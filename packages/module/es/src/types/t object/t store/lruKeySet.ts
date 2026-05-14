@@ -1,7 +1,7 @@
 /**
  * Ordered key set that tracks LRU access order.
  * Uses a `Set<string>` so JS insertion-order iteration gives LRU semantics.
- * Does not store values -- the Store handles that.
+ * Does not store values; the Store handles that.
  *
  * @example
  * ```ts

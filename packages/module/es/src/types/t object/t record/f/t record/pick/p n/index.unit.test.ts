@@ -50,7 +50,7 @@ await describe({
         expect(() =>
           $({
             original: user,
-            // @ts-expect-error -- intentionally passing non-existent key to test runtime error
+            // @ts-expect-error; intentionally passing non-existent key to test runtime error
             toPick: new Set(['id', 'nonexistent',] as const,),
           },)
         )

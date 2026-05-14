@@ -25,9 +25,9 @@ export type $ = string & { length: 1; };
 const _one: $ = '1' as $;
 
 /** Compile-time test: multi-character string fails assignment. */
-// @ts-expect-error -- Type 'string' is not assignable to type '$'. Type 'string' is not assignable to type '{ length: 1; }'.ts(2322)
+// @ts-expect-error; Type 'string' is not assignable to type '$'. Type 'string' is not assignable to type '{ length: 1; }'.ts(2322)
 const _two: $ = '12';
 
 /** Compile-time test: empty string fails assignment. */
-// @ts-expect-error -- Type 'string' is not assignable to type '$'. Type 'string' is not assignable to type '{ length: 1; }'.ts(2322)
+// @ts-expect-error; Type 'string' is not assignable to type '$'. Type 'string' is not assignable to type '{ length: 1; }'.ts(2322)
 const _empty: $ = '';

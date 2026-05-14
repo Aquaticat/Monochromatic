@@ -22,7 +22,7 @@ const _one: $ = '1';
 const _two: $ = '12';
 
 /** Compile-time test: empty string fails assignment. */
-// @ts-expect-error -- Type '""' is not assignable to type '`${any}${string}`'.ts(2322)
+// @ts-expect-error; Type '""' is not assignable to type '`${any}${string}`'.ts(2322)
 const _empty: $ = '';
 
 // No need for a runtime type guard because TypeScript's static type checking will immediately flag any empty string passed to a function that expects $.

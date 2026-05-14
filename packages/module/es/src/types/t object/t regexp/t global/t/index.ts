@@ -8,5 +8,5 @@ export type $ = RegExp & {
 const _a: $ = /a/g as $;
 
 /** Compile-time test: non-global regex fails the brand check. */
-// @ts-expect-error -- Isn't global
+// @ts-expect-error; Isn't global
 const _b: $ = /b/;

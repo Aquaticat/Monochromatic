@@ -577,7 +577,7 @@ const testRealGenericStringToNumber = (function testRealGenericStringToNumber():
   }
 
   // Generic Extends Pattern
-  // @ts-expect-error -- StringToNumberSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  // @ts-expect-error; StringToNumberSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
   isRealSchema_GenericExtends(value,);
 
   if (isRealSchema_GenericExtends(value as RealSchema & typeof value,)) {
@@ -591,7 +591,7 @@ const testRealGenericStringToNumber = (function testRealGenericStringToNumber():
   // to demonstrate what happens inside the if block
 
   // Generic Extends with Inference Pattern
-  // @ts-expect-error -- StringToNumberSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  // @ts-expect-error; StringToNumberSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
   isRealSchema_GenericExtendsInfer(value,);
 
   if (isRealSchema_GenericExtendsInfer(value as RealSchema & typeof value,)) {
@@ -601,7 +601,7 @@ const testRealGenericStringToNumber = (function testRealGenericStringToNumber():
   }
 
   // Generic Extends with Inference (Non-Intersection) Pattern
-  // @ts-expect-error -- StringToNumberSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  // @ts-expect-error; StringToNumberSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
   isRealSchema_GenericExtendsDirect(value,);
 
   if (isRealSchema_GenericExtendsDirect(value as RealSchema & typeof value,)) {
@@ -645,7 +645,7 @@ const testRealGenericWeightedString = (function testRealGenericWeightedString():
   }
 
   // Generic Extends Pattern
-  // @ts-expect-error -- WeightedStringSchema is not assignable to RealSchema (demonstrates compile-time safety)
+  // @ts-expect-error; WeightedStringSchema is not assignable to RealSchema (demonstrates compile-time safety)
   isRealSchema_GenericExtends(value,);
 
   if (isRealSchema_GenericExtends(value as RealSchema & typeof value,)) {
@@ -657,7 +657,7 @@ const testRealGenericWeightedString = (function testRealGenericWeightedString():
   }
 
   // Generic Extends with Inference Pattern
-  // @ts-expect-error -- WeightedStringSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  // @ts-expect-error; WeightedStringSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
   isRealSchema_GenericExtendsInfer(value,);
 
   if (isRealSchema_GenericExtendsInfer(value as RealSchema & typeof value,)) {
@@ -669,7 +669,7 @@ const testRealGenericWeightedString = (function testRealGenericWeightedString():
   }
 
   // Generic Extends with Inference (Non-Intersection) Pattern
-  // @ts-expect-error -- WeightedStringSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  // @ts-expect-error; WeightedStringSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
   isRealSchema_GenericExtendsDirect(value,);
 
   if (isRealSchema_GenericExtendsDirect(value as RealSchema & typeof value,)) {
@@ -709,7 +709,7 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser(): void {
     const user = value.parse(userInput,); // Should return User type
   }
 
-  // @ts-expect-error -- NamedUserSchema is not assignable to RealSchema (demonstrates compile-time safety)
+  // @ts-expect-error; NamedUserSchema is not assignable to RealSchema (demonstrates compile-time safety)
   isRealSchema_GenericExtends(value,);
 
   if (isRealSchema_GenericExtends(value as RealSchema & typeof value,)) {
@@ -724,7 +724,7 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser(): void {
     },);
   }
 
-  // @ts-expect-error -- NamedUserSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  // @ts-expect-error; NamedUserSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
   isRealSchema_GenericExtendsInfer(value,);
 
   if (isRealSchema_GenericExtendsInfer(value as RealSchema & typeof value,)) {
@@ -739,7 +739,7 @@ const testRealGenericNamedUser = (function testRealGenericNamedUser(): void {
     },);
   }
 
-  // @ts-expect-error -- NamedUserSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+  // @ts-expect-error; NamedUserSchema is not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
   isRealSchema_GenericExtendsDirect(value,);
 
   if (isRealSchema_GenericExtendsDirect(value as RealSchema & typeof value,)) {
@@ -776,7 +776,7 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): v
     // asyncResult should be Promise<User> or Promisable<User>
   }
 
-  // @ts-expect-error -- AsyncUserSchema is not assignable to RealSchemaAsync (demonstrates compile-time safety)
+  // @ts-expect-error; AsyncUserSchema is not assignable to RealSchemaAsync (demonstrates compile-time safety)
   isRealSchemaAsync_GenericExtends(asyncSchema,);
 
   if (isRealSchemaAsync_GenericExtends(
@@ -808,7 +808,7 @@ const testRealGenericAsyncVariants = (function testRealGenericAsyncVariants(): v
     },);
   }
 
-  // @ts-expect-error -- UserTransformSchema is not assignable to RealMaybeAsyncSchema (demonstrates compile-time safety)
+  // @ts-expect-error; UserTransformSchema is not assignable to RealMaybeAsyncSchema (demonstrates compile-time safety)
   isRealMaybeAsyncSchema_GenericExtends(flexibleSchema,);
 
   if (isRealMaybeAsyncSchema_GenericExtends(
@@ -850,14 +850,14 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
 
   if (isRealSchema_Unknown(unknownValue,)) {
     unknownValue.parse; // Should be callable but loses all constraint info
-    // @ts-expect-error -- Unknown loses additional properties from unknown input
+    // @ts-expect-error; Unknown loses additional properties from unknown input
     unknownValue.weight;
   }
 
   if (isRealSchema_Generic(unknownValue,)) {
-    // @ts-expect-error -- Generic pattern with unknown creates never type
+    // @ts-expect-error; Generic pattern with unknown creates never type
     unknownValue.parse;
-    // @ts-expect-error -- Never type means no properties accessible
+    // @ts-expect-error; Never type means no properties accessible
     unknownValue.weight;
   }
 
@@ -866,7 +866,7 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
 
   if (isRealSchema_Unknown(anyValue,)) {
     anyValue.parse; // Should be callable
-    // @ts-expect-error -- Unknown pattern loses additional properties even from any
+    // @ts-expect-error; Unknown pattern loses additional properties even from any
     anyValue.extraData;
   }
 
@@ -934,7 +934,7 @@ const testRealGenericEdgeCases = (function testRealGenericEdgeCases(): void {
   }
 
   if (isRealSchema_Generic(invalidSchema,)) {
-    // @ts-expect-error -- Generic pattern creates never for invalid input
+    // @ts-expect-error; Generic pattern creates never for invalid input
     invalidSchema.parse;
   }
 })();
@@ -956,7 +956,7 @@ const testRealGenericPromisableBehavior =
       // const awaited = await result; // Should be number
     }
 
-    // @ts-expect-error -- RealSchema<string, Promise<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+    // @ts-expect-error; RealSchema<string, Promise<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
     isRealSchema_GenericExtends(promiseSchema,);
 
     if (isRealSchema_GenericExtends(
@@ -966,7 +966,7 @@ const testRealGenericPromisableBehavior =
       // Result should maintain Promise<number> type
     }
 
-    // @ts-expect-error -- RealSchema<string, Promise<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+    // @ts-expect-error; RealSchema<string, Promise<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
     isRealSchema_GenericExtendsDirect(promiseSchema,);
 
     if (isRealSchema_GenericExtendsDirect(
@@ -990,7 +990,7 @@ const testRealGenericPromisableBehavior =
       }
     }
 
-    // @ts-expect-error -- RealSchema<string, Promisable<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+    // @ts-expect-error; RealSchema<string, Promisable<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
     isRealSchema_GenericExtends(promisableSchema,);
 
     if (isRealSchema_GenericExtends(
@@ -1008,7 +1008,7 @@ const testRealGenericPromisableBehavior =
       }
     }
 
-    // @ts-expect-error -- RealSchema<string, Promisable<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
+    // @ts-expect-error; RealSchema<string, Promisable<number>> not assignable to RealSchema<unknown, unknown> (demonstrates compile-time safety)
     isRealSchema_GenericExtendsDirect(promisableSchema,);
 
     if (isRealSchema_GenericExtendsDirect(
@@ -1056,7 +1056,7 @@ const testRealGenericComplexConstraints =
       }
     }
 
-    // @ts-expect-error -- ValidatedTransformSchema is not assignable to RealSchema (demonstrates compile-time safety)
+    // @ts-expect-error; ValidatedTransformSchema is not assignable to RealSchema (demonstrates compile-time safety)
     isRealSchema_GenericExtends(validatedSchema,);
 
     if (isRealSchema_GenericExtends(
@@ -1074,7 +1074,7 @@ const testRealGenericComplexConstraints =
       }
     }
 
-    // @ts-expect-error -- ValidatedTransformSchema is not assignable to RealSchema (demonstrates compile-time safety)
+    // @ts-expect-error; ValidatedTransformSchema is not assignable to RealSchema (demonstrates compile-time safety)
     isRealSchema_GenericExtendsDirect(validatedSchema,);
 
     if (isRealSchema_GenericExtendsDirect(

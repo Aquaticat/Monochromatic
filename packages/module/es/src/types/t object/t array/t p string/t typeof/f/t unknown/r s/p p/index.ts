@@ -216,7 +216,7 @@ export function $(value: unknown,): TypeOf {
           'Object',
           {
             iterable: typeof (
-                // @ts-expect-error -- Might be Async Iterable
+                // @ts-expect-error; Might be Async Iterable
                 myValue[Symbol.asyncIterator]
               ) === 'function'
               ? [
@@ -224,7 +224,7 @@ export function $(value: unknown,): TypeOf {
                 { async: true, },
               ]
               : (typeof (
-                  // @ts-expect-error -- Might be Iterable
+                  // @ts-expect-error; Might be Iterable
                   myValue[Symbol.iterator]
                 ) === 'function'
                 ? [

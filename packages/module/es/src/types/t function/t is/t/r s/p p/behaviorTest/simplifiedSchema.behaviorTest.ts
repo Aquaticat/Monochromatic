@@ -314,24 +314,24 @@ const testSimplifiedUnknownValue = (function testSimplifiedUnknownValue(): void 
   // Unknown guard
   if (isSchema_Unknown(value,)) {
     value.parse('test',);
-    // @ts-expect-error -- unknown input narrowed to Schema, weight property lost
+    // @ts-expect-error; unknown input narrowed to Schema, weight property lost
     value.weight;
   }
 
   // Generic guard
   if (isSchema_Generic(value,)) {
-    // @ts-expect-error -- unknown creates never type in generic pattern
+    // @ts-expect-error; unknown creates never type in generic pattern
     value.parse('test',);
-    // @ts-expect-error -- unknown creates never type, no weight property
+    // @ts-expect-error; unknown creates never type, no weight property
     value.weight;
   }
 
   // Typed guard (can't call without cast)
-  // @ts-expect-error -- unknown is not Schema
+  // @ts-expect-error; unknown is not Schema
   isSchema_Typed(value,);
 
   // Generic extends guard (can't call without cast)
-  // @ts-expect-error -- unknown can't extend Schema
+  // @ts-expect-error; unknown can't extend Schema
   isSchema_GenericExtends(value,);
 })();
 
@@ -342,7 +342,7 @@ const testSimplifiedAnyValue = (function testSimplifiedAnyValue(): void {
   // Unknown guard
   if (isSchema_Unknown(value,)) {
     value.parse('test',);
-    // @ts-expect-error -- any input gets narrowed to Schema, losing weight
+    // @ts-expect-error; any input gets narrowed to Schema, losing weight
     value.weight;
   }
 
@@ -355,7 +355,7 @@ const testSimplifiedAnyValue = (function testSimplifiedAnyValue(): void {
   // Typed guard
   if (isSchema_Typed(value,)) {
     value.parse('test',);
-    // @ts-expect-error -- any input gets narrowed to Schema, losing weight
+    // @ts-expect-error; any input gets narrowed to Schema, losing weight
     value.weight;
   }
 
@@ -380,11 +380,11 @@ const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes(): void {
     unionWithString.parse('test',); // Does generic handle union directly?
 
   // Typed guard - direct call (can't call)
-  // @ts-expect-error -- union type is not assignable to Schema
+  // @ts-expect-error; union type is not assignable to Schema
   isSchema_Typed(unionWithString,);
 
   // Generic extends guard - direct call (can't call)
-  // @ts-expect-error -- union type can't extend Schema
+  // @ts-expect-error; union type can't extend Schema
   isSchema_GenericExtends(unionWithString,);
 
   // Union with null
@@ -392,13 +392,13 @@ const testSimplifiedUnionTypes = (function testSimplifiedUnionTypes(): void {
 
   if (isSchema_Unknown(unionWithNull,)) {
     unionWithNull.parse('test',);
-    // @ts-expect-error -- union narrowing loses weight property
+    // @ts-expect-error; union narrowing loses weight property
     unionWithNull.weight;
   }
 
   if (isSchema_Generic(unionWithNull,)) {
     unionWithNull.parse('test',);
-    // @ts-expect-error -- union narrowing loses weight property
+    // @ts-expect-error; union narrowing loses weight property
     unionWithNull.weight;
   }
 })();
@@ -442,7 +442,7 @@ const testSimplifiedEdgeCases = (function testSimplifiedEdgeCases(): void {
     notASchema.parse('test',); // Type narrowed to Schema, but runtime fails
 
   if (isSchema_Generic(notASchema,)) {
-    // @ts-expect-error -- notASchema creates never type in generic
+    // @ts-expect-error; notASchema creates never type in generic
     notASchema.parse('test',);
   }
 
