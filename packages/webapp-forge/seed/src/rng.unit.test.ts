@@ -22,7 +22,7 @@ await describe({
   name: '',
   children: [
     describe({
-      name: 'rng',
+      name: rng.name,
       children: [
         it({
           name: 'returns the same value for the same seed',
@@ -44,7 +44,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'rngInt',
+      name: rngInt.name,
       children: [
         it({
           name: 'returns lo when hi <= lo',
@@ -79,7 +79,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'rngPick',
+      name: rngPick.name,
       children: [
         it({
           name: 'returns undefined for empty input',
