@@ -65,13 +65,13 @@ export function $(
     trimmer: Global;
   },
 ): string {
-  // Use matchAll to get all matches in a single regex execution
+  /** All regex matches as an iterator; consumed once below into an array for reverse traversal. */
   const matches = str.matchAll(trimmer,);
 
-  // Convert iterator to array and reverse to process from end
+  /** Matches reversed so the scan walks inward from the string's end. */
   const matchArray = [...matches,].toReversed();
 
-  // Track how much to trim from the end
+  /** Running count of characters to strip from the end as consecutive trailing matches are confirmed. */
   let totalTrimLength = 0;
 
   // Process matches in reverse order to find consecutive trailing matches
@@ -79,11 +79,14 @@ export function $(
     // Index 0: the full matched text
     // Index 1+: captured groups (parentheses parts)
     // Extra properties: index (position), input (original string)
+    /** Start offset of this match in the original string. */
     const matchIndex = match.index;
+    /** Length of the matched substring; added to `totalTrimLength` when the match abuts the current trim boundary. */
     const matchLength = match[0].length;
 
-    // For trimming from the end, check if the match ends at the current boundary
+    /** Exclusive end offset of this match; used to detect whether it abuts the current trim boundary. */
     const matchEndsAt = matchIndex + matchLength;
+    /** Current trim boundary; matches must end exactly here to count as consecutive trailing matches. */
     const currentBoundary = str.length - totalTrimLength;
 
     // If match doesn't end exactly at the current trim boundary, stop

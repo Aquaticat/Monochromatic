@@ -31,6 +31,7 @@ export function serializePrimitive(
     .with(
       'boolean',
       function handler() {
+        /** Cast of `obj` to its narrowed primitive after the discriminant match confirmed the runtime type. */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- discriminant match confirms boolean
         const boolObj = obj as boolean;
         return String(boolObj,);
