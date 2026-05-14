@@ -36,11 +36,20 @@ import {
  * @param status - HTTP status code (defaults to 200)
  *
  * @returns JSON response with content-type header
+ *
+ * @example
+ * ```ts
+ * return jsonResponse({ payload: { ok: true, }, });
+ * return jsonResponse({ payload: { error: 'not found', }, status: HTTP_NOT_FOUND, });
+ * ```
  */
-function jsonResponse(
-  payload: unknown,
-  status: number = HTTP_OK,
-): Response {
+function jsonResponse({
+  payload,
+  status = HTTP_OK,
+}: {
+  payload: unknown;
+  status?: number;
+},): Response {
   return Response.json(
     payload,
     { status, },
@@ -64,19 +73,19 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
     /** Loosely-typed body validated by `isRecord` before field-by-field access. */
     const body: unknown = await req.json();
     if (!isRecord(body,)) {
-      return jsonResponse(
-        { error: 'Invalid request body', },
-        HTTP_BAD_REQUEST,
-      );
+      return jsonResponse({
+        payload: { error: 'Invalid request body', },
+        status: HTTP_BAD_REQUEST,
+      },);
     }
 
     /** Trimmed title; empty string short-circuits to the 400 branch below. */
-    const title = typeof body.title === 'string' ? body.title.trim() : '';
+    const title = (typeof body.title) === 'string' ? body.title.trim() : '';
     if (title.length === 0) {
-      return jsonResponse(
-        { error: 'Task title is required', },
-        HTTP_BAD_REQUEST,
-      );
+      return jsonResponse({
+        payload: { error: 'Task title is required', },
+        status: HTTP_BAD_REQUEST,
+      },);
     }
 
     /** Allowed priority values reused for both `priority` and `complexity` parsing. */
@@ -84,28 +93,28 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
     /** Created row returned by the data layer; serialised below with 201. */
     const task = await createTask({
       title,
-      description: typeof body.description === 'string' ? body.description : null,
+      description: (typeof body.description) === 'string' ? body.description : null,
       tags: parseStringArray(body.tags,) ?? [],
       locations: parseStringArray(body.locations,) ?? [],
-      priority: parseEnumValue<TaskPriority>(
-        body.priority,
-        priorities,
-      ) ?? null,
-      complexity: parseEnumValue<TaskPriority>(
-        body.complexity,
-        priorities,
-      ) ?? null,
+      priority: parseEnumValue<TaskPriority>({
+        value: body.priority,
+        validValues: priorities,
+      },) ?? null,
+      complexity: parseEnumValue<TaskPriority>({
+        value: body.complexity,
+        validValues: priorities,
+      },) ?? null,
     },);
-    return jsonResponse(
-      task,
-      HTTP_CREATED,
-    );
+    return jsonResponse({
+      payload: task,
+      status: HTTP_CREATED,
+    },);
   }
   catch (error) {
-    return jsonResponse(
-      { error: String(error,), },
-      HTTP_INTERNAL_SERVER_ERROR,
-    );
+    return jsonResponse({
+      payload: { error: String(error,), },
+      status: HTTP_INTERNAL_SERVER_ERROR,
+    },);
   }
 }
 
@@ -120,44 +129,47 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
  *
  * @example
  * ```ts
- * const response = await handleUpdateTask(request, 'abc-123');
+ * const response = await handleUpdateTask({ req: request, id: 'abc-123', });
  * ```
  */
-export async function handleUpdateTask(
-  req: Request,
-  id: string,
-): Promise<Response> {
+export async function handleUpdateTask({
+  req,
+  id,
+}: {
+  req: Request;
+  id: string;
+},): Promise<Response> {
   try {
     /** Loosely-typed body validated by `parseTaskUpdateInput` below. */
     const body: unknown = await req.json();
     /** Normalised update payload; null indicates the body failed validation. */
     const taskUpdateInput = parseTaskUpdateInput(body,);
     if (taskUpdateInput === null) {
-      return jsonResponse(
-        { error: 'Invalid update payload', },
-        HTTP_BAD_REQUEST,
-      );
+      return jsonResponse({
+        payload: { error: 'Invalid update payload', },
+        status: HTTP_BAD_REQUEST,
+      },);
     }
 
     /** Result row; null indicates the row was not found, surfaced as 404 below. */
-    const task = await updateTask(
+    const task = await updateTask({
       id,
-      taskUpdateInput,
-    );
+      input: taskUpdateInput,
+    },);
     if (task === null) {
-      return jsonResponse(
-        { error: 'Task not found', },
-        HTTP_NOT_FOUND,
-      );
+      return jsonResponse({
+        payload: { error: 'Task not found', },
+        status: HTTP_NOT_FOUND,
+      },);
     }
 
-    return jsonResponse(task,);
+    return jsonResponse({ payload: task, },);
   }
   catch (error) {
-    return jsonResponse(
-      { error: String(error,), },
-      HTTP_INTERNAL_SERVER_ERROR,
-    );
+    return jsonResponse({
+      payload: { error: String(error,), },
+      status: HTTP_INTERNAL_SERVER_ERROR,
+    },);
   }
 }
 
@@ -177,11 +189,11 @@ export async function handleDeleteTask(id: string,): Promise<Response> {
   /** Whether a row was actually removed; `false` is surfaced as 404 below. */
   const deleted = await deleteTask(id,);
   if (!deleted) {
-    return jsonResponse(
-      { error: 'Task not found', },
-      HTTP_NOT_FOUND,
-    );
+    return jsonResponse({
+      payload: { error: 'Task not found', },
+      status: HTTP_NOT_FOUND,
+    },);
   }
 
-  return jsonResponse({ ok: true, },);
+  return jsonResponse({ payload: { ok: true, }, },);
 }

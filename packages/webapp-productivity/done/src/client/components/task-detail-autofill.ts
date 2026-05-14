@@ -129,25 +129,25 @@ export class AutofillManager {
       /* oxlint-enable typescript/no-unsafe-type-assertion */
       this.autofilled.clear();
 
-      if (result.tags.length > 0 && metadata.tags.length === 0) {
+      if ((result.tags.length > 0) && (metadata.tags.length === 0)) {
         metadata.tags = result.tags;
         this.autofilled.add('tags',);
       }
-      if (result.locations.length > 0 && metadata.locations.length === 0) {
+      if ((result.locations.length > 0) && (metadata.locations.length === 0)) {
         metadata.locations = result.locations;
         this.autofilled.add('locations',);
       }
-      if (result.priority !== null && metadata.priority === null) {
+      if ((result.priority !== null) && (metadata.priority === null)) {
         metadata.priority = result.priority;
         this.autofilled.add('priority',);
       }
-      if (result.complexity !== null && metadata.complexity === null) {
+      if ((result.complexity !== null) && (metadata.complexity === null)) {
         metadata.complexity = result.complexity;
         this.autofilled.add('complexity',);
       }
     }
     catch (error: unknown) {
-      if (error instanceof DOMException && error.name === 'AbortError')
+      if ((error instanceof DOMException) && (error.name === 'AbortError'))
         return;
       console.error(
         'Autofill request failed:',

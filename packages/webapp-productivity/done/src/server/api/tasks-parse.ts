@@ -26,7 +26,7 @@ const priorities = new Set<string>(TASK_PRIORITIES,);
  * ```
  */
 export function isRecord(value: unknown,): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
+  return ((typeof value) === 'object') && (value !== null);
 }
 
 /**
@@ -47,7 +47,7 @@ export function parseStringArray(value: unknown,): string[] | null {
   /** Normalised entries: only strings, trimmed, non-empty; returned as the parsed result. */
   const parsedValues = value
     .filter(function isString(entry,): entry is string {
-      return typeof entry === 'string';
+      return (typeof entry) === 'string';
     },)
     .map(function trimEntry(entry,) {
       return entry.trim();
@@ -71,18 +71,21 @@ export function parseStringArray(value: unknown,): string[] | null {
  *
  * @example
  * ```ts
- * const priority = parseEnumValue<TaskPriority>(body['priority'], getPriorities());
+ * const priority = parseEnumValue<TaskPriority>({ value: body['priority'], validValues: getPriorities(), });
  * ```
  */
-export function parseEnumValue<T extends string,>(
-  value: unknown,
-  validValues: Set<string>,
-): T | null | undefined {
+export function parseEnumValue<T extends string,>({
+  value,
+  validValues,
+}: {
+  value: unknown;
+  validValues: Set<string>;
+},): T | null | undefined {
   if (value === undefined)
     return undefined;
   if (value === null)
     return null;
-  if (typeof value !== 'string')
+  if ((typeof value) !== 'string')
     return undefined;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
   return validValues.has(value,) ? (value as T) : undefined;

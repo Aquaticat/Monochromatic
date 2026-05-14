@@ -83,33 +83,31 @@ function parseAutofillResponse(raw: string,): AutofillResult {
     /** Raw object asserted to the loose shape; every field is rechecked individually. */
     const parsed = JSON.parse(raw,) as RawAutofillResponse;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
-    if (typeof parsed !== 'object')
+    if ((typeof parsed) !== 'object')
       return empty;
 
     /** String-only tag list filtered defensively against malformed AI output. */
     const tags = Array.isArray(parsed.tags,)
       ? parsed.tags.filter(function isString(tag,): tag is string {
-        return typeof tag === 'string';
+        return (typeof tag) === 'string';
       },)
       : [];
 
     /** String-only location list filtered defensively against malformed AI output. */
     const locations = Array.isArray(parsed.locations,)
       ? parsed.locations.filter(function isString(location,): location is string {
-        return typeof location === 'string';
+        return (typeof location) === 'string';
       },)
       : [];
 
     /* oxlint-disable typescript/no-unsafe-type-assertion -- validated by Set.has check */
     /** Priority gated by the allowed-value set; everything else collapses to null. */
-    const priority = typeof parsed
-            .priority === 'string' && VALID_PRIORITIES.has(parsed.priority,)
+    const priority = ((typeof parsed.priority) === 'string') && VALID_PRIORITIES.has(parsed.priority,)
       ? (parsed.priority as TaskPriority)
       : null;
 
     /** Complexity gated by the allowed-value set; everything else collapses to null. */
-    const complexity = typeof parsed
-            .complexity === 'string' && VALID_COMPLEXITIES.has(parsed.complexity,)
+    const complexity = ((typeof parsed.complexity) === 'string') && VALID_COMPLEXITIES.has(parsed.complexity,)
       ? (parsed.complexity as TaskComplexity)
       : null;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -172,7 +170,7 @@ export async function handleAutofill(req: Request,): Promise<Response> {
     const body = (await req.json()) as Record<string, unknown>;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     /** Trimmed title; empty string short-circuits to the empty-response branch below. */
-    const title = typeof body.title === 'string' ? body.title.trim() : '';
+    const title = (typeof body.title) === 'string' ? body.title.trim() : '';
 
     if (title.length === 0) {
       return Response.json({
@@ -188,11 +186,11 @@ export async function handleAutofill(req: Request,): Promise<Response> {
     /** Locations already in use, forwarded so the model prefers consistency. */
     const existingLocations = await listAllLocations();
     /** Composed chat messages ready for the completion endpoint. */
-    const messages = buildAutofillMessages(
+    const messages = buildAutofillMessages({
       title,
       existingTags,
       existingLocations,
-    );
+    },);
 
     /** Discriminated result wrapping the model output or a transport error. */
     const result = await chatCompletion({

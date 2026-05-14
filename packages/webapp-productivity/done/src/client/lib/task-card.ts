@@ -73,7 +73,7 @@ class TaskCard extends HTMLElement {
     const task = this.#task;
     /** Snapshot of the configured options; early-returns below if not yet set. */
     const options = this.#options;
-    if (task === null || options === null)
+    if ((task === null) || (options === null))
       return;
 
     /** Chip label strings built from the task fields. */
@@ -156,14 +156,17 @@ customElements.define(
  *
  * @example
  * ```ts
- * const card = createTaskCard(task, { onOpen: handleOpen, onToggleComplete: handleComplete });
+ * const card = createTaskCard({ task, options: { onOpen: handleOpen, onToggleComplete: handleComplete, }, });
  * list.append(card);
  * ```
  */
-export function createTaskCard(
-  task: Task,
-  options: TaskCardOptions,
-): TaskCard {
+export function createTaskCard({
+  task,
+  options,
+}: {
+  task: Task;
+  options: TaskCardOptions;
+},): TaskCard {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-card is registered as TaskCard */
   /** Live `TaskCard` instance so the imperative `configure()` API is reachable. */
   const card = document.createElement('task-card',) as TaskCard;

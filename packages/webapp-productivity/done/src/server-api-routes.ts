@@ -34,11 +34,19 @@ import { HTTP_BAD_REQUEST, } from '@monochromatic-dev/module-numeric-const';
  * @returns Parameter value
  *
  * @throws HTTPError 400 when parameter is missing
+ *
+ * @example
+ * ```ts
+ * const id = requireParam({ event, name: 'id', });
+ * ```
  */
-function requireParam(
-  event: Parameters<typeof getRouterParam>[0],
-  name: string,
-): string {
+function requireParam({
+  event,
+  name,
+}: {
+  event: Parameters<typeof getRouterParam>[0];
+  name: string;
+},): string {
   /** Route value as returned by h3; converted to a thrown 400 below when absent. */
   const value = getRouterParam(
     event,
@@ -75,14 +83,14 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id',
     defineHandler(function handleUpdateTaskRoute(event,) {
       /** Required route slug; thrown as 400 by `requireParam` when absent. */
-      const id = requireParam(
+      const id = requireParam({
         event,
-        'id',
-      );
-      return handleUpdateTask(
-        event.req,
+        name: 'id',
+      },);
+      return handleUpdateTask({
+        req: event.req,
         id,
-      );
+      },);
     },),
   );
 
@@ -90,10 +98,10 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id',
     defineHandler(function handleDeleteTaskRoute(event,) {
       /** Required route slug; thrown as 400 by `requireParam` when absent. */
-      const id = requireParam(
+      const id = requireParam({
         event,
-        'id',
-      );
+        name: 'id',
+      },);
       return handleDeleteTask(id,);
     },),
   );
@@ -102,10 +110,10 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id/start',
     defineHandler(function handleStartTimerRoute(event,) {
       /** Required route slug; thrown as 400 by `requireParam` when absent. */
-      const id = requireParam(
+      const id = requireParam({
         event,
-        'id',
-      );
+        name: 'id',
+      },);
       return handleStartTimer(id,);
     },),
   );
@@ -114,10 +122,10 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id/stop',
     defineHandler(function handleStopTimerRoute(event,) {
       /** Required route slug; thrown as 400 by `requireParam` when absent. */
-      const id = requireParam(
+      const id = requireParam({
         event,
-        'id',
-      );
+        name: 'id',
+      },);
       return handleStopTimer(id,);
     },),
   );
@@ -126,10 +134,10 @@ export function registerApiRoutes(app: H3,): void {
     '/api/tasks/:id/complete',
     defineHandler(function handleCompleteTaskRoute(event,) {
       /** Required route slug; thrown as 400 by `requireParam` when absent. */
-      const id = requireParam(
+      const id = requireParam({
         event,
-        'id',
-      );
+        name: 'id',
+      },);
       return handleCompleteTask(id,);
     },),
   );

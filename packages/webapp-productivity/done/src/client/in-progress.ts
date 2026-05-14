@@ -65,19 +65,19 @@ const list = h({
 
 for (const task of pageData.tasks) {
   list.append(
-    createTaskCard(
+    createTaskCard({
       task,
-      {
+      options: {
         onOpen: handleOpen,
         onToggleComplete: async function handleStop(taskId,) {
-          await api(
-            `/api/tasks/${taskId}/stop`,
-            { method: 'POST', },
-          );
+          await api({
+            path: `/api/tasks/${taskId}/stop`,
+            options: { method: 'POST', },
+          },);
           globalThis.location.reload();
         },
       },
-    ),
+    },),
   );
 }
 

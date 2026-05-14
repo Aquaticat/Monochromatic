@@ -78,13 +78,13 @@ class SearchBar extends HTMLElement {
     // Debounced search dispatch
     /** Pre-bound dispatcher so the timeout fires without losing `this`. */
     const dispatchFn = this.dispatchEvent.bind(this,);
-    /** Shared timer handle; reassigned on every keystroke so the previous fire is cancelled. */
-    let timeout: ReturnType<typeof setTimeout> | undefined = undefined;
+    /** Container for the shared timer handle so the binding stays `const` while the handle is reassigned on every keystroke. */
+    const timer: { handle: ReturnType<typeof setTimeout> | undefined; } = { handle: undefined, };
     input.addEventListener(
       'input',
       function handleInput(): void {
-        clearTimeout(timeout,);
-        timeout = setTimeout(
+        clearTimeout(timer.handle,);
+        timer.handle = setTimeout(
           function emitSearch(): void {
             dispatchFn(
               new CustomEvent(

@@ -26,14 +26,22 @@ import type { ChatMessage, } from './client.ts';
  *
  * @example
  * ```ts
- * const messages = buildAutofillMessages('Buy groceries', ['errand'], ['Walmart']);
+ * const messages = buildAutofillMessages({
+ *   title: 'Buy groceries',
+ *   existingTags: ['errand'],
+ *   existingLocations: ['Walmart'],
+ * });
  * ```
  */
-export function buildAutofillMessages(
-  title: string,
-  existingTags: readonly string[],
-  existingLocations: readonly string[],
-): ChatMessage[] {
+export function buildAutofillMessages({
+  title,
+  existingTags,
+  existingLocations,
+}: {
+  title: string;
+  existingTags: readonly string[];
+  existingLocations: readonly string[];
+},): ChatMessage[] {
   /** Schema-bearing system message; passed back as the first element of the chat array. */
   const systemPrompt =
     `You are a task metadata assistant. Given a task title, infer metadata.
@@ -79,7 +87,7 @@ For consistency, prefer these existing locations when applicable: ${
  *
  * The AI returns an ordered array of task IDs, most relevant first.
  *
- * @param tasks - Serializable task summaries (id, title, tags, locations, priority, dueDate, complexity)
+ * @param tasks - Serialisable task summaries (id, title, tags, locations, priority, dueDate, complexity)
  *
  * @param currentLocation - User's current or pinned location, or null
  *
@@ -89,10 +97,18 @@ For consistency, prefer these existing locations when applicable: ${
  *
  * @example
  * ```ts
- * const messages = buildSuggestionMessages(tasks, 'home', 'focus on errands');
+ * const messages = buildSuggestionMessages({
+ *   tasks,
+ *   currentLocation: 'home',
+ *   focusDirective: 'focus on errands',
+ * });
  * ```
  */
-export function buildSuggestionMessages(
+export function buildSuggestionMessages({
+  tasks,
+  currentLocation,
+  focusDirective,
+}: {
   tasks: readonly {
     id: string;
     title: string;
@@ -101,10 +117,10 @@ export function buildSuggestionMessages(
     priority: string | null;
     dueDate: string | null;
     complexity: string | null;
-  }[],
-  currentLocation: string | null,
-  focusDirective: string | null,
-): ChatMessage[] {
+  }[];
+  currentLocation: string | null;
+  focusDirective: string | null;
+},): ChatMessage[] {
   /** Snapshot of the request time so the model can reason about due-date proximity. */
   const currentTime = new Date().toISOString();
 

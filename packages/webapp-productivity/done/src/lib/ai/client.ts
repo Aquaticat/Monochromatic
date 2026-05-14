@@ -46,7 +46,7 @@ function isRateLimited(): boolean {
 
   // Discard entries older than the window
   /* oxlint-disable typescript/no-unsafe-type-assertion -- array index 0 is checked via length guard */
-  while (requestTimestamps.length > 0 && (requestTimestamps[0] as number) < cutoff)
+  while ((requestTimestamps.length > 0) && ((requestTimestamps[0] as number) < cutoff))
     requestTimestamps.shift();
   /* oxlint-enable typescript/no-unsafe-type-assertion */
 

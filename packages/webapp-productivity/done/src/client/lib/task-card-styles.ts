@@ -17,13 +17,13 @@ import {
 } from '../mixins.ts';
 
 /** Checkbox box size in rem (1 3/4). */
-const CHECKBOX_SIZE = 1 + 1 / 2 + 1 / 2 / 2;
+const CHECKBOX_SIZE = 1 + (1 / 2) + ((1 / 2) / 2);
 
 /** Checkbox border width in rem (1/4). */
 const CHECKBOX_BORDER = 1 / 2 / 2;
 
 /** Title font size in rem (1 1/4). */
-const TITLE_FONT_SIZE = 1 + 1 / 2 / 2;
+const TITLE_FONT_SIZE = 1 + ((1 / 2) / 2);
 
 /** Chip gap in rem (1/4). */
 const CHIP_GAP = 1 / 2 / 2;

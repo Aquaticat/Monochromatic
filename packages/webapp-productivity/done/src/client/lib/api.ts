@@ -21,13 +21,17 @@ export { showToast, };
  *
  * @example
  * ```ts
- * const task = await api<Task>('/api/tasks/abc-123');
+ * const task = await api<Task>({ path: '/api/tasks/abc-123', });
+ * await api({ path: '/api/tasks', options: { method: 'POST', body: JSON.stringify({ title: 'New', }), }, });
  * ```
  */
-export async function api<TResponse = unknown,>(
-  path: string,
-  options?: RequestInit,
-): Promise<TResponse> {
+export async function api<TResponse = unknown,>({
+  path,
+  options,
+}: {
+  path: string;
+  options?: RequestInit;
+},): Promise<TResponse> {
   /** Base headers merged with any caller-supplied overrides below. */
   const headers = new Headers({ 'Content-Type': 'application/json', },);
   if (options?.headers !== undefined) {
@@ -61,10 +65,8 @@ export async function api<TResponse = unknown,>(
     }
     /** Surface message extracted from `error.error` when present, otherwise the generic fallback. */
     const message =
-      typeof error === 'object' && error !== null && 'error' in error && typeof error
-            .error === 'string'
-        ? error
-          .error
+      ((typeof error) === 'object') && (error !== null) && ('error' in error) && ((typeof error.error) === 'string')
+        ? error.error
         : 'Request failed';
     showToast(message,);
     throw new Error(message,);

@@ -26,7 +26,7 @@ const FOCUS_OFFSET = -(1 / 2 / 2 / 2);
 const STROKE_WIDTH = 4;
 
 /** Heading and title-input font size in rem. */
-const HEADING_FONT_SIZE = 1 + 1 / 2;
+const HEADING_FONT_SIZE = 1 + (1 / 2);
 
 /** Normal font weight for headings and inputs. */
 const FONT_WEIGHT_NORMAL = 400;

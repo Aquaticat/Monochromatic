@@ -15,7 +15,7 @@ import { $ as css, } from '../css.ts';
 import { borderRadiusFull, } from '../mixins.ts';
 
 /** Circle element size in rem (1 + 3/8). */
-const CIRCLE_SIZE = 1 + 1 / 2 / 2 + 1 / 2 / 2 / 2;
+const CIRCLE_SIZE = 1 + ((1 / 2) / 2) + (((1 / 2) / 2) / 2);
 
 /** Border width shared by circle and handle in rem. */
 const BORDER = 1 / 2 / 2;
@@ -24,7 +24,7 @@ const BORDER = 1 / 2 / 2;
 const HANDLE_OFFSET_PX = 19;
 
 /** Handle bar height in rem (7/8). */
-const HANDLE_HEIGHT = 1 - 1 / 2 / 2 / 2;
+const HANDLE_HEIGHT = 1 - (((1 / 2) / 2) / 2);
 
 /** Rotation amount in turns for the handle angle (-1/8 turn). */
 const HANDLE_TURN = -(1 / 2 / 2 / 2);

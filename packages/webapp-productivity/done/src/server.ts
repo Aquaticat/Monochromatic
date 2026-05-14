@@ -25,6 +25,7 @@ import {
   serve,
   serveStatic,
 } from 'h3';
+import type { Stats, } from 'node:fs';
 import {
   readFile,
   stat,
@@ -140,19 +141,22 @@ app.get(
           );
         },
         getMeta: async function getMetadata(id,) {
-          /** Reassigned in the try block; remains undefined when the file is missing. */
-          let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
-          try {
-            stats = await stat(
-              join(
-                '.',
-                id,
-              ),
-            );
-          }
-          catch {
+          /** Resolved file stats, or undefined when the file is missing or `stat` failed. */
+          const stats = await (async function readStats(): Promise<Stats | undefined> {
+            try {
+              return await stat(
+                join(
+                  '.',
+                  id,
+                ),
+              );
+            }
+            catch {
+              return undefined;
+            }
+          })();
+          if (stats === undefined)
             return;
-          }
           if (!stats.isFile())
             return;
           return {

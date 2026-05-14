@@ -92,13 +92,16 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
  *
  * @example
  * ```ts
- * const task = await updateTask('abc-123', { title: 'Updated title' });
+ * const task = await updateTask({ id: 'abc-123', input: { title: 'Updated title', }, });
  * ```
  */
-export async function updateTask(
-  id: string,
-  input: TaskUpdateInput,
-): Promise<Task | null> {
+export async function updateTask({
+  id,
+  input,
+}: {
+  id: string;
+  input: TaskUpdateInput;
+},): Promise<Task | null> {
   /** Existing row used as the merge baseline; null short-circuits not-found. */
   const currentTask = await getTaskById(id,);
   if (currentTask === null)

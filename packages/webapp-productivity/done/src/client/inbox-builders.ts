@@ -49,13 +49,13 @@ export function buildTaskList(
   },);
 
   for (const task of tasks) {
-    list.append(createTaskCard(
+    list.append(createTaskCard({
       task,
-      {
+      options: {
         onOpen,
         onToggleComplete,
       },
-    ),);
+    },),);
 
     /** Tasks blocked by `task`; empty when nothing depends on it. */
     const childLinks = blockedTasksByBlocker[task.id] ?? [];
@@ -69,14 +69,14 @@ export function buildTaskList(
               tag: 'ul',
               class: 'task-list',
               children: childLinks.map(function buildBlockedCard(childLink,) {
-                return createTaskCard(
-                  childLink.task,
-                  {
+                return createTaskCard({
+                  task: childLink.task,
+                  options: {
                     showBlockedBadge: true,
                     onOpen,
                     onToggleComplete,
                   },
-                );
+                },);
               },),
             },),
           ],

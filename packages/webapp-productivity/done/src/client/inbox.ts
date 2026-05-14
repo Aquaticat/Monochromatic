@@ -58,10 +58,10 @@ function openTask(taskId: string,): void {
  * @param taskId - ID of task to complete
  */
 async function completeTask(taskId: string,): Promise<void> {
-  await api(
-    `/api/tasks/${taskId}/complete`,
-    { method: 'POST', },
-  );
+  await api({
+    path: `/api/tasks/${taskId}/complete`,
+    options: { method: 'POST', },
+  },);
   globalThis.location.reload();
 }
 

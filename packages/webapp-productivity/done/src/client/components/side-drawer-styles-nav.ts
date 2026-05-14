@@ -28,7 +28,7 @@ const FULL_PERCENT = 100;
 const LINK_HEIGHT = 3;
 
 /** Font size for navigation links in rem. */
-const NAV_FONT_SIZE = 1 + 1 / 2 / 2;
+const NAV_FONT_SIZE = 1 + ((1 / 2) / 2);
 
 /** Font weight for navigation text. */
 const FONT_WEIGHT_NORMAL = 400;

@@ -43,13 +43,16 @@ export async function getSetting(key: string,): Promise<string | null> {
  *
  * @example
  * ```ts
- * await setSetting('openai-api-key', 'sk-...');
+ * await setSetting({ key: 'openai-api-key', value: 'sk-...', });
  * ```
  */
-export async function setSetting(
-  key: string,
-  value: string,
-): Promise<void> {
+export async function setSetting({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+},): Promise<void> {
   await db
     .prepare(
       'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',

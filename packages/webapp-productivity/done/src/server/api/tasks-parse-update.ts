@@ -40,7 +40,7 @@ const statuses = new Set<string>([
 function parseStatus(value: unknown,): TaskStatus | undefined {
   if (value === undefined)
     return undefined;
-  if (typeof value !== 'string')
+  if ((typeof value) !== 'string')
     return undefined;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
   return statuses.has(value as TaskStatus,) ? (value as TaskStatus) : undefined;
@@ -66,13 +66,13 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   const taskUpdateInput: TaskUpdateInput = {};
 
   if ('title' in value) {
-    if (typeof value.title !== 'string')
+    if ((typeof value.title) !== 'string')
       return null;
     taskUpdateInput.title = value.title;
   }
 
   if ('description' in value) {
-    if (typeof value.description !== 'string' && value.description !== null)
+    if (((typeof value.description) !== 'string') && (value.description !== null))
       return null;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated above: string | null
     taskUpdateInput.description = value.description;
@@ -112,10 +112,10 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
 
   if ('priority' in value) {
     /** Enum-validated priority; undefined indicates the field failed validation. */
-    const priority = parseEnumValue<TaskPriority>(
-      value.priority,
-      priorities,
-    );
+    const priority = parseEnumValue<TaskPriority>({
+      value: value.priority,
+      validValues: priorities,
+    },);
     if (priority === undefined)
       return null;
     taskUpdateInput.priority = priority;
@@ -123,17 +123,17 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
 
   if ('complexity' in value) {
     /** Enum-validated complexity; undefined indicates the field failed validation. */
-    const complexity = parseEnumValue<TaskPriority>(
-      value.complexity,
-      priorities,
-    );
+    const complexity = parseEnumValue<TaskPriority>({
+      value: value.complexity,
+      validValues: priorities,
+    },);
     if (complexity === undefined)
       return null;
     taskUpdateInput.complexity = complexity;
   }
 
   if ('dueDate' in value) {
-    if (typeof value.dueDate !== 'string' && value.dueDate !== null)
+    if (((typeof value.dueDate) !== 'string') && (value.dueDate !== null))
       return null;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated above: string | null
     taskUpdateInput.dueDate = value.dueDate;

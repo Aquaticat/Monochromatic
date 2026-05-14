@@ -82,14 +82,10 @@ export function createNewTaskDialog(): NewTaskDialog {
   );
   panel.append(detail,);
 
-  /** Reference to the FAB so open/close can toggle its visibility. */
-  let fabElement: HTMLElement | null = null;
-
   /** Hides the panel popover and restores the FAB. */
   function closePanel(): void {
     panel.hidePopover();
-    if (fabElement !== null)
-      fabElement.hidden = false;
+    fab.hidden = false;
   }
 
   detail.addEventListener(
@@ -124,9 +120,9 @@ export function createNewTaskDialog(): NewTaskDialog {
         /** Snapshot of the autofill/manual metadata, forwarded to the create endpoint. */
         const metadata = detail.getMetadata();
         void (async function saveTask(): Promise<void> {
-          await api(
-            '/api/tasks',
-            {
+          await api({
+            path: '/api/tasks',
+            options: {
               method: 'POST',
               body: JSON.stringify({
                 title: trimmedTitle,
@@ -137,7 +133,7 @@ export function createNewTaskDialog(): NewTaskDialog {
                 complexity: metadata.complexity,
               },),
             },
-          );
+          },);
           globalThis.location.reload();
         })();
       }
@@ -155,8 +151,7 @@ export function createNewTaskDialog(): NewTaskDialog {
       blockerSummaries: [],
       mode: 'create',
     },);
-    if (fabElement !== null)
-      fabElement.hidden = true;
+    fab.hidden = true;
 
     // Restart the expand animation by toggling the data attribute
     delete panel.dataset['animating'];
@@ -170,14 +165,12 @@ export function createNewTaskDialog(): NewTaskDialog {
     },);
   }
 
-  /** Floating action button stored in `fabElement` for visibility toggling. */
+  /** Floating action button referenced by `openPanel`/`closePanel` to toggle visibility. */
   const fab = h({
     tag: 'fab-button',
     attrs: { label: 'Add task', },
     on: { click: openPanel, },
   },);
-  // let bindings justified: fabElement is set once after creation, read in open/close callbacks
-  fabElement = fab;
 
   return {
     panel,

@@ -16,7 +16,7 @@ import {
 const HOST_GAP = 1 / 2;
 
 /** Heading and toggle size in rem (1 1/4). */
-const HEADING_SIZE = 1 + 1 / 2 / 2;
+const HEADING_SIZE = 1 + ((1 / 2) / 2);
 
 /** Normal font weight. */
 const FONT_WEIGHT_NORMAL = 400;
