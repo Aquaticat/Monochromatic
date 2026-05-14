@@ -216,12 +216,12 @@ async function buildInternalFilter(
   if (options.events !== undefined) {
     filters.push(buildEventKindFilter(options.events,),);
   }
-  if (options.extensions !== undefined && options.extensions.length > 0) {
+  if ((options.extensions !== undefined) && (options.extensions.length > 0)) {
     filters.push(extFilter(options.extensions,),);
   }
   if (
-    (options.include !== undefined && options.include.length > 0)
-    || (options.exclude !== undefined && options.exclude.length > 0)
+    ((options.include !== undefined) && (options.include.length > 0))
+    || ((options.exclude !== undefined) && (options.exclude.length > 0))
   ) {
     filters.push(globFilter({
       ...(options.include === undefined ? {} : { include: options.include, }),
@@ -229,8 +229,8 @@ async function buildInternalFilter(
     },),);
   }
   if (
-    (options.includeRegex !== undefined && options.includeRegex.length > 0)
-    || (options.excludeRegex !== undefined && options.excludeRegex.length > 0)
+    ((options.includeRegex !== undefined) && (options.includeRegex.length > 0))
+    || ((options.excludeRegex !== undefined) && (options.excludeRegex.length > 0))
   ) {
     filters.push(regexFilter({
       ...(options.includeRegex === undefined
@@ -256,7 +256,7 @@ async function buildInternalFilter(
     : options.paths;
   /** Resolved extra ignore files; empty when none configured. */
   const gitignoreExtraFiles: readonly string[] = options.ignoreFiles ?? [];
-  if (gitignoreRoots.length > 0 || gitignoreExtraFiles.length > 0) {
+  if ((gitignoreRoots.length > 0) || (gitignoreExtraFiles.length > 0)) {
     filters.push(
       await gitignoreFilter({
         roots: gitignoreRoots,

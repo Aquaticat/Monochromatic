@@ -76,9 +76,15 @@ export type SpawnedChildHandle = {
   /** Sends a signal to the child; mirrors `ChildProcess.kill`. */
   kill(signal?: NodeJS.Signals | number,): boolean;
   /** Registers a one-shot exit listener; mirrors `ChildProcess.once('exit', ...)`. */
-  once(event: 'exit', listener: ExitListener,): void;
+  once(
+    event: 'exit',
+    listener: ExitListener,
+  ): void;
   /** Removes a previously-registered exit listener; mirrors `ChildProcess.off`. */
-  off(event: 'exit', listener: ExitListener,): void;
+  off(
+    event: 'exit',
+    listener: ExitListener,
+  ): void;
 };
 
 /**
@@ -629,7 +635,7 @@ export class Child {
     handle: SpawnedChildHandle,
     signal: NodeJS.Signals,
   ): void {
-    if (this.#processGroup && handle.pid !== undefined) {
+    if (this.#processGroup && (handle.pid !== undefined)) {
       this.#processSignal({
         pid: -handle.pid,
         signal,

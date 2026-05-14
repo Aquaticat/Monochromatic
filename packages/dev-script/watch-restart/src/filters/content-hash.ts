@@ -47,7 +47,7 @@ export function contentHashFilter(): WatchFilter {
       readonly ctx: WatchCtx;
     },
   ): Promise<boolean> {
-    if (event.entity === 'dir' || event.kind === 'unlink') {
+    if ((event.entity === 'dir') || (event.kind === 'unlink')) {
       // Directories have no content to hash; `unlink` already cleared
       // the cache entry. In both cases the decision to fire belongs to
       // other filters (e.g. `typeFilter`, `--events`).

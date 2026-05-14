@@ -84,7 +84,7 @@ export function cliEventToInternal(token: string,): WatchEventKind {
  * ```
  */
 export function parseTypeToken(token: string,): WatchEntityType {
-  if (token === 'file' || token === 'dir') {
+  if ((token === 'file') || (token === 'dir')) {
     return token;
   }
   throw new Error(

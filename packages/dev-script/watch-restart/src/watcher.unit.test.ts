@@ -225,8 +225,8 @@ await describe({
             await wait(NO_EVENT_WAIT_MS,);
 
             const changesOnFile = events.filter(function isFileChange(e,) {
-              return e.path === resolve(file,)
-                && (e.kind === 'add' || e.kind === 'change');
+              return (e.path === resolve(file,))
+                && ((e.kind === 'add') || (e.kind === 'change'));
             },);
             expect(changesOnFile.length,).toBeGreaterThanOrEqual(1,);
 
@@ -252,7 +252,7 @@ await describe({
             await wait(POST_EVENT_WAIT_MS,);
 
             const adds = events.filter(function isAdd(e,) {
-              return e.kind === 'add' && e.path === resolve(file,);
+              return (e.kind === 'add') && (e.path === resolve(file,));
             },);
             expect(adds.length,).toBeGreaterThanOrEqual(1,);
             // Deepest match is `inner`, so relativePath is `leaf.txt`, not `inner/leaf.txt`.
@@ -331,7 +331,7 @@ await describe({
             await wait(500,);
 
             const adds = events.filter(function isAdd(e,) {
-              return e.kind === 'add' && e.path === resolve(file,);
+              return (e.kind === 'add') && (e.path === resolve(file,));
             },);
             expect(adds.length,).toBeGreaterThanOrEqual(1,);
 

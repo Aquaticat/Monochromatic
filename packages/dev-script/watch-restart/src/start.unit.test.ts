@@ -92,7 +92,7 @@ class FakeChild implements SpawnedChildHandle {
       return;
     }
     const idx = this.#exitListeners.indexOf(listener,);
-    if (idx !== -1) {
+    if (idx !== (-1)) {
       this.#exitListeners.splice(idx, 1,);
     }
   }
@@ -110,7 +110,7 @@ class FakeChild implements SpawnedChildHandle {
    */
   kill(signal?: NodeJS.Signals | number,): boolean {
     this.killed = true;
-    const resolvedSignal: NodeJS.Signals = typeof signal === 'string'
+    const resolvedSignal: NodeJS.Signals = ((typeof signal) === 'string')
       ? signal
       : 'SIGTERM';
     /** Captured `this` so the setImmediate closure can reach private state. */

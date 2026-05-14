@@ -531,7 +531,7 @@ export class Watcher {
     const root = this.#findRoot(path,);
     /** Entity derived from kind once; filters reuse rather than re-derive. */
     const entity: WatchEntityType =
-      kind === 'addDir' || kind === 'unlinkDir' ? 'dir' : 'file';
+      ((kind === 'addDir') || (kind === 'unlinkDir')) ? 'dir' : 'file';
     /** Normalised event handed to the orchestrator's `onEvent` callback. */
     const event: WatchEvent = {
       kind,

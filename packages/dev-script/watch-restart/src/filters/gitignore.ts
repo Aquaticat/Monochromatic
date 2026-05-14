@@ -25,7 +25,7 @@ import type {
  * ```
  */
 function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
-  return error instanceof Error && 'code' in error;
+  return (error instanceof Error) && ('code' in error);
 }
 
 /**
@@ -57,7 +57,7 @@ async function readUtf8IfExists(path: string,): Promise<string | undefined> {
     );
   }
   catch (error) {
-    if (isErrnoException(error,) && error.code === 'ENOENT') {
+    if (isErrnoException(error,) && (error.code === 'ENOENT')) {
       return undefined;
     }
     throw error;

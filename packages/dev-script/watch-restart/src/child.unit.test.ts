@@ -69,10 +69,10 @@ class FakeChild implements SpawnedChildHandle {
    * @returns `true` always (matches `ChildProcess.kill`'s sentinel for "delivered")
    */
   kill(signal: NodeJS.Signals | number = 'SIGTERM',): boolean {
-    if (typeof signal === 'string')
+    if ((typeof signal) === 'string')
       this.signalsReceived.push(signal,);
     this.killed = true;
-    if (this.autoExitOnSigterm && signal === 'SIGTERM') {
+    if (this.autoExitOnSigterm && (signal === 'SIGTERM')) {
       this.simulateExit({
         code: null,
         signal: 'SIGTERM',
@@ -554,7 +554,7 @@ await describe({
               const rec = records.find(function matchByPid(r,) {
                 return r.handle.pid === Math.abs(args.pid,);
               },);
-              if (rec && typeof args.signal === 'string') {
+              if (rec && ((typeof args.signal) === 'string')) {
                 rec.handle.simulateExit({
                   code: null,
                   signal: args.signal,

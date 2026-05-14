@@ -283,7 +283,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
   }
   /** Positional split: first non-option after `--` is the command; the rest is its argv. */
   const [command, ...commandArgs] = args.rest;
-  if (command === undefined || command === '') {
+  if ((command === undefined) || (command === '')) {
     throw new Error(
       'Empty command after "--"; usage: watch-restart -w <dir>... -- <cmd> [<args>...]',
     );
