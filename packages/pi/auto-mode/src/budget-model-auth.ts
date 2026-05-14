@@ -63,11 +63,13 @@ class NoBudgetModelError extends Error {
       cheapestOverall?: ModelCandidate | null;
     } = {},
   ) {
+    /** Per-line accumulator for the multi-line error message; joined with newlines below. */
     const lines = [
       "Tried to auto-detect a budget model for a background task, but couldn't find one.",
       `Reason: ${reason}`,
     ];
     if (candidates.sameProvider !== undefined && candidates.sameProvider !== null) {
+      /** Local alias for the same-provider candidate so the template strings stay readable. */
       const c = candidates.sameProvider;
       lines.push(
         `Best same-provider option: ${c.provider}/${c.modelId} ($${c.costInput}/$${c.costOutput} per M tokens)`,
@@ -78,6 +80,7 @@ class NoBudgetModelError extends Error {
       && candidates.cheapestOverall !== null
       && candidates.cheapestOverall.hasApiKey
     ) {
+      /** Local alias for the cheapest-overall candidate so the template strings stay readable. */
       const c = candidates.cheapestOverall;
       lines.push(
         `Cheapest with API key: ${c.provider}/${c.modelId} ($${c.costInput}/$${c.costOutput} per M tokens)`,
@@ -153,9 +156,11 @@ async function resolveAuth(
   headers?: Record<string, string>;
 } | null> {
   try {
+    /** Registry response carrying `ok` plus optional `apiKey` and `headers`. */
     const result = await ctx.modelRegistry.getApiKeyAndHeaders(model,);
     if (!result.ok)
       return null;
+    /** Output auth object assembled field-by-field so omitted keys stay undefined rather than `null`. */
     const auth: {
       apiKey?: string;
       headers?: Record<string, string>;
@@ -167,6 +172,7 @@ async function resolveAuth(
     return auth;
   }
   catch (err) {
+    /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
     const innerL = tagged({
       tag: resolveAuth.name,
       l,
@@ -201,9 +207,12 @@ async function findCheapestCandidate(
   allModels: Model<Api>[],
   majorVersions: number,
 ): Promise<ModelCandidate | null> {
+  /** Dynamically imported version helper; lazy to break a potential circular import on module init. */
   const { findCheapestInMajorVersions, } = await import('./budget-model-version.ts');
+  /** Provider name to its list of models, used so version ranking runs per provider. */
   const byProvider = new Map<string, Model<Api>[]>();
   for (const m of allModels) {
+    /** Provider name normalised to string; the type allows non-string discriminants from upstream. */
     const p = String(m.provider,);
     if (!byProvider.has(p,)) {
       byProvider.set(
@@ -211,20 +220,24 @@ async function findCheapestCandidate(
         [],
       );
     }
+    /** Bucket the current model goes into; defined after the `set` above. */
     const list = byProvider.get(p,);
     if (list !== undefined)
       list.push(m,);
   }
 
+  /** Best (cheapest-input) candidate seen so far across all providers; null until the first one is picked. */
   let best: {
     model: Model<Api>;
     provider: string;
   } | null = null;
   for (const [provider, models,] of byProvider) {
+    /** Per-provider candidates already sorted by cost then version. */
     const candidates = findCheapestInMajorVersions(
       models,
       majorVersions,
     );
+    /** Head of the per-provider candidate list; compared against `best` to find the overall cheapest. */
     const [firstCandidate,] = candidates;
     if (
       firstCandidate !== undefined

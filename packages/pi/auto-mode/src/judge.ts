@@ -81,12 +81,14 @@ async function callJudge(
   systemPrompt: string,
   batchContext: BatchEntry[] | undefined,
 ): Promise<Verdict> {
+  /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
   const innerL = tagged({
     tag: callJudge.name,
     l,
   },);
   innerL.debug(`calling ${String(model.provider,)}/${model.id} for action: ${action}`,);
 
+  /** Rendered user-message body that bundles working directory, action, context, and batch siblings. */
   const userContent = buildUserContent(
     action,
     cwd,
@@ -95,6 +97,7 @@ async function callJudge(
     batchContext,
   );
 
+  /** Single-turn user message array handed to the streaming entry point. */
   const messages = [
     {
       role: 'user' as const,
@@ -103,7 +106,9 @@ async function callJudge(
     },
   ];
 
+  /** Abort controller wired into both the timeout disposable and the stream's `signal` option. */
   const controller = new AbortController();
+  /** Disposable timer; on scope exit it clears the timeout regardless of how the function returns. */
   using _timer = disposableTimeout(
     timeoutMs,
     function onTimeout() {
@@ -111,6 +116,7 @@ async function callJudge(
     },
   );
 
+  /** Provider-specific stream options assembled key-by-key so `auth` fields stay optional. */
   const opts: Record<string, unknown> = {
     signal: controller.signal,
   };
@@ -120,6 +126,7 @@ async function callJudge(
     opts.headers = auth.headers;
   opts.toolChoice = toolChoiceForApi(String(model.api,),);
 
+  /** Streaming event source for the judge invocation; collected into a tool call below. */
   const stream = streamSimple(
     model,
     {
@@ -131,6 +138,7 @@ async function callJudge(
     opts as SimpleStreamOptions,
   );
 
+  /** Parsed `render_verdict` arguments (or the text-fallback record) from the stream. */
   const result = await collectToolCall(stream,);
   return parseVerdict(result,);
 }
@@ -161,6 +169,7 @@ function buildUserContent(
   trustDirectives: string[],
   batchContext: BatchEntry[] | undefined,
 ): string {
+  /** Per-line accumulator for the rendered prompt body; joined with newlines on return. */
   const lines: string[] = [
     `Working directory: ${cwd}`,
     '',
@@ -232,7 +241,9 @@ function buildUserContent(
 async function collectToolCall(
   stream: AsyncIterable<AssistantMessageEvent>,
 ): Promise<Record<string, string>> {
+  /** Last-seen tool call from the stream; defined only after a `toolcall_end` event. */
   let toolCall: ToolCall | undefined = undefined;
+  /** Cumulative text from `text_end` events, used only when the model never emitted a tool call. */
   let textContent = '';
 
   for await (const event of stream) {
@@ -254,6 +265,7 @@ async function collectToolCall(
   }
 
   if (textContent !== '') {
+    /** Per-call sub-logger so the text-fallback warning carries the function name as a tag. */
     const innerL = tagged({
       tag: collectToolCall.name,
       l,
@@ -308,6 +320,7 @@ function extractJsonVerdict(
     /* Fall through to balanced-brace scan. */
   }
 
+  /** First balanced `{...}` block found in the free-text output, or undefined if none exists. */
   const block = findBalancedJsonObject(text,);
   if (block === undefined) {
     throw new Error(
@@ -336,15 +349,20 @@ function extractJsonVerdict(
  *   balanced object is found
  */
 function findBalancedJsonObject(text: string,): string | undefined {
+  /** Index of the first `{` in the text; the scan starts here. */
   const start = text.indexOf('{',);
   if (start === -1)
     return undefined;
 
+  /** Brace nesting depth; the slice is taken when this returns to 0. */
   let depth = 0;
+  /** True while the scan is inside a double-quoted string literal so braces are ignored. */
   let inString = false;
+  /** True after a backslash inside a string so the next character is treated as literal. */
   let escape = false;
 
   for (let i = start; i < text.length; i++) {
+    /** Character at the current scan position, used by the state machine below. */
     const ch = text[i];
 
     if (escape) {
@@ -397,8 +415,11 @@ function findBalancedJsonObject(text: string,): string | undefined {
 function parseVerdict(
   args: Record<string, string>,
 ): Verdict {
+  /** Raw verdict string from the tool call; defaulted to `ask` when missing so the union check below decides. */
   const verdict = args.verdict ?? 'ask';
+  /** Free-text rationale captured from the tool call. */
   const reason = args.reason ?? '';
+  /** Guidance string to surface back to the agent; empty for approvals. */
   const guidance = args.guidance ?? '';
 
   if (
@@ -437,6 +458,7 @@ function disposableTimeout(
   ms: number,
   onTimeout: () => void,
 ): Disposable {
+  /** Timer handle returned by setTimeout; cleared on dispose to cancel pending callbacks. */
   const id = setTimeout(
     onTimeout,
     ms,

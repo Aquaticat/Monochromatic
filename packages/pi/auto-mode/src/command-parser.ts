@@ -41,6 +41,7 @@ import type {
 function analyzeBashCommand(
   cmd: string,
 ): BashAnalysis {
+  /** Fallback result spread into the early-return when `shell-quote` throws on malformed input. */
   const empty: BashAnalysis = {
     parsed: false,
     commands: [],
@@ -49,8 +50,15 @@ function analyzeBashCommand(
     allParamRefs: [],
   };
 
+  /** Param references harvested via regex before parsing so the catch-branch still surfaces them. */
   const preScanRefs = extractParamRefs(cmd,);
 
+  /**
+   * Tokens emitted by `shell-quote` for the command.
+   *
+   * Declared with `let` so the catch branch can leave it empty without
+   * needing a separate flag; reassigned inside `try` on successful parse.
+   */
   let entries: ParseEntry[] = [];
   try {
     entries = parse(cmd,);
@@ -62,10 +70,15 @@ function analyzeBashCommand(
     };
   }
 
+  /** Accumulator for parsed `CommandInfo` entries; one push per `|`, `&&`, `||`, `;`, `&`, or `;;` boundary. */
   const commands: CommandInfo[] = [];
+  /** True once a `|` operator has been seen anywhere in the command; surfaced verbatim on the return. */
   let isPipeline = false;
+  /** Word tokens belonging to the command currently being assembled; reset at every command boundary. */
   let currentArgs: string[] = [];
+  /** Paths recorded after `>`, `>>`, `<`, `>&`, or `|&` for the current command; reset at every boundary. */
   let currentRedirectTargets: string[] = [];
+  /** True for one tick after a redirect operator so the very next string token is captured as the target path. */
   let nextIsRedirectTarget = false;
 
   for (const entry of entries) {
@@ -81,6 +94,7 @@ function analyzeBashCommand(
 
     if (!('op' in entry))
       continue;
+    /** Operator string from the non-word `shell-quote` entry; dispatched on by the branches below. */
     const { op, } = entry;
 
     if (
@@ -156,6 +170,7 @@ function analyzeBashCommand(
     preScanRefs,
   );
 
+  /** Union of every path-shaped argument and every redirect target across all commands, in source order. */
   const allFiles = commands.flatMap(
     function collectFiles(c,) {
       return [
@@ -164,6 +179,7 @@ function analyzeBashCommand(
       ];
     },
   );
+  /** Deduplicated param references aggregated across all commands; falls back to the pre-scan set below. */
   const allParamRefs = [...new Set(
     commands.flatMap(
       function collectRefs(c,) {
@@ -208,6 +224,7 @@ function flushCurrentCommand(
   if (args.length === 0 && redirectTargets.length === 0)
     return;
 
+  /** Command name (first word, empty string on redirect-only commands) plus its remaining word arguments. */
   const [name = '', ...cmdArgs] = args;
 
   commands.push({

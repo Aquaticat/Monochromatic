@@ -86,12 +86,19 @@ async function evaluate(
   block: true;
   reason: string;
 } | undefined> {
+  /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
   const innerL = tagged({
     tag: evaluate.name,
     l,
   },);
   innerL.debug(`evaluating action: ${action}`,);
 
+  /**
+   * Resolved judge model handed to {@link callJudge}.
+   *
+   * Declared with `let` so the catch branch can leave it undefined and the
+   * downstream `if (judge === undefined)` falls through to manual approval.
+   */
   let judge: BudgetModel | undefined = undefined;
   try {
     judge = await resolveJudgeModel(
@@ -122,10 +129,13 @@ async function evaluate(
     );
   }
 
+  /** Recent session activity rendered as a string for the judge prompt. */
   const recentContext = buildContext(ctx,);
+  /** Active trust directives for this session, listed in the prompt as guardrail relaxations. */
   const trustDirectives = getTrustDirectives(ctx,);
 
   try {
+    /** Structured verdict from the judge: `approve`/`deny`/`ask` plus rationale and guidance. */
     const verdict = await callJudge(
       judge.model,
       judge.auth,
@@ -194,6 +204,7 @@ async function evaluate(
     );
   }
   catch (err) {
+    /** Normalised error message so both `Error` instances and non-`Error` throws produce a string. */
     const msg = err instanceof Error ? err.message : String(err,);
     innerL.error(`judge error: ${msg}`,);
     return askUser(
@@ -218,6 +229,7 @@ async function resolveJudgeModel(
   ctx: ExtensionContext,
   config: MergedConfig,
 ): Promise<BudgetModel> {
+  /** Dynamically imported budget-model finder; lazy to keep startup cost low when judging is rare. */
   const { findBudgetModel, } = await import('./budget-model.ts');
   return findBudgetModel(
     ctx,
@@ -235,6 +247,7 @@ async function resolveJudgeModel(
 function toBudgetModelOptions(
   config: MergedConfig,
 ): BudgetModelOptions {
+  /** Cleaned budget-model options that drop `modelOverride` so it can be re-attached conditionally below. */
   const opts: BudgetModelOptions = {
     strategy: config.judgeModel.strategy,
     costRatio: config.judgeModel.costRatio,

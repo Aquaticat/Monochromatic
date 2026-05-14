@@ -95,6 +95,7 @@ function shouldFlag(
     'bash',
     event,
   )) {
+    /** Parsed bash AST used to walk individual commands and their redirect targets. */
     const analysis = analyzeBashCommand(event.input.command,);
     if (bashSignals(
       analysis,
@@ -112,6 +113,7 @@ function shouldFlag(
     return false;
   }
 
+  /** Path argument extracted from the tool event when one applies (read/write/edit/etc.). */
   const filePath = getFilePath(event,);
   if (
     filePath !== undefined
@@ -124,6 +126,7 @@ function shouldFlag(
     return true;
   }
 
+  /** Free text extracted from the tool event (file body, search query) for content/text signals. */
   const text = extractToolText(event,);
   if (text !== undefined && text !== '') {
     if (contentSignals(text,))
@@ -218,6 +221,7 @@ function bashSignals(
       return true;
     }
 
+    /** Path-shaped arguments plus redirect targets, each tested for sensitive paths below. */
     const files = [
       ...cmd.args.filter(looksLikePath,),
       ...cmd.redirectTargets,
@@ -308,6 +312,7 @@ function hasFlag(
   args: string[],
   ...flags: string[]
 ): boolean {
+  /** Latch flipped on `--`; subsequent args are treated as positional and ignored by the matcher. */
   let pastEndOfOptions = false;
   return args.some(
     function checkArg(a,) {
@@ -344,6 +349,7 @@ function hasFlag(
 function hasRootTarget(
   cmd: Pick<CommandInfo, 'args' | 'redirectTargets'>,
 ): boolean {
+  /** Every positional and redirect target as a flat list; each is tested for `/` or `/*`. */
   const allTargets = [
     ...cmd.args,
     ...cmd.redirectTargets,
@@ -367,6 +373,7 @@ function hasInlineCode(
   name: string,
   args: string[],
 ): boolean {
+  /** Inline-code flags registered for this interpreter; `undefined` for non-interpreters. */
   const flags = INTERPRETER_INLINE_FLAGS[name];
   if (flags === undefined)
     return false;
@@ -465,6 +472,7 @@ function matchUserCommands(
       else {
         if (cmd.name !== matcher[0])
           continue;
+        /** Argument tokens that must appear after the command name for the matcher to fire. */
         const prefix = matcher.slice(1,);
         if (prefix.every(
           function argMatches(

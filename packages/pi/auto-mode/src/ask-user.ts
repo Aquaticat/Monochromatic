@@ -55,6 +55,7 @@ async function askUser(
   block: true;
   reason: string;
 } | undefined> {
+  /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
   const innerL = tagged({
     tag: askUser.name,
     l,
@@ -77,12 +78,14 @@ async function askUser(
   }
 
   innerL.debug(`prompting user for action: ${action}`,);
+  /** Multi-line prompt body shown to the user; first line is a header, last is the literal action. */
   const lines = [
     "Command needs approval. Agent's explanation:",
     `> ${explanation}`,
     '',
     action,
   ];
+  /** Selected button label, used to dispatch between approve / deny / hard-stop branches below. */
   const choice = await ctx.ui.select(
     lines.join('\n',),
     [
@@ -157,6 +160,7 @@ function updateWidget(
     reason: string;
   }[],
 ): void {
+  /** Count of `approved` verdicts, surfaced in the widget summary line. */
   const approved = verdicts
     .filter(
       function isApproved(v,) {
@@ -164,6 +168,7 @@ function updateWidget(
       },
     )
     .length;
+  /** Count of `denied` verdicts, surfaced in the widget summary line. */
   const denied = verdicts
     .filter(
       function isDenied(v,) {
@@ -171,6 +176,7 @@ function updateWidget(
       },
     )
     .length;
+  /** Comma-joined summary fragments; empty when both counts are zero so the widget stays blank. */
   const parts: string[] = [];
   if (approved > 0)
     parts.push(`${approved} approved`,);
