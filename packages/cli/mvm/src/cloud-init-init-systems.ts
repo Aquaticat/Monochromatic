@@ -139,13 +139,16 @@ export function templateRuncmd(initSystem: InitSystem,): string {
  *
  * @example
  * ```ts
- * vmAutologin('systemd', 'ubuntu');
+ * vmAutologin({ initSystem: 'systemd', user: 'ubuntu' });
  * ```
  */
-export function vmAutologin(
-  initSystem: InitSystem,
-  user: string,
-): string {
+export function vmAutologin({
+  initSystem,
+  user,
+}: {
+  initSystem: InitSystem;
+  user: string;
+},): string {
   if (initSystem === 'openrc')
     return vmAutologinOpenrc(user,);
   return vmAutologinSystemd(user,);

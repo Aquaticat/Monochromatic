@@ -120,15 +120,20 @@ export const PATH_TABLE_SIZE = 10;
  * @example
  * ```ts
  * const buf = new Uint8Array(32);
- * writeStr(buf, 0, 'CD001', 5);
+ * writeStr({ buf, offset: 0, str: 'CD001', len: 5 });
  * ```
  */
-export function writeStr(
-  buf: Uint8Array,
-  offset: number,
-  str: string,
-  len: number,
-): void {
+export function writeStr({
+  buf,
+  len,
+  offset,
+  str,
+}: {
+  buf: Uint8Array;
+  len: number;
+  offset: number;
+  str: string;
+},): void {
   for (let idx = 0; idx < len; idx++) {
     /* oxlint-disable-next-line unicorn/prefer-code-point -- ISO 9660 uses single-byte ASCII; charCodeAt is correct for byte-level buffer operations */
     buf[offset + idx] = idx < str.length ? str.charCodeAt(idx,) : ASCII_SPACE;
@@ -147,14 +152,18 @@ export function writeStr(
  * @example
  * ```ts
  * const view = new DataView(new ArrayBuffer(4));
- * writeBoth16(view, 0, 2048);
+ * writeBoth16({ view, offset: 0, value: 2048 });
  * ```
  */
-export function writeBoth16(
-  view: DataView,
-  offset: number,
-  value: number,
-): void {
+export function writeBoth16({
+  offset,
+  value,
+  view,
+}: {
+  offset: number;
+  value: number;
+  view: DataView;
+},): void {
   view.setUint16(
     offset,
     value,
@@ -179,14 +188,18 @@ export function writeBoth16(
  * @example
  * ```ts
  * const view = new DataView(new ArrayBuffer(8));
- * writeBoth32(view, 0, 65536);
+ * writeBoth32({ view, offset: 0, value: 65_536 });
  * ```
  */
-export function writeBoth32(
-  view: DataView,
-  offset: number,
-  value: number,
-): void {
+export function writeBoth32({
+  offset,
+  value,
+  view,
+}: {
+  offset: number;
+  value: number;
+  view: DataView;
+},): void {
   view.setUint32(
     offset,
     value,
@@ -209,13 +222,16 @@ export function writeBoth32(
  * @example
  * ```ts
  * const buf = new Uint8Array(7);
- * writeTimestamp7(buf, 0);
+ * writeTimestamp7({ buf, offset: 0 });
  * ```
  */
-export function writeTimestamp7(
-  buf: Uint8Array,
-  offset: number,
-): void {
+export function writeTimestamp7({
+  buf,
+  offset,
+}: {
+  buf: Uint8Array;
+  offset: number;
+},): void {
   buf[offset] = TIMESTAMP_YEAR_SINCE_1900;
   buf[offset + 1] = 1; // month
   buf[offset + 2] = 1; // day
@@ -231,19 +247,22 @@ export function writeTimestamp7(
  * @example
  * ```ts
  * const buf = new Uint8Array(17);
- * writeTimestamp17(buf, 0);
+ * writeTimestamp17({ buf, offset: 0 });
  * ```
  */
-export function writeTimestamp17(
-  buf: Uint8Array,
-  offset: number,
-): void {
-  writeStr(
+export function writeTimestamp17({
+  buf,
+  offset,
+}: {
+  buf: Uint8Array;
+  offset: number;
+},): void {
+  writeStr({
     buf,
+    len: TIMESTAMP_17_STR_LENGTH,
     offset,
-    '2026010100000000',
-    TIMESTAMP_17_STR_LENGTH,
-  );
+    str: '2026010100000000',
+  },);
 }
 
 //endregion Binary format helpers

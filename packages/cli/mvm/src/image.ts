@@ -223,7 +223,7 @@ export async function ensureWinFsp(): Promise<string> {
   };
   /** Matching MSI asset; the released zip carries a per-build filename so it cannot be hard-coded. */
   const msiAsset = release.assets.find(function findMsi(a,) {
-    return a.name.endsWith('.msi',) && !a.name.includes('tests',);
+    return (a.name.endsWith('.msi',)) && (!a.name.includes('tests',));
   },);
   if (msiAsset === undefined)
     throw new Error(`no MSI asset found in WinFsp release ${version}`,);

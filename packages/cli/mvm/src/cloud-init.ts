@@ -73,10 +73,10 @@ runcmd:
   - ["mkdir", "-p", "/mnt/shared"]
   - ["mount", "-a"]
 ${
-    vmAutologin(
-      linux.initSystem,
-      linux.defaultUser,
-    )
+    vmAutologin({
+      initSystem: linux.initSystem,
+      user: linux.defaultUser,
+    },)
   }`;
 }
 

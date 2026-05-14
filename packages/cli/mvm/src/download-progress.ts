@@ -35,12 +35,17 @@ const PROGRESS_LINE_PAD = 20;
  *
  * @param signal - AbortSignal that stops the polling loop
  */
-async function pollProgress(
-  destPath: string,
-  contentLength: number,
-  totalStr: string,
-  signal: AbortSignal,
-): Promise<void> {
+async function pollProgress({
+  contentLength,
+  destPath,
+  signal,
+  totalStr,
+}: {
+  contentLength: number;
+  destPath: string;
+  signal: AbortSignal;
+  totalStr: string;
+},): Promise<void> {
   /** Milliseconds between file size polls for progress display. */
   const POLL_INTERVAL_MS = 500;
 
@@ -112,12 +117,12 @@ export async function writeWithProgress({
 
   /** Background progress poller; awaited at the end to ensure the final tick flushes before returning. */
   // Start progress polling in the background
-  const progressDone = pollProgress(
-    destPath,
+  const progressDone = pollProgress({
     contentLength,
+    destPath,
+    signal: controller.signal,
     totalStr,
-    controller.signal,
-  );
+  },);
 
   /** Response body stream destructured for null-check; null bodies trigger an explicit error. */
   // Stream response body to disk via AsyncIterable protocol (runtime-neutral)

@@ -51,13 +51,13 @@ export async function shell({ name, }: { name: string; },): Promise<void> {
     );
   }
   catch (error: unknown) {
-    if (error !== null
-      && error !== undefined
-      && typeof error === 'object'
-      && 'exitCode' in error)
+    if ((error !== null)
+      && (error !== undefined)
+      && ((typeof error) === 'object')
+      && ('exitCode' in error))
     {
       /** Forwarded so the shell exit code reflects the virsh console outcome. */
-      const exitCode = typeof error.exitCode === 'number' ? error.exitCode : undefined;
+      const exitCode = ((typeof error.exitCode) === 'number') ? error.exitCode : undefined;
       if (exitCode !== undefined)
         process.exitCode = exitCode;
     }

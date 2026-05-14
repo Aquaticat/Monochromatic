@@ -129,7 +129,9 @@ export async function create({
     ? await ensureTemplate(resolved.spec,)
     : resolved.customTemplatePath;
 
-  /** Guest config (osFamily, shell, etc.); falls back to {@link CUSTOM_GUEST_DEFAULTS} for custom templates. */
+  /**
+   * Guest config (osFamily, shell, etc.); falls back to {@link CUSTOM_GUEST_DEFAULTS} for custom templates.
+   */
   const guest = resolved.kind === 'registry'
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;

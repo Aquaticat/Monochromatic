@@ -63,23 +63,26 @@ export function pnpDriverPaths(): string {
     'NetKVM',
   ];
   /**
-   * Running counter used to populate `wcm:keyValue` for each `<PathAndCredentials>` entry.
+   * Flattened list of `<PathAndCredentials>` entries spanning every driver and candidate letter.
    *
-   * Windows requires unique keyValues per element; incrementing across the
-   * cross-product of drivers and candidate drive letters guarantees uniqueness.
+   * `wcm:keyValue` must be unique per element; derived from the cross-product index of
+   * driver and letter so each pair gets a deterministic 1-based id.
    */
-  let keyValue = 1;
-  /** Flattened list of `<PathAndCredentials>` entries spanning every driver and candidate letter. */
-  const paths = driverDirs.flatMap(function mapDriver(driver,) {
-    return VIRTIO_DRIVE_CANDIDATES.map(function mapLetter(letter,) {
-      /** One `<PathAndCredentials>` XML fragment for the current driver/letter pair. */
-      const entry = `      <PathAndCredentials wcm:action="add" wcm:keyValue="${
+  const paths = driverDirs.flatMap(function mapDriver(
+    driver,
+    driverIdx,
+  ) {
+    return VIRTIO_DRIVE_CANDIDATES.map(function mapLetter(
+      letter,
+      letterIdx,
+    ) {
+      /** Unique 1-based keyValue derived from the driver/letter cross-product position. */
+      const keyValue = (driverIdx * VIRTIO_DRIVE_CANDIDATES.length) + letterIdx + 1;
+      return `      <PathAndCredentials wcm:action="add" wcm:keyValue="${
         String(keyValue,)
       }">
         <Path>${letter}:\\${driver}\\${VIRTIO_DRIVER_OS_DIR}\\amd64</Path>
       </PathAndCredentials>`;
-      keyValue++;
-      return entry;
     },);
   },);
 

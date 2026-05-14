@@ -63,7 +63,9 @@ export async function exec(
     tag: exec.name,
     l,
   },);
-  /** Prefixed libvirt domain name; required because libvirt namespaces VMs under {@link VM_PREFIX}. */
+  /**
+   * Prefixed libvirt domain name; required because libvirt namespaces VMs under {@link VM_PREFIX}.
+   */
   const fullName = `${VM_PREFIX}${name}`;
 
   /** Per-VM directory holding `meta.json`; used below to determine guest shell. */

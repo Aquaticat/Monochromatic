@@ -14,64 +14,91 @@ import * as L from './iso9660-layout.ts';
  *
  * @param buf - Target byte array
  *
- * @param view - DataView for the target buffer
+ * @param view - DataView for target buffer
  *
- * @param offset - Byte offset within the buffer
+ * @param offset - Byte offset within target buffer
  *
- * @param opts - Directory entry parameters (directory flag, name, sector, size)
+ * @param isDir - Directory flag (sets 0x02 in flags byte)
  *
- * @returns Number of bytes written (the record length)
+ * @param name - File identifier (or `\u0000` for self, `\u0001` for parent)
+ *
+ * @param sector - Starting sector (extent location) for this entry
+ *
+ * @param size - Data length in bytes for this entry
+ *
+ * @returns Number of bytes written (record length)
+ *
+ * @example
+ * ```ts
+ * const buf = new Uint8Array(L.SECTOR_SIZE);
+ * const view = new DataView(buf.buffer);
+ * const written = writeDirEntry({
+ *   buf,
+ *   view,
+ *   offset: 0,
+ *   isDir: true,
+ *   name: '\u0000',
+ *   sector: L.ROOT_DIRECTORY_SECTOR,
+ *   size: L.SECTOR_SIZE,
+ * });
+ * ```
  */
-function writeDirEntry(
-  buf: Uint8Array,
-  view: DataView,
-  offset: number,
-  opts: {
-    isDir: boolean;
-    name: string;
-    sector: number;
-    size: number;
-  },
-): number {
+function writeDirEntry({
+  buf,
+  isDir,
+  name,
+  offset,
+  sector,
+  size,
+  view,
+}: {
+  buf: Uint8Array;
+  isDir: boolean;
+  name: string;
+  offset: number;
+  sector: number;
+  size: number;
+  view: DataView;
+},): number {
   /** ISO9660 file identifier length; the special "self" and "parent" entries collapse to a single byte. */
-  const nameLen = opts.name === '\u0000' || opts.name === '\u0001' ? 1 : opts.name.length;
+  const nameLen = ((name === '\u0000') || (name === '\u0001')) ? 1 : name.length;
   /** Record length must be even per ISO9660. */
-  const recordLen = L.DIR_FIXED_HEADER_SIZE + nameLen + (nameLen % 2 === 0 ? 1 : 0);
+  const recordLen = L.DIR_FIXED_HEADER_SIZE + nameLen + (((nameLen % 2) === 0) ? 1 : 0);
 
   buf[offset] = recordLen;
-  L.writeBoth32(
+  L.writeBoth32({
+    offset: offset + L.DIR_EXTENT_OFFSET,
+    value: sector,
     view,
-    offset + L.DIR_EXTENT_OFFSET,
-    opts.sector,
-  );
-  L.writeBoth32(
+  },);
+  L.writeBoth32({
+    offset: offset + L.DIR_SIZE_OFFSET,
+    value: size,
     view,
-    offset + L.DIR_SIZE_OFFSET,
-    opts.size,
-  );
-  L.writeTimestamp7(
+  },);
+  L.writeTimestamp7({
     buf,
-    offset + L.DIR_TIMESTAMP_OFFSET,
-  );
-  buf[offset + L.DIR_FLAGS_OFFSET] = opts.isDir ? 0x02 : 0x00;
-  L.writeBoth16(
+    offset: offset + L.DIR_TIMESTAMP_OFFSET,
+  },);
+  buf[offset + L.DIR_FLAGS_OFFSET] = isDir ? 0x02 : 0x00;
+  L.writeBoth16({
+    offset: offset + L.DIR_VOL_SEQ_OFFSET,
+    value: 1,
     view,
-    offset + L.DIR_VOL_SEQ_OFFSET,
-    1,
-  );
+  },);
   buf[offset + L.DIR_NAME_LEN_OFFSET] = nameLen;
 
-  if (opts.name === '\u0000')
+  if (name === '\u0000')
     buf[offset + L.DIR_NAME_DATA_OFFSET] = 0;
-  else if (opts.name === '\u0001')
+  else if (name === '\u0001')
     buf[offset + L.DIR_NAME_DATA_OFFSET] = 1;
   else {
-    L.writeStr(
+    L.writeStr({
       buf,
-      offset + L.DIR_NAME_DATA_OFFSET,
-      opts.name,
-      nameLen,
-    );
+      len: nameLen,
+      offset: offset + L.DIR_NAME_DATA_OFFSET,
+      str: name,
+    },);
   }
 
   return recordLen;
@@ -143,50 +170,50 @@ export function createIso({
   /** Byte offset of the PVD inside `iso`; PVD lives at sector 16 by spec. */
   const pvd = L.PVD_SECTOR * L.SECTOR_SIZE;
   iso[pvd] = 1;
-  L.writeStr(
-    iso,
-    pvd + 1,
-    'CD001',
-    L.CD001_LENGTH,
-  );
+  L.writeStr({
+    buf: iso,
+    len: L.CD001_LENGTH,
+    offset: pvd + 1,
+    str: 'CD001',
+  },);
   iso[pvd + L.PVD_VERSION_OFFSET] = 1;
-  L.writeStr(
-    iso,
-    pvd + L.PVD_SYSTEM_ID_OFFSET,
-    '',
-    L.ISO_STRING_FIELD_LENGTH,
-  );
-  L.writeStr(
-    iso,
-    pvd + L.PVD_VOLUME_ID_OFFSET,
-    volumeId,
-    L.ISO_STRING_FIELD_LENGTH,
-  );
-  L.writeBoth32(
+  L.writeStr({
+    buf: iso,
+    len: L.ISO_STRING_FIELD_LENGTH,
+    offset: pvd + L.PVD_SYSTEM_ID_OFFSET,
+    str: '',
+  },);
+  L.writeStr({
+    buf: iso,
+    len: L.ISO_STRING_FIELD_LENGTH,
+    offset: pvd + L.PVD_VOLUME_ID_OFFSET,
+    str: volumeId,
+  },);
+  L.writeBoth32({
+    offset: pvd + L.PVD_VOLUME_SPACE_OFFSET,
+    value: totalSectors,
     view,
-    pvd + L.PVD_VOLUME_SPACE_OFFSET,
-    totalSectors,
-  );
-  L.writeBoth16(
+  },);
+  L.writeBoth16({
+    offset: pvd + L.PVD_VOLUME_SET_SIZE_OFFSET,
+    value: 1,
     view,
-    pvd + L.PVD_VOLUME_SET_SIZE_OFFSET,
-    1,
-  );
-  L.writeBoth16(
+  },);
+  L.writeBoth16({
+    offset: pvd + L.PVD_VOLUME_SEQ_OFFSET,
+    value: 1,
     view,
-    pvd + L.PVD_VOLUME_SEQ_OFFSET,
-    1,
-  );
-  L.writeBoth16(
+  },);
+  L.writeBoth16({
+    offset: pvd + L.PVD_BLOCK_SIZE_OFFSET,
+    value: L.SECTOR_SIZE,
     view,
-    pvd + L.PVD_BLOCK_SIZE_OFFSET,
-    L.SECTOR_SIZE,
-  );
-  L.writeBoth32(
+  },);
+  L.writeBoth32({
+    offset: pvd + L.PVD_PATH_TABLE_SIZE_OFFSET,
+    value: L.PATH_TABLE_SIZE,
     view,
-    pvd + L.PVD_PATH_TABLE_SIZE_OFFSET,
-    L.PATH_TABLE_SIZE,
-  );
+  },);
   view.setUint32(
     pvd + L.PVD_PATH_TABLE_L_OFFSET,
     L.PATH_TABLE_LE_SECTOR,
@@ -197,33 +224,31 @@ export function createIso({
     L.PATH_TABLE_BE_SECTOR,
     false,
   );
-  writeDirEntry(
-    iso,
+  writeDirEntry({
+    buf: iso,
+    isDir: true,
+    name: '\u0000',
+    offset: pvd + L.PVD_ROOT_DIR_RECORD_OFFSET,
+    sector: L.ROOT_DIRECTORY_SECTOR,
+    size: rootDirSize,
     view,
-    pvd + L.PVD_ROOT_DIR_RECORD_OFFSET,
-    {
-      isDir: true,
-      name: '\u0000',
-      sector: L.ROOT_DIRECTORY_SECTOR,
-      size: rootDirSize,
-    },
-  );
-  L.writeTimestamp17(
-    iso,
-    pvd + L.PVD_CREATION_TIMESTAMP_OFFSET,
-  );
-  L.writeTimestamp17(
-    iso,
-    pvd + L.PVD_MODIFICATION_TIMESTAMP_OFFSET,
-  );
-  L.writeTimestamp17(
-    iso,
-    pvd + L.PVD_EXPIRATION_TIMESTAMP_OFFSET,
-  );
-  L.writeTimestamp17(
-    iso,
-    pvd + L.PVD_EFFECTIVE_TIMESTAMP_OFFSET,
-  );
+  },);
+  L.writeTimestamp17({
+    buf: iso,
+    offset: pvd + L.PVD_CREATION_TIMESTAMP_OFFSET,
+  },);
+  L.writeTimestamp17({
+    buf: iso,
+    offset: pvd + L.PVD_MODIFICATION_TIMESTAMP_OFFSET,
+  },);
+  L.writeTimestamp17({
+    buf: iso,
+    offset: pvd + L.PVD_EXPIRATION_TIMESTAMP_OFFSET,
+  },);
+  L.writeTimestamp17({
+    buf: iso,
+    offset: pvd + L.PVD_EFFECTIVE_TIMESTAMP_OFFSET,
+  },);
   iso[pvd + L.PVD_FILE_STRUCTURE_VERSION_OFFSET] = 1;
   //endregion
 
@@ -231,12 +256,12 @@ export function createIso({
   /** Byte offset of the VDST inside `iso`; VDST follows the PVD at sector 17 by spec. */
   const vdst = L.VDST_SECTOR * L.SECTOR_SIZE;
   iso[vdst] = 255;
-  L.writeStr(
-    iso,
-    vdst + 1,
-    'CD001',
-    L.CD001_LENGTH,
-  );
+  L.writeStr({
+    buf: iso,
+    len: L.CD001_LENGTH,
+    offset: vdst + 1,
+    str: 'CD001',
+  },);
   iso[vdst + L.PVD_VERSION_OFFSET] = 1;
   //endregion
 
@@ -270,41 +295,35 @@ export function createIso({
   //region Root directory (sector 20)
   /** Write cursor inside the root directory sector; bumped by each emitted dir entry. */
   let pos = L.ROOT_DIRECTORY_SECTOR * L.SECTOR_SIZE;
-  pos += writeDirEntry(
-    iso,
+  pos += writeDirEntry({
+    buf: iso,
+    isDir: true,
+    name: '\u0000',
+    offset: pos,
+    sector: L.ROOT_DIRECTORY_SECTOR,
+    size: rootDirSize,
     view,
-    pos,
-    {
-      isDir: true,
-      name: '\u0000',
-      sector: L.ROOT_DIRECTORY_SECTOR,
-      size: rootDirSize,
-    },
-  );
-  pos += writeDirEntry(
-    iso,
+  },);
+  pos += writeDirEntry({
+    buf: iso,
+    isDir: true,
+    name: '\u0001',
+    offset: pos,
+    sector: L.ROOT_DIRECTORY_SECTOR,
+    size: rootDirSize,
     view,
-    pos,
-    {
-      isDir: true,
-      name: '\u0001',
-      sector: L.ROOT_DIRECTORY_SECTOR,
-      size: rootDirSize,
-    },
-  );
+  },);
 
   for (const entry of entries) {
-    pos += writeDirEntry(
-      iso,
+    pos += writeDirEntry({
+      buf: iso,
+      isDir: false,
+      name: `${entry.name};1`,
+      offset: pos,
+      sector: entry.sector,
+      size: entry.data.length,
       view,
-      pos,
-      {
-        isDir: false,
-        name: `${entry.name};1`,
-        sector: entry.sector,
-        size: entry.data.length,
-      },
-    );
+    },);
   }
   //endregion
 

@@ -155,7 +155,9 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
       ),
       'utf8',
     );
-    /** Parsed metadata record; trusted because it was written by {@link writeVmMeta}. */
+    /**
+     * Parsed metadata record; trusted because it was written by {@link writeVmMeta}.
+     */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted local meta.json written by writeVmMeta
     const meta = JSON.parse(content,) as VmMeta;
     rl.debug(`read VM metadata from ${vmDir}/meta.json`,);
@@ -166,22 +168,26 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
   }
 
   // Fall back to legacy image text file
-  /** Image identifier resolved from the legacy `image` text file, or {@link DEFAULT_IMAGE} when missing. */
-  let image = DEFAULT_IMAGE;
-  try {
-    /** Raw legacy file contents; trimmed because old writers added a trailing newline. */
-    const content = await readFile(
-      join(
-        vmDir,
-        'image',
-      ),
-      'utf8',
-    );
-    image = content.trim();
-  }
-  catch {
-    rl.debug('legacy image file not found, assuming ubuntu',);
-  }
+  /**
+   * Image identifier resolved from the legacy `image` text file, or {@link DEFAULT_IMAGE} when missing.
+   */
+  const image = await (async function readLegacyImage(): Promise<string> {
+    try {
+      /** Raw legacy file contents; trimmed because old writers added a trailing newline. */
+      const content = await readFile(
+        join(
+          vmDir,
+          'image',
+        ),
+        'utf8',
+      );
+      return content.trim();
+    }
+    catch {
+      rl.debug('legacy image file not found, assuming ubuntu',);
+      return DEFAULT_IMAGE;
+    }
+  })();
 
   /** Image record resolved from the legacy identifier; registry or custom. */
   const resolved = resolveImage(image,);
