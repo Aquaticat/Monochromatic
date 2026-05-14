@@ -55,6 +55,7 @@ const CHANNEL_KEYS: readonly ChannelKey[] = [
  * @throws When the element is absent from the DOM.
  */
 export function el(id: string,): HTMLElement {
+  /** Raw `getElementById` result, validated below so the caller receives a non-null element. */
   const node = document.getElementById(id,);
   if (node === null) throw new Error(`Control element #${id} missing from DOM`,);
   return node;
@@ -70,6 +71,7 @@ export function el(id: string,): HTMLElement {
  * @throws When the element is absent or not an `<input>`.
  */
 export function elInput(id: string,): HTMLInputElement {
+  /** Element resolved by {@link el}, narrowed below to `HTMLInputElement` via `instanceof`. */
   const node = el(id,);
   if (!(node instanceof HTMLInputElement)) throw new Error(`Control element #${id} is not an <input>`,);
   return node;
@@ -85,6 +87,7 @@ export function elInput(id: string,): HTMLInputElement {
  * @throws When the element is absent or not a `<select>`.
  */
 export function elSelect(id: string,): HTMLSelectElement {
+  /** Element resolved by {@link el}, narrowed below to `HTMLSelectElement` via `instanceof`. */
   const node = el(id,);
   if (!(node instanceof HTMLSelectElement)) throw new Error(`Control element #${id} is not a <select>`,);
   return node;
@@ -109,6 +112,7 @@ export function syncDomFromState(
 ): void {
   CHANNEL_KEYS.forEach(function syncDim(channel,) {
     elSelect(`dim-${channel}`,).value = state.dimMapping[channel];
+    /** Range slider bounds for this channel: lower (`lo`) and upper (`hi`) ends pushed into the two number inputs below. */
     const [
       lo,
       hi,
@@ -117,7 +121,9 @@ export function syncDomFromState(
     elInput(`range-${channel}-max`,).value = hi.toString();
   },);
   TOGGLE_KEYS.forEach(function syncToggle(key: ToggleKey,) {
+    /** Current 3-state toggle value (`'any'`/`'yes'`/`'no'`) used to pick the matching radio below. */
     const value = state.toggles[key];
+    /** Radio input matching the current toggle value; absent radios are silently skipped (the toggle is read-only on that frame). */
     const radio = document.querySelector<HTMLInputElement>(`input[name="toggle-${key}"][value="${value}"]`,);
     if (radio !== null) radio.checked = true;
   },);

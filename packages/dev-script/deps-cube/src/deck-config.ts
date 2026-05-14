@@ -122,7 +122,9 @@ export function computeSceneBounds(
     dimMapping: DimMapping;
   },
 ): SceneBounds {
+  /** Per-channel `[key, extent]` pairs ready to feed `Object.fromEntries` into a SceneBounds record. */
   const entries = CHANNEL_KEYS.map(function extentFor(channel,) {
+    /** Known values across every probe for this channel; nulls (unknown dim) are dropped before min/max. */
     const values = probes
       .map(function pluck(probe,) {
         return extractDim({
@@ -146,6 +148,7 @@ export function computeSceneBounds(
       ] as const,
     ] as const;
   },);
+  /** Object built from `entries`; widened by `Object.fromEntries` to `Record<string, ...>` and re-asserted below. */
   const record = Object.fromEntries(entries,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- entries exhaust ChannelKey; Object.fromEntries widens to Record<string, V>.
   return record as SceneBounds;
@@ -205,6 +208,7 @@ export function buildLayers(
     chrome: ChromeColors;
   },
 ): readonly Layer[] {
+  /** Unknown-cluster scatter layers when the toggle is on; empty otherwise so the group flattens to nothing. */
   const unknownCluster = state.displayToggles.showUnknownCluster
     ? buildUnknownClusterLayer({
       probes,
@@ -213,12 +217,14 @@ export function buildLayers(
       visibleIndices,
     },)
     : [];
+  /** Threshold guide-line layer when the toggle is on; `null` is filtered out before flattening. */
   const thresholdLines = state.displayToggles.showThresholdPlanes
     ? buildThresholdLineLayer({
       bounds,
       dimMapping: state.dimMapping,
     },)
     : null;
+  /** Layer groups in back-to-front order; flattened below into the final layer array deck.gl renders. */
   const groups: readonly (readonly Layer[])[] = [
     state.displayToggles.showWireframe
       ? buildCoordinatePlaneLayers({

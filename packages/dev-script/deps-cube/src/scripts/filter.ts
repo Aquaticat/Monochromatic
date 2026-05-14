@@ -252,6 +252,7 @@ function passesToggles(
     toggles: ToggleState;
   },
 ): boolean {
+  /** Key/value pairs from the toggle record, retyped so `passOne` sees the discriminated key. */
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- Object.entries() loses key type; cast narrows it back.
   const entries = Object.entries(toggles,) as readonly (readonly [ToggleKey, ToggleValue,])[];
   return entries.every(function passOne(
@@ -261,6 +262,7 @@ function passesToggles(
     ],
   ) {
     if (value === 'any') return true;
+    /** Concrete derived-boolean reading for the toggle; `null` means undetermined and fails both `'yes'` and `'no'`. */
     const actual = derivedBool({
       probe,
       key,

@@ -59,8 +59,11 @@ export function partitionProbes(
   nonLeaf: readonly ScatterDatum[];
   unknown: readonly ScatterDatum[];
 } {
+  /** Leaf-package bucket (no transitive deps, drawn as filled spheres). */
   const leaf: ScatterDatum[] = [];
+  /** Non-leaf bucket (has transitive deps, drawn as octahedra). */
   const nonLeaf: ScatterDatum[] = [];
+  /** Unknown bucket (missing dim values or flagged via `unknownReason`); drawn at the +max corner. */
   const unknown: ScatterDatum[] = [];
   probes.forEach(function bucket(
     probe,
@@ -136,6 +139,7 @@ export function computeNameBakeSet(
       return i;
     },),);
   }
+  /** Probes paired with their original indices, sorted oldest-first by last-commit age, then truncated to {@link TOP_N_NAMES}. */
   const ranked = probes
     .map(function withIndex(
       probe,

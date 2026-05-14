@@ -78,6 +78,7 @@ const PACKAGE_ROOT = await findPackageRootCached({
  * @returns Filename like `deps-cube-2026-05-12T21-23-45Z.html`.
  */
 function currentRunOutputFilename(): string {
+  /** ISO 8601 UTC timestamp (`YYYY-MM-DDTHH:MM:SS.sssZ`) captured at filename-construction time. */
   const iso = new Date().toISOString();
   /** Drop the millisecond suffix and trailing `Z` ({@link iso} = `YYYY-MM-DDTHH:MM:SS.sssZ`). */
   const seconds = iso.slice(0, 19,);

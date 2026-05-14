@@ -151,6 +151,7 @@ function paintBackground(
     fillColor: Rgba;
   },
 ): void {
+  /** Byte-RGBA channels destructured so each can be formatted into the CSS rgba string. */
   const [
     r,
     g,
@@ -245,9 +246,12 @@ function pickFontSize(
     slotWidthPx: number;
   },
 ): number {
+  /** Measured width at the maximum font size; one measurement is enough since width scales linearly. */
   const measuredAtMax = ctx.measureText(text,).width;
+  /** Width budget after reserving the fill-fraction margin for the outline. */
   const targetWidth = slotWidthPx * SPHERE_SLOT_FILL_FRACTION;
   if (measuredAtMax <= targetWidth) return FONT_SIZE_PX;
+  /** Proportionally-rescaled font size before clamping to the minimum. */
   const scaled = FONT_SIZE_PX * (targetWidth / measuredAtMax);
   return Math.max(MIN_FONT_SIZE_PX, scaled,);
 }
@@ -298,17 +302,21 @@ export function makeProbeTexture(
     withName: boolean;
   },
 ): HTMLCanvasElement {
+  /** Stable cache identity for the texture inputs; reused on subsequent calls. */
   const key = cacheKey({
     probe,
     fillColor,
     shape,
     withName,
   },);
+  /** Previously-built canvas for this key, or undefined on first build. */
   const cached = TEXTURE_CACHE.get(key,);
   if (cached !== undefined) return cached;
+  /** Fresh canvas sized to the texture dimensions; populated by the painting steps below. */
   const canvas = document.createElement('canvas',);
   canvas.width = TEXTURE_SIZE_PX;
   canvas.height = TEXTURE_SIZE_PX;
+  /** Drawing context for the new canvas; nullable when Canvas2D is unavailable. */
   const ctx = canvas.getContext('2d',);
   if (ctx === null) throw new Error('Canvas2D context unavailable',);
   paintBackground({
@@ -326,7 +334,9 @@ export function makeProbeTexture(
   ctx.strokeStyle = 'rgba(0, 0, 0, 1)';
   ctx.fillStyle = 'rgba(255, 255, 255, 1)';
   if (shape === 'sphere') {
+    /** Per-repetition horizontal slot width; sets the auto-shrink budget. */
     const stepPx = TEXTURE_SIZE_PX / SPHERE_REPETITIONS;
+    /** Font size that fits the longest text inside one slot, clamped to the minimum. */
     const fontSize = pickFontSize({
       ctx,
       text: probe.npmName,
@@ -334,8 +344,11 @@ export function makeProbeTexture(
     },);
     ctx.font = `700 ${fontSize.toString()}px sans-serif`;
     ctx.lineWidth = OUTLINE_WIDTH_PX * (fontSize / FONT_SIZE_PX);
+    /** Canvas-Y of the upright stripe; just above the equator. */
     const uprightYPx = SPHERE_UPRIGHT_V * TEXTURE_SIZE_PX;
+    /** Canvas-Y of the rotated stripe; just below the equator. */
     const flippedYPx = SPHERE_FLIPPED_V * TEXTURE_SIZE_PX;
+    /** Per-repetition horizontal centres; one stamp pair per offset along the equator. */
     const offsets = Array.from(
       {
         length: SPHERE_REPETITIONS,
@@ -360,8 +373,11 @@ export function makeProbeTexture(
     }
   } else {
     ctx.lineWidth = OUTLINE_WIDTH_PX;
+    /** Canvas-X centre of the single octahedron stamp; horizontal midpoint of the texture. */
     const centreX = TEXTURE_SIZE_PX * HALF;
     /**
+     * Canvas-Y of the upright stripe.
+     *
      * Octahedron faces map to UV triangle `(0,0), (1,0), (0.5,1)`.
      * Two stripes inside the triangle; upright at `v = 1/4` and
      * rotated 180° at `v = 1/2`: so a reader sees at least one
@@ -369,6 +385,7 @@ export function makeProbeTexture(
      * winds up oriented on the sphere.
      */
     const uprightYPx = OCTAHEDRON_UPRIGHT_V * TEXTURE_SIZE_PX;
+    /** Canvas-Y of the rotated stripe; pairs with `uprightYPx` for orientation coverage. */
     const flippedYPx = OCTAHEDRON_FLIPPED_V * TEXTURE_SIZE_PX;
     paintUpright({
       ctx,

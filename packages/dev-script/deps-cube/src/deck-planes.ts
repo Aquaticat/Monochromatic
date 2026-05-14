@@ -98,24 +98,34 @@ const THRESHOLD_LINE_WIDTH = 1.5;
 export function buildCoordinatePlaneLayers(
   { bounds, }: { bounds: SceneBounds; },
 ): readonly Layer[] {
+  /** X-axis min and max destructured from `bounds.x` for polygon corner math. */
   const [
     xMin,
     xMax,
   ] = bounds.x;
+  /** Y-axis min and max destructured from `bounds.y` for polygon corner math. */
   const [
     yMin,
     yMax,
   ] = bounds.y;
+  /** Z-axis min and max destructured from `bounds.z` for polygon corner math. */
   const [
     zMin,
     zMax,
   ] = bounds.z;
+  /** X-axis total extent; basis for the X margin. */
   const dx = xMax - xMin;
+  /** Y-axis total extent; basis for the Y margin. */
   const dy = yMax - yMin;
+  /** Z-axis total extent; basis for the Z margin. */
   const dz = zMax - zMin;
+  /** Outward X margin so planes overhang the data box on the +/- X faces. */
   const mx = dx * PLANE_MARGIN_FRACTION;
+  /** Outward Y margin so planes overhang the data box on the +/- Y faces. */
   const my = dy * PLANE_MARGIN_FRACTION;
+  /** Outward Z margin so planes overhang the data box on the +/- Z faces. */
   const mz = dz * PLANE_MARGIN_FRACTION;
+  /** Floor polygon (XZ plane at `yMin`); first of the three coordinate walls. */
   const floor: PolygonDatum = {
     polygon: [
       [xMin - mx, yMin, zMin - mz,],
@@ -124,6 +134,7 @@ export function buildCoordinatePlaneLayers(
       [xMin - mx, yMin, zMax + mz,],
     ],
   };
+  /** Back polygon (XY plane at `zMin`); second of the three coordinate walls. */
   const back: PolygonDatum = {
     polygon: [
       [xMin - mx, yMin - my, zMin,],
@@ -132,6 +143,7 @@ export function buildCoordinatePlaneLayers(
       [xMin - mx, yMax + my, zMin,],
     ],
   };
+  /** Side polygon (YZ plane at `xMin`); third of the three coordinate walls. */
   const side: PolygonDatum = {
     polygon: [
       [xMin, yMin - my, zMin - mz,],
@@ -200,17 +212,21 @@ export function buildThresholdLineLayer(
     dimMapping: DimMapping;
   },
 ): Layer | null {
+  /** X-axis min and max destructured from `bounds.x` for guide-line endpoints. */
   const [
     xMin,
     xMax,
   ] = bounds.x;
+  /** Y-axis min and max destructured from `bounds.y` for guide-line endpoints. */
   const [
     yMin,
     yMax,
   ] = bounds.y;
+  /** Z-axis minimum; guides sit on the back wall at `zMin`. */
   const [
     zMin,
   ] = bounds.z;
+  /** Accumulator for guide-line paths; one entry per threshold whose dim is mapped and within bounds. */
   const segments: PathDatum[] = [];
   if (
     dimMapping.x === 'logSourceBytes'
