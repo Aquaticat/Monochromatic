@@ -42,23 +42,31 @@ import type {
  * ```ts
  * import { createMcpServer, defineTool, serve } from '\@monochromatic-dev/mcp-stdio';
  *
- * const server = createMcpServer(
- *   { name: 'demo', version: '0.1.0' },
- *   [
- *     defineTool('greet', {
- *       description: 'Greets by name.',
- *       handler: async (args) => ({
- *         content: [{ type: 'text', text: `Hello, ${args.name}!` }],
- *       }),
+ * const server = createMcpServer({
+ *   config: { name: 'demo', version: '0.1.0' },
+ *   tools: [
+ *     defineTool({
+ *       name: 'greet',
+ *       entry: {
+ *         description: 'Greets by name.',
+ *         handler: async (args) => ({
+ *           content: [{ type: 'text', text: `Hello, ${args.name}!` }],
+ *         }),
+ *       },
  *     }),
  *   ],
- * );
- * await serve(server);
+ * });
+ * await serve({ server });
  * ```
  */
 export function createMcpServer(
-  config: McpServerConfig,
-  tools: readonly ToolEntry[],
+  {
+    config,
+    tools,
+  }: {
+    config: McpServerConfig;
+    tools: readonly ToolEntry[];
+  },
 ): McpServerHandle {
   /**
    * Immutable lookup of registered tools keyed by name; built once at construction so
@@ -136,35 +144,35 @@ export function createMcpServer(
     } = request;
 
     if (method === 'initialize') {
-      return Promise.resolve(respondSuccess(
+      return Promise.resolve(respondSuccess({
         id,
-        buildInitializeResult(),
-      ),);
+        result: buildInitializeResult(),
+      },),);
     }
     if (method === 'ping') {
-      return Promise.resolve(respondSuccess(
+      return Promise.resolve(respondSuccess({
         id,
-        {},
-      ),);
+        result: {},
+      },),);
     }
     if (method === 'tools/list') {
-      return Promise.resolve(respondSuccess(
+      return Promise.resolve(respondSuccess({
         id,
-        buildToolsList(),
-      ),);
+        result: buildToolsList(),
+      },),);
     }
     if (method === 'tools/call') {
-      return handleToolCall(
+      return handleToolCall({
         toolMap,
         request,
-      );
+      },);
     }
     return Promise.resolve(
-      respondError(
+      respondError({
         id,
-        JSON_RPC_METHOD_NOT_FOUND,
-        `Method not found: ${method}`,
-      ),
+        code: JSON_RPC_METHOD_NOT_FOUND,
+        message: `Method not found: ${method}`,
+      },),
     );
   }
 

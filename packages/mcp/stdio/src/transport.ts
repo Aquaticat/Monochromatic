@@ -69,14 +69,20 @@ function processStdoutWriter(): StdoutWriter {
  * ```ts
  * import { createMcpServer, defineTool, serve } from '\@monochromatic-dev/mcp-stdio';
  *
- * const server = createMcpServer({ name: 'demo', version: '0.1.0' }, []);
- * await serve(server);
+ * const server = createMcpServer({ config: { name: 'demo', version: '0.1.0' }, tools: [] });
+ * await serve({ server });
  * ```
  */
 export async function serve(
-  server: McpServerHandle,
-  input: AsyncIterable<Uint8Array> = process.stdin,
-  output: StdoutWriter = processStdoutWriter(),
+  {
+    server,
+    input = process.stdin,
+    output = processStdoutWriter(),
+  }: {
+    server: McpServerHandle;
+    input?: AsyncIterable<Uint8Array>;
+    output?: StdoutWriter;
+  },
 ): Promise<void> {
   /** Reused across every outbound message so each call avoids allocating a fresh encoder. */
   const encoder = new TextEncoder();
@@ -109,11 +115,11 @@ export async function serve(
           message: 'Failed to parse JSON',
         },
       };
-      await writeMessage(
-        output,
+      await writeMessage({
+        writer: output,
         encoder,
-        errorResponse,
-      );
+        message: errorResponse,
+      },);
       continue;
     }
 
@@ -133,11 +139,11 @@ export async function serve(
           message: 'Invalid JSON-RPC message: missing jsonrpc or method field',
         },
       };
-      await writeMessage(
-        output,
+      await writeMessage({
+        writer: output,
         encoder,
-        errorResponse,
-      );
+        message: errorResponse,
+      },);
       continue;
     }
 
@@ -151,11 +157,11 @@ export async function serve(
       continue;
 
     console.error(`[mcp-stdio] -> ${JSON.stringify(response,)}`,);
-    await writeMessage(
-      output,
+    await writeMessage({
+      writer: output,
       encoder,
-      response,
-    );
+      message: response,
+    },);
   }
 }
 
@@ -171,11 +177,26 @@ export async function serve(
  * @param encoder - Reusable TextEncoder instance.
  *
  * @param message - JSON-RPC response to serialize and write.
+ *
+ * @example
+ * ```ts
+ * await writeMessage({
+ *   writer: processStdoutWriter(),
+ *   encoder: new TextEncoder(),
+ *   message: { jsonrpc: '2.0', id: 1, result: {} },
+ * });
+ * ```
  */
 async function writeMessage(
-  writer: StdoutWriter,
-  encoder: TextEncoder,
-  message: JsonRpcOutbound,
+  {
+    writer,
+    encoder,
+    message,
+  }: {
+    writer: StdoutWriter;
+    encoder: TextEncoder;
+    message: JsonRpcOutbound;
+  },
 ): Promise<void> {
   /** Newline-terminated JSON; MCP stdio framing requires one message per line. */
   const serialized = `${JSON.stringify(message,)}\n`;

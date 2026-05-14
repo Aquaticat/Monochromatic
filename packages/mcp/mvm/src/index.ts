@@ -30,12 +30,12 @@ export {};
 //region Server setup: create and serve the MCP server
 
 /** MCP server instance exposing mvm operations as tools. */
-const server = createMcpServer(
-  {
+const server = createMcpServer({
+  config: {
     name: 'mvm',
     version: '0.1.0',
   },
-  [
+  tools: [
     listTool,
     createTool,
     destroyTool,
@@ -45,8 +45,8 @@ const server = createMcpServer(
     pushTool,
     pullTool,
   ],
-);
+},);
 
-await serve(server,);
+await serve({ server, },);
 
 //endregion Server setup

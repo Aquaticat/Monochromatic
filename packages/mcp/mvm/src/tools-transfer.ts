@@ -19,9 +19,9 @@ import {
 //region Transfer tools: move files between host and guest VMs
 
 /** MCP tool: push a file from the host into a running VM. */
-export const pushTool: ToolEntry = defineTool(
-  'push_to_vm',
-  {
+export const pushTool: ToolEntry = defineTool({
+  name: 'push_to_vm',
+  entry: {
     description:
       'Pushes a file from the host filesystem into a running VM via the QEMU guest agent. The file is written to the specified guest path, creating or overwriting as needed.',
     inputSchema: {
@@ -69,12 +69,12 @@ export const pushTool: ToolEntry = defineTool(
       }
     },
   },
-);
+},);
 
 /** MCP tool: pull a file from a running VM to the host. */
-export const pullTool: ToolEntry = defineTool(
-  'pull_from_vm',
-  {
+export const pullTool: ToolEntry = defineTool({
+  name: 'pull_from_vm',
+  entry: {
     description:
       'Pulls a file from a running VM to the host filesystem via the QEMU guest agent. The file is read from the specified guest path and written to the host path.',
     inputSchema: {
@@ -132,6 +132,6 @@ export const pullTool: ToolEntry = defineTool(
       }
     },
   },
-);
+},);
 
 //endregion Transfer tools

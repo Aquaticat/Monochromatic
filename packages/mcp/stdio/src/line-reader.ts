@@ -30,6 +30,7 @@ export async function* readLines(
    * Declared with `let` because each chunk appends new text and each yield slices off
    * the emitted prefix; both operations require reassignment of the binding.
    */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- parser cursor: buffer accumulates across stream chunks and is sliced after each yielded line, so reassignment is fundamental to the generator's contract
   let buffer = '';
 
   for await (const chunk of stream) {
@@ -45,7 +46,7 @@ export async function* readLines(
      * containing several newline-delimited messages yields each in turn.
      */
     let newlineIndex = buffer.indexOf('\n',);
-    while (newlineIndex !== -1) {
+    while (newlineIndex !== (-1)) {
       yield buffer.slice(
         0,
         newlineIndex,

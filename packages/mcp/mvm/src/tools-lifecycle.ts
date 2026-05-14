@@ -17,9 +17,9 @@ import {
 //region Lifecycle tools: VM listing and template updates
 
 /** MCP tool: list all managed VMs and their state. */
-export const listTool: ToolEntry = defineTool(
-  'list_vms',
-  {
+export const listTool: ToolEntry = defineTool({
+  name: 'list_vms',
+  entry: {
     description:
       'Lists all managed VMs with their current state (running, shut off, etc.).',
     handler: async function handleListVms() {
@@ -42,12 +42,12 @@ export const listTool: ToolEntry = defineTool(
       }
     },
   },
-);
+},);
 
 /** MCP tool: re-download and rebuild all template images. */
-export const updateTool: ToolEntry = defineTool(
-  'update_templates',
-  {
+export const updateTool: ToolEntry = defineTool({
+  name: 'update_templates',
+  entry: {
     description:
       'Re-downloads all base images and rebuilds all templates unconditionally. Use to refresh Windows evaluation ISOs (180-day expiry), pick up new Linux cloud image releases, or update virtio-win drivers. Builds templates for all registered images, even those never previously used. Windows template rebuild takes 15-30 minutes.',
     handler: async function handleUpdateTemplates() {
@@ -63,6 +63,6 @@ export const updateTool: ToolEntry = defineTool(
       }
     },
   },
-);
+},);
 
 //endregion Lifecycle tools

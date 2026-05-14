@@ -27,12 +27,20 @@ import type { RegisteredTool, } from './server-types.ts';
  *
  * @example
  * ```ts
- * const response = await handleToolCall(toolMap, { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'get_diagnostics' } });
+ * const response = await handleToolCall({
+ *   toolMap,
+ *   request: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'get_diagnostics' } },
+ * });
  * ```
  */
 export async function handleToolCall(
-  toolMap: ReadonlyMap<string, RegisteredTool>,
-  request: JsonRpcRequest,
+  {
+    toolMap,
+    request,
+  }: {
+    toolMap: ReadonlyMap<string, RegisteredTool>;
+    request: JsonRpcRequest;
+  },
 ): Promise<JsonRpcOutbound> {
   /** Echoed back in the response so the client can correlate the call with the result. */
   const {
@@ -41,22 +49,22 @@ export async function handleToolCall(
   } = request;
 
   /** Tool name extracted from untrusted params; `undefined` triggers an invalid-params error below. */
-  const toolName = typeof params?.name === 'string' ? params.name : undefined;
+  const toolName = (((typeof params?.name) === 'string')) ? params.name : undefined;
   if (toolName === undefined) {
-    return respondError(
+    return respondError({
       id,
-      JSON_RPC_INVALID_PARAMS,
-      'Missing or non-string tool name in tools/call',
-    );
+      code: JSON_RPC_INVALID_PARAMS,
+      message: 'Missing or non-string tool name in tools/call',
+    },);
   }
 
   /** Raw `arguments` value from params, validated below before being handed to the tool. */
   const rawArgs = params?.arguments;
   /** Validated argument bag: empty object when params arrived missing, null, an array, or a non-object. */
-  const toolArgs: Record<string, unknown> = rawArgs !== undefined
-      && rawArgs !== null
-      && typeof rawArgs === 'object'
-      && !Array.isArray(rawArgs,)
+  const toolArgs: Record<string, unknown> = (rawArgs !== undefined)
+      && (rawArgs !== null)
+      && (((typeof rawArgs) === 'object'))
+      && (!Array.isArray(rawArgs,))
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed from unknown to non-array object above
     ? (rawArgs as Record<string, unknown>)
     : {};
@@ -64,11 +72,11 @@ export async function handleToolCall(
   /** Tool entry resolved from the registry; `undefined` means the client requested an unknown tool. */
   const registered = toolMap.get(toolName,);
   if (registered === undefined) {
-    return respondError(
+    return respondError({
       id,
-      JSON_RPC_INVALID_PARAMS,
-      `Unknown tool: ${toolName}`,
-    );
+      code: JSON_RPC_INVALID_PARAMS,
+      message: `Unknown tool: ${toolName}`,
+    },);
   }
 
   // Deliberate catch-and-return: in a server context, tool handler errors must be
@@ -76,22 +84,22 @@ export async function handleToolCall(
   try {
     /** Tool handler output, wrapped below into a JSON-RPC success response. */
     const result: ToolCallResult = await registered.handler(toolArgs,);
-    return respondSuccess(
+    return respondSuccess({
       id,
       result,
-    );
+    },);
   }
   catch (error: unknown) {
     /** Human-readable error text; falls back to `String(error)` when the thrown value is not an `Error`. */
-    const message = error instanceof Error ? error.message : String(error,);
+    const message = (error instanceof Error) ? error.message : String(error,);
     console.error(
       `[mcp-stdio] tool "${toolName}" threw:`,
       error,
     );
-    return respondError(
+    return respondError({
       id,
-      JSON_RPC_INTERNAL_ERROR,
-      `Tool execution failed: ${message}`,
-    );
+      code: JSON_RPC_INTERNAL_ERROR,
+      message: `Tool execution failed: ${message}`,
+    },);
   }
 }

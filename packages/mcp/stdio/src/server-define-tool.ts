@@ -16,17 +16,25 @@ import type { ToolEntry, } from './server-types.ts';
  *
  * @example
  * ```ts
- * const tool = defineTool('get_time', {
- *   description: 'Returns current UTC time.',
- *   handler: async () => ({
- *     content: [{ type: 'text', text: new Date().toISOString() }],
- *   }),
+ * const tool = defineTool({
+ *   name: 'get_time',
+ *   entry: {
+ *     description: 'Returns current UTC time.',
+ *     handler: async () => ({
+ *       content: [{ type: 'text', text: new Date().toISOString() }],
+ *     }),
+ *   },
  * });
  * ```
  */
 export function defineTool(
-  name: string,
-  entry: Omit<ToolEntry, 'name'>,
+  {
+    name,
+    entry,
+  }: {
+    name: string;
+    entry: Omit<ToolEntry, 'name'>;
+  },
 ): ToolEntry {
   return {
     name,

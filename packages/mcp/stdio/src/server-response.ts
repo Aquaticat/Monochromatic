@@ -18,13 +18,18 @@ import type {
  *
  * @example
  * ```ts
- * respondSuccess(1, { tools: [] });
+ * respondSuccess({ id: 1, result: { tools: [] } });
  * // { jsonrpc: '2.0', id: 1, result: { tools: [] } }
  * ```
  */
 export function respondSuccess(
-  id: JsonRpcRequest['id'],
-  result: unknown,
+  {
+    id,
+    result,
+  }: {
+    id: JsonRpcRequest['id'];
+    result: unknown;
+  },
 ): JsonRpcResponse {
   return {
     jsonrpc: '2.0',
@@ -46,14 +51,20 @@ export function respondSuccess(
  *
  * @example
  * ```ts
- * respondError(1, -32601, 'Method not found');
+ * respondError({ id: 1, code: -32601, message: 'Method not found' });
  * // { jsonrpc: '2.0', id: 1, error: { code: -32601, message: 'Method not found' } }
  * ```
  */
 export function respondError(
-  id: JsonRpcRequest['id'],
-  code: number,
-  message: string,
+  {
+    id,
+    code,
+    message,
+  }: {
+    id: JsonRpcRequest['id'];
+    code: number;
+    message: string;
+  },
 ): JsonRpcErrorResponse {
   return {
     jsonrpc: '2.0',

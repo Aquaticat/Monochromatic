@@ -47,7 +47,7 @@ function collectingWriter(): { writer: StdoutWriter; lines: string[]; } {
       const text = decoder.decode(data,);
       // Split on newlines and filter trailing empty string from final newline.
       const parts = text.split('\n',).filter((part, index, array,) =>
-        index < array.length - 1 || part.length > 0
+        (index < (array.length - 1)) || (part.length > 0)
       );
       lines.push(...parts,);
       return data.length;
@@ -86,7 +86,7 @@ await describe({
         ],);
         const { writer, lines, } = collectingWriter();
 
-        await serve(server, input, writer,);
+        await serve({ server, input, output: writer, },);
 
         expect(lines,).toEqual([JSON.stringify(serverResponse,),],);
       },
@@ -100,7 +100,7 @@ await describe({
           '{"jsonrpc":"2.0","id":1,"method":"ping"}',],);
         const { writer, lines, } = collectingWriter();
 
-        await serve(server, input, writer,);
+        await serve({ server, input, output: writer, },);
 
         expect(lines,).toHaveLength(1,);
       },
@@ -112,7 +112,7 @@ await describe({
         const input = stdinFromMessages(['not-json',],);
         const { writer, lines, } = collectingWriter();
 
-        await serve(server, input, writer,);
+        await serve({ server, input, output: writer, },);
 
         expect(lines,).toHaveLength(1,);
         const parsed = JSON.parse(lines[0] ?? '{}',) as JsonRpcOutbound;
@@ -128,7 +128,7 @@ await describe({
         const input = stdinFromMessages(['{"not":"jsonrpc"}',],);
         const { writer, lines, } = collectingWriter();
 
-        await serve(server, input, writer,);
+        await serve({ server, input, output: writer, },);
 
         expect(lines,).toHaveLength(1,);
         const parsed = JSON.parse(lines[0] ?? '{}',) as JsonRpcOutbound;
@@ -146,7 +146,7 @@ await describe({
         ],);
         const { writer, lines, } = collectingWriter();
 
-        await serve(server, input, writer,);
+        await serve({ server, input, output: writer, },);
 
         expect(lines,).toHaveLength(0,);
       },
@@ -169,7 +169,7 @@ await describe({
         ],);
         const { writer, lines, } = collectingWriter();
 
-        await serve(server, input, writer,);
+        await serve({ server, input, output: writer, },);
 
         expect(lines,).toHaveLength(3,);
       },
@@ -185,7 +185,7 @@ await describe({
         ],);
         const { writer, lines, } = collectingWriter();
 
-        await serve(server, input, writer,);
+        await serve({ server, input, output: writer, },);
 
         // One parse error response + one valid response.
         expect(lines,).toHaveLength(2,);
