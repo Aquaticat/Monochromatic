@@ -57,6 +57,7 @@ let buffer: CaptureBuffer = [];
  * ```
  */
 export function store(set: CaptureSet,): void {
+  /** Updated buffer with the new set appended; trimmed to the most recent {@link MAX_ENTRIES} entries. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- bounded tuple enforced by MAX_ENTRIES slice
   const next = [
     ...buffer,
@@ -103,6 +104,7 @@ function isAfterCutoff(
  * Removes capture sets older than {@link RETENTION_MS} from the buffer.
  */
 function prune(): void {
+  /** Oldest timestamp to keep; sets older than this are filtered out. */
   const cutoff = Date.now() - RETENTION_MS;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- bounded tuple enforced by filter subset
   buffer = buffer.filter(function checkRetention(s,) {
