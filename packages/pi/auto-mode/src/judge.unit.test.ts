@@ -20,7 +20,7 @@ import {
 } from './judge.ts';
 
 await describe({
-  name: 'toolChoiceForApi',
+  name: toolChoiceForApi.name,
   children: [
     it({
       name: 'returns forced tool object for anthropic-messages',
@@ -125,7 +125,7 @@ await describe({
 },);
 
 await describe({
-  name: 'extractJsonVerdict',
+  name: extractJsonVerdict.name,
   children: [
     it({
       name: 'parses a clean JSON object',
@@ -168,7 +168,7 @@ await describe({
 },);
 
 await describe({
-  name: 'collectToolCall',
+  name: collectToolCall.name,
   children: [
     it({
       name: 'concatenates text_end content across multiple blocks',
@@ -232,7 +232,7 @@ await describe({
 },);
 
 await describe({
-  name: 'parseVerdict',
+  name: parseVerdict.name,
   children: [
     it({
       name: 'passes through valid verdicts',

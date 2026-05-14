@@ -45,7 +45,7 @@ const VAR_HOME_CTX: SignalContext = {
 };
 
 await describe({
-  name: 'pathSignals',
+  name: pathSignals.name,
   children: [
     //region Under cwd: not flagged
 
@@ -125,7 +125,7 @@ await describe({
 },);
 
 await describe({
-  name: 'isUnder',
+  name: isUnder.name,
   children: [
     it({
       name: 'returns true for exact match',
@@ -158,7 +158,7 @@ await describe({
 },);
 
 await describe({
-  name: 'isHomeDotfile',
+  name: isHomeDotfile.name,
   children: [
     it({
       name: 'detects .ssh directory',
@@ -180,7 +180,7 @@ await describe({
 },);
 
 await describe({
-  name: 'hasFlag',
+  name: hasFlag.name,
   children: [
     it({
       name: 'detects short flag -rf',
@@ -214,7 +214,7 @@ await describe({
 },);
 
 await describe({
-  name: 'bashSignals',
+  name: bashSignals.name,
   children: [
     //region Privilege
 
@@ -328,7 +328,7 @@ await describe({
 },);
 
 await describe({
-  name: 'contentSignals',
+  name: contentSignals.name,
   children: [
     it({
       name: 'detects private key',
@@ -361,7 +361,7 @@ await describe({
 },);
 
 await describe({
-  name: 'textSignals',
+  name: textSignals.name,
   children: [
     it({
       name: 'detects sudo in text',
@@ -394,7 +394,7 @@ await describe({
 },);
 
 await describe({
-  name: 'matchUserCommands',
+  name: matchUserCommands.name,
   children: [
     it({
       name: 'matches string matcher',
@@ -434,7 +434,7 @@ await describe({
 },);
 
 await describe({
-  name: 'resolvePath',
+  name: resolvePath.name,
   children: [
     it({
       name: 'resolves ~ to home directory',

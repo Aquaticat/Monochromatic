@@ -48,7 +48,7 @@ await describe({
 },);
 
 await describe({
-  name: 'buildSystemPrompt',
+  name: buildSystemPrompt.name,
   children: [
     it({
       name: 'includes base prompt without instructions',
@@ -91,7 +91,7 @@ await describe({
 },);
 
 await describe({
-  name: 'compilePatterns',
+  name: compilePatterns.name,
   children: [
     it({
       name: 'compiles valid regex patterns',

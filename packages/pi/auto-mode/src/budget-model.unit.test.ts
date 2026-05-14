@@ -46,7 +46,7 @@ function createModel(
 }
 
 await describe({
-  name: 'extractMajorVersion',
+  name: extractMajorVersion.name,
   children: [
     it({
       name: 'extracts version from gpt-4o-mini',
@@ -80,7 +80,7 @@ await describe({
 },);
 
 await describe({
-  name: 'extractVersionNumbers',
+  name: extractVersionNumbers.name,
   children: [
     it({
       name: 'extracts all version numbers',
@@ -101,7 +101,7 @@ await describe({
 },);
 
 await describe({
-  name: 'findCheapestInMajorVersions',
+  name: findCheapestInMajorVersions.name,
   children: [
     it({
       name: 'returns models sorted by cost',
@@ -167,7 +167,7 @@ await describe({
 },);
 
 await describe({
-  name: 'NoBudgetModelError',
+  name: NoBudgetModelError.name,
   children: [
     it({
       name: 'includes reason in message',
