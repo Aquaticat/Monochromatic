@@ -98,6 +98,10 @@ function bashOutputFilterParser(raw: string,): PreToolUseInput {
  * Serializes the bash-output-filter output for stdout.
  *
  * No trailing newline -- matches Claude Code's wire convention.
+ *
+ * @param output - handler result to serialize
+ *
+ * @returns JSON string for stdout
  */
 function bashOutputFilterWriter(output: BashOutputFilterOutput,): string {
   return JSON.stringify(output,);

@@ -112,6 +112,8 @@ function updateChildOnStop(
  * - Otherwise returns an empty pass-through.
  *
  * @param event - parsed Stop hook event payload
+ *
+ * @returns block decision with child results, or empty pass-through
  */
 function stopResponse(
   event: Extract<HookInput, { hook_event_name: 'Stop'; }>,
@@ -143,6 +145,8 @@ function stopResponse(
  * delivery hooks (PreToolUse, PostToolUse, PostToolUseFailure, etc.).
  *
  * @param event - any hook event other than SessionStart, Stop, SessionEnd
+ *
+ * @returns hook response carrying child-result text, or empty pass-through
  */
 function additionalContextResponse(event: HookInput,): ClaudeSpawnOutput {
   const context = checkCompletedChildren({
@@ -174,6 +178,8 @@ function additionalContextResponse(event: HookInput,): ClaudeSpawnOutput {
  * delivery.
  *
  * @param event - parsed hook event from Claude Code
+ *
+ * @returns hook response for stdout
  */
 function claudeSpawnHandler(event: HookInput,): ClaudeSpawnOutput {
   if (event.hook_event_name === 'SessionStart') {
@@ -219,6 +225,10 @@ function claudeSpawnParser(raw: string,): HookInput {
  * Renders the discriminated output to stdout. Raw variants are written
  * verbatim; JSON variants are stringified without trailing newline,
  * matching the legacy wire format.
+ *
+ * @param output - discriminated handler result
+ *
+ * @returns text payload to write to stdout
  */
 function claudeSpawnWriter(output: ClaudeSpawnOutput,): string {
   if (output.kind === 'raw')

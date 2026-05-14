@@ -105,6 +105,10 @@ function promptTimeParser(raw: string,): UserPromptSubmitInput {
  * Serializes the prompt-time output for stdout.
  *
  * No trailing newline -- matches Claude Code's wire convention.
+ *
+ * @param output - handler result to serialize
+ *
+ * @returns JSON string for stdout
  */
 function promptTimeWriter(output: PromptTimeOutput,): string {
   return JSON.stringify(output,);

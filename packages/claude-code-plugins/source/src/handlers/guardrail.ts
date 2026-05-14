@@ -116,6 +116,10 @@ function guardrailParser(raw: string,): PreToolUseInput {
  * Serializes the guardrail output for stdout.
  *
  * No trailing newline -- matches Claude Code's wire convention.
+ *
+ * @param output - handler result to serialize
+ *
+ * @returns JSON string for stdout
  */
 function guardrailWriter(output: GuardrailOutput,): string {
   return JSON.stringify(output,);

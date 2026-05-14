@@ -111,6 +111,8 @@ type SessionStartHousekeepingOutput = void;
  *
  * @param event - parsed SessionStart event from Claude Code
  *
+ * @returns nothing; runtime emits empty stdout via the writer
+ *
  * @example
  * ```ts
  * await sessionStartHousekeepingHandler({ cwd: '/repo', source: 'startup', ... });
@@ -144,6 +146,10 @@ function sessionStartHousekeepingParser(raw: string,): SessionStartInput {
 /**
  * Returns an empty string -- the legacy hook produced no stdout, and the runtime
  * shell writes whatever this returns verbatim.
+ *
+ * @param _output - ignored handler result (housekeeping has no stdout)
+ *
+ * @returns empty string
  */
 function sessionStartHousekeepingWriter(
   _output: SessionStartHousekeepingOutput,

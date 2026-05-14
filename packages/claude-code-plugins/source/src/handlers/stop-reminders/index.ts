@@ -2,6 +2,8 @@ import type {
   StopInput,
   StopOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+
+import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
   findCategoricalDismissal,
   findTrailingQuestion,
@@ -96,16 +98,23 @@ function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
  * Parses raw stdin as a `StopInput`.
  *
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ *
+ * @param raw - JSON payload from Claude Code stdin
+ *
+ * @returns parsed Stop event
  */
 function stopRemindersParser(raw: string,): StopInput {
-  /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
-  return JSON.parse(raw,) as StopInput;
+  return parseHookJson<StopInput>(raw,);
 }
 
 /**
  * Serializes the stop-reminders output for stdout.
  *
  * No trailing newline -- matches Claude Code's wire convention.
+ *
+ * @param output - handler result to serialize
+ *
+ * @returns JSON string for stdout
  */
 function stopRemindersWriter(output: StopRemindersOutput,): string {
   return JSON.stringify(output,);

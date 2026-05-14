@@ -49,7 +49,13 @@ function titleForTool(event: PreToolUseInput | PostToolUseInput,): string {
   );
 }
 
-/** Filename portion of an absolute or relative path. */
+/**
+ * Filename portion of an absolute or relative path.
+ *
+ * @param filePath - path to shorten
+ *
+ * @returns last path segment
+ */
 function shortPath(filePath: string,): string {
   return basename(filePath,);
 }
@@ -140,6 +146,8 @@ type TerminalTitleOutput = void;
  * nothing.
  *
  * @param event - parsed hook event from Claude Code
+ *
+ * @returns nothing; title is set as a side effect via `/dev/tty`
  */
 function terminalTitleHandler(event: HookInput,): TerminalTitleOutput {
   const title = titleForEvent(event,);
@@ -166,6 +174,10 @@ function terminalTitleParser(raw: string,): HookInput {
 /**
  * Returns an empty string -- the legacy hook produced no stdout, and the
  * runtime shell writes whatever this returns verbatim.
+ *
+ * @param _output - ignored handler result (title is set as a side effect)
+ *
+ * @returns empty string
  */
 function terminalTitleWriter(_output: TerminalTitleOutput,): string {
   return '';
