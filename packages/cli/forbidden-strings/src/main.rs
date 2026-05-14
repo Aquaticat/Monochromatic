@@ -395,7 +395,7 @@ fn main() -> ExitCode {
                     "                      Overrides FORBIDDEN_STRINGS_RULES.\n",
                     "                      Default: ./forbidden-strings.local.txt\n",
                     "    --all             Scan every git-tracked file under cwd.\n",
-                    "                      Respects .gitignore via `git ls-files`.\n",
+                    "                      Respects .gitignore (via the `ignore` crate).\n",
                     "    -h, --help        Print this help and exit.\n",
                     "    -V, --version     Print version and exit.\n",
                     "\n",
