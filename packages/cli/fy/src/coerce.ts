@@ -20,11 +20,13 @@ import {
  * ```
  */
 export function coerceArg({ arg, }: { arg: string; },): unknown {
+  /** Tagged logger scoped to this function so log lines identify the coercion call site. */
   const rl = tagged({
     tag: coerceArg.name,
     l,
   },);
   try {
+    /** Parsed value from `JSON.parse`; typed `unknown` so callers must narrow before use. */
     const parsed: unknown = JSON.parse(arg,);
     rl.info(`"${arg}" => ${typeof parsed} ${String(parsed,)}`,);
     return parsed;
