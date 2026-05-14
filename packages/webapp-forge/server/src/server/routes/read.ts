@@ -46,18 +46,22 @@ const HTML_FRAGMENT_HEADERS = {
  */
 export const issueDetailHandler: EventHandlerWithFetch = defineHandler(
   async function handleIssueDetail(event,) {
+    /** Owner login segment of the route path. */
     const owner = requireParam(
       event.context.params,
       'owner',
     );
+    /** Repo name segment of the route path. */
     const repoName = requireParam(
       event.context.params,
       'repo',
     );
+    /** Raw issue number from the URL; parsed below. */
     const numberRaw = requireParam(
       event.context.params,
       'number',
     );
+    /** Parsed issue number; non-finite or non-positive triggers a 400. */
     const number = Number.parseInt(
       numberRaw,
       DECIMAL_RADIX,
@@ -68,6 +72,7 @@ export const issueDetailHandler: EventHandlerWithFetch = defineHandler(
         message: 'invalid issue number',
       },);
     }
+    /** Repo row identified by owner login + repo name. */
     const repo = await getRepoByOwnerLogin({
       ownerLogin: owner,
       name: repoName,
@@ -78,6 +83,7 @@ export const issueDetailHandler: EventHandlerWithFetch = defineHandler(
         message: 'repo not found',
       },);
     }
+    /** Issue row identified by repo id + number. */
     const issue = await getIssueByNumber({
       repoId: repo.id,
       number,
@@ -88,6 +94,7 @@ export const issueDetailHandler: EventHandlerWithFetch = defineHandler(
         message: 'issue not found',
       },);
     }
+    /** Rendered fragment body bytes; missing means dispatcher hasn't built it. */
     const body = await storage.get(issueDetailKey({
       repoId: repo.id,
       issueId: issue.id,
@@ -112,17 +119,23 @@ export const issueDetailHandler: EventHandlerWithFetch = defineHandler(
  */
 export const filterListHandler: EventHandlerWithFetch = defineHandler(
   async function handleFilterList(event,) {
+    /** Owner login segment of the route path. */
     const owner = requireParam(
       event.context.params,
       'owner',
     );
+    /** Repo name segment of the route path. */
     const repoName = requireParam(
       event.context.params,
       'repo',
     );
+    /** Request URL parsed once so query params are reachable below. */
     const url = new URL(event.req.url,);
+    /** `?label=...` query param; null means "any label". */
     const labelParam = url.searchParams.get('label',);
+    /** `?state=...` query param; defaults to `'open'`. */
     const stateParam = url.searchParams.get('state',) ?? 'open';
+    /** Validated state facet; null triggers a 400. */
     const stateFacet = parseStateFacet(stateParam,);
     if (stateFacet === null) {
       throw new HTTPError({
@@ -130,6 +143,7 @@ export const filterListHandler: EventHandlerWithFetch = defineHandler(
         message: `invalid state: ${stateParam}`,
       },);
     }
+    /** Repo row identified by owner login + repo name. */
     const repo = await getRepoByOwnerLogin({
       ownerLogin: owner,
       name: repoName,
@@ -140,7 +154,9 @@ export const filterListHandler: EventHandlerWithFetch = defineHandler(
         message: 'repo not found',
       },);
     }
+    /** Effective label id; `null` query param means `ANY_LABEL` sentinel. */
     const labelId = labelParam ?? ANY_LABEL;
+    /** Rendered fragment body bytes; missing means dispatcher hasn't built it. */
     const body = await storage.get(filterListKey({
       repoId: repo.id,
       labelId,
@@ -166,7 +182,9 @@ export const filterListHandler: EventHandlerWithFetch = defineHandler(
  */
 export const rawFragmentHandler: EventHandlerWithFetch = defineHandler(
   async function handleRawFragment(event,) {
+    /** Request URL parsed once so pathname is reachable below. */
     const url = new URL(event.req.url,);
+    /** Path under `/_fragments/`, treated as a literal storage key. */
     const path = url.pathname.replace(
       /^\/_fragments\//,
       '',
@@ -177,6 +195,7 @@ export const rawFragmentHandler: EventHandlerWithFetch = defineHandler(
         message: 'missing fragment key',
       },);
     }
+    /** Stored fragment bytes; missing yields 404. */
     const body = await storage.get(path,);
     if (body === undefined) {
       throw new HTTPError({

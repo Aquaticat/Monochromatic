@@ -58,29 +58,37 @@ export async function dispatchAndFlush(row: {
   writeBuffer: WriteBuffer;
   batchSize?: number;
 },): Promise<number> {
+  /** Bounded page size protects the loop from unbounded backlog. */
   const batchSize = row.batchSize ?? DEFAULT_BATCH_SIZE;
+  /** Advances through `events.id` order; returned to caller as the new high-water mark. */
   let cursor = row.afterEventId;
   // Process up to `batchSize` events per loop turn so an unbounded
   // backlog cannot starve the caller. Phase 1 callers usually only
   // expect 1-2 events; the loop terminates once `listEventsAfter`
   // returns an empty page.
   while (true) {
-    // oxlint-disable-next-line no-await-in-loop -- sequential by design
+    /* oxlint-disable no-await-in-loop -- sequential by design */
+    /** Next page of unprocessed events ordered by id. */
     const events = await listEventsAfter(
       cursor,
       batchSize,
     );
+    /* oxlint-enable no-await-in-loop */
     if (events.length === 0)
       break;
     for (const eventRow of events) {
       cursor = eventRow.id;
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- event-log column is a string subtype
+      /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- event-log column is a string subtype */
+      /** Narrowed event kind; the column type is a free string at the SQL boundary. */
       const kind = eventRow.kind as EventKind;
+      /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       if (!DISPATCHABLE_KINDS.has(kind,))
         continue;
+      /** Comment id pulled from payload for the comment-created branch only. */
       const commentId = kind === 'comment.created'
         ? extractCommentId(eventRow.payload,)
         : undefined;
+      /** Synthetic event passed to the dispatcher; `commentId` is omitted when absent. */
       const event = commentId === undefined
         ? {
           kind,
@@ -121,6 +129,7 @@ export async function dispatchAndFlush(row: {
  * ```
  */
 function extractCommentId(payload: string,): string | undefined {
+  /** Parsed JSON payload; `undefined` until the `try` block succeeds. */
   let parsed: unknown = undefined;
   try {
     // oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns any
@@ -133,6 +142,7 @@ function extractCommentId(payload: string,): string | undefined {
     return undefined;
   if (!('commentId' in parsed))
     return undefined;
+  /** Destructured commentId narrowed to string below. */
   const { commentId, } = parsed;
   return typeof commentId === 'string' ? commentId : undefined;
 }

@@ -44,6 +44,7 @@ export function requireParam(
   params: Record<string, string> | undefined,
   name: string,
 ): string {
+  /** Raw param value; missing/empty triggers the 400 below. */
   const value = params?.[name];
   if (value === undefined || value === '') {
     throw new HTTPError({
@@ -90,6 +91,7 @@ export type Actor = {
  * ```
  */
 export async function requireActor(event: ActorEvent,): Promise<Actor> {
+  /** Active Better Auth session, when one is present on the request. */
   const session = await auth.api.getSession({ headers: event.req.headers, },);
   if (session !== null) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- Better Auth's session.user shape includes the username plugin's optional `username` field, which the framework's typed surface omits at this entry point */
@@ -107,6 +109,7 @@ export async function requireActor(event: ActorEvent,): Promise<Actor> {
       message: 'no session',
     },);
   }
+  /** Dev-only login from the legacy header; missing triggers the 401 below. */
   const login = event.req.headers.get('x-forge-user',);
   if (login === null || login === '') {
     throw new HTTPError({
@@ -114,6 +117,7 @@ export async function requireActor(event: ActorEvent,): Promise<Actor> {
       message: 'no session and missing X-Forge-User dev header',
     },);
   }
+  /** Resolved user row keyed by login; missing triggers the 401 below. */
   const user = await getUserByLogin(login,);
   if (user === undefined) {
     throw new HTTPError({
@@ -138,6 +142,7 @@ export async function requireActor(event: ActorEvent,): Promise<Actor> {
  * ```
  */
 export async function runDispatch(): Promise<void> {
+  /** New event-id high-water mark returned after the drain completes. */
   const cursor = await dispatchAndFlush({
     afterEventId: getEventCursor(),
     storage,
