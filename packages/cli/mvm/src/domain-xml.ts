@@ -121,6 +121,7 @@ export function domainXml(
     sharedDir?: string | undefined;
   },
 ): string {
+  /** Mutable buffer because Windows pushes Hyper-V enlightenments on top of ACPI. */
   const features = [h({ tag: 'acpi', },),];
   if (osFamily === 'windows')
     features.push(hypervFeatures(),);
@@ -128,6 +129,7 @@ export function domainXml(
   /** Device name prefix depends on bus type: vda for virtio, sda for sata. */
   const diskDev = diskBus === 'virtio' ? 'vda' : 'sda';
 
+  /** Mutable buffer because optional seed, virtiofs, and CDROM blocks extend the base disk. */
   const devices: string[] = [
     h({
       tag: 'disk',

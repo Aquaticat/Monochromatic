@@ -140,6 +140,7 @@ else if (args.cmd === 'pull') {
     name: args.name,
     guestPath: args.guestPath,
   },);
+  /** Dynamic import keeps the pull-only branch off the cold-start dependency graph. */
   const { writeFile, } = await import('node:fs/promises');
   await writeFile(
     args.hostPath,

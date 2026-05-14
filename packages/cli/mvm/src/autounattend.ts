@@ -142,16 +142,20 @@ export function createAutounattendIso({
   hostname: string;
   imageIndex: number;
 },): Uint8Array {
+  /** Tagged logger so ISO-creation messages name the call site. */
   const rl = tagged({
     tag: createAutounattendIso.name,
     l,
   },);
+  /** Rendered ahead of ISO packing so the encoder operates on a final string. */
   const xml = generateAutounattend({
     hostname,
     imageIndex,
   },);
+  /** Reused for the single XML payload below. */
   const encoder = new TextEncoder();
 
+  /** Captured before the success log so the bytes are returned after announcement. */
   const iso = createIso({
     files: [
       {

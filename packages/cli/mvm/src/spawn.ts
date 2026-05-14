@@ -31,12 +31,14 @@ export async function spawn(
     command: string;
   },
 ): Promise<string> {
+  /** Tagged logger so the debug line names the spawn call site. */
   const rl = tagged({
     tag: spawn.name,
     l,
   },);
   rl.debug(`${command} ${args.join(' ',)}`,);
 
+  /** Only stdout is consumed; stderr and subprocess fields are discarded by destructuring. */
   const { stdout, } = await nanoSpawn(
     command,
     [...args,],

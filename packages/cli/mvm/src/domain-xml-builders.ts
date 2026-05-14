@@ -127,6 +127,7 @@ export function ideCdromDevices(
     cdrom,
     index,
   ) {
+    /** Sequential IDE slot for this CDROM, undefined past the bus's four-slot limit. */
     const devName = ideDevNames[index];
     if (devName === undefined) {
       throw new Error(
@@ -184,6 +185,7 @@ export function ideCdromDevices(
  * ```
  */
 export function commonDevices(osFamily: OsFamily,): readonly string[] {
+  /** Mutable buffer because Windows appends VGA and tablet on top of the base list. */
   const devices: string[] = [
     // SLIRP user-mode networking for outbound internet without bridge setup
     h({

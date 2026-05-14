@@ -271,6 +271,7 @@ export const CUSTOM_GUEST_DEFAULTS: LinuxGuestConfig = {
  * ```
  */
 export function resolveImage(identifier: string,): ResolvedImage {
+  /** Registry lookup; primary resolution path before the custom-template fallback. */
   const spec = IMAGES[identifier];
   if (spec !== undefined) {
     return {
@@ -279,6 +280,7 @@ export function resolveImage(identifier: string,): ResolvedImage {
     };
   }
 
+  /** Candidate path for a user-supplied template under the images directory. */
   const customPath = join(
     IMAGES_DIR,
     `${identifier}.qcow2`,
@@ -290,6 +292,7 @@ export function resolveImage(identifier: string,): ResolvedImage {
     };
   }
 
+  /** Listed in the error message so an unknown identifier shows the valid choices. */
   const available = Object.keys(IMAGES,).join(', ',);
   throw new Error(
     `unknown image "${identifier}". Built-in images: ${available}. `
