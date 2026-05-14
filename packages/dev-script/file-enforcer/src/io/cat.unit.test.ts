@@ -10,21 +10,22 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
 import {
-  reads,
-  reset,
-} from '../tracker.ts';
+  join,
+  resolve,
+} from 'node:path';
+import { reads, } from '../tracker.ts';
 import {
   cat,
   type GlobResults,
 } from './cat.ts';
 
-/** Creates a fresh temp directory and resets tracker state */
+// No reset() in setup: each test uses a unique mkdtemp path, so tracker keys
+// never collide. Clearing the globals under concurrent test execution wipes
+// sibling tests' entries mid-flight, causing false failures. Mirrors the
+// convention documented in ./cache.unit.test.ts.
 async function setup(prefix: string,): Promise<string> {
-  const tempDir = await mkdtemp(join(tmpdir(), prefix,),);
-  reset();
-  return tempDir;
+  return mkdtemp(join(tmpdir(), prefix,),);
 }
 
 /** Removes the temp directory */
@@ -124,11 +125,12 @@ await describe({
           name: 'tracks read paths in the tracker',
           fn: async () => {
             const tempDir = await setup('file-enforcer-cat-',);
-            await writeFile(join(tempDir, 'tracked.txt',), 'data',);
+            const tracked = join(tempDir, 'tracked.txt',);
+            await writeFile(tracked, 'data',);
 
-            await cat([join(tempDir, 'tracked.txt',),],);
-            /** Tracker should have recorded the absolute read path */
-            expect(reads.size,).toBeGreaterThan(0,);
+            await cat([tracked,],);
+            /** Tracker should have recorded the absolute read path (size check unsafe under concurrent execution) */
+            expect(reads.has(resolve(tracked,),),).toBe(true,);
             await teardown(tempDir,);
           },
         },),
@@ -184,12 +186,15 @@ await describe({
           name: 'tracks each matched file in the tracker',
           fn: async () => {
             const tempDir = await setup('file-enforcer-cat-glob-',);
-            await writeFile(join(tempDir, 'r1.ts',), 'a',);
-            await writeFile(join(tempDir, 'r2.ts',), 'b',);
+            const r1 = join(tempDir, 'r1.ts',);
+            const r2 = join(tempDir, 'r2.ts',);
+            await writeFile(r1, 'a',);
+            await writeFile(r2, 'b',);
 
             await cat(join(tempDir, '*.ts',),);
-            /** Both files should be tracked */
-            expect(reads.size,).toBe(2,);
+            /** Both files should be tracked individually (size check unsafe under concurrent execution) */
+            expect(reads.has(resolve(r1,),),).toBe(true,);
+            expect(reads.has(resolve(r2,),),).toBe(true,);
             await teardown(tempDir,);
           },
         },),

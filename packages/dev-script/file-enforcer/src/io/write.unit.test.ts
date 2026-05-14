@@ -16,8 +16,6 @@ import {
   resolve,
 } from 'node:path';
 import {
-  reset,
-  resetWriteTimestamps,
   writes,
   writeTimestamps,
 } from '../tracker.ts';
@@ -28,12 +26,12 @@ import {
   overwriteIfNotExists,
 } from './write.ts';
 
-/** Creates a fresh temp directory and resets tracker state */
+// No reset()/resetWriteTimestamps() in setup: each test uses a unique mkdtemp
+// path, so tracker keys never collide. Clearing the globals under concurrent
+// test execution wipes sibling tests' entries mid-flight, causing false
+// failures. Mirrors the convention documented in ./cache.unit.test.ts.
 async function setup(prefix: string,): Promise<string> {
-  const tempDir = await mkdtemp(join(tmpdir(), prefix,),);
-  reset();
-  resetWriteTimestamps();
-  return tempDir;
+  return mkdtemp(join(tmpdir(), prefix,),);
 }
 
 /** Removes the temp directory */
@@ -102,12 +100,13 @@ await describe({
             await writeFile(dest, 'old content',);
 
             await overwrite({ dest, content: 'new content', },);
-            expect(writeTimestamps.has(resolve(dest,),),).toBe(true,);
+            /** Captured value proves no new write occurred without touching sibling state */
+            const firstTimestamp = writeTimestamps.get(resolve(dest,),);
+            expect(firstTimestamp,).toBeDefined();
 
-            resetWriteTimestamps();
             await overwrite({ dest, content: 'new content', },);
-            /** Same content now: should NOT record timestamp */
-            expect(writeTimestamps.has(resolve(dest,),),).toBe(false,);
+            /** Same content now: timestamp must be identical to the first write */
+            expect(writeTimestamps.get(resolve(dest,),),).toBe(firstTimestamp,);
             await teardown(tempDir,);
           },
         },),
@@ -257,8 +256,8 @@ await describe({
               files,
             },);
 
-            /** No writeTimestamp because content was identical */
-            expect(writeTimestamps.size,).toBe(0,);
+            /** No writeTimestamp for this dest because content was identical (size check unsafe under concurrent execution) */
+            expect(writeTimestamps.has(resolve(join(destDir, 'same.ts',),),),).toBe(false,);
             await teardown(tempDir,);
           },
         },),
@@ -273,7 +272,11 @@ await describe({
                 results: [],
               },),
             },);
-            expect(writes.size,).toBe(0,);
+            /** No tracker entry should reference this test's tempDir (size check unsafe under concurrent execution) */
+            const tempPrefix = resolve(tempDir,);
+            expect([...writes,].some(function isUnderTemp(p,): boolean {
+              return p.startsWith(tempPrefix,);
+            },),).toBe(false,);
             await teardown(tempDir,);
           },
         },),
@@ -296,7 +299,9 @@ await describe({
               destGlob: join(tempDir, 'out', '*.ts',),
               files,
             },);
-            expect(writes.size,).toBe(2,);
+            /** Each dest path must be tracked individually (size check unsafe under concurrent execution) */
+            expect(writes.has(resolve(join(tempDir, 'out', 'x.ts',),),),).toBe(true,);
+            expect(writes.has(resolve(join(tempDir, 'out', 'y.ts',),),),).toBe(true,);
             await teardown(tempDir,);
           },
         },),
