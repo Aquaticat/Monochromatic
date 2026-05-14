@@ -10,6 +10,10 @@ import { inspect, } from './inspect.ts';
 
 await describe({
   name: inspect.name,
+  // Sequential execution required: tests spy on the shared module-level
+  // logger `l`, and sinon refuses to wrap an already-wrapped method.
+  // Matches the convention in module/test/src/sinon.unit.test.ts.
+  concurrency: 1,
   children: [
     it({
       name: 'returns a string unchanged',

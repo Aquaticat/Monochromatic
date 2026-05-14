@@ -10,6 +10,10 @@ import { notifyWriteProtection, } from './notify.ts';
 
 await describe({
   name: notifyWriteProtection.name,
+  // Sequential execution required: tests spy on the shared module-level
+  // logger `l`, and sinon refuses to wrap an already-wrapped method.
+  // Matches the convention in module/test/src/sinon.unit.test.ts.
+  concurrency: 1,
   children: [
     it({
       name: 'logs a warning via tagged logger',
