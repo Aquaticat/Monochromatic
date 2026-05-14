@@ -11,6 +11,7 @@ import {
 } from '@monochromatic-dev/module-test';
 
 await describe({
+  // oxlint-disable-next-line no-restricted-syntax/prefer-describe-function-ref-name -- harness self-test; the function under test IS the local binding, so `expect.name` is circular
   name: 'expect',
   children: [
     //region toBe (strict equality)
