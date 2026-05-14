@@ -11,13 +11,16 @@ Importing this package from a non-DOM runtime
 (Node without a `document` shim, a service worker, a Bun script with no JSDOM)
 compiles, but every helper throws at call time.
 
-The package is source-only.
-`./ts` resolves to `./src/index.ts` (the barrel).
+Public exports are source-only:
+`./ts` resolves to `./src/index.ts` (the barrel),
 `./ts/*` resolves to individual modules for consumers that only need one helper.
+A browser-target build under `dist/` is produced by
+`mise run //packages/module/dom:build:js:browser` and is for the local
+Playwright e2e fixtures only; it is not part of the public surface.
 
 ## Exports
 
-### `prompt(message, defaultValue?)`
+### `prompt({ message, defaultValue?, classes? })`
 
 Async replacement for `window.prompt` that uses an HTML `<dialog>`,
 so the dialog can be styled with CSS instead of locked to the browser's native chrome.
@@ -30,7 +33,7 @@ the returned promise lets other work continue while the dialog is open.
 ```ts
 import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
 
-const newApiKey = await prompt('Change api key',);
+const newApiKey = await prompt({ message: 'Change api key', },);
 if (newApiKey !== null) {
   applyApiKey(newApiKey,);
 }
@@ -53,7 +56,7 @@ Unset entries fall back to the defaults,
 exported as `DEFAULT_PROMPT_CLASSES` for consumers that want to compose with them
 instead of duplicating the literals.
 
-### `replicateElementAsParentContent(templateElement, targetCount)`
+### `replicateElementAsParentContent({ templateElement, targetCount })`
 
 Replaces the parent's children with `targetCount` deep clones of `templateElement`.
 The original template element is itself removed
@@ -73,7 +76,7 @@ import { replicateElementAsParentContent, } from '@monochromatic-dev/module-dom/
 // </ul>
 
 const template = document.querySelector<HTMLElement>('.row',)!;
-replicateElementAsParentContent(template, 3,);
+replicateElementAsParentContent({ templateElement: template, targetCount: 3, },);
 
 // After:
 // <ul id="list">
@@ -85,7 +88,7 @@ replicateElementAsParentContent(template, 3,);
 
 `targetCount` of `0` empties the parent.
 
-### `replicateElementAsContentOf(templateElement, parentElement, targetCount)`
+### `replicateElementAsContentOf({ templateElement, parentElement, targetCount })`
 
 Replaces `parentElement`'s children with `targetCount` deep clones of `templateElement`.
 The parent is passed in explicitly;
@@ -105,7 +108,11 @@ const template = (document.querySelector<HTMLTemplateElement>('#row-template',)!
   .firstElementChild as HTMLElement;
 const list = document.querySelector<HTMLElement>('#list',)!;
 
-replicateElementAsContentOf(template, list, 3,);
+replicateElementAsContentOf({
+  templateElement: template,
+  parentElement: list,
+  targetCount: 3,
+},);
 // #list now holds three independent clones; the <template> is untouched.
 ```
 
@@ -113,11 +120,11 @@ replicateElementAsContentOf(template, list, 3,);
 
 The two helpers differ only in how the parent is supplied:
 
-- `replicateElementAsParentContent(template, n)` infers the parent
-  from the template's existing position in the tree,
+- `replicateElementAsParentContent({ templateElement, targetCount })`
+  infers the parent from the template's existing position in the tree,
   and **removes the template** along with its siblings.
-- `replicateElementAsContentOf(template, parent, n)` takes the parent explicitly
-  and **leaves the template alone**,
+- `replicateElementAsContentOf({ templateElement, parentElement, targetCount })`
+  takes the parent explicitly and **leaves the template alone**,
   so the same template can fill several parents.
 
 When in doubt, reach for `replicateElementAsContentOf`:
@@ -222,7 +229,15 @@ onLoadSetCssFromUrlParams([
 
 ## Design decisions
 
-- **Source-only.** No build step; consumers import directly from `src/`.
+- **Source-only public exports.**
+  Consumers import directly from `src/` via `./ts` and `./ts/*`.
+  A local browser-target build exists only to back the Playwright e2e
+  fixtures and is not part of the public surface.
+- **Named-params API.**
+  Every helper with more than one parameter takes a single destructured
+  object so call sites are self-describing and parameter additions stay
+  backwards-compatible (per the project-wide
+  `no-restricted-syntax/require-destructured-params` rule).
 - **One file per concern.**
   `prompt.ts`, `redirectingTo.ts`, `duplicateElement.ts`, `set/cssFromParam.ts`;
   `index.ts` re-exports.
