@@ -25,6 +25,13 @@ type TextItem = {
  * @returns concatenated page text separated by blank lines
  *
  * @throws when pdfjs cannot parse the document
+ *
+ * @example
+ * ```ts
+ * const file = inputEl.files[0];
+ * const text = await extractPdf(file);
+ * // text is the concatenated plain-text of each page, blank-line separated
+ * ```
  */
 export async function extractPdf(file: File | Blob,): Promise<string> {
   /** PDF bytes pulled into memory before pdfjs takes a typed-array view. */
@@ -40,14 +47,21 @@ export async function extractPdf(file: File | Blob,): Promise<string> {
       data: new Uint8Array(buf,),
     },)
     .promise;
-  /** Accumulator for trimmed per-page text strings, joined on return. */
-  const pages: string[] = [];
-  for (
-    let pageNo = 1;
-    pageNo <= doc.numPages;
-    pageNo += 1
-  ) {
-    /** Single pdfjs page proxy for the current iteration. */
+  /** 1-based page numbers materialised so per-page extraction can run via map. */
+  const pageNumbers = Array.from(
+    { length: doc.numPages, },
+    function indexToPageNo(
+      _unused: unknown,
+      i: number,
+    ): number {
+      return i + 1;
+    },
+  );
+  /** Trimmed per-page text strings, joined on return. */
+  const pages = await Promise.all(pageNumbers.map(async function pageText(
+    pageNo: number,
+  ): Promise<string> {
+    /** Single pdfjs page proxy for the current page number. */
     const page = await doc.getPage(pageNo,);
     /** Raw text content payload for the current page. */
     const content = await page.getTextContent();
@@ -61,8 +75,7 @@ export async function extractPdf(file: File | Blob,): Promise<string> {
     /** Narrow view of the text-item array used by the join logic below. */
     const items = content.items as readonly TextItem[];
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-    /** Trimmed plain text for the current page, with whitespace collapsed. */
-    const pageText = items
+    return items
       .map(function pickStr(it,): string {
         return it.hasEOL === true ? `${it.str}\n` : `${it.str} `;
       },)
@@ -76,7 +89,6 @@ export async function extractPdf(file: File | Blob,): Promise<string> {
         '\n\n',
       )
       .trim();
-    pages.push(pageText,);
-  }
+  },),);
   return pages.join('\n\n',);
 }

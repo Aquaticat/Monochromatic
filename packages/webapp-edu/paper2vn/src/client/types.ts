@@ -70,7 +70,9 @@ export type Settings = {
 /** Identifier for a configured LLM provider. */
 export type ProviderId = 'openrouter' | 'openai' | 'anthropic' | 'ollama';
 
-/** Runtime list of valid {@link Locale} values for narrowing helpers. */
+/**
+ * Runtime list of valid {@link Locale} values for narrowing helpers.
+ */
 export const LOCALE_VALUES: readonly Locale[] = [
   'en',
   'zh',
@@ -78,7 +80,9 @@ export const LOCALE_VALUES: readonly Locale[] = [
   'ru',
 ];
 
-/** Runtime list of valid {@link ProviderId} values for narrowing helpers. */
+/**
+ * Runtime list of valid {@link ProviderId} values for narrowing helpers.
+ */
 export const PROVIDER_ID_VALUES: readonly ProviderId[] = [
   'openrouter',
   'openai',
@@ -98,13 +102,18 @@ export const PROVIDER_ID_VALUES: readonly ProviderId[] = [
  *
  * @example
  * ```ts
- * coerceLocale('en', 'en'); // 'en'
- * coerceLocale('xx', 'en'); // 'en'
+ * coerceLocale({ value: 'en', fallback: 'en' }); // 'en'
+ * coerceLocale({ value: 'xx', fallback: 'en' }); // 'en'
  * ```
  */
 export function coerceLocale(
-  value: string,
-  fallback: Locale,
+  {
+    value,
+    fallback,
+  }: {
+    value: string;
+    fallback: Locale;
+  },
 ): Locale {
   for (const candidate of LOCALE_VALUES) {
     if (candidate === value)
@@ -125,13 +134,18 @@ export function coerceLocale(
  *
  * @example
  * ```ts
- * coerceProviderId('openai', 'openrouter'); // 'openai'
- * coerceProviderId('???',    'openrouter'); // 'openrouter'
+ * coerceProviderId({ value: 'openai', fallback: 'openrouter' }); // 'openai'
+ * coerceProviderId({ value: '???',    fallback: 'openrouter' }); // 'openrouter'
  * ```
  */
 export function coerceProviderId(
-  value: string,
-  fallback: ProviderId,
+  {
+    value,
+    fallback,
+  }: {
+    value: string;
+    fallback: ProviderId;
+  },
 ): ProviderId {
   for (const candidate of PROVIDER_ID_VALUES) {
     if (candidate === value)

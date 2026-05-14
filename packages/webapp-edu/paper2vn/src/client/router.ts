@@ -34,16 +34,42 @@ export type ScreenModule = {
 /** Registered screens keyed by id. */
 const screens = new Map<ScreenId, ScreenModule>();
 
-/** Last screen id activated, used during teardown. */
-let currentScreen: ScreenId | undefined;
+/**
+ * Mutable router state.
+ *
+ * Held inside a single `const` object so individual fields can be
+ * reassigned without violating the `no-module-root-let` rule.
+ */
+const routerState: {
+  /** Last screen id activated, used during teardown. */
+  currentScreen: ScreenId | undefined;
+  /** Last teardown function, called before mounting the next screen. */
+  currentTeardown: ScreenTeardown | undefined;
+} = {
+  currentScreen: undefined,
+  currentTeardown: undefined,
+};
 
-/** Last teardown function, called before mounting the next screen. */
-let currentTeardown: ScreenTeardown | undefined;
-
-/** Registers a screen. */
+/**
+ * Registers a screen so {@link navigate} can mount it later.
+ *
+ * @param id - screen identifier
+ *
+ * @param module - mount and optional unmount pair
+ *
+ * @example
+ * ```ts
+ * registerScreen({ id: 'menu', module: { mount: mountMenu } });
+ * ```
+ */
 export function registerScreen(
-  id: ScreenId,
-  module: ScreenModule,
+  {
+    id,
+    module,
+  }: {
+    id: ScreenId;
+    module: ScreenModule;
+  },
 ): void {
   screens.set(
     id,
@@ -57,15 +83,20 @@ export function registerScreen(
  * @param id - screen to activate
  *
  * @throws when the screen has not been registered
+ *
+ * @example
+ * ```ts
+ * navigate('menu');
+ * ```
  */
 export function navigate(id: ScreenId,): void {
   /** Destination screen module, resolved before any teardown work. */
   const next = screens.get(id,);
   if (next === undefined)
     throw new Error(`[router] unknown screen: ${id}`,);
-  if (currentTeardown !== undefined) {
-    currentTeardown();
-    currentTeardown = undefined;
+  if (routerState.currentTeardown !== undefined) {
+    routerState.currentTeardown();
+    routerState.currentTeardown = undefined;
   }
   /** App-root container where each screen mounts its subtree. */
   const root = document.querySelector<HTMLElement>('#app',);
@@ -74,15 +105,24 @@ export function navigate(id: ScreenId,): void {
   root.replaceChildren();
   next.mount(root,);
   if (next.unmount !== undefined)
-    currentTeardown = next.unmount;
-  currentScreen = id;
+    routerState.currentTeardown = next.unmount;
+  routerState.currentScreen = id;
   console.error(
     '[router] navigated to',
     id,
   );
 }
 
-/** Returns the currently active screen id, when one exists. */
+/**
+ * Returns the currently active screen id, when one exists.
+ *
+ * @returns active screen id, or `undefined` before any navigation
+ *
+ * @example
+ * ```ts
+ * if (getCurrentScreen() === 'lecture') pauseLecture();
+ * ```
+ */
 export function getCurrentScreen(): ScreenId | undefined {
-  return currentScreen;
+  return routerState.currentScreen;
 }

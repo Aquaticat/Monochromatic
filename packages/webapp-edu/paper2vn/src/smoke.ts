@@ -36,11 +36,14 @@
  * MUST stay first; moving it below the page-module imports breaks
  * `state.ts` hydration.
  */
-// oxlint-disable-next-line import/no-unassigned-import -- side-effect: installs localStorage shim
+// oxlint-disable-next-line eslint-plugin-import/no-unassigned-import -- side-effect: installs localStorage shim
 import './smoke-storage-shim.ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+
 import { generateChapters, } from './client/dialogue/generator.ts';
-import { loadAllLocales, } from './client/i18n/i18n-util.sync.ts';
+// oxlint-disable-next-line eslint-plugin-import/no-unassigned-import -- side-effect: typesafe-i18n runtime registers locale loaders
 import './client/i18n/runtime.ts';
+import { loadAllLocales, } from './client/i18n/i18n-util.sync.ts';
 import {
   updateProvider,
   updateSettings,
@@ -60,7 +63,7 @@ export {};
 function requireEnv(name: string,): string {
   /** Raw env-var value, validated as non-empty before being returned. */
   const value = process.env[name];
-  if (value === undefined || value === '')
+  if ((value === undefined) || (value === ''))
     throw new Error(`smoke: missing required env var ${name}`,);
   return value;
 }
@@ -86,10 +89,16 @@ const OPENROUTER_API_KEY = process.env['PAPER2VN_OPENROUTER_API_KEY']
  * Override the entire list with a single model via
  * `PAPER2VN_OPENROUTER_MODEL`.
  */
+/** Raw env override for the OpenRouter model list, validated below before use. */
+const envOpenRouterModel = process.env['PAPER2VN_OPENROUTER_MODEL'];
+/**
+ * OpenRouter models tried in order during the smoke run; the first that
+ * returns a parseable response wins. Override the entire list with a
+ * single model via `PAPER2VN_OPENROUTER_MODEL`.
+ */
 const OPENROUTER_MODELS: readonly string[] =
-  process.env['PAPER2VN_OPENROUTER_MODEL'] !== undefined
-    && process.env['PAPER2VN_OPENROUTER_MODEL'] !== ''
-    ? [process.env['PAPER2VN_OPENROUTER_MODEL'],]
+  ((envOpenRouterModel !== undefined) && (envOpenRouterModel !== ''))
+    ? [envOpenRouterModel,]
     : [
       'moonshotai/kimi-k2.6',
       'anthropic/claude-haiku-4.5',
@@ -128,13 +137,20 @@ consistency criterion is noisy.
 `
   .trim();
 
+/**
+ * Raw env override for the paper body; falls back to {@link DEFAULT_PAPER_TEXT} when unset or empty.
+ */
+const envSmokePaper = process.env['PAPER2VN_SMOKE_PAPER'];
 /** Paper body for the smoke run; env override takes precedence over the default. */
-const PAPER_TEXT = process.env['PAPER2VN_SMOKE_PAPER'] !== undefined
-    && process.env['PAPER2VN_SMOKE_PAPER'] !== ''
-  ? process.env['PAPER2VN_SMOKE_PAPER']!
+const PAPER_TEXT = ((envSmokePaper !== undefined) && (envSmokePaper !== ''))
+  ? envSmokePaper
   : DEFAULT_PAPER_TEXT;
 
-/** Top-of-step log helper (mirrors the rest of the codebase using stderr). */
+/**
+ * Top-of-step log helper (mirrors the rest of the codebase using stderr).
+ *
+ * @param message - human-readable step description
+ */
 function step(message: string,): void {
   console.error(`[smoke] ${message}`,);
 }
@@ -198,7 +214,14 @@ async function runWithFallback(): Promise<{
     /** Per-attempt start timestamp used to report elapsed milliseconds. */
     const t0 = Date.now();
     try {
-      /** Successful generator output, returned with timing info on first success. */
+      /**
+       * Successful generator output, returned with timing info on first success.
+       *
+       * Sequential await is intentional: each model gets one attempt before
+       * the next falls through, so parallel `Promise.all` would defeat the
+       * fallback ordering.
+       */
+      // oxlint-disable-next-line eslint/no-await-in-loop -- sequential fallback, must wait before trying next model
       const generation = await generateChapters({
         paperText: PAPER_TEXT,
         signal: undefined,
@@ -259,22 +282,24 @@ if (generation.chapters.length === 0)
  */
 //endregion
 /** First chapter of the generation, asserted non-empty above. */
-const firstChapter = generation.chapters[0]!;
+const firstChapter = nonNullishOrThrow(generation.chapters[0],);
 /** First dialogue beat of the first chapter, checked for non-empty text below. */
-const firstBeat = firstChapter.dialogue[0];
-if (firstBeat === undefined || firstBeat.text.trim() === '') {
+const [firstBeat,] = firstChapter.dialogue;
+if ((firstBeat === undefined) || (firstBeat.text.trim() === '')) {
   throw new Error(
     'smoke: first chapter has no usable dialogue beat',
   );
 }
 
+/** Number of characters to log from the first beat as a smoke preview. */
+const FIRST_BEAT_PREVIEW_CHARS = 80;
 /** Total elapsed time for the smoke run, reported in the PASS log. */
 const tookMs = Date.now() - startedAt;
 console.error(
   `[smoke] PASS in ${tookMs}ms (model: ${model}, chapters: ${generation.chapters.length}, first beat: "${
     firstBeat.text.slice(
       0,
-      80,
+      FIRST_BEAT_PREVIEW_CHARS,
     )
   }...")`,
 );

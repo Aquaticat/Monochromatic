@@ -12,81 +12,94 @@ import {
 } from '../router.ts';
 import { getCharacterPose, } from '../sprite-pack.ts';
 
-/** Mounts the menu into `root`. */
+/**
+ * Mounts the menu into `root`.
+ *
+ * @param root - host element the screen mounts into
+ */
 function mount(root: HTMLElement,): void {
   /** Current locale's translation accessors. */
+  // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
   /** Left-rail navigation block with start, saves, and settings entries. */
-  const menu = el(
-    'nav',
-    { class: 'menu', },
-    [
-      el(
-        'h1',
-        {},
-        [ll.appName(),],
-      ),
-      el(
-        'button',
-        {
+  const menu = el({
+    tag: 'nav',
+    attrs: { class: 'menu', },
+    children: [
+      el({
+        tag: 'h1',
+        attrs: {},
+        children: [ll.appName(),],
+      }),
+      el({
+        tag: 'button',
+        attrs: {
           'data-variant': 'primary',
           onclick: function go(): void {
             navigate('select-topic',);
           },
         },
-        [ll.start(),],
-      ),
-      el(
-        'button',
-        {
+        children: [ll.start(),],
+      }),
+      el({
+        tag: 'button',
+        attrs: {
           onclick: function go(): void {
             navigate('saves',);
           },
         },
-        [ll.saves(),],
-      ),
-      el(
-        'button',
-        {
+        children: [ll.saves(),],
+      }),
+      el({
+        tag: 'button',
+        attrs: {
           onclick: function go(): void {
             navigate('settings',);
           },
         },
-        [ll.settings(),],
-      ),
+        children: [ll.settings(),],
+      }),
     ],
-  );
+  });
   /** Ruka portrait shown alongside the menu so the landing screen has a face. */
-  const portrait = el(
-    'img',
-    {
-      src: getCharacterPose(
-        'ruka',
-        'happy',
-      ),
+  const portrait = el({
+    tag: 'img',
+    attrs: {
+      src: getCharacterPose({
+        characterId: 'ruka',
+        pose: 'happy',
+      },),
       alt: '',
       style: 'block-size: min(70dvb, 30rem); inline-size: auto; align-self: center;',
     },
-  );
+  });
   /** Outer screen container the router toggles via the `data-screen` selector. */
-  const screen = el(
-    'section',
-    {
+  const screen = el({
+    tag: 'section',
+    attrs: {
       class: 'screen',
       'data-screen': 'menu',
     },
-    [
+    children: [
       menu,
       portrait,
     ],
-  );
+  });
   root.append(screen,);
 }
 
-/** Registers the menu screen with the router. */
+/**
+ * Registers the menu screen with the router.
+ *
+ * @example
+ * ```ts
+ * registerMenu();
+ * navigate('menu');
+ * ```
+ */
 export function registerMenu(): void {
-  registerScreen(
-    'menu',
-    { mount, },
-  );
+  registerScreen({
+    id: 'menu',
+    module: { mount, },
+  },);
 }

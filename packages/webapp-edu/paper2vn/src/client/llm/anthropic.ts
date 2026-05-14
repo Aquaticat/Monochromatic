@@ -26,6 +26,12 @@ const ANTHROPIC_VERSION = '2023-06-01';
 /** Maximum tokens to request. Used for both single-shot and JSON modes. */
 const MAX_TOKENS = 4_096;
 
+/** Default sampling temperature when callers do not supply one. */
+const DEFAULT_TEMPERATURE = 0.7;
+
+/** Maximum body snippet length included in error messages on non-2xx responses. */
+const ERROR_BODY_PREVIEW_CHARS = 500;
+
 /** Anthropic Messages API response shape (subset). */
 type MessagesResponse = {
   content: readonly {
@@ -39,13 +45,20 @@ type MessagesResponse = {
  *
  * Anthropic separates the system prompt from messages, so we extract
  * any leading system message into the `system` field.
+ *
+ * @param opts - chat options including `apiKey`, `baseUrl`, `model`, `messages`,
+ *   optional `temperature`, optional `signal`
+ *
+ * @returns assistant text from the first text content block
  */
 async function callAnthropic(opts: ChatOptions,): Promise<string> {
   if (opts.apiKey === '')
     throw new Error('anthropic: no API key configured',);
   /** Configured base URL falling back to the public Anthropic endpoint. */
   const base = opts.baseUrl === '' ? DEFAULT_BASE : opts.baseUrl;
-  /** Full `/v1/messages` URL composed from {@link base}. */
+  /**
+   * Full `/v1/messages` URL composed from {@link base}.
+   */
   const url = `${
     base.replace(
       /\/$/,
@@ -74,7 +87,7 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
   const body: Record<string, unknown> = {
     model: opts.model,
     max_tokens: MAX_TOKENS,
-    temperature: opts.temperature ?? 0.7,
+    temperature: opts.temperature ?? DEFAULT_TEMPERATURE,
     system,
     messages: turnMessages.map(function toApi(
       m,
@@ -107,16 +120,19 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
   );
   if (!res.ok) {
     /** Best-effort error-body snippet appended to the thrown message. */
-    const text = await res
-      .text()
-      .catch(function ignore(): string {
+    const text = await (async function safeText(): Promise<string> {
+      try {
+        return await res.text();
+      }
+      catch {
         return '';
-      },);
+      }
+    })();
     throw new Error(
       `anthropic: HTTP ${res.status} ${res.statusText}: ${
         text.slice(
           0,
-          500,
+          ERROR_BODY_PREVIEW_CHARS,
         )
       }`,
     );

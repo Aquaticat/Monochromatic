@@ -51,10 +51,28 @@ const DEFAULT_PROVIDER: ProviderConfig = {
   acknowledgedAnthropicWarning: false,
 };
 
-/** Reads JSON from localStorage and parses, returning fallback on any failure. */
+/**
+ * Reads JSON from localStorage and parses, returning fallback on any failure.
+ *
+ * @param key - localStorage key to read
+ *
+ * @param fallback - value returned when the key is missing or parse fails
+ *
+ * @returns the parsed value, or `fallback` on any failure
+ *
+ * @example
+ * ```ts
+ * const settings = readJson({ key: 'settings', fallback: DEFAULT_SETTINGS });
+ * ```
+ */
 function readJson<T,>(
-  key: string,
-  fallback: T,
+  {
+    key,
+    fallback,
+  }: {
+    key: string;
+    fallback: T;
+  },
 ): T {
   try {
     /** Raw stored JSON string, or `null` when the key is missing. */
@@ -82,10 +100,26 @@ function readJson<T,>(
   }
 }
 
-/** Writes JSON to localStorage, logging and continuing on quota/security failures. */
+/**
+ * Writes JSON to localStorage, logging and continuing on quota/security failures.
+ *
+ * @param key - localStorage key to write
+ *
+ * @param value - JSON-serialisable value
+ *
+ * @example
+ * ```ts
+ * writeJson({ key: 'settings', value: nextSettings });
+ * ```
+ */
 function writeJson(
-  key: string,
-  value: unknown,
+  {
+    key,
+    value,
+  }: {
+    key: string;
+    value: unknown;
+  },
 ): void {
   try {
     globalThis.localStorage.setItem(
@@ -102,7 +136,11 @@ function writeJson(
   }
 }
 
-/** Removes a key from localStorage; ignores failures. */
+/**
+ * Removes a key from localStorage; ignores failures.
+ *
+ * @param key - localStorage key to remove
+ */
 function removeKey(key: string,): void {
   try {
     globalThis.localStorage.removeItem(key,);
@@ -119,7 +157,9 @@ function removeKey(key: string,): void {
 /** Listener notified after any state mutation. */
 type Listener = () => void;
 
-/** Subscribers of {@link onChange}. */
+/**
+ * Subscribers of {@link onChange}.
+ */
 const listeners = new Set<Listener>();
 
 /** Notifies every subscriber. Errors in one listener do not stop others. */
@@ -143,6 +183,15 @@ function emit(): void {
  * @param fn - listener invoked synchronously after each mutation
  *
  * @returns unsubscribe function
+ *
+ * @example
+ * ```ts
+ * const off = onChange(function refresh(): void {
+ *   render();
+ * });
+ * // later, on teardown:
+ * off();
+ * ```
  */
 export function onChange(fn: Listener,): () => void {
   listeners.add(fn,);
@@ -151,97 +200,176 @@ export function onChange(fn: Listener,): () => void {
   };
 }
 
-/** Current settings snapshot. */
-let settings: Settings = {
-  ...DEFAULT_SETTINGS,
-  ...readJson<Partial<Settings>>(
-    STORAGE_KEY_SETTINGS,
-    {},
-  ),
+/**
+ * Mutable in-memory state container.
+ *
+ * Held inside a single `const` so individual fields can be reassigned
+ * without violating `no-module-root-let`.
+ */
+const store: {
+  /** Current settings snapshot. */
+  settings: Settings;
+  /** Current provider config snapshot. */
+  provider: ProviderConfig;
+  /** Save slots index. */
+  saves: readonly SaveSummary[];
+  /** Save id of the active save, when one is loaded. */
+  activeSaveId: string | undefined;
+  /** Active save payload, materialized when loaded from storage or just created. */
+  activeSave: SaveData | undefined;
+} = {
+  settings: {
+    ...DEFAULT_SETTINGS,
+    ...readJson<Partial<Settings>>({
+      key: STORAGE_KEY_SETTINGS,
+      fallback: {},
+    },),
+  },
+  provider: {
+    ...DEFAULT_PROVIDER,
+    ...readJson<Partial<ProviderConfig>>({
+      key: STORAGE_KEY_PROVIDER,
+      fallback: {},
+    },),
+  },
+  saves: readJson<readonly SaveSummary[]>({
+    key: STORAGE_KEY_SAVES,
+    fallback: [],
+  },),
+  activeSaveId: undefined,
+  activeSave: undefined,
 };
 
-/** Current provider config snapshot. */
-let provider: ProviderConfig = {
-  ...DEFAULT_PROVIDER,
-  ...readJson<Partial<ProviderConfig>>(
-    STORAGE_KEY_PROVIDER,
-    {},
-  ),
-};
-
-/** Save slots index. */
-let saves: readonly SaveSummary[] = readJson<readonly SaveSummary[]>(
-  STORAGE_KEY_SAVES,
-  [],
-);
-
-/** Save id of the active save, when one is loaded. */
-let activeSaveId: string | undefined;
-
-/** Active save payload, materialized when loaded from storage or just created. */
-let activeSave: SaveData | undefined;
-
-/** Returns the current settings (read-only snapshot). */
+/**
+ * Returns the current settings (read-only snapshot).
+ *
+ * @returns the live settings object
+ *
+ * @example
+ * ```ts
+ * const { textSpeed } = getSettings();
+ * ```
+ */
 export function getSettings(): Settings {
-  return settings;
+  return store.settings;
 }
 
 /**
  * Updates settings and persists.
  *
  * @param patch - partial settings to merge over current values
+ *
+ * @example
+ * ```ts
+ * updateSettings({ voiceEnabled: true });
+ * ```
  */
 export function updateSettings(patch: Partial<Settings>,): void {
-  settings = {
-    ...settings,
+  store.settings = {
+    ...store.settings,
     ...patch,
   };
-  writeJson(
-    STORAGE_KEY_SETTINGS,
-    settings,
-  );
+  writeJson({
+    key: STORAGE_KEY_SETTINGS,
+    value: store.settings,
+  },);
   emit();
 }
 
-/** Returns current provider configuration. */
+/**
+ * Returns current provider configuration.
+ *
+ * @returns the live provider config object
+ *
+ * @example
+ * ```ts
+ * if (getProvider().apiKey === '') showSettingsScreen();
+ * ```
+ */
 export function getProvider(): ProviderConfig {
-  return provider;
+  return store.provider;
 }
 
-/** Updates provider config and persists. */
+/**
+ * Updates provider config and persists.
+ *
+ * @param patch - partial provider fields to merge
+ *
+ * @example
+ * ```ts
+ * updateProvider({ id: 'anthropic', apiKey: 'sk-...' });
+ * ```
+ */
 export function updateProvider(patch: Partial<ProviderConfig>,): void {
-  provider = {
-    ...provider,
+  store.provider = {
+    ...store.provider,
     ...patch,
   };
-  writeJson(
-    STORAGE_KEY_PROVIDER,
-    provider,
-  );
+  writeJson({
+    key: STORAGE_KEY_PROVIDER,
+    value: store.provider,
+  },);
   emit();
 }
 
-/** Returns the current saves index (read-only). */
+/**
+ * Returns the current saves index (read-only).
+ *
+ * @returns the live array of save summaries
+ *
+ * @example
+ * ```ts
+ * for (const summary of getSaves()) console.error(summary.label);
+ * ```
+ */
 export function getSaves(): readonly SaveSummary[] {
-  return saves;
+  return store.saves;
 }
 
-/** Returns the active save when one is loaded. */
+/**
+ * Returns the active save when one is loaded.
+ *
+ * @returns the active save, or `undefined` when no save is loaded
+ *
+ * @example
+ * ```ts
+ * const save = getActiveSave();
+ * if (save === undefined) navigate('menu');
+ * ```
+ */
 export function getActiveSave(): SaveData | undefined {
-  return activeSave;
+  return store.activeSave;
 }
 
-/** Sets the active save in memory; does not write through to disk yet. */
+/**
+ * Sets the active save in memory; does not write through to disk yet.
+ *
+ * @param save - save payload to mark active
+ *
+ * @example
+ * ```ts
+ * setActiveSave(freshlyCreatedSave);
+ * navigate('lecture');
+ * ```
+ */
 export function setActiveSave(save: SaveData,): void {
-  activeSave = save;
-  activeSaveId = save.id;
+  store.activeSave = save;
+  store.activeSaveId = save.id;
   emit();
 }
 
-/** Clears the active save (does not delete the persisted slot). */
+/**
+ * Clears the active save (does not delete the persisted slot).
+ *
+ * @example
+ * ```ts
+ * clearActiveSave();
+ * navigate('menu');
+ * ```
+ */
 export function clearActiveSave(): void {
-  activeSave = undefined;
-  activeSaveId = undefined;
+  store.activeSave = undefined;
+  store.activeSaveId = undefined;
   emit();
 }
 
@@ -249,20 +377,26 @@ export function clearActiveSave(): void {
  * Persists the active save to storage and updates the saves index.
  *
  * No-op when no save is active.
+ *
+ * @example
+ * ```ts
+ * patchActiveSave({ beatIndex: live.beatIndex + 1 });
+ * persistActiveSave();
+ * ```
  */
 export function persistActiveSave(): void {
-  if (activeSave === undefined)
+  if (store.activeSave === undefined)
     return;
   /** Active save with refreshed `updatedAt` so the persisted copy reflects the write. */
   const updated: SaveData = {
-    ...activeSave,
+    ...store.activeSave,
     updatedAt: new Date().toISOString(),
   };
-  activeSave = updated;
-  writeJson(
-    `${STORAGE_KEY_SAVE_PREFIX}${updated.id}`,
-    updated,
-  );
+  store.activeSave = updated;
+  writeJson({
+    key: `${STORAGE_KEY_SAVE_PREFIX}${updated.id}`,
+    value: updated,
+  },);
   /** Index entry rebuilt from `updated` so listings stay current. */
   const summary: SaveSummary = {
     id: updated.id,
@@ -271,17 +405,17 @@ export function persistActiveSave(): void {
     updatedAt: updated.updatedAt,
   };
   /** Existing index minus the entry being replaced. */
-  const next = saves.filter(function isOther(s,): boolean {
+  const next = store.saves.filter(function isOther(s,): boolean {
     return s.id !== updated.id;
   },);
-  saves = [
+  store.saves = [
     summary,
     ...next,
   ];
-  writeJson(
-    STORAGE_KEY_SAVES,
-    saves,
-  );
+  writeJson({
+    key: STORAGE_KEY_SAVES,
+    value: store.saves,
+  },);
   emit();
 }
 
@@ -291,17 +425,23 @@ export function persistActiveSave(): void {
  * @param id - save id from {@link SaveSummary}
  *
  * @returns the loaded save, or `undefined` when not found
+ *
+ * @example
+ * ```ts
+ * const save = loadSave(summary.id);
+ * if (save !== undefined) navigate('lecture');
+ * ```
  */
 export function loadSave(id: string,): SaveData | undefined {
   /** Loaded save payload, or `null` when the storage key is absent. */
-  const data = readJson<SaveData | null>(
-    `${STORAGE_KEY_SAVE_PREFIX}${id}`,
-    null,
-  );
+  const data = readJson<SaveData | null>({
+    key: `${STORAGE_KEY_SAVE_PREFIX}${id}`,
+    fallback: null,
+  },);
   if (data === null)
     return undefined;
-  activeSave = data;
-  activeSaveId = data.id;
+  store.activeSave = data;
+  store.activeSaveId = data.id;
   emit();
   return data;
 }
@@ -310,17 +450,22 @@ export function loadSave(id: string,): SaveData | undefined {
  * Deletes a save slot.
  *
  * @param id - save id to remove
+ *
+ * @example
+ * ```ts
+ * deleteSave('save-2026-05-14');
+ * ```
  */
 export function deleteSave(id: string,): void {
   removeKey(`${STORAGE_KEY_SAVE_PREFIX}${id}`,);
-  saves = saves.filter(function isOther(s,): boolean {
+  store.saves = store.saves.filter(function isOther(s,): boolean {
     return s.id !== id;
   },);
-  writeJson(
-    STORAGE_KEY_SAVES,
-    saves,
-  );
-  if (activeSaveId === id)
+  writeJson({
+    key: STORAGE_KEY_SAVES,
+    value: store.saves,
+  },);
+  if (store.activeSaveId === id)
     clearActiveSave();
   emit();
 }
@@ -329,12 +474,17 @@ export function deleteSave(id: string,): void {
  * Mutates the active save in memory (does not persist).
  *
  * @param patch - partial save fields to merge
+ *
+ * @example
+ * ```ts
+ * patchActiveSave({ beatIndex: live.beatIndex + 1 });
+ * ```
  */
 export function patchActiveSave(patch: Partial<SaveData>,): void {
-  if (activeSave === undefined)
+  if (store.activeSave === undefined)
     return;
-  activeSave = {
-    ...activeSave,
+  store.activeSave = {
+    ...store.activeSave,
     ...patch,
   };
   emit();

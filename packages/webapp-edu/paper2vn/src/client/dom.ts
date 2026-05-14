@@ -10,13 +10,25 @@
 type TagNameMap = HTMLElementTagNameMap;
 
 /**
- * Creates an HTMLElement with the given tag, attributes, and children.
+ * Attribute and event-listener bag passed to {@link el}.
+ */
+export type ElAttrs = Record<string, string | EventListener | undefined>;
+
+/**
+ * Allowed child nodes for {@link el}.
+ */
+export type ElChildren = readonly (Node | string)[];
+
+/**
+ * Hyperscript factory. Same shape as React.createElement and
+ * `module-hyperscript/h-html`. Creates a real DOM Element with the given
+ * tag, attributes, and children.
  *
  * @param tag - HTML tag name
  *
- * @param attrs - attribute and event listener bag; keys starting with
- *   `on` (e.g. `onclick`) are treated as event listeners, the rest as
- *   string attributes
+ * @param attrs - attribute and event listener bag; keys starting with `on`
+ *   (e.g. `onclick`) are treated as event listeners, the rest as string
+ *   attributes
  *
  * @param children - child nodes or strings to append
  *
@@ -24,27 +36,35 @@ type TagNameMap = HTMLElementTagNameMap;
  *
  * @example
  * ```ts
- * const btn = el(
- *   'button',
- *   { 'data-variant': 'primary', onclick: () => alert('hi') },
- *   ['Click me'],
- * );
+ * const btn = el({
+ *   tag: 'button',
+ *   attrs: { 'data-variant': 'primary', onclick: function go(): void { console.error('hi'); } },
+ *   children: ['Click me'],
+ * });
  * ```
  */
 export function el<K extends keyof TagNameMap,>(
-  tag: K,
-  attrs: Record<string, string | EventListener | undefined> = {},
-  children: readonly (Node | string)[] = [],
+  {
+    tag,
+    attrs = {},
+    children = [],
+  }: {
+    tag: K;
+    attrs?: ElAttrs;
+    children?: ElChildren;
+  },
 ): TagNameMap[K] {
   /** Newly created element receiving the wired attributes and children. */
   const node = document.createElement(tag,);
-  for (const [
-    key,
-    value,
-  ] of Object.entries(attrs,)) {
+  for (
+    const [
+      key,
+      value,
+    ] of Object.entries(attrs,)
+  ) {
     if (value === undefined)
       continue;
-    if (key.startsWith('on',) && typeof value === 'function') {
+    if (key.startsWith('on',) && ((typeof value) === 'function')) {
       node.addEventListener(
         key
           .slice(2,)
@@ -53,7 +73,7 @@ export function el<K extends keyof TagNameMap,>(
       );
       continue;
     }
-    if (typeof value === 'string') {
+    if ((typeof value) === 'string') {
       node.setAttribute(
         key,
         value,
@@ -69,6 +89,12 @@ export function el<K extends keyof TagNameMap,>(
  * Removes every child from a node.
  *
  * @param parent - element whose children should be cleared
+ *
+ * @example
+ * ```ts
+ * clear(dialogueEl);
+ * dialogueEl.append(nextBeatTextNode);
+ * ```
  */
 export function clear(parent: Node,): void {
   if (parent instanceof Element) {
@@ -76,5 +102,5 @@ export function clear(parent: Node,): void {
     return;
   }
   while (parent.firstChild !== null)
-    parent.removeChild(parent.firstChild,);
+    parent.firstChild.remove();
 }

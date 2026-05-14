@@ -18,6 +18,16 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
  *   embedded in a non-rendering script tag and fetched at runtime
  *
  * @returns complete HTML document string
+ *
+ * @example
+ * ```ts
+ * const html = renderPage({
+ *   css: '.app { color: black; }',
+ *   js: 'console.log("paper2vn ready");',
+ *   spritePackManifest: '{"sprites":[]}',
+ * });
+ * // html === '<!DOCTYPE html>\n<html lang="en">...</html>'
+ * ```
  */
 export function renderPage(
   {

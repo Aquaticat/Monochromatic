@@ -5,11 +5,16 @@
  * extractor. Returns the unified plain-text representation that the
  * dialogue generator feeds into the LLM.
  */
+import { BYTES_PER_MIB, } from '@monochromatic-dev/module-numeric-const';
+
 import { extractPdf, } from './pdf.ts';
 import { extractText, } from './text.ts';
 
-/** Maximum accepted file size, mirroring the original UI. */
-const MAX_BYTES = 30 * 1_024 * 1_024;
+/** Maximum accepted upload size in mebibytes, mirroring the original UI. */
+const MAX_MIB = 30;
+
+/** Maximum accepted file size in bytes. */
+const MAX_BYTES = MAX_MIB * BYTES_PER_MIB;
 
 /**
  * Extracts text from a paper file.
@@ -19,6 +24,13 @@ const MAX_BYTES = 30 * 1_024 * 1_024;
  * @returns plain text content
  *
  * @throws when the file is too large or the format is unsupported
+ *
+ * @example
+ * ```ts
+ * const file = inputEl.files[0];
+ * const text = await extractPaperText(file);
+ * // text is plaintext content; PDFs go through pdf.ts, .md/.txt through text.ts
+ * ```
  */
 export async function extractPaperText(file: File,): Promise<string> {
   if (file.size > MAX_BYTES)
@@ -26,7 +38,7 @@ export async function extractPaperText(file: File,): Promise<string> {
   /** Lowercased file name so extension checks stay case-insensitive. */
   const name = file.name.toLowerCase();
   /** Whether the upload should be routed to the PDF extractor. */
-  const isPdf = name.endsWith('.pdf',) || file.type === 'application/pdf';
+  const isPdf = name.endsWith('.pdf',) || (file.type === 'application/pdf');
   /** Whether the upload should be routed to the plain-text extractor. */
   const isText = name.endsWith('.txt',)
     || name.endsWith('.md',)

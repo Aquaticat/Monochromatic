@@ -17,6 +17,12 @@ type ChatCompletionResponse = {
   }[];
 };
 
+/** Default sampling temperature when callers do not supply one. */
+const DEFAULT_TEMPERATURE = 0.7;
+
+/** Maximum body snippet length included in error messages on non-2xx responses. */
+const ERROR_BODY_PREVIEW_CHARS = 500;
+
 /**
  * POSTs to an OpenAI-compatible chat completions endpoint.
  *
@@ -27,6 +33,19 @@ type ChatCompletionResponse = {
  * @param opts - chat options
  *
  * @returns assistant text
+ *
+ * @example
+ * ```ts
+ * const reply = await chatOpenAICompatible({
+ *   baseUrl: 'https://api.openai.com/v1',
+ *   extraHeaders: {},
+ *   opts: {
+ *     apiKey: process.env.OPENAI_API_KEY ?? '',
+ *     model: 'gpt-4o-mini',
+ *     messages: [{ role: 'user', content: 'one line haiku about lint' }],
+ *   },
+ * });
+ * ```
  */
 export async function chatOpenAICompatible(
   {
@@ -66,7 +85,7 @@ export async function chatOpenAICompatible(
         content: m.content,
       };
     },),
-    temperature: opts.temperature ?? 0.7,
+    temperature: opts.temperature ?? DEFAULT_TEMPERATURE,
   };
   if (opts.expectJson === true)
     body['response_format'] = { type: 'json_object', };
@@ -82,16 +101,19 @@ export async function chatOpenAICompatible(
   );
   if (!res.ok) {
     /** Best-effort error-body snippet included in the thrown message. */
-    const text = await res
-      .text()
-      .catch(function ignore(): string {
+    const text = await (async function safeText(): Promise<string> {
+      try {
+        return await res.text();
+      }
+      catch {
         return '';
-      },);
+      }
+    })();
     throw new Error(
       `openai-compatible: HTTP ${res.status} ${res.statusText}: ${
         text.slice(
           0,
-          500,
+          ERROR_BODY_PREVIEW_CHARS,
         )
       }`,
     );

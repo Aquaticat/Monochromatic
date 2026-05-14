@@ -10,9 +10,21 @@
  * the imports in the consumer's body are evaluated, since ES module
  * imports are evaluated in source order at module-load time.
  */
+export {};
+
+/**
+ * Web Storage-compatible surface implemented by the in-memory shim.
+ *
+ * Mirrors the subset of the DOM `Storage` interface that the page modules
+ * call into; the actual `Storage` type is part of the DOM lib and cannot
+ * be implemented directly, so the shim is cast at the install seam.
+ */
 type StorageLike = {
   getItem(key: string,): string | null;
-  setItem(key: string, value: string,): void;
+  setItem(
+    key: string,
+    value: string,
+  ): void;
   removeItem(key: string,): void;
   clear(): void;
   readonly length: number;
@@ -22,10 +34,12 @@ type StorageLike = {
 if (globalThis.localStorage === undefined) {
   /** In-memory backing map used by the polyfilled storage methods. */
   const store = new Map<string, string>();
-  /** Web Storage-shaped facade over {@link store} for the smoke harness. */
+  /**
+   * Web Storage-shaped facade over {@link store} for the smoke harness.
+   */
   const shim: StorageLike = {
     getItem(key,): string | null {
-      return store.has(key,) ? store.get(key,)! : null;
+      return store.get(key,) ?? null;
     },
     setItem(
       key,
@@ -65,22 +79,19 @@ if (globalThis.localStorage === undefined) {
  * `HTTP-Referer` header. In Bun script mode there is no `location`,
  * so the bundled call would crash before fetch. Stub a minimal
  * `Location`-shaped object so the adapter sees a stable origin string.
+ *
+ * A real `Location` has many fields the smoke does not need; only the
+ * subset the adapters reference is populated, then cast at the seam.
  */
-if (globalThis.location === undefined) {
-  /*
-   * A real `Location` has many fields the smoke does not need; we only
-   * implement the subset the adapters reference. Cast at the seam.
-   */
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
-  globalThis.location = {
-    origin: 'http://localhost.paper2vn.smoke',
-    href: 'http://localhost.paper2vn.smoke/',
-    protocol: 'http:',
-    host: 'localhost.paper2vn.smoke',
-    hostname: 'localhost.paper2vn.smoke',
-    port: '',
-    pathname: '/',
-    search: '',
-    hash: '',
-  } as unknown as Location;
-}
+// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
+globalThis.location ??= {
+  origin: 'http://localhost.paper2vn.smoke',
+  href: 'http://localhost.paper2vn.smoke/',
+  protocol: 'http:',
+  host: 'localhost.paper2vn.smoke',
+  hostname: 'localhost.paper2vn.smoke',
+  port: '',
+  pathname: '/',
+  search: '',
+  hash: '',
+} as unknown as Location;

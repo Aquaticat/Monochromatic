@@ -13,9 +13,14 @@ import {
 import { getCharacterName, } from '../sprite-pack.ts';
 import { getActiveSave, } from '../state.ts';
 
-/** Mounts the log screen. */
+/**
+ * Mounts the log screen.
+ *
+ * @param root - host element the screen mounts into
+ */
 function mount(root: HTMLElement,): void {
   /** Current locale's translation accessors. */
+  // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
   /** Active save record, source of the log entries to render. */
   const save = getActiveSave();
@@ -26,71 +31,79 @@ function mount(root: HTMLElement,): void {
   /** Rendered row nodes, or an empty-state placeholder when no entries. */
   const rows = entries.length === 0
     ? [
-      el(
-        'p',
-        { class: 'muted', },
-        [ll.noLog(),],
-      ),
+      el({
+        tag: 'p',
+        attrs: { class: 'muted', },
+        children: [ll.noLog(),],
+      }),
     ]
     : entries.map(function toRow(entry,): HTMLElement {
-      return el(
-        'div',
-        { class: 'log-entry', },
-        [
-          el(
-            'div',
-            { class: 'speaker-name', },
-            [
+      return el({
+        tag: 'div',
+        attrs: { class: 'log-entry', },
+        children: [
+          el({
+            tag: 'div',
+            attrs: { class: 'speaker-name', },
+            children: [
               entry.speaker === 'persona' ? ruka : ll.speakerYou(),
             ],
-          ),
-          el(
-            'div',
-            { class: 'dialogue-text', },
-            [entry.text,],
-          ),
+          }),
+          el({
+            tag: 'div',
+            attrs: { class: 'dialogue-text', },
+            children: [entry.text,],
+          }),
         ],
-      );
+      });
     },);
   /** Outer screen container with header and the rendered rows. */
-  const screen = el(
-    'section',
-    {
+  const screen = el({
+    tag: 'section',
+    attrs: {
       class: 'screen log-pane',
       'data-screen': 'log',
     },
-    [
-      el(
-        'header',
-        { class: 'row', },
-        [
-          el(
-            'button',
-            {
+    children: [
+      el({
+        tag: 'header',
+        attrs: { class: 'row', },
+        children: [
+          el({
+            tag: 'button',
+            attrs: {
               'data-variant': 'ghost',
               onclick: function go(): void {
                 navigate('lecture',);
               },
             },
-            [ll.back(),],
-          ),
-          el(
-            'h2',
-            {},
-            [ll.memoryLog(),],
-          ),
+            children: [ll.back(),],
+          }),
+          el({
+            tag: 'h2',
+            attrs: {},
+            children: [ll.memoryLog(),],
+          }),
         ],
-      ),
+      }),
       ...rows,
     ],
-  );
+  });
   root.append(screen,);
 }
 
-/** Registers the log screen. */
+/**
+ * Registers the log screen with the router.
+ *
+ * @example
+ * ```ts
+ * registerLog();
+ * navigate('log');
+ * ```
+ */
 export function registerLog(): void {
-  registerScreen(
-    'log',
-    { mount, },
-  );
+  registerScreen({
+    id: 'log',
+    module: { mount, },
+  },);
 }

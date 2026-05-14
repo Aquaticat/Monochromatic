@@ -18,23 +18,28 @@ import {
   loadedLocales,
 } from './i18n-util.ts';
 
-/** Maps stored locale to typesafe-i18n locales code (identity here). */
+/**
+ * Maps stored locale to typesafe-i18n locales code (identity here).
+ *
+ * @returns the active locale code
+ */
 function resolveLocale(): Locales {
   return getSettings().locale;
 }
 
-/** Cache of the last resolved (locale, accessor) pair. */
-let cached:
-  | {
-    locale: Locales;
-    LL: TranslationFunctions;
-  }
-  | undefined;
+/** Translation-accessor cache keyed by locale. */
+const accessorByLocale = new Map<Locales, TranslationFunctions>();
 
 /**
  * Loads all bundled locales into typesafe-i18n's registry.
  *
  * Call once at boot. Idempotent.
+ *
+ * @example
+ * ```ts
+ * bootI18n();
+ * console.error(LL().menu.start());
+ * ```
  */
 export function bootI18n(): void {
   loadAllLocales();
@@ -48,20 +53,38 @@ export function bootI18n(): void {
  * changes.
  *
  * @returns object whose methods return localized strings
+ *
+ * @example
+ * ```ts
+ * el.textContent = LL().menu.startLecture();
+ * ```
  */
 export function LL(): TranslationFunctions {
   /** Active locale code, looked up once so cache check and accessor rebuild agree. */
   const locale = resolveLocale();
-  if (cached === undefined || cached.locale !== locale) {
-    cached = {
-      locale,
-      LL: i18nObject(locale,),
-    };
-  }
-  return cached.LL;
+  /** Existing accessor for this locale, if any. */
+  const existing = accessorByLocale.get(locale,);
+  if (existing !== undefined)
+    return existing;
+  /** Freshly-built accessor cached for subsequent calls in the same locale. */
+  const fresh = i18nObject(locale,);
+  accessorByLocale.set(
+    locale,
+    fresh,
+  );
+  return fresh;
 }
 
-/** Returns the BCP-47 language tag for the current locale, used by Web Speech. */
+/**
+ * Returns the BCP-47 language tag for the current locale, used by Web Speech.
+ *
+ * @returns BCP-47 tag (e.g. `en-US` for the `en` locale)
+ *
+ * @example
+ * ```ts
+ * utterance.lang = bcp47();
+ * ```
+ */
 export function bcp47(): string {
   return ({
     en: 'en-US',
@@ -104,7 +127,10 @@ export function rawString(key: StringKey,): string {
   const translations = loadedLocales[locale];
   /** Raw translation entry, expected to be a plain string for this key. */
   const value = translations[key];
-  if (typeof value !== 'string')
-    throw new Error(`[i18n] expected string for ${key}, got ${typeof value}`,);
+  if ((typeof value) !== 'string') {
+    throw new Error(
+      `[i18n] expected string for ${String(key,)}, got ${typeof value}`,
+    );
+  }
   return value;
 }

@@ -22,41 +22,51 @@ import {
 } from '../state.ts';
 import type { SaveData, } from '../types.ts';
 
+/** Maximum random suffix used by the timestamp-derived save-id fallback. */
+const FALLBACK_ID_SUFFIX_RANGE = 1_000_000;
+
 /**
  * Generates a stable id for new save slots.
  *
  * Uses `crypto.randomUUID` which is supported across all baseline
  * browsers; fallback to a timestamp-derived id if missing.
+ *
+ * @returns a unique save-slot id
  */
 function newSaveId(): string {
-  if (typeof globalThis.crypto?.randomUUID === 'function')
+  if (((typeof globalThis.crypto?.randomUUID) === 'function'))
     return globalThis.crypto.randomUUID();
-  return `save-${Date.now()}-${Math.floor(Math.random() * 1e6,)}`;
+  return `save-${Date.now()}-${Math.floor(Math.random() * FALLBACK_ID_SUFFIX_RANGE,)}`;
 }
 
-/** Mounts the select-topic screen. */
+/**
+ * Mounts the select-topic screen.
+ *
+ * @param root - host element the screen mounts into
+ */
 function mount(root: HTMLElement,): void {
   /** Current locale's translation accessors. */
+  // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
   /** File picker accepting the locale-tuned accept string. */
-  const fileInput = el(
-    'input',
-    {
+  const fileInput = el({
+    tag: 'input',
+    attrs: {
       type: 'file',
       accept: ll.uploadAccept(),
     },
-  );
+  });
   /** Plain-text alternative input when the user pastes instead of uploading. */
-  const textarea = el(
-    'textarea',
-    { placeholder: ll.pasteTextPlaceholder(), },
-  );
+  const textarea = el({
+    tag: 'textarea',
+    attrs: { placeholder: ll.pasteTextPlaceholder(), },
+  });
   /** Inline status paragraph used for hints and error messages. */
-  const status = el(
-    'p',
-    { class: 'muted', },
-    [ll.selectTopicHint(),],
-  );
+  const status = el({
+    tag: 'p',
+    attrs: { class: 'muted', },
+    children: [ll.selectTopicHint(),],
+  });
 
   /** Click handler for the primary action: parse input, generate, navigate. */
   async function start(): Promise<void> {
@@ -65,19 +75,17 @@ function mount(root: HTMLElement,): void {
       status.className = 'error';
       return;
     }
-    /** Paper body either extracted from the upload or read from the textarea. */
-    let paperText = '';
     /** First selected file from the picker, when the upload path is chosen. */
     const file = fileInput.files?.[0];
     try {
       if (file !== undefined) {
         status.textContent = `${ll.generating()} (${file.name})`;
         status.className = 'muted';
-        paperText = await extractPaperText(file,);
       }
-      else {
-        paperText = textarea.value;
-      }
+      /** Paper body either extracted from the upload or read from the textarea. */
+      const paperText = file !== undefined
+        ? await extractPaperText(file,)
+        : textarea.value;
       if (paperText.trim().length === 0) {
         status.textContent = ll.selectTopicHint();
         status.className = 'error';
@@ -118,82 +126,92 @@ function mount(root: HTMLElement,): void {
     }
   }
 
-  /** Primary "Start lecture" button wiring the click to the local async {@link start}. */
-  const startBtn = el(
-    'button',
-    {
+  /**
+   * Primary "Start lecture" button wiring the click to the local async {@link start}.
+   */
+  const startBtn = el({
+    tag: 'button',
+    attrs: {
       'data-variant': 'primary',
       onclick: function onClick(): void {
         void start();
       },
     },
-    [ll.startLecture(),],
-  );
+    children: [ll.startLecture(),],
+  });
 
   /** Outer screen container with header, upload, paste, status, and start button. */
-  const screen = el(
-    'section',
-    {
+  const screen = el({
+    tag: 'section',
+    attrs: {
       class: 'screen',
       'data-screen': 'select-topic',
     },
-    [
-      el(
-        'header',
-        { class: 'row', },
-        [
-          el(
-            'button',
-            {
+    children: [
+      el({
+        tag: 'header',
+        attrs: { class: 'row', },
+        children: [
+          el({
+            tag: 'button',
+            attrs: {
               'data-variant': 'ghost',
               onclick: function go(): void {
                 navigate('menu',);
               },
             },
-            [ll.back(),],
-          ),
-          el(
-            'h2',
-            {},
-            [ll.selectTopic(),],
-          ),
+            children: [ll.back(),],
+          }),
+          el({
+            tag: 'h2',
+            attrs: {},
+            children: [ll.selectTopic(),],
+          }),
         ],
-      ),
-      el(
-        'div',
-        { class: 'field', },
-        [
-          el(
-            'label',
-            {},
-            [ll.upload(),],
-          ),
+      }),
+      el({
+        tag: 'div',
+        attrs: { class: 'field', },
+        children: [
+          el({
+            tag: 'label',
+            attrs: {},
+            children: [ll.upload(),],
+          }),
           fileInput,
         ],
-      ),
-      el(
-        'div',
-        { class: 'field', },
-        [
-          el(
-            'label',
-            {},
-            [ll.pasteText(),],
-          ),
+      }),
+      el({
+        tag: 'div',
+        attrs: { class: 'field', },
+        children: [
+          el({
+            tag: 'label',
+            attrs: {},
+            children: [ll.pasteText(),],
+          }),
           textarea,
         ],
-      ),
+      }),
       status,
       startBtn,
     ],
-  );
+  });
   root.append(screen,);
 }
 
-/** Registers the screen with the router. */
+/**
+ * Registers the select-topic screen with the router.
+ *
+ * @example
+ * ```ts
+ * registerSelectTopic();
+ * navigate('select-topic');
+ * ```
+ */
 export function registerSelectTopic(): void {
-  registerScreen(
-    'select-topic',
-    { mount, },
-  );
+  registerScreen({
+    id: 'select-topic',
+    module: { mount, },
+  },);
 }

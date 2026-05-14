@@ -14,6 +14,12 @@ import type {
 /** Default Ollama base URL when not overridden. */
 const DEFAULT_BASE = 'http://localhost:11434';
 
+/** Default sampling temperature when callers do not supply one. */
+const DEFAULT_TEMPERATURE = 0.7;
+
+/** Maximum body snippet length included in error messages on non-2xx responses. */
+const ERROR_BODY_PREVIEW_CHARS = 500;
+
 /** Subset of Ollama's `/api/chat` non-streaming response. */
 type OllamaResponse = {
   message: { content: string; };
@@ -25,7 +31,9 @@ export const ollama: Provider = {
   chat: async function chat(opts: ChatOptions,): Promise<string> {
     /** Configured base URL falling back to localhost when unset. */
     const base = opts.baseUrl === '' ? DEFAULT_BASE : opts.baseUrl;
-    /** Full chat endpoint URL composed from {@link base}. */
+    /**
+     * Full chat endpoint URL composed from {@link base}.
+     */
     const url = `${
       base.replace(
         /\/$/,
@@ -48,7 +56,7 @@ export const ollama: Provider = {
         };
       },),
       options: {
-        temperature: opts.temperature ?? 0.7,
+        temperature: opts.temperature ?? DEFAULT_TEMPERATURE,
       },
     };
     if (opts.expectJson === true)
@@ -65,16 +73,19 @@ export const ollama: Provider = {
     );
     if (!res.ok) {
       /** Best-effort error-body snippet appended to the thrown message. */
-      const text = await res
-        .text()
-        .catch(function ignore(): string {
+      const text = await (async function safeText(): Promise<string> {
+        try {
+          return await res.text();
+        }
+        catch {
           return '';
-        },);
+        }
+      })();
       throw new Error(
         `ollama: HTTP ${res.status} ${res.statusText}: ${
           text.slice(
             0,
-            500,
+            ERROR_BODY_PREVIEW_CHARS,
           )
         }`,
       );

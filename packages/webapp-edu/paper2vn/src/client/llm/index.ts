@@ -31,6 +31,18 @@ const PROVIDERS: Record<ProviderId, Provider> = {
  * Returns `true` when the configured provider is ready to make calls.
  *
  * Anthropic also requires the explicit dangerous-browser opt-in.
+ *
+ * @returns true when the active provider has the credentials and
+ *   acknowledgements it needs to dispatch a chat completion
+ *
+ * @example
+ * ```ts
+ * if (!isProviderReady()) {
+ *   showSettingsScreen();
+ *   return;
+ * }
+ * const reply = await chat({ messages, expectJson: false, signal: undefined });
+ * ```
  */
 export function isProviderReady(): boolean {
   /** Active provider config snapshot from the settings store. */
@@ -39,7 +51,7 @@ export function isProviderReady(): boolean {
     return true;
   if (cfg.apiKey === '')
     return false;
-  if (cfg.id === 'anthropic' && !cfg.acknowledgedAnthropicWarning)
+  if ((cfg.id === 'anthropic') && (!cfg.acknowledgedAnthropicWarning))
     return false;
   return true;
 }
@@ -56,8 +68,18 @@ export function isProviderReady(): boolean {
  * @returns assistant text
  *
  * @throws when no provider is configured or the request fails
+ *
+ * @example
+ * ```ts
+ * const reply = await chat({
+ *   messages: [{ role: 'user', content: 'Summarise this in one sentence.' }],
+ *   expectJson: false,
+ *   signal: undefined,
+ * });
+ * console.error('[main]', reply);
+ * ```
  */
-export async function chat(
+export function chat(
   {
     messages,
     expectJson,

@@ -12,7 +12,15 @@
 import { bcp47, } from './i18n/runtime.ts';
 import { getSettings, } from './state.ts';
 
-/** Cancels any in-flight utterance. */
+/**
+ * Cancels any in-flight utterance.
+ *
+ * @example
+ * ```ts
+ * stopSpeaking();
+ * await speak('Welcome back, Master.');
+ * ```
+ */
 export function stopSpeaking(): void {
   try {
     globalThis.speechSynthesis.cancel();
@@ -25,10 +33,19 @@ export function stopSpeaking(): void {
   }
 }
 
-/** Returns whether voice playback is available + enabled. */
+/**
+ * Returns whether voice playback is available and enabled.
+ *
+ * @returns `true` when the user has opted in and the Web Speech API is exposed
+ *
+ * @example
+ * ```ts
+ * if (canSpeak()) await speak('Welcome back, Master.');
+ * ```
+ */
 export function canSpeak(): boolean {
   return getSettings().voiceEnabled
-    && globalThis.speechSynthesis !== undefined;
+    && (globalThis.speechSynthesis !== undefined);
 }
 
 /**
@@ -66,7 +83,12 @@ function pickVoice(): SpeechSynthesisVoice | undefined {
  *
  * @param text - dialogue text
  *
- * @returns promise that resolves on `onend` or rejects on `onerror`
+ * @throws when the Web Speech engine emits an `error` event
+ *
+ * @example
+ * ```ts
+ * await speak('Today we discuss iterative refinement.');
+ * ```
  */
 export async function speak(text: string,): Promise<void> {
   if (!canSpeak())
@@ -74,32 +96,47 @@ export async function speak(text: string,): Promise<void> {
   stopSpeaking();
   /** Snapshot of settings used to configure volume on the utterance. */
   const settings = getSettings();
-  return await new Promise<void>(
+  /** Outgoing speech utterance configured with locale, volume, and voice. */
+  const utterance = new SpeechSynthesisUtterance(text,);
+  utterance.lang = bcp47();
+  utterance.volume = settings.voiceVolume;
+  /** Picked voice for the locale, or `undefined` to let the engine choose. */
+  const voice = pickVoice();
+  if (voice !== undefined)
+    utterance.voice = voice;
+  /*
+   * `eslint-plugin-promise/avoid-new` flags raw `new Promise` constructors;
+   * the Web Speech API only exposes lifecycle events (`onend`/`onerror`),
+   * not a thenable, so a one-shot promise wrapper around addEventListener
+   * is the only way to await playback completion. The promise is created
+   * exactly once per call and never escapes this function.
+   */
+  /* oxlint-disable eslint-plugin-promise/avoid-new -- only way to await Web Speech lifecycle events; promise is local to this call. */
+  /** Promise that resolves when the Web Speech engine emits `end`, or rejects on `error`. */
+  const finished = new Promise<void>(
     function run(
       resolve,
       reject,
     ): void {
-      /** Outgoing speech utterance configured with locale, volume, and voice. */
-      const utterance = new SpeechSynthesisUtterance(text,);
-      utterance.lang = bcp47();
-      utterance.volume = settings.voiceVolume;
-      /** Picked voice for the locale, or `undefined` to let the engine choose. */
-      const voice = pickVoice();
-      if (voice !== undefined)
-        utterance.voice = voice;
-      utterance.onend = function onEnd(): void {
-        resolve();
-      };
-      utterance.onerror = function onError(
-        event: SpeechSynthesisErrorEvent,
-      ): void {
-        console.error(
-          '[tts] error',
-          event.error,
-        );
-        reject(new Error(`tts: ${event.error}`,),);
-      };
-      globalThis.speechSynthesis.speak(utterance,);
+      utterance.addEventListener(
+        'end',
+        function onEnd(): void {
+          resolve();
+        },
+      );
+      utterance.addEventListener(
+        'error',
+        function onError(event,): void {
+          console.error(
+            '[tts] error',
+            event.error,
+          );
+          reject(new Error(`tts: ${event.error}`,),);
+        },
+      );
     },
   );
+  /* oxlint-enable eslint-plugin-promise/avoid-new */
+  globalThis.speechSynthesis.speak(utterance,);
+  await finished;
 }

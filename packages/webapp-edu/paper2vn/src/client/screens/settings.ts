@@ -27,127 +27,34 @@ import {
 import {
   coerceLocale,
   coerceProviderId,
-  type Locale,
-  type ProviderId,
 } from '../types.ts';
+import {
+  anthropicWarningNodes,
+  AUTO_DELAY_MAX_MS,
+  AUTO_DELAY_STEP_MS,
+  checkbox,
+  field,
+  FONT_SCALE_MAX,
+  FONT_SCALE_MIN,
+  FONT_SCALE_STEP,
+  languageSelect,
+  providerInput,
+  providerSelect,
+  range,
+  TEXT_SPEED_MAX,
+  TEXT_SPEED_MIN,
+  TEXT_SPEED_STEP,
+  VOLUME_STEP,
+} from './settings-helpers.ts';
 
 /**
- * Inline-styled hint paragraph.
+ * Mounts the settings screen.
  *
- * @param text - hint copy
- *
- * @returns paragraph element
- *
- * @example
- * ```ts
- * const p = hint('API key stored locally.');
- * ```
+ * @param root - host element the screen mounts into
  */
-function hint(text: string,): HTMLElement {
-  return el(
-    'p',
-    { class: 'muted', },
-    [text,],
-  );
-}
-
-/**
- * Field row: label + control with optional hint.
- *
- * @param label - field label text
- *
- * @param control - the input element
- *
- * @param hintText - optional hint shown below the control
- *
- * @returns field container
- *
- * @example
- * ```ts
- * field('Language', langSelect);
- * ```
- */
-function field(
-  label: string,
-  control: HTMLElement,
-  hintText: string | undefined,
-): HTMLElement {
-  /** Field children built up with the optional hint paragraph. */
-  const children: (Node | string)[] = [
-    el(
-      'label',
-      {},
-      [label,],
-    ),
-    control,
-  ];
-  if (hintText !== undefined)
-    children.push(hint(hintText,),);
-  return el(
-    'div',
-    { class: 'field', },
-    children,
-  );
-}
-
-/**
- * Builds a labeled `<input type="range">` slider.
- *
- * @param min - minimum value
- *
- * @param max - maximum value
- *
- * @param step - increment between values
- *
- * @param initial - starting value
- *
- * @param onValue - callback fired with each `input` event
- *
- * @returns range input element
- *
- * @example
- * ```ts
- * const r = range({ min: 0, max: 1, step: 0.1, initial: 0.5, onValue: console.log });
- * ```
- */
-function range(
-  {
-    min,
-    max,
-    step,
-    initial,
-    onValue,
-  }: {
-    min: number;
-    max: number;
-    step: number;
-    initial: number;
-    onValue: (value: number,) => void;
-  },
-): HTMLInputElement {
-  /** Slider input wired to fire {@link onValue} with the coerced number. */
-  const input = el(
-    'input',
-    {
-      type: 'range',
-      min: String(min,),
-      max: String(max,),
-      step: String(step,),
-      value: String(initial,),
-    },
-  );
-  input.addEventListener(
-    'input',
-    function onInput(): void {
-      onValue(Number(input.value,),);
-    },
-  );
-  return input;
-}
-
-/** Mounts the settings screen. */
 function mount(root: HTMLElement,): void {
   /** Current locale's translation accessors. */
+  // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
   /** Settings snapshot used to seed every control. */
   const settings = getSettings();
@@ -155,57 +62,15 @@ function mount(root: HTMLElement,): void {
   const provider = getProvider();
 
   /** Language `<select>` whose change event writes the new locale to settings. */
-  const langSelect = el(
-    'select',
-    {},
-    (
-      [
-        [
-          'en',
-          'English',
-        ],
-        [
-          'zh',
-          '中文',
-        ],
-        [
-          'ja',
-          '日本語',
-        ],
-        [
-          'ru',
-          'Русский',
-        ],
-      ] as readonly (readonly [
-        Locale,
-        string,
-      ])[]
-    )
-      .map(function toOption(
-        [
-          value,
-          label,
-        ],
-      ): HTMLOptionElement {
-        /** Option attributes, with `selected` set when the locale matches. */
-        const attrs: Record<string, string> = { value, };
-        if (settings.locale === value)
-          attrs['selected'] = 'selected';
-        return el(
-          'option',
-          attrs,
-          [label,],
-        );
-      },),
-  );
+  const langSelect = languageSelect(settings.locale,);
   langSelect.addEventListener(
     'change',
     function onChange(): void {
       /** Newly chosen locale, coerced back to the union to drop unknown values. */
-      const next = coerceLocale(
-        langSelect.value,
-        settings.locale,
-      );
+      const next = coerceLocale({
+        value: langSelect.value,
+        fallback: settings.locale,
+      },);
       updateSettings({ locale: next, },);
       document.documentElement.style.setProperty(
         '--font-scale',
@@ -217,9 +82,9 @@ function mount(root: HTMLElement,): void {
 
   /** Font-scale slider feeding `--font-scale` for live preview. */
   const fontInput = range({
-    min: 0.75,
-    max: 1.5,
-    step: 0.05,
+    min: FONT_SCALE_MIN,
+    max: FONT_SCALE_MAX,
+    step: FONT_SCALE_STEP,
     initial: settings.fontScale,
     onValue: function onValue(v,): void {
       updateSettings({ fontScale: v, },);
@@ -231,9 +96,9 @@ function mount(root: HTMLElement,): void {
   },);
   /** Text-speed slider controlling the lecture screen's typing cadence. */
   const speedInput = range({
-    min: 10,
-    max: 120,
-    step: 5,
+    min: TEXT_SPEED_MIN,
+    max: TEXT_SPEED_MAX,
+    step: TEXT_SPEED_STEP,
     initial: settings.textSpeed,
     onValue: function onValue(v,): void {
       updateSettings({ textSpeed: v, },);
@@ -243,7 +108,7 @@ function mount(root: HTMLElement,): void {
   const voiceVolInput = range({
     min: 0,
     max: 1,
-    step: 0.05,
+    step: VOLUME_STEP,
     initial: settings.voiceVolume,
     onValue: function onValue(v,): void {
       updateSettings({ voiceVolume: v, },);
@@ -253,7 +118,7 @@ function mount(root: HTMLElement,): void {
   const bgmVolInput = range({
     min: 0,
     max: 1,
-    step: 0.05,
+    step: VOLUME_STEP,
     initial: settings.bgmVolume,
     onValue: function onValue(v,): void {
       updateSettings({ bgmVolume: v, },);
@@ -262,268 +127,195 @@ function mount(root: HTMLElement,): void {
   /** Auto-advance delay slider used by the lecture screen between beats. */
   const autoDelayInput = range({
     min: 0,
-    max: 5_000,
-    step: 100,
+    max: AUTO_DELAY_MAX_MS,
+    step: AUTO_DELAY_STEP_MS,
     initial: settings.autoAdvanceDelayMs,
     onValue: function onValue(v,): void {
       updateSettings({ autoAdvanceDelayMs: v, },);
     },
   },);
 
-  /** Checkbox attributes, with `checked` set when voice is currently enabled. */
-  const voiceToggleAttrs: Record<string, string> = { type: 'checkbox', };
-  if (settings.voiceEnabled)
-    voiceToggleAttrs['checked'] = 'checked';
   /** Voice-enabled checkbox; change event writes back to settings. */
-  const voiceToggle = el(
-    'input',
-    voiceToggleAttrs,
-  );
-  voiceToggle.addEventListener(
-    'change',
-    function onChange(): void {
-      updateSettings({ voiceEnabled: voiceToggle.checked, },);
+  const voiceToggle = checkbox({
+    initial: settings.voiceEnabled,
+    onChange: function saveVoiceEnabled(value,): void {
+      updateSettings({ voiceEnabled: value, },);
     },
-  );
+  },);
 
   /** Provider `<select>` whose change event swaps the active provider id. */
-  const providerSelect = el(
-    'select',
-    {},
-    (
-      [
-        [
-          'openrouter',
-          ll.providerOpenrouter(),
-        ],
-        [
-          'openai',
-          ll.providerOpenai(),
-        ],
-        [
-          'anthropic',
-          ll.providerAnthropic(),
-        ],
-        [
-          'ollama',
-          ll.providerOllama(),
-        ],
-      ] as readonly (readonly [
-        ProviderId,
-        string,
-      ])[]
-    )
-      .map(function toOption(
-        [
-          value,
-          label,
-        ],
-      ): HTMLOptionElement {
-        /** Option attributes, with `selected` set when the provider id matches. */
-        const attrs: Record<string, string> = { value, };
-        if (provider.id === value)
-          attrs['selected'] = 'selected';
-        return el(
-          'option',
-          attrs,
-          [label,],
-        );
-      },),
-  );
-  providerSelect.addEventListener(
+  const providerSelectEl = providerSelect({
+    activeProvider: provider.id,
+    labels: {
+      openrouter: ll.providerOpenrouter(),
+      openai: ll.providerOpenai(),
+      anthropic: ll.providerAnthropic(),
+      ollama: ll.providerOllama(),
+    },
+  },);
+  providerSelectEl.addEventListener(
     'change',
     function onChange(): void {
       /** Newly chosen provider id, coerced back to the union to drop unknowns. */
-      const next = coerceProviderId(
-        providerSelect.value,
-        provider.id,
-      );
+      const next = coerceProviderId({
+        value: providerSelectEl.value,
+        fallback: provider.id,
+      },);
       updateProvider({ id: next, },);
       navigate('settings',);
     },
   );
 
   /** Model text input; input event writes the new model name to provider state. */
-  const modelInput = el(
-    'input',
-    {
-      type: 'text',
-      value: provider.model,
+  const modelInput = providerInput({
+    type: 'text',
+    initial: provider.model,
+    autocomplete: undefined,
+    onValue: function saveModel(value,): void {
+      updateProvider({ model: value, },);
     },
-  );
-  modelInput.addEventListener(
-    'input',
-    function onInput(): void {
-      updateProvider({ model: modelInput.value, },);
-    },
-  );
+  },);
 
   /** API-key password input; input event writes the new key to provider state. */
-  const apiKeyInput = el(
-    'input',
-    {
-      type: 'password',
-      value: provider.apiKey,
-      autocomplete: 'off',
+  const apiKeyInput = providerInput({
+    type: 'password',
+    initial: provider.apiKey,
+    autocomplete: 'off',
+    onValue: function saveApiKey(value,): void {
+      updateProvider({ apiKey: value, },);
     },
-  );
-  apiKeyInput.addEventListener(
-    'input',
-    function onInput(): void {
-      updateProvider({ apiKey: apiKeyInput.value, },);
-    },
-  );
+  },);
 
   /** Base-URL text input; input event writes the new URL to provider state. */
-  const baseUrlInput = el(
-    'input',
-    {
-      type: 'text',
-      value: provider.baseUrl,
+  const baseUrlInput = providerInput({
+    type: 'text',
+    initial: provider.baseUrl,
+    autocomplete: undefined,
+    onValue: function saveBaseUrl(value,): void {
+      updateProvider({ baseUrl: value, },);
     },
-  );
-  baseUrlInput.addEventListener(
-    'input',
-    function onInput(): void {
-      updateProvider({ baseUrl: baseUrlInput.value, },);
-    },
-  );
+  },);
 
   /** Anthropic-specific opt-in nodes, populated only when that provider is active. */
-  const anthropicWarningChildren: (Node | string)[] = [];
-  if (provider.id === 'anthropic') {
-    /** Checkbox attributes, with `checked` set when the warning was acknowledged. */
-    const ackAttrs: Record<string, string> = { type: 'checkbox', };
-    if (provider.acknowledgedAnthropicWarning)
-      ackAttrs['checked'] = 'checked';
-    /** Anthropic dangerous-browser-access acknowledgement checkbox. */
-    const ackInput = el(
-      'input',
-      ackAttrs,
-    );
-    ackInput.addEventListener(
-      'change',
-      function onChange(): void {
-        updateProvider(
-          { acknowledgedAnthropicWarning: ackInput.checked, },
-        );
-      },
-    );
-    anthropicWarningChildren.push(
-      hint(ll.anthropicWarning(),),
-      el(
-        'label',
-        { class: 'row', },
-        [
-          ackInput,
-          ll.anthropicAccept(),
-        ],
-      ),
-    );
-  }
+  const anthropicWarningChildren = anthropicWarningNodes({
+    provider,
+    warningText: ll.anthropicWarning(),
+    acceptText: ll.anthropicAccept(),
+    onAcknowledge: function saveAck(value,): void {
+      updateProvider({ acknowledgedAnthropicWarning: value, },);
+    },
+  },);
 
   /** Outer screen container assembling header, fields, and provider section. */
-  const screen = el(
-    'section',
-    {
+  const screen = el({
+    tag: 'section',
+    attrs: {
       class: 'screen',
       'data-screen': 'settings',
     },
-    [
-      el(
-        'header',
-        { class: 'row', },
-        [
-          el(
-            'button',
-            {
+    children: [
+      el({
+        tag: 'header',
+        attrs: { class: 'row', },
+        children: [
+          el({
+            tag: 'button',
+            attrs: {
               'data-variant': 'ghost',
               onclick: function go(): void {
                 navigate('menu',);
               },
             },
-            [ll.back(),],
-          ),
-          el(
-            'h2',
-            {},
-            [ll.settings(),],
-          ),
+            children: [ll.back(),],
+          }),
+          el({
+            tag: 'h2',
+            attrs: {},
+            children: [ll.settings(),],
+          }),
         ],
-      ),
-      field(
-        ll.language(),
-        langSelect,
-        undefined,
-      ),
-      field(
-        ll.fontSize(),
-        fontInput,
-        undefined,
-      ),
-      field(
-        ll.textSpeed(),
-        speedInput,
-        undefined,
-      ),
-      field(
-        ll.voiceVolume(),
-        voiceVolInput,
-        undefined,
-      ),
-      field(
-        ll.bgmVolume(),
-        bgmVolInput,
-        undefined,
-      ),
-      field(
-        ll.autoAdvanceDelay(),
-        autoDelayInput,
-        undefined,
-      ),
-      el(
-        'label',
-        { class: 'row', },
-        [
+      }),
+      field({
+        label: ll.language(),
+        control: langSelect,
+        hintText: undefined,
+      },),
+      field({
+        label: ll.fontSize(),
+        control: fontInput,
+        hintText: undefined,
+      },),
+      field({
+        label: ll.textSpeed(),
+        control: speedInput,
+        hintText: undefined,
+      },),
+      field({
+        label: ll.voiceVolume(),
+        control: voiceVolInput,
+        hintText: undefined,
+      },),
+      field({
+        label: ll.bgmVolume(),
+        control: bgmVolInput,
+        hintText: undefined,
+      },),
+      field({
+        label: ll.autoAdvanceDelay(),
+        control: autoDelayInput,
+        hintText: undefined,
+      },),
+      el({
+        tag: 'label',
+        attrs: { class: 'row', },
+        children: [
           voiceToggle,
           ll.voiceEnabled(),
         ],
-      ),
-      el(
-        'h2',
-        {},
-        [ll.provider(),],
-      ),
-      field(
-        ll.provider(),
-        providerSelect,
-        undefined,
-      ),
-      field(
-        ll.model(),
-        modelInput,
-        undefined,
-      ),
-      field(
-        ll.apiKey(),
-        apiKeyInput,
-        ll.apiKeyHint(),
-      ),
-      field(
-        ll.baseUrl(),
-        baseUrlInput,
-        ll.baseUrlHint(),
-      ),
+      }),
+      el({
+        tag: 'h2',
+        attrs: {},
+        children: [ll.provider(),],
+      }),
+      field({
+        label: ll.provider(),
+        control: providerSelectEl,
+        hintText: undefined,
+      },),
+      field({
+        label: ll.model(),
+        control: modelInput,
+        hintText: undefined,
+      },),
+      field({
+        label: ll.apiKey(),
+        control: apiKeyInput,
+        hintText: ll.apiKeyHint(),
+      },),
+      field({
+        label: ll.baseUrl(),
+        control: baseUrlInput,
+        hintText: ll.baseUrlHint(),
+      },),
       ...anthropicWarningChildren,
     ],
-  );
+  });
   root.append(screen,);
 }
 
-/** Registers the settings screen. */
+/**
+ * Registers the settings screen with the router.
+ *
+ * @example
+ * ```ts
+ * registerSettings();
+ * navigate('settings');
+ * ```
+ */
 export function registerSettings(): void {
-  registerScreen(
-    'settings',
-    { mount, },
-  );
+  registerScreen({
+    id: 'settings',
+    module: { mount, },
+  },);
 }

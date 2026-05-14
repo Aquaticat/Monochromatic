@@ -10,6 +10,7 @@
     "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-numeric-const": "workspace:*",
+    "@monochromatic-dev/module-or-throw": "workspace:*",
     "pdfjs-dist": "catalog:",
     "typesafe-i18n": "catalog:"
   },

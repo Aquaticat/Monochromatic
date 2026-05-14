@@ -21,6 +21,16 @@ const PAPER_TEXT_BUDGET = 60_000;
  * @param signal - optional abort signal
  *
  * @returns persona reply text
+ *
+ * @example
+ * ```ts
+ * const reply = await askPersona({
+ *   paperText: 'Title: A Tiny Note...\n\nAbstract. ...',
+ *   question: 'What is the convergence criterion?',
+ *   signal: undefined,
+ * });
+ * console.error(reply); // 'Master, the criterion plateaus when ...'
+ * ```
  */
 export async function askPersona(
   {
@@ -33,7 +43,9 @@ export async function askPersona(
     signal: AbortSignal | undefined;
   },
 ): Promise<string> {
-  /** Paper body capped to {@link PAPER_TEXT_BUDGET} so prompts fit context windows. */
+  /**
+   * Paper body capped to {@link PAPER_TEXT_BUDGET} so prompts fit context windows.
+   */
   const truncated = paperText.length > PAPER_TEXT_BUDGET
     ? paperText.slice(
       0,

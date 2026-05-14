@@ -18,30 +18,37 @@ import {
 } from '../state.ts';
 import type { SaveSummary, } from '../types.ts';
 
-/** Renders one row inside the saves list. */
+/**
+ * Renders one row inside the saves list.
+ *
+ * @param summary - save-slot metadata used to label the row
+ *
+ * @returns the rendered row element with load and delete actions wired up
+ */
 function renderRow(summary: SaveSummary,): HTMLElement {
   /** Current locale's translation accessors. */
+  // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
-  return el(
-    'div',
-    { class: 'row', },
-    [
-      el(
-        'span',
-        { class: 'speaker-name', },
-        [summary.label,],
-      ),
-      el(
-        'span',
-        { class: 'muted', },
-        [
+  return el({
+    tag: 'div',
+    attrs: { class: 'row', },
+    children: [
+      el({
+        tag: 'span',
+        attrs: { class: 'speaker-name', },
+        children: [summary.label,],
+      }),
+      el({
+        tag: 'span',
+        attrs: { class: 'muted', },
+        children: [
           new Date(summary.updatedAt,)
             .toLocaleString(),
         ],
-      ),
-      el(
-        'button',
-        {
+      }),
+      el({
+        tag: 'button',
+        attrs: {
           'data-variant': 'primary',
           onclick: function onClick(): void {
             /** Loaded save record, `undefined` when the slot is gone. */
@@ -50,84 +57,109 @@ function renderRow(summary: SaveSummary,): HTMLElement {
               navigate('lecture',);
           },
         },
-        [ll.loadSave(),],
-      ),
-      el(
-        'button',
-        {
+        children: [ll.loadSave(),],
+      }),
+      el({
+        tag: 'button',
+        attrs: {
           'data-variant': 'ghost',
           onclick: function onClick(): void {
+            /*
+             * `globalThis.confirm` is the simplest cross-frame confirmation
+             * surface; the build is dependency-free and a custom modal would
+             * pull in framework code for a single yes/no prompt. The lint
+             * rule's intent is to avoid blocking dialogs in production app
+             * flows, but a delete confirmation on a local save list is the
+             * canonical case where a synchronous prompt is appropriate.
+             */
+            /* oxlint-disable no-alert -- intentional confirmation for a destructive local-save delete; documented above. */
             /** User confirmation result for the destructive delete action. */
             const ok = globalThis.confirm(
               `${ll.deleteSave()}: ${summary.label}?`,
             );
+            /* oxlint-enable no-alert */
             if (ok) {
               deleteSave(summary.id,);
               navigate('saves',);
             }
           },
         },
-        [ll.deleteSave(),],
-      ),
+        children: [ll.deleteSave(),],
+      }),
     ],
-  );
+  });
 }
 
-/** Mounts the saves screen. */
+/**
+ * Mounts the saves screen.
+ *
+ * @param root - host element the screen mounts into
+ */
 function mount(root: HTMLElement,): void {
   /** Current locale's translation accessors. */
+  // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
   /** Index of every save slot, source of the rendered rows. */
   const saves = getSaves();
   /** Rendered row nodes, or an empty-state placeholder when no saves exist. */
   const rows = saves.length === 0
     ? [
-      el(
-        'p',
-        { class: 'muted', },
-        [ll.noSaves(),],
-      ),
+      el({
+        tag: 'p',
+        attrs: { class: 'muted', },
+        children: [ll.noSaves(),],
+      }),
     ]
-    : saves.map(renderRow,);
+    : saves.map(function renderEachRow(summary,): HTMLElement {
+      return renderRow(summary,);
+    },);
   /** Outer screen container with header and the rendered rows. */
-  const screen = el(
-    'section',
-    {
+  const screen = el({
+    tag: 'section',
+    attrs: {
       class: 'screen',
       'data-screen': 'saves',
     },
-    [
-      el(
-        'header',
-        { class: 'row', },
-        [
-          el(
-            'button',
-            {
+    children: [
+      el({
+        tag: 'header',
+        attrs: { class: 'row', },
+        children: [
+          el({
+            tag: 'button',
+            attrs: {
               'data-variant': 'ghost',
               onclick: function go(): void {
                 navigate('menu',);
               },
             },
-            [ll.back(),],
-          ),
-          el(
-            'h2',
-            {},
-            [ll.saves(),],
-          ),
+            children: [ll.back(),],
+          }),
+          el({
+            tag: 'h2',
+            attrs: {},
+            children: [ll.saves(),],
+          }),
         ],
-      ),
+      }),
       ...rows,
     ],
-  );
+  });
   root.append(screen,);
 }
 
-/** Registers the saves screen. */
+/**
+ * Registers the saves screen with the router.
+ *
+ * @example
+ * ```ts
+ * registerSaves();
+ * navigate('saves');
+ * ```
+ */
 export function registerSaves(): void {
-  registerScreen(
-    'saves',
-    { mount, },
-  );
+  registerScreen({
+    id: 'saves',
+    module: { mount, },
+  },);
 }

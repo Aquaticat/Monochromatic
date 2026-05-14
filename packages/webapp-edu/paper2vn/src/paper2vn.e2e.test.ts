@@ -25,6 +25,7 @@ import {
   type Page,
   test,
 } from '@playwright/test';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 /**
  * Absolute file URL to the bundled paper2vn page. Resolved off
@@ -95,11 +96,13 @@ type Seed = {
  *
  * @example
  * ```ts
- * await seedStorage(page, { provider: { apiKey: 'sk-...' }, settings: { locale: 'zh' } });
+ * await seedStorage({ page, seed: { provider: { apiKey: 'sk-...' }, settings: { locale: 'zh' } } });
  * await page.goto(APP_URL);
  * ```
  */
-async function seedStorage(page: Page, seed: Seed,): Promise<void> {
+async function seedStorage(
+  { page, seed, }: { page: Page; seed: Seed; },
+): Promise<void> {
   /*
    * Storage keys live in `client/storage-keys.ts` but the init script
    * runs in the page context with no module imports, so the keys are
@@ -116,7 +119,7 @@ async function seedStorage(page: Page, seed: Seed,): Promise<void> {
   };
   await page.addInitScript(
     function install(arg: InitArg,): void {
-      function writeJson(key: string, value: unknown,): void {
+      function writeJson({ key, value, }: { key: string; value: unknown; },): void {
         globalThis.localStorage.setItem(
           key,
           JSON.stringify(value,),
@@ -124,10 +127,10 @@ async function seedStorage(page: Page, seed: Seed,): Promise<void> {
       }
       const { keyProvider, keySettings, keySaves, keySavePrefix, seed: payload, } = arg;
       if (payload.provider !== undefined)
-        writeJson(keyProvider, payload.provider,);
+        writeJson({ key: keyProvider, value: payload.provider, },);
       if (payload.settings !== undefined)
-        writeJson(keySettings, payload.settings,);
-      if (payload.saves !== undefined && payload.saves.length > 0) {
+        writeJson({ key: keySettings, value: payload.settings, },);
+      if ((payload.saves !== undefined) && (payload.saves.length > 0)) {
         const summaries = payload.saves.map(function toSummary(s,) {
           return {
             id: s.id,
@@ -136,18 +139,21 @@ async function seedStorage(page: Page, seed: Seed,): Promise<void> {
             updatedAt: new Date().toISOString(),
           };
         },);
-        writeJson(keySaves, summaries,);
+        writeJson({ key: keySaves, value: summaries, },);
         for (const s of payload.saves) {
-          writeJson(`${keySavePrefix}${s.id}`, {
-            id: s.id,
-            label: s.label,
-            paperTitle: s.paperTitle,
-            paperText: s.paperText,
-            chapters: s.chapters,
-            chapterIndex: s.chapterIndex ?? 0,
-            beatIndex: s.beatIndex ?? 0,
-            log: [],
-            updatedAt: new Date().toISOString(),
+          writeJson({
+            key: `${keySavePrefix}${s.id}`,
+            value: {
+              id: s.id,
+              label: s.label,
+              paperTitle: s.paperTitle,
+              paperText: s.paperText,
+              chapters: s.chapters,
+              chapterIndex: s.chapterIndex ?? 0,
+              beatIndex: s.beatIndex ?? 0,
+              log: [],
+              updatedAt: new Date().toISOString(),
+            },
           },);
         }
       }
@@ -217,7 +223,7 @@ test.describe('menu screen', () => {
 
 test.describe('locale switching', () => {
   test('Chinese locale renders zh menu strings', async ({ page, },) => {
-    await seedStorage(page, { settings: { locale: 'zh', }, },);
+    await seedStorage({ page, seed: { settings: { locale: 'zh', }, }, },);
     await page.goto(APP_URL,);
     const menu = page.locator('section[data-screen="menu"]',);
     await expect(menu,).toBeVisible();
@@ -284,13 +290,16 @@ test.describe('select-topic gating', () => {
      * that surfaces the muted hint as an error; the page short-
      * circuits before any LLM call would happen.
      */
-    await seedStorage(page, {
-      provider: {
-        id: 'openrouter',
-        model: 'anthropic/claude-haiku-4.5',
-        apiKey: 'fake-key-for-empty-input-branch',
-        baseUrl: '',
-        acknowledgedAnthropicWarning: false,
+    await seedStorage({
+      page,
+      seed: {
+        provider: {
+          id: 'openrouter',
+          model: 'anthropic/claude-haiku-4.5',
+          apiKey: 'fake-key-for-empty-input-branch',
+          baseUrl: '',
+          acknowledgedAnthropicWarning: false,
+        },
       },
     },);
     await page.goto(APP_URL,);
@@ -368,25 +377,28 @@ test.describe('saves screen', () => {
   });
 
   test('seeded save appears in the saves list', async ({ page, },) => {
-    await seedStorage(page, {
-      saves: [
-        {
-          id: 'fixture-save-1',
-          label: 'A Tiny Note on Iterative Refinement',
-          paperTitle: 'A Tiny Note on Iterative Refinement',
-          paperText: 'Abstract. Sample paper text.',
-          chapters: [
-            {
-              title: 'Overview',
-              summary: 'Overview of the paper.',
-              dialogue: [
-                { text: 'Welcome, Master.', pose: 'happy', },
-                { text: 'Today we discuss iterative refinement.', pose: 'neutral', },
-              ],
-            },
-          ],
-        },
-      ],
+    await seedStorage({
+      page,
+      seed: {
+        saves: [
+          {
+            id: 'fixture-save-1',
+            label: 'A Tiny Note on Iterative Refinement',
+            paperTitle: 'A Tiny Note on Iterative Refinement',
+            paperText: 'Abstract. Sample paper text.',
+            chapters: [
+              {
+                title: 'Overview',
+                summary: 'Overview of the paper.',
+                dialogue: [
+                  { text: 'Welcome, Master.', pose: 'happy', },
+                  { text: 'Today we discuss iterative refinement.', pose: 'neutral', },
+                ],
+              },
+            ],
+          },
+        ],
+      },
     },);
     await page.goto(APP_URL,);
     await page
@@ -434,7 +446,7 @@ test.describe('lecture screen with seeded save', () => {
   };
 
   test('Load button on saves screen takes the user to the lecture', async ({ page, },) => {
-    await seedStorage(page, lectureFixture,);
+    await seedStorage({ page, seed: lectureFixture, },);
     await page.goto(APP_URL,);
     await page
       .locator('section[data-screen="menu"] button',)
@@ -454,7 +466,7 @@ test.describe('lecture screen with seeded save', () => {
   });
 
   test('arrow-right advances to the next beat and hides the chapter card', async ({ page, },) => {
-    await seedStorage(page, lectureFixture,);
+    await seedStorage({ page, seed: lectureFixture, },);
     await page.goto(APP_URL,);
     await page
       .locator('section[data-screen="menu"] button',)
@@ -480,7 +492,7 @@ test.describe('lecture screen with seeded save', () => {
   });
 
   test('advancing past last beat of chapter A jumps to chapter B card', async ({ page, },) => {
-    await seedStorage(page, lectureFixture,);
+    await seedStorage({ page, seed: lectureFixture, },);
     await page.goto(APP_URL,);
     await page
       .locator('section[data-screen="menu"] button',)
@@ -508,7 +520,7 @@ test.describe('lecture screen with seeded save', () => {
   });
 
   test('Menu toolbar button returns to the menu screen', async ({ page, },) => {
-    await seedStorage(page, lectureFixture,);
+    await seedStorage({ page, seed: lectureFixture, },);
     await page.goto(APP_URL,);
     await page
       .locator('section[data-screen="menu"] button',)
@@ -540,12 +552,12 @@ test.describe('lecture screen with seeded save', () => {
  * fail; CI without a key still runs the rest of the suite.
  */
 const OPENROUTER_API_KEY: string | undefined =
-  (process.env['PAPER2VN_OPENROUTER_API_KEY'] !== undefined
-      && process.env['PAPER2VN_OPENROUTER_API_KEY'] !== ''
+  (((process.env['PAPER2VN_OPENROUTER_API_KEY'] !== undefined)
+      && (process.env['PAPER2VN_OPENROUTER_API_KEY'] !== ''))
     ? process.env['PAPER2VN_OPENROUTER_API_KEY']
     : undefined)
-    ?? (process.env['OPENROUTER_API_KEY'] !== undefined
-        && process.env['OPENROUTER_API_KEY'] !== ''
+    ?? (((process.env['OPENROUTER_API_KEY'] !== undefined)
+        && (process.env['OPENROUTER_API_KEY'] !== ''))
       ? process.env['OPENROUTER_API_KEY']
       : undefined);
 
@@ -554,8 +566,8 @@ const OPENROUTER_API_KEY: string | undefined =
  * the fallback policy. Override with `PAPER2VN_OPENROUTER_MODEL` to
  * force a single model for a faster local run.
  */
-const LIVE_MODEL = process.env['PAPER2VN_OPENROUTER_MODEL'] !== undefined
-    && process.env['PAPER2VN_OPENROUTER_MODEL'] !== ''
+const LIVE_MODEL = ((process.env['PAPER2VN_OPENROUTER_MODEL'] !== undefined)
+    && (process.env['PAPER2VN_OPENROUTER_MODEL'] !== ''))
   ? process.env['PAPER2VN_OPENROUTER_MODEL']
   : 'anthropic/claude-haiku-4.5';
 
@@ -602,7 +614,7 @@ test.describe('live LLM round-trip', () => {
       'console',
       function onConsole(msg,): void {
         const t = msg.type();
-        if (t === 'error' || t === 'warning')
+        if ((t === 'error') || (t === 'warning'))
           console.error(`[page:${t}] ${msg.text()}`,);
       },
     );
@@ -623,16 +635,19 @@ test.describe('live LLM round-trip', () => {
       },
     );
 
-    await seedStorage(page, {
-      provider: {
-        id: 'openrouter',
-        model: LIVE_MODEL,
-        apiKey: OPENROUTER_API_KEY!,
-        baseUrl: '',
-        acknowledgedAnthropicWarning: false,
-      },
-      settings: {
-        textSpeed: 240,
+    await seedStorage({
+      page,
+      seed: {
+        provider: {
+          id: 'openrouter',
+          model: LIVE_MODEL,
+          apiKey: nonNullishOrThrow(OPENROUTER_API_KEY,),
+          baseUrl: '',
+          acknowledgedAnthropicWarning: false,
+        },
+        settings: {
+          textSpeed: 240,
+        },
       },
     },);
     await page.goto(APP_URL,);

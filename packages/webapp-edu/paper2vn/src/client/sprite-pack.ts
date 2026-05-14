@@ -39,19 +39,27 @@ type Manifest = {
   backgrounds: Record<string, string>;
 };
 
-/** Singleton parsed manifest. */
-let manifest: Manifest | undefined;
+/** Singleton-slot container holding the parsed manifest after first load. */
+const manifestCache: { value: Manifest | undefined; } = { value: undefined, };
 
 /**
  * Reads the JSON island from the document and caches it.
  *
+ * @returns the cached parsed manifest
+ *
  * @throws when the island element is missing or invalid JSON
+ *
+ * @example
+ * ```ts
+ * const pack = loadSpritePack();
+ * console.error('pack name:', pack.name);
+ * ```
  */
 export function loadSpritePack(): Manifest {
-  if (manifest !== undefined)
-    return manifest;
+  if (manifestCache.value !== undefined)
+    return manifestCache.value;
   /** JSON island element embedded by the build, source of the manifest text. */
-  const island = document.querySelector('#sprite-pack',);
+  const island = document.querySelector<HTMLScriptElement>('#sprite-pack',);
   if (island === null)
     throw new Error('[sprite-pack] #sprite-pack island not found',);
   /** Raw JSON text content of the island, defaulting to empty when missing. */
@@ -61,8 +69,8 @@ export function loadSpritePack(): Manifest {
    * so the shape contract holds at this trust boundary.
    */
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
-  manifest = JSON.parse(text,) as Manifest;
-  return manifest;
+  manifestCache.value = JSON.parse(text,) as Manifest;
+  return manifestCache.value;
 }
 
 /**
@@ -76,10 +84,21 @@ export function loadSpritePack(): Manifest {
  * @param pose - pose key
  *
  * @returns image URL
+ *
+ * @example
+ * ```ts
+ * const src = getCharacterPose({ characterId: 'ruka', pose: 'happy' });
+ * imgEl.src = src;
+ * ```
  */
 export function getCharacterPose(
-  characterId: string,
-  pose: string,
+  {
+    characterId,
+    pose,
+  }: {
+    characterId: string;
+    pose: string;
+  },
 ): string {
   /** Cached manifest used to resolve the character and pose. */
   const m = loadSpritePack();
@@ -94,14 +113,36 @@ export function getCharacterPose(
     ?? '';
 }
 
-/** Returns the display name of a character. */
+/**
+ * Returns the display name of a character.
+ *
+ * @param characterId - character key
+ *
+ * @returns the manifest-declared display name, or the id when missing
+ *
+ * @example
+ * ```ts
+ * speakerName.textContent = getCharacterName('ruka');
+ * ```
+ */
 export function getCharacterName(characterId: string,): string {
   /** Cached manifest used to look up the character entry. */
   const m = loadSpritePack();
   return m.characters[characterId]?.displayName ?? characterId;
 }
 
-/** Returns a background image URL by id. */
+/**
+ * Returns a background image URL by id.
+ *
+ * @param id - background key
+ *
+ * @returns the URL declared in the manifest, or an empty string when missing
+ *
+ * @example
+ * ```ts
+ * el({ tag: 'div', attrs: { style: `background-image: url("${getBackground('classroom')}")` } });
+ * ```
+ */
 export function getBackground(id: string,): string {
   /** Cached manifest used to look up the background entry. */
   const m = loadSpritePack();
