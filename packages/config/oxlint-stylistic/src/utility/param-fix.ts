@@ -42,6 +42,7 @@ export function paramsNeedFix({
   closeParen,
   params,
 }: ParamsNeedFixParams,): boolean {
+  /** First param's range; used to test whether it shares a line with the opening paren. */
   const firstRange = rangeOf(at({
     arr: params,
     index: 0,
@@ -56,6 +57,7 @@ export function paramsNeedFix({
     return true;
   }
 
+  /** Last param's range; used to test whether it shares a line with the closing paren. */
   const lastRange = rangeOf(at({
     arr: params,
     index: params.length - 1,

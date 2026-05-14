@@ -34,7 +34,9 @@ export function needsPerLineFix({
   container,
   items,
 }: NeedsPerLineFixParams,): boolean {
+  /** Container span boundaries; compared against item lines to detect inline first/last items. */
   const containerRange = rangeOf(container,);
+  /** First item's range; used to test whether it shares a line with the opening delimiter. */
   const firstRange = rangeOf(at({
     arr: items,
     index: 0,
@@ -50,6 +52,7 @@ export function needsPerLineFix({
     return true;
   }
 
+  /** Last item's range; used to test whether it shares a line with the closing delimiter. */
   const lastRange = rangeOf(at({
     arr: items,
     index: items.length - 1,
@@ -65,10 +68,12 @@ export function needsPerLineFix({
   }
 
   for (let i = 1; i < items.length; i++) {
+    /** Previous item's range; paired with `currRange` to detect items sharing a line. */
     const prevRange = rangeOf(at({
       arr: items,
       index: i - 1,
     },),);
+    /** Current item's range; paired with `prevRange` to detect items sharing a line. */
     const currRange = rangeOf(at({
       arr: items,
       index: i,

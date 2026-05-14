@@ -25,6 +25,7 @@ export function lineAt({
   sourceText,
   offset,
 }: LineAtParams,): number {
+  /** Accumulator initialised to 1 because callers expect 1-indexed line numbers. */
   let line = 1;
   for (let i = 0; i < offset; i++) {
     if (sourceText[i] === '\n')

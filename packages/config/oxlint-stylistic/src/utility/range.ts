@@ -57,6 +57,7 @@ export function at<T,>({
   arr,
   index,
 }: AtParams<T>,): T {
+  /** Lookup captured into a const so the undefined branch can throw before returning. */
   const value = arr[index];
   if (value === undefined) {
     throw new Error(

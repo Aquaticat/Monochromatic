@@ -25,10 +25,12 @@ export function baseIndentAt({
   sourceText,
   offset,
 }: BaseIndentAtParams,): string {
+  /** Byte offset of the first character on the line containing `offset`. */
   const lineStart = sourceText.lastIndexOf(
     '\n',
     offset - 1,
   ) + 1;
+  /** Substring from line start to `offset`; the regex pulls only its leading whitespace. */
   const linePrefix = sourceText.slice(
     lineStart,
     offset,
