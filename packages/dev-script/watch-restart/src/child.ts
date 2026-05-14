@@ -570,6 +570,7 @@ export class Child {
     if (this.#clear) {
       this.#writeClear();
     }
+    /** Freshly spawned process handle; stored on `#current` so subsequent stops can address it. */
     const handle = this.#spawn({
       command: this.#command,
       args: this.#args,
@@ -650,6 +651,7 @@ export class Child {
    * instead of silently no-op'ing.
    */
   async #stopRunning(): Promise<void> {
+    /** Active child handle narrowed from `#current`; the throw guards against the private method being called outside `running`. */
     const handle = nonNullishOrThrow(this.#current,);
     this.#state = 'stopping';
     this.#logger.info(
@@ -663,6 +665,7 @@ export class Child {
       this.#killSignal,
     );
 
+    /** Race winner tag: `'exited'` means the child stopped within grace, `'timeout'` triggers SIGKILL escalation. */
     const result = await Promise.race([
       tagExited(exited,),
       tagTimeout(this.#stopTimeout,),

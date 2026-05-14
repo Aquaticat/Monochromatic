@@ -468,6 +468,7 @@ export class Watcher {
    * @param path - absolute path to hash and store
    */
   #trackPrePopulate(path: string,): void {
+    /** Hash-and-store job retained in `#prePopulate` so `untilReady()` can drain it. */
     const job = this.#runPrePopulate(path,);
     this.#prePopulate.add(job,);
     void this.#drainPrePopulateJob(job,);
@@ -493,6 +494,7 @@ export class Watcher {
    */
   async #runPrePopulate(path: string,): Promise<void> {
     try {
+      /** Digest computed off the disk read; `null` signals a non-fatal I/O miss that should not poison the cache. */
       const hash = await this.#hashCache.hashFile(path,);
       if (hash !== null) {
         this.#hashCache.set({
@@ -525,10 +527,12 @@ export class Watcher {
     kind: WatchEventKind,
     path: string,
   ): Promise<void> {
+    /** Deepest configured root containing `path`; used to compute the event's relative path. */
     const root = this.#findRoot(path,);
     /** Entity derived from kind once; filters reuse rather than re-derive. */
     const entity: WatchEntityType =
       kind === 'addDir' || kind === 'unlinkDir' ? 'dir' : 'file';
+    /** Normalised event handed to the orchestrator's `onEvent` callback. */
     const event: WatchEvent = {
       kind,
       entity,

@@ -54,10 +54,12 @@ export function contentHashFilter(): WatchFilter {
       return true;
     }
     try {
+      /** Hash computed off the current file bytes; `null` means the file exceeds the size cap. */
       const fresh = await ctx.hashCache.hashFile(event.path,);
       if (fresh === null) {
         return true;
       }
+      /** Previously stored hash for this path; `undefined` when the watcher has never seen the file. */
       const prior = ctx.hashCache.get(event.path,);
       if (prior === fresh) {
         return false;
@@ -69,6 +71,7 @@ export function contentHashFilter(): WatchFilter {
       return true;
     }
     catch (error) {
+      /** Human-readable error string used in the fire-on-failure warning log. */
       const message = error instanceof Error ? error.message : String(error,);
       ctx.logger.warn(
         `content-hash filter failed for ${event.path}: ${message}; firing`,

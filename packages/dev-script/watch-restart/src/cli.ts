@@ -281,6 +281,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
       'No command supplied after "--"; usage: watch-restart -w <dir>... -- <cmd> [<args>...]',
     );
   }
+  /** Positional split: first non-option after `--` is the command; the rest is its argv. */
   const [command, ...commandArgs] = args.rest;
   if (command === undefined || command === '') {
     throw new Error(
@@ -424,6 +425,7 @@ function installShutdownHandler(
           process.exit(0,);
         }
         catch (error) {
+          /** Human-readable error string used in the shutdown-failure stderr line. */
           const message = error instanceof Error
             ? error.message
             : String(error,);

@@ -388,6 +388,7 @@ export async function startWatchRestart(
             await child.restart();
           }
           catch (error) {
+            /** Human-readable error string used in the restart-failure log line. */
             const message = error instanceof Error
               ? error.message
               : String(error,);
@@ -409,6 +410,7 @@ export async function startWatchRestart(
    */
   async function onEvent(event: WatchEvent,): Promise<void> {
     try {
+      /** Composed filter verdict; `true` means the event should trigger a debounced restart. */
       const passed = await internalFilter({
         event,
         ctx,
@@ -418,6 +420,7 @@ export async function startWatchRestart(
       }
     }
     catch (error) {
+      /** Human-readable error string used in the filter-failure log line. */
       const message = error instanceof Error
         ? error.message
         : String(error,);
@@ -427,6 +430,7 @@ export async function startWatchRestart(
     }
   }
 
+  /** Watcher instance owned by this orchestrator; closed during `stop()`. */
   const watcher = new Watcher({
     paths: options.paths,
     hashCache,

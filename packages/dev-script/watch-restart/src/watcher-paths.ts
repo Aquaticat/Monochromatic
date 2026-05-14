@@ -31,6 +31,7 @@ function resolveOne(p: string,): string {
 export function sortRootsByLengthDesc(
   paths: readonly string[],
 ): readonly string[] {
+  /** Mutable absolute-path copy of the input; sorted in-place by descending length below. */
   const copy: string[] = paths.map(function mapResolve(p,) {
     return resolveOne(p,);
   },);
@@ -69,6 +70,7 @@ export function isPathUnderRoot(
 ): boolean {
   if (absPath === root)
     return true;
+  /** Root with a trailing separator guaranteed, so `startsWith` cannot match sibling roots like `/abs/srcZ` against `/abs/src`. */
   const prefix = root.endsWith(sep,) ? root : root + sep;
   return absPath.startsWith(prefix,);
 }
