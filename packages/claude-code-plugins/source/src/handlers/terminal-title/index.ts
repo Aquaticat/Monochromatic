@@ -147,9 +147,12 @@ type TerminalTitleOutput = void;
  *
  * @param event - parsed hook event from Claude Code
  *
- * @returns nothing; title is set as a side effect via `/dev/tty`
+ * @example
+ * ```ts
+ * terminalTitleHandler({ hook_event_name: 'PreToolUse', tool_name: 'Read', ... });
+ * ```
  */
-function terminalTitleHandler(event: HookInput,): TerminalTitleOutput {
+function terminalTitleHandler(event: HookInput,): void {
   const title = titleForEvent(event,);
   setTerminalTitle(truncate({
     value: `${TITLE_PREFIX} ${title}`,
@@ -166,6 +169,11 @@ function terminalTitleHandler(event: HookInput,): TerminalTitleOutput {
  * @param raw - JSON payload from Claude Code stdin
  *
  * @returns parsed hook event union
+ *
+ * @example
+ * ```ts
+ * const event = terminalTitleParser(await text(process.stdin));
+ * ```
  */
 function terminalTitleParser(raw: string,): HookInput {
   return parseHookJson<HookInput>(raw,);
@@ -178,6 +186,11 @@ function terminalTitleParser(raw: string,): HookInput {
  * @param _output - ignored handler result (title is set as a side effect)
  *
  * @returns empty string
+ *
+ * @example
+ * ```ts
+ * terminalTitleWriter(); // ''
+ * ```
  */
 function terminalTitleWriter(_output: TerminalTitleOutput,): string {
   return '';

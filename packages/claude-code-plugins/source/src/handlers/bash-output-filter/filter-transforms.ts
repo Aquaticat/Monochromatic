@@ -29,6 +29,12 @@ import {
  * @param line - trimmed line to check
  *
  * @returns `true` if the line is noise that should be stripped
+ *
+ * @example
+ * ```ts
+ * shouldStripLine('100644'); // true (git file mode noise)
+ * shouldStripLine('hello world'); // false
+ * ```
  */
 function shouldStripLine(line: string,): boolean {
   if (GIT_FILE_MODE_PATTERN.test(line,))
@@ -54,6 +60,12 @@ function shouldStripLine(line: string,): boolean {
  * @param line - line to process
  *
  * @returns line with long character runs collapsed
+ *
+ * @example
+ * ```ts
+ * collapseRepeatedChars('====================');
+ * // '==== (x20)'
+ * ```
  */
 function collapseRepeatedChars(line: string,): string {
   return line.replaceAll(
@@ -79,6 +91,13 @@ function collapseRepeatedChars(line: string,): string {
  * @param line - line to process
  *
  * @returns line with CWD-prefixed start converted to a relative path
+ *
+ * @example
+ * ```ts
+ * // CWD = '/repo'
+ * collapseCwdPaths('/repo/src/index.ts'); // 'src/index.ts'
+ * collapseCwdPaths('error at /repo/x'); // unchanged (not at start)
+ * ```
  */
 function collapseCwdPaths(line: string,): string {
   if (CWD_PREFIX === '')
@@ -111,6 +130,12 @@ function collapseCwdPaths(line: string,): string {
  * @param line - line to process
  *
  * @returns line with home directory path collapsed to `~` if at start
+ *
+ * @example
+ * ```ts
+ * // HOME = '/home/alice'
+ * collapseHomePaths('/home/alice/notes.md'); // '~/notes.md'
+ * ```
  */
 function collapseHomePaths(line: string,): string {
   if (HOME_DIR === '')
@@ -146,6 +171,11 @@ function collapseHomePaths(line: string,): string {
  * @param line - line to potentially truncate
  *
  * @returns original line if short enough, or truncated with a length marker
+ *
+ * @example
+ * ```ts
+ * truncateLine('x'.repeat(800)); // truncates with `... [800 chars]`
+ * ```
  */
 function truncateLine(line: string,): string {
   if (line.length <= MAX_LINE_LENGTH)
@@ -171,6 +201,12 @@ function truncateLine(line: string,): string {
  * @param line - repeated line content
  *
  * @param count - how many consecutive times `line` appeared
+ *
+ * @example
+ * ```ts
+ * const out: string[] = [];
+ * flushRepeated({ result: out, line: 'foo', count: 5, },); // out: ['foo (x5)']
+ * ```
  */
 function flushRepeated(
   {

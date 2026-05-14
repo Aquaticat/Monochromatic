@@ -31,7 +31,10 @@ type TenseLabels = {
  */
 type ToolTitleEntry = {
   extract: (input: GenericToolInput,) => string | undefined;
-  format: (value: string, tense: 'pre' | 'post',) => string;
+  format: (
+    value: string,
+    tense: 'pre' | 'post',
+  ) => string;
   fallback: TenseLabels;
 };
 
@@ -71,11 +74,16 @@ function truncate(
 }
 
 /**
- * Extracts the filename from a path, or returns the path if no separator is found.
+ * Extracts filename from a path, or returns the path if no separator is found.
  *
  * @param filePath - absolute or relative file path
  *
- * @returns just the filename portion
+ * @returns last filename portion
+ *
+ * @example
+ * ```ts
+ * shortPath('/repo/src/index.ts'); // 'index.ts'
+ * ```
  */
 function shortPath(filePath: string,): string {
   return basename(filePath,);
@@ -117,6 +125,12 @@ function stringField(
  * @param key - property name to extract
  *
  * @returns extractor function compatible with `ToolTitleEntry.extract`
+ *
+ * @example
+ * ```ts
+ * const get = field('command');
+ * get({ command: 'ls' }); // 'ls'
+ * ```
  */
 function field(key: string,): (input: GenericToolInput,) => string | undefined {
   return function extractField(input: GenericToolInput,) {
@@ -133,10 +147,19 @@ function field(key: string,): (input: GenericToolInput,) => string | undefined {
  * @param labels - present and past tense verbs
  *
  * @returns formatter producing titles like "Reading index.ts"
+ *
+ * @example
+ * ```ts
+ * const fmt = pathFormat({ pre: 'Reading', post: 'Read' });
+ * fmt('/repo/x.ts', 'pre'); // 'Reading x.ts'
+ * ```
  */
 function pathFormat(
   labels: TenseLabels,
-): (value: string, tense: 'pre' | 'post',) => string {
+): (
+  value: string,
+  tense: 'pre' | 'post',
+) => string {
   return function formatPath(
     v: string,
     tense: 'pre' | 'post',
@@ -151,10 +174,19 @@ function pathFormat(
  * @param labels - present and past tense verbs
  *
  * @returns formatter producing titles like `Searching "pattern"`
+ *
+ * @example
+ * ```ts
+ * const fmt = quotedFormat({ pre: 'Searching', post: 'Searched' });
+ * fmt('TODO', 'pre'); // 'Searching "TODO"'
+ * ```
  */
 function quotedFormat(
   labels: TenseLabels,
-): (value: string, tense: 'pre' | 'post',) => string {
+): (
+  value: string,
+  tense: 'pre' | 'post',
+) => string {
   return function formatQuoted(
     v: string,
     tense: 'pre' | 'post',
@@ -181,6 +213,11 @@ const COMMAND_NOISE_RE = /^(?:(?!-)\S+=\S*\s+|(?:timeout|env|nice|nohup)\s+\S+\s
  * @param command - full bash command string
  *
  * @returns shortened command representation
+ *
+ * @example
+ * ```ts
+ * shortCommand('NODE_ENV=prod env timeout 5 ls -la'); // 'ls -la'
+ * ```
  */
 function shortCommand(command: string,): string {
   return command.replace(

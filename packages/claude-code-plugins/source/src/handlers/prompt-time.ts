@@ -96,6 +96,11 @@ function promptTimeHandler(_event: UserPromptSubmitInput,): PromptTimeOutput {
  * @param raw - JSON payload from Claude Code stdin
  *
  * @returns parsed UserPromptSubmit event
+ *
+ * @example
+ * ```ts
+ * const event = promptTimeParser(await text(process.stdin));
+ * ```
  */
 function promptTimeParser(raw: string,): UserPromptSubmitInput {
   return parseHookJson<UserPromptSubmitInput>(raw,);
@@ -109,6 +114,11 @@ function promptTimeParser(raw: string,): UserPromptSubmitInput {
  * @param output - handler result to serialize
  *
  * @returns JSON string for stdout
+ *
+ * @example
+ * ```ts
+ * process.stdout.write(promptTimeWriter(output));
+ * ```
  */
 function promptTimeWriter(output: PromptTimeOutput,): string {
   return JSON.stringify(output,);

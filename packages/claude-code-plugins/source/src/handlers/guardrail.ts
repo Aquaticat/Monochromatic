@@ -51,6 +51,11 @@ type GuardrailOutput = PreToolUseOutput | Record<string, never>;
  * @param event - parsed PreToolUse event from Claude Code
  *
  * @returns deny response with reason, or `{}` to allow the tool call
+ *
+ * @example
+ * ```ts
+ * guardrailHandler({ tool_name: 'Agent', tool_input: { subagent_type: 'Explore' }, ... });
+ * ```
  */
 function guardrailHandler(event: PreToolUseInput,): GuardrailOutput {
   if (event.tool_name !== 'Agent')
@@ -107,6 +112,11 @@ function guardrailHandler(event: PreToolUseInput,): GuardrailOutput {
  * @param raw - JSON payload from Claude Code stdin
  *
  * @returns parsed PreToolUse event
+ *
+ * @example
+ * ```ts
+ * const event = guardrailParser(await text(process.stdin));
+ * ```
  */
 function guardrailParser(raw: string,): PreToolUseInput {
   return parseHookJson<PreToolUseInput>(raw,);
@@ -120,6 +130,11 @@ function guardrailParser(raw: string,): PreToolUseInput {
  * @param output - handler result to serialize
  *
  * @returns JSON string for stdout
+ *
+ * @example
+ * ```ts
+ * process.stdout.write(guardrailWriter({}));
+ * ```
  */
 function guardrailWriter(output: GuardrailOutput,): string {
   return JSON.stringify(output,);

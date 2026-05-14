@@ -26,6 +26,11 @@ import {
  *
  * @returns filtered text with boilerplate, long lines, duplicates, and trailing
  *   whitespace removed
+ *
+ * @example
+ * ```ts
+ * filterOutput('hello\nhello\nworld'); // 'hello (x2)\nworld'
+ * ```
  */
 function filterOutput(input: string,): string {
   return collapseLines(input.split('\n',),).join('\n',);
@@ -91,6 +96,11 @@ function collapseLines(lines: string[],): string[] {
  * pipeline, and writes the result to stdout. On any failure, writes the
  * unfiltered stdin content as a fallthrough -- losing output is worse than
  * failing to filter.
+ *
+ * @example
+ * ```ts
+ * await runFilter();
+ * ```
  */
 async function runFilter(): Promise<void> {
   try {

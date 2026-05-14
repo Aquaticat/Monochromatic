@@ -16,6 +16,12 @@ import {
  * @param input - tool input to check
  *
  * @returns `true` when `input` has a string `command` property
+ *
+ * @example
+ * ```ts
+ * isBashToolInput({ command: 'ls' }); // true
+ * isBashToolInput({ file_path: 'x' }); // false
+ * ```
  */
 function isBashToolInput(input: Record<string, unknown>,): input is BashToolInput {
   return (typeof input.command) === 'string';
@@ -52,6 +58,11 @@ type BashOutputFilterOutput = PreToolUseOutput | Record<string, never>;
  * @param event - parsed PreToolUse event from Claude Code
  *
  * @returns rewritten output when the command should be filtered, otherwise `{}`
+ *
+ * @example
+ * ```ts
+ * bashOutputFilterHandler({ tool_name: 'Bash', tool_input: { command: 'ls' }, ... });
+ * ```
  */
 function bashOutputFilterHandler(event: PreToolUseInput,): BashOutputFilterOutput {
   if ((event.tool_name !== 'Bash') || (!isBashToolInput(event.tool_input,)))
@@ -89,6 +100,11 @@ function bashOutputFilterHandler(event: PreToolUseInput,): BashOutputFilterOutpu
  * @param raw - JSON payload from Claude Code stdin
  *
  * @returns parsed PreToolUse event
+ *
+ * @example
+ * ```ts
+ * const event = bashOutputFilterParser(await text(process.stdin));
+ * ```
  */
 function bashOutputFilterParser(raw: string,): PreToolUseInput {
   return parseHookJson<PreToolUseInput>(raw,);
@@ -102,6 +118,11 @@ function bashOutputFilterParser(raw: string,): PreToolUseInput {
  * @param output - handler result to serialize
  *
  * @returns JSON string for stdout
+ *
+ * @example
+ * ```ts
+ * process.stdout.write(bashOutputFilterWriter({}));
+ * ```
  */
 function bashOutputFilterWriter(output: BashOutputFilterOutput,): string {
   return JSON.stringify(output,);

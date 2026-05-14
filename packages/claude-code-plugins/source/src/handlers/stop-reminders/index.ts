@@ -41,6 +41,11 @@ type StopRemindersOutput = StopOutput | Record<string, never>;
  * @param event - parsed Stop event from Claude Code
  *
  * @returns blocking output when reminders apply, otherwise `{}`
+ *
+ * @example
+ * ```ts
+ * stopRemindersHandler({ stop_hook_active: false, last_assistant_message: 'Done?' });
+ * ```
  */
 function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
   if (event.stop_hook_active)
@@ -102,6 +107,11 @@ function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
  * @param raw - JSON payload from Claude Code stdin
  *
  * @returns parsed Stop event
+ *
+ * @example
+ * ```ts
+ * const event = stopRemindersParser(await text(process.stdin));
+ * ```
  */
 function stopRemindersParser(raw: string,): StopInput {
   return parseHookJson<StopInput>(raw,);
@@ -115,6 +125,11 @@ function stopRemindersParser(raw: string,): StopInput {
  * @param output - handler result to serialize
  *
  * @returns JSON string for stdout
+ *
+ * @example
+ * ```ts
+ * process.stdout.write(stopRemindersWriter({}));
+ * ```
  */
 function stopRemindersWriter(output: StopRemindersOutput,): string {
   return JSON.stringify(output,);

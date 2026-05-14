@@ -23,6 +23,12 @@ const ALLOW_PATTERNS: readonly RegExp[] = [
  * @param command - full Bash command string from the tool input
  *
  * @returns `true` if the command matches the allowlist patterns
+ *
+ * @example
+ * ```ts
+ * isAllowed('git status'); // true
+ * isAllowed('!special'); // false
+ * ```
  */
 function isAllowed(command: string,): boolean {
   return ALLOW_PATTERNS.some(function patternTest(pattern,) {
@@ -63,6 +69,12 @@ const SKIP_PATTERNS: readonly RegExp[] = [
  * @param command - full Bash command string from the tool input
  *
  * @returns `true` if the command matches any denylist pattern
+ *
+ * @example
+ * ```ts
+ * shouldSkip('xxd file.bin'); // true (binary tool denylisted)
+ * shouldSkip('git status'); // false
+ * ```
  */
 function shouldSkip(command: string,): boolean {
   return SKIP_PATTERNS.some(function patternTest(pattern,) {

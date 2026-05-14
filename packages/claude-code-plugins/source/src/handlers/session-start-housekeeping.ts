@@ -138,6 +138,11 @@ async function sessionStartHousekeepingHandler(
  * @param raw - JSON payload from Claude Code stdin
  *
  * @returns parsed SessionStart event
+ *
+ * @example
+ * ```ts
+ * const event = sessionStartHousekeepingParser(await text(process.stdin));
+ * ```
  */
 function sessionStartHousekeepingParser(raw: string,): SessionStartInput {
   return parseHookJson<SessionStartInput>(raw,);
@@ -150,6 +155,11 @@ function sessionStartHousekeepingParser(raw: string,): SessionStartInput {
  * @param _output - ignored handler result (housekeeping has no stdout)
  *
  * @returns empty string
+ *
+ * @example
+ * ```ts
+ * sessionStartHousekeepingWriter(); // ''
+ * ```
  */
 function sessionStartHousekeepingWriter(
   _output: SessionStartHousekeepingOutput,

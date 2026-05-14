@@ -180,6 +180,11 @@ function additionalContextResponse(event: HookInput,): ClaudeSpawnOutput {
  * @param event - parsed hook event from Claude Code
  *
  * @returns hook response for stdout
+ *
+ * @example
+ * ```ts
+ * claudeSpawnHandler({ hook_event_name: 'SessionEnd', session_id: 'abc', ... });
+ * ```
  */
 function claudeSpawnHandler(event: HookInput,): ClaudeSpawnOutput {
   if (event.hook_event_name === 'SessionStart') {
@@ -216,6 +221,11 @@ function claudeSpawnHandler(event: HookInput,): ClaudeSpawnOutput {
  * @param raw - JSON payload from Claude Code stdin
  *
  * @returns parsed hook event union
+ *
+ * @example
+ * ```ts
+ * const event = claudeSpawnParser(await text(process.stdin));
+ * ```
  */
 function claudeSpawnParser(raw: string,): HookInput {
   return parseHookJson<HookInput>(raw,);
@@ -229,6 +239,11 @@ function claudeSpawnParser(raw: string,): HookInput {
  * @param output - discriminated handler result
  *
  * @returns text payload to write to stdout
+ *
+ * @example
+ * ```ts
+ * process.stdout.write(claudeSpawnWriter({ kind: 'json', payload: {} }));
+ * ```
  */
 function claudeSpawnWriter(output: ClaudeSpawnOutput,): string {
   if (output.kind === 'raw')
