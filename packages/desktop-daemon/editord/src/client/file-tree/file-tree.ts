@@ -136,6 +136,7 @@ export class FileTree extends HTMLElement {
 
   /** Renders the tree container and attaches event delegation. */
   connectedCallback(): void {
+    /** Stable reference to `this` so inner event handlers retain the component instance. */
     const tree = this;
     this.#tree = h({
       tag: 'div',
@@ -170,6 +171,7 @@ export class FileTree extends HTMLElement {
     this.#tree.addEventListener(
       'show-context',
       function handleShowContext(event,) {
+        /** Detail payload from the bubbling `show-context` CustomEvent: coordinates and target. */
         const {
           x,
           y,
@@ -215,11 +217,14 @@ export class FileTree extends HTMLElement {
    * @param rootPath - absolute path to the root directory
    */
   async expandRoot(rootPath: string,): Promise<void> {
+    /** Captured fetch callback; absent when the tree was never wired up with a backing fetcher. */
     const { fetchDir, } = this.#state;
     if (this.#tree === null || fetchDir === null)
       return;
     this.#rootPath = rootPath;
+    /** Root-level directory listing used to populate the top of the tree. */
     const entries = await fetchDir(rootPath,);
+    /** DOM nodes representing the root listing; replaces any prior children. */
     const children = createEntryElements({
       parentPath: rootPath,
       entries,
@@ -254,7 +259,9 @@ export class FileTree extends HTMLElement {
   async restoreExpansion({ dirs, }: { dirs: string[]; },): Promise<void> {
     if (this.#tree === null || this.#state.fetchDir === null || dirs.length === 0)
       return;
+    /** Trailing-slash prefix used to drop any restored path that escaped the configured root. */
     const rootPrefix = `${this.#rootPath}/`;
+    /** Restored paths that still sit under the current root; everything else is silently dropped. */
     const validDirs = dirs.filter(function withinRoot(dir,) {
       return dir.startsWith(rootPrefix,);
     },);
@@ -290,6 +297,7 @@ export class FileTree extends HTMLElement {
   async revealFiles({ paths, }: { paths: string[]; },): Promise<void> {
     if (this.#tree === null || this.#rootPath === '')
       return;
+    /** Stable reference to `this` so the inline `restore` callback retains the component instance. */
     const tree = this;
     await doRevealFiles({
       tree: this.#tree,

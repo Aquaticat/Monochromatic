@@ -69,6 +69,7 @@ export async function dispatchLspFeatureMessage(
         },
       },);
     }
+    /** Definition target reported by the LSP, or null when no symbol resolves at the position. */
     const def = await lspManager.gotoDefinition({
       path: parsed.path,
       line: parsed.line,

@@ -52,6 +52,7 @@ function windowsFsId({ path, }: { path: string; },): string {
     0,
     DRIVE_ROOT_LENGTH,
   );
+  /** Raw output from `cmd /c vol`, expected to contain a "Serial Number is XXXX-XXXX" line. */
   const output = execFileSync(
     'cmd.exe',
     [
@@ -63,6 +64,7 @@ function windowsFsId({ path, }: { path: string; },): string {
       encoding: 'utf8',
     },
   );
+  /** Regex capture of the serial token; failure means the locale or shell output is unexpected. */
   const match = /Serial Number is\s+(\S+)/i.exec(output,);
   if (match === null)
     throw new Error(`failed to parse volume serial from: ${output}`,);
@@ -111,6 +113,7 @@ function darwinFsId({ path, }: { path: string; },): string {
  * ```
  */
 export function resolveFsId({ path, }: { path: string; },): string {
+  /** Host OS name from `os.platform()`; dispatched below to the per-OS implementation. */
   const os = platform();
   if (os === 'linux')
     return linuxFsId({ path, },);

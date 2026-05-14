@@ -57,12 +57,14 @@ function extractMetadata(
     return null;
   }
 
+  /** Anchor in stderr at which the useful `Input #...` metadata begins. */
   const match = INPUT_LINE_PATTERN.exec(stderr,);
   if (match === null) {
     probeLog.info(`no Input line found for: ${path}`,);
     return null;
   }
 
+  /** Metadata-only slice, trailing whitespace removed for tidy display. */
   const trimmed = stderr.slice(match.index,).trimEnd();
   probeLog.info(`probed: ${path}`,);
   return trimmed;
@@ -100,6 +102,7 @@ export async function probeMedia({ path, }: { path: string; },): Promise<string 
      * nano-spawn's SubprocessError still carries the captured stderr.
      */
     if (error !== null && typeof error === 'object' && 'stderr' in error) {
+      /** Stderr captured by nano-spawn on non-zero exit; still contains the metadata we want. */
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'stderr' in check
       const { stderr, } = error as { stderr: string; };
       return extractMetadata({

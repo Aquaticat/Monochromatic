@@ -94,10 +94,12 @@ export function createWsHandler(
   },
 ): EventHandler {
   return defineWebSocketHandler(function resolveHooks(event,) {
+    /** Parsed URL; the host portion is irrelevant since `event.url` is request-relative. */
     const url = new URL(
       event.url,
       'http://localhost',
     );
+    /** Token from the query string; compared against `authToken` to gate the connection. */
     const token = url.searchParams.get('token',);
 
     if (token !== authToken)
@@ -133,6 +135,7 @@ export function createWsHandler(
         catch (error) {
           // Only reached for pre-parse errors (malformed JSON) where no request id exists.
           // Handler-level errors are caught inside dispatchMessage with proper id correlation.
+          /** Human-readable extraction so the peer sees a stable shape instead of `[object Object]`. */
           const msg = extractErrorMessage({ error, },);
           l.error(`message handler failed: ${msg}`,);
           sendJson({

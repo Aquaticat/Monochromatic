@@ -63,10 +63,12 @@ export async function showReferences(
     rect: DOMRect;
   },
 ): Promise<void> {
+  /** Current file path; null when no buffer is open, in which case the request would be meaningless. */
   const path = getCurrentFilePath();
   if (path === null)
     return;
   try {
+    /** Server response payload; `locations` is the only field consumed downstream. */
     const { locations, } = await ws.request({
       type: 'findReferences',
       path,
@@ -85,7 +87,9 @@ export async function showReferences(
     /** Strip common prefix from paths for display. */
     /** Without destructuring: prefer-destructuring lint error for member access. */
     const { rootDir, } = ws;
+    /** Display-ready reference entries with paths shortened relative to the workspace root. */
     const items: ReferenceLocation[] = locations.map(function toItem(loc,) {
+      /** Workspace-relative display string; falls back to the full path when outside the root. */
       const label = loc.path.startsWith(rootDir,)
         ? loc.path.slice(rootDir.length + 1,)
         : loc.path;

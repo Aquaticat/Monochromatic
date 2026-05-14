@@ -29,6 +29,7 @@ export type { ContextMenuItem, } from './items.ts';
 function handlePopoverToggle(event: Event,): void {
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover elements always carries newState
   if ((event as ToggleEvent).newState === 'closed') {
+    /** Popover element fired the toggle; remove it so the next show creates a fresh one. */
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the popover div
     const popup = event.currentTarget as HTMLDivElement;
     popup.remove();
@@ -81,6 +82,7 @@ export class ContextMenu {
   },): void {
     this.hide();
 
+    /** Captures `this` so the named `onActivate` helper can hide the menu without a bound method. */
     const self = this;
 
     /**
@@ -93,6 +95,7 @@ export class ContextMenu {
       action();
     }
 
+    /** Rendered DOM rows for every item; each row is either an input or a button row. */
     const menuItems = items.map(function renderItem(item,) {
       return item.defaultValue !== undefined
         ? renderInputItem({
@@ -130,6 +133,7 @@ export class ContextMenu {
     document.body.append(this.#popup,);
     this.#popup.showPopover();
 
+    /** First rendered row; focused on open so keyboard users land on a real item, not the dialog. */
     const [firstItem,] = menuItems;
     if (firstItem !== undefined)
       firstItem.focus();

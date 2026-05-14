@@ -118,6 +118,7 @@ const binaryViewer = document.createElement('binary-viewer',) as BinaryViewer;
 // oxlint-enable typescript-eslint/no-unsafe-type-assertion
 
 fileTree.fetchDir = async function fetchDir(path: string,): Promise<DirEntry[]> {
+  /** Directory listing returned by the server; surface goes back as the fetchDir result. */
   const { entries, } = await ws.request({
     type: 'listDir',
     path,
@@ -144,7 +145,9 @@ searchOverlay.getRootDir = function getScope(): string {
 searchOverlay.onSearch = async function handleSearch(
   query: string,
 ): Promise<SearchResult[]> {
+  /** Directory the search is scoped to; either the file-tree selection or the project root. */
   const scope = resolveSearchScope();
+  /** Search hits returned by the server for the given query and scope. */
   const { results, } = await ws.request({
     type: 'search',
     query,
@@ -197,6 +200,7 @@ async function loadFileSafe(
     character?: number | undefined;
   },
 ): Promise<void> {
+  /** Loaded file's category (`text` vs binary variants); null when the load was rejected. */
   const kind = await loadFile({
     ws,
     editorPane,
@@ -314,6 +318,7 @@ wireKeybindings({
     performSwapUp({ pane: editorPane, },);
   },
   openTerminalAtCurrentFile: function openTerminal() {
+    /** Directory to spawn the terminal in: the open file's parent, or the project root when nothing is open. */
     const dir = state.currentFilePath !== null
       ? state.currentFilePath.slice(
         0,
@@ -329,6 +334,7 @@ wireKeybindings({
   expandSelection,
   shrinkSelection,
   navigateToRecentFile: function navigateToRecent(index: number,) {
+    /** Path at the given recency slot; undefined when the user requested a slot the history has not filled yet. */
     const path = recentFiles.paths[index];
     if (path === undefined)
       return;

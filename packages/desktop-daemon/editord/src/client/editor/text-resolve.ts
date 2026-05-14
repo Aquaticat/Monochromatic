@@ -38,17 +38,22 @@ export function resolveTextPosition({
   node: Node;
   offset: number;
 } | null {
+  /** Line element at `lineIndex`; undefined when the index is past the editor's end. */
   const lineDiv = editor.children[lineIndex];
   if (lineDiv === undefined)
     return null;
 
+  /** Text-only walker over the line so syntax-highlight spans are skipped. */
   const walker = document.createTreeWalker(
     lineDiv,
     NodeFilter.SHOW_TEXT,
   );
+  /** Characters still to consume; decremented by each text-node length until the target node is reached. */
   let remaining = character;
+  /** Current text node under inspection; null exits the walk. */
   let textNode = walker.nextNode();
   while (textNode !== null) {
+    /** Length of the current text node; treat null textContent as 0. */
     const len = textNode.textContent?.length ?? 0;
     if (remaining <= len) {
       return {
@@ -100,7 +105,9 @@ export function resolveLineCharacter({
   line: number;
   character: number;
 } | null {
+  /** Walk cursor; starts at the caller's container and rises until it hits the editor or runs out. */
   let node: Node | null = container;
+  /** First ancestor that is a direct child of the editor; identifies the owning line. */
   let lineDiv: HTMLElement | null = null;
   while (node !== null && node !== editor) {
     if (node.parentNode === editor && node instanceof HTMLElement) {
@@ -112,6 +119,7 @@ export function resolveLineCharacter({
   if (lineDiv === null)
     return null;
 
+  /** Zero-based line index of `lineDiv`; -1 when the element is not actually under the editor. */
   const line = Array.prototype.indexOf.call(
     editor.children,
     lineDiv,
@@ -119,11 +127,14 @@ export function resolveLineCharacter({
   if (line === -1)
     return null;
 
+  /** Character offset within the line; summed across text nodes until the container is reached. */
   let character = 0;
+  /** Text-only walker over the resolved line so the offset count skips highlight spans. */
   const walker = document.createTreeWalker(
     lineDiv,
     NodeFilter.SHOW_TEXT,
   );
+  /** Current text node; null exits the walk. */
   let textNode = walker.nextNode();
   while (textNode !== null) {
     if (textNode === container) {

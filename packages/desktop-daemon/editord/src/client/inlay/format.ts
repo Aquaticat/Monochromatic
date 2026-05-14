@@ -24,7 +24,9 @@ import type {
  * ```
  */
 export function formatHintLabel({ hint, }: { hint: InlayHint; },): string {
+  /** Leading whitespace requested by the hint metadata; empty string when no padding is requested. */
   const padLeft = hint.paddingLeft === true ? ' ' : '';
+  /** Trailing whitespace requested by the hint metadata; empty string when no padding is requested. */
   const padRight = hint.paddingRight === true ? ' ' : '';
   /** Parameter hints (kind=2) have a trailing colon that adds noise. */
   const PARAMETER_KIND = 2;
@@ -69,6 +71,7 @@ export function formatHintLabel({ hint, }: { hint: InlayHint; },): string {
 export function formatDiagnosticLabel(
   { diagnostic, }: { diagnostic: Diagnostic; },
 ): string {
+  /** Severity-with-source tag rendered ahead of the message; falls back to bare severity when the source is empty. */
   const prefix = diagnostic.source !== ''
     ? `${diagnostic.severity}(${diagnostic.source})`
     : diagnostic.severity;
@@ -101,10 +104,13 @@ const LOWEST_PRIORITY = 4;
 export function findWorstSeverity(
   { diagnostics, }: { diagnostics: Diagnostic[]; },
 ): string {
+  /** Severity string of the worst diagnostic seen so far; empty until the first match. */
   let worst = '';
+  /** Priority value of the worst diagnostic so far; starts at the lowest so any seen severity wins. */
   let worstPriority = LOWEST_PRIORITY;
 
   for (const diag of diagnostics) {
+    /** Numeric priority for this diagnostic; unknown severities fall back to the lowest priority. */
     const priority = SEVERITY_PRIORITY[diag.severity] ?? LOWEST_PRIORITY;
     if (priority < worstPriority) {
       worstPriority = priority;

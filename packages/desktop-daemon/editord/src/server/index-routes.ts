@@ -52,6 +52,7 @@ export function registerRoutes({
   app.get(
     '/',
     defineHandler(async function handleIndex() {
+      /** Index HTML loaded once per request; small enough that caching isn't worth the staleness risk. */
       const html = await readFile(
         join(
           packageRoot,
@@ -83,11 +84,13 @@ export function registerRoutes({
             ),);
           },
           getMeta: async function getMetadata(id,) {
+            /** Absolute path resolved against package root before reading filesystem metadata. */
             const fullPath = join(
               packageRoot,
               id,
             );
             try {
+              /** Filesystem stat used to derive size and mtime for h3's caching headers. */
               const stats = await stat(fullPath,);
               if (!stats.isFile())
                 return;
@@ -119,6 +122,7 @@ export function registerRoutes({
   app.get(
     '/_raw',
     defineHandler(async function handleRawFile(event,) {
+      /** Parsed query string carrying `token` (auth) and `path` (target file). */
       const query = getQuery(event,);
       if (query.token !== authToken) {
         return new Response(
@@ -126,6 +130,7 @@ export function registerRoutes({
           { status: 401, },
         );
       }
+      /** Requested file path; null when the client did not supply a string `path` query parameter. */
       const filePath = typeof query.path === 'string' ? query.path : null;
       if (filePath === null) {
         return new Response(
@@ -133,11 +138,14 @@ export function registerRoutes({
           { status: 400, },
         );
       }
+      /** Resolved absolute path; throws if `filePath` escapes the configured root directory. */
       const absolutePath = assertWithinRoot({
         rootDir,
         path: filePath,
       },);
+      /** Full file bytes; raw endpoint serves binary media so the body must be a Buffer. */
       const buffer = await readFile(absolutePath,);
+      /** Content-Type inferred from the file extension; controls how the browser renders the response. */
       const contentType = getContentType({ path: absolutePath, },);
       return new Response(
         buffer,

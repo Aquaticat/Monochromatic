@@ -69,10 +69,12 @@ export async function loadFile(
   },
 ): Promise<FileKind | null> {
   try {
+    /** Full server response; kept around because the media branch also reads `mediaInfo`. */
     const r = await ws.request({
       type: 'open',
       path,
     },);
+    /** File kind and content lifted out for the branching below. */
     const {
       kind,
       content,
@@ -81,7 +83,9 @@ export async function loadFile(
 
     if (kind === 'image' || kind === 'audio' || kind === 'video') {
       editorPane.style.display = 'none';
+      /** Token-scoped URL the browser fetches the asset bytes from for native media playback. */
       const mediaUrl = `/_raw?path=${encodeURIComponent(path,)}&token=${token}`;
+      /** Options bag for the binary viewer, including probed media metadata when the server returned it. */
       const mediaOpts = r.mediaInfo !== undefined
         ? {
           url: mediaUrl,

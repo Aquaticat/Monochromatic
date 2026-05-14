@@ -89,12 +89,15 @@ function performLineOp({
     character: number;
   } | null;
 },): void {
+  /** Contenteditable container; null when the pane has not been connected yet. */
   const editor = pane.getEditorElement();
   if (editor === null)
     return;
+  /** Current caret position; null when no selection is active in the editor. */
   const pos = pane.getCursorPosition();
   if (pos === null)
     return;
+  /** New caret position returned by the operation, or null when the caret should not move. */
   const result = fn(
     editor,
     pos,
@@ -118,17 +121,22 @@ function performIndentOp({
   pane: PaneApi;
   fn: typeof doIndent;
 },): void {
+  /** Contenteditable container; null when the pane has not been connected yet. */
   const editor = pane.getEditorElement();
   if (editor === null)
     return;
+  /** Current caret position; null when no selection is active. */
   const pos = pane.getCursorPosition();
   if (pos === null)
     return;
+  /** Raw selection bounds, including collapsed cases that the indent op should ignore. */
   const sel = pane.getSelection();
+  /** Same selection narrowed to multi-position ranges; null when the selection is collapsed. */
   const nonCollapsed = sel !== null
       && !(sel.startLine === sel.endLine && sel.startCharacter === sel.endCharacter)
     ? sel
     : null;
+  /** Outcome of the indent/unindent run, expressed as either an updated selection or a new caret. */
   const result = fn({
     editor,
     cursorLine: pos.line,
@@ -252,10 +260,13 @@ export function performSwapUp({ pane, }: { pane: PaneApi; },): void {
  * ```
  */
 export function performSelectAndCopy({ pane, }: { pane: PaneApi; },): boolean {
+  /** Contenteditable container; bail when the pane is not connected or its shadow is detached. */
   const editor = pane.getEditorElement();
   if (editor === null || pane.shadowRoot === null)
     return false;
+  /** Caret position needed to identify which line should be copied. */
   const pos = pane.getCursorPosition();
+  /** Composed selection range resolved through the shadow root; null when no caret is set. */
   const composedRange = getComposedRange({ shadow: pane.shadowRoot, },);
   if (composedRange === null || pos === null)
     return false;

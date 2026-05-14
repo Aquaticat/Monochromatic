@@ -57,6 +57,7 @@ export async function restoreExpansion({
       ];
     },),
   );
+  /** Dirs sorted shallow-to-deep so each parent is open before its children are looked up. */
   const sorted = dirs.toSorted(function byDepth(
     a,
     b,
@@ -65,6 +66,7 @@ export async function restoreExpansion({
   },);
 
   for (const dirPath of sorted) {
+    /** Summary element marking the directory header; null when the parent has not loaded yet. */
     const summary = tree.querySelector<HTMLElement>(
       `summary[data-path="${CSS.escape(dirPath,)}"]`,
     );
@@ -72,6 +74,7 @@ export async function restoreExpansion({
       l.warn(`skipping expansion of ${dirPath}: not found in tree`,);
       continue;
     }
+    /** Owning `<details>` wrapper; opening it triggers the toggle handler that loads children. */
     const details = summary.parentElement;
     if (details instanceof HTMLDetailsElement && !details.open) {
       details.open = true;
@@ -101,8 +104,10 @@ export function updateRecencyMarkers({
   tree: HTMLDivElement;
   paths: string[];
 },): void {
+  /** Path-to-position lookup so each tree entry can resolve its recency index in O(1). */
   const recencyByPath = new Map<string, number>();
   for (let i = 0; i < paths.length; i++) {
+    /** Recent entry at index `i`; undefined slots are ignored to keep the map dense. */
     const recentPath = paths[i];
     if (recentPath !== undefined) {
       recencyByPath.set(
@@ -113,10 +118,13 @@ export function updateRecencyMarkers({
   }
 
   for (const label of tree.querySelectorAll<HTMLElement>('tree-file-entry[data-path]',)) {
+    /** Absolute path this entry represents; undefined when the data attribute is missing or empty. */
     const labelPath = label.dataset['path'];
+    /** Position in the recency list, or undefined when this path is not among the recent files. */
     const recencyIndex = labelPath !== undefined
       ? recencyByPath.get(labelPath,)
       : undefined;
+    /** Inline marker element displaying the numeric recency indicator. */
     const toggle = label.querySelector<HTMLElement>('.toggle',);
 
     if (recencyIndex !== undefined) {
@@ -149,11 +157,13 @@ export function resolveSelectedDir(
 ): string {
   if (lastFocused === null)
     return '';
+  /** Absolute path of the focused entry, or empty when the entry has no data-path attribute. */
   const itemPath = lastFocused.dataset['path'] ?? '';
   if (itemPath === '')
     return '';
   if (lastFocused.tagName === 'SUMMARY')
     return itemPath;
+  /** Index of the last separator; used to derive the parent directory of a file entry. */
   const lastSlash = itemPath.lastIndexOf('/',);
   return lastSlash > 0
     ? itemPath.slice(
@@ -176,10 +186,12 @@ export function resolveSelectedDir(
  * ```
  */
 export function collectExpandedDirs({ tree, }: { tree: HTMLDivElement; },): string[] {
+  /** Accumulator collecting every expanded directory path encountered during the walk. */
   const dirs: string[] = [];
   for (const details of tree.querySelectorAll<HTMLDetailsElement>('details[open]',)) {
     /** `<summary>` is always the first child of `<details>` (set in TreeDirEntry.connectedCallback). */
     const first = details.firstElementChild;
+    /** Path read from the summary's data attribute; empty when the summary lacks a data-path. */
     const path = first instanceof HTMLElement ? (first.dataset['path'] ?? '') : '';
     if (path !== '')
       dirs.push(path,);

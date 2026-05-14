@@ -126,6 +126,7 @@ export class EditorWsClient {
 
   /** Wires message, close, and handshake handlers onto the current WebSocket. */
   #wireConnection(): Promise<void> {
+    /** Handshake promise returned to the caller so `ready` resolves once authenticated. */
     const handshakePromise = this.#performHandshake();
     this.#ws.addEventListener(
       'message',
@@ -140,6 +141,7 @@ export class EditorWsClient {
 
   /** Performs the server handshake using the extracted handshake module. */
   #performHandshake(): Promise<void> {
+    /** Captured `this` so the handshake callback can mutate instance fields without `this` rebinding. */
     const client = this;
     return performHandshake({
       ws: this.#ws,
@@ -177,20 +179,25 @@ export class EditorWsClient {
   ): Promise<RequestResponseMap[TReq['type']]> {
     await this.ready;
 
+    /** Monotonically increasing correlation ID assigned to this request. */
     const id = String(this.#nextId++,);
+    /** Request payload with the generated `id` attached for server correlation. */
     const fullMessage = {
       ...message,
       id,
     };
+    /** Local alias for the pending-request map so the inner Promise executor closes over it without `this`. */
     const pending = this.#pending;
 
     // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- pending request tracking requires storing resolve/reject callbacks in a map
+    /** Promise that resolves with the matching response or rejects on timeout/close. */
     const responsePromise = new Promise<ServerMessage>(
       function awaitResponse(
         resolve,
         reject,
       ) {
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
+        /** Timer handle stored on the pending entry so the response handler can cancel it. */
         const timeoutId = globalThis.setTimeout(
           function rejectStale() {
             if (pending.delete(id,)) {
@@ -236,6 +243,7 @@ export class EditorWsClient {
    */
   #handleMessage(event: MessageEvent,): void {
     // oxlint-disable-next-line eslint/init-declarations -- try/catch initialization with early return requires split declaration
+    /** Parsed message body; declared outside the try block so the catch can short-circuit before assignment. */
     let data: ServerMessage;
     try {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; runtime type is validated by discriminant checks below
@@ -269,6 +277,7 @@ export class EditorWsClient {
 
     // Correlated response
     if ('id' in data) {
+      /** Tracked request matching this response's `id`, or undefined if it already timed out. */
       const pending = this.#pending.get(data.id,);
       if (pending !== undefined) {
         this.#pending.delete(data.id,);
@@ -286,6 +295,7 @@ export class EditorWsClient {
    * then schedules a reconnection attempt with exponential backoff.
    */
   #handleClose(): void {
+    /** Rejection reason shared by every pending request so each caller sees the same close cause. */
     const closeError = new Error('WebSocket connection closed',);
     for (const [, pending,] of this.#pending) {
       clearTimeout(pending.timeoutId,);
@@ -300,12 +310,14 @@ export class EditorWsClient {
    * Resets the delay to {@link RECONNECT_BASE_MS} on successful reconnection.
    */
   #scheduleReconnect(): void {
+    /** Current backoff delay captured before being doubled for the next attempt. */
     const delay = this.#reconnectDelay;
     this.#reconnectDelay = Math.min(
       delay * RECONNECT_BACKOFF_FACTOR,
       RECONNECT_MAX_MS,
     );
     l.info(`reconnecting in ${delay}ms`,);
+    /** Captured `this` so the timer callback can replace WebSocket/ready fields without `this` rebinding. */
     const client = this;
     globalThis.setTimeout(
       function attemptReconnect() {

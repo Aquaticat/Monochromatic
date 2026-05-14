@@ -45,15 +45,18 @@ export async function listDir(
     path: string;
   },
 ): Promise<ListDirResult> {
+  /** Absolute resolved path; throws when `path` escapes `rootDir`, gating the readdir below. */
   const absolutePath = assertWithinRoot({
     rootDir,
     path,
   },);
+  /** Raw Dirent results from Node; mapped to the wire shape below to drop unrelated fields. */
   const dirents = await readdir(
     absolutePath,
     { withFileTypes: true, },
   );
 
+  /** Wire-format entries with just `name` and `isDirectory`; client does not need stat data. */
   const entries: DirEntry[] = dirents.map(function toDirEntry(dirent,) {
     return {
       name: dirent.name,

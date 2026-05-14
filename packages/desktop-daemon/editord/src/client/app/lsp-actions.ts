@@ -47,10 +47,12 @@ export async function formatDocument({
   editorPane: EditorPane;
   getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
+  /** Current file path; null when no buffer is open, in which case formatting has no target. */
   const path = getCurrentFilePath();
   if (path === null)
     return;
   try {
+    /** Edits returned by the formatter; empty when the document is already well-formed. */
     const { edits, } = await ws.request({
       type: 'format',
       path,
@@ -95,10 +97,12 @@ export function wireGotoDefinition(
   editorPane.addEventListener(
     'click',
     function handleCtrlClick(event,) {
+      /** Click event narrowed to MouseEvent so modifier flags and viewport coords are accessible. */
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- click is always a MouseEvent
       const me = event as MouseEvent;
       if (!me.ctrlKey && !me.metaKey)
         return;
+      /** Editor-space position under the cursor; null when the click misses any text. */
       const pos = editorPane.getPositionFromPoint({
         x: me.clientX,
         y: me.clientY,

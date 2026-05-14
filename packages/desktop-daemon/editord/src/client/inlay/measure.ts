@@ -41,7 +41,9 @@ export function measureSpaceRatio({ editor, }: { editor: HTMLElement; },): numbe
 
   /** Without destructuring: prefer-destructuring lint error for member access. */
   const { fontSize, } = getComputedStyle(editor,);
+  /** Off-screen canvas used purely for text measurement; never attached to the document. */
   const canvas = document.createElement('canvas',);
+  /** 2D context whose `measureText` reports glyph widths under each font we probe. */
   const ctx = canvas.getContext('2d',);
   if (ctx === null) {
     cachedRatio = 1;
@@ -49,9 +51,11 @@ export function measureSpaceRatio({ editor, }: { editor: HTMLElement; },): numbe
   }
 
   ctx.font = `${fontSize} 'JetBrains Mono', monospace`;
+  /** Width of a single space rendered in JetBrains Mono at the editor's font size. */
   const monoSpace = ctx.measureText(' ',).width;
 
   ctx.font = `${fontSize} 'Inter', sans-serif`;
+  /** Width of a single space rendered in Inter at the same font size, used as the divisor. */
   const interSpace = ctx.measureText(' ',).width;
 
   cachedRatio = interSpace > 0 ? monoSpace / interSpace : 1;
@@ -103,8 +107,11 @@ export function interSpacesForGap({
   if (cachedCtx === null || cachedMonoW === 0 || cachedInterSpW === 0)
     return Math.round((charPos - fallbackCursor) * spaceRatio,);
 
+  /** Pixel column the hint should land on, derived from the monospace character offset. */
   const targetPx = charPos * cachedMonoW;
+  /** Actual pixel width the existing Inter-rendered row already occupies. */
   const rowPx = cachedCtx.measureText(rowText,).width;
+  /** Number of Inter spaces that bridge the remaining gap; clamped at zero for short rows. */
   const gap = Math.max(
     0,
     Math.round((targetPx - rowPx) / cachedInterSpW,),
@@ -130,6 +137,7 @@ export function measureInlayOffsets({ editor, }: { editor: HTMLElement; },): voi
     if (!(child instanceof HTMLElement) || child.dataset.inlay === undefined)
       continue;
 
+    /** Rendered height of the `::before` annotation; drives the line-number offset variable. */
     const beforeHeight = getComputedStyle(
       child,
       '::before',

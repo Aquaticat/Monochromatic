@@ -24,10 +24,13 @@ import {
  * @returns ancestor paths ordered from nearest parent to filesystem root
  */
 function collectAncestors(start: string,): string[] {
+  /** Accumulator for each ancestor seen on the walk; returned to the caller. */
   const ancestors: string[] = [];
+  /** Cursor used by the walk loop; advances one directory level per iteration. */
   let current = start;
 
   while (true) {
+    /** Parent directory of the cursor; equal to `current` only at the filesystem root. */
     const parent = dirname(current,);
     if (parent === current)
       break;
@@ -59,7 +62,9 @@ function collectAncestors(start: string,): string[] {
  * ```
  */
 export async function resolveRoot(): Promise<string> {
+  /** Absolute current working directory; used as the walk seed and the fallback root. */
   const cwd = resolve('.',);
+  /** Every ancestor directory of `cwd`, near-to-far; candidate set for the highest writable. */
   const ancestors = collectAncestors(cwd,);
 
   /** Check write permission for all ancestors concurrently. */

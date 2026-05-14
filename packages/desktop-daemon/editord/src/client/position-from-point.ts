@@ -41,6 +41,7 @@ export function getPositionFromPoint({
   x: number;
   y: number;
 },): EditorPosition | null {
+  /** Line index and div containing the pointer y, or null when the click missed every line. */
   const lineResult = findLineAtY({
     editor,
     y,
@@ -48,6 +49,7 @@ export function getPositionFromPoint({
   if (lineResult === null)
     return null;
 
+  /** Character offset within `lineResult.lineDiv` that best fits the pointer x. */
   const character = findCharAtX({
     lineDiv: lineResult.lineDiv,
     x,
@@ -75,15 +77,21 @@ function findLineAtY({
   line: number;
   lineDiv: Element;
 } | null {
+  /** Vertically-ordered children; each is one line div whose bounding rect is checked against `y`. */
   const { children, } = editor;
+  /** Inclusive low bound of the binary-search window over `children`. */
   let lo = 0;
+  /** Inclusive high bound of the binary-search window over `children`. */
   let hi = children.length - 1;
 
   while (lo <= hi) {
+    /** Midpoint index inspected this iteration; unsigned shift avoids overflow for huge documents. */
     const mid = (lo + hi) >>> 1;
+    /** Candidate line div at `mid`; undefined would indicate detached children. */
     const child = children[mid];
     if (child === undefined)
       return null;
+    /** Bounding rect of the candidate; reading it triggers layout but is unavoidable for hit-testing. */
     const rect = child.getBoundingClientRect();
 
     if (y < rect.top)

@@ -36,9 +36,13 @@ const OPENING_BRACKETS = new Set([
  * ```
  */
 export function computeIndent({ lineText, }: { lineText: string; },): string {
+  /** Regex match capturing the leading spaces; null only when the regex itself fails. */
   const match = /^( *)/.exec(lineText,);
+  /** Whitespace at the start of the previous line; carried over to align the new line. */
   const baseIndent = match?.[1] ?? '';
+  /** Line text with trailing whitespace stripped; needed to inspect the meaningful last char. */
   const trimmed = lineText.trimEnd();
+  /** Final non-whitespace char of the previous line; decides whether to add a deeper indent. */
   const lastChar = trimmed.at(-1,) ?? '';
   if (OPENING_BRACKETS.has(lastChar,))
     return baseIndent + INDENT_UNIT;
@@ -90,9 +94,11 @@ export function createAutoIndentHandler({
     if (prevDiv === undefined)
       return;
 
+    /** Raw text content of the previous line div; empty string when missing. */
     const prevText = prevDiv.textContent ?? '';
     /** Empty lines store `'\n'` as a height-preserving marker. */
     const lineText = prevText === '\n' ? '' : prevText;
+    /** Whitespace string to prepend so the new line aligns with (or under) the previous line. */
     const indent = computeIndent({ lineText, },);
 
     if (indent !== '') {
