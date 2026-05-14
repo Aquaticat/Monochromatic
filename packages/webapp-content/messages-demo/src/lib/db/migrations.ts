@@ -102,6 +102,7 @@ const SEED_USERS: readonly {
 export async function runMigrations(db: Database,): Promise<void> {
   await db.exec(MIGRATION_SCHEMA,);
 
+  /** Prepared once so the seed-user loop can reuse it per row without re-parsing the SQL. */
   const insertUser = db.prepare(
     'INSERT OR IGNORE INTO users(id, name) VALUES (?, ?)',
   );

@@ -30,6 +30,7 @@ export async function mountCustomEditor(
     state: ComposerState;
   },
 ): Promise<void> {
+  /** Mount node inserted as a sibling of the textarea; the editor renders into this element. */
   const host = document.createElement('div',);
   // Use a distinct class; not `composer-body`: so
   // `querySelector('.composer-body')` continues to return the textarea
@@ -42,7 +43,9 @@ export async function mountCustomEditor(
     host,
     input.textarea,
   );
+  /** URL-flag override that surfaces editor-internal trace logs in the browser console. */
   const debug = new URLSearchParams(globalThis.location.search,).get('debug',) === '1';
+  /** Saved on composer state so later send/promote steps can read editor text or unmount it. */
   const editor = await mountEditor({
     host,
     initialText: input.textarea.value,

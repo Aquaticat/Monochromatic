@@ -52,6 +52,7 @@ export function invertChangeset(
     before: string;
   },
 ): Changeset {
+  /** Pre-edit substring captured so the inverse can re-insert it on undo. */
   const removed = input.before.slice(
     input.changeset.from,
     input.changeset.to,
@@ -127,6 +128,7 @@ export function mapOffsetThroughChangeset(
     return input.offset;
   if (input.offset <= input.changeset.to)
     return input.changeset.from + input.changeset.insert.length;
+  /** Net length change so offsets past the edit window shift by exactly this much. */
   const delta = input.changeset.insert.length
     - (input.changeset.to - input.changeset.from);
   return input.offset + delta;
@@ -164,6 +166,7 @@ export function composeChangesets(
     b: Changeset;
   },
 ): Changeset | null {
+  /** Offset where `a` ends after its insert; composition is only legal when `b` lands here. */
   const insertEnd = input.a.from + input.a.insert.length;
   if (input.b.from !== insertEnd || input.b.to !== insertEnd)
     return null;

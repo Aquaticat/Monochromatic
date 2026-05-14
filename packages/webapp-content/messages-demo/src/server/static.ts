@@ -40,6 +40,7 @@ export const staticHandler: EventHandlerWithFetch = defineHandler(
           );
         },
         getMeta: async function getMetadata(id,) {
+          /** Reassigned from undefined to the stat result on success; left undefined otherwise so the catch path returns. */
           let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
           try {
             stats = await stat(

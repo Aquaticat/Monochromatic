@@ -57,6 +57,7 @@ export async function postCreateDraft(
     parentId: string | null;
   },
 ): Promise<void> {
+  /** Awaited so the `!ok` branch can read the body before throwing. */
   const response = await fetch(
     '/api/drafts',
     {
@@ -70,6 +71,7 @@ export async function postCreateDraft(
     },
   );
   if (!response.ok) {
+    /** Server-supplied error body folded into the thrown message for the caller's logs. */
     const message = await response.text();
     throw new Error(`create draft failed: ${message}`,);
   }
@@ -90,9 +92,13 @@ export async function postCreateDraft(
  * ```
  */
 export async function fetchChunkCount(messageId: number,): Promise<number> {
+  /** Awaited before reading the body so the body-read can throw the network error first if any. */
   const response = await fetch(`/m/${String(messageId,)}/c/0`,);
+  /** Full HTML of the chunk-0 nav, scanned for the chunk-count regex. */
   const text = await response.text();
+  /** Holds the regex match so the count can be parsed from capture group 1. */
   const match = /chunk\s+\d+\s+of\s+(\d+)/.exec(text,);
+  /** Extracted before the undefined check so the call site sees one narrowed string. */
   const captured = match?.[1];
   if (captured === undefined)
     throw new Error('could not determine chunk count',);
@@ -180,6 +186,7 @@ export function getIdentity(form: HTMLFormElement,): string {
 export function parseEditId(raw: string | undefined,): number | null {
   if (raw === undefined || raw === '')
     return null;
+  /** Parsed once so the finite-and-positive guard and the return can both reference it. */
   const value = Number.parseInt(
     raw,
     DECIMAL_RADIX,
@@ -201,9 +208,11 @@ export function parseEditId(raw: string | undefined,): number | null {
  * ```
  */
 export function appendStatusElement(form: HTMLFormElement,): HTMLElement {
+  /** Returned as-is when present so repeated calls do not re-append the same div. */
   const existing = form.querySelector<HTMLElement>('.composer-status',);
   if (existing !== null)
     return existing;
+  /** Lazily created on first call; appended below and returned to the caller. */
   const status = document.createElement('div',);
   status.className = 'composer-status';
   form.append(status,);
@@ -242,6 +251,7 @@ export function setStatus(
  * ```
  */
 export function appendVolatileBadge(form: HTMLFormElement,): void {
+  /** Indicator pinned next to the composer so users notice unsent edits are in-memory only. */
   const badge = document.createElement('span',);
   badge.className = 'composer-volatile-badge';
   badge.textContent = 'volatile mode';
