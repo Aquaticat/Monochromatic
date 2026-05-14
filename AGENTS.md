@@ -32,7 +32,7 @@ Before sending any response with substantive claims:
 2. Described how an external tool works without reading its source? Clone and read (see "Third-party libraries"), or label as recall-from-training.
 3. Estimated the difficulty of a fix you have not built? Drop the estimate.
 4. Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
-5. Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents, whether a tool/syntax/feature is used in the codebase, whether a config already covers the behaviour being proposed, whether AGENTS.md already bans/requires the thing being weighed)? Measure it. Categorical dismissals ("the project doesn't use X", "X doesn't apply here", "X is already handled by Y") feel like recall but are one `rg`/`find`/config-read/AGENTS.md-grep away from being checked. **AGENTS.md itself counts as a config to read.** Cite the search result inline (file path, line number, or config key); if the dismissal was wrong, fold the now-relevant option back into the analysis.
+5. Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents, whether a tool/syntax/feature is used in the codebase, whether a config already covers the behaviour being proposed, whether AGENTS.md already bans/requires the thing being weighed) or about the user's own working pattern recorded in repo artifacts (commit cadence, working hours, defect-recovery rate, whether parallel sessions are running concurrent with the conversation)? Measure it. Categorical dismissals ("the project doesn't use X", "X doesn't apply here", "X is already handled by Y") feel like recall but are one `rg`/`find`/config-read/AGENTS.md-grep away from being checked. **AGENTS.md itself counts as a config to read.** Cite the search result inline (file path, line number, or config key); if the dismissal was wrong, fold the now-relevant option back into the analysis.
 6. Assumed a non-measurable preference (which approach, what they value)? Ask.
 7. Confident factual claim about your environment, an external tool, or source code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
 8. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
@@ -42,13 +42,17 @@ Before sending any response with substantive claims:
 
 ### Measure-vs-ask
 
-**Measurable facts: measure.** Codebase size, build time, file count, dependency tree, test count, perf numbers, config values, file contents.
+**Measurable facts: measure.** Codebase size, build time, file count, dependency tree, test count, perf numbers, config values, file contents. Also the user's own working pattern recorded in repo artifacts: commit cadence, working hours, defect-recovery rate, concurrent-session evidence.
 
 - Codebase size: `tokei` or `find . -name '*.ts' | xargs wc -l`
 - Build time: `time mise run build`
 - Test count: count test files or run with reporter
 - Dependency count: `pnpm ls --depth=0` or count entries in `package.json`
 - Fix complexity: read the source code path that would change
+- User commit cadence: `git log --format='%aI' --since=<date> | cut -dT -f1 | uniq -c` for commits-per-day distribution
+- Daily commit span (proxy for working hours): per-day min and max hour from `git log --format='%aI'`
+- Defect-recovery rate: count of `revert`/`regression`/`fix.*broken` commits over total commits in the window
+- Concurrent-session evidence: compare `git log --since=<conversation-start>` timestamps against this conversation's UserPromptSubmit hook times
 
 Run the measurement yourself; never quantitative-adjective ("small", "large", "fast", "slow", "simple", "complex", "short", "long", "sparse", "dense", "tractable", "trivial", "significant") without one. The agent has the tools; using them is the agent's job, not the user's.
 
@@ -83,6 +87,7 @@ Do not write these; do the step instead.
 - "an afternoon" or any other duration estimate: only valid if you have built a similar fix in this codebase before; otherwise drop
 - "the project doesn't use X" / "we don't use X" / "the codebase doesn't have X" used to cut off a candidate without verifying: one `rg`/`find`/config-read away; cite the search result or drop the dismissal. AGENTS.md and tsconfig count as places X may be wired up.
 - "X is already handled by Y" / "X is already covered by Y" used as a dismissal: read Y's config or source to confirm the overlap before dropping X from consideration. Pair the dismissal with a file path and line number, or drop it.
+- "I don't know your specific X" / "I'd need data on your Y" / "this depends on your specific Z that I don't have" used to defer reasoning about the user's working history, defect rate, throughput, hours, or whether parallel sessions are running: `git log`, `gh issue list`, and file mtimes record these. The phrase is a deflection, not an epistemic limit; run the measurement before drawing the conclusion.
 
 The `ccsr` stop hook catches some of these at response-send time; internal self-catch is faster.
 
@@ -417,6 +422,7 @@ When writing instructions, configuration, or documentation that prescribes how a
 - When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its source and read the relevant code path. This applies whether you encountered the bug yourself, are summarizing a tracker issue without diagnosis, or are estimating how hard a fix would be. A linked issue without diagnosis is not evidence the bug is undiagnosable; it is evidence nobody has diagnosed it yet, and the next investigator can be you. "No public diagnosis exists" is never a valid stopping point when the source is open. When citing a finding from cloned source, quote the file path, line number, and the relevant code excerpt so the user can verify your reasoning.
 - When proposing a package to replace an existing dependency, audit the candidate to the same depth as the dependency being replaced: transitive deps, the source paths that handle the same cases the incumbent mishandles, build provenance for native or wasm modules (compiler flags, wasm import surface, whether the upstream sources are checksum-verified), and maintenance signals (downloads, stars, last commit, single-maintainer concentration). Report the audit findings inline with the recommendation, not as trailing caveats. Without this depth the recommendation replaces a known-flaw dependency with an unknown-flaw one, and the next audit lands in the same place.
 - After investigating an external tool, write up findings in a `TROUBLESHOOTING.<topic>.md` file at the repo root. The `troubleshooting-doc` skill encodes the required sections, the source-trace rule, and the 5-constraint upstream-filing check that gates the draft GitHub issue at the end; invoke it when you reach the write-up moment.
+- **Claude Code bugs are exempt from upstream-tracking.** Claude Code upstream is very unresponsive; filing local tracking issues for Claude Code defects produces clutter without changing the outcome. Document the defect in `TROUBLESHOOTING.<topic>.md`, encode the workaround as a rule in this file, and skip the GitHub issue. See [.out-of-scope/claude-code-upstream-bugs.md](.out-of-scope/claude-code-upstream-bugs.md).
 
 ## When committing or documenting
 
