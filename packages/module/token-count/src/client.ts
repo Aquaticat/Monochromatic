@@ -52,6 +52,7 @@ function resolveApiKey(explicit: string | undefined,): string | undefined {
   if (explicit !== undefined)
     return explicit;
   for (const envVar of API_KEY_ENV_VARS) {
+    /** Treat empty-string env vars as unset so a blank shell export does not shadow later fallbacks. */
     const value = process.env[envVar];
     if (value !== undefined && value !== '')
       return value;
@@ -76,6 +77,7 @@ function resolveApiKey(explicit: string | undefined,): string | undefined {
 function resolveClient(
   { apiKey, }: { readonly apiKey: string | undefined; },
 ): Anthropic {
+  /** Branch on the resolved value so the SDK still falls through to its own default when nothing is found. */
   const resolved = resolveApiKey(apiKey,);
   return new Anthropic(resolved !== undefined ? { apiKey: resolved, } : undefined,);
 }
@@ -106,15 +108,19 @@ export async function countTokens({
   readonly content: string;
   readonly config?: CountTokensConfig;
 },): Promise<TokenCountResult> {
+  /** Scope log lines to this function so concurrent counts stay distinguishable. */
   const rl = tagged({
     tag: countTokens.name,
     l,
   },);
+  /** Fall back to the shared default so callers can omit model when the tokenizer choice is irrelevant. */
   const model = config.model ?? DEFAULT_MODEL;
+  /** Build the SDK client lazily here so each call can supply its own apiKey override. */
   const client = resolveClient({ apiKey: config.apiKey, },);
 
   rl.debug(`counting tokens model=${model} contentLength=${String(content.length,)}`,);
 
+  /** Hold the SDK response so the input_tokens field can be logged before being repackaged for the caller. */
   const response = await client.messages.countTokens({
     model,
     messages: [{
@@ -158,16 +164,19 @@ export async function countFileTokens({
   readonly filePath: string;
   readonly config?: CountTokensConfig;
 },): Promise<FileTokenCountResult> {
+  /** Scope log lines to this function so concurrent file reads stay distinguishable. */
   const rl = tagged({
     tag: countFileTokens.name,
     l,
   },);
   rl.debug(`reading file path=${filePath}`,);
 
+  /** Read once up front so the file path is reported in any read error before the API is touched. */
   const content = await readFile(
     filePath,
     'utf8',
   );
+  /** Delegate token counting to the string variant so the API call has a single owner. */
   const result = await countTokens({
     content,
     config,

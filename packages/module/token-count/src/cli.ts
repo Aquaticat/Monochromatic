@@ -66,6 +66,7 @@ for (const result of results)
   console.log(`${String(result.inputTokens,).padStart(PAD_WIDTH,)} ${result.filePath}`,);
 
 if (results.length > 1) {
+  /** Aggregate across files so the trailing summary line matches `wc -l`-style output. */
   const total = results.reduce(
     function sumTokens(
       sum,
