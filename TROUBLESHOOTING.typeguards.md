@@ -1,316 +1,233 @@
-# Troubleshooting: TypeScript Typeguards and Type Preservation
+# TypeScript typeguards: `value: unknown` parameter loses caller's type information through narrowing; generic-extends pattern preserves it
 
-## 🤯 WTF TypeScript Discoveries: When the Type System Betrays You
+## Symptom
 
-### **WTF #1: "If it compiles, it's safe" is a MASSIVE LIE**
+A typeguard declared as `function isSchema(value: unknown):
+value is Schema` compiles cleanly and runs correctly at
+runtime, but inside the narrowed branch, the original
+caller's type information is gone:
 
-```typescript
-// Industry standard pattern - ALL OF THESE COMPILE but explode at runtime
-function isSchema(value: unknown): value is Schema { /* validation */ }
-
-isSchema(null) ✓         // 🤯 WTF: Compiles! null.parse() explodes
-isSchema(undefined) ✓    // 🤯 WTF: Compiles! undefined.parse() explodes  
-isSchema({}) ✓           // 🤯 WTF: Compiles! {}.parse is not a function
-isSchema(42) ✓          // 🤯 WTF: Compiles! (42).parse is not a function
-isSchema('hello') ✓     // 🤯 WTF: Compiles! 'hello'.parse is not a function
-isSchema([1,2,3]) ✓     // 🤯 WTF: Compiles! Array.parse is not a function
-
-// TypeScript just gave you 23 different ways to explode at runtime
-// while PROMISING type safety through compilation success
-```
-
-### **WTF #2: TypeScript DESTROYS your carefully crafted types**
-
-```typescript
+```ts
 const richObject = {
   parse: x => x,
   weight: 100,
-  metadata: { version: '1.0', },
+  metadata: { version: '1.0' },
   validator: customValidator,
   cache: new Map(),
 };
 
-// 🤯 WTF: The `as unknown` cast is a TYPE DESTROYER
-if (isSchema(richObject as unknown,)) {
-  richObject.weight; // 🔥 GONE - TypeScript deleted your property
-  richObject.metadata; // 🔥 GONE - Your rich metadata vanished
-  richObject.validator; // 🔥 GONE - Your custom logic disappeared
-  richObject.cache; // 🔥 GONE - Your performance optimization lost
-
-  // You had a rich, useful object. TypeScript narrowed it to bare Schema.
-  // Your type information was MURDERED by the type system meant to protect it.
+if (isSchema(richObject as unknown)) {
+  richObject.weight;     // Error: 'weight' does not exist on type 'Schema'
+  richObject.metadata;   // Error
+  richObject.validator;  // Error
+  richObject.cache;      // Error
 }
 ```
 
-### **WTF #3: Input type matters more than the guard (mind-bending)**
+The compiler narrows `richObject` to the predicate type
+(`Schema`) and discards everything else. Callers must either
+re-cast back to the original type, write a more specific
+typeguard, or restructure the predicate to preserve the
+input.
 
-```typescript
-// SAME validation logic, COMPLETELY different behavior based on input type
-const typedSchema: SchemaWithWeight = { parse: x => x, weight: 100, };
-const unknownSchema: unknown = { parse: x => x, weight: 100, };
+Additional surprises:
 
-// Same guard, different universe of behavior:
-if (isSchema(typedSchema,))
-  typedSchema.weight; // 🎯 PRESERVED - TypeScript is your friend
+- The runtime body of `isSchema(value: unknown)` is
+  permitted to accept any value (`null`, `undefined`,
+  primitives, plain objects). Each of those compiles
+  successfully but explodes at runtime if the body assumes
+  object semantics. The signature does not catch this.
+- `any` inputs are still narrowed to the predicate type:
+  the "escape hatch" does not bypass the typeguard's effect.
+- Intersection types (`A & B & C`) can lose parts during
+  narrowing depending on the guard pattern.
+- Casting (`value as unknown as T & typeof value`) can
+  produce worse narrowing than direct usage.
 
-if (isSchema(unknownSchema,))
-  unknownSchema.weight; // 🔥 DESTROYED - TypeScript is your enemy
+## Root cause
 
-// 🤯 WTF: The GUARD didn't change, the INPUT type changed everything
-// This violates every assumption about how functions should behave
-```
+TypeScript's narrowing rule for a typeguard `(x: P): x is
+T` is: inside the `if (guard(x))` block, the type of `x`
+becomes `T` (or `T & inputType` when the input type has
+useful structure). When the input type is `unknown`, the
+narrowed result is `T` alone, with no intersection. The
+caller's richer type is discarded.
 
-### **WTF #4: `any` gets narrowed but generics can save it**
+Concretely:
 
-```typescript
-const anyValue: any = { parse: x => x, weight: 100, magic: true, };
+- `(x: SchemaWithWeight): x is Schema` — narrowing produces
+  `SchemaWithWeight & Schema`, which preserves `weight`.
+- `(x: unknown): x is Schema` — narrowing produces `Schema`
+  alone; the caller's properties are gone.
+- `(x: T): x is T` with `T extends Schema` — narrowing
+  produces `T`, which preserves the caller's properties when
+  `T` was the rich type.
 
-// 🤯 WTF: Even `any` - the "escape hatch" - gets destroyed
-if (isSchema_Unknown(anyValue,)) {
-  anyValue.weight; // 🔥 GONE - any doesn't protect you from narrowing
-  anyValue.magic; // 🔥 GONE - any is not actually any after guards
-}
+The behaviour is correct by spec; the rule is "narrow to the
+predicate, intersected with the parameter type". `unknown`
+contributes nothing to the intersection.
 
-// But generics can rescue any:
-if (isSchema_Generic(anyValue,)) {
-  anyValue.weight; // 🎯 SAVED - Generic pattern rescues any
-  anyValue.magic; // 🎯 SAVED - any stays any-ish with generics
-}
+## Verification
 
-// 🤯 WTF: The "do anything" type can lose properties,
-// but generics somehow preserve what any should preserve
-```
+Version under test: TypeScript pinned in workspace
+`tsconfig.json`. Reproduce with the 84 test scenarios in
+`typeguard.behaviorTest.ts` (workspace path); the table below
+summarises the dominant findings.
 
-### **WTF #5: Industry "best practices" create runtime bombs**
+Behaviour by guard signature and caller's input type:
 
-```typescript
-// This pattern is in EVERY major TypeScript library:
-// Zod, io-ts, Effect, most validation libraries, TypeScript handbook
+- `isSchema(value: unknown): value is Schema` applied to a
+  typed value cast to `unknown`: loses caller's properties.
+- `isSchema(value: Schema): value is Schema` applied to a
+  typed value: preserves caller's properties through
+  intersection.
+- `isSchema<const T extends Schema = Schema>(value: T):
+  value is T` applied to a typed value: preserves caller's
+  properties exactly.
+- All three guards accept runtime-unsafe inputs (null,
+  undefined, primitives) at compile time when the parameter
+  is `unknown`.
 
-function isValid(value: unknown,): value is ValidType {
-  return; /* some validation */
-}
+## Verified workaround: prefer the generic-extends pattern
 
-// 🤯 WTF: The "best practice" is actually a RUNTIME BOMB FACTORY
-// It compiles successfully for inputs that will explode:
-// - null values that call methods
-// - undefined values that access properties
-// - primitives treated as objects
-// - empty objects missing required methods
-// - wrong object shapes that pass basic checks
-
-// The entire TypeScript ecosystem built on DANGEROUS foundations
-```
-
-### **WTF #6: TypeScript's intersection behavior is insane**
-
-```typescript
-type ComplexType = BaseType & { extra: string; } & { more: number; };
-const complex: ComplexType = {/* all properties */};
-
-// 🤯 WTF: Intersection types can LOSE parts during narrowing
-if (isBaseType(complex,)) {
-  complex.extra; // 🔥 SOMETIMES GONE - depending on the guard pattern
-  complex.more; // 🔥 SOMETIMES GONE - TypeScript's intersection logic
-}
-
-// The & operator doesn't guarantee preservation through type guards
-// Your intersected types can be UN-INTERSECTED by the type system
-```
-
-### **WTF #7: Casting makes everything worse in weird ways**
-
-```typescript
-const typed: GoodType | string = getValue();
-
-// 🤯 WTF: Casting to help TypeScript actually HURTS
-if (isGoodType(typed as unknown as GoodType & typeof typed,)) {
-  // This cast pattern, meant to "help" TypeScript understand,
-  // can create WORSE type behavior than just direct usage
-  typed.method(); // 🔥 May not work - casting confusion
-}
-
-// Sometimes helping TypeScript makes it more confused
-// The type system fights your attempts to be explicit
-```
-
----
-
-## Critical Discovery: Input Type Determines Type Preservation
-
-### The Real Rule
-
-**TypeScript typeguards preserve properties based on the INPUT type, not the guard pattern:**
-
-- **Typed inputs**: Properties preserved through intersection types
-- **`unknown`/`any` inputs**: Properties lost, narrowed to predicate type only
-
-## Common Misconceptions Corrected
-
-### Myth: "TypeScript always preserves type information"
-
-**PARTIALLY FALSE**: It depends on the input type.
-
-```typescript
-type SchemaWithWeight = Schema & { weight: number; };
-const schema: SchemaWithWeight = { parse: x => x, weight: 100, };
-
-// ✅ PRESERVES properties - typed input
-if (isSchema(schema,))
-  schema.weight; // Works! Type: SchemaWithWeight & Schema
-
-// ❌ LOSES properties - unknown input
-const unknownSchema: unknown = schema;
-if (isSchema(unknownSchema,))
-  unknownSchema.weight; // Error! Type: Schema only
-```
-
-### Myth: "`any` bypasses type narrowing"
-
-**FALSE**: `any` still gets narrowed by typeguards.
-
-```typescript
-const anySchema: any = { parse: x => x, weight: 100, };
-
-if (isSchema(anySchema,))
-  anySchema.weight; // ❌ Error! Even any gets narrowed to Schema
-
-// Exception: Generic patterns may preserve any better
-if (isSchemaGeneric(anySchema,))
-  anySchema.weight; // ✅ May work - depends on generic implementation
-```
-
-## The Industry Standard Problem
-
-**The `value: unknown` pattern loses type information:**
-
-```typescript
-// Common pattern - loses properties
-function isSchema(value: unknown,): value is Schema {/* */}
-
-const richSchema = { parse: x => x, weight: 100, name: 'test', };
-
-// Problem: Must cast to unknown, losing all type info
-if (isSchema(richSchema as unknown,)) {
-  richSchema.weight; // ❌ Error - lost in narrowing
-  richSchema.name; // ❌ Error - lost in narrowing
-}
-
-// Solution: Don't cast to unknown
-if (isSchema(richSchema,)) {
-  richSchema.weight; // ✅ Works - intersection preserves properties
-  richSchema.name; // ✅ Works - intersection preserves properties
-}
-```
-
-## Better Patterns for Type Preservation
-
-### Pattern 1: Generic with extends constraint
-
-```typescript
-function isSchema<const T extends Schema = Schema,>(
+```ts
+function isSchema<const T extends Schema = Schema>(
   value: T,
 ): value is T {
-  return; /* validation */
+  // runtime validation
 }
 
-// Preserves ALL original type information
-// Provides compile-time safety
-// Forces explicit casting for unknown data
-```
-
-### Pattern 2: Simple typed parameter
-
-```typescript
-function isSchema(value: Schema,): value is Schema {
-  return; /* validation */
-}
-
-// Preserves properties for typed inputs
-// Simpler than generic approach
-// Still requires casting for unknown data
-```
-
-## Practical Guidelines
-
-### For Validating Unknown Data
-
-```typescript
-const untrusted: unknown = JSON.parse(data,);
-
-// Make the unknown → typed conversion explicit
-if (isSchema(untrusted as unknown as Schema & typeof untrusted,)) {
-  untrusted.parse('test',); // ✅ Validated
-  // No additional properties expected from unknown
-}
-```
-
-### For Narrowing Typed Values
-
-```typescript
-const typed: SchemaWithWeight | string = getValue();
-
-// Preserve properties during narrowing
-if (isSchema(typed as Schema & typeof typed,))
-  typed.weight; // ✅ Preserved if it was SchemaWithWeight
-```
-
-### For Objects with Additional Properties
-
-```typescript
-const enriched = { parse: (x) => x, weight: 100, metadata: {...} };
-
-// DON'T cast to unknown - loses all properties
-if (isSchema(enriched as unknown)) {
-  enriched.weight; // ❌ Lost
-}
-
-// DO use direct validation - preserves properties
-if (isSchema(enriched)) {
-  enriched.weight; // ✅ Preserved
-  enriched.metadata; // ✅ Preserved
-}
-```
-
-## FINAL DECISION: Generic Extends Pattern for Type Safety
-
-### For Type-Safety Focused Codebases: Generic Extends Wins
-
-**IMMEDIATE ACTION**: Refactor all typeguards to Generic Extends pattern.
-
-```typescript
-// NEW STANDARD PATTERN
-export function isString<const T extends string = string,>(
+function isString<const T extends string = string>(
   value: T,
 ): value is T {
   return typeof value === 'string';
 }
+```
 
-export function isSchema<const T extends Schema = Schema,>(
-  value: T,
-): value is T {
-  // validation logic
+Tradeoffs:
+
+- Caller must pass an already-typed value. For untrusted
+  data (e.g. `JSON.parse(...)`), the caller must perform an
+  explicit cast: `isSchema(untrusted as unknown as Schema &
+  typeof untrusted)`. The cast is louder than the implicit
+  `unknown` form; that loudness is the point because it
+  exposes the trust boundary in the source.
+- The `const` generic parameter is required to preserve the
+  caller's narrow type literal where applicable.
+- The generic default (`= Schema`) makes the call site
+  ergonomic when the caller does not have a more specific
+  type available.
+
+## Alternative workaround: simple typed parameter
+
+When generics feel heavy:
+
+```ts
+function isSchema(value: Schema): value is Schema {
+  // runtime validation
 }
 ```
 
-### Why Generic Extends Is The Clear Winner
+Tradeoff: preserves properties for typed inputs through
+intersection but still requires casting for `unknown` data.
+Simpler than the generic; less precise for callers with
+narrower-than-Schema types.
 
-1. **🎯 Maximum Type Preservation**: 35 scenarios maintain rich type information
-2. **🚫 Strong Compile-Time Safety**: 18 scenarios catch errors before runtime
-3. **💣 Eliminates False Safety**: Prevents 23 dangerous runtime explosions
-4. **🔥 Minimizes Type Destruction**: Only 4 scenarios lose information
+## What does not work
 
-### Migration Strategy
+- `function isSchema(value: unknown): value is Schema` as
+  the only guard for general use: loses caller's properties
+  on every typed call site, forcing widespread casts to
+  recover the type.
+- `value as unknown as Schema & typeof value` as the
+  universal recovery cast: visually noisy and easy to apply
+  incorrectly. Use only at the trust boundary.
+- Relying on `any` to bypass narrowing: `any` is still
+  narrowed by typeguards. The "do anything" type does not
+  protect against the narrowing rule.
+- Intersection types as protection: `A & B & C` can be
+  reduced to `A` during narrowing if the guard pattern
+  discards the rest. The `&` operator does not guarantee
+  preservation through narrowing.
+- Casting to "help" TypeScript: `isGoodType(typed as unknown
+  as GoodType & typeof typed)` sometimes produces worse
+  narrowing than direct usage. The cast is for the trust
+  boundary; do not sprinkle it speculatively.
 
-1. **Priority 1**: Basic guards (`string`, `number`, `boolean`, `error`)
-2. **Priority 2**: Collections (`array`, `map`, `set`, `promise`)
-3. **Priority 3**: Complex objects (`schema`, `jsonl`)
-4. **Priority 4**: Update all tests and documentation
+## Practical guidelines
 
-### Usage Patterns
+### Validating unknown data (trust boundary)
 
-- **Internal validation**: Direct use for maximum safety
-- **External APIs**: Explicit casting shows dangerous intent
-- **Union narrowing**: Safe with proper casting patterns
+```ts
+const untrusted: unknown = JSON.parse(data);
 
-**Evidence**: 84 comprehensive test scenarios in `typeguard.behaviorTest.ts` prove Generic Extends superiority for type-safety focused development.
+if (isSchema(untrusted as unknown as Schema & typeof untrusted)) {
+  untrusted.parse('test');
+}
+```
+
+The cast is explicit at the boundary; downstream code sees
+the original type.
+
+### Narrowing typed values (no boundary crossed)
+
+```ts
+const typed: SchemaWithWeight | string = getValue();
+
+if (isSchema(typed)) {
+  typed.weight;  // preserved when `typed` was `SchemaWithWeight`
+}
+```
+
+### Objects with additional properties
+
+```ts
+const enriched = { parse: x => x, weight: 100, metadata: {...} };
+
+// DON'T cast to unknown — loses all properties
+if (isSchema(enriched as unknown)) {
+  enriched.weight;  // lost
+}
+
+// DO use direct validation — preserves properties
+if (isSchema(enriched)) {
+  enriched.weight;     // preserved
+  enriched.metadata;   // preserved
+}
+```
+
+## Migration strategy
+
+Refactor all typeguards in the workspace to the
+generic-extends pattern, in this order:
+
+1. Basic guards: `string`, `number`, `boolean`, `error`.
+2. Collections: `array`, `map`, `set`, `promise`.
+3. Complex objects: `schema`, `jsonl`.
+4. Update tests and callers; in particular, replace `as
+   unknown` casts at call sites with the explicit
+   trust-boundary form.
+
+Evidence: 84 test scenarios in
+`typeguard.behaviorTest.ts` exercise the patterns above.
+
+## Why we do not file this upstream
+
+The behaviour is correct per the TypeScript specification.
+Walking the 5 constraints:
+
+1. **Is it really upstream's fault?** No; the narrowing rule
+   is documented and consistent.
+2. **Can upstream fix it?** Changing the narrowing rule to
+   "intersect with the original input type" would break
+   existing valid code and undermine the safety contract
+   `unknown` provides.
+3. **Are they supporting this use case?** Yes; both the
+   `unknown` pattern and the generic-extends pattern are
+   documented.
+4. **Will they likely fix it?** N/A.
+5. **Have we prototyped a minimal fix?** N/A.
+
+Decision: no upstream report. The fix lives at our boundary
+(generic-extends typeguard pattern + explicit cast at the
+trust boundary).
