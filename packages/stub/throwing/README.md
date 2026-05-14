@@ -1,5 +1,7 @@
 # @monochromatic-dev/stub-throwing
 
+Ready to publish.
+
 A workspace stub package used by `.pnpmfile.mjs` to substitute for blocked dependencies whose policy is `throw`.
 
 When a package is blocklisted with `action: 'throw'` in the POLICY table at the repo root's `.pnpmfile.mjs`, the pnpm install hook rewrites every transitive dependency entry pointing at the blocked package to point here instead.

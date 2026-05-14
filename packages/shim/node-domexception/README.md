@@ -1,5 +1,7 @@
 # @monochromatic-dev/shim-node-domexception
 
+Ready to publish.
+
 API-compatible shim for [`node-domexception`](https://www.npmjs.com/package/node-domexception).
 Its `index.cjs` is a single line: `module.exports = globalThis.DOMException`, identical to the final line of `node-domexception@1.0.0/index.js` after the Node-<17 fallback block runs.
 
