@@ -108,7 +108,7 @@
 
 - [ ] **Large files need splitting**:
   - [`function.pipe.ts`](src/function.pipe.ts:19): 1500+ lines, consider splitting by arity
-  - [`boolean.equal.ts`](src/boolean.equal.ts:174) - Complex comparison logic could be modularized
+  - [`boolean.equal.ts`](src/boolean.equal.ts:174): Complex comparison logic could be modularized
   - [`string.limitedGetComputedCss.ts`](src/string.limitedGetComputedCss.ts:533): CSS parsing could be separate module
 
 - [ ] **Related functions in separate files**:

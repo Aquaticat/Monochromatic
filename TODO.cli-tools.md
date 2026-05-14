@@ -10,7 +10,7 @@
 
 ## High Priority Tools
 
-### `cpfd` - Copy Files From Dependencies
+### `cpfd`: Copy Files From Dependencies
 
 **Status**: Deprecated; superseded by `packages/dev-script/file-enforcer`
 

@@ -34,14 +34,14 @@
 #### Array Utilities Needing Better Documentation
 
 - [ ] **[`array.is.ts`](src/array.is.ts:51)**: Multiple functions need enhancement:
-  - [`isEmptyArray()`](src/array.is.ts:51) - Add type narrowing examples
-  - [`isArrayEmpty()`](src/array.is.ts:83) - Document vs `isEmptyArray()` differences
-  - [`isArrayNonEmpty()`](src/array.is.ts:117) - Add generic type examples
-  - [`arrayIsNonEmpty()`](src/array.is.ts:189) - Document functional usage patterns
+  - [`isEmptyArray()`](src/array.is.ts:51): Add type narrowing examples
+  - [`isArrayEmpty()`](src/array.is.ts:83): Document vs `isEmptyArray()` differences
+  - [`isArrayNonEmpty()`](src/array.is.ts:117): Add generic type examples
+  - [`arrayIsNonEmpty()`](src/array.is.ts:189): Document functional usage patterns
 
 - [ ] **[`array.range.ts`](src/array.range.ts:73)**: Functions need better docs:
-  - [`arrayRange()`](src/array.range.ts:73) - Add performance vs generator comparison
-  - [`arrayRangeGen()`](src/array.range.ts:130) - Document memory efficiency benefits
+  - [`arrayRange()`](src/array.range.ts:73): Add performance vs generator comparison
+  - [`arrayRangeGen()`](src/array.range.ts:130): Document memory efficiency benefits
 
 #### String Utilities Documentation Gaps
 
@@ -51,8 +51,8 @@
   - Add examples with different input sizes
 
 - [ ] **[`string.trim.ts`](src/string.trim.ts:20)**: Multiple functions:
-  - [`trimEndWith()`](src/string.trim.ts:20) - Add examples with different trimmers
-  - [`trimStartWith()`](src/string.trim.ts:59) - Document edge cases
+  - [`trimEndWith()`](src/string.trim.ts:20): Add examples with different trimmers
+  - [`trimStartWith()`](src/string.trim.ts:59): Document edge cases
 
 - [ ] **[`string.capitalize.ts`](src/string.capitalize.ts:87)**: [`capitalizeString()`](src/string.capitalize.ts:87)
   - Missing locale-specific examples
@@ -72,14 +72,14 @@
 #### File System Utilities Documentation
 
 - [ ] **[`fs.emptyPath.ts`](src/fs.emptyPath.ts:20)**: Multiple functions need docs:
-  - [`emptyPath()`](src/fs.emptyPath.ts:20) - Document query parameter handling
-  - [`emptyDir()`](src/fs.emptyPath.ts:35) - Add directory structure examples
-  - [`emptyFile()`](src/fs.emptyPath.ts:49) - Document file creation behavior
-  - [`removeEmptyFilesInDir()`](src/fs.emptyPath.ts:58) - Add cleanup examples
+  - [`emptyPath()`](src/fs.emptyPath.ts:20): Document query parameter handling
+  - [`emptyDir()`](src/fs.emptyPath.ts:35): Add directory structure examples
+  - [`emptyFile()`](src/fs.emptyPath.ts:49): Document file creation behavior
+  - [`removeEmptyFilesInDir()`](src/fs.emptyPath.ts:58): Add cleanup examples
 
 - [ ] **[`fs.pathJoin.shared.ts`](src/fs.pathJoin.shared.ts:1)**: Utility functions:
-  - [`trimPathTrailingSlash()`](src/fs.pathJoin.shared.ts:1) - Add edge case examples
-  - [`trimPathLeadingSlash()`](src/fs.pathJoin.shared.ts:5) - Document root path handling
+  - [`trimPathTrailingSlash()`](src/fs.pathJoin.shared.ts:1): Add edge case examples
+  - [`trimPathLeadingSlash()`](src/fs.pathJoin.shared.ts:5): Document root path handling
 
 ### Functions with Inadequate TSDoc
 
@@ -98,18 +98,18 @@
 
 - [ ] **[`string.limitedGetComputedCss.ts`](src/string.limitedGetComputedCss.ts:533)**: Multiple functions:
   - All `lGCC_*` functions need better documentation
-  - [`limitedGetComputedCss()`](src/string.limitedGetComputedCss.ts:533) - Main function needs comprehensive docs
+  - [`limitedGetComputedCss()`](src/string.limitedGetComputedCss.ts:533): Main function needs comprehensive docs
   - Document CSS parsing limitations and security model
 
 #### Async Functions Needing Better Documentation
 
 - [ ] **[`any.observable.ts`](src/any.observable.ts:3)**: Observable functions:
-  - [`createObservable()`](src/any.observable.ts:3) - Add reactive programming examples
-  - [`createObservableAsync()`](src/any.observable.ts:23) - Document async change handler patterns
+  - [`createObservable()`](src/any.observable.ts:3): Add reactive programming examples
+  - [`createObservableAsync()`](src/any.observable.ts:23): Document async change handler patterns
 
 - [ ] **[`any.when.ts`](src/any.when.ts:24)**: Conditional functions:
-  - [`when()`](src/any.when.ts:24) - Add functional programming examples
-  - [`whenAsync()`](src/any.when.ts:65) - Document async predicate patterns
+  - [`when()`](src/any.when.ts:24): Add functional programming examples
+  - [`whenAsync()`](src/any.when.ts:65): Document async predicate patterns
 
 #### Error Handling Documentation
 
@@ -133,7 +133,7 @@
 #### Browser Platform Functions
 
 - [ ] **[`fs.fs.default.ts`](src/fs.fs.default.ts:18)**: Browser filesystem polyfill
-  - [`getFsPromises()`](src/fs.fs.default.ts:18) - Missing complete documentation
+  - [`getFsPromises()`](src/fs.fs.default.ts:18): Missing complete documentation
   - Document browser limitations and fallback behavior
 
 - [ ] **[`dom.*.ts` files](src/dom.duplicateElement.ts:33)**: All DOM utilities:
@@ -160,7 +160,7 @@
 
 #### Parameter Documentation Issues
 
-**Status**: High Priority - Consistency
+**Status**: High Priority; Consistency
 
 Functions with poor parameter documentation:
 
@@ -170,7 +170,7 @@ Functions with poor parameter documentation:
 
 #### Return Value Documentation Issues
 
-**Status**: Normal Priority - Clarity
+**Status**: Normal Priority; Clarity
 
 Functions missing meaningful return value documentation:
 
@@ -180,7 +180,7 @@ Functions missing meaningful return value documentation:
 
 #### Missing Example Documentation
 
-**Status**: Normal Priority - Developer experience
+**Status**: Normal Priority; Developer experience
 
 Functions that need `@example` tags with practical usage:
 
@@ -217,7 +217,7 @@ Functions that need `@example` tags with practical usage:
 
 #### Format Inconsistencies
 
-**Status**: Normal Priority - Standardization
+**Status**: Normal Priority; Standardization
 
 - [ ] **Inconsistent example formatting** across functions
 - [ ] **Inconsistent parameter naming** in documentation vs implementation
@@ -225,7 +225,7 @@ Functions that need `@example` tags with practical usage:
 
 #### Missing Cross-References
 
-**Status**: Low Priority - Navigation
+**Status**: Low Priority; Navigation
 
 - [ ] **Related function references** missing in TSDoc
 - [ ] **See-also tags** for similar functions
@@ -235,7 +235,7 @@ Functions that need `@example` tags with practical usage:
 
 #### Missing Specialized Tags
 
-**Status**: Low Priority - Enhanced developer experience
+**Status**: Low Priority; Enhanced developer experience
 
 - [ ] **`@since` tags** for version information
 - [ ] **`@deprecated` tags** for functions being phased out
@@ -281,6 +281,6 @@ Functions that need `@example` tags with practical usage:
 
 ## Cross-References
 
-- [**Code Quality Todo**](../../TODO.code-quality.md#testing-requirements-and-standards) - TSDoc standards and linting rules
-- [**Documentation Todo**](../../TODO.documentation.md#api-documentation-automation) - Automated documentation generation
-- [**Build System Todo**](../../TODO.build-system.md#validation-and-testing) - Documentation validation in build process
+- [**Code Quality Todo**](../../TODO.code-quality.md#testing-requirements-and-standards): TSDoc standards and linting rules
+- [**Documentation Todo**](../../TODO.documentation.md#api-documentation-automation): Automated documentation generation
+- [**Build System Todo**](../../TODO.build-system.md#validation-and-testing): Documentation validation in build process

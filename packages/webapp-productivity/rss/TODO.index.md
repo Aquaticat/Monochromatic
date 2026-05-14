@@ -6,25 +6,25 @@ This directory contains detailed improvement plans for the RSS reader package, o
 
 ### 1.1 Critical Priority
 
-- [`TODO.testing.md`](./TODO.testing.md) - Testing infrastructure and comprehensive test coverage
-- [`TODO.documentation.md`](./TODO.documentation.md) - Code, API, and user documentation
+- [`TODO.testing.md`](./TODO.testing.md): Testing infrastructure and comprehensive test coverage
+- [`TODO.documentation.md`](./TODO.documentation.md): Code, API, and user documentation
 
 ### 1.2 High Priority
 
-- [`TODO.code-organization.md`](./TODO.code-organization.md) - Code structure and maintainability improvements
+- [`TODO.code-organization.md`](./TODO.code-organization.md): Code structure and maintainability improvements
 
 ### 1.3 Pending Research
 
-- [`TODO.caching.md`](./TODO.caching.md) - Caching strategy using Caddy proxy
-- [`TODO.performance.md`](./TODO.performance.md) - Performance profiling and optimizations
+- [`TODO.caching.md`](./TODO.caching.md): Caching strategy using Caddy proxy
+- [`TODO.performance.md`](./TODO.performance.md): Performance profiling and optimizations
 
 ### 1.4 Low Priority
 
-- [`TODO.configuration.md`](./TODO.configuration.md) - Configuration management and environment variables
+- [`TODO.configuration.md`](./TODO.configuration.md): Configuration management and environment variables
 
 ### 1.5 Not Planned
 
-- [`TODO.not-planned.md`](./TODO.not-planned.md) - Features and improvements explicitly not planned
+- [`TODO.not-planned.md`](./TODO.not-planned.md): Features and improvements explicitly not planned
 
 ## 2. 📊 Summary by Priority
 

@@ -129,11 +129,11 @@ const FETCH_INTERVAL_MS = config.feed.fetchIntervalMs;
 
 Files to update:
 
-- [ ] 3.4.1 `interval.ts` - Fetch-cache time bucket
-- [ ] 3.4.2 `html.ts` - Display limit
-- [ ] 3.4.3 `client.ts` - Poll interval
-- [ ] 3.4.4 `feed.ts` - Fetch timeout
-- [ ] 3.4.5 `ignore.ts` - File paths
+- [ ] 3.4.1 `interval.ts`: Fetch-cache time bucket
+- [ ] 3.4.2 `html.ts`: Display limit
+- [ ] 3.4.3 `client.ts`: Poll interval
+- [ ] 3.4.4 `feed.ts`: Fetch timeout
+- [ ] 3.4.5 `ignore.ts`: File paths
 - [ ] 3.4.6 `opmls.ts`: OPML path
 
 ### 3.5 Configuration Documentation

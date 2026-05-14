@@ -45,7 +45,7 @@
 
 **Status**: Foundation phase; must complete before parallel work
 
-#### Critical TypeScript Fixes (Days 1-2) - Solo Work
+#### Critical TypeScript Fixes (Days 1-2): Solo Work
 
 - [ ] **Critical**: Fix missing exports in `iterable.is.ts`
   - [ ] Export `isEmptyArray`, `isAsyncGenerator`, `isGenerator`, `isMap`, `isArray`, `arrayIsNonEmpty`
@@ -53,7 +53,7 @@
 - [ ] Fix type naming inconsistencies between modules
 - [ ] Verify all TypeScript compilation passes without errors
 
-#### Bounty System Infrastructure (Days 3-4) - Solo Work
+#### Bounty System Infrastructure (Days 3-4): Solo Work
 
 - [ ] Create function specification templates for bounty contributors
 - [ ] Set up GitHub issues with bounty labels and rewards
@@ -116,7 +116,7 @@
 
 **Reference**: [`TODO.api-refactors.md`](TODO.api-refactors.md)
 
-##### Week 3 (August 30 - September 5): Logger Parameter Integration
+##### Week 3 (August 30 to September 5): Logger Parameter Integration
 
 - [ ] Implement logger parameter pattern for all existing core functions
 - [ ] Refactor array utilities (20+ functions) with logger integration
@@ -248,7 +248,7 @@
 
 **Reference**: [`TODO.missing-implementations.md`](TODO.missing-implementations.md): Network Utilities Section
 
-##### Week 7 (September 27 - October 3): URL & HTTP Core
+##### Week 7 (September 27 to October 3): URL & HTTP Core
 
 - [ ] **URL Manipulation**: `parseUrl`, `buildUrl`, `joinUrls`, `isValidUrl`, `extractDomain`
 - [ ] **Query Strings**: `parseQuery`, `buildQuery`, `addQuery`, `removeQuery`, `hasQuery`

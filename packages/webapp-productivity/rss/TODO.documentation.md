@@ -20,8 +20,8 @@ Create comprehensive documentation to improve maintainability, onboarding, and u
 
 - [ ] 2.2.1 Create OpenAPI/Swagger specification
 - [ ] 2.2.2 Document all endpoints:
-  - 2.2.2.1 `GET /` - RSS reader interface
-  - 2.2.2.2 `POST /api/ignore/new` - Append an ignored item to JSONL storage
+  - 2.2.2.1 `GET /`: RSS reader interface
+  - 2.2.2.2 `POST /api/ignore/new`: Append an ignored item to JSONL storage
 - [ ] 2.2.3 Document request/response schemas
 - [ ] 2.2.4 Document error responses and status codes
 - [ ] 2.2.5 Add authentication requirements (if any)

@@ -33,21 +33,21 @@
 
 #### Object Utilities (3 functions)
 
-- [ ] Implement `pick(object, keys)` - Extract subset of object properties
-- [ ] Implement `omit(object, keys)` - Remove specified properties from object
-- [ ] Implement `merge(...objects)` - Deep merge multiple objects
+- [ ] Implement `pick(object, keys)`: Extract subset of object properties
+- [ ] Implement `omit(object, keys)`: Remove specified properties from object
+- [ ] Implement `merge(...objects)`: Deep merge multiple objects
 
 #### Array Utilities (3 functions)
 
-- [ ] Implement `chunk(array, size)` - Split array into chunks of specified size
-- [ ] Implement `flatten(array, depth?)` - Flatten nested arrays
-- [ ] Implement `uniq(array)` - Remove duplicate values from array
+- [ ] Implement `chunk(array, size)`: Split array into chunks of specified size
+- [ ] Implement `flatten(array, depth?)`: Flatten nested arrays
+- [ ] Implement `uniq(array)`: Remove duplicate values from array
 
 #### String Utilities (3 functions)
 
-- [ ] Implement `capitalize(string)` - Capitalize first letter
-- [ ] Implement `trim(string, chars?)` - Remove whitespace or specified characters
-- [ ] Implement `split(string, separator, limit?)` - Enhanced string splitting
+- [ ] Implement `capitalize(string)`: Capitalize first letter
+- [ ] Implement `trim(string, chars?)`: Remove whitespace or specified characters
+- [ ] Implement `split(string, separator, limit?)`: Enhanced string splitting
 
 #### Additional Essential Function (1 function)
 
@@ -163,10 +163,10 @@
 
 After achieving presentability, continue with the comprehensive long-term plan documented in:
 
-- [`TODO.index.md`](TODO.md) - Master roadmap
+- [`TODO.index.md`](TODO.md): Master roadmap
 - [`TODO.missing-implementations.md`](TODO.missing-implementations.md): 350+ additional functions
-- [`TODO.api-refactors.md`](TODO.api-refactors.md) - Major API improvements
-- [`TODO.governance-strategy.md`](TODO.governance-strategy.md) - Long-term strategy
+- [`TODO.api-refactors.md`](TODO.api-refactors.md): Major API improvements
+- [`TODO.governance-strategy.md`](TODO.governance-strategy.md): Long-term strategy
 
 ---
 

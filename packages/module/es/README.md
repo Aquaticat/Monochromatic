@@ -47,9 +47,9 @@ This library aims to be the definitive TypeScript functional programming toolkit
 - **Crypto utilities**: Hashing, encoding, secure random generation
 - **Network utilities**: URL manipulation, query string handling
 - **Geometry utilities**: Point, vector, shape operations
-- **Color utilities** - Color space conversion, manipulation
-- **Tree/graph utilities** - Tree traversal, graph algorithms
-- **Lens/optics utilities** - Functional data access and manipulation
+- **Color utilities**: Color space conversion, manipulation
+- **Tree/graph utilities**: Tree traversal, graph algorithms
+- **Lens/optics utilities**: Functional data access and manipulation
 
 ## Design Principles
 
@@ -171,28 +171,28 @@ import type {
 
 ### Phase 1: Foundation (Immediate)
 
-- **Current export map documentation** - Document the taxonomy-based `types` namespace and real subpaths
-- **Object utilities expansion** - Deep object manipulation functions beyond existing record pick, omit, and merge
-- **Async iterator completion** - Full async iterable ecosystem
+- **Current export map documentation**: Document the taxonomy-based `types` namespace and real subpaths
+- **Object utilities expansion**: Deep object manipulation functions beyond existing record pick, omit, and merge
+- **Async iterator completion**: Full async iterable ecosystem
 
 ### Phase 2: Core Expansion (Next Quarter)
 
-- **Date/time utilities** - Comprehensive temporal operations
-- **Math utilities** - Statistical and geometric functions
-- **Validation framework** - Type-safe input validation
+- **Date/time utilities**: Comprehensive temporal operations
+- **Math utilities**: Statistical and geometric functions
+- **Validation framework**: Type-safe input validation
 
 ### Phase 3: Advanced Features (Future)
 
-- **Stream processing** - Async stream utilities
-- **Parser combinators** - Text parsing and grammar tools
-- **Lens/optics system** - Functional data access patterns
+- **Stream processing**: Async stream utilities
+- **Parser combinators**: Text parsing and grammar tools
+- **Lens/optics system**: Functional data access patterns
 
 ### Phase 4: Specialized Domains (Long-term)
 
-- **Geometry utilities** - Mathematical shape and vector operations
-- **Color utilities** - Color space manipulation and conversion
-- **Network utilities** - URL, HTTP, and networking helpers
-- **Crypto utilities** - Cryptographic operations and secure random
+- **Geometry utilities**: Mathematical shape and vector operations
+- **Color utilities**: Color space manipulation and conversion
+- **Network utilities**: URL, HTTP, and networking helpers
+- **Crypto utilities**: Cryptographic operations and secure random
 
 ## Current Implementation Status
 
@@ -247,7 +247,7 @@ Use [`jsonc.min`](https://www.npmjs.com/package/jsonc.min/) instead.
 #### Observable
 
 For simple observable needs, use `any.observable.ts` (`createObservable`/`createObservableAsync`).
-For a more complete observable implementation, use [`@therapy/observable`](https://jsr.io/@therapy/observable) - a lightweight, zero-dependency TypeScript observable library with a simple `.value` API.
+For a more complete observable implementation, use [`@therapy/observable`](https://jsr.io/@therapy/observable): a lightweight, zero-dependency TypeScript observable library with a simple `.value` API.
 
 ## Contributing to Completeness
 
@@ -255,18 +255,18 @@ This library is designed to eventually contain every useful functional programmi
 
 ### High-Impact Missing Categories
 
-1. **Object utilities** - Core data manipulation functions
-2. **Date/time operations** - Temporal calculations and formatting
-3. **Advanced async patterns** - Concurrency control and streaming
-4. **Mathematical operations** - Statistics, geometry, algorithms
+1. **Object utilities**: Core data manipulation functions
+2. **Date/time operations**: Temporal calculations and formatting
+3. **Advanced async patterns**: Concurrency control and streaming
+4. **Mathematical operations**: Statistics, geometry, algorithms
 
 ### Implementation Guidelines
 
-- **Pure functions only** - no side effects or mutations
-- **Type safety first** - leverage TypeScript's type system fully
-- **Performance matters** - optimize for common use cases
-- **Document comprehensively** - include examples and edge cases
-- **Test thoroughly** - aim for 100% coverage with edge case testing
+- **Pure functions only**: no side effects or mutations
+- **Type safety first**: leverage TypeScript's type system fully
+- **Performance matters**: optimize for common use cases
+- **Document comprehensively**: include examples and edge cases
+- **Test thoroughly**: aim for 100% coverage with edge case testing
 
 ### Quality Standards
 
@@ -278,11 +278,11 @@ This library is designed to eventually contain every useful functional programmi
 
 ## Related TODO Files
 
-- [**Export Fixes**](TODO.exports-fixes.md) - Critical compilation errors (immediate priority)
-- [**Missing Implementations**](TODO.missing-implementations.md) - Functions to implement for completeness
-- [**Testing Coverage**](TODO.testing.md) - Test gaps and coverage improvements
-- [**TSDoc Improvements**](TODO.tsdoc-improvements.md) - Documentation enhancement
-- [**Function Improvements**](TODO.improvements.md) - Performance and API improvements
-- [**Package TODO Index**](TODO.md) - Complete roadmap and priority overview
+- [**Export Fixes**](TODO.exports-fixes.md): Critical compilation errors (immediate priority)
+- [**Missing Implementations**](TODO.missing-implementations.md): Functions to implement for completeness
+- [**Testing Coverage**](TODO.testing.md): Test gaps and coverage improvements
+- [**TSDoc Improvements**](TODO.tsdoc-improvements.md): Documentation enhancement
+- [**Function Improvements**](TODO.improvements.md): Performance and API improvements
+- [**Package TODO Index**](TODO.md): Complete roadmap and priority overview
 
 For the complete vision and implementation roadmap, see [**TODO.index.md**](TODO.md).

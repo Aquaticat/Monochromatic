@@ -20,14 +20,14 @@ The main concerns are: excessive `as any` casts, silent catch blocks in sinks, s
 
 ### WARNING
 
-- `t boolean/f/t unknown/r s/p p/index.ts` (entire file) - Missing TSDoc on exported function `$`.
+- `t boolean/f/t unknown/r s/p p/index.ts` (entire file): Missing TSDoc on exported function `$`.
   The function is a one-liner wrapping `Boolean()` but per project rules all declarations must have TSDoc.
   Suggested action: add TSDoc with `@param`, `@returns`, and `@example`.
 
-- `t object/t array/f/t iterable/r s/p p/index.ts` (entire file) - Missing TSDoc on exported function `$`.
+- `t object/t array/f/t iterable/r s/p p/index.ts` (entire file): Missing TSDoc on exported function `$`.
   Suggested action: add TSDoc explaining the sync iterable-to-array conversion.
 
-- `t object/t array/f/t iterable/p p/index.ts` (entire file) - Missing TSDoc on exported function `$`.
+- `t object/t array/f/t iterable/p p/index.ts` (entire file): Missing TSDoc on exported function `$`.
   Suggested action: add TSDoc explaining the async iterable-to-array conversion.
 
 - Multiple files exceed 100 lines without a justification comment at the top:

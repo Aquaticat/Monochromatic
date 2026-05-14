@@ -25,20 +25,20 @@ src/
 
 #### 2.1.1 Types Directory (`/types`)
 
-- [ ] 2.1.1.1 Create `feed.types.ts` - Feed-related interfaces
-- [ ] 2.1.1.2 Create `item.types.ts` - Item interfaces
+- [ ] 2.1.1.1 Create `feed.types.ts`: Feed-related interfaces
+- [ ] 2.1.1.2 Create `item.types.ts`: Item interfaces
 - [ ] 2.1.1.3 Create `outline.types.ts`: OPML/Outline types
 - [ ] 2.1.1.4 Create `api.types.ts`: API request/response types
-- [ ] 2.1.1.5 Create `config.types.ts` - Configuration interfaces
+- [ ] 2.1.1.5 Create `config.types.ts`: Configuration interfaces
 - [ ] 2.1.1.6 Move all interfaces from existing files
 
 #### 2.1.2 Utils Directory (`/utils`)
 
-- [ ] 2.1.2.1 Create `date.utils.ts` - Date parsing and formatting
-- [ ] 2.1.2.2 Create `observable.utils.ts` - Observable helpers
-- [ ] 2.1.2.3 Create `file.utils.ts` - File system operations
-- [ ] 2.1.2.4 Create `validation.utils.ts` - Input validation
-- [ ] 2.1.2.5 Create `constants.ts` - Shared constants
+- [ ] 2.1.2.1 Create `date.utils.ts`: Date parsing and formatting
+- [ ] 2.1.2.2 Create `observable.utils.ts`: Observable helpers
+- [ ] 2.1.2.3 Create `file.utils.ts`: File system operations
+- [ ] 2.1.2.4 Create `validation.utils.ts`: Input validation
+- [ ] 2.1.2.5 Create `constants.ts`: Shared constants
 - [ ] 2.1.2.6 Extract utility functions from existing modules
 
 #### 2.1.3 Services Directory (`/services`)
@@ -62,10 +62,10 @@ src/
 
 #### 2.1.5 Config Directory (`/config`)
 
-- [ ] 2.1.5.1 Create `config/index.ts` - Main configuration
-- [ ] 2.1.5.2 Create `config/paths.ts` - Path configurations
-- [ ] 2.1.5.3 Create `config/server.ts` - Server settings
-- [ ] 2.1.5.4 Create `config/feed.ts` - Feed-specific settings
+- [ ] 2.1.5.1 Create `config/index.ts`: Main configuration
+- [ ] 2.1.5.2 Create `config/paths.ts`: Path configurations
+- [ ] 2.1.5.3 Create `config/server.ts`: Server settings
+- [ ] 2.1.5.4 Create `config/feed.ts`: Feed-specific settings
 - [ ] 2.1.5.5 Move constants from existing files
 
 ### 2.2 Extract Constants

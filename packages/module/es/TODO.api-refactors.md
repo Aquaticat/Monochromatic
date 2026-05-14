@@ -64,37 +64,37 @@ export function clamp(
 
 #### Any Utilities (8 functions)
 
-- [ ] [`any.constant()`](src/any.constant.ts:32) - Add logger parameter
-- [ ] [`any.echo()`](src/any.echo.ts:26) - Add logger parameter
-- [ ] [`any.hasCycle()`](src/any.hasCycle.ts:56) - Add logger parameter
-- [ ] [`any.identity()`](src/any.identity.ts:25) - Add logger parameter
-- [ ] [`any.toExport()`](src/any.toExport.ts:45) - Add logger parameter
-- [ ] [`any.typeOf()`](src/any.typeOf.ts:25) - Add logger parameter
-- [ ] [`any.when()`](src/any.when.ts:24) - Add logger parameter
-- [ ] [`any.whenAsync()`](src/any.when.ts:65) - Add logger parameter
+- [ ] [`any.constant()`](src/any.constant.ts:32): Add logger parameter
+- [ ] [`any.echo()`](src/any.echo.ts:26): Add logger parameter
+- [ ] [`any.hasCycle()`](src/any.hasCycle.ts:56): Add logger parameter
+- [ ] [`any.identity()`](src/any.identity.ts:25): Add logger parameter
+- [ ] [`any.toExport()`](src/any.toExport.ts:45): Add logger parameter
+- [ ] [`any.typeOf()`](src/any.typeOf.ts:25): Add logger parameter
+- [ ] [`any.when()`](src/any.when.ts:24): Add logger parameter
+- [ ] [`any.whenAsync()`](src/any.when.ts:65): Add logger parameter
 
 #### Array Utilities (15+ functions)
 
-- [ ] [`array.range()`](src/array.range.ts:73) - Add logger parameter
-- [ ] [`array.rangeGen()`](src/array.range.ts:130) - Add logger parameter
-- [ ] [`arrayOf()`](src/array.of.ts:35) - Add logger parameter
-- [ ] [`genOf()`](src/array.of.ts:84) - Add logger parameter
+- [ ] [`array.range()`](src/array.range.ts:73): Add logger parameter
+- [ ] [`array.rangeGen()`](src/array.range.ts:130): Add logger parameter
+- [ ] [`arrayOf()`](src/array.of.ts:35): Add logger parameter
+- [ ] [`genOf()`](src/array.of.ts:84): Add logger parameter
 - [ ] All array type guard functions - Add logger parameters
 - [ ] All array utility functions - Add logger parameters
 
 #### Boolean Utilities (3 functions)
 
-- [ ] [`equal()`](src/boolean.equal.ts:174) - Add logger parameter
-- [ ] [`equalAsync()`](src/boolean.equal.ts:543) - Add logger parameter
-- [ ] [`isPrimitive()`](src/boolean.equal.ts:69) - Add logger parameter
-- [ ] [`BooleanNot()`](src/boolean.not.ts:23) - Add logger parameter
+- [ ] [`equal()`](src/boolean.equal.ts:174): Add logger parameter
+- [ ] [`equalAsync()`](src/boolean.equal.ts:543): Add logger parameter
+- [ ] [`isPrimitive()`](src/boolean.equal.ts:69): Add logger parameter
+- [ ] [`BooleanNot()`](src/boolean.not.ts:23): Add logger parameter
 
 #### Error Utilities (25+ functions)
 
 - [ ] All assertion functions - Add logger parameters
 - [ ] All `not*OrThrow()` functions - Add logger parameters
-- [ ] [`throws()`](src/error.throws.ts:43) - Add logger parameter
-- [ ] [`isError()`](src/error.is.ts:32) - Add logger parameter
+- [ ] [`throws()`](src/error.throws.ts:43): Add logger parameter
+- [ ] [`isError()`](src/error.is.ts:32): Add logger parameter
 
 #### Function Utilities (20+ functions)
 
@@ -153,9 +153,9 @@ export function clamp(
 
 **Array Functions**:
 
-- [ ] [`chunksArray()`](src/iterable.chunks.ts:76) - Convert to named parameters
-- [ ] [`chunksIterable()`](src/iterable.chunks.ts:199) - Convert to named parameters
-- [ ] [`replicateElementAsParentContent()`](src/dom.duplicateElement.ts:33) - Convert to named parameters
+- [ ] [`chunksArray()`](src/iterable.chunks.ts:76): Convert to named parameters
+- [ ] [`chunksIterable()`](src/iterable.chunks.ts:199): Convert to named parameters
+- [ ] [`replicateElementAsParentContent()`](src/dom.duplicateElement.ts:33): Convert to named parameters
 
 **Future Implementations Requiring Named Parameters**:
 
@@ -282,9 +282,9 @@ export function complexFunction({
 
 **Exported Constants**:
 
-- [ ] **Type constants** like [`Int`](src/numeric.type.int.ts:1), [`PositiveInt`](src/numeric.type.int.ts:1) - Test type definitions
+- [ ] **Type constants** like [`Int`](src/numeric.type.int.ts:1), [`PositiveInt`](src/numeric.type.int.ts:1): Test type definitions
 - [ ] **Value constants**: Test literal type inference and immutability
-- [ ] **Function constants** like [`alwaysTrue()`](src/function.always.ts:1) - Test return type consistency
+- [ ] **Function constants** like [`alwaysTrue()`](src/function.always.ts:1): Test return type consistency
 
 #### All Type Exports Need Testing
 
@@ -299,8 +299,8 @@ export function complexFunction({
 
 **Interface and Object Type Testing**:
 
-- [ ] **Store types** in [`any.store.shared.ts`](src/any.store.shared.ts:8) - Test type definitions
-- [ ] **Error assertion types** in [`error.assert.equal.type.ts`](src/error.assert.equal.type.ts:1) - Enhance existing tests
+- [ ] **Store types** in [`any.store.shared.ts`](src/any.store.shared.ts:8): Test type definitions
+- [ ] **Error assertion types** in [`error.assert.equal.type.ts`](src/error.assert.equal.type.ts:1): Enhance existing tests
 - [ ] **Configuration object types**: Test all option object types
 
 ### Comprehensive Type Testing Patterns
