@@ -40,6 +40,7 @@ export {};
  * ```
  */
 function bracketFirst(word: string,): string {
+  /** First character isolated so it can be wrapped in a case-insensitive bracket; empty string when word is empty. */
   const [first,] = word;
   if (first === undefined)
     return '';
@@ -91,6 +92,7 @@ const rlMusicDir = tagged({
  * @throws When `xdg-user-dir` is not available and `XDG_MUSIC_DIR` is unset.
  */
 async function resolveMusicDir(): Promise<string> {
+  /** User-set XDG override; preferred path when present so callers can point at any directory. */
   const envDir = process.env['XDG_MUSIC_DIR'];
   if (envDir !== undefined && envDir.length > 0) {
     rlMusicDir.info(`using XDG_MUSIC_DIR="${envDir}"`,);
@@ -98,10 +100,12 @@ async function resolveMusicDir(): Promise<string> {
   }
 
   rlMusicDir.info('XDG_MUSIC_DIR unset, falling back to xdg-user-dir',);
+  /** Raw stdout from `xdg-user-dir MUSIC`; trimmed below since the helper appends a newline. */
   const { stdout, } = await spawn(
     'xdg-user-dir',
     ['MUSIC',],
   );
+  /** Trimmed music directory path; stripping the trailing newline so the value is a valid filesystem path. */
   const dir = stdout.trim();
   rlMusicDir.info(`xdg-user-dir resolved to "${dir}"`,);
   return dir;
@@ -164,6 +168,7 @@ async function findFiles({
           && typeof err === 'object'
           && 'exitCode' in err)
         {
+          /** Process exit code pulled off the spawn error so the no-match case (1) can be rethrown with a clearer message. */
           const { exitCode, } = err;
           if (exitCode === 1) {
             throw new Error(
@@ -176,6 +181,7 @@ async function findFiles({
       },
     );
 
+  /** Matched file paths split from the null-separated rg output; empty fragments dropped so the count reflects real matches. */
   const files = rgOutput.split('\0',).filter(function nonEmpty(f,) {
     return f.length > 0;
   },);
