@@ -141,10 +141,10 @@ type TerminalTitleOutput = void;
  */
 function terminalTitleHandler(event: HookInput,): TerminalTitleOutput {
   const title = titleForEvent(event,);
-  setTerminalTitle(truncate(
-    `${TITLE_PREFIX} ${title}`,
-    MAX_TITLE_LENGTH,
-  ),);
+  setTerminalTitle(truncate({
+    value: `${TITLE_PREFIX} ${title}`,
+    maxLength: MAX_TITLE_LENGTH,
+  },),);
 }
 
 /**

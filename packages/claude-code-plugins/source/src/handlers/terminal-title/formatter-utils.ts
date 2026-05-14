@@ -36,18 +36,29 @@ type ToolTitleEntry = {
 };
 
 /**
- * Truncates a string to the specified maximum length, appending an ellipsis
+ * Truncates a string to specified maximum length, appending an ellipsis
  * if truncated.
  *
  * @param value - string to truncate
  *
- * @param maxLength - maximum allowed length including the ellipsis
+ * @param maxLength - maximum allowed length including ellipsis
  *
  * @returns truncated string or original if within limit
+ *
+ * @example
+ * ```typescript
+ * truncate({ value: 'hello world', maxLength: 8 }); // 'hello w…'
+ * truncate({ value: 'short', maxLength: 10 }); // 'short'
+ * ```
  */
 function truncate(
-  value: string,
-  maxLength: number,
+  {
+    value,
+    maxLength,
+  }: {
+    value: string;
+    maxLength: number;
+  },
 ): string {
   if (value.length <= maxLength)
     return value;
@@ -71,17 +82,28 @@ function shortPath(filePath: string,): string {
 }
 
 /**
- * Extracts a string field from untyped tool input.
+ * Extracts string field from untyped tool input.
  *
  * @param input - tool input record
  *
  * @param key - property name to extract
  *
  * @returns string value or `undefined` if absent or non-string
+ *
+ * @example
+ * ```typescript
+ * stringField({ input: { file_path: '/x.ts' }, key: 'file_path' }); // '/x.ts'
+ * stringField({ input: { count: 3 }, key: 'count' }); // undefined
+ * ```
  */
 function stringField(
-  input: GenericToolInput,
-  key: string,
+  {
+    input,
+    key,
+  }: {
+    input: GenericToolInput;
+    key: string;
+  },
 ): string | undefined {
   const value = input[key];
   if (typeof value === 'string')
@@ -98,10 +120,10 @@ function stringField(
  */
 function field(key: string,): (input: GenericToolInput,) => string | undefined {
   return function extractField(input: GenericToolInput,) {
-    return stringField(
+    return stringField({
       input,
       key,
-    );
+    },);
   };
 }
 
@@ -138,10 +160,10 @@ function quotedFormat(
     tense: 'pre' | 'post',
   ) {
     return `${labels[tense]} "${
-      truncate(
-        v,
-        MAX_PATTERN_LENGTH,
-      )
+      truncate({
+        value: v,
+        maxLength: MAX_PATTERN_LENGTH,
+      },)
     }"`;
   };
 }

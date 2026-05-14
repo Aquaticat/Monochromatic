@@ -339,6 +339,21 @@ function findCategoricalDismissal(prose: string,): UncertaintyMatch | undefined 
   return undefined;
 }
 
+/**
+ * Detects when prose ends with a literal question to the user, ignoring
+ * common rhetorical patterns. Used by the stop-reminders hook to nudge the
+ * agent toward `AskUserQuestion` when it forgot to use the structured tool.
+ *
+ * @param prose - assistant message text to scan
+ *
+ * @returns matched question sentence, or `undefined` if none qualifies
+ *
+ * @example
+ * ```typescript
+ * findTrailingQuestion('Done. Want me to commit?'); // { sentence: 'Want me to commit?' }
+ * findTrailingQuestion('What if cats ruled?'); // undefined (rhetorical)
+ * ```
+ */
 function findTrailingQuestion(prose: string,): QuestionMatch | undefined {
   const tail = prose.slice(-TRAILING_QUESTION_SCAN_LENGTH,);
 

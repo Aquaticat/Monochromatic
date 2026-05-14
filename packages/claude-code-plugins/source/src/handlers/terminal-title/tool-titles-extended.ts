@@ -58,10 +58,10 @@ const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
       tense,
     ) {
       return `${tense === 'pre' ? 'Creating' : 'Created'} task: ${
-        truncate(
-          v,
-          MAX_PATTERN_LENGTH,
-        )
+        truncate({
+          value: v,
+          maxLength: MAX_PATTERN_LENGTH,
+        },)
       }`;
     },
     fallback: {
@@ -135,10 +135,10 @@ const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
       tense,
     ) {
       return `${tense === 'pre' ? 'Scheduling' : 'Scheduled'}: ${
-        truncate(
-          v,
-          MAX_PATTERN_LENGTH,
-        )
+        truncate({
+          value: v,
+          maxLength: MAX_PATTERN_LENGTH,
+        },)
       }`;
     },
     fallback: {

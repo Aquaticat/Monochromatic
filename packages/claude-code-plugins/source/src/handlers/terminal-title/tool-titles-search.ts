@@ -50,10 +50,10 @@ const SEARCH_TOOL_TITLES: Record<string, ToolTitleEntry> = {
       tense,
     ) {
       return `${tense === 'pre' ? 'Asking' : 'Asked'}: ${
-        truncate(
-          v,
-          MAX_PATTERN_LENGTH,
-        )
+        truncate({
+          value: v,
+          maxLength: MAX_PATTERN_LENGTH,
+        },)
       }`;
     },
     fallback: {
@@ -124,10 +124,10 @@ const SEARCH_TOOL_TITLES: Record<string, ToolTitleEntry> = {
       tense,
     ) {
       return `${tense === 'pre' ? 'Discovering' : 'Discovered'}: ${
-        truncate(
-          v,
-          MAX_PATTERN_LENGTH,
-        )
+        truncate({
+          value: v,
+          maxLength: MAX_PATTERN_LENGTH,
+        },)
       }`;
     },
     fallback: {
