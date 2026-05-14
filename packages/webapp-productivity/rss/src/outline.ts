@@ -40,22 +40,29 @@ export type InnerOutlineWUrl = Opml.Outline<string> & { xmlUrl: string; };
 export async function getOutlinesFromOpmls(
   opmls: v.InferOutput<typeof OPMLS_SCHEMA>,
 ): Promise<InnerOutlineWUrl[]> {
+  /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: getOutlinesFromOpmls.name,
     l,
   },);
+  /** Raw OPML XML texts pulled before parsing so partial failures do not stall the pipeline. */
   const texts = await getOPMLTexts(opmls,);
+  /** Parsed OPML documents, with unparseable inputs discarded by parseSafe. */
   const parsed = parseSafe(texts,);
+  /** Top-level outline groups extracted from each OPML body. */
   const outerOutlines = parsed.flatMap(function extractBody(opml,) {
     return opml.body?.outlines ?? [];
   },);
+  /** Nested feed outlines unwrapped one level so the validate step sees flat entries. */
   const innerOutlines = outerOutlines.flatMap(function extractInner(outline,) {
     return outline.outlines ?? [];
   },);
+  /** Outlines whose xmlUrl passes HTTP-domain validation, returned as the function output. */
   const result = innerOutlines.filter(
     function hasValidXmlUrl(
       outline,
     ): outline is InnerOutlineWUrl {
+      /** Destructured xmlUrl so the empty/undefined gate reads on a named binding. */
       const { xmlUrl, } = outline;
       if (xmlUrl === undefined || xmlUrl === '') {
         innerL.warn(`outline ${outline.text ?? 'unnamed'} has no xmlUrl`,);
@@ -68,6 +75,7 @@ export async function getOutlinesFromOpmls(
             v.url(),
             v.check(
               function isHttpDomainUrl(s,) {
+                /** Parsed URL so the protocol and hostname can be checked independently. */
                 const u = new URL(s,);
                 return /^https?:$/.test(u.protocol,) && v.DOMAIN_REGEX.test(u.hostname,);
               },
@@ -96,6 +104,7 @@ export async function getOutlinesFromOpmls(
  * @returns Successfully parsed OPML documents
  */
 function parseSafe(texts: string[],): Opml.Document<string>[] {
+  /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: parseSafe.name,
     l,

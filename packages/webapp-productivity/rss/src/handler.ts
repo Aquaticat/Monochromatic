@@ -35,12 +35,15 @@ const l = tagged({
 export async function serveIndex(options: {
   getHtmlBody: () => Promise<string>;
 },): Promise<Response> {
+  /** Destructured renderer so the call site reads without `options.` prefix. */
   const { getHtmlBody, } = options;
+  /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: serveIndex.name,
     l,
   },);
   innerL.debug('serving index',);
+  /** Awaited HTML body so the response constructor receives a string, not a Promise. */
   const body = await getHtmlBody();
   return new Response(
     `${indexHtmlStart}${body}${INDEX_HTML_END}`,
@@ -68,13 +71,16 @@ export async function serveIndex(options: {
  * ```
  */
 export async function ignore(request: Request,): Promise<Response> {
+  /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: ignore.name,
     l,
   },);
+  /** Raw request body persisted verbatim so the ignore file matches the wire payload. */
   const body = await request.text();
   innerL.debug(`ignore ${body}`,);
 
+  /** Resolved path to the JSONL log so create-on-miss and append share one target. */
   const filePath = join(
     IGNORE_PATH,
     'api.jsonl',
@@ -96,6 +102,7 @@ export async function ignore(request: Request,): Promise<Response> {
     `\n${body}`,
   );
 
+  /** Final file stats returned to the client as proof of the append. */
   const stats = await stat(filePath,);
   return Response.json(stats,);
 }

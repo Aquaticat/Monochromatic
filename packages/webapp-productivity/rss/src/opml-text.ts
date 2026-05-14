@@ -40,16 +40,20 @@ const l = tagged({
 export async function getOPMLTexts(
   opmls: v.InferOutput<typeof OPMLS_SCHEMA>,
 ): Promise<string[]> {
+  /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: getOPMLTexts.name,
     l,
   },);
+  /** Unique sentinel returned for fetch/read failures so the filter step can drop them. */
   const DISCARD = Symbol('discard',);
+  /** Successfully fetched OPML texts left after dropping DISCARD entries. */
   const result = (await mapIterableAsync(
     async function fetchOpml(
       opmlLink: (v.InferOutput<typeof OPMLS_SCHEMA>)[number],
     ): Promise<string | typeof DISCARD> {
       if (opmlLink.startsWith('http',)) {
+        /** Single Response held so status check and text read share one network round trip. */
         const response = await fetch(opmlLink,);
         if (!response.ok) {
           innerL.warn(`${opmlLink} responded ${String(response.status,)}`,);
@@ -78,6 +82,7 @@ export async function getOPMLTexts(
             return DISCARD;
           }
         }
+        /** Relative file path resolved against the .env directory so config-local paths work. */
         const absPath = resolve(
           dirname(nonNullishOrThrow(DOT_ENV_PATH,),),
           opmlLink

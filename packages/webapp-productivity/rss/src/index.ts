@@ -37,14 +37,19 @@ const memoizedGetSortedItems = await memoizeAsync({
   fn: async function fetchPipeline(): Promise<
     ReturnType<typeof getSortedItems>
   > {
+    /** Inner logger tagged with this function name for traceable log lines. */
     const innerL = tagged({
       tag: fetchPipeline.name,
       l,
     },);
     innerL.debug('running feed pipeline',);
+    /** Source URLs read first so the pipeline can fail fast on invalid env. */
     const opmls = getOpmls();
+    /** Validated feed outlines fetched from those URLs. */
     const outlines = await getOutlinesFromOpmls(opmls,);
+    /** Parsed and date-sorted feeds derived from the outlines. */
     const feeds = await getSortedFeeds(outlines,);
+    /** Flattened, dated, sorted items returned to the memoize layer for caching. */
     const items = getSortedItems(feeds,);
     innerL.debug(`pipeline complete: ${String(items.length,)} items`,);
     return items;
@@ -60,16 +65,20 @@ const memoizedGetSortedItems = await memoizeAsync({
  */
 const memoizedGetHtmlBody = await memoizeAsync({
   fn: async function renderPipeline(): Promise<string> {
+    /** Inner logger tagged with this function name for traceable log lines. */
     const innerL = tagged({
       tag: renderPipeline.name,
       l,
     },);
     innerL.debug('rendering HTML body',);
+    /** Time-bucket salt so the upstream memoize cache invalidates on interval rollover. */
     const fetchSalt = getFetchSalt();
+    /** Cached or freshly-pulled items used as the render input. */
     const items = await memoizedGetSortedItems({
       args: [],
       salt: fetchSalt,
     },);
+    /** Rendered HTML body returned from the cache key handler. */
     const body = await getIndexHtmlBody({ items, },);
     innerL.debug(`rendered ${String(body.length,)} chars`,);
     return body;
@@ -87,7 +96,9 @@ const memoizedGetHtmlBody = await memoizeAsync({
  * @returns Rendered HTML body string
  */
 async function getHtmlBody(): Promise<string> {
+  /** Time-bucket salt component so interval rollover invalidates the render cache. */
   const fetchSalt = getFetchSalt();
+  /** Ignore-file content salt component so user dismissals invalidate the render cache. */
   const ignoreContent = await getIgnoreContent();
   return memoizedGetHtmlBody({
     args: [],

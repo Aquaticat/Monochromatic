@@ -22,15 +22,18 @@ export function itemToFeed(
     index: number;
   },
 ): string {
+  /** Destructured top-level inputs so the body reads without `options.` prefix. */
   const {
     itemWDate,
     index,
   } = options;
+  /** Destructured nested fields so the JSX-like tree reads directly. */
   const {
     item,
     pubDateDate,
     feed,
   } = itemWDate;
+  /** Optional iframe markup omitted when description is absent so empty content stays unrendered. */
   const descriptionIframe = item.description !== undefined && item.description !== ''
     ? h({
       tag: 'iframe',

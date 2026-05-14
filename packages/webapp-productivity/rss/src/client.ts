@@ -28,10 +28,12 @@ function addScrollEvents(scrollOptions: {
   element: HTMLElement;
   options?: IntersectionObserverInit;
 },): IntersectionObserver {
+  /** Destructured inputs so the body reads without `scrollOptions.` prefix. */
   const {
     element,
     options = {},
   } = scrollOptions;
+  /** Defaults merged with caller overrides so the observer sees a complete config. */
   const config: IntersectionObserverInit = {
     threshold: [
       0,
@@ -44,11 +46,15 @@ function addScrollEvents(scrollOptions: {
     ...options,
   };
 
+  /** Closure latch so `scrolledIn` fires exactly once per visibility cycle. */
   let wasFullyVisible = false;
+  /** Closure cursor for ratio crossings so enter/leave events trigger on transition, not state. */
   let lastRatio = 0;
 
+  /** IntersectionObserver bound to the closure state above so callbacks share lifecycle. */
   const observer = new IntersectionObserver(
     function onIntersect(entries,) {
+      /** First entry per spec, used as the source of the ratio reading. */
       const [entry,] = entries;
       if (!entry) {
         console.error(
@@ -58,6 +64,7 @@ function addScrollEvents(scrollOptions: {
         );
         return;
       }
+      /** Current intersection ratio used by every transition check below. */
       const ratio = entry.intersectionRatio;
 
       if (ratio === 1 && !wasFullyVisible) {
@@ -108,13 +115,16 @@ elements.forEach(function bindScrollIgnore(element,) {
       void (async function onScrolledOutAsync(): Promise<void> {
         try {
           console.error('scrolledOut',);
+          /** Required metadata wrapper so a missing element fails loud, not silent. */
           const metadata = nonNullishOrThrow(
             element.querySelector<HTMLElement>('.feed__metadata',),
           );
+          /** Required link anchor inside metadata so the href is guaranteed present. */
           const anchor: HTMLAnchorElement = nonNullishOrThrow(
             metadata.querySelector<HTMLAnchorElement>('.feed__link',),
           );
 
+          /** Request body shape varies by whether the href is a valid URL. */
           const body: Record<string, string> = v
               .safeParse(
                 v.pipe(
@@ -127,6 +137,7 @@ elements.forEach(function bindScrollIgnore(element,) {
             ? { link: anchor.href, }
             : { metadataOuterHtml: metadata.outerHTML, };
 
+          /** Ignore-API response held so the ok check and text read share one Response. */
           const response = await fetch(
             `/api/ignore/new`,
             {
@@ -141,6 +152,7 @@ elements.forEach(function bindScrollIgnore(element,) {
             );
             return;
           }
+          /** Response text persisted for the success log line. */
           const text = await response.text();
           console.error(`ignored: ${text}`,);
           element.dataset.ignored = '';

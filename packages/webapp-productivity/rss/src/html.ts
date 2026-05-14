@@ -37,14 +37,19 @@ export const INDEX_HTML_END = '</body></html>';
 export async function getIndexHtmlBody(
   options: { items: ItemWDate[]; },
 ): Promise<string> {
+  /** Destructured items so the loop body reads without `options.` prefix. */
   const { items, } = options;
+  /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: getIndexHtmlBody.name,
     l,
   },);
 
+  /** Raw JSONL content read once so parse runs over a stable snapshot. */
   const ignoreContent = await getIgnoreContent();
+  /** Link set used as the membership predicate for filtering. */
   const ignoredLinks = parseIgnoredLinks(ignoreContent,);
+  /** Items remaining after the ignore-link filter, before the page limit slice. */
   const filteredItems = items.filter(function notIgnored(item,) {
     if (item.item.link === undefined || item.item.link === '')
       return true;

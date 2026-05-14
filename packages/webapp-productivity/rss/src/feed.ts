@@ -45,11 +45,14 @@ export type FeedWOutline = {
 export async function getSortedFeeds(
   outlines: InnerOutlineWUrl[],
 ): Promise<FeedWOutline[]> {
+  /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: getSortedFeeds.name,
     l,
   },);
+  /** Fetched and parsed feeds held so the sort step works on a stable array. */
   const feeds = await fetchAndParseFeeds(outlines,);
+  /** Date-sorted copy returned, preserving the input array's identity for callers. */
   const result = feeds.toSorted(function byDate(
     feedA,
     feedB,
@@ -70,18 +73,22 @@ export async function getSortedFeeds(
 async function fetchAndParseFeeds(
   outlines: InnerOutlineWUrl[],
 ): Promise<FeedWOutline[]> {
+  /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: fetchAndParseFeeds.name,
     l,
   },);
+  /** Unique sentinel returned for fetch/text failures so the filter step can drop them. */
   const DISCARD = Symbol('discard',);
   /** Fetched OPML text paired with its source outline for later parsing. */
   type TextWOutline = {
     text: string;
     outline: Opml.Outline<string> & { xmlUrl: string; };
   };
+  /** Fetched feed texts paired with outlines, filtered down to the successful subset. */
   const textsWOutline: TextWOutline[] = (await mapIterableAsync(
     async function fetchFeed(outline: Opml.Outline<string> & { xmlUrl: string; },) {
+      /** Single Response held so status check and text read share one network round trip. */
       const response = await fetch(outline.xmlUrl,);
       if (!response.ok) {
         innerL.warn(`${outline.xmlUrl} responded ${String(response.status,)}`,);
@@ -110,6 +117,7 @@ async function fetchAndParseFeeds(
     text,
     outline,
   },) {
+    /** Parser picked by outline type so each feed runs through the matching parser. */
     const parser = outline.type === 'atom' ? parseAtomFeed : parseRssFeed;
     try {
       return [{
@@ -145,20 +153,25 @@ const coerceDateSchema = v.pipe(
  * @returns Parsed publication date
  */
 function extractDate(feedWOutline: FeedWOutline,): Date {
+  /** Destructured fields so the branch reads `outline.type` and `feed` directly. */
   const {
     feed,
     outline,
   } = feedWOutline;
   if (outline.type === 'atom') {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type */
+    /** Narrowed feed view used to read the Atom-specific `updated` field. */
     const atomFeed = feed as Atom.Feed<string>;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
     return v.parse(
       coerceDateSchema,
       atomFeed.updated ?? new Date(0,),
     );
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom feeds are RSS
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- non-atom feeds are RSS */
+  /** Narrowed feed view used to read the RSS-specific `pubDate` field. */
   const rssFeed = feed as Rss.Feed<string>;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return v.parse(
     coerceDateSchema,
     rssFeed.pubDate ?? new Date(0,),

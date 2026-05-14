@@ -29,10 +29,12 @@ const l = tagged({
  * ```
  */
 export async function getIgnoreContent(): Promise<string> {
+  /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: getIgnoreContent.name,
     l,
   },);
+  /** Mutable so the missing-directory catch can leave the empty default in place. */
   let filesInDir: Dirent[] = [];
   try {
     filesInDir = await readdir(
@@ -44,6 +46,7 @@ export async function getIgnoreContent(): Promise<string> {
     innerL.debug('ignore directory not found',);
     return '';
   }
+  /** Per-file contents read in parallel, joined back into one stream for callers. */
   const contents = await mapIterableAsync(
     function readIgnoreFile(dirent: Dirent,) {
       return readFile(
@@ -72,11 +75,14 @@ export async function getIgnoreContent(): Promise<string> {
  * ```
  */
 export function parseIgnoredLinks(content: string,): Set<string> {
+  /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: parseIgnoredLinks.name,
     l,
   },);
+  /** Accumulator for unique link URLs so duplicate ignore entries collapse. */
   const links = new Set<string>();
+  /** Trimmed, non-empty lines so the JSON parser does not choke on whitespace. */
   const lines = content
     .split('\n',)
     .map(function trimLine(line,) {
@@ -87,8 +93,10 @@ export function parseIgnoredLinks(content: string,): Set<string> {
     },);
   for (const line of lines) {
     try {
+      /** Parsed entry kept as unknown so the shape check below narrows it explicitly. */
       const parsed: unknown = JSON.parse(line,);
       if (parsed !== null && typeof parsed === 'object' && 'link' in parsed) {
+        /** Destructured link field so the type guard runs on a named binding. */
         const { link, } = parsed;
         if (typeof link === 'string' && link !== '')
           links.add(link,);
