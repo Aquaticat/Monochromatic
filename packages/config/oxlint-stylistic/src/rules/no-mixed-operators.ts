@@ -2,6 +2,8 @@
 import type {
   Context,
   CreateOnceRule,
+  Fix,
+  Fixer,
   Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
@@ -67,7 +69,7 @@ function hasParens({
 export const noMixedOperators: CreateOnceRule = {
   meta: {
     type: 'problem',
-    fixable: null,
+    fixable: 'code',
     docs: {
       description:
         'Require parentheses around nested binary or logical expressions whose operator differs from the parent.',
@@ -83,6 +85,16 @@ export const noMixedOperators: CreateOnceRule = {
      * Checks both children of a BinaryExpression or LogicalExpression and
      * reports the parent node once for each child that mixes operators
      * without parens.
+     *
+     * Why the auto-fix is safe: it wraps each offending child in `(...)`
+     * at the operand's existing AST range. Parentheses are a precedence-
+     * neutral grouping; they cannot alter evaluation order because they
+     * are inserted at the exact span the parser already grouped the
+     * operands at. The original AST captures the parsed associativity, so
+     * post-fix bytes re-parse to the same AST. No short-circuit order,
+     * operator precedence, or side-effect sequence changes. The wrap is
+     * tight against the operand's byte range so existing surrounding
+     * whitespace and line breaks are preserved verbatim.
      *
      * @param node - parent BinaryExpression or LogicalExpression
      */
@@ -103,9 +115,28 @@ export const noMixedOperators: CreateOnceRule = {
           child,
           sourceText,
         },)) continue;
+        const offender = child;
         context.report({
           node,
           messageId: 'nested',
+          fix(fixer: Fixer,): Fix[] {
+            return [
+              fixer.insertTextBeforeRange(
+                [
+                  offender.start,
+                  offender.end,
+                ],
+                '(',
+              ),
+              fixer.insertTextAfterRange(
+                [
+                  offender.start,
+                  offender.end,
+                ],
+                ')',
+              ),
+            ];
+          },
         },);
       }
     }
