@@ -194,6 +194,7 @@ function post(message: OutboundMessage,): void {
  * @param event - inbound `message` event
  */
 function onMessage(event: MessageEvent<InboundMessage>,): void {
+  /** Destructured early so the kind switch reads `data.kind` directly without repeated access. */
   const { data, } = event;
   try {
     if (data.kind === 'init') {
@@ -214,11 +215,13 @@ function onMessage(event: MessageEvent<InboundMessage>,): void {
       handleUndoRedo(data,);
   }
   catch (error) {
+    /** Default text overwritten when the caught value has a usable message; sent as the error envelope. */
     let message = 'unknown buffer-worker error';
     if (error instanceof Error)
       ({ message, } = error);
     else if (typeof error === 'string')
       message = error;
+    /** Echoed back so the main thread can resolve the right pending promise; `-1` signals no-id. */
     const id = 'id' in data ? data.id : -1;
     post({
       kind: 'error',
@@ -236,7 +239,9 @@ function onMessage(event: MessageEvent<InboundMessage>,): void {
  * @param data - apply message
  */
 function handleApply(data: Extract<InboundMessage, { kind: 'apply'; }>,): void {
+  /** Pre-apply length captured so the undo entry remembers the buffer size at edit time. */
   const preLength = table.length;
+  /** Inverse changeset returned by the apply helper; consumed by undo and forwarded in the reply. */
   const inverse = applyToTable({
     table,
     changeset: data.changeset,
@@ -298,9 +303,13 @@ function handleSnapshot(
 function handleUndoRedo(
   data: Extract<InboundMessage, { kind: 'undo' | 'redo'; }>,
 ): void {
+  /** Stack to pop the next step from (undo pops undo, redo pops redo). */
   const sourceStack = data.kind === 'undo' ? undoStack : redoStack;
+  /** Stack to push the inverse re-application onto so the user can reverse direction. */
   const sinkStack = data.kind === 'undo' ? redoStack : undoStack;
+  /** Popped step; undefined means the stack was empty so the reply carries `applied: null`. */
   const entry = sourceStack.pop();
+  /** Reply discriminant chosen by direction (`undone` or `redone`). */
   const replyKind = data.kind === 'undo' ? 'undone' : 'redone';
   if (entry === undefined) {
     post({
@@ -311,6 +320,7 @@ function handleUndoRedo(
     },);
     return;
   }
+  /** Inverse of the popped step; pushed onto the sink stack so the user can reverse direction. */
   const reapplied = applyToTable({
     table,
     changeset: entry.inverse,

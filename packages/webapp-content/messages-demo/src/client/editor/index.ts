@@ -159,6 +159,7 @@ export function mountEditor(
     debug?: boolean;
   },
 ): Promise<Editor> {
+  /** Reused when the same host is mounted again; avoids spawning a second worker. */
   const existing = mounted.get(input.host,);
   if (existing !== undefined)
     return Promise.resolve(existing,);
@@ -168,6 +169,7 @@ export function mountEditor(
   // composer chunk that contains this code lives at
   // `dist/client/composer-*.js`, so the relative path is
   // `editor/buffer.worker.js`.
+  /** Per-host dedicated worker that owns the authoritative piece table. */
   const worker = new Worker(
     new URL(
       'editor/buffer.worker.js',
@@ -184,12 +186,15 @@ export function mountEditor(
       reject: (error: Error,) => void;
     }
   >();
+  /** Monotonically incrementing request id; correlates worker replies with their resolvers. */
   let nextId = 1;
 
   worker.addEventListener(
     'message',
     function dispatch(event: MessageEvent<WorkerMessage>,) {
+      /** Destructured early so the dispatch logic can read `kind` and `id` directly. */
       const { data, } = event;
+      /** Resolver / rejecter pair registered when the request was issued; undefined means a stale reply. */
       const entry = pending.get(data.id,);
       if (entry === undefined)
         return;
@@ -213,13 +218,16 @@ export function mountEditor(
   function request(
     requestInput: WorkerRequest,
   ): Promise<WorkerMessage> {
+    /** Captured before increment so the resolver registers under this exact id. */
     const id = nextId;
     nextId += 1;
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- distributive Omit
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- distributive Omit */
+    /** Augmented payload with the assigned id; the cast widens past the distributive `Omit<id>`. */
     const message = {
       ...requestInput,
       id,
     } as WorkerInbound;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
     // The worker's reply will resolve this promise via `dispatch`.
     // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- bridges async messaging
     return new Promise<WorkerMessage>(function register(
@@ -240,6 +248,7 @@ export function mountEditor(
   }
 
   // Initialise the worker with the seed text. `init` has no reply.
+  /** Effective initial text; defaulted to empty so the mirror and worker buffer start aligned. */
   const initialText = input.initialText ?? '';
   /* oxlint-disable eslint-plugin-unicorn/require-post-message-target-origin -- Worker channel */
   worker.postMessage({
@@ -289,15 +298,18 @@ export function mountEditor(
    * @returns inverse changeset (for parity with the worker reply)
    */
   async function applyLocal(changeset: Changeset,): Promise<Changeset> {
+    /** Captured before mutating `mirror` so `applyChangeset` and `invertChangeset` see the pre-edit state. */
     const before = mirror;
     mirror = applyChangeset({
       changeset,
       before,
     },);
+    /** Pre-computed inverse so the undo stack can stash it before the worker round-trip lands. */
     const inverse = invertChangeset({
       changeset,
       before,
     },);
+    /** Fire-and-await worker reply; captured so `inflight` and `await` reference the same promise. */
     const reply = request({
       kind: 'apply',
       changeset,
@@ -311,14 +323,17 @@ export function mountEditor(
   // Mount the renderer layers. The viewport reads from the mirror;
   // selection sits on top of the viewport; input translates DOM events
   // into changesets and feeds them through `applyLocal`.
+  /** Renders the visible window; consumed by the change listener and the selection mount. */
   const viewport = mountViewport({
     host: input.host,
     initialText,
   },);
+  /** Selection overlay anchored on the viewport's surface; passed to the input layer. */
   const selection = mountSelection({
     host: input.host,
     surface: viewport.surface,
   },);
+  /** Disposer returned by the input wiring; invoked from `destroy`. */
   const inputCleanup = attachInput({
     surface: viewport.surface,
     apply: applyLocal,
@@ -338,6 +353,7 @@ export function mountEditor(
   // `insert.length === 0`).
   changeListeners.push(function repaint(changeset,) {
     viewport.render(mirror,);
+    /** Cursor lands at the end of the inserted text, or at `from` for pure deletes (insert length 0). */
     const cursor = changeset.from + changeset.insert.length;
     selection.set({
       from: cursor,
@@ -354,6 +370,7 @@ export function mountEditor(
   if (input.debug === true) {
     changeListeners.push(function checkInvariant() {
       void (async function check(): Promise<void> {
+        /** Worker snapshot reply; compared against `mirror` for the invariant check. */
         const reply = await request({ kind: 'snapshot', },);
         if (reply.kind !== 'snapshotted')
           return;
@@ -371,6 +388,7 @@ export function mountEditor(
     },);
   }
 
+  /** Public handle returned to the caller; threaded through `mounted` so re-mounts reuse it. */
   const editor: Editor = {
     /** Synchronous mirror of the worker buffer; see module TSDoc. */
     get text() {

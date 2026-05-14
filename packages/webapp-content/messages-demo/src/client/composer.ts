@@ -143,13 +143,16 @@ export async function attachComposer(
     return;
   form.dataset['composerAttached'] = '1';
 
+  /** Identity select; null aborts the attach so a half-mounted form is not left behind. */
   const select = form.querySelector<HTMLSelectElement>('.composer-identity',);
+  /** Composer body textarea; null aborts the attach. */
   const textarea = form.querySelector<HTMLTextAreaElement>('.composer-body',);
+  /** Send button; null aborts the attach. */
   const sendBtn = form.querySelector<HTMLButtonElement>('.composer-send',);
   if (select === null || textarea === null || sendBtn === null)
     return;
 
-  // Restore persisted identity if we have one.
+  /** Identity previously persisted; restored if it still matches one of the select's options. */
   const persisted = loadIdentity(caps.localStorage,);
   if (persisted !== null && [...select.options,].some(function isPersisted(option,) {
     return option.value === persisted;
@@ -167,6 +170,7 @@ export async function attachComposer(
     },
   );
 
+  /** Outbox and chunk cache built concurrently; both depend only on `caps`. */
   const [outbox, cache,] = await Promise.all([
     createOutbox({ idbAvailable: caps.idb, },),
     createChunkCache({
@@ -177,6 +181,7 @@ export async function attachComposer(
     },),
   ],);
 
+  /** Long-lived composer state; passed to every helper so they share editor, outbox, and tier discriminant. */
   const state: ComposerState = {
     /* oxlint-disable eslint/no-magic-numbers, typescript/no-unsafe-type-assertion -- tier discriminant cast */
     tier: Number.parseInt(
@@ -197,8 +202,10 @@ export async function attachComposer(
 
   // Mount the metrics overlay before any worker spawns so we don't
   // miss the first compile pass. Only when `?debug=1`.
+  /** URL-flag override that surfaces the per-pipeline metrics overlay. */
   const debug = new URLSearchParams(globalThis.location.search,).get('debug',) === '1';
   if (debug) {
+    /** Overlay handle whose `recordTransition` is captured on state for later metrics. */
     const overlay = attachMetricsOverlay({
       parent: form,
       state,
@@ -209,12 +216,14 @@ export async function attachComposer(
   if (!caps.localStorage || !caps.idb)
     appendVolatileBadge(form,);
 
+  /** Idempotent status element appended below the form; passed to every send and edit helper. */
   const status = appendStatusElement(form,);
 
   // Custom editor opt-in via `?editor=custom`. The textarea stays in
   // the DOM (visually hidden) so every existing read of
   // `textarea.value` still works; the editor mirrors its text into
   // the textarea on every change.
+  /** Opt-in for the worker-backed editor; the textarea remains in the DOM as the mirrored source-of-truth. */
   const wantCustom = new URLSearchParams(globalThis.location.search,).get('editor',)
     === 'custom';
   if (wantCustom) {
@@ -289,10 +298,13 @@ async function loadExistingChunksForEdit(
 ): Promise<void> {
   if (input.state.editMessageId === null)
     return;
+  /** Captured under a non-null name so the branch logic does not re-narrow per access. */
   const messageId = input.state.editMessageId;
   // oxlint-disable-next-line eslint/no-magic-numbers -- tier discriminant
   if (input.state.tier === 3) {
+    /** Total chunk count from the server; needed to render the nav and size the tier-3 state. */
     const chunkCount = await fetchChunkCount(messageId,);
+    /** Allocated up front so the create-draft POST and the tier-3 state both pick up the same id. */
     const newDraftId = randomId();
     await postCreateDraft({
       id: newDraftId,
@@ -321,12 +333,15 @@ async function loadExistingChunksForEdit(
     );
     return;
   }
+  /** Total chunk count from the server; used as the upper bound for the fetch loop. */
   const chunkCount = await fetchChunkCount(messageId,);
   // Sequential fetches keep ordering deterministic for streaming
   // assembly; the textarea concatenates parts in seq order.
   /* oxlint-disable no-await-in-loop */
+  /** Accumulator of fetched chunk markdown; joined in seq order before writing the body. */
   const parts: string[] = [];
   for (let seq = 0; seq < chunkCount; seq += 1) {
+    /** Per-chunk fetch response; throws on `!ok` so a partial body is never written. */
     const response = await fetch(`/m/${String(messageId,)}/c/${String(seq,)}/md`,);
     if (!response.ok)
       throw new Error(`failed to load chunk ${String(seq,)}`,);
@@ -367,6 +382,7 @@ function queueTierPromotionCheck(
   promotionTimer = setTimeout(
     function onIdle() {
       promotionTimer = null;
+      /** Tier-transition decision computed on the post-idle snapshot of buffer length and state. */
       const transition = decideTierTransition({
         tier: input.state.tier,
         length: input.textarea.value.length,
@@ -401,9 +417,11 @@ export const init: typeof attachComposer = attachComposer;
  * ```
  */
 export async function bootstrap(): Promise<void> {
+  /** Composer form element; null aborts the bootstrap on pages without a composer. */
   const form = document.querySelector<HTMLFormElement>('#composer',);
   if (form === null)
     return;
+  /** Storage capability probe results; forwarded to outbox, cache, and identity-store helpers. */
   const caps = await probeStorage();
   await attachComposer(
     form,
