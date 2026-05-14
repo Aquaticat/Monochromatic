@@ -133,6 +133,7 @@ export class LspPool {
       filePath: string;
     },
   ): Promise<LspClient | null> {
+    /** Project root for this server type; null when no config file found up to the ceiling. */
     const root = findProjectRoot({
       startDir: dirname(filePath,),
       configFiles: CONFIG_FILES[type],
@@ -156,10 +157,12 @@ export class LspPool {
       },);
     }
 
+    /** Pool map key encoding `(type, root)` so each pair gets exactly one cached client. */
     const key = buildPoolKey({
       type,
       root,
     },);
+    /** Cached creation promise for this key, or undefined when no client has been spawned yet. */
     const existing = this.#pool.get(key,);
     if (existing !== undefined) {
       this.#l.info(
@@ -173,6 +176,7 @@ export class LspPool {
     this.#l.info(
       `${type} resolve: spawning NEW client for ${root} (trigger: ${filePath})`,
     );
+    /** Newly spawned client promise; stored in the pool before awaiting so concurrent callers share it. */
     const promise = this.#spawnWithCrashRecovery({
       type,
       root,
@@ -207,6 +211,7 @@ export class LspPool {
     filePath: string;
     root: string;
   },): Promise<LspClient | null> {
+    /** tsconfig `include` glob patterns; gate access so non-source files never reach tsgo. */
     const patterns = await resolveTsconfigIncludes({
       root,
       l: this.#l,
@@ -219,10 +224,12 @@ export class LspPool {
       return null;
     }
 
+    /** Pool map key for the tsgo client at this root; distinct from oxlint/dprint keys at the same root. */
     const key = buildPoolKey({
       type: 'tsgo',
       root,
     },);
+    /** Cached tsgo creation promise; reused on subsequent matching-file resolves. */
     const existing = this.#pool.get(key,);
     if (existing !== undefined) {
       this.#l.info(
@@ -234,6 +241,7 @@ export class LspPool {
       return null;
 
     this.#l.info(`tsgo resolve: spawning NEW client for ${root} (trigger: ${filePath})`,);
+    /** New tsgo client promise; stored in the pool before await so concurrent callers share it. */
     const promise = this.#spawnWithCrashRecovery({
       type: 'tsgo',
       root,
@@ -268,8 +276,11 @@ export class LspPool {
     root: string;
     key: string;
   },): Promise<LspClient | null> {
+    /** Local alias for `this.#pool`; captured by the `onExit` closure so it can clear dead entries. */
     const pool = this.#pool;
+    /** Local alias for `this.#crashes`; captured by the `onExit` closure to record backoff state. */
     const crashes = this.#crashes;
+    /** Local alias for `this.#l`; captured by the `onExit` closure to log crash diagnostics. */
     const l = this.#l;
 
     return spawnLspClient({
@@ -284,8 +295,11 @@ export class LspPool {
         if (!unexpected)
           return;
         pool.delete(key,);
+        /** True when stderr contains the known tsgo ScriptKind panic; selects flat-retry over exponential backoff. */
         const deterministic = recentStderr.includes(SCRIPT_KIND_PANIC_PATTERN,);
+        /** Prior crash record for this key, or undefined on the first crash. */
         const prev = crashes.get(key,);
+        /** Crash counter incremented for this exit; drives exponential backoff in the non-deterministic branch. */
         const count = (prev?.count ?? 0) + 1;
         crashes.set(
           key,
@@ -295,6 +309,7 @@ export class LspPool {
             deterministic,
           },
         );
+        /** Delay before the next spawn attempt; flat for known panics, exponential-with-cap otherwise. */
         const delay = deterministic
           ? DETERMINISTIC_PANIC_RETRY_MS
           : Math.min(
@@ -320,15 +335,20 @@ export class LspPool {
    * @returns true when the server should not be restarted yet
    */
   #isInBackoff({ key, }: { key: string; },): boolean {
+    /** Crash record for this key, or undefined when the server has never crashed. */
     const state = this.#crashes.get(key,);
     if (state === undefined)
       return false;
+    /**
+     * Required cooldown for this key's crash history; mirrors the delay computed in `#spawnWithCrashRecovery`.
+     */
     const delay = state.deterministic
       ? DETERMINISTIC_PANIC_RETRY_MS
       : Math.min(
         BASE_RESTART_DELAY_MS * 2 ** (state.count - 1),
         MAX_RESTART_DELAY_MS,
       );
+    /** Time since the last crash; compared against `delay` to decide if the cooldown has elapsed. */
     const elapsed = Date.now() - state.lastCrashAt;
     if (elapsed >= delay) {
       /** Backoff/retry period has elapsed; allow restart. */
@@ -347,6 +367,7 @@ export class LspPool {
    * @returns server slots with oxlint, tsgo, and dprint clients
    */
   async resolveAll({ path, }: { path: string; },): Promise<ServerSlots> {
+    /** Resolved clients for all three server types in parallel; each slot may be null. */
     const [oxlint, tsgo, dprint,] = await Promise.all([
       this.resolve({
         type: 'oxlint',

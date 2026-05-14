@@ -83,6 +83,7 @@ export class SearchOverlay extends HTMLElement {
 
   /** Renders the dialog and attaches keyboard listeners for double-shift. */
   connectedCallback(): void {
+    /** Local alias for `this`; captured by the input/dialog event handler closures. */
     const overlay = this;
     this.#input = h({
       tag: 'input',
@@ -108,6 +109,7 @@ export class SearchOverlay extends HTMLElement {
           },);
         },
         blur: function handleInputBlur(event,) {
+          /** Element receiving focus next; null when focus left the document entirely. */
           const related = event.relatedTarget;
           if (related === null
             || !(related instanceof Node)
@@ -148,6 +150,7 @@ export class SearchOverlay extends HTMLElement {
     this.#boundKeyup = function handleGlobalKeyup(event: KeyboardEvent,): void {
       if (event.key !== 'Shift')
         return;
+      /** Current timestamp; compared against `lastShiftUp` to detect a double-shift within the threshold. */
       const now = Date.now();
       if (!overlay.#interveningKey
         && overlay.#lastShiftUp > 0
@@ -218,8 +221,11 @@ export class SearchOverlay extends HTMLElement {
       return;
     if (this.#dialog === null)
       return;
+    /** Resolved `font` shorthand for the dialog; passed straight to the canvas context for measurement. */
     const { font, } = getComputedStyle(this.#dialog,);
+    /** Off-screen canvas used as a measurement surface; never attached to the document. */
     const canvas = document.createElement('canvas',);
+    /** 2D drawing context used for `measureText`; null when the browser denies the canvas. */
     const ctx = canvas.getContext('2d',);
     if (ctx === null)
       return;
@@ -240,6 +246,7 @@ export class SearchOverlay extends HTMLElement {
 
   /** Schedules a debounced search. */
   #scheduleSearch(): void {
+    /** Local alias for `this`; captured by the `execute` callback so it can call back into the instance. */
     const overlay = this;
     scheduleSearch({
       state: this.#searchState,
@@ -253,6 +260,7 @@ export class SearchOverlay extends HTMLElement {
   async #performSearch(): Promise<void> {
     if (this.onSearch === null || this.#input === null)
       return;
+    /** Local alias for `this`; captured by the `onResults` callback. */
     const overlay = this;
     await performSearch({
       raw: this.#input.value,
@@ -279,6 +287,7 @@ export class SearchOverlay extends HTMLElement {
     this.#results = results;
     this.#selectedIndex = results.length > 0 ? 0 : -1;
     if (results.length === 0) {
+      /** True when the input contains non-whitespace text; selects the "No results" message over a blank placeholder. */
       const hasInput = this.#input !== null && this.#input.value.trim() !== '';
       this.#resultsContainer.replaceChildren(
         hasInput
@@ -291,8 +300,11 @@ export class SearchOverlay extends HTMLElement {
       );
       return;
     }
+    /** Local alias for `this`; captured by the `onSelect` callback. */
     const overlay = this;
+    /** Root directory with a guaranteed trailing slash; stripped from result paths when displaying them. */
     const rootPrefix = this.#rootDir.endsWith('/',) ? this.#rootDir : `${this.#rootDir}/`;
+    /** Rendered DOM nodes for each result row, ready to swap into `resultsContainer`. */
     const elements = renderResultElements({
       results,
       query,
@@ -326,6 +338,7 @@ export class SearchOverlay extends HTMLElement {
   }
   /** Dispatches a `result-select` event for the result at the given index and closes. */
   #selectResult({ index, }: { index: number; },): void {
+    /** Event payload for `result-select`; null when `index` is out of range or `results` is empty. */
     const detail = buildResultDetail({
       index,
       results: this.#results,

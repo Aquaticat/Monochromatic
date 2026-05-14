@@ -139,6 +139,7 @@ function readProcLink(
 function parsePpid(statusContent: string | null,): number {
   if (statusContent === null)
     return 0;
+  /** First `PPid:` line from /proc/PID/status, if any; bare `find` returns undefined when missing. */
   const ppidLine = statusContent
     .split('\n',)
     .find(function isPpidLine(line,): boolean {
@@ -146,6 +147,7 @@ function parsePpid(statusContent: string | null,): number {
     },);
   if (ppidLine === undefined)
     return 0;
+  /** Parsed integer ppid; falls back to 0 below when /proc emits a non-numeric value. */
   const num = Number.parseInt(
     ppidLine.slice('PPid:'.length,).trim(),
     10,
@@ -161,26 +163,31 @@ function parsePpid(statusContent: string | null,): number {
  * @returns Process frame, or null when the process is gone or unreadable
  */
 function readProcessFrame(pid: number,): ProcessFrame | null {
+  /** Raw /proc/PID/status text; null shortcircuits the rest of the frame when the process is gone. */
   const status = readProcFile({
     pid,
     name: 'status',
   },);
   if (status === null)
     return null;
+  /** Raw cmdline buffer with NUL separators; empty string when readable but blank (kernel threads). */
   const cmdlineRaw = readProcFile({
     pid,
     name: 'cmdline',
   },) ?? '';
+  /** Human-readable cmdline with NULs replaced by spaces and trailing NUL removed. */
   const cmdline = cmdlineRaw
     .replaceAll(
       '\0',
       ' ',
     )
     .trimEnd();
+  /** Resolved /proc/PID/exe symlink target; null when not permitted or when exe was unlinked. */
   const exe = readProcLink({
     pid,
     name: 'exe',
   },);
+  /** Parent PID extracted from the status text; 0 means "no parent / unparseable". */
   const ppid = parsePpid(status,);
   return {
     pid,
@@ -211,6 +218,7 @@ function walkParentChain(
 ): ProcessFrame[] {
   if (remaining <= 0)
     return [];
+  /** Current frame of the parent chain; null terminates the walk on read failure. */
   const frame = readProcessFrame(pid,);
   if (frame === null)
     return [];
@@ -235,15 +243,18 @@ function walkParentChain(
  * @returns `sha256:<hex>` digest string
  */
 function hashEnvironment(env: NodeJS.ProcessEnv,): string {
+  /** Sorted `key=value\n` lines; sorting makes the hash stable across env-iteration order. */
   const lines = Object
     .keys(env,)
     .toSorted()
     .map(function envLine(key,): string {
+      /** Env value for `key`; defaults to '' so unset keys still hash deterministically. */
       const value = env[key] ?? '';
       return SECRET_KEY_PATTERN.test(key,)
         ? `${key}=<len:${String(value.length,)}>\n`
         : `${key}=${value}\n`;
     },);
+  /** Streaming sha256 instance; updated with concatenated lines and finalised below. */
   const hash = createHash('sha256',);
   hash.update(lines.join('',),);
   return `sha256:${hash.digest('hex',)}`;
@@ -280,6 +291,9 @@ const logPath = join(
 );
 
 try {
+  /**
+   * Provenance record for this invocation; appended as one JSONL line to {@link logPath}.
+   */
   const record = buildRecord();
   appendFileSync(
     logPath,

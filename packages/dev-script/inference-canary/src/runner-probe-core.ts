@@ -68,23 +68,33 @@ export async function runProbeCore(
       l,
     },),
   },);
+  /** Shared OpenAI client used for every consistency run; reuse keeps connection pooling intact. */
   const client = createProbeClient(config,);
   // Consistency runs must be sequential (rate limits) and each run's score is
   // logged immediately. scores uses push because each run appends in the loop;
   // functional reduce/map would require pre-running all turns before collecting.
+  /** Per-run scores collected in iteration order; later reduced to mean and consistency check. */
   const scores: number[] = [];
   // lastCompletion is let because the for-of loop reassigns it each run, and the
   // final value is needed after the loop for artifact enrichment.
+  /** Most recent completion result; used after the loop for artifact enrichment and failure handling. */
   let lastCompletion: CompletionResult | undefined = undefined;
   // lastScore tracks the score of the most recent consistency run for artifact enrichment.
+  /** Score of the most recent run; written into the initial-pass artifact metadata. */
   let lastScore = 0;
   // worstCompletion tracks the consistency run with the lowest score so the fix pass
   // operates on the output that most needs fixing, not whichever run happened to be last.
+  /**
+   * Completion of the lowest-scoring run; the fix pass operates on this so the model
+   * always tries to repair its worst output, never a coincidentally-perfect last run.
+   */
   let worstCompletion: CompletionResult | undefined = undefined;
   // worstScore tracks the score of the worst consistency run for fix pass selection.
+  /** Lowest score seen so far; gates which run becomes `worstCompletion`. */
   let worstScore = Infinity;
   // enrichedInitial tracks whether the initial-pass artifact was successfully enriched,
   // so the failure handler knows whether it needs to write the artifact.
+  /** Whether the initial-pass artifact has been written; failure handler avoids double-writing. */
   let enrichedInitial = false;
 
   try {
@@ -96,12 +106,14 @@ export async function runProbeCore(
         client,
         signal,
       );
+      /** Context handed to the probe's scorer; identifies this initial-pass run for artifact naming. */
       const scoreContext: ScoreContext = {
         label: config.label,
         pass: 'initial',
         timestamp,
         signal,
       };
+      /** Numeric score from this run; appended to `scores` and compared against `worstScore`. */
       // oxlint-disable-next-line no-await-in-loop -- score may involve container execution
       const runScore = await probe.score(
         lastCompletion.text,
@@ -133,7 +145,9 @@ export async function runProbeCore(
       enrichedInitial = true;
     }
 
+    /** Arithmetic mean of run scores; the headline metric returned to the caller. */
     const meanScore = mean(scores,);
+    /** True when every consistency run produced the same score; useful for flakiness reporting. */
     const consistent = scores.every(function sameScore(score,): boolean {
       return score === scores[0];
     },);
@@ -142,7 +156,9 @@ export async function runProbeCore(
     // gets a chance to fix code that actually has problems. Using the last run
     // would skip the fix when the last run happened to be perfect but earlier
     // runs were not.
+    /** Completion fed into the fix pass: prefer worst-scoring run; fall back to the last run if scoring failed. */
     const fixCompletion = worstCompletion ?? lastCompletion;
+    /** Score after the second-pass fix; `undefined` when the probe declines a fix pass. */
     const pass2Score = await runAndEnrichFixPass(
       probe,
       config,
@@ -166,6 +182,9 @@ export async function runProbeCore(
     };
   }
   catch (error) {
+    /**
+     * Partial stream payload recovered from a {@link PartialCompletionError}, if any; null otherwise.
+     */
     const partialCompletion = extractPartialCompletion(error,);
     // Save whatever data we collected before the failure. Uses a separate try/catch
     // so a write failure doesn't mask the original error.

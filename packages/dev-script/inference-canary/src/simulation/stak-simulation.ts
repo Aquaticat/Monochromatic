@@ -33,11 +33,13 @@ import type { Probe, } from '../probes.ts';
  * @returns concatenated interpreter source
  */
 async function readInterpreterSource(): Promise<string> {
+  /** Interpreter source files in dependency order; concatenation flows top-down for the model. */
   const files = [
     '../stak/interpreter-jumps.ts',
     '../stak/interpreter-ops.ts',
     '../stak/interpreter.ts',
   ] as const;
+  /** Raw file contents fetched in parallel; joined below into the embedded prompt block. */
   const sources = await Promise.all(
     files.map(function readSourceFile(relativePath,): Promise<string> {
       return readFile(
@@ -61,11 +63,13 @@ const INTERPRETER_SOURCE = await readInterpreterSource();
  * @returns formatted prompt string
  */
 function buildSimulationPrompt(): string {
+  /** One formatted block per simulation case; spliced into the prompt below. */
   const programBlocks = SIMULATION_CASES.map(
     function formatCase(
       testCase,
       index,
     ): string {
+      /** Lines composing one program block: header, fence open, program body, fence close. */
       const lines = [
         `Program ${String(index + 1,)}:`,
         '```',
@@ -108,6 +112,7 @@ function buildSimulationPrompt(): string {
  * @returns array of trimmed output sections, one per program
  */
 function parseSections(response: string,): readonly string[] {
+  /** Response with `---` separators forced onto their own line so the split below stays uniform. */
   const normalized = response.replaceAll(
     /([^\n])---/g,
     '$1\n---',
@@ -131,6 +136,9 @@ export const stakSimulation: Probe = {
     response,
     context,
   ): number {
+    /**
+     * Per-program output sections parsed from the response; positional alignment with {@link SIMULATION_CASES}.
+     */
     const sections = parseSections(response,);
     /** Probe-specific logger for simulation case mismatch messages. */
     const rl = tagged({
@@ -140,9 +148,12 @@ export const stakSimulation: Probe = {
         l,
       },),
     },);
+    /** Tracks whether every program matched its expected output; one mismatch flips this to false. */
     let allCorrect = true;
     for (const [index, testCase,] of SIMULATION_CASES.entries()) {
+      /** Section text for this case; empty string when the response had fewer sections than cases. */
       const section = sections[index] ?? '';
+      /** Whether this case's output matches its expectation exactly (whitespace-trimmed). */
       const match = section === testCase.expected;
       if (!match) {
         allCorrect = false;

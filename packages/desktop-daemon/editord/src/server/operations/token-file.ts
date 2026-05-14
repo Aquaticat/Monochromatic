@@ -68,14 +68,20 @@ function tokenFilePath({ port, }: { port: number; },): string {
  */
 async function readFreshToken({ path, }: { path: string; },): Promise<string | null> {
   try {
+    /** Stat record for the token file; throws (caught below) when the file does not exist. */
     const fileStat = await stat(path,);
+    /**
+     * Age of the token file in milliseconds; compared against {@link FRESHNESS_THRESHOLD_MS}.
+     */
     const ageMs = Date.now() - fileStat.mtimeMs;
     if (ageMs > FRESHNESS_THRESHOLD_MS)
       return null;
+    /** Raw file contents; trimmed below to strip any trailing newline written by editors. */
     const content = await readFile(
       path,
       'utf8',
     );
+    /** Token string with surrounding whitespace removed; empty after trimming counts as no token. */
     const token = content.trim();
     if (token.length === 0)
       return null;
@@ -162,6 +168,7 @@ async function writeAndTouch({
     'utf8',
   );
 
+  /** Timer handle for the periodic mtime-refresh; cancelled by `stopTouching`/`deleteFile`. */
   const interval = setInterval(
     function touchTokenFile() {
       void touchFile({
@@ -219,15 +226,19 @@ export async function resolveAuthToken({
   stopTouching: () => void;
   deleteFile: () => void;
 }> {
+  /** Logger scoped with the `token` tag so token lifecycle events are filterable. */
   const tokenLog = tagged({
     tag: 'token',
     l,
   },);
+  /** Absolute path to the token file for this port; isolates concurrent instances on the same machine. */
   const path = tokenFilePath({ port, },);
 
+  /** Override token from the environment; takes precedence over file reuse and fresh generation. */
   const envToken = process.env.EDITORD_TOKEN;
   if (envToken !== undefined && envToken.length > 0) {
     tokenLog.info('using token from EDITORD_TOKEN env var',);
+    /** Lifecycle handles returned by `writeAndTouch`; merged into the resolveAuthToken return value. */
     const handles = await writeAndTouch({
       path,
       token: envToken,
@@ -239,10 +250,12 @@ export async function resolveAuthToken({
     };
   }
 
+  /** Token recovered from a recently-touched file, or null when the file is stale or missing. */
   const existing = await readFreshToken({ path, },);
 
   if (existing !== null) {
     tokenLog.info('reusing token from previous instance (auto-restart detected)',);
+    /** Lifecycle handles for the reused token; same shape as the env-var branch. */
     const handles = await writeAndTouch({
       path,
       token: existing,
@@ -254,8 +267,10 @@ export async function resolveAuthToken({
     };
   }
 
+  /** Newly generated UUID used as the auth token on cold start (no env override, no fresh file). */
   const token = crypto.randomUUID();
   tokenLog.info('generated fresh token',);
+  /** Lifecycle handles for the freshly generated token. */
   const handles = await writeAndTouch({
     path,
     token,

@@ -158,7 +158,9 @@ export class LspClient {
       },
     );
 
+    /** Local alias for `this.#l`; captured by stream callbacks that cannot bind `this`. */
     const clientLog = this.#l;
+    /** JSON-RPC framing parser fed from stdout; emits parsed messages or parse errors. */
     const parser = createLspParser({
       onMessage: this.#handleMessage.bind(this,),
       onError: function handleParseError(error,) {
@@ -173,10 +175,12 @@ export class LspClient {
     );
     /** Maximum bytes kept in the rolling stderr buffer. */
     const STDERR_BUFFER_LIMIT = 4_096;
+    /** Local alias for `this`; captured by stream callbacks so they can mutate instance state. */
     const client = this;
     this.#proc.stderr?.on(
       'data',
       function handleStderr(chunk: Buffer,) {
+        /** Decoded stderr chunk with trailing newline stripped; logged and appended to the rolling buffer. */
         const text = chunk.toString('utf8',).trimEnd();
         clientLog.error(`stderr: ${text}`,);
         client.#stderrBuffer += `${text}\n`;
@@ -189,6 +193,7 @@ export class LspClient {
       'exit',
       function handleExit(code,) {
         client.#dead = true;
+        /** True when the exit was not preceded by an explicit `shutdown()`; signals a crash to `onExit`. */
         const unexpected = !client.#shuttingDown;
         if (unexpected) {
           clientLog.error(`crashed with code ${String(code,)}`,);
@@ -227,7 +232,8 @@ export class LspClient {
     rootUri: string;
     initializationOptions?: Record<string, unknown>;
   },): Promise<LspServerCapabilities> {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP initialize always returns { capabilities }
+    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- LSP initialize always returns { capabilities } */
+    /** Raw initialize response, narrowed to the capabilities shape required by the spec. */
     const result = await this.request({
       method: 'initialize',
       params: buildInitializeParams({
@@ -235,6 +241,7 @@ export class LspClient {
         initializationOptions,
       },),
     },) as { capabilities: LspServerCapabilities; };
+    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
     this.capabilities = result.capabilities;
     this.notify({
@@ -270,22 +277,28 @@ export class LspClient {
     params: unknown;
     timeoutMs?: number;
   },): Promise<unknown> {
+    /** Monotonic JSON-RPC request id; post-increment so each request gets a fresh value. */
     const id = this.#nextId++;
+    /** Outgoing JSON-RPC request envelope; serialized below and sent over stdin. */
     const message = {
       jsonrpc: '2.0' as const,
       id,
       method,
       params,
     };
+    /** Local alias for the pending-request map; captured by the executor closure. */
     const pending = this.#pending;
+    /** Local alias for the tagged logger; captured by the timeout callback. */
     const clientLog = this.#l;
 
-    // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- request correlation requires storing resolve/reject in a map
+    /* oxlint-disable eslint-plugin-promise/avoid-new -- request correlation requires storing resolve/reject in a map */
+    /** Promise resolved when the matching response arrives, or rejected on timeout/error. */
     const responsePromise = new Promise<unknown>(
       function awaitLspResponse(
         resolve,
         reject,
       ) {
+        /** Pending-request record stored under `id`; the response handler resolves it on arrival. */
         const entry: PendingLspRequest = {
           resolve,
           reject,
@@ -312,6 +325,7 @@ export class LspClient {
         );
       },
     );
+    /* oxlint-enable eslint-plugin-promise/avoid-new */
 
     this.#send(message,);
     return responsePromise;
@@ -385,6 +399,7 @@ export class LspClient {
    * @param message - message object to encode and send
    */
   #send(message: unknown,): void {
+    /** Length-prefixed JSON-RPC frame ready for stdin; produced by the framing encoder. */
     const encoded = encodeLspMessage({ message, },);
     this.#proc.stdin?.write(encoded,);
   }

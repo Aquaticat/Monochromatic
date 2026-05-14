@@ -28,6 +28,7 @@ export type ExecutionStep = {
 function pop(stack: number[],): number {
   if (stack.length === 0)
     throw new Error('stack underflow',);
+  /** Popped top-of-stack value; the explicit undefined check is for `noUncheckedIndexedAccess`. */
   const value = stack.pop();
   if (value === undefined)
     throw new Error('stack underflow (unreachable)',);
@@ -107,9 +108,12 @@ export function executeOp(
     return {};
   }
 
+  /** Binary arithmetic implementation for `op`, or undefined when the op is non-arithmetic. */
   const binaryOp = BINARY_OPS[op];
   if (binaryOp !== undefined) {
+    /** Right-hand operand; popped first because Stak pushes in left-to-right order. */
     const b = pop(stack,);
+    /** Left-hand operand; popped after `b` to restore the original operand order. */
     const a = pop(stack,);
     stack.push(binaryOp(
       a,
@@ -117,13 +121,16 @@ export function executeOp(
     ),);
   }
   else if (op === 'DUP') {
+    /** Current top of stack; duplicated without consuming, hence `at(-1)` rather than `pop`. */
     const top = stack.at(-1,);
     if (top === undefined)
       throw new Error('stack underflow',);
     stack.push(top,);
   }
   else if (op === 'SWAP') {
+    /** Top operand before swap; re-pushed second so it lands below `a`. */
     const b = pop(stack,);
+    /** Second operand before swap; re-pushed last so it lands on top. */
     const a = pop(stack,);
     stack.push(b,);
     stack.push(a,);
@@ -145,6 +152,7 @@ export function executeOp(
   else if (op === 'LOAD') {
     if (arg === undefined)
       throw new Error('LOAD missing name',);
+    /** Value bound to `arg` in the environment; undefined means the variable was never STOREd. */
     const val = env.get(arg,);
     if (val === undefined)
       throw new Error(`undefined: ${arg}`,);
@@ -161,6 +169,7 @@ export function executeOp(
     );
   }
   else if (op === 'JUMPZ') {
+    /** Popped predicate; conditionally jumps when zero, otherwise falls through. */
     const val = pop(stack,);
     if (val === 0) {
       return resolveJumpTarget(

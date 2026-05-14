@@ -39,7 +39,9 @@ function positionToOffset({
   line: number;
   character: number;
 },): number {
+  /** Absolute string offset walked forward until `currentLine` reaches `line`. */
   let offset = 0;
+  /** Line counter incremented each time a `\n` is consumed; stops the walk when it equals `line`. */
   let currentLine = 0;
   while (currentLine < line && offset < text.length) {
     if (text[offset] === '\n')
@@ -72,6 +74,7 @@ function applyEditsToString({
       a,
       b,
     ) {
+      /** Negative line difference (b - a) for reverse-document ordering; falls through to character compare on ties. */
       const lineDiff = b.range.start.line - a.range.start.line;
       if (lineDiff !== 0)
         return lineDiff;
@@ -79,13 +82,16 @@ function applyEditsToString({
     },
   );
 
+  /** Working text mutated in place by each edit; reverse-ordered edits keep earlier offsets valid. */
   let result = text;
   for (const edit of sorted) {
+    /** Start offset of the edit, recomputed against the current `result` since prior edits may have shifted it. */
     const start = positionToOffset({
       text: result,
       line: edit.range.start.line,
       character: edit.range.start.character,
     },);
+    /** End offset of the edit, recomputed against the current `result` for the same reason as `start`. */
     const end = positionToOffset({
       text: result,
       line: edit.range.end.line,
@@ -133,10 +139,12 @@ async function applyEditsToFile({
   filePath: string;
   wireEdits: TextEdit[];
 },): Promise<void> {
+  /** Pre-edit file contents loaded from disk; basis for applying `wireEdits`. */
   const content = await readFile(
     filePath,
     'utf8',
   );
+  /** Post-edit file contents to write back; reverse-ordered application keeps positions stable. */
   const modified = applyEditsToString({
     text: content,
     edits: wireEdits,
@@ -183,19 +191,25 @@ export async function applyWorkspaceEdit({
   currentFilePath: string;
   dirWatcher: DirWatcher | null;
 },): Promise<WorkspaceFileEdit[]> {
+  /** URI-keyed edit map carried by the LSP workspace edit; undefined for no-op edits. */
   const { changes, } = workspaceEdit;
   if (changes === undefined)
     return [];
 
+  /** Output accumulator: edits grouped by absolute file path for the client to mirror. */
   const result: WorkspaceFileEdit[] = [];
+  /** Promises for the disk writes performed for non-current files; awaited together at the end. */
   const writePromises: Promise<void>[] = [];
 
   for (const uri of Object.keys(changes,)) {
+    /** Edits targeting this URI; undefined or empty when LSP returned nothing for that file. */
     const lspEdits = changes[uri];
     if (lspEdits === undefined || lspEdits.length === 0)
       continue;
 
+    /** Absolute path decoded from the LSP `file://` URI for use with `node:fs` APIs. */
     const filePath = uriToPath({ uri, },);
+    /** Wire-format edits passed to the writer; widens `range` from optional fields to non-null `Range`. */
     const wireEdits: TextEdit[] = lspEdits.map(
       function convertEdit(edit,): TextEdit {
         return {

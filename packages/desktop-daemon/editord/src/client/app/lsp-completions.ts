@@ -51,9 +51,17 @@ function isInsideStringLiteral({
   line: string;
   character: number;
 },): boolean {
+  /**
+   * Currently-open string delimiter, or null when the walker is outside any string.
+   *
+   * Tracks the active quote character (double-quote, single-quote, or backtick) as
+   * the walker advances; flipped back to null when the matching delimiter is hit.
+   */
   let active: '"' | "'" | '`' | null = null;
+  /** Cursor into `line`; advances by 1 for normal characters, by 2 across backslash escapes. */
   let i = 0;
   while (i < character) {
+    /** Character at the walker's current position; undefined past the end of the line. */
     const ch = line[i];
     if (ch === '\\') {
       i += 2;
@@ -103,20 +111,24 @@ export async function requestCompletions(
     getCurrentFilePath: GetCurrentFilePathFn;
   },
 ): Promise<void> {
+  /** Currently-open file path, or null when no document is loaded. */
   const path = getCurrentFilePath();
   if (path === null)
     return;
+  /** Cursor position at request time; used later to drop responses whose cursor has since moved. */
   const requestPos = editorPane.getCursorPosition();
   if (requestPos === null)
     return;
 
   try {
+    /** Completion items returned by the LSP; destructured so the response shape stays narrow. */
     const { items, } = await ws.request({
       type: 'completion',
       path,
       line: requestPos.line,
       character: requestPos.character,
     },);
+    /** Cursor position when the response lands; compared against `requestPos` to reject stale responses. */
     const responsePos = editorPane.getCursorPosition();
     if (responsePos === null)
       return;
@@ -126,6 +138,7 @@ export async function requestCompletions(
     ) {
       return;
     }
+    /** Caret rectangle in viewport coordinates; popup is anchored to its bottom-left corner. */
     const rect = editorPane.getCursorRect();
     if (items.length === 0 || rect === null)
       return;
@@ -167,17 +180,21 @@ export function wireCompletionTrigger({
     'keydown',
     function handleDotKey(event,) {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- keydown is always a KeyboardEvent
+      /** Narrowed view of the event so `.key` is reachable without `unknown` checks. */
       const ke = event as KeyboardEvent;
       if (ke.key !== '.')
         return;
       globalThis.setTimeout(
         function deferredTrigger() {
+          /** Cursor position after the dot is inserted; null when the editor has lost focus. */
           const pos = editorPane.getCursorPosition();
           if (pos === null)
             return;
+          /** Editor container element; null while the editor is still mounting. */
           const editorEl = editorPane.getEditorElement();
           if (editorEl === null)
             return;
+          /** Text of the line the cursor is on; null when the line div has not yet been created. */
           const lineText = getLineText({
             editor: editorEl,
             line: pos.line,
@@ -228,9 +245,11 @@ export function wireCompletionDismiss({
     function handleSelectionChange() {
       if (!completionPopup.visible)
         return;
+      /** Trigger cursor position captured at the last `show()`; null when popup is hidden mid-handler. */
       const { shownAt, } = completionPopup;
       if (shownAt === null)
         return;
+      /** Cursor position right now; popup hides when this differs from the captured `shownAt`. */
       const pos = editorPane.getCursorPosition();
       if (pos === null)
         return;

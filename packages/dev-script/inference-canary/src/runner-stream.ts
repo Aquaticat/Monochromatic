@@ -68,7 +68,13 @@ export async function streamCompletion(
   // Track whether the signal fired during the stream. tsgo narrows `signal.aborted` to
   // `false | undefined` after the for-await loop (infers no abort if stream completed
   // without throwing), so we use a listener-set flag that tsgo cannot narrow away.
-  // let: assigned true by the abort listener callback below
+  /**
+   * Flag flipped by the abort listener so post-stream code can distinguish
+   * graceful completion from cancellation.
+   *
+   * Declared as `let` because the listener callback writes to it from outside
+   * the for-await scope; tsgo cannot prove the flag stays `false` either way.
+   */
   let streamWasAborted = false;
   /** Sets the abort flag when the signal fires during streaming. */
   function onAbort(): void {
@@ -80,14 +86,17 @@ export async function streamCompletion(
     { once: true, },
   );
 
+  /** Wall-clock anchor for the stream; every timing metric below is computed relative to it. */
   const startMs = Date.now();
 
+  /** Optional SDK fields (reasoning, verbosity) injected only when set; keeps the request body minimal. */
   const extraBody: Record<string, unknown> = {
     ...(config.reasoning ? { reasoning: { enabled: true, }, } : {}),
     // 'high' is OpenRouter's server-side default, so skip sending it to reduce payload noise
     ...(config.verbosity !== 'high' ? { verbosity: config.verbosity, } : {}),
   };
 
+  /** Async iterator over chat completion chunks; awaited per-chunk in the for-await below. */
   const stream = await client.chat.completions.create(
     {
       model: config.model,
@@ -102,18 +111,27 @@ export async function streamCompletion(
 
   // Mutable accumulators are required here: for-await streams are inherently
   // imperative and each chunk must be processed as it arrives.
+  /** Text chunks from `delta.content`; joined into the final completion text. */
   const chunks: string[] = [];
+  /** Reasoning trace fragments (text/summary) extracted from OpenRouter's `reasoning_details`. */
   const reasoningChunks: string[] = [];
+  /** Per-chunk inter-arrival times in ms; used to compute streaming-rate stats. */
   const interChunkMs: number[] = [];
   // firstChunkMs, lastChunkMs, chunkCount, lastFinishReason, lastUsage are let
   // because they are all reassigned inside the for-await loop.
+  /** Latency (ms) from request start to the first chunk; set on the first iteration. */
   let firstChunkMs = 0;
+  /** Wall-clock timestamp of the most recent chunk; seed value compares against `startMs`. */
   let lastChunkMs = startMs;
+  /** Number of stream chunks observed so far; drives first-chunk detection and metrics. */
   let chunkCount = 0;
+  /** Most recent non-null `finish_reason`; the final value is what the API used to terminate. */
   let lastFinishReason: string | undefined = undefined;
+  /** Most recent usage payload; arrives only on the final chunk when `include_usage` is set. */
   let lastUsage: OpenAI.CompletionUsage | null | undefined = undefined;
 
   for await (const chunk of stream) {
+    /** Wall-clock timestamp captured once per chunk so first-chunk and inter-chunk arithmetic stay consistent. */
     const now = Date.now();
     chunkCount += 1;
     if (chunkCount === 1)
@@ -122,9 +140,15 @@ export async function streamCompletion(
       interChunkMs.push(now - lastChunkMs,);
     lastChunkMs = now;
 
-    const [choice,] = chunk.choices;
+    /** First (and typically only) choice from this chunk; rest of the array is unused. */
+    const [
+      choice,
+    ] = chunk.choices;
     if (choice !== undefined) {
-      const { delta, } = choice;
+      /** Delta payload from the choice; carries incremental `content`, reasoning, and finish state. */
+      const {
+        delta,
+      } = choice;
       if (delta.content !== undefined && delta.content !== null)
         chunks.push(delta.content,);
 
@@ -132,6 +156,7 @@ export async function streamCompletion(
       // objects with `type` ("reasoning.text" | "reasoning.summary" | "reasoning.encrypted")
       // and a type-specific text field (`text`, `summary`, or `data`).
       // The field is not typed in OpenAI SDK v6.22, so access it dynamically.
+      /** OpenRouter's untyped reasoning array on the delta; mined for `reasoning.text`/`reasoning.summary` items. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenRouter extends the SDK delta with reasoning_details
       const reasoningDetails = (delta as Record<string, unknown>)['reasoning_details'];
       if (Array.isArray(reasoningDetails,)) {
@@ -161,7 +186,9 @@ export async function streamCompletion(
     onAbort,
   );
 
+  /** End-to-end stream duration (ms) from request start to last chunk. */
   const totalMs = Date.now() - startMs;
+  /** Bundled timing snapshot logged once and stored on the final result for the report. */
   const timing: StreamTiming = {
     timeToFirstChunkMs: firstChunkMs,
     interChunkMs,
@@ -173,6 +200,7 @@ export async function streamCompletion(
     timing,
   );
 
+  /** Assembled completion (text + reasoning + usage + finish reason) returned on success or in PartialCompletionError. */
   const result = buildResult(
     chunks,
     reasoningChunks,

@@ -29,10 +29,12 @@ const MAX_RUNTIME_STDERR_LENGTH = 500;
 function buildRuntimeSection(container: ContainerResult,): string {
   if (container.timedOut)
     return '=== runtime error ===\nProcess timed out.';
+  /** First N bytes of stderr; cap keeps the fix prompt within a reasonable token budget. */
   const truncated = container.stderr.slice(
     0,
     MAX_RUNTIME_STDERR_LENGTH,
   );
+  /** "...(truncated)" tail when the cap kicked in; empty otherwise. */
   const suffix = container.stderr.length > MAX_RUNTIME_STDERR_LENGTH
     ? '\n...(truncated)'
     : '';
@@ -70,9 +72,11 @@ export async function buildCodeGenFixPrompt(
   priorLint?: LintResult,
   priorContainer?: ContainerResult,
 ): Promise<string | undefined> {
+  /** Source extracted from the model's first-pass response; fed to the linter for fix-time diagnostics. */
   const source = extractCode(response,);
   // Reuse the lint result from score() if available to avoid linting the same code twice.
   // Falls back to running lintSource if called without a prior result (e.g. in tests).
+  /** Lint result reused from the scoring phase, or freshly computed when missing (e.g. in tests). */
   const lint = priorLint ?? await lintSource(
     source,
     {
@@ -85,28 +89,33 @@ export async function buildCodeGenFixPrompt(
   );
 
   // Narrow to a failed container only when exit was non-zero or process was killed
+  /** Container result restricted to actual failures (non-zero exit or timeout); undefined for clean runs. */
   const failedContainer = priorContainer !== undefined
       && (priorContainer.exitCode !== 0 || priorContainer.timedOut)
     ? priorContainer
     : undefined;
 
+  /** True when lint reported actionable issues with diagnostic text to surface. */
   const hasLintDiagnostics = lint.violationCount + lint.typeErrors > 0
     && lint.rawDiagnostics.length > 0;
   if (failedContainer === undefined && !hasLintDiagnostics)
     return undefined;
 
+  /** One-line lint summary shown before the diagnostics; undefined when there are zero issues. */
   const lintSummary =
     lint.severity.errors > 0 || lint.severity.warnings > 0 || lint.typeErrors > 0
       ? `It has ${String(lint.severity.errors,)} lint errors, ${
         String(lint.severity.warnings,)
       } lint warnings, and ${String(lint.typeErrors,)} type errors.`
       : undefined;
+  /** One-line runtime summary shown alongside `lintSummary`; undefined when the run did not fail. */
   const runtimeSummary = failedContainer !== undefined
     ? (failedContainer.timedOut
       ? 'It timed out at runtime.'
       : `It crashed at runtime (exit code ${String(failedContainer.exitCode,)}).`)
     : undefined;
 
+  /** Diagnostic blocks (runtime + lint) in display order; empty entries filtered before joining. */
   const diagnosticParts = [
     failedContainer !== undefined ? buildRuntimeSection(failedContainer,) : '',
     lint.rawDiagnostics.length > 0 ? lint.rawDiagnostics : '',

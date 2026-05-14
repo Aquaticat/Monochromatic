@@ -31,23 +31,29 @@ export function applyEditsToText({
   text: string;
   edits: TextEdit[];
 },): string {
+  /** Editor text split into per-line strings; mutated by `splice` for each applied edit. */
   const lines = text.split('\n',);
 
+  /** Edits sorted bottom-to-top so applying earlier ones never shifts later ranges. */
   const sorted = edits.toSorted(function compareEditsReverse(
     a,
     b,
   ) {
+    /** Line diff (b - a) for reverse ordering; falls through to character on ties. */
     const lineDiff = b.range.end.line - a.range.end.line;
     return lineDiff !== 0 ? lineDiff : b.range.end.character - a.range.end.character;
   },);
 
   for (const edit of sorted) {
+    /** Text on the start line before the edit range; preserved verbatim around the replacement. */
     const before = lines[edit.range.start.line]?.slice(
       0,
       edit.range.start.character,
     )
       ?? '';
+    /** Text on the end line after the edit range; preserved verbatim around the replacement. */
     const after = lines[edit.range.end.line]?.slice(edit.range.end.character,) ?? '';
+    /** Replacement lines for the spliced range; `newText` may introduce or collapse line breaks. */
     const newLines = (before + edit.newText + after).split('\n',);
     lines.splice(
       edit.range.start.line,
@@ -131,6 +137,7 @@ function offsetToPosition({
   /** Accumulator for offset remaining as we walk the lines. */
   let remaining = offset;
   for (const [line, lineText,] of lines.entries()) {
+    /** Visible length of this line, excluding its `\n` terminator. */
     const lineLen = lineText.length;
     if (remaining <= lineLen) {
       return {
@@ -140,6 +147,7 @@ function offsetToPosition({
     }
     remaining -= lineLen + 1;
   }
+  /** Index of the last line; clamped to 0 for empty input so subsequent lookup never goes negative. */
   const lastLine = Math.max(
     0,
     lines.length - 1,
@@ -200,7 +208,9 @@ export function mapCursorThroughEdits({
   line: number;
   character: number;
 } {
+  /** Pre-edit text split by `\n`; used to translate the original cursor to an absolute offset. */
   const originalLines = originalText.split('\n',);
+  /** Cursor expressed as a single offset against `originalText`, simplifying edit-shift arithmetic. */
   const cursorOffset = positionToOffset({
     position: cursor,
     lines: originalLines,
@@ -211,6 +221,7 @@ export function mapCursorThroughEdits({
     a,
     b,
   ) {
+    /** Line diff for forward ordering; falls through to character on ties. */
     const lineDiff = a.range.start.line - b.range.start.line;
     return lineDiff !== 0 ? lineDiff : a.range.start.character - b.range.start.character;
   },);
@@ -219,10 +230,12 @@ export function mapCursorThroughEdits({
   let shift = 0;
 
   for (const edit of sorted) {
+    /** Edit start as an absolute offset in `originalText`; compared against `cursorOffset` for case routing. */
     const editStart = positionToOffset({
       position: edit.range.start,
       lines: originalLines,
     },);
+    /** Edit end as an absolute offset in `originalText`; matched against `cursorOffset` to detect inclusion. */
     const editEnd = positionToOffset({
       position: edit.range.end,
       lines: originalLines,
@@ -240,6 +253,7 @@ export function mapCursorThroughEdits({
     }
   }
 
+  /** Post-edit text split by `\n`; basis for translating the shifted offset back to a `(line, character)`. */
   const newLines = newText.split('\n',);
   return offsetToPosition({
     offset: cursorOffset + shift,
