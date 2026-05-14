@@ -1,4 +1,4 @@
-# Package management and dependencies aggregator: pnpm 9.x global blocklist mechanism, 24 pre-emptive transitive bans, vlt 0.x fails to fetch manifest URL when dependency spec includes semver build metadata `+<hash>` suffix, and per-package workspace override audits (node-domexception shim, @google/genai removal, ms-kept-intentionally, proper-lockfile shim)
+# Package management aggregator: pnpm 9.x blocklist mechanism, 24 transitive bans, vlt 0.x semver-build-metadata manifest fetch failure, per-package override audits
 
 The vlt entry below is the only entry in this file that follows the
 troubleshooting-doc shape (it is a real external-tool bug). The

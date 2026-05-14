@@ -1,4 +1,4 @@
-# TypeScript aggregator (tsc 6.0.x and tsgo 7.0.0-dev): seven distinct failure modes (dprint non-relative-path warning without baseUrl, TS2677 type-predicate conditional-type assignability, Astro+MDX missing global JSX.IntrinsicElements, config-typescript/dom needed for cross-package DOM type availability, narrowing not preserved across function declaration closure boundary (intentional per hoisting safety), JSR-ships-.ts-source bypasses skipLibCheck (WAI per TS team), and tsgo LSP panics with ScriptKindUnknown when non-source files like SVG, PNG, CSS reach parser via compilerHost.GetSourceFile)
+# TypeScript aggregator (tsc 6.0.x and tsgo 7.0.0-dev): seven failure modes from dprint baseUrl warnings through tsgo LSP ScriptKindUnknown panic on non-source files
 
 This file aggregates seven distinct TypeScript-related failure modes
 encountered across the workspace. Each section follows the
@@ -36,6 +36,11 @@ This tells TypeScript to resolve non-relative paths from the project root, which
 ### Note
 
 Setting `baseUrl` may or may not completely resolve the warnings, but it helps TypeScript understand that non-relative paths in the `paths` mapping should be resolved from the project root.
+
+### Verification
+
+Reproduced under tsc 6.0.x and dprint 0.x. Trigger: any `paths` map
+entry without a leading `./` when `baseUrl` is unset.
 
 ### Why we do not file this upstream
 
@@ -115,6 +120,12 @@ function maybeAsyncSchemaIsSchemaAsync<Input, Output,>(
 
 This throws away the specific schema type information, making the type guard less useful for preserving types in calling code.
 
+### Verification
+
+Reproduced under tsc 6.0.x (tsgo 7.0.0-dev exhibits identical
+behavior). Trigger: type predicate with conditional type body
+referencing the function's generic parameter.
+
 ### Why we do not file this upstream
 
 5-constraint walk:
@@ -188,6 +199,13 @@ This maps Astro's JSX types to the global namespace that `@types/mdx` expects.
 - [MDX Getting Started - Types](https://mdxjs.com/docs/getting-started/#types)
 - [Astro TypeScript - Extending global types](https://docs.astro.build/en/guides/typescript/#extending-global-types)
 
+### Verification
+
+Reproduced under Astro 4.x with `@types/mdx@2.x` and VS Code's
+TypeScript language service (any tsc 5.x or later). Trigger: any MDX
+file containing native HTML elements like `<abbr>`, `<sub>`, `<kbd>`
+inside an Astro project that does not also depend on `@types/react`.
+
 ### Why we do not file this upstream
 
 5-constraint walk:
@@ -247,6 +265,14 @@ regardless of the package's target runtime.
   "extends": "@monochromatic-dev/config-typescript/dom"
 }
 ```
+
+### Verification
+
+Reproduced under tsgo 7.0.0-dev `--build`, tsc 6.0.x exhibits the
+same. Trigger: package extends the base `@monochromatic-dev/config-typescript`
+(lib: ESNext only) and imports a workspace package that re-exports
+raw `.ts` from a module touching `FileSystemWritableFileStream`,
+`navigator.storage`, or other DOM/WebWorker types.
 
 ### Why we do not file this upstream
 

@@ -1,4 +1,4 @@
-# AWS CloudFront + ACM + Njalla DNS (us-east-1, November 2025 TLS 1.3 origin announcement era): mirror setup hits seven failure surfaces (Alt-Svc cross-origin SAN forcing apex CAA widening, CAA tree-walk reaching apex, EC_secp384r1 cert rejected with misleading InvalidViewerCertificate, deterministic validation CNAME tokens per (account, domain), CAA-vs-CNAME coexistence ban, CNAME-following keeps CAA chain safe, CloudFront edge HTTP 502 against TLS-1.3-only origin)
+# AWS CloudFront mirror (us-east-1 ACM + Njalla DNS, Nov 2025): seven failure surfaces from Alt-Svc cross-origin SAN through TLS 1.3 origin handshake mismatch
 
 **Date**: 2026-05-09
 **Subject**: Setting up `aws.aquati.cat` as a public CloudFront mirror of
