@@ -156,11 +156,14 @@ Tradeoffs:
   if that changes, switch to the `nu -c $"echo ($args)"` evaluation pattern
   used by the `test` task at `mise.toml:268-269` to round-trip through
   shell-quoting.
-- The `.` fallback still walks the full tree when no args are provided. That
-  path goes through the remap and lints only `*.{md,markdown}` at top level,
-  so it does not OOM, but it also does not recurse into subdirectories.
-  Whole-repo recursive linting requires `markdownlint-cli2 '**/*.md'` or
-  expanding the config `globs` array.
+- The `.` fallback only lints top-level `*.{md,markdown}` (105 files in this
+  repo) because that is what the dot-only remap expands to; subdirectory
+  files such as `packages/*/*/README.md` are not covered. This is the
+  pre-existing scope of the original task, unchanged by this fix. Whole-tree
+  recursive linting would require `markdownlint-cli2 '**/*.md'` (subject to
+  the corpus/negation slowdown noted in the verification matrix) or adding
+  a positive `globs` array to `.markdownlint-cli2.jsonc`. Out of scope for
+  the OOM fix; tracked separately if it becomes a real coverage gap.
 
 ### B. Set `"gitignore": true` in `.markdownlint-cli2.jsonc`
 
