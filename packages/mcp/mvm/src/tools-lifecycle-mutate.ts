@@ -46,8 +46,11 @@ export const createTool: ToolEntry = defineTool(
       required: ['name',],
     },
     handler: async function handleCreateVm(args,) {
+      /** New VM name coerced to string so libvirt receives a stable type regardless of MCP client encoding. */
       const name = String(args.name,);
+      /** Optional source VM to clone from; `undefined` selects the create-fresh path below. */
       const from = typeof args.from === 'string' ? args.from : undefined;
+      /** Optional image template; `undefined` falls back to the default in {@link create}. */
       const image = typeof args.image === 'string' ? args.image : undefined;
       try {
         await (from !== undefined
@@ -59,6 +62,7 @@ export const createTool: ToolEntry = defineTool(
             image,
             name,
           },));
+        /** Trailing fragment appended to the success message to disclose clone provenance when applicable. */
         const suffix = from !== undefined ? ` (cloned from ${from})` : '';
         return textResponse(
           `VM ${name} created${suffix} and started. Use exec_in_vm to run commands inside it.`,
@@ -94,7 +98,9 @@ export const destroyTool: ToolEntry = defineTool(
       },
     },
     handler: async function handleDestroyVm(args,) {
+      /** Optional single-VM target; mutually exclusive with `all` and validated below. */
       const name = typeof args.name === 'string' ? args.name : undefined;
+      /** Optional destroy-everything flag; mutually exclusive with `name` and validated below. */
       const all = typeof args.all === 'boolean' ? args.all : undefined;
       try {
         if (all === true) {

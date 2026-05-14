@@ -42,9 +42,12 @@ export const execTool: ToolEntry = defineTool(
       ],
     },
     handler: async function handleExecInVm(args,) {
+      /** Target VM name coerced to string so libvirt receives a stable type regardless of MCP client encoding. */
       const name = String(args.name,);
+      /** Shell command coerced to string for the same reason as `name`. */
       const command = String(args.command,);
       try {
+        /** Execution result holding stdout, stderr, and exit code; formatted into the response below. */
         const result = await exec({
           command,
           name,
@@ -84,9 +87,12 @@ export const runTool: ToolEntry = defineTool(
       required: ['command',],
     },
     handler: async function handleRunInVm(args,) {
+      /** Shell command coerced to string so the ephemeral VM receives a stable type regardless of MCP client encoding. */
       const command = String(args.command,);
+      /** Optional source VM to clone from; `undefined` selects the create-fresh path inside {@link run}. */
       const from = typeof args.from === 'string' ? args.from : undefined;
       try {
+        /** Execution result holding stdout, stderr, and exit code; formatted into the response below. */
         const result = await run({
           command,
           from,

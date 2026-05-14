@@ -28,6 +28,7 @@ export const listTool: ToolEntry = defineTool(
         const vms = await list();
         if (vms.length === 0)
           return textResponse('No VMs found.',);
+        /** One `name: state` line per VM, joined with newlines into the response body below. */
         const lines = vms.map(function formatVmLine(vm,) {
           return `${vm.name}: ${vm.state}`;
         },);

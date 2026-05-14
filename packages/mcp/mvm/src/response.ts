@@ -65,6 +65,7 @@ export function errorResponse(
   tag: string,
   err: unknown,
 ): ErrorResponse {
+  /** Human-readable error text extracted from `Error.message` when available, stringified otherwise. */
   const message = err instanceof Error ? err.message : String(err,);
   console.error(
     `[mcp-mvm] ${tag} failed:`,
@@ -99,6 +100,7 @@ export function formatExecResult(
     stdout: string;
   },
 ): string {
+  /** Output sections accumulated in order: stdout, stderr (when non-empty), exit code. Joined with blank lines below. */
   const parts: string[] = [];
   if (result.stdout.length > 0)
     parts.push(`stdout:\n${result.stdout}`,);

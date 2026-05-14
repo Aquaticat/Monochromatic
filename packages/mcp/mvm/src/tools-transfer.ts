@@ -47,8 +47,11 @@ export const pushTool: ToolEntry = defineTool(
       ],
     },
     handler: async function handlePushToVm(args,) {
+      /** Target VM name coerced to string so downstream calls receive a stable type regardless of MCP client encoding. */
       const name = String(args.name,);
+      /** Host source path coerced to string for the same reason as `name`. */
       const hostPath = String(args.hostPath,);
+      /** Guest destination path coerced to string for the same reason as `name`. */
       const guestPath = String(args.guestPath,);
       try {
         await pushFile({
@@ -97,14 +100,19 @@ export const pullTool: ToolEntry = defineTool(
       ],
     },
     handler: async function handlePullFromVm(args,) {
+      /** Source VM name coerced to string so downstream calls receive a stable type regardless of MCP client encoding. */
       const name = String(args.name,);
+      /** Guest source path coerced to string for the same reason as `name`. */
       const guestPath = String(args.guestPath,);
+      /** Host destination path coerced to string for the same reason as `name`. */
       const hostPath = String(args.hostPath,);
       try {
+        /** Raw file bytes pulled from the guest, written to the host below. */
         const content = await pullFile({
           name,
           guestPath,
         },);
+        /** Lazy-imported `writeFile` so the heavy fs/promises module loads only on the pull path. */
         const { writeFile, } = await import('node:fs/promises');
         await writeFile(
           hostPath,
