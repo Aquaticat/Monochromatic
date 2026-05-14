@@ -29,9 +29,13 @@ function lineIntersection(
   p2: Point,
   d2: Point,
 ): Point {
+  /** 2D cross product of the two direction vectors; zero means parallel lines. */
   const cross = d1[0] * d2[1] - d1[1] * d2[0];
+  /** X offset from `p1` to `p2`, used to project the gap onto `d1`'s parameter axis. */
   const dx = p2[0] - p1[0];
+  /** Y offset from `p1` to `p2`, paired with `dx` to form the gap vector. */
   const dy = p2[1] - p1[1];
+  /** Parameter along line 1: the multiple of `d1` that lands on the intersection point. */
   const t = (dx * d2[1] - dy * d2[0]) / cross;
   return [
     p1[0] + t * d1[0],
@@ -61,24 +65,33 @@ export function offsetPolygon(
   vertices: readonly Point[],
   offset: number,
 ): Point[] {
+  /** Cached vertex count used as the modulus for wrap-around edge indexing. */
   const vertexCount = vertices.length;
 
-  // Compute parallel-shifted edges
+  /**
+   * Each edge of the source polygon shifted along its outward normal by `offset`,
+   * stored as `{ point, direction }` so the next pass can intersect consecutive edges.
+   */
   const offsetEdges = vertices.map(function shiftEdge(
     vertex,
     vertexIndex,
   ) {
+    /** Successor vertex; wraps around so the last edge connects back to vertex 0. */
     const next = vertices[(vertexIndex + 1) % vertexCount];
     if (next === undefined)
       throw new Error('unreachable: vertex index out of bounds',);
+    /** Edge direction X component, used both for the normal and as the line direction. */
     const dx = next[0] - vertex[0];
+    /** Edge direction Y component, paired with `dx` to define the edge vector. */
     const dy = next[1] - vertex[1];
+    /** Edge length, used to normalise the direction vector before scaling by `offset`. */
     const len = Math.hypot(
       dx,
       dy,
     );
-    // Outward normal for CW polygon in SVG coords (Y-down): (dy/len, -dx/len)
+    /** X component of the outward normal scaled by `offset` (CW polygon, Y-down SVG coords). */
     const nx = (dy / len) * offset;
+    /** Y component of the outward normal scaled by `offset`. */
     const ny = (-dx / len) * offset;
     return {
       point: [
@@ -97,6 +110,7 @@ export function offsetPolygon(
     edge,
     edgeIndex,
   ) {
+    /** Successor offset edge; pairs with the current edge to produce one new vertex via intersection. */
     const nextEdge = offsetEdges[(edgeIndex + 1) % vertexCount];
     if (nextEdge === undefined)
       throw new Error('unreachable: edge index out of bounds',);

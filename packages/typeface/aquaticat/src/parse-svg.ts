@@ -38,6 +38,7 @@ function attr(
   attrs: string,
   name: string,
 ): string | undefined {
+  /** First regex match for the named attribute; capture group 1 is its value. */
   const match = new RegExp(`${name}="([^"]*)"`,).exec(attrs,);
   return match?.[1];
 }
@@ -58,23 +59,29 @@ function attr(
  * ```
  */
 export function parseSvg(svgContent: string,): Cell[] {
+  /** Accumulator of parsed cells, filled in strip order as `<rect>` tags are encountered. */
   const cells: Cell[] = [];
+  /** Matches a self-closing `<rect ... />` or `<path ... />` tag and captures its tag name and attributes. */
   const elementRegex = /<(rect|path)\s+([^>]*?)\/>/g;
 
   // oxlint-disable-next-line no-restricted-syntax -- regex exec loop is the idiomatic way to iterate matches
   for (let match = elementRegex.exec(svgContent,); match !== null;
     match = elementRegex.exec(svgContent,))
   {
+    /** Captured `tag` and `attrs` from the current match; index 0 is the whole match. */
     const [, tag, attrs,] = match;
     if (attrs === undefined)
       continue;
 
     if (tag === 'rect') {
+      /** Raw `transform` attribute value, expected to be `translate(<x>)` for cell rects. */
       const transform = attr(
         attrs,
         'transform',
       );
+      /** Captured numeric argument of the `translate(...)` transform, or undefined when absent. */
       const translateMatch = transform?.match(/translate\((\d+(?:\.\d+)?)\)/,);
+      /** Parsed X offset of this cell rect; falls back to 0 when no translate is present. */
       const xOffset = translateMatch !== undefined && translateMatch !== null
         ? Number(translateMatch[1] ?? '0',)
         : 0;
@@ -86,6 +93,7 @@ export function parseSvg(svgContent: string,): Cell[] {
     }
 
     // tag === "path"
+    /** Raw SVG path `d` attribute string for the current `<path>` element. */
     const d = attr(
       attrs,
       'd',
@@ -93,22 +101,27 @@ export function parseSvg(svgContent: string,): Cell[] {
     if (d === undefined)
       continue;
 
+    /** Raw `stroke` attribute value used to discriminate stroked paths from filled ones. */
     const strokeAttr = attr(
       attrs,
       'stroke',
     );
+    /** True when the path has a stroke but no fill, indicating it must be expanded into an outline. */
     const isStroked = strokeAttr !== undefined && attr(
           attrs,
           'fill',
         ) === undefined;
+    /** Raw `stroke-width` attribute string; parsed only when the path is actually stroked. */
     const strokeWidthStr = attr(
       attrs,
       'stroke-width',
     );
+    /** Numeric stroke width in SVG units; 0 for filled paths so downstream code skips expansion. */
     const strokeWidth = isStroked && strokeWidthStr !== undefined
       ? Number(strokeWidthStr,)
       : 0;
 
+    /** Most recently pushed cell, which owns every `<path>` until the next `<rect>` appears. */
     const currentCell = cells.at(-1,);
     if (currentCell !== undefined) {
       currentCell.paths.push({
@@ -161,15 +174,23 @@ export type SVGPathCommand =
  * ```
  */
 export function parseSvgPathD(d: string,): SVGPathCommand[] {
+  /** Accumulator of parsed commands, returned to the caller in path order. */
   const commands: SVGPathCommand[] = [];
+  /** Matches either a command letter (M/L/H/V/Z) or a signed decimal number. */
   const tokenRegex = /([MLHVZ])|(-?\d+(?:\.\d+)?)/g;
 
-  // Mutable state tracking the current command letter while consuming coordinate tokens
-  // let needed because the regex loop reassigns on each command letter encountered
+  /**
+   * Last command letter seen, which determines how subsequent number tokens are consumed.
+   *
+   * Declared as `let` because the regex loop reassigns it whenever a new command
+   * letter is matched; coordinate tokens between letters apply to whatever letter
+   * was set most recently.
+   */
   let currentCmd = '';
 
   // oxlint-disable-next-line no-restricted-syntax -- regex exec loop
   for (let tok = tokenRegex.exec(d,); tok !== null; tok = tokenRegex.exec(d,)) {
+    /** Captured command letter (group 1) from the current token, undefined when the token is a number. */
     const [, commandLetter,] = tok;
     if (commandLetter !== undefined) {
       currentCmd = commandLetter;
@@ -178,9 +199,11 @@ export function parseSvgPathD(d: string,): SVGPathCommand[] {
       continue;
     }
 
+    /** Numeric value of the current number token (group 2 of `tokenRegex`). */
     const num = Number(tok[2],);
 
     if (currentCmd === 'M' || currentCmd === 'L') {
+      /** Y coordinate token paired with the just-consumed X for M/L commands. */
       const yTok = tokenRegex.exec(d,);
       if (yTok === null)
         break;

@@ -26,13 +26,24 @@ export function resolveAbsolutePoints(
   number,
   number,
 ][] {
+  /** Accumulator of resolved absolute coordinates, written in command order. */
   const points: [
     number,
     number,
   ][] = [];
-  // Mutable cursor tracking the current pen position while replaying path commands
-  // let needed because M/L/H/V each update different axes of the cursor
+  /**
+   * X component of the pen cursor while replaying path commands.
+   *
+   * Declared as `let` because M/L set both axes, H rewrites only this one,
+   * and V leaves it alone; each command updates a different subset.
+   */
   let cx = 0;
+  /**
+   * Y component of the pen cursor while replaying path commands.
+   *
+   * Declared as `let` for the same reason as `cx`: V rewrites only this axis,
+   * while H leaves it alone.
+   */
   let cy = 0;
   commands.forEach(function resolveCommand(cmd,) {
     if (cmd.type === 'M' || cmd.type === 'L') {

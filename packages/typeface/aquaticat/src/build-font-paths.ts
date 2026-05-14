@@ -43,17 +43,30 @@ export function computeLocalXBounds(
   minX: number;
   maxX: number;
 } {
-  // Mutable accumulators narrowed across all path points
-  // let needed because we reduce across multiple paths and their points
+  /**
+   * Running minimum of local X across every point of every path.
+   *
+   * Declared as `let` because the value is reduced across two nested forEach
+   * loops; seeded to `+Infinity` so the first comparison always wins.
+   */
   let minX = Infinity;
+  /**
+   * Running maximum of local X, the symmetric partner of `minX`.
+   *
+   * Seeded to `-Infinity` so the first comparison always wins.
+   */
   let maxX = -Infinity;
 
   paths.forEach(function measurePath(pathData,) {
+    /** Parsed command list for this path, used to drive {@link resolveAbsolutePoints}. */
     const commands = parseSvgPathD(pathData.d,);
+    /** Absolute point coordinates for this path (H/V already expanded). */
     const points = resolveAbsolutePoints(commands,);
+    /** Half the stroke width: the amount each point's bounding box extends past the centreline. */
     const halfStroke = pathData.strokeWidth / 2;
 
     points.forEach(function updateBounds([px,],) {
+      /** Point X translated into cell-local coordinates so bounds are independent of cell position. */
       const localX = px - cellX;
       minX = Math.min(
         minX,
@@ -94,8 +107,19 @@ export function addFilledPath(
   cellX: number,
   xShift: number,
 ): void {
-  // Mutable cursor tracking pen position for expanding H/V into absolute coordinates
+  /**
+   * X component of the pen cursor while emitting OpenType path commands.
+   *
+   * Declared as `let` because SVG H rewrites only this axis, and the cursor
+   * is read back into the opentype `moveTo`/`lineTo` calls for the next vertex.
+   */
   let cx = 0;
+  /**
+   * Y component of the pen cursor.
+   *
+   * Declared as `let` for the same reason as `cx`: V rewrites only this axis,
+   * and the cursor is read back on every subsequent command.
+   */
   let cy = 0;
 
   commands.forEach(function traceFilledCommand(cmd,) {

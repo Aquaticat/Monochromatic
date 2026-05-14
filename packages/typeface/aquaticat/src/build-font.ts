@@ -91,11 +91,14 @@ const letterGlyphs = cells.flatMap(
     cell,
     cellIndex,
   ): opentype.Glyph[] {
+    /** Unicode code point assigned to this cell position, or undefined for unused slots. */
     const unicode = CELL_UNICODE[cellIndex];
     if (unicode === undefined)
       return [];
 
+    /** Human-readable letter string used as the OpenType glyph name. */
     const letterName = String.fromCodePoint(unicode,);
+    /** Local X bounds of this glyph's strokes, used to derive shift and advance width. */
     const {
       minX,
       maxX,
@@ -103,11 +106,15 @@ const letterGlyphs = cells.flatMap(
       cell.paths,
       cell.xOffset,
     );
+    /** Horizontal shift that places the leftmost stroke exactly one side-bearing inside the glyph box. */
     const xShift = SIDE_BEARING - minX;
+    /** Total advance width: stroke span plus a side-bearing on each side. */
     const advanceWidth = maxX - minX + 2 * SIDE_BEARING;
 
+    /** OpenType path that collects every contour from this cell's SVG paths. */
     const path = new opentype.Path();
     cell.paths.forEach(function addCellPath(cellPath,) {
+      /** Tokenised commands for one SVG path, dispatched into stroked or filled tracing. */
       const commands = parseSvgPathD(cellPath.d,);
       if (cellPath.isStroked) {
         addStrokedPath(
