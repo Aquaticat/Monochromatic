@@ -507,6 +507,6 @@ A `PostToolUse` lint:types hook is on the roadmap but not yet implemented; type-
 
 ## Agent skills
 
-- **Issue tracker**: GitHub Issues via `gh` CLI. See `docs/agents/issue-tracker.md`.
+- **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after the fix commits; commit-body `Closes #N` auto-close is not sufficient. See `docs/agents/issue-tracker.md`.
 - **Triage labels**: five canonical roles with default label strings. See `docs/agents/triage-labels.md`.
 - **Domain docs**: no context files; agents read fresh code on every probe. See `docs/agents/domain.md`.
