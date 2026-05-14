@@ -10,7 +10,7 @@
  * children (plain strings from data) are HTML-escaped, while results
  * from nested `jsx` calls (which are `SafeHtml` objects) pass through
  * unescaped. Function components are called with their props and return
- * `SafeHtml` directly -- no separate render pass needed.
+ * `SafeHtml` directly; no separate render pass needed.
  *
  * Reuses `escapeHtml` and `VOID_ELEMENTS` from `@monochromatic-dev/module-hyperscript`
  * to avoid duplicating HTML generation internals.
@@ -125,7 +125,7 @@ function renderAttrs(props: Record<string, unknown>,): string {
 //region Public API
 
 /**
- * Fragment component -- renders children without a wrapper element.
+ * Fragment component; renders children without a wrapper element.
  *
  * @param props - props containing children
  *

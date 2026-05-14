@@ -25,7 +25,7 @@ async function makeTmpDir(): Promise<string> {
   return mkdtemp(join(tmpdir(), 'file-enforcer-cache-',),);
 }
 
-// No afterEach(readCache.clear) -- each test uses a unique mkdtemp path,
+// No afterEach(readCache.clear): each test uses a unique mkdtemp path,
 // so cache keys never collide. A global .clear() under concurrentTestGlob
 // wipes other tests' entries mid-execution, causing false failures.
 

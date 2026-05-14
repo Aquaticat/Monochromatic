@@ -13,8 +13,8 @@
  * Path shapes recognised (anything else falls through to an empty
  * payload so the route stays a stable API contract):
  *
- * - `/owner/repo/issues/N` -- single issue + its comments
- * - `/owner/repo/issues` -- filter list (permissions only; authored
+ * - `/owner/repo/issues/N`: single issue + its comments
+ * - `/owner/repo/issues`: filter list (permissions only; authored
  *   lookup is skipped because it would scan the whole repo)
  */
 
@@ -297,7 +297,7 @@ async function buildFilterListDelta(row: {
 }
 
 /**
- * `GET /api/me/delta?path=/owner/repo/issues/N` -- per-viewer JSON
+ * `GET /api/me/delta?path=/owner/repo/issues/N`: per-viewer JSON
  * overlay for the prebuilt fragment at `path`. Returns
  * `{ actor: null, ... }` for unauthenticated requests so the client
  * always has the same payload shape.

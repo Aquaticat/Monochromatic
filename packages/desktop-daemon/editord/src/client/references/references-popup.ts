@@ -31,7 +31,7 @@ export type {
 };
 
 /**
- * `<references-popup>` -- language server references dropdown.
+ * `<references-popup>`: language server references dropdown.
  *
  * Dispatches `reference-select` CustomEvent when a location is accepted.
  */

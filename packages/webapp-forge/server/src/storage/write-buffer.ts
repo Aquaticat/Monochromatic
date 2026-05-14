@@ -9,7 +9,7 @@
  * ceiling.
  *
  * Per-key ordering is preserved: when the same key is enqueued twice,
- * the second body wins -- the first put is dropped before flush so the
+ * the second body wins; the first put is dropped before flush so the
  * adapter sees a single durable write per coalescing window.
  *
  * The buffer exposes an explicit `flush()` for tests and a `close()`

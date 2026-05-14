@@ -38,7 +38,7 @@ export type Verify = () => Promise<boolean> | boolean;
  * Logger interface with 6 log levels plus `flush` for sinks that buffer.
  * `flush()` resolves once every available sink's own `flush` hook has
  * settled; sinks without a hook are skipped. Safe to call even when no
- * sink buffers -- resolves immediately.
+ * sink buffers; resolves immediately.
  */
 export type Logger = {
   debug: (message: string,) => void;

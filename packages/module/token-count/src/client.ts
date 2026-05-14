@@ -15,7 +15,7 @@ import type {
  * Default Claude model used when no model is specified in config.
  * The API requires a model to select the tokenizer, but all current Claude
  * models share the same tokenizer so the choice has no effect on the count.
- * No inference is performed -- only the dedicated token counting endpoint is called.
+ * No inference is performed; only the dedicated token counting endpoint is called.
  *
  * @example
  * ```ts

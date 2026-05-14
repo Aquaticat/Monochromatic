@@ -5,7 +5,7 @@
  * - **Lint violations** (oxlint -D all): style and correctness rules, split by severity
  * - **Type errors** (tsgo --noEmit): type safety using the monorepo's strict tsconfig
  *
- * Both are early degradation signals -- code quality degrades before correctness does.
+ * Both are early degradation signals; code quality degrades before correctness does.
  */
 import { writeLintFile, } from './linter-artifacts.ts';
 import { runAndParseOxlint, } from './linter-oxlint.ts';

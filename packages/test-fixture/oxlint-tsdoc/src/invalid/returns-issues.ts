@@ -1,8 +1,8 @@
 // Fixture: return documentation violations.
 // Expected violations:
-//   tsdoc(require-returns) -- missing @returns on value-returning function
-//   tsdoc(require-returns-check) -- @returns on void/never function
-//   tsdoc(require-returns-description) -- @returns without description
+//   tsdoc(require-returns): missing @returns on value-returning function
+//   tsdoc(require-returns-check): @returns on void/never function
+//   tsdoc(require-returns-description): @returns without description
 
 /**
  * Gets a name.

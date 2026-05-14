@@ -25,7 +25,7 @@ const STYLES = css(`
 const DISMISS_MS = 3_000;
 
 /**
- * `\<toast-message\>` -- ephemeral notification that auto-dismisses.
+ * `\<toast-message\>`: ephemeral notification that auto-dismisses.
  * Reads the `message` attribute for display text.
  */
 class ToastMessage extends HTMLElement {

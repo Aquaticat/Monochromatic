@@ -25,7 +25,7 @@ import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
  *
  * @example
  * ```ts
- * // Bad -- empty returns tag
+ * // Bad; empty returns tag
  * /\** @returns *\/
  * function getName(): string { return 'name'; }
  *

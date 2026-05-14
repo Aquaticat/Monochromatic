@@ -151,7 +151,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
         );
       }
       catch {
-        // Missing or malformed meta.json -- skip
+        // Missing or malformed meta.json; skip
       }
       //endregion Per-probe artifact detection
     }

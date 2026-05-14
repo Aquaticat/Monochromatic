@@ -66,7 +66,7 @@ export function computeDocumentRange({ editor, }: { editor: HTMLDivElement; },):
  * Previously `setDiagnostics` and `setInlayHints` in editor-pane.ts
  * used `JSON.stringify(a) === JSON.stringify(b)` for deep equality.
  * That serialises every field of every element into a temporary string
- * on **every** LSP push -- even when nothing changed. For a file with
+ * on **every** LSP push; even when nothing changed. For a file with
  * hundreds of diagnostics the stringify alone can take milliseconds,
  * blocking the main thread on the hot path. Field-level comparison
  * bails on the first mismatch (commonly the array length), making

@@ -4,7 +4,7 @@
  * CLI tool that spawns steerable child Claude Code sessions in terminal windows.
  *
  * Launches a child Claude session via `terminal-exec` with a pre-created spawn
- * state file. Only `CLAUDE_SPAWN_ID` is passed as an env var -- the child's
+ * state file. Only `CLAUDE_SPAWN_ID` is passed as an env var; the child's
  * SessionStart and Stop hooks use it to fill in session info and report
  * completion.
  *
@@ -111,7 +111,7 @@ else {
   /**
    * Pre-create the spawn state file before launching the child.
    *
-   * `sessionId` starts empty -- the first SessionStart that sees it empty
+   * `sessionId` starts empty; the first SessionStart that sees it empty
    * claims ownership. Subsequent sessions with stale `CLAUDE_SPAWN_ID`
    * env vars see a non-empty `sessionId` and skip registration.
    */

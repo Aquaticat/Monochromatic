@@ -23,7 +23,7 @@ export type RunnerConfig = {
   /** Maximum tokens in the model's response */
   readonly maxTokens: number;
   /**
-   * OpenRouter verbosity parameter -- controls output_config.effort on the provider side.
+   * OpenRouter verbosity parameter; controls output_config.effort on the provider side.
    * "max" available for Claude 4.6 Opus/Sonnet only; falls back to "high" elsewhere.
    */
   readonly verbosity: VerbosityLevel;

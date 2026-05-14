@@ -5,7 +5,7 @@
  * Yields complete lines from a byte stream, buffering partial reads across chunk boundaries.
  * Each yielded string has the trailing newline stripped.
  *
- * Accepts any `AsyncIterable<Uint8Array>` -- works with `ReadableStream`, `process.stdin`,
+ * Accepts any `AsyncIterable<Uint8Array>`: works with `ReadableStream`, `process.stdin`,
  * and Node `Readable` streams without conversion or type casts.
  *
  * @param stream - Async iterable of byte chunks to consume.

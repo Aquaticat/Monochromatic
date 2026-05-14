@@ -58,7 +58,7 @@
 //                                    composite-helpers only (e.g.
 //                                    `aws-secret-access-key`,
 //                                    `ovh-application-key`,
-//                                    `polymarket-api-secret`) -- they
+//                                    `polymarket-api-secret`): they
 //                                    have no useful standalone signal.
 //   - `pkcs12-file`                  path-only rule (no regex field);
 //                                    forbidden-strings has no path-only
@@ -248,7 +248,7 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
           }
           continue;
         }
-        // Top-level table marker (next `[[rules]]` or `[other]`) -- end of rule.
+        // Top-level table marker (next `[[rules]]` or `[other]`): end of rule.
         if (rl.startsWith('[',))
           break;
         // Field extractors. Each consumes its own lines via `i`.

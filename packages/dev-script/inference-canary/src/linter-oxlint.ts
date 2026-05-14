@@ -44,7 +44,7 @@ export type OxlintResult = {
 
 //endregion Types
 
-//region Parsing -- converts raw JSON from oxlint --format json into structured OxlintResult
+//region Parsing; converts raw JSON from oxlint --format json into structured OxlintResult
 
 /**
  * Formats oxlint JSON diagnostics into human-readable lines for model feedback.

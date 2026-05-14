@@ -88,7 +88,7 @@ async function readFreshToken({ path, }: { path: string; },): Promise<string | n
 
 /**
  * Re-writes the token file to keep its mtime fresh.
- * Errors are silently ignored -- worst case, the next restart generates a fresh token.
+ * Errors are silently ignored; worst case, the next restart generates a fresh token.
  *
  * @param path - token file path
  *
@@ -190,9 +190,9 @@ async function writeAndTouch({
  * Resolves the auth token for this server instance.
  *
  * Precedence:
- * 1. `EDITORD_TOKEN` env var -- deterministic token for external integrations
- * 2. Fresh token file (mtime within {@link FRESHNESS_THRESHOLD_MS}) -- reuse across dev-mode auto-restarts
- * 3. New random UUID -- cold start fallback
+ * 1. `EDITORD_TOKEN` env var; deterministic token for external integrations
+ * 2. Fresh token file (mtime within {@link FRESHNESS_THRESHOLD_MS}): reuse across dev-mode auto-restarts
+ * 3. New random UUID; cold start fallback
  *
  * In all cases, starts a periodic mtime touch so the next restart
  * can detect that this process was recently alive.

@@ -1,5 +1,5 @@
 /**
- * Boot command -- launches a VM on the auto-detected hypervisor,
+ * Boot command; launches a VM on the auto-detected hypervisor,
  * waits for shutdown, then triggers incremental sync.
  *
  * KVM boots use a qcow2 overlay so only changed blocks need syncing.

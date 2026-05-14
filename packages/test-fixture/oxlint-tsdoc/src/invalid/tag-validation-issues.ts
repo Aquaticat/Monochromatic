@@ -1,8 +1,8 @@
 // Fixture: tag name and type annotation violations.
 // Expected violations:
-//   tsdoc(check-tag-names) -- JSDoc-only and unknown tags
-//   tsdoc(check-access) -- conflicting access modifiers
-//   tsdoc(no-types) -- JSDoc-style {Type} annotations
+//   tsdoc(check-tag-names): JSDoc-only and unknown tags
+//   tsdoc(check-access): conflicting access modifiers
+//   tsdoc(no-types): JSDoc-style {Type} annotations
 
 /**
  * @type {string}

@@ -4,7 +4,7 @@
  * Claude Code PreToolUse hook that pipes Bash tool output through a filter
  * to strip wasteful patterns (git boilerplate, long lines, repeated diagnostics).
  *
- * Thin shim -- handler logic, validation, and the filter pipeline live in
+ * Thin shim; handler logic, validation, and the filter pipeline live in
  * `@monochromatic-dev/claude-code-plugins-source/handlers/bash-output-filter`.
  * This file exists so the standard tsdown build produces an installable plugin
  * entry at `dist/final/node/index.mjs`. The companion shim `src/filter.ts`

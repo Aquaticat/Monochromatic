@@ -3,7 +3,7 @@
  *
  * Each screen is registered with a render function that mounts its
  * DOM into the app root. Switching screens unmounts the previous
- * tree and mounts the next one. There's no history stack -- screens
+ * tree and mounts the next one. There's no history stack; screens
  * read state from the store directly.
  */
 

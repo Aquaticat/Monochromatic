@@ -19,16 +19,16 @@
  * @example
  * ```bash
  * # File-based
- * task-depends -s "src/*.ts" -o "dist/*.js" -- mise run build
+ * task-depends -s "src/*.ts" -o "dist/*.js"; mise run build
  *
  * # Command-based output check (gate pattern)
- * task-depends -o "sh:podman image exists img && echo Infinity || echo -Infinity" -- podman build .
+ * task-depends -o "sh:podman image exists img && echo Infinity || echo -Infinity"; podman build .
  *
  * # Timestamp from command
- * task-depends -s "sh:git log -1 --format=%ct" -o "dist/*.js" -- mise run build
+ * task-depends -s "sh:git log -1 --format=%ct" -o "dist/*.js"; mise run build
  *
  * # Catch missing outputs in mixed lists with oldest strategy
- * task-depends --output-time-strategy oldest -s "src/**" -o "dist/**" -o "sh:..." -- mise run build
+ * task-depends --output-time-strategy oldest -s "src/**" -o "dist/**" -o "sh:..."; mise run build
  * ```
  */
 

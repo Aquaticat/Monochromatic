@@ -218,7 +218,7 @@ function parseGlobalOptions(args: readonly string[],): GlobalOptionLayout {
  * // passes even if process.cwd() is elsewhere
  *
  * await requireRoot(['clone', 'https://github.com/...']);
- * // always passes -- clone is exempt
+ * // always passes; clone is exempt
  * ```
  */
 export async function requireRoot(args: readonly string[],): Promise<readonly string[]> {

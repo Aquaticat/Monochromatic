@@ -3,7 +3,7 @@
  *
  * The tests inject a fake `S3FetchClient` whose `fetch` method consults
  * an in-memory `Map<key, body>` plus a recorded request log. Real network
- * I/O is out of scope here -- those checks belong in stress tests against
+ * I/O is out of scope here; those checks belong in stress tests against
  * Garage (Phase 2 task #17).
  */
 

@@ -6,7 +6,7 @@
  * notifies screens when state changes.
  *
  * Storage failures (quota, blocked storage) are logged and silently
- * downgraded to in-memory only -- the app keeps working without
+ * downgraded to in-memory only; the app keeps working without
  * persistence rather than crashing.
  */
 import {

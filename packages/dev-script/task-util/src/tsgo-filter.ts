@@ -282,7 +282,7 @@ try {
     [...tsgoArgs,],
   );
 
-  // tsgo succeeded (exit 0) -- pass output through unfiltered
+  // tsgo succeeded (exit 0): pass output through unfiltered
   if (result.stdout.length > 0)
     process.stdout.write(result.stdout,);
   if (result.stderr.length > 0)

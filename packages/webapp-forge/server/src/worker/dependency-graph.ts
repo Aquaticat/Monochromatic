@@ -76,7 +76,7 @@ const ALL_STATES: readonly IssueStateFacet[] = [
  * every filter list whose membership or sort order depends on the issue.
  * That includes:
  *
- * - `(*, state)` for the issue's current state -- the issue appears here
+ * - `(*, state)` for the issue's current state; the issue appears here
  * - every `(labelId, state)` for the issue's current labels in its current state
  * - the corresponding entries in the *opposite* state, since `issue.labeled`
  *   cannot change the issue's state today but the union still has to cover

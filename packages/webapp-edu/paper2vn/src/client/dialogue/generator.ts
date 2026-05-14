@@ -131,7 +131,7 @@ export async function generateChapters(
    * the chapter instruction embeds a JSON schema with deeply nested
    * `{}` patterns. typesafe-i18n's `REGEX_BRACKETS_SPLIT`
    * (`/(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g`) catastrophically
-   * backtracks on that input under V8 -- the page hangs for minutes
+   * backtracks on that input under V8; the page hangs for minutes
    * before any fetch is dispatched. Bypassing the template parser
    * makes the prompt build sub-millisecond. Documented in
    * TROUBLESHOOTING.typesafe-i18n-regex-redos.md.

@@ -1,5 +1,5 @@
 /**
- * Database initialisation -- imported as a side effect by routes and seed.
+ * Database initialisation; imported as a side effect by routes and seed.
  *
  * On import this module:
  *

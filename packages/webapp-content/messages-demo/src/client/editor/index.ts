@@ -3,12 +3,12 @@
  *
  * Composes the four layers documented in plan §1:
  *
- * - **buffer.worker.ts** -- piece-table source of truth, off the main
+ * - **buffer.worker.ts**: piece-table source of truth, off the main
  *   thread; receives `apply`/`query`/`snapshot`/`undo`/`redo` messages
- * - **viewport.ts** -- main-thread virtual scroller; renders only the
+ * - **viewport.ts**: main-thread virtual scroller; renders only the
  *   visible window
- * - **input.ts** -- `beforeinput` / IME / paste interceptor
- * - **selection.ts** -- cursor + selection overlay
+ * - **input.ts**: `beforeinput` / IME / paste interceptor
+ * - **selection.ts**: cursor + selection overlay
  *
  * The worker is the authoritative buffer; the main thread keeps a
  * **mirror cache** updated on every applied changeset so `editor.text`
@@ -346,7 +346,7 @@ export function mountEditor(
   },);
 
   /**
-   * Optional debug invariant -- gated on `input.debug`. After every
+   * Optional debug invariant; gated on `input.debug`. After every
    * change, awaits the worker round-trip and asserts the mirror equals
    * the worker's authoritative snapshot. Logs (does not throw) on
    * mismatch so the invariant violation is loud but recoverable.

@@ -1,7 +1,7 @@
 /**
  * Deterministic Mulberry32 PRNG.
  *
- * Reproducible test corpora -- same seed always produces same sequence.
+ * Reproducible test corpora; same seed always produces same sequence.
  * Mirrors `packages/webapp-content/messages-demo/src/lib/seed.ts`.
  */
 

@@ -28,7 +28,7 @@ const _writeTimestamps: Map<string, number> = new Map<string, number>();
 /**
  * Absolute paths of files read during config execution.
  * Populated by `cat()` as a side effect so watch mode knows what to monitor.
- * Read-only -- use {@link trackRead} or {@link addWatchedPaths} to add entries.
+ * Read-only; use {@link trackRead} or {@link addWatchedPaths} to add entries.
  */
 export const reads: ReadonlySet<string> = _reads;
 
@@ -36,7 +36,7 @@ export const reads: ReadonlySet<string> = _reads;
  * Absolute paths of all managed destination files.
  * Populated by `overwrite()` / `overwriteEach()` even when content
  * is unchanged and the actual write is skipped.
- * Read-only -- use {@link trackDest} to add entries.
+ * Read-only; use {@link trackDest} to add entries.
  */
 export const writes: ReadonlySet<string> = _writes;
 
@@ -45,7 +45,7 @@ export const writes: ReadonlySet<string> = _writes;
  * Only populated when content was different and a real write occurred.
  * Used by `classifyEvent` to distinguish our write echoes from external edits
  * by comparing against the file's mtime.
- * Read-only -- use {@link trackWriteTime} or {@link setWriteTimestamp} to add entries.
+ * Read-only; use {@link trackWriteTime} or {@link setWriteTimestamp} to add entries.
  */
 export const writeTimestamps: ReadonlyMap<string, number> = _writeTimestamps;
 
@@ -70,7 +70,7 @@ export function reset(): void {
 
 /**
  * Clears all write timestamps.
- * Primarily for test cleanup -- production watch mode preserves timestamps
+ * Primarily for test cleanup; production watch mode preserves timestamps
  * across re-runs via {@link reset} which intentionally skips this collection.
  *
  * @example
@@ -133,7 +133,7 @@ export function trackWriteTime(filePath: string,): void {
 
 /**
  * Directly sets a write timestamp for a path.
- * Primarily for testing -- production code should use {@link trackWriteTime}
+ * Primarily for testing; production code should use {@link trackWriteTime}
  * which captures the current time automatically.
  *
  * @param filePath - path to set timestamp for (resolved to absolute)
@@ -163,7 +163,7 @@ export function setWriteTimestamp(
 /**
  * Escape hatch for manually registering additional paths that watch mode
  * should monitor. Useful for dependencies that `cat()` cannot track
- * automatically -- for example, files consumed by `exec()` or external
+ * automatically; for example, files consumed by `exec()` or external
  * tools whose inputs are opaque to the enforcer.
  *
  * @param paths - Array of file paths (resolved to absolute) to add to the read set

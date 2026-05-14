@@ -31,12 +31,12 @@ const FALLBACK_COLOR = '#6B7280';
 /**
  * Brand colors by vendor prefix.
  *
- * - anthropic: Claude terracotta (#D97757) -- Anthropic corporate (#F1F0E8) is invisible on white
- * - google: Gemini blue (#3186FF) -- primary fill color from the icon SVG
- * - openai: GPT 5 pink (#F86AA4) -- OpenAI corporate (#000) is unusable
- * - moonshotai: Kimi blue (#027AFF) -- Moonshot corporate (#16191E) is near-black
+ * - anthropic: Claude terracotta (#D97757): Anthropic corporate (#F1F0E8) is invisible on white
+ * - google: Gemini blue (#3186FF): primary fill color from the icon SVG
+ * - openai: GPT 5 pink (#F86AA4): OpenAI corporate (#000) is unusable
+ * - moonshotai: Kimi blue (#027AFF): Moonshot corporate (#16191E) is near-black
  * - minimax: Minimax coral (#F23F5D)
- * - z-ai: Zhipu indigo (#3859FF) -- GLM is a Zhipu product
+ * - z-ai: Zhipu indigo (#3859FF): GLM is a Zhipu product
  * - qwen: Qwen purple (#615CED)
  */
 const VENDOR_COLORS: Record<string, string> = {

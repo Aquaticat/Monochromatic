@@ -74,7 +74,7 @@ export type CodeGenProbeConfig = {
    * conditions. Each run can transform the source (e.g. inject CLI flags) and use
    * different stdin input. All runs execute in parallel with the main correctness test.
    *
-   * Correctness from all runs is combined via `Math.min` -- every run must pass
+   * Correctness from all runs is combined via `Math.min`: every run must pass
    * for the probe to score above zero.
    */
   readonly additionalRuns?: readonly AdditionalRun[];

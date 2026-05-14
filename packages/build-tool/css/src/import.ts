@@ -5,9 +5,9 @@
  * implementation that works in both Node/Bun and browser environments.
  *
  * Resolution strategy (mirrors CSS conventions):
- * 1. Relative paths (`./foo.css`, `../bar.css`) -- resolved against the importer
- * 2. Bare specifiers (`mixin.css`) -- tried as relative first (CSS treats these as relative)
- * 3. Package specifiers (`\@scope/pkg/path.css`, `pkg/path.css`) -- resolved via
+ * 1. Relative paths (`./foo.css`, `../bar.css`): resolved against the importer
+ * 2. Bare specifiers (`mixin.css`): tried as relative first (CSS treats these as relative)
+ * 3. Package specifiers (`\@scope/pkg/path.css`, `pkg/path.css`): resolved via
  *    `node_modules` traversal, checking `exports` then `style`/`main` fields
  */
 import {

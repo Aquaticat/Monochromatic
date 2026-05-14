@@ -38,11 +38,11 @@ type GuardrailOutput = PreToolUseOutput | Record<string, never>;
  *
  * Two checks, applied in order:
  *
- * 1. **General-purpose blocking** -- denies Agent calls where `subagent_type` is missing
+ * 1. **General-purpose blocking**: denies Agent calls where `subagent_type` is missing
  *    or `"general-purpose"`, directing Claude to use `spawn-claude` instead.
  *    General-purpose agents are banned due to bugs; specialized types pass through.
  *
- * 2. **Resume blocking** -- denies Agent calls containing a `resume` parameter.
+ * 2. **Resume blocking**: denies Agent calls containing a `resume` parameter.
  *    Background agents notify automatically on completion; polling via `resume`
  *    wastes context tokens on repeated error messages.
  *
@@ -107,7 +107,7 @@ function guardrailHandler(event: PreToolUseInput,): GuardrailOutput {
 /**
  * Parses raw stdin as a `PreToolUseInput`.
  *
- * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
  * @param raw - JSON payload from Claude Code stdin
  *
@@ -125,7 +125,7 @@ function guardrailParser(raw: string,): PreToolUseInput {
 /**
  * Serializes the guardrail output for stdout.
  *
- * No trailing newline -- matches Claude Code's wire convention.
+ * No trailing newline; matches Claude Code's wire convention.
  *
  * @param output - handler result to serialize
  *

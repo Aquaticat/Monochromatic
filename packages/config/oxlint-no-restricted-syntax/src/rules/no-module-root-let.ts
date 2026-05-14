@@ -24,20 +24,20 @@ import type {
  *
  * @example
  * ```ts
- * // Bad -- module-scope mutable state
+ * // Bad; module-scope mutable state
  * let cache: Map<string, string> | null = null;
  *
- * // Good -- Map container is the mutable surface
+ * // Good; Map container is the mutable surface
  * const cache = new Map<string, string>();
  *
- * // Good -- IIFE-into-const for lazy initialization
+ * // Good; IIFE-into-const for lazy initialization
  * const cache = (function init (): Map<string, string> {
  *   const m = new Map<string, string>();
  *   m.set('seed', 'value',);
  *   return m;
  * })();
  *
- * // Good -- memoize() encapsulates the cache
+ * // Good; memoize() encapsulates the cache
  * const getValue = memoize(function compute (): string {
  *   return expensiveLookup();
  * },);

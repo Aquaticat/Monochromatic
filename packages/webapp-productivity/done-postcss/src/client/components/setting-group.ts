@@ -34,7 +34,7 @@ const STYLES = css(`
 `,);
 
 /**
- * `\<setting-group\>` -- a single settings row with a label, description,
+ * `\<setting-group\>`: a single settings row with a label, description,
  * and an action control (toggle switch or button) determined by the `mode` attribute.
  */
 class SettingGroup extends HTMLElement {

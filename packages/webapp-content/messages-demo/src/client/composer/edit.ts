@@ -1,9 +1,9 @@
 /**
  * Edit-mode send handlers.
  *
- * - `sendInlineEdit` -- single-textarea edit, swap pointers via
+ * - `sendInlineEdit`: single-textarea edit, swap pointers via
  *   `/api/messages/:id/edit`
- * - `sendTier3Edit` -- chunk-paginated edit, inherit unedited chunks
+ * - `sendTier3Edit`: chunk-paginated edit, inherit unedited chunks
  *   from the original via fetch+PUT and then commit the swap
  */
 

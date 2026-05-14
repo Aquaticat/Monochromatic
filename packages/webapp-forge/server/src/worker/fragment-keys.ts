@@ -7,18 +7,18 @@
  *
  * Phase 1 emits:
  *
- * - `issues/{repo_id}/{issue_id}/detail` -- single issue detail page
- * - `repos/{repo_id}/filters/{labelId|*}/{state}/list` -- filtered issue list
+ * - `issues/{repo_id}/{issue_id}/detail`: single issue detail page
+ * - `repos/{repo_id}/filters/{labelId|*}/{state}/list`: filtered issue list
  *
  * Phase 2 adds:
  *
- * - `prs/{repo_id}/{issue_id}/detail` -- pull-request detail
- * - `prs/{repo_id}/{issue_id}/reviews` -- review thread
- * - `prs/{repo_id}/{issue_id}/merge-status` -- merge readiness panel
- * - `comments/{comment_id}` -- standalone comment (permalink + swap target)
- * - `repos/{repo_id}/tree/{ref}/{path}` -- file tree (git-backed; lands with task #16)
- * - `repos/{repoId}/blob/{ref}/{path}` -- blob view (git-backed)
- * - `repos/{repoId}/diff/{base_sha}/{head_sha}` -- commit diff (git-backed)
+ * - `prs/{repo_id}/{issue_id}/detail`: pull-request detail
+ * - `prs/{repo_id}/{issue_id}/reviews`: review thread
+ * - `prs/{repo_id}/{issue_id}/merge-status`: merge readiness panel
+ * - `comments/{comment_id}`: standalone comment (permalink + swap target)
+ * - `repos/{repo_id}/tree/{ref}/{path}`: file tree (git-backed; lands with task #16)
+ * - `repos/{repoId}/blob/{ref}/{path}`: blob view (git-backed)
+ * - `repos/{repoId}/diff/{base_sha}/{head_sha}`: commit diff (git-backed)
  *
  * The key namespace is forwards-compatible because every kind is prefixed by
  * its resource family.

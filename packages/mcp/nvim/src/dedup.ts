@@ -4,7 +4,7 @@ import type { Diagnostic, } from './nvim-types.ts';
 
 /**
  * Builds a deduplication key for a diagnostic.
- * Uses `lnum:col:code` when code is present (most reliable -- same rule at same location).
+ * Uses `lnum:col:code` when code is present (most reliable; same rule at same location).
  * Falls back to `lnum:col:message` when code is absent.
  *
  * @param diagnostic - Diagnostic to build a key for.

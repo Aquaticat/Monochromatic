@@ -1,7 +1,7 @@
 /**
  * Unit tests for the PR detail renderer.
  *
- * Pure function -- no DB, no IO. Each case asserts that produced HTML
+ * Pure function; no DB, no IO. Each case asserts that produced HTML
  * contains the expected branches/state, escapes XSS, and surfaces the
  * mergeable/state attributes for client-side styling.
  */

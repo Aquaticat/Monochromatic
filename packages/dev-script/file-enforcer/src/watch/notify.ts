@@ -90,7 +90,7 @@ export async function notifyWriteProtection(filePath: string,): Promise<void> {
 
 /**
  * Sends a desktop notification using the detected notification tool.
- * Fails silently when no tool is available -- the terminal warning
+ * Fails silently when no tool is available; the terminal warning
  * is always printed regardless.
  *
  * @param filePath - Absolute path shown in the notification body

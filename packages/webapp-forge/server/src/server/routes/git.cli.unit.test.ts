@@ -10,9 +10,9 @@
  *
  * Three scenarios:
  *
- * 1. Tiny-file clone roundtrip -- push, then clone elsewhere, then diff.
- * 2. 5 MB binary blob roundtrip -- byte-for-byte equality after pack apply.
- * 3. 100-ref batched push -- single push delivers every ref intact.
+ * 1. Tiny-file clone roundtrip; push, then clone elsewhere, then diff.
+ * 2. 5 MB binary blob roundtrip; byte-for-byte equality after pack apply.
+ * 3. 100-ref batched push; single push delivers every ref intact.
  *
  * Subprocess hardening:
  *

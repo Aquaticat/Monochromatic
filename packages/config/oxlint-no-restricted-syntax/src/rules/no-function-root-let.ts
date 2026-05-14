@@ -81,21 +81,21 @@ function isHelperShape(body: ESTree.FunctionBody,): boolean {
  *
  * @example
  * ```ts
- * // Bad -- let at function-body root, return is an expression
+ * // Bad; let at function-body root, return is an expression
  * function fires(items: readonly number[],): number {
  *   let total = 0;
  *   for (const x of items) total += x;
  *   return total * 2;
  * }
  *
- * // Good -- helper shape: ends with `return total`
+ * // Good; helper shape: ends with `return total`
  * function helper(items: readonly number[],): number {
  *   let total = 0;
  *   for (const x of items) total += x;
  *   return total;
  * }
  *
- * // Good -- named-function IIFE callee
+ * // Good; named-function IIFE callee
  * function wrap(items: readonly number[],): number {
  *   const total = (function sum (): number {
  *     let acc = 0;
@@ -105,7 +105,7 @@ function isHelperShape(body: ESTree.FunctionBody,): boolean {
  *   return total * 2;
  * }
  *
- * // Good -- refactored to const via reduce
+ * // Good; refactored to const via reduce
  * function reduced(items: readonly number[],): number {
  *   const total = items.reduce(function add (a: number, x: number,): number { return a + x; }, 0,);
  *   return total * 2;

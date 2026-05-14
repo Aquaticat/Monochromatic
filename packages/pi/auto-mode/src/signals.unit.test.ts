@@ -199,7 +199,7 @@ await describe({
     it({
       name: 'respects -- end-of-options separator',
       fn: async () => {
-        // -f after -- should NOT be treated as a flag
+        // -f after; should NOT be treated as a flag
         expect(hasFlag(['--', '-f',], 'f',),).toBe(false,);
       },
     },),
@@ -310,16 +310,16 @@ await describe({
 
     //endregion
 
-    //region rm -- -f
+    //region rm; -f
 
     it({
       name: 'does not flag -f after -- as rm -f',
       fn: async () => {
-        // rm -- -f: -f is a positional argument (filename), not a flag
+        // rm; -f: -f is a positional argument (filename), not a flag
         const analysis = analyzeBashCommand('rm -- -f',);
         // This should NOT trigger the rm -f signal since -f is after --
         // However, rm is a mutating command with -r check only.
-        // rm -- -f by itself should not flag (no -rf, no -f flag before --)
+        // rm; -f by itself should not flag (no -rf, no -f flag before --)
         expect(bashSignals(analysis, DEFAULT_CTX,),).toBe(false,);
       },
     },),

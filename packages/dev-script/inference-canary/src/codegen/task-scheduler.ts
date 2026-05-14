@@ -5,7 +5,7 @@
  *
  * Asks the model to implement a scheduler that respects dependency graphs and
  * parallelism limits. Combines topological sort, async programming, and resource
- * management -- models often get concurrency limiting wrong or deadlock.
+ * management; models often get concurrency limiting wrong or deadlock.
  */
 import type { Probe, } from '../probe-types.ts';
 import { createCodeGenProbe, } from './probe-factory.ts';

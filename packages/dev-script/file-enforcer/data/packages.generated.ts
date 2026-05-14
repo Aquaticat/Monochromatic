@@ -1,6 +1,6 @@
 /**
  * Auto-generated from Repology package metadata.
- * Do not edit manually -- run the index generator to rebuild.
+ * Do not edit manually; run the index generator to rebuild.
  *
  * Generated: 2026-03-30
  * Entries: 9647

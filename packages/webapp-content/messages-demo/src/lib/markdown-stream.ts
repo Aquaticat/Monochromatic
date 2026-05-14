@@ -92,7 +92,7 @@ export function* segmentBlocks(md: string,): Generator<string, void, void> {
 
   /**
    * Closes the running buffer, yielding it if non-empty, and resets.
-   * Local helper closure -- avoids repeating the conditional yield.
+   * Local helper closure; avoids repeating the conditional yield.
    *
    * @returns generator that yields at most one buffered block
    *

@@ -98,7 +98,7 @@ export function multiplexSideband(row: {
  *
  * Layout:
  *
- * 1. `PKT-LINE("NAK\n")` -- standard "no negotiated common bases"
+ * 1. `PKT-LINE("NAK\n")`: standard "no negotiated common bases"
  *    answer for the simplest case (no haves).
  * 2. If sideband requested, the packfile is multiplexed onto channel 1;
  *    progress lines (if any) onto channel 2. Without sideband, the

@@ -99,12 +99,12 @@ function resolvePackageName(
  * via the detected OS package manager.
  *
  * **For mise-installable tools** (node, python, jq, etc.), prefer
- * `exec('mise', ['use', '-g', '<tool>'])` instead -- it avoids root,
+ * `exec('mise', ['use', '-g', '<tool>'])` instead; it avoids root,
  * manages versions, and works on immutable distros. Use this function
  * for system-level packages that mise does not cover.
  *
  * Lookup order:
- * 1. Check if the binary exists on PATH -- return immediately if so
+ * 1. Check if the binary exists on PATH; return immediately if so
  * 2. Look up the binary in the registered package index
  * 3. Detect the system's package manager
  * 4. Resolve the per-manager package name

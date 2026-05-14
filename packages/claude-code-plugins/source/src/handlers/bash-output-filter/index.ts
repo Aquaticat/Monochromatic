@@ -44,11 +44,11 @@ type BashOutputFilterOutput = PreToolUseOutput | Record<string, never>;
  *
  * Decision tree:
  *
- * 1. **Tool gate** -- non-Bash tools or malformed Bash inputs return `{}`.
- * 2. **Allowlist** -- commands not matching the safe-prefix allowlist return `{}`.
- * 3. **Denylist** -- commands matching any skip pattern (binary tools, redirects,
+ * 1. **Tool gate**: non-Bash tools or malformed Bash inputs return `{}`.
+ * 2. **Allowlist**: commands not matching the safe-prefix allowlist return `{}`.
+ * 3. **Denylist**: commands matching any skip pattern (binary tools, redirects,
  *    background processes, command substitutions, shell builtins) return `{}`.
- * 4. **Rewrite** -- the surviving command becomes:
+ * 4. **Rewrite**: the surviving command becomes:
  *    `set -o pipefail && <cmd> 2>&1 | bun <filterPath> && true`.
  *    The trailing `&& true` absorbs the sandbox's `< /dev/null` append (see
  *    `bash-output-filter/TROUBLESHOOTING.md`) and lets pipefail surface the
@@ -95,7 +95,7 @@ function bashOutputFilterHandler(event: PreToolUseInput,): BashOutputFilterOutpu
 /**
  * Parses raw stdin as a `PreToolUseInput`.
  *
- * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
  * @param raw - JSON payload from Claude Code stdin
  *
@@ -113,7 +113,7 @@ function bashOutputFilterParser(raw: string,): PreToolUseInput {
 /**
  * Serializes the bash-output-filter output for stdout.
  *
- * No trailing newline -- matches Claude Code's wire convention.
+ * No trailing newline; matches Claude Code's wire convention.
  *
  * @param output - handler result to serialize
  *

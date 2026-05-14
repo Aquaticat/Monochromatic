@@ -1,5 +1,5 @@
 /**
- * Status command -- displays the current state of a managed VM.
+ * Status command; displays the current state of a managed VM.
  *
  * @module
  */

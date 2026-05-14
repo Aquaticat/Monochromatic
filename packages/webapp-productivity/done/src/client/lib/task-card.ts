@@ -16,7 +16,7 @@ import {
 import { TASK_CARD_STYLES, } from './task-card-styles.ts';
 
 /**
- * `<task-card>` -- displays a task as a clickable card with checkbox, title, and metadata chips.
+ * `<task-card>`: displays a task as a clickable card with checkbox, title, and metadata chips.
  * Created programmatically via `createTaskCard()`, not placed in server HTML.
  */
 class TaskCard extends HTMLElement {

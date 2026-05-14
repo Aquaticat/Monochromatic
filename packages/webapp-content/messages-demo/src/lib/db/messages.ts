@@ -156,7 +156,7 @@ export async function feedAggregates(): Promise<{
  * 410 Gone vs 404 based on whether the row exists at all).
  *
  * Caller is responsible for opening a `BEGIN DEFERRED` transaction
- * before invoking this and `getChunk` -- WAL snapshot isolation guards
+ * before invoking this and `getChunk`: WAL snapshot isolation guards
  * the streaming response from observing a partial edit.
  *
  * @param messageId - target message id

@@ -3,10 +3,10 @@
  *
  * Two modes:
  *
- * - `--count=N` -- creates N mixed-size messages distributed roughly
+ * - `--count=N`: creates N mixed-size messages distributed roughly
  *   like a real chat archive: P50 ~500 chars, P95 ~5 KB, P99 ~50 KB.
  *   Used by `mise run seed:demo`.
- * - `--huge=N` -- creates ONE message of N gigabytes of synthetic
+ * - `--huge=N`: creates ONE message of N gigabytes of synthetic
  *   markdown. Used by `mise run seed:stress` to verify the streaming
  *   path. N may be fractional (e.g. `0.05` for ~50 MB).
  *
@@ -132,7 +132,7 @@ const LOREM_WORDS = (
 
 /**
  * Returns a deterministic-looking pseudo-random number in [0, 1) seeded
- * by the given integer. Demo seed reproducibility -- `Math.random` is
+ * by the given integer. Demo seed reproducibility; `Math.random` is
  * not seedable in Node and we want repeatable corpora.
  *
  * @param seed - integer seed; same seed yields same sequence

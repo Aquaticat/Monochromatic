@@ -6,7 +6,7 @@
  * to the combined (correctness + lint) score, so slow implementations degrade
  * the full score proportionally.
  *
- * The perf test does not verify output correctness -- the correctness container
+ * The perf test does not verify output correctness; the correctness container
  * already handles that. Perf only measures whether the process completes within
  * acceptable time bounds. A crashed or timed-out process scores 0 (it failed to
  * run at all, not just slowly).

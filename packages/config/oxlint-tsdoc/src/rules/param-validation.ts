@@ -61,7 +61,7 @@ export const requireParamName: CreateOnceRule = {
  *
  * @example
  * ```ts
- * // Bad -- no description
+ * // Bad; no description
  * /\** \@param name *\/
  * function foo(name: string): void {}
  *

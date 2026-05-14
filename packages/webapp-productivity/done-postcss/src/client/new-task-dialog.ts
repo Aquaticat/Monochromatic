@@ -7,7 +7,7 @@
  *
  * Exceeds 100 lines: the blank task template (18 fields), event listener
  * with save/close branches, and panel open/close logic form a single cohesive
- * unit -- splitting further would scatter the lifecycle across files.
+ * unit; splitting further would scatter the lifecycle across files.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../lib/types.ts';

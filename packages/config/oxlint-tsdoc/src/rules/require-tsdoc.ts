@@ -22,7 +22,7 @@ import { reportMissing, } from './node-extraction.ts';
  *
  * @example
  * ```ts
- * // Bad -- missing TSDoc
+ * // Bad; missing TSDoc
  * function foo(): void {}
  *
  * // Good

@@ -3,7 +3,7 @@
  * Provides binary names and custom existence-check flags
  * that Repology cannot infer.
  *
- * This file survives index regeneration -- only edit this file manually.
+ * This file survives index regeneration; only edit this file manually.
  * The generated file (`packages.generated.ts`) is rebuilt from Repology data.
  *
  * Each entry uses `p()` with the same `effname` as the generated entry it overrides.

@@ -43,7 +43,7 @@ export function bootI18n(): void {
 /**
  * Returns the current locale's translation functions.
  *
- * Cheap to call repeatedly -- the accessor object is memoized
+ * Cheap to call repeatedly; the accessor object is memoized
  * per-locale and invalidated automatically when the active locale
  * changes.
  *
@@ -84,7 +84,7 @@ type StringKey = {
  * `chapterInstruction` prompts pins V8's regex engine for minutes;
  * JSC under Bun handles the same pattern in microseconds). Use this
  * accessor for prompt strings that contain literal braces and don't
- * need parameter interpolation -- the parser's machinery is overkill
+ * need parameter interpolation; the parser's machinery is overkill
  * for fixed prompts.
  *
  * @param key - translation key (must be a plain string in every locale)

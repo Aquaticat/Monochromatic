@@ -168,7 +168,7 @@ function createMethod(level: Level,): (message: string,) => void {
  * are isolated: a rejecting `flush` marks that sink unavailable and does
  * not fail the aggregate.
  *
- * Safe to call when no sink buffers -- resolves immediately.
+ * Safe to call when no sink buffers; resolves immediately.
  *
  * @example
  * ```ts

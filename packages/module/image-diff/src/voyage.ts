@@ -19,7 +19,7 @@ import {
 } from './voyage.api.ts';
 
 /**
- * Default Voyage model -- latest and highest quality.
+ * Default Voyage model; latest and highest quality.
  */
 const DEFAULT_VOYAGE_MODEL: VoyageModel = 'voyage-multimodal-3.5';
 

@@ -29,7 +29,7 @@ function pad2(n: number,): string {
  * Formats a `Date` as the additionalContext payload `<time>HH:MM</time>` in
  * the system's local 24-hour clock.
  *
- * Pure function -- separated from {@link promptTimeHandler} so unit tests can
+ * Pure function; separated from {@link promptTimeHandler} so unit tests can
  * pin a fixed `Date` and assert on the exact tag.
  *
  * @param now - timestamp to format
@@ -49,7 +49,7 @@ function formatTimeContext(now: Date,): string {
 /**
  * Output of the prompt-time handler.
  *
- * Always populates `hookSpecificOutput.additionalContext` -- the handler never
+ * Always populates `hookSpecificOutput.additionalContext`: the handler never
  * blocks the prompt or chooses an empty response.
  */
 type PromptTimeOutput = UserPromptSubmitOutput;
@@ -91,7 +91,7 @@ function promptTimeHandler(_event: UserPromptSubmitInput,): PromptTimeOutput {
 /**
  * Parses raw stdin as a `UserPromptSubmitInput`.
  *
- * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
  * @param raw - JSON payload from Claude Code stdin
  *
@@ -109,7 +109,7 @@ function promptTimeParser(raw: string,): UserPromptSubmitInput {
 /**
  * Serializes the prompt-time output for stdout.
  *
- * No trailing newline -- matches Claude Code's wire convention.
+ * No trailing newline; matches Claude Code's wire convention.
  *
  * @param output - handler result to serialize
  *

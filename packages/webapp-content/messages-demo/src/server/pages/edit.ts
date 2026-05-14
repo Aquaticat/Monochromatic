@@ -1,5 +1,5 @@
 /**
- * GET /m/:id/edit -- the composer mounted in edit mode for an existing
+ * GET /m/:id/edit; the composer mounted in edit mode for an existing
  * message.
  *
  * Server renders the standard layout with the composer footer pre-tagged
@@ -63,7 +63,7 @@ function startingTier(chunkCount: number,): 1 | 2 | 3 {
  *
  * @param messageId - target message id
  *
- * @returns HTTP `Response` -- 200 with the edit shell, 404, or 410
+ * @returns HTTP `Response`: 200 with the edit shell, 404, or 410
  *
  * @example
  * ```ts

@@ -110,10 +110,10 @@ export const restrictionRules: DummyRuleMap = {
   'no-restricted-syntax/no-disable-prefer-regexp-exec': 'error',
   //endregion no-disable
 
-  // Never process.exit() -- throw errors instead.
+  // Never process.exit(): throw errors instead.
   'unicorn/no-process-exit': 'error',
 
-  // Ban non-null assertion (!) -- use nonNullishOrThrow instead.
+  // Ban non-null assertion (!): use nonNullishOrThrow instead.
   'typescript/no-non-null-assertion': 'error',
 
   // Enforce import type for type-only imports.

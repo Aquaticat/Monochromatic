@@ -1,5 +1,5 @@
 /**
- * GET /m/:id and GET /m/:id/c/:idx -- single-message read pages.
+ * GET /m/:id and GET /m/:id/c/:idx; single-message read pages.
  *
  * Returns one chunk per page with prev/next/back navigation. Honours
  * If-None-Match against a strong ETag derived from `messages.revision`
@@ -82,7 +82,7 @@ function tierFor(charCount: number,): 1 | 2 | 3 {
  *
  * @param ifNoneMatch - request `If-None-Match` header for ETag negotiation
  *
- * @returns HTTP `Response` -- 200 with HTML, 304 Not Modified, 404 Not
+ * @returns HTTP `Response`: 200 with HTML, 304 Not Modified, 404 Not
  *          Found, or 410 Gone
  *
  * @example

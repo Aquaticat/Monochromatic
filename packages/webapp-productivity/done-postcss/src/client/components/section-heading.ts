@@ -30,7 +30,7 @@ const STYLES = css(`
 `,);
 
 /**
- * `\<section-heading\>` -- collapsible section with icon, label, and toggle indicator.
+ * `\<section-heading\>`: collapsible section with icon, label, and toggle indicator.
  * Dispatches a `toggle` event with `\{ open \}` when the heading is clicked.
  */
 class SectionHeading extends HTMLElement {

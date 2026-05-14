@@ -3,7 +3,7 @@
  * with ~240 files across 20 simulated packages, including 6-level deep
  * directory nesting for testing glob traversal performance.
  *
- * Files are small (100-3000 bytes each) -- no large file testing since
+ * Files are small (100-3000 bytes each): no large file testing since
  * managing files over 1MB is considered a user error for file-enforcer.
  */
 

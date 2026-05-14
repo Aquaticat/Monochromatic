@@ -10,7 +10,7 @@ import type { GeminiModel, } from './types.ts';
 export const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 /**
- * Default Gemini model -- latest multimodal embedding preview.
+ * Default Gemini model; latest multimodal embedding preview.
  */
 export const DEFAULT_GEMINI_MODEL: GeminiModel = 'gemini-embedding-2-preview';
 

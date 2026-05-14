@@ -3,7 +3,7 @@
  * timer. Each sweep deletes at most `SWEEP_BATCH` rows so it adds at
  * most a few ms to its host op.
  *
- * Two sweep types only -- there is **no** superseded-draft sweep:
+ * Two sweep types only; there is **no** superseded-draft sweep:
  * ancestor drafts cannot be safely reaped while their head still chains
  * through them. The hard-delete chain walk handles ancestors when the
  * message itself is being removed.

@@ -10,7 +10,7 @@
  * @example
  * ```sh
  * terminal-exec bash -l
- * terminal-exec --title="My Shell" --dir=/tmp -- bash
+ * terminal-exec --title="My Shell" --dir=/tmp; bash
  * ```
  *
  * @module

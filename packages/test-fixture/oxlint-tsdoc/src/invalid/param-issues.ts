@@ -1,8 +1,8 @@
 // Fixture: parameter documentation violations.
 // Expected violations:
-//   tsdoc(check-param-names) -- mismatched param name
-//   tsdoc(require-param) -- missing @param tags
-//   tsdoc(require-param-description) -- @param without description
+//   tsdoc(check-param-names): mismatched param name
+//   tsdoc(require-param): missing @param tags
+//   tsdoc(require-param-description): @param without description
 
 /**
  * @param x - wrong name

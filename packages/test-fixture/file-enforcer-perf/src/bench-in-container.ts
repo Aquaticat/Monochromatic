@@ -124,7 +124,7 @@ type TimingEntry = { readonly label: string; readonly ms: number; };
  */
 const timings: TimingEntry[] = [];
 
-// Cold run -- all destination files written fresh
+// Cold run; all destination files written fresh
 /** Timestamp before the cold run starts */
 const coldStart = performance.now();
 await import(`${CONFIG_PATH}?v=cold`);

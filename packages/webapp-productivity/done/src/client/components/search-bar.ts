@@ -1,5 +1,5 @@
 /**
- * `<search-bar>` -- sticky bar with a back button and debounced search input.
+ * `<search-bar>`: sticky bar with a back button and debounced search input.
  * Dispatches a `search` event with `{ query }` after the debounce delay.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';

@@ -2,7 +2,7 @@
 /**
  * Signs the container image with cosign and pushes it to GHCR.
  * Separate from `build-and-import.ts` because cosign signatures are OCI artifacts
- * that must be pushed to a registry -- they cannot exist in local podman storage alone.
+ * that must be pushed to a registry; they cannot exist in local podman storage alone.
  *
  * Run: mise run //packages/dev-script/vm-builder:push
  *

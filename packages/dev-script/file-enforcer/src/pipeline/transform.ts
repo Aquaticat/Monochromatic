@@ -19,7 +19,7 @@ export function dedup(content: string,): string {
 
 /**
  * Extracts a nested property from JSON content using a dot-separated path.
- * Uses `dot-prop` under the hood -- supports simple dot notation (`.a.b.c`),
+ * Uses `dot-prop` under the hood; supports simple dot notation (`.a.b.c`),
  * not the full JSONPath query language.
  *
  * @param path - Dot-separated path with leading dot (e.g., `.rules`, `.settings.env`)

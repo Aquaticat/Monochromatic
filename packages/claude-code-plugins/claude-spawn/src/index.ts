@@ -3,7 +3,7 @@
 /**
  * Claude Code multi-event hook entry point for the claude-spawn plugin.
  *
- * Thin shim -- handler logic, parser, writer, the SessionStart helper, and the
+ * Thin shim; handler logic, parser, writer, the SessionStart helper, and the
  * spawn-state coordination modules live in
  * `@monochromatic-dev/claude-code-plugins-source/handlers/claude-spawn`.
  * This file exists so the standard tsdown build produces an installable plugin

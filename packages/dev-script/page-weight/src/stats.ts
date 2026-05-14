@@ -2,7 +2,7 @@
  * Distribution summary for a finite sample of numbers.
  *
  * Reports the four stats the user cares about: min, max, mean, median.
- * Standard deviation is intentionally omitted -- it adds noise to a short
+ * Standard deviation is intentionally omitted; it adds noise to a short
  * CLI report and rarely drives action.
  */
 import {
@@ -86,7 +86,7 @@ function medianOfSorted(sorted: readonly number[],): number {
 /**
  * Computes min, max, mean, median, sum for a sample.
  *
- * Throws when given an empty sample -- an empty distribution has no
+ * Throws when given an empty sample; an empty distribution has no
  * meaningful summary, and silently returning zeros would mask bugs
  * in the caller's data pipeline.
  *

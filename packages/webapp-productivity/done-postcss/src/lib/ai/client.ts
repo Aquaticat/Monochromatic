@@ -30,7 +30,7 @@ const REQUEST_TIMEOUT_MS = 30_000;
 /**
  * Timestamps of requests within the current window.
  * Mutable array because the sliding window requires `.shift()` to discard expired
- * entries and `.push()` to record new ones -- a functional approach would allocate
+ * entries and `.push()` to record new ones; a functional approach would allocate
  * a new array on every request for no benefit in this module-scoped singleton.
  */
 const requestTimestamps: number[] = [];

@@ -6,7 +6,7 @@
  * Filters out packages installable via mise (registry + backends).
  *
  * First run builds the container image and initializes the database (~15 min).
- * Subsequent runs are incremental -- only changed repo data is re-fetched.
+ * Subsequent runs are incremental; only changed repo data is re-fetched.
  *
  * @example
  * ```bash
@@ -203,14 +203,14 @@ async function loadMiseRegistry(): Promise<ReadonlySet<string>> {
  * upstream registries are also available as mise backends.
  * Only includes ecosystems where mise has a native backend:
  *
- * - `cargo:` -- Rust crates (Repology `rust:`)
- * - `pipx:` -- Python packages (Repology `python:`)
- * - `npm:` -- Node packages (Repology `node:`)
- * - `go:` -- Go modules (Repology `go:`)
- * - `gem:` -- Ruby gems (Repology `ruby:`)
+ * - `cargo:`: Rust crates (Repology `rust:`)
+ * - `pipx:`: Python packages (Repology `python:`)
+ * - `npm:`: Node packages (Repology `node:`)
+ * - `go:`: Go modules (Repology `go:`)
+ * - `gem:`: Ruby gems (Repology `ruby:`)
  *
  * Ecosystems without mise backends (perl, haskell, erlang, ocaml,
- * lua, php, r, java, gap, texlive) are NOT filtered -- those
+ * lua, php, r, java, gap, texlive) are NOT filtered; those
  * packages genuinely need OS package managers.
  *
  * @example

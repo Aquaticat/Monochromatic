@@ -48,7 +48,7 @@ function readText(absolutePath: string,): Promise<string> {
  * Reads a CSS file and returns the raw source, or `null` if it cannot be read.
  *
  * Skipping on read failure keeps the pipeline robust against broken links
- * without masking them -- the caller still receives the path via `missing`.
+ * without masking them; the caller still receives the path via `missing`.
  *
  * @param absolutePath - absolute CSS path
  *

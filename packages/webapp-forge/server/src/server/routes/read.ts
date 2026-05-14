@@ -1,9 +1,9 @@
 /**
  * Read-side route handlers.
  *
- * - `GET /:owner/:repo/issues/:number` -- issue detail page
- * - `GET /:owner/:repo/issues` -- filter list
- * - `GET /_fragments/...` -- raw fragment passthrough
+ * - `GET /:owner/:repo/issues/:number`: issue detail page
+ * - `GET /:owner/:repo/issues`: filter list
+ * - `GET /_fragments/...`: raw fragment passthrough
  */
 
 import {
@@ -40,7 +40,7 @@ const HTML_FRAGMENT_HEADERS = {
 } as const;
 
 /**
- * `GET /:owner/:repo/issues/:number` -- serves the issue-detail fragment
+ * `GET /:owner/:repo/issues/:number`: serves the issue-detail fragment
  * straight from the storage adapter. Returns 500 if the fragment has
  * not been built yet (a sign the dispatcher missed the event).
  */
@@ -106,7 +106,7 @@ export const issueDetailHandler: EventHandlerWithFetch = defineHandler(
 );
 
 /**
- * `GET /:owner/:repo/issues[?label=...&state=...]` -- serves the
+ * `GET /:owner/:repo/issues[?label=...&state=...]`: serves the
  * filter-list fragment. Returns 500 when the fragment has not been
  * built yet.
  */
@@ -160,7 +160,7 @@ export const filterListHandler: EventHandlerWithFetch = defineHandler(
 );
 
 /**
- * `GET /_fragments/...` -- raw fragment passthrough; lets clients fetch
+ * `GET /_fragments/...`: raw fragment passthrough; lets clients fetch
  * any fragment by storage key. Treats anything under the prefix as a
  * literal storage key.
  */

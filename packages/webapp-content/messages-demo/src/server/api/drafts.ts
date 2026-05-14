@@ -3,7 +3,7 @@
  *
  * All handlers return JSON. Identity is sent in the body for create /
  * finalize and cross-checked against the draft's stored `user_id` for
- * the others. The chunk PUT is identity-free -- `draft_id` is opaque
+ * the others. The chunk PUT is identity-free; `draft_id` is opaque
  * and finalize is the gatekeeper.
  *
  * Each successful write piggybacks a small bounded sweep on the same

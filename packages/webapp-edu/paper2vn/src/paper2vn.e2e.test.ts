@@ -4,7 +4,7 @@
  * Drives the built `dist/final/index.html` in a real browser via
  * Playwright. Tier 1 (UI) covers menu rendering, navigation, settings,
  * locale switching, the missing-key gate, save listing, and the lecture
- * runtime against a seeded save -- no LLM required, fast and
+ * runtime against a seeded save; no LLM required, fast and
  * deterministic. Tier 2 covers the live LLM round-trip and is skipped
  * when `PAPER2VN_OPENROUTER_API_KEY` is unset, so CI without a key
  * still runs the rest.
@@ -248,7 +248,7 @@ test.describe('locale switching', () => {
      * The first <select> on the settings screen is the language picker
      * (markup order is fixed in `settings.ts`). Switching it triggers
      * `navigate('settings')` which re-mounts the screen with the new
-     * locale -- the back button text flips to Chinese.
+     * locale; the back button text flips to Chinese.
      */
     await settings.locator('select',).first().selectOption('zh',);
     await expect(
@@ -537,7 +537,7 @@ test.describe('lecture screen with seeded save', () => {
  * API key for the live-LLM tier. Pulled from the same env vars as the
  * Bun smoke test (`smoke.ts`) so a single `.env.local` setting drives
  * both. When unset, all tests below skip with a reason rather than
- * fail -- CI without a key still runs the rest of the suite.
+ * fail; CI without a key still runs the rest of the suite.
  */
 const OPENROUTER_API_KEY: string | undefined =
   (process.env['PAPER2VN_OPENROUTER_API_KEY'] !== undefined
@@ -658,7 +658,7 @@ test.describe('live LLM round-trip', () => {
     /*
      * The page transitions from select-topic -> lecture once
      * `generateChapters` resolves. Wait for the lecture screen rather
-     * than the generating-status text -- the latter is replaced
+     * than the generating-status text; the latter is replaced
      * synchronously when the resolution lands.
      */
     const lecture = page.locator('section[data-screen="lecture"]',);

@@ -85,7 +85,7 @@ const CORRECTION_REMINDER_TEXT = [
 /**
  * Output of the correction-reminder handler.
  *
- * Always uses `additionalContext` -- the handler never blocks the prompt.
+ * Always uses `additionalContext`: the handler never blocks the prompt.
  */
 type CorrectionReminderOutput = UserPromptSubmitOutput;
 
@@ -126,7 +126,7 @@ function correctionReminderHandler(
 /**
  * Parses raw stdin as a `UserPromptSubmitInput`.
  *
- * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
  * @param raw - JSON-encoded event payload received on stdin
  *
@@ -146,7 +146,7 @@ function correctionReminderParser(raw: string,): UserPromptSubmitInput {
 /**
  * Serializes the correction-reminder output for stdout.
  *
- * No trailing newline -- matches Claude Code's wire convention.
+ * No trailing newline; matches Claude Code's wire convention.
  *
  * @param output - handler result to serialize
  *

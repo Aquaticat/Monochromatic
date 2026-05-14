@@ -6,8 +6,8 @@
  * line) with a uniform line height; long lines scroll horizontally
  * rather than wrapping, matching plan §1's deliberate scope cut.
  *
- * The viewport keeps its own line index -- a sorted array of `0`-
- * relative line-start offsets -- recomputed on every `render`. For the
+ * The viewport keeps its own line index; a sorted array of `0`-
+ * relative line-start offsets; recomputed on every `render`. For the
  * demo's tier-3 ceiling (256 KB per chunk, ~10 KB lines worst case)
  * the index is well under 5 K entries, so the O(n) recompute on each
  * change is acceptable. A future optimisation could maintain it

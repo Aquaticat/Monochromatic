@@ -16,7 +16,7 @@ export type ModelConfig = {
   readonly openrouterId: OpenRouterModelId;
   /**
    * Short human-readable label for reports.
-   * Must be unique across all models -- used as the dedup key and artifact directory name.
+   * Must be unique across all models; used as the dedup key and artifact directory name.
    */
   readonly label: string;
   /**

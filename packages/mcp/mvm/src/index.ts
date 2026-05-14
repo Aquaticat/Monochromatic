@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * MCP server entry point for mvm -- exposes VM operations as MCP tools.
+ * MCP server entry point for mvm; exposes VM operations as MCP tools.
  * @module
  */
 import {

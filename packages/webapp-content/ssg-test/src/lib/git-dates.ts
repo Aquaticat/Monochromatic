@@ -335,10 +335,10 @@ type PostDates = {
  * Resolves `published` and `updated` dates for a single post.
  *
  * Strategy:
- * - `updated` -- newest commit author date from local `git log --follow`
- * - `published` -- oldest commit author date from local `git log --follow --reverse`,
+ * - `updated`: newest commit author date from local `git log --follow`
+ * - `published`: oldest commit author date from local `git log --follow --reverse`,
  *   or GitHub REST API when the clone is shallow
- * - Fallback on both -- file mtime when the file has no git history (untracked or uncommitted)
+ * - Fallback on both; file mtime when the file has no git history (untracked or uncommitted)
  *
  * @param filePath - absolute or cwd-relative path to the MDX file
  *

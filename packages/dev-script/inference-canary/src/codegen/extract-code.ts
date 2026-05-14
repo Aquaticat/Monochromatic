@@ -8,7 +8,7 @@ export type ExtractResult = {
   readonly source: string;
   /**
    * Whether a code block was found in the response.
-   * When false, `source` is the raw response text -- the model did not produce
+   * When false, `source` is the raw response text; the model did not produce
    * a fenced code block and the "source" is likely prose, not valid TypeScript.
    */
   readonly fenced: boolean;

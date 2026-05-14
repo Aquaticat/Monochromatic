@@ -1,9 +1,9 @@
 // Fixture: structural formatting violations.
 // Expected violations:
-//   tsdoc(multiline-blocks) -- single-line with tag
-//   tsdoc(no-multi-asterisks) -- double asterisk
-//   tsdoc(tag-lines) -- missing blank line before tag
-//   tsdoc(empty-tags) -- modifier tag with content
+//   tsdoc(multiline-blocks): single-line with tag
+//   tsdoc(no-multi-asterisks): double asterisk
+//   tsdoc(tag-lines): missing blank line before tag
+//   tsdoc(empty-tags): modifier tag with content
 
 /** @returns value */
 function singleLineWithTag(): number {

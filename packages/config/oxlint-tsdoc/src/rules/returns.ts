@@ -21,7 +21,7 @@ import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
  *
  * @example
  * ```ts
- * // Bad -- missing returns tag
+ * // Bad; missing returns tag
  * /\** Adds numbers. *\/
  * function add(a: number, b: number): number { return a + b; }
  *

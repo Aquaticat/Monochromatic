@@ -41,9 +41,9 @@ export function watchDirs(configPath: string,): Set<string> {
 
 /**
  * Classifies a filesystem event into one of three categories:
- * - `source`: a tracked read or the config file changed -- normal re-run
- * - `protected`: a managed destination was modified externally -- re-run + notify
- * - `ignore`: unrelated file or our own write echo -- skip
+ * - `source`: a tracked read or the config file changed; normal re-run
+ * - `protected`: a managed destination was modified externally; re-run + notify
+ * - `ignore`: unrelated file or our own write echo; skip
  *
  * For write paths, uses `stat()` to compare the file's mtime against our
  * recorded write timestamp. If mtime \> our timestamp, the edit is external.

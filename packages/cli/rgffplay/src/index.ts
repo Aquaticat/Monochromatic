@@ -109,7 +109,7 @@ async function resolveMusicDir(): Promise<string> {
 
 //endregion Music directory resolution
 
-//region File search -- rg --files with glob pattern
+//region File search; rg --files with glob pattern
 
 /** Tagged logger for the file search phase. */
 const rlSearch = tagged({

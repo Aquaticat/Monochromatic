@@ -146,7 +146,7 @@ function renderAttrs(props: Record<string, unknown>,): string {
 //region Public API: JSX runtime exports
 
 /**
- * Fragment component -- renders children without a wrapper element.
+ * Fragment component; renders children without a wrapper element.
  *
  * Used by the JSX compiler for `<>...</>` syntax.
  *
@@ -209,7 +209,7 @@ export function jsx(
 /**
  * JSX factory for elements with statically known children.
  *
- * Identical to {@link jsx} for static rendering -- the `s` variant exists
+ * Identical to {@link jsx} for static rendering; the `s` variant exists
  * in React/Preact for reconciliation optimizations that do not apply here.
  */
 export const jsxs: typeof jsx = jsx;

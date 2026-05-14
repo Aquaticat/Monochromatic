@@ -53,7 +53,7 @@ const stream = await anthropic
       role: 'user',
       content: 'How to change background color in VS Code?',
     },],
-    // @ts-expect-error -- mcp_servers not yet in SDK types
+    // @ts-expect-error; mcp_servers not yet in SDK types
     mcp_servers: [
       {
         type: 'url',

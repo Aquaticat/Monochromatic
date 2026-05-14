@@ -67,7 +67,7 @@ const MONOREPO_ROOT = await findMonorepoRootCached();
 /**
  * Directory where bootc-image-builder writes its output.
  * Created automatically before the conversion step.
- * Gitignored -- not checked in.
+ * Gitignored; not checked in.
  */
 const OUTPUT_DIR = join(
   PACKAGE_DIR,

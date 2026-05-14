@@ -94,7 +94,7 @@ function collapseLines(lines: string[],): string[] {
 /**
  * Entry-point for the filter script. Reads stdin to EOF, applies the filter
  * pipeline, and writes the result to stdout. On any failure, writes the
- * unfiltered stdin content as a fallthrough -- losing output is worse than
+ * unfiltered stdin content as a fallthrough; losing output is worse than
  * failing to filter.
  *
  * @example

@@ -431,7 +431,7 @@ const TAIL_BYTES = 8_192;
 /**
  * Find the last meaningful gerund in a string.
  *
- * @param text - Any text to scan (raw transcript, prose, JSON -- gerunds survive regardless).
+ * @param text - Any text to scan (raw transcript, prose, JSON; gerunds survive regardless).
  *
  * @returns Capitalized gerund, or `undefined` if none found.
  *

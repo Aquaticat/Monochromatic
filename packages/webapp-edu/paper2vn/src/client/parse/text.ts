@@ -2,7 +2,7 @@
  * Plain-text and Markdown extractor.
  *
  * Reads a `File` or `Blob` as UTF-8. Markdown is treated as plain
- * text -- no rendering, just text extraction for the LLM.
+ * text; no rendering, just text extraction for the LLM.
  */
 
 /**

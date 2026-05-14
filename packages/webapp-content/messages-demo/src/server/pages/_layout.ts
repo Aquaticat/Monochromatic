@@ -19,7 +19,7 @@ type SeedUser = {
 
 /**
  * Loads the three seeded users for the identity dropdown. Cached at
- * module load -- users are seeded once at migration time and never
+ * module load; users are seeded once at migration time and never
  * change for the demo.
  */
 const seedUsers: SeedUser[] = await loadUsers();

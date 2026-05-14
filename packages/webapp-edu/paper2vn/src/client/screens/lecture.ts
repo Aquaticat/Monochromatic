@@ -1,5 +1,5 @@
 /**
- * Lecture screen -- the visual-novel runtime.
+ * Lecture screen; the visual-novel runtime.
  *
  * Shows a chapter card before the first beat of each chapter, then
  * walks through each beat with a typewriter reveal. Toolbar buttons

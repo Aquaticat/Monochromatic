@@ -2,7 +2,7 @@
  * Task detail page handler.
  *
  * Renders its own HTML inline (not via `renderPage()`) because the task detail
- * page omits the `<top-nav>` entirely -- the `<task-detail>` web component
+ * page omits the `<top-nav>` entirely; the `<task-detail>` web component
  * provides its own back-button header.
  *
  * Client entry: `/dist/client/task-details.js` (src/client/task-details.ts)

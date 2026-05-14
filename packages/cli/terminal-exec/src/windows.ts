@@ -54,8 +54,8 @@ async function which(name: string,): Promise<string | null> {
  * Resolves the terminal emulator on Windows.
  *
  * Resolution order:
- * 1. Windows Terminal (`wt.exe`) -- default on Windows 11+, widely installed on Windows 10
- * 2. `cmd.exe` -- always available
+ * 1. Windows Terminal (`wt.exe`): default on Windows 11+, widely installed on Windows 10
+ * 2. `cmd.exe`: always available
  *
  * @returns Resolved terminal entry.
  *

@@ -174,7 +174,7 @@ export const maxStatementsPerLine: CreateOnceRule = {
           // When `curr` is nested inside `prev` (e.g. the alternate of an
           // `IfStatement` whose own range covers the whole `if/else`), the
           // slice `[prevEnd, currStart]` is negative. The fix shape is
-          // wrong for this case anyway -- splitting `if (a) foo(); else bar();`
+          // wrong for this case anyway; splitting `if (a) foo(); else bar();`
           // requires inserting before `else`, not before `bar()`. Skip the
           // fix and still report.
           const nested = currStart <= prevEnd;

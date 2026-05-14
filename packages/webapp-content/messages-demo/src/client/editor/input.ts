@@ -8,18 +8,18 @@
  *
  * Three categories of input handled:
  *
- * 1. **Plain edits** -- `beforeinput` covers insert text, delete
+ * 1. **Plain edits**: `beforeinput` covers insert text, delete
  *    backward/forward, paste, cut, undo/redo (via execCommand or
  *    keyboard). We intercept (`preventDefault`) and emit our own
  *    changeset.
- * 2. **IME composition** -- `compositionstart` flips a guard so we do
+ * 2. **IME composition**: `compositionstart` flips a guard so we do
  *    not race the browser's tentative DOM mutations; `compositionend`
  *    reads the composed text and emits a single changeset, then
  *    re-renders the line so the browser's transient nodes are wiped.
- * 3. **Keyboard shortcuts** -- Cmd/Ctrl+Z / Cmd/Ctrl+Shift+Z map to
+ * 3. **Keyboard shortcuts**: Cmd/Ctrl+Z / Cmd/Ctrl+Shift+Z map to
  *    `undo` / `redo` on the buffer worker via the `apply` channel
  *    (the worker exposes them as separate messages but we route
- *    through `apply` for now -- TODO once the wider editor lands).
+ *    through `apply` for now; TODO once the wider editor lands).
  *
  * Note on undo/redo wiring: the worker has dedicated `undo`/`redo`
  * messages, but the public Editor surface in `index.ts` does not yet

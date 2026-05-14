@@ -2,7 +2,7 @@
  * Composer network + UI helpers.
  *
  * Extracted from `composer.ts`. None of these functions hold composer
- * state -- they take the data they need as arguments and operate on
+ * state; they take the data they need as arguments and operate on
  * passed-in DOM nodes.
  */
 

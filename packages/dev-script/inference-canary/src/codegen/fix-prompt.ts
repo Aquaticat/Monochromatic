@@ -46,7 +46,7 @@ function buildRuntimeSection(container: ContainerResult,): string {
  * Returns undefined when there are no diagnostics (skip the second pass).
  *
  * The model's first-pass response is already in the conversation as a native
- * assistant message, so this prompt only carries diagnostics -- no code echo.
+ * assistant message, so this prompt only carries diagnostics; no code echo.
  *
  * @param response - raw model output from the first pass (used to extract source for linting)
  *

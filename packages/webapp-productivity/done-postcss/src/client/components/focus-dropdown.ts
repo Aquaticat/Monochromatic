@@ -1,5 +1,5 @@
 /**
- * `\<focus-dropdown\>` -- popover-based dropdown for selecting a focus preset.
+ * `\<focus-dropdown\>`: popover-based dropdown for selecting a focus preset.
  * Reads initial value from the `value` attribute and dispatches `change`
  * events with `\{ value \}` when a preset is selected.
  */

@@ -26,15 +26,15 @@ type StopRemindersOutput = StopOutput | Record<string, never>;
  *
  * Decision tree:
  *
- * 1. **Loop guard** -- when `stop_hook_active` is `true`, returns `{}` to allow
+ * 1. **Loop guard**: when `stop_hook_active` is `true`, returns `{}` to allow
  *    the stop unconditionally; re-blocking would create an endless cycle.
- * 2. **Prose extraction** -- strips code blocks, inline code, blockquotes, and
+ * 2. **Prose extraction**: strips code blocks, inline code, blockquotes, and
  *    quoted strings from `last_assistant_message` before scanning.
- * 3. **Uncertainty scan** -- matches against hedging phrases (probably, maybe,
+ * 3. **Uncertainty scan**: matches against hedging phrases (probably, maybe,
  *    I think, etc.); a hit contributes a reminder to gather evidence.
- * 4. **Trailing-question scan** -- looks for sentences ending in `?` in the
+ * 4. **Trailing-question scan**: looks for sentences ending in `?` in the
  *    last 500 characters; rhetorical/conditional prefixes are excluded.
- * 5. **Result** -- if any reasons accumulated, returns
+ * 5. **Result**: if any reasons accumulated, returns
  *    `\{ decision: 'block', reason: [reasons joined by space] \}`;
  *    otherwise `\{\}`.
  *
@@ -102,7 +102,7 @@ function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
 /**
  * Parses raw stdin as a `StopInput`.
  *
- * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
  * @param raw - JSON payload from Claude Code stdin
  *
@@ -120,7 +120,7 @@ function stopRemindersParser(raw: string,): StopInput {
 /**
  * Serializes the stop-reminders output for stdout.
  *
- * No trailing newline -- matches Claude Code's wire convention.
+ * No trailing newline; matches Claude Code's wire convention.
  *
  * @param output - handler result to serialize
  *

@@ -23,9 +23,9 @@ export type MatrixOptions = {
 
   /**
    * Environments. Protocol prefix selects the backend.
-   * - `container:` -- podman (implemented)
-   * - `host:` -- run directly on the host (no container, runtime must be pre-installed)
-   * - `vm:` -- mvm (not yet implemented, throws)
+   * - `container:`: podman (implemented)
+   * - `host:`: run directly on the host (no container, runtime must be pre-installed)
+   * - `vm:`: mvm (not yet implemented, throws)
    *
    * @example `['container:ubuntu', 'container:fedora']`
    *
@@ -35,8 +35,8 @@ export type MatrixOptions = {
 
   /**
    * User contexts inside each environment.
-   * - `'root'` -- run as root
-   * - `'user'` -- create a non-root user with passwordless sudo
+   * - `'root'`: run as root
+   * - `'user'`: create a non-root user with passwordless sudo
    *
    * Defaults to `['root']`.
    */
@@ -50,7 +50,7 @@ export type MatrixOptions = {
 
   /**
    * Exclude specific combinations from the cartesian product.
-   * Each entry is a partial match -- all specified fields must match to exclude.
+   * Each entry is a partial match; all specified fields must match to exclude.
    *
    * @example
    * ```ts
@@ -70,15 +70,15 @@ export type MatrixOptions = {
 
 /**
  * User context inside a container.
- * - `'root'` -- run as root (uid 0)
- * - `'user'` -- create a non-root user (uid 1000) with passwordless sudo
+ * - `'root'`: run as root (uid 0)
+ * - `'user'`: create a non-root user (uid 1000) with passwordless sudo
  */
 export type UserContext = 'root' | 'user';
 
 /**
  * JS runtime to install and execute test files with.
- * - `'bun'` -- installed via `curl -fsSL https://bun.sh/install | bash`
- * - `'deno'` -- installed via `curl -fsSL https://deno.land/install.sh | sh`
+ * - `'bun'`: installed via `curl -fsSL https://bun.sh/install | bash`
+ * - `'deno'`: installed via `curl -fsSL https://deno.land/install.sh | sh`
  */
 export type Runtime = 'bun' | 'deno';
 
@@ -130,10 +130,10 @@ export type Combination = {
 
 /**
  * Supported package managers, derived from distro names.
- * - `apt` -- Debian, Ubuntu
- * - `dnf` -- Fedora, RHEL, CentOS
- * - `apk` -- Alpine
- * - `pacman` -- Arch
+ * - `apt`: Debian, Ubuntu
+ * - `dnf`: Fedora, RHEL, CentOS
+ * - `apk`: Alpine
+ * - `pacman`: Arch
  */
 export type PackageManager = 'apt' | 'dnf' | 'apk' | 'pacman';
 

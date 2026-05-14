@@ -46,7 +46,7 @@ const STYLES = css(`
 `,);
 
 /**
- * `\<toggle-switch\>` -- boolean toggle with animated thumb.
+ * `\<toggle-switch\>`: boolean toggle with animated thumb.
  * Reflects state via the `on` attribute and dispatches a `change` event on toggle.
  */
 class ToggleSwitch extends HTMLElement {

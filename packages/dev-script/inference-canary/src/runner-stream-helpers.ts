@@ -61,7 +61,7 @@ export class PartialCompletionError extends Error {
 
 /**
  * Logs a timing summary for a streamed response.
- * Only ttfc and total are shown -- chunk count and inter-chunk gaps are too granular
+ * Only ttfc and total are shown; chunk count and inter-chunk gaps are too granular
  * for routine human inspection and are preserved in the StreamTiming object for callers
  * that need them.
  *

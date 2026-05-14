@@ -5,7 +5,7 @@
  * Final score = combinedScore(correctness, lint) * perfScore, where:
  * - combinedScore: correctness 40%, lint 30%, type safety 30%
  * - perfScore: 1.0 when fast, linear decay to 0.0 when slow
- * Performance is a direct multiplier with no cap -- a slow implementation degrades
+ * Performance is a direct multiplier with no cap; a slow implementation degrades
  * the full score proportionally, not just a small fraction of it.
  */
 import type { Probe, } from '../probes.ts';

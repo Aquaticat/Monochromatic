@@ -14,7 +14,7 @@
  * @example
  * ```ts
  * JSDOC_TO_TSDOC_MAP.get('\@type');
- * // => 'Remove \@type -- TypeScript handles types.'
+ * // => 'Remove \@type; TypeScript handles types.'
  * ```
  */
 export const JSDOC_TO_TSDOC_MAP: ReadonlyMap<string, string> = new Map([

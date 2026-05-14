@@ -34,7 +34,7 @@ export type { ContainerResult, } from './container-exec.ts';
  *
  * Uses `crypto.randomUUID()` instead of `mkdtemp` to generate a unique subdirectory
  * name without relying on `os.tmpdir()`. Keeping staging files under LINT_DIR means
- * all container I/O is in one place -- easier to inspect and already gitignored.
+ * all container I/O is in one place; easier to inspect and already gitignored.
  *
  * @returns async disposable with the staging directory path
  */

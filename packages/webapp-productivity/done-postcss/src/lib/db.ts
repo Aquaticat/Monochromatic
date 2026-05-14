@@ -1,5 +1,5 @@
 /**
- * Database initialization module -- imported as a side-effect by `server.ts`.
+ * Database initialization module; imported as a side-effect by `server.ts`.
  *
  * On import, this module:
  * 1. Resolves the database path from CLI args / env / default

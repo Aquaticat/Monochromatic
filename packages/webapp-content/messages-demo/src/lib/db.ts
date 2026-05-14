@@ -1,5 +1,5 @@
 /**
- * Database initialisation -- imported as a side-effect by `server.ts` and `seed.ts`.
+ * Database initialisation; imported as a side-effect by `server.ts` and `seed.ts`.
  *
  * On import this module:
  *

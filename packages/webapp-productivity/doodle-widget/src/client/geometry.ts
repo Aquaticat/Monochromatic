@@ -213,8 +213,8 @@ export function segmentsIntersect(
  * Computes the squared minimum distance between two line segments.
  *
  * Handles two cases:
- * 1. Segments intersect -- distance is 0
- * 2. Otherwise -- minimum of the four endpoint-to-opposite-segment distances
+ * 1. Segments intersect; distance is 0
+ * 2. Otherwise; minimum of the four endpoint-to-opposite-segment distances
  *
  * @param a1x - segment 1 start x
  *

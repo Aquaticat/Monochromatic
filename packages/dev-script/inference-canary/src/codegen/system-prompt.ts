@@ -8,7 +8,7 @@
  * so on its own it tells the model nothing about which rules are active.
  * To close that gap, we also embed every rule module source file from the
  * shared config package. These files contain the actual severity mappings
- * and inline comments explaining each rule -- enough for a model to comply
+ * and inline comments explaining each rule; enough for a model to comply
  * without a hand-curated cheat sheet.
  *
  * Custom JS plugin rules (`tsdoc/*`, `no-restricted-syntax/*`, `stylistic/*`)

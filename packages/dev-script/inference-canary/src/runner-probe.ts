@@ -53,7 +53,7 @@ function createDisposableTimeout(
 /**
  * Runs a single probe with a 5-minute timeout covering all turns (consistency + fix).
  *
- * Uses `AbortController` so the timeout doesn't just cancel the promise -- it also
+ * Uses `AbortController` so the timeout doesn't just cancel the promise; it also
  * cancels in-flight HTTP streams (OpenAI SDK respects `signal`) and kills any live
  * container processes (`execBun` listens for abort). Without cancellation, orphaned
  * coroutines keep the Bun event loop alive well past the timeout.

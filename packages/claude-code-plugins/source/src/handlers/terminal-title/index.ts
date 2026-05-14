@@ -134,7 +134,7 @@ function setTerminalTitle(title: string,): void {
 }
 
 /**
- * Output is `void` -- the terminal-title handler writes its OSC sequence to
+ * Output is `void`: the terminal-title handler writes its OSC sequence to
  * `/dev/tty` and emits no stdout. The runtime invokes `terminalTitleWriter`
  * which returns an empty string.
  */
@@ -166,7 +166,7 @@ function terminalTitleHandler(event: HookInput,): TerminalTitleOutput {
  * Parses raw stdin as a `HookInput` (any of the union members; narrowed at
  * dispatch time inside the handler).
  *
- * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
  * @param raw - JSON payload from Claude Code stdin
  *
@@ -182,7 +182,7 @@ function terminalTitleParser(raw: string,): HookInput {
 }
 
 /**
- * Returns an empty string -- the legacy hook produced no stdout, and the
+ * Returns an empty string; the legacy hook produced no stdout, and the
  * runtime shell writes whatever this returns verbatim.
  *
  * @param _output - ignored handler result (title is set as a side effect)

@@ -71,7 +71,7 @@ export function etagForFeed(
 
 /**
  * Tests whether the request's `If-None-Match` header matches the supplied
- * ETag. The comparison is byte-exact -- there is only one strong ETag
+ * ETag. The comparison is byte-exact; there is only one strong ETag
  * shape per resource.
  *
  * @param ifNoneMatch - raw `If-None-Match` header value, or `null` /

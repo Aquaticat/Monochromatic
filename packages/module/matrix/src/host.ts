@@ -62,7 +62,7 @@ function runtimeArgs({
  * Spawns the runtime binary with the test file path.
  * The runtime must be pre-installed and available on PATH.
  * The `user` axis is included in the combination for labeling
- * but does not affect execution -- the process runs as the current user.
+ * but does not affect execution; the process runs as the current user.
  *
  * @param combination - Fully resolved combination to execute
  *

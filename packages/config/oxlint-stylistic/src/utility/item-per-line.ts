@@ -44,7 +44,7 @@ export type ItemPerLineConfig = {
   /**
    * Minimum number of items required to trigger the rule.
    *
-   * Defaults to 2 -- single-item lists are never flagged.
+   * Defaults to 2; single-item lists are never flagged.
    */
   minItems?: number;
   /**

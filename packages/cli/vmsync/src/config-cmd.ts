@@ -1,5 +1,5 @@
 /**
- * Config command -- updates boot settings for a managed VM.
+ * Config command; updates boot settings for a managed VM.
  *
  * @module
  */

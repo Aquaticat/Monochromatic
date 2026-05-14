@@ -106,8 +106,8 @@ function nextSemanticToken(
  * Extracts every `url(...)` reference from a CSS source string.
  *
  * Handles both forms the tokenizer recognises:
- * - `url(path)` / `url("path")` / `url('path')` -- tokenised as a single `Url` token
- * - `url("path")` with whitespace or escapes -- tokenised as `Function(url)` followed
+ * - `url(path)` / `url("path")` / `url('path')`: tokenised as a single `Url` token
+ * - `url("path")` with whitespace or escapes; tokenised as `Function(url)` followed
  *   by a `String` token and then a `CloseParen`
  *
  * `@import` URLs emit a bare `String` token preceded by `@import`; those are

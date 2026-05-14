@@ -2,7 +2,7 @@
  * Resolves the on-wire transfer size for an asset.
  *
  * When a `.zst` companion exists alongside the requested file,
- * its size is returned instead -- this mirrors file servers that
+ * its size is returned instead; this mirrors file servers that
  * serve pre-compressed variants when the client advertises zstd support.
  * Otherwise the raw file size is returned.
  */

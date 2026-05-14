@@ -163,7 +163,7 @@ export function resetRootCache(): void {
 
 /**
  * Checks whether a package exists in the detected manager's repository.
- * Does not require root -- search commands run unprivileged.
+ * Does not require root; search commands run unprivileged.
  *
  * @param manager - Package manager to query
  *

@@ -2,7 +2,7 @@
  * Top-level HTML document shell.
  *
  * Produces a complete `<!DOCTYPE html>` page linking to the external stylesheet.
- * All content is static -- viewable with JavaScript disabled.
+ * All content is static; viewable with JavaScript disabled.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 

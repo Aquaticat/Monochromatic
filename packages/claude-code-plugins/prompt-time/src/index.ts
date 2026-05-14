@@ -4,7 +4,7 @@
  * Claude Code UserPromptSubmit hook that injects the current local system
  * time into Claude's conversation context as `<time>HH:MM</time>`.
  *
- * Thin shim -- handler logic, parser, and writer live in
+ * Thin shim; handler logic, parser, and writer live in
  * `@monochromatic-dev/claude-code-plugins-source/handlers/prompt-time`.
  * This file exists so the standard tsdown build produces an installable plugin
  * entry at `dist/final/node/index.mjs` for Claude Code's marketplace install.

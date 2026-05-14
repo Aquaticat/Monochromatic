@@ -10,7 +10,7 @@
  * - `iso-server-advertisement.ts`: `info/refs` advertisement builder
  *
  * Filesystem strategy: option (a) from
- * `server/TROUBLESHOOTING.isomorphic-git.md` -- bare directories under
+ * `server/TROUBLESHOOTING.isomorphic-git.md`: bare directories under
  * `WEBAPP_FORGE_GITDIR_ROOT` are the source of truth.
  */
 

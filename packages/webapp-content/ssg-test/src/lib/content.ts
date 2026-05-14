@@ -4,7 +4,7 @@
  * Globs MDX files from `src/content/{lang}/`, parses YAML frontmatter with
  * an inline parser backed by the `yaml` package, validates with Zod, and
  * provides grouping utilities.
- * Filesystem paths give `lang` and `name` directly -- no string splitting needed.
+ * Filesystem paths give `lang` and `name` directly; no string splitting needed.
  *
  * Uses a custom frontmatter parser instead of `gray-matter` because `gray-matter`
  * pulls in a large dependency tree and uses `eval` internally (via `js-yaml`'s
@@ -261,7 +261,7 @@ export type Post = {
  *
  * Globs `src/content` for `.mdx` files, extracts `lang` from the parent
  * directory name and `name` from the filename (minus extension).
- * Does not resolve `published`/`updated` -- those are derived from git
+ * Does not resolve `published`/`updated`: those are derived from git
  * separately by `./git-dates.ts` and attached via `attachDates`.
  *
  * @param contentDir - path to content directory containing `{lang}/*.mdx`
@@ -328,7 +328,7 @@ export type ResolvedDates = {
  * Combines loaded posts with resolved git dates and returns sorted `Post[]`.
  *
  * The caller (typically `build.ts`) is responsible for producing the
- * `datesByFilePath` map -- either from cache (when HEAD is unchanged)
+ * `datesByFilePath` map; either from cache (when HEAD is unchanged)
  * or by calling `getPostDates` for files missing from the cache.
  *
  * Posts are returned sorted by `updated` descending, matching the previous

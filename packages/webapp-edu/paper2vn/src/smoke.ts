@@ -11,7 +11,7 @@
  *
  *  1. agent-browser's CDP `Runtime.evaluate` queues behind the page's
  *     in-flight fetch, and reasoning models like Kimi K2.6 hold the
- *     fetch open for 40-80s -- well past the per-command timeout.
+ *     fetch open for 40-80s; well past the per-command timeout.
  *  2. `Input.dispatchMouseEvent` for a click on `Start lecture` after
  *     filling the textarea is observed to time out at the CDP layer
  *     even though manual clicking works in a real browser. Repro and
@@ -27,13 +27,13 @@
  *
  * Required env: `PAPER2VN_OPENROUTER_API_KEY` (or `OPENROUTER_API_KEY`).
  * Optional env:
- *   - `PAPER2VN_OPENROUTER_MODEL` -- restrict to a single model
- *   - `PAPER2VN_SMOKE_PAPER` -- override the default tiny paper text
+ *   - `PAPER2VN_OPENROUTER_MODEL`: restrict to a single model
+ *   - `PAPER2VN_SMOKE_PAPER`: override the default tiny paper text
  */
 /*
  * Side-effect import: installs `globalThis.localStorage` before any
  * page module runs. ES imports evaluate in source order, so this
- * MUST stay first -- moving it below the page-module imports breaks
+ * MUST stay first; moving it below the page-module imports breaks
  * `state.ts` hydration.
  */
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: installs localStorage shim
@@ -76,7 +76,7 @@ const OPENROUTER_API_KEY = process.env['PAPER2VN_OPENROUTER_API_KEY']
 /**
  * Smoke-test model order.
  *
- * Kimi K2.6 is the primary -- the app's recommended default. It is a
+ * Kimi K2.6 is the primary; the app's recommended default. It is a
  * reasoning model and a single chapter-generation call typically takes
  * 40-80s before content lands. If Kimi errors (transient upstream
  * failure, malformed JSON, bad gateway), fall through to Claude Haiku

@@ -1,5 +1,5 @@
 /**
- * `<side-drawer>` -- intrinsic sidebar navigation.
+ * `<side-drawer>`: intrinsic sidebar navigation.
  *
  * Renders two copies of the nav: an inline sidebar visible when the
  * component is narrow, and a popover panel opened by the hamburger menu

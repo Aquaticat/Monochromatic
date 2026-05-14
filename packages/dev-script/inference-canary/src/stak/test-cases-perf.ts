@@ -7,7 +7,7 @@
  *
  * LCG parameters: a=1664525, c=1013904223, m=2000000000, seed=42.
  * At 1M iterations models completed in 125-623ms (5x range). Scaling to 10M
- * makes that 1.25-6.23s -- wide enough for PERF_FAST_MS/PERF_SLOW_MS to
+ * makes that 1.25-6.23s; wide enough for PERF_FAST_MS/PERF_SLOW_MS to
  * differentiate. Expected output is precomputed in perf-expected-output.ts to
  * avoid an 8s module-load delay.
  */

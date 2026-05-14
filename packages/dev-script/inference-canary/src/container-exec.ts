@@ -30,7 +30,7 @@ export type ContainerResult = {
 /**
  * Executes the container command and captures stdout/stderr/exit-code.
  *
- * Resolves on any exit code (including non-zero) -- callers check exitCode/timedOut.
+ * Resolves on any exit code (including non-zero): callers check exitCode/timedOut.
  *
  * @param containerArgs - fully-formed arguments for the container runtime binary
  *

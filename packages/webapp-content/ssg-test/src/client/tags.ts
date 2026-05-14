@@ -24,7 +24,7 @@ export {
  * Lezer highlighter that maps parse tree tags to highlight group names.
  * Used with `highlightTree` to collect token ranges for CSS Custom Highlight registration.
  *
- * Tag specificity is handled by `tagHighlighter` internally -- more specific
+ * Tag specificity is handled by `tagHighlighter` internally; more specific
  * modifier tags (e.g. `function(variableName)`) take priority over base tags.
  * Base tags like `comment` and `number` match their subtypes
  * (`lineComment`, `blockComment`, `integer`, `float`, etc.) via tag hierarchy.

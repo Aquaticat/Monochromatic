@@ -3,7 +3,7 @@
  *
  * Writes generated model output to `src/canary-lint/<model>/<probe>-<pass>-<timestamp>/canary.ts`
  * with a `meta.json` sidecar for traceability. Directory is gitignored and intentionally
- * kept after runs for debugging -- artifacts do not accumulate enough to matter.
+ * kept after runs for debugging; artifacts do not accumulate enough to matter.
  */
 import {
   mkdir,

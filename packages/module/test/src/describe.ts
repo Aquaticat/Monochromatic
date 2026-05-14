@@ -48,9 +48,9 @@ export type DescribeOptions = {
   /**
    * Maximum number of children running at the same time.
    *
-   * - `1` -- sequential execution via `for...of` loop, no `p-limit` overhead
-   * - `2`..`Number.MAX_SAFE_INTEGER - 1` -- bounded concurrency via `p-limit`
-   * - `Infinity` or `Number.MAX_SAFE_INTEGER` -- unbounded concurrency via
+   * - `1`: sequential execution via `for...of` loop, no `p-limit` overhead
+   * - `2`..`Number.MAX_SAFE_INTEGER - 1`: bounded concurrency via `p-limit`
+   * - `Infinity` or `Number.MAX_SAFE_INTEGER`: unbounded concurrency via
    *   raw `Promise.allSettled` (no `p-limit` overhead)
    *
    * **Inherited by child describes.** A nested `describe` without its own

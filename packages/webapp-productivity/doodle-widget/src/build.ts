@@ -3,7 +3,7 @@
  *
  * Reads default SVG backgrounds for each page, reads the pre-bundled
  * client JS from tsdown output, then assembles HTML/CSS/JS into a
- * single file. SVG backgrounds are embedded unmodified -- white fill
+ * single file. SVG backgrounds are embedded unmodified; white fill
  * removal for user-uploaded SVGs happens at runtime via size-based
  * detection in the client background module.
  *
@@ -43,7 +43,7 @@ const DIST_DIR = join(
 console.error('[doodle-widget] building...',);
 
 /**
- * SVG backgrounds passed through unmodified -- the bundled SVGs already
+ * SVG backgrounds passed through unmodified; the bundled SVGs already
  * have transparent backgrounds (`fill:none`). White fill removal only
  * applies to user-uploaded SVGs at runtime via `setSvgBackground`,
  * which uses size-based detection to target actual backgrounds.

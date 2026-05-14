@@ -1,5 +1,5 @@
 /**
- * List command -- enumerates all managed VMs and their sync state.
+ * List command; enumerates all managed VMs and their sync state.
  *
  * @module
  */

@@ -119,7 +119,7 @@ async function loadPagefind(): Promise<PagefindApi | undefined> {
     // oxlint-disable-next-line no-unsafe-type-assertion -- Pagefind JS API shape is untyped
     const api = await import(
       /* webpackIgnore: true */
-      // @ts-expect-error -- Pagefind bundle is generated at build time by `pagefind --site dist`; no type declarations exist
+      // @ts-expect-error; Pagefind bundle is generated at build time by `pagefind --site dist`; no type declarations exist
       '/pagefind/pagefind.js'
     ) as PagefindApi;
     api.init();

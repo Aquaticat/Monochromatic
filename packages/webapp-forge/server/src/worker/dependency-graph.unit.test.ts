@@ -1,7 +1,7 @@
 /**
  * Unit tests for the dependency-graph mapping.
  *
- * Pure function -- no fixtures, no DB. Each case asserts the exact set of
+ * Pure function; no fixtures, no DB. Each case asserts the exact set of
  * fragment keys produced for a given (event, context) pair.
  */
 

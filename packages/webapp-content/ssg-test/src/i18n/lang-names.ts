@@ -5,7 +5,7 @@
  * are intentionally constant across renders: the value for `ca`
  * is always "Català" regardless of which locale is currently being
  * rendered, so a reader on the English landing page sees the Catalan
- * option labelled in Catalan -- a standard convention for language
+ * option labelled in Catalan; a standard convention for language
  * switchers on multilingual sites.
  *
  * @example

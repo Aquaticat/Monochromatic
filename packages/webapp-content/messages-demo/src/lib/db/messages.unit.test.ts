@@ -4,7 +4,7 @@
  * so we never touch the disk fixture.
  *
  * Concurrency is 1: every test mutates the singleton database, so
- * isolating writes with unique ids is not enough -- we serialise
+ * isolating writes with unique ids is not enough; we serialise
  * to keep transactions linear.
  */
 

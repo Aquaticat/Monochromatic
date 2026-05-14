@@ -31,7 +31,7 @@ export async function mountCustomEditor(
   },
 ): Promise<void> {
   const host = document.createElement('div',);
-  // Use a distinct class -- not `composer-body` -- so
+  // Use a distinct class; not `composer-body`: so
   // `querySelector('.composer-body')` continues to return the textarea
   // unambiguously elsewhere in the page.
   host.className = 'composer-body--custom';

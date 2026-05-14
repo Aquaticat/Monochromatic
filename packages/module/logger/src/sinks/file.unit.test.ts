@@ -19,7 +19,7 @@ import {
  * Mock `stat` that always throws an ENOENT-like error, so `findNodeModulesUp`
  * walks the whole tree and exhausts without matching.
  *
- * @returns never -- always throws
+ * @returns never; always throws
  */
 function statAlwaysMissing(): never {
   const error: NodeJS.ErrnoException = Object.assign(

@@ -8,7 +8,7 @@
  *
  * Cache key triple: `(messageId, revision, idx)`. The plan calls for
  * stale-entry eviction on read whenever a different revision is in
- * scope -- a fresh edit bumps `messages.revision`, so a `get` for the
+ * scope; a fresh edit bumps `messages.revision`, so a `get` for the
  * new revision deletes the prior revision's entries for the same
  * message id. This keeps cache size bounded to one revision per
  * message.
@@ -69,7 +69,7 @@ export type ChunkCacheCaps = {
 
 /**
  * Builds a chunk cache. Honours the storage probe; never throws
- * because of a failed backend -- on a setup failure the no-op cache is
+ * because of a failed backend; on a setup failure the no-op cache is
  * returned so the composer remains operable.
  *
  * @param input - probe results

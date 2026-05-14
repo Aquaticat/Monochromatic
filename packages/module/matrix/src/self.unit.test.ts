@@ -2,7 +2,7 @@
  * Self-test entry point for `@monochromatic-dev/module-matrix`.
  *
  * Imports each per-module test suite so they run in sequence.
- * Run directly with `bun` -- no external test runner needed.
+ * Run directly with `bun`: no external test runner needed.
  *
  * @module
  */

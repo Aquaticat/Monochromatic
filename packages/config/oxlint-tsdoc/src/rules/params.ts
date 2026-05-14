@@ -28,7 +28,7 @@ import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
  *
  * @example
  * ```ts
- * // Bad -- parameter name doesn't match
+ * // Bad; parameter name doesn't match
  * /\** \@param x - description *\/
  * function foo(name: string): void {}
  *
@@ -36,7 +36,7 @@ import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
  * /\** \@param name - description *\/
  * function foo(name: string): void {}
  *
- * // Good -- destructured property names are allowed
+ * // Good; destructured property names are allowed
  * /\** \@param value - item to process *\/
  * function foo({ value }: Options): void {}
  * ```
@@ -115,7 +115,7 @@ export const checkParamNames: CreateOnceRule = {
  *
  * @example
  * ```ts
- * // Bad -- missing \@param for `count`
+ * // Bad; missing \@param for `count`
  * /\** \@param name - user name *\/
  * function greet(name: string, count: number): void {}
  *

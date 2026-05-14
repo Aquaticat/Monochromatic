@@ -7,7 +7,7 @@
  * translates browser-level edits into changesets) and the buffer
  * worker (which holds the piece-table source of truth).
  *
- * Helpers in this module are intentionally pure -- no DOM, no
+ * Helpers in this module are intentionally pure; no DOM, no
  * postMessage, no state. They run identically in the worker and on
  * the main thread.
  */

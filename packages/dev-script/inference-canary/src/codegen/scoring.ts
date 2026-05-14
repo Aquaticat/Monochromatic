@@ -10,7 +10,7 @@
  *
  * The per-rule cap prevents one systematically violated rule (e.g. require-tsdoc
  * on every declaration) from dominating the score. Forgetting TSDoc costs at most
- * 0.3, not 2.5 -- the model missed one convention, not twenty different ones.
+ * 0.3, not 2.5; the model missed one convention, not twenty different ones.
  *
  * Final score is clamped to [0, 1].
  */

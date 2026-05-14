@@ -48,7 +48,7 @@ type CreateCommentPayload = {
 };
 
 /**
- * `POST /api/repos/:owner/:repo/issues` -- creates an issue. Body must
+ * `POST /api/repos/:owner/:repo/issues`: creates an issue. Body must
  * include `title`; `body` and `number` are optional.
  */
 export const createIssueHandler: EventHandlerWithFetch = defineHandler(
@@ -107,7 +107,7 @@ export const createIssueHandler: EventHandlerWithFetch = defineHandler(
 );
 
 /**
- * `POST /api/repos/:owner/:repo/issues/:number/comments` -- posts a
+ * `POST /api/repos/:owner/:repo/issues/:number/comments`: posts a
  * comment to an existing issue. Body must include `body`.
  */
 export const createCommentHandler: EventHandlerWithFetch = defineHandler(
@@ -175,7 +175,7 @@ export const createCommentHandler: EventHandlerWithFetch = defineHandler(
 );
 
 /**
- * `POST /api/repos/:owner/:repo/issues/:number/labels/:label` -- attaches
+ * `POST /api/repos/:owner/:repo/issues/:number/labels/:label`: attaches
  * a label to an existing issue. Idempotent at the data layer; the event
  * fires every call so filter list fragments still rebuild.
  */

@@ -13,10 +13,10 @@
  * Aggregation strategy for reducing multiple timestamps to a single value.
  *
  * Builtin strategies:
- * - `newest`: `Math.max` -- most recent timestamp wins
- * - `oldest`: `Math.min` -- least recent timestamp wins
- * - `mean`: arithmetic mean -- average timestamp across all items
- * - `median`: middle value -- central timestamp, robust to outliers
+ * - `newest`: `Math.max`: most recent timestamp wins
+ * - `oldest`: `Math.min`: least recent timestamp wins
+ * - `mean`: arithmetic mean; average timestamp across all items
+ * - `median`: middle value; central timestamp, robust to outliers
  *
  * Custom strategies use `sh:` prefix: the command receives all resolved
  * timestamps as space-separated arguments and must output a single timestamp.

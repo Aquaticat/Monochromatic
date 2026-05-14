@@ -3,8 +3,8 @@
  *
  * Uses `@mdx-js/mdx` to compile and evaluate MDX source, with a minimal
  * JSX runtime (`jsx-to-html`) that produces HTML strings directly instead
- * of virtual DOM nodes. This follows the intended MDX flow -- parse, compile
- * to JS, evaluate -- so JSX comments, expressions, and imports are handled
+ * of virtual DOM nodes. This follows the intended MDX flow; parse, compile
+ * to JS, evaluate; so JSX comments, expressions, and imports are handled
  * correctly by the MDX compiler.
  *
  * Syntax highlighting is handled client-side via the CSS Custom Highlight API
@@ -31,13 +31,13 @@ import rehypeHighlight from './rehype-highlight.ts';
  * Renders an MDX body string to an HTML string.
  *
  * Pipeline stages (handled internally by `@mdx-js/mdx` and the JSX runtime):
- * 1. `remark-parse` + `remark-mdx` -- parse markdown and MDX syntax (built-in)
- * 2. `remark-gfm` -- GitHub Flavored Markdown (tables, autolinks, task lists)
- * 3. `remark-sectionize` -- wrap headings in `<section>` elements
- * 5. `remark-rehype` -- convert markdown AST to HTML AST (built-in)
- * 6. `rehype-slug` -- add `id` attributes to headings
- * 7. `rehype-autolink-headings` -- add anchor links to headings
- * 8. `rehype-highlight` -- pre-compute Lezer syntax highlight ranges
+ * 1. `remark-parse` + `remark-mdx`: parse markdown and MDX syntax (built-in)
+ * 2. `remark-gfm`: GitHub Flavored Markdown (tables, autolinks, task lists)
+ * 3. `remark-sectionize`: wrap headings in `<section>` elements
+ * 5. `remark-rehype`: convert markdown AST to HTML AST (built-in)
+ * 6. `rehype-slug`: add `id` attributes to headings
+ * 7. `rehype-autolink-headings`: add anchor links to headings
+ * 8. `rehype-highlight`: pre-compute Lezer syntax highlight ranges
  * 9. Compile to JS and evaluate with string-producing JSX runtime
  *
  * JSX comments (`{/* ... *\/}`) are naturally stripped during JS compilation,

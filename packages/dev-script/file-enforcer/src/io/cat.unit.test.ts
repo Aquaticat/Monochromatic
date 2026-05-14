@@ -35,7 +35,7 @@ async function teardown(tempDir: string,): Promise<void> {
 await describe({
   name: '',
   children: [
-    //region cat(string[]) -- array mode
+    //region cat(string[]): array mode
 
     describe({
       name: 'cat(string[])',
@@ -135,9 +135,9 @@ await describe({
       ],
     },),
 
-    //endregion cat(string[]) -- array mode
+    //endregion cat(string[]): array mode
 
-    //region cat(string) -- glob mode
+    //region cat(string): glob mode
 
     describe({
       name: 'cat(string)',
@@ -211,6 +211,6 @@ await describe({
         },),
       ],
     },),
-    //endregion cat(string) -- glob mode
+    //endregion cat(string): glob mode
   ],
 },);

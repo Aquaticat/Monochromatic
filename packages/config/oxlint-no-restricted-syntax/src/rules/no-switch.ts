@@ -19,14 +19,14 @@ import type {
  *   default: return 0;
  * }
  *
- * // Good -- if/else
+ * // Good; if/else
  * if (kind === 'a') {
  *   return 1;
  * } else {
  *   return 0;
  * }
  *
- * // Good -- Record lookup
+ * // Good; Record lookup
  * const VALUES: Record<string, number> = { a: 1 };
  * return VALUES[kind] ?? 0;
  * ```

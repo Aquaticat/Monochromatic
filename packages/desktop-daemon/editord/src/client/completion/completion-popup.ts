@@ -24,7 +24,7 @@ type ShownAt = {
 };
 
 /**
- * `<completion-popup>` -- language server autocompletion dropdown.
+ * `<completion-popup>`: language server autocompletion dropdown.
  *
  * Dispatches `completion-select` CustomEvent when an item is accepted.
  */

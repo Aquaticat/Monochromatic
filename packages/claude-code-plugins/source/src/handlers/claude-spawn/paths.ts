@@ -5,9 +5,9 @@
  * parent-child session relationships and result forwarding.
  *
  * Directory layout under `~/.claude/spawn-results/`:
- * - `.by-pid/{claude_pid}` -- maps Claude process PID to session identity
- * - `spawns/{spawnId}.json` -- spawn state for each child session
- * - `spawns/{spawnId}.reported` -- renamed after result injection
+ * - `.by-pid/{claude_pid}`: maps Claude process PID to session identity
+ * - `spawns/{spawnId}.json`: spawn state for each child session
+ * - `spawns/{spawnId}.reported`: renamed after result injection
  *
  * @module
  */

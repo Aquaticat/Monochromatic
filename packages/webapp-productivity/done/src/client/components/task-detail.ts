@@ -16,7 +16,7 @@ import type {
 } from './task-detail-types.ts';
 
 /**
- * `<task-detail>` -- full-page task editor with title, description, metadata pills,
+ * `<task-detail>`: full-page task editor with title, description, metadata pills,
  * action buttons (start/stop/complete/delete), and debounced AI autofill.
  */
 class TaskDetail extends HTMLElement {

@@ -108,7 +108,7 @@ export type ComposerState = {
     /**
      * Local copy of all chunks, populated when tier-3 was reached for
      * a new message (chunks were not yet on the server). `null` in
-     * edit-mode tier 3 -- existing chunks resolve via the chain walk
+     * edit-mode tier 3; existing chunks resolve via the chain walk
      * on the server.
      */
     localChunks: {

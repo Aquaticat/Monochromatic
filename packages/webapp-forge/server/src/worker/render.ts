@@ -48,7 +48,7 @@ export type RenderResult = {
  * Renders the fragment identified by `fragmentKey`.
  *
  * Throws when the key shape is unknown or when underlying data is
- * missing (e.g. the issue id no longer exists -- a sign the caller
+ * missing (e.g. the issue id no longer exists; a sign the caller
  * raced a delete).
  *
  * @param fragmentKey - canonical fragment key

@@ -1,5 +1,5 @@
 /**
- * `\<side-drawer\>` -- intrinsic sidebar navigation.
+ * `\<side-drawer\>`: intrinsic sidebar navigation.
  *
  * Renders two copies of the nav: an inline sidebar visible when the
  * component is narrow (~22 rem, meaning it sits beside the main content
@@ -7,7 +7,7 @@
  * the hamburger menu when the component is full-width (stacked).
  *
  * Visibility is governed entirely by a CSS container query on the
- * wrapper element -- no viewport media queries, no JS resize observers.
+ * wrapper element; no viewport media queries, no JS resize observers.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import {

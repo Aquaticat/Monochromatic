@@ -7,7 +7,7 @@
  * not `3 days, 1:00:00`). Locale is left undefined so numerals follow
  * the host's `Intl` default.
  *
- * Pure functions with no component dependencies -- used by both
+ * Pure functions with no component dependencies; used by both
  * `\<task-card\>` and `\<task-detail\>` to display elapsed time.
  */
 import {

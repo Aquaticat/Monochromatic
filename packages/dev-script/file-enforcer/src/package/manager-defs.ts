@@ -6,10 +6,10 @@ import type { PackageManager, } from './types.ts';
  * Per-manager command templates.
  * `{pkg}` is replaced with the resolved package name at call time.
  *
- * - `check` -- predicate to detect whether this manager is available
- * - `search` -- command to verify a package exists in the repo (exit 0 = available)
- * - `install` -- command template for installing a package
- * - `needsRoot` -- whether install requires privilege escalation
+ * - `check`: predicate to detect whether this manager is available
+ * - `search`: command to verify a package exists in the repo (exit 0 = available)
+ * - `install`: command template for installing a package
+ * - `needsRoot`: whether install requires privilege escalation
  */
 export type ManagerDef = {
   readonly check: readonly string[];

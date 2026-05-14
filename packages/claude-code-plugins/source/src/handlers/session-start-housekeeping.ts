@@ -93,7 +93,7 @@ async function removeMcpJson(workspaceRoot: string,): Promise<void> {
 }
 
 /**
- * Output is `void` -- the housekeeping handler performs filesystem side effects
+ * Output is `void`: the housekeeping handler performs filesystem side effects
  * and writes nothing to stdout. The runtime invokes `sessionStartHousekeepingWriter`
  * which returns an empty string, matching the legacy hook's wire behavior.
  */
@@ -133,7 +133,7 @@ async function sessionStartHousekeepingHandler(
 /**
  * Parses raw stdin as a `SessionStartInput`.
  *
- * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ * Input is trusted; it comes from Claude Code's hook dispatch system.
  *
  * @param raw - JSON payload from Claude Code stdin
  *
@@ -149,7 +149,7 @@ function sessionStartHousekeepingParser(raw: string,): SessionStartInput {
 }
 
 /**
- * Returns an empty string -- the legacy hook produced no stdout, and the runtime
+ * Returns an empty string; the legacy hook produced no stdout, and the runtime
  * shell writes whatever this returns verbatim.
  *
  * @param _output - ignored handler result (housekeeping has no stdout)

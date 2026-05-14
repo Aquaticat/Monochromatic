@@ -91,7 +91,7 @@ function hasYieldsTag(result: TsdocParseResult,): boolean {
  *
  * @example
  * ```ts
- * // Bad -- missing yield documentation for generator
+ * // Bad; missing yield documentation for generator
  * /\** Generates numbers. *\/
  * function* count(): Generator<number> { yield 1; }
  *

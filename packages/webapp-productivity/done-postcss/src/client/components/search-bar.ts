@@ -50,7 +50,7 @@ function onBackClick(): void {
 }
 
 /**
- * `\<search-bar\>` -- sticky bar with a back button and debounced search input.
+ * `\<search-bar\>`: sticky bar with a back button and debounced search input.
  * Dispatches a `search` event with `\{ query \}` after the debounce delay.
  */
 class SearchBar extends HTMLElement {

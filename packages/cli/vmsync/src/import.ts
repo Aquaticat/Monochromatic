@@ -1,5 +1,5 @@
 /**
- * Import command -- validates a disk image is UEFI-bootable,
+ * Import command; validates a disk image is UEFI-bootable,
  * converts it to qcow2 + vhdx, and creates a managed VM directory.
  *
  * @module

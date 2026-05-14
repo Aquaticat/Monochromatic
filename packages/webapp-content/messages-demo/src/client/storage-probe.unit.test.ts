@@ -37,7 +37,7 @@ type StubHandle = Disposable;
  * Installs `fake` as `globalThis.localStorage` and returns a disposable
  * that removes it on scope exit (including throws). Removing rather
  * than restoring is correct here because Bun does not expose
- * `localStorage` natively -- the property would not exist before the
+ * `localStorage` natively; the property would not exist before the
  * test ran.
  *
  * @param fake - object exposing the localStorage subset the probe uses

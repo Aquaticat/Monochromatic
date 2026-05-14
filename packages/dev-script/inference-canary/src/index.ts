@@ -13,7 +13,7 @@
  *   --retest-all        Retest all models even if recent (<24h) results exist
  *
  * Environment (read from .env.local via mise):
- *   INFERENCE_VALIDATION_OPENROUTER_API_KEY -- OpenRouter API key
+ *   INFERENCE_VALIDATION_OPENROUTER_API_KEY; OpenRouter API key
  */
 // Side-effecting import: writes a record to `_invocation-log.jsonl` at the
 // package root before any other code runs. Captures process tree, exe path,

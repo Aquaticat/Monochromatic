@@ -1,13 +1,13 @@
 /**
  * Container integration test for {@link ensurePackage}.
- * Runs inside a container via the matrix runner -- never on the host.
+ * Runs inside a container via the matrix runner; never on the host.
  *
  * Test matrix (managed by the matrix runner):
  * - ubuntu:latest (apt) as root and user
  * - fedora:latest (dnf) as root and user
  *
  * Package shapes tested:
- * - String shorthand (`p('tree')`) -- binary = effname = package name
+ * - String shorthand (`p('tree')`): binary = effname = package name
  * - Bin differs from effname (`p({ bin: 'rg', effname: 'ripgrep' })`)
  * - Per-manager overrides via yes tuples (`yes: [['dnf', 'ImageMagick']]`)
  */

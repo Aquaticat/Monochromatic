@@ -45,7 +45,7 @@ type HookHandler<TInput, TOutput,> = (input: TInput,) => TOutput | Promise<TOutp
 /**
  * Writer serializes the handler output for stdout.
  *
- * Returns a string written verbatim -- no trailing newline is appended,
+ * Returns a string written verbatim; no trailing newline is appended,
  * matching the wire convention Claude Code expects.
  */
 type Writer<TOutput,> = (output: TOutput,) => string;

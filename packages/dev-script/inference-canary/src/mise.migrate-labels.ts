@@ -2,7 +2,7 @@
  * Migrates canary-lint artifact directories from model-ID-based names to label-based names.
  *
  * Renames directories and adds `label` field to all meta.json files.
- * Safe to run multiple times -- skips already-migrated directories.
+ * Safe to run multiple times; skips already-migrated directories.
  */
 import {
   readdir,

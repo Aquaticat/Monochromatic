@@ -1,5 +1,5 @@
 /**
- * POST /api/import -- single-shot streaming upload of a large markdown
+ * POST /api/import; single-shot streaming upload of a large markdown
  * body to a new draft.
  *
  * The body is consumed as a `ReadableStream`; we decode it with
@@ -9,7 +9,7 @@
  * so memory stays bounded regardless of total size.
  *
  * Identity (`user_id`) is sent via header `x-user-id` because the body
- * is the upload payload itself. There is no resume protocol -- a TCP
+ * is the upload payload itself. There is no resume protocol; a TCP
  * reset means the partial draft is reaped by the orphan sweep and the
  * client retries the whole upload. For chunk-level resilience the user
  * goes through the editor flow.

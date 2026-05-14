@@ -167,7 +167,7 @@ export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
 );
 
 /**
- * `POST /:owner/:repo.git/git-upload-pack` -- clone/fetch.
+ * `POST /:owner/:repo.git/git-upload-pack`: clone/fetch.
  */
 export const gitUploadPackHandler: EventHandlerWithFetch = defineHandler(
   async function handleUploadPackRoute(event,) {
@@ -197,7 +197,7 @@ export const gitUploadPackHandler: EventHandlerWithFetch = defineHandler(
 );
 
 /**
- * `POST /:owner/:repo.git/git-receive-pack` -- push.
+ * `POST /:owner/:repo.git/git-receive-pack`: push.
  *
  * For every accepted ref update we record a `push` event in the
  * forge's event log. Unknown repos are accepted at the git layer

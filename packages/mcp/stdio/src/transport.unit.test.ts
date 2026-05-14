@@ -70,7 +70,7 @@ function mockServer(response: JsonRpcOutbound | undefined,): McpServerHandle {
 
 //endregion helpers
 
-//region serve -- stdio transport connecting stdin/stdout to server handle
+//region serve; stdio transport connecting stdin/stdout to server handle
 
 await describe({
   name: serve.name,

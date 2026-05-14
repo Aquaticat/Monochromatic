@@ -5,7 +5,7 @@
  * input and reminds Claude to call advisor before its next substantive
  * response.
  *
- * Thin shim -- handler logic, parser, and writer live in
+ * Thin shim; handler logic, parser, and writer live in
  * `@monochromatic-dev/claude-code-plugins-source/handlers/correction-reminder`.
  * This file exists so the standard tsdown build produces an installable plugin
  * entry at `dist/final/node/index.mjs` for Claude Code's marketplace install.

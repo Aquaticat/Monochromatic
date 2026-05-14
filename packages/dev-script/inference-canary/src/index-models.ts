@@ -2,7 +2,7 @@
  * Model selection for the inference canary CLI.
  *
  * Resolves which models to test based on the `--model` flag.
- * Only registered model labels are accepted -- ad-hoc OpenRouter IDs are not
+ * Only registered model labels are accepted; ad-hoc OpenRouter IDs are not
  * supported because they bypass per-model configuration (verbosity, label).
  * Matching by `openrouterId` within the registry is intentionally not
  * supported because multiple models can share the same `openrouterId`

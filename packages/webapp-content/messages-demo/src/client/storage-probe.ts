@@ -2,7 +2,7 @@
  * Storage capability probes.
  *
  * Each probe returns `true` only when a round-trip read/write succeeds
- * end to end -- not just "the API is defined." A 500 ms timeout caps
+ * end to end; not just "the API is defined." A 500 ms timeout caps
  * each probe so a hung backend cannot delay startup.
  *
  * Probes are non-throwing: any rejection or thrown exception turns into

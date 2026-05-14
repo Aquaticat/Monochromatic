@@ -50,7 +50,7 @@ const IGNORED_EXTENSIONS = [
 /**
  * Oxlint JS plugin that requires TSDoc comments on all documentable declarations.
  *
- * Uses the `createOnce` alternative API for better performance -- `eslintCompatPlugin`
+ * Uses the `createOnce` alternative API for better performance; `eslintCompatPlugin`
  * adds a `create` shim so the plugin also works with ESLint.
  */
 const plugin = eslintCompatPlugin({

@@ -15,13 +15,13 @@ import type {
  *
  * @example
  * ```ts
- * // Bad -- multiple positional parameters
+ * // Bad; multiple positional parameters
  * function createUser(name: string, age: number): User { }
  *
- * // Good -- single destructured object
+ * // Good; single destructured object
  * function createUser({ name, age }: { name: string; age: number }): User { }
  *
- * // Good -- single parameter (exempt)
+ * // Good; single parameter (exempt)
  * function greet(name: string): void { }
  * ```
  */

@@ -11,7 +11,7 @@ export type GeminiInlineData = {
 };
 
 /**
- * A content part for the Gemini API -- either inline image data or text.
+ * A content part for the Gemini API; either inline image data or text.
  */
 export type GeminiPart = {
   readonly inline_data: GeminiInlineData;

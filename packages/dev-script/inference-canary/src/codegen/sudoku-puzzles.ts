@@ -39,7 +39,7 @@ export const SOLVABLE_CLUES: readonly (readonly number[])[] = [
 ];
 
 /**
- * Unsolvable puzzle -- box conflict in top-left 3x3.
+ * Unsolvable puzzle; box conflict in top-left 3x3.
  * Position (2,0) changed from 0 to 3, creating duplicate 3s with (0,1)=3.
  * No row or column conflicts exist, so only box-aware solvers detect this.
  */
@@ -57,7 +57,7 @@ export const UNSOLVABLE_BOX: string = [
   .join('\n',);
 
 /**
- * Unsolvable puzzle -- column conflict in column 8.
+ * Unsolvable puzzle; column conflict in column 8.
  * Position (8,8) changed from 9 to 3, creating duplicate 3s with (3,8)=3.
  * No row or box conflicts exist, so only column-aware solvers detect this.
  */
@@ -75,7 +75,7 @@ export const UNSOLVABLE_COL: string = [
   .join('\n',);
 
 /**
- * Multi-solution puzzle -- first band (rows 0-2) from the Wikipedia solution, rest empty.
+ * Multi-solution puzzle; first band (rows 0-2) from the Wikipedia solution, rest empty.
  * 27 clues across 3 complete rows with all 3 top-band boxes valid. Leaves 6 rows
  * unconstrained enough to guarantee many valid completions while still being
  * quick to solve for the first solution (basic backtracking finds one in milliseconds).
@@ -152,7 +152,7 @@ export const TWO_SOLUTION_CLUES: readonly (readonly number[])[] = [
 export const EXPECTED_TWO_SOLUTIONS = 2;
 
 /**
- * Many-solution puzzle for --all mode -- first two bands (rows 0-5) given, last band empty.
+ * Many-solution puzzle for --all mode; first two bands (rows 0-5) given, last band empty.
  * 54 clues with 27 empty cells concentrated in the last 3 rows. Each column has exactly
  * 3 candidate values, producing a manageable number of solutions (estimated 10-50)
  * that --all mode must enumerate completely within the container timeout.

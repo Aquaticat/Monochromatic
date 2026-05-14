@@ -50,7 +50,7 @@ export type InitializeResult = {
 
 /**
  * JSON Schema subset describing tool input parameters.
- * Kept intentionally loose -- servers provide arbitrary JSON Schema objects.
+ * Kept intentionally loose; servers provide arbitrary JSON Schema objects.
  *
  * @example
  * ```ts

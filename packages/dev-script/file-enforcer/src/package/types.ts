@@ -27,8 +27,8 @@ export type PackageMapping = Partial<Record<PackageManager, string>>;
 /**
  * Single element in the {@link PackageSpec.yes} availability array.
  *
- * - **String** -- manager name; package name is the effname
- * - **Tuple** -- `[manager, packageName]` when the repo uses a different name
+ * - **String**: manager name; package name is the effname
+ * - **Tuple**: `[manager, packageName]` when the repo uses a different name
  *
  * @example
  * ```ts
@@ -45,11 +45,11 @@ export type ManagerAvailability = PackageManager | readonly [
  * Object form accepted by {@link p} when the binary name or effname
  * differs from the default, or when per-manager availability is known.
  *
- * - `bin` -- binary name to check on PATH (defaults to `effname`)
- * - `check` -- custom flag for existence check (defaults to `--version`);
+ * - `bin`: binary name to check on PATH (defaults to `effname`)
+ * - `check`: custom flag for existence check (defaults to `--version`);
  *   some binaries use `-V`, `-v`, `--help`, or `version` instead
- * - `effname` -- Repology canonical project name (used as fallback package name)
- * - `yes` -- managers where Repology confirms the package exists;
+ * - `effname`: Repology canonical project name (used as fallback package name)
+ * - `yes`: managers where Repology confirms the package exists;
  *   each element is a bare manager name (uses effname) or a
  *   `[manager, packageName]` tuple. Managers absent from this list
  *   are treated as unavailable, skipping the live `canProvide` check.
@@ -72,7 +72,7 @@ export type PackageSpec = {
 
 /**
  * Normalized package entry produced by {@link p}.
- * Immutable value object -- safe to store in arrays and indexes.
+ * Immutable value object; safe to store in arrays and indexes.
  */
 export type PackageEntry = {
   /**

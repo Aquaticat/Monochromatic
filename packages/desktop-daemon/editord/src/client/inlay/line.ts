@@ -13,7 +13,7 @@
  * cursor (in mono units) under-counts the remaining pixel distance,
  * placing subsequent hints too far left. The fix is to measure the
  * accumulated row text's actual pixel width via `canvas.measureText()`
- * and derive the space count from the pixel-level gap -- see
+ * and derive the space count from the pixel-level gap; see
  * {@link interSpacesForGap} in `measure.ts`.
  */
 

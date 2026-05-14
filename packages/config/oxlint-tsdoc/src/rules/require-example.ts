@@ -103,7 +103,7 @@ function isExempt(result: TsdocParseResult,): boolean {
  *
  * @example
  * ```ts
- * // Bad -- exported function without \@example
+ * // Bad; exported function without \@example
  * /\** Adds two numbers. *\/
  * export function add(a: number, b: number): number { return a + b; }
  *

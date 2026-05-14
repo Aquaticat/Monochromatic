@@ -1,5 +1,5 @@
 /**
- * GET / and GET /p/:cursor -- the message feed.
+ * GET / and GET /p/:cursor; the message feed.
  *
  * Newest-first keyset pagination over `messages`. Honours
  * `If-None-Match` against an ETag derived from `MAX(id, updated_at)`,

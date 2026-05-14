@@ -1,5 +1,5 @@
 /**
- * Incremental sync -- applies changed blocks from the last boot session
+ * Incremental sync; applies changed blocks from the last boot session
  * to the other disk format via NBD block-level patching.
  *
  * @module
@@ -243,7 +243,7 @@ export async function syncFromHyperv(name: string,): Promise<void> {
   /**
    * Full vhdx-to-qcow2 conversion.
    * Hyper-V does not produce an overlay, so block-level incremental sync
-   * requires checkpoint-based differencing disks -- a future optimization.
+   * requires checkpoint-based differencing disks; a future optimization.
    * For MVP, full conversion of a 100GB vhdx takes ~5 minutes.
    */
   await convert({

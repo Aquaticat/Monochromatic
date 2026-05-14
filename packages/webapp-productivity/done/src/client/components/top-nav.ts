@@ -1,5 +1,5 @@
 /**
- * `<top-nav>` -- sticky navigation bar with hamburger menu, page heading, and search link.
+ * `<top-nav>`: sticky navigation bar with hamburger menu, page heading, and search link.
  * Dispatches a `menu-open` composed event when the hamburger is clicked.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';

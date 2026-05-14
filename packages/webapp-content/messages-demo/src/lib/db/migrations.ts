@@ -6,13 +6,13 @@
  *
  * Schema overview:
  *
- * - `users` -- the identity dropdown's options. Seeded with three rows.
- * - `drafts` -- staging area for in-progress messages. Drafts may have a
+ * - `users`: the identity dropdown's options. Seeded with three rows.
+ * - `drafts`: staging area for in-progress messages. Drafts may have a
  *   `parent_id` to form a copy-on-write chain for edits; reads of a chunk
  *   that the head draft does not contain walk the chain to an ancestor.
- * - `chunks` -- pre-rendered HTML chunks per draft. Stored once per draft;
+ * - `chunks`: pre-rendered HTML chunks per draft. Stored once per draft;
  *   never copied at finalize/edit time.
- * - `messages` -- finalised messages. `draft_id` points at the head of
+ * - `messages`: finalised messages. `draft_id` points at the head of
  *   the chain. Soft-delete via `deleted_at`; hard-delete sweep walks the
  *   chain and removes every ancestor draft (cascading to chunks).
  */

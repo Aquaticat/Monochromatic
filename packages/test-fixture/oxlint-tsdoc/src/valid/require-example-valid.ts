@@ -38,7 +38,7 @@ function multiply(a: number, b: number,): number {
 }
 
 /**
- * Non-exported helper -- no @example needed.
+ * Non-exported helper; no @example needed.
  *
  * @param value - input string
  *

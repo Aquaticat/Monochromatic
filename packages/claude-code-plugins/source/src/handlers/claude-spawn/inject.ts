@@ -4,7 +4,7 @@
  *
  * Called from hook handlers with two modes:
  * - **Consuming** (`consume: true`): renames `.json` to `.reported`,
- *   preventing future reads. Used by all delivery hooks -- first one to
+ *   preventing future reads. Used by all delivery hooks; first one to
  *   fire wins.
  * - **Non-consuming** (`consume: false`): reads but does not rename.
  *   Reserved for diagnostic or observability use cases where the result

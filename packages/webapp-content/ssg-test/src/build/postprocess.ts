@@ -10,11 +10,11 @@
  *   references in HTML, CSS, and `manifest.webmanifest`.
  *
  * Fingerprinting has three dependency-ordered phases (CSS references fonts):
- * 1. Hash leaf assets (images, fonts, JS, PDFs, favicons) -- no outgoing references
+ * 1. Hash leaf assets (images, fonts, JS, PDFs, favicons): no outgoing references
  * 2. Rewrite CSS font `url()` with hashed names from phase 1, then hash the CSS
  * 3. Rewrite all HTML files and `manifest.webmanifest` with the complete replacement map
  *
- * Phases 1 and 2 touch binary leaf assets and `styles.css` -- disjoint
+ * Phases 1 and 2 touch binary leaf assets and `styles.css`: disjoint
  * from the HTML pagefind reads. Those phases run **concurrently with
  * pagefind** via `Promise.all`. Phase 3 modifies the same HTML files
  * pagefind reads, so it runs **after** pagefind completes.

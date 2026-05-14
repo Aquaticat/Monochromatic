@@ -21,7 +21,7 @@ export type BunExecOptions = {
   /** Milliseconds before the process is forcibly killed */
   readonly timeout?: number;
   /**
-   * Abort signal -- kills the process immediately when aborted.
+   * Abort signal; kills the process immediately when aborted.
    * Used to propagate probe timeouts into container subprocesses.
    */
   readonly signal?: AbortSignal | undefined;
@@ -30,7 +30,7 @@ export type BunExecOptions = {
 /**
  * Runs a command via nano-spawn, capturing stdout and stderr separately.
  *
- * Never throws -- callers check `exitCode` and `killed` to decide what to do.
+ * Never throws; callers check `exitCode` and `killed` to decide what to do.
  *
  * @param command - executable name or absolute path
  *

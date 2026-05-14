@@ -48,7 +48,7 @@ function jsonResponse(
 }
 
 /**
- * POST /api/tasks -- creates a new task from the request body.
+ * POST /api/tasks; creates a new task from the request body.
  *
  * @param req - Incoming request with JSON body
  *
@@ -106,7 +106,7 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
 }
 
 /**
- * PUT /api/tasks/:id -- applies a partial update to an existing task.
+ * PUT /api/tasks/:id; applies a partial update to an existing task.
  *
  * @param req - Incoming request with JSON body
  *
@@ -155,7 +155,7 @@ export async function handleUpdateTask(
 }
 
 /**
- * DELETE /api/tasks/:id -- permanently removes a task.
+ * DELETE /api/tasks/:id; permanently removes a task.
  *
  * @param id - Task UUID from the route parameter
  *

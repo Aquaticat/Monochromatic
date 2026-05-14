@@ -9,11 +9,11 @@
  *    left off.
  * 2. PUTs the chunk via the existing `/api/drafts/:id/chunks/:seq`
  *    endpoint with bounded exponential-backoff retries.
- * 3. On acknowledgment from the server (`{ ack }` -- highest contiguous
+ * 3. On acknowledgment from the server (`{ ack }`: highest contiguous
  *    seq), drops every persisted entry whose `seq <= ack` for the same
  *    `draftId`, since those are now durable on the server.
  * 4. Re-attempts terminally failed uploads when the browser fires
- *    `online` or `visibilitychange` -- the most common cause of
+ *    `online` or `visibilitychange`: the most common cause of
  *    terminal failure is a closed laptop lid, not a permanent error.
  *
  * The server's `chunks` table is the source of truth. The outbox is a

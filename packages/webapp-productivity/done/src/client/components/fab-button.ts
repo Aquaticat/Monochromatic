@@ -64,7 +64,7 @@ const STYLES = [
   .join('',);
 
 /**
- * `<fab-button>` -- floating action button pinned to the bottom-right.
+ * `<fab-button>`: floating action button pinned to the bottom-right.
  * Reads the `label` attribute for accessibility and renders a `<slot>` for custom content.
  */
 class FabButton extends HTMLElement {

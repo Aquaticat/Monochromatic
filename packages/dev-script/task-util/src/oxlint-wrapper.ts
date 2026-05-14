@@ -52,7 +52,7 @@ try {
     [...oxlintArgs,],
   );
 
-  // oxlint succeeded (exit 0, no diagnostics) -- pass output through
+  // oxlint succeeded (exit 0, no diagnostics): pass output through
   if (result.stdout.length > 0)
     process.stdout.write(augmentOxlintOutput(result.stdout,),);
   if (result.stderr.length > 0)

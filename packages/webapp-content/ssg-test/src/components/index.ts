@@ -10,7 +10,7 @@
  * custom-element-compliant tag in the output HTML
  * (e.g. `<callout-alert data-is>...</callout-alert>`). This split is
  * required because MDX only consults the components map for
- * capitalized tag names -- lowercase hyphenated JSX tags compile to
+ * capitalized tag names; lowercase hyphenated JSX tags compile to
  * raw HTML element strings.
  */
 export { CalloutAlert, } from './callout-alert.ts';

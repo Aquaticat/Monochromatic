@@ -10,7 +10,7 @@
  *
  * Exceeds 100 lines: borderline at ~105 lines, but `parseAutofillResponse`,
  * `listAllLocations`, and `handleAutofill` share the same types and validation
- * constants -- splitting would add a module for fewer than 40 lines of code.
+ * constants; splitting would add a module for fewer than 40 lines of code.
  */
 import { chatCompletion, } from '../../lib/ai/client.ts';
 import { buildAutofillMessages, } from '../../lib/ai/prompts.ts';
@@ -145,7 +145,7 @@ async function listAllLocations(): Promise<string[]> {
 //region Handler
 
 /**
- * POST /api/ai/autofill -- infers task metadata from a title using AI.
+ * POST /api/ai/autofill; infers task metadata from a title using AI.
  *
  * @param req - Incoming request with JSON body containing `title`
  *

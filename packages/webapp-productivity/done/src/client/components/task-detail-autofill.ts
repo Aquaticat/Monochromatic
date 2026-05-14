@@ -1,5 +1,5 @@
 /**
- * Autofill manager for `<task-detail>` -- debounced AI metadata suggestion.
+ * Autofill manager for `<task-detail>`: debounced AI metadata suggestion.
  *
  * Encapsulates the timer, abort controller, and autofill state so the main
  * component class stays focused on rendering and event wiring.

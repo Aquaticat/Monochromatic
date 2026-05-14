@@ -90,7 +90,7 @@ await describe({
         const result = analyzeBashCommand('rm -- -f',);
         expect(result.parsed,).toBe(true,);
         expect(result.commands[0]?.name,).toBe('rm',);
-        // -f after -- should be a positional arg, not a flag
+        // -f after; should be a positional arg, not a flag
         expect(result.commands[0]?.args,).toContain('--',);
         expect(result.commands[0]?.args,).toContain('-f',);
       },

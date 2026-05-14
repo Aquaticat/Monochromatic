@@ -134,7 +134,7 @@ let collapseTimer: ReturnType<typeof setTimeout> | null = null;
  * Schedules a node-count collapse on the next idle. If the table grew
  * past the threshold, the collapse re-anchors the document into a
  * single original piece (clearing the add buffer). Undo / redo are
- * preserved -- the offsets are document-relative and the underlying
+ * preserved; the offsets are document-relative and the underlying
  * text is identical.
  *
  * Bounded so it never blocks an in-flight `apply`: the collapse runs
@@ -162,7 +162,7 @@ function scheduleCollapseIfNeeded(): void {
 
 /**
  * Pushes `entry` onto the undo stack, evicting the oldest entry when
- * the stack would exceed `MAX_UNDO`. Clears the redo stack -- a fresh
+ * the stack would exceed `MAX_UNDO`. Clears the redo stack; a fresh
  * edit invalidates any previously undone edits.
  *
  * @param input - the undo entry to record

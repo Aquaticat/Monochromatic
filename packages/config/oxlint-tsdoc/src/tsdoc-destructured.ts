@@ -66,7 +66,7 @@ function collectDestructuredNames({
     return;
   }
   if (pattern.type === 'AssignmentPattern') {
-    // `{ a = defaultValue }` -- unwrap to the left side
+    // `{ a = defaultValue }`: unwrap to the left side
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const left = pattern.left as Record<string, unknown>;
     collectDestructuredNames({
@@ -108,7 +108,7 @@ function collectDestructuredNames({
         },);
       }
       else {
-        // Property node -- extract the key name
+        // Property node; extract the key name
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const key = prop.key as Record<string, unknown> | undefined;
         if (key !== undefined && key.type === 'Identifier') {
@@ -120,7 +120,7 @@ function collectDestructuredNames({
     return;
   }
   if (pattern.type === 'ArrayPattern') {
-    // Array destructuring: `[a, b]` -- elements are binding patterns
+    // Array destructuring: `[a, b]`: elements are binding patterns
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const elements = pattern.elements as (Record<string, unknown> | null)[] | undefined;
     if (elements === undefined)

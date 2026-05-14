@@ -1,7 +1,7 @@
 // Fixture: yield documentation violations.
 // Expected violations:
-//   tsdoc(require-yields) -- missing @yields on generator
-//   tsdoc(require-yields-check) -- @yields on non-generator
+//   tsdoc(require-yields): missing @yields on generator
+//   tsdoc(require-yields-check): @yields on non-generator
 
 /**
  * Generates numbers.

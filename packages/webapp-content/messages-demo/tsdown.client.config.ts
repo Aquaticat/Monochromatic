@@ -11,12 +11,12 @@ import {
  * Client-side browser bundle config for the messages-demo webapp.
  *
  * Three entry points:
- * - `index.ts` -- main page entry; loads storage probes and identity
+ * - `index.ts`: main page entry; loads storage probes and identity
  *   store, lazy-imports the composer on first focus.
- * - `composer.worker.ts` -- Web Worker that hosts the markdown compile +
+ * - `composer.worker.ts`: Web Worker that hosts the markdown compile +
  *   chunk-upload pipeline. Loaded via dynamic `new Worker(...)` from the
  *   composer module.
- * - `editor/buffer.worker.ts` -- Web Worker that hosts the custom
+ * - `editor/buffer.worker.ts`: Web Worker that hosts the custom
  *   editor's piece-table buffer. Listed explicitly because rolldown
  *   leaves the original `.ts` URL in the output if we rely on its
  *   automatic worker detection (verified empirically with the v1
