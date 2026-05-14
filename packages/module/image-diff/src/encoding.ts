@@ -117,7 +117,9 @@ export function inferFormat(filePath: string,): ImageFormat {
     tag: inferFormat.name,
     l,
   },);
-  /** Path extension normalised to lower case for case-insensitive lookup in {@link EXTENSION_FORMAT_MAP}. */
+  /**
+   * Path extension normalised to lower case for case-insensitive lookup in {@link EXTENSION_FORMAT_MAP}.
+   */
   const ext = extname(filePath,).toLowerCase();
   /** Format resolved from the extension; `undefined` for unsupported extensions triggers the explicit error below. */
   const format = EXTENSION_FORMAT_MAP[ext];
@@ -215,7 +217,7 @@ export function parseDataUri(dataUri: string,): {
 } {
   /** Match of `data:<mime>;base64,<data>`; capture groups 1 and 2 hold the MIME type and payload. */
   const match = /^data:([^;]+);base64,(.+)$/.exec(dataUri,);
-  if (match === null || match[1] === undefined || match[2] === undefined) {
+  if ((match === null) || (match[1] === undefined) || (match[2] === undefined)) {
     throw new Error(
       `Invalid data URI format: expected "data:<mime>;base64,<data>", got "${
         dataUri.slice(

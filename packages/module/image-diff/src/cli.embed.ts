@@ -42,7 +42,9 @@ export async function handleEmbed({
     tag: handleEmbed.name,
     l,
   },);
-  /** Parsed image input; converts the CLI path-or-URL string into the structured {@link ImageInput}. */
+  /**
+   * Parsed image input; converts the CLI path-or-URL string into the structured {@link ImageInput}.
+   */
   const input = parseImageArg(image,);
 
   if (provider !== undefined) {

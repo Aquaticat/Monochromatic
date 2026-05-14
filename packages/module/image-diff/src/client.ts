@@ -161,7 +161,7 @@ export async function compareEmbeddings({
   },);
   /** Pair of embeddings destructured for the dot-product call; guarded against a malformed batch result. */
   const [embeddingA, embeddingB,] = embeddings;
-  if (embeddingA === undefined || embeddingB === undefined)
+  if ((embeddingA === undefined) || (embeddingB === undefined))
     throw new Error('Expected exactly 2 embeddings from batch call',);
 
   /** Cosine-equivalent similarity (embeddings are unit vectors) for the two images. */

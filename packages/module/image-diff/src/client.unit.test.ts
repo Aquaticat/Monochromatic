@@ -196,7 +196,7 @@ await describe({
 
             expect(result.embeddings.length,).toBe(2,);
             const [first, second,] = result.embeddings;
-            if (first === undefined || second === undefined)
+            if ((first === undefined) || (second === undefined))
               throw new Error('missing embeddings',);
             expect(first.length,).toBeGreaterThan(0,);
             expect(second.length,).toBeGreaterThan(0,);
@@ -276,7 +276,7 @@ await describe({
 
             expect(result.embeddings.length,).toBe(2,);
             const [first, second,] = result.embeddings;
-            if (first === undefined || second === undefined)
+            if ((first === undefined) || (second === undefined))
               throw new Error('missing embeddings',);
             expect(first.length,).toBeGreaterThan(0,);
             expect(second.length,).toBeGreaterThan(0,);

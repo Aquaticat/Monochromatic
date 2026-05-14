@@ -52,7 +52,9 @@ async function geminiEmbed({
 
   /** Resolved Gemini credential; pulled here once and forwarded into the API call. */
   const apiKey = resolveGeminiApiKey(config.apiKey,);
-  /** Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}. */
+  /**
+   * Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
+   */
   const model = (config.model as GeminiModel | undefined) ?? DEFAULT_GEMINI_MODEL;
   /** Gemini-shaped inline data payload converted from the caller's image input. */
   const inlineData = await toGeminiInlineData(input,);

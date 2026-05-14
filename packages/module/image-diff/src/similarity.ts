@@ -41,7 +41,7 @@ export function dotProduct({
     const ai = a[i];
     /** Element from the second vector at index `i`; guarded against jagged-array sparsity. */
     const bi = b[i];
-    if (ai === undefined || bi === undefined)
+    if ((ai === undefined) || (bi === undefined))
       break;
     sum += ai * bi;
   }

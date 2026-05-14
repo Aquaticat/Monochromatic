@@ -126,7 +126,7 @@ export async function compareAll({
     }
   }
 
-  if (successfulEntries.length === 0 && description === undefined) {
+  if ((successfulEntries.length === 0) && (description === undefined)) {
     throw new Error(
       'No results: all embedding providers failed and no description was generated. Check that at least one API key is configured.',
     );

@@ -38,7 +38,7 @@ export function resolveGeminiApiKey(configKey: string | undefined,): string {
   const key = configKey
     ?? process.env['IMAGE_DIFF_GEMINI_API_KEY']
     ?? process.env['GEMINI_API_KEY'];
-  if (key === undefined || key === '') {
+  if ((key === undefined) || (key === '')) {
     throw new Error(
       'Gemini API key is required. Provide it via config.apiKey or set IMAGE_DIFF_GEMINI_API_KEY (or GEMINI_API_KEY) environment variable.',
     );

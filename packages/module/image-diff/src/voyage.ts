@@ -53,7 +53,9 @@ async function voyageEmbed({
 
   /** Resolved Voyage credential; pulled here once and forwarded into the API call. */
   const apiKey = resolveVoyageApiKey(config.apiKey,);
-  /** Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}. */
+  /**
+   * Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
+   */
   const model = (config.model as VoyageModel | undefined) ?? DEFAULT_VOYAGE_MODEL;
   /** Voyage-shaped content payload converted from the caller's image input. */
   const contentItem = await toVoyageContentItem(input,);
@@ -121,7 +123,9 @@ async function voyageEmbedBatch({
 
   /** Resolved Voyage credential; pulled here once and forwarded into the API call. */
   const apiKey = resolveVoyageApiKey(config.apiKey,);
-  /** Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}. */
+  /**
+   * Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
+   */
   const model = (config.model as VoyageModel | undefined) ?? DEFAULT_VOYAGE_MODEL;
 
   /** Voyage-shaped content payloads converted from each caller image, in input order. */

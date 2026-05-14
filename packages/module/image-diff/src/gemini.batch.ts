@@ -55,7 +55,9 @@ export async function geminiEmbedBatch({
 
   /** Resolved Gemini credential; pulled here once and forwarded into the API call. */
   const apiKey = resolveGeminiApiKey(config.apiKey,);
-  /** Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}. */
+  /**
+   * Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
+   */
   const model = (config.model as GeminiModel | undefined) ?? DEFAULT_GEMINI_MODEL;
 
   /** Gemini-shaped inline data payloads converted from each caller image, in input order. */

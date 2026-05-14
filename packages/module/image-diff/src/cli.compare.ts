@@ -47,9 +47,13 @@ export async function handleCompare({
     tag: handleCompare.name,
     l,
   },);
-  /** Parsed first-image input; converts path or URL string into the structured {@link ImageInput}. */
+  /**
+   * Parsed first-image input; converts path or URL string into the structured {@link ImageInput}.
+   */
   const inputA = parseImageArg(imageA,);
-  /** Parsed second-image input; converts path or URL string into the structured {@link ImageInput}. */
+  /**
+   * Parsed second-image input; converts path or URL string into the structured {@link ImageInput}.
+   */
   const inputB = parseImageArg(imageB,);
 
   if (provider !== undefined) {
