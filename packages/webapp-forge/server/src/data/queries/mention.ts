@@ -110,6 +110,7 @@ export async function replaceMentionsForFragment(row: {
  * ```
  */
 export async function listFragmentsMentioningUser(userId: string,): Promise<string[]> {
+  /** Raw `mention_index` rows projected to fragment keys below. */
   const rows = await all<{ readonly fragment_key: string; }>(
     'SELECT fragment_key FROM mention_index WHERE user_id = ? ORDER BY fragment_key ASC',
     [userId,],
@@ -134,6 +135,7 @@ export async function listFragmentsMentioningUser(userId: string,): Promise<stri
 export async function listUsersMentionedByFragment(
   fragmentKey: string,
 ): Promise<string[]> {
+  /** Raw `mention_index` rows projected to user ids below. */
   const rows = await all<{ readonly user_id: string; }>(
     'SELECT user_id FROM mention_index WHERE fragment_key = ? ORDER BY user_id ASC',
     [fragmentKey,],

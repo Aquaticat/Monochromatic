@@ -44,6 +44,7 @@ export async function nextSequence(
       resourceId,
     ],
   );
+  /** Re-read after the upsert returns the post-increment value. */
   const row = await get<{ current: number; }>(
     'SELECT current FROM sequences WHERE resource_type = ? AND resource_id = ?',
     [
@@ -83,6 +84,7 @@ export async function insertEvent(row: {
   sequenceNumber: number;
   createdAt: number;
 },): Promise<number> {
+  /** Insert result; `lastInsertRowid` becomes the returned `events.id`. */
   const result = await run(
     `INSERT INTO events(resource_type, resource_id, kind, payload, sequence_number, created_at)
      VALUES (?, ?, ?, ?, ?, ?)`,

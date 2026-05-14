@@ -172,6 +172,7 @@ export async function unassignUserFromIssue(row: {
  * ```
  */
 export async function listIssueAssignees(issueId: string,): Promise<User[]> {
+  /** Raw join rows mapped through `toUser` before returning. */
   const rows = await all<{
     readonly id: string;
     readonly login: string | null;

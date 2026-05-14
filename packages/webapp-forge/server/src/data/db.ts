@@ -53,8 +53,11 @@ function normalizeDatabasePath(value: string,): string {
  * @returns resolved filesystem path
  */
 function resolveDatabasePath(): string {
+  /** `--db=PATH` CLI argument when supplied; highest priority source. */
   const argumentPath = getArgumentValue('db',);
+  /** `DB_PATH` environment variable; second priority source. */
   const environmentPath = process.env.DB_PATH;
+  /** Selected raw path; falls back to the compile-time default. */
   const rawPath = argumentPath ?? environmentPath ?? DEFAULT_DATABASE_PATH;
   return normalizeDatabasePath(rawPath,);
 }
@@ -148,6 +151,7 @@ export async function run(
   changes: number;
   lastInsertRowid: number;
 }> {
+  /** Prepared statement for the one-shot execution. */
   const stmt = db.prepare(sql,);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- libSQL typed result
   return await stmt.run(...params,) as {
@@ -174,9 +178,12 @@ export async function get<T = Record<string, unknown>,>(
   sql: string,
   params: readonly unknown[] = [],
 ): Promise<T | undefined> {
+  /** Prepared statement for the single-row fetch. */
   const stmt = db.prepare(sql,);
-  // oxlint-disable-next-line typescript/no-unsafe-assignment -- libSQL returns any
+  /* oxlint-disable typescript/no-unsafe-assignment -- libSQL returns any */
+  /** First row returned by the statement; undefined when no rows match. */
   const value = await stmt.get(...params,);
+  /* oxlint-enable typescript/no-unsafe-assignment */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- libSQL typed row
   return (value === undefined || value === null) ? undefined : value as T;
 }
@@ -199,6 +206,7 @@ export async function all<T = Record<string, unknown>,>(
   sql: string,
   params: readonly unknown[] = [],
 ): Promise<T[]> {
+  /** Prepared statement for the multi-row fetch. */
   const stmt = db.prepare(sql,);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- libSQL typed rows
   return await stmt.all(...params,) as T[];
