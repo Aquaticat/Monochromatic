@@ -59,12 +59,15 @@ const EXIT_MISSING_REFS = 2;
  * ```
  */
 function humanBytes(bytes: number,): string {
+  /** Scaled byte count divided down into the chosen unit. */
   let value = bytes;
+  /** Position in `BYTE_UNITS` reached by the scaling loop. */
   let unitIndex = 0;
   while (value >= BYTES_PER_KIB && unitIndex < BYTE_UNITS.length - 1) {
     value /= BYTES_PER_KIB;
     unitIndex += 1;
   }
+  /** Decimals shown in the formatted output; raw bytes are reported as integers. */
   const precision = unitIndex === 0 ? 0 : 1;
   return `${value.toFixed(precision,)} ${BYTE_UNITS[unitIndex]}`;
 }
@@ -163,6 +166,7 @@ const header = [
   .join('  ',);
 console.log(header,);
 for (const entry of sorted) {
+  /** Pre-padded report row joined for terminal-aligned columns. */
   const row = [
     entry.page.padEnd(pageColumnWidth,),
     humanBytes(entry.totalBytes,).padStart(bytesColumnWidth,),

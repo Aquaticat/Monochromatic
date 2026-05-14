@@ -75,9 +75,11 @@ function attr(
     name: string;
   },
 ): string | null {
+  /** Attribute value as hast stores it; may be missing or non-string. */
   const raw = element.properties[name];
   if (typeof raw !== 'string')
     return null;
+  /** Whitespace-stripped value so empty-after-trim attributes report as `null`. */
   const trimmed = raw.trim();
   return trimmed === '' ? null : trimmed;
 }
@@ -94,6 +96,7 @@ function attr(
  * @returns first URL, or `null` if the value is empty
  */
 function firstSrcsetUrl(srcset: string,): string | null {
+  /** First candidate descriptor in the srcset list; used as the canonical pick. */
   const first = srcset.split(',',)[0]?.trim();
   if (first === undefined || first === '')
     return null;
@@ -118,6 +121,7 @@ function addIfLocal(
 ): void {
   if (raw === null)
     return;
+  /** Whitespace-stripped form so empty and fragment-only references are filtered out. */
   const trimmed = raw.trim();
   if (trimmed === '' || trimmed.startsWith('#',))
     return;
@@ -152,11 +156,13 @@ function collectInlineStyle(
     out: string[];
   },
 ): void {
+  /** Text-node fragments collected from the `<style>` children. */
   const parts: string[] = [];
   for (const child of element.children) {
     if (isText(child,))
       parts.push(child.value,);
   }
+  /** Concatenated `<style>` content; only emitted when non-blank so the accumulator stays clean. */
   const text = parts.join('',);
   if (text.trim() !== '')
     out.push(text,);
@@ -190,12 +196,14 @@ function collectMediaUrl(
     if (!isElement(child,))
       continue;
     if (child.tagName === 'source') {
+      /** `srcset` on the current `<source>` child, if any; preferred over `src`. */
       const srcset = attr({
         element: child,
         name: 'srcset',
       },);
       if (srcset !== null)
         return firstSrcsetUrl(srcset,);
+      /** Plain `src` fallback for the current `<source>` child when no `srcset` is set. */
       const src = attr({
         element: child,
         name: 'src',
@@ -213,6 +221,7 @@ function collectMediaUrl(
   if (element.tagName === 'picture') {
     for (const child of element.children) {
       if (isElement(child,) && child.tagName === 'img') {
+        /** Fallback `<img>` `src` used when no `<source>` child matched. */
         const src = attr({
           element: child,
           name: 'src',
@@ -262,6 +271,7 @@ function ownAssetUrl(element: Element,): string | null {
     },);
   }
   if (element.tagName === 'img') {
+    /** `<img>` `srcset`, preferred over `src` when set. */
     const srcset = attr({
       element,
       name: 'srcset',
@@ -274,6 +284,7 @@ function ownAssetUrl(element: Element,): string | null {
     },);
   }
   if (element.tagName === 'use') {
+    /** `<use>` `href`, preferred over the legacy `xlink:href`. */
     const href = attr({
       element,
       name: 'href',
@@ -346,6 +357,7 @@ function walk(
       raw: ownAssetUrl(node,),
     },);
   }
+  /** Structural view of the node so children can be visited when the node carries them. */
   const parent = node as Partial<Parent>;
   if (parent.children !== undefined) {
     for (const child of parent.children) {
@@ -371,8 +383,11 @@ function walk(
  * ```
  */
 export function extractHtmlRefs(source: string,): HtmlReferences {
+  /** Parsed hast tree the walker descends. */
   const tree = parseHtml(source,);
+  /** Dedup set built up during the walk; converted to an array on return. */
   const urls = new Set<string>();
+  /** `<style>` bodies pulled out for a separate `url()` scan by the caller. */
   const inlineStyles: string[] = [];
 
   walk({

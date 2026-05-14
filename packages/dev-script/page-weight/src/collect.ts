@@ -90,21 +90,27 @@ async function walkCss(
     missing: string[];
   },
 ): Promise<string[]> {
+  /** Accumulator of unique asset paths discovered through the CSS graph. */
   const collected: string[] = [];
+  /** BFS frontier so chained `@import`s are followed before the function returns. */
   const queue: string[] = [startPath,];
+  /** Cycle guard so a CSS file reached twice is not re-parsed. */
   const visited = new Set<string>();
 
   while (queue.length > 0) {
+    /** Next stylesheet to process; the while-condition guarantees a value. */
     const cssPath = nonNullishOrThrow(queue.shift(),);
     if (visited.has(cssPath,))
       continue;
     visited.add(cssPath,);
 
+    /** CSS text, or `null` when the file cannot be read so dead links don't abort the walk. */
     const source = await readCssOrNull(cssPath,);
     if (source === null)
       continue;
 
     for (const ref of extractCssUrls(source,)) {
+      /** Absolute asset path, or `null` when the reference escapes the dist root. */
       const resolved = resolveReference({
         root,
         fromFile: cssPath,
@@ -162,17 +168,23 @@ export async function weighPage(
     root: string;
   },
 ): Promise<PageWeight> {
+  /** Accumulator for unresolvable references, surfaced on the returned record. */
   const missing: string[] = [];
+  /** Dedup set seeded with the HTML so it is not re-added via a self-reference. */
   const seen = new Set<string>([htmlPath,],);
+  /** Ordered list of unique asset paths, beginning with the HTML itself. */
   const assets: string[] = [htmlPath,];
 
+  /** Raw HTML scanned for asset references. */
   const htmlSource = await readText(htmlPath,);
+  /** Destructured pair so direct URLs and inline `<style>` blocks can be walked separately. */
   const {
     urls,
     inlineStyles,
   } = extractHtmlRefs(htmlSource,);
 
   for (const ref of urls) {
+    /** Absolute path of the referenced asset, or `null` when it escapes the dist root. */
     const resolved = resolveReference({
       root,
       fromFile: htmlPath,
@@ -187,6 +199,7 @@ export async function weighPage(
       assets.push(resolved,);
     }
     if (extname(resolved,).toLowerCase() === '.css') {
+      /** Assets reachable through the CSS `@import` / `url()` graph rooted at this stylesheet. */
       const nested = await walkCss({
         startPath: resolved,
         root,
@@ -200,6 +213,7 @@ export async function weighPage(
 
   for (const inline of inlineStyles) {
     for (const ref of extractCssUrls(inline,)) {
+      /** Absolute asset path for an inline `<style>` reference, or `null` when it escapes the dist root. */
       const resolved = resolveReference({
         root,
         fromFile: htmlPath,
@@ -216,8 +230,10 @@ export async function weighPage(
     }
   }
 
+  /** Running sum of wire sizes; mutable because each iteration adds conditionally. */
   let totalBytes = 0;
   for (const asset of assets) {
+    /** Wire size for the current asset, or `null` when it cannot be measured. */
     const size = await wireSize(asset,);
     if (size === null) {
       missing.push(asset,);
@@ -226,6 +242,7 @@ export async function weighPage(
     totalBytes += size;
   }
 
+  /** Page path stripped of the dist root prefix so the report stays readable. */
   const relativePage = htmlPath.startsWith(root,)
     ? htmlPath.slice(root.length + 1,)
     : htmlPath;
