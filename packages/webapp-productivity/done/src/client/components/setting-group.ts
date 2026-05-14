@@ -77,11 +77,16 @@ class SettingGroup extends HTMLElement {
 
   /** Renders the setting label, optional description, and action control. */
   connectedCallback(): void {
+    /** Resolved at attach time so the header still renders if the attribute is absent. */
     const label = this.getAttribute('label',) ?? '';
+    /** Empty string sentinels an absent description so the optional paragraph stays unrendered. */
     const description = this.getAttribute('description',) ?? '';
+    /** Default `toggle` mode preserves backwards compatibility with existing usages. */
     const mode = this.getAttribute('mode',) ?? 'toggle';
+    /** Boolean-attribute presence flag forwarded to the embedded toggle. */
     const on = this.hasAttribute('on',);
 
+    /** Right-hand control whose tag depends on `mode`; captured once for inclusion below. */
     const actionElement = mode === 'button'
       ? h({
         tag: 'button',
@@ -99,6 +104,7 @@ class SettingGroup extends HTMLElement {
         attrs: on ? { on: '', } : {},
       },);
 
+    /** Accumulator so the optional description paragraph can be appended conditionally. */
     const children: (HTMLElement)[] = [
       h({
         tag: 'style',

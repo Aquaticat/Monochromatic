@@ -61,6 +61,7 @@ function jsonResponse(
  */
 export async function handleCreateTask(req: Request,): Promise<Response> {
   try {
+    /** Loosely-typed body validated by `isRecord` before field-by-field access. */
     const body: unknown = await req.json();
     if (!isRecord(body,)) {
       return jsonResponse(
@@ -69,6 +70,7 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
       );
     }
 
+    /** Trimmed title; empty string short-circuits to the 400 branch below. */
     const title = typeof body.title === 'string' ? body.title.trim() : '';
     if (title.length === 0) {
       return jsonResponse(
@@ -77,7 +79,9 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
       );
     }
 
+    /** Allowed priority values reused for both `priority` and `complexity` parsing. */
     const priorities = getPriorities();
+    /** Created row returned by the data layer; serialised below with 201. */
     const task = await createTask({
       title,
       description: typeof body.description === 'string' ? body.description : null,
@@ -124,7 +128,9 @@ export async function handleUpdateTask(
   id: string,
 ): Promise<Response> {
   try {
+    /** Loosely-typed body validated by `parseTaskUpdateInput` below. */
     const body: unknown = await req.json();
+    /** Normalised update payload; null indicates the body failed validation. */
     const taskUpdateInput = parseTaskUpdateInput(body,);
     if (taskUpdateInput === null) {
       return jsonResponse(
@@ -133,6 +139,7 @@ export async function handleUpdateTask(
       );
     }
 
+    /** Result row; null indicates the row was not found, surfaced as 404 below. */
     const task = await updateTask(
       id,
       taskUpdateInput,
@@ -167,6 +174,7 @@ export async function handleUpdateTask(
  * ```
  */
 export async function handleDeleteTask(id: string,): Promise<Response> {
+  /** Whether a row was actually removed; `false` is surfaced as 404 below. */
   const deleted = await deleteTask(id,);
   if (!deleted) {
     return jsonResponse(

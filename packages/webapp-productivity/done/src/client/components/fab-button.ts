@@ -79,6 +79,7 @@ class FabButton extends HTMLElement {
 
   /** Renders the action button with label and slot into the shadow root. */
   connectedCallback(): void {
+    /** Resolved at attach time so missing attributes still render a usable button. */
     const label = this.getAttribute('label',) ?? 'Action';
     this.#shadow.replaceChildren(
       h({

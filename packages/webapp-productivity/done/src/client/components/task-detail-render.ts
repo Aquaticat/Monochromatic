@@ -57,6 +57,7 @@ export function buildTaskDetailTree(
 ): RenderResult {
   // Close button uses innerHTML for SVG because h() creates HTML-namespace
   // elements: SVG requires the SVG namespace.
+  /** Reusable close button shell; the inline SVG glyph is injected on the next line. */
   const closeButton = h({
     tag: 'button',
     class: 'close',
@@ -68,6 +69,7 @@ export function buildTaskDetailTree(
   closeButton.innerHTML =
     `<svg viewBox="0 0 48 48" fill="none"><line x1="14" y1="14" x2="34" y2="34"/><line x1="34" y1="14" x2="14" y2="34"/></svg>`;
 
+  /** Exposed in refs so the host component can read live title edits. */
   const titleInput = h({
     tag: 'input',
     class: 'title-input',
@@ -79,6 +81,7 @@ export function buildTaskDetailTree(
     },
   },);
 
+  /** Exposed in refs so the host component can read live description edits. */
   const descInput = h({
     tag: 'textarea',
     class: 'desc-input',
@@ -87,16 +90,20 @@ export function buildTaskDetailTree(
   if (task.description !== null)
     descInput.textContent = task.description;
 
+  /** Mutable attribute map so a `disabled` flag can be appended conditionally below. */
   const startAttrs: Record<string, string> = { 'data-action': 'start', };
   if (task.timerStartedAt !== null)
     startAttrs['disabled'] = '';
+  /** Mutable attribute map mirroring `startAttrs`; disabled when no timer is running. */
   const stopAttrs: Record<string, string> = { 'data-action': 'stop', };
   if (task.timerStartedAt === null)
     stopAttrs['disabled'] = '';
+  /** Mutable attribute map disabled while any blocker remains unresolved. */
   const completeAttrs: Record<string, string> = { 'data-action': 'complete', };
   if (task.blockedBy.length > 0)
     completeAttrs['disabled'] = '';
 
+  /** Exposed in refs so the host component can toggle button visibility per mode. */
   const btnRow = h({
     tag: 'div',
     class: 'btn-row',
@@ -130,11 +137,13 @@ export function buildTaskDetailTree(
   if (isCreate)
     btnRow.dataset['hidden'] = '';
 
+  /** Exposed in refs so the pill manager can replace its children without re-rendering the tree. */
   const pillsContainer = h({
     tag: 'div',
     class: 'pills',
   },);
 
+  /** Ordered child list returned to the caller for `shadow.replaceChildren`. */
   const elements = [
     h({
       tag: 'style',

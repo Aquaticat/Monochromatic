@@ -66,21 +66,25 @@ detail.addEventListener(
   function handleAction(event,) {
     if (!(event instanceof CustomEvent))
       throw new TypeError("Expected CustomEvent for 'action' listener",);
+    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component */
+    /** Destructured action payload dispatched by the embedded `<task-detail>`. */
     const {
       action,
       title,
       description,
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component
     } = event.detail as {
       action: string;
       title: string;
       description: string;
     };
+    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
     if (action === 'close')
       globalThis.location.href = '/';
     else if (action === 'save') {
+      /** Snapshot of the autofill/manual metadata fields captured before the request body is built. */
       const metadata = detail.getMetadata();
+      /** Body forwarded to the PUT endpoint; merges metadata with the unchanged base task fields. */
       const payload = {
         title,
         description: description.length === 0 ? null : description,

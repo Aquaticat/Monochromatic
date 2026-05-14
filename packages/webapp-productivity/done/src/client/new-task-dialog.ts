@@ -66,9 +66,12 @@ type NewTaskDialog = {
  * ```
  */
 export function createNewTaskDialog(): NewTaskDialog {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-detail is registered as TaskDetail
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-detail is registered as TaskDetail */
+  /** Live instance of the custom element so its imperative API stays accessible. */
   const detail = document.createElement('task-detail',) as TaskDetail;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
 
+  /** Popover host containing the detail panel; toggled by `openPanel`/`closePanel`. */
   const panel = h({
     tag: 'div',
     class: 'new-task-panel',
@@ -94,16 +97,18 @@ export function createNewTaskDialog(): NewTaskDialog {
     function handleAction(event,) {
       if (!(event instanceof CustomEvent))
         throw new TypeError("Expected CustomEvent for 'action' listener",);
+      /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component */
+      /** Destructured action payload dispatched by the inner `<task-detail>`. */
       const {
         action,
         title,
         description,
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- event.detail shape is controlled by the task-detail component
       } = event.detail as {
         action: string;
         title: string;
         description: string;
       };
+      /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
       if (action === 'close') {
         closePanel();
@@ -111,10 +116,12 @@ export function createNewTaskDialog(): NewTaskDialog {
       }
 
       if (action === 'save') {
+        /** Trimmed title captured once; empty titles short-circuit the save below. */
         const trimmedTitle = title.trim();
         if (trimmedTitle.length === 0)
           return;
 
+        /** Snapshot of the autofill/manual metadata, forwarded to the create endpoint. */
         const metadata = detail.getMetadata();
         void (async function saveTask(): Promise<void> {
           await api(
@@ -156,12 +163,14 @@ export function createNewTaskDialog(): NewTaskDialog {
     panel.showPopover();
     requestAnimationFrame(function animatePanel() {
       panel.dataset['animating'] = '';
+      /** Looked up after the panel opens so the autofocus lands on the right input. */
       const titleInput =
         detail.shadowRoot?.querySelector<HTMLInputElement>('.title-input',) ?? null;
       titleInput?.focus();
     },);
   }
 
+  /** Floating action button stored in `fabElement` for visibility toggling. */
   const fab = h({
     tag: 'fab-button',
     attrs: { label: 'Add task', },

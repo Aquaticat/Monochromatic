@@ -39,6 +39,7 @@ function requireParam(
   event: Parameters<typeof getRouterParam>[0],
   name: string,
 ): string {
+  /** Route value as returned by h3; converted to a thrown 400 below when absent. */
   const value = getRouterParam(
     event,
     name,
@@ -73,6 +74,7 @@ export function registerApiRoutes(app: H3,): void {
   app.put(
     '/api/tasks/:id',
     defineHandler(function handleUpdateTaskRoute(event,) {
+      /** Required route slug; thrown as 400 by `requireParam` when absent. */
       const id = requireParam(
         event,
         'id',
@@ -87,6 +89,7 @@ export function registerApiRoutes(app: H3,): void {
   app.delete(
     '/api/tasks/:id',
     defineHandler(function handleDeleteTaskRoute(event,) {
+      /** Required route slug; thrown as 400 by `requireParam` when absent. */
       const id = requireParam(
         event,
         'id',
@@ -98,6 +101,7 @@ export function registerApiRoutes(app: H3,): void {
   app.post(
     '/api/tasks/:id/start',
     defineHandler(function handleStartTimerRoute(event,) {
+      /** Required route slug; thrown as 400 by `requireParam` when absent. */
       const id = requireParam(
         event,
         'id',
@@ -109,6 +113,7 @@ export function registerApiRoutes(app: H3,): void {
   app.post(
     '/api/tasks/:id/stop',
     defineHandler(function handleStopTimerRoute(event,) {
+      /** Required route slug; thrown as 400 by `requireParam` when absent. */
       const id = requireParam(
         event,
         'id',
@@ -120,6 +125,7 @@ export function registerApiRoutes(app: H3,): void {
   app.post(
     '/api/tasks/:id/complete',
     defineHandler(function handleCompleteTaskRoute(event,) {
+      /** Required route slug; thrown as 400 by `requireParam` when absent. */
       const id = requireParam(
         event,
         'id',

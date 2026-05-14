@@ -70,6 +70,7 @@ class ToastMessage extends HTMLElement {
   /** Renders content and schedules auto-removal after `DISMISS_MS`. */
   connectedCallback(): void {
     this.#render();
+    /** Pre-bound `remove` so the timeout fires without losing `this`. */
     const removeFn = this.remove.bind(this,);
     this.#timer = setTimeout(
       function dismiss(): void {
@@ -96,6 +97,7 @@ class ToastMessage extends HTMLElement {
 
   /** Renders the toast content into the shadow root. */
   #render(): void {
+    /** Resolved at render time so empty-attribute elements still produce a valid toast. */
     const message = this.getAttribute('message',) ?? '';
     this.#shadow.replaceChildren(
       h({
@@ -130,6 +132,7 @@ customElements.define(
 export function showToast(message: string,): void {
   document.querySelector<HTMLElement>('toast-message',)?.remove();
 
+  /** Freshly constructed element so the new message replaces the previous one. */
   const toast = document.createElement('toast-message',);
   toast.setAttribute(
     'message',

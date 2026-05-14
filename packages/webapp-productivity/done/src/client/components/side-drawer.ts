@@ -69,7 +69,9 @@ class SideDrawer extends HTMLElement {
   connectedCallback(): void {
     this.#render();
     this.#panel = this.#shadow.querySelector<HTMLDivElement>('.panel',);
+    /** Pre-bound closer so the inline listeners keep `this` after handoff. */
     const closeFn = this.#closeDrawer.bind(this,);
+    /** Local alias used by the backdrop listener to compare against the click target. */
     const panel = this.#panel;
 
     this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener(
@@ -102,6 +104,7 @@ class SideDrawer extends HTMLElement {
 
   /** Renders the inline sidebar and popover panel into the shadow root. */
   #render(): void {
+    /** Reused close button, tagged with `.panel-close` so the listener can find it. */
     const panelClose = buildCloseButton('Close menu',);
     panelClose.classList.add('panel-close',);
 

@@ -62,6 +62,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   if (!isRecord(value,))
     return null;
 
+  /** Accumulator filled field-by-field below; only present keys are assigned. */
   const taskUpdateInput: TaskUpdateInput = {};
 
   if ('title' in value) {
@@ -78,6 +79,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   }
 
   if ('tags' in value) {
+    /** Normalised tag array; null indicates the field failed validation. */
     const tags = parseStringArray(value.tags,);
     if (tags === null)
       return null;
@@ -85,6 +87,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   }
 
   if ('locations' in value) {
+    /** Normalised location array; null indicates the field failed validation. */
     const locations = parseStringArray(value.locations,);
     if (locations === null)
       return null;
@@ -92,6 +95,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   }
 
   if ('blockedBy' in value) {
+    /** Normalised blockedBy array; null indicates the field failed validation. */
     const blockedBy = parseStringArray(value.blockedBy,);
     if (blockedBy === null)
       return null;
@@ -99,6 +103,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   }
 
   if ('reminders' in value) {
+    /** Normalised reminders array; null indicates the field failed validation. */
     const reminders = parseStringArray(value.reminders,);
     if (reminders === null)
       return null;
@@ -106,6 +111,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   }
 
   if ('priority' in value) {
+    /** Enum-validated priority; undefined indicates the field failed validation. */
     const priority = parseEnumValue<TaskPriority>(
       value.priority,
       priorities,
@@ -116,6 +122,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   }
 
   if ('complexity' in value) {
+    /** Enum-validated complexity; undefined indicates the field failed validation. */
     const complexity = parseEnumValue<TaskPriority>(
       value.complexity,
       priorities,
@@ -133,6 +140,7 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   }
 
   if ('status' in value) {
+    /** Validated status string; undefined indicates the field failed validation. */
     const status = parseStatus(value.status,);
     if (status === undefined)
       return null;

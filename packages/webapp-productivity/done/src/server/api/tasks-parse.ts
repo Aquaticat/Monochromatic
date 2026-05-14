@@ -44,6 +44,7 @@ export function isRecord(value: unknown,): value is Record<string, unknown> {
 export function parseStringArray(value: unknown,): string[] | null {
   if (!Array.isArray(value,))
     return null;
+  /** Normalised entries: only strings, trimmed, non-empty; returned as the parsed result. */
   const parsedValues = value
     .filter(function isString(entry,): entry is string {
       return typeof entry === 'string';

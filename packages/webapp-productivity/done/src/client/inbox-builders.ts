@@ -42,6 +42,7 @@ export function buildTaskList(
     onToggleComplete: (taskId: string,) => Promise<void>;
   },
 ): HTMLUListElement {
+  /** Top-level list mutated in-place as the loop appends cards and child branches. */
   const list = h({
     tag: 'ul',
     class: 'task-list',
@@ -56,6 +57,7 @@ export function buildTaskList(
       },
     ),);
 
+    /** Tasks blocked by `task`; empty when nothing depends on it. */
     const childLinks = blockedTasksByBlocker[task.id] ?? [];
     if (childLinks.length > 0) {
       list.append(

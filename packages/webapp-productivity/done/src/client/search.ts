@@ -52,14 +52,16 @@ const app = appElement;
 // Listen for search events from the search-bar component
 document.querySelector<HTMLElement>('search-bar',)?.addEventListener(
   'search',
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent handler must be cast to EventListener for addEventListener
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- CustomEvent handler must be cast to EventListener for addEventListener */
   (function handleSearch(event: CustomEvent<{ query: string; }>,) {
+    /** Search-bar query text destructured for the URL builder below. */
     const { query, } = event.detail;
     globalThis.location.href = query.length === 0
       ? '/search'
       : `/search?q=${encodeURIComponent(query,)}`;
   }) as EventListener,
 );
+/* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
 if (pageData.query.length === 0) {
   app.append(
@@ -70,6 +72,7 @@ if (pageData.query.length === 0) {
     },),
   );
 
+  /** Tags surfaced as quick-pick chips when the user has not typed anything yet. */
   const { availableTags, } = pageData;
   if (availableTags.length > 0) {
     app.append(
@@ -93,6 +96,7 @@ if (pageData.query.length === 0) {
   }
 }
 else {
+  /** Container appended below; populated by iterating `pageData.results`. */
   const resultList = h({
     tag: 'ul',
     class: 'task-list',

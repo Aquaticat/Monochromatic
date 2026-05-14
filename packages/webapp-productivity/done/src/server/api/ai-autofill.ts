@@ -70,6 +70,7 @@ const MAX_TOKENS = 256;
  * @returns Validated autofill result with safe defaults
  */
 function parseAutofillResponse(raw: string,): AutofillResult {
+  /** Safe default returned whenever parsing or validation fails. */
   const empty: AutofillResult = {
     tags: [],
     locations: [],
@@ -78,34 +79,40 @@ function parseAutofillResponse(raw: string,): AutofillResult {
   };
 
   try {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; shape validated below
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; shape validated below */
+    /** Raw object asserted to the loose shape; every field is rechecked individually. */
     const parsed = JSON.parse(raw,) as RawAutofillResponse;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
     if (typeof parsed !== 'object')
       return empty;
 
+    /** String-only tag list filtered defensively against malformed AI output. */
     const tags = Array.isArray(parsed.tags,)
       ? parsed.tags.filter(function isString(tag,): tag is string {
         return typeof tag === 'string';
       },)
       : [];
 
+    /** String-only location list filtered defensively against malformed AI output. */
     const locations = Array.isArray(parsed.locations,)
       ? parsed.locations.filter(function isString(location,): location is string {
         return typeof location === 'string';
       },)
       : [];
 
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- validated by Set.has check */
+    /** Priority gated by the allowed-value set; everything else collapses to null. */
     const priority = typeof parsed
             .priority === 'string' && VALID_PRIORITIES.has(parsed.priority,)
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
       ? (parsed.priority as TaskPriority)
       : null;
 
+    /** Complexity gated by the allowed-value set; everything else collapses to null. */
     const complexity = typeof parsed
             .complexity === 'string' && VALID_COMPLEXITIES.has(parsed.complexity,)
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
       ? (parsed.complexity as TaskComplexity)
       : null;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
 
     return {
       tags,
@@ -129,12 +136,14 @@ function parseAutofillResponse(raw: string,): AutofillResult {
  * @returns Sorted array of unique location strings
  */
 async function listAllLocations(): Promise<string[]> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns rows with loc column
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns rows with loc column */
+  /** Single-column projection; the location string is unwrapped from each row below. */
   const rows = await db
     .prepare(
       'SELECT DISTINCT loc.value AS loc FROM tasks, json_each(tasks.locations) AS loc ORDER BY loc.value ASC',
     )
     .all() as { loc: string; }[];
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function extractLoc(row,) {
     return row.loc;
   },);
@@ -158,8 +167,11 @@ async function listAllLocations(): Promise<string[]> {
  */
 export async function handleAutofill(req: Request,): Promise<Response> {
   try {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- request body is expected to be a JSON object
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- request body is expected to be a JSON object */
+    /** Loose object so each field can be validated individually before use. */
     const body = (await req.json()) as Record<string, unknown>;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
+    /** Trimmed title; empty string short-circuits to the empty-response branch below. */
     const title = typeof body.title === 'string' ? body.title.trim() : '';
 
     if (title.length === 0) {
@@ -171,14 +183,18 @@ export async function handleAutofill(req: Request,): Promise<Response> {
       },);
     }
 
+    /** Tags already in use, forwarded so the model prefers consistency. */
     const existingTags = await listAllTags();
+    /** Locations already in use, forwarded so the model prefers consistency. */
     const existingLocations = await listAllLocations();
+    /** Composed chat messages ready for the completion endpoint. */
     const messages = buildAutofillMessages(
       title,
       existingTags,
       existingLocations,
     );
 
+    /** Discriminated result wrapping the model output or a transport error. */
     const result = await chatCompletion({
       messages,
       temperature: 0,
@@ -199,6 +215,7 @@ export async function handleAutofill(req: Request,): Promise<Response> {
       },);
     }
 
+    /** Validated metadata; serialised straight to the response body below. */
     const autofill = parseAutofillResponse(result.content,);
     return Response.json(autofill,);
   }

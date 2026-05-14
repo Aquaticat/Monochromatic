@@ -69,12 +69,16 @@ class TaskCard extends HTMLElement {
 
   /** Renders the card content (checkbox, title, chips) into the shadow root. */
   #render(): void {
+    /** Snapshot of the configured task; early-returns below if not yet set. */
     const task = this.#task;
+    /** Snapshot of the configured options; early-returns below if not yet set. */
     const options = this.#options;
     if (task === null || options === null)
       return;
 
+    /** Chip label strings built from the task fields. */
     const chipTexts = buildChipTexts(task,);
+    /** Chip DOM nodes mutated below when the blocked badge needs to be appended. */
     const chipElements: HTMLElement[] = chipTexts.map(function toChipElement(text,) {
       return h({
         tag: 'span',
@@ -160,8 +164,10 @@ export function createTaskCard(
   task: Task,
   options: TaskCardOptions,
 ): TaskCard {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-card is registered as TaskCard
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-card is registered as TaskCard */
+  /** Live `TaskCard` instance so the imperative `configure()` API is reachable. */
   const card = document.createElement('task-card',) as TaskCard;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   card.configure(
     task,
     options,
@@ -185,6 +191,7 @@ export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt === null)
     return formatTrackedTime(task.trackedTime,);
 
+  /** Live tick since the timer started; clamped so a clock skew never produces negatives. */
   const elapsedSeconds = Math.max(
     0,
     Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / MS_PER_SECOND,),

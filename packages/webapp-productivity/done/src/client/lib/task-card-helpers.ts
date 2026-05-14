@@ -39,12 +39,16 @@ const DIGITAL_FORMATTER = new Intl.DurationFormat(
  * formatTrackedTime(3661); // '1:01:01'
  */
 export function formatTrackedTime(seconds: number,): string {
+  /** Clamps the input so negative or fractional inputs do not propagate into the formatter. */
   const totalSeconds = Math.max(
     0,
     Math.floor(seconds,),
   );
+  /** Hours bucket fed to `Intl.DurationFormat`. */
   const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR,);
+  /** Minutes bucket within the hour. */
   const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,);
+  /** Seconds remainder within the minute. */
   const remainingSeconds = totalSeconds % SECONDS_PER_MINUTE;
   return DIGITAL_FORMATTER.format({
     hours,
@@ -66,6 +70,7 @@ export function formatTrackedTime(seconds: number,): string {
  * // ['#errand', 'tracked: 1:30:00', 'home']
  */
 export function buildChipTexts(task: Task,): string[] {
+  /** Accumulator mutated by the conditional pushes below; tag chips come first. */
   const chips: string[] = [];
 
   if (task.tags.length > 0)

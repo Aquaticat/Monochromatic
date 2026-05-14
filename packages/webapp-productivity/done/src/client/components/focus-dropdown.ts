@@ -68,13 +68,16 @@ class FocusDropdown extends HTMLElement {
 
   /** Renders the trigger button, divider, and popover menu into the shadow root. */
   #render(): void {
+    /** Trigger label captured so the option callback can update it in place. */
     const textSpan = h({
       tag: 'span',
       class: 'text',
       text: this.#value,
     },);
+    /** Pre-bound selector so each option click fires with the correct `this`. */
     const selectFn = this.#selectPreset.bind(this,);
 
+    /** Popover menu captured so the option callback can close it after selection. */
     const menu = h({
       tag: 'ul',
       class: 'menu',

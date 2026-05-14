@@ -68,6 +68,7 @@ export class AutofillManager {
     if (options.title.trim().length === 0)
       return;
 
+    /** Pre-bound fetch so the timeout callback keeps the manager's `this`. */
     const fetchFn = this.#fetch.bind(this,);
     this.#timer = setTimeout(
       function triggerFetch(): void {
@@ -91,6 +92,7 @@ export class AutofillManager {
     metadata,
     onUpdate,
   }: AutofillRequestOptions,): Promise<void> {
+    /** Fresh controller stored on the instance so a follow-up request can abort it. */
     const controller = new AbortController();
     this.#abort = controller;
     this.loading = true;
@@ -107,6 +109,7 @@ export class AutofillManager {
     };
 
     try {
+      /** Network response from the autofill endpoint, awaited before reading the body. */
       const response = await fetch(
         '/api/ai/autofill',
         {
@@ -120,8 +123,10 @@ export class AutofillManager {
       if (!response.ok)
         return;
 
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response JSON matches AutofillResult by API contract
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- response JSON matches AutofillResult by API contract */
+      /** Parsed autofill payload used to fill empty metadata slots below. */
       const result = (await response.json()) as AutofillResult;
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
       this.autofilled.clear();
 
       if (result.tags.length > 0 && metadata.tags.length === 0) {

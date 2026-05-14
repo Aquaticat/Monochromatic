@@ -30,6 +30,7 @@ class SearchBar extends HTMLElement {
    * @returns Search input value
    */
   get value(): string {
+    /** Shadow-DOM lookup; null until `connectedCallback` runs. */
     const input = this.#shadow.querySelector<HTMLInputElement>('input',);
     return input?.value ?? '';
   }
@@ -40,6 +41,7 @@ class SearchBar extends HTMLElement {
    * @param text - New value to display
    */
   set value(text: string,) {
+    /** Shadow-DOM lookup; silently ignored before `connectedCallback` runs. */
     const input = this.#shadow.querySelector<HTMLInputElement>('input',);
     if (input !== null)
       input.value = text;
@@ -47,10 +49,12 @@ class SearchBar extends HTMLElement {
 
   /** Renders the back button and search input, wires up debounced search dispatch. */
   connectedCallback(): void {
+    /** Initial query forwarded as the input's starting value. */
     const query = this.getAttribute('value',) ?? '';
 
     // SVG back arrow built via innerHTML on a container because h() targets
     // HTMLElement creation: SVG elements require the SVG namespace.
+    /** Reusable back-button shell so the inline SVG glyph can be injected next. */
     const backButton = h({
       tag: 'button',
       class: 'back',
@@ -60,6 +64,7 @@ class SearchBar extends HTMLElement {
     backButton.innerHTML =
       `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 10,16 20,26"/></svg>`;
 
+    /** Captured so the input listener can read the latest value at dispatch time. */
     const input = h({
       tag: 'input',
       attrs: {
@@ -71,7 +76,9 @@ class SearchBar extends HTMLElement {
     },);
 
     // Debounced search dispatch
+    /** Pre-bound dispatcher so the timeout fires without losing `this`. */
     const dispatchFn = this.dispatchEvent.bind(this,);
+    /** Shared timer handle; reassigned on every keystroke so the previous fire is cancelled. */
     let timeout: ReturnType<typeof setTimeout> | undefined = undefined;
     input.addEventListener(
       'input',

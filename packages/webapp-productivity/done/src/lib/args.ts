@@ -19,7 +19,9 @@
  * ```
  */
 export function getArgumentValue(name: string,): string | undefined {
+  /** Search prefix built once so the predicate closure stays cheap. */
   const prefix = `--${name}=`;
+  /** First argv entry that opens with `--name=`; undefined when absent. */
   const argument = process.argv.find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);
   },);

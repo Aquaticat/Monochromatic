@@ -99,6 +99,7 @@ export function nowIso(): string {
  */
 export function parseStringArray(value: string,): string[] {
   try {
+    /** Untyped parse result narrowed by the array guard below. */
     const parsed = JSON.parse(value,) as unknown;
     if (!Array.isArray(parsed,))
       return [];
@@ -186,9 +187,11 @@ export function mapTask(row: TaskRow,): Task {
  * ```
  */
 export async function getTaskRowById(id: string,): Promise<TaskRow | null> {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database prepare().get() returns the row shape we defined
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- database prepare().get() returns the row shape we defined */
+  /** Raw row read from SQLite; `undefined` distinguished from `null` for not-found. */
   const taskRow = await db.prepare(SQL_SELECT_TASK_BY_ID,).get(id,) as
     | TaskRow
     | undefined;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return taskRow ?? null;
 }

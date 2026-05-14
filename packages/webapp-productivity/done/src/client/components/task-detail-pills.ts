@@ -28,6 +28,7 @@ export function buildPillElements({
   autofillLoading: boolean;
   autofilled: Set<string>;
 },): HTMLElement[] {
+  /** Ordered pill descriptors; field names align with the autofilled set lookup below. */
   const pillData = [
     {
       field: 'tags',
@@ -70,6 +71,7 @@ export function buildPillElements({
   ];
 
   return pillData.map(function toPillElement(pill,) {
+    /** Built once so the conditional data attributes below can be appended in place. */
     const element = h({
       tag: 'span',
       class: 'pill',

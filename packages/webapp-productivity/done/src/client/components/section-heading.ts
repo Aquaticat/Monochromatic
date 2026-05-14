@@ -127,9 +127,11 @@ class SectionHeading extends HTMLElement {
    * ```
    */
   #updateToggle(): void {
+    /** Shadow-DOM lookup; element may be missing if `#render` has not run yet. */
     const toggle = this.#shadow.querySelector<HTMLElement>('.toggle',);
     if (toggle instanceof HTMLElement)
       toggle.textContent = this.#open ? '\u25B2' : '\u25BC';
+    /** Sibling content region whose visibility tracks the open flag. */
     const content = this.#shadow.querySelector<HTMLElement>('.content',);
     if (content !== null)
       content.style.display = this.#open ? 'flex' : 'none';
@@ -137,7 +139,9 @@ class SectionHeading extends HTMLElement {
 
   /** Renders the heading row and content slot into the shadow root. */
   #render(): void {
+    /** Resolved at render time so heading still works when the icon attribute is omitted. */
     const icon = this.getAttribute('icon',) ?? '';
+    /** Resolved at render time so heading still works when the label attribute is omitted. */
     const label = this.getAttribute('label',) ?? '';
 
     this.#shadow.replaceChildren(

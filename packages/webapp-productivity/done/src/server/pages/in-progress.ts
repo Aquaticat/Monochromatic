@@ -18,6 +18,7 @@ import { renderPage, } from './layout.ts';
  * ```
  */
 export async function inProgressPage(): Promise<Response> {
+  /** Active timer rows forwarded as the page payload. */
   const tasks = await listInProgressTasks();
 
   return renderPage({

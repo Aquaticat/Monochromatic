@@ -23,7 +23,9 @@ class TopNav extends HTMLElement {
 
   /** Renders the hamburger, heading, and search link into the shadow root. */
   connectedCallback(): void {
+    /** Resolved at attach time so a missing attribute still renders an empty title slot. */
     const heading = this.getAttribute('heading',) ?? '';
+    /** Pre-bound dispatcher so the inner click handler keeps `this` after handoff. */
     const dispatchFn = this.dispatchEvent.bind(this,);
 
     this.#shadow.replaceChildren(

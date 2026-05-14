@@ -53,12 +53,16 @@ const DECIMAL_RADIX = 10;
  * @returns Resolved port number
  */
 function resolvePort(): number {
+  /** Highest-priority source: explicit `--port=` flag. */
   const argumentPort = getArgumentValue('port',);
+  /** Mid-priority source: `PORT` env var when no flag is given. */
   const environmentPort = process.env.PORT;
+  /** First-found source; `undefined` falls through to the default port. */
   const rawPort = argumentPort ?? environmentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
 
+  /** Numeric parse with `NaN` falling back to the default. */
   const parsedPort = Number.parseInt(
     rawPort,
     DECIMAL_RADIX,
@@ -87,6 +91,7 @@ app.get(
 app.get(
   '/tasks/:id',
   defineHandler(function handleTaskDetails(event,) {
+    /** Route slug captured from `/tasks/:id`; undefined is a router invariant violation. */
     const id = getRouterParam(
       event,
       'id',
@@ -135,6 +140,7 @@ app.get(
           );
         },
         getMeta: async function getMetadata(id,) {
+          /** Reassigned in the try block; remains undefined when the file is missing. */
           let stats: Awaited<ReturnType<typeof stat>> | undefined = undefined;
           try {
             stats = await stat(

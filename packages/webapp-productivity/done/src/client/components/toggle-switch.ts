@@ -86,6 +86,7 @@ class ToggleSwitch extends HTMLElement {
 
   /** Renders the track and thumb elements into the shadow root. */
   #render(): void {
+    /** Captured once so the value stays stable across both child branches below. */
     const isOn = this.on;
     this.#shadow.replaceChildren(
       h({

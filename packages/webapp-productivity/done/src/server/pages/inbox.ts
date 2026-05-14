@@ -22,8 +22,11 @@ import { renderPage, } from './layout.ts';
  * ```
  */
 export async function inboxPage(): Promise<Response> {
+  /** Unblocked inbox tasks; surface row for both `suggestedTasks` and `allTasks`. */
   const inboxTasks = await listInboxUnblockedTasks();
+  /** Raw blocker-to-blocked rows fed to the grouping below. */
   const blockedLinks = await listBlockedInboxTasks();
+  /** Pre-grouped map so the client can render blocked children under each blocker. */
   const blockedTasksByBlocker = Object.groupBy(
     blockedLinks,
     function byBlocker(link,) {

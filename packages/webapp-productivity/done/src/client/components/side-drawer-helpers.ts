@@ -55,6 +55,7 @@ export function buildNav(): HTMLElement {
  * ```
  */
 export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
+  /** Accumulator for the header children so an optional close button can be appended. */
   const children: HTMLElement[] = [
     h({
       tag: 'span',
@@ -84,6 +85,7 @@ export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
  * ```
  */
 export function buildCloseButton(label: string,): HTMLElement {
+  /** Bare button shell so the inline SVG can be injected via innerHTML below. */
   const button = h({
     tag: 'button',
     class: 'close',

@@ -41,12 +41,14 @@ const requestTimestamps: number[] = [];
  * @returns `true` when the request should be rejected
  */
 function isRateLimited(): boolean {
+  /** Lower bound of the sliding window; older timestamps are evicted below. */
   const cutoff = Date.now() - WINDOW_DURATION_MS;
 
   // Discard entries older than the window
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- array index 0 is checked via length guard
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- array index 0 is checked via length guard */
   while (requestTimestamps.length > 0 && (requestTimestamps[0] as number) < cutoff)
     requestTimestamps.shift();
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
 
   return requestTimestamps.length >= MAX_REQUESTS_PER_WINDOW;
 }
@@ -137,6 +139,7 @@ export async function chatCompletion(
 
   recordRequest();
 
+  /** Mutable request body so optional fields can be appended conditionally below. */
   const body: Record<string, unknown> = {
     messages: options.messages,
     temperature: options.temperature ?? 0,
@@ -149,6 +152,7 @@ export async function chatCompletion(
     body.response_format = { type: 'json_object', };
 
   try {
+    /** Network response from the OpenAI-compatible endpoint. */
     const response = await fetch(
       completionsUrl,
       {
@@ -160,6 +164,7 @@ export async function chatCompletion(
     );
 
     if (!response.ok) {
+      /** Best-effort body text; reassigned in the try block, default surfaces on parse failure. */
       let errorText = 'unknown error';
       try {
         errorText = await response.text();
@@ -173,8 +178,11 @@ export async function chatCompletion(
       };
     }
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- API response shape matches ChatCompletionResponse */
+    /** Parsed response payload; only `choices[0]` is consumed below. */
     const data = (await response.json()) as ChatCompletionResponse;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
+    /** First completion choice; absent on malformed responses. */
     const [firstChoice,] = data.choices;
     if (firstChoice === undefined) {
       return {
@@ -189,6 +197,7 @@ export async function chatCompletion(
     };
   }
   catch (caughtError: unknown) {
+    /** Human-readable error text extracted whether the cause is an Error or a raw throw. */
     const message = caughtError instanceof Error
       ? caughtError.message
       : String(caughtError,);
