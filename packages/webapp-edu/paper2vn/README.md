@@ -21,17 +21,17 @@ Single self-contained HTML file: the build assembles CSS, the client JavaScript 
 
 ### Inputs
 
-- `src/client/main.ts` -- SPA entry, mounts the screen router
-- `src/client/screens/*.ts` -- one module per screen (menu, select-topic, lecture, settings, saves)
-- `src/client/llm/` -- provider abstraction; ships OpenRouter, OpenAI, Anthropic, and Ollama adapters
-- `src/client/parse/` -- file-to-text extractors (PDF via pdfjs, TXT, MD)
-- `src/client/i18n/` -- string tables per locale and the persona-prompt translations
-- `src/assets/sprites/` -- pluggable sprite manifest plus the bundled placeholder pack
+- `src/client/main.ts`: SPA entry, mounts the screen router
+- `src/client/screens/*.ts`: one module per screen (menu, select-topic, lecture, settings, saves)
+- `src/client/llm/`: provider abstraction; ships OpenRouter, OpenAI, Anthropic, and Ollama adapters
+- `src/client/parse/`: file-to-text extractors (PDF via pdfjs, TXT, MD)
+- `src/client/i18n/`: string tables per locale and the persona-prompt translations
+- `src/assets/sprites/`: pluggable sprite manifest plus the bundled placeholder pack
 
 ### Outputs
 
-- `dist/client/main.js` -- bundled client (tsdown, minified, no name mangling)
-- `dist/final/index.html` -- the self-contained app
+- `dist/client/main.js`: bundled client (tsdown, minified, no name mangling)
+- `dist/final/index.html`: the self-contained app
 
 ## Running
 
@@ -83,10 +83,10 @@ The Bun smoke validates the prompt-to-parsed-chapters pipeline without the cost 
 
 Browsers enforce CORS on cross-origin requests. Each supported provider behaves differently:
 
-- **OpenRouter** -- full CORS support, no extra setup, recommended default
-- **OpenAI** -- CORS-permissive on `/v1/chat/completions`, works direct from the browser
-- **Anthropic** -- requires the `anthropic-dangerous-direct-browser-access: true` request header and the `dangerouslyAllowBrowser` SDK flag; the app surfaces this as an explicit warning in settings
-- **Ollama (local)** -- requires `OLLAMA_ORIGINS=*` (or the page's origin) to be set when starting `ollama serve`, otherwise CORS blocks the request
+- **OpenRouter**: full CORS support, no extra setup, recommended default
+- **OpenAI**: CORS-permissive on `/v1/chat/completions`, works direct from the browser
+- **Anthropic**: requires the `anthropic-dangerous-direct-browser-access: true` request header and the `dangerouslyAllowBrowser` SDK flag; the app surfaces this as an explicit warning in settings
+- **Ollama (local)**: requires `OLLAMA_ORIGINS=*` (or the page's origin) to be set when starting `ollama serve`, otherwise CORS blocks the request
 
 ## Sprite packs
 

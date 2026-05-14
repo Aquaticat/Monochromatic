@@ -225,21 +225,21 @@ Authoritative enumeration (every `require` or `import` of `readable-stream` reac
 
 `winston@3.15.0`, top-level only:
 
-- `lib/winston/logger.js:10` -- `const { Stream, Transform } = require('readable-stream');`
-- `lib/winston/exception-stream.js:10` -- `const { Writable } = require('readable-stream');`
-- `lib/winston/rejection-stream.js:10` -- `const { Writable } = require('readable-stream');`
-- `lib/winston/transports/file.js:16` -- `const { Stream, PassThrough } = require('readable-stream');`
-- `lib/winston/transports/http.js:12` -- `const { Stream } = require('readable-stream');`
-- `lib/winston/tail-file.js:12` -- `const { Stream } = require('readable-stream');`
+- `lib/winston/logger.js:10`: `const { Stream, Transform } = require('readable-stream');`
+- `lib/winston/exception-stream.js:10`: `const { Writable } = require('readable-stream');`
+- `lib/winston/rejection-stream.js:10`: `const { Writable } = require('readable-stream');`
+- `lib/winston/transports/file.js:16`: `const { Stream, PassThrough } = require('readable-stream');`
+- `lib/winston/transports/http.js:12`: `const { Stream } = require('readable-stream');`
+- `lib/winston/tail-file.js:12`: `const { Stream } = require('readable-stream');`
 
 `winston-transport@4.9.0`:
 
-- `modern.js:4` -- `const Writable = require('readable-stream/lib/_stream_writable.js');`
+- `modern.js:4`: `const Writable = require('readable-stream/lib/_stream_writable.js');`
   (the only deep subpath import in the entire reachable graph)
 
 `isomorphic-git@1.37.6`:
 
-- `http/node/index.js:91` -- `const { PassThrough } = require('readable-stream');`
+- `http/node/index.js:91`: `const { PassThrough } = require('readable-stream');`
 
 Subpaths covered by the shim: `.` (the top-level entry) and `./lib/_stream_writable.js`.
 The remaining four `lib/_stream_*.js` entries in the shim are not reached by current code; they are present as a forward-compatibility hedge against future winston-transport or patched-fork reaches.

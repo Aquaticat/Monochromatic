@@ -10,8 +10,8 @@ virtiofs on Windows requires **four** separate components, installed in the corr
 from three different sources, none of which tell you about the others.
 
 1. **viofs kernel driver**: from the virtio-win ISO, installed via `pnputil`
-2. **VirtioFsSvc** (user-mode service) -- from `virtio-win-gt-x64.msi` on the same ISO
-3. **WinFsp** (Windows File System Proxy) -- a **separate download** from `github.com/winfsp/winfsp`,
+2. **VirtioFsSvc** (user-mode service): from `virtio-win-gt-x64.msi` on the same ISO
+3. **WinFsp** (Windows File System Proxy): a **separate download** from `github.com/winfsp/winfsp`,
    not included anywhere on the virtio-win ISO, not mentioned in any Red Hat documentation
    that you will find in the first 30 minutes of searching
 4. **QEMU guest agent**: from `qemu-ga-x86_64.msi` on the virtio-win ISO,

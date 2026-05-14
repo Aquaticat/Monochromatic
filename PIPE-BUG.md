@@ -115,7 +115,7 @@ execve("/usr/bin/cat")  # cat reads from pipe, gets "hello\n"
 Extracted JS via `tweakcc unpack` from the compiled binary at
 `~/.local/share/claude/versions/2.1.71`.
 
-### `oAD` -- wraps user command with `/dev/null` redirect (the broken path)
+### `oAD`: wraps user command with `/dev/null` redirect (the broken path)
 
 ```javascript
 // Minified names: H = command, $ = shouldRedirect, ID = shellQuote
@@ -133,10 +133,10 @@ function oAD(H, $ = true,) {
 ```
 
 `ID` is the shell-quoting function. `ID(["echo hello | cat", "<", "/dev/null"])`
-produces `'echo hello | cat' '<' '/dev/null'` -- three quoted tokens.
+produces `'echo hello | cat' '<' '/dev/null'`: three quoted tokens.
 The `<` becomes a literal argument `'<'`, not a redirect operator.
 
-### `HLD` -- pipe-aware redirect insertion (the correct path, but not used in sandbox)
+### `HLD`: pipe-aware redirect insertion (the correct path, but not used in sandbox)
 
 ```javascript
 function HLD(H,) {
@@ -153,7 +153,7 @@ function HLD(H,) {
 This correctly places `< /dev/null` on the left side of the pipe.
 But it is **gated on `!q.useSandbox`**:
 
-### Call site -- the sandbox gate
+### Call site; the sandbox gate
 
 ```javascript
 Y = sAD(f,); // replace NUL with /dev/null
@@ -166,7 +166,7 @@ if (!q.useSandbox && Y.includes('|',) && O)
 Inside the sandbox (`q.useSandbox === true`), `HLD` is never called.
 The `oAD` path is always used, which shell-quotes `<` as a literal argument.
 
-### `odH` -- fallback for complex commands (works correctly)
+### `odH`: fallback for complex commands (works correctly)
 
 ```javascript
 function odH(H,) {
@@ -217,8 +217,8 @@ the redirected stdin propagates to all child commands without interfering with p
 The same `\<` bug causes a different symptom when the user command contains `&&` or `;`
 but **no pipes**. Tools like `rg` and `fd` auto-detect whether stdin is a TTY:
 
-- **TTY stdin** -- search current directory (normal interactive behavior)
-- **Non-TTY stdin** -- read input from stdin (filter mode)
+- **TTY stdin**: search current directory (normal interactive behavior)
+- **Non-TTY stdin**: read input from stdin (filter mode)
 
 Claude Code's stdin is a non-TTY socket that never sends EOF.
 The `< /dev/null` redirect is meant to give commands immediate EOF,
@@ -316,19 +316,19 @@ echo hello | cat; echo done          # returns "hello\ndone"
 
 ### Strace log files
 
-- `/tmp/claude-1000/strace-broken.log` -- broken case showing pipe overwrite
-- `/tmp/claude-1000/strace-detailed.log` -- working case for comparison
-- `/tmp/claude-1000/strace-broken2.log` -- broken case with fcntl tracing (no fcntl in child, confirming no redirect save/undo)
-- `/tmp/claude-1000/strace-full.raw` -- full strace confirming parent never opens /dev/null
+- `/tmp/claude-1000/strace-broken.log`: broken case showing pipe overwrite
+- `/tmp/claude-1000/strace-detailed.log`: working case for comparison
+- `/tmp/claude-1000/strace-broken2.log`: broken case with fcntl tracing (no fcntl in child, confirming no redirect save/undo)
+- `/tmp/claude-1000/strace-full.raw`: full strace confirming parent never opens /dev/null
 
 ### Bash source files
 
-- `~/temp/bash-src/execute_cmd.c` -- `do_piping()`, `execute_disk_command()`, `do_redirections()`
-- `~/temp/bash-src/builtins/evalstring.c` -- `parse_and_execute()`, fork optimization
-- `~/temp/bash-src/builtins/eval.def` -- eval builtin passes `SEVAL_NOOPTIMIZE`
-- `~/temp/bash-src/redir.c` -- `do_redirections()`, `do_redirection_internal()`
+- `~/temp/bash-src/execute_cmd.c`: `do_piping()`, `execute_disk_command()`, `do_redirections()`
+- `~/temp/bash-src/builtins/evalstring.c`: `parse_and_execute()`, fork optimization
+- `~/temp/bash-src/builtins/eval.def`: eval builtin passes `SEVAL_NOOPTIMIZE`
+- `~/temp/bash-src/redir.c`: `do_redirections()`, `do_redirection_internal()`
 
 ### LD_PRELOAD trace files
 
-- `/tmp/claude-1000/trace_open*.c` -- progressively more comprehensive open/openat hooks
+- `/tmp/claude-1000/trace_open*.c`: progressively more comprehensive open/openat hooks
 - Only caught parent's `open()`, never child's (glibc's internal `open()` bypasses PLT)

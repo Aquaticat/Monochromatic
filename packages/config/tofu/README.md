@@ -76,11 +76,11 @@ terraform apply
 
 ### Inbound
 
-- HTTP (80) -- from all
-- HTTPS TCP/UDP (443) -- from all
-- SSH (22) -- from home ISP and Coolify IPs
-- ICMP -- from home ISP IPs
-- Syncthing (21027/22000/22067/22070) -- from all
+- HTTP (80): from all
+- HTTPS TCP/UDP (443): from all
+- SSH (22): from home ISP and Coolify IPs
+- ICMP; from home ISP IPs
+- Syncthing (21027/22000/22067/22070): from all
 
 ### Outbound
 
@@ -120,12 +120,12 @@ xcaddy build v2.11.2 \
 
 Provides these Caddy modules:
 
-- `github.com/mholt/caddy-l4` -- all `layer4.*`, `caddy.listeners.layer4`, `tls.handshake_match.alpn`
-- `github.com/caddyserver/cache-handler` -- `http.handlers.cache`, `admin.api.souin`
-- `github.com/darkweak/storages/otter/caddy` -- `storages.cache.otter`
-- `github.com/greenpau/caddy-security` -- `security`, `http.authentication.providers.authorizer`, `http.handlers.authenticator`
-- `github.com/mholt/caddy-ratelimit` -- `http.handlers.rate_limit`
-- `github.com/mholt/caddy-webdav` -- `http.handlers.webdav`
+- `github.com/mholt/caddy-l4`: all `layer4.*`, `caddy.listeners.layer4`, `tls.handshake_match.alpn`
+- `github.com/caddyserver/cache-handler`: `http.handlers.cache`, `admin.api.souin`
+- `github.com/darkweak/storages/otter/caddy`: `storages.cache.otter`
+- `github.com/greenpau/caddy-security`: `security`, `http.authentication.providers.authorizer`, `http.handlers.authenticator`
+- `github.com/mholt/caddy-ratelimit`: `http.handlers.rate_limit`
+- `github.com/mholt/caddy-webdav`: `http.handlers.webdav`
 
 Verify after building: `./caddy list-modules` and `./caddy version`.
 
@@ -151,7 +151,7 @@ and reset credentials or mount the filesystem.
 
 The following are gitignored and must be created manually:
 
-- `*.auto.tfvars` -- API tokens and home ISP ASN
-- `.env.local` -- ipinfo token for fetch_ips.ts
-- `cache_*.json` -- ASN lookup caches
-- `terraform.tfstate*` -- Terraform state
+- `*.auto.tfvars`: API tokens and home ISP ASN
+- `.env.local`: ipinfo token for fetch_ips.ts
+- `cache_*.json`: ASN lookup caches
+- `terraform.tfstate*`: Terraform state

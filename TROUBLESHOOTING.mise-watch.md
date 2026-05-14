@@ -206,11 +206,11 @@ on the next manual start.
 
 ### What does not work
 
-- Deleting the token file on both SIGTERM and SIGINT -- the new process starts
+- Deleting the token file on both SIGTERM and SIGINT; the new process starts
   after the old one exits, and if the file is deleted, it has no token to reuse.
   This was the initial implementation bug: `handleShutdown` ran `cleanupToken()`
   which deleted the file before the new process could read it.
-- Using the same cleanup function for both signals -- SIGTERM must preserve the
+- Using the same cleanup function for both signals; SIGTERM must preserve the
   file, SIGINT must delete it. Split into `handleSigterm` and `handleSigint`.
 
 ### Why we do not file this upstream

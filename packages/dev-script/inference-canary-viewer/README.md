@@ -20,9 +20,9 @@ or the Highlight API is unavailable.
 
 The dashboard provides three switchable views:
 
-- **Overview** -- combined all-models scatter plot of overall scores over time, plus a summary table with latest score, last run date, run count, degradation threshold, and status flags per model
-- **By model** -- collapsible `<details>` per model, each containing an overall score scatter plot with threshold line and nested per-probe breakdowns
-- **By probe** -- collapsible `<details>` per probe with a cross-model scatter plot showing all models overlaid, plus nested per-model breakdowns
+- **Overview**: combined all-models scatter plot of overall scores over time, plus a summary table with latest score, last run date, run count, degradation threshold, and status flags per model
+- **By model**: collapsible `<details>` per model, each containing an overall score scatter plot with threshold line and nested per-probe breakdowns
+- **By probe**: collapsible `<details>` per probe with a cross-model scatter plot showing all models overlaid, plus nested per-model breakdowns
 
 Scatter plots are CSS-positioned `<button>` elements inside a relative container.
 Each point opens a Popover API overlay via `popovertarget`.

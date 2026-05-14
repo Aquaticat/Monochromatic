@@ -11,9 +11,9 @@ Custom geometric typeface. Regular weight, uppercase only (A--Q, X--Z).
 
 ## Outputs
 
-- `dist/Aquaticat-Regular.otf` -- OpenType format
-- `dist/Aquaticat-Regular.woff2` -- compressed web font
-- `src/aquaticat.css` -- `@font-face` declaration referencing both formats
+- `dist/Aquaticat-Regular.otf`: OpenType format
+- `dist/Aquaticat-Regular.woff2`: compressed web font
+- `src/aquaticat.css`: `@font-face` declaration referencing both formats
 
 ## Usage
 

@@ -7,7 +7,7 @@ Clone replaces snapshot needs.
 
 ## Prerequisites
 
-- **Linux only** -- depends on KVM, libvirt, and `virsh`, none of which are available on macOS or Windows
+- **Linux only**: depends on KVM, libvirt, and `virsh`, none of which are available on macOS or Windows
 - KVM support (`/dev/kvm` must exist)
 - `virsh` and `qemu-img` installed (`sudo dnf install libvirt qemu-img`)
 
@@ -45,10 +45,10 @@ mise run //packages/cli/mvm:run -- create --image windows win-box
 
 ## Available images
 
-- **ubuntu** (default) -- Ubuntu 24.04 LTS (Noble Numbat), user: `ubuntu`
-- **fedora** -- Fedora 43 Cloud Base, user: `fedora`
-- **alpine** -- Alpine 3.23 with cloud-init, user: `alpine`
-- **windows** -- Windows Server 2025 evaluation ISO, user: `Administrator`
+- **ubuntu** (default): Ubuntu 24.04 LTS (Noble Numbat), user: `ubuntu`
+- **fedora**: Fedora 43 Cloud Base, user: `fedora`
+- **alpine**: Alpine 3.23 with cloud-init, user: `alpine`
+- **windows**: Windows Server 2025 evaluation ISO, user: `Administrator`
 
 Each image is downloaded once and cached in `~/.local/share/mvm/images/`.
 A per-image template with qemu-guest-agent pre-installed is baked on first use

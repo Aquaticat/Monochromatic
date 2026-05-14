@@ -1,7 +1,7 @@
 # Mise `sources`/`outputs` staleness checking
 
 Mise supports `sources` and `outputs` on tasks to skip re-execution when inputs
-haven't changed. This works transitively through `depends` -- a dependent task
+haven't changed. This works transitively through `depends`: a dependent task
 with `sources`/`outputs` will be skipped when up-to-date.
 
 ## How it works (mise v2026.2+)

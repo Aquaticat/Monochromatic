@@ -80,9 +80,9 @@ Single h3 server process handling both page routes (HTML) and API routes (JSON).
 
 ## Monorepo dependencies
 
-- `@monochromatic-dev/build-tool-css` -- CSS `@mixin`/`@apply` expansion pipeline
-- `@monochromatic-dev/module-hyperscript` -- h-html, h-dom factories (h-css is unused here)
-- `@monochromatic-dev/module-es` -- Functional utilities
+- `@monochromatic-dev/build-tool-css`: CSS `@mixin`/`@apply` expansion pipeline
+- `@monochromatic-dev/module-hyperscript`: h-html, h-dom factories (h-css is unused here)
+- `@monochromatic-dev/module-es`: Functional utilities
 
 This package runs only within the Monochromatic monorepo.
 
@@ -115,9 +115,9 @@ The current approach uses named SQL constants extracted to the top of each file.
 
 ## Further reading
 
-- `../done/README.md` -- Canonical product description
-- `PHILOSOPHY.css.md` (repo root) -- Why h-css replaces this PostCSS approach
-- `packages/build-tool/css/README.md` -- `@mixin`/`@apply` pipeline details
-- `PLAN.md` -- Implementation plan with DB schema, AI prompts, and deployment details
-- `SPEC.md` -- Product specification (task model, screens, sync targets)
-- `FRAMEWORK_EVALUATION.md` -- Why vanilla TS + Bun over SvelteKit, Vue Vapor, or WC frameworks
+- `../done/README.md`: Canonical product description
+- `PHILOSOPHY.css.md` (repo root): Why h-css replaces this PostCSS approach
+- `packages/build-tool/css/README.md`: `@mixin`/`@apply` pipeline details
+- `PLAN.md`: Implementation plan with DB schema, AI prompts, and deployment details
+- `SPEC.md`: Product specification (task model, screens, sync targets)
+- `FRAMEWORK_EVALUATION.md`: Why vanilla TS + Bun over SvelteKit, Vue Vapor, or WC frameworks

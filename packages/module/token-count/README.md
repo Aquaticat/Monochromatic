@@ -80,9 +80,9 @@ Multiple files include a total:
 
 Count input tokens for a text string.
 
-- **content** -- text to tokenize
-- **config.model** -- Claude model (default: `claude-sonnet-4-6`)
-- **config.apiKey** -- Anthropic API key (default: env var fallback chain above)
+- **content**: text to tokenize
+- **config.model**: Claude model (default: `claude-sonnet-4-6`)
+- **config.apiKey**: Anthropic API key (default: env var fallback chain above)
 
 Returns `{ inputTokens, model }`.
 

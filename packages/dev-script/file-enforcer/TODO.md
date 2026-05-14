@@ -4,7 +4,7 @@
 
 - Cache currently assumes files are only modified by file-enforcer or a single external edit.
   If multiple external tools modify the same source file between re-runs, only the last version is seen.
-- No cache size limit -- for extremely large monorepos, memory usage could grow indefinitely.
+- No cache size limit; for extremely large monorepos, memory usage could grow indefinitely.
   Consider an LRU eviction strategy if this becomes a problem.
 - Glob expansion results (`expandGlob`) are not cached.
   Directory listings are re-scanned on every run even when no files were added or removed.
@@ -23,7 +23,7 @@
 
 ## Write-protection notifications
 
-- No notification deduplication -- rapid external edits to the same file produce multiple notifications.
+- No notification deduplication; rapid external edits to the same file produce multiple notifications.
 
 ## Config execution model
 
@@ -38,7 +38,7 @@
 ## CLI
 
 - No `--verbose` / `--quiet` flags to control log output.
-- No `--config <path>` flag -- config path is positional-only or found via find-up.
+- No `--config <path>` flag; config path is positional-only or found via find-up.
 - No support for multiple config files (e.g., per-package configs merged at the root).
 
 ## API gaps

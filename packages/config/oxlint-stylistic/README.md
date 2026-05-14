@@ -18,28 +18,28 @@ by requiring explicit parentheses at operator boundaries.
 
 All per-line rules are auto-fixable via `oxlint --fix`.
 
-- **param-per-line** -- each function parameter on its own line.
+- **param-per-line**: each function parameter on its own line.
   Covers `FunctionDeclaration`, `FunctionExpression`, `ArrowFunctionExpression`
   and the full TypeScript function-like set:
   `TSFunctionType`, `TSDeclareFunction`, `TSMethodSignature`,
   `TSCallSignatureDeclaration`, `TSConstructSignatureDeclaration`,
   `TSConstructorType`, `TSEmptyBodyFunctionExpression`.
-- **argument-per-line** -- each function call argument on its own line (`CallExpression`, `NewExpression`)
-- **array-element-per-line** -- each array literal element on its own line
-- **object-property-per-line** -- each object literal property on its own line
-- **import-per-line** -- each named import specifier on its own line
-- **export-per-line** -- each named export specifier on its own line
-- **type-property-per-line** -- each type literal or interface member on its own line
-- **tuple-per-line** -- each tuple type element on its own line
-- **destructure-per-line** -- each destructured property on its own line
+- **argument-per-line**: each function call argument on its own line (`CallExpression`, `NewExpression`)
+- **array-element-per-line**: each array literal element on its own line
+- **object-property-per-line**: each object literal property on its own line
+- **import-per-line**: each named import specifier on its own line
+- **export-per-line**: each named export specifier on its own line
+- **type-property-per-line**: each type literal or interface member on its own line
+- **tuple-per-line**: each tuple type element on its own line
+- **destructure-per-line**: each destructured property on its own line
 
 ### Statement boundaries
 
-- **one-var-declaration-per-line** -- each declarator in a `var`/`let`/`const`/`using` declaration on its own line.
+- **one-var-declaration-per-line**: each declarator in a `var`/`let`/`const`/`using` declaration on its own line.
   Operates in `'always'` mode: every multi-declarator declaration is flagged
   regardless of whether declarators have initializers.
   Auto-fixable; fix is suppressed if a comment lives between declarators (preserves the comment).
-- **max-statements-per-line** -- at most one statement per source line.
+- **max-statements-per-line**: at most one statement per source line.
   Single-child container parents (`if`/`while`/`for`/`labeled`/`export-default`/`export-named`)
   exempt their inner statement, so `if (a) foo();` is allowed; the alternate branch of `if`/`else`
   is not exempt, so `if (a) foo(); else bar();` flags `bar()`.
@@ -47,7 +47,7 @@ All per-line rules are auto-fixable via `oxlint --fix`.
 
 ### Expression structure
 
-- **no-mixed-operators** -- require parentheses around nested binary or logical expressions
+- **no-mixed-operators**: require parentheses around nested binary or logical expressions
   whose operator differs from the parent.
   Same-operator chains (`a + b + c`, `x && y && z`) are permitted because they are unambiguous under associativity.
   Mixed operators (`a + b * c`, `x || y && z`) must be disambiguated with explicit parens.
@@ -85,13 +85,13 @@ keeping rule files minimal.
 
 ## Source files
 
-- `index.ts` -- plugin entry point; assembles all rules into the oxlint plugin object
-- `rules/` -- one file per rule, each exporting a `CreateOnceRule`
-- `utility/item-per-line.ts` -- shared detection and reporting logic
-- `utility/item-per-line-fix.ts` -- shared autofix logic (indentation detection, content rebuild)
-- `utility/needs-fix.ts` -- line-sharing detection between items and container delimiters
-- `utility/delimiter.ts` -- opening/closing delimiter scanning
-- `utility/range.ts` -- `rangeOf` and `at` helpers for untyped AST node access
+- `index.ts`: plugin entry point; assembles all rules into the oxlint plugin object
+- `rules/`: one file per rule, each exporting a `CreateOnceRule`
+- `utility/item-per-line.ts`: shared detection and reporting logic
+- `utility/item-per-line-fix.ts`: shared autofix logic (indentation detection, content rebuild)
+- `utility/needs-fix.ts`: line-sharing detection between items and container delimiters
+- `utility/delimiter.ts`: opening/closing delimiter scanning
+- `utility/range.ts`: `rangeOf` and `at` helpers for untyped AST node access
 
 ## Tests
 

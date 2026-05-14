@@ -48,13 +48,13 @@ auto-externalizes production dependencies without any user configuration.
 
 ### Step 1: `package.json` is read at config resolution time
 
-`src/config/options.ts:96` -- `resolveOptions()` reads `package.json` from the working directory:
+`src/config/options.ts:96`: `resolveOptions()` reads `package.json` from the working directory:
 
 ```typescript
 const pkg = await readPackageJson(cwd,);
 ```
 
-`src/utils/package.ts:13-24` -- `readPackageJson()` uses `empathic/package` to locate
+`src/utils/package.ts:13-24`: `readPackageJson()` uses `empathic/package` to locate
 the nearest `package.json` and parses it:
 
 ```typescript
@@ -71,7 +71,7 @@ export async function readPackageJson(
 
 ### Step 2: `pkg` is passed into the resolved config
 
-`src/config/options.ts:299` -- the parsed `PackageJson` object is stored on the resolved config:
+`src/config/options.ts:299`: the parsed `PackageJson` object is stored on the resolved config:
 
 ```typescript
 const config: ResolvedConfig = {
@@ -83,7 +83,7 @@ const config: ResolvedConfig = {
 
 ### Step 3: `DepsPlugin` is registered whenever `pkg` exists
 
-`src/features/rolldown.ts:115-117` -- the plugin is added if there is a `package.json`
+`src/features/rolldown.ts:115-117`: the plugin is added if there is a `package.json`
 **or** if `skipNodeModulesBundle` is set.
 Since any real project has a `package.json`, this plugin is effectively always active:
 
@@ -94,7 +94,7 @@ if (config.pkg || config.deps.skipNodeModulesBundle)
 
 ### Step 4: `getProductionDeps` collects all production dependency names
 
-`src/features/deps.ts:415-421` -- on plugin creation, production deps are extracted
+`src/features/deps.ts:415-421`: on plugin creation, production deps are extracted
 from `package.json`:
 
 ```typescript
@@ -118,7 +118,7 @@ const deps = pkg && Array.from(getProductionDeps(pkg,),);
 
 ### Step 5: every non-entry import is checked against the production deps list
 
-`src/features/deps.ts:296-331` -- `externalStrategy()` runs for every resolved import.
+`src/features/deps.ts:296-331`: `externalStrategy()` runs for every resolved import.
 If the import ID matches a production dependency name (or starts with `<dep>/`),
 it returns `true` (external):
 
@@ -166,7 +166,7 @@ if (shouldExternal === true || shouldExternal === 'absolute') {
 
 ### Step 6: bundled `node_modules` deps trigger a warning by default
 
-`src/features/deps.ts:275-284` -- when `onlyBundle` is not configured (the default),
+`src/features/deps.ts:275-284`: when `onlyBundle` is not configured (the default),
 the `generateBundle` hook scans output chunks for bundled `node_modules` deps
 and emits a hint:
 
@@ -228,9 +228,9 @@ A user reading only the FAQ would:
 
 For reference, the actual dependency handling options:
 
-- `deps.alwaysBundle` -- force-bundle specific packages even if listed in production deps (equivalent to tsup's `noExternal`)
-- `deps.skipNodeModulesBundle` -- externalize **all** `node_modules` imports regardless of `package.json` listing
-- `deps.onlyBundle` -- whitelist specific `node_modules` packages; warn on anything else being bundled
+- `deps.alwaysBundle`: force-bundle specific packages even if listed in production deps (equivalent to tsup's `noExternal`)
+- `deps.skipNodeModulesBundle`: externalize **all** `node_modules` imports regardless of `package.json` listing
+- `deps.onlyBundle`: whitelist specific `node_modules` packages; warn on anything else being bundled
 
 ---
 
@@ -256,7 +256,7 @@ This contradicts two other documentation pages:
 
 **How It Works page** (`docs/guide/how-it-works.md:30`):
 
-> `dependencies`, `peerDependencies`, and `optionalDependencies` are **externalized** -- they appear as `import` / `require` statements in the output and are not included in the bundle.
+> `dependencies`, `peerDependencies`, and `optionalDependencies` are **externalized**: they appear as `import` / `require` statements in the output and are not included in the bundle.
 
 ### Source code confirms the Dependencies page is correct
 

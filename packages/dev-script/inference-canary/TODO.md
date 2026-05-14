@@ -6,9 +6,9 @@
 
 **Sources to re-mine periodically:**
 
-- `w3c/csswg-drafts` issues -- active spec debates reveal where training data is thin
-- `https://www.w3.org/TR/` -- look for First Public Working Drafts; the gap between "discussed" and "implemented" is where models fail
-- `drafts.csswg.org` -- editor's drafts move faster than published WDs
+- `w3c/csswg-drafts` issues; active spec debates reveal where training data is thin
+- `https://www.w3.org/TR/`: look for First Public Working Drafts; the gap between "discussed" and "implemented" is where models fail
+- `drafts.csswg.org`: editor's drafts move faster than published WDs
 
 **Candidates:**
 
@@ -47,8 +47,8 @@ Good candidate; simpler than `if()` but tests the same chaining logic.
 
 **Sources to re-mine:**
 
-- `https://www.rfc-editor.org/rfc/` -- filter by date for recent publications
-- `https://datatracker.ietf.org/` -- search by area (Web) for upcoming RFCs
+- `https://www.rfc-editor.org/rfc/`: filter by date for recent publications
+- `https://datatracker.ietf.org/`: search by area (Web) for upcoming RFCs
 
 **Candidates:**
 
@@ -58,14 +58,14 @@ and Parameters. Parse from text, output canonical re-serialized form (or "ERROR"
 
 Trip wires models consistently get wrong:
 
-- Token (`sugar`) vs String (`"sugar"`) -- different allowed character sets, different semantics
+- Token (`sugar`) vs String (`"sugar"`): different allowed character sets, different semantics
 - Boolean true omits the value in serialization: `a` not `a=?1`; false is `a=?0`
 - `-0` parses to `0`, must re-serialize as `0`
 - Leading zeros in integers/decimals: strip them (`042` → `42`)
 - Decimal precision: max 3 decimal places, always at least 1 (`1.5` not `1.50`)
 - Display String `%"..."`: percent-encoding uses only lowercase hex (`%c3%bc` not `%C3%BC`);
   unescaped non-ASCII and control chars are rejected
-- Date type: `@<integer>` -- must fail if a decimal is given (`@1659578233.12` is invalid)
+- Date type: `@<integer>`: must fail if a decimal is given (`@1659578233.12` is invalid)
 - Byte sequence: `:base64:` with standard base64 padding
 
 Canonical test suite: `github.com/httpwg/structured-field-tests` (JSON test vectors,
@@ -77,7 +77,7 @@ Input: JSON object. Output: canonical UTF-8 bytes.
 
 Trip wires:
 
-- Key sort uses UTF-16 code unit order, not Unicode code points or locale -- matters for keys
+- Key sort uses UTF-16 code unit order, not Unicode code points or locale; matters for keys
   containing supplementary characters (surrogate pairs sort differently)
 - Number serialization must match ES6 `JSON.stringify` exactly: integers without decimal point
   up to 2^53, floats use minimum-precision representation (Grisu/Ryu)
@@ -92,7 +92,7 @@ Reference test vectors: `github.com/cyberphone/json-canonicalization`
 
 **Sources to re-mine:**
 
-- `github.com/tc39/proposals` -- Stage 2-3 proposals only; Stage 1 is too unstable
+- `github.com/tc39/proposals`: Stage 2-3 proposals only; Stage 1 is too unstable
 - Individual proposal repos for open issues revealing edge cases
 
 **Candidates:**
@@ -122,8 +122,8 @@ Spec: `tc39/proposal-temporal`, well-defined at Stage 3. Polyfill exists
 
 **Sources to re-mine:**
 
-- `github.com/whatwg/url` -- open issues surface edge cases
-- `github.com/web-platform-tests/wpt` -- test vectors for URL, Encoding, Streams
+- `github.com/whatwg/url`: open issues surface edge cases
+- `github.com/web-platform-tests/wpt`: test vectors for URL, Encoding, Streams
 
 **Candidates:**
 

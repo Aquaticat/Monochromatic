@@ -37,9 +37,9 @@ this cluster.
 The handler logic for each plugin lives in `source/src/handlers/{plugin}.ts`,
 exported as three named functions:
 
-- `{plugin}Handler` -- pure function from parsed event to typed response.
-- `{plugin}Parser` -- raw stdin string to typed event.
-- `{plugin}Writer` -- typed response to stdout string.
+- `{plugin}Handler`: pure function from parsed event to typed response.
+- `{plugin}Parser`: raw stdin string to typed event.
+- `{plugin}Writer`: typed response to stdout string.
 
 The per-plugin directory's `src/index.ts` is a four-line shim:
 
@@ -113,7 +113,7 @@ source package:
 `source/src/runtime/handler-runtime.ts` absorbs the equivalent
 `readStdin`/`writeOutput` logic.
 
-## ADR -- per-plugin tsdown wrappers, not multi-entry from source
+## ADR; per-plugin tsdown wrappers, not multi-entry from source
 
 ### Decision
 
@@ -146,15 +146,15 @@ Three layouts were considered for bundling N plugins from one source package:
 Tsdown's default `clean: true` recursively walks `outDir` and wipes
 hand-maintained sibling files. With `outDir: '..'`, it wiped not only
 `packages/claude-code-plugins/{plugin}/.claude-plugin/`, `README.md`, and
-sibling source trees, but also `packages/config/tsdown/src/` -- the workspace
+sibling source trees, but also `packages/config/tsdown/src/`: the workspace
 package the build itself depended on. Recovery via `git checkout HEAD --` was
 clean, but the footgun is severe.
 
 Two workarounds exist:
 
-- `clean: false` -- prevents the wipe but accumulates orphan files when entries
+- `clean: false`: prevents the wipe but accumulates orphan files when entries
   are renamed or removed. The cleanup safety net stops working.
-- `clean: ['**/dist/final/node/*.mjs']` -- restricts clean to a glob covering
+- `clean: ['**/dist/final/node/*.mjs']`: restricts clean to a glob covering
   only generated artifacts. Tsdown supports this, but the principle that
   `clean: true` defaults exist because "you never know what your build actually
   generates" still applies in spirit: a future contributor adding a new

@@ -23,9 +23,9 @@ JSR's npm compatibility bridge (`npm.jsr.io`) has chronic quality issues:
 
 JSR packages that have npm equivalents are referenced by their npm versions:
 
-- `@optique/core`, `@optique/run` -- published to both npm and JSR (use npm `dev` tag for 1.x)
-- `valibot` -- on npm as `valibot@>=1.4.0` (Standard Schema-compatible)
-- `@cspotcode/outdent` -- aliased to `outdent` on npm (same author)
+- `@optique/core`, `@optique/run`: published to both npm and JSR (use npm `dev` tag for 1.x)
+- `valibot`: on npm as `valibot@>=1.4.0` (Standard Schema-compatible)
+- `@cspotcode/outdent`: aliased to `outdent` on npm (same author)
 
 ### Why no GitHub deps
 
@@ -219,7 +219,7 @@ tsdown fills the gap with:
 - Workspace mode (92 lines, half-baked: no topological sort, shallow config merge, no error isolation).
   We use mise for monorepo orchestration instead.
 - Hooks system (hookable, 86 lines). Redundant with mise task sequencing.
-- pkg/ directory (publint, attw, exports generation -- 821 lines, 16% of codebase).
+- pkg/ directory (publint, attw, exports generation; 821 lines, 16% of codebase).
   Post-build validation, not bundling. Would be better as a separate tool.
 - CSS handling (160 lines). Admitted workaround until rolldown supports CSS syntax lowering natively.
 

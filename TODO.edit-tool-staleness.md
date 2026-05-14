@@ -15,8 +15,8 @@ The file was **not** modified. Re-reading confirmed identical content.
 3. `dprint fmt` runs: scans workspace, reformats the test file (1 file changed), `stat()`s other `.ts` files
 4. `bun test` runs: imports `manager-defs.ts` at runtime (read-only)
 5. `mise run lint` runs `task-tsgo --build`, writes `tsconfig.tsbuildinfo` in the dist tree
-6. `Edit` on `manager-defs.ts` -- **rejected as stale**
-7. `Read` on `manager-defs.ts` -- content is byte-identical to step 1
+6. `Edit` on `manager-defs.ts`: **rejected as stale**
+7. `Read` on `manager-defs.ts`: content is byte-identical to step 1
 
 No PostToolUse hooks are configured that modify `.ts` files (confirmed by checking `.claude/settings.json` and user-level settings).
 

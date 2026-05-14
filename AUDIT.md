@@ -21,7 +21,7 @@ Total packages: 629 (626 libraries, 3 frameworks).
 
 ### Dependency chains for flagged packages
 
-**`picomatch@2.3.2` -- transitive via stylelint (dev-only):**
+**`picomatch@2.3.2`: transitive via stylelint (dev-only):**
 
 ```text
 stylelint -> micromatch -> picomatch@2.3.2
@@ -41,7 +41,7 @@ The discussion continues in stylelint/stylelint#8051 and stylelint/stylelint#892
 `picomatch@4.0.4` (used by tsdown, tinyglobby, rolldown, fdir) is a separate major version
 and was never affected by these CVEs.
 
-**`openai@6.33.0` -- direct dep of `packages/dev-script/inference-canary`:**
+**`openai@6.33.0`: direct dep of `packages/dev-script/inference-canary`:**
 Socket flags this as `potentialVulnerability` (medium behavioral risk).
 The `bin/cli` file defines a `migrate` subcommand that calls `spawnSync` to download and execute
 an unsigned tarball from GitHub (`stainless-api/migrate-ts`) via `npx -y`.
@@ -52,17 +52,17 @@ in `node_modules/.bin`. Dev-only dependency.
 
 ### Informational findings
 
-#### Potential vulnerabilities (2 packages) -- behavioral risk, not CVEs
+#### Potential vulnerabilities (2 packages): behavioral risk, not CVEs
 
-- `picomatch@2.3.2` -- ReDoS via unconstrained regex from user-supplied globs; transitive via stylelint; dev-only
-- `openai@6.33.0` -- unsigned tarball download in `migrate` subcommand; direct dep; dev-only
+- `picomatch@2.3.2`: ReDoS via unconstrained regex from user-supplied globs; transitive via stylelint; dev-only
+- `openai@6.33.0`: unsigned tarball download in `migrate` subcommand; direct dep; dev-only
 
 #### Unpopular packages (4)
 
-- `lezer-toml@1.0.0` -- direct dep of `packages/desktop-daemon/editord`; niche Lezer grammar for TOML
-- `@mitata/counters@0.0.8` -- direct dep of `packages/test-fixture/file-enforcer-perf`; companion to mitata benchmarking
-- `@tursodatabase/database-darwin-arm64@0.5.3` -- transitive platform binary for turso
-- `@tursodatabase/database-win32-x64-msvc@0.5.3` -- transitive platform binary for turso
+- `lezer-toml@1.0.0`: direct dep of `packages/desktop-daemon/editord`; niche Lezer grammar for TOML
+- `@mitata/counters@0.0.8`: direct dep of `packages/test-fixture/file-enforcer-perf`; companion to mitata benchmarking
+- `@tursodatabase/database-darwin-arm64@0.5.3`: transitive platform binary for turso
+- `@tursodatabase/database-win32-x64-msvc@0.5.3`: transitive platform binary for turso
 
 #### Unmaintained (>3 years without updates, 34 packages)
 
@@ -226,8 +226,8 @@ Remaining dependencies to audit, ordered by priority.
 - [ ] @csstools/css-tokenizer
 - [ ] @cspotcode/outdent
 - [ ] serialize-error
-- [x] chokidar -- evaluated 2026-05; adopted by `packages/dev-script/watch-restart/` (one transitive dep `readdirp`, `atomic: true` for rename+create, `awaitWriteFinish` for chunked writes, cross-platform recursion via FSEvents/inotify/ReadDirectoryChangesW)
-- [x] ignore (kaelzhang/node-ignore) -- evaluated 2026-05; adopted by `packages/dev-script/watch-restart/src/filters/gitignore.ts` for `--gitignore` / `--ignore-file` parsing (zero runtime deps, mirrors git's own semantics including negation `!`, anchored leading `/`, directory-only trailing `/`, and `**`; cheaper than reimplementing the spec)
+- [x] chokidar; evaluated 2026-05; adopted by `packages/dev-script/watch-restart/` (one transitive dep `readdirp`, `atomic: true` for rename+create, `awaitWriteFinish` for chunked writes, cross-platform recursion via FSEvents/inotify/ReadDirectoryChangesW)
+- [x] ignore (kaelzhang/node-ignore): evaluated 2026-05; adopted by `packages/dev-script/watch-restart/src/filters/gitignore.ts` for `--gitignore` / `--ignore-file` parsing (zero runtime deps, mirrors git's own semantics including negation `!`, anchored leading `/`, directory-only trailing `/`, and `**`; cheaper than reimplementing the spec)
 - [ ] the-new-css-reset
 - [ ] TODS
 - [ ] opentype.js

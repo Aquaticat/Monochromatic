@@ -1,4 +1,4 @@
-# Done -- AI-powered task aggregator
+# Done; AI-powered task aggregator
 
 ## Elevator pitch
 
@@ -29,7 +29,7 @@ User IDs are opaque (ULIDs), not user-chosen names: no abuse vector for offensiv
 Auth security considerations:
 
 - Password hashing via `Bun.password` uses argon2id (constant-time verification)
-- Sessions are server-side lookup tokens (random 32-byte hex IDs stored in `orchestrator.db`), not signed JWTs -- no crypto to get wrong
+- Sessions are server-side lookup tokens (random 32-byte hex IDs stored in `orchestrator.db`), not signed JWTs; no crypto to get wrong
 - Session cookies: `HttpOnly` + `Secure` + `SameSite=Strict`, cookie `Path` set to `/u/<user-id>/`
 - Rate limit login attempts: in-memory counter per IP, max 10/minute
 - Same error message for wrong email and wrong password (no user enumeration)
@@ -44,9 +44,9 @@ It does not just organize tasks; it actively surfaces the right task at the righ
 - **Framework**: h3 server with vanilla TypeScript client bundles and h-css runtime-generated styles. The server owns page routes and REST API routes under `/api/...`; client pages read server-embedded JSON and build DOM imperatively.
 - **Database**: libsql (SQLite-compatible, single file, local)
 - **AI**: Self-hosted llama.cpp (OpenAI-compatible API, full model control, no provider ban risk). Primary model: Qwen3-1.7B (Q4_K_M, ~1.2GB RAM, CPU-only, non-thinking mode for fast autofill). Fallback: LFM2.5-1.2B-Instruct (under 1GB, 239 tok/s on CPU).
-- **Auth + reverse proxy**: Orchestrator (Bun) -- handles registration, login, session cookies, path ACL enforcement, and HTTP reverse proxy to user processes. No Caddy or AuthCrunch; Coolify's reverse proxy terminates HTTPS upstream.
-- **Email**: `@upyo/smtp` (JSR) -- generic SMTP transport; works with Resend, Fastmail, or any SMTP provider. If the transport fails, that's the provider's problem, not ours.
-- **Deployment**: Docker Compose on Coolify -- two containers (orchestrator+user processes, llama.cpp), path-based routing (`/u/<user-id>/`), named volumes for user data
+- **Auth + reverse proxy**: Orchestrator (Bun): handles registration, login, session cookies, path ACL enforcement, and HTTP reverse proxy to user processes. No Caddy or AuthCrunch; Coolify's reverse proxy terminates HTTPS upstream.
+- **Email**: `@upyo/smtp` (JSR): generic SMTP transport; works with Resend, Fastmail, or any SMTP provider. If the transport fails, that's the provider's problem, not ours.
+- **Deployment**: Docker Compose on Coolify; two containers (orchestrator+user processes, llama.cpp), path-based routing (`/u/<user-id>/`), named volumes for user data
 
 ## Screens
 
@@ -77,14 +77,14 @@ Opened from any task card. Contains:
 - **Description**: Multi-line text area
 - **Attachments**: "Attach file" and "Take photo" buttons
 - **Metadata chips** (all tappable to edit):
-  - `#tag1,tag2` -- Comma-separated tags (OR semantics)
-  - `tracked: Xs` -- Cumulative tracked time
-  - `where: Place1,Place2` -- Comma-separated locations (OR semantics: task can be done at any listed place)
-  - `priority: ?` -- User-set or AI-suggested
-  - `due: ?` -- Due date
-  - `complexity: low|medium|high` -- AI-suggested or user-set
-  - `reminders: None|...` -- Reminder configuration
-  - `blockedBy: none|Task(s)` -- Blocking dependencies; tappable to select blocker tasks
+  - `#tag1,tag2`: Comma-separated tags (OR semantics)
+  - `tracked: Xs`: Cumulative tracked time
+  - `where: Place1,Place2`: Comma-separated locations (OR semantics: task can be done at any listed place)
+  - `priority: ?`: User-set or AI-suggested
+  - `due: ?`: Due date
+  - `complexity: low|medium|high`: AI-suggested or user-set
+  - `reminders: None|...`: Reminder configuration
+  - `blockedBy: none|Task(s)`: Blocking dependencies; tappable to select blocker tasks
 - **Save** button
 
 ### Search (overlay)
@@ -159,7 +159,7 @@ Task {
 ### Blocking rules
 
 - A task with unresolved blockers cannot transition to `done`.
-- Blocked tasks are **hidden from Suggestions and All** -- they only appear nested under their blockers.
+- Blocked tasks are **hidden from Suggestions and All**: they only appear nested under their blockers.
 - Search always returns blocked tasks (with a "blocked" badge) so nothing is permanently invisible.
 - The task details overlay shows a summary of all blocking tasks when `blockedBy` is non-empty.
 - Completing a blocker task automatically unblocks dependents (they reappear in Suggestions/All).
@@ -221,14 +221,14 @@ The server is the authority for start/stop events; the client handles smooth dis
 
 - Starting a timer: server sets `timerStartedAt` to current UTC timestamp, returns it to client
 - Stopping a timer: server computes elapsed delta, adds to `trackedTime`, nulls `timerStartedAt`
-- **Client-side display**: `setInterval(1000)` computes `trackedTime + (Date.now() - Date.parse(timerStartedAt)) / 1000` -- purely local math, no network per tick
+- **Client-side display**: `setInterval(1000)` computes `trackedTime + (Date.now() - Date.parse(timerStartedAt)) / 1000`: purely local math, no network per tick
 - Cross-device consistency: any device that opens In Progress gets the authoritative `timerStartedAt` from the server and ticks locally from there
 - No SSE or polling needed for timer display; server is only contacted on user actions (start/stop/complete)
 
 ## PWA requirements
 
 - Installable (manifest.json with icons)
-- Service worker caches static assets (JS, CSS, icons) for faster repeat loads -- not a full offline mode
+- Service worker caches static assets (JS, CSS, icons) for faster repeat loads; not a full offline mode
 - When offline, show a clear "offline" banner; all pages and actions require connectivity since everything is server-rendered
 - Camera access for "Take photo" attachment
 - Geolocation API for location autodetect
@@ -257,15 +257,15 @@ Two services:
 
 Named volumes:
 
-- `done-data` -- `/data/<user-id>/done.db` per user (mounted in orchestrator)
-- `llama-models` -- Cached model files at `/root/.cache/llama.cpp` (persists auto-downloaded models across container restarts)
+- `done-data`: `/data/<user-id>/done.db` per user (mounted in orchestrator)
+- `llama-models`: Cached model files at `/root/.cache/llama.cpp` (persists auto-downloaded models across container restarts)
 
 Environment variables (configured in Coolify):
 
-- `DOMAIN` -- Public domain (e.g., `done.app`)
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` -- SMTP provider credentials
-- `CHAT_COMPLETIONS_URL` -- Full URL for llama.cpp's OpenAI-compatible chat completions endpoint (defaults to `http://llama-cpp:8080/v1/chat/completions`)
-- `PORT_RANGE_START`, `PORT_RANGE_END` -- Port range for user processes (e.g., 3100-3999)
+- `DOMAIN`: Public domain (e.g., `done.app`)
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`: SMTP provider credentials
+- `CHAT_COMPLETIONS_URL`: Full URL for llama.cpp's OpenAI-compatible chat completions endpoint (defaults to `http://llama-cpp:8080/v1/chat/completions`)
+- `PORT_RANGE_START`, `PORT_RANGE_END`: Port range for user processes (e.g., 3100-3999)
 
 ### FTS5 rowid note
 

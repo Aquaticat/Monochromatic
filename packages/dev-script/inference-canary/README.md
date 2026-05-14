@@ -100,15 +100,15 @@ mise run canary
 
 ### Options
 
-- `--model <id>` -- test a single OpenRouter model instead of all registered models
-- `--runs <n>` -- consistency runs per probe (default: 2)
-- `--simple` -- run cheap text-only probes instead of code-gen
-- `--slow` -- include slow probes (e.g. task-scheduler)
-- `--retest-all` -- retest all models even if recent (<24h) results exist
+- `--model <id>`: test a single OpenRouter model instead of all registered models
+- `--runs <n>`: consistency runs per probe (default: 2)
+- `--simple`: run cheap text-only probes instead of code-gen
+- `--slow`: include slow probes (e.g. task-scheduler)
+- `--retest-all`: retest all models even if recent (<24h) results exist
 
 ### Environment
 
-- `INFERENCE_VALIDATION_OPENROUTER_API_KEY` -- OpenRouter API key (read from `.env.local` via mise)
+- `INFERENCE_VALIDATION_OPENROUTER_API_KEY`: OpenRouter API key (read from `.env.local` via mise)
 
 ## Models
 
@@ -135,8 +135,8 @@ Gitignored, local to each machine.
 
 Generated model outputs organized as `<model-slug>/<probe>-<pass>/`:
 
-- `canary.ts` -- the TypeScript source the model generated
-- `meta.json` -- model ID, probe name, pass (initial/fix), timestamp
+- `canary.ts`: the TypeScript source the model generated
+- `meta.json`: model ID, probe name, pass (initial/fix), timestamp
 
 Gitignored but preserved locally across runs for post-run inspection.
 Directory structure is designed for a future viewer tool that displays score graphs with clickable data points.

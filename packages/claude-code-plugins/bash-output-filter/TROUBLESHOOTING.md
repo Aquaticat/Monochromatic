@@ -124,14 +124,14 @@ in suffix positions after `||`.
 
 This avoids all five constraints:
 
-- **No `{ }`** -- no compound command grouping
-- **No `;`** -- `&&` chains without segment boundaries
-- **No `bash -c`** -- no extra quoting layer; the original command runs in the same
+- **No `{ }`**: no compound command grouping
+- **No `;`**: `&&` chains without segment boundaries
+- **No `bash -c`**: no extra quoting layer; the original command runs in the same
   shell context with identical quoting and expansion semantics
-- **`< /dev/null` absorbed by `true`** -- bash parses
+- **`< /dev/null` absorbed by `true`**: bash parses
   `cmd | filter && true < /dev/null` with the redirect on `true`,
   not on `filter`, preserving the filter's pipe stdin
-- **No shell variables** -- `&& true` uses no `$?` or `$PIPESTATUS`;
+- **No shell variables**: `&& true` uses no `$?` or `$PIPESTATUS`;
   exit code propagation relies entirely on `&&` short-circuit semantics
 
 ### Exit code propagation

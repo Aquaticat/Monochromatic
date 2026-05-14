@@ -40,5 +40,5 @@ Works automatically when Factory Droid runs from Neovim's `:terminal`
 
 ## Dependencies
 
-- `@monochromatic-dev/mcp-stdio` -- stdio MCP framework (workspace)
-- `neovim` -- msgpack-RPC client for Neovim
+- `@monochromatic-dev/mcp-stdio`: stdio MCP framework (workspace)
+- `neovim`: msgpack-RPC client for Neovim

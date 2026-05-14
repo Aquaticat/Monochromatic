@@ -1,6 +1,6 @@
 # editord implementation plan
 
-## Phase 1 -- Edit and save a file (done)
+## Phase 1; Edit and save a file (done)
 
 - [x] h3 server on port 4400 with token auth
 - [x] Static file serving for index.html and dist/client/
@@ -19,7 +19,7 @@
 - No visual feedback on save (logged via tagged logger, no UI indicator)
 - No favicon, no PWA manifest yet
 
-## Phase 2 -- File tree and navigation (done)
+## Phase 2; File tree and navigation (done)
 
 - [x] `resolveRoot` server operation: walk up to highest writable ancestor directory
 - [x] `listDir` server operation: `fs.readdir` with `{ withFileTypes: true }`, sorted entries
@@ -28,7 +28,7 @@
 - [x] Root directory sent to client on WebSocket connection
 - [x] One-level-ahead preloading of subdirectory contents
 
-## Phase 2.5 -- Hardening (done)
+## Phase 2.5; Hardening (done)
 
 - [x] Path containment: `assertWithinRoot` validates all file operations against `rootDir`
 - [x] Shared protocol types: `src/protocol.ts` eliminates type duplication between server and client
@@ -39,7 +39,7 @@
 - [x] Cross-runtime: `Bun.file()` replaced with `readFile` from `node:fs/promises`
 - [x] Static serving: silent catch narrowed to ENOENT only; unexpected errors rethrow
 
-## Phase 3 -- Search (done)
+## Phase 3; Search (done)
 
 - [x] `search` server operation: spawn `rg` subprocess, return `SearchResult[]` (file-path + content matches)
 - [x] Double-shift detection: track Shift keyup timestamps, trigger on <400ms gap with no intervening keys
@@ -47,7 +47,7 @@
 - [x] File-path results listed before content results; `%` prefix for content-only mode
 - [x] `EditorPane.scrollToLine`: content search results open the file at the matching line
 
-## Phase 4 -- File watching and themes (done)
+## Phase 4; File watching and themes (done)
 
 - [x] `DirWatcher` class: per-directory non-recursive watcher, initially `fs.watch`, superseded by chokidar in Phase 13
 - [x] Event classification from watcher event kind, initially stat-after-debounce, superseded by chokidar
@@ -58,7 +58,7 @@
 - [x] Light theme (#444 on #fff) via `data-theme="light"` attribute on `:root`
 - [x] `--editor-padding` CSS variable defined as `0.5rem`
 
-## Phase 5 -- Syntax highlighting (done)
+## Phase 5; Syntax highlighting (done)
 
 - [x] Lezer parser integration: `@lezer/javascript` with TypeScript/JSX dialect configuration
 - [x] `getParserForPath` extension-to-parser mapping: JS/TS, JSON/JSONL, CSS, HTML, Markdown, YAML, TOML
@@ -69,7 +69,7 @@
 - [x] 100KB file size limit: files over 100KB skip highlighting entirely
 - [x] Tag groups: keyword, string, comment, number, type, function, property, heading, link, emphasis
 
-## Phase 6 -- LSP integration (done)
+## Phase 6; LSP integration (done)
 
 - [x] JSON-RPC framing over stdio for LSP communication
 - [x] `LspClient` class: spawn, initialize, request/response, notification routing
@@ -89,7 +89,7 @@
 - [x] Graceful degradation: servers that fail to start are skipped; features degrade
 - [x] Late-init recovery: documents opened before LSP ready are re-opened after init
 
-## Phase 7 -- Inlay hints (done)
+## Phase 7; Inlay hints (done)
 
 - [x] Wire protocol: `inlayHint` request with range, `inlayHintResult` response with hints
 - [x] Server: `requestInlayHints` via `textDocument/inlayHint` to tsgo
@@ -105,17 +105,17 @@
 - [x] Client: hints soft-wrap via `white-space: pre-wrap`
 - [x] Debounced refresh on content changes (750ms), immediate on file open
 
-## Phase 8 -- Binary file viewer (done)
+## Phase 8; Binary file viewer (done)
 
 - [x] `FileKind` type: `'text' | 'image' | 'audio' | 'video' | 'binary'`
 - [x] `file-kind.ts`: extension-based detection for images, audio, video; SVG excluded (editable text)
 - [x] `hex-dump.ts`: xxd-style format, 16 bytes/line, grouped as two 8-byte halves,
       ASCII on right, truncated at 16 384 bytes with footer
-- [x] `<binary-viewer>` web component: four modes -- `<img>`, `<audio controls>`, `<video controls>`, `<pre>` hex dump
+- [x] `<binary-viewer>` web component: four modes; `<img>`, `<audio controls>`, `<video controls>`, `<pre>` hex dump
 - [x] `fileContent` response includes `kind` field for viewer routing
 - [x] Editor pane hidden when binary viewer is active, and vice versa
 
-## Phase 9 -- File tree context menu and filesystem operations (done)
+## Phase 9; File tree context menu and filesystem operations (done)
 
 - [x] `<context-menu>` class: Popover API with CSS anchor positioning and `position-try-fallbacks`
 - [x] Button items and inline input items (for rename/copy/move with pre-filled names)
@@ -125,7 +125,7 @@
 - [x] `fsActionDone` response for all filesystem mutations
 - [x] `app-context-actions.ts` bridges context menu actions to WebSocket requests
 
-## Phase 10 -- Selection ranges (done)
+## Phase 10; Selection ranges (done)
 
 - [x] Wire protocol: `selectionRange` request with positions, `selectionRangeResult` with nested chains
 - [x] Server: `textDocument/selectionRange` forwarded to tsgo
@@ -133,7 +133,7 @@
 - [x] Client: `shrinkSelection` walks the chain to find the largest strictly smaller range
 - [x] Ctrl+W expands, Ctrl+Shift+W shrinks; stateless (fresh chain per invocation)
 
-## Phase 11 -- Editor line operations (done)
+## Phase 11; Editor line operations (done)
 
 - [x] Ctrl+C copies entire current line when no text is selected
 - [x] Ctrl+D duplicates current line down (clones DOM node, repositions cursor)
@@ -141,7 +141,7 @@
 - [x] Tab / Shift+Tab indents / unindents current line or selection (2-space indent unit)
 - [x] Fullscreen keyboard lock: FAB enters fullscreen, locks Ctrl+W from browser
 
-## Phase 12 -- Infrastructure (done)
+## Phase 12; Infrastructure (done)
 
 - [x] `resolve-fs-id.ts`: stable filesystem volume ID (Linux `stat -f`, macOS `stat -f %v`, Windows `vol`)
 - [x] `connected` message includes `fsId` for localStorage key stability across mounts
@@ -149,7 +149,7 @@
 - [x] `file-tree-entry.styles.ts`: extracted entry styles with custom disclosure arrows
 - [x] `completion-popup-render.ts`: extracted DOM rendering helpers for completion items
 
-## Phase 13 -- Save durability and watcher migration (done)
+## Phase 13; Save durability and watcher migration (done)
 
 - [x] `write-file-atomic.ts`: temp + fsync + rename helper, `O_NOFOLLOW`/`O_EXCL` on the temp open, `lstat`-and-refuse on symlinked targets (`ELOOP`), `fchmod` to preserve mode
 - [x] `save.ts`, `apply-workspace-edit.ts`, `new-entry.ts` migrated to `writeFileAtomic`

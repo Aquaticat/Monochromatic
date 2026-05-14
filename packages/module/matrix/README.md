@@ -33,26 +33,26 @@ so concurrency is safe without additional coordination.
 
 **Parameters:**
 
-- **`os`** (required) -- array of OS specifications with protocol prefix.
-  - `container:` -- podman container (e.g. `'container:ubuntu'`, `'container:fedora'`)
-  - `host:` -- run directly on the host, no container (e.g. `'host:'`)
-  - `vm:` -- reserved for mvm, not yet implemented
+- **`os`** (required): array of OS specifications with protocol prefix.
+  - `container:`: podman container (e.g. `'container:ubuntu'`, `'container:fedora'`)
+  - `host:`: run directly on the host, no container (e.g. `'host:'`)
+  - `vm:`: reserved for mvm, not yet implemented
 
-- **`files`** -- array of file paths to execute inside each environment.
+- **`files`**: array of file paths to execute inside each environment.
   Defaults to discovering `*.unit.matrix.test.ts` in the current directory.
 
-- **`user`** -- array of user contexts. `'root'` runs as root,
+- **`user`**: array of user contexts. `'root'` runs as root,
   `'user'` creates a non-root user (uid 1000) with passwordless sudo.
   Defaults to `['root']`.
 
-- **`runtime`** -- array of JS runtimes to install.
+- **`runtime`**: array of JS runtimes to install.
   Supported: `'bun'`, `'deno'`. Defaults to `['bun']`.
 
-- **`exclude`** -- array of partial match objects to exclude from the cartesian product.
+- **`exclude`**: array of partial match objects to exclude from the cartesian product.
   All specified fields must match for a combination to be excluded.
   Each field accepts an exact value or a predicate function.
 
-- **`concurrency`** -- maximum number of combinations to run concurrently.
+- **`concurrency`**: maximum number of combinations to run concurrently.
   Defaults to `4`. Caps how many containers or host processes execute at once
   to avoid saturating CPU and memory on large matrices.
 
@@ -77,7 +77,7 @@ await matrix({
 
 ## Protocols
 
-### `container:` -- podman containers
+### `container:`: podman containers
 
 Runs test files inside ephemeral podman containers.
 Handles prerequisite installation, runtime installation, and user creation.
@@ -90,7 +90,7 @@ await matrix({
 },);
 ```
 
-### `host:` -- direct execution
+### `host:`: direct execution
 
 Runs test files directly on the host machine.
 No container, no prerequisite installation, no user creation.
@@ -142,15 +142,15 @@ This runs 5 combinations: 1 host (user/bun) + 4 container (2 OS x 2 users).
 
 The package manager is detected from the distro name:
 
-- **apt** -- ubuntu, debian
-- **dnf** -- fedora, centos, rhel, rocky, alma
-- **apk** -- alpine
-- **pacman** -- arch
+- **apt**: ubuntu, debian
+- **dnf**: fedora, centos, rhel, rocky, alma
+- **apk**: alpine
+- **pacman**: arch
 
 ## Supported runtimes
 
-- **bun** -- in containers, installed via `curl -fsSL https://bun.sh/install | bash`; on host, must be on PATH
-- **deno** -- in containers, installed via `curl -fsSL https://deno.land/install.sh | sh`; on host, must be on PATH
+- **bun**: in containers, installed via `curl -fsSL https://bun.sh/install | bash`; on host, must be on PATH
+- **deno**: in containers, installed via `curl -fsSL https://deno.land/install.sh | sh`; on host, must be on PATH
 
 ## What the package handles per combination
 
@@ -249,7 +249,7 @@ await matrix({
 
 ## Dependencies
 
-- `@monochromatic-dev/module-test` -- `describe`/`it` for execution and reporting
-- `@monochromatic-dev/module-logger` -- tagged logger
-- `nano-spawn` -- process execution (podman and host runtimes)
-- `find-up` -- monorepo root detection
+- `@monochromatic-dev/module-test`: `describe`/`it` for execution and reporting
+- `@monochromatic-dev/module-logger`: tagged logger
+- `nano-spawn`: process execution (podman and host runtimes)
+- `find-up`: monorepo root detection

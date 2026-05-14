@@ -64,6 +64,6 @@ so the mise task (or CI) can flag broken builds.
 
 ## Exit codes
 
-- `0` -- summary printed, every referenced asset resolved
-- `1` -- bad arguments (no dist directory, or no HTML files under it)
-- `2` -- summary printed, one or more referenced assets could not be resolved
+- `0`: summary printed, every referenced asset resolved
+- `1`: bad arguments (no dist directory, or no HTML files under it)
+- `2`: summary printed, one or more referenced assets could not be resolved

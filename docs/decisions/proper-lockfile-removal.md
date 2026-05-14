@@ -13,11 +13,11 @@ The two alternatives (silent stub and pure removal) both fail under at least one
 `rg -n -e "AuthStorage|SettingsManager|FileAuthStorageBackend|InMemoryAuthStorageBackend|proper-lockfile|lockfile" /var/home/user/Monochromatic/packages/` returns zero matches.
 Every `@earendil-works/pi-coding-agent` import across the workspace is `import type { ... }`:
 
-- `packages/pi/auto-mode/src/index.ts:12-17` -- `import type { ExtensionAPI, ExtensionContext, ToolCallEvent, ToolCallEventResult }`
-- `packages/pi/auto-mode/src/{ask-user.ts:14, budget-model.ts:15, budget-model-auth.ts:13, context.ts:18, evaluate.ts:16, index.unit.test.ts:8, signals.ts:15, tool-helpers.ts:18}` -- type-only
-- `packages/pi/morph-compact/src/{compaction.ts, compaction-handler.ts, compress-branch.ts, file-tracking.ts, formatting.ts, index.ts, ipc-launch.ts, types.ts}` -- type-only
-- `packages/pi/morph-compact/src/{compress-branch.unit.test.ts, file-tracking.unit.test.ts, formatting.unit.test.ts}` -- type-only
-- `packages/pi/terminal-title/src/{index.ts:27, index.unit.test.ts:13}` -- type-only
+- `packages/pi/auto-mode/src/index.ts:12-17`: `import type { ExtensionAPI, ExtensionContext, ToolCallEvent, ToolCallEventResult }`
+- `packages/pi/auto-mode/src/{ask-user.ts:14, budget-model.ts:15, budget-model-auth.ts:13, context.ts:18, evaluate.ts:16, index.unit.test.ts:8, signals.ts:15, tool-helpers.ts:18}`: type-only
+- `packages/pi/morph-compact/src/{compaction.ts, compaction-handler.ts, compress-branch.ts, file-tracking.ts, formatting.ts, index.ts, ipc-launch.ts, types.ts}`: type-only
+- `packages/pi/morph-compact/src/{compress-branch.unit.test.ts, file-tracking.unit.test.ts, formatting.unit.test.ts}`: type-only
+- `packages/pi/terminal-title/src/{index.ts:27, index.unit.test.ts:13}`: type-only
 
 All three workspace pi packages declare `@earendil-works/pi-coding-agent` only under `peerDependencies` + `devDependencies`, never `dependencies` (see `packages/pi/auto-mode/package.json:26-37`).
 
@@ -28,13 +28,13 @@ No first-party source constructs `AuthStorage`, `FileAuthStorageBackend`, `InMem
 The package is consumed at runtime because `packages/pi/auto-mode` ships at `dist/final/node/index.mjs` and is loaded by the pi CLI binary (the host).
 The relevant call sites inside the installed `@earendil-works/pi-coding-agent@0.74.0` dist:
 
-- `dist/main.js:377` -- `const startupSettingsManager = SettingsManager.create(cwd, agentDir);`
-- `dist/main.js:408` -- `const authStorage = AuthStorage.create();`
-- `dist/core/sdk.js:90,92` -- defaulted construction via `?? AuthStorage.create(authPath)` and `?? SettingsManager.create(cwd, agentDir)`
-- `dist/core/agent-session-services.js:56,57` -- same defaulting pattern
-- `dist/core/resource-loader.js:121` -- `this.settingsManager = options.settingsManager ?? SettingsManager.create(this.cwd, this.agentDir);`
-- `dist/package-manager-cli.js:304,358` -- `SettingsManager.create(cwd, agentDir)`
-- `dist/core/model-registry.js:519` -- `const apiKeyFromAuthStorage = await this.authStorage.getApiKey(model.provider, { includeFallback: false });`
+- `dist/main.js:377`: `const startupSettingsManager = SettingsManager.create(cwd, agentDir);`
+- `dist/main.js:408`: `const authStorage = AuthStorage.create();`
+- `dist/core/sdk.js:90,92`: defaulted construction via `?? AuthStorage.create(authPath)` and `?? SettingsManager.create(cwd, agentDir)`
+- `dist/core/agent-session-services.js:56,57`: same defaulting pattern
+- `dist/core/resource-loader.js:121`: `this.settingsManager = options.settingsManager ?? SettingsManager.create(this.cwd, this.agentDir);`
+- `dist/package-manager-cli.js:304,358`: `SettingsManager.create(cwd, agentDir)`
+- `dist/core/model-registry.js:519`: `const apiKeyFromAuthStorage = await this.authStorage.getApiKey(model.provider, { includeFallback: false });`
 
 `SettingsManager.create` reaches `FileSettingsStorage` -> `withLock` (sync) -> `lockfile.lockSync(...)` at `settings-manager.js:44`, but only when the settings file already exists (`settings-manager.js:69`).
 `AuthStorage.getApiKey` reaches `FileAuthStorageBackend` -> `withLockAsync` -> `lockfile.lock(...)` at `auth-storage.js:88` and `await release()` at `auth-storage.js:116`.
@@ -43,7 +43,7 @@ Both the sync and async lock paths are exercised during normal pi startup, not o
 
 ## Silent-stub semantics
 
-`packages/stub/silent/index.cjs` is a `Proxy` over a no-op function whose `get` trap returns `module.exports` for every property -- including `then`.
+`packages/stub/silent/index.cjs` is a `Proxy` over a no-op function whose `get` trap returns `module.exports` for every property; including `then`.
 That makes the stub a thenable: `await stub` enters the Promise resolution machinery, calls `stub.then(resolve, reject)`, the `apply` trap returns the stub (neither callback is invoked), and the await never settles.
 The Proxy is callable, `apply`, `construct`, and `get` are all wired, so `lockfile.lockSync(path, opts)` and `lockfile.lock(path, opts)` both return the stub itself.
 
@@ -92,15 +92,15 @@ Ranking: 1 > 2 > 3.
 
 Package root: `packages/shim/proper-lockfile/`.
 
-- `package.json` -- private, `"type": "commonjs"`, name `@monochromatic-dev/shim-proper-lockfile`, `main: "./index.cjs"`, `types: "./index.d.cts"`, LGPL-3.0-or-later (matches workspace shim precedent, not upstream MIT).
-- `index.cjs` -- the API-compatible replacement source.
+- `package.json`: private, `"type": "commonjs"`, name `@monochromatic-dev/shim-proper-lockfile`, `main: "./index.cjs"`, `types: "./index.d.cts"`, LGPL-3.0-or-later (matches workspace shim precedent, not upstream MIT).
+- `index.cjs`: the API-compatible replacement source.
   Acquires the lock by atomic `mkdirSync`; releases by `rmdirSync`.
   `lockSync` throws `ELOCKED` on first conflict (the upstream contract).
   `lock` retries internally per `options.retries` (number or object form) with exponential backoff from `minTimeout` to `maxTimeout`, no jitter.
-- `index.d.cts` -- declares the upstream's exported shape with `export = lock` and a merged namespace.
-- `mise.toml` -- inherits the standard `lint`, `lint:oxlint`, `lint:types` tasks.
-- `tsconfig.json` -- extends `@monochromatic-dev/config-typescript`; `include: ["index.d.cts"]`.
-- `README.md` -- one paragraph stating what the shim replaces, the API contract, the upstream features intentionally omitted, and the cross-references.
+- `index.d.cts`: declares the upstream's exported shape with `export = lock` and a merged namespace.
+- `mise.toml`: inherits the standard `lint`, `lint:oxlint`, `lint:types` tasks.
+- `tsconfig.json`: extends `@monochromatic-dev/config-typescript`; `include: ["index.d.cts"]`.
+- `README.md`: one paragraph stating what the shim replaces, the API contract, the upstream features intentionally omitted, and the cross-references.
 
 The `module.exports` shape mirrors the upstream pattern:
 

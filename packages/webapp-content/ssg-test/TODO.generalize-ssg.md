@@ -11,16 +11,16 @@ The Aquaticat blog content moves to a new sibling package (`site-aquaticat`).
 The SSG looks for `site.config.ts` in the current working directory by convention.
 
 - [ ] Create `src/config/schema.ts` with a Zod schema covering:
-  - `url` (string, required) -- site base URL
-  - `contentDir` (string, default `'content'`) -- path to MDX content directory, relative to config file
+  - `url` (string, required): site base URL
+  - `contentDir` (string, default `'content'`): path to MDX content directory, relative to config file
   - `languages` (record of language code to `{ siteName, siteDescription, i18n? }`, required)
     - `i18n` is an optional partial record of UI string keys to override values
     - All UI string keys (`chooseALang`, `searchPlaceholder`, `noResults`, `page`,
       `postNotInLang`, `redirectingToLangChooser`, `themeToggle`, `langSwitcher`) are optional;
       SSG defaults fill in anything not provided
-  - `tickerQuotes` (string array, required) -- footer ticker content
-  - `favicon.source` (string, default `'public/favicon.svg'`) -- path to source SVG
-  - `favicon.backgroundColor` (object `{ r, g, b }`, required) -- background for apple-touch/maskable icons
+  - `tickerQuotes` (string array, required): footer ticker content
+  - `favicon.source` (string, default `'public/favicon.svg'`): path to source SVG
+  - `favicon.backgroundColor` (object `{ r, g, b }`, required): background for apple-touch/maskable icons
 - [ ] Create `src/config/load.ts` that resolves `site.config.ts` from `process.cwd()` and validates with the schema
 - [ ] Export `defineConfig` from the package entry point for type-safe config authoring
 
@@ -57,8 +57,8 @@ via `config.languages[lang].i18n`:
 
 ### `src/build.ts`
 
-- [ ] Remove `const SITE_URL = 'https://aquati.cat'` (`src/build.ts:62`) -- read from `config.url`
-- [ ] Remove `const CONTENT_DIR = 'src/content'` (`src/build.ts:66`) -- read from `config.contentDir`
+- [ ] Remove `const SITE_URL = 'https://aquati.cat'` (`src/build.ts:62`): read from `config.url`
+- [ ] Remove `const CONTENT_DIR = 'src/content'` (`src/build.ts:66`): read from `config.contentDir`
 - [ ] Load config at the top of the build script via `loadConfig()`
 - [ ] Pass config (or relevant fields) to every function that currently reads a hardcoded value
 
@@ -79,8 +79,8 @@ via `config.languages[lang].i18n`:
 
 ### `src/build/render.ts`
 
-- [ ] Remove hardcoded `SVG_SOURCE` path (`src/build/render.ts:9`) -- read from `config.favicon.source`
-- [ ] Remove hardcoded `BACKGROUND` color (`src/build/render.ts:12-18`) -- read from `config.favicon.backgroundColor`
+- [ ] Remove hardcoded `SVG_SOURCE` path (`src/build/render.ts:9`): read from `config.favicon.source`
+- [ ] Remove hardcoded `BACKGROUND` color (`src/build/render.ts:12-18`): read from `config.favicon.backgroundColor`
 
 ### `src/lib/rss.ts`
 
@@ -110,7 +110,7 @@ Approximately 10 functions across these files:
   - `site.config.ts` with Aquaticat-specific values
   - `content/en/*.mdx` (moved from `ssg-test/src/content/en/`)
   - `content/zh/*.mdx` (moved from `ssg-test/src/content/zh/`)
-  - `public/` (moved from `ssg-test/public/` -- favicon source, static images)
+  - `public/` (moved from `ssg-test/public/`: favicon source, static images)
   - `Caddyfile` (moved from `ssg-test/`)
 - [ ] Move all MDX content files
 - [ ] Move all static assets (images, favicon SVG)
@@ -181,8 +181,8 @@ export default defineConfig({
 ## Estimated effort
 
 - **Phase 1** (config schema): ~2 hours
-- **Phase 2** (threading config): ~4 hours -- most files, but each change is small
-- **Phase 3** (content separation): ~2 hours -- file moves + verification
+- **Phase 2** (threading config): ~4 hours; most files, but each change is small
+- **Phase 3** (content separation): ~2 hours; file moves + verification
 - **Phase 4** (rename): ~1 hour
 - **Phase 5** (publish prep): ~2 hours
 

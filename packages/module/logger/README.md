@@ -68,20 +68,20 @@ already provides its own log-level filtering.
 The default logger writes to **all** available sinks simultaneously.
 Availability is verified once at module load; sinks that fail verification are skipped.
 
-- **console** -- formats as `[level] [ISO timestamp] message`;
+- **console**: formats as `[level] [ISO timestamp] message`;
   maps levels to corresponding `console.*` methods
-- **file** -- Node.js only; walks up from `process.cwd()` to the nearest
+- **file**: Node.js only; walks up from `process.cwd()` to the nearest
   ancestor `node_modules/`, then appends JSONL records to
   `<that dir>/node_modules/.monochromatic/{timestamp}.log.jsonl` via
   `node:fs/promises`. When no ancestor `node_modules/` exists, the sink
   is marked unavailable rather than creating one at cwd; this prevents
   stray log directories from landing inside build output or other
   non-project trees when a script is invoked from an unexpected cwd
-- **OPFS** -- browser only; appends JSONL records to Origin Private File System;
+- **OPFS**: browser only; appends JSONL records to Origin Private File System;
   keeps a `FileSystemWritableFileStream` open for the session
-- **sessionStorage** -- browser only; stores JSONL records under `monochromatic.log.{n}` keys
+- **sessionStorage**: browser only; stores JSONL records under `monochromatic.log.{n}` keys
   with an auto-incrementing counter
-- **noop** -- discards all records; useful for testing
+- **noop**: discards all records; useful for testing
 
 Sinks can be sync or async.
 Async sinks are fire-and-forget; the log call never blocks the caller.
@@ -105,22 +105,22 @@ File, OPFS, and sessionStorage sinks write records as one JSON object per line (
 
 - `initPromise` rejects during eager initialization if **no** backends pass verification
 - Throws at log time once initialization has completed with no available backend
-- Individual sink failures are silent -- the sink is disabled and remaining sinks continue
+- Individual sink failures are silent; the sink is disabled and remaining sinks continue
 
 ## Design decisions
 
 See [DECISIONS.md](DECISIONS.md) for rationale on:
 
-- No sub-logger hierarchy -- per-component filtering is a log viewer problem
-- String-only messages -- callers own serialization; no auto-stringify
+- No sub-logger hierarchy; per-component filtering is a log viewer problem
+- String-only messages; callers own serialization; no auto-stringify
 
 ## Source files
 
-- `src/types.ts` -- `Logger`, `LogRecord`, `Sink`, `SinkFlush`, `Verify`, `Level` type definitions
-- `src/logger.ts` -- default multi-sink logger singleton with eager initialization
-- `src/tagged.ts` -- `tagged()` wrapper for composable prefixes
-- `src/sinks/console.ts` -- console sink with verbose-mode gating and microtask batching
-- `src/sinks/file.ts` -- Node.js file sink (JSONL via `appendFile`)
-- `src/sinks/opfs.ts` -- browser OPFS sink with persistent writable stream
-- `src/sinks/session-storage.ts` -- browser sessionStorage sink
-- `src/sinks/noop.ts` -- noop sink for testing
+- `src/types.ts`: `Logger`, `LogRecord`, `Sink`, `SinkFlush`, `Verify`, `Level` type definitions
+- `src/logger.ts`: default multi-sink logger singleton with eager initialization
+- `src/tagged.ts`: `tagged()` wrapper for composable prefixes
+- `src/sinks/console.ts`: console sink with verbose-mode gating and microtask batching
+- `src/sinks/file.ts`: Node.js file sink (JSONL via `appendFile`)
+- `src/sinks/opfs.ts`: browser OPFS sink with persistent writable stream
+- `src/sinks/session-storage.ts`: browser sessionStorage sink
+- `src/sinks/noop.ts`: noop sink for testing

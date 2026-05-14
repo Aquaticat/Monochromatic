@@ -5,7 +5,7 @@ The build, the type check, and the seeded-save lecture flow all pass.
 
 ## Resolved in this round
 
-- 22 `typescript-eslint(no-unsafe-type-assertion)` errors -- refactored `screens/settings.ts` to capture typed element refs and `addEventListener` post-creation; added `coerceLocale`/`coerceProviderId` helpers; changed `lecture.ts` timer type to `ReturnType<typeof setTimeout>`. The remaining JSON-parse / pdfjs casts have `oxlint-disable-next-line` directives with justification per AGENTS.md.
+- 22 `typescript-eslint(no-unsafe-type-assertion)` errors; refactored `screens/settings.ts` to capture typed element refs and `addEventListener` post-creation; added `coerceLocale`/`coerceProviderId` helpers; changed `lecture.ts` timer type to `ReturnType<typeof setTimeout>`. The remaining JSON-parse / pdfjs casts have `oxlint-disable-next-line` directives with justification per AGENTS.md.
 
 ## Remaining counts
 
@@ -26,12 +26,12 @@ Add missing `@example`, `@param`, `@returns` tags and TSDoc blocks. The screen m
 
 Lift literals to named constants. Hot spots:
 
-- `state.ts` -- `textSpeed: 40`, `voiceVolume/bgmVolume: 0.3`, `autoAdvanceDelayMs: 1600`, font scale range bounds
-- `select-topic.ts` -- random-id seed `1e6`
-- `parse/index.ts` -- `30 * 1024 * 1024` byte cap
-- `dialogue/generator.ts` -- `60_000` paper text budget
-- `tts.ts` -- voice-pick fallbacks
-- `settings.ts` -- range bounds (`0.75`, `1.5`, `0.05`, `120`, `5000`, `100`, `5`)
+- `state.ts`: `textSpeed: 40`, `voiceVolume/bgmVolume: 0.3`, `autoAdvanceDelayMs: 1600`, font scale range bounds
+- `select-topic.ts`: random-id seed `1e6`
+- `parse/index.ts`: `30 * 1024 * 1024` byte cap
+- `dialogue/generator.ts`: `60_000` paper text budget
+- `tts.ts`: voice-pick fallbacks
+- `settings.ts`: range bounds (`0.75`, `1.5`, `0.05`, `120`, `5000`, `100`, `5`)
 
 ### eslint(new-cap)
 
@@ -61,9 +61,9 @@ Mostly auto-fixable formatting; `dprint` should handle this once configured for 
 
 ### Remaining tsdoc/structural issues
 
-- `multiline-blocks` -- some `/** */` comments have layout issues (3)
-- `valid-types` -- TSDoc does not allow TypeScript type syntax in tags (2)
-- `numeric-separators-style` -- `_` separators on numbers >= 5 digits (6)
+- `multiline-blocks`: some `/** */` comments have layout issues (3)
+- `valid-types`: TSDoc does not allow TypeScript type syntax in tags (2)
+- `numeric-separators-style`: `_` separators on numbers >= 5 digits (6)
 
 ## Suggested order
 

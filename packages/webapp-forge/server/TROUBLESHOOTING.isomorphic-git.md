@@ -127,7 +127,7 @@ Description:
 >
 > Each gap forces server implementations to vendor wire-format code, duplicating
 > the well-tested client-side functions in this repo. Reproduction: clone the repo
-> and grep `wire/` -- only `parseUploadPackRequest` and `writeRefsAdResponse` are
+> and grep `wire/`: only `parseUploadPackRequest` and `writeRefsAdResponse` are
 > server-flavoured.
 >
 > Suggested fix: extract the commented `GitSideBand.mux` into a runtime-portable

@@ -4,10 +4,10 @@
 
 All three Figma export formats (.fig, .deck, .jam) are ZIP archives containing:
 
-- `canvas.fig` -- Binary blob with header + compressed schema + compressed document data
-- `meta.json` -- File metadata (background color, render bounds, export timestamp)
-- `thumbnail.png` -- Preview image
-- `images/` -- Referenced image assets (SHA-1 hash filenames)
+- `canvas.fig`: Binary blob with header + compressed schema + compressed document data
+- `meta.json`: File metadata (background color, render bounds, export timestamp)
+- `thumbnail.png`: Preview image
+- `images/`: Referenced image assets (SHA-1 hash filenames)
 
 ## canvas.fig binary layout
 
@@ -119,14 +119,14 @@ but most are absent in any given node. Only non-default fields are encoded.
 
 Key fields (by tag):
 
-- tag 1: guid (GUID struct -- inline sessionID + localID varuints)
+- tag 1: guid (GUID struct; inline sessionID + localID varuints)
 - tag 2: phase (NodePhase enum)
-- tag 3: parentIndex (ParentIndex struct -- inline GUID + position string)
+- tag 3: parentIndex (ParentIndex struct; inline GUID + position string)
 - tag 4: type (NodeType enum)
 - tag 5: name (string)
 - tag 6: visible (bool)
 - tag 8: opacity (float/varfloat)
-- tag 12: transform (Matrix struct -- 6 varfloat values inline)
+- tag 12: transform (Matrix struct; 6 varfloat values inline)
 - etc.
 
 ### ParentIndex encoding
@@ -186,7 +186,7 @@ All three file types decoded 100%:
 
 ## Research files
 
-- `/tmp/figma-research/fig-extract/canvas.decompressed` -- 63746-byte decompressed schema
-- `/tmp/figma-research/zstd_decompressed.bin` -- 2779-byte decompressed document (small file)
-- `/tmp/figma-research/scholar_zstd_decompressed.bin` -- 3.7MB decompressed document (large file)
-- `/tmp/kiwi-source/` -- Cloned evanw/kiwi source for reference
+- `/tmp/figma-research/fig-extract/canvas.decompressed`: 63746-byte decompressed schema
+- `/tmp/figma-research/zstd_decompressed.bin`: 2779-byte decompressed document (small file)
+- `/tmp/figma-research/scholar_zstd_decompressed.bin`: 3.7MB decompressed document (large file)
+- `/tmp/kiwi-source/`: Cloned evanw/kiwi source for reference

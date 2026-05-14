@@ -42,29 +42,29 @@ bun packages/dev-script/file-enforcer/src/index.ts --watch
 
 ### Reading
 
-- `cat(files: string[])` -- reads and concatenates files into a single string; paths containing `*` or `?` are auto-expanded as globs
-- `cat(glob: string)` -- reads files matching a glob pattern, returns `GlobResults` (a `GlobResult[]` carrying the source pattern)
+- `cat(files: string[])`: reads and concatenates files into a single string; paths containing `*` or `?` are auto-expanded as globs
+- `cat(glob: string)`: reads files matching a glob pattern, returns `GlobResults` (a `GlobResult[]` carrying the source pattern)
 
 ### Writing
 
-- `overwrite(dest, content)` -- writes content to dest; skips when existing content is identical
-- `overwriteIfNotExists(dest, content)` -- writes only if the file does not exist
-- `overwriteEach(destGlob, files)` -- mirrors each `GlobResults` entry to a destination using positional wildcard substitution; source glob is read from the array
+- `overwrite(dest, content)`: writes content to dest; skips when existing content is identical
+- `overwriteIfNotExists(dest, content)`: writes only if the file does not exist
+- `overwriteEach(destGlob, files)`: mirrors each `GlobResults` entry to a destination using positional wildcard substitution; source glob is read from the array
 
 ### Transforms
 
-- `dedup(content)` -- removes duplicate lines, preserving first occurrence order
-- `getProperty(path, jsonContent)` -- extracts a nested value using dot-separated paths (e.g., `.config.features`)
-- `exec(cmd, args)` -- runs a command and captures stdout
-- `exec(platformCommands)` -- platform-aware exec; evaluates `[predicate, command]` tuples top-to-bottom and runs the first match (see [Platform-aware exec](#platform-aware-exec) below)
-- `evaluatePredicate(predicate)` -- runs a predicate and returns whether it succeeded (exit 0); results cached per-session
-- `inspect(value)` -- debug tap that logs and returns the value unchanged
+- `dedup(content)`: removes duplicate lines, preserving first occurrence order
+- `getProperty(path, jsonContent)`: extracts a nested value using dot-separated paths (e.g., `.config.features`)
+- `exec(cmd, args)`: runs a command and captures stdout
+- `exec(platformCommands)`: platform-aware exec; evaluates `[predicate, command]` tuples top-to-bottom and runs the first match (see [Platform-aware exec](#platform-aware-exec) below)
+- `evaluatePredicate(predicate)`: runs a predicate and returns whether it succeeded (exit 0); results cached per-session
+- `inspect(value)`: debug tap that logs and returns the value unchanged
 
 ### Watch mode utilities
 
-- `addWatchedPaths(paths)` -- registers additional paths for watch mode to monitor (for `exec()` dependencies)
-- `invalidatePaths(paths)` -- surgically removes specific entries from the in-memory read cache
-- `reset()` -- clears read/write tracking sets between re-runs (preserves cache and write timestamps)
+- `addWatchedPaths(paths)`: registers additional paths for watch mode to monitor (for `exec()` dependencies)
+- `invalidatePaths(paths)`: surgically removes specific entries from the in-memory read cache
+- `reset()`: clears read/write tracking sets between re-runs (preserves cache and write timestamps)
 
 ## Platform-aware exec
 
@@ -227,12 +227,12 @@ p({ bin: 'openssl', check: 'version', effname: 'openssl', },); // custom existen
 
 The index is split into two files:
 
-- `data/packages.generated.ts` -- auto-generated from Repology database dump (7,332 entries).
+- `data/packages.generated.ts`: auto-generated from Repology database dump (7,332 entries).
   Freely rebuilt; contains effname and per-manager package name mappings.
-- `data/packages.overrides.ts` -- hand-maintained.
+- `data/packages.overrides.ts`: hand-maintained.
   Contains binary names, custom check flags, and corrections that Repology cannot infer.
   Survives index regeneration.
-- `data/packages.ts` -- merges both files into the final index.
+- `data/packages.ts`: merges both files into the final index.
 
 ### Supported package managers
 
@@ -277,9 +277,9 @@ This makes full re-runs cheap even without knowing which source changed.
 The CLI's `--watch` flag uses `fs.watch` on directories derived from tracked reads and writes.
 Events are classified into three categories:
 
-- **source** -- a tracked source file or the config changed; triggers re-run
-- **protected** -- a managed destination was modified externally; triggers re-run + system notification via `notify-send`
-- **ignore** -- unrelated file or our own write echoing through `fs.watch`
+- **source**: a tracked source file or the config changed; triggers re-run
+- **protected**: a managed destination was modified externally; triggers re-run + system notification via `notify-send`
+- **ignore**: unrelated file or our own write echoing through `fs.watch`
 
 Echo detection compares the file's `mtime` against the recorded write timestamp.
 
@@ -292,26 +292,26 @@ Echo detection compares the file's `mtime` against the recorded write timestamp.
 
 All production source files are under 100 lines per the monorepo coding guidelines.
 
-- `cache.ts` -- in-memory read cache with invalidation and post-write updates
-- `cat.ts` -- overloaded file reading (array concatenation vs glob expansion)
-- `ensure-package.ts` -- `ensurePackage()` function, index lookup, binary check, install dispatch
-- `evaluate-predicate.ts` -- shell predicate evaluation with per-session caching
-- `exec.ts` -- child process execution with stdout capture and platform-aware tuple dispatch
-- `glob.ts` -- glob expansion and mirror-glob path mapping
-- `inspect.ts` -- generic debug tap
-- `manager.ts` -- package manager detection, `binaryExists`, `canProvide`, `installPackage`
-- `merge.ts` -- merge generated index with hand-maintained overrides
-- `mod.ts` -- re-exports for the public API
-- `index.ts` -- CLI entry point with find-up and --watch flag
-- `notify.ts` -- terminal warning + platform-aware desktop notification dispatch
-- `p.ts` -- `p()` builder for `PackageEntry` values
-- `tracker.ts` -- read/write/timestamp tracking for watch mode
-- `transform.ts` -- dedup and dot-prop getProperty
-- `types.ts` -- `PackageManager`, `PackageSpec`, `PackageEntry` type definitions
-- `watch.ts` -- main watch loop with debounce and cache-busting re-import
-- `watch-dir.ts` -- per-directory fs.watch wrapper with AbortController
-- `watch-filter.ts` -- event classification (source/protected/ignore)
-- `write.ts` -- overwrite, overwriteIfNotExists, overwriteEach with content-skip
+- `cache.ts`: in-memory read cache with invalidation and post-write updates
+- `cat.ts`: overloaded file reading (array concatenation vs glob expansion)
+- `ensure-package.ts`: `ensurePackage()` function, index lookup, binary check, install dispatch
+- `evaluate-predicate.ts`: shell predicate evaluation with per-session caching
+- `exec.ts`: child process execution with stdout capture and platform-aware tuple dispatch
+- `glob.ts`: glob expansion and mirror-glob path mapping
+- `inspect.ts`: generic debug tap
+- `manager.ts`: package manager detection, `binaryExists`, `canProvide`, `installPackage`
+- `merge.ts`: merge generated index with hand-maintained overrides
+- `mod.ts`: re-exports for the public API
+- `index.ts`: CLI entry point with find-up and --watch flag
+- `notify.ts`: terminal warning + platform-aware desktop notification dispatch
+- `p.ts`: `p()` builder for `PackageEntry` values
+- `tracker.ts`: read/write/timestamp tracking for watch mode
+- `transform.ts`: dedup and dot-prop getProperty
+- `types.ts`: `PackageManager`, `PackageSpec`, `PackageEntry` type definitions
+- `watch.ts`: main watch loop with debounce and cache-busting re-import
+- `watch-dir.ts`: per-directory fs.watch wrapper with AbortController
+- `watch-filter.ts`: event classification (source/protected/ignore)
+- `write.ts`: overwrite, overwriteIfNotExists, overwriteEach with content-skip
 
 ## Tests
 

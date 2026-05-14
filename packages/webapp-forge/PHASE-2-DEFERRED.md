@@ -30,14 +30,14 @@ constraints around the remaining work.
 
 The protocol layer ships in `src/git/`:
 
-- `pkt-line.ts` -- pkt-line frame encode/decode.
-- `pack-protocol.ts` + `pack-protocol-writers.ts` -- vendored
+- `pkt-line.ts`: pkt-line frame encode/decode.
+- `pack-protocol.ts` + `pack-protocol-writers.ts`: vendored
   `parseUploadPackBody`, `parseReceivePackBody`,
   `writeUploadPackResponse`, `writeReceivePackResponse`.
 - `iso-server.ts`, `iso-server-refs.ts`, `iso-server-walk.ts`,
-  `iso-server-advertisement.ts` -- ref read/write, pack assembly from the
+  `iso-server-advertisement.ts`: ref read/write, pack assembly from the
   isomorphic-git object store, pack apply on receive.
-- `lib/git-config.ts` -- `WEBAPP_FORGE_GITDIR_ROOT` env helper; default
+- `lib/git-config.ts`: `WEBAPP_FORGE_GITDIR_ROOT` env helper; default
   is a per-process scratch dir under `os.tmpdir()`.
 - Routes: `info/refs`, `git-upload-pack`, `git-receive-pack` mounted in
   `src/server/routes/git.ts`.

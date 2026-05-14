@@ -28,7 +28,7 @@ The script runs four steps in sequence:
 2. **Convert**: `bootc-image-builder` converts the image to
    `output/qcow2/disk.qcow2` (rootful `sudo podman`, privileged)
 3. **Fix ownership**: restores `output/` from root:root to current user
-4. **Import** -- `virt-install --import` registers the qcow2 as a libvirt domain
+4. **Import**: `virt-install --import` registers the qcow2 as a libvirt domain
 
 After the script finishes, start the VM:
 
@@ -58,7 +58,7 @@ See the TODO comments in that file for ZFS encryption status.
 
 ## Files
 
-- `Containerfile` -- OS image definition (ucore-hci base, KDE, apps, dev tools, user, mise, dotfiles)
-- `disk_config/disk.toml` -- bootc-image-builder disk layout
-- `src/build-and-import.ts` -- orchestration script
-- `output/` -- build artifacts (gitignored)
+- `Containerfile`: OS image definition (ucore-hci base, KDE, apps, dev tools, user, mise, dotfiles)
+- `disk_config/disk.toml`: bootc-image-builder disk layout
+- `src/build-and-import.ts`: orchestration script
+- `output/`: build artifacts (gitignored)

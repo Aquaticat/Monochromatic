@@ -141,7 +141,7 @@ bun test packages/build/css/
 
 Integration tests exercise two CSS import resolution strategies using fixture packages:
 
-- **`exports` field** -- `test-css-importing` imports from `test-css-imported` (has `exports` in package.json)
-- **Direct file path** -- `test-css-importing-filepath` imports from `test-css-imported-no-exports` (no `exports` field)
+- **`exports` field**: `test-css-importing` imports from `test-css-imported` (has `exports` in package.json)
+- **Direct file path**: `test-css-importing-filepath` imports from `test-css-imported-no-exports` (no `exports` field)
 
 Both strategies run identical assertions: import resolution, mixin removal, `@apply` expansion, nested mixin inlining, and output file writing.

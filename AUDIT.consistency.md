@@ -7,14 +7,14 @@ plus root-level documentation files.
 
 Per CLAUDE.md, every package needs `package.json`, `mise.toml`, and `README.md`.
 
-- `claude-code-plugins/verbose-tool-output` -- missing **all three** (package.json, mise.toml, README.md)
-- `claude-code-plugins/statusline` -- missing package.json, mise.toml
-- `claude-code-plugins/research-agent` -- missing package.json, mise.toml
-- `intellij-plugins/islands-black` -- missing package.json, mise.toml
-- `config/tofu` -- missing mise.toml
-- `config/cosign` -- missing mise.toml
-- `config/dotfiles` -- missing mise.toml
-- `test-fixture/oxlint-stylistic` -- missing README.md
+- `claude-code-plugins/verbose-tool-output`: missing **all three** (package.json, mise.toml, README.md)
+- `claude-code-plugins/statusline`: missing package.json, mise.toml
+- `claude-code-plugins/research-agent`: missing package.json, mise.toml
+- `intellij-plugins/islands-black`: missing package.json, mise.toml
+- `config/tofu`: missing mise.toml
+- `config/cosign`: missing mise.toml
+- `config/dotfiles`: missing mise.toml
+- `test-fixture/oxlint-stylistic`: missing README.md
 
 ## Package naming
 
@@ -59,12 +59,12 @@ Packages with **blank/empty** README first lines: `config/stylelint`, `dev-scrip
 
 15 packages have no `version` field at all. The rest are split across five different versions:
 
-- `0.0.1` (46 packages) -- the majority
-- `0.0.125` (1) -- module/es
-- `0.0.5` (1) -- config/typescript
-- `0.1.0` (4) -- mcp/nvim, mcp/stdio, mcp/mvm, stylesheet/monochromatic
-- `1.0.0` (2) -- webapp-productivity/rss, webapp-search/ai-tree
-- missing (13) -- config/dprint, config/stylelint, config/tsdown, config/oxlint-tsdoc,
+- `0.0.1` (46 packages): the majority
+- `0.0.125` (1): module/es
+- `0.0.5` (1): config/typescript
+- `0.1.0` (4): mcp/nvim, mcp/stdio, mcp/mvm, stylesheet/monochromatic
+- `1.0.0` (2): webapp-productivity/rss, webapp-search/ai-tree
+- missing (13): config/dprint, config/stylelint, config/tsdown, config/oxlint-tsdoc,
   config/tofu, config/oxlint-no-restricted-syntax,
   config/oxlint-stylistic, config/oxlint,
   webapp-content/ssg-test, webapp-productivity/done, webapp-productivity/done-h-css-test,
@@ -103,9 +103,9 @@ and a few others). The vast majority omit both.
 
 Three different states with no clear pattern by package type:
 
-- `false` (4 packages) -- dev-script/file-enforcer, dev-script/backup-path, claude-code-plugins/hook-types, claude-code-plugins/hook-utils
-- `true` (19 packages) -- all CLIs, all claude-code-plugins (except hook-types/hook-utils), dev-scripts, desktop-daemon/hall-monitor
-- missing (45 packages) -- everything else
+- `false` (4 packages): dev-script/file-enforcer, dev-script/backup-path, claude-code-plugins/hook-types, claude-code-plugins/hook-utils
+- `true` (19 packages): all CLIs, all claude-code-plugins (except hook-types/hook-utils), dev-scripts, desktop-daemon/hall-monitor
+- missing (45 packages): everything else
 
 Libraries that likely should declare `sideEffects: false` (module/es, module/hyperscript, etc.) do not.
 
@@ -211,8 +211,8 @@ The single source of truth is `pnpm-workspace.yaml`.
 Three different license values across 69 packages:
 
 - `LGPL-3.0-or-later` (65 packages)
-- `LGPL-3.0-or-later AND CC-BY-SA-4.0` (2) -- webapp-content/ssg-test, typeface/aquaticat
-- `CC-BY-SA-4.0` (2) -- duik/teto, duik/teto-generated
+- `LGPL-3.0-or-later AND CC-BY-SA-4.0` (2): webapp-content/ssg-test, typeface/aquaticat
+- `CC-BY-SA-4.0` (2): duik/teto, duik/teto-generated
 
 The mixed licenses are likely intentional (content vs code),
 but there is no documentation explaining the licensing model.

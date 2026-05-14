@@ -27,47 +27,47 @@ All rules are enabled by default at `"warn"` severity with `recommended: true`.
 
 ### Presence
 
-- **require-tsdoc** -- requires TSDoc comments on module-level documentable declarations
+- **require-tsdoc**: requires TSDoc comments on module-level documentable declarations
   (functions, classes, interfaces, type aliases, enums, variables, properties, enum members, getters, setters);
   skips VariableDeclaration nodes inside function bodies
 
 ### Structural formatting
 
-- **check-alignment** -- enforces consistent asterisk alignment in multiline TSDoc blocks
-- **multiline-blocks** -- requires multiline format for TSDoc comments containing tags
-- **no-multi-asterisks** -- disallows `** text` lines (doubled leading asterisks)
-- **tag-lines** -- requires blank comment lines before block tags
-- **empty-tags** -- enforces that modifier tags (`@public`, `@readonly`, `@override`, etc.) have no content
-- **escape-inline-tags** -- detects unescaped `*/` inside comment content
+- **check-alignment**: enforces consistent asterisk alignment in multiline TSDoc blocks
+- **multiline-blocks**: requires multiline format for TSDoc comments containing tags
+- **no-multi-asterisks**: disallows `** text` lines (doubled leading asterisks)
+- **tag-lines**: requires blank comment lines before block tags
+- **empty-tags**: enforces that modifier tags (`@public`, `@readonly`, `@override`, etc.) have no content
+- **escape-inline-tags**: detects unescaped `*/` inside comment content
 
 ### Tag validation
 
-- **check-tag-names** -- validates that tags are recognized TSDoc standard tags;
+- **check-tag-names**: validates that tags are recognized TSDoc standard tags;
   reports JSDoc-only tags with migration suggestions;
   skips fenced code blocks and backtick-wrapped inline code
-- **check-access** -- detects conflicting access modifier tags
-- **valid-types** -- reports TSDoc parse errors from the `@microsoft/tsdoc` parser
-- **no-types** -- disallows JSDoc-style `{Type}` annotations in TSDoc
+- **check-access**: detects conflicting access modifier tags
+- **valid-types**: reports TSDoc parse errors from the `@microsoft/tsdoc` parser
+- **no-types**: disallows JSDoc-style `{Type}` annotations in TSDoc
 
 ### Parameter documentation
 
-- **check-param-names** -- validates `@param` names against the function signature;
+- **check-param-names**: validates `@param` names against the function signature;
   allows property names from destructured parameters
-- **require-param** -- requires `@param` tags for all function parameters
-- **require-param-name** -- requires every `@param` tag to specify a parameter name
-- **require-param-description** -- requires descriptions on `@param` tags
+- **require-param**: requires `@param` tags for all function parameters
+- **require-param-name**: requires every `@param` tag to specify a parameter name
+- **require-param-description**: requires descriptions on `@param` tags
 
 ### Return documentation
 
-- **require-returns** -- requires `@returns` tag for functions with non-void return types;
+- **require-returns**: requires `@returns` tag for functions with non-void return types;
   skips constructors and setters
-- **require-returns-check** -- reports `@returns` on void functions
-- **require-returns-description** -- requires descriptions on `@returns` tags
+- **require-returns-check**: reports `@returns` on void functions
+- **require-returns-description**: requires descriptions on `@returns` tags
 
 ### Yield documentation
 
-- **require-yields** -- requires `@yields` tag for generator functions
-- **require-yields-check** -- reports `@yields` on non-generator functions
+- **require-yields**: requires `@yields` tag for generator functions
+- **require-yields-check**: reports `@yields` on non-generator functions
 
 ## Ignored files
 
@@ -76,14 +76,14 @@ Files matching these extensions are skipped by all rules:
 
 ## Source files
 
-- `index.ts` -- plugin entry point; assembles all rules into the oxlint plugin object
-- `tsdoc-utils.ts` -- shared TSDoc parsing, comment lookup, parameter extraction utilities
-- `rules/require-tsdoc.ts` -- require-tsdoc rule with scope-depth tracking
-- `rules/structural.ts` -- structural formatting rules (alignment, multiline, asterisks, tag spacing, escaping)
-- `rules/tag-validation.ts` -- tag name validation, access checks, parse error reporting, type annotation detection
-- `rules/params.ts` -- parameter documentation rules
-- `rules/returns.ts` -- return documentation rules
-- `rules/yields.ts` -- yield documentation rules
+- `index.ts`: plugin entry point; assembles all rules into the oxlint plugin object
+- `tsdoc-utils.ts`: shared TSDoc parsing, comment lookup, parameter extraction utilities
+- `rules/require-tsdoc.ts`: require-tsdoc rule with scope-depth tracking
+- `rules/structural.ts`: structural formatting rules (alignment, multiline, asterisks, tag spacing, escaping)
+- `rules/tag-validation.ts`: tag name validation, access checks, parse error reporting, type annotation detection
+- `rules/params.ts`: parameter documentation rules
+- `rules/returns.ts`: return documentation rules
+- `rules/yields.ts`: yield documentation rules
 
 ## Tests
 

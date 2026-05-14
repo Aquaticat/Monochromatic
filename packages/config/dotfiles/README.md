@@ -5,8 +5,8 @@ The Containerfile COPYs these into the user's `~/.config/` directory.
 
 ## Files
 
-- `ghostty/config` -- Ghostty terminal configuration
-- `mise/config.toml` -- global mise config (nushell tool for monorepo task runner)
+- `ghostty/config`: Ghostty terminal configuration
+- `mise/config.toml`: global mise config (nushell tool for monorepo task runner)
 
 ## Adding a new dotfile
 

@@ -110,11 +110,11 @@ See `TROUBLESHOOTING.dependencies.md` for the audit trail behind each one.
 
 Create a workspace package under `packages/shim/<name>/` with five files (mirror `packages/shim/node-domexception/`):
 
-- `package.json` -- private, `"type": "commonjs"`, name `@monochromatic-dev/shim-<name>`, `main: "./index.cjs"`, `types: "./index.d.cts"`.
-- `index.cjs` -- the API-compatible replacement source.
-- `index.d.cts` -- a minimal type declaration matching the exported shape (use `export = _;` to mirror CJS default export).
-- `mise.toml` -- `extends` the standard `lint`, `lint:oxlint`, `lint:types` tasks.
-- `README.md` -- one paragraph stating what the shim replaces, the API contract, and a cross-reference to `TROUBLESHOOTING.dependencies.md`.
+- `package.json`: private, `"type": "commonjs"`, name `@monochromatic-dev/shim-<name>`, `main: "./index.cjs"`, `types: "./index.d.cts"`.
+- `index.cjs`: the API-compatible replacement source.
+- `index.d.cts`: a minimal type declaration matching the exported shape (use `export = _;` to mirror CJS default export).
+- `mise.toml`: `extends` the standard `lint`, `lint:oxlint`, `lint:types` tasks.
+- `README.md`: one paragraph stating what the shim replaces, the API contract, and a cross-reference to `TROUBLESHOOTING.dependencies.md`.
 
 Wire the substitution by adding one line to `pnpm-workspace.yaml`'s `overrides` block:
 

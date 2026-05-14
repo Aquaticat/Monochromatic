@@ -8,9 +8,9 @@ Shared [tsdown](https://tsdown.dev/) build configurations for Monochromatic pack
 
 Three platform-specific presets are available:
 
-- **Neutral** (default) -- browser-compatible builds targeting Firefox 140
-- **Node** -- server-side builds with `platform: 'node'`
-- **Client** -- browser bundles for `<script type="module">` tags, no `.d.ts` output
+- **Neutral** (default): browser-compatible builds targeting Firefox 140
+- **Node**: server-side builds with `platform: 'node'`
+- **Client**: browser bundles for `<script type="module">` tags, no `.d.ts` output
 
 All presets bundle workspace dependencies (`@monochromatic-dev/*`) into the output
 so built artifacts are self-contained outside the monorepo.

@@ -1,4 +1,4 @@
-# verbose-tool-output plugin -- won't fix
+# verbose-tool-output plugin; won't fix
 
 PostToolUse hook plugin that would print full tool output to the terminal,
 compensating for Claude Code's renderer which only shows summary lines like "Read 200 lines".
@@ -29,7 +29,7 @@ to the terminal so the user can see what Claude sees.
 - Result: **garbled output**
 - The write reaches the terminal content area, but ink repaints over it immediately.
   The hook's output gets interleaved with ink's render pass, producing corrupted text.
-  Observed: `Readi5ilines1m 36s` instead of `Read 5 lines` -- the tty marker text
+  Observed: `Readi5ilines1m 36s` instead of `Read 5 lines`: the tty marker text
   was spliced into the middle of ink's summary line.
 - OSC escape sequences (used by `terminal-title`) work because they modify the
   terminal title bar, not the content area. Arbitrary visible text does not survive.

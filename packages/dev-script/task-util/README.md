@@ -192,22 +192,22 @@ Commands run via `/bin/sh` (Node.js `child_process` with `shell: true`).
 
 ### task-command
 
-- **-a, --allowFailure** -- suppress the command's non-zero exit code (always exit 0)
-- **-s, --shell** -- execute the command string through the system shell
-- **-t, --timeout \<ms\>** -- kill the command after the given number of milliseconds
+- **-a, --allowFailure**: suppress the command's non-zero exit code (always exit 0)
+- **-s, --shell**: execute the command string through the system shell
+- **-t, --timeout \<ms\>**: kill the command after the given number of milliseconds
 
 ### task-append
 
-- **-t, --to \<file\>** -- target file to append to (required)
+- **-t, --to \<file\>**: target file to append to (required)
 
 ### task-depends
 
-- **-s, --sources \<glob | sh:command\>** -- source item (repeatable, optional)
-- **-o, --outputs \<glob | sh:command\>** -- output item (repeatable, at least one required)
-- **--source-time-strategy \<strategy\>** -- aggregation for source timestamps (default: `newest`)
-- **--output-time-strategy \<strategy\>** -- aggregation for output timestamps (default: `newest`)
-- **-a, --allowFailure** -- suppress the command's non-zero exit code (always exit 0)
-- **-v, --verbose** -- log staleness decision details to stderr
+- **-s, --sources \<glob | sh:command\>**: source item (repeatable, optional)
+- **-o, --outputs \<glob | sh:command\>**: output item (repeatable, at least one required)
+- **--source-time-strategy \<strategy\>**: aggregation for source timestamps (default: `newest`)
+- **--output-time-strategy \<strategy\>**: aggregation for output timestamps (default: `newest`)
+- **-a, --allowFailure**: suppress the command's non-zero exit code (always exit 0)
+- **-v, --verbose**: log staleness decision details to stderr
 
 Strategies: `newest`, `oldest`, `mean`, `median`, or `sh:command`.
 

@@ -25,10 +25,10 @@ Tested with WebStorm but works with any JetBrains IDE that ships the Islands Dar
 
 The theme JSON overrides four color tokens in the Islands Dark color system:
 
-- `gray-10` -- base background for editors and tool windows
-- `gray-20` -- tool window headers and island borders
-- `gray-30` -- main window background between panels and panel borders
-- `gray-40` -- toolbar, status bar, and stripe backgrounds
+- `gray-10`: base background for editors and tool windows
+- `gray-20`: tool window headers and island borders
+- `gray-30`: main window background between panels and panel borders
+- `gray-40`: toolbar, status bar, and stripe backgrounds
 
 The editor color scheme extends Darcula and overrides:
 

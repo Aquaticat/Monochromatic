@@ -411,7 +411,7 @@ function setup(): void {
 
 - Combining multiple null checks into one `if` guard:
   the same hoisting concern applies per-variable
-- `asserts` functions -- they narrow the **parameter**
+- `asserts` functions; they narrow the **parameter**
   in the caller's flow, but the narrowed binding is still a `const`
   subject to the same closure rules
 - Adding `as HTMLDivElement`:
@@ -613,10 +613,10 @@ Since `zod` resolves fine through `node_modules`, the ambient declaration is ign
 
 ### References
 
-- [JSR @zod/zod](https://jsr.io/@zod/zod) -- the source of the `.ts`-shipping package
-- [TypeScript tsconfig: skipLibCheck](https://www.typescriptlang.org/tsconfig/skipLibCheck.html) -- only `.d.ts`
-- [typescript-go resolver.go](https://github.com/microsoft/typescript-go/blob/main/internal/module/resolver.go) -- extension priority and `paths` bypass
-- [typescript-go program.go](https://github.com/microsoft/typescript-go/blob/main/internal/compiler/program.go) -- `SkipTypeChecking` implementation
+- [JSR @zod/zod](https://jsr.io/@zod/zod): the source of the `.ts`-shipping package
+- [TypeScript tsconfig: skipLibCheck](https://www.typescriptlang.org/tsconfig/skipLibCheck.html): only `.d.ts`
+- [typescript-go resolver.go](https://github.com/microsoft/typescript-go/blob/main/internal/module/resolver.go): extension priority and `paths` bypass
+- [typescript-go program.go](https://github.com/microsoft/typescript-go/blob/main/internal/compiler/program.go): `SkipTypeChecking` implementation
 
 ### Why we do not file this upstream
 
@@ -885,9 +885,9 @@ regardless of whether a tsgo client exists for the project root.
 
 ### References
 
-- [microsoft/typescript-go PR #437](https://github.com/microsoft/typescript-go/pull/437) -- original extension guard (later bypassed)
-- [microsoft/typescript-go PR #2004](https://github.com/microsoft/typescript-go/pull/2004) -- removed "unsupported extensions" concept
-- [microsoft/typescript-go PR #1556](https://github.com/microsoft/typescript-go/pull/1556) -- improved panic message to include filename
+- [microsoft/typescript-go PR #437](https://github.com/microsoft/typescript-go/pull/437): original extension guard (later bypassed)
+- [microsoft/typescript-go PR #2004](https://github.com/microsoft/typescript-go/pull/2004): removed "unsupported extensions" concept
+- [microsoft/typescript-go PR #1556](https://github.com/microsoft/typescript-go/pull/1556): improved panic message to include filename
 - [microsoft/typescript-go#2669](https://github.com/microsoft/typescript-go/issues/2669):
   same crash in the completions LSP path, fixed by [PR #2679](https://github.com/microsoft/typescript-go/pull/2679)
 - [denoland/deno#31423](https://github.com/denoland/deno/issues/31423):
@@ -895,13 +895,13 @@ regardless of whether a tsgo client exists for the project root.
 - [neovim/nvim-lspconfig#4018](https://github.com/neovim/nvim-lspconfig/issues/4018):
   filetype mismatch triggering the same crash
 - Source commit: `c0703e66` of `microsoft/typescript-go`
-- `internal/core/core.go:512-529` -- `GetScriptKindFromFileName`
-- `internal/parser/parser.go:288-291` -- panic site
-- `internal/project/compilerhost.go:95-102` -- `GetSourceFile` missing guard
-- `internal/project/overlayfs.go:100-102` -- `diskFile.Kind()` returning `Unknown`
-- `internal/project/parsecache.go:30-38` -- parse cache forwarding `Unknown` to parser
-- `internal/project/project.go:100-121` -- `NewInferredProject` setting `AllowNonTsExtensions`
-- `internal/compiler/filesparser.go:68-95` -- extension guard (bypassed by `AllowNonTsExtensions`)
+- `internal/core/core.go:512-529`: `GetScriptKindFromFileName`
+- `internal/parser/parser.go:288-291`: panic site
+- `internal/project/compilerhost.go:95-102`: `GetSourceFile` missing guard
+- `internal/project/overlayfs.go:100-102`: `diskFile.Kind()` returning `Unknown`
+- `internal/project/parsecache.go:30-38`: parse cache forwarding `Unknown` to parser
+- `internal/project/project.go:100-121`: `NewInferredProject` setting `AllowNonTsExtensions`
+- `internal/compiler/filesparser.go:68-95`: extension guard (bypassed by `AllowNonTsExtensions`)
 
 ### Why we would file this upstream (5 constraints)
 

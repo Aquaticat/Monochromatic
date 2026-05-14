@@ -4,14 +4,14 @@ Long-term goal: a collaborative design tool built entirely in TypeScript with na
 
 ## Architectural constraints
 
-- **DOM/SVG rendering only** -- no Canvas, WebGL, or WebGPU
+- **DOM/SVG rendering only**: no Canvas, WebGL, or WebGPU
   - Native text rendering, native accessibility, native CSS layout, native hit testing
   - Performance ceiling is lower than Canvas-based tools but rendering fidelity is exact
   - Investigate CSS `contain`, `content-visibility`, and virtual scrolling for large documents
-- **TypeScript only** -- no Clojure, no Rust WASM, no C++
+- **TypeScript only**: no Clojure, no Rust WASM, no C++
   - Entire stack in one language: client, server, collaboration engine, build tools
   - Leverages the existing Monochromatic ecosystem (module-es, build-css, design tokens)
-- **Real-time multiplayer** -- concurrent editing with live cursors and presence
+- **Real-time multiplayer**: concurrent editing with live cursors and presence
 
 ## Major subsystems
 
@@ -39,7 +39,7 @@ Long-term goal: a collaborative design tool built entirely in TypeScript with na
 
 - [ ] Map document model to DOM/SVG elements
 - [ ] Viewport with pan and zoom (CSS transforms on a container, not re-rendering)
-- [ ] Virtualization -- only render objects within the visible viewport
+- [ ] Virtualization; only render objects within the visible viewport
 - [ ] CSS `contain: strict` and `content-visibility: auto` for off-screen layers
 - [ ] SVG for vector shapes, native DOM for text, `<img>` for rasters
 - [ ] Blend modes via CSS `mix-blend-mode`
@@ -50,7 +50,7 @@ Long-term goal: a collaborative design tool built entirely in TypeScript with na
 ### Layout engine
 
 - [ ] Constraint-based positioning (pin to edges, center, stretch)
-- [ ] Auto-layout (flexbox-like) for frames -- map directly to CSS flexbox since rendering is DOM
+- [ ] Auto-layout (flexbox-like) for frames; map directly to CSS flexbox since rendering is DOM
 - [ ] Responsive resize behavior
 - [ ] Absolute positioning within auto-layout frames (the "absolute position" toggle Figma has)
 - [ ] Grid layout (CSS grid mapping)
@@ -59,15 +59,15 @@ Long-term goal: a collaborative design tool built entirely in TypeScript with na
 ### Vector editing
 
 - [ ] Pen tool for Bezier path creation and editing
-- [ ] Research vector networks (Figma's innovation over traditional paths) -- no known open-source implementation exists
-- [ ] Boolean operations (union, subtract, intersect, exclude) -- investigate existing JS libraries or build on top of SVG clipPath/mask
+- [ ] Research vector networks (Figma's innovation over traditional paths): no known open-source implementation exists
+- [ ] Boolean operations (union, subtract, intersect, exclude): investigate existing JS libraries or build on top of SVG clipPath/mask
 - [ ] Path simplification and smoothing
 - [ ] SVG import/export
 
 ### Text editing
 
 - [ ] Rich text editing within design objects
-- [ ] Leverage `contenteditable` or an existing editor (Tiptap, Lexical) since rendering is DOM -- this is a major advantage over Canvas-based tools
+- [ ] Leverage `contenteditable` or an existing editor (Tiptap, Lexical) since rendering is DOM; this is a major advantage over Canvas-based tools
 - [ ] Typography controls (font family, size, weight, line height, letter spacing, paragraph spacing)
 - [ ] Auto-sizing text frames (fixed width, auto width, auto height)
 - [ ] Text styles as reusable tokens
@@ -140,9 +140,9 @@ Long-term goal: a collaborative design tool built entirely in TypeScript with na
 
 ## Prior art to study
 
-- **Penpot** -- open-source Figma alternative (Clojure/ClojureScript, SVG rendering), study architecture decisions and what works/does not
-- **Excalidraw** -- open-source whiteboard with Yjs collaboration, clean TypeScript codebase, good reference for multiplayer architecture
-- **tldraw** -- open-source infinite canvas library with multiplayer, well-designed shape/tool system
-- **WeaveJS** (InditexTech) -- open-source library for real-time collaborative Canvas apps
-- **Liveblocks** -- recently open-sourced sync engine, potential collaboration infrastructure
-- **Figma engineering blog posts** -- vector networks, multiplayer architecture, rendering pipeline
+- **Penpot**: open-source Figma alternative (Clojure/ClojureScript, SVG rendering), study architecture decisions and what works/does not
+- **Excalidraw**: open-source whiteboard with Yjs collaboration, clean TypeScript codebase, good reference for multiplayer architecture
+- **tldraw**: open-source infinite canvas library with multiplayer, well-designed shape/tool system
+- **WeaveJS** (InditexTech): open-source library for real-time collaborative Canvas apps
+- **Liveblocks**: recently open-sourced sync engine, potential collaboration infrastructure
+- **Figma engineering blog posts**: vector networks, multiplayer architecture, rendering pipeline

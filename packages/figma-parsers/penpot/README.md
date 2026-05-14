@@ -8,9 +8,9 @@ into Penpot binfile-v3 format: a ZIP archive of JSON files following the
 
 ## Supported formats
 
-- `.fig` -- Figma design files; each CANVAS becomes a Penpot page
-- `.deck` -- Figma presentation decks; each SLIDE becomes a Penpot page
-- `.jam` -- FigJam whiteboards; each CANVAS becomes a Penpot page
+- `.fig`: Figma design files; each CANVAS becomes a Penpot page
+- `.deck`: Figma presentation decks; each SLIDE becomes a Penpot page
+- `.jam`: FigJam whiteboards; each CANVAS becomes a Penpot page
 
 ## Usage
 

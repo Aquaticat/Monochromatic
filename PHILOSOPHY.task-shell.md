@@ -125,8 +125,8 @@ has no built-in watch support.
 
 ### Why this works
 
-- **Depends only on the task shell** -- no mise template functions, no runtime APIs, no extra CLI tools
-- **Reads as plain code** -- a pipeline over a glob, no template delimiters or escaping
-- **Transfers unchanged** -- the same line works in any nushell context, not just mise tasks
-- **Composes naturally** -- filtering, sorting, and parallel execution use standard nushell operations
+- **Depends only on the task shell**: no mise template functions, no runtime APIs, no extra CLI tools
+- **Reads as plain code**: a pipeline over a glob, no template delimiters or escaping
+- **Transfers unchanged**: the same line works in any nushell context, not just mise tasks
+- **Composes naturally**: filtering, sorting, and parallel execution use standard nushell operations
   without switching languages

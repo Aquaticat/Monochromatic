@@ -122,8 +122,8 @@ Runs inside the container as the entrypoint.
 
 ### Mise tasks
 
-- `test:e2e:prepare` -- builds container image, cached via `task-depends`
-- `test:e2e` -- `podman run` with `ANTHROPIC_API_KEY` forwarded from
+- `test:e2e:prepare`: builds container image, cached via `task-depends`
+- `test:e2e`: `podman run` with `ANTHROPIC_API_KEY` forwarded from
   `CLAUDE_CODE_TEST_CLAUDE_API_KEY`; no volume mounts needed since the plugin
   is installed from the marketplace inside the container
 
@@ -140,8 +140,8 @@ Steps:
 1. Checkout (for Containerfile and orchestrator script)
 2. Build container image
 3. Run e2e test container with secrets:
-   - `CLAUDE_CODE_TEST_CLAUDE_API_KEY` -- Anthropic API key for Claude sessions
-   - `ANTHROPIC_API_KEY` -- same key, forwarded as the env var Claude Code reads
+   - `CLAUDE_CODE_TEST_CLAUDE_API_KEY`: Anthropic API key for Claude sessions
+   - `ANTHROPIC_API_KEY`: same key, forwarded as the env var Claude Code reads
 
 ### Known footguns
 

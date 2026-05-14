@@ -14,9 +14,9 @@ A capable agent reading the codebase will infer these faster and more accurately
 
 Removed:
 
-- "Repository Information" -- obvious from package names and directory structure
-- "Core Features" -- obvious from the packages directory
-- "Architecture" -- was empty; real architecture constraints belong in specific technical sections
+- "Repository Information"; obvious from package names and directory structure
+- "Core Features"; obvious from the packages directory
+- "Architecture"; was empty; real architecture constraints belong in specific technical sections
 
 ### Generic section titles
 
@@ -27,7 +27,7 @@ When no section fits, add one with a specific name.
 ### Runtime environment checks
 
 Do not put detection logic or compatibility warnings in AGENTS.md when a hook can enforce the same constraint automatically and silently.
-AGENTS.md text is passive -- an agent reads it once and may not apply it consistently.
+AGENTS.md text is passive; an agent reads it once and may not apply it consistently.
 A hook fires on every session start and injects a warning directly into context only when the condition is actually violated.
 
 ### Removed: "Detecting the Current Shell"
@@ -36,7 +36,7 @@ The original section told agents how to detect whether the shell is bash-compati
 This was removed because:
 
 1. AI agents already assume bash-compatible syntax by default and do not need to be told to.
-2. The detection instructions were only useful if something was already wrong -- a condition better caught by automation.
+2. The detection instructions were only useful if something was already wrong; a condition better caught by automation.
 3. A `SessionStart` hook covers the failure case with no AGENTS.md noise for the common case.
 
 ### Hook setup
@@ -93,7 +93,7 @@ Explaining these things wastes tokens on every context load and signals distrust
 Removed:
 
 - `rg` examples (`-t ts`, `--type ts`, `-A 5 -B 5`) -- standard ripgrep flags, universally known
-- "Reach for this first when working with a third-party library: the official docs are usually faster..." -- states the obvious
+- "Reach for this first when working with a third-party library: the official docs are usually faster..."; states the obvious
 
 What belongs instead: the name of the tool, what it covers in this project's context, and any non-obvious constraint (e.g. "raw source is still useful when docs are incomplete").
 
@@ -119,7 +119,7 @@ Keep rationale only when the reasoning is project-specific or counterintuitive.
 
 Compress multi-bullet expansions of a single rule into one line when the sub-bullets are obvious consequences.
 
-Example: "Never modify files in cloned third-party repositories -- use configuration, env vars, or wrapper scripts" replaces five bullets explaining why modification is bad and what the alternatives are.
+Example: "Never modify files in cloned third-party repositories; use configuration, env vars, or wrapper scripts" replaces five bullets explaining why modification is bad and what the alternatives are.
 
 ## What was compressed (2025-02-25)
 
@@ -152,18 +152,18 @@ All bad/good code examples were relocated to `.factory/skills/code-review/SKILL.
 
 ### Dropped as inferable
 
-- "Check web sources, session history, or codebase as appropriate" -- implied by "search for evidence"
-- Detailed CLI tool execution patterns (`uv run script.py` not `uv run python script.py`) -- generic agent knowledge
-- Third-party repo rationale bullets ("breaks git pull", "creates merge conflicts") -- obvious consequences of the rule
-- "Convert callback-based APIs to promises" -- implied by "async/await only"
-- "Implement interfaces explicitly when a class should conform to a contract" -- standard TypeScript knowledge
-- "Use abstract classes sparingly, prefer interfaces and composition" -- standard OOP knowledge
-- "Document version requirements in both the pinning file and README" -- generic practice
-- "Regularly review pinned versions to check if constraints still apply" -- generic practice
-- TSDoc rationale about "obvious from context" and "dead code" caveats -- the rule to document all declarations is sufficient
-- Individual type descriptions for commit types (`style: Changes that do not affect...`) -- Conventional Commits is a well-known spec
+- "Check web sources, session history, or codebase as appropriate"; implied by "search for evidence"
+- Detailed CLI tool execution patterns (`uv run script.py` not `uv run python script.py`): generic agent knowledge
+- Third-party repo rationale bullets ("breaks git pull", "creates merge conflicts"): obvious consequences of the rule
+- "Convert callback-based APIs to promises"; implied by "async/await only"
+- "Implement interfaces explicitly when a class should conform to a contract"; standard TypeScript knowledge
+- "Use abstract classes sparingly, prefer interfaces and composition"; standard OOP knowledge
+- "Document version requirements in both the pinning file and README"; generic practice
+- "Regularly review pinned versions to check if constraints still apply"; generic practice
+- TSDoc rationale about "obvious from context" and "dead code" caveats; the rule to document all declarations is sufficient
+- Individual type descriptions for commit types (`style: Changes that do not affect...`): Conventional Commits is a well-known spec
 - `dprint` enforcement notes -- the tool config speaks for itself
-- "For arrow functions, make sure the JavaScript engine can infer a name" -- inferable from "always name functions"
+- "For arrow functions, make sure the JavaScript engine can infer a name"; inferable from "always name functions"
 
 ### Kept in compressed form
 
@@ -193,24 +193,24 @@ AGENTS.md was compressed from 6672 words / 684 lines to 5894 words / 449 lines (
 
 ### Sub-section merges
 
-- **Pre-response checklist item 4 + "Hedge phrases that signal a skipped step"** -- single hedge-phrase list now lives in the dedicated section; checklist item 4 cross-references it. Full hedge list, the `ccsr` stop-hook reference, and the genuine-uncertainty exception clause all preserved.
-- **"Measure before you characterize" + "Ask only for non-measurable facts"** -- collapsed to "Measure-vs-ask" with two bolded sub-rules. Both example lists (measurement commands; non-measurable cases) and the three-failure-direction summary preserved. Dropped: prose framing, employee-vs-boss analogy retained inside.
-- **Pre-response checklist item 9 + "Before claiming inability"** -- checklist item 9 cross-references the dedicated section; the bridging-tools list (`ffmpeg`, `pandoc`, etc.) and "state the bridges you tried" rule kept in the dedicated section.
-- **TypeScript standards / Type system / Variables and values / Programming patterns** -- merged into one "TypeScript" section with four bolded sub-headings (Standards / Type system / Variables and values / Programming patterns). Every bullet kept; only the four `H3` headers became four `**bold**` paragraph leads.
-- **Cross-runtime / Script preferences / Tool version management / Hooks and automation** -- four single-bullet H3 sections collapsed to one "Cross-runtime and scripts" sub-section with four bullets. All rules preserved verbatim.
-- **Agent skills** trailing meta section -- three single-line H3 sub-sections (Issue tracker / Triage labels / Domain docs) flattened to a three-bullet list.
+- **Pre-response checklist item 4 + "Hedge phrases that signal a skipped step"**: single hedge-phrase list now lives in the dedicated section; checklist item 4 cross-references it. Full hedge list, the `ccsr` stop-hook reference, and the genuine-uncertainty exception clause all preserved.
+- **"Measure before you characterize" + "Ask only for non-measurable facts"**: collapsed to "Measure-vs-ask" with two bolded sub-rules. Both example lists (measurement commands; non-measurable cases) and the three-failure-direction summary preserved. Dropped: prose framing, employee-vs-boss analogy retained inside.
+- **Pre-response checklist item 9 + "Before claiming inability"**: checklist item 9 cross-references the dedicated section; the bridging-tools list (`ffmpeg`, `pandoc`, etc.) and "state the bridges you tried" rule kept in the dedicated section.
+- **TypeScript standards / Type system / Variables and values / Programming patterns**: merged into one "TypeScript" section with four bolded sub-headings (Standards / Type system / Variables and values / Programming patterns). Every bullet kept; only the four `H3` headers became four `**bold**` paragraph leads.
+- **Cross-runtime / Script preferences / Tool version management / Hooks and automation**: four single-bullet H3 sections collapsed to one "Cross-runtime and scripts" sub-section with four bullets. All rules preserved verbatim.
+- **Agent skills** trailing meta section; three single-line H3 sub-sections (Issue tracker / Triage labels / Domain docs) flattened to a three-bullet list.
 
 ### Prose tightening (highest-yield)
 
-- **Communication style** -- six paragraphs collapsed to five tighter paragraphs. Dropped: connective restatements between rule and example, "Why? Because..." scaffolding.
-- **Vet vendor recommendations** -- 43 lines to ~26 lines. Dropped: closing two paragraphs that restated the same lesson; bullet sub-explanations folded into single-line phrasing.
-- **Constraint-fit** -- 35 lines to ~22 lines. The "Signal you are about to violate this rule" elaboration kept; the "verbalized vs silent form" prose moved inline to the third bullet.
-- **Resource-exhaustion isolation** -- 24 lines to ~16 lines via paragraph compression; full six-example bullet list kept.
-- **Test coverage** and **Verify at user boundary** -- light prose tightening; all five user-boundary examples kept verbatim.
+- **Communication style**: six paragraphs collapsed to five tighter paragraphs. Dropped: connective restatements between rule and example, "Why? Because..." scaffolding.
+- **Vet vendor recommendations**: 43 lines to ~26 lines. Dropped: closing two paragraphs that restated the same lesson; bullet sub-explanations folded into single-line phrasing.
+- **Constraint-fit**: 35 lines to ~22 lines. The "Signal you are about to violate this rule" elaboration kept; the "verbalized vs silent form" prose moved inline to the third bullet.
+- **Resource-exhaustion isolation**: 24 lines to ~16 lines via paragraph compression; full six-example bullet list kept.
+- **Test coverage** and **Verify at user boundary**: light prose tightening; all five user-boundary examples kept verbatim.
 
 ### Structure note
 
-The moment-of-decision top-level structure (eight sections from "Before responding" through "Agent skills") was retained even though the user authorized "Free reorganization." That ordering encodes *when* each rule loads -- a feature called out in the document's preamble. Reorganizing into topical sections would lose load-timing information without compensating compression gain. Sub-section reorganization within each top-level section was applied freely, per the merge list above.
+The moment-of-decision top-level structure (eight sections from "Before responding" through "Agent skills") was retained even though the user authorized "Free reorganization." That ordering encodes *when* each rule loads; a feature called out in the document's preamble. Reorganizing into topical sections would lose load-timing information without compensating compression gain. Sub-section reorganization within each top-level section was applied freely, per the merge list above.
 
 ### What was deliberately not done
 
@@ -226,17 +226,17 @@ AGENTS.md was compressed from 6693 words / 480 lines to 6672 words / 477 lines (
 
 ### Sub-section merges
 
-- **Documentation standards + Markdown conventions** -- merged into one `Documentation standards` section with two `####` sub-headers (`#### Prose style`, `#### Markdown syntax`). The "Documentation standards" header was retained (not "Documentation and Markdown" as initially proposed) to preserve an external reference at `PLANNING.forbidden-strings-em-dash.md:281`. Duplicate "**bold** for emphasis" mention in the Markdown-conventions opener removed; the rule remains under `#### Prose style`.
-- **TypeScript function-declaration bullets** -- three bullets ("No arrow functions", "No const x = function() {}", "Always name functions; parentheses around all arrow params in external API callbacks where arrows are unavoidable") merged into one bullet preserving all four rationales (anonymous stack traces, hide intent, no TSDoc, no overloads, harder to scan, external-API exception with paren rule). The separate "No calling functions before their declaration" bullet kept distinct.
-- **Pre-response checklist items 7 and 8** -- merged into one item covering both verify-existing-citation and add-missing-citation cases. Old item 9 renumbered to new item 8.
-- **Communication style paragraphs 4-5** -- merged into one paragraph covering documentation-gap recognition, propose-edit, no-promise-to-future-self, monotonic-growth counter, and the cue.
+- **Documentation standards + Markdown conventions**: merged into one `Documentation standards` section with two `####` sub-headers (`#### Prose style`, `#### Markdown syntax`). The "Documentation standards" header was retained (not "Documentation and Markdown" as initially proposed) to preserve an external reference at `PLANNING.forbidden-strings-em-dash.md:281`. Duplicate "**bold** for emphasis" mention in the Markdown-conventions opener removed; the rule remains under `#### Prose style`.
+- **TypeScript function-declaration bullets**: three bullets ("No arrow functions", "No const x = function() {}", "Always name functions; parentheses around all arrow params in external API callbacks where arrows are unavoidable") merged into one bullet preserving all four rationales (anonymous stack traces, hide intent, no TSDoc, no overloads, harder to scan, external-API exception with paren rule). The separate "No calling functions before their declaration" bullet kept distinct.
+- **Pre-response checklist items 7 and 8**: merged into one item covering both verify-existing-citation and add-missing-citation cases. Old item 9 renumbered to new item 8.
+- **Communication style paragraphs 4-5**: merged into one paragraph covering documentation-gap recognition, propose-edit, no-promise-to-future-self, monotonic-growth counter, and the cue.
 
 ### Prose tightening
 
-- **`ccsr` stop hook entry** in `Enforcement mechanisms` -- the inline 6-phrase hedge list ("probably", "maybe", etc.) replaced by a back-reference to the canonical "Hedge phrases that signal a skipped step" section.
-- **Hedge phrases section** -- the reciprocal back-pointer "(Item 4 of the pre-response checklist applies to the same phrases.)" dropped; the checklist already points here.
-- **Proactivity calibration** -- three "(see X)" parenthetical cross-references dropped from paragraph 2; the rules stand on their own. The recognition-cue paragraph at line 23 retained as distinct from the action rule at line 19.
-- **Clone-source-and-read cluster** -- six mentions (pre-response checklist item 2, hedge-phrase entry "no public diagnosis exists", research-tools web-search rationale, before-running-command clone rule, Third-party-libraries canonical, "Name the verification step" example) consolidated. Line 387 (Third-party libraries) kept as canonical home with the full rule and the "quote file path, line number, code excerpt" caveat. Other mentions reference back via "(see ...)" pointers. Distinct sub-rules preserved separately: the `gh repo clone` vs `git clone` operational preference (`Before running a command`); the "do not remove cloned repos from `/tmp`" lifecycle rule (`Research tools`); the verification-step example value (`Name the verification step`).
+- **`ccsr` stop hook entry** in `Enforcement mechanisms`: the inline 6-phrase hedge list ("probably", "maybe", etc.) replaced by a back-reference to the canonical "Hedge phrases that signal a skipped step" section.
+- **Hedge phrases section**: the reciprocal back-pointer "(Item 4 of the pre-response checklist applies to the same phrases.)" dropped; the checklist already points here.
+- **Proactivity calibration**: three "(see X)" parenthetical cross-references dropped from paragraph 2; the rules stand on their own. The recognition-cue paragraph at line 23 retained as distinct from the action rule at line 19.
+- **Clone-source-and-read cluster**: six mentions (pre-response checklist item 2, hedge-phrase entry "no public diagnosis exists", research-tools web-search rationale, before-running-command clone rule, Third-party-libraries canonical, "Name the verification step" example) consolidated. Line 387 (Third-party libraries) kept as canonical home with the full rule and the "quote file path, line number, code excerpt" caveat. Other mentions reference back via "(see ...)" pointers. Distinct sub-rules preserved separately: the `gh repo clone` vs `git clone` operational preference (`Before running a command`); the "do not remove cloned repos from `/tmp`" lifecycle rule (`Research tools`); the verification-step example value (`Name the verification step`).
 
 ### Heading convention fix
 

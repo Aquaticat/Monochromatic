@@ -38,7 +38,7 @@ bun packages/dev-script/catalog-tighten/src/index.ts --dry-run
 
 Every catalog entry is logged with a status prefix:
 
-- **TIGHT** -- range was tightened (old -> new)
-- **OK** -- installed version matches catalog floor (already tight)
-- **SKIP** -- entry is not a `>=` range
-- **MISS** -- package not found in any `node_modules`
+- **TIGHT**: range was tightened (old -> new)
+- **OK**: installed version matches catalog floor (already tight)
+- **SKIP**: entry is not a `>=` range
+- **MISS**: package not found in any `node_modules`

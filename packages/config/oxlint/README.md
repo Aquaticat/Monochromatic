@@ -51,9 +51,9 @@ The `--type-aware` flag is passed via the CLI in the mise task template
 
 ## Related packages
 
-- **@monochromatic-dev/config-oxlint-tsdoc** -- jsPlugin providing TSDoc validation rules
-- **@monochromatic-dev/config-oxlint-no-restricted-syntax** -- jsPlugin for banned syntax patterns
-- **@monochromatic-dev/config-oxlint-stylistic** -- jsPlugin for one-item-per-line formatting
+- **@monochromatic-dev/config-oxlint-tsdoc**: jsPlugin providing TSDoc validation rules
+- **@monochromatic-dev/config-oxlint-no-restricted-syntax**: jsPlugin for banned syntax patterns
+- **@monochromatic-dev/config-oxlint-stylistic**: jsPlugin for one-item-per-line formatting
 
 These are JS plugins (`jsPlugins`), not config packages. They implement rule
 logic; this package configures rule severity and options. All three are

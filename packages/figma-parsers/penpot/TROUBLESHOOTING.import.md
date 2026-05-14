@@ -7,9 +7,9 @@ Upload a generated `.penpot` file to a running Penpot instance at
 
 ## Files
 
-- `/tmp/final-fig.penpot` -- 36 KB (Figma .fig conversion)
-- `/tmp/final-deck.penpot` -- 9.7 KB (Figma .deck conversion)
-- `/tmp/final-jam.penpot` -- 100 KB (Figma .jam conversion)
+- `/tmp/final-fig.penpot`: 36 KB (Figma .fig conversion)
+- `/tmp/final-deck.penpot`: 9.7 KB (Figma .deck conversion)
+- `/tmp/final-jam.penpot`: 100 KB (Figma .jam conversion)
 
 ## Penpot instance details
 
@@ -113,7 +113,7 @@ or URL-encode the base64 string before passing to evaluate_script.
 Split the file as hex (19,392 chars = 5 chunks of ~4 KB). Successfully
 loaded chunk 0 (4,000 chars confirmed). Started loading chunk 1.
 
-**Result**: Partially successful but slow -- each 4 KB chunk requires a
+**Result**: Partially successful but slow; each 4 KB chunk requires a
 separate evaluate_script call, and the full upload JS (reconstruct blob,
 create FormData, fetch) still needs the auth cookies to be present.
 

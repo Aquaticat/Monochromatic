@@ -143,7 +143,7 @@ The "realistic" ruleset is the betterleaks-port baseline: 259 regex
 rules + 3 literals (851 total lines).
 
 The current numbers reflect the hybrid engine (`CompiledRegex::{Resharp,Plain}`
-in `src/rules/engine.rs` -- 257 of 259 rules compile via the standard `regex`
+in `src/rules/engine.rs`: 257 of 259 rules compile via the standard `regex`
 crate, ~100x faster than resharp; 2 rules use resharp's set-algebra
 operators), the regex-crate `unicode(false)` mode with try-and-fallback
 to `unicode(true)` for rules that need unicode-property classes (a 17x
@@ -245,22 +245,22 @@ L796  /\b((?:hvs\.[\w-]{90,120}|s\.(?i:[a-z0-9]{24})))(?:\\?['"`]|[\s;]|\\[nr]|$
 
 Per-rule promotion analysis:
 
-- **L114** -- single required substring `Q~` (2 chars, below
+- **L114**: single required substring `Q~` (2 chars, below
   `MIN_PREFIX_LEN = 4`), no top-level alternation. The regex crate's
   literal-prefix optimisation already memchr-scans for `Q~` internally.
   Promoting to AC moves the same filter earlier in the pipeline; the
   expensive part (full regex verification on each candidate window) is
   unchanged. Not promotable without lowering MIN_PREFIX_LEN, which
   would create AC false-positive storms on `Q~` in arbitrary source.
-- **L251** -- no usable literal substring at all. The required content
+- **L251**: no usable literal substring at all. The required content
   is `\d{15,16}` (numeric only) followed by `|` or `%`. Not promotable.
-- **L769** -- single required substring `SK` (2 chars). Same conclusion
+- **L769**: single required substring `SK` (2 chars). Same conclusion
   as L114.
-- **L796** -- top-level alternation between `hvs\.[\w-]{90,120}` and
+- **L796**: top-level alternation between `hvs\.[\w-]{90,120}` and
   `s\.(?i:[a-z0-9]{24})`. Branch 1 has the 4-char anchor `hvs.`;
   Branch 2 has only `s.` (2 chars before flag scope). Multi-substring
   AC gating could route Branch 1 to AC, but the regex crate is already
-  internally memchr-optimising on `hvs.` -- the gain is moving the
+  internally memchr-optimising on `hvs.`: the gain is moving the
   filter from regex-internal to our AC bucket, not changing the work.
   Branch 2 stays on the regex engine regardless.
 

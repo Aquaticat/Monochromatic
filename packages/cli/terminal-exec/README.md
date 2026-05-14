@@ -13,7 +13,7 @@ which writes `TerminalService` to `$XDG_CONFIG_HOME/kdeglobals` or, with the
 current fallback implementation, `$HOME/config/kdeglobals` when `XDG_CONFIG_HOME`
 is unset.
 The reference script does not read `kdeglobals`, falling back to scanning all `.desktop` entries
-with `Categories=TerminalEmulator` -- often selecting the wrong one.
+with `Categories=TerminalEmulator`: often selecting the wrong one.
 
 On Windows, no equivalent of `xdg-terminal-exec` exists at all.
 
@@ -28,8 +28,8 @@ On Windows, no equivalent of `xdg-terminal-exec` exists at all.
 
 ### Windows
 
-1. Windows Terminal (`wt.exe`) -- default on Windows 11, widely installed on Windows 10
-2. `cmd.exe` -- always available
+1. Windows Terminal (`wt.exe`): default on Windows 11, widely installed on Windows 10
+2. `cmd.exe`: always available
 
 ## Usage
 
@@ -39,11 +39,11 @@ terminal-exec [options] [--] [command [args...]]
 
 **Options:**
 
-- `--app-id=VALUE` -- set the terminal window app ID / class
-- `--title=VALUE` -- set the terminal window title
-- `--dir=VALUE` -- set the working directory
-- `--hold` -- keep the terminal open after the command finishes
-- `--` or `-e` -- delimiter between options and the command
+- `--app-id=VALUE`: set the terminal window app ID / class
+- `--title=VALUE`: set the terminal window title
+- `--dir=VALUE`: set the working directory
+- `--hold`: keep the terminal open after the command finishes
+- `--` or `-e`: delimiter between options and the command
 
 **Examples:**
 
@@ -81,11 +81,11 @@ Prefix an entry ID with `-` to prevent it from appearing in the fallback scan:
 
 Terminal `.desktop` files declare how to pass arguments via `X-TerminalArg*` keys:
 
-- `X-TerminalArgExec` -- how to pass a command (`-e`, `--`, `execute`)
-- `X-TerminalArgTitle` -- how to set window title (`--title=` or `--title`)
-- `X-TerminalArgAppId` -- how to set app ID (`--class=` or `--class`)
-- `X-TerminalArgDir` -- how to set working directory (`--working-directory=`)
-- `X-TerminalArgHold` -- how to keep terminal open (`--wait-after-command`)
+- `X-TerminalArgExec`: how to pass a command (`-e`, `--`, `execute`)
+- `X-TerminalArgTitle`: how to set window title (`--title=` or `--title`)
+- `X-TerminalArgAppId`: how to set app ID (`--class=` or `--class`)
+- `X-TerminalArgDir`: how to set working directory (`--working-directory=`)
+- `X-TerminalArgHold`: how to keep terminal open (`--wait-after-command`)
 
 A trailing `=` means the value is concatenated as one argument (`--title=My Title`).
 No trailing `=` means two separate arguments (`--title` `My Title`).

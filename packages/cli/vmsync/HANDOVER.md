@@ -4,9 +4,9 @@
 
 ### Unit tests (45 tests, all passing)
 
-- `src/config.unit.test.ts` -- `validateName`, `stripJsoncComments`, `vmDir`, `vmConfigPath`, `detectHypervisor`
-- `src/boot.unit.test.ts` -- `parseMemoryToBytes` (exported for testing)
-- `src/import.unit.test.ts` -- `nameFromPath` (exported for testing)
+- `src/config.unit.test.ts`: `validateName`, `stripJsoncComments`, `vmDir`, `vmConfigPath`, `detectHypervisor`
+- `src/boot.unit.test.ts`: `parseMemoryToBytes` (exported for testing)
+- `src/import.unit.test.ts`: `nameFromPath` (exported for testing)
 
 Run unit tests with `mise run //packages/cli/vmsync:test:unit`.
 Run lifecycle tests with `mise run //packages/cli/vmsync:test:e2e`.

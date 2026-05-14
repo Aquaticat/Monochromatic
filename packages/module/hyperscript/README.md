@@ -9,8 +9,8 @@ options object, replacing manual template literals with composable, type-checked
 
 The package provides two entry points:
 
-- **`.`** -- built JavaScript (bundled, minified)
-- **`./ts`** -- raw TypeScript source for workspace consumers
+- **`.`**: built JavaScript (bundled, minified)
+- **`./ts`**: raw TypeScript source for workspace consumers
 
 Both expose the same named exports:
 

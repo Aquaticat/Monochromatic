@@ -26,38 +26,38 @@ Files live in `parts/`.
 
 **Head group**
 
-- `head_face` -- face, ears, neck stub
-- `eyes` -- both eyes with irises, pupils, highlights (separate for blink animation)
-- `mouth` -- lips (separate for lip sync)
+- `head_face`: face, ears, neck stub
+- `eyes`: both eyes with irises, pupils, highlights (separate for blink animation)
+- `mouth`: lips (separate for lip sync)
 
 **Hair group**
 
-- `hair_back` -- hair mass behind head
-- `hair_bangs` -- front fringe
-- `hair_drill_L` -- left twin drill
-- `hair_drill_R` -- right twin drill
-- `hair_accessory_L` -- left white horn/ribbon accent
-- `hair_accessory_R` -- right white horn/ribbon accent
+- `hair_back`: hair mass behind head
+- `hair_bangs`: front fringe
+- `hair_drill_L`: left twin drill
+- `hair_drill_R`: right twin drill
+- `hair_accessory_L`: left white horn/ribbon accent
+- `hair_accessory_R`: right white horn/ribbon accent
 
 **Torso group**
 
-- `torso_front` -- jacket body, buttons, collar, collar pin
-- `epaulette_L` -- left layered shoulder plate
-- `epaulette_R` -- right layered shoulder plate
+- `torso_front`: jacket body, buttons, collar, collar pin
+- `epaulette_L`: left layered shoulder plate
+- `epaulette_R`: right layered shoulder plate
 
 **Arm group**
 
-- `upper_arm_L` / `upper_arm_R` -- shoulder to elbow, jacket sleeve
-- `forearm_L` / `forearm_R` -- elbow to wrist, including black cuff
+- `upper_arm_L` / `upper_arm_R`: shoulder to elbow, jacket sleeve
+- `forearm_L` / `forearm_R`: elbow to wrist, including black cuff
 - `hand_L` / `hand_R`
 
 **Lower body group**
 
-- `skirt_back` -- red underskirt layer (renders behind legs)
-- `skirt_front` -- gray panels over red, waistband (renders in front of legs)
-- `upper_leg_L` / `upper_leg_R` -- thigh
-- `lower_leg_L` / `lower_leg_R` -- calf
-- `boot_L` / `boot_R` -- knee-high boots with red trim
+- `skirt_back`: red underskirt layer (renders behind legs)
+- `skirt_front`: gray panels over red, waistband (renders in front of legs)
+- `upper_leg_L` / `upper_leg_R`: thigh
+- `lower_leg_L` / `lower_leg_R`: calf
+- `boot_L` / `boot_R`: knee-high boots with red trim
 
 ## Layer order (back to front)
 

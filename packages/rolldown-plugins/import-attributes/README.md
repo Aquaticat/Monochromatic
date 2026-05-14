@@ -41,7 +41,7 @@ All three forms produce a module whose default export is the file content as a s
 
 ## Supported types
 
-- **`text`** -- exports raw file content as a default string export
+- **`text`**: exports raw file content as a default string export
 
 ## How it works
 

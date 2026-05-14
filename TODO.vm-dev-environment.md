@@ -22,12 +22,12 @@ ucore-hci (immutable, rpm-ostree, Fedora CoreOS base)
 
 Two artifacts define the entire environment:
 
-1. **Custom container image** (`Containerfile` + TypeScript orchestration in `src/build-and-import.ts`) -- OS layer, rarely changes
-2. **First-login provisioner** (file-enforcer config in this monorepo) -- user layer, changes often
+1. **Custom container image** (`Containerfile` + TypeScript orchestration in `src/build-and-import.ts`): OS layer, rarely changes
+2. **First-login provisioner** (file-enforcer config in this monorepo): user layer, changes often
 
 ## Decisions made
 
-- **Base image**: `ghcr.io/ublue-os/ucore-hci:stable` -- well-documented,
+- **Base image**: `ghcr.io/ublue-os/ucore-hci:stable`: well-documented,
   has its own GitHub repo, includes HCI stack (libvirt, KVM, ZFS, cockpit, podman)
 - **Not Bazzite**: too much gaming bloat for a dev VM
 - **Not Fedora Kinoite**: poor documentation, no dedicated repo, includes unwanted defaults
@@ -92,13 +92,13 @@ KDE Plasma desktop (full `plasma-workspace` meta-package):
 
 - [x] `plasma-workspace`, `sddm`, `konsole`, `dolphin`, `virt-manager`
 - [x] `graphical.target` set as default (symlink in `/usr/lib/systemd/system/`,
-      not `/etc/` -- ostree discards `/etc/` symlinks during deployment)
+      not `/etc/`: ostree discards `/etc/` symlinks during deployment)
 - [x] SDDM enabled via symlink in `graphical.target.wants/`
 - [x] SDDM auto-login configured for user `user`
 
 Browser + password manager:
 
-- [x] LibreWolf repo (`https://repo.librewolf.net/librewolf.repo` -- domain changed from `rpm.librewolf.net` in 2026)
+- [x] LibreWolf repo (`https://repo.librewolf.net/librewolf.repo`: domain changed from `rpm.librewolf.net` in 2026)
 - [x] `librewolf`, `keepassxc`
 
 Terminal:
@@ -136,7 +136,7 @@ Implementation notes discovered during build:
 - LibreWolf repo URL changed: `rpm.librewolf.net` -> `repo.librewolf.net` (2026)
 - `findUp('package.json')` returns relative paths when the file is in cwd; wrap with `resolve()`
 
-### Full-disk encryption -- decided: host-level FDE
+### Full-disk encryption; decided: host-level FDE
 
 **Decision:** rely on host OS full-disk encryption instead of per-image encryption.
 
@@ -155,15 +155,15 @@ Research findings (March 2026):
   Microsoft's Shielded VMs use guest-side BitLocker, not VHDX encryption.
   This breaks vmsync's cross-platform sync parity.
 
-- [x] ~~Determine if bootc-image-builder supports ZFS pool encryption~~ -- no, not at any layer
-- [x] ~~Evaluate alternatives~~ -- host-level FDE chosen over per-image encryption
+- [x] ~~Determine if bootc-image-builder supports ZFS pool encryption~~: no, not at any layer
+- [x] ~~Evaluate alternatives~~: host-level FDE chosen over per-image encryption
 
-### Ignition/Butane config -- decided: skip
+### Ignition/Butane config; decided: skip
 
 Ignition adds no value beyond what the Containerfile already provides.
 The user account is baked in, and SSH keys are handled manually post-boot.
 
-- [x] ~~Decide if Ignition adds value~~ -- no, skipped
+- [x] ~~Decide if Ignition adds value~~: no, skipped
 
 ## Phase 2: first-login provisioner
 
@@ -180,14 +180,14 @@ Only two configs needed: ghostty and mise.
 - [x] Create `packages/config/dotfiles/` with:
   - `ghostty/config`
   - `mise/config.toml` (global mise config, declares nushell)
-- [x] ~~Archive `Aquaticat/nvim`~~ -- nvim is deprecated by editord in the monorepo
-- [x] ~~Decide which `~/.config/` directories to include~~ -- only ghostty and mise
+- [x] ~~Archive `Aquaticat/nvim`~~: nvim is deprecated by editord in the monorepo
+- [x] ~~Decide which `~/.config/` directories to include~~: only ghostty and mise
 
 ### Provisioner script tasks
 
 Runs as user after first login. Idempotent (safe to re-run).
 
-- [x] ~~Copy dotfiles~~ -- baked into image at build time via Containerfile COPY
+- [x] ~~Copy dotfiles~~: baked into image at build time via Containerfile COPY
 - [x] Run image-time `mise install` for baked global config tools (currently Nushell) in `Containerfile`
 - [ ] Decide whether a future first-login provisioner should run monorepo `mise install` after clone
 - [ ] Install flatpaks via `flatpak install --user -y`:
@@ -240,11 +240,11 @@ No image rebuild needed: just re-run the provisioner in the existing VM.
 
 ## Open questions
 
-- [x] ~~Where does the provisioner live?~~ -- future provisioner belongs in the vm-builder package; no file exists yet
+- [x] ~~Where does the provisioner live?~~: future provisioner belongs in the vm-builder package; no file exists yet
 - [x] Custom image repo: `packages/dev-script/vm-builder/` in this monorepo
-- [x] ~~KDE Plasma package set~~ -- `plasma-workspace` meta-package (full desktop)
-- [x] ~~Which flatpaks?~~ -- Flatseal, Fastmail, Gear Lever, KColorChooser, KeePassXC,
+- [x] ~~KDE Plasma package set~~: `plasma-workspace` meta-package (full desktop)
+- [x] ~~Which flatpaks?~~: Flatseal, Fastmail, Gear Lever, KColorChooser, KeePassXC,
       Nextcloud, OBS, RustDesk, Ungoogled Chromium
-- [x] ~~Disk encryption~~ -- host-level FDE only (ZFS/LUKS/qcow2-LUKS all ruled out; see Phase 1)
-- [x] ~~Nvim repo~~ -- nvim deprecated by editord
-- [x] ~~Cosign key setup~~ -- key pair at `packages/config/cosign/`, signing step in build-and-import.ts
+- [x] ~~Disk encryption~~: host-level FDE only (ZFS/LUKS/qcow2-LUKS all ruled out; see Phase 1)
+- [x] ~~Nvim repo~~: nvim deprecated by editord
+- [x] ~~Cosign key setup~~: key pair at `packages/config/cosign/`, signing step in build-and-import.ts

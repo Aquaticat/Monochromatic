@@ -55,11 +55,11 @@ Children are lazy {@link TestDescriptor} values from nested `describe` or `it`
 calls; they do not run until the parent suite dispatches them. Sequential,
 bounded, and unbounded modes all work without wrapping children in thunks.
 
-- **`concurrency`** (`number`, default `16` at the root) -- maximum number of children running at the same time.
+- **`concurrency`** (`number`, default `16` at the root): maximum number of children running at the same time.
   The implementation adapts to the value:
-  - `1` -- sequential execution via `for...of` loop, no `p-limit` overhead
-  - `2`..`Number.MAX_SAFE_INTEGER - 1` -- bounded concurrency via [`p-limit`](https://www.npmjs.com/package/p-limit)
-  - `Infinity` or `Number.MAX_SAFE_INTEGER` -- unbounded concurrency via raw `Promise.allSettled`, no `p-limit` overhead
+  - `1`: sequential execution via `for...of` loop, no `p-limit` overhead
+  - `2`..`Number.MAX_SAFE_INTEGER - 1`: bounded concurrency via [`p-limit`](https://www.npmjs.com/package/p-limit)
+  - `Infinity` or `Number.MAX_SAFE_INTEGER`: unbounded concurrency via raw `Promise.allSettled`, no `p-limit` overhead
 
   **Inherited by child describes.** A nested `describe` without its own
   `concurrency` inherits the parent's effective value, so setting
@@ -70,9 +70,9 @@ bounded, and unbounded modes all work without wrapping children in thunks.
   fail with `"Attempted to wrap X which is already wrapped"` because sinon
   refuses to wrap a method that another concurrent test's sandbox has already
   wrapped.
-- **`skip`** (`boolean | string`, default `false`) -- skips the entire suite without running any children;
+- **`skip`** (`boolean | string`, default `false`): skips the entire suite without running any children;
   a string is logged as the reason
-- **`repeats`** (default `0`) -- number of additional runs of the entire suite;
+- **`repeats`** (default `0`): number of additional runs of the entire suite;
   `repeats: 2` runs the suite 3 times total
 
 On success, the suite emits one `info` line listing every fulfilled child's name plus the
@@ -114,9 +114,9 @@ guaranteeing every suite executes regardless of earlier failures.
 When the test file exercises a single named export,
 derive the suite name from the export itself rather than hardcoding a string literal:
 
-- **Functions** -- use `.name`:
+- **Functions**: use `.name`:
   `name: myFunction.name` (stays in sync with renames)
-- **Objects** -- use `.constructor.name`:
+- **Objects**: use `.constructor.name`:
   `name: myObj.constructor.name` (reflects the class or constructor that created it)
 
 This keeps suite names automatically consistent with refactors.
@@ -128,8 +128,8 @@ Fall back to a string literal only when no single export is the test subject
 Executes a single test case.
 `fn` receives a `TestContext` containing:
 
-- **`expect`** -- scoped expect with assertion counting (`expect.assertions(n)`, `expect.hasAssertions()`)
-- **`sinon`** -- sinon sandbox for stubs, spies, and fake timers; auto-restores after the test.
+- **`expect`**: scoped expect with assertion counting (`expect.assertions(n)`, `expect.hasAssertions()`)
+- **`sinon`**: sinon sandbox for stubs, spies, and fake timers; auto-restores after the test.
   The sandbox is created with default config.
   Custom `SinonSandboxConfig` is not supported;
   its only useful option (`useFakeTimers`) is already callable directly via `sinon.useFakeTimers()`.
@@ -138,11 +138,11 @@ The global `expect` still works for tests that do not destructure the context.
 Returns `{ name }` on success.
 Throws `Error(name, { cause })` on failure or timeout.
 
-- **`skip`** (`boolean | string`, default `false`) -- skips execution entirely, logs `SKIP`, and returns immediately;
+- **`skip`** (`boolean | string`, default `false`): skips execution entirely, logs `SKIP`, and returns immediately;
   a string is logged as the reason
-- **`repeats`** (default `0`) -- number of additional runs after the first execution;
+- **`repeats`** (default `0`): number of additional runs after the first execution;
   `repeats: 2` runs the test 3 times total, with labels like `[run 1/3]`
-- **`fails`** (`boolean | string`, default `false`) -- inverts pass/fail logic;
+- **`fails`** (`boolean | string`, default `false`): inverts pass/fail logic;
   a throwing test is treated as PASS, a passing test as FAIL;
   a string is logged as the reason alongside pass/fail output
 
@@ -150,7 +150,7 @@ Throws `Error(name, { cause })` on failure or timeout.
 
 Jest-style matchers backed by chai:
 
-- **Equality**: `toBe` (strict `===`), `toEqual` (deep), `toStrictEqual` (deep, alias for `toEqual` -- chai's deep equality is strict by default)
+- **Equality**: `toBe` (strict `===`), `toEqual` (deep), `toStrictEqual` (deep, alias for `toEqual`: chai's deep equality is strict by default)
 - **Truthiness**: `toBeTruthy`, `toBeFalsy`, `toBeNull`, `toBeUndefined`, `toBeDefined`, `toBeNaN`
 - **Numeric**: `toBeGreaterThan`, `toBeGreaterThanOrEqual`, `toBeLessThan`, `toBeLessThanOrEqual`, `toBeCloseTo`
 - **Strings**: `toMatch` (regex or string)
@@ -208,14 +208,14 @@ test name. Empty-name suites contribute no tag segment.
 
 ### What each level emits
 
-- **`info`** -- per-suite `[outer] [inner] PASS childA, childB, ... (<duration>)` listing
+- **`info`**: per-suite `[outer] [inner] PASS childA, childB, ... (<duration>)` listing
   every fulfilled child (tests and nested describes alike) plus the suite's
   wall-clock duration. Mixed-result suites still emit a names list (without
   duration) so passing siblings stay visible alongside the error-level FAIL
   rollup. `SKIP` messages from `it` are also `info`. Visible by default.
-- **`error`** -- `[chain...] FAIL (<duration>)` for each failing test, plus a rollup
+- **`error`**: `[chain...] FAIL (<duration>)` for each failing test, plus a rollup
   `[chain...] FAIL (<duration>)` for each suite that has failing children. Always visible.
-- **`debug`** -- per-test `[chain...] PASS (<duration>)` for each passing test (full
+- **`debug`**: per-test `[chain...] PASS (<duration>)` for each passing test (full
   hierarchy in the tag chain), per-suite `[chain...] start (concurrency: N)`
   traces, and the rollup for empty-name (invisible) suites. Hidden by default;
   enable with `DEBUG=true` or `--verbose`.
@@ -435,7 +435,7 @@ it({
 ### Async error assertions
 
 Await the async operation first, then assert on the result or caught error.
-Avoid `.rejects` and `.resolves` -- they add an indirection layer
+Avoid `.rejects` and `.resolves`: they add an indirection layer
 that obscures stack traces and makes assertion failures harder to diagnose.
 
 ```ts
@@ -625,7 +625,7 @@ Children are lazy descriptors and do not start until the parent dispatches
 them, so the limit takes effect uniformly regardless of how the children
 were constructed.
 
-**Sequential** (`concurrency: 1`) -- runs children one at a time via `for...of`:
+**Sequential** (`concurrency: 1`): runs children one at a time via `for...of`:
 
 ```ts
 await describe({
@@ -650,7 +650,7 @@ await describe({
 },);
 ```
 
-**Bounded** (`concurrency: 3`) -- caps simultaneous children via `p-limit`:
+**Bounded** (`concurrency: 3`): caps simultaneous children via `p-limit`:
 
 ```ts
 await describe({
@@ -667,7 +667,7 @@ await describe({
 },);
 ```
 
-**Unbounded** (`concurrency: Infinity`) -- raw `Promise.allSettled`, no `p-limit` overhead:
+**Unbounded** (`concurrency: Infinity`): raw `Promise.allSettled`, no `p-limit` overhead:
 
 ```ts
 await describe({
@@ -968,28 +968,28 @@ or **omitted** (intentional gap with rationale).
 
 **Supported:**
 
-- `describe(name, fn)` -- `describe({ name, children })`
-- `describe.skip` -- `describe({ skip: true })` or `describe({ skip: 'reason' })`
-- `describe.concurrent` -- default behavior; suites run children concurrently via `Promise.allSettled`
-- `describe.sequential` -- `describe({ concurrency: 1 })`
-- `test` / `it` -- `it({ name, fn })`
-- `test.skip` -- `it({ skip: true })` or `it({ skip: 'reason' })`
-- `test.fails` -- `it({ fails: true })` or `it({ fails: 'reason' })`
-- `test.todo` -- `it({ name: 'TODO: ...', skip: true, fn: async () => {} })`
-- `describe.todo` -- same pattern with `describe({ skip: true })`
+- `describe(name, fn)`: `describe({ name, children })`
+- `describe.skip`: `describe({ skip: true })` or `describe({ skip: 'reason' })`
+- `describe.concurrent`: default behavior; suites run children concurrently via `Promise.allSettled`
+- `describe.sequential`: `describe({ concurrency: 1 })`
+- `test` / `it`: `it({ name, fn })`
+- `test.skip`: `it({ skip: true })` or `it({ skip: 'reason' })`
+- `test.fails`: `it({ fails: true })` or `it({ fails: 'reason' })`
+- `test.todo`: `it({ name: 'TODO: ...', skip: true, fn: async () => {} })`
+- `describe.todo`: same pattern with `describe({ skip: true })`
 
 **Equivalent:**
 
-- `test.skipIf(condition)` -- `it({ skip: condition || false })`
-- `test.runIf(condition)` -- `it({ skip: !condition || false })`
-- `describe.skipIf` / `describe.runIf` -- same pattern with the `skip` option
-- `test.each(cases)` / `test.for(cases)` -- `cases.map(c => it({ name: ..., fn: ... }))` passed as `children`
-- `describe.each` / `describe.for` -- same `.map()` pattern with `describe`
-- `test.concurrent` -- default behavior; all `it` descriptors dispatch through the parent's concurrency limit
-- Vitest `maxConcurrency` config -- `describe({ concurrency: n })` per suite; see "Concurrency model comparison" below
-- `describe.timeout` -- `describe({ timeout: ms })`
-- `test.timeout` -- `it({ timeout: ms })`
-- `test.repeats` -- `it({ repeats: n })` (Vitest has `retry` which retries on failure;
+- `test.skipIf(condition)`: `it({ skip: condition || false })`
+- `test.runIf(condition)`: `it({ skip: !condition || false })`
+- `describe.skipIf` / `describe.runIf`: same pattern with the `skip` option
+- `test.each(cases)` / `test.for(cases)`: `cases.map(c => it({ name: ..., fn: ... }))` passed as `children`
+- `describe.each` / `describe.for`: same `.map()` pattern with `describe`
+- `test.concurrent`: default behavior; all `it` descriptors dispatch through the parent's concurrency limit
+- Vitest `maxConcurrency` config; `describe({ concurrency: n })` per suite; see "Concurrency model comparison" below
+- `describe.timeout`: `describe({ timeout: ms })`
+- `test.timeout`: `it({ timeout: ms })`
+- `test.repeats`: `it({ repeats: n })` (Vitest has `retry` which retries on failure;
   our `repeats` always re-runs regardless of outcome)
 
 **Omitted:**
@@ -1005,17 +1005,17 @@ or **omitted** (intentional gap with rationale).
   adds a fixtures system with automatic setup/teardown.
   Plain functions called explicitly in each test serve the same purpose
   without hiding control flow.
-- **`test.scoped` / `test.override`** -- fixture-related; same reasoning as `test.extend`
-- **`bench`** -- benchmarking is a separate concern; use dedicated benchmarking tools
+- **`test.scoped` / `test.override`**: fixture-related; same reasoning as `test.extend`
+- **`bench`**: benchmarking is a separate concern; use dedicated benchmarking tools
 
 ### Lifecycle hooks
 
 **Equivalent:**
 
-- `beforeEach` / `afterEach` -- define plain functions; call at start/end of each `fn`.
+- `beforeEach` / `afterEach`: define plain functions; call at start/end of each `fn`.
   See the "Setup and teardown" usage section.
-- `beforeAll` / `afterAll` -- top-level statements before and after `describe`.
-- `aroundEach` / `aroundAll` -- compose before/after functions manually
+- `beforeAll` / `afterAll`: top-level statements before and after `describe`.
+- `aroundEach` / `aroundAll`: compose before/after functions manually
 
 **Omitted:**
 
@@ -1036,7 +1036,7 @@ or **omitted** (intentional gap with rationale).
 - **Error**: `toThrow` (bare, message string, regex, error class)
 - **Predicate**: `toSatisfy`
 - **Negation**: `not` modifier
-- **Promise**: `resolves`, `rejects` modifiers (legacy -- prefer awaiting first; see README)
+- **Promise**: `resolves`, `rejects` modifiers (legacy; prefer awaiting first; see README)
 
 **Omitted:**
 
@@ -1108,8 +1108,8 @@ or **omitted** (intentional gap with rationale).
 
 **Supported:**
 
-- `expect.assertions(n)` -- via scoped `expect` from `TestContext`
-- `expect.hasAssertions()` -- via scoped `expect` from `TestContext`
+- `expect.assertions(n)`: via scoped `expect` from `TestContext`
+- `expect.hasAssertions()`: via scoped `expect` from `TestContext`
 
 **Omitted:**
 
@@ -1128,8 +1128,8 @@ or **omitted** (intentional gap with rationale).
 - **`expect.extend`**:
   custom matchers add framework-specific API surface.
   Use `toSatisfy` with a predicate function instead.
-- **`expect.addSnapshotSerializer`** -- snapshot testing is omitted entirely
-- **`expect.addEqualityTesters`** -- chai's deep equality is sufficient;
+- **`expect.addSnapshotSerializer`**: snapshot testing is omitted entirely
+- **`expect.addEqualityTesters`**: chai's deep equality is sufficient;
   custom equality logic belongs in the comparison function, not the test framework
 
 ### Mocking and spies (vi object)
@@ -1139,35 +1139,35 @@ The `TestContext.sinon` sandbox auto-restores after each test.
 
 **Equivalent:**
 
-- `vi.fn(impl?)` -- `sinon.stub()` or `sinon.spy(impl)`
-- `vi.spyOn(obj, method)` -- `sinon.spy(obj, 'method')` or `sinon.stub(obj, 'method')`
-- `vi.useFakeTimers()` -- `sinon.useFakeTimers()`
-- `vi.advanceTimersByTime(ms)` -- `clock.tick(ms)` (where `clock = sinon.useFakeTimers()`)
-- `vi.clearAllMocks()` -- `sinon.reset()`
-- `vi.restoreAllMocks()` -- `sinon.restore()` (automatic via `await using`)
-- `vi.isFakeTimers()` -- check `clock` reference existence
-- `vi.setSystemTime(date)` -- `sinon.useFakeTimers(date)` or `clock.setSystemTime(date)`
-- `vi.getRealSystemTime()` -- `Date.now()` before `useFakeTimers`, or `clock.now`
-- `vi.runAllTimers()` -- `clock.runAll()`
-- `vi.runAllTimersAsync()` -- `await clock.runAllAsync()`
-- `vi.advanceTimersToNextTimer()` -- `clock.next()`
-- `vi.advanceTimersToNextTimerAsync()` -- `await clock.nextAsync()`
-- `vi.runOnlyPendingTimers()` -- `clock.runToLast()`
-- `vi.getTimerCount()` -- `clock.countTimers()`
-- `vi.clearAllTimers()` -- `clock.reset()`
-- `MockInstance.mockReturnValue(v)` -- `stub.returns(v)`
-- `MockInstance.mockReturnValueOnce(v)` -- `stub.onFirstCall().returns(v)` (or `onSecondCall`, etc.)
-- `MockInstance.mockImplementation(fn)` -- `stub.callsFake(fn)`
-- `MockInstance.mockResolvedValue(v)` -- `stub.resolves(v)`
-- `MockInstance.mockRejectedValue(v)` -- `stub.rejects(v)`
-- `MockInstance.mockClear()` -- `spy.resetHistory()`
-- `MockInstance.mockReset()` -- `stub.reset()`
-- `MockInstance.mockRestore()` -- `stub.restore()` (automatic via sandbox)
-- `MockInstance.mock.calls` -- `spy.args`
-- `MockInstance.mock.results` -- `spy.returnValues` and `spy.exceptions`
-- `MockInstance.mock.lastCall` -- `spy.lastCall.args`
-- `MockInstance.mock.contexts` -- `spy.thisValues`
-- `MockInstance.mock.instances` -- not directly available; use `spy.thisValues` with `new`
+- `vi.fn(impl?)`: `sinon.stub()` or `sinon.spy(impl)`
+- `vi.spyOn(obj, method)`: `sinon.spy(obj, 'method')` or `sinon.stub(obj, 'method')`
+- `vi.useFakeTimers()`: `sinon.useFakeTimers()`
+- `vi.advanceTimersByTime(ms)`: `clock.tick(ms)` (where `clock = sinon.useFakeTimers()`)
+- `vi.clearAllMocks()`: `sinon.reset()`
+- `vi.restoreAllMocks()`: `sinon.restore()` (automatic via `await using`)
+- `vi.isFakeTimers()`: check `clock` reference existence
+- `vi.setSystemTime(date)`: `sinon.useFakeTimers(date)` or `clock.setSystemTime(date)`
+- `vi.getRealSystemTime()`: `Date.now()` before `useFakeTimers`, or `clock.now`
+- `vi.runAllTimers()`: `clock.runAll()`
+- `vi.runAllTimersAsync()`: `await clock.runAllAsync()`
+- `vi.advanceTimersToNextTimer()`: `clock.next()`
+- `vi.advanceTimersToNextTimerAsync()`: `await clock.nextAsync()`
+- `vi.runOnlyPendingTimers()`: `clock.runToLast()`
+- `vi.getTimerCount()`: `clock.countTimers()`
+- `vi.clearAllTimers()`: `clock.reset()`
+- `MockInstance.mockReturnValue(v)`: `stub.returns(v)`
+- `MockInstance.mockReturnValueOnce(v)`: `stub.onFirstCall().returns(v)` (or `onSecondCall`, etc.)
+- `MockInstance.mockImplementation(fn)`: `stub.callsFake(fn)`
+- `MockInstance.mockResolvedValue(v)`: `stub.resolves(v)`
+- `MockInstance.mockRejectedValue(v)`: `stub.rejects(v)`
+- `MockInstance.mockClear()`: `spy.resetHistory()`
+- `MockInstance.mockReset()`: `stub.reset()`
+- `MockInstance.mockRestore()`: `stub.restore()` (automatic via sandbox)
+- `MockInstance.mock.calls`: `spy.args`
+- `MockInstance.mock.results`: `spy.returnValues` and `spy.exceptions`
+- `MockInstance.mock.lastCall`: `spy.lastCall.args`
+- `MockInstance.mock.contexts`: `spy.thisValues`
+- `MockInstance.mock.instances`: not directly available; use `spy.thisValues` with `new`
 
 **Omitted:**
 
@@ -1175,30 +1175,30 @@ The `TestContext.sinon` sandbox auto-restores after each test.
   requires intercepting ESM imports via a build transform or custom loader,
   which contradicts the no-magic, no-custom-module-resolution design.
   Restructure code to accept dependencies as parameters instead.
-- **`vi.importActual` / `vi.importMock`** -- module mocking infrastructure
-- **`vi.hoisted`** -- module mocking infrastructure
-- **`vi.mocked`** -- TypeScript narrowing helper for `vi.fn`; sinon types are already correct
-- **`vi.mockObject`** -- deep object mocking; create stubs explicitly for the methods needed
-- **`vi.stubEnv` / `vi.unstubAllEnvs`** -- set `process.env` directly; restore in afterEach
-- **`vi.stubGlobal` / `vi.unstubAllGlobals`** -- assign to `globalThis` directly; restore in afterEach
-- **`vi.resetModules`** -- module mocking infrastructure
-- **`vi.dynamicImportSettled`** -- module mocking infrastructure
-- **`vi.waitFor` / `vi.waitUntil`** -- retry/polling utilities belong in application code,
+- **`vi.importActual` / `vi.importMock`**: module mocking infrastructure
+- **`vi.hoisted`**: module mocking infrastructure
+- **`vi.mocked`**: TypeScript narrowing helper for `vi.fn`; sinon types are already correct
+- **`vi.mockObject`**: deep object mocking; create stubs explicitly for the methods needed
+- **`vi.stubEnv` / `vi.unstubAllEnvs`**: set `process.env` directly; restore in afterEach
+- **`vi.stubGlobal` / `vi.unstubAllGlobals`**: assign to `globalThis` directly; restore in afterEach
+- **`vi.resetModules`**: module mocking infrastructure
+- **`vi.dynamicImportSettled`**: module mocking infrastructure
+- **`vi.waitFor` / `vi.waitUntil`**: retry/polling utilities belong in application code,
   not the test framework
-- **`vi.setConfig` / `vi.resetConfig`** -- no per-file configuration to change
-- **`vi.defineHelper`** -- error stack trace rewriting; our plain `Error` cause chains
+- **`vi.setConfig` / `vi.resetConfig`**: no per-file configuration to change
+- **`vi.defineHelper`**: error stack trace rewriting; our plain `Error` cause chains
   already provide clear traceability
 
 ### Type testing
 
 **Supported:**
 
-- `expectTypeOf` -- re-exported from the [expect-type](https://www.npmjs.com/package/expect-type) package.
+- `expectTypeOf`: re-exported from the [expect-type](https://www.npmjs.com/package/expect-type) package.
   All `expectTypeOf` matchers from Vitest are available since Vitest uses the same library.
 
 **Omitted:**
 
-- **`assertType`** -- requires Vitest's `--typecheck` mode.
+- **`assertType`**: requires Vitest's `--typecheck` mode.
   `expectTypeOf` covers the same use cases without a special runner mode.
 
 ### Chai assert API
@@ -1265,9 +1265,9 @@ The test files under `src/*.unit.test.ts` use the package's own primitives to va
 
 ## Dependencies
 
-- **chai** -- assertion engine
-- **chai-as-promised** -- registered as a chai plugin for users who prefer chai's `.eventually` syntax over the built-in `rejects`/`resolves` API
-- **expect-type** -- compile-time type assertions, re-exported as `expectTypeOf`
-- **sinon** -- stubs, spies, sandboxes (exposed via `TestContext.sinon`)
-- **sinon-chai** -- chai plugin for sinon matchers
-- **@monochromatic-dev/module-es** -- tagged logger
+- **chai**: assertion engine
+- **chai-as-promised**: registered as a chai plugin for users who prefer chai's `.eventually` syntax over the built-in `rejects`/`resolves` API
+- **expect-type**: compile-time type assertions, re-exported as `expectTypeOf`
+- **sinon**: stubs, spies, sandboxes (exposed via `TestContext.sinon`)
+- **sinon-chai**: chai plugin for sinon matchers
+- **@monochromatic-dev/module-es**: tagged logger

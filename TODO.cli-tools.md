@@ -12,15 +12,15 @@
 
 ### `cpfd` - Copy Files From Dependencies
 
-**Status**: Deprecated -- superseded by `packages/dev-script/file-enforcer`
+**Status**: Deprecated; superseded by `packages/dev-script/file-enforcer`
 
 ### `increase-version`
 
-**Status**: Deprecated -- no longer needed after monorepo adoption (no frequent npm publishes)
+**Status**: Deprecated; no longer needed after monorepo adoption (no frequent npm publishes)
 
 ### `add-scripts`
 
-**Status**: Deprecated -- handled by file-enforcer and mise task templates
+**Status**: Deprecated; handled by file-enforcer and mise task templates
 
 ## Monochromatic CLI Development
 

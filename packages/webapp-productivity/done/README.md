@@ -25,8 +25,8 @@ Single h3 server process handling both page routes (HTML) and API routes (JSON).
 
 ## Monorepo dependencies
 
-- `@monochromatic-dev/module-hyperscript` -- h-css, h-html, h-dom factories
-- `@monochromatic-dev/module-es` -- Functional utilities
+- `@monochromatic-dev/module-hyperscript`: h-css, h-html, h-dom factories
+- `@monochromatic-dev/module-es`: Functional utilities
 
 This package runs only within the Monochromatic monorepo.
 
@@ -51,7 +51,7 @@ Done's UI is built with h-css (typed TypeScript composition; see `PHILOSOPHY.css
 Sibling packages re-implement the same product against alternative CSS frameworks so the
 approaches can be diffed side by side at the same scale of UI.
 
-- `../done-postcss/` -- PostCSS `@mixin` + `@apply` (via `@monochromatic-dev/build-tool-css`)
+- `../done-postcss/`: PostCSS `@mixin` + `@apply` (via `@monochromatic-dev/build-tool-css`)
 
 These comparison packages exist purely as reference. They inherit product changes from
 this package; they are not intended to be shipped, and may be deleted once their
@@ -59,8 +59,8 @@ comparison value is exhausted. See each variant's README for the per-file differ
 
 ## Further reading
 
-- `PLAN.md` -- Implementation plan with DB schema, AI prompts, and deployment details
-- `SPEC.md` -- Product specification (task model, screens, sync targets)
-- `FRAMEWORK_EVALUATION.md` -- Why vanilla TS + Bun over SvelteKit, Vue Vapor, or WC frameworks
-- `PHILOSOPHY.css.md` (repo root) -- Why h-css over `@apply`, CSS-in-JS, and external CSS files
-- `packages/module/hyperscript/README.md` -- h-css API reference
+- `PLAN.md`: Implementation plan with DB schema, AI prompts, and deployment details
+- `SPEC.md`: Product specification (task model, screens, sync targets)
+- `FRAMEWORK_EVALUATION.md`: Why vanilla TS + Bun over SvelteKit, Vue Vapor, or WC frameworks
+- `PHILOSOPHY.css.md` (repo root): Why h-css over `@apply`, CSS-in-JS, and external CSS files
+- `packages/module/hyperscript/README.md`: h-css API reference

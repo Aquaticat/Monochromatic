@@ -21,29 +21,29 @@ and the static site generator powering this very website.
 
 I am the **lead maintainer and sole architect**, responsible for:
 
-- **Architecture** -- Designing the monorepo structure, package boundaries,
+- **Architecture**: Designing the monorepo structure, package boundaries,
   and dependency graph across dozens of packages
-- **CSS design system** -- Building a token-based design system with OKLCH colours,
+- **CSS design system**: Building a token-based design system with OKLCH colours,
   logical properties, and light/dark mode support
-- **Utilities library** -- Functional TypeScript utilities for common patterns
-- **Configuration presets** -- Shareable configs for Dprint, Oxlint, and TypeScript
-- **Documentation** -- Writing documentation with Astro
-- **Testing** -- Enforcing standards via automated testing
-- **Static site generator** -- Building the SSG that powers aquati.cat,
+- **Utilities library**: Functional TypeScript utilities for common patterns
+- **Configuration presets**: Shareable configs for Dprint, Oxlint, and TypeScript
+- **Documentation**: Writing documentation with Astro
+- **Testing**: Enforcing standards via automated testing
+- **Static site generator**: Building the SSG that powers aquati.cat,
   featuring incremental builds, MDX processing, i18n, and build-time
   syntax highlighting with the CSS Custom Highlight API
 
 ## Technical highlights
 
-- **Monorepo tooling** -- pnpm workspaces, mise task runner,
+- **Monorepo tooling**: pnpm workspaces, mise task runner,
   workspace-protocol dependencies
-- **Build-time syntax highlighting** -- Lezer parsers run at build time;
+- **Build-time syntax highlighting**: Lezer parsers run at build time;
   only pre-computed character offsets ship to the browser,
   achieving a 99.4% reduction in client-side JavaScript
-- **Incremental builds** -- SHA-256 content hashing with a manifest-based cache
+- **Incremental builds**: SHA-256 content hashing with a manifest-based cache
   skips re-processing unchanged files
-- **Type-safe i18n** -- typesafe-i18n for compile-time translation safety
-- **OKLCH colour system** -- CSS custom properties with perceptually uniform
+- **Type-safe i18n**: typesafe-i18n for compile-time translation safety
+- **OKLCH colour system**: CSS custom properties with perceptually uniform
   colour spaces for consistent light and dark themes
 
 ## Skills and tools demonstrated

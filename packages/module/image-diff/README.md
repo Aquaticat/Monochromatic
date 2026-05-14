@@ -85,10 +85,10 @@ const { embeddings, } = await embedBatch({
 
 ### Supported input formats
 
-- **File path**: `{ path: './photo.png' }` -- reads from disk, infers format from extension
-- **URL**: `{ url: 'https://...' }` -- passed directly to Voyage; fetched and base64-encoded for Gemini
-- **Base64**: `{ base64: 'data:image/png;base64,...' }` -- pre-encoded data URI
-- **Buffer**: `{ buffer: arrayBuffer, format: 'png' }` -- raw bytes with explicit format
+- **File path**: `{ path: './photo.png' }`: reads from disk, infers format from extension
+- **URL**: `{ url: 'https://...' }`: passed directly to Voyage; fetched and base64-encoded for Gemini
+- **Base64**: `{ base64: 'data:image/png;base64,...' }`: pre-encoded data URI
+- **Buffer**: `{ buffer: arrayBuffer, format: 'png' }`: raw bytes with explicit format
 
 ### Similarity utilities
 
@@ -125,12 +125,12 @@ image-diff embed --provider voyage --model voyage-multimodal-3.5 photo.png
 
 ### Voyage AI
 
-- `voyage-multimodal-3.5` (default) -- latest, highest quality
-- `voyage-multimodal-3` -- previous generation
+- `voyage-multimodal-3.5` (default): latest, highest quality
+- `voyage-multimodal-3`: previous generation
 
 ### Google Gemini
 
-- `gemini-embedding-2-preview` (default) -- multimodal embedding with 3072 dimensions
+- `gemini-embedding-2-preview` (default): multimodal embedding with 3072 dimensions
 
 [voyage]: https://docs.voyageai.com/docs/multimodal-embeddings
 [gemini]: https://ai.google.dev/gemini-api/docs/embeddings

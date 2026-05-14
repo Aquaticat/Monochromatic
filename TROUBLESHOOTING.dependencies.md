@@ -120,9 +120,9 @@ and cross-package dependency pinning before publish.
 
 The npm registry returns 404 for version URLs containing `+`:
 
-- `GET /@optique/core/1.0.0-dev.1692` -- 200 OK
-- `GET /@optique/core/1.0.0-dev.1692+5c265bd4` -- 404
-- `GET /@optique/core/1.0.0-dev.1692%2B5c265bd4` -- 404
+- `GET /@optique/core/1.0.0-dev.1692`: 200 OK
+- `GET /@optique/core/1.0.0-dev.1692+5c265bd4`: 404
+- `GET /@optique/core/1.0.0-dev.1692%2B5c265bd4`: 404
 
 vlt hits this because it never strips build metadata from the version string
 before constructing the per-version manifest URL.
@@ -232,7 +232,7 @@ No reliable workaround exists within vlt's configuration:
 - **Graph modifiers** (`"modifiers"` in `vlt.json`) override specs during
   ideal graph building but do not apply during node extraction.
   Tested with `"#@optique/core": ">=1.0.0-dev.0"` and
-  `"#@optique/run": ">=1.0.0-dev.0"` -- both failed, error shows `overridden: false`.
+  `"#@optique/run": ">=1.0.0-dev.0"`: both failed, error shows `overridden: false`.
 - **Lockfile restoration** does not help because vlt re-resolves specs during install.
 - **Cache clearing** (`rm -rf ~/.cache/vlt/{package-info,registry-client}`)
   does not help because the build metadata originates from the upstream manifest,
@@ -429,7 +429,7 @@ from `fetch-blob/from.js`, so the import path executes at runtime whenever
 node-fetch is loaded.
 
 A `'fetch-blob>node-domexception': '-'` override removes the package from the
-install but leaves the static import in `fetch-blob/from.js` -- node-fetch
+install but leaves the static import in `fetch-blob/from.js`: node-fetch
 crashes at module load.
 
 #### Why upgrading does not help
@@ -550,10 +550,10 @@ override list: `chalk`, `cli-highlight`, `diff`, `extract-zip`,
 
 The overrides retained for pi-coding-agent are:
 
-- `@mariozechner/clipboard` -- `utils/clipboard-native.js` wraps
+- `@mariozechner/clipboard`: `utils/clipboard-native.js` wraps
   `require("@mariozechner/clipboard")` in `try`/`catch`, so the missing
   package falls back to `clipboard = null`.
-- `marked` -- pi-coding-agent vendors `core/export-html/vendor/marked.min.js`
+- `marked`: pi-coding-agent vendors `core/export-html/vendor/marked.min.js`
   and does not statically import the npm `marked` package.
 
 `undici` was previously retained as an override on the assumption that
@@ -700,13 +700,13 @@ pi-coding-agent work unchanged.
 The two consumer modules inside pi-coding-agent both hard-import the package
 at module scope:
 
-- `dist/core/auth-storage.js:12` -- `import lockfile from "proper-lockfile";`
-- `dist/core/settings-manager.js:4` -- `import lockfile from "proper-lockfile";`
+- `dist/core/auth-storage.js:12`: `import lockfile from "proper-lockfile";`
+- `dist/core/settings-manager.js:4`: `import lockfile from "proper-lockfile";`
 
 Both modules are re-exported from the package's barrel:
 
-- `dist/index.js:6` -- `export { AuthStorage, FileAuthStorageBackend, InMemoryAuthStorageBackend } from "./core/auth-storage.js";`
-- `dist/index.js:22` -- `export { SettingsManager } from "./core/settings-manager.js";`
+- `dist/index.js:6`: `export { AuthStorage, FileAuthStorageBackend, InMemoryAuthStorageBackend } from "./core/auth-storage.js";`
+- `dist/index.js:22`: `export { SettingsManager } from "./core/settings-manager.js";`
 
 A `'proper-lockfile': '-'` override removes the package from the install but
 leaves the static import in `auth-storage.js` and `settings-manager.js` --
@@ -743,15 +743,15 @@ commit is from 2021-01). Upstream is unmaintained; there is no upgrade path.
 
 Every pi invocation reaches one or both of these paths:
 
-- `dist/main.js:377` -- `SettingsManager.create(cwd, agentDir)` runs at
+- `dist/main.js:377`: `SettingsManager.create(cwd, agentDir)` runs at
   startup. `FileSettingsStorage` only calls `lockfile.lockSync` when the
   settings file already exists (`settings-manager.js:69`); on a fresh
   machine, the sync lock is skipped until the file is created.
-- `dist/main.js:408` -- `AuthStorage.create()` runs at startup.
+- `dist/main.js:408`: `AuthStorage.create()` runs at startup.
 - `dist/core/sdk.js:90,92`, `dist/core/agent-session-services.js:56,57`,
   `dist/core/resource-loader.js:121`, `dist/package-manager-cli.js:304,358`
-  -- defaulted SDK construction; same call shape.
-- `dist/core/model-registry.js:519` -- `await this.authStorage.getApiKey(model.provider, ...)`
+ ; defaulted SDK construction; same call shape.
+- `dist/core/model-registry.js:519`: `await this.authStorage.getApiKey(model.provider, ...)`
   runs during model resolution. `FileAuthStorageBackend.getApiKey` goes through
   `withLockAsync`, which does `release = await lockfile.lock(...)` and
   `await release()`. Both ends of the async lock contract must execute

@@ -10,7 +10,7 @@
 
 - No benchmark for the `exec()` operation.
   Add a scenario that shells out to a command whose output is written to a destination file.
-- No benchmark for `overwriteIfNotExists` -- only `overwrite` and `overwriteEach` are exercised.
+- No benchmark for `overwriteIfNotExists`: only `overwrite` and `overwriteEach` are exercised.
 - No benchmark for watch mode latency (time from fs event to re-run completion).
   This would require a different harness that starts the watcher, modifies a file, and measures the response time.
 - No benchmark for config files with many independent rules running in `Promise.all`.

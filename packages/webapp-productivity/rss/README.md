@@ -4,11 +4,11 @@ An RSS/Atom feed reader that converts feeds to an HTML interface with memoized u
 
 ## Features
 
-- **Multi-format support** -- reads both RSS and Atom feeds
-- **OPML integration** -- configure feeds using OPML files
-- **Memoized pipeline** -- time-bucketed and content-derived cache invalidation avoids redundant fetches
-- **Embedded content** -- safe rendering of feed descriptions in sandboxed iframes
-- **Auto-dismiss** -- items scrolled past are automatically marked as ignored
+- **Multi-format support**: reads both RSS and Atom feeds
+- **OPML integration**: configure feeds using OPML files
+- **Memoized pipeline**: time-bucketed and content-derived cache invalidation avoids redundant fetches
+- **Embedded content**: safe rendering of feed descriptions in sandboxed iframes
+- **Auto-dismiss**: items scrolled past are automatically marked as ignored
 
 ## Architecture
 
@@ -20,18 +20,18 @@ OPML URLs -> Fetch OPML texts -> Parse outlines -> Fetch feeds -> Sort items -> 
 
 Two memoize layers with distinct salt strategies:
 
-- **Fetch layer** -- time-bucketed salt (`date % interval`), so feeds are re-fetched only when the interval window advances
-- **Render layer** -- salt combines fetch time bucket + ignore file content, so rendering updates when either feeds or ignore list change
+- **Fetch layer**: time-bucketed salt (`date % interval`), so feeds are re-fetched only when the interval window advances
+- **Render layer**: salt combines fetch time bucket + ignore file content, so rendering updates when either feeds or ignore list change
 
 ### Core modules
 
-- **opmls.ts** -- reads and validates OPML source URLs from environment
-- **outline.ts** -- fetches OPML files and extracts feed outlines
-- **feed.ts** -- fetches and parses RSS/Atom feeds
-- **item.ts** -- extracts, normalizes, and sorts feed items
-- **html.ts** -- renders items to HTML, filtering out ignored entries
-- **interval.ts** -- configurable time-bucket for fetch cache invalidation
-- **index.ts** -- memoized pipeline orchestration and HTTP server
+- **opmls.ts**: reads and validates OPML source URLs from environment
+- **outline.ts**: fetches OPML files and extracts feed outlines
+- **feed.ts**: fetches and parses RSS/Atom feeds
+- **item.ts**: extracts, normalizes, and sorts feed items
+- **html.ts**: renders items to HTML, filtering out ignored entries
+- **interval.ts**: configurable time-bucket for fetch cache invalidation
+- **index.ts**: memoized pipeline orchestration and HTTP server
 
 ## Configuration
 
@@ -65,8 +65,8 @@ RSS_FETCH_INTERVAL_MS=300000
 
 ## API endpoints
 
-- `GET /` -- serve the RSS reader interface
-- `POST /api/ignore/new` -- mark a feed item as ignored
+- `GET /`: serve the RSS reader interface
+- `POST /api/ignore/new`: mark a feed item as ignored
 
 ## Usage
 

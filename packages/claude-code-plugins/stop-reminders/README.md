@@ -52,4 +52,4 @@ Add to `.claude/settings.json` or `.claude/settings.local.json`:
 
 ## Binary
 
-`ccsr` -- **C**laude **C**ode **S**top **R**eminders
+`ccsr`: **C**laude **C**ode **S**top **R**eminders

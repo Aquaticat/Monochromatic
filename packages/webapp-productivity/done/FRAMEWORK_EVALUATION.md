@@ -1,4 +1,4 @@
-# Done -- Framework evaluation
+# Done; Framework evaluation
 
 Written Feb 9, 2026. Documents the reasoning behind choosing vanilla TS + Bun over SvelteKit, Vue Vapor, or Web Components frameworks.
 
@@ -6,7 +6,7 @@ Written Feb 9, 2026. Documents the reasoning behind choosing vanilla TS + Bun ov
 
 The original plan used SvelteKit with SSR (adapter-bun). While working through the Svelte tutorial, accumulated architectural concerns led to a full framework re-evaluation. See `svelte-first-impressions.md` in Nextcloud notes for the complete critique.
 
-## Svelte -- why we're leaving
+## Svelte; why we're leaving
 
 Documented extensively in the Svelte notes. Summary of architectural problems:
 
@@ -16,20 +16,20 @@ Documented extensively in the Svelte notes. Summary of architectural problems:
 - **Framework abstractions over platform primitives.** `{@attach}` reinvents `<dialog>` + `connectedCallback`. `style:` directives are inline styles with nicer syntax. Conditional class syntax where `data-` attributes work.
 - **Compilation advantage irrelevant for JS-heavy apps.** Svelte's pitch is "less JS shipped." Done is inherently JS-heavy (real-time task management, AI curation, 10k cards). The app needs JS regardless. What remains is architectural weakness.
 
-## Vue Vapor -- architecturally right, practically wrong (for now)
+## Vue Vapor; architecturally right, practically wrong (for now)
 
 ### What it gets right
 
 Vue Vapor (Vue 3.6, currently beta.5 as of Jan 30 2026) addresses every Svelte concern:
 
-- `defineProps<{ title: string }>()` -- required is default, optional is explicit (`?`), TypeScript enforces at call site
-- `readonly(ref)` -- export read-only proxy, mutations stay internal
-- `v-for` requires `:key` by ESLint default -- no silent positional corruption
-- `$attrs` excludes declared props/emits -- controlled forwarding
-- `v-model` decomposes to `:value` + `@update:modelValue` -- interceptable, not opaque
-- Composition API only in Vapor -- simpler than old Options + Composition split
+- `defineProps<{ title: string }>()`: required is default, optional is explicit (`?`), TypeScript enforces at call site
+- `readonly(ref)`: export read-only proxy, mutations stay internal
+- `v-for` requires `:key` by ESLint default; no silent positional corruption
+- `$attrs` excludes declared props/emits; controlled forwarding
+- `v-model` decomposes to `:value` + `@update:modelValue`: interceptable, not opaque
+- Composition API only in Vapor; simpler than old Options + Composition split
 - No file-extension compiler magic (`.vapor.vue` is opt-in per component)
-- alien-signals reactivity rewrite -- SolidJS/Svelte-level performance
+- alien-signals reactivity rewrite; SolidJS/Svelte-level performance
 
 ### What blocks it for this project
 
@@ -56,10 +56,10 @@ No reactive state graph, no complex routing, no client-side store. A framework s
 
 ## Web Components frameworks considered
 
-- **Lit 3.0** -- Most mature WC library. SSR is experimental ("Lit Labs"), only Node (not Bun). Repository appears less actively maintained than desired. Good for components, no app architecture.
-- **Enhance** -- Full WC app framework with file-based routing and WASM SSR. Small team/community, routing tied to Architect/AWS deployment model. Too niche for a competition.
-- **Stencil** -- Ionic's WC compiler. Component compiler, not app framework. No routing, no server integration.
-- **Plain custom elements** -- No framework needed for 5 screens and 3-4 reusable elements.
+- **Lit 3.0**: Most mature WC library. SSR is experimental ("Lit Labs"), only Node (not Bun). Repository appears less actively maintained than desired. Good for components, no app architecture.
+- **Enhance**: Full WC app framework with file-based routing and WASM SSR. Small team/community, routing tied to Architect/AWS deployment model. Too niche for a competition.
+- **Stencil**: Ionic's WC compiler. Component compiler, not app framework. No routing, no server integration.
+- **Plain custom elements**: No framework needed for 5 screens and 3-4 reusable elements.
 
 ## Chosen approach: vanilla TS + Bun.serve() + Bun.build()
 
@@ -68,7 +68,7 @@ No reactive state graph, no complex routing, no client-side store. A framework s
 - **One process, one command:** `bun --watch src/server.ts`
 - **Server:** `Bun.serve()` handles API routes (DB, AI proxy) and serves built client assets
 - **Client:** Plain TypeScript with `document.createElement`, custom elements where reuse is needed
-- **Build:** `Bun.build()` runs at server startup -- bundles, tree-shakes, and (in prod) minifies client TS into JS
+- **Build:** `Bun.build()` runs at server startup; bundles, tree-shakes, and (in prod) minifies client TS into JS
 - **Dev reload:** `bun --watch` restarts server on any file change, which re-runs `Bun.build()`, producing fresh client bundles. Same code path in dev and prod.
 - **Operational advantage:** Orchestrator spawns per-user Bun processes. New processes immediately get the latest build since `Bun.build()` runs at process start.
 
@@ -78,16 +78,16 @@ No reactive state graph, no complex routing, no client-side store. A framework s
 - No reactivity needed beyond one `setInterval`.
 - 5 screens is trivially handleable with URL pathname matching.
 - Tree-shaking via `Bun.build()` keeps imports like zod-mini efficient.
-- Zero dev/prod code path divergence -- same `Bun.build()` call, only `minify` flag differs.
-- TypeScript throughout -- Bun runs server TS natively, `Bun.build()` handles client TS.
-- No framework abstractions over platform primitives -- uses `<dialog>`, `data-` attributes, CSS directly.
+- Zero dev/prod code path divergence; same `Bun.build()` call, only `minify` flag differs.
+- TypeScript throughout; Bun runs server TS natively, `Bun.build()` handles client TS.
+- No framework abstractions over platform primitives; uses `<dialog>`, `data-` attributes, CSS directly.
 
 ### What we give up
 
-- **No progressive enhancement.** Forms require JS. Acceptable -- Done is inherently a JS app.
+- **No progressive enhancement.** Forms require JS. Acceptable; Done is inherently a JS app.
 - **No HMR (hot module replacement).** Full page reload on save via `bun --watch`. Acceptable for 5 screens.
 - **No component-scoped CSS.** Use BEM or `data-` attribute selectors. Acceptable for competition scope.
-- **Manual DOM construction.** More verbose than templates. Acceptable -- the DOM surface is small.
+- **Manual DOM construction.** More verbose than templates. Acceptable; the DOM surface is small.
 
 ### Tradeoffs vs Vue Vapor post-competition
 

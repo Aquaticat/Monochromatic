@@ -1,4 +1,4 @@
-# Done -- Implementation plan
+# Done; Implementation plan
 
 This plan no longer follows a competition deadline.
 The day-by-day sequence and hour estimates now serve as implementation guidance only, not as a hard timeline.
@@ -16,7 +16,7 @@ No framework. Vanilla TypeScript on both server and client, unified by Bun.
 - **Server:** h3 `H3` route registration handles page and API routes. Static serving handles built client assets from `dist/client/`.
 - **Client:** Plain TypeScript with `document.createElement` for DOM construction. Custom elements where reuse is needed (task card, chip editor, collapsible section).
 - **Build:** `build-css` compiles global CSS and tsdown bundles client TypeScript as separate mise build tasks. Server startup compiles CSS, but client JS bundles are built separately by `mise run build:js:client`.
-- **CSS:** CSS files use `@mixin`/`@apply` syntax processed by `@monochromatic-dev/build-css`. Processed CSS is imported as text in client TS and injected at runtime -- no separate `<link>` tags needed.
+- **CSS:** CSS files use `@mixin`/`@apply` syntax processed by `@monochromatic-dev/build-css`. Processed CSS is imported as text in client TS and injected at runtime; no separate `<link>` tags needed.
 - **Dev:** `mise watch -w src -r -- bun src/server.ts` restarts the server process on source changes.
 - **Operational advantage:** The orchestrator spawns per-user Bun processes. Each process runs the build pipeline at startup, so new/restarted processes immediately serve the latest code.
 
@@ -721,7 +721,7 @@ Cookie: session=<session-id>; Path=/u/<user-id>/; HttpOnly; Secure; SameSite=Str
 - On each request, orchestrator looks up `session-id` in the `sessions` table
 - If found and not expired, extract `user_id` and compare against the path's `<user-id>`
 - If expired, delete the row and redirect to login
-- No HMAC signing needed -- the session ID itself is the secret (high entropy, stored server-side)
+- No HMAC signing needed; the session ID itself is the secret (high entropy, stored server-side)
 
 ### Orchestrator request flow (pseudocode)
 
@@ -835,7 +835,7 @@ Minimal styling: these are functional forms, not the app itself.
 ### AI model recommendation
 
 For CPU-only inference on a competition server, use the smallest model that reliably produces structured JSON.
-Our prompts are simple (infer tags from a title, rank tasks by context) -- not hard reasoning problems.
+Our prompts are simple (infer tags from a title, rank tasks by context): not hard reasoning problems.
 Speed matters more than capability here because autofill runs on every keystroke (debounced).
 
 #### Primary choice: Qwen3-1.7B (Q4_K_M quantization)
@@ -847,7 +847,7 @@ Speed matters more than capability here because autofill runs on every keystroke
 
 #### Fallback: LFM2.5-1.2B-Instruct (GGUF)
 
-- Under 1GB RAM, 239 tok/s on AMD CPU -- remarkably fast
+- Under 1GB RAM, 239 tok/s on AMD CPU; remarkably fast
 - IFEval 86.23% (instruction following) is strong for its size
 - Official GGUF: `llama-cli -hf LiquidAI/LFM2.5-1.2B-Instruct-GGUF`
 - Use if Qwen3 is too slow on the competition server's CPU
@@ -941,26 +941,26 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
 **Task card layout:**
 
 - Checkbox (left) + title text (wraps to 2 lines max)
-- Metadata chips row below title: `# tag`, `timer: Xs`, `where: Place` -- horizontal scroll on overflow, no wrapping
+- Metadata chips row below title: `# tag`, `timer: Xs`, `where: Place`: horizontal scroll on overflow, no wrapping
 - Tapping the card navigates to task details; tapping the checkbox completes the task
 
 **FAB (floating action button):**
 
 - Bottom-right, black circle with white `+` icon
-- Opens new task creation (inline or overlay -- TBD based on other screen designs)
+- Opens new task creation (inline or overlay; TBD based on other screen designs)
 
 **Color palette:**
 
 - Monochrome: black text on white background
 - Accent: muted red/brown for tags (`# shopping` text color)
-- No shadows, no gradients, no border-radius on cards -- deliberately bare-bones
+- No shadows, no gradients, no border-radius on cards; deliberately bare-bones
 
 ## Day 2 (Wed): Core CRUD UI (~4h)
 
 ### 2.1 Layout shell and navigation (~2h) **done**
 
 - (0.5h) Create shared HTML shell function (`src/server/pages/layout.ts`): returns the `<!DOCTYPE html>` wrapper with nav drawer, styles, and script tag slot
-- (0.5h) Build drawer navigation as part of the shell: Inbox, In Progress, Settings links. Hamburger toggle. Pure HTML + CSS (no JS needed for drawer -- use `<details>` or checkbox hack).
+- (0.5h) Build drawer navigation as part of the shell: Inbox, In Progress, Settings links. Hamburger toggle. Pure HTML + CSS (no JS needed for drawer; use `<details>` or checkbox hack).
 - (0.5h) Create FAB function in `src/client/components/fab.ts`: creates a fixed-position button element, wires click to open new-task form
 - (0.5h) Set up `src/client/styles.css` with `@import 'mixin.css'` and `@apply` rules. Create `src/client/mixin.css` with shared mixins. CSS is processed by build-css, then imported as text in client TS and injected at runtime (no `<link>` tag). Include Inter + JetBrains Mono fonts (via CDN), Material Symbols icon font, CSS variables for colors.
 
@@ -1015,7 +1015,7 @@ When the autofill response includes a non-null `splitSuggestion`, the UI shows a
 - (0.5h) Create `src/client/search.ts`: search input with debounced navigation to `/search?q=...`, result list with blocked badges
 - (0.5h) Test: create tasks with various tags -> search by tag -> verify results include blocked tasks with badge
 
-## Day 4 (Fri): AI integration -- autofill and suggestions (~4h)
+## Day 4 (Fri): AI integration; autofill and suggestions (~4h)
 
 AI is the core differentiator. Prompt engineering and structured output parsing are the focus.
 
@@ -1045,13 +1045,13 @@ AI is the core differentiator. Prompt engineering and structured output parsing 
 
 - (0.5h) Review all prompts: verify system prompt separated from user data, user content always in delimited blocks
 - (0.5h) Verify structured JSON output schema validation rejects unexpected fields
-- (0.5h) Verify server never passes AI output as raw HTML -- all user-facing text is set via `textContent`, never `innerHTML`
+- (0.5h) Verify server never passes AI output as raw HTML; all user-facing text is set via `textContent`, never `innerHTML`
 
 ## Day 5 (Mon): Suggestions, orchestrator, and deployment (~4h)
 
 Two-day gap (Sat-Sun) before this session. Budget time for context recovery.
 
-### 5.1 Suggestion engine -- server side (~3h)
+### 5.1 Suggestion engine; server side (~3h)
 
 - (0.5h) Write suggestion prompt: include all unblocked inbox tasks (metadata only), user's current location, focus directive
 - (0.5h) Implement structured output: AI returns ranked array of task IDs as JSON, validate against known task IDs
@@ -1059,9 +1059,9 @@ Two-day gap (Sat-Sun) before this session. Budget time for context recovery.
 - (0.5h) Handle AI unavailable: if llama.cpp is down or rate-limited, fall back to simple heuristic (due date, priority)
 - (0.5h) Test: create 10 tasks with varied locations/priorities, set location to "Walmart", verify shopping tasks surface first
 
-### 5.2 Suggestion engine -- UI polish (~2.5h)
+### 5.2 Suggestion engine; UI polish (~2.5h)
 
-- (0.5h) Add loading state for suggestions section (skeleton cards while AI processes -- or just show "Loading suggestions..." text)
+- (0.5h) Add loading state for suggestions section (skeleton cards while AI processes; or just show "Loading suggestions..." text)
 - (0.5h) Add "Suggested" section header with explanation tooltip ("Based on your location and focus")
 - (0.5h) Handle empty suggestions gracefully: show "No suggestions right now" message
 - (0.5h) Tune suggestion count: limit to top 5-8 tasks to avoid overwhelming the user
@@ -1118,7 +1118,7 @@ Coolify's reverse proxy handles HTTPS termination; the orchestrator only listens
 The orchestrator container spawns per-user Bun processes as child processes within itself (not separate containers).
 Each child process runs `Bun.build()` at startup to bundle client assets; no separate build step in the Dockerfile.
 User data lives on a named volume mounted at `/data/` inside the orchestrator container.
-The orchestrator keeps all routing state in memory (rebuilt from `orchestrator.db` on startup) -- no external config files to manage.
+The orchestrator keeps all routing state in memory (rebuilt from `orchestrator.db` on startup): no external config files to manage.
 
 **Atomic tasks:**
 
@@ -1203,7 +1203,7 @@ volumes:
 
 - (0.25h) Create `manifest.json`: app name, icons, theme color, `display: standalone`
 - (0.5h) Create service worker: cache static assets (JS, CSS, icons) for faster repeat loads
-- (0.25h) Add offline detection: show "offline" banner when connectivity is lost (no full offline mode -- all actions require server)
+- (0.25h) Add offline detection: show "offline" banner when connectivity is lost (no full offline mode; all actions require server)
 - (0.5h) Test: install as PWA on phone/desktop, verify cached shell loads fast, verify offline banner appears when disconnected
 
 ### 6.2 Geolocation (~1h) `priority:low`
@@ -1218,14 +1218,14 @@ volumes:
 - (0.5h) Wire API route `POST /api/tasks/:id/attach`: validate file type/size, store as BLOB in attachments table
 - (0.25h) Wire API route `GET /api/attachments/:id`: download attachment by ID
 
-### 6.4 Email -- reminder notifications (~2h) `priority:medium`
+### 6.4 Email; reminder notifications (~2h) `priority:medium`
 
 - (0.5h) Create `src/lib/email/transport.ts`: `@upyo/smtp` wrapper configured from SMTP env vars
 - (0.5h) Create `src/lib/email/reminders.ts`: query due reminders, format email body (task title, description, link)
 - (0.5h) Wire `setTimeout` loop in server startup: check every 60 seconds, send due reminders, remove fired reminders from JSON array
 - (0.5h) Test: create task with reminder 1 minute from now -> verify email arrives -> verify reminder removed from task
 
-### 6.5 Email -- daily database backup (~1h) `priority:medium`
+### 6.5 Email; daily database backup (~1h) `priority:medium`
 
 - (0.25h) Create `src/lib/email/backup.ts`: export tasks + settings + attachment metadata as JSON (no BLOBs)
 - (0.5h) Wire scheduled job: run once daily at 3am UTC, send JSON attachment via `@upyo/smtp`
@@ -1288,7 +1288,7 @@ These patterns are confirmed working; no surprises expected during implementatio
 ### AI autofill latency (typing feels sluggish)
 
 - Debounce 500ms, show loading indicator, make all fields manually editable
-- llama.cpp latency depends on hardware -- test early, adjust model size if needed
+- llama.cpp latency depends on hardware; test early, adjust model size if needed
 
 ### GitHub sync complexity (two-way is hard)
 
@@ -1317,7 +1317,7 @@ These patterns are confirmed working; no surprises expected during implementatio
 
 ### Orchestrator complexity underestimated
 
-- Process management, auth, reverse proxy, and registration flow are non-trivial -- but simpler than configuring Caddy + AuthCrunch
+- Process management, auth, reverse proxy, and registration flow are non-trivial; but simpler than configuring Caddy + AuthCrunch
 - Cold-start wake-on-request adds latency; users may see a brief loading page
 - Mitigation: keep the orchestrator minimal for MVP (no graceful suspension, just kill + respawn), test registration flow early on day 5
 
@@ -1347,14 +1347,14 @@ Marked items are built if time allows, in descending priority order.
 **Core (done):** 1.1, 1.2, 2.1, 2.2, 2.3, 2.4, 4.1, 4.2
 **Core (partial):** 1.3 (tasks + settings done; attachments/reminders not started)
 **Core (not started):** 4.3, 4.4, 5.1, 5.2, 5.3, 7.1a, 7.1b, 7.1d, 7.4, 7.5
-Note: Dockerfile simplified (no framework build step) -- single stage, Bun runs TS directly.
+Note: Dockerfile simplified (no framework build step): single stage, Bun runs TS directly.
 
-**`priority:medium` -- done:** 3.3 (blocking UI)
-**`priority:medium` -- not started:** 6.4 (email reminders), 6.5 (daily backup)
+**`priority:medium`: done:** 3.3 (blocking UI)
+**`priority:medium`: not started:** 6.4 (email reminders), 6.5 (daily backup)
 
-**`priority:low` -- done:** 3.1 (timer logic), 3.2 (in-progress screen), 3.4 (search)
-**`priority:low` -- partial:** 6.6 (settings screen -- UI skeleton only)
-**`priority:low` -- not started:** 6.1 (PWA), 6.2 (geolocation), 6.3 (camera), 7.2 (GitHub sync), 7.3 (codebase TODO sync)
+**`priority:low`: done:** 3.1 (timer logic), 3.2 (in-progress screen), 3.4 (search)
+**`priority:low`: partial:** 6.6 (settings screen; UI skeleton only)
+**`priority:low`: not started:** 6.1 (PWA), 6.2 (geolocation), 6.3 (camera), 7.2 (GitHub sync), 7.3 (codebase TODO sync)
 
 **`priority:min`:** 7.1c (idle suspension)
 

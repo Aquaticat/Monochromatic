@@ -9,12 +9,12 @@ It serves a single user on `localhost` over WebSocket.
 
 Certain scenarios are considered **user error** and are not optimized for:
 
-- **Directories with 1000+ entries** -- the file tree renders every entry into the DOM
+- **Directories with 1000+ entries**: the file tree renders every entry into the DOM
   without virtualization. Flat directories at that scale indicate
   a missing `.gitignore` or an unconventional project layout.
-- **Multiple projects in one tab** -- editord serves one project root per instance.
+- **Multiple projects in one tab**: editord serves one project root per instance.
   Opening unrelated project trees in the same session is unsupported.
-- **Text files over 1 MB** -- `contenteditable` with CSS counter line numbers
+- **Text files over 1 MB**: `contenteditable` with CSS counter line numbers
   degrades on very large files. Generated output, minified bundles,
   and binary-disguised-as-text fall outside the intended use case.
 
@@ -23,14 +23,14 @@ Certain scenarios are considered **user error** and are not optimized for:
 Because editord runs locally, certain optimizations that matter
 for networked editors are unnecessary:
 
-- **Full-file saves are acceptable** -- Ctrl+S sends the entire file over WebSocket.
+- **Full-file saves are acceptable**: Ctrl+S sends the entire file over WebSocket.
   On loopback, even large files transfer in under a millisecond.
   Incremental diffing or operational transforms add complexity
   without meaningful latency improvement.
-- **DOM rebuild on expand is fine** -- `replaceChildren` replacing a subtree
+- **DOM rebuild on expand is fine**: `replaceChildren` replacing a subtree
   on directory expand is a single synchronous paint.
   Layout thrashing is a non-issue at local directory sizes.
-- **Prefetch cache needs no eviction** -- each cache entry is a small array
+- **Prefetch cache needs no eviction**: each cache entry is a small array
   of `{ name, isDirectory }` objects. Even with hundreds of directories
   preloaded, total memory is negligible.
 
@@ -45,13 +45,13 @@ which defeats the compositor optimization that motivates editord's existence.
 
 Running in real Chrome (not Electron) means editord inherits every browser capability for free:
 
-- **Zoom** -- Ctrl+Plus/Minus scales the entire UI without any custom implementation
-- **Find in page** -- Ctrl+F works natively because content is in the DOM
-- **Accessibility** -- screen readers, high contrast, reduced motion all work out of the box
-- **DevTools** -- full Chrome DevTools for debugging the editor itself
-- **Smooth scrolling** -- `chrome://flags/#smooth-scrolling` controls compositor-driven scroll
-- **Print** -- Ctrl+P prints the file via the browser's native print dialog
-- **Spell check** -- available natively on contenteditable elements
+- **Zoom**: Ctrl+Plus/Minus scales the entire UI without any custom implementation
+- **Find in page**: Ctrl+F works natively because content is in the DOM
+- **Accessibility**: screen readers, high contrast, reduced motion all work out of the box
+- **DevTools**: full Chrome DevTools for debugging the editor itself
+- **Smooth scrolling**: `chrome://flags/#smooth-scrolling` controls compositor-driven scroll
+- **Print**: Ctrl+P prints the file via the browser's native print dialog
+- **Spell check**: available natively on contenteditable elements
 
 Features that other editors must reimplement from scratch are already present.
 

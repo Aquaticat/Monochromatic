@@ -27,12 +27,12 @@ Each fix exposed the next problem. The session ran out of context twice and was 
 The central obstacle was Windows Server 2025's SAN policy 4, which marks VirtIO disks as "offline shared bus."
 The installer refuses to write to offline disks. Claude tried:
 
-1. `RunSynchronous` with inline diskpart -- failed from XML entity encoding corruption (`0x80070057`)
-2. `Microsoft-Windows-PartitionManager` with `SanPolicy=1` -- component ignored in WinPE pass
-3. Batch script on the autounattend ISO -- worked when run manually from WinPE debug console (verified by sending `Shift+F10` keystrokes via `virsh send-key`), but `RunSynchronous` never executed it
-4. Inline `cmd /c` with XML entities -- same `0x80070057` error
-5. `diskpart /s` with script file -- same failure
-6. UEFI boot -- stuck on "Press any key to boot from CD" prompt that can't be automated
+1. `RunSynchronous` with inline diskpart; failed from XML entity encoding corruption (`0x80070057`)
+2. `Microsoft-Windows-PartitionManager` with `SanPolicy=1`: component ignored in WinPE pass
+3. Batch script on the autounattend ISO; worked when run manually from WinPE debug console (verified by sending `Shift+F10` keystrokes via `virsh send-key`), but `RunSynchronous` never executed it
+4. Inline `cmd /c` with XML entities; same `0x80070057` error
+5. `diskpart /s` with script file; same failure
+6. UEFI boot; stuck on "Press any key to boot from CD" prompt that can't be automated
 
 **The breakthrough:** Rather than continuing to fight WinPE's `RunSynchronous`,
 Claude recognized the entire approach was wrong and proposed a fundamentally different architecture:
@@ -56,7 +56,7 @@ verify it boots, then capture. This completely sidestepped the SAN policy.
 
 Most people would have given up after the third or fourth SAN policy attempt.
 The WinPE `RunSynchronous` debugging alone involved sending keystrokes to a VM console
-to verify scripts manually -- that's the kind of tedious verification work
+to verify scripts manually; that's the kind of tedious verification work
 that makes you question whether the whole approach is viable.
 Claude did that verification, confirmed the scripts were correct,
 concluded that `RunSynchronous` itself was the problem, and pivoted to a new architecture.
@@ -84,7 +84,7 @@ Each fix revealed a new constraint that nobody had documented.
 | V4      | `bash -c` wrapper               | `!` escaped to `\!`           | Extra shell layer corrupts quoting        |
 | V5      | `set -o pipefail &&`            | SIGPIPE exit 141              | `< /dev/null` appended to last command    |
 | V6      | `\|\| (exit $?)` suffix         | `$?` is empty                 | Variables don't expand in suffix position |
-| V7      | `&& true` suffix                | **Works**                     | --                                        |
+| V7      | `&& true` suffix                | **Works**                     |;                                        |
 
 **The solution:** `set -o pipefail && cmd 2>&1 | bun filter && true`.
 No shell variables, no special syntax, no nested shells.

@@ -62,57 +62,57 @@ Full text round-trips on open/save.
 
 ## Key design decisions
 
-- **Real Chrome, not Electron** -- access to `chrome://flags/#smooth-scrolling` and all compositor optimizations;
+- **Real Chrome, not Electron**: access to `chrome://flags/#smooth-scrolling` and all compositor optimizations;
   Chrome updates independently
-- **Raw contenteditable** -- browser handles keystroke-to-render natively;
+- **Raw contenteditable**: browser handles keystroke-to-render natively;
   editord is notified asynchronously for persistence
-- **No virtualization** -- entire file rendered in DOM.
+- **No virtualization**: entire file rendered in DOM.
   Loading a huge file is a user error.
   This means normal scrolls are pure GPU layer translations on the compositor thread.
-- **Per-line `<div>` elements** -- natural for contenteditable (Enter creates new divs, Backspace merges them);
+- **Per-line `<div>` elements**: natural for contenteditable (Enter creates new divs, Backspace merges them);
   enables `children[n]` indexing for go-to-line
-- **Native `<details><summary>`** -- file tree directories use browser-native expand/collapse;
+- **Native `<details><summary>`**: file tree directories use browser-native expand/collapse;
   JS only handles lazy-loading on first expand and one-level-ahead preloading
-- **CSS `order` sorting** -- file tree entries are sorted alphabetically via CSS `order` integers
+- **CSS `order` sorting**: file tree entries are sorted alphabetically via CSS `order` integers
   derived from the first four characters of the filename, avoiding DOM re-insertion
-- **Web components with shadow DOM** -- encapsulated styling via h-css, DOM construction via h-dom
-- **Shared protocol types** -- `src/protocol.ts` defines all wire types once;
+- **Web components with shadow DOM**: encapsulated styling via h-css, DOM construction via h-dom
+- **Shared protocol types**: `src/protocol.ts` defines all wire types once;
   both server and client import from the same module
-- **Path containment** -- all filesystem operations validate paths against the root directory
+- **Path containment**: all filesystem operations validate paths against the root directory
   via `assertWithinRoot`, preventing traversal even with a valid auth token
-- **Tagged loggers** -- all server and client modules use structured tagged logging
+- **Tagged loggers**: all server and client modules use structured tagged logging
   from `@monochromatic-dev/module-logger`
-- **WebSocket with token auth** -- token generated per-session via `crypto.randomUUID()`,
+- **WebSocket with token auth**: token generated per-session via `crypto.randomUUID()`,
   passed as URL query param
-- **Recent files with recency markers** -- file tree shows numbers 0 (current) through 9 (oldest)
+- **Recent files with recency markers**: file tree shows numbers 0 (current) through 9 (oldest)
   in the toggle column; Ctrl+0..9 navigates to the Nth recent file, auto-expanding ancestor
   directories with scroll anchoring to keep the user's view stable; list persists across sessions
-- **JetBrains keymap** -- double-shift for Search Everywhere (replaces command palette)
-- **Inlay hints via `::before`** -- type annotations and parameter names rendered as `::before`
+- **JetBrains keymap**: double-shift for Search Everywhere (replaces command palette)
+- **Inlay hints via `::before`**: type annotations and parameter names rendered as `::before`
   pseudo-elements on line divs, with line numbers moved to `::after` to free up `::before`;
   `--line-num-offset` measured via `getComputedStyle` in a follow-up rAF so line numbers
   stay aligned with code even when hints wrap across multiple visual lines
-- **Two themes** -- dark (#ccc on #000), light (#444 on #fff); toggled via `data-theme` attribute
-- **Binary file viewer** -- non-text files detected by extension (`FileKind`);
+- **Two themes**: dark (#ccc on #000), light (#444 on #fff); toggled via `data-theme` attribute
+- **Binary file viewer**: non-text files detected by extension (`FileKind`);
   images, audio, and video render in native `<img>`, `<audio>`, `<video>` elements;
   unknown binaries display a hex dump (16 bytes/line, truncated at 16 384 bytes)
-- **Context menu via Popover API** -- right-click on file tree entries opens a context menu
+- **Context menu via Popover API**: right-click on file tree entries opens a context menu
   using `popover="auto"` with CSS anchor positioning and `position-try-fallbacks`
   for viewport edge detection; supports inline input items for rename/copy operations
-- **Directory watching** -- chokidar per expanded directory (`depth: 0`, `atomic: true`,
+- **Directory watching**: chokidar per expanded directory (`depth: 0`, `atomic: true`,
   `awaitWriteFinish` 150 ms), pushes `fileChanged` events to the client; save operations
   suppress self-triggered events for 500 ms; ignores `.git`, `node_modules`, swap files,
   and temp files
-- **Filesystem volume ID** -- `connected` message includes `fsId` (filesystem volume identifier
+- **Filesystem volume ID**: `connected` message includes `fsId` (filesystem volume identifier
   from `stat -f`) so localStorage keys are stable per volume, not per mount path
-- **Diagnostic store** -- multi-source diagnostic aggregation; each LSP server (oxlint, tsgo)
+- **Diagnostic store**: multi-source diagnostic aggregation; each LSP server (oxlint, tsgo)
   publishes independently without overwriting the other's diagnostics for the same file
-- **Selection ranges** -- LSP `textDocument/selectionRange` for syntactic expand/shrink selection;
+- **Selection ranges**: LSP `textDocument/selectionRange` for syntactic expand/shrink selection;
   Ctrl+W expands to the next larger enclosing scope, Ctrl+Shift+W shrinks back
-- **Find references with fallback** -- Ctrl+B tries go-to-definition first;
+- **Find references with fallback**: Ctrl+B tries go-to-definition first;
   if already at the definition, falls through to find references;
   single reference navigates directly, multiple references show a popup
-- **Fullscreen keyboard lock** -- floating action button enters fullscreen mode and calls
+- **Fullscreen keyboard lock**: floating action button enters fullscreen mode and calls
   `navigator.keyboard.lock(['KeyW'])` to capture Ctrl+W from the browser
 
 ## Running
@@ -229,48 +229,48 @@ Notifications have no `id` and expect no response.
 
 **Client to server (requests):**
 
-- `{ type: "open", id, path }` -- read file, responds with `fileContent`
-- `{ type: "save", id, path, content }` -- write file, responds with `saved`
-- `{ type: "listDir", id, path }` -- list directory, responds with `dirListing`
-- `{ type: "search", id, query, scope }` -- ripgrep search scoped to a directory
-- `{ type: "hover", id, path, line, character }` -- request hover info
-- `{ type: "completion", id, path, line, character }` -- request completions
-- `{ type: "format", id, path }` -- request document formatting
-- `{ type: "gotoDefinition", id, path, line, character }` -- request go-to-definition
-- `{ type: "findReferences", id, path, line, character }` -- request find-references
-- `{ type: "inlayHint", id, path, range }` -- request inlay hints for a range
-- `{ type: "selectionRange", id, path, positions }` -- request expand/shrink selection chain
-- `{ type: "deleteEntry", id, path }` -- delete file or directory
-- `{ type: "copyEntry", id, path, destPath }` -- copy file or directory
-- `{ type: "moveEntry", id, path, destPath }` -- rename or move file/directory
-- `{ type: "newEntry", id, parentPath, name, isDirectory }` -- create new file or directory
-- `{ type: "openInTerminal", id, path }` -- launch terminal at directory
-- `{ type: "openInDefaultApp", id, path }` -- open file in default application
+- `{ type: "open", id, path }`: read file, responds with `fileContent`
+- `{ type: "save", id, path, content }`: write file, responds with `saved`
+- `{ type: "listDir", id, path }`: list directory, responds with `dirListing`
+- `{ type: "search", id, query, scope }`: ripgrep search scoped to a directory
+- `{ type: "hover", id, path, line, character }`: request hover info
+- `{ type: "completion", id, path, line, character }`: request completions
+- `{ type: "format", id, path }`: request document formatting
+- `{ type: "gotoDefinition", id, path, line, character }`: request go-to-definition
+- `{ type: "findReferences", id, path, line, character }`: request find-references
+- `{ type: "inlayHint", id, path, range }`: request inlay hints for a range
+- `{ type: "selectionRange", id, path, positions }`: request expand/shrink selection chain
+- `{ type: "deleteEntry", id, path }`: delete file or directory
+- `{ type: "copyEntry", id, path, destPath }`: copy file or directory
+- `{ type: "moveEntry", id, path, destPath }`: rename or move file/directory
+- `{ type: "newEntry", id, parentPath, name, isDirectory }`: create new file or directory
+- `{ type: "openInTerminal", id, path }`: launch terminal at directory
+- `{ type: "openInDefaultApp", id, path }`: open file in default application
 
 **Client to server (notifications):**
 
-- `{ type: "didChange", path, content }` -- notify LSP servers of content change (no response)
-- `{ type: "didClose", path }` -- notify LSP servers file was closed (no response)
-- `{ type: "watchDir", path }` -- register a directory for filesystem change notifications
+- `{ type: "didChange", path, content }`: notify LSP servers of content change (no response)
+- `{ type: "didClose", path }`: notify LSP servers file was closed (no response)
+- `{ type: "watchDir", path }`: register a directory for filesystem change notifications
 
 **Server to client:**
 
-- `{ type: "connected", rootDir, fsId }` -- handshake with root directory and filesystem volume ID
-- `{ type: "fileContent", id, path, content, kind }` -- file read result with `FileKind` for viewer routing
-- `{ type: "saved", id, path }` -- write confirmation
-- `{ type: "dirListing", id, path, entries }` -- directory listing with `{ name, isDirectory }` entries
-- `{ type: "searchResults", id, results }` -- search results (file-path and content matches)
-- `{ type: "fileChanged", path, changeType, isDirectory }` -- push notification for filesystem changes
-- `{ type: "diagnostics", path, diagnostics }` -- push diagnostics from LSP servers
-- `{ type: "hoverResult", id, contents, range? }` -- hover info response
-- `{ type: "completionResult", id, items }` -- completion items response
-- `{ type: "formatResult", id, edits }` -- formatting text edits response
-- `{ type: "definitionResult", id, path, line, character }` -- go-to-definition response
-- `{ type: "referencesResult", id, locations }` -- find-references response with path + position
-- `{ type: "inlayHintResult", id, hints }` -- inlay hints with position, label, kind
-- `{ type: "selectionRangeResult", id, ranges }` -- nested selection range chains
-- `{ type: "fsActionDone", id }` -- confirmation for filesystem mutations (delete/copy/move/new/open)
-- `{ type: "error", id?, message }` -- error response
+- `{ type: "connected", rootDir, fsId }`: handshake with root directory and filesystem volume ID
+- `{ type: "fileContent", id, path, content, kind }`: file read result with `FileKind` for viewer routing
+- `{ type: "saved", id, path }`: write confirmation
+- `{ type: "dirListing", id, path, entries }`: directory listing with `{ name, isDirectory }` entries
+- `{ type: "searchResults", id, results }`: search results (file-path and content matches)
+- `{ type: "fileChanged", path, changeType, isDirectory }`: push notification for filesystem changes
+- `{ type: "diagnostics", path, diagnostics }`: push diagnostics from LSP servers
+- `{ type: "hoverResult", id, contents, range? }`: hover info response
+- `{ type: "completionResult", id, items }`: completion items response
+- `{ type: "formatResult", id, edits }`: formatting text edits response
+- `{ type: "definitionResult", id, path, line, character }`: go-to-definition response
+- `{ type: "referencesResult", id, locations }`: find-references response with path + position
+- `{ type: "inlayHintResult", id, hints }`: inlay hints with position, label, kind
+- `{ type: "selectionRangeResult", id, ranges }`: nested selection range chains
+- `{ type: "fsActionDone", id }`: confirmation for filesystem mutations (delete/copy/move/new/open)
+- `{ type: "error", id?, message }`: error response
 
 ## JetBrains parity
 
@@ -282,9 +282,9 @@ file tree interactions, and general editor behavior.
 
 editord proxies three language servers over JSON-RPC/stdio:
 
-- **oxlint** (`oxlint --lsp`) -- linting diagnostics for JS/TS
-- **tsgo** (`tsgo --lsp --stdio`) -- type diagnostics, hover, completions, go-to-definition, find references, inlay hints, selection ranges for JS/TS
-- **dprint** (`dprint lsp`) -- formatting for JS/TS, JSON, CSS, HTML, Markdown, YAML, TOML
+- **oxlint** (`oxlint --lsp`): linting diagnostics for JS/TS
+- **tsgo** (`tsgo --lsp --stdio`): type diagnostics, hover, completions, go-to-definition, find references, inlay hints, selection ranges for JS/TS
+- **dprint** (`dprint lsp`): formatting for JS/TS, JSON, CSS, HTML, Markdown, YAML, TOML
 
 The server aggregates diagnostics from oxlint and tsgo via a `DiagnosticStore`
 that maintains per-source diagnostic sets per file, merging them into a single push.
@@ -294,23 +294,23 @@ Servers that fail to start are skipped; the editor degrades gracefully.
 
 **Keybindings:**
 
-- **Ctrl+S** -- save current file
-- **Ctrl+Z** / **Ctrl+Shift+Z** -- undo / redo
-- **Ctrl+Y** -- delete current line
-- **Ctrl+C** -- copy current line when no text is selected
-- **Ctrl+D** -- duplicate current line down
-- **Ctrl+Shift+Up** / **Ctrl+Shift+Down** -- swap line up / down
-- **Tab** / **Shift+Tab** -- indent / unindent current line or selection
-- **Ctrl+B** -- go to definition (falls back to find references if already at definition)
-- **Ctrl+Click** -- go to definition at click position
-- **Ctrl+Space** -- trigger completions
-- **Ctrl+Shift+F** / **Ctrl+Alt+L** -- format document (JetBrains parity)
-- **Ctrl+W** -- expand selection to next larger syntactic scope
-- **Ctrl+Shift+W** -- shrink selection to previous smaller scope
-- **Ctrl+0..9** -- navigate to recent file by recency index (0 = current, 9 = oldest)
-- **Double Shift** -- search everywhere (file paths and content)
-- **Mouse hover** -- show type information (350ms debounce)
-- **Escape** -- dismiss hover popup, completion popup, or references popup
+- **Ctrl+S**: save current file
+- **Ctrl+Z** / **Ctrl+Shift+Z**: undo / redo
+- **Ctrl+Y**: delete current line
+- **Ctrl+C**: copy current line when no text is selected
+- **Ctrl+D**: duplicate current line down
+- **Ctrl+Shift+Up** / **Ctrl+Shift+Down**: swap line up / down
+- **Tab** / **Shift+Tab**: indent / unindent current line or selection
+- **Ctrl+B**: go to definition (falls back to find references if already at definition)
+- **Ctrl+Click**: go to definition at click position
+- **Ctrl+Space**: trigger completions
+- **Ctrl+Shift+F** / **Ctrl+Alt+L**: format document (JetBrains parity)
+- **Ctrl+W**: expand selection to next larger syntactic scope
+- **Ctrl+Shift+W**: shrink selection to previous smaller scope
+- **Ctrl+0..9**: navigate to recent file by recency index (0 = current, 9 = oldest)
+- **Double Shift**: search everywhere (file paths and content)
+- **Mouse hover**: show type information (350ms debounce)
+- **Escape**: dismiss hover popup, completion popup, or references popup
 
 ## Not in MVP
 

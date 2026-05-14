@@ -7,11 +7,11 @@ to strip wasteful patterns before the model sees them.
 
 Bash tool outputs contain patterns that waste tokens without providing value to the model:
 
-- **Git commit boilerplate** -- `create mode 100644` lines repeated per file (~5% of all Bash output)
-- **Git transport progress** -- `Enumerating objects`, `Counting objects`, `Writing objects` counters
-- **Long lines** -- minified JS/CSS lines thousands of chars long (~5% of output)
-- **Repeated diagnostics** -- linters emitting the same message for every violation (~2%)
-- **Trailing whitespace** -- spaces and tabs at end of lines
+- **Git commit boilerplate**: `create mode 100644` lines repeated per file (~5% of all Bash output)
+- **Git transport progress**: `Enumerating objects`, `Counting objects`, `Writing objects` counters
+- **Long lines**: minified JS/CSS lines thousands of chars long (~5% of output)
+- **Repeated diagnostics**: linters emitting the same message for every violation (~2%)
+- **Trailing whitespace**: spaces and tabs at end of lines
 
 Combined, these account for ~12% of all Bash tool output tokens across typical sessions.
 
@@ -26,13 +26,13 @@ original_command 2>&1 | bun ccbof-filter.js; _bof=${PIPESTATUS[0]}; (exit $_bof)
 
 **Key design decisions:**
 
-- **Filter-by-default with denylist** -- all commands are filtered unless they match
+- **Filter-by-default with denylist**: all commands are filtered unless they match
   a denylist (binary tools, file redirects, background processes, double-wrapping)
-- **Runs inside the sandbox** -- the filter executes as the right side of a pipe,
+- **Runs inside the sandbox**: the filter executes as the right side of a pipe,
   inheriting the sandbox's filesystem and network restrictions
-- **Preserves exit codes** -- `PIPESTATUS[0]` captures the original command's exit code
+- **Preserves exit codes**: `PIPESTATUS[0]` captures the original command's exit code
   and replays it via `(exit $_bof)` so Claude Code sees failures correctly
-- **Works with the pipe bug** -- the sandbox's `< /dev/null` redirect
+- **Works with the pipe bug**: the sandbox's `< /dev/null` redirect
   lands on `(exit $_bof)` (the last simple command), not the filter
 
 ## Filter transformations

@@ -1060,10 +1060,10 @@ For completeness, the following self-acknowledged mirror comments were found and
 already covered by earlier findings:
 
 - `webapp-forge/server/src/lib/http.ts` ("Mirrors the pattern from
-  `packages/webapp-content/messages-demo/src/lib/http.ts`") -- covered by the
+  `packages/webapp-content/messages-demo/src/lib/http.ts`"): covered by the
   `lib/http.ts` finding.
 - `webapp-forge/server/src/lib/args.ts` ("Mirrors
-  `packages/webapp-content/messages-demo/src/lib/args.ts`") -- covered by the
+  `packages/webapp-content/messages-demo/src/lib/args.ts`"): covered by the
   `lib/args.ts` finding.
 - `webapp-content/ssg-test/src/client/tags.ts` ("Mirrors the mapping used by editord
   for visual consistency across surfaces"), covered by the `HIGHLIGHT_GROUPS`
@@ -1268,9 +1268,9 @@ the call site, drops the local definition.
 
 Two callsites with the same conceptual function but different output strings:
 
-- `packages/webapp-content/messages-demo/src/server/pages/feed.ts` -- returns
+- `packages/webapp-content/messages-demo/src/server/pages/feed.ts`: returns
   "just now", "5m ago", "2h ago", "3d ago", or ISO-date prefix
-- `packages/claude-code-plugins/statusline/statusline.ts` -- returns
+- `packages/claude-code-plugins/statusline/statusline.ts`: returns
   "now", "30s", "5m", "2h30m", "3d4h" (no "ago" suffix)
 
 Both walk the same threshold ladder using `SECONDS_PER_MINUTE` / `SECONDS_PER_HOUR` /
@@ -1299,7 +1299,7 @@ function-level section.
 
 `packages/cli/vmsync/src/boot.ts` exports `parseMemoryToBytes(memory: string): number`
 which accepts strings like `"4G"` or `"2048M"` and returns bytes. Includes its own
-inline `GIB` and `MIB` constants. Pairs naturally with `formatBytes` -- any package
+inline `GIB` and `MIB` constants. Pairs naturally with `formatBytes`: any package
 that emits the human-readable form will eventually want to read it back.
 
 Suggested resolution: extract together with `formatBytes` into the same `module/es`
@@ -1386,7 +1386,7 @@ the inline typeguard.
 `function readJson<T,>(key: string, fallback: T): T` reading and parsing JSON from
 `localStorage` with a fallback on any failure. A second `readJson` exists in
 `packages/webapp-content/messages-demo/src/client/json-fetch.ts` but operates on
-`Response`, not `localStorage` -- different signature, same name. This is the
+`Response`, not `localStorage`: different signature, same name. This is the
 "name collision" case the constants section already documents.
 
 The `localStorage` variant is generic-shaped (no app-specific types) and will be
@@ -1434,7 +1434,7 @@ Three near-identical wrappers around `mkdir(..., { recursive: true })`:
   takes a file path, calls `mkdir(dirname(filePath), { recursive: true })`
 - `packages/claude-code-plugins/source/src/handlers/session-start-housekeeping.ts:ensureDir(dirPath)`:
   takes a directory path directly
-- `packages/webapp-content/ssg-test/src/build/assets.ts:ensureDir(dir)` -- inline
+- `packages/webapp-content/ssg-test/src/build/assets.ts:ensureDir(dir)`: inline
   callback inside a `Promise.all(map)` chain
 
 Three call shapes, three definitions, one underlying operation. The first one
@@ -1461,7 +1461,7 @@ Suggested resolution: bundle `getFlag`, `intFlag`, `boolFlag`, `stringFlag` into
 single `module/es` arg-parser submodule. The five `getFlag`-or-equivalent
 implementations and the two `intFlag` copies all collapse to imports.
 
-#### `truncate(value, maxLength)` with ellipsis -- one fork has two copies
+#### `truncate(value, maxLength)` with ellipsis; one fork has two copies
 
 `packages/pi/terminal-title/src/formatter-utils.ts:truncate` and the corresponding
 copy in `packages/claude-code-plugins/source/src/handlers/terminal-title/formatter-utils.ts`
@@ -1515,7 +1515,7 @@ Suggested resolution: extract to `module/es/path/glob.ts` (sibling to the existi
 both define `round1(value): number => Math.round(value * 10) / 10`. Same body, no
 divergence. While `test-fixture/*` is excluded from the broader DRY scope, this
 function is shape-generic enough that it should leave the fixture and live in
-`module/es` -- any package that prints fractional metrics will write its own copy
+`module/es`: any package that prints fractional metrics will write its own copy
 otherwise.
 
 Suggested resolution: move to `module/es/types/t number/...` (the taxonomic location
@@ -1662,10 +1662,10 @@ during a future drive-by.
 following the package's own taxonomy. Each level has a one-line `index.ts` that
 re-exports the next level. Across the tree, several one-line barrel patterns recur:
 
-- `export * as sync from './r s/index.ts';` -- 52 files
-- `export * as positional from './p p/index.ts';` -- 51 files
-- `export * as type from './t/index.ts';` -- 27 files
-- `export * as from from './f/index.ts';` -- 24 files
+- `export * as sync from './r s/index.ts';`: 52 files
+- `export * as positional from './p p/index.ts';`: 51 files
+- `export * as type from './t/index.ts';`: 27 files
+- `export * as from from './f/index.ts';`: 24 files
 - `export * as named from './p n/index.ts';
   export * as positional from './p p/index.ts';` (16 files)
 

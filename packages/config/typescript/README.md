@@ -87,9 +87,15 @@ and for tools that read tsconfig to locate declarations.
 
 ## Project references
 
-`composite: true` is inherited from the base.
-No package in this monorepo currently uses TypeScript project references.
-If a downstream consumer is referenced as a project,
+`composite: true` is inherited from the base, but no package in this monorepo uses
+TypeScript project references and we have no plans to adopt them. `tsgo` reads source
+directly via the `./ts` entry in each package's `exports` map, which short-circuits the
+cold-rebuild cost references are meant to solve in classic-tsc workflows.
+
+See [`.out-of-scope/typescript-project-references.md`](../../../.out-of-scope/typescript-project-references.md)
+for the full decision and trade-off analysis.
+
+If a downstream consumer **is** referenced as a project,
 TypeScript raises TS6310 ("Referenced project may not disable emit");
 the referenced consumer must override `noEmit: false` in its own `tsconfig.json`.
 

@@ -41,10 +41,10 @@ Use generous pass thresholds and consume results to prevent dead code eliminatio
 
 Uses hyperfine for statistically rigorous timing across 4 scenarios:
 
-- **Cold run** -- dest directory empty, all files written fresh
-- **Warm run** -- all content unchanged, all writes skipped
-- **1 source changed** -- one source modified between runs
-- **1 dest changed** -- one dest modified externally between runs
+- **Cold run**: dest directory empty, all files written fresh
+- **Warm run**: all content unchanged, all writes skipped
+- **1 source changed**: one source modified between runs
+- **1 dest changed**: one dest modified externally between runs
 
 ### Constrained (`run-constrained.ts`)
 
@@ -75,7 +75,7 @@ This created unrealistic benchmark results because CFS bandwidth control works b
 Real VPS providers use approaches that do not produce periodic stalls:
 
 - **Dedicated vCPU pinning** (Hetzner, DigitalOcean, Vultr regular instances): KVM with `virsh vcpupin` gives the guest a full hardware thread of a weaker Xeon/EPYC. Execution is uniformly slower with zero periodic stalls.
-- **Proportional sharing** (overcommitted hosts, some budget providers): Uses `cpu.weight` (cgroup v2) or `cpu.shares` (v1). No hard cap -- throughput varies with neighbor activity but without artificial stall injection.
+- **Proportional sharing** (overcommitted hosts, some budget providers): Uses `cpu.weight` (cgroup v2) or `cpu.shares` (v1). No hard cap; throughput varies with neighbor activity but without artificial stall injection.
 - **Burstable with `cpu.max.burst`** (AWS t3, Azure B-series, Ubicloud burstable): Uses `cpu.max` with accumulated burst credits that smooth out the stalls significantly.
 
 None of these match the bare `cpu.max` sawtooth behavior.
@@ -88,7 +88,7 @@ All containers compete for the same physical core through the kernel's EEVDF sch
 Benefits over CFS bandwidth throttling:
 
 - Preemption at natural scheduler boundaries, not at arbitrary 10-100ms walls
-- No bimodal latency -- just uniformly slower with realistic variance from contention
+- No bimodal latency; just uniformly slower with realistic variance from contention
 - The variance itself is useful data (it captures real scheduling jitter)
 - Each container reports sysbench scores; with 5 containers on 1 core of a Ryzen 7 8700F (~5300 events/sec total), each gets ~1060-1090 events/sec, well below the 1605 VPS baseline
 
@@ -150,11 +150,11 @@ The 2-55ms warm variance was caused by CFS period boundary stalls, not actual pe
 
 ## Source files
 
-- `setup-fixture.ts` -- creates the 240-file benchmark fixture
-- `perf.config.ts` -- exercises all file-enforcer operations against the fixture
-- `perf.bench.test.ts` -- 11 micro-benchmarks with JIT limitation notes
-- `run-e2e.ts` -- hyperfine-based end-to-end benchmarks
-- `validate-resources.ts` -- CPU, memory, IO, and sysbench benchmarks for resource validation
-- `bench-in-container.ts` -- runs inside the container, validates CPU affinity and memory limits, times config execution
-- `run-constrained.ts` -- orchestrates podman build, parallel container launch, and constrained benchmarks
-- `Containerfile` -- Fedora 43 with bun and sysbench
+- `setup-fixture.ts`: creates the 240-file benchmark fixture
+- `perf.config.ts`: exercises all file-enforcer operations against the fixture
+- `perf.bench.test.ts`: 11 micro-benchmarks with JIT limitation notes
+- `run-e2e.ts`: hyperfine-based end-to-end benchmarks
+- `validate-resources.ts`: CPU, memory, IO, and sysbench benchmarks for resource validation
+- `bench-in-container.ts`: runs inside the container, validates CPU affinity and memory limits, times config execution
+- `run-constrained.ts`: orchestrates podman build, parallel container launch, and constrained benchmarks
+- `Containerfile`: Fedora 43 with bun and sysbench
