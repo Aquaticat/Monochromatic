@@ -9,7 +9,7 @@ import {
   dirname,
   join,
   resolve,
-} from '@monochromatic-dev/module-es/ts/path/index.ts';
+} from '@monochromatic-dev/module-fs-path';
 import {
   existsSync,
   readCssFileSync,
@@ -49,9 +49,11 @@ export function findPackageDir(
   while (true) {
     /** Candidate node_modules/<pkg> directory */
     const candidate = join(
-      current,
-      'node_modules',
-      packageName,
+      [
+        current,
+        'node_modules',
+        packageName,
+      ],
     );
     if (existsSync(candidate,))
       return candidate;
@@ -82,8 +84,10 @@ export function readPackageJson(
 ): Record<string, unknown> | undefined {
   /** Path to package.json */
   const packageJsonPath = join(
-    packageDir,
-    'package.json',
+    [
+      packageDir,
+      'package.json',
+    ],
   );
   try {
     /** Raw JSON text */
@@ -192,8 +196,10 @@ export function resolvePackage(
       if (resolved !== undefined) {
         /** Absolute path from exports resolution */
         const absolutePath = resolve(
-          packageDir,
-          resolved,
+          [
+            packageDir,
+            resolved,
+          ],
         );
         if (existsSync(absolutePath,))
           return absolutePath;
@@ -211,8 +217,10 @@ export function resolvePackage(
         if (typeof value === 'string') {
           /** Absolute path from style/main field */
           const absolutePath = resolve(
-            packageDir,
-            value,
+            [
+              packageDir,
+              value,
+            ],
           );
           if (existsSync(absolutePath,))
             return absolutePath;
@@ -228,8 +236,10 @@ export function resolvePackage(
     const relativePart = subpath.startsWith('./',) ? subpath.slice(2,) : subpath;
     /** Absolute path from direct file reference */
     const directPath = join(
-      packageDir,
-      relativePart,
+      [
+        packageDir,
+        relativePart,
+      ],
     );
     if (existsSync(directPath,))
       return directPath;

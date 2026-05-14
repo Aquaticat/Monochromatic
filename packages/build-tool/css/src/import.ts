@@ -15,7 +15,7 @@ import {
   isAbsolute,
   resolve,
   sep,
-} from '@monochromatic-dev/module-es/ts/path/index.ts';
+} from '@monochromatic-dev/module-fs-path';
 import {
   type AtRule,
   parse,
@@ -63,8 +63,10 @@ function resolveSpecifier(
   if (specifier.startsWith('.',)) {
     /** Resolved absolute path from relative specifier */
     const resolved = resolve(
-      fromDir,
-      specifier,
+      [
+        fromDir,
+        specifier,
+      ],
     );
     if (existsSync(resolved,))
       return resolved;
@@ -80,8 +82,10 @@ function resolveSpecifier(
   {
     /** Attempt to resolve as relative path */
     const asRelative = resolve(
-      fromDir,
-      specifier,
+      [
+        fromDir,
+        specifier,
+      ],
     );
     if (existsSync(asRelative,))
       return asRelative;

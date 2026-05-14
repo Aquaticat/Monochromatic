@@ -5,7 +5,7 @@ import './process-shim.ts';
 import {
   dirname,
   resolve,
-} from '@monochromatic-dev/module-es/ts/path/index.ts';
+} from '@monochromatic-dev/module-fs-path';
 import postcss, { parse, } from 'postcss';
 import { readCssFile, } from './fs.ts';
 import { postcssInlineImport, } from './import.ts';
@@ -120,7 +120,7 @@ export async function build(options: BuildOptions,): Promise<string> {
   mixins.clear();
 
   /** Absolute path to the CSS entry point */
-  const inputPath = resolve(input,);
+  const inputPath = resolve([input,],);
 
   /** Raw CSS text read from the entry file */
   const cssText = await readCssFile(inputPath,);
@@ -154,7 +154,7 @@ export async function build(options: BuildOptions,): Promise<string> {
     writeFile,
   } = await import('node:fs/promises');
   /** Absolute path for the output file */
-  const outputPath = resolve(output,);
+  const outputPath = resolve([output,],);
   await mkdir(
     dirname(outputPath,),
     { recursive: true, },
