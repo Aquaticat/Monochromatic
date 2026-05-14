@@ -41,9 +41,12 @@ export function resolveNpmNames(
   /** Length of the `npm:` prefix */
   const NPM_PREFIX_LENGTH = 4;
   if (catalogValue.startsWith('npm:',)) {
+    /** Catalog value with the `npm:` prefix stripped, leaving `<target>@<range>` or `<target>` for further parsing. */
     const withoutNpm = catalogValue.slice(NPM_PREFIX_LENGTH,);
     // Find the last @ that isn't position 0 (scoped package)
+    /** Index of the version separator `@`; skipped at position 0 so scoped names like `@scope/name` survive intact. */
     const lastAt = withoutNpm.lastIndexOf('@',);
+    /** Registry-target name without the version suffix; the actual install lives here when bun honours the alias. */
     const aliasTarget = lastAt > 0
       ? withoutNpm.slice(
         0,
@@ -83,13 +86,16 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
   if (workspaceRootsCache !== undefined)
     return workspaceRootsCache;
 
+  /** Top-level `packages/` directory; each entry is a category subdir holding individual workspace packages. */
   const packagesDir = join(
     monorepoRoot,
     'packages',
   );
+  /** Accumulator that collects each discovered workspace package directory before caching. */
   const roots: string[] = [];
 
   try {
+    /** Direct children of `packages/`, expected to be category directories (e.g. `module`, `dev-script`). */
     const categories = readdirSync(
       packagesDir,
       { withFileTypes: true, },
@@ -97,10 +103,12 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
     for (const cat of categories) {
       if (!cat.isDirectory())
         continue;
+      /** Absolute path to one category directory, scanned for the actual package folders. */
       const catPath = join(
         packagesDir,
         cat.name,
       );
+      /** Individual workspace packages nested under the category; each becomes one entry in `roots`. */
       const pkgs = readdirSync(
         catPath,
         { withFileTypes: true, },
@@ -150,23 +158,28 @@ export function readInstalledVersion(
   | undefined
 {
   // Try root node_modules first
+  /** Expected hoisted location of the package's `package.json` directly under the monorepo root. */
   const rootPkgJson = join(
     monorepoRoot,
     'node_modules',
     npmName,
     'package.json',
   );
+  /** Version found at the hoisted root location, if any; short-circuits before slower fallbacks. */
   const version = readVersionFromPackageJson(rootPkgJson,);
   if (version !== undefined)
     return version;
 
   // Try resolving from monorepo root via createRequire
   try {
+    /** Node-style require anchored at the monorepo root, used to walk the resolution chain from there. */
     const require = createRequire(join(
       monorepoRoot,
       'package.json',
     ),);
+    /** Resolved absolute path to the package's `package.json` via Node resolution from the monorepo root. */
     const resolved = require.resolve(`${npmName}/package.json`,);
+    /** Version read from the require-resolved `package.json`; second attempt after the hoisted lookup. */
     const rootVersion = readVersionFromPackageJson(resolved,);
     if (rootVersion !== undefined)
       return rootVersion;
@@ -176,14 +189,18 @@ export function readInstalledVersion(
   }
 
   // Walk workspace packages and try resolving from each
+  /** Every workspace package directory, used as alternate require anchors when root resolution fails. */
   const workspaceRoots = discoverWorkspaceRoots(monorepoRoot,);
   for (const wsRoot of workspaceRoots) {
     try {
+      /** Node-style require anchored at one workspace package, picking up its locally hoisted deps. */
       const require = createRequire(join(
         wsRoot,
         'package.json',
       ),);
+      /** Resolved absolute path to the package's `package.json` via require from this workspace anchor. */
       const resolved = require.resolve(`${npmName}/package.json`,);
+      /** Version read via the workspace-anchored resolution; tried per package before falling through to the bun store. */
       const wsVersion = readVersionFromPackageJson(resolved,);
       if (wsVersion !== undefined)
         return wsVersion;

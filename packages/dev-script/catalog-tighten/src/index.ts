@@ -80,16 +80,22 @@ const workspaceYamlContent = readFileSync(
  * @returns Map of package names to version range strings found under the `catalog:` section.
  */
 function parseCatalogFromYaml(content: string,): Record<string, string> {
+  /** Accumulator mapping each catalog package name to its raw range value; mutated in place during scanning. */
   const result: Record<string, string> = {};
+  /** Block-level match locating the `catalog:` section and capturing its indented body for entry scanning. */
   const catalogMatch = /^catalog:\s*\n((?:[ \t]+.+\n)*)/m.exec(content,);
   if (catalogMatch === null)
     return result;
+  /** Indented body of the `catalog:` block; each line inside is one `name: range` entry. */
   const [, catalogBlock,] = catalogMatch;
   if (catalogBlock === undefined)
     return result;
+  /** Stateful regex over the catalog block; the `g` flag advances `lastIndex` across `.exec` calls. */
   const entryPattern = /^\s+"?([^":]+)"?\s*:\s*"?([^"\n]+)"?\s*$/gm;
+  /** Current entry match; `null` ends the scan loop. */
   let match = entryPattern.exec(catalogBlock,);
   while (match !== null) {
+    /** Package name and version range captured from one entry line. */
     const [, name, value,] = match;
     if (name !== undefined && value !== undefined)
       result[name] = value;

@@ -42,10 +42,13 @@ const RANGE_RE = /^(?<prefix>.*?)>=(?<version>.+)$/;
  * ```
  */
 export function parseRange(value: string,): ParsedRange | undefined {
+  /** Regex match result; `null` means the value isn't a `>=` range so the caller should treat it as opaque. */
   const match = RANGE_RE.exec(value,);
   if (match === null)
     return undefined;
+  /** Substring captured before `>=`, preserved verbatim so the npm alias prefix round-trips into the rewritten range. */
   const prefix = match.groups?.['prefix'];
+  /** Substring captured after `>=`, used as the semver to compare against installed versions. */
   const version = match.groups?.['version'];
   if (prefix === undefined || version === undefined)
     return undefined;
@@ -75,12 +78,16 @@ function splitSemver(version: string,): [
   number,
   string,
 ] {
+  /** Position of the prerelease separator `-`, or `-1` when the version is a plain release. */
   const dashIndex = version.indexOf('-',);
+  /** Prerelease tag (substring after `-`) or empty string for a plain release. */
   const prerelease = dashIndex === -1 ? '' : version.slice(dashIndex + 1,);
+  /** Dotted-numeric core of the version (`major.minor.patch`), stripped of any prerelease suffix. */
   const coreStr = dashIndex === -1 ? version : version.slice(
     0,
     dashIndex,
   );
+  /** Three string segments parsed out of `coreStr`; cast to numbers below. */
   const parts = coreStr.split('.',);
   return [
     Number(parts[0],),
@@ -112,7 +119,9 @@ export function isStrictlyGreater(
   cataloged: string,
   installed: string,
 ): boolean {
+  /** Catalog version split into `[major, minor, patch, prerelease]` for component-wise comparison. */
   const [cMaj, cMin, cPat, cPre,] = splitSemver(cataloged,);
+  /** Installed version split into `[major, minor, patch, prerelease]` to test against the catalog tuple. */
   const [iMaj, iMin, iPat, iPre,] = splitSemver(installed,);
 
   if (iMaj !== cMaj)
