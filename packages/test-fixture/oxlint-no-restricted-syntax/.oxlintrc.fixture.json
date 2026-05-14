@@ -1,0 +1,49 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+  // Dedicated config for fixture linting: all no-restricted-syntax rules enabled,
+  // no ignorePatterns that would skip invalid/ or test-fixture/ paths.
+  // Used by the lint-fixture mise task and the oxlint-no-restricted-syntax unit tests.
+  "jsPlugins": [
+    "../../config/oxlint-no-restricted-syntax/src/index.ts"
+  ],
+  "ignorePatterns": [
+    "**/dist",
+    "**/node_modules"
+  ],
+  "rules": {
+    "no-restricted-syntax/no-arrow-function": "error",
+    "no-restricted-syntax/no-enum": "error",
+    "no-restricted-syntax/no-for-in": "error",
+    "no-restricted-syntax/no-function-root-let": "error",
+    "no-restricted-syntax/no-hasownproperty": "error",
+    "no-restricted-syntax/no-module-root-let": "error",
+    "no-restricted-syntax/no-promise-catch": "error",
+    "no-restricted-syntax/no-promise-finally": "error",
+    "no-restricted-syntax/no-rest-params": "error",
+    "no-restricted-syntax/no-switch": "error",
+    "no-restricted-syntax/no-trim-left-right": "error",
+    "no-restricted-syntax/no-try-finally": "error",
+    "no-restricted-syntax/no-variable-function-expression": "error",
+    "no-restricted-syntax/require-destructured-params": "error",
+    "no-restricted-syntax/require-queryselector-generic": "error",
+    "no-restricted-syntax/no-disable-max-lines": "error",
+    "no-restricted-syntax/no-disable-no-arrow-function": "error",
+    "no-restricted-syntax/no-disable-no-enum": "error",
+    "no-restricted-syntax/no-disable-no-for-in": "error",
+    "no-restricted-syntax/no-disable-no-hasownproperty": "error",
+    "no-restricted-syntax/no-disable-no-misused-promises": "error",
+    "no-restricted-syntax/no-disable-no-non-null-assertion": "error",
+    "no-restricted-syntax/no-disable-no-promise-catch": "error",
+    "no-restricted-syntax/no-disable-no-promise-finally": "error",
+    "no-restricted-syntax/no-disable-no-rest-params": "error",
+    "no-restricted-syntax/no-disable-no-switch": "error",
+    "no-restricted-syntax/no-disable-no-trim-left-right": "error",
+    "no-restricted-syntax/no-disable-no-try-finally": "error",
+    "no-restricted-syntax/no-disable-no-useless-return": "error",
+    "no-restricted-syntax/no-disable-no-variable-function-expression": "error",
+    "no-restricted-syntax/no-disable-prefer-regexp-exec": "error",
+    "no-restricted-syntax/no-disable-require-destructured-params": "error",
+    "no-restricted-syntax/no-disable-require-returns": "error",
+    "no-restricted-syntax/no-disable-require-tsdoc": "error"
+  }
+}

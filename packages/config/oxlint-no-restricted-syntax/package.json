@@ -13,7 +13,9 @@
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
-    "@types/bun": "catalog:"
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:",
+    "nano-spawn": "catalog:"
   },
   "type": "module",
   "files": [

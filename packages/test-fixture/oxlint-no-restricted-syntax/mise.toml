@@ -1,0 +1,16 @@
+# lint:oxlint omitted -- root oxlint.config.ts ignorePatterns includes **/test-fixture/**
+# but per-package tasks run oxlint from within the package directory where
+# CWD-relative paths no longer contain "test-fixture/".
+
+# lint and lint:types commented out -- test fixtures contain intentionally
+# invalid code that triggers TS errors by design.
+
+# [tasks.lint]
+# extends = "lint"
+
+# [tasks."lint:types"]
+# extends = "lint:types"
+
+[tasks."lint-fixture"]
+description = "Lint fixture files with all no-restricted-syntax rules enabled (for plugin validation)"
+run = "oxlint -c .oxlintrc.fixture.json src/"

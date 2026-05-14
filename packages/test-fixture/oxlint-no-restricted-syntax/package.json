@@ -1,0 +1,11 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/test-fixture-oxlint-no-restricted-syntax",
+  "description": "Test fixture: valid and invalid TypeScript samples for verifying oxlint-no-restricted-syntax rule behavior.",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "files": [
+    "src/"
+  ]
+}
