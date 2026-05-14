@@ -71,7 +71,7 @@ const CWD_PREFIX: string = (function resolveCwdPrefix(): string {
  * this computes the alternate by swapping the home-directory prefix.
  */
 const ALT_CWD_PREFIX: string = (function resolveAltCwdPrefix(): string {
-  if (CWD_PREFIX === '' || REAL_HOME_DIR === '' || HOME_DIR === '')
+  if ((CWD_PREFIX === '') || (REAL_HOME_DIR === '') || (HOME_DIR === ''))
     return '';
 
   if (CWD_PREFIX.startsWith(`${REAL_HOME_DIR}/`,))

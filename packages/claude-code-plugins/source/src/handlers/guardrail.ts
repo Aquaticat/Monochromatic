@@ -22,7 +22,7 @@ import { parseHookJson, } from '../runtime/handler-runtime.ts';
  * ```
  */
 function isGeneralPurpose(subagentType: unknown,): boolean {
-  return subagentType === undefined || subagentType === 'general-purpose';
+  return (subagentType === undefined) || (subagentType === 'general-purpose');
 }
 
 /**
@@ -80,7 +80,7 @@ function guardrailHandler(event: PreToolUseInput,): GuardrailOutput {
     ? event.tool_input['resume']
     : undefined;
 
-  if (typeof resume === 'string') {
+  if ((typeof resume) === 'string') {
     return {
       hookSpecificOutput: {
         hookEventName: 'PreToolUse',

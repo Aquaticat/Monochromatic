@@ -63,8 +63,8 @@ function shortPath(filePath: string,): string {
  * @returns short descriptive title for the terminal tab
  */
 function titleForEvent(hookEvent: HookInput,): string {
-  if (hookEvent.hook_event_name === 'PreToolUse'
-    || hookEvent.hook_event_name === 'PostToolUse')
+  if ((hookEvent.hook_event_name === 'PreToolUse')
+    || (hookEvent.hook_event_name === 'PostToolUse'))
   {
     return titleForTool(hookEvent,);
   }

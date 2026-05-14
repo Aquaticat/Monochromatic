@@ -185,7 +185,7 @@ function findByMostRecent(): PidMapping | null {
         );
         const mapping = parseHookJson<PidMapping>(raw,);
 
-        if (current === null || mtime > current.mtime) {
+        if ((current === null) || (mtime > current.mtime)) {
           return {
             mapping,
             mtime,

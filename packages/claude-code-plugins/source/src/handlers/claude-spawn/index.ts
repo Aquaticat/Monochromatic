@@ -70,7 +70,7 @@ function updateChildOnStop(
   },
 ): void {
   const spawnId = process.env.CLAUDE_SPAWN_ID;
-  if (spawnId === undefined || lastMessage === undefined)
+  if ((spawnId === undefined) || (lastMessage === undefined))
     return;
 
   const filePath = join(

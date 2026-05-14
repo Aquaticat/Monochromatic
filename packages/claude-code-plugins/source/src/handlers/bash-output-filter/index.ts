@@ -18,7 +18,7 @@ import {
  * @returns `true` when `input` has a string `command` property
  */
 function isBashToolInput(input: Record<string, unknown>,): input is BashToolInput {
-  return typeof input.command === 'string';
+  return (typeof input.command) === 'string';
 }
 
 /**
@@ -54,12 +54,12 @@ type BashOutputFilterOutput = PreToolUseOutput | Record<string, never>;
  * @returns rewritten output when the command should be filtered, otherwise `{}`
  */
 function bashOutputFilterHandler(event: PreToolUseInput,): BashOutputFilterOutput {
-  if (event.tool_name !== 'Bash' || !isBashToolInput(event.tool_input,))
+  if ((event.tool_name !== 'Bash') || (!isBashToolInput(event.tool_input,)))
     return {};
 
   const bashInput = event.tool_input;
 
-  if (!isAllowed(bashInput.command,) || shouldSkip(bashInput.command,))
+  if ((!isAllowed(bashInput.command,)) || shouldSkip(bashInput.command,))
     return {};
 
   const isBuilt = import.meta.url.endsWith('.mjs',);

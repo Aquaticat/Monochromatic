@@ -41,7 +41,7 @@ const SEARCH_TOOL_TITLES: Record<string, ToolTitleEntry> = {
       if (first === undefined)
         return undefined;
       const { question, } = first;
-      if (typeof question === 'string')
+      if ((typeof question) === 'string')
         return question;
       return undefined;
     },

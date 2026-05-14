@@ -64,7 +64,7 @@ function collapseLines(lines: string[],): string[] {
     const shortened = collapseHomePaths(relative,);
     const processed = truncateLine(shortened,);
 
-    if (processed === prevLine && repeatCount > 0)
+    if ((processed === prevLine) && (repeatCount > 0))
       repeatCount++;
     else {
       flushRepeated({

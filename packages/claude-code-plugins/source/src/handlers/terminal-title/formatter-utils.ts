@@ -106,7 +106,7 @@ function stringField(
   },
 ): string | undefined {
   const value = input[key];
-  if (typeof value === 'string')
+  if ((typeof value) === 'string')
     return value;
   return undefined;
 }
