@@ -12,7 +12,7 @@ filter DSL, no embedded interpreter).
 
 editord originally shelled out to `watchexec -w src/server --no-meta -r --
 bun src/server/index.ts`. Two failure modes documented in
-`packages/desktop-daemon/editord/TROUBLESHOOTING.mise-watch.md` motivated the
+the repo-root `TROUBLESHOOTING.mise-watch.md` motivated the
 replacement: a Tokio reference-cycle SIGINT hang in watchexec's jaq filter
 mode, and SIGTERM not reaching grandchildren through the `watchexec → mise → nu
 → bun` chain. A workspace-local TypeScript implementation pins the runtime we
@@ -157,7 +157,7 @@ Use this for boolean compositions the CLI flags cannot express.
 Built-in helpers (composable via `composeFilters` for all-of and `anyFilter`
 for any-of):
 
-- `contentHashFilter({ maxSize? })`: byte-equality skip on cached sha256.
+- `contentHashFilter()`: byte-equality skip using `ctx.hashCache`; configure size cap via `startWatchRestart({ maxHashSize })`.
 - `extFilter([...])`: extension allowlist (case-insensitive, leading dot optional).
 - `globFilter({ include?, exclude? })`: picomatch globs against `relativePath`.
 - `regexFilter({ include?, exclude? })`: regex against `relativePath`.
@@ -240,7 +240,9 @@ cases plus the Q6 expansion:
 Baseline:
 
 1. Byte-identical write produces no restart.
-2. Atomic save (rename `_tmp` → file) with new content fires once.
+2. Atomic save (rename `_tmp` → file) has a skipped unit-test placeholder because
+   chokidar `atomic` + `awaitWriteFinish` timing is flaky in isolation; coverage is
+   expected through editord dev-loop integration verification.
 3. Two writes inside the debounce window coalesce to one restart.
 4. Deletion fires once and clears the file's cache entry.
 5. SIGTERM exits the watcher and child cleanly within `--stop-timeout`.

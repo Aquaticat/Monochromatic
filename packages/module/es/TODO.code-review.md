@@ -1,5 +1,9 @@
 # Code review: packages/module/es
 
+> Stale as of 2026-05-13: this review predates the current `src/types/**`
+> taxonomy cleanup and the removal of `src/deprecated/`. Treat specific path
+> inventories and counts below as historical until rechecked against current code.
+
 **Date**: 2026-02-17
 
 Summary: A functional-programming utility library with a deeply nested directory hierarchy encoding type information in path names.

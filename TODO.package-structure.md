@@ -2,6 +2,11 @@
 
 Review date: 2026-02-17
 
+> Stale as of 2026-05-13: several proposed moves have already happened
+> (`dev-script/`, `test-fixture/`, `webapp-*`, and `desktop-daemon/` now exist).
+> Treat the package list and proposed migration below as historical input,
+> not current state. Re-audit with the current `packages/` tree before acting.
+
 ## Current layout
 
 ```text
@@ -80,8 +85,6 @@ The convention `@monochromatic-dev/<category>-<name>` is used for most packages,
 
 These `package.json` files have empty or absent `description` fields:
 
-- `ai-tree`
-- `rss`
 - `config-dprint`
 - `config-stylelint`
 - `config-tsdown`
@@ -146,7 +149,7 @@ New categories are created as needed when a hypothetical non-experiment package 
 
 ### Fill in missing descriptions
 
-Add meaningful `description` fields to the seven packages listed above.
+Add meaningful `description` fields to the remaining packages listed above.
 
 ### Proposed final layout
 

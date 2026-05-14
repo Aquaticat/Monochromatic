@@ -20,11 +20,8 @@ Create comprehensive documentation to improve maintainability, onboarding, and u
 
 - [ ] 2.2.1 Create OpenAPI/Swagger specification
 - [ ] 2.2.2 Document all endpoints:
-  - 2.2.2.1 `/feed/update` - Feed update endpoint
-  - 2.2.2.2 `/feed/ignore` - Ignore item endpoint
-  - 2.2.2.3 `/api/ignore` - Get ignored items
-  - 2.2.2.4 `/api/ignore/clear` - Clear ignored items
-  - 2.2.2.5 `/api/assetHash` - Get asset hash for cache busting
+  - 2.2.2.1 `GET /` - RSS reader interface
+  - 2.2.2.2 `POST /api/ignore/new` - Append an ignored item to JSONL storage
 - [ ] 2.2.3 Document request/response schemas
 - [ ] 2.2.4 Document error responses and status codes
 - [ ] 2.2.5 Add authentication requirements (if any)
@@ -82,22 +79,21 @@ Create comprehensive documentation to improve maintainability, onboarding, and u
 - [ ] 2.8.1 Document app vs library metadata conventions
   - Apps are marked private and do not expose exports maps.
   - Libraries define an exports map with node/default targets (example: [exports map](packages/module/es/package.json:6)).
-  - For apps, do not set a misleading "module" field. If present, it must point to a real file; otherwise remove [module field](packages/site/rss/package.json:5).
+  - For apps, do not set a misleading "module" field. If present, it must point to a real file; otherwise remove it.
 
 - [ ] 2.8.2 Document runtime vs devDependency classification
   - Any import used at runtime must be under "dependencies".
-  - Example: Elysia is used at runtime via [new Elysia()](packages/site/rss/src/index.ts:110) and belongs in dependencies, not devDependencies; update [package.json](packages/site/rss/package.json:24).
+  - Example: h3 is used at runtime in `packages/webapp-productivity/rss/src/index.ts` and belongs in dependencies, not devDependencies.
 
 - [ ] 2.8.3 Document Node builtin import style
   - Prefer `"node:"` specifier for core modules.
-  - Example correction: change `'path'` to `'node:path'` in [outline.ts](packages/site/rss/src/outline.ts:13) for consistency with [index.ts](packages/site/rss/src/index.ts:15).
+  - Current RSS code already uses `node:path` in `packages/webapp-productivity/rss/src/outline.ts`; keep that style for new imports.
 
-- [ ] 2.8.4 Document type import facade for feedsmith
-  - Avoid deep `node_modules/…` imports. Create `src/types/feedsmith.ts` that re-exports public types.
-  - Replace deep imports in [feed.ts](packages/site/rss/src/feed.ts:9) and [item.ts](packages/site/rss/src/item.ts:6) with imports from `./types/feedsmith.ts`.
+- [x] 2.8.4 Document type import style for feedsmith
+  - Current RSS code imports feedsmith types from the package root in `packages/webapp-productivity/rss/src/feed.ts`.
 
 - [ ] 2.8.5 Cross-link conventions to Code Organization
-  - Reference actionable tasks in [Code Organization 2.6](packages/site/rss/TODO.code-organization.md) to keep docs and refactors aligned.
+  - Reference actionable tasks in [Code Organization 2.6](TODO.code-organization.md) to keep docs and refactors aligned.
 
 ## 3. Documentation Standards
 

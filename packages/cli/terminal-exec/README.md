@@ -9,7 +9,9 @@ On Windows, detects Windows Terminal or falls back to `cmd.exe`.
 
 The reference `xdg-terminal-exec` shell script ignores desktop environment settings.
 On KDE Plasma, users configure their default terminal in System Settings,
-which writes `TerminalService` to `~/.config/kdeglobals`.
+which writes `TerminalService` to `$XDG_CONFIG_HOME/kdeglobals` or, with the
+current fallback implementation, `$HOME/config/kdeglobals` when `XDG_CONFIG_HOME`
+is unset.
 The reference script does not read `kdeglobals`, falling back to scanning all `.desktop` entries
 with `Categories=TerminalEmulator` -- often selecting the wrong one.
 
@@ -20,7 +22,8 @@ On Windows, no equivalent of `xdg-terminal-exec` exists at all.
 ### Linux / FreeBSD (XDG)
 
 1. Explicit entries from `xdg-terminals.list` config files (desktop-specific variants checked first)
-2. KDE `TerminalService` from `~/.config/kdeglobals` (when no explicit entries exist)
+2. KDE `TerminalService` from `$XDG_CONFIG_HOME/kdeglobals`, falling back to `$HOME/config/kdeglobals`
+   when `XDG_CONFIG_HOME` is unset (when no explicit entries exist)
 3. All `TerminalEmulator`-category desktop entries as fallback
 
 ### Windows
@@ -32,7 +35,7 @@ On Windows, no equivalent of `xdg-terminal-exec` exists at all.
 
 ```sh
 terminal-exec [options] [--] [command [args...]]
-```
+```text
 
 **Options:**
 
@@ -53,13 +56,13 @@ terminal-exec bash -l
 
 # Open terminal with title and working directory
 terminal-exec --title="Build logs" --dir=/tmp -- tail -f build.log
-```
+```text
 
 ## Configuration (Linux)
 
 Create `~/.config/xdg-terminals.list` to explicitly set preferred terminals:
 
-```
+```text
 com.mitchellh.ghostty.desktop
 org.kde.konsole.desktop
 ```
@@ -70,7 +73,7 @@ First valid entry wins. Entries listed here bypass `OnlyShowIn`/`NotShowIn` chec
 
 Prefix an entry ID with `-` to prevent it from appearing in the fallback scan:
 
-```
+```text
 -vscodium-pod-shell.desktop
 ```
 

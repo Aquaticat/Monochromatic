@@ -8,7 +8,7 @@ Client JS is bundled by tsdown as a separate build step (`mise run build:js:clie
 CSS compilation (build-css) still runs at server startup.
 In development, `mise run dev:site` uses `mise watch` to restart the process on any source change.
 
-```
+```sh
 mise run build:js:client  # bundle client scripts
 bun src/server.ts         # start server (compiles CSS at startup)
 mise run dev:site         # development (auto-restart on src/ change via mise watch)
@@ -16,11 +16,11 @@ mise run dev:site         # development (auto-restart on src/ change via mise wa
 
 ## Architecture overview
 
-Single `Bun.serve()` process handling both page routes (HTML) and API routes (JSON).
+Single h3 server process handling both page routes (HTML) and API routes (JSON).
 
 1. **CSS**: `@monochromatic-dev/build-css` resolves `@import` and expands `@mixin`/`@apply` into plain CSS
 2. **Client JS**: tsdown bundles one entry per page (inbox, in-progress, task-details, search, settings) via `mise run build:js:client`
-3. **Server**: `Bun.serve()` with declarative `routes` for pages and REST API; fallback handler serves static assets from `dist/client/`
+3. **Server**: h3 `H3` route registration plus h3 static serving for built client assets from `dist/client/`
 4. **Database**: SQLite (@tursodatabase/database) with FTS5 full-text search, initialized via side-effect import at startup
 5. **Client**: Vanilla TypeScript with custom elements; reads server-embedded JSON from `<script id="page-data">`, builds DOM imperatively
 

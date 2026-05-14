@@ -24,7 +24,7 @@ The browser's compositor thread owns scroll entirely: no `preventDefault`, no JS
 
 ## Architecture
 
-```
+```text
 editord (Bun + h3)              Chromium PWA
 +-----------------------+       +---------------------------+
 | HTTP: serve index.html|       | <editor-pane>             |
@@ -53,7 +53,7 @@ editord (Bun + h3)              Chromium PWA
 |   tsgo --lsp --stdio  |       |                           |
 |   dprint lsp          |       |                           |
 +-----------------------+       +---------------------------+
-```
+```text
 
 **Frontend owns the canonical buffer.**
 The DOM contenteditable element is the text state.
@@ -81,7 +81,7 @@ Full text round-trips on open/save.
 - **Path containment** -- all filesystem operations validate paths against the root directory
   via `assertWithinRoot`, preventing traversal even with a valid auth token
 - **Tagged loggers** -- all server and client modules use structured tagged logging
-  from `@monochromatic-dev/module-es`
+  from `@monochromatic-dev/module-logger`
 - **WebSocket with token auth** -- token generated per-session via `crypto.randomUUID()`,
   passed as URL query param
 - **Recent files with recency markers** -- file tree shows numbers 0 (current) through 9 (oldest)
@@ -99,9 +99,10 @@ Full text round-trips on open/save.
 - **Context menu via Popover API** -- right-click on file tree entries opens a context menu
   using `popover="auto"` with CSS anchor positioning and `position-try-fallbacks`
   for viewport edge detection; supports inline input items for rename/copy operations
-- **Directory watching** -- `fs.watch` per expanded directory, debounced 200ms,
-  pushes `fileChanged` events to the client; save operations suppress self-triggered events for 500ms;
-  ignores `.git`, `node_modules`, swap files, and temp files
+- **Directory watching** -- chokidar per expanded directory (`depth: 0`, `atomic: true`,
+  `awaitWriteFinish` 150 ms), pushes `fileChanged` events to the client; save operations
+  suppress self-triggered events for 500 ms; ignores `.git`, `node_modules`, swap files,
+  and temp files
 - **Filesystem volume ID** -- `connected` message includes `fsId` (filesystem volume identifier
   from `stat -f`) so localStorage keys are stable per volume, not per mount path
 - **Diagnostic store** -- multi-source diagnostic aggregation; each LSP server (oxlint, tsgo)
@@ -131,7 +132,7 @@ mise run //packages/desktop-daemon/editord:dev
 
 ## Project structure
 
-```
+```text
 src/
   protocol.ts                  -- shared wire types (ClientMessage, ServerMessage, DirEntry, FileKind, etc.)
   server/
@@ -154,7 +155,7 @@ src/
       save.ts                  -- write file to disk
       search.ts                -- dual rg search: file paths + content matches, concurrent
       stream-rg.ts             -- streaming rg subprocess helper with early kill on limit
-      watch-filesystem.ts      -- per-directory fs.watch with debounce and event classification
+      watch-filesystem.ts      -- per-directory chokidar watcher with atomic-save handling and suppression
       watch-filesystem-filter.ts -- ignore patterns and timing constants for directory watcher
     lsp/
       types.ts                 -- LSP type definitions (Position, Diagnostic, Hover, InlayHint, etc.)

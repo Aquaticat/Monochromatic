@@ -10,7 +10,7 @@ Externalize hardcoded values to make the application more flexible and configura
 
 | Value          | Current     | Location    | Purpose                            |
 | -------------- | ----------- | ----------- | ---------------------------------- |
-| `MIN_INTERVAL` | 100 seconds | `index.ts`  | Rate limiting between feed updates |
+| `FETCH_INTERVAL_MS` | 300000 ms / 5 minutes | `interval.ts` | Fetch-cache time bucket |
 | Display limit  | 100 items   | `html.ts`   | Maximum items shown in UI          |
 | Poll interval  | 1000ms      | `client.ts` | Client-side asset check frequency  |
 | Fetch timeout  | 30 seconds  | Various     | HTTP request timeout               |
@@ -40,7 +40,7 @@ const ConfigSchema = z.object({
 
   // Feed configuration
   feed: z.object({
-    minInterval: z.number().default(100,), // seconds
+    fetchIntervalMs: z.number().default(300000,), // milliseconds
     fetchTimeout: z.number().default(30000,), // milliseconds
     maxRetries: z.number().default(0,), // no retries by design
     concurrencyLimit: z.number().default(1,), // sequential by default
@@ -76,9 +76,9 @@ export const config = ConfigSchema.parse({
     host: process.env.HOST || 'localhost',
   },
   feed: {
-    minInterval: process.env.MIN_INTERVAL
-      ? parseInt(process.env.MIN_INTERVAL,)
-      : 100,
+    fetchIntervalMs: process.env.RSS_FETCH_INTERVAL_MS
+      ? parseInt(process.env.RSS_FETCH_INTERVAL_MS,)
+      : 300000,
     fetchTimeout: process.env.FETCH_TIMEOUT
       ? parseInt(process.env.FETCH_TIMEOUT,)
       : 30000,
@@ -120,16 +120,16 @@ Replace hardcoded values throughout the codebase:
 
 ```typescript
 // Before
-const MIN_INTERVAL = 100;
+const FETCH_INTERVAL_MS = 300000;
 
 // After
 import { config, } from './config';
-const MIN_INTERVAL = config.feed.minInterval;
+const FETCH_INTERVAL_MS = config.feed.fetchIntervalMs;
 ```
 
 Files to update:
 
-- [ ] 3.4.1 `index.ts` - Rate limiting interval
+- [ ] 3.4.1 `interval.ts` - Fetch-cache time bucket
 - [ ] 3.4.2 `html.ts` - Display limit
 - [ ] 3.4.3 `client.ts` - Poll interval
 - [ ] 3.4.4 `feed.ts` - Fetch timeout

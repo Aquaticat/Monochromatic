@@ -1,8 +1,8 @@
 # `@monochromatic-dev/dev-script-deps-cube`
 
-Renders an interactive 3D scatter of every entry in the `pnpm-workspace.yaml` catalog. Each catalog package becomes a glyph positioned in a 6-dimensional feature space (3 spatial + color + shape + size); the audit-target octant — small + stale + small-footprint + non-TS + leaf + niche — is the corner you scroll the camera toward.
+Renders an interactive 3D scatter of every entry in the `pnpm-workspace.yaml` catalog. Each catalog package becomes a glyph positioned in a 6-dimensional feature space (3 spatial + color + shape + size); the audit-target octant, small + stale + small-footprint + non-TS + leaf + niche, is the corner you scroll the camera toward.
 
-Naming note: the package name preserves user's original `depsUpset` intent. The actual visualisation is a 3D scatter rendered via deck.gl (WebGL), not an UpSet plot — UpSet binarises continuous attributes that are more useful at full resolution. See `docs/decisions/deps-cube.md` for the design rationale.
+Naming note: the package name preserves user's original `depsUpset` intent. The actual visualisation is a 3D scatter rendered via deck.gl (WebGL), not an UpSet plot. UpSet binarises continuous attributes that are more useful at full resolution. See `../../../docs/decisions/deps-cube.md` for the design rationale.
 
 ## Usage
 
@@ -20,12 +20,12 @@ Output: `<package>/dist/deps-cube-<YYYY-MM-DDTHH-MM-SSZ>.html` (filename carries
 
 Default mapping (changeable via the in-page dim picker):
 
-- **x = log(source bytes)** — replacement cost
-- **y = log(days since last commit)** — staleness
-- **z = log(install size, transitive)** — actual footprint
-- **color** — TS ratio, interpolated in OKLCH from red (low) through amber (mid) to green (high)
-- **shape** — circle (leaf) / diamond (non-leaf)
-- **size** — log(weekly downloads)
+- **x = log(source bytes)**: replacement cost
+- **y = log(days since last commit)**: staleness
+- **z = log(install size, transitive)**: actual footprint
+- **color**: TS ratio, interpolated in OKLCH from red (low) through amber (mid) to green (high)
+- **shape**: sphere (leaf) / octahedron (non-leaf)
+- **size**: log(weekly downloads)
 
 Available additional dims selectable per channel:
 
@@ -37,19 +37,19 @@ Available additional dims selectable per channel:
 
 ## Control panel
 
-- **6 dim dropdowns** — remap any data attribute to any channel (type-filtered)
+- **6 dim dropdowns**: remap any data attribute to any channel (type-filtered)
 - **7 three-state toggles** (must / must-not / any) for boolean attributes: leaf, TS-majority, large, recent, permissive, copyleft, has-known-GH-repo
-- **6 range sliders** — fine-grained continuous filtering per active channel
-- **Name search box** — substring / regex
-- **Display toggles** — threshold planes, wireframe, name labels, unknown cluster
-- **Visibility counter** — `X of 120 visible`
+- **6 range sliders**: fine-grained continuous filtering per active channel
+- **Name search box**: substring / regex
+- **Display toggles**: coordinate planes, threshold guide lines, name labels, unknown cluster
+- **Visibility counter**: `X of 120 visible`
 - **Reset filters** button
 
 Camera (deck.gl `OrbitController`): drag rotates, shift-drag pans, scroll zooms, double-click resets.
 
 Click any glyph to pin a tooltip beside the chart; click background to unpin.
 
-URL hash encodes view state — copy URL to share the exact camera + dim mapping + filter view.
+URL hash encodes view state. Copy URL to share the exact camera + dim mapping + filter view.
 
 ## Cache
 
@@ -59,17 +59,17 @@ To force refresh of one entry: `rm ~/.cache/monochromatic/deps-cube/<name>@*.jso
 
 ## Data acquisition
 
-- npm registry `https://registry.npmjs.org/{name}/{version}` → repository, dependencies, dist.unpackedSize, license, first-publish time
-- npm downloads `https://api.npmjs.org/downloads/point/last-week/{name}` → weekly download count
-- `gh api repos/{owner}/{repo}/languages` → Linguist bytes per language
-- `gh api repos/{owner}/{repo}` or `gh api 'repos/.../commits?path={directory}'` → maintenance signal (path-scoped for monorepo-housed packages)
+- npm registry `https://registry.npmjs.org/{name}/{version}`: repository, dependencies, dist.unpackedSize, license, first-publish time
+- npm downloads `https://api.npmjs.org/downloads/point/last-week/{name}`: weekly download count
+- `gh api repos/{owner}/{repo}/languages`: Linguist bytes per language
+- `gh api repos/{owner}/{repo}` or `gh api 'repos/.../commits?path={directory}'`: maintenance signal (path-scoped for monorepo-housed packages)
 
-Packages without a parseable GitHub `repository.url` (gitlab-hosted, private, missing) render with their TS/size/maintenance dims marked unknown — their glyph lives in a separate "unknown" cluster at the edge of the scene.
+Packages without a parseable GitHub `repository.url` (gitlab-hosted, private, missing) render with their TS/size/maintenance dims marked unknown. Their glyph lives in a separate "unknown" cluster at the edge of the scene.
 
 ## Verification checklist (manual)
 
 1. Run `deps-cube`; confirm stdout is exactly one line.
-2. Open the HTML in Firefox; confirm initial render: 3D box, threshold planes, ~120 glyphs, unknown cluster, control panel.
+2. Open the HTML in Firefox; confirm initial render: coordinate planes, arrowed axes with tick marks, ~120 glyphs, unknown cluster, control panel.
 3. Drag to rotate; shift-drag to pan; scroll to zoom; double-click to reset.
 4. Change a dim dropdown; confirm glyphs reposition without page reload.
 5. Drag a range slider; confirm filtered-out glyphs fade to 5% opacity; visibility counter updates.
@@ -77,5 +77,5 @@ Packages without a parseable GitHub `repository.url` (gitlab-hosted, private, mi
 7. Set the three-state toggles to identify the audit-target pattern (TS-majority must-not / Leaf must / Recent must-not); confirm visibility counter shrinks to the audit target list.
 8. Hover a glyph; confirm tooltip shows pkg name + every dim value.
 9. Click a glyph; confirm pinned tooltip appears.
-10. Toggle threshold planes on/off; confirm visual update.
+10. Toggle threshold guide lines on/off; confirm visual update.
 11. Copy URL; reload; confirm view restored.

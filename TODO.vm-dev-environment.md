@@ -22,7 +22,7 @@ ucore-hci (immutable, rpm-ostree, Fedora CoreOS base)
 
 Two artifacts define the entire environment:
 
-1. **Custom container image** (Containerfile + build.sh) -- OS layer, rarely changes
+1. **Custom container image** (`Containerfile` + TypeScript orchestration in `src/build-and-import.ts`) -- OS layer, rarely changes
 2. **First-login provisioner** (file-enforcer config in this monorepo) -- user layer, changes often
 
 ## Decisions made
@@ -59,8 +59,9 @@ Two artifacts define the entire environment:
   (MS-VHDX spec has zero cipher/key fields), breaking vmsync cross-platform parity.
 - **plasma-workspace meta-package**: full KDE desktop set rather than minimal plasma-desktop,
   since ucore-hci is a server base with no desktop components
-- **Provisioner in vm-builder**: `src/provision.ts` alongside `build-and-import.ts`,
-  not a separate package: the provisioner is small enough to colocate
+- **Provisioner in vm-builder**: no `src/provision.ts` or `:provision` task exists yet.
+  Dotfiles are baked into the image by `Containerfile`; a future first-login
+  provisioner still needs to be created if flatpak or user-layer setup remains required.
 - **Nvim deprecated by editord**: no nvim config clone needed in the provisioner
 - **Skip Ignition/Butane**: everything is baked into the image or handled by the provisioner;
   Ignition adds no value beyond what the Containerfile already provides
@@ -83,7 +84,7 @@ Run via: `mise run //packages/dev-script/vm-builder:run`
 - [x] Write Containerfile (single-stage, rpm-ostree install on ucore-hci base)
 - [x] Fill in `build-and-import.ts` orchestration (build, convert, copy to libvirt images, import via virsh define)
 
-### System packages to bake in (build.sh)
+### System packages to bake in (`Containerfile`)
 
 All packages below are installed and verified in the Containerfile.
 
@@ -166,9 +167,10 @@ The user account is baked in, and SSH keys are handled manually post-boot.
 
 ## Phase 2: first-login provisioner
 
-Lives in `packages/dev-script/vm-builder/src/provision.ts` alongside `build-and-import.ts`.
-Run via: `mise run //packages/dev-script/vm-builder:provision`
-Uses file-enforcer primitives: `exec()`, `overwrite()`, `overwriteEach()`, `cat()`.
+No `src/provision.ts` or `:provision` mise task exists yet. Dotfiles are baked into the
+image by `Containerfile`, and image-time mise installs only the global tools declared in
+`packages/config/dotfiles/mise/config.toml`. A future first-login provisioner still needs
+to be created if flatpak or user-layer setup remains required.
 
 ### Dotfiles package
 
@@ -186,7 +188,8 @@ Only two configs needed: ghostty and mise.
 Runs as user after first login. Idempotent (safe to re-run).
 
 - [x] ~~Copy dotfiles~~ -- baked into image at build time via Containerfile COPY
-- [ ] Run `mise install` via `exec()` (installs all tools from monorepo config)
+- [x] Run image-time `mise install` for baked global config tools (currently Nushell) in `Containerfile`
+- [ ] Decide whether a future first-login provisioner should run monorepo `mise install` after clone
 - [ ] Install flatpaks via `flatpak install --user -y`:
       Flatseal, Fastmail, Gear Lever, KColorChooser, KeePassXC,
       Nextcloud, OBS, RustDesk, Ungoogled Chromium
@@ -205,8 +208,8 @@ gh repo clone Aquaticat/Monochromatic ~/Monochromatic
 cd ~/Monochromatic
 mise trust && mise install
 
-# 4. Run provisioner (copies dotfiles from monorepo, installs flatpaks)
-mise run //packages/dev-script/vm-builder:provision
+# 4. Future, not implemented yet: run first-login provisioner if one is added
+# mise run //packages/dev-script/vm-builder:provision
 ```
 
 ## Phase 3: verification
@@ -228,7 +231,7 @@ mise run //packages/dev-script/vm-builder:provision
 
 Once the base image is stable, day-to-day changes fall into two categories:
 
-**OS-level changes** (rare): edit Containerfile/build.sh, rebuild image, convert to qcow2.
+**OS-level changes** (rare): edit Containerfile or TypeScript build orchestration, rebuild image, convert to qcow2.
 Examples: new system package, display manager config, kernel module.
 
 **User-level changes** (frequent): edit provisioner or dotfiles, re-run provisioner.
@@ -237,7 +240,7 @@ No image rebuild needed: just re-run the provisioner in the existing VM.
 
 ## Open questions
 
-- [x] ~~Where does the provisioner live?~~ -- `src/provision.ts` in vm-builder package
+- [x] ~~Where does the provisioner live?~~ -- future provisioner belongs in the vm-builder package; no file exists yet
 - [x] Custom image repo: `packages/dev-script/vm-builder/` in this monorepo
 - [x] ~~KDE Plasma package set~~ -- `plasma-workspace` meta-package (full desktop)
 - [x] ~~Which flatpaks?~~ -- Flatseal, Fastmail, Gear Lever, KColorChooser, KeePassXC,

@@ -22,8 +22,10 @@ Pass a parent logger via the `l` parameter to build hierarchical prefixes:
 const l = tagged({ tag: 'http', },);
 const rl = tagged({ tag: 'retry', l, },);
 rl.warn('attempt 3 failed',);
-// [warn] [...] [retry] [http] attempt 3 failed
+// [warn] [...] [http] [retry] attempt 3 failed
 ```
+
+Composed tags render root-first because each wrapper prepends before delegating to its parent logger.
 
 Convention: use `myFn.name` as the tag so prefixes stay in sync with refactors.
 
@@ -101,8 +103,8 @@ File, OPFS, and sessionStorage sinks write records as one JSON object per line (
 
 ## Error handling
 
-- Throws at module load if **no** backends pass verification
-- Throws at log time if all backends have failed since initialization
+- `initPromise` rejects during eager initialization if **no** backends pass verification
+- Throws at log time once initialization has completed with no available backend
 - Individual sink failures are silent -- the sink is disabled and remaining sinks continue
 
 ## Design decisions

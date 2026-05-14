@@ -66,11 +66,9 @@ Create unit tests for each module with focus on:
 
 ### 2.3 Integration Tests
 
-- [ ] 2.3.1 Test API endpoint `/feed/update`
-- [ ] 2.3.2 Test API endpoint `/feed/ignore`
-- [ ] 2.3.3 Test API endpoint `/api/ignore`
-- [ ] 2.3.4 Test API endpoint `/api/ignore/clear`
-- [ ] 2.3.5 Test API endpoint `/api/assetHash`
+- [ ] 2.3.1 Test endpoint `GET /`, renders the RSS reader interface
+- [ ] 2.3.2 Test endpoint `POST /api/ignore/new`, appends an ignored item to JSONL storage
+- [ ] 2.3.3 Remove or explicitly plan the old `/feed/update`, `/feed/ignore`, `/api/ignore`, `/api/ignore/clear`, and `/api/assetHash` endpoints before writing tests for them
 - [ ] 2.3.6 Test rate limiting behavior
 - [ ] 2.3.7 Test CORS headers
 

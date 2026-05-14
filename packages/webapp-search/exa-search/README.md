@@ -16,18 +16,15 @@ A self-contained, single-file HTML search interface for the Exa AI search API, s
 From the workspace root:
 
 ```bash
-mise run exa-search:js
+mise run //packages/webapp-search/exa-search:build:js:client
 ```
 
-This creates a self-contained HTML file at:
-
-```
-packages/site/exa-search/dist/final/js/index.html
-```
+This builds the browser bundle at `dist/client/client.js`. The h3 server composes
+the HTML in memory from that bundle.
 
 ## Usage
 
-1. Open the generated `index.html` file in any modern web browser
+1. Start the server with `mise run //packages/webapp-search/exa-search:dev`
 2. Click "Set API Key" and enter your Exa API key (get one at [exa.ai](https://exa.ai))
 3. Enter your search query and click "Search"
 4. All results (up to 100) will be displayed below the search box
@@ -39,13 +36,14 @@ The API key is stored in your browser's localStorage for convenience. You can ch
 - **Build system**: tsdown
 - **Language**: TypeScript
 - **Styling**: Pure CSS with CSS custom properties for theming
-- **No external dependencies**: Everything is bundled into the single HTML file
+- **Dependencies**: Server and rendering use h3, h-html, Valibot, and workspace DOM/logger utilities
 - **API integration**: Direct fetch calls to Exa's search API
 
 ## Development
 
 The source files are organized as:
 
-- `index.html`: Main HTML structure (at package root)
-- `src/index.ts`: TypeScript logic for API integration and UI updates
+- `src/index.ts`: h3 server entry point
+- `src/asset*.ts`: HTML sections and server-side document composition
+- `src/client*.ts`: browser behavior and API integration
 - `src/index.css`: Styling with dark/light mode support

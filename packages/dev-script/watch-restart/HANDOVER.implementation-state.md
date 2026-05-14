@@ -1,4 +1,4 @@
-# Handover: watch-restart implementation in progress
+# Handover: watch-restart shipped, editord interactive verification pending
 
 ## What you are picking up
 
@@ -6,7 +6,7 @@ The package `packages/dev-script/watch-restart/` is being built per the approved
 
 **Status**: tasks 1 through 10 done (baseline package).  Q6 watchexec-parity expansion approved by user 2026-05-12 (see plan file `## Question 6`).  Q6 progress: tasks 11 + 13 + 14 + 15 + 16 + 17 + 18 + 19 + 20 + 22 done (event shape extension + typeFilter + cli parser extension + regexFilter + hiddenFilter + gitignoreFilter + watcher chokidar config + child process control + README + AUDIT.md tick).  All Q6 work shipped.  Baseline interactive verification partially GREEN as of 2026-05-12 (cases 1, 5, 7 of the seven listed below; cases 2, 3, 4, 6 still need user action).  Q6 expansion is purely additive and does not block the remaining verification.
 
-**Last commit**: see `git log --oneline -- packages/dev-script/watch-restart packages/desktop-daemon/editord AUDIT.md TROUBLESHOOTING.mise-watch.md` for the full task-by-task progression.  Task 9 baseline: `f006520e feat(desktop-daemon/editord): switch dev:server to watch-restart`.  Q6 task 11 + 15: `812ff9b1 feat(dev-script/watch-restart): extend event shape for file/dir events`.  Q6 task 13: see latest commit (cli parser extension; new sibling `src/cli-helpers.ts` holds the validators).
+**Last commit**: see `git log --oneline -- packages/dev-script/watch-restart packages/desktop-daemon/editord AUDIT.md TROUBLESHOOTING.mise-watch.md` for the full task-by-task progression.  Task 9 baseline: `f006520e feat(desktop-daemon/editord): switch dev:server to watch-restart`.  Q6 task 11 + 15: `812ff9b1 feat(dev-script/watch-restart): extend event shape for file/dir events`.  Q6 task 13: `774c9736 feat(dev-script/watch-restart): extend cli + options with Q6 watchexec-parity flags`.
 
 ## Q6 task tracker
 
@@ -41,7 +41,7 @@ The `rg 'watchexec' packages/desktop-daemon/editord/` invariant from the plan is
 
 ## State on disk (verified before this handover)
 
-```
+```text
 packages/dev-script/watch-restart/
 ├── HANDOVER.implementation-state.md   ← this file
 ├── README.md                          ← CLI surface and design choices
@@ -83,7 +83,7 @@ packages/dev-script/watch-restart/
 │   └── watcher.unit.test.ts           ← 13 tests covering pre-populate, live add/change/unlink, multi-root, lifecycle, chokidar option pass-through (depth/poll/followSymlinks)
 ├── tsconfig.json
 └── tsdown.node.config.ts
-```
+```sh
 
 `pnpm-workspace.yaml` gained `chokidar: '>=5.0.0'`, `ignore: '>=7.0.5'`, and `picomatch: '>=4.0.4'`. `readdirp` is intentionally **not** in the catalog or in `dependencies`: it is a chokidar internal we do not import directly.
 
@@ -92,7 +92,7 @@ Verification at this checkpoint:
 - `mise run //packages/dev-script/watch-restart:build` → exits 0, emits to `dist/final/node/`.
 - `mise run //packages/dev-script/watch-restart:lint` → 0 warnings, 0 errors.
 - `mise run //packages/dev-script/watch-restart:lint:types` → exits 0.
-- `mise run //packages/dev-script/watch-restart:test:unit` → 78 tests pass (13 HashCache + 8 Watcher + 13 Child + 23 filters [6 contentHashFilter + 5 extFilter + 5 globFilter + 4 composeFilters + 3 anyFilter] + 9 startWatchRestart + 12 cli [10 round trip + 2 errors]; 1 Watcher atomic-save case skipped, see "Picked up during the child implementation" below).
+- `mise run //packages/dev-script/watch-restart:test:unit` → unit suite passes with the known skipped Watcher atomic-save case; includes HashCache, Watcher, Child, filter, startWatchRestart, CLI, and CLI-helper tests.
 
 ## Decisions made during implementation that the plan did not pin
 
@@ -234,7 +234,7 @@ These rules come from `AGENTS.md`; the implementer should re-read it but these s
 
 After each implemented module:
 
-```
+```sh
 mise run //packages/dev-script/watch-restart:build
 mise run //packages/dev-script/watch-restart:lint
 mise run //packages/dev-script/watch-restart:lint:types

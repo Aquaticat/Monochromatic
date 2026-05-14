@@ -250,6 +250,6 @@ await matrix({
 ## Dependencies
 
 - `@monochromatic-dev/module-test` -- `describe`/`it` for execution and reporting
-- `@monochromatic-dev/module-es` -- tagged logger
+- `@monochromatic-dev/module-logger` -- tagged logger
 - `nano-spawn` -- process execution (podman and host runtimes)
 - `find-up` -- monorepo root detection

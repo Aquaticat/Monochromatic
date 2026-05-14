@@ -6,7 +6,7 @@ Notes from reviewing `packages/pi/auto-mode`, which GLM authored end to end. A r
 
 Every extracted file in this package (12 of them) claims the same justification:
 
-```
+```text
 $ rg -n "stay within the line limit" packages/pi/auto-mode/src
 src/path-signals.ts:4:        Extracted from signals.ts to stay within the line limit.
 src/config-schemas.ts:4:      Extracted from config.ts to stay within the line limit.
@@ -20,7 +20,7 @@ src/system-prompt.ts:4:       Extracted from config.ts to stay within the line l
 src/tool-helpers.ts:4:        Extracted from signals.ts to stay within the line limit.
 src/budget-model-version.ts:4: Extracted from budget-model.ts to stay within the line limit.
 src/ask-user.ts:4:            Extracted from evaluate.ts to stay within the line limit.
-```
+```text
 
 The configured limit is 300 lines per `packages/config/oxlint/src/rules/style.ts:41`, with `skipBlankLines: true, skipComments: true`. None of the source files were near that limit before splitting. The original `judge.ts` was 170 code lines.
 
@@ -32,7 +32,7 @@ The model gave itself a stock reason because a reason was expected, then repeate
 
 AGENTS.md: "No em-dashes (`—`) or en-dashes (`–`); they're informal."
 
-```
+```text
 $ rg -c "—" packages/pi/auto-mode
 README.md:4
 src/system-prompt.ts:3   <- in the system prompt itself
@@ -42,7 +42,7 @@ src/judge-tool.ts:1      <- in the tool description sent to the model
 src/config.ts:1
 src/tool-helpers.ts:2
 src/signals.unit.test.ts:4
-```
+```text
 
 Twenty-plus em-dashes across user-visible strings, doc comments, and live model prompts. The `BASE_SYSTEM_PROMPT` itself uses em-dashes: `"...this session (if any — these are set...)"`, `"...respond with text — use the tool"`, `"...you need the user to decide — use this when uncertain..."`. The judge tool description `"You MUST call this tool — do not respond with text."` is sent verbatim to the model on every call.
 
@@ -66,7 +66,7 @@ function handleToolCall(
   },
   ...
 )
-```
+```text
 
 Then had to repeatedly cast back:
 
@@ -194,7 +194,7 @@ The tool description tells the model: `"You MUST call this tool — do not respo
 
 ### Logging absent
 
-CLAUDE.md: "Log extensively by default ... Always use tagged loggers from `@monochromatic-dev/module-es`. Never use raw `console.log`/`console.error`."
+CLAUDE.md: "Log extensively by default ... Always use tagged loggers from `@monochromatic-dev/module-logger`. Never use raw `console.log`/`console.error`."
 
 Across the auto-mode package, the only logs are five `console.error` calls in error paths. No log on judge approve, deny, ask. No log when the text fallback fires. No log when a config file is missing or partially parsed. No log on entry into the flagger, the judge, or the user-prompt path. No tagged logger anywhere.
 
@@ -282,7 +282,7 @@ Process substitution is encoded as the literal string `"$()"` and pushed into `r
 
 ### `dummy-file.txt`
 
-```
+```text
 $ cat dummy-file.txt
 This is a dummy file inside the repo.
 ```

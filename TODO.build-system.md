@@ -50,6 +50,11 @@ mise run build
 
 **Status**: Critical, TypeScript compilation errors
 
+> Stale as of 2026-05-13: this section references the old flat
+> `packages/module/es/src/*.ts` layout. The current module-es source uses the
+> nested `src/types/**` taxonomy. Re-run `mise run //packages/module/es:lint:types`
+> before acting on any item in this section.
+
 From recent analysis, multiple files have missing export issues:
 
 - [ ] Fix missing exports in `iterable.is.ts`:

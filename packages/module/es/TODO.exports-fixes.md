@@ -1,5 +1,11 @@
 # Module ES - Export Fixes Todo
 
+> Stale as of 2026-05-13: this file references obsolete flat source files
+> such as `src/iterable.is.ts` and `src/boolean.equal.ts`. The current package
+> uses the nested `src/types/**` taxonomy and the root entry exports the `types`
+> namespace plus package subpaths from `package.json`. Re-audit current
+> `mise run //packages/module/es:lint:types` output before acting on any item below.
+
 ## Critical Export Issues
 
 ### Missing Exports in `iterable.is.ts`

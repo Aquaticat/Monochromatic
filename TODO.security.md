@@ -22,7 +22,7 @@
 
 - [ ] Audit all user inputs for proper validation
 - [ ] Implement content security policies (CSP) for all web applications
-- [ ] Add input sanitization for RSS feed content in packages/site/rss
+- [ ] Add input sanitization for RSS feed content in `packages/webapp-productivity/rss`
 - [ ] Validate OPML file uploads and parsing
 - [ ] Add rate limiting to all API endpoints
 - [ ] Implement proper error handling without information disclosure

@@ -20,7 +20,7 @@ AGENTS.md rule:
 | ASCII `--` em-dash substitute | 1058       | 369   |
 | ASCII `-` em-dash substitute  | 625        | 58    |
 
-**Total definite prose violations: 1883**
+Total definite prose violations: 1883
 
 ## A. Em-dash (`—`) prose asides
 
@@ -1085,7 +1085,7 @@ Replace with proper punctuation or restructure sentence.
 - Line 22: //region Verbose flag -- stripped before parsing; logger detects it from raw process.argv at import time
 - Line 61: //region Dispatch -- parse argv and route to the appropriate handler
 
-### packages/cli/vmsync/src/lifecycle.unit.test.ts
+### packages/cli/vmsync/src/lifecycle.expensive.unit.test.ts
 
 - Line 451: // only runs during boot, not status -- but the binary runs on Windows,
 
@@ -3446,7 +3446,7 @@ Replace with proper punctuation or restructure sentence.
 
 ### packages/webapp-content/ssg-test/src/content/en/mdx.mdx
 
-- Line 36: This HTML output is stolen from [MDN - Adding Captions and Subtitles to Video](https://developer.mozilla.org/en-US/docs/Web/Media/Audio_and_video_delivery/Adding_captions_and_subti
+- Line 36: This HTML output is stolen from MDN, Adding Captions and Subtitles to Video
 
 ### packages/webapp-content/ssg-test/src/content/en/web-resources.mdx
 
@@ -3460,7 +3460,7 @@ Replace with proper punctuation or restructure sentence.
 
 ### packages/webapp-content/ssg-test/src/content/zh/mdx.mdx
 
-- Line 36: This HTML output is stolen from [MDN - Adding Captions and Subtitles to Video](https://developer.mozilla.org/en-US/docs/Web/Media/Audio_and_video_delivery/Adding_captions_and_subti
+- Line 36: This HTML output is stolen from MDN, Adding Captions and Subtitles to Video
 
 ### packages/webapp-productivity/rss/TODO.code-organization.md
 

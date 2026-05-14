@@ -8,7 +8,7 @@ This package was extracted from `@monochromatic-dev/module-es`'s `path/` submodu
 ## Exports
 
 The package is source-only.
-`.` resolves to `./src/index.ts` (the barrel), which re-exports every helper.
+`.` resolves to `./src/index.ts` (the barrel), which re-exports every public helper.
 `./find-monorepo-root` resolves directly to `./src/find-monorepo-root.ts` for consumers that only need that one function.
 `./find-package-root` resolves directly to `./src/find-package-root.ts` for consumers that only need that one function.
 
@@ -32,10 +32,6 @@ The package is source-only.
 | `removeEmptyFilesInDir` | `src/empty.ts`              | Deletes zero-byte files (after trimming) within a directory; leaves non-files and non-empty files alone. |
 | `trimLeadingSlash`      | `src/trim.ts`               | Removes a leading `/` unless the path is root.                                                           |
 | `trimTrailingSlash`     | `src/trim.ts`               | Removes a trailing `/` unless the path is root.                                                          |
-| `normalize`             | `src/fallbacks.ts`          | Browser fallback for `node:path/posix.normalize`. Exported for completeness.                             |
-| `dirnameFallback`       | `src/fallbacks.ts`          | Browser fallback for `dirname`. Used internally by `dirname` when `node:path` is unavailable.            |
-| `joinFallback`          | `src/fallbacks.ts`          | Browser fallback for `join`.                                                                             |
-| `resolveFallback`       | `src/fallbacks.ts`          | Browser fallback for `resolve`.                                                                          |
 
 ## Usage
 

@@ -11,7 +11,7 @@ Shared [dprint](https://dprint.dev/) configuration for Monochromatic repositorie
 - **YAML**: single quotes, no indented block sequences
 - **TOML**: default settings with optional leading spaces in comments
 - **JSON**: trailing commas in tsconfig.json and editor settings
-- **Exec plugin**: chains stylelint and oxlint as post-formatters
+- **Post-format linting**: handled by mise `format` tasks, not a dprint Exec plugin
 
 ## Usage
 

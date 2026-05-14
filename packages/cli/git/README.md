@@ -14,8 +14,10 @@ to real git untouched, so git itself reports the missing-repo error if
 relevant. Exempt subcommands: `init`, `clone`, `version`, `help`, and
 `config` with `--global`/`--system`/`--list`.
 
-**Atomic push**: injects `--atomic` into `git push` commands automatically,
-ensuring all refs update together or none do. Override with `--no-atomic`.
+**Atomic push**: injects `--atomic` into bare `git push` commands automatically
+when `push` is the first argv token, ensuring all refs update together or none do.
+Override with `--no-atomic`. Current limitation: pre-subcommand global options such
+as `git -C /repo push` bypass this rule.
 
 ## How it works
 
@@ -26,6 +28,7 @@ then the real git is spawned with full stdio inheritance.
 
 ## Adding rules
 
-Rules are functions with the signature `(args: readonly string[]) => readonly string[]`.
+Rules are functions with the signature
+`(args: readonly string[]) => readonly string[] | Promise<readonly string[]>`.
 A rule can return modified args or throw to reject the command.
 Add new rules to the `RULES` array in `src/index.ts`.

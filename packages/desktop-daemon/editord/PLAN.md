@@ -32,7 +32,7 @@
 
 - [x] Path containment: `assertWithinRoot` validates all file operations against `rootDir`
 - [x] Shared protocol types: `src/protocol.ts` eliminates type duplication between server and client
-- [x] Tagged loggers: all server and client modules use `tagged()` from `@monochromatic-dev/module-es`
+- [x] Tagged loggers: all server and client modules use `tagged()` from `@monochromatic-dev/module-logger`
 - [x] Named parameters: all functions with 2+ params use destructured object parameters
 - [x] WebSocket close handling: pending requests rejected on disconnect (prevents promise leaks)
 - [x] Error propagation: fire-and-forget async calls wrapped with try/catch and tagged logging
@@ -49,8 +49,8 @@
 
 ## Phase 4 -- File watching and themes (done)
 
-- [x] `DirWatcher` class: per-directory non-recursive `fs.watch`, debounced 200ms
-- [x] Event classification via `stat` after debounce (created/modified/deleted)
+- [x] `DirWatcher` class: per-directory non-recursive watcher, initially `fs.watch`, superseded by chokidar in Phase 13
+- [x] Event classification from watcher event kind, initially stat-after-debounce, superseded by chokidar
 - [x] Save suppression: `suppressPath` ignores self-triggered events for 500ms
 - [x] Ignore patterns: `.git`, `node_modules`, `.DS_Store`, swap files, temp files
 - [x] `watchDir` client notification registers directories for watching

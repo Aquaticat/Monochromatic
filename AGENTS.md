@@ -264,7 +264,7 @@ Move changes where they belong immediately: different file, new file, gitignore 
 ### Simplification
 
 - Prefer `const`, immutable patterns, functional approaches (`map`/`filter`/`reduce`) over mutable state and imperative loops.
-- Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-es`) over manual promise creation.
+- Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
 - Extract and name concepts; start simple, refactor to complexity only when necessary.
 - Simplification progression: imperative loop -> while -> for -> recursive -> higher-order functions/async iterators.
 - Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings (e.g. `crc32.ts`, `headers.ts`), constants to `constants.ts`, types to `types.ts`. Pattern: `packages/module/hyperscript/src/index.ts` (76 lines, pure re-exports), `packages/module/image-diff/src/index.ts` (75 lines, pure re-exports). Forbidden workarounds (each violates another rule): compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
@@ -280,7 +280,7 @@ Move changes where they belong immediately: different file, new file, gitignore 
 
 Log extensively by default: function entry points, branch decisions, error paths, async lifecycle events. Never remove logging to "clean up"; treat it as permanent infrastructure.
 
-Always use tagged loggers from `@monochromatic-dev/module-es`. Never use raw `console.log`/`console.error` or untagged logger instances in production code. Exception: raw `console` is allowed when precise control over terminal output is needed (CLI user-facing messages, progress indicators, interactive prompts).
+Always use tagged loggers from `@monochromatic-dev/module-logger`. Never use raw `console.log`/`console.error` or untagged logger instances in production code. Exception: raw `console` is allowed when precise control over terminal output is needed (CLI user-facing messages, progress indicators, interactive prompts).
 
 - Tag at every module and function boundary; use `myFn.name` as tag to stay in sync with refactors.
 - Compose tags deeply: when calling a sub-function that accepts a logger, wrap the current logger with an additional tag before passing it.

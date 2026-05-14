@@ -18,7 +18,7 @@ Path-based routing (`done.app/u/<user-id>/`) instead of subdomains: avoids DNS A
 1. User registers with email on the orchestrator's own registration page, verified via SMTP (through `@upyo/smtp`)
 2. Orchestrator hashes password with `Bun.password` (argon2id), stores user record in `orchestrator.db`
 3. On login, orchestrator verifies password, creates a session row in `orchestrator.db` with a random 32-byte hex token, sets cookie (`HttpOnly` / `SameSite=Strict` / `Secure`, scoped to `/u/<user-id>/`)
-4. Orchestrator spawns a new **SvelteKit-on-Bun process** (`bun run build/index.js --port=XXXX --db=/data/<user-id>/done.db`)
+4. Orchestrator spawns a new **Bun + h3 Done process** (`bun src/server.ts --port=XXXX --db=/data/<user-id>/done.db`)
 5. On every request to `/u/<user-id>/*`, orchestrator validates the session cookie and checks that the session's user-id matches the path, then reverse-proxies to `localhost:$PORT`, stripping the `/u/<user-id>` prefix
 6. Unauthenticated requests get redirected to the login page; wrong-user requests get 403
 7. The orchestrator **suspends idle instances** (kill + respawn on next request) and **wakes them on URL access** (cold-start pattern)
@@ -41,7 +41,7 @@ It does not just organize tasks; it actively surfaces the right task at the righ
 ## Tech stack
 
 - **Runtime**: Bun (server + bundler)
-- **Framework**: SvelteKit with SSR (server-side rendering on Bun via adapter-bun) -- one process handles both pages and data. `load` functions fetch data server-side, form actions handle mutations. No separate API layer.
+- **Framework**: h3 server with vanilla TypeScript client bundles. The server owns page routes and REST API routes under `/api/...`; client pages read server-embedded JSON and build DOM imperatively.
 - **Database**: libsql (SQLite-compatible, single file, local)
 - **AI**: Self-hosted llama.cpp (OpenAI-compatible API, full model control, no provider ban risk). Primary model: Qwen3-1.7B (Q4_K_M, ~1.2GB RAM, CPU-only, non-thinking mode for fast autofill). Fallback: LFM2.5-1.2B-Instruct (under 1GB, 239 tok/s on CPU).
 - **Auth + reverse proxy**: Orchestrator (Bun) -- handles registration, login, session cookies, path ACL enforcement, and HTTP reverse proxy to user processes. No Caddy or AuthCrunch; Coolify's reverse proxy terminates HTTPS upstream.
@@ -125,7 +125,7 @@ This is a caution-first data safety measure; if the instance dies, the user has 
 
 ## Task model
 
-```
+```text
 Task {
   id: string (ULID)
   title: string
@@ -235,15 +235,12 @@ The server is the authority for start/stop events; the client handles smooth dis
 
 ## Architecture notes
 
-### SvelteKit SSR on Bun
+### h3 server on Bun
 
-SvelteKit runs as a full SSR server via adapter-bun.
-Each user's instance is a single SvelteKit process that handles everything: page rendering, data loading (`+page.server.ts` load functions), mutations (form actions), and AI proxy endpoints (`+server.ts`).
-The orchestrator reverse-proxies `done.app/u/<user-id>/*` to the user's SvelteKit port, stripping the `/u/<user-id>` prefix so SvelteKit sees clean `/` paths.
-SvelteKit's `base` path stays as the default `/` (it's a build-time config, can't vary per user).
-This works because SvelteKit generates relative links (e.g., `./settings`, `../[id]`) which resolve correctly from the browser's `/u/<user-id>/` URL.
-Each user process gets `ORIGIN=https://done.app` so SvelteKit can construct absolute URLs for redirects.
-No separate API layer, no CORS, no client-side fetch() for basic CRUD; forms submit natively, SvelteKit enhances with client-side navigation.
+Each user's instance is a single Bun process running an h3 server.
+The server handles HTML page routes and REST API routes under `/api/...`.
+Client pages use vanilla TypeScript bundles, read server-embedded JSON, and perform mutations through API handlers.
+The orchestrator reverse-proxies `done.app/u/<user-id>/*` to the user's h3 port, stripping the `/u/<user-id>` prefix before the request reaches the app.
 
 ### AI rate limiting
 
@@ -255,7 +252,7 @@ The entire stack ships as a `docker-compose.yml` deployable on Coolify.
 Coolify's own reverse proxy handles HTTPS termination; the orchestrator only listens on HTTP.
 Two services:
 
-1. **orchestrator**: Bun image with the built SvelteKit app and orchestrator code. Listens on port 3000 (HTTP). Handles registration, login, session validation, path ACL enforcement, and HTTP reverse proxy to user processes. Spawns per-user Bun processes as child processes within the same container.
+1. **orchestrator**: Bun image with the h3 Done app and orchestrator code. Listens on port 3000 (HTTP). Handles registration, login, session validation, path ACL enforcement, and HTTP reverse proxy to user processes. Spawns per-user Bun processes as child processes within the same container.
 2. **llama-cpp**: CPU-only `ghcr.io/ggml-org/llama.cpp:server` image. Shared AI inference for all users.
 
 Named volumes:

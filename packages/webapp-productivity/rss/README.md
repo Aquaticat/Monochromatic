@@ -14,7 +14,7 @@ An RSS/Atom feed reader that converts feeds to an HTML interface with memoized u
 
 Pull-based memoized pipeline triggered on each page request:
 
-```
+```text
 OPML URLs -> Fetch OPML texts -> Parse outlines -> Fetch feeds -> Sort items -> Filter ignored -> Render HTML
 ```
 
@@ -72,12 +72,12 @@ RSS_FETCH_INTERVAL_MS=300000
 
 1. Configure your OPML file with desired RSS/Atom feeds
 2. Set the `OPMLS` environment variable to point to your OPML file(s)
-3. Start the server: `mise run start`
+3. Start the server: `mise run //packages/webapp-productivity/rss:dev`
 4. Visit `http://localhost:4112` to view your feeds
 
 ## Technical details
 
-- Built with Bun.serve for the HTTP server
+- Built with h3's `H3` router and `serve()` helper for the HTTP server
 - Uses h-html for string-based HTML generation
 - Supports both HTTP and file-based OPML sources
 - Salted memoize caching with automatic invalidation

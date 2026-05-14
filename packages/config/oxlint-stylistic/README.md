@@ -61,7 +61,7 @@ keeping rule files minimal.
 Fixture-based tests covering all 9 rules plus autofix verification:
 
 ```bash
-mise run test:unit -- --filter oxlint-stylistic
+mise run buildAndTest -- packages/config/oxlint-stylistic/src/oxlint-stylistic.unit.test.ts
 ```
 
 Test fixtures live in `packages/test-fixture/oxlint-stylistic/src/` with `valid/` and `invalid/` directories.

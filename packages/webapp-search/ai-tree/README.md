@@ -4,10 +4,10 @@ AI-powered tree exploration web application using the Claude API.
 
 ## Stack
 
-- **Server**: Elysia with Swagger documentation
+- **Server**: h3
 - **AI**: Anthropic SDK with Claude Sonnet, extended thinking, web search,
   code execution, and remote MCP server integration
-- **Validation**: Zod for schema definitions
+- **Validation**: Valibot for schema definitions
 
 ## Configuration
 
@@ -17,5 +17,6 @@ to `4111` and is configurable via `AI_TREE_PORT`.
 ## Running
 
 ```sh
-mise run //packages/webapp-search/ai-tree:start
+mise run //packages/webapp-search/ai-tree:build
+bun packages/webapp-search/ai-tree/src/index.ts
 ```

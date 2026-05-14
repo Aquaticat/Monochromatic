@@ -12,13 +12,18 @@ and throughput targets.
 | ---------------- | -------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `hot-repo`       | one repo, 10K issues | mitata-paced bursts of `comment.created` | rebuild p99 < 5s; zero stale fragments after drain                                        |
 | `bursty-comment` | one issue, 60s burst | sustained 167 evts/sec on the same issue | detail-fragment rebuild count <= 60 (1/sec debounce); final fragment matches ground truth |
+| `wide-service`   | broad service graph  | fanout across many repos and services    | list and service fragments invalidate without stale reads                                 |
+| `force-push`     | repo with branches   | force-push event sequence                | branch and commit fragments converge after rewrite                                        |
 
-Phase 2 adds `wide-service` and `force-push`. Phase 3 adds `cross-cutting-rename` and `filter-fanout`.
+Phase 3 adds `cross-cutting-rename` and `filter-fanout`.
 
 ## Run
 
 ```sh
 mise run //packages/webapp-forge/stress:stress -- --scenario=hot-repo
+mise run //packages/webapp-forge/stress:stress -- --scenario=wide-service
+mise run //packages/webapp-forge/stress:stress -- --scenario=force-push
+mise run //packages/webapp-forge/stress:stress -- --scenario=all
 mise run //packages/webapp-forge/stress:stress:hot-repo
 mise run //packages/webapp-forge/stress:stress:bursty-comment
 ```

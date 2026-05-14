@@ -593,6 +593,8 @@ _.path = [
 "packages/pi/auto-mode/node_modules/.bin",
 "packages/pi/terminal-title/node_modules/.bin",
 "packages/pi/morph-compact/node_modules/.bin",
+"packages/duik/teto-generated/node_modules/.bin",
+"packages/duik/teto/node_modules/.bin",
 "packages/rolldown-plugins/import-attributes/node_modules/.bin",
 "packages/claude-code-plugins/prompt-time/node_modules/.bin",
 "packages/claude-code-plugins/terminal-title/node_modules/.bin",

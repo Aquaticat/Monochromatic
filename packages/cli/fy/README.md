@@ -49,7 +49,7 @@ Specifiers are resolved in this order:
 
 1. CWD `node_modules`
 2. Monorepo root `node_modules` (walks up from CWD looking for a `package.json` with `workspaces`)
-3. Global `node_modules` (checks common Bun and Node.js global install locations)
+3. Global `node_modules` locations that contain the marker file currently used by the resolver
 
 ## Error handling
 

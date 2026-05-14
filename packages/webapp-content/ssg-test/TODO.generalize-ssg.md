@@ -16,7 +16,7 @@ The SSG looks for `site.config.ts` in the current working directory by conventio
   - `languages` (record of language code to `{ siteName, siteDescription, i18n? }`, required)
     - `i18n` is an optional partial record of UI string keys to override values
     - All UI string keys (`chooseALang`, `searchPlaceholder`, `noResults`, `page`,
-      `postNotInLang`, `redirectingToLangChooser`, `themeToggle`) are optional;
+      `postNotInLang`, `redirectingToLangChooser`, `themeToggle`, `langSwitcher`) are optional;
       SSG defaults fill in anything not provided
   - `tickerQuotes` (string array, required) -- footer ticker content
   - `favicon.source` (string, default `'public/favicon.svg'`) -- path to source SVG
@@ -49,6 +49,7 @@ via `config.languages[lang].i18n`:
 - `postNotInLang` (default: `"Post doesn't exist in specified language"` / `'无该语言的页面'`)
 - `redirectingToLangChooser` (default: `'Choose a language for'` / `'的语言选择'`)
 - `themeToggle` (default: `'Invert theme'` / `'反转主题'`)
+- `langSwitcher` (default: `'Switch language'` / `'切换语言'`)
 
 ## Phase 2: Thread config through the build pipeline
 
@@ -56,8 +57,8 @@ via `config.languages[lang].i18n`:
 
 ### `src/build.ts`
 
-- [ ] Remove `const SITE_URL = 'https://aquati.cat'` (line 54) -- read from `config.url`
-- [ ] Remove `const CONTENT_DIR = 'src/content'` (line 57) -- read from `config.contentDir`
+- [ ] Remove `const SITE_URL = 'https://aquati.cat'` (`src/build.ts:62`) -- read from `config.url`
+- [ ] Remove `const CONTENT_DIR = 'src/content'` (`src/build.ts:66`) -- read from `config.contentDir`
 - [ ] Load config at the top of the build script via `loadConfig()`
 - [ ] Pass config (or relevant fields) to every function that currently reads a hardcoded value
 
@@ -71,15 +72,15 @@ via `config.languages[lang].i18n`:
 - [ ] Update `i18n-types.ts` to include `siteName` and `siteDescription` as fields
       that come from the merged config, not from the base translation
 
-### `src/templates/ticker-quotes.ts`
+### `src/components/site-footer.ts`
 
-- [ ] Remove the hardcoded `TICKER_QUOTES` array
-- [ ] `footer.ts` receives ticker quotes from config instead of importing the constant
+- [ ] Remove or parameterize the hardcoded `TICKER_QUOTES` array
+- [ ] Pass ticker quotes into the footer renderer from config
 
 ### `src/build/render.ts`
 
-- [ ] Remove hardcoded `SVG_SOURCE` path (line 10) -- read from `config.favicon.source`
-- [ ] Remove hardcoded `BACKGROUND` color (lines 13-18) -- read from `config.favicon.backgroundColor`
+- [ ] Remove hardcoded `SVG_SOURCE` path (`src/build/render.ts:9`) -- read from `config.favicon.source`
+- [ ] Remove hardcoded `BACKGROUND` color (`src/build/render.ts:12-18`) -- read from `config.favicon.backgroundColor`
 
 ### `src/lib/rss.ts`
 

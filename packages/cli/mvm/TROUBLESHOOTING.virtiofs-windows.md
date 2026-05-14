@@ -44,12 +44,13 @@ the QEMU guest agent channel. The moment the guest agent service starts (Order 2
 `waitForGuestAgent` returns and the template code **immediately shuts down the VM**
 to proceed with the VirtIO disk bus switchover.
 
-Any FirstLogonCommands with Order > 2 will **never execute**.
+Any FirstLogonCommands with Order greater than 2 can be skipped by template shutdown.
 They are registered, they appear in the setup log as "Set command",
 and they vanish into the ether when the VM powers off.
 
-This is why VirtioFsSvc installation is done via `guest-exec` after the agent is up,
-not via additional FirstLogonCommands.
+This is why WinFsp and the real VirtioFsSvc setup are done via `guest-exec` after
+the agent is up. Autounattend still contains a best-effort Order 3 service start,
+but template creation does not rely on that command completing.
 
 ## The MSI serialisation trap
 

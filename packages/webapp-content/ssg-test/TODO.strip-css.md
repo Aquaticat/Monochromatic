@@ -7,17 +7,17 @@ Material Symbols cleanup, double-calc fix).
 Everything listed below is decorative, defensive, or redundant.
 Removing it will not break functionality or basic readability.
 
-## `.material-symbols-outlined` (`icons.ts:47-57`)
+## `.material-symbols-outlined` (`icons.ts:77-86`)
 
 - `font-weight: normal` -- defensive; icons aren't inside bold contexts in current markup
 - `font-style: normal` -- defensive; icons aren't inside italic contexts
 - `white-space: nowrap` -- defensive; ligature text won't wrap at icon font-size
 
-## `pre` (`global.ts:148-157`)
+## `pre` (`global.ts:155-162`)
 
 - `border-radius: 0.5rem` -- decorative rounding
 
-## `:focus-visible` (`global.ts:192-199`)
+## `:focus-visible` (`global.ts:209-215`)
 
 - `outline-offset` -- decorative; default `0` is fine
 

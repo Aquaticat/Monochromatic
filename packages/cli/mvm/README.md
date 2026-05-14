@@ -1,4 +1,4 @@
-# cli-vm (mvm)
+# cli-mvm
 
 Ephemeral VM manager backed by KVM/libvirt.
 Creates always-on virtual machines you can immediately shell into.
@@ -15,30 +15,32 @@ Clone replaces snapshot needs.
 
 ```sh
 # Create a new VM (downloads Ubuntu 24.04 LTS cloud image on first run)
-bun packages/cli/vm/src/index.ts create dev-01
+bun packages/cli/mvm/src/index.ts create dev-01
 
 # Create a VM with a different image
-bun packages/cli/vm/src/index.ts create --image fedora build-box
-bun packages/cli/vm/src/index.ts create --image alpine lightweight
+bun packages/cli/mvm/src/index.ts create --image fedora build-box
+bun packages/cli/mvm/src/index.ts create --image alpine lightweight
+bun packages/cli/mvm/src/index.ts create --image windows win-box
 
 # Connect to a running VM (auto-login serial console, Ctrl+] to disconnect)
-bun packages/cli/vm/src/index.ts shell dev-01
+bun packages/cli/mvm/src/index.ts shell dev-01
 
 # List all managed VMs
-bun packages/cli/vm/src/index.ts list
+bun packages/cli/mvm/src/index.ts list
 
 # Clone a VM (full disk copy, new hostname via cloud-init)
-bun packages/cli/vm/src/index.ts create --from dev-01 dev-02
+bun packages/cli/mvm/src/index.ts create --from dev-01 dev-02
 
 # Destroy a VM and all its storage
-bun packages/cli/vm/src/index.ts destroy dev-01
+bun packages/cli/mvm/src/index.ts destroy dev-01
 ```
 
 Or via mise:
 
 ```sh
-mise run packages/cli/vm:run -- create dev-01
-mise run packages/cli/vm:run -- create --image fedora build-box
+mise run //packages/cli/mvm:run -- create dev-01
+mise run //packages/cli/mvm:run -- create --image fedora build-box
+mise run //packages/cli/mvm:run -- create --image windows win-box
 ```
 
 ## Available images
@@ -46,6 +48,7 @@ mise run packages/cli/vm:run -- create --image fedora build-box
 - **ubuntu** (default) -- Ubuntu 24.04 LTS (Noble Numbat), user: `ubuntu`
 - **fedora** -- Fedora 43 Cloud Base, user: `fedora`
 - **alpine** -- Alpine 3.23 with cloud-init, user: `alpine`
+- **windows** -- Windows Server 2025 evaluation ISO, user: `Administrator`
 
 Each image is downloaded once and cached in `~/.local/share/mvm/images/`.
 A per-image template with qemu-guest-agent pre-installed is baked on first use

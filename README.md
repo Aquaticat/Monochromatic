@@ -145,7 +145,8 @@ packages/
   audit/                    Compliance audits (oph-common-look-and-feel)
   build-tool/               Build tooling (CSS processor)
   claude-code-plugins/      Claude Code IDE plugins (7 packages)
-  cli/                      CLI tools (mvm -- KVM virtual machine manager)
+  cli/                      CLI tools (git wrapper, mvm, vmsync,
+                              terminal-exec, cli-fy, rgffplay)
   config/                   Shared configurations (dprint, oxlint,
                               stylelint, tofu, tsdown, typescript)
   desktop-daemon/           Background services (hall-monitor)

@@ -1,5 +1,10 @@
 # Module ES - API Refactors Todo
 
+> Stale as of 2026-05-13: many links in this file reference obsolete flat
+> source names such as `src/any.toExport.ts` and `src/array.range.ts`. Current
+> implementations live under `src/types/**`. Rebuild this inventory from the
+> current taxonomy before scheduling API refactor work.
+
 ## Major API Design Changes Required
 
 ### Critical Breaking Changes for Library Design

@@ -1,6 +1,6 @@
 # TODO: lint cleanup
 
-`mise run //packages/webapp-edu/paper2vn:lint:oxlint` reports 27 errors and 181 warnings as of v0.0.1.
+`mise run //packages/webapp-edu/paper2vn:lint:oxlint` reports 50 errors and 163 warnings as of 2026-05-13.
 The build, the type check, and the seeded-save lecture flow all pass.
 
 ## Resolved in this round
@@ -9,28 +9,20 @@ The build, the type check, and the seeded-save lecture flow all pass.
 
 ## Remaining counts
 
-```
-43 tsdoc(require-example)
-25 tsdoc(require-param)
-24 eslint(no-magic-numbers)
-21 tsdoc(require-returns)
-18 stylistic(object-property-per-line)
-17 tsdoc(require-tsdoc)
- 9 eslint(new-cap)
- 8 eslint(init-declarations)
- 6 eslint-plugin-unicorn(numeric-separators-style)
- 5 stylistic(type-property-per-line)
- 3 tsdoc(multiline-blocks)
- 3 eslint(max-lines)
+```text
+50 errors, including module-root `let`, function-root `let`, `avoid-new`,
+missing destructured params, missing querySelector generics, no-promise-catch,
+non-null assertions, max-lines, new-cap, init-declarations, and no-magic-numbers.
+163 warnings, mostly TSDoc and stylistic cleanup.
 ```
 
 ## Categories
 
-### tsdoc(require-example, require-param, require-returns, require-tsdoc) -- 106
+### tsdoc(require-example, require-param, require-returns, require-tsdoc)
 
 Add missing `@example`, `@param`, `@returns` tags and TSDoc blocks. The screen modules and `dom.ts` have most of the gaps. AGENTS.md mandates these on every declaration.
 
-### eslint(no-magic-numbers) -- 24
+### eslint(no-magic-numbers)
 
 Lift literals to named constants. Hot spots:
 
@@ -41,22 +33,29 @@ Lift literals to named constants. Hot spots:
 - `tts.ts` -- voice-pick fallbacks
 - `settings.ts` -- range bounds (`0.75`, `1.5`, `0.05`, `120`, `5000`, `100`, `5`)
 
-### eslint(new-cap) -- 9
+### eslint(new-cap)
 
 `LL()`, `i18nObject(...)`, `initI18n(...)` factory calls flagged because their names start with uppercase. Either rename in the wrapper or configure `new-cap` to allow these specific identifiers.
 
-### eslint(init-declarations) -- 8
+### eslint(init-declarations)
 
 `let foo;` declarations in `state.ts` and `lecture.ts` need explicit initializers (typically `undefined`).
 
-### eslint(max-lines) -- 3
+### eslint(max-lines)
 
 `screens/lecture.ts` and `screens/settings.ts` exceed the line limit. Split into sub-modules:
 
 - `lecture.ts` -> `lecture/runtime.ts` (typewriter + auto), `lecture/toolbar.ts`, `lecture/ask-panel.ts`
 - `settings.ts` -> `settings/display.ts`, `settings/provider.ts`
 
-### stylistic -- 23 (`object-property-per-line`, `type-property-per-line`, `tuple-per-line`)
+### structural errors added since the first cleanup pass
+
+- `state.ts` has module-root `let` state that must move into containers or a named helper shape.
+- `lecture.ts` has `avoid-new`, function-root `let`, querySelector generic, and no-promise-catch violations.
+- Some event handlers still need single destructured object parameters.
+- Remaining non-null assertions need runtime narrowing helpers.
+
+### stylistic (`object-property-per-line`, `type-property-per-line`, `tuple-per-line`)
 
 Mostly auto-fixable formatting; `dprint` should handle this once configured for the package.
 

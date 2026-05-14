@@ -48,9 +48,10 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 **Status**: Normal priority, common operations
 
-- [ ] Add `object.pick()` - Select specific properties from object
-- [ ] Add `object.omit()` - Remove specific properties from object
-- [ ] Add `object.merge()` - Deep merge objects with conflict resolution
+- [x] Add record `pick` helper in current `module-es` taxonomy
+- [x] Add record `omit` helper in current `module-es` taxonomy
+- [x] Add record `merge` helper in current `module-es` taxonomy
+- [ ] Add root-friendly aliases or documentation for record pick, omit, and merge
 - [ ] Add `object.flatten()` - Flatten nested objects with dot notation keys
 - [ ] Add `object.unflatten()` - Convert dot notation keys back to nested objects
 - [ ] Add `object.transform()` - Transform object keys and values
@@ -93,7 +94,7 @@ This file tracks improvements needed across different packages in the monorepo, 
 
 #### Path and URL Utilities
 
-- [ ] Add `path.normalize()` - Cross-platform path normalization
+- [ ] Decide whether `module-fs-path` should publicly export `normalize()`; path helpers moved out of `module-es`
 - [ ] Add `url.build()` - Build URLs with query parameters
 - [ ] Add `url.parse()` - Parse URLs into components
 
@@ -165,11 +166,11 @@ This file tracks improvements needed across different packages in the monorepo, 
 - [ ] Add performance monitoring for documentation site
 - [ ] Create multi-language support for documentation
 
-### RSS Reader (packages/site/rss)
+### RSS Reader (packages/webapp-productivity/rss)
 
 **Note**: RSS package has comprehensive TODO files already. See:
 
-- [`packages/site/rss/TODO.index.md`](packages/site/rss/TODO.index.md) for overview
+- [`packages/webapp-productivity/rss/TODO.index.md`](packages/webapp-productivity/rss/TODO.index.md) for overview
 - Individual TODO files for testing, performance, caching, etc.
 
 ---

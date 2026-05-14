@@ -4,15 +4,20 @@ This plan no longer follows a competition deadline.
 The day-by-day sequence and hour estimates now serve as implementation guidance only, not as a hard timeline.
 Items without a priority marker are implicitly highest priority.
 
+> Stale-warning, 2026-05-13: lower historical sections still contain the original
+> `Bun.serve()` / `Bun.build()` sketch. Current implementation uses h3 route
+> registration, h-css runtime-generated styles, and tsdown client bundles. Trust
+> `README.md` and `src/server.ts` over older embedded snippets.
+
 ## Architecture overview
 
 No framework. Vanilla TypeScript on both server and client, unified by Bun.
 
-- **Server:** `Bun.serve()` with its built-in `routes` property handles page and API routes with `:param` syntax and per-method dispatch. No separate router file needed. Unmatched requests fall through to a `fetch` handler that serves built client assets.
+- **Server:** h3 `H3` route registration handles page and API routes. Static serving handles built client assets from `dist/client/`.
 - **Client:** Plain TypeScript with `document.createElement` for DOM construction. Custom elements where reuse is needed (task card, chip editor, collapsible section).
-- **Build:** `build-css` (resolve @import, expand @mixin/@apply) runs first, then `Bun.build()` bundles client TS (with CSS imported as text strings) at server startup. Same code path in dev and prod; only `minify` flag differs.
+- **Build:** h-css runtime-generated styles and tsdown client bundles are built through mise tasks.
 - **CSS:** CSS files use `@mixin`/`@apply` syntax processed by `@monochromatic-dev/build-css`. Processed CSS is imported as text in client TS and injected at runtime -- no separate `<link>` tags needed.
-- **Dev:** `bun --watch src/server.ts` -- one command. On any file change, Bun restarts the server process, which re-runs the full build pipeline. No second tool, no separate watcher.
+- **Dev:** `mise watch -w src -r -- bun src/server.ts` restarts the server process on source changes.
 - **Operational advantage:** The orchestrator spawns per-user Bun processes. Each process runs the build pipeline at startup, so new/restarted processes immediately serve the latest code.
 
 See `FRAMEWORK_EVALUATION.md` for why this approach was chosen over SvelteKit, Vue Vapor, or Web Components frameworks.
@@ -544,7 +549,7 @@ await transport.close();
 
 Single `Bun.serve()` process handles both pages (HTML responses) and API (JSON responses).
 
-```
+```text
 src/
   server.ts                         -- entry point: build-css + Bun.build() + Bun.serve({ routes })
   server/
@@ -708,7 +713,7 @@ CREATE INDEX idx_sessions_expires ON sessions(expires_at);
 The session cookie is a simple lookup token, not a signed JWT.
 The `sessions` table is the source of truth: no crypto to get wrong.
 
-```
+```http
 Cookie: session=<session-id>; Path=/u/<user-id>/; HttpOnly; Secure; SameSite=Strict
 ```
 
@@ -833,14 +838,14 @@ For CPU-only inference on a competition server, use the smallest model that reli
 Our prompts are simple (infer tags from a title, rank tasks by context) -- not hard reasoning problems.
 Speed matters more than capability here because autofill runs on every keystroke (debounced).
 
-**Primary choice: Qwen3-1.7B (Q4_K_M quantization)**
+#### Primary choice: Qwen3-1.7B (Q4_K_M quantization)
 
 - ~1.2GB RAM, good structured JSON output (community-validated with Ollama JSON schema constraints)
 - Use **non-thinking mode** (`/no_think` or temperature=0) for fast autofill without chain-of-thought overhead
 - Official GGUF from Qwen team: `Qwen/Qwen3-1.7B-GGUF`
 - llama.cpp auto-downloads: `--hf-repo Qwen/Qwen3-1.7B-GGUF --hf-file Qwen3-1.7B-Q4_K_M.gguf --ctx-size 4096`
 
-**Fallback: LFM2.5-1.2B-Instruct (GGUF)**
+#### Fallback: LFM2.5-1.2B-Instruct (GGUF)
 
 - Under 1GB RAM, 239 tok/s on AMD CPU -- remarkably fast
 - IFEval 86.23% (instruction following) is strong for its size
@@ -851,9 +856,9 @@ Both support the OpenAI-compatible `/v1/chat/completions` endpoint in llama.cpp 
 
 ### AI prompt templates (reference for day 4)
 
-**Autofill prompt (4.2):**
+#### Autofill prompt (4.2)
 
-```
+```text
 System: You are a task metadata assistant. Given a task title, infer metadata.
 Return ONLY valid JSON matching this schema, no other text:
 {
@@ -875,9 +880,9 @@ set splitSuggestion with the reason and proposed sub-task titles.
 </user_task>
 ```
 
-**Suggestion ranking prompt (5.1):**
+#### Suggestion ranking prompt (5.1)
 
-```
+```text
 System: You are a task prioritization assistant. Given a list of tasks and the user's
 current context, return the task IDs ranked by what the user should do next.
 Return ONLY a JSON array of task ID strings, most important first. No other text.
@@ -1075,13 +1080,13 @@ It lives at `packages/site/done/orchestrator/` with its own entry point.
 It handles auth, reverse proxy, and process management: no Caddy or AuthCrunch needed.
 Coolify's reverse proxy terminates HTTPS upstream; the orchestrator listens on HTTP (port 3000).
 
-**7.1a Registration and login (~1.5h)**
+#### 7.1a Registration and login (~1.5h)
 
 - (0.5h) Create `orchestrator/src/auth.ts`: registration form (HTML page served by orchestrator), email verification via `@upyo/smtp`
 - (0.5h) Implement login: verify password with `Bun.password.verify()`, create session row in `orchestrator.db` with random 32-byte hex ID, set cookie (`HttpOnly`, `SameSite=Strict`, `Secure`, `Path=/u/<user-id>/`), rate limit login attempts (10/min per IP)
 - (0.5h) On verified registration: generate ULID user ID, hash password with `Bun.password.hash()` (argon2id), store in `orchestrator.db`, create `/data/<user-id>/` directory, initialize empty `done.db` with migration
 
-**7.1b Process management (~1.5h)**
+#### 7.1b Process management (~1.5h)
 
 - (0.5h) Create `orchestrator/src/process-manager.ts`: spawn per-user Bun process (`bun src/server.ts --port=XXXX --db=/data/<user-id>/done.db`). Each spawn runs `Bun.build()` at startup, so new processes always serve fresh client code.
 - (0.5h) Implement port allocation: track PID + port + user-id mapping in `orchestrator.db`; allocate ports from a configurable range (e.g., 3100-3999)
@@ -1092,7 +1097,7 @@ Coolify's reverse proxy terminates HTTPS upstream; the orchestrator listens on H
 - (0.25h) Monitor last-request timestamp per user (updated on each proxied request)
 - (0.25h) Suspend idle processes after configurable timeout (kill + respawn on next request); orchestrator returns loading page briefly during cold start
 
-**7.1d HTTP reverse proxy and path ACL (~0.5h)**
+#### 7.1d HTTP reverse proxy and path ACL (~0.5h)
 
 - (0.25h) Create `orchestrator/src/proxy.ts`: on each request to `/u/<user-id>/*`, validate session cookie, check session user-id matches path user-id, proxy to `localhost:$PORT` with prefix stripped
 - (0.25h) Handle edge cases: unauthenticated -> redirect to login, wrong user -> 403, user process not running -> spawn and queue request

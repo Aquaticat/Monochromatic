@@ -98,7 +98,9 @@ Lint, types, and tests all clean (0 errors; 473 stylistic warnings — two more 
 
 **Last commits** (most recent first):
 
-- (next commit, this session) — iteration-7 paint upright AND rotated-180° copies on each texture
+- `c2a2079a feat(dev-script/deps-cube): interpolate probe colour in OKLCH`
+- `80a5f175 feat(dev-script/deps-cube): pin camera-controls guide to top of sidebar`
+- `677af470 fix(dev-script/deps-cube): paint upright AND rotated-180° copies per texture` (iteration 7)
 - `bd6e6049 fix(dev-script/deps-cube): flip texture Y + auto-shrink long names + 2 reps` (iteration 6)
 - `62d80159 feat(dev-script/deps-cube): bake names into per-probe mesh textures` (iteration 5)
 - `059201f2 feat(dev-script/deps-cube): paint name labels onto each ball/octahedron` (iteration 4)
@@ -140,12 +142,16 @@ Done:
   - `src/scripts/controller-tooltip.ts` — `formatTooltipHtml` (10-row tooltip table with HTML-escaped probe fields) + lazy-initialised `<aside id="pinned-tooltip">` with a close button, exposed as `pinTooltip` / `unpinTooltip`. Used by the deck.gl `getTooltip` hover callback (transient) and the `onClick` handler (pinned).
   - **`src/scripts/state.ts` change**: `ViewState.target` is now mutable `[number, number, number]` instead of `readonly`, because deck.gl's `OrbitViewState.target` requires mutable.
   - **Bundle smoke test**: `bun build src/scripts/controller.ts --format=iife --minify` produces a 754KB bundle (513 modules, including `@luma.gl/core` transitives). About 2× the audit estimate (~400KB); the extra comes from luma.gl + math.gl + probe.gl. Worth recording in `docs/decisions/deps-cube.md` under "implementation notes" when task 11 lands.
-- ~~Task 7 (deck.gl config + layer factories)~~ — split across five files to stay under the line cap:
-  - `src/deck-config.ts` — `orbitView` (OrbitView instance, `orbitAxis: 'Y'`, `fovy: 50`), `computeSceneBounds` (extent per channel from `extractDim`), `buildLayers` (assembles layer groups, filters by display toggles, returns `readonly Layer[]`). Exports `SceneBounds` type.
-  - `src/deck-accessors.ts` — pure per-probe value accessors: `probePosition` (returns `[x, y, z] | null`), `probeFillColor` (red↔green linear RGB ramp + blue tint; mid-grey for unknown; alpha 13 ≈ 5% for filtered, 255 for visible), `probeRadius` (linear interp 3px↔30px), `probeIsFilled` (shape < 0.5 → filled), `unknownClusterPosition` (offset corner of bounds with per-index hash jitter).
-  - `src/deck-layers.ts` — wireframe `PathLayer` (12 edges via `edge({ a, b })` helper) + threshold-plane `PolygonLayer`s at `log10(10000)` / `log10(365)` / `log10(100000)`; planes render only when the channel is mapped to its expected default dim (otherwise the heuristic value is meaningless).
-  - `src/deck-scatter.ts` — `partitionProbes` helper buckets probes into `{ filled, stroked, unknown }` based on `probeIsFilled` and `unknownReason`. Three `ScatterplotLayer` factories: `buildLeafScatterLayer` (filled), `buildNonLeafScatterLayer` (stroked), `buildUnknownClusterLayer` (offset position, stroke+fill).
-  - `src/deck-labels.ts` — `buildAxisLabelsLayer` (TextLayer at axis midpoints using `DIM_DISPLAY_NAMES` for the three spatial channels) + `buildNameLabelsLayer` (top-N by staleness or all visible probes, label above each glyph).
+- ~~Task 7 (deck.gl config + layer factories)~~ — split across current layer modules:
+  - `src/deck-config.ts` — `orbitView`, `computeSceneBounds`, and `buildLayers` orchestrator.
+  - `src/deck-accessors.ts` — pure per-probe accessors for position, OKLCH colour, radius, and shape bucket.
+  - `src/deck-layers.ts` — axis shafts, arrowhead cones, and tick marks.
+  - `src/deck-planes.ts` — coordinate planes via `SolidPolygonLayer` plus threshold guide lines via `PathLayer`.
+  - `src/deck-scatter.ts` — per-probe `SimpleMeshLayer` spheres and octahedra with baked canvas textures.
+  - `src/deck-scatter-helpers.ts` — partitioning and top-N name-bake selection.
+  - `src/deck-labels.ts` — axis capitals, axis subtitles, and origin label.
+  - `src/deck-textures.ts` — per-probe texture baking for colours and package names.
+  - `src/oklch.ts` — OKLCH-to-sRGB conversion for the colour ramp.
 
 - ~~Task 10 (HTML composer + CLI)~~ — three files plus a CSS asset:
   - `src/render-html.ts` — `renderHtml({ probes })` builds the final document: calls `Bun.build({ entrypoints: ['src/scripts/controller.ts'], format: 'iife', minify: true, target: 'browser' })` to obtain the controller IIFE, inlines `window.__PROBES__ = <json>` ahead of the controller script, embeds the control-panel fragment from `renderControls`, and wraps everything in `<!doctype html>...</html>` with the CSS from `styles.css` in a `<style>` block. Helpers: `bundleController` (throws when `result.success === false`, joining `result.logs.map(log => log.message)`), `escapeForScriptTag` (replaces `</script` → `<\/script` and `<!--` → `<\!--` so the inline JS can't escape the script tag). Empty-probes smoke test: 770KB output, 513 modules, document terminates cleanly with `</html>`.
@@ -157,13 +163,13 @@ Done:
 
 Done (continued):
 
-- ~~Task 11 (decision doc)~~ — `docs/decisions/deps-cube.md` follows the pattern of the existing decision docs (`font-subsetting.md`, `readable-stream-shim.md`): Context, Decision with the TS-ratio exception (attributed to the user's screenshot-confirmed authorization, not an independent re-derivation), Rejected alternatives (plotly.js / three.js / echarts / d3-3d / @thi.ng/* / @nivo-visx-recharts / hand-rolled, each with the specific gate they fail), Audit notes (transitive surface enumerated package-by-package with license + module-type, build provenance via vis.gl's `ocular-bundle`, maintenance signals re-verified at audit time via `gh api repos/visgl/deck.gl` + `npm api`), Implementation notes (2x bundle weight vs plan estimate explained by the transitive cone, filled-vs-stroked shape deviation justified by ScatterplotLayer's circle-only rendering, pre-existing canvas wiring choice, top-N labels TODO, monorepo-housed packages routed to Unknown cluster). Numbers in the doc come from `gh api repos/visgl/deck.gl/{languages,contributors}` (TS 72.56%, contributors 277+) and `https://api.npmjs.org/downloads/point/last-week/` (~630K/week for `@deck.gl/core` and `@deck.gl/layers`), measured 2026-05-12. No em-dashes, no en-dashes, no tables, lines under 120, sentence-case headings, ATX max 3 levels.
+- ~~Task 11 (decision doc)~~ — repo-root `docs/decisions/deps-cube.md` follows the pattern of the existing decision docs (`font-subsetting.md`, `readable-stream-shim.md`): Context, Decision with the TS-ratio exception (attributed to the user's screenshot-confirmed authorization, not an independent re-derivation), Rejected alternatives (plotly.js / three.js / echarts / d3-3d / @thi.ng/* / @nivo-visx-recharts / hand-rolled, each with the specific gate they fail), Audit notes (transitive surface enumerated package-by-package with license + module-type, build provenance via vis.gl's `ocular-bundle`, maintenance signals re-verified at audit time via `gh api repos/visgl/deck.gl` + `npm api`), Implementation notes (2x bundle weight vs plan estimate explained by the transitive cone, mesh-glyph migration, pre-existing canvas wiring choice, top-N name-bake TODO, monorepo-housed packages routed to Unknown cluster). Numbers in the doc come from `gh api repos/visgl/deck.gl/{languages,contributors}` (TS 72.56%, contributors 277+) and `https://api.npmjs.org/downloads/point/last-week/` (~630K/week for `@deck.gl/core` and `@deck.gl/layers`), measured 2026-05-12. No em-dashes, no en-dashes, no tables, lines under 120, sentence-case headings, ATX max 3 levels.
 
 Done (continued):
 
-- ~~Task 12 (unit tests)~~ — eight `test/*.unit.test.ts` files: `cache`, `catalog`, `filter`, `state`, `render-controls`, `render-html`, `probe`, `deck-config`. Each is self-contained with local fixtures, uses the `@monochromatic-dev/module-test` harness (`describe({ name, children: [it(...)] })`), and creates temp directories under `os.tmpdir()` with an `await using` disposable for cleanup. The mise task wiring uses the root template (`[tasks.'test:unit'] extends = "test:unit"`), which runs `bun <file>` per `*.unit.test.ts` in parallel via the root `task_templates."test:unit"`. The CLAUDE.md rule "Never invoke raw tools (`bun test`, `oxlint`, etc.) directly; use the corresponding mise task" caught this — the package's earlier `[tasks.test] run = "bun test"` definition was replaced with the template extension.
+- ~~Task 12 (unit tests)~~ — nine `test/*.unit.test.ts` files: `cache`, `catalog`, `filter`, `state`, `render-controls`, `render-html`, `probe`, `deck-config`, and `oklch`. Each is self-contained with local fixtures, uses the `@monochromatic-dev/module-test` harness (`describe({ name, children: [it(...)] })`), and creates temp directories under `os.tmpdir()` with an `await using` disposable for cleanup. The mise task wiring uses the root template (`[tasks.'test:unit'] extends = "test:unit"`), which runs `bun <file>` per `*.unit.test.ts` in parallel via the root `task_templates."test:unit"`. The CLAUDE.md rule "Never invoke raw tools (`bun test`, `oxlint`, etc.) directly; use the corresponding mise task" caught this — the package's earlier `[tasks.test] run = "bun test"` definition was replaced with the template extension.
 
-  Run via `mise run //packages/dev-script/deps-cube:test:unit`. Reports 8 PASS lines, 0 FAIL, 1 SKIP. Coverage per file:
+  Run via `mise run //packages/dev-script/deps-cube:test:unit`. Reports 9 PASS lines, 0 FAIL, 1 SKIP. Coverage per file:
 
   - **cache** — read miss; round-trip; TTL semantics (null = never expire, negative = always expire); multiple fields coexisting in one file; rootDir exposure; parent-directory auto-creation for scoped names (`@scope/pkg`); malformed JSON treated as miss.
   - **catalog** — `decodeAlias` for plain ranges, `npm:` aliases (scoped/unscoped, with/without `@range`); `readCatalog` for default + named blocks; `npm:` decoding inside catalog entries; throw paths for missing yaml and empty catalog blocks. Uses `findUp` constrained to a temp dir so the test doesn't accidentally pick up the real `pnpm-workspace.yaml` higher in the tree.
@@ -173,6 +179,7 @@ Done (continued):
   - **render-html** — stubs `Bun.build` via `ctx.sinon.stub(Bun, 'build').resolves(...)` returning a fake bundle. Asserts the composed document starts with `<!doctype html>`, has `<meta charset>`/`<meta viewport>`/`<title>`, contains no external `<link rel="stylesheet">` or `<script src=...>` references, inlines the probe array as `window.__PROBES__`, embeds the stubbed bundle text, and includes `<style>...</style>` plus the control panel + canvas. Verifies `</script` and `<!--` are neutralised inside both the data and the bundle text; verifies the failure path joins all bundler logs into the thrown error. **`concurrency: 1`** on this describe block — `Bun.build` is a single global property, so concurrent stubs trip sinon's "already wrapped" guard.
   - **probe** — pure helpers (`parseRepository` for plain URL / `git+https` / `github:` shorthand / object with `directory` / non-GH / undefined / empty; `classifyLicense` for every class; `resolveVersion` for pinned vs range); `probeAll` exercised against a pre-populated file cache covering every `UnknownReason` branch (`null` known, `no-repo`, `non-github`, `monorepo`, `private-or-404`). The `private-or-404` case uses `sinon.stub(globalThis, 'fetch').rejects(...)` so the field probe's manifest fetch fails and the orchestrator emits a `failedProbe` stub via the catch in `probeAll`.
   - **deck-config (accessors)** — covers the importable `src/deck-accessors.ts` helpers: `probePosition` (known + null spatial); `unknownClusterPosition` (offsets beyond bounds, deterministic per index, distinct per index); `probeFillColor` (visible=255 / filtered=13 alpha, grey for unknown colour dim, red↔green ramp); `probeRadius` (in `[3, 30]`px, minimum for null/zero size dim); `probeIsFilled` (false for leaves, true for non-leaves under the default shape mapping, hollow for unknown shape dim).
+  - **oklch** — covers OKLCH conversion, endpoint interpolation, midpoint amber colour, and out-of-gamut clamping.
 
   **Layer-count snapshot from the plan is blocked upstream**: importing `src/deck-config.ts` at test runtime fails because `@loaders.gl/schema-utils@4.4.1` statically imports `@math.gl/types` without declaring it as a dependency, so Bun's and Node's module-load resolver can't find the latter. `Bun.build` (used by `render-html.ts` at runtime) tree-shakes the unreachable path, so the produced HTML still works. The `deck-config.unit.test.ts` file has a single `it({ skip: '<reason>' })` placeholder so the limitation surfaces in test output. Upstream fix path: add `@math.gl/types` to `@loaders.gl/schema-utils`'s `package.json` dependencies (track via `visgl/loaders.gl` repo when revisiting).
 
@@ -193,11 +200,11 @@ Partial:
   - `hasKnownRepo='yes'` toggle hides partial-unknowns (`93 of 115`, matching the 22 probes with non-null `unknownReason`) ✓
   - Re-run from cache completes in <2s ✓
 
-  Manual Firefox verification still needed for the interactive 3D pieces that headless tools cannot exercise meaningfully: drag-rotate, shift-drag pan, scroll-zoom, double-click reset of the camera; visual confirmation of glyph positions, wireframe, threshold planes, and partial-unknown outline color; hover-tooltip and click-pinned-tooltip behaviour. Open the most recent `packages/dev-script/deps-cube/dist/deps-cube-*.html` in Firefox ESR 140+ and walk steps 4, 10, 11, 13, 16, 17 of the plan's verification checklist.
+  Manual Firefox verification still needed for the interactive 3D pieces that headless tools cannot exercise meaningfully: drag-rotate, shift-drag pan, scroll-zoom, double-click reset of the camera; visual confirmation of glyph positions, coordinate planes, threshold guide lines, and partial-unknown rendering; hover-tooltip and click-pinned-tooltip behaviour. Open the most recent `packages/dev-script/deps-cube/dist/deps-cube-*.html` in Firefox ESR 140+ and walk steps 4, 10, 11, 13, 16, 17 of the plan's verification checklist.
 
 ## State on disk (verified before this handover)
 
-```
+```text
 packages/dev-script/deps-cube/
 ├── HANDOVER.implementation-state.md   ← this file
 ├── README.md
@@ -211,14 +218,18 @@ packages/dev-script/deps-cube/
 │   ├── css.d.ts                 ← ambient `declare module '*.css'` shim for text imports
 │   ├── deck-accessors.ts        ← per-probe pure accessors (position/color/radius/shape)
 │   ├── deck-config.ts           ← orbit view + computeSceneBounds + buildLayers orchestrator
-│   ├── deck-labels.ts           ← axis + name label TextLayers (imports DIM_DISPLAY_NAMES)
-│   ├── deck-layers.ts           ← wireframe PathLayer + threshold-plane PolygonLayers
-│   ├── deck-scatter.ts          ← filled/stroked/unknown ScatterplotLayers + partition helper
+│   ├── deck-labels.ts           ← axis capitals/subtitles + origin TextLayers
+│   ├── deck-layers.ts           ← axis shafts, arrowhead cones, tick marks
+│   ├── deck-planes.ts           ← coordinate planes + threshold guide lines
+│   ├── deck-scatter.ts          ← per-probe SimpleMeshLayer spheres/octahedra
+│   ├── deck-scatter-helpers.ts  ← probe partitioning + name-bake selection
+│   ├── deck-textures.ts         ← per-probe canvas texture baking
 │   ├── dim-meta.ts              ← shared display names, kinds, channel-acceptance, toggle labels
 │   ├── index.ts                 ← library re-exports (readCatalog, createCache, probeAll, renderHtml…)
 │   ├── probe.ts                 ← orchestration + PackageProbe type
 │   ├── probe-fields.ts          ← per-field probes + helpers (gh + registry)
 │   ├── probe-transitive.ts      ← depth-bounded dep walk
+│   ├── oklch.ts                 ← OKLCH → sRGB colour conversion
 │   ├── render-controls.ts       ← Node-side HTML emitter for the control-panel <aside>
 │   ├── render-html.ts           ← composes the final HTML (Bun.build bundle + probe literal + controls)
 │   ├── styles.css               ← page CSS, native nesting, logical properties, design tokens
@@ -234,6 +245,7 @@ packages/dev-script/deps-cube/
     ├── catalog.unit.test.ts      ← decodeAlias + readCatalog over fixture pnpm-workspace.yaml
     ├── deck-config.unit.test.ts  ← deck-accessors (deck-config import blocked by loaders.gl bug)
     ├── filter.unit.test.ts       ← extractDim / derivedBool / searchMatches / computeVisibleIndices
+    ├── oklch.unit.test.ts        ← OKLCH conversion + interpolation
     ├── probe.unit.test.ts        ← parseRepository / classifyLicense / probeAll (5 UnknownReason branches)
     ├── render-controls.unit.test.ts ← structural counts + id presence + attribute escape
     ├── render-html.unit.test.ts  ← Bun.build stub + self-contained-document assertions
@@ -244,12 +256,14 @@ The split (probe.ts / probe-fields.ts / probe-transitive.ts and deck-config.ts /
 
 ## Verification before declaring each task complete
 
-After every code change, run all three in sequence (none can be skipped):
+After every code change, run all five in sequence (none can be skipped):
 
 ```sh
+mise run //packages/dev-script/deps-cube:build
 mise run //packages/dev-script/deps-cube:lint:types
 mise run //packages/dev-script/deps-cube:lint:oxlint
 mise run //packages/dev-script/deps-cube:test:unit
+mise run //packages/dev-script/deps-cube:run
 ```
 
 **Never invoke `bun test` directly**: the project rule "Never invoke raw tools (`bun test`, `oxlint`, etc.) directly; use the corresponding mise task" applies here. The `test:unit` task extends the root `task_templates."test:unit"` which runs `bun <file>` per `*.unit.test.ts` in parallel — the harness (`@monochromatic-dev/module-test`) uses top-level `await describe(...)`, so each file is its own test process. Bun's built-in `bun test` runner has a separate result accumulator that doesn't track these harness-driven results; running through the template is the only way to get an accurate exit code and reporter output.
@@ -285,4 +299,4 @@ The first two pass cleanly now. oxlint reports ~278 stylistic warnings on the pa
 - **Linguist `bytes(TypeScript) / sum(bytes)` is whole-repo**: monorepo-housed packages (`repository.directory` set) intentionally return `null` for `tsRatioOrNull` and `sourceBytesOrNull` — the viz must place these in the Unknown cluster region, not silently coerce to 0. This is already the case.
 - **`oxlint-disable-next-line` placement**: must be on the line directly before the violation. If the violation spans multiple lines (e.g. a multi-line cast), extract the expression to a single-line `const` first and put the disable comment on the line directly above that. See `state.ts`'s `computeFullRanges` for the pattern.
 
-Plan, README, this handover, and the audit doc (`docs/decisions/deps-cube.md`, task 11) are the source of truth. The README documents external behaviour; this handover documents in-progress state; the plan documents the design decisions; the audit doc will document the library trade-off.
+Plan, README, this handover, and the repo-root audit doc (`docs/decisions/deps-cube.md`, task 11) are the source of truth. The README documents external behaviour; this handover documents in-progress state; the plan documents the design decisions; the audit doc documents the library trade-off.

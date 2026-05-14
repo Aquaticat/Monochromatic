@@ -2,6 +2,10 @@
 
 A comprehensive functional programming utility library for TypeScript, designed to provide every thinkable utility function with excellent type safety, performance, and developer experience.
 
+> Stale-warning, 2026-05-13: this README predates the current `types` taxonomy
+> and package export map. Treat broad examples below as aspirational unless they
+> use actual subpaths from `package.json`.
+
 ## Vision
 
 This library aims to be the definitive TypeScript functional programming toolkit, providing:
@@ -11,7 +15,7 @@ This library aims to be the definitive TypeScript functional programming toolkit
 - **Immutable-first design** with no mutational methods
 - **Dual platform support** for both Node.js and browser environments
 - **Performance optimization** for production applications
-- **Zero runtime dependencies** for maximum portability
+- **Minimal workspace runtime dependencies** for portability
 
 ## Current State vs Complete Vision
 
@@ -33,7 +37,7 @@ This library aims to be the definitive TypeScript functional programming toolkit
 
 ### 🔴 Missing Categories (Critical Gaps)
 
-- **Object utilities**: Pick, omit, merge, transform, deep operations
+- **Object utilities**: Record pick, omit, and merge exist; transform and deep operations remain missing
 - **Date/time utilities**: Parsing, formatting, arithmetic, timezone handling
 - **Math utilities**: Statistics, interpolation, geometric operations
 - **Validation utilities**: Schema validation, input sanitization
@@ -80,35 +84,17 @@ All functions are pure and don't rely on execution context.
 #### Data Type Utilities
 
 ```typescript
-// Any type utilities
+// Current root namespace
 import {
-  constant,
-  echo,
-  hasCycle,
-  identity,
-} from '@monochromatic-dev/module-es';
+  types,
+} from '@monochromatic-dev/module-es/ts';
 
-// Array utilities
-import {
-  arrayRange,
-  isArrayNonEmpty,
-  isEmptyArray,
-} from '@monochromatic-dev/module-es';
-
-// Object utilities (planned)
-import {
-  flatten,
-  merge,
-  omit,
-  pick,
-} from '@monochromatic-dev/module-es';
-
-// String utilities
-import {
-  capitalizeString,
-  hashString,
-  isString,
-} from '@monochromatic-dev/module-es';
+// Special subpaths exposed by package.json include:
+// @monochromatic-dev/module-es/binary
+// @monochromatic-dev/module-es/create-observable
+// @monochromatic-dev/module-es/create-observable-async
+// @monochromatic-dev/module-es/map-iterable-async
+// @monochromatic-dev/module-es/memoize-async
 ```
 
 #### Functional Programming Patterns
@@ -185,8 +171,8 @@ import type {
 
 ### Phase 1: Foundation (Immediate)
 
-- **Critical export fixes** - Resolve TypeScript compilation errors
-- **Object utilities implementation** - Core object manipulation functions
+- **Current export map documentation** - Document the taxonomy-based `types` namespace and real subpaths
+- **Object utilities expansion** - Deep object manipulation functions beyond existing record pick, omit, and merge
 - **Async iterator completion** - Full async iterable ecosystem
 
 ### Phase 2: Core Expansion (Next Quarter)
@@ -220,7 +206,7 @@ import type {
 | **Iterable**    | 25/60+    | 65%   | 60%           | 🟡 Partial   |
 | **Numeric**     | 15/25     | 85%   | 80%           | 🟢 Good      |
 | **String**      | 20/40+    | 85%   | 75%           | 🟢 Good      |
-| **Object**      | 1/30+     | 0%    | 0%            | 🔴 Missing   |
+| **Object**      | Partial   | Partial | Partial      | 🟡 Record pick, omit, and merge exist |
 | **Date**        | 0/25+     | 0%    | 0%            | 🔴 Missing   |
 | **Math**        | 0/20+     | 0%    | 0%            | 🔴 Missing   |
 | **Collections** | 5/20+     | 40%   | 50%           | 🔴 Basic     |

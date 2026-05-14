@@ -41,8 +41,8 @@ Use `@deck.gl/core@9.3.2` plus `@deck.gl/layers@9.3.2`. Both MIT,
 `type: "module"`. The `Deck` class provides the lifecycle, picking, and
 event wiring; `OrbitView` plus its built-in `OrbitController` provide the
 3D camera. Layer composition through `ScatterplotLayer`, `PolygonLayer`,
-`PathLayer`, and `TextLayer` covers the scatter glyphs, threshold planes,
-wireframe edges, and axis or name labels respectively.
+`PathLayer`, and `TextLayer` covers the scatter glyphs, coordinate planes,
+threshold guide lines, axes, and labels respectively.
 
 ### TypeScript-ratio exception (user-approved)
 
@@ -262,32 +262,30 @@ This is well below the rejected plotly.js footprint (~3 MB) and stays
 opening in browsers via `file://` without performance concerns at the
 120-glyph scale.
 
-### Filled-vs-stroked deviation from plan
+### Filled-vs-stroked deviation from plan (superseded)
 
-The plan specified shape encoding as circles for leaf packages and
-diamonds for non-leaf packages. The implementation instead encodes the
-binary as filled vs stroked circles, both rendered via
-`ScatterplotLayer`.
+This section describes the first deck.gl implementation. It was
+superseded by the mesh-glyph migration in commit `220818cb`, then by
+per-probe baked-name textures in commit `62d80159`.
 
-Reason: `ScatterplotLayer` renders circles only; diamond support requires
-either an `IconLayer` driven by per-shape icon textures (PNG atlases,
-additional asset pipeline, larger bundle) or `SimpleMeshLayer` (3D
-geometry, overkill at 120 points and a separate shader path). Filled vs
-stroked is the simplest binary distinction within `ScatterplotLayer`
-that requires no auxiliary assets. The non-leaf scatter layer sets
-`filled: false, stroked: true, lineWidthMinPixels: 2`; the leaf scatter
-layer sets `filled: true, stroked: false`.
+### Mesh glyphs supersede filled-vs-stroked circles
 
-`partitionProbes` in `src/deck-scatter.ts` routes each probe to one of
-three buckets: filled (leaf), stroked (non-leaf), unknown (any
-`unknownReason !== null` or any-null position dim). The unknown bucket
-gets its own offset position layer with a third visual style (fill plus
-stroke) so it is distinguishable from both leaf and non-leaf.
+The current implementation encodes leaf packages as spheres and non-leaf
+packages as octahedra, both rendered through `SimpleMeshLayer` in
+`packages/dev-script/deps-cube/src/deck-scatter.ts`. Unknown probes are
+rendered as spheres in the unknown cluster.
 
-Re-evaluate if a future change adds a need for more than two shape
-classes. The IconLayer path is the natural extension and the bundle
-weight delta of adding it on top of the current cone is on the order of
-~30 KB.
+The change was made after Firefox visual verification showed flat
+`ScatterplotLayer` glyphs foreshortening into ellipses at the orbit
+camera's tilt. True 3D meshes preserve round and diamond-like silhouettes
+across camera angles and allow package names to be baked into per-probe
+textures so depth testing occludes labels correctly.
+
+`partitionProbes` now lives in
+`packages/dev-script/deps-cube/src/deck-scatter-helpers.ts` and routes each
+probe to one of three buckets: leaf, non-leaf, or unknown. The unknown
+bucket is still rendered at the edge of the scene so missing repository or
+monorepo-scoped measurements do not collapse to the origin.
 
 ### Pre-existing `<canvas>` vs deck.gl-created `<canvas>`
 
@@ -309,8 +307,9 @@ probes by `daysSinceLastCommitOrNull` descending (oldest first) and
 takes the top 10. Subject to refinement once the audit-target scoring
 is formalised; a weighted score across staleness, small size, non-TS,
 and low downloads would better surface the audit corner of the cube.
-The implementation lives in `buildNameLabelsLayer` in
-`src/deck-labels.ts`.
+The implementation lives in `computeNameBakeSet` in
+`packages/dev-script/deps-cube/src/deck-scatter-helpers.ts`; the resulting
+set controls per-probe texture baking in `src/deck-scatter.ts`.
 
 ### Linguist `bytes(TypeScript) / sum(bytes)` is whole-repo
 

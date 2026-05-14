@@ -10,7 +10,7 @@ Vitest was evaluated and rejected; it requires substantial configuration
 and pulls in Vite's transform pipeline, adding a black-box build step
 between test source and execution.
 
-This package is ~250 lines of auditable code with zero magic.
+This package is plain TypeScript with zero magic.
 Every failure is traceable through plain `Error` cause chains
 and tagged structured logs (console + `.jsonl` file output).
 No test transforms, no custom module resolution, no framework-specific globals.
@@ -100,7 +100,7 @@ await describe({
     },),
   ],
 },);
-```
+```text
 
 Multiple top-level `await describe(...)` calls break test completeness:
 `describe` throws on child failure, so the first failing suite
@@ -184,7 +184,7 @@ import { expectTypeOf, } from '@monochromatic-dev/module-test';
 expectTypeOf<string>().toEqualTypeOf<string>();
 expectTypeOf({ a: 1, },).toHaveProperty('a',);
 expectTypeOf<() => void>().toBeFunction();
-```
+```text
 
 ## Output format
 
@@ -195,9 +195,9 @@ one suite-level info line per parent and demoting per-test `PASS` to `debug`.
 
 ### Per-line shape
 
-```
+```text
 [level] [iso-timestamp] [outer] [inner] [child] message
-```
+```text
 
 The leftmost tag is the outermost `describe`; the rightmost tag is the current `it`
 or innermost `describe`. The chain falls out of `tagged` composition: each suite
@@ -245,14 +245,14 @@ await describe({
 
 a successful run prints (default verbosity):
 
-```
+```text
 [info] [...] [math] PASS adds, subtracts (1.4ms)
 ```
 
 The empty-name root suite's enumeration goes to `debug`, so it stays silent. With
 `DEBUG=true`, per-test detail surfaces too:
 
-```
+```text
 [debug] [...] [math] start (concurrency: 16)
 [debug] [...] [math] [adds] PASS (0.5ms)
 [debug] [...] [math] [subtracts] PASS (0.6ms)
@@ -262,7 +262,7 @@ The empty-name root suite's enumeration goes to `debug`, so it stays silent. Wit
 
 A failure in `subtracts` emits (default verbosity):
 
-```
+```text
 [error] [...] [math] [subtracts] FAIL (0.7ms) Error: ... at fn (math.unit.test.ts:9:19) at runFnOnce (...)
 Caused by: Error: ... at otherFn (...) at ...
 [info]  [...] [math] PASS adds

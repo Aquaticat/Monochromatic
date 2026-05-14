@@ -12,7 +12,7 @@ Improve maintainability and structure by reorganizing code into logical modules 
 
 Create organized directory structure:
 
-```
+```text
 src/
 ├── types/          # TypeScript interfaces and types
 ├── utils/          # Shared utility functions
@@ -70,7 +70,7 @@ src/
 
 ### 2.2 Extract Constants
 
-- [ ] 2.2.1 Move `MIN_INTERVAL` to config
+- [ ] 2.2.1 Move `FETCH_INTERVAL_MS` to config
 - [ ] 2.2.2 Move display limit (100 items) to config
 - [ ] 2.2.3 Move poll interval (1000ms) to config
 - [ ] 2.2.4 Move file paths to config
@@ -107,26 +107,19 @@ Create proper error hierarchy:
 
 #### 2.6.1 Package metadata
 
-- [ ] 2.6.1.1 Mark package as private: add `"private": true` to [package.json](packages/site/rss/package.json:1).
-- [ ] 2.6.1.2 Remove or correct `"module"` field:
-  - Current points to [module path](packages/site/rss/package.json:5) that does not exist at runtime.
-  - If keeping a module entry, point to the actual built file [index.js](packages/site/rss/dist/final/js/index.js:1).
-  - As this is an application (not a library), prefer removing `"module"` entirely to avoid misleading tooling.
+- [x] 2.6.1.1 Package is private in `packages/webapp-productivity/rss/package.json`.
+- [x] 2.6.1.2 No misleading application `"module"` field is present.
 - [ ] 2.6.1.3 Do not add an exports map unless this package is intended to be consumed as a library. See library example in [es package exports](packages/module/es/package.json:6).
 
 #### 2.6.2 Dependency classification
 
-- [ ] 2.6.2.1 Move `"elysia"` from devDependencies to dependencies in [package.json](packages/site/rss/package.json:23); it is used at runtime via [new Elysia()](packages/site/rss/src/index.ts:110).
-- [ ] 2.6.2.2 Audit remaining runtime imports and ensure they live under `dependencies` (e.g., `"happy-dom"`, `"watcher"`) in [package.json](packages/site/rss/package.json:9).
+- [x] 2.6.2.1 Runtime server dependency is h3, not Elysia, and lives under `dependencies`.
+- [ ] 2.6.2.2 Audit remaining runtime imports and ensure they live under `dependencies` in `packages/webapp-productivity/rss/package.json`.
 
 #### 2.6.3 Import style consistency
 
-- [ ] 2.6.3.1 Create a local type facade `src/types/feedsmith.ts` that re-exports public types from `"feedsmith"` (e.g., `export type { Outline } from 'feedsmith';`). Replace deep imports from `node_modules/…`:
-  - Replace [Outline type import](packages/site/rss/src/feed.ts:9) with import from `./types/feedsmith.ts`.
-  - Replace [Category/Link/Outline deep type imports](packages/site/rss/src/item.ts:6) with imports from `./types/feedsmith.ts`.
-- [ ] 2.6.3.2 Standardize Node builtins to `"node:"` scheme:
-  - Change [path import](packages/site/rss/src/outline.ts:13) from `'path'` to `'node:path'`.
-  - Keep existing `"node:"` imports consistent, e.g., [node:path usage](packages/site/rss/src/index.ts:15).
+- [x] 2.6.3.1 Feedsmith types are imported from the package root, not deep `node_modules` paths.
+- [x] 2.6.3.2 Node builtin path imports use the `node:` scheme in current RSS source.
 
 #### 2.6.4 Monorepo conventions alignment
 

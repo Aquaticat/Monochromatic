@@ -24,7 +24,8 @@
 
 ## Monochromatic CLI Development
 
-**Current Direction**: Writing a few mise tasks instead of a full CLI.
+**Current state**: Dedicated CLI packages live under `packages/cli/`.
+The old `monochromatic new ...` scaffolding ideas remain unimplemented.
 
 ### `monochromatic new <monorepo-name>`
 

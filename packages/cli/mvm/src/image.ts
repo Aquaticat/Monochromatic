@@ -241,8 +241,10 @@ export async function ensureWinFsp(): Promise<string> {
 /**
  * Ensures the mise Windows exe is cached locally.
  * Downloads the zip from the latest GitHub release, extracts mise.exe,
- * and caches it in the images directory. Embedded in the autounattend ISO
- * during Windows template creation so it's available without guest networking.
+ * and caches it in the images directory.
+ *
+ * Current template creation does not embed this file in Autounattend;
+ * Windows lifecycle tests install mise at runtime instead.
  *
  * @returns Absolute path to the cached mise.exe
  *

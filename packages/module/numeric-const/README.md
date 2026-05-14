@@ -39,8 +39,10 @@ which re-exports every constant from per-category sibling files.
 | `HTTP_OK`                    | `200`         | `src/http-status.ts` | RFC 9110 success                                  |
 | `HTTP_CREATED`               | `201`         | `src/http-status.ts` | RFC 9110 resource created                         |
 | `HTTP_NO_CONTENT`            | `204`         | `src/http-status.ts` | RFC 9110 success with empty body                  |
+| `HTTP_NOT_MODIFIED`          | `304`         | `src/http-status.ts` | RFC 9110 conditional request cache hit            |
 | `HTTP_BAD_REQUEST`           | `400`         | `src/http-status.ts` | RFC 9110 client malformed request                 |
 | `HTTP_UNAUTHORIZED`          | `401`         | `src/http-status.ts` | RFC 9110 missing authentication                   |
+| `HTTP_FORBIDDEN`             | `403`         | `src/http-status.ts` | RFC 9110 authorization refused                    |
 | `HTTP_NOT_FOUND`             | `404`         | `src/http-status.ts` | RFC 9110 resource missing                         |
 | `HTTP_CONFLICT`              | `409`         | `src/http-status.ts` | RFC 9110 state conflict                           |
 | `HTTP_INTERNAL_SERVER_ERROR` | `500`         | `src/http-status.ts` | RFC 9110 unexpected server failure                |

@@ -26,8 +26,8 @@
 
 ### WebSocket protocol
 
-- **No heartbeat or reconnection** -- connection drops are silent;
-  the client has no ping/pong or automatic reconnect logic
+- **No heartbeat** -- automatic reconnect exists, but there is no ping/pong or explicit liveness check;
+  half-open connections may remain silent until the browser reports close
 - **No backpressure** -- rapid `listDir` requests from preloading
   can saturate the server with no queuing or throttling
 
