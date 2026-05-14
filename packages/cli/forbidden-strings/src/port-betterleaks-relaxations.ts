@@ -8,6 +8,15 @@ export type Relaxation = {
   readonly transform: (regex: string,) => string;
 };
 
+/**
+ * Rule-id to relaxation lookup applied before {@link pcreToResharp} converts
+ * the upstream regex.
+ *
+ * Each entry pairs the upstream betterleaks rule id with a transform that
+ * rewrites the regex into a resharp-acceptable form plus a human-readable
+ * note explaining what was lost. The note is emitted alongside the rule in
+ * the generated example file so the lossy step stays visible.
+ */
 export const RELAXATIONS: ReadonlyMap<string, Relaxation> = new Map([
   // `(?:^|[X])` start-anchor alternation: drop the `^|` arm. Loses the
   // unusual case where the secret starts at byte 0 of the file.
