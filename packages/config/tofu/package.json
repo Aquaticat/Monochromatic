@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/config-tofu",
+  "private": true,
   "description": "OpenTofu configuration for Hetzner Cloud firewalls with dynamic IP range aggregation from CDNs and ASN lookups.",
   "type": "module",
   "devDependencies": {

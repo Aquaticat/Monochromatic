@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/webapp-productivity-syllable-break-demo",
+  "private": true,
   "description": "Demo of syllable-aware word breaking without visible hyphens using JS hyphenation and zero-width spaces",
   "type": "module",
   "main": "src/build.ts",

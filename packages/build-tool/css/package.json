@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/build-tool-css",
+  "private": true,
   "description": "CSS build tool with @mixin/@apply processing and @import resolution for monorepo packages.",
   "type": "module",
   "module": "dist/final/node/index.js",

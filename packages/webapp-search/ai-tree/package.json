@@ -1,6 +1,7 @@
 {
   "name": "@monochromatic-dev/webapp-search-ai-tree",
   "version": "1.0.0",
+  "private": true,
   "description": "AI-powered tree exploration web application.",
   "module": "dist/final/node/index.js",
   "keywords": [],

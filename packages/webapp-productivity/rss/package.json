@@ -1,6 +1,7 @@
 {
   "name": "@monochromatic-dev/webapp-productivity-rss",
   "version": "1.0.0",
+  "private": true,
   "description": "RSS and OPML productivity web application.",
   "module": "src/index.ts",
   "keywords": [],

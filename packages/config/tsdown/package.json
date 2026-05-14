@@ -1,5 +1,6 @@
 {
   "name": "@monochromatic-dev/config-tsdown",
+  "private": false,
   "keywords": [
     "tsdown",
     "config",

@@ -1,5 +1,6 @@
 {
   "name": "@monochromatic-dev/config-oxlint-tsdoc",
+  "private": true,
   "keywords": [
     "oxlint",
     "tsdoc",

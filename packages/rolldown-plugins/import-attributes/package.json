@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/rolldown-plugin-import-attributes",
+  "private": true,
   "description": "Rolldown plugin that transforms import attributes (with { type: 'text' }) into bundler-compatible module loads.",
   "type": "module",
   "module": "dist/final/node/index.mjs",

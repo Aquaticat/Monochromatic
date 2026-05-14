@@ -1,7 +1,5 @@
 # @monochromatic-dev/figma-kiwi
 
-Ready to publish.
-
 Parser for Figma's exported binary file formats (.fig, .deck, .jam).
 
 These files use the Kiwi serialization format (github.com/evanw/kiwi)

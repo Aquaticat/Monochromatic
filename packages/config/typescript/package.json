@@ -1,6 +1,7 @@
 {
   "name": "@monochromatic-dev/config-typescript",
   "version": "0.0.5",
+  "private": true,
   "description": "Monochromatic's tsconfig.json",
   "main": "tsconfig.options.json",
   "module": "tsconfig.options.json",

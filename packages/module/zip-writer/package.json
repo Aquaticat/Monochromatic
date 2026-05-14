@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/module-zip-writer",
+  "private": true,
   "description": "Minimal STORE-only ZIP archive writer. Zero runtime dependencies, write-only (no parser attack surface). Runtime-neutral (browser, Node, Bun, Deno, Workers).",
   "type": "module",
   "module": "dist/final/neutral/index.mjs",

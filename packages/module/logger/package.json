@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/module-logger",
+  "private": true,
   "description": "Zero-config multi-sink logger with tagged composition. Auto-discovers console, file, OPFS, and sessionStorage backends at import time.",
   "type": "module",
   "module": "dist/final/neutral/index.mjs",

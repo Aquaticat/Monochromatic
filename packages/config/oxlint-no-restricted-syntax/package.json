@@ -1,5 +1,6 @@
 {
   "name": "@monochromatic-dev/config-oxlint-no-restricted-syntax",
+  "private": false,
   "keywords": [
     "oxlint",
     "no-restricted-syntax",

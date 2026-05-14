@@ -1,6 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/module-hyperscript",
+  "private": true,
   "description": "Type-safe hyperscript factories for HTML, CSS, DOM, and XML generation.",
   "type": "module",
   "module": "dist/final/index.js",

@@ -1,6 +1,7 @@
 {
   "name": "@monochromatic-dev/figma-kiwi",
   "version": "0.1.0",
+  "private": true,
   "description": "Parser for Figma's Kiwi binary schema and document format. Decodes .fig, .deck, and .jam exported files.",
   "type": "module",
   "module": "dist/final/node/index.mjs",
