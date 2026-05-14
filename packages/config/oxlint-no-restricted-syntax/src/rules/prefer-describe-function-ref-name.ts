@@ -45,6 +45,7 @@ const ALL_CAPS_SNAKE = /^[A-Z][A-Z0-9_]*$/;
  * @returns Tag describing what kind of binding the source exposes.
  */
 function classifyExportedName(sourcePath: string, name: string,): 'callable' | 'const' | 'reexport' | 'unknown' {
+  /** Source text of the imported file; empty when the read fails so callers can short-circuit. */
   const content = (function readOrEmpty(): string {
     try {
       return readFileSync(sourcePath, 'utf8',);
@@ -55,17 +56,21 @@ function classifyExportedName(sourcePath: string, name: string,): 'callable' | '
   })();
   if (content === '')
     return 'unknown';
+  /** Pattern matching `export function`, `export async function`, and `export function*` declarations of `name`. */
   const fnRe = new RegExp(
     '(?:^|\\n)export\\s+(?:async\\s+)?function\\s*\\*?\\s+' + name + '\\b',
   );
   if (fnRe.test(content,))
     return 'callable';
+  /** Pattern matching `export class` declarations of `name`. */
   const classRe = new RegExp('(?:^|\\n)export\\s+class\\s+' + name + '\\b',);
   if (classRe.test(content,))
     return 'callable';
+  /** Pattern matching `export const` declarations of `name`, regardless of initializer shape. */
   const constRe = new RegExp('(?:^|\\n)export\\s+const\\s+' + name + '\\b',);
   if (constRe.test(content,))
     return 'const';
+  /** Pattern matching `export { ... name ... } from '...'` re-export specifiers. */
   const reexportRe = new RegExp(
     'export\\s*\\{[^}]*\\b' + name + '\\b[^}]*\\}\\s*from\\s*[\'"]',
   );
@@ -105,6 +110,7 @@ function isCallableBinding(
   variable: Variable,
   currentFile: string,
 ): boolean {
+  /** First definition site of the binding; absent for implicit globals the rule does not target. */
   const [def,] = variable.defs;
   if (def === undefined)
     return false;
@@ -113,11 +119,13 @@ function isCallableBinding(
   if (def.type === 'ImportBinding') {
     /** Walk up to the enclosing ImportDeclaration to inspect the source. */
     const node = def.node;
+    /** Resolved enclosing ImportDeclaration, or the non-import parent when scope-manager hands back something unexpected. */
     const decl = node.type === 'ImportDeclaration'
       ? node
       : node.parent;
     if (decl === null || decl === undefined || decl.type !== 'ImportDeclaration')
       return !ALL_CAPS_SNAKE.test(variable.name,);
+    /** Literal source string of the import, typed as `string | null` by ESTree to cover non-conforming nodes. */
     const sourceValue = decl.source.value;
     if (typeof sourceValue !== 'string')
       return !ALL_CAPS_SNAKE.test(variable.name,);
@@ -128,12 +136,14 @@ function isCallableBinding(
     /** Imports use the alias's local name; the source may export under a different identifier. */
     const sourceName = node.type === 'ImportSpecifier' && 'imported' in node
       ? (function getImportedName(): string {
+        /** Imported-name slot on the specifier; an Identifier or string Literal per ESTree. */
         const { imported, } = node;
         if (imported.type === 'Identifier')
           return imported.name;
         return variable.name;
       })()
       : variable.name;
+    /** Classification tag distinguishing callable, plain const, re-export, or unresolved bindings. */
     const kind = classifyExportedName(sourcePath, sourceName,);
     if (kind === 'callable')
       return true;
@@ -142,9 +152,11 @@ function isCallableBinding(
     return !ALL_CAPS_SNAKE.test(variable.name,);
   }
   if (def.type === 'Variable') {
+    /** VariableDeclarator AST node carrying the initializer to inspect for callability. */
     const declarator = def.node;
     if (declarator.type !== 'VariableDeclarator')
       return false;
+    /** Right-hand initializer; absent for `let x;`-style declarations the rule treats as non-callable. */
     const { init, } = declarator;
     if (init === null || init === undefined)
       return false;
@@ -267,6 +279,7 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
           scope !== null && scope.type !== 'global';
           scope = scope.upper
         ) {
+          /** Binding registered in this scope under `stringValue`, or `undefined` when the scope has none. */
           const variable = scope.set.get(stringValue,);
           if (variable === undefined)
             continue;
