@@ -83,6 +83,24 @@ async function validateFile(filePath: string,): Promise<void> {
 }
 
 /**
+ * Options for {@link appendLinesToFile}.
+ *
+ * @example
+ * ```ts
+ * const options: AppendLinesToFileOptions = {
+ *   filePath: './output.md',
+ *   lines: ['line 1', 'line 2'],
+ * };
+ * ```
+ */
+type AppendLinesToFileOptions = {
+  /** Absolute or relative path to append to */
+  readonly filePath: string;
+  /** Lines of text to append */
+  readonly lines: readonly string[];
+};
+
+/**
  * Appends lines to a file, joining them with newlines and adding a trailing newline.
  *
  * @param filePath - Absolute or relative path to append to
@@ -91,13 +109,13 @@ async function validateFile(filePath: string,): Promise<void> {
  *
  * @example
  * ```ts
- * await appendLinesToFile('./output.md', ['line 1', 'line 2']);
+ * await appendLinesToFile({ filePath: './output.md', lines: ['line 1', 'line 2'] });
  * ```
  */
-async function appendLinesToFile(
-  filePath: string,
-  lines: readonly string[],
-): Promise<void> {
+async function appendLinesToFile({
+  filePath,
+  lines,
+}: AppendLinesToFileOptions,): Promise<void> {
   /** Joined payload with a trailing newline so subsequent appends start on a fresh line. */
   const content = `${lines.join('\n',)}\n`;
   await appendFile(
@@ -136,7 +154,7 @@ if (args.lines.length === 0)
 await validateFile(args.to,);
 
 // Append all lines to the file
-await appendLinesToFile(
-  args.to,
-  args.lines,
-);
+await appendLinesToFile({
+  filePath: args.to,
+  lines: args.lines,
+},);

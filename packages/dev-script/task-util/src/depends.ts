@@ -116,7 +116,7 @@ const rawArgs = runSync(
  */
 function filterNullish(values: readonly (string | null | undefined)[],): string[] {
   return values.filter(function isString(value,): value is string {
-    return value !== null && value !== undefined;
+    return (value !== null) && (value !== undefined);
   },);
 }
 
@@ -127,6 +127,24 @@ const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set([
   'mean',
   'median',
 ],);
+
+/**
+ * Options for {@link validateTimeStrategy}.
+ *
+ * @example
+ * ```ts
+ * const options: ValidateTimeStrategyOptions = {
+ *   value: 'oldest',
+ *   flagName: '--source-time-strategy',
+ * };
+ * ```
+ */
+type ValidateTimeStrategyOptions = {
+  /** Raw value from optique (possibly nullish when option is omitted) */
+  readonly value: string | null | undefined;
+  /** Flag name for error messages */
+  readonly flagName: string;
+};
 
 /**
  * Validates and defaults a time strategy option.
@@ -143,26 +161,25 @@ const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set([
  *
  * @example
  * ```ts
- * validateTimeStrategy(undefined, '--source-time-strategy') // 'newest'
- * validateTimeStrategy('oldest', '--output-time-strategy') // 'oldest'
- * validateTimeStrategy('sh:my-script', '--source-time-strategy') // 'sh:my-script'
+ * validateTimeStrategy({ value: undefined, flagName: '--source-time-strategy' }) // 'newest'
+ * validateTimeStrategy({ value: 'oldest', flagName: '--output-time-strategy' }) // 'oldest'
+ * validateTimeStrategy({ value: 'sh:my-script', flagName: '--source-time-strategy' }) // 'sh:my-script'
  * ```
  */
-function validateTimeStrategy(
-  value: string | null | undefined,
-  flagName: string,
-): TimeStrategy {
-  if (value === null || value === undefined)
+function validateTimeStrategy({
+  value,
+  flagName,
+}: ValidateTimeStrategyOptions,): TimeStrategy {
+  if ((value === null) || (value === undefined))
     return 'newest';
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- value is validated by Set.has / sh: prefix check before each cast below */
   if (BUILTIN_STRATEGIES.has(value as BuiltinTimeStrategy,)) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- value is a validated BuiltinTimeStrategy
     return value as TimeStrategy;
   }
   if (value.startsWith('sh:',)) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- sh: prefix confirmed above
     return value as TimeStrategy;
   }
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   throw new Error(
     `Invalid ${flagName}: "${value}". Must be a builtin (newest, oldest, mean, median) or sh:command.`,
   );
@@ -172,14 +189,14 @@ function validateTimeStrategy(
 const args = {
   sources: filterNullish(rawArgs.sources,),
   outputs: filterNullish(rawArgs.outputs,),
-  sourceTimeStrategy: validateTimeStrategy(
-    rawArgs.sourceTimeStrategy,
-    '--source-time-strategy',
-  ),
-  outputTimeStrategy: validateTimeStrategy(
-    rawArgs.outputTimeStrategy,
-    '--output-time-strategy',
-  ),
+  sourceTimeStrategy: validateTimeStrategy({
+    value: rawArgs.sourceTimeStrategy,
+    flagName: '--source-time-strategy',
+  },),
+  outputTimeStrategy: validateTimeStrategy({
+    value: rawArgs.outputTimeStrategy,
+    flagName: '--output-time-strategy',
+  },),
   allowFailure: rawArgs.allowFailure,
   verbose: rawArgs.verbose,
   rest: rawArgs.rest,
@@ -188,7 +205,7 @@ const args = {
 /** Destructured command and its arguments from the rest args after `--` */
 const [command, ...commandArgs] = args.rest;
 
-if (command === undefined || command === '') {
+if ((command === undefined) || (command === '')) {
   throw new Error(
     outdent`
       No command specified after --

@@ -85,7 +85,7 @@ const args = runSync(
 /** Destructured command and its arguments from the rest args after `--` */
 const [command, ...commandArgs] = args.rest;
 
-if (command === undefined || command === '') {
+if ((command === undefined) || (command === '')) {
   throw new Error(
     outdent`
       No command specified after --
@@ -110,7 +110,7 @@ try {
       stderr: 'inherit',
       stdin: 'inherit',
       shell: args.shell,
-      timeout: typeof args.timeout === 'number' ? args.timeout : undefined,
+      timeout: ((typeof args.timeout) === 'number') ? args.timeout : undefined,
     },
   );
 
@@ -127,9 +127,9 @@ catch (error) {
         signalName?: string;
         message: string;
       } {
-        return candidate !== null
-          && typeof candidate === 'object'
-          && 'exitCode' in candidate;
+        return (candidate !== null)
+          && ((typeof candidate) === 'object')
+          && ('exitCode' in candidate);
       },
       function handleSubprocessError(subprocessError,): void {
         match(subprocessError.signalName,)

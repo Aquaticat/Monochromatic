@@ -26,21 +26,39 @@ import { filterPnpmOutput, } from './pnpm-output-filter.ts';
 const pnpmArgs = process.argv.slice(2,);
 
 /**
- * Filters output and writes to the given stream if non-empty after filtering.
- *
- * @param raw - raw pnpm output
- *
- * @param stream - target writable stream
+ * Options for {@link writeFiltered}.
  *
  * @example
  * ```ts
- * writeFiltered('some output\n', process.stdout);
+ * const options: WriteFilteredOptions = {
+ *   raw: ' WARN  cycle: a, b\nother\n',
+ *   stream: process.stdout,
+ * };
  * ```
  */
-function writeFiltered(
-  raw: string,
-  stream: NodeJS.WriteStream,
-): void {
+type WriteFilteredOptions = {
+  /** Raw pnpm output */
+  readonly raw: string;
+  /** Target writable stream */
+  readonly stream: NodeJS.WriteStream;
+};
+
+/**
+ * Filters output and writes to the given stream if non-empty after filtering.
+ *
+ * @param raw - Raw pnpm output
+ *
+ * @param stream - Target writable stream
+ *
+ * @example
+ * ```ts
+ * writeFiltered({ raw: 'some output\n', stream: process.stdout });
+ * ```
+ */
+function writeFiltered({
+  raw,
+  stream,
+}: WriteFilteredOptions,): void {
   if (raw.length === 0)
     return;
   /** Output with allowed pnpm cycle warnings stripped; may be empty if every line was a known-benign warning. */
@@ -56,18 +74,18 @@ try {
     [...pnpmArgs,],
   );
 
-  writeFiltered(
-    result.stdout,
-    process.stdout,
-  );
-  writeFiltered(
-    result.stderr,
-    process.stderr,
-  );
+  writeFiltered({
+    raw: result.stdout,
+    stream: process.stdout,
+  },);
+  writeFiltered({
+    raw: result.stderr,
+    stream: process.stderr,
+  },);
 }
 catch (error) {
-  if (error !== null && typeof error === 'object' && 'exitCode' in error) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape
+  if ((error !== null) && ((typeof error) === 'object') && ('exitCode' in error)) {
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows error to the captured-subprocess shape */
     /** Re-typed thrown error so its captured stdout, stderr, and exit fields can be forwarded after filtering. */
     const subprocessError = error as {
       stdout?: string;
@@ -75,19 +93,20 @@ catch (error) {
       exitCode?: number;
       signalName?: string;
     };
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
 
-    writeFiltered(
-      subprocessError.stdout ?? '',
-      process.stdout,
-    );
-    writeFiltered(
-      subprocessError.stderr ?? '',
-      process.stderr,
-    );
+    writeFiltered({
+      raw: subprocessError.stdout ?? '',
+      stream: process.stdout,
+    },);
+    writeFiltered({
+      raw: subprocessError.stderr ?? '',
+      stream: process.stderr,
+    },);
 
     process.exitCode = subprocessError.exitCode ?? 1;
 
-    if (subprocessError.signalName !== undefined && subprocessError.signalName !== '') {
+    if ((subprocessError.signalName !== undefined) && (subprocessError.signalName !== '')) {
       console.error(
         `[task-pnpm] pnpm terminated by signal: ${subprocessError.signalName}`,
       );

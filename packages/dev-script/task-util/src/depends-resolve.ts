@@ -23,6 +23,37 @@ import { resolveGlobFiles, } from './depends-resolve-glob.ts';
 //region Item resolution: resolve individual items to timestamps
 
 /**
+ * Position label distinguishing source items (cause staleness) from output items (compared against source).
+ *
+ * @example
+ * ```ts
+ * const pos: ItemPosition = 'source';
+ * ```
+ */
+type ItemPosition = 'source' | 'output';
+
+/**
+ * Options for {@link resolveGlob}.
+ *
+ * @example
+ * ```ts
+ * const options: ResolveGlobOptions = {
+ *   pattern: 'src/*.ts',
+ *   position: 'source',
+ *   verbose: false,
+ * };
+ * ```
+ */
+type ResolveGlobOptions = {
+  /** File glob pattern */
+  readonly pattern: string;
+  /** Whether this is a source or output item (for logging) */
+  readonly position: ItemPosition;
+  /** Whether to log diagnostic messages */
+  readonly verbose: boolean;
+};
+
+/**
  * Resolves a file glob to an array of file mtimes.
  *
  * When the glob matches no files, returns an empty array.
@@ -39,14 +70,14 @@ import { resolveGlobFiles, } from './depends-resolve-glob.ts';
  *
  * @example
  * ```ts
- * const mtimes = await resolveGlob('src/*.ts', 'source', false);
+ * const mtimes = await resolveGlob({ pattern: 'src/*.ts', position: 'source', verbose: false });
  * ```
  */
-async function resolveGlob(
-  pattern: string,
-  position: 'source' | 'output',
-  verbose: boolean,
-): Promise<number[]> {
+async function resolveGlob({
+  pattern,
+  position,
+  verbose,
+}: ResolveGlobOptions,): Promise<number[]> {
   /** Files matched by the glob; an empty result yields an empty timestamp set rather than an error. */
   const files = await resolveGlobFiles(pattern,);
 
@@ -75,6 +106,27 @@ async function resolveGlob(
 }
 
 /**
+ * Options for {@link resolveShellCommand}.
+ *
+ * @example
+ * ```ts
+ * const options: ResolveShellCommandOptions = {
+ *   command: 'git log -1 --format=%ct',
+ *   position: 'source',
+ *   verbose: false,
+ * };
+ * ```
+ */
+type ResolveShellCommandOptions = {
+  /** Shell command to execute (without `sh:` prefix) */
+  readonly command: string;
+  /** Whether this is a source or output item (for error messages) */
+  readonly position: ItemPosition;
+  /** Whether to log diagnostic messages */
+  readonly verbose: boolean;
+};
+
+/**
  * Resolves a shell command to a single timestamp.
  *
  * Commands must output a parseable timestamp on stdout:
@@ -96,16 +148,16 @@ async function resolveGlob(
  * @example
  * ```ts
  * // Timestamp from stdout
- * await resolveShellCommand('git log -1 --format=%ct', 'source', false)
+ * await resolveShellCommand({ command: 'git log -1 --format=%ct', position: 'source', verbose: false })
  * // Gate pattern: explicit Infinity/-Infinity
- * await resolveShellCommand('podman image exists img && echo Infinity || echo -Infinity', 'output', false)
+ * await resolveShellCommand({ command: 'podman image exists img && echo Infinity || echo -Infinity', position: 'output', verbose: false })
  * ```
  */
-async function resolveShellCommand(
-  command: string,
-  position: 'source' | 'output',
-  verbose: boolean,
-): Promise<number> {
+async function resolveShellCommand({
+  command,
+  position,
+  verbose,
+}: ResolveShellCommandOptions,): Promise<number> {
   /** Raw stdout from the command */
   let stdout = '';
 
@@ -153,6 +205,27 @@ async function resolveShellCommand(
 }
 
 /**
+ * Options for {@link resolveItems}.
+ *
+ * @example
+ * ```ts
+ * const options: ResolveItemsOptions = {
+ *   items: ['src/*.ts', 'sh:git log -1 --format=%ct'],
+ *   position: 'source',
+ *   verbose: false,
+ * };
+ * ```
+ */
+export type ResolveItemsOptions = {
+  /** Array of glob patterns and/or `sh:` commands */
+  readonly items: readonly string[];
+  /** Whether these are source or output items */
+  readonly position: ItemPosition;
+  /** Whether to log diagnostic messages */
+  readonly verbose: boolean;
+};
+
+/**
  * Resolves an array of source or output items to timestamps.
  *
  * Each item is either a file glob (resolved to file mtimes) or a `sh:` prefixed
@@ -168,31 +241,31 @@ async function resolveShellCommand(
  *
  * @example
  * ```ts
- * const ts = await resolveItems(['src/*.ts', 'sh:git log -1 --format=%ct'], 'source', false);
+ * const ts = await resolveItems({ items: ['src/*.ts', 'sh:git log -1 --format=%ct'], position: 'source', verbose: false });
  * ```
  */
-export async function resolveItems(
-  items: readonly string[],
-  position: 'source' | 'output',
-  verbose: boolean,
-): Promise<number[]> {
+export async function resolveItems({
+  items,
+  position,
+  verbose,
+}: ResolveItemsOptions,): Promise<number[]> {
   /** Per-item timestamp arrays awaited concurrently; flattened below into a single timestamp set. */
   const results = await Promise.all(
     items.map(async function resolveItem(item,): Promise<number[]> {
       if (isShellCommand(item,)) {
         /** Single timestamp produced by a `sh:` command; wrapped in an array so the outer `flat()` call sees a uniform shape. */
-        const ts = await resolveShellCommand(
-          extractCommand(item,),
+        const ts = await resolveShellCommand({
+          command: extractCommand(item,),
           position,
           verbose,
-        );
+        },);
         return [ts,];
       }
-      return resolveGlob(
-        item,
+      return resolveGlob({
+        pattern: item,
         position,
         verbose,
-      );
+      },);
     },),
   );
 

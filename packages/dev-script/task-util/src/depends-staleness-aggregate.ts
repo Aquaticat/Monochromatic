@@ -19,6 +19,27 @@ import {
 //region Shell strategy execution
 
 /**
+ * Options for {@link runStrategyCommand}.
+ *
+ * @example
+ * ```ts
+ * const options: RunStrategyCommandOptions = {
+ *   command: 'sort -rn | head -1',
+ *   timestamps: [1, 2, 3],
+ *   verbose: false,
+ * };
+ * ```
+ */
+type RunStrategyCommandOptions = {
+  /** Shell command (without `sh:` prefix) */
+  readonly command: string;
+  /** Resolved timestamps to pipe via stdin */
+  readonly timestamps: readonly number[];
+  /** Whether to log diagnostic messages */
+  readonly verbose: boolean;
+};
+
+/**
  * Runs a custom shell strategy command with timestamps piped via stdin.
  *
  * Timestamps are piped to the command as newline-separated values on stdin
@@ -39,14 +60,14 @@ import {
  *
  * @example
  * ```ts
- * await runStrategyCommand('sort -rn | head -1', [1, 2, 3], false) // 3
+ * await runStrategyCommand({ command: 'sort -rn | head -1', timestamps: [1, 2, 3], verbose: false }) // 3
  * ```
  */
-async function runStrategyCommand(
-  command: string,
-  timestamps: readonly number[],
-  verbose: boolean,
-): Promise<number> {
+async function runStrategyCommand({
+  command,
+  timestamps,
+  verbose,
+}: RunStrategyCommandOptions,): Promise<number> {
   /** Space-separated stringified timestamps suitable for embedding in a `printf` argument list. */
   const formattedValues = timestamps.map(String,).join(' ',);
   // Use printf to pipe timestamps (one per line) into the strategy command via stdin
@@ -114,6 +135,27 @@ async function runStrategyCommand(
 //region Aggregation dispatch
 
 /**
+ * Options for {@link aggregateTimestamps}.
+ *
+ * @example
+ * ```ts
+ * const options: AggregateTimestampsOptions = {
+ *   timestamps: [1, 2, 3],
+ *   strategy: 'newest',
+ *   verbose: false,
+ * };
+ * ```
+ */
+export type AggregateTimestampsOptions = {
+  /** Resolved timestamps to aggregate */
+  readonly timestamps: readonly number[];
+  /** Builtin strategy name or `sh:` command */
+  readonly strategy: TimeStrategy;
+  /** Whether to log diagnostic messages */
+  readonly verbose: boolean;
+};
+
+/**
  * Aggregates timestamps using the given strategy.
  *
  * Dispatches to a builtin function or runs a custom shell command.
@@ -128,14 +170,14 @@ async function runStrategyCommand(
  *
  * @example
  * ```ts
- * await aggregateTimestamps([1, 2, 3], 'newest', false) // 3
+ * await aggregateTimestamps({ timestamps: [1, 2, 3], strategy: 'newest', verbose: false }) // 3
  * ```
  */
-export async function aggregateTimestamps(
-  timestamps: readonly number[],
-  strategy: TimeStrategy,
-  verbose: boolean,
-): Promise<number> {
+export async function aggregateTimestamps({
+  timestamps,
+  strategy,
+  verbose,
+}: AggregateTimestampsOptions,): Promise<number> {
   if (strategy in builtinStrategies) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'in' check above narrows strategy to BuiltinTimeStrategy
     return builtinStrategies[strategy as BuiltinTimeStrategy](timestamps,);
@@ -146,11 +188,11 @@ export async function aggregateTimestamps(
   if (strategy.startsWith(shPrefix,)) {
     if (timestamps.length === 0)
       return -Infinity;
-    return await runStrategyCommand(
-      strategy.slice(shPrefix.length,),
+    return await runStrategyCommand({
+      command: strategy.slice(shPrefix.length,),
       timestamps,
       verbose,
-    );
+    },);
   }
 
   throw new Error(`Unknown time strategy: "${strategy}"`,);

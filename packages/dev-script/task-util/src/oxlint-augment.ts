@@ -194,22 +194,23 @@ export function augmentOxlintOutput(output: string,): string {
   /** Output buffer assembled in order; guidance lines are spliced in alongside the originals. */
   const result: string[] = [];
 
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: activeGuidance and injected are mutated by four branches across loop iterations, with side effects on `result`. */
   /** Rule name from the current diagnostic block, null when unmatched. */
   let activeGuidance: string | null = null;
-
   /** Whether guidance has been injected for the current diagnostic block. */
   let injected = false;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   for (const line of lines) {
     /** Rule name extracted from the current line when it matches a diagnostic header; otherwise null. */
     const ruleName = extractRuleName(line,);
     if (ruleName !== null) {
-      activeGuidance = RULE_GUIDANCE[ruleName] !== undefined ? ruleName : null;
+      activeGuidance = (RULE_GUIDANCE[ruleName] !== undefined) ? ruleName : null;
       injected = false;
     }
 
     // Inject after help line when guidance is pending
-    if (activeGuidance !== null && !injected && isHelpLine(line,)) {
+    if ((activeGuidance !== null) && (!injected) && isHelpLine(line,)) {
       result.push(line,);
       result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance] ?? '',),);
       injected = true;
@@ -217,7 +218,7 @@ export function augmentOxlintOutput(output: string,): string {
     }
 
     // Inject before blank line (end of diagnostic) if no help line was found
-    if (activeGuidance !== null && !injected && stripAnsi(line,).trim() === '') {
+    if ((activeGuidance !== null) && (!injected) && (stripAnsi(line,).trim() === '')) {
       result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance] ?? '',),);
       injected = true;
       activeGuidance = null;
@@ -227,7 +228,7 @@ export function augmentOxlintOutput(output: string,): string {
   }
 
   // Handle trailing diagnostic with no blank line at end
-  if (activeGuidance !== null && !injected)
+  if ((activeGuidance !== null) && (!injected))
     result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance] ?? '',),);
 
   return result.join('\n',);

@@ -39,7 +39,7 @@ function splitGlob(pattern: string,): readonly [
   /** Position of the first wildcard character; `-1` means the pattern is a literal path. */
   const metaIndex = pattern.search(GLOB_META,);
 
-  if (metaIndex === -1) {
+  if (metaIndex === (-1)) {
     return [
       resolve(pattern,),
       '',
@@ -54,7 +54,7 @@ function splitGlob(pattern: string,): readonly [
   /** Last `/` inside the static prefix; splits the directory `cwd` from the remaining glob suffix. */
   const lastSep = staticPrefix.lastIndexOf('/',);
 
-  if (lastSep === -1) {
+  if (lastSep === (-1)) {
     return [
       resolve('.',),
       pattern,
@@ -83,7 +83,9 @@ function splitGlob(pattern: string,): readonly [
  * ```
  */
 export async function resolveGlobFiles(pattern: string,): Promise<string[]> {
-  /** Base directory and relative glob suffix produced by {@link splitGlob}. */
+  /**
+   * Base directory and relative glob suffix produced by {@link splitGlob}.
+   */
   const [cwd, relativeGlob,] = splitGlob(pattern,);
 
   if (relativeGlob === '')

@@ -112,30 +112,30 @@ export async function checkStaleness(
   },
 ): Promise<boolean> {
   /** Per-source timestamps resolved from globs, files, or shell commands; aggregated below into one source-side time. */
-  const sourceTimestamps = await resolveItems(
-    sources,
-    'source',
+  const sourceTimestamps = await resolveItems({
+    items: sources,
+    position: 'source',
     verbose,
-  );
+  },);
   /** Per-output timestamps resolved from globs, files, or shell commands; aggregated below into one output-side time. */
-  const outputTimestamps = await resolveItems(
-    outputs,
-    'output',
+  const outputTimestamps = await resolveItems({
+    items: outputs,
+    position: 'output',
     verbose,
-  );
+  },);
 
   /** Single source-side timestamp produced by the configured strategy (max, min, mean, median, ...). */
-  const sourceTime = await aggregateTimestamps(
-    sourceTimestamps,
-    sourceTimeStrategy,
+  const sourceTime = await aggregateTimestamps({
+    timestamps: sourceTimestamps,
+    strategy: sourceTimeStrategy,
     verbose,
-  );
+  },);
   /** Single output-side timestamp produced by the configured strategy; compared against `sourceTime` to decide staleness. */
-  const outputTime = await aggregateTimestamps(
-    outputTimestamps,
-    outputTimeStrategy,
+  const outputTime = await aggregateTimestamps({
+    timestamps: outputTimestamps,
+    strategy: outputTimeStrategy,
     verbose,
-  );
+  },);
 
   /** True when the source side is newer than the output side, meaning the build is stale and must rerun. */
   const stale = sourceTime > outputTime;

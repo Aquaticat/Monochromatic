@@ -188,7 +188,7 @@ export function isSuppressedDiagnostic(line: string,): boolean {
  * ```
  */
 export function isContinuationLine(line: string,): boolean {
-  return line.length > 0 && (line.startsWith(' ',) || line.startsWith('\t',));
+  return (line.length > 0) && (line.startsWith(' ',) || line.startsWith('\t',));
 }
 
 //endregion Diagnostic line detection
@@ -235,10 +235,12 @@ export function filterTsgoOutput(output: string,): {
   const lines = output.split('\n',);
   /** Lines retained after filtering; rejoined with `\n` to reconstruct the output stream. */
   const kept: string[] = [];
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: droppingContinuation and hasRemainingErrors are mutated by four branches across loop iterations, with side effects on `kept`. */
   /** True while the loop is inside a suppressed diagnostic block, so its continuation lines are also dropped. */
   let droppingContinuation = false;
   /** True once any non-suppressed diagnostic is retained; the caller uses it to decide the wrapper's exit code. */
   let hasRemainingErrors = false;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   for (const line of lines) {
     if (isDiagnosticLine(line,)) {
@@ -295,7 +297,7 @@ try {
     process.stderr.write(result.stderr,);
 }
 catch (error) {
-  if (error !== null && typeof error === 'object' && 'exitCode' in error) {
+  if ((error !== null) && ((typeof error) === 'object') && ('exitCode' in error)) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape */
     /** Subprocess failure narrowed to the shape exposed by the bun/node spawn libraries; carries the streams to filter. */
     const subprocessError = error as {
@@ -330,7 +332,7 @@ catch (error) {
     if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors)
       process.exitCode = subprocessError.exitCode ?? 1;
 
-    if (subprocessError.signalName !== undefined && subprocessError.signalName !== '') {
+    if ((subprocessError.signalName !== undefined) && (subprocessError.signalName !== '')) {
       console.error(
         `[task-tsgo] tsgo terminated by signal: ${subprocessError.signalName}`,
       );

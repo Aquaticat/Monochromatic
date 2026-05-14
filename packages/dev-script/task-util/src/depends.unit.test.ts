@@ -47,17 +47,39 @@ function teardown({ testDir, }: { testDir: string; },) {
 //region Helpers
 
 /**
+ * Options for {@link touch}.
+ *
+ * @example
+ * ```ts
+ * const options: TouchOptions = {
+ *   path: join(srcDir, 'a.ts'),
+ *   ageMs: 5000,
+ * };
+ * ```
+ */
+type TouchOptions = {
+  /** Absolute file path */
+  readonly path: string;
+  /** How many milliseconds in the past to set mtime (0 = now) */
+  readonly ageMs?: number;
+};
+
+/**
  * Creates a file and optionally sets its mtime to the past.
  *
  * @param path - Absolute file path
+ *
  * @param ageMs - How many milliseconds in the past to set mtime (0 = now)
  *
  * @example
  * ```ts
- * touch(join(srcDir, 'a.ts'), 5000); // 5 seconds old
+ * touch({ path: join(srcDir, 'a.ts'), ageMs: 5000 }); // 5 seconds old
  * ```
  */
-function touch(path: string, ageMs = 0,): void {
+function touch({
+  path,
+  ageMs = 0,
+}: TouchOptions,): void {
   writeFileSync(path, `file: ${path}`,);
   if (ageMs > 0) {
     const past = new Date(Date.now() - ageMs,);
@@ -97,7 +119,7 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
               `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
@@ -116,8 +138,8 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-            touch(join(outDir, 'a.js',), 5_000,);
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(outDir, 'a.js',), ageMs: 5_000, },);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
               `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
@@ -136,8 +158,8 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',), 5_000,);
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(srcDir, 'a.ts',), ageMs: 5_000, },);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
@@ -156,7 +178,7 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             const { stderr, } = await execAsync(
               `bun ${cliPath} -v -s "${srcDir}/**" -o "${outDir}/**" -- ${
@@ -176,8 +198,8 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',), 5_000,);
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(srcDir, 'a.ts',), ageMs: 5_000, },);
+            touch({ path: join(outDir, 'a.js',), },);
 
             const { stderr, } = await execAsync(
               `bun ${cliPath} -v -s "${srcDir}/**" -o "${outDir}/**" -- ${
@@ -198,8 +220,8 @@ await describe({
 
             const libDir = join(testDir, 'lib',);
             mkdirSync(libDir, { recursive: true, },);
-            touch(join(srcDir, 'a.ts',),);
-            touch(join(libDir, 'b.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
+            touch({ path: join(libDir, 'b.ts',), },);
 
             await execAsync(
               `bun ${cliPath} -s "${srcDir}/**" -s "${libDir}/**" -o "${outDir}/**" -- ${
@@ -220,9 +242,9 @@ await describe({
 
             const dist2Dir = join(testDir, 'dist2',);
             mkdirSync(dist2Dir, { recursive: true, },);
-            touch(join(srcDir, 'a.ts',), 5_000,);
-            touch(join(outDir, 'a.js',),);
-            touch(join(dist2Dir, 'b.js',),);
+            touch({ path: join(srcDir, 'a.ts',), ageMs: 5_000, },);
+            touch({ path: join(outDir, 'a.js',), },);
+            touch({ path: join(dist2Dir, 'b.js',), },);
 
             await execAsync(
               `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -o "${dist2Dir}/**" -- ${
@@ -241,7 +263,7 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
               `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- ${
@@ -262,7 +284,7 @@ await describe({
 
             // Empty source glob → no timestamps → sourceTime = -Infinity → fresh
             // Use srcDir (exists) with a non-matching extension to avoid ENOENT on missing dirs
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} -s "${srcDir}/**/*.xyz" -o "${outDir}/**" -- ${
@@ -396,7 +418,7 @@ await describe({
             const fixtures = setup();
             const { cliPath, outDir, markerPath, } = fixtures;
 
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} -s "sh:echo Infinity" -o "${outDir}/**" -- ${
@@ -415,7 +437,7 @@ await describe({
             const fixtures = setup();
             const { cliPath, outDir, markerPath, } = fixtures;
 
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} -s "sh:echo -Infinity" -o "${outDir}/**" -- ${
@@ -441,7 +463,7 @@ await describe({
 
             // Source returns a timestamp far in the future (year 2040)
             // Output files are from now; source is newer → stale
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
@@ -461,7 +483,7 @@ await describe({
             const { cliPath, outDir, markerPath, } = fixtures;
 
             // Source returns a timestamp far in the future (year 2040, in ms)
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} -s "sh:echo 2208988800000" -o "${outDir}/**" -- ${
@@ -481,7 +503,7 @@ await describe({
             const { cliPath, outDir, markerPath, } = fixtures;
 
             // Source returns a date far in the future
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} -s "sh:echo 2040-01-01T00:00:00Z" -o "${outDir}/**" -- ${
@@ -501,7 +523,7 @@ await describe({
             const { cliPath, outDir, markerPath, } = fixtures;
 
             // Source returns a very old timestamp (year 2000)
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} -s "sh:echo 946684800" -o "${outDir}/**" -- ${
@@ -521,7 +543,7 @@ await describe({
             const { cliPath, srcDir, markerPath, } = fixtures;
 
             // Output returns a very old timestamp → older than sources → stale
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
               `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo 946684800" -- ${
@@ -605,7 +627,7 @@ await describe({
 
             // Two sources: one very old (epoch), one very new (now)
             // With oldest: min picks the old one → old > new output → false → fresh
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} --source-time-strategy oldest -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
@@ -625,7 +647,7 @@ await describe({
             const { cliPath, outDir, markerPath, } = fixtures;
 
             // Same sources as above, but with newest: max picks the new one → new > output → stale
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} --source-time-strategy newest -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
@@ -646,8 +668,8 @@ await describe({
 
             // File output exists (fresh) + sh: output is -Infinity (missing)
             // With oldest: min picks -Infinity → source > -Infinity → stale
-            touch(join(srcDir, 'a.ts',),);
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} --output-time-strategy oldest -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo -Infinity" -- ${
@@ -667,8 +689,8 @@ await describe({
             const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
             // Same setup but with newest: max picks the real mtime → source (old) < output → fresh
-            touch(join(srcDir, 'a.ts',), 5_000,);
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(srcDir, 'a.ts',), ageMs: 5_000, },);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} --output-time-strategy newest -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo -Infinity" -- ${
@@ -707,7 +729,7 @@ await describe({
             // Custom strategy using sort -n | head -1 (minimum, like oldest)
             // Two sources: year 2000 (946684800s) and year 2040 (2208988800s)
             // Strategy receives parsed ms values, picks minimum (year 2000) → older than output → fresh
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} --source-time-strategy "sh:sort -n | head -1" -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
@@ -728,7 +750,7 @@ await describe({
 
             // Custom strategy using sort -rn | head -1 (maximum, like newest)
             // Max picks year 2040 → newer than output → stale
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} --source-time-strategy "sh:sort -rn | head -1" -s "sh:echo 946684800" -s "sh:echo 2208988800" -o "${outDir}/**" -- ${
@@ -748,7 +770,7 @@ await describe({
             const { cliPath, srcDir, markerPath, } = fixtures;
 
             // Custom output strategy: sort -n picks minimum → -Infinity dominates → stale
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
               `bun ${cliPath} --output-time-strategy "sh:sort -n | head -1" -s "${srcDir}/**" -o "sh:echo Infinity" -o "sh:echo -Infinity" -- ${
@@ -829,7 +851,7 @@ await describe({
 
             // Source is now, output sh: returns Infinity → source_mtime > Infinity → false → fresh
             // This is correct: Infinity means "output exists and is infinitely fresh"
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
               `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo Infinity" -- ${
@@ -848,7 +870,7 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, markerPath, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             await execAsync(
               `bun ${cliPath} -s "${srcDir}/**" -o "sh:echo 946684800" -- ${
@@ -867,8 +889,8 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, markerPath, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',), 5_000,);
-            touch(join(outDir, 'a.js',),);
+            touch({ path: join(srcDir, 'a.ts',), ageMs: 5_000, },);
+            touch({ path: join(outDir, 'a.js',), },);
 
             await execAsync(
               `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -o "sh:echo Infinity" -- ${
@@ -892,7 +914,7 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             const { stdout, } = await execAsync(
               `bun ${cliPath} -s "${srcDir}/**" -o "${outDir}/**" -- echo HIDDEN_OUTPUT`,
@@ -909,7 +931,7 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             try {
               await execAsync(
@@ -931,7 +953,7 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             try {
               await execAsync(
@@ -958,7 +980,7 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             await expect(
               execAsync(
@@ -977,7 +999,7 @@ await describe({
             const fixtures = setup();
             const { cliPath, srcDir, outDir, } = fixtures;
 
-            touch(join(srcDir, 'a.ts',),);
+            touch({ path: join(srcDir, 'a.ts',), },);
 
             const result = await execAsync(
               `bun ${cliPath} -a -s "${srcDir}/**" -o "${outDir}/**" -- node -e "process.exit(1)"`,

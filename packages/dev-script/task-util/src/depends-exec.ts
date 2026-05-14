@@ -93,12 +93,30 @@ export async function executeWithCollapsedOutput({
       console.error('[task-depends] command completed successfully',);
   }
   catch (error) {
-    dumpAndHandleError(
+    dumpAndHandleError({
       error,
       allowFailure,
-    );
+    },);
   }
 }
+
+/**
+ * Options for {@link dumpAndHandleError}.
+ *
+ * @example
+ * ```ts
+ * const options: DumpAndHandleErrorOptions = {
+ *   error: new Error('boom'),
+ *   allowFailure: false,
+ * };
+ * ```
+ */
+type DumpAndHandleErrorOptions = {
+  /** Error thrown by nano-spawn (typically SubprocessError) */
+  readonly error: unknown;
+  /** Whether to suppress the failure */
+  readonly allowFailure: boolean;
+};
 
 /**
  * Dumps captured output from a failed subprocess and handles the error.
@@ -113,15 +131,15 @@ export async function executeWithCollapsedOutput({
  *
  * @example
  * ```ts
- * try { await spawn('cmd'); } catch (e) { dumpAndHandleError(e, false); }
+ * try { await spawn('cmd'); } catch (e) { dumpAndHandleError({ error: e, allowFailure: false }); }
  * ```
  */
-function dumpAndHandleError(
-  error: unknown,
-  allowFailure: boolean,
-): void {
+function dumpAndHandleError({
+  error,
+  allowFailure,
+}: DumpAndHandleErrorOptions,): void {
   // SubprocessError from nano-spawn includes captured stdout/stderr
-  if (error !== null && typeof error === 'object') {
+  if ((error !== null) && ((typeof error) === 'object')) {
     /** Re-typed thrown error so its captured subprocess fields can be dumped to the parent streams. */
     const subprocessError = error as {
       stdout?: string;
@@ -132,12 +150,12 @@ function dumpAndHandleError(
     };
 
     // Dump captured output so the user can see what happened
-    if (subprocessError.stdout !== undefined && subprocessError.stdout !== '')
+    if ((subprocessError.stdout !== undefined) && (subprocessError.stdout !== ''))
       process.stdout.write(`${subprocessError.stdout}\n`,);
-    if (subprocessError.stderr !== undefined && subprocessError.stderr !== '')
+    if ((subprocessError.stderr !== undefined) && (subprocessError.stderr !== ''))
       process.stderr.write(`${subprocessError.stderr}\n`,);
 
-    if (subprocessError.signalName !== undefined && subprocessError.signalName !== '') {
+    if ((subprocessError.signalName !== undefined) && (subprocessError.signalName !== '')) {
       console.error(
         `[task-depends] command terminated by signal: ${subprocessError.signalName}`,
       );

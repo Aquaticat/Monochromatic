@@ -37,7 +37,7 @@ const threadOverride = process.env['OXLINT_THREADS'];
 
 /** Arguments forwarded to oxlint. */
 const oxlintArgs = [
-  ...(threadOverride !== undefined && threadOverride !== ''
+  ...(((threadOverride !== undefined) && (threadOverride !== ''))
     ? [
       '--threads',
       threadOverride,
@@ -60,8 +60,8 @@ try {
     process.stderr.write(result.stderr,);
 }
 catch (error) {
-  if (error !== null && typeof error === 'object' && 'exitCode' in error) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 'exitCode' in check narrows to subprocess shape
+  if ((error !== null) && ((typeof error) === 'object') && ('exitCode' in error)) {
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows error to the captured-subprocess shape */
     /** Re-typed thrown error so its captured stdout, stderr, and exit fields can be augmented and forwarded. */
     const subprocessError = error as {
       stdout?: string;
@@ -69,6 +69,7 @@ catch (error) {
       exitCode?: number;
       signalName?: string;
     };
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
 
     /** oxlint diagnostics with the wrapper's extra guidance appended, ready for the parent stdout. */
     const augmentedStdout = augmentOxlintOutput(subprocessError.stdout ?? '',);
@@ -88,7 +89,7 @@ catch (error) {
     // Preserve oxlint's exit code
     process.exitCode = subprocessError.exitCode ?? 1;
 
-    if (subprocessError.signalName !== undefined && subprocessError.signalName !== '') {
+    if ((subprocessError.signalName !== undefined) && (subprocessError.signalName !== '')) {
       console.error(
         `[task-oxlint] oxlint terminated by signal: ${subprocessError.signalName}`,
       );

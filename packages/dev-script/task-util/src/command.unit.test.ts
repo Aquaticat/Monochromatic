@@ -323,7 +323,7 @@ await describe({
         await new Promise(resolve => setTimeout(resolve, 100,));
 
         // Kill the process
-        if (childProcess.pid !== undefined && childProcess.pid !== 0)
+        if ((childProcess.pid !== undefined) && (childProcess.pid !== 0))
           process.kill(childProcess.pid, 'SIGTERM',);
 
         // Wait for the process to finish
