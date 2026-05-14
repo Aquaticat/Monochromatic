@@ -3,6 +3,8 @@ import type {
   UserPromptSubmitOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 
+import { parseHookJson, } from '../runtime/handler-runtime.ts';
+
 /**
  * Pads a non-negative integer to two digits with a leading zero.
  *
@@ -90,10 +92,13 @@ function promptTimeHandler(_event: UserPromptSubmitInput,): PromptTimeOutput {
  * Parses raw stdin as a `UserPromptSubmitInput`.
  *
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ *
+ * @param raw - JSON payload from Claude Code stdin
+ *
+ * @returns parsed UserPromptSubmit event
  */
-/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 function promptTimeParser(raw: string,): UserPromptSubmitInput {
-  return JSON.parse(raw,) as UserPromptSubmitInput;
+  return parseHookJson<UserPromptSubmitInput>(raw,);
 }
 
 /**

@@ -6,11 +6,33 @@ import { text, } from 'node:stream/consumers';
  * @example
  * ```ts
  * const parser: Parser<PreToolUseInput> = function jsonParser(raw): PreToolUseInput {
- *   return JSON.parse(raw) as PreToolUseInput;
+ *   return parseHookJson<PreToolUseInput>(raw);
  * };
  * ```
  */
 type Parser<TInput,> = (raw: string,) => TInput;
+
+/**
+ * Parses raw JSON into a typed value.
+ *
+ * Centralizes the unsafe cast used by every hook parser so each call site
+ * stays trivial and the trust boundary is documented in one place. Inputs
+ * come from Claude Code's hook dispatch system or from JSON files written
+ * by sibling hooks in this package; both are trusted by contract.
+ *
+ * @param raw - serialized JSON payload from stdin or a trusted file
+ *
+ * @returns parsed value, cast to `T`
+ *
+ * @example
+ * ```ts
+ * const event = parseHookJson<UserPromptSubmitInput>(raw);
+ * ```
+ */
+function parseHookJson<T,>(raw: string,): T {
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- trusted JSON contract: caller's type parameter is the documented schema
+  return JSON.parse(raw,) as T;
+}
 
 /**
  * Handler is the pure function at the heart of every hook plugin.
@@ -73,4 +95,7 @@ export type {
   Writer,
 };
 
-export { runHookPlugin, };
+export {
+  parseHookJson,
+  runHookPlugin,
+};

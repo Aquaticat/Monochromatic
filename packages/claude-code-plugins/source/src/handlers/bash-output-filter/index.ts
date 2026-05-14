@@ -3,6 +3,8 @@ import type {
   PreToolUseInput,
   PreToolUseOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+
+import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
   isAllowed,
   shouldSkip,
@@ -83,10 +85,13 @@ function bashOutputFilterHandler(event: PreToolUseInput,): BashOutputFilterOutpu
  * Parses raw stdin as a `PreToolUseInput`.
  *
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ *
+ * @param raw - JSON payload from Claude Code stdin
+ *
+ * @returns parsed PreToolUse event
  */
-/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 function bashOutputFilterParser(raw: string,): PreToolUseInput {
-  return JSON.parse(raw,) as PreToolUseInput;
+  return parseHookJson<PreToolUseInput>(raw,);
 }
 
 /**

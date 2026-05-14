@@ -9,6 +9,8 @@ import {
   writeSync,
 } from 'node:fs';
 import { basename, } from 'node:path';
+
+import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
   TOOL_TITLES,
   truncate,
@@ -152,10 +154,13 @@ function terminalTitleHandler(event: HookInput,): TerminalTitleOutput {
  * dispatch time inside the handler).
  *
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ *
+ * @param raw - JSON payload from Claude Code stdin
+ *
+ * @returns parsed hook event union
  */
-/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 function terminalTitleParser(raw: string,): HookInput {
-  return JSON.parse(raw,) as HookInput;
+  return parseHookJson<HookInput>(raw,);
 }
 
 /**

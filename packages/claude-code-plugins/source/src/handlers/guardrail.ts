@@ -3,6 +3,8 @@ import type {
   PreToolUseOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 
+import { parseHookJson, } from '../runtime/handler-runtime.ts';
+
 /**
  * Whether the given subagent type represents a general-purpose agent.
  *
@@ -101,10 +103,13 @@ function guardrailHandler(event: PreToolUseInput,): GuardrailOutput {
  * Parses raw stdin as a `PreToolUseInput`.
  *
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ *
+ * @param raw - JSON payload from Claude Code stdin
+ *
+ * @returns parsed PreToolUse event
  */
-/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 function guardrailParser(raw: string,): PreToolUseInput {
-  return JSON.parse(raw,) as PreToolUseInput;
+  return parseHookJson<PreToolUseInput>(raw,);
 }
 
 /**

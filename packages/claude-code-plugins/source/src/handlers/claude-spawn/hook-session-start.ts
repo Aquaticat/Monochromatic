@@ -21,6 +21,7 @@ import {
   resolve,
 } from 'node:path';
 
+import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
   BY_PID_DIR,
   type PidMapping,
@@ -102,8 +103,7 @@ function handleSessionStart({
         jsonPath,
         'utf8',
       );
-      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
-      const state = JSON.parse(raw,) as SpawnState;
+      const state = parseHookJson<SpawnState>(raw,);
 
       if (state.sessionId === '') {
         /** Genuine child: claim ownership by filling in session identity. */

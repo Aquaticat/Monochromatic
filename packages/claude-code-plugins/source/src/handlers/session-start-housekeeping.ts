@@ -7,6 +7,8 @@ import {
   rm,
 } from 'node:fs/promises';
 
+import { parseHookJson, } from '../runtime/handler-runtime.ts';
+
 /**
  * Stale artifact names that git metadata or Claude config can leak into nested
  * `dist/final/` directories. Removed on session start to prevent build contamination.
@@ -130,10 +132,13 @@ async function sessionStartHousekeepingHandler(
  * Parses raw stdin as a `SessionStartInput`.
  *
  * Input is trusted -- it comes from Claude Code's hook dispatch system.
+ *
+ * @param raw - JSON payload from Claude Code stdin
+ *
+ * @returns parsed SessionStart event
  */
-/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
 function sessionStartHousekeepingParser(raw: string,): SessionStartInput {
-  return JSON.parse(raw,) as SessionStartInput;
+  return parseHookJson<SessionStartInput>(raw,);
 }
 
 /**

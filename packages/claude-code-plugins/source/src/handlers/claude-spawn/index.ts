@@ -21,6 +21,7 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 
+import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import { handleSessionStart, } from './hook-session-start.ts';
 import { checkCompletedChildren, } from './inject.ts';
 import {
@@ -203,10 +204,15 @@ function claudeSpawnHandler(event: HookInput,): ClaudeSpawnOutput {
   return additionalContextResponse(event,);
 }
 
-/** Parses raw stdin as a `HookInput` (any union member; narrowed at dispatch). */
-/* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted input from Claude Code hook system */
+/**
+ * Parses raw stdin as a `HookInput` (any union member; narrowed at dispatch).
+ *
+ * @param raw - JSON payload from Claude Code stdin
+ *
+ * @returns parsed hook event union
+ */
 function claudeSpawnParser(raw: string,): HookInput {
-  return JSON.parse(raw,) as HookInput;
+  return parseHookJson<HookInput>(raw,);
 }
 
 /**

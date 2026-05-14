@@ -20,6 +20,7 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 
+import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
   SPAWNS_DIR,
   type SpawnState,
@@ -113,8 +114,7 @@ function checkCompletedChildren(
         filePath,
         'utf8',
       );
-      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own hooks */
-      const state = JSON.parse(raw,) as SpawnState;
+      const state = parseHookJson<SpawnState>(raw,);
 
       if (state.parentSessionId !== parentSessionId)
         continue;

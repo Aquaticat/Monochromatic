@@ -14,6 +14,7 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 
+import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
   BY_PID_DIR,
   type PidMapping,
@@ -51,8 +52,7 @@ function findByProcessTree(): PidMapping | null {
         pidFilePath,
         'utf8',
       );
-      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
-      return JSON.parse(raw,) as PidMapping;
+      return parseHookJson<PidMapping>(raw,);
     }
     catch {
       // No coordination file for this PID: walk up to its parent.
@@ -126,8 +126,7 @@ function findByMostRecent(): PidMapping | null {
         filePath,
         'utf8',
       );
-      /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted file written by our own SessionStart hook */
-      const mapping = JSON.parse(raw,) as PidMapping;
+      const mapping = parseHookJson<PidMapping>(raw,);
 
       if (newest === null || mtime > newest.mtime) {
         newest = {
