@@ -21,7 +21,7 @@ await describe({
     //region runtimeInstallCommand
 
     describe({
-      name: 'runtimeInstallCommand',
+      name: runtimeInstallCommand.name,
       children: [
         it({
           name: 'bun install uses bun.sh',
@@ -48,7 +48,7 @@ await describe({
     //region runtimeExecCommand
 
     describe({
-      name: 'runtimeExecCommand',
+      name: runtimeExecCommand.name,
       children: [
         it({
           name: 'bun exec uses $HOME/.bun/bin/bun run',

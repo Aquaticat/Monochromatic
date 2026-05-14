@@ -21,7 +21,7 @@ await describe({
     //region parseOs
 
     describe({
-      name: 'parseOs',
+      name: parseOs.name,
       children: [
         it({
           name: 'parses container:ubuntu',
@@ -86,7 +86,7 @@ await describe({
     //region buildContainerCommand
 
     describe({
-      name: 'buildContainerCommand',
+      name: buildContainerCommand.name,
       children: [
         it({
           name: 'root user builds a direct command chain',

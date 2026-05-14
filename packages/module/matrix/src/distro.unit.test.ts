@@ -23,7 +23,7 @@ await describe({
     //region detectPackageManager
 
     describe({
-      name: 'detectPackageManager',
+      name: detectPackageManager.name,
       children: [
         it({
           name: 'ubuntu resolves to apt',
@@ -112,7 +112,7 @@ await describe({
     //region prerequisiteCommand
 
     describe({
-      name: 'prerequisiteCommand',
+      name: prerequisiteCommand.name,
       children: [
         it({
           name: 'apt root installs curl and unzip without sudo',
@@ -212,7 +212,7 @@ await describe({
     //region userCreationCommand
 
     describe({
-      name: 'userCreationCommand',
+      name: userCreationCommand.name,
       children: [
         it({
           name: 'root returns empty string',
