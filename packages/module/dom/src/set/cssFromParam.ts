@@ -35,9 +35,11 @@
  * ```
  */
 export function onLoadSetCssFromUrlParams(allowedProperties?: Iterable<string>,): void {
+  /** Parsed URL query, iterated to project each entry onto a CSS custom property. */
   const params = new URLSearchParams(globalThis.location.search,);
 
   if (allowedProperties) {
+    /** Set form of `allowedProperties` so each entry can be matched in O(1). */
     const allowedSet = new Set(allowedProperties,);
     for (const [key, value,] of params.entries()) {
       if (allowedSet.has(key,)) {

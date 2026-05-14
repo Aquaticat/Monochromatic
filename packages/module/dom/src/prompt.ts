@@ -73,6 +73,7 @@ export async function prompt(
     classes?: PromptClassNames;
   },
 ): Promise<string | null> {
+  /** Per-call classes merged with {@link DEFAULT_PROMPT_CLASSES} so unset fields stay defaulted. */
   const resolvedClasses = {
     ...DEFAULT_PROMPT_CLASSES,
     ...classes,
@@ -80,39 +81,42 @@ export async function prompt(
 
   // oxlint-disable-next-line promise/avoid-new -- Required for dialog event handling
   return new Promise(function promptExecutor(resolve,) {
-    // Tracks whether the dialog was closed via OK (false) or any cancel path (true).
-    // Initialised to `true` so Esc, backdrop click, and the dialog being closed by
-    // any other means default to "cancelled"; only the submit handler flips it.
+    /**
+     * Tracks whether the dialog was closed via OK (false) or any cancel path (true).
+     *
+     * Initialised to `true` so Esc, backdrop click, and any other dialog close
+     * default to "cancelled"; only the submit handler flips it.
+     */
     const state = { cancelled: true, };
 
-    // Create dialog element
+    /** Modal element that hosts the prompt form. */
     const dialog = document.createElement('dialog',);
     dialog.className = resolvedClasses.dialog;
 
-    // Create form element
+    /** Inner form; uses method="dialog" so submit closes the dialog natively. */
     const form = document.createElement('form',);
     form.method = 'dialog';
 
-    // Create title element
+    /** Heading element carrying the prompt message. */
     const titleElement = document.createElement('h2',);
     titleElement.textContent = message;
 
-    // Create input element
+    /** Text input that captures the user's response. */
     const input = document.createElement('input',);
     input.type = 'text';
     input.value = defaultValue;
     input.autofocus = true;
 
-    // Create button container
+    /** Wrapper that lays out the Cancel and OK buttons side by side. */
     const buttonContainer = document.createElement('div',);
 
-    // Create cancel button
+    /** Cancel button; leaves `state.cancelled = true` and closes the dialog. */
     const cancelButton = document.createElement('button',);
     cancelButton.type = 'button';
     cancelButton.className = resolvedClasses.cancel;
     cancelButton.textContent = 'Cancel';
 
-    // Create OK button
+    /** OK button; submits the form to flip `state.cancelled` and close. */
     const okButton = document.createElement('button',);
     okButton.type = 'submit';
     okButton.className = resolvedClasses.ok;
@@ -153,6 +157,7 @@ export async function prompt(
     dialog.addEventListener(
       'close',
       function onClose() {
+        /** Final value handed to the caller: `null` on every cancel path, entered string on OK. */
         const result = state.cancelled ? null : input.value;
 
         dialog.remove();
@@ -167,7 +172,9 @@ export async function prompt(
       function onBackdropClick(event,) {
         // Check if click was on the backdrop (dialog element itself, not its children).
         if (event.target === dialog) {
+          /** Dialog box rectangle used to distinguish backdrop clicks from content clicks. */
           const rect = dialog.getBoundingClientRect();
+          /** True when the pointer was inside the visible dialog box, not on the backdrop. */
           const clickedInDialog = (event.clientX >= rect.left)
             && (event.clientX <= rect.right)
             && (event.clientY >= rect.top)

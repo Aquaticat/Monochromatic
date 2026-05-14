@@ -73,14 +73,17 @@ const bundleSourceCache = new Map<string, string>();
  * ```
  */
 async function bundleAsGlobalAssignment(): Promise<string> {
+  /** Previously-computed rewritten bundle; reused across calls in the same Playwright run. */
   const cached = bundleSourceCache.get(BUNDLE_PATH,);
   if (cached !== undefined)
     return cached;
 
+  /** Raw bundle contents read from disk before the trailing `export { ... }` rewrite. */
   const source = await readFile(
     BUNDLE_PATH,
     'utf8',
   );
+  /** Match for the trailing `export { ... }` so its body can be re-emitted as a global assignment. */
   const exportMatch = /export\s*\{\s*([^}]+)\s*\}\s*;?\s*$/.exec(source,);
   if (exportMatch === null) {
     throw new Error(
@@ -88,14 +91,17 @@ async function bundleAsGlobalAssignment(): Promise<string> {
     );
   }
 
+  /** Destructured export list extracted from the matched `export { ... }` clause. */
   const [
     ,
     namedExports,
   ] = exportMatch;
+  /** Bundle text with the trailing `export { ... }` removed; ready for global rewrite. */
   const stripped = source.slice(
     0,
     exportMatch.index,
   );
+  /** Final bundle text where the named exports are assigned to `globalThis.moduleDom` for inline-script consumption. */
   const rewritten = `${stripped}globalThis.moduleDom = { ${namedExports} };`;
   bundleSourceCache.set(
     BUNDLE_PATH,
@@ -130,11 +136,13 @@ export async function loadHarness(
     query?: string;
   },
 ): Promise<void> {
+  /** Harness URL with the optional query string normalised to a leading `?`. */
   const url = (query === undefined) || (query === '')
     ? HARNESS_URL
     : `${HARNESS_URL}${query.startsWith('?',) ? query : `?${query}`}`;
   await page.goto(url,);
 
+  /** Bundle text where the named exports are rewritten as a `globalThis.moduleDom` assignment for inline injection. */
   const content = await bundleAsGlobalAssignment();
   await page.addScriptTag({
     content,
