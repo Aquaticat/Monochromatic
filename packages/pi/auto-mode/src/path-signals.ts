@@ -42,6 +42,7 @@ function pathSignals(
   filePath: string,
   ctx: SignalContext,
 ): boolean {
+  /** Cached resolution shared by the cwd-containment, dotfile, and secret-pattern checks below. */
   const resolved = resolvePath(
     filePath,
     ctx.cwd,
@@ -119,6 +120,7 @@ function isUnder(
   resolved: string,
   dir: string,
 ): boolean {
+  /** Trailing slash prevents `/foo` from matching `/foobar` via `startsWith`. */
   const norm = dir.endsWith('/',) ? dir : `${dir}/`;
   return resolved === dir || resolved.startsWith(norm,);
 }
@@ -148,10 +150,12 @@ function isHomeDotfile(
   )) {
     return false;
   }
+  /** Home-relative path; first segment determines whether this is a dotfile/dotdir under `~`. */
   const relative = resolved.slice(home.length,).replace(
     /^\//,
     '',
   );
+  /** Default `''` covers the empty-relative case (path equals home directory). */
   const [first = '',] = relative.split('/',);
   return first.startsWith('.',);
 }

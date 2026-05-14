@@ -31,10 +31,12 @@
 function extractParamRefs(
   cmd: string,
 ): string[] {
+  /** Cross-pass accumulator; both regex loops below push into it, deduped via `Set` at return. */
   const refs: string[] = [];
 
-  // Match ${VAR} references
+  /** Separate from `simplePattern` because `${VAR}` has no surrounding-character constraints. */
   const bracedPattern = /\$\{([A-Za-z_][A-Za-z0-9_]*)\}/g;
+  /** Mutable cursor for `bracedPattern.exec` across the loop below. */
   let bracedMatch: RegExpExecArray | null = bracedPattern.exec(cmd,);
   while (bracedMatch !== null) {
     if (bracedMatch[1] !== undefined)
@@ -42,8 +44,9 @@ function extractParamRefs(
     bracedMatch = bracedPattern.exec(cmd,);
   }
 
-  // Match $VAR references (not preceded by $ and not followed by { or ()
+  /** Negative lookbehind/lookahead skip `$$` (escape) and `${`/`$(` (substitutions/subshells), which need different handling. */
   const simplePattern = /(?<!\$)\$([A-Za-z_][A-Za-z0-9_]*)(?![{(])/g;
+  /** Mutable cursor for `simplePattern.exec` across the loop below. */
   let simpleMatch: RegExpExecArray | null = simplePattern.exec(cmd,);
   while (simpleMatch !== null) {
     if (simpleMatch[1] !== undefined)
