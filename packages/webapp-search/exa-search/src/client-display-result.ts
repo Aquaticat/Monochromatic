@@ -78,11 +78,11 @@ export function displayResult({
   summary.textContent = result.summary;
   text.textContent = result.text;
 
-  replicateElementAsContentOf(
-    firstHighlight,
-    highlights,
-    result.highlights.length,
-  );
+  replicateElementAsContentOf({
+    templateElement: firstHighlight,
+    parentElement: highlights,
+    targetCount: result.highlights.length,
+  },);
 
   result.highlights.forEach(
     function populateHighlight(

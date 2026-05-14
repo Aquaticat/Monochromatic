@@ -98,7 +98,7 @@ changeApiKeyButton.addEventListener(
   function onChangeApiKey() {
     void (async function promptForNewApiKey(): Promise<void> {
       try {
-        const inputApiKey = nonNullishOrThrow(await prompt('Change api key',),);
+        const inputApiKey = nonNullishOrThrow(await prompt({ message: 'Change api key', },),);
         apiKey.value = inputApiKey;
       }
       catch (error: unknown) {

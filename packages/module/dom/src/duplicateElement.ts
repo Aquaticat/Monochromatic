@@ -16,9 +16,8 @@
  * </div>
  * ```
  * ```ts
- * const elementToReplicate: HTMLElement = document.querySelector('.element-to-replicate')!;
- * // Call the function to replace children with 3 clones
- * replicateElementAsParentContent(elementToReplicate, 3);
+ * const elementToReplicate = document.querySelector<HTMLElement>('.element-to-replicate',)!;
+ * replicateElementAsParentContent({ templateElement: elementToReplicate, targetCount: 3, },);
  * ```
  * ```html
  * <!-- Resulting DOM -->
@@ -30,8 +29,13 @@
  * ```
  */
 export function replicateElementAsParentContent(
-  templateElement: HTMLElement,
-  targetCount: number,
+  {
+    templateElement,
+    targetCount,
+  }: {
+    templateElement: HTMLElement;
+    targetCount: number;
+  },
 ): void {
   // Get the parent of the template element.
   const parent = templateElement.parentElement;
@@ -94,14 +98,20 @@ export function deepCloneNode<const T extends Node,>(element: T,): T {
  * const template = (document.querySelector<HTMLTemplateElement>('#row-template',)!).content
  *   .firstElementChild as HTMLElement;
  * const list = document.querySelector<HTMLElement>('#list',)!;
- * replicateElementAsContentOf(template, list, 3,);
+ * replicateElementAsContentOf({ templateElement: template, parentElement: list, targetCount: 3, },);
  * // #list now holds three independent clones; the <template> is untouched.
  * ```
  */
 export function replicateElementAsContentOf(
-  templateElement: HTMLElement,
-  parentElement: HTMLElement,
-  targetCount: number,
+  {
+    templateElement,
+    parentElement,
+    targetCount,
+  }: {
+    templateElement: HTMLElement;
+    parentElement: HTMLElement;
+    targetCount: number;
+  },
 ): void {
   const clones = Array.from(
     { length: targetCount, },

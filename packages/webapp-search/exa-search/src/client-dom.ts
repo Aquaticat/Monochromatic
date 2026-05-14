@@ -31,7 +31,7 @@ const bindings = {
         v.transformAsync(async function promptSet(val,): Promise<string> {
           if (val !== null)
             return val;
-          const inputApiKey = nonNullishOrThrow(await prompt('Set api key',),);
+          const inputApiKey = nonNullishOrThrow(await prompt({ message: 'Set api key', },),);
           localStorage.setItem(
             'exaApiKey',
             inputApiKey,
@@ -166,11 +166,11 @@ export const numTotalSearches: Observable<number> = derived.numTotalSearches;
 export const numResults: Observable<number> = derived.numResults;
 
 // TODO: Use logic of replicating element inside fetch result to avoid errors on subsequent searches.
-replicateElementAsContentOf(
-  firstResult,
-  resultsSection,
-  exaMaxResults,
-);
+replicateElementAsContentOf({
+  templateElement: firstResult,
+  parentElement: resultsSection,
+  targetCount: exaMaxResults,
+},);
 
 /** Live HTMLCollection of result article elements inside the results section. */
 export const resultArticles: HTMLCollection = resultsSection.children;

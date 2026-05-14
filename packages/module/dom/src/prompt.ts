@@ -13,15 +13,20 @@
  *
  * @example
  * ```ts
- * const name = await prompt('What is your name?');
+ * const name = await prompt({ message: 'What is your name?', },);
  * if (name !== null) {
- *   console.log(`Hello, ${name}!`);
+ *   console.log(`Hello, ${name}!`,);
  * }
  * ```
  */
 export async function prompt(
-  message: string,
-  defaultValue = '',
+  {
+    message,
+    defaultValue = '',
+  }: {
+    message: string;
+    defaultValue?: string;
+  },
 ): Promise<string | null> {
   // oxlint-disable-next-line promise/avoid-new -- Required for dialog event handling
   return new Promise(function promptExecutor(resolve,) {
