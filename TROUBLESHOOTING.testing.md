@@ -1,144 +1,380 @@
-# Testing troubleshooting
+# `@monochromatic-dev/module-test` test harness: confusing error chains with duplicate describes, skipped tests after first failure, shared-state flakes, assertion-count + sinon-restore pitfalls
 
-## Duplicate describe names causing confusing error output
+This file groups five independent quirks of the in-tree test harness
+(`@monochromatic-dev/module-test`). Each gets its own canonical
+section.
 
-Symptoms:
+---
 
-- Error cause chains show the wrong suite name for a failing test.
-- Multiple suites report the same name in output, making it hard to locate the failure.
+## Bug 1: Duplicate `describe` names at the same scope produce ambiguous error chains
 
-Root cause:
+### Symptom
 
-- `describe` propagates child failures as `Error(name, { cause })`.
-  When two sibling describes share the same `name`, the error chain is ambiguous;
-  both suites wrap their errors with the same message string.
-- The harness does not merge or deduplicate suites with the same name
-  (unlike bun:test's reporter), but the output becomes hard to read.
+Test output reports a failing test under the wrong suite name, or
+two suites print the same name, making it hard to locate the
+actual failure:
 
-Prevention:
+```text
+FAIL  suite-name > test-a   ← which "suite-name"?
+FAIL  suite-name > test-b   ← (there are two)
+```
 
-- Keep `describe` names unique at the same scope within a file.
-- Use `functionName.name` for imported functions -- this is inherently unique per import.
-- Use region markers to visually separate groups and catch accidental duplication.
+### Root cause
 
-## Tests silently skipped after first failure with multiple top-level awaits
+`describe` propagates child failures as
+`new Error(name, { cause: childError })`. When two sibling
+describes share the same `name`, both errors wrap their causes with
+the same message string. The runner's output cannot distinguish
+them; the cause chain is technically correct (the `cause` field
+preserves the inner error), but the human-readable summary loses
+the disambiguation.
 
-Symptoms:
+The harness does not merge or deduplicate suites with the same name
+(unlike bun:test's reporter), so the output prints both with their
+shared name verbatim.
 
-- Only the first failing suite's errors appear in output.
-- Suites defined after the failing one never run.
-- The process exits before all tests complete.
+### Verification
 
-Root cause:
+Version under test: `@monochromatic-dev/module-test` at workspace
+HEAD.
 
-- `describe` throws on child failure.
-  Multiple `await describe(...)` at the top level means a throw in the first
-  kills the process, skipping all subsequent describes.
-
-Fix:
-
-- Wrap all suites in a single `await describe({ name: '', children: [...] })`.
-  The empty-name wrapper runs children through `Promise.allSettled`,
-  guaranteeing every suite executes regardless of earlier failures.
+Reproduce:
 
 ```ts
-// BAD: second suite skipped if first throws
-await describe({ name: 'suite A', children: [...] });
-await describe({ name: 'suite B', children: [...] });
+await describe({
+  name: 'root',
+  children: [
+    describe({ name: 'dup', children: [it({ name: 'a', fn: () => { throw new Error('boom') } })] }),
+    describe({ name: 'dup', children: [it({ name: 'b', fn: () => {} })] }),
+  ],
+});
+// Output: both "dup" lines visible; failure attribution requires
+// reading the cause chain manually.
+```
 
-// GOOD: both suites always run
+### Verified workaround
+
+Keep `describe` names unique within a scope:
+
+- Prefer `functionName.name` for imported functions — that is
+  inherently unique per import.
+- Use region markers (`//region X` / `//endregion`) to visually
+  separate groups and catch accidental duplication during review.
+
+Tradeoff: enforced by convention, not by the runner. A future
+linter rule could detect duplicates but is not in place.
+
+### What does not work
+
+- Renaming nested suites only: top-level duplicates still produce
+  the ambiguous chain.
+- Relying on the cause chain in output: present but not surfaced
+  by the default reporter.
+
+### Why we do not file this upstream
+
+The runner is in-tree. Walking the 5 constraints as if `module-test`
+were the upstream:
+
+1. **Is it really upstream's fault?** Borderline. Deduplication
+   matching bun:test's reporter would help but adds complexity.
+2. **Can upstream fix it?** Yes — augment the reporter to mark
+   duplicates with a suffix or path.
+3. **Are they supporting this use case?** The runner accepts any
+   name; duplicates are not rejected.
+4. **Will they likely fix it?** Not at this priority.
+5. **Have we prototyped a minimal fix?** No.
+
+Decision: keep the convention rule.
+
+---
+
+## Bug 2: Multiple top-level `await describe(...)` calls — first failure skips the rest
+
+### Symptom
+
+A test file has multiple top-level `await describe({ ... })` calls.
+The first one fails; the second never runs:
+
+```text
+FAIL  suite A > test-1
+(no further output for suite B; process exits)
+```
+
+### Root cause
+
+`describe` throws on child failure. Multiple `await describe(...)`
+at the top level means a throw in the first kills the surrounding
+module evaluation, so subsequent describes never reach the
+scheduling step.
+
+### Verification
+
+```ts
+await describe({ name: 'A', children: [it({ name: 'fails', fn: () => { throw new Error('boom') } })] });
+await describe({ name: 'B', children: [it({ name: 'never runs', fn: () => {} })] });
+// Suite B is silently skipped.
+```
+
+### Verified workaround
+
+Wrap all suites in a single empty-named parent describe. The empty
+parent runs children through `Promise.allSettled`, so every suite
+executes regardless of earlier failures:
+
+```ts
 await describe({
   name: '',
   children: [
-    describe({ name: 'suite A', children: [...] }),
-    describe({ name: 'suite B', children: [...] }),
+    describe({ name: 'A', children: [...] }),
+    describe({ name: 'B', children: [...] }),
   ],
 });
 ```
 
-## Concurrent tests sharing mutable state
+Tradeoff: every test file has a wrapper at the top. Trivial
+boilerplate but easy to forget; reviewing for two top-level
+`await describe(...)` calls is the simplest catch.
 
-Symptoms:
+### What does not work
 
-- Tests pass when run individually but fail when run together.
-- Assertions see values set by a different test.
-- Flaky failures that depend on execution order.
+- Wrapping each describe in its own try/catch: catches the error,
+  but the runner does not see the original failure for reporting.
+- Using `Promise.all` over `Promise.allSettled`: same fail-fast
+  behaviour as sequential awaits.
 
-Root cause:
+### Why we do not file this upstream
 
-- Children run concurrently by default via `Promise.allSettled`.
-  Tests that share module-level mutable state (counters, caches, singletons)
-  interfere with each other.
+1. **Is it really upstream's fault?** Borderline. The throw-on-fail
+   contract is intentional; the wrapper pattern is the documented
+   shape.
+2. **Can upstream fix it?** Could change top-level behaviour to use
+   `allSettled` implicitly, but that hides bugs where the file
+   forgets to declare a parent.
+3. **Are they supporting this use case?** Yes; the wrapper pattern
+   is documented.
+4. **Will they likely fix it?** No.
+5. **Have we prototyped a minimal fix?** N/A.
 
-Fix:
+Decision: keep the wrapper convention.
 
-- Isolate state per test: create fresh state inside each `fn`.
-- Use `concurrency: 1` on the describe when shared state is unavoidable.
-  Children are lazy descriptors and dispatched by the parent, so no thunk
-  wrapping is needed; the parent's effective concurrency is inherited by
-  nested describes:
+---
+
+## Bug 3: Concurrent tests sharing mutable state interfere
+
+### Symptom
+
+Tests pass individually but fail when run together. Assertions see
+values written by another test. Failures depend on execution order
+and are flaky on reruns.
+
+### Root cause
+
+Children of a describe run concurrently by default (via
+`Promise.allSettled`). Tests that mutate module-level state
+(counters, caches, singletons) race with their siblings.
+
+### Verification
+
+```ts
+// module under test:
+let counter = 0;
+export function increment(): number { return ++counter; }
+
+// tests:
+describe({
+  name: 'counter',
+  children: [
+    it({ name: 'first call returns 1', fn: ({ expect }) => expect(increment()).toBe(1) }),
+    it({ name: 'second call returns 2', fn: ({ expect }) => expect(increment()).toBe(2) }),
+  ],
+});
+// Both run concurrently; one of them returns 2 first, the other returns 1,
+// the assertion ordering breaks.
+```
+
+### Verified workaround
+
+Isolate state per test (preferred): create fresh state inside each
+`fn`, so siblings cannot interfere.
+
+When shared state is unavoidable, set `concurrency: 1` on the
+describe:
 
 ```ts
 describe({
-  name: 'shared resource -- tests mutate shared cache',
+  name: 'shared resource',
   concurrency: 1,
   children: [
-    it({ name: 'first', fn: async () => { ... } }),
-    it({ name: 'second', fn: async () => { ... } }),
+    it({ name: 'first',  fn: async () => { /* ... */ } }),
+    it({ name: 'second', fn: async () => { /* ... */ } }),
   ],
-})
+});
 ```
 
-## Assertion count mismatch with global expect
+Children are lazy descriptors and dispatched by the parent, so no
+thunk wrapping is needed; the parent's effective concurrency is
+inherited by nested describes.
 
-Symptoms:
+Tradeoff: `concurrency: 1` serialises the whole describe, which
+slows the suite. Use it only when isolation is genuinely
+impractical.
 
-- `expect.assertions(n)` is not available or does not work.
-- Tests with async branches pass silently when an assertion is never reached.
+### What does not work
 
-Root cause:
+- Restructuring tests to "assume execution order": the runner does
+  not promise order; even with `concurrency: 1`, relying on order
+  outside the explicit sequencing is fragile.
+- Wrapping shared state in a `Map` keyed by test name: works but
+  spreads state-tracking concerns into every test; the runner-level
+  `concurrency: 1` is cleaner.
 
-- The global `expect` (imported directly from `@monochromatic-dev/module-test`)
-  does not support assertion counting.
-  Only the scoped `expect` from the test context tracks counts.
+### Why we do not file this upstream
 
-Fix:
+The default-concurrent behaviour is intentional. Walking the
+constraints concludes: no upstream report; document the convention.
 
-- Destructure `expect` from the `fn` parameter:
+---
+
+## Bug 4: `expect.assertions(n)` only works when destructured from the test context
+
+### Symptom
+
+`expect.assertions(n)` is not available on the imported `expect`:
+
+```ts
+import { expect } from '@monochromatic-dev/module-test';
+// `expect.assertions` is undefined.
+```
+
+Worse, async tests where one branch never reaches its assertion
+silently pass, because no count is being enforced.
+
+### Root cause
+
+The global `expect` (imported directly from the package) does not
+support assertion counting. Only the scoped `expect` from the test
+context (passed via `fn`'s parameter) tracks counts; that is the
+instance that has the `assertions` method.
+
+### Verification
+
+```ts
+import { describe, it, expect as globalExpect } from '@monochromatic-dev/module-test';
+
+await describe({
+  name: 'count check',
+  children: [
+    it({
+      name: 'scoped',
+      fn: async ({ expect }) => {
+        expect.assertions(2);                       // works
+        expect(await fetchA()).toBe('a');
+        expect(await fetchB()).toBe('b');
+      },
+    }),
+    it({
+      name: 'global',
+      fn: async () => {
+        globalExpect.assertions(2);                 // TypeError or undefined
+      },
+    }),
+  ],
+});
+```
+
+### Verified workaround
+
+Always destructure `expect` from the `fn` parameter:
 
 ```ts
 it({
   name: 'all branches assert',
-  fn: async ({ expect, },) => {
-    expect.assertions(2,);
-    expect(await fetchA(),).toBe('a',);
-    expect(await fetchB(),).toBe('b',);
+  fn: async ({ expect }) => {
+    expect.assertions(2);
+    expect(await fetchA()).toBe('a');
+    expect(await fetchB()).toBe('b');
   },
-},);
+});
 ```
 
-## Sinon stubs not restored between tests
+Tradeoff: every test that needs assertion counting must use the
+scoped form. The global `expect` is still useful for ad-hoc
+assertions, but should not be used inside `fn`.
 
-Symptoms:
+### What does not work
 
-- A stub set in one test leaks into another.
-- Tests fail with "already wrapped" errors.
+- Patching `expect.assertions` onto the global instance: the
+  counter state lives in the per-test context, so a shimmed global
+  cannot find the right counter.
+- Relying on the test runner to detect unreached assertions
+  heuristically: not implemented; assertion counting is the only
+  guarantee.
 
-Root cause:
+### Why we do not file this upstream
 
-- Using `sinon` imported directly instead of the per-test sandbox from context.
-  The global sinon instance does not auto-restore.
+In-tree harness. The scoped-only design is intentional (state lives
+in the context). Walking the constraints concludes no upstream
+report.
 
-Fix:
+---
 
-- Use `ctx.sinon` from the test context, which auto-restores via `await using`:
+## Bug 5: `sinon` imported directly leaks stubs across tests
+
+### Symptom
+
+A stub installed in test A is still installed when test B runs.
+Test B fails with "TypeError: Attempted to wrap …" because the
+already-wrapped method cannot be wrapped a second time.
+
+### Root cause
+
+The directly-imported `sinon` is the singleton; stubs installed on
+it persist until explicitly restored. The per-test `sinon` exposed
+via context is wrapped in a sandbox that auto-restores at the end
+of the test (via `await using`).
+
+### Verification
+
+```ts
+import sinon from 'sinon';
+
+it({
+  name: 'stubs leak',
+  fn: async () => {
+    sinon.stub(obj, 'method').returns('mocked');
+    // No restore; the stub persists into the next test.
+  },
+});
+```
+
+### Verified workaround
+
+Use `ctx.sinon` from the test context:
 
 ```ts
 it({
   name: 'stubs cleanly',
-  fn: async ({ sinon, },) => {
-    sinon.stub(obj, 'method',).returns('mocked',);
-    // stub is automatically restored after this test
+  fn: async ({ sinon }) => {
+    sinon.stub(obj, 'method').returns('mocked');
+    // Sandbox auto-restores via `await using`.
   },
-},);
+});
 ```
+
+Tradeoff: every test that needs stubs must destructure `sinon` from
+the context. Refactoring legacy tests that import `sinon` directly
+is mechanical but tedious.
+
+### What does not work
+
+- Calling `sinon.restore()` manually in a `finally` block: works
+  but reintroduces the boilerplate the sandbox replaced; missing a
+  single `finally` re-creates the leak.
+- Wrapping every test in `beforeEach`/`afterEach`: this runner does
+  not have lifecycle hooks; the sandbox model is the substitute.
+
+### Why we do not file this upstream
+
+In-tree convention; sinon itself is upstream-correct. No
+upstream report.
