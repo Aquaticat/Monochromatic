@@ -8,20 +8,25 @@ import { arrayElementPerLine, } from './rules/array-element-per-line.ts';
 import { destructurePerLine, } from './rules/destructure-per-line.ts';
 import { exportPerLine, } from './rules/export-per-line.ts';
 import { importPerLine, } from './rules/import-per-line.ts';
+import { noMixedOperators, } from './rules/no-mixed-operators.ts';
 import { objectPropertyPerLine, } from './rules/object-property-per-line.ts';
 import { paramPerLine, } from './rules/param-per-line.ts';
 import { tuplePerLine, } from './rules/tuple-per-line.ts';
 import { typePropertyPerLine, } from './rules/type-property-per-line.ts';
 
 /**
- * Oxlint JS plugin enforcing one-item-per-line formatting across
- * all multi-element constructs in TypeScript.
+ * Oxlint JS plugin for TypeScript stylistic rules: one-item-per-line
+ * formatting across multi-element constructs and explicit operator
+ * structure in nested expressions.
  *
- * Each rule fires when 2 or more items share a source line and
- * auto-fixes by placing every item on its own line with consistent
- * indentation. Works alongside dprint's `preferHanging: "always"`
+ * The per-line rules fire when 2 or more items share a source line and
+ * auto-fix by placing every item on its own line with consistent
+ * indentation. They work alongside dprint's `preferHanging: "always"`
  * setting, which formats multi-line items correctly but does not
  * force them to be multi-line.
+ *
+ * The expression-structure rules surface ambiguous operator precedence
+ * by requiring explicit parentheses at operator boundaries.
  *
  * @example
  * ```typescript
@@ -48,6 +53,10 @@ const plugin: Plugin = eslintCompatPlugin({
     'tuple-per-line': tuplePerLine,
     'destructure-per-line': destructurePerLine,
     //endregion Per-line rules
+
+    //region Expression structure: enforce explicit parens at operator boundaries
+    'no-mixed-operators': noMixedOperators,
+    //endregion Expression structure
   },
 },);
 

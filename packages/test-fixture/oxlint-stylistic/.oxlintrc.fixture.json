@@ -19,6 +19,7 @@
     "stylistic/export-per-line": "error",
     "stylistic/type-property-per-line": "error",
     "stylistic/tuple-per-line": "error",
-    "stylistic/destructure-per-line": "error"
+    "stylistic/destructure-per-line": "error",
+    "stylistic/no-mixed-operators": "error"
   }
 }

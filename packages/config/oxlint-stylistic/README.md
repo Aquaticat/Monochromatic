@@ -1,15 +1,22 @@
 # @monochromatic-dev/config-oxlint-stylistic
 
-Oxlint JS plugin enforcing one-item-per-line formatting across all multi-element TypeScript constructs.
+Oxlint JS plugin for TypeScript stylistic rules:
+one-item-per-line formatting across multi-element constructs,
+and explicit operator structure in nested expressions.
 
-Each rule fires when 2 or more items share a source line and auto-fixes by placing every item on its own line
-with consistent indentation.
-Works alongside dprint's `preferHanging: "always"` setting, which formats multi-line items correctly
-but does not force them to be multi-line.
+The per-line rules fire when 2 or more items share a source line
+and auto-fix by placing every item on its own line with consistent indentation.
+They work alongside dprint's `preferHanging: "always"` setting,
+which formats multi-line items correctly but does not force them to be multi-line.
+
+The expression-structure rules surface ambiguous operator precedence
+by requiring explicit parentheses at operator boundaries.
 
 ## Rules
 
-All rules are auto-fixable via `oxlint --fix`.
+### Per-line rules
+
+All per-line rules are auto-fixable via `oxlint --fix`.
 
 - **param-per-line** -- each function parameter on its own line (declarations, expressions, arrows)
 - **argument-per-line** -- each function call argument on its own line (`CallExpression`, `NewExpression`)
@@ -20,6 +27,14 @@ All rules are auto-fixable via `oxlint --fix`.
 - **type-property-per-line** -- each type literal or interface member on its own line
 - **tuple-per-line** -- each tuple type element on its own line
 - **destructure-per-line** -- each destructured property on its own line
+
+### Expression structure
+
+- **no-mixed-operators** -- require parentheses around nested binary or logical expressions
+  whose operator differs from the parent.
+  Same-operator chains (`a + b + c`, `x && y && z`) are permitted because they are unambiguous under associativity.
+  Mixed operators (`a + b * c`, `x || y && z`) must be disambiguated with explicit parens.
+  Not auto-fixable.
 
 ## Usage
 

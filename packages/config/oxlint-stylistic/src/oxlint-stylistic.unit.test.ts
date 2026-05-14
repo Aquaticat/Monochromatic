@@ -173,6 +173,13 @@ await describe({
             expect(diagnostics,).toEqual([],);
           },
         },),
+        it({
+          name: 'no-mixed-operators valid cases produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/no-mixed-operators.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
       ],
     },),
 
@@ -293,6 +300,19 @@ await describe({
             const diagnostics = await lint('invalid/destructure-per-line.ts',);
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(destructure-per-line)',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'no-mixed-operators',
+      children: [
+        it({
+          name: 'reports nested mixed-operator expressions without parens',
+          fn: async () => {
+            const diagnostics = await lint('invalid/no-mixed-operators.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(no-mixed-operators)',);
           },
         },),
       ],
