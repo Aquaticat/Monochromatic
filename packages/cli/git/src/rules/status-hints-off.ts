@@ -25,36 +25,6 @@ const QUIET_INJECTION: readonly string[] = [
 ];
 
 /**
- * Injects `-c advice.statusHints=false` before `git status` so git suppresses
- * its stock hints, which suggest patterns the wrapper rejects. The injection
- * slots into the pre-subcommand region, so any user-supplied global options
- * are preserved.
- *
- * Skipped when the user has already set `advice.statusHints=<anything>` via
- * `-c` in the pre-subcommand region, so an explicit
- * `git -c advice.statusHints=true status` continues to print git's hints.
- *
- * @param args - Raw git arguments (global options + subcommand + flags).
- *
- * @returns Modified args with `-c advice.statusHints=false` injected before
- *   the `status` token, or unmodified args.
- *
- * @example
- * ```ts
- * statusHintsOff(['status']);
- * // => ['-c', 'advice.statusHints=false', 'status']
- *
- * statusHintsOff(['-C', '/repo', 'status', 'packages/x']);
- * // => ['-C', '/repo', '-c', 'advice.statusHints=false', 'status', 'packages/x']
- *
- * statusHintsOff(['-c', 'advice.statusHints=true', 'status']);
- * // => ['-c', 'advice.statusHints=true', 'status'] (user override honoured)
- *
- * statusHintsOff(['commit', '-m', 'x']);
- * // => ['commit', '-m', 'x'] (not a status invocation)
- * ```
- */
-/**
  * Whether the caller has already configured `advice.statusHints` via a
  * pre-subcommand `-c <key>=<value>` pair. Used both by the rule (skip
  * injection) and by the entry point (skip the post-spawn cli-git note); when

@@ -3,6 +3,7 @@ import {
   tagged,
 } from '../log.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
+import { analyzeCommitArgs, } from './commit-args.ts';
 
 /**
  * Wrapper-only escape hatch that suppresses `-o` injection for one invocation.
@@ -11,15 +12,20 @@ import { parseGlobalOptions, } from '../parse-global-options.ts';
 const ESCAPE_HATCH = '--no-enforce-only';
 
 /**
- * Flags that indicate the user already made an explicit choice about `--only`
- * mode (either form, positive or negative). Presence of any of these skips
- * injection without stripping anything.
+ * Diagnostic emitted when commit-only enforcement sees no pathspec source and
+ * no git mode that permits pathless only-mode commits.
  */
-const EXPLICIT_ONLY_FLAGS: ReadonlySet<string> = new Set([
-  '-o',
-  '--only',
-  '--no-only',
-],);
+const NO_PATHSPEC_MESSAGE = 'cli-git: git commit requires an explicit pathspec when commit-only enforcement is active. '
+  + 'Name the paths in the commit command (for example, git commit -m <msg> <path>), '
+  + 'pass --pathspec-from-file, or pass --no-enforce-only to bypass for this invocation.';
+
+/**
+ * Diagnostic emitted when commit-only enforcement sees `-a`/`--all`, which
+ * stages tracked modifications implicitly before committing.
+ */
+const ALL_FLAG_MESSAGE = 'cli-git: git commit rejects -a/--all because it stages every tracked modification before committing. '
+  + 'Stage paths explicitly and commit with git commit -m <msg> <path>, '
+  + 'or pass --no-enforce-only to bypass for this invocation.';
 
 /**
  * Injects `-o` (a.k.a. `--only`) into `git commit` commands when not already
@@ -89,12 +95,23 @@ export function commitOnly(args: readonly string[],): readonly string[] {
     ];
   }
 
-  /** True when args already carry `-o`, `--only`, or `--no-only` after the subcommand. */
-  const hasExplicitFlag = postSubcommandArgs.some(function isExplicitFlag(arg,) {
-    return EXPLICIT_ONLY_FLAGS.has(arg,);
-  },);
+  /** Commit argv facts used to reject policy violations before git emits opaque errors. */
+  const analysis = analyzeCommitArgs(postSubcommandArgs,);
 
-  if (hasExplicitFlag) {
+  if (!analysis.hasNoOnlyFlag) {
+    if (analysis.hasAllFlag)
+      throw new Error(ALL_FLAG_MESSAGE,);
+
+    /** True when pathspecs are supplied positionally, through a pathspec file, or by a git mode that permits pathless only commits. */
+    const hasPathspecSource = analysis.hasPathspec
+      || analysis.hasPathspecFromFile
+      || analysis.hasPathlessAllowedFlag;
+
+    if (!hasPathspecSource)
+      throw new Error(NO_PATHSPEC_MESSAGE,);
+  }
+
+  if (analysis.hasExplicitOnlyFlag) {
     rl.debug('-o, --only, or --no-only already present, skipping injection',);
     return args;
   }

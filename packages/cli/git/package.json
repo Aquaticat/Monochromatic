@@ -1,7 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/cli-git",
-  "description": "Git wrapper that enforces repo-root execution and injects --atomic on push.",
+  "description": "Git wrapper that enforces repo-root, explicit add, atomic push, commit-only, and status-hint safeguards.",
   "type": "module",
   "private": true,
   "main": "src/index.ts",

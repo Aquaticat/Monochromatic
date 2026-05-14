@@ -1,0 +1,435 @@
+import {
+  mkdir,
+  mkdtemp,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import {
+  dirname,
+  join,
+} from 'node:path';
+import { fileURLToPath, } from 'node:url';
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test';
+import nanoSpawn, {
+  SubprocessError,
+  type Result,
+} from 'nano-spawn';
+
+import { resolveGit, } from './resolve-git.ts';
+
+/** Absolute path to real git binary used for fixture setup and assertions. */
+const realGitPath = await resolveGit();
+
+/** Absolute path to cli-git entry point under test. */
+const WRAPPER_PATH = join(
+  dirname(fileURLToPath(import.meta.url,),),
+  'index.ts',
+);
+
+/** Git author email used in disposable repositories. */
+const TEST_USER_EMAIL = 'cli-git@example.invalid';
+
+/** Git author name used in disposable repositories. */
+const TEST_USER_NAME = 'cli-git test';
+
+/** Options for running git-like commands in tests. */
+type RunGitOptions = {
+  /** Working directory for subprocess. */
+  readonly cwd: string;
+  /** Arguments passed after executable name. */
+  readonly args: readonly string[];
+};
+
+/** Disposable temporary directory used by CLI integration tests. */
+type TempDirectory = {
+  /** Absolute path to temporary directory. */
+  readonly path: string;
+  /** Deletes temporary directory after test exits. */
+  readonly [Symbol.asyncDispose]: () => Promise<void>;
+};
+
+/**
+ * Creates disposable temporary directory for git repositories.
+ *
+ * @returns Temporary directory that removes itself when disposed.
+ *
+ * @example
+ * ```ts
+ * await using tempDirectory = await createTempDirectory();
+ * console.log(tempDirectory.path);
+ * ```
+ */
+async function createTempDirectory(): Promise<TempDirectory> {
+  /** Absolute temporary directory path for one test case. */
+  const path = await mkdtemp(join(
+    tmpdir(),
+    'cli-git-index-',
+  ),);
+
+  return {
+    path,
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(
+        path,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    },
+  };
+}
+
+/**
+ * Runs real git binary, bypassing wrapper under test.
+ *
+ * @param options - Working directory and git argv.
+ *
+ * @returns Captured subprocess result.
+ *
+ * @example
+ * ```ts
+ * await runRealGit({ cwd: '/repo', args: ['status', '--short'] });
+ * ```
+ */
+async function runRealGit(options: RunGitOptions,): Promise<Result> {
+  return nanoSpawn(
+    realGitPath,
+    options.args,
+    { cwd: options.cwd, },
+  );
+}
+
+/**
+ * Runs cli-git entry point through Bun.
+ *
+ * @param options - Working directory and git argv.
+ *
+ * @returns Captured subprocess result.
+ *
+ * @example
+ * ```ts
+ * await runWrapper({ cwd: '/repo', args: ['status', '--short'] });
+ * ```
+ */
+async function runWrapper(options: RunGitOptions,): Promise<Result> {
+  return nanoSpawn(
+    'bun',
+    [
+      WRAPPER_PATH,
+      ...options.args,
+    ],
+    { cwd: options.cwd, },
+  );
+}
+
+/**
+ * Captures cli-git subprocess failure.
+ *
+ * @param options - Working directory and git argv.
+ *
+ * @returns Subprocess failure, or `undefined` when invocation succeeds.
+ *
+ * @example
+ * ```ts
+ * const error = await catchWrapperError({ cwd: '/repo', args: ['status'] });
+ * expect(error).toBeInstanceOf(SubprocessError);
+ * ```
+ */
+async function catchWrapperError(options: RunGitOptions,): Promise<SubprocessError | undefined> {
+  try {
+    await runWrapper(options,);
+  }
+  catch (error) {
+    if (error instanceof SubprocessError)
+      return error;
+    throw error;
+  }
+  return undefined;
+}
+
+/**
+ * Narrows optional subprocess error after expectation assertion.
+ *
+ * @param error - Optional subprocess error returned by catch helper.
+ *
+ * @returns Subprocess error when present.
+ *
+ * @throws When subprocess unexpectedly succeeded.
+ *
+ * @example
+ * ```ts
+ * const error = requireSubprocessError(await catchWrapperError(options));
+ * console.log(error.stderr);
+ * ```
+ */
+function requireSubprocessError(error: SubprocessError | undefined,): SubprocessError {
+  expect(error,).toBeInstanceOf(SubprocessError,);
+
+  if (error === undefined)
+    throw new Error('Expected cli-git subprocess to fail.',);
+
+  return error;
+}
+
+/**
+ * Initializes disposable git repository and configures commit identity.
+ *
+ * @param options - Repository path to create and initialize.
+ *
+ * @returns Nothing after repository is initialized.
+ *
+ * @example
+ * ```ts
+ * await initializeRepository({ repoPath: '/tmp/repo' });
+ * ```
+ */
+async function initializeRepository({
+  repoPath,
+}: {
+  /** Absolute path to repository root. */
+  readonly repoPath: string;
+},): Promise<void> {
+  await mkdir(
+    repoPath,
+    { recursive: true, },
+  );
+  await runRealGit({
+    cwd: repoPath,
+    args: [
+      'init',
+      '--quiet',
+    ],
+  },);
+  await runRealGit({
+    cwd: repoPath,
+    args: [
+      'config',
+      'user.email',
+      TEST_USER_EMAIL,
+    ],
+  },);
+  await runRealGit({
+    cwd: repoPath,
+    args: [
+      'config',
+      'user.name',
+      TEST_USER_NAME,
+    ],
+  },);
+}
+
+/**
+ * Writes file and stages it with real git.
+ *
+ * @param options - Repository path, relative file name, and file content.
+ *
+ * @returns Nothing after file is staged.
+ *
+ * @example
+ * ```ts
+ * await writeAndStageFile({ repoPath: '/repo', fileName: 'file.txt', content: 'x\n' });
+ * ```
+ */
+async function writeAndStageFile({
+  repoPath,
+  fileName,
+  content,
+}: {
+  /** Absolute repository root. */
+  readonly repoPath: string;
+  /** Repository-relative file name. */
+  readonly fileName: string;
+  /** File content to write. */
+  readonly content: string;
+},): Promise<void> {
+  await writeFile(
+    join(
+      repoPath,
+      fileName,
+    ),
+    content,
+  );
+  await runRealGit({
+    cwd: repoPath,
+    args: [
+      'add',
+      fileName,
+    ],
+  },);
+}
+
+/**
+ * Creates initial commit in repository.
+ *
+ * @param options - Repository path to seed.
+ *
+ * @returns Nothing after initial commit exists.
+ *
+ * @example
+ * ```ts
+ * await createInitialCommit({ repoPath: '/repo' });
+ * ```
+ */
+async function createInitialCommit({
+  repoPath,
+}: {
+  /** Absolute repository root. */
+  readonly repoPath: string;
+},): Promise<void> {
+  await writeAndStageFile({
+    repoPath,
+    fileName: 'tracked.txt',
+    content: 'initial\n',
+  },);
+  await runRealGit({
+    cwd: repoPath,
+    args: [
+      'commit',
+      '--quiet',
+      '-m',
+      'initial',
+    ],
+  },);
+}
+
+/**
+ * Reads latest commit subject from repository.
+ *
+ * @param options - Repository path to inspect.
+ *
+ * @returns Latest commit subject.
+ *
+ * @example
+ * ```ts
+ * const subject = await readLatestSubject({ repoPath: '/repo' });
+ * ```
+ */
+async function readLatestSubject({
+  repoPath,
+}: {
+  /** Absolute repository root. */
+  readonly repoPath: string;
+},): Promise<string> {
+  /** Git log result containing latest subject on stdout. */
+  const result = await runRealGit({
+    cwd: repoPath,
+    args: [
+      'log',
+      '-1',
+      '--format=%s',
+    ],
+  },);
+
+  return result.stdout;
+}
+
+await describe({
+  name: 'cli-git entry point',
+  children: [
+    it({
+      name: 'prints wrapper diagnostic for pathless commit before git fatal',
+      fn: async function testPathlessCommitDiagnostic(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeAndStageFile({
+          repoPath: tempDirectory.path,
+          fileName: 'file.txt',
+          content: 'content\n',
+        },);
+
+        /** cli-git failure for commit without pathspec. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: [
+            'commit',
+            '-m',
+            'pathless',
+          ],
+        },),);
+
+        expect(error.stderr,).toContain('cli-git: git commit requires an explicit pathspec',);
+        expect(error.stderr,).not.toContain('No paths with --include/--only',);
+      },
+    },),
+    it({
+      name: 'commits named path through wrapper-injected only mode',
+      fn: async function testNamedPathCommit(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeAndStageFile({
+          repoPath: tempDirectory.path,
+          fileName: 'file.txt',
+          content: 'content\n',
+        },);
+
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'commit',
+            '-m',
+            'named path',
+            'file.txt',
+          ],
+        },);
+
+        expect(await readLatestSubject({ repoPath: tempDirectory.path, },),).toBe('named path',);
+      },
+    },),
+    it({
+      name: 'rejects linked worktree subdirectory because .git is a file',
+      fn: async function testLinkedWorktreeSubdirectory(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Main repository path inside disposable parent directory. */
+        const repoPath = join(
+          tempDirectory.path,
+          'repo',
+        );
+        /** Linked worktree path with `.git` file instead of directory. */
+        const worktreePath = join(
+          tempDirectory.path,
+          'worktree',
+        );
+        /** Subdirectory below linked worktree root. */
+        const subdirectory = join(
+          worktreePath,
+          'subdir',
+        );
+
+        await initializeRepository({ repoPath, },);
+        await createInitialCommit({ repoPath, },);
+        await runRealGit({
+          cwd: repoPath,
+          args: [
+            'worktree',
+            'add',
+            '--quiet',
+            worktreePath,
+          ],
+        },);
+        await mkdir(subdirectory,);
+
+        /** cli-git failure for worktree subdirectory. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: subdirectory,
+          args: [
+            'status',
+            '--short',
+          ],
+        },),);
+
+        expect(error.stderr,).toContain('cli-git: not at the root of the git repository',);
+        expect(error.stderr,).toContain(`Repo root is ${worktreePath}`,);
+      },
+    },),
+  ],
+},);

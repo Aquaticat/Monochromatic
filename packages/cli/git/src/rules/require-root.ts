@@ -94,7 +94,7 @@ export async function requireRoot(args: readonly string[],): Promise<readonly st
   const gitPath = await findUp(
     '.git',
     {
-      type: 'directory',
+      type: 'both',
       cwd: effectiveCwd,
     },
   );

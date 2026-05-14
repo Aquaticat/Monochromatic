@@ -6,13 +6,14 @@ Git wrapper that enforces safety rules before forwarding to the real git binary.
 
 **Require root**: when the effective working directory is inside a git
 repository, rejects commands unless that directory is the repository root
-(where `.git` lives). The effective directory is `process.cwd()` with every
-pre-subcommand `-C <path>` applied in order, matching git's own resolution,
-so `git -C /repo status` from anywhere passes the check. When no `.git` is
-found up the tree from the effective directory, the command passes through
-to real git untouched, so git itself reports the missing-repo error if
-relevant. Exempt subcommands: `init`, `clone`, `version`, `help`, and
-`config` with `--global`/`--system`/`--list`.
+(where `.git` lives). `.git` may be a directory or a file, so linked worktrees
+and submodules are checked the same way normal repositories are. The effective
+directory is `process.cwd()` with every pre-subcommand `-C <path>` applied in
+order, matching git's own resolution, so `git -C /repo status` from anywhere
+passes the check. When no `.git` is found up the tree from the effective
+directory, the command passes through to real git untouched, so git itself
+reports the missing-repo error if relevant. Exempt subcommands: `init`,
+`clone`, `version`, `help`, and `config` with `--global`/`--system`/`--list`.
 
 **Add explicit**: rejects `git add` invocations that use bulk-staging
 patterns (`.`, `./`, `*`, `:/`, `-A`/`--all`, `-u`/`--update`), which sweep
@@ -29,10 +30,15 @@ The rule walks pre-subcommand global options (`-C <path>`, `-c key=val`,
 
 **Commit only**: injects `-o` (a.k.a. `--only`) into `git commit` commands so
 every commit must name the paths it includes rather than picking up whatever is
-staged. Skipped when `-o`, `--only`, or `--no-only` is already present (the user
-has made an explicit choice). Escape hatch for a single invocation: pass
-`--no-enforce-only`, which is stripped before forwarding to real git. The rule
-walks pre-subcommand global options the same way atomic-push does.
+staged. `git commit -m <msg>` without paths is rejected by the wrapper before
+git can emit its opaque `No paths with --include/--only` fatal. `git commit -a`
+and `git commit --all` are rejected because they stage tracked modifications
+implicitly. Pathless commits remain valid when git permits them with `--amend`,
+`--allow-empty`, or `--pathspec-from-file`. Skipped when `-o`, `--only`, or
+`--no-only` is already present (the user has made an explicit choice). Escape
+hatch for a single invocation: pass `--no-enforce-only`, which is stripped
+before forwarding to real git. The rule walks pre-subcommand global options the
+same way atomic-push does.
 
 **Status hints off**: injects `-c advice.statusHints=false` before `git status`
 so git suppresses its stock hints, which suggest patterns the wrapper rejects
