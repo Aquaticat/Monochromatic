@@ -12,7 +12,9 @@ import {
   serializePenpotZip,
 } from '../src/index.ts';
 
+/** First positional argument: source Figma export file path that the converter reads. */
 const inputPath = process.argv[2];
+/** Optional second positional argument: destination `.penpot` path; falls back to the input path with the extension swapped. */
 const outputPath = process.argv[3];
 
 if (!inputPath) {
@@ -20,7 +22,9 @@ if (!inputPath) {
   throw new Error('Missing input path',);
 }
 
+/** Fully decoded Figma file model that the conversion pipeline consumes. */
 const figmaFile = await parseFigmaFile(inputPath,);
+/** Intermediate Penpot document model produced by the converter, ready for ZIP serialization. */
 const doc = convertFigmaToPenpot(
   figmaFile,
   {
@@ -28,7 +32,9 @@ const doc = convertFigmaToPenpot(
   },
 );
 
+/** Final ZIP buffer ready to be written to disk. */
 const zipBuffer = await serializePenpotZip(doc,);
+/** Resolved output path: caller's argument takes precedence, otherwise the input filename with its extension swapped to `.penpot`. */
 const outPath = outputPath ?? inputPath.replace(
   /\.(fig|deck|jam)$/,
   '.penpot',
@@ -39,6 +45,7 @@ await writeFile(
   zipBuffer,
 );
 
+/** Count of NodeChange entries logged below as a quick sanity-check of conversion scope. */
 const nodeCount = (figmaFile.document?.nodeChanges ?? []).length;
 console.log(
   `Converted ${figmaFile.fileType} (${nodeCount} nodes) -> ${outPath} (${zipBuffer.length} bytes)`,

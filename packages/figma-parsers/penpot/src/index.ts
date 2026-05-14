@@ -264,6 +264,7 @@ type ConvertOptions = {
 
 // region Constants
 
+/** SVG-shaped identity matrix used as the default transform and as the reset value when normalising shape positions into x/y. */
 const IDENTITY_TRANSFORM: PenpotTransform = {
   a: 1,
   b: 0,
@@ -273,6 +274,7 @@ const IDENTITY_TRANSFORM: PenpotTransform = {
   f: 0,
 };
 
+/** Penpot feature flags required for the importer to accept files produced by this converter; older clients without these are not the intended consumers. */
 const DEFAULT_FEATURES = [
   'fdata/path-data',
   'design-tokens/v1',
@@ -282,10 +284,13 @@ const DEFAULT_FEATURES = [
   'fdata/shape-data-type',
 ];
 
+/** Penpot binfile schema version stamped onto every produced `PenpotFile`. */
 const PENPOT_FILE_VERSION = 67;
 
+/** All-zero UUID Penpot uses as the implicit root-frame id on every page. */
 const ZERO_UUID: Uuid = '00000000-0000-0000-0000-000000000000';
 
+/** Lookup that maps each Figma `NodeType` to its Penpot shape equivalent (or `null` when the node has no Penpot counterpart and should be skipped). */
 const FIGMA_NODE_TYPE_MAP: Record<string, PenpotShapeType | null> = {
   // Structural nodes (no direct Penpot shape)
   'NodeType.DOCUMENT': null,
@@ -326,6 +331,7 @@ const FIGMA_NODE_TYPE_MAP: Record<string, PenpotShapeType | null> = {
 
 // region UUID generation
 
+/** Monotonic counter feeding the deterministic UUID fallback when `crypto.randomUUID` is unavailable. */
 let uuidCounter = 0;
 
 /** Generate a unique UUID v4. */
@@ -336,8 +342,9 @@ function nextUuid(): Uuid {
     return crypto.randomUUID();
   }
   catch {
-    // Fallback: counter-based pseudo-UUID
+    /** Snapshot of the counter so each section of the fallback UUID derives from the same value. */
     const c = uuidCounter;
+    /** Format `n` as zero-padded hex of width `w`; shared by every UUID segment below. */
     function h(
       n: number,
       w: number,
@@ -347,10 +354,12 @@ function nextUuid(): Uuid {
         '0',
       );
     }
+    /** First 8-hex segment of the synthetic UUID (low 32 bits of the counter). */
     const a = h(
       c & 0xFF_FF_FF_FF,
       8,
     );
+    /** Second 4-hex segment (bits 32-47 of the counter). */
     const b = h(
       (c >> 32) & 0xFF_FF,
       4,
@@ -395,9 +404,11 @@ function guidToUuid(
   sessionId: unknown,
   localId: unknown,
 ): Uuid {
+  /** Figma session id coerced to a number so it can be bit-shifted; defaults to 0 when missing or wrong-typed. */
   const sid = typeof sessionId === 'number' ? sessionId : 0;
+  /** Figma local id coerced to a number for bit-shifting; defaults to 0 when missing or wrong-typed. */
   const lid = typeof localId === 'number' ? localId : 0;
-  // Deterministic UUID v4 from Figma GUID
+  /** Format `n` as zero-padded hex of width `w`; shared by every UUID segment below so the encoding is uniform. */
   function h(
     n: number,
     w: number,
@@ -407,27 +418,33 @@ function guidToUuid(
       '0',
     );
   }
+  /** First 8-hex segment: the full session id, so files from the same session cluster together. */
   const a = h(
     sid,
     8,
   );
+  /** Second 4-hex segment: high bits of the local id, distinguishing nodes within a session. */
   const b = h(
     (lid >>> 16) & 0xFF_FF,
     4,
   );
+  /** Third segment: literal `'4'` (UUID v4 marker) plus 3 hex digits derived from the local id. */
   const c = `4${
     h(
       (lid >>> 4) & 0xF_FF,
       3,
     )
   }`;
+  /** Variant nibble forced into the 8-B range so the result is a well-formed v4 UUID. */
   const yNibble = ((lid & 0xF) | 0x8).toString(16,);
+  /** Fourth segment: variant nibble plus 3 hex digits sourced from the session id. */
   const d = `${yNibble}${
     h(
       (sid >>> 16) & 0xF_FF,
       3,
     )
   }`;
+  /** Final 12-hex segment: composite of remaining low bits of both ids so the full GUID is encoded losslessly. */
   const e = `${
     h(
       sid & 0xFF_FF,
@@ -470,8 +487,11 @@ function guidToUuid(
  * Figma stores colors as 0-1 floats; Penpot uses "#RRGGBB" hex strings.
  */
 function figmaColorToHex(color: Record<string, unknown>,): string {
+  /** Red channel rounded to 0-255 integer so it can be hex-encoded. */
   const r = Math.round((typeof color.r === 'number' ? color.r : 0) * 255,);
+  /** Green channel rounded to 0-255 integer so it can be hex-encoded. */
   const g = Math.round((typeof color.g === 'number' ? color.g : 0) * 255,);
+  /** Blue channel rounded to 0-255 integer so it can be hex-encoded. */
   const b = Math.round((typeof color.b === 'number' ? color.b : 0) * 255,);
   return `#${
     r.toString(16,).padStart(
@@ -510,13 +530,14 @@ function figmaColorToFill(color: Record<string, unknown>,): PenpotFill {
 
 /** Figma PaintType to Penpot fill. */
 function figmaPaintToFill(paint: Record<string, unknown>,): PenpotFill | null {
-  // paint.type is the enum value like "PaintType.SOLID"
-  // paint.__type is just the schema type name "Paint"
+  /** Paint type string normalised across the enum-style `type` and the schema-style `__type` keys Figma emits. */
   const paintType = String(paint.type ?? paint.__type ?? '',);
   if (paintType === 'PaintType.SOLID' || paintType.includes('SOLID',)) {
+    /** Optional color struct; guarded so missing-color paints fall through to `null`. */
     const color = paint.color as Record<string, unknown> | undefined;
     if (!color)
       return null;
+    /** Solid fill assembled from the color; opacity may be overridden by the paint's own `opacity` field below. */
     const fill = figmaColorToFill(color,);
     if (typeof paint.opacity === 'number')
       fill.fillOpacity = paint.opacity;
@@ -533,8 +554,10 @@ function figmaPaintToStroke(
   strokeWeight: number,
   strokeAlign: string,
 ): PenpotStroke | null {
+  /** Paint type string normalised across the enum-style `type` and the schema-style `__type` keys, same as the fill path. */
   const paintType = String(paint.type ?? paint.__type ?? '',);
   if (paintType === 'PaintType.SOLID' || paintType.includes('SOLID',)) {
+    /** Optional color struct; guarded so missing-color paints fall through to `null`. */
     const color = paint.color as Record<string, unknown> | undefined;
     if (!color)
       return null;
@@ -572,7 +595,9 @@ function computeSelRect(
     PenpotPoint,
   ];
 } {
+  /** Right edge of the bounding rect, derived once and reused for both selrect and the corner points. */
   const x2 = x + width;
+  /** Bottom edge of the bounding rect, derived once and reused for both selrect and the corner points. */
   const y2 = y + height;
   return {
     selrect: {
@@ -651,6 +676,7 @@ function parseParentIndex(parentIndex: Record<string, unknown> | undefined | nul
 } | null {
   if (!parentIndex)
     return null;
+  /** Optional parent-GUID struct; guarded so malformed parentIndex entries return `null`. */
   const guid = parentIndex.guid as Record<string, unknown> | undefined;
   if (!guid)
     return null;
@@ -680,21 +706,29 @@ function convertFigmaToPenpot(
   figmaFile: FigmaFile,
   options: ConvertOptions = {},
 ): PenpotDocument {
+  /** Penpot file UUID assigned up-front so manifest, file metadata, and entry paths can all reference it. */
   const fileId = nextUuid();
+  /** Display name for the converted file; caller override beats Figma's `meta.fileName`, with a generic fallback for both. */
   const fileName = options.fileName ?? figmaFile.meta.fileName ?? 'Untitled';
+  /** ISO timestamp stamped on both `createdAt` and `modifiedAt` so the file looks freshly minted to Penpot. */
   const now = new Date().toISOString();
 
-  // Build a map from Figma GUID -> UUID
+  /** Cross-pass index from composite `"sessionID:localID"` keys to stable Penpot UUIDs, built first so later passes can resolve parents and children consistently. */
   const figmaGuidToUuid = new Map<string, Uuid>();
+  /** Raw NodeChange entries lifted out of the Figma document; iterated repeatedly below to build the tree. */
   const nodeChanges = (figmaFile.document?.nodeChanges ?? []) as Record<string,
     unknown>[];
 
   // First pass: assign UUIDs to all nodes
   for (const nc of nodeChanges) {
+    /** Per-node GUID struct guarded before reading session/local ids. */
     const guid = nc.guid as Record<string, unknown> | undefined;
     if (guid) {
+      /** Numeric session id with 0-fallback so missing/wrong-typed values stay deterministic. */
       const sid = typeof guid.sessionID === 'number' ? guid.sessionID : 0;
+      /** Numeric local id with 0-fallback so missing/wrong-typed values stay deterministic. */
       const lid = typeof guid.localID === 'number' ? guid.localID : 0;
+      /** Composite key matching the format used by `childrenByParent` and `nodeByGuid`. */
       const key = `${sid}:${lid}`;
       figmaGuidToUuid.set(
         key,
@@ -706,46 +740,61 @@ function convertFigmaToPenpot(
     }
   }
 
-  // Create the root frame for each page
+  /** Page metadata accumulator; populated as we walk each Figma canvas or slide that becomes a Penpot page. */
   const pages = new Map<Uuid, PenpotPage>();
+  /** Every shape generated across pages, keyed by Penpot UUID; written through the recursion in `convertNode`. */
   const shapes = new Map<Uuid, PenpotShape>();
+  /** Media records (images, etc.) placeholder; populated once image decoding is implemented. */
   const media = new Map<Uuid, PenpotMedia>();
+  /** Storage objects placeholder paired with their raw bytes; populated alongside `media`. */
   const storageObjects = new Map<Uuid, {
     meta: PenpotStorageObject;
     data: Uint8Array;
   }>();
+  /** Component library placeholder; emitted into `files/<id>/components/` if Figma components are converted later. */
   const components = new Map<Uuid, Record<string, unknown>>();
+  /** Shared color library placeholder; emitted into `files/<id>/colors/` if Figma styles are converted later. */
   const colors = new Map<Uuid, Record<string, unknown>>();
+  /** Typography library placeholder; emitted into `files/<id>/typographies/` if Figma text styles are converted later. */
   const typographies = new Map<Uuid, Record<string, unknown>>();
+  /** Thumbnail records emitted at fixed archive paths; populated when thumbnail generation is implemented. */
   const thumbnails: {
     path: string;
     data: Record<string, unknown>;
   }[] = [];
 
-  // Group nodes by parent to build tree
+  /** Random-access index from GUID composite key to the original NodeChange; used by `convertNode` to look up parents and children quickly. */
   const nodeByGuid = new Map<string, Record<string, unknown>>();
+  /** Reverse index from parent GUID key to its child GUID keys, building the parent->children tree the recursion needs. */
   const childrenByParent = new Map<string, string[]>();
+  /** Tracks which pages have been materialised so the missing-page fallback below can detect an empty conversion. */
   const pageRootIds: Uuid[] = [];
 
   for (const nc of nodeChanges) {
+    /** Per-node GUID struct guarded before reading session/local ids. */
     const guid = nc.guid as Record<string, unknown> | undefined;
     if (!guid)
       continue;
+    /** Numeric session id with 0-fallback. */
     const sid = typeof guid.sessionID === 'number' ? guid.sessionID : 0;
+    /** Numeric local id with 0-fallback. */
     const lid = typeof guid.localID === 'number' ? guid.localID : 0;
+    /** Composite key consumed by both `nodeByGuid` and `childrenByParent`. */
     const key = `${sid}:${lid}`;
     nodeByGuid.set(
       key,
       nc,
     );
 
-    // Track parent-child relationships
+    /** Parent reference parsed from `parentIndex`; null when the node is unparented or malformed. */
     const parentIndex = parseParentIndex(
       nc.parentIndex as Record<string, unknown> | undefined | null,
     );
     if (parentIndex) {
+      /** Composite key matching the parent in the `childrenByParent` map. */
       const parentKey =
         `${parentIndex.parentGuid.sessionId}:${parentIndex.parentGuid.localId}`;
+      /** Existing child list for this parent, or a fresh array when first observed. */
       const children = childrenByParent.get(parentKey,) ?? [];
       children.push(key,);
       childrenByParent.set(
@@ -755,24 +804,28 @@ function convertFigmaToPenpot(
     }
   }
 
-  // Determine page source based on file type
-  // - .fig: each CANVAS node becomes a Penpot page
-  // - .deck: each SLIDE node becomes a Penpot page (CANVAS is just a container)
-  // - .jam: each CANVAS node becomes a Penpot page (same as .fig)
+  /**
+   * Distinguishes Figma `.deck` files, where slides map to pages, from `.fig`/`.jam` where canvases map to pages.
+   *
+   * The two branches below diverge only on which `NodeType` they accept as a page source.
+   */
   const isDeck = figmaFile.fileType === 'deck';
 
-  // Collect the nodes that will become pages
+  /** Candidate Figma nodes that will each become a Penpot page; populated by either the deck or fig/jam branch below. */
   const pageSourceNodes: {
     key: string;
     nc: Record<string, unknown>;
   }[] = [];
   if (isDeck) {
-    // For decks, find all SLIDE nodes: each becomes a page
     for (const nc of nodeChanges) {
+      /** Figma node type string used to filter for slides. */
       const nodeType = String(nc.type ?? '',);
       if (nodeType === 'NodeType.SLIDE') {
+        /** GUID struct used to build the composite key matching `nodeByGuid`. */
         const guid = nc.guid as Record<string, unknown>;
+        /** Numeric session id with 0-fallback. */
         const sid = typeof guid.sessionID === 'number' ? guid.sessionID : 0;
+        /** Numeric local id with 0-fallback. */
         const lid = typeof guid.localID === 'number' ? guid.localID : 0;
         pageSourceNodes.push({
           key: `${sid}:${lid}`,
@@ -782,18 +835,22 @@ function convertFigmaToPenpot(
     }
   }
   else {
-    // For fig/jam, find all CANVAS nodes: each becomes a page
     for (const nc of nodeChanges) {
+      /** Figma node type string used to filter for canvases. */
       const nodeType = String(nc.type ?? '',);
       if (nodeType === 'NodeType.CANVAS') {
-        // Skip "Internal Only Canvas": it's a Figma internal canvas
+        /** Canvas name lower-cased for the "Internal Only" heuristic below. */
         const name = String(nc.name ?? '',);
+        /** Best-effort flag identifying Figma's hidden internal canvas so we don't emit it as a page. */
         const internalOnly = nc.internalOnly === true || nc.editInfo != null;
         if (internalOnly && name.toLowerCase().includes('internal',))
           continue;
 
+        /** GUID struct used to build the composite key matching `nodeByGuid`. */
         const guid = nc.guid as Record<string, unknown>;
+        /** Numeric session id with 0-fallback. */
         const sid = typeof guid.sessionID === 'number' ? guid.sessionID : 0;
+        /** Numeric local id with 0-fallback. */
         const lid = typeof guid.localID === 'number' ? guid.localID : 0;
         pageSourceNodes.push({
           key: `${sid}:${lid}`,
@@ -803,17 +860,20 @@ function convertFigmaToPenpot(
     }
   }
 
-  // Create pages from the source nodes
+  /** Running 0-based index stamped onto each page so Penpot preserves the source order. */
   let pageIndex = 0;
   for (const {
     key: sourceKey,
     nc,
   } of pageSourceNodes) {
+    /** Fresh UUID for this Penpot page; used in entry paths and as a back-reference on every shape. */
     const pageId = nextUuid();
+    /** Penpot's well-known root-frame UUID; every page has exactly one root frame at this id. */
     const rootFrameId = ZERO_UUID;
 
-    // Create page
+    /** Page name, falling back to "Page N" when the Figma canvas/slide has no name. */
     const pageName = typeof nc.name === 'string' ? nc.name : `Page ${pageIndex + 1}`;
+    /** Optional canvas-background struct used to colour the page; falls back to a neutral preset below. */
     const bgColor = nc.backgroundColor as Record<string, unknown> | undefined;
     pages.set(
       pageId,
@@ -827,7 +887,7 @@ function convertFigmaToPenpot(
       },
     );
 
-    // Create root frame for page
+    /** Implicit root frame Penpot requires on every page; child shapes attach to it via `parentId`/`frameId`. */
     const rootShape: PenpotShape = {
       id: rootFrameId,
       name: 'Root Frame',
@@ -887,13 +947,17 @@ function convertFigmaToPenpot(
       rootShape,
     );
 
-    // Recursively convert children of this page source
-    // For fig/jam: sourceKey points to the CANVAS, children go directly into root frame
-    // For deck: sourceKey points to the SLIDE, children go directly into root frame
+    /**
+     * Direct GUID keys of this page-source node's children.
+     *
+     * For fig/jam the source is the CANVAS; for deck it is the SLIDE — in both cases children attach directly to the page's root frame.
+     */
     const childKeys = childrenByParent.get(sourceKey,) ?? [];
+    /** Penpot UUIDs collected from each child recursion, used to populate `rootShape.shapes` below. */
     const childUuids: Uuid[] = [];
 
     for (const childKey of childKeys) {
+      /** Result UUID from converting one child subtree; may be null when the child has no Penpot equivalent. */
       const childUuid = convertNode(
         childKey,
         nodeByGuid,
@@ -917,7 +981,9 @@ function convertFigmaToPenpot(
 
   // If no canvas nodes found, create a single default page
   if (pages.size === 0) {
+    /** Fresh UUID for the fallback page Penpot needs even when the Figma file produced no pages. */
     const pageId = nextUuid();
+    /** Penpot's well-known root-frame UUID, same as the regular branch. */
     const rootFrameId = ZERO_UUID;
     pages.set(
       pageId,
@@ -928,6 +994,7 @@ function convertFigmaToPenpot(
         index: 0,
       },
     );
+    /** Implicit root frame for the fallback page; mirrors the regular branch so downstream code can treat both uniformly. */
     const rootShape: PenpotShape = {
       id: rootFrameId,
       name: 'Root Frame',
@@ -989,7 +1056,7 @@ function convertFigmaToPenpot(
     pageRootIds.push(pageId,);
   }
 
-  // Build file metadata
+  /** File-level metadata Penpot expects at `files/<fileId>.json`; aggregates id, name, revision, features, and timestamps. */
   const file: PenpotFile = {
     id: fileId,
     name: fileName,
@@ -1007,6 +1074,7 @@ function convertFigmaToPenpot(
     },
   };
 
+  /** Top-level archive manifest emitted at `manifest.json`; references the file by id and declares the feature set Penpot must support. */
   const manifest: PenpotManifest = {
     type: 'penpot/export-files',
     version: 1,
@@ -1056,37 +1124,49 @@ function convertNode(
   media: Map<Uuid, PenpotMedia>,
   figmaImages: Map<string, Uint8Array>,
 ): Uuid | null {
+  /** NodeChange entry for this key; null result means the GUID was never indexed and the node is skippable. */
   const nc = nodeByGuid.get(nodeKey,);
   if (!nc)
     return null;
 
+  /** Figma node type string used to look up the Penpot equivalent. */
   const nodeType = String(nc.type ?? '',);
+  /** Penpot shape type or `null` when this Figma node type has no Penpot equivalent (DOCUMENT, NONE, etc.). */
   const penpotType = FIGMA_NODE_TYPE_MAP[nodeType];
 
-  // Skip nodes with no Penpot equivalent (DOCUMENT, NONE, etc.)
   if (penpotType === null || penpotType === undefined)
     return null;
 
+  /** Stable UUID for this shape; reuses the cross-pass GUID map so parents and children share consistent ids. */
   const shapeUuid = guidToUuidMap.get(nodeKey,) ?? nextUuid();
 
-  // Extract geometry
+  /** SVG-shaped transform extracted from Figma's matrix struct; its `e`/`f` doubles as the shape's x/y. */
   const transform = figmaTransformToPenpot(
     nc.transform as Record<string, unknown> | undefined,
   );
+  /** Optional size struct from Figma; guarded so missing-size nodes default to zero dimensions. */
   const size = nc.size as Record<string, unknown> | undefined;
+  /** X position lifted out of the transform's translation component. */
   const x = typeof transform.e === 'number' ? transform.e : 0;
+  /** Y position lifted out of the transform's translation component. */
   const y = typeof transform.f === 'number' ? transform.f : 0;
+  /** Width pulled from the optional size struct, 0 when missing. */
   const width = size && typeof size.x === 'number' ? size.x : 0;
+  /** Height pulled from the optional size struct, 0 when missing. */
   const height = size && typeof size.y === 'number' ? size.y : 0;
 
-  // For path/vector nodes, use selrect from actual bounds
+  /** Branch flag: true only when the node has a measurable bounding rect; paths/vectors without bounds skip the rect-based branch below. */
   const hasGeometry = width > 0 && height > 0;
+  /** Geometry-aware x; collapsed to 0 for non-measurable shapes so selrect math stays valid. */
   const effectiveX = hasGeometry ? x : 0;
+  /** Geometry-aware y; collapsed to 0 for non-measurable shapes. */
   const effectiveY = hasGeometry ? y : 0;
+  /** Geometry-aware width; collapsed to 0 for non-measurable shapes. */
   const effectiveW = hasGeometry ? width : 0;
+  /** Geometry-aware height; collapsed to 0 for non-measurable shapes. */
   const effectiveH = hasGeometry ? height : 0;
 
-  // Build selrect and points
+  /** Selrect plus its 4 corner points, computed from geometry or zeroed when the shape has none. */
   const {
     selrect,
     points,
@@ -1133,21 +1213,27 @@ function convertNode(
       ],
     };
 
-  // Extract fills from fillPaints
+  /** Raw Figma paints for the fill list; iterated below to build Penpot fills, skipping anything non-solid. */
   const fillPaints = (nc.fillPaints ?? []) as Record<string, unknown>[];
+  /** Penpot fill list accumulated from `fillPaints`. */
   const fills: PenpotFill[] = [];
   for (const paint of fillPaints) {
+    /** Solid fill candidate; null means the paint type is unsupported (gradient, image) and is dropped. */
     const fill = figmaPaintToFill(paint,);
     if (fill)
       fills.push(fill,);
   }
 
-  // Extract strokes from strokePaints
+  /** Raw Figma paints for the stroke list. */
   const strokePaints = (nc.strokePaints ?? []) as Record<string, unknown>[];
+  /** Numeric stroke weight with 0-fallback so the stroke is degenerate but still encodable. */
   const strokeWeight = typeof nc.strokeWeight === 'number' ? nc.strokeWeight : 0;
+  /** Figma stroke alignment enum ("INSIDE", "OUTSIDE", "CENTER") translated below; defaults to "CENTER". */
   const strokeAlign = String(nc.strokeAlign ?? 'CENTER',);
+  /** Penpot stroke list accumulated from `strokePaints`. */
   const strokes: PenpotStroke[] = [];
   for (const paint of strokePaints) {
+    /** Solid stroke candidate; null means the paint type is unsupported and is dropped. */
     const stroke = figmaPaintToStroke(
       paint,
       strokeWeight,
@@ -1157,21 +1243,23 @@ function convertNode(
       strokes.push(stroke,);
   }
 
-  // Determine parent: find parent UUID from ParentIndex
+  /** Parent reference parsed from the Figma node, or null when unparented. */
   const parentIndex = parseParentIndex(
     nc.parentIndex as Record<string, unknown> | undefined | null,
   );
+  /** Parent UUID actually used by this shape; starts at the recursion's `parentUuid` and is overridden when a real parent resolves through the GUID map. */
   let effectiveParentUuid = parentUuid;
   if (parentIndex) {
+    /** Composite key matching the parent entry in `guidToUuidMap`. */
     const parentKey =
       `${parentIndex.parentGuid.sessionId}:${parentIndex.parentGuid.localId}`;
     effectiveParentUuid = guidToUuidMap.get(parentKey,) ?? parentUuid;
   }
 
-  // The frame UUID is the nearest ancestor frame (or self if frame)
+  /** Frame ancestor UUID: this shape's own id when it is a frame, otherwise the enclosing frame from the recursion. */
   const effectiveFrameUuid = penpotType === 'frame' ? shapeUuid : frameUuid;
 
-  // Build base shape
+  /** Penpot shape record being assembled; mutated below to add type-specific fields before being stored in `shapes`. */
   const shape: PenpotShape = {
     id: shapeUuid,
     name: typeof nc.name === 'string' ? nc.name : 'Unnamed',
@@ -1218,7 +1306,7 @@ function convertNode(
       shape.r4 = nc.cornerRadius;
     }
 
-    // Background color (for canvas nodes)
+    /** Canvas-background colour used as the frame's fill when the Figma node has no explicit fills of its own. */
     const bgColor = nc.backgroundColor as Record<string, unknown> | undefined;
     if (bgColor && fills.length === 0)
       shape.fills = [figmaColorToFill(bgColor,),];
@@ -1230,7 +1318,7 @@ function convertNode(
   if (penpotType === 'bool') {
     shape.shapes = [];
     shape.boolType = 'union';
-    // Boolean operations in Figma have fillGeometry/strokeGeometry
+    /** Boolean operation geometry from Figma; its first path is taken as the shape's content. */
     const fillGeometry = (nc.fillGeometry ?? []) as Record<string, unknown>[];
     if (fillGeometry.length > 0 && typeof fillGeometry[0]!.path === 'string')
       shape.content = fillGeometry[0]!.path;
@@ -1247,8 +1335,9 @@ function convertNode(
 
   if (penpotType === 'path') {
     shape.growType = 'fixed';
-    // Use fillGeometry for path data
+    /** Path geometry from Figma; preferred source for the SVG-style `content` string. */
     const fillGeometry = (nc.fillGeometry ?? []) as Record<string, unknown>[];
+    /** Stroke-only geometry used as a fallback when fillGeometry is absent (open paths, lines). */
     const strokeGeometry = (nc.strokeGeometry ?? []) as Record<string, unknown>[];
     if (fillGeometry.length > 0 && typeof fillGeometry[0]!.path === 'string')
       shape.content = fillGeometry[0]!.path;
@@ -1261,10 +1350,12 @@ function convertNode(
     shape.content = convertTextContent(nc,);
   }
 
-  // Recurse into children
+  /** Direct GUID keys of this node's children, looked up from the prepass index. */
   const childKeys = childrenByParent.get(nodeKey,) ?? [];
+  /** Penpot UUIDs collected from each child recursion to populate `shape.shapes` for container types. */
   const childUuids: Uuid[] = [];
   for (const childKey of childKeys) {
+    /** Result UUID from converting one child; null when the child has no Penpot equivalent. */
     const childUuid = convertNode(
       childKey,
       nodeByGuid,
@@ -1297,18 +1388,25 @@ function convertNode(
 
 /** Convert Figma text node data to Penpot text content tree. */
 function convertTextContent(nc: Record<string, unknown>,): Record<string, unknown> {
-  // Build a minimal Penpot text content tree from Figma text data
+  /** Numeric font size with a 16px fallback for nodes whose Figma data is incomplete. */
   const fontSize = typeof nc.fontSize === 'number' ? nc.fontSize : 16;
+  /** Font family string with a sans-serif fallback so Penpot can resolve a real font. */
   const fontFamily = typeof nc.fontName === 'string' ? nc.fontName : 'Source Sans 3';
+  /** Font weight stringified to match Penpot's text-attribute shape; defaults to "400" (regular). */
   const fontWeight = typeof nc.fontWeight === 'number' ? String(nc.fontWeight,) : '400';
+  /** Raw character payload from the Figma text node; empty string when absent so the output stays well-formed. */
   const textContent = typeof nc.characters === 'string' ? nc.characters : '';
+  /** Penpot font id corresponding to the chosen family; matches Penpot's bundled "sourcesanspro" entry. */
   const fontId = 'sourcesanspro';
+  /** Variant id mirrors the weight string so each weight resolves to the right Penpot variant. */
   const fontVariantId = fontWeight;
 
-  // Build fills from the node's fills (already converted)
+  /** Text fills assembled from the node's paint list; defaulted to opaque black when none survive conversion. */
   const fills: PenpotFill[] = [];
+  /** Raw paint list to convert into text fills. */
   const fillPaints = (nc.fillPaints ?? []) as Record<string, unknown>[];
   for (const paint of fillPaints) {
+    /** Solid fill candidate; null means the paint type is unsupported. */
     const fill = figmaPaintToFill(paint,);
     if (fill)
       fills.push(fill,);
@@ -1320,6 +1418,7 @@ function convertTextContent(nc: Record<string, unknown>,): Record<string, unknow
     },);
   }
 
+  /** Paragraph-level attribute block shared across the text run; defaults match Penpot's "plain" paragraph. */
   const paragraphAttrs = {
     lineHeight: '1.2',
     fontStyle: 'normal',
@@ -1366,6 +1465,7 @@ function convertTextContent(nc: Record<string, unknown>,): Record<string, unknow
  * @returns ZIP file as Uint8Array
  */
 async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
+  /** ZipWriter that accumulates every JSON and binary entry; `build()` at the end produces the final `.penpot` archive bytes. */
   const zip = new ZipWriter();
 
   // manifest.json
@@ -1378,7 +1478,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
     ),
   );
 
-  // File metadata
+  /** File UUID hoisted once so it can be spliced into every entry path below. */
   const fileId = doc.file.id;
   zip.add(
     `files/${fileId}.json`,
@@ -1391,6 +1491,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
 
   // Pages
   for (const [, page,] of doc.pages) {
+    /** Directory prefix for every entry belonging to this page (page JSON plus each shape JSON). */
     const pageDir = `files/${fileId}/pages/${page.id}`;
     zip.add(
       `${pageDir}.json`,
@@ -1401,10 +1502,12 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
       ),
     );
 
-    // Root frame (always UUID zero)
+    /** Well-known UUID for the root frame so the lookup below works for every page. */
     const rootFrameId = ZERO_UUID;
+    /** Root-frame shape for this page; falsy when no shapes were ever registered. */
     const rootShape = doc.shapes.get(rootFrameId,);
     if (rootShape && rootShape.pageId === page.id) {
+      /** Serialised root frame; written under the page directory before the page's other shapes. */
       const shapeJson = JSON.stringify(
         rootShape,
         null,
@@ -1457,6 +1560,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
         2,
       ),
     );
+    /** Filename extension chosen from the object's MIME type so the binary entry has a recognisable name. */
     const ext = mtypeToExtension(meta.contentType,);
     zip.add(
       `objects/${objectId}${ext}`,
@@ -1532,6 +1636,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
 
 /** Map MIME type to file extension. */
 function mtypeToExtension(mtype: string,): string {
+  /** Static MIME-type to extension lookup; entries cover the formats Penpot stores in `objects/`. */
   const map: Record<string, string> = {
     'image/png': '.png',
     'image/jpeg': '.jpg',
@@ -1569,13 +1674,16 @@ async function figmaToPenpot(
   outputPath: string | null = null,
   options: ConvertOptions = {},
 ): Promise<Uint8Array> {
+  /** Intermediate Penpot document model assembled before serialization; held so the same data could be inspected by callers in future. */
   const doc = convertFigmaToPenpot(
     figmaFile,
     options,
   );
+  /** Final ZIP buffer returned to the caller and optionally written to disk below. */
   const zipBuffer = await serializePenpotZip(doc,);
 
   if (outputPath) {
+    /** Lazy `node:fs/promises` import so the converter still works in non-Node environments when no output path is given. */
     const { writeFile, } = await import('node:fs/promises');
     await writeFile(
       outputPath,
