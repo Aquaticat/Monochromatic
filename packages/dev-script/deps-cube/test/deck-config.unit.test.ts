@@ -46,7 +46,7 @@ const KNOWN: PackageProbe = {
   isLeaf: true,
   weeklyDownloads: 5_000_000,
   installSizeBytes: 250_000,
-  packageAgeDays: 1500,
+  packageAgeDays: 1_500,
   licenseClass: 'permissive',
   runtimeDepCount: 0,
   transitiveDepCount: 0,
@@ -94,9 +94,9 @@ const NON_LEAF: PackageProbe = {
   licenseClass: 'copyleft',
   runtimeDepCount: 2,
   transitiveDepCount: 5,
-  tsRatioOrNull: 0.10,
+  tsRatioOrNull: 0.1,
   sourceBytesOrNull: 5_000,
-  daysSinceLastCommitOrNull: 1500,
+  daysSinceLastCommitOrNull: 1_500,
   repositoryUrlOrNull: 'https://github.com/vercel/ms',
   isMonorepoHoused: false,
   unknownReason: null,
@@ -224,8 +224,8 @@ await describe({
     it({
       name: 'probeFillColor red↔green ramp matches the colour-channel value',
       fn: async () => {
-        const lowTs: PackageProbe = { ...KNOWN, tsRatioOrNull: 0.0, };
-        const highTs: PackageProbe = { ...KNOWN, tsRatioOrNull: 1.0, };
+        const lowTs: PackageProbe = { ...KNOWN, tsRatioOrNull: 0, };
+        const highTs: PackageProbe = { ...KNOWN, tsRatioOrNull: 1, };
         const low = probeFillColor({
           probe: lowTs,
           state: STATE,

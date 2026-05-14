@@ -45,7 +45,11 @@ export type ViewState = {
   rotationX: number;
   rotationOrbit: number;
   zoom: number;
-  target: [number, number, number,];
+  target: [
+    number,
+    number,
+    number,
+  ];
 };
 
 /**
@@ -120,7 +124,11 @@ const DEFAULT_VIEW_STATE: ViewState = {
   rotationX: 30,
   rotationOrbit: -45,
   zoom: 0,
-  target: [0, 0, 0,],
+  target: [
+    0,
+    0,
+    0,
+  ],
 };
 
 /** Channel keys, fixed order, used to iterate dim mapping. */
@@ -143,6 +151,7 @@ const CHANNEL_KEYS: readonly ChannelKey[] = [
  * a known value (degenerate, but lets the UI render without NaN).
  *
  * @param probes - Full probe array.
+ *
  * @param dim - Data dim to scan.
  *
  * @returns Inclusive `[min, max]` bounds.
@@ -155,7 +164,10 @@ function computeExtent(
     probes: readonly PackageProbe[];
     dim: DataDimKey;
   },
-): readonly [number, number,] {
+): readonly [
+  number,
+  number,
+] {
   /** Known dim readings (unknowns stripped) so `Math.min`/`Math.max` see only real numbers. */
   const values = probes
     .map(function pluck(probe,) {
@@ -167,7 +179,10 @@ function computeExtent(
     .filter(function nonNull(value,): value is number {
       return value !== null;
     },);
-  if (values.length === 0) return [0, 0,];
+  if (values.length === 0) return [
+    0,
+    0,
+  ];
   return [
     Math.min(...values,),
     Math.max(...values,),
@@ -178,6 +193,7 @@ function computeExtent(
  * Builds a `RangeState` with every channel set to its data extent.
  *
  * @param probes - Full probe array.
+ *
  * @param dimMapping - Current channel → dim mapping.
  *
  * @returns Range state spanning the full data extent on every channel.
@@ -289,7 +305,7 @@ export function encodeState(
  * @returns The value typed as `AppState`, or `null` when malformed.
  */
 function validateAppState(value: unknown,): AppState | null {
-  if (typeof value !== 'object' || value === null) return null;
+  if (((typeof value) !== 'object') || (value === null)) return null;
   /** Top-level `AppState` fields that must all be present for the shape check to pass. */
   const required: readonly (keyof AppState)[] = [
     'viewState',
@@ -353,6 +369,7 @@ export function decodeState(
  * failure.
  *
  * @param hash - The hash string (typically `window.location.hash`).
+ *
  * @param fallback - State to return when the hash has no valid payload.
  *
  * @returns Decoded state, or `fallback` if absent/malformed.
@@ -380,7 +397,10 @@ export function readStateFromHash(
   const match = /(?:^|&)state=([^&]+)/.exec(stripped,);
   if (match === null) return fallback;
   /** Captured URL-encoded payload from the `state=` parameter. */
-  const encoded = match[1];
+  const [
+    ,
+    encoded,
+  ] = match;
   if (encoded === undefined) return fallback;
   /** Round-tripped state, or `null` when the payload fails to parse or validate. */
   const decoded = decodeState({

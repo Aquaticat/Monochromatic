@@ -42,9 +42,16 @@ const TOP_N_NAMES = 10;
  * preserving the original index of every probe.
  *
  * @param probes - Full probe array.
+ *
  * @param state - Current state.
  *
  * @returns Three disjoint arrays.
+ *
+ * @example
+ * ```ts
+ * const { leaf, nonLeaf, unknown } = partitionProbes({ probes, state });
+ * // leaf.length + nonLeaf.length + unknown.length === probes.length
+ * ```
  */
 export function partitionProbes(
   {
@@ -120,9 +127,16 @@ export function partitionProbes(
  *   `daysSinceLastCommitOrNull` descending) get baked names.
  *
  * @param probes - Full probe array.
+ *
  * @param state - Current state (uses `displayToggles.nameLabels`).
  *
  * @returns Set of original indices to bake the name into.
+ *
+ * @example
+ * ```ts
+ * const bakeSet = computeNameBakeSet({ probes, state });
+ * if (bakeSet.has(originalIndex)) renderWithName();
+ * ```
  */
 export function computeNameBakeSet(
   {
@@ -135,11 +149,16 @@ export function computeNameBakeSet(
 ): ReadonlySet<number> {
   if (state.displayToggles.nameLabels === 'none') return new Set();
   if (state.displayToggles.nameLabels === 'all') {
-    return new Set(probes.map(function indexOf(_, i,) {
+    return new Set(probes.map(function indexOf(
+      _,
+      i,
+    ) {
       return i;
     },),);
   }
-  /** Probes paired with their original indices, sorted oldest-first by last-commit age, then truncated to {@link TOP_N_NAMES}. */
+  /**
+   * Probes paired with their original indices, sorted oldest-first by last-commit age, then truncated to {@link TOP_N_NAMES}.
+   */
   const ranked = probes
     .map(function withIndex(
       probe,
@@ -150,13 +169,16 @@ export function computeNameBakeSet(
         originalIndex,
       };
     },)
-    .sort(function byStale(
+    .toSorted(function byStale(
       a,
       b,
     ) {
       return (b.probe.daysSinceLastCommitOrNull ?? 0) - (a.probe.daysSinceLastCommitOrNull ?? 0);
     },)
-    .slice(0, TOP_N_NAMES,);
+    .slice(
+      0,
+      TOP_N_NAMES,
+    );
   return new Set(ranked.map(function pickIndex({ originalIndex, },) {
     return originalIndex;
   },),);

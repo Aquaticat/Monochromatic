@@ -15,6 +15,11 @@
 
 import spawn from 'nano-spawn';
 
+import {
+  MS_PER_DAY,
+  MS_PER_SECOND,
+} from '@monochromatic-dev/module-numeric-const';
+
 import type { Cache, } from './cache.ts';
 
 //region Public types (used by orchestrator)
@@ -34,7 +39,11 @@ export type NpmPackage = {
 export type NpmVersion = {
   repository?:
     | string
-    | { type?: string; url?: string; directory?: string; };
+    | {
+      type?: string;
+      url?: string;
+      directory?: string;
+    };
   dependencies?: Record<string, string>;
   dist?: { unpackedSize?: number; };
   license?: string | { type?: string; };
@@ -63,10 +72,14 @@ export type LicenseClass = 'permissive' | 'copyleft' | 'non-oss' | 'unknown';
 
 /** Indefinite cache TTL marker. */
 const TTL_FOREVER: number | null = null;
-/** 30-day TTL for fields that can change with upstream activity. */
-const TTL_30_DAYS = 30 * 24 * 60 * 60 * 1000;
+/** Days of validity for fields that can change with upstream activity. */
+const TTL_DAYS = 30;
+/** TTL in ms for fields that can change with upstream activity. */
+const TTL_MS = TTL_DAYS * MS_PER_DAY;
+/** HTTP timeout in seconds; lets `gh api` complete on slow links without hanging an audit. */
+const HTTP_TIMEOUT_SECONDS = 30;
 /** Per-HTTP-request timeout in ms. */
-const HTTP_TIMEOUT_MS = 30_000;
+const HTTP_TIMEOUT_MS = HTTP_TIMEOUT_SECONDS * MS_PER_SECOND;
 
 /** Permissive license SPDX identifiers (uppercase). */
 const PERMISSIVE_LICENSES = new Set([
@@ -95,14 +108,24 @@ const PERMISSIVE_LICENSES = new Set([
  * @param repoField - Raw `repository` value from the version manifest.
  *
  * @returns Parsed repository info or `null`.
+ *
+ * @example
+ * ```ts
+ * parseRepository({ type: 'git', url: 'git+https://github.com/preactjs/preact.git' });
+ * // { host: 'github', owner: 'preactjs', repo: 'preact', directory: undefined, url: 'https://github.com/preactjs/preact' }
+ * parseRepository('github:lezer-parser/common');
+ * // { host: 'github', owner: 'lezer-parser', repo: 'common', directory: undefined, url: 'https://github.com/lezer-parser/common' }
+ * ```
  */
 export function parseRepository(repoField: NpmVersion['repository'],): RepositoryInfo {
-  if (repoField === undefined || repoField === null) return null;
+  if ((repoField === undefined) || (repoField === null)) return null;
 
+  /** `true` when the `repository` field is a plain string (vs the `{url, ...}` object form). */
+  const isStringForm = (typeof repoField) === 'string';
   /** Unified string form of the `repository` value, regardless of plain-string or object shape. */
-  const rawString = typeof repoField === 'string' ? repoField : (repoField.url ?? '');
+  const rawString = isStringForm ? repoField : (repoField.url ?? '');
   /** Optional monorepo sub-directory; only objects carry one, plain-string entries don't. */
-  const directory = typeof repoField === 'string' ? undefined : repoField.directory;
+  const directory = isStringForm ? undefined : repoField.directory;
 
   if (rawString === '') return null;
 
@@ -111,7 +134,7 @@ export function parseRepository(repoField: NpmVersion['repository'],): Repositor
   if (shortMatch !== null) {
     /** `[full, owner, repo]` captured groups from `shortMatch`; full match discarded. */
     const [, owner, repo,] = shortMatch;
-    if (owner === undefined || repo === undefined) return null;
+    if ((owner === undefined) || (repo === undefined)) return null;
     return {
       host: 'github',
       owner,
@@ -121,14 +144,16 @@ export function parseRepository(repoField: NpmVersion['repository'],): Repositor
     };
   }
 
-  /** Pattern matching any GitHub URL variant: `https://`, `git+`, `git@`, with or without `.git` suffix. */
+  /**
+   * Pattern matching any GitHub URL variant: `https://`, `git+`, `git@`, with or without `.git` suffix.
+   */
   const githubUrlPattern = /github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?(?:[/?#].*)?$/i;
   /** Match result for the GitHub URL pattern; `null` when the URL is not on GitHub. */
   const match = githubUrlPattern.exec(rawString,);
   if (match !== null) {
     /** `[full, owner, repo]` captured groups from `match`; full match discarded. */
     const [, owner, repo,] = match;
-    if (owner === undefined || repo === undefined) return null;
+    if ((owner === undefined) || (repo === undefined)) return null;
     return {
       host: 'github',
       owner,
@@ -159,9 +184,16 @@ export function parseRepository(repoField: NpmVersion['repository'],): Repositor
  * limitation in `docs/decisions/deps-cube.md`.
  *
  * @param range - Range string from the catalog.
+ *
  * @param pkg - Package-level npm registry response.
  *
  * @returns Concrete version string, or `undefined` if neither pin nor latest resolves.
+ *
+ * @example
+ * ```ts
+ * resolveVersion({ range: '10.26.0', pkg }); // '10.26.0' when present in pkg.versions
+ * resolveVersion({ range: '^10.0.0', pkg }); // falls back to pkg['dist-tags'].latest
+ * ```
  */
 export function resolveVersion(
   {
@@ -172,7 +204,7 @@ export function resolveVersion(
     pkg: NpmPackage;
   },
 ): string | undefined {
-  if (/^\d+\.\d+\.\d+/.test(range,) && pkg.versions?.[range] !== undefined) return range;
+  if (/^\d+\.\d+\.\d+/.test(range,) && (pkg.versions?.[range] !== undefined)) return range;
   return pkg['dist-tags']?.latest;
 }
 
@@ -186,15 +218,27 @@ export function resolveVersion(
  * @param license - Raw `license` field from the version manifest.
  *
  * @returns One of `permissive`, `copyleft`, `non-oss`, or `unknown`.
+ *
+ * @example
+ * ```ts
+ * classifyLicense('MIT'); // 'permissive'
+ * classifyLicense('GPL-3.0'); // 'copyleft'
+ * classifyLicense({ type: 'UNLICENSED' }); // 'non-oss'
+ * classifyLicense(undefined); // 'unknown'
+ * ```
  */
 export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
+  /** `true` when the `license` field is a plain SPDX string (vs the `{type: ...}` object form). */
+  const isStringForm = (typeof license) === 'string';
+  /** Raw license string before normalisation; either the field itself or its `.type` subfield. */
+  const unnormalised = isStringForm ? license : (license?.type ?? '');
   /** Normalised license string: object form unwrapped, uppercased, trimmed, ready for set/prefix checks. */
-  const raw = (typeof license === 'string' ? license : license?.type ?? '').toUpperCase().trim();
+  const raw = unnormalised.toUpperCase().trim();
   if (raw === '') return 'unknown';
   if (PERMISSIVE_LICENSES.has(raw,)) return 'permissive';
   if (raw.startsWith('GPL',) || raw.startsWith('LGPL',) || raw.startsWith('AGPL',) || raw.includes('COPYLEFT',))
     return 'copyleft';
-  if (raw === 'UNLICENSED' || raw.startsWith('SEE LICENSE',) || raw.startsWith('PROPRIETARY',))
+  if ((raw === 'UNLICENSED') || raw.startsWith('SEE LICENSE',) || raw.startsWith('PROPRIETARY',))
     return 'non-oss';
   return 'unknown';
 }
@@ -214,7 +258,12 @@ export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
  */
 async function fetchJson<T>(url: string,): Promise<T> {
   /** HTTP response from `fetch`; aborted if it doesn't complete within `HTTP_TIMEOUT_MS`. */
-  const response = await fetch(url, { signal: AbortSignal.timeout(HTTP_TIMEOUT_MS,), },);
+  const response = await fetch(
+    url,
+    {
+      signal: AbortSignal.timeout(HTTP_TIMEOUT_MS,),
+    },
+  );
   if (!response.ok) throw new Error(`HTTP ${response.status.toString()} on ${url}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response.json() is `unknown`; caller asserts T.
   return await response.json() as T;
@@ -231,7 +280,16 @@ async function fetchJson<T>(url: string,): Promise<T> {
  */
 async function ghApi<T>(path: string,): Promise<T> {
   /** `gh api` subprocess result; `stdout` holds the JSON payload, throws on non-zero exit. */
-  const result = await spawn('gh', ['api', path,], { timeout: HTTP_TIMEOUT_MS, },);
+  const result = await spawn(
+    'gh',
+    [
+      'api',
+      path,
+    ],
+    {
+      timeout: HTTP_TIMEOUT_MS,
+    },
+  );
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns `any`; caller asserts T.
   return JSON.parse(result.stdout,) as T;
 }
@@ -244,6 +302,7 @@ async function ghApi<T>(path: string,): Promise<T> {
  * Fetches the package-level npm registry manifest (all versions + time).
  *
  * @param npmName - Real npm package name.
+ *
  * @param cache - File cache handle.
  *
  * @returns Package-level npm manifest.
@@ -262,17 +321,26 @@ export async function probePackageManifest(
     cache: Cache;
   },
 ): Promise<NpmPackage> {
-  /** Cached manifest, valid for `TTL_30_DAYS`; `undefined` on cache miss. */
+  /**
+   * Cached manifest, valid for {@link TTL_MS}; `undefined` on cache miss.
+   */
   const cached = await cache.read<NpmPackage>({
     name: npmName,
     version: '_pkg',
     field: 'registry',
-    ttlMs: TTL_30_DAYS,
+    ttlMs: TTL_MS,
   },);
   if (cached !== undefined) return cached;
+  /**
+   * Percent-encoded npm name preserving `@` for scoped packages (so `@scope/name` becomes `@scope%2Fname` not `%40scope%2Fname`).
+   */
+  const encodedName = encodeURIComponent(npmName,).replaceAll(
+    '%40',
+    '@',
+  );
   /** Fresh manifest from the npm registry; written to cache below before return. */
   const fetched = await fetchJson<NpmPackage>(
-    `https://registry.npmjs.org/${encodeURIComponent(npmName,).replace(/%40/g, '@',)}`,
+    `https://registry.npmjs.org/${encodedName}`,
   );
   await cache.write({
     name: npmName,
@@ -287,6 +355,7 @@ export async function probePackageManifest(
  * Fetches last-week downloads. Returns `0` on error or for niche packages.
  *
  * @param npmName - Real npm package name.
+ *
  * @param cache - File cache handle.
  *
  * @returns Weekly download count.
@@ -310,13 +379,20 @@ export async function probeDownloads(
     name: npmName,
     version: '_pkg',
     field: 'downloads',
-    ttlMs: TTL_30_DAYS,
+    ttlMs: TTL_MS,
   },);
   if (cached !== undefined) return cached.downloads;
   try {
+    /**
+     * Percent-encoded npm name preserving `@` for scoped packages so the URL matches the npm API's expected shape.
+     */
+    const encodedName = encodeURIComponent(npmName,).replaceAll(
+      '%40',
+      '@',
+    );
     /** Fresh downloads payload from npm; the outer try swallows failures so transient errors yield `0`. */
     const fetched = await fetchJson<{ downloads: number; }>(
-      `https://api.npmjs.org/downloads/point/last-week/${encodeURIComponent(npmName,).replace(/%40/g, '@',)}`,
+      `https://api.npmjs.org/downloads/point/last-week/${encodedName}`,
     );
     await cache.write({
       name: npmName,
@@ -334,7 +410,9 @@ export async function probeDownloads(
  * Calls Linguist for a GH repo, returning the language→bytes map.
  *
  * @param owner - GitHub owner.
+ *
  * @param repo - GitHub repo name.
+ *
  * @param cache - File cache handle.
  *
  * @returns `null` when the API errors (private, 404, rate-limited).
@@ -385,8 +463,11 @@ export async function probeLanguages(
  * or the most recent commit's date in `directory` otherwise.
  *
  * @param owner - GitHub owner.
+ *
  * @param repo - GitHub repo name.
+ *
  * @param directory - Subdirectory for monorepo-housed packages; whole-repo if omitted.
+ *
  * @param cache - File cache handle.
  *
  * @returns ISO timestamp string or `null` when the API errors out.
@@ -418,7 +499,7 @@ export async function probeLastCommit(
     name: key,
     version: '_repo',
     field,
-    ttlMs: TTL_30_DAYS,
+    ttlMs: TTL_MS,
   },);
   if (cached !== undefined) return cached;
 

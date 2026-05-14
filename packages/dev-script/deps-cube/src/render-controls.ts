@@ -108,10 +108,22 @@ const CHANNEL_LABELS: Record<ChannelKey, string> = {
  */
 function escapeAttr(raw: string,): string {
   return raw
-    .replaceAll('&', '&amp;',)
-    .replaceAll('"', '&quot;',)
-    .replaceAll('<', '&lt;',)
-    .replaceAll('>', '&gt;',);
+    .replaceAll(
+      '&',
+      '&amp;',
+    )
+    .replaceAll(
+      '"',
+      '&quot;',
+    )
+    .replaceAll(
+      '<',
+      '&lt;',
+    )
+    .replaceAll(
+      '>',
+      '&gt;',
+    );
 }
 
 /**
@@ -120,6 +132,7 @@ function escapeAttr(raw: string,): string {
  * value so the slider can still render.
  *
  * @param probes - Source probes.
+ *
  * @param dim - Dim whose extent to compute.
  *
  * @returns Inclusive `[min, max]` bounds.
@@ -132,8 +145,13 @@ function computeChannelExtent(
     probes: readonly PackageProbe[];
     dim: DataDimKey;
   },
-): readonly [number, number,] {
-  /** Known (non-null) values for `dim`, used to derive the slider's `[min, max]` extent. */
+): readonly [
+  number,
+  number,
+] {
+  /**
+   * Known (non-null) values for `dim`, used to derive the slider's `[min, max]` extent.
+   */
   const values = probes
     .map(function pluck(probe,) {
       return extractDim({
@@ -144,7 +162,12 @@ function computeChannelExtent(
     .filter(function nonNull(value,): value is number {
       return value !== null;
     },);
-  if (values.length === 0) return [0, 0,];
+  if (values.length === 0) {
+    return [
+      0,
+      0,
+    ];
+  }
   return [
     Math.min(...values,),
     Math.max(...values,),
@@ -163,6 +186,7 @@ function computeChannelExtent(
  * exists without reading docs.
  *
  * @param channel - Channel being bound (x, y, z, color, shape, size).
+ *
  * @param selectedDim - Currently mapped dim.
  *
  * @returns HTML fragment for one dim row.
@@ -181,7 +205,9 @@ function renderDimDropdown(
     selectedDim: DataDimKey;
   },
 ): string {
-  /** One `<option>` per dim, ordered to match {@link DIM_KEYS}; concatenated below into the dropdown body. */
+  /**
+   * One `<option>` per dim, ordered to match {@link DIM_KEYS}; concatenated below into the dropdown body.
+   */
   const options = DIM_KEYS.map(function renderOption(dim,) {
     /** `true` when the channel accepts this dim type; gates the `disabled` attribute. */
     const accepted = acceptsDim({
@@ -208,6 +234,7 @@ function renderDimDropdown(
  * Renders one 3-state radio group for a boolean filter toggle.
  *
  * @param key - Toggle key (identifies the boolean attribute).
+ *
  * @param current - Currently selected value.
  *
  * @returns HTML fragment for one toggle row.
@@ -249,7 +276,9 @@ function renderToggleRow(
  * after URL-hash restore they typically diverge.
  *
  * @param channel - Channel being filtered.
+ *
  * @param fullExtent - Full data extent (slider bounds).
+ *
  * @param current - Currently set `[min, max]` (initial handle positions).
  *
  * @returns HTML fragment for one range row.
@@ -266,8 +295,14 @@ function renderRangeRow(
     current,
   }: {
     channel: ChannelKey;
-    fullExtent: readonly [number, number,];
-    current: readonly [number, number,];
+    fullExtent: readonly [
+      number,
+      number,
+    ];
+    current: readonly [
+      number,
+      number,
+    ];
   },
 ): string {
   /** Slider's `min`/`max` bounds from the dim's full data extent. */
@@ -353,6 +388,7 @@ function renderDisplaySection(
  * embedded by render-html.ts) wires every control after the page loads.
  *
  * @param probes - Source probes; drives the per-channel slider extents.
+ *
  * @param state - Initial state; every control's initial value reflects this.
  *
  * @returns HTML fragment containing the complete control panel.
@@ -372,14 +408,18 @@ export function renderControls(
     state: AppState;
   },
 ): string {
-  /** Concatenated dim-dropdown rows, one per channel, in {@link CHANNEL_KEYS} order. */
+  /**
+   * Concatenated dim-dropdown rows, one per channel, in {@link CHANNEL_KEYS} order.
+   */
   const dimRows = CHANNEL_KEYS.map(function dropdownFor(channel,) {
     return renderDimDropdown({
       channel,
       selectedDim: state.dimMapping[channel],
     },);
   },).join('',);
-  /** Concatenated toggle rows, one per boolean filter, in {@link TOGGLE_KEYS} order. */
+  /**
+   * Concatenated toggle rows, one per boolean filter, in {@link TOGGLE_KEYS} order.
+   */
   const toggleRows = TOGGLE_KEYS.map(function toggleFor(key,) {
     return renderToggleRow({
       key,

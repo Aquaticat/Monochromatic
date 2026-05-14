@@ -31,9 +31,9 @@ import type { PackageProbe, } from '../probe.ts';
  * Identifier for one of the seven 3-state boolean filter toggles.
  *
  * - `isLeaf`: package has no runtime deps
- * - `tsMajority`: TS ratio >= {@link TS_MAJORITY_THRESHOLD}
- * - `large`: source bytes >= {@link LARGE_SOURCE_BYTES_THRESHOLD}
- * - `recent`: days since last commit < {@link RECENT_DAYS_THRESHOLD}
+ * - `tsMajority`: TS ratio `>=` {@link TS_MAJORITY_THRESHOLD}
+ * - `large`: source bytes `>=` {@link LARGE_SOURCE_BYTES_THRESHOLD}
+ * - `recent`: days since last commit `<` {@link RECENT_DAYS_THRESHOLD}
  * - `permissive`: license class is `permissive`
  * - `copyleft`: license class is `copyleft`
  * - `hasKnownRepo`: every GH-derived attribute is known (`unknownReason === null`)
@@ -97,19 +97,22 @@ export type DimMapping = Record<ChannelKey, DataDimKey>;
  * Per-channel range slider state, expressed in displayed-value units
  * (i.e. after log scaling for continuous dims).
  */
-export type RangeState = Record<ChannelKey, readonly [number, number,]>;
+export type RangeState = Record<ChannelKey, readonly [
+  number,
+  number,
+]>;
 
 //endregion Types
 
 //region Constants
 
-/** TS-majority cutoff used by the toggle: TS ratio >= this counts as TS-majority. */
+/** TS-majority cutoff used by the toggle: TS ratio `>=` this counts as TS-majority. */
 const TS_MAJORITY_THRESHOLD = 0.95;
-/** "Large" cutoff used by the toggle: source bytes >= this counts as large. */
+/** "Large" cutoff used by the toggle: source bytes `>=` this counts as large. */
 const LARGE_SOURCE_BYTES_THRESHOLD = 10_000;
-/** "Recent" cutoff used by the toggle: days since last commit < this counts as recent. */
+/** "Recent" cutoff used by the toggle: days since last commit `<` this counts as recent. */
 const RECENT_DAYS_THRESHOLD = 365;
-/** Floor used in log scaling; values <= floor map to `log10(floor)` to avoid `-Infinity`. */
+/** Floor used in log scaling; values `<=` floor map to `log10(floor)` to avoid `-Infinity`. */
 const LOG_FLOOR = 1;
 /** Numeric code for license classes; matches the `licenseClassNumeric` dim. */
 const LICENSE_CODES: Record<PackageProbe['licenseClass'], number> = {
@@ -132,6 +135,7 @@ const LICENSE_CODES: Record<PackageProbe['licenseClass'], number> = {
  * render it at a sentinel offset position.
  *
  * @param probe - Source probe.
+ *
  * @param dim - Data dimension to extract.
  *
  * @returns Numeric value, or `null` when the source field is unknown.
@@ -155,18 +159,39 @@ export function extractDim(
 ): number | null {
   if (dim === 'logSourceBytes') {
     if (probe.sourceBytesOrNull === null) return null;
-    return Math.log10(Math.max(probe.sourceBytesOrNull, LOG_FLOOR,),);
+    return Math.log10(Math.max(
+      probe.sourceBytesOrNull,
+      LOG_FLOOR,
+    ),);
   }
   if (dim === 'logDaysStale') {
     if (probe.daysSinceLastCommitOrNull === null) return null;
-    return Math.log10(Math.max(probe.daysSinceLastCommitOrNull, LOG_FLOOR,),);
+    return Math.log10(Math.max(
+      probe.daysSinceLastCommitOrNull,
+      LOG_FLOOR,
+    ),);
   }
-  if (dim === 'logInstallSize') return Math.log10(Math.max(probe.installSizeBytes, LOG_FLOOR,),);
-  if (dim === 'logDownloads') return Math.log10(Math.max(probe.weeklyDownloads, LOG_FLOOR,),);
+  if (dim === 'logInstallSize') {
+    return Math.log10(Math.max(
+      probe.installSizeBytes,
+      LOG_FLOOR,
+    ),);
+  }
+  if (dim === 'logDownloads') {
+    return Math.log10(Math.max(
+      probe.weeklyDownloads,
+      LOG_FLOOR,
+    ),);
+  }
   if (dim === 'tsRatio') return probe.tsRatioOrNull;
   if (dim === 'runtimeDepCount') return probe.runtimeDepCount;
   if (dim === 'transitiveDepCount') return probe.transitiveDepCount;
-  if (dim === 'logPackageAge') return Math.log10(Math.max(probe.packageAgeDays, LOG_FLOOR,),);
+  if (dim === 'logPackageAge') {
+    return Math.log10(Math.max(
+      probe.packageAgeDays,
+      LOG_FLOOR,
+    ),);
+  }
   if (dim === 'isLeafNumeric') return probe.isLeaf ? 1 : 0;
   if (dim === 'licenseClassNumeric') return LICENSE_CODES[probe.licenseClass];
   throw new Error(`Unknown dim: ${dim as string}`,);
@@ -180,6 +205,7 @@ export function extractDim(
  * derivation is always defined; it's the "no unknowns" predicate itself.
  *
  * @param probe - Source probe.
+ *
  * @param key - Toggle key.
  *
  * @returns Boolean value, or `null` when undetermined.
@@ -231,6 +257,7 @@ export function derivedBool(
  * sets the toggle back to `'any'`.
  *
  * @param probe - Probe being tested.
+ *
  * @param toggles - Current toggle state.
  *
  * @returns `true` if every toggle constraint is satisfied.
@@ -254,7 +281,10 @@ function passesToggles(
 ): boolean {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.entries() loses key type; cast narrows it back. */
   /** Key/value pairs from the toggle record, retyped so `passOne` sees the discriminated key. */
-  const entries = Object.entries(toggles,) as readonly (readonly [ToggleKey, ToggleValue,])[];
+  const entries = Object.entries(toggles,) as readonly (readonly [
+    ToggleKey,
+    ToggleValue,
+  ])[];
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   return entries.every(function passOne(
     [
@@ -290,7 +320,9 @@ function passesToggles(
  * a contrasting outline).
  *
  * @param probe - Probe being tested.
+ *
  * @param ranges - Per-channel `[min, max]` bounds.
+ *
  * @param dimMapping - Channel → data-dim mapping.
  *
  * @returns `true` if every channel's value is within bounds or unknown.
@@ -324,7 +356,7 @@ function passesRanges(
       dim,
     },);
     if (value === null) return true;
-    return value >= min && value <= max;
+    return (value >= min) && (value <= max);
   },);
 }
 
@@ -337,6 +369,7 @@ function passesRanges(
  * "no match" so an in-progress pattern doesn't crash the page.
  *
  * @param probe - Probe being tested.
+ *
  * @param search - Search term.
  *
  * @returns `true` if the name matches the term.
@@ -359,10 +392,16 @@ export function searchMatches(
   if (search === '') return true;
   /** Lowercased npm name so the substring/regex test is case-insensitive. */
   const name = probe.npmName.toLowerCase();
-  if (search.length >= 2 && search.startsWith('/',) && search.endsWith('/',)) {
+  if ((search.length >= 2) && search.startsWith('/',) && search.endsWith('/',)) {
     try {
       /** Regex parsed from the `/.../` delimiters; an invalid pattern is caught and falls back to "no match". */
-      const pattern = new RegExp(search.slice(1, -1,), 'i',);
+      const pattern = new RegExp(
+        search.slice(
+          1,
+          -1,
+        ),
+        'i',
+      );
       return pattern.test(name,);
     } catch {
       return false;
@@ -384,9 +423,13 @@ export function searchMatches(
  * opacity so the user retains spatial context.
  *
  * @param probes - Full probe array.
+ *
  * @param toggles - Current 3-state toggle settings.
+ *
  * @param ranges - Per-channel range-slider bounds.
+ *
  * @param search - Name-search term.
+ *
  * @param dimMapping - Channel → data-dim mapping.
  *
  * @returns Set of indices (into `probes`) for fully-visible probes.

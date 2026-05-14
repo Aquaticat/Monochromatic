@@ -78,7 +78,7 @@ function linearToSrgb(x: number,): number {
   if (x <= SRGB_LINEAR_THRESHOLD) {
     return SRGB_LINEAR_SLOPE * x;
   }
-  return SRGB_GAMMA_GAIN * (x ** SRGB_GAMMA_EXPONENT_RECIP) - SRGB_GAMMA_OFFSET;
+  return (SRGB_GAMMA_GAIN * (x ** SRGB_GAMMA_EXPONENT_RECIP)) - SRGB_GAMMA_OFFSET;
 }
 
 /**
@@ -133,7 +133,7 @@ export function oklchToSrgb(color: Oklch,): Rgb8 {
   /** OKLab `b` axis (blue→yellow); the Cartesian projection of chroma at the hue angle. */
   const b = C * Math.sin(H * DEG_TO_RAD,);
 
-  /* oxlint-disable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style -- Ottosson 2020 OKLab→linear-sRGB matrix coefficients; naming or regrouping each obscures the math. */
+  /* oxlint-disable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, stylistic/no-mixed-operators -- Ottosson 2020 OKLab→linear-sRGB matrix coefficients; naming or regrouping each obscures the math. */
   /** Ottosson stage 1: long-cone response in pre-cube-root form. */
   const lPrime = L + 0.3963377774 * a + 0.2158037573 * b;
   /** Ottosson stage 1: medium-cone response in pre-cube-root form. */
@@ -154,7 +154,7 @@ export function oklchToSrgb(color: Oklch,): Rgb8 {
   const gLin = -1.2684380046 * lCubed + 2.6097574011 * mCubed - 0.3413193965 * sCubed;
   /** Ottosson stage 3: linear-sRGB blue channel. */
   const bLin = -0.0041960863 * lCubed - 0.7034186147 * mCubed + 1.707614701 * sCubed;
-  /* oxlint-enable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style */
+  /* oxlint-enable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, stylistic/no-mixed-operators */
 
   return [
     to8Bit(linearToSrgb(rLin,),),
@@ -172,7 +172,9 @@ export function oklchToSrgb(color: Oklch,): Rgb8 {
  * hue gaps this passes through the wrong side of the colour wheel.
  *
  * @param start - Colour returned when `t === 0`.
+ *
  * @param end - Colour returned when `t === 1`.
+ *
  * @param t - Interpolation parameter; values outside `[0, 1]`
  *   extrapolate linearly.
  *
@@ -199,9 +201,9 @@ export function oklchLerpToSrgb(
   },
 ): Rgb8 {
   return oklchToSrgb({
-    L: start.L + t * (end.L - start.L),
-    C: start.C + t * (end.C - start.C),
-    H: start.H + t * (end.H - start.H),
+    L: start.L + (t * (end.L - start.L)),
+    C: start.C + (t * (end.C - start.C)),
+    H: start.H + (t * (end.H - start.H)),
   },);
 }
 

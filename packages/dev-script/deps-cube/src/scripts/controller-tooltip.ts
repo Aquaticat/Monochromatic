@@ -54,10 +54,22 @@ const PINNED_CLOSE_CLASS = 'pinned-tooltip-close';
  */
 function escapeHtml(raw: string,): string {
   return raw
-    .replaceAll('&', '&amp;',)
-    .replaceAll('<', '&lt;',)
-    .replaceAll('>', '&gt;',)
-    .replaceAll('"', '&quot;',);
+    .replaceAll(
+      '&',
+      '&amp;',
+    )
+    .replaceAll(
+      '<',
+      '&lt;',
+    )
+    .replaceAll(
+      '>',
+      '&gt;',
+    )
+    .replaceAll(
+      '"',
+      '&quot;',
+    );
 }
 
 //endregion HTML escape
@@ -173,7 +185,7 @@ export function formatTooltipHtml(
  */
 function ensurePinElement(): HTMLElement {
   /** Existing pinned-tooltip element from a previous `ensurePinElement` call, or `null` on first use. */
-  const existing = document.getElementById(PINNED_ID,);
+  const existing = document.querySelector<HTMLElement>(`#${PINNED_ID}`,);
   if (existing !== null) return existing;
   /** Fresh outer `<aside>` element that owns the pinned-tooltip surface. */
   const aside = document.createElement('aside',);
@@ -184,13 +196,19 @@ function ensurePinElement(): HTMLElement {
   close.type = 'button';
   close.className = PINNED_CLOSE_CLASS;
   close.textContent = '×';
-  close.addEventListener('click', function onCloseClick() {
-    unpinTooltip();
-  },);
+  close.addEventListener(
+    'click',
+    function onCloseClick() {
+      unpinTooltip();
+    },
+  );
   /** Inner content wrapper whose `innerHTML` is replaced on every pin. */
   const content = document.createElement('div',);
   content.className = PINNED_CONTENT_CLASS;
-  aside.append(close, content,);
+  aside.append(
+    close,
+    content,
+  );
   document.body.append(aside,);
   return aside;
 }
@@ -229,7 +247,7 @@ export function pinTooltip(
  */
 export function unpinTooltip(): void {
   /** Pinned-tooltip element, if it was ever created; missing element is a no-op. */
-  const aside = document.getElementById(PINNED_ID,);
+  const aside = document.querySelector<HTMLElement>(`#${PINNED_ID}`,);
   if (aside === null) return;
   aside.hidden = true;
 }

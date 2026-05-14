@@ -57,9 +57,18 @@ type WorkspaceYaml = {
  * name, not the alias.
  *
  * @param key - Catalog key as written in `pnpm-workspace.yaml`.
+ *
  * @param value - Catalog value (range or `npm:<name>@<range>` form).
  *
  * @returns Decoded `{ npmName, range }` pair.
+ *
+ * @example
+ * ```ts
+ * decodeAlias({ key: '\@cspotcode/outdent', value: 'npm:outdent\@0.8.0' });
+ * // → { npmName: 'outdent', range: '0.8.0' }
+ * decodeAlias({ key: 'preact', value: '^10.26.0' });
+ * // → { npmName: 'preact', range: '^10.26.0' }
+ * ```
  */
 export function decodeAlias(
   {
@@ -79,9 +88,13 @@ export function decodeAlias(
       range: value,
     };
   }
-  /** Catalog value after the `npm:` alias prefix; still contains the optional `@<range>` suffix. */
+  /**
+   * Catalog value after the `npm:` alias prefix; still contains the optional `@<range>` suffix.
+   */
   const remainder = value.slice('npm:'.length,);
-  /** Position of the version-separating `@`; `lastIndexOf` skips the scope-leading `@`. */
+  /**
+   * Position of the version-separating `@`; `lastIndexOf` skips the scope-leading `@`.
+   */
   const atIndex = remainder.lastIndexOf('@',);
   // No '@' or only the scope-leading '@' (index 0) means no range; entire
   // remainder is the aliased package name.
@@ -92,7 +105,10 @@ export function decodeAlias(
     };
   }
   return {
-    npmName: remainder.slice(0, atIndex,),
+    npmName: remainder.slice(
+      0,
+      atIndex,
+    ),
     range: remainder.slice(atIndex + 1,),
   };
 }
@@ -100,7 +116,8 @@ export function decodeAlias(
 /**
  * Flattens a `Record<key, value>` catalog block into resolved entries.
  *
- * @param block - The parsed catalog block (default or named).
+ * @param block - Parsed catalog block (default or named).
+ *
  * @param catalogName - Optional name of the named catalog; omitted for the default block.
  *
  * @returns Array of {@link CatalogEntry} for every key/value in the block.
@@ -145,6 +162,14 @@ function entriesFromBlock(
  * @returns Array of normalised catalog entries, one per package per (named-or-default) catalog.
  *
  * @throws When `pnpm-workspace.yaml` cannot be located or contains no catalog blocks.
+ *
+ * @example
+ * ```ts
+ * const entries = await readCatalog();
+ * for (const entry of entries) {
+ *   console.info(entry.catalogKey, entry.npmName, entry.range);
+ * }
+ * ```
  */
 export async function readCatalog(
   { startDir, }: { startDir?: string; } = {},
@@ -158,7 +183,10 @@ export async function readCatalog(
     throw new Error(`Could not locate pnpm-workspace.yaml by walking up from ${startDir ?? process.cwd()}`,);
 
   /** UTF-8 text of the workspace file; fed to the YAML parser. */
-  const raw = await readFile(workspaceYamlPath, 'utf8',);
+  const raw = await readFile(
+    workspaceYamlPath,
+    'utf8',
+  );
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- YAML parse is `unknown`; pnpm-workspace.yaml shape is fixed. */
   /** Parsed workspace document, narrowed to the catalog-bearing subset. */
   const parsed = parseYaml(raw,) as WorkspaceYaml;
@@ -180,7 +208,10 @@ export async function readCatalog(
   },);
 
   /** Union of default and named entries returned to callers. */
-  const combined = [...defaultEntries, ...namedEntries,];
+  const combined = [
+    ...defaultEntries,
+    ...namedEntries,
+  ];
   if (combined.length === 0)
     throw new Error(`No catalog or catalogs entries found in ${workspaceYamlPath}`,);
 

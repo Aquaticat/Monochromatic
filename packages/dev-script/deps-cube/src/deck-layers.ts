@@ -1,7 +1,7 @@
 /**
- * Axis-shaft, arrowhead, and tick-mark layer factories.
+ * Axis-shaft and arrowhead layer factories.
  *
- * Three structural elements of the coordinate-system backdrop:
+ * Two structural elements of the coordinate-system backdrop:
  *
  * - {@link buildAxisShaftLayer}: three thick black line segments
  *   running from the min corner outward along +x, +y, +z.
@@ -9,12 +9,16 @@
  *   tips of the axis shafts, pointing along the respective axis.
  *   Pre-rotated cone geometries live in {@link ./deck-geometries.ts}
  *   so no runtime orientation math is needed.
- * - {@link buildAxisTickLayer}: short perpendicular marks at evenly
- *   spaced intervals along each axis.
  *
- * Coordinate planes and threshold guide lines moved to
+ * The tick-mark PathLayer (`buildAxisTickLayer`) moved to
+ * `./deck-layers-ticks.ts` so each file stays under the 300-line cap.
+ * Coordinate planes and threshold guide lines live in
  * `./deck-planes.ts`; scatter and text-layer factories live in
  * `./deck-scatter.ts` and `./deck-labels.ts`.
+ *
+ * The shared {@link computeAxisGeometry} helper and {@link getDatumPath}
+ * accessor are exported so siblings (`deck-layers-ticks.ts`) can reuse
+ * them without duplication.
  *
  * @example
  * ```ts
@@ -38,23 +42,76 @@ import type { ChromeColors, } from './scripts/scheme.ts';
 //region Types
 
 /** Data shape for the axis-shaft PathLayer; deck.gl expects mutable nested arrays. */
-type PathDatum = {
-  path: [number, number, number,][];
+export type PathDatum = {
+  path: [
+    number,
+    number,
+    number,
+  ][];
 };
 
 /** Data shape for arrowhead mesh-layer instances. */
 type ArrowheadDatum = {
-  position: [number, number, number,];
+  position: [
+    number,
+    number,
+    number,
+  ];
 };
 
 //endregion Types
+
+//region Datum accessors
+
+/**
+ * Reads the `path` field off a {@link PathDatum} for `PathLayer.getPath`.
+ *
+ * Module-scoped to avoid recreating the closure per layer; it captures
+ * no outer state, so hoisting is safe.
+ *
+ * @param d - One PathLayer datum.
+ *
+ * @returns The list of 3D points that form the path.
+ *
+ * @example
+ * ```ts
+ * getDatumPath({ path: [[0, 0, 0], [1, 0, 0]] }); // [[0, 0, 0], [1, 0, 0]]
+ * ```
+ */
+export function getDatumPath(d: PathDatum,): [
+  number,
+  number,
+  number,
+][] {
+  return d.path;
+}
+
+/**
+ * Reads the `position` field off an {@link ArrowheadDatum} for `SimpleMeshLayer.getPosition`.
+ *
+ * @param d - One arrowhead datum.
+ *
+ * @returns The 3D position of the cone base centre.
+ *
+ * @example
+ * ```ts
+ * getArrowheadPosition({ position: [1, 0, 0] }); // [1, 0, 0]
+ * ```
+ */
+function getArrowheadPosition(d: ArrowheadDatum,): [
+  number,
+  number,
+  number,
+] {
+  return d.position;
+}
+
+//endregion Datum accessors
 
 //region Constants
 
 /** Axis shaft width in pixels (with `widthMinPixels` floor). */
 const AXIS_SHAFT_WIDTH = 3;
-/** Axis tick line width in pixels. */
-const AXIS_TICK_WIDTH = 1.5;
 
 /** Fraction of the axis extent the arrow tip extends past `max`. */
 const AXIS_EXTENSION_FRACTION = 0.12;
@@ -62,10 +119,6 @@ const AXIS_EXTENSION_FRACTION = 0.12;
 const ARROWHEAD_LENGTH_FRACTION = 0.06;
 /** Cone arrowhead radius, as a fraction of the axis extent. */
 const ARROWHEAD_RADIUS_FRACTION = 0.018;
-/** Number of tick marks per axis (evenly spaced including endpoints). */
-const TICK_COUNT = 5;
-/** Tick mark length, as a fraction of the axis extent. */
-const TICK_LENGTH_FRACTION = 0.02;
 
 //endregion Constants
 
@@ -78,8 +131,15 @@ const TICK_LENGTH_FRACTION = 0.02;
  * @param bounds - Scene bounds.
  *
  * @returns Object with `dx`/`dy`/`dz` extents, `tipX`/`tipY`/`tipZ` tip positions, and the min corner.
+ *
+ * @example
+ * ```ts
+ * const g = computeAxisGeometry({ bounds: { x: [0, 6], y: [0, 6], z: [0, 6] } });
+ * g.dx; // 6
+ * g.tipX; // 6.72  (= 6 + 6 * 0.12)
+ * ```
  */
-function computeAxisGeometry(
+export function computeAxisGeometry(
   { bounds, }: { bounds: SceneBounds; },
 ): {
   xMin: number;
@@ -126,9 +186,9 @@ function computeAxisGeometry(
     dx,
     dy,
     dz,
-    tipX: xMax + dx * AXIS_EXTENSION_FRACTION,
-    tipY: yMax + dy * AXIS_EXTENSION_FRACTION,
-    tipZ: zMax + dz * AXIS_EXTENSION_FRACTION,
+    tipX: xMax + (dx * AXIS_EXTENSION_FRACTION),
+    tipY: yMax + (dy * AXIS_EXTENSION_FRACTION),
+    tipZ: zMax + (dz * AXIS_EXTENSION_FRACTION),
   };
 }
 
@@ -142,7 +202,17 @@ function computeAxisGeometry(
  *
  * @param bounds - Scene bounds.
  *
+ * @param chrome - Theme-aware colour palette.
+ *
  * @returns PathLayer.
+ *
+ * @example
+ * ```ts
+ * const shaft = buildAxisShaftLayer({
+ *   bounds: { x: [0, 6], y: [0, 6], z: [0, 6] },
+ *   chrome: detectScheme(),
+ * });
+ * ```
  */
 export function buildAxisShaftLayer(
   {
@@ -161,29 +231,51 @@ export function buildAxisShaftLayer(
   const data: PathDatum[] = [
     {
       path: [
-        [g.xMin, g.yMin, g.zMin,],
-        [g.tipX, g.yMin, g.zMin,],
+        [
+          g.xMin,
+          g.yMin,
+          g.zMin,
+        ],
+        [
+          g.tipX,
+          g.yMin,
+          g.zMin,
+        ],
       ],
     },
     {
       path: [
-        [g.xMin, g.yMin, g.zMin,],
-        [g.xMin, g.tipY, g.zMin,],
+        [
+          g.xMin,
+          g.yMin,
+          g.zMin,
+        ],
+        [
+          g.xMin,
+          g.tipY,
+          g.zMin,
+        ],
       ],
     },
     {
       path: [
-        [g.xMin, g.yMin, g.zMin,],
-        [g.xMin, g.yMin, g.tipZ,],
+        [
+          g.xMin,
+          g.yMin,
+          g.zMin,
+        ],
+        [
+          g.xMin,
+          g.yMin,
+          g.tipZ,
+        ],
       ],
     },
   ];
   return new PathLayer<PathDatum>({
     id: 'axis-shafts',
     data,
-    getPath: function getPath(d,) {
-      return d.path;
-    },
+    getPath: getDatumPath,
     getColor: chrome.axis,
     getWidth: AXIS_SHAFT_WIDTH,
     widthUnits: 'pixels',
@@ -197,7 +289,17 @@ export function buildAxisShaftLayer(
  *
  * @param bounds - Scene bounds.
  *
+ * @param chrome - Theme-aware colour palette.
+ *
  * @returns Three SimpleMeshLayers (one per axis).
+ *
+ * @example
+ * ```ts
+ * const [arrowX, arrowY, arrowZ] = buildAxisArrowheadLayers({
+ *   bounds: { x: [0, 6], y: [0, 6], z: [0, 6] },
+ *   chrome: detectScheme(),
+ * });
+ * ```
  */
 export function buildAxisArrowheadLayers(
   {
@@ -229,13 +331,15 @@ export function buildAxisArrowheadLayers(
       id: 'arrowhead-x',
       data: [
         {
-          position: [g.tipX - coneLengthX, g.yMin, g.zMin,],
+          position: [
+            g.tipX - coneLengthX,
+            g.yMin,
+            g.zMin,
+          ],
         },
       ],
       mesh: coneGeometryX,
-      getPosition: function getPosition(d,) {
-        return d.position;
-      },
+      getPosition: getArrowheadPosition,
       getColor: chrome.axis,
       getScale: [
         coneLengthX,
@@ -248,13 +352,15 @@ export function buildAxisArrowheadLayers(
       id: 'arrowhead-y',
       data: [
         {
-          position: [g.xMin, g.tipY - coneLengthY, g.zMin,],
+          position: [
+            g.xMin,
+            g.tipY - coneLengthY,
+            g.zMin,
+          ],
         },
       ],
       mesh: coneGeometryY,
-      getPosition: function getPosition(d,) {
-        return d.position;
-      },
+      getPosition: getArrowheadPosition,
       getColor: chrome.axis,
       getScale: [
         coneRadiusY,
@@ -267,13 +373,15 @@ export function buildAxisArrowheadLayers(
       id: 'arrowhead-z',
       data: [
         {
-          position: [g.xMin, g.yMin, g.tipZ - coneLengthZ,],
+          position: [
+            g.xMin,
+            g.yMin,
+            g.tipZ - coneLengthZ,
+          ],
         },
       ],
       mesh: coneGeometryZ,
-      getPosition: function getPosition(d,) {
-        return d.position;
-      },
+      getPosition: getArrowheadPosition,
       getColor: chrome.axis,
       getScale: [
         coneRadiusZ,
@@ -286,83 +394,3 @@ export function buildAxisArrowheadLayers(
 }
 
 //endregion Axis shafts + arrowheads
-
-//region Tick marks
-
-/**
- * Builds the tick-marks PathLayer: short perpendicular segments at
- * evenly spaced intervals along each axis.
- *
- * @param bounds - Scene bounds.
- *
- * @returns PathLayer with `3 * (TICK_COUNT + 1)` tick segments.
- */
-export function buildAxisTickLayer(
-  {
-    bounds,
-    chrome,
-  }: {
-    bounds: SceneBounds;
-    chrome: ChromeColors;
-  },
-): Layer {
-  /** Cached axis geometry; tick positions and lengths derive from its extents. */
-  const g = computeAxisGeometry({
-    bounds,
-  },);
-  /** Tick mark length on the X axis in world units; reused for Z ticks since both share the X extent. */
-  const tx = g.dx * TICK_LENGTH_FRACTION;
-  /** Tick mark length on the Y axis in world units. */
-  const ty = g.dy * TICK_LENGTH_FRACTION;
-  /** `[0, 1/N, …, 1]` normalised positions for the `TICK_COUNT + 1` evenly-spaced ticks. */
-  const ts: readonly number[] = Array.from(
-    {
-      length: TICK_COUNT + 1,
-    },
-    function tForIndex(_, i,) {
-      return i / TICK_COUNT;
-    },
-  );
-  /** Flattened tick paths: three perpendicular segments per `t` value, one per axis. */
-  const ticks: PathDatum[] = ts.flatMap(function tickTriple(t,) {
-    /** World-space X coordinate of the tick on the X axis for parameter `t`. */
-    const xAt = g.xMin + g.dx * t;
-    /** World-space Y coordinate of the tick on the Y axis for parameter `t`. */
-    const yAt = g.yMin + g.dy * t;
-    /** World-space Z coordinate of the tick on the Z axis for parameter `t`. */
-    const zAt = g.zMin + g.dz * t;
-    return [
-      {
-        path: [
-          [xAt, g.yMin - ty, g.zMin,],
-          [xAt, g.yMin + ty, g.zMin,],
-        ],
-      },
-      {
-        path: [
-          [g.xMin - tx, yAt, g.zMin,],
-          [g.xMin + tx, yAt, g.zMin,],
-        ],
-      },
-      {
-        path: [
-          [g.xMin, g.yMin - ty, zAt,],
-          [g.xMin, g.yMin + ty, zAt,],
-        ],
-      },
-    ];
-  },);
-  return new PathLayer<PathDatum>({
-    id: 'axis-ticks',
-    data: ticks,
-    getPath: function getPath(d,) {
-      return d.path;
-    },
-    getColor: chrome.axisTick,
-    getWidth: AXIS_TICK_WIDTH,
-    widthUnits: 'pixels',
-    widthMinPixels: AXIS_TICK_WIDTH,
-  },);
-}
-
-//endregion Tick marks

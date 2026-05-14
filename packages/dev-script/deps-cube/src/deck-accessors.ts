@@ -52,11 +52,17 @@ const COLOR_RAMP_HIGH: Oklch = {
   C: 0.2,
   H: 145,
 };
+/** Per-RGB-channel grey level (0xff/2 ≈ 50% lightness) used for unknown color values. */
+const COLOR_UNKNOWN_GREY = 136;
 /** Mid-grey used for unknown color values. */
-const COLOR_UNKNOWN: readonly [number, number, number,] = [
-  136,
-  136,
-  136,
+const COLOR_UNKNOWN: readonly [
+  number,
+  number,
+  number,
+] = [
+  COLOR_UNKNOWN_GREY,
+  COLOR_UNKNOWN_GREY,
+  COLOR_UNKNOWN_GREY,
 ];
 /** Minimum glyph radius in pixels. */
 const RADIUS_MIN_PX = 3;
@@ -69,7 +75,7 @@ const RADIUS_MAX_PX = 30;
  * each other in dense regions and so per-glyph name labels have room to
  * breathe.
  */
-const RADIUS_MIN_WORLD_FRACTION = 0.0025;
+const RADIUS_MIN_WORLD_FRACTION = 0.002_5;
 /**
  * Maximum glyph radius in world units, as a fraction of the bounds diagonal.
  *
@@ -80,22 +86,31 @@ const RADIUS_MAX_WORLD_FRACTION = 0.015;
 const UNKNOWN_CLUSTER_OFFSET = 2;
 /** Half-extent of the unknown-cluster jitter cube so glyphs don't pile on one point. */
 const UNKNOWN_CLUSTER_JITTER = 0.5;
-/** Binary "is filled" threshold: shape dim values < this render filled, otherwise stroked. */
+/** Binary "is filled" threshold: shape dim values below this render filled, otherwise stroked. */
 const SHAPE_FILLED_THRESHOLD = 0.5;
 
 //endregion Constants
 
 //region Helpers
 
+/* oxlint-disable eslint/no-magic-numbers -- `0.5` is the degenerate-bounds centre; named const would obscure intent. */
 /**
  * Maps a value into the unit interval `[0, 1]` given inclusive bounds.
  * Degenerate bounds (`lo === hi`) return `0.5` to centre the result.
  *
  * @param value - Source value.
+ *
  * @param lo - Lower bound, inclusive.
+ *
  * @param hi - Upper bound, inclusive.
  *
  * @returns `t` in `[0, 1]`.
+ *
+ * @example
+ * ```ts
+ * normalise({ value: 5, lo: 0, hi: 10 }); // → 0.5
+ * normalise({ value: 7, lo: 5, hi: 5 });  // → 0.5 (degenerate)
+ * ```
  */
 function normalise(
   {
@@ -109,8 +124,15 @@ function normalise(
   },
 ): number {
   if (hi === lo) return 0.5;
-  return Math.min(1, Math.max(0, (value - lo) / (hi - lo),),);
+  return Math.min(
+    1,
+    Math.max(
+      0,
+      (value - lo) / (hi - lo),
+    ),
+  );
 }
+/* oxlint-enable eslint/no-magic-numbers */
 
 //endregion Helpers
 
@@ -122,9 +144,16 @@ function normalise(
  * Unknown-cluster layer instead.
  *
  * @param probe - Source probe.
+ *
  * @param state - Current state (uses `dimMapping.x/y/z`).
  *
  * @returns `[x, y, z]` in scene coords, or `null` when undefined.
+ *
+ * @example
+ * ```ts
+ * const pos = probePosition({ probe, state });
+ * if (pos !== null) draw(pos);
+ * ```
  */
 export function probePosition(
   {
@@ -134,7 +163,11 @@ export function probePosition(
     probe: PackageProbe;
     state: AppState;
   },
-): [number, number, number,] | null {
+): [
+  number,
+  number,
+  number,
+] | null {
   /** Scene-space X coordinate, or `null` when the X dim is unknown for this probe. */
   const x = extractDim({
     probe,
@@ -150,8 +183,12 @@ export function probePosition(
     probe,
     dim: state.dimMapping.z,
   },);
-  if (x === null || y === null || z === null) return null;
-  return [x, y, z,];
+  if ((x === null) || (y === null) || (z === null)) return null;
+  return [
+    x,
+    y,
+    z,
+  ];
 }
 
 /**
@@ -161,9 +198,16 @@ export function probePosition(
  * stable per-index offset so they don't all collapse to one point.
  *
  * @param index - Probe index (deterministic input).
+ *
  * @param bounds - Scene bounds.
  *
  * @returns `[x, y, z]` in scene coords.
+ *
+ * @example
+ * ```ts
+ * const pos = unknownClusterPosition({ index: 0, bounds });
+ * // → near the +max corner of the data box, plus deterministic jitter
+ * ```
  */
 export function unknownClusterPosition(
   {
@@ -173,7 +217,11 @@ export function unknownClusterPosition(
     index: number;
     bounds: SceneBounds;
   },
-): [number, number, number,] {
+): [
+  number,
+  number,
+  number,
+] {
   /** Upper-bound corner of the data box on X; the unknown cluster sits beyond this. */
   const [
     ,
@@ -189,17 +237,19 @@ export function unknownClusterPosition(
     ,
     zMax,
   ] = bounds.z;
+  /* oxlint-disable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, eslint-plugin-unicorn/number-literal-case, eslint-plugin-unicorn/prefer-math-trunc -- Knuth-multiplicative-hash constant + per-byte shift offsets are intrinsic to the algorithm; the `>>> 0` is the canonical unsigned-32-bit coercion (Math.trunc returns signed); named consts would obscure the bit layout. */
   /**
    * Knuth multiplicative hash on the probe index, giving a deterministic 32-bit
    * value to derive three independent jitter offsets from.
    */
-  const hash = (index * 2654435761) >>> 0;
+  const hash = (index * 2_654_435_761) >>> 0;
   /** X jitter in `[-UNKNOWN_CLUSTER_JITTER, +UNKNOWN_CLUSTER_JITTER]`, derived from the low byte of `hash`. */
   const jx = (((hash & 0xff) / 0xff) - 0.5) * 2 * UNKNOWN_CLUSTER_JITTER;
   /** Y jitter from the second byte of `hash`, same range as `jx`. */
   const jy = ((((hash >> 8) & 0xff) / 0xff) - 0.5) * 2 * UNKNOWN_CLUSTER_JITTER;
   /** Z jitter from the third byte of `hash`, same range as `jx`. */
   const jz = ((((hash >> 16) & 0xff) / 0xff) - 0.5) * 2 * UNKNOWN_CLUSTER_JITTER;
+  /* oxlint-enable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, eslint-plugin-unicorn/number-literal-case, eslint-plugin-unicorn/prefer-math-trunc */
   return [
     xMax + UNKNOWN_CLUSTER_OFFSET + jx,
     yMax + UNKNOWN_CLUSTER_OFFSET + jy,
@@ -224,11 +274,20 @@ export function unknownClusterPosition(
  *   visible probes get alpha={@link ALPHA_VISIBLE}.
  *
  * @param probe - Source probe.
+ *
  * @param state - Current state (uses `dimMapping.color`).
+ *
  * @param bounds - Scene bounds.
+ *
  * @param isVisible - `true` when the probe passes every filter.
  *
  * @returns RGBA tuple, each component in `[0, 255]`.
+ *
+ * @example
+ * ```ts
+ * const rgba = probeFillColor({ probe, state, bounds, isVisible: true });
+ * // → [r, g, b, 255]
+ * ```
  */
 export function probeFillColor(
   {
@@ -242,7 +301,12 @@ export function probeFillColor(
     bounds: SceneBounds;
     isVisible: boolean;
   },
-): [number, number, number, number,] {
+): [
+  number,
+  number,
+  number,
+  number,
+] {
   /** Alpha selected by filter visibility so filtered probes fade out instead of disappearing. */
   const alpha = isVisible ? ALPHA_VISIBLE : ALPHA_FILTERED;
   /** Raw probe value for the colour dim, or `null` when the dim is unknown. */
@@ -296,10 +360,18 @@ export function probeFillColor(
  * channel's bounds. Unknown size-dim values get the minimum radius.
  *
  * @param probe - Source probe.
+ *
  * @param state - Current state (uses `dimMapping.size`).
+ *
  * @param bounds - Scene bounds.
  *
  * @returns Radius in pixels.
+ *
+ * @example
+ * ```ts
+ * const r = probeRadius({ probe, state, bounds });
+ * // → in [RADIUS_MIN_PX, RADIUS_MAX_PX]
+ * ```
  */
 export function probeRadius(
   {
@@ -329,7 +401,7 @@ export function probeRadius(
     lo,
     hi,
   },);
-  return RADIUS_MIN_PX + t * (RADIUS_MAX_PX - RADIUS_MIN_PX);
+  return RADIUS_MIN_PX + (t * (RADIUS_MAX_PX - RADIUS_MIN_PX));
 }
 
 /**
@@ -348,7 +420,9 @@ export function probeRadius(
  * like true 3D objects, not screen-aligned sprites.
  *
  * @param probe - Source probe.
+ *
  * @param state - Current state (uses `dimMapping.size`).
+ *
  * @param bounds - Scene bounds.
  *
  * @returns Radius in world units.
@@ -377,7 +451,11 @@ export function probeRadiusWorld(
   /** Height of the scene bounding box along Z, one component of the diagonal. */
   const dz = bounds.z[1] - bounds.z[0];
   /** Bounding-box diagonal length; world-space radii are expressed as fractions of this so they scale with scene size. */
-  const diagonal = Math.hypot(dx, dy, dz,);
+  const diagonal = Math.hypot(
+    dx,
+    dy,
+    dz,
+  );
   /** Raw probe value for the size dim, or `null` when the dim is unknown. */
   const value = extractDim({
     probe,
@@ -395,7 +473,7 @@ export function probeRadiusWorld(
     lo,
     hi,
   },);
-  return diagonal * (RADIUS_MIN_WORLD_FRACTION + t * (RADIUS_MAX_WORLD_FRACTION - RADIUS_MIN_WORLD_FRACTION));
+  return diagonal * (RADIUS_MIN_WORLD_FRACTION + (t * (RADIUS_MAX_WORLD_FRACTION - RADIUS_MIN_WORLD_FRACTION)));
 }
 
 //endregion Radius
@@ -410,9 +488,16 @@ export function probeRadiusWorld(
  * distinguishable from the all-known set.
  *
  * @param probe - Source probe.
+ *
  * @param state - Current state (uses `dimMapping.shape`).
  *
  * @returns `true` if filled, `false` if stroked.
+ *
+ * @example
+ * ```ts
+ * const filled = probeIsFilled({ probe, state });
+ * // → true for leaf packages under the default mapping
+ * ```
  */
 export function probeIsFilled(
   {

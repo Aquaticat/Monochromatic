@@ -52,6 +52,11 @@
  * ```
  */
 
+import {
+  HALF,
+  QUARTER,
+} from '@monochromatic-dev/module-numeric-const';
+
 import type { PackageProbe, } from './probe.ts';
 
 //region Types
@@ -95,14 +100,12 @@ const SPHERE_UPRIGHT_V = 0.35;
 const SPHERE_FLIPPED_V = 0.65;
 /** Fraction of the slot width the text may occupy before auto-shrink kicks in. Leaves a small margin for the outline. */
 const SPHERE_SLOT_FILL_FRACTION = 0.85;
-/** Half-coefficient used for centring. */
-const HALF = 1 / 2;
 /** Module-level cache: `(catalogKey, rgba, shape, withName)` → built canvas. Avoids re-rendering on every state recompute. */
 const TEXTURE_CACHE = new Map<string, HTMLCanvasElement>();
 /** Octahedron upright stripe centre, in normalised texture v space. */
-const OCTAHEDRON_UPRIGHT_V = 1 / 4;
+const OCTAHEDRON_UPRIGHT_V = QUARTER;
 /** Octahedron rotated stripe centre, in normalised texture v space. Below the upright copy so the face shows both within the `(0,0), (1,0), (0.5,1)` UV triangle. */
-const OCTAHEDRON_FLIPPED_V = 1 / 2;
+const OCTAHEDRON_FLIPPED_V = HALF;
 
 //endregion Constants
 
@@ -113,8 +116,11 @@ const OCTAHEDRON_FLIPPED_V = 1 / 2;
  * tuple.
  *
  * @param probe - Source probe.
+ *
  * @param fillColor - RGBA fill colour.
+ *
  * @param shape - Mesh shape.
+ *
  * @param withName - Whether the name is baked into the texture.
  *
  * @returns Cache key string.
@@ -140,6 +146,7 @@ function cacheKey(
  * rgba string derived from the byte-RGBA tuple.
  *
  * @param ctx - Target context.
+ *
  * @param fillColor - RGBA tuple, 0 to 255.
  */
 function paintBackground(
@@ -159,7 +166,12 @@ function paintBackground(
     a,
   ] = fillColor;
   ctx.fillStyle = `rgba(${r.toString()}, ${g.toString()}, ${b.toString()}, ${(a / 255).toString()})`;
-  ctx.fillRect(0, 0, TEXTURE_SIZE_PX, TEXTURE_SIZE_PX,);
+  ctx.fillRect(
+    0,
+    0,
+    TEXTURE_SIZE_PX,
+    TEXTURE_SIZE_PX,
+  );
 }
 
 /**
@@ -167,8 +179,11 @@ function paintBackground(
  * canvas centre, in the natural canvas orientation.
  *
  * @param ctx - Target context.
+ *
  * @param text - Name string.
+ *
  * @param x - Horizontal centre in texture pixels.
+ *
  * @param y - Vertical centre in texture pixels.
  */
 function paintUpright(
@@ -184,8 +199,16 @@ function paintUpright(
     y: number;
   },
 ): void {
-  ctx.strokeText(text, x, y,);
-  ctx.fillText(text, x, y,);
+  ctx.strokeText(
+    text,
+    x,
+    y,
+  );
+  ctx.fillText(
+    text,
+    x,
+    y,
+  );
 }
 
 /**
@@ -196,8 +219,11 @@ function paintUpright(
  * camera angle.
  *
  * @param ctx - Target context.
+ *
  * @param text - Name string.
+ *
  * @param x - Horizontal centre in texture pixels.
+ *
  * @param y - Vertical centre in texture pixels.
  */
 function paintRotated180(
@@ -214,10 +240,21 @@ function paintRotated180(
   },
 ): void {
   ctx.save();
-  ctx.translate(x, y,);
+  ctx.translate(
+    x,
+    y,
+  );
   ctx.rotate(Math.PI,);
-  ctx.strokeText(text, 0, 0,);
-  ctx.fillText(text, 0, 0,);
+  ctx.strokeText(
+    text,
+    0,
+    0,
+  );
+  ctx.fillText(
+    text,
+    0,
+    0,
+  );
   ctx.restore();
 }
 
@@ -230,7 +267,9 @@ function paintRotated180(
  * measurement is enough.
  *
  * @param ctx - Target context (must already have `font` set so subsequent measureText returns the correct width).
+ *
  * @param text - The string that will be drawn.
+ *
  * @param slotWidthPx - Width of the slot the text must fit inside.
  *
  * @returns Font size in pixels.
@@ -253,7 +292,10 @@ function pickFontSize(
   if (measuredAtMax <= targetWidth) return FONT_SIZE_PX;
   /** Proportionally-rescaled font size before clamping to the minimum. */
   const scaled = FONT_SIZE_PX * (targetWidth / measuredAtMax);
-  return Math.max(MIN_FONT_SIZE_PX, scaled,);
+  return Math.max(
+    MIN_FONT_SIZE_PX,
+    scaled,
+  );
 }
 
 //endregion Helpers
@@ -271,8 +313,11 @@ function pickFontSize(
  * octahedron maps to that triangle so the label shows on each face.
  *
  * @param probe - Source probe.
+ *
  * @param fillColor - RGBA tuple matching the probe's data-derived colour at full alpha.
+ *
  * @param shape - Mesh shape selecting the UV layout.
+ *
  * @param withName - When `false`, the texture is colour-only (no name baked).
  *
  * @returns Canvas element ready to pass to `SimpleMeshLayer.texture`.
@@ -324,7 +369,10 @@ export function makeProbeTexture(
     fillColor,
   },);
   if (!withName) {
-    TEXTURE_CACHE.set(key, canvas,);
+    TEXTURE_CACHE.set(
+      key,
+      canvas,
+    );
     return canvas;
   }
   ctx.font = `700 ${FONT_SIZE_PX.toString()}px sans-serif`;
@@ -353,7 +401,10 @@ export function makeProbeTexture(
       {
         length: SPHERE_REPETITIONS,
       },
-      function asOffset(_, i,) {
+      function asOffset(
+        _,
+        i,
+      ) {
         return (i + HALF) * stepPx;
       },
     );
@@ -400,7 +451,10 @@ export function makeProbeTexture(
       y: flippedYPx,
     },);
   }
-  TEXTURE_CACHE.set(key, canvas,);
+  TEXTURE_CACHE.set(
+    key,
+    canvas,
+  );
   return canvas;
 }
 

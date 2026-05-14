@@ -22,6 +22,8 @@
  * ```
  */
 
+// oxlint-disable eslint/no-magic-numbers -- octahedron face/vertex tables and per-face stride offsets are intrinsic geometry data; naming each slot is absurd and obscures the layout.
+
 import {
   ConeGeometry,
   Geometry,
@@ -44,26 +46,92 @@ const SPHERE_NLONG = 16;
 /** Cone tessellation; 16 sides is enough for a clean arrowhead silhouette at any zoom. */
 const CONE_RADIAL_SEGMENTS = 16;
 
-/** Indices into {@link OCTAHEDRON_VERTICES} for the eight triangular faces, CCW from outside. */
-const OCTAHEDRON_FACE_INDICES: readonly (readonly [number, number, number,])[] = [
-  [2, 0, 4,],
-  [2, 4, 1,],
-  [2, 1, 5,],
-  [2, 5, 0,],
-  [3, 4, 0,],
-  [3, 1, 4,],
-  [3, 5, 1,],
-  [3, 0, 5,],
+/**
+ * Indices into {@link OCTAHEDRON_VERTICES} for the eight triangular faces, CCW from outside.
+ */
+const OCTAHEDRON_FACE_INDICES: readonly (readonly [
+  number,
+  number,
+  number,
+])[] = [
+  [
+    2,
+    0,
+    4,
+  ],
+  [
+    2,
+    4,
+    1,
+  ],
+  [
+    2,
+    1,
+    5,
+  ],
+  [
+    2,
+    5,
+    0,
+  ],
+  [
+    3,
+    4,
+    0,
+  ],
+  [
+    3,
+    1,
+    4,
+  ],
+  [
+    3,
+    5,
+    1,
+  ],
+  [
+    3,
+    0,
+    5,
+  ],
 ];
 
 /** Six canonical octahedron vertices, on the unit axes. */
-const OCTAHEDRON_VERTICES: readonly (readonly [number, number, number,])[] = [
-  [1, 0, 0,],
-  [-1, 0, 0,],
-  [0, 1, 0,],
-  [0, -1, 0,],
-  [0, 0, 1,],
-  [0, 0, -1,],
+const OCTAHEDRON_VERTICES: readonly (readonly [
+  number,
+  number,
+  number,
+])[] = [
+  [
+    1,
+    0,
+    0,
+  ],
+  [
+    -1,
+    0,
+    0,
+  ],
+  [
+    0,
+    1,
+    0,
+  ],
+  [
+    0,
+    -1,
+    0,
+  ],
+  [
+    0,
+    0,
+    1,
+  ],
+  [
+    0,
+    0,
+    -1,
+  ],
 ];
 
 /** Number of position/normal floats per face (3 vertices × 3 components). */
@@ -106,9 +174,23 @@ function buildOctahedronGeometry(): Geometry {
   const normals = new Float32Array(faceCount * FLOATS_PER_FACE_VEC3,);
   /** Per-vertex UVs; every face uses the same triangle so the canvas texture renders identically per side. */
   const texCoords = new Float32Array(faceCount * FLOATS_PER_FACE_VEC2,);
-  /** Looks up an octahedron vertex by index; throws on out-of-range. */
-  function vertexAt(i: number,): readonly [number, number, number,] {
-    /** Vertex tuple from the canonical table; out-of-range becomes an explicit error rather than a silent `undefined`. */
+  /**
+   * Looks up an octahedron vertex by index; throws on out-of-range.
+   *
+   * @param i - Octahedron vertex index in `[0, 5]`.
+   *
+   * @returns The 3-tuple at that index.
+   *
+   * @throws When `i` is outside the vertex table bounds.
+   */
+  function vertexAt(i: number,): readonly [
+    number,
+    number,
+    number,
+  ] {
+    /**
+     * Vertex tuple from the canonical table; out-of-range becomes an explicit error rather than a silent `undefined`.
+     */
     const v = OCTAHEDRON_VERTICES[i];
     if (v === undefined) throw new Error(`octahedron vertex index out of range: ${i.toString()}`,);
     return v;
@@ -118,29 +200,43 @@ function buildOctahedronGeometry(): Geometry {
     faceIndex,
   ) {
     /** First corner of the triangle being emitted. */
-    const vA = vertexAt(a,);
+    const [
+      vAx,
+      vAy,
+      vAz,
+    ] = vertexAt(a,);
     /** Second corner of the triangle being emitted. */
-    const vB = vertexAt(b,);
+    const [
+      vBx,
+      vBy,
+      vBz,
+    ] = vertexAt(b,);
     /** Third corner of the triangle being emitted. */
-    const vC = vertexAt(c,);
+    const [
+      vCx,
+      vCy,
+      vCz,
+    ] = vertexAt(c,);
     /** Face-centroid sum component × `SQRT_3_INV` = octahedral unit normal. */
-    const nx = (vA[0] + vB[0] + vC[0]) * SQRT_3_INV;
+    const nx = (vAx + vBx + vCx) * SQRT_3_INV;
     /** Y component of the same face normal. */
-    const ny = (vA[1] + vB[1] + vC[1]) * SQRT_3_INV;
+    const ny = (vAy + vBy + vCy) * SQRT_3_INV;
     /** Z component of the same face normal. */
-    const nz = (vA[2] + vB[2] + vC[2]) * SQRT_3_INV;
+    const nz = (vAz + vBz + vCz) * SQRT_3_INV;
     /** Byte-flat write cursor for the position buffer; advances three vec3 slots per face. */
     const posOffset = faceIndex * FLOATS_PER_FACE_VEC3;
-    positions[posOffset + 0] = vA[0];
-    positions[posOffset + 1] = vA[1];
-    positions[posOffset + 2] = vA[2];
-    positions[posOffset + 3] = vB[0];
-    positions[posOffset + 4] = vB[1];
-    positions[posOffset + 5] = vB[2];
-    positions[posOffset + 6] = vC[0];
-    positions[posOffset + 7] = vC[1];
-    positions[posOffset + 8] = vC[2];
-    /** Write cursor for the normal buffer; identical stride to {@link posOffset}. */
+    positions[posOffset + 0] = vAx;
+    positions[posOffset + 1] = vAy;
+    positions[posOffset + 2] = vAz;
+    positions[posOffset + 3] = vBx;
+    positions[posOffset + 4] = vBy;
+    positions[posOffset + 5] = vBz;
+    positions[posOffset + 6] = vCx;
+    positions[posOffset + 7] = vCy;
+    positions[posOffset + 8] = vCz;
+    /**
+     * Write cursor for the normal buffer; identical stride to {@link posOffset}.
+     */
     const norOffset = faceIndex * FLOATS_PER_FACE_VEC3;
     normals[norOffset + 0] = nx;
     normals[norOffset + 1] = ny;

@@ -20,16 +20,21 @@
  * ```
  */
 
+import { MS_PER_DAY, } from '@monochromatic-dev/module-numeric-const';
 import type { Cache, } from './cache.ts';
-import { probePackageManifest, } from './probe-fields.ts';
-import type { NpmPackage, } from './probe-fields.ts';
+import {
+  type NpmPackage,
+  probePackageManifest,
+} from './probe-fields.ts';
 
 //region Constants
 
 /** Depth cap for transitive dep walks. */
 const TRANSITIVE_DEPTH_CAP = 5;
-/** 30-day TTL for cached transitive counts. */
-const TTL_30_DAYS = 30 * 24 * 60 * 60 * 1000;
+/** Number of days the cached transitive count remains valid. */
+const TTL_DAYS = 30;
+/** TTL for cached transitive counts. */
+const TTL_MS = TTL_DAYS * MS_PER_DAY;
 
 //endregion Constants
 
@@ -40,6 +45,7 @@ const TTL_30_DAYS = 30 * 24 * 60 * 60 * 1000;
  * transitive walk return `null` instead of throwing.
  *
  * @param npmName - npm package name.
+ *
  * @param cache - File cache handle.
  *
  * @returns Manifest, or `null` on any fetch error.
@@ -71,9 +77,13 @@ async function readManifestSilent(
  * Best-effort transitive dep count via a depth-bounded registry walk.
  *
  * @param name - npm package name.
+ *
  * @param version - Concrete version.
+ *
  * @param cache - File cache handle.
+ *
  * @param visited - Set of already-visited `name@version` keys.
+ *
  * @param depth - Current recursion depth (caller passes `0` initially).
  *
  * @returns Count of distinct packages reachable via `dependencies` within depth cap.
@@ -98,18 +108,22 @@ export async function probeTransitive(
     depth: number;
   },
 ): Promise<number> {
-  /** `name@version` identity used both as the cycle-breaker key in `visited` and as the cache key. */
+  /**
+   * `name@version` identity used both as the cycle-breaker key in `visited` and as the cache key.
+   */
   const key = `${name}@${version}`;
   if (visited.has(key,)) return 0;
   visited.add(key,);
   if (depth >= TRANSITIVE_DEPTH_CAP) return 0;
 
-  /** Cached transitive count from a previous run, if still within the 30-day TTL. */
+  /**
+   * Cached transitive count from a previous run, if still within {@link TTL_MS}.
+   */
   const cached = await cache.read<number>({
     name,
     version,
     field: 'transitive',
-    ttlMs: TTL_30_DAYS,
+    ttlMs: TTL_MS,
   },);
   if (cached !== undefined) return cached;
 

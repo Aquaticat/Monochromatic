@@ -108,6 +108,7 @@ const TOGGLE_VALUES: readonly ToggleValue[] = [
  * one data dim, skipping unknowns.
  *
  * @param probes - Source probes.
+ *
  * @param dim - Dim whose extent to compute.
  *
  * @returns Inclusive `[min, max]` bounds, or `[0, 0]` if no probe has a known value.
@@ -120,7 +121,10 @@ function computeRangeExtent(
     probes: readonly PackageProbe[];
     dim: DataDimKey;
   },
-): readonly [number, number,] {
+): readonly [
+  number,
+  number,
+] {
   /** Known (non-null) values for `dim` across `probes`; basis for the `[min, max]` extent. */
   const values = probes
     .map(function pluck(probe,) {
@@ -132,7 +136,12 @@ function computeRangeExtent(
     .filter(function nonNull(value,): value is number {
       return value !== null;
     },);
-  if (values.length === 0) return [0, 0,];
+  if (values.length === 0) {
+    return [
+      0,
+      0,
+    ];
+  }
   return [
     Math.min(...values,),
     Math.max(...values,),
@@ -149,8 +158,15 @@ function computeRangeExtent(
  * dim's units and become meaningless) and recomputes scene bounds.
  *
  * @param session - Mutable session.
+ *
  * @param probes - Source probes.
+ *
  * @param commit - Callback that re-renders + syncs hash.
+ *
+ * @example
+ * ```ts
+ * wireDimDropdowns({ session, probes, commit });
+ * ```
  */
 export function wireDimDropdowns(
   {
@@ -166,37 +182,42 @@ export function wireDimDropdowns(
   CHANNEL_KEYS.forEach(function bind(channel,) {
     /** Dim-dropdown `<select>` for this channel; source of the `change` event below. */
     const select = elSelect(`dim-${channel}`,);
-    select.addEventListener('change', function onChange() {
-      /** Raw `value` attribute from the dropdown; validated against {@link DIM_KEYS} before use. */
-      const raw = select.value;
-      /** Narrowed `DataDimKey` matching `raw`; `undefined` rejects stale or out-of-bounds values. */
-      const nextDim = DIM_KEYS.find(function match(candidate,) {
-        return candidate === raw;
-      },);
-      if (nextDim === undefined) return;
-      session.state.dimMapping[channel] = nextDim;
-      /** Fresh `[min, max]` for the newly-selected dim; replaces the now-meaningless previous range. */
-      const extent = computeRangeExtent({
-        probes,
-        dim: nextDim,
-      },);
-      session.state.ranges[channel] = extent;
-      /** Min-slider for this channel; min/max/value rewritten to the new dim's extent below. */
-      const minSlider = elInput(`range-${channel}-min`,);
-      /** Max-slider for this channel; min/max/value rewritten to the new dim's extent below. */
-      const maxSlider = elInput(`range-${channel}-max`,);
-      minSlider.min = extent[0].toString();
-      minSlider.max = extent[1].toString();
-      minSlider.value = extent[0].toString();
-      maxSlider.min = extent[0].toString();
-      maxSlider.max = extent[1].toString();
-      maxSlider.value = extent[1].toString();
-      session.bounds = computeSceneBounds({
-        probes,
-        dimMapping: session.state.dimMapping,
-      },);
-      commit();
-    },);
+    select.addEventListener(
+      'change',
+      function onChange() {
+        /**
+         * Raw `value` attribute from the dropdown; validated against {@link DIM_KEYS} before use.
+         */
+        const raw = select.value;
+        /** Narrowed `DataDimKey` matching `raw`; `undefined` rejects stale or out-of-bounds values. */
+        const nextDim = DIM_KEYS.find(function match(candidate,) {
+          return candidate === raw;
+        },);
+        if (nextDim === undefined) return;
+        session.state.dimMapping[channel] = nextDim;
+        /** Fresh `[min, max]` for the newly-selected dim; replaces the now-meaningless previous range. */
+        const extent = computeRangeExtent({
+          probes,
+          dim: nextDim,
+        },);
+        session.state.ranges[channel] = extent;
+        /** Min-slider for this channel; min/max/value rewritten to the new dim's extent below. */
+        const minSlider = elInput(`range-${channel}-min`,);
+        /** Max-slider for this channel; min/max/value rewritten to the new dim's extent below. */
+        const maxSlider = elInput(`range-${channel}-max`,);
+        minSlider.min = extent[0].toString();
+        minSlider.max = extent[1].toString();
+        minSlider.value = extent[0].toString();
+        maxSlider.min = extent[0].toString();
+        maxSlider.max = extent[1].toString();
+        maxSlider.value = extent[1].toString();
+        session.bounds = computeSceneBounds({
+          probes,
+          dimMapping: session.state.dimMapping,
+        },);
+        commit();
+      },
+    );
   },);
 }
 
@@ -206,7 +227,13 @@ export function wireDimDropdowns(
  * listen on a `change` event at the fieldset level.
  *
  * @param session - Mutable session.
+ *
  * @param commit - Callback that re-renders + syncs hash.
+ *
+ * @example
+ * ```ts
+ * wireToggles({ session, commit });
+ * ```
  */
 export function wireToggles(
   {
@@ -221,18 +248,21 @@ export function wireToggles(
     /** Fieldset wrapping the three radios for this toggle; event delegation hangs off it. */
     const fieldset = document.querySelector<HTMLFieldSetElement>(`[data-toggle="${key}"]`,);
     if (fieldset === null) return;
-    fieldset.addEventListener('change', function onChange(event,) {
-      /** Delegated event target; narrowed to `HTMLInputElement` below before reading `.value`. */
-      const input = event.target;
-      if (!(input instanceof HTMLInputElement)) return;
-      /** Narrowed `ToggleValue` matching the input's value; `undefined` rejects unexpected values. */
-      const next = TOGGLE_VALUES.find(function match(candidate,) {
-        return candidate === input.value;
-      },);
-      if (next === undefined) return;
-      session.state.toggles[key] = next;
-      commit();
-    },);
+    fieldset.addEventListener(
+      'change',
+      function onChange(event,) {
+        /** Delegated event target; narrowed to `HTMLInputElement` below before reading `.value`. */
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement)) return;
+        /** Narrowed `ToggleValue` matching the input's value; `undefined` rejects unexpected values. */
+        const next = TOGGLE_VALUES.find(function match(candidate,) {
+          return candidate === input.value;
+        },);
+        if (next === undefined) return;
+        session.state.toggles[key] = next;
+        commit();
+      },
+    );
   },);
 }
 
@@ -242,7 +272,13 @@ export function wireToggles(
  * mask is O(probes).
  *
  * @param session - Mutable session.
+ *
  * @param commit - Callback that re-renders + syncs hash.
+ *
+ * @example
+ * ```ts
+ * wireRanges({ session, commit });
+ * ```
  */
 export function wireRanges(
   {
@@ -268,11 +304,25 @@ export function wireRanges(
       const minVal = Number.parseFloat(minSlider.value,);
       /** Numeric form of the max-slider's current value. */
       const maxVal = Number.parseFloat(maxSlider.value,);
-      session.state.ranges[channel] = minVal <= maxVal ? [minVal, maxVal,] : [maxVal, minVal,];
+      session.state.ranges[channel] = minVal <= maxVal
+        ? [
+          minVal,
+          maxVal,
+        ]
+        : [
+          maxVal,
+          minVal,
+        ];
       commit();
     }
-    minSlider.addEventListener('input', onInput,);
-    maxSlider.addEventListener('input', onInput,);
+    minSlider.addEventListener(
+      'input',
+      onInput,
+    );
+    maxSlider.addEventListener(
+      'input',
+      onInput,
+    );
   },);
 }
 
@@ -282,7 +332,13 @@ export function wireRanges(
  * yield zero matches rather than crashing the page.
  *
  * @param session - Mutable session.
+ *
  * @param commit - Callback that re-renders + syncs hash.
+ *
+ * @example
+ * ```ts
+ * wireSearch({ session, commit });
+ * ```
  */
 export function wireSearch(
   {
@@ -295,10 +351,13 @@ export function wireSearch(
 ): void {
   /** Search-box `<input>`; mirrored to `state.search` on every keystroke. */
   const input = elInput('search',);
-  input.addEventListener('input', function onInput() {
-    session.state.search = input.value;
-    commit();
-  },);
+  input.addEventListener(
+    'input',
+    function onInput() {
+      session.state.search = input.value;
+      commit();
+    },
+  );
 }
 
 /**
@@ -306,7 +365,13 @@ export function wireSearch(
  * Each change triggers a full layer rebuild via `commit`.
  *
  * @param session - Mutable session.
+ *
  * @param commit - Callback that re-renders + syncs hash.
+ *
+ * @example
+ * ```ts
+ * wireDisplay({ session, commit });
+ * ```
  */
 export function wireDisplay(
   {
@@ -322,6 +387,7 @@ export function wireDisplay(
    * `session` + `commit` from the enclosing wire function.
    *
    * @param id - Element id of the checkbox.
+   *
    * @param key - Which display-toggles boolean the checkbox controls.
    */
   function bindCheckbox(
@@ -335,10 +401,13 @@ export function wireDisplay(
   ): void {
     /** Checkbox `<input>` resolved by id; `change` event drives the bound display toggle. */
     const input = elInput(id,);
-    input.addEventListener('change', function onChange() {
-      session.state.displayToggles[key] = input.checked;
-      commit();
-    },);
+    input.addEventListener(
+      'change',
+      function onChange() {
+        session.state.displayToggles[key] = input.checked;
+        commit();
+      },
+    );
   }
   bindCheckbox({
     id: 'display-wireframe',
@@ -358,13 +427,16 @@ export function wireDisplay(
   },);
   /** Name-labels `<select>`; controls how many probe names are rendered as text. */
   const nameLabels = elSelect('name-labels',);
-  nameLabels.addEventListener('change', function onChange() {
-    /** Raw `value` from the select; narrowed against the allowed name-label modes below. */
-    const raw = nameLabels.value;
-    if (raw !== 'none' && raw !== 'topN' && raw !== 'all') return;
-    session.state.displayToggles.nameLabels = raw;
-    commit();
-  },);
+  nameLabels.addEventListener(
+    'change',
+    function onChange() {
+      /** Raw `value` from the select; narrowed against the allowed name-label modes below. */
+      const raw = nameLabels.value;
+      if ((raw !== 'none') && (raw !== 'topN') && (raw !== 'all')) return;
+      session.state.displayToggles.nameLabels = raw;
+      commit();
+    },
+  );
 }
 
 /**
@@ -372,8 +444,15 @@ export function wireDisplay(
  * the state swap, every control's DOM value is re-synced.
  *
  * @param session - Mutable session.
+ *
  * @param probes - Source probes.
+ *
  * @param commit - Callback that re-renders + syncs hash.
+ *
+ * @example
+ * ```ts
+ * wireReset({ session, probes, commit });
+ * ```
  */
 export function wireReset(
   {
@@ -386,24 +465,29 @@ export function wireReset(
     commit: Commit;
   },
 ): void {
-  /** Reset button; click handler swaps state back to {@link defaultState} and re-syncs every control. */
+  /**
+   * Reset button; click handler swaps state back to {@link defaultState} and re-syncs every control.
+   */
   const button = el('reset',);
-  button.addEventListener('click', function onClick() {
-    /** Pristine state derived from the source probes; replaces the entire session state below. */
-    const next = defaultState({
-      probes,
-    },);
-    session.state = next;
-    session.bounds = computeSceneBounds({
-      probes,
-      dimMapping: next.dimMapping,
-    },);
-    syncDomFromState({
-      state: next,
-    },);
-    unpinTooltip();
-    commit();
-  },);
+  button.addEventListener(
+    'click',
+    function onClick() {
+      /** Pristine state derived from the source probes; replaces the entire session state below. */
+      const next = defaultState({
+        probes,
+      },);
+      session.state = next;
+      session.bounds = computeSceneBounds({
+        probes,
+        dimMapping: next.dimMapping,
+      },);
+      syncDomFromState({
+        state: next,
+      },);
+      unpinTooltip();
+      commit();
+    },
+  );
 }
 
 //endregion Wire functions

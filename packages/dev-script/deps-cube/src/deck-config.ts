@@ -30,8 +30,8 @@ import {
 import {
   buildAxisArrowheadLayers,
   buildAxisShaftLayer,
-  buildAxisTickLayer,
 } from './deck-layers.ts';
+import { buildAxisTickLayer, } from './deck-layers-ticks.ts';
 import {
   buildCoordinatePlaneLayers,
   buildThresholdLineLayer,
@@ -56,7 +56,10 @@ import type { AppState, } from './scripts/state.ts';
  * from the current dim mapping. Drives axis labels, color normalisation,
  * the wireframe extent, and the Unknown-cluster offset position.
  */
-export type SceneBounds = Record<ChannelKey, readonly [number, number,]>;
+export type SceneBounds = Record<ChannelKey, readonly [
+  number,
+  number,
+]>;
 
 //endregion Types
 
@@ -76,7 +79,13 @@ const CHANNEL_KEYS: readonly ChannelKey[] = [
 const CAMERA_FOVY = 50;
 
 /** Fallback extent when a channel has no known values across the probe set. */
-const FALLBACK_EXTENT: readonly [number, number,] = [0, 1,];
+const FALLBACK_EXTENT: readonly [
+  number,
+  number,
+] = [
+  0,
+  1,
+];
 
 //endregion Constants
 
@@ -103,6 +112,7 @@ export const orbitView: OrbitView = new OrbitView({
  * Run on every render so dim swaps reflow the camera + axis labels.
  *
  * @param probes - Full probe array.
+ *
  * @param dimMapping - Current channel → data-dim mapping.
  *
  * @returns Bounds per channel.
@@ -182,8 +192,11 @@ export function computeSceneBounds(
  * coordinate planes (the bounding-box wireframe is gone).
  *
  * @param probes - Full probe array.
+ *
  * @param state - Current `AppState`.
+ *
  * @param visibleIndices - Probes that pass every filter; others fade to 5% alpha.
+ *
  * @param bounds - Output of {@link computeSceneBounds}.
  *
  * @returns Array of deck.gl `Layer` instances ready for `new Deck({ layers })`.

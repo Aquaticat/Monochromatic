@@ -91,11 +91,30 @@ export const DIM_KINDS: Record<DataDimKey, DimKind> = {
  * size yields two radii and conveys nothing the shape channel doesn't.
  */
 export const CHANNEL_ACCEPTED_KINDS: Record<ChannelKey, readonly DimKind[]> = {
-  x: ['continuous', 'binary', 'categorical',],
-  y: ['continuous', 'binary', 'categorical',],
-  z: ['continuous', 'binary', 'categorical',],
-  color: ['continuous', 'binary', 'categorical',],
-  shape: ['binary', 'categorical',],
+  x: [
+    'continuous',
+    'binary',
+    'categorical',
+  ],
+  y: [
+    'continuous',
+    'binary',
+    'categorical',
+  ],
+  z: [
+    'continuous',
+    'binary',
+    'categorical',
+  ],
+  color: [
+    'continuous',
+    'binary',
+    'categorical',
+  ],
+  shape: [
+    'binary',
+    'categorical',
+  ],
   size: ['continuous',],
 };
 
@@ -122,6 +141,7 @@ export const TOGGLE_LABELS: Record<ToggleKey, string> = {
  * Tests whether a visual channel will represent a given dim.
  *
  * @param channel - Channel key being assigned.
+ *
  * @param dim - Candidate dim.
  *
  * @returns `true` if the channel's accepted-kinds list contains the dim's kind.

@@ -20,6 +20,8 @@
 
 import pLimit from 'p-limit';
 
+import { MS_PER_DAY, } from '@monochromatic-dev/module-numeric-const';
+
 import type { CatalogEntry, } from './catalog.ts';
 import type { Cache, } from './cache.ts';
 import {
@@ -98,8 +100,6 @@ export type PackageProbe = {
 
 /** Concurrency cap for parallel probes. */
 const CONCURRENCY = 8;
-/** Milliseconds per day, for staleness math. */
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 //endregion Constants
 
@@ -110,7 +110,9 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
  * on the repo info and the Linguist outcome.
  *
  * @param repoInfo - Normalised repository info, or `null` if missing.
+ *
  * @param isMonorepoHoused - `true` when `repository.directory` is set.
+ *
  * @param languages - Linguist response, or `null` when API failed.
  *
  * @returns A discriminated reason code, or `null` when all three GH-derived
@@ -129,7 +131,7 @@ function computeUnknownReason(
 ): UnknownReason | null {
   if (repoInfo === null) return 'no-repo';
   if (repoInfo.host !== 'github') return 'non-github';
-  if (isMonorepoHoused && languages === null) return 'monorepo';
+  if (isMonorepoHoused && (languages === null)) return 'monorepo';
   if (languages === null) return 'private-or-404';
   return null;
 }
@@ -139,6 +141,7 @@ function computeUnknownReason(
  * failure visually rather than crashing the run.
  *
  * @param entry - The catalog entry that failed.
+ *
  * @param err - The underlying error.
  *
  * @returns A {@link PackageProbe} with zeroed continuous fields and `unknownReason: 'private-or-404'`.
@@ -181,6 +184,7 @@ function failedProbe(
  * Runs the full probe pipeline for one catalog entry.
  *
  * @param entry - The catalog entry.
+ *
  * @param cache - Shared file cache handle.
  *
  * @returns Resolved {@link PackageProbe} with every field populated.
@@ -234,13 +238,20 @@ async function probeOne(
   /** Parsed repository pointer, or `null` when the manifest lacks a usable repo URL. */
   const repoInfo = parseRepository(versionManifest.repository,);
   /** `true` when the package lives inside a monorepo; Linguist measures the wrong scope here so we skip it. */
-  const isMonorepoHoused = repoInfo !== null && repoInfo.directory !== undefined;
+  const isMonorepoHoused = (repoInfo !== null) && (repoInfo.directory !== undefined);
   /** `true` when the repo is on GitHub; gates the GH-specific probes below. */
-  const isGitHub = repoInfo !== null && repoInfo.host === 'github';
+  const isGitHub = (repoInfo !== null) && (repoInfo.host === 'github');
+
+  /** `true` when the package is on GitHub and not buried inside a monorepo; gates the Linguist probe. */
+  const isStandaloneGitHub = isGitHub && (!isMonorepoHoused);
 
   /** Tuple of parallel GH/registry probe results: Linguist languages, last-commit ISO, transitive dep count. */
-  const [languages, lastCommitDate, transitiveDepCount,] = await Promise.all([
-    isGitHub && !isMonorepoHoused
+  const [
+    languages,
+    lastCommitDate,
+    transitiveDepCount,
+  ] = await Promise.all([
+    isStandaloneGitHub
       ? probeLanguages({
         owner: repoInfo.owner,
         repo: repoInfo.repo,
@@ -267,16 +278,24 @@ async function probeOne(
   /** Sum of Linguist byte counts across every detected language, used as the denominator for `tsRatioOrNull`. */
   const totalBytes = languages === null
     ? null
-    : Object.values(languages,).reduce(function sumBytes(a, b,) {
-      return a + b;
-    }, 0,);
+    : Object.values(languages,).reduce(
+      function sumBytes(
+        a,
+        b,
+      ) {
+        return a + b;
+      },
+      0,
+    );
   /** Bytes Linguist attributes to TypeScript; `null` when Linguist did not run or did not detect TS. */
   const tsBytes = languages?.['TypeScript'] ?? null;
   /** Bytes Linguist attributes to JavaScript; `0` when Linguist did not detect JS. */
   const jsBytes = languages?.['JavaScript'] ?? 0;
 
+  /** `true` when the Linguist-derived byte counts can't yield a meaningful TS ratio. */
+  const tsRatioUnknown = (totalBytes === null) || (totalBytes === 0) || (tsBytes === null);
   /** TS-share of total source bytes, in `[0, 1]`; `null` when Linguist data is missing or unusable. */
-  const tsRatioOrNull = totalBytes === null || totalBytes === 0 || tsBytes === null
+  const tsRatioOrNull = tsRatioUnknown
     ? null
     : tsBytes / totalBytes;
   /** Combined TS+JS bytes; `null` when Linguist data is missing. */
@@ -327,6 +346,7 @@ async function probeOne(
  * {@link failedProbe} so a single failure doesn't abort the whole audit.
  *
  * @param entries - Catalog entries from {@link readCatalog}.
+ *
  * @param cache - Shared file cache handle.
  *
  * @returns Array of probes, in the same order as `entries`.
@@ -350,7 +370,10 @@ export async function probeAll(
   /** Total entry count, cached for log messages. */
   const total = entries.length;
   /** Per-entry probe promises queued through `limit`; resolved in input order via `Promise.all`. */
-  const tasks = entries.map(function buildTask(entry, index,) {
+  const tasks = entries.map(function buildTask(
+    entry,
+    index,
+  ) {
     return limit(async function runTask() {
       console.error(`[probe ${(index + 1).toString()}/${total.toString()}] ${entry.npmName}`,);
       try {

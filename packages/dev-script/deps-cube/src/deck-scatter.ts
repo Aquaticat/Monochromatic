@@ -34,6 +34,7 @@ import type { Geometry, } from '@luma.gl/engine';
 import type { PackageProbe, } from './probe.ts';
 import {
   probeFillColor,
+  probePosition,
   probeRadiusWorld,
   unknownClusterPosition,
 } from './deck-accessors.ts';
@@ -42,9 +43,6 @@ import {
   octahedronGeometry,
   sphereGeometry,
 } from './deck-geometries.ts';
-import {
-  probePosition,
-} from './deck-accessors.ts';
 import {
   computeNameBakeSet,
   partitionProbes,
@@ -81,13 +79,21 @@ const TEXTURE_ALPHA = 255;
  * default) so the mesh keeps its 3D shading.
  *
  * @param datum - Probe + original index.
+ *
  * @param state - Current state.
+ *
  * @param bounds - Scene bounds.
+ *
  * @param visibleIndices - Set of original indices that pass every filter.
+ *
  * @param mesh - Geometry: sphere or octahedron.
+ *
  * @param shape - Texture-layout selector matching `mesh`.
+ *
  * @param idPrefix - Layer-id prefix; suffixed with `originalIndex` for uniqueness.
+ *
  * @param bake - Whether to draw the npm name into the texture (vs colour-only).
+ *
  * @param positionOverride - Optional explicit position; when set, takes precedence over `probePosition`.
  *
  * @returns SimpleMeshLayer instance.
@@ -112,7 +118,11 @@ function buildProbeLayer(
     shape: MeshShape;
     idPrefix: string;
     bake: boolean;
-    positionOverride?: readonly [number, number, number,] | undefined;
+    positionOverride?: readonly [
+      number,
+      number,
+      number,
+    ] | undefined;
   },
 ): Layer {
   /** `true` when the probe passes every filter; drives the layer's `opacity`. */
@@ -184,11 +194,19 @@ function buildProbeLayer(
  * baked with the probe's colour and (per the toggle) its npm name.
  *
  * @param probes - Full probe array.
+ *
  * @param state - Current state.
+ *
  * @param bounds - Scene bounds.
+ *
  * @param visibleIndices - Set of original indices that pass every filter.
  *
  * @returns Array of SimpleMeshLayers, one per leaf probe.
+ *
+ * @example
+ * ```ts
+ * const layers = buildLeafScatterLayer({ probes, state, bounds, visibleIndices });
+ * ```
  */
 export function buildLeafScatterLayer(
   {
@@ -233,11 +251,19 @@ export function buildLeafScatterLayer(
  * name on every face.
  *
  * @param probes - Full probe array.
+ *
  * @param state - Current state.
+ *
  * @param bounds - Scene bounds.
+ *
  * @param visibleIndices - Set of original indices that pass every filter.
  *
  * @returns Array of SimpleMeshLayers, one per non-leaf probe.
+ *
+ * @example
+ * ```ts
+ * const layers = buildNonLeafScatterLayer({ probes, state, bounds, visibleIndices });
+ * ```
  */
 export function buildNonLeafScatterLayer(
   {
@@ -282,11 +308,19 @@ export function buildNonLeafScatterLayer(
  * unknown colour and (per the toggle) the npm name.
  *
  * @param probes - Full probe array.
+ *
  * @param state - Current state.
+ *
  * @param bounds - Scene bounds.
+ *
  * @param visibleIndices - Set of original indices that pass every filter.
  *
  * @returns Array of SimpleMeshLayers, empty when the bucket has no probes.
+ *
+ * @example
+ * ```ts
+ * const layers = buildUnknownClusterLayer({ probes, state, bounds, visibleIndices });
+ * ```
  */
 export function buildUnknownClusterLayer(
   {

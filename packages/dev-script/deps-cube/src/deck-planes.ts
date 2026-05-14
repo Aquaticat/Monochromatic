@@ -35,24 +35,38 @@ import type { DimMapping, } from './scripts/filter.ts';
 
 /** Data shape for the PolygonLayer (coordinate planes); mutable arrays per deck.gl typings. */
 type PolygonDatum = {
-  polygon: [number, number, number,][];
+  polygon: [
+    number,
+    number,
+    number,
+  ][];
 };
 
 /** Data shape for the PathLayer (threshold guides); mutable arrays per deck.gl typings. */
 type PathDatum = {
-  path: [number, number, number,][];
+  path: [
+    number,
+    number,
+    number,
+  ][];
 };
 
 //endregion Types
 
 //region Constants
 
+/** Source-bytes value at the "300 SLOC" boundary; log10'd below. */
+const SOURCE_BYTES_AT_300_SLOC = 10_000;
+/** Days-since-commit value at the "1 year stale" boundary. */
+const DAYS_STALE_AT_ONE_YEAR = 365;
+/** Install-size value at the "100KB soft boundary"; log10'd below. */
+const INSTALL_BYTES_AT_100KB = 100_000;
 /** Source-bytes threshold (~ "300 SLOC" boundary), on log10. */
-const SOURCE_BYTES_THRESHOLD = Math.log10(10_000,);
+const SOURCE_BYTES_THRESHOLD = Math.log10(SOURCE_BYTES_AT_300_SLOC,);
 /** Days-since-commit threshold (1 year), on log10. */
-const DAYS_STALE_THRESHOLD = Math.log10(365,);
+const DAYS_STALE_THRESHOLD = Math.log10(DAYS_STALE_AT_ONE_YEAR,);
 /** Install-size threshold (~100KB soft boundary), on log10. */
-const INSTALL_SIZE_THRESHOLD = Math.log10(100_000,);
+const INSTALL_SIZE_THRESHOLD = Math.log10(INSTALL_BYTES_AT_100KB,);
 
 /**
  * Coordinate-plane fill colour: pale green, ~24% opacity.
@@ -61,7 +75,13 @@ const INSTALL_SIZE_THRESHOLD = Math.log10(100_000,);
  * the busy scene. The reference image's planes read more clearly; alpha
  * 60 gets visibly translucent without fully obscuring the data.
  */
-const COORDINATE_PLANE_COLOR: readonly [number, number, number, number,] = [
+/* oxlint-disable eslint/no-magic-numbers -- rgba components and line-width pixel are domain values; named consts would obscure the colour intent. */
+const COORDINATE_PLANE_COLOR: readonly [
+  number,
+  number,
+  number,
+  number,
+] = [
   140,
   200,
   140,
@@ -69,7 +89,12 @@ const COORDINATE_PLANE_COLOR: readonly [number, number, number, number,] = [
 ];
 
 /** Threshold-line colour: muted brown so the line reads as a heuristic guide, not part of the axes. */
-const THRESHOLD_LINE_COLOR: readonly [number, number, number, number,] = [
+const THRESHOLD_LINE_COLOR: readonly [
+  number,
+  number,
+  number,
+  number,
+] = [
   150,
   100,
   60,
@@ -80,8 +105,45 @@ const THRESHOLD_LINE_COLOR: readonly [number, number, number, number,] = [
 const PLANE_MARGIN_FRACTION = 0.05;
 /** Threshold-guide line width in pixels. */
 const THRESHOLD_LINE_WIDTH = 1.5;
+/* oxlint-enable eslint/no-magic-numbers */
 
 //endregion Constants
+
+//region Accessors
+
+/**
+ * Returns a `PolygonDatum`'s `polygon` field; deck.gl's `SolidPolygonLayer` calls this per datum.
+ *
+ * @param d - Source polygon datum.
+ *
+ * @returns The polygon's ring of vertices.
+ *
+ * @example
+ * ```ts
+ * new SolidPolygonLayer<PolygonDatum>({ getPolygon, ... });
+ * ```
+ */
+function getPolygonAccessor(d: PolygonDatum,): PolygonDatum['polygon'] {
+  return d.polygon;
+}
+
+/**
+ * Returns a `PathDatum`'s `path` field; deck.gl's `PathLayer` calls this per datum.
+ *
+ * @param d - Source path datum.
+ *
+ * @returns The path's vertex list.
+ *
+ * @example
+ * ```ts
+ * new PathLayer<PathDatum>({ getPath: getPathAccessor, ... });
+ * ```
+ */
+function getPathAccessor(d: PathDatum,): PathDatum['path'] {
+  return d.path;
+}
+
+//endregion Accessors
 
 //region Coordinate planes
 
@@ -94,6 +156,12 @@ const THRESHOLD_LINE_WIDTH = 1.5;
  * @param bounds - Scene bounds.
  *
  * @returns Three PolygonLayers (floor / back / side).
+ *
+ * @example
+ * ```ts
+ * const planes = buildCoordinatePlaneLayers({ bounds });
+ * // → [floor, back, side] SolidPolygonLayer instances
+ * ```
  */
 export function buildCoordinatePlaneLayers(
   { bounds, }: { bounds: SceneBounds; },
@@ -128,28 +196,76 @@ export function buildCoordinatePlaneLayers(
   /** Floor polygon (XZ plane at `yMin`); first of the three coordinate walls. */
   const floor: PolygonDatum = {
     polygon: [
-      [xMin - mx, yMin, zMin - mz,],
-      [xMax + mx, yMin, zMin - mz,],
-      [xMax + mx, yMin, zMax + mz,],
-      [xMin - mx, yMin, zMax + mz,],
+      [
+        xMin - mx,
+        yMin,
+        zMin - mz,
+      ],
+      [
+        xMax + mx,
+        yMin,
+        zMin - mz,
+      ],
+      [
+        xMax + mx,
+        yMin,
+        zMax + mz,
+      ],
+      [
+        xMin - mx,
+        yMin,
+        zMax + mz,
+      ],
     ],
   };
   /** Back polygon (XY plane at `zMin`); second of the three coordinate walls. */
   const back: PolygonDatum = {
     polygon: [
-      [xMin - mx, yMin - my, zMin,],
-      [xMax + mx, yMin - my, zMin,],
-      [xMax + mx, yMax + my, zMin,],
-      [xMin - mx, yMax + my, zMin,],
+      [
+        xMin - mx,
+        yMin - my,
+        zMin,
+      ],
+      [
+        xMax + mx,
+        yMin - my,
+        zMin,
+      ],
+      [
+        xMax + mx,
+        yMax + my,
+        zMin,
+      ],
+      [
+        xMin - mx,
+        yMax + my,
+        zMin,
+      ],
     ],
   };
   /** Side polygon (YZ plane at `xMin`); third of the three coordinate walls. */
   const side: PolygonDatum = {
     polygon: [
-      [xMin, yMin - my, zMin - mz,],
-      [xMin, yMin - my, zMax + mz,],
-      [xMin, yMax + my, zMax + mz,],
-      [xMin, yMax + my, zMin - mz,],
+      [
+        xMin,
+        yMin - my,
+        zMin - mz,
+      ],
+      [
+        xMin,
+        yMin - my,
+        zMax + mz,
+      ],
+      [
+        xMin,
+        yMax + my,
+        zMax + mz,
+      ],
+      [
+        xMin,
+        yMax + my,
+        zMin - mz,
+      ],
     ],
   };
   return [
@@ -158,9 +274,7 @@ export function buildCoordinatePlaneLayers(
       data: [
         floor,
       ],
-      getPolygon: function getPolygon(d,) {
-        return d.polygon;
-      },
+      getPolygon: getPolygonAccessor,
       getFillColor: COORDINATE_PLANE_COLOR,
       _full3d: true,
     },),
@@ -169,9 +283,7 @@ export function buildCoordinatePlaneLayers(
       data: [
         back,
       ],
-      getPolygon: function getPolygon(d,) {
-        return d.polygon;
-      },
+      getPolygon: getPolygonAccessor,
       getFillColor: COORDINATE_PLANE_COLOR,
       _full3d: true,
     },),
@@ -180,9 +292,7 @@ export function buildCoordinatePlaneLayers(
       data: [
         side,
       ],
-      getPolygon: function getPolygon(d,) {
-        return d.polygon;
-      },
+      getPolygon: getPolygonAccessor,
       getFillColor: COORDINATE_PLANE_COLOR,
       _full3d: true,
     },),
@@ -199,9 +309,16 @@ export function buildCoordinatePlaneLayers(
  * the relevant channel's dim mapping matches.
  *
  * @param bounds - Scene bounds.
+ *
  * @param dimMapping - Current dim mapping.
  *
  * @returns PathLayer with zero to three guide segments, or `null` if none qualify.
+ *
+ * @example
+ * ```ts
+ * const layer = buildThresholdLineLayer({ bounds, dimMapping: state.dimMapping });
+ * if (layer !== null) layers.push(layer);
+ * ```
  */
 export function buildThresholdLineLayer(
   {
@@ -229,45 +346,67 @@ export function buildThresholdLineLayer(
   /** Accumulator for guide-line paths; one entry per threshold whose dim is mapped and within bounds. */
   const segments: PathDatum[] = [];
   if (
-    dimMapping.x === 'logSourceBytes'
-    && SOURCE_BYTES_THRESHOLD > xMin
-    && SOURCE_BYTES_THRESHOLD < xMax
+    (dimMapping.x === 'logSourceBytes')
+    && (SOURCE_BYTES_THRESHOLD > xMin)
+    && (SOURCE_BYTES_THRESHOLD < xMax)
   )
     segments.push({
       path: [
-        [SOURCE_BYTES_THRESHOLD, yMin, zMin,],
-        [SOURCE_BYTES_THRESHOLD, yMax, zMin,],
+        [
+          SOURCE_BYTES_THRESHOLD,
+          yMin,
+          zMin,
+        ],
+        [
+          SOURCE_BYTES_THRESHOLD,
+          yMax,
+          zMin,
+        ],
       ],
     },);
   if (
-    dimMapping.y === 'logDaysStale'
-    && DAYS_STALE_THRESHOLD > yMin
-    && DAYS_STALE_THRESHOLD < yMax
+    (dimMapping.y === 'logDaysStale')
+    && (DAYS_STALE_THRESHOLD > yMin)
+    && (DAYS_STALE_THRESHOLD < yMax)
   )
     segments.push({
       path: [
-        [xMin, DAYS_STALE_THRESHOLD, zMin,],
-        [xMax, DAYS_STALE_THRESHOLD, zMin,],
+        [
+          xMin,
+          DAYS_STALE_THRESHOLD,
+          zMin,
+        ],
+        [
+          xMax,
+          DAYS_STALE_THRESHOLD,
+          zMin,
+        ],
       ],
     },);
   if (
-    dimMapping.z === 'logInstallSize'
-    && INSTALL_SIZE_THRESHOLD > bounds.z[0]
-    && INSTALL_SIZE_THRESHOLD < bounds.z[1]
+    (dimMapping.z === 'logInstallSize')
+    && (INSTALL_SIZE_THRESHOLD > bounds.z[0])
+    && (INSTALL_SIZE_THRESHOLD < bounds.z[1])
   )
     segments.push({
       path: [
-        [xMin, yMin, INSTALL_SIZE_THRESHOLD,],
-        [xMax, yMin, INSTALL_SIZE_THRESHOLD,],
+        [
+          xMin,
+          yMin,
+          INSTALL_SIZE_THRESHOLD,
+        ],
+        [
+          xMax,
+          yMin,
+          INSTALL_SIZE_THRESHOLD,
+        ],
       ],
     },);
   if (segments.length === 0) return null;
   return new PathLayer<PathDatum>({
     id: 'threshold-guides',
     data: segments,
-    getPath: function getPath(d,) {
-      return d.path;
-    },
+    getPath: getPathAccessor,
     getColor: THRESHOLD_LINE_COLOR,
     getWidth: THRESHOLD_LINE_WIDTH,
     widthUnits: 'pixels',

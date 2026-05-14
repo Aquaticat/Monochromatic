@@ -94,6 +94,7 @@ export type Cache = {
    * Writes a field's value, creating the cache file atomically.
    *
    * @param key - Field address.
+   *
    * @param value - JSON-serialisable value to store.
    *
    * @returns Resolves once the file has been renamed into place.
@@ -126,15 +127,24 @@ function defaultRootDir(): string {
   /** XDG override; empty or unset falls through to the `$HOME/.cache` default. */
   const xdg = process.env['XDG_CACHE_HOME'];
   /** Resolved cache home; honours XDG when present, falls back to the conventional location. */
-  const cacheHome = xdg !== undefined && xdg !== '' ? xdg : join(homedir(), '.cache',);
-  return join(cacheHome, 'monochromatic', 'deps-cube',);
+  const cacheHome = ((xdg !== undefined) && (xdg !== '')) ? xdg : join(
+    homedir(),
+    '.cache',
+  );
+  return join(
+    cacheHome,
+    'monochromatic',
+    'deps-cube',
+  );
 }
 
 /**
  * Resolves the absolute file path for one (name, version) cache entry.
  *
  * @param name - npm package name (may be scoped).
+ *
  * @param version - Concrete version string.
+ *
  * @param rootDir - Cache root directory.
  *
  * @returns Absolute path to the JSON file (which may not yet exist).
@@ -150,7 +160,11 @@ function filePath(
     rootDir: string;
   },
 ): string {
-  return join(rootDir, name, `${version}.json`,);
+  return join(
+    rootDir,
+    name,
+    `${version}.json`,
+  );
 }
 
 /**
@@ -165,7 +179,10 @@ function filePath(
 async function readFileOrEmpty(path: string,): Promise<CacheFile> {
   try {
     /** UTF-8 file contents fed to `JSON.parse`; any failure here is caught below as a miss. */
-    const raw = await readFile(path, 'utf8',);
+    const raw = await readFile(
+      path,
+      'utf8',
+    );
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns `any`; cache files are written only by us.
     return JSON.parse(raw,) as CacheFile;
   } catch {
@@ -219,7 +236,7 @@ export function createCache(
     /** Stored entry for the requested field, or `undefined` for a miss. */
     const entry = file[field];
     if (entry === undefined) return undefined;
-    if (ttlMs !== null && Date.now() - entry.fetchedAt > ttlMs)
+    if ((ttlMs !== null) && ((Date.now() - entry.fetchedAt) > ttlMs))
       return undefined;
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- caller asserts T; cache file shape is opaque at this layer.
     return entry.value as T;
@@ -255,11 +272,25 @@ export function createCache(
         fetchedAt: Date.now(),
       },
     };
-    await mkdir(dirname(path,), { recursive: true, },);
+    await mkdir(
+      dirname(path,),
+      { recursive: true, },
+    );
     /** Sibling temp path used for the atomic write; pid and timestamp avoid collisions between concurrent writes. */
     const tmpPath = `${path}.${process.pid}.${Date.now()}.tmp`;
-    await writeFile(tmpPath, JSON.stringify(next, null, 2,), 'utf8',);
-    await rename(tmpPath, path,);
+    await writeFile(
+      tmpPath,
+      JSON.stringify(
+        next,
+        null,
+        2,
+      ),
+      'utf8',
+    );
+    await rename(
+      tmpPath,
+      path,
+    );
   }
 
   return {

@@ -44,11 +44,58 @@ import type { ChromeColors, } from './scripts/scheme.ts';
 
 /** Data shape for the TextLayer. */
 type TextDatum = {
-  position: [number, number, number,];
+  position: [
+    number,
+    number,
+    number,
+  ];
   text: string;
 };
 
 //endregion Types
+
+//region Datum accessors
+
+/**
+ * Reads the `position` field off a {@link TextDatum} for `TextLayer.getPosition`.
+ *
+ * Module-scoped to avoid recreating the closure per layer; it captures
+ * no outer state, so hoisting is safe.
+ *
+ * @param d - One TextLayer datum.
+ *
+ * @returns The 3D position tuple for the label.
+ *
+ * @example
+ * ```ts
+ * getDatumPosition({ position: [0, 0, 0], text: 'O' }); // [0, 0, 0]
+ * ```
+ */
+function getDatumPosition(d: TextDatum,): [
+  number,
+  number,
+  number,
+] {
+  return d.position;
+}
+
+/**
+ * Reads the `text` field off a {@link TextDatum} for `TextLayer.getText`.
+ *
+ * @param d - One TextLayer datum.
+ *
+ * @returns The label string to render at the datum's position.
+ *
+ * @example
+ * ```ts
+ * getDatumText({ position: [0, 0, 0], text: 'X' }); // 'X'
+ * ```
+ */
+function getDatumText(d: TextDatum,): string {
+  return d.text;
+}
+
+//endregion Datum accessors
 
 //region Constants
 
@@ -149,7 +196,17 @@ function axisExtents(
  *
  * @param bounds - Scene bounds.
  *
+ * @param chrome - Theme-aware colour palette.
+ *
  * @returns TextLayer with three capital-letter labels.
+ *
+ * @example
+ * ```ts
+ * const layer = buildAxisCapitalsLayer({
+ *   bounds: { x: [0, 6], y: [0, 6], z: [0, 6] },
+ *   chrome: detectScheme(),
+ * });
+ * ```
  */
 export function buildAxisCapitalsLayer(
   {
@@ -173,27 +230,35 @@ export function buildAxisCapitalsLayer(
   /** Three capital-letter labels, one per axis tip. */
   const data: TextDatum[] = [
     {
-      position: [g.xMax + offX, g.yMin, g.zMin,],
+      position: [
+        g.xMax + offX,
+        g.yMin,
+        g.zMin,
+      ],
       text: 'X',
     },
     {
-      position: [g.xMin, g.yMax + offY, g.zMin,],
+      position: [
+        g.xMin,
+        g.yMax + offY,
+        g.zMin,
+      ],
       text: 'Y',
     },
     {
-      position: [g.xMin, g.yMin, g.zMax + offZ,],
+      position: [
+        g.xMin,
+        g.yMin,
+        g.zMax + offZ,
+      ],
       text: 'Z',
     },
   ];
   return new TextLayer<TextDatum>({
     id: 'axis-capitals',
     data,
-    getPosition: function getPosition(d,) {
-      return d.position;
-    },
-    getText: function getText(d,) {
-      return d.text;
-    },
+    getPosition: getDatumPosition,
+    getText: getDatumText,
     getSize: TIP_LABEL_SIZE_PX,
     getColor: chrome.axisLabel,
     sizeUnits: 'pixels',
@@ -212,9 +277,21 @@ export function buildAxisCapitalsLayer(
  * etc.), drawn just inside each arrow tip along the axis line.
  *
  * @param bounds - Scene bounds.
+ *
  * @param dimMapping - Current dim mapping.
  *
+ * @param chrome - Theme-aware colour palette.
+ *
  * @returns TextLayer with three subtitle labels.
+ *
+ * @example
+ * ```ts
+ * const layer = buildAxisSubtitlesLayer({
+ *   bounds: { x: [0, 6], y: [0, 6], z: [0, 6] },
+ *   dimMapping: { x: 'logSourceBytes', y: 'logDownloads', z: 'tsRatio', color: 'logDaysStale', shape: 'isLeafNumeric', size: 'logInstallSize' },
+ *   chrome: detectScheme(),
+ * });
+ * ```
  */
 export function buildAxisSubtitlesLayer(
   {
@@ -238,27 +315,35 @@ export function buildAxisSubtitlesLayer(
   /** Three dim-name subtitle labels positioned at each axis midpoint. */
   const data: TextDatum[] = [
     {
-      position: [(g.xMin + g.xMax) * HALF, g.yMin - offY, g.zMin,],
+      position: [
+        (g.xMin + g.xMax) * HALF,
+        g.yMin - offY,
+        g.zMin,
+      ],
       text: DIM_DISPLAY_NAMES[dimMapping.x],
     },
     {
-      position: [g.xMin - offX, (g.yMin + g.yMax) * HALF, g.zMin,],
+      position: [
+        g.xMin - offX,
+        (g.yMin + g.yMax) * HALF,
+        g.zMin,
+      ],
       text: DIM_DISPLAY_NAMES[dimMapping.y],
     },
     {
-      position: [g.xMin, g.yMin - offY, (g.zMin + g.zMax) * HALF,],
+      position: [
+        g.xMin,
+        g.yMin - offY,
+        (g.zMin + g.zMax) * HALF,
+      ],
       text: DIM_DISPLAY_NAMES[dimMapping.z],
     },
   ];
   return new TextLayer<TextDatum>({
     id: 'axis-subtitles',
     data,
-    getPosition: function getPosition(d,) {
-      return d.position;
-    },
-    getText: function getText(d,) {
-      return d.text;
-    },
+    getPosition: getDatumPosition,
+    getText: getDatumText,
     getSize: SUBTITLE_LABEL_SIZE_PX,
     getColor: chrome.axisLabel,
     sizeUnits: 'pixels',
@@ -279,7 +364,17 @@ export function buildAxisSubtitlesLayer(
  *
  * @param bounds - Scene bounds.
  *
+ * @param chrome - Theme-aware colour palette.
+ *
  * @returns TextLayer with one origin label.
+ *
+ * @example
+ * ```ts
+ * const layer = buildOriginLabelLayer({
+ *   bounds: { x: [0, 6], y: [0, 6], z: [0, 6] },
+ *   chrome: detectScheme(),
+ * });
+ * ```
  */
 export function buildOriginLabelLayer(
   {
@@ -303,19 +398,19 @@ export function buildOriginLabelLayer(
   /** Single-entry data array; only the origin marker is rendered by this layer. */
   const data: TextDatum[] = [
     {
-      position: [g.xMin - offX, g.yMin - offY, g.zMin - offZ,],
+      position: [
+        g.xMin - offX,
+        g.yMin - offY,
+        g.zMin - offZ,
+      ],
       text: 'O',
     },
   ];
   return new TextLayer<TextDatum>({
     id: 'origin-label',
     data,
-    getPosition: function getPosition(d,) {
-      return d.position;
-    },
-    getText: function getText(d,) {
-      return d.text;
-    },
+    getPosition: getDatumPosition,
+    getText: getDatumText,
     getSize: ORIGIN_LABEL_SIZE_PX,
     getColor: chrome.originLabel,
     sizeUnits: 'pixels',

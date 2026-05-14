@@ -71,7 +71,7 @@ await describe({
       fn: async () => {
         await using temp = await tempCacheRoot();
         const cache = createCache({ rootDir: temp.rootDir, },);
-        const payload = { TypeScript: 1000, JavaScript: 500, };
+        const payload = { TypeScript: 1_000, JavaScript: 500, };
         await cache.write({
           name: 'preact',
           version: '10.0.0',

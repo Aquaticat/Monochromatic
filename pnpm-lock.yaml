@@ -1055,6 +1055,9 @@ importers:
       '@monochromatic-dev/module-fs-path':
         specifier: workspace:*
         version: link:../../module/fs-path
+      '@monochromatic-dev/module-numeric-const':
+        specifier: workspace:*
+        version: link:../../module/numeric-const
       find-up:
         specifier: 'catalog:'
         version: 8.0.0
@@ -2243,6 +2246,9 @@ importers:
       '@monochromatic-dev/module-numeric-const':
         specifier: workspace:*
         version: link:../../module/numeric-const
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
       pdfjs-dist:
         specifier: 'catalog:'
         version: 5.7.284

@@ -53,10 +53,15 @@ const CHANNEL_KEYS: readonly ChannelKey[] = [
  * @returns Element typed as `HTMLElement`.
  *
  * @throws When the element is absent from the DOM.
+ *
+ * @example
+ * ```ts
+ * el('dim-x').classList.add('active');
+ * ```
  */
 export function el(id: string,): HTMLElement {
-  /** Raw `getElementById` result, validated below so the caller receives a non-null element. */
-  const node = document.getElementById(id,);
+  /** Raw `querySelector` result, validated below so the caller receives a non-null element. */
+  const node = document.querySelector<HTMLElement>(`#${id}`,);
   if (node === null) throw new Error(`Control element #${id} missing from DOM`,);
   return node;
 }
@@ -69,9 +74,16 @@ export function el(id: string,): HTMLElement {
  * @returns Element typed as `HTMLInputElement`.
  *
  * @throws When the element is absent or not an `<input>`.
+ *
+ * @example
+ * ```ts
+ * elInput('search').value = 'etag';
+ * ```
  */
 export function elInput(id: string,): HTMLInputElement {
-  /** Element resolved by {@link el}, narrowed below to `HTMLInputElement` via `instanceof`. */
+  /**
+   * Element resolved by {@link el}, narrowed below to `HTMLInputElement` via `instanceof`.
+   */
   const node = el(id,);
   if (!(node instanceof HTMLInputElement)) throw new Error(`Control element #${id} is not an <input>`,);
   return node;
@@ -85,9 +97,16 @@ export function elInput(id: string,): HTMLInputElement {
  * @returns Element typed as `HTMLSelectElement`.
  *
  * @throws When the element is absent or not a `<select>`.
+ *
+ * @example
+ * ```ts
+ * elSelect('dim-x').value = 'tsRatio';
+ * ```
  */
 export function elSelect(id: string,): HTMLSelectElement {
-  /** Element resolved by {@link el}, narrowed below to `HTMLSelectElement` via `instanceof`. */
+  /**
+   * Element resolved by {@link el}, narrowed below to `HTMLSelectElement` via `instanceof`.
+   */
   const node = el(id,);
   if (!(node instanceof HTMLSelectElement)) throw new Error(`Control element #${id} is not a <select>`,);
   return node;
@@ -106,6 +125,11 @@ export function elSelect(id: string,): HTMLSelectElement {
  * input checked. Search input, display checkboxes, name-labels select.
  *
  * @param state - State whose values to write into the DOM.
+ *
+ * @example
+ * ```ts
+ * syncDomFromState({ state: defaultAppState() });
+ * ```
  */
 export function syncDomFromState(
   { state, }: { state: AppState; },

@@ -54,7 +54,12 @@ const PACKAGE_ROOT = await findPackageRootCached({
  * source tree is shipped alongside the built artifacts (see
  * `package.json#files`) so the path resolves in both modes.
  */
-const CONTROLLER_ENTRY_PATH = resolvePath(PACKAGE_ROOT, 'src', 'scripts', 'controller.ts',);
+const CONTROLLER_ENTRY_PATH = resolvePath(
+  PACKAGE_ROOT,
+  'src',
+  'scripts',
+  'controller.ts',
+);
 
 /**
  * Inlined contents of `src/styles.css`, read once at module load.
@@ -69,7 +74,11 @@ const CONTROLLER_ENTRY_PATH = resolvePath(PACKAGE_ROOT, 'src', 'scripts', 'contr
  * after a tsdown build.
  */
 const stylesCss = await readFile(
-  resolvePath(PACKAGE_ROOT, 'src', 'styles.css',),
+  resolvePath(
+    PACKAGE_ROOT,
+    'src',
+    'styles.css',
+  ),
   'utf8',
 );
 
@@ -128,8 +137,14 @@ async function bundleController(): Promise<string> {
  */
 function escapeForScriptTag(js: string,): string {
   return js
-    .replaceAll('</script', '<\\/script',)
-    .replaceAll('<!--', '<\\!--',);
+    .replaceAll(
+      '</script',
+      String.raw`<\/script`,
+    )
+    .replaceAll(
+      '<!--',
+      String.raw`<\!--`,
+    );
 }
 
 //endregion Helpers

@@ -34,7 +34,7 @@ const PROBES: readonly PackageProbe[] = [
     isLeaf: true,
     weeklyDownloads: 5_000_000,
     installSizeBytes: 250_000,
-    packageAgeDays: 1500,
+    packageAgeDays: 1_500,
     licenseClass: 'permissive',
     runtimeDepCount: 0,
     transitiveDepCount: 0,
@@ -102,7 +102,7 @@ await describe({
         sinon.stub(Bun, 'build',).resolves({
           success: true,
           // oxlint-disable-next-line typescript-eslint/no-explicit-any -- minimal stub of BuildArtifact for the test path.
-          outputs: [{ text: async (): Promise<string> => '</script><!--' + FIXTURE_BUNDLE, } as any,],
+          outputs: [{ text: async (): Promise<string> => `</script><!--${FIXTURE_BUNDLE}`, } as any,],
           logs: [],
           // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- minimal stub of BuildOutput; only the consumed fields are populated.
         } as unknown as Awaited<ReturnType<typeof Bun.build>>,);
@@ -110,8 +110,8 @@ await describe({
         /* oxlint-enable typescript-eslint/no-unsafe-call */
 
         const html = await renderHtml({ probes: PROBES, },);
-        expect(html,).toContain('<\\/script>',);
-        expect(html,).toContain('<\\!--',);
+        expect(html,).toContain(String.raw`<\/script>`,);
+        expect(html,).toContain(String.raw`<\!--`,);
         // No raw `</script>` inside the inlined script blocks (the closing tag
         // for our own <script> remains in the document, so we check the bundle
         // payload only):

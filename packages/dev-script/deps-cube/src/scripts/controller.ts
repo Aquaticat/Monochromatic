@@ -100,8 +100,10 @@ type Session = {
  * @throws When `window.__PROBES__` was not injected.
  */
 function getProbes(): readonly PackageProbe[] {
+  /* oxlint-disable eslint-plugin-unicorn/prefer-global-this -- accessing the `Window`-augmented `__PROBES__` field requires the named global, not `globalThis`. */
   /** Probe array injected onto `window` by `render-html.ts`; `undefined` signals a broken bundle. */
   const probes = window.__PROBES__;
+  /* oxlint-enable eslint-plugin-unicorn/prefer-global-this */
   if (probes === undefined) throw new Error('window.__PROBES__ not injected; check render-html.ts',);
   return probes;
 }
@@ -117,11 +119,12 @@ function getProbes(): readonly PackageProbe[] {
  * @returns The picked probe, or `null` when no probe is under the cursor.
  */
 function pickedProbe(info: PickingInfo,): PackageProbe | null {
-  if (info.object === undefined || info.object === null) return null;
-  if (typeof info.object !== 'object') return null;
+  if ((info.object === undefined) || (info.object === null)) return null;
+  if ((typeof info.object) !== 'object') return null;
   if (!('probe' in info.object)) return null;
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- ScatterplotLayer is fed ScatterDatum from layer factories; .probe is always a PackageProbe.
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access -- ScatterplotLayer is fed ScatterDatum from layer factories; .probe is always a PackageProbe. */
   return info.object.probe as PackageProbe;
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access */
 }
 
 //endregion Helpers
@@ -133,6 +136,7 @@ function pickedProbe(info: PickingInfo,): PackageProbe | null {
  * visibility counter, and writes the result back into the session.
  *
  * @param session - Mutable session.
+ *
  * @param probes - Source probes.
  */
 function recomputeVisibility(
@@ -152,7 +156,7 @@ function recomputeVisibility(
     dimMapping: session.state.dimMapping,
   },);
   /** Counter element under the canvas; missing in tests / partial pages, so we no-op when absent. */
-  const counter = document.getElementById('visibility-counter',);
+  const counter = document.querySelector<HTMLElement>('#visibility-counter',);
   if (counter !== null) counter.textContent = `${session.visibleIndices.size.toString()} of ${probes.length.toString()} visible`;
 }
 
@@ -161,6 +165,7 @@ function recomputeVisibility(
  * `setProps`.
  *
  * @param session - Mutable session.
+ *
  * @param probes - Source probes.
  */
 function rerenderLayers(
@@ -194,9 +199,13 @@ function rerenderLayers(
 function syncHash(
   { session, }: { session: Session; },
 ): void {
-  history.replaceState(null, '', writeStateToHash({
-    state: session.state,
-  },),);
+  history.replaceState(
+    null,
+    '',
+    writeStateToHash({
+      state: session.state,
+    },),
+  );
 }
 
 //endregion Render path
@@ -257,6 +266,7 @@ function onCanvasClick(info: PickingInfo,): void {
 function createSession(
   { probes, }: { probes: readonly PackageProbe[]; },
 ): Session {
+  /* oxlint-disable eslint-plugin-unicorn/prefer-global-this -- `window.location` is the canonical name; aliasing to `globalThis.location` only obscures intent for a browser-only file. */
   /** Initial `AppState`; uses any bookmarked URL hash, otherwise falls back to the data-driven defaults. */
   const initial = readStateFromHash({
     hash: window.location.hash,
@@ -264,6 +274,7 @@ function createSession(
       probes,
     },),
   },);
+  /* oxlint-enable eslint-plugin-unicorn/prefer-global-this */
   /** Per-channel data extents used by every layer factory; recomputed only when the dim mapping changes. */
   const bounds = computeSceneBounds({
     probes,
@@ -329,7 +340,9 @@ function createSession(
  * the URL hash, and updates the visibility counter.
  */
 function start(): void {
-  /** Embedded probe payload; throws via {@link getProbes} when the global is missing. */
+  /**
+   * Embedded probe payload; throws via {@link getProbes} when the global is missing.
+   */
   const probes = getProbes();
   /** Hydrated session for this page load. */
   const session = createSession({

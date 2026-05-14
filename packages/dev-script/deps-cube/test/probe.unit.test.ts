@@ -60,12 +60,24 @@ async function tempPopulatedCache(
   [Symbol.asyncDispose]: () => Promise<void>;
 }> {
   const rootDir = await mkdtemp(join(tmpdir(), 'deps-cube-probe-',),);
-  for (const [nameAndVersion, fields,] of Object.entries(entries,)) {
+  /** Pre-fill operations queued from `entries`, awaited together so each cache entry is written without serial-await overhead. */
+  const fillTasks = Object.entries(entries,).map(async function fillOne(
+    [nameAndVersion, fields,],
+  ) {
     const slashIdx = nameAndVersion.lastIndexOf('/',);
-    const name = nameAndVersion.slice(0, slashIdx,);
+    const name = nameAndVersion.slice(
+      0,
+      slashIdx,
+    );
     const version = nameAndVersion.slice(slashIdx + 1,);
-    const dir = join(rootDir, name,);
-    await mkdir(dir, { recursive: true, },);
+    const dir = join(
+      rootDir,
+      name,
+    );
+    await mkdir(
+      dir,
+      { recursive: true, },
+    );
     const payload: Record<string, { value: unknown; fetchedAt: number; }> = {};
     for (const { field, value, } of fields) {
       payload[field] = {
@@ -73,8 +85,20 @@ async function tempPopulatedCache(
         fetchedAt: Date.now(),
       };
     }
-    await writeFile(join(dir, `${version}.json`,), JSON.stringify(payload, null, 2,), 'utf8',);
-  }
+    await writeFile(
+      join(
+        dir,
+        `${version}.json`,
+      ),
+      JSON.stringify(
+        payload,
+        null,
+        2,
+      ),
+      'utf8',
+    );
+  },);
+  await Promise.all(fillTasks,);
   return {
     rootDir,
     [Symbol.asyncDispose]: async function dispose() {
@@ -253,7 +277,7 @@ await describe({
             ],
             'preactjs/preact/_repo': [
               { field: 'languages', value: { TypeScript: 900, JavaScript: 100, }, },
-              { field: 'pushed_at', value: new Date(Date.now() - 14 * 86_400_000,).toISOString(), },
+              { field: 'pushed_at', value: new Date(Date.now() - (14 * 86_400_000),).toISOString(), },
             ],
             'preact/10.26.0': [
               { field: 'transitive', value: 0, },

@@ -64,6 +64,9 @@ const PACKAGE_ROOT = await findPackageRootCached({
 
 //region Helpers
 
+/** Length of the `YYYY-MM-DDTHH:MM:SS` prefix in an ISO 8601 UTC timestamp; drops `.sssZ`. */
+const ISO_SECONDS_PREFIX_LENGTH = 19;
+
 /**
  * Builds the output filename for the current run.
  *
@@ -76,14 +79,30 @@ const PACKAGE_ROOT = await findPackageRootCached({
  * than overwriting earlier runs.
  *
  * @returns Filename like `deps-cube-2026-05-12T21-23-45Z.html`.
+ *
+ * @example
+ * ```ts
+ * currentRunOutputFilename();
+ * // → 'deps-cube-2026-05-12T21-23-45Z.html'
+ * ```
  */
 function currentRunOutputFilename(): string {
-  /** ISO 8601 UTC timestamp (`YYYY-MM-DDTHH:MM:SS.sssZ`) captured at filename-construction time. */
+  /**
+   * ISO 8601 UTC timestamp (`YYYY-MM-DDTHH:MM:SS.sssZ`) captured at filename-construction time.
+   */
   const iso = new Date().toISOString();
-  /** Drop the millisecond suffix and trailing `Z` ({@link iso} = `YYYY-MM-DDTHH:MM:SS.sssZ`). */
-  const seconds = iso.slice(0, 19,);
+  /**
+   * Drop the millisecond suffix and trailing `Z` ({@link iso} = `YYYY-MM-DDTHH:MM:SS.sssZ`).
+   */
+  const seconds = iso.slice(
+    0,
+    ISO_SECONDS_PREFIX_LENGTH,
+  );
   /** Filesystem-safe form: every `:` becomes `-`. */
-  const stem = seconds.replace(/:/g, '-',);
+  const stem = seconds.replaceAll(
+    ':',
+    '-',
+  );
   return `deps-cube-${stem}Z.html`;
 }
 
@@ -108,15 +127,30 @@ const html = await renderHtml({
   probes,
 },);
 
-/** Absolute path of this package's `dist/` directory, anchored on {@link PACKAGE_ROOT}. */
-const distDir = resolvePath(PACKAGE_ROOT, 'dist',);
+/**
+ * Absolute path of this package's `dist/` directory, anchored on {@link PACKAGE_ROOT}.
+ */
+const distDir = resolvePath(
+  PACKAGE_ROOT,
+  'dist',
+);
 
-await mkdir(distDir, { recursive: true, },);
+await mkdir(
+  distDir,
+  { recursive: true, },
+);
 
 /** Absolute path of today's output file under `<package>/dist/`. */
-const absPath = resolvePath(distDir, currentRunOutputFilename(),);
+const absPath = resolvePath(
+  distDir,
+  currentRunOutputFilename(),
+);
 
-await writeFile(absPath, html, 'utf8',);
+await writeFile(
+  absPath,
+  html,
+  'utf8',
+);
 console.log(`Saved to ${absPath}`,);
 
 //endregion Entry

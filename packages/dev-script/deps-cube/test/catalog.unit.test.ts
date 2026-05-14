@@ -25,6 +25,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
 import {
+  type CatalogEntry,
   decodeAlias,
   readCatalog,
 } from '../src/catalog.ts';
@@ -145,20 +146,33 @@ await describe({
         );
         const entries = await readCatalog({ startDir: temp.dir, },);
         expect(entries.length,).toBe(3,);
-        const named = entries.filter(function named(e,) {
+        const named: readonly CatalogEntry[] = entries.filter(function hasName(
+          e: CatalogEntry,
+        ) {
           return e.catalogName !== undefined;
         },);
-        const namedCatalogs = named
-          .map(function pluck(e,) {
-            return e.catalogName;
-          },)
-          .filter(function present(name,): name is string {
-            return name !== undefined;
-          },)
-          .toSorted(function alphabetical(a, b,) {
-            return a.localeCompare(b,);
-          },);
-        expect(namedCatalogs,).toEqual(['react18', 'react19',],);
+        const plucked: readonly (string | undefined)[] = named.map(function pluck(
+          e: CatalogEntry,
+        ) {
+          return e.catalogName;
+        },);
+        const present: readonly string[] = plucked.filter(function isString(
+          name: string | undefined,
+        ): name is string {
+          return name !== undefined;
+        },);
+        /* oxlint-disable typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-call -- oxlint's type-aware mode loses `string[]` through the readonly+toSorted chain; tsgo confirms the types resolve. */
+        const namedCatalogs: readonly string[] = present.toSorted(function alphabetical(
+          a: string,
+          b: string,
+        ) {
+          return a.localeCompare(b,);
+        },);
+        /* oxlint-enable typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-call */
+        expect(namedCatalogs,).toEqual([
+          'react18',
+          'react19',
+        ],);
       },
     },),
 

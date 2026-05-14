@@ -32,7 +32,12 @@
  * accessor (`getColor`, `getFillColor`, `getLineColor`) expects when
  * fed a constant per-layer colour.
  */
-export type RgbaColor = readonly [number, number, number, number,];
+export type RgbaColor = readonly [
+  number,
+  number,
+  number,
+  number,
+];
 
 /**
  * Palette of colours used to render the scene chrome. The layer
@@ -56,6 +61,7 @@ export type ChromeColors = {
 
 //region Palettes
 
+/* oxlint-disable eslint/no-magic-numbers, stylistic/array-element-per-line, stylistic/tuple-per-line -- 8-bit RGBA components within fixed 4-element tuples; vertical splits per channel make the palette table unreadable. */
 /**
  * Dark-mode palette; light tones so chrome reads against the
  * dark page background (`--bg-page: #0f0f0f`).
@@ -79,6 +85,7 @@ const LIGHT_CHROME: ChromeColors = {
   originLabel: [80, 80, 80, 255,],
   nameLabel: [50, 50, 50, 255,],
 };
+/* oxlint-enable eslint/no-magic-numbers, stylistic/array-element-per-line, stylistic/tuple-per-line */
 
 //endregion Palettes
 
@@ -105,7 +112,7 @@ const LIGHT_CHROME: ChromeColors = {
  */
 export function detectScheme(): ChromeColors {
   /** True when the OS or browser is currently in dark mode; captured once per session, no live listener. */
-  const isDark = window.matchMedia('(prefers-color-scheme: dark)',).matches;
+  const isDark = globalThis.matchMedia('(prefers-color-scheme: dark)',).matches;
   return isDark ? DARK_CHROME : LIGHT_CHROME;
 }
 
