@@ -36,10 +36,22 @@ if (newApiKey !== null) {
 }
 ```
 
-The dialog elements receive class names
+The dialog elements receive default class names
 (`prompt-polyfill-dialog`, `prompt-polyfill-cancel`, `prompt-polyfill-ok`)
-so the consumer's stylesheet can theme them;
-no styles are bundled.
+so a global stylesheet can theme them; no styles are bundled.
+Pass `classes` to override any subset of those names per call,
+useful when two prompts on the same page need distinct styling:
+
+```ts
+await prompt({
+  message: 'Rename file',
+  classes: { dialog: 'rename-dialog', ok: 'rename-ok', },
+},);
+```
+
+Unset entries fall back to the defaults,
+exported as `DEFAULT_PROMPT_CLASSES` for consumers that want to compose with them
+instead of duplicating the literals.
 
 ### `replicateElementAsParentContent(templateElement, targetCount)`
 

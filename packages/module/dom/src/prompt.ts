@@ -1,5 +1,40 @@
 // Prompt Dialog Polyfill: Drop-in replacement for window.prompt using dialog element
 
+/**
+ * Per-call class-name overrides for the dialog, cancel button, and OK button.
+ *
+ * Any field left undefined falls back to the corresponding entry in
+ * {@link DEFAULT_PROMPT_CLASSES}, so existing stylesheets keyed on the
+ * default names continue to work without changes.
+ *
+ * @example
+ * ```ts
+ * await prompt({
+ *   message: 'Rename file',
+ *   classes: { dialog: 'rename-dialog', ok: 'rename-ok', },
+ * },);
+ * ```
+ */
+export type PromptClassNames = {
+  /** Class applied to the `<dialog>` element. */
+  dialog?: string;
+  /** Class applied to the Cancel button. */
+  cancel?: string;
+  /** Class applied to the OK (submit) button. */
+  ok?: string;
+};
+
+/**
+ * Default class names applied to the dialog parts when no per-call
+ * {@link PromptClassNames} are supplied. Exported so consumers can
+ * target the same names in their stylesheet without duplicating literals.
+ */
+export const DEFAULT_PROMPT_CLASSES: Required<PromptClassNames> = {
+  dialog: 'prompt-polyfill-dialog',
+  cancel: 'prompt-polyfill-cancel',
+  ok: 'prompt-polyfill-ok',
+};
+
 /* oxlint-disable require-await -- exposed as async so callers can `await` even though the work is event-driven */
 /**
  * Creates a modern prompt dialog using the HTML dialog element.
@@ -8,6 +43,11 @@
  * @param message - Message to display to the user
  *
  * @param defaultValue - Default value for the input field
+ *
+ * @param classes - Optional per-call class-name overrides; unset fields fall
+ *   back to {@link DEFAULT_PROMPT_CLASSES}. Use when two prompts on the same
+ *   page need distinct styling, since a global stylesheet keyed on the
+ *   defaults cannot differentiate them.
  *
  * @returns Promise that resolves to the entered string when OK is clicked
  *   (including `''` for an empty field), or `null` when the user cancels
@@ -26,11 +66,18 @@ export async function prompt(
   {
     message,
     defaultValue = '',
+    classes,
   }: {
     message: string;
     defaultValue?: string;
+    classes?: PromptClassNames;
   },
 ): Promise<string | null> {
+  const resolvedClasses = {
+    ...DEFAULT_PROMPT_CLASSES,
+    ...classes,
+  };
+
   // oxlint-disable-next-line promise/avoid-new -- Required for dialog event handling
   return new Promise(function promptExecutor(resolve,) {
     // Tracks whether the dialog was closed via OK (false) or any cancel path (true).
@@ -40,7 +87,7 @@ export async function prompt(
 
     // Create dialog element
     const dialog = document.createElement('dialog',);
-    dialog.className = 'prompt-polyfill-dialog';
+    dialog.className = resolvedClasses.dialog;
 
     // Create form element
     const form = document.createElement('form',);
@@ -62,13 +109,13 @@ export async function prompt(
     // Create cancel button
     const cancelButton = document.createElement('button',);
     cancelButton.type = 'button';
-    cancelButton.className = 'prompt-polyfill-cancel';
+    cancelButton.className = resolvedClasses.cancel;
     cancelButton.textContent = 'Cancel';
 
     // Create OK button
     const okButton = document.createElement('button',);
     okButton.type = 'submit';
-    okButton.className = 'prompt-polyfill-ok';
+    okButton.className = resolvedClasses.ok;
     okButton.textContent = 'OK';
 
     // Assemble the dialog
