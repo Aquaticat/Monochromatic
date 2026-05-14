@@ -13,7 +13,7 @@ import {
 import { nonemptyOrThrow, } from './nonempty-or-throw.ts';
 
 await describe({
-  name: 'nonemptyOrThrow',
+  name: nonemptyOrThrow.name,
   children: [
     it({
       name: 'returns the value for every recognized nonempty container',

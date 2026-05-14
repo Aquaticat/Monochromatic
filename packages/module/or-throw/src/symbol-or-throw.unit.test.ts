@@ -14,7 +14,7 @@ import {
 import { symbolOrThrow, } from './symbol-or-throw.ts';
 
 await describe({
-  name: 'symbolOrThrow',
+  name: symbolOrThrow.name,
   children: [
     it({
       name: 'returns symbols unchanged',

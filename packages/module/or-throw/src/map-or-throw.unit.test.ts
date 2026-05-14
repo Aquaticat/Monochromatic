@@ -14,7 +14,7 @@ import {
 import { mapOrThrow, } from './map-or-throw.ts';
 
 await describe({
-  name: 'mapOrThrow',
+  name: mapOrThrow.name,
   children: [
     it({
       name: 'returns the value when it is a Map',

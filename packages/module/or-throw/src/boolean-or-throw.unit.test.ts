@@ -14,7 +14,7 @@ import {
 import { booleanOrThrow, } from './boolean-or-throw.ts';
 
 await describe({
-  name: 'booleanOrThrow',
+  name: booleanOrThrow.name,
   children: [
     it({
       name: 'returns primitive booleans unchanged',

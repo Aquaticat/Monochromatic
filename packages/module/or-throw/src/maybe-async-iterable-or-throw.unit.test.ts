@@ -13,7 +13,7 @@ import {
 import { maybeAsyncIterableOrThrow, } from './maybe-async-iterable-or-throw.ts';
 
 await describe({
-  name: 'maybeAsyncIterableOrThrow',
+  name: maybeAsyncIterableOrThrow.name,
   children: [
     it({
       name: 'returns sync-iterable values unchanged',

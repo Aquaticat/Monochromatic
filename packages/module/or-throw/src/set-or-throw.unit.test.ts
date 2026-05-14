@@ -14,7 +14,7 @@ import {
 import { setOrThrow, } from './set-or-throw.ts';
 
 await describe({
-  name: 'setOrThrow',
+  name: setOrThrow.name,
   children: [
     it({
       name: 'returns the value when it is a Set',

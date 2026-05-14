@@ -14,7 +14,7 @@ import {
 import { falsyOrThrow, } from './falsy-or-throw.ts';
 
 await describe({
-  name: 'falsyOrThrow',
+  name: falsyOrThrow.name,
   children: [
     it({
       name: 'returns the value when falsy',

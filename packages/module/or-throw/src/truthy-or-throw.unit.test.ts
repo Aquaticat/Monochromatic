@@ -14,7 +14,7 @@ import {
 import { truthyOrThrow, } from './truthy-or-throw.ts';
 
 await describe({
-  name: 'truthyOrThrow',
+  name: truthyOrThrow.name,
   children: [
     it({
       name: 'returns the value when truthy',

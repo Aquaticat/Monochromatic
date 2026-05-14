@@ -14,7 +14,7 @@ import {
 import { weakMapOrThrow, } from './weak-map-or-throw.ts';
 
 await describe({
-  name: 'weakMapOrThrow',
+  name: weakMapOrThrow.name,
   children: [
     it({
       name: 'returns the value when it is a WeakMap',

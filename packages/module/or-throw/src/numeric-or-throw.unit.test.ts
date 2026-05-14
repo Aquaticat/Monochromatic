@@ -14,7 +14,7 @@ import {
 import { numericOrThrow, } from './numeric-or-throw.ts';
 
 await describe({
-  name: 'numericOrThrow',
+  name: numericOrThrow.name,
   children: [
     it({
       name: 'returns primitive numbers unchanged',

@@ -14,7 +14,7 @@ import {
 import { bigintOrThrow, } from './bigint-or-throw.ts';
 
 await describe({
-  name: 'bigintOrThrow',
+  name: bigintOrThrow.name,
   children: [
     it({
       name: 'returns primitive bigints unchanged',

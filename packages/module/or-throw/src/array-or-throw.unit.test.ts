@@ -14,7 +14,7 @@ import {
 import { arrayOrThrow, } from './array-or-throw.ts';
 
 await describe({
-  name: 'arrayOrThrow',
+  name: arrayOrThrow.name,
   children: [
     it({
       name: 'returns the value when it is an array',

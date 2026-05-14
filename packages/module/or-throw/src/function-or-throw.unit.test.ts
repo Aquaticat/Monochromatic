@@ -28,7 +28,7 @@ function* yieldOne(): Generator<number> {
 function noop(): void {}
 
 await describe({
-  name: 'functionOrThrow',
+  name: functionOrThrow.name,
   children: [
     it({
       name: 'returns named function declarations unchanged',

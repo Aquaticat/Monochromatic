@@ -14,7 +14,7 @@ import {
 import { stringOrThrow, } from './string-or-throw.ts';
 
 await describe({
-  name: 'stringOrThrow',
+  name: stringOrThrow.name,
   children: [
     it({
       name: 'returns primitive strings unchanged',

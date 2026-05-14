@@ -14,7 +14,7 @@ import {
 import { dateOrThrow, } from './date-or-throw.ts';
 
 await describe({
-  name: 'dateOrThrow',
+  name: dateOrThrow.name,
   children: [
     it({
       name: 'returns native Date instances unchanged',

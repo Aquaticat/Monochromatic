@@ -14,7 +14,7 @@ import {
 import { asyncIterableOrThrow, } from './async-iterable-or-throw.ts';
 
 await describe({
-  name: 'asyncIterableOrThrow',
+  name: asyncIterableOrThrow.name,
   children: [
     it({
       name: 'returns async-iterable values unchanged',

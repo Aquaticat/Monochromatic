@@ -14,7 +14,7 @@ import {
 import { promiseOrThrow, } from './promise-or-throw.ts';
 
 await describe({
-  name: 'promiseOrThrow',
+  name: promiseOrThrow.name,
   children: [
     it({
       name: 'returns native promises unchanged',

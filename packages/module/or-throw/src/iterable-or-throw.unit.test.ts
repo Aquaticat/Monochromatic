@@ -14,7 +14,7 @@ import {
 import { iterableOrThrow, } from './iterable-or-throw.ts';
 
 await describe({
-  name: 'iterableOrThrow',
+  name: iterableOrThrow.name,
   children: [
     it({
       name: 'returns sync-iterable values unchanged',

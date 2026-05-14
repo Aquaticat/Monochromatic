@@ -14,7 +14,7 @@ import {
 import { regExpOrThrow, } from './regexp-or-throw.ts';
 
 await describe({
-  name: 'regExpOrThrow',
+  name: regExpOrThrow.name,
   children: [
     it({
       name: 'returns RegExp instances unchanged',

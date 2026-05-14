@@ -13,7 +13,7 @@ import {
 import { emptyOrThrow, } from './empty-or-throw.ts';
 
 await describe({
-  name: 'emptyOrThrow',
+  name: emptyOrThrow.name,
   children: [
     it({
       name: 'returns the value for every recognized empty container',

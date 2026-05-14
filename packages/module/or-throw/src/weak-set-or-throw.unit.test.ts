@@ -14,7 +14,7 @@ import {
 import { weakSetOrThrow, } from './weak-set-or-throw.ts';
 
 await describe({
-  name: 'weakSetOrThrow',
+  name: weakSetOrThrow.name,
   children: [
     it({
       name: 'returns the value when it is a WeakSet',

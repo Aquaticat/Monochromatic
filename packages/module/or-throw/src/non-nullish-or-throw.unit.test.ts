@@ -14,7 +14,7 @@ import {
 import { nonNullishOrThrow, } from './non-nullish-or-throw.ts';
 
 await describe({
-  name: 'nonNullishOrThrow',
+  name: nonNullishOrThrow.name,
   children: [
     it({
       name: 'returns the value when non-nullish',

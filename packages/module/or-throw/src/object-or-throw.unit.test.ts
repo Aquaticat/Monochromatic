@@ -14,7 +14,7 @@ import {
 import { objectOrThrow, } from './object-or-throw.ts';
 
 await describe({
-  name: 'objectOrThrow',
+  name: objectOrThrow.name,
   children: [
     it({
       name: 'returns plain objects, arrays, and class instances unchanged',

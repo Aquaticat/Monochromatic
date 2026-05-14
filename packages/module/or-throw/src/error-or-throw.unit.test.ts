@@ -14,7 +14,7 @@ import {
 import { errorOrThrow, } from './error-or-throw.ts';
 
 await describe({
-  name: 'errorOrThrow',
+  name: errorOrThrow.name,
   children: [
     it({
       name: 'returns Error instances unchanged',
