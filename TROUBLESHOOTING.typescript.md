@@ -1,4 +1,13 @@
-# TypeScript Troubleshooting
+# TypeScript aggregator (tsc 6.0.x and tsgo 7.0.0-dev): seven distinct failure modes (dprint non-relative-path warning without baseUrl, TS2677 type-predicate conditional-type assignability, Astro+MDX missing global JSX.IntrinsicElements, config-typescript/dom needed for cross-package DOM type availability, narrowing not preserved across function declaration closure boundary (intentional per hoisting safety), JSR-ships-.ts-source bypasses skipLibCheck (WAI per TS team), and tsgo LSP panics with ScriptKindUnknown when non-source files like SVG, PNG, CSS reach parser via compilerHost.GetSourceFile)
+
+This file aggregates seven distinct TypeScript-related failure modes
+encountered across the workspace. Each section follows the
+troubleshooting-doc canonical structure (Symptom / Root cause /
+Verification / Workaround / What does not work / 5-constraint
+upstream-filing audit / Draft issue if warranted). Sections written
+before the canonicalization push use "Problem" / "Solution" / "Root
+Cause" headings, kept as-is to preserve git history; the content
+matches the canonical shape.
 
 ## TypeScript Path Warnings with dprint
 
@@ -27,6 +36,22 @@ This tells TypeScript to resolve non-relative paths from the project root, which
 ### Note
 
 Setting `baseUrl` may or may not completely resolve the warnings, but it helps TypeScript understand that non-relative paths in the `paths` mapping should be resolved from the project root.
+
+### Why we do not file this upstream
+
+5-constraint walk:
+
+1. **Upstream's fault?** No. TypeScript / dprint correctly require
+   `baseUrl` to be set when `paths` contains non-relative entries; the
+   warning is informative, not a bug.
+2. **Can upstream fix it?** Not applicable; this is documented behavior.
+3. **Supporting this use case?** Yes; `paths` + `baseUrl` is a
+   first-class TypeScript feature.
+4. **Will they fix it?** Not applicable.
+5. **Minimal-fix prototype?** Not applicable.
+
+**Decision: no upstream report.** Workspace config fix is the
+correct response.
 
 ## Type Predicate Assignment Errors
 
@@ -90,6 +115,29 @@ function maybeAsyncSchemaIsSchemaAsync<Input, Output,>(
 
 This throws away the specific schema type information, making the type guard less useful for preserving types in calling code.
 
+### Why we do not file this upstream
+
+5-constraint walk:
+
+1. **Upstream's fault?** Partial. TS2677 is a known limitation of
+   conditional-type assignability in type predicates, documented in
+   the TypeScript handbook as a constraint of the type system rather
+   than a bug.
+2. **Can upstream fix it?** Possibly, but the fix would require
+   extending conditional-type variance reasoning, a structural-core
+   change touching the type relation algorithm. Not a small change.
+3. **Supporting this use case?** Conditional types in type predicates
+   are not a documented first-class feature; the recommendation is
+   intersection types as shown above.
+4. **Will they fix it?** Unlikely. Multiple long-standing tracker
+   entries on conditional-type-in-predicate produce no movement.
+5. **Minimal-fix prototype?** Not feasible without touching the type
+   relation core.
+
+**Decision: no upstream report.** The intersection-type workaround
+satisfies the use case; the limitation is accepted as a tradeoff of
+the type system's design.
+
 ## JSX.IntrinsicElements Missing in Astro MDX Files
 
 ### Problem
@@ -140,6 +188,31 @@ This maps Astro's JSX types to the global namespace that `@types/mdx` expects.
 - [MDX Getting Started - Types](https://mdxjs.com/docs/getting-started/#types)
 - [Astro TypeScript - Extending global types](https://docs.astro.build/en/guides/typescript/#extending-global-types)
 
+### Why we do not file this upstream
+
+5-constraint walk:
+
+1. **Upstream's fault?** Distributed across Astro and @types/mdx. MDX
+   documentation explicitly says "the JSX namespace must be typed";
+   Astro chose to define JSX types under `astroHTML.JSX` namespace
+   rather than the global `JSX` namespace. Neither side considers it
+   a bug.
+2. **Can upstream fix it?** Yes, either by Astro adding a global
+   `JSX` re-export or by @types/mdx accepting a different namespace
+   prefix. Both are tractable but require coordination.
+3. **Supporting this use case?** Astro+MDX without React is a
+   documented configuration, but the namespace bridging step is
+   left to the user.
+4. **Will they fix it?** Astro issue #5061 has been open for years
+   without movement. Low signal of a fix.
+5. **Minimal-fix prototype?** The workspace-side bridge
+   (`src/env.d.ts`) is the minimal fix; no upstream code change is
+   strictly required.
+
+**Decision: no upstream report.** Existing Astro issue #5061 already
+tracks the namespace question; the workspace-side bridge satisfies
+the use case.
+
 ## All packages must extend `config-typescript/dom`
 
 ### Problem
@@ -174,6 +247,27 @@ regardless of the package's target runtime.
   "extends": "@monochromatic-dev/config-typescript/dom"
 }
 ```
+
+### Why we do not file this upstream
+
+5-constraint walk:
+
+1. **Upstream's fault?** No. TypeScript checks consumed `.ts` files
+   under the consumer's tsconfig by design; the lib setting is
+   inherited from the consumer, not the package. This is documented
+   compiler behavior.
+2. **Can upstream fix it?** Yes (in principle: per-package lib
+   resolution), but it would be a structural change to lib resolution.
+3. **Supporting this use case?** Workspace packages re-exporting raw
+   `.ts` sources is a non-standard pattern; standard practice ships
+   `.d.ts` declarations.
+4. **Will they fix it?** Not on the roadmap.
+5. **Minimal-fix prototype?** Workspace-side fix (extending `/dom`
+   variant) is the minimal solution; no upstream change needed.
+
+**Decision: no upstream report.** The workspace convention (extend
+`config-typescript/dom` everywhere) satisfies the constraint at the
+workspace boundary.
 
 ## Narrowing not preserved inside function declarations
 
@@ -296,6 +390,32 @@ function setup(): void {
   subject to the same closure rules
 - Adding `as HTMLDivElement`:
   suppresses the error but is flagged by `no-unsafe-type-assertion`
+
+### Why we do not file this upstream
+
+5-constraint walk:
+
+1. **Upstream's fault?** No. The cited code in `checker.ts` (around
+   line 31181) deliberately excludes `SyntaxKind.FunctionDeclaration`
+   from the closure-narrowing loop because hoisting makes
+   call-before-guard legal. The behavior is intentional safety, not
+   a bug.
+2. **Can upstream fix it?** Possibly (via flow analysis that
+   distinguishes "definitely called after the guard" from "could be
+   called before"), but this would be a significant change to the
+   control-flow analyzer that could regress soundness in edge cases.
+3. **Supporting this use case?** The recommended pattern is helper
+   functions returning non-null or explicit reassignment with
+   annotation; both are documented and idiomatic.
+4. **Will they fix it?** Not on the roadmap. The intentional
+   exclusion has been in place across multiple TypeScript major
+   versions (verified consistent in tsc 6.0.1-rc and tsgo 7.0.0-dev).
+5. **Minimal-fix prototype?** Not feasible without proving soundness
+   of the new flow-analysis branch.
+
+**Decision: no upstream report.** Workarounds are well-understood
+and idiomatic. The behavior is correctly defensive given hoisting
+semantics.
 
 ## JSR packages ship `.ts` source files that `skipLibCheck` cannot skip
 
@@ -471,6 +591,32 @@ Since `zod` resolves fine through `node_modules`, the ambient declaration is ign
 - [TypeScript tsconfig: skipLibCheck](https://www.typescriptlang.org/tsconfig/skipLibCheck.html) -- only `.d.ts`
 - [typescript-go resolver.go](https://github.com/microsoft/typescript-go/blob/main/internal/module/resolver.go) -- extension priority and `paths` bypass
 - [typescript-go program.go](https://github.com/microsoft/typescript-go/blob/main/internal/compiler/program.go) -- `SkipTypeChecking` implementation
+
+### Why we do not file this upstream
+
+5-constraint walk:
+
+1. **Upstream's fault?** No, per the TypeScript team's repeated
+   stance. Cited issues (#41883, #44205, #48779, #40426) all
+   closed or stalled with "Working as Intended" or "The only correct
+   path forward is to not have a .ts file in your node_modules."
+   `skipLibCheck` is documented as `.d.ts`-only.
+2. **Can upstream fix it?** Yes (extend `skipLibCheck` to cover `.ts`
+   in `node_modules`, or add a separate `skipNodeModulesCheck`
+   option), but they have explicitly declined to do so.
+3. **Supporting this use case?** JSR's `.ts`-shipping is a JSR
+   convention; TypeScript does not endorse it. The TypeScript team's
+   stated path is "don't ship .ts to node_modules."
+4. **Will they fix it?** No. Multiple closed-as-WAI issues with the
+   same request. Filing a new one would duplicate #44205, #48779,
+   #41883 without changing the outcome.
+5. **Minimal-fix prototype?** Even with a prototype, the team's
+   position is structural ("don't have .ts in node_modules"), not
+   missing-implementation.
+
+**Decision: no upstream report.** Filing would duplicate already-
+declined issues. The workspace wrapper script that strips
+`node_modules` diagnostics is the correct boundary fix.
 
 ## tsgo LSP panics on non-source files (SVG, PNG, etc.)
 
@@ -731,106 +877,127 @@ regardless of whether a tsgo client exists for the project root.
 - `internal/project/project.go:100-121` -- `NewInferredProject` setting `AllowNonTsExtensions`
 - `internal/compiler/filesparser.go:68-95` -- extension guard (bypassed by `AllowNonTsExtensions`)
 
-### Draft upstream issue
+### Why we would file this upstream (5 constraints)
 
-Ready to file against [microsoft/typescript-go](https://github.com/microsoft/typescript-go/issues).
+5-constraint walk:
 
+1. **Upstream's fault?** Yes. `compilerHost.GetSourceFile` passes
+   `ScriptKindUnknown` to the parse cache without guarding, leading
+   to a deliberate panic in `parser.initializeState`. The parser
+   panic site exists specifically to flag this misuse (line
+   288-291), so the calling code is buggy by the parser's own
+   contract.
+2. **Can upstream fix it?** Yes; the suggested fix is a 4-line guard
+   in `compilerHost.GetSourceFile`. PR #2679 already implemented the
+   equivalent fix for the completions code path (issue #2669); the
+   same pattern applies here.
+3. **Supporting this use case?** Yes. LSP support for projects
+   containing mixed file types (SVG icons alongside .ts source) is a
+   first-class scenario; the panic crashes the entire LSP, which is
+   never the intended response.
+4. **Will they fix it?** Likely yes given the existing PR #2679 fix
+   pattern. The completions team accepted the same shape of fix.
+5. **Minimal-fix prototype?** Yes; the suggested patch below is
+   the prototype, with related-issue evidence that the fix shape is
+   accepted upstream.
+
+**Decision: file upstream.** All five constraints hold. The draft
+below is ready; re-validate against current microsoft/typescript-go
+HEAD before filing in case the path got fixed in the meantime.
+
+### Draft upstream issue (do not file as-is; re-validate against current microsoft/typescript-go HEAD before filing)
+
+~~~md
 **Title:** LSP panics on ScriptKindUnknown when non-source file reaches parser via compilerHost.GetSourceFile
 
-**Labels:** `bug`, `LSP`
+**Labels:** bug, LSP
 
-**Body:**
+**Summary:**
 
-````markdown
-## Bug Report
-
-### Summary
-
-The LSP server panics when it receives a feature request (e.g. hover, inlayHints)
-for a non-source file (e.g. `.svg`, `.png`, `.css`).
+The LSP server panics when it receives a feature request (e.g. hover,
+inlayHints) for a non-source file (e.g. `.svg`, `.png`, `.css`).
 tsgo creates an inferred project for the file, which triggers parsing
 with `ScriptKindUnknown` and panics in `parser.initializeState`.
 
-### tsgo version
+**tsgo version:** 7.0.0-dev.20260404.1
 
-7.0.0-dev.20260404.1
-
-### Reproduction
+**Reproduction:**
 
 1. Create a directory with a `tsconfig.json`:
+
    ```json
    {
      "compilerOptions": { "strict": true },
      "include": ["src/**/*.ts"]
    }
    ```
-````
 
-2. Add `src/index.ts` (any valid TypeScript file)
-3. Add `architecture.svg` (any SVG file) in the same directory
-4. Start `tsgo --lsp --stdio` and send an `initialize` request
-   with `rootUri` pointing to this directory
-5. Open `src/index.ts` via `textDocument/didOpen`
+2. Add `src/index.ts` (any valid TypeScript file).
+3. Add `architecture.svg` (any SVG file) in the same directory.
+4. Start `tsgo --lsp --stdio` and send an `initialize` request with
+   `rootUri` pointing to this directory.
+5. Open `src/index.ts` via `textDocument/didOpen`.
 
 tsgo panics with:
 
-```bash
+```text
 panic: ScriptKind must be specified when parsing source file: /path/to/architecture.svg
 ```
 
-### Root cause analysis
+**Root cause analysis:**
 
 `compilerHost.GetSourceFile` (`internal/project/compilerhost.go:95-102`)
-passes `fh.Kind()` to the parse cache without checking for `ScriptKindUnknown`.
-`diskFile.Kind()` (`internal/project/overlayfs.go:100-102`) delegates to
+passes `fh.Kind()` to the parse cache without checking for
+`ScriptKindUnknown`. `diskFile.Kind()`
+(`internal/project/overlayfs.go:100-102`) delegates to
 `GetScriptKindFromFileName` (`internal/core/core.go:512-529`),
 which returns `ScriptKindUnknown` for any unrecognized extension.
-The parse cache forwards this to `parser.ParseSourceFile`,
-which panics at `internal/parser/parser.go:289-290`.
+The parse cache forwards this to `parser.ParseSourceFile`, which
+panics at `internal/parser/parser.go:289-290`.
 
-The extension guard in `filesparser.go:68-95` exists
-but is bypassed when `AllowNonTsExtensions` is true
-(as set by `NewInferredProject` at `internal/project/project.go:119`).
+The extension guard in `filesparser.go:68-95` exists but is bypassed
+when `AllowNonTsExtensions` is true (as set by `NewInferredProject`
+at `internal/project/project.go:119`).
 
-The `include` patterns correctly exclude the SVG
-(confirmed by `--showConfig` and by `matchFiles` in `vfsmatch.go:604-606`
-filtering by supported extensions).
-The file enters the project through a path that bypasses
-the `matchFiles` extension filter.
+The `include` patterns correctly exclude the SVG (confirmed by
+`--showConfig` and by `matchFiles` in `vfsmatch.go:604-606` filtering
+by supported extensions). The file enters the project through a path
+that bypasses the `matchFiles` extension filter.
 
-### Suggested fix
+**Suggested fix:**
 
 Add a `ScriptKindUnknown` check in `compilerHost.GetSourceFile`
 before calling `parseCache.Acquire`:
 
 ```go
 func (c *compilerHost) GetSourceFile(opts ast.SourceFileParseOptions) *ast.SourceFile {
-	c.ensureAlive()
-	if fh := c.sourceFS.GetFileByPath(opts.FileName, opts.Path); fh != nil {
-		kind := fh.Kind()
-		if kind == core.ScriptKindUnknown {
-			return nil
-		}
-		key := NewParseCacheKey(opts, fh.Hash(), kind)
-		return c.builder.parseCache.Acquire(key, fh)
-	}
-	return nil
+    c.ensureAlive()
+    if fh := c.sourceFS.GetFileByPath(opts.FileName, opts.Path); fh != nil {
+        kind := fh.Kind()
+        if kind == core.ScriptKindUnknown {
+            return nil
+        }
+        key := NewParseCacheKey(opts, fh.Hash(), kind)
+        return c.builder.parseCache.Acquire(key, fh)
+    }
+    return nil
 }
 ```
 
-This is consistent with how the CLI's file loader handles unsupported extensions
-(returning early with a diagnostic rather than panicking).
+This is consistent with how the CLI's file loader handles
+unsupported extensions (returning early with a diagnostic rather than
+panicking).
 
-### Related issues
+**Related issues:**
 
-- #2669 / #2679 -- same crash fixed in the completions code path
-- denoland/deno#31423 -- CSS imports causing the same panic
-- neovim/nvim-lspconfig#4018 -- filetype mismatch in LSP
+- microsoft/typescript-go#2669 and #2679: same crash fixed in the
+  completions code path.
+- denoland/deno#31423: CSS imports causing the same panic.
+- neovim/nvim-lspconfig#4018: filetype mismatch in LSP.
+~~~
 
-```text
 ## Related Documentation
 
-- [VSCode](./TROUBLESHOOTING.vscode.md) - VSCode extension configuration for TypeScript tools
-- [Toolchain](./TROUBLESHOOTING.toolchain.md) - Build tools and toolchain management
-- [Stylelint](./TROUBLESHOOTING.stylelint.md) - CSS linting configuration issues
-```
+- [VSCode](./TROUBLESHOOTING.vscode.md): VSCode extension configuration for TypeScript tools.
+- [Toolchain](./TROUBLESHOOTING.toolchain.md): build tools and toolchain management.
+- [Stylelint](./TROUBLESHOOTING.stylelint.md): CSS linting configuration issues.
