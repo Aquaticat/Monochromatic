@@ -36,6 +36,7 @@ export function tomlSetHeaderComment(
     comment: string | readonly string[] | null;
   },
 ): TomlEditState {
+  /** Normalised payload so the state field carries one representation. */
   const headerComment = resolveComment({ comment, },);
   return {
     ...edit,

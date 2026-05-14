@@ -56,6 +56,7 @@ export function* $<T,>(
   // Behavior is identical: we still detect missing keys because any key in toOmit
   // that exists in the iterable will be added to matched, so matched.size < toOmit.size
   // implies at least one key was never found.
+  /** Subset of toOmit keys actually observed; used to detect missing-key errors under strict mode. */
   const matched = new Set<T>();
 
   for (const item of iterable) {

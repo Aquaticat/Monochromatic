@@ -38,6 +38,7 @@ export function $<T,>(
   initialValue: T,
   onChange: (newValue: T, oldValue: T,) => void,
 ): Observable<T> {
+  /** Internal store backing the value getter and setter pair. */
   let current: T = initialValue;
   return {
     /** Retrieves the current observed value. */
@@ -46,6 +47,7 @@ export function $<T,>(
     },
     /** Sets the observed value and triggers the onChange callback. */
     set value(newValue: T,) {
+      /** Snapshot of the prior value preserved for the change handler call. */
       const old = current;
       current = newValue;
       onChange(

@@ -54,6 +54,7 @@ export function mergeComments(
   // Both has comment.
   // No trimming needed because we wanna support both `// This is` and `//region`.
   // Be careful not to indent here.
+  /** Concatenated comment body preserving raw line breaks between the two inputs. */
   const commentValue = `${value.commentValue}
 ${value2.commentValue}`;
   return value.type === value2.type

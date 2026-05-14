@@ -42,6 +42,7 @@ export function tomlInsertCommentAfter(
     comment: string;
   },
 ): TomlEditState {
+  /** Path lookup so missing keys throw before any state change. */
   const resolved = resolveByPath({
     edit,
     path,
@@ -51,12 +52,15 @@ export function tomlInsertCommentAfter(
       `Path ${formatPath({ path, },)} not found`,
     );
 
+  /** Use the last AoT element so the comment lands next to the entry the caller named. */
   const node = resolved.kind === 'array-of-tables'
     ? nonNullishOrThrow(resolved.nodes.at(-1),)
     : resolved.node;
 
+  /** Two-space prefix matches the prevailing style for trailing comments. */
   const text = `  # ${comment}`;
 
+  /** Anchor records placement so the emitter can splice in source order. */
   const anchor: Insertion['anchor'] = {
     position: 'same-line-after',
     node,

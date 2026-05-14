@@ -97,9 +97,9 @@ export function expectArraySeparatorOrEnd(
     };
   }
 
-  /** Preview snippet used for error reporting context. */
   /** Maximum characters for error preview snippet */
   const ERROR_PREVIEW_LENGTH = 32;
+  /** Truncated snippet of the remaining content surfaced inside the error message. */
   const preview = rc.slice(
     0,
     ERROR_PREVIEW_LENGTH,

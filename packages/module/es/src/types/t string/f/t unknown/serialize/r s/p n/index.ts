@@ -84,6 +84,7 @@ export type SerializeOptions = {
  * ```
  */
 export function $(options: SerializeOptions,): string {
+  /** Inputs destructured from options for direct use inside the function body. */
   const {
     value,
     serializer,
@@ -91,8 +92,11 @@ export function $(options: SerializeOptions,): string {
   } = options;
 
   if (hasCycle(value,)) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- hasCycle verified value is an object with cycles
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- hasCycle verified value is an object with cycles */
+    /** Cycle-stripped copy of value used so the serializer cannot blow the stack. */
     const decycled = decircular(value as object,);
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
+    /** Serialised representation of the decycled value. */
     const serialized = serializer(decycled,);
     if (!lossyForCircular) {
       throw new TypeError(

@@ -29,8 +29,10 @@ export async function queryAllBackends(
   BackendResult<StorageBackend>,
   ...BackendResult<StorageBackend>[],
 ]> {
+  /** Per-backend query results gathered concurrently. */
   const results = await Promise.all(
     backends.map(async function queryBackend(backend,) {
+      /** Raw value returned by this backend before nullish normalisation. */
       const raw = await backend.get(key,);
       return {
         value: raw === null ? undefined : raw,
@@ -144,6 +146,7 @@ export async function evictLruEntry(
 ): Promise<void> {
   if (lru === undefined)
     return;
+  /** Key displaced by the LRU touch, or undefined when nothing was evicted. */
   const evicted = lru.touch(key,);
   if (evicted === undefined)
     return;

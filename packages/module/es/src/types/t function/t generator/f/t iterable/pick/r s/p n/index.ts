@@ -56,6 +56,7 @@ export function* $<T,>(
   // Behavior is identical: we still detect missing keys because any key in toPick
   // that exists in the iterable will be added to matched, so matched.size < toPick.size
   // implies at least one key was never found.
+  /** Subset of toPick keys actually observed; used to detect missing-key errors under strict mode. */
   const matched = new Set<T>();
 
   for (const item of iterable) {

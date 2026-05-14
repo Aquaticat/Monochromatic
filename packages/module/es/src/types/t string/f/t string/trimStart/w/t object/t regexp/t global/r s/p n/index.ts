@@ -66,9 +66,11 @@ export function $(
   },
 ): string {
   // Use matchAll to get all matches in a single regex execution
+  /** Lazy iterator of every regex match across the input. */
   const matches = str.matchAll(trimmer,);
 
   // Track consecutive matches starting from position 0
+  /** Total characters consumed by contiguous leading matches found so far. */
   let totalTrimLength = 0;
 
   // Process matches in order to find consecutive leading matches
@@ -76,6 +78,7 @@ export function $(
     // Index 0: the full matched text
     // Index 1+: captured groups (parentheses parts)
     // Extra properties: index (position), input (original string)
+    /** Position of the current match used to detect a break in contiguity. */
     const matchIndex = match.index;
 
     // No bug here because js matchAll consumes matches.
@@ -84,6 +87,7 @@ export function $(
       break;
 
     // Add this match length to total trim
+    /** Length of the current match folded into the running trim count. */
     const matchLength = match[0].length;
     totalTrimLength += matchLength;
   }

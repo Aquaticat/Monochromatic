@@ -47,7 +47,9 @@ export function attachedCommentsFor(
     edit: TomlEditState
   },
 ): readonly TomlComment[] {
+  /** Local alias so the recursive walker reads as `comments[i]`. */
   const {comments} = edit.program;
+  /** Source bytes so the gap test can read between adjacent comments. */
   const {source} = edit;
   return collectAttached({
     comments,
@@ -72,21 +74,26 @@ function collectAttached(
     cursor: number;
   },
 ): readonly TomlComment[] {
+  /** Accumulator filled in source order via `unshift`. */
   const collected: TomlComment[] = [];
+  /** Last comment whose end falls before the cursor; starting point for the walk. */
   const initialIdx = lastCommentBefore({
     comments,
     offset: cursor,
   },);
+  /** IIFE-into-const so the recursive walker satisfies the no-let-root rule. */
   const fold = (function loop(
     i: number,
     c: number,
   ): TomlComment[] {
     if (i < 0) return collected;
+    /** Candidate comment so the gap check can decide if it is still attached. */
     const comment = nonNullishOrThrow(comments[i],);
     if (comment.range[1] >= c) return loop(
       i - 1,
       c,
     );
+    /** Source between the comment and the cursor; whitespace-only means still attached. */
     const between = source.slice(
       comment.range[1],
       c,
@@ -153,12 +160,16 @@ export function trailingInlineCommentFor(
     edit: TomlEditState
   },
 ): TomlComment | null {
+  /** Source bytes so the same-line check can scan for the next newline. */
   const {source} = edit;
+  /** First newline after the node; `-1` means EOF, so `limit` falls back to `source.length`. */
   const newlineAfter = source.indexOf(
     '\n',
     node.range[1],
   );
+  /** Upper bound for "still on the same line" matches. */
   const limit = newlineAfter === (-1) ? source.length : newlineAfter;
+  /** First comment that starts after the node and before the line break. */
   const match = edit.program.comments.find(function inLine(c,) {
     return (c.range[0] > node.range[1]) && (c.range[0] < limit);
   },);

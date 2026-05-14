@@ -74,6 +74,7 @@ export function tomlDelete(
     path: TomlPath
   },
 ): TomlEditState {
+  /** Direct AST lookup so deletion can branch on the resolution kind. */
   const resolved = resolveByPath({
     edit,
     path,
@@ -174,36 +175,43 @@ function deleteArrayElement(
     element: AST.TOMLContentNode;
   },
 ): TomlEditState {
+  /** Destructured parent so the type guard can read it once. */
   const { parent, } = element;
   if ((parent === null) || (parent.type !== 'TOMLArray'))
     throw new TomlImmutableNodeError(
       `tomlDelete at ${formatPath({ path, },)}: expected an array element, found parent type ${String(parent?.type,)}`,
     );
+  /** Position of the element to drop; seeds the skip path for the outer walk. */
   const skipIndex = parent.elements.indexOf(element,);
   if (skipIndex === (-1))
     throw new TomlImmutableNodeError(
       `tomlDelete at ${formatPath({ path, },)}: element not found in parent array`,
     );
+  /** Climb the parent chain so the outermost containing key-value is the edit target. */
   const walkResult = walkUpToKeyValue({
     path,
     array: parent,
     trailingPath: [skipIndex,],
   },);
+  /** Re-emit the outermost array with the element omitted at the deepest level. */
   const newText = emitArrayWithSkipPath({
     array: walkResult.outerArray,
     skipPath: walkResult.skipPath,
     options: edit.canonical,
     depth: 0,
   },);
+  /** Post-delete JS view so readers see the new shape immediately. */
   const newJsArray = removeJsAtPath({
     arr: getStaticTOMLValue(walkResult.outerArray,) as readonly unknown[],
     path: walkResult.skipPath,
   },);
+  /** Replace-value delta on the containing key-value. */
   const delta: Edit = {
     kind: 'replace-value',
     newText,
     jsValue: newJsArray,
   };
+  /** Fresh map so the prior state's edits remain untouched. */
   const nextEdits = new Map([
     ...edit.edits,
     [
@@ -242,6 +250,7 @@ function walkUpToKeyValue(
   readonly outerArray: AST.TOMLArray;
   readonly skipPath: readonly number[];
 } {
+  /** Next ancestor up the AST so the walk can decide whether to recurse. */
   const ancestor = array.parent;
   if (ancestor === null)
     throw new TomlImmutableNodeError(
@@ -254,6 +263,7 @@ function walkUpToKeyValue(
       skipPath: trailingPath,
     };
   if (ancestor.type === 'TOMLArray') {
+    /** Index of `array` inside its enclosing array; prepended to the skip path. */
     const idx = ancestor.elements.indexOf(array,);
     if (idx === (-1))
       throw new TomlImmutableNodeError(
@@ -293,7 +303,9 @@ function removeJsAtPath(
     throw new TomlImmutableNodeError(
       'removeJsAtPath: path must not be empty',
     );
+  /** Current outer index; each recursion step strips this off the path. */
   const head = nonNullishOrThrow(path[0],);
+  /** Inner-level segments still to traverse. */
   const rest = path.slice(1,);
   if (rest.length === 0)
     return arr.filter(function notSkipped(
@@ -302,6 +314,7 @@ function removeJsAtPath(
     ) {
       return i !== head;
     },);
+  /** Inner array at this level so the recursion can drill in. */
   const target = arr[head];
   if (!Array.isArray(target,))
     throw new TomlImmutableNodeError(

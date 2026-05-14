@@ -55,11 +55,13 @@ import {
   // iterating the pick set is O(M) vs O(N) for iterating all keys. This matters when M << N.
   // Build a normalized set of original keys that includes both string and numeric representations.
   // Reflect.ownKeys returns numeric keys as strings (e.g., '1' not 1), but users may pass numbers in toPick.
+  /** Original keys widened with numeric duals so user-supplied numeric keys still match. */
   const normalizedOriginalKeys = new Set<string | number | symbol>();
   for (const key of Reflect.ownKeys(original,)) {
     normalizedOriginalKeys.add(key,);
     // Add numeric representation for string keys that are valid numbers so they match user-provided numeric keys.
     if (typeof key === 'string') {
+      /** Numeric dual added so user-supplied numeric keys match the string ownKey. */
       const numericKey = Number(key,);
       if (!Number.isNaN(numericKey,))
         normalizedOriginalKeys.add(numericKey,);

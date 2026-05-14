@@ -38,6 +38,7 @@ export async function $<T, R,>(
   // `Promise.all` only collects already-running results; it does not "activate" them.
   // `Array.fromAsync` is not suitable here: it awaits each mapped value sequentially,
   // which would serialize the work and lose concurrency.
+  /** Eager mapping promises gathered in input order for a single Promise.all join. */
   const promises: Promise<R>[] = [];
   for await (const item of iterable)
     promises.push(fn(item,),);

@@ -36,20 +36,28 @@ import type {
  * ```
  */
 export function $(value: Jsonc,): value is HasNoTrailingCommas {
+  /** Every comma-then-closer match across the input considered for trailing-comma classification. */
   const potentialTrailingCommas = value.matchAll(/,\s{0,}[\}\]]/gv,);
 
   for (const potentialTrailingComma of potentialTrailingCommas) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing regex match index to branded Int type
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- narrowing regex match index to branded Int type */
+    /** Match start offset narrowed into the branded Int domain. */
     const startInclusive = potentialTrailingComma.index as Int;
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing computed end index to branded Int type
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- narrowing computed end index to branded Int type */
+    /** Match end offset narrowed into the branded Int domain. */
     const endInclusive = (potentialTrailingComma
       .index + potentialTrailingComma[0].length) as Int;
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- constructing branded RangeInt from verified Int values
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- constructing branded RangeInt from verified Int values */
+    /** Range covering the candidate trailing-comma run for in-quotes lookup. */
     const rangeInt = {
       startInclusive,
       endInclusive,
     } as RangeInt;
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
 
+    /** Range annotated with per-string in-quotes membership for the candidate run. */
     const rangeIntWInQuotesInfo = inQuotes({
       value: rangeInt,
       strs: [value,],

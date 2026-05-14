@@ -68,6 +68,7 @@ const primitive = Object.freeze(
  * ```
  */
 export function $(obj: unknown,): string {
+  /** Discriminant describing the runtime kind of obj, used to pick a serialiser branch. */
   const objType = unknownToTypeOfString(obj,);
   if (primitive.includes(objType,)) {
     return serializePrimitive(
@@ -81,8 +82,10 @@ export function $(obj: unknown,): string {
     .with(
       'set',
       function handler() {
-        // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Set
+        /* oxlint-disable typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Set */
+        /** obj narrowed to Set after the runtime discriminant matched 'set'. */
         const setObj = obj as Set<any>;
+        /* oxlint-enable typescript/no-explicit-any, typescript/no-unsafe-type-assertion */
         return `Object.freeze(new Set([${
           [...setObj,]
             // oxlint-disable-next-line typescript/no-explicit-any -- Set element type is unknown at runtime
@@ -96,8 +99,10 @@ export function $(obj: unknown,): string {
     .with(
       'map',
       function handler() {
-        // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Map
+        /* oxlint-disable typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms Map */
+        /** obj narrowed to Map after the runtime discriminant matched 'map'. */
         const mapObj = obj as Map<any, any>;
+        /* oxlint-enable typescript/no-explicit-any, typescript/no-unsafe-type-assertion */
         return `Object.freeze(new Map([${
           [...mapObj,]
             .map(function eachMapEntry([k, v,],) {
@@ -110,8 +115,10 @@ export function $(obj: unknown,): string {
     .with(
       'array',
       function handler() {
-        // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms array
+        /* oxlint-disable typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms array */
+        /** obj narrowed to array after the runtime discriminant matched 'array'. */
         const arrayObj = obj as any[];
+        /* oxlint-enable typescript/no-explicit-any, typescript/no-unsafe-type-assertion */
         return `Object.freeze([${
           arrayObj
             // oxlint-disable-next-line typescript/no-explicit-any -- array element type is unknown at runtime
@@ -126,8 +133,10 @@ export function $(obj: unknown,): string {
     .with(
       'object',
       function handler() {
-        // oxlint-disable-next-line typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms plain object
+        /* oxlint-disable typescript/no-explicit-any, typescript/no-unsafe-type-assertion -- runtime type check confirms plain object */
+        /** obj narrowed to plain object after the runtime discriminant matched 'object'. */
         const objectObj = obj as Record<string, any>;
+        /* oxlint-enable typescript/no-explicit-any, typescript/no-unsafe-type-assertion */
         return `Object.freeze(Object.fromEntries([${
           Object
             .entries(objectObj,)

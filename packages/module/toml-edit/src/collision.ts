@@ -63,10 +63,12 @@ export function assertNoSiblingTableCollision(
   },
 ): void {
   if (dottedSegments.length === 0) return;
+  /** Full path the dotted key would create so equality checks are direct. */
   const newLeafPath: TomlPath = [
     ...basePath,
     ...dottedSegments,
   ];
+  /** Each implicit table the dotted key would introduce so they can be checked individually. */
   const implicitPaths: readonly TomlPath[] = Array.from(
     { length: dottedSegments.length - 1, },
     function buildImplicit(
@@ -84,6 +86,7 @@ export function assertNoSiblingTableCollision(
   );
   for (const child of programBody) {
     if (child.type !== 'TOMLTable') continue;
+    /** Sibling's resolved key so equality and prefix checks reuse one binding. */
     const rk = child.resolvedKey;
     if (pathsEqual({
       a: rk,
@@ -149,6 +152,7 @@ export function assertNoInlineTableCollision(
   },
 ): void {
   for (const kv of body) {
+    /** Existing chain so both prefix directions can be checked. */
     const existing = keysOf({ key: kv.key, },);
     if (
       startsWithInclusive({

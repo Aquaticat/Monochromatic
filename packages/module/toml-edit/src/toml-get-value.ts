@@ -39,6 +39,7 @@ export function tomlGetValue(
     path: TomlPath
   },
 ): unknown {
+  /** Effective resolution accounts for pending edits and deletes. */
   const result = effectiveAt({
     edit,
     path,

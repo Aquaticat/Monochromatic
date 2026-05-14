@@ -46,6 +46,7 @@ export function createLruKeySet(
       keys.add(key,);
 
       if (keys.size > maxSize) {
+        /** Iterator step naming the oldest key under insertion order. */
         const oldest = keys.values().next();
         // oxlint-disable-next-line typescript/strict-boolean-expressions -- IteratorResult.done is boolean|undefined
         if (!oldest.done) {

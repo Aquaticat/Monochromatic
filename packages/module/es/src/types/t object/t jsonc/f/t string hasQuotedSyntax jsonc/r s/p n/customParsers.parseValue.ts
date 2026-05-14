@@ -69,6 +69,7 @@ export function parseValueFromStart(
     };
   }
 
+  /** Literal token attempt, or a sentinel symbol when the input is not a literal. */
   const literal = parseLiteralToken({ value, },);
   if (typeof literal !== 'symbol') {
     /** Matched literal node and remaining fragment extracted from tokenizer result. */

@@ -153,6 +153,7 @@ function emitArray(
     depth: number;
   },
 ): string {
+  /** Per-element text so the assembler can join into inline or multi-line form. */
   const parts = node.elements.map(function each(el,) {
     return emitContentNode({
       node: el,
@@ -194,6 +195,7 @@ export function emitArrayWithoutIndex(
     depth: number;
   },
 ): string {
+  /** Per-element text with the targeted index dropped before encoding. */
   const parts = array.elements
     .filter(function notSkipped(
       _el,
@@ -263,7 +265,9 @@ export function emitArrayWithSkipPath(
       'emitArrayWithSkipPath: skipPath must not be empty',
     );
 
+  /** Current outer index; selects which child array to recurse into. */
   const head = nonNullishOrThrow(skipPath[0],);
+  /** Remaining inner-level indices. */
   const rest = skipPath.slice(1,);
 
   if (rest.length === 0)
@@ -274,6 +278,7 @@ export function emitArrayWithSkipPath(
       depth,
     },);
 
+  /** Per-element text where the matching child gets a recursive skip-path emit. */
   const parts = array.elements.map(function each(
     el,
     i,
@@ -319,13 +324,16 @@ function assembleArrayParts(
     depth: number;
   },
 ): string {
+  /** Speculative inline form so the column budget check can decide the layout. */
   const inlineCandidate = `[ ${parts.join(', ',)}${parts.length === 0 ? '' : ', '}]`;
   if (
     (parts.length <= options.arrayInlineThreshold)
     && (inlineCandidate.length <= options.arrayInlineMaxColumns)
   )
     return inlineCandidate;
+  /** Indent for each element when the array goes multi-line. */
   const indent = ' '.repeat(options.indent * (depth + 1),);
+  /** Closing bracket sits at the parent's indent level. */
   const closingIndent = ' '.repeat(options.indent * depth,);
   return `[\n${parts.map(function withIndent(p,) {
     return `${indent}${p},`;
@@ -348,6 +356,7 @@ function emitInlineTable(
     depth: number;
   },
 ): string {
+  /** Body entries rendered as `k = v` fragments for the assembler. */
   const parts = emitInlineTableBodyParts({
     body: node.body,
     options,
@@ -391,6 +400,7 @@ export function emitInlineTableWithExtra(
     extraValue: string;
   },
 ): string {
+  /** Existing entries plus the new one so the assembler joins them in order. */
   const parts = [
     ...emitInlineTableBodyParts({
       body: node.body,
@@ -419,11 +429,13 @@ function emitInlineTableBodyParts(
   },
 ): readonly string[] {
   return body.map(function each(kv,) {
+    /** Encoded key chain joined with `.` so dotted keys reuse their original spelling. */
     const keyText = kv.key.keys
       .map(function each2(k,) {
         return encodeKey({ key: k.type === 'TOMLBare' ? k.name : k.value, },);
       },)
       .join('.',);
+    /** Encoded value text so the entry can be composed as `k = v`. */
     const valueText = emitContentNode({
       node: kv.value,
       options,

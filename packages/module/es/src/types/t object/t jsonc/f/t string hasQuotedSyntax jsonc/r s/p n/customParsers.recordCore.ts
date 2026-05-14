@@ -88,11 +88,14 @@ export function parseOneRecordMember(
   ];
   remaining: FragmentStringJsonc;
 } {
+  /** Parsed record key and fragment remaining after consuming it. */
   const {
     keyNode,
     remaining: afterKey,
   } = parseRecordKey(tail,);
+  /** Fragment remaining after consuming the required colon separator. */
   const afterColon = expectColonAfterKey(afterKey,);
+  /** Parsed record value and fragment remaining after consuming it. */
   const {
     valueNode,
     remaining,

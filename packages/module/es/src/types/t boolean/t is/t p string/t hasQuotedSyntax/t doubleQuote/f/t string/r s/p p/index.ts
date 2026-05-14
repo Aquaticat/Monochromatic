@@ -26,6 +26,7 @@ import type {
  */
 export function $(value: string,): value is DoubleQuotedSyntax {
   // get first effective (unescaped) quote
+  /** First unescaped quote, distinguishing double quote from other quote kinds. */
   const firstEffectiveQuoteMatch = /(?<!\\)(?:\\\\)*["'`]/.exec(value,);
 
   // assert that's a double quote

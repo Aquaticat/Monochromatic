@@ -66,6 +66,7 @@ export function $<T_i,>(
   predicate: (i: T_i,) => boolean,
   arrayLike: Iterable<T_i>,
 ): T_i[] {
+  /** Accumulator of elements that satisfy the predicate. */
   const yes: T_i[] = [];
 
   for (const i of arrayLike) {

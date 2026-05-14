@@ -64,6 +64,7 @@ export function $({
   str: string;
   trimmer: string;
 },): string {
+  /** Trimmer string lifted into a literal global regex for the regex-based helper. */
   const globalRegexp = regexpToGlobalRegexp(stringToRegexp(trimmer,),);
 
   return trimEndRegex({

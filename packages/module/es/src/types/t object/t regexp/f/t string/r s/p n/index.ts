@@ -55,6 +55,7 @@ export function $({ str, }: { str: string; },): RegExp {
   // The pattern matches: $ ( ) * + . ? [ \ ] ^ { | }
   // Each matched character gets replaced with a backslash-escaped version
   // For example: "user.name" becomes "user\.name" which matches literal "user.name"
+  /** Input string with regex metacharacters escaped so it matches literally. */
   const escapedPattern = str.replaceAll(
     /[$()*+.?[\\\]^{|}]/g,
     String.raw`\$&`,

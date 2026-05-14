@@ -70,6 +70,7 @@ export function effectiveAt(
     path: TomlPath
   },
 ): EffectiveResult {
+  /** Exact-path pending insertion wins before any walk, per the resolution policy. */
   const exactInsertion = edit.insertions.find(function matchesPath(ins,) {
     return (ins.path !== undefined) && pathEquals({
       a: ins.path,
@@ -82,6 +83,7 @@ export function effectiveAt(
       value: exactInsertion.jsValue,
     };
 
+  /** Longest-prefix walk so a covering ancestor edit shows through. */
   const prefixProjection = projectPendingAtPrefix({
     edit,
     path,
@@ -89,6 +91,7 @@ export function effectiveAt(
   if (prefixProjection !== null)
     return prefixProjection;
 
+  /** Sub-tree synthesis merges pending descendants for intermediate-level reads. */
   const subtree = synthesiseSubtree({
     edit,
     path,
@@ -141,12 +144,15 @@ function projectPendingAtPrefix(
   },
 ): EffectiveResult | null {
   for (let prefixLen = path.length; prefixLen >= 1; prefixLen--) {
+    /** Candidate ancestor path being probed at this iteration. */
     const prefix = path.slice(
       0,
       prefixLen,
     );
+    /** Remaining segments to navigate inside the matched JS value. */
     const rest = path.slice(prefixLen,);
 
+    /** Pending insertion that covers this prefix exactly, if any. */
     const matchingIns = edit.insertions.find(function matches(ins,) {
       return (ins.path !== undefined) && pathEquals({
         a: ins.path,
@@ -160,14 +166,17 @@ function projectPendingAtPrefix(
         rest,
       },);
 
+    /** AST resolution at the prefix so a pending edit can be looked up. */
     const baseAtPrefix = resolveByPath({
       edit,
       path: prefix,
     },);
+    /** AST node a pending edit could be keyed on. */
     const pendingNode = nodeFromResolved({ resolved: baseAtPrefix, },);
     if (pendingNode !== null) {
       if (edit.deletions.has(pendingNode,))
         return { kind: 'deleted', };
+      /** Pending edit's jsValue is the surface to navigate. */
       const pendingEdit = edit.edits.get(pendingNode,);
       if ((pendingEdit !== undefined) && (pendingEdit.jsValue !== undefined))
         return navigateJsValue({
@@ -218,11 +227,14 @@ function synthesiseSubtree(
     path: TomlPath;
   },
 ): Record<string, unknown> | null {
+  /** Lazy accumulator so an empty pending set returns `null` instead of `{}`. */
   let acc: Record<string, unknown> | null = null;
   for (const ins of edit.insertions) {
+    /** Path field is optional; skip insertions without a path. */
     const insPath = ins.path;
     if (insPath === undefined) continue;
     if (insPath.length <= path.length) continue;
+    /** True when `path` is a strict prefix of `insPath`. */
     const matches = path.every(function eq(
       seg,
       i,
@@ -230,7 +242,9 @@ function synthesiseSubtree(
       return seg === insPath[i];
     },);
     if (!matches) continue;
+    /** Segments after the prefix; describes where to merge `jsValue`. */
     const rest = insPath.slice(path.length,);
+    /** Numeric segments rule out merging into a plain object. */
     const restStrings = asStringPath({ segs: rest, },);
     if (restStrings === null) continue;
     acc = mergeAt({
@@ -269,6 +283,7 @@ function navigateJsValue(
       value,
     };
   }
+  /** Current segment so each recursion step navigates one level deeper. */
   const [head, ...remaining] = rest;
   if (head === undefined) return missingFor({ edit, },);
   if ((typeof head) === 'number') {
@@ -302,6 +317,7 @@ function resolveAst(
     path: TomlPath
   },
 ): EffectiveResult {
+  /** AST-only resolution so deletion and edit lookups can be keyed by node identity. */
   const base = resolveByPath({
     edit,
     path,
@@ -309,6 +325,7 @@ function resolveAst(
   if (base.kind === 'keyvalue') {
     if (edit.deletions.has(base.node,))
       return { kind: 'deleted', };
+    /** Pending replace-value edit on this keyvalue, if any. */
     const pending = edit.edits.get(base.node,);
     if (pending !== undefined)
       return {
@@ -317,6 +334,7 @@ function resolveAst(
       };
   }
   if (base.kind === 'value') {
+    /** Pending element edit on this content node, if any. */
     const pending = edit.edits.get(base.node,);
     if (pending !== undefined)
       return {

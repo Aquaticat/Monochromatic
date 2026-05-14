@@ -123,13 +123,15 @@ import {
  */
 export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
   //region Pre-scan for comments: Strip/record leading comments to decide how to dispatch
+  /** Leading-comment record consulted to choose the parser dispatch branch. */
   const outStartsComment = startsWithComment({ value, },);
   //endregion Pre-scan for comments
 
   //region Top-level dispatch and heuristics: Select array/object path; attempt simple trailing-comma fix, else fallback
-  // oxlint-disable-next-line eslint/no-shadow -- inner outStartsComment parameter deliberately shadows outer for scoped dispatch
+  /* oxlint-disable eslint/no-shadow -- inner outStartsComment parameter and remainingContent destructure deliberately shadow outer bindings for scoped dispatch */
+  /** Final parsed JSONC value returned to the caller after dispatch. */
   const result = (function getResult({ outStartsComment, },): Jsonc.Value {
-    // oxlint-disable-next-line eslint/no-shadow -- inner value from destructuring deliberately shadows outer parameter
+    /** Content after leading comment stripping, narrowed back into the StringJsonc handle. */
     const { remainingContent: value, } = outStartsComment;
     if (value.startsWith('[',)) {
       return parseWithFallback({
@@ -157,6 +159,7 @@ export function $({ value, }: { value: StringJsonc; },): Jsonc.Value {
     );
     //endregion Error handling
   })({ outStartsComment, },);
+  /* oxlint-enable eslint/no-shadow */
 
   //endregion Top-level dispatch and heuristics
 

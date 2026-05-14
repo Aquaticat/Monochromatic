@@ -43,6 +43,7 @@ export function tomlInsertCommentBefore(
     comment: string | readonly string[];
   },
 ): TomlEditState {
+  /** Path lookup so missing keys throw before any state change. */
   const resolved = resolveByPath({
     edit,
     path,
@@ -52,11 +53,14 @@ export function tomlInsertCommentBefore(
       `Path ${formatPath({ path, },)} not found`,
     );
 
+  /** Normalised to an array so a single string and a multi-line list share the join path. */
   const lines = toLines({ comment, },);
+  /** Each line gets the `# ` prefix and a newline so it stands as its own physical line. */
   const text = lines.map(function withHash(line,) {
     return `# ${line}\n`;
   },).join('',);
 
+  /** Anchor records placement so the emitter can splice in source order. */
   const anchor: Insertion['anchor'] = resolved.kind === 'array-of-tables'
     ? {
       position: 'before-node',

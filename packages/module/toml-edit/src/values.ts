@@ -131,11 +131,13 @@ function encodeWrapped(
       ? wrapped.value.toString()
       : String(wrapped.value,);
   if (wrapped.tomlKind === 'float') {
+    /** Numeric form so finiteness and NaN can be checked. */
     const n = Number(wrapped.value,);
     if (!Number.isFinite(n,)) {
       if (Number.isNaN(n,)) return 'nan';
       return n > 0 ? 'inf' : '-inf';
     }
+    /** String form so the float-marker check can scan once. */
     const s = String(n,);
     return s.includes('.') || s.includes('e') || s.includes('E') ? s : `${s}.0`;
   }
@@ -167,6 +169,7 @@ function encodeString(
       style: existing.style,
       multiline: existing.multiline,
     },);
+  /** Multi-line content selects triple-quoted output to avoid splitting. */
   const hasNewline = value.includes('\n',);
   if (hasNewline)
     return encodeStringWithStyle({
@@ -201,6 +204,7 @@ function encodeStringWithStyle(
     if (multiline) return `'''\n${value}'''`;
     return `'${value}'`;
   }
+  /** Backslash and control-char escapes shared by single- and multi-line basic strings. */
   const escaped = value
     .replaceAll(
       '\\',
@@ -223,6 +227,7 @@ function encodeStringWithStyle(
       String.raw`\f`,
     );
   if (multiline) {
+    /** Newlines stay literal so the multi-line string preserves layout. */
     const escapedKeepNewlines = escaped.replaceAll(
       '\r',
       String.raw`\r`,
@@ -286,9 +291,11 @@ function encodeArray(
     existing: AST.TOMLContentNode | undefined;
   },
 ): string {
+  /** Existing per-element AST so encoder can reuse spelling when value matches. */
   const elementExistings = (existing !== undefined) && (existing.type === 'TOMLArray')
     ? existing.elements
     : null;
+  /** Encoded element strings so the result can be both inline-tested and multi-line-emitted. */
   const encoded = input.map(function each(
     el,
     i,
@@ -300,13 +307,16 @@ function encodeArray(
       depth: depth + 1,
     },);
   },);
+  /** Speculative inline form so the column budget check can decide the layout. */
   const inlineCandidate = `[ ${encoded.join(', ',)}${encoded.length === 0 ? '' : ', '}]`;
   if (
     (encoded.length <= options.arrayInlineThreshold)
     && (inlineCandidate.length <= options.arrayInlineMaxColumns)
   )
     return inlineCandidate;
+  /** Indent for each element when the array goes multi-line. */
   const indent = ' '.repeat(options.indent * (depth + 1),);
+  /** Closing bracket sits at the parent's indent level for legibility. */
   const closingIndent = ' '.repeat(options.indent * depth,);
   return `[\n${encoded.map(function withIndent(e,) {
     return `${indent}${e},`;
@@ -329,7 +339,9 @@ function encodeInlineTable(
     depth: number;
   },
 ): string {
+  /** Entries so iteration is keyed and ordering is deterministic. */
   const entries = Object.entries(input,);
+  /** Each entry becomes its own `k = v` fragment so the joiner can comma-separate. */
   const parts = entries.map(function each([k, v,],) {
     return `${encodeKey({ key: k, },)} = ${
       encodeValue({
@@ -400,6 +412,7 @@ function isWrappedInput(value: unknown,): value is TomlWrappedInput {
  */
 export function isPlainObject(value: unknown,): value is Record<string, unknown> {
   if (((typeof value) !== 'object') || (value === null)) return false;
+  /** Prototype lookup so class instances and built-ins are rejected. */
   const proto: unknown = Object.getPrototypeOf(value,);
   return (proto === Object.prototype) || (proto === null);
 }

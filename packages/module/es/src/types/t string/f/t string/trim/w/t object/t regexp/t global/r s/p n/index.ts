@@ -72,6 +72,7 @@ export function $(
   },
 ): string {
   // First trim from the start
+  /** Intermediate string after leading matches are stripped, fed into the trailing pass. */
   const startTrimmed = trimRegexpStart({
     str,
     trimmer,

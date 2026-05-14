@@ -54,6 +54,7 @@ import {
   // Normalize user's keys to match Reflect.ownKeys output format.
   // Reflect.ownKeys returns numeric keys as strings (e.g., '1' not 1), so convert numbers to strings.
   // Only store ONE representation per key to ensure the stricter omitFromIterable validation passes.
+  /** Normalised omit set with numeric keys widened to strings to match Reflect.ownKeys output. */
   const normalizedOmitSet = new Set<string | symbol>();
   for (const key of toOmit) {
     if (typeof key === 'number')

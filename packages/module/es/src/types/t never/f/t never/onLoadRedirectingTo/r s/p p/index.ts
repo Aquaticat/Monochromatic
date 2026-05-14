@@ -31,6 +31,7 @@
  * ```
  */
 export function $(delayTime: number = 5_000,): void {
+  /** Optional anchor sentinel marking a deferred redirect target. */
   const potentialRedirectingToElement: HTMLAnchorElement | null = document
     .querySelector<HTMLAnchorElement>('a.redirectingTo',);
   if (potentialRedirectingToElement) {

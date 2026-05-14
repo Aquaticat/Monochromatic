@@ -81,7 +81,9 @@
   if (count === 0)
     return [];
 
+  /** Accumulator of taken elements up to the requested count. */
   const result: T[] = [];
+  /** Running count of elements collected so far, used to short-circuit at the cap. */
   let taken = 0;
 
   for (const element of iterable) {

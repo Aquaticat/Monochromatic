@@ -63,6 +63,7 @@ export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
       text: string
     };
 
+  /** Accumulator for all deltas so a single sort orders the emission. */
   const events: SortedEvent[] = [];
 
   for (const [node, edit_,] of edit.edits)
@@ -78,6 +79,7 @@ export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
     },),);
 
   for (const ins of edit.insertions) {
+    /** Resolved byte offset so insertions can join the sorted-by-offset stream. */
     const at = resolveAnchor({
       anchor: ins.anchor,
       state: edit,
@@ -93,12 +95,16 @@ export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
     a,
     b,
   ) {
+    /** Inserts use `at`, range events use `start`; normalise so the comparator is uniform. */
     const aAt = a.kind === 'insert' ? a.at : a.start;
+    /** Counterpart to `aAt` for the second comparand. */
     const bAt = b.kind === 'insert' ? b.at : b.start;
     return aAt - bAt;
   },);
 
+  /** Buffer for emitted slices so the result is one final `join`. */
   const out: string[] = [];
+  /** Running offset; tracks how much of `edit.source` has been copied. */
   const cursor = events.reduce(
     function step(
       c,
@@ -151,6 +157,7 @@ function computeReplaceEvent(
   text: string
 } {
   if (edit.kind === 'replace-value') {
+    /** Narrow to the value's bytes so the key and `=` stay in place. */
     const valueRange = valueRangeOf({ node, },);
     return {
       kind: 'replace',
@@ -230,20 +237,25 @@ function computeDeletionRange(
   start: number;
   end: number
 } {
+  /** Start offset of the deletion; the end is computed below to absorb the trailing line. */
   const [start,] = node.range;
+  /** Index of the first newline after the node; `-1` means EOF. */
   const newlineAfter = state.source.indexOf(
     '\n',
     node.range[1],
   );
+  /** Same-line comment so it disappears with the node it annotates. */
   const trailingInlineComment = state.program.comments.find(function inSameLine(c,) {
     return (
       (c.range[0] > node.range[1])
       && ((newlineAfter === (-1)) || (c.range[0] < newlineAfter))
     );
   },);
+  /** Offset just past the line terminator so the deletion absorbs the trailing `\n`. */
   const lineEndExclusive = newlineAfter === (-1)
     ? state.source.length
     : newlineAfter + 1;
+  /** Extends the range past a trailing inline comment when one was found. */
   const endIncludingComment = trailingInlineComment === undefined
     ? lineEndExclusive
     : Math.max(
@@ -300,6 +312,7 @@ function endOfLineAt({
   source: string;
   at: number
 },): number {
+  /** Newline index; `-1` means EOF, so callers fall back to `source.length`. */
   const nl = source.indexOf(
     '\n',
     at,
@@ -329,6 +342,7 @@ function resolveInsideTable(
       },);
     return 0;
   }
+  /** Last existing body entry so the insertion lands on the next line after it. */
   const last = nonNullishOrThrow(table.body.at(-1),);
   return endOfLineAt({
     source,

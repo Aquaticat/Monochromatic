@@ -31,6 +31,7 @@ import type {
  * ```
  */
 export function emptyTomlEdit({ canonical, }: TomlEmptyOptions = {},): TomlEditState {
+  /** Bootstrapped state from a zero-byte source so callers can build documents incrementally. */
   const base = parseTomlEdit(
     canonical === undefined
       ? {

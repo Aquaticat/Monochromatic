@@ -96,6 +96,7 @@ export async function* $<T,>({
 > {
   for await (const item of iterable) {
     try {
+      /** Awaited predicate verdict for the current item, used to choose pass/fail. */
       const result = await predicate(item,);
       yield (result
         ? {

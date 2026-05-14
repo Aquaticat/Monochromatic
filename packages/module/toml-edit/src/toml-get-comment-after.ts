@@ -40,6 +40,7 @@ export function tomlGetCommentAfter(
     path: TomlPath
   },
 ): TomlComment | null {
+  /** Effective resolution accounts for pending edits and deletes. */
   const result = effectiveAt({
     edit,
     path,
@@ -50,6 +51,7 @@ export function tomlGetCommentAfter(
     );
   if (result.kind === 'pending-value')
     return null;
+  /** Last AoT element is the one a trailing comment would attach to in source. */
   const node = result.kind === 'array-of-tables'
     ? nonNullishOrThrow(result.nodes.at(-1),)
     : result.node;

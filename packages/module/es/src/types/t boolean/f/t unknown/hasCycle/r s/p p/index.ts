@@ -38,6 +38,7 @@ export function $(value: unknown,): boolean {
   // Intentional mutation: stack is consumed during traversal
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- stack shrinks via pop
   while (stack.length > 0) {
+    /** Next reference dequeued from the traversal stack. */
     const current = stack.pop();
     if (typeof current !== 'object' || current === null)
       continue;

@@ -53,6 +53,7 @@ export async function* $<const T,>(
   element: T;
   index: Int & (Positive | 0);
 }> {
+  /** Running zero-based position emitted alongside each element. */
   let index = 0;
   for await (const element of myIterable) {
     yield {

@@ -33,6 +33,7 @@ export function getLengthsToTestFirst(
     lengths: readonly number[];
   },
 ): number[] {
+  /** Selected lengths beginning with the upper bound sentinel. */
   const result = [lengthUpperBound,];
   for (const length of lengths) {
     if (length > lengthUpperBound)

@@ -95,12 +95,14 @@ export function tomlSet(
       `Cannot set ${formatPath({ path, },)} to ${String(value,)}; use tomlDelete`,
     );
 
+  /** Direct AST lookup so the setter can branch on the resolution kind. */
   const resolved = resolveByPath({
     edit,
     path,
   },);
 
   if (resolved.kind === 'keyvalue') {
+    /** Encoded replacement text for an existing key-value's value. */
     const newText = jsValueToTomlText({
       input: value,
       options: edit.canonical,
@@ -118,6 +120,7 @@ export function tomlSet(
   }
 
   if (resolved.kind === 'value') {
+    /** Encoded replacement text for an array element or inline-table value. */
     const newText = jsValueToTomlText({
       input: value,
       options: edit.canonical,
@@ -182,13 +185,17 @@ function doTableReplace(
       `tomlSet at ${formatPath({ path, },)} requires a plain object to replace a table body; got ${describeNonObject({ value, },)}`,
     );
 
+  /** Existing body key-values so they can be marked for deletion. */
   const bodyKvs = container.body.filter(function isKv(child,): child is AST.TOMLKeyValue {
     return child.type === 'TOMLKeyValue';
   },);
 
+  /** Anchor placing new insertions inside the table body. */
   const anchor: AnchorKind = anchorForTableReplace({ container, },);
 
+  /** One `Insertion` per replacement entry so the splice engine can emit them in order. */
   const newInsertions: Insertion[] = Object.entries(value,).map(function each([k, v,],) {
+    /** Encoded `key = value\n` line. */
     const text = `${encodeKey({ key: k, },)} = ${
       jsValueToTomlText({
         input: v,
@@ -244,6 +251,7 @@ function anchorForTableReplace(
       table: container,
       atEnd: true,
     };
+  /** First `[foo]` header after the top-level body so insertions land before it. */
   const firstTable = container.body.find(function isTable(child,): child is AST.TOMLTable {
     return child.type === 'TOMLTable';
   },);
@@ -300,6 +308,7 @@ function doAotReplace(
     nodes: readonly AST.TOMLTable[];
   },
 ): TomlEditState {
+  /** True when every node is a `[[foo]]` instance rather than a sibling standard table. */
   const allAot = nodes.every(function isAot(n,) {
     return n.kind === 'array';
   },);
@@ -316,8 +325,10 @@ function doAotReplace(
       + `got ${describeNonObject({ value, },)}. Pass [] to clear all instances.`,
     );
 
+  /** Aliased so the iteration site reads as `elements` not `value`. */
   const elements: readonly unknown[] = value;
 
+  /** Encoded dotted header so each `[[a.b]]` line shares one spelling. */
   const encodedHeader = path
     .map(function each(seg,) {
       if ((typeof seg) !== 'string')
@@ -328,7 +339,9 @@ function doAotReplace(
     },)
     .join('.',);
 
+  /** Destructure so the first existing AOT instance can anchor the new insertions. */
   const [firstNode,] = nodes;
+  /** Anchor in front of the first existing instance, or EOF when there are none. */
   const anchor: AnchorKind = firstNode === undefined
     ? 'eof'
     : {
@@ -336,6 +349,7 @@ function doAotReplace(
       node: firstNode,
     };
 
+  /** One insertion per AOT element so the splice engine can emit each `[[a.b]]` block in order. */
   const newInsertions: Insertion[] = elements.map(function each(
     el,
     i,
@@ -345,6 +359,7 @@ function doAotReplace(
         `tomlSet on an array-of-tables at ${formatPath({ path, },)} requires every element to be a plain object; `
         + `element at index ${i} is ${describeNonObject({ value: el, },)}.`,
       );
+    /** Encoded body lines for this AOT element. */
     const bodyText = Object.entries(el,)
       .map(function eachEntry([k, v,],) {
         return `${encodeKey({ key: k, },)} = ${

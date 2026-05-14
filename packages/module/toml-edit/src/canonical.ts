@@ -57,17 +57,21 @@ export function canonicalEmit({ edit, }: { edit: TomlEditState; },): string {
  * @returns Computed string.
  */
 function canonicalFromEmpty({ edit, }: { edit: TomlEditState; },): string {
+  /** Accumulator so the header block and insertions can be emitted in source order. */
   const parts: string[] = [];
   if ((edit.headerComment !== null) && (edit.headerComment !== '')) {
+    /** Header comment is stored joined; split here so each line gets its own `#` prefix. */
     const lines = edit.headerComment.split('\n',);
     for (const line of lines)
       parts.push(`# ${line}${edit.canonical.lineBreak}`,);
     parts.push(edit.canonical.lineBreak,);
   }
+  /** Pending insertions become the body when there is no parsed source. */
   const insertionTexts = edit.insertions.map(function each(ins,) {
     return ins.text;
   },);
   parts.push(...insertionTexts,);
+  /** Single join so callers see a contiguous string instead of array fragments. */
   const result = parts.join('',);
   if (
     edit.canonical.trailingNewline

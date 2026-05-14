@@ -38,6 +38,7 @@ export function tomlKeys(
     path?: TomlPath
   },
 ): readonly (string | number)[] {
+  /** Effective resolution accounts for pending edits and deletes. */
   const result = effectiveAt({
     edit,
     path,
@@ -45,6 +46,7 @@ export function tomlKeys(
   if ((result.kind === 'missing') || (result.kind === 'deleted'))
     return [];
   if (result.kind === 'pending-value') {
+    /** Local alias so the type guards can read directly. */
     const v = result.value;
     if (Array.isArray(v,))
       return v.map(function eachIdx(
@@ -103,16 +105,20 @@ function tableChildKeys(
     container: AST.TOMLTopLevelTable | AST.TOMLTable | AST.TOMLInlineTable;
   },
 ): readonly string[] {
+  /** Tracks emitted top-level segments so each first key is reported once. */
   const seen = new Set<string>();
   return container.body.flatMap(function flatten(child,) {
     if (child.type === 'TOMLKeyValue') {
+      /** All key segments of this entry so the first one can be projected out. */
       const segs = keysOf({ key: child.key, },);
+      /** Top-level segment that becomes the visible key. */
       const first = nonNullishOrThrow(segs[0],);
       if (seen.has(first,)) return [];
       seen.add(first,);
       return [first,];
     }
     if (container.type === 'TOMLTopLevelTable') {
+      /** Header's first segment so a top-level table contributes its top key. */
       const [tableTop,] = child.resolvedKey;
       if (((typeof tableTop) !== 'string') || seen.has(tableTop,)) return [];
       seen.add(tableTop,);

@@ -72,9 +72,12 @@ export function doPathCreate(
     };
   },
 ): TomlEditState {
+  /** Segments not yet matched by the AST walk; describe the path to create. */
   const remaining = path.slice(resolved.consumed,);
+  /** Deepest ancestor node so the dispatch can pick a strategy. */
   const {deepest} = resolved;
 
+  /** All-string remaining segments; numeric segments are rejected for path-create. */
   const dottedSegments: readonly string[] = remaining.map(function asString(seg,) {
     if ((typeof seg) !== 'string')
       throw new TomlImmutableNodeError(
@@ -147,19 +150,23 @@ function doTopLevelDottedKeyInsert(
     path,
   },);
 
+  /** Encoded value text so the insertion is `dottedKey = valueText`. */
   const valueText = jsValueToTomlText({
     input: value,
     options: edit.canonical,
     existing: undefined,
   },);
+  /** Dotted key spelling so each segment is encoded once. */
   const dottedKey = dottedSegments.map(function each(s,) {
     return encodeKey({ key: s, },);
   },).join('.',);
 
+  /** First `[foo]` header so the insertion can anchor before it. */
   const firstTable = container.body.find(function isTable(child,): child is AST.TOMLTable {
     return child.type === 'TOMLTable';
   },);
 
+  /** Anchor: before the first table header, or EOF when there are no headers. */
   const anchor: AnchorKind = firstTable !== undefined
     ? {
       position: 'before-node',
@@ -171,6 +178,7 @@ function doTopLevelDottedKeyInsert(
   // existing newline (the table header is on its own line), so no leading
   // prefix is needed. For 'eof', prepend a newline only when the source
   // ends mid-line.
+  /** Leading newline only when the EOF insertion would land mid-line. */
   const prefix = firstTable !== undefined
     ? ''
     : ((edit.source === '') || edit.source.endsWith('\n',)
@@ -220,15 +228,18 @@ function doTableDottedKeyInsert(
     path,
   },);
 
+  /** Encoded value text so the insertion is `dottedKey = valueText`. */
   const valueText = jsValueToTomlText({
     input: value,
     options: edit.canonical,
     existing: undefined,
   },);
+  /** Dotted key spelling so each segment is encoded once. */
   const dottedKey = dottedSegments.map(function each(s,) {
     return encodeKey({ key: s, },);
   },).join('.',);
 
+  /** Leading newline only when the source ends mid-line. */
   const prefix = edit.source.endsWith('\n',) ? '' : '\n';
 
   return withInsertion({
@@ -272,6 +283,7 @@ function doInlineTableExtend(
     dottedSegments: readonly string[];
   },
 ): TomlEditState {
+  /** Destructured parent so the type guard can read it once. */
   const {parent} = inlineTable;
   if ((parent === null) || (parent.type !== 'TOMLKeyValue'))
     throw new TomlImmutableNodeError(
@@ -284,15 +296,18 @@ function doInlineTableExtend(
     path,
   },);
 
+  /** Encoded value text for the new entry. */
   const valueText = jsValueToTomlText({
     input: value,
     options: edit.canonical,
     existing: undefined,
   },);
+  /** Dotted key spelling so each segment is encoded once. */
   const extraKey = dottedSegments.map(function each(s,) {
     return encodeKey({ key: s, },);
   },).join('.',);
 
+  /** Re-emitted inline-table text with the new entry appended. */
   const newText = emitInlineTableWithExtra({
     node: inlineTable,
     options: edit.canonical,
@@ -301,10 +316,13 @@ function doInlineTableExtend(
     extraValue: valueText,
   },);
 
+  /** Pre-merge JS view of the inline table; may be a non-object for malformed AST. */
   const existingJsRaw = getStaticTOMLValue(inlineTable,);
+  /** Normalised to a plain object so the merge has a definite shape to extend. */
   const existingJs: Record<string, unknown> = isPlainObject(existingJsRaw,)
     ? existingJsRaw
     : {};
+  /** Post-merge JS value so cross-path readers see the new shape. */
   const newJsValue = mergeDottedSegments({
     base: existingJs,
     segments: dottedSegments,
@@ -341,6 +359,7 @@ function mergeDottedSegments(
   },
 ): Record<string, unknown> {
   if (segments.length === 0) return base;
+  /** Current segment so each recursion step shrinks `segments` by one. */
   const [head,] = segments;
   if (head === undefined) return base;
   if (segments.length === 1)
@@ -348,7 +367,9 @@ function mergeDottedSegments(
       ...base,
       [head]: value,
     };
+  /** Snapshot prior subtree so it can be merged into rather than overwritten. */
   const existing = base[head];
+  /** Default to an empty object when the existing slot is not a plain object. */
   const child = isPlainObject(existing,) ? existing : {};
   return {
     ...base,
