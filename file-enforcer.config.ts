@@ -31,12 +31,12 @@ ${
   }
 ]
 `;
-  await overwrite(
-    './mise.toml',
-    `# Generated from mise.no-env.toml by file-enforcer.
+  await overwrite({
+    dest: './mise.toml',
+    content: `# Generated from mise.no-env.toml by file-enforcer.
 ${await cat(['./mise.no-env.toml',],)}
 ${envSection}`,
-  );
+  },);
 }
 
 /**
@@ -59,17 +59,17 @@ async function generateForbiddenStringsRules(): Promise<void> {
   // codenames, customer names) that must not be committed. We never
   // write a literal into this committed config; otherwise the
   // scanner would self-match against the seed string here.
-  await overwriteIfNotExists(
-    './forbidden-strings.append.local.txt',
-    `# forbidden-strings per-repo appendix (gitignored).
+  await overwriteIfNotExists({
+    dest: './forbidden-strings.append.local.txt',
+    content: `# forbidden-strings per-repo appendix (gitignored).
 # Add literal substrings or /PATTERN/FLAGS regex rules below; one per line.
 # This file is concatenated onto forbidden-strings.local.example.txt by
 # file-enforcer to produce the runtime forbidden-strings.local.txt.
 `,
-  );
-  await overwrite(
-    './forbidden-strings.local.txt',
-    `# Generated from forbidden-strings.local.example.txt + forbidden-strings.append.local.txt by file-enforcer.
+  },);
+  await overwrite({
+    dest: './forbidden-strings.local.txt',
+    content: `# Generated from forbidden-strings.local.example.txt + forbidden-strings.append.local.txt by file-enforcer.
 # Do not edit manually. To change baseline rules, edit
 # packages/cli/forbidden-strings/src/mise.port-betterleaks.ts and re-run it.
 # To add per-repo rules, edit forbidden-strings.append.local.txt.
@@ -78,7 +78,7 @@ ${await cat([
       './forbidden-strings.local.example.txt',
       './forbidden-strings.append.local.txt',
     ],)}`,
-  );
+  },);
 }
 
 /**
@@ -89,22 +89,22 @@ async function mirrorSkills(): Promise<void> {
   /** Concatenated SKILL.md contents from the canonical .agents/skills tree, mirrored verbatim to legacy consumer dirs. */
   const skills = await cat('./.agents/skills/*/*.md',);
   await Promise.all([
-    overwriteEach(
-      './.factory/skills/*/*.md',
-      skills,
-    ),
-    overwriteEach(
-      './.claude/skills/*/*.md',
-      skills,
-    ),
+    overwriteEach({
+      destGlob: './.factory/skills/*/*.md',
+      files: skills,
+    },),
+    overwriteEach({
+      destGlob: './.claude/skills/*/*.md',
+      files: skills,
+    },),
   ],);
 }
 
 await Promise.all([
   // CLAUDE.md must literally contain AGENTS.md content (Claude Code's @include is unreliable)
-  overwrite(
-    './CLAUDE.md',
-    `Generated from AGENTS.md by file-enforcer.
+  overwrite({
+    dest: './CLAUDE.md',
+    content: `Generated from AGENTS.md by file-enforcer.
     
     ### Spawning child Claude sessions
 
@@ -123,7 +123,7 @@ The command prints \`{"spawnId":"<uuid>"}\` on success.
 Completed child results are injected into context automatically between tool calls.
 
 ${await cat(['./AGENTS.md',],)}`,
-  ),
+  },),
 
   generateMiseToml(),
 

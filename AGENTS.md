@@ -40,7 +40,7 @@ Before sending any response with substantive claims:
 8. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
 9. Quoted a clause or doc passage and drawn a conclusion from it? Restate the subject and object in plain English before relying on the conclusion. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
 10. About to ask the user to perform a manual action? Apply "Handing off manual actions": try the bridging path first; if you must hand off, write it in HANDOVER format.
-11. Revising a substantive claim the user just corrected? Call advisor before sending. The original reasoning had a blind spot; the revision shares it unless a fresh pair of eyes sees the transcript. User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
+11. Revising a substantive claim the user just corrected? Call advisor before sending. If no native advisor tool is available, use `.agents/skills/advisor/SKILL.md` as the clean-room fallback workflow before answering. The original reasoning had a blind spot; the revision shares it unless a fresh review pass sees the transcript. User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
 
 ### Measure-vs-ask
 
@@ -520,6 +520,7 @@ A `PostToolUse` lint:types hook is on the roadmap but not yet implemented; type-
 
 ## Agent skills
 
+- **Advisor**: clean-room fallback for the Claude Code advisor pattern when no native advisor tool is available. Use `.agents/skills/advisor/SKILL.md` before substantive revisions after user corrections, before committing to an approach on multi-step work, when stuck, and before declaring longer work done.
 - **Issue tracker**: GitHub Issues via `gh` CLI. "Resolve issue N" requires explicit `gh issue close` after the fix commits; commit-body `Closes #N` auto-close is not sufficient. See `docs/agents/issue-tracker.md`.
 - **Triage labels**: five canonical roles with default label strings. See `docs/agents/triage-labels.md`.
 - **Domain docs**: no context files; agents read fresh code on every probe. See `docs/agents/domain.md`.
