@@ -53,6 +53,7 @@ const PENDING_BUFFER_MULTIPLE = 2;
  */
 export const importHandler: EventHandlerWithFetch = defineHandler(
   async function handleImport(event,) {
+    /** Identity sent via `x-user-id` header because the body is the upload payload. */
     const userId = event.req.headers.get('x-user-id',);
     if (userId === null || userId === '') {
       throw new HTTPError({
@@ -61,6 +62,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
 
+    /** Inbound body stream; null aborts the import before any draft is created. */
     const stream = event.req.body;
     if (stream === null || stream === undefined) {
       throw new HTTPError({
@@ -69,6 +71,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
 
+    /** Pre-allocated draft id reused by chunk PUTs and the finalize call below. */
     const draftId = randomUUID();
     await createDraft({
       id: draftId,
@@ -76,12 +79,18 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
       parentId: null,
     },);
 
+    /** Decoded reader; multi-byte safe because `TextDecoderStream` re-aligns chunks. */
     const reader = stream.pipeThrough(new TextDecoderStream(),).getReader();
 
+    /** Buffer holding text between chunker flushes; cut at blank-line boundaries. */
     let pending = '';
+    /** Monotonically incrementing chunk index forwarded to `putChunk`. */
     let seq = 0;
+    /** Accumulated char count across all chunks; passed to finalize. */
     let charCount = 0;
+    /** First chunk's markdown captured once for the preview field. */
     let firstMd = '';
+    /** Total chunk count produced by the chunker; passed to finalize. */
     let chunkCount = 0;
 
     /**
@@ -104,11 +113,13 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
       // fence between flushes. For the demo we use a simple heuristic:
       // find the last "\n\n" outside any in-progress fence. With block
       // sizes typically << 1 MB, this scan is negligible.
+      /** Cut offset: end-of-buffer when forced, otherwise the last blank line. */
       const lastBlank = force
         ? pending.length
         : pending.lastIndexOf('\n\n',);
       if (lastBlank <= 0)
         return;
+      /** Prefix to feed through the chunker; remaining suffix stays in `pending`. */
       const prefix = pending.slice(
         0,
         lastBlank,
@@ -139,11 +150,13 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
       }
     }
 
+    /** Holds the first thrown error from the read loop so the reader can release before rethrow. */
     let readError: unknown = undefined;
     try {
       // Streaming reader is inherently sequential.
       /* oxlint-disable no-await-in-loop, no-constant-condition */
       while (true) {
+        /** Destructured read result; `done` ends the loop, `value` is the new text segment. */
         const {
           value,
           done,
@@ -167,6 +180,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
     if (readError !== undefined) {
       if (readError instanceof Error)
         throw readError;
+      /** Human-readable rendering of `readError` for the rethrow message. */
       const description = typeof readError === 'string'
         ? readError
         : 'unknown error';
@@ -180,6 +194,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
 
+    /** New messages.id; null becomes a 500 because the draft passed every check above. */
     const messageId = await finalizeDraft({
       draftId,
       userId,

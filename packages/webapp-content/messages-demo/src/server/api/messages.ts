@@ -42,7 +42,9 @@ const DECIMAL_RADIX = 10;
  */
 export const editMessageHandler: EventHandlerWithFetch = defineHandler(
   async function handleEditMessage(event,) {
+    /** Parsed `:id` path param; throws 400 when missing or non-positive. */
     const messageId = parseMessageId(event.context.params,);
+    /** Decoded body; defaulted so an absent body still flows through the shape check. */
     const body = await readBody<unknown>(event,) ?? {};
     if (!isRecord(body,)) {
       throw new HTTPError({
@@ -51,19 +53,24 @@ export const editMessageHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
 
+    /** Identity claimed by the edit; cross-checked against the message row. */
     const userId = stringField(
       body,
       'user_id',
     );
+    /** Newly-created child draft id pointed at by the swap. */
     const newDraftId = stringField(
       body,
       'new_draft_id',
     );
+    /** Preview snippet copied into messages.preview for the index page. */
     const preview = stringField(
       body,
       'preview',
     );
+    /** Raw `char_count`; narrowed to number below before the edit call. */
     const charCount = body['char_count'];
+    /** Raw `chunk_count`; narrowed to number below before the edit call. */
     const chunkCount = body['chunk_count'];
     if (
       userId === null
@@ -78,6 +85,7 @@ export const editMessageHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
 
+    /** Edit outcome variant; drives the HTTP status returned to the caller. */
     const outcome = await editMessage({
       messageId,
       userId,
@@ -133,7 +141,9 @@ export const editMessageHandler: EventHandlerWithFetch = defineHandler(
  */
 export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
   async function handleDeleteMessage(event,) {
+    /** Parsed `:id` path param; throws 400 when missing or non-positive. */
     const messageId = parseMessageId(event.context.params,);
+    /** Decoded body; defaulted so an absent body still flows through the shape check. */
     const body = await readBody<unknown>(event,) ?? {};
     if (!isRecord(body,)) {
       throw new HTTPError({
@@ -141,6 +151,7 @@ export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
         message: 'invalid body',
       },);
     }
+    /** Identity claimed by the delete; cross-checked against the message row. */
     const userId = stringField(
       body,
       'user_id',
@@ -152,6 +163,7 @@ export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
 
+    /** Soft-delete outcome variant; drives the HTTP status returned to the caller. */
     const outcome = await softDeleteMessage({
       messageId,
       userId,
@@ -195,6 +207,7 @@ export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
  * @throws `HTTPError` 400 when missing or not a positive integer
  */
 function parseMessageId(params: Record<string, string> | undefined,): number {
+  /** Raw `:id` path param; empty or undefined trips the 400 below. */
   const raw = params?.['id'];
   if (raw === undefined || raw === '') {
     throw new HTTPError({
@@ -202,6 +215,7 @@ function parseMessageId(params: Record<string, string> | undefined,): number {
       message: 'missing message id',
     },);
   }
+  /** Parsed id; non-finite or non-positive trips the 400 below. */
   const value = Number.parseInt(
     raw,
     DECIMAL_RADIX,
@@ -250,6 +264,7 @@ function stringField(
   body: Record<string, unknown>,
   key: string,
 ): string | null {
+  /** Indexed once so the typeof narrow and the return both reference the same value. */
   const value = body[key];
   return typeof value === 'string' ? value : null;
 }
