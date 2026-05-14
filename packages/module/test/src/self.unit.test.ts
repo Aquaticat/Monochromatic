@@ -14,3 +14,4 @@ import './sinon.unit.test.ts';
 import './descriptor.unit.test.ts';
 import './it.unit.test.ts';
 import './describe.unit.test.ts';
+import './format-error.unit.test.ts';

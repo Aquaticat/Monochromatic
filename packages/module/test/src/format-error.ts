@@ -26,18 +26,41 @@
 import { findMonorepoRootCached, } from '@monochromatic-dev/module-fs-path';
 
 /**
- * Substrings identifying harness-internal stack frames. Any frame
- * containing one of these is dropped before joining; the failing
- * user code is the interesting frame, not the harness's own
- * dispatch machinery.
+ * Substrings identifying stack frames that belong to the harness's
+ * own dispatch machinery. Any frame containing one of these is
+ * dropped before joining; the failing user code is the interesting
+ * frame, not the layers under it.
  *
- * Both forms are listed because the package is consumed either as a
- * workspace package (path `packages/module/test/dist/`) or via
- * `node_modules` (path `module-test/dist/`).
+ * Two categories are listed:
+ *
+ * - The harness's own bundle, under two paths because consumers
+ *   resolve it either as a workspace package
+ *   (`packages/module/test/dist/`) or via `node_modules`
+ *   (`module-test/dist/`).
+ *
+ * - The vendored assertion stack. `expect()` calls land in `chai`,
+ *   which dispatches through the `chai-as-promised` and `sinon-chai`
+ *   plugins activated in `expect-matchers.ts`, and `sinon` spies feed
+ *   the sinon-chai matchers. These four are module/test's only
+ *   consumers in the monorepo (no other package depends on chai or
+ *   sinon), so any frame inside them on a failure path must come
+ *   from the harness's assertion dispatch.
+ *
+ * Fragments are matched with substring `includes`, which collapses
+ * pnpm's virtual store layout
+ * (`node_modules/.pnpm/chai@6.2.2/node_modules/chai/index.js`) and
+ * the flat / hoisted layout (`node_modules/chai/index.js`) under one
+ * entry per package. The trailing slash on each package fragment
+ * prevents `chai/` matching frames inside `chai-as-promised/` and
+ * prevents `sinon/` matching `sinon-chai/`.
  */
 const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
   'packages/module/test/dist/',
   'module-test/dist/',
+  'node_modules/chai/',
+  'node_modules/chai-as-promised/',
+  'node_modules/sinon-chai/',
+  'node_modules/sinon/',
 ];
 
 //region Workspace prefix resolution
