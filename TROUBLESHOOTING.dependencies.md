@@ -1,4 +1,13 @@
-# Package Management & Dependencies Troubleshooting
+# Package management and dependencies aggregator: pnpm 9.x global blocklist mechanism, 24 pre-emptive transitive bans, vlt 0.x fails to fetch manifest URL when dependency spec includes semver build metadata `+<hash>` suffix, and per-package workspace override audits (node-domexception shim, @google/genai removal, ms-kept-intentionally, proper-lockfile shim)
+
+The vlt entry below is the only entry in this file that follows the
+troubleshooting-doc shape (it is a real external-tool bug). The
+remaining sections are workspace audit trails for dependency
+substitution decisions; they document the "why we substituted /
+removed / kept" rationale and explicitly do not file upstream because
+the upstream packages are not defective — only unsuitable for this
+workspace's policy. See "Why we do not file the policy entries
+upstream" at the bottom of this file for the 5-constraint walk.
 
 ## Global blocklist (substitution vs removal)
 
@@ -70,7 +79,7 @@ no substitutions occur and no `[blocked-dep]` lines are printed.
 The only diff is the checksum line itself, which is committed alongside
 the `.pnpmfile.mjs` change.
 
-## vlt fails to fetch manifest for versions with semver build metadata
+## vlt 0.x fails to fetch manifest when dependency spec includes semver build metadata `+<hash>` suffix
 
 ### Symptom
 
@@ -186,6 +195,36 @@ The trigger requires a package that pins a dependency to an **exact version
 with build metadata** (not a range). This is functionally unreachable
 through normal npm publishing workflows.
 
+### Verification
+
+Version under test: `vlt` from the `vltpkg/vltpkg` monorepo, file paths
+in this document are relative to that monorepo's `src/` tree.
+
+Trigger package: `@optique/run@1.0.0-dev.1692` declaring
+`"@optique/core": "1.0.0-dev.1692+5c265bd4"`.
+
+Catalogues:
+
+- **Works**: `npm install`, `pnpm install`, `yarn install` against the
+  same trigger package. All three strip `+<build>` from the version
+  string before constructing the registry URL.
+- **Works**: registry URL `GET /@optique/core/1.0.0-dev.1692` (without
+  build metadata) returns 200 OK.
+- **Fails**: `vlt install` with the trigger package. URL
+  `GET /@optique/core/1.0.0-dev.1692+5c265bd4` returns 404, and the
+  percent-encoded variant `%2B5c265bd4` also returns 404.
+- **Fails (no recovery)**: `vlt install` with `vlt.json` graph
+  modifiers (`"#@optique/core": ">=1.0.0-dev.0"`,
+  `"#@optique/run": ">=1.0.0-dev.0"`). Both run with
+  `overridden: false` because the failure is in the extraction path
+  (`src/graph/src/reify/extract-node.ts:57`), which is downstream of
+  modifier application (`src/graph/src/ideal/append-nodes.ts:271-288`).
+- **Fails (no recovery)**: lockfile restoration. vlt re-resolves
+  specs during install.
+- **Fails (no recovery)**: cache clearing
+  (`rm -rf ~/.cache/vlt/{package-info,registry-client}`). Build
+  metadata originates from the upstream manifest, not stale cache.
+
 ### Workaround
 
 No reliable workaround exists within vlt's configuration:
@@ -225,10 +264,127 @@ A more comprehensive fix would strip build metadata in the `Spec` parser
 This aligns with SemVer 2.0.0 items 10-11, which state build metadata
 **MUST** be ignored when determining version precedence.
 
+### Why we would file this upstream (5 constraints)
+
+Walked against the 5-constraint upstream-filing check.
+
+1. **Upstream's fault?** Yes. SemVer 2.0.0 items 10-11 state build
+   metadata MUST be ignored when determining version precedence; vlt's
+   single-version fast path violates this by treating `+<build>` as
+   part of the addressable version. The npm registry follows the spec
+   by stripping `+` from version keys at publish time
+   (npm/npm#6379, 2014); vlt's URL construction does not.
+2. **Can upstream fix it?** Yes; one-line fix in
+   `src/package-info/src/index.ts:405-407` to strip `+.*$` before URL
+   construction, or a broader fix in `src/spec/src/browser.ts:644` so
+   all downstream consumers see clean versions. Both are tractable
+   given the cited code.
+3. **Supporting this use case?** vlt is positioned as a general-purpose
+   npm-compatible package manager; SemVer-compliant version handling
+   is in scope.
+4. **Will they fix it?** Plausible. vlt is actively developed; the
+   change is small. The issue tracker has no existing report for this
+   pattern (issues #260, #1263, #1534 are all different "failed to
+   fetch manifest" causes). Acceptance is likely but not guaranteed.
+5. **Minimal-fix prototype?** Yes (the patch above). Tests against
+   non-trivial set: the trigger package
+   `@optique/run@1.0.0-dev.1692` reproduces; a synthetic minimal
+   reproduction with any package that pins a build-metadata dependency
+   would suffice.
+
+**Decision: file upstream.** All five constraints hold. A draft bug
+report is kept at `BUG-REPORT.vlt-build-metadata.md` (referenced below);
+do not file as-is without re-validating the constraints against the
+current vlt HEAD.
+
+### Draft upstream issue (do not file as-is — re-validate against current vltpkg/vltpkg HEAD before filing)
+
+~~~md
+**Title:** vlt fails to fetch manifest when dependency spec includes
+semver build metadata `+<hash>` suffix
+
+**Labels:** bug, package-info, spec-parsing
+
+**Description:**
+
+`vlt install` fails with `Error: failed to fetch manifest` when a
+dependency declaration includes semver build metadata in its version
+string. SemVer 2.0.0 items 10-11 state build metadata MUST be ignored
+for version precedence; npm registry strips `+<build>` from version
+keys at publish time (npm/npm#6379, 2014). vlt's single-version fast
+path does not.
+
+**Reproduction:**
+
+`@optique/run@1.0.0-dev.1692` declares
+`"@optique/core": "1.0.0-dev.1692+5c265bd4"`. Running `vlt install`
+against this dependency:
+
+```text
+Error: failed to fetch manifest
+  [cause]: {
+    code: 'ERESOLVE',
+    spec: Spec2 { spec: '@optique/core@1.0.0-dev.1692+5c265bd4', … },
+    url: https://registry.npmjs.org/@optique/core/1.0.0-dev.1692+5c265bd4,
+  }
+```
+
+The registry returns 404 for paths containing `+`. Compare:
+
+- `GET /@optique/core/1.0.0-dev.1692` — 200 OK
+- `GET /@optique/core/1.0.0-dev.1692+5c265bd4` — 404
+- `GET /@optique/core/1.0.0-dev.1692%2B5c265bd4` — 404
+
+`npm install`, `pnpm install`, `yarn install` all succeed against the
+same trigger package.
+
+**Code trace:**
+
+- `src/spec/src/browser.ts:644` sets `registrySpec = bareSpec`
+  verbatim, preserving `+5c265bd4`.
+- `src/package-info/src/index.ts:601-603`: version with `+` parses as
+  `isSingle === true`, so vlt takes the fast path.
+- `src/package-info/src/index.ts:405-407`:
+
+  ```ts
+  const version = hasLeadingRange ? registrySpec.slice(1,) : registrySpec;
+  const pakuURL = new URL(`${name}/${version}`, registry,);
+  ```
+
+  `version` becomes `"1.0.0-dev.1692+5c265bd4"`. `new URL()` preserves
+  `+` literally; the npm registry does not recognize the resulting
+  path.
+- `src/graph/src/reify/extract-node.ts:57` hydrates the spec from the
+  node's DepID; the extraction-time spec is built from
+  `fetchManifestsForDeps`
+  (`src/graph/src/ideal/append-nodes.ts:590`), which preserves the
+  `+` suffix.
+
+**Suggested fix:**
+
+Strip build metadata before URL construction:
+
+```ts
+// src/package-info/src/index.ts, inside #registryManifestRequest
+const version = hasLeadingRange ? registrySpec.slice(1,) : registrySpec;
+const versionClean = version.replace(/\+.*$/, '',);
+const pakuURL = new URL(`${name}/${versionClean}`, registry,);
+```
+
+A more comprehensive fix would strip in the `Spec` parser
+(`src/spec/src/browser.ts:644`) so all downstream consumers see clean
+versions.
+
+**Tested against:** trigger package
+`@optique/run@1.0.0-dev.1692` declaring
+`"@optique/core": "1.0.0-dev.1692+5c265bd4"`.
+~~~
+
 ### Status
 
 No upstream issue filed yet as of 2026-04-04.
-See the draft bug report in `BUG-REPORT.vlt-build-metadata.md`
+See the draft bug report in `BUG-REPORT.vlt-build-metadata.md` and the
+in-line draft above.
 
 ## Package Management Warnings
 
@@ -649,3 +805,40 @@ seed `<agentDir>/settings.json` with `{}` before re-running `pi --help`.
 See `docs/decisions/proper-lockfile-removal.md` for the decision rationale
 (why a shim was preferred over silent stub or pure removal) and
 `docs/dependency-blocklist.md` for the policy reference.
+
+## Why we do not file the policy entries upstream
+
+Walked the 5-constraint upstream-filing check once for the whole policy
+category (pre-emptive bans, node-domexception, @google/genai, ms,
+proper-lockfile, and the global blocklist mechanism). The conclusion is
+the same across all of them; doing the audit once at the category
+level is correct since the constraints do not differ per-entry.
+
+1. **Upstream's fault?** No. Each upstream package functions as
+   documented; the substitution / removal / ban is a workspace policy
+   decision about runtime profile (Node 22+ / Bun), maintenance
+   posture (3+ years abandoned), API surface (single-method
+   utilities replaced by platform primitives), or licensing /
+   provenance posture. The packages are not defective; they are
+   unsuitable for this workspace's policy.
+2. **Can upstream fix it?** Not applicable. Upstream would have to
+   un-abandon, re-license, or merge with a platform primitive. The
+   policy decision is upstream-independent.
+3. **Supporting this use case?** Not applicable. The use case
+   ("don't pull this package into this workspace") is workspace-local.
+4. **Will they fix it?** Not applicable. Several packages are
+   abandoned (no commits in 3+ years); some are deprecated by their
+   maintainer's own README ("Use your platform's native DOMException
+   instead"). The policy already takes upstream signals into account
+   when making the decision.
+5. **Minimal-fix prototype?** Not applicable.
+
+**Decision: no upstream report for any policy entry.** Each entry's
+documentation in this file is the workspace-internal audit trail
+justifying the decision. The "Conditions for revisiting" subsections
+spell out the trigger that would re-open the entry, so a future
+reviewer can validate the decision without re-deriving the analysis.
+
+The `vlt` section above is the only entry in this file that gets a
+separate "Why we would file this upstream" walk because vlt's bug is
+a genuine spec violation on their side, not a workspace policy choice.
