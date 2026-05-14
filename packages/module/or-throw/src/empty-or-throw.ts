@@ -35,6 +35,7 @@ import { getSize, } from './size.ts';
  * ```
  */
 export function emptyOrThrow<T,>(value: T,): T {
+  /** Container length or undefined for non-container inputs; non-zero triggers the throw branch. */
   const size = getSize(value,);
   if (size !== 0)
     throw new Error(`Expected empty container, got size ${String(size,)}`,);
