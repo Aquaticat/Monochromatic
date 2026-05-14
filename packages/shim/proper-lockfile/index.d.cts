@@ -19,11 +19,20 @@ type LockOptions = {
 
 type Release = () => void;
 
-declare function lock(file: string, options?: LockOptions,): Promise<Release>;
+declare function lock(
+  file: string,
+  options?: LockOptions,
+): Promise<Release>;
 
 declare namespace lock {
-  function lock(file: string, options?: LockOptions,): Promise<Release>;
-  function lockSync(file: string, options?: LockSyncOptions,): Release;
+  function lock(
+    file: string,
+    options?: LockOptions,
+  ): Promise<Release>;
+  function lockSync(
+    file: string,
+    options?: LockSyncOptions,
+  ): Release;
 }
 
 export = lock;
