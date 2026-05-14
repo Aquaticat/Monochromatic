@@ -71,7 +71,9 @@ function walkBranch(branchEntries: SessionEntry[],): {
   previousSummary: string | undefined;
   messages: BranchMessage[];
 } {
+  /** Index of the most recent compaction entry; -1 means none seen yet. */
   let lastCompactionIndex = -1;
+  /** Summary text recovered from the last compaction entry, when present. */
   let previousSummary: string | undefined = undefined;
 
   for (
@@ -79,6 +81,7 @@ function walkBranch(branchEntries: SessionEntry[],): {
     index < branchEntries.length;
     index += 1
   ) {
+    /** Branch entry under inspection in the forward pass. */
     const entry = branchEntries[index];
     if (entry === undefined)
       continue;
@@ -90,18 +93,22 @@ function walkBranch(branchEntries: SessionEntry[],): {
 
   // Collect all messages from SessionMessageEntry entries
   // after the last compaction (or all messages if no compaction)
+  /** First index past the last compaction; iteration anchor for collection. */
   const startIdx = lastCompactionIndex + 1;
+  /** Post-compaction messages forwarded into the Morph payload. */
   const messages: BranchMessage[] = [];
   for (
     let index = startIdx;
     index < branchEntries.length;
     index += 1
   ) {
+    /** Current entry inspected for message-type extraction. */
     const entry = branchEntries[index];
     if (entry === undefined)
       continue;
     if (entry.type !== 'message')
       continue;
+    /** Narrowed alias exposing the message payload typed as BranchMessage. */
     const msgEntry = entry as SessionMessageEntry;
     messages.push(msgEntry.message,);
   }
@@ -146,6 +153,7 @@ function walkBranch(branchEntries: SessionEntry[],): {
 export async function compressBranch(
   params: CompressBranchParams,
 ): Promise<string> {
+  /** Destructured caller params used in the compression body. */
   const {
     branchEntries,
     contextUsage,
@@ -153,6 +161,7 @@ export async function compressBranch(
     customInstructions,
   } = params;
 
+  /** Previous summary plus post-compaction messages recovered from the branch. */
   const {
     previousSummary,
     messages,
@@ -171,23 +180,29 @@ export async function compressBranch(
     return previousSummary;
 
   // Serialize messages for Morph input
+  /** Plain-text rendering of post-compaction messages fed to Morph. */
   const conversationText = serializeConversation(
     convertToLlm(messages,),
   );
+  /** Final prompt body combining prior summary tags and conversation. */
   const input = buildMorphInput(
     conversationText,
     previousSummary,
   );
 
+  /** Latest-intent query forwarded for relevance ranking. */
   const query = extractLatestQuery(
     branchEntries,
     customInstructions,
   );
+  /** Adaptive ratio derived from current context pressure. */
   const ratio = chooseCompressionRatio(contextUsage,);
 
+  /** Per-call client constructed with the resolved API key. */
   const client = new MorphCompactClient({
     morphApiKey: apiKey,
   },);
+  /** Network response payload from the compact endpoint. */
   const result = await client.compact({
     input,
     query,
@@ -197,6 +212,7 @@ export async function compressBranch(
     includeLineRanges: true,
   },);
 
+  /** Trimmed compacted body; empty output is treated as failure. */
   const output = result.output?.trim();
   if (output === undefined || output === '') {
     throw new Error(

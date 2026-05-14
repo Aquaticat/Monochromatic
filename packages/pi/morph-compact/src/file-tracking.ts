@@ -24,15 +24,18 @@ export function computeFileLists(
   readFiles: string[];
   modifiedFiles: string[];
 } {
+  /** Union of edits and writes used to subtract from the read list. */
   const modified = new Set([
     ...fileOps.edited,
     ...fileOps.written,
   ],);
+  /** Read-only entries with mutations stripped to avoid duplication. */
   const readFiles = [...fileOps.read,]
     .filter(function isNotModified(file,) {
       return !modified.has(file,);
     },)
     .toSorted();
+  /** Sorted modifications surface deterministically in summaries. */
   const modifiedFiles = [...modified,].toSorted();
   return {
     readFiles,
@@ -60,6 +63,7 @@ export function formatFileOperations(
   readFiles: string[],
   modifiedFiles: string[],
 ): string {
+  /** Accumulates per-category XML fragments before joining. */
   const sections: string[] = [];
   if (readFiles.length > 0)
     sections.push(`<read-files>\n${readFiles.join('\n',)}\n</read-files>`,);

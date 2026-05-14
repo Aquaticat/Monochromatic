@@ -73,6 +73,7 @@ export async function handleBeforeCompact(
   | { cancel: true; }
   | undefined
 > {
+  /** Resolved Morph key; undefined disables the integration for this event. */
   const apiKey = await resolveMorphApiKey();
   if (apiKey === undefined) {
     if (!warnedMissingKey) {
@@ -91,12 +92,14 @@ export async function handleBeforeCompact(
   if (event.signal.aborted)
     return undefined;
 
+  /** Preparation slices read for the pre-flight emptiness check. */
   const {
     messagesToSummarize,
     turnPrefixMessages,
     previousSummary,
   } = event.preparation;
 
+  /** True when either pending list has at least one message. */
   const hasMessages = messagesToSummarize.length > 0
     || turnPrefixMessages.length > 0;
   if (!hasMessages && previousSummary === undefined) {
@@ -107,6 +110,7 @@ export async function handleBeforeCompact(
     return { cancel: true, };
   }
 
+  /** Total messages slated for compaction; surfaced in the status notify. */
   const msgCount = messagesToSummarize.length
     + turnPrefixMessages.length;
   ctx.ui.notify(
@@ -115,6 +119,7 @@ export async function handleBeforeCompact(
   );
 
   try {
+    /** Outcome of the Morph attempt; success surfaces a CompactionResult. */
     const attempt = await attemptMorphCompaction(
       event,
       ctx.getContextUsage(),
@@ -124,18 +129,24 @@ export async function handleBeforeCompact(
     if (attempt.kind === 'fallback')
       return undefined;
 
+    /** Extracted CompactionResult forwarded back to pi after the notify. */
     const { result, } = attempt;
 
     if (!event.signal.aborted) {
+      /** Telemetry block stored on result.details; absent when the API omitted usage. */
       const morphUsage = result.details?.morphUsage;
+      /** Whole-percent reduction reported to the UI; zero when ratio unavailable. */
       const reductionPct = morphUsage?.compressionRatio !== undefined
           && morphUsage.compressionRatio !== 0
         ? Math.round(
           (1 - morphUsage.compressionRatio) * 100,
         )
         : 0;
+      /** Input token count rendered with locale separators for the notify. */
       const inTokens = morphUsage?.inputTokens?.toLocaleString() ?? '?';
+      /** Output token count rendered with locale separators for the notify. */
       const outTokens = morphUsage?.outputTokens?.toLocaleString() ?? '?';
+      /** Processing time string rendered for the notify line. */
       const ms = morphUsage?.processingTimeMs?.toLocaleString() ?? '?';
       ctx.ui.notify(
         `Morph Compact: ${reductionPct}% reduction (${inTokens} → ${outTokens} tokens) in ${ms}ms`,
@@ -149,6 +160,7 @@ export async function handleBeforeCompact(
     if (event.signal.aborted)
       return undefined;
 
+    /** Best-effort diagnostic forwarded into the UI notify body. */
     const message = error instanceof Error
       ? error.message
       : 'Unknown Morph compaction error';

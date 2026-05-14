@@ -53,21 +53,28 @@ let cachePopulated = false;
  */
 async function readKeyFromMcpConfig(): Promise<string | undefined> {
   try {
+    /** Raw JSON bytes from the user's mcp.json; parsed below. */
     const contents = await readFile(
       MCP_CONFIG_PATH,
       'utf8',
     );
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns any; we validate shape below
+    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns any; we validate shape below */
+    /** Parsed mcp.json payload before structural validation. */
     const config: unknown = JSON.parse(contents,);
+    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     if (typeof config !== 'object' || config === null)
       return undefined;
+    /** MCP server entries that may carry the Morph key under env. */
     const servers = (config as McpConfig).mcpServers;
     if (servers === undefined)
       return undefined;
 
+    /** Iteration keys for walking each configured server entry. */
     const serverNames = Object.keys(servers,);
     for (const serverName of serverNames) {
+      /** Current server entry; may be missing env block. */
       const server = servers[serverName];
+      /** First env-stored key encountered short-circuits the walk. */
       const key = server?.env?.['MORPH_API_KEY'];
       if (key !== undefined && key !== '')
         return key;
@@ -98,6 +105,7 @@ async function readKeyFromMcpConfig(): Promise<string | undefined> {
  */
 export async function resolveMorphApiKey(): Promise<string | undefined> {
   // Check env var first
+  /** Direct env override takes precedence over mcp.json. */
   const envKey = process.env.MORPH_API_KEY;
   if (envKey !== undefined && envKey !== '')
     return envKey;

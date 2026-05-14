@@ -264,6 +264,7 @@ function resolveApiKey({
 },): string {
   if (explicit !== undefined && explicit !== '')
     return explicit;
+  /** Browser-safe fallback to process env when the runtime exposes one. */
   const envKey = typeof process !== 'undefined'
     ? process.env['MORPH_API_KEY']
     : undefined;
@@ -287,6 +288,7 @@ function resolveApiKey({
  * ```
  */
 function buildRequestBody(input: CompactInput,): Record<string, unknown> {
+  /** Mutable accumulator filled with API-shape keys; one of input/messages added below. */
   const body: Record<string, unknown> = {
     compression_ratio: input.compressionRatio ?? DEFAULT_COMPRESSION_RATIO,
     preserve_recent: input.preserveRecent ?? DEFAULT_PRESERVE_RECENT,
@@ -333,6 +335,7 @@ function buildSignal({
   caller?: AbortSignal | undefined;
   timeoutMs: number;
 },): AbortSignal {
+  /** Hard ceiling so a hung request cannot block compaction indefinitely. */
   const timeout = AbortSignal.timeout(timeoutMs,);
   if (caller === undefined)
     return timeout;
@@ -413,13 +416,18 @@ export class MorphCompactClient {
    * ```
    */
   async compact(input: CompactInput,): Promise<CompactResult> {
+    /** Late-bound key resolution so env overrides can surface per call. */
     const apiKey = resolveApiKey({ explicit: this.#config.morphApiKey, },);
+    /** Fully qualified compact endpoint resolved against the configured base URL. */
     const url = `${this.#config.morphApiUrl}/v1/compact`;
+    /** Wire-shape JSON payload built from caller input. */
     const body = buildRequestBody(input,);
+    /** Composite signal so either caller-cancel or timeout aborts fetch. */
     const signal = buildSignal({
       caller: input.signal,
       timeoutMs: this.#config.timeout,
     },);
+    /** Raw fetch response inspected for status and parsed below. */
     const response = await fetch(
       url,
       {
@@ -433,6 +441,7 @@ export class MorphCompactClient {
       },
     );
     if (!response.ok) {
+      /** Captured error body forwarded into MorphApiError for diagnostics. */
       const text = await response.text();
       throw new MorphApiError({
         status: response.status,

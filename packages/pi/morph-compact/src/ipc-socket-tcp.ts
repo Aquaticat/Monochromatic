@@ -70,8 +70,11 @@ export type OneShotTcpServerResult = {
 export async function createOneShotTcpServer(
   text: string,
 ): Promise<OneShotTcpServerResult> {
+  /** Lazily assigned server reference closed by the shared close() helper. */
   let server: Server | null = null;
+  /** Idle-timeout handle cleared on connect or close. */
   let idleTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Guards against re-entry when multiple clients race to connect. */
   let served = false;
 
   /** Close the server and clear idle timer. */
@@ -87,7 +90,8 @@ export async function createOneShotTcpServer(
   }
 
   // Wait for the server to start listening before returning
-  // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping callback-based server.listen requires manual Promise construction
+  /* oxlint-disable eslint-plugin-promise/avoid-new -- wrapping callback-based server.listen requires manual Promise construction */
+  /** Host:port string resolved once the listening callback observes a valid AddressInfo. */
   const address = await new Promise<string>(
     function awaitListening(
       resolve,
@@ -132,6 +136,7 @@ export async function createOneShotTcpServer(
         0,
         LOCALHOST,
         function onListening(): void {
+          /** AddressInfo from the bound socket; resolved into host:port for callers. */
           const addrInfo = server?.address();
           if (
             addrInfo !== undefined
@@ -151,6 +156,7 @@ export async function createOneShotTcpServer(
       );
     },
   );
+  /* oxlint-enable eslint-plugin-promise/avoid-new */
 
   return {
     address,
@@ -191,9 +197,13 @@ export function readFromTcpSocket(
       resolve,
       reject,
     ): void {
+      /** Host and stringified port split out of the address. */
       const [host, portStr,] = address.split(':',);
+      /** Numeric port forwarded to createTcpConnection. */
       const port = Number(portStr,);
+      /** Captured data buffers concatenated when the server ends the stream. */
       const chunks: Buffer[] = [];
+      /** Latch ensuring resolve/reject is called exactly once. */
       let settled = false;
 
       /**
@@ -217,6 +227,7 @@ export function readFromTcpSocket(
           resolve(result ?? '',);
       }
 
+      /** Outbound TCP connection whose event handlers feed the promise lifecycle. */
       const socket = createTcpConnection(
         {
           host,

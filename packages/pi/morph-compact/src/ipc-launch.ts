@@ -72,6 +72,7 @@ export async function launchWithLargeContext(
 ): Promise<void> {
   // Tier 2: temp file
   try {
+    /** Path returned by the file tier; surfaced as a CLI flag to the child. */
     const { filePath, } = writeCompactFile(compressedText,);
     await launchTerminal({
       dir: cwd,
@@ -90,6 +91,7 @@ export async function launchWithLargeContext(
 
   // Tier 3: Unix domain socket
   try {
+    /** Socket path returned by the unix-socket tier; surfaced as a CLI flag. */
     const { socketPath, } = createOneShotSocketServer(compressedText,);
     await launchTerminal({
       dir: cwd,
@@ -107,6 +109,7 @@ export async function launchWithLargeContext(
   }
 
   // Tier 4: TCP localhost (zero filesystem dependency)
+  /** Final-tier listen address forwarded to the child via CLI flag. */
   const { address, } = await createOneShotTcpServer(compressedText,);
   await launchTerminal({
     dir: cwd,
@@ -165,8 +168,10 @@ async function injectCompactContext(
   api: ExtensionAPI,
 ): Promise<void> {
   // Tier 2: temp file
+  /** File path passed from launcher; non-string means file tier inactive. */
   const filePath = api.getFlag('morph-compact-file',);
   if (typeof filePath === 'string') {
+    /** Decoded compact payload read off disk for injection. */
     const text = readCompactFile(filePath,);
     api.sendUserMessage(text,);
     // Clean up the temp directory after reading
@@ -186,8 +191,10 @@ async function injectCompactContext(
   }
 
   // Tier 3: Unix domain socket
+  /** Socket path passed from launcher; non-string means socket tier inactive. */
   const socketPath = api.getFlag('morph-compact-socket',);
   if (typeof socketPath === 'string') {
+    /** Payload read from the one-shot socket server before injection. */
     const text = await readFromUnixSocket(socketPath,);
     api.sendUserMessage(text,);
     // Unlink the socket file after reading
@@ -201,8 +208,10 @@ async function injectCompactContext(
   }
 
   // Tier 4: TCP localhost
+  /** TCP address passed from launcher; non-string means TCP tier inactive. */
   const tcpAddress = api.getFlag('morph-compact-tcp',);
   if (typeof tcpAddress === 'string') {
+    /** Payload read from the one-shot TCP server before injection. */
     const text = await readFromTcpSocket(tcpAddress,);
     api.sendUserMessage(text,);
   }

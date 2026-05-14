@@ -56,12 +56,14 @@ export type WriteCompactFileResult = {
 export function writeCompactFile(
   text: string,
 ): WriteCompactFileResult {
+  /** Unique temp directory whose removal yields a single cleanup target. */
   const dir = mkdtempSync(
     join(
       tmpdir(),
       'morph-compact-',
     ),
   );
+  /** Final write target inside the temp directory; surfaced to the new session. */
   const filePath = join(
     dir,
     'data.txt',

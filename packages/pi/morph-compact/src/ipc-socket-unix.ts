@@ -69,13 +69,17 @@ export type OneShotSocketServerResult = {
 export function createOneShotSocketServer(
   text: string,
 ): OneShotSocketServerResult {
+  /** Unique socket path under the system tmpdir for this one-shot run. */
   const socketPath = join(
     tmpdir(),
     `morph-compact-${randomUUID()}.sock`,
   );
 
+  /** Lazily assigned server reference closed by the shared close() helper. */
   let server: Server | null = null;
+  /** Idle-timeout handle cleared on connect or close. */
   let idleTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Guards against re-entry when multiple clients race to connect. */
   let served = false;
 
   /** Close the server and unlink the socket file. */
@@ -174,7 +178,9 @@ export function readFromUnixSocket(
       resolve,
       reject,
     ): void {
+      /** Captured data buffers concatenated when the server ends the stream. */
       const chunks: Buffer[] = [];
+      /** Latch ensuring resolve/reject is called exactly once. */
       let settled = false;
 
       /**
@@ -198,6 +204,7 @@ export function readFromUnixSocket(
           resolve(result ?? '',);
       }
 
+      /** Outbound connection whose event handlers feed the promise lifecycle. */
       const socket = createConnection(
         { path: socketPath, },
         function onConnect(): void {
