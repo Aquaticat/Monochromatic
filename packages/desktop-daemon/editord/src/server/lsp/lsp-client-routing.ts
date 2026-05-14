@@ -60,7 +60,7 @@ export function routeJsonRpcMessage({
     params: unknown;
   },) => void;
 },): void {
-  if ('id' in message && !('method' in message)) {
+  if (('id' in message) && (!('method' in message))) {
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to response shape */
     /** Narrowed response view used to look up the matching pending request. */
     const response = message as {
@@ -84,7 +84,7 @@ export function routeJsonRpcMessage({
         entry.resolve(response.result,);
     }
   }
-  else if ('method' in message && !('id' in message)) {
+  else if (('method' in message) && (!('id' in message))) {
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to notification shape */
     /** Narrowed notification view forwarded to the consumer's handler. */
     const notification = message as {
@@ -97,7 +97,7 @@ export function routeJsonRpcMessage({
       params: notification.params,
     },);
   }
-  else if ('method' in message && 'id' in message) {
+  else if (('method' in message) && ('id' in message)) {
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to request shape */
     /** Narrowed request view used only for the response id below. */
     const request = message as { id: number; };

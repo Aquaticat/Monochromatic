@@ -236,7 +236,7 @@ export async function resolveAuthToken({
 
   /** Override token from the environment; takes precedence over file reuse and fresh generation. */
   const envToken = process.env.EDITORD_TOKEN;
-  if (envToken !== undefined && envToken.length > 0) {
+  if ((envToken !== undefined) && (envToken.length > 0)) {
     tokenLog.info('using token from EDITORD_TOKEN env var',);
     /** Lifecycle handles returned by `writeAndTouch`; merged into the resolveAuthToken return value. */
     const handles = await writeAndTouch({

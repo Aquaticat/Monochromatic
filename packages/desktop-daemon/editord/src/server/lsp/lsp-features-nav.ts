@@ -62,7 +62,7 @@ export async function requestGotoDefinition({
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
-  if (result === null || result === undefined)
+  if ((result === null) || (result === undefined))
     return null;
 
   /** LSP definition returns Location | Location[] | null */
@@ -70,7 +70,7 @@ export async function requestGotoDefinition({
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- array index on LSP result
     ? (result as unknown[])[0]
     : result;
-  if (rawLocation === undefined || rawLocation === null)
+  if ((rawLocation === undefined) || (rawLocation === null))
     return null;
 
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- narrow from Location shape */
@@ -144,7 +144,7 @@ export async function requestReferences({
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
-  if (result === null || result === undefined || !Array.isArray(result,))
+  if ((result === null) || (result === undefined) || (!Array.isArray(result,)))
     return [];
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP references returns Location[]

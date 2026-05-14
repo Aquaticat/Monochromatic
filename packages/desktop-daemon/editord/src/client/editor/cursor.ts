@@ -176,7 +176,7 @@ export function setSelection({
     lineIndex: coords.endLine,
     character: coords.endCharacter,
   },);
-  if (start === null || end === null)
+  if ((start === null) || (end === null))
     return;
   selection.setBaseAndExtent(
     start.node,
@@ -223,7 +223,7 @@ export function getSelection({
     container: range.endContainer,
     offset: range.endOffset,
   },);
-  if (start === null || end === null)
+  if ((start === null) || (end === null))
     return null;
   return {
     startLine: start.line,

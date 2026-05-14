@@ -66,7 +66,7 @@ export function resolveRefreshContainer({
   }
   if (container === null)
     return null;
-  if (path !== rootPath && !loadedDirs.has(path,))
+  if ((path !== rootPath) && (!loadedDirs.has(path,)))
     return null;
   return container;
 }
@@ -207,7 +207,7 @@ export async function refreshDirContents(
     return createTreeFileEntry({
       path: fullPath,
       name: entry.name,
-      recencyIndex: recencyMap.get(fullPath,) ?? -1,
+      recencyIndex: recencyMap.get(fullPath,) ?? (-1),
     },);
   },);
 

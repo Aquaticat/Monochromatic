@@ -21,7 +21,7 @@ const FULL = 100;
 const REPEAT_RESTING_OPACITY = 0.8;
 
 /** Minimum touch target for the repeat button in rem: 5/2. */
-const REPEAT_MIN_SIZE = (2 * 2 + 1) / 2;
+const REPEAT_MIN_SIZE = ((2 * 2) + 1) / 2;
 
 /** Media element and control styles. */
 export const MEDIA_STYLES = [

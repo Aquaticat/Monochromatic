@@ -71,11 +71,11 @@ export async function restoreSession(
   await fileTree.expandRoot(ws.rootDir,);
 
   /** Restore expanded directories from saved state after the root has been rendered. */
-  if (saved !== null && saved.expandedDirs.length > 0)
+  if ((saved !== null) && (saved.expandedDirs.length > 0))
     await fileTree.restoreExpansion({ dirs: saved.expandedDirs, },);
 
   /** Restore cursor and scroll position after file and tree are loaded. */
-  if (saved !== null && bootFilePath !== null && bootFilePath === saved.filePath) {
+  if ((saved !== null) && (bootFilePath !== null) && (bootFilePath === saved.filePath)) {
     editorPane.restoreCursor(saved.cursor,);
     editorPane.editorScrollTop = saved.scrollTop;
   }

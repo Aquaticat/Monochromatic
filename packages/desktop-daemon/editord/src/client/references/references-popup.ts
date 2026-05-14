@@ -108,7 +108,7 @@ export class ReferencesPopup extends HTMLElement {
       cursorHeight: number;
     },
   ): void {
-    if (this.#list === null || locations.length === 0)
+    if ((this.#list === null) || (locations.length === 0))
       return;
     this.#locations = locations;
     this.#selectedIndex = 0;
@@ -151,7 +151,7 @@ export class ReferencesPopup extends HTMLElement {
 
   /** Moves the selection up or down. */
   navigate({ direction, }: { direction: 'up' | 'down'; },): void {
-    if (this.#locations.length === 0 || this.#list === null)
+    if ((this.#locations.length === 0) || (this.#list === null))
       return;
     this.#selectedIndex = computeNextIndex({
       current: this.#selectedIndex,
@@ -170,7 +170,7 @@ export class ReferencesPopup extends HTMLElement {
    * @returns selected location detail, or null if nothing selected
    */
   accept(): ReferenceSelectDetail | null {
-    if (this.#selectedIndex < 0 || this.#selectedIndex >= this.#locations.length)
+    if ((this.#selectedIndex < 0) || (this.#selectedIndex >= this.#locations.length))
       return null;
     /** Currently highlighted reference entry; bounds-checked above. */
     const loc = this.#locations[this.#selectedIndex];

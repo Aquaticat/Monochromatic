@@ -38,8 +38,13 @@ function diagLine(diagnostic: Diagnostic,): number {
   return diagnostic.range.start.line;
 }
 
-/** Tracks which line indices currently have annotations, enabling targeted cleanup. */
-let annotatedLines = new Set<number>();
+/**
+ * Tracks which line indices currently have annotations, enabling targeted cleanup.
+ *
+ * Mutated in-place by {@link applyInlayAnnotations} (clear + add) and
+ * {@link clearInlayAnnotations} (clear) so the reference itself stays `const`.
+ */
+const annotatedLines = new Set<number>();
 
 /**
  * Applies inlay annotations to the editor's line divs.
@@ -93,7 +98,7 @@ export function applyInlayAnnotations({
   for (const line of newLines) {
     /** Line div for the current line index, or undefined when the editor is shorter than expected. */
     const div = children[line];
-    if (div !== undefined && div instanceof HTMLElement) {
+    if ((div !== undefined) && (div instanceof HTMLElement)) {
       applyLineAnnotation({
         div,
         lineHints: hintsByLine.get(line,),
@@ -110,14 +115,16 @@ export function applyInlayAnnotations({
       continue;
     /** Line div whose stale annotation must be removed; null when the line was deleted. */
     const div = children[line];
-    if (div instanceof HTMLElement && div.dataset.inlay !== undefined) {
+    if ((div instanceof HTMLElement) && (div.dataset.inlay !== undefined)) {
       delete div.dataset.inlay;
       delete div.dataset.inlaySeverity;
       div.style.removeProperty('--line-num-offset',);
     }
   }
 
-  annotatedLines = newLines;
+  annotatedLines.clear();
+  for (const line of newLines)
+    annotatedLines.add(line,);
 }
 
 /**
@@ -140,5 +147,5 @@ export function clearInlayAnnotations({ editor, }: { editor: HTMLElement; },): v
       child.style.removeProperty('--line-num-offset',);
     }
   }
-  annotatedLines = new Set();
+  annotatedLines.clear();
 }

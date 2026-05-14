@@ -72,7 +72,7 @@ export function performGotoAtCursor(
   const pos = editorPane.getCursorPosition();
   /** Screen rect anchors the toast and references popup. */
   const rect = editorPane.getCursorRect();
-  if (pos === null || rect === null) {
+  if ((pos === null) || (rect === null)) {
     cursorLog.info('could not resolve editor cursor position',);
     return;
   }

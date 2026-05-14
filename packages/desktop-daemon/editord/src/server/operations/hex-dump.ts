@@ -80,7 +80,9 @@ export function generateHexDump(
       offset + BYTES_PER_LINE,
       limit,
     );
-    /** Slice covering this row; up to {@link BYTES_PER_LINE} bytes. */
+    /**
+     * Slice covering this row; up to {@link BYTES_PER_LINE} bytes.
+     */
     const chunk = buffer.subarray(
       offset,
       end,
@@ -95,13 +97,15 @@ export function generateHexDump(
       if (i === GROUP_BOUNDARY)
         hexParts.push('',);
       if (i < chunk.length) {
-        /** {@link nonNullishOrThrow} replaces the `!` operator banned by AGENTS.md. */
+        /**
+         * {@link nonNullishOrThrow} replaces the `!` operator banned by AGENTS.md.
+         */
         const byte = nonNullishOrThrow(chunk[i],);
         hexParts.push(byte.toString(HEX_RADIX,).padStart(
           2,
           '0',
         ),);
-        ascii += (byte >= ASCII_PRINTABLE_START && byte <= ASCII_PRINTABLE_END)
+        ascii += ((byte >= ASCII_PRINTABLE_START) && (byte <= ASCII_PRINTABLE_END))
           ? String.fromCodePoint(byte,)
           : '.';
       }

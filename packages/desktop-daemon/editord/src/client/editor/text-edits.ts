@@ -57,7 +57,7 @@ export function applyEditsToText({
     const newLines = (before + edit.newText + after).split('\n',);
     lines.splice(
       edit.range.start.line,
-      edit.range.end.line - edit.range.start.line + 1,
+      (edit.range.end.line - edit.range.start.line) + 1,
       ...newLines,
     );
   }
@@ -134,7 +134,10 @@ function offsetToPosition({
   line: number;
   character: number;
 } {
-  /** Accumulator for offset remaining as we walk the lines. */
+  /**
+   * Accumulator for offset remaining as we walk the lines.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- line-walker cursor: `remaining` decrements by each line's length plus terminator, with early return when the line is found
   let remaining = offset;
   for (const [line, lineText,] of lines.entries()) {
     /** Visible length of this line, excluding its `\n` terminator. */
@@ -226,7 +229,10 @@ export function mapCursorThroughEdits({
     return lineDiff !== 0 ? lineDiff : a.range.start.character - b.range.start.character;
   },);
 
-  /** Running delta `newOffset - originalOffset` accumulated across edits. */
+  /**
+   * Running delta `newOffset - originalOffset` accumulated across edits.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- edit-walker accumulator: `shift` accumulates length deltas with early `break` once the cursor falls inside an edit
   let shift = 0;
 
   for (const edit of sorted) {
@@ -245,7 +251,7 @@ export function mapCursorThroughEdits({
       shift += edit.newText.length - (editEnd - editStart);
     else if (editStart < cursorOffset) {
       /** Cursor is inside this edit; clamp to end of replacement text. */
-      shift += editStart + edit.newText.length - cursorOffset;
+      shift += (editStart + edit.newText.length) - cursorOffset;
       break;
     }
     else {

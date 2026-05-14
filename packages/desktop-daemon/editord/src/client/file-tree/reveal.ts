@@ -186,7 +186,9 @@ export async function revealFiles(
   },);
   await restoreExpansion({ dirs: [...dirs,], },);
   if (anchor !== null) {
-    /** Difference from {@link anchor.offsetFromViewport} drives the scroll correction. */
+    /**
+     * Difference from {@link anchor.offsetFromViewport} drives the scroll correction.
+     */
     const newTop = anchor.element.getBoundingClientRect().top;
     hostElement.scrollTop += newTop - anchor.offsetFromViewport;
   }

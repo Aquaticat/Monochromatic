@@ -39,11 +39,17 @@ function positionToOffset({
   line: number;
   character: number;
 },): number {
-  /** Absolute string offset walked forward until `currentLine` reaches `line`. */
+  /**
+   * Absolute string offset walked forward until `currentLine` reaches `line`.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- text-walker cursor: `offset` advances character-by-character until the target line
   let offset = 0;
-  /** Line counter incremented each time a `\n` is consumed; stops the walk when it equals `line`. */
+  /**
+   * Line counter incremented each time a `\n` is consumed; stops the walk when it equals `line`.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- text-walker counter: `currentLine` increments on each newline consumed
   let currentLine = 0;
-  while (currentLine < line && offset < text.length) {
+  while ((currentLine < line) && (offset < text.length)) {
     if (text[offset] === '\n')
       currentLine++;
     offset++;
@@ -204,7 +210,7 @@ export async function applyWorkspaceEdit({
   for (const uri of Object.keys(changes,)) {
     /** Edits targeting this URI; undefined or empty when LSP returned nothing for that file. */
     const lspEdits = changes[uri];
-    if (lspEdits === undefined || lspEdits.length === 0)
+    if ((lspEdits === undefined) || (lspEdits.length === 0))
       continue;
 
     /** Absolute path decoded from the LSP `file://` URI for use with `node:fs` APIs. */

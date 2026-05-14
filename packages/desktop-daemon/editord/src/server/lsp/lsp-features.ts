@@ -118,7 +118,7 @@ export async function requestCompletion({
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
-  if (result === null || result === undefined)
+  if ((result === null) || (result === undefined))
     return [];
   if (Array.isArray(result,)) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP completion can return CompletionItem[]

@@ -66,7 +66,7 @@ export async function resolveTsconfigIncludes({
 },): Promise<readonly string[]> {
   /** TTL-gated reuse below avoids respawning tsgo for repeated queries. */
   const cached = includesCache.get(root,);
-  if (cached !== undefined && Date.now() - cached.storedAt < CACHE_TTL_MS)
+  if ((cached !== undefined) && ((Date.now() - cached.storedAt) < CACHE_TTL_MS))
     return cached.patterns;
 
   try {

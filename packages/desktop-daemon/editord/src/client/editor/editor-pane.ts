@@ -223,11 +223,13 @@ export class EditorPane extends HTMLElement {
    * @param edits - text edits to apply
    */
   applyTextEdits(edits: TextEdit[],): void {
-    if (this.#editor === null || edits.length === 0)
+    if ((this.#editor === null) || (edits.length === 0))
       return;
     /** Capture cursor before setText replaces every line div. */
     const cursorBefore = this.getCursorPosition();
-    /** Pre-edit document text; retained so {@link mapCursorThroughEdits} can translate the cursor. */
+    /**
+     * Pre-edit document text; retained so {@link mapCursorThroughEdits} can translate the cursor.
+     */
     const original = this.getText();
     /** Post-edit document text; written back via `setText`. */
     const updated = applyEditsToText({

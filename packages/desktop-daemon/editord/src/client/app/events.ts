@@ -227,14 +227,14 @@ export function wireFileWatching({
     },
   ): void {
     appLog.info(`file changed: ${path} (${changeType})`,);
-    if ((changeType === 'modified' || changeType === 'created')
-      && path === state.currentFilePath)
+    if (((changeType === 'modified') || (changeType === 'created'))
+      && (path === state.currentFilePath))
     {
       void loadFileSafe({ path, },);
       if (changeType === 'modified')
         return;
     }
-    if (changeType === 'created' || changeType === 'deleted') {
+    if ((changeType === 'created') || (changeType === 'deleted')) {
       void fileTree.refreshDir({ path: path.slice(
         0,
         path.lastIndexOf('/',),

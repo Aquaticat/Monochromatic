@@ -66,18 +66,22 @@ export function strictlyContains(
   },
 ): boolean {
   /** True when outer's start is strictly earlier than inner's start. */
-  const outerStartBefore = outer.startLine < inner.startLine
-    || (outer.startLine === inner.startLine
-      && outer.startCharacter < inner.startCharacter);
+  const outerStartBefore = (outer.startLine < inner.startLine)
+    || ((outer.startLine === inner.startLine)
+      && (outer.startCharacter < inner.startCharacter));
   /** True when outer's end is strictly later than inner's end. */
-  const outerEndAfter = outer.endLine > inner.endLine
-    || (outer.endLine === inner.endLine && outer.endCharacter > inner.endCharacter);
-  /** True when starts coincide; pairs with {@link outerEndAfter} for the "extends end only" case. */
-  const outerStartSame = outer.startLine === inner.startLine
-    && outer.startCharacter === inner.startCharacter;
-  /** True when ends coincide; pairs with {@link outerStartBefore} for the "extends start only" case. */
-  const outerEndSame = outer.endLine === inner.endLine
-    && outer.endCharacter === inner.endCharacter;
+  const outerEndAfter = (outer.endLine > inner.endLine)
+    || ((outer.endLine === inner.endLine) && (outer.endCharacter > inner.endCharacter));
+  /**
+   * True when starts coincide; pairs with {@link outerEndAfter} for the "extends end only" case.
+   */
+  const outerStartSame = (outer.startLine === inner.startLine)
+    && (outer.startCharacter === inner.startCharacter);
+  /**
+   * True when ends coincide; pairs with {@link outerStartBefore} for the "extends start only" case.
+   */
+  const outerEndSame = (outer.endLine === inner.endLine)
+    && (outer.endCharacter === inner.endCharacter);
 
   /** Strictly larger: at least one boundary must differ outward. */
   if (outerStartBefore && outerEndAfter)

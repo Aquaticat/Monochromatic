@@ -162,7 +162,7 @@ export function createEntryElements({
     return createTreeFileEntry({
       path: fullPath,
       name: entry.name,
-      recencyIndex: recencyIndex.get(fullPath,) ?? -1,
+      recencyIndex: recencyIndex.get(fullPath,) ?? (-1),
     },);
   },);
 }

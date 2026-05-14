@@ -28,7 +28,7 @@ export function findCharAtX({
   /** Empty / whitespace-only lines short-circuit to offset 0 below. */
   const text = lineDiv.textContent ?? '';
   /* oxlint-enable typescript-eslint/no-unnecessary-condition */
-  if (text.length === 0 || text === '\n')
+  if ((text.length === 0) || (text === '\n'))
     return 0;
 
   /** Get the first text node in the line. */
@@ -123,7 +123,7 @@ function resolveOffset({
   localOffset: number;
 } {
   for (const entry of textNodes) {
-    if (offset <= entry.start + entry.length) {
+    if (offset <= (entry.start + entry.length)) {
       return {
         node: entry.node,
         localOffset: offset - entry.start,

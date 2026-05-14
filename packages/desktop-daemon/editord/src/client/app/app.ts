@@ -248,7 +248,7 @@ wireSelectEvents({
 
 /** Saves the current editor content to the server. Skips non-text files. */
 async function saveCurrentFile(): Promise<void> {
-  if (state.currentFilePath === null || state.currentFileKind !== 'text')
+  if ((state.currentFilePath === null) || (state.currentFileKind !== 'text'))
     return;
   try {
     await ws.request({

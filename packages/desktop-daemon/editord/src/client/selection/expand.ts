@@ -73,9 +73,9 @@ export async function doExpandSelection({
     const currentSel = editorPane.getSelection();
 
     /** No selection or collapsed: apply the innermost range. */
-    if (currentSel === null
-      || (currentSel.startLine === currentSel.endLine
-        && currentSel.startCharacter === currentSel.endCharacter))
+    if ((currentSel === null)
+      || ((currentSel.startLine === currentSel.endLine)
+        && (currentSel.startCharacter === currentSel.endCharacter)))
     {
       /** Innermost entry; undefined was guarded out by the length check above. */
       const [first,] = chain;
@@ -88,7 +88,9 @@ export async function doExpandSelection({
 
     /** Find the first range strictly larger than the current selection. */
     for (const entry of chain) {
-      /** Flat form needed by {@link strictlyContains}. */
+      /**
+       * Flat form needed by {@link strictlyContains}.
+       */
       const flat = toFlat({ sr: entry, },);
       if (strictlyContains({
         outer: flat,

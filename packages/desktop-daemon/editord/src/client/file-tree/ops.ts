@@ -76,7 +76,7 @@ export async function restoreExpansion({
     }
     /** Owning `<details>` wrapper; opening it triggers the toggle handler that loads children. */
     const details = summary.parentElement;
-    if (details instanceof HTMLDetailsElement && !details.open) {
+    if ((details instanceof HTMLDetailsElement) && (!details.open)) {
       details.open = true;
       details.dispatchEvent(new Event('toggle',),);
       // oxlint-disable-next-line eslint(no-await-in-loop) -- sequential expansion is intentional: parent directories must render before children can be found in the DOM

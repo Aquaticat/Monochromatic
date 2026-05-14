@@ -86,7 +86,7 @@ export function createAutoIndentHandler({
       editor,
       shadow,
     },);
-    if (pos === null || pos.line === 0)
+    if ((pos === null) || (pos.line === 0))
       return;
 
     /** Previous line div contains the text that was before the cursor. */

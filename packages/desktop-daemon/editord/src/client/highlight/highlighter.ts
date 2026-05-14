@@ -88,7 +88,7 @@ export function applyHighlights({
     const name = `hl-${group}`;
     /** Ranges collected for this group, or undefined when no token of this kind appeared. */
     const ranges = rangesByGroup.get(group,);
-    if (ranges !== undefined && ranges.length > 0) {
+    if ((ranges !== undefined) && (ranges.length > 0)) {
       CSS.highlights.set(
         name,
         new Highlight(...ranges,),

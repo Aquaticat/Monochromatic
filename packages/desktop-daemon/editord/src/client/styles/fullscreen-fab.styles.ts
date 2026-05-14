@@ -18,7 +18,7 @@ import {
 const Z_INDEX = 9_999;
 
 /** Default opacity: 6/10. */
-const DEFAULT_OPACITY = (2 + 1) / (2 * 2 + 1);
+const DEFAULT_OPACITY = (2 + 1) / ((2 * 2) + 1);
 
 // oxlint-disable eslint(no-magic-numbers) -- denominators for derived constants; naming them adds no clarity
 /** Opacity transition duration in seconds: 0.15 = 3/20. */

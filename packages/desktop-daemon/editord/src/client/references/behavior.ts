@@ -188,5 +188,5 @@ export function computeNextIndex({
 },): number {
   if (direction === 'up')
     return current <= 0 ? total - 1 : current - 1;
-  return current >= total - 1 ? 0 : current + 1;
+  return current >= (total - 1) ? 0 : current + 1;
 }

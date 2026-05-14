@@ -41,9 +41,11 @@ export function nameToOrder({ name, }: { name: string; },): number {
     ORDER_CHARS,
   );
   // Mutable accumulator shifted left by ORDER_BASE per character
-  /** Built up as a base-{@link ORDER_BASE} number from the first `limit` code points. */
+  /**
+   * Built up as a base-{@link ORDER_BASE} number from the first `limit` code points.
+   */
   let order = 0;
   for (let index = 0; index < limit; index++)
-    order = order * ORDER_BASE + (lower.codePointAt(index,) ?? 0);
+    order = (order * ORDER_BASE) + (lower.codePointAt(index,) ?? 0);
   return order;
 }

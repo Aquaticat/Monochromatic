@@ -113,7 +113,9 @@ export async function performSearch({
     },);
     return;
   }
-  /** Leading `%` toggles content-only mode; stripped from {@link query}. */
+  /**
+   * Leading `%` toggles content-only mode; stripped from {@link query}.
+   */
   const isContentOnly = raw.startsWith('%',);
   /** Trimmed pattern sent to the server; empty short-circuits to no-op. */
   const query = isContentOnly ? raw.slice(1,).trim() : raw.trim();

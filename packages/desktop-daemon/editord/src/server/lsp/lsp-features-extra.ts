@@ -65,7 +65,7 @@ export async function requestInlayHints({
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
-  if (result === null || result === undefined)
+  if ((result === null) || (result === undefined))
     return [];
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP inlayHint returns InlayHint[]
@@ -118,7 +118,7 @@ export async function requestSelectionRange({
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
-  if (result === null || result === undefined || !Array.isArray(result,))
+  if ((result === null) || (result === undefined) || (!Array.isArray(result,)))
     return [];
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP selectionRange returns SelectionRange[]

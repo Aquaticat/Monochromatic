@@ -101,10 +101,10 @@ export function registerRoutes({
             }
             catch (error) {
               /** Only swallow ENOENT (file not found); rethrow unexpected errors. */
-              const isNotFound = error instanceof Error
-                && 'code' in error
+              const isNotFound = (error instanceof Error)
+                && ('code' in error)
                 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guarded by instanceof Error and 'code' in error above
-                && (error as NodeJS.ErrnoException).code === 'ENOENT';
+                && ((error as NodeJS.ErrnoException).code === 'ENOENT');
               if (isNotFound)
                 return;
               throw error;
@@ -131,7 +131,7 @@ export function registerRoutes({
         );
       }
       /** Requested file path; null when the client did not supply a string `path` query parameter. */
-      const filePath = typeof query.path === 'string' ? query.path : null;
+      const filePath = (typeof query.path) === 'string' ? query.path : null;
       if (filePath === null) {
         return new Response(
           'Missing path',

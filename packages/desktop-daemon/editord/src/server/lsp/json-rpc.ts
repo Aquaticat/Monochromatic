@@ -52,14 +52,28 @@ export function createLspParser({
   onMessage: (message: JsonRpcMessage,) => void;
   onError: (error: unknown,) => void;
 },): { feed: (chunk: Buffer,) => void; } {
-  /** Pending chunks that haven't been consolidated yet. */
-  const chunks: Buffer[] = [];
-  /** Total byte length across all pending chunks. */
-  let totalLength = 0;
-  /** Consolidated buffer: rebuilt from chunks only when needed for parsing. */
-  let buffer = Buffer.alloc(0,);
-  /** -1 means no header parsed yet; reset to -1 after consuming the body. */
-  let contentLength = -1;
+  /**
+   * Closure-shared state for `consolidate` and `feed`.
+   *
+   * - `chunks`: pending chunks not yet consolidated.
+   * - `totalLength`: byte sum across the pending and consolidated buffers.
+   * - `buffer`: consolidated content rebuilt from chunks only when parsing needs it.
+   * - `contentLength`: -1 when no header parsed yet; reset to -1 after consuming the body.
+   *
+   * Held inside an object so the closures can mutate the same fields without
+   * a function-root `let`.
+   */
+  const state: {
+    chunks: Buffer[];
+    totalLength: number;
+    buffer: Buffer;
+    contentLength: number;
+  } = {
+    chunks: [],
+    totalLength: 0,
+    buffer: Buffer.alloc(0,),
+    contentLength: -1,
+  };
 
   /**
    * Consolidates pending chunks into a single buffer.
@@ -67,69 +81,81 @@ export function createLspParser({
    * the O(N^2) cost of `Buffer.concat` on every incoming chunk.
    */
   function consolidate(): void {
-    if (chunks.length === 0)
+    if (state.chunks.length === 0)
       return;
-    buffer = Buffer.concat([
-      buffer,
-      ...chunks,
+    state.buffer = Buffer.concat([
+      state.buffer,
+      ...state.chunks,
     ],);
-    chunks.length = 0;
-    totalLength = buffer.byteLength;
+    state.chunks.length = 0;
+    state.totalLength = state.buffer.byteLength;
   }
 
   return {
     feed(chunk: Buffer,): void {
-      chunks.push(chunk,);
-      totalLength += chunk.byteLength;
+      state.chunks.push(chunk,);
+      state.totalLength += chunk.byteLength;
 
       // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- loop exits via return when buffer is incomplete
       while (true) {
-        if (contentLength === -1) {
+        if (state.contentLength === (-1)) {
           consolidate();
-          /** -1 means the header is not yet complete in the buffer; wait for more data. */
-          const headerEnd = buffer.indexOf(HEADER_SEPARATOR,);
-          if (headerEnd === -1)
+          /**
+           * -1 means the header is not yet complete in the buffer; wait for more data.
+           */
+          const headerEnd = state.buffer.indexOf(HEADER_SEPARATOR,);
+          if (headerEnd === (-1))
             return;
 
-          /** Header text decoded as ASCII so the Content-Length scan stays cheap. */
-          const header = buffer
+          /**
+           * Header text decoded as ASCII so the Content-Length scan stays cheap.
+           */
+          const header = state.buffer
             .subarray(
               0,
               headerEnd,
             )
             .toString('ascii',);
-          /** null means the header lacks Content-Length; skip past it and resume. */
+          /**
+           * null means the header lacks Content-Length; skip past it and resume.
+           */
           const match = CONTENT_LENGTH_PATTERN.exec(header,);
           if (match === null) {
-            buffer = buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
-            totalLength = buffer.byteLength;
+            state.buffer = state.buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
+            state.totalLength = state.buffer.byteLength;
             continue;
           }
 
-          contentLength = Number(match[1],);
-          buffer = buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
-          totalLength = buffer.byteLength;
+          state.contentLength = Number(match[1],);
+          state.buffer = state.buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
+          state.totalLength = state.buffer.byteLength;
         }
 
-        /** Wait for enough data before consolidating for body extraction. */
-        if (totalLength < contentLength)
+        /**
+         * Wait for enough data before consolidating for body extraction.
+         */
+        if (state.totalLength < state.contentLength)
           return;
         consolidate();
 
-        /** Body bytes decoded as UTF-8 for `JSON.parse` below. */
-        const json = buffer
+        /**
+         * Body bytes decoded as UTF-8 for `JSON.parse` below.
+         */
+        const json = state.buffer
           .subarray(
             0,
-            contentLength,
+            state.contentLength,
           )
           .toString('utf8',);
-        buffer = buffer.subarray(contentLength,);
-        totalLength = buffer.byteLength;
-        contentLength = -1;
+        state.buffer = state.buffer.subarray(state.contentLength,);
+        state.totalLength = state.buffer.byteLength;
+        state.contentLength = -1;
 
         try {
           /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; callers validate via discriminant checks */
-          /** Untyped at runtime; downstream handlers gate on discriminants before use. */
+          /**
+           * Untyped at runtime; downstream handlers gate on discriminants before use.
+           */
           const message = JSON.parse(json,) as JsonRpcMessage;
           /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
           onMessage(message,);

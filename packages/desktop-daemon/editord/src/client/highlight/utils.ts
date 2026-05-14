@@ -60,9 +60,15 @@ export function findLineForOffset({
   offset: number;
   lineStarts: readonly number[];
 },): number {
-  /** Binary-search lower bound; mutated as the search narrows. */
+  /**
+   * Binary-search lower bound; mutated as the search narrows.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- binary-search state machine: `lo` rises when `mid` overshoots
   let lo = 0;
-  /** Binary-search upper bound; ends one before length so out-of-range returns last. */
+  /**
+   * Binary-search upper bound; ends one before length so out-of-range returns last.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- binary-search state machine: `hi` falls when `mid` undershoots
   let hi = lineStarts.length - 1;
   while (lo <= hi) {
     /** Unsigned right shift halves without overflowing for very long files. */

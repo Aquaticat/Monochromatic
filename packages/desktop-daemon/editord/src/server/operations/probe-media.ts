@@ -101,7 +101,7 @@ export async function probeMedia({ path, }: { path: string; },): Promise<string 
      * ffprobe often exits non-zero (e.g. for image files).
      * nano-spawn's SubprocessError still carries the captured stderr.
      */
-    if (error !== null && typeof error === 'object' && 'stderr' in error) {
+    if ((error !== null) && ((typeof error) === 'object') && ('stderr' in error)) {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- narrowed by 'stderr' in check */
       /** Stderr captured by nano-spawn on non-zero exit; still contains the metadata we want. */
       const { stderr, } = error as { stderr: string; };

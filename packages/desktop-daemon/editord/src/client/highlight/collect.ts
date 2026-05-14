@@ -102,7 +102,7 @@ export function collectHighlightRanges({
         const lineText = lines[lineIndex];
 
         // Skip empty lines: text node is '\n' placeholder with no visible text
-        if (lineText === undefined || lineText === '')
+        if ((lineText === undefined) || (lineText === ''))
           continue;
 
         /** Highlight start column within this line: clipped to 0 unless this is the first line of the token. */

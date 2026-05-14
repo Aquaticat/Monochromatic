@@ -219,7 +219,7 @@ export class FileTree extends HTMLElement {
   async expandRoot(rootPath: string,): Promise<void> {
     /** Captured fetch callback; absent when the tree was never wired up with a backing fetcher. */
     const { fetchDir, } = this.#state;
-    if (this.#tree === null || fetchDir === null)
+    if ((this.#tree === null) || (fetchDir === null))
       return;
     this.#rootPath = rootPath;
     /** Root-level directory listing used to populate the top of the tree. */
@@ -257,7 +257,7 @@ export class FileTree extends HTMLElement {
    * @param dirs - absolute paths of directories to expand
    */
   async restoreExpansion({ dirs, }: { dirs: string[]; },): Promise<void> {
-    if (this.#tree === null || this.#state.fetchDir === null || dirs.length === 0)
+    if ((this.#tree === null) || (this.#state.fetchDir === null) || (dirs.length === 0))
       return;
     /** Trailing-slash prefix used to drop any restored path that escaped the configured root. */
     const rootPrefix = `${this.#rootPath}/`;
@@ -295,7 +295,7 @@ export class FileTree extends HTMLElement {
    * @param paths - absolute file paths to reveal
    */
   async revealFiles({ paths, }: { paths: string[]; },): Promise<void> {
-    if (this.#tree === null || this.#rootPath === '')
+    if ((this.#tree === null) || (this.#rootPath === ''))
       return;
     /** Stable reference to `this` so the inline `restore` callback retains the component instance. */
     const tree = this;

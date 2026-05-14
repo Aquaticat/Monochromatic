@@ -91,10 +91,13 @@ export function findProjectRoot({
   const cacheKey = `${startDir}\0${ceiling}\0${getJoinedConfigFiles(configFiles,)}`;
   /** TTL-gated reuse below avoids hitting the filesystem for recently-resolved paths. */
   const cached = rootCache.get(cacheKey,);
-  if (cached !== undefined && Date.now() - cached.storedAt < CACHE_TTL_MS)
+  if ((cached !== undefined) && ((Date.now() - cached.storedAt) < CACHE_TTL_MS))
     return cached.value;
 
-  /** Walks upward from {@link startDir}; mutated by the loop body. */
+  /**
+   * Walks upward from {@link startDir}; mutated by the loop body.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- directory-walk cursor: `dir` rises via `dirname` each iteration until ceiling or filesystem root
   let dir = startDir;
   while (true) {
     for (const file of configFiles) {

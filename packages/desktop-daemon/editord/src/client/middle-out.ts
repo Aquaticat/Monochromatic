@@ -47,7 +47,7 @@ export function middleOut({
   /** Case-folded indexOf so queries find matches regardless of case. */
   const matchStart = text.toLowerCase().indexOf(query.toLowerCase(),);
 
-  if (matchStart === -1) {
+  if (matchStart === (-1)) {
     return text.slice(
       0,
       budget - 1,
@@ -58,7 +58,7 @@ export function middleOut({
   const matchEnd = matchStart + query.length;
 
   // Match near the start: keep start, truncate end
-  if (matchEnd <= budget - 1) {
+  if (matchEnd <= (budget - 1)) {
     return text.slice(
       0,
       budget - 1,
@@ -66,8 +66,8 @@ export function middleOut({
   }
 
   // Match near the end: truncate start, keep end
-  if (text.length - matchStart <= budget - 1)
-    return ELLIPSIS + text.slice(text.length - budget + 1,);
+  if ((text.length - matchStart) <= (budget - 1))
+    return ELLIPSIS + text.slice((text.length - budget) + 1,);
 
   // Match in the middle: truncate both sides, center on the match
   /** Remaining budget after reserving space for the query and two ellipses. */

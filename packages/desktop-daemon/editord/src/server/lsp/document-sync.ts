@@ -39,11 +39,11 @@ function relevantClients(
   const clients: LspClient[] = [];
   /** Cached so the gating below does not re-test the language id three times. */
   const isJsTs = JS_TS_LANGUAGE_IDS.has(languageId,);
-  if (isJsTs && oxlint !== null && oxlint.initialized)
+  if (isJsTs && (oxlint !== null) && oxlint.initialized)
     clients.push(oxlint,);
-  if (isJsTs && tsgo !== null && tsgo.initialized)
+  if (isJsTs && (tsgo !== null) && tsgo.initialized)
     clients.push(tsgo,);
-  if (dprint !== null && dprint.initialized)
+  if ((dprint !== null) && dprint.initialized)
     clients.push(dprint,);
   return clients;
 }
@@ -71,7 +71,9 @@ export function didOpen({
 },): void {
   /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
-  /** Resolved once so {@link relevantClients} and the didOpen payload stay in sync. */
+  /**
+   * Resolved once so {@link relevantClients} and the didOpen payload stay in sync.
+   */
   const languageId = getLanguageId({ path, },);
   if (documents.has(uri,)) {
     didClose({

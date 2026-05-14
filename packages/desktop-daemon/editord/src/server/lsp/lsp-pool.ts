@@ -313,7 +313,7 @@ export class LspPool {
         const delay = deterministic
           ? DETERMINISTIC_PANIC_RETRY_MS
           : Math.min(
-            BASE_RESTART_DELAY_MS * 2 ** (count - 1),
+            BASE_RESTART_DELAY_MS * (2 ** (count - 1)),
             MAX_RESTART_DELAY_MS,
           );
         l.error(
@@ -345,7 +345,7 @@ export class LspPool {
     const delay = state.deterministic
       ? DETERMINISTIC_PANIC_RETRY_MS
       : Math.min(
-        BASE_RESTART_DELAY_MS * 2 ** (state.count - 1),
+        BASE_RESTART_DELAY_MS * (2 ** (state.count - 1)),
         MAX_RESTART_DELAY_MS,
       );
     /** Time since the last crash; compared against `delay` to decide if the cooldown has elapsed. */

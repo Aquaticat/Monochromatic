@@ -62,22 +62,33 @@ export function streamRg({
         ...args,
       ],
     );
-    /** Accumulator passed to `resolve` once the process closes or the cap is hit. */
+    /**
+     * Accumulator passed to `resolve` once the process closes or the cap is hit.
+     */
     const results: SearchResult[] = [];
-    /** Carries partial last line between data events. */
-    let buffer = '';
-    /** Idempotency guard so close/data races resolve the promise only once. */
-    let resolved = false;
+    /**
+     * Closure-shared state for the data/close/error handlers below.
+     *
+     * - `buffer`: partial last line carried between data events.
+     * - `resolved`: idempotency guard so close/data races resolve the promise only once.
+     *
+     * Held in an object so the inner handlers can mutate the same fields without
+     * a function-root `let`.
+     */
+    const state = {
+      buffer: '',
+      resolved: false,
+    };
 
     /**
      * Resolves the promise and kills the child process.
      * Guards against double-resolution from concurrent close/data events.
      */
     function finish(): void {
-      if (resolved)
+      if (state.resolved)
         return;
 
-      resolved = true;
+      state.resolved = true;
       proc.kill();
       resolve(results,);
     }
@@ -93,11 +104,15 @@ export function streamRg({
     proc.stdout.on(
       'data',
       function handleData(chunk: Buffer,) {
-        buffer += chunk.toString('utf8',);
-        /** Split on newlines; the trailing partial line stays in `buffer`. */
-        const lines = buffer.split('\n',);
-        /** Keep the last (possibly incomplete) line in the buffer. */
-        buffer = lines.pop() ?? '';
+        state.buffer += chunk.toString('utf8',);
+        /**
+         * Split on newlines; the trailing partial line stays in `state.buffer`.
+         */
+        const lines = state.buffer.split('\n',);
+        /**
+         * Keep the last (possibly incomplete) line in the buffer.
+         */
+        state.buffer = lines.pop() ?? '';
 
         for (const line of lines) {
           if (line === '')
@@ -119,9 +134,11 @@ export function streamRg({
     proc.on(
       'close',
       function handleClose() {
-        if (buffer !== '') {
-          /** Last partial line salvaged on close so we do not drop the final hit. */
-          const result = processLine(buffer,);
+        if (state.buffer !== '') {
+          /**
+           * Last partial line salvaged on close so we do not drop the final hit.
+           */
+          const result = processLine(state.buffer,);
           if (result !== null)
             results.push(result,);
         }
@@ -133,8 +150,8 @@ export function streamRg({
     proc.on(
       'error',
       function handleError(error,) {
-        if (!resolved) {
-          resolved = true;
+        if (!state.resolved) {
+          state.resolved = true;
           reject(error,);
         }
       },

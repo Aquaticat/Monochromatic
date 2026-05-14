@@ -35,10 +35,12 @@ import { PARSERS, } from './language-parsers.ts';
 export function getParserForPath({ path, }: { path: string; },): Parser | null {
   /** Index of the final `.` in the path; `-1` means no extension. */
   const dotIndex = path.lastIndexOf('.',);
-  if (dotIndex === -1)
+  if (dotIndex === (-1))
     return null;
 
-  /** Extension including the leading dot, matched against {@link PARSERS} keys. */
+  /**
+   * Extension including the leading dot, matched against {@link PARSERS} keys.
+   */
   const extension = path.slice(dotIndex,);
   return PARSERS[extension] ?? null;
 }

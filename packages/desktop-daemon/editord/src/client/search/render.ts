@@ -146,7 +146,10 @@ export function highlightMatches(
     NodeFilter.SHOW_TEXT,
   );
 
-  /** Current text node being scanned for matches; null terminates the walk. */
+  /**
+   * Current text node being scanned for matches; null terminates the walk.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- tree-walker cursor: `node` advances via `walker.nextNode()`
   let node = walker.nextNode();
   while (node !== null) {
     /** Raw text of the current node; empty string falls back when textContent is null. */
@@ -162,7 +165,7 @@ export function highlightMatches(
         lowerQuery,
         searchFrom,
       );
-      if (index === -1)
+      if (index === (-1))
         break;
 
       /** DOM Range covering this match so the Custom Highlight API can style it. */

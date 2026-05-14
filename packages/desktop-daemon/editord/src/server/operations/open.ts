@@ -106,7 +106,9 @@ export async function openFile(
       size,
       HEX_DUMP_MAX_BYTES,
     );
-    /** Sized to {@link dumpLimit} so the read fits without an extra slice. */
+    /**
+     * Sized to {@link dumpLimit} so the read fits without an extra slice.
+     */
     const dumpBuffer = Buffer.alloc(dumpLimit,);
     await handle.read(
       dumpBuffer,

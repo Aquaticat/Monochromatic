@@ -9,15 +9,28 @@
  * in the proportional-font `::before` aligns with the monospace code.
  */
 
-/** Cached ratio of mono character width to Inter space width. */
-let cachedRatio: number | null = null;
-
-/** Cached canvas context (Inter font) and mono character width for label measurement. */
-let cachedCtx: CanvasRenderingContext2D | null = null;
-/** Cached JetBrains Mono character width in pixels, measured once via off-screen canvas. */
-let cachedMonoW = 0;
-/** Cached Inter space character width in pixels, measured once via off-screen canvas. */
-let cachedInterSpW = 0;
+/**
+ * Module-scoped measurement cache filled by {@link measureSpaceRatio}.
+ *
+ * - `ratio`: mono-to-Inter space-width ratio; `null` until first measured.
+ * - `ctx`: canvas context retained with the Inter font for later `measureText` calls.
+ * - `monoW`: JetBrains Mono character width in pixels.
+ * - `interSpW`: Inter space-character width in pixels (divisor for gap computation).
+ *
+ * Held in a single `const` container so the cache lives at module scope without
+ * a module-root `let` (no-module-root-let rule).
+ */
+const cache: {
+  ratio: number | null;
+  ctx: CanvasRenderingContext2D | null;
+  monoW: number;
+  interSpW: number;
+} = {
+  ratio: null,
+  ctx: null,
+  monoW: 0,
+  interSpW: 0,
+};
 
 /**
  * Computes the ratio `monoSpaceWidth / interSpaceWidth` so that
@@ -36,34 +49,46 @@ let cachedInterSpW = 0;
  * ```
  */
 export function measureSpaceRatio({ editor, }: { editor: HTMLElement; },): number {
-  if (cachedRatio !== null)
-    return cachedRatio;
+  if (cache.ratio !== null)
+    return cache.ratio;
 
-  /** Without destructuring: prefer-destructuring lint error for member access. */
+  /**
+   * Without destructuring: prefer-destructuring lint error for member access.
+   */
   const { fontSize, } = getComputedStyle(editor,);
-  /** Off-screen canvas used purely for text measurement; never attached to the document. */
+  /**
+   * Off-screen canvas used purely for text measurement; never attached to the document.
+   */
   const canvas = document.createElement('canvas',);
-  /** 2D context whose `measureText` reports glyph widths under each font we probe. */
+  /**
+   * 2D context whose `measureText` reports glyph widths under each font we probe.
+   */
   const ctx = canvas.getContext('2d',);
   if (ctx === null) {
-    cachedRatio = 1;
+    cache.ratio = 1;
     return 1;
   }
 
   ctx.font = `${fontSize} 'JetBrains Mono', monospace`;
-  /** Width of a single space rendered in JetBrains Mono at the editor's font size. */
+  /**
+   * Width of a single space rendered in JetBrains Mono at the editor's font size.
+   */
   const monoSpace = ctx.measureText(' ',).width;
 
   ctx.font = `${fontSize} 'Inter', sans-serif`;
-  /** Width of a single space rendered in Inter at the same font size, used as the divisor. */
+  /**
+   * Width of a single space rendered in Inter at the same font size, used as the divisor.
+   */
   const interSpace = ctx.measureText(' ',).width;
 
-  cachedRatio = interSpace > 0 ? monoSpace / interSpace : 1;
-  cachedMonoW = monoSpace;
-  cachedInterSpW = interSpace;
-  /** Retain context with Inter font for {@link measureInterText}. */
-  cachedCtx = ctx;
-  return cachedRatio;
+  cache.ratio = interSpace > 0 ? monoSpace / interSpace : 1;
+  cache.monoW = monoSpace;
+  cache.interSpW = interSpace;
+  /**
+   * Retain context with Inter font for {@link measureInterText}.
+   */
+  cache.ctx = ctx;
+  return cache.ratio;
 }
 
 /**
@@ -104,17 +129,23 @@ export function interSpacesForGap({
   fallbackCursor: number;
   spaceRatio: number;
 },): number {
-  if (cachedCtx === null || cachedMonoW === 0 || cachedInterSpW === 0)
+  if ((cache.ctx === null) || (cache.monoW === 0) || (cache.interSpW === 0))
     return Math.round((charPos - fallbackCursor) * spaceRatio,);
 
-  /** Pixel column the hint should land on, derived from the monospace character offset. */
-  const targetPx = charPos * cachedMonoW;
-  /** Actual pixel width the existing Inter-rendered row already occupies. */
-  const rowPx = cachedCtx.measureText(rowText,).width;
-  /** Number of Inter spaces that bridge the remaining gap; clamped at zero for short rows. */
+  /**
+   * Pixel column the hint should land on, derived from the monospace character offset.
+   */
+  const targetPx = charPos * cache.monoW;
+  /**
+   * Actual pixel width the existing Inter-rendered row already occupies.
+   */
+  const rowPx = cache.ctx.measureText(rowText,).width;
+  /**
+   * Number of Inter spaces that bridge the remaining gap; clamped at zero for short rows.
+   */
   const gap = Math.max(
     0,
-    Math.round((targetPx - rowPx) / cachedInterSpW,),
+    Math.round((targetPx - rowPx) / cache.interSpW,),
   );
   return gap;
 }
@@ -134,7 +165,7 @@ export function interSpacesForGap({
  */
 export function measureInlayOffsets({ editor, }: { editor: HTMLElement; },): void {
   for (const child of editor.children) {
-    if (!(child instanceof HTMLElement) || child.dataset.inlay === undefined)
+    if ((!(child instanceof HTMLElement)) || (child.dataset.inlay === undefined))
       continue;
 
     /** Rendered height of the `::before` annotation; drives the line-number offset variable. */
@@ -143,7 +174,7 @@ export function measureInlayOffsets({ editor, }: { editor: HTMLElement; },): voi
       '::before',
     )
       .height;
-    if (beforeHeight !== 'auto' && beforeHeight !== '0px') {
+    if ((beforeHeight !== 'auto') && (beforeHeight !== '0px')) {
       child.style.setProperty(
         '--line-num-offset',
         beforeHeight,

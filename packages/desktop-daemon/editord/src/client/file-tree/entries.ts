@@ -78,16 +78,20 @@ const MAX_PREFETCH_CACHE_SIZE = 200;
 function evictPrefetchCache({ cache, }: { cache: Map<string, DirEntry[]>; },): void {
   if (cache.size <= MAX_PREFETCH_CACHE_SIZE)
     return;
-  /** Number of oldest entries to drop so the cache returns under cap. */
+  /**
+   * Number of oldest entries to drop so the cache returns under cap.
+   */
   const excess = cache.size - MAX_PREFETCH_CACHE_SIZE;
-  /** Counter compared against {@link excess} to stop the eviction loop. */
-  let removed = 0;
-  for (const key of cache.keys()) {
-    if (removed >= excess)
-      break;
+  /**
+   * First-N keys in insertion order; Maps preserve insertion order, so
+   * slicing here selects the oldest entries to evict.
+   */
+  const keysToEvict = [...cache.keys(),].slice(
+    0,
+    excess,
+  );
+  for (const key of keysToEvict)
     cache.delete(key,);
-    removed++;
-  }
 }
 
 /**
@@ -130,7 +134,9 @@ export async function preloadChildren({
           parentPath,
           name: entry.name,
         },);
-        /** Listing stored under {@link fullPath} for the next on-demand expansion. */
+        /**
+         * Listing stored under {@link fullPath} for the next on-demand expansion.
+         */
         const children = await fetchDir(fullPath,);
         prefetchCache.set(
           fullPath,

@@ -48,9 +48,15 @@ export function resolveTextPosition({
     lineDiv,
     NodeFilter.SHOW_TEXT,
   );
-  /** Characters still to consume; decremented by each text-node length until the target node is reached. */
+  /**
+   * Characters still to consume; decremented by each text-node length until the target node is reached.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- tree-walker cursor: `remaining` decrements until the target node is found
   let remaining = character;
-  /** Current text node under inspection; null exits the walk. */
+  /**
+   * Current text node under inspection; null exits the walk.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- tree-walker cursor: `textNode` advances via `walker.nextNode()`
   let textNode = walker.nextNode();
   while (textNode !== null) {
     /** Length of the current text node; treat null textContent as 0. */
@@ -105,12 +111,18 @@ export function resolveLineCharacter({
   line: number;
   character: number;
 } | null {
-  /** Walk cursor; starts at the caller's container and rises until it hits the editor or runs out. */
+  /**
+   * Walk cursor; starts at the caller's container and rises until it hits the editor or runs out.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- ancestor-walk cursor: `node` rises via `parentNode` until it matches the editor or null
   let node: Node | null = container;
-  /** First ancestor that is a direct child of the editor; identifies the owning line. */
+  /**
+   * First ancestor that is a direct child of the editor; identifies the owning line.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- ancestor-walk cursor: `lineDiv` is set inside the loop when the editor-child ancestor is found
   let lineDiv: HTMLElement | null = null;
-  while (node !== null && node !== editor) {
-    if (node.parentNode === editor && node instanceof HTMLElement) {
+  while ((node !== null) && (node !== editor)) {
+    if ((node.parentNode === editor) && (node instanceof HTMLElement)) {
       lineDiv = node;
       break;
     }
@@ -124,17 +136,25 @@ export function resolveLineCharacter({
     editor.children,
     lineDiv,
   );
-  if (line === -1)
+  if (line === (-1))
     return null;
 
-  /** Character offset within the line; summed across text nodes until the container is reached. */
+  /**
+   * Character offset within the line; summed across text nodes until the container is reached.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- tree-walker accumulator: `character` sums text-node lengths until the container node is matched
   let character = 0;
-  /** Text-only walker over the resolved line so the offset count skips highlight spans. */
+  /**
+   * Text-only walker over the resolved line so the offset count skips highlight spans.
+   */
   const walker = document.createTreeWalker(
     lineDiv,
     NodeFilter.SHOW_TEXT,
   );
-  /** Current text node; null exits the walk. */
+  /**
+   * Current text node; null exits the walk.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- tree-walker cursor: `textNode` advances via `walker.nextNode()`
   let textNode = walker.nextNode();
   while (textNode !== null) {
     if (textNode === container) {

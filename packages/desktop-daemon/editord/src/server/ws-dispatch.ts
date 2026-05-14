@@ -72,10 +72,10 @@ export async function dispatchMessage(
 ): Promise<void> {
   /** Untyped intermediate so the shape can be validated before assertion. */
   const raw: unknown = JSON.parse(messageText,);
-  if (typeof raw !== 'object'
-    || raw === null
-    || !('type' in raw)
-    || typeof (raw as { type: unknown; }).type !== 'string')
+  if (((typeof raw) !== 'object')
+    || (raw === null)
+    || (!('type' in raw))
+    || ((typeof (raw as { type: unknown; }).type) !== 'string'))
   {
     sendJson({
       peer,
@@ -106,7 +106,7 @@ export async function dispatchMessage(
           ...result,
         },
       },);
-      if (lspManager !== null && result.kind === 'text') {
+      if ((lspManager !== null) && (result.kind === 'text')) {
         await lspManager.didOpen({
           path: parsed.path,
           text: result.content,

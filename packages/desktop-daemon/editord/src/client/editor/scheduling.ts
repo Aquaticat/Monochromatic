@@ -85,7 +85,7 @@ export function scheduleInlayAnnotations({
   diagnostics: Diagnostic[];
 },): number {
   return requestAnimationFrame(function applyScheduledInlayAnnotations() {
-    if (hints.length === 0 && diagnostics.length === 0) {
+    if ((hints.length === 0) && (diagnostics.length === 0)) {
       clearInlayAnnotations({ editor, },);
       return;
     }

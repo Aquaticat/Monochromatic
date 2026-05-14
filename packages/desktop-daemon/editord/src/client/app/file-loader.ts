@@ -81,7 +81,7 @@ export async function loadFile(
     } = r;
     document.title = `editord - ${path}`;
 
-    if (kind === 'image' || kind === 'audio' || kind === 'video') {
+    if ((kind === 'image') || (kind === 'audio') || (kind === 'video')) {
       editorPane.style.display = 'none';
       /** Token-scoped URL the browser fetches the asset bytes from for native media playback. */
       const mediaUrl = `/_raw?path=${encodeURIComponent(path,)}&token=${token}`;

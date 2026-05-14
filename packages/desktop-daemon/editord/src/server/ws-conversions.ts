@@ -32,7 +32,7 @@ import type {
  * ```
  */
 export function extractHoverContent({ hover, }: { hover: LspHover; },): string {
-  if (typeof hover.contents === 'string')
+  if ((typeof hover.contents) === 'string')
     return hover.contents;
 
   return (hover.contents as LspMarkupContent).value;
@@ -78,7 +78,7 @@ export function toWireCompletionItems(
 export function toWireInlayHints({ hints, }: { hints: LspInlayHint[]; },): InlayHint[] {
   return hints.map(function convertHint(hint,) {
     /** Flat label text; structured `label` parts are concatenated since the wire format is plain string. */
-    const label = typeof hint.label === 'string'
+    const label = (typeof hint.label) === 'string'
       ? hint.label
       : hint
         .label

@@ -104,13 +104,13 @@ export function diagnosticsEqual({
     const db = b[i];
     if (db === undefined)
       return false;
-    return da.message === db.message
-      && da.severity === db.severity
-      && da.source === db.source
-      && da.range.start.line === db.range.start.line
-      && da.range.start.character === db.range.start.character
-      && da.range.end.line === db.range.end.line
-      && da.range.end.character === db.range.end.character;
+    return (da.message === db.message)
+      && (da.severity === db.severity)
+      && (da.source === db.source)
+      && (da.range.start.line === db.range.start.line)
+      && (da.range.start.character === db.range.start.character)
+      && (da.range.end.line === db.range.end.line)
+      && (da.range.end.character === db.range.end.character);
   },);
 }
 
@@ -148,12 +148,12 @@ export function hintsEqual({
     const hb = b[i];
     if (hb === undefined)
       return false;
-    return ha.label === hb.label
-      && ha.kind === hb.kind
-      && ha.position.line === hb.position.line
-      && ha.position.character === hb.position.character
-      && ha.paddingLeft === hb.paddingLeft
-      && ha.paddingRight === hb.paddingRight;
+    return (ha.label === hb.label)
+      && (ha.kind === hb.kind)
+      && (ha.position.line === hb.position.line)
+      && (ha.position.character === hb.position.character)
+      && (ha.paddingLeft === hb.paddingLeft)
+      && (ha.paddingRight === hb.paddingRight);
   },);
 }
 

@@ -109,7 +109,9 @@ function searchFiles({
         rootDir,
         line,
       );
-      /** Case-folded copy aligned with {@link normalizedQuery} so `.includes` works symmetrically. */
+      /**
+       * Case-folded copy aligned with {@link normalizedQuery} so `.includes` works symmetrically.
+       */
       const candidate = caseSensitive ? relativePath : relativePath.toLowerCase();
 
       if (candidate.includes(normalizedQuery,)) {

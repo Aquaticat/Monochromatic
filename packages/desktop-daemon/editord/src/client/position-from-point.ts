@@ -79,9 +79,15 @@ function findLineAtY({
 } | null {
   /** Vertically-ordered children; each is one line div whose bounding rect is checked against `y`. */
   const { children, } = editor;
-  /** Inclusive low bound of the binary-search window over `children`. */
+  /**
+   * Inclusive low bound of the binary-search window over `children`.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- binary-search state machine: `lo` rises when the candidate is above `y`
   let lo = 0;
-  /** Inclusive high bound of the binary-search window over `children`. */
+  /**
+   * Inclusive high bound of the binary-search window over `children`.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- binary-search state machine: `hi` falls when the candidate is below `y`
   let hi = children.length - 1;
 
   while (lo <= hi) {

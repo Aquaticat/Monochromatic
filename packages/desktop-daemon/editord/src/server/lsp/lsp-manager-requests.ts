@@ -74,7 +74,7 @@ async function withClient<T,>({
     type: serverType,
     filePath: path,
   },);
-  if (c === null || !c.initialized)
+  if ((c === null) || (!c.initialized))
     return fallback;
   try {
     return await request(c,);

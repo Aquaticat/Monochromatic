@@ -70,7 +70,7 @@ export async function requestPrepareRename({
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
-  if (result === null || result === undefined)
+  if ((result === null) || (result === undefined))
     return null;
 
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- LSP prepareRename returns Range | { range, placeholder } | null */
@@ -82,7 +82,7 @@ export async function requestPrepareRename({
    * tsgo returns `{ range, placeholder }` when prepareProvider is true.
    * Some servers return just a Range (without placeholder).
    */
-  if ('placeholder' in raw && 'range' in raw) {
+  if (('placeholder' in raw) && ('range' in raw)) {
     return {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by 'range' check
       range: raw.range as LspRange,
@@ -92,7 +92,7 @@ export async function requestPrepareRename({
   }
 
   /** Plain Range response: extract the symbol text from the range as placeholder. */
-  if ('start' in raw && 'end' in raw) {
+  if (('start' in raw) && ('end' in raw)) {
     return {
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrowed by start/end check
       range: raw as unknown as LspRange,
@@ -153,7 +153,7 @@ export async function requestRename({
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
-  if (result === null || result === undefined)
+  if ((result === null) || (result === undefined))
     return null;
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP rename returns WorkspaceEdit | null

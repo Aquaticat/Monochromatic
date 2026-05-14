@@ -37,9 +37,15 @@ export function findTextOffset({
     lineDiv,
     NodeFilter.SHOW_TEXT,
   );
-  /** Decrements as the walker advances; the matching node is the one that goes non-positive. */
+  /**
+   * Decrements as the walker advances; the matching node is the one that goes non-positive.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- tree-walker state machine: `remaining` shrinks by each visited node's text length
   let remaining = charOffset;
-  /** Walker cursor; null means the offset is past the end of the line. */
+  /**
+   * Walker cursor; null means the offset is past the end of the line.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- tree-walker state machine: `textNode` is advanced via `walker.nextNode()` each iteration
   let textNode = walker.nextNode();
 
   while (textNode !== null) {
@@ -84,7 +90,7 @@ export function createDiagnosticRange({
   const startDiv = editor.children[diagnostic.range.start.line];
   /** Out-of-bounds line index returns null instead of throwing. */
   const endDiv = editor.children[diagnostic.range.end.line];
-  if (startDiv === undefined || endDiv === undefined)
+  if ((startDiv === undefined) || (endDiv === undefined))
     return null;
 
   /** Resolved DOM position; null when the start column is past end-of-line. */
@@ -97,7 +103,7 @@ export function createDiagnosticRange({
     lineDiv: endDiv,
     charOffset: diagnostic.range.end.character,
   },);
-  if (startPos === null || endPos === null)
+  if ((startPos === null) || (endPos === null))
     return null;
 
   /** Mutable Range built up across the next few setStart/setEnd calls. */

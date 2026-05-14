@@ -34,7 +34,7 @@ export function handleTextEditKey({
   event: KeyboardEvent;
   deps: TextOpsDeps;
 },): boolean {
-  if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'z') {
+  if ((event.ctrlKey || event.metaKey) && (!event.shiftKey) && (event.key === 'z')) {
     event.preventDefault();
     // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand('undo') is the only way to trigger the browser's native undo stack in contenteditable
     document.execCommand(
@@ -43,7 +43,7 @@ export function handleTextEditKey({
     );
     return true;
   }
-  if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'Z') {
+  if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'Z')) {
     event.preventDefault();
     // oxlint-disable-next-line typescript-eslint/no-deprecated -- execCommand('redo') is the only way to trigger the browser's native redo stack in contenteditable
     document.execCommand(
@@ -52,31 +52,31 @@ export function handleTextEditKey({
     );
     return true;
   }
-  if ((event.ctrlKey || event.metaKey) && event.key === 'y') {
+  if ((event.ctrlKey || event.metaKey) && (event.key === 'y')) {
     event.preventDefault();
     deps.deleteCurrentLine();
     return true;
   }
   /** Without combined condition: no-lonely-if lint error for nested if without else. */
   if ((event.ctrlKey || event.metaKey)
-    && !event.shiftKey
-    && event.key === 'c'
+    && (!event.shiftKey)
+    && (event.key === 'c')
     && deps.selectAndCopyCurrentLine())
   {
     event.preventDefault();
     return true;
   }
-  if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key === 'd') {
+  if ((event.ctrlKey || event.metaKey) && (!event.shiftKey) && (event.key === 'd')) {
     event.preventDefault();
     deps.duplicateLineDown();
     return true;
   }
-  if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'ArrowDown') {
+  if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'ArrowDown')) {
     event.preventDefault();
     deps.swapLineDown();
     return true;
   }
-  if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'ArrowUp') {
+  if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'ArrowUp')) {
     event.preventDefault();
     deps.swapLineUp();
     return true;

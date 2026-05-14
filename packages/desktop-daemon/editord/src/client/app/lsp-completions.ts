@@ -57,8 +57,12 @@ function isInsideStringLiteral({
    * Tracks the active quote character (double-quote, single-quote, or backtick) as
    * the walker advances; flipped back to null when the matching delimiter is hit.
    */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- parser-cursor state machine: `active` is flipped by quote-open/close branches while `i` walks the string
   let active: '"' | "'" | '`' | null = null;
-  /** Cursor into `line`; advances by 1 for normal characters, by 2 across backslash escapes. */
+  /**
+   * Cursor into `line`; advances by 1 for normal characters, by 2 across backslash escapes.
+   */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- parser-cursor state machine: `i` advances asymmetrically (1 or 2) based on backslash branch
   let i = 0;
   while (i < character) {
     /** Character at the walker's current position; undefined past the end of the line. */
@@ -68,7 +72,7 @@ function isInsideStringLiteral({
       continue;
     }
     if (active === null) {
-      if (ch === '"' || ch === "'" || ch === '`')
+      if ((ch === '"') || (ch === "'") || (ch === '`'))
         active = ch;
     }
     else if (ch === active) {
@@ -133,14 +137,14 @@ export async function requestCompletions(
     if (responsePos === null)
       return;
     if (
-      responsePos.line !== requestPos.line
-      || responsePos.character !== requestPos.character
+      (responsePos.line !== requestPos.line)
+      || (responsePos.character !== requestPos.character)
     ) {
       return;
     }
     /** Caret rectangle in viewport coordinates; popup is anchored to its bottom-left corner. */
     const rect = editorPane.getCursorRect();
-    if (items.length === 0 || rect === null)
+    if ((items.length === 0) || (rect === null))
       return;
     completionPopup.show({
       items,
@@ -253,7 +257,7 @@ export function wireCompletionDismiss({
       const pos = editorPane.getCursorPosition();
       if (pos === null)
         return;
-      if (pos.line !== shownAt.line || pos.character !== shownAt.character)
+      if ((pos.line !== shownAt.line) || (pos.character !== shownAt.character))
         completionPopup.hide();
     },
   );

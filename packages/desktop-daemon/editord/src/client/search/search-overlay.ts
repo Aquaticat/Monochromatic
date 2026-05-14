@@ -111,9 +111,9 @@ export class SearchOverlay extends HTMLElement {
         blur: function handleInputBlur(event,) {
           /** Element receiving focus next; null when focus left the document entirely. */
           const related = event.relatedTarget;
-          if (related === null
-            || !(related instanceof Node)
-            || overlay.#dialog?.contains(related,) !== true)
+          if ((related === null)
+            || (!(related instanceof Node))
+            || (overlay.#dialog?.contains(related,) !== true))
           {
             overlay.#close();
           }
@@ -152,9 +152,9 @@ export class SearchOverlay extends HTMLElement {
         return;
       /** Current timestamp; compared against `lastShiftUp` to detect a double-shift within the threshold. */
       const now = Date.now();
-      if (!overlay.#interveningKey
-        && overlay.#lastShiftUp > 0
-        && now - overlay.#lastShiftUp < DOUBLE_SHIFT_THRESHOLD_MS)
+      if ((!overlay.#interveningKey)
+        && (overlay.#lastShiftUp > 0)
+        && ((now - overlay.#lastShiftUp) < DOUBLE_SHIFT_THRESHOLD_MS))
       {
         overlay.#lastShiftUp = 0;
         overlay.#interveningKey = false;
@@ -193,7 +193,7 @@ export class SearchOverlay extends HTMLElement {
   /** Opens the overlay. */
   #show(): void {
     this.#rootDir = this.getRootDir?.() ?? '';
-    if (this.#dialog === null || this.#input === null || this.#resultsContainer === null)
+    if ((this.#dialog === null) || (this.#input === null) || (this.#resultsContainer === null))
       return;
     this.#input.value = '';
     this.#resultsContainer.replaceChildren();
@@ -239,7 +239,7 @@ export class SearchOverlay extends HTMLElement {
    * @returns number of monospace characters that fit in one result row
    */
   #charBudget(): number {
-    if (this.#charWidthPx <= 0 || this.#resultsContainer === null)
+    if ((this.#charWidthPx <= 0) || (this.#resultsContainer === null))
       return 0;
     return Math.floor(this.#resultsContainer.clientWidth / this.#charWidthPx,);
   }
@@ -258,7 +258,7 @@ export class SearchOverlay extends HTMLElement {
 
   /** Reads the input value, invokes `onSearch`, and renders results. */
   async #performSearch(): Promise<void> {
-    if (this.onSearch === null || this.#input === null)
+    if ((this.onSearch === null) || (this.#input === null))
       return;
     /** Local alias for `this`; captured by the `onResults` callback. */
     const overlay = this;
@@ -288,7 +288,7 @@ export class SearchOverlay extends HTMLElement {
     this.#selectedIndex = results.length > 0 ? 0 : -1;
     if (results.length === 0) {
       /** True when the input contains non-whitespace text; selects the "No results" message over a blank placeholder. */
-      const hasInput = this.#input !== null && this.#input.value.trim() !== '';
+      const hasInput = (this.#input !== null) && (this.#input.value.trim() !== '');
       this.#resultsContainer.replaceChildren(
         hasInput
           ? h({

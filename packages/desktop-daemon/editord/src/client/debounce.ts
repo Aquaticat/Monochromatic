@@ -60,35 +60,42 @@ export function createDebounced(
   },
 ): DebouncedHandle {
   /**
-   * Active `setTimeout` handle, or `0` when no timer is pending.
+   * Closure-shared state for `flush`, `debounced`, and `cancel`.
    *
-   * Reassigned by every `debounced()` call (after clearing the previous handle)
-   * and reset to `0` by `flush()` and `cancel()`. Sentinel `0` lets
-   * `clearTimeout(timer)` stay a safe no-op on first invocation.
+   * `state.timer` holds the active `setTimeout` handle or `0` when no timer
+   * is pending. Sentinel `0` lets `clearTimeout(state.timer)` stay a safe
+   * no-op on first invocation. Held inside an object so the three inner
+   * functions can mutate the same reference without a function-root `let`.
    */
-  let timer = 0;
+  const state = { timer: 0, };
 
-  /** Executes the function immediately and cancels any pending timer. */
+  /**
+   * Executes the function immediately and cancels any pending timer.
+   */
   function flush(): void {
-    clearTimeout(timer,);
-    timer = 0;
+    clearTimeout(state.timer,);
+    state.timer = 0;
     fn();
   }
 
-  /** Schedules execution after the debounce delay. */
+  /**
+   * Schedules execution after the debounce delay.
+   */
   function debounced(): void {
-    clearTimeout(timer,);
+    clearTimeout(state.timer,);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
-    timer = globalThis.setTimeout(
+    state.timer = globalThis.setTimeout(
       fn,
       delayMs,
     ) as unknown as number;
   }
 
-  /** Cancels any pending timer without executing the function. */
+  /**
+   * Cancels any pending timer without executing the function.
+   */
   function cancel(): void {
-    clearTimeout(timer,);
-    timer = 0;
+    clearTimeout(state.timer,);
+    state.timer = 0;
   }
 
   return {

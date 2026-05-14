@@ -245,7 +245,10 @@ export class EditorWsClient {
    */
   #handleMessage(event: MessageEvent,): void {
     /* oxlint-disable eslint/init-declarations -- try/catch initialization with early return requires split declaration */
-    /** Parsed message body; declared outside the try block so the catch can short-circuit before assignment. */
+    /**
+     * Parsed message body; declared outside the try block so the catch can short-circuit before assignment.
+     */
+    // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- try-assignment pattern: `data` is assigned inside try, used after the catch's early return
     let data: ServerMessage;
     /* oxlint-enable eslint/init-declarations */
     try {

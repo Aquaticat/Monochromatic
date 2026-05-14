@@ -104,7 +104,9 @@ const CONTENT_TYPE_MAP: Record<string, string> = {
  * ```
  */
 export function getContentType({ path, }: { path: string; },): string {
-  /** Lowercased extension keyed against {@link CONTENT_TYPE_MAP} below. */
+  /**
+   * Lowercased extension keyed against {@link CONTENT_TYPE_MAP} below.
+   */
   const ext = extname(path,).toLowerCase();
   return CONTENT_TYPE_MAP[ext] ?? 'application/octet-stream';
 }

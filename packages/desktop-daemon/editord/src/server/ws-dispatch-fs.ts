@@ -29,11 +29,11 @@ import {
  * @returns whether the error code indicates a file lock
  */
 function isFileLockError(error: unknown,): boolean {
-  if (typeof error !== 'object' || error === null)
+  if (((typeof error) !== 'object') || (error === null))
     return false;
   /** Node `errno` code lifted off the caught error so the lock-error check stays local. */
   const { code, } = error as { code?: string; };
-  return code === 'EBUSY' || code === 'EPERM';
+  return (code === 'EBUSY') || (code === 'EPERM');
 }
 
 /**
@@ -66,7 +66,7 @@ async function retryOnFileLock<T>({
     return await operation();
   }
   catch (error) {
-    if (isFileLockError(error,) && lspManager !== null) {
+    if (isFileLockError(error,) && (lspManager !== null)) {
       await lspManager.shutdownForPath({ path, },);
       return await operation();
     }

@@ -83,14 +83,16 @@ export async function doShrinkSelection({
      */
     let best: FlatRange | null = null;
     for (const entry of chain) {
-      /** Flat form needed by {@link strictlyContains}. */
+      /**
+       * Flat form needed by {@link strictlyContains}.
+       */
       const flat = toFlat({ sr: entry, },);
       /** Without this combined check, the inner `best` comparison would run for non-contained ranges. */
       if (strictlyContains({
         outer: currentSel,
         inner: flat,
       },)
-        && (best === null || strictlyContains({
+        && ((best === null) || strictlyContains({
           outer: flat,
           inner: best,
         },)))

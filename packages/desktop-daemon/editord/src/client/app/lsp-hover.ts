@@ -108,7 +108,7 @@ export function wireHover(
       },);
       if (pos === null)
         return;
-      if (pos.line === hoverState.lastLine && pos.character === hoverState.lastChar)
+      if ((pos.line === hoverState.lastLine) && (pos.character === hoverState.lastChar))
         return;
       hoverState.lastLine = pos.line;
       hoverState.lastChar = pos.character;
@@ -142,8 +142,8 @@ export function wireHover(
       /** Narrowed event for the relatedTarget property used in the popup-overlap check below. */
       const me = event as MouseEvent;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-      if (me.relatedTarget === hoverPopup
-        || (me.relatedTarget instanceof Node && hoverPopup.contains(me.relatedTarget,)))
+      if ((me.relatedTarget === hoverPopup)
+        || ((me.relatedTarget instanceof Node) && hoverPopup.contains(me.relatedTarget,)))
       {
         return;
       }

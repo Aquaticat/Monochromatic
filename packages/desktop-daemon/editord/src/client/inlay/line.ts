@@ -80,7 +80,9 @@ export function applyLineAnnotation({
       },
     );
 
-    /** Mutated as hints are appended; flushed to {@link rows} on overlap. */
+    /**
+     * Mutated as hints are appended; flushed to {@link rows} on overlap.
+     */
     let rowText = '';
     /**
      * Cursor in monospace character units, used only for the overlap
@@ -91,10 +93,12 @@ export function applyLineAnnotation({
     for (const hint of sorted) {
       /** Rendered hint string; used for both row append and cursor advance. */
       const label = formatHintLabel({ hint, },);
-      /** Column the hint anchors to; compared against {@link cursor} for overlap. */
+      /**
+       * Column the hint anchors to; compared against {@link cursor} for overlap.
+       */
       const charPos = hint.position.character;
 
-      if (rowText === '' || charPos >= cursor) {
+      if ((rowText === '') || (charPos >= cursor)) {
         /**
          * Fits on the current row.
          * Measure the actual pixel width of the current row content
@@ -112,7 +116,9 @@ export function applyLineAnnotation({
       else {
         /** Overlaps previous hint; flush current row and start fresh. */
         rows.push(rowText,);
-        /** Approximates the column offset using {@link spaceRatio} from canvas measurement. */
+        /**
+         * Approximates the column offset using {@link spaceRatio} from canvas measurement.
+         */
         const indent = ' '.repeat(Math.round(charPos * spaceRatio,),);
         rowText = indent + label;
         cursor = charPos + label.length;
@@ -125,7 +131,9 @@ export function applyLineAnnotation({
 
   if (lineDiags !== undefined) {
     for (const diagnostic of lineDiags) {
-      /** Approximates the diagnostic's column using {@link spaceRatio}. */
+      /**
+       * Approximates the diagnostic's column using {@link spaceRatio}.
+       */
       const indent = ' '.repeat(
         Math.round(diagnostic.range.start.character * spaceRatio,),
       );
@@ -135,7 +143,7 @@ export function applyLineAnnotation({
 
   div.dataset.inlay = rows.join('\n',);
 
-  if (lineDiags !== undefined && lineDiags.length > 0)
+  if ((lineDiags !== undefined) && (lineDiags.length > 0))
     div.dataset.inlaySeverity = findWorstSeverity({ diagnostics: lineDiags, },);
   else
     delete div.dataset.inlaySeverity;

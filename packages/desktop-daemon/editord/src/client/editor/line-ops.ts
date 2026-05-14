@@ -140,14 +140,14 @@ export function swapLineDown({
 } | null {
   /** Length needed before grabbing the neighbour to confirm the move is in range. */
   const { children, } = editor;
-  if (line >= children.length - 1)
+  if (line >= (children.length - 1))
     return null;
 
   /** Element being moved past its successor. */
   const currentDiv = children[line];
   /** Successor that becomes the predecessor after the swap. */
   const nextDiv = children[line + 1];
-  if (currentDiv === undefined || nextDiv === undefined)
+  if ((currentDiv === undefined) || (nextDiv === undefined))
     return null;
 
   nextDiv.after(currentDiv,);
@@ -194,7 +194,7 @@ export function swapLineUp({
   const currentDiv = children[line];
   /** Predecessor that becomes the successor after the swap. */
   const prevDiv = children[line - 1];
-  if (currentDiv === undefined || prevDiv === undefined)
+  if ((currentDiv === undefined) || (prevDiv === undefined))
     return null;
 
   prevDiv.before(currentDiv,);

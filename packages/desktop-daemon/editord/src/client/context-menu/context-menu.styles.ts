@@ -21,7 +21,7 @@ import {
 } from '../styles/tokens.ts';
 
 /** Minimum width of the popup in rem: 10 = 2 * (2 * 2 + 1). */
-const MIN_WIDTH = 2 * (2 * 2 + 1);
+const MIN_WIDTH = 2 * ((2 * 2) + 1);
 
 /** Input field opacity: (10 - 2 - 1) / 10 = 7/10 for subtle appearance. */
 const INPUT_OPACITY = (10 - 2 - 1) / 10;

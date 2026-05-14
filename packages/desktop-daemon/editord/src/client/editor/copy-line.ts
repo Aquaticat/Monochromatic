@@ -6,6 +6,56 @@
  */
 
 /**
+ * Walks every text node in the subtree under `lineDiv` and returns the last one.
+ *
+ * Allowlist-shape helper extracted to satisfy the no-function-root-let rule:
+ * the walker advances a cursor through the tree, and the helper's terminating
+ * `return last` lets the caller treat the result as a value rather than mutated
+ * state at function-body root.
+ *
+ * @param lineDiv - root element whose text-node subtree is walked
+ *
+ * @param firstText - first text node already retrieved by the caller; used as the seed for the walk
+ *
+ * @returns the final text node encountered; equals `firstText` when no further text nodes exist
+ *
+ * @example
+ * ```ts
+ * const last = findLastTextNode({ lineDiv: editor.children[3]!, firstText: textNode, });
+ * ```
+ */
+function findLastTextNode({
+  lineDiv,
+  firstText,
+}: {
+  lineDiv: Element;
+  firstText: Node;
+},): Node {
+  /**
+   * Fresh walker so the caller's walker stays at its current position.
+   */
+  const walker = document.createTreeWalker(
+    lineDiv,
+    NodeFilter.SHOW_TEXT,
+  );
+  walker.currentNode = firstText;
+  /**
+   * Tracks the rightmost text node seen so far; updated each iteration
+   * by the walker. The helper-shape `return last` allowlists this `let`.
+   */
+  let last: Node = firstText;
+  /**
+   * Walker lookahead; null ends the walk.
+   */
+  let next = walker.nextNode();
+  while (next !== null) {
+    last = next;
+    next = walker.nextNode();
+  }
+  return last;
+}
+
+/**
  * Selects the full line at the cursor position and copies it to the clipboard.
  *
  * @param editor - contenteditable container element
@@ -53,14 +103,13 @@ export function selectAndCopyLine({
   if (firstText === null)
     return false;
 
-  /** Last text node seen so far; updated each iteration so the loop ends with the rightmost. */
-  let lastText: Node = firstText;
-  /** Walker lookahead; null marks the end of the line's text nodes. */
-  let next = walker.nextNode();
-  while (next !== null) {
-    lastText = next;
-    next = walker.nextNode();
-  }
+  /**
+   * Rightmost text node in the line's subtree; passed to `setBaseAndExtent` as the focus.
+   */
+  const lastText = findLastTextNode({
+    lineDiv,
+    firstText,
+  },);
 
   /** Length of the last text node so the focus offset lands at the very end of the line. */
   const lastLen = lastText.textContent?.length ?? 0;

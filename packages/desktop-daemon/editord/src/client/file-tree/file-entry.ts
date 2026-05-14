@@ -59,7 +59,7 @@ export class TreeFileEntry extends HTMLElement {
       tag: 'span',
       class: 'toggle',
     },);
-    if (this.recencyIndex !== -1) {
+    if (this.recencyIndex !== (-1)) {
       toggle.textContent = String(this.recencyIndex,);
       this.dataset['recency'] = String(this.recencyIndex,);
     }

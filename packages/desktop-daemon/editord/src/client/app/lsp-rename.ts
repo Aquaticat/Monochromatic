@@ -60,7 +60,7 @@ export async function initiateRename({
   const pos = editorPane.getCursorPosition();
   /** Screen rect anchors the toast and rename popover. */
   const rect = editorPane.getCursorRect();
-  if (pos === null || rect === null) {
+  if ((pos === null) || (rect === null)) {
     renameLog.info('could not resolve cursor position for rename',);
     return;
   }
@@ -163,7 +163,7 @@ export async function performRename({
       },
     );
 
-    if (currentFileEdits !== undefined && currentFileEdits.edits.length > 0)
+    if ((currentFileEdits !== undefined) && (currentFileEdits.edits.length > 0))
       editorPane.applyTextEdits(currentFileEdits.edits,);
 
     /** File-count summary used in the post-rename log entry below. */

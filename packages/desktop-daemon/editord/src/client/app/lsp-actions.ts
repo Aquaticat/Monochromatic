@@ -101,7 +101,7 @@ export function wireGotoDefinition(
       /** Click event narrowed to MouseEvent so modifier flags and viewport coords are accessible. */
       const me = event as MouseEvent;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-      if (!me.ctrlKey && !me.metaKey)
+      if ((!me.ctrlKey) && (!me.metaKey))
         return;
       /** Editor-space position under the cursor; null when the click misses any text. */
       const pos = editorPane.getPositionFromPoint({

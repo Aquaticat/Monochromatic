@@ -27,7 +27,7 @@ const FULL_HEIGHT = 100;
 const LINE_HEIGHT = (2 + 1) / 2;
 
 /** Width of the line number gutter in `ch` units: 5 = 2 * 2 + 1. */
-const GUTTER_WIDTH = 2 * 2 + 1;
+const GUTTER_WIDTH = (2 * 2) + 1;
 
 /** Total left padding (gutter + gap) in `ch` units: 6 = (2 + 1) * 2. */
 const LINE_PADDING = (2 + 1) * 2;
