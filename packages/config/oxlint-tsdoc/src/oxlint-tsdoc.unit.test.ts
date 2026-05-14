@@ -128,6 +128,13 @@ await describe({
             expect(diagnostics,).toEqual([],);
           },
         },),
+        it({
+          name: 'documented local declarations produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/documented-locals.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
       ],
     },),
 
@@ -155,6 +162,20 @@ await describe({
               .length;
             // function, arrow, class, type, interface, enum, const = at least 7
             expect(requireTsdocCount,).toBeGreaterThanOrEqual(7,);
+          },
+        },),
+        it({
+          name: 'reports missing TSDoc on undocumented locals while exempting for-loop bindings',
+          fn: async () => {
+            const diagnostics = await lint('invalid/missing-tsdoc-locals.ts',);
+            const requireTsdocDiags = diagnostics.filter(
+              function isRequireTsdoc(d,): boolean {
+                return d.code === 'tsdoc(require-tsdoc)';
+              },
+            );
+            // out, count, next, empty: four locals; for-loop `const v` is exempt; outer fn has TSDoc.
+            const EXPECTED_LOCAL_VIOLATIONS = 4;
+            expect(requireTsdocDiags.length,).toBe(EXPECTED_LOCAL_VIOLATIONS,);
           },
         },),
       ],

@@ -16,7 +16,9 @@ import type { DummyRuleMap, } from 'oxlint';
 
 /** Rule severity for the tsdoc JS plugin. */
 export const tsdocRules: DummyRuleMap = {
-  // Every module-level declaration (function, type, const, class, enum) needs a /** *\/ comment.
+  // Every documentable declaration (function, type, const, class, enum) needs a /** *\/ comment,
+  // including local consts and lets inside function bodies and block scopes.
+  // For-loop bindings (`for (const x of arr)`) are exempt.
   'tsdoc/require-tsdoc': 'error',
 
   // Exported functions must include at least one @example tag.

@@ -9,25 +9,32 @@ import { shouldIgnoreFile, } from '../tsdoc-utils.ts';
 import { reportMissing, } from './node-extraction.ts';
 
 /**
- * Requires TSDoc comments on module-level documentable declarations.
+ * Requires TSDoc comments on every documentable declaration, including
+ * local variables inside function bodies and block scopes.
  *
- * Ported from the original root-level `oxlint-require-tsdoc.ts`.
+ * FunctionExpression and ArrowFunctionExpression are excluded because
+ * their TSDoc is owned by the enclosing VariableDeclaration or
+ * MethodDefinition node.
  *
- * FunctionExpression and ArrowFunctionExpression are intentionally
- * excluded because their TSDoc is owned by the enclosing
- * VariableDeclaration or MethodDefinition node.
- *
- * VariableDeclaration nodes inside function bodies (nonzero scope depth) are
- * skipped because local implementation variables do not warrant TSDoc.
+ * For-loop bindings (`for (const x of arr)`, `for (let i = 0; ...)`)
+ * are excluded because they have no natural site for TSDoc.
  *
  * @example
  * ```ts
- * // Bad; missing TSDoc
- * function foo(): void {}
+ * // Bad; missing TSDoc on local
+ * /\** Doubles a value. *\/
+ * function double(n: number): number {
+ *   const result = n * 2;
+ *   return result;
+ * }
  *
  * // Good
- * /\** Does something. *\/
- * function foo(): void {}
+ * /\** Doubles a value. *\/
+ * function double(n: number): number {
+ *   /\** Computed double of the input. *\/
+ *   const result = n * 2;
+ *   return result;
+ * }
  * ```
  */
 export const requireTsdoc: CreateOnceRule = {
@@ -46,13 +53,9 @@ export const requireTsdoc: CreateOnceRule = {
      * Mutable visitor traversal state shared across AST callbacks.
      *
      * AGENTS.md bans function-root `let` for cleanliness; an object with
-     * mutable properties carries the same state in a single `const` binding.
+     * a mutable property carries the same state in a single `const` binding.
      */
     const state = {
-      /** Tracks nesting depth inside function-like scopes. */
-      scopeDepth: 0,
-      /** Tracks nesting depth inside block scopes (for-loop bodies, if-else, try-catch). */
-      blockDepth: 0,
       /** True when the next VariableDeclaration is a for-loop binding (for/for-of/for-in init). */
       inForLoopInit: false,
     };
@@ -69,22 +72,6 @@ export const requireTsdoc: CreateOnceRule = {
           node,
           context,
         },);
-        state.scopeDepth++;
-      },
-      'FunctionDeclaration:exit'(): void {
-        state.scopeDepth--;
-      },
-      FunctionExpression(): void {
-        state.scopeDepth++;
-      },
-      'FunctionExpression:exit'(): void {
-        state.scopeDepth--;
-      },
-      ArrowFunctionExpression(): void {
-        state.scopeDepth++;
-      },
-      'ArrowFunctionExpression:exit'(): void {
-        state.scopeDepth--;
       },
       ClassDeclaration(node,): void {
         reportMissing({
@@ -116,12 +103,6 @@ export const requireTsdoc: CreateOnceRule = {
           context,
         },);
       },
-      BlockStatement(): void {
-        state.blockDepth++;
-      },
-      'BlockStatement:exit'(): void {
-        state.blockDepth--;
-      },
       ForStatement(): void {
         state.inForLoopInit = true;
       },
@@ -136,12 +117,10 @@ export const requireTsdoc: CreateOnceRule = {
           state.inForLoopInit = false;
           return;
         }
-        if (state.scopeDepth === 0 && state.blockDepth === 0) {
-          reportMissing({
-            node: node,
-            context,
-          },);
-        }
+        reportMissing({
+          node: node,
+          context,
+        },);
       },
       PropertyDefinition(node,): void {
         reportMissing({
