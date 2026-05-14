@@ -39,7 +39,7 @@ const DEFAULT_MAPPING: DimMapping = {
 };
 
 /**
- * Default "don't care" toggle state — every filter inactive.
+ * Default "don't care" toggle state; every filter inactive.
  */
 const ANY_TOGGLES: ToggleState = {
   isLeaf: 'any',
@@ -130,7 +130,7 @@ const MONOREPO_UNKNOWN: PackageProbe = {
 };
 
 /**
- * Permissive leaf with a recent commit, not TS-majority — sits in
+ * Permissive leaf with a recent commit, not TS-majority; sits in
  * the audit-target band.
  */
 const AUDIT_TARGET: PackageProbe = {

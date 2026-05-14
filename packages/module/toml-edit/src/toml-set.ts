@@ -48,7 +48,7 @@ import {
  *   order. Sub-tables (`[foo.sub]`) are preserved. The JS value must be
  *   a plain object; arrays, scalars, and `Date` throw `TomlTypeError`.
  * - Existing array-of-tables collection (multiple `[[foo]]` or a path
- *   shared by multiple sibling tables): rejected — ambiguous semantics
+ *   shared by multiple sibling tables): rejected; ambiguous semantics
  *   between N instances and one logical table. Set per-element instead.
  * - Missing path: a fresh entry is created. Dotted-key insertions check
  *   for sibling-table or inline-table collisions and throw

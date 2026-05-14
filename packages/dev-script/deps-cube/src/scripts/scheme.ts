@@ -3,7 +3,7 @@
  *
  * The HTML page respects `prefers-color-scheme: dark` for its CSS
  * variables, but the deck.gl scene's text/axis/origin colours are
- * passed to layer factories as raw `[r, g, b, a]` tuples — there's no
+ * passed to layer factories as raw `[r, g, b, a]` tuples; there's no
  * CSS variable resolution inside the canvas. This module picks the
  * right palette once at session start by branching on
  * `window.matchMedia('(prefers-color-scheme: dark)')`.
@@ -28,7 +28,7 @@
 //region Types
 
 /**
- * Discrete RGBA colour tuple — matches the shape every deck.gl
+ * Discrete RGBA colour tuple; matches the shape every deck.gl
  * accessor (`getColor`, `getFillColor`, `getLineColor`) expects when
  * fed a constant per-layer colour.
  */
@@ -38,11 +38,11 @@ export type RgbaColor = readonly [number, number, number, number,];
  * Palette of colours used to render the scene chrome. The layer
  * factories pick one field each:
  *
- * - `axis` — axis shaft `PathLayer` and cone `SimpleMeshLayer` colour.
- * - `axisTick` — tick-mark `PathLayer` colour. Slightly muted vs the shafts.
- * - `axisLabel` — `X` / `Y` / `Z` capitals and dim-name subtitles.
- * - `originLabel` — the `O` at the min corner.
- * - `nameLabel` — per-glyph package-name labels.
+ * - `axis`: axis shaft `PathLayer` and cone `SimpleMeshLayer` colour.
+ * - `axisTick`: tick-mark `PathLayer` colour. Slightly muted vs the shafts.
+ * - `axisLabel`: `X` / `Y` / `Z` capitals and dim-name subtitles.
+ * - `originLabel`: the `O` at the min corner.
+ * - `nameLabel`: per-glyph package-name labels.
  */
 export type ChromeColors = {
   axis: RgbaColor;
@@ -57,7 +57,7 @@ export type ChromeColors = {
 //region Palettes
 
 /**
- * Dark-mode palette — light tones so chrome reads against the
+ * Dark-mode palette; light tones so chrome reads against the
  * dark page background (`--bg-page: #0f0f0f`).
  */
 const DARK_CHROME: ChromeColors = {
@@ -69,7 +69,7 @@ const DARK_CHROME: ChromeColors = {
 };
 
 /**
- * Light-mode palette — dark tones so chrome reads against the
+ * Light-mode palette; dark tones so chrome reads against the
  * light page background (`--bg-page: #fafafa`).
  */
 const LIGHT_CHROME: ChromeColors = {
@@ -91,7 +91,7 @@ const LIGHT_CHROME: ChromeColors = {
  * Reads `window.matchMedia('(prefers-color-scheme: dark)').matches`
  * exactly once; the result is captured in the controller and reused
  * for every `setProps` cycle. We don't listen for scheme changes
- * mid-session — re-detecting on every render would require teardown
+ * mid-session; re-detecting on every render would require teardown
  * of the colour-baked vertex buffers anyway, and the user can reload
  * the page if they flip OS theme.
  *

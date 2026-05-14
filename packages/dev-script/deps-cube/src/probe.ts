@@ -62,11 +62,11 @@ export type PackageProbe = {
   /** Concrete version used for all measurements. */
   resolvedVersion: string;
 
-  /** `true` when `dependencies` is empty / absent — package has no runtime deps. */
+  /** `true` when `dependencies` is empty / absent; package has no runtime deps. */
   isLeaf: boolean;
-  /** Weekly downloads from npm registry — 0 for niche packages, never null. */
+  /** Weekly downloads from npm registry; 0 for niche packages, never null. */
   weeklyDownloads: number;
-  /** Self install size (unpacked tarball) in bytes — from `dist.unpackedSize`. */
+  /** Self install size (unpacked tarball) in bytes; from `dist.unpackedSize`. */
   installSizeBytes: number;
   /** Days since the package was first published. */
   packageAgeDays: number;

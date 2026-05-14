@@ -47,7 +47,7 @@ import {
 /**
  * Mutable session view used by the wire functions. The full
  * controller-side session in `./controller.ts` carries an additional
- * `deck` field that the events module doesn't need to touch — leaving
+ * `deck` field that the events module doesn't need to touch; leaving
  * it out here means a Session value from `./controller.ts` is
  * structurally assignable to this type with no cast.
  */

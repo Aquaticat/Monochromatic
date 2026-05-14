@@ -36,10 +36,10 @@ import {
 /**
  * OrbitView camera state per deck.gl conventions.
  *
- * - `rotationX` — pitch in degrees (0 = view along the +y axis).
- * - `rotationOrbit` — yaw in degrees around the vertical axis.
- * - `zoom` — log-like zoom factor; 0 ≈ default.
- * - `target` — world-space coordinates of the orbit pivot.
+ * - `rotationX`: pitch in degrees (0 = view along the +y axis).
+ * - `rotationOrbit`: yaw in degrees around the vertical axis.
+ * - `zoom`: log-like zoom factor; 0 ≈ default.
+ * - `target`: world-space coordinates of the orbit pivot.
  */
 export type ViewState = {
   rotationX: number;
@@ -60,7 +60,7 @@ export type DisplayToggleState = {
 };
 
 /**
- * Full UI state — every value that contributes to a unique view.
+ * Full UI state; every value that contributes to a unique view.
  */
 export type AppState = {
   viewState: ViewState;
@@ -85,7 +85,7 @@ const DEFAULT_DIM_MAPPING: DimMapping = {
   size: 'logDownloads',
 };
 
-/** Default toggle state — every filter "don't care". */
+/** Default toggle state; every filter "don't care". */
 const DEFAULT_TOGGLES: ToggleState = {
   isLeaf: 'any',
   tsMajority: 'any',
@@ -102,7 +102,7 @@ const DEFAULT_TOGGLES: ToggleState = {
  * Threshold guide lines default to off because they're an opt-in
  * heuristic overlay and clutter the reference-style coordinate-system
  * backdrop. Name labels default to `'all'` so every glyph is identifiable
- * on first load (the scatter is sparse enough — ~70 catalog entries —
+ * on first load (the scatter is sparse enough; ~70 catalog entries;
  * for the labels to be useful rather than overwhelming). Every other
  * chrome element starts on so the scene reads as a proper 3D coordinate
  * system on first load.
@@ -115,7 +115,7 @@ const DEFAULT_DISPLAY_TOGGLES: DisplayToggleState = {
   showUnknownCluster: true,
 };
 
-/** Default OrbitView angle — slight tilt + slight orbit so 3 axes are distinguishable. */
+/** Default OrbitView angle; slight tilt + slight orbit so 3 axes are distinguishable. */
 const DEFAULT_VIEW_STATE: ViewState = {
   rotationX: 30,
   rotationOrbit: -45,
@@ -276,7 +276,7 @@ export function encodeState(
 }
 
 /**
- * Shallow shape check — every top-level field present and of the right
+ * Shallow shape check; every top-level field present and of the right
  * primitive kind. Doesn't deep-validate `dimMapping` values or range
  * tuple shapes; if those are wrong the renderer will surface NaN /
  * undefined and the user can reset via the URL.

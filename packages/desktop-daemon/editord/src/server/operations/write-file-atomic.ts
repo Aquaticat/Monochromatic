@@ -31,11 +31,11 @@ import {
 
 /**
  * Open flags for the temp file:
- * - `O_WRONLY` — we only write.
- * - `O_CREAT` — create the temp file.
- * - `O_EXCL` — fail if the temp file already exists (random suffix prevents
+ * - `O_WRONLY`: we only write.
+ * - `O_CREAT`: create the temp file.
+ * - `O_EXCL`: fail if the temp file already exists (random suffix prevents
  *   collisions in practice; `O_EXCL` is defence-in-depth).
- * - `O_NOFOLLOW` — refuse the open if a pre-existing entity at the temp
+ * - `O_NOFOLLOW`: refuse the open if a pre-existing entity at the temp
  *   path turns out to be a symlink. Combined with `O_EXCL`, the only
  *   acceptable state for the temp path is "does not exist."
  *

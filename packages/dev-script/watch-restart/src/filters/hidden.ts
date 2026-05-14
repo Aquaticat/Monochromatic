@@ -32,7 +32,7 @@ const HIDDEN_SEGMENT_PATTERN: RegExp = new RegExp(
  * Default-off (rejection mode) matches the `fd` / `rg` ergonomics noted
  * in the plan and avoids spurious restarts when an editor writes a `.swp`
  * swap file, a build emits a `.cache/` directory, or `.git/index`
- * updates after a checkout — events that have nothing to do with the
+ * updates after a checkout; events that have nothing to do with the
  * source the dev loop is watching.
  *
  * `allowHidden: true` collapses to a vacuous pass-all; the orchestrator

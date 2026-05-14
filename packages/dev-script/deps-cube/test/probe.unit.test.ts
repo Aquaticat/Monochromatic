@@ -402,7 +402,7 @@ await describe({
     it({
       name: 'probeAll handles failed entries via the failedProbe stub (private-or-404)',
       fn: async ({ sinon, },) => {
-        // No cache entries for this package — manifest fetch will fail because
+        // No cache entries for this package; manifest fetch will fail because
         // the test runs without network credentials. The orchestrator catches
         // the failure and emits a failedProbe with unknownReason='private-or-404'.
         await using cacheDir = await tempPopulatedCache({ entries: {}, },);

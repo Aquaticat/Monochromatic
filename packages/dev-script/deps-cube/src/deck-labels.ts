@@ -1,5 +1,5 @@
 /**
- * Text-layer factories — axis tip capitals, axis dim subtitles, origin
+ * Text-layer factories; axis tip capitals, axis dim subtitles, origin
  * marker.
  *
  * The axis-label rendering is split across **two** TextLayer
@@ -7,7 +7,7 @@
  * the arrow tips, another for the smaller dim-name subtitles. The
  * origin gets a single TextLayer with the character `O`. Splitting by
  * purpose keeps font sizes, anchor strategies, and per-instance
- * positions independent — a single combined layer would have to
+ * positions independent; a single combined layer would have to
  * compromise.
  *
  * Per-glyph package-name labels used to live here too as a separate
@@ -261,7 +261,7 @@ export function buildAxisSubtitlesLayer(
 //region Origin marker
 
 /**
- * Builds the origin marker — a single `O` character at the min corner
+ * Builds the origin marker; a single `O` character at the min corner
  * of the data box, offset slightly into the back wall so it doesn't
  * collide with the axis shafts.
  *

@@ -13,7 +13,7 @@
  * ```ts
  * import { acceptsDim, DIM_DISPLAY_NAMES } from './dim-meta.ts';
  * if (!acceptsDim({ channel: 'shape', dim: 'tsRatio' })) {
- *   // shape only accepts binary/categorical — render this option disabled
+ *   // shape only accepts binary/categorical; render this option disabled
  * }
  * ```
  */
@@ -77,17 +77,17 @@ export const DIM_KINDS: Record<DataDimKey, DimKind> = {
 /**
  * Which kinds each visual channel meaningfully represents.
  *
- * Spatial axes (`x`, `y`, `z`) and `color` accept every kind — the
+ * Spatial axes (`x`, `y`, `z`) and `color` accept every kind; the
  * renderer's accessors normalise any numeric output gracefully, so binary
  * on `x` clusters probes onto two lines and categorical on `color` gives
  * banded hues rather than crashes. Aesthetically coarser, but useful for
  * audit queries like "stack on x by leaf-ness".
  *
- * `shape` accepts only binary/categorical — the filled-vs-stroked split
+ * `shape` accepts only binary/categorical; the filled-vs-stroked split
  * is fundamentally a 2-state encoding; continuous values get thresholded
  * at 0.5 which discards most of the information.
  *
- * `size` accepts only continuous — radius is a magnitude. Binary on
+ * `size` accepts only continuous; radius is a magnitude. Binary on
  * size yields two radii and conveys nothing the shape channel doesn't.
  */
 export const CHANNEL_ACCEPTED_KINDS: Record<ChannelKey, readonly DimKind[]> = {

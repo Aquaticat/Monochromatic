@@ -43,7 +43,7 @@ export const DEFAULT_DEBOUNCE_MS = 100;
  * parses straight into this shape with no second translation layer. Each
  * field that gates a filter is `?`-optional and unset means "do not
  * apply this filter dimension"; `contentChanged === undefined` defaults
- * to `true` (the package's reason for being) — only an explicit `false`
+ * to `true` (the package's reason for being): only an explicit `false`
  * opts out.
  */
 export type StartWatchRestartOptions = {

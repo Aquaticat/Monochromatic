@@ -1,5 +1,5 @@
 /**
- * Glyph mesh-layer factories — one `SimpleMeshLayer` per probe.
+ * Glyph mesh-layer factories; one `SimpleMeshLayer` per probe.
  *
  * Probes are partitioned into three buckets (leaf / non-leaf /
  * unknown) by {@link ./deck-scatter-helpers.ts}, then each probe gets
@@ -174,7 +174,7 @@ function buildProbeLayer(
 //region Layer factories
 
 /**
- * Builds one `SimpleMeshLayer` per leaf probe — sphere mesh, texture
+ * Builds one `SimpleMeshLayer` per leaf probe; sphere mesh, texture
  * baked with the probe's colour and (per the toggle) its npm name.
  *
  * @param probes - Full probe array.
@@ -220,7 +220,7 @@ export function buildLeafScatterLayer(
 }
 
 /**
- * Builds one `SimpleMeshLayer` per non-leaf probe — octahedron mesh,
+ * Builds one `SimpleMeshLayer` per non-leaf probe; octahedron mesh,
  * texture baked with the probe's colour and (per the toggle) its npm
  * name on every face.
  *
@@ -267,7 +267,7 @@ export function buildNonLeafScatterLayer(
 }
 
 /**
- * Builds one `SimpleMeshLayer` per unknown probe — sphere mesh placed
+ * Builds one `SimpleMeshLayer` per unknown probe; sphere mesh placed
  * at the unknown-cluster jitter position, texture with the mid-grey
  * unknown colour and (per the toggle) the npm name.
  *

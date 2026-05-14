@@ -3,13 +3,13 @@
  *
  * Three structural elements of the coordinate-system backdrop:
  *
- * - {@link buildAxisShaftLayer} — three thick black line segments
+ * - {@link buildAxisShaftLayer}: three thick black line segments
  *   running from the min corner outward along +x, +y, +z.
- * - {@link buildAxisArrowheadLayers} — three small dark cones at the
+ * - {@link buildAxisArrowheadLayers}: three small dark cones at the
  *   tips of the axis shafts, pointing along the respective axis.
  *   Pre-rotated cone geometries live in {@link ./deck-geometries.ts}
  *   so no runtime orientation math is needed.
- * - {@link buildAxisTickLayer} — short perpendicular marks at evenly
+ * - {@link buildAxisTickLayer}: short perpendicular marks at evenly
  *   spaced intervals along each axis.
  *
  * Coordinate planes and threshold guide lines moved to
@@ -131,8 +131,8 @@ function computeAxisGeometry(
 //region Axis shafts + arrowheads
 
 /**
- * Builds a single {@link PathLayer} with three line segments — one per
- * axis — running from the min corner to the arrow tip position.
+ * Builds a single {@link PathLayer} with three line segments; one per
+ * axis; running from the min corner to the arrow tip position.
  *
  * @param bounds - Scene bounds.
  *
@@ -184,7 +184,7 @@ export function buildAxisShaftLayer(
 }
 
 /**
- * Builds three {@link SimpleMeshLayer} instances — one per axis —
+ * Builds three {@link SimpleMeshLayer} instances; one per axis;
  * each rendering a single cone at the tip of its axis.
  *
  * @param bounds - Scene bounds.

@@ -74,7 +74,7 @@ const stylesCss = await readFile(
 );
 
 /** Document `<title>` for the generated HTML. */
-const PAGE_TITLE = 'deps-cube — catalog dependency audit';
+const PAGE_TITLE = 'deps-cube; catalog dependency audit';
 
 //endregion Constants
 

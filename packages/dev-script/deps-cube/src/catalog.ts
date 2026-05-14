@@ -81,7 +81,7 @@ export function decodeAlias(
   }
   const remainder = value.slice('npm:'.length,);
   const atIndex = remainder.lastIndexOf('@',);
-  // No '@' or only the scope-leading '@' (index 0) means no range — entire
+  // No '@' or only the scope-leading '@' (index 0) means no range; entire
   // remainder is the aliased package name.
   if (atIndex <= 0) {
     return {

@@ -7,12 +7,12 @@
  *
  * Three geometries:
  *
- * - {@link sphereGeometry} — leaf glyphs and the unknown cluster.
+ * - {@link sphereGeometry}: leaf glyphs and the unknown cluster.
  *   Smooth-shaded per-vertex normals via {@link SphereGeometry}.
- * - {@link octahedronGeometry} — non-leaf glyphs. Flat-shaded with one
+ * - {@link octahedronGeometry}: non-leaf glyphs. Flat-shaded with one
  *   face normal per triangle (vertices duplicated 24 times so each
  *   face's three corners share a normal).
- * - {@link coneGeometry} — axis arrowheads. Smooth-shaded cone with apex
+ * - {@link coneGeometry}: axis arrowheads. Smooth-shaded cone with apex
  *   along +Y; rotate via `getOrientation` to align with +x/+y/+z axes.
  *
  * @example
@@ -91,7 +91,7 @@ export const sphereGeometry: Geometry = new SphereGeometry({
  * Unit octahedron for non-leaf glyphs.
  *
  * Vertices duplicated 24 times so each triangle's three corners share
- * a single face normal — produces visible facets ("diamond" silhouette
+ * a single face normal; produces visible facets ("diamond" silhouette
  * from every camera angle). Face normals are the eight `(±1/√3)³`
  * unit vectors.
  *
@@ -140,7 +140,7 @@ function buildOctahedronGeometry(): Geometry {
     normals[norOffset + 7] = ny;
     normals[norOffset + 8] = nz;
     /**
-     * Every face shares the same UV triangle `(0, 0) – (1, 0) – (0.5, 1)`
+     * Every face shares the same UV triangle `(0, 0), (1, 0), (0.5, 1)`
      * so the per-probe canvas texture appears the same on each face;
      * the name baked into that triangle is then readable on whichever
      * face is currently camera-facing.
@@ -180,7 +180,7 @@ export const octahedronGeometry: Geometry = buildOctahedronGeometry();
  *
  * Used for the +X axis arrowhead. Built via luma.gl's
  * {@link ConeGeometry} with `verticalAxis: 'x'`, so the cone's vertical
- * dimension is the world-X axis — no runtime rotation needed.
+ * dimension is the world-X axis; no runtime rotation needed.
  */
 export const coneGeometryX: Geometry = new ConeGeometry({
   radius: 1,

@@ -283,7 +283,7 @@ const TRAILING_QUESTION_SCAN_LENGTH = 500;
  *
  * @example
  * ```ts
- * lineHasCitation('skip — see packages/x/y.ts:42');  // true
+ * lineHasCitation('skip; see packages/x/y.ts:42');  // true
  * lineHasCitation('the project doesn\'t use JSX');   // false
  * ```
  */
@@ -317,7 +317,7 @@ function lineHasCitation(line: string,): boolean {
  * findCategoricalDismissal('All JSX rules: project doesn\'t use JSX.');
  * // => { phrase: "project doesn't use", pattern: /.../ }
  *
- * findCategoricalDismissal('Skip — project doesn\'t use X (see tsconfig.json:5)');
+ * findCategoricalDismissal('Skip; project doesn\'t use X (see tsconfig.json:5)');
  * // => undefined
  * ```
  */

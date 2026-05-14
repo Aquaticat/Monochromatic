@@ -3,9 +3,9 @@
  *
  * Two distinct shapes live here:
  *
- * - {@link formatDuration} — magnitude-adaptive sub-millisecond / ms / s
+ * - {@link formatDuration}: magnitude-adaptive sub-millisecond / ms / s
  *   for `performance.now()` deltas (test summaries, perf traces).
- * - {@link formatTrackedDuration} — ultra-compact human-friendly ladder
+ * - {@link formatTrackedDuration}: ultra-compact human-friendly ladder
  *   from seconds to years for accumulated tracked work time
  *   (productivity-app chip text).
  *
@@ -85,7 +85,7 @@ const SECONDS_PER_WEEK = SECONDS_PER_DAY * DAYS_PER_WEEK;
 /**
  * Seconds in one month, derived from {@link SECONDS_PER_DAY} and
  * {@link DAYS_PER_MONTH}. Approximation: 30 days. Creates a small cliff
- * near the year boundary — see {@link formatTrackedDuration}.
+ * near the year boundary; see {@link formatTrackedDuration}.
  */
 const SECONDS_PER_MONTH = SECONDS_PER_DAY * DAYS_PER_MONTH;
 
@@ -102,7 +102,7 @@ const SECONDS_PER_YEAR = SECONDS_PER_DAY * DAYS_PER_YEAR;
  * non-zero) or top-2 in strict adjacency with the next smaller unit
  * (when any larger unit is non-zero). Single-letter suffix per unit
  * (`y`, `m`, `w`, `d`, `h`, `m`, `s`); the secondary always
- * disambiguates the reused `m` — `1y2m` is years + months because of
+ * disambiguates the reused `m`: `1y2m` is years + months because of
  * the `y`, `1h30m` is hours + minutes because of the `h`, and standalone
  * `Xm` never occurs because seconds-only renders as `Xs`.
  *

@@ -105,7 +105,7 @@ export function parseTypeToken(token: string,): WatchEntityType {
  *
  * Typed as `ReadonlySet<string>` (not `ReadonlySet<NodeJS.Signals>`) so the
  * `has()` call accepts a raw `string` and acts as the runtime check for
- * the type-guard predicate {@link parseKillSignal} relies on — avoiding
+ * the type-guard predicate {@link parseKillSignal} relies on; avoiding
  * the `as NodeJS.Signals` assertion the type-system would otherwise force.
  */
 const KILL_SIGNALS: ReadonlySet<string> = new Set<string>([

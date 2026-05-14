@@ -12,7 +12,7 @@
  * tessellate to zero triangles: their XY projection is a degenerate
  * line, and earcut produces nothing. With `_full3d`, deck.gl picks the
  * largest-area plane (xy / xz / yz) for tessellation, then permutes
- * back — verified by reading the upstream
+ * back; verified by reading the upstream
  * `solid-polygon-layer/polygon.ts` getSurfaceIndices implementation.
  *
  * @example

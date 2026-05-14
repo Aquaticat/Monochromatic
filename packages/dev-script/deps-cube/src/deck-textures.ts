@@ -4,7 +4,7 @@
  * Bakes the probe's fill colour AND its npm name into a 2D canvas that
  * deck.gl's `SimpleMeshLayer` consumes as `texture`. Texture sampling
  * happens in the fragment shader, so the painted name is part of the
- * mesh surface — front objects naturally occlude back objects, and
+ * mesh surface; front objects naturally occlude back objects, and
  * faces rotating away from the camera hide their text the same way a
  * real ball would.
  *
@@ -16,7 +16,7 @@
  * semantics. Texture mapping is the standard way to get that.
  *
  * Sphere UV layout (equirectangular): the name is drawn in two
- * horizontal stripes — one upright above the equator at `v ≈ 0.35`,
+ * horizontal stripes; one upright above the equator at `v ≈ 0.35`,
  * one rotated 180° below the equator at `v ≈ 0.65`. Each stripe has
  * two horizontal repetitions at `u = 0.25 / 0.75` for longitude
  * coverage. The mix of orientations guarantees that, whatever
@@ -33,7 +33,7 @@
  * SPHERE_REPETITIONS` slot.
  *
  * Octahedron UV layout: every face is mapped to the same UV triangle
- * `(0, 0) — (1, 0) — (0.5, 1)`. The name is drawn inside that triangle
+ * `(0, 0), (1, 0), (0.5, 1)`. The name is drawn inside that triangle
  * (once upright, once rotated 180°) for the same reason.
  *
  * The shape parameter selects which texture layout to use; spheres and
@@ -62,7 +62,7 @@ import type { PackageProbe, } from './probe.ts';
  * Sphere: equirectangular projection (luma.gl `SphereGeometry`); name
  * repeated horizontally so any longitude shows it.
  *
- * Octahedron: per-face `(0,0)–(1,0)–(0.5,1)` triangle; name drawn
+ * Octahedron: per-face `(0,0), (1,0), (0.5,1)` triangle; name drawn
  * inside that triangle once.
  */
 export type MeshShape = 'sphere' | 'octahedron';
@@ -83,7 +83,7 @@ export type Rgba = readonly [
 const TEXTURE_SIZE_PX = 512;
 /** Maximum font size in pixels for the baked name; auto-shrunk on the sphere if the text overruns its slot. */
 const FONT_SIZE_PX = 56;
-/** Minimum font size in pixels — below this the text stops shrinking and just overflows; readability matters more than fit. */
+/** Minimum font size in pixels; below this the text stops shrinking and just overflows; readability matters more than fit. */
 const MIN_FONT_SIZE_PX = 22;
 /** Black outline width in pixels around the white text fill. */
 const OUTLINE_WIDTH_PX = 6;
@@ -101,7 +101,7 @@ const HALF = 1 / 2;
 const TEXTURE_CACHE = new Map<string, HTMLCanvasElement>();
 /** Octahedron upright stripe centre, in normalised texture v space. */
 const OCTAHEDRON_UPRIGHT_V = 1 / 4;
-/** Octahedron rotated stripe centre, in normalised texture v space. Below the upright copy so the face shows both within the `(0,0)–(1,0)–(0.5,1)` UV triangle. */
+/** Octahedron rotated stripe centre, in normalised texture v space. Below the upright copy so the face shows both within the `(0,0), (1,0), (0.5,1)` UV triangle. */
 const OCTAHEDRON_FLIPPED_V = 1 / 2;
 
 //endregion Constants
@@ -140,7 +140,7 @@ function cacheKey(
  * rgba string derived from the byte-RGBA tuple.
  *
  * @param ctx - Target context.
- * @param fillColor - RGBA tuple, 0–255.
+ * @param fillColor - RGBA tuple, 0 to 255.
  */
 function paintBackground(
   {
@@ -189,7 +189,7 @@ function paintUpright(
 
 /**
  * Draws the name with a black outline and white fill at a given
- * canvas centre, rotated 180° around that centre — i.e. upside-down
+ * canvas centre, rotated 180° around that centre; i.e. upside-down
  * in canvas coords. Paired with {@link paintUpright} on the same
  * texture so the sphere shows at least one readable copy from any
  * camera angle.
@@ -225,7 +225,7 @@ function paintRotated180(
  * that fits `text` inside `slotWidthPx * SPHERE_SLOT_FILL_FRACTION`.
  *
  * Uses `ctx.measureText` at `FONT_SIZE_PX` and rescales proportionally
- * — text width is linear in font size for a given typeface, so one
+ *; text width is linear in font size for a given typeface, so one
  * measurement is enough.
  *
  * @param ctx - Target context (must already have `font` set so subsequent measureText returns the correct width).
@@ -263,7 +263,7 @@ function pickFontSize(
  * the equator so the label is visible from any longitude.
  *
  * Octahedron variant: paints the name once inside the face triangle
- * `(0,0)–(1,0)–(0.5,1)` (in normalised UV); every face of the
+ * `(0,0), (1,0), (0.5,1)` (in normalised UV); every face of the
  * octahedron maps to that triangle so the label shows on each face.
  *
  * @param probe - Source probe.
@@ -362,9 +362,9 @@ export function makeProbeTexture(
     ctx.lineWidth = OUTLINE_WIDTH_PX;
     const centreX = TEXTURE_SIZE_PX * HALF;
     /**
-     * Octahedron faces map to UV triangle `(0,0) – (1,0) – (0.5,1)`.
-     * Two stripes inside the triangle — upright at `v = 1/4` and
-     * rotated 180° at `v = 1/2` — so a reader sees at least one
+     * Octahedron faces map to UV triangle `(0,0), (1,0), (0.5,1)`.
+     * Two stripes inside the triangle; upright at `v = 1/4` and
+     * rotated 180° at `v = 1/2`: so a reader sees at least one
      * readable orientation per face regardless of how the texture
      * winds up oriented on the sphere.
      */

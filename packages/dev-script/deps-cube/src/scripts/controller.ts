@@ -108,7 +108,7 @@ function getProbes(): readonly PackageProbe[] {
 /**
  * Extracts the probe payload from a deck.gl picking-info object, or
  * returns `null` when nothing was picked or the picked datum lacks the
- * `.probe` field. `info.object` is typed `any` by deck.gl — the cast
+ * `.probe` field. `info.object` is typed `any` by deck.gl; the cast
  * is justified because we own the layer-data contract.
  *
  * @param info - deck.gl picking info.
@@ -218,7 +218,7 @@ function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
 }
 
 /**
- * `onClick` handler — pins a tooltip beside the canvas, or unpins it
+ * `onClick` handler; pins a tooltip beside the canvas, or unpins it
  * when the click misses every glyph.
  *
  * @param info - deck.gl picking info.
@@ -312,7 +312,7 @@ function createSession(
 }
 
 /**
- * Entry point — called once at module-load time. Reads probes, builds
+ * Entry point; called once at module-load time. Reads probes, builds
  * the session, wires every control, paints the initial scene, syncs
  * the URL hash, and updates the visibility counter.
  */

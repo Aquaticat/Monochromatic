@@ -8,7 +8,7 @@
  * different TTLs (language data is immutable per version, last-commit data
  * only fresh for 30 days).
  *
- * Writes are atomic: render to a sibling `.tmp` file, then rename — readers
+ * Writes are atomic: render to a sibling `.tmp` file, then rename; readers
  * never see torn JSON even if the process is killed mid-write.
  *
  * @example

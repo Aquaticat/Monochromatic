@@ -30,13 +30,13 @@ import type { PackageProbe, } from '../probe.ts';
 /**
  * Identifier for one of the seven 3-state boolean filter toggles.
  *
- * - `isLeaf` — package has no runtime deps
- * - `tsMajority` — TS ratio >= {@link TS_MAJORITY_THRESHOLD}
- * - `large` — source bytes >= {@link LARGE_SOURCE_BYTES_THRESHOLD}
- * - `recent` — days since last commit < {@link RECENT_DAYS_THRESHOLD}
- * - `permissive` — license class is `permissive`
- * - `copyleft` — license class is `copyleft`
- * - `hasKnownRepo` — every GH-derived attribute is known (`unknownReason === null`)
+ * - `isLeaf`: package has no runtime deps
+ * - `tsMajority`: TS ratio >= {@link TS_MAJORITY_THRESHOLD}
+ * - `large`: source bytes >= {@link LARGE_SOURCE_BYTES_THRESHOLD}
+ * - `recent`: days since last commit < {@link RECENT_DAYS_THRESHOLD}
+ * - `permissive`: license class is `permissive`
+ * - `copyleft`: license class is `copyleft`
+ * - `hasKnownRepo`: every GH-derived attribute is known (`unknownReason === null`)
  */
 export type ToggleKey =
   | 'isLeaf'
@@ -109,7 +109,7 @@ const TS_MAJORITY_THRESHOLD = 0.95;
 const LARGE_SOURCE_BYTES_THRESHOLD = 10_000;
 /** "Recent" cutoff used by the toggle: days since last commit < this counts as recent. */
 const RECENT_DAYS_THRESHOLD = 365;
-/** Floor used in log scaling — values <= floor map to `log10(floor)` to avoid `-Infinity`. */
+/** Floor used in log scaling; values <= floor map to `log10(floor)` to avoid `-Infinity`. */
 const LOG_FLOOR = 1;
 /** Numeric code for license classes; matches the `licenseClassNumeric` dim. */
 const LICENSE_CODES: Record<PackageProbe['licenseClass'], number> = {
@@ -227,7 +227,7 @@ export function derivedBool(
  *
  * `'any'` matches everything; `'yes'` requires the derived bool to be `true`;
  * `'no'` requires `false`. Probes whose derived bool is `null` (unknown)
- * fail both `'yes'` and `'no'` — they're explicitly hidden until the user
+ * fail both `'yes'` and `'no'`: they're explicitly hidden until the user
  * sets the toggle back to `'any'`.
  *
  * @param probe - Probe being tested.

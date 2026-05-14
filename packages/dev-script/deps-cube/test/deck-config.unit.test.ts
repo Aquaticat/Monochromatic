@@ -59,7 +59,7 @@ const KNOWN: PackageProbe = {
 };
 
 /**
- * Monorepo-housed probe — TS ratio and source bytes unknown.
+ * Monorepo-housed probe; TS ratio and source bytes unknown.
  */
 const UNKNOWN: PackageProbe = {
   catalogKey: '@lezer/common',
@@ -316,7 +316,7 @@ await describe({
         + 'until the upstream packaging is fixed. Bun.build resolves it via tree-shaking, '
         + 'so the runtime HTML still works.',
       fn: async () => {
-        // Intentionally empty — kept as a documented placeholder so the
+        // Intentionally empty; kept as a documented placeholder so the
         // limitation appears in test output rather than only in HANDOVER.
       },
     },),
