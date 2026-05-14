@@ -100,7 +100,7 @@ if (exportValue === undefined) {
   );
 }
 
-if (typeof exportValue === 'function') {
+if ((typeof exportValue) === 'function') {
   /** Coerced arguments for the function call */
   const coercedArgs = args.callArgs.map(function coerceCallArg(arg,) {
     return coerceArg({ arg, },);

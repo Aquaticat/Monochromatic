@@ -118,6 +118,34 @@ function findGlobalNodeModules(): string | undefined {
 }
 
 /**
+ * Wraps {@link findMonorepoRootCached} to swallow discovery errors and emit a single
+ * diagnostic log instead. Returns the cached root or `undefined` when the helper throws
+ * (i.e. when no `pnpm-workspace.yaml` exists above CWD).
+ *
+ * @returns Cached monorepo root, or `undefined` outside a monorepo
+ *
+ * @example
+ * ```ts
+ * const root = await tryFindMonorepoRoot();
+ * // => '/home/user/Monochromatic' (or undefined outside a workspace)
+ * ```
+ */
+async function tryFindMonorepoRoot(): Promise<string | undefined> {
+  /** Tagged logger scoped to this helper so the "no monorepo root" log identifies the call site. */
+  const rl = tagged({
+    tag: tryFindMonorepoRoot.name,
+    l,
+  },);
+  try {
+    return await findMonorepoRootCached();
+  }
+  catch {
+    rl.info('no monorepo root found',);
+    return undefined;
+  }
+}
+
+/**
  * Resolves an ESM specifier by searching CWD node_modules, monorepo root node_modules,
  * and global node_modules in that order.
  *
@@ -162,22 +190,16 @@ export async function resolveSpecifier(
    * Stays `undefined` outside a monorepo or when discovery throws; reused below to
    * render the diagnostic line for the not-found error.
    */
-  let monorepoRoot: string | undefined = undefined;
-  try {
-    monorepoRoot = await findMonorepoRootCached();
-    if (monorepoRoot !== cwd) {
-      rl.info(`trying monorepo root: ${monorepoRoot}`,);
-      /** Result of resolution anchored at the monorepo root; tried only when the root differs from CWD. */
-      const fromMonorepo = resolveFrom({
-        specifier,
-        baseDir: monorepoRoot,
-      },);
-      if (fromMonorepo !== undefined)
-        return fromMonorepo;
-    }
-  }
-  catch {
-    rl.info('no monorepo root found',);
+  const monorepoRoot = await tryFindMonorepoRoot();
+  if ((monorepoRoot !== undefined) && (monorepoRoot !== cwd)) {
+    rl.info(`trying monorepo root: ${monorepoRoot}`,);
+    /** Result of resolution anchored at the monorepo root; tried only when the root differs from CWD. */
+    const fromMonorepo = resolveFrom({
+      specifier,
+      baseDir: monorepoRoot,
+    },);
+    if (fromMonorepo !== undefined)
+      return fromMonorepo;
   }
   //endregion Monorepo root resolution
 
