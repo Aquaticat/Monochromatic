@@ -29,10 +29,12 @@ async function bootComposer(): Promise<void> {
   if (composerBooted)
     return;
   composerBooted = true;
+  /** Lazily-loaded composer module; `bootstrap` registers the real submit handler. */
   const composer = await import('./composer.ts');
   await composer.bootstrap();
   if (pendingSubmit) {
     pendingSubmit = false;
+    /** Composer form element; redispatch fires the freshly-attached submit handler. */
     const form = document.querySelector<HTMLFormElement>('#composer',);
     if (form !== null) {
       form.dispatchEvent(new Event(
@@ -50,6 +52,7 @@ async function bootComposer(): Promise<void> {
  * Wires the synchronous interceptor + the lazy loader.
  */
 function attachComposerLoaders(): void {
+  /** Composer form element; null exits early on pages without a composer. */
   const form = document.querySelector<HTMLFormElement>('#composer',);
   if (form === null)
     return;

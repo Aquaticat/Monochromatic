@@ -165,6 +165,7 @@ function renderComposerFooter(
     initialTier: 1 | 2 | 3 | undefined;
   },
 ): string {
+  /** Pre-rendered `<option>` HTML for the identity select, in seed-list order. */
   const userOptions = seedUsers
     .map(function toOption(user,) {
       return h({
@@ -175,9 +176,11 @@ function renderComposerFooter(
     },)
     .join('',);
 
+  /** Optional `data-edit-message-id` attribute used by the composer to enter edit mode. */
   const editAttr = options.editMessageId === undefined
     ? ''
     : ` data-edit-message-id="${String(options.editMessageId,)}"`;
+  /** Optional `data-initial-tier` attribute that seeds the composer's tier discriminant. */
   const tierAttr = options.initialTier === undefined
     ? ''
     : ` data-initial-tier="${String(options.initialTier,)}"`;
@@ -212,6 +215,7 @@ function renderComposerFooter(
  * ```
  */
 export function renderPage(options: PageOptions,): string {
+  /** Composed `<body>` HTML; embedded inside the doctype envelope below. */
   const bodyHtml = renderSiteHeader()
     + h({
       tag: 'main',

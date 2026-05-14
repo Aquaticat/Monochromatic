@@ -87,7 +87,9 @@ function isCodeFence(line: string,): boolean {
  * ```
  */
 export function* segmentBlocks(md: string,): Generator<string, void, void> {
+  /** Accumulator for the current block; yielded by `flush` when a blank-line boundary is reached. */
   let buffer = '';
+  /** Tracks whether the walker is currently inside a fenced code block. */
   let inFence = false;
 
   /**
@@ -112,8 +114,10 @@ export function* segmentBlocks(md: string,): Generator<string, void, void> {
   // because CommonMark blanks are line-anchored and split() is the
   // simplest correct primitive for a demo. For multi-GB inputs the worker
   // calls this on chunks of the buffer, never the full thing.
+  /** Source split on `\n`; CommonMark blanks are line-anchored so this is the simplest correct primitive. */
   const lines = md.split('\n',);
   for (const line of lines) {
+    /** Blank-line detection drives the block-boundary cut outside fences. */
     const isBlank = line.trim().length === 0;
 
     if (isCodeFence(line,)) {
@@ -152,7 +156,9 @@ export function* segmentBlocks(md: string,): Generator<string, void, void> {
  * ```
  */
 export function* renderChunks(md: string,): Generator<RenderedChunk, void, void> {
+  /** Accumulator of source markdown across blocks; flushed at chunk boundaries. */
   let pendingMd = '';
+  /** Accumulator of rendered HTML; the soft-target threshold compares against its length. */
   let pendingHtml = '';
 
   /**
@@ -179,6 +185,7 @@ export function* renderChunks(md: string,): Generator<RenderedChunk, void, void>
   }
 
   for (const block of segmentBlocks(md,)) {
+    /** Rendered HTML for one block; compared against the hard cap before merging into pending. */
     const blockHtml = micromark(block,);
 
     // A single block over the hard cap still ships as its own chunk;
@@ -235,6 +242,7 @@ export function extractPreview(
   md: string,
   maxLength: number,
 ): string {
+  /** Successively stripped form; built up by chained replaces before length check. */
   const stripped = md
     .replaceAll(
       /```[\s\S]*?```/g,

@@ -40,6 +40,7 @@ export type Cursor = {
  * ```
  */
 export function encodeCursor(cursor: Cursor,): string {
+  /** ASCII-only pre-encoded form fed to the base64 helper. */
   const raw = `${String(cursor.createdAt,)}:${String(cursor.id,)}`;
   return base64UrlEncode(raw,);
 }
@@ -60,10 +61,13 @@ export function encodeCursor(cursor: Cursor,): string {
  * ```
  */
 export function decodeCursor(token: string,): Cursor {
+  /** Decoded `<int>:<int>` pair fed to the colon-split below. */
   const raw = base64UrlDecode(token,);
+  /** Colon offset separating the two integers; `-1` signals malformed input. */
   const colon = raw.indexOf(':',);
   if (colon === -1)
     throw new Error(`malformed cursor: ${token}`,);
+  /** Created-at half parsed as an integer. */
   const createdAt = Number.parseInt(
     raw.slice(
       0,
@@ -71,6 +75,7 @@ export function decodeCursor(token: string,): Cursor {
     ),
     DECIMAL_RADIX,
   );
+  /** Id half parsed as an integer. */
   const id = Number.parseInt(
     raw.slice(colon + 1,),
     DECIMAL_RADIX,
@@ -94,7 +99,9 @@ export function decodeCursor(token: string,): Cursor {
 function base64UrlEncode(value: string,): string {
   // btoa requires a Latin-1 string; we encode UTF-8 bytes first to
   // support non-ASCII safely, even though cursors are ASCII today.
+  /** UTF-8 byte view of `value`; iterated below into a Latin-1 string for `btoa`. */
   const bytes = new TextEncoder().encode(value,);
+  /** Latin-1 representation of the UTF-8 bytes; safe input for `btoa`. */
   let binary = '';
   for (const byte of bytes)
     binary += String.fromCodePoint(byte,);
@@ -122,6 +129,7 @@ function base64UrlEncode(value: string,): string {
  * @returns decoded UTF-8 string
  */
 function base64UrlDecode(value: string,): string {
+  /** URL-safe input with `-_` mapped back to `+/`; padded below to a 4-group boundary. */
   let padded = value
     .replaceAll(
       '-',
@@ -133,7 +141,9 @@ function base64UrlDecode(value: string,): string {
     );
   while (padded.length % BASE64_GROUP_SIZE !== 0)
     padded += '=';
+  /** Latin-1 string of decoded bytes; rewrapped into a Uint8Array below for `TextDecoder`. */
   const binary = globalThis.atob(padded,);
+  /** Byte buffer copied from `binary`; decoded back to UTF-8 below. */
   const bytes = new Uint8Array(binary.length,);
   for (let index = 0; index < binary.length; index += 1)
     bytes[index] = binary.codePointAt(index,) ?? 0;

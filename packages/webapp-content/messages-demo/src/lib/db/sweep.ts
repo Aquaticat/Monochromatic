@@ -58,6 +58,7 @@ export const DELETED_TTL_MS: number = DELETED_TTL_DAYS
 export async function sweepOrphans(
   scope: { userId: string | null; },
 ): Promise<void> {
+  /** Threshold; drafts older than this and still unfinalised are reaped. */
   const cutoff = Date.now() - ORPHAN_TTL_MS;
   await run(
     `DELETE FROM drafts WHERE id IN (
@@ -89,7 +90,9 @@ export async function sweepOrphans(
  * ```
  */
 export async function sweepDeleted(): Promise<void> {
+  /** Threshold; messages soft-deleted before this are eligible for hard-delete. */
   const cutoff = Date.now() - DELETED_TTL_MS;
+  /** Bounded candidate batch; each row is hard-deleted in its own transaction below. */
   const candidates = await all<{
     id: number;
     draft_id: string;
@@ -116,10 +119,13 @@ export async function sweepDeleted(): Promise<void> {
       // Collect every draft in the chain, then DELETE them. Chunks
       // cascade via FK. We walk in JS because Turso does not implement
       // recursive CTEs. Chain depth is bounded by the 10-revision cap.
+      /** Collected draft chain ids; deleted in a single sweep at the end of the transaction. */
       const chainIds: string[] = [];
+      /** Walk cursor; advances to each draft's parent until the chain terminates. */
       let cursor: string | null = candidate.draft_id;
       while (cursor !== null) {
         chainIds.push(cursor,);
+        /** Parent draft row; absence breaks the loop. */
         const parentRow: { parent_id: string | null; } | undefined = await get<
           { parent_id: string | null; }
         >(

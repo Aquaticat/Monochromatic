@@ -46,8 +46,11 @@ function normalizeDatabasePath(value: string,): string {
  * @returns resolved filesystem path
  */
 function resolveDatabasePath(): string {
+  /** CLI override; preferred over the env var when both are set. */
   const argumentPath = getArgumentValue('db',);
+  /** Fallback environment value; used when the CLI did not supply one. */
   const environmentPath = process.env.DB_PATH;
+  /** Resolved precedence: CLI > env > default. */
   const rawPath = argumentPath ?? environmentPath ?? DEFAULT_DATABASE_PATH;
   return normalizeDatabasePath(rawPath,);
 }
@@ -108,12 +111,14 @@ export async function run(
   changes: number;
   lastInsertRowid: number;
 }> {
+  /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
   const stmt = db.prepare(sql,);
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Turso typed result
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- Turso typed result */
   return await stmt.run(...params,) as {
     changes: number;
     lastInsertRowid: number;
   };
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
 }
 
 /**
@@ -134,11 +139,13 @@ export async function get<T = Record<string, unknown>,>(
   sql: string,
   params: readonly unknown[] = [],
 ): Promise<T | undefined> {
+  /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
   const stmt = db.prepare(sql,);
-  // oxlint-disable-next-line typescript/no-unsafe-assignment -- Turso returns any
+  /* oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Turso returns any */
+  /** Raw row returned by Turso; widened to `unknown` here and asserted to `T` below. */
   const value = await stmt.get(...params,);
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Turso typed row
   return (value === undefined || value === null) ? undefined : value as T;
+  /* oxlint-enable typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion */
 }
 
 /**
@@ -159,7 +166,9 @@ export async function all<T = Record<string, unknown>,>(
   sql: string,
   params: readonly unknown[] = [],
 ): Promise<T[]> {
+  /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
   const stmt = db.prepare(sql,);
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Turso typed rows
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- Turso typed rows */
   return await stmt.all(...params,) as T[];
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
 }

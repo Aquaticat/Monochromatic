@@ -82,11 +82,13 @@ function mountMetricsOverlay(
     state: ComposerState;
   },
 ): () => void {
+  /** Overlay container appended to the parent; re-rendered on every metrics update. */
   const overlay = document.createElement('div',);
   overlay.className = 'composer-metrics-overlay';
   overlay.dataset['testid'] = 'metrics-overlay';
   input.parent.append(overlay,);
   return function render(): void {
+    /** Snapshot of state metrics, falling back to empty when not yet seeded. */
     const m = input.state.metrics ?? emptyMetrics();
     overlay.innerHTML = `${
       row(
@@ -142,6 +144,7 @@ type WorkerMetricsPayload = {
 function asMetricsPayload(data: unknown,): WorkerMetricsPayload | null {
   if (typeof data !== 'object' || data === null || !('kind' in data))
     return null;
+  /** Narrowed alias so the `kind` check reads `message.kind` rather than a type-cast. */
   const message: { kind: unknown; } = data;
   if (message.kind !== 'metrics')
     return null;
@@ -166,6 +169,7 @@ function foldCounters(
     payload: WorkerMetricsPayload;
   },
 ): CompilePipelineMetrics {
+  /** Running snapshot; replaced with widened copies as each payload field folds in. */
   let next = input.current;
   if (typeof input.payload.maxPutQueueDepth === 'number') {
     next = {
@@ -215,7 +219,9 @@ export function attachMetricsOverlay(
   recordTransition: (ms: number,) => void;
 } {
   input.state.metrics = emptyMetrics();
+  /** Rolling buffer of per-chunk compile times; folded into the median/p99 stats. */
   const samples: number[] = [];
+  /** Imperative re-render callback; called after every fold. */
   const render = mountMetricsOverlay({
     parent: input.parent,
     state: input.state,
@@ -226,6 +232,7 @@ export function attachMetricsOverlay(
   function refresh(): void {
     if (input.state.metrics === null)
       return;
+    /** Ascending copy of `samples`; fed to median/percentile helpers. */
     const sorted = samples.toSorted(function asc(
       a,
       b,
@@ -246,6 +253,7 @@ export function attachMetricsOverlay(
 
   return {
     onWorkerMessage(data,) {
+      /** Narrowed worker metrics payload; null skips non-metrics messages. */
       const payload = asMetricsPayload(data,);
       if (payload === null)
         return;

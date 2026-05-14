@@ -71,8 +71,10 @@ function startingTier(chunkCount: number,): 1 | 2 | 3 {
  * ```
  */
 export async function renderEditPage(messageId: number,): Promise<Response> {
+  /** Snapshot of the message; null branches to 404 / 410 below. */
   const snapshot = await getSnapshot(messageId,);
   if (snapshot === null) {
+    /** Disambiguates 410 Gone (was a message, now deleted) from 404 Not Found. */
     const exists = await messageExists(messageId,);
     return new Response(
       renderSimplePage({
@@ -95,6 +97,7 @@ export async function renderEditPage(messageId: number,): Promise<Response> {
     );
   }
 
+  /** Edit shell body HTML (back link, heading, revision label). */
   const body = h({
     tag: 'section',
     attrs: { class: 'edit-shell', },
@@ -122,6 +125,7 @@ export async function renderEditPage(messageId: number,): Promise<Response> {
     ],
   },);
 
+  /** Complete HTML document for the edit page. */
   const html = renderPage({
     title: `Edit message ${String(messageId,)}`,
     body,

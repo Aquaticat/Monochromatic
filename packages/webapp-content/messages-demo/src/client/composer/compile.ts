@@ -37,13 +37,17 @@ const PREVIEW_MAX_LENGTH = 200;
  * ```
  */
 export function compileInline(body: string,): Compiled {
+  /** Per-chunk rendered output; returned on the `chunks` field so the caller can PUT each row. */
   const chunks: {
     md: string;
     html: string;
     charCount: number;
   }[] = [];
+  /** Accumulated character count across all chunks; passed to finalize. */
   let charCount = 0;
+  /** First chunk's markdown captured once for the preview field. */
   let firstMd = '';
+  /** Concatenated HTML; tier-1 sends inspect this for empty-result fallbacks. */
   let html = '';
   for (const chunk of renderChunks(body,)) {
     if (chunks.length === 0)
@@ -102,10 +106,12 @@ export function compileViaWorker(
       ),
       { type: 'module', },
     );
+    /** Non-null after the lazy-create above; destructured so the listener wiring reads it directly. */
     const { worker, } = input.state;
     // Pipe every worker message through the metrics hooks (when the
     // overlay is mounted). The hook discriminates on `kind` and only
     // folds `metrics` payloads, so non-metrics messages are no-ops.
+    /** Optional metrics hook; non-null causes the tee listener to fold metrics envelopes. */
     const { metricsHooks, } = input.state;
     if (metricsHooks !== null) {
       worker.addEventListener(
@@ -127,6 +133,7 @@ export function compileViaWorker(
      * ```
      */
     function onMessage(event: MessageEvent<WorkerOut>,): void {
+      /** Destructured early so the kind switch reads `data.kind` without repeated access. */
       const { data, } = event;
       if (data.kind === 'done') {
         worker.removeEventListener(

@@ -144,6 +144,7 @@ async function renderChunkData(
   },
   ifNoneMatch: string | null,
 ): Promise<Response> {
+  /** Snapshot of the message; null returns 410 Gone (deleted or never existed). */
   const snapshot = await getSnapshot(input.messageId,);
   if (snapshot === null) {
     return new Response(
@@ -154,6 +155,7 @@ async function renderChunkData(
       },
     );
   }
+  /** Per-chunk ETag built from revision + chunk index; sent on 200 and 304. */
   const etag = etagForChunk({
     revision: snapshot.revision,
     chunkIndex: input.chunkIndex,
@@ -182,6 +184,7 @@ async function renderChunkData(
       },
     );
   }
+  /** Chunk row resolved via the copy-on-write draft chain walk. */
   const chunk = await getChunk({
     messageId: input.messageId,
     chunkIndex: input.chunkIndex,
