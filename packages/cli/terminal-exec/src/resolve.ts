@@ -78,21 +78,28 @@ export async function resolveTerminal(): Promise<ResolvedTerminal | null> {
  * @returns Resolved terminal entry, or `null` if no valid terminal is found.
  */
 async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
+  /** Lowercased XDG_CURRENT_DESKTOP list; needed for ShowIn checks below. */
   const desktops = currentDesktops();
+  /** Ordered config file paths; later parseConfigFiles reads in priority order. */
   const configs = configPaths({ desktops, },);
+  /** Merged config across all files; consumed for entry preferences and execarg defaults. */
   const config = await parseConfigFiles({ paths: configs, },);
 
+  /** Ascending-priority application directory list. */
   const dirs = applicationDirs();
+  /** Destructure the scan result: registry maps ids to paths; fallbackIds is the priority-ordered scan list. */
   const {
     registry,
     fallbackIds,
   } = await scanEntries({ dirs, },);
 
   //region Build candidate list: explicit entries, then KDE fallback, then fallback scan
+  /** Mutable copy so the KDE fallback can swap it without mutating config. */
   let explicitIds = [...config.entryIds,];
 
   if (explicitIds.length === 0) {
     l.debug('no explicit entries in config, checking kdeglobals',);
+    /** KDE fallback used only when explicit entries are empty. */
     const kdeId = await kdeTerminalService();
     if (kdeId !== null) {
       explicitIds = [kdeId,];
@@ -108,7 +115,8 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
 
   //region Try explicit entries first (bypass OnlyShowIn/NotShowIn)
   for (const entryId of explicitIds) {
-    /* oxlint-disable-next-line no-await-in-loop -- sequential: first valid entry wins */
+    /* oxlint-disable no-await-in-loop -- sequential: first valid entry wins */
+    /** Per-entry validation attempt; first non-null wins. */
     const result = await tryEntry({
       entryId,
       registry,
@@ -116,6 +124,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
       isFallback: false,
       config,
     },);
+    /* oxlint-enable no-await-in-loop */
     if (result !== null) {
       return {
         ...result,
@@ -127,7 +136,8 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
 
   //region Try fallback entries
   for (const entryId of filteredFallbackIds) {
-    /* oxlint-disable-next-line no-await-in-loop -- sequential: first valid entry wins */
+    /* oxlint-disable no-await-in-loop -- sequential: first valid entry wins */
+    /** Per-entry validation attempt against the fallback list; first non-null wins. */
     const result = await tryEntry({
       entryId,
       registry,
@@ -135,6 +145,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
       isFallback: true,
       config,
     },);
+    /* oxlint-enable no-await-in-loop */
     if (result !== null) {
       return {
         ...result,
@@ -179,12 +190,14 @@ async function tryEntry({
   isFallback: boolean;
   config: { readonly execArgDefaults: ReadonlyMap<string, string>; };
 },): Promise<ValidatedEntry | null> {
+  /** Registry lookup; missing id means we cannot resolve this preference. */
   const reg = registry.get(entryId,);
   if (reg === undefined) {
     l.debug(`entry '${entryId}' not found in registry`,);
     return null;
   }
 
+  /** Parsed desktop entry contents; null on read failure. */
   const entry = await parseDesktopEntry({ path: reg.path, },);
   if (entry === null)
     return null;

@@ -55,9 +55,12 @@ async function executableExists({ name, }: { name: string; },): Promise<boolean>
  * @returns Absolute path if found, or `null`.
  */
 async function which(name: string,): Promise<string | null> {
+  /** Empty PATH fallback yields no candidates, which falls through to null cleanly. */
   const pathEnv = process.env['PATH'] ?? '';
+  /** Split on the platform PATH delimiter; colon on POSIX. */
   const dirs = pathEnv.split(delimiter,);
   for (const dir of dirs) {
+    /** Absolute path candidate fed to access() inside the loop. */
     const candidate = resolve(
       dir,
       name,
@@ -141,6 +144,7 @@ export async function validateEntry({
   //region OnlyShowIn / NotShowIn (fallback entries only)
   if (isFallback) {
     if (entry.onlyShowIn.length > 0) {
+      /** Whether any OnlyShowIn entry matches the current desktops list. */
       const shown = entry.onlyShowIn.some(function matchDesktop(d,) {
         return desktops.includes(d.toLowerCase(),);
       },);
@@ -150,6 +154,7 @@ export async function validateEntry({
       }
     }
     if (entry.notShowIn.length > 0) {
+      /** Whether any NotShowIn entry matches the current desktops list. */
       const hidden = entry.notShowIn.some(function matchDesktop(d,) {
         return desktops.includes(d.toLowerCase(),);
       },);
@@ -166,12 +171,14 @@ export async function validateEntry({
     return null;
   }
 
+  /** Argv form of the Exec line; null or empty disqualifies the entry. */
   const execTokens = tokenizeExec({ exec: entry.exec, },);
   if (execTokens === null || execTokens.length === 0) {
     l.debug(`${entryId}: Exec tokenization failed or empty`,);
     return null;
   }
 
+  /** Executable token, the only one we PATH-check before validating. */
   const [firstToken,] = execTokens;
   if (firstToken === undefined)
     throw new Error('unreachable: length checked above',);

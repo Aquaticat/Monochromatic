@@ -44,6 +44,7 @@ const l = tagged({
 export async function parseDesktopEntry(
   { path, }: { path: string; },
 ): Promise<DesktopEntry | null> {
+  /** Empty default lets the catch return null without restructuring the read path. */
   let text = '';
   try {
     text = await readFile(
@@ -55,11 +56,14 @@ export async function parseDesktopEntry(
     return null;
   }
 
+  /** Mutated by applyKey calls below; one accumulator per parsed file. */
   const result = createEmptyEntry();
 
+  /** Section gate; toggled on each `[Section]` line so non-Desktop Entry sections are skipped. */
   let inDesktopEntry = false;
 
   for (const rawLine of text.split('\n',)) {
+    /** Whitespace tolerance before prefix checks. */
     const line = rawLine.trim();
 
     if (line.startsWith('[',)) {
@@ -72,16 +76,19 @@ export async function parseDesktopEntry(
     if (!inDesktopEntry)
       continue;
 
+    /** Separator index; -1 means a non-key line that must be skipped. */
     const eqIdx = line.indexOf('=',);
     if (eqIdx === -1)
       continue;
 
+    /** Normalized key name passed to applyKey for dispatch. */
     const key = line
       .slice(
         0,
         eqIdx,
       )
       .trim();
+    /** Payload after `=`, trimmed before applyKey stores it. */
     const value = line.slice(eqIdx + 1,).trim();
 
     applyKey({

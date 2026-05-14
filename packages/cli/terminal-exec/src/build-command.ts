@@ -116,6 +116,7 @@ export function buildCommand({
   terminal: ResolvedTerminal;
   options: UserOptions;
 },): readonly string[] {
+  /** Mutable arg accumulator seeded with the kept exec tokens; appended to by the option blocks below. */
   const args: string[] = terminal.execTokens.filter(keepToken,);
 
   if (options.appId.length > 0 && terminal.appIdArg.length > 0) {

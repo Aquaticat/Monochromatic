@@ -49,13 +49,17 @@ export type ConfigResult = {
 export async function parseConfigFiles(
   { paths, }: { paths: readonly string[]; },
 ): Promise<ConfigResult> {
+  /** Mutable accumulator of explicit entry preferences in priority order. */
   const entryIds: string[] = [];
+  /** Ids removed from fallback unless overridden by a later `+`. */
   const excludedIds = new Set<string>();
   /** Tracks IDs that have been explicitly included via `+`, preventing later `-` from excluding them. */
   const includedIds = new Set<string>();
+  /** Per-id execarg defaults from `/execarg_default:` directives. */
   const execArgDefaults = new Map<string, string>();
 
   for (const path of paths) {
+    /** Empty default lets the catch path continue to the next config file without restructuring. */
     let text = '';
     try {
       /* oxlint-disable-next-line no-await-in-loop -- sequential: config files override in priority order */
@@ -71,6 +75,7 @@ export async function parseConfigFiles(
     l.debug(`reading config '${path}'`,);
 
     for (const rawLine of text.split('\n',)) {
+      /** Whitespace tolerance before prefix-character dispatch. */
       const line = rawLine.trim();
       if (line.length === 0 || line.startsWith('#',))
         continue;
@@ -84,6 +89,7 @@ export async function parseConfigFiles(
       }
 
       if (line.startsWith('-',)) {
+        /** Entry id without the leading `-` exclusion marker. */
         const id = line.slice(1,);
         if (!includedIds.has(id,)) {
           excludedIds.add(id,);
@@ -93,6 +99,7 @@ export async function parseConfigFiles(
       }
 
       if (line.startsWith('+',)) {
+        /** Entry id without the leading `+` inclusion marker. */
         const id = line.slice(1,);
         includedIds.add(id,);
         excludedIds.delete(id,);
@@ -127,15 +134,20 @@ function parseDirective(
     execArgDefaults: Map<string, string>;
   },
 ): void {
+  /** Directive prefix lifted to a name for the slice math below. */
   const EXECARG_PREFIX = '/execarg_default:';
   if (line.startsWith(EXECARG_PREFIX,)) {
+    /** Directive payload; format is `<entryId>:<defaultArg>`. */
     const rest = line.slice(EXECARG_PREFIX.length,);
+    /** Separator between entry id and default arg; -1 means malformed and skipped. */
     const colonIdx = rest.indexOf(':',);
     if (colonIdx !== -1) {
+      /** Target entry id for the default. */
       const entryId = rest.slice(
         0,
         colonIdx,
       );
+      /** Default execarg value associated with the entry id. */
       const defaultArg = rest.slice(colonIdx + 1,);
       execArgDefaults.set(
         entryId,

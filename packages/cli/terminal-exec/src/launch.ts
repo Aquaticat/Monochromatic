@@ -49,6 +49,7 @@ export async function launchTerminal({
   command?: readonly string[];
   title?: string;
 },): Promise<void> {
+  /** Platform-specific resolution; the null path raises a user-facing error below. */
   const terminal = await resolveTerminal();
 
   if (terminal === null) {
@@ -61,6 +62,7 @@ export async function launchTerminal({
 
   l.info(`resolved terminal: ${terminal.entryId}`,);
 
+  /** Final command array fed to spawn; built from the terminal entry and user options. */
   const argv = buildCommand({
     terminal,
     options: {
@@ -75,6 +77,7 @@ export async function launchTerminal({
   if (argv.length === 0)
     throw new Error('launchTerminal: buildCommand returned empty argv',);
 
+  /** Splits argv to feed spawn's separate executable/args parameters. */
   const [executable, ...args] = argv;
 
   l.info(`launching: ${String(executable,)} ${args.join(' ',)}`,);
@@ -84,6 +87,7 @@ export async function launchTerminal({
     resolve,
     reject,
   ): void {
+    /** Detached child reference; unref'd so the parent does not wait on it. */
     const child = spawn(
       String(executable,),
       args,

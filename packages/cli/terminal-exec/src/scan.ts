@@ -44,6 +44,7 @@ export type EntryRegistration = {
  * @returns Array of absolute file paths.
  */
 async function findDesktopFiles({ dir, }: { dir: string; },): Promise<readonly string[]> {
+  /** Mutable accumulator filled by the inner walk function. */
   const results: string[] = [];
 
   /**
@@ -52,6 +53,7 @@ async function findDesktopFiles({ dir, }: { dir: string; },): Promise<readonly s
    * @param current - Directory to walk.
    */
   async function walk({ current, }: { current: string; },): Promise<void> {
+    /** Empty default lets the catch path return early without restructuring. */
     let entries: Dirent[] = [];
     try {
       entries = await readdir(
@@ -63,6 +65,7 @@ async function findDesktopFiles({ dir, }: { dir: string; },): Promise<readonly s
       return;
     }
     for (const entry of entries) {
+      /** Absolute candidate for recursion or `.desktop` matching. */
       const fullPath = join(
         current,
         entry.name,
@@ -106,13 +109,17 @@ export async function scanEntries({ dirs, }: { dirs: readonly string[]; },): Pro
   const allIds: string[] = [];
 
   for (const dir of dirs) {
-    /* oxlint-disable-next-line no-await-in-loop -- sequential: later dirs override earlier for same ID */
+    /* oxlint-disable no-await-in-loop -- sequential: later dirs override earlier for same ID */
+    /** Desktop files in one directory; one batch per priority level. */
     const files = await findDesktopFiles({ dir, },);
+    /* oxlint-enable no-await-in-loop */
     for (const filePath of files) {
+      /** Subpath used to derive the entry id. */
       const rel = relative(
         dir,
         filePath,
       );
+      /** Entry id per spec: subdir separators become dashes. */
       const id = rel.replaceAll(
         '/',
         '-',

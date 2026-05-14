@@ -34,13 +34,19 @@ const l = tagged({
  * ```
  */
 export function parseArgs({ argv, }: { argv: readonly string[]; },): UserOptions {
+  /** Option accumulator mutated by the parse loop below; let because reassigned conditionally. */
   let appId = '';
+  /** Same shape as appId; the parse loop populates each option in turn. */
   let title = '';
+  /** Same shape as appId; the parse loop populates each option in turn. */
   let dir = '';
+  /** Same shape as appId; the parse loop populates each option in turn. */
   let hold = false;
+  /** Cursor into argv; advanced as options are consumed and used to slice the command remainder. */
   let i = 0;
 
   while (i < argv.length) {
+    /** Current argv slot, scoped to the loop iteration. */
     const arg = argv[i];
     if (arg === undefined)
       break;
@@ -90,6 +96,7 @@ export function parseArgs({ argv, }: { argv: readonly string[]; },): UserOptions
     break;
   }
 
+  /** Remainder after the delimiter is the command to execute. */
   const command = argv.slice(i,);
 
   l.debug(

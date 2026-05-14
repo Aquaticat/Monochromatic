@@ -36,13 +36,16 @@ export function execvp({ command, }: { command: readonly string[]; },): void {
   if (command.length === 0)
     throw new Error('execvp: empty command array',);
 
+  /** First token separated so the args slice below can pass the rest to Bun.spawn. */
   const [executable,] = command;
   if (executable === undefined)
     throw new Error('execvp: unreachable (length checked above)',);
+  /** Arguments without the executable, ready to feed Bun.spawn's separate argv parameter. */
   const args = command.slice(1,);
 
   l.debug(`exec: ${executable} ${args.join(' ',)}`,);
 
+  /** Spawned-process handle; consumed by the exited callback to propagate the exit code. */
   const proc = Bun.spawn(
     [
       executable,

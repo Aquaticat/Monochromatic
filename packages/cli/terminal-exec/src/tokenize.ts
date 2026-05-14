@@ -61,12 +61,17 @@ const FIELD_CODES = new Set([
  * ```
  */
 export function tokenizeExec({ exec, }: { exec: string; },): readonly string[] | null {
+  /** Output accumulator; pushed when whitespace ends a token. */
   const tokens: string[] = [];
+  /** In-progress token characters; reset on whitespace. */
   let current = '';
+  /** Quote-state gate; toggled by unescaped `"` characters. */
   let inQuote = false;
+  /** Input cursor; multi-character constructs advance by 2 to skip the escaped second char. */
   let i = 0;
 
   while (i < exec.length) {
+    /** Current input character, scoped to the loop iteration. */
     const ch = exec[i];
     if (ch === undefined)
       break;
@@ -78,6 +83,7 @@ export function tokenizeExec({ exec, }: { exec: string; },): readonly string[] |
         continue;
       }
       if (ch === '\\' && i + 1 < exec.length) {
+        /** Lookahead char for the quoted-backslash escape branch. */
         const next = exec[i + 1];
         if (next === undefined)
           break; // unreachable (length checked above)
@@ -114,6 +120,7 @@ export function tokenizeExec({ exec, }: { exec: string; },): readonly string[] |
 
     //region % field code stripping
     if (ch === '%' && i + 1 < exec.length) {
+      /** Lookahead char for the `%` field-code branch. */
       const next = exec[i + 1];
       if (next === undefined)
         break; // unreachable (length checked above)

@@ -31,10 +31,14 @@ const l = tagged({
  * ```
  */
 export async function kdeTerminalService(): Promise<string | null> {
+  /** HOME envar fallback keeps path construction deterministic on systems where HOME is unset. */
   const home = process.env['HOME'] ?? '/tmp';
+  /** XDG config base; defaults under HOME per the spec. */
   const configHome = process.env['XDG_CONFIG_HOME'] ?? `${home}/config`;
+  /** KDE's global settings file; source of the TerminalService key. */
   const path = `${configHome}/kdeglobals`;
 
+  /** Empty default lets the catch path fall through without a separate branch; rebound by readFile on success. */
   let text = '';
   try {
     text = await readFile(
@@ -48,8 +52,10 @@ export async function kdeTerminalService(): Promise<string | null> {
   }
 
   for (const rawLine of text.split('\n',)) {
+    /** Whitespace tolerance before the prefix check. */
     const line = rawLine.trim();
     if (line.startsWith('TerminalService=',)) {
+      /** Payload after the key, trimmed of stray whitespace before the empty check. */
       const value = line.slice('TerminalService='.length,).trim();
       if (value.length > 0) {
         l.debug(`kdeglobals TerminalService='${value}'`,);
