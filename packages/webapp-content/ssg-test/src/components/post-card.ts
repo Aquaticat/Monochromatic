@@ -116,6 +116,7 @@ export function css(): string {
  * ```
  */
 export function html(post: Post,): string {
+  /** Pre-rendered tag list injected into the card body so the JSX structure stays flat. */
   const tagItems = post.data.tags.map(function renderTag(tag,) {
     return h({
       tag: 'li',

@@ -116,12 +116,14 @@ async function loadPagefind(): Promise<PagefindApi | undefined> {
     // Dynamic import from the build-generated Pagefind bundle.
     // This path is created by `pagefind --site dist` and cannot be
     // resolved at bundle time; it must be a runtime import.
-    // oxlint-disable-next-line no-unsafe-type-assertion -- Pagefind JS API shape is untyped
+    /* oxlint-disable no-unsafe-type-assertion -- Pagefind JS API shape is untyped */
+    /** Resolved Pagefind API module imported lazily on first interaction. */
     const api = await import(
       /* webpackIgnore: true */
       // @ts-expect-error; Pagefind bundle is generated at build time by `pagefind --site dist`; no type declarations exist
       '/pagefind/pagefind.js'
     ) as PagefindApi;
+    /* oxlint-enable no-unsafe-type-assertion */
     api.init();
     pagefindApi = api;
     return api;
@@ -156,12 +158,14 @@ async function executeSearch(query: string,): Promise<void> {
     return;
   }
 
+  /** Pagefind API handle reused across queries once first loaded. */
   const api = await loadPagefind();
   if (api === undefined) {
     hideResults();
     return;
   }
 
+  /** Debounced response that may be `null` when a newer query supersedes this one. */
   const response = await api.debouncedSearch(
     query,
     {},
@@ -177,10 +181,12 @@ async function executeSearch(query: string,): Promise<void> {
     return;
   }
 
+  /** Capped slice of best matches; over-large result sets get truncated to MAX_RESULTS. */
   const topResults = response.results.slice(
     0,
     MAX_RESULTS,
   );
+  /** Per-result metadata fetched in parallel before rendering. */
   const loaded = await Promise.all(
     topResults.map(function loadResultData(result,) {
       return result.data();
@@ -210,14 +216,17 @@ function setActiveOption(index: number,): void {
   if (resultsList === null || input === null)
     return;
 
+  /** Snapshot of option elements used for index-based active-descendant updates. */
   const options = resultsList.querySelectorAll<HTMLElement>('[role="option"]',);
 
+  /** Previously active option whose data attribute is cleared before the new one is set. */
   const previous = options[activeIndex];
   if (previous !== undefined)
     delete previous.dataset.active;
 
   activeIndex = index;
 
+  /** Newly active option marked with `data-active` and scrolled into view. */
   const option = options[activeIndex];
   if (option !== undefined) {
     option.dataset.active = '';
@@ -257,7 +266,9 @@ function renderResults(results: readonly PagefindResultData[],): void {
       result,
       index,
     ) {
+      /** Escaped result title; falls back to the URL when the page has no `<title>`. */
       const title = escapeHtml(result.meta.title ?? result.url,);
+      /** Escaped href used both on the link element and on the option's `data-url`. */
       const url = escapeHtml(result.url,);
       return [
         `<li id="search-option-${index}" role="option" data-url="${url}">`,
@@ -313,8 +324,10 @@ if (input !== null && resultsList !== null) {
   input.addEventListener(
     'input',
     function onSearchInput(event,) {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- EventTarget is the input element
+      /* oxlint-disable no-unsafe-type-assertion -- EventTarget is the input element */
+      /** Narrowed event target for the input event; the listener is bound to the input only. */
       const target = event.target as HTMLInputElement;
+      /* oxlint-enable no-unsafe-type-assertion */
       void executeSearch(target.value,);
     },
   );
@@ -323,8 +336,11 @@ if (input !== null && resultsList !== null) {
   document.addEventListener(
     'click',
     function onDocumentClick(event,) {
-      // oxlint-disable-next-line no-unsafe-type-assertion -- EventTarget is always a Node in click handlers
+      /* oxlint-disable no-unsafe-type-assertion -- EventTarget is always a Node in click handlers */
+      /** Click target narrowed to Node so containment can be checked against the search root. */
       const target = event.target as Node;
+      /* oxlint-enable no-unsafe-type-assertion */
+      /** Enclosing search widget element; clicks outside this container dismiss results. */
       const searchContainer = input.closest<HTMLElement>('site-search',);
       if (searchContainer !== null && !searchContainer.contains(target,))
         hideResults();
@@ -334,7 +350,9 @@ if (input !== null && resultsList !== null) {
   input.addEventListener(
     'keydown',
     function onSearchKeydown(event,) {
+      /** Snapshot of option elements used for arrow-key navigation. */
       const options = resultsList.querySelectorAll<HTMLElement>('[role="option"]',);
+      /** Cached length used by every navigation branch. */
       const count = options.length;
 
       if (event.key === 'Escape') {
@@ -360,8 +378,10 @@ if (input !== null && resultsList !== null) {
 
       if (event.key === 'Enter' && activeIndex >= 0 && activeIndex < count) {
         event.preventDefault();
+        /** Currently active option whose URL is navigated to on Enter. */
         const option = options[activeIndex];
         if (option !== undefined) {
+          /** Destructured `data-url` attribute storing the result href. */
           const { url, } = option.dataset;
           if (url !== undefined)
             globalThis.location.href = url;

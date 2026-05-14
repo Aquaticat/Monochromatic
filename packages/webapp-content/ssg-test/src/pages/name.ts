@@ -43,6 +43,7 @@ export function namePage(
     canonicalUrl: string;
   },
 ): string {
+  /** Main element tree composed before the page layout wraps it with `<head>` and friends. */
   const content = h({
     tag: 'main',
     children: [
@@ -70,6 +71,7 @@ export function namePage(
 
   /** Default to the first available translation's language, falling back to 'en'. */
   const [firstPost,] = posts;
+  /** Resolved page locale used for head meta plus the lang switcher. */
   const lang: Locales = firstPost !== undefined && isLocale(firstPost.lang,)
     ? firstPost.lang
     : 'en';

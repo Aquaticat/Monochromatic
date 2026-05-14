@@ -49,6 +49,7 @@ const ICO_DATA_OFFSET = 22;
  * ```
  */
 export function createIco({ pngData, }: { pngData: Buffer; },): Buffer {
+  /** ICONDIR header preceding the image directory entries per the ICO spec. */
   const header = Buffer.alloc(ICO_HEADER_SIZE,);
   header.writeUInt16LE(
     1,
@@ -59,6 +60,7 @@ export function createIco({ pngData, }: { pngData: Buffer; },): Buffer {
     ICO_HEADER_COUNT_OFFSET,
   ); // image count
 
+  /** ICONDIRENTRY describing the single embedded PNG image. */
   const entry = Buffer.alloc(ICO_ENTRY_SIZE,);
   entry.writeUInt8(
     ICO_DIMENSION,

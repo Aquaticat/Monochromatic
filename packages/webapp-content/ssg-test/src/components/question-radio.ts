@@ -95,6 +95,7 @@ const HEX_RADIX = 16;
  * ```
  */
 function fnv1a32(input: string,): string {
+  /** Running hash accumulator; intermediate state must be mutable per the FNV-1a algorithm. */
   let hash = FNV_OFFSET_32;
   for (let i = 0; i < input.length; i++) {
     hash ^= input.codePointAt(i,) ?? 0;
@@ -132,6 +133,7 @@ function toHtmlString(value: SafeHtml | string,): string {
  * @returns 8-digit hex ID suitable for `name="q-{id}"` input grouping
  */
 function deriveQuestionId(props: QuestionProps,): string {
+  /** Hash input fragments joined with NUL to keep field boundaries unambiguous. */
   const parts = [toHtmlString(props.scenario,),];
   for (const opt of props.options) {
     parts.push(toHtmlString(opt.label,),);
@@ -163,6 +165,7 @@ function validate(props: QuestionProps,): void {
       `Question needs at least ${MIN_OPTIONS} options; got ${props.options.length}.`,
     );
   }
+  /** Number of options marked correct; must equal REQUIRED_CORRECT_COUNT for radio questions. */
   const correctCount = props
     .options
     .filter(function isCorrect(o,) {
@@ -196,7 +199,9 @@ function renderOption(
   idx: number,
   opt: QuestionOption,
 ): SafeHtml {
+  /** Unique input identifier; linked from the sibling label's htmlFor. */
   const inputId = `q-${qId}-${idx}`;
+  /** Built incrementally so the `data-correct` attribute is set only when applicable. */
   const inputProps: Record<string, unknown> = {
     type: 'radio',
     name: `q-${qId}`,
@@ -254,6 +259,7 @@ function renderOption(
  */
 export function QuestionRadio(props: QuestionProps,): SafeHtml {
   validate(props,);
+  /** Derived stable id grouping all option inputs of this question. */
   const qId = deriveQuestionId(props,);
   return jsx(
     'question-radio',

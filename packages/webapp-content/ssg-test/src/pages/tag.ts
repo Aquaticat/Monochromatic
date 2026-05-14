@@ -49,9 +49,12 @@ export function tagPage(
     canonicalUrl: string;
   },
 ): string {
+  /** Locale-bound translator reused for head meta strings on the tag page. */
   const t = i18nObject(lang,);
+  /** Hash-prefixed tag label rendered as the page heading. */
   const title = `#${tag}`;
 
+  /** Main element tree composed before the page layout wraps it with `<head>` and friends. */
   const content = h({
     tag: 'main',
     children: [

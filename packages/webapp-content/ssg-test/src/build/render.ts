@@ -68,6 +68,7 @@ export async function renderPadded(
     canvasSize: number;
   },
 ): Promise<Buffer> {
+  /** Inner glyph rendered first so the padded outer canvas can centre-composite it. */
   const content = await renderPng({ size: contentSize, },);
   return sharp({
     create: {

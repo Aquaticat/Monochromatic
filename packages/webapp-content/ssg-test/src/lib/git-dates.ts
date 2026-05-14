@@ -49,6 +49,7 @@ async function runCapture(
   args: readonly string[],
   { cwd, }: { cwd?: string; } = {},
 ): Promise<CommandResult> {
+  /** Destructured spawn result; only stdout and stderr are forwarded to the caller. */
   const {
     stdout,
     stderr,
@@ -76,6 +77,7 @@ async function runCapture(
  * ```
  */
 async function runGit(args: readonly string[],): Promise<CommandResult> {
+  /** Repository root cached lookup pinning the git cwd. */
   const root = await findMonorepoRootCached();
   return runCapture(
     'git',
@@ -103,6 +105,7 @@ async function runGit(args: readonly string[],): Promise<CommandResult> {
  * ```
  */
 export async function getHeadSha(): Promise<string> {
+  /** Captured stdout from `git rev-parse HEAD` containing the 40-char SHA plus newline. */
   const { stdout, } = await runGit([
     'rev-parse',
     'HEAD',
@@ -125,6 +128,7 @@ export async function getHeadSha(): Promise<string> {
  * ```
  */
 export async function detectShallow(): Promise<boolean> {
+  /** Captured stdout from `git rev-parse --is-shallow-repository`; trimmed to `true`/`false`. */
   const { stdout, } = await runGit([
     'rev-parse',
     '--is-shallow-repository',
@@ -148,12 +152,15 @@ export async function detectShallow(): Promise<boolean> {
  */
 async function getGithubSlug(): Promise<string | undefined> {
   try {
+    /** Captured stdout from `git remote get-url origin`; may be SSH or HTTPS form. */
     const { stdout, } = await runGit([
       'remote',
       'get-url',
       'origin',
     ],);
+    /** Trimmed remote URL fed to the slug regex. */
     const url = stdout.trim();
+    /** Regex capture extracting `owner/repo` from either supported URL form. */
     const match = /github\.com[:/]([^/]+\/[^/.]+)(?:\.git)?$/.exec(url,);
     return match?.[1];
   }
@@ -191,10 +198,12 @@ async function getGithubSlug(): Promise<string | undefined> {
 async function gitLogDates(
   { filePath, }: { filePath: string; },
 ): Promise<string[]> {
+  /** Absolute file path passed to git so `--follow` can trace renames consistently. */
   const absolute = resolve(
     process.cwd(),
     filePath,
   );
+  /** Captured stdout: newline-separated ISO-8601 author dates newest-first. */
   const { stdout, } = await runGit([
     'log',
     '--follow',
@@ -226,11 +235,14 @@ async function gitLogDates(
  * ```
  */
 async function getRepoRelativePath(filePath: string,): Promise<string> {
+  /** Repository root cached lookup pinning the git cwd. */
   const root = await findMonorepoRootCached();
+  /** Absolute path normalised before handing to `git ls-files --full-name`. */
   const absolute = resolve(
     process.cwd(),
     filePath,
   );
+  /** Captured stdout containing the repo-relative path with forward slashes. */
   const { stdout, } = await runCapture(
     'git',
     [
@@ -275,6 +287,7 @@ async function ghApiFirstCommitDate(
     repoRelPath: string;
   },
 ): Promise<string | undefined> {
+  /** Captured stdout from `gh api` containing concatenated JSON pages. */
   const { stdout, } = await runCapture(
     'gh',
     [
@@ -287,6 +300,7 @@ async function ghApiFirstCommitDate(
   /* `--paginate` concatenates JSON arrays with no separator between pages.
    * Parse by splitting on `][` and re-bracketing; single-page output parses
    * directly as JSON. */
+  /** Trimmed JSON payload returned from `gh api --paginate`. */
   const raw = stdout.trim();
   if (raw.length === 0)
     return undefined;
@@ -305,7 +319,9 @@ async function ghApiFirstCommitDate(
       i,
       arr,
     ) {
+      /** Opening bracket re-inserted on every chunk except the first to rebuild the JSON array boundary. */
       const prefix = i === 0 ? '' : '[';
+      /** Closing bracket re-inserted on every chunk except the last to rebuild the JSON array boundary. */
       const suffix = i === arr.length - 1 ? '' : ']';
       // oxlint-disable-next-line typescript-eslint(no-unsafe-return) -- see above
       return JSON.parse(`${prefix}${chunk}${suffix}`,);
@@ -313,6 +329,7 @@ async function ghApiFirstCommitDate(
     // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- see above
     : (JSON.parse(raw,) as GhCommit[]);
 
+  /** Oldest commit in the API response (last entry per GitHub's newest-first ordering). */
   const last = commits.at(-1,);
   return last?.commit.author.date;
 }
@@ -396,6 +413,7 @@ export async function getPostDates(
         `Shallow clone detected but no GitHub remote configured; cannot resolve published date for ${filePath}. Fetch with --unshallow or configure an origin on github.com.`,
       );
     }
+    /** Repo-relative form required by the GitHub commits API `path` query param. */
     const repoRelPath = await getRepoRelativePath(filePath,);
     publishedIso = await ghApiFirstCommitDate({
       slug: githubSlug,
@@ -415,7 +433,9 @@ export async function getPostDates(
 
   /** File mtime fallback for untracked or uncommitted files. */
   const stats = await stat(filePath,);
+  /** Date-typed mtime used to fill in whichever field is missing from git history. */
   const mtime = new Date(stats.mtimeMs,);
+  /** Names of fields filled in from mtime, surfaced in the diagnostic log line. */
   const missing: string[] = [];
   if (publishedIso === undefined)
     missing.push('published',);
@@ -461,6 +481,7 @@ export type GitDatesContext = {
  * ```
  */
 export async function resolveGitDatesContext(): Promise<GitDatesContext> {
+  /** Repository-level probes gathered concurrently into a single context object. */
   const [headSha, isShallow, githubSlug,] = await Promise.all([
     getHeadSha(),
     detectShallow(),

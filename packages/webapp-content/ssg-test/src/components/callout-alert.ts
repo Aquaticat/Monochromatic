@@ -58,7 +58,9 @@ export function CalloutAlert(props: {
   children: unknown;
   'data-type': AlertType;
 },): SafeHtml {
+  /** Discriminator picking the right icon and label pair from the alert tables. */
   const type = props['data-type'];
+  /** Icon plus label cluster rendered ahead of the alert body. */
   const indicator = jsx(
     'alert-indicator',
     {
@@ -78,6 +80,7 @@ export function CalloutAlert(props: {
       ],
     },
   );
+  /** Slot wrapper for the user-supplied alert body. */
   const content = jsx(
     'alert-content',
     {
@@ -85,6 +88,7 @@ export function CalloutAlert(props: {
       children: props.children,
     },
   );
+  /** Semantic blockquote root keeping screen readers' alert quote context. */
   const blockquote = jsx(
     'blockquote',
     {

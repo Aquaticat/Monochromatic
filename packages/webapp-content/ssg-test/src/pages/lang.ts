@@ -40,9 +40,12 @@ export function langPage(
     canonicalUrl: string;
   },
 ): string {
+  /** Locale-bound translator reused for both `<h1>` and head meta strings. */
   const t = i18nObject(lang,);
+  /** Page heading mirrors the site description for the language landing page. */
   const title = t.siteDescription();
 
+  /** Main element tree composed before the page layout wraps it with `<head>` and friends. */
   const content = h({
     tag: 'main',
     children: [

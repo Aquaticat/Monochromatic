@@ -104,11 +104,13 @@ const gitDatesReusable = !pipelineChanged && cache?.headSha === gitCtx.headSha;
 const datesByFilePath = new Map<string, ResolvedDates>();
 
 await Promise.all(loadedPosts.map(async function resolveDates(post,) {
+  /** Repo-relative path used as the manifest key for this post. */
   const cacheKey = relative(
     '.',
     post.filePath,
   );
   if (gitDatesReusable) {
+    /** Prior manifest entry reused only when both pipeline and git head are unchanged. */
     const cached = getCachedEntry({
       manifest: effectiveCache,
       filePath: cacheKey,
@@ -126,6 +128,7 @@ await Promise.all(loadedPosts.map(async function resolveDates(post,) {
     }
   }
 
+  /** Freshly resolved publication and update timestamps when no cache hit applies. */
   const dates = await getPostDates({
     filePath: post.filePath,
     isShallow: gitCtx.isShallow,
@@ -146,10 +149,12 @@ const posts = attachDates({
 
 /** Results from processing each post: rendered HTML and cache entry. */
 const processResults = await Promise.all(posts.map(async function processPost(post,) {
+  /** Repo-relative path used as the manifest key for this post. */
   const cacheKey = relative(
     '.',
     post.filePath,
   );
+  /** Prior manifest entry reused when the post content hash is unchanged. */
   const cached = getCachedEntry({
     manifest: effectiveCache,
     filePath: cacheKey,
@@ -160,6 +165,7 @@ const processResults = await Promise.all(posts.map(async function processPost(po
     /* Reuse rendered HTML; overlay freshly-resolved dates onto cached frontmatter
      * so downstream consumers see dates consistent with the current HEAD even
      * when `gitDatesReusable` was false. */
+    /** Cached manifest entry with overlaid current-HEAD dates. */
     const entry = {
       contentHash: cached.contentHash,
       html: cached.html,
@@ -177,7 +183,9 @@ const processResults = await Promise.all(posts.map(async function processPost(po
     };
   }
 
+  /** Freshly rendered post body when no cache hit applies. */
   const html = await renderMdx(post.body,);
+  /** New manifest entry persisted for future builds. */
   const entry = createCacheEntry({
     contentHash: post.contentHash,
     html,

@@ -190,6 +190,7 @@ function resolveHref(
   },
 ): string {
   if (currentName !== undefined) {
+    /** Treats an unset `availableInLangs` as "all locales available" so non-post pages keep deep links. */
     const hasTarget = availableInLangs === undefined
       || availableInLangs.includes(targetLang,);
     if (hasTarget)
@@ -226,6 +227,7 @@ export function html(
     availableInLangs?: readonly Locales[] | undefined;
   },
 ): string {
+  /** Locale-bound translator for the switcher's aria-label and menu item text. */
   const t = i18nObject(currentLang,);
   return h({
     tag: 'lang-switcher',
@@ -249,11 +251,13 @@ export function html(
             tag: 'ul',
             class: 'menu',
             children: locales.map(function renderItem(targetLang,) {
+              /** URL path computed once per locale row before the link element is built. */
               const href = resolveHref({
                 targetLang,
                 currentName,
                 availableInLangs,
               },);
+              /** Marks the current-locale item so aria-current renders consistently. */
               const isCurrent = targetLang === currentLang;
               return h({
                 tag: 'li',

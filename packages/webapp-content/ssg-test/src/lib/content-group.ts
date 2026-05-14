@@ -97,6 +97,7 @@ export function allTags(posts: readonly Post[],): string[] {
  * ```
  */
 export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
+  /** Distinct tag universe computed once so the inner filter loop only iterates the set, not duplicates. */
   const tags = allTags(posts,);
   return Object.fromEntries(
     tags.map(function tagEntry(tag,) {
@@ -130,6 +131,7 @@ export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
 export function groupByLangThenTag(
   posts: readonly Post[],
 ): Partial<Record<Locales, Record<string, Post[]>>> {
+  /** Stage one of the two-level grouping; second-level tag grouping happens per language to avoid empty buckets. */
   const byLang = groupByLang(posts,);
 
   return Object.fromEntries(

@@ -98,6 +98,7 @@ export async function readCache(
   { l, }: { l: Logger; },
 ): Promise<BuildManifest | undefined> {
   try {
+    /** Raw JSON text read before schema validation so parse errors and validation errors share the same catch. */
     const raw = await readFile(
       CACHE_PATH,
       'utf8',
@@ -109,6 +110,7 @@ export async function readCache(
   }
   catch (error) {
     // ENOENT is expected on first build; everything else is worth logging
+    /** Distinguishes the benign first-build case from genuine failures so logs stay quiet on the happy path. */
     const isFileNotFound = error instanceof Error
       && 'code' in error
       && error.code === 'ENOENT';
@@ -182,6 +184,7 @@ export function getCachedEntry(
   if (manifest === undefined)
     return undefined;
 
+  /** Lookup separated from the hash check so the missing-key and stale-hash branches both early-return. */
   const entry = manifest.content[filePath];
   if (entry === undefined)
     return undefined;

@@ -34,6 +34,7 @@ export async function writePage(
     content: string;
   },
 ): Promise<void> {
+  /** Absolute target so mkdir and writeFile reach the same dist location. */
   const fullPath = join(
     DIST,
     relativePath,

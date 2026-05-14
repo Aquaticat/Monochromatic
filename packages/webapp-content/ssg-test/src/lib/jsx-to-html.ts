@@ -118,12 +118,14 @@ function renderChild(child: unknown,): string {
  * @returns space-prefixed attribute string (empty string if no attributes)
  */
 function renderAttrs(props: Record<string, unknown>,): string {
+  /** Accumulator built up across the prop loop; concatenation matches the simple-serialisation contract. */
   let result = '';
   for (const [key, value,] of Object.entries(props,)) {
     if (key === 'children' || key === 'dangerouslySetInnerHTML')
       continue;
     if (value === null || value === undefined || value === false)
       continue;
+    /** Resolved HTML attribute name; PROP_TO_ATTR rewrites JSX-isms like `className` to `class`. */
     const name = PROP_TO_ATTR[key] ?? key;
     if (value === true)
       result += ` ${name}`;
@@ -194,11 +196,13 @@ export function jsx(
   if (typeof type === 'function')
     return type(props,);
 
+  /** Serialised attribute string shared by both the void and the closed-tag paths. */
   const attrs = renderAttrs(props,);
 
   if (VOID_ELEMENTS.has(type,))
     return { html: `<${type}${attrs}>`, };
 
+  /** Element body chosen between raw HTML escape hatch and rendered children. */
   const inner = isDangerousHtml(props.dangerouslySetInnerHTML,)
     ? props.dangerouslySetInnerHTML.__html
     : renderChild(props.children,);

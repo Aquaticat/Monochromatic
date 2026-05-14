@@ -110,14 +110,19 @@ const TOTAL_DURATION = QUOTE_COUNT * (HOLD_DURATION + SCROLL_DURATION);
  * ```
  */
 function tickerKeyframeStops(): string[] {
+  /** Accumulator pushed into across the loop; flattened into the keyframe rule list at the end. */
   const stops: string[] = [];
+  /** Vertical translate granularity expressed as a percentage of the ticker height. */
   const stepPercent = 100 / QUOTE_COUNT;
 
   for (let i = 0; i < QUOTE_COUNT; i++) {
+    /** Loop iteration's hold-start percentage marking when this quote becomes stationary. */
     const holdStart = (i * (HOLD_DURATION + SCROLL_DURATION) / TOTAL_DURATION) * 100;
+    /** Loop iteration's hold-end percentage marking when this quote begins scrolling out. */
     const holdEnd = (i * (HOLD_DURATION + SCROLL_DURATION) + HOLD_DURATION)
       / TOTAL_DURATION
       * 100;
+    /** Pre-formatted transform value applied to the hold-start and hold-end stops. */
     const offset = cssTranslateY(cssPercent(-(i * stepPercent),),);
 
     stops.push(

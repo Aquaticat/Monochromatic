@@ -58,11 +58,14 @@ export async function generatePages(
     l: Logger;
   },
 ): Promise<void> {
+  /** Function-scoped logger tagged with the caller name for traceable log lines. */
   const l = tagged({
     tag: generatePages.name,
     l: parentLogger,
   },);
+  /** Posts grouped by slug name so the name page can iterate translation siblings. */
   const byName = groupByName(posts,);
+  /** Distinct post slugs serving as the index for cross-locale write fan-out. */
   const names = Object.keys(byName,);
 
   /** Locales each post slug has a translation in. */
@@ -78,6 +81,7 @@ export async function generatePages(
       },),
     );
 
+  /** Flat list of write promises gathered before the single Promise.all flush at the end. */
   const writes = [
     writePage({
       relativePath: 'index.html',
@@ -87,7 +91,9 @@ export async function generatePages(
       },),
     },),
     ...validLangs.flatMap(function langWrites(lang,) {
+      /** Posts narrowed to this locale; absent locales yield an empty list instead of an error. */
       const langPosts = byLang[lang] ?? [];
+      /** Per-locale tag bucketing computed once per language pass. */
       const langTags = groupByTag(langPosts,);
       return [
         writePage({
@@ -99,9 +105,11 @@ export async function generatePages(
           },),
         },),
         ...names.map(function postWrite(name,) {
+          /** Locale-specific post for this slug or undefined when no translation exists. */
           const post = langPosts.find(function matchName(lp,) {
             return lp.name === name;
           },);
+          /** Pre-rendered MDX body keyed by `lang/name`; absent for missing translations. */
           const html = renderedContent.get(`${lang}/${name}`,);
           return writePage({
             relativePath: `${lang}/${name}.html`,
@@ -129,6 +137,7 @@ export async function generatePages(
       ];
     },),
     ...names.map(function nameWrite(name,) {
+      /** Cross-language translations for this slug feeding the language picker on the name page. */
       const namePosts = byName[name] ?? [];
       return writePage({
         relativePath: `${name}.html`,

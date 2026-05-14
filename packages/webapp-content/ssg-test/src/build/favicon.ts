@@ -57,11 +57,13 @@ const TARGETS = [
 export async function ensureFavicons(
   { l: parentLogger, }: { l: Logger; },
 ): Promise<void> {
+  /** Function-scoped logger tagged with the caller name for traceable log lines. */
   const l = tagged({
     tag: ensureFavicons.name,
     l: parentLogger,
   },);
 
+  /** Existence flags collected in parallel so the early-return path stays cheap when all targets exist. */
   const checks = await Promise.all(
     TARGETS.map(function checkTarget(name,) {
       return fileExists(join(
@@ -78,6 +80,7 @@ export async function ensureFavicons(
 
   l.info('generating favicon files from SVG source',);
 
+  /** Rasterised PNG buffers prepared in parallel for the favicon family and PWA icons. */
   const [png32, png192, png512, appleTouchIcon, maskableIcon,] = await Promise.all([
     renderPng({ size: 32, },),
     renderPng({ size: 192, },),
@@ -92,6 +95,7 @@ export async function ensureFavicons(
     },),
   ],);
 
+  /** Serialised web app manifest written alongside the PNG icons. */
   const manifest = JSON.stringify(
     {
       icons: [
@@ -168,6 +172,7 @@ export async function ensureFavicons(
 
 //region Standalone execution: allows running via `mise run generate:favicons`
 if (import.meta.main) {
+  /** Lazily imported logger so library consumers do not pull in the side-effect initialiser. */
   const {
     logger,
     initPromise,

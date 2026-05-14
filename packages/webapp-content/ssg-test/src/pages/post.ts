@@ -70,6 +70,7 @@ export function postPage(
     },);
   }
 
+  /** Main element tree composed before the page layout wraps it with `<head>` and friends. */
   const content = h({
     tag: 'main',
     children: [
@@ -124,9 +125,12 @@ function postNotFoundPage(
     availableInLangs: readonly Locales[];
   },
 ): string {
+  /** Locale-bound translator reused for fallback page strings. */
   const t = i18nObject(lang,);
+  /** Heading naming the missing-translation condition for the requested locale. */
   const title = t.postNotInLang();
 
+  /** Main element tree composed before the page layout wraps it with `<head>` and friends. */
   const content = h({
     tag: 'main',
     children: [

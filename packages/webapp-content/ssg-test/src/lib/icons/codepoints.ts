@@ -56,6 +56,7 @@ function parseLine(line: string,): readonly [
   string,
   string,
 ] {
+  /** Destructured space-delimited fields; downstream uses defaults to absorb malformed lines. */
   const [name, hex,] = line.split(' ',);
   return [
     name ?? '',

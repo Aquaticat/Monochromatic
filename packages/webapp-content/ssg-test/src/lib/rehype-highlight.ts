@@ -110,10 +110,12 @@ function extractText(node: ElementContent,): string {
  * @returns language name, or `undefined` when no `language-*` class is found
  */
 function getLanguage(codeElement: Element,): string | undefined {
+  /** Destructured class-list property; rehype puts the language as a `language-*` token here. */
   const { className, } = codeElement.properties;
   if (!Array.isArray(className,))
     return undefined;
   for (const cls of className) {
+    /** Per-iteration string cast since className entries may be numbers in the hast spec. */
     const name = String(cls,);
     if (name.startsWith(LANGUAGE_PREFIX,))
       return name.slice(LANGUAGE_PREFIX.length,);
@@ -144,6 +146,7 @@ function annotateCodeBlock({
   parser: Parser;
   text: string;
 },): void {
+  /** Parsed syntax tree fed to the Lezer highlighter for offset-pair extraction. */
   const tree = parser.parse(text,);
 
   /** Accumulated `from-to` pairs per highlight group. */
@@ -157,6 +160,7 @@ function annotateCodeBlock({
       to: number,
       classes: string,
     ) {
+      /** Existing or freshly created pair list for this highlight class group. */
       let pairs = pairsByGroup.get(classes,);
       if (pairs === undefined) {
         pairs = [];
@@ -170,6 +174,7 @@ function annotateCodeBlock({
   );
 
   for (const group of HIGHLIGHT_GROUPS) {
+    /** Pairs for the current highlight group; undefined when no match was found. */
     const pairs = pairsByGroup.get(group,);
     if (pairs !== undefined && pairs.length > 0)
       codeElement.properties[`data-hl-${group}`] = pairs.join(';',);
@@ -187,16 +192,20 @@ function visitNode(node: Root | Element,): void {
       continue;
 
     if (child.tagName === 'pre') {
+      /** First child node expected to be the `<code>` block; processed when present. */
       const [firstChild,] = child.children;
       if (
         firstChild !== undefined
         && firstChild.type === 'element'
         && firstChild.tagName === 'code'
       ) {
+        /** Language detected from the `<code>` class list, or undefined to skip. */
         const lang = getLanguage(firstChild,);
         if (lang !== undefined) {
+          /** Lezer parser bound to the detected language, or undefined when unsupported. */
           const parser = PARSERS[lang];
           if (parser !== undefined) {
+            /** Plain text extracted from the code element prior to highlighting. */
             const text = firstChild.children.map(extractText,).join('',);
             if (text.length > 0) {
               annotateCodeBlock({

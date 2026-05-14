@@ -124,6 +124,7 @@ function insertHash(
     hash: string;
   },
 ): string {
+  /** Position of the final dot; `-1` indicates the file has no extension. */
   const lastDot = name.lastIndexOf('.',);
   if (lastDot === -1) {
     return `${name}.${
@@ -133,10 +134,12 @@ function insertHash(
       )
     }`;
   }
+  /** Filename portion before the extension; used as the prefix for the hashed name. */
   const stem = name.slice(
     0,
     lastDot,
   );
+  /** Extension portion including the leading dot; appended after the hash. */
   const ext = name.slice(lastDot,);
   return `${stem}.${
     hash.slice(
@@ -166,16 +169,22 @@ function insertHash(
 async function fingerprintLeafAssets(
   { files, }: { files: readonly string[]; },
 ): Promise<Map<string, string>> {
+  /** Original-to-hashed basename map built up across the per-file fan-out. */
   const replacements = new Map<string, string>();
 
   await Promise.all(files.map(async function fingerprintFile(filePath,) {
+    /** File bytes read once for both the hash and the eventual rename. */
     const content = await readFile(filePath,);
+    /** Content-addressed hash spliced into the renamed filename. */
     const hash = sha256Buffer(content,);
+    /** Original basename used as the map key and rename source. */
     const original = basename(filePath,);
+    /** Hashed basename produced by `insertHash`. */
     const hashed = insertHash({
       name: original,
       hash,
     },);
+    /** Absolute rename target sharing the original directory. */
     const hashedPath = join(
       dirname(filePath,),
       hashed,
@@ -223,6 +232,7 @@ async function fingerprintCss(
     replacements: Map<string, string>;
   },
 ): Promise<void> {
+  /** Absolute path of the pre-fingerprinted CSS file shared by readCss and the rename. */
   const cssPath = join(
     distDir,
     'styles.css',
@@ -251,10 +261,12 @@ async function fingerprintCss(
     }
   }
 
+  /** Pre-fingerprint CSS body; undefined when the file is already renamed. */
   const initialCss = await readCss();
   if (initialCss === undefined)
     return;
 
+  /** Mutable copy of the CSS body rewritten via replacements before hashing. */
   let cssContent = initialCss;
   for (const [original, hashed,] of replacements) {
     cssContent = cssContent.replaceAll(
@@ -263,11 +275,14 @@ async function fingerprintCss(
     );
   }
 
+  /** Content-addressed hash spliced into the renamed CSS filename. */
   const hash = sha256(cssContent,);
+  /** Hashed basename produced by `insertHash`. */
   const hashedName = insertHash({
     name: 'styles.css',
     hash,
   },);
+  /** Absolute path used as the write target before the original is unlinked. */
   const hashedPath = join(
     distDir,
     hashedName,
@@ -313,7 +328,9 @@ async function rewriteReferences(
     replacements: ReadonlyMap<string, string>;
   },
 ): Promise<void> {
+  /** HTML files discovered by globbing dist for rewrite candidates. */
   const htmlResult = await readdir(`${distDir}/**/*.html`,);
+  /** Combined HTML and manifest targets for the rewrite fan-out. */
   const rewriteTargets = [
     ...htmlResult.files,
     join(
@@ -323,6 +340,7 @@ async function rewriteReferences(
   ];
 
   await Promise.all(rewriteTargets.map(async function rewriteFile(filePath,) {
+    /** Mutable file body progressively rewritten by the replacement map. */
     let content = await readFile(
       filePath,
       'utf8',
@@ -401,10 +419,12 @@ async function cleanStaleFingerprints(
 async function runPagefind(
   { distDir, }: { distDir: string; },
 ): Promise<void> {
+  /** Sub-tagged logger so pagefind output is attributable in the build log. */
   const pl = tagged({
     tag: 'pagefind',
     l,
   },);
+  /** Child process handle used to stream stdout and stderr concurrently. */
   const subprocess = spawn(
     'pagefind',
     [
@@ -437,6 +457,7 @@ const fullScan = await readdir(`${DIST}/**/*`,);
 
 /** Previously fingerprinted files to clean up before re-fingerprinting. */
 const staleFiles = fullScan.files.filter(function isStale(filePath,) {
+  /** Basename used for the stale-fingerprint pattern check, regardless of subdirectory depth. */
   const name = basename(filePath,);
   return STALE_HASH_PATTERN.test(name,) || STALE_HASH_ZST_PATTERN.test(name,);
 },);
@@ -462,6 +483,7 @@ const LEAF_EXCLUDES = [
 
 /** Leaf assets eligible for fingerprinting (excludes HTML, CSS, pagefind, etc.). */
 const leafAssetFiles = fullScan.files.filter(function isLeafAsset(filePath,) {
+  /** Basename used for the stale-fingerprint pattern check independent of the full path. */
   const name = basename(filePath,);
   if (STALE_HASH_PATTERN.test(name,) || STALE_HASH_ZST_PATTERN.test(name,))
     return false;
@@ -486,6 +508,7 @@ const leafAssetFiles = fullScan.files.filter(function isLeafAsset(filePath,) {
  * ```
  */
 async function fingerprintAssets(): Promise<Map<string, string>> {
+  /** Hashed leaf-asset replacements; passed to CSS rewriting and later returned to phase 3. */
   const replacements = await fingerprintLeafAssets({
     files: leafAssetFiles,
   },);

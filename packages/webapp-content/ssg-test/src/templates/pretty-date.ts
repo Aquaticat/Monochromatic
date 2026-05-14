@@ -30,6 +30,7 @@ export function prettyDate(
     lang: string;
   },
 ): string {
+  /** Locale-formatted display text rendered inside the `<time>` element. */
   const formatted = date.toLocaleDateString(
     lang,
     {

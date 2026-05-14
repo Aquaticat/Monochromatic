@@ -45,14 +45,19 @@ export function sha256(input: string,): string {
 export async function computePipelineFingerprint(
   glob: string,
 ): Promise<string> {
+  /** Glob expansion result; `.files` holds the matched paths used downstream. */
   const result = await readdir(glob,);
+  /** File path list feeding the per-entry mtime fan-out. */
   const paths = result.files;
+  /** Modification timestamps gathered in parallel for the max-mtime aggregation. */
   const mtimes = await Promise.all(
     paths.map(async function getMtime(path,) {
+      /** Per-file stat result used solely for `mtimeMs`. */
       const stats = await stat(path,);
       return stats.mtimeMs;
     },),
   );
+  /** Greatest modification time, or zero when no files match, encoded into the fingerprint. */
   const maxMtime = mtimes.length > 0
     ? Math.max(...mtimes,)
     : 0;

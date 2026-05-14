@@ -40,6 +40,7 @@ import { ICON_CODEPOINTS, } from './codepoints.ts';
  * ```
  */
 export function icon(name: string,): string {
+  /** Lookup separated from the existence check so the error path can name the missing key. */
   const codepoint = ICON_CODEPOINTS[name];
   if (codepoint === undefined)
     throw new Error(`Unknown Material Symbols Outlined icon: ${name}`,);
