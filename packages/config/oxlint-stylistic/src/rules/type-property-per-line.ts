@@ -48,7 +48,9 @@ export const typePropertyPerLine: CreateOnceRule = {
      * @param node - TSTypeLiteral or TSInterfaceBody AST node
      */
     function checkBody(node: Span,): void {
+      /** Widen `node` to index members under either `body` (interface) or `members` (type literal). */
       const bodyNode = node as Span & Record<string, unknown>;
+      /** Members under either key; AST differs between `TSTypeLiteral` and `TSInterfaceBody`. */
       const members = (bodyNode['body'] as Span[] | null | undefined)
         ?? (bodyNode['members'] as Span[] | null | undefined);
       if (members === undefined || members === null)

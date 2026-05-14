@@ -73,6 +73,7 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
      * @param node - VariableDeclaration AST node
      */
     function checkDeclaration(node: Span,): void {
+      /** Destructure to access declarators and the for-statement parent escape hatch in one step. */
       const {
         declarations,
         parent,
@@ -90,23 +91,30 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
       if (declarations.length < 2)
         return;
 
+      /** Source text is needed for line-number lookups and inter-declarator slices. */
       const sourceText = context.sourceCode.getText();
+      /** Indentation of the declaration keyword; the fix aligns continuations relative to it. */
       const baseIndent = baseIndentAt({
         sourceText,
         offset: rangeOf(node,)[0],
       },);
+      /** Continuation indent for declarators after the first; two-space convention matches the rest of the package. */
       const childIndent = `${baseIndent}  `;
 
       for (let i = 1; i < declarations.length; i++) {
+        /** Previous declarator; its end offset is the cut point for the inter-declarator slice. */
         const prev = at({
           arr: declarations,
           index: i - 1,
         },);
+        /** Current declarator; its start offset is the other cut point. */
         const curr = at({
           arr: declarations,
           index: i,
         },);
+        /** Source range of the previous declarator, queried once. */
         const prevRange = rangeOf(prev,);
+        /** Source range of the current declarator, queried once. */
         const currRange = rangeOf(curr,);
 
         if (
@@ -121,10 +129,12 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
           continue;
         }
 
+        /** Source slice between the two declarators; comments here block the autofix. */
         const between = sourceText.slice(
           prevRange[1],
           currRange[0],
         );
+        /** Whether the inter-declarator slice contains only whitespace and commas (i.e. no comments to preserve). */
         const canFix = SAFE_TO_FIX.test(between,);
 
         context.report({

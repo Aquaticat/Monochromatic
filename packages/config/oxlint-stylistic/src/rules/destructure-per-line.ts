@@ -41,7 +41,9 @@ export const destructurePerLine: CreateOnceRule = {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       ObjectPattern(node: Span,): void {
+        /** Widen `node` to index `properties` without leaving an untyped cast at the call site. */
         const patternNode = node as Span & Record<string, unknown>;
+        /** Extract properties from the untyped record cast above. */
         const properties = patternNode['properties'] as Span[] | null | undefined;
         if (properties === undefined || properties === null)
           return;

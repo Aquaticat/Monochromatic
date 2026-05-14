@@ -44,7 +44,9 @@ export const arrayElementPerLine: CreateOnceRule = {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       ArrayExpression(node: Span,): void {
+        /** Widen `node` to index `elements` without leaving an untyped cast at the call site. */
         const arrayNode = node as Span & Record<string, unknown>;
+        /** Extract elements from the untyped record cast above. */
         const elements = arrayNode['elements'] as Span[] | null | undefined;
         if (elements === undefined || elements === null)
           return;

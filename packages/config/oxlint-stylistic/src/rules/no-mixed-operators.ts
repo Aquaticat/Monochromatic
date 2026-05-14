@@ -99,7 +99,9 @@ export const noMixedOperators: CreateOnceRule = {
      * @param node - parent BinaryExpression or LogicalExpression
      */
     function check(node: Span,): void {
+      /** Source text is needed for `hasParens` to peek at bytes surrounding the operand spans. */
       const sourceText = context.sourceCode.getText();
+      /** Widen `node` so operator/left/right can be accessed without leaving an untyped cast at every use. */
       const parent = node as Span & {
         operator?: string;
         left: Span & { operator?: string; };
@@ -115,6 +117,7 @@ export const noMixedOperators: CreateOnceRule = {
           child,
           sourceText,
         },)) continue;
+        /** Alias so the fixer closure captures the loop value rather than `child` (which TypeScript widens across the for-of). */
         const offender = child;
         context.report({
           node,

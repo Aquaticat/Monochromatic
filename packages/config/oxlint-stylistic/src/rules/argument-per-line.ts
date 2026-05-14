@@ -48,7 +48,9 @@ export const argumentPerLine: CreateOnceRule = {
      * @param node - call expression AST node
      */
     function checkCall(node: Span,): void {
+      /** Widen `node` to index `arguments` without leaving an untyped cast at the call site. */
       const callNode = node as Span & Record<string, unknown>;
+      /** Extract arguments from the untyped record cast above. */
       const args = callNode['arguments'] as Span[] | null | undefined;
       if (args === undefined || args === null)
         return;

@@ -120,6 +120,7 @@ export const maxStatementsPerLine: CreateOnceRule = {
      * @param node - statement AST node
      */
     function trackStatement(node: Span,): void {
+      /** Destructure to access the parent escape hatch used by the single-child container check. */
       const { parent, } = node as Span & {
         parent?: {
           type: string;
@@ -127,16 +128,20 @@ export const maxStatementsPerLine: CreateOnceRule = {
         };
       };
       if ((parent !== undefined) && SINGLE_CHILD_ALLOWED.has(parent.type,)) {
+        /** Alternate branch of an `if`/`else` is not exempt; it counts toward the line tally. */
         const isIfAlternate = (parent.type === 'IfStatement')
           && (parent.alternate === node);
         if (!isIfAlternate) return;
       }
 
+      /** Source text is needed to map the node's start offset to a line number. */
       const sourceText = context.sourceCode.getText();
+      /** Line number of the statement's start offset; bucket key. */
       const line = lineAt({
         sourceText,
         offset: rangeOf(node,)[0],
       },);
+      /** Per-line bucket of statements seen so far; created on demand. */
       const bucket = perLine.get(line,) ?? [];
       bucket.push(node,);
       perLine.set(line, bucket,);
@@ -147,29 +152,36 @@ export const maxStatementsPerLine: CreateOnceRule = {
      * past the first.
      */
     function reportExceeding(): void {
+      /** Source text is needed for indent lookup and inter-statement slices. */
       const sourceText = context.sourceCode.getText();
       for (const stmts of perLine.values()) {
         if (stmts.length <= 1) continue;
 
+        /** Range of the first statement on this line; its leading whitespace defines the indent for the fix. */
         const firstRange = rangeOf(at({
           arr: stmts,
           index: 0,
         },),);
+        /** Indent applied to each split-out statement so continuations align with the original line. */
         const indent = baseIndentAt({
           sourceText,
           offset: firstRange[0],
         },);
 
         for (let i = 1; i < stmts.length; i++) {
+          /** Previous statement; its end offset is the cut point for the inter-statement slice. */
           const prev = at({
             arr: stmts,
             index: i - 1,
           },);
+          /** Current statement; its start offset is the other cut point and the reported node. */
           const curr = at({
             arr: stmts,
             index: i,
           },);
+          /** End offset of the previous statement; queried once and reused below. */
           const prevEnd = rangeOf(prev,)[1];
+          /** Start offset of the current statement; queried once and reused below. */
           const currStart = rangeOf(curr,)[0];
           // When `curr` is nested inside `prev` (e.g. the alternate of an
           // `IfStatement` whose own range covers the whole `if/else`), the
@@ -177,8 +189,11 @@ export const maxStatementsPerLine: CreateOnceRule = {
           // wrong for this case anyway; splitting `if (a) foo(); else bar();`
           // requires inserting before `else`, not before `bar()`. Skip the
           // fix and still report.
+          /** Whether the current statement is nested inside the previous (e.g. `if/else` alternate); blocks the autofix. */
           const nested = currStart <= prevEnd;
+          /** Source slice between the two statements; comments here block the autofix. */
           const between = nested ? '' : sourceText.slice(prevEnd, currStart,);
+          /** Whether the inter-statement slice is trivially replaceable (no nested span, only whitespace/semicolons). */
           const canFix = !nested && SAFE_TO_FIX.test(between,);
 
           context.report({

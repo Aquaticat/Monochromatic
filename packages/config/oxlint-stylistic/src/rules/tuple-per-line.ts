@@ -40,7 +40,9 @@ export const tuplePerLine: CreateOnceRule = {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       TSTupleType(node: Span,): void {
+        /** Widen `node` to index `elementTypes` without leaving an untyped cast at the call site. */
         const tupleNode = node as Span & Record<string, unknown>;
+        /** Extract elementTypes from the untyped record cast above. */
         const elements = tupleNode['elementTypes'] as Span[] | null | undefined;
         if (elements === undefined || elements === null)
           return;

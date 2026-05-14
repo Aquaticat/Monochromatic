@@ -43,7 +43,9 @@ export const objectPropertyPerLine: CreateOnceRule = {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       ObjectExpression(node: Span,): void {
+        /** Widen `node` to index `properties` without leaving an untyped cast at the call site. */
         const objNode = node as Span & Record<string, unknown>;
+        /** Extract properties from the untyped record cast above. */
         const properties = objNode['properties'] as Span[] | null | undefined;
         if (properties === undefined || properties === null)
           return;

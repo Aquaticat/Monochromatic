@@ -45,12 +45,14 @@ export const exportPerLine: CreateOnceRule = {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       ExportNamedDeclaration(node: Span,): void {
+        /** Widen `node` to index export-specific fields without leaving an untyped cast at the call site. */
         const exportNode = node as Span & Record<string, unknown>;
 
         /** Skip inline declarations (`export const x = ...`). */
         if (exportNode['declaration'] !== null && exportNode['declaration'] !== undefined)
           return;
 
+        /** Extract specifiers from the untyped record cast above. */
         const specifiers = exportNode['specifiers'] as Span[] | null | undefined;
         if (specifiers === undefined || specifiers === null)
           return;

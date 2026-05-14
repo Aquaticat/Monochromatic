@@ -73,10 +73,12 @@ export function paramsNeedFix({
   }
 
   for (let i = 1; i < params.length; i++) {
+    /** Range of the previous param; its end offset is compared with the current param's start line. */
     const prevRange = rangeOf(at({
       arr: params,
       index: i - 1,
     },),);
+    /** Range of the current param; its start offset is the other side of the line-equality check. */
     const currRange = rangeOf(at({
       arr: params,
       index: i,
@@ -136,8 +138,10 @@ export function buildParamFix({
     sourceText,
     offset: openParen,
   },);
+  /** Two-space continuation indent for params placed inside the parens. */
   const childIndent = `${baseIndent}  `;
 
+  /** Trimmed source text for each param; trailing delimiters are re-added uniformly below. */
   const paramTexts = params.map(
     function getParamText(p,): string {
       return context.sourceCode.getText(p,).trim();
@@ -149,18 +153,23 @@ export function buildParamFix({
     arr: params,
     index: params.length - 1,
   },),);
+  /** Source slice between the last param and the close paren; inspected for an existing trailing comma. */
   const between = sourceText.slice(
     lastRange[1],
     closeParen,
   );
+  /** Whether the original source had a trailing comma; preserved verbatim in the rewrite. */
   const hasTrailing = between.includes(',',);
 
+  /** Params rendered one per line with `childIndent` and the appropriate comma suffix. */
   const formatted = paramTexts
     .map(function fmt(
       text,
       idx,
     ): string {
+      /** Whether this is the last param; combined with `hasTrailing` to decide whether to emit a comma. */
       const isLast = idx === paramTexts.length - 1;
+      /** Comma suffix or empty string for the last param without an original trailing comma. */
       const comma = isLast && !hasTrailing ? '' : ',';
       return `${childIndent}${text}${comma}`;
     },)

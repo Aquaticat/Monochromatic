@@ -45,7 +45,9 @@ export const importPerLine: CreateOnceRule = {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       ImportDeclaration(node: Span,): void {
+        /** Widen `node` to index `specifiers` without leaving an untyped cast at the call site. */
         const importNode = node as Span & Record<string, unknown>;
+        /** Extract specifiers (typed with record access since each entry will be probed for `type`) from the untyped record cast above. */
         const specifiers = importNode['specifiers'] as
           | (Span & Record<string, unknown>)[]
           | null
