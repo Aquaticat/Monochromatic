@@ -53,7 +53,7 @@ export const typePropertyPerLine: CreateOnceRule = {
       /** Members under either key; AST differs between `TSTypeLiteral` and `TSInterfaceBody`. */
       const members = (bodyNode['body'] as Span[] | null | undefined)
         ?? (bodyNode['members'] as Span[] | null | undefined);
-      if (members === undefined || members === null)
+      if ((members === undefined) || (members === null))
         return;
 
       checkItemsPerLine({

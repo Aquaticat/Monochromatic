@@ -44,7 +44,7 @@ export const tuplePerLine: CreateOnceRule = {
         const tupleNode = node as Span & Record<string, unknown>;
         /** Extract elementTypes from the untyped record cast above. */
         const elements = tupleNode['elementTypes'] as Span[] | null | undefined;
-        if (elements === undefined || elements === null)
+        if ((elements === undefined) || (elements === null))
           return;
 
         checkItemsPerLine({

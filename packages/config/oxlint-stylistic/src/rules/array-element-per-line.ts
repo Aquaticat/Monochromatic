@@ -48,7 +48,7 @@ export const arrayElementPerLine: CreateOnceRule = {
         const arrayNode = node as Span & Record<string, unknown>;
         /** Extract elements from the untyped record cast above. */
         const elements = arrayNode['elements'] as Span[] | null | undefined;
-        if (elements === undefined || elements === null)
+        if ((elements === undefined) || (elements === null))
           return;
 
         checkItemsPerLine({

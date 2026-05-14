@@ -52,7 +52,7 @@ export const importPerLine: CreateOnceRule = {
           | (Span & Record<string, unknown>)[]
           | null
           | undefined;
-        if (specifiers === undefined || specifiers === null)
+        if ((specifiers === undefined) || (specifiers === null))
           return;
 
         /** Filter to only named import specifiers (skip default and namespace). */

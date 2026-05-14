@@ -168,9 +168,9 @@ export function buildParamFix({
       idx,
     ): string {
       /** Whether this is the last param; combined with `hasTrailing` to decide whether to emit a comma. */
-      const isLast = idx === paramTexts.length - 1;
+      const isLast = idx === (paramTexts.length - 1);
       /** Comma suffix or empty string for the last param without an original trailing comma. */
-      const comma = isLast && !hasTrailing ? '' : ',';
+      const comma = (isLast && (!hasTrailing)) ? '' : ',';
       return `${childIndent}${text}${comma}`;
     },)
     .join('\n',);

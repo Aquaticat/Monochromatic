@@ -144,7 +144,10 @@ export const maxStatementsPerLine: CreateOnceRule = {
       /** Per-line bucket of statements seen so far; created on demand. */
       const bucket = perLine.get(line,) ?? [];
       bucket.push(node,);
-      perLine.set(line, bucket,);
+      perLine.set(
+        line,
+        bucket,
+      );
     }
 
     /**
@@ -180,9 +183,9 @@ export const maxStatementsPerLine: CreateOnceRule = {
             index: i,
           },);
           /** End offset of the previous statement; queried once and reused below. */
-          const prevEnd = rangeOf(prev,)[1];
+          const [, prevEnd,] = rangeOf(prev,);
           /** Start offset of the current statement; queried once and reused below. */
-          const currStart = rangeOf(curr,)[0];
+          const [currStart,] = rangeOf(curr,);
           // When `curr` is nested inside `prev` (e.g. the alternate of an
           // `IfStatement` whose own range covers the whole `if/else`), the
           // slice `[prevEnd, currStart]` is negative. The fix shape is
@@ -192,9 +195,12 @@ export const maxStatementsPerLine: CreateOnceRule = {
           /** Whether the current statement is nested inside the previous (e.g. `if/else` alternate); blocks the autofix. */
           const nested = currStart <= prevEnd;
           /** Source slice between the two statements; comments here block the autofix. */
-          const between = nested ? '' : sourceText.slice(prevEnd, currStart,);
+          const between = nested ? '' : sourceText.slice(
+            prevEnd,
+            currStart,
+          );
           /** Whether the inter-statement slice is trivially replaceable (no nested span, only whitespace/semicolons). */
-          const canFix = !nested && SAFE_TO_FIX.test(between,);
+          const canFix = (!nested) && SAFE_TO_FIX.test(between,);
 
           context.report({
             node: curr,
@@ -223,7 +229,10 @@ export const maxStatementsPerLine: CreateOnceRule = {
     const visitor: Record<string, unknown> = {
       'Program:exit': reportExceeding,
       ...Object.fromEntries(STATEMENT_TYPES.map(
-        function asEntry(type,): [string, typeof trackStatement,] {
+        function asEntry(type,): [
+          string,
+          typeof trackStatement,
+        ] {
           return [
             type,
             trackStatement,

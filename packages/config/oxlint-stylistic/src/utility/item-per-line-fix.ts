@@ -125,7 +125,7 @@ export function buildPerLineFix({
     lastRangeEnd,
   );
 
-  if (openPos === -1 || closePos === -1) {
+  if ((openPos === (-1)) || (closePos === (-1))) {
     return fixer.replaceTextRange(
       [
         firstRange[0],
@@ -181,9 +181,9 @@ export function buildPerLineFix({
       idx,
     ): string {
       /** Whether this is the last item; combined with `hasTrailingDelimiter` to decide the suffix. */
-      const isLast = idx === itemTexts.length - 1;
+      const isLast = idx === (itemTexts.length - 1);
       /** Delimiter or empty string for the last item without a trailing delimiter in the original. */
-      const suffix = isLast && !hasTrailingDelimiter ? '' : delimiter;
+      const suffix = (isLast && (!hasTrailingDelimiter)) ? '' : delimiter;
       return `${childIndent}${text}${suffix}`;
     },)
     .join('\n',);

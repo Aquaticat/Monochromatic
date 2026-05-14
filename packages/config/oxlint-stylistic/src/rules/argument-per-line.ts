@@ -52,7 +52,7 @@ export const argumentPerLine: CreateOnceRule = {
       const callNode = node as Span & Record<string, unknown>;
       /** Extract arguments from the untyped record cast above. */
       const args = callNode['arguments'] as Span[] | null | undefined;
-      if (args === undefined || args === null)
+      if ((args === undefined) || (args === null))
         return;
 
       checkItemsPerLine({

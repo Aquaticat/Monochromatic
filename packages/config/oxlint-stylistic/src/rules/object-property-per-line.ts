@@ -47,7 +47,7 @@ export const objectPropertyPerLine: CreateOnceRule = {
         const objNode = node as Span & Record<string, unknown>;
         /** Extract properties from the untyped record cast above. */
         const properties = objNode['properties'] as Span[] | null | undefined;
-        if (properties === undefined || properties === null)
+        if ((properties === undefined) || (properties === null))
           return;
 
         checkItemsPerLine({

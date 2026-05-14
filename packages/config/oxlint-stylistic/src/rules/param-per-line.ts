@@ -78,7 +78,7 @@ export const paramPerLine: CreateOnceRule = {
       const fnNode = node as Span & Record<string, unknown>;
       /** Extract params from the untyped record cast above. */
       const params = fnNode['params'] as Span[] | null | undefined;
-      if (params === undefined || params === null || params.length < 2)
+      if ((params === undefined) || (params === null) || (params.length < 2))
         return;
 
       /** Source text is needed for boundary-paren lookup and the fixer call below. */
@@ -105,7 +105,7 @@ export const paramPerLine: CreateOnceRule = {
         lastRange[1],
       );
 
-      if (openParen === -1 || closeParen === -1)
+      if ((openParen === (-1)) || (closeParen === (-1)))
         return;
 
       if (!paramsNeedFix({

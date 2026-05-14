@@ -109,7 +109,7 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
 
   return output.diagnostics.filter(function isStylisticRule(diagnostic,): boolean {
     // Defensive: some runner-level error diagnostics omit `code` entirely.
-    return (typeof diagnostic.code === 'string')
+    return ((typeof diagnostic.code) === 'string')
       && diagnostic.code.startsWith('stylistic(',);
   },);
 }
@@ -392,7 +392,7 @@ await describe({
             const diagnostics = await lint('invalid/fixable.copy.ts',);
             const stylisticDiags = diagnostics.filter(
               function isStylistic(d,): boolean {
-                return (typeof d.code === 'string')
+                return ((typeof d.code) === 'string')
                   && d.code.startsWith('stylistic(',);
               },
             );

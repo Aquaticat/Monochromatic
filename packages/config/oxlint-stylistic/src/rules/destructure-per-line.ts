@@ -45,7 +45,7 @@ export const destructurePerLine: CreateOnceRule = {
         const patternNode = node as Span & Record<string, unknown>;
         /** Extract properties from the untyped record cast above. */
         const properties = patternNode['properties'] as Span[] | null | undefined;
-        if (properties === undefined || properties === null)
+        if ((properties === undefined) || (properties === null))
           return;
 
         checkItemsPerLine({
