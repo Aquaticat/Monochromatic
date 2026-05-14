@@ -5,7 +5,7 @@ troubleshooting-doc shape (it is a real external-tool bug). The
 remaining sections are workspace audit trails for dependency
 substitution decisions; they document the "why we substituted /
 removed / kept" rationale and explicitly do not file upstream because
-the upstream packages are not defective — only unsuitable for this
+the upstream packages are not defective, only unsuitable for this
 workspace's policy. See "Why we do not file the policy entries
 upstream" at the bottom of this file for the 5-constraint walk.
 
@@ -297,7 +297,7 @@ report is kept at `BUG-REPORT.vlt-build-metadata.md` (referenced below);
 do not file as-is without re-validating the constraints against the
 current vlt HEAD.
 
-### Draft upstream issue (do not file as-is — re-validate against current vltpkg/vltpkg HEAD before filing)
+### Draft upstream issue (do not file as-is; re-validate against current vltpkg/vltpkg HEAD before filing)
 
 ~~~md
 **Title:** vlt fails to fetch manifest when dependency spec includes
@@ -331,9 +331,9 @@ Error: failed to fetch manifest
 
 The registry returns 404 for paths containing `+`. Compare:
 
-- `GET /@optique/core/1.0.0-dev.1692` — 200 OK
-- `GET /@optique/core/1.0.0-dev.1692+5c265bd4` — 404
-- `GET /@optique/core/1.0.0-dev.1692%2B5c265bd4` — 404
+- `GET /@optique/core/1.0.0-dev.1692`: 200 OK
+- `GET /@optique/core/1.0.0-dev.1692+5c265bd4`: 404
+- `GET /@optique/core/1.0.0-dev.1692%2B5c265bd4`: 404
 
 `npm install`, `pnpm install`, `yarn install` all succeed against the
 same trigger package.

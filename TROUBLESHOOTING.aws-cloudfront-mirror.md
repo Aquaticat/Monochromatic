@@ -1,4 +1,4 @@
-# AWS CloudFront + ACM + Njalla DNS (us-east-1, November 2025 TLS 1.3 origin announcement era): mirror setup hits seven failure surfaces — Alt-Svc cross-origin SAN forcing apex CAA widening, CAA tree-walk reaching apex, EC_secp384r1 cert rejected with misleading InvalidViewerCertificate, deterministic validation CNAME tokens per (account, domain), CAA-vs-CNAME coexistence ban, CNAME-following keeps CAA chain safe, and CloudFront edge HTTP 502 against TLS-1.3-only origin
+# AWS CloudFront + ACM + Njalla DNS (us-east-1, November 2025 TLS 1.3 origin announcement era): mirror setup hits seven failure surfaces (Alt-Svc cross-origin SAN forcing apex CAA widening, CAA tree-walk reaching apex, EC_secp384r1 cert rejected with misleading InvalidViewerCertificate, deterministic validation CNAME tokens per (account, domain), CAA-vs-CNAME coexistence ban, CNAME-following keeps CAA chain safe, CloudFront edge HTTP 502 against TLS-1.3-only origin)
 
 **Date**: 2026-05-09
 **Subject**: Setting up `aws.aquati.cat` as a public CloudFront mirror of
@@ -760,7 +760,7 @@ when the ARN, region, validity, and chain are all valid but the key
 algorithm is not in the supported set.
 ~~~
 
-### Issue 4: ACM validation CNAME deterministic per (account, domain) — docs gap
+### Issue 4: ACM validation CNAME deterministic per (account, domain), docs gap
 
 ACM derives the validation CNAME deterministically from the AWS account
 ID and the domain name, so re-requests for the same `(account, domain)`
