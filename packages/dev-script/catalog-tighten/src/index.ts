@@ -97,7 +97,7 @@ function parseCatalogFromYaml(content: string,): Record<string, string> {
   while (match !== null) {
     /** Package name and version range captured from one entry line. */
     const [, name, value,] = match;
-    if (name !== undefined && value !== undefined)
+    if ((name !== undefined) && (value !== undefined))
       result[name] = value;
     match = entryPattern.exec(catalogBlock,);
   }
@@ -112,90 +112,111 @@ if (Object.keys(catalog,).length === 0) {
   throw new Error('No catalog found in pnpm-workspace.yaml',);
 }
 
-/** Collected tightening results for the summary log. */
-const results: TightenResult[] = [];
+/**
+ * Aggregated outcome of processing every catalog entry.
+ *
+ * Folded by `Array.reduce` over `Object.entries(catalog)` so the per-category
+ * counters and `results` accumulator live on the same object instead of as
+ * module-root `let` bindings.
+ */
+type CatalogSummary = {
+  /** Tightening results to write back to `pnpm-workspace.yaml`. */
+  results: TightenResult[];
+  /** Count of entries skipped (not `>=` ranges). */
+  skippedCount: number;
+  /** Count of entries where the installed version matched the catalog range (already tight). */
+  alreadyTightCount: number;
+  /** Count of entries where the package was not found in node_modules. */
+  notFoundCount: number;
+};
 
-/** Count of entries skipped (not `>=` ranges). */
-let skippedCount = 0;
-
-/** Count of entries where the installed version matched the catalog range (already tight). */
-let alreadyTightCount = 0;
-
-/** Count of entries where the package was not found in node_modules. */
-let notFoundCount = 0;
+/** Initial summary fed into the reduce; every counter starts at zero with an empty result list. */
+const initialSummary: CatalogSummary = {
+  results: [],
+  skippedCount: 0,
+  alreadyTightCount: 0,
+  notFoundCount: 0,
+};
 
 /** Classifies and processes each catalog entry for tightening. */
-Object.entries(catalog,).forEach(function processEntry([name, value,],) {
-  /** Parsed range prefix and version, or `undefined` if not a `>=` range. */
-  const parsed = parseRange(value,);
-  if (parsed === undefined) {
-    skippedCount += 1;
-    console.info(`SKIP  ${name}: ${value} (not a >= range)`,);
-    return;
-  }
+const summary: CatalogSummary = Object.entries(catalog,).reduce(
+  function processEntry(
+    acc,
+    [name, value,],
+  ): CatalogSummary {
+    /** Parsed range prefix and version, or `undefined` if not a `>=` range. */
+    const parsed = parseRange(value,);
+    if (parsed === undefined) {
+      console.info(`SKIP  ${name}: ${value} (not a >= range)`,);
+      acc.skippedCount += 1;
+      return acc;
+    }
 
-  /** Candidate npm package names to probe in node_modules. */
-  const npmNames = resolveNpmNames(
-    name,
-    value,
-  );
-  /** First npm name candidate whose installed version resolves. */
-  const resolved = npmNames
-    .map(function probeCandidate(candidate,) {
-      return {
-        name: candidate,
-        version: readInstalledVersion(
-          candidate,
-          monorepoRoot,
-        ),
-      };
-    },)
-    .find(function hasVersion(r,) {
-      return r.version !== undefined;
+    /** Candidate npm package names to probe in node_modules. */
+    const npmNames = resolveNpmNames({
+      catalogKey: name,
+      catalogValue: value,
     },);
+    /** First npm name candidate whose installed version resolves. */
+    const resolved = npmNames
+      .map(function probeCandidate(candidate,) {
+        return {
+          name: candidate,
+          version: readInstalledVersion({
+            npmName: candidate,
+            monorepoRoot,
+          },),
+        };
+      },)
+      .find(function hasVersion(r,) {
+        return r.version !== undefined;
+      },);
 
-  if (resolved === undefined || resolved.version === undefined) {
-    notFoundCount += 1;
-    console.warn(
-      `MISS  ${name}: not found in node_modules (tried ${npmNames.join(', ',)})`,
-    );
-    return;
-  }
+    if ((resolved === undefined) || (resolved.version === undefined)) {
+      console.warn(
+        `MISS  ${name}: not found in node_modules (tried ${npmNames.join(', ',)})`,
+      );
+      acc.notFoundCount += 1;
+      return acc;
+    }
 
-  if (!isStrictlyGreater(
-    parsed.version,
-    resolved.version,
-  )) {
-    alreadyTightCount += 1;
-    console.info(
-      `OK    ${name}: >=${parsed.version} -- installed ${resolved.version} (already tight)`,
-    );
-    return;
-  }
+    if (!isStrictlyGreater({
+      cataloged: parsed.version,
+      installed: resolved.version,
+    },)) {
+      console.info(
+        `OK    ${name}: >=${parsed.version} -- installed ${resolved.version} (already tight)`,
+      );
+      acc.alreadyTightCount += 1;
+      return acc;
+    }
 
-  /** Tightened version range using the installed version as the lower bound. */
-  const newRange = `${parsed.prefix}>=${resolved.version}`;
-  results.push({
-    name,
-    oldRange: value,
-    newRange,
-  },);
-  console.info(`TIGHT ${name}: ${value} -> ${newRange} (installed ${resolved.version})`,);
-},);
+    /** Tightened version range using the installed version as the lower bound. */
+    const newRange = `${parsed.prefix}>=${resolved.version}`;
+    console.info(`TIGHT ${name}: ${value} -> ${newRange} (installed ${resolved.version})`,);
+    acc.results.push({
+      name,
+      oldRange: value,
+      newRange,
+    },);
+    return acc;
+  },
+  initialSummary,
+);
 
 //region Write results
 
-if (results.length === 0)
+if (summary.results.length === 0)
   console.info('\nNo catalog entries to tighten.',);
 else if (dryRun)
-  console.info(`\nDry run: ${String(results.length,)} entries would be tightened.`,);
+  console.info(`\nDry run: ${String(summary.results.length,)} entries would be tightened.`,);
 else {
   /**
    * Rewrite pnpm-workspace.yaml using string replacement to preserve formatting.
    * Each catalog entry is replaced individually to avoid touching unrelated content.
    * Handles both quoted (`">=1.2.3"`) and unquoted (`>=1.2.3`) YAML values.
    */
-  const rewritten = results.reduce(
+  const rewritten = summary.results.reduce(
     function applyTightening(
       acc,
       {
@@ -222,7 +243,7 @@ else {
     rewritten,
   );
   console.info(
-    `\nWrote ${String(results.length,)} tightened entries to pnpm-workspace.yaml.`,
+    `\nWrote ${String(summary.results.length,)} tightened entries to pnpm-workspace.yaml.`,
   );
 }
 
@@ -231,10 +252,10 @@ else {
 //region Summary
 
 console.info(`\nSummary:`,);
-console.info(`  Tightened: ${String(results.length,)}`,);
-console.info(`  Already tight: ${String(alreadyTightCount,)}`,);
-console.info(`  Skipped (not >=): ${String(skippedCount,)}`,);
-console.info(`  Not found: ${String(notFoundCount,)}`,);
+console.info(`  Tightened: ${String(summary.results.length,)}`,);
+console.info(`  Already tight: ${String(summary.alreadyTightCount,)}`,);
+console.info(`  Skipped (not >=): ${String(summary.skippedCount,)}`,);
+console.info(`  Not found: ${String(summary.notFoundCount,)}`,);
 
 //endregion Summary
 

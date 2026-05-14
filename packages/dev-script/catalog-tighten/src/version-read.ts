@@ -58,13 +58,18 @@ export function readVersionFromPackageJson(pkgJsonPath: string,): string | undef
  *
  * @example
  * ```ts
- * readVersionFromBunStore("\@oxc-project/runtime", "/home/user/Monochromatic") // "1.1.0"
- * readVersionFromBunStore("chokidar", "/home/user/Monochromatic") // "5.0.0"
+ * readVersionFromBunStore({ npmName: "\@oxc-project/runtime", monorepoRoot: "/home/user/Monochromatic" }) // "1.1.0"
+ * readVersionFromBunStore({ npmName: "chokidar", monorepoRoot: "/home/user/Monochromatic" }) // "5.0.0"
  * ```
  */
 export function readVersionFromBunStore(
-  npmName: string,
-  monorepoRoot: string,
+  {
+    npmName,
+    monorepoRoot,
+  }: {
+    npmName: string;
+    monorepoRoot: string;
+  },
 ):
   | string
   | undefined
@@ -99,9 +104,13 @@ export function readVersionFromBunStore(
   }
 
   // Match directories starting with `prefix@` (the @ separates name from version)
-  /** Exact prefix used to filter store entries: encoded name plus the version separator `@`. */
+  /**
+   * Exact prefix used to filter store entries: encoded name plus the version separator `@`.
+   */
   const matchPrefix = `${storePrefix}@`;
-  /** Store entries whose directory name starts with `<name>@`; each holds one installed version. */
+  /**
+   * Store entries whose directory name starts with `<name>@`; each holds one installed version.
+   */
   const candidates = entries.filter(function filterBunStoreEntry(entry,) {
     return entry.startsWith(matchPrefix,);
   },);
@@ -130,10 +139,10 @@ export function readVersionFromBunStore(
     const candidateVersion = readVersionFromPackageJson(pkgJsonPath,);
     if (candidateVersion === undefined)
       continue;
-    if (bestVersion === undefined || isStrictlyGreater(
-      bestVersion,
-      candidateVersion,
-    )) {
+    if ((bestVersion === undefined) || isStrictlyGreater({
+      cataloged: bestVersion,
+      installed: candidateVersion,
+    },)) {
       bestVersion = candidateVersion;
     }
   }

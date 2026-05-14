@@ -50,7 +50,7 @@ export function parseRange(value: string,): ParsedRange | undefined {
   const prefix = match.groups?.['prefix'];
   /** Substring captured after `>=`, used as the semver to compare against installed versions. */
   const version = match.groups?.['version'];
-  if (prefix === undefined || version === undefined)
+  if ((prefix === undefined) || (version === undefined))
     return undefined;
   return {
     prefix,
@@ -80,13 +80,19 @@ function splitSemver(version: string,): [
 ] {
   /** Position of the prerelease separator `-`, or `-1` when the version is a plain release. */
   const dashIndex = version.indexOf('-',);
+  /** Sentinel value returned by `String.indexOf` when the search target is absent. */
+  const NOT_FOUND = -1;
+  /** Whether the version carries a prerelease suffix; precomputed so the slice expressions read as a plain ternary. */
+  const hasPrerelease = dashIndex !== NOT_FOUND;
   /** Prerelease tag (substring after `-`) or empty string for a plain release. */
-  const prerelease = dashIndex === -1 ? '' : version.slice(dashIndex + 1,);
+  const prerelease = hasPrerelease ? version.slice(dashIndex + 1,) : '';
   /** Dotted-numeric core of the version (`major.minor.patch`), stripped of any prerelease suffix. */
-  const coreStr = dashIndex === -1 ? version : version.slice(
-    0,
-    dashIndex,
-  );
+  const coreStr = hasPrerelease
+    ? version.slice(
+      0,
+      dashIndex,
+    )
+    : version;
   /** Three string segments parsed out of `coreStr`; cast to numbers below. */
   const parts = coreStr.split('.',);
   return [
@@ -110,14 +116,19 @@ function splitSemver(version: string,): [
  *
  * @example
  * ```ts
- * isStrictlyGreater("1.2.0", "1.3.0") // true
- * isStrictlyGreater("1.2.0", "1.2.0") // false
- * isStrictlyGreater("7.0.0-dev.1", "7.0.0-dev.2") // true
+ * isStrictlyGreater({ cataloged: "1.2.0", installed: "1.3.0" }) // true
+ * isStrictlyGreater({ cataloged: "1.2.0", installed: "1.2.0" }) // false
+ * isStrictlyGreater({ cataloged: "7.0.0-dev.1", installed: "7.0.0-dev.2" }) // true
  * ```
  */
 export function isStrictlyGreater(
-  cataloged: string,
-  installed: string,
+  {
+    cataloged,
+    installed,
+  }: {
+    cataloged: string;
+    installed: string;
+  },
 ): boolean {
   /** Catalog version split into `[major, minor, patch, prerelease]` for component-wise comparison. */
   const [cMaj, cMin, cPat, cPre,] = splitSemver(cataloged,);
@@ -133,9 +144,9 @@ export function isStrictlyGreater(
 
   // Same major.minor.patch: compare prerelease
   // No prerelease > any prerelease (release is "greater" than prerelease of same triple)
-  if (cPre !== '' && iPre === '')
+  if ((cPre !== '') && (iPre === ''))
     return true;
-  if (cPre === '' && iPre !== '') {
+  if ((cPre === '') && (iPre !== '')) {
     // Installed is a prerelease of the same triple; not greater
     return false;
   }

@@ -30,21 +30,30 @@ import {
  *
  * @example
  * ```ts
- * resolveNpmNames("zod", "npm:\@jsr/zod__zod\@>=4.1.8") // ["zod", "\@jsr/zod__zod"]
- * resolveNpmNames("oxlint", ">=0.20.0") // ["oxlint"]
+ * resolveNpmNames({ catalogKey: "zod", catalogValue: "npm:\@jsr/zod__zod\@>=4.1.8" }) // ["zod", "\@jsr/zod__zod"]
+ * resolveNpmNames({ catalogKey: "oxlint", catalogValue: ">=0.20.0" }) // ["oxlint"]
  * ```
  */
 export function resolveNpmNames(
-  catalogKey: string,
-  catalogValue: string,
+  {
+    catalogKey,
+    catalogValue,
+  }: {
+    catalogKey: string;
+    catalogValue: string;
+  },
 ): string[] {
   /** Length of the `npm:` prefix */
   const NPM_PREFIX_LENGTH = 4;
   if (catalogValue.startsWith('npm:',)) {
-    /** Catalog value with the `npm:` prefix stripped, leaving `<target>@<range>` or `<target>` for further parsing. */
+    /**
+     * Catalog value with the `npm:` prefix stripped, leaving `<target>@<range>` or `<target>` for further parsing.
+     */
     const withoutNpm = catalogValue.slice(NPM_PREFIX_LENGTH,);
     // Find the last @ that isn't position 0 (scoped package)
-    /** Index of the version separator `@`; skipped at position 0 so scoped names like `@scope/name` survive intact. */
+    /**
+     * Index of the version separator `@`; skipped at position 0 so scoped names like `@scope/name` survive intact.
+     */
     const lastAt = withoutNpm.lastIndexOf('@',);
     /** Registry-target name without the version suffix; the actual install lives here when bun honours the alias. */
     const aliasTarget = lastAt > 0
@@ -65,12 +74,12 @@ export function resolveNpmNames(
   return [catalogKey,];
 }
 
-/** Cached workspace root directories. */
-let workspaceRootsCache: string[] | undefined = undefined;
+/** Cached workspace root directories keyed by monorepo root path. */
+const workspaceRootsCache = new Map<string, string[]>();
 
 /**
  * Discovers all workspace package directories under `packages/{category}/{pkg}`.
- * Cached after first call.
+ * Cached per `monorepoRoot` after first call.
  *
  * @param monorepoRoot - absolute path to the monorepo root
  *
@@ -83,8 +92,10 @@ let workspaceRootsCache: string[] | undefined = undefined;
  * ```
  */
 function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
-  if (workspaceRootsCache !== undefined)
-    return workspaceRootsCache;
+  /** Previously-computed roots for this `monorepoRoot`, if any; short-circuits the directory scan. */
+  const cached = workspaceRootsCache.get(monorepoRoot,);
+  if (cached !== undefined)
+    return cached;
 
   /** Top-level `packages/` directory; each entry is a category subdir holding individual workspace packages. */
   const packagesDir = join(
@@ -127,7 +138,10 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
     // packages/ dir not found: return empty
   }
 
-  workspaceRootsCache = roots;
+  workspaceRootsCache.set(
+    monorepoRoot,
+    roots,
+  );
   return roots;
 }
 
@@ -147,12 +161,17 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
  *
  * @example
  * ```ts
- * readInstalledVersion("oxlint", "/home/user/Monochromatic") // "0.21.0"
+ * readInstalledVersion({ npmName: "oxlint", monorepoRoot: "/home/user/Monochromatic" }) // "0.21.0"
  * ```
  */
 export function readInstalledVersion(
-  npmName: string,
-  monorepoRoot: string,
+  {
+    npmName,
+    monorepoRoot,
+  }: {
+    npmName: string;
+    monorepoRoot: string;
+  },
 ):
   | string
   | undefined
@@ -211,10 +230,10 @@ export function readInstalledVersion(
   }
 
   // Last resort: scan bun store directory names for transitive deps
-  return readVersionFromBunStore(
+  return readVersionFromBunStore({
     npmName,
     monorepoRoot,
-  );
+  },);
 }
 
 //endregion Version resolution
