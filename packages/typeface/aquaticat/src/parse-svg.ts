@@ -33,11 +33,19 @@ export type Cell = {
  * @param name - attribute name to extract
  *
  * @returns attribute value, or undefined if not found
+ *
+ * @example
+ * ```ts
+ * attr({ attrs: 'fill="red" stroke="black"', name: 'fill' }); // 'red'
+ * ```
  */
-function attr(
-  attrs: string,
-  name: string,
-): string | undefined {
+function attr({
+  attrs,
+  name,
+}: {
+  attrs: string;
+  name: string;
+},): string | undefined {
   /** First regex match for the named attribute; capture group 1 is its value. */
   const match = new RegExp(`${name}="([^"]*)"`,).exec(attrs,);
   return match?.[1];
@@ -75,14 +83,14 @@ export function parseSvg(svgContent: string,): Cell[] {
 
     if (tag === 'rect') {
       /** Raw `transform` attribute value, expected to be `translate(<x>)` for cell rects. */
-      const transform = attr(
+      const transform = attr({
         attrs,
-        'transform',
-      );
+        name: 'transform',
+      },);
       /** Captured numeric argument of the `translate(...)` transform, or undefined when absent. */
       const translateMatch = transform?.match(/translate\((\d+(?:\.\d+)?)\)/,);
       /** Parsed X offset of this cell rect; falls back to 0 when no translate is present. */
-      const xOffset = translateMatch !== undefined && translateMatch !== null
+      const xOffset = (translateMatch !== undefined) && (translateMatch !== null)
         ? Number(translateMatch[1] ?? '0',)
         : 0;
       cells.push({
@@ -94,30 +102,30 @@ export function parseSvg(svgContent: string,): Cell[] {
 
     // tag === "path"
     /** Raw SVG path `d` attribute string for the current `<path>` element. */
-    const d = attr(
+    const d = attr({
       attrs,
-      'd',
-    );
+      name: 'd',
+    },);
     if (d === undefined)
       continue;
 
     /** Raw `stroke` attribute value used to discriminate stroked paths from filled ones. */
-    const strokeAttr = attr(
+    const strokeAttr = attr({
       attrs,
-      'stroke',
-    );
+      name: 'stroke',
+    },);
     /** True when the path has a stroke but no fill, indicating it must be expanded into an outline. */
-    const isStroked = strokeAttr !== undefined && attr(
-          attrs,
-          'fill',
-        ) === undefined;
-    /** Raw `stroke-width` attribute string; parsed only when the path is actually stroked. */
-    const strokeWidthStr = attr(
+    const isStroked = (strokeAttr !== undefined) && (attr({
       attrs,
-      'stroke-width',
-    );
+      name: 'fill',
+    },) === undefined);
+    /** Raw `stroke-width` attribute string; parsed only when the path is actually stroked. */
+    const strokeWidthStr = attr({
+      attrs,
+      name: 'stroke-width',
+    },);
     /** Numeric stroke width in SVG units; 0 for filled paths so downstream code skips expansion. */
-    const strokeWidth = isStroked && strokeWidthStr !== undefined
+    const strokeWidth = isStroked && (strokeWidthStr !== undefined)
       ? Number(strokeWidthStr,)
       : 0;
 
@@ -202,7 +210,7 @@ export function parseSvgPathD(d: string,): SVGPathCommand[] {
     /** Numeric value of the current number token (group 2 of `tokenRegex`). */
     const num = Number(tok[2],);
 
-    if (currentCmd === 'M' || currentCmd === 'L') {
+    if ((currentCmd === 'M') || (currentCmd === 'L')) {
       /** Y coordinate token paired with the just-consumed X for M/L commands. */
       const yTok = tokenRegex.exec(d,);
       if (yTok === null)

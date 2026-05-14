@@ -20,13 +20,19 @@ import spawn from 'nano-spawn';
  *
  * @example
  * ```ts
- * await convertToWoff2("/dist/Aquaticat-Regular.otf", "/dist");
+ * await convertToWoff2({
+ *   otfPath: '/dist/Aquaticat-Regular.otf',
+ *   distDir: '/dist',
+ * });
  * ```
  */
-export async function convertToWoff2(
-  otfPath: string,
-  distDir: string,
-): Promise<void> {
+export async function convertToWoff2({
+  otfPath,
+  distDir,
+}: {
+  otfPath: string;
+  distDir: string;
+},): Promise<void> {
   console.log('Converting to WOFF2 via fonttools...',);
   /** Output path for the WOFF2 font file. */
   const woff2Path = resolve(

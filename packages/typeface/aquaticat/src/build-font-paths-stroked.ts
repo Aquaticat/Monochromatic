@@ -29,16 +29,28 @@ import type { SVGPathCommand, } from './parse-svg.ts';
  *
  * @example
  * ```ts
- * addStrokedPath(otPath, commands, 2, cellX, xShift);
+ * addStrokedPath({
+ *   otPath: glyphPath,
+ *   commands: parseSvgPathD('M0 0 L10 0 L10 10 L0 10 Z'),
+ *   strokeWidth: 2,
+ *   cellX: 0,
+ *   xShift: 40,
+ * });
  * ```
  */
-export function addStrokedPath(
-  otPath: opentype.Path,
-  commands: readonly SVGPathCommand[],
-  strokeWidth: number,
-  cellX: number,
-  xShift: number,
-): void {
+export function addStrokedPath({
+  otPath,
+  commands,
+  strokeWidth,
+  cellX,
+  xShift,
+}: {
+  otPath: opentype.Path;
+  commands: readonly SVGPathCommand[];
+  strokeWidth: number;
+  cellX: number;
+  xShift: number;
+},): void {
   /** Half the stroke width, the signed distance each side is shifted from the centreline. */
   const halfWidth = strokeWidth / 2;
   /** Absolute coordinates of the stroke centreline, with H/V already expanded. */
@@ -55,11 +67,11 @@ export function addStrokedPath(
    * when present so every edge has a real direction.
    */
   const vertices = (
-      first !== undefined
-      && last !== undefined
-      && points.length > 1
-      && first[0] === last[0]
-      && first[1] === last[1]
+      (first !== undefined)
+      && (last !== undefined)
+      && (points.length > 1)
+      && (first[0] === last[0])
+      && (first[1] === last[1])
     )
     ? points.slice(
       0,
@@ -68,15 +80,15 @@ export function addStrokedPath(
     : points;
 
   /** Outer contour: centreline expanded outward by `halfWidth`. */
-  const outerVerts = offsetPolygon(
+  const outerVerts = offsetPolygon({
     vertices,
-    halfWidth,
-  );
+    offset: halfWidth,
+  },);
   /** Inner contour: centreline shrunk inward by `halfWidth`, traced in reverse to form a hole. */
-  const innerVerts = offsetPolygon(
+  const innerVerts = offsetPolygon({
     vertices,
-    -halfWidth,
-  );
+    offset: -halfWidth,
+  },);
 
   /**
    * Traces a polygon contour onto the opentype path.
@@ -92,8 +104,10 @@ export function addStrokedPath(
       vertIndex,
     ) {
       /** Glyph-space X: vertex shifted from SVG coords into the glyph's local origin. */
-      const fx = vert[0] - cellX + xShift;
-      /** Glyph-space Y: vertex flipped into font Y-up coordinates by {@link fontY}. */
+      const fx = (vert[0] - cellX) + xShift;
+      /**
+       * Glyph-space Y: vertex flipped into font Y-up coordinates by {@link fontY}.
+       */
       const fy = fontY(vert[1],);
       if (vertIndex === 0) {
         otPath.moveTo(

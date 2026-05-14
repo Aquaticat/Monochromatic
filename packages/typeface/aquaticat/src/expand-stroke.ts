@@ -22,24 +22,40 @@ type Point = [
  * @param d2 - direction of line 2
  *
  * @returns intersection point
+ *
+ * @example
+ * ```ts
+ * lineIntersection({
+ *   p1: [0, 0],
+ *   d1: [1, 0],
+ *   p2: [10, 5],
+ *   d2: [0, 1],
+ * });
+ * // [10, 0]
+ * ```
  */
-function lineIntersection(
-  p1: Point,
-  d1: Point,
-  p2: Point,
-  d2: Point,
-): Point {
+function lineIntersection({
+  p1,
+  d1,
+  p2,
+  d2,
+}: {
+  p1: Point;
+  d1: Point;
+  p2: Point;
+  d2: Point;
+},): Point {
   /** 2D cross product of the two direction vectors; zero means parallel lines. */
-  const cross = d1[0] * d2[1] - d1[1] * d2[0];
+  const cross = (d1[0] * d2[1]) - (d1[1] * d2[0]);
   /** X offset from `p1` to `p2`, used to project the gap onto `d1`'s parameter axis. */
   const dx = p2[0] - p1[0];
   /** Y offset from `p1` to `p2`, paired with `dx` to form the gap vector. */
   const dy = p2[1] - p1[1];
   /** Parameter along line 1: the multiple of `d1` that lands on the intersection point. */
-  const t = (dx * d2[1] - dy * d2[0]) / cross;
+  const t = ((dx * d2[1]) - (dy * d2[0])) / cross;
   return [
-    p1[0] + t * d1[0],
-    p1[1] + t * d1[1],
+    p1[0] + (t * d1[0]),
+    p1[1] + (t * d1[1]),
   ];
 }
 
@@ -58,13 +74,16 @@ function lineIntersection(
  * @example
  * ```ts
  * const square: [number, number][] = [[0, 0], [10, 0], [10, 10], [0, 10]];
- * const expanded = offsetPolygon(square, 2);
+ * const expanded = offsetPolygon({ vertices: square, offset: 2 });
  * ```
  */
-export function offsetPolygon(
-  vertices: readonly Point[],
-  offset: number,
-): Point[] {
+export function offsetPolygon({
+  vertices,
+  offset,
+}: {
+  vertices: readonly Point[];
+  offset: number;
+},): Point[] {
   /** Cached vertex count used as the modulus for wrap-around edge indexing. */
   const vertexCount = vertices.length;
 
@@ -92,7 +111,7 @@ export function offsetPolygon(
     /** X component of the outward normal scaled by `offset` (CW polygon, Y-down SVG coords). */
     const nx = (dy / len) * offset;
     /** Y component of the outward normal scaled by `offset`. */
-    const ny = (-dx / len) * offset;
+    const ny = ((-dx) / len) * offset;
     return {
       point: [
         vertex[0] + nx,
@@ -114,11 +133,11 @@ export function offsetPolygon(
     const nextEdge = offsetEdges[(edgeIndex + 1) % vertexCount];
     if (nextEdge === undefined)
       throw new Error('unreachable: edge index out of bounds',);
-    return lineIntersection(
-      edge.point,
-      edge.direction,
-      nextEdge.point,
-      nextEdge.direction,
-    );
+    return lineIntersection({
+      p1: edge.point,
+      d1: edge.direction,
+      p2: nextEdge.point,
+      d2: nextEdge.direction,
+    },);
   },);
 }

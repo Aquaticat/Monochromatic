@@ -102,14 +102,14 @@ const letterGlyphs = cells.flatMap(
     const {
       minX,
       maxX,
-    } = computeLocalXBounds(
-      cell.paths,
-      cell.xOffset,
-    );
+    } = computeLocalXBounds({
+      paths: cell.paths,
+      cellX: cell.xOffset,
+    },);
     /** Horizontal shift that places the leftmost stroke exactly one side-bearing inside the glyph box. */
     const xShift = SIDE_BEARING - minX;
     /** Total advance width: stroke span plus a side-bearing on each side. */
-    const advanceWidth = maxX - minX + 2 * SIDE_BEARING;
+    const advanceWidth = (maxX - minX) + (2 * SIDE_BEARING);
 
     /** OpenType path that collects every contour from this cell's SVG paths. */
     const path = new opentype.Path();
@@ -117,21 +117,21 @@ const letterGlyphs = cells.flatMap(
       /** Tokenised commands for one SVG path, dispatched into stroked or filled tracing. */
       const commands = parseSvgPathD(cellPath.d,);
       if (cellPath.isStroked) {
-        addStrokedPath(
-          path,
+        addStrokedPath({
+          otPath: path,
           commands,
-          cellPath.strokeWidth,
-          cell.xOffset,
+          strokeWidth: cellPath.strokeWidth,
+          cellX: cell.xOffset,
           xShift,
-        );
+        },);
       }
       else {
-        addFilledPath(
-          path,
+        addFilledPath({
+          otPath: path,
           commands,
-          cell.xOffset,
+          cellX: cell.xOffset,
           xShift,
-        );
+        },);
       }
     },);
 
@@ -180,9 +180,9 @@ writeFileSync(
 );
 console.log(`Wrote ${otfPath} (${buffer.byteLength} bytes)`,);
 
-await convertToWoff2(
+await convertToWoff2({
   otfPath,
   distDir,
-);
+},);
 
 //endregion Main build

@@ -33,13 +33,19 @@ import {
  *
  * @example
  * ```ts
- * const { minX, maxX } = computeLocalXBounds(cell.paths, cell.xOffset);
+ * const { minX, maxX } = computeLocalXBounds({
+ *   paths: cell.paths,
+ *   cellX: cell.xOffset,
+ * });
  * ```
  */
-export function computeLocalXBounds(
-  paths: readonly CellPath[],
-  cellX: number,
-): {
+export function computeLocalXBounds({
+  paths,
+  cellX,
+}: {
+  paths: readonly CellPath[];
+  cellX: number;
+},): {
   minX: number;
   maxX: number;
 } {
@@ -49,16 +55,20 @@ export function computeLocalXBounds(
    * Declared as `let` because the value is reduced across two nested forEach
    * loops; seeded to `+Infinity` so the first comparison always wins.
    */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- accumulator across nested forEach loops; seed +Infinity guarantees first comparison wins
   let minX = Infinity;
   /**
    * Running maximum of local X, the symmetric partner of `minX`.
    *
    * Seeded to `-Infinity` so the first comparison always wins.
    */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- accumulator across nested forEach loops; seed -Infinity guarantees first comparison wins
   let maxX = -Infinity;
 
   paths.forEach(function measurePath(pathData,) {
-    /** Parsed command list for this path, used to drive {@link resolveAbsolutePoints}. */
+    /**
+     * Parsed command list for this path, used to drive {@link resolveAbsolutePoints}.
+     */
     const commands = parseSvgPathD(pathData.d,);
     /** Absolute point coordinates for this path (H/V already expanded). */
     const points = resolveAbsolutePoints(commands,);
@@ -98,21 +108,32 @@ export function computeLocalXBounds(
  *
  * @example
  * ```ts
- * addFilledPath(otPath, commands, cellX, xShift);
+ * addFilledPath({
+ *   otPath: glyphPath,
+ *   commands: parseSvgPathD('M0 0 L10 0 L10 10 Z'),
+ *   cellX: 0,
+ *   xShift: 40,
+ * });
  * ```
  */
-export function addFilledPath(
-  otPath: opentype.Path,
-  commands: readonly SVGPathCommand[],
-  cellX: number,
-  xShift: number,
-): void {
+export function addFilledPath({
+  otPath,
+  commands,
+  cellX,
+  xShift,
+}: {
+  otPath: opentype.Path;
+  commands: readonly SVGPathCommand[];
+  cellX: number;
+  xShift: number;
+},): void {
   /**
    * X component of the pen cursor while emitting OpenType path commands.
    *
    * Declared as `let` because SVG H rewrites only this axis, and the cursor
    * is read back into the opentype `moveTo`/`lineTo` calls for the next vertex.
    */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- pen cursor: H rewrites only x, each command consumes the prior cursor across forEach iterations
   let cx = 0;
   /**
    * Y component of the pen cursor.
@@ -120,6 +141,7 @@ export function addFilledPath(
    * Declared as `let` for the same reason as `cx`: V rewrites only this axis,
    * and the cursor is read back on every subsequent command.
    */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- pen cursor: V rewrites only y, each command consumes the prior cursor across forEach iterations
   let cy = 0;
 
   commands.forEach(function traceFilledCommand(cmd,) {
@@ -127,7 +149,7 @@ export function addFilledPath(
       cx = cmd.x;
       cy = cmd.y;
       otPath.moveTo(
-        cx - cellX + xShift,
+        (cx - cellX) + xShift,
         fontY(cy,),
       );
     }
@@ -135,21 +157,21 @@ export function addFilledPath(
       cx = cmd.x;
       cy = cmd.y;
       otPath.lineTo(
-        cx - cellX + xShift,
+        (cx - cellX) + xShift,
         fontY(cy,),
       );
     }
     else if (cmd.type === 'H') {
       cx = cmd.x;
       otPath.lineTo(
-        cx - cellX + xShift,
+        (cx - cellX) + xShift,
         fontY(cy,),
       );
     }
     else if (cmd.type === 'V') {
       cy = cmd.y;
       otPath.lineTo(
-        cx - cellX + xShift,
+        (cx - cellX) + xShift,
         fontY(cy,),
       );
     }
