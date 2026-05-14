@@ -160,6 +160,10 @@ export const styleRules: DummyRuleMap = {
   'stylistic/destructure-per-line': 'warn',
   //endregion stylistic
 
+  //region stylistic: expression structure
+  'stylistic/no-mixed-operators': 'warn',
+  //endregion stylistic: expression structure
+
   // Formatting concern only.
   'eslint/curly': 'off',
 
