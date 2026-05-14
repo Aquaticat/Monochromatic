@@ -81,6 +81,52 @@ treated as a publicity incident.
    correctness argument, or tests against a nontrivial set does not
    count.
 
+### Auto-prototype when constraints 1-4 hold or sorta-hold
+
+When constraints 1-4 are all "yes" or "yes-with-a-soft-yes" (e.g. #4
+reads "plausible" or "likely" rather than a definitive yes), do not
+stop at "constraint 5: not yet" and report the gate failed. Prototype
+the minimal fix yourself before declaring the audit done:
+
+1. Clone the upstream source if not already cloned (use `gh repo
+   clone` into `/tmp/<repo>`; reuse an existing clone if present).
+2. Apply the smallest change that addresses the cause identified in
+   "Root cause." Keep it to the line(s) constraint 2 named.
+3. Verify by running the tool's own test suite, an existing
+   reproduction harness, or a targeted minimal program. Whatever you
+   pick must surface the failure pre-patch and the success post-patch;
+   "it compiles" is not verification.
+4. Record the result, the verification command, and the verification
+   output inline in the doc. For the diff itself: if it is small
+   (single hunk, roughly under 20 lines including context), embed it
+   inline in a fenced `diff` block. If it is larger (multiple hunks,
+   multiple files, or long enough that inline embedding would crowd
+   the doc), save it as a sibling file at the repo root named
+   `TROUBLESHOOTING.<topic>.patch` (matching the doc's `<topic>`) and
+   link to it from the doc with a relative path. The inline-vs-file
+   threshold is about readability, not significance; either form
+   satisfies constraint 5 as long as the patch is reproducible from
+   what is recorded. With this recording in place, the audit ends
+   with all five constraints "yes" and the draft becomes fileable.
+
+A one-line terminfo or config-table change costs less than the
+5-constraint audit itself; the prototype is the cheap step, not the
+expensive one. The trigger is "constraints 1-4 hold or sorta-hold and
+constraint 2 named a small, scoped change"; not "we are sure
+upstream will accept this."
+
+If prototyping reveals the change is not actually small, breaks the
+architectural core, or fails the tool's existing tests in unrelated
+places, re-evaluate constraints 2 and 4 with the new evidence and
+revise the audit. The prototype is also a probe; a failed probe is
+useful data, not a wasted step.
+
+AGENTS.md's "never modify files in cloned third-party repositories"
+rule applies to local workarounds (where editing source bypasses the
+intended boundary). Prototyping an upstream patch in a `/tmp` clone
+to generate a diff for filing is the intended use of source
+modification and is not what that rule restricts.
+
 The consumer-side workaround belongs at our boundary (e.g. a parse-time
 guard in the consuming crate) where it solves the user-facing problem
 regardless of upstream movement.
@@ -105,3 +151,8 @@ concrete code locations.
   so the rationale is auditable.
 - The draft issue is wrapped in a fenced block and marked "do not file
   as-is" unless all five constraints hold.
+- If constraints 1-4 held or sorta-held but constraint 5 read "not
+  yet," the audit is incomplete; either run the auto-prototype step
+  and record the result, or document why prototyping was attempted and
+  abandoned. "Not yet" without that follow-up is the failure mode this
+  skill explicitly catches.
