@@ -117,6 +117,7 @@ catalog:
   'the-new-css-reset': '>=1.11.3'
   'tiny-readdir-glob': '>=2.0.0'
   'to-vfile': '>=8.0.0'
+  'toml-eslint-parser': '>=1.0.3'
   'ts-pattern': '>=5.9.0'
   'tsdown': '>=0.22.0'
   'type-fest': '>=5.4.3'
