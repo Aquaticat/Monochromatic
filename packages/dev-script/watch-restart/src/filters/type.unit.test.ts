@@ -56,7 +56,7 @@ function makeEvent(
 }
 
 await describe({
-  name: 'typeFilter',
+  name: typeFilter.name,
   children: [
     it({
       name: 'admits file events when types is [file]',

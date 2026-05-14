@@ -223,7 +223,7 @@ async function safeStop(handle: WatchRestartHandle,): Promise<void> {
 }
 
 await describe({
-  name: 'startWatchRestart',
+  name: startWatchRestart.name,
   children: [
     it({
       name: 'initial: true (default) spawns the child immediately after ready',

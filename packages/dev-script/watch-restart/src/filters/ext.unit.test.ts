@@ -57,7 +57,7 @@ function makeEvent(
 }
 
 await describe({
-  name: 'extFilter',
+  name: extFilter.name,
   children: [
     it({
       name: 'matches when event.ext is in the configured list',

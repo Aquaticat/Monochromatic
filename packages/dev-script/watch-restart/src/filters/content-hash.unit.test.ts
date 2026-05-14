@@ -95,7 +95,7 @@ function makeEvent(
 }
 
 await describe({
-  name: 'contentHashFilter',
+  name: contentHashFilter.name,
   children: [
     it({
       name: 'unlink passes through (true) without touching the cache',

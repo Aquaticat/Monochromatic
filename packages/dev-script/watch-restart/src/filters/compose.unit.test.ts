@@ -111,7 +111,7 @@ function recordingFilter(
 }
 
 await describe({
-  name: 'composeFilters',
+  name: composeFilters.name,
   children: [
     it({
       name: 'returns true when every filter returns true',
@@ -187,7 +187,7 @@ await describe({
 },);
 
 await describe({
-  name: 'anyFilter',
+  name: anyFilter.name,
   children: [
     it({
       name: 'returns true on first true and short-circuits later filters',

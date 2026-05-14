@@ -14,7 +14,7 @@ await describe({
   name: 'cli-helpers',
   children: [
     describe({
-      name: 'parseTypeToken',
+      name: parseTypeToken.name,
       children: [
         it({
           name: 'returns "file" for "file"',
@@ -39,7 +39,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'parseKillSignal',
+      name: parseKillSignal.name,
       children: [
         it({
           name: 'returns "SIGTERM" for "SIGTERM"',
@@ -72,7 +72,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'compileRegex',
+      name: compileRegex.name,
       children: [
         it({
           name: 'compiles a valid pattern',
@@ -93,7 +93,7 @@ await describe({
       ],
     },),
     describe({
-      name: 'resolveBoolPair',
+      name: resolveBoolPair.name,
       children: [
         it({
           name: 'returns undefined when neither flag is passed',

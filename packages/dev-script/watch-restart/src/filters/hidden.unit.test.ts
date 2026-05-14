@@ -56,7 +56,7 @@ function makeEvent(
 }
 
 await describe({
-  name: 'hiddenFilter',
+  name: hiddenFilter.name,
   children: [
     it({
       name: 'default (allowHidden off) rejects leading-dot segment at root',

@@ -56,7 +56,7 @@ function makeEvent(
 }
 
 await describe({
-  name: 'globFilter',
+  name: globFilter.name,
   children: [
     it({
       name: 'no patterns is a vacuous pass-all',

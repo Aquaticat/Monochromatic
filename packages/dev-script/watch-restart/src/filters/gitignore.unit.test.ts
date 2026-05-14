@@ -77,7 +77,7 @@ async function makeTmpDir(): Promise<string> {
 }
 
 await describe({
-  name: 'gitignoreFilter',
+  name: gitignoreFilter.name,
   children: [
     it({
       name: 'no .gitignore at root: vacuous pass-all',
