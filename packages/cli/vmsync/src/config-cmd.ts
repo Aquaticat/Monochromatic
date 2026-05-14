@@ -62,10 +62,10 @@ export async function updateConfig(
     boot: updatedBoot,
   };
 
-  await writeConfig(
+  await writeConfig({
     name,
-    updatedConfig,
-  );
+    config: updatedConfig,
+  },);
 
   console.log(
     `updated "${name}": memory=${updatedBoot.memory}, cpus=${String(updatedBoot.cpus,)}`,

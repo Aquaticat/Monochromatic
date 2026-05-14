@@ -194,10 +194,10 @@ async function bootKvm(name: string,): Promise<void> {
   config.state.lastBootHypervisor = 'kvm';
   config.state.lastBootAt = new Date().toISOString();
   config.state.synced = false;
-  await writeConfig(
+  await writeConfig({
     name,
     config,
-  );
+  },);
   //endregion Update state before boot
 
   await spawn({
@@ -274,10 +274,10 @@ async function bootHyperv(name: string,): Promise<void> {
   config.state.lastBootHypervisor = 'hyperv';
   config.state.lastBootAt = new Date().toISOString();
   config.state.synced = false;
-  await writeConfig(
+  await writeConfig({
     name,
     config,
-  );
+  },);
   //endregion Update state before boot
 
   rl.info('launching Hyper-V VM',);

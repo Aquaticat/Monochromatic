@@ -120,8 +120,10 @@ export function stripJsoncComments(text: string,): string {
   /** Result accumulator built character-by-character. */
   const result: string[] = [];
   /** Current position in the source text. */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- parser cursor advances by 1 or 2 depending on which side-effecting branch fires
   let i = 0;
   /** Whether we are currently inside a double-quoted string. */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- string-mode flag toggled across multiple branches of the parser state machine
   let inString = false;
 
   while (i < text.length) {
@@ -150,13 +152,13 @@ export function stripJsoncComments(text: string,): string {
       result.push(ch,);
       i += 1;
     }
-    else if (ch === '/' && text[i + 1] === '/') {
-      while (i < text.length && text[i] !== '\n')
+    else if ((ch === '/') && (text[i + 1] === '/')) {
+      while ((i < text.length) && (text[i] !== '\n'))
         i += 1;
     }
-    else if (ch === '/' && text[i + 1] === '*') {
+    else if ((ch === '/') && (text[i + 1] === '*')) {
       i += 2;
-      while (i < text.length && !(text[i - 1] === '*' && text[i] === '/'))
+      while ((i < text.length) && (!((text[i - 1] === '*') && (text[i] === '/'))))
         i += 1;
       i += 1;
     }
@@ -216,12 +218,17 @@ export async function readConfig(name: string,): Promise<VmsyncConfig> {
  *
  * @example
  * ```ts
- * await writeConfig('alpine', config);
+ * await writeConfig({ name: 'alpine', config });
  * ```
  */
 export async function writeConfig(
-  name: string,
-  config: VmsyncConfig,
+  {
+    name,
+    config,
+  }: {
+    name: string;
+    config: VmsyncConfig;
+  },
 ): Promise<void> {
   /** Tagged logger so write-config entries are scoped to `writeConfig` in the output. */
   const rl = tagged({

@@ -42,7 +42,7 @@ const rawArgs = process.argv.slice(2,);
 const doubleDashIndex = rawArgs.indexOf('--',);
 
 /** Boundary past which tokens must not be touched. */
-const boundary = doubleDashIndex === -1 ? rawArgs.length : doubleDashIndex;
+const boundary = (doubleDashIndex === (-1)) ? rawArgs.length : doubleDashIndex;
 
 /**
  * Process argv with infrastructure flags removed only from the vmsync-owned prefix.
@@ -53,7 +53,7 @@ const filteredArgs = rawArgs.filter(function keepNonInfraArgs(
   arg,
   i,
 ) {
-  return i >= boundary || !INFRA_FLAGS.has(arg,);
+  return (i >= boundary) || (!INFRA_FLAGS.has(arg,));
 },);
 
 //endregion Verbose flag

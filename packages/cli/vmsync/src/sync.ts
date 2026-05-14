@@ -87,7 +87,7 @@ export async function syncFromKvm(name: string,): Promise<void> {
   /** Regions at depth 0 with actual data: these were written during the boot session. */
   const changedRegions: readonly QemuMapRegion[] = regions.filter(
     function isOverlayData(r,) {
-      return r.depth === 0 && r.data;
+      return (r.depth === 0) && r.data;
     },
   );
 
@@ -124,10 +124,10 @@ export async function syncFromKvm(name: string,): Promise<void> {
     qcow2: qcow2Hash,
     vhdx: vhdxHash,
   };
-  await writeConfig(
+  await writeConfig({
     name,
     config,
-  );
+  },);
 
   rl.info('sync from KVM complete',);
   console.log(
@@ -245,10 +245,10 @@ export async function syncFromHyperv(name: string,): Promise<void> {
   if (newVhdxHash === config.state.checksums.vhdx) {
     rl.info('vhdx unchanged, skipping sync',);
     config.state.synced = true;
-    await writeConfig(
+    await writeConfig({
       name,
       config,
-    );
+    },);
     return;
   }
 
@@ -275,10 +275,10 @@ export async function syncFromHyperv(name: string,): Promise<void> {
     qcow2: newQcow2Hash,
     vhdx: newVhdxHash,
   };
-  await writeConfig(
+  await writeConfig({
     name,
     config,
-  );
+  },);
 
   rl.info('sync from Hyper-V complete',);
   console.log(`synced "${name}" (vhdx -> qcow2, full conversion)`,);

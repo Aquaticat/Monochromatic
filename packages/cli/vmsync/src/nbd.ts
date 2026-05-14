@@ -73,10 +73,10 @@ export async function findFreeNbdDevice(): Promise<string> {
         },
       ) {
         /** Whether this device is free (not connected). */
-        const isFree = await checkDeviceFree(
+        const isFree = await checkDeviceFree({
           sysfsSize,
           rl,
-        );
+        },);
         return isFree ? device : undefined;
       },
     ),
@@ -109,8 +109,13 @@ export async function findFreeNbdDevice(): Promise<string> {
  * @returns True when the device is free
  */
 async function checkDeviceFree(
-  sysfsSize: string,
-  rl: ReturnType<typeof tagged>,
+  {
+    sysfsSize,
+    rl,
+  }: {
+    sysfsSize: string;
+    rl: ReturnType<typeof tagged>;
+  },
 ): Promise<boolean> {
   try {
     await access(sysfsSize,);
@@ -331,7 +336,7 @@ async function transferRegion(
     rl: ReturnType<typeof tagged>;
   },
 ): Promise<void> {
-  if (region.start % SECTOR_SIZE !== 0 || region.length % SECTOR_SIZE !== 0) {
+  if (((region.start % SECTOR_SIZE) !== 0) || ((region.length % SECTOR_SIZE) !== 0)) {
     throw new Error(
       `region at offset ${String(region.start,)} with length ${
         String(region.length,)

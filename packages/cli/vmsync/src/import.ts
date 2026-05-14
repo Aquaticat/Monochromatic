@@ -246,10 +246,10 @@ export async function importImage(
     },
   };
 
-  await writeConfig(
-    vmName,
+  await writeConfig({
+    name: vmName,
     config,
-  );
+  },);
   rl.info(`import complete: "${vmName}" ready in ${dir}`,);
   console.log(`imported "${vmName}" (${info.format} -> qcow2 + vhdx)`,);
 

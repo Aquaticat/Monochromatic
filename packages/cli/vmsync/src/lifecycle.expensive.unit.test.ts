@@ -69,8 +69,13 @@ const BUNDLE_PATH = join(PKG_ROOT, 'dist', 'final', 'node', 'index.mjs',);
  * @returns Trimmed stdout
  */
 async function mvm(
-  args: readonly string[],
-  timeout: number = EXEC_TIMEOUT_MS,
+  {
+    args,
+    timeout = EXEC_TIMEOUT_MS,
+  }: {
+    args: readonly string[];
+    timeout?: number;
+  },
 ): Promise<string> {
   const { stdout, } = await nanoSpawn(
     MVM,
@@ -92,14 +97,20 @@ async function mvm(
  * @returns Trimmed stdout
  */
 async function execInVm(
-  vmName: string,
-  command: string,
-  timeout: number = EXEC_TIMEOUT_MS,
+  {
+    vmName,
+    command,
+    timeout = EXEC_TIMEOUT_MS,
+  }: {
+    vmName: string;
+    command: string;
+    timeout?: number;
+  },
 ): Promise<string> {
-  return mvm(
-    ['exec', vmName, command,],
+  return mvm({
+    args: ['exec', vmName, command,],
     timeout,
-  );
+  },);
 }
 
 /**
@@ -109,7 +120,7 @@ async function execInVm(
  */
 async function safeDestroy(vmName: string,): Promise<void> {
   try {
-    await mvm(['destroy', vmName,],);
+    await mvm({ args: ['destroy', vmName,], },);
   }
   catch {
     // VM may not exist
@@ -140,35 +151,35 @@ async function safeDestroy(vmName: string,): Promise<void> {
 
   // beforeAll setup
   await safeDestroy(VM,);
-  await mvm(
-    ['create', VM,],
-    CREATE_TIMEOUT_MS,
-  );
+  await mvm({
+    args: ['create', VM,],
+    timeout: CREATE_TIMEOUT_MS,
+  },);
 
   // Push the tsdown bundle via virtiofs (instant)
-  await mvm(['push', VM, BUNDLE_PATH, 'index.mjs',],);
+  await mvm({ args: ['push', VM, BUNDLE_PATH, 'index.mjs',], },);
 
   // Install mise, then use mise to install bun (handles arch detection).
   // guest-exec runs without login shell so HOME is unset; export it explicitly.
-  await execInVm(
-    VM,
-    'export HOME=/home/ubuntu && curl -fsSL https://mise.jdx.dev/install.sh | sh',
-    EXEC_TIMEOUT_MS,
-  );
-  await execInVm(
-    VM,
-    'export HOME=/home/ubuntu && /home/ubuntu/.local/bin/mise use -g bun@latest',
-    EXEC_TIMEOUT_MS,
-  );
+  await execInVm({
+    vmName: VM,
+    command: 'export HOME=/home/ubuntu && curl -fsSL https://mise.jdx.dev/install.sh | sh',
+    timeout: EXEC_TIMEOUT_MS,
+  },);
+  await execInVm({
+    vmName: VM,
+    command: 'export HOME=/home/ubuntu && /home/ubuntu/.local/bin/mise use -g bun@latest',
+    timeout: EXEC_TIMEOUT_MS,
+  },);
 
   // Install qemu-img, fdisk, and nbd module for disk image operations
-  await execInVm(
-    VM,
-    'sudo apt-get update -qq && sudo apt-get install -y -qq qemu-utils fdisk nbd-client > /dev/null 2>&1',
-    EXEC_TIMEOUT_MS,
-  );
+  await execInVm({
+    vmName: VM,
+    command: 'sudo apt-get update -qq && sudo apt-get install -y -qq qemu-utils fdisk nbd-client > /dev/null 2>&1',
+    timeout: EXEC_TIMEOUT_MS,
+  },);
   // Pre-load nbd kernel module (needed for vmsync import UEFI validation)
-  await execInVm(VM, 'sudo modprobe nbd max_part=0',);
+  await execInVm({ vmName: VM, command: 'sudo modprobe nbd max_part=0', },);
 
   await using _cleanup = { [Symbol.asyncDispose]: () => safeDestroy(VM,), };
   await describe({
@@ -181,7 +192,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
         name: 'full CLI lifecycle',
         fn: async () => {
           //region --help
-          const help = await execInVm(VM, `${VMSYNC} --help`,);
+          const help = await execInVm({ vmName: VM, command: `${VMSYNC} --help`, },);
           expect(help,).toContain('vmsync',);
           expect(help,).toContain('import',);
           expect(help,).toContain('boot',);
@@ -192,39 +203,39 @@ async function safeDestroy(vmName: string,): Promise<void> {
           //endregion --help
 
           //region list (empty)
-          const emptyList = await execInVm(VM, `${VMSYNC} list`,);
+          const emptyList = await execInVm({ vmName: VM, command: `${VMSYNC} list`, },);
           expect(emptyList,).toContain('no managed VMs',);
           //endregion list (empty)
 
           //region Create test UEFI image
-          await execInVm(
-            VM,
-            [
+          await execInVm({
+            vmName: VM,
+            command: [
               'qemu-img create -f raw /tmp/test-uefi.raw 512M',
               String
                 .raw`printf "g\nn\n1\n2048\n+100M\nt\n1\nw\n" | fdisk /tmp/test-uefi.raw`,
               'qemu-img convert -f raw -O qcow2 /tmp/test-uefi.raw /tmp/test-uefi.qcow2',
             ]
               .join(' && ',),
-          );
+          },);
           //endregion Create test UEFI image
 
           //region import --name
-          const importOutput = await execInVm(
-            VM,
-            `${VMSYNC} import /tmp/test-uefi.qcow2 --name test-vm`,
-          );
+          const importOutput = await execInVm({
+            vmName: VM,
+            command: `${VMSYNC} import /tmp/test-uefi.qcow2 --name test-vm`,
+          },);
           expect(importOutput,).toContain('imported "test-vm"',);
           //endregion import --name
 
           //region list (populated)
-          const populatedList = await execInVm(VM, `${VMSYNC} list`,);
+          const populatedList = await execInVm({ vmName: VM, command: `${VMSYNC} list`, },);
           expect(populatedList,).toContain('test-vm',);
           expect(populatedList,).toContain('synced',);
           //endregion list (populated)
 
           //region status
-          const status = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          const status = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
           expect(status,).toContain('name:       test-vm',);
           expect(status,).toContain('synced:     true',);
           expect(status,).toContain('last boot:  never',);
@@ -233,35 +244,35 @@ async function safeDestroy(vmName: string,): Promise<void> {
           //endregion status
 
           //region config update
-          const configOutput = await execInVm(
-            VM,
-            `${VMSYNC} config test-vm --memory 8G --cpus 8`,
-          );
+          const configOutput = await execInVm({
+            vmName: VM,
+            command: `${VMSYNC} config test-vm --memory 8G --cpus 8`,
+          },);
           expect(configOutput,).toContain('memory=8G',);
           expect(configOutput,).toContain('cpus=8',);
 
-          const statusAfterConfig = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          const statusAfterConfig = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
           expect(statusAfterConfig,).toContain('memory:     8G',);
           expect(statusAfterConfig,).toContain('cpus:       8',);
           //endregion config update
 
           //region config partial update (memory only, cpus preserved)
-          await execInVm(VM, `${VMSYNC} config test-vm --memory 2G`,);
-          const statusAfterPartial = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          await execInVm({ vmName: VM, command: `${VMSYNC} config test-vm --memory 2G`, },);
+          const statusAfterPartial = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
           expect(statusAfterPartial,).toContain('memory:     2G',);
           expect(statusAfterPartial,).toContain('cpus:       8',);
           //endregion config partial update
 
           //region import with auto-derived name
-          const autoNameOutput = await execInVm(
-            VM,
-            `${VMSYNC} import /tmp/test-uefi.qcow2`,
-          );
+          const autoNameOutput = await execInVm({
+            vmName: VM,
+            command: `${VMSYNC} import /tmp/test-uefi.qcow2`,
+          },);
           expect(autoNameOutput,).toContain('imported "test-uefi"',);
           //endregion import with auto-derived name
 
           //region sync (already synced)
-          const syncOutput = await execInVm(VM, `${VMSYNC} sync test-vm`,);
+          const syncOutput = await execInVm({ vmName: VM, command: `${VMSYNC} sync test-vm`, },);
           expect(syncOutput,).toContain('already synced',);
           //endregion sync (already synced)
         },
@@ -301,18 +312,18 @@ async function safeDestroy(vmName: string,): Promise<void> {
 
   // beforeAll setup
   await safeDestroy(VM,);
-  await mvm(
-    ['create', VM, '--image', 'windows',],
-    CREATE_TIMEOUT_MS,
-  );
+  await mvm({
+    args: ['create', VM, '--image', 'windows',],
+    timeout: CREATE_TIMEOUT_MS,
+  },);
 
   // Push the tsdown bundle via virtiofs (instant)
-  await mvm(['push', VM, BUNDLE_PATH, 'index.mjs',],);
+  await mvm({ args: ['push', VM, BUNDLE_PATH, 'index.mjs',], },);
 
   // Install Visual C++ runtime (required by mise.exe, not present on Server Core).
-  await execInVm(
-    VM,
-    [
+  await execInVm({
+    vmName: VM,
+    command: [
       '$ProgressPreference = "SilentlyContinue"',
       String
         .raw`Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile "$env:TEMP\vc_redist.x64.exe"`,
@@ -320,15 +331,15 @@ async function safeDestroy(vmName: string,): Promise<void> {
         .raw`Start-Process -FilePath "$env:TEMP\vc_redist.x64.exe" -ArgumentList "/install","/quiet","/norestart" -Wait`,
     ]
       .join('; ',),
-    EXEC_TIMEOUT_MS,
-  );
+    timeout: EXEC_TIMEOUT_MS,
+  },);
 
   // Download and install mise at test runtime.
   // Resolves the latest version tag via GitHub redirect, then downloads
   // the versioned zip to ensure we always get the actual latest release.
-  await execInVm(
-    VM,
-    [
+  await execInVm({
+    vmName: VM,
+    command: [
       '$ProgressPreference = "SilentlyContinue"',
       String.raw`$env:HOME = "C:\Users\Administrator"`,
       String.raw`$dir = "C:\Users\Administrator\.local\bin"`,
@@ -345,17 +356,17 @@ async function safeDestroy(vmName: string,): Promise<void> {
       String.raw`Remove-Item "$env:TEMP\mise.zip","$env:TEMP\mise" -Recurse -Force`,
     ]
       .join('; ',),
-    EXEC_TIMEOUT_MS,
-  );
+    timeout: EXEC_TIMEOUT_MS,
+  },);
 
   // Use mise to install bun (handles arch detection).
   // ErrorActionPreference=Continue prevents PowerShell from treating
   // mise's stderr progress output as a terminating error.
-  await execInVm(
-    VM,
-    `$ErrorActionPreference = "Continue"; & "${MISE_BIN}" use -g bun@latest 2>$null; exit $LASTEXITCODE`,
-    EXEC_TIMEOUT_MS,
-  );
+  await execInVm({
+    vmName: VM,
+    command: `$ErrorActionPreference = "Continue"; & "${MISE_BIN}" use -g bun@latest 2>$null; exit $LASTEXITCODE`,
+    timeout: EXEC_TIMEOUT_MS,
+  },);
 
   await using _cleanup = { [Symbol.asyncDispose]: () => safeDestroy(VM,), };
   await describe({
@@ -365,7 +376,7 @@ async function safeDestroy(vmName: string,): Promise<void> {
         name: 'full CLI lifecycle',
         fn: async () => {
           //region --help
-          const help = await execInVm(VM, `${VMSYNC} --help`,);
+          const help = await execInVm({ vmName: VM, command: `${VMSYNC} --help`, },);
           expect(help,).toContain('vmsync',);
           expect(help,).toContain('import',);
           expect(help,).toContain('boot',);
@@ -376,16 +387,16 @@ async function safeDestroy(vmName: string,): Promise<void> {
           //endregion --help
 
           //region list (empty)
-          const emptyList = await execInVm(VM, `${VMSYNC} list`,);
+          const emptyList = await execInVm({ vmName: VM, command: `${VMSYNC} list`, },);
           expect(emptyList,).toContain('no managed VMs',);
           //endregion list (empty)
 
           //region Create config manually (Windows lacks qemu-nbd for full import)
           // Uses newline joins because PowerShell hash literals (@{}) require
           // actual newlines between entries, not semicolons.
-          await execInVm(
-            VM,
-            [
+          await execInVm({
+            vmName: VM,
+            command: [
               String.raw`$dir = "$env:USERPROFILE\.local\share\vmsync\test-vm"`,
               'New-Item -ItemType Directory -Path $dir -Force | Out-Null',
               '$config = @{',
@@ -402,17 +413,17 @@ async function safeDestroy(vmName: string,): Promise<void> {
               String.raw`Set-Content -Path "$dir\vmsync.jsonc" -Value $config`,
             ]
               .join('\n',),
-          );
+          },);
           //endregion Create config manually
 
           //region list (populated)
-          const populatedList = await execInVm(VM, `${VMSYNC} list`,);
+          const populatedList = await execInVm({ vmName: VM, command: `${VMSYNC} list`, },);
           expect(populatedList,).toContain('test-vm',);
           expect(populatedList,).toContain('synced',);
           //endregion list (populated)
 
           //region status
-          const status = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          const status = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
           expect(status,).toContain('name:       test-vm',);
           expect(status,).toContain('synced:     true',);
           expect(status,).toContain('last boot:  never',);
@@ -421,32 +432,32 @@ async function safeDestroy(vmName: string,): Promise<void> {
           //endregion status
 
           //region config update
-          const configOutput = await execInVm(
-            VM,
-            `${VMSYNC} config test-vm --memory 16G --cpus 16`,
-          );
+          const configOutput = await execInVm({
+            vmName: VM,
+            command: `${VMSYNC} config test-vm --memory 16G --cpus 16`,
+          },);
           expect(configOutput,).toContain('memory=16G',);
           expect(configOutput,).toContain('cpus=16',);
 
-          const statusAfterConfig = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          const statusAfterConfig = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
           expect(statusAfterConfig,).toContain('memory:     16G',);
           expect(statusAfterConfig,).toContain('cpus:       16',);
           //endregion config update
 
           //region config partial update (cpus only, memory preserved)
-          await execInVm(VM, `${VMSYNC} config test-vm --cpus 8`,);
-          const statusAfterPartial = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          await execInVm({ vmName: VM, command: `${VMSYNC} config test-vm --cpus 8`, },);
+          const statusAfterPartial = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
           expect(statusAfterPartial,).toContain('memory:     16G',);
           expect(statusAfterPartial,).toContain('cpus:       8',);
           //endregion config partial update
 
           //region sync (already synced)
-          const syncOutput = await execInVm(VM, `${VMSYNC} sync test-vm`,);
+          const syncOutput = await execInVm({ vmName: VM, command: `${VMSYNC} sync test-vm`, },);
           expect(syncOutput,).toContain('already synced',);
           //endregion sync (already synced)
 
           //region detectHypervisor returns hyperv on Windows
-          const statusCheck = await execInVm(VM, `${VMSYNC} status test-vm`,);
+          const statusCheck = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
           // The VM was never booted, last boot is "never" (hypervisor detection
           // only runs during boot, not status; but the binary runs on Windows,
           // confirming cross-platform compatibility)
