@@ -92,12 +92,14 @@ export class ZipWriter {
     validatePath(path,);
     if (this.#entries.has(path,))
       throw new Error(`zip-writer: duplicate entry at \`${path}\``,);
+    /** UTF-8 path encoding shared between the size check and the stored entry. */
     const nameBytes = TEXT_ENCODER.encode(path,);
     if (nameBytes.length > MAX_UINT16) {
       throw new Error(
         `zip-writer: path too long when UTF-8 encoded (${nameBytes.length} bytes, max ${MAX_UINT16}): ${path}`,
       );
     }
+    /** Raw byte view of the content so the size check works for both inputs. */
     const data = typeof content === 'string' ? TEXT_ENCODER.encode(content,) : content;
     if (data.length > MAX_UINT32) {
       throw new Error(

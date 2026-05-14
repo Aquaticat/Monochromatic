@@ -47,7 +47,9 @@ function computeOffsets(
   cdSize: number;
   totalSize: number;
 } {
+  /** Accumulates entries paired with their computed local file header offsets. */
   const positioned: Positioned[] = [];
+  /** Running byte position marking the next local file header. */
   let cursor = 0;
   for (const entry of entries) {
     positioned.push({
@@ -56,10 +58,13 @@ function computeOffsets(
     },);
     cursor += LFH_FIXED_SIZE + entry.nameBytes.length + entry.content.length;
   }
+  /** Cursor frozen at the point the central directory begins. */
   const cdStart = cursor;
+  /** Running total of central directory header bytes. */
   let cdSize = 0;
   for (const { entry, } of positioned)
     cdSize += CDH_FIXED_SIZE + entry.nameBytes.length;
+  /** Final archive size used to allocate the output buffer. */
   const totalSize = cdStart + cdSize + EOCD_FIXED_SIZE;
   if (cdStart > MAX_UINT32 || cdSize > MAX_UINT32 || totalSize > MAX_UINT32) {
     throw new Error(
@@ -104,6 +109,7 @@ function writeEndOfCentralDirectory(
     startOffset: number;
   },
 ): number {
+  /** Local cursor tracking each successive little-endian write. */
   let offset = startOffset;
   view.setUint32(
     offset,
@@ -185,6 +191,7 @@ export function serializeEntries(entries: ReadonlyMap<string, ZipEntry>,): Uint8
     );
   }
 
+  /** Offsets and totals derived in one pass over the entries. */
   const {
     positioned,
     cdStart,
@@ -192,21 +199,26 @@ export function serializeEntries(entries: ReadonlyMap<string, ZipEntry>,): Uint8
     totalSize,
   } = computeOffsets(entries.values(),);
 
+  /** Output byte buffer sized to the precomputed total. */
   const buffer = new Uint8Array(totalSize,);
+  /** Little-endian view over the output buffer for numeric writes. */
   const view = new DataView(buffer.buffer,);
 
+  /** Cursor after the local file headers; central directory begins here. */
   const lfhEnd = writeLocalFileHeaders({
     view,
     buffer,
     positioned,
     startOffset: 0,
   },);
+  /** Cursor after the central directory; EOCD record begins here. */
   const cdEnd = writeCentralDirectory({
     view,
     buffer,
     positioned,
     startOffset: lfhEnd,
   },);
+  /** Final cursor used to assert the write neither overshot nor undershot the buffer. */
   const eocdEnd = writeEndOfCentralDirectory({
     view,
     entryCount: entries.size,
