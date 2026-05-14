@@ -13,6 +13,7 @@ import { join, } from 'node:path';
  * containing _.path entries for all workspace package bin directories.
  */
 async function generateMiseToml(): Promise<void> {
+  /** Dynamic [env] block appended after the static mise.no-env.toml content; wires PATH to every workspace bin dir. */
   const envSection = `[env]
 # .env file is optional - mise silently ignores missing files
 # https://github.com/jdx/mise/blob/main/src/config/env_directive/file.rs#L155-L163
@@ -85,6 +86,7 @@ ${await cat([
  * for legacy consumers.
  */
 async function mirrorSkills(): Promise<void> {
+  /** Concatenated SKILL.md contents from the canonical .agents/skills tree, mirrored verbatim to legacy consumer dirs. */
   const skills = await cat('./.agents/skills/*/*.md',);
   await Promise.all([
     overwriteEach(

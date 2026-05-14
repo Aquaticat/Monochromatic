@@ -17,11 +17,13 @@ const mimeTypes: Record<string, string> = {
   '.map': 'application/json',
 };
 
+/** Test-harness HTTP server; routes serve the harness HTML and built dist assets to Playwright. */
 const app = new H3();
 
 app.all(
   '/**',
   defineHandler(async function serveTestHarness(event,) {
+    /** Request URL path; routed below by prefix match. */
     const { pathname, } = event.url;
 
     if (pathname === '/' || pathname === '/test-harness.html') {
@@ -34,6 +36,7 @@ app.all(
     }
 
     if (pathname.startsWith('/dist/module-logger/',)) {
+      /** Resolved MIME type for the requested asset; falls back to a safe binary type. */
       const contentType = mimeTypes[extname(pathname,)] ?? 'application/octet-stream';
       return new Response(
         await readFile(
@@ -46,6 +49,7 @@ app.all(
     }
 
     if (pathname.startsWith('/dist/',)) {
+      /** Resolved MIME type for the requested asset; falls back to a safe binary type. */
       const contentType = mimeTypes[extname(pathname,)] ?? 'application/octet-stream';
       return new Response(
         await readFile(`packages/module/es${pathname}`,),

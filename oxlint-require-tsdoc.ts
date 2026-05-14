@@ -12,6 +12,7 @@ function hasTsdoc(
   node: Span,
   context: Context,
 ): boolean {
+  /** Comments adjacent to the node; the rule passes when any one is a TSDoc block. */
   const comments = context.sourceCode.getCommentsBefore(node,);
   return comments.some(comment =>
     comment.type === 'Block'
