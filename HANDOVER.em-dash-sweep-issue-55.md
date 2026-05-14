@@ -1,6 +1,6 @@
 # Handover: em-dash sweep (issue #55)
 
-## Status (2026-05-14, mid-sweep)
+## Status (2026-05-14, complete)
 
 Issue: [#55](https://github.com/Aquaticat/Monochromatic/issues/55).
 Tracks `docs:` sweep of em-dash and en-dash prose violations against the
@@ -14,42 +14,42 @@ What's done:
   (commit `f2b15a56`, 28 files).
 - Unicode en-dash (`–`) in `.md` and `.ts` files: 0 outside intentional
   content (same two commits).
-- ASCII `--` em-dash substitute in `.md` files: 1627 -> 419 remaining
-  (commit `7c13761b`, 104 files). Remaining `--` is CLI args inside code
-  blocks / inline backticks / CLI invocations, preserved by heuristic.
-- ASCII `--` em-dash substitute in `.ts` files: 1667 -> 1164 remaining
-  (commit `369b73e7`, 248 files). Conservative scope: only lines that
-  start with `//` or ` *` comment markers, skipping disable directives.
-- `AUDIT.em-dash.md` summary updated with post-sweep counts (uncommitted).
+- ASCII `--` em-dash substitute in `.md` files (commit `7c13761b`, 104
+  files). Remaining `--` is CLI args inside code blocks, inline backticks,
+  or CLI invocations, preserved by heuristic.
+- ASCII `--` em-dash substitute in `.ts` files (commit `369b73e7`, 248
+  files). Conservative scope: only lines starting with `//` or ` *`
+  comment markers, skipping disable directives.
+- ASCII single-dash (`-`) em-dash substitute in `.md` files (commit
+  `78e055b9`, 20 files, 1242 instances replaced). Conservative scope:
+  only when preceded by a close marker (backtick, `)`, `]`, `}`, `**`,
+  `~~`); plus a focused regex for `**Status**: <value> - <description>`
+  Status patterns; plus date-range pass converting `Month DD - Month DD`
+  to `Month DD to Month DD`.
+- ASCII single-dash (`-`) em-dash substitute in `.ts` files (commit
+  `4978ae4f`, 2 files, 16 instances replaced). Conservative scope: only
+  comment lines (`//` or ` *`) preceded by a close marker, skipping
+  TSDoc tag lines (`@param`, `@returns`, `@throws`, `@example`, etc.)
+  because TSDoc convention uses ` - ` as separator, and skipping
+  ``` fences within TSDoc comments to avoid rewriting code examples.
 
 What's left:
 
-- ASCII single-dash (`-`) sweep is deferred. False-positive rate is too
-  high for a single-pass mechanical sweep (subtraction, negative numbers,
-  date ranges, list bullets).
 - A `forbidden-strings` rule to prevent regressions. Per user instruction
-  during this session, this should be filed as a separate GitHub issue
-  rather than completed here.
+  during this session, this is filed as a separate GitHub issue rather
+  than completed here.
 
-User instruction in this session: close issue #55 with a caveat noting
-the deferred work and file a separate issue for the forbidden-strings
-rule.
+Issue #55 closed with a comment noting the completed work and pointing
+to the follow-up forbidden-strings issue.
 
-## Sweep scripts (durable copies in `.out-of-scope/`)
+## Sweep scripts (not retained)
 
-- `.out-of-scope/em-dash-sweep.ts` -- unicode em-dash + en-dash sweep.
-  Run with `bun .out-of-scope/em-dash-sweep.ts <repo-root> <type>`
-  where `<type>` is `md` or `ts`.
-- `.out-of-scope/ascii-dash-sweep.ts` -- ASCII `--` sweep for markdown.
-  Tracks fenced code blocks and inline backticks; skips CLI invocations.
-- `.out-of-scope/ascii-dash-sweep-ts.ts` -- ASCII `--` sweep for TS.
-  Only modifies lines that start with `//` or ` *` comment markers; skips
-  `oxlint-disable` / `eslint-disable` / `biome-disable` / `prettier-disable`
-  lines because they use ` -- ` as a syntactic rule/reason separator.
-
-The scripts are not part of the package tree and are not built or tested
-via mise tasks; they're one-shot tools kept around in case the sweep
-needs to be re-run after future content additions.
+The five one-shot sweep scripts written for this work are not kept around
+after the sweep completes. The strategy and heuristics are documented in
+the "Replacement heuristics" section below; that's the durable artifact.
+If future content additions need a re-sweep, reconstruct the script from
+the heuristics or write a more general `forbidden-strings` rule (tracked
+as a separate follow-up issue) that prevents regressions at write time.
 
 ## Excluded files (intentional content)
 
@@ -84,6 +84,26 @@ En-dash (`–`) was replaced by:
 
 ASCII `--` was replaced by the same code-marker-aware heuristic. CLI
 invocations and disable directives were preserved.
+
+ASCII single-dash `-` (markdown) was replaced by:
+
+- `: ` when preceded by a close marker (backtick, `)`, `]`, `}`, `**`,
+  `~~`) at line content position (skipping list-bullet position so
+  `- item` bullets stay as bullets).
+- `; ` for the focused `**Label**: <value> - <Uppercase>` Status pattern
+  (e.g. `**Status**: High Priority - Developer experience` becomes
+  `**Status**: High Priority; Developer experience`).
+- ` to ` for month-name date ranges (`August 16 - August 30, 2025` and
+  `2024 - 2025`).
+- Skipped for math expressions (`mean - 2*stddev`), list bullets, fenced
+  code blocks, and inline backtick spans.
+
+ASCII single-dash `-` (TypeScript) was replaced by the same close-marker
+heuristic with three additional exclusions: TSDoc tag lines (`@param`,
+`@returns`, `@throws`, `@example`, etc.) because TSDoc convention uses
+` - ` as the name/description separator, ``` fences within TSDoc
+comments (`@example` continuation lines that hold code), and arrow
+notation (`->`).
 
 ## Quality trade-offs
 

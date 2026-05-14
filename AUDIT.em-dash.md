@@ -28,33 +28,40 @@ Post-sweep counts (2026-05-14, issue #55):
 
 | Category                      | Outside intentional | Inside intentional |
 | ----------------------------- | ------------------- | ------------------ |
-| Em-dash (`—`) MD              | 0                   | 202                |
+| Em-dash (`—`) MD              | 0                   | 199                |
 | Em-dash (`—`) TS              | 0                   | 0                  |
 | En-dash (`–`) MD              | 0                   | 14                 |
 | En-dash (`–`) TS              | 0                   | 2                  |
-| ASCII `--` MD                 | 418                 | 1044               |
-| ASCII `--` TS                 | 1161                | 0                  |
-| ASCII `-` MD                  | not swept           | not swept          |
+| ASCII `--` MD                 | preserved CLI args  | preserved CLI args |
+| ASCII `--` TS                 | preserved CLI args  | preserved CLI args |
+| ASCII `-` MD                  | preserved bullets   | preserved bullets  |
+| ASCII `-` TS                  | preserved TSDoc     | preserved TSDoc    |
 
 Intentional content (preserved by exclusion list): `AUDIT.em-dash.md` itself
 (self-references), `PLANNING.forbidden-strings-em-dash.md`,
 `packages/cli/forbidden-strings/README.md`, `AGENTS.md` (rule statement in
-backticks), `GLM_LIMITATIONS.md` (documents model violations), and
-`packages/module/hyperscript/src/css/index.unit.test.ts` (en-dash as CSS
-counter-style symbol). The MD `--` sweep also excluded
+backticks), `GLM_LIMITATIONS.md` (documents model violations),
+`HANDOVER.em-dash-sweep-issue-55.md` (handover doc with em-dash examples
+in backticks), and `packages/module/hyperscript/src/css/index.unit.test.ts`
+(en-dash as CSS counter-style symbol). The MD `--` sweep also excluded
 `TODO.claude-code-words.md` and `TODO.forbidden-strings.md` because both
 intentionally use `--` as definition markers.
 
-Remaining ASCII `--` instances (418 MD, 1161 TS) are CLI argument separators
-preserved by the sweep heuristic: lines that look like CLI invocations
-(`mise`, `git`, `npm`, etc. as first token), text inside fenced code blocks,
-inline backtick spans, and `oxlint-disable`/`eslint-disable`/`biome-disable`
+Remaining ASCII `--` instances are CLI argument separators preserved by the
+sweep heuristic: lines that look like CLI invocations (`mise`, `git`,
+`npm`, etc. as first token), text inside fenced code blocks, inline
+backtick spans, and `oxlint-disable`/`eslint-disable`/`biome-disable`
 directives (which use ` -- ` as a syntactic rule/reason separator).
 
-ASCII `-` sweep deferred: ambiguity with subtraction, negative numbers,
-date ranges, and list bullets pushes the false-positive rate too high for
-a single-pass mechanical sweep. Follow-up issue tracks the remaining
-work plus the `forbidden-strings` rule that prevents regressions.
+Remaining ASCII `-` instances are list bullets at line start (`- item`),
+markdown bullets within TSDoc comments, subtraction in math expressions,
+identifiers and CLI flags, dashes in compound words ("user-facing"),
+TSDoc `@param name - description` separators (per TSDoc convention), and
+mid-prose dashes the conservative marker-after-close heuristic skipped
+to avoid false positives.
+
+The remaining `forbidden-strings` rule to prevent regressions is tracked
+in a separate follow-up issue.
 
 ## A. Em-dash (`—`) prose asides
 
