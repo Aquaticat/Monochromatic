@@ -81,14 +81,14 @@ export function renderStyles(): string {
         position: 'relative',
         'margin-block': 'auto',
         'margin-inline': 'auto',
-        'inline-size': cssMin(
+        'inline-size': cssMin([
           cssCqi(100,),
           cssCalc(
             `${cssCqb(100,)} * ${String(LETTER_WIDTH_IN,)} / ${
               String(LETTER_HEIGHT_IN,)
             }`,
           ),
-        ),
+        ],),
         'aspect-ratio': LETTER_ASPECT_RATIO,
         'background-color': cssOklch({
           l: 1,
