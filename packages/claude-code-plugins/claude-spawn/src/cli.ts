@@ -13,4 +13,5 @@
  * @module
  */
 
+// oxlint-disable-next-line eslint-plugin-import/no-unassigned-import -- entrypoint shim: source module's CLI runs at top level via shebang
 import '@monochromatic-dev/claude-code-plugins-source/cli/spawn-claude';
