@@ -103,18 +103,25 @@ export type UploadPackRequest = {
  * ```
  */
 export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
+  /** Reused decoder for the pkt-line length prefixes and text payloads. */
   const decoder = new TextDecoder();
+  /** Triplets collected in stream order; populated in the loop below. */
   const triplets: RefUpdateTriplet[] = [];
+  /** Capability list parsed from the first triplet's NUL-separated suffix. */
   let capabilities: readonly string[] = [];
+  /** Cursor advancing through `body` as each pkt-line is consumed. */
   let offset = 0;
+  /** Sentinel flipped when the protocol's flush-pkt is observed. */
   let sawFlush = false;
   while (offset < body.byteLength) {
     if (body.byteLength - offset < PKT_HEADER_BYTES)
       throw new Error('receive-pack: truncated pkt-len header',);
+    /** Length prefix string for the current pkt-line. */
     const lengthHex = decoder.decode(body.subarray(
       offset,
       offset + PKT_HEADER_BYTES,
     ),);
+    /** Decoded total pkt-line length including header. */
     const length = Number.parseInt(
       lengthHex,
       PKT_HEX_RADIX,
@@ -128,22 +135,27 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
       throw new Error(`receive-pack: invalid pkt-len ${String(length,)}`,);
     if (offset + length > body.byteLength)
       throw new Error('receive-pack: pkt-line overruns body',);
+    /** Payload bytes of the current pkt-line, length prefix excluded. */
     const payload = body.subarray(
       offset + PKT_HEADER_BYTES,
       offset + length,
     );
     offset += length;
-    // Strip optional trailing LF.
+    /** Payload without the optional trailing line-feed git emits on text lines. */
     const trimmed = payload[payload.byteLength - 1] === ASCII_LF
       ? payload.subarray(
         0,
         payload.byteLength - 1,
       )
       : payload;
+    /** UTF-8 decoded line text. */
     const text = decoder.decode(trimmed,);
+    /** NUL-separated split: index 0 is the triplet, index 1 the capability suffix. */
     const nullSplit = text.split('\0',);
+    /** Triplet portion of the line ("old new ref"). */
     const tripletText = nullSplit[0] ?? '';
     if (triplets.length === 0 && nullSplit.length >= 2) {
+      /** Raw capability string from the first triplet line. */
       const capsText = nullSplit[1] ?? '';
       capabilities = capsText.length === 0
         ? []
@@ -151,9 +163,11 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
           return s.length > 0;
         },);
     }
+    /** Whitespace-separated triplet tokens; ref names may contain spaces. */
     const parts = tripletText.split(' ',);
     if (parts.length < TRIPLET_MIN_TOKENS)
       throw new Error(`receive-pack: malformed triplet "${tripletText}"`,);
+    /** Destructured triplet; ref names may contain embedded spaces. */
     const [oldOid, newOid, ...refTokens] = parts;
     triplets.push({
       oldOid: oldOid ?? '',
@@ -163,6 +177,7 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
   }
   if (!sawFlush)
     throw new Error('receive-pack: missing flush-pkt before pack data',);
+  /** Pack bytes following the flush-pkt; empty for delete-only requests. */
   const packfile = new Uint8Array(body.subarray(offset,),);
   return {
     capabilities,
@@ -188,27 +203,37 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
  * ```
  */
 export function parseUploadPackBody(body: Uint8Array,): UploadPackRequest {
+  /** Reused decoder for the pkt-line text payloads. */
   const decoder = new TextDecoder();
+  /** OIDs the client requested; populated by `want` lines. */
   const wants: string[] = [];
+  /** OIDs the client already has; populated by `have` lines. */
   const haves: string[] = [];
+  /** OIDs flagged shallow; populated by `shallow` lines. */
   const shallows: string[] = [];
+  /** Capabilities advertised on the first `want` line. */
   let capabilities: readonly string[] = [];
+  /** Set when the client signalled negotiation completion via `done`. */
   let done = false;
   for (const line of decodePktLines(body,)) {
     if (line === null || line === 'delim')
       continue;
+    /** Payload without the optional trailing line-feed git emits on text lines. */
     const trimmed = line[line.byteLength - 1] === ASCII_LF
       ? line.subarray(
         0,
         line.byteLength - 1,
       )
       : line;
+    /** UTF-8 decoded line text. */
     const text = decoder.decode(trimmed,).trim();
     if (text === 'done') {
       done = true;
       continue;
     }
+    /** Space-separated tokens; key/value/rest decide the line's meaning. */
     const tokens = text.split(' ',);
+    /** Destructured tokens: `key` selects the request kind, `rest` holds caps. */
     const [key, value, ...rest] = tokens;
     if (capabilities.length === 0 && rest.length > 0) {
       capabilities = rest.filter(function nonEmpty(s,) {

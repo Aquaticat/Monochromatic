@@ -45,6 +45,7 @@ export async function ensureRepoExists(row: {
   owner: string;
   repo: string;
 },): Promise<string> {
+  /** Resolved gitdir path used both for mkdir and the init call below. */
   const gitdir = repoGitdir(row,);
   await mkdir(
     gitdir,
@@ -96,16 +97,20 @@ const PACK_TAG_BYTES = 16;
  * ```
  */
 export async function listAllRefs(row: { gitdir: string; },): Promise<RefPair[]> {
+  /** Raw ref names under `refs/` reported by isomorphic-git. */
   const refsBelow = await git.listRefs({
     fs: nodeFs,
     gitdir: row.gitdir,
     filepath: 'refs',
   },);
+  /** Names to resolve in advertisement order; HEAD must come first. */
   const refNames: string[] = ['HEAD',];
   for (const r of refsBelow)
     refNames.push(`refs/${r}`,);
+  /** Collected `[refName, oid]` pairs after successful resolution. */
   const out: RefPair[] = [];
   for (const refName of refNames) {
+    /** Resolved object id, or `undefined` when the ref resolution throws. */
     let oid: string | undefined = undefined;
     try {
       // oxlint-disable-next-line no-await-in-loop -- ref resolution can hit packed-refs lookup; serial is simpler than batched
@@ -141,6 +146,7 @@ export async function indexPackData(row: {
   gitdir: string;
   packBytes: Uint8Array;
 },): Promise<void> {
+  /** Pack directory under the gitdir; created on demand. */
   const packDir = join(
     row.gitdir,
     'objects',
@@ -150,7 +156,9 @@ export async function indexPackData(row: {
     packDir,
     { recursive: true, },
   );
+  /** Random suffix avoids collision with concurrent pack writes. */
   const tag = randomBytes(PACK_TAG_BYTES,).toString('hex',);
+  /** Absolute temp path that holds the pack until indexing succeeds. */
   const packPath = join(
     packDir,
     `pack-${tag}.pack`,
@@ -210,10 +218,12 @@ export async function applyRefUpdate(row: {
     refName: string;
   };
 },): Promise<RefUpdateResultLite> {
+  /** Destructured for ergonomic access through the validation branches. */
   const {
     triplet,
     gitdir,
   } = row;
+  /** Current ref value, or `undefined` when the ref does not yet exist. */
   let currentOid: string | undefined = undefined;
   try {
     currentOid = await git.resolveRef({

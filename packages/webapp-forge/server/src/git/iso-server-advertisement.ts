@@ -59,23 +59,28 @@ export async function buildInfoRefsAdvertisement(row: {
   repo: string;
   service: 'git-upload-pack' | 'git-receive-pack';
 },): Promise<Uint8Array> {
+  /** On-disk repo path the advertisement is built against. */
   const gitdir = await ensureRepoExists({
     owner: row.owner,
     repo: row.repo,
   },);
+  /** Capability set advertised depends on which service the client requested. */
   const caps = row.service === 'git-upload-pack' ? UPLOAD_PACK_CAPS : RECEIVE_PACK_CAPS;
+  /** Existing refs decide between empty-repo placeholder and standard layout. */
   const refs = await listAllRefs({ gitdir, },);
+  /** Accumulator for the response body parts in protocol order. */
   const chunks: Uint8Array[] = [
     encodePkt(`# service=${row.service}\n`,),
     flushPkt(),
   ];
   if (refs.length === 0) {
-    // Empty-repo advertisement: zero-OID + the synthetic "capabilities^{}" ref.
+    /** Synthetic `capabilities^{}` pkt-line is required when no refs exist. */
     const head = `${ZERO_OID} capabilities^{}\0${caps.join(' ',)}\n`;
     chunks.push(encodePkt(head,),);
   }
   else {
     for (const [index, [refName, oid,],] of refs.entries()) {
+      /** First ref carries the capabilities suffix; subsequent refs do not. */
       const line = index === 0
         ? `${oid} ${refName}\0${caps.join(' ',)}\n`
         : `${oid} ${refName}\n`;
@@ -100,10 +105,13 @@ export async function buildInfoRefsAdvertisement(row: {
  * ```
  */
 function concatChunks(chunks: readonly Uint8Array[],): Uint8Array {
+  /** Running sum of every chunk's byte length to size the output buffer. */
   let total = 0;
   for (const chunk of chunks)
     total += chunk.byteLength;
+  /** Destination buffer sized exactly to the total chunk length. */
   const out = new Uint8Array(total,);
+  /** Write position advancing through `out` as each chunk is copied. */
   let cursor = 0;
   for (const chunk of chunks) {
     out.set(

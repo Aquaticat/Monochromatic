@@ -73,15 +73,20 @@ export function multiplexSideband(row: {
   channel: number;
   useSideBand64k: boolean;
 },): Uint8Array[] {
+  /** Per-frame payload ceiling depends on which sideband flavour was negotiated. */
   const max = row.useSideBand64k ? MAX_SIDEBAND_64K_PAYLOAD : MAX_SIDEBAND_PAYLOAD;
+  /** Output frames produced as the payload is sliced. */
   const out: Uint8Array[] = [];
+  /** Read position advancing through `row.payload`. */
   let cursor = 0;
   while (cursor < row.payload.byteLength) {
+    /** Next chunk of payload bytes for one sideband frame. */
     const slice = row.payload.subarray(
       cursor,
       cursor + max,
     );
     cursor += slice.byteLength;
+    /** Frame buffer with the channel marker prepended to the slice. */
     const wrapped = new Uint8Array(slice.byteLength + 1,);
     wrapped[0] = row.channel;
     wrapped.set(
@@ -120,9 +125,11 @@ export function writeUploadPackResponse(row: {
   useSideBand64k: boolean;
   progress?: string;
 },): Uint8Array[] {
+  /** Response chunks; starts with the mandatory NAK acknowledging no common bases. */
   const chunks: Uint8Array[] = [encodePkt('NAK\n',),];
   if (row.useSideBand) {
     if (row.progress !== undefined && row.progress.length > 0) {
+      /** Fresh encoder reused only for the progress payload. */
       const encoder = new TextEncoder();
       chunks.push(...multiplexSideband({
         payload: encoder.encode(row.progress,),
@@ -187,6 +194,7 @@ export function writeReceivePackResponse(row: {
   /** Whether the client negotiated `side-band-64k` specifically. */
   useSideBand64k?: boolean;
 },): Uint8Array[] {
+  /** Status report chunks; sideband wrapping is applied later when negotiated. */
   const report: Uint8Array[] = [
     row.unpackOk
       ? encodePkt('unpack ok\n',)
@@ -201,10 +209,13 @@ export function writeReceivePackResponse(row: {
   report.push(flushPkt(),);
   if (row.useSideBand !== true)
     return report;
+  /** Running sum of report chunk lengths to size the flattened buffer. */
   let total = 0;
   for (const chunk of report)
     total += chunk.byteLength;
+  /** Flattened report bytes; sideband multiplexing operates on a single buffer. */
   const flat = new Uint8Array(total,);
+  /** Write position advancing through `flat` as each chunk is copied. */
   let cursor = 0;
   for (const chunk of report) {
     flat.set(

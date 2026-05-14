@@ -76,15 +76,20 @@ export function delimPkt(): Uint8Array {
  * ```
  */
 export function encodePkt(payload: Uint8Array | string,): Uint8Array {
+  /** Payload bytes; strings are UTF-8 encoded here so callers may pass either. */
   const bytes = typeof payload === 'string'
     ? new TextEncoder().encode(payload,)
     : payload;
+  /** Total frame length includes the length prefix itself per the spec. */
   const total = bytes.byteLength + PKT_LEN_BYTES;
+  /** Four-digit hex length prefix, zero-padded. */
   const lengthHex = total.toString(HEX_RADIX,).padStart(
     PKT_LEN_BYTES,
     '0',
   );
+  /** ASCII bytes of the length prefix written at offset 0 of the frame. */
   const prefix = new TextEncoder().encode(lengthHex,);
+  /** Destination buffer sized to fit prefix plus payload. */
   const out = new Uint8Array(total,);
   out.set(
     prefix,
@@ -116,8 +121,11 @@ export type PktLine = Uint8Array | null | 'delim';
  * ```
  */
 export function decodePktLines(data: Uint8Array,): PktLine[] {
+  /** Reused decoder for the ASCII length prefixes. */
   const decoder = new TextDecoder();
+  /** Output accumulator visited in stream order. */
   const out: PktLine[] = [];
+  /** Cursor advancing through `data` as each frame is consumed. */
   let offset = 0;
   while (offset < data.byteLength) {
     if (data.byteLength - offset < PKT_LEN_BYTES) {
@@ -127,11 +135,14 @@ export function decodePktLines(data: Uint8Array,): PktLine[] {
         } bytes too short for length prefix`,
       );
     }
+    /** Length prefix bytes for the upcoming frame. */
     const lengthSlice = data.subarray(
       offset,
       offset + PKT_LEN_BYTES,
     );
+    /** Decoded ASCII length string parsed below as hex. */
     const lengthText = decoder.decode(lengthSlice,);
+    /** Frame length including the prefix; flush/delim are special low values. */
     const length = Number.parseInt(
       lengthText,
       HEX_RADIX,
@@ -157,6 +168,7 @@ export function decodePktLines(data: Uint8Array,): PktLine[] {
         } remain`,
       );
     }
+    /** Frame payload sliced from `data` after the length prefix. */
     const payload = data.subarray(
       offset + PKT_LEN_BYTES,
       offset + length,

@@ -75,17 +75,24 @@ export type ReceivePackOutcome = {
 export async function handleUploadPack(
   row: RepoArgs & { body: Uint8Array; },
 ): Promise<Uint8Array> {
+  /** Resolved gitdir for the requested repo. */
   const gitdir = await ensureRepoExists(row,);
+  /** Parsed upload-pack request driving the rest of the handler. */
   const request = parseUploadPackBody(row.body,);
+  /** Client opted into 64k side-band frames; checked before generic side-band. */
   const useSideBand64k = request.capabilities.includes('side-band-64k',);
+  /** Either form of side-band selects the multiplexed response shape. */
   const useSideBand = useSideBand64k || request.capabilities.includes('side-band',);
+  /** Object ids the server still needs to send after subtracting client haves. */
   const oids = await collectReachable({
     gitdir,
     wants: request.wants,
     haves: request.haves,
   },);
+  /** Packfile bytes start empty; only populated when the want set is non-empty. */
   let packfile = new Uint8Array(0,);
   if (oids.length > 0) {
+    /** Pack-generation result; `packfile` is undefined for empty packs. */
     const result = await git.packObjects({
       fs: nodeFs,
       gitdir,
@@ -95,6 +102,7 @@ export async function handleUploadPack(
     if (result.packfile !== undefined)
       packfile = new Uint8Array(result.packfile,);
   }
+  /** Wire chunks framing the packfile plus protocol scaffolding. */
   const chunks = writeUploadPackResponse({
     packfile,
     useSideBand,
@@ -119,9 +127,13 @@ export async function handleUploadPack(
 export async function handleReceivePack(
   row: RepoArgs & { body: Uint8Array; },
 ): Promise<ReceivePackOutcome> {
+  /** Resolved gitdir for the requested repo. */
   const gitdir = await ensureRepoExists(row,);
+  /** Parsed receive-pack request: triplets, packfile, capabilities. */
   const request = parseReceivePackBody(row.body,);
+  /** Client opted into 64k side-band frames; checked before generic side-band. */
   const useSideBand64k = request.capabilities.includes('side-band-64k',);
+  /** Either form of side-band selects the multiplexed response shape. */
   const useSideBand = useSideBand64k || request.capabilities.includes('side-band',);
   if (request.triplets.length === 0) {
     return {
@@ -134,7 +146,9 @@ export async function handleReceivePack(
       applied: [],
     };
   }
+  /** Indexing success flag reported back via the wire response. */
   let unpackOk = true;
+  /** Captured pack-indexing error message, when one occurs. */
   let unpackError: string | undefined = undefined;
   if (request.packfile.byteLength > 0) {
     try {
@@ -148,19 +162,23 @@ export async function handleReceivePack(
       unpackError = err instanceof Error ? err.message : 'index failed';
     }
   }
+  /** Per-ref outcomes mirrored back into the receive-pack response body. */
   const refResults: {
     refName: string;
     ok: boolean;
     error?: string;
   }[] = [];
+  /** Successfully applied triplets surfaced to the dispatcher for events. */
   const applied: RefUpdateTriplet[] = [];
   if (unpackOk) {
     for (const triplet of request.triplets) {
-      // oxlint-disable-next-line no-await-in-loop -- ref updates are atomic per ref; sequential is correct
+      /* oxlint-disable no-await-in-loop -- ref updates are atomic per ref; sequential is correct */
+      /** Per-ref apply result; sequential because each touches one ref atomically. */
       const result = await applyRefUpdate({
         gitdir,
         triplet,
       },);
+      /* oxlint-enable no-await-in-loop */
       refResults.push(result.error === undefined
         ? {
           refName: triplet.refName,
@@ -184,6 +202,7 @@ export async function handleReceivePack(
       },);
     }
   }
+  /** Final response bytes; shape depends on whether indexing surfaced an error. */
   const body = concatChunks(writeReceivePackResponse(unpackError === undefined
     ? {
       unpackOk,
@@ -220,6 +239,7 @@ export async function handleReceivePack(
 export async function getRef(
   row: RepoArgs & { ref: string; },
 ): Promise<string | undefined> {
+  /** Resolved gitdir; created on demand by `ensureRepoExists`. */
   const gitdir = await ensureRepoExists(row,);
   try {
     return await git.resolveRef({
@@ -248,6 +268,7 @@ export async function getRef(
 export async function listRefs(
   row: RepoArgs & { filepath: string; },
 ): Promise<readonly string[]> {
+  /** Resolved gitdir; created on demand by `ensureRepoExists`. */
   const gitdir = await ensureRepoExists(row,);
   return git.listRefs({
     fs: nodeFs,
@@ -272,7 +293,9 @@ export async function listRefs(
 export async function readLooseObjectBytes(
   row: RepoArgs & { oid: string; },
 ): Promise<Uint8Array> {
+  /** Resolved gitdir; created on demand by `ensureRepoExists`. */
   const gitdir = await ensureRepoExists(row,);
+  /** Loose-object path follows git's `xx/yyy...` two-char prefix layout. */
   const path = join(
     gitdir,
     'objects',
@@ -298,10 +321,13 @@ export async function readLooseObjectBytes(
  * ```
  */
 function concatChunks(chunks: readonly Uint8Array[],): Uint8Array {
+  /** Running sum of every chunk's byte length to size the output buffer. */
   let total = 0;
   for (const chunk of chunks)
     total += chunk.byteLength;
+  /** Destination buffer sized exactly to the total chunk length. */
   const out = new Uint8Array(total,);
+  /** Write position advancing through `out` as each chunk is copied. */
   let cursor = 0;
   for (const chunk of chunks) {
     out.set(
