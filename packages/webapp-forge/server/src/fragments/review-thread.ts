@@ -121,6 +121,7 @@ function reviewBlock(props: ReviewRowData,): SafeHtml {
  * ```
  */
 export function renderReviewThread(data: ReviewThreadData,): SafeHtml {
+  /** Per-review HTML blocks composing the rendered thread. */
   const blocks = data.reviews.map(function eachReview(review,) {
     return reviewBlock(review,);
   },);

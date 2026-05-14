@@ -96,12 +96,14 @@ function renderChild(child: unknown,): string {
  * @returns space-prefixed attribute string (empty string if no attributes)
  */
 function renderAttrs(props: Record<string, unknown>,): string {
+  /** Accumulator for the rendered attribute string. */
   let result = '';
   for (const [key, value,] of Object.entries(props,)) {
     if (key === 'children' || key === 'dangerouslySetInnerHTML')
       continue;
     if (value === null || value === undefined || value === false)
       continue;
+    /** Attribute name; remapped from JSX prop names when the table provides one. */
     const name = PROP_TO_ATTR[key] ?? key;
     if (value === true)
       result += ` ${name}`;
@@ -164,11 +166,13 @@ export function jsx(
   if (typeof type === 'function')
     return type(props,);
 
+  /** Rendered attribute string used by both branches below. */
   const attrs = renderAttrs(props,);
 
   if (VOID_ELEMENTS.has(type,))
     return { html: `<${type}${attrs}>`, };
 
+  /** Inner HTML: dangerouslySetInnerHTML wins over children when present. */
   const inner = isDangerousHtml(props.dangerouslySetInnerHTML,)
     ? props.dangerouslySetInnerHTML.__html
     : renderChild(props.children,);

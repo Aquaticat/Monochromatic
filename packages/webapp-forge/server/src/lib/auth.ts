@@ -71,8 +71,11 @@ const DEV_BETTER_AUTH_SECRET =
  * ```
  */
 function resolveLibsqlUrl(): string {
+  /** `--db=PATH` CLI argument when supplied; highest priority source. */
   const argumentPath = getArgumentValue('db',);
+  /** `DB_PATH` environment variable; second priority source. */
   const environmentPath = process.env.DB_PATH;
+  /** Selected raw path; falls back to the compile-time default. */
   const rawPath = argumentPath ?? environmentPath ?? DEFAULT_DATABASE_PATH;
   if (rawPath === ':memory:')
     return ':memory:';

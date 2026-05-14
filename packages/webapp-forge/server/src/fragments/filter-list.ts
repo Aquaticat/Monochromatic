@@ -116,6 +116,7 @@ function issueRow(props: {
  * ```
  */
 export function renderFilterList(data: FilterListData,): SafeHtml {
+  /** Per-issue row HTML rendered into the filter list. */
   const rows = data.issues.map(function eachIssue(issue,) {
     return issueRow({
       ownerLogin: data.ownerLogin,
