@@ -70,7 +70,7 @@ function hasBlock(options: AtRuleOptions,): boolean {
   if (options.raw !== undefined)
     return true;
 
-  if (options.children !== undefined && options.children.length > 0)
+  if ((options.children !== undefined) && (options.children.length > 0))
     return true;
 
   return false;
@@ -123,7 +123,7 @@ function renderBody(
       parts.push(serialized,);
   }
 
-  if (raw !== undefined && raw !== '')
+  if ((raw !== undefined) && (raw !== ''))
     parts.push(raw,);
 
   /** Holds the concatenated children so the empty case can be detected before composing with the rest of the body. */
@@ -134,7 +134,7 @@ function renderBody(
   /** Holds the declarations-and-raw section so the join with `childrenStr` can insert a `;` only when both halves are non-empty. */
   const innerStr = parts.join(';',);
 
-  if (innerStr !== '' && childrenStr !== '')
+  if ((innerStr !== '') && (childrenStr !== ''))
     return `${innerStr};${childrenStr}`;
 
   return `${innerStr}${childrenStr}`;

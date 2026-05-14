@@ -151,9 +151,9 @@ type XmlOptions = {
   //region Self-closing check
   // XML has no void elements; instead, childless elements self-close.
   /** Flags whether the element has body content so the caller can choose between self-closing and the open/close pair. */
-  const hasContent = text !== undefined
-    || raw !== undefined
-    || (children !== undefined && children.length > 0);
+  const hasContent = (text !== undefined)
+    || (raw !== undefined)
+    || ((children !== undefined) && (children.length > 0));
 
   if (!hasContent) {
     parts.push(' />',);
