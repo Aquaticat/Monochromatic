@@ -110,7 +110,7 @@ await describe({
     it({
       name: 'renders multi-week durations as weeks + days',
       fn: async ({ expect, },) => {
-        expect(formatTrackedDuration(2 * SECONDS_PER_WEEK + 3 * SECONDS_PER_DAY,),).toBe('2w3d',);
+        expect(formatTrackedDuration((2 * SECONDS_PER_WEEK) + (3 * SECONDS_PER_DAY),),).toBe('2w3d',);
       },
     },),
 
@@ -135,7 +135,7 @@ await describe({
     it({
       name: 'renders months + weeks when both non-zero',
       fn: async ({ expect, },) => {
-        expect(formatTrackedDuration(2 * SECONDS_PER_MONTH + SECONDS_PER_WEEK,),).toBe('2m1w',);
+        expect(formatTrackedDuration((2 * SECONDS_PER_MONTH) + SECONDS_PER_WEEK,),).toBe('2m1w',);
       },
     },),
 

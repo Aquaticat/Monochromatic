@@ -152,7 +152,9 @@ export function formatTrackedDuration(seconds: number,): string {
   const years = Math.floor(total / SECONDS_PER_YEAR,);
   /** Residual after years; fed to months. */
   const remAfterY = total % SECONDS_PER_YEAR;
-  /** Carved off the post-years residual using the 30-day approximation in {@link SECONDS_PER_MONTH}. */
+  /**
+   * Carved off the post-years residual using the 30-day approximation in {@link SECONDS_PER_MONTH}.
+   */
   const months = Math.floor(remAfterY / SECONDS_PER_MONTH,);
   /** Residual after months; fed to weeks. */
   const remAfterMo = remAfterY % SECONDS_PER_MONTH;
@@ -210,12 +212,12 @@ export function formatTrackedDuration(seconds: number,): string {
     return value > 0;
   },);
 
-  if (biggestIdx === -1) return '0s';
+  if (biggestIdx === (-1)) return '0s';
 
   /** Top unit; primary cell of the rendered string. */
   const [bigValue, bigSuffix,] = nonNullishOrThrow(UNITS[biggestIdx],);
 
-  if (biggestIdx === UNITS.length - 1)
+  if (biggestIdx === (UNITS.length - 1))
     return `${bigValue}${bigSuffix}`;
 
   /** Partner unit; immediately adjacent per the strict-adjacency rule (no skipping). */
