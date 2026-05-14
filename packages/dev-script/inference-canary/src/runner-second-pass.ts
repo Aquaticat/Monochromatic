@@ -69,6 +69,7 @@ export async function runSecondPass(
       l,
     },),
   },);
+  /** Diagnostic-only follow-up prompt; undefined when the probe decides no fix turn is warranted. */
   const fixPrompt = await probe.buildFixPrompt(
     firstResponse,
     context,
@@ -80,6 +81,7 @@ export async function runSecondPass(
 
   rl.info('pass2: sending fix prompt...',);
 
+  /** Conversation echoed back to the model: system, original prompt, first response, then the fix instruction. */
   const messages: ChatMessage[] = [
     {
       role: 'system',
@@ -98,6 +100,7 @@ export async function runSecondPass(
       content: fixPrompt,
     },
   ];
+  /** Streamed completion for the fix turn; carries the model's revised source plus usage and timing data. */
   const completion = await streamCompletion(
     client,
     messages,
@@ -105,6 +108,7 @@ export async function runSecondPass(
     `${probe.name}:fix`,
     context.signal,
   );
+  /** Fix-pass score; combined with the completion data in the returned `SecondPassResult`. */
   const score = await probe.score(
     completion.text,
     context,

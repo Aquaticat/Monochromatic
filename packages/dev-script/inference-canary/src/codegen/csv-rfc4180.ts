@@ -44,11 +44,14 @@ export const csvRfc4180: Probe = createCodeGenProbe({
     .join('\n',),
   verify: function verifyCsv(result,): { correctness: number; } {
     try {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse output matched against known test input shape
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- JSON.parse output matched against known test input shape */
+      /** Parsed model output; rejected below when not an array of two rows. */
       const parsed = JSON.parse(result.stdout.trim(),) as Record<string, string>[];
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
       if (!Array.isArray(parsed,) || parsed.length !== 2)
         return { correctness: 0.1, };
 
+      /** First and second rows of the parsed model output; each may be undefined when the array is short. */
       const [first, second,] = parsed;
       if (first === undefined)
         return { correctness: 0.1, };
@@ -56,6 +59,7 @@ export const csvRfc4180: Probe = createCodeGenProbe({
       if (second === undefined)
         return { correctness: 0.2, };
 
+      /** Number of field-level checks the model output satisfied; divided by the total to yield correctness. */
       const correctCount = [
         first['name'] === 'O\'Brien, "Bob"',
         first['bio'] === 'likes\ntravel',

@@ -59,6 +59,7 @@ export const FAILURE_DIR_PATTERN: RegExp = /^failure-(?<timestamp>\d{4}-.+)$/;
  * @returns ISO 8601 timestamp string, or undefined if parsing fails
  */
 function restoreTimestamp(rawTimestamp: string,): string {
+  /** Slug with hyphens swapped back to colons; the date portion is fixed up to hyphens by the return expression. */
   const withColons = rawTimestamp
     .replaceAll(
       '-',
@@ -94,7 +95,9 @@ export function isRecentTimestamp(
   rawTimestamp: string,
   cutoff: number,
 ): boolean {
+  /** Restored ISO 8601 timestamp; parsed by `Date` below for the cutoff comparison. */
   const fixed = restoreTimestamp(rawTimestamp,);
+  /** Epoch milliseconds for the artifact's timestamp; NaN when the slug failed to parse. */
   const entryTime = new Date(fixed,).getTime();
   return !Number.isNaN(entryTime,) && entryTime >= cutoff;
 }

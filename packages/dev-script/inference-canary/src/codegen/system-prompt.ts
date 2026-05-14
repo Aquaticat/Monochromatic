@@ -64,10 +64,12 @@ const OXLINT_CONFIG_SRC = 'packages/config/oxlint/src';
  * @returns sorted relative paths (from monorepo root)
  */
 async function discoverRuleModules(): Promise<string[]> {
+  /** Absolute path to the shared oxlint config source tree; resolves relative paths returned by `readdir`. */
   const absoluteDir = join(
     MONOREPO_ROOT,
     OXLINT_CONFIG_SRC,
   );
+  /** Directory entries under `absoluteDir` traversed recursively to discover every rule module. */
   const entries = await readdir(
     absoluteDir,
     {
@@ -101,8 +103,10 @@ async function discoverRuleModules(): Promise<string[]> {
  * @returns complete system prompt with embedded config contents
  */
 async function buildSystemPrompt(): Promise<string> {
+  /** Discovered rule module paths; iterated below to read each module's source and align it with the awaited result. */
   const ruleModulePaths = await discoverRuleModules();
 
+  /** Awaited config sources: oxlintrc, tsconfig, then each rule module in `ruleModulePaths` order. */
   const [oxlintrc, tsconfig, ...ruleModules] = await Promise.all([
     readConfig('oxlint.config.ts',),
     readConfig(
@@ -113,6 +117,7 @@ async function buildSystemPrompt(): Promise<string> {
     },),
   ],);
 
+  /** Rendered "=== path === \\n source" sections, one per rule module, embedded into the prompt below. */
   const ruleModuleSections = ruleModulePaths.map(
     function formatRuleModule(
       path,

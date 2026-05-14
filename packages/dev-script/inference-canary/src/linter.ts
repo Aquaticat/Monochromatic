@@ -81,6 +81,7 @@ export async function lintSource(
   source: string,
   meta: ArtifactMeta,
 ): Promise<LintResult> {
+  /** Artifact file path and its enclosing lint directory; passed to the two analyzers below. */
   const {
     filePath,
     lintDir,
@@ -91,11 +92,13 @@ export async function lintSource(
 
   // runAndParseOxlint and runAndParseTypeCheck each catch their own errors and
   // return safe defaults, so no outer catch is needed here.
+  /** Oxlint and tsgo results awaited together; merged below into the returned `LintResult`. */
   const [oxlintResult, typeResult,] = await Promise.all([
     runAndParseOxlint(filePath,),
     runAndParseTypeCheck(lintDir,),
   ],);
 
+  /** Non-empty diagnostic sections from each analyzer; joined for the model-facing `rawDiagnostics` field. */
   const rawParts = [
     oxlintResult.rawOutput.length > 0 ? `=== oxlint ===\n${oxlintResult.rawOutput}` : '',
     typeResult.rawOutput.length > 0 ? `=== tsgo ===\n${typeResult.rawOutput}` : '',

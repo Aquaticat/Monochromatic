@@ -33,6 +33,7 @@ export function resolveJumpTarget(
 ): ExecutionStep {
   if (arg === undefined)
     throw new Error(`${op} missing label`,);
+  /** Resolved jump position from the label map; throws below when the label is unknown. */
   const target = labels.get(arg,);
   if (target === undefined)
     throw new Error(`unknown label: ${arg}`,);

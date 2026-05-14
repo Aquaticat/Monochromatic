@@ -69,6 +69,7 @@ export async function enrichArtifact(
     error?: string;
   },
 ): Promise<void> {
+  /** Full enriched artifact written to disk; optional fields are spread in conditionally to keep absent fields out of JSON. */
   const enriched: EnrichedArtifactMeta = {
     model: config.model,
     label: config.label,
@@ -149,6 +150,7 @@ export async function saveFailureArtifacts(
   lastScore: number,
   enrichedInitial: boolean,
 ): Promise<void> {
+  /** Human-readable error string written into the failure artifact for post-hoc inspection. */
   const errorMessage = error instanceof Error ? error.message : String(error,);
 
   // If we have a partial completion from an aborted stream, save it.

@@ -62,15 +62,17 @@ export async function execBun(
   }
 
   try {
+    /* oxlint-disable typescript/no-unsafe-type-assertion -- nano-spawn accepts mutable string array */
+    /** Successful spawn result; reshaped into a `BunExecResult` so callers see the same shape on success and failure. */
     const result = await spawn(
       command,
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nano-spawn accepts mutable string array
       args as string[],
       {
         timeout: options.timeout,
         signal: options.signal,
       },
     );
+    /* oxlint-enable typescript/no-unsafe-type-assertion */
 
     return {
       stdout: result.stdout,
@@ -86,15 +88,18 @@ export async function execBun(
       && typeof error === 'object'
       && 'exitCode' in error)
     {
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- nano-spawn SubprocessError has known shape
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- nano-spawn SubprocessError has known shape */
+      /** Narrowed view of the caught nano-spawn `SubprocessError`; carries stdout, stderr, exit code, and signal name. */
       const subprocessError = error as {
         stdout: string;
         stderr: string;
         exitCode: number | undefined;
         signalName: string | undefined;
       };
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
       // Killed if the signal was aborted (race: it may have become true after spawn started)
       // or the process received a termination signal
+      /** True when the abort signal fired or the process received a termination signal; surfaced to callers as `BunExecResult.killed`. */
       const wasKilled = Boolean(options.signal?.aborted,)
         || subprocessError.signalName !== undefined;
 
@@ -107,6 +112,7 @@ export async function execBun(
     }
 
     // Unexpected error (e.g. command not found)
+    /** Human-readable error text for the synthetic non-zero result returned to callers. */
     const message = error instanceof Error ? error.message : String(error,);
 
     return {

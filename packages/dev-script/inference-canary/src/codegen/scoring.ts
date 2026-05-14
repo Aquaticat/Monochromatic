@@ -67,7 +67,7 @@ export function combinedScore(
   if (correctness < 1)
     return 0;
 
-  // Sum lint penalties with per-rule cap
+  /** Total lint penalty after capping each rule at `MAX_PENALTY_PER_RULE`; subtracted from the perfect-score baseline. */
   const lintPenalty = [...lint.perRulePenalty.values(),]
     .reduce(
       function capAndSum(
@@ -82,6 +82,7 @@ export function combinedScore(
       0,
     );
 
+  /** Flat per-error penalty for tsgo diagnostics; no cap since each type error is treated as distinct. */
   const typePenalty = lint.typeErrors * TYPE_ERROR_PENALTY;
   return Math.max(
     0,
@@ -111,6 +112,7 @@ export async function lintAndLog(
   probeName: string,
   context: ScoreContext,
 ): Promise<LintResult> {
+  /** Full lint result returned to callers; also drives the per-probe log summary below. */
   const lint = await lintSource(
     source,
     {
@@ -130,12 +132,15 @@ export async function lintAndLog(
         l,
       },),
     },);
+    /** Oxlint portion of the one-line log summary; "skipped" when the linter never ran. */
     const lintSummary = lint.linterRan
       ? `lint=${String(lint.severity.errors,)}err/${String(lint.severity.warnings,)}warn`
       : 'lint=skipped';
+    /** Tsgo portion of the one-line log summary; "skipped" when the type checker never ran. */
     const typeSummary = lint.typeCheckerRan
       ? `type=${String(lint.typeErrors,)}err`
       : 'type=skipped';
+    /** Top `MAX_DISPLAYED_RULES` violated rule IDs in a parenthetical; empty when nothing violated. */
     const rulesSummary = lint.violatedRules.length > 0
       ? ` (${
         lint

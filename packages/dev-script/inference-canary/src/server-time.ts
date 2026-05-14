@@ -48,6 +48,7 @@ export async function fetchServerTimestamp(): Promise<ISOTimestamp> {
     l,
   },);
   try {
+    /** HEAD response from the OpenRouter models endpoint; only the `date` header is consumed. */
     const response = await fetch(
       OPENROUTER_MODELS_URL,
       {
@@ -55,8 +56,10 @@ export async function fetchServerTimestamp(): Promise<ISOTimestamp> {
         signal: AbortSignal.timeout(TIMEOUT_MS,),
       },
     );
+    /** Raw RFC 7231 `Date` header from the response; null when the server omitted it. */
     const dateHeader = response.headers.get('date',);
     if (dateHeader !== null) {
+      /** Parsed `Date` instance; checked for NaN below before being serialized as ISO 8601. */
       const parsed = new Date(dateHeader,);
       if (!Number.isNaN(parsed.getTime(),)) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ISOTimestamp is a branded string; toISOString() always produces a valid ISO 8601 value

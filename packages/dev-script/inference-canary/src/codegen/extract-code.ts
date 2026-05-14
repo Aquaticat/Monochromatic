@@ -35,6 +35,7 @@ export type ExtractResult = {
  * ```
  */
 export function tryExtractCode(response: string,): ExtractResult {
+  /** Match for a fully closed fenced block; preferred path so trailing prose outside the fence is dropped. */
   const closedFence = /```(?:typescript|ts)?\n([\s\S]*?)```/.exec(response,);
   if (closedFence !== null && closedFence[1] !== undefined) {
     return {
@@ -43,6 +44,7 @@ export function tryExtractCode(response: string,): ExtractResult {
     };
   }
 
+  /** Fallback match for a fence whose closing backticks were truncated; salvages mid-stream output. */
   const openFence = /```(?:typescript|ts)?\n([\s\S]*)/.exec(response,);
   if (openFence !== null && openFence[1] !== undefined) {
     return {

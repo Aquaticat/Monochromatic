@@ -65,14 +65,17 @@ export const expressionEvaluator: Probe = createCodeGenProbe({
   ]
     .join('\n',),
   verify: function verifyExprEval(result,): { correctness: number; } {
+    /** Per-line model output, trimmed so trailing whitespace does not perturb the float comparison below. */
     const lines = result.stdout.trim().split('\n',).map(function trimLine(line,): string {
       return line.trim();
     },);
+    /** Number of expected outputs the model produced; divided by the total to yield correctness. */
     const correctCount = EXPR_EXPECTED
       .filter(function checkLine(
         exp,
         index,
       ): boolean {
+        /** Model's output for the current expected line; undefined when the model emitted fewer lines than expected. */
         const actual = lines[index];
         if (actual === undefined)
           return false;

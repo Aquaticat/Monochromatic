@@ -30,12 +30,14 @@ export function selectModels(): readonly ModelConfig[] {
   if (modelOverride === undefined)
     return models;
 
+  /** Registered model whose `label` matches the override; undefined when the override matches none. */
   const byLabel = models.find(function matchLabel(model,): boolean {
     return model.label === modelOverride;
   },);
   if (byLabel !== undefined)
     return [byLabel,];
 
+  /** Indented list of every registered label; embedded into the error so the user sees the valid options. */
   const availableLabels = models
     .map(function getLabel(model,): string {
       return `  - ${model.label}`;

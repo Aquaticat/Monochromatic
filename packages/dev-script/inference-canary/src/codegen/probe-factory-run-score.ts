@@ -135,11 +135,14 @@ export async function scoreImpl(
     )
     : undefined;
 
+  /** Correctness container result and lint analysis awaited together so downstream caching and scoring see both. */
   const [result, lint,] = await Promise.all([
     correctnessPromise,
     lintPromise,
   ],);
+  /** Awaited perf container result; undefined when this probe declares no perf test. */
   const perfResult = perfPromise !== undefined ? await perfPromise : undefined;
+  /** Awaited additional-run results, in declaration order; undefined when no additional runs are configured. */
   const additionalResults = additionalPromise !== undefined
     ? await additionalPromise
     : undefined;
@@ -164,6 +167,7 @@ export async function scoreImpl(
     );
   }
 
+  /** Perf score in [0, 1]; multiplied into the combined score so slow runs degrade the full result, not a fraction of it. */
   const perfMultiplier = cacheAndComputePerfMultiplier(
     config,
     context,
@@ -189,6 +193,7 @@ export async function scoreImpl(
     ) * perfMultiplier;
   }
 
+  /** Main-run correctness fraction from the probe's verifier; combined below with additional-run correctness via `Math.min`. */
   const { correctness: mainCorrectness, } = config.verify(result,);
 
   // Combine main and additional run correctness via Math.min;

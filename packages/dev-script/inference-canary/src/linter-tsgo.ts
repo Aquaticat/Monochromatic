@@ -39,6 +39,7 @@ function filterTypeErrors(
   output: string,
   subdirId: string,
 ): readonly string[] {
+  /** Path fragment that uniquely identifies this probe's canary.ts; used to ignore unrelated diagnostics. */
   const marker = `canary-lint/${subdirId}/canary.ts`;
   return output.split('\n',).filter(function matchLine(line,): boolean {
     return line.includes(marker,) && line.includes('error TS',);
@@ -71,6 +72,7 @@ export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult
       PACKAGE_DIR,
       'tsconfig.canary-lint.json',
     );
+    /** tsgo stdout from the clean-exit branch; empty when the project has zero type errors. */
     const output = await execPromise(
       'tsgo',
       [
@@ -82,6 +84,7 @@ export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult
         timeout: LINT_TIMEOUT_MS,
       },
     );
+    /** Diagnostic lines belonging to this probe's canary.ts; other paths are dropped. */
     const filtered = filterTypeErrors(
       output,
       relativeSuffix,
@@ -94,8 +97,10 @@ export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult
   }
   catch (error) {
     // tsgo exits non-zero when there are type errors; stdout has the diagnostics
+    /** stdout salvaged from the thrown error; carries tsgo diagnostics on the failure branch. */
     const stdout = getStdoutFromError(error,);
     if (stdout.includes('error TS',)) {
+      /** Diagnostic lines belonging to this probe's canary.ts on the failure branch. */
       const filtered = filterTypeErrors(
         stdout,
         relativeSuffix,

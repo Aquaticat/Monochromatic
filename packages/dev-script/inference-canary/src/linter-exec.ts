@@ -66,7 +66,9 @@ export async function execPromise(
   args: readonly string[],
   options: LintExecOptions = {},
 ): Promise<string> {
+  /** Forwarded exec options; the `timeout` key is omitted when undefined so callers can detect the unset state downstream. */
   const execOptions = options.timeout !== undefined ? { timeout: options.timeout, } : {};
+  /** Raw exec result; inspected below to surface non-zero exits as thrown errors with stdout/stderr attached. */
   const result = await execBun(
     command,
     args,

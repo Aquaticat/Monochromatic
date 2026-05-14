@@ -68,7 +68,9 @@ export async function runInContainerTimed(
   input: string,
   signal: AbortSignal | undefined,
 ): Promise<TimedContainerResult> {
+  /** Wall-clock origin for the duration measurement returned alongside the container result. */
   const start = Date.now();
+  /** Container result; merged below with `durationMs` so callers receive both in one object. */
   const result = await runInContainer(
     source,
     input,
@@ -131,6 +133,7 @@ export function buildPerfDiagnostic(
   perfResult: TimedContainerResult,
   config: PerfTestConfig,
 ): string | undefined {
+  /** Perf score for the current run; the diagnostic is suppressed when the run already hit the fast threshold. */
   const score = computePerfScore(
     perfResult,
     config,

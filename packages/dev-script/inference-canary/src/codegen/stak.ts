@@ -106,7 +106,9 @@ export const stakInterpreter: Probe = createCodeGenProbe({
   verify: function verifyStak(result,): { correctness: number; } {
     // nano-spawn strips the trailing newline from captured stdout;
     // trimEnd normalizes so the checks work regardless of trailing whitespace
+    /** Trimmed stdout used as the haystack for all output checks below. */
     const output = result.stdout.trimEnd();
+    /** Independent boolean checks against the model output; counted to yield correctness. */
     const checks = [
       // Floor division: -7 DIV 2 must be -4 (floor), not -3 (truncation)
       output.startsWith('-4\n',),
