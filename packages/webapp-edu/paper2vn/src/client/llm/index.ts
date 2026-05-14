@@ -33,6 +33,7 @@ const PROVIDERS: Record<ProviderId, Provider> = {
  * Anthropic also requires the explicit dangerous-browser opt-in.
  */
 export function isProviderReady(): boolean {
+  /** Active provider config snapshot from the settings store. */
   const cfg = getProvider();
   if (cfg.id === 'ollama')
     return true;
@@ -69,7 +70,9 @@ export async function chat(
 ): Promise<string> {
   if (!isProviderReady())
     throw new Error('llm: provider not ready (missing key or pending warning)',);
+  /** Active provider config (id, key, model, base URL). */
   const cfg = getProvider();
+  /** Adapter implementation for the active provider id. */
   const provider = PROVIDERS[cfg.id];
   console.error(
     '[llm] dispatching to',

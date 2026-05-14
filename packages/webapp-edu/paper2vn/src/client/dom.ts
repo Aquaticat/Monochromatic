@@ -36,6 +36,7 @@ export function el<K extends keyof TagNameMap,>(
   attrs: Record<string, string | EventListener | undefined> = {},
   children: readonly (Node | string)[] = [],
 ): TagNameMap[K] {
+  /** Newly created element receiving the wired attributes and children. */
   const node = document.createElement(tag,);
   for (const [
     key,

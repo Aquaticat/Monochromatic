@@ -58,6 +58,7 @@ export {};
  * @throws when unset
  */
 function requireEnv(name: string,): string {
+  /** Raw env-var value, validated as non-empty before being returned. */
   const value = process.env[name];
   if (value === undefined || value === '')
     throw new Error(`smoke: missing required env var ${name}`,);
@@ -127,6 +128,7 @@ consistency criterion is noisy.
 `
   .trim();
 
+/** Paper body for the smoke run; env override takes precedence over the default. */
 const PAPER_TEXT = process.env['PAPER2VN_SMOKE_PAPER'] !== undefined
     && process.env['PAPER2VN_SMOKE_PAPER'] !== ''
   ? process.env['PAPER2VN_SMOKE_PAPER']!
@@ -188,12 +190,15 @@ async function runWithFallback(): Promise<{
   generation: Awaited<ReturnType<typeof generateChapters>>;
   durationMs: number;
 }> {
+  /** Accumulated per-model failure messages reported when every model fails. */
   const errors: string[] = [];
   for (const model of OPENROUTER_MODELS) {
     seedProviderState(model,);
     step(`attempting chapter generation with ${model}`,);
+    /** Per-attempt start timestamp used to report elapsed milliseconds. */
     const t0 = Date.now();
     try {
+      /** Successful generator output, returned with timing info on first success. */
       const generation = await generateChapters({
         paperText: PAPER_TEXT,
         signal: undefined,
@@ -205,6 +210,7 @@ async function runWithFallback(): Promise<{
       };
     }
     catch (err) {
+      /** Normalised error message stashed for the eventual aggregate throw. */
       const message = err instanceof Error ? err.message : String(err,);
       console.error(
         `[smoke] ${model} failed after ${Date.now() - t0}ms: ${message}`,
@@ -217,7 +223,9 @@ async function runWithFallback(): Promise<{
   );
 }
 
+/** Top-level start timestamp used to report the overall PASS duration. */
 const startedAt = Date.now();
+/** Successful run output destructured into the script-scope bindings. */
 const {
   model,
   generation,
@@ -250,7 +258,9 @@ if (generation.chapters.length === 0)
  * returns an unrecognized shape that asBeat/asChapter quietly drops.
  */
 //endregion
+/** First chapter of the generation, asserted non-empty above. */
 const firstChapter = generation.chapters[0]!;
+/** First dialogue beat of the first chapter, checked for non-empty text below. */
 const firstBeat = firstChapter.dialogue[0];
 if (firstBeat === undefined || firstBeat.text.trim() === '') {
   throw new Error(
@@ -258,6 +268,7 @@ if (firstBeat === undefined || firstBeat.text.trim() === '') {
   );
 }
 
+/** Total elapsed time for the smoke run, reported in the PASS log. */
 const tookMs = Date.now() - startedAt;
 console.error(
   `[smoke] PASS in ${tookMs}ms (model: ${model}, chapters: ${generation.chapters.length}, first beat: "${

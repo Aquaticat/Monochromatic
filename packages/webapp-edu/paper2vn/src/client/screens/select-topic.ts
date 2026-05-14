@@ -36,7 +36,9 @@ function newSaveId(): string {
 
 /** Mounts the select-topic screen. */
 function mount(root: HTMLElement,): void {
+  /** Current locale's translation accessors. */
   const ll = LL();
+  /** File picker accepting the locale-tuned accept string. */
   const fileInput = el(
     'input',
     {
@@ -44,23 +46,28 @@ function mount(root: HTMLElement,): void {
       accept: ll.uploadAccept(),
     },
   );
+  /** Plain-text alternative input when the user pastes instead of uploading. */
   const textarea = el(
     'textarea',
     { placeholder: ll.pasteTextPlaceholder(), },
   );
+  /** Inline status paragraph used for hints and error messages. */
   const status = el(
     'p',
     { class: 'muted', },
     [ll.selectTopicHint(),],
   );
 
+  /** Click handler for the primary action: parse input, generate, navigate. */
   async function start(): Promise<void> {
     if (!isProviderReady()) {
       status.textContent = ll.apiKeyMissing();
       status.className = 'error';
       return;
     }
+    /** Paper body either extracted from the upload or read from the textarea. */
     let paperText = '';
+    /** First selected file from the picker, when the upload path is chosen. */
     const file = fileInput.files?.[0];
     try {
       if (file !== undefined) {
@@ -78,10 +85,12 @@ function mount(root: HTMLElement,): void {
       }
       status.textContent = ll.generating();
       status.className = 'muted';
+      /** LLM-generated title and chapters for the parsed paper text. */
       const generation = await generateChapters({
         paperText,
         signal: undefined,
       },);
+      /** Fresh save record stored before navigating to the lecture screen. */
       const save: SaveData = {
         id: newSaveId(),
         label: generation.title,
@@ -98,6 +107,7 @@ function mount(root: HTMLElement,): void {
       navigate('lecture',);
     }
     catch (err) {
+      /** Normalised error message shown to the user in the status paragraph. */
       const message = err instanceof Error ? err.message : String(err,);
       console.error(
         '[select-topic] start failed',
@@ -108,6 +118,7 @@ function mount(root: HTMLElement,): void {
     }
   }
 
+  /** Primary "Start lecture" button wiring the click to the local async {@link start}. */
   const startBtn = el(
     'button',
     {
@@ -119,6 +130,7 @@ function mount(root: HTMLElement,): void {
     [ll.startLecture(),],
   );
 
+  /** Outer screen container with header, upload, paste, status, and start button. */
   const screen = el(
     'section',
     {

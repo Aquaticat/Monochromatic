@@ -33,6 +33,7 @@ export async function askPersona(
     signal: AbortSignal | undefined;
   },
 ): Promise<string> {
+  /** Paper body capped to {@link PAPER_TEXT_BUDGET} so prompts fit context windows. */
   const truncated = paperText.length > PAPER_TEXT_BUDGET
     ? paperText.slice(
       0,
@@ -46,6 +47,7 @@ export async function askPersona(
    * same accessor keeps these prompts immune to future i18n edits that
    * might introduce them.
    */
+  /** Persona prompt assembled with the paper body so the model stays grounded. */
   const systemMessage = `${rawString('persona',)}\n\n${
     rawString('askInstruction',)
   }\n\nPaper text follows:\n---BEGIN PAPER---\n${truncated}\n---END PAPER---`;

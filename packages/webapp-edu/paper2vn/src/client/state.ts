@@ -57,6 +57,7 @@ function readJson<T,>(
   fallback: T,
 ): T {
   try {
+    /** Raw stored JSON string, or `null` when the key is missing. */
     const raw = globalThis.localStorage.getItem(key,);
     if (raw === null)
       return fallback;
@@ -252,6 +253,7 @@ export function clearActiveSave(): void {
 export function persistActiveSave(): void {
   if (activeSave === undefined)
     return;
+  /** Active save with refreshed `updatedAt` so the persisted copy reflects the write. */
   const updated: SaveData = {
     ...activeSave,
     updatedAt: new Date().toISOString(),
@@ -261,12 +263,14 @@ export function persistActiveSave(): void {
     `${STORAGE_KEY_SAVE_PREFIX}${updated.id}`,
     updated,
   );
+  /** Index entry rebuilt from `updated` so listings stay current. */
   const summary: SaveSummary = {
     id: updated.id,
     label: updated.label,
     paperTitle: updated.paperTitle,
     updatedAt: updated.updatedAt,
   };
+  /** Existing index minus the entry being replaced. */
   const next = saves.filter(function isOther(s,): boolean {
     return s.id !== updated.id;
   },);
@@ -289,6 +293,7 @@ export function persistActiveSave(): void {
  * @returns the loaded save, or `undefined` when not found
  */
 export function loadSave(id: string,): SaveData | undefined {
+  /** Loaded save payload, or `null` when the storage key is absent. */
   const data = readJson<SaveData | null>(
     `${STORAGE_KEY_SAVE_PREFIX}${id}`,
     null,

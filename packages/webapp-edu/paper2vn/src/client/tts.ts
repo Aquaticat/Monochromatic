@@ -38,18 +38,23 @@ export function canSpeak(): boolean {
  *   `undefined` to let the engine pick a default
  */
 function pickVoice(): SpeechSynthesisVoice | undefined {
+  /** Active locale's BCP-47 tag, matched against voice metadata. */
   const lang = bcp47();
+  /** Snapshot of installed synthesis voices for the running engine. */
   const voices = globalThis.speechSynthesis.getVoices();
+  /** Voice whose lang matches the active locale exactly. */
   const exact = voices.find(function isExact(v,): boolean {
     return v.lang === lang;
   },);
   if (exact !== undefined)
     return exact;
+  /** Language portion of the BCP-47 tag, used for prefix-match fallback. */
   const prefix = lang
     .split(
       '-',
       1,
     )[0] ?? '';
+  /** First voice whose lang starts with the prefix, when no exact match exists. */
   const partial = voices.find(function isPartial(v,): boolean {
     return v.lang.startsWith(prefix,);
   },);
@@ -67,15 +72,18 @@ export async function speak(text: string,): Promise<void> {
   if (!canSpeak())
     return;
   stopSpeaking();
+  /** Snapshot of settings used to configure volume on the utterance. */
   const settings = getSettings();
   return await new Promise<void>(
     function run(
       resolve,
       reject,
     ): void {
+      /** Outgoing speech utterance configured with locale, volume, and voice. */
       const utterance = new SpeechSynthesisUtterance(text,);
       utterance.lang = bcp47();
       utterance.volume = settings.voiceVolume;
+      /** Picked voice for the locale, or `undefined` to let the engine choose. */
       const voice = pickVoice();
       if (voice !== undefined)
         utterance.voice = voice;

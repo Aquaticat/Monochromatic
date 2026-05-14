@@ -39,17 +39,20 @@ export async function chatOpenAICompatible(
     opts: ChatOptions;
   },
 ): Promise<string> {
+  /** Full chat-completions endpoint URL built from the provider base URL. */
   const url = `${
     baseUrl.replace(
       /\/$/,
       '',
     )
   }/chat/completions`;
+  /** Request headers: JSON content-type, bearer auth, plus provider extras. */
   const headers: Record<string, string> = {
     'content-type': 'application/json',
     authorization: `Bearer ${opts.apiKey}`,
     ...extraHeaders,
   };
+  /** Outgoing JSON payload (model, messages, temperature, optional JSON format). */
   const body: Record<string, unknown> = {
     model: opts.model,
     messages: opts.messages.map(function toApi(
@@ -67,6 +70,7 @@ export async function chatOpenAICompatible(
   };
   if (opts.expectJson === true)
     body['response_format'] = { type: 'json_object', };
+  /** Raw fetch response so status can gate the JSON read. */
   const res = await fetch(
     url,
     {
@@ -77,6 +81,7 @@ export async function chatOpenAICompatible(
     },
   );
   if (!res.ok) {
+    /** Best-effort error-body snippet included in the thrown message. */
     const text = await res
       .text()
       .catch(function ignore(): string {
@@ -95,8 +100,11 @@ export async function chatOpenAICompatible(
    * Provider response shape is documented; we narrow at the seam and
    * treat fields defensively (`choices[0]?.message.content ?? ''`).
    */
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- documented provider response shape, narrowed at the seam */
+  /** Parsed chat-completions payload, narrowed to the fields we read. */
   const json = await res.json() as ChatCompletionResponse;
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
+  /** First choice's assistant content, defaulting to empty when missing. */
   const content = json.choices[0]?.message.content ?? '';
   return content;
 }

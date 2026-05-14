@@ -16,6 +16,7 @@ import type {
  * ```
  */
 export function initFormatters(_locale: Locales,): Formatters {
+  /** Per-locale formatter bag, currently empty until custom formatters land. */
   const formatters: Formatters = {};
 
   return formatters;

@@ -88,13 +88,18 @@ function typewrite(
   done: Promise<void>;
 } {
   target.textContent = '';
+  /** Cooperative cancel flag flipped by the returned cancel callback. */
   let cancelled = false;
+  /** Per-character delay derived from `charsPerSecond`, floored at 8 ms. */
   const interval = Math.max(
     8,
     Math.floor(1_000 / charsPerSecond,),
   );
+  /** Reveal cursor advanced one character per tick. */
   let index = 0;
+  /** Promise resolved when the reveal completes or is cancelled. */
   const done = new Promise<void>(function run(resolve,): void {
+    /** Repeating timer driving the per-character reveal. */
     const timer = globalThis.setInterval(
       function step(): void {
         if (cancelled) {
@@ -131,6 +136,7 @@ let currentTeardown: (() => void) | undefined;
 
 /** Persists and appends a log entry to the active save. */
 function appendLog(entry: LogEntry,): void {
+  /** Active save snapshot used to append `entry` to its log. */
   const save = getActiveSave();
   if (save === undefined)
     return;
@@ -144,12 +150,15 @@ function appendLog(entry: LogEntry,): void {
 
 /** Mounts the lecture screen against the active save. */
 function mount(root: HTMLElement,): void {
+  /** Current locale's translation accessors. */
   const ll = LL();
+  /** Active save snapshot; missing means the user landed here without a save. */
   const save = getActiveSave();
   if (save === undefined) {
     navigate('menu',);
     return;
   }
+  /** Per-mount mutable runtime state (auto, timers, hidden, ask panel). */
   const runtime: Runtime = {
     auto: false,
     typewriterCancel: undefined,
@@ -158,10 +167,12 @@ function mount(root: HTMLElement,): void {
     askPanel: undefined,
   };
 
+  /** Top-level stage container holding background, character, dialogue, toolbar. */
   const stage = el(
     'div',
     { class: 'stage', },
   );
+  /** Background layer painted with the classroom asset. */
   const bg = el(
     'div',
     {
@@ -169,6 +180,7 @@ function mount(root: HTMLElement,): void {
       style: `background-image: url("${getBackground('classroom',)}")`,
     },
   );
+  /** Character portrait image whose `src` is swapped per beat pose. */
   const characterImg = el(
     'img',
     {
@@ -179,20 +191,24 @@ function mount(root: HTMLElement,): void {
       alt: '',
     },
   );
+  /** Wrapper sized to position the character relative to the stage. */
   const characterWrap = el(
     'div',
     { class: 'stage-character', },
     [characterImg,],
   );
+  /** Inner element receiving the typewriter-revealed dialogue text. */
   const dialogueText = el(
     'div',
     { class: 'dialogue-text', },
   );
+  /** Speaker-name span shown in the dialogue header. */
   const speakerName = el(
     'span',
     { class: 'speaker-name', },
     [getCharacterName('ruka',),],
   );
+  /** Bottom dialogue box assembled from header + text. */
   const dialogueBox = el(
     'div',
     { class: 'stage-dialogue', },
@@ -205,11 +221,13 @@ function mount(root: HTMLElement,): void {
       dialogueText,
     ],
   );
+  /** Chapter-card overlay shown before the first beat of each chapter. */
   const chapterCard = el(
     'div',
     { class: 'chapter-card', },
   );
   chapterCard.hidden = true;
+  /** Toolbar row hosting the navigation/auto/log/hide/ask buttons. */
   const toolbar = el(
     'div',
     { class: 'stage-controls', },
@@ -222,6 +240,7 @@ function mount(root: HTMLElement,): void {
     toolbar,
   );
 
+  /** Outer screen container wrapping the assembled stage. */
   const screen = el(
     'section',
     {
@@ -232,6 +251,7 @@ function mount(root: HTMLElement,): void {
   );
   root.append(screen,);
 
+  /** Cancels any in-flight typewriter, auto timer, or speech. */
   function clearTimers(): void {
     if (runtime.typewriterCancel !== undefined) {
       runtime.typewriterCancel();
@@ -244,23 +264,29 @@ function mount(root: HTMLElement,): void {
     stopSpeaking();
   }
 
+  /** Returns the chapter at the saved index, throwing on a vanished save. */
   function currentChapter(): Chapter {
+    /** Active save snapshot used to read the chapter index. */
     const live = getActiveSave();
     if (live === undefined)
       throw new Error('lecture: active save vanished',);
+    /** Chapter looked up by index; throws on out-of-range. */
     const chapter = live.chapters[live.chapterIndex];
     if (chapter === undefined)
       throw new Error('lecture: chapter index out of range',);
     return chapter;
   }
 
+  /** Returns the beat at the saved indices, or `undefined` when missing. */
   function currentBeat(): DialogueBeat | undefined {
+    /** Active save snapshot used to read chapter and beat indices. */
     const live = getActiveSave();
     if (live === undefined)
       return undefined;
     return live.chapters[live.chapterIndex]?.dialogue[live.beatIndex];
   }
 
+  /** Renders the chapter card overlay for `chapter`. */
   function showChapterCard(chapter: Chapter,): void {
     chapterCard.replaceChildren(
       el(
@@ -283,15 +309,19 @@ function mount(root: HTMLElement,): void {
     chapterCard.hidden = false;
   }
 
+  /** Hides the chapter card overlay so the dialogue stage is visible. */
   function hideChapterCard(): void {
     chapterCard.hidden = true;
   }
 
+  /** Renders the current beat: pose, typewriter reveal, optional speech, auto-advance. */
   async function showCurrentBeat(): Promise<void> {
     clearTimers();
+    /** Beat to render at the saved indices, or `undefined` when none remains. */
     const beat = currentBeat();
     if (beat === undefined)
       return;
+    /** Active save snapshot read alongside the beat lookup. */
     const live = getActiveSave();
     if (live === undefined)
       return;
@@ -303,13 +333,16 @@ function mount(root: HTMLElement,): void {
       'ruka',
       beat.pose ?? 'neutral',
     );
+    /** Settings snapshot used to pick the typewriter speed. */
     const settings = getSettings();
+    /** Typewriter controller exposing cancel and a completion promise. */
     const tw = typewrite({
       target: dialogueText,
       text: beat.text,
       charsPerSecond: settings.textSpeed,
     },);
     runtime.typewriterCancel = tw.cancel;
+    /** Pending speech promise when voice playback is enabled. */
     let speakPromise: Promise<void> | undefined;
     if (canSpeak())
       speakPromise = speak(beat.text,);
@@ -321,6 +354,7 @@ function mount(root: HTMLElement,): void {
     },);
     persistActiveSave();
     if (runtime.auto) {
+      /** Fresh settings read after speech/log so the latest values drive auto-advance. */
       const settingsAfter = getSettings();
       if (
         settingsAfter.autoAdvanceByVoice
@@ -342,10 +376,13 @@ function mount(root: HTMLElement,): void {
     }
   }
 
+  /** Moves to the next beat (or next chapter, or parks at the end). */
   function advance(): void {
+    /** Active save snapshot, read so the next index can be patched correctly. */
     const live = getActiveSave();
     if (live === undefined)
       return;
+    /** Current chapter resolved through the throwing helper. */
     const chapter = currentChapter();
     if (live.beatIndex + 1 < chapter.dialogue.length) {
       patchActiveSave({ beatIndex: live.beatIndex + 1, },);
@@ -364,7 +401,9 @@ function mount(root: HTMLElement,): void {
     persistActiveSave();
   }
 
+  /** Moves to the previous beat (or end of the previous chapter). */
   function regress(): void {
+    /** Active save snapshot, read so the previous index can be patched. */
     const live = getActiveSave();
     if (live === undefined)
       return;
@@ -374,6 +413,7 @@ function mount(root: HTMLElement,): void {
       return;
     }
     if (live.chapterIndex > 0) {
+      /** Previous chapter entry whose final beat becomes the new index. */
       const prev = live.chapters[live.chapterIndex - 1];
       if (prev === undefined)
         return;
@@ -385,6 +425,7 @@ function mount(root: HTMLElement,): void {
     }
   }
 
+  /** Toggles auto-advance and immediately advances once when turning on. */
   function toggleAuto(): void {
     runtime.auto = !runtime.auto;
     autoBtn.dataset.variant = runtime.auto ? 'primary' : 'ghost';
@@ -394,23 +435,28 @@ function mount(root: HTMLElement,): void {
     }
   }
 
+  /** Toggles visibility of dialogue and toolbar to reveal the background. */
   function toggleHide(): void {
     runtime.hidden = !runtime.hidden;
     dialogueBox.hidden = runtime.hidden;
     toolbar.hidden = runtime.hidden;
   }
 
+  /** Opens the ask-the-persona panel; no-op when one is already open. */
   function openAsk(): void {
     if (runtime.askPanel !== undefined)
       return;
+    /** Question input where the user types their query. */
     const input = el(
       'textarea',
       { placeholder: ll.askPlaceholder(), },
     );
+    /** Inline status paragraph for the thinking and error messages. */
     const status = el(
       'p',
       { class: 'muted', },
     );
+    /** Send button wired to the local async `send`. */
     const sendBtn = el(
       'button',
       {
@@ -421,6 +467,7 @@ function mount(root: HTMLElement,): void {
       },
       [ll.askSend(),],
     );
+    /** Close button restoring the dialogue stage. */
     const closeBtn = el(
       'button',
       {
@@ -431,6 +478,7 @@ function mount(root: HTMLElement,): void {
       },
       [ll.back(),],
     );
+    /** Panel container holding input, status, send, and close. */
     const panel = el(
       'div',
       {
@@ -458,10 +506,13 @@ function mount(root: HTMLElement,): void {
     stage.append(panel,);
     runtime.askPanel = panel;
 
+    /** Sends the question to the persona LLM and renders the reply. */
     async function send(): Promise<void> {
+      /** Active save snapshot, source of the paper text passed to the LLM. */
       const live = getActiveSave();
       if (live === undefined)
         return;
+      /** Trimmed question text; empty value short-circuits the send. */
       const question = input.value.trim();
       if (question.length === 0)
         return;
@@ -471,6 +522,7 @@ function mount(root: HTMLElement,): void {
         'disabled',
       );
       try {
+        /** LLM-generated persona reply rendered inline once received. */
         const reply = await askPersona({
           paperText: live.paperText,
           question,
@@ -492,6 +544,7 @@ function mount(root: HTMLElement,): void {
         close();
       }
       catch (err) {
+        /** Normalised error message shown in the panel status paragraph. */
         const message = err instanceof Error ? err.message : String(err,);
         status.textContent = `${ll.generationError()}${message}`;
         status.className = 'error';
@@ -499,12 +552,14 @@ function mount(root: HTMLElement,): void {
       }
     }
 
+    /** Tears down the ask panel and clears the runtime reference. */
     function close(): void {
       panel.remove();
       runtime.askPanel = undefined;
     }
   }
 
+  /** Back toolbar button stepping the dialogue cursor backward. */
   const backBtn = el(
     'button',
     {
@@ -515,6 +570,7 @@ function mount(root: HTMLElement,): void {
     },
     [ll.back(),],
   );
+  /** Auto toolbar button toggling auto-advance state. */
   const autoBtn = el(
     'button',
     {
@@ -525,6 +581,7 @@ function mount(root: HTMLElement,): void {
     },
     [ll.auto(),],
   );
+  /** Log toolbar button navigating to the memory-log screen. */
   const logBtn = el(
     'button',
     {
@@ -535,6 +592,7 @@ function mount(root: HTMLElement,): void {
     },
     [ll.log(),],
   );
+  /** Hide toolbar button toggling dialogue/toolbar visibility. */
   const hideBtn = el(
     'button',
     {
@@ -545,6 +603,7 @@ function mount(root: HTMLElement,): void {
     },
     [ll.hide(),],
   );
+  /** Ask toolbar button opening the persona-question panel. */
   const askBtn = el(
     'button',
     {
@@ -555,6 +614,7 @@ function mount(root: HTMLElement,): void {
     },
     [ll.ask(),],
   );
+  /** Menu toolbar button returning to the main menu. */
   const menuBtn = el(
     'button',
     {
@@ -574,6 +634,7 @@ function mount(root: HTMLElement,): void {
     askBtn,
   );
 
+  /** Global keyboard handler driving advance/regress shortcuts. */
   function onKey(ev: KeyboardEvent,): void {
     if (
       ev.key === ' '
@@ -598,6 +659,7 @@ function mount(root: HTMLElement,): void {
     onKey,
   );
 
+  /** Stage click handler advancing the dialogue while ignoring control clicks. */
   function onStageClick(ev: MouseEvent,): void {
     if (
       ev.target instanceof Element

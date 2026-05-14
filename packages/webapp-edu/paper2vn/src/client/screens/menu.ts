@@ -14,7 +14,9 @@ import { getCharacterPose, } from '../sprite-pack.ts';
 
 /** Mounts the menu into `root`. */
 function mount(root: HTMLElement,): void {
+  /** Current locale's translation accessors. */
   const ll = LL();
+  /** Left-rail navigation block with start, saves, and settings entries. */
   const menu = el(
     'nav',
     { class: 'menu', },
@@ -54,6 +56,7 @@ function mount(root: HTMLElement,): void {
       ),
     ],
   );
+  /** Ruka portrait shown alongside the menu so the landing screen has a face. */
   const portrait = el(
     'img',
     {
@@ -65,6 +68,7 @@ function mount(root: HTMLElement,): void {
       style: 'block-size: min(70dvb, 30rem); inline-size: auto; align-self: center;',
     },
   );
+  /** Outer screen container the router toggles via the `data-screen` selector. */
   const screen = el(
     'section',
     {

@@ -43,28 +43,34 @@ type MessagesResponse = {
 async function callAnthropic(opts: ChatOptions,): Promise<string> {
   if (opts.apiKey === '')
     throw new Error('anthropic: no API key configured',);
+  /** Configured base URL falling back to the public Anthropic endpoint. */
   const base = opts.baseUrl === '' ? DEFAULT_BASE : opts.baseUrl;
+  /** Full `/v1/messages` URL composed from {@link base}. */
   const url = `${
     base.replace(
       /\/$/,
       '',
     )
   }/v1/messages`;
+  /** Leading system turns split out since Anthropic accepts them as a separate field. */
   const systemMessages = opts.messages.filter(function isSystem(
     m: Message,
   ): boolean {
     return m.role === 'system';
   },);
+  /** Non-system turns forming the message list payload. */
   const turnMessages = opts.messages.filter(function isTurn(
     m: Message,
   ): boolean {
     return m.role !== 'system';
   },);
+  /** Joined system-message text passed via Anthropic's `system` field. */
   const system = systemMessages
     .map(function toText(m,): string {
       return m.content;
     },)
     .join('\n\n',);
+  /** Outgoing payload for Anthropic's `/v1/messages`. */
   const body: Record<string, unknown> = {
     model: opts.model,
     max_tokens: MAX_TOKENS,
@@ -82,12 +88,14 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
       };
     },),
   };
+  /** Request headers including the dangerous-browser opt-in and version pin. */
   const headers: Record<string, string> = {
     'content-type': 'application/json',
     'x-api-key': opts.apiKey,
     'anthropic-version': ANTHROPIC_VERSION,
     'anthropic-dangerous-direct-browser-access': 'true',
   };
+  /** Raw fetch response so status can gate the JSON read. */
   const res = await fetch(
     url,
     {
@@ -98,6 +106,7 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
     },
   );
   if (!res.ok) {
+    /** Best-effort error-body snippet appended to the thrown message. */
     const text = await res
       .text()
       .catch(function ignore(): string {
@@ -116,8 +125,11 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
    * Provider response shape pinned via `anthropic-version` header.
    * Read defensively below.
    */
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- response shape pinned by `anthropic-version` header */
+  /** Parsed Messages API payload, narrowed to the fields we read. */
   const json = await res.json() as MessagesResponse;
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
+  /** First `text`-typed content block, the assistant's reply. */
   const textPart = json.content.find(function isText(
     c,
   ): boolean {

@@ -74,6 +74,7 @@ function asChapter(value: unknown,): Chapter | undefined {
   }
   if (!Array.isArray(value['dialogue'],))
     return undefined;
+  /** Validated beat list dropped to {@link DialogueBeat} entries only. */
   const dialogue = value['dialogue']
     .map(asBeat,)
     .filter(function isBeat(b,): b is DialogueBeat {
@@ -117,7 +118,9 @@ export async function generateChapters(
     signal: AbortSignal | undefined;
   },
 ): Promise<Generation> {
+  /** Current locale's translation accessors, used for default title fallback. */
   const ll = LL();
+  /** Paper body capped to {@link PAPER_TEXT_BUDGET} with a truncation notice. */
   const truncated = paperText.length > PAPER_TEXT_BUDGET
     ? `${
       paperText.slice(
@@ -136,9 +139,12 @@ export async function generateChapters(
    * makes the prompt build sub-millisecond. Documented in
    * TROUBLESHOOTING.typesafe-i18n-regex-redos.md.
    */
+  /** Persona prompt plus chapter-instruction schema, used as the system message. */
   const systemMessage = `${rawString('persona',)}\n\n${rawString('chapterInstruction',)}`;
+  /** Paper body wrapped in fences with the JSON-only directive. */
   const userMessage =
     `Paper text:\n\n---BEGIN PAPER---\n${truncated}\n---END PAPER---\n\nRespond with valid JSON only.`;
+  /** Raw LLM response text returned by the provider. */
   const text = await chat({
     messages: [
       {
@@ -153,16 +159,20 @@ export async function generateChapters(
     expectJson: true,
     signal,
   },);
+  /** Response text with surrounding Markdown JSON fences stripped. */
   const cleaned = stripJsonFence(text,);
   /*
    * LLM output is an untrusted shape; we narrow against `RawResponse`
    * which uses `unknown` for every nested field, then validate via
    * `asChapter`/`asBeat` before exposing to the lecture screen.
    */
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- untrusted LLM JSON narrowed to a fully-`unknown` shape */
+  /** Parsed JSON narrowed to {@link RawResponse}; every nested field stays `unknown`. */
   const parsed = JSON.parse(cleaned,) as RawResponse;
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   if (!Array.isArray(parsed.chapters,))
     throw new Error('generator: response missing `chapters` array',);
+  /** Validated chapter list dropped to {@link Chapter} entries only. */
   const chapters = parsed
     .chapters
     .map(asChapter,)
@@ -171,6 +181,7 @@ export async function generateChapters(
     },);
   if (chapters.length === 0)
     throw new Error('generator: no valid chapters in response',);
+  /** LLM-provided paper title, falling back to the locale default when missing. */
   const title = typeof parsed.title === 'string' && parsed.title.length > 0
     ? parsed.title
     : ll.defaultPaperTitle();
@@ -185,8 +196,10 @@ export async function generateChapters(
  * providers. Returns the original input when no fence is detected.
  */
 function stripJsonFence(text: string,): string {
+  /** Input with surrounding whitespace removed, used to detect the fence. */
   const trimmed = text.trim();
   if (trimmed.startsWith('```',)) {
+    /** Fenceless body returned when a Markdown JSON fence wrapped the input. */
     const stripped = trimmed
       .replace(
         /^```(?:json)?\s*/,

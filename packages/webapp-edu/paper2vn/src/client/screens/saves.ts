@@ -20,6 +20,7 @@ import type { SaveSummary, } from '../types.ts';
 
 /** Renders one row inside the saves list. */
 function renderRow(summary: SaveSummary,): HTMLElement {
+  /** Current locale's translation accessors. */
   const ll = LL();
   return el(
     'div',
@@ -43,6 +44,7 @@ function renderRow(summary: SaveSummary,): HTMLElement {
         {
           'data-variant': 'primary',
           onclick: function onClick(): void {
+            /** Loaded save record, `undefined` when the slot is gone. */
             const data = loadSave(summary.id,);
             if (data !== undefined)
               navigate('lecture',);
@@ -55,6 +57,7 @@ function renderRow(summary: SaveSummary,): HTMLElement {
         {
           'data-variant': 'ghost',
           onclick: function onClick(): void {
+            /** User confirmation result for the destructive delete action. */
             const ok = globalThis.confirm(
               `${ll.deleteSave()}: ${summary.label}?`,
             );
@@ -72,8 +75,11 @@ function renderRow(summary: SaveSummary,): HTMLElement {
 
 /** Mounts the saves screen. */
 function mount(root: HTMLElement,): void {
+  /** Current locale's translation accessors. */
   const ll = LL();
+  /** Index of every save slot, source of the rendered rows. */
   const saves = getSaves();
+  /** Rendered row nodes, or an empty-state placeholder when no saves exist. */
   const rows = saves.length === 0
     ? [
       el(
@@ -83,6 +89,7 @@ function mount(root: HTMLElement,): void {
       ),
     ]
     : saves.map(renderRow,);
+  /** Outer screen container with header and the rendered rows. */
   const screen = el(
     'section',
     {

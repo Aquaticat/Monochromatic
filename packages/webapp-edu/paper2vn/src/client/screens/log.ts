@@ -15,10 +15,15 @@ import { getActiveSave, } from '../state.ts';
 
 /** Mounts the log screen. */
 function mount(root: HTMLElement,): void {
+  /** Current locale's translation accessors. */
   const ll = LL();
+  /** Active save record, source of the log entries to render. */
   const save = getActiveSave();
+  /** Persona display name, used to label persona lines. */
   const ruka = getCharacterName('ruka',);
+  /** Log entries from the active save, defaulting to empty when none. */
   const entries = save?.log ?? [];
+  /** Rendered row nodes, or an empty-state placeholder when no entries. */
   const rows = entries.length === 0
     ? [
       el(
@@ -47,6 +52,7 @@ function mount(root: HTMLElement,): void {
         ],
       );
     },);
+  /** Outer screen container with header and the rendered rows. */
   const screen = el(
     'section',
     {

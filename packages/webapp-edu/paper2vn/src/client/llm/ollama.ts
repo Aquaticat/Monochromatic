@@ -23,13 +23,16 @@ type OllamaResponse = {
 export const ollama: Provider = {
   id: 'ollama',
   chat: async function chat(opts: ChatOptions,): Promise<string> {
+    /** Configured base URL falling back to localhost when unset. */
     const base = opts.baseUrl === '' ? DEFAULT_BASE : opts.baseUrl;
+    /** Full chat endpoint URL composed from {@link base}. */
     const url = `${
       base.replace(
         /\/$/,
         '',
       )
     }/api/chat`;
+    /** Outgoing payload for Ollama's `/api/chat` (model, messages, options). */
     const body: Record<string, unknown> = {
       model: opts.model,
       stream: false,
@@ -50,6 +53,7 @@ export const ollama: Provider = {
     };
     if (opts.expectJson === true)
       body['format'] = 'json';
+    /** Raw fetch response so status can gate the JSON read. */
     const res = await fetch(
       url,
       {
@@ -60,6 +64,7 @@ export const ollama: Provider = {
       },
     );
     if (!res.ok) {
+      /** Best-effort error-body snippet appended to the thrown message. */
       const text = await res
         .text()
         .catch(function ignore(): string {
@@ -78,8 +83,10 @@ export const ollama: Provider = {
      * Ollama's `/api/chat` non-streaming response is stable since 0.1.
      * Field access is safe under that contract.
      */
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion
+    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- stable Ollama 0.1+ response shape */
+    /** Parsed Ollama response payload, narrowed to the fields we read. */
     const json = await res.json() as OllamaResponse;
+    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     return json.message.content;
   },
 };

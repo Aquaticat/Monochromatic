@@ -50,6 +50,7 @@ export function bootI18n(): void {
  * @returns object whose methods return localized strings
  */
 export function LL(): TranslationFunctions {
+  /** Active locale code, looked up once so cache check and accessor rebuild agree. */
   const locale = resolveLocale();
   if (cached === undefined || cached.locale !== locale) {
     cached = {
@@ -97,8 +98,11 @@ type StringKey = {
  * ```
  */
 export function rawString(key: StringKey,): string {
+  /** Active locale, captured before the dictionary lookup. */
   const locale = resolveLocale();
+  /** Loaded dictionary for the active locale. */
   const translations = loadedLocales[locale];
+  /** Raw translation entry, expected to be a plain string for this key. */
   const value = translations[key];
   if (typeof value !== 'string')
     throw new Error(`[i18n] expected string for ${key}, got ${typeof value}`,);

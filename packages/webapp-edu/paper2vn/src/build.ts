@@ -77,6 +77,7 @@ await mkdir(
   DIST_DIR,
   { recursive: true, },
 );
+/** Final HTML output path inside the dist directory. */
 const outPath = join(
   DIST_DIR,
   'index.html',

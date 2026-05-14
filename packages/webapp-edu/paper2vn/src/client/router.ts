@@ -59,6 +59,7 @@ export function registerScreen(
  * @throws when the screen has not been registered
  */
 export function navigate(id: ScreenId,): void {
+  /** Destination screen module, resolved before any teardown work. */
   const next = screens.get(id,);
   if (next === undefined)
     throw new Error(`[router] unknown screen: ${id}`,);
@@ -66,6 +67,7 @@ export function navigate(id: ScreenId,): void {
     currentTeardown();
     currentTeardown = undefined;
   }
+  /** App-root container where each screen mounts its subtree. */
   const root = document.querySelector<HTMLElement>('#app',);
   if (root === null)
     throw new Error('[router] #app root not found',);
