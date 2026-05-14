@@ -38,14 +38,16 @@ type DecisionWindow = [
   Decision,
 ];
 
-/** Rolling window of recent verdicts, initialized as all productive. */
-let decisions: DecisionWindow = [
-  'PRODUCTIVE',
-  'PRODUCTIVE',
-  'PRODUCTIVE',
-  'PRODUCTIVE',
-  'PRODUCTIVE',
-];
+/** Module-singleton mutable state for the rolling decision window; wrapped so it satisfies no-module-root-let. */
+const state: { decisions: DecisionWindow; } = {
+  decisions: [
+    'PRODUCTIVE',
+    'PRODUCTIVE',
+    'PRODUCTIVE',
+    'PRODUCTIVE',
+    'PRODUCTIVE',
+  ],
+};
 //endregion
 
 /**
@@ -120,16 +122,16 @@ export async function cycle(): Promise<void> {
     /** Verdict extracted from the LLM response and pushed into the sliding decision window. */
     const verdict = parseVerdict(result,);
     /* oxlint-disable no-magic-numbers -- sliding window indices 1..4 */
-    decisions = [
-      decisions[1],
-      decisions[2],
-      decisions[3],
-      decisions[4],
+    state.decisions = [
+      state.decisions[1],
+      state.decisions[2],
+      state.decisions[3],
+      state.decisions[4],
       verdict,
     ];
     /* oxlint-enable no-magic-numbers */
     /** Count of unproductive verdicts in the current 5-cycle window; surfaced in the log line as `streak: N/5`. */
-    const streakCount = decisions
+    const streakCount = state.decisions
       .filter(function checkUnproductive(d,) {
         return isUnproductive(d,);
       },)
@@ -138,11 +140,11 @@ export async function cycle(): Promise<void> {
     log.info(`[report] ${result}`,);
     log.info(`[verdict] ${verdict} (streak: ${streakCount}/5)`,);
 
-    if (decisions.every(function checkUnproductive(d,) {
+    if (state.decisions.every(function checkUnproductive(d,) {
       return isUnproductive(d,);
     },)) {
       await sendNotification(result,);
-      decisions = [
+      state.decisions = [
         'PRODUCTIVE',
         'PRODUCTIVE',
         'PRODUCTIVE',

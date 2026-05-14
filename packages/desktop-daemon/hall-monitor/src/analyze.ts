@@ -122,7 +122,9 @@ export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
  * ```
  */
 export async function analyze(sets: CaptureSet[],): Promise<string> {
-  /** Capture sets trimmed to {@link MAX_CAPTURE_SETS} so prompt size stays bounded. */
+  /**
+   * Capture sets trimmed to {@link MAX_CAPTURE_SETS} so prompt size stays bounded.
+   */
   const capped = sets.slice(
     0,
     MAX_CAPTURE_SETS,

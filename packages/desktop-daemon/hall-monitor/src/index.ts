@@ -31,8 +31,8 @@ const { values: args, } = parseArgs({
   }, },
 },);
 
-/** Whether the daemon loop should continue running. */
-let running = true;
+/** Module-singleton mutable state for the daemon loop flag; wrapped so it satisfies no-module-root-let. */
+const state: { running: boolean; } = { running: true, };
 
 /**
  * Gracefully shuts down the daemon by stopping the main loop,
@@ -40,8 +40,8 @@ let running = true;
  */
 function shutdown(): void {
   log.debug('[hall-monitor] Shutting down...',);
-  running = false;
-  getLockServer().close();
+  state.running = false;
+  getLockServer()?.close();
   // oxlint-disable-next-line promise/prefer-await-to-then, promise/always-return -- shutdown handler cannot be async; then() is fire-and-forget
   void forceCleanup().then(function setExitCode() {
     process.exitCode = 0;
@@ -83,8 +83,8 @@ async function main(): Promise<void> {
 
   // Not needed because we don't allow configuring interval: defense-in-depth: add a floor (e.g. Math.max(INTERVAL_MS, 60_000))
   // so a misconfigured or zero interval cannot cause a tight spin loop.
-  // oxlint-disable-next-line no-unmodified-loop-condition, typescript/no-unnecessary-condition -- running is mutated by signal handler
-  while (running) {
+  // oxlint-disable-next-line no-unmodified-loop-condition, typescript/no-unnecessary-condition -- state.running is mutated by signal handler
+  while (state.running) {
     // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- sequential timer loop; setTimeout wrapper for delay
     await new Promise(function intervalDelay(resolve,) {
       setTimeout(
@@ -92,8 +92,8 @@ async function main(): Promise<void> {
         INTERVAL_MS,
       );
     },);
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- running is mutated by signal handler
-    if (running) {
+    // oxlint-disable-next-line typescript/no-unnecessary-condition -- state.running is mutated by signal handler
+    if (state.running) {
       // oxlint-disable-next-line no-await-in-loop -- sequential polling loop; each cycle must complete before the next
       await cycle();
     }

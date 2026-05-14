@@ -33,8 +33,8 @@ const HEALTH_POLL_MS = 500;
 /** OpenAI-compatible chat completions endpoint served by llama-server. */
 export const API_URL: string = `http://127.0.0.1:${PORT}/v1/chat/completions`;
 
-/** Handle to the running llama-server subprocess, or null when stopped. */
-let server: ChildProcess | null = null;
+/** Module-singleton mutable state for the running llama-server subprocess handle; wrapped so it satisfies no-module-root-let. */
+const state: { server: ChildProcess | null; } = { server: null, };
 
 /**
  * Starts llama-server inside a distrobox container with AMD GPU overrides.
@@ -50,11 +50,11 @@ let server: ChildProcess | null = null;
  * ```
  */
 export async function start(): Promise<void> {
-  if (server)
+  if (state.server)
     return;
 
   log.debug('[llama] Starting llama-server via distrobox...',);
-  server = cpSpawn(
+  state.server = cpSpawn(
     'distrobox',
     [
       'enter',
@@ -100,7 +100,7 @@ export async function start(): Promise<void> {
  * ```
  */
 export async function stop(): Promise<void> {
-  if (!server)
+  if (!state.server)
     return;
   log.debug('[llama] Stopping llama-server...',);
 
@@ -121,8 +121,8 @@ export async function stop(): Promise<void> {
   /** Milliseconds to wait after server exit for the port to be freed. */
   const PORT_FREE_DELAY_MS = 500;
 
-  /** Pinned reference to the current server handle so the exit listener still works after `server` is nulled below. */
-  const currentServer = server;
+  /** Pinned reference to the current server handle so the exit listener still works after `state.server` is nulled below. */
+  const currentServer = state.server;
   currentServer.kill();
   // oxlint-disable-next-line promise/avoid-new -- wrapping Node.js event-based ChildProcess API
   await new Promise<void>(function awaitExit(resolve,) {
@@ -131,7 +131,7 @@ export async function stop(): Promise<void> {
       resolve,
     );
   },);
-  server = null;
+  state.server = null;
 
   // Wait briefly for port to free up
   await setTimeout(PORT_FREE_DELAY_MS,);
@@ -161,7 +161,7 @@ export async function forceCleanup(): Promise<void> {
   catch {
     // process may already be gone, or pkill exits non-zero if no match
   }
-  server = null;
+  state.server = null;
 }
 
 /** Maximum number of health polls before giving up. */

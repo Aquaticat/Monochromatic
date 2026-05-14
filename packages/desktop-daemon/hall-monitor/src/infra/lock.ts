@@ -25,23 +25,22 @@ const SIGTERM_RETRIES = 10;
 /** Maximum SIGKILL retry attempts before giving up. */
 const SIGKILL_RETRIES = 7;
 
-/** Handle to the lock server, held for the lifetime of the process. */
-// oxlint-disable-next-line init-declarations -- assigned in acquireLock() before first use
-let lockServer: Server;
+/** Module-singleton mutable state for the lock-server handle; wrapped so it satisfies no-module-root-let. */
+const state: { lockServer: Server | undefined; } = { lockServer: undefined, };
 
 /**
  * Returns the lock server instance.
  * Used during shutdown to close the socket.
  *
- * @returns lock server, or undefined if no lock is held
+ * @returns lock server, or `undefined` if no lock is currently held
  *
  * @example
  * ```ts
  * getLockServer()?.close();
  * ```
  */
-export function getLockServer(): Server {
-  return lockServer;
+export function getLockServer(): Server | undefined {
+  return state.lockServer;
 }
 
 /**
@@ -60,8 +59,10 @@ export function getLockServer(): Server {
 export function acquireLock(): Promise<boolean> {
   // oxlint-disable-next-line promise/avoid-new -- wrapping Node.js callback-based Server API
   return new Promise(function tryListen(resolve,) {
-    lockServer = createServer();
-    lockServer.on(
+    /** Local handle to the freshly created server so listeners can be attached before assigning into `state`. */
+    const server = createServer();
+    state.lockServer = server;
+    server.on(
       'error',
       function handleSocketError(err: NodeJS.ErrnoException,) {
         if (err.code === 'EADDRINUSE')
@@ -72,7 +73,7 @@ export function acquireLock(): Promise<boolean> {
         }
       },
     );
-    lockServer.listen(
+    server.listen(
       SOCKET_NAME,
       function onListening() {
         resolve(true,);

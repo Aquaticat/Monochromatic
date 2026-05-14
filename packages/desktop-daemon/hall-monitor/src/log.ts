@@ -11,12 +11,17 @@ import spawn from 'nano-spawn';
  *
  * @example
  * ```ts
- * emit("info", "capture cycle complete");
+ * emit({ priority: "info", message: "capture cycle complete" });
  * ```
  */
 function emit(
-  priority: string,
-  message: string,
+  {
+    priority,
+    message,
+  }: {
+    priority: string;
+    message: string;
+  },
 ): void {
   // Fire-and-forget: ignore spawn errors to avoid blocking the main flow
   void spawn(
@@ -38,10 +43,10 @@ function emit(
  * @param msg - log message body
  */
 function logDebug(msg: string,): void {
-  emit(
-    'debug',
-    msg,
-  );
+  emit({
+    priority: 'debug',
+    message: msg,
+  },);
 }
 
 /**
@@ -50,10 +55,10 @@ function logDebug(msg: string,): void {
  * @param msg - log message body
  */
 function logInfo(msg: string,): void {
-  emit(
-    'info',
-    msg,
-  );
+  emit({
+    priority: 'info',
+    message: msg,
+  },);
 }
 
 /**
@@ -62,10 +67,10 @@ function logInfo(msg: string,): void {
  * @param msg - log message body
  */
 function logWarn(msg: string,): void {
-  emit(
-    'warning',
-    msg,
-  );
+  emit({
+    priority: 'warning',
+    message: msg,
+  },);
 }
 
 /**
@@ -74,10 +79,10 @@ function logWarn(msg: string,): void {
  * @param msg - log message body
  */
 function logError(msg: string,): void {
-  emit(
-    'err',
-    msg,
-  );
+  emit({
+    priority: 'err',
+    message: msg,
+  },);
 }
 
 /**
