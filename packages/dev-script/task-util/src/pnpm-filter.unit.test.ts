@@ -28,6 +28,15 @@ await describe({
           },
         },),
         it({
+          name: 'returns true for the known module/async-time + module/test cycle',
+          fn: async () => {
+            expect(isAllowedCycleWarning(
+              `${WARN} There are cyclic workspace dependencies: /var/home/user/Monochromatic/packages/module/async-time, /var/home/user/Monochromatic/packages/module/test`,
+            ),)
+              .toBe(true,);
+          },
+        },),
+        it({
           name: 'returns true regardless of monorepo root path',
           fn: async () => {
             expect(isAllowedCycleWarning(

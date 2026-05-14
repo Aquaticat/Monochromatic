@@ -1,8 +1,10 @@
 /**
  * Pure filtering functions for pnpm output.
  *
- * The monorepo has an intentional cyclic workspace dependency between
- * `packages/module/es` and `packages/module/test`.
+ * The monorepo has intentional cyclic workspace dependencies among
+ * `packages/module/es`, `packages/module/async-time`, and `packages/module/test`
+ * (each shipped module depends on `module-test` for its test harness,
+ * while `module-test` depends on those modules in production code).
  * pnpm lacks a per-package allowlist for cycle warnings:
  * the only built-in options are `ignoreWorkspaceCycles` (all or nothing)
  * and `disallowWorkspaceCycles`.
@@ -29,6 +31,7 @@
  */
 const ALLOWED_CYCLE_PACKAGES: ReadonlySet<string> = new Set([
   'packages/module/es',
+  'packages/module/async-time',
   'packages/module/test',
 ],);
 
