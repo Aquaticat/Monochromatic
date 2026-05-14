@@ -112,7 +112,10 @@ Worked file-by-file, **one commit per doc**. Each commit titled
 42. `TROUBLESHOOTING.typescript.md`: `90809c7c`
 
 Plus em-dash style cleanup at `b92199b6` (aws-cloudfront-mirror,
-dependencies).
+dependencies), H1 title tightening and Verification-section
+additions at `f44e2e5a` (all three new docs), and MD040 bare-fence
+language tagging at `9c584c70` (aws-cloudfront-mirror only;
+dependencies and typescript lint clean as committed).
 
 ## Files skipped
 
