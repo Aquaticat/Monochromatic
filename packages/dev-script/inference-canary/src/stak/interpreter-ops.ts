@@ -36,7 +36,10 @@ function pop(stack: number[],): number {
 }
 
 /** Binary arithmetic operations that pop two values and push a result */
-const BINARY_OPS: Record<string, (a: number, b: number,) => number> = {
+const BINARY_OPS: Record<string, (
+  a: number,
+  b: number,
+) => number> = {
   ADD: function add(
     a,
     b,
@@ -70,6 +73,33 @@ const BINARY_OPS: Record<string, (a: number, b: number,) => number> = {
 };
 
 /**
+ * Options for {@link executeOp}.
+ *
+ * @example
+ * ```ts
+ * const opts: ExecuteOpOptions = {
+ *   op: '42',
+ *   arg: undefined,
+ *   stack: [],
+ *   env: new Map(),
+ *   labels: new Map(),
+ * };
+ * ```
+ */
+export type ExecuteOpOptions = {
+  /** Opcode string (e.g. "ADD", "JUMP", or a numeric literal) */
+  readonly op: string;
+  /** Optional argument (variable or label name) */
+  readonly arg: string | undefined;
+  /** Mutable integer stack */
+  readonly stack: number[];
+  /** Mutable variable environment */
+  readonly env: Map<string, number>;
+  /** Label-to-position mapping from the indexing pass */
+  readonly labels: ReadonlyMap<string, number>;
+};
+
+/**
  * Executes a single Stak instruction, mutating the stack and environment.
  *
  * @param op - opcode string (e.g. "ADD", "JUMP", or a numeric literal)
@@ -91,17 +121,17 @@ const BINARY_OPS: Record<string, (a: number, b: number,) => number> = {
  * const stack: number[] = [];
  * const env = new Map<string, number>();
  * const labels = new Map<string, number>();
- * executeOp('42', undefined, stack, env, labels);
+ * executeOp({ op: '42', arg: undefined, stack, env, labels });
  * // stack is now [42]
  * ```
  */
-export function executeOp(
-  op: string,
-  arg: string | undefined,
-  stack: number[],
-  env: Map<string, number>,
-  labels: ReadonlyMap<string, number>,
-): ExecutionStep {
+export function executeOp({
+  op,
+  arg,
+  stack,
+  env,
+  labels,
+}: ExecuteOpOptions,): ExecutionStep {
   // oxlint-disable-next-line prefer-named-capture-group -- detection heuristic, not data extraction
   if (/^-?\d+$/.test(op,)) {
     stack.push(Number(op,),);
@@ -162,21 +192,21 @@ export function executeOp(
     /* no-op */
   }
   else if (op === 'JUMP') {
-    return resolveJumpTarget(
+    return resolveJumpTarget({
       op,
       arg,
       labels,
-    );
+    },);
   }
   else if (op === 'JUMPZ') {
     /** Popped predicate; conditionally jumps when zero, otherwise falls through. */
     const val = pop(stack,);
     if (val === 0) {
-      return resolveJumpTarget(
+      return resolveJumpTarget({
         op,
         arg,
         labels,
-      );
+      },);
     }
   }
   else {

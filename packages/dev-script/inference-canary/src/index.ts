@@ -45,7 +45,7 @@ import {
 
 /** OpenRouter API key from environment, required for all inference calls. */
 const apiKey = process.env['INFERENCE_VALIDATION_OPENROUTER_API_KEY'];
-if (apiKey === undefined || apiKey === '')
+if ((apiKey === undefined) || (apiKey === ''))
   throw new Error('INFERENCE_VALIDATION_OPENROUTER_API_KEY not set in environment',);
 
 //endregion API key resolution
@@ -130,14 +130,14 @@ else {
       },)
       .join(', ',)
   }`,);
-  await runAndReport(
+  await runAndReport({
     selectedModels,
     probes,
-    effectiveRecentPairs,
+    recentModelProbePairs: effectiveRecentPairs,
     recentlyFailedModels,
     apiKey,
     runsOverride,
-  );
+  },);
 }
 
 // Intermittently, Bun's fetch connection pool or other async resources prevent the

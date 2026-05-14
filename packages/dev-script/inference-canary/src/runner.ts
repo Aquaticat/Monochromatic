@@ -81,6 +81,24 @@ function computeCategoryScores(results: readonly ProbeResult[],): Record<string,
 }
 
 /**
+ * Options for {@link runCanary}.
+ *
+ * @example
+ * ```ts
+ * const opts: RunCanaryOptions = {
+ *   probes: codeGenProbes,
+ *   config: { model: 'opus', label: 'Opus 4.6', apiKey },
+ * };
+ * ```
+ */
+type RunCanaryOptions = {
+  /** Canary probes to execute */
+  readonly probes: readonly Probe[];
+  /** Runner configuration (merged with defaults) */
+  readonly config?: Partial<RunnerConfig>;
+};
+
+/**
  * Runs all provided probes and produces a diagnostic report.
  *
  * @param probes - canary probes to execute
@@ -91,14 +109,14 @@ function computeCategoryScores(results: readonly ProbeResult[],): Record<string,
  *
  * @example
  * ```ts
- * const report = await runCanary(probes, { model: 'opus', label: 'Opus 4.6', apiKey });
+ * const report = await runCanary({ probes, config: { model: 'opus', label: 'Opus 4.6', apiKey } });
  * report.overallScore; // aggregate score across all probes
  * ```
  */
-export async function runCanary(
-  probes: readonly Probe[],
-  config: Partial<RunnerConfig> = {},
-): Promise<CanaryReport> {
+export async function runCanary({
+  probes,
+  config = {},
+}: RunCanaryOptions,): Promise<CanaryReport> {
   /**
    * Full config with user overrides merged onto {@link defaultConfig}; used everywhere below.
    */
@@ -139,11 +157,11 @@ export async function runCanary(
     const results = await Promise.all(
       probesToRun.map(async function runOne(probe,): Promise<ProbeResult> {
         /** Completed probe result; the per-probe `info` log below summarises its mean. */
-        const result = await runProbe(
+        const result = await runProbe({
           probe,
-          mergedConfig,
+          config: mergedConfig,
           timestamp,
-        );
+        },);
         /** Probe-specific logger for result summary. */
         const pl = tagged({
           tag: probe.name,
@@ -176,10 +194,10 @@ export async function runCanary(
     };
   }
   catch (error) {
-    return handleRunFailure(
+    return handleRunFailure({
       error,
       mergedConfig,
       timestamp,
-    );
+    },);
   }
 }

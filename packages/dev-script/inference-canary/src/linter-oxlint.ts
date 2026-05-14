@@ -189,17 +189,17 @@ function parseOxlintJson(jsonOutput: string,): OxlintResult {
 export async function runAndParseOxlint(filePath: string,): Promise<OxlintResult> {
   try {
     /** Raw oxlint stdout on success (zero violations); fed straight into the parser. */
-    const output = await execPromise(
-      'oxlint',
-      [
+    const output = await execPromise({
+      command: 'oxlint',
+      args: [
         '--format',
         'json',
         filePath,
       ],
-      {
+      options: {
         timeout: LINT_TIMEOUT_MS,
       },
-    );
+    },);
     return parseOxlintJson(output,);
   }
   catch (error) {

@@ -14,6 +14,33 @@ import type {
 const MAX_ADDITIONAL_OUTPUT = 500;
 
 /**
+ * Options for {@link appendAdditionalRunDiagnostics}.
+ *
+ * @example
+ * ```ts
+ * const options: AppendAdditionalRunDiagnosticsOptions = {
+ *   base: 'lint diagnostics',
+ *   runs: probe.additionalRuns,
+ *   containerCaches,
+ *   verifyCaches,
+ *   label: 'Opus',
+ * };
+ * ```
+ */
+type AppendAdditionalRunDiagnosticsOptions = {
+  /** Base fix prompt from buildCodeGenFixPrompt (may be undefined) */
+  readonly base: string | undefined;
+  /** Additional run configurations */
+  readonly runs: readonly AdditionalRun[] | undefined;
+  /** Per-run container result caches */
+  readonly containerCaches: readonly Map<string, ContainerResult>[];
+  /** Per-run verification result caches */
+  readonly verifyCaches: readonly Map<string, VerifyResult>[];
+  /** Model label for cache lookups */
+  readonly label: string;
+};
+
+/**
  * Appends diagnostics from additional container runs to the base fix prompt.
  *
  * Includes runtime errors (crash/timeout) and incorrect output summaries for runs
@@ -33,17 +60,17 @@ const MAX_ADDITIONAL_OUTPUT = 500;
  *
  * @example
  * ```ts
- * const enhanced = appendAdditionalRunDiagnostics(base, runs, cCaches, vCaches, label);
+ * const enhanced = appendAdditionalRunDiagnostics({ base, runs, containerCaches, verifyCaches, label });
  * ```
  */
-export function appendAdditionalRunDiagnostics(
-  base: string | undefined,
-  runs: readonly AdditionalRun[] | undefined,
-  containerCaches: readonly Map<string, ContainerResult>[],
-  verifyCaches: readonly Map<string, VerifyResult>[],
-  label: string,
-): string | undefined {
-  if (runs === undefined || runs.length === 0)
+export function appendAdditionalRunDiagnostics({
+  base,
+  runs,
+  containerCaches,
+  verifyCaches,
+  label,
+}: AppendAdditionalRunDiagnosticsOptions,): string | undefined {
+  if ((runs === undefined) || (runs.length === 0))
     return base;
 
   /** Diagnostic text sections for runs that failed or produced incorrect output */
@@ -68,7 +95,7 @@ export function appendAdditionalRunDiagnostics(
       }
       /** Cached verification result for this run and model */
       const verify = verifyCaches[index]?.get(label,);
-      if (verify !== undefined && verify.correctness < 1) {
+      if ((verify !== undefined) && (verify.correctness < 1)) {
         return `=== ${run.name} (incorrect output) ===\n${
           container.stdout.slice(
             0,

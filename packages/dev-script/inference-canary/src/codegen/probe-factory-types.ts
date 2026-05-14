@@ -54,7 +54,10 @@ export type CodeGenProbeConfig = {
    * @param context - model identity and pass info
    * @returns transformed source or rejection signal
    */
-  readonly transformSource?: (source: string, context: ScoreContext,) => {
+  readonly transformSource?: (
+    source: string,
+    context: ScoreContext,
+  ) => {
     readonly reject: boolean;
     readonly source: string;
   };
@@ -66,7 +69,10 @@ export type CodeGenProbeConfig = {
    * @param context - model identity and pass info
    * @returns modified fix prompt, or undefined to skip
    */
-  readonly customizeFixPrompt?: (base: string | undefined, context: ScoreContext,) =>
+  readonly customizeFixPrompt?: (
+    base: string | undefined,
+    context: ScoreContext,
+  ) =>
     | string
     | undefined;
   /**

@@ -18,7 +18,7 @@
  * @example
  * ```ts
  * import { PERF_TEST_INPUT } from './test-cases-perf.ts';
- * const result = await runInContainer(source, PERF_TEST_INPUT, signal);
+ * const result = await runInContainer({ source, stdinData: PERF_TEST_INPUT, signal });
  * ```
  */
 export const PERF_TEST_INPUT: string = [

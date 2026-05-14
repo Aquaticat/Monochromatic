@@ -77,6 +77,24 @@ function restoreTimestamp(rawTimestamp: string,): string {
 }
 
 /**
+ * Options for {@link isRecentTimestamp}.
+ *
+ * @example
+ * ```ts
+ * const opts: IsRecentTimestampOptions = {
+ *   rawTimestamp: '2026-03-06T12-00-00.000Z',
+ *   cutoff: Date.now() - 86_400_000,
+ * };
+ * ```
+ */
+type IsRecentTimestampOptions = {
+  /** Filesystem-safe timestamp slug */
+  readonly rawTimestamp: string;
+  /** Cutoff time in milliseconds since epoch */
+  readonly cutoff: number;
+};
+
+/**
  * Checks whether a filesystem-safe timestamp slug falls within the recent cutoff.
  *
  * @param rawTimestamp - filesystem-safe timestamp slug
@@ -88,16 +106,16 @@ function restoreTimestamp(rawTimestamp: string,): string {
  * @example
  * ```ts
  * const cutoff = Date.now() - 86_400_000;
- * isRecentTimestamp('2026-03-06T12-00-00.000Z', cutoff);
+ * isRecentTimestamp({ rawTimestamp: '2026-03-06T12-00-00.000Z', cutoff });
  * ```
  */
-export function isRecentTimestamp(
-  rawTimestamp: string,
-  cutoff: number,
-): boolean {
+export function isRecentTimestamp({
+  rawTimestamp,
+  cutoff,
+}: IsRecentTimestampOptions,): boolean {
   /** Restored ISO 8601 timestamp; parsed by `Date` below for the cutoff comparison. */
   const fixed = restoreTimestamp(rawTimestamp,);
   /** Epoch milliseconds for the artifact's timestamp; NaN when the slug failed to parse. */
   const entryTime = new Date(fixed,).getTime();
-  return !Number.isNaN(entryTime,) && entryTime >= cutoff;
+  return (!Number.isNaN(entryTime,)) && (entryTime >= cutoff);
 }

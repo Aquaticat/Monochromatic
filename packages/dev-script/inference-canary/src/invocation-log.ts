@@ -222,7 +222,7 @@ function walkParentChain(
   const frame = readProcessFrame(pid,);
   if (frame === null)
     return [];
-  if (frame.ppid === 0 || frame.ppid === pid)
+  if ((frame.ppid === 0) || (frame.ppid === pid))
     return [frame,];
   return [
     frame,

@@ -44,6 +44,30 @@ function buildRuntimeSection(container: ContainerResult,): string {
 }
 
 /**
+ * Options for {@link buildCodeGenFixPrompt}.
+ *
+ * @example
+ * ```ts
+ * const options: BuildCodeGenFixPromptOptions = {
+ *   response: 'raw model text',
+ *   context: scoreContext,
+ *   priorLint: lintResult,
+ *   priorContainer: containerResult,
+ * };
+ * ```
+ */
+type BuildCodeGenFixPromptOptions = {
+  /** Raw model output from the first pass (used to extract source for linting) */
+  readonly response: string;
+  /** Model identity and pass for artifact organization */
+  readonly context: ScoreContext;
+  /** Lint result already computed by score(); pass `undefined` to re-lint */
+  readonly priorLint: LintResult | undefined;
+  /** Container result already computed by score(); runtime errors are included when present, `undefined` to skip */
+  readonly priorContainer: ContainerResult | undefined;
+};
+
+/**
  * Builds a diagnostics-only follow-up prompt for the fix turn.
  * Returns undefined when there are no diagnostics (skip the second pass).
  *
@@ -62,48 +86,48 @@ function buildRuntimeSection(container: ContainerResult,): string {
  *
  * @example
  * ```ts
- * const prompt = await buildCodeGenFixPrompt(response, context, priorLint, priorContainer);
+ * const prompt = await buildCodeGenFixPrompt({ response, context, priorLint, priorContainer });
  * if (prompt !== undefined) sendFixTurn(prompt);
  * ```
  */
-export async function buildCodeGenFixPrompt(
-  response: string,
-  context: ScoreContext,
-  priorLint?: LintResult,
-  priorContainer?: ContainerResult,
-): Promise<string | undefined> {
+export async function buildCodeGenFixPrompt({
+  response,
+  context,
+  priorLint,
+  priorContainer,
+}: BuildCodeGenFixPromptOptions,): Promise<string | undefined> {
   /** Source extracted from the model's first-pass response; fed to the linter for fix-time diagnostics. */
   const source = extractCode(response,);
   // Reuse the lint result from score() if available to avoid linting the same code twice.
   // Falls back to running lintSource if called without a prior result (e.g. in tests).
   /** Lint result reused from the scoring phase, or freshly computed when missing (e.g. in tests). */
-  const lint = priorLint ?? await lintSource(
+  const lint = priorLint ?? await lintSource({
     source,
-    {
+    meta: {
       model: context.label,
       label: context.label,
       probe: 'fix-prompt',
       pass: context.pass,
       timestamp: context.timestamp,
     },
-  );
+  },);
 
   // Narrow to a failed container only when exit was non-zero or process was killed
   /** Container result restricted to actual failures (non-zero exit or timeout); undefined for clean runs. */
-  const failedContainer = priorContainer !== undefined
-      && (priorContainer.exitCode !== 0 || priorContainer.timedOut)
+  const failedContainer = (priorContainer !== undefined)
+      && ((priorContainer.exitCode !== 0) || priorContainer.timedOut)
     ? priorContainer
     : undefined;
 
   /** True when lint reported actionable issues with diagnostic text to surface. */
-  const hasLintDiagnostics = lint.violationCount + lint.typeErrors > 0
-    && lint.rawDiagnostics.length > 0;
-  if (failedContainer === undefined && !hasLintDiagnostics)
+  const hasLintDiagnostics = ((lint.violationCount + lint.typeErrors) > 0)
+    && (lint.rawDiagnostics.length > 0);
+  if ((failedContainer === undefined) && (!hasLintDiagnostics))
     return undefined;
 
   /** One-line lint summary shown before the diagnostics; undefined when there are zero issues. */
   const lintSummary =
-    lint.severity.errors > 0 || lint.severity.warnings > 0 || lint.typeErrors > 0
+    (lint.severity.errors > 0) || (lint.severity.warnings > 0) || (lint.typeErrors > 0)
       ? `It has ${String(lint.severity.errors,)} lint errors, ${
         String(lint.severity.warnings,)
       } lint warnings, and ${String(lint.typeErrors,)} type errors.`

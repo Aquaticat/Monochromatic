@@ -19,6 +19,36 @@ import type { ModelConfig, } from './models.ts';
 import type { Probe, } from './probes.ts';
 
 /**
+ * Options for {@link runAndReport}.
+ *
+ * @example
+ * ```ts
+ * const opts: RunAndReportOptions = {
+ *   selectedModels,
+ *   probes,
+ *   recentModelProbePairs: new Map(),
+ *   recentlyFailedModels: new Set(),
+ *   apiKey: 'sk-or-v1-...',
+ *   runsOverride: undefined,
+ * };
+ * ```
+ */
+export type RunAndReportOptions = {
+  /** Models to test */
+  readonly selectedModels: readonly ModelConfig[];
+  /** Probes to run on each model */
+  readonly probes: readonly Probe[];
+  /** Model:probe pairs to skip (tested recently) */
+  readonly recentModelProbePairs: ReadonlyMap<string, ReadonlySet<string>>;
+  /** Model labels that had a whole-model failure recently (e.g. 429) */
+  readonly recentlyFailedModels: ReadonlySet<string>;
+  /** OpenRouter API key */
+  readonly apiKey: string;
+  /** Override for the number of consistency runs (already parsed as integer), `undefined` to use config default */
+  readonly runsOverride: number | undefined;
+};
+
+/**
  * Runs canary probes for all selected models and prints the report.
  *
  * Results are persisted as enriched artifacts (meta.json + response.txt) during
@@ -38,17 +68,24 @@ import type { Probe, } from './probes.ts';
  *
  * @example
  * ```ts
- * await runAndReport(selectedModels, probes, recentPairs, failedModels, apiKey, undefined);
+ * await runAndReport({
+ *   selectedModels,
+ *   probes,
+ *   recentModelProbePairs: recentPairs,
+ *   recentlyFailedModels: failedModels,
+ *   apiKey,
+ *   runsOverride: undefined,
+ * });
  * ```
  */
-export async function runAndReport(
-  selectedModels: readonly ModelConfig[],
-  probes: readonly Probe[],
-  recentModelProbePairs: ReadonlyMap<string, ReadonlySet<string>>,
-  recentlyFailedModels: ReadonlySet<string>,
-  apiKey: string,
-  runsOverride: number | undefined,
-): Promise<void> {
+export async function runAndReport({
+  selectedModels,
+  probes,
+  recentModelProbePairs,
+  recentlyFailedModels,
+  apiKey,
+  runsOverride,
+}: RunAndReportOptions,): Promise<void> {
   /** Partial config patch carrying the consistency-runs override, or empty when no override is set. */
   const consistencyRunsOverride: Pick<Partial<RunnerConfig>, 'consistencyRuns'> =
     runsOverride !== undefined ? { consistencyRuns: runsOverride, } : {};
@@ -76,9 +113,9 @@ export async function runAndReport(
   /** Canary reports for every kept model; promise fan-out so models run concurrently. */
   const reports: readonly CanaryReport[] = await Promise.all(
     modelsToRun.map(function runModel(model,): Promise<CanaryReport> {
-      return runCanary(
+      return runCanary({
         probes,
-        {
+        config: {
           model: model.openrouterId,
           label: model.label,
           verbosity: model.verbosity,
@@ -86,7 +123,7 @@ export async function runAndReport(
           skipProbes: recentModelProbePairs,
           ...consistencyRunsOverride,
         },
-      );
+      },);
     },),
   );
 
@@ -102,7 +139,7 @@ export async function runAndReport(
   // Only skip the report when all probes were cached and nothing actually ran or failed.
   // Probe-level timeouts now produce zero-score results rather than failing the model,
   // so they appear in reportsWithResults and are never silently dropped.
-  if (reportsWithResults.length === 0 && failedReports.length === 0) {
+  if ((reportsWithResults.length === 0) && (failedReports.length === 0)) {
     l.info(
       'all probes skipped due to recent results. Use --retest-all to force re-run.',
     );

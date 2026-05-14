@@ -21,6 +21,30 @@ import type {
 } from './probe-factory-types.ts';
 
 /**
+ * Options for {@link buildFixPromptImpl}.
+ *
+ * @example
+ * ```ts
+ * const options: BuildFixPromptImplOptions = {
+ *   config: probeConfig,
+ *   response: 'raw model text',
+ *   context: scoreContext,
+ *   caches: probeFactoryCaches,
+ * };
+ * ```
+ */
+type BuildFixPromptImplOptions = {
+  /** Probe configuration with verify, perfTest, and customizeFixPrompt hooks */
+  readonly config: CodeGenProbeConfig;
+  /** Raw model response text */
+  readonly response: string;
+  /** Scoring context with model label for cache lookups */
+  readonly context: ScoreContext;
+  /** Shared per-model caches for lint, container, perf, and additional runs */
+  readonly caches: ProbeFactoryCaches;
+};
+
+/**
  * Builds a fix prompt for a code-generation probe using cached results.
  *
  * Combines standard lint/runtime diagnostics, additional run failure diagnostics,
@@ -39,33 +63,33 @@ import type {
  *
  * @example
  * ```ts
- * const prompt = await buildFixPromptImpl(config, response, context, caches);
+ * const prompt = await buildFixPromptImpl({ config, response, context, caches });
  * if (prompt !== undefined) sendFixTurn(prompt);
  * ```
  */
-export async function buildFixPromptImpl(
-  config: CodeGenProbeConfig,
-  response: string,
-  context: ScoreContext,
-  caches: ProbeFactoryCaches,
-): Promise<string | undefined> {
+export async function buildFixPromptImpl({
+  config,
+  response,
+  context,
+  caches,
+}: BuildFixPromptImplOptions,): Promise<string | undefined> {
   /** Base fix prompt from standard lint/runtime diagnostics */
-  const base = await buildCodeGenFixPrompt(
+  const base = await buildCodeGenFixPrompt({
     response,
     context,
-    caches.lint.get(context.label,),
-    caches.container.get(context.label,),
-  );
+    priorLint: caches.lint.get(context.label,),
+    priorContainer: caches.container.get(context.label,),
+  },);
 
   // Append additional run diagnostics when runs failed or produced incorrect output
   /** Fix prompt with additional run failure diagnostics appended */
-  const withAdditional = appendAdditionalRunDiagnostics(
+  const withAdditional = appendAdditionalRunDiagnostics({
     base,
-    config.additionalRuns,
-    caches.additionalContainers,
-    caches.additionalVerify,
-    context.label,
-  );
+    runs: config.additionalRuns,
+    containerCaches: caches.additionalContainers,
+    verifyCaches: caches.additionalVerify,
+    label: context.label,
+  },);
 
   // Apply probe-specific customization (e.g. constraint violation messages)
   /** Fix prompt after probe-specific customizeFixPrompt hook */
@@ -84,10 +108,10 @@ export async function buildFixPromptImpl(
   if (perf === undefined)
     return customized;
   /** Formatted performance diagnostic text, undefined when perf was acceptable */
-  const perfDiag = buildPerfDiagnostic(
-    perf,
-    config.perfTest,
-  );
+  const perfDiag = buildPerfDiagnostic({
+    perfResult: perf,
+    config: config.perfTest,
+  },);
   if (perfDiag === undefined)
     return customized;
 

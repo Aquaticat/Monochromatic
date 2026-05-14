@@ -48,14 +48,14 @@ const cliArgs = runSync(
 );
 
 /** Single-model override from --model flag (matches by label, e.g. "Opus 4.6 medium") */
-export const modelOverride: string | undefined = typeof cliArgs.model === 'string'
+export const modelOverride: string | undefined = ((typeof cliArgs.model) === 'string')
   ? cliArgs.model
   : undefined;
 
 /** Consistency runs override from --runs flag, validated to be \>= 1 to prevent empty score arrays */
 export const runsOverride: number | undefined =
   (function parseRunsOverride(): number | undefined {
-    if (typeof cliArgs.runs !== 'number')
+    if ((typeof cliArgs.runs) !== 'number')
       return undefined;
     if (cliArgs.runs < 1)
       throw new Error(`--runs must be >= 1, got ${String(cliArgs.runs,)}`,);
@@ -68,7 +68,7 @@ export const runsOverride: number | undefined =
  */
 export const probeFilter: ReadonlySet<string> | undefined =
   (function parseProbeFilter(): ReadonlySet<string> | undefined {
-    if (typeof cliArgs.probe !== 'string')
+    if ((typeof cliArgs.probe) !== 'string')
       return undefined;
     return new Set(cliArgs
       .probe

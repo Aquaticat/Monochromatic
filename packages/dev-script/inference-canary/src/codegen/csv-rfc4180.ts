@@ -48,7 +48,7 @@ export const csvRfc4180: Probe = createCodeGenProbe({
       /** Parsed model output; rejected below when not an array of two rows. */
       const parsed = JSON.parse(result.stdout.trim(),) as Record<string, string>[];
       /* oxlint-enable typescript/no-unsafe-type-assertion */
-      if (!Array.isArray(parsed,) || parsed.length !== 2)
+      if ((!Array.isArray(parsed,)) || (parsed.length !== 2))
         return { correctness: 0.1, };
 
       /** First and second rows of the parsed model output; each may be undefined when the array is short. */

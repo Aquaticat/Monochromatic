@@ -41,6 +41,24 @@ const MAX_DISPLAYED_RULES = 5;
 //endregion Scoring penalties
 
 /**
+ * Options for {@link combinedScore}.
+ *
+ * @example
+ * ```ts
+ * const options: CombinedScoreOptions = {
+ *   correctness: 1.0,
+ *   lint: lintResult,
+ * };
+ * ```
+ */
+type CombinedScoreOptions = {
+  /** 0-1 score from output verification; must be exactly 1.0 to earn points */
+  readonly correctness: number;
+  /** Full lint result with per-rule penalty map and type errors */
+  readonly lint: LintResult;
+};
+
+/**
  * Combines correctness, lint quality, and type safety into a final score.
  *
  * Any correctness failure (score below 1.0) zeroes the entire result.
@@ -57,13 +75,13 @@ const MAX_DISPLAYED_RULES = 5;
  * // Perfect correctness, require-tsdoc violated 20 times (uncapped 2.0, capped 0.3),
  * // one other error (0.1), 2 type errors (0.2)
  * // score = 1.0 - 0.3 - 0.1 - 0.2 = 0.4
- * combinedScore(1.0, lint);
+ * combinedScore({ correctness: 1.0, lint });
  * ```
  */
-export function combinedScore(
-  correctness: number,
-  lint: LintResult,
-): number {
+export function combinedScore({
+  correctness,
+  lint,
+}: CombinedScoreOptions,): number {
   if (correctness < 1)
     return 0;
 
@@ -91,6 +109,27 @@ export function combinedScore(
 }
 
 /**
+ * Options for {@link lintAndLog}.
+ *
+ * @example
+ * ```ts
+ * const options: LintAndLogOptions = {
+ *   source: 'console.log(1);',
+ *   probeName: 'sudoku-solver',
+ *   context: scoreContext,
+ * };
+ * ```
+ */
+type LintAndLogOptions = {
+  /** TypeScript source to analyze */
+  readonly source: string;
+  /** Probe name for log prefixes */
+  readonly probeName: string;
+  /** Model identity and pass for artifact organization */
+  readonly context: ScoreContext;
+};
+
+/**
  * Runs oxlint and tsgo on generated source and logs results per probe.
  *
  * @param source - TypeScript source to analyze
@@ -103,26 +142,26 @@ export function combinedScore(
  *
  * @example
  * ```ts
- * const lint = await lintAndLog(source, 'sudoku-solver', context);
+ * const lint = await lintAndLog({ source, probeName: 'sudoku-solver', context });
  * lint.violationCount; // total violations
  * ```
  */
-export async function lintAndLog(
-  source: string,
-  probeName: string,
-  context: ScoreContext,
-): Promise<LintResult> {
+export async function lintAndLog({
+  source,
+  probeName,
+  context,
+}: LintAndLogOptions,): Promise<LintResult> {
   /** Full lint result returned to callers; also drives the per-probe log summary below. */
-  const lint = await lintSource(
+  const lint = await lintSource({
     source,
-    {
+    meta: {
       model: context.label,
       label: context.label,
       probe: probeName,
       pass: context.pass,
       timestamp: context.timestamp,
     },
-  );
+  },);
   if (lint.linterRan || lint.typeCheckerRan) {
     /** Probe-specific logger for lint result summary. */
     const rl = tagged({

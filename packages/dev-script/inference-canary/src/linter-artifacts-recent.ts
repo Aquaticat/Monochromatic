@@ -52,13 +52,17 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
   const failedModels = new Set<string>();
 
   /**
-   * Names of model directories under {@link LINT_DIR}; defaults to empty so a missing dir short-circuits below.
+   * Names of model directories under {@link LINT_DIR}; `undefined` when the directory is missing.
    */
-  let modelDirs: string[] = [];
-  try {
-    modelDirs = await readdir(LINT_DIR,);
-  }
-  catch {
+  const modelDirs = await (async function tryReadModelDirs(): Promise<string[] | undefined> {
+    try {
+      return await readdir(LINT_DIR,);
+    }
+    catch {
+      return undefined;
+    }
+  })();
+  if (modelDirs === undefined) {
     return {
       probePairs,
       failedModels,
@@ -85,15 +89,15 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       //region Failure artifact detection: whole-model failures like 429 or auth errors
       /** Regex match for the `failure-<timestamp>` directory naming convention; null when the dir is a per-probe artifact. */
       const failureMatch = FAILURE_DIR_PATTERN.exec(dirName,);
-      if (failureMatch !== null && failureMatch.groups !== undefined) {
+      if ((failureMatch !== null) && (failureMatch.groups !== undefined)) {
         /**
          * Timestamp segment captured from the failure directory name; checked against {@link cutoff} for recency.
          */
         const rawTimestamp = failureMatch.groups['timestamp'];
-        if (rawTimestamp !== undefined && isRecentTimestamp(
+        if ((rawTimestamp !== undefined) && isRecentTimestamp({
           rawTimestamp,
           cutoff,
-        )) {
+        },)) {
           /** Path to the failure artifact's meta.json; read to recover the original model label. */
           const metaPath = join(
             modelPath,
@@ -126,7 +130,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       //region Per-probe artifact detection: individual probe results
       /** Regex match for the per-probe artifact directory naming convention; null when the dir is unrelated. */
       const match = ARTIFACT_DIR_PATTERN.exec(dirName,);
-      if (match === null || match.groups === undefined)
+      if ((match === null) || (match.groups === undefined))
         continue;
       if (match.groups['pass'] !== 'initial')
         continue;
@@ -137,10 +141,10 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       const rawTimestamp = match.groups['timestamp'];
       if (rawTimestamp === undefined)
         continue;
-      if (!isRecentTimestamp(
+      if (!isRecentTimestamp({
         rawTimestamp,
         cutoff,
-      )) {
+      },)) {
         continue;
       }
 

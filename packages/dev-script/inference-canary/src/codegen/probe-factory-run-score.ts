@@ -38,6 +38,30 @@ import type {
 } from './probe-factory-types.ts';
 
 /**
+ * Options for {@link scoreImpl}.
+ *
+ * @example
+ * ```ts
+ * const options: ScoreImplOptions = {
+ *   config: probeConfig,
+ *   response: 'raw model text',
+ *   context: scoreContext,
+ *   caches: probeFactoryCaches,
+ * };
+ * ```
+ */
+type ScoreImplOptions = {
+  /** Probe configuration with testInput, verify, perfTest, and additionalRuns */
+  readonly config: CodeGenProbeConfig;
+  /** Raw model response text containing a fenced code block */
+  readonly response: string;
+  /** Scoring context with model label, pass, timestamp, and abort signal */
+  readonly context: ScoreContext;
+  /** Shared per-model caches populated for downstream use by buildFixPromptImpl */
+  readonly caches: ProbeFactoryCaches;
+};
+
+/**
  * Executes the full scoring pipeline for a code-generation probe.
  *
  * Extracts code from the model response, applies optional source transforms,
@@ -57,16 +81,16 @@ import type {
  *
  * @example
  * ```ts
- * const score = await scoreImpl(config, response, context, caches);
+ * const score = await scoreImpl({ config, response, context, caches });
  * // score in [0, 1]
  * ```
  */
-export async function scoreImpl(
-  config: CodeGenProbeConfig,
-  response: string,
-  context: ScoreContext,
-  caches: ProbeFactoryCaches,
-): Promise<number> {
+export async function scoreImpl({
+  config,
+  response,
+  context,
+  caches,
+}: ScoreImplOptions,): Promise<number> {
   /** Probe-specific logger for scoring messages. */
   const rl = tagged({
     tag: config.name,
@@ -81,11 +105,11 @@ export async function scoreImpl(
     rl.info('no fenced code block found in response',);
     // Still lint the raw response so artifacts are written for debugging,
     // but score is forced to 0 since the model didn't follow the output format.
-    await lintAndLog(
-      extraction.source,
-      config.name,
+    await lintAndLog({
+      source: extraction.source,
+      probeName: config.name,
       context,
-    );
+    },);
     return 0;
   }
 
@@ -107,32 +131,32 @@ export async function scoreImpl(
 
   // Launch all container runs in parallel: correctness + lint + perf + additional
   /** Main correctness container promise */
-  const correctnessPromise = runInContainer(
+  const correctnessPromise = runInContainer({
     source,
-    config.testInput,
-    context.signal,
-  );
+    stdinData: config.testInput,
+    signal: context.signal,
+  },);
   /** Lint analysis promise */
-  const lintPromise = lintAndLog(
+  const lintPromise = lintAndLog({
     source,
-    config.name,
+    probeName: config.name,
     context,
-  );
+  },);
   /** Perf container promise (undefined when no perfTest configured) */
   const perfPromise = config.perfTest !== undefined
-    ? runInContainerTimed(
+    ? runInContainerTimed({
       source,
-      config.perfTest.input,
-      context.signal,
-    )
+      input: config.perfTest.input,
+      signal: context.signal,
+    },)
     : undefined;
   /** Additional run container promises (empty array when no additional runs) */
   const additionalPromise = config.additionalRuns !== undefined
-    ? executeAdditionalRuns(
+    ? executeAdditionalRuns({
       source,
-      config.additionalRuns,
-      context.signal,
-    )
+      runs: config.additionalRuns,
+      signal: context.signal,
+    },)
     : undefined;
 
   /** Correctness container result and lint analysis awaited together so downstream caching and scoring see both. */
@@ -157,40 +181,40 @@ export async function scoreImpl(
   );
 
   // Cache and verify additional runs
-  if (additionalResults !== undefined && config.additionalRuns !== undefined) {
-    cacheAdditionalResults(
-      additionalResults,
-      config.additionalRuns,
-      caches.additionalContainers,
-      caches.additionalVerify,
-      context.label,
-    );
+  if ((additionalResults !== undefined) && (config.additionalRuns !== undefined)) {
+    cacheAdditionalResults({
+      results: additionalResults,
+      runs: config.additionalRuns,
+      containerCaches: caches.additionalContainers,
+      verifyCaches: caches.additionalVerify,
+      label: context.label,
+    },);
   }
 
   /** Perf score in [0, 1]; multiplied into the combined score so slow runs degrade the full result, not a fraction of it. */
-  const perfMultiplier = cacheAndComputePerfMultiplier(
+  const perfMultiplier = cacheAndComputePerfMultiplier({
     config,
     context,
     caches,
     perfResult,
-  );
+  },);
 
   if (transformed.reject) {
-    return combinedScore(
-      0,
+    return combinedScore({
+      correctness: 0,
       lint,
-    ) * perfMultiplier;
+    },) * perfMultiplier;
   }
-  if (result.timedOut || result.exitCode !== 0) {
+  if (result.timedOut || (result.exitCode !== 0)) {
     rl.info(
       `container failed: exit=${String(result.exitCode,)} timedOut=${
         String(result.timedOut,)
       }`,
     );
-    return combinedScore(
-      0,
+    return combinedScore({
+      correctness: 0,
       lint,
-    ) * perfMultiplier;
+    },) * perfMultiplier;
   }
 
   /** Main-run correctness fraction from the probe's verifier; combined below with additional-run correctness via `Math.min`. */
@@ -200,14 +224,14 @@ export async function scoreImpl(
   // every run must achieve perfect correctness for a non-zero final score
   /** Per-run correctness fractions from additional runs (empty when none configured) */
   const additionalCorrectnesses =
-    additionalResults !== undefined && config.additionalRuns !== undefined
-      ? computeAdditionalCorrectnesses(
-        additionalResults,
-        config.additionalRuns,
-        caches.additionalVerify,
-        context.label,
-        config.name,
-      )
+    (additionalResults !== undefined) && (config.additionalRuns !== undefined)
+      ? computeAdditionalCorrectnesses({
+        results: additionalResults,
+        runs: config.additionalRuns,
+        verifyCaches: caches.additionalVerify,
+        label: context.label,
+        probeName: config.name,
+      },)
       : [];
 
   /** Combined correctness: minimum of main and all additional runs */
@@ -215,8 +239,8 @@ export async function scoreImpl(
     mainCorrectness,
     ...additionalCorrectnesses,
   );
-  return combinedScore(
-    overallCorrectness,
+  return combinedScore({
+    correctness: overallCorrectness,
     lint,
-  ) * perfMultiplier;
+  },) * perfMultiplier;
 }

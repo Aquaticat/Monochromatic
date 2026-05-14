@@ -38,14 +38,16 @@ const DIR_RENAMES: Record<string, string> = {
  */
 const DIR_LABELS: Record<string, string> = DIR_RENAMES;
 
-/** Top-level model directories from the canary-lint artifact root */
-let modelDirs: string[] = [];
-try {
-  modelDirs = await readdir(LINT_DIR,);
-}
-catch {
-  console.log('No canary-lint directory found, nothing to migrate.',);
-}
+/** Top-level model directories from the canary-lint artifact root; empty when the directory is missing. */
+const modelDirs: string[] = await (async function tryReadModelDirs(): Promise<string[]> {
+  try {
+    return await readdir(LINT_DIR,);
+  }
+  catch {
+    console.log('No canary-lint directory found, nothing to migrate.',);
+    return [];
+  }
+})();
 
 for (const modelDir of modelDirs) {
   /** Label for this model from the mapping, undefined if no mapping exists */

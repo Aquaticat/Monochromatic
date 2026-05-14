@@ -68,6 +68,27 @@ async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: stri
 //region Public API: runInContainer is the sole entry point for executing generated code
 
 /**
+ * Options for {@link runInContainer}.
+ *
+ * @example
+ * ```ts
+ * const options: RunInContainerOptions = {
+ *   source: 'console.log("hello");',
+ *   stdinData: 'optional input',
+ *   signal: undefined,
+ * };
+ * ```
+ */
+type RunInContainerOptions = {
+  /** TypeScript source code to execute */
+  readonly source: string;
+  /** Optional stdin data to pipe to the script */
+  readonly stdinData?: string;
+  /** Abort signal; kills the container immediately when aborted, or `undefined` to disable */
+  readonly signal: AbortSignal | undefined;
+};
+
+/**
  * Runs a TypeScript source string inside a locked-down container.
  *
  * Writes source and optional stdin to staging files on the host, then bind-mounts
@@ -84,15 +105,15 @@ async function makeStagingDir(): Promise<AsyncDisposable & { readonly path: stri
  *
  * @example
  * ```ts
- * const result = await runInContainer('console.log("hello");');
+ * const result = await runInContainer({ source: 'console.log("hello");' });
  * result.stdout; // "hello\n"
  * ```
  */
-export async function runInContainer(
-  source: string,
-  stdinData?: string,
-  signal?: AbortSignal,
-): Promise<ContainerResult> {
+export async function runInContainer({
+  source,
+  stdinData,
+  signal,
+}: RunInContainerOptions,): Promise<ContainerResult> {
   /** Disposable staging directory; cleaned up automatically when this function returns. */
   await using stagingResource = await makeStagingDir();
   /** Host path holding `canary.ts` and (optionally) `stdin.txt`; bind-mounted read-only into the container. */
@@ -124,8 +145,8 @@ export async function runInContainer(
     );
   }
 
-  return await execContainer(
-    [
+  return await execContainer({
+    containerArgs: [
       'run',
       '--rm',
       '--network=none',
@@ -148,7 +169,7 @@ export async function runInContainer(
       shellScript,
     ],
     signal,
-  );
+  },);
 }
 
 //endregion Public API

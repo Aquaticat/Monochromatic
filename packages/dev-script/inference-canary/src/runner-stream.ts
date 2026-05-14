@@ -24,6 +24,33 @@ import type {
 export { PartialCompletionError, } from './runner-stream-helpers.ts';
 
 /**
+ * Options for {@link streamCompletion}.
+ *
+ * @example
+ * ```ts
+ * const opts: StreamCompletionOptions = {
+ *   client: openAi,
+ *   messages: [{ role: 'user', content: 'hi' }],
+ *   config: runnerConfig,
+ *   probeName: 'sudoku-solver',
+ *   signal: abortSignal,
+ * };
+ * ```
+ */
+type StreamCompletionOptions = {
+  /** OpenAI SDK client */
+  readonly client: OpenAI;
+  /** Conversation messages */
+  readonly messages: readonly ChatMessage[];
+  /** Runner configuration */
+  readonly config: RunnerConfig;
+  /** Label for timing logs */
+  readonly probeName: string;
+  /** Abort signal; cancels the HTTP stream when aborted, or `undefined` to disable */
+  readonly signal: AbortSignal | undefined;
+};
+
+/**
  * Streams a chat completion and collects text, reasoning traces, per-chunk timing,
  * token usage, and finish reason.
  *
@@ -36,7 +63,7 @@ export { PartialCompletionError, } from './runner-stream-helpers.ts';
  *
  * @param config - runner configuration
  *
- * @param label - label for timing logs
+ * @param probeName - label for timing logs
  *
  * @param signal - optional abort signal; cancels the HTTP stream when aborted
  *
@@ -46,19 +73,19 @@ export { PartialCompletionError, } from './runner-stream-helpers.ts';
  *
  * @example
  * ```ts
- * const result = await streamCompletion(client, messages, config, 'sudoku-solver', signal);
+ * const result = await streamCompletion({ client, messages, config, probeName: 'sudoku-solver', signal });
  * result.text; // full model response
  * ```
  */
-export async function streamCompletion(
-  client: OpenAI,
-  messages: readonly ChatMessage[],
-  config: RunnerConfig,
-  label: string,
-  signal?: AbortSignal,
-): Promise<CompletionResult> {
+export async function streamCompletion({
+  client,
+  messages,
+  config,
+  probeName,
+  signal,
+}: StreamCompletionOptions,): Promise<CompletionResult> {
   // Fast-path: if the signal is already aborted, skip the network request entirely.
-  if (signal !== undefined && signal.aborted) {
+  if ((signal !== undefined) && signal.aborted) {
     throw new DOMException(
       'Probe timeout signal already aborted before stream start',
       'AbortError',
@@ -68,6 +95,7 @@ export async function streamCompletion(
   // Track whether the signal fired during the stream. tsgo narrows `signal.aborted` to
   // `false | undefined` after the for-await loop (infers no abort if stream completed
   // without throwing), so we use a listener-set flag that tsgo cannot narrow away.
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- listener callback writes from outside the for-await scope; tsgo cannot prove the flag stays false either way
   /**
    * Flag flipped by the abort listener so post-stream code can distinguish
    * graceful completion from cancellation.
@@ -119,14 +147,19 @@ export async function streamCompletion(
   const interChunkMs: number[] = [];
   // firstChunkMs, lastChunkMs, chunkCount, lastFinishReason, lastUsage are let
   // because they are all reassigned inside the for-await loop.
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- streaming accumulator: reassigned on first chunk
   /** Latency (ms) from request start to the first chunk; set on the first iteration. */
   let firstChunkMs = 0;
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- streaming accumulator: reassigned each chunk
   /** Wall-clock timestamp of the most recent chunk; seed value compares against `startMs`. */
   let lastChunkMs = startMs;
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- streaming accumulator: incremented each chunk
   /** Number of stream chunks observed so far; drives first-chunk detection and metrics. */
   let chunkCount = 0;
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- streaming accumulator: updated per chunk; final value used after loop
   /** Most recent non-null `finish_reason`; the final value is what the API used to terminate. */
   let lastFinishReason: string | undefined = undefined;
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- streaming accumulator: usage arrives on final chunk
   /** Most recent usage payload; arrives only on the final chunk when `include_usage` is set. */
   let lastUsage: OpenAI.CompletionUsage | null | undefined = undefined;
 
@@ -149,7 +182,7 @@ export async function streamCompletion(
       const {
         delta,
       } = choice;
-      if (delta.content !== undefined && delta.content !== null)
+      if ((delta.content !== undefined) && (delta.content !== null))
         chunks.push(delta.content,);
 
       // OpenRouter surfaces reasoning via `reasoning_details` on the delta: an array of
@@ -162,10 +195,10 @@ export async function streamCompletion(
       if (Array.isArray(reasoningDetails,)) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenRouter reasoning_details items have known shape
         for (const detail of reasoningDetails as readonly Record<string, unknown>[]) {
-          if (detail['type'] === 'reasoning.text' && typeof detail['text'] === 'string')
+          if ((detail['type'] === 'reasoning.text') && ((typeof detail['text']) === 'string'))
             reasoningChunks.push(detail['text'],);
-          else if (detail['type'] === 'reasoning.summary'
-            && typeof detail['summary'] === 'string')
+          else if ((detail['type'] === 'reasoning.summary')
+            && ((typeof detail['summary']) === 'string'))
           {
             reasoningChunks.push(detail['summary'],);
           }
@@ -177,7 +210,7 @@ export async function streamCompletion(
     }
 
     // Usage arrives on the final chunk when stream_options.include_usage is set.
-    if (chunk.usage !== undefined && chunk.usage !== null)
+    if ((chunk.usage !== undefined) && (chunk.usage !== null))
       lastUsage = chunk.usage;
   }
 
@@ -195,19 +228,19 @@ export async function streamCompletion(
     totalMs,
     chunkCount,
   };
-  logTiming(
-    label,
+  logTiming({
+    probeName,
     timing,
-  );
+  },);
 
   /** Assembled completion (text + reasoning + usage + finish reason) returned on success or in PartialCompletionError. */
-  const result = buildResult(
+  const result = buildResult({
     chunks,
     reasoningChunks,
     timing,
-    lastUsage,
-    lastFinishReason,
-  );
+    usage: lastUsage,
+    finishReason: lastFinishReason,
+  },);
 
   // The SDK ends the stream gracefully on abort (returns partial data) rather than throwing.
   // Throw PartialCompletionError so callers can distinguish abort from success while still

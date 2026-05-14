@@ -60,28 +60,46 @@ export class PartialCompletionError extends Error {
 //endregion PartialCompletionError
 
 /**
+ * Options for {@link logTiming}.
+ *
+ * @example
+ * ```ts
+ * const opts: LogTimingOptions = {
+ *   probeName: 'sudoku-solver',
+ *   timing: streamTiming,
+ * };
+ * ```
+ */
+type LogTimingOptions = {
+  /** Probe/call label for log prefix */
+  readonly probeName: string;
+  /** Collected timing data */
+  readonly timing: StreamTiming;
+};
+
+/**
  * Logs a timing summary for a streamed response.
  * Only ttfc and total are shown; chunk count and inter-chunk gaps are too granular
  * for routine human inspection and are preserved in the StreamTiming object for callers
  * that need them.
  *
- * @param label - probe/call label for log prefix
+ * @param probeName - probe/call label for log prefix
  *
  * @param timing - collected timing data
  *
  * @example
  * ```ts
- * logTiming('sudoku-solver', timing);
+ * logTiming({ probeName: 'sudoku-solver', timing });
  * // logs: [timing:sudoku-solver] ttfc=150ms total=3.2s
  * ```
  */
-export function logTiming(
-  label: string,
-  timing: StreamTiming,
-): void {
+export function logTiming({
+  probeName,
+  timing,
+}: LogTimingOptions,): void {
   /** Timing-specific logger tagged with the call label. */
   const rl = tagged({
-    tag: `timing:${label}`,
+    tag: `timing:${probeName}`,
     l,
   },);
   /** Total stream duration rendered as seconds with one decimal, suitable for terse human log lines. */
@@ -109,7 +127,7 @@ export function logTiming(
 export function parseUsage(
   raw: OpenAI.CompletionUsage | null | undefined,
 ): StreamUsage | undefined {
-  if (raw === null || raw === undefined)
+  if ((raw === null) || (raw === undefined))
     return undefined;
   return {
     promptTokens: raw.prompt_tokens,
@@ -118,6 +136,33 @@ export function parseUsage(
     totalTokens: raw.total_tokens,
   };
 }
+
+/**
+ * Options for {@link buildResult}.
+ *
+ * @example
+ * ```ts
+ * const opts: BuildResultOptions = {
+ *   chunks: ['hello', ' world'],
+ *   reasoningChunks: ['thinking...'],
+ *   timing: streamTiming,
+ *   usage: chunk.usage,
+ *   finishReason: 'stop',
+ * };
+ * ```
+ */
+type BuildResultOptions = {
+  /** Collected content deltas */
+  readonly chunks: readonly string[];
+  /** Collected reasoning deltas */
+  readonly reasoningChunks: readonly string[];
+  /** Computed timing breakdown */
+  readonly timing: StreamTiming;
+  /** Raw usage from the API (may be nullish) */
+  readonly usage: OpenAI.CompletionUsage | null | undefined;
+  /** Stop reason from the final chunk */
+  readonly finishReason: string | undefined;
+};
 
 /**
  * Builds a {@link CompletionResult} from accumulated stream data.
@@ -136,17 +181,17 @@ export function parseUsage(
  *
  * @example
  * ```ts
- * const result = buildResult(chunks, reasoningChunks, timing, usage, 'stop');
+ * const result = buildResult({ chunks, reasoningChunks, timing, usage, finishReason: 'stop' });
  * result.text; // joined content chunks
  * ```
  */
-export function buildResult(
-  chunks: readonly string[],
-  reasoningChunks: readonly string[],
-  timing: StreamTiming,
-  usage: OpenAI.CompletionUsage | null | undefined,
-  finishReason: string | undefined,
-): CompletionResult {
+export function buildResult({
+  chunks,
+  reasoningChunks,
+  timing,
+  usage,
+  finishReason,
+}: BuildResultOptions,): CompletionResult {
   return {
     text: chunks.join('',),
     reasoning: reasoningChunks.join('',),

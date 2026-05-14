@@ -114,7 +114,7 @@ function timestampSlug(timestamp: string,): string {
  * ```
  */
 export function artifactDir(meta: ArtifactMeta,): string {
-  if (typeof meta.label !== 'string') {
+  if ((typeof meta.label) !== 'string') {
     throw new TypeError(
       `ArtifactMeta.label must be a string, got ${typeof meta.label} (model=${
         String(meta.model,)
@@ -129,6 +129,24 @@ export function artifactDir(meta: ArtifactMeta,): string {
     `${meta.probe}-${meta.pass}-${safeTs}`,
   );
 }
+
+/**
+ * Options for {@link writeLintFile}.
+ *
+ * @example
+ * ```ts
+ * const opts: WriteLintFileOptions = {
+ *   source: 'const x = 1;',
+ *   meta: { label: 'Opus 4.6', probe: 'sum', pass: 'initial', timestamp: '2026-03-06T12:00:00.000Z' },
+ * };
+ * ```
+ */
+type WriteLintFileOptions = {
+  /** TypeScript source to analyze */
+  readonly source: string;
+  /** Artifact metadata (model, probe, pass, timestamp) */
+  readonly meta: ArtifactMeta;
+};
 
 /**
  * Writes generated source and a meta.json sidecar into an artifact directory.
@@ -146,17 +164,19 @@ export function artifactDir(meta: ArtifactMeta,): string {
  *
  * @example
  * ```ts
- * const { filePath, lintDir } = await writeLintFile('const x = 1;', meta);
+ * const { filePath, lintDir } = await writeLintFile({ source: 'const x = 1;', meta });
  * ```
  */
-export async function writeLintFile(
-  source: string,
-  meta: ArtifactMeta,
-): Promise<{
+export async function writeLintFile({
+  source,
+  meta,
+}: WriteLintFileOptions,): Promise<{
   readonly filePath: string;
   readonly lintDir: string;
 }> {
-  /** Per-run artifact directory; computed deterministically from {@link meta} so historical runs do not collide. */
+  /**
+   * Per-run artifact directory; computed deterministically from {@link meta} so historical runs do not collide.
+   */
   const lintDir = artifactDir(meta,);
   await mkdir(
     lintDir,
@@ -193,6 +213,24 @@ export async function writeLintFile(
 }
 
 /**
+ * Options for {@link writeEnrichedArtifact}.
+ *
+ * @example
+ * ```ts
+ * const opts: WriteEnrichedArtifactOptions = {
+ *   enriched: enrichedMeta,
+ *   rawResponse: '```ts\nconst x = 1;\n```',
+ * };
+ * ```
+ */
+type WriteEnrichedArtifactOptions = {
+  /** Full enriched metadata including score and completion data */
+  readonly enriched: EnrichedArtifactMeta;
+  /** Raw model output text */
+  readonly rawResponse: string;
+};
+
+/**
  * Writes enriched metadata and the raw response to an artifact directory.
  *
  * Overwrites the basic meta.json written by {@link writeLintFile} with all
@@ -208,13 +246,13 @@ export async function writeLintFile(
  *
  * @example
  * ```ts
- * await writeEnrichedArtifact(enrichedMeta, '```ts\nconst x = 1;\n```');
+ * await writeEnrichedArtifact({ enriched: enrichedMeta, rawResponse: '```ts\nconst x = 1;\n```' });
  * ```
  */
-export async function writeEnrichedArtifact(
-  enriched: EnrichedArtifactMeta,
-  rawResponse: string,
-): Promise<void> {
+export async function writeEnrichedArtifact({
+  enriched,
+  rawResponse,
+}: WriteEnrichedArtifactOptions,): Promise<void> {
   /** Existing artifact directory; reused so the basic meta.json gets overwritten in place. */
   const dir = artifactDir(enriched,);
   await mkdir(
@@ -259,7 +297,9 @@ export async function writeEnrichedArtifact(
  * ```
  */
 export async function writeFailureArtifact(meta: FailureArtifactMeta,): Promise<void> {
-  /** Filesystem-safe timestamp slug; same encoding as {@link artifactDir} for consistency. */
+  /**
+   * Filesystem-safe timestamp slug; same encoding as {@link artifactDir} for consistency.
+   */
   const safeTs = timestampSlug(meta.timestamp,);
   /** Failure-specific directory path under the model label, separate from per-probe directories. */
   const dir = join(

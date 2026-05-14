@@ -19,6 +19,30 @@ import type {
 } from './probe-factory-types.ts';
 
 /**
+ * Options for {@link cacheAndComputePerfMultiplier}.
+ *
+ * @example
+ * ```ts
+ * const options: CacheAndComputePerfMultiplierOptions = {
+ *   config: probeConfig,
+ *   context: scoreContext,
+ *   caches: probeFactoryCaches,
+ *   perfResult: timedResult,
+ * };
+ * ```
+ */
+type CacheAndComputePerfMultiplierOptions = {
+  /** Probe configuration (for perfTest thresholds and probe name) */
+  readonly config: CodeGenProbeConfig;
+  /** Scoring context (for model label in logs and cache keys) */
+  readonly context: ScoreContext;
+  /** Shared caches to populate with the perf result */
+  readonly caches: ProbeFactoryCaches;
+  /** Timed container result, undefined when no perf test ran */
+  readonly perfResult: TimedContainerResult | undefined;
+};
+
+/**
  * Caches the perf result and computes the performance multiplier.
  *
  * When no perf test is configured or no result is available, returns 1 (no penalty).
@@ -37,27 +61,27 @@ import type {
  *
  * @example
  * ```ts
- * const multiplier = cacheAndComputePerfMultiplier(config, context, caches, perfResult);
+ * const multiplier = cacheAndComputePerfMultiplier({ config, context, caches, perfResult });
  * finalScore *= multiplier;
  * ```
  */
-export function cacheAndComputePerfMultiplier(
-  config: CodeGenProbeConfig,
-  context: ScoreContext,
-  caches: ProbeFactoryCaches,
-  perfResult: TimedContainerResult | undefined,
-): number {
-  if (config.perfTest === undefined || perfResult === undefined)
+export function cacheAndComputePerfMultiplier({
+  config,
+  context,
+  caches,
+  perfResult,
+}: CacheAndComputePerfMultiplierOptions,): number {
+  if ((config.perfTest === undefined) || (perfResult === undefined))
     return 1;
   caches.perf.set(
     context.label,
     perfResult,
   );
   /** Multiplier in [0, 1] derived from `perfResult.durationMs` against the configured thresholds. */
-  const score = computePerfScore(
+  const score = computePerfScore({
     perfResult,
-    config.perfTest,
-  );
+    config: config.perfTest,
+  },);
   /** Probe-specific logger for perf result messages. */
   const rl = tagged({
     tag: config.name,

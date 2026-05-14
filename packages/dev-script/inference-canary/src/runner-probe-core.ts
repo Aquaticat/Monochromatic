@@ -32,6 +32,30 @@ import type {
 } from './runner-types.ts';
 
 /**
+ * Options for {@link runProbeCore}.
+ *
+ * @example
+ * ```ts
+ * const opts: RunProbeCoreOptions = {
+ *   probe: sudokuSolverProbe,
+ *   config: runnerConfig,
+ *   timestamp: '2025-09-21T11:13:00Z',
+ *   signal: abortSignal,
+ * };
+ * ```
+ */
+type RunProbeCoreOptions = {
+  /** Canary probe to execute */
+  readonly probe: Probe;
+  /** Runner configuration */
+  readonly config: RunnerConfig;
+  /** Authoritative server timestamp for artifact naming */
+  readonly timestamp: string;
+  /** Abort signal from the timeout controller; cancels HTTP streams and containers */
+  readonly signal: AbortSignal;
+};
+
+/**
  * Core probe logic: runs consistency checks then the second-pass fix loop.
  * After scoring, writes enriched metadata to each artifact directory.
  *
@@ -50,16 +74,16 @@ import type {
  *
  * @example
  * ```ts
- * const result = await runProbeCore(probe, config, timestamp, signal);
+ * const result = await runProbeCore({ probe, config, timestamp, signal });
  * result.meanScore; // average across consistency runs
  * ```
  */
-export async function runProbeCore(
-  probe: Probe,
-  config: RunnerConfig,
-  timestamp: string,
-  signal: AbortSignal,
-): Promise<ProbeResult> {
+export async function runProbeCore({
+  probe,
+  config,
+  timestamp,
+  signal,
+}: RunProbeCoreOptions,): Promise<ProbeResult> {
   /** Probe-specific logger for run progress and error messages. */
   const rl = tagged({
     tag: probe.name,
@@ -75,37 +99,39 @@ export async function runProbeCore(
   // functional reduce/map would require pre-running all turns before collecting.
   /** Per-run scores collected in iteration order; later reduced to mean and consistency check. */
   const scores: number[] = [];
-  // lastCompletion is let because the for-of loop reassigns it each run, and the
-  // final value is needed after the loop for artifact enrichment.
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: for-of loop reassigns each run, value needed after loop for artifact enrichment and failure handling */
   /** Most recent completion result; used after the loop for artifact enrichment and failure handling. */
   let lastCompletion: CompletionResult | undefined = undefined;
-  // lastScore tracks the score of the most recent consistency run for artifact enrichment.
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: tracks score of most recent run for artifact metadata */
   /** Score of the most recent run; written into the initial-pass artifact metadata. */
   let lastScore = 0;
-  // worstCompletion tracks the consistency run with the lowest score so the fix pass
-  // operates on the output that most needs fixing, not whichever run happened to be last.
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: tracks worst run for fix-pass selection */
   /**
    * Completion of the lowest-scoring run; the fix pass operates on this so the model
    * always tries to repair its worst output, never a coincidentally-perfect last run.
    */
   let worstCompletion: CompletionResult | undefined = undefined;
-  // worstScore tracks the score of the worst consistency run for fix pass selection.
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: lowest score seen, gates worstCompletion selection */
   /** Lowest score seen so far; gates which run becomes `worstCompletion`. */
   let worstScore = Infinity;
-  // enrichedInitial tracks whether the initial-pass artifact was successfully enriched,
-  // so the failure handler knows whether it needs to write the artifact.
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: flag for failure handler to avoid double-writing artifact */
   /** Whether the initial-pass artifact has been written; failure handler avoids double-writing. */
   let enrichedInitial = false;
+  /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   try {
     for (const runIndex of Array.from({ length: config.consistencyRuns, },).keys()) {
       // oxlint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
-      lastCompletion = await executeProbe(
+      lastCompletion = await executeProbe({
         probe,
         config,
         client,
         signal,
-      );
+      },);
       /** Context handed to the probe's scorer; identifies this initial-pass run for artifact naming. */
       const scoreContext: ScoreContext = {
         label: config.label,
@@ -134,14 +160,14 @@ export async function runProbeCore(
 
     // Enrich the initial-pass artifact with the last consistency run's data.
     if (lastCompletion !== undefined) {
-      await enrichArtifact(
+      await enrichArtifact({
         probe,
         config,
         timestamp,
-        'initial',
-        lastCompletion,
-        lastScore,
-      );
+        pass: 'initial',
+        completion: lastCompletion,
+        score: lastScore,
+      },);
       enrichedInitial = true;
     }
 
@@ -159,15 +185,15 @@ export async function runProbeCore(
     /** Completion fed into the fix pass: prefer worst-scoring run; fall back to the last run if scoring failed. */
     const fixCompletion = worstCompletion ?? lastCompletion;
     /** Score after the second-pass fix; `undefined` when the probe declines a fix pass. */
-    const pass2Score = await runAndEnrichFixPass(
+    const pass2Score = await runAndEnrichFixPass({
       probe,
       config,
       client,
       timestamp,
       signal,
-      fixCompletion?.text ?? '',
+      lastCompletionText: fixCompletion?.text ?? '',
       meanScore,
-    );
+    },);
 
     return {
       name: probe.name,
@@ -189,7 +215,7 @@ export async function runProbeCore(
     // Save whatever data we collected before the failure. Uses a separate try/catch
     // so a write failure doesn't mask the original error.
     try {
-      await saveFailureArtifacts(
+      await saveFailureArtifacts({
         probe,
         config,
         timestamp,
@@ -198,7 +224,7 @@ export async function runProbeCore(
         partialCompletion,
         lastScore,
         enrichedInitial,
-      );
+      },);
     }
     catch (saveError) {
       rl.error(

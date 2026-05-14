@@ -23,6 +23,39 @@ import type {
 import type { RunnerConfig, } from './runner-config.ts';
 
 /**
+ * Options for {@link runAndEnrichFixPass}.
+ *
+ * @example
+ * ```ts
+ * const opts: RunAndEnrichFixPassOptions = {
+ *   probe: cssMixinProbe,
+ *   config: runnerConfig,
+ *   client: openAi,
+ *   timestamp: '2025-09-21T11:13:00Z',
+ *   signal: abortSignal,
+ *   lastCompletionText: '```ts\n//\n```',
+ *   meanScore: 0.8,
+ * };
+ * ```
+ */
+type RunAndEnrichFixPassOptions = {
+  /** Canary probe that produced the first-pass response */
+  readonly probe: Probe;
+  /** Runner configuration */
+  readonly config: RunnerConfig;
+  /** OpenAI SDK client (reused from first pass) */
+  readonly client: OpenAI;
+  /** Authoritative server timestamp for artifact naming */
+  readonly timestamp: string;
+  /** Abort signal for cancellation */
+  readonly signal: AbortSignal;
+  /** Raw text from the last consistency run */
+  readonly lastCompletionText: string;
+  /** Mean score across consistency runs, used for delta logging */
+  readonly meanScore: number;
+};
+
+/**
  * Runs the second-pass fix turn, enriches artifacts, and handles errors.
  *
  * On success, logs the fix score and delta, enriches the fix-pass artifact,
@@ -47,18 +80,18 @@ import type { RunnerConfig, } from './runner-config.ts';
  *
  * @example
  * ```ts
- * const score = await runAndEnrichFixPass(probe, config, client, timestamp, signal, text, 0.8);
+ * const score = await runAndEnrichFixPass({ probe, config, client, timestamp, signal, lastCompletionText: text, meanScore: 0.8 });
  * ```
  */
-export async function runAndEnrichFixPass(
-  probe: Probe,
-  config: RunnerConfig,
-  client: OpenAI,
-  timestamp: string,
-  signal: AbortSignal,
-  lastCompletionText: string,
-  meanScore: number,
-): Promise<number | undefined> {
+export async function runAndEnrichFixPass({
+  probe,
+  config,
+  client,
+  timestamp,
+  signal,
+  lastCompletionText,
+  meanScore,
+}: RunAndEnrichFixPassOptions,): Promise<number | undefined> {
   /** Probe-specific logger for fix pass messages. */
   const rl = tagged({
     tag: probe.name,
@@ -76,13 +109,13 @@ export async function runAndEnrichFixPass(
       signal,
     };
     /** Result of the fix pass; undefined when the probe declined to run a second pass. */
-    const pass2Result = await runSecondPass(
+    const pass2Result = await runSecondPass({
       probe,
       config,
       client,
       lastCompletionText,
       fixContext,
-    );
+    },);
 
     if (pass2Result === undefined)
       return undefined;
@@ -100,17 +133,17 @@ export async function runAndEnrichFixPass(
     );
 
     // Enrich the fix-pass artifact with completion data, score, and diagnostic prompt.
-    await enrichArtifact(
+    await enrichArtifact({
       probe,
       config,
       timestamp,
-      'fix',
-      pass2Result.completion,
-      pass2Result.score,
-      {
+      pass: 'fix',
+      completion: pass2Result.completion,
+      score: pass2Result.score,
+      options: {
         fixPrompt: pass2Result.fixPrompt,
       },
-    );
+    },);
 
     return pass2Result.score;
   }
@@ -125,18 +158,18 @@ export async function runAndEnrichFixPass(
     const partialFix = extractPartialCompletion(fixError,);
     if (partialFix !== undefined) {
       try {
-        await enrichArtifact(
+        await enrichArtifact({
           probe,
           config,
           timestamp,
-          'fix',
-          partialFix,
-          0,
-          {
+          pass: 'fix',
+          completion: partialFix,
+          score: 0,
+          options: {
             partial: true,
             error: errorMessage,
           },
-        );
+        },);
       }
       catch (saveError) {
         rl.error(

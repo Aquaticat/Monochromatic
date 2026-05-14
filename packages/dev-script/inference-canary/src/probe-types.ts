@@ -41,7 +41,10 @@ export type Probe = {
    * @param context - model identity and pass info for artifact organization
    * @returns score between 0 (complete failure) and 1 (perfect)
    */
-  readonly score: (response: string, context: ScoreContext,) => number | Promise<number>;
+  readonly score: (
+    response: string,
+    context: ScoreContext,
+  ) => number | Promise<number>;
   /**
    * Generates a follow-up prompt for a second pass where the model gets its
    * code back with linter/type-checker output and tries to fix issues.
@@ -50,7 +53,10 @@ export type Probe = {
    * @param context - model identity and pass info for artifact organization
    * @returns follow-up user message, or undefined to skip
    */
-  readonly buildFixPrompt?: (response: string, context: ScoreContext,) =>
+  readonly buildFixPrompt?: (
+    response: string,
+    context: ScoreContext,
+  ) =>
     | string
     | undefined
     | Promise<string | undefined>;

@@ -85,9 +85,9 @@ export function parseGrid(text: string,): number[][] | undefined {
         '',
       ),)
       .map(Number,);
-    return digits.length === GRID_SIZE
+    return (digits.length === GRID_SIZE)
         && digits.every(function validDigit(digit,): boolean {
-          return digit >= 1 && digit <= GRID_SIZE;
+          return (digit >= 1) && (digit <= GRID_SIZE);
         },)
       ? digits
       : undefined;
@@ -100,6 +100,21 @@ export function parseGrid(text: string,): number[][] | undefined {
 }
 
 /**
+ * Options for {@link extractColumn}.
+ *
+ * @example
+ * ```ts
+ * const options: ExtractColumnOptions = { grid, col: 0 };
+ * ```
+ */
+type ExtractColumnOptions = {
+  /** 9x9 grid of digits */
+  readonly grid: number[][];
+  /** Column index (0-8) */
+  readonly col: number;
+};
+
+/**
  * Extracts all values from a single column of the grid.
  *
  * @param grid - 9x9 grid of digits
@@ -110,17 +125,34 @@ export function parseGrid(text: string,): number[][] | undefined {
  *
  * @example
  * ```ts
- * extractColumn(grid, 0); // [5, 6, 1, 8, 4, 7, 9, 2, 3]
+ * extractColumn({ grid, col: 0 }); // [5, 6, 1, 8, 4, 7, 9, 2, 3]
  * ```
  */
-function extractColumn(
-  grid: number[][],
-  col: number,
-): number[] {
+function extractColumn({
+  grid,
+  col,
+}: ExtractColumnOptions,): number[] {
   return grid.map(function getCol(row,): number {
     return row[col] ?? 0;
   },);
 }
+
+/**
+ * Options for {@link extractBox}.
+ *
+ * @example
+ * ```ts
+ * const options: ExtractBoxOptions = { grid, originRow: 0, originCol: 0 };
+ * ```
+ */
+type ExtractBoxOptions = {
+  /** 9x9 grid of digits */
+  readonly grid: number[][];
+  /** Top row of the box (0, 3, or 6) */
+  readonly originRow: number;
+  /** Left column of the box (0, 3, or 6) */
+  readonly originCol: number;
+};
 
 /**
  * Extracts all 9 values from a 3x3 box given its top-left corner.
@@ -136,14 +168,14 @@ function extractColumn(
  *
  * @example
  * ```ts
- * extractBox(grid, 0, 0); // top-left box values
+ * extractBox({ grid, originRow: 0, originCol: 0 }); // top-left box values
  * ```
  */
-function extractBox(
-  grid: number[][],
-  originRow: number,
-  originCol: number,
-): number[] {
+function extractBox({
+  grid,
+  originRow,
+  originCol,
+}: ExtractBoxOptions,): number[] {
   return Array.from(
     { length: GRID_SIZE, },
     function cellValue(
@@ -190,23 +222,38 @@ export function isValidSolution(grid: number[][],): boolean {
 
   // Columns
   if (!COLUMN_INDICES.every(function checkCol(col,): boolean {
-    return hasAllDigits(extractColumn(
+    return hasAllDigits(extractColumn({
       grid,
       col,
-    ),);
+    },),);
   },)) {
     return false;
   }
 
   // 3x3 boxes
   return BOX_ORIGINS.every(function checkBox([originRow, originCol,],): boolean {
-    return hasAllDigits(extractBox(
+    return hasAllDigits(extractBox({
       grid,
       originRow,
       originCol,
-    ),);
+    },),);
   },);
 }
+
+/**
+ * Options for {@link matchesClues}.
+ *
+ * @example
+ * ```ts
+ * const options: MatchesCluesOptions = { grid: solvedGrid, clues: SOLVABLE_CLUES };
+ * ```
+ */
+type MatchesCluesOptions = {
+  /** 9x9 solved grid */
+  readonly grid: number[][];
+  /** 9x9 clue grid (0 = empty, non-zero = required digit) */
+  readonly clues: readonly (readonly number[])[];
+};
 
 /**
  * Verifies that a solved grid matches all non-zero clue cells from the original puzzle.
@@ -219,13 +266,13 @@ export function isValidSolution(grid: number[][],): boolean {
  *
  * @example
  * ```ts
- * matchesClues(solvedGrid, SOLVABLE_CLUES); // true
+ * matchesClues({ grid: solvedGrid, clues: SOLVABLE_CLUES }); // true
  * ```
  */
-export function matchesClues(
-  grid: number[][],
-  clues: readonly (readonly number[])[],
-): boolean {
+export function matchesClues({
+  grid,
+  clues,
+}: MatchesCluesOptions,): boolean {
   return clues.every(function checkRow(
     row,
     rowIndex,
@@ -234,7 +281,7 @@ export function matchesClues(
       clue,
       colIndex,
     ): boolean {
-      return clue === 0 || clue === (grid[rowIndex]?.[colIndex] ?? -1);
+      return (clue === 0) || (clue === (grid[rowIndex]?.[colIndex] ?? (-1)));
     },);
   },);
 }

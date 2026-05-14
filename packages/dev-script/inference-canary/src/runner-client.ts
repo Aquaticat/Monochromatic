@@ -34,6 +34,30 @@ export function createProbeClient(config: RunnerConfig,): OpenAI {
 }
 
 /**
+ * Options for {@link executeProbe}.
+ *
+ * @example
+ * ```ts
+ * const opts: ExecuteProbeOptions = {
+ *   probe: cssMixinProbe,
+ *   config: runnerConfig,
+ *   client: openAi,
+ *   signal: abortSignal,
+ * };
+ * ```
+ */
+type ExecuteProbeOptions = {
+  /** Canary probe to execute */
+  readonly probe: Probe;
+  /** Runner configuration */
+  readonly config: RunnerConfig;
+  /** OpenAI SDK client (reused across consistency runs and fix pass) */
+  readonly client: OpenAI;
+  /** Optional abort signal; cancels the HTTP stream when aborted */
+  readonly signal?: AbortSignal;
+};
+
+/**
  * Sends a single probe to the API and returns the full completion result
  * including text, reasoning traces, timing, usage, and finish reason.
  *
@@ -49,16 +73,16 @@ export function createProbeClient(config: RunnerConfig,): OpenAI {
  *
  * @example
  * ```ts
- * const completion = await executeProbe(probe, config, client, signal);
+ * const completion = await executeProbe({ probe, config, client, signal });
  * completion.text; // model response text
  * ```
  */
-export function executeProbe(
-  probe: Probe,
-  config: RunnerConfig,
-  client: OpenAI,
-  signal?: AbortSignal,
-): Promise<CompletionResult> {
+export function executeProbe({
+  probe,
+  config,
+  client,
+  signal,
+}: ExecuteProbeOptions,): Promise<CompletionResult> {
   /** Two-turn chat history (system + user) assembled from the probe's text fields. */
   const messages: ChatMessage[] = [
     {
@@ -70,11 +94,11 @@ export function executeProbe(
       content: probe.prompt,
     },
   ];
-  return streamCompletion(
+  return streamCompletion({
     client,
     messages,
     config,
-    probe.name,
+    probeName: probe.name,
     signal,
-  );
+  },);
 }

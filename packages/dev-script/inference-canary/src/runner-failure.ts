@@ -17,6 +17,27 @@ import type {
 } from './runner-types.ts';
 
 /**
+ * Options for {@link handleRunFailure}.
+ *
+ * @example
+ * ```ts
+ * const opts: HandleRunFailureOptions = {
+ *   error: new Error('boom'),
+ *   mergedConfig: runnerConfig,
+ *   timestamp: '2025-09-21T11:13:00Z',
+ * };
+ * ```
+ */
+type HandleRunFailureOptions = {
+  /** Caught error from the runner */
+  readonly error: unknown;
+  /** Merged runner configuration */
+  readonly mergedConfig: RunnerConfig;
+  /** Authoritative server timestamp for artifact naming */
+  readonly timestamp: ISOTimestamp;
+};
+
+/**
  * Handles a whole-model failure during canary execution.
  *
  * Logs the error, writes a failure artifact to disk so the artifact directory
@@ -32,15 +53,15 @@ import type {
  *
  * @example
  * ```ts
- * const report = await handleRunFailure(error, mergedConfig, timestamp);
+ * const report = await handleRunFailure({ error, mergedConfig, timestamp });
  * report.failed; // true
  * ```
  */
-export async function handleRunFailure(
-  error: unknown,
-  mergedConfig: RunnerConfig,
-  timestamp: ISOTimestamp,
-): Promise<CanaryReport> {
+export async function handleRunFailure({
+  error,
+  mergedConfig,
+  timestamp,
+}: HandleRunFailureOptions,): Promise<CanaryReport> {
   /** Model-specific logger for failure messages. */
   const rl = tagged({
     tag: mergedConfig.label,

@@ -28,6 +28,27 @@ export type BunExecOptions = {
 };
 
 /**
+ * Options for {@link execBun}.
+ *
+ * @example
+ * ```ts
+ * const opts: ExecBunOptions = {
+ *   command: 'echo',
+ *   args: ['hello'],
+ *   options: { timeout: 5000 },
+ * };
+ * ```
+ */
+type ExecBunOptions = {
+  /** Executable name or absolute path */
+  readonly command: string;
+  /** Command arguments */
+  readonly args: readonly string[];
+  /** Optional timeout and abort signal */
+  readonly options?: BunExecOptions;
+};
+
+/**
  * Runs a command via nano-spawn, capturing stdout and stderr separately.
  *
  * Never throws; callers check `exitCode` and `killed` to decide what to do.
@@ -36,21 +57,21 @@ export type BunExecOptions = {
  *
  * @param args - command arguments
  *
- * @param options - optional timeout
+ * @param options - optional timeout and abort signal
  *
  * @returns execution result with stdout, stderr, exit code, and killed flag
  *
  * @example
  * ```ts
- * const result = await execBun('echo', ['hello']);
+ * const result = await execBun({ command: 'echo', args: ['hello'] });
  * result.stdout; // "hello\n"
  * ```
  */
-export async function execBun(
-  command: string,
-  args: readonly string[],
-  options: BunExecOptions = {},
-): Promise<BunExecResult> {
+export async function execBun({
+  command,
+  args,
+  options = {},
+}: ExecBunOptions,): Promise<BunExecResult> {
   // Fast-path: if the signal is already aborted, skip spawning entirely.
   if (options.signal?.aborted === true) {
     return {
@@ -83,10 +104,10 @@ export async function execBun(
   }
   catch (error: unknown) {
     // nano-spawn throws SubprocessError on non-zero exit
-    if (error !== null
-      && error !== undefined
-      && typeof error === 'object'
-      && 'exitCode' in error)
+    if ((error !== null)
+      && (error !== undefined)
+      && ((typeof error) === 'object')
+      && ('exitCode' in error))
     {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- nano-spawn SubprocessError has known shape */
       /** Narrowed view of the caught nano-spawn `SubprocessError`; carries stdout, stderr, exit code, and signal name. */
@@ -101,7 +122,7 @@ export async function execBun(
       // or the process received a termination signal
       /** True when the abort signal fired or the process received a termination signal; surfaced to callers as `BunExecResult.killed`. */
       const wasKilled = Boolean(options.signal?.aborted,)
-        || subprocessError.signalName !== undefined;
+        || (subprocessError.signalName !== undefined);
 
       return {
         stdout: subprocessError.stdout,

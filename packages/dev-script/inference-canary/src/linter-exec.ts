@@ -34,10 +34,31 @@ type LintExecOptions = {
  * ```
  */
 export function getStdoutFromError(error: unknown,): string {
-  if (error instanceof Error && 'stdout' in error)
+  if ((error instanceof Error) && ('stdout' in error))
     return String((error as { stdout: unknown; }).stdout,);
   return '';
 }
+
+/**
+ * Options for {@link execPromise}.
+ *
+ * @example
+ * ```ts
+ * const opts: ExecPromiseOptions = {
+ *   command: 'oxlint',
+ *   args: ['--format', 'json', 'file.ts'],
+ *   options: { timeout: 15000 },
+ * };
+ * ```
+ */
+type ExecPromiseOptions = {
+  /** Lint tool executable */
+  readonly command: string;
+  /** Tool arguments */
+  readonly args: readonly string[];
+  /** Optional timeout */
+  readonly options?: LintExecOptions;
+};
 
 /**
  * Runs a linting command and returns its stdout.
@@ -58,22 +79,22 @@ export function getStdoutFromError(error: unknown,): string {
  *
  * @example
  * ```ts
- * const stdout = await execPromise('oxlint', ['--format', 'json', 'file.ts']);
+ * const stdout = await execPromise({ command: 'oxlint', args: ['--format', 'json', 'file.ts'] });
  * ```
  */
-export async function execPromise(
-  command: string,
-  args: readonly string[],
-  options: LintExecOptions = {},
-): Promise<string> {
+export async function execPromise({
+  command,
+  args,
+  options = {},
+}: ExecPromiseOptions,): Promise<string> {
   /** Forwarded exec options; the `timeout` key is omitted when undefined so callers can detect the unset state downstream. */
   const execOptions = options.timeout !== undefined ? { timeout: options.timeout, } : {};
   /** Raw exec result; inspected below to surface non-zero exits as thrown errors with stdout/stderr attached. */
-  const result = await execBun(
+  const result = await execBun({
     command,
     args,
-    execOptions,
-  );
+    options: execOptions,
+  },);
 
   if (result.exitCode !== 0) {
     throw Object.assign(

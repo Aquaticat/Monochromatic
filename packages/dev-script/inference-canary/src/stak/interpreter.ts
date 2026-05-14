@@ -46,7 +46,7 @@ export function runStak(source: string,): string {
       op,
       name,
     ] = token.split(' ',);
-    if (op === 'LABEL' && name !== undefined) {
+    if ((op === 'LABEL') && (name !== undefined)) {
       labels.set(
         name,
         i,
@@ -80,13 +80,13 @@ export function runStak(source: string,): string {
     }
 
     /** Result of dispatching the current op; may carry output text and/or a jump target. */
-    const step = executeOp(
+    const step = executeOp({
       op,
       arg,
       stack,
       env,
       labels,
-    );
+    },);
     if (step.output !== undefined)
       out += step.output;
     if (step.jumpTo !== undefined) {

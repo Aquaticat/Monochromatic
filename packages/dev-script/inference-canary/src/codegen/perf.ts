@@ -47,6 +47,27 @@ export type PerfTestConfig = {
 };
 
 /**
+ * Options for {@link runInContainerTimed}.
+ *
+ * @example
+ * ```ts
+ * const options: RunInContainerTimedOptions = {
+ *   source: 'console.log("hi");',
+ *   input: '',
+ *   signal: undefined,
+ * };
+ * ```
+ */
+type RunInContainerTimedOptions = {
+  /** TypeScript source to execute */
+  readonly source: string;
+  /** stdin data */
+  readonly input: string;
+  /** Abort signal */
+  readonly signal: AbortSignal | undefined;
+};
+
+/**
  * Runs a container and records wall-clock duration alongside the result.
  *
  * @param source - TypeScript source to execute
@@ -59,28 +80,46 @@ export type PerfTestConfig = {
  *
  * @example
  * ```ts
- * const timedResult = await runInContainerTimed(source, stdinData, signal);
+ * const timedResult = await runInContainerTimed({ source, input: stdinData, signal });
  * console.log(`Took ${timedResult.durationMs}ms`);
  * ```
  */
-export async function runInContainerTimed(
-  source: string,
-  input: string,
-  signal: AbortSignal | undefined,
-): Promise<TimedContainerResult> {
+export async function runInContainerTimed({
+  source,
+  input,
+  signal,
+}: RunInContainerTimedOptions,): Promise<TimedContainerResult> {
   /** Wall-clock origin for the duration measurement returned alongside the container result. */
   const start = Date.now();
   /** Container result; merged below with `durationMs` so callers receive both in one object. */
-  const result = await runInContainer(
+  const result = await runInContainer({
     source,
-    input,
+    stdinData: input,
     signal,
-  );
+  },);
   return {
     ...result,
     durationMs: Date.now() - start,
   };
 }
+
+/**
+ * Options for {@link computePerfScore} and {@link buildPerfDiagnostic}.
+ *
+ * @example
+ * ```ts
+ * const options: PerfScoreOptions = {
+ *   perfResult: timedResult,
+ *   config: { input, fastMs: 3000, slowMs: 10000 },
+ * };
+ * ```
+ */
+type PerfScoreOptions = {
+  /** Timed container result from the perf test */
+  readonly perfResult: TimedContainerResult;
+  /** Timing thresholds */
+  readonly config: PerfTestConfig;
+};
 
 /**
  * Converts a timed container result into a 0-1 perf score.
@@ -96,22 +135,22 @@ export async function runInContainerTimed(
  * @example
  * ```ts
  * // Fast enough: score 1.0
- * computePerfScore(result, { fastMs: 3000, slowMs: 10000 }); // durationMs=2000 -> 1.0
+ * computePerfScore({ perfResult, config: { fastMs: 3000, slowMs: 10000 } }); // durationMs=2000 -> 1.0
  * // Between thresholds: linear decay
- * computePerfScore(result, { fastMs: 3000, slowMs: 10000 }); // durationMs=6500 -> 0.5
+ * computePerfScore({ perfResult, config: { fastMs: 3000, slowMs: 10000 } }); // durationMs=6500 -> 0.5
  * ```
  */
-export function computePerfScore(
-  perfResult: TimedContainerResult,
-  config: PerfTestConfig,
-): number {
-  if (perfResult.timedOut || perfResult.exitCode !== 0)
+export function computePerfScore({
+  perfResult,
+  config,
+}: PerfScoreOptions,): number {
+  if (perfResult.timedOut || (perfResult.exitCode !== 0))
     return 0;
   if (perfResult.durationMs <= config.fastMs)
     return 1;
   if (perfResult.durationMs >= config.slowMs)
     return 0;
-  return 1 - (perfResult.durationMs - config.fastMs) / (config.slowMs - config.fastMs);
+  return 1 - ((perfResult.durationMs - config.fastMs) / (config.slowMs - config.fastMs));
 }
 
 /**
@@ -125,19 +164,19 @@ export function computePerfScore(
  *
  * @example
  * ```ts
- * const diag = buildPerfDiagnostic(perfResult, { input: largeInput, fastMs: 3000, slowMs: 10000 });
+ * const diag = buildPerfDiagnostic({ perfResult, config: { input: largeInput, fastMs: 3000, slowMs: 10000 } });
  * if (diag !== undefined) console.log(diag);
  * ```
  */
-export function buildPerfDiagnostic(
-  perfResult: TimedContainerResult,
-  config: PerfTestConfig,
-): string | undefined {
+export function buildPerfDiagnostic({
+  perfResult,
+  config,
+}: PerfScoreOptions,): string | undefined {
   /** Perf score for the current run; the diagnostic is suppressed when the run already hit the fast threshold. */
-  const score = computePerfScore(
+  const score = computePerfScore({
     perfResult,
     config,
-  );
+  },);
   if (score >= 1)
     return undefined;
   return [

@@ -13,6 +13,30 @@ import {
 } from './sudoku-grid.ts';
 
 /**
+ * Options for {@link verifySolutionSet}.
+ *
+ * @example
+ * ```ts
+ * const options: VerifySolutionSetOptions = {
+ *   section: 'raw output',
+ *   clues: CLUE_GRID,
+ *   expectedCount: 2,
+ *   minCount: 2,
+ * };
+ * ```
+ */
+type VerifySolutionSetOptions = {
+  /** Raw output section for one puzzle */
+  readonly section: string;
+  /** Clue grid to verify solutions against */
+  readonly clues: readonly (readonly number[])[];
+  /** Exact number of solutions expected, or undefined for "at least min" */
+  readonly expectedCount: number | undefined;
+  /** Minimum number of solutions when expectedCount is undefined */
+  readonly minCount: number;
+};
+
+/**
  * Checks whether a puzzle section contains the expected number of valid, distinct
  * solutions that all match the given clues.
  *
@@ -28,16 +52,16 @@ import {
  *
  * @example
  * ```ts
- * const ok = verifySolutionSet(section, clues, 2, 2);
+ * const ok = verifySolutionSet({ section, clues, expectedCount: 2, minCount: 2 });
  * // true when section contains exactly 2 valid distinct solutions
  * ```
  */
-export function verifySolutionSet(
-  section: string,
-  clues: readonly (readonly number[])[],
-  expectedCount: number | undefined,
-  minCount: number,
-): boolean {
+export function verifySolutionSet({
+  section,
+  clues,
+  expectedCount,
+  minCount,
+}: VerifySolutionSetOptions,): boolean {
   /** Raw solution text blocks split on blank lines within the section */
   const solutionBlocks = splitSolutions(section,);
   /** Parsed grids from solution blocks, filtering out unparseable ones */
@@ -56,10 +80,10 @@ export function verifySolutionSet(
     return false;
   /** Whether every parsed grid is a valid complete sudoku matching the original clues */
   const allValid = grids.every(function validateGrid(grid,): boolean {
-    return isValidSolution(grid,) && matchesClues(
+    return isValidSolution(grid,) && matchesClues({
       grid,
       clues,
-    );
+    },);
   },);
   if (!allValid)
     return false;

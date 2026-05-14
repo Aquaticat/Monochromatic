@@ -58,10 +58,10 @@ export function verifyNormal(stdout: string,): number {
   /** Destructured puzzle output sections: solvable, two unsolvables, and multi-solution */
   const [solvableSection, unsolvableBoxSection, unsolvableColSection, multiSection,] =
     sections;
-  if (solvableSection === undefined
-    || unsolvableBoxSection === undefined
-    || unsolvableColSection === undefined
-    || multiSection === undefined)
+  if ((solvableSection === undefined)
+    || (unsolvableBoxSection === undefined)
+    || (unsolvableColSection === undefined)
+    || (multiSection === undefined))
   {
     return PARTIAL_CREDIT;
   }
@@ -78,23 +78,23 @@ export function verifyNormal(stdout: string,): number {
   /** Number of checks that passed out of NORMAL_CHECKS total */
   const correctCount = [
     // Check 1: solvable puzzle solved correctly
-    solvableGrid !== undefined
+    (solvableGrid !== undefined)
     && isValidSolution(solvableGrid,)
-    && matchesClues(
-      solvableGrid,
-      SOLVABLE_CLUES,
-    ),
+    && matchesClues({
+      grid: solvableGrid,
+      clues: SOLVABLE_CLUES,
+    },),
     // Check 2: box-conflict unsolvable rejected
     unsolvableBoxSection.toUpperCase() === 'UNSOLVABLE',
     // Check 3: column-conflict unsolvable rejected
     unsolvableColSection.toUpperCase() === 'UNSOLVABLE',
     // Check 4: multi-solution returns exactly 1 valid solution
-    multiGrid !== undefined
+    (multiGrid !== undefined)
     && isValidSolution(multiGrid,)
-    && matchesClues(
-      multiGrid,
-      MULTI_CLUES,
-    ),
+    && matchesClues({
+      grid: multiGrid,
+      clues: MULTI_CLUES,
+    },),
   ]
     .filter(Boolean,)
     .length;
@@ -130,9 +130,9 @@ export function verifyAll(stdout: string,): number {
 
   /** Destructured --all mode output sections: 2-solution, many-solution, unsolvable */
   const [twoSolSection, manySolSection, unsolvableSection,] = sections;
-  if (twoSolSection === undefined
-    || manySolSection === undefined
-    || unsolvableSection === undefined)
+  if ((twoSolSection === undefined)
+    || (manySolSection === undefined)
+    || (unsolvableSection === undefined))
   {
     return PARTIAL_CREDIT;
   }
@@ -140,19 +140,19 @@ export function verifyAll(stdout: string,): number {
   /** Number of checks that passed out of ALL_CHECKS total */
   const correctCount = [
     // Check 1: exactly 2 valid distinct solutions matching clues
-    verifySolutionSet(
-      twoSolSection,
-      TWO_SOLUTION_CLUES,
-      EXPECTED_TWO_SOLUTIONS,
-      EXPECTED_TWO_SOLUTIONS,
-    ),
+    verifySolutionSet({
+      section: twoSolSection,
+      clues: TWO_SOLUTION_CLUES,
+      expectedCount: EXPECTED_TWO_SOLUTIONS,
+      minCount: EXPECTED_TWO_SOLUTIONS,
+    },),
     // Check 2: multiple valid distinct solutions for the many-solution puzzle
-    verifySolutionSet(
-      manySolSection,
-      MANY_SOLUTION_CLUES,
-      undefined,
-      MIN_MANY_SOLUTIONS,
-    ),
+    verifySolutionSet({
+      section: manySolSection,
+      clues: MANY_SOLUTION_CLUES,
+      expectedCount: undefined,
+      minCount: MIN_MANY_SOLUTIONS,
+    },),
     // Check 3: unsolvable still rejected under --all
     unsolvableSection.toUpperCase() === 'UNSOLVABLE',
   ]

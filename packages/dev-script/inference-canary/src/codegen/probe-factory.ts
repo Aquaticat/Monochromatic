@@ -86,24 +86,24 @@ export function createCodeGenProbe(config: CodeGenProbeConfig,): Probe {
       response,
       context,
     ): Promise<string | undefined> {
-      return buildFixPromptImpl(
+      return buildFixPromptImpl({
         config,
         response,
         context,
         caches,
-      );
+      },);
     },
 
     score: function score(
       response,
       context,
     ): Promise<number> {
-      return scoreImpl(
+      return scoreImpl({
         config,
         response,
         context,
         caches,
-      );
+      },);
     },
   };
 }

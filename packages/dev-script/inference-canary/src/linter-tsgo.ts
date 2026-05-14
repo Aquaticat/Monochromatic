@@ -26,6 +26,24 @@ export type TsgoResult = {
 };
 
 /**
+ * Options for {@link filterTypeErrors}.
+ *
+ * @example
+ * ```ts
+ * const opts: FilterTypeErrorsOptions = {
+ *   output: tsgoStdout,
+ *   subdirId: 'css-mixin-initial',
+ * };
+ * ```
+ */
+type FilterTypeErrorsOptions = {
+  /** Raw tsgo output */
+  readonly output: string;
+  /** Subdirectory label within canary-lint/ (e.g. "css-mixin-initial") */
+  readonly subdirId: string;
+};
+
+/**
  * Extracts type error lines from a specific canary lint subdirectory only,
  * ignoring noise from bun-types, other project files, or other probe runs.
  *
@@ -35,10 +53,10 @@ export type TsgoResult = {
  *
  * @returns error lines from that subdirectory's canary.ts
  */
-function filterTypeErrors(
-  output: string,
-  subdirId: string,
-): readonly string[] {
+function filterTypeErrors({
+  output,
+  subdirId,
+}: FilterTypeErrorsOptions,): readonly string[] {
   /** Path fragment that uniquely identifies this probe's canary.ts; used to ignore unrelated diagnostics. */
   const marker = `canary-lint/${subdirId}/canary.ts`;
   return output.split('\n',).filter(function matchLine(line,): boolean {
@@ -73,22 +91,22 @@ export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult
       'tsconfig.canary-lint.json',
     );
     /** tsgo stdout from the clean-exit branch; empty when the project has zero type errors. */
-    const output = await execPromise(
-      'tsgo',
-      [
+    const output = await execPromise({
+      command: 'tsgo',
+      args: [
         '--noEmit',
         '-p',
         canaryTsconfig,
       ],
-      {
+      options: {
         timeout: LINT_TIMEOUT_MS,
       },
-    );
+    },);
     /** Diagnostic lines belonging to this probe's canary.ts; other paths are dropped. */
-    const filtered = filterTypeErrors(
+    const filtered = filterTypeErrors({
       output,
-      relativeSuffix,
-    );
+      subdirId: relativeSuffix,
+    },);
     return {
       errorCount: filtered.length,
       ran: true,
@@ -101,10 +119,10 @@ export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult
     const stdout = getStdoutFromError(error,);
     if (stdout.includes('error TS',)) {
       /** Diagnostic lines belonging to this probe's canary.ts on the failure branch. */
-      const filtered = filterTypeErrors(
-        stdout,
-        relativeSuffix,
-      );
+      const filtered = filterTypeErrors({
+        output: stdout,
+        subdirId: relativeSuffix,
+      },);
       return {
         errorCount: filtered.length,
         ran: true,

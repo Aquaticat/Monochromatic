@@ -148,22 +148,24 @@ export const stakSimulation: Probe = {
         l,
       },),
     },);
-    /** Tracks whether every program matched its expected output; one mismatch flips this to false. */
-    let allCorrect = true;
-    for (const [index, testCase,] of SIMULATION_CASES.entries()) {
+    /** Per-case match flags; logged on mismatch and reduced to the overall pass/fail score. */
+    const matches = SIMULATION_CASES.map(function checkCase(
+      testCase,
+      index,
+    ): boolean {
       /** Section text for this case; empty string when the response had fewer sections than cases. */
       const section = sections[index] ?? '';
       /** Whether this case's output matches its expectation exactly (whitespace-trimmed). */
       const match = section === testCase.expected;
       if (!match) {
-        allCorrect = false;
         rl.info(
           `case ${testCase.label}: expected ${JSON.stringify(testCase.expected,)}, got ${
             JSON.stringify(section,)
           }`,
         );
       }
-    }
-    return allCorrect ? 1 : 0;
+      return match;
+    },);
+    return matches.every(Boolean,) ? 1 : 0;
   },
 };

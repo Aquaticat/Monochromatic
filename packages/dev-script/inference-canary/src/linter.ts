@@ -59,6 +59,24 @@ export type LintResult = {
 //region Public API: lintSource is the sole entry point; writes artifact, runs oxlint + tsgo, returns combined result
 
 /**
+ * Options for {@link lintSource}.
+ *
+ * @example
+ * ```ts
+ * const opts: LintSourceOptions = {
+ *   source: 'const x: number = 1;',
+ *   meta: { label: 'Opus 4.6', probe: 'sum', pass: 'initial', timestamp: '2026-03-06T12:00:00.000Z' },
+ * };
+ * ```
+ */
+export type LintSourceOptions = {
+  /** TypeScript source code to analyze */
+  readonly source: string;
+  /** Artifact metadata for directory naming and traceability */
+  readonly meta: ArtifactMeta;
+};
+
+/**
  * Runs both oxlint and tsgo on generated source, returns combined results.
  *
  * Generated source is written to `src/canary-lint/<model>/<probe>-<pass>-<timestamp>/canary.ts`
@@ -73,22 +91,22 @@ export type LintResult = {
  *
  * @example
  * ```ts
- * const result = await lintSource('const x: number = 1;', meta);
+ * const result = await lintSource({ source: 'const x: number = 1;', meta });
  * result.violationCount; // total lint violations
  * ```
  */
-export async function lintSource(
-  source: string,
-  meta: ArtifactMeta,
-): Promise<LintResult> {
+export async function lintSource({
+  source,
+  meta,
+}: LintSourceOptions,): Promise<LintResult> {
   /** Artifact file path and its enclosing lint directory; passed to the two analyzers below. */
   const {
     filePath,
     lintDir,
-  } = await writeLintFile(
+  } = await writeLintFile({
     source,
     meta,
-  );
+  },);
 
   // runAndParseOxlint and runAndParseTypeCheck each catch their own errors and
   // return safe defaults, so no outer catch is needed here.

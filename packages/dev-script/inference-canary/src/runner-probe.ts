@@ -27,6 +27,24 @@ const PROBE_TIMEOUT_MINUTES = 5;
 const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND;
 
 /**
+ * Options for {@link createDisposableTimeout}.
+ *
+ * @example
+ * ```ts
+ * const opts: CreateDisposableTimeoutOptions = {
+ *   callback: () => console.log('fire'),
+ *   ms: 1000,
+ * };
+ * ```
+ */
+type CreateDisposableTimeoutOptions = {
+  /** Function to execute when the timeout fires */
+  readonly callback: () => void;
+  /** Timeout duration in milliseconds */
+  readonly ms: number;
+};
+
+/**
  * Creates a disposable timeout that auto-clears via `Symbol.dispose`.
  * Calling `unref()` on the timer prevents it from keeping the event loop alive.
  *
@@ -35,11 +53,16 @@ const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE * MS_PER_SEC
  * @param ms - timeout duration in milliseconds
  *
  * @returns disposable handle; timer is cleared when disposed
+ *
+ * @example
+ * ```ts
+ * using timer = createDisposableTimeout({ callback: onTick, ms: 1000 });
+ * ```
  */
-function createDisposableTimeout(
-  callback: () => void,
-  ms: number,
-): Disposable {
+function createDisposableTimeout({
+  callback,
+  ms,
+}: CreateDisposableTimeoutOptions,): Disposable {
   /** Node timer handle retained so `clearTimeout` can run from the dispose hook. */
   const id = setTimeout(
     callback,
@@ -50,6 +73,27 @@ function createDisposableTimeout(
     clearTimeout(id,);
   }, };
 }
+
+/**
+ * Options for {@link runProbe}.
+ *
+ * @example
+ * ```ts
+ * const opts: RunProbeOptions = {
+ *   probe: cssMixinProbe,
+ *   config: runnerConfig,
+ *   timestamp: '2025-09-21T11:13:00Z',
+ * };
+ * ```
+ */
+type RunProbeOptions = {
+  /** Canary probe to execute */
+  readonly probe: Probe;
+  /** Runner configuration */
+  readonly config: RunnerConfig;
+  /** Authoritative server timestamp for artifact naming */
+  readonly timestamp: string;
+};
 
 /**
  * Runs a single probe with a 5-minute timeout covering all turns (consistency + fix).
@@ -72,24 +116,24 @@ function createDisposableTimeout(
  *
  * @example
  * ```ts
- * const result = await runProbe(probe, config, timestamp);
+ * const result = await runProbe({ probe, config, timestamp });
  * result.meanScore; // 0 if timed out
  * ```
  */
-export async function runProbe(
-  probe: Probe,
-  config: RunnerConfig,
-  timestamp: string,
-): Promise<ProbeResult> {
+export async function runProbe({
+  probe,
+  config,
+  timestamp,
+}: RunProbeOptions,): Promise<ProbeResult> {
   /** Signals cancellation to in-flight HTTP streams and container processes when the timeout fires. */
   const controller = new AbortController();
   /** Live probe execution; settled by either success, failure, or `controller.abort()`. */
-  const corePromise = runProbeCore(
+  const corePromise = runProbeCore({
     probe,
     config,
     timestamp,
-    controller.signal,
-  );
+    signal: controller.signal,
+  },);
   /**
    * Zero-score sentinel returned when the timeout fires.
    *
@@ -124,7 +168,9 @@ export async function runProbe(
     }
   }
 
-  /** Promise resolved from the timeout callback; raced against {@link observedCore}. */
+  /**
+   * Promise resolved from the timeout callback; raced against {@link observedCore}.
+   */
   const {
     promise: timeoutPromise,
     resolve: resolveTimeout,
@@ -133,8 +179,8 @@ export async function runProbe(
   >();
 
   /** Disposable timeout handle; auto-clears via `Symbol.dispose` when the function returns. */
-  using _timer = createDisposableTimeout(
-    function onTimeout(): void {
+  using _timer = createDisposableTimeout({
+    callback: function onTimeout(): void {
       controller.abort();
       /** Probe-specific logger for timeout message. */
       const rl = tagged({
@@ -149,8 +195,8 @@ export async function runProbe(
       );
       resolveTimeout(timedOutResult,);
     },
-    PROBE_TIMEOUT_MS,
-  );
+    ms: PROBE_TIMEOUT_MS,
+  },);
 
   return await Promise.race([
     observedCore(),

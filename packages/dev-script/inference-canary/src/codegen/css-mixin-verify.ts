@@ -32,7 +32,7 @@ const MIN_FLEX_OCCURRENCES = 3;
 function verifyOverrideTest(output: string,): boolean {
   /** Byte offset where the `.override-test` selector begins in the transpiled output. */
   const start = output.indexOf('.override-test',);
-  if (start === -1)
+  if (start === (-1))
     return false;
   /** Byte offset of the closing brace that terminates the `.override-test` rule. */
   const blockEnd = output.indexOf(
@@ -46,7 +46,7 @@ function verifyOverrideTest(output: string,): boolean {
   );
   /** Offset of the last `display:` declaration in the block, used to identify the cascade winner. */
   const lastDisplay = block.lastIndexOf('display:',);
-  return lastDisplay !== -1 && block.slice(lastDisplay,).includes('grid',);
+  return (lastDisplay !== (-1)) && block.slice(lastDisplay,).includes('grid',);
 }
 
 /**
@@ -80,7 +80,9 @@ export function verifyCssMixin(result: ContainerResult,): { correctness: number;
 
   /** Count of `display: flex` declarations; the mixin must expand into three call sites. */
   const flexOccurrences = output.split('display: flex',).length - 1;
-  /** Boolean correctness invariants for each scoring criterion; their sum divided by {@link CSS_MIXIN_TOTAL_CHECKS} is the score. */
+  /**
+   * Boolean correctness invariants for each scoring criterion; their sum divided by {@link CSS_MIXIN_TOTAL_CHECKS} is the score.
+   */
   const checks = [
     !output.includes('@mixin',),
     !output.includes('@apply',),

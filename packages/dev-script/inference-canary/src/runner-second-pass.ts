@@ -30,6 +30,33 @@ export type SecondPassResult = {
 };
 
 /**
+ * Options for {@link runSecondPass}.
+ *
+ * @example
+ * ```ts
+ * const opts: RunSecondPassOptions = {
+ *   probe: cssMixinProbe,
+ *   config: runnerConfig,
+ *   client: openAi,
+ *   lastCompletionText: 'first response text',
+ *   fixContext: scoreContext,
+ * };
+ * ```
+ */
+type RunSecondPassOptions = {
+  /** Probe that produced the first-pass response */
+  readonly probe: Probe;
+  /** Runner configuration */
+  readonly config: RunnerConfig;
+  /** OpenAI SDK client (reused from first pass) */
+  readonly client: OpenAI;
+  /** Raw model output from the first pass */
+  readonly lastCompletionText: string;
+  /** Score context for artifact organization (includes abort signal) */
+  readonly fixContext: ScoreContext;
+};
+
+/**
  * Runs the second pass: sends the model its code + linter/type-checker diagnostics
  * and scores whether it can fix the issues in one follow-up turn.
  *
@@ -39,25 +66,25 @@ export type SecondPassResult = {
  *
  * @param client - OpenAI SDK client (reused from first pass)
  *
- * @param firstResponse - raw model output from the first pass
+ * @param lastCompletionText - raw model output from the first pass
  *
- * @param context - score context for artifact organization (includes abort signal)
+ * @param fixContext - score context for artifact organization (includes abort signal)
  *
  * @returns second-pass result with score, completion data, and fix prompt; or undefined if skipped
  *
  * @example
  * ```ts
- * const result = await runSecondPass(probe, config, client, firstResponse, context);
+ * const result = await runSecondPass({ probe, config, client, lastCompletionText, fixContext });
  * if (result !== undefined) result.score; // fix pass score
  * ```
  */
-export async function runSecondPass(
-  probe: Probe,
-  config: RunnerConfig,
-  client: OpenAI,
-  firstResponse: string,
-  context: ScoreContext,
-): Promise<SecondPassResult | undefined> {
+export async function runSecondPass({
+  probe,
+  config,
+  client,
+  lastCompletionText,
+  fixContext,
+}: RunSecondPassOptions,): Promise<SecondPassResult | undefined> {
   if (probe.buildFixPrompt === undefined)
     return undefined;
 
@@ -71,8 +98,8 @@ export async function runSecondPass(
   },);
   /** Diagnostic-only follow-up prompt; undefined when the probe decides no fix turn is warranted. */
   const fixPrompt = await probe.buildFixPrompt(
-    firstResponse,
-    context,
+    lastCompletionText,
+    fixContext,
   );
   if (fixPrompt === undefined) {
     rl.info('pass2: skipped (no diagnostics to fix)',);
@@ -93,7 +120,7 @@ export async function runSecondPass(
     },
     {
       role: 'assistant',
-      content: firstResponse,
+      content: lastCompletionText,
     },
     {
       role: 'user',
@@ -101,17 +128,17 @@ export async function runSecondPass(
     },
   ];
   /** Streamed completion for the fix turn; carries the model's revised source plus usage and timing data. */
-  const completion = await streamCompletion(
+  const completion = await streamCompletion({
     client,
     messages,
     config,
-    `${probe.name}:fix`,
-    context.signal,
-  );
+    probeName: `${probe.name}:fix`,
+    signal: fixContext.signal,
+  },);
   /** Fix-pass score; combined with the completion data in the returned `SecondPassResult`. */
   const score = await probe.score(
     completion.text,
-    context,
+    fixContext,
   );
   return {
     score,
