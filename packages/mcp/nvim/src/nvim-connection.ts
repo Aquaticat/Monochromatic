@@ -36,7 +36,7 @@ export function findAllSocketPaths(): string[] {
   /** Set accumulates discovered paths so the `$NVIM` entry can coexist with scan-directory entries without duplication. */
   const found = new Set<string>();
 
-  if (process.env.NVIM !== undefined && process.env.NVIM !== '')
+  if ((process.env.NVIM !== undefined) && (process.env.NVIM !== ''))
     found.add(process.env.NVIM,);
 
   /** Current process UID; `undefined` on platforms where `getuid` isn't available (e.g. Windows). */

@@ -25,7 +25,7 @@ await describe({
           code: 2_345,
           message: 'Type mismatch',
         };
-        expect(formatDiagnostic(diagnostic,),).toBe(
+        expect(formatDiagnostic({ diagnostic, },),).toBe(
           'ERROR 10:5 [typescript 2345] Type mismatch',
         );
       },
@@ -41,7 +41,7 @@ await describe({
           code: null,
           message: 'Unused variable',
         };
-        expect(formatDiagnostic(diagnostic,),).toBe('WARN 3:1 [eslint] Unused variable',);
+        expect(formatDiagnostic({ diagnostic, },),).toBe('WARN 3:1 [eslint] Unused variable',);
       },
     },),
     it({
@@ -55,7 +55,7 @@ await describe({
           code: null,
           message: 'Some info',
         };
-        expect(formatDiagnostic(diagnostic,),).toBe('INFO 1:1 Some info',);
+        expect(formatDiagnostic({ diagnostic, },),).toBe('INFO 1:1 Some info',);
       },
     },),
     it({
@@ -69,7 +69,7 @@ await describe({
           code: 'some-code',
           message: 'Consider refactoring',
         };
-        expect(formatDiagnostic(diagnostic,),).toBe('HINT 20:15 Consider refactoring',);
+        expect(formatDiagnostic({ diagnostic, },),).toBe('HINT 20:15 Consider refactoring',);
       },
     },),
     it({
@@ -83,7 +83,7 @@ await describe({
           code: 1_000,
           message: 'Missing semicolon',
         };
-        expect(formatDiagnostic(diagnostic, '  ',),).toBe(
+        expect(formatDiagnostic({ diagnostic, indent: '  ', },),).toBe(
           '  ERROR 5:3 [ts 1000] Missing semicolon',
         );
       },
@@ -99,7 +99,7 @@ await describe({
           code: null,
           message: 'Test',
         };
-        const result = formatDiagnostic(diagnostic,);
+        const result = formatDiagnostic({ diagnostic, },);
         expect(result.startsWith('WARN',),).toBe(true,);
       },
     },),
@@ -114,7 +114,7 @@ await describe({
           code: 'no-unused-vars',
           message: 'Variable is unused',
         };
-        expect(formatDiagnostic(diagnostic,),).toBe(
+        expect(formatDiagnostic({ diagnostic, },),).toBe(
           'ERROR 7:12 [oxlint no-unused-vars] Variable is unused',
         );
       },
@@ -130,7 +130,7 @@ await describe({
           code: null,
           message: 'At origin',
         };
-        expect(formatDiagnostic(diagnostic,),).toBe('ERROR 0:0 At origin',);
+        expect(formatDiagnostic({ diagnostic, },),).toBe('ERROR 0:0 At origin',);
       },
     },),
   ],

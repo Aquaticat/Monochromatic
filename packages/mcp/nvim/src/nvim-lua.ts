@@ -30,22 +30,24 @@ import {
  */
 export function mapRawDiagnostic(d: Record<string, unknown>,): Diagnostic {
   // Fields come from Neovim's Lua msgpack bridge; types are guaranteed by the Lua code above.
-  /** Raw severity index from Neovim; falls back to 0 so {@link SEVERITY_MAP} produces an `UNKNOWN` label. */
-  const severity = typeof d.severity === 'number' ? d.severity : 0;
+  /**
+   * Raw severity index from Neovim; falls back to 0 so {@link SEVERITY_MAP} produces an `UNKNOWN` label.
+   */
+  const severity = (((typeof d.severity) === 'number')) ? d.severity : 0;
   /** Raw 0-indexed line; bumped by 1 below to match the 1-indexed coordinate scheme. */
-  const lnum = typeof d.lnum === 'number' ? d.lnum : 0;
+  const lnum = (((typeof d.lnum) === 'number')) ? d.lnum : 0;
   /** Raw 0-indexed column; bumped by 1 below to match the 1-indexed coordinate scheme. */
-  const col = typeof d.col === 'number' ? d.col : 0;
+  const col = (((typeof d.col) === 'number')) ? d.col : 0;
   /** Raw 0-indexed end line; bumped by 1 below to match the 1-indexed coordinate scheme. */
-  const endLnum = typeof d.end_lnum === 'number' ? d.end_lnum : 0;
+  const endLnum = (((typeof d.end_lnum) === 'number')) ? d.end_lnum : 0;
   /** Raw 0-indexed end column; bumped by 1 below to match the 1-indexed coordinate scheme. */
-  const endCol = typeof d.end_col === 'number' ? d.end_col : 0;
+  const endCol = (((typeof d.end_col) === 'number')) ? d.end_col : 0;
   /** Raw diagnostic text; coerced to empty string when Lua returns a non-string. */
-  const message = typeof d.message === 'string' ? d.message : '';
+  const message = (((typeof d.message) === 'string')) ? d.message : '';
   /** Diagnostic source identifier (e.g. `'typescript'`); `null` when absent so downstream formatters can drop the suffix. */
-  const source = typeof d.source === 'string' ? d.source : null;
+  const source = (((typeof d.source) === 'string')) ? d.source : null;
   /** Diagnostic code (rule id or numeric error code); `null` when absent so downstream formatters can drop the suffix. */
-  const code = typeof d.code === 'string' || typeof d.code === 'number' ? d.code : null;
+  const code = ((((typeof d.code) === 'string')) || (((typeof d.code) === 'number'))) ? d.code : null;
 
   return {
     severity: SEVERITY_MAP[severity] ?? `UNKNOWN(${String(severity,)})`,

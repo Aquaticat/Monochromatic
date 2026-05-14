@@ -54,13 +54,14 @@ export async function getDiagnostics(): Promise<Diagnostic[]> {
   const results = await Promise.all(
     nvimClients.map(async function queryInstance(nvim,) {
       try {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
+        /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query */
         /** Raw msgpack records from the Lua bridge; mapped to typed diagnostics below. */
         const raw = (await nvim
           .executeLua(
             LUA_GET_CURRENT_BUF_DIAGNOSTICS,
             [],
           )) as Record<string, unknown>[];
+        /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         return raw
           .map(function mapDiag(d,) {
             return mapRawDiagnostic(d,);
@@ -99,7 +100,7 @@ export async function getCurrentFiles(): Promise<CurrentFile[]> {
   const results = await Promise.all(
     nvimClients.map(async function queryInstance(nvim,) {
       try {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
+        /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query */
         /** Raw record from the Lua bridge; field types are coerced individually below. */
         const result = (await nvim.executeLua(
           LUA_GET_CURRENT_FILE,
@@ -108,10 +109,11 @@ export async function getCurrentFiles(): Promise<CurrentFile[]> {
           string,
           unknown
         >;
+        /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         return {
-          path: typeof result.path === 'string' ? result.path : '',
-          filetype: typeof result.filetype === 'string' ? result.filetype : '',
-          modified: typeof result.modified === 'boolean' ? result.modified : false,
+          path: (((typeof result.path) === 'string')) ? result.path : '',
+          filetype: (((typeof result.filetype) === 'string')) ? result.filetype : '',
+          modified: (((typeof result.modified) === 'boolean')) ? result.modified : false,
         };
       }
       catch (err: unknown) {

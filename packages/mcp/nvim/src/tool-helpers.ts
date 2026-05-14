@@ -88,7 +88,7 @@ export function formatNotes(notes: readonly string[],): string {
 export function buildHeader(files: readonly CurrentFile[],): string {
   /** First entry; used for the single-instance shortcut path that emits a vertical key/value block. */
   const [firstFile,] = files;
-  if (files.length === 1 && firstFile !== undefined)
+  if ((files.length === 1) && (firstFile !== undefined))
     return `path: ${firstFile.path}\nfiletype: ${firstFile.filetype}\nmodified: ${firstFile.modified}`;
 
   return files

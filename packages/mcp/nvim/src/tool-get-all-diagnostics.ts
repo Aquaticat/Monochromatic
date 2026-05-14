@@ -92,10 +92,10 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
     const sections = result.map(function formatSection(fileEntry,) {
       /** Diagnostic lines for this file; indented two spaces so the path header reads as the section title. */
       const lines = fileEntry.diagnostics.map(function formatLine(diagnostic,) {
-        return formatDiagnostic(
+        return formatDiagnostic({
           diagnostic,
-          '  ',
-        );
+          indent: '  ',
+        },);
       },);
       return `${fileEntry.path}\n${lines.join('\n',)}`;
     },);

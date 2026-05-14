@@ -32,15 +32,21 @@ import {
  *
  * @example
  * ```ts
- * const root = findAncestorWithFile("/home/user/project/packages/foo/src", "oxlint.config.ts");
+ * const root = findAncestorWithFile({ startDir: "/home/user/project/packages/foo/src", filename: "oxlint.config.ts" });
  * // => "/home/user/project"
  * ```
  */
 export function findAncestorWithFile(
-  startDir: string,
-  filename: string,
+  {
+    startDir,
+    filename,
+  }: {
+    startDir: string;
+    filename: string;
+  },
 ): string | null {
   /** Walking cursor; advances toward the filesystem root each iteration until the file is found or the root is reached. */
+  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- filesystem walking cursor advances toward root each iteration
   let current = startDir;
   // oxlint-disable-next-line no-constant-condition -- walk up until filesystem root
   while (true) {
@@ -74,13 +80,18 @@ export function findAncestorWithFile(
  *
  * @example
  * ```ts
- * const result = parseOxlintOutput(jsonOutput, "/home/user/project");
+ * const result = parseOxlintOutput({ output: jsonOutput, cwd: "/home/user/project" });
  * // => Map { "/home/user/project/src/index.ts" => [{ severity: "ERROR", ... }] }
  * ```
  */
 export function parseOxlintOutput(
-  output: OxlintJsonOutput,
-  cwd: string,
+  {
+    output,
+    cwd,
+  }: {
+    output: OxlintJsonOutput;
+    cwd: string;
+  },
 ): Map<string, Diagnostic[]> {
   /** Output accumulator keyed by absolute path; populated below as diagnostics are converted entry by entry. */
   const result = new Map<string, Diagnostic[]>();
@@ -97,7 +108,7 @@ export function parseOxlintOutput(
       entry.filename,
     );
     /** Final diagnostic text; appends the optional `help:` block when oxlint provided one. */
-    const message = entry.help !== undefined && entry.help.length > 0
+    const message = ((entry.help !== undefined) && (entry.help.length > 0))
       ? `${entry.message} (help: ${entry.help})`
       : entry.message;
     /** Diagnostic record in the shape consumed by the rest of the pipeline. */

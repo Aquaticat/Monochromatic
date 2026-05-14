@@ -37,7 +37,7 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
   const instanceResults = await Promise.all(
     nvimClients.map(async function queryInstance(nvim,) {
       try {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query
+        /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Neovim executeLua returns msgpack data matching our Lua query */
         /** Raw msgpack file entries from the Lua bridge; mapped to typed FileDiagnostics below. */
         const raw = (await nvim.executeLua(
           LUA_GET_ALL_DIAGNOSTICS,
@@ -46,14 +46,16 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
           string,
           unknown
         >[];
+        /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         return raw.map(function mapFileEntry(file,) {
           /** Buffer path from the Lua bridge; coerced to empty string when missing so the Map key is always a string. */
-          const filePath = typeof file.path === 'string' ? file.path : '';
+          const filePath = (((typeof file.path) === 'string')) ? file.path : '';
+          /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Neovim msgpack array narrowed via Array.isArray */
           /** Raw diagnostic records for this file; empty when the Lua bridge returned a non-array (defensive). */
           const fileDiags = Array.isArray(file.diagnostics,)
-            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Neovim msgpack array narrowed via Array.isArray
             ? file.diagnostics as Record<string, unknown>[]
             : [];
+          /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
           return {
             path: filePath,
             diagnostics: fileDiags.map(function mapDiag(d,) {

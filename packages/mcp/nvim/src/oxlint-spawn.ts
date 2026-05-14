@@ -74,27 +74,31 @@ export async function spawnOxlint({
       return new Map();
     }
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema
-    /** Parsed oxlint JSON output; trusted to match {@link OxlintJsonOutput} because oxlint is the producer. */
+    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema */
+    /**
+     * Parsed oxlint JSON output; trusted to match {@link OxlintJsonOutput} because oxlint is the producer.
+     */
     const parsed = JSON.parse(stdout,) as OxlintJsonOutput;
-    return parseOxlintOutput(
-      parsed,
+    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
+    return parseOxlintOutput({
+      output: parsed,
       cwd,
-    );
+    },);
   }
   catch (err: unknown) {
     // oxlint exits non-zero when it finds diagnostics, which is expected
-    if (err !== null && err !== undefined && typeof err === 'object' && 'stdout' in err) {
+    if ((err !== null) && (err !== undefined) && (((typeof err) === 'object')) && ('stdout' in err)) {
       /** Captured stdout from the failed run; oxlint emits diagnostics here even when exiting non-zero. */
       const stdout = String(err.stdout,);
       if (stdout.trim().length > 0) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema
+        /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema */
         /** Parsed oxlint JSON output from the failed run; same schema as the success path. */
         const parsed = JSON.parse(stdout,) as OxlintJsonOutput;
-        return parseOxlintOutput(
-          parsed,
+        /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
+        return parseOxlintOutput({
+          output: parsed,
           cwd,
-        );
+        },);
       }
       /** Exit code surfaced to the log when oxlint produced no diagnostics; `'unknown'` when nano-spawn omits the field. */
       const exitCode = 'exitCode' in err ? String(err.exitCode,) : 'unknown';

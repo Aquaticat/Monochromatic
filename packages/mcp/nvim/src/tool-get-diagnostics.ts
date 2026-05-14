@@ -114,7 +114,7 @@ export async function handleGetDiagnostics(): Promise<ToolCallResult> {
     if (mergedByPath.size === 1) {
       /** Formatted diagnostic lines for the single-file shortcut path; no indent because no section header. */
       const lines = allMerged.map(function formatLine(diagnostic,) {
-        return formatDiagnostic(diagnostic,);
+        return formatDiagnostic({ diagnostic, },);
       },);
       return {
         content: [{
@@ -129,10 +129,10 @@ export async function handleGetDiagnostics(): Promise<ToolCallResult> {
       function formatSection([path, diagnostics,],) {
         /** Diagnostic lines for this file; indented two spaces so the path header reads as the section title. */
         const lines = diagnostics.map(function formatLine(diagnostic,) {
-          return formatDiagnostic(
+          return formatDiagnostic({
             diagnostic,
-            '  ',
-          );
+            indent: '  ',
+          },);
         },);
         return `${path}\n${lines.join('\n',)}`;
       },

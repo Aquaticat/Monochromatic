@@ -33,7 +33,7 @@ await describe({
           start_time: 0.05,
         };
 
-        const result = parseOxlintOutput(output, '/home/user/project',);
+        const result = parseOxlintOutput({ output, cwd: '/home/user/project', },);
         const diags = result.get('/home/user/project/src/index.ts',);
 
         expect(diags,).toEqual([
@@ -71,7 +71,7 @@ await describe({
           start_time: 0.05,
         };
 
-        const result = parseOxlintOutput(output, '/tmp',);
+        const result = parseOxlintOutput({ output, cwd: '/tmp', },);
         const diags = result.get('/tmp/src/foo.ts',);
         expect(diags?.[0]?.severity,).toBe('WARN',);
       },
@@ -97,7 +97,7 @@ await describe({
           start_time: 0,
         };
 
-        const result = parseOxlintOutput(output, '/tmp',);
+        const result = parseOxlintOutput({ output, cwd: '/tmp', },);
         expect(result.get('/tmp/a.ts',)?.[0]?.severity,).toBe('UNKNOWN(info)',);
       },
     },),
@@ -140,7 +140,7 @@ await describe({
           start_time: 0.05,
         };
 
-        const result = parseOxlintOutput(output, '/project',);
+        const result = parseOxlintOutput({ output, cwd: '/project', },);
         expect(result.get('/project/src/a.ts',),).toHaveLength(2,);
         expect(result.get('/project/src/b.ts',),).toHaveLength(1,);
       },
@@ -166,7 +166,7 @@ await describe({
           start_time: 0,
         };
 
-        const result = parseOxlintOutput(output, '/tmp',);
+        const result = parseOxlintOutput({ output, cwd: '/tmp', },);
         expect(result.size,).toBe(0,);
       },
     },),
@@ -181,7 +181,7 @@ await describe({
           start_time: 0.05,
         };
 
-        const result = parseOxlintOutput(output, '/tmp',);
+        const result = parseOxlintOutput({ output, cwd: '/tmp', },);
         expect(result.size,).toBe(0,);
       },
     },),
@@ -206,7 +206,7 @@ await describe({
           start_time: 0,
         };
 
-        const result = parseOxlintOutput(output, '/project/packages/foo',);
+        const result = parseOxlintOutput({ output, cwd: '/project/packages/foo', },);
         expect(result.has('/project/packages/other/file.ts',),).toBe(true,);
         expect(result.has('/project/packages/foo/../other/file.ts',),).toBe(false,);
       },
@@ -233,7 +233,7 @@ await describe({
           start_time: 0.05,
         };
 
-        const result = parseOxlintOutput(output, '/tmp',);
+        const result = parseOxlintOutput({ output, cwd: '/tmp', },);
         expect(result.get('/tmp/src/a.ts',)?.[0]?.message,).toBe(
           'Empty exports do nothing in module files (help: Remove this empty export.)',
         );
@@ -260,7 +260,7 @@ await describe({
           start_time: 0.05,
         };
 
-        const result = parseOxlintOutput(output, '/tmp',);
+        const result = parseOxlintOutput({ output, cwd: '/tmp', },);
         expect(result.get('/tmp/src/a.ts',)?.[0]?.message,).toBe(
           'Missing TSDoc comment.',
         );
@@ -288,7 +288,7 @@ await describe({
           start_time: 0,
         };
 
-        const result = parseOxlintOutput(output, '/tmp',);
+        const result = parseOxlintOutput({ output, cwd: '/tmp', },);
         expect(result.get('/tmp/src/a.ts',)?.[0]?.message,).toBe('Some error.',);
       },
     },),
@@ -313,7 +313,7 @@ await describe({
           start_time: 0,
         };
 
-        const result = parseOxlintOutput(output, '/tmp',);
+        const result = parseOxlintOutput({ output, cwd: '/tmp', },);
         expect(result.get('/tmp/x.ts',)?.[0]?.source,).toBe('oxlint',);
       },
     },),
