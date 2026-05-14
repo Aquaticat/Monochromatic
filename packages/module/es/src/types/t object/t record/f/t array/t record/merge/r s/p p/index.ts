@@ -61,13 +61,14 @@ export type { ObjectsMergeRules, } from './rules.ts';
     return objs[0] as UnknownRecord;
   }
 
-  // Collect all unique property names
+  /** Union of every property name observed across the input objects; drives the per-property merge loop below. */
   const allKeys = new Set<string>();
   for (const obj of objs) {
     for (const key of Object.keys(obj,))
       allKeys.add(key,);
   }
 
+  /** Accumulator that receives the resolved value for each property in {@link allKeys}. */
   const result: Record<string, unknown> = {};
 
   // Process each property
@@ -98,7 +99,7 @@ function resolveProperty(
   objs: readonly UnknownRecord[],
   rules: Partial<ObjectsMergeRules> | undefined,
 ): unknown {
-  // Collect all values for this key across objects
+  /** Values seen at `key` across every input object that defined the property; basis for consensus and conflict checks. */
   const allValuesForKey: unknown[] = objs
     .filter(function hasKey(obj,) {
       return key in obj;
@@ -107,10 +108,12 @@ function resolveProperty(
       return obj[key];
     },);
 
-  // Group values by typeof
+  /** Bucketing of {@link allValuesForKey} by `typeof`; lets the mixed-types guard report which types collided. */
   const valuesByType = new Map<string, unknown[]>();
   for (const value of allValuesForKey) {
+    /** Discriminator used as the {@link valuesByType} key; intentionally `typeof` so the merge rules can target it by name. */
     const valueType = typeof value;
+    /** Existing bucket for this type, or undefined when this is the first value of that type. */
     const existing = valuesByType.get(valueType,);
     if (existing !== undefined)
       existing.push(value,);
@@ -131,21 +134,28 @@ function resolveProperty(
     );
   }
 
+  /** Materialised entries of {@link valuesByType}; needed because Map iteration is consumed in a single pass. */
   const entries = [...valuesByType.entries(),];
+  /** Only entry in the map (the mixed-types guard above ruled out more than one), or undefined when no object defined the key. */
   const [firstEntry,] = entries;
   if (firstEntry === undefined)
     return undefined;
 
+  /** Bucket destructured from {@link firstEntry}: the shared typeof and every value seen at this key. */
   const [valueType, values,] = firstEntry;
 
   if (values.length === 1)
     return values[0];
 
   // Check for consensus using structuredClone round-trip for deep equality
+  /** Reference value compared against every other value in {@link values} to detect consensus. */
   const [firstValue,] = values;
+  /** True when every value in {@link values} is deep-equal to {@link firstValue}; lets us skip the rule when the conflict is only apparent. */
   const allEqual = values.every(function checkEqual(value,) {
     try {
+      /** Deep clone of {@link firstValue}; JSON-stringified for structural comparison without identity coupling. */
       const clonedFirst = structuredClone(firstValue,);
+      /** Deep clone of the value under test; paired with {@link clonedFirst} for structural comparison. */
       const clonedValue = structuredClone(value,);
       return JSON.stringify(clonedFirst,) === JSON.stringify(clonedValue,);
     }
@@ -160,6 +170,7 @@ function resolveProperty(
 
   // Apply type-specific conflict resolution rule
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime typeof string narrowed to ObjectsMergeRules key
+  /** Resolver registered for {@link valueType} in `rules`, or undefined when the caller did not register one. */
   const rule = rules?.[valueType as keyof ObjectsMergeRules];
   if (!rule) {
     throw new TypeError(

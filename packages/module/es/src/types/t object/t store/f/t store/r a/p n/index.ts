@@ -69,14 +69,20 @@ export { configureDefaultBackendsBuilder, } from './backends.ts';
  * ```
  */
 export async function $(config: StoreConfig = {},): Promise<Store> {
+  /** Caller-supplied identifier or freshly minted UUID; used in debug logs and passed to the platform backends builder. */
   const storeId = config.storeId ?? crypto.randomUUID();
   // oxlint-disable-next-line import/no-named-as-default-member -- superjson default export provides stringify/parse as methods
+  /** Serializer applied on every `set`; defaults to superjson so structured values round-trip through string backends. */
   const serializer: Serializer = config.serializer ?? superjson.stringify;
   // oxlint-disable-next-line import/no-named-as-default-member -- superjson default export provides stringify/parse as methods
+  /** Deserializer applied on every `get`; paired with {@link serializer}'s default so superjson output decodes correctly. */
   const deserializer: Deserializer = config.deserializer ?? superjson.parse;
+  /** When `true`, circular structures are serialized lossily instead of throwing; opt-in safety net for graph-shaped values. */
   const lossyForCircular = config.lossyForCircular ?? true;
 
+  /** Platform-specific backend factory registered via {@link configureDefaultBackendsBuilder}, or undefined when none was set. */
   const defaultBackendsBuilder = getDefaultBackendsBuilder();
+  /** Non-empty list of storage backends; user-supplied, else the platform builder's output, else a single in-memory Map. */
   const backends: readonly [
     StorageBackend,
     ...StorageBackend[],
@@ -85,11 +91,14 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
       ? await defaultBackendsBuilder({ storeId, },)
       : [new Map<string, string>(),]);
 
+  /** Configured eviction policies; empty array means unbounded growth. */
   const policies = config.eviction ?? [];
+  /** First LRU policy in the list, or undefined when LRU is not configured. */
   const lruPolicy = policies.find(function isLru(p,) {
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- future-proofing: more eviction policies will be added
     return p.policy === 'lru';
   },);
+  /** LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or undefined when LRU is not configured. */
   const lru = lruPolicy !== undefined
     ? createLruKeySet(lruPolicy.maxSize,)
     : undefined;
@@ -98,6 +107,7 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
     `Store "${storeId}" created with ${String(backends.length,)} backend(s)`,
   );
 
+  /** Exposed Store instance; declared as a binding so member methods can self-reference for chaining. */
   const store: Store = {
     storeId,
     serializer,
@@ -110,11 +120,13 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
       value: unknown,
     ): Promise<Store> {
       defaultLogger.debug(`Store.set: "${key}"`,);
+      /** Serialized form written to every backend; computed once so all backends agree on byte-identical content. */
       const serialized = serializeValue({
         value,
         serializer,
         lossyForCircular,
       },);
+      /** Effective storage key: the caller's key when non-empty, else a hash of the serialized value so empty keys still address something stable. */
       const resolvedKey = key.length === 0 ? await hashString(serialized,) : key;
 
       await Promise.all(
@@ -138,10 +150,12 @@ export async function $(config: StoreConfig = {},): Promise<Store> {
 
     async get<const T = unknown,>(key: string,): Promise<T | undefined> {
       defaultLogger.debug(`Store.get: "${key}"`,);
+      /** Per-backend lookup results; feeds both consensus resolution and the healing pass. */
       const results = await queryAllBackends(
         backends,
         key,
       );
+      /** Consensus value across backends, or undefined when no backend held the key. */
       const canonicalSerialized = resolveConsensus(
         results,
         key,

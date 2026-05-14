@@ -70,23 +70,31 @@ import { queryAllBackendsSync, } from './backends.ts';
  * ```
  */
 export function $(config: SyncStoreConfig = {},): SyncStore {
+  /** Caller-supplied identifier or freshly minted UUID; used in debug logs to disambiguate stores. */
   const storeId = config.storeId ?? crypto.randomUUID();
   // oxlint-disable-next-line import/no-named-as-default-member -- superjson default export provides stringify/parse as methods
+  /** Serializer applied on every `set`; defaults to superjson so structured values round-trip through string backends. */
   const serializer: Serializer = config.serializer ?? superjson.stringify;
   // oxlint-disable-next-line import/no-named-as-default-member -- superjson default export provides stringify/parse as methods
+  /** Deserializer applied on every `get`; paired with {@link serializer}'s default so superjson output decodes correctly. */
   const deserializer: Deserializer = config.deserializer ?? superjson.parse;
+  /** When `true`, circular structures are serialized lossily instead of throwing; opt-in safety net for graph-shaped values. */
   const lossyForCircular = config.lossyForCircular ?? true;
+  /** Non-empty list of storage backends queried in order; defaults to a single in-memory Map for ad-hoc stores. */
   const backends: readonly [
     SyncStorageBackend,
     ...SyncStorageBackend[],
   ] = config.backends
     ?? [new Map<string, string>(),];
 
+  /** Configured eviction policies; empty array means unbounded growth. */
   const policies = config.eviction ?? [];
+  /** First LRU policy in the list, or undefined when LRU is not configured. */
   const lruPolicy = policies.find(function isLru(p,) {
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- future-proofing: more eviction policies will be added
     return p.policy === 'lru';
   },);
+  /** LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or undefined when LRU is not configured. */
   const lru = lruPolicy !== undefined
     ? createLruKeySet(lruPolicy.maxSize,)
     : undefined;
@@ -95,6 +103,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
     `SyncStore "${storeId}" created with ${String(backends.length,)} backend(s)`,
   );
 
+  /** Exposed SyncStore instance; declared as a binding so member methods can self-reference for chaining. */
   const store: SyncStore = {
     storeId,
     serializer,
@@ -104,6 +113,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
 
     /** Number of entries in the primary backend, or `0` when unavailable. */
     get size(): number {
+      /** Primary backend; size is reported from this one when it exposes a numeric `size`. */
       const [first,] = backends;
       if ('size' in first && typeof first.size === 'number')
         return first.size;
@@ -115,6 +125,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
       value: unknown,
     ): SyncStore {
       defaultLogger.debug(`SyncStore.set: "${key}"`,);
+      /** Serialized form written to every backend; computed once so all backends agree on byte-identical content. */
       const serialized = serializeValue({
         value,
         serializer,
@@ -129,6 +140,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
       }
 
       if (lru !== undefined) {
+        /** Key the LRU tracker chose to drop, or undefined when below capacity. */
         const evicted = lru.touch(key,);
         if (evicted !== undefined) {
           defaultLogger.debug(`SyncStore.evict: "${evicted}"`,);
@@ -142,10 +154,12 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
 
     get<const T = unknown,>(key: string,): T | undefined {
       defaultLogger.debug(`SyncStore.get: "${key}"`,);
+      /** Per-backend lookup results; feeds both consensus resolution and the healing pass. */
       const results = queryAllBackendsSync(
         backends,
         key,
       );
+      /** Consensus value across backends, or undefined when no backend held the key. */
       const canonicalSerialized = resolveConsensus(
         results,
         key,
@@ -158,6 +172,7 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
       );
 
       if (canonicalSerialized !== undefined && lru !== undefined) {
+        /** Key the LRU tracker chose to drop on access, or undefined when below capacity. */
         const evicted = lru.touch(key,);
         if (evicted !== undefined) {
           defaultLogger.debug(`SyncStore.evict: "${evicted}"`,);

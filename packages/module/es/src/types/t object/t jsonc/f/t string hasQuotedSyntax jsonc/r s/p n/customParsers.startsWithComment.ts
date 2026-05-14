@@ -27,12 +27,15 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
   //       Then check if the match contains '//'
   //       If so, discard the match.
 
+  /** Input with surrounding whitespace stripped; both lookup branches scan against this normalized form. */
   const trimmed = value.trim();
 
   // Check for first-line optimization jackpot case: /*...*\/ all on one line
   // This handles the unique case where the entire block comment is on the first line
   // Must be lazy else will match 1, /* c *\/ 2, /* d *\/
+  /** Matches a `/* ... *\/` comment confined to a single line; lazy so it stops at the first closing delimiter. */
   const FIRST_LINE_BLOCK_COMMENT_REGEX = /\/\*[^\n]*?\*\//;
+  /** Single-line block comment match against {@link trimmed}, or null when the comment spans multiple lines. */
   const firstLineMatch = FIRST_LINE_BLOCK_COMMENT_REGEX.exec(trimmed,);
   if (firstLineMatch) {
     // Found a complete block comment on the first line - return immediately
@@ -43,7 +46,9 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
 
   // If not on first line, use line-based approach
   // This regex specifically finds *\/ that appear after newlines
+  /** Locates a `*\/` sequence anchored to a non-first line; used to skip closes that fall inside `//` line comments. */
   const NEWLINE_STAR_SLASH_REGEX = /\n[^\n]*\*\//g;
+  /** Iterator over every newline-anchored `*\/` candidate; the loop discards those preceded by `//`. */
   const newlineStarSlashMatches = trimmed.matchAll(NEWLINE_STAR_SLASH_REGEX,);
 
   // Process each starSlash match and check for line comment interference
@@ -95,23 +100,27 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
   },
 ): { remainingContent: Value; } & Jsonc.ValueBase {
   // Eliminate leading and trailing whitespace, including space and newline characters.
+  /** Input with surrounding whitespace stripped; every branch below pattern-matches against this normalized form. */
   const trimmed = value.trim();
 
   // trimmed.split('//') would not be faster because it needs to scan the whole string.
 
   if (trimmed.startsWith('//',)) {
     // Find the end of the line comment (newline character)
+    /** Index of the newline that terminates the inline comment, or `-1` when the comment extends to EOF. */
     const newlinePosition = trimmed.indexOf(
       '\n',
       '//'.length,
     );
     if (newlinePosition === -1) {
       // No newline found - line comment extends to end of input (valid at end of file)
+      /** Inline comment node captured up to EOF; emitted because the comment consumed every remaining character. */
       const commentPart: Jsonc.Comment = {
         type: 'inline',
         commentValue: trimmed
           .slice('//'.length,),
       };
+      /** Combined inbound and freshly parsed comment; preserves any comment already on `context`. */
       const mergedComments = mergeComments({
         value: context?.comment,
         value2: commentPart,
@@ -127,6 +136,7 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
 
     // Extract the comment and the rest of the content after newline
     // No trimming needed because we wanna support both `// This is` and `//region`.
+    /** Inline comment node spanning from `//` to the terminating newline; raw text preserved so `//region` markers survive. */
     const commentPart: Jsonc.Comment = {
       type: 'inline',
       commentValue: trimmed
@@ -135,11 +145,13 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
           newlinePosition,
         ),
     };
+    /** Combined inbound and freshly parsed comment; chained into the recursive call's context. */
     const mergedComments = mergeComments({
       value: context?.comment,
       value2: commentPart,
     },);
 
+    /** Input remaining after the inline comment; fed back through the parser to consume further comments. */
     const remainingContent = trimmed
       .slice(newlinePosition + '\n'.length,)
       .trim() as Value;
@@ -154,9 +166,11 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
   }
 
   if (trimmed.startsWith('/*',)) {
+    /** Index of the `*` that closes the block comment; computed by {@link findBlockEndPosition}. */
     const blockEndPosition = findBlockEndPosition({ value: trimmed, },);
 
     // Extract the comment and the rest of the content after the closing star slash
+    /** Block comment node spanning from `/*` to {@link blockEndPosition}; raw body preserved for downstream consumers. */
     const commentPart: Jsonc.Comment = {
       type: 'block',
       commentValue: trimmed.slice(
@@ -164,12 +178,14 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
         blockEndPosition,
       ),
     };
+    /** Combined inbound and freshly parsed comment; chained into the recursive call's context. */
     const mergedComments = mergeComments({
       value: context?.comment,
       value2: commentPart,
     },);
 
     // Get content after the block comment, skipping the star slash delimiter
+    /** Input remaining after the block comment; fed back through the parser to consume further comments. */
     const remainingContent = trimmed
       .slice(blockEndPosition + '*/'.length,)
       .trim() as Value;
