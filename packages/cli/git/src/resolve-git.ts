@@ -28,6 +28,7 @@ const PACKAGE_NAME = '@monochromatic-dev/cli-git';
  */
 async function isShimForSelf(candidatePath: string,): Promise<boolean> {
   try {
+    /** Raw file bytes decoded as UTF-8; scanned below for the package-name marker. */
     const content = await readFile(
       candidatePath,
       'utf8',
@@ -63,7 +64,9 @@ export async function resolveGit(): Promise<string> {
     l,
   },);
 
+  /** Raw `PATH` environment value; empty string when unset so the split yields a no-op scan. */
   const pathEnv = process.env['PATH'] ?? '';
+  /** Individual PATH entries, scanned in order so the first executable git wins. */
   const pathDirs = pathEnv.split(':',);
 
   for (const dir of pathDirs) {

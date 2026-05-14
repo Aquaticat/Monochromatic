@@ -122,6 +122,7 @@ function walkGlobalOptions({
       subcommandIndex: args.length,
     };
 
+  /** Current argv entry under inspection during the recursive walk. */
   const arg = args[index];
   if (arg === undefined)
     return {
@@ -130,6 +131,7 @@ function walkGlobalOptions({
     };
 
   if (arg === '-C') {
+    /** Path argument that follows `-C`; missing when `-C` is the final argv entry. */
     const path = args[index + 1];
     if (path === undefined) {
       // malformed `-C` at end of args; let real git surface the error
@@ -228,10 +230,12 @@ export async function requireRoot(args: readonly string[],): Promise<readonly st
     l,
   },);
 
+  /** Effective cwd and subcommand index after walking pre-subcommand `-C` chaining. */
   const {
     effectiveCwd,
     subcommandIndex,
   } = parseGlobalOptions(args,);
+  /** Subcommand at the located index; `undefined` when args have no subcommand. */
   const subcommand = args[subcommandIndex];
 
   rl.debug(`effective cwd: ${effectiveCwd}, subcommand: ${subcommand ?? '(none)'}`,);
@@ -242,6 +246,7 @@ export async function requireRoot(args: readonly string[],): Promise<readonly st
   }
 
   if (subcommand === 'config') {
+    /** True when any global-scope flag (`--global`, `--system`, `--list`, `-l`) appears in args. */
     const hasGlobalFlag = args.some(function isGlobalConfigFlag(arg,) {
       return GLOBAL_CONFIG_FLAGS.has(arg,);
     },);

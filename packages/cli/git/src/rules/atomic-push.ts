@@ -33,6 +33,7 @@ export function atomicPush(args: readonly string[],): readonly string[] {
     l,
   },);
 
+  /** True when args already carry `--atomic` or `--no-atomic`, so no injection should occur. */
   const hasAtomicFlag = args.some(function isAtomicFlag(arg,) {
     return arg === '--atomic' || arg === '--no-atomic';
   },);
@@ -43,6 +44,7 @@ export function atomicPush(args: readonly string[],): readonly string[] {
   }
 
   rl.debug('injecting --atomic into push',);
+  /** Split into the `push` token and remaining args so `--atomic` can slot between them. */
   const [subcommand, ...rest] = args;
   return [
     subcommand,
