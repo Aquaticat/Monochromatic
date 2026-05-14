@@ -53,7 +53,10 @@ export type MatcherSet = {
   toHaveBeenCalledTimes: (count: number,) => void;
   toHaveBeenCalledWith: (...args: readonly unknown[]) => void;
   toHaveBeenLastCalledWith: (...args: readonly unknown[]) => void;
-  toHaveBeenNthCalledWith: (n: number, ...args: readonly unknown[]) => void;
+  toHaveBeenNthCalledWith: (
+    n: number,
+    ...args: readonly unknown[]
+  ) => void;
   toHaveLength: (expected: number,) => void;
   toHaveProperty: (
     path: string,
@@ -63,7 +66,10 @@ export type MatcherSet = {
   toHaveReturnedTimes: (count: number,) => void;
   toHaveReturnedWith: (expected: unknown,) => void;
   toHaveLastReturnedWith: (expected: unknown,) => void;
-  toHaveNthReturnedWith: (n: number, expected: unknown,) => void;
+  toHaveNthReturnedWith: (
+    n: number,
+    expected: unknown,
+  ) => void;
   toMatch: (expected: string | RegExp,) => void;
   toMatchObject: (expected: Record<string, unknown>,) => void;
   toSatisfy: (predicate: (value: unknown,) => boolean,) => void;

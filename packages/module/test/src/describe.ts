@@ -149,7 +149,7 @@ async function runDescribe(
 
   if (skip !== false) {
     /** Reason suffix appended after the SKIP keyword when a string was supplied. */
-    const reason = typeof skip === 'string' ? `: ${skip}` : '';
+    const reason = (typeof skip) === 'string' ? `: ${skip}` : '';
     l.info(`SKIP suite${name ? ` "${name}"` : ''}${reason}`,);
     return { name, };
   }

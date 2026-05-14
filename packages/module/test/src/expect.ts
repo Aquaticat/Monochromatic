@@ -170,7 +170,7 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
       /** getRejection already verified the promise rejected; nothing more to check */
       return;
     }
-    if (typeof expected === 'string') {
+    if ((typeof expected) === 'string') {
       /** Stringified rejection used for substring containment when an expected string was supplied. */
       const message = error instanceof Error ? error.message : String(error,);
       chaiExpect(message,).to.include(expected,);

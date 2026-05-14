@@ -95,7 +95,7 @@ async function resolveWorkspacePrefix(): Promise<string> {
      * fallback path runs on every call. Compute the cwd-based prefix
      * directly; `process.cwd()` is cheap (single syscall).
      */
-    if (typeof process === 'undefined')
+    if ((typeof process) === 'undefined')
       return '';
     try {
       return `${process.cwd()}/`;
@@ -151,7 +151,7 @@ function safeString(value: unknown,): string {
  * ```
  */
 function readMessage(error: object,): string {
-  if ('message' in error && typeof error.message === 'string')
+  if (('message' in error) && ((typeof error.message) === 'string'))
     return error.message;
   return '<unknown message>';
 }
@@ -172,7 +172,7 @@ function readMessage(error: object,): string {
  * ```
  */
 function readErrorLabel(error: object,): string {
-  if ('name' in error && typeof error.name === 'string' && error.name !== '')
+  if (('name' in error) && ((typeof error.name) === 'string') && (error.name !== ''))
     return error.name;
   return 'Error';
 }
@@ -255,7 +255,7 @@ function readStackFrames({
   readonly message: string;
   readonly workspacePrefix: string;
 },): readonly string[] {
-  if (!('stack' in error) || typeof error.stack !== 'string')
+  if ((!('stack' in error)) || ((typeof error.stack) !== 'string'))
     return [];
   /** Raw newline-split stack lines, before header-line trimming and per-frame cleanup. */
   const rawLines = error.stack.split('\n',);
@@ -264,7 +264,7 @@ function readStackFrames({
    * on the first line. Drop it so the caller does not show the
    * header twice; otherwise keep all lines.
    */
-  const startIndex = rawLines[0] !== undefined && rawLines[0].includes(message,)
+  const startIndex = (rawLines[0] !== undefined) && rawLines[0].includes(message,)
     ? 1
     : 0;
   return rawLines
@@ -326,7 +326,7 @@ function formatNode({
   readonly visited: WeakSet<object>;
   readonly workspacePrefix: string;
 },): readonly string[] {
-  if (typeof value !== 'object' || value === null)
+  if (((typeof value) !== 'object') || (value === null))
     return [`${headerPrefix}Threw non-Error value: ${safeString(value,)}`,];
 
   if (visited.has(value,))

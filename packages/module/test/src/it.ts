@@ -161,7 +161,7 @@ async function runIt(
 
   if (skip !== false) {
     /** Reason suffix appended after the SKIP keyword when a string was supplied. */
-    const reason = typeof skip === 'string' ? `: ${skip}` : '';
+    const reason = (typeof skip) === 'string' ? `: ${skip}` : '';
     l.info(`SKIP${reason}`,);
     return { name, };
   }
@@ -216,7 +216,7 @@ async function runIt(
     const durationMs = performance.now() - runStart;
 
     /** Inline annotation appended after the FAIL/PASS line when `fails` was set as a string. */
-    const failsReason = typeof fails === 'string' ? ` (${fails})` : '';
+    const failsReason = (typeof fails) === 'string' ? ` (${fails})` : '';
 
     if (fails !== false) {
       if (threw) {
@@ -252,7 +252,7 @@ async function runIt(
     }
 
     //region Assertion count verification
-    if (tracker.expected !== null && tracker.count !== tracker.expected) {
+    if ((tracker.expected !== null) && (tracker.count !== tracker.expected)) {
       /** Synthetic cause naming the assertion-count mismatch so the failure surface mirrors a regular throw. */
       const assertionCause = new Error(
         `Expected ${String(tracker.expected,)} assertions, but ${
@@ -272,7 +272,7 @@ async function runIt(
       );
     }
 
-    if (tracker.requiresAtLeastOne && tracker.count === 0) {
+    if (tracker.requiresAtLeastOne && (tracker.count === 0)) {
       /** Synthetic cause used when `expect.hasAssertions()` was declared but no assertion ran. */
       const noAssertionsCause = new Error(
         'Expected at least one assertion to be called',
