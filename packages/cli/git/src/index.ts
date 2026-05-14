@@ -7,6 +7,7 @@ import {
 } from './log.ts';
 import { resolveGit, } from './resolve-git.ts';
 import { atomicPush, } from './rules/atomic-push.ts';
+import { commitOnly, } from './rules/commit-only.ts';
 import { requireRoot, } from './rules/require-root.ts';
 
 export {};
@@ -41,6 +42,7 @@ const RULES: readonly ((
 ) => readonly string[] | Promise<readonly string[]>)[] = [
   requireRoot,
   atomicPush,
+  commitOnly,
 ];
 
 //endregion Rule pipeline
@@ -75,7 +77,7 @@ try {
     && (processedArgs[0] !== undefined)
     && VERSION_SUBCOMMANDS.has(processedArgs[0],))
   {
-    console.log('cli-git wrapper (require-root, atomic-push)',);
+    console.log('cli-git wrapper (require-root, atomic-push, commit-only)',);
   }
 }
 catch (error) {

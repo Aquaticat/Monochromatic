@@ -19,6 +19,13 @@ when `push` is the first argv token, ensuring all refs update together or none d
 Override with `--no-atomic`. Current limitation: pre-subcommand global options such
 as `git -C /repo push` bypass this rule.
 
+**Commit only**: injects `-o` (a.k.a. `--only`) into `git commit` commands so
+every commit must name the paths it includes rather than picking up whatever is
+staged. Skipped when `-o`, `--only`, or `--no-only` is already present (the user
+has made an explicit choice). Escape hatch for a single invocation: pass
+`--not-only`, which is stripped before forwarding to real git. Current limitation:
+pre-subcommand global options such as `git -C /repo commit` bypass this rule.
+
 ## How it works
 
 The wrapper shadows the system `git` binary on PATH (via mise bin linkage).
