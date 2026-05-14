@@ -82,10 +82,10 @@ function importAttributesPlugin(): Plugin {
       code,
       id,
     ) {
-      return transformImportAttributes(
+      return transformImportAttributes({
         code,
         id,
-      );
+      },);
     },
 
     /**
@@ -145,11 +145,11 @@ function importAttributesPlugin(): Plugin {
        */
       if (importer !== undefined) {
         const cleanImporter = importer.split('?',)[0] ?? importer;
-        const attrType = scanImporterForAttribute(
-          source,
-          cleanImporter,
+        const attrType = scanImporterForAttribute({
+          specifier: source,
+          importerPath: cleanImporter,
           importerSourceCache,
-        );
+        },);
 
         if (attrType !== undefined) {
           const resolved = await this.resolve(

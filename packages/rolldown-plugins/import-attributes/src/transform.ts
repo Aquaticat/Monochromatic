@@ -45,10 +45,13 @@ import {
  * // result.code: "import x from './file.sql?attr=text'"
  * ```
  */
-export function transformImportAttributes(
-  code: string,
-  id: string,
-): { code: string; } | null {
+export function transformImportAttributes({
+  code,
+  id,
+}: {
+  code: string;
+  id: string;
+},): { code: string; } | null {
   if (!code.includes(' with ',) && !code.includes(' with{',))
     return null;
 
@@ -65,13 +68,13 @@ export function transformImportAttributes(
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements(
-        node.source,
-        node.attributes,
+      collectStaticReplacements({
+        source: node.source,
+        attributes: node.attributes,
         attrType,
         code,
         replacements,
-      );
+      },);
     },
 
     ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
@@ -80,13 +83,13 @@ export function transformImportAttributes(
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements(
-        node.source,
-        node.attributes,
+      collectStaticReplacements({
+        source: node.source,
+        attributes: node.attributes,
         attrType,
         code,
         replacements,
-      );
+      },);
     },
 
     ExportAllDeclaration(node: ESTree.ExportAllDeclaration,): void {
@@ -95,13 +98,13 @@ export function transformImportAttributes(
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements(
-        node.source,
-        node.attributes,
+      collectStaticReplacements({
+        source: node.source,
+        attributes: node.attributes,
         attrType,
         code,
         replacements,
-      );
+      },);
     },
 
     ImportExpression(node: ESTree.ImportExpression,): void {
@@ -121,10 +124,15 @@ export function transformImportAttributes(
         text: `${quote}${sourceValue}?${ATTR_QUERY_KEY}=${attrType}${quote}`,
       },);
 
-      // Remove the options argument: find the comma after source, remove through options end
-      let commaPos = node.source.end;
-      while (commaPos < node.options.start && code[commaPos] !== ',')
-        commaPos++;
+      // Remove the options argument: find the first comma between source and options
+      const between = code.slice(
+        node.source.end,
+        node.options.start,
+      );
+      const relCommaIndex = between.indexOf(',',);
+      const commaPos = relCommaIndex === -1
+        ? node.options.start
+        : node.source.end + relCommaIndex;
       replacements.push({
         start: commaPos,
         end: node.options.end,
@@ -146,13 +154,18 @@ export function transformImportAttributes(
     return b.start - a.start;
   },);
 
-  let transformed = code;
-  for (const r of replacements) {
-    transformed = transformed.slice(
-      0,
-      r.start,
-    ) + r.text + transformed.slice(r.end,);
-  }
+  const transformed = replacements.reduce(
+    function applyReplacement(
+      acc,
+      r,
+    ): string {
+      return acc.slice(
+        0,
+        r.start,
+      ) + r.text + acc.slice(r.end,);
+    },
+    code,
+  );
 
   return { code: transformed, };
 }

@@ -45,11 +45,15 @@ import {
  * // 'text' if main.ts contains: import x from './sample.sql' with { type: 'text' }
  * ```
  */
-export function scanImporterForAttribute(
-  specifier: string,
-  importerPath: string,
-  importerSourceCache: Map<string, string>,
-): string | undefined {
+export function scanImporterForAttribute({
+  specifier,
+  importerPath,
+  importerSourceCache,
+}: {
+  specifier: string;
+  importerPath: string;
+  importerSourceCache: Map<string, string>;
+},): string | undefined {
   let source = importerSourceCache.get(importerPath,);
   if (source === undefined) {
     try {
