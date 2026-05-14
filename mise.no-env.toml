@@ -387,13 +387,36 @@ run = "dprint check --list-different"
 
 [tasks."lint:stylelint"]
 hide = true
-description = "Lint CSS with Stylelint"
-run = 'stylelint --ignore-path .gitignore "**/*.{css,astro,html}"'
+description = "Lint CSS with Stylelint, optionally restricted to specific files or globs"
+usage = 'arg "[args]" var=#true help="File paths or globs (when provided, only those are linted)"'
+run = """
+let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|p| $p != '' })
+if ($args | is-empty) {
+  stylelint --ignore-path .gitignore "**/*.{css,astro,html}"
+} else {
+  stylelint --ignore-path .gitignore ...$args
+}
+"""
 
+# markdownlint-cli2 only remaps the bare `.` arg to `*.{md,markdown}` when it
+# is the sole argument (see markdownlint-cli2.mjs:219). If `.` is paired with
+# another arg, as happened when this task was `markdownlint-cli2 .` and mise
+# appended user-supplied paths via `--`, the dot is passed verbatim to globby,
+# which then walks every file in the tree, including binaries the config-level
+# ignores do not exclude, and OOMs reading large files into a 4 GB Node heap.
+# See TROUBLESHOOTING.markdownlint-cli2.md.
 [tasks."lint:markdownlint"]
 hide = true
-description = "Lint Markdown with markdownlint-cli2"
-run = "markdownlint-cli2 ."
+description = "Lint Markdown with markdownlint-cli2, optionally restricted to specific files"
+usage = 'arg "[args]" var=#true help="Markdown file paths (when provided, only those files are linted)"'
+run = """
+let args = ($env.usage_args? | default '' | str trim | split row ' ' | where {|p| $p != '' })
+if ($args | is-empty) {
+  markdownlint-cli2 .
+} else {
+  markdownlint-cli2 ...$args
+}
+"""
 
 #endregion Linting Tasks
 
