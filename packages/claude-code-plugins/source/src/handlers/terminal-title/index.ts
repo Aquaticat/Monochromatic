@@ -147,12 +147,14 @@ type TerminalTitleOutput = void;
  *
  * @param event - parsed hook event from Claude Code
  *
+ * @returns nothing; title is set as a side effect via `/dev/tty`
+ *
  * @example
  * ```ts
  * terminalTitleHandler({ hook_event_name: 'PreToolUse', tool_name: 'Read', ... });
  * ```
  */
-function terminalTitleHandler(event: HookInput,): void {
+function terminalTitleHandler(event: HookInput,): TerminalTitleOutput {
   const title = titleForEvent(event,);
   setTerminalTitle(truncate({
     value: `${TITLE_PREFIX} ${title}`,
