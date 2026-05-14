@@ -2,7 +2,19 @@
 name = "forbidden-strings"
 version = "0.1.0"
 edition = "2021"
-publish = false
+description = "Out-of-band scanner for forbidden literal strings and regex patterns. Gitignore-aware, fast, dependency-light: built for CI deny-listing of leaked credentials and banned tokens."
+license = "LGPL-3.0-or-later"
+repository = "https://github.com/Aquaticat/Monochromatic.git"
+homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/packages/cli/forbidden-strings"
+readme = "README.md"
+keywords = ["security", "secrets", "scanner", "deny-list", "ci"]
+categories = ["command-line-utilities", "development-tools"]
+include = [
+  "src/**/*.rs",
+  "Cargo.toml",
+  "Cargo.lock",
+  "README.md",
+]
 
 [[bin]]
 name = "forbidden-strings"

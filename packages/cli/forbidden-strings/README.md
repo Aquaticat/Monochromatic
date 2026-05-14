@@ -1,5 +1,7 @@
 # forbidden-strings
 
+Ready to publish.
+
 A linear-time deny-list scanner for Git repos, designed for the case where the rules themselves are sensitive.
 
 Most secret-scanning tools (gitleaks, trufflehog, secretlint) ship rules in committed config files and rely on `keywords` prefilters.
