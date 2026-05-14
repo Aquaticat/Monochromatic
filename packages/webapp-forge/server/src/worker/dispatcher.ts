@@ -90,6 +90,7 @@ export async function processEvent(
   eventId: number,
   sink: Storage | WriteBuffer,
 ): Promise<ProcessEventResult> {
+  /** Issue context drives the dependency graph; null means the event is stale. */
   const context = await resolveContext(event,);
   if (context === null) {
     l.debug(
@@ -102,22 +103,30 @@ export async function processEvent(
       discarded: 0,
     };
   }
+  /** Fragment keys this event invalidates. */
   const keys = dependenciesFor(
     event,
     context,
   );
+  /** Counter for fragments whose content hash matched and were skipped. */
   let skipped = 0;
+  /** Counter for fragments that were re-rendered and written. */
   let written = 0;
+  /** Counter for fragments that lost the sequence-guard race. */
   let discarded = 0;
 
   // Render in declared order. Phase 2+ adds parallel rendering via
   // p-limit; for Phase 1 the synchronous in-request dispatcher only
   // sees one event at a time.
   for (const fragmentKey of keys) {
-    // oxlint-disable-next-line no-await-in-loop -- per-fragment serialisation by design
+    /* oxlint-disable no-await-in-loop -- per-fragment serialisation by design */
+    /** Prior content hash from `fragment_index`; identical hash skips re-write. */
     const previousHash = await existingContentHash(fragmentKey,);
-    // oxlint-disable-next-line no-await-in-loop -- pure-DB-read render runs sequentially in Phase 1
+    /* oxlint-enable no-await-in-loop */
+    /* oxlint-disable no-await-in-loop -- pure-DB-read render runs sequentially in Phase 1 */
+    /** Freshly rendered fragment body plus its content hash. */
     const result = await renderFragment(fragmentKey,);
+    /* oxlint-enable no-await-in-loop */
     if (previousHash === result.contentHash) {
       skipped += 1;
       continue;
@@ -130,7 +139,8 @@ export async function processEvent(
     // the latest state at write time. `sequenceNumber` stays in the
     // event log for telemetry; `eventId` is what the fragment_index
     // races on.
-    // oxlint-disable-next-line no-await-in-loop -- sequence-guarded upsert must observe prior writes
+    /* oxlint-disable no-await-in-loop -- sequence-guarded upsert must observe prior writes */
+    /** Upsert outcome: false means a later event already wrote this fragment. */
     const accepted = await upsertFragmentIndexIfNewer({
       fragmentKey,
       contentHash: result.contentHash,
@@ -138,6 +148,7 @@ export async function processEvent(
       sourceEventId: eventId,
       sourceEventSequence: eventId,
     },);
+    /* oxlint-enable no-await-in-loop */
     if (!accepted) {
       l.debug(
         `sequence guard rejected fragment write: ${fragmentKey} eventId=${
@@ -179,12 +190,17 @@ export async function processEvent(
  * @returns resolved context, or `null` when the issue does not exist
  */
 async function resolveContext(event: EventInput,): Promise<ResolvedEventContext | null> {
+  /** Issue id aliased from the resource id for readability. */
   const issueId = event.resourceId;
+  /** Issue row; missing rows mean the event references a deleted issue. */
   const issue = await getIssue(issueId,);
   if (issue === undefined)
     return null;
+  /** Labels currently attached to the issue. */
   const issueLabels = await listIssueLabels(issueId,);
+  /** All labels defined on the repo for filter-list dependency expansion. */
   const repoLabels = await listRepoLabels(issue.repo_id,);
+  /** Issue state collapsed to the open/closed facet used by fragment keys. */
   const state: IssueStateFacet = issue.state === 'closed' ? 'closed' : 'open';
   return {
     repoId: issue.repo_id,

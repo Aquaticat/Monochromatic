@@ -24,16 +24,22 @@
  * ```
  */
 export function fnv1a64(bytes: Uint8Array,): string {
+  /** High 32 bits of the FNV-1a 64-bit state; mutated per byte. */
   let hi = 0xCB_F2_9C_E4;
+  /** Low 32 bits of the FNV-1a 64-bit state; mutated per byte. */
   let lo = 0x84_22_23_25;
+  /** High word of the FNV prime, split for `Math.imul`. */
   const PRIME_HI = 0x00_00_01_00;
+  /** Low word of the FNV prime, split for `Math.imul`. */
   const PRIME_LO = 0x00_00_01_B3;
   for (const b of bytes) {
     lo ^= b;
+    /** Low-word product carrying low-by-low multiplication only. */
     const lowMul = Math.imul(
       lo,
       PRIME_LO,
     );
+    /** High-word product: cross-term sum reduced modulo 2^32 below. */
     const highMul = Math.imul(
       hi,
       PRIME_LO,

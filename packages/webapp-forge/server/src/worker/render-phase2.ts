@@ -65,29 +65,37 @@ const DEFAULT_REQUIRED_APPROVALS = 1;
 export async function tryRenderPhase2(
   fragmentKey: string,
 ): Promise<RenderResult | null> {
+  /** PR-detail key match; non-null routes to the PR-detail branch. */
   const prDetailMatch = PR_DETAIL_PATTERN.exec(fragmentKey,);
   if (prDetailMatch !== null) {
+    /** Issue id captured by the second group of `PR_DETAIL_PATTERN`. */
     const issueId = prDetailMatch.at(2,);
     if (issueId === undefined)
       throw new Error(`unparseable fragment key: ${fragmentKey}`,);
     return await renderPrDetailByKey(issueId,);
   }
+  /** Review-thread key match; non-null routes to the review-thread branch. */
   const reviewMatch = REVIEW_THREAD_PATTERN.exec(fragmentKey,);
   if (reviewMatch !== null) {
+    /** Issue id captured by the second group of `REVIEW_THREAD_PATTERN`. */
     const issueId = reviewMatch.at(2,);
     if (issueId === undefined)
       throw new Error(`unparseable fragment key: ${fragmentKey}`,);
     return await renderReviewThreadByKey(issueId,);
   }
+  /** Merge-status key match; non-null routes to the merge-status branch. */
   const mergeMatch = MERGE_STATUS_PATTERN.exec(fragmentKey,);
   if (mergeMatch !== null) {
+    /** Issue id captured by the second group of `MERGE_STATUS_PATTERN`. */
     const issueId = mergeMatch.at(2,);
     if (issueId === undefined)
       throw new Error(`unparseable fragment key: ${fragmentKey}`,);
     return await renderMergeStatusByKey(issueId,);
   }
+  /** Standalone-comment key match; non-null routes to the comment branch. */
   const commentMatch = COMMENT_PATTERN.exec(fragmentKey,);
   if (commentMatch !== null) {
+    /** Comment id captured by the first group of `COMMENT_PATTERN`. */
     const commentId = commentMatch.at(1,);
     if (commentId === undefined)
       throw new Error(`unparseable fragment key: ${fragmentKey}`,);
@@ -109,9 +117,13 @@ export async function tryRenderPhase2(
  * ```
  */
 async function renderPrDetailByKey(issueId: string,): Promise<RenderResult> {
+  /** Resolved PR metadata for the issue id. */
   const ctx = await loadPrContext(issueId,);
+  /** Reviews on the PR; feeds the approval counters below. */
   const reviews = await listReviewsForPr(issueId,);
+  /** Aggregated approval and changes-requested counts. */
   const counts = countReviewStates(reviews,);
+  /** Rendered HTML for the PR-detail fragment. */
   const { html, } = renderPrDetail({
     ownerLogin: ctx.ownerLogin,
     repoName: ctx.repoName,
@@ -128,6 +140,7 @@ async function renderPrDetailByKey(issueId: string,): Promise<RenderResult> {
     approvedCount: counts.approved,
     changesRequestedCount: counts.changesRequested,
   },);
+  /** UTF-8 body bytes hashed below for content-addressing. */
   const body = new TextEncoder().encode(html,);
   return {
     body,
@@ -148,10 +161,14 @@ async function renderPrDetailByKey(issueId: string,): Promise<RenderResult> {
  * ```
  */
 async function renderReviewThreadByKey(issueId: string,): Promise<RenderResult> {
+  /** Resolved PR metadata for the issue id. */
   const ctx = await loadPrContext(issueId,);
+  /** Reviews on the PR; drives both the entry list and reviewer hydration. */
   const reviews = await listReviewsForPr(issueId,);
+  /** Resolved `[reviewerId, login]` pairs; missing users degrade to 'unknown'. */
   const reviewerEntries = await Promise.all(
     reviews.map(async function loadReviewer(review,) {
+      /** Reviewer user row, possibly `undefined` for deleted users. */
       const reviewer = await getUser(review.reviewer_id,);
       return [
         review.reviewer_id,
@@ -159,7 +176,9 @@ async function renderReviewThreadByKey(issueId: string,): Promise<RenderResult> 
       ] as const;
     },),
   );
+  /** Lookup map fed to the per-review renderer for byline display. */
   const reviewerLogins = new Map<string, string>(reviewerEntries,);
+  /** Rendered HTML for the review-thread fragment. */
   const { html, } = renderReviewThread({
     ownerLogin: ctx.ownerLogin,
     repoName: ctx.repoName,
@@ -174,6 +193,7 @@ async function renderReviewThreadByKey(issueId: string,): Promise<RenderResult> 
       };
     },),
   },);
+  /** UTF-8 body bytes hashed below for content-addressing. */
   const body = new TextEncoder().encode(html,);
   return {
     body,
@@ -194,9 +214,13 @@ async function renderReviewThreadByKey(issueId: string,): Promise<RenderResult> 
  * ```
  */
 async function renderMergeStatusByKey(issueId: string,): Promise<RenderResult> {
+  /** Resolved PR metadata for the issue id. */
   const ctx = await loadPrContext(issueId,);
+  /** Reviews on the PR; feeds the approval counters below. */
   const reviews = await listReviewsForPr(issueId,);
+  /** Aggregated approval and changes-requested counts. */
   const counts = countReviewStates(reviews,);
+  /** Rendered HTML for the merge-status fragment. */
   const { html, } = renderMergeStatus({
     prNumber: ctx.prNumber,
     mergeable: ctx.mergeable,
@@ -204,6 +228,7 @@ async function renderMergeStatusByKey(issueId: string,): Promise<RenderResult> {
     changesRequestedCount: counts.changesRequested,
     requiredApprovals: DEFAULT_REQUIRED_APPROVALS,
   },);
+  /** UTF-8 body bytes hashed below for content-addressing. */
   const body = new TextEncoder().encode(html,);
   return {
     body,
@@ -224,16 +249,20 @@ async function renderMergeStatusByKey(issueId: string,): Promise<RenderResult> {
  * ```
  */
 async function renderCommentByKey(commentId: string,): Promise<RenderResult> {
+  /** Comment row; missing means a race against deletion. */
   const comment = await getComment(commentId,);
   if (comment === undefined)
     throw new Error(`comment not found: ${commentId}`,);
+  /** Author user record; missing degrades to 'unknown' login. */
   const author = await getUser(comment.author_id,);
+  /** Rendered HTML for the standalone-comment fragment. */
   const { html, } = renderComment({
     id: comment.id,
     authorLogin: author?.login ?? 'unknown',
     body: comment.body,
     createdAt: new Date(comment.created_at,).toISOString(),
   },);
+  /** UTF-8 body bytes hashed below for content-addressing. */
   const body = new TextEncoder().encode(html,);
   return {
     body,
@@ -265,7 +294,9 @@ type ReviewCounts = {
 function countReviewStates(
   reviews: readonly { readonly state: string; }[],
 ): ReviewCounts {
+  /** Running count of `approved` reviews. */
   let approved = 0;
+  /** Running count of `changes_requested` reviews. */
   let changesRequested = 0;
   for (const review of reviews) {
     if (review.state === 'approved')
@@ -310,14 +341,17 @@ type PrContext = {
  * ```
  */
 async function loadPrContext(issueId: string,): Promise<PrContext> {
+  /** Issue row backing the PR; missing means a race against deletion. */
   const issue = await getIssue(issueId,);
   if (issue === undefined)
     throw new Error(`issue not found: ${issueId}`,);
+  /** PR-specific row; missing means the issue is not actually a PR. */
   const pr = await getPullRequest(issueId,);
   if (pr === undefined)
     throw new Error(`pr not found: ${issueId}`,);
-  // Repo + owner go through the queries module via the helper below.
+  /** Owner+repo bundle; helper centralises the dual lookup. */
   const repoOwner = await loadRepoOwner(issue.repo_id,);
+  /** Author user record; missing degrades to 'unknown' login. */
   const author = await getUser(issue.author_id,);
   return {
     ownerLogin: repoOwner.ownerLogin,
@@ -351,9 +385,11 @@ async function loadRepoOwner(repoId: string,): Promise<{
   ownerLogin: string;
   repoName: string;
 }> {
+  /** Repo row; missing means the repo no longer exists. */
   const repo = await getRepo(repoId,);
   if (repo === undefined)
     throw new Error(`repo not found: ${repoId}`,);
+  /** Owning user row; missing means a dangling foreign key. */
   const owner = await getUser(repo.owner_id,);
   if (owner === undefined)
     throw new Error(`owner not found for repo ${repoId}`,);

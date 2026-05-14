@@ -106,6 +106,7 @@ export function dependenciesFor(
   event: EventInput,
   context: ResolvedEventContext,
 ): Set<string> {
+  /** Dependency keys accumulating as branches below resolve. */
   const keysIterable: string[] = [
     issueDetailKey({
       repoId: context.repoId,
