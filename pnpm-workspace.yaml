@@ -140,7 +140,18 @@ overrides:
   'jspdf>canvg': '-'
   'jspdf>dompurify': '-'
   '@anthropic-ai/sdk': '>=0.91.1'
+  # Patch GHSA-v39h-62p7-jpjc / CVE-2026-6322: <=3.1.1 decodes percent-encoded
+  # authority delimiters inside the host, letting a normalized URL re-parse
+  # against a different host than the source string appeared to encode. Only
+  # transitive consumer is ajv@8.18.0 (pulled in by stylelint > table); a
+  # patch-level bump is range-compatible with ajv's `^3.0.0` dep.
+  'fast-uri': '>=3.1.2'
   'fast-xml-parser': '>=5.7.0'
+  # Patch GHSA-5wm8-gmm8-39j9 / CVE-2026-44665: <=1.1.6 lets quote characters
+  # in attribute values break out of the attribute and inject sibling
+  # attributes when processEntities is disabled. Only transitive consumer is
+  # fast-xml-parser@5.7.2 (`fast-xml-builder: ^1.1.5`); patch-level bump.
+  'fast-xml-builder': '>=1.1.7'
   'postcss': '>=8.5.10'
   # Substitute deprecated node-domexception@1.0.0 with a workspace shim that
   # re-exports globalThis.DOMException (the native constructor on Node 17+
