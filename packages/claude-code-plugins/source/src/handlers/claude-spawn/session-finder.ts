@@ -21,6 +21,97 @@ import {
 } from './paths.ts';
 
 /**
+ * Reads the parent PID of a given process from `/proc/{pid}/status`.
+ *
+ * @param pid - process id whose parent to look up
+ *
+ * @returns parent PID, or `null` if `/proc` is unreadable or the entry is missing
+ *
+ * @example
+ * ```ts
+ * const parent = readParentPid(1234);
+ * ```
+ */
+function readParentPid(pid: number,): number | null {
+  try {
+    const statusContent = readFileSync(
+      `/proc/${String(pid,)}/status`,
+      'utf8',
+    );
+    const ppidLine = statusContent.split('\n',).find(function isPpidLine(line,) {
+      return line.startsWith('PPid:',);
+    },);
+
+    if (ppidLine === undefined)
+      return null;
+
+    return Number.parseInt(
+      ppidLine.split(/\s+/,)[1] ?? '0',
+      10,
+    );
+  }
+  catch {
+    // Cannot read /proc: platform limitation or process already exited.
+    return null;
+  }
+}
+
+/**
+ * Looks up a coordination file for a single PID without walking further.
+ *
+ * @param pid - process id to query
+ *
+ * @returns mapping when the file exists and parses, `null` otherwise
+ *
+ * @example
+ * ```ts
+ * const mapping = readPidMapping(1234);
+ * ```
+ */
+function readPidMapping(pid: number,): PidMapping | null {
+  const pidFilePath = join(
+    BY_PID_DIR,
+    String(pid,),
+  );
+  try {
+    const raw = readFileSync(
+      pidFilePath,
+      'utf8',
+    );
+    return parseHookJson<PidMapping>(raw,);
+  }
+  catch {
+    return null;
+  }
+}
+
+/**
+ * Walks up the process tree starting from a given PID, returning the first
+ * matching mapping or `null` once the walk reaches PID 1 or `/proc` becomes
+ * unreadable.
+ *
+ * @param pid - PID to start the walk from
+ *
+ * @returns first matching mapping, or `null`
+ *
+ * @example
+ * ```ts
+ * const m = walkProcessTreeFrom(process.ppid);
+ * ```
+ */
+function walkProcessTreeFrom(pid: number,): PidMapping | null {
+  if (pid <= 1)
+    return null;
+  const direct = readPidMapping(pid,);
+  if (direct !== null)
+    return direct;
+  const parentPid = readParentPid(pid,);
+  if (parentPid === null)
+    return null;
+  return walkProcessTreeFrom(parentPid,);
+}
+
+/**
  * Walks up the process tree from the current process to find the Claude
  * session identity by checking each ancestor PID against the `.by-pid/`
  * coordination directory.
@@ -39,49 +130,7 @@ import {
  * ```
  */
 function findByProcessTree(): PidMapping | null {
-  let pid = process.ppid;
-
-  while (pid > 1) {
-    const pidFilePath = join(
-      BY_PID_DIR,
-      String(pid,),
-    );
-
-    try {
-      const raw = readFileSync(
-        pidFilePath,
-        'utf8',
-      );
-      return parseHookJson<PidMapping>(raw,);
-    }
-    catch {
-      // No coordination file for this PID: walk up to its parent.
-    }
-
-    try {
-      const statusContent = readFileSync(
-        `/proc/${String(pid,)}/status`,
-        'utf8',
-      );
-      const ppidLine = statusContent.split('\n',).find(function isPpidLine(line,) {
-        return line.startsWith('PPid:',);
-      },);
-
-      if (ppidLine === undefined)
-        return null;
-
-      pid = Number.parseInt(
-        ppidLine.split(/\s+/,)[1] ?? '0',
-        10,
-      );
-    }
-    catch {
-      // Cannot read /proc: platform limitation or process already exited.
-      return null;
-    }
-  }
-
-  return null;
+  return walkProcessTreeFrom(process.ppid,);
 }
 
 /**
@@ -100,45 +149,57 @@ function findByProcessTree(): PidMapping | null {
  * ```
  */
 function findByMostRecent(): PidMapping | null {
-  let entries: string[] = [];
-
-  try {
-    entries = readdirSync(BY_PID_DIR,);
-  }
-  catch {
-    return null;
-  }
-
-  let newest: {
-    mapping: PidMapping;
-    mtime: number;
-  } | null = null;
-
-  for (const filename of entries) {
-    const filePath = join(
-      BY_PID_DIR,
-      filename,
-    );
-
+  const entries = (function readByPidDir(): string[] | null {
     try {
-      const mtime = statSync(filePath,).mtimeMs;
-      const raw = readFileSync(
-        filePath,
-        'utf8',
-      );
-      const mapping = parseHookJson<PidMapping>(raw,);
-
-      if (newest === null || mtime > newest.mtime) {
-        newest = {
-          mapping,
-          mtime,
-        };
-      }
+      return readdirSync(BY_PID_DIR,);
     }
     catch {
-      // Skip unreadable files.
+      return null;
     }
-  }
+  })();
+
+  if (entries === null)
+    return null;
+
+  /** Folds the entries to the most recently modified mapping, skipping unreadable files. */
+  type NewestMapping = {
+    mapping: PidMapping;
+    mtime: number;
+  } | null;
+
+  const newest = entries.reduce<NewestMapping>(
+    function pickNewer(
+      current,
+      filename,
+    ) {
+      const filePath = join(
+        BY_PID_DIR,
+        filename,
+      );
+
+      try {
+        const mtime = statSync(filePath,).mtimeMs;
+        const raw = readFileSync(
+          filePath,
+          'utf8',
+        );
+        const mapping = parseHookJson<PidMapping>(raw,);
+
+        if (current === null || mtime > current.mtime) {
+          return {
+            mapping,
+            mtime,
+          };
+        }
+        return current;
+      }
+      catch {
+        // Skip unreadable files.
+        return current;
+      }
+    },
+    null,
+  );
 
   return newest?.mapping ?? null;
 }

@@ -83,13 +83,17 @@ function checkCompletedChildren(
     consume: boolean;
   },
 ): string | null {
-  let entries: string[] = [];
-  try {
-    entries = readdirSync(SPAWNS_DIR,);
-  }
-  catch {
+  const entries = (function readSpawnsDir(): string[] | null {
+    try {
+      return readdirSync(SPAWNS_DIR,);
+    }
+    catch {
+      return null;
+    }
+  })();
+
+  if (entries === null)
     return null;
-  }
 
   const results: string[] = [];
 

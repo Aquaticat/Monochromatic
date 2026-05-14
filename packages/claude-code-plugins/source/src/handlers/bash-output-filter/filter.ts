@@ -28,9 +28,28 @@ import {
  *   whitespace removed
  */
 function filterOutput(input: string,): string {
-  const lines = input.split('\n',);
-  const result: string[] = [];
+  return collapseLines(input.split('\n',),).join('\n',);
+}
 
+/**
+ * Applies per-line transformations and collapses consecutive duplicates,
+ * returning the resulting lines.
+ *
+ * Helper-function shape: encapsulates the mutable state machine
+ * (`prevLine`, `repeatCount`) needed to detect and collapse runs of
+ * identical lines without leaking those bindings to callers.
+ *
+ * @param lines - raw lines from the input, before transformations
+ *
+ * @returns processed lines with duplicates collapsed via `flushRepeated`
+ *
+ * @example
+ * ```ts
+ * const out = collapseLines(['hello', 'hello', 'world']);
+ * ```
+ */
+function collapseLines(lines: string[],): string[] {
+  const result: string[] = [];
   let prevLine = '';
   let repeatCount = 0;
 
@@ -64,7 +83,7 @@ function filterOutput(input: string,): string {
     count: repeatCount,
   },);
 
-  return result.join('\n',);
+  return result;
 }
 
 /**

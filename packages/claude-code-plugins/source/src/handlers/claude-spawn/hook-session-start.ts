@@ -123,103 +123,130 @@ function handleSessionStart({
     }
   }
 
-  /** Auto-setup spawn-claude CLI if not already on PATH. */
-  let cliWarning: string | null = null;
+  const cliWarning = autoSetupCli(hookDir,);
+  if (cliWarning !== null)
+    return cliWarning;
 
-  let cliOnPath = false;
+  return JSON.stringify({},);
+}
+
+/**
+ * Detects whether `spawn-claude` is already discoverable on PATH.
+ *
+ * @returns `true` if `which` finds `spawn-claude`, `false` otherwise
+ *
+ * @example
+ * ```ts
+ * if (cliIsOnPath()) skipAutoSetup();
+ * ```
+ */
+function cliIsOnPath(): boolean {
   try {
     execFileSync(
       'which',
       ['spawn-claude',],
       { stdio: 'ignore', },
     );
-    cliOnPath = true;
+    return true;
   }
   catch {
-    // Not on PATH: attempt auto-setup.
+    return false;
   }
+}
 
-  if (!cliOnPath) {
-    /**
-     * Resolve plugin root from the compiled hook's location.
-     * Hook binary: `${PLUGIN_ROOT}/dist/final/node/index.mjs`
-     * CLI source:  `${PLUGIN_ROOT}/src/cli.ts`
-     */
-    const pluginRoot = resolve(
-      hookDir,
-      '..',
-      '..',
-      '..',
-    );
-    /** Absolute path to CLI entry point that the symlink will target. */
-    const cliSource = join(
-      pluginRoot,
-      'src',
-      'cli.ts',
-    );
+/**
+ * Symlinks the CLI source into `~/.local/bin/spawn-claude` and returns a
+ * human-readable warning when the result is incomplete (PATH missing or
+ * symlink failure).
+ *
+ * @param hookDir - directory of the compiled hook entry point, used to derive plugin root
+ *
+ * @returns warning text to print to stdout, or `null` when setup either succeeded or was unnecessary
+ *
+ * @example
+ * ```ts
+ * const warning = autoSetupCli(import.meta.dir);
+ * if (warning !== null) console.warn(warning);
+ * ```
+ */
+function autoSetupCli(hookDir: string,): string | null {
+  if (cliIsOnPath())
+    return null;
 
-    /** Standard XDG user-local bin directory. */
-    const localBin = join(
-      process.env.HOME ?? '/tmp',
-      '.local',
-      'bin',
-    );
-    /** Destination path for the `spawn-claude` symlink in user's local bin. */
-    const symlinkPath = join(
+  /**
+   * Resolve plugin root from the compiled hook's location.
+   * Hook binary: `${PLUGIN_ROOT}/dist/final/node/index.mjs`
+   * CLI source:  `${PLUGIN_ROOT}/src/cli.ts`
+   */
+  const pluginRoot = resolve(
+    hookDir,
+    '..',
+    '..',
+    '..',
+  );
+  /** Absolute path to CLI entry point that the symlink will target. */
+  const cliSource = join(
+    pluginRoot,
+    'src',
+    'cli.ts',
+  );
+
+  /** Standard XDG user-local bin directory. */
+  const localBin = join(
+    process.env.HOME ?? '/tmp',
+    '.local',
+    'bin',
+  );
+  /** Destination path for the `spawn-claude` symlink in user's local bin. */
+  const symlinkPath = join(
+    localBin,
+    'spawn-claude',
+  );
+
+  try {
+    mkdirSync(
       localBin,
-      'spawn-claude',
+      { recursive: true, },
     );
 
+    /** Unix permission bits for owner rwx, group/others rx. */
+    const EXECUTABLE_PERMISSION = 0o755;
+    /** Ensure CLI source is executable (shebang: #!/usr/bin/env bun). */
+    chmodSync(
+      cliSource,
+      EXECUTABLE_PERMISSION,
+    );
+
+    /** Remove stale symlink if it exists, then create a fresh one. */
     try {
-      mkdirSync(
-        localBin,
-        { recursive: true, },
-      );
-
-      /** Unix permission bits for owner rwx, group/others rx. */
-      const EXECUTABLE_PERMISSION = 0o755;
-      /** Ensure CLI source is executable (shebang: #!/usr/bin/env bun). */
-      chmodSync(
-        cliSource,
-        EXECUTABLE_PERMISSION,
-      );
-
-      /** Remove stale symlink if it exists, then create a fresh one. */
-      try {
-        unlinkSync(symlinkPath,);
-      }
-      catch { /* Does not exist yet. */ }
-      symlinkSync(
-        cliSource,
-        symlinkPath,
-      );
-
-      /** Verify ~/.local/bin is on PATH so the symlink is discoverable. */
-      const pathDirs = (process.env.PATH ?? '').split(':',);
-      cliWarning = pathDirs.includes(localBin,)
-        ? null
-        : [
-          '[claude-spawn] Symlinked spawn-claude to ~/.local/bin/spawn-claude,',
-          'but ~/.local/bin is not on PATH. Add it to your shell profile:',
-          '  export PATH="$HOME/.local/bin:$PATH"',
-        ]
-          .join('\n',);
+      unlinkSync(symlinkPath,);
     }
-    catch {
-      cliWarning = [
-        '[claude-spawn] Could not auto-setup spawn-claude CLI.',
-        `Symlink target: ${cliSource}`,
-        `Symlink path: ${symlinkPath}`,
-        'Create the symlink manually or add the plugin directory to PATH.',
+    catch { /* Does not exist yet. */ }
+    symlinkSync(
+      cliSource,
+      symlinkPath,
+    );
+
+    /** Verify ~/.local/bin is on PATH so the symlink is discoverable. */
+    const pathDirs = (process.env.PATH ?? '').split(':',);
+    return pathDirs.includes(localBin,)
+      ? null
+      : [
+        '[claude-spawn] Symlinked spawn-claude to ~/.local/bin/spawn-claude,',
+        'but ~/.local/bin is not on PATH. Add it to your shell profile:',
+        '  export PATH="$HOME/.local/bin:$PATH"',
       ]
         .join('\n',);
-    }
   }
-
-  if (cliWarning !== null)
-    return cliWarning;
-
-  return JSON.stringify({},);
+  catch {
+    return [
+      '[claude-spawn] Could not auto-setup spawn-claude CLI.',
+      `Symlink target: ${cliSource}`,
+      `Symlink path: ${symlinkPath}`,
+      'Create the symlink manually or add the plugin directory to PATH.',
+    ]
+      .join('\n',);
+  }
 }
 
 export { handleSessionStart, };
