@@ -1,5 +1,7 @@
 # @monochromatic-dev/config-oxlint
 
+Ready to publish.
+
 Shared oxlint configuration for Monochromatic repositories,
 exported as a typed `OxlintConfig` object from `oxlint.config.ts`.
 

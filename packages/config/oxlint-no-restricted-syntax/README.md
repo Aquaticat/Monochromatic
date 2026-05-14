@@ -1,5 +1,7 @@
 # @monochromatic-dev/config-oxlint-no-restricted-syntax
 
+Ready to publish.
+
 Oxlint JS plugin implementing `no-restricted-syntax` rules
 that oxlint does not support natively.
 

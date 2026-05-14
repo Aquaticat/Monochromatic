@@ -1,5 +1,7 @@
 # config-dprint
 
+Ready to publish.
+
 Shared [dprint](https://dprint.dev/) configuration for Monochromatic repositories.
 
 ## What it configures

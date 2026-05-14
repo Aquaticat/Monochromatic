@@ -1,5 +1,7 @@
 # config-tsdown
 
+Ready to publish.
+
 Shared [tsdown](https://tsdown.dev/) build configurations for Monochromatic packages.
 
 ## Configurations

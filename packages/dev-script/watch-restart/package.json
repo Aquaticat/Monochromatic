@@ -42,6 +42,6 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/dev-script/watch-restart"
   },
-  "private": true,
+  "private": false,
   "sideEffects": false
 }

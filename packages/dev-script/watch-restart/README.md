@@ -1,5 +1,7 @@
 # @monochromatic-dev/dev-script-watch-restart
 
+Ready to publish.
+
 Watch source files and restart a long-running child process on content change.
 
 Replaces `watchexec` in editord's dev loop and is reusable as a library for any
