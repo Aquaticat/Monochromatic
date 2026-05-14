@@ -35,7 +35,7 @@ export function atomicPush(args: readonly string[],): readonly string[] {
 
   /** True when args already carry `--atomic` or `--no-atomic`, so no injection should occur. */
   const hasAtomicFlag = args.some(function isAtomicFlag(arg,) {
-    return arg === '--atomic' || arg === '--no-atomic';
+    return (arg === '--atomic') || (arg === '--no-atomic');
   },);
 
   if (hasAtomicFlag) {
