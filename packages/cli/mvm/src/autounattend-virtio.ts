@@ -57,13 +57,22 @@ const VIRTIO_DRIVER_DIRS = [
  * ```
  */
 export function pnpDriverPaths(): string {
+  /** Storage and network drivers WinPE must load before partitioning becomes possible. */
   const driverDirs = [
     'viostor',
     'NetKVM',
   ];
+  /**
+   * Running counter used to populate `wcm:keyValue` for each `<PathAndCredentials>` entry.
+   *
+   * Windows requires unique keyValues per element; incrementing across the
+   * cross-product of drivers and candidate drive letters guarantees uniqueness.
+   */
   let keyValue = 1;
+  /** Flattened list of `<PathAndCredentials>` entries spanning every driver and candidate letter. */
   const paths = driverDirs.flatMap(function mapDriver(driver,) {
     return VIRTIO_DRIVE_CANDIDATES.map(function mapLetter(letter,) {
+      /** One `<PathAndCredentials>` XML fragment for the current driver/letter pair. */
       const entry = `      <PathAndCredentials wcm:action="add" wcm:keyValue="${
         String(keyValue,)
       }">
@@ -102,6 +111,7 @@ ${paths.join('\n',)}
  * ```
  */
 export function virtioInstallCommand(): string {
+  /** Comma-separated quoted drive letter list passed to `Get-ChildItem -Path` for ISO discovery. */
   const driveList = VIRTIO_DRIVE_CANDIDATES
     .map(function formatDriveLetter(d,) {
       return `'${d}:\\'`;

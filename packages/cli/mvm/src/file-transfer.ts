@@ -79,6 +79,7 @@ export async function pushFile(
   },
 ): Promise<string> {
   validateName(name,);
+  /** Tagged logger so push entries are scoped to `pushFile` in the output. */
   const rl = tagged({
     tag: pushFile.name,
     l,
@@ -115,8 +116,10 @@ export async function pushFile(
     VMS_DIR,
     name,
   );
+  /** VM metadata used to pick the correct guest mount point for the OS family. */
   const meta = await readVmMeta(vmDir,);
 
+  /** Absolute path the guest will use to read the pushed file, branched on OS. */
   const guestFilePath = meta.osFamily === 'windows'
     ? `${WINDOWS_GUEST_MOUNT_POINT}${filename}`
     : `${GUEST_MOUNT_POINT}/${filename}`;
@@ -162,6 +165,7 @@ export async function pullFile(
   },
 ): Promise<Buffer> {
   validateName(name,);
+  /** Tagged logger so pull entries are scoped to `pullFile` in the output. */
   const rl = tagged({
     tag: pullFile.name,
     l,
@@ -184,6 +188,7 @@ export async function pullFile(
   );
 
   rl.info(`pulling ${sharedHostPath} (guest: ${guestPath})`,);
+  /** File payload read from the shared mount; returned to the caller as a Buffer. */
   const content = await readFile(sharedHostPath,);
   rl.info(`pulled ${String(content.length,)} bytes from ${sharedHostPath}`,);
 

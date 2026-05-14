@@ -53,6 +53,7 @@ async function destroyOne(
 
   await undefineVm({ name, },);
 
+  /** Per-VM directory holding storage and metadata; removed to complete destruction. */
   const vmDir = join(
     VMS_DIR,
     name,
@@ -83,6 +84,7 @@ async function destroyOne(
  */
 export async function destroy({ name, }: { name: string; },): Promise<void> {
   validateName(name,);
+  /** Tagged logger so destroy entries are scoped to `destroy` in the output. */
   const rl = tagged({
     tag: destroy.name,
     l,
@@ -104,10 +106,12 @@ export async function destroy({ name, }: { name: string; },): Promise<void> {
  * ```
  */
 export async function destroyAll(): Promise<void> {
+  /** Tagged logger so bulk-destroy entries are scoped to `destroyAll` in the output. */
   const rl = tagged({
     tag: destroyAll.name,
     l,
   },);
+  /** Current set of managed VM names enumerated before any destruction runs. */
   const vms = await listVms();
 
   if (vms.length === 0) {
