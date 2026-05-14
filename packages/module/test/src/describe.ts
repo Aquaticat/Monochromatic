@@ -119,8 +119,13 @@ export type DescribeOptions = {
  *   matching the pre-change behavior.
  */
 async function runDescribe(
-  opts: DescribeOptions,
-  ctx: DescriptorContext,
+  {
+    opts,
+    ctx,
+  }: {
+    readonly ctx: DescriptorContext;
+    readonly opts: DescribeOptions;
+  },
 ): Promise<DescribeResult> {
   const {
     name,
@@ -259,25 +264,37 @@ async function runDescribe(
       : settleAll;
 
     const startTime = performance.now();
-    let settled: PromiseSettledResult<DescribeResult | ItResult>[] = [];
-    try {
-      settled = await withTimeoutApplied;
+    /**
+     * Awaits the settle promise while surfacing timeout failures inline.
+     * Extracted so the binding stays `const`; the catch always re-throws,
+     * so the resolved array is the only path that reaches assignment.
+     *
+     * Timeout bypasses every child-result processing line, so the
+     * failure has no inline diagnostic surface on its own. Emit one
+     * `l.error` carrying the FAIL summary fused with the formatted
+     * timeout error before re-throwing; the throw shape is preserved
+     * (raw timeout error, matching pre-change behavior).
+     *
+     * @returns settled results from `Promise.allSettled` or the sequential equivalent
+     *
+     * @throws original timeout error, after logging the FAIL line
+     */
+    async function awaitSettleWithTimeoutLogging(): Promise<
+      PromiseSettledResult<DescribeResult | ItResult>[]
+    > {
+      try {
+        return await withTimeoutApplied;
+      }
+      catch (timeoutError) {
+        const elapsedMs = performance.now() - startTime;
+        l.error(await formatFailure({
+          summary: `FAIL${runLabel}: timeout (${formatDuration(elapsedMs,)})`,
+          value: timeoutError,
+        },),);
+        throw timeoutError;
+      }
     }
-    catch (timeoutError) {
-      /**
-       * Timeout bypasses every child-result processing line, so the
-       * failure has no inline diagnostic surface on its own. Emit one
-       * `l.error` carrying the FAIL summary fused with the formatted
-       * timeout error before re-throwing; the throw shape is preserved
-       * (raw timeout error, matching pre-change behavior).
-       */
-      const elapsedMs = performance.now() - startTime;
-      l.error(await formatFailure({
-        summary: `FAIL${runLabel}: timeout (${formatDuration(elapsedMs,)})`,
-        value: timeoutError,
-      },),);
-      throw timeoutError;
-    }
+    const settled = await awaitSettleWithTimeoutLogging();
     const durationMs = performance.now() - startTime;
 
     const errors: unknown[] = [];
@@ -392,9 +409,9 @@ async function runDescribe(
  */
 export function describe(opts: DescribeOptions,): TestDescriptor<DescribeResult> {
   return makeDescriptor(function runDescribeWithCtx(ctx,) {
-    return runDescribe(
+    return runDescribe({
       opts,
       ctx,
-    );
+    },);
   },);
 }

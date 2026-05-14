@@ -83,29 +83,8 @@ export function makeDescriptor<T,>(
   run: (ctx: DescriptorContext,) => Promise<T>,
 ): TestDescriptor<T> {
   /**
-   * PromiseLike contract entry point. Top-level `await` lands here with
-   * a root context (default concurrency); parent suites bypass this in
-   * favour of {@link RUN_WITH_CONTEXT} to propagate inheritance.
-   *
-   * @param onfulfilled - resolution handler forwarded to the run promise
-   *
-   * @param onrejected - rejection handler forwarded to the run promise
-   *
-   * @returns chained PromiseLike resolving to the handler result
-   */
-  function then<R1 = T, R2 = never,>(
-    onfulfilled?: ((value: T,) => R1 | PromiseLike<R1>) | null,
-    onrejected?: ((reason: unknown,) => R2 | PromiseLike<R2>) | null,
-  ): PromiseLike<R1 | R2> {
-    return run({ effectiveConcurrency: DEFAULT_CONCURRENCY, },)
-      .then(
-        onfulfilled,
-        onrejected,
-      );
-  }
-  /**
    * Internal entry point used by parent suites to dispatch with an
-   * inherited context. Bypasses the root-context default of {@link then}.
+   * inherited context. Bypasses the root-context default of `then`.
    *
    * @param ctx - inherited execution context from the parent suite
    *
@@ -115,8 +94,33 @@ export function makeDescriptor<T,>(
     return run(ctx,);
   }
   return {
+    /**
+     * PromiseLike contract entry point. Top-level `await` lands here with
+     * a root context (default concurrency); parent suites bypass this in
+     * favour of {@link RUN_WITH_CONTEXT} to propagate inheritance.
+     *
+     * Defined as object method shorthand because the PromiseLike interface
+     * dictates the positional `onfulfilled` and `onrejected` parameters,
+     * which the codebase's `require-destructured-params` rule otherwise
+     * forbids on function declarations.
+     *
+     * @param onfulfilled - resolution handler forwarded to the run promise
+     *
+     * @param onrejected - rejection handler forwarded to the run promise
+     *
+     * @returns chained PromiseLike resolving to the handler result
+     */
     // oxlint-disable-next-line no-thenable -- a thenable is the entire point of TestDescriptor; awaiting drives lazy execution
-    then,
+    then<R1 = T, R2 = never,>(
+      onfulfilled?: ((value: T,) => R1 | PromiseLike<R1>) | null,
+      onrejected?: ((reason: unknown,) => R2 | PromiseLike<R2>) | null,
+    ): PromiseLike<R1 | R2> {
+      return run({ effectiveConcurrency: DEFAULT_CONCURRENCY, },)
+        .then(
+          onfulfilled,
+          onrejected,
+        );
+    },
     [RUN_WITH_CONTEXT]: runWithContext,
   };
 }

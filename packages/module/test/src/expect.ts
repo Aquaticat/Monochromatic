@@ -103,10 +103,10 @@ function buildAsyncMatchers(getValue: () => Promise<unknown>,): AsyncMatcherSet 
       ...args: Parameters<MatcherSet[K]>
     ): Promise<void> {
       const value = await getValue();
-      const matchers = buildMatchers(
-        chaiExpect(value,),
-        value,
-      );
+      const matchers = buildMatchers({
+        a: chaiExpect(value,),
+        actual: value,
+      },);
       // oxlint-disable-next-line no-unsafe-argument, no-unsafe-type-assertion -- args are typed by MatcherSet[K]; cast needed for dynamic dispatch
       (matchers[key] as (...a: readonly unknown[]) => void)(...args,);
     };
@@ -301,15 +301,15 @@ type Expect = ((actual: unknown,) => ExpectResult) & ExpectStatic;
  */
 function expectImpl(actual: unknown,): ExpectResult {
   return {
-    ...buildMatchers(
-      chaiExpect(actual,),
+    ...buildMatchers({
+      a: chaiExpect(actual,),
       actual,
-    ),
+    },),
 
-    not: buildMatchers(
-      chaiExpect(actual,).not,
+    not: buildMatchers({
+      a: chaiExpect(actual,).not,
       actual,
-    ),
+    },),
     // oxlint-disable-next-line no-unsafe-type-assertion -- cast required for Promise.race pattern
     rejects: buildRejectsMatchers(actual as Promise<unknown>,),
     // oxlint-disable-next-line no-unsafe-type-assertion -- cast required for Promise.race pattern
@@ -480,8 +480,13 @@ export type ScopedExpect = Expect & {
  * @returns new matcher set that counts calls
  */
 function wrapMatchersWithCounter(
-  matchers: MatcherSet,
-  tracker: AssertionTracker,
+  {
+    matchers,
+    tracker,
+  }: {
+    readonly matchers: MatcherSet;
+    readonly tracker: AssertionTracker;
+  },
 ): MatcherSet {
   const wrapped = {} as Record<string, (...args: readonly unknown[]) => unknown>;
 
@@ -508,8 +513,13 @@ function wrapMatchersWithCounter(
  * @returns new async matcher set that counts calls
  */
 function wrapAsyncMatchersWithCounter(
-  matchers: AsyncMatcherSet,
-  tracker: AssertionTracker,
+  {
+    matchers,
+    tracker,
+  }: {
+    readonly matchers: AsyncMatcherSet;
+    readonly tracker: AssertionTracker;
+  },
 ): AsyncMatcherSet {
   const wrapped = {} as Record<string, (...args: readonly unknown[]) => Promise<unknown>>;
 
@@ -562,22 +572,22 @@ export function createScopedExpect(): readonly [
   function scopedExpectImpl(actual: unknown,): ExpectResult {
     const original = expectImpl(actual,);
     return {
-      ...wrapMatchersWithCounter(
-        original,
+      ...wrapMatchersWithCounter({
+        matchers: original,
         tracker,
-      ),
-      not: wrapMatchersWithCounter(
-        original.not,
+      },),
+      not: wrapMatchersWithCounter({
+        matchers: original.not,
         tracker,
-      ),
-      rejects: wrapAsyncMatchersWithCounter(
-        original.rejects,
+      },),
+      rejects: wrapAsyncMatchersWithCounter({
+        matchers: original.rejects,
         tracker,
-      ),
-      resolves: wrapAsyncMatchersWithCounter(
-        original.resolves,
+      },),
+      resolves: wrapAsyncMatchersWithCounter({
+        matchers: original.resolves,
         tracker,
-      ),
+      },),
     };
   }
 

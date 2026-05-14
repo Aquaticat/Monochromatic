@@ -118,6 +118,25 @@ const configOverride = {
   },
 } satisfies OxlintOverride;
 
+/**
+ * The test module exposes Jest-style matchers (`toHaveBeenCalledWith`,
+ * `toHaveBeenLastCalledWith`, `toHaveBeenNthCalledWith`,
+ * `toHaveBeenCalledExactlyOnceWith`) whose public signatures take
+ * variadic positional arguments to match the Vitest/Jest convention
+ * documented in this package's README. The internal wrappers that
+ * forward through `MatcherSet[K]` inherit the same shape. External
+ * function signatures may use rest parameters.
+ */
+const jestMatcherApiOverride = {
+  files: [
+    '**/module/test/src/expect.ts',
+    '**/module/test/src/expect-matchers.ts',
+  ],
+  rules: {
+    'no-restricted-syntax/no-rest-params': 'off',
+  },
+} satisfies OxlintOverride;
+
 /** Test and benchmark files have relaxed rules for flexibility. */
 const testOverride = {
   files: ['**/*.{test,bench}.ts',],
@@ -198,5 +217,6 @@ export const overrides: OxlintOverride[] = [
   astroOverride,
   declarationOverride,
   configOverride,
+  jestMatcherApiOverride,
   testOverride,
 ];

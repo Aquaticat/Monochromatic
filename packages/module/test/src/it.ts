@@ -124,8 +124,13 @@ async function runFnOnce({
  * @throws Error wrapping the original failure with the test name and cause chain
  */
 async function runIt(
-  opts: ItOptions,
-  descriptorCtx: DescriptorContext,
+  {
+    opts,
+    descriptorCtx,
+  }: {
+    readonly descriptorCtx: DescriptorContext;
+    readonly opts: ItOptions;
+  },
 ): Promise<ItResult> {
   const {
     name,
@@ -296,9 +301,9 @@ async function runIt(
  */
 export function it(opts: ItOptions,): TestDescriptor<ItResult> {
   return makeDescriptor(function runItWithCtx(ctx,) {
-    return runIt(
+    return runIt({
       opts,
-      ctx,
-    );
+      descriptorCtx: ctx,
+    },);
   },);
 }

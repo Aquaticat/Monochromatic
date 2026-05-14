@@ -84,13 +84,18 @@ export type MatcherSet = {
  *
  * @example
  * ```ts
- * const matchers = buildMatchers(chaiExpect(value), value);
+ * const matchers = buildMatchers({ a: chaiExpect(value), actual: value });
  * matchers.toBe(42);
  * ```
  */
 export function buildMatchers(
-  a: Chai.Assertion,
-  actual: unknown,
+  {
+    a,
+    actual,
+  }: {
+    readonly a: Chai.Assertion;
+    readonly actual: unknown;
+  },
 ): MatcherSet {
   return {
     toBe: function toBe(expected: unknown,): void {
