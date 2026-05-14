@@ -3,7 +3,10 @@ import {
   access,
   readFile,
 } from 'node:fs/promises';
-import { join, } from 'node:path';
+import {
+  delimiter,
+  join,
+} from 'node:path';
 
 import {
   l,
@@ -19,8 +22,35 @@ import {
 const PACKAGE_NAME = '@monochromatic-dev/cli-git';
 
 /**
+ * Bundle entry path used by pnpm command shims when they point at this wrapper.
+ * pnpm's generated `node_modules/.bin/git` script can reference this built file
+ * without naming the package, so package-name detection alone misses it.
+ */
+const BUNDLED_ENTRY_MARKER = 'packages/cli/git/dist/final/node/index.mjs';
+
+/**
+ * Text markers that identify scripts delegating back into this wrapper.
+ * Real git binaries should not contain these package-specific strings.
+ */
+const SELF_SHIM_MARKERS: ReadonlySet<string> = new Set([
+  PACKAGE_NAME,
+  BUNDLED_ENTRY_MARKER,
+],);
+
+/**
+ * Options for resolving the real git binary.
+ */
+type ResolveGitOptions = {
+  /**
+   * PATH-like string to scan. Defaults to current process PATH so production
+   * calls follow shell lookup order, while tests can inject isolated paths.
+   */
+  readonly pathEnv?: string;
+};
+
+/**
  * Checks whether a candidate binary is a package manager shim that delegates
- * to this wrapper package. Reads the file content and looks for the package name.
+ * to this wrapper package. Reads the file content and looks for wrapper-specific markers.
  *
  * @param candidatePath - Absolute path to the candidate binary.
  *
@@ -28,12 +58,14 @@ const PACKAGE_NAME = '@monochromatic-dev/cli-git';
  */
 async function isShimForSelf(candidatePath: string,): Promise<boolean> {
   try {
-    /** Raw file bytes decoded as UTF-8; scanned below for the package-name marker. */
+    /** Raw file bytes decoded as UTF-8; scanned below for self-shim markers. */
     const content = await readFile(
       candidatePath,
       'utf8',
     );
-    return content.includes(PACKAGE_NAME,);
+    return [...SELF_SHIM_MARKERS].some(function hasSelfShimMarker(marker,) {
+      return content.includes(marker,);
+    },);
   }
   catch {
     return false;
@@ -57,17 +89,17 @@ async function isShimForSelf(candidatePath: string,): Promise<boolean> {
  * // => '/usr/bin/git'
  * ```
  */
-export async function resolveGit(): Promise<string> {
+export async function resolveGit({
+  pathEnv = process.env['PATH'] ?? '',
+}: ResolveGitOptions = {},): Promise<string> {
   /** Tagged logger for git binary resolution. */
   const rl = tagged({
     tag: resolveGit.name,
     l,
   },);
 
-  /** Raw `PATH` environment value; empty string when unset so the split yields a no-op scan. */
-  const pathEnv = process.env['PATH'] ?? '';
   /** Individual PATH entries, scanned in order so the first executable git wins. */
-  const pathDirs = pathEnv.split(':',);
+  const pathDirs = pathEnv.split(delimiter,);
 
   for (const dir of pathDirs) {
     /** Candidate git binary path in this PATH entry. */

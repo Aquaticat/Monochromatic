@@ -45,6 +45,9 @@ constraints. Skipped when the user has already set `advice.statusHints=...` via
 
 The wrapper shadows the system `git` binary on PATH (via mise bin linkage).
 It scans PATH to find the real git binary, skipping its own entry.
+Self-shim detection checks both the package name and the bundled entry path
+`packages/cli/git/dist/final/node/index.mjs`, because pnpm-generated shims can
+point at the built file without naming the package.
 Arguments pass through a rule pipeline that may reject or transform them,
 then the real git is spawned with full stdio inheritance.
 
