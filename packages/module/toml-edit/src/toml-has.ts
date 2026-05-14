@@ -15,14 +15,25 @@ import type {
  * array-of-tables in the effective state (parse-time AST plus pending
  * deltas).
  *
+ * @returns Resulting boolean.
+ *
  * @example
  * ```ts
  * tomlHas({ edit, path: ['tools', 'bun',], },);  // true / false
  * ```
  */
 export function tomlHas(
-  { edit, path, }: { edit: TomlEditState; path: TomlPath; },
+  {
+    edit,
+    path,
+  }: {
+    edit: TomlEditState;
+    path: TomlPath
+  },
 ): boolean {
-  const result = effectiveAt({ edit, path, },);
-  return result.kind !== 'missing' && result.kind !== 'deleted';
+  const result = effectiveAt({
+    edit,
+    path,
+  },);
+  return (result.kind !== 'missing') && (result.kind !== 'deleted');
 }

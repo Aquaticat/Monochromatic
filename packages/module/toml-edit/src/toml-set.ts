@@ -54,6 +54,8 @@ import {
  *   for sibling-table or inline-table collisions and throw
  *   `TomlImmutableNodeError` when the result would not re-parse.
  *
+ * @returns A fresh `TomlEditState` reflecting the change.
+ *
  * @throws TomlTypeError for `null`, `undefined`, or a non-object value
  *         when replacing a table body.
  *
@@ -80,12 +82,15 @@ export function tomlSet(
     value: unknown;
   },
 ): TomlEditState {
-  if (value === null || value === undefined)
+  if ((value === null) || (value === undefined))
     throw new TomlTypeError(
       `Cannot set ${formatPath({ path, },)} to ${String(value,)}; use tomlDelete`,
     );
 
-  const resolved = resolveByPath({ edit, path, },);
+  const resolved = resolveByPath({
+    edit,
+    path,
+  },);
 
   if (resolved.kind === 'keyvalue') {
     const newText = jsValueToTomlText({
@@ -96,7 +101,11 @@ export function tomlSet(
     return withEditOn({
       edit,
       node: resolved.node,
-      delta: { kind: 'replace-value', newText, jsValue: value, },
+      delta: {
+        kind: 'replace-value',
+        newText,
+        jsValue: value,
+      },
     },);
   }
 
@@ -109,7 +118,11 @@ export function tomlSet(
     return withEditOn({
       edit,
       node: resolved.node,
-      delta: { kind: 'replace-value', newText, jsValue: value, },
+      delta: {
+        kind: 'replace-value',
+        newText,
+        jsValue: value,
+      },
     },);
   }
 
@@ -120,15 +133,27 @@ export function tomlSet(
       + `Set per-element with tomlSet({ path: [..., N, 'key'], value }) instead.`,
     );
 
-  if (resolved.kind === 'table' || resolved.kind === 'top-level')
-    return doTableReplace({ edit, path, value, container: resolved.node, },);
+  if ((resolved.kind === 'table') || (resolved.kind === 'top-level'))
+    return doTableReplace({
+      edit,
+      path,
+      value,
+      container: resolved.node,
+    },);
 
-  return doPathCreate({ edit, path, value, resolved, },);
+  return doPathCreate({
+    edit,
+    path,
+    value,
+    resolved,
+  },);
 }
 
 /**
  * Replace the key-values inside an existing `TOMLTable` or
  * `TOMLTopLevelTable` with the entries of the given JS object.
+ *
+ * @returns A fresh `TomlEditState` reflecting the change.
  */
 function doTableReplace(
   {
@@ -156,20 +181,33 @@ function doTableReplace(
 
   const newInsertions: Insertion[] = Object.entries(value,).map(function each([k, v,],) {
     const text = `${encodeKey({ key: k, },)} = ${
-      jsValueToTomlText({ input: v, options: edit.canonical, existing: undefined, },)
+      jsValueToTomlText({
+        input: v,
+        options: edit.canonical,
+        existing: undefined,
+      },)
     }\n`;
     return {
       anchor,
       text,
-      path: [...path, k,],
+      path: [
+        ...path,
+        k,
+      ],
       jsValue: v,
     };
   },);
 
   return {
     ...edit,
-    deletions: new Set([...edit.deletions, ...bodyKvs,],),
-    insertions: [...edit.insertions, ...newInsertions,],
+    deletions: new Set([
+      ...edit.deletions,
+      ...bodyKvs,
+    ],),
+    insertions: [
+      ...edit.insertions,
+      ...newInsertions,
+    ],
   };
 }
 
@@ -181,6 +219,8 @@ function doTableReplace(
  * - `TOMLTopLevelTable`: `before-node` of the first sibling `TOMLTable`,
  *   if any (so the new entries land between the old top-level KVs and
  *   the first table header). Else `eof`.
+ *
+ * @returns Computed result (`AnchorKind`).
  */
 function anchorForTableReplace(
   {
@@ -190,23 +230,34 @@ function anchorForTableReplace(
   },
 ): AnchorKind {
   if (container.type === 'TOMLTable')
-    return { position: 'inside-table', table: container, atEnd: true, };
+    return {
+      position: 'inside-table',
+      table: container,
+      atEnd: true,
+    };
   const firstTable = container.body.find(function isTable(child,): child is AST.TOMLTable {
     return child.type === 'TOMLTable';
   },);
   if (firstTable !== undefined)
-    return { position: 'before-node', node: firstTable, };
+    return {
+      position: 'before-node',
+      node: firstTable,
+    };
   return 'eof';
 }
 
-/** Describe a non-plain-object value for the table-replace error message. */
+/**
+ * Describe a non-plain-object value for the table-replace error message.
+ *
+ * @returns Computed string.
+ */
 function describeNonObject(
   { value, }: { value: unknown; },
 ): string {
   if (value === null) return 'null';
   if (Array.isArray(value,)) return 'array';
   if (value instanceof Date) return 'Date';
-  if (typeof value === 'object') return 'non-plain-object';
+  if ((typeof value) === 'object') return 'non-plain-object';
   return typeof value;
 }
 

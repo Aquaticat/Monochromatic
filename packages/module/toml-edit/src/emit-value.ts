@@ -18,6 +18,8 @@ import type { CanonicalOptions, } from './types.ts';
 /**
  * Emit `node` as TOML text per its parse-time fields.
  *
+ * @returns Computed string.
+ *
  * @example
  * ```ts
  * emitContentNode({ node: someTOMLValue, options: edit.canonical, },);
@@ -37,22 +39,38 @@ export function emitContentNode(
   if (node.type === 'TOMLValue')
     return emitValueLeaf({ node, },);
   if (node.type === 'TOMLArray')
-    return emitArray({ node, options, depth, },);
-  return emitInlineTable({ node, options, depth, },);
+    return emitArray({
+      node,
+      options,
+      depth,
+    },);
+  return emitInlineTable({
+    node,
+    options,
+    depth,
+  },);
 }
 
-/** Emit a primitive leaf (`string` / `integer` / `float` / `boolean` / date kinds). */
+/**
+ * Emit a primitive leaf (`string` / `integer` / `float` / `boolean` / date kinds).
+ *
+ * @returns Computed string.
+ */
 function emitValueLeaf({ node, }: { node: AST.TOMLValue; },): string {
   if (node.kind === 'string')
     return emitStringValue({ node, },);
-  if (node.kind === 'integer' || node.kind === 'float')
+  if ((node.kind === 'integer') || (node.kind === 'float'))
     return node.number;
   if (node.kind === 'boolean')
     return node.value ? 'true' : 'false';
   return node.datetime;
 }
 
-/** Emit a `TOMLStringValue` per its style and `multiline` flag. */
+/**
+ * Emit a `TOMLStringValue` per its style and `multiline` flag.
+ *
+ * @returns Computed string.
+ */
 function emitStringValue({ node, }: { node: AST.TOMLStringValue; },): string {
   if (node.style === 'literal') {
     if (node.multiline) return `'''${node.value}'''`;
@@ -63,26 +81,65 @@ function emitStringValue({ node, }: { node: AST.TOMLStringValue; },): string {
   return `"${escapeBasic({ value: node.value, },)}"`;
 }
 
-/** Escape a string for emission inside a basic single-line `"..."` literal. */
+/**
+ * Escape a string for emission inside a basic single-line `"..."` literal.
+ *
+ * @returns Computed string.
+ */
 function escapeBasic({ value, }: { value: string; },): string {
   return value
-    .replaceAll('\\', '\\\\',)
-    .replaceAll('"', '\\"',)
-    .replaceAll('\b', '\\b',)
-    .replaceAll('\f', '\\f',)
-    .replaceAll('\n', '\\n',)
-    .replaceAll('\r', '\\r',)
-    .replaceAll('\t', '\\t',);
+    .replaceAll(
+      '\\',
+      String.raw`\\`,
+    )
+    .replaceAll(
+      '"',
+      String.raw`\"`,
+    )
+    .replaceAll(
+      '\b',
+      String.raw`\b`,
+    )
+    .replaceAll(
+      '\f',
+      String.raw`\f`,
+    )
+    .replaceAll(
+      '\n',
+      String.raw`\n`,
+    )
+    .replaceAll(
+      '\r',
+      String.raw`\r`,
+    )
+    .replaceAll(
+      '\t',
+      String.raw`\t`,
+    );
 }
 
-/** Escape a string for emission inside a `"""..."""` multiline basic literal. */
+/**
+ * Escape a string for emission inside a `"""..."""` multiline basic literal.
+ *
+ * @returns Computed string.
+ */
 function escapeBasicMultiline({ value, }: { value: string; },): string {
   return value
-    .replaceAll('\\', '\\\\',)
-    .replaceAll('"""', '\\"\\"\\"',);
+    .replaceAll(
+      '\\',
+      String.raw`\\`,
+    )
+    .replaceAll(
+      '"""',
+      String.raw`\"\"\"`,
+    );
 }
 
-/** Emit a `TOMLArray`, inline or multiline per `arrayInline*` options. */
+/**
+ * Emit a `TOMLArray`, inline or multiline per `arrayInline*` options.
+ *
+ * @returns Computed string.
+ */
 function emitArray(
   {
     node,
@@ -95,9 +152,17 @@ function emitArray(
   },
 ): string {
   const parts = node.elements.map(function each(el,) {
-    return emitContentNode({ node: el, options, depth: depth + 1, },);
+    return emitContentNode({
+      node: el,
+      options,
+      depth: depth + 1,
+    },);
   },);
-  return assembleArrayParts({ parts, options, depth, },);
+  return assembleArrayParts({
+    parts,
+    options,
+    depth,
+  },);
 }
 
 /**
@@ -106,6 +171,13 @@ function emitArray(
  * Used by `tomlDelete` on an array element: re-emits the parent array
  * via canonical formatting, applying the same inline-vs-multiline
  * thresholds as `emitArray`.
+ *
+ * @returns Computed string.
+ *
+ * @example
+ * ```ts
+ * emitArrayWithoutIndex({ array: kvNode.value, skipIndex: 1, options, depth: 0, },);
+ * ```
  */
 export function emitArrayWithoutIndex(
   {
@@ -121,16 +193,31 @@ export function emitArrayWithoutIndex(
   },
 ): string {
   const parts = array.elements
-    .filter(function notSkipped(_el, i,) {
+    .filter(function notSkipped(
+      _el,
+      i,
+    ) {
       return i !== skipIndex;
     },)
     .map(function each(el,) {
-      return emitContentNode({ node: el, options, depth: depth + 1, },);
+      return emitContentNode({
+        node: el,
+        options,
+        depth: depth + 1,
+      },);
     },);
-  return assembleArrayParts({ parts, options, depth, },);
+  return assembleArrayParts({
+    parts,
+    options,
+    depth,
+  },);
 }
 
-/** Shared array-text assembly used by `emitArray` and `emitArrayWithoutIndex`. */
+/**
+ * Shared array-text assembly used by `emitArray` and `emitArrayWithoutIndex`.
+ *
+ * @returns Computed string.
+ */
 function assembleArrayParts(
   {
     parts,
@@ -144,8 +231,8 @@ function assembleArrayParts(
 ): string {
   const inlineCandidate = `[ ${parts.join(', ',)}${parts.length === 0 ? '' : ', '}]`;
   if (
-    parts.length <= options.arrayInlineThreshold
-    && inlineCandidate.length <= options.arrayInlineMaxColumns
+    (parts.length <= options.arrayInlineThreshold)
+    && (inlineCandidate.length <= options.arrayInlineMaxColumns)
   )
     return inlineCandidate;
   const indent = ' '.repeat(options.indent * (depth + 1),);
@@ -155,7 +242,11 @@ function assembleArrayParts(
   },).join('\n',)}\n${closingIndent}]`;
 }
 
-/** Emit a `TOMLInlineTable` as `{ k = v, ... }`. */
+/**
+ * Emit a `TOMLInlineTable` as `{ k = v, ... }`.
+ *
+ * @returns Computed string.
+ */
 function emitInlineTable(
   {
     node,
@@ -167,7 +258,11 @@ function emitInlineTable(
     depth: number;
   },
 ): string {
-  const parts = emitInlineTableBodyParts({ body: node.body, options, depth, },);
+  const parts = emitInlineTableBodyParts({
+    body: node.body,
+    options,
+    depth,
+  },);
   return assembleInlineTableParts({ parts, },);
 }
 
@@ -177,6 +272,19 @@ function emitInlineTable(
  * `extraKey` is the encoded dotted-key string (may contain `.`); `extraValue`
  * is the encoded value text. The caller is responsible for ensuring the new
  * entry does not collide with existing inline-table keys.
+ *
+ * @returns Computed string.
+ *
+ * @example
+ * ```ts
+ * emitInlineTableWithExtra({
+ *   node: inlineTable,
+ *   options: canonical,
+ *   depth: 0,
+ *   extraKey: 'b',
+ *   extraValue: '1',
+ * },);
+ * ```
  */
 export function emitInlineTableWithExtra(
   {
@@ -194,13 +302,21 @@ export function emitInlineTableWithExtra(
   },
 ): string {
   const parts = [
-    ...emitInlineTableBodyParts({ body: node.body, options, depth, },),
+    ...emitInlineTableBodyParts({
+      body: node.body,
+      options,
+      depth,
+    },),
     `${extraKey} = ${extraValue}`,
   ];
   return assembleInlineTableParts({ parts, },);
 }
 
-/** Render each `TOMLKeyValue` in an inline-table body as `key = value` text. */
+/**
+ * Render each `TOMLKeyValue` in an inline-table body as `key = value` text.
+ *
+ * @returns Computed result (`readonly string[]`).
+ */
 function emitInlineTableBodyParts(
   {
     body,
@@ -218,12 +334,20 @@ function emitInlineTableBodyParts(
         return encodeKey({ key: k.type === 'TOMLBare' ? k.name : k.value, },);
       },)
       .join('.',);
-    const valueText = emitContentNode({ node: kv.value, options, depth: depth + 1, },);
+    const valueText = emitContentNode({
+      node: kv.value,
+      options,
+      depth: depth + 1,
+    },);
     return `${keyText} = ${valueText}`;
   },);
 }
 
-/** Wrap the rendered parts in `{ ... }` with the canonical comma layout. */
+/**
+ * Wrap the rendered parts in `{ ... }` with the canonical comma layout.
+ *
+ * @returns Computed string.
+ */
 function assembleInlineTableParts(
   {
     parts,

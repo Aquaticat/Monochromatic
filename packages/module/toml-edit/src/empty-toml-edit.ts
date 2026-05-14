@@ -33,8 +33,18 @@ import type {
 export function emptyTomlEdit({ canonical, }: TomlEmptyOptions = {},): TomlEditState {
   const base = parseTomlEdit(
     canonical === undefined
-      ? { source: '', mode: 'canonical', }
-      : { source: '', mode: 'canonical', canonical, },
+      ? {
+        source: '',
+        mode: 'canonical',
+      }
+      : {
+        source: '',
+        mode: 'canonical',
+        canonical,
+      },
   );
-  return { ...base, mode: 'canonical', };
+  return {
+    ...base,
+    mode: 'canonical',
+  };
 }

@@ -38,6 +38,16 @@ import type { TomlPath, } from './types.ts';
  *   what we are now writing as a leaf), OR
  * - `RK` equals any of the implicit-table paths the dotted key creates
  *   (`basePath + dottedSegments[0..i]` for `i` in `1..n-1`).
+ *
+ * @example
+ * ```ts
+ * assertNoSiblingTableCollision({
+ *   programBody: edit.program.body[0].body,
+ *   basePath: ['a',],
+ *   dottedSegments: ['b','c',],
+ *   path: ['a','b','c',],
+ * },);
+ * ```
  */
 export function assertNoSiblingTableCollision(
   {
@@ -53,24 +63,42 @@ export function assertNoSiblingTableCollision(
   },
 ): void {
   if (dottedSegments.length === 0) return;
-  const newLeafPath: TomlPath = [...basePath, ...dottedSegments,];
+  const newLeafPath: TomlPath = [
+    ...basePath,
+    ...dottedSegments,
+  ];
   const implicitPaths: readonly TomlPath[] = Array.from(
     { length: dottedSegments.length - 1, },
-    function buildImplicit(_v, i,) {
-      return [...basePath, ...dottedSegments.slice(0, i + 1,),];
+    function buildImplicit(
+      _v,
+      i,
+    ) {
+      return [
+        ...basePath,
+        ...dottedSegments.slice(
+          0,
+          i + 1,
+        ),
+      ];
     },
   );
   for (const child of programBody) {
     if (child.type !== 'TOMLTable') continue;
     const rk = child.resolvedKey;
-    if (pathsEqual({ a: rk, b: newLeafPath, },))
+    if (pathsEqual({
+      a: rk,
+      b: newLeafPath,
+    },))
       throw new TomlImmutableNodeError(
         collisionMessage({
           path,
           reason: `would redefine the existing table ${formatPath({ path: rk, },)}`,
         },),
       );
-    if (startsWith({ haystack: rk, needle: newLeafPath, },))
+    if (startsWith({
+      haystack: rk,
+      needle: newLeafPath,
+    },))
       throw new TomlImmutableNodeError(
         collisionMessage({
           path,
@@ -78,7 +106,10 @@ export function assertNoSiblingTableCollision(
         },),
       );
     for (const ip of implicitPaths)
-      if (pathsEqual({ a: rk, b: ip, },))
+      if (pathsEqual({
+        a: rk,
+        b: ip,
+      },))
         throw new TomlImmutableNodeError(
           collisionMessage({
             path,
@@ -96,6 +127,15 @@ export function assertNoSiblingTableCollision(
  *
  * - `E` is a (possibly equal) prefix of `newSegments`, OR
  * - `newSegments` is a (possibly equal) prefix of `E`.
+ *
+ * @example
+ * ```ts
+ * assertNoInlineTableCollision({
+ *   body: inlineTable.body,
+ *   newSegments: ['a','b',],
+ *   path: ['foo','a','b',],
+ * },);
+ * ```
  */
 export function assertNoInlineTableCollision(
   {
@@ -111,8 +151,14 @@ export function assertNoInlineTableCollision(
   for (const kv of body) {
     const existing = keysOf({ key: kv.key, },);
     if (
-      startsWithInclusive({ haystack: existing, needle: newSegments, },)
-      || startsWithInclusive({ haystack: newSegments, needle: existing, },)
+      startsWithInclusive({
+        haystack: existing,
+        needle: newSegments,
+      },)
+      || startsWithInclusive({
+        haystack: newSegments,
+        needle: existing,
+      },)
     )
       throw new TomlImmutableNodeError(
         collisionMessage({
@@ -123,24 +169,51 @@ export function assertNoInlineTableCollision(
   }
 }
 
-/** Compose a uniform collision message. */
+/**
+ * Compose a uniform collision message.
+ *
+ * @returns Computed string.
+ */
 function collisionMessage(
-  { path, reason, }: { path: TomlPath; reason: string; },
+  {
+    path,
+    reason,
+  }: {
+    path: TomlPath;
+    reason: string
+  },
 ): string {
   return `tomlSet at ${formatPath({ path, },)} would create invalid TOML on re-parse: ${reason}`;
 }
 
-/** True when `a` and `b` have identical segments. */
+/**
+ * True when `a` and `b` have identical segments.
+ *
+ * @returns Resulting boolean.
+ */
 function pathsEqual(
-  { a, b, }: { a: readonly (string | number)[]; b: TomlPath; },
+  {
+    a,
+    b,
+  }: {
+    a: readonly (string | number)[];
+    b: TomlPath
+  },
 ): boolean {
   if (a.length !== b.length) return false;
-  return a.every(function eq(seg, i,) {
+  return a.every(function eq(
+    seg,
+    i,
+  ) {
     return seg === b[i];
   },);
 }
 
-/** True when `haystack` strictly extends `needle` (haystack.length > needle.length). */
+/**
+ * True when `haystack` strictly extends `needle` (haystack.length \> needle.length).
+ *
+ * @returns Resulting boolean.
+ */
 function startsWith(
   {
     haystack,
@@ -151,12 +224,19 @@ function startsWith(
   },
 ): boolean {
   if (haystack.length <= needle.length) return false;
-  return needle.every(function eq(seg, i,) {
+  return needle.every(function eq(
+    seg,
+    i,
+  ) {
     return seg === haystack[i];
   },);
 }
 
-/** True when `needle` is a prefix of `haystack`, allowing equality. */
+/**
+ * True when `needle` is a prefix of `haystack`, allowing equality.
+ *
+ * @returns Resulting boolean.
+ */
 function startsWithInclusive(
   {
     haystack,
@@ -167,7 +247,10 @@ function startsWithInclusive(
   },
 ): boolean {
   if (haystack.length < needle.length) return false;
-  return needle.every(function eq(seg, i,) {
+  return needle.every(function eq(
+    seg,
+    i,
+  ) {
     return seg === haystack[i];
   },);
 }

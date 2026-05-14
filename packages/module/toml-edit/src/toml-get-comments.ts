@@ -16,6 +16,8 @@ import type {
  * `tomlInsertCommentBefore` / `tomlInsertCommentAfter` are not reflected
  * here until the source is re-parsed.
  *
+ * @returns Computed result (`readonly TomlComment[]`).
+ *
  * @example
  * ```ts
  * tomlGetComments({ edit, },);  // [{ value: ' header', range: [0, 8,], ...},]

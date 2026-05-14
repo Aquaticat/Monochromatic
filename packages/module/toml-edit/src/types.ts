@@ -92,17 +92,34 @@ export type TomlEmptyOptions = {
  * value without parsing the emitted `newText`.
  */
 export type Edit =
-  | { readonly kind: 'replace-value'; readonly newText: string; readonly jsValue: unknown; }
-  | { readonly kind: 'replace-keyvalue'; readonly newText: string; readonly jsValue: unknown; };
+  | {
+    readonly kind: 'replace-value';
+    readonly newText: string;
+    readonly jsValue: unknown
+  }
+  | {
+    readonly kind: 'replace-keyvalue';
+    readonly newText: string;
+    readonly jsValue: unknown
+  };
 
 /**
  * Where a pending `Insertion` should land at emit time.
  */
 export type AnchorKind =
   | 'eof'
-  | { readonly position: 'after-node'; readonly node: AST.TOMLNode; }
-  | { readonly position: 'before-node'; readonly node: AST.TOMLNode; }
-  | { readonly position: 'same-line-after'; readonly node: AST.TOMLNode; }
+  | {
+    readonly position: 'after-node';
+    readonly node: AST.TOMLNode
+  }
+  | {
+    readonly position: 'before-node';
+    readonly node: AST.TOMLNode
+  }
+  | {
+    readonly position: 'same-line-after';
+    readonly node: AST.TOMLNode
+  }
   | {
     readonly position: 'inside-table';
     readonly table: AST.TOMLTable | AST.TOMLTopLevelTable;

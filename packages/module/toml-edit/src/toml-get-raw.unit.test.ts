@@ -61,7 +61,7 @@ await describe({
       name: 'returns the parse-time source slice even after a pending tomlSet',
       fn: async () => {
         const e0 = parseTomlEdit({ source: "key = 'literal'\n", },);
-        const tomlSet = (await import('./toml-set.ts',)).tomlSet;
+        const {tomlSet} = (await import('./toml-set.ts',));
         const e1 = tomlSet({ edit: e0, path: ['key',], value: 'new', },);
         expect(tomlGetRaw({ edit: e1, path: ['key',], },),).toBe("'literal'",);
       },

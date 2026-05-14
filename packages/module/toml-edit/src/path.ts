@@ -15,6 +15,8 @@ import type { TomlPath, } from './types.ts';
  * decoded string as `value`. Both are surfaced as the same string here so
  * path comparisons treat `key = 1` and `"key" = 1` identically.
  *
+ * @returns Computed string.
+ *
  * @example
  * ```ts
  * keyNameOf({ key: { type: 'TOMLBare', name: 'foo' } as never, },); // 'foo'
@@ -28,6 +30,8 @@ export function keyNameOf({ key, }: { key: AST.TOMLBare | AST.TOMLQuoted; },): s
  * The full list of segments that a `TOMLKey` spells.
  *
  * Dotted-key forms like `a.b.c = 1` produce three segments.
+ *
+ * @returns Computed result (`readonly string[]`).
  *
  * @example
  * ```ts
@@ -43,6 +47,8 @@ export function keysOf({ key, }: { key: AST.TOMLKey; },): readonly string[] {
 /**
  * Render a `TomlPath` as a human-readable string for error messages.
  *
+ * @returns Computed string.
+ *
  * @example
  * ```ts
  * formatPath({ path: ['fruits', 0, 'name'] as const, },); // 'fruits[0].name'
@@ -50,8 +56,11 @@ export function keysOf({ key, }: { key: AST.TOMLKey; },): readonly string[] {
  */
 export function formatPath({ path, }: { path: TomlPath; },): string {
   return path
-    .map(function fmt(seg, i,) {
-      if (typeof seg === 'number')
+    .map(function fmt(
+      seg,
+      i,
+    ) {
+      if ((typeof seg) === 'number')
         return `[${String(seg,)}]`;
       if (i === 0) return seg;
       return `.${seg}`;
@@ -62,6 +71,8 @@ export function formatPath({ path, }: { path: TomlPath; },): string {
 /**
  * True when a path segment matches a TOML key string (bare or quoted).
  *
+ * @returns Resulting boolean.
+ *
  * @example
  * ```ts
  * keyMatchesSegment({ keyName: 'foo', segment: 'foo', },); // true
@@ -69,7 +80,13 @@ export function formatPath({ path, }: { path: TomlPath; },): string {
  * ```
  */
 export function keyMatchesSegment(
-  { keyName, segment, }: { keyName: string; segment: string | number; },
+  {
+    keyName,
+    segment,
+  }: {
+    keyName: string;
+    segment: string | number
+  },
 ): boolean {
-  return typeof segment === 'string' && segment === keyName;
+  return ((typeof segment) === 'string') && (segment === keyName);
 }

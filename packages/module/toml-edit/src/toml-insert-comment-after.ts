@@ -22,7 +22,14 @@ import type {
  * `tomlStringify` time. It is placed right after the node's end on the
  * same source line, before the newline.
  *
+ * @returns A fresh `TomlEditState` reflecting the change.
+ *
  * @throws TomlPathNotFoundError when `path` does not exist.
+ *
+ * @example
+ * ```ts
+ * tomlInsertCommentAfter({ edit, path: ['version',], comment: ' bumped', },);
+ * ```
  */
 export function tomlInsertCommentAfter(
   {
@@ -35,19 +42,34 @@ export function tomlInsertCommentAfter(
     comment: string;
   },
 ): TomlEditState {
-  const resolved = resolveByPath({ edit, path, },);
-  if (resolved.kind === 'missing' || resolved.kind === 'top-level')
+  const resolved = resolveByPath({
+    edit,
+    path,
+  },);
+  if ((resolved.kind === 'missing') || (resolved.kind === 'top-level'))
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
 
   const node = resolved.kind === 'array-of-tables'
-    ? nonNullishOrThrow(resolved.nodes[resolved.nodes.length - 1],)
+    ? nonNullishOrThrow(resolved.nodes.at(-1),)
     : resolved.node;
 
   const text = `  # ${comment}`;
 
-  const anchor: Insertion['anchor'] = { position: 'same-line-after', node, };
+  const anchor: Insertion['anchor'] = {
+    position: 'same-line-after',
+    node,
+  };
 
-  return { ...edit, insertions: [...edit.insertions, { anchor, text, },], };
+  return {
+    ...edit,
+    insertions: [
+      ...edit.insertions,
+      {
+        anchor,
+        text,
+      },
+    ],
+  };
 }

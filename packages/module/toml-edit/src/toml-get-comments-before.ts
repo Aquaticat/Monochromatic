@@ -21,6 +21,8 @@ import type {
  * at `path`, with no blank line between any pair. A comment separated from
  * the node by a blank line is NOT attached.
  *
+ * @returns Computed result (`readonly TomlComment[]`).
+ *
  * @throws TomlPathNotFoundError when `path` does not exist or was deleted.
  *
  * @example
@@ -32,15 +34,27 @@ import type {
  * ```
  */
 export function tomlGetCommentsBefore(
-  { edit, path, }: { edit: TomlEditState; path: TomlPath; },
+  {
+    edit,
+    path,
+  }: {
+    edit: TomlEditState;
+    path: TomlPath
+  },
 ): readonly TomlComment[] {
-  const result = effectiveAt({ edit, path, },);
-  if (result.kind === 'missing' || result.kind === 'deleted')
+  const result = effectiveAt({
+    edit,
+    path,
+  },);
+  if ((result.kind === 'missing') || (result.kind === 'deleted'))
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
   if (result.kind === 'pending-value')
     return [];
   const node = result.kind === 'array-of-tables' ? nonNullishOrThrow(result.nodes[0],) : result.node;
-  return attachedCommentsFor({ node, edit, },);
+  return attachedCommentsFor({
+    node,
+    edit,
+  },);
 }

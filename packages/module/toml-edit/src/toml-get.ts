@@ -14,13 +14,24 @@ import type {
  * Alias for {@link tomlGetValue}. Provided for ergonomic call sites where
  * the explicit `Value` suffix is verbose.
  *
+ * @returns Computed result (`unknown`).
+ *
  * @example
  * ```ts
  * tomlGet({ edit, path: ['title',], },);  // 'Demo'
  * ```
  */
 export function tomlGet(
-  { edit, path, }: { edit: TomlEditState; path: TomlPath; },
+  {
+    edit,
+    path,
+  }: {
+    edit: TomlEditState;
+    path: TomlPath
+  },
 ): unknown {
-  return tomlGetValue({ edit, path, },);
+  return tomlGetValue({
+    edit,
+    path,
+  },);
 }

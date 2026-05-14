@@ -27,20 +27,36 @@ import type {
  * is no AST node; `TomlPathNotFoundError` is thrown. `tomlStringify` and
  * reparse to materialise an AST node for such paths.
  *
+ * @returns Computed result (`AST.TOMLContentNode | AST.TOMLTable | AST.TOMLTopLevelTable | readonly AST.TOMLTable[]`).
+ *
  * @throws TomlPathNotFoundError when `path` was not present in the parse-time
  *         source.
+ *
+ * @example
+ * ```ts
+ * const node = tomlGetNode({ edit, path: ['tools', 'bun',], },);
+ * ```
  */
 export function tomlGetNode(
-  { edit, path, }: { edit: TomlEditState; path: TomlPath; },
+  {
+    edit,
+    path,
+  }: {
+    edit: TomlEditState;
+    path: TomlPath
+  },
 ): AST.TOMLContentNode | AST.TOMLTable | AST.TOMLTopLevelTable | readonly AST.TOMLTable[] {
-  const result = resolveByPath({ edit, path, },);
+  const result = resolveByPath({
+    edit,
+    path,
+  },);
   if (result.kind === 'missing')
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found in parse-time AST`,
     );
   if (result.kind === 'keyvalue')
     return result.node.value;
-  if (result.kind === 'value' || result.kind === 'table' || result.kind === 'top-level')
+  if ((result.kind === 'value') || (result.kind === 'table') || (result.kind === 'top-level'))
     return result.node;
   return result.nodes;
 }

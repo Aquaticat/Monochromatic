@@ -37,17 +37,28 @@ import { encodeKey, } from './values.ts';
  * When the source is empty (from `emptyTomlEdit`), the splice path produces
  * just the concatenation of insertions, which is what we want for build-
  * from-scratch flows.
+ *
+ * @returns Computed string.
+ *
+ * @example
+ * ```ts
+ * canonicalEmit({ edit, },);
+ * ```
  */
 export function canonicalEmit({ edit, }: { edit: TomlEditState; },): string {
-  if (edit.source !== '' || edit.program.body[0].body.length > 0)
+  if ((edit.source !== '') || (edit.program.body[0].body.length > 0))
     return spliceEmit({ edit, },);
   return canonicalFromEmpty({ edit, },);
 }
 
-/** Render canonical text for an `emptyTomlEdit`-derived state. */
+/**
+ * Render canonical text for an `emptyTomlEdit`-derived state.
+ *
+ * @returns Computed string.
+ */
 function canonicalFromEmpty({ edit, }: { edit: TomlEditState; },): string {
   const parts: string[] = [];
-  if (edit.headerComment !== null && edit.headerComment !== '') {
+  if ((edit.headerComment !== null) && (edit.headerComment !== '')) {
     const lines = edit.headerComment.split('\n',);
     for (const line of lines)
       parts.push(`# ${line}${edit.canonical.lineBreak}`,);
@@ -60,8 +71,8 @@ function canonicalFromEmpty({ edit, }: { edit: TomlEditState; },): string {
   const result = parts.join('',);
   if (
     edit.canonical.trailingNewline
-    && result !== ''
-    && !result.endsWith('\n',)
+    && (result !== '')
+    && (!result.endsWith('\n',))
   )
     return `${result}${edit.canonical.lineBreak}`;
   return result;
@@ -69,6 +80,13 @@ function canonicalFromEmpty({ edit, }: { edit: TomlEditState; },): string {
 
 /**
  * Render a TOML key node (single or dotted) as canonical text.
+ *
+ * @returns Computed string.
+ *
+ * @example
+ * ```ts
+ * emitKey({ key: kvNode.key, },);  // e.g. 'tools.bun'
+ * ```
  */
 export function emitKey(
   {
@@ -86,6 +104,13 @@ export function emitKey(
 
 /**
  * Render an entire `TOMLKeyValue` as canonical text (key + ` = ` + value).
+ *
+ * @returns Computed string.
+ *
+ * @example
+ * ```ts
+ * emitKeyValue({ keyValue: kvNode, options: canonical, },);
+ * ```
  */
 export function emitKeyValue(
   {
@@ -97,6 +122,9 @@ export function emitKeyValue(
   },
 ): string {
   return `${emitKey({ key: keyValue.key, },)} = ${
-    emitContentNode({ node: keyValue.value, options, },)
+    emitContentNode({
+      node: keyValue.value,
+      options,
+    },)
   }`;
 }

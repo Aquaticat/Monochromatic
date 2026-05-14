@@ -34,7 +34,7 @@ const fixtureFiles = (await readdir(fixturesDir,))
   .filter(function isInput(name,) {
     return name.endsWith('-input.toml',);
   },)
-  .sort();
+  .toSorted();
 
 await describe({
   name: 'fixtures round-trip',
@@ -42,7 +42,7 @@ await describe({
     return it({
       name: filename,
       fn: async () => {
-        const source = await readFile(join(fixturesDir, filename,), 'utf-8',);
+        const source = await readFile(join(fixturesDir, filename,), 'utf8',);
         const result = (function attemptParse() {
           try {
             return {

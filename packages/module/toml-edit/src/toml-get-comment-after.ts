@@ -22,6 +22,8 @@ import type {
  * A comment is "trailing" when its `range[0]` is strictly after the node's
  * end and on the same source line (no newline between).
  *
+ * @returns Result, or `null` when no match.
+ *
  * @throws TomlPathNotFoundError when `path` does not exist or was deleted.
  *
  * @example
@@ -30,17 +32,29 @@ import type {
  * ```
  */
 export function tomlGetCommentAfter(
-  { edit, path, }: { edit: TomlEditState; path: TomlPath; },
+  {
+    edit,
+    path,
+  }: {
+    edit: TomlEditState;
+    path: TomlPath
+  },
 ): TomlComment | null {
-  const result = effectiveAt({ edit, path, },);
-  if (result.kind === 'missing' || result.kind === 'deleted')
+  const result = effectiveAt({
+    edit,
+    path,
+  },);
+  if ((result.kind === 'missing') || (result.kind === 'deleted'))
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
   if (result.kind === 'pending-value')
     return null;
   const node = result.kind === 'array-of-tables'
-    ? nonNullishOrThrow(result.nodes[result.nodes.length - 1],)
+    ? nonNullishOrThrow(result.nodes.at(-1),)
     : result.node;
-  return trailingInlineCommentFor({ node, edit, },);
+  return trailingInlineCommentFor({
+    node,
+    edit,
+  },);
 }

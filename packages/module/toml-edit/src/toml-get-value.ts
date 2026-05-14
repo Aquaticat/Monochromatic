@@ -23,16 +23,27 @@ import type {
  * For arrays and array-of-tables, returns the array of values.
  * For primitives, returns the JS primitive.
  *
+ * @returns Computed result (`unknown`).
+ *
  * @example
  * ```ts
  * tomlGetValue({ edit, path: ['fruits', 0, 'name',], },);  // 'apple'
  * ```
  */
 export function tomlGetValue(
-  { edit, path, }: { edit: TomlEditState; path: TomlPath; },
+  {
+    edit,
+    path,
+  }: {
+    edit: TomlEditState;
+    path: TomlPath
+  },
 ): unknown {
-  const result = effectiveAt({ edit, path, },);
-  if (result.kind === 'missing' || result.kind === 'deleted')
+  const result = effectiveAt({
+    edit,
+    path,
+  },);
+  if ((result.kind === 'missing') || (result.kind === 'deleted'))
     return undefined;
   if (result.kind === 'pending-value')
     return result.value;
@@ -40,7 +51,7 @@ export function tomlGetValue(
     return getStaticTOMLValue(result.node.value,);
   if (result.kind === 'value')
     return getStaticTOMLValue(result.node,);
-  if (result.kind === 'table' || result.kind === 'top-level')
+  if ((result.kind === 'table') || (result.kind === 'top-level'))
     return getStaticTOMLValue(result.node,);
   return result.nodes.map(function each(t,) {
     return getStaticTOMLValue(t,);

@@ -100,7 +100,7 @@ await describe({
         const e1 = tomlSet({
           edit: parseTomlEdit({ source, },),
           path: ['size',],
-          value: 1000,
+          value: 1_000,
         },);
         expect(tomlStringify({ edit: e1, },),).toBe('size = 1000\n',);
       },

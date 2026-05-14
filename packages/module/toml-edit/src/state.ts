@@ -19,6 +19,8 @@ import type {
 /**
  * Return a fresh state with an additional `edits` entry on `node`.
  *
+ * @returns A fresh `TomlEditState` reflecting the change.
+ *
  * @example
  * ```ts
  * withEditOn({ edit, node, delta: { kind: 'replace-value', ... }, },);
@@ -35,12 +37,26 @@ export function withEditOn(
     delta: Edit;
   },
 ): TomlEditState {
-  const entries: [AST.TOMLNode, Edit,][] = [...edit.edits, [node, delta,],];
-  return { ...edit, edits: new Map(entries,), };
+  const entries: [
+    AST.TOMLNode,
+    Edit,
+  ][] = [
+    ...edit.edits,
+    [
+      node,
+      delta,
+    ],
+  ];
+  return {
+    ...edit,
+    edits: new Map(entries,),
+  };
 }
 
 /**
  * Return a fresh state with an additional pending `insertion`.
+ *
+ * @returns A fresh `TomlEditState` reflecting the change.
  *
  * @example
  * ```ts
@@ -56,5 +72,11 @@ export function withInsertion(
     insertion: Insertion;
   },
 ): TomlEditState {
-  return { ...edit, insertions: [...edit.insertions, insertion,], };
+  return {
+    ...edit,
+    insertions: [
+      ...edit.insertions,
+      insertion,
+    ],
+  };
 }

@@ -17,7 +17,11 @@ import {
   type TomlEditState,
 } from './types.ts';
 
-/** Parse `source` and wrap `ParseError` in a `TomlEditError`. */
+/**
+ * Parse `source` and wrap `ParseError` in a `TomlEditError`.
+ *
+ * @returns Computed result (`AST.TOMLProgram`).
+ */
 function safeParse(
   {
     source,
@@ -34,7 +38,10 @@ function safeParse(
     );
   } catch (e: unknown) {
     if (e instanceof ParseError)
-      throw new TomlEditError(`Failed to parse TOML: ${e.message}`, { cause: e, },);
+      throw new TomlEditError(
+        `Failed to parse TOML: ${e.message}`,
+        { cause: e, },
+      );
     throw e;
   }
 }
@@ -81,7 +88,10 @@ export function parseTomlEdit(
     tomlVersion,
   }: TomlEditOptions,
 ): TomlEditState {
-  const program = safeParse({ source, tomlVersion, },);
+  const program = safeParse({
+    source,
+    tomlVersion,
+  },);
 
   return {
     source,

@@ -48,6 +48,8 @@ import {
 /**
  * Dispatch the path-create branches.
  *
+ * @returns A fresh `TomlEditState` reflecting the change.
+ *
  * @example
  * ```ts
  * doPathCreate({ edit, path: ['a','b','c',], value: 42, resolved, },);
@@ -63,14 +65,18 @@ export function doPathCreate(
     edit: TomlEditState;
     path: TomlPath;
     value: unknown;
-    resolved: { kind: 'missing'; deepest: AST.TOMLNode; consumed: number; };
+    resolved: {
+      kind: 'missing';
+      deepest: AST.TOMLNode;
+      consumed: number
+    };
   },
 ): TomlEditState {
   const remaining = path.slice(resolved.consumed,);
-  const deepest = resolved.deepest;
+  const {deepest} = resolved;
 
   const dottedSegments: readonly string[] = remaining.map(function asString(seg,) {
-    if (typeof seg !== 'string')
+    if ((typeof seg) !== 'string')
       throw new TomlImmutableNodeError(
         `Cannot path-create at numeric segment ${String(seg,)} in path ${formatPath({ path, },)}`,
       );
@@ -116,6 +122,8 @@ export function doPathCreate(
  * in the top-level body; else `eof`. This avoids the TOML grammar trap
  * where a key-value after a `[section]` header is parsed as belonging
  * to that section.
+ *
+ * @returns A fresh `TomlEditState` reflecting the change.
  */
 function doTopLevelDottedKeyInsert(
   {
@@ -153,7 +161,10 @@ function doTopLevelDottedKeyInsert(
   },);
 
   const anchor: AnchorKind = firstTable !== undefined
-    ? { position: 'before-node', node: firstTable, }
+    ? {
+      position: 'before-node',
+      node: firstTable,
+    }
     : 'eof';
 
   // For 'before-node', the byte at firstTable.range[0] is preceded by an
@@ -162,9 +173,9 @@ function doTopLevelDottedKeyInsert(
   // ends mid-line.
   const prefix = firstTable !== undefined
     ? ''
-    : edit.source === '' || edit.source.endsWith('\n',)
+    : ((edit.source === '') || edit.source.endsWith('\n',)
       ? ''
-      : '\n';
+      : '\n');
 
   return withInsertion({
     edit,
@@ -184,6 +195,8 @@ function doTopLevelDottedKeyInsert(
  * the program's top-level body so a sibling `[foo.sub]` that overlaps
  * the new dotted-key implicit-table path is caught before we record
  * the insertion.
+ *
+ * @returns A fresh `TomlEditState` reflecting the change.
  */
 function doTableDottedKeyInsert(
   {
@@ -221,7 +234,11 @@ function doTableDottedKeyInsert(
   return withInsertion({
     edit,
     insertion: {
-      anchor: { position: 'inside-table', table: container, atEnd: true, },
+      anchor: {
+        position: 'inside-table',
+        table: container,
+        atEnd: true,
+      },
       text: `${prefix}${dottedKey} = ${valueText}\n`,
       path,
       jsValue: value,
@@ -237,6 +254,8 @@ function doTableDottedKeyInsert(
  * new entry via the standard keyvalue lookup. This requires the inline
  * table to be the direct value of a `TOMLKeyValue`; nested inline tables
  * inside an array are rejected.
+ *
+ * @returns A fresh `TomlEditState` reflecting the change.
  */
 function doInlineTableExtend(
   {
@@ -253,8 +272,8 @@ function doInlineTableExtend(
     dottedSegments: readonly string[];
   },
 ): TomlEditState {
-  const parent = inlineTable.parent;
-  if (parent === null || parent.type !== 'TOMLKeyValue')
+  const {parent} = inlineTable;
+  if ((parent === null) || (parent.type !== 'TOMLKeyValue'))
     throw new TomlImmutableNodeError(
       `tomlSet at ${formatPath({ path, },)}: extending an inline table nested inside an array is not supported in v1`,
     );
@@ -295,7 +314,11 @@ function doInlineTableExtend(
   return withEditOn({
     edit,
     node: parent,
-    delta: { kind: 'replace-value', newText, jsValue: newJsValue, },
+    delta: {
+      kind: 'replace-value',
+      newText,
+      jsValue: newJsValue,
+    },
   },);
 }
 
@@ -303,6 +326,8 @@ function doInlineTableExtend(
  * Merge `value` into `base` at the chain of dotted segments, returning
  * a fresh object. Intermediate non-object slots are overwritten with
  * fresh `{}`.
+ *
+ * @returns Computed result (`Record<string, unknown>`).
  */
 function mergeDottedSegments(
   {
@@ -316,10 +341,13 @@ function mergeDottedSegments(
   },
 ): Record<string, unknown> {
   if (segments.length === 0) return base;
-  const head = segments[0];
+  const [head,] = segments;
   if (head === undefined) return base;
   if (segments.length === 1)
-    return { ...base, [head]: value, };
+    return {
+      ...base,
+      [head]: value,
+    };
   const existing = base[head];
   const child = isPlainObject(existing,) ? existing : {};
   return {

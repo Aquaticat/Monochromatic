@@ -21,6 +21,11 @@
 import type { AST, } from 'toml-eslint-parser';
 
 import {
+  asStringPath,
+  mergeAt,
+  pathEquals,
+} from './effective-helpers.ts';
+import {
   resolveByPath,
   type ResolveResult,
 } from './resolve.ts';
@@ -40,11 +45,16 @@ import { isPlainObject, } from './values.ts';
  */
 export type EffectiveResult =
   | { readonly kind: 'deleted'; }
-  | { readonly kind: 'pending-value'; readonly value: unknown; }
+  | {
+    readonly kind: 'pending-value';
+    readonly value: unknown
+  }
   | ResolveResult;
 
 /**
  * Resolve a path against the AST plus pending deltas.
+ *
+ * @returns Computed result (`EffectiveResult`).
  *
  * @example
  * ```ts
@@ -52,29 +62,55 @@ export type EffectiveResult =
  * ```
  */
 export function effectiveAt(
-  { edit, path, }: { edit: TomlEditState; path: TomlPath; },
+  {
+    edit,
+    path,
+  }: {
+    edit: TomlEditState;
+    path: TomlPath
+  },
 ): EffectiveResult {
   const exactInsertion = edit.insertions.find(function matchesPath(ins,) {
-    return ins.path !== undefined && pathEquals({ a: ins.path, b: path, },);
+    return (ins.path !== undefined) && pathEquals({
+      a: ins.path,
+      b: path,
+    },);
   },);
   if (exactInsertion !== undefined)
-    return { kind: 'pending-value', value: exactInsertion.jsValue, };
+    return {
+      kind: 'pending-value',
+      value: exactInsertion.jsValue,
+    };
 
-  const prefixProjection = projectPendingAtPrefix({ edit, path, },);
+  const prefixProjection = projectPendingAtPrefix({
+    edit,
+    path,
+  },);
   if (prefixProjection !== null)
     return prefixProjection;
 
-  const subtree = synthesiseSubtree({ edit, path, },);
+  const subtree = synthesiseSubtree({
+    edit,
+    path,
+  },);
   if (subtree !== null)
-    return { kind: 'pending-value', value: subtree, };
+    return {
+      kind: 'pending-value',
+      value: subtree,
+    };
 
-  return resolveAst({ edit, path, },);
+  return resolveAst({
+    edit,
+    path,
+  },);
 }
 
 /**
  * Synthetic `missing` placeholder for JS-space dead-ends. Uses the
  * program's top-level table as a non-null `deepest` sentinel; consumers
  * only read `kind` from the missing arm.
+ *
+ * @returns Computed result (`ResolveResult`).
  */
 function missingFor(
   { edit, }: { edit: TomlEditState; },
@@ -92,6 +128,8 @@ function missingFor(
  * segments.
  *
  * Returns `null` when no covering pending state exists.
+ *
+ * @returns Result, or `null` when no match.
  */
 function projectPendingAtPrefix(
   {
@@ -103,23 +141,40 @@ function projectPendingAtPrefix(
   },
 ): EffectiveResult | null {
   for (let prefixLen = path.length; prefixLen >= 1; prefixLen--) {
-    const prefix = path.slice(0, prefixLen,);
+    const prefix = path.slice(
+      0,
+      prefixLen,
+    );
     const rest = path.slice(prefixLen,);
 
     const matchingIns = edit.insertions.find(function matches(ins,) {
-      return ins.path !== undefined && pathEquals({ a: ins.path, b: prefix, },);
+      return (ins.path !== undefined) && pathEquals({
+        a: ins.path,
+        b: prefix,
+      },);
     },);
     if (matchingIns !== undefined)
-      return navigateJsValue({ edit, value: matchingIns.jsValue, rest, },);
+      return navigateJsValue({
+        edit,
+        value: matchingIns.jsValue,
+        rest,
+      },);
 
-    const baseAtPrefix = resolveByPath({ edit, path: prefix, },);
+    const baseAtPrefix = resolveByPath({
+      edit,
+      path: prefix,
+    },);
     const pendingNode = nodeFromResolved({ resolved: baseAtPrefix, },);
     if (pendingNode !== null) {
       if (edit.deletions.has(pendingNode,))
         return { kind: 'deleted', };
       const pendingEdit = edit.edits.get(pendingNode,);
-      if (pendingEdit !== undefined && pendingEdit.jsValue !== undefined)
-        return navigateJsValue({ edit, value: pendingEdit.jsValue, rest, },);
+      if ((pendingEdit !== undefined) && (pendingEdit.jsValue !== undefined))
+        return navigateJsValue({
+          edit,
+          value: pendingEdit.jsValue,
+          rest,
+        },);
     }
   }
   return null;
@@ -132,13 +187,15 @@ function projectPendingAtPrefix(
  * its `value.range`). For `value`, this is the content node directly
  * (used by element-Edit cases). Other kinds either have no single node
  * to edit or are handled in the AST fallback.
+ *
+ * @returns Result, or `null` when no match.
  */
 function nodeFromResolved(
   { resolved, }: { resolved: ResolveResult; },
 ): AST.TOMLNode | null {
-  if (resolved.kind === 'keyvalue' || resolved.kind === 'value')
+  if ((resolved.kind === 'keyvalue') || (resolved.kind === 'value'))
     return resolved.node;
-  if (resolved.kind === 'table' || resolved.kind === 'top-level')
+  if ((resolved.kind === 'table') || (resolved.kind === 'top-level'))
     return resolved.node;
   return null;
 }
@@ -149,6 +206,8 @@ function nodeFromResolved(
  * level above a deep path-create.
  *
  * Returns `null` when no pending insertion contributes.
+ *
+ * @returns Result, or `null` when no match.
  */
 function synthesiseSubtree(
   {
@@ -164,7 +223,10 @@ function synthesiseSubtree(
     const insPath = ins.path;
     if (insPath === undefined) continue;
     if (insPath.length <= path.length) continue;
-    const matches = path.every(function eq(seg, i,) {
+    const matches = path.every(function eq(
+      seg,
+      i,
+    ) {
       return seg === insPath[i];
     },);
     if (!matches) continue;
@@ -181,56 +243,12 @@ function synthesiseSubtree(
 }
 
 /**
- * Project `segs` to a `string[]` when every segment is a string; else
- * `null`. Used in sub-tree synthesis to skip insertions whose path
- * goes through an array (a sub-tree can't be reconstructed via key
- * navigation alone).
- */
-function asStringPath(
-  { segs, }: { segs: TomlPath; },
-): readonly string[] | null {
-  const result: string[] = [];
-  for (const s of segs) {
-    if (typeof s !== 'string') return null;
-    result.push(s,);
-  }
-  return result;
-}
-
-/** Merge `value` into `base` at the chain of segments, returning a fresh object. */
-function mergeAt(
-  {
-    base,
-    segments,
-    value,
-  }: {
-    base: Record<string, unknown>;
-    segments: readonly string[];
-    value: unknown;
-  },
-): Record<string, unknown> {
-  if (segments.length === 0) return base;
-  const head = segments[0];
-  if (head === undefined) return base;
-  if (segments.length === 1)
-    return { ...base, [head]: value, };
-  const existing = base[head];
-  const child = isPlainObject(existing,) ? existing : {};
-  return {
-    ...base,
-    [head]: mergeAt({
-      base: child,
-      segments: segments.slice(1,),
-      value,
-    },),
-  };
-}
-
-/**
  * Navigate a JS value with the remaining path segments.
  *
  * Returns `pending-value` on success or `missing` when navigation hits
  * `undefined` / a non-traversable shape.
+ *
+ * @returns Computed result (`EffectiveResult`).
  */
 function navigateJsValue(
   {
@@ -246,13 +264,20 @@ function navigateJsValue(
   if (rest.length === 0) {
     if (value === undefined)
       return missingFor({ edit, },);
-    return { kind: 'pending-value', value, };
+    return {
+      kind: 'pending-value',
+      value,
+    };
   }
   const [head, ...remaining] = rest;
   if (head === undefined) return missingFor({ edit, },);
-  if (typeof head === 'number') {
+  if ((typeof head) === 'number') {
     if (!Array.isArray(value,)) return missingFor({ edit, },);
-    return navigateJsValue({ edit, value: value[head], rest: remaining, },);
+    return navigateJsValue({
+      edit,
+      value: value[head],
+      rest: remaining,
+    },);
   }
   if (!isPlainObject(value,))
     return missingFor({ edit, },);
@@ -263,27 +288,46 @@ function navigateJsValue(
   },);
 }
 
-/** AST-only resolution (no cross-path projection); used as fallback. */
+/**
+ * AST-only resolution (no cross-path projection); used as fallback.
+ *
+ * @returns Computed result (`EffectiveResult`).
+ */
 function resolveAst(
-  { edit, path, }: { edit: TomlEditState; path: TomlPath; },
+  {
+    edit,
+    path,
+  }: {
+    edit: TomlEditState;
+    path: TomlPath
+  },
 ): EffectiveResult {
-  const base = resolveByPath({ edit, path, },);
+  const base = resolveByPath({
+    edit,
+    path,
+  },);
   if (base.kind === 'keyvalue') {
     if (edit.deletions.has(base.node,))
       return { kind: 'deleted', };
     const pending = edit.edits.get(base.node,);
     if (pending !== undefined)
-      return { kind: 'pending-value', value: pending.jsValue, };
+      return {
+        kind: 'pending-value',
+        value: pending.jsValue,
+      };
   }
   if (base.kind === 'value') {
     const pending = edit.edits.get(base.node,);
     if (pending !== undefined)
-      return { kind: 'pending-value', value: pending.jsValue, };
+      return {
+        kind: 'pending-value',
+        value: pending.jsValue,
+      };
   }
-  if (base.kind === 'table' && edit.deletions.has(base.node,))
+  if ((base.kind === 'table') && edit.deletions.has(base.node,))
     return { kind: 'deleted', };
   if (
-    base.kind === 'array-of-tables'
+    (base.kind === 'array-of-tables')
     && base.nodes.every(function isDeleted(n,) {
       return edit.deletions.has(n,);
     },)
@@ -292,26 +336,3 @@ function resolveAst(
   return base;
 }
 
-/** Strict equality on two TOML paths (segment-wise). */
-function pathEquals(
-  { a, b, }: { a: TomlPath; b: TomlPath; },
-): boolean {
-  if (a.length !== b.length) return false;
-  return a.every(function eq(seg, i,) {
-    return seg === b[i];
-  },);
-}
-
-/**
- * Apply any pending `replace-value` edit to a `TOMLContentNode`, returning
- * the effective text representation. Currently a passthrough; populated by
- * the write API.
- */
-export function effectiveValueText(
-  { edit, node, }: { edit: TomlEditState; node: AST.TOMLContentNode; },
-): { kind: 'edited'; text: string; } | { kind: 'parse-time'; node: AST.TOMLContentNode; } {
-  const pending = edit.edits.get(node,);
-  if (pending !== undefined && pending.kind === 'replace-value')
-    return { kind: 'edited', text: pending.newText, };
-  return { kind: 'parse-time', node, };
-}

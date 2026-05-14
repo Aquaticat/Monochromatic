@@ -22,7 +22,15 @@ import type {
  * `tomlStringify` time. They do not show up in `tomlGetComments` until the
  * output is reparsed.
  *
+ * @returns A fresh `TomlEditState` reflecting the change.
+ *
  * @throws TomlPathNotFoundError when `path` does not exist.
+ *
+ * @example
+ * ```ts
+ * tomlInsertCommentBefore({ edit, path: ['version',], comment: ' bumped', },);
+ * tomlInsertCommentBefore({ edit, path: ['tools',], comment: [' line one', ' line two',], },);
+ * ```
  */
 export function tomlInsertCommentBefore(
   {
@@ -35,8 +43,11 @@ export function tomlInsertCommentBefore(
     comment: string | readonly string[];
   },
 ): TomlEditState {
-  const resolved = resolveByPath({ edit, path, },);
-  if (resolved.kind === 'missing' || resolved.kind === 'top-level')
+  const resolved = resolveByPath({
+    edit,
+    path,
+  },);
+  if ((resolved.kind === 'missing') || (resolved.kind === 'top-level'))
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
@@ -47,16 +58,35 @@ export function tomlInsertCommentBefore(
   },).join('',);
 
   const anchor: Insertion['anchor'] = resolved.kind === 'array-of-tables'
-    ? { position: 'before-node', node: nonNullishOrThrow(resolved.nodes[0],), }
-    : { position: 'before-node', node: resolved.node, };
+    ? {
+      position: 'before-node',
+      node: nonNullishOrThrow(resolved.nodes[0],),
+    }
+    : {
+      position: 'before-node',
+      node: resolved.node,
+    };
 
-  return { ...edit, insertions: [...edit.insertions, { anchor, text, },], };
+  return {
+    ...edit,
+    insertions: [
+      ...edit.insertions,
+      {
+        anchor,
+        text,
+      },
+    ],
+  };
 }
 
-/** Normalise the `comment` arg to a readonly array of lines. */
+/**
+ * Normalise the `comment` arg to a readonly array of lines.
+ *
+ * @returns Computed result (`readonly string[]`).
+ */
 function toLines(
   { comment, }: { comment: string | readonly string[]; },
 ): readonly string[] {
-  if (typeof comment === 'string') return [comment,];
+  if ((typeof comment) === 'string') return [comment,];
   return comment;
 }

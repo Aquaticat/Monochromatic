@@ -23,9 +23,22 @@
  * ```
  */
 export class TomlEditError extends Error {
-  /** Wrap `message` and the optional `cause`. */
-  constructor(message: string, options?: ErrorOptions,) {
-    super(message, options,);
+  /**
+   * Wrap `message` and the optional `cause`.
+   *
+   * @param message - Human-readable description of the failure.
+   *
+   * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
+   *                  underlying error.
+   */
+  constructor(
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(
+      message,
+      options,
+    );
     this.name = 'TomlEditError';
   }
 }
@@ -35,9 +48,22 @@ export class TomlEditError extends Error {
  * operation cannot resolve it via path-create).
  */
 export class TomlPathNotFoundError extends TomlEditError {
-  /** Wrap `message` and the optional `cause`. */
-  constructor(message: string, options?: ErrorOptions,) {
-    super(message, options,);
+  /**
+   * Wrap `message` and the optional `cause`.
+   *
+   * @param message - Human-readable description of the missing path.
+   *
+   * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
+   *                  underlying error.
+   */
+  constructor(
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(
+      message,
+      options,
+    );
     this.name = 'TomlPathNotFoundError';
   }
 }
@@ -47,9 +73,22 @@ export class TomlPathNotFoundError extends TomlEditError {
  * called on a canonical-mode state.
  */
 export class TomlSpliceUnavailableError extends TomlEditError {
-  /** Wrap `message` and the optional `cause`. */
-  constructor(message: string, options?: ErrorOptions,) {
-    super(message, options,);
+  /**
+   * Wrap `message` and the optional `cause`.
+   *
+   * @param message - Human-readable description naming the splice-only API.
+   *
+   * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
+   *                  underlying error.
+   */
+  constructor(
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(
+      message,
+      options,
+    );
     this.name = 'TomlSpliceUnavailableError';
   }
 }
@@ -59,9 +98,22 @@ export class TomlSpliceUnavailableError extends TomlEditError {
  * `undefined`, symbols, functions).
  */
 export class TomlTypeError extends TomlEditError {
-  /** Wrap `message` and the optional `cause`. */
-  constructor(message: string, options?: ErrorOptions,) {
-    super(message, options,);
+  /**
+   * Wrap `message` and the optional `cause`.
+   *
+   * @param message - Human-readable description naming the rejected JS type.
+   *
+   * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
+   *                  underlying error.
+   */
+  constructor(
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(
+      message,
+      options,
+    );
     this.name = 'TomlTypeError';
   }
 }
@@ -72,9 +124,22 @@ export class TomlTypeError extends TomlEditError {
  * one shot). Documented in the package's Open risks.
  */
 export class TomlImmutableNodeError extends TomlEditError {
-  /** Wrap `message` and the optional `cause`. */
-  constructor(message: string, options?: ErrorOptions,) {
-    super(message, options,);
+  /**
+   * Wrap `message` and the optional `cause`.
+   *
+   * @param message - Human-readable description naming the unsupported shape.
+   *
+   * @param options - Standard `ErrorOptions`; pass `{ cause }` to chain an
+   *                  underlying error.
+   */
+  constructor(
+    message: string,
+    options?: ErrorOptions,
+  ) {
+    super(
+      message,
+      options,
+    );
     this.name = 'TomlImmutableNodeError';
   }
 }

@@ -48,6 +48,8 @@ import type {
  *   direct value of a key-value): rewrites the parent array via
  *   canonical re-emission, missing the indexed element.
  *
+ * @returns A fresh `TomlEditState` reflecting the change.
+ *
  * @throws TomlImmutableNodeError when deleting an element nested inside
  *         an array of arrays (the outer container is also a `TOMLArray`,
  *         not a key-value).
@@ -60,23 +62,46 @@ import type {
  * ```
  */
 export function tomlDelete(
-  { edit, path, }: { edit: TomlEditState; path: TomlPath; },
+  {
+    edit,
+    path,
+  }: {
+    edit: TomlEditState;
+    path: TomlPath
+  },
 ): TomlEditState {
-  const resolved = resolveByPath({ edit, path, },);
+  const resolved = resolveByPath({
+    edit,
+    path,
+  },);
 
-  if (resolved.kind === 'missing' || resolved.kind === 'top-level')
+  if ((resolved.kind === 'missing') || (resolved.kind === 'top-level'))
     return edit;
 
   if (resolved.kind === 'array-of-tables')
-    return withDeletions({ edit, nodes: resolved.nodes, },);
+    return withDeletions({
+      edit,
+      nodes: resolved.nodes,
+    },);
 
   if (resolved.kind === 'value')
-    return deleteArrayElement({ edit, path, element: resolved.node, },);
+    return deleteArrayElement({
+      edit,
+      path,
+      element: resolved.node,
+    },);
 
-  return withDeletion({ edit, node: resolved.node, },);
+  return withDeletion({
+    edit,
+    node: resolved.node,
+  },);
 }
 
-/** Return a fresh state with `node` added to `deletions`. */
+/**
+ * Return a fresh state with `node` added to `deletions`.
+ *
+ * @returns A fresh `TomlEditState` reflecting the change.
+ */
 function withDeletion(
   {
     edit,
@@ -86,10 +111,20 @@ function withDeletion(
     node: AST.TOMLNode;
   },
 ): TomlEditState {
-  return { ...edit, deletions: new Set([...edit.deletions, node,],), };
+  return {
+    ...edit,
+    deletions: new Set([
+      ...edit.deletions,
+      node,
+    ],),
+  };
 }
 
-/** Return a fresh state with all `nodes` added to `deletions` in one allocation. */
+/**
+ * Return a fresh state with all `nodes` added to `deletions` in one allocation.
+ *
+ * @returns A fresh `TomlEditState` reflecting the change.
+ */
 function withDeletions(
   {
     edit,
@@ -99,7 +134,13 @@ function withDeletions(
     nodes: readonly AST.TOMLNode[];
   },
 ): TomlEditState {
-  return { ...edit, deletions: new Set([...edit.deletions, ...nodes,],), };
+  return {
+    ...edit,
+    deletions: new Set([
+      ...edit.deletions,
+      ...nodes,
+    ],),
+  };
 }
 
 /**
@@ -109,6 +150,8 @@ function withDeletions(
  * The Edit's `jsValue` is the post-delete JS array, so
  * `tomlGetValue({ path: containingKeyPath })` returns the new array on
  * the same or any branched state.
+ *
+ * @returns A fresh `TomlEditState` reflecting the change.
  */
 function deleteArrayElement(
   {
@@ -121,18 +164,18 @@ function deleteArrayElement(
     element: AST.TOMLContentNode;
   },
 ): TomlEditState {
-  const parent = element.parent;
-  if (parent === null || parent.type !== 'TOMLArray')
+  const {parent} = element;
+  if ((parent === null) || (parent.type !== 'TOMLArray'))
     throw new TomlImmutableNodeError(
       `tomlDelete at ${formatPath({ path, },)}: expected an array element, found parent type ${String(parent?.type,)}`,
     );
   const grandparent = parent.parent;
-  if (grandparent === null || grandparent.type !== 'TOMLKeyValue')
+  if ((grandparent === null) || (grandparent.type !== 'TOMLKeyValue'))
     throw new TomlImmutableNodeError(
       `tomlDelete on a nested-array element at ${formatPath({ path, },)} is not supported in v1; the outer array is not the direct value of a key`,
     );
   const skipIndex = parent.elements.indexOf(element,);
-  if (skipIndex === -1)
+  if (skipIndex === (-1))
     throw new TomlImmutableNodeError(
       `tomlDelete at ${formatPath({ path, },)}: element not found in parent array`,
     );
@@ -143,7 +186,10 @@ function deleteArrayElement(
     depth: 0,
   },);
   const newJsArray = parent.elements
-    .filter(function notSkipped(_el, i,) {
+    .filter(function notSkipped(
+      _el,
+      i,
+    ) {
       return i !== skipIndex;
     },)
     .map(function each(el,) {
@@ -154,6 +200,15 @@ function deleteArrayElement(
     newText,
     jsValue: newJsArray,
   };
-  const nextEdits = new Map([...edit.edits, [grandparent, delta,] as const,],);
-  return { ...edit, edits: nextEdits, };
+  const nextEdits = new Map([
+    ...edit.edits,
+    [
+      grandparent,
+      delta,
+    ] as const,
+  ],);
+  return {
+    ...edit,
+    edits: nextEdits,
+  };
 }

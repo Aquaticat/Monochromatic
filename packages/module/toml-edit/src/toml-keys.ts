@@ -21,6 +21,8 @@ import type {
  * array-of-tables, returns numeric indices. For a missing path, returns
  * an empty array.
  *
+ * @returns Computed result (`readonly (string | number)[]`).
+ *
  * @example
  * ```ts
  * tomlKeys({ edit, },);                  // ['title', 'tools', 'fruits']
@@ -28,28 +30,43 @@ import type {
  * ```
  */
 export function tomlKeys(
-  { edit, path = [], }: { edit: TomlEditState; path?: TomlPath; },
+  {
+    edit,
+    path = [],
+  }: {
+    edit: TomlEditState;
+    path?: TomlPath
+  },
 ): readonly (string | number)[] {
-  const result = effectiveAt({ edit, path, },);
-  if (result.kind === 'missing' || result.kind === 'deleted')
+  const result = effectiveAt({
+    edit,
+    path,
+  },);
+  if ((result.kind === 'missing') || (result.kind === 'deleted'))
     return [];
   if (result.kind === 'pending-value') {
     const v = result.value;
     if (Array.isArray(v,))
-      return v.map(function eachIdx(_: unknown, i: number,) {
+      return v.map(function eachIdx(
+        _: unknown,
+        i: number,
+      ) {
         return i;
       },);
-    if (v !== null && typeof v === 'object')
+    if ((v !== null) && ((typeof v) === 'object'))
       return Object.keys(v,);
     return [];
   }
-  if (result.kind === 'top-level' || result.kind === 'table')
+  if ((result.kind === 'top-level') || (result.kind === 'table'))
     return tableChildKeys({ container: result.node, },);
   if (result.kind === 'keyvalue') {
     if (result.node.value.type === 'TOMLInlineTable')
       return tableChildKeys({ container: result.node.value, },);
     if (result.node.value.type === 'TOMLArray')
-      return result.node.value.elements.map(function eachIdx(_: unknown, i: number,) {
+      return result.node.value.elements.map(function eachIdx(
+        _: unknown,
+        i: number,
+      ) {
         return i;
       },);
     return [];
@@ -58,17 +75,27 @@ export function tomlKeys(
     if (result.node.type === 'TOMLInlineTable')
       return tableChildKeys({ container: result.node, },);
     if (result.node.type === 'TOMLArray')
-      return result.node.elements.map(function eachIdx(_: unknown, i: number,) {
+      return result.node.elements.map(function eachIdx(
+        _: unknown,
+        i: number,
+      ) {
         return i;
       },);
     return [];
   }
-  return result.nodes.map(function eachIdx(_: unknown, i: number,) {
+  return result.nodes.map(function eachIdx(
+    _: unknown,
+    i: number,
+  ) {
     return i;
   },);
 }
 
-/** First key of each direct child entry in a table container (deduped). */
+/**
+ * First key of each direct child entry in a table container (deduped).
+ *
+ * @returns Computed result (`readonly string[]`).
+ */
 function tableChildKeys(
   {
     container,
@@ -86,8 +113,8 @@ function tableChildKeys(
       return [first,];
     }
     if (container.type === 'TOMLTopLevelTable') {
-      const tableTop = child.resolvedKey[0];
-      if (typeof tableTop !== 'string' || seen.has(tableTop,)) return [];
+      const [tableTop,] = child.resolvedKey;
+      if (((typeof tableTop) !== 'string') || seen.has(tableTop,)) return [];
       seen.add(tableTop,);
       return [tableTop,];
     }

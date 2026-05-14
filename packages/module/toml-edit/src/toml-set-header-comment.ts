@@ -18,6 +18,14 @@ import type {
  * Splice-mode emission does not currently re-flow existing source
  * comments; setting a header comment in splice mode affects only
  * canonical re-emission via `tomlStringify` when the state is canonical.
+ *
+ * @returns A fresh `TomlEditState` reflecting the change.
+ *
+ * @example
+ * ```ts
+ * tomlSetHeaderComment({ edit, comment: ' Generated; do not edit', },);
+ * tomlSetHeaderComment({ edit, comment: null, },);
+ * ```
  */
 export function tomlSetHeaderComment(
   {
@@ -29,14 +37,21 @@ export function tomlSetHeaderComment(
   },
 ): TomlEditState {
   const headerComment = resolveComment({ comment, },);
-  return { ...edit, headerComment, };
+  return {
+    ...edit,
+    headerComment,
+  };
 }
 
-/** Normalise the `comment` arg to a single newline-joined string or `null`. */
+/**
+ * Normalise the `comment` arg to a single newline-joined string or `null`.
+ *
+ * @returns Result, or `null` when no match.
+ */
 function resolveComment(
   { comment, }: { comment: string | readonly string[] | null; },
 ): string | null {
   if (comment === null) return null;
-  if (typeof comment === 'string') return comment;
+  if ((typeof comment) === 'string') return comment;
   return comment.join('\n',);
 }
