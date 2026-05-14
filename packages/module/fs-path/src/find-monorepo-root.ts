@@ -21,8 +21,12 @@ import { dirname, } from './index.ts';
  */
 type ReadFileFn = (path: string,) => Promise<string | undefined>;
 
-/** Cached filesystem backend, resolved once on first call. */
-let cachedReadFile: ReadFileFn | undefined = undefined;
+/**
+ * Cached filesystem backend, resolved once on first call.
+ * Stored as an object property so module-root state stays in a `const`
+ * container (`no-module-root-let` would otherwise reject a top-level `let`).
+ */
+const backendCache: { readFile?: ReadFileFn; } = {};
 
 /** Tagged logger for monorepo root discovery diagnostics. */
 const l = tagged({ tag: 'findMonorepoRoot', },);
@@ -94,22 +98,22 @@ function resolveEmptyReadFile(): ReadFileFn {
  * @returns filesystem read function for the current runtime
  */
 async function resolveReadFile(): Promise<ReadFileFn> {
-  if (cachedReadFile !== undefined)
-    return cachedReadFile;
+  if (backendCache.readFile !== undefined)
+    return backendCache.readFile;
 
   // Node/Bun: process.versions.node is set
   /* oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined */
   if (typeof process !== 'undefined' && process.versions?.node !== undefined) {
-    cachedReadFile = await resolveNodeReadFile();
-    return cachedReadFile;
+    backendCache.readFile = await resolveNodeReadFile();
+    return backendCache.readFile;
   }
 
   // Browser: check OPFS support via happy-opfs
   try {
     const { isOPFSSupported, } = await import('happy-opfs');
     if (isOPFSSupported()) {
-      cachedReadFile = await resolveOpfsReadFile();
-      return cachedReadFile;
+      backendCache.readFile = await resolveOpfsReadFile();
+      return backendCache.readFile;
     }
   }
   catch {
@@ -117,8 +121,8 @@ async function resolveReadFile(): Promise<ReadFileFn> {
   }
 
   // No filesystem available
-  cachedReadFile = resolveEmptyReadFile();
-  return cachedReadFile;
+  backendCache.readFile = resolveEmptyReadFile();
+  return backendCache.readFile;
 }
 
 //endregion Filesystem backend resolution
@@ -146,20 +150,17 @@ async function walkUp({
   cwd: string;
   readFile: ReadFileFn;
 },): Promise<string | undefined> {
-  let dir = cwd;
+  const content = await readFile(`${cwd}/mise.toml`,);
+  if (content !== undefined && content.includes(MONOREPO_SECTION_MARKER,))
+    return cwd;
 
-  // oxlint-disable-next-line no-constant-condition -- terminates when dirname(dir) === dir (filesystem root)
-  while (true) {
-    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential directory walk requires awaiting each level
-    const content = await readFile(`${dir}/mise.toml`,);
-    if (content !== undefined && content.includes(MONOREPO_SECTION_MARKER,))
-      return dir;
-
-    const parent = dirname(dir,);
-    if (parent === dir)
-      return undefined;
-    dir = parent;
-  }
+  const parent = dirname(cwd,);
+  if (parent === cwd)
+    return undefined;
+  return walkUp({
+    cwd: parent,
+    readFile,
+  },);
 }
 
 //endregion Walk-up search

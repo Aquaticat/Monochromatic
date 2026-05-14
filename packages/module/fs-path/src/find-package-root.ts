@@ -63,10 +63,10 @@ export async function findPackageRoot(
     name: string;
   },
 ): Promise<string> {
-  const candidate = resolve(
+  const candidate = resolve([
     dir,
     'package.json',
-  );
+  ],);
   try {
     const contents = await readFile(
       candidate,

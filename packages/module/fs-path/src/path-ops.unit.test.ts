@@ -60,15 +60,15 @@ await describe({
     it({
       name: 'join concatenates and normalizes segments',
       fn: async () => {
-        expect(join('/foo', 'bar', 'baz',),).toBe('/foo/bar/baz',);
-        expect(join('foo', '../bar',),).toBe('bar',);
+        expect(join(['/foo', 'bar', 'baz',],),).toBe('/foo/bar/baz',);
+        expect(join(['foo', '../bar',],),).toBe('bar',);
       },
     },),
     it({
       name: 'resolve produces an absolute path',
       fn: async () => {
-        expect(resolve('/foo', 'bar', 'baz',),).toBe('/foo/bar/baz',);
-        expect(resolve('foo', '/bar', 'baz',),).toBe('/bar/baz',);
+        expect(resolve(['/foo', 'bar', 'baz',],),).toBe('/foo/bar/baz',);
+        expect(resolve(['foo', '/bar', 'baz',],),).toBe('/bar/baz',);
       },
     },),
     it({
@@ -83,16 +83,16 @@ await describe({
     it({
       name: 'joinFallback handles empty and relative segments',
       fn: async () => {
-        expect(joinFallback('foo', 'bar', 'baz',),).toBe('foo/bar/baz',);
-        expect(joinFallback('/root', '../sibling',),).toBe('/sibling',);
-        expect(joinFallback(),).toBe('.',);
+        expect(joinFallback(['foo', 'bar', 'baz',],),).toBe('foo/bar/baz',);
+        expect(joinFallback(['/root', '../sibling',],),).toBe('/sibling',);
+        expect(joinFallback([],),).toBe('.',);
       },
     },),
     it({
       name: 'resolveFallback yields an absolute path',
       fn: async () => {
-        expect(resolveFallback('/foo', 'bar', './baz',),).toBe('/foo/bar/baz',);
-        expect(resolveFallback('/foo', '/bar',),).toBe('/bar',);
+        expect(resolveFallback(['/foo', 'bar', './baz',],),).toBe('/foo/bar/baz',);
+        expect(resolveFallback(['/foo', '/bar',],),).toBe('/bar',);
       },
     },),
     it({

@@ -88,18 +88,20 @@ export function dirnameFallback(filePath: string,): string {
   const SLASH_CODE_POINT = 47;
   /** Whether the input path is rooted */
   const isRoot = filePath.codePointAt(0,) === SLASH_CODE_POINT;
-  /** Index of the last slash, ignoring a trailing slash */
-  let lastSlash = -1;
-
-  // Walk backwards to find the last separator, skipping a trailing slash
-  for (let charIndex = filePath.length - 1; charIndex >= 1; charIndex--) {
-    if (filePath.codePointAt(charIndex,) === SLASH_CODE_POINT) {
-      if (charIndex === filePath.length - 1)
-        continue;
-      lastSlash = charIndex;
-      break;
-    }
-  }
+  /**
+   * Highest index to consider when searching backward for the separator:
+   * one before a trailing slash, otherwise the last character. Skipping
+   * any trailing slash keeps it from being picked as the directory boundary.
+   */
+  const searchEnd = filePath.length > 1
+      && filePath.codePointAt(filePath.length - 1,) === SLASH_CODE_POINT
+    ? filePath.length - 2
+    : filePath.length - 1;
+  /** Index of the last meaningful slash, or -1 when none exists. */
+  const lastSlash = filePath.lastIndexOf(
+    '/',
+    searchEnd,
+  );
 
   if (lastSlash === -1)
     return isRoot ? '/' : '.';
@@ -124,12 +126,12 @@ export function dirnameFallback(filePath: string,): string {
  *
  * @example
  * ```ts
- * joinFallback('foo', 'bar', 'baz');   // 'foo/bar/baz'
- * joinFallback('/root', '../sibling'); // '/sibling'
- * joinFallback();                      // '.'
+ * joinFallback(['foo', 'bar', 'baz']);   // 'foo/bar/baz'
+ * joinFallback(['/root', '../sibling']); // '/sibling'
+ * joinFallback([]);                      // '.'
  * ```
  */
-export function joinFallback(...segments: string[]): string {
+export function joinFallback(segments: readonly string[],): string {
   if (segments.length === 0)
     return '.';
   /** Raw concatenation of all non-empty segments */
@@ -156,47 +158,46 @@ export function joinFallback(...segments: string[]): string {
  *
  * @example
  * ```ts
- * resolveFallback('/foo', 'bar', './baz'); // '/foo/bar/baz'
- * resolveFallback('foo', 'bar');           // `${cwd}/foo/bar`
+ * resolveFallback(['/foo', 'bar', './baz']); // '/foo/bar/baz'
+ * resolveFallback(['foo', 'bar']);           // `${cwd}/foo/bar`
  * ```
  */
-export function resolveFallback(...segments: string[]): string {
-  /** Accumulated path built right-to-left */
-  let resolved = '';
-  /** Whether the accumulated path is already absolute */
-  let resolvedAbsolute = false;
-
-  // Walk segments right-to-left; stop once we have an absolute path
-  for (let segmentIndex = segments.length - 1; segmentIndex >= 0 && !resolvedAbsolute;
-    segmentIndex--)
-  {
-    /** Current segment being processed */
-    const segment = segments[segmentIndex];
-    if (segment === undefined || segment === '')
-      continue;
-    /** Unicode code point for `/` */
-    const SLASH_CODE_POINT = 47;
-    resolved = resolved === '' ? segment : `${segment}/${resolved}`;
-    resolvedAbsolute = segment.codePointAt(0,) === SLASH_CODE_POINT;
-  }
-
-  // If still not absolute, prepend cwd (unavailable in browser, default to '/')
-  if (!resolvedAbsolute) {
-    /** Current working directory (falls back to `/` in browser) */
-    const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function'
-      ? process.cwd()
-      : '/';
-    resolved = `${cwd}/${resolved}`;
-  }
-
-  /** Normalized absolute path */
-  const normalized = normalize(resolved,);
-  // resolve() never returns trailing slashes except for root '/'
+export function resolveFallback(segments: readonly string[],): string {
   /** Unicode code point for `/` */
   const SLASH_CODE_POINT = 47;
-  if (normalized.length > 1
-    && normalized.codePointAt(normalized.length - 1,) === SLASH_CODE_POINT)
-  {
+
+  /**
+   * Index of the rightmost segment starting with `/`. Matches the
+   * right-to-left walk semantics of `node:path.resolve`: only segments
+   * from that point onward contribute, since each absolute segment
+   * discards everything to its left.
+   */
+  const absoluteIndex = segments.findLastIndex(function isAbsoluteSegment(segment,) {
+    return segment !== '' && segment.codePointAt(0,) === SLASH_CODE_POINT;
+  },);
+
+  /** Segments from the rightmost absolute (or start when none) to end. */
+  const relevantSegments = segments.slice(absoluteIndex === -1 ? 0 : absoluteIndex,);
+  /** Joined path built from the relevant segments, dropping empty entries. */
+  const partial = relevantSegments
+    .filter(function isNonEmpty(segment,) {
+      return segment !== '';
+    },)
+    .join('/',);
+
+  /** Current working directory (falls back to `/` in browser) */
+  const cwd = typeof process !== 'undefined' && typeof process.cwd === 'function'
+    ? process.cwd()
+    : '/';
+  /** Absolute composition: prepend cwd when no segment supplied a root. */
+  const composed = absoluteIndex === -1 ? `${cwd}/${partial}` : partial;
+  /** Normalized absolute path */
+  const normalized = normalize(composed,);
+
+  if (
+    normalized.length > 1
+    && normalized.codePointAt(normalized.length - 1,) === SLASH_CODE_POINT
+  ) {
     return normalized.slice(
       0,
       -1,

@@ -128,14 +128,14 @@ export function isAbsolute(filePath: string,): boolean {
  *
  * @example
  * ```ts
- * join('/foo', 'bar', 'baz'); // '/foo/bar/baz'
- * join('foo', '../bar');       // 'bar'
+ * join(['/foo', 'bar', 'baz']); // '/foo/bar/baz'
+ * join(['foo', '../bar']);       // 'bar'
  * ```
  */
-export function join(...segments: string[]): string {
+export function join(segments: readonly string[],): string {
   if (nodePath !== undefined)
     return nodePath.join(...segments,);
-  return joinFallback(...segments,);
+  return joinFallback(segments,);
 }
 
 /**
@@ -152,12 +152,12 @@ export function join(...segments: string[]): string {
  *
  * @example
  * ```ts
- * resolve('/foo', 'bar', 'baz'); // '/foo/bar/baz'
- * resolve('foo', '/bar', 'baz'); // '/bar/baz'
+ * resolve(['/foo', 'bar', 'baz']); // '/foo/bar/baz'
+ * resolve(['foo', '/bar', 'baz']); // '/bar/baz'
  * ```
  */
-export function resolve(...segments: string[]): string {
+export function resolve(segments: readonly string[],): string {
   if (nodePath !== undefined)
     return nodePath.resolve(...segments,);
-  return resolveFallback(...segments,);
+  return resolveFallback(segments,);
 }
