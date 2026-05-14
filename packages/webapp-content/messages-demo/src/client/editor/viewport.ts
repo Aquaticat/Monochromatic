@@ -77,8 +77,10 @@ export function mountViewport(
   },
 ): Viewport {
   input.host.classList.add('ce-host',);
+  /** Spacer node that carries the total scroll height for virtualisation. */
   const spacer = document.createElement('div',);
   spacer.className = 'ce-spacer';
+  /** Contenteditable surface the input layer binds to and the viewport repaints into. */
   const surface = document.createElement('div',);
   surface.className = 'ce-surface';
   surface.setAttribute(
@@ -110,6 +112,7 @@ export function mountViewport(
    * @param text - the current buffer
    */
   function rebuildLineStarts(text: string,): void {
+    /** Local buffer built in one pass and assigned to `lineStarts` once complete. */
     const starts: number[] = [
       0,
     ];
@@ -133,29 +136,38 @@ export function mountViewport(
 
     spacer.style.minBlockSize = `${String(lineStarts.length * lineHeight,)}px`;
 
+    /** Cached layout rect; read once per render to avoid forcing a second layout per line. */
     const hostRect = input.host.getBoundingClientRect();
+    /** Current vertical scroll position; informs the visible-window slice below. */
     const { scrollTop, } = input.host;
+    /** Visible viewport height in pixels; falls back when the host has zero height (not laid out yet). */
     const visibleHeight = hostRect.height > 0
       ? hostRect.height
       : FALLBACK_VIEWPORT_HEIGHT_PX;
+    /** First line index inside the rendered window (overscanned above). */
     const firstVisible = Math.max(
       0,
       Math.floor(scrollTop / lineHeight,) - OVERSCAN_LINES,
     );
+    /** Last line index inside the rendered window (overscanned below). */
     const lastVisible = Math.min(
       lineStarts.length - 1,
       Math.ceil((scrollTop + visibleHeight) / lineHeight,) + OVERSCAN_LINES,
     );
 
+    /** Off-screen fragment so the surface only takes one DOM mutation when committed. */
     const fragment = document.createDocumentFragment();
     for (let line = firstVisible; line <= lastVisible; line += 1) {
+      /** Buffer offset where this line starts; skip when the index is out of range. */
       const start = lineStarts[line];
       if (start === undefined)
         continue;
+      /** Buffer offset where this line ends; uses the next line's start minus the trailing newline. */
       const end = line + 1 < lineStarts.length
         // The next line's start minus the trailing newline.
         ? (lineStarts[line + 1] ?? text.length) - 1
         : text.length;
+      /** One absolutely-positioned `<div>` per visible line; appended to the fragment. */
       const lineDiv = document.createElement('div',);
       lineDiv.className = 'ce-line';
       lineDiv.dataset['line'] = String(line,);
@@ -175,8 +187,10 @@ export function mountViewport(
     // Measure line height after the first render so subsequent renders
     // size the spacer accurately. We only re-measure when the value
     // diverges materially.
+    /** Sampled line element used to refine `lineHeight` after the first layout pass. */
     const firstLine = surface.querySelector<HTMLElement>('.ce-line',);
     if (firstLine !== null) {
+      /** Live measurement; replaces `lineHeight` only when the divergence is material. */
       const measured = firstLine.getBoundingClientRect().height;
       if (measured > 0 && Math.abs(measured - lineHeight,) > 1)
         lineHeight = measured;
@@ -204,10 +218,14 @@ export function mountViewport(
     line: number;
     col: number;
   } {
+    /** Binary-search lower bound; converges with `hi` to the target line index. */
     let lo = 0;
+    /** Binary-search upper bound; capped at the highest known line index. */
     let hi = lineStarts.length - 1;
     while (lo < hi) {
+      /** Midpoint biased upward so the loop terminates with `lo === hi`. */
       const mid = (lo + hi + 1) >>> 1;
+      /** Probe value at `mid`; undefined signals a stale index and pushes `hi` down. */
       const start = lineStarts[mid];
       if (start === undefined || start > offset)
         hi = mid - 1;
@@ -233,6 +251,7 @@ export function mountViewport(
       col: number;
     },
   ): number {
+    /** Clamped line index so out-of-range inputs collapse to the nearest valid line. */
     const clampedLine = Math.max(
       0,
       Math.min(
@@ -240,10 +259,13 @@ export function mountViewport(
         lineStarts.length - 1,
       ),
     );
+    /** Buffer offset where the clamped line starts. */
     const lineStart = lineStarts[clampedLine] ?? 0;
+    /** Buffer offset where the clamped line ends; uses next-start minus trailing newline. */
     const nextStart = clampedLine + 1 < lineStarts.length
       ? (lineStarts[clampedLine + 1] ?? lastText.length) - 1
       : lastText.length;
+    /** Character width of the clamped line; used to clamp `target.col`. */
     const lineLength = nextStart - lineStart;
     return lineStart + Math.max(
       0,

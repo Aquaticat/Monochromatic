@@ -77,11 +77,15 @@ const DECIMAL_RADIX = 10;
  * @returns parsed port
  */
 function resolvePort(): number {
+  /** CLI override; preferred over the env var so the developer's `--port=` wins in foreground runs. */
   const argumentPort = getArgumentValue('port',);
+  /** Fallback environment value; used when the CLI did not supply one. */
   const environmentPort = process.env.PORT;
+  /** Resolved precedence: CLI > env; undefined falls through to the default. */
   const rawPort = argumentPort ?? environmentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
+  /** Parsed value; NaN signals a malformed input, in which case the default wins. */
   const parsedPort = Number.parseInt(
     rawPort,
     DECIMAL_RADIX,
@@ -122,6 +126,7 @@ app.get(
   '/',
   defineHandler(
     async function handleFeed(event,) {
+      /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
       const ifNoneMatch = event.req.headers.get('if-none-match',);
       return await renderFeed(
         null,
@@ -135,10 +140,12 @@ app.get(
   '/p/:cursor',
   defineHandler(
     async function handleFeedPage(event,) {
+      /** Required `:cursor` path param; bails to 400 when missing. */
       const cursor = requireParam(
         event.context.params,
         'cursor',
       );
+      /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
       const ifNoneMatch = event.req.headers.get('if-none-match',);
       return await renderFeed(
         cursor,
@@ -152,6 +159,7 @@ app.get(
   '/m/:id',
   defineHandler(
     function handleMessageRoot(event,) {
+      /** Parsed `:id` param; redirect target uses this in the chunk-0 URL. */
       const id = parseId(
         event.context.params,
         'id',
@@ -168,15 +176,18 @@ app.get(
   '/m/:id/c/:idx',
   defineHandler(
     async function handleMessageChunk(event,) {
+      /** Parsed `:id` param; consumed by `renderMessageChunk` as the message id. */
       const id = parseId(
         event.context.params,
         'id',
       );
+      /** Parsed `:idx` param; chunk index inside the message. */
       const idx = parseId(
         event.context.params,
         'idx',
         0,
       );
+      /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
       const ifNoneMatch = event.req.headers.get('if-none-match',);
       return await renderMessageChunk(
         {
@@ -193,15 +204,18 @@ app.get(
   '/m/:id/c/:idx/raw',
   defineHandler(
     async function handleChunkRaw(event,) {
+      /** Parsed `:id` param; consumed by `renderChunkRaw` as the message id. */
       const id = parseId(
         event.context.params,
         'id',
       );
+      /** Parsed `:idx` param; chunk index inside the message. */
       const idx = parseId(
         event.context.params,
         'idx',
         0,
       );
+      /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
       const ifNoneMatch = event.req.headers.get('if-none-match',);
       return await renderChunkRaw(
         {
@@ -218,15 +232,18 @@ app.get(
   '/m/:id/c/:idx/md',
   defineHandler(
     async function handleChunkMd(event,) {
+      /** Parsed `:id` param; consumed by `renderChunkMd` as the message id. */
       const id = parseId(
         event.context.params,
         'id',
       );
+      /** Parsed `:idx` param; chunk index inside the message. */
       const idx = parseId(
         event.context.params,
         'idx',
         0,
       );
+      /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
       const ifNoneMatch = event.req.headers.get('if-none-match',);
       return await renderChunkMd(
         {
@@ -243,6 +260,7 @@ app.get(
   '/m/:id/edit',
   defineHandler(
     async function handleEdit(event,) {
+      /** Parsed `:id` param; consumed by `renderEditPage`. */
       const id = parseId(
         event.context.params,
         'id',
@@ -339,6 +357,7 @@ function requireParam(
   params: Record<string, string> | undefined,
   name: string,
 ): string {
+  /** Indexed once so the empty-string check and the return both reference the same value. */
   const value = params?.[name];
   if (value === undefined || value === '') {
     throw new HTTPError({
@@ -366,10 +385,12 @@ function parseId(
   name: string,
   min = 1,
 ): number {
+  /** Raw param string forwarded into `Number.parseInt`. */
   const raw = requireParam(
     params,
     name,
   );
+  /** Parsed integer; non-finite or below-minimum triggers a 400 below. */
   const parsed = Number.parseInt(
     raw,
     DECIMAL_RADIX,
