@@ -21,16 +21,11 @@ The package is source-only.
 
 Async replacement for `window.prompt` that uses an HTML `<dialog>`,
 so the dialog can be styled with CSS instead of locked to the browser's native chrome.
-Resolves to the entered string,
+Return shape mirrors native `window.prompt`:
+the entered string when the user clicks OK (including `''` for an empty field),
 or `null` when the user cancels (Esc, backdrop click, or the Cancel button).
 Unlike `window.prompt`, it never blocks the main thread;
 the returned promise lets other work continue while the dialog is open.
-
-It is not a true drop-in: `window.prompt` returns `''` when the user
-clicks OK with an empty field, but this helper resolves to `null`
-for both cancellation and empty-OK.
-Callers that need to distinguish "submitted blank" from "cancelled"
-should use a different control.
 
 ```ts
 import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';

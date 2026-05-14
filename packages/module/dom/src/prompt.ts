@@ -9,7 +9,10 @@
  *
  * @param defaultValue - Default value for the input field
  *
- * @returns Promise that resolves to the user's input or null if cancelled
+ * @returns Promise that resolves to the entered string when OK is clicked
+ *   (including `''` for an empty field), or `null` when the user cancels
+ *   via the Cancel button, the Esc key, or a backdrop click. Mirrors the
+ *   distinction native `window.prompt` makes between empty-OK and cancel.
  *
  * @example
  * ```ts
@@ -30,6 +33,11 @@ export async function prompt(
 ): Promise<string | null> {
   // oxlint-disable-next-line promise/avoid-new -- Required for dialog event handling
   return new Promise(function promptExecutor(resolve,) {
+    // Tracks whether the dialog was closed via OK (false) or any cancel path (true).
+    // Initialised to `true` so Esc, backdrop click, and the dialog being closed by
+    // any other means default to "cancelled"; only the submit handler flips it.
+    const state = { cancelled: true, };
+
     // Create dialog element
     const dialog = document.createElement('dialog',);
     dialog.className = 'prompt-polyfill-dialog';
@@ -72,45 +80,45 @@ export async function prompt(
     dialog.append(form,);
     document.body.append(dialog,);
 
-    // Handle form submission
+    // Handle form submission (OK click or Enter key). This is the only path that
+    // counts as a successful prompt; `state.cancelled` flips so the close handler
+    // can resolve to the entered string instead of null, even when the string is empty.
     form.addEventListener(
       'submit',
       function onSubmit(event,) {
         event.preventDefault();
-        dialog.returnValue = input.value;
+        state.cancelled = false;
         dialog.close();
       },
     );
 
-    // Handle cancel button
+    // Handle cancel button: leave state.cancelled = true and just close.
     cancelButton.addEventListener(
       'click',
       function onCancelClick() {
-        dialog.returnValue = '';
         dialog.close();
       },
     );
 
-    // Handle dialog close (ESC key or other close methods)
+    // Handle dialog close (Esc key, programmatic close, or close after submit/cancel above).
+    // `state.cancelled` decides between native-prompt's two return shapes:
+    // entered string (including '') on OK, null on every cancel path.
     dialog.addEventListener(
       'close',
       function onClose() {
-        // Get the return value (empty string means cancelled)
-        const result = dialog.returnValue || null;
+        const result = state.cancelled ? null : input.value;
 
-        // Clean up
         dialog.remove();
 
-        // Resolve the promise
-        resolve(result === '' ? null : result,);
+        resolve(result,);
       },
     );
 
-    // Handle backdrop click
+    // Handle backdrop click: treat as cancellation, same as the Cancel button.
     dialog.addEventListener(
       'click',
       function onBackdropClick(event,) {
-        // Check if click was on the backdrop (dialog element itself, not its children)
+        // Check if click was on the backdrop (dialog element itself, not its children).
         if (event.target === dialog) {
           const rect = dialog.getBoundingClientRect();
           const clickedInDialog = (event.clientX >= rect.left)
@@ -119,7 +127,6 @@ export async function prompt(
             && (event.clientY <= rect.bottom);
 
           if (!clickedInDialog) {
-            dialog.returnValue = '';
             dialog.close();
           }
         }
