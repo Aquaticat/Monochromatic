@@ -94,7 +94,7 @@ const rlMusicDir = tagged({
 async function resolveMusicDir(): Promise<string> {
   /** User-set XDG override; preferred path when present so callers can point at any directory. */
   const envDir = process.env['XDG_MUSIC_DIR'];
-  if (envDir !== undefined && envDir.length > 0) {
+  if ((envDir !== undefined) && (envDir.length > 0)) {
     rlMusicDir.info(`using XDG_MUSIC_DIR="${envDir}"`,);
     return envDir;
   }
@@ -163,10 +163,10 @@ async function findFiles({
       },
       function handleRgError(err: unknown,) {
         // rg exits 1 when no files match the glob
-        if (err !== null
-          && err !== undefined
-          && typeof err === 'object'
-          && 'exitCode' in err)
+        if ((err !== null)
+          && (err !== undefined)
+          && ((typeof err) === 'object')
+          && ('exitCode' in err))
         {
           /** Process exit code pulled off the spawn error so the no-match case (1) can be rethrown with a clearer message. */
           const { exitCode, } = err;
