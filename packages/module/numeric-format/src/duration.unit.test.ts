@@ -12,7 +12,7 @@ import {
 import { formatDuration, } from './duration.ts';
 
 await describe({
-  name: 'formatDuration',
+  name: formatDuration.name,
   children: [
     //region Sub-10ms branch: one decimal place
 

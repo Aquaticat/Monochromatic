@@ -19,7 +19,7 @@ const SECONDS_PER_MONTH = 30 * SECONDS_PER_DAY;
 const SECONDS_PER_YEAR = 365 * SECONDS_PER_DAY;
 
 await describe({
-  name: 'formatTrackedDuration',
+  name: formatTrackedDuration.name,
   children: [
     //region Seconds-only branch (top-1)
 

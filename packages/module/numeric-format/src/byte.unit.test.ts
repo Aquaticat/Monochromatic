@@ -12,7 +12,7 @@ import {
 import { formatBytes, } from './byte.ts';
 
 await describe({
-  name: 'formatBytes',
+  name: formatBytes.name,
   children: [
     //region KiB branch: whole KiB
 
