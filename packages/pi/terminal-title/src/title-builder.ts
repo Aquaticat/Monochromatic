@@ -59,8 +59,10 @@ function titleForTool(
   args: Record<string, unknown>,
   tense: 'pre' | 'post',
 ): string {
+  /** Lookup entry for the tool; `undefined` triggers the generic Running/Ran fallback below. */
   const entry = TOOL_TITLES[toolName];
   if (entry !== undefined) {
+    /** Extracted display value (e.g. command, file path) sampled from the tool's arg record. */
     const value = entry.extract(args,);
     if (value !== undefined) {
       return entry.format(
@@ -71,6 +73,7 @@ function titleForTool(
     return entry.fallback[tense];
   }
 
+  /** Tense-appropriate verb for the generic fallback used by tools without a dedicated entry. */
   // Custom/MCP tool fallback
   const verb = tense === 'pre' ? 'Running' : 'Ran';
   return `${verb} ${toolName}`;
@@ -107,6 +110,7 @@ const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string
     return 'Stopped';
   },
   before_agent_start(data,) {
+    /** Pending user prompt sourced from the event; empty string when absent so truncate stays defined. */
     const prompt = data.prompt ?? '';
     return truncate(
       prompt,
@@ -153,8 +157,11 @@ function titleForEvent(
   eventType: HandledEventType,
   data: EventData,
 ): string {
+  /** Body-text builder selected by event type; produces the user-visible payload before the prefix. */
   const builder = EVENT_BODY_BUILDERS[eventType];
+  /** Event-specific body text (e.g. tool description, session reason) before the title prefix. */
   const body = builder(data,);
+  /** Prefixed title before truncation; the truncate call below enforces the terminal-friendly cap. */
   const title = `${TITLE_PREFIX} ${body}`;
   return truncate(
     title,

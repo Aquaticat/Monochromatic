@@ -50,6 +50,7 @@ function handleToolExecutionStart(
   },
   ctx: TitleContext,
 ): void {
+  /** Event arguments coerced to a string-keyed record so the title builder can sample fields by name. */
   /* oxlint-disable-next-line typescript/no-unsafe-type-assertion -- pi event args are typed as `any` */
   const args = (event.args ?? {}) as Record<string, unknown>;
   ctx.ui.setTitle(

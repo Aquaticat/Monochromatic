@@ -97,6 +97,7 @@ function stringField(
   input: Record<string, unknown>,
   key: string,
 ): string | undefined {
+  /** Raw value pulled out of `input` by key; only strings are accepted, anything else becomes `undefined`. */
   const value = input[key];
   if (typeof value === 'string')
     return value;
