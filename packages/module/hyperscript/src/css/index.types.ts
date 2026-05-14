@@ -81,12 +81,20 @@ type UntypedAtRuleOptions = {
  * At-rules come in three forms:
  * - **Block with children**: `@media (...) { rules }`, provide `children`
  * - **Block with declarations**: `@property --x { syntax: ... }`, provide `decls`
- * - **Statement**: `@layer tokens;`, omit both `decls` and `children`
+ * - **Statement**: `@layer tokens;`, omit `decls`, `raw`, and `children` entirely
  *
  * For at-rules with csstype descriptor interfaces (`font-face`, `property`,
  * `counter-style`, `page`, `view-transition`),
  * the `decls` field is typed to the matching descriptor interface.
  * For all other at-rules, `decls` accepts `Record<string, string>`.
+ *
+ * **Statement-form output requires omitting all three of `decls`, `raw`,
+ * and `children`.** Passing an empty `decls: {}`, empty `raw: ''`, or
+ * empty `children: []` still yields a block: `$({ at: 'font-face',
+ * decls: {} })` produces `@font-face{}`, not `@font-face;`. This means
+ * the library cannot emit `@font-face;` (which is invalid CSS anyway, since
+ * `@font-face` requires a block); to emit a statement at-rule the input
+ * must contain no body fields at all.
  */
 export type AtRuleOptions = TypedAtRuleOptions | UntypedAtRuleOptions;
 
