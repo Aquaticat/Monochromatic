@@ -1,8 +1,14 @@
-# mise watch troubleshooting
+# mise 2026.3.8 `mise watch` drops `--no-meta` / `-J` flags; watchexec 2.5.1 `-j` filter hangs forever on SIGINT due to an Arc cycle keeping `FilterProgs`' channel sender alive; plus saved-token / EADDRINUSE / unnecessary-restart quirks of the editord watch loop
 
-## `mise watch` drops `--no-meta` and `-J` (filter-prog) flags
+This file groups five independent mise + watchexec issues
+that bit the editord dev-server watch loop. Each gets its own
+canonical section.
 
-### Problem
+---
+
+## Bug 1: `mise watch` drops `--no-meta` and `-J` (filter-prog) flags
+
+### Symptom
 
 `mise watch` advertises `--no-meta` and `-J`/`--filter-prog` in its `--help` output
 but silently drops them when constructing the underlying `watchexec` command.
@@ -21,17 +27,14 @@ DEBUG $ watchexec --restart --watch src/server -- /home/user/.local/bin/mise run
 
 ### Root cause
 
-mise 2026.3.8 parses these flags on the CLI side (they appear in `--help`)
-but does not forward them to watchexec when it spawns the child process.
-The `-J` flag is particularly confusing because mise remaps watchexec's
-lowercase `-j` (filter-prog) to uppercase `-J`, while taking `-j` for its own `--jobs`.
+mise 2026.3.8 parses these flags on the CLI side (they appear
+in `--help`) but does not forward them to watchexec when it
+spawns the child process. The `-J` flag is particularly
+confusing because mise remaps watchexec's lowercase `-j`
+(filter-prog) to uppercase `-J`, while taking `-j` for its own
+`--jobs`.
 
-### Verified in
-
-- mise 2026.3.8 linux-x64
-- watchexec 2.5.0
-
-### Solution
+### Verified workaround
 
 Call `watchexec` directly instead of `mise watch`,
 and run the server command directly (not through `mise run`):
@@ -53,16 +56,35 @@ Note the flag difference: use lowercase `-j` (watchexec native) not uppercase `-
 - `mise watch -J @file.jaq` -- same: parsed but dropped
 - `mise watch --fs-events create,remove,rename,modify` -- untested but likely same issue
 
+### Verification
+
+Version under test: mise 2026.3.8 linux-x64; watchexec 2.5.0.
+
+### Why we do not file this upstream
+
+1. **Is it really upstream's fault?** Yes; advertised but
+   silently dropped flags.
+2. **Can upstream fix it?** Yes; forward the parsed flags to
+   the watchexec invocation.
+3. **Are they supporting this use case?** Implicitly; the
+   flags appear in `--help`.
+4. **Will they likely fix it?** Plausible.
+5. **Have we prototyped a minimal fix?** No.
+
+Decision: worth raising as an issue; the calling-watchexec-
+directly workaround removes the urgency.
+
 ---
 
-## Unnecessary restarts on metadata-only or same-content writes
+## Bug 2: Unnecessary restarts on metadata-only or same-content writes
 
-### Problem
+### Symptom
 
-`mise watch -w src/server -r -- start:server` restarts the server process
-when file metadata changes (mtime from `touch`, `chmod`) or when a file is
-written with identical content (e.g. format-on-save producing the same output,
-or Ctrl+S without changes).
+`mise watch -w src/server -r -- start:server` restarts the
+server process when file metadata changes (mtime from
+`touch`, `chmod`) or when a file is written with identical
+content (e.g. format-on-save producing the same output, or
+Ctrl+S without changes).
 
 This causes problems when editing the watched project's own source files
 in a tool served by that project (editord editing its own source).
@@ -70,15 +92,16 @@ Every save restarts the server, killing WebSocket connections and LSP servers.
 
 ### Root cause
 
-By default, watchexec triggers on all filesystem event types including
-`Modify(Metadata(Any))`. A bare `touch` or `chmod` fires this event even
-though file content is unchanged.
+By default, watchexec triggers on all filesystem event types
+including `Modify(Metadata(Any))`. A bare `touch` or `chmod`
+fires this event even though file content is unchanged.
 
-For content-preserving writes (editor saves identical bytes), the OS reports
-`Modify(Data(Any))`, a real data write event, because it cannot distinguish
-"same bytes" from "different bytes" at the kernel level.
+For content-preserving writes (editor saves identical bytes),
+the OS reports `Modify(Data(Any))`, a real data write event,
+because it cannot distinguish "same bytes" from "different
+bytes" at the kernel level.
 
-### Solution
+### Verified workaround
 
 Two layers, in different places:
 
@@ -130,24 +153,42 @@ hit and no restart. The save-side skip in `saveFile` stays — it is
 strictly cheaper than the watch-side compare (no write, no event, no
 hash) for the editord-on-editord path it already covered.
 
+### Why we do not file this upstream
+
+1. **Is it really upstream's fault?** No; the OS reports
+   `Modify(Data(Any))` for "same bytes" writes because the
+   kernel cannot tell them apart from "different bytes". The
+   watcher behaves correctly.
+2. **Can upstream fix it?** Not in watchexec; the data is
+   not there to filter on.
+3. **Are they supporting this use case?** Yes; the `-j`
+   filter program exists for exactly this.
+4. **Will they likely fix it?** N/A.
+5. **Have we prototyped a minimal fix?** N/A.
+
+Decision: no upstream report. Fix lives at our boundary
+(saveFile early-return + watch-restart's content-hash cache).
+
 ---
 
-## Server restart generates fresh auth token (client loses connection)
+## Bug 3: Server restart generates fresh auth token (client loses connection)
 
-### Problem
+### Symptom
 
-When the dev server restarts (via watchexec or manual kill+restart),
-the new instance generates a new `crypto.randomUUID()` auth token.
-The browser client has the old token embedded in its WebSocket URL
-and cannot reconnect; every reconnect attempt fails with "unauthorized".
+When the dev server restarts (via watchexec or manual
+kill+restart), the new instance generates a new
+`crypto.randomUUID()` auth token. The browser client has the
+old token embedded in its WebSocket URL and cannot reconnect;
+every reconnect attempt fails with "unauthorized".
 
 ### Root cause
 
-The auth token was generated in-memory on every startup with no persistence.
-The client's `EditorWsClient` reconnects with exponential backoff but always
-uses the original token from `#wsUrl` (set once in the constructor).
+The auth token was generated in-memory on every startup with
+no persistence. The client's `EditorWsClient` reconnects with
+exponential backoff but always uses the original token from
+`#wsUrl` (set once in the constructor).
 
-### Solution
+### Verified workaround
 
 A token file at `$TMPDIR/editord-<port>.token` persists the token across restarts:
 
@@ -172,28 +213,36 @@ on the next manual start.
 - Using the same cleanup function for both signals -- SIGTERM must preserve the
   file, SIGINT must delete it. Split into `handleSigterm` and `handleSigint`.
 
+### Why we do not file this upstream
+
+Internal to editord; no external upstream. 5 constraints
+walked: not applicable. Decision: no upstream report.
+
 ---
 
-## EADDRINUSE from deep process trees on restart
+## Bug 4: EADDRINUSE from deep process trees on restart
 
-### Problem
+### Symptom
 
-After switching to `watchexec` directly, restarts fail with `EADDRINUSE`
-because the previous server process still holds the port.
+After switching to `watchexec` directly, restarts fail with
+`EADDRINUSE` because the previous server process still holds
+the port.
 
 ### Root cause
 
-When the inner command is `mise run start:server`, the process tree is:
+When the inner command is `mise run start:server`, the
+process tree is:
 
 ```text
 watchexec → mise → nu (nushell) → bun src/server/index.ts
 ```
 
-watchexec sends SIGTERM to its direct child (`mise`) on restart.
-mise exits, but the signal does not propagate through nushell to `bun`.
-The bun process orphans and keeps the port bound.
+watchexec sends SIGTERM to its direct child (`mise`) on
+restart. mise exits, but the signal does not propagate
+through nushell to `bun`. The bun process orphans and keeps
+the port bound.
 
-### Solution
+### Verified workaround
 
 Run `bun` directly as the inner command so watchexec's SIGTERM reaches it:
 
@@ -219,11 +268,29 @@ rather than by careful argv composition.
 - `watchexec -r -- mise run start:server` -- SIGTERM does not propagate
   through the `mise → nushell → bun` chain, leaving orphaned bun processes
 
+### Why we do not file this upstream
+
+1. **Is it really upstream's fault?** Borderline. Nushell
+   does not propagate signals to child processes by default;
+   mise inherits that behaviour. Both are documented.
+2. **Can upstream fix it?** mise could opt to spawn child
+   processes that forward signals; nushell could change its
+   default. Both are large behaviour changes.
+3. **Are they supporting this use case?** Yes for direct
+   `bun` invocations; the deep-tree case is a side effect.
+4. **Will they likely fix it?** No targeted fix expected.
+5. **Have we prototyped a minimal fix?** Bypass at our
+   boundary: flat process tree via direct watchexec/bun
+   invocation.
+
+Decision: no upstream report. Mitigation lives in the task
+definition.
+
 ---
 
-## watchexec `-j` filter program hangs on SIGINT (Ctrl+C does not return)
+## Bug 5: watchexec `-j` filter program hangs on SIGINT (Ctrl+C does not return)
 
-### Problem
+### Symptom
 
 `mise run //packages/desktop-daemon/editord:dev` does not return to the
 terminal on Ctrl+C. Three processes survive the signal and block the
@@ -244,8 +311,9 @@ Only SIGKILL kills it.
 
 ### Root cause
 
-`watchexec` enters a permanent hang on SIGINT when the `-j` (filter program)
-flag is used. The bug is reproducible in isolation, with no editord plumbing:
+`watchexec` 2.5.1 enters a permanent hang on SIGINT when the
+`-j` (filter program) flag is used. The bug is reproducible
+in isolation, with no editord plumbing:
 
 ```sh
 mkdir -p /tmp/quietdir && echo "true" > /tmp/minimal.jaq
@@ -339,15 +407,17 @@ Without `-j`, no `FilterProgs` and no `spawn_blocking` task is created,
 so the runtime aborts the async tasks and exits despite the same cycle
 existing on the closure side.
 
-### Verified in
+### Verification
+
+Versions under test:
 
 - watchexec 2.5.1 linux-x64 (from mise install)
-- watchexec/watchexec HEAD at commit `9d8e3443` (post-2.5.1; both files
-  above are byte-identical to v2.5.1)
+- watchexec/watchexec HEAD at commit `9d8e3443` (post-2.5.1;
+  both cited files are byte-identical to v2.5.1)
 - bun 1.3.13 linux-x64
 - mise 2026.5.0 linux-x64
 
-### Workaround
+### Verified workaround
 
 Resolved in two stages.
 
@@ -402,7 +472,26 @@ Earlier alternatives considered:
   `crates/cli/src/config.rs:206-209`, `crates/cli/src/state.rs:45`) are
   byte-identical between v2.5.1 and the current HEAD.
 
-### Draft upstream issue
+### Why we would file this upstream
+
+All 5 constraints hold:
+
+1. **Is it really upstream's fault?** Yes; the Arc cycle
+   keeping `FilterProgs`' channel sender alive past shutdown
+   is the root cause.
+2. **Can upstream fix it?** Yes; two concrete patches sketched
+   in the draft below (Weak capture in the action handler, or
+   explicit Drop/Notify shutdown for FilterProgs).
+3. **Are they supporting this use case?** Yes; `-j` is a
+   first-class CLI feature.
+4. **Will they likely fix it?** Plausible; watchexec is
+   actively maintained.
+5. **Have we prototyped a minimal fix?** Architectural
+   sketches in the draft; not coded up.
+
+Decision: worth filing.
+
+### Draft upstream issue (kept as reference; revise before filing)
 
 To file against `watchexec/watchexec`:
 
