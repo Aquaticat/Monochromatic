@@ -83,6 +83,7 @@ export async function searchExa({
   query: string;
   options?: ExaSearchOptions;
 },): Promise<ExaSearchResponse> {
+  /** HTTP `Response` retained so the success and error branches share one instance. */
   const response = await fetch(
     `${baseUrl}/search`,
     {
@@ -100,12 +101,14 @@ export async function searchExa({
   );
 
   if (!response.ok) {
+    /** Response body text embedded in the thrown error for diagnostic context. */
     const errorBody = await response.text();
     throw new Error(
       `Exa /search responded ${response.status} ${response.statusText}: ${errorBody}`,
     );
   }
 
+  /** Parsed body typed as `unknown` before the explicit narrowing assertion. */
   const data: unknown = await response.json();
   return data as ExaSearchResponse;
 }

@@ -31,10 +31,12 @@ const bindings = {
         v.transformAsync(async function promptSet(val,): Promise<string> {
           if (val !== null)
             return val;
+          /** Raw prompt response captured before uuid validation gates persistence. */
           const inputApiKey = nonNullishOrThrow(await prompt({ message: 'Set api key', },),);
           // Validate BEFORE persisting. The prompt aligns with native window.prompt
           // and resolves '' on OK-with-empty; writing that through to localStorage
           // would leave the page broken on every subsequent load.
+          /** Uuid-validated key persisted to localStorage and returned through the pipeline. */
           const validated = v.parse(
             v.pipe(
               v.string(),
@@ -130,6 +132,7 @@ const derived = {
       v.pipe(
         v.unknown(),
         v.transform(function toNumberOrZero(input,) {
+          /** Coerced numeric value checked for NaN before the zero fallback. */
           const n = Number(input,);
           return Number.isNaN(n,) ? 0 : n;
         },),
