@@ -100,33 +100,27 @@ export function buildPerLineFix({
   bracketPair,
   delimiter = ',',
 }: PerLineFixConfig,): ReturnType<Fixer['replaceText']> {
-  const firstRange = rangeOf(at(
-    items,
-    0,
-  ),);
-  const lastRange = rangeOf(at(
-    items,
-    items.length - 1,
-  ),);
+  const firstRange = rangeOf(at({
+    arr: items,
+    index: 0,
+  },),);
+  const lastRange = rangeOf(at({
+    arr: items,
+    index: items.length - 1,
+  },),);
 
   /** Scan backward from first item to find the opening bracket. */
-  let openPos = -1;
-  for (let i = firstRange[0] - 1; i >= 0; i--) {
-    if (sourceText.charAt(i,) === bracketPair.open) {
-      openPos = i;
-      break;
-    }
-  }
+  const openPos = sourceText.lastIndexOf(
+    bracketPair.open,
+    firstRange[0] - 1,
+  );
 
   /** Scan forward from last item to find the closing bracket. */
-  let closePos = -1;
   const [, lastRangeEnd,] = lastRange;
-  for (let i = lastRangeEnd; i < sourceText.length; i++) {
-    if (sourceText.charAt(i,) === bracketPair.close) {
-      closePos = i;
-      break;
-    }
-  }
+  const closePos = sourceText.indexOf(
+    bracketPair.close,
+    lastRangeEnd,
+  );
 
   if (openPos === -1 || closePos === -1) {
     return fixer.replaceTextRange(

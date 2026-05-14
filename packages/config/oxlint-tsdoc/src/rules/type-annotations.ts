@@ -39,9 +39,9 @@ export const noTypes: CreateOnceRule = {
     /** Regex detecting JSDoc-style type annotations like `{Type}` after a tag. */
     const typePattern = /@\w+\s+\{([^}]+)\}/g;
 
-    return createTsdocVisitor(
+    return createTsdocVisitor({
       context,
-      function noTypesHandler(
+      handler: function noTypesHandler(
         _node,
         comment,
       ): void {
@@ -57,10 +57,7 @@ export const noTypes: CreateOnceRule = {
               '',
             )
             .trimStart();
-          // Reset regex state
-          typePattern.lastIndex = 0;
-          let match = typePattern.exec(trimmed,);
-          while (match !== null) {
+          for (const match of trimmed.matchAll(typePattern,)) {
             context.report({
               loc: {
                 start: {
@@ -71,10 +68,9 @@ export const noTypes: CreateOnceRule = {
               messageId: 'noType',
               data: { type: match[1] ?? 'unknown', },
             },);
-            match = typePattern.exec(trimmed,);
           }
         },);
       },
-    );
+    },);
   },
 };

@@ -62,14 +62,14 @@ export const paramPerLine: CreateOnceRule = {
         return;
 
       const sourceText = context.sourceCode.getText();
-      const firstRange = rangeOf(at(
-        params,
-        0,
-      ),);
-      const lastRange = rangeOf(at(
-        params,
-        params.length - 1,
-      ),);
+      const firstRange = rangeOf(at({
+        arr: params,
+        index: 0,
+      },),);
+      const lastRange = rangeOf(at({
+        arr: params,
+        index: params.length - 1,
+      },),);
 
       /** Find the `(` before the first param. */
       const openParen = sourceText.lastIndexOf(
@@ -85,12 +85,12 @@ export const paramPerLine: CreateOnceRule = {
       if (openParen === -1 || closeParen === -1)
         return;
 
-      if (!paramsNeedFix(
+      if (!paramsNeedFix({
         sourceText,
         openParen,
         closeParen,
         params,
-      )) {
+      },)) {
         return;
       }
 
@@ -98,14 +98,14 @@ export const paramPerLine: CreateOnceRule = {
         node,
         messageId: 'paramPerLine',
         fix(fixer: Fixer,) {
-          return buildParamFix(
+          return buildParamFix({
             fixer,
             sourceText,
             openParen,
             closeParen,
             params,
             context,
-          );
+          },);
         },
       },);
     }

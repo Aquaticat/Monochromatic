@@ -83,14 +83,19 @@ export const checkTagNames: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(
+    return createTsdocVisitor({
       context,
-      function checkTagNamesHandler(
+      handler: function checkTagNamesHandler(
         _node,
         comment,
       ): void {
         const lines = comment.value.split('\n',);
-        let insideCodeFence = false;
+        /**
+         * Mutable code-fence state, kept in a `const` object so AGENTS.md's
+         * function-root `let` ban is satisfied while the forEach callback
+         * still toggles the flag across iterations.
+         */
+        const fenceState = { inside: false, };
 
         lines.forEach(function checkLine(
           line,
@@ -98,10 +103,10 @@ export const checkTagNames: CreateOnceRule = {
         ): void {
           // Track fenced code block boundaries to skip tag scanning inside them
           if (CODE_FENCE_PATTERN.test(line,)) {
-            insideCodeFence = !insideCodeFence;
+            fenceState.inside = !fenceState.inside;
             return;
           }
-          if (insideCodeFence)
+          if (fenceState.inside)
             return;
 
           // Strip inline code and escaped @ to avoid false positives on
@@ -141,6 +146,6 @@ export const checkTagNames: CreateOnceRule = {
           }
         },);
       },
-    );
+    },);
   },
 };

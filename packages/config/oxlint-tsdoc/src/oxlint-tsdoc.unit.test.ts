@@ -58,17 +58,19 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
   const target = resolve(FIXTURES, fixturePath,);
 
   // oxlint exits non-zero when violations are found: capture stdout from the error
-  let stdout: string;
-  try {
-    const result = await spawn('oxlint', ['--format', 'json', '-c', FIXTURE_CONFIG,
-      target,], {
-      cwd: ROOT,
-    },);
-    ({ stdout, } = result);
+  async function captureStdout(): Promise<string> {
+    try {
+      const { stdout, } = await spawn('oxlint', ['--format', 'json', '-c', FIXTURE_CONFIG,
+        target,], {
+        cwd: ROOT,
+      },);
+      return stdout;
+    }
+    catch (error: unknown) {
+      return (error as { stdout: string; }).stdout;
+    }
   }
-  catch (error: unknown) {
-    ({ stdout, } = error as { stdout: string; });
-  }
+  const stdout = await captureStdout();
 
   // oxlint-disable-next-line typescript/no-unsafe-assignment -- JSON.parse returns any
   const output: OxlintOutput = JSON.parse(stdout,);

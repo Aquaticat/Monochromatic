@@ -42,12 +42,20 @@ export const requireTsdoc: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    /** Tracks nesting depth inside function-like scopes. */
-    let scopeDepth = 0;
-    /** Tracks nesting depth inside block scopes (for-loop bodies, if-else, try-catch). */
-    let blockDepth = 0;
-    /** True when the next VariableDeclaration is a for-loop binding (for/for-of/for-in init). */
-    let inForLoopInit = false;
+    /**
+     * Mutable visitor traversal state shared across AST callbacks.
+     *
+     * AGENTS.md bans function-root `let` for cleanliness; an object with
+     * mutable properties carries the same state in a single `const` binding.
+     */
+    const state = {
+      /** Tracks nesting depth inside function-like scopes. */
+      scopeDepth: 0,
+      /** Tracks nesting depth inside block scopes (for-loop bodies, if-else, try-catch). */
+      blockDepth: 0,
+      /** True when the next VariableDeclaration is a for-loop binding (for/for-of/for-in init). */
+      inForLoopInit: false,
+    };
 
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
@@ -57,102 +65,102 @@ export const requireTsdoc: CreateOnceRule = {
         return undefined;
       },
       FunctionDeclaration(node,): void {
-        reportMissing(
+        reportMissing({
           node,
           context,
-        );
-        scopeDepth++;
+        },);
+        state.scopeDepth++;
       },
       'FunctionDeclaration:exit'(): void {
-        scopeDepth--;
+        state.scopeDepth--;
       },
       FunctionExpression(): void {
-        scopeDepth++;
+        state.scopeDepth++;
       },
       'FunctionExpression:exit'(): void {
-        scopeDepth--;
+        state.scopeDepth--;
       },
       ArrowFunctionExpression(): void {
-        scopeDepth++;
+        state.scopeDepth++;
       },
       'ArrowFunctionExpression:exit'(): void {
-        scopeDepth--;
+        state.scopeDepth--;
       },
       ClassDeclaration(node,): void {
-        reportMissing(
+        reportMissing({
           node,
           context,
-        );
+        },);
       },
       MethodDefinition(node,): void {
-        reportMissing(
+        reportMissing({
           node,
           context,
-        );
+        },);
       },
       TSInterfaceDeclaration(node,): void {
-        reportMissing(
+        reportMissing({
           node,
           context,
-        );
+        },);
       },
       TSTypeAliasDeclaration(node,): void {
-        reportMissing(
+        reportMissing({
           node,
           context,
-        );
+        },);
       },
       TSEnumDeclaration(node,): void {
-        reportMissing(
+        reportMissing({
           node,
           context,
-        );
+        },);
       },
       BlockStatement(): void {
-        blockDepth++;
+        state.blockDepth++;
       },
       'BlockStatement:exit'(): void {
-        blockDepth--;
+        state.blockDepth--;
       },
       ForStatement(): void {
-        inForLoopInit = true;
+        state.inForLoopInit = true;
       },
       ForOfStatement(): void {
-        inForLoopInit = true;
+        state.inForLoopInit = true;
       },
       ForInStatement(): void {
-        inForLoopInit = true;
+        state.inForLoopInit = true;
       },
       VariableDeclaration(node,): void {
-        if (inForLoopInit) {
-          inForLoopInit = false;
+        if (state.inForLoopInit) {
+          state.inForLoopInit = false;
           return;
         }
-        if (scopeDepth === 0 && blockDepth === 0) {
-          reportMissing(
-            node,
+        if (state.scopeDepth === 0 && state.blockDepth === 0) {
+          reportMissing({
+            node: node,
             context,
-          );
+          },);
         }
       },
       PropertyDefinition(node,): void {
-        reportMissing(
+        reportMissing({
           node,
           context,
-        );
+        },);
       },
       TSEnumMember(node,): void {
-        reportMissing(
+        reportMissing({
           node,
           context,
-        );
+        },);
       },
       Property(node,): void {
         if (node.kind === 'get' || node.kind === 'set') {
-          reportMissing(
-            node,
+          reportMissing({
+            node: node,
             context,
-          );
+          },);
         }
       },
     } as VisitorWithHooks;

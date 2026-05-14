@@ -37,9 +37,9 @@ export const tagLines: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(
+    return createTsdocVisitor({
       context,
-      function tagLinesHandler(
+      handler: function tagLinesHandler(
         _node,
         comment,
       ): void {
@@ -128,7 +128,7 @@ export const tagLines: CreateOnceRule = {
           }
         },);
       },
-    );
+    },);
   },
 };
 

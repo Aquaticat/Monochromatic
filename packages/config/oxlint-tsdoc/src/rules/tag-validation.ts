@@ -38,9 +38,9 @@ export const checkAccess: CreateOnceRule = {
       '@experimental',
     ];
 
-    return createTsdocVisitor(
+    return createTsdocVisitor({
       context,
-      function checkAccessHandler(
+      handler: function checkAccessHandler(
         _node,
         comment,
       ): void {
@@ -67,7 +67,7 @@ export const checkAccess: CreateOnceRule = {
           },);
         }
       },
-    );
+    },);
   },
 };
 

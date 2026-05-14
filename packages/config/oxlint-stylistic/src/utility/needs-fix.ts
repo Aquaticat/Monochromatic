@@ -7,73 +7,79 @@ import {
 } from './range.ts';
 
 /**
+ * Parameters for {@link needsPerLineFix}.
+ */
+export type NeedsPerLineFixParams = {
+  /** Full file source text. */
+  sourceText: string;
+  /** Container AST node. */
+  container: Span;
+  /** Child items to check (must be non-empty). */
+  items: Span[];
+};
+
+/**
  * Checks whether any items share a source line with each other
  * or with the container delimiters.
- *
- * @param sourceText - full file source text
- *
- * @param container - container AST node
- *
- * @param items - child items to check (must be non-empty)
  *
  * @returns whether a fix is needed
  *
  * @example
  * ```ts
- * if (needsPerLineFix(sourceText, container, items)) { /* report *\/ }
+ * if (needsPerLineFix({ sourceText, container, items })) { /* report *\/ }
  * ```
  */
-export function needsPerLineFix(
-  sourceText: string,
-  container: Span,
-  items: Span[],
-): boolean {
+export function needsPerLineFix({
+  sourceText,
+  container,
+  items,
+}: NeedsPerLineFixParams,): boolean {
   const containerRange = rangeOf(container,);
-  const firstRange = rangeOf(at(
-    items,
-    0,
-  ),);
+  const firstRange = rangeOf(at({
+    arr: items,
+    index: 0,
+  },),);
 
-  if (lineAt(
+  if (lineAt({
     sourceText,
-    containerRange[0],
-  ) === lineAt(
+    offset: containerRange[0],
+  },) === lineAt({
     sourceText,
-    firstRange[0],
-  )) {
+    offset: firstRange[0],
+  },)) {
     return true;
   }
 
-  const lastRange = rangeOf(at(
-    items,
-    items.length - 1,
-  ),);
-  if (lineAt(
+  const lastRange = rangeOf(at({
+    arr: items,
+    index: items.length - 1,
+  },),);
+  if (lineAt({
     sourceText,
-    lastRange[1],
-  ) === lineAt(
+    offset: lastRange[1],
+  },) === lineAt({
     sourceText,
-    containerRange[1],
-  )) {
+    offset: containerRange[1],
+  },)) {
     return true;
   }
 
   for (let i = 1; i < items.length; i++) {
-    const prevRange = rangeOf(at(
-      items,
-      i - 1,
-    ),);
-    const currRange = rangeOf(at(
-      items,
-      i,
-    ),);
-    if (lineAt(
+    const prevRange = rangeOf(at({
+      arr: items,
+      index: i - 1,
+    },),);
+    const currRange = rangeOf(at({
+      arr: items,
+      index: i,
+    },),);
+    if (lineAt({
       sourceText,
-      prevRange[1],
-    ) === lineAt(
+      offset: prevRange[1],
+    },) === lineAt({
       sourceText,
-      currRange[0],
-    )) {
+      offset: currRange[0],
+    },)) {
       return true;
     }
   }

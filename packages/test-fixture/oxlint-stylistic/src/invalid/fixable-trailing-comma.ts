@@ -8,8 +8,4 @@ const { host, port, } = config;
 
 create('Alice', 30,);
 
-export {
-  config,
-  create,
-  items,
-};
+export { config, create, items, };

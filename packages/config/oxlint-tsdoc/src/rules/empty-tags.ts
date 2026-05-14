@@ -52,9 +52,9 @@ export const emptyTags: CreateOnceRule = {
       '@packageDocumentation',
     ],);
 
-    return createTsdocVisitor(
+    return createTsdocVisitor({
       context,
-      function emptyTagsHandler(
+      handler: function emptyTagsHandler(
         _node,
         comment,
       ): void {
@@ -95,6 +95,6 @@ export const emptyTags: CreateOnceRule = {
           }
         },);
       },
-    );
+    },);
   },
 };

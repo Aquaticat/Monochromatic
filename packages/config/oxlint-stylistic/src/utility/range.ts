@@ -30,13 +30,19 @@ export function rangeOf(node: Span,): [
 }
 
 /**
+ * Parameters for {@link at}.
+ */
+export type AtParams<T,> = {
+  /** Source array. */
+  arr: T[];
+  /** Numeric index. */
+  index: number;
+};
+
+/**
  * Safely indexes into an array, throwing on out-of-bounds access.
  *
  * Replaces `arr[i]!` which is banned by no-non-null-assertion.
- *
- * @param arr - source array
- *
- * @param index - numeric index
  *
  * @returns element at index
  *
@@ -44,13 +50,13 @@ export function rangeOf(node: Span,): [
  *
  * @example
  * ```ts
- * const first = at(items, 0);
+ * const first = at({ arr: items, index: 0 });
  * ```
  */
-export function at<T,>(
-  arr: T[],
-  index: number,
-): T {
+export function at<T,>({
+  arr,
+  index,
+}: AtParams<T>,): T {
   const value = arr[index];
   if (value === undefined) {
     throw new Error(

@@ -35,9 +35,9 @@ export const escapeInlineTags: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(
+    return createTsdocVisitor({
       context,
-      function escapeHandler(
+      handler: function escapeHandler(
         _node,
         comment,
       ): void {
@@ -73,6 +73,6 @@ export const escapeInlineTags: CreateOnceRule = {
             }
           },);
       },
-    );
+    },);
   },
 };

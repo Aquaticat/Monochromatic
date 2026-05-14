@@ -81,6 +81,16 @@ export const FALLBACK_ELIGIBLE_TYPES: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Parameters for {@link findTsdocComment} and {@link parseTsdocForNode}.
+ */
+export type TsdocLookupParams = {
+  /** AST node to find TSDoc for. */
+  node: Span;
+  /** Oxlint rule context providing sourceCode. */
+  context: Context;
+};
+
+/**
  * Finds the TSDoc block comment associated with a node.
  *
  * Uses `getCommentsBefore` first (cheapest lookup), then falls back to
@@ -94,21 +104,17 @@ export const FALLBACK_ELIGIBLE_TYPES: ReadonlySet<string> = new Set([
  * FunctionExpression or ArrowFunctionExpression, because their TSDoc
  * is owned by the enclosing VariableDeclaration or MethodDefinition.
  *
- * @param node - AST node to find TSDoc for
- *
- * @param context - oxlint rule context providing sourceCode
- *
  * @returns block comment starting with `*`, or undefined when absent
  *
  * @example
  * ```ts
- * const comment = findTsdocComment(node, context);
+ * const comment = findTsdocComment({ node, context });
  * ```
  */
-export function findTsdocComment(
-  node: Span,
-  context: Context,
-): Comment | undefined {
+export function findTsdocComment({
+  node,
+  context,
+}: TsdocLookupParams,): Comment | undefined {
   // Fast path: getCommentsBefore works for most declarations
   const comments = context.sourceCode.getCommentsBefore(node,);
   for (let i = comments.length - 1; i >= 0; i--) {
@@ -151,29 +157,25 @@ export function findTsdocComment(
 /**
  * Extracts and parses the TSDoc comment for a given AST node.
  *
- * @param node - AST node to find TSDoc for
- *
- * @param context - oxlint rule context
- *
  * @returns parsed result, or undefined when no TSDoc comment precedes the node
  *
  * @example
  * ```ts
- * const result = parseTsdocForNode(node, context);
+ * const result = parseTsdocForNode({ node, context });
  * if (result === undefined) return;
  * for (const message of result.messages) {
  *   context.report({ node, message: message.toString() });
  * }
  * ```
  */
-export function parseTsdocForNode(
-  node: Span,
-  context: Context,
-): TsdocParseResult | undefined {
-  const comment = findTsdocComment(
+export function parseTsdocForNode({
+  node,
+  context,
+}: TsdocLookupParams,): TsdocParseResult | undefined {
+  const comment = findTsdocComment({
     node,
     context,
-  );
+  },);
   if (comment === undefined)
     return undefined;
 

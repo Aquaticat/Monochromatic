@@ -102,25 +102,31 @@ export function extractNodeKind(node: Span,): string {
 }
 
 /**
+ * Parameters for {@link reportMissing}.
+ */
+export type ReportMissingParams = {
+  /** AST node that should have TSDoc. */
+  node: Span;
+  /** Oxlint rule context. */
+  context: Context;
+};
+
+/**
  * Reports a diagnostic when node lacks a TSDoc comment.
- *
- * @param node - AST node that should have TSDoc
- *
- * @param context - oxlint rule context
  *
  * @example
  * ```ts
- * reportMissing(node, context);
+ * reportMissing({ node, context });
  * ```
  */
-export function reportMissing(
-  node: Span,
-  context: Context,
-): void {
-  if (findTsdocComment(
+export function reportMissing({
+  node,
+  context,
+}: ReportMissingParams,): void {
+  if (findTsdocComment({
     node,
     context,
-  ) === undefined) {
+  },) === undefined) {
     context.report({
       node,
       messageId: 'missing',

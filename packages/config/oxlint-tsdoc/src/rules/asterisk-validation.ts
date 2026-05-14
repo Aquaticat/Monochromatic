@@ -34,9 +34,9 @@ export const noMultiAsterisks: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(
+    return createTsdocVisitor({
       context,
-      function noMultiHandler(
+      handler: function noMultiHandler(
         _node,
         comment,
       ): void {
@@ -66,6 +66,6 @@ export const noMultiAsterisks: CreateOnceRule = {
             }
           },);
       },
-    );
+    },);
   },
 };

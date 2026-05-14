@@ -41,36 +41,45 @@ export function getCommentLines(comment: Comment,): readonly string[] {
 }
 
 /**
+ * Parameters for {@link createTsdocVisitor}.
+ */
+export type CreateTsdocVisitorParams = {
+  /** Oxlint rule context. */
+  context: Context;
+  /** Invoked for each (node, comment) pair. */
+  handler: (node: Span, comment: Comment,) => void;
+};
+
+/**
  * Creates a visitor that iterates over all documentable node types
  * and calls the provided handler when a TSDoc comment is found.
- *
- * @param context - oxlint rule context
- *
- * @param handler - invoked for each (node, comment) pair
  *
  * @returns visitor with hooks
  *
  * @example
  * ```ts
- * return createTsdocVisitor(context, function handleDoc(node, comment) {
- *   // process TSDoc comment
+ * return createTsdocVisitor({
+ *   context,
+ *   handler: function handleDoc(node, comment) {
+ *     // process TSDoc comment
+ *   },
  * });
  * ```
  */
-export function createTsdocVisitor(
-  context: Context,
-  handler: (node: Span, comment: Comment,) => void,
-): VisitorWithHooks {
+export function createTsdocVisitor({
+  context,
+  handler,
+}: CreateTsdocVisitorParams,): VisitorWithHooks {
   /**
    * Checks node and fires handler when TSDoc exists.
    *
    * @param node - AST node to check
    */
   function check(node: Span,): void {
-    const comment = findTsdocComment(
+    const comment = findTsdocComment({
       node,
       context,
-    );
+    },);
     if (comment !== undefined) {
       handler(
         node,
@@ -105,38 +114,47 @@ export function createTsdocVisitor(
 }
 
 /**
+ * Parameters for {@link createFunctionTsdocVisitor}.
+ */
+export type CreateFunctionTsdocVisitorParams = {
+  /** Oxlint rule context. */
+  context: Context;
+  /** Invoked with node and parsed TSDoc for each function-like node. */
+  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult,) => void;
+};
+
+/**
  * Creates a visitor for function-like nodes that have TSDoc comments.
  *
  * Covers FunctionDeclaration, FunctionExpression, ArrowFunctionExpression,
  * and MethodDefinition. Parses the TSDoc comment before invoking the handler.
  *
- * @param context - oxlint rule context
- *
- * @param handler - invoked with node and parsed TSDoc for each function-like node
- *
  * @returns visitor with hooks
  *
  * @example
  * ```ts
- * return createFunctionTsdocVisitor(context, function handleFn(node, result) {
- *   // check function TSDoc
+ * return createFunctionTsdocVisitor({
+ *   context,
+ *   handler: function handleFn(node, result) {
+ *     // check function TSDoc
+ *   },
  * });
  * ```
  */
-export function createFunctionTsdocVisitor(
-  context: Context,
-  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult,) => void,
-): VisitorWithHooks {
+export function createFunctionTsdocVisitor({
+  context,
+  handler,
+}: CreateFunctionTsdocVisitorParams,): VisitorWithHooks {
   /**
    * Checks a function-like node for TSDoc and invokes handler.
    *
    * @param node - AST node to check
    */
   function check(node: Span,): void {
-    const result = parseTsdocForNode(
+    const result = parseTsdocForNode({
       node,
       context,
-    );
+    },);
     if (result === undefined)
       return;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped

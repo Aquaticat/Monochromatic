@@ -15,23 +15,29 @@ const CLOSE_DELIMITERS: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Parameters for {@link findDelimiter}.
+ */
+export type FindDelimiterParams = {
+  /** Source text of the container node. */
+  text: string;
+  /** `'open'` scans forward, `'close'` scans backward. */
+  direction: 'close' | 'open';
+};
+
+/**
  * Finds the index of an opening or closing delimiter in container text.
- *
- * @param text - source text of the container node
- *
- * @param direction - `'open'` scans forward, `'close'` scans backward
  *
  * @returns index of the delimiter, or -1
  *
  * @example
  * ```ts
- * findDelimiter('function foo(a, b)', 'open') // → 12
+ * findDelimiter({ text: 'function foo(a, b)', direction: 'open' }) // → 12
  * ```
  */
-export function findDelimiter(
-  text: string,
-  direction: 'close' | 'open',
-): number {
+export function findDelimiter({
+  text,
+  direction,
+}: FindDelimiterParams,): number {
   if (direction === 'open') {
     for (let i = 0; i < text.length; i++) {
       if (OPEN_DELIMITERS.has(text.charAt(i,),))

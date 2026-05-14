@@ -15,28 +15,37 @@ import {
 //region Shared
 
 /**
+ * Parameters for the local {@link createFunctionTsdocVisitor}.
+ */
+type CreateFunctionTsdocVisitorParams = {
+  /** Oxlint rule context. */
+  context: Context;
+  /** Invoked with node and parsed TSDoc. */
+  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult,) => void;
+};
+
+/**
  * Creates a visitor for function-like nodes with TSDoc comments.
  *
- * @param context - oxlint rule context
- *
- * @param handler - invoked with node and parsed TSDoc
+ * Local variant: skips ArrowFunctionExpression because arrow functions
+ * cannot be generators, so yields-related rules never need to visit them.
  *
  * @returns visitor with hooks
  */
-function createFunctionTsdocVisitor(
-  context: Context,
-  handler: (node: Span & Record<string, unknown>, result: TsdocParseResult,) => void,
-): VisitorWithHooks {
+function createFunctionTsdocVisitor({
+  context,
+  handler,
+}: CreateFunctionTsdocVisitorParams,): VisitorWithHooks {
   /**
    * Checks a function-like node for TSDoc and invokes handler.
    *
    * @param node - AST node to check
    */
   function check(node: Span,): void {
-    const result = parseTsdocForNode(
+    const result = parseTsdocForNode({
       node,
       context,
-    );
+    },);
     if (result === undefined)
       return;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
@@ -106,9 +115,9 @@ export const requireYields: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createFunctionTsdocVisitor(
+    return createFunctionTsdocVisitor({
       context,
-      function requireYieldsHandler(
+      handler: function requireYieldsHandler(
         node,
         result,
       ): void {
@@ -121,7 +130,7 @@ export const requireYields: CreateOnceRule = {
           },);
         }
       },
-    );
+    },);
   },
 };
 
@@ -142,9 +151,9 @@ export const requireYieldsCheck: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createFunctionTsdocVisitor(
+    return createFunctionTsdocVisitor({
       context,
-      function requireYieldsCheckHandler(
+      handler: function requireYieldsCheckHandler(
         node,
         result,
       ): void {
@@ -155,6 +164,6 @@ export const requireYieldsCheck: CreateOnceRule = {
           },);
         }
       },
-    );
+    },);
   },
 };

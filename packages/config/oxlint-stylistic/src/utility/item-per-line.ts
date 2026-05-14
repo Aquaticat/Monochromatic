@@ -100,11 +100,11 @@ export function checkItemsPerLine({
   /** Source text of the entire file. */
   const sourceText = context.sourceCode.getText();
 
-  if (!needsPerLineFix(
+  if (!needsPerLineFix({
     sourceText,
     container,
     items,
-  )) {
+  },)) {
     return;
   }
 

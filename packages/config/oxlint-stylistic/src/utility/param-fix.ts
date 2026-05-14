@@ -12,73 +12,79 @@ import {
 } from './range.ts';
 
 /**
+ * Parameters for {@link paramsNeedFix}.
+ */
+export type ParamsNeedFixParams = {
+  /** Full file source text. */
+  sourceText: string;
+  /** Byte offset of opening `(`. */
+  openParen: number;
+  /** Byte offset of closing `)`. */
+  closeParen: number;
+  /** Array of parameter AST nodes. */
+  params: Span[];
+};
+
+/**
  * Checks whether function params need per-line reformatting.
- *
- * @param sourceText - full file source text
- *
- * @param openParen - byte offset of opening `(`
- *
- * @param closeParen - byte offset of closing `)`
- *
- * @param params - array of parameter AST nodes
  *
  * @returns whether any params share a line
  *
  * @example
  * ```ts
- * if (paramsNeedFix(sourceText, openParen, closeParen, params)) { /* report *\/ }
+ * if (paramsNeedFix({ sourceText, openParen, closeParen, params })) { /* report *\/ }
  * ```
  */
-export function paramsNeedFix(
-  sourceText: string,
-  openParen: number,
-  closeParen: number,
-  params: Span[],
-): boolean {
-  const firstRange = rangeOf(at(
-    params,
-    0,
-  ),);
-  if (lineAt(
+export function paramsNeedFix({
+  sourceText,
+  openParen,
+  closeParen,
+  params,
+}: ParamsNeedFixParams,): boolean {
+  const firstRange = rangeOf(at({
+    arr: params,
+    index: 0,
+  },),);
+  if (lineAt({
     sourceText,
-    openParen,
-  ) === lineAt(
+    offset: openParen,
+  },) === lineAt({
     sourceText,
-    firstRange[0],
-  )) {
+    offset: firstRange[0],
+  },)) {
     return true;
   }
 
-  const lastRange = rangeOf(at(
-    params,
-    params.length - 1,
-  ),);
-  if (lineAt(
+  const lastRange = rangeOf(at({
+    arr: params,
+    index: params.length - 1,
+  },),);
+  if (lineAt({
     sourceText,
-    lastRange[1],
-  ) === lineAt(
+    offset: lastRange[1],
+  },) === lineAt({
     sourceText,
-    closeParen,
-  )) {
+    offset: closeParen,
+  },)) {
     return true;
   }
 
   for (let i = 1; i < params.length; i++) {
-    const prevRange = rangeOf(at(
-      params,
-      i - 1,
-    ),);
-    const currRange = rangeOf(at(
-      params,
-      i,
-    ),);
-    if (lineAt(
+    const prevRange = rangeOf(at({
+      arr: params,
+      index: i - 1,
+    },),);
+    const currRange = rangeOf(at({
+      arr: params,
+      index: i,
+    },),);
+    if (lineAt({
       sourceText,
-      prevRange[1],
-    ) === lineAt(
+      offset: prevRange[1],
+    },) === lineAt({
       sourceText,
-      currRange[0],
-    )) {
+      offset: currRange[0],
+    },)) {
       return true;
     }
   }
@@ -87,35 +93,41 @@ export function paramsNeedFix(
 }
 
 /**
+ * Parameters for {@link buildParamFix}.
+ */
+export type BuildParamFixParams = {
+  /** Fixer instance. */
+  fixer: Fixer;
+  /** Full file source text. */
+  sourceText: string;
+  /** Byte offset of `(`. */
+  openParen: number;
+  /** Byte offset of `)`. */
+  closeParen: number;
+  /** Parameter AST nodes. */
+  params: Span[];
+  /** Lint context for source text access. */
+  context: Context;
+};
+
+/**
  * Builds a fixer result that places each param on its own line.
- *
- * @param fixer - fixer instance
- *
- * @param sourceText - full file source text
- *
- * @param openParen - byte offset of `(`
- *
- * @param closeParen - byte offset of `)`
- *
- * @param params - parameter AST nodes
- *
- * @param context - lint context for source text access
  *
  * @returns fixer replacement result
  *
  * @example
  * ```ts
- * return buildParamFix(fixer, sourceText, openParen, closeParen, params, context);
+ * return buildParamFix({ fixer, sourceText, openParen, closeParen, params, context });
  * ```
  */
-export function buildParamFix(
-  fixer: Fixer,
-  sourceText: string,
-  openParen: number,
-  closeParen: number,
-  params: Span[],
-  context: Context,
-): ReturnType<Fixer['replaceText']> {
+export function buildParamFix({
+  fixer,
+  sourceText,
+  openParen,
+  closeParen,
+  params,
+  context,
+}: BuildParamFixParams,): ReturnType<Fixer['replaceText']> {
   /** Detect base indentation from the line containing `(`. */
   const lineStart = sourceText.lastIndexOf(
     '\n',
@@ -135,10 +147,10 @@ export function buildParamFix(
   );
 
   /** Check trailing comma. */
-  const lastRange = rangeOf(at(
-    params,
-    params.length - 1,
-  ),);
+  const lastRange = rangeOf(at({
+    arr: params,
+    index: params.length - 1,
+  },),);
   const between = sourceText.slice(
     lastRange[1],
     closeParen,

@@ -44,17 +44,23 @@ function extractRawParams(
 }
 
 /**
+ * Parameters for {@link collectDestructuredNames}.
+ */
+type CollectDestructuredNamesParams = {
+  /** AST binding pattern node. */
+  pattern: Record<string, unknown>;
+  /** Mutable set to collect names into. */
+  names: Set<string>;
+};
+
+/**
  * Recursively collects property names from a destructured parameter pattern
  * into the provided set.
- *
- * @param pattern - AST binding pattern node
- *
- * @param names - mutable set to collect names into
  */
-function collectDestructuredNames(
-  pattern: Record<string, unknown>,
-  names: Set<string>,
-): void {
+function collectDestructuredNames({
+  pattern,
+  names,
+}: CollectDestructuredNamesParams,): void {
   if (pattern.type === 'Identifier') {
     // Named params are handled by extractParamNames, skip here
     return;
@@ -63,29 +69,29 @@ function collectDestructuredNames(
     // `{ a = defaultValue }` -- unwrap to the left side
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const left = pattern.left as Record<string, unknown>;
-    collectDestructuredNames(
-      left,
+    collectDestructuredNames({
+      pattern: left,
       names,
-    );
+    },);
     return;
   }
   if (pattern.type === 'RestElement') {
     // `...rest` inside destructuring
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const argument = pattern.argument as Record<string, unknown>;
-    collectDestructuredNames(
-      argument,
+    collectDestructuredNames({
+      pattern: argument,
       names,
-    );
+    },);
     return;
   }
   if (pattern.type === 'TSParameterProperty') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const parameter = pattern.parameter as Record<string, unknown>;
-    collectDestructuredNames(
-      parameter,
+    collectDestructuredNames({
+      pattern: parameter,
       names,
-    );
+    },);
     return;
   }
   if (pattern.type === 'ObjectPattern') {
@@ -96,10 +102,10 @@ function collectDestructuredNames(
     for (const prop of properties) {
       if (prop.type === 'RestElement') {
         // `{ ...rest }` inside object destructuring
-        collectDestructuredNames(
-          prop,
+        collectDestructuredNames({
+          pattern: prop,
           names,
-        );
+        },);
       }
       else {
         // Property node -- extract the key name
@@ -121,10 +127,10 @@ function collectDestructuredNames(
       return;
     for (const element of elements) {
       if (element !== null) {
-        collectDestructuredNames(
-          element,
+        collectDestructuredNames({
+          pattern: element,
           names,
-        );
+        },);
       }
     }
   }
@@ -159,10 +165,10 @@ export function extractDestructuredParamNames(
   const names = new Set<string>();
 
   for (const param of extractRawParams(node,)) {
-    collectDestructuredNames(
-      param,
+    collectDestructuredNames({
+      pattern: param,
       names,
-    );
+    },);
   }
 
   return names;

@@ -42,10 +42,10 @@ export const validTypes: CreateOnceRule = {
      * @param node - AST node to check
      */
     function check(node: Span,): void {
-      const result = parseTsdocForNode(
+      const result = parseTsdocForNode({
         node,
         context,
-      );
+      },);
       if (result === undefined)
         return;
       result.messages.forEach(function reportMessage(message,): void {

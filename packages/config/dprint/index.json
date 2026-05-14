@@ -11,7 +11,8 @@
     "**/bak/**/*.*",
     "**/.astro/**/*.*",
     "**/pnpm-lock.yaml",
-    "**/src/i18n/**"
+    "**/src/i18n/**",
+    "**/test-fixture/oxlint-stylistic/src/invalid/**/*.*"
   ],
   "lineWidth": 90,
   "useTabs": false,

@@ -145,19 +145,20 @@ export const requireExample: CreateOnceRule = {
 
     /**
      * Reports a missing `\@example` tag for a given node and its TSDoc comment.
-     *
-     * @param node - function-like AST node
-     *
-     * @param comment - TSDoc comment AST node for error location
      */
-    function reportMissingExample(
-      node: Span,
-      comment: Comment,
-    ): void {
-      const result = parseTsdocForNode(
+    function reportMissingExample({
+      node,
+      comment,
+    }: {
+      /** Function-like AST node. */
+      node: Span;
+      /** TSDoc comment AST node for error location. */
+      comment: Comment;
+    },): void {
+      const result = parseTsdocForNode({
         node,
         context,
-      );
+      },);
       if (result === undefined)
         return;
       if (isExempt(result,))
@@ -177,18 +178,18 @@ export const requireExample: CreateOnceRule = {
      * @param node - AST node to check
      */
     function checkFunction(node: Span,): void {
-      const comment = findTsdocComment(
+      const comment = findTsdocComment({
         node,
         context,
-      );
+      },);
       if (comment === undefined)
         return;
 
       if (isDirectlyExported(node,)) {
-        reportMissingExample(
+        reportMissingExample({
           node,
           comment,
-        );
+        },);
         return;
       }
 
@@ -234,18 +235,18 @@ export const requireExample: CreateOnceRule = {
       if (init.type !== 'FunctionExpression' && init.type !== 'ArrowFunctionExpression')
         return;
 
-      const comment = findTsdocComment(
+      const comment = findTsdocComment({
         node,
         context,
-      );
+      },);
       if (comment === undefined)
         return;
 
       if (isDirectlyExported(node,)) {
-        reportMissingExample(
+        reportMissingExample({
           node,
           comment,
-        );
+        },);
         return;
       }
 
@@ -296,10 +297,10 @@ export const requireExample: CreateOnceRule = {
         // Check deferred function nodes against specifier-exported names
         for (const [name, entry,] of functionNodes) {
           if (specifierExportedNames.has(name,)) {
-            reportMissingExample(
-              entry.node,
-              entry.comment,
-            );
+            reportMissingExample({
+              node: entry.node,
+              comment: entry.comment,
+            },);
           }
         }
       },

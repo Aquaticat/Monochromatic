@@ -46,9 +46,9 @@ export const requireReturnsDescription: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createFunctionTsdocVisitor(
+    return createFunctionTsdocVisitor({
       context,
-      function requireReturnsDescHandler(
+      handler: function requireReturnsDescHandler(
         _node,
         result,
       ): void {
@@ -62,6 +62,6 @@ export const requireReturnsDescription: CreateOnceRule = {
           },);
         }
       },
-    );
+    },);
   },
 };

@@ -34,9 +34,9 @@ export const checkAlignment: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(
+    return createTsdocVisitor({
       context,
-      function checkAlignmentHandler(
+      handler: function checkAlignmentHandler(
         _node,
         comment,
       ): void {
@@ -75,7 +75,7 @@ export const checkAlignment: CreateOnceRule = {
           }
         },);
       },
-    );
+    },);
   },
 };
 
@@ -97,9 +97,9 @@ export const multilineBlocks: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createTsdocVisitor(
+    return createTsdocVisitor({
       context,
-      function multilineHandler(
+      handler: function multilineHandler(
         _node,
         comment,
       ): void {
@@ -117,7 +117,7 @@ export const multilineBlocks: CreateOnceRule = {
           },);
         }
       },
-    );
+    },);
   },
 };
 

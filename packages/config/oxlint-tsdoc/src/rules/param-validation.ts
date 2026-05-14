@@ -33,9 +33,9 @@ export const requireParamName: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createFunctionTsdocVisitor(
+    return createFunctionTsdocVisitor({
       context,
-      function requireParamNameHandler(
+      handler: function requireParamNameHandler(
         _node,
         result,
       ): void {
@@ -48,7 +48,7 @@ export const requireParamName: CreateOnceRule = {
           }
         },);
       },
-    );
+    },);
   },
 };
 
@@ -82,9 +82,9 @@ export const requireParamDescription: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    return createFunctionTsdocVisitor(
+    return createFunctionTsdocVisitor({
       context,
-      function requireParamDescHandler(
+      handler: function requireParamDescHandler(
         _node,
         result,
       ): void {
@@ -98,6 +98,6 @@ export const requireParamDescription: CreateOnceRule = {
           }
         },);
       },
-    );
+    },);
   },
 };
