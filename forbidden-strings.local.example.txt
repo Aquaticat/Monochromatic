@@ -318,7 +318,7 @@
 # === github-pat ===
 # Uncovered a GitHub Personal Access Token, potentially leading to unauthorized repository access and sensitive content exposure.
 # RELAXATION: excluded documented placeholder `ghp_000000000000000000000000000000000000` via resharp intersection/complement.
-/ghp\x5f[0-9a-zA-Z]{36}&~(ghp\x5f0{36})/
+/ghp[_][0-9a-zA-Z]{36}&~(ghp[_]0{36})/
 # === github-refresh-token ===
 # Detected a GitHub Refresh Token, which could allow prolonged unauthorized access to GitHub services.
 /ghr\_[0-9a-zA-Z]{36}/

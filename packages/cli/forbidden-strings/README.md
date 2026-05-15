@@ -153,10 +153,11 @@ This flags `key_12345` and `key_99999` but lets `key_00000` through. Class-level
 `[A&&B]` (intersection) and `[A~~B]` (symmetric difference) are also available inside
 character classes.
 
-When an algebra operand needs a literal underscore, prefer `\x5f` or `[_]` instead of
-`\_`. Plain regex rules match `\_` as a literal underscore, but resharp 0.5.x does not
-match `\_` consistently once the pattern is composed with `&` / `~(...)`. The generated
-GitHub PAT relaxation therefore writes `ghp\x5f...&~(ghp\x5f0{36})`.
+Underscore is a resharp meta character. Unescaped `_` is the top pattern, which matches
+any single codepoint. For literal underscores in algebra rules that use `~(...)`, prefer
+`[_]`: resharp's parser source treats `\_` as a literal meta-character escape, but the
+`forbidden-strings` executable matrix did not scan `\_` reliably in this complement
+shape. The generated GitHub PAT relaxation therefore writes `ghp[_]...&~(ghp[_]0{36})`.
 
 The scanner extracts a leading literal prefix from each regex rule and folds it into a
 shared Aho-Corasick gate so the regex engine only runs on files that contain the prefix.
