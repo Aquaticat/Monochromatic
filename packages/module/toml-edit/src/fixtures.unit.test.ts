@@ -87,7 +87,8 @@ await describe({
             const source = await readFile(join(invalidFixturesDir, filename,), 'utf8',);
             expect(function parseInvalidFixture() {
               parseTomlEdit({ source, },);
-            },).toThrow(TomlEditError,);
+            },)
+              .toThrow(TomlEditError,);
           },
         },);
       },),
