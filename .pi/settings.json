@@ -1,1 +1,3 @@
-{}
+{
+  "_comment": "Project Pi settings intentionally stay empty of packages. Put user-specific workflow packages in global ~/.pi/agent/settings.json."
+}
