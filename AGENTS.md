@@ -310,7 +310,7 @@ Move changes where they belong immediately: different file, new file, gitignore 
 ### Cross-runtime and scripts
 
 - Prefer cross-runtime patterns instead of Bun-specific implementations.
-- Never write bash/shell scripts; use TypeScript files as `mise.<action>.ts` in `packages/module/es/src/`. Execute with Bun directly; top-level code and top-level await (no `main()` wrapper).
+- Never write bash/powershell scripts; use inline nushell or TypeScript files as `mise.<action>.ts`. Execute with Bun directly; top-level code and top-level await (no `main()` wrapper).
 - Pin tool versions only with clear justification and a comment explaining why.
 - Add explicit guards (transcript size check, env var flag, session type filter) to any automation that spawns agent sessions, to prevent recursive token burn.
 
@@ -329,6 +329,8 @@ Move changes where they belong immediately: different file, new file, gitignore 
 - Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
 - Block-level `/* oxlint-disable rule */` must wrap tightly. Order with TSDoc: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */`. The disable goes **before** the TSDoc so the TSDoc remains the immediately preceding comment. The enable goes on the **very next line** after the declaration (or closing `);`/`}`). Never at end-of-file or many lines later. Leaving a disable open longer than necessary silences unrelated violations.
 - When a declaration needs both TSDoc and a suppression, use the block-level disable + enable pair wrapping the TSDoc and declaration tightly. Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration: the directive applies only to the literal next physical line, so it lands on the TSDoc instead of the declaration and the suppression is lost.
+- Never loosen lint rules without prior approval.
+- Address all lint issues, this includes but not limited to warnings.
 
 ### Logging
 
@@ -504,7 +506,6 @@ Commit immediately after every minimum logical unit of work, before moving to th
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. Scope: package name or `*` for multi-package changes.
 
 - Group related changes by type; be specific about what changed.
-- Include ALL changes in a single comprehensive commit message.
 - Focus on "what" and "why".
 
 If you notice a commit message is inaccurate after committing, do not amend (harness rule). Surface the inaccuracy to the user and ask them to push (pushing is a shared-state action that needs explicit authorization; do not push yourself unless the user said so), then post a commit comment via `gh api repos/<OWNER>/<REPO>/commits/<SHA>/comments -X POST -f body='<correction>'`. The comment renders alongside the commit on GitHub and survives history rewrites. Do not silently let an inaccurate commit message stand: future readers see only the message, not the conversation that produced it. The cue: you are about to write "the commit message overstates scope" or similar in chat as a one-off note instead of recording it where the commit lives.
