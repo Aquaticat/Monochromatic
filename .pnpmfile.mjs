@@ -175,7 +175,10 @@ const warned = new Set();
  * @param {string} key
  * @param {string} message
  */
-function warnOnce({ key, message, },) {
+function warnOnce({
+  key,
+  message,
+},) {
   if (warned.has(key,))
     return;
   warned.add(key,);
@@ -192,12 +195,12 @@ function warnOnce({ key, message, },) {
  * @returns {object}
  */
 function applyBlocklist({ pkg, },) {
-  const dependentName = typeof pkg.name === 'string' ? pkg.name : '<unknown>';
-  const dependentVersion = typeof pkg.version === 'string' ? pkg.version : '0.0.0';
+  const dependentName = (typeof pkg.name) === 'string' ? pkg.name : '<unknown>';
+  const dependentVersion = (typeof pkg.version) === 'string' ? pkg.version : '0.0.0';
 
   for (const field of DEP_FIELDS) {
     const deps = pkg[field];
-    if (deps === null || deps === undefined || typeof deps !== 'object')
+    if ((deps === null) || (deps === undefined) || (typeof deps) !== 'object')
       continue;
     for (const [name, currentSpec,] of Object.entries(deps,)) {
       const policy = POLICY[name];
@@ -211,7 +214,10 @@ function applyBlocklist({ pkg, },) {
         `[blocked-dep] ${key}: substituting with stub-${policy.action}. ${policy.reason} (previous spec: ${
           String(currentSpec,)
         })`;
-      warnOnce({ key, message, },);
+      warnOnce({
+        key,
+        message,
+      },);
 
       deps[name] = STUB_SPECIFIER[policy.action];
     }

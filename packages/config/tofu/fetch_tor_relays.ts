@@ -36,7 +36,7 @@ async function run() {
   if (existsSync(CACHE_FILE,)) {
     /** Cache file metadata used to compare mtime against {@link ONE_HOUR_MS}. */
     const stats = await stat(CACHE_FILE,);
-    if (Date.now() - stats.mtimeMs < ONE_HOUR_MS) {
+    if ((Date.now() - stats.mtimeMs) < ONE_HOUR_MS) {
       process.stdout.write(
         JSON.stringify({ ips: await readFile(
           CACHE_FILE,
@@ -70,7 +70,7 @@ async function run() {
             )
           }/128`,);
         }
-        else if (addr.endsWith(':443',) && !addr.startsWith('[',)) {
+        else if (addr.endsWith(':443',) && (!addr.startsWith('[',))) {
           // IPv4: 1.2.3.4:443
           ips.push(`${addr.split(':',)[0]}/32`,);
         }

@@ -396,7 +396,7 @@ await describe({
             expect(doc.pages.size,).toBeGreaterThan(0,);
             // Should have sticky notes as frames
             const frames = [...doc.shapes.values(),].filter(s =>
-              s.type === 'frame' && s.name !== 'Root Frame'
+              (s.type === 'frame') && (s.name !== 'Root Frame')
             );
             expect(frames.length,).toBeGreaterThan(0,);
           },

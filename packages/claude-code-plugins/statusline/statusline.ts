@@ -134,9 +134,9 @@ function formatModelDisplay(raw: string,): string {
   /** Accumulator for the trimmed display name, seeded with the family and extended only with parts that diverge from defaults. */
   let result = family;
 
-  if (version && version !== defaults?.latestVersion)
+  if (version && (version !== defaults?.latestVersion))
     result += ` ${version}`;
-  if (context && context !== defaults?.defaultContext)
+  if (context && (context !== defaults?.defaultContext))
     result += ` (${context})`;
 
   return result;
@@ -227,7 +227,7 @@ function formatRateLimit({
   tier: RateLimitTier | undefined;
   windowSeconds: number;
 },): string {
-  if (!tier?.used_percentage || !tier.resets_at)
+  if ((!tier?.used_percentage) || (!tier.resets_at))
     return '';
 
   /** Current wall-clock time in epoch seconds; matched against `tier.resets_at` to derive elapsed. */
@@ -240,7 +240,7 @@ function formatRateLimit({
    * Set to `0` when elapsed is non-positive or usage is below {@link MIN_USAGE_FOR_PROJECTION},
    * to suppress the divide-by-tiny-elapsed amplification at session start.
    */
-  const projected = elapsed > 0 && tier.used_percentage >= MIN_USAGE_FOR_PROJECTION
+  const projected = (elapsed > 0) && (tier.used_percentage >= MIN_USAGE_FOR_PROJECTION)
     ? (tier.used_percentage / elapsed) * windowSeconds
     : 0;
   /** True when projected usage exceeds 100%, forcing the segment to render even below {@link RATE_LIMIT_THRESHOLD}. */
@@ -248,13 +248,13 @@ function formatRateLimit({
 
   /** Remaining quota percentage as a whole number; the user-facing value in the output. */
   const remaining = Math.floor(100 - tier.used_percentage,);
-  if (remaining > RATE_LIMIT_THRESHOLD && !isProjectedOverrun)
+  if ((remaining > RATE_LIMIT_THRESHOLD) && (!isProjectedOverrun))
     return '';
 
   /** Human-readable time until window reset, formatted by {@link formatRelativeTime}. */
   const timeLeft = formatRelativeTime(tier.resets_at,);
   /** Colour code picked from the critical/caution/healthy bands or red for any projected overrun. */
-  const rateColor = (isProjectedOverrun || remaining <= CRITICAL_THRESHOLD)
+  const rateColor = (isProjectedOverrun || (remaining <= CRITICAL_THRESHOLD))
     ? RED
     : (remaining <= CAUTION_THRESHOLD
       ? YELLOW
@@ -607,7 +607,7 @@ const used = (usage?.input_tokens ?? 0)
   + (usage?.cache_read_input_tokens ?? 0)
   + (usage?.output_tokens ?? 0);
 /** Rendered context-window segment; empty until both used and total are known so the line stays clean at session start. */
-const contextSegment = used > 0 && total > 0
+const contextSegment = (used > 0) && (total > 0)
   ? formatContextWindow(
     used,
     total,

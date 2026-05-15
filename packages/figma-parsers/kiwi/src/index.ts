@@ -99,6 +99,7 @@ class BinaryReader {
    * Construct a reader over an existing buffer.
    *
    * @param data - Buffer to read from
+   *
    * @param pos - Initial byte cursor; defaults to 0
    */
   constructor(
@@ -216,7 +217,7 @@ class BinaryReader {
   readString(): string {
     /** Scan cursor seeking the next 0x00 terminator; left pointing AT the null when the loop exits. */
     let end = this.pos;
-    while (end < this.data.length && this.data[end] !== 0)
+    while ((end < this.data.length) && (this.data[end] !== 0))
       end += 1;
     /** UTF-8 decode of the bytes between the original cursor and the terminator. */
     const s = new TextDecoder('utf-8',).decode(this.data.subarray(
@@ -779,7 +780,7 @@ function parseCanvasHeader(
   // Find null terminator within first 10 bytes
   /** Cursor seeking the 0x00 terminator inside the 10-byte magic window. */
   let magicLen = 0;
-  while (magicLen < 10 && data[magicLen] !== 0)
+  while ((magicLen < 10) && (data[magicLen] !== 0))
     magicLen++;
   /** ASCII-decoded magic string used to discriminate fig/deck/jam payloads. */
   const magic = new TextDecoder('ascii',).decode(data.subarray(
@@ -843,12 +844,12 @@ async function parseCanvasFig(canvasData: Uint8Array,): Promise<{
   ],);
   /** Byte offset where the zstd frame begins; -1 indicates no zstd payload was found. */
   let zstdOffset = -1;
-  for (let i = CANVAS_HEADER_SIZE; i < canvasData.length - 4; i++) {
+  for (let i = CANVAS_HEADER_SIZE; i < (canvasData.length - 4); i++) {
     if (
-      canvasData[i] === zstdMagic[0]
-      && canvasData[i + 1] === zstdMagic[1]
-      && canvasData[i + 2] === zstdMagic[2]
-      && canvasData[i + 3] === zstdMagic[3]
+      (canvasData[i] === zstdMagic[0])
+      && (canvasData[i + 1] === zstdMagic[1])
+      && (canvasData[i + 2] === zstdMagic[2])
+      && (canvasData[i + 3] === zstdMagic[3])
     ) {
       zstdOffset = i;
       break;
@@ -1093,7 +1094,7 @@ async function extractZipEntries(buffer: Uint8Array,): Promise<Map<string, Uint8
     }
   }
 
-  if (eocdOffset === -1)
+  if (eocdOffset === (-1))
     throw new Error('Cannot find ZIP end of central directory',);
 
   /** Absolute byte offset of the central directory pulled from the EOCD record. */
@@ -1242,7 +1243,7 @@ async function parseFigmaFile(
 ): Promise<FigmaFile> {
   /** Whole-file buffer; populated from disk or passed-through depending on the input shape. */
   let rawBuffer: Uint8Array;
-  if (typeof filePathOrBuffer === 'string') {
+  if ((typeof filePathOrBuffer) === 'string') {
     /** Promise-based `readFile` resolved lazily so a Uint8Array input avoids the fs import. */
     const { readFile, } = await import('node:fs/promises');
     rawBuffer = new Uint8Array(await readFile(filePathOrBuffer,),);

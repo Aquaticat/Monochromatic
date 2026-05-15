@@ -39,7 +39,7 @@ function encodeVarUint(value: number,): number[] {
 
 /** Encode a number as a zigzag varint. */
 function encodeVarInt(value: number,): number[] {
-  const raw = value < 0 ? (~value << 1) | 1 : value << 1;
+  const raw = value < 0 ? ((~value) << 1) | 1 : value << 1;
   return encodeVarUint(raw >>> 0,);
 }
 

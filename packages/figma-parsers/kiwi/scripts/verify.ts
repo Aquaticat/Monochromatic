@@ -79,7 +79,7 @@ async function main(): Promise<void> {
       }
       /** DOCUMENT entry of NodeType; its value must equal 1 to confirm enum decoding is correct. */
       const docField = nodeType.fields.find(f => f.name === 'DOCUMENT');
-      if (!docField || docField.value !== 1) {
+      if ((!docField) || (docField.value !== 1)) {
         console.error(
           `  FAIL: NodeType.DOCUMENT not found or wrong value: ${docField?.value}`,
         );
@@ -106,7 +106,7 @@ async function main(): Promise<void> {
       const nodeChanges = file.document.nodeChanges as
         | Record<string, unknown>[]
         | undefined;
-      if (!nodeChanges || !Array.isArray(nodeChanges,)) {
+      if ((!nodeChanges) || (!Array.isArray(nodeChanges,))) {
         console.error('  FAIL: nodeChanges not found or not an array',);
         failed++;
         continue;

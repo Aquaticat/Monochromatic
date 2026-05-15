@@ -122,7 +122,7 @@ function escapeResharpOnlyMeta({ pattern, }: { pattern: string; },): string {
     /** Current character under the cursor; shorthand to avoid repeating `pattern[i]!`. */
     const c = pattern[i]!;
     // Pass an escape sequence through unmodified (consumes two chars).
-    if ((c === '\\') && (i + 1) < pattern.length) {
+    if ((c === '\\') && ((i + 1) < pattern.length)) {
       out += pattern.slice(
         i,
         i + 2,

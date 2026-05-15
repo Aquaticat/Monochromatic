@@ -15,7 +15,7 @@ function hasTsdoc(
   /** Comments adjacent to the node; the rule passes when any one is a TSDoc block. */
   const comments = context.sourceCode.getCommentsBefore(node,);
   return comments.some(comment =>
-    comment.type === 'Block'
+    (comment.type === 'Block')
     && comment.value.startsWith('*',)
   );
 }
@@ -144,7 +144,7 @@ const plugin = eslintCompatPlugin({
             );
           },
           Property(node,): void {
-            if (node.kind === 'get' || node.kind === 'set') {
+            if ((node.kind === 'get') || (node.kind === 'set')) {
               reportTsdoc(
                 node,
                 context,

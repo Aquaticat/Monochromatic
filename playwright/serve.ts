@@ -26,7 +26,7 @@ app.all(
     /** Request URL path; routed below by prefix match. */
     const { pathname, } = event.url;
 
-    if (pathname === '/' || pathname === '/test-harness.html') {
+    if ((pathname === '/') || (pathname === '/test-harness.html')) {
       return new Response(
         await readFile('playwright/test-harness.html',),
         {

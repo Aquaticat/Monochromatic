@@ -37,7 +37,7 @@ async function run() {
   if (existsSync(CACHE_FILE,)) {
     /** Cache file metadata used to compare mtime against {@link THIRTY_DAYS_MS}. */
     const stats = await stat(CACHE_FILE,);
-    if (Date.now() - stats.mtimeMs < THIRTY_DAYS_MS) {
+    if ((Date.now() - stats.mtimeMs) < THIRTY_DAYS_MS) {
       process.stdout.write(
         JSON.stringify({ ips: await readFile(
           CACHE_FILE,

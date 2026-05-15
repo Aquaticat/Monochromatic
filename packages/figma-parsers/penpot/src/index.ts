@@ -405,9 +405,9 @@ function guidToUuid(
   localId: unknown,
 ): Uuid {
   /** Figma session id coerced to a number so it can be bit-shifted; defaults to 0 when missing or wrong-typed. */
-  const sid = typeof sessionId === 'number' ? sessionId : 0;
+  const sid = (typeof sessionId) === 'number' ? sessionId : 0;
   /** Figma local id coerced to a number for bit-shifting; defaults to 0 when missing or wrong-typed. */
-  const lid = typeof localId === 'number' ? localId : 0;
+  const lid = (typeof localId) === 'number' ? localId : 0;
   /** Format `n` as zero-padded hex of width `w`; shared by every UUID segment below so the encoding is uniform. */
   function h(
     n: number,
@@ -488,11 +488,11 @@ function guidToUuid(
  */
 function figmaColorToHex(color: Record<string, unknown>,): string {
   /** Red channel rounded to 0-255 integer so it can be hex-encoded. */
-  const r = Math.round((typeof color.r === 'number' ? color.r : 0) * 255,);
+  const r = Math.round(((typeof color.r) === 'number' ? color.r : 0) * 255,);
   /** Green channel rounded to 0-255 integer so it can be hex-encoded. */
-  const g = Math.round((typeof color.g === 'number' ? color.g : 0) * 255,);
+  const g = Math.round(((typeof color.g) === 'number' ? color.g : 0) * 255,);
   /** Blue channel rounded to 0-255 integer so it can be hex-encoded. */
-  const b = Math.round((typeof color.b === 'number' ? color.b : 0) * 255,);
+  const b = Math.round(((typeof color.b) === 'number' ? color.b : 0) * 255,);
   return `#${
     r.toString(16,).padStart(
       2,
@@ -520,7 +520,7 @@ function figmaColorToHex(color: Record<string, unknown>,): string {
 function figmaColorToFill(color: Record<string, unknown>,): PenpotFill {
   return {
     fillColor: figmaColorToHex(color,),
-    fillOpacity: typeof color.a === 'number' ? color.a : 1,
+    fillOpacity: (typeof color.a) === 'number' ? color.a : 1,
   };
 }
 
@@ -532,14 +532,14 @@ function figmaColorToFill(color: Record<string, unknown>,): PenpotFill {
 function figmaPaintToFill(paint: Record<string, unknown>,): PenpotFill | null {
   /** Paint type string normalised across the enum-style `type` and the schema-style `__type` keys Figma emits. */
   const paintType = String(paint.type ?? paint.__type ?? '',);
-  if (paintType === 'PaintType.SOLID' || paintType.includes('SOLID',)) {
+  if ((paintType === 'PaintType.SOLID') || paintType.includes('SOLID',)) {
     /** Optional color struct; guarded so missing-color paints fall through to `null`. */
     const color = paint.color as Record<string, unknown> | undefined;
     if (!color)
       return null;
     /** Solid fill assembled from the color; opacity may be overridden by the paint's own `opacity` field below. */
     const fill = figmaColorToFill(color,);
-    if (typeof paint.opacity === 'number')
+    if ((typeof paint.opacity) === 'number')
       fill.fillOpacity = paint.opacity;
     return fill;
   }
@@ -556,7 +556,7 @@ function figmaPaintToStroke(
 ): PenpotStroke | null {
   /** Paint type string normalised across the enum-style `type` and the schema-style `__type` keys, same as the fill path. */
   const paintType = String(paint.type ?? paint.__type ?? '',);
-  if (paintType === 'PaintType.SOLID' || paintType.includes('SOLID',)) {
+  if ((paintType === 'PaintType.SOLID') || paintType.includes('SOLID',)) {
     /** Optional color struct; guarded so missing-color paints fall through to `null`. */
     const color = paint.color as Record<string, unknown> | undefined;
     if (!color)
@@ -570,7 +570,7 @@ function figmaPaintToStroke(
           : 'center'),
       strokeWidth: strokeWeight,
       strokeColor: figmaColorToHex(color,),
-      strokeOpacity: typeof paint.opacity === 'number' ? paint.opacity : 1,
+      strokeOpacity: (typeof paint.opacity) === 'number' ? paint.opacity : 1,
     };
   }
   return null;
@@ -647,12 +647,12 @@ function figmaTransformToPenpot(
   // | b d f | = | m10 m11 m12 | = | b d ty |
   // | 0 0 1 |   | 0   0   1   |   | 0 0 1  |
   return {
-    a: typeof transform.m00 === 'number' ? transform.m00 : 1,
-    b: typeof transform.m10 === 'number' ? transform.m10 : 0,
-    c: typeof transform.m01 === 'number' ? transform.m01 : 0,
-    d: typeof transform.m11 === 'number' ? transform.m11 : 1,
-    e: typeof transform.m02 === 'number' ? transform.m02 : 0,
-    f: typeof transform.m12 === 'number' ? transform.m12 : 0,
+    a: (typeof transform.m00) === 'number' ? transform.m00 : 1,
+    b: (typeof transform.m10) === 'number' ? transform.m10 : 0,
+    c: (typeof transform.m01) === 'number' ? transform.m01 : 0,
+    d: (typeof transform.m11) === 'number' ? transform.m11 : 1,
+    e: (typeof transform.m02) === 'number' ? transform.m02 : 0,
+    f: (typeof transform.m12) === 'number' ? transform.m12 : 0,
   };
 }
 
@@ -682,10 +682,10 @@ function parseParentIndex(parentIndex: Record<string, unknown> | undefined | nul
     return null;
   return {
     parentGuid: {
-      sessionId: typeof guid.sessionID === 'number' ? guid.sessionID : 0,
-      localId: typeof guid.localID === 'number' ? guid.localID : 0,
+      sessionId: (typeof guid.sessionID) === 'number' ? guid.sessionID : 0,
+      localId: (typeof guid.localID) === 'number' ? guid.localID : 0,
     },
-    position: typeof parentIndex.position === 'string' ? parentIndex.position : '',
+    position: (typeof parentIndex.position) === 'string' ? parentIndex.position : '',
   };
 }
 
@@ -725,9 +725,9 @@ function convertFigmaToPenpot(
     const guid = nc.guid as Record<string, unknown> | undefined;
     if (guid) {
       /** Numeric session id with 0-fallback so missing/wrong-typed values stay deterministic. */
-      const sid = typeof guid.sessionID === 'number' ? guid.sessionID : 0;
+      const sid = (typeof guid.sessionID) === 'number' ? guid.sessionID : 0;
       /** Numeric local id with 0-fallback so missing/wrong-typed values stay deterministic. */
-      const lid = typeof guid.localID === 'number' ? guid.localID : 0;
+      const lid = (typeof guid.localID) === 'number' ? guid.localID : 0;
       /** Composite key matching the format used by `childrenByParent` and `nodeByGuid`. */
       const key = `${sid}:${lid}`;
       figmaGuidToUuid.set(
@@ -776,9 +776,9 @@ function convertFigmaToPenpot(
     if (!guid)
       continue;
     /** Numeric session id with 0-fallback. */
-    const sid = typeof guid.sessionID === 'number' ? guid.sessionID : 0;
+    const sid = (typeof guid.sessionID) === 'number' ? guid.sessionID : 0;
     /** Numeric local id with 0-fallback. */
-    const lid = typeof guid.localID === 'number' ? guid.localID : 0;
+    const lid = (typeof guid.localID) === 'number' ? guid.localID : 0;
     /** Composite key consumed by both `nodeByGuid` and `childrenByParent`. */
     const key = `${sid}:${lid}`;
     nodeByGuid.set(
@@ -824,9 +824,9 @@ function convertFigmaToPenpot(
         /** GUID struct used to build the composite key matching `nodeByGuid`. */
         const guid = nc.guid as Record<string, unknown>;
         /** Numeric session id with 0-fallback. */
-        const sid = typeof guid.sessionID === 'number' ? guid.sessionID : 0;
+        const sid = (typeof guid.sessionID) === 'number' ? guid.sessionID : 0;
         /** Numeric local id with 0-fallback. */
-        const lid = typeof guid.localID === 'number' ? guid.localID : 0;
+        const lid = (typeof guid.localID) === 'number' ? guid.localID : 0;
         pageSourceNodes.push({
           key: `${sid}:${lid}`,
           nc,
@@ -842,16 +842,16 @@ function convertFigmaToPenpot(
         /** Canvas name lower-cased for the "Internal Only" heuristic below. */
         const name = String(nc.name ?? '',);
         /** Best-effort flag identifying Figma's hidden internal canvas so we don't emit it as a page. */
-        const internalOnly = nc.internalOnly === true || nc.editInfo != null;
+        const internalOnly = (nc.internalOnly === true) || (nc.editInfo != null);
         if (internalOnly && name.toLowerCase().includes('internal',))
           continue;
 
         /** GUID struct used to build the composite key matching `nodeByGuid`. */
         const guid = nc.guid as Record<string, unknown>;
         /** Numeric session id with 0-fallback. */
-        const sid = typeof guid.sessionID === 'number' ? guid.sessionID : 0;
+        const sid = (typeof guid.sessionID) === 'number' ? guid.sessionID : 0;
         /** Numeric local id with 0-fallback. */
-        const lid = typeof guid.localID === 'number' ? guid.localID : 0;
+        const lid = (typeof guid.localID) === 'number' ? guid.localID : 0;
         pageSourceNodes.push({
           key: `${sid}:${lid}`,
           nc,
@@ -872,7 +872,7 @@ function convertFigmaToPenpot(
     const rootFrameId = ZERO_UUID;
 
     /** Page name, falling back to "Page N" when the Figma canvas/slide has no name. */
-    const pageName = typeof nc.name === 'string' ? nc.name : `Page ${pageIndex + 1}`;
+    const pageName = (typeof nc.name) === 'string' ? nc.name : `Page ${pageIndex + 1}`;
     /** Optional canvas-background struct used to colour the page; falls back to a neutral preset below. */
     const bgColor = nc.backgroundColor as Record<string, unknown> | undefined;
     pages.set(
@@ -1134,7 +1134,7 @@ function convertNode(
   /** Penpot shape type or `null` when this Figma node type has no Penpot equivalent (DOCUMENT, NONE, etc.). */
   const penpotType = FIGMA_NODE_TYPE_MAP[nodeType];
 
-  if (penpotType === null || penpotType === undefined)
+  if ((penpotType === null) || (penpotType === undefined))
     return null;
 
   /** Stable UUID for this shape; reuses the cross-pass GUID map so parents and children share consistent ids. */
@@ -1147,16 +1147,16 @@ function convertNode(
   /** Optional size struct from Figma; guarded so missing-size nodes default to zero dimensions. */
   const size = nc.size as Record<string, unknown> | undefined;
   /** X position lifted out of the transform's translation component. */
-  const x = typeof transform.e === 'number' ? transform.e : 0;
+  const x = (typeof transform.e) === 'number' ? transform.e : 0;
   /** Y position lifted out of the transform's translation component. */
-  const y = typeof transform.f === 'number' ? transform.f : 0;
+  const y = (typeof transform.f) === 'number' ? transform.f : 0;
   /** Width pulled from the optional size struct, 0 when missing. */
-  const width = size && typeof size.x === 'number' ? size.x : 0;
+  const width = size && (typeof size.x) === 'number' ? size.x : 0;
   /** Height pulled from the optional size struct, 0 when missing. */
-  const height = size && typeof size.y === 'number' ? size.y : 0;
+  const height = size && (typeof size.y) === 'number' ? size.y : 0;
 
   /** Branch flag: true only when the node has a measurable bounding rect; paths/vectors without bounds skip the rect-based branch below. */
-  const hasGeometry = width > 0 && height > 0;
+  const hasGeometry = (width > 0) && (height > 0);
   /** Geometry-aware x; collapsed to 0 for non-measurable shapes so selrect math stays valid. */
   const effectiveX = hasGeometry ? x : 0;
   /** Geometry-aware y; collapsed to 0 for non-measurable shapes. */
@@ -1227,7 +1227,7 @@ function convertNode(
   /** Raw Figma paints for the stroke list. */
   const strokePaints = (nc.strokePaints ?? []) as Record<string, unknown>[];
   /** Numeric stroke weight with 0-fallback so the stroke is degenerate but still encodable. */
-  const strokeWeight = typeof nc.strokeWeight === 'number' ? nc.strokeWeight : 0;
+  const strokeWeight = (typeof nc.strokeWeight) === 'number' ? nc.strokeWeight : 0;
   /** Figma stroke alignment enum ("INSIDE", "OUTSIDE", "CENTER") translated below; defaults to "CENTER". */
   const strokeAlign = String(nc.strokeAlign ?? 'CENTER',);
   /** Penpot stroke list accumulated from `strokePaints`. */
@@ -1262,7 +1262,7 @@ function convertNode(
   /** Penpot shape record being assembled; mutated below to add type-specific fields before being stored in `shapes`. */
   const shape: PenpotShape = {
     id: shapeUuid,
-    name: typeof nc.name === 'string' ? nc.name : 'Unnamed',
+    name: (typeof nc.name) === 'string' ? nc.name : 'Unnamed',
     type: penpotType,
     x: hasGeometry ? effectiveX : null,
     y: hasGeometry ? effectiveY : null,
@@ -1285,7 +1285,7 @@ function convertNode(
   };
 
   // Opacity
-  if (typeof nc.opacity === 'number' && nc.opacity !== 1)
+  if ((typeof nc.opacity) === 'number' && (nc.opacity !== 1))
     shape.opacity = nc.opacity;
 
   // Visible/hidden
@@ -1299,7 +1299,7 @@ function convertNode(
     shape.shapes = [];
 
     // Border radius
-    if (typeof nc.cornerRadius === 'number' && nc.cornerRadius > 0) {
+    if ((typeof nc.cornerRadius) === 'number' && (nc.cornerRadius > 0)) {
       shape.r1 = nc.cornerRadius;
       shape.r2 = nc.cornerRadius;
       shape.r3 = nc.cornerRadius;
@@ -1308,7 +1308,7 @@ function convertNode(
 
     /** Canvas-background colour used as the frame's fill when the Figma node has no explicit fills of its own. */
     const bgColor = nc.backgroundColor as Record<string, unknown> | undefined;
-    if (bgColor && fills.length === 0)
+    if (bgColor && (fills.length === 0))
       shape.fills = [figmaColorToFill(bgColor,),];
   }
 
@@ -1320,12 +1320,12 @@ function convertNode(
     shape.boolType = 'union';
     /** Boolean operation geometry from Figma; its first path is taken as the shape's content. */
     const fillGeometry = (nc.fillGeometry ?? []) as Record<string, unknown>[];
-    if (fillGeometry.length > 0 && typeof fillGeometry[0]!.path === 'string')
+    if ((fillGeometry.length > 0) && (typeof fillGeometry[0]!.path) === 'string')
       shape.content = fillGeometry[0]!.path;
   }
 
   if (penpotType === 'rect') {
-    if (typeof nc.cornerRadius === 'number' && nc.cornerRadius > 0) {
+    if ((typeof nc.cornerRadius) === 'number' && (nc.cornerRadius > 0)) {
       shape.r1 = nc.cornerRadius;
       shape.r2 = nc.cornerRadius;
       shape.r3 = nc.cornerRadius;
@@ -1339,9 +1339,9 @@ function convertNode(
     const fillGeometry = (nc.fillGeometry ?? []) as Record<string, unknown>[];
     /** Stroke-only geometry used as a fallback when fillGeometry is absent (open paths, lines). */
     const strokeGeometry = (nc.strokeGeometry ?? []) as Record<string, unknown>[];
-    if (fillGeometry.length > 0 && typeof fillGeometry[0]!.path === 'string')
+    if ((fillGeometry.length > 0) && (typeof fillGeometry[0]!.path) === 'string')
       shape.content = fillGeometry[0]!.path;
-    else if (strokeGeometry.length > 0 && typeof strokeGeometry[0]!.path === 'string')
+    else if ((strokeGeometry.length > 0) && (typeof strokeGeometry[0]!.path) === 'string')
       shape.content = strokeGeometry[0]!.path;
   }
 
@@ -1372,7 +1372,7 @@ function convertNode(
       childUuids.push(childUuid,);
   }
 
-  if (penpotType === 'frame' || penpotType === 'group' || penpotType === 'bool')
+  if ((penpotType === 'frame') || (penpotType === 'group') || (penpotType === 'bool'))
     shape.shapes = childUuids;
 
   shapes.set(
@@ -1389,13 +1389,13 @@ function convertNode(
 /** Convert Figma text node data to Penpot text content tree. */
 function convertTextContent(nc: Record<string, unknown>,): Record<string, unknown> {
   /** Numeric font size with a 16px fallback for nodes whose Figma data is incomplete. */
-  const fontSize = typeof nc.fontSize === 'number' ? nc.fontSize : 16;
+  const fontSize = (typeof nc.fontSize) === 'number' ? nc.fontSize : 16;
   /** Font family string with a sans-serif fallback so Penpot can resolve a real font. */
-  const fontFamily = typeof nc.fontName === 'string' ? nc.fontName : 'Source Sans 3';
+  const fontFamily = (typeof nc.fontName) === 'string' ? nc.fontName : 'Source Sans 3';
   /** Font weight stringified to match Penpot's text-attribute shape; defaults to "400" (regular). */
-  const fontWeight = typeof nc.fontWeight === 'number' ? String(nc.fontWeight,) : '400';
+  const fontWeight = (typeof nc.fontWeight) === 'number' ? String(nc.fontWeight,) : '400';
   /** Raw character payload from the Figma text node; empty string when absent so the output stays well-formed. */
-  const textContent = typeof nc.characters === 'string' ? nc.characters : '';
+  const textContent = (typeof nc.characters) === 'string' ? nc.characters : '';
   /** Penpot font id corresponding to the chosen family; matches Penpot's bundled "sourcesanspro" entry. */
   const fontId = 'sourcesanspro';
   /** Variant id mirrors the weight string so each weight resolves to the right Penpot variant. */
@@ -1506,7 +1506,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
     const rootFrameId = ZERO_UUID;
     /** Root-frame shape for this page; falsy when no shapes were ever registered. */
     const rootShape = doc.shapes.get(rootFrameId,);
-    if (rootShape && rootShape.pageId === page.id) {
+    if (rootShape && (rootShape.pageId === page.id)) {
       /** Serialised root frame; written under the page directory before the page's other shapes. */
       const shapeJson = JSON.stringify(
         rootShape,
@@ -1521,7 +1521,7 @@ async function serializePenpotZip(doc: PenpotDocument,): Promise<Uint8Array> {
 
     // Shapes for this page
     for (const [shapeId, shape,] of doc.shapes) {
-      if (shape.pageId === page.id && shapeId !== rootFrameId) {
+      if ((shape.pageId === page.id) && (shapeId !== rootFrameId)) {
         zip.add(
           `${pageDir}/${shapeId}.json`,
           JSON.stringify(
