@@ -1,4 +1,0 @@
-# https://toml.io/en/v1.0.0#inline-table
-[product]
-type = { name = "Nail" }
-type.edible = false  # INVALID

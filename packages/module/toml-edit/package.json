@@ -16,6 +16,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
+    "@monochromatic-dev/test-fixture-toml-edit": "workspace:*",
     "@types/bun": "catalog:",
     "typescript": "catalog:"
   },

@@ -1,0 +1,15 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/test-fixture-toml-edit",
+  "description": "Reusable TOML parser fixture data split into valid and invalid inputs for toml-edit round-trip and parse-failure tests.",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./valid/*": "./src/valid/*",
+    "./invalid/*": "./src/invalid/*"
+  },
+  "files": [
+    "src/"
+  ]
+}

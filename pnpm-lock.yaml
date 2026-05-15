@@ -1819,6 +1819,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
+      '@monochromatic-dev/test-fixture-toml-edit':
+        specifier: workspace:*
+        version: link:../../test-fixture/toml-edit
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
@@ -2095,6 +2098,8 @@ importers:
   packages/test-fixture/oxlint-stylistic: {}
 
   packages/test-fixture/oxlint-tsdoc: {}
+
+  packages/test-fixture/toml-edit: {}
 
   packages/typeface/aquaticat:
     devDependencies:
