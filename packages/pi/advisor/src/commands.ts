@@ -1,0 +1,282 @@
+/**
+ * Slash command registration for Advisor.
+ *
+ * @module
+ */
+
+import type {
+  ExtensionAPI,
+  ExtensionCommandContext,
+} from '@earendil-works/pi-coding-agent';
+import { sendAdvisorMessage, } from './command-message.ts';
+import { ADVISOR_TOOL_NAME, } from './constants.ts';
+import { selectDefaultModel, } from './model-cost.ts';
+import { resolveEffectiveScope, } from './scope-resolver.ts';
+import { runAdvisor, } from './tool.ts';
+import type { AdvisorConfig, } from './types.ts';
+
+//region Types
+
+/** Mutable Advisor session state controlled by slash commands. */
+export type AdvisorSessionState = {
+  /** Whether Advisor is enabled for this session. */
+  enabled: boolean;
+};
+
+/** Options for command registration. */
+export type RegisterAdvisorCommandsOptions = {
+  /** Pi extension API. */
+  pi: ExtensionAPI;
+  /** Runtime config accessor. */
+  getConfig: () => AdvisorConfig;
+  /** Session enablement state. */
+  state: AdvisorSessionState;
+};
+
+//endregion Types
+
+//region Public API
+
+/**
+ * Register `/advisor` command and subcommands.
+ *
+ * @param options - pi API and runtime state
+ *
+ * @example
+ * ```typescript
+ * registerAdvisorCommands({ pi, getConfig, state });
+ * ```
+ */
+export function registerAdvisorCommands(
+  options: RegisterAdvisorCommandsOptions,
+): void {
+  options.pi.registerCommand(
+    ADVISOR_TOOL_NAME,
+    {
+      description: 'Run Advisor, inspect scoped models, or toggle Advisor for this session',
+      async handler(
+        args,
+        ctx,
+      ) {
+        await handleAdvisorCommand({
+          args,
+          ctx,
+          pi: options.pi,
+          getConfig: options.getConfig,
+          state: options.state,
+        },);
+      },
+    },
+  );
+}
+
+/**
+ * Synchronize active tools with Advisor session state.
+ *
+ * @param pi - pi extension API
+ *
+ * @param enabled - whether Advisor should be active
+ *
+ * @example
+ * ```typescript
+ * syncAdvisorActiveTool({ pi, enabled: false });
+ * ```
+ */
+export function syncAdvisorActiveTool(
+  {
+    pi,
+    enabled,
+  }: {
+    pi: ExtensionAPI;
+    enabled: boolean;
+  },
+): void {
+  /** Current active tool names. */
+  const activeTools = pi.getActiveTools();
+  /** Whether Advisor is active. */
+  const alreadyActive = activeTools.includes(ADVISOR_TOOL_NAME,);
+  if (enabled && (!alreadyActive)) {
+    pi.setActiveTools([
+      ...activeTools,
+      ADVISOR_TOOL_NAME,
+    ],);
+    return;
+  }
+  if ((!enabled) && alreadyActive) {
+    pi.setActiveTools(activeTools.filter(function keepTool(toolName,) {
+      return toolName !== ADVISOR_TOOL_NAME;
+    },),);
+  }
+}
+
+/**
+ * Build `/advisor status` text.
+ *
+ * @param ctx - command-capable extension context
+ *
+ * @param config - runtime Advisor config
+ *
+ * @param enabled - session enablement state
+ *
+ * @returns status text
+ *
+ * @example
+ * ```typescript
+ * const text = buildAdvisorStatus({ ctx, config, enabled: true });
+ * ```
+ */
+export function buildAdvisorStatus(
+  {
+    ctx,
+    config,
+    enabled,
+  }: {
+    ctx: ExtensionCommandContext;
+    config: AdvisorConfig;
+    enabled: boolean;
+  },
+): string {
+  /** Effective model scope for status. */
+  const scope = resolveEffectiveScope({ ctx, },);
+  /** Empty-context default ranking for status display. */
+  const defaultSelection = scope.entries.length === 0
+    ? undefined
+    : selectDefaultModel({
+      scope,
+      estimatedInputTokens: 0,
+      maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
+    },);
+
+  return [
+    `Advisor: ${enabled ? 'on' : 'off'}`,
+    `Scope source: ${scope.source}`,
+    `Scoped models: ${scope.entries.length === 0 ? 'none' : scope.entries.map(function mapEntry(entry,) {
+      return entry.canonicalSlug;
+    },).join(', ')}`,
+    `Default model: ${defaultSelection?.selected.canonicalSlug ?? 'none'}`,
+    `Default ranking: ${defaultSelection?.reason ?? 'none'}`,
+    `Config: global=${config.source.globalLoaded ? config.source.globalPath : 'absent'} project=${
+      config.source.projectLoaded ? config.source.projectPath : 'absent'
+    }`,
+    `Context budget: ${config.maxContextChars} chars, ${config.maxAdvisorOutputTokens} output tokens`,
+    `Prior Advisor results: ${config.includePriorAdvisorResults ? 'included' : 'omitted'}`,
+  ].join('\n',);
+}
+
+//endregion Public API
+
+//region Handler
+
+/** Options for the command handler. */
+type HandleAdvisorCommandOptions = {
+  /** Raw command args. */
+  args: string;
+  /** Command context. */
+  ctx: ExtensionCommandContext;
+  /** Pi extension API. */
+  pi: ExtensionAPI;
+  /** Runtime config accessor. */
+  getConfig: () => AdvisorConfig;
+  /** Mutable session state. */
+  state: AdvisorSessionState;
+};
+
+/**
+ * Handle one `/advisor` invocation.
+ *
+ * @param options - command handler inputs
+ */
+async function handleAdvisorCommand(
+  options: HandleAdvisorCommandOptions,
+): Promise<void> {
+  /** Trimmed command args. */
+  const trimmed = options.args.trim();
+  if (trimmed === 'status') {
+    options.ctx.ui.notify(buildAdvisorStatus({
+      ctx: options.ctx,
+      config: options.getConfig(),
+      enabled: options.state.enabled,
+    },),);
+    return;
+  }
+
+  if (trimmed === 'off') {
+    options.state.enabled = false;
+    syncAdvisorActiveTool({
+      pi: options.pi,
+      enabled: false,
+    },);
+    options.ctx.ui.notify('Advisor disabled for this session.',);
+    return;
+  }
+
+  if (trimmed === 'on') {
+    options.state.enabled = true;
+    syncAdvisorActiveTool({
+      pi: options.pi,
+      enabled: true,
+    },);
+    options.ctx.ui.notify('Advisor enabled for this session.',);
+    return;
+  }
+
+  if (!options.state.enabled) {
+    options.ctx.ui.notify(
+      'Advisor is disabled for this session. Run /advisor on to re-enable.',
+      'error',
+    );
+    return;
+  }
+
+  await runImmediateAdvisor({
+    ctx: options.ctx,
+    pi: options.pi,
+    config: options.getConfig(),
+    requestedSlug: trimmed === '' ? undefined : trimmed,
+  },);
+}
+
+/** Run immediate manual Advisor review and append a custom message. */
+async function runImmediateAdvisor(
+  {
+    ctx,
+    pi,
+    config,
+    requestedSlug,
+  }: {
+    ctx: ExtensionCommandContext;
+    pi: ExtensionAPI;
+    config: AdvisorConfig;
+    requestedSlug?: string | undefined;
+  },
+): Promise<void> {
+  await ctx.waitForIdle();
+  try {
+    /** Manual Advisor review result. */
+    const result = await runAdvisor({
+      ctx,
+      config,
+      ...(requestedSlug === undefined ? {} : { requestedSlug, }),
+      ...(ctx.signal === undefined ? {} : { signal: ctx.signal, }),
+    },);
+    sendAdvisorMessage({
+      pi,
+      result,
+    },);
+  }
+  catch (error) {
+    if (ctx.signal?.aborted === true) {
+      ctx.ui.notify(
+        'Advisor review cancelled.',
+        'warning',
+      );
+      return;
+    }
+    ctx.ui.notify(
+      `Advisor review failed: ${error instanceof Error ? error.message : String(error,)}`,
+      'error',
+    );
+  }
+}
+
+//endregion Handler

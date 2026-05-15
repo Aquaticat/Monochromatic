@@ -1,0 +1,46 @@
+{
+  "name": "@monochromatic-dev/pi-advisor",
+  "description": "Scoped secondary reviewer tool for pi, modelled after Claude Code Advisor",
+  "type": "module",
+  "private": true,
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/pi/advisor"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts"
+  },
+  "pi": {
+    "extensions": ["./dist/final/node/index.mjs"]
+  },
+  "files": [
+    "dist/final",
+    "src"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
+  },
+  "dependencies": {
+    "@monochromatic-dev/module-logger": "workspace:*",
+    "minimatch": "^10.2.3",
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-ai": "^0.74.0",
+    "@earendil-works/pi-coding-agent": "catalog:",
+    "@earendil-works/pi-tui": "^0.74.0",
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:",
+    "typebox": "^1.1.34"
+  }
+}

@@ -375,33 +375,6 @@ importers:
       '@monochromatic-dev/cli-terminal-exec':
         specifier: workspace:*
         version: link:packages/cli/terminal-exec
-      '@monochromatic-dev/codex-plugins-bash-output-filter':
-        specifier: workspace:*
-        version: link:packages/codex-plugins/bash-output-filter
-      '@monochromatic-dev/codex-plugins-claude-spawn':
-        specifier: workspace:*
-        version: link:packages/codex-plugins/claude-spawn
-      '@monochromatic-dev/codex-plugins-correction-reminder':
-        specifier: workspace:*
-        version: link:packages/codex-plugins/correction-reminder
-      '@monochromatic-dev/codex-plugins-guardrail':
-        specifier: workspace:*
-        version: link:packages/codex-plugins/guardrail
-      '@monochromatic-dev/codex-plugins-prompt-time':
-        specifier: workspace:*
-        version: link:packages/codex-plugins/prompt-time
-      '@monochromatic-dev/codex-plugins-session-start-housekeeping':
-        specifier: workspace:*
-        version: link:packages/codex-plugins/session-start-housekeeping
-      '@monochromatic-dev/codex-plugins-source':
-        specifier: workspace:*
-        version: link:packages/codex-plugins/source
-      '@monochromatic-dev/codex-plugins-stop-reminders':
-        specifier: workspace:*
-        version: link:packages/codex-plugins/stop-reminders
-      '@monochromatic-dev/codex-plugins-terminal-title':
-        specifier: workspace:*
-        version: link:packages/codex-plugins/terminal-title
       '@monochromatic-dev/config-dprint':
         specifier: workspace:*
         version: link:packages/config/dprint
@@ -813,162 +786,6 @@ importers:
       find-up:
         specifier: 'catalog:'
         version: 8.0.0
-
-  packages/codex-plugins/bash-output-filter:
-    dependencies:
-      '@monochromatic-dev/codex-plugins-source':
-        specifier: workspace:*
-        version: link:../source
-    devDependencies:
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
-
-  packages/codex-plugins/claude-spawn:
-    dependencies:
-      '@monochromatic-dev/codex-plugins-source':
-        specifier: workspace:*
-        version: link:../source
-    devDependencies:
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
-
-  packages/codex-plugins/correction-reminder:
-    dependencies:
-      '@monochromatic-dev/codex-plugins-source':
-        specifier: workspace:*
-        version: link:../source
-    devDependencies:
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
-
-  packages/codex-plugins/guardrail:
-    dependencies:
-      '@monochromatic-dev/codex-plugins-source':
-        specifier: workspace:*
-        version: link:../source
-    devDependencies:
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
-
-  packages/codex-plugins/hook-types:
-    devDependencies:
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-
-  packages/codex-plugins/prompt-time:
-    dependencies:
-      '@monochromatic-dev/codex-plugins-source':
-        specifier: workspace:*
-        version: link:../source
-    devDependencies:
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
-
-  packages/codex-plugins/session-start-housekeeping:
-    dependencies:
-      '@monochromatic-dev/codex-plugins-source':
-        specifier: workspace:*
-        version: link:../source
-    devDependencies:
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
-
-  packages/codex-plugins/source:
-    dependencies:
-      '@monochromatic-dev/codex-plugins-hook-types':
-        specifier: workspace:*
-        version: link:../hook-types
-      '@optique/core':
-        specifier: 'catalog:'
-        version: 1.0.0-dev.1692
-      '@optique/run':
-        specifier: 'catalog:'
-        version: 1.0.0-dev.1692
-    devDependencies:
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@monochromatic-dev/module-test':
-        specifier: workspace:*
-        version: link:../../module/test
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
-
-  packages/codex-plugins/stop-reminders:
-    dependencies:
-      '@monochromatic-dev/codex-plugins-source':
-        specifier: workspace:*
-        version: link:../source
-    devDependencies:
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
-
-  packages/codex-plugins/terminal-title:
-    dependencies:
-      '@monochromatic-dev/codex-plugins-source':
-        specifier: workspace:*
-        version: link:../source
-    devDependencies:
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
 
   packages/config/cosign: {}
 
@@ -2029,6 +1846,43 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
+
+  packages/pi/advisor:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      minimatch:
+        specifier: ^10.2.3
+        version: 10.2.5
+      valibot:
+        specifier: 'catalog:'
+        version: 1.4.0(typescript@6.0.2)
+    devDependencies:
+      '@earendil-works/pi-ai':
+        specifier: ^0.74.0
+        version: 0.74.0(ws@8.20.0)(zod@4.3.6)
+      '@earendil-works/pi-coding-agent':
+        specifier: 'catalog:'
+        version: 0.74.0(ws@8.20.0)(zod@4.3.6)
+      '@earendil-works/pi-tui':
+        specifier: ^0.74.0
+        version: 0.74.0
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typebox:
+        specifier: ^1.1.34
+        version: 1.1.34
 
   packages/pi/auto-mode:
     dependencies:

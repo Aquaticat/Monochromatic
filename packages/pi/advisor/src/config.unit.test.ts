@@ -1,0 +1,154 @@
+/**
+ * Unit tests for Advisor configuration loading.
+ *
+ * @module
+ */
+
+import {
+  mkdir,
+  mkdtemp,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test';
+import { loadMergedConfig, } from './config.ts';
+
+//region Constants
+
+/** Global timeout fixture. */
+const GLOBAL_TIMEOUT_MS = 10;
+
+/** Project timeout fixture. */
+const PROJECT_TIMEOUT_MS = 20;
+
+//endregion Constants
+
+await describe({
+  name: loadMergedConfig.name,
+  children: [
+    it({
+      name: 'uses defaults when config files are absent',
+      fn: async () => {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'pi-advisor-test-',
+        ),);
+        const config = loadMergedConfig({
+          cwd: join(
+            root,
+            'repo',
+          ),
+          home: join(
+            root,
+            'home',
+          ),
+        },);
+        expect(config.enabled,).toBe(true,);
+      },
+    },),
+    it({
+      name: 'merges project config over global config',
+      fn: async () => {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'pi-advisor-test-',
+        ),);
+        const home = join(
+          root,
+          'home',
+        );
+        const cwd = join(
+          root,
+          'repo',
+        );
+        const globalConfigDir = join(
+          home,
+          '.pi',
+          'agent',
+          'extensions',
+        );
+        const projectConfigDir = join(
+          cwd,
+          '.pi',
+          'extensions',
+        );
+        await Promise.all([
+          mkdir(
+            globalConfigDir,
+            { recursive: true, },
+          ),
+          mkdir(
+            projectConfigDir,
+            { recursive: true, },
+          ),
+        ],);
+        await writeFile(
+          join(
+            globalConfigDir,
+            'pi-advisor.json',
+          ),
+          JSON.stringify({ timeoutMs: GLOBAL_TIMEOUT_MS, },),
+        );
+        await writeFile(
+          join(
+            projectConfigDir,
+            'pi-advisor.json',
+          ),
+          JSON.stringify({ timeoutMs: PROJECT_TIMEOUT_MS, },),
+        );
+        const config = loadMergedConfig({ cwd, home, },);
+        expect(config.timeoutMs,).toBe(PROJECT_TIMEOUT_MS,);
+      },
+    },),
+    it({
+      name: 'reports invalid config path',
+      fn: async () => {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'pi-advisor-test-',
+        ),);
+        const home = join(
+          root,
+          'home',
+        );
+        const globalConfigDir = join(
+          home,
+          '.pi',
+          'agent',
+          'extensions',
+        );
+        await mkdir(
+          globalConfigDir,
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            globalConfigDir,
+            'pi-advisor.json',
+          ),
+          JSON.stringify({ timeoutMs: 0, },),
+        );
+        let caught: unknown;
+        try {
+          loadMergedConfig({
+            cwd: join(
+              root,
+              'repo',
+            ),
+            home,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('pi-advisor.json',);
+      },
+    },),
+  ],
+},);
