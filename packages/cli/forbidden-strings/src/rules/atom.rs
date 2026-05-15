@@ -14,7 +14,7 @@ use super::walker::extract_scope;
 //           between the leading pass and the post-skip passes.
 //           Literal-recognition rules: punctuation escapes (`\.`,
 //           `\*`, ...) become their literal char; metacharacters
-//           (`. * + ? | ( [ { $ ^`) end the walk; non-punctuation
+//           (`. * + ? | ( [ { $ ^ & ~`) end the walk; non-punctuation
 //           escapes (`\d`, `\w`, ...) end the walk. Iterating by
 //           `char` (not `u8`) is required for soundness: a previous
 //           byte-by-byte version cast each `u8` to `char`, which
@@ -37,7 +37,7 @@ use super::walker::extract_scope;
 //       if (/[A-Za-z0-9]/.test(next)) break;
 //       out.push(next); tail = tail.slice(2); continue;
 //     }
-//     if ('.*+?([{$^'.includes(c)) break;
+//     if ('.*+?([{$^&~'.includes(c)) break;
 //     out.push(c); tail = tail.slice(1);
 //   }
 //   return { remainder: tail };
@@ -229,13 +229,16 @@ pub(super) fn walk_literal_bytes<'a>(
         //           constructs the walker is not equipped to handle
         //           inline; the outer `extract_required_prefix` loop
         //           may resume after them via `skip_atom_with_extract`.
-        // TS map:   `if ('.*+?()[]{}$^'.includes(c)) break;`.
+        // TS map:   `if ('.*+?()[]{}$^&~'.includes(c)) break;`.
         //
         // In TS you'd write (pseudocode):
         // ```ts
-        // if ('.*+?()[]{}$^'.includes(c)) break;
+        // if ('.*+?()[]{}$^&~'.includes(c)) break;
         // ```
-        if matches!(c, '.' | '*' | '+' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '$' | '^') {
+        if matches!(
+            c,
+            '.' | '*' | '+' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '$' | '^' | '&' | '~'
+        ) {
             break;
         }
         // What:     `out.push(c);` pushes `char` `c` into `out`,
@@ -299,6 +302,9 @@ pub(super) fn walk_literal_bytes<'a>(
 //             non-capturing or capturing group; recurses via
 //             `extract_scope` into body with the SAME ci as the caller
 //             (no flag change at this scope).
+//           - `~(body)<quantifier>`: resharp complement. Skips the
+//             body without extracting from it because complement
+//             bytes are excluded, not required.
 //           - `(?flags)`: inline flag group, no body. Transparent atom,
 //             no extraction.
 //           - `(?flags:body)<quantifier>`: scoped flag group. Computes
@@ -355,6 +361,30 @@ pub(super) fn skip_atom_with_extract(
             }
             _ => {}
         }
+    }
+
+    // What:     Resharp complement `~(body)` is a zero-contribution
+    //           algebra atom for extraction. The body is an excluded
+    //           language, so literals inside it are NOT required bytes
+    //           of a successful match.
+    // Why:      Registering complement-body literals as AC gates makes
+    //           placeholder exclusions disable real matches. Example:
+    //           `ghp\_...&~(ghp\_0{36})` must gate on `ghp_`, not on
+    //           the all-zero placeholder body.
+    // TS map:   `if (s.startsWith("~(")) return { remainder: after, extracted: null };`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (s.startsWith("~(")) {
+    //   const closeIdx = findMatchingCloseParen(s.slice(1));
+    //   return { remainder: skipAnyQuantifier(s.slice(closeIdx + 2)), extracted: null };
+    // }
+    // ```
+    if bytes.len() >= 2 && bytes[0] == b'~' && bytes[1] == b'(' {
+        let close_idx = 1 + find_matching_close_paren(&s[1..])?;
+        let after = &s[close_idx + 1..];
+        let after_quant = skip_any_quantifier(after);
+        return Some((after_quant, None));
     }
 
     // What:     Group: `(?:body)`, `(body)`, or inline `(?flags)`.

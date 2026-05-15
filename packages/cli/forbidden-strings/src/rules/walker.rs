@@ -185,6 +185,25 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
         if s.starts_with('|') {
             break;
         }
+        // What:     Resharp `&` intersects the current positive
+        //           operand with the next operand. It consumes no
+        //           input bytes itself, so it should not become part
+        //           of a literal AC gate.
+        // Why:      A pattern like `BUILD_[0-9]{6}&~(BUILD_000000)`
+        //           must gate on `BUILD_`, not on a source-text
+        //           fragment containing `&`. Skipping `&` also lets
+        //           extraction continue to later positive operands
+        //           when earlier operands have no useful literal.
+        // TS map:   `if (s.startsWith("&")) { s = s.slice(1); continue; }`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (s.startsWith("&")) { s = s.slice(1); continue; }
+        // ```
+        if let Some(rest) = s.strip_prefix('&') {
+            s = rest;
+            continue;
+        }
         if let Some((rest, contribution)) = skip_atom_with_extract(s, ci) {
             s = rest;
             if let Some(candidate) = contribution {

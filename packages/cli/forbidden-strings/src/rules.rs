@@ -44,6 +44,8 @@ mod walker;
 // // No 1:1 -- TS test files are typically compiled separately.
 // ```
 #[cfg(test)]
+mod algebra_tests;
+#[cfg(test)]
 mod atom_tests;
 #[cfg(test)]
 mod engine_tests;

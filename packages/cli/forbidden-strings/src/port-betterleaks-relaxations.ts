@@ -151,12 +151,7 @@ export const RELAXATIONS: ReadonlyMap<string, Relaxation> = new Map([
       note:
         'excluded documented placeholder `ghp_000000000000000000000000000000000000` via resharp intersection/complement.',
       convertedTransform: function excludeGitHubPatPlaceholder(r,): string {
-        /** Pattern with literal underscores expressed as character classes for resharp algebra operands. */
-        const literalUnderscorePattern = r.replaceAll(
-          String.raw`\_`,
-          '[_]',
-        );
-        return String.raw`${literalUnderscorePattern}&~(ghp[_]0{36})`;
+        return String.raw`${r}&~(ghp\_0{36})`;
       },
     },
   ],

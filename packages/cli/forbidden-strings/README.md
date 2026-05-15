@@ -154,16 +154,16 @@ This flags `key_12345` and `key_99999` but lets `key_00000` through. Class-level
 character classes.
 
 Underscore is a resharp meta character. Unescaped `_` is the top pattern, which matches
-any single codepoint. For literal underscores in algebra rules that use `~(...)`, prefer
-`[_]`: resharp's parser source treats `\_` as a literal meta-character escape, but the
-`forbidden-strings` executable matrix did not scan `\_` reliably in this complement
-shape. The generated GitHub PAT relaxation therefore writes `ghp[_]...&~(ghp[_]0{36})`.
+any single codepoint. Escape a literal underscore as `\_`, including inside algebra
+operands such as `ghp\_...&~(ghp\_0{36})`.
 
-The scanner extracts a leading literal prefix from each regex rule and folds it into a
-shared Aho-Corasick gate so the regex engine only runs on files that contain the prefix.
-A pattern that starts with literal bytes (`key_[0-9]{5}&~(...)` extracts `key_`) stays on
-the fast path. A pattern that starts with `~(...)` or another metacharacter falls into a
-smaller residual gate, still correct, just slower per file.
+The scanner extracts required literal bytes from regex rules and folds them into a
+shared Aho-Corasick gate so the regex engine only runs on files that contain a required
+substring. For set-algebra rules, intersection `&` is a transparent separator and
+complement `~(...)` bodies never contribute gates because they describe excluded strings,
+not required bytes. A pattern that starts with literal bytes (`key_[0-9]{5}&~(...)`
+extracts `key_`) stays on the fast path. A pattern that starts with `~(...)` or another
+metacharacter falls into a smaller residual gate, still correct, just slower per file.
 Extracted prefixes preserve the regex source's original UTF-8 bytes verbatim, so a rule
 whose leading literal contains non-ASCII characters (em-dash `—`, smart quotes, ellipsis,
 emoji) gates correctly against file content holding the same bytes; a walker that
