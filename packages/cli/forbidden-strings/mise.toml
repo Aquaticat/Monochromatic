@@ -18,6 +18,14 @@ run = "cargo check"
 description = "Run clippy"
 run = "cargo clippy --release -- -D warnings"
 
+[tasks.package]
+description = "Build the crates.io package tarball"
+run = "cargo package"
+
+[tasks.publish]
+description = "Publish the crate to crates.io"
+run = "cargo publish"
+
 [tasks.test]
 description = "cargo test"
 run = "cargo test --release"
