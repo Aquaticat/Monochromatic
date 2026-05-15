@@ -178,13 +178,14 @@ await describe({
           '-m',
           'message',
           'file.ts',
-        ],),).toEqual([
-          'commit',
-          '-o',
-          '-m',
-          'message',
-          'file.ts',
-        ],);
+        ],),)
+          .toEqual([
+            'commit',
+            '-o',
+            '-m',
+            'message',
+            'file.ts',
+          ],);
       },
     },),
     it({
@@ -197,15 +198,16 @@ await describe({
           '-m',
           'message',
           'file.ts',
-        ],),).toEqual([
-          '-C',
-          '/tmp/repo',
-          'commit',
-          '-o',
-          '-m',
-          'message',
-          'file.ts',
-        ],);
+        ],),)
+          .toEqual([
+            '-C',
+            '/tmp/repo',
+            'commit',
+            '-o',
+            '-m',
+            'message',
+            'file.ts',
+          ],);
       },
     },),
     it({
@@ -216,11 +218,12 @@ await describe({
           '--no-enforce-only',
           '-am',
           'message',
-        ],),).toEqual([
-          'commit',
-          '-am',
-          'message',
-        ],);
+        ],),)
+          .toEqual([
+            'commit',
+            '-am',
+            'message',
+          ],);
       },
     },),
     it({
@@ -274,13 +277,14 @@ await describe({
           '-m',
           '-a',
           'file.ts',
-        ],),).toEqual([
-          'commit',
-          '-o',
-          '-m',
-          '-a',
-          'file.ts',
-        ],);
+        ],),)
+          .toEqual([
+            'commit',
+            '-o',
+            '-m',
+            '-a',
+            'file.ts',
+          ],);
       },
     },),
     it({
@@ -292,14 +296,15 @@ await describe({
           'message',
           '--',
           '-dash-file',
-        ],),).toEqual([
-          'commit',
-          '-o',
-          '-m',
-          'message',
-          '--',
-          '-dash-file',
-        ],);
+        ],),)
+          .toEqual([
+            'commit',
+            '-o',
+            '-m',
+            'message',
+            '--',
+            '-dash-file',
+          ],);
       },
     },),
     ...PATHLESS_ALLOWED_CASES.map(function mapPathlessAllowedCase(pathlessCase,) {

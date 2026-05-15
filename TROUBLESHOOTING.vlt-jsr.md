@@ -76,9 +76,9 @@ Source citations in
 ```ts
 // Line 601-608: isSingle branch uses version-specific endpoint exclusively
 const mani = spec.range?.isSingle
-  ? await this.#registryManifestRequest(spec, options)   // /<pkg>/<version>
+  ? await this.#registryManifestRequest(spec, options,) // /<pkg>/<version>
   : pickManifest(
-    await this.packument(f, options),                    // /<pkg> (full)
+    await this.packument(f, options,), // /<pkg> (full)
     spec,
     options,
   );
@@ -86,14 +86,14 @@ const mani = spec.range?.isSingle
 
 ```ts
 // Line 407: constructs the version-specific URL
-const pakuURL = new URL(`${name}/${version}`, registry);
+const pakuURL = new URL(`${name}/${version}`, registry,);
 
 // Line 413-423: throws immediately on non-200, no fallback
 if (response.statusCode !== 200) {
   throw this.#resolveError(spec, options, 'failed to fetch manifest', {
     url: pakuURL,
     response,
-  });
+  },);
 }
 ```
 
@@ -203,7 +203,7 @@ Decision: worth filing.
 
 ### Draft for vltpkg/vltpkg
 
-~~~md
+```md
 **Title**: `package-info`: version-specific manifest request 404s on registries that only serve full packuments (JSR, GitHub Packages)
 
 **Labels**: bug, registry, jsr
@@ -223,11 +223,11 @@ Reproduction: see test case above (omitted here for brevity; insert before filin
 **Suggested fix**: Option A is the safest; fall back to full packument on 404 in `#registryManifestRequest`. Option B (skip the optimisation for JSR scope-registries) mirrors the existing tarball-URL carve-out at `spec/src/browser.ts:648-651`.
 
 Related issue: `defaultScopeRegistries` is not merged in `getOptions()` (`spec/src/browser.ts:72`), so `@jsr/*` routing fails on first install without an explicit `vlt.json`.
-~~~
+```
 
 ### Draft for jsr-io/jsr
 
-~~~md
+```md
 **Title**: `npm.jsr.io` does not implement version-specific packument endpoint (`GET /@jsr/<pkg>/<version>`)
 
 **Labels**: bug, npm-compat
@@ -244,7 +244,7 @@ Source trace:
 **Suggested fix**: implement the endpoint in the Worker by extracting the requested version from the cached full packument JSON, returning the per-version object. No R2 storage change required.
 
 Related but distinct: pnpm had a different issue (pnpm/pnpm#10915) about tarball URL stripping.
-~~~
+```
 
 ## Environment
 

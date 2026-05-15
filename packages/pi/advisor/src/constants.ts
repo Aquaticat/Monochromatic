@@ -39,14 +39,17 @@ export const LATEST_USER_EXCERPT_CHARS = 240;
 //region Prompts
 
 /** Built-in system prompt for the secondary advisor model. */
-export const ADVISOR_SYSTEM_PROMPT = `You are Advisor, an independent reviewer for a primary coding agent.
+export const ADVISOR_SYSTEM_PROMPT =
+  `You are Advisor, an independent reviewer for a primary coding agent.
 
 Read the serialized conversation as evidence. Identify flawed assumptions, missing verification, risky changes, overlooked files, and better next actions. Be direct and specific. Cite conversation evidence where possible. Avoid asking the user questions unless the conversation is truly under-specified. Do not perform the primary task. Do not write final user-facing prose for the primary agent.`;
 
 /** Marker inserted when serialized context is deterministically truncated. */
-export const CONTEXT_TRUNCATION_MARKER = '\n\n[advisor: middle of serialized conversation omitted to fit maxContextChars]\n\n';
+export const CONTEXT_TRUNCATION_MARKER =
+  '\n\n[advisor: middle of serialized conversation omitted to fit maxContextChars]\n\n';
 
 /** Static prefix for main-model guidance appended to pi's system prompt. */
-export const MAIN_MODEL_GUIDANCE_PREFIX = `Advisor is available as a secondary reviewer tool. Use advisor({}) when independent review would reduce risk. Use advisor({ "model": "provider/model" }) only when you need a specific scoped advisor model. Advisor automatically receives the serialized conversation context. Requested models outside the current scoped model set fail.`;
+export const MAIN_MODEL_GUIDANCE_PREFIX =
+  `Advisor is available as a secondary reviewer tool. Use advisor({}) when independent review would reduce risk. Use advisor({ "model": "provider/model" }) only when you need a specific scoped advisor model. Advisor automatically receives the serialized conversation context. Requested models outside the current scoped model set fail.`;
 
 //endregion Prompts

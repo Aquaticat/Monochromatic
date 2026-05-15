@@ -19,9 +19,7 @@ import {
   type TokenString,
   type TokenURL,
 } from '@csstools/css-tokenizer';
-import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 /**
  * Tuple index of the "extra data" field in a CSS token.

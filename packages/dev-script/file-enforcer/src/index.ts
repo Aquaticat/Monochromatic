@@ -16,13 +16,13 @@ export {
   expandGlob,
   mirrorGlobPath,
 } from './io/glob.ts';
+export { overwriteTomlKey, } from './io/write-toml.ts';
 export {
   overwrite,
   overwriteEach,
   overwriteIfNotExists,
   readExisting,
 } from './io/write.ts';
-export { overwriteTomlKey, } from './io/write-toml.ts';
 export {
   l,
   tagged,
@@ -52,14 +52,13 @@ export type {
 export { exec, } from './pipeline/exec.ts';
 export { inspect, } from './pipeline/inspect.ts';
 export {
-  dedup,
-  getJsonProperty,
-} from './pipeline/transform.ts';
-export {
   editTomlKey,
   getTomlProperty,
 } from './pipeline/toml.ts';
-export type { Path, } from './types.ts';
+export {
+  dedup,
+  getJsonProperty,
+} from './pipeline/transform.ts';
 export type {
   Command,
   PlatformCommands,
@@ -79,6 +78,7 @@ export {
   writes,
   writeTimestamps,
 } from './tracker.ts';
+export type { Path, } from './types.ts';
 export { notifyWriteProtection, } from './watch/notify.ts';
 export {
   DEBOUNCE_MS,

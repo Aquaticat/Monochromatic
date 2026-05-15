@@ -26,7 +26,8 @@ await describe({
         expect(comments.length,).toBe(2,);
         expect(comments.map(function values(c,) {
           return c.value;
-        },),).toStrictEqual([' one', ' two',],);
+        },),)
+          .toStrictEqual([' one', ' two',],);
       },
     },),
 

@@ -25,13 +25,13 @@ import {
   type PickingInfo,
 } from '@deck.gl/core';
 
-import type { PackageProbe, } from '../probe.ts';
 import {
   buildLayers,
   computeSceneBounds,
   orbitView,
   type SceneBounds,
 } from '../deck-config.ts';
+import type { PackageProbe, } from '../probe.ts';
 import { syncDomFromState, } from './controller-dom.ts';
 import {
   wireDimDropdowns,
@@ -104,7 +104,8 @@ function getProbes(): readonly PackageProbe[] {
   /** Probe array injected onto `window` by `render-html.ts`; `undefined` signals a broken bundle. */
   const probes = window.__PROBES__;
   /* oxlint-enable eslint-plugin-unicorn/prefer-global-this */
-  if (probes === undefined) throw new Error('window.__PROBES__ not injected; check render-html.ts',);
+  if (probes === undefined)
+    throw new Error('window.__PROBES__ not injected; check render-html.ts',);
   return probes;
 }
 
@@ -119,9 +120,12 @@ function getProbes(): readonly PackageProbe[] {
  * @returns The picked probe, or `null` when no probe is under the cursor.
  */
 function pickedProbe(info: PickingInfo,): PackageProbe | null {
-  if ((info.object === undefined) || (info.object === null)) return null;
-  if ((typeof info.object) !== 'object') return null;
-  if (!('probe' in info.object)) return null;
+  if ((info.object === undefined) || (info.object === null))
+    return null;
+  if ((typeof info.object) !== 'object')
+    return null;
+  if (!('probe' in info.object))
+    return null;
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access -- ScatterplotLayer is fed ScatterDatum from layer factories; .probe is always a PackageProbe. */
   return info.object.probe as PackageProbe;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access */
@@ -157,7 +161,10 @@ function recomputeVisibility(
   },);
   /** Counter element under the canvas; missing in tests / partial pages, so we no-op when absent. */
   const counter = document.querySelector<HTMLElement>('#visibility-counter',);
-  if (counter !== null) counter.textContent = `${session.visibleIndices.size.toString()} of ${probes.length.toString()} visible`;
+  if (counter !== null) {
+    counter.textContent =
+      `${session.visibleIndices.size.toString()} of ${probes.length.toString()} visible`;
+  }
 }
 
 /**
@@ -222,7 +229,8 @@ function syncHash(
 function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
   /** Probe under the cursor, or `null` for hover-over-empty-space. */
   const probe = pickedProbe(info,);
-  if (probe === null) return null;
+  if (probe === null)
+    return null;
   return {
     html: formatTooltipHtml({
       probe,

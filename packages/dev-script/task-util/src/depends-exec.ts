@@ -155,7 +155,9 @@ function dumpAndHandleError({
     if ((subprocessError.stderr !== undefined) && (subprocessError.stderr !== ''))
       process.stderr.write(`${subprocessError.stderr}\n`,);
 
-    if ((subprocessError.signalName !== undefined) && (subprocessError.signalName !== '')) {
+    if ((subprocessError.signalName !== undefined)
+      && (subprocessError.signalName !== ''))
+    {
       console.error(
         `[task-depends] command terminated by signal: ${subprocessError.signalName}`,
       );

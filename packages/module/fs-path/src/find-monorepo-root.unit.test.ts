@@ -30,7 +30,8 @@ await describe({
       },
     },),
     it({
-      name: 'returns the monorepo directory (Monochromatic) when called from this package',
+      name:
+        'returns the monorepo directory (Monochromatic) when called from this package',
       fn: async () => {
         const root = await findMonorepoRoot({ cwd: import.meta.dirname, },);
         expect(root.endsWith('/Monochromatic',),).toBe(true,);

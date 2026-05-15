@@ -156,11 +156,12 @@ export async function handleReceivePack(
     unpackOk: boolean;
     unpackError: string | undefined;
   }> {
-    if (request.packfile.byteLength === 0)
+    if (request.packfile.byteLength === 0) {
       return {
         unpackOk: true,
         unpackError: undefined,
       };
+    }
     try {
       await indexPackData({
         gitdir,

@@ -36,7 +36,8 @@ export async function createDraft(
   /** Captured once so created_at and updated_at start as the same value. */
   const now = Date.now();
   await run({
-    sql: 'INSERT INTO drafts(id, parent_id, user_id, created_at, updated_at, finalized) VALUES (?, ?, ?, ?, ?, 0)',
+    sql:
+      'INSERT INTO drafts(id, parent_id, user_id, created_at, updated_at, finalized) VALUES (?, ?, ?, ?, ?, 0)',
     params: [
       draft.id,
       draft.parentId,

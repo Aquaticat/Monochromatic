@@ -49,7 +49,10 @@ export async function list(): Promise<readonly VmInfo[]> {
     const vmName = match?.[1];
     /** Captured state column from the regex; trimmed when emitted because it carries trailing spaces. */
     const vmState = match?.[2];
-    if ((vmName !== undefined) && (vmState !== undefined) && vmName.startsWith(VM_PREFIX,)) {
+    if ((vmName !== undefined)
+      && (vmState !== undefined)
+      && vmName.startsWith(VM_PREFIX,))
+    {
       vms.push({
         name: vmName.slice(VM_PREFIX.length,),
         state: vmState.trim(),

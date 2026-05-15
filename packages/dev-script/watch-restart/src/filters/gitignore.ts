@@ -1,6 +1,6 @@
+import ignore, { type Ignore, } from 'ignore';
 import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
-import ignore, { type Ignore, } from 'ignore';
 import type {
   WatchCtx,
   WatchEvent,
@@ -57,9 +57,8 @@ async function readUtf8IfExists(path: string,): Promise<string | undefined> {
     );
   }
   catch (error) {
-    if (isErrnoException(error,) && (error.code === 'ENOENT')) {
+    if (isErrnoException(error,) && (error.code === 'ENOENT'))
       return undefined;
-    }
     throw error;
   }
 }
@@ -129,9 +128,10 @@ export async function gitignoreFilter(
     [
       ...rootGitignorePaths,
       ...extraFiles,
-    ].map(function read(path,): Promise<string | undefined> {
-      return readUtf8IfExists(path,);
-    },),
+    ]
+      .map(function read(path,): Promise<string | undefined> {
+        return readUtf8IfExists(path,);
+      },),
   );
 
   /**
@@ -142,9 +142,8 @@ export async function gitignoreFilter(
    */
   const ig: Ignore = ignore();
   for (const content of allContents) {
-    if (content !== undefined) {
+    if (content !== undefined)
       ig.add(content,);
-    }
   }
 
   return function gitignoreFilterFn(

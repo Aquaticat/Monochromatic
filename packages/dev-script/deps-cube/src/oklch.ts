@@ -75,9 +75,8 @@ const RGB_MAX = 255;
  * @returns sRGB channel value, typically in `[0, 1]`.
  */
 function linearToSrgb(x: number,): number {
-  if (x <= SRGB_LINEAR_THRESHOLD) {
+  if (x <= SRGB_LINEAR_THRESHOLD)
     return SRGB_LINEAR_SLOPE * x;
-  }
   return (SRGB_GAMMA_GAIN * (x ** SRGB_GAMMA_EXPONENT_RECIP)) - SRGB_GAMMA_OFFSET;
 }
 

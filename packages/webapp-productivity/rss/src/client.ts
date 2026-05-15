@@ -1,12 +1,10 @@
 // 104 lines: scroll observer + feed binding are tightly coupled; splitting loses the shared closure context
 import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
-import {
   HALF,
   QUARTER,
   THREE_QUARTERS,
 } from '@monochromatic-dev/module-numeric-const';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import * as v from 'valibot';
 
 //region Scroll event observer: Tracks element visibility and dispatches custom scroll lifecycle events

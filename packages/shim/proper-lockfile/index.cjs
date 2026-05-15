@@ -1,8 +1,8 @@
 'use strict';
 
-const { mkdirSync, rmdirSync, } = require('node:fs');
-const { setTimeout: sleep, } = require('node:timers/promises');
-const { dirname, basename, resolve, } = require('node:path');
+const { mkdirSync, rmdirSync, } = require('node:fs',);
+const { setTimeout: sleep, } = require('node:timers/promises',);
+const { dirname, basename, resolve, } = require('node:path',);
 
 /** Match upstream proper-lockfile's default when caller passes no `retries`. */
 const DEFAULT_RETRIES = 0;
@@ -44,7 +44,8 @@ function acquire(target,) {
   const dir = lockDirFor(target,);
   try {
     mkdirSync(dir,);
-  } catch (err) {
+  }
+  catch (err) {
     if (err.code === 'EEXIST') {
       const elocked = new Error(`Lock file is already being held (lock: ${dir})`,);
       elocked.code = 'ELOCKED';
@@ -54,13 +55,13 @@ function acquire(target,) {
   }
   const state = { released: false, };
   return function release() {
-    if (state.released) {
+    if (state.released)
       return;
-    }
     state.released = true;
     try {
       rmdirSync(dir,);
-    } catch {
+    }
+    catch {
       // Tolerate disappearance; a stale-cleanup sweep or a parallel holder
       // running through its own release path may have removed the directory.
     }
@@ -133,7 +134,8 @@ async function attemptLock({ target, config, attempt, timeout, },) {
   const maxAttempts = config.retries + 1;
   try {
     return acquire(target,);
-  } catch (err) {
+  }
+  catch (err) {
     if (err.code === 'ELOCKED' && attempt < maxAttempts) {
       await sleep(timeout,);
       return attemptLock({

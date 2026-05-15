@@ -163,7 +163,8 @@ async function safeDestroy(vmName: string,): Promise<void> {
   // guest-exec runs without login shell so HOME is unset; export it explicitly.
   await execInVm({
     vmName: VM,
-    command: 'export HOME=/home/ubuntu && curl -fsSL https://mise.jdx.dev/install.sh | sh',
+    command:
+      'export HOME=/home/ubuntu && curl -fsSL https://mise.jdx.dev/install.sh | sh',
     timeout: EXEC_TIMEOUT_MS,
   },);
   await execInVm({
@@ -175,7 +176,8 @@ async function safeDestroy(vmName: string,): Promise<void> {
   // Install qemu-img, fdisk, and nbd module for disk image operations
   await execInVm({
     vmName: VM,
-    command: 'sudo apt-get update -qq && sudo apt-get install -y -qq qemu-utils fdisk nbd-client > /dev/null 2>&1',
+    command:
+      'sudo apt-get update -qq && sudo apt-get install -y -qq qemu-utils fdisk nbd-client > /dev/null 2>&1',
     timeout: EXEC_TIMEOUT_MS,
   },);
   // Pre-load nbd kernel module (needed for vmsync import UEFI validation)
@@ -229,13 +231,15 @@ async function safeDestroy(vmName: string,): Promise<void> {
           //endregion import --name
 
           //region list (populated)
-          const populatedList = await execInVm({ vmName: VM, command: `${VMSYNC} list`, },);
+          const populatedList = await execInVm({ vmName: VM,
+            command: `${VMSYNC} list`, },);
           expect(populatedList,).toContain('test-vm',);
           expect(populatedList,).toContain('synced',);
           //endregion list (populated)
 
           //region status
-          const status = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
+          const status = await execInVm({ vmName: VM,
+            command: `${VMSYNC} status test-vm`, },);
           expect(status,).toContain('name:       test-vm',);
           expect(status,).toContain('synced:     true',);
           expect(status,).toContain('last boot:  never',);
@@ -251,14 +255,17 @@ async function safeDestroy(vmName: string,): Promise<void> {
           expect(configOutput,).toContain('memory=8G',);
           expect(configOutput,).toContain('cpus=8',);
 
-          const statusAfterConfig = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
+          const statusAfterConfig = await execInVm({ vmName: VM,
+            command: `${VMSYNC} status test-vm`, },);
           expect(statusAfterConfig,).toContain('memory:     8G',);
           expect(statusAfterConfig,).toContain('cpus:       8',);
           //endregion config update
 
           //region config partial update (memory only, cpus preserved)
-          await execInVm({ vmName: VM, command: `${VMSYNC} config test-vm --memory 2G`, },);
-          const statusAfterPartial = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
+          await execInVm({ vmName: VM,
+            command: `${VMSYNC} config test-vm --memory 2G`, },);
+          const statusAfterPartial = await execInVm({ vmName: VM,
+            command: `${VMSYNC} status test-vm`, },);
           expect(statusAfterPartial,).toContain('memory:     2G',);
           expect(statusAfterPartial,).toContain('cpus:       8',);
           //endregion config partial update
@@ -272,7 +279,8 @@ async function safeDestroy(vmName: string,): Promise<void> {
           //endregion import with auto-derived name
 
           //region sync (already synced)
-          const syncOutput = await execInVm({ vmName: VM, command: `${VMSYNC} sync test-vm`, },);
+          const syncOutput = await execInVm({ vmName: VM,
+            command: `${VMSYNC} sync test-vm`, },);
           expect(syncOutput,).toContain('already synced',);
           //endregion sync (already synced)
         },
@@ -364,7 +372,8 @@ async function safeDestroy(vmName: string,): Promise<void> {
   // mise's stderr progress output as a terminating error.
   await execInVm({
     vmName: VM,
-    command: `$ErrorActionPreference = "Continue"; & "${MISE_BIN}" use -g bun@latest 2>$null; exit $LASTEXITCODE`,
+    command:
+      `$ErrorActionPreference = "Continue"; & "${MISE_BIN}" use -g bun@latest 2>$null; exit $LASTEXITCODE`,
     timeout: EXEC_TIMEOUT_MS,
   },);
 
@@ -417,13 +426,15 @@ async function safeDestroy(vmName: string,): Promise<void> {
           //endregion Create config manually
 
           //region list (populated)
-          const populatedList = await execInVm({ vmName: VM, command: `${VMSYNC} list`, },);
+          const populatedList = await execInVm({ vmName: VM,
+            command: `${VMSYNC} list`, },);
           expect(populatedList,).toContain('test-vm',);
           expect(populatedList,).toContain('synced',);
           //endregion list (populated)
 
           //region status
-          const status = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
+          const status = await execInVm({ vmName: VM,
+            command: `${VMSYNC} status test-vm`, },);
           expect(status,).toContain('name:       test-vm',);
           expect(status,).toContain('synced:     true',);
           expect(status,).toContain('last boot:  never',);
@@ -439,25 +450,29 @@ async function safeDestroy(vmName: string,): Promise<void> {
           expect(configOutput,).toContain('memory=16G',);
           expect(configOutput,).toContain('cpus=16',);
 
-          const statusAfterConfig = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
+          const statusAfterConfig = await execInVm({ vmName: VM,
+            command: `${VMSYNC} status test-vm`, },);
           expect(statusAfterConfig,).toContain('memory:     16G',);
           expect(statusAfterConfig,).toContain('cpus:       16',);
           //endregion config update
 
           //region config partial update (cpus only, memory preserved)
           await execInVm({ vmName: VM, command: `${VMSYNC} config test-vm --cpus 8`, },);
-          const statusAfterPartial = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
+          const statusAfterPartial = await execInVm({ vmName: VM,
+            command: `${VMSYNC} status test-vm`, },);
           expect(statusAfterPartial,).toContain('memory:     16G',);
           expect(statusAfterPartial,).toContain('cpus:       8',);
           //endregion config partial update
 
           //region sync (already synced)
-          const syncOutput = await execInVm({ vmName: VM, command: `${VMSYNC} sync test-vm`, },);
+          const syncOutput = await execInVm({ vmName: VM,
+            command: `${VMSYNC} sync test-vm`, },);
           expect(syncOutput,).toContain('already synced',);
           //endregion sync (already synced)
 
           //region detectHypervisor returns hyperv on Windows
-          const statusCheck = await execInVm({ vmName: VM, command: `${VMSYNC} status test-vm`, },);
+          const statusCheck = await execInVm({ vmName: VM,
+            command: `${VMSYNC} status test-vm`, },);
           // The VM was never booted, last boot is "never" (hypervisor detection
           // only runs during boot, not status; but the binary runs on Windows,
           // confirming cross-platform compatibility)

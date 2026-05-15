@@ -84,7 +84,8 @@ await describe({
             expect(getJsonProperty({
               path: ['settings', 'theme',],
               content: json,
-            },),).toBe('dark',);
+            },),)
+              .toBe('dark',);
           },
         },),
         it({
@@ -124,13 +125,15 @@ await describe({
             expect(getJsonProperty({
               path: ['missing',],
               content: json,
-            },),).toBeUndefined();
+            },),)
+              .toBeUndefined();
           },
         },),
         it({
           name: 'throws on invalid JSON input',
           fn: async () => {
-            expect(() => getJsonProperty({ path: ['key',], content: 'not-json', },)).toThrow();
+            expect(() => getJsonProperty({ path: ['key',], content: 'not-json', },))
+              .toThrow();
           },
         },),
         it({
@@ -138,7 +141,9 @@ await describe({
           fn: async () => {
             /** JSON with a boolean value */
             const json = JSON.stringify({ active: true, },);
-            expect(getJsonProperty({ path: ['active',], content: json, },),).toBe('true',);
+            expect(getJsonProperty({ path: ['active',], content: json, },),).toBe(
+              'true',
+            );
           },
         },),
         it({
@@ -157,18 +162,22 @@ await describe({
             expect(getJsonProperty({
               path: ['a', 'b', 'c',],
               content: json,
-            },),).toBe('deep',);
+            },),)
+              .toBe('deep',);
           },
         },),
         it({
           name: 'indexes into arrays by numeric segment',
           fn: async () => {
             /** JSON with an array of objects */
-            const json = JSON.stringify({ items: [{ name: 'first', }, { name: 'second', },], },);
+            const json = JSON.stringify({
+              items: [{ name: 'first', }, { name: 'second', },],
+            },);
             expect(getJsonProperty({
               path: ['items', 0, 'name',],
               content: json,
-            },),).toBe('first',);
+            },),)
+              .toBe('first',);
           },
         },),
         it({

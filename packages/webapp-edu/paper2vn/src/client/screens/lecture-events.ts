@@ -97,8 +97,9 @@ export function lectureStageClickHandler(
     if (
       (ev.target instanceof Element)
       && (ev.target.closest<HTMLElement>(CONTROLS_SELECTOR,) !== null)
-    )
+    ) {
       return;
+    }
     if (runtime.typewriterCancel !== undefined) {
       runtime.typewriterCancel();
       runtime.typewriterCancel = undefined;

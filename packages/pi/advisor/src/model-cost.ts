@@ -77,7 +77,9 @@ export function selectDefaultModel(
     throw new Error('advisor: no scoped models with configured auth',);
 
   /** Sorted scores, highest expected cost first. */
-  const ranking = options.scope.entries
+  const ranking = options
+    .scope
+    .entries
     .map(function scoreEntry(entry,) {
       return scoreModel({
         entry,
@@ -202,9 +204,7 @@ function buildSelectionReason(
     score: ModelCostScore;
   },
 ): string {
-  return `highest expected cost: ${score.slug} = ${score.inputTokens} input tokens * ${
-    score.inputCost
-  } + ${score.maxOutputTokens} output tokens * ${score.outputCost}`;
+  return `highest expected cost: ${score.slug} = ${score.inputTokens} input tokens * ${score.inputCost} + ${score.maxOutputTokens} output tokens * ${score.outputCost}`;
 }
 
 //endregion Internal helpers

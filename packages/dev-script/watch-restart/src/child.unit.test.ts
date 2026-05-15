@@ -528,7 +528,8 @@ await describe({
           },
         },),
         it({
-          name: 'processGroup: true routes signals through processSignal with negative pid',
+          name:
+            'processGroup: true routes signals through processSignal with negative pid',
           fn: async () => {
             const { spawn, records, } = makeRecordingSpawn();
             const pgSignals: {
@@ -584,7 +585,8 @@ await describe({
           },
         },),
         it({
-          name: 'clear: true runs writeClear before initial spawn and again before restart',
+          name:
+            'clear: true runs writeClear before initial spawn and again before restart',
           fn: async () => {
             const calls: { count: number; } = { count: 0, };
             /**

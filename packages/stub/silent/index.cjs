@@ -16,4 +16,4 @@ module.exports = new Proxy(function silentStub() {}, {
   construct() {
     return module.exports;
   },
-});
+},);

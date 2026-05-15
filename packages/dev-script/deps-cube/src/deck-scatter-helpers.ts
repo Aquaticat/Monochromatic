@@ -11,11 +11,11 @@
  * ```
  */
 
-import type { PackageProbe, } from './probe.ts';
 import {
   probeIsFilled,
   probePosition,
 } from './deck-accessors.ts';
+import type { PackageProbe, } from './probe.ts';
 import type { AppState, } from './scripts/state.ts';
 
 //region Types
@@ -96,15 +96,18 @@ export function partitionProbes(
     if (probeIsFilled({
       probe,
       state,
-    },))
+    },)) {
       leaf.push({
         probe,
         originalIndex,
       },);
-    else nonLeaf.push({
-      probe,
-      originalIndex,
-    },);
+    }
+    else {
+      nonLeaf.push({
+        probe,
+        originalIndex,
+      },);
+    }
   },);
   return {
     leaf,
@@ -147,7 +150,8 @@ export function computeNameBakeSet(
     state: AppState;
   },
 ): ReadonlySet<number> {
-  if (state.displayToggles.nameLabels === 'none') return new Set();
+  if (state.displayToggles.nameLabels === 'none')
+    return new Set();
   if (state.displayToggles.nameLabels === 'all') {
     return new Set(probes.map(function indexOf(
       _,
@@ -173,7 +177,8 @@ export function computeNameBakeSet(
       a,
       b,
     ) {
-      return (b.probe.daysSinceLastCommitOrNull ?? 0) - (a.probe.daysSinceLastCommitOrNull ?? 0);
+      return (b.probe.daysSinceLastCommitOrNull ?? 0)
+        - (a.probe.daysSinceLastCommitOrNull ?? 0);
     },)
     .slice(
       0,

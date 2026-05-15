@@ -18,12 +18,12 @@
  * ```
  */
 
-import type { PackageProbe, } from './probe.ts';
 import type { SceneBounds, } from './deck-config.ts';
 import {
-  oklchLerpToSrgb,
   type Oklch,
+  oklchLerpToSrgb,
 } from './oklch.ts';
+import type { PackageProbe, } from './probe.ts';
 import { extractDim, } from './scripts/filter.ts';
 import type { AppState, } from './scripts/state.ts';
 
@@ -123,7 +123,8 @@ function normalise(
     hi: number;
   },
 ): number {
-  if (hi === lo) return 0.5;
+  if (hi === lo)
+    return 0.5;
   return Math.min(
     1,
     Math.max(
@@ -183,7 +184,8 @@ export function probePosition(
     probe,
     dim: state.dimMapping.z,
   },);
-  if ((x === null) || (y === null) || (z === null)) return null;
+  if ((x === null) || (y === null) || (z === null))
+    return null;
   return [
     x,
     y,
@@ -314,13 +316,14 @@ export function probeFillColor(
     probe,
     dim: state.dimMapping.color,
   },);
-  if (value === null)
+  if (value === null) {
     return [
       COLOR_UNKNOWN[0],
       COLOR_UNKNOWN[1],
       COLOR_UNKNOWN[2],
       alpha,
     ];
+  }
   /** Inclusive `[lo, hi]` range for the colour dim across the whole dataset, used to normalise `value`. */
   const [
     lo,
@@ -389,7 +392,8 @@ export function probeRadius(
     probe,
     dim: state.dimMapping.size,
   },);
-  if (value === null) return RADIUS_MIN_PX;
+  if (value === null)
+    return RADIUS_MIN_PX;
   /** Inclusive `[lo, hi]` range for the size dim, used to normalise `value`. */
   const [
     lo,
@@ -461,7 +465,8 @@ export function probeRadiusWorld(
     probe,
     dim: state.dimMapping.size,
   },);
-  if (value === null) return diagonal * RADIUS_MIN_WORLD_FRACTION;
+  if (value === null)
+    return diagonal * RADIUS_MIN_WORLD_FRACTION;
   /** Inclusive `[lo, hi]` range for the size dim, used to normalise `value`. */
   const [
     lo,
@@ -473,7 +478,9 @@ export function probeRadiusWorld(
     lo,
     hi,
   },);
-  return diagonal * (RADIUS_MIN_WORLD_FRACTION + (t * (RADIUS_MAX_WORLD_FRACTION - RADIUS_MIN_WORLD_FRACTION)));
+  return diagonal
+    * (RADIUS_MIN_WORLD_FRACTION
+      + (t * (RADIUS_MAX_WORLD_FRACTION - RADIUS_MIN_WORLD_FRACTION)));
 }
 
 //endregion Radius
@@ -513,7 +520,8 @@ export function probeIsFilled(
     probe,
     dim: state.dimMapping.shape,
   },);
-  if (value === null) return false;
+  if (value === null)
+    return false;
   return value < SHAPE_FILLED_THRESHOLD;
 }
 

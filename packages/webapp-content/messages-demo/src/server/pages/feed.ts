@@ -199,10 +199,12 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
           tag: 'a',
           attrs: {
             class: 'pagination-older',
-            href: `/p/${encodeCursor({
-              createdAt: last.createdAt,
-              id: last.id,
-            },)}`,
+            href: `/p/${
+              encodeCursor({
+                createdAt: last.createdAt,
+                id: last.id,
+              },)
+            }`,
           },
           text: 'older messages »',
         },),

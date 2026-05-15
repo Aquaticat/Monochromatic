@@ -112,7 +112,8 @@ export async function replaceMentionsForFragment(row: {
 export async function listFragmentsMentioningUser(userId: string,): Promise<string[]> {
   /** Raw `mention_index` rows projected to fragment keys below. */
   const rows = await all<{ readonly fragment_key: string; }>({
-    sql: 'SELECT fragment_key FROM mention_index WHERE user_id = ? ORDER BY fragment_key ASC',
+    sql:
+      'SELECT fragment_key FROM mention_index WHERE user_id = ? ORDER BY fragment_key ASC',
     params: [userId,],
   },);
   return rows.map(function pickKey(r,) {

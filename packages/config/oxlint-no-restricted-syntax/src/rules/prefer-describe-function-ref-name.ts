@@ -163,7 +163,7 @@ function isCallableBinding(
     const sourceValue = decl.source.value;
     if ((typeof sourceValue) !== 'string')
       return !ALL_CAPS_SNAKE.test(variable.name,);
-    if (!sourceValue.startsWith('.'))
+    if (!sourceValue.startsWith('.',))
       return !ALL_CAPS_SNAKE.test(variable.name,);
     /** Resolve relative to the file under lint. */
     const sourcePath = resolve(
@@ -271,12 +271,11 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
     type: 'suggestion',
     docs: {
       description:
-        'Prefer `describe({ name: fn.name })` over `describe({ name: \'fn\' })` when `fn` is an in-scope binding.',
+        "Prefer `describe({ name: fn.name })` over `describe({ name: 'fn' })` when `fn` is an in-scope binding.",
       recommended: true,
     },
     messages: {
-      forbidden:
-        '`describe` name `\'{{name}}\'` matches the in-scope binding `{{name}}`. '
+      forbidden: "`describe` name `'{{name}}'` matches the in-scope binding `{{name}}`. "
         + 'Replace with `{{name}}.name` so renames stay in sync. '
         + 'See .claude/skills/testing-practices/SKILL.md for the convention. '
         + 'If the function under test IS the local binding (harness self-test), '

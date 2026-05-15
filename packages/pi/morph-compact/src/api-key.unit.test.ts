@@ -51,7 +51,8 @@ await describe({
           name: 'resolves MORPH_API_KEY from environment',
           fn: async () => {
             // oxlint-disable-next-line no-restricted-syntax -- env cleanup requires using block
-            using _restore = setEnv({ key: 'MORPH_API_KEY', value: 'test-key-from-env', },);
+            using _restore = setEnv({ key: 'MORPH_API_KEY',
+              value: 'test-key-from-env', },);
             const key = await resolveMorphApiKey();
             expect(key,).toBe('test-key-from-env',);
           },

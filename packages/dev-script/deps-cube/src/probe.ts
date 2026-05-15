@@ -22,8 +22,8 @@ import pLimit from 'p-limit';
 
 import { MS_PER_DAY, } from '@monochromatic-dev/module-numeric-const';
 
-import type { CatalogEntry, } from './catalog.ts';
 import type { Cache, } from './cache.ts';
+import type { CatalogEntry, } from './catalog.ts';
 import {
   classifyLicense,
   type LicenseClass,
@@ -129,10 +129,14 @@ function computeUnknownReason(
     languages: Record<string, number> | null;
   },
 ): UnknownReason | null {
-  if (repoInfo === null) return 'no-repo';
-  if (repoInfo.host !== 'github') return 'non-github';
-  if (isMonorepoHoused && (languages === null)) return 'monorepo';
-  if (languages === null) return 'private-or-404';
+  if (repoInfo === null)
+    return 'no-repo';
+  if (repoInfo.host !== 'github')
+    return 'non-github';
+  if (isMonorepoHoused && (languages === null))
+    return 'monorepo';
+  if (languages === null)
+    return 'private-or-404';
   return null;
 }
 
@@ -293,7 +297,9 @@ async function probeOne(
   const jsBytes = languages?.['JavaScript'] ?? 0;
 
   /** `true` when the Linguist-derived byte counts can't yield a meaningful TS ratio. */
-  const tsRatioUnknown = (totalBytes === null) || (totalBytes === 0) || (tsBytes === null);
+  const tsRatioUnknown = (totalBytes === null)
+    || (totalBytes === 0)
+    || (tsBytes === null);
   /** TS-share of total source bytes, in `[0, 1]`; `null` when Linguist data is missing or unusable. */
   const tsRatioOrNull = tsRatioUnknown
     ? null
@@ -375,13 +381,16 @@ export async function probeAll(
     index,
   ) {
     return limit(async function runTask() {
-      console.error(`[probe ${(index + 1).toString()}/${total.toString()}] ${entry.npmName}`,);
+      console.error(
+        `[probe ${(index + 1).toString()}/${total.toString()}] ${entry.npmName}`,
+      );
       try {
         return await probeOne({
           entry,
           cache,
         },);
-      } catch (err) {
+      }
+      catch (err) {
         return failedProbe({
           entry,
           err: err instanceof Error ? err : new Error(String(err,),),

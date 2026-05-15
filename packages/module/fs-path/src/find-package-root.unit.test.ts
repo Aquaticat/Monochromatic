@@ -37,7 +37,7 @@ await describe({
       },
     },),
     it({
-      name: 'returns this package\'s directory when starting from its src/',
+      name: "returns this package's directory when starting from its src/",
       fn: async () => {
         const root = await findPackageRoot({
           dir: import.meta.dirname,
@@ -63,7 +63,8 @@ await describe({
         expect(Error.isError(caught,),).toBe(true,);
         expect(
           Error.isError(caught,) && caught.message.includes(missingName,),
-        ).toBe(true,);
+        )
+          .toBe(true,);
       },
     },),
   ],

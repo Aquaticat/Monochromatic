@@ -88,7 +88,7 @@ When a file has multiple logical suites, wrap them in a single
 `await describe({ name: '', children: [...] })` where
 the inner describes are un-awaited promises in the children array:
 
-```ts
+````ts
 await describe({
   name: '',
   children: [
@@ -243,7 +243,7 @@ await describe({
     },),
   ],
 },);
-```
+````
 
 a successful run prints (default verbosity):
 
@@ -513,7 +513,7 @@ it({
   timeout: 100,
   fails: 'expected to hang',
   fn: async () => {
-    await new Promise(() => {});
+    await new Promise(() => {},);
   },
 },);
 ```
@@ -663,7 +663,7 @@ await describe({
         const res = await fetch(`/api/item/${index}`,);
         expect(res.status,).toBe(200,);
       },
-    },)),
+    },),),
 },);
 ```
 

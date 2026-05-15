@@ -14,7 +14,8 @@ import { fsRegistry, } from './fs-registry.ts';
  * Bun and Node both set `process.versions.node`.
  */
 // oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime check for browser environments
-const hasNodeFs = ((typeof process) !== 'undefined') && (process.versions?.node !== undefined);
+const hasNodeFs = ((typeof process) !== 'undefined')
+  && (process.versions?.node !== undefined);
 
 /** Computed specifier so browser bundlers cannot statically resolve the import */
 const nodeFsSpecifier = `node:fs`;

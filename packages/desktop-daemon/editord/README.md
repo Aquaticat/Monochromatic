@@ -24,7 +24,7 @@ The browser's compositor thread owns scroll entirely: no `preventDefault`, no JS
 
 ## Architecture
 
-```text
+````text
 editord (Bun + h3)              Chromium PWA
 +-----------------------+       +---------------------------+
 | HTTP: serve index.html|       | <editor-pane>             |
@@ -119,7 +119,7 @@ Full text round-trips on open/save.
 
 ```sh
 mise run //packages/desktop-daemon/editord:start:server
-```
+````
 
 Open the printed URL in Chrome.
 Add `&file=path/to/file` to open a specific file.

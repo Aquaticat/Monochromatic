@@ -101,9 +101,10 @@ export const noArrowFunction: CreateOnceRule = {
         },);
 
         /** Return type annotation if present. */
-        const returnTypeText = (node.returnType !== null) && (node.returnType !== undefined)
-          ? context.sourceCode.getText(node.returnType,)
-          : '';
+        const returnTypeText =
+          (node.returnType !== null) && (node.returnType !== undefined)
+            ? context.sourceCode.getText(node.returnType,)
+            : '';
 
         /** Body text, wrapping expression bodies in `{ return ...; }`. */
         const bodyText = node.expression

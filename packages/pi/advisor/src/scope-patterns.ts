@@ -5,9 +5,9 @@
  */
 
 import {
-  modelsAreEqual,
   type Api,
   type Model,
+  modelsAreEqual,
 } from '@earendil-works/pi-ai';
 import { minimatch, } from 'minimatch';
 import { canonicalSlug, } from './model-slug.ts';
@@ -109,7 +109,9 @@ function resolveGlobPattern(
     .map(function mapMatch(model,) {
       return scopedModelFromModel({
         model,
-        ...(parsed.thinkingLevel === undefined ? {} : { thinkingLevel: parsed.thinkingLevel, }),
+        ...(parsed.thinkingLevel === undefined
+          ? {}
+          : { thinkingLevel: parsed.thinkingLevel, }),
       },);
     },);
 }

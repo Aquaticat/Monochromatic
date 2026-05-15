@@ -1,14 +1,12 @@
-import type {
-  PreToolUseInput,
-} from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type { PreToolUseInput, } from '@monochromatic-dev/claude-code-plugins-hook-types';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test';
 import {
-  type GuardrailOutput,
   guardrailHandler,
+  type GuardrailOutput,
 } from './guardrail.ts';
 
 /**
@@ -82,14 +80,18 @@ await describe({
         it({
           name: 'denies when subagent_type is "general-purpose"',
           fn: async ({ expect: e, },) => {
-            const result = guardrailHandler(makeAgentEvent({ subagent_type: 'general-purpose', },),);
+            const result = guardrailHandler(
+              makeAgentEvent({ subagent_type: 'general-purpose', },),
+            );
             e(isDeny(result,),).toBe(true,);
           },
         },),
         it({
           name: 'allows specialized subagent_type "Explore"',
           fn: async ({ expect: e, },) => {
-            const result = guardrailHandler(makeAgentEvent({ subagent_type: 'Explore', },),);
+            const result = guardrailHandler(
+              makeAgentEvent({ subagent_type: 'Explore', },),
+            );
             e(isDeny(result,),).toBe(false,);
           },
         },),
@@ -110,7 +112,9 @@ await describe({
         it({
           name: 'allows when resume is absent',
           fn: async ({ expect: e, },) => {
-            const result = guardrailHandler(makeAgentEvent({ subagent_type: 'Explore', },),);
+            const result = guardrailHandler(
+              makeAgentEvent({ subagent_type: 'Explore', },),
+            );
             e(isDeny(result,),).toBe(false,);
           },
         },),
@@ -185,7 +189,9 @@ await describe({
         it({
           name: 'allows quoted "bun test" inside echo (segment-anchored)',
           fn: async ({ expect: e, },) => {
-            const result = guardrailHandler(makeBashEvent('echo "use bun test instead"',),);
+            const result = guardrailHandler(
+              makeBashEvent('echo "use bun test instead"',),
+            );
             e(isDeny(result,),).toBe(false,);
           },
         },),

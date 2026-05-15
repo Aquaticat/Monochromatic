@@ -121,7 +121,9 @@ function resolveExportEntry(
     ? Number.parseFloat(raw.fontSize,)
     : defaultFontSizePx;
   /** Per-entry color, falling back to CSS default */
-  const color = ((raw.color !== undefined) && (raw.color !== '')) ? raw.color : TEXT_COLOR;
+  const color = ((raw.color !== undefined) && (raw.color !== ''))
+    ? raw.color
+    : TEXT_COLOR;
 
   return {
     value: raw.value,

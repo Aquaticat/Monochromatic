@@ -34,9 +34,8 @@ the returned promise lets other work continue while the dialog is open.
 import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
 
 const newApiKey = await prompt({ message: 'Change api key', },);
-if (newApiKey !== null) {
+if (newApiKey !== null)
   applyApiKey(newApiKey,);
-}
 ```
 
 The dialog elements receive default class names
@@ -67,7 +66,9 @@ Use when the template element you already hold a reference to
 is the one whose container you want to fill.
 
 ```ts
-import { replicateElementAsParentContent, } from '@monochromatic-dev/module-dom/ts/duplicateElement.ts';
+import {
+  replicateElementAsParentContent,
+} from '@monochromatic-dev/module-dom/ts/duplicateElement.ts';
 
 // Before:
 // <ul id="list">
@@ -76,7 +77,8 @@ import { replicateElementAsParentContent, } from '@monochromatic-dev/module-dom/
 // </ul>
 
 const template = document.querySelector<HTMLElement>('.row',)!;
-replicateElementAsParentContent({ templateElement: template, targetCount: 3, },);
+replicateElementAsParentContent({ templateElement: template,
+  targetCount: 3, },);
 
 // After:
 // <ul id="list">
@@ -99,13 +101,17 @@ Use when the template lives in one tree
 and you need to fill a separate parent with copies.
 
 ```ts
-import { replicateElementAsContentOf, } from '@monochromatic-dev/module-dom/ts/duplicateElement.ts';
+import {
+  replicateElementAsContentOf,
+} from '@monochromatic-dev/module-dom/ts/duplicateElement.ts';
 
 // <template id="row-template"><li class="row">…</li></template>
 // <ul id="list"></ul>
 
-const template = (document.querySelector<HTMLTemplateElement>('#row-template',)!).content
-  .firstElementChild as HTMLElement;
+const template =
+  (document.querySelector<HTMLTemplateElement>('#row-template',)!)
+    .content
+    .firstElementChild as HTMLElement;
 const list = document.querySelector<HTMLElement>('#list',)!;
 
 replicateElementAsContentOf({
@@ -139,7 +145,9 @@ Type-preserving wrapper around `Node.prototype.cloneNode(true)`.
 so a cloned `HTMLAnchorElement` stays an `HTMLAnchorElement` without a manual `as`.
 
 ```ts
-import { deepCloneNode, } from '@monochromatic-dev/module-dom/ts/duplicateElement.ts';
+import {
+  deepCloneNode,
+} from '@monochromatic-dev/module-dom/ts/duplicateElement.ts';
 
 const link = document.querySelector<HTMLAnchorElement>('a.primary',)!;
 const linkClone = deepCloneNode(link,);
@@ -161,13 +169,17 @@ so it is safe to call unconditionally on every page.
 Expected markup:
 
 ```html
-<a href="https://example.com/dashboard" class="redirectingTo">
+<a
+  href='https://example.com/dashboard'
+  class='redirectingTo'>
   Taking you to the dashboard…
 </a>
 ```
 
 ```ts
-import { onLoadRedirectingTo, } from '@monochromatic-dev/module-dom/ts/redirectingTo.ts';
+import {
+  onLoadRedirectingTo,
+} from '@monochromatic-dev/module-dom/ts/redirectingTo.ts';
 
 // At module top level on a landing page.
 // Default 5s delay:
@@ -215,7 +227,9 @@ that overwrite layout-critical properties on `:root`
 that affect the entire document).
 
 ```ts
-import { onLoadSetCssFromUrlParams, } from '@monochromatic-dev/module-dom/ts/set/cssFromParam.ts';
+import {
+  onLoadSetCssFromUrlParams,
+} from '@monochromatic-dev/module-dom/ts/set/cssFromParam.ts';
 
 // URL: /?--brand=oklch(0.7 0.15 250)&--radius=0.5rem
 onLoadSetCssFromUrlParams([

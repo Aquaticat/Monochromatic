@@ -41,8 +41,11 @@ export const noHasownproperty: CreateOnceRule = {
         const { callee, } = node;
         if ((callee.type !== 'MemberExpression') || callee.computed)
           return;
-        if ((callee.property.type !== 'Identifier') || (callee.property.name !== 'hasOwnProperty'))
+        if ((callee.property.type !== 'Identifier')
+          || (callee.property.name !== 'hasOwnProperty'))
+        {
           return;
+        }
         context.report({
           node,
           messageId: 'forbidden',

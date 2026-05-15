@@ -35,24 +35,24 @@ await describe({
     it({
       name: 'throws when value is null',
       fn: async () => {
-        expect(() => nonNullishOrThrow(null,),).toThrow(/non-nullish/,);
+        expect(() => nonNullishOrThrow(null,)).toThrow(/non-nullish/,);
       },
     },),
 
     it({
       name: 'throws when value is undefined',
       fn: async () => {
-        expect(() => nonNullishOrThrow(undefined,),).toThrow(/non-nullish/,);
+        expect(() => nonNullishOrThrow(undefined,)).toThrow(/non-nullish/,);
       },
     },),
 
     it({
       name: 'does not throw on falsy-but-non-nullish values',
       fn: async () => {
-        expect(() => nonNullishOrThrow(0,),).not.toThrow();
-        expect(() => nonNullishOrThrow('',),).not.toThrow();
-        expect(() => nonNullishOrThrow(false,),).not.toThrow();
-        expect(() => nonNullishOrThrow(Number.NaN,),).not.toThrow();
+        expect(() => nonNullishOrThrow(0,)).not.toThrow();
+        expect(() => nonNullishOrThrow('',)).not.toThrow();
+        expect(() => nonNullishOrThrow(false,)).not.toThrow();
+        expect(() => nonNullishOrThrow(Number.NaN,)).not.toThrow();
       },
     },),
 

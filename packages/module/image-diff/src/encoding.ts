@@ -152,12 +152,14 @@ export function bufferToBase64(buffer: ArrayBuffer,): string {
   /** Byte-level view over the buffer; `btoa` needs a string of single-byte chars, not the raw buffer. */
   const bytes = new Uint8Array(buffer,);
   /** Binary string assembled byte by byte; one code point per byte is what `btoa` expects. */
-  const binary = Array.from(
-    bytes,
-    function byteToChar(byte,) {
-      return String.fromCodePoint(byte,);
-    },
-  ).join('',);
+  const binary = Array
+    .from(
+      bytes,
+      function byteToChar(byte,) {
+        return String.fromCodePoint(byte,);
+      },
+    )
+    .join('',);
   return btoa(binary,);
 }
 

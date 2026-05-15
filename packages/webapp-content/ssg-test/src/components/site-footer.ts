@@ -146,7 +146,9 @@ function tickerKeyframeStops(): string[] {
     $({
       rule: '100%',
       decls: {
-        transform: cssTranslateY(cssPercent((-(QUOTE_COUNT - 1)) * (100 / QUOTE_COUNT),),),
+        transform: cssTranslateY(
+          cssPercent((-(QUOTE_COUNT - 1)) * (100 / QUOTE_COUNT),),
+        ),
       },
     },),
   );

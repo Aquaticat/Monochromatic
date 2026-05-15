@@ -7,9 +7,7 @@
 import { readFile, } from 'node:fs/promises';
 import { extname, } from 'node:path';
 
-import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 import { extractCssUrls, } from './css.ts';
 import { extractHtmlRefs, } from './html.ts';
@@ -123,9 +121,8 @@ async function walkCss(
         missing.push(ref,);
         continue;
       }
-      if ((extname(resolved,).toLowerCase() === '.css') && (!visited.has(resolved,))) {
+      if ((extname(resolved,).toLowerCase() === '.css') && (!visited.has(resolved,)))
         queue.push(resolved,);
-      }
       if (!seen.has(resolved,)) {
         seen.add(resolved,);
         collected.push(resolved,);
@@ -238,9 +235,11 @@ export async function weighPage(
   }
 
   /** Wire sizes per asset, computed in parallel; `null` slots are surfaced via `missing` below. */
-  const sizes = await Promise.all(assets.map(function measure(asset: string,): Promise<number | null> {
-    return wireSize(asset,);
-  },),);
+  const sizes = await Promise.all(
+    assets.map(function measure(asset: string,): Promise<number | null> {
+      return wireSize(asset,);
+    },),
+  );
   /** Sum of every successfully measured asset, with unmeasurable assets recorded into `missing`. */
   const totalBytes = sizes.reduce(
     function sumNonNull(

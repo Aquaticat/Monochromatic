@@ -74,9 +74,8 @@ class FakeChild implements SpawnedChildHandle {
    * @param listener - exit callback (code, signal)
    */
   once(event: 'exit', listener: ExitListener,): void {
-    if (event !== 'exit') {
+    if (event !== 'exit')
       return;
-    }
     this.#exitListeners.push(listener,);
   }
 
@@ -88,13 +87,11 @@ class FakeChild implements SpawnedChildHandle {
    * @param listener - the same reference passed to {@link once}
    */
   off(event: 'exit', listener: ExitListener,): void {
-    if (event !== 'exit') {
+    if (event !== 'exit')
       return;
-    }
     const idx = this.#exitListeners.indexOf(listener,);
-    if (idx !== (-1)) {
+    if (idx !== (-1))
       this.#exitListeners.splice(idx, 1,);
-    }
   }
 
   /**
@@ -134,16 +131,14 @@ class FakeChild implements SpawnedChildHandle {
     code: number | null,
     signal: NodeJS.Signals | null,
   ): void {
-    if (this.#exited) {
+    if (this.#exited)
       return;
-    }
     this.#exited = true;
     this.exitCode = code;
     /** Snapshot the listeners before clearing so a listener that re-registers does not loop. */
     const listeners = this.#exitListeners.splice(0,);
-    for (const listener of listeners) {
+    for (const listener of listeners)
       listener(code, signal,);
-    }
   }
 }
 

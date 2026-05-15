@@ -35,7 +35,7 @@ function mount(root: HTMLElement,): void {
         tag: 'p',
         attrs: { class: 'muted', },
         children: [ll.noLog(),],
-      }),
+      },),
     ]
     : entries.map(function toRow(entry,): HTMLElement {
       return el({
@@ -48,14 +48,14 @@ function mount(root: HTMLElement,): void {
             children: [
               entry.speaker === 'persona' ? ruka : ll.speakerYou(),
             ],
-          }),
+          },),
           el({
             tag: 'div',
             attrs: { class: 'dialogue-text', },
             children: [entry.text,],
-          }),
+          },),
         ],
-      });
+      },);
     },);
   /** Outer screen container with header and the rendered rows. */
   const screen = el({
@@ -78,17 +78,17 @@ function mount(root: HTMLElement,): void {
               },
             },
             children: [ll.back(),],
-          }),
+          },),
           el({
             tag: 'h2',
             attrs: {},
             children: [ll.memoryLog(),],
-          }),
+          },),
         ],
-      }),
+      },),
       ...rows,
     ],
-  });
+  },);
   root.append(screen,);
 }
 

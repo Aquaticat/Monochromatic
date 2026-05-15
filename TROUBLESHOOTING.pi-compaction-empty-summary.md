@@ -67,8 +67,9 @@ const historyEnd = cutPoint.isSplitTurn
 // This loop never executes when historyEnd === boundaryStart === 0
 const messagesToSummarize: AgentMessage[] = [];
 for (let i = boundaryStart; i < historyEnd; i++) {
-  const msg = getMessageFromEntryForCompaction(pathEntries[i]);
-  if (msg) messagesToSummarize.push(msg);
+  const msg = getMessageFromEntryForCompaction(pathEntries[i],);
+  if (msg)
+    messagesToSummarize.push(msg,);
 }
 ```
 
@@ -82,13 +83,13 @@ Compare with the early-return guard in `agent-session.ts`
 line 1256:
 
 ```ts
-const preparation = prepareCompaction(pathEntries, settings);
+const preparation = prepareCompaction(pathEntries, settings,);
 if (!preparation) {
   // Check why we can't compact
   const lastEntry = pathEntries[pathEntries.length - 1];
   if (lastEntry?.type === 'compaction')
-    throw new Error('Already compacted');
-  throw new Error('Nothing to compact (session too small)');
+    throw new Error('Already compacted',);
+  throw new Error('Nothing to compact (session too small)',);
 }
 ```
 
@@ -171,7 +172,7 @@ if (!hasMessages && previousSummary === undefined) {
     'Morph Compact: nothing to compact (session too small)',
     'warning',
   );
-  return { cancel: true };
+  return { cancel: true, };
 }
 ```
 
@@ -227,7 +228,8 @@ means "nothing to compact":
 // At the end of prepareCompaction(), before the return:
 if (messagesToSummarize.length === 0
   && turnPrefixMessages.length === 0
-  && !previousSummary) {
+  && !previousSummary)
+{
   return undefined;
 }
 ```
@@ -251,7 +253,7 @@ the summary content but still writes the entry.
 
 ## Draft upstream issue (kept as reference; revise before filing)
 
-~~~md
+```md
 **Title**: Compaction produces empty "(none)" summary when session fits within keepRecentTokens
 
 **Labels**: bug, compaction
@@ -288,4 +290,4 @@ Option B: `compact()` guards the non-split-turn branch with the same `messagesTo
 
 - pi: 0.70.6
 - OS: linux
-~~~
+```

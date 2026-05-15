@@ -262,8 +262,6 @@ The Glob tool is denylisted (does not respect .gitignore); unlikely to change.
 
 Clone entire git repo of a package to a temp dir whenever investigating source code. Use `gh repo clone` instead of `git clone`; `gh` handles authentication and fork remotes automatically.
 
-Sandbox breaks `pnpm install` despite proper allowlisting; run it outside sandbox. Marked wontfix.
-
 ### Bash output path collapse
 
 Do not treat `~` in Bash tool output as a literal tilde. It is a display substitution for `/var/home/user` or `/home/user` applied by the `bash-output-filter` hook, plus stripping of the current cwd prefix. The substitution makes output more readable; it applies only at the start of a line, so paths inside JSON or error messages are unaffected. Filesystem values are unchanged; this is display-only. Account for the transform when debugging path issues before concluding the path is wrong.

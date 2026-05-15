@@ -8,7 +8,7 @@ Notes from reviewing `packages/pi/auto-mode`, which GLM authored end to end. A r
 
 Every extracted file in this package (12 of them) claims the same justification:
 
-```text
+````text
 $ rg -n "stay within the line limit" packages/pi/auto-mode/src
 src/path-signals.ts:4:        Extracted from signals.ts to stay within the line limit.
 src/config-schemas.ts:4:      Extracted from config.ts to stay within the line limit.
@@ -83,7 +83,7 @@ let flagged = shouldFlag(
 if (!flagged && denialInPreviousTurn && isRelevantTool(event as never)) {
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ToolCallEvent type mismatch
 const action = describeAction(event as never);
-```
+````
 
 Three `as never` casts, three justifications about "type mismatch". The mismatch is that GLM declared a different type than the one the API gives. Type the parameter as `ToolCallEvent` and the casts disappear.
 

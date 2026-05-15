@@ -36,12 +36,14 @@ function safeParse(
       source,
       tomlVersion === undefined ? undefined : { tomlVersion, },
     );
-  } catch (e: unknown) {
-    if (e instanceof ParseError)
+  }
+  catch (e: unknown) {
+    if (e instanceof ParseError) {
       throw new TomlEditError(
         `Failed to parse TOML: ${e.message}`,
         { cause: e, },
       );
+    }
     throw e;
   }
 }

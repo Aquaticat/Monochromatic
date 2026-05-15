@@ -40,7 +40,7 @@ type PageHistory = {
  * Stored as an object property so module-root state stays in a `const`
  * container (`no-module-root-let` would otherwise reject a top-level `let`).
  */
-const historiesState: { all: PageHistory[]; } = { all: [] };
+const historiesState: { all: PageHistory[]; } = { all: [], };
 
 /**
  * Initializes empty history stacks for all pages.

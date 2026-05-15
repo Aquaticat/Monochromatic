@@ -72,13 +72,13 @@ type Callable = {
 };
 
 type Constructible = {
-  new (
+  new(
     a: string,
     b: number,
   ): void;
 };
 
-type CtorType = new (
+type CtorType = new(
   a: string,
   b: number,
 ) => void;

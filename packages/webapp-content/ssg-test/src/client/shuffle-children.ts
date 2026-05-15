@@ -41,8 +41,9 @@ function shuffleChildren(): void {
   if (CSS.supports(
     'order',
     RANDOM_PROBE,
-  ))
+  )) {
     return;
+  }
 
   /** Wrapper elements opting into per-render shuffling. */
   const wrappers = document.querySelectorAll<HTMLElement>(

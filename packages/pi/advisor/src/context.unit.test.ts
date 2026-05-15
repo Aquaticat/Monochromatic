@@ -10,12 +10,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test';
+import { DEFAULT_CONFIG, } from './config.ts';
 import { ADVISOR_MESSAGE_TYPE, } from './constants.ts';
 import {
   buildAdvisorContext,
   truncateContext,
 } from './context.ts';
-import { DEFAULT_CONFIG, } from './config.ts';
 import type { AdvisorConfig, } from './types.ts';
 
 //region Fixtures
@@ -94,7 +94,9 @@ await describe({
           maxChars: TRUNCATION_BUDGET,
         },);
         expect(result.truncated,).toBe(true,);
-        expect(result.text,).toContain('advisor: middle of serialized conversation omitted',);
+        expect(result.text,).toContain(
+          'advisor: middle of serialized conversation omitted',
+        );
       },
     },),
   ],

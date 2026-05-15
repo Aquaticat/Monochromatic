@@ -27,7 +27,7 @@ export function tomlGet(
     path,
   }: {
     edit: TomlEditState;
-    path: TomlPath
+    path: TomlPath;
   },
 ): unknown {
   return tomlGetValue({

@@ -87,19 +87,21 @@ function walkGlobalOptions({
   readonly index: number;
   readonly cwd: string;
 },): GlobalOptionLayout {
-  if (index >= args.length)
+  if (index >= args.length) {
     return {
       effectiveCwd: cwd,
       subcommandIndex: args.length,
     };
+  }
 
   /** Current argv entry under inspection during the recursive walk. */
   const arg = args[index];
-  if (arg === undefined)
+  if (arg === undefined) {
     return {
       effectiveCwd: cwd,
       subcommandIndex: index,
     };
+  }
 
   if (arg === '-C') {
     /** Path argument that follows `-C`; missing when `-C` is the final argv entry. */
@@ -121,19 +123,21 @@ function walkGlobalOptions({
     },);
   }
 
-  if (VALUE_TAKING_GLOBAL_OPTIONS.has(arg,))
+  if (VALUE_TAKING_GLOBAL_OPTIONS.has(arg,)) {
     return walkGlobalOptions({
       args,
       index: index + 2,
       cwd,
     },);
+  }
 
-  if (arg.startsWith('-',))
+  if (arg.startsWith('-',)) {
     return walkGlobalOptions({
       args,
       index: index + 1,
       cwd,
     },);
+  }
 
   return {
     effectiveCwd: cwd,

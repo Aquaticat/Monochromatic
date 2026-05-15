@@ -8,8 +8,8 @@ the element confirms the state, and yet the box is still visible:
 
 ```js
 el.hidden = true;
-console.log(el.hidden);                       // true
-console.log(getComputedStyle(el).display);    // "grid"  (expected: "none")
+console.log(el.hidden,); // true
+console.log(getComputedStyle(el,).display,); // "grid"  (expected: "none")
 ```
 
 Discovered in paper2vn's chapter-card overlay
@@ -59,10 +59,18 @@ Minimal reproduction:
 
 ```html
 <style>
-  [hidden] { display: none; }
-  .card    { display: grid; }
+[hidden] {
+  display: none;
+}
+.card {
+  display: grid;
+}
 </style>
-<div class="card" hidden>still visible</div>
+<div
+  class='card'
+  hidden>
+  still visible
+</div>
 ```
 
 `getComputedStyle(document.querySelector('.card')).display` returns
@@ -102,9 +110,13 @@ put **layout rules** in a layer and leave `[hidden]` unlayered:
 
 ```css
 @layer layout {
-  .card { display: grid; }
+  .card {
+    display: grid;
+  }
 }
-[hidden] { display: none; }
+[hidden] {
+  display: none;
+}
 ```
 
 Tradeoff: every layout rule in the codebase needs to move into the

@@ -5,9 +5,9 @@
  */
 
 import {
-  complete,
   type Api,
   type AssistantMessage,
+  complete,
   type Message,
   type Model,
   type ProviderStreamOptions,
@@ -121,7 +121,8 @@ export async function completeAdvisor(
 export function extractAdvisorText(
   message: AssistantMessage,
 ): string {
-  return message.content
+  return message
+    .content
     .filter(function keepText(block,) {
       return block.type === 'text';
     },)

@@ -294,7 +294,8 @@ await describe({
             const bytes = zip.build();
             const entries = await listZipEntries(bytes,);
             expect(entries,).toEqual(['日本語/ファイル.txt',],);
-            const extracted = await extractFromZip({ bytes, path: '日本語/ファイル.txt', },);
+            const extracted = await extractFromZip({ bytes,
+              path: '日本語/ファイル.txt', },);
             expect(new TextDecoder().decode(extracted,),).toBe('こんにちは',);
           },
         },),

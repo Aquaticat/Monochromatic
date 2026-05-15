@@ -94,7 +94,8 @@ export function matches(
   // The client may send a comma-separated list (e.g. multiple cached
   // entries for the same URL across redirects); a hit on any of them
   // means our resource is current.
-  return input.ifNoneMatch
+  return input
+    .ifNoneMatch
     .split(',',)
     .map(function trim(part,) {
       return part.trim();

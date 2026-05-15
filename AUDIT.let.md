@@ -202,9 +202,13 @@ Sample mechanical migration (from `webapp-forge/seed/src/rng.unit.test.ts:38`):
 
 ```typescript
 // Before
-for (let i = 0; i < 100; i += 1) { /* ... */ }
+for (let i = 0; i < 100; i += 1) {
+  /* ... */
+}
 // After
-for (const _i of range(100,)) { /* ... */ }
+for (const _i of range(100,)) {
+  /* ... */
+}
 ```
 
 The 36 of 133 (27%) that use decrement or non-unit step
@@ -216,7 +220,8 @@ Patterns like:
 
 ```typescript
 let total = 0;
-for (const chunk of chunks) total += chunk.byteLength;
+for (const chunk of chunks)
+  total += chunk.byteLength;
 ```
 
 Single-accumulator-then-return rewrites to `reduce`:
@@ -233,7 +238,9 @@ Extraction to a helper function preserves the imperative style while shrinking s
 function applyBurst(config: Config,): { priorOid: Oid; appliedTotal: number; } {
   let priorOid = ZERO_OID;
   let appliedTotal = 0;
-  for (let i = 0; i < config.burstEvents; i += 1) { /* ... */ }
+  for (let i = 0; i < config.burstEvents; i += 1) {
+    /* ... */
+  }
   return { priorOid, appliedTotal, };
 }
 const { priorOid, appliedTotal, } = applyBurst(config,);
@@ -251,7 +258,9 @@ let id: string | undefined;
 let description: string | undefined;
 let regex: string | undefined;
 // scan loop assigns to each
-while (i < lines.length) { /* ... */ }
+while (i < lines.length) {
+  /* ... */
+}
 out.push({ id, description, regex, },);
 ```
 
@@ -305,15 +314,18 @@ with a one-liner:
 // Before
 let cachedTool: NotificationTool | null | undefined = undefined;
 function getNotificationTool(): NotificationTool | null {
-  if (cachedTool !== undefined) return cachedTool;
+  if (cachedTool !== undefined)
+    return cachedTool;
   cachedTool = computeTool();
   return cachedTool;
 }
 
 // After
-const getNotificationTool = memoize(function getNotificationTool(): NotificationTool | null {
-  return computeTool();
-});
+const getNotificationTool = memoize(
+  function getNotificationTool(): NotificationTool | null {
+    return computeTool();
+  },
+);
 ```
 
 Currently `memoize` is used once in the whole monorepo.
@@ -516,14 +528,14 @@ Once the warning count is zero (every report is refactored, allowlist-shaped, or
 
 ### Status table
 
-| Phase | State | Date | Notes |
-| --- | --- | --- | --- |
-| 0: rules landed | DONE | 2026-05-10 | Two rule files + registration + `'warn'` enablement + AGENTS.md. |
-| 1: baseline capture | TODO | | Per-rule report count, spot-check 10 each. |
-| 2: mechanical refactors | TODO | | Ternary, reduce, chain. |
-| 3: helper / IIFE | TODO | | Use the allowlist heuristics deliberately. |
-| 4: disable-with-justification | TODO | | Each disable names a concrete constraint. |
-| 5: flip to `'error'` | TODO | | Both entries in `restriction.ts`. |
+| Phase                         | State | Date       | Notes                                                            |
+| ----------------------------- | ----- | ---------- | ---------------------------------------------------------------- |
+| 0: rules landed               | DONE  | 2026-05-10 | Two rule files + registration + `'warn'` enablement + AGENTS.md. |
+| 1: baseline capture           | TODO  |            | Per-rule report count, spot-check 10 each.                       |
+| 2: mechanical refactors       | TODO  |            | Ternary, reduce, chain.                                          |
+| 3: helper / IIFE              | TODO  |            | Use the allowlist heuristics deliberately.                       |
+| 4: disable-with-justification | TODO  |            | Each disable names a concrete constraint.                        |
+| 5: flip to `'error'`          | TODO  |            | Both entries in `restriction.ts`.                                |
 
 ### Verification targets
 

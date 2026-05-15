@@ -160,9 +160,10 @@ export function patternHasGlob(
     '*',
     '?',
     '[',
-  ].some(function patternIncludes(token,) {
-    return pattern.includes(token,);
-  },);
+  ]
+    .some(function patternIncludes(token,) {
+      return pattern.includes(token,);
+    },);
 }
 
 /**

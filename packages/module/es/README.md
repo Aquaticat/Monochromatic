@@ -85,9 +85,7 @@ All functions are pure and don't rely on execution context.
 
 ```typescript
 // Current root namespace
-import {
-  types,
-} from '@monochromatic-dev/module-es/ts';
+import { types, } from '@monochromatic-dev/module-es/ts';
 
 // Special subpaths exposed by package.json include:
 // @monochromatic-dev/module-es/binary
@@ -196,20 +194,20 @@ import type {
 
 ## Current Implementation Status
 
-| Category        | Functions | Tests | Documentation | Completeness |
-| --------------- | --------- | ----- | ------------- | ------------ |
-| **Any**         | 8/10      | 60%   | 70%           | 🟡 Partial   |
-| **Array**       | 12/50+    | 80%   | 85%           | 🟡 Basic     |
-| **Boolean**     | 3/5       | 100%  | 90%           | 🟢 Good      |
-| **Error**       | 25/30     | 90%   | 85%           | 🟢 Excellent |
-| **Function**    | 20/30     | 75%   | 70%           | 🟢 Good      |
-| **Iterable**    | 25/60+    | 65%   | 60%           | 🟡 Partial   |
-| **Numeric**     | 15/25     | 85%   | 80%           | 🟢 Good      |
-| **String**      | 20/40+    | 85%   | 75%           | 🟢 Good      |
-| **Object**      | Partial   | Partial | Partial      | 🟡 Record pick, omit, and merge exist |
-| **Date**        | 0/25+     | 0%    | 0%            | 🔴 Missing   |
-| **Math**        | 0/20+     | 0%    | 0%            | 🔴 Missing   |
-| **Collections** | 5/20+     | 40%   | 50%           | 🔴 Basic     |
+| Category        | Functions | Tests   | Documentation | Completeness                          |
+| --------------- | --------- | ------- | ------------- | ------------------------------------- |
+| **Any**         | 8/10      | 60%     | 70%           | 🟡 Partial                            |
+| **Array**       | 12/50+    | 80%     | 85%           | 🟡 Basic                              |
+| **Boolean**     | 3/5       | 100%    | 90%           | 🟢 Good                               |
+| **Error**       | 25/30     | 90%     | 85%           | 🟢 Excellent                          |
+| **Function**    | 20/30     | 75%     | 70%           | 🟢 Good                               |
+| **Iterable**    | 25/60+    | 65%     | 60%           | 🟡 Partial                            |
+| **Numeric**     | 15/25     | 85%     | 80%           | 🟢 Good                               |
+| **String**      | 20/40+    | 85%     | 75%           | 🟢 Good                               |
+| **Object**      | Partial   | Partial | Partial       | 🟡 Record pick, omit, and merge exist |
+| **Date**        | 0/25+     | 0%      | 0%            | 🔴 Missing                            |
+| **Math**        | 0/20+     | 0%      | 0%            | 🔴 Missing                            |
+| **Collections** | 5/20+     | 40%     | 50%           | 🔴 Basic                              |
 
 **Target**: 500+ utility functions across 20+ categories
 

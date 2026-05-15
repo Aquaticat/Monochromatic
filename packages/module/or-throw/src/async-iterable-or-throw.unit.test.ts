@@ -29,19 +29,19 @@ await describe({
     it({
       name: 'throws on sync-iterable-but-not-async values',
       fn: async () => {
-        expect(() => asyncIterableOrThrow([1, 2,],),).toThrow(/async iterable/,);
-        expect(() => asyncIterableOrThrow('abc',),).toThrow(/async iterable/,);
-        expect(() => asyncIterableOrThrow(new Set(),),).toThrow(/async iterable/,);
+        expect(() => asyncIterableOrThrow([1, 2,],)).toThrow(/async iterable/,);
+        expect(() => asyncIterableOrThrow('abc',)).toThrow(/async iterable/,);
+        expect(() => asyncIterableOrThrow(new Set(),)).toThrow(/async iterable/,);
       },
     },),
 
     it({
       name: 'throws on non-iterable values',
       fn: async () => {
-        expect(() => asyncIterableOrThrow(42,),).toThrow(/async iterable/,);
-        expect(() => asyncIterableOrThrow(null,),).toThrow(/async iterable/,);
-        expect(() => asyncIterableOrThrow(undefined,),).toThrow(/async iterable/,);
-        expect(() => asyncIterableOrThrow({},),).toThrow(/async iterable/,);
+        expect(() => asyncIterableOrThrow(42,)).toThrow(/async iterable/,);
+        expect(() => asyncIterableOrThrow(null,)).toThrow(/async iterable/,);
+        expect(() => asyncIterableOrThrow(undefined,)).toThrow(/async iterable/,);
+        expect(() => asyncIterableOrThrow({},)).toThrow(/async iterable/,);
       },
     },),
 

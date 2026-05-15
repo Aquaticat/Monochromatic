@@ -10,11 +10,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
+import { emptyTomlEdit, } from './empty-toml-edit.ts';
 import {
   TomlImmutableNodeError,
   TomlTypeError,
 } from './errors.ts';
-import { emptyTomlEdit, } from './empty-toml-edit.ts';
 import { parseTomlEdit, } from './parse-toml-edit.ts';
 import { tomlGetValue, } from './toml-get-value.ts';
 import { tomlSet, } from './toml-set.ts';
@@ -180,7 +180,8 @@ await describe({
             path: ['foo',],
             value: null,
           },);
-        },).toThrow(TomlTypeError,);
+        },)
+          .toThrow(TomlTypeError,);
       },
     },),
 
@@ -193,7 +194,8 @@ await describe({
             path: ['foo',],
             value: undefined,
           },);
-        },).toThrow(TomlTypeError,);
+        },)
+          .toThrow(TomlTypeError,);
       },
     },),
 
@@ -348,7 +350,8 @@ await describe({
             path: ['foo',],
             value: { y: 1, },
           },);
-        },).toThrow(TomlTypeError,);
+        },)
+          .toThrow(TomlTypeError,);
       },
     },),
 
@@ -365,7 +368,8 @@ await describe({
               42,
             ],
           },);
-        },).toThrow(TomlTypeError,);
+        },)
+          .toThrow(TomlTypeError,);
       },
     },),
 
@@ -379,7 +383,8 @@ await describe({
             path: ['a',],
             value: [{ z: 3, },],
           },);
-        },).toThrow(TomlImmutableNodeError,);
+        },)
+          .toThrow(TomlImmutableNodeError,);
       },
     },),
 
@@ -401,7 +406,8 @@ await describe({
     },),
 
     it({
-      name: 'effective whole-AOT read after replace is undefined (parent-path projection is sub-path only)',
+      name:
+        'effective whole-AOT read after replace is undefined (parent-path projection is sub-path only)',
       fn: async () => {
         const source = '[[foo]]\nx = 1\n[[foo]]\nx = 2\n';
         const e1 = tomlSet({
@@ -444,7 +450,8 @@ await describe({
             path: ['foo',],
             value: 42,
           },);
-        },).toThrow(TomlTypeError,);
+        },)
+          .toThrow(TomlTypeError,);
       },
     },),
 
@@ -559,7 +566,8 @@ await describe({
             path: ['foo', 0, 'bar',],
             value: 1,
           },);
-        },).toThrow(TomlImmutableNodeError,);
+        },)
+          .toThrow(TomlImmutableNodeError,);
       },
     },),
 
@@ -588,7 +596,8 @@ await describe({
             path: ['foo', 'a', 'b',],
             value: 3,
           },);
-        },).toThrow(TomlImmutableNodeError,);
+        },)
+          .toThrow(TomlImmutableNodeError,);
       },
     },),
 
@@ -602,7 +611,8 @@ await describe({
             path: ['foo', 'a', 'b',],
             value: 3,
           },);
-        },).toThrow(TomlImmutableNodeError,);
+        },)
+          .toThrow(TomlImmutableNodeError,);
       },
     },),
 

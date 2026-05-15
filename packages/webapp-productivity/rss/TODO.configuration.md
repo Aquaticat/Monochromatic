@@ -8,13 +8,13 @@ Externalize hardcoded values to make the application more flexible and configura
 
 ## 2. Current Hardcoded Values
 
-| Value          | Current     | Location    | Purpose                            |
-| -------------- | ----------- | ----------- | ---------------------------------- |
-| `FETCH_INTERVAL_MS` | 300000 ms / 5 minutes | `interval.ts` | Fetch-cache time bucket |
-| Display limit  | 100 items   | `html.ts`   | Maximum items shown in UI          |
-| Poll interval  | 1000ms      | `client.ts` | Client-side asset check frequency  |
-| Fetch timeout  | 30 seconds  | Various     | HTTP request timeout               |
-| File paths     | Hardcoded   | Various     | JSONL, OPML locations              |
+| Value               | Current               | Location      | Purpose                           |
+| ------------------- | --------------------- | ------------- | --------------------------------- |
+| `FETCH_INTERVAL_MS` | 300000 ms / 5 minutes | `interval.ts` | Fetch-cache time bucket           |
+| Display limit       | 100 items             | `html.ts`     | Maximum items shown in UI         |
+| Poll interval       | 1000ms                | `client.ts`   | Client-side asset check frequency |
+| Fetch timeout       | 30 seconds            | Various       | HTTP request timeout              |
+| File paths          | Hardcoded             | Various       | JSONL, OPML locations             |
 
 ## 3. Tasks
 

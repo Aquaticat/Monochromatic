@@ -49,7 +49,7 @@ export async function getAllDiagnostics(): Promise<FileDiagnostics[]> {
         /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         return raw.map(function mapFileEntry(file,) {
           /** Buffer path from the Lua bridge; coerced to empty string when missing so the Map key is always a string. */
-          const filePath = (((typeof file.path) === 'string')) ? file.path : '';
+          const filePath = ((typeof file.path) === 'string') ? file.path : '';
           /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Neovim msgpack array narrowed via Array.isArray */
           /** Raw diagnostic records for this file; empty when the Lua bridge returned a non-array (defensive). */
           const fileDiags = Array.isArray(file.diagnostics,)

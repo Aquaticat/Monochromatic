@@ -456,7 +456,7 @@ Earlier alternatives considered:
    failure modes (SIGINT hang, deep-tree signal propagation) were
    weighed against the implementation cost. Lives at
    `packages/dev-script/watch-restart/`; see its README for the chokidar
-   + custom `child_process.spawn` rationale.
+   - custom `child_process.spawn` rationale.
 
 ### What does not work
 
@@ -570,5 +570,3 @@ Either break the cycle or give `FilterProgs` an explicit shutdown path:
   out of the blocking loop. A `tokio::sync::Notify` wired into the loop
   would also work.
 ````
-
-

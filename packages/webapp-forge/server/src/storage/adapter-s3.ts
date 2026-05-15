@@ -399,7 +399,6 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
     );
   }
 
-
   /**
    * Single GET from the bucket.
    *

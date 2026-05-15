@@ -19,7 +19,9 @@ import type { Span, } from '@oxlint/plugins';
 function unwrapMethodDefinition(
   node: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
-  if ((node.type === 'MethodDefinition') || (node.type === 'TSAbstractMethodDefinition')) {
+  if ((node.type === 'MethodDefinition')
+    || (node.type === 'TSAbstractMethodDefinition'))
+  {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return node.value as Record<string, unknown> | undefined;
   }
@@ -42,7 +44,9 @@ export function functionReturnsValue(node: Span & Record<string, unknown>,): boo
   // Check kind on the outer MethodDefinition BEFORE unwrapping to .value,
   // because `kind` ("constructor", "get", "set", "method") is a property
   // of MethodDefinition, not of the inner FunctionExpression.
-  if ((node.type === 'MethodDefinition') || (node.type === 'TSAbstractMethodDefinition')) {
+  if ((node.type === 'MethodDefinition')
+    || (node.type === 'TSAbstractMethodDefinition'))
+  {
     /** Method kind (constructor/get/set/method); read on the outer MethodDefinition before unwrap. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const kind = (node as Record<string, unknown>).kind as string | undefined;

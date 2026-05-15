@@ -28,7 +28,9 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * // onlyWeak is WeakMap<object, string>
  * ```
  */
-export function weakMapOrThrow<T,>(value: T,): ExtractOrUnknown<T, WeakMap<object, unknown>> {
+export function weakMapOrThrow<T,>(
+  value: T,
+): ExtractOrUnknown<T, WeakMap<object, unknown>> {
   if (!(value instanceof WeakMap))
     throw new Error(`Expected WeakMap, got ${typeof value} ${String(value,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T after instanceof

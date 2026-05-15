@@ -16,7 +16,9 @@ import { resolve, } from 'node:path';
 
 import spawn, { type Result, } from 'nano-spawn';
 
-import { findMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+import {
+  findMonorepoRootCached,
+} from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 
 import type { Logger, } from './types.ts';
 
@@ -412,26 +414,27 @@ export async function getPostDates(
     : localHistory.at(-1,);
 
   /** Final `published` ISO string, resolved through shallow/gh fallback when needed. */
-  const publishedIso: string | undefined = await (async function resolvePublishedIso(): Promise<string | undefined> {
-    if ((oldestLocalIso !== undefined) || (!isShallow) || (latestIso === undefined))
-      return oldestLocalIso;
-    if (githubSlug === undefined) {
-      throw new Error(
-        `Shallow clone detected but no GitHub remote configured; cannot resolve published date for ${filePath}. Fetch with --unshallow or configure an origin on github.com.`,
+  const publishedIso: string | undefined =
+    await (async function resolvePublishedIso(): Promise<string | undefined> {
+      if ((oldestLocalIso !== undefined) || (!isShallow) || (latestIso === undefined))
+        return oldestLocalIso;
+      if (githubSlug === undefined) {
+        throw new Error(
+          `Shallow clone detected but no GitHub remote configured; cannot resolve published date for ${filePath}. Fetch with --unshallow or configure an origin on github.com.`,
+        );
+      }
+      /** Repo-relative form required by the GitHub commits API `path` query param. */
+      const repoRelPath = await getRepoRelativePath(filePath,);
+      /** ISO date returned by the gh-api fallback; undefined when the API has no commits for the path. */
+      const ghIso = await ghApiFirstCommitDate({
+        slug: githubSlug,
+        repoRelPath,
+      },);
+      l.info(
+        `shallow clone: resolved published date for ${filePath} via gh api`,
       );
-    }
-    /** Repo-relative form required by the GitHub commits API `path` query param. */
-    const repoRelPath = await getRepoRelativePath(filePath,);
-    /** ISO date returned by the gh-api fallback; undefined when the API has no commits for the path. */
-    const ghIso = await ghApiFirstCommitDate({
-      slug: githubSlug,
-      repoRelPath,
-    },);
-    l.info(
-      `shallow clone: resolved published date for ${filePath} via gh api`,
-    );
-    return ghIso;
-  })();
+      return ghIso;
+    })();
 
   if ((latestIso !== undefined) && (publishedIso !== undefined)) {
     return {

@@ -349,7 +349,7 @@ export function buildThresholdLineLayer(
     (dimMapping.x === 'logSourceBytes')
     && (SOURCE_BYTES_THRESHOLD > xMin)
     && (SOURCE_BYTES_THRESHOLD < xMax)
-  )
+  ) {
     segments.push({
       path: [
         [
@@ -364,11 +364,12 @@ export function buildThresholdLineLayer(
         ],
       ],
     },);
+  }
   if (
     (dimMapping.y === 'logDaysStale')
     && (DAYS_STALE_THRESHOLD > yMin)
     && (DAYS_STALE_THRESHOLD < yMax)
-  )
+  ) {
     segments.push({
       path: [
         [
@@ -383,11 +384,12 @@ export function buildThresholdLineLayer(
         ],
       ],
     },);
+  }
   if (
     (dimMapping.z === 'logInstallSize')
     && (INSTALL_SIZE_THRESHOLD > bounds.z[0])
     && (INSTALL_SIZE_THRESHOLD < bounds.z[1])
-  )
+  ) {
     segments.push({
       path: [
         [
@@ -402,7 +404,9 @@ export function buildThresholdLineLayer(
         ],
       ],
     },);
-  if (segments.length === 0) return null;
+  }
+  if (segments.length === 0)
+    return null;
   return new PathLayer<PathDatum>({
     id: 'threshold-guides',
     data: segments,

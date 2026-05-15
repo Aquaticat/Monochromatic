@@ -42,7 +42,7 @@ export function findPackageDir({
 }: {
   startDir: string;
   packageName: string;
-}):
+},):
   | string
   | undefined
 {
@@ -125,7 +125,7 @@ export function resolveExports({
 }: {
   exports: unknown;
   subpath: string;
-}): string | undefined {
+},): string | undefined {
   if (((typeof exports) !== 'object') || (exports === null))
     return undefined;
 
@@ -183,7 +183,7 @@ export function resolvePackage({
 }: {
   specifier: string;
   fromDir: string;
-}): string {
+},): string {
   /** Split decouples package directory lookup from sub-path resolution. */
   const [packageName, subpath,] = splitPackageSpecifier(specifier,);
   /** Absolute path to the package directory in node_modules */

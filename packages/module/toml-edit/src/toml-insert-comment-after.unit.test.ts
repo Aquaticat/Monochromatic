@@ -40,7 +40,8 @@ await describe({
             path: ['missing',],
             comment: 'x',
           },);
-        },).toThrow(TomlPathNotFoundError,);
+        },)
+          .toThrow(TomlPathNotFoundError,);
       },
     },),
   ],

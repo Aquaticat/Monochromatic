@@ -179,8 +179,7 @@ export async function listIssueAssignees(issueId: string,): Promise<User[]> {
     readonly email: string;
     readonly createdAt: string;
   }>({
-    sql:
-      `SELECT u.id, u.username AS login, u.email, u.createdAt
+    sql: `SELECT u.id, u.username AS login, u.email, u.createdAt
      FROM user u
      JOIN issue_assignees ia ON ia.user_id = u.id
      WHERE ia.issue_id = ?

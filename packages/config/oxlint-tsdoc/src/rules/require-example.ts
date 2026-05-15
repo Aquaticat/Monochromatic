@@ -241,8 +241,11 @@ export const requireExample: CreateOnceRule = {
       const init = decl.init as Record<string, unknown> | null | undefined;
       if ((init === undefined) || (init === null))
         return;
-      if ((init.type !== 'FunctionExpression') && (init.type !== 'ArrowFunctionExpression'))
+      if ((init.type !== 'FunctionExpression')
+        && (init.type !== 'ArrowFunctionExpression'))
+      {
         return;
+      }
 
       /** Attached TSDoc comment for the variable; absent means nothing to validate. */
       const comment = findTsdocComment({

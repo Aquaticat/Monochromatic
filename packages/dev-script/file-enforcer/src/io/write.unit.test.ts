@@ -257,7 +257,9 @@ await describe({
             },);
 
             /** No writeTimestamp for this dest because content was identical (size check unsafe under concurrent execution) */
-            expect(writeTimestamps.has(resolve(join(destDir, 'same.ts',),),),).toBe(false,);
+            expect(writeTimestamps.has(resolve(join(destDir, 'same.ts',),),),).toBe(
+              false,
+            );
             await teardown(tempDir,);
           },
         },),
@@ -276,7 +278,8 @@ await describe({
             const tempPrefix = resolve(tempDir,);
             expect([...writes,].some(function isUnderTemp(p,): boolean {
               return p.startsWith(tempPrefix,);
-            },),).toBe(false,);
+            },),)
+              .toBe(false,);
             await teardown(tempDir,);
           },
         },),

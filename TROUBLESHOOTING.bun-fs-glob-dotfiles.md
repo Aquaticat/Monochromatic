@@ -12,14 +12,14 @@ and explicit dot patterns (`.*`, `.hidden`) return empty results
 for dot entries:
 
 ```ts
-import { glob } from 'node:fs/promises';
+import { glob, } from 'node:fs/promises';
 
 // Directory contains: visible, .hidden
-for await (const match of glob('/path/*'))
-  console.log(match); // only "visible"; .hidden is silently skipped
+for await (const match of glob('/path/*',))
+  console.log(match,); // only "visible"; .hidden is silently skipped
 
-for await (const match of glob('/path/.*'))
-  console.log(match); // no output at all
+for await (const match of glob('/path/.*',))
+  console.log(match,); // no output at all
 ```
 
 `Bun.Glob` with `dot: true` matches correctly under identical
@@ -103,23 +103,28 @@ Version under test:
 Reproduce:
 
 ```ts
-import { mkdir, writeFile } from 'node:fs/promises';
-import { glob } from 'node:fs/promises';
+import {
+  mkdir,
+  writeFile,
+} from 'node:fs/promises';
+import { glob, } from 'node:fs/promises';
 
-await mkdir('/tmp/dotfile-test', { recursive: true });
-await writeFile('/tmp/dotfile-test/visible', '');
-await writeFile('/tmp/dotfile-test/.hidden', '');
+await mkdir('/tmp/dotfile-test', { recursive: true, },);
+await writeFile('/tmp/dotfile-test/visible', '',);
+await writeFile('/tmp/dotfile-test/.hidden', '',);
 
 const matches: string[] = [];
-for await (const m of glob('/tmp/dotfile-test/*')) matches.push(m);
-console.log(matches);
+for await (const m of glob('/tmp/dotfile-test/*',))
+  matches.push(m,);
+console.log(matches,);
 // Bun 1.3.10: ['/tmp/dotfile-test/visible']
 // Node.js v22.17+: ['/tmp/dotfile-test/visible']
 //   (Node also skips wildcard dot matches; that part agrees)
 
 const dotMatches: string[] = [];
-for await (const m of glob('/tmp/dotfile-test/.*')) dotMatches.push(m);
-console.log(dotMatches);
+for await (const m of glob('/tmp/dotfile-test/.*',))
+  dotMatches.push(m,);
+console.log(dotMatches,);
 // Bun 1.3.10: []                              ← bug
 // Node.js v22.17+: ['/tmp/dotfile-test/.hidden']  ← correct
 ```
@@ -133,7 +138,7 @@ Two files used `Bun.Glob`:
   **Cannot migrate** to `fs.glob` due to this bug. Kept on
   `Bun.Glob`.
 - `packages/claude-code-plugins/session-start-housekeeping/src/index.ts`
- ; matches named directories only
+  ; matches named directories only
   (`packages/*/*/dist/final`); no dot-file concern. **Migrated**
   to `node:fs/promises` glob.
 
@@ -145,8 +150,8 @@ For Bun-specific code paths that need dot-file matching, use
 `Bun.Glob` directly rather than `node:fs/promises` glob:
 
 ```ts
-const glob = new Bun.Glob('/path/*');
-for await (const m of glob.scan({ cwd: '/path', dot: true })) {
+const glob = new Bun.Glob('/path/*',);
+for await (const m of glob.scan({ cwd: '/path', dot: true, },)) {
   // matches dot files
 }
 ```
@@ -161,9 +166,10 @@ When the use case is "match a specific named file", use a direct
 `readdir`/`stat` rather than a glob:
 
 ```ts
-import { readdir } from 'node:fs/promises';
-const entries = await readdir('/path', { withFileTypes: true });
-for (const e of entries) if (e.name.startsWith('.')) /* ... */;
+import { readdir, } from 'node:fs/promises';
+const entries = await readdir('/path', { withFileTypes: true, },);
+for (const e of entries)
+  if (e.name.startsWith('.',))/* ... */ ;
 ```
 
 Tradeoff: more verbose; no pattern flexibility. Appropriate when
@@ -233,7 +239,7 @@ locations and patch.
 
 ## Draft upstream issue (kept as reference)
 
-~~~md
+````md
 **Title**: `node:fs/promises` `glob` silently skips dot files because internal bridge omits `dot: true`
 
 **Labels**: bug, node-compat, fs
@@ -266,15 +272,19 @@ Because `mapOptions` never overrides the default, all dot files are excluded.
 **Reproduction**:
 
 ```ts
-import { glob } from 'node:fs/promises';
-import { writeFile, mkdir } from 'node:fs/promises';
+import { glob, } from 'node:fs/promises';
+import {
+  mkdir,
+  writeFile,
+} from 'node:fs/promises';
 
-await mkdir('/tmp/dotfile-test', { recursive: true });
-await writeFile('/tmp/dotfile-test/.hidden', '');
+await mkdir('/tmp/dotfile-test', { recursive: true, },);
+await writeFile('/tmp/dotfile-test/.hidden', '',);
 
 const matches: string[] = [];
-for await (const m of glob('/tmp/dotfile-test/.*')) matches.push(m);
-console.log(matches); // [] on Bun; ['/tmp/dotfile-test/.hidden'] on Node v22.17+
+for await (const m of glob('/tmp/dotfile-test/.*',))
+  matches.push(m,);
+console.log(matches,); // [] on Bun; ['/tmp/dotfile-test/.hidden'] on Node v22.17+
 ```
 
 **Suggested fix**: add `dot: true` to the `mapOptions` return in `src/js/internal/fs/glob.ts`:
@@ -290,4 +300,4 @@ return {
 ```
 
 This aligns with Node.js: explicit dot patterns match dot files; wildcard exclusion is still handled by the glob pattern semantics, not by the scanner-level `dot` flag.
-~~~
+````

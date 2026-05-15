@@ -70,9 +70,8 @@ export function extFilter(extensions: readonly string[],): WatchFilter {
       readonly ctx: WatchCtx;
     },
   ): boolean {
-    if (normalized.size === 0) {
+    if (normalized.size === 0)
       return true;
-    }
     return normalized.has(event.ext.toLowerCase(),);
   };
 }

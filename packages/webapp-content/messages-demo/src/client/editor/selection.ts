@@ -61,8 +61,9 @@ function findEnclosingLine(start: Node,): HTMLElement | null {
     if (
       (runner instanceof HTMLElement)
       && runner.classList.contains('ce-line',)
-    )
+    ) {
       return runner;
+    }
     runner = runner.parentNode;
   }
   return null;

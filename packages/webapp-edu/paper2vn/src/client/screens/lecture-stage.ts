@@ -47,7 +47,7 @@ export function buildLectureStage(): LectureStage {
   const stage = el({
     tag: 'div',
     attrs: { class: 'stage', },
-  });
+  },);
   /** Background layer painted with the classroom asset. */
   const bg = el({
     tag: 'div',
@@ -55,7 +55,7 @@ export function buildLectureStage(): LectureStage {
       class: 'stage-bg',
       style: `background-image: url("${getBackground('classroom',)}")`,
     },
-  });
+  },);
   /** Character portrait image whose `src` is swapped per beat pose. */
   const characterImg = el({
     tag: 'img',
@@ -66,24 +66,24 @@ export function buildLectureStage(): LectureStage {
       },),
       alt: '',
     },
-  });
+  },);
   /** Wrapper sized to position the character relative to the stage. */
   const characterWrap = el({
     tag: 'div',
     attrs: { class: 'stage-character', },
     children: [characterImg,],
-  });
+  },);
   /** Inner element receiving the typewriter-revealed dialogue text. */
   const dialogueText = el({
     tag: 'div',
     attrs: { class: 'dialogue-text', },
-  });
+  },);
   /** Speaker-name span shown in the dialogue header. */
   const speakerName = el({
     tag: 'span',
     attrs: { class: 'speaker-name', },
     children: [getCharacterName('ruka',),],
-  });
+  },);
   /** Bottom dialogue box assembled from header + text. */
   const dialogueBox = el({
     tag: 'div',
@@ -93,21 +93,21 @@ export function buildLectureStage(): LectureStage {
         tag: 'header',
         attrs: {},
         children: [speakerName,],
-      }),
+      },),
       dialogueText,
     ],
-  });
+  },);
   /** Chapter-card overlay shown before the first beat of each chapter. */
   const chapterCard = el({
     tag: 'div',
     attrs: { class: 'chapter-card', },
-  });
+  },);
   chapterCard.hidden = true;
   /** Toolbar row hosting the navigation/auto/log/hide/ask buttons. */
   const toolbar = el({
     tag: 'div',
     attrs: { class: 'stage-controls', },
-  });
+  },);
   stage.append(
     bg,
     characterWrap,

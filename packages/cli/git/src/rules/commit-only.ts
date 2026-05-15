@@ -15,7 +15,8 @@ const ESCAPE_HATCH = '--no-enforce-only';
  * Diagnostic emitted when commit-only enforcement sees no pathspec source and
  * no git mode that permits pathless only-mode commits.
  */
-const NO_PATHSPEC_MESSAGE = 'cli-git: git commit requires an explicit pathspec when commit-only enforcement is active. '
+const NO_PATHSPEC_MESSAGE =
+  'cli-git: git commit requires an explicit pathspec when commit-only enforcement is active. '
   + 'Name the paths in the commit command (for example, git commit -m <msg> <path>), '
   + 'pass --pathspec-from-file, or pass --no-enforce-only to bypass for this invocation.';
 
@@ -23,7 +24,8 @@ const NO_PATHSPEC_MESSAGE = 'cli-git: git commit requires an explicit pathspec w
  * Diagnostic emitted when commit-only enforcement sees `-a`/`--all`, which
  * stages tracked modifications implicitly before committing.
  */
-const ALL_FLAG_MESSAGE = 'cli-git: git commit rejects -a/--all because it stages every tracked modification before committing. '
+const ALL_FLAG_MESSAGE =
+  'cli-git: git commit rejects -a/--all because it stages every tracked modification before committing. '
   + 'Stage paths explicitly and commit with git commit -m <msg> <path>, '
   + 'or pass --no-enforce-only to bypass for this invocation.';
 

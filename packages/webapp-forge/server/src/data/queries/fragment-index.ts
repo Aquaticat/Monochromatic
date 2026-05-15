@@ -61,7 +61,8 @@ export async function upsertFragmentIndexIfNewer(row: {
 },): Promise<boolean> {
   /** Upsert result; `changes > 0` means our row won the sequence guard. */
   const result = await run({
-    sql: `INSERT INTO fragment_index(fragment_key, content_hash, last_built_at, source_event_id, source_event_sequence)
+    sql:
+      `INSERT INTO fragment_index(fragment_key, content_hash, last_built_at, source_event_id, source_event_sequence)
      VALUES (?, ?, ?, ?, ?)
      ON CONFLICT(fragment_key) DO UPDATE SET
        content_hash = excluded.content_hash,

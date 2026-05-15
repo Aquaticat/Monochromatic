@@ -157,4 +157,4 @@ if the workaround stops working after a VS Code or Remote-WSL update.
 ## Related
 
 - [dprint VS Code extension PATH gap in WSL](./TROUBLESHOOTING.dprint.md)
- ; a sibling Remote-WSL pain point with a different shape.
+  ; a sibling Remote-WSL pain point with a different shape.

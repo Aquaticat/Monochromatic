@@ -174,11 +174,15 @@ export function attachInput(
     // stops the browser from mutating the DOM out from under us.
     event.preventDefault();
 
-    if ((event.inputType === 'insertText') || (event.inputType === 'insertCompositionText')) {
+    if ((event.inputType === 'insertText')
+      || (event.inputType === 'insertCompositionText'))
+    {
       handleInsert(event.data ?? '',);
       return;
     }
-    if ((event.inputType === 'insertParagraph') || (event.inputType === 'insertLineBreak')) {
+    if ((event.inputType === 'insertParagraph')
+      || (event.inputType === 'insertLineBreak'))
+    {
       handleInsert('\n',);
       return;
     }

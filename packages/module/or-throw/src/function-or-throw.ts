@@ -36,7 +36,9 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * fn('boom',);
  * ```
  */
-export function functionOrThrow<T,>(value: T,): ExtractOrUnknown<T, (...args: never[]) => unknown> {
+export function functionOrThrow<T,>(
+  value: T,
+): ExtractOrUnknown<T, (...args: never[]) => unknown> {
   if ((typeof value) !== 'function')
     throw new Error(`Expected function, got ${typeof value} ${String(value,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T after typeof

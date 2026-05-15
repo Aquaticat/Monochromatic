@@ -64,10 +64,12 @@ export async function api<TResponse = unknown,>({
       error = { error: 'Request failed', };
     }
     /** Surface message extracted from `error.error` when present, otherwise the generic fallback. */
-    const message =
-      ((typeof error) === 'object') && (error !== null) && ('error' in error) && ((typeof error.error) === 'string')
-        ? error.error
-        : 'Request failed';
+    const message = ((typeof error) === 'object')
+        && (error !== null)
+        && ('error' in error)
+        && ((typeof error.error) === 'string')
+      ? error.error
+      : 'Request failed';
     showToast(message,);
     throw new Error(message,);
   }

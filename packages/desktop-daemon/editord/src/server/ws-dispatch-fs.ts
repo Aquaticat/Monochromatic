@@ -53,7 +53,7 @@ function isFileLockError(error: unknown,): boolean {
  *
  * @throws re-throws non-file-lock errors and file-lock errors when lspManager is null
  */
-async function retryOnFileLock<T>({
+async function retryOnFileLock<T,>({
   operation,
   path,
   lspManager,

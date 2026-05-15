@@ -52,11 +52,12 @@ contains `m`". Anything that does not end in `.mjs` takes the
 Same file, lines 110-115:
 
 ```ts
-function pnpmFileExistsSync (pnpmFilePath: string): boolean {
-  const pnpmFileRealName = pnpmFilePath.endsWith('.cjs') || pnpmFilePath.endsWith('.mjs')
-    ? pnpmFilePath
-    : `${pnpmFilePath}.cjs`
-  return fs.existsSync(pnpmFileRealName)
+function pnpmFileExistsSync(pnpmFilePath: string,): boolean {
+  const pnpmFileRealName =
+    pnpmFilePath.endsWith('.cjs',) || pnpmFilePath.endsWith('.mjs',)
+      ? pnpmFilePath
+      : `${pnpmFilePath}.cjs`;
+  return fs.existsSync(pnpmFileRealName,);
 }
 ```
 
@@ -141,7 +142,9 @@ Use `.pnpmfile.mjs` and annotate with JSDoc:
 ```js
 /** @satisfies {import('@pnpm/pnpmfile/lib/Hooks').Hooks} */
 export const hooks = {
-  readPackage(pkg) { return applyBlocklist({ pkg }); },
+  readPackage(pkg,) {
+    return applyBlocklist({ pkg, },);
+  },
 };
 ```
 
@@ -173,11 +176,11 @@ the generated artifact, add a CI drift check.
 import tsBlankSpace from 'ts-blank-space';
 
 async function generatePnpmfile(): Promise<void> {
-  const tsSource = await cat(['./.pnpmfile.ts']);
+  const tsSource = await cat(['./.pnpmfile.ts',],);
   await overwrite(
     './.pnpmfile.mjs',
     `// Generated from .pnpmfile.ts by file-enforcer.
-${tsBlankSpace(tsSource)}`,
+${tsBlankSpace(tsSource,)}`,
   );
 }
 ```

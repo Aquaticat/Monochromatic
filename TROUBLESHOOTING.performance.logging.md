@@ -51,13 +51,13 @@ Replace function-entry `l.trace()` calls with `l.debug()`:
 ```ts
 // Before; with stack-trace overhead
 function myFunction() {
-  l.trace('myFunction started');
+  l.trace('myFunction started',);
   // ... function logic
 }
 
 // After; basic debug logging
 function myFunction() {
-  l.debug('myFunction started');
+  l.debug('myFunction started',);
   // ... function logic
 }
 ```

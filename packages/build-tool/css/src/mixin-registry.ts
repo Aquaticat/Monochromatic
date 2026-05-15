@@ -152,9 +152,8 @@ function runMixinPasses(remainingAttempts: number,): void {
       `Mixin expansion exceeded ${MAX_PASSES} passes: likely caused by circular @apply references between mixins`,
     );
   }
-  if (runSingleMixinPass()) {
+  if (runSingleMixinPass())
     runMixinPasses(remainingAttempts - 1,);
-  }
 }
 
 /**

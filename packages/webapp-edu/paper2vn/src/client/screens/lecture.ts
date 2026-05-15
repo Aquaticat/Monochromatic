@@ -146,7 +146,7 @@ function mount(root: HTMLElement,): void {
       'data-screen': 'lecture',
     },
     children: [stage,],
-  });
+  },);
   root.append(screen,);
 
   /** Cancels any in-flight typewriter, auto timer, or speech. */
@@ -179,8 +179,9 @@ function mount(root: HTMLElement,): void {
         chapter: currentChapter(),
       },);
     }
-    else
+    else {
       hideChapterCard(chapterCard,);
+    }
     characterImg.src = getCharacterPose({
       characterId: 'ruka',
       pose: beat.pose ?? 'neutral',

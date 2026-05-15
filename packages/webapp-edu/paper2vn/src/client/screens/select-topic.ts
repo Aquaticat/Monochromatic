@@ -55,18 +55,18 @@ function mount(root: HTMLElement,): void {
       type: 'file',
       accept: ll.uploadAccept(),
     },
-  });
+  },);
   /** Plain-text alternative input when the user pastes instead of uploading. */
   const textarea = el({
     tag: 'textarea',
     attrs: { placeholder: ll.pasteTextPlaceholder(), },
-  });
+  },);
   /** Inline status paragraph used for hints and error messages. */
   const status = el({
     tag: 'p',
     attrs: { class: 'muted', },
     children: [ll.selectTopicHint(),],
-  });
+  },);
 
   /** Click handler for the primary action: parse input, generate, navigate. */
   async function start(): Promise<void> {
@@ -138,7 +138,7 @@ function mount(root: HTMLElement,): void {
       },
     },
     children: [ll.startLecture(),],
-  });
+  },);
 
   /** Outer screen container with header, upload, paste, status, and start button. */
   const screen = el({
@@ -161,14 +161,14 @@ function mount(root: HTMLElement,): void {
               },
             },
             children: [ll.back(),],
-          }),
+          },),
           el({
             tag: 'h2',
             attrs: {},
             children: [ll.selectTopic(),],
-          }),
+          },),
         ],
-      }),
+      },),
       el({
         tag: 'div',
         attrs: { class: 'field', },
@@ -177,10 +177,10 @@ function mount(root: HTMLElement,): void {
             tag: 'label',
             attrs: {},
             children: [ll.upload(),],
-          }),
+          },),
           fileInput,
         ],
-      }),
+      },),
       el({
         tag: 'div',
         attrs: { class: 'field', },
@@ -189,14 +189,14 @@ function mount(root: HTMLElement,): void {
             tag: 'label',
             attrs: {},
             children: [ll.pasteText(),],
-          }),
+          },),
           textarea,
         ],
-      }),
+      },),
       status,
       startBtn,
     ],
-  });
+  },);
   root.append(screen,);
 }
 

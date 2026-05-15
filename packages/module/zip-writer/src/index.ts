@@ -100,7 +100,9 @@ export class ZipWriter {
       );
     }
     /** Raw byte view of the content so the size check works for both inputs. */
-    const data = ((typeof content) === 'string') ? TEXT_ENCODER.encode(content,) : content;
+    const data = ((typeof content) === 'string')
+      ? TEXT_ENCODER.encode(content,)
+      : content;
     if (data.length > MAX_UINT32) {
       throw new Error(
         `zip-writer: file too large for legacy ZIP (${data.length} bytes, max ${MAX_UINT32}): ${path}`,

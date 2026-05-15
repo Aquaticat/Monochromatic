@@ -32,7 +32,8 @@ export const HARNESS_URL: string = pathToFileURL(
     'test',
     'harness.html',
   ),
-).href;
+)
+  .href;
 
 /**
  * Absolute path to the built browser bundle that the tests exercise.

@@ -179,8 +179,13 @@ export async function readCatalog(
     'pnpm-workspace.yaml',
     startDir === undefined ? undefined : { cwd: startDir, },
   );
-  if (workspaceYamlPath === undefined)
-    throw new Error(`Could not locate pnpm-workspace.yaml by walking up from ${startDir ?? process.cwd()}`,);
+  if (workspaceYamlPath === undefined) {
+    throw new Error(
+      `Could not locate pnpm-workspace.yaml by walking up from ${
+        startDir ?? process.cwd()
+      }`,
+    );
+  }
 
   /** UTF-8 text of the workspace file; fed to the YAML parser. */
   const raw = await readFile(
@@ -200,12 +205,14 @@ export async function readCatalog(
   /** Flattened entries from the default block, each tagged without a `catalogName`. */
   const defaultEntries = entriesFromBlock({ block: defaultBlock, },);
   /** Flattened entries from every named block, each tagged with its `catalogName`. */
-  const namedEntries = Object.entries(namedBlocks,).flatMap(function expandNamed([catalogName, block,],) {
-    return entriesFromBlock({
-      block,
-      catalogName,
-    },);
-  },);
+  const namedEntries = Object.entries(namedBlocks,).flatMap(
+    function expandNamed([catalogName, block,],) {
+      return entriesFromBlock({
+        block,
+        catalogName,
+      },);
+    },
+  );
 
   /** Union of default and named entries returned to callers. */
   const combined = [

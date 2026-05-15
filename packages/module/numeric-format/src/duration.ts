@@ -212,7 +212,8 @@ export function formatTrackedDuration(seconds: number,): string {
     return value > 0;
   },);
 
-  if (biggestIdx === (-1)) return '0s';
+  if (biggestIdx === (-1))
+    return '0s';
 
   /** Top unit; primary cell of the rendered string. */
   const [bigValue, bigSuffix,] = nonNullishOrThrow(UNITS[biggestIdx],);

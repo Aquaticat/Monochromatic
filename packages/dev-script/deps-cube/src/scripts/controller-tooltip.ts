@@ -85,7 +85,8 @@ function escapeHtml(raw: string,): string {
  * @returns Formatted string.
  */
 function formatNum(value: number | null,): string {
-  if (value === null) return 'unknown';
+  if (value === null)
+    return 'unknown';
   return value.toFixed(TOOLTIP_DECIMALS,);
 }
 
@@ -98,7 +99,8 @@ function formatNum(value: number | null,): string {
  * @returns Formatted string.
  */
 function formatInt(value: number | null,): string {
-  if (value === null) return 'unknown';
+  if (value === null)
+    return 'unknown';
   return Math.round(value,).toString();
 }
 
@@ -111,7 +113,8 @@ function formatInt(value: number | null,): string {
  * @returns Formatted string.
  */
 function formatBool(value: boolean | null,): string {
-  if (value === null) return 'unknown';
+  if (value === null)
+    return 'unknown';
   return value ? '✓' : '✗';
 }
 
@@ -150,9 +153,13 @@ export function formatTooltipHtml(
   /** Escaped license-class label rendered in the table. */
   const license = escapeHtml(probe.licenseClass,);
   /** Escaped repository URL, or the literal `"unknown"` when the probe lacks a repo. */
-  const repo = probe.repositoryUrlOrNull === null ? 'unknown' : escapeHtml(probe.repositoryUrlOrNull,);
+  const repo = probe.repositoryUrlOrNull === null
+    ? 'unknown'
+    : escapeHtml(probe.repositoryUrlOrNull,);
   /** Optional unknown-reason banner; empty string when the probe has no unknowns to report. */
-  const unknown = probe.unknownReason === null ? '' : `<div class="tooltip-unknown">unknown: ${escapeHtml(probe.unknownReason,)}</div>`;
+  const unknown = probe.unknownReason === null
+    ? ''
+    : `<div class="tooltip-unknown">unknown: ${escapeHtml(probe.unknownReason,)}</div>`;
   return `<div class="tooltip">
       <div class="tooltip-name">${name}@${version}</div>
       <table class="tooltip-table">
@@ -161,7 +168,9 @@ export function formatTooltipHtml(
         <tr><th>source bytes</th><td>${formatInt(probe.sourceBytesOrNull,)}</td></tr>
         <tr><th>install bytes</th><td>${formatInt(probe.installSizeBytes,)}</td></tr>
         <tr><th>downloads/week</th><td>${formatInt(probe.weeklyDownloads,)}</td></tr>
-        <tr><th>days stale</th><td>${formatInt(probe.daysSinceLastCommitOrNull,)}</td></tr>
+        <tr><th>days stale</th><td>${
+    formatInt(probe.daysSinceLastCommitOrNull,)
+  }</td></tr>
         <tr><th>age (days)</th><td>${formatInt(probe.packageAgeDays,)}</td></tr>
         <tr><th>runtime deps</th><td>${formatInt(probe.runtimeDepCount,)}</td></tr>
         <tr><th>transitive deps</th><td>${formatInt(probe.transitiveDepCount,)}</td></tr>
@@ -186,7 +195,8 @@ export function formatTooltipHtml(
 function ensurePinElement(): HTMLElement {
   /** Existing pinned-tooltip element from a previous `ensurePinElement` call, or `null` on first use. */
   const existing = document.querySelector<HTMLElement>(`#${PINNED_ID}`,);
-  if (existing !== null) return existing;
+  if (existing !== null)
+    return existing;
   /** Fresh outer `<aside>` element that owns the pinned-tooltip surface. */
   const aside = document.createElement('aside',);
   aside.id = PINNED_ID;
@@ -230,7 +240,8 @@ export function pinTooltip(
   const aside = ensurePinElement();
   /** Content wrapper inside the aside; `null` only if the DOM was tampered with externally. */
   const content = aside.querySelector<HTMLDivElement>(`.${PINNED_CONTENT_CLASS}`,);
-  if (content === null) return;
+  if (content === null)
+    return;
   content.innerHTML = formatTooltipHtml({
     probe,
   },);
@@ -248,7 +259,8 @@ export function pinTooltip(
 export function unpinTooltip(): void {
   /** Pinned-tooltip element, if it was ever created; missing element is a no-op. */
   const aside = document.querySelector<HTMLElement>(`#${PINNED_ID}`,);
-  if (aside === null) return;
+  if (aside === null)
+    return;
   aside.hidden = true;
 }
 

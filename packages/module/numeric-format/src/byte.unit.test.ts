@@ -75,7 +75,6 @@ await describe({
         expect(formatBytes(2_684_354_560,),).toBe('2.5 GiB',);
       },
     },),
-
     //endregion GiB branch: one decimal
   ],
 },);

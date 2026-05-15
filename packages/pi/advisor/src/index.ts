@@ -14,25 +14,23 @@ import type {
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import {
-  buildAdvisorSystemPrompt,
-} from './advisor-client.ts';
+  type AdvisorSessionState,
+  buildAdvisorStatus,
+  registerAdvisorCommands,
+  syncAdvisorActiveTool,
+} from './commands.ts';
+import { loadMergedConfig, } from './config.ts';
 import {
   ADVISOR_MESSAGE_TYPE,
   MAIN_MODEL_GUIDANCE_PREFIX,
 } from './constants.ts';
-import {
-  buildAdvisorStatus,
-  registerAdvisorCommands,
-  syncAdvisorActiveTool,
-  type AdvisorSessionState,
-} from './commands.ts';
-import { loadMergedConfig, } from './config.ts';
+import { l as parentLogger, } from './log.ts';
 import { selectDefaultModel, } from './model-cost.ts';
 import { renderAdvisorMessage, } from './rendering.ts';
 import { resolveEffectiveScope, } from './scope-resolver.ts';
 import { createAdvisorTool, } from './tool.ts';
-import { l as parentLogger, } from './log.ts';
 
 /** Tagged logger for the Advisor entry point. */
 const l = tagged({
@@ -177,10 +175,13 @@ function buildMainModelGuidance(
 
   return [
     MAIN_MODEL_GUIDANCE_PREFIX,
-    `Allowed Advisor model slugs: ${scopedSlugs.length === 0 ? 'none' : scopedSlugs.join(', ')}`,
+    `Allowed Advisor model slugs: ${
+      scopedSlugs.length === 0 ? 'none' : scopedSlugs.join(', ',)
+    }`,
     `advisor({}) default model: ${defaultSelection?.selected.canonicalSlug ?? 'none'}`,
     `Advisor prompt: ${buildAdvisorSystemPrompt(config,).split('\n',)[0]}`,
-  ].join('\n');
+  ]
+    .join('\n',);
 }
 
 //endregion Prompt guidance

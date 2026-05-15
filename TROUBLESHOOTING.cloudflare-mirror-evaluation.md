@@ -19,8 +19,9 @@ record `0 issue "letsencrypt.org"`. Use Cloudflare's free plan.
 Outcome: every viable Cloudflare configuration either violates a
 constraint (move DNS away from Njalla) or requires a paid plan
 (Business or Enterprise). No combination of free Cloudflare plan
-+ DNS-at-Njalla + diversification-only goal works without
-significant off-label use of the Cloudflare-for-SaaS product.
+
+- DNS-at-Njalla + diversification-only goal works without
+  significant off-label use of the Cloudflare-for-SaaS product.
 
 ## Root cause
 

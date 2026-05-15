@@ -19,9 +19,7 @@ import {
   join,
 } from 'node:path';
 
-import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import { findUp, } from 'find-up';
 
 import { STYLES as CTX_MENU_STYLES, } from '../context-menu/context-menu.styles.ts';

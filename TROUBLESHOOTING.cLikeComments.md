@@ -76,7 +76,7 @@ at workspace HEAD (commit ranges above).
 Reproduce the failure:
 
 ```ts
-import { parse } from '@monochromatic-dev/module-es';
+import { parse, } from '@monochromatic-dev/module-es';
 
 const text = `/*
   some config
@@ -85,7 +85,7 @@ const text = `/*
 */
 {"key": "value"}
 `;
-parse(text);
+parse(text,);
 // Throws or returns unparsed remainder containing "in it\nmore config\n*/..."
 ```
 
@@ -97,7 +97,7 @@ const text = `// some config
 // more config
 {"key": "value"}
 `;
-parse(text);
+parse(text,);
 // Parses cleanly into the JSON object plus three leading line comments
 ```
 

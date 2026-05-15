@@ -95,25 +95,33 @@ await describe({
         it({
           name: 'returns string value when present',
           fn: async () => {
-            expect(stringField({ input: { path: '/foo.ts', }, key: 'path', },),).toBe('/foo.ts',);
+            expect(stringField({ input: { path: '/foo.ts', }, key: 'path', },),).toBe(
+              '/foo.ts',
+            );
           },
         },),
         it({
           name: 'returns undefined for missing key',
           fn: async () => {
-            expect(stringField({ input: { path: '/foo.ts', }, key: 'missing', },),).toBe(undefined,);
+            expect(stringField({ input: { path: '/foo.ts', }, key: 'missing', },),).toBe(
+              undefined,
+            );
           },
         },),
         it({
           name: 'returns undefined for non-string value',
           fn: async () => {
-            expect(stringField({ input: { count: 42, }, key: 'count', },),).toBe(undefined,);
+            expect(stringField({ input: { count: 42, }, key: 'count', },),).toBe(
+              undefined,
+            );
           },
         },),
         it({
           name: 'returns undefined for null value',
           fn: async () => {
-            expect(stringField({ input: { path: null, }, key: 'path', },),).toBe(undefined,);
+            expect(stringField({ input: { path: null, }, key: 'path', },),).toBe(
+              undefined,
+            );
           },
         },),
       ],

@@ -12,12 +12,13 @@ import {
 import { loadHarness, } from './test-setup.ts';
 
 test.describe('replicateElementAsParentContent', () => {
-  test('replaces the parent\'s children with the requested number of clones', async ({ page, },) => {
+  test("replaces the parent's children with the requested number of clones", async ({ page, },) => {
     await loadHarness({ page, },);
 
     const result = await page.evaluate(function exerciseHappyPath() {
       const container = document.createElement('div',);
-      container.innerHTML = '<span>other</span><p class="tpl">orig</p><span>another</span>';
+      container.innerHTML =
+        '<span>other</span><p class="tpl">orig</p><span>another</span>';
       document.body.append(container,);
 
       const template = container.querySelector<HTMLElement>('.tpl',);
@@ -39,7 +40,7 @@ test.describe('replicateElementAsParentContent', () => {
 
     expect(result.total,).toBe(3,);
     expect(result.allMatchTemplate,).toBe(true,);
-  },);
+  });
 
   test('throws when the template has no parent', async ({ page, },) => {
     await loadHarness({ page, },);
@@ -60,7 +61,7 @@ test.describe('replicateElementAsParentContent', () => {
     },);
 
     expect(errored,).toBe(true,);
-  },);
+  });
 
   test('empties the parent when targetCount is 0', async ({ page, },) => {
     await loadHarness({ page, },);
@@ -82,8 +83,8 @@ test.describe('replicateElementAsParentContent', () => {
     },);
 
     expect(remaining,).toBe(0,);
-  },);
-},);
+  });
+});
 
 test.describe('replicateElementAsContentOf', () => {
   test('fills the explicit parent without moving the template', async ({ page, },) => {
@@ -117,8 +118,8 @@ test.describe('replicateElementAsContentOf', () => {
 
     expect(result.listChildren,).toBe(3,);
     expect(result.templateStillInHost,).toBe(true,);
-  },);
-},);
+  });
+});
 
 test.describe('deepCloneNode', () => {
   test('preserves descendants and attributes', async ({ page, },) => {
@@ -148,5 +149,5 @@ test.describe('deepCloneNode', () => {
     expect(result.cls,).toBe('primary',);
     expect(result.innerChildCount,).toBe(1,);
     expect(result.innerSpanFlag,).toBe('x',);
-  },);
-},);
+  });
+});

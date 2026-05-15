@@ -106,7 +106,9 @@ catch (error) {
 
     process.exitCode = subprocessError.exitCode ?? 1;
 
-    if ((subprocessError.signalName !== undefined) && (subprocessError.signalName !== '')) {
+    if ((subprocessError.signalName !== undefined)
+      && (subprocessError.signalName !== ''))
+    {
       console.error(
         `[task-pnpm] pnpm terminated by signal: ${subprocessError.signalName}`,
       );

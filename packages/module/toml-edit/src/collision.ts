@@ -62,7 +62,8 @@ export function assertNoSiblingTableCollision(
     path: TomlPath;
   },
 ): void {
-  if (dottedSegments.length === 0) return;
+  if (dottedSegments.length === 0)
+    return;
   /** Full path the dotted key would create so equality checks are direct. */
   const newLeafPath: TomlPath = [
     ...basePath,
@@ -85,40 +86,49 @@ export function assertNoSiblingTableCollision(
     },
   );
   for (const child of programBody) {
-    if (child.type !== 'TOMLTable') continue;
+    if (child.type !== 'TOMLTable')
+      continue;
     /** Sibling's resolved key so equality and prefix checks reuse one binding. */
     const rk = child.resolvedKey;
     if (pathsEqual({
       a: rk,
       b: newLeafPath,
-    },))
+    },)) {
       throw new TomlImmutableNodeError(
         collisionMessage({
           path,
           reason: `would redefine the existing table ${formatPath({ path: rk, },)}`,
         },),
       );
+    }
     if (startsWith({
       haystack: rk,
       needle: newLeafPath,
-    },))
+    },)) {
       throw new TomlImmutableNodeError(
         collisionMessage({
           path,
-          reason: `existing table ${formatPath({ path: rk, },)} is a deeper child of the new leaf`,
+          reason: `existing table ${
+            formatPath({ path: rk, },)
+          } is a deeper child of the new leaf`,
         },),
       );
-    for (const ip of implicitPaths)
+    }
+    for (const ip of implicitPaths) {
       if (pathsEqual({
         a: rk,
         b: ip,
-      },))
+      },)) {
         throw new TomlImmutableNodeError(
           collisionMessage({
             path,
-            reason: `existing table ${formatPath({ path: rk, },)} would be redefined as an implicit table`,
+            reason: `existing table ${
+              formatPath({ path: rk, },)
+            } would be redefined as an implicit table`,
           },),
         );
+      }
+    }
   }
 }
 
@@ -163,13 +173,16 @@ export function assertNoInlineTableCollision(
         haystack: newSegments,
         needle: existing,
       },)
-    )
+    ) {
       throw new TomlImmutableNodeError(
         collisionMessage({
           path,
-          reason: `existing inline-table entry ${existing.join('.',)} overlaps the new key chain ${newSegments.join('.',)}`,
+          reason: `existing inline-table entry ${
+            existing.join('.',)
+          } overlaps the new key chain ${newSegments.join('.',)}`,
         },),
       );
+    }
   }
 }
 
@@ -184,10 +197,12 @@ function collisionMessage(
     reason,
   }: {
     path: TomlPath;
-    reason: string
+    reason: string;
   },
 ): string {
-  return `tomlSet at ${formatPath({ path, },)} would create invalid TOML on re-parse: ${reason}`;
+  return `tomlSet at ${
+    formatPath({ path, },)
+  } would create invalid TOML on re-parse: ${reason}`;
 }
 
 /**
@@ -201,10 +216,11 @@ function pathsEqual(
     b,
   }: {
     a: readonly (string | number)[];
-    b: TomlPath
+    b: TomlPath;
   },
 ): boolean {
-  if (a.length !== b.length) return false;
+  if (a.length !== b.length)
+    return false;
   return a.every(function eq(
     seg,
     i,
@@ -227,7 +243,8 @@ function startsWith(
     needle: TomlPath;
   },
 ): boolean {
-  if (haystack.length <= needle.length) return false;
+  if (haystack.length <= needle.length)
+    return false;
   return needle.every(function eq(
     seg,
     i,
@@ -250,7 +267,8 @@ function startsWithInclusive(
     needle: readonly (string | number)[];
   },
 ): boolean {
-  if (haystack.length < needle.length) return false;
+  if (haystack.length < needle.length)
+    return false;
   return needle.every(function eq(
     seg,
     i,

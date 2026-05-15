@@ -100,13 +100,11 @@ export const maxStatementsPerLine: CreateOnceRule = {
     type: 'layout',
     fixable: 'whitespace',
     docs: {
-      description:
-        'Require at most one statement per source line.',
+      description: 'Require at most one statement per source line.',
       recommended: true,
     },
     messages: {
-      exceed:
-        'This line has {{count}} statements. Maximum allowed is 1.',
+      exceed: 'This line has {{count}} statements. Maximum allowed is 1.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -131,7 +129,8 @@ export const maxStatementsPerLine: CreateOnceRule = {
         /** Alternate branch of an `if`/`else` is not exempt; it counts toward the line tally. */
         const isIfAlternate = (parent.type === 'IfStatement')
           && (parent.alternate === node);
-        if (!isIfAlternate) return;
+        if (!isIfAlternate)
+          return;
       }
 
       /** Source text is needed to map the node's start offset to a line number. */
@@ -158,7 +157,8 @@ export const maxStatementsPerLine: CreateOnceRule = {
       /** Source text is needed for indent lookup and inter-statement slices. */
       const sourceText = context.sourceCode.getText();
       for (const stmts of perLine.values()) {
-        if (stmts.length <= 1) continue;
+        if (stmts.length <= 1)
+          continue;
 
         /** Range of the first statement on this line; its leading whitespace defines the indent for the fix. */
         const firstRange = rangeOf(at({

@@ -179,10 +179,12 @@ function computeExtent(
     .filter(function nonNull(value,): value is number {
       return value !== null;
     },);
-  if (values.length === 0) return [
-    0,
-    0,
-  ];
+  if (values.length === 0) {
+    return [
+      0,
+      0,
+    ];
+  }
   return [
     Math.min(...values,),
     Math.max(...values,),
@@ -305,7 +307,8 @@ export function encodeState(
  * @returns The value typed as `AppState`, or `null` when malformed.
  */
 function validateAppState(value: unknown,): AppState | null {
-  if (((typeof value) !== 'object') || (value === null)) return null;
+  if (((typeof value) !== 'object') || (value === null))
+    return null;
   /** Top-level `AppState` fields that must all be present for the shape check to pass. */
   const required: readonly (keyof AppState)[] = [
     'viewState',
@@ -319,7 +322,8 @@ function validateAppState(value: unknown,): AppState | null {
   const has = required.every(function present(key,) {
     return key in value;
   },);
-  if (!has) return null;
+  if (!has)
+    return null;
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- shape verified above; deep-validation is intentionally cheap.
   return value as AppState;
 }
@@ -354,7 +358,8 @@ export function decodeState(
     const parsed = JSON.parse(json,) as unknown;
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     return validateAppState(parsed,);
-  } catch {
+  }
+  catch {
     return null;
   }
 }
@@ -395,13 +400,15 @@ export function readStateFromHash(
   const stripped = hash.startsWith('#',) ? hash.slice(1,) : hash;
   /** Regex match groups for the `state=` parameter; `null` means no payload to decode. */
   const match = /(?:^|&)state=([^&]+)/.exec(stripped,);
-  if (match === null) return fallback;
+  if (match === null)
+    return fallback;
   /** Captured URL-encoded payload from the `state=` parameter. */
   const [
     ,
     encoded,
   ] = match;
-  if (encoded === undefined) return fallback;
+  if (encoded === undefined)
+    return fallback;
   /** Round-tripped state, or `null` when the payload fails to parse or validate. */
   const decoded = decodeState({
     encoded,
@@ -424,9 +431,11 @@ export function readStateFromHash(
 export function writeStateToHash(
   { state, }: { state: AppState; },
 ): string {
-  return `#state=${encodeState({
-    state,
-  },)}`;
+  return `#state=${
+    encodeState({
+      state,
+    },)
+  }`;
 }
 
 /**

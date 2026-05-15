@@ -28,7 +28,7 @@ test.describe('onLoadSetCssFromUrlParams', () => {
 
     expect(result.brand,).toBe('red',);
     expect(result.fontSize,).toBe('16px',);
-  },);
+  });
 
   test('applies only allow-listed keys when an allowlist is supplied', async ({ page, },) => {
     await loadHarness({ page, query: '--brand=red&font-size=16px', },);
@@ -43,7 +43,7 @@ test.describe('onLoadSetCssFromUrlParams', () => {
 
     expect(result.brand,).toBe('red',);
     expect(result.fontSize,).toBe('',);
-  },);
+  });
 
   test('is a no-op when the query string has no matching keys', async ({ page, },) => {
     await loadHarness({ page, query: '--brand=red', },);
@@ -58,7 +58,7 @@ test.describe('onLoadSetCssFromUrlParams', () => {
 
     expect(result.brand,).toBe('',);
     expect(result.nonexistent,).toBe('',);
-  },);
+  });
 
   test('silently drops unknown standard CSS keys via setProperty', async ({ page, },) => {
     await loadHarness({ page, query: 'notacssprop=anything', },);
@@ -71,5 +71,5 @@ test.describe('onLoadSetCssFromUrlParams', () => {
     },);
 
     expect(result.notacssprop,).toBe('',);
-  },);
-},);
+  });
+});

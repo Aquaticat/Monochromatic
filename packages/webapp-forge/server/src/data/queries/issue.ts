@@ -55,7 +55,8 @@ export async function createIssueWithEvent(row: {
   await db.exec('BEGIN IMMEDIATE',);
   try {
     await run({
-      sql: `INSERT INTO issues(id, repo_id, number, author_id, title, body, state, created_at, updated_at)
+      sql:
+        `INSERT INTO issues(id, repo_id, number, author_id, title, body, state, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, 'open', ?, ?)`,
       params: [
         row.id,
@@ -181,7 +182,8 @@ export async function createCommentWithEvent(row: {
   await db.exec('BEGIN IMMEDIATE',);
   try {
     await run({
-      sql: 'INSERT INTO comments(id, issue_id, author_id, body, created_at) VALUES (?, ?, ?, ?, ?)',
+      sql:
+        'INSERT INTO comments(id, issue_id, author_id, body, created_at) VALUES (?, ?, ?, ?, ?)',
       params: [
         row.id,
         row.issueId,

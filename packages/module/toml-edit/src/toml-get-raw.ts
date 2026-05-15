@@ -47,41 +47,46 @@ export function tomlGetRaw(
     path,
   }: {
     edit: TomlEditState;
-    path: TomlPath
+    path: TomlPath;
   },
 ): string {
-  if (edit.mode === 'canonical')
+  if (edit.mode === 'canonical') {
     throw new TomlSpliceUnavailableError(
       `tomlGetRaw requires splice mode; current state is canonical`,
     );
+  }
   /** Direct AST lookup so the slice maps to parse-time source bytes. */
   const result = resolveByPath({
     edit,
     path,
   },);
-  if (result.kind === 'missing')
+  if (result.kind === 'missing') {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found in parse-time source`,
     );
-  if (result.kind === 'keyvalue')
+  }
+  if (result.kind === 'keyvalue') {
     return edit.source.slice(
       result.node.value.range[0],
       result.node.value.range[1],
     );
-  if (result.kind === 'value')
+  }
+  if (result.kind === 'value') {
     return edit.source.slice(
       result.node.range[0],
       result.node.range[1],
     );
-  if ((result.kind === 'table') || (result.kind === 'top-level'))
+  }
+  if ((result.kind === 'table') || (result.kind === 'top-level')) {
     return edit.source.slice(
       result.node.range[0],
       result.node.range[1],
     );
+  }
   /** Span the slice over the first and last AoT element so every entry is captured. */
   const first = nonNullishOrThrow(result.nodes[0],);
   /** Pair with `first` to cover the full AoT extent in source order. */
-  const last = nonNullishOrThrow(result.nodes.at(-1),);
+  const last = nonNullishOrThrow(result.nodes.at(-1,),);
   return edit.source.slice(
     first.range[0],
     last.range[1],

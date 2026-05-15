@@ -339,11 +339,14 @@ async function runDescribe(
     if (passedNames.length > 0) {
       if (errors.length === 0) {
         logSuccess(
-          `PASS ${passedNames.join(', ',)} ${labelPrefix}(${formatDuration(durationMs,)})`,
+          `PASS ${passedNames.join(', ',)} ${labelPrefix}(${
+            formatDuration(durationMs,)
+          })`,
         );
       }
-      else
+      else {
         logSuccess(`PASS ${passedNames.join(', ',)}`,);
+      }
     }
 
     if (errors.length === 0) {

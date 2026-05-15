@@ -48,17 +48,20 @@ export function tomlInsertCommentBefore(
     edit,
     path,
   },);
-  if ((resolved.kind === 'missing') || (resolved.kind === 'top-level'))
+  if ((resolved.kind === 'missing') || (resolved.kind === 'top-level')) {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
+  }
 
   /** Normalised to an array so a single string and a multi-line list share the join path. */
   const lines = toLines({ comment, },);
   /** Each line gets the `# ` prefix and a newline so it stands as its own physical line. */
-  const text = lines.map(function withHash(line,) {
-    return `# ${line}\n`;
-  },).join('',);
+  const text = lines
+    .map(function withHash(line,) {
+      return `# ${line}\n`;
+    },)
+    .join('',);
 
   /** Anchor records placement so the emitter can splice in source order. */
   const anchor: Insertion['anchor'] = resolved.kind === 'array-of-tables'
@@ -91,6 +94,7 @@ export function tomlInsertCommentBefore(
 function toLines(
   { comment, }: { comment: string | readonly string[]; },
 ): readonly string[] {
-  if ((typeof comment) === 'string') return [comment,];
+  if ((typeof comment) === 'string')
+    return [comment,];
   return comment;
 }

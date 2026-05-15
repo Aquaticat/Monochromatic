@@ -5,17 +5,17 @@
  */
 
 import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test';
+import {
   mkdir,
   mkdtemp,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
-import {
-  describe,
-  expect,
-  it,
-} from '@monochromatic-dev/module-test';
 import { loadMergedConfig, } from './config.ts';
 
 //region Constants

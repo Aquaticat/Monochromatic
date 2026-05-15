@@ -87,7 +87,8 @@ export async function insertUser(row: {
   /** Email defaults to a synthesised value so the NOT NULL column is satisfied. */
   const email = row.email ?? `${row.login}@forge.test`;
   await run({
-    sql: `INSERT OR IGNORE INTO user(id, name, email, emailVerified, createdAt, updatedAt, username, displayUsername)
+    sql:
+      `INSERT OR IGNORE INTO user(id, name, email, emailVerified, createdAt, updatedAt, username, displayUsername)
      VALUES (?, ?, ?, 0, ?, ?, ?, ?)`,
     params: [
       row.id,
@@ -118,7 +119,8 @@ export async function insertRepo(row: {
   createdAt: number;
 },): Promise<void> {
   await run({
-    sql: 'INSERT OR IGNORE INTO repos(id, owner_id, name, visibility, default_branch, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    sql:
+      'INSERT OR IGNORE INTO repos(id, owner_id, name, visibility, default_branch, created_at) VALUES (?, ?, ?, ?, ?, ?)',
     params: [
       row.id,
       row.ownerId,

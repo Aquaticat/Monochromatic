@@ -70,7 +70,7 @@ export function applyMixins({
 }: {
   cssText: string;
   mixinCssText: string;
-}): string {
+},): string {
   mixins.clear();
 
   /**

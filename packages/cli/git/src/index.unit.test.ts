@@ -17,8 +17,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 import nanoSpawn, {
-  SubprocessError,
   type Result,
+  SubprocessError,
 } from 'nano-spawn';
 
 import { resolveGit, } from './resolve-git.ts';
@@ -142,7 +142,9 @@ async function runWrapper(options: RunGitOptions,): Promise<Result> {
  * expect(error).toBeInstanceOf(SubprocessError);
  * ```
  */
-async function catchWrapperError(options: RunGitOptions,): Promise<SubprocessError | undefined> {
+async function catchWrapperError(
+  options: RunGitOptions,
+): Promise<SubprocessError | undefined> {
   try {
     await runWrapper(options,);
   }
@@ -355,7 +357,9 @@ await describe({
           ],
         },),);
 
-        expect(error.stderr,).toContain('cli-git: git commit requires an explicit pathspec',);
+        expect(error.stderr,).toContain(
+          'cli-git: git commit requires an explicit pathspec',
+        );
         expect(error.stderr,).not.toContain('No paths with --include/--only',);
       },
     },),
@@ -381,7 +385,9 @@ await describe({
           ],
         },);
 
-        expect(await readLatestSubject({ repoPath: tempDirectory.path, },),).toBe('named path',);
+        expect(await readLatestSubject({ repoPath: tempDirectory.path, },),).toBe(
+          'named path',
+        );
       },
     },),
     it({
@@ -427,7 +433,9 @@ await describe({
           ],
         },),);
 
-        expect(error.stderr,).toContain('cli-git: not at the root of the git repository',);
+        expect(error.stderr,).toContain(
+          'cli-git: not at the root of the git repository',
+        );
         expect(error.stderr,).toContain(`Repo root is ${worktreePath}`,);
       },
     },),

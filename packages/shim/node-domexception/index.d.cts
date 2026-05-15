@@ -1,2 +1,2 @@
-declare const _: new (message?: string, name?: string) => Error;
+declare const _: new(message?: string, name?: string,) => Error;
 export = _;

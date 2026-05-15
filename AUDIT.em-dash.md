@@ -26,16 +26,16 @@ Total original violations: 1883.
 
 Post-sweep counts (2026-05-14, issue #55):
 
-| Category                      | Outside intentional | Inside intentional |
-| ----------------------------- | ------------------- | ------------------ |
-| Em-dash (`—`) MD              | 0                   | 199                |
-| Em-dash (`—`) TS              | 0                   | 0                  |
-| En-dash (`–`) MD              | 0                   | 14                 |
-| En-dash (`–`) TS              | 0                   | 2                  |
-| ASCII `--` MD                 | preserved CLI args  | preserved CLI args |
-| ASCII `--` TS                 | preserved CLI args  | preserved CLI args |
-| ASCII `-` MD                  | preserved bullets   | preserved bullets  |
-| ASCII `-` TS                  | preserved TSDoc     | preserved TSDoc    |
+| Category         | Outside intentional | Inside intentional |
+| ---------------- | ------------------- | ------------------ |
+| Em-dash (`—`) MD | 0                   | 199                |
+| Em-dash (`—`) TS | 0                   | 0                  |
+| En-dash (`–`) MD | 0                   | 14                 |
+| En-dash (`–`) TS | 0                   | 2                  |
+| ASCII `--` MD    | preserved CLI args  | preserved CLI args |
+| ASCII `--` TS    | preserved CLI args  | preserved CLI args |
+| ASCII `-` MD     | preserved bullets   | preserved bullets  |
+| ASCII `-` TS     | preserved TSDoc     | preserved TSDoc    |
 
 Intentional content (preserved by exclusion list): `AUDIT.em-dash.md` itself
 (self-references), `PLANNING.forbidden-strings-em-dash.md`,
@@ -51,7 +51,7 @@ Remaining ASCII `--` instances are CLI argument separators preserved by the
 sweep heuristic: lines that look like CLI invocations (`mise`, `git`,
 `npm`, etc. as first token), text inside fenced code blocks, inline
 backtick spans, and `oxlint-disable`/`eslint-disable`/`biome-disable`
-directives (which use ` -- ` as a syntactic rule/reason separator).
+directives (which use `--` as a syntactic rule/reason separator).
 
 Remaining ASCII `-` instances are list bullets at line start (`- item`),
 markdown bullets within TSDoc comments, subtraction in math expressions,

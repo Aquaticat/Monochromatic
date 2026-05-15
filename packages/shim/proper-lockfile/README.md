@@ -14,18 +14,18 @@ both paths invoke the shim's sync and async surfaces.
 ## Simplifications versus upstream
 
 - **No realpath resolution.**
-   The shim calls `path.resolve` on the target, never `fs.realpath`.
-   Both pi-coding-agent callsites always pass `{ realpath: false }` (verified at `auth-storage.js:38` and `settings-manager.js:44`), so the shim's behavior matches the only contract exercised in this workspace.
+  The shim calls `path.resolve` on the target, never `fs.realpath`.
+  Both pi-coding-agent callsites always pass `{ realpath: false }` (verified at `auth-storage.js:38` and `settings-manager.js:44`), so the shim's behavior matches the only contract exercised in this workspace.
 - **No stale-lock detection.**
-   Upstream rewrites a sentinel file inside the lock dir on a `stale` interval and removes the lock if no holder is alive.
-   The shim has no equivalent.
-   If pi crashes while holding the lock, the next pi invocation throws ELOCKED until the user removes `<agentDir>/.auth.json.lock` or `<agentDir>/.settings.json.lock` manually.
+  Upstream rewrites a sentinel file inside the lock dir on a `stale` interval and removes the lock if no holder is alive.
+  The shim has no equivalent.
+  If pi crashes while holding the lock, the next pi invocation throws ELOCKED until the user removes `<agentDir>/.auth.json.lock` or `<agentDir>/.settings.json.lock` manually.
 - **No `onCompromised` callback.**
-   The option is accepted on the options record but never invoked.
-   pi-coding-agent's `auth-storage.js` reads the callback's effect via a `lockCompromised` flag that stays false; `throwIfCompromised()` becomes a no-op.
+  The option is accepted on the options record but never invoked.
+  pi-coding-agent's `auth-storage.js` reads the callback's effect via a `lockCompromised` flag that stays false; `throwIfCompromised()` becomes a no-op.
 - **No retry jitter.**
-   Upstream's `retries.randomize` option is ignored; backoff is strictly exponential by `factor` from `minTimeout` to `maxTimeout`.
-   The workspace does not run concurrent pi instances, so deterministic backoff is acceptable.
+  Upstream's `retries.randomize` option is ignored; backoff is strictly exponential by `factor` from `minTimeout` to `maxTimeout`.
+  The workspace does not run concurrent pi instances, so deterministic backoff is acceptable.
 
 `lockSync` throws `ELOCKED` immediately on first conflict; callers handle retries themselves.
 `auth-storage.js`'s `acquireLockSyncWithRetry` and `settings-manager.js`'s matching helper both wrap `lockSync` in a sync retry loop.

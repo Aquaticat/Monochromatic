@@ -44,13 +44,13 @@ export function attachedCommentsFor(
     edit,
   }: {
     node: AST.TOMLNode;
-    edit: TomlEditState
+    edit: TomlEditState;
   },
 ): readonly TomlComment[] {
   /** Local alias so the recursive walker reads as `comments[i]`. */
-  const {comments} = edit.program;
+  const { comments, } = edit.program;
   /** Source bytes so the gap test can read between adjacent comments. */
-  const {source} = edit;
+  const { source, } = edit;
   return collectAttached({
     comments,
     source,
@@ -86,19 +86,23 @@ function collectAttached(
     i: number,
     c: number,
   ): TomlComment[] {
-    if (i < 0) return collected;
+    if (i < 0)
+      return collected;
     /** Candidate comment so the gap check can decide if it is still attached. */
     const comment = nonNullishOrThrow(comments[i],);
-    if (comment.range[1] >= c) return loop(
-      i - 1,
-      c,
-    );
+    if (comment.range[1] >= c) {
+      return loop(
+        i - 1,
+        c,
+      );
+    }
     /** Source between the comment and the cursor; whitespace-only means still attached. */
     const between = source.slice(
       comment.range[1],
       c,
     );
-    if (!ATTACHED_GAP_PATTERN.test(between,)) return collected;
+    if (!ATTACHED_GAP_PATTERN.test(between,))
+      return collected;
     collected.unshift(comment,);
     return loop(
       i - 1,
@@ -122,7 +126,7 @@ function lastCommentBefore(
     offset,
   }: {
     comments: readonly TomlComment[];
-    offset: number
+    offset: number;
   },
 ): number {
   return comments.reduce(
@@ -131,9 +135,10 @@ function lastCommentBefore(
       c,
       i,
     ) {
-    if (c.range[1] < offset) return i;
-    return acc;
-  },
+      if (c.range[1] < offset)
+        return i;
+      return acc;
+    },
     -1,
   );
 }
@@ -157,11 +162,11 @@ export function trailingInlineCommentFor(
     edit,
   }: {
     node: AST.TOMLNode;
-    edit: TomlEditState
+    edit: TomlEditState;
   },
 ): TomlComment | null {
   /** Source bytes so the same-line check can scan for the next newline. */
-  const {source} = edit;
+  const { source, } = edit;
   /** First newline after the node; `-1` means EOF, so `limit` falls back to `source.length`. */
   const newlineAfter = source.indexOf(
     '\n',

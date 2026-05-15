@@ -99,16 +99,16 @@ to passive.
 
 ```ts
 canvas.addEventListener('touchstart',
-  function handleTouchStart(event: TouchEvent): void {
-    if (shouldSuppressNativeGestures()) event.preventDefault();
-  },
-  { passive: false });
+  function handleTouchStart(event: TouchEvent,): void {
+    if (shouldSuppressNativeGestures())
+      event.preventDefault();
+  }, { passive: false, },);
 
 canvas.addEventListener('touchmove',
-  function handleTouchMove(event: TouchEvent): void {
-    if (shouldSuppressNativeGestures()) event.preventDefault();
-  },
-  { passive: false });
+  function handleTouchMove(event: TouchEvent,): void {
+    if (shouldSuppressNativeGestures())
+      event.preventDefault();
+  }, { passive: false, },);
 ```
 
 Guard `preventDefault()` behind a condition (e.g. active tool
@@ -127,11 +127,11 @@ event sequence after `pointerdown` fires.
 
 ```ts
 canvas.addEventListener('pointerdown',
-  function handlePointerDown(event: PointerEvent): void {
+  function handlePointerDown(event: PointerEvent,): void {
     event.preventDefault();
-    canvas.setPointerCapture(event.pointerId);
+    canvas.setPointerCapture(event.pointerId,);
     // ... gesture logic
-  });
+  },);
 ```
 
 Tradeoff: prevents the default action (text selection, link
@@ -147,8 +147,8 @@ out) triggers the system callout instead.
 
 ```css
 #my-canvas {
-  touch-action: none;            /* still set; works on every other browser */
-  -webkit-touch-callout: none;   /* iOS long-press menu suppression */
+  touch-action: none; /* still set; works on every other browser */
+  -webkit-touch-callout: none; /* iOS long-press menu suppression */
 }
 ```
 

@@ -38,12 +38,12 @@ import {
   init as initSubset,
   subset,
 } from 'hb-subset-wasm';
+import readdir from 'tiny-readdir-glob';
 import wawoff2 from 'wawoff2';
 import {
   encode as encodeWoff2,
   init as initWoff2,
 } from 'woff2-encode-wasm';
-import readdir from 'tiny-readdir-glob';
 
 import { ICON_CODEPOINTS, } from '../lib/icons/codepoints.ts';
 

@@ -5,14 +5,14 @@
 Step-by-step manual verification for the editord migration committed as
 `f33633bc` (feat) and `493f1e81` (fix). The migration:
 
--   Replaces `fs.writeFile` with an atomic temp + fsync + rename through
-    `src/server/operations/write-file-atomic.ts` for every user-project
-    mutation (`save`, `apply-workspace-edit`, `new-entry`).
--   Swaps native `fs.watch` for chokidar 5 in `DirWatcher`
-    (`src/server/operations/watch-filesystem.ts`).
--   Adds the previously-missing `dirWatcher.suppressPath` calls for
-    workspace-edit, new-entry, move-entry, delete-entry, copy-entry, so
-    fs actions stop echoing back as `fileChanged` events.
+- Replaces `fs.writeFile` with an atomic temp + fsync + rename through
+  `src/server/operations/write-file-atomic.ts` for every user-project
+  mutation (`save`, `apply-workspace-edit`, `new-entry`).
+- Swaps native `fs.watch` for chokidar 5 in `DirWatcher`
+  (`src/server/operations/watch-filesystem.ts`).
+- Adds the previously-missing `dirWatcher.suppressPath` calls for
+  workspace-edit, new-entry, move-entry, delete-entry, copy-entry, so
+  fs actions stop echoing back as `fileChanged` events.
 
 Automated checks (lint:types, lint, runtime smoke of `writeFileAtomic`
 and `DirWatcher` in isolation) all pass. What's left is the end-to-end
@@ -58,30 +58,30 @@ every other file, scrambling cursor positions.
 
 ### Steps
 
-1.  Open the PWA at `http://localhost:4400`. Pick a project that has at
-    least one TypeScript symbol used in two or more files (any monorepo
-    package works; e.g. `packages/dev-script/deps-cube/src/cache.ts`
-    has `createCache` referenced from `index.ts` and others).
-2.  Open Chrome DevTools (F12). Go to the **Console** tab. Clear the
-    log (`Ctrl+L`).
-3.  Position the cursor inside the symbol name.
-4.  Press **Shift+F6**. A small floating input appears, pre-filled with
-    the current symbol name.
-5.  Type a new name and press **Enter**. The rename input closes; all
-    occurrences of the symbol get replaced.
+1. Open the PWA at `http://localhost:4400`. Pick a project that has at
+   least one TypeScript symbol used in two or more files (any monorepo
+   package works; e.g. `packages/dev-script/deps-cube/src/cache.ts`
+   has `createCache` referenced from `index.ts` and others).
+2. Open Chrome DevTools (F12). Go to the **Console** tab. Clear the
+   log (`Ctrl+L`).
+3. Position the cursor inside the symbol name.
+4. Press **Shift+F6**. A small floating input appears, pre-filled with
+   the current symbol name.
+5. Type a new name and press **Enter**. The rename input closes; all
+   occurrences of the symbol get replaced.
 
 ### What to check
 
--   **On disk**: open one of the other affected files (not the one you
-    were editing) directly in a different terminal with `cat` or your
-    own editor. The symbol should be renamed in that file too.
--   **DevTools Console**: filter for `fileChanged`. Expected: **zero**
-    `fileChanged` events for the renamed files during the operation.
-    The client maintains the buffers itself based on the `renameResult`
-    message; a `fileChanged` event would mean the watcher echoed the
-    save back, which is the bug this migration fixes.
--   **PWA**: undo (`Ctrl+Z`) should work normally in the currently-open
-    file. The non-open files are not in the buffer history.
+- **On disk**: open one of the other affected files (not the one you
+  were editing) directly in a different terminal with `cat` or your
+  own editor. The symbol should be renamed in that file too.
+- **DevTools Console**: filter for `fileChanged`. Expected: **zero**
+  `fileChanged` events for the renamed files during the operation.
+  The client maintains the buffers itself based on the `renameResult`
+  message; a `fileChanged` event would mean the watcher echoed the
+  save back, which is the bug this migration fixes.
+- **PWA**: undo (`Ctrl+Z`) should work normally in the currently-open
+  file. The non-open files are not in the buffer history.
 
 ### Restore
 
@@ -103,16 +103,16 @@ file that's still being displayed).
 For each of the four actions below, with DevTools open and the
 console filter set to `fileChanged`:
 
-1.  **Create a file**: right-click an entry in the file tree sidebar,
-    pick **New File**. Type a name and press Enter.
-2.  **Create a folder**: right-click, pick **New Folder**. Type a name
-    and press Enter.
-3.  **Rename / move**: right-click an existing entry, pick **Rename**
-    (this is the file-tree rename, **not** the LSP symbol rename from
-    section B). Type a new name and press Enter.
-4.  **Delete**: right-click an entry, pick **Delete**. Confirm.
-5.  **Copy** (if available): right-click, pick **Copy**, then
-    right-click the destination directory and pick **Paste**.
+1. **Create a file**: right-click an entry in the file tree sidebar,
+   pick **New File**. Type a name and press Enter.
+2. **Create a folder**: right-click, pick **New Folder**. Type a name
+   and press Enter.
+3. **Rename / move**: right-click an existing entry, pick **Rename**
+   (this is the file-tree rename, **not** the LSP symbol rename from
+   section B). Type a new name and press Enter.
+4. **Delete**: right-click an entry, pick **Delete**. Confirm.
+5. **Copy** (if available): right-click, pick **Copy**, then
+   right-click the destination directory and pick **Paste**.
 
 ### What to check
 
@@ -213,11 +213,15 @@ Save as `/tmp/editord-tear-reader.mjs`. This is the same shape as
 `reader.mjs` from `/TROUBLESHOOTING.claude-code-edit-non-atomic-fallback.md`:
 
 ```js
-import { readFile, stat, } from 'node:fs/promises';
+import {
+  readFile,
+  stat,
+} from 'node:fs/promises';
 
 const path = process.argv[2];
 const N = Number.parseInt(process.argv[3] ?? '5000', 10,);
-const expected = ((await readFile(path, 'utf8',)).match(/SENTINEL/g,) ?? []).length;
+const expected =
+  ((await readFile(path, 'utf8',)).match(/SENTINEL/g,) ?? []).length;
 
 let zeroSize = 0;
 let zeroMatch = 0;
@@ -229,7 +233,9 @@ for (let i = 0; i < N; i++) {
       zeroSize++;
       continue;
     }
-    const matches = ((await readFile(path, 'utf8',)).match(/SENTINEL/g,) ?? []).length;
+    const matches = ((await readFile(path, 'utf8',))
+      .match(/SENTINEL/g,) ?? [])
+      .length;
     if (matches === 0)
       zeroMatch++;
   }
@@ -286,17 +292,17 @@ rm -f /tmp/editord-tear-test.txt /tmp/editord-tear-writer.mjs /tmp/editord-tear-
 These were run during implementation and are recorded here so you don't
 re-run them:
 
--   **`writeFileAtomic` direct calls**: writes correct content, doesn't
-    leave orphan temps on success, preserves mode 0640 across writes,
-    rejects symlinked targets with `ELOOP` without modifying either the
-    symlink or the linked-to file.
--   **`DirWatcher` orphan sweep**: matches only `.<basename>.editord.<hex>~`
-    pattern, leaves other tilde-files alone, emits zero events for the
-    swept temps.
--   **`DirWatcher` suppression integration**: calling `suppressPath` and
-    then `writeFileAtomic` on the same path produces 0 events; an
-    unsuppressed `writeFileAtomic` produces exactly 1 `modified` event
-    with the right shape.
+- **`writeFileAtomic` direct calls**: writes correct content, doesn't
+  leave orphan temps on success, preserves mode 0640 across writes,
+  rejects symlinked targets with `ELOOP` without modifying either the
+  symlink or the linked-to file.
+- **`DirWatcher` orphan sweep**: matches only `.<basename>.editord.<hex>~`
+  pattern, leaves other tilde-files alone, emits zero events for the
+  swept temps.
+- **`DirWatcher` suppression integration**: calling `suppressPath` and
+  then `writeFileAtomic` on the same path produces 0 events; an
+  unsuppressed `writeFileAtomic` produces exactly 1 `modified` event
+  with the right shape.
 
 If any of these fails on a new build, the bug is in the helper or the
 watcher itself, not in the integration; the smoke commands are in the

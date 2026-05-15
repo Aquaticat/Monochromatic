@@ -5,9 +5,7 @@
  * Standard deviation is intentionally omitted; it adds noise to a short
  * CLI report and rarely drives action.
  */
-import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 /**
  * Aggregate description of a numeric sample.

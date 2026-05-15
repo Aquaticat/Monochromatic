@@ -43,21 +43,28 @@ export function tomlGetNode(
     path,
   }: {
     edit: TomlEditState;
-    path: TomlPath
+    path: TomlPath;
   },
-): AST.TOMLContentNode | AST.TOMLTable | AST.TOMLTopLevelTable | readonly AST.TOMLTable[] {
+): AST.TOMLContentNode | AST.TOMLTable | AST.TOMLTopLevelTable
+  | readonly AST.TOMLTable[]
+{
   /** Direct AST lookup so callers can branch on the resolution kind. */
   const result = resolveByPath({
     edit,
     path,
   },);
-  if (result.kind === 'missing')
+  if (result.kind === 'missing') {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found in parse-time AST`,
     );
+  }
   if (result.kind === 'keyvalue')
     return result.node.value;
-  if ((result.kind === 'value') || (result.kind === 'table') || (result.kind === 'top-level'))
+  if ((result.kind === 'value')
+    || (result.kind === 'table')
+    || (result.kind === 'top-level'))
+  {
     return result.node;
+  }
   return result.nodes;
 }

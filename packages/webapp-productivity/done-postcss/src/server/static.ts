@@ -36,7 +36,9 @@ export const staticHandler: EventHandlerWithFetch = defineHandler(
         },
         getMeta: async function getMetadata(id,) {
           /** Stat result captured via a try/catch helper; `undefined` when the file is missing or inaccessible. */
-          const stats = await (async function tryStat(): Promise<Awaited<ReturnType<typeof stat>> | undefined> {
+          const stats = await (async function tryStat(): Promise<
+            Awaited<ReturnType<typeof stat>> | undefined
+          > {
             try {
               /** Direct `stat()` result returned to the outer `stats` binding. */
               const result = await stat(

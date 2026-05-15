@@ -65,23 +65,23 @@ Editing the silent stub to add the carve-out for one consumer weakens the stub c
    Decoupled from the silent stub's thenable trap.
    Matches the precedent at `packages/shim/node-domexception/` and `packages/shim/readable-stream/`.
 
-    - Pros: every existing call site keeps working; no latent hang; future pi versions that exercise additional `AuthStorage`/`SettingsManager` methods continue to work.
-    - Cons: five new files plus a `tsconfig.json`; the shim's `mkdirSync`-based locking is simpler than upstream (no stale-file detection, no `onCompromised` callback, no retry-with-jitter), so it does not protect against crashed pi processes leaving stale lock dirs.
+   - Pros: every existing call site keeps working; no latent hang; future pi versions that exercise additional `AuthStorage`/`SettingsManager` methods continue to work.
+   - Cons: five new files plus a `tsconfig.json`; the shim's `mkdirSync`-based locking is simpler than upstream (no stale-file detection, no `onCompromised` callback, no retry-with-jitter), so it does not protect against crashed pi processes leaving stale lock dirs.
 
 2. **Silent stub.**
    Add `proper-lockfile` to `.pnpmfile.mjs` `POLICY` with `action: 'silent'`.
    Works for the sync path but hangs the async path under `await release` and under `await lockfile.lock(...)` because the workspace stub's Proxy treats every property access (including `.then`) as a self-return.
 
-    - Pros: one-line change, no new package.
-    - Cons: hangs pi on every startup that resolves a model API key (`model-registry.js:519` is on the hot path, not just OAuth refresh).
+   - Pros: one-line change, no new package.
+   - Cons: hangs pi on every startup that resolves a model API key (`model-registry.js:519` is on the hot path, not just OAuth refresh).
 
 3. **Removal** (`pnpm-workspace.yaml` `overrides: { 'proper-lockfile': '-' }` or parent-scoped `'@earendil-works/pi-coding-agent>proper-lockfile': '-'`).
    Causes `auth-storage.js:12` and `settings-manager.js:4` to throw `MODULE_NOT_FOUND` at module load.
    Since `dist/index.js:6,22` statically re-exports both, pi-coding-agent itself fails to load.
    The runtime extension load chain (`packages/pi/auto-mode` -> host pi -> `pi-coding-agent/dist/index.js`) breaks.
 
-    - Pros: smallest possible install footprint.
-    - Cons: not viable; crashes pi.
+   - Pros: smallest possible install footprint.
+   - Cons: not viable; crashes pi.
 
 Ranking: 1 > 2 > 3.
 

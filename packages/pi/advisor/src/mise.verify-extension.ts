@@ -6,8 +6,8 @@
 
 import {
   createEventBus,
-  type ExtensionAPI,
   type ExecResult,
+  type ExtensionAPI,
 } from '@earendil-works/pi-coding-agent';
 
 //region Constants
@@ -31,7 +31,7 @@ const EXPECTED_REGISTRATIONS = [
 /** Built Advisor extension module shape. */
 type AdvisorExtensionModule = {
   /** Pi extension factory. */
-  default: (pi: ExtensionAPI) => void | Promise<void>;
+  default: (pi: ExtensionAPI,) => void | Promise<void>;
 };
 
 //endregion Types
@@ -47,22 +47,25 @@ type AdvisorExtensionModule = {
  */
 async function verifyBuiltExtension(): Promise<string> {
   /** Built extension module imported through package output. */
-  const mod: unknown = await import(BUILT_EXTENSION_PATH,);
-  if (!isAdvisorExtensionModule(mod,))
-    throw new Error('built Advisor extension does not export a default extension factory',);
+  const mod: unknown = await import(BUILT_EXTENSION_PATH);
+  if (!isAdvisorExtensionModule(mod,)) {
+    throw new Error(
+      'built Advisor extension does not export a default extension factory',
+    );
+  }
 
   /** Registration calls observed through fake Pi API. */
   const registrations: string[] = [];
-  await mod.default(fakePiApi({ registrations, }),);
+  await mod.default(fakePiApi({ registrations, },),);
 
   /** Expected registrations not observed. */
   const missing = EXPECTED_REGISTRATIONS.filter(function isMissing(expected,) {
     return !registrations.includes(expected,);
   },);
   if (missing.length > 0)
-    throw new Error(`missing Advisor registrations: ${missing.join(', ')}`,);
+    throw new Error(`missing Advisor registrations: ${missing.join(', ',)}`,);
 
-  return `Advisor extension verified: ${registrations.join(', ')}`;
+  return `Advisor extension verified: ${registrations.join(', ',)}`;
 }
 
 /**

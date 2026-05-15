@@ -23,11 +23,11 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { Locales, } from '../i18n/i18n-types.ts';
-import { LANG_NAMES, } from '../i18n/lang-names.ts';
 import {
   i18nObject,
   locales,
 } from '../i18n/i18n-util.ts';
+import { LANG_NAMES, } from '../i18n/lang-names.ts';
 import { icon, } from '../lib/icons/icon.ts';
 import {
   BORDER_WIDTH_REM,

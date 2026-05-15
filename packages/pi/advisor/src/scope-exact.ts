@@ -94,10 +94,12 @@ function matchProviderModelReference(
     return undefined;
 
   /** Provider segment from a canonical reference. */
-  const provider = trimmedReference.slice(
-    0,
-    slashIndex,
-  ).trim();
+  const provider = trimmedReference
+    .slice(
+      0,
+      slashIndex,
+    )
+    .trim();
   /** Model id segment from a canonical reference. */
   const modelId = trimmedReference.slice(slashIndex + 1,).trim();
   if ((provider === '') || (modelId === ''))

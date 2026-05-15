@@ -33,21 +33,21 @@ await describe({
     it({
       name: 'throws when a recognized container has zero size',
       fn: async () => {
-        expect(() => nonemptyOrThrow('',),).toThrow(/size 0/,);
-        expect(() => nonemptyOrThrow([],),).toThrow(/size 0/,);
-        expect(() => nonemptyOrThrow(new Set(),),).toThrow(/size 0/,);
-        expect(() => nonemptyOrThrow(new Map(),),).toThrow(/size 0/,);
-        expect(() => nonemptyOrThrow({},),).toThrow(/size 0/,);
+        expect(() => nonemptyOrThrow('',)).toThrow(/size 0/,);
+        expect(() => nonemptyOrThrow([],)).toThrow(/size 0/,);
+        expect(() => nonemptyOrThrow(new Set(),)).toThrow(/size 0/,);
+        expect(() => nonemptyOrThrow(new Map(),)).toThrow(/size 0/,);
+        expect(() => nonemptyOrThrow({},)).toThrow(/size 0/,);
       },
     },),
 
     it({
       name: 'throws when value is not a recognized container',
       fn: async () => {
-        expect(() => nonemptyOrThrow(null,),).toThrow(/sized container/,);
-        expect(() => nonemptyOrThrow(undefined,),).toThrow(/sized container/,);
-        expect(() => nonemptyOrThrow(42,),).toThrow(/sized container/,);
-        expect(() => nonemptyOrThrow(true,),).toThrow(/sized container/,);
+        expect(() => nonemptyOrThrow(null,)).toThrow(/sized container/,);
+        expect(() => nonemptyOrThrow(undefined,)).toThrow(/sized container/,);
+        expect(() => nonemptyOrThrow(42,)).toThrow(/sized container/,);
+        expect(() => nonemptyOrThrow(true,)).toThrow(/sized container/,);
       },
     },),
   ],

@@ -56,7 +56,7 @@ export function hint(text: string,): HTMLElement {
     tag: 'p',
     attrs: { class: 'muted', },
     children: [text,],
-  });
+  },);
 }
 
 /**
@@ -92,7 +92,7 @@ export function field(
       tag: 'label',
       attrs: {},
       children: [label,],
-    }),
+    },),
     control,
   ];
   if (hintText !== undefined)
@@ -101,7 +101,7 @@ export function field(
     tag: 'div',
     attrs: { class: 'field', },
     children: children,
-  });
+  },);
 }
 
 /**
@@ -157,7 +157,7 @@ export function range(
       step: String(step,),
       value: String(initial,),
     },
-  });
+  },);
   input.addEventListener(
     'input',
     function onInput(): void {
@@ -222,9 +222,9 @@ export function languageSelect(activeLocale: Locale,): HTMLSelectElement {
         tag: 'option',
         attrs: attrs,
         children: [label,],
-      });
+      },);
     },),
-  });
+  },);
 }
 
 /**
@@ -296,9 +296,9 @@ export function providerSelect(
         tag: 'option',
         attrs: attrs,
         children: [label,],
-      });
+      },);
     },),
-  });
+  },);
 }
 
 /**
@@ -349,7 +349,7 @@ export function providerInput(
   const input = el({
     tag: 'input',
     attrs: attrs,
-  });
+  },);
   input.addEventListener(
     'input',
     function onInput(): void {
@@ -393,7 +393,7 @@ export function checkbox(
   const input = el({
     tag: 'input',
     attrs: attrs,
-  });
+  },);
   input.addEventListener(
     'change',
     function onChangeHandler(): void {
@@ -461,6 +461,6 @@ export function anthropicWarningNodes(
         ackInput,
         acceptText,
       ],
-    }),
+    },),
   ];
 }

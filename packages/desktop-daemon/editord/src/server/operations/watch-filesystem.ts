@@ -128,10 +128,16 @@ async function sweepOrphanTemps(
         return r.status === 'rejected';
       },
     );
-    if (failed.length > 0)
-      l.warn(`orphan sweep: ${String(failed.length,)}/${String(orphans.length,)} unlinks failed in ${path}`,);
-    else
+    if (failed.length > 0) {
+      l.warn(
+        `orphan sweep: ${String(failed.length,)}/${
+          String(orphans.length,)
+        } unlinks failed in ${path}`,
+      );
+    }
+    else {
       l.info(`orphan sweep: cleaned ${String(orphans.length,)} temp file(s) in ${path}`,);
+    }
   }
   catch (sweepError) {
     l.warn(`orphan sweep failed for ${path}: ${String(sweepError,)}`,);

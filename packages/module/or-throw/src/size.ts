@@ -38,9 +38,12 @@
 export function getSize(value: unknown,): number {
   if ((value === null) || (value === undefined))
     throw new Error(`Expected sized container, got ${String(value,)}`,);
-  if ((typeof value) === 'string') return value.length;
-  if (Array.isArray(value,)) return value.length;
-  if ((value instanceof Set) || (value instanceof Map)) return value.size;
+  if ((typeof value) === 'string')
+    return value.length;
+  if (Array.isArray(value,))
+    return value.length;
+  if ((value instanceof Set) || (value instanceof Map))
+    return value.size;
   if ((typeof value) === 'object')
     return Object.keys(value as object,).length;
   throw new Error(`Expected sized container, got ${typeof value}`,);

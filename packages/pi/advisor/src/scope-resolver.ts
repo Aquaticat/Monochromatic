@@ -100,7 +100,9 @@ export function resolveEffectiveScope(
 
   return {
     source: 'available',
-    entries: options.ctx.modelRegistry
+    entries: options
+      .ctx
+      .modelRegistry
       .getAvailable()
       .map(function mapAvailableModel(model,) {
         return scopedModelFromModel({ model, },);
@@ -136,7 +138,9 @@ function readLiveScope(
         ? scopedModelFromModel({ model: item, },)
         : scopedModelFromModel({
           model: item.model,
-          ...(item.thinkingLevel === undefined ? {} : { thinkingLevel: item.thinkingLevel, }),
+          ...(item.thinkingLevel === undefined
+            ? {}
+            : { thinkingLevel: item.thinkingLevel, }),
         },);
     },);
 }

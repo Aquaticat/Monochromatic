@@ -35,17 +35,17 @@ pi -p "Read README.md"
 
 ```ts
 const SYSTEM_PREFIXES = ['/etc', '/usr', '/var', '/boot', '/sys', '/proc',
-  '/dev', '/sbin', '/lib'];
+  '/dev', '/sbin', '/lib',];
 
-function pathSignals(filePath, ctx) {
-  const resolved = resolvePath(filePath, ctx.cwd);
-  if (!isUnder(resolved, ctx.cwd))
+function pathSignals(filePath, ctx,) {
+  const resolved = resolvePath(filePath, ctx.cwd,);
+  if (!isUnder(resolved, ctx.cwd,))
     return true; // outside cwd; flag
-  if (isHomeDotfile(resolved, ctx.home))
+  if (isHomeDotfile(resolved, ctx.home,))
     return true; // dotfile in $HOME; flag
-  if (isSystemPath(resolved))
+  if (isSystemPath(resolved,))
     return true; // system path; flag
-  if (SECRET_PATH_PATTERN.test(filePath))
+  if (SECRET_PATH_PATTERN.test(filePath,))
     return true; // secret file; flag
   return false;
 }
@@ -86,17 +86,21 @@ In the compiled dist at
 delete the line:
 
 ```js
-if (isSystemPath(resolved)) return true;
+if (isSystemPath(resolved,))
+  return true;
 ```
 
 The corrected `pathSignals`:
 
 ```js
-function pathSignals(filePath, ctx) {
-  const resolved = resolvePath(filePath, ctx.cwd);
-  if (!isUnder(resolved, ctx.cwd)) return true;
-  if (isHomeDotfile(resolved, ctx.home)) return true;
-  if (SECRET_PATH_PATTERN.test(filePath)) return true;
+function pathSignals(filePath, ctx,) {
+  const resolved = resolvePath(filePath, ctx.cwd,);
+  if (!isUnder(resolved, ctx.cwd,))
+    return true;
+  if (isHomeDotfile(resolved, ctx.home,))
+    return true;
+  if (SECRET_PATH_PATTERN.test(filePath,))
+    return true;
   return false;
 }
 ```
@@ -139,7 +143,7 @@ Decision: worth filing.
 
 ### Draft upstream issue (kept as reference; revise before filing)
 
-~~~md
+```md
 **Title**: `pathSignals` false positive on systems with home under `/var/home/`
 
 **Labels**: bug
@@ -161,7 +165,7 @@ The `isSystemPath` check is redundant for paths already confirmed to be under cw
 **Suggested fix**:
 
 Remove `if (isSystemPath(resolved)) return true;` from `pathSignals` in `packages/safeguard/src/signals.ts:95-101`. The `!isUnder` check already handles paths outside the project directory, which covers the actual system-path threat model.
-~~~
+```
 
 ---
 
@@ -283,7 +287,7 @@ compiled dist:
 
 ```js
 // pi-budget-model/dist/index.js, lines 81, 113, 128, 156
-const apiKey = await ctx.modelRegistry.getApiKey(candidate);
+const apiKey = await ctx.modelRegistry.getApiKey(candidate,);
 ```
 
 The `ModelRegistry` class in
@@ -317,15 +321,15 @@ with a bare `catch` block:
 ```js
 // pi-safeguard/dist/index.js
 async function evaluate(pi, ctx, config, systemPrompt, action, batchContext,
-  flowVerdicts)
+  flowVerdicts,)
 {
   let judge;
   try {
-    judge = await resolveJudgeModel(ctx, config);
+    judge = await resolveJudgeModel(ctx, config,);
   }
   catch {
     return askUser(pi, ctx, action,
-      'No judge model available; manual approval required.');
+      'No judge model available; manual approval required.',);
   }
   // ...
 }
@@ -361,11 +365,12 @@ Add to the pi-safeguard dist so it runs before
 `findBudgetModel` is called:
 
 ```js
-import { ModelRegistry } from '@earendil-works/pi-coding-agent';
+import { ModelRegistry, } from '@earendil-works/pi-coding-agent';
 if (!ModelRegistry.prototype.getApiKey) {
-  ModelRegistry.prototype.getApiKey = async function(model) {
-    const result = await this.getApiKeyAndHeaders(model);
-    if (!result.ok) return undefined;
+  ModelRegistry.prototype.getApiKey = async function(model,) {
+    const result = await this.getApiKeyAndHeaders(model,);
+    if (!result.ok)
+      return undefined;
     return result.apiKey;
   };
 }
@@ -379,13 +384,13 @@ upgrades. The shim is small and limited; safer than nothing.
 Replace all four occurrences of:
 
 ```js
-const apiKey = await ctx.modelRegistry.getApiKey(candidate);
+const apiKey = await ctx.modelRegistry.getApiKey(candidate,);
 ```
 
 with:
 
 ```js
-const apiKey = (await ctx.modelRegistry.getApiKeyAndHeaders(candidate)).apiKey;
+const apiKey = (await ctx.modelRegistry.getApiKeyAndHeaders(candidate,)).apiKey;
 ```
 
 (and similarly for the call sites that use `model` instead
@@ -444,7 +449,7 @@ Decision: worth filing.
 
 ### Draft upstream issue (kept as reference; revise before filing)
 
-~~~md
+```md
 **Title**: `pi-budget-model` calls `ModelRegistry.getApiKey()` which no longer exists in pi-coding-agent 0.70.6
 
 **Labels**: bug
@@ -467,4 +472,4 @@ Every flagged action requires manual approval, regardless of configuration. The 
 **Suggested fix**:
 
 Replace `ctx.modelRegistry.getApiKey(model)` calls with `ctx.modelRegistry.getApiKeyAndHeaders(model)` and extract the API key from the structured result. Alternatively, add a `getApiKey(model)` compatibility method to `ModelRegistry` that wraps `getApiKeyAndHeaders`.
-~~~
+```

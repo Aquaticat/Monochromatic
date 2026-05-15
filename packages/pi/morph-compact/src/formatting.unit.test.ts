@@ -41,7 +41,8 @@ await describe({
           name: 'extracts last user message text',
           fn: async () => {
             const entries = [
-              makeMessageEntry({ role: 'user', content: 'Tell me about European capitals', },),
+              makeMessageEntry({ role: 'user',
+                content: 'Tell me about European capitals', },),
             ];
             const query = extractLatestQuery({
               branchEntries: entries,
@@ -54,7 +55,8 @@ await describe({
           name: 'custom instructions take priority',
           fn: async () => {
             const entries = [
-              makeMessageEntry({ role: 'user', content: 'Tell me about European capitals', },),
+              makeMessageEntry({ role: 'user',
+                content: 'Tell me about European capitals', },),
             ];
             const query = extractLatestQuery({
               branchEntries: entries,

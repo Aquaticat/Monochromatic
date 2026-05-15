@@ -201,9 +201,8 @@ function bashExecutionToText(
       ? `\`\`\`\n${msg.output}\n\`\`\``
       : '(no output)',
   ];
-  if (msg.cancelled) {
+  if (msg.cancelled)
     sections.push('\n(command cancelled)',);
-  }
   else if (
     (msg.exitCode !== null)
     && (msg.exitCode !== undefined)

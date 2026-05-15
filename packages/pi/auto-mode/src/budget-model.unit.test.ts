@@ -173,7 +173,9 @@ await describe({
     it({
       name: 'returns empty array for models without versions',
       fn: async () => {
-        const models = [createModel({ id: 'embedding-ada', costInput: 0.1, costOutput: 0.1, },),];
+        const models = [
+          createModel({ id: 'embedding-ada', costInput: 0.1, costOutput: 0.1, },),
+        ];
         const result = findCheapestInMajorVersions({ models, majorVersions: 1, },);
         expect(result,).toHaveLength(0,);
       },

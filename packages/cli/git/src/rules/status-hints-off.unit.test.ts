@@ -22,7 +22,8 @@ await describe({
               '-c',
               'advice.statusHints=true',
               'status',
-            ],),).toBe(true,);
+            ],),)
+              .toBe(true,);
           },
         },),
         it({
@@ -32,7 +33,8 @@ await describe({
               'status',
               '-c',
               'advice.statusHints=true',
-            ],),).toBe(false,);
+            ],),)
+              .toBe(false,);
           },
         },),
         it({
@@ -40,7 +42,8 @@ await describe({
           fn: async function testOverrideAbsent(): Promise<void> {
             expect(hasExplicitStatusHintsOverride([
               'status',
-            ],),).toBe(false,);
+            ],),)
+              .toBe(false,);
           },
         },),
       ],
@@ -67,11 +70,12 @@ await describe({
           fn: async function testInjectsAdviceOverride(): Promise<void> {
             expect(statusHintsOff([
               'status',
-            ],),).toEqual([
-              '-c',
-              'advice.statusHints=false',
-              'status',
-            ],);
+            ],),)
+              .toEqual([
+                '-c',
+                'advice.statusHints=false',
+                'status',
+              ],);
           },
         },),
         it({
@@ -82,14 +86,15 @@ await describe({
               '/tmp/repo',
               'status',
               '--short',
-            ],),).toEqual([
-              '-C',
-              '/tmp/repo',
-              '-c',
-              'advice.statusHints=false',
-              'status',
-              '--short',
-            ],);
+            ],),)
+              .toEqual([
+                '-C',
+                '/tmp/repo',
+                '-c',
+                'advice.statusHints=false',
+                'status',
+                '--short',
+              ],);
           },
         },),
         it({

@@ -95,10 +95,10 @@ Reproduce:
 
 ```ts
 // repro.ts
-import { compile } from '@mdx-js/mdx';
+import { compile, } from '@mdx-js/mdx';
 
 const src = '# Hi\n\n<callout-alert>text</callout-alert>\n\n<Foo>x</Foo>';
-console.log(String(await compile(src)));
+console.log(String(await compile(src,),),);
 ```
 
 Run with `bun repro.ts`. The relevant fragment:
@@ -107,17 +107,17 @@ Run with `bun repro.ts`. The relevant fragment:
 const _components = {
     h1: 'h1',
     ...props.components,
-  }, { Foo } = _components;
+  }, { Foo, } = _components;
 // ...
 return _jsxs(_Fragment, {
   children: [
-    _jsx(_components.h1, { children: 'Hi' }),    // markdown  -> lookup
+    _jsx(_components.h1, { children: 'Hi', },), // markdown  -> lookup
     '\n',
-    _jsx('callout-alert', { children: 'text' }), // explicit JSX -> literal string
+    _jsx('callout-alert', { children: 'text', },), // explicit JSX -> literal string
     '\n',
-    _jsx(Foo, { children: 'x' }),                // capitalized -> component reference
+    _jsx(Foo, { children: 'x', },), // capitalized -> component reference
   ],
-});
+},);
 ```
 
 Three tag shapes, three different emission rules. Only the
@@ -132,8 +132,8 @@ In the barrel:
 
 ```ts
 // src/components/index.ts
-export { CalloutAlert } from './callout-alert.ts';
-export { QuizQuestion } from './quiz-question.ts';
+export { CalloutAlert, } from './callout-alert.ts';
+export { QuizQuestion, } from './quiz-question.ts';
 ```
 
 In the MDX content:
@@ -147,11 +147,11 @@ Never use Bootstrap in production.
 In the component:
 
 ```ts
-export function CalloutAlert(props: CalloutAlertProps): SafeHtml {
+export function CalloutAlert(props: CalloutAlertProps,): SafeHtml {
   return jsx('callout-alert', {
     'data-is': true,
     children: blockquote,
-  });
+  },);
 }
 ```
 
@@ -187,10 +187,10 @@ project chose this approach because the alternative
   source level:
 
   ```ts
-  function mdxJsx(type, props, key) {
+  function mdxJsx(type, props, key,) {
     if (typeof type === 'string' && type in components)
-      return jsx(components[type], props, key);
-    return jsx(type, props, key);
+      return jsx(components[type], props, key,);
+    return jsx(type, props, key,);
   }
   ```
 
@@ -219,7 +219,7 @@ change).
 
 ## Draft upstream issue (kept as reference; revise before filing)
 
-~~~md
+````md
 **Title**: Documentation improvement: call out that lowercase JSX tags bypass the components map
 
 **Labels**: documentation
@@ -237,10 +237,10 @@ Suggested documentation change: add a short note to the "Components" section exp
 Reproduction:
 
 ```ts
-import { compile } from '@mdx-js/mdx';
+import { compile, } from '@mdx-js/mdx';
 const src = '# Hi\n\n<callout-alert>x</callout-alert>\n\n<Foo>y</Foo>';
-console.log(String(await compile(src)));
+console.log(String(await compile(src,),),);
 ```
 
 Output shows `_jsx(_components.h1, ...)` for the markdown heading, `_jsx("callout-alert", ...)` for the explicit JSX, and `_jsx(Foo, ...)` for the capitalised identifier.
-~~~
+````

@@ -193,7 +193,9 @@ const summary: CatalogSummary = Object.entries(catalog,).reduce(
 
     /** Tightened version range using the installed version as the lower bound. */
     const newRange = `${parsed.prefix}>=${resolved.version}`;
-    console.info(`TIGHT ${name}: ${value} -> ${newRange} (installed ${resolved.version})`,);
+    console.info(
+      `TIGHT ${name}: ${value} -> ${newRange} (installed ${resolved.version})`,
+    );
     acc.results.push({
       name,
       oldRange: value,
@@ -208,8 +210,11 @@ const summary: CatalogSummary = Object.entries(catalog,).reduce(
 
 if (summary.results.length === 0)
   console.info('\nNo catalog entries to tighten.',);
-else if (dryRun)
-  console.info(`\nDry run: ${String(summary.results.length,)} entries would be tightened.`,);
+else if (dryRun) {
+  console.info(
+    `\nDry run: ${String(summary.results.length,)} entries would be tightened.`,
+  );
+}
 else {
   /**
    * Rewrite pnpm-workspace.yaml using string replacement to preserve formatting.
@@ -243,7 +248,9 @@ else {
     rewritten,
   );
   console.info(
-    `\nWrote ${String(summary.results.length,)} tightened entries to pnpm-workspace.yaml.`,
+    `\nWrote ${
+      String(summary.results.length,)
+    } tightened entries to pnpm-workspace.yaml.`,
   );
 }
 

@@ -296,13 +296,16 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     },
   );
   /** Flattened, comma-split type list mapped to internal entity types. */
-  const types: readonly WatchEntityType[] = args.type.flatMap(
-    function flattenType(raw,): string[] {
-      return splitCommas(raw,);
-    },
-  ).map(function mapTypeToken(token,): WatchEntityType {
-    return parseTypeToken(token,);
-  },);
+  const types: readonly WatchEntityType[] = args
+    .type
+    .flatMap(
+      function flattenType(raw,): string[] {
+        return splitCommas(raw,);
+      },
+    )
+    .map(function mapTypeToken(token,): WatchEntityType {
+      return parseTypeToken(token,);
+    },);
   /**
    * Flattened, comma-split event kind list; translated from
    * CLI-facing `create`/`delete` to internal `add`/`unlink`.

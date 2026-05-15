@@ -90,10 +90,12 @@ await describe({
         const edit = parseTomlEdit({ source: '', },);
         expect(function setNull() {
           tomlSet({ edit, path: ['x',], value: null, },);
-        },).toThrow(TomlTypeError,);
+        },)
+          .toThrow(TomlTypeError,);
         expect(function setUndefined() {
           tomlSet({ edit, path: ['x',], value: undefined, },);
-        },).toThrow(TomlTypeError,);
+        },)
+          .toThrow(TomlTypeError,);
       },
     },),
   ],

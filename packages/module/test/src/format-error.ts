@@ -490,5 +490,6 @@ export async function formatFailure({
   return [
     `${summary} ${first}`,
     ...rest,
-  ].join('\n',);
+  ]
+    .join('\n',);
 }

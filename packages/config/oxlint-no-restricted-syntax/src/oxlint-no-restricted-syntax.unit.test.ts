@@ -127,7 +127,8 @@ function uniqueRules(
         return d.code;
       },
     ),),
-  ].toSorted();
+  ]
+    .toSorted();
 }
 
 /**

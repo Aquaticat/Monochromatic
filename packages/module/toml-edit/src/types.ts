@@ -95,12 +95,12 @@ export type Edit =
   | {
     readonly kind: 'replace-value';
     readonly newText: string;
-    readonly jsValue: unknown
+    readonly jsValue: unknown;
   }
   | {
     readonly kind: 'replace-keyvalue';
     readonly newText: string;
-    readonly jsValue: unknown
+    readonly jsValue: unknown;
   };
 
 /**
@@ -110,15 +110,15 @@ export type AnchorKind =
   | 'eof'
   | {
     readonly position: 'after-node';
-    readonly node: AST.TOMLNode
+    readonly node: AST.TOMLNode;
   }
   | {
     readonly position: 'before-node';
-    readonly node: AST.TOMLNode
+    readonly node: AST.TOMLNode;
   }
   | {
     readonly position: 'same-line-after';
-    readonly node: AST.TOMLNode
+    readonly node: AST.TOMLNode;
   }
   | {
     readonly position: 'inside-table';

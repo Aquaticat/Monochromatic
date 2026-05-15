@@ -195,8 +195,11 @@ export async function streamCompletion({
       if (Array.isArray(reasoningDetails,)) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenRouter reasoning_details items have known shape
         for (const detail of reasoningDetails as readonly Record<string, unknown>[]) {
-          if ((detail['type'] === 'reasoning.text') && ((typeof detail['text']) === 'string'))
+          if ((detail['type'] === 'reasoning.text')
+            && ((typeof detail['text']) === 'string'))
+          {
             reasoningChunks.push(detail['text'],);
+          }
           else if ((detail['type'] === 'reasoning.summary')
             && ((typeof detail['summary']) === 'string'))
           {

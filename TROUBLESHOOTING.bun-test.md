@@ -38,21 +38,25 @@ Reproduce:
 
 ```ts
 // example.duplicate-describe.unit.test.ts
-import { describe, expect, test } from 'bun:test';
+import {
+  describe,
+  expect,
+  test,
+} from 'bun:test';
 
 describe('suite', () => {
   test('first', () => {
     // oxlint-disable-next-line no-console -- demonstration
-    console.log('from first suite');
-    expect(1).toBe(2);
+    console.log('from first suite',);
+    expect(1,).toBe(2,);
   });
 });
 
 describe('suite', () => {
   test('second', () => {
     // oxlint-disable-next-line no-console -- demonstration
-    console.log('from second suite');
-    expect(1).toBe(1);
+    console.log('from second suite',);
+    expect(1,).toBe(1,);
   });
 });
 ```
@@ -71,14 +75,18 @@ titles unique at the same scope.
 Template:
 
 ```ts
-import { describe, expect, test } from 'bun:test';
+import {
+  describe,
+  expect,
+  test,
+} from 'bun:test';
 
 describe('subject-under-test', () => {
   //region Success and retry behavior
 
   describe('success and retry behavior', () => {
-    test('returns result on success', () => { /* ... */ });
-    test('retries on true decision', () => { /* ... */ });
+    test('returns result on success', () => {/* ... */});
+    test('retries on true decision', () => {/* ... */});
   });
 
   //endregion Success and retry behavior
@@ -86,7 +94,7 @@ describe('subject-under-test', () => {
   //region Null suppression behavior
 
   describe('null suppression behavior', () => {
-    test('returns undefined on null decision', () => { /* ... */ });
+    test('returns undefined on null decision', () => {/* ... */});
   });
 
   //endregion Null suppression behavior
@@ -94,7 +102,7 @@ describe('subject-under-test', () => {
   //region Validation and type checking
 
   describe('validation and type checking', () => {
-    test('invalid decision type throws TypeError', () => { /* ... */ });
+    test('invalid decision type throws TypeError', () => {/* ... */});
   });
 
   //endregion Validation and type checking
@@ -191,17 +199,17 @@ explicit assertions that validate the exact behaviour expected:
 ```ts
 // Before; unreliable under concurrency
 test('example', () => {
-  expect.assertions(2);
-  expect(getValue()).toBe(5);
-  expect(getError()).toBeNull();
+  expect.assertions(2,);
+  expect(getValue(),).toBe(5,);
+  expect(getError(),).toBeNull();
 });
 
 // After; reliable regardless of concurrency
 test('example', () => {
   const value = getValue();
   const error = getError();
-  expect(value).toBe(5);
-  expect(error).toBeNull();
+  expect(value,).toBe(5,);
+  expect(error,).toBeNull();
 });
 ```
 

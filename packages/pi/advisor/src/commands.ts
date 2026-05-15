@@ -53,7 +53,8 @@ export function registerAdvisorCommands(
   options.pi.registerCommand(
     ADVISOR_TOOL_NAME,
     {
-      description: 'Run Advisor, inspect scoped models, or toggle Advisor for this session',
+      description:
+        'Run Advisor, inspect scoped models, or toggle Advisor for this session',
       async handler(
         args,
         ctx,
@@ -150,17 +151,25 @@ export function buildAdvisorStatus(
   return [
     `Advisor: ${enabled ? 'on' : 'off'}`,
     `Scope source: ${scope.source}`,
-    `Scoped models: ${scope.entries.length === 0 ? 'none' : scope.entries.map(function mapEntry(entry,) {
-      return entry.canonicalSlug;
-    },).join(', ')}`,
+    `Scoped models: ${
+      scope.entries.length === 0 ? 'none' : scope
+        .entries
+        .map(function mapEntry(entry,) {
+          return entry.canonicalSlug;
+        },)
+        .join(', ',)
+    }`,
     `Default model: ${defaultSelection?.selected.canonicalSlug ?? 'none'}`,
     `Default ranking: ${defaultSelection?.reason ?? 'none'}`,
-    `Config: global=${config.source.globalLoaded ? config.source.globalPath : 'absent'} project=${
-      config.source.projectLoaded ? config.source.projectPath : 'absent'
-    }`,
+    `Config: global=${
+      config.source.globalLoaded ? config.source.globalPath : 'absent'
+    } project=${config.source.projectLoaded ? config.source.projectPath : 'absent'}`,
     `Context budget: ${config.maxContextChars} chars, ${config.maxAdvisorOutputTokens} output tokens`,
-    `Prior Advisor results: ${config.includePriorAdvisorResults ? 'included' : 'omitted'}`,
-  ].join('\n',);
+    `Prior Advisor results: ${
+      config.includePriorAdvisorResults ? 'included' : 'omitted'
+    }`,
+  ]
+    .join('\n',);
 }
 
 //endregion Public API

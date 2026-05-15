@@ -12,12 +12,10 @@ import { access, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
-import {
   BYTES_PER_GIB,
   BYTES_PER_MIB,
 } from '@monochromatic-dev/module-numeric-const';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 import {
   detectHypervisor,

@@ -101,9 +101,8 @@ export function globFilter(
     ) {
       return false;
     }
-    if (includeMatchers.length === 0) {
+    if (includeMatchers.length === 0)
       return true;
-    }
     return includeMatchers.some(function matchInclude(m,): boolean {
       return m(event.relativePath,);
     },);

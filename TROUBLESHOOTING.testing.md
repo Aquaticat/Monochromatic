@@ -44,10 +44,12 @@ Reproduce:
 await describe({
   name: 'root',
   children: [
-    describe({ name: 'dup', children: [it({ name: 'a', fn: () => { throw new Error('boom') } })] }),
-    describe({ name: 'dup', children: [it({ name: 'b', fn: () => {} })] }),
+    describe({ name: 'dup', children: [it({ name: 'a', fn: () => {
+      throw new Error('boom',);
+    }, },),], },),
+    describe({ name: 'dup', children: [it({ name: 'b', fn: () => {}, },),], },),
   ],
-});
+},);
 // Output: both "dup" lines visible; failure attribution requires
 // reading the cause chain manually.
 ```
@@ -111,8 +113,11 @@ scheduling step.
 ### Verification
 
 ```ts
-await describe({ name: 'A', children: [it({ name: 'fails', fn: () => { throw new Error('boom') } })] });
-await describe({ name: 'B', children: [it({ name: 'never runs', fn: () => {} })] });
+await describe({ name: 'A', children: [it({ name: 'fails', fn: () => {
+  throw new Error('boom',);
+}, },),], },);
+await describe({ name: 'B',
+  children: [it({ name: 'never runs', fn: () => {}, },),], },);
 // Suite B is silently skipped.
 ```
 
@@ -179,16 +184,20 @@ Children of a describe run concurrently by default (via
 ```ts
 // module under test:
 let counter = 0;
-export function increment(): number { return ++counter; }
+export function increment(): number {
+  return ++counter;
+}
 
 // tests:
 describe({
   name: 'counter',
   children: [
-    it({ name: 'first call returns 1', fn: ({ expect }) => expect(increment()).toBe(1) }),
-    it({ name: 'second call returns 2', fn: ({ expect }) => expect(increment()).toBe(2) }),
+    it({ name: 'first call returns 1',
+      fn: ({ expect, },) => expect(increment(),).toBe(1,), },),
+    it({ name: 'second call returns 2',
+      fn: ({ expect, },) => expect(increment(),).toBe(2,), },),
   ],
-});
+},);
 // Both run concurrently; one of them returns 2 first, the other returns 1,
 // the assertion ordering breaks.
 ```
@@ -206,10 +215,10 @@ describe({
   name: 'shared resource',
   concurrency: 1,
   children: [
-    it({ name: 'first',  fn: async () => { /* ... */ } }),
-    it({ name: 'second', fn: async () => { /* ... */ } }),
+    it({ name: 'first', fn: async () => {/* ... */}, },),
+    it({ name: 'second', fn: async () => {/* ... */}, },),
   ],
-});
+},);
 ```
 
 Children are lazy descriptors and dispatched by the parent, so no
@@ -243,7 +252,7 @@ constraints concludes: no upstream report; document the convention.
 `expect.assertions(n)` is not available on the imported `expect`:
 
 ```ts
-import { expect } from '@monochromatic-dev/module-test';
+import { expect, } from '@monochromatic-dev/module-test';
 // `expect.assertions` is undefined.
 ```
 
@@ -260,27 +269,31 @@ instance that has the `assertions` method.
 ### Verification
 
 ```ts
-import { describe, it, expect as globalExpect } from '@monochromatic-dev/module-test';
+import {
+  describe,
+  expect as globalExpect,
+  it,
+} from '@monochromatic-dev/module-test';
 
 await describe({
   name: 'count check',
   children: [
     it({
       name: 'scoped',
-      fn: async ({ expect }) => {
-        expect.assertions(2);                       // works
-        expect(await fetchA()).toBe('a');
-        expect(await fetchB()).toBe('b');
+      fn: async ({ expect, },) => {
+        expect.assertions(2,); // works
+        expect(await fetchA(),).toBe('a',);
+        expect(await fetchB(),).toBe('b',);
       },
-    }),
+    },),
     it({
       name: 'global',
       fn: async () => {
-        globalExpect.assertions(2);                 // TypeError or undefined
+        globalExpect.assertions(2,); // TypeError or undefined
       },
-    }),
+    },),
   ],
-});
+},);
 ```
 
 ### Verified workaround
@@ -290,12 +303,12 @@ Always destructure `expect` from the `fn` parameter:
 ```ts
 it({
   name: 'all branches assert',
-  fn: async ({ expect }) => {
-    expect.assertions(2);
-    expect(await fetchA()).toBe('a');
-    expect(await fetchB()).toBe('b');
+  fn: async ({ expect, },) => {
+    expect.assertions(2,);
+    expect(await fetchA(),).toBe('a',);
+    expect(await fetchB(),).toBe('b',);
   },
-});
+},);
 ```
 
 Tradeoff: every test that needs assertion counting must use the
@@ -342,10 +355,10 @@ import sinon from 'sinon';
 it({
   name: 'stubs leak',
   fn: async () => {
-    sinon.stub(obj, 'method').returns('mocked');
+    sinon.stub(obj, 'method',).returns('mocked',);
     // No restore; the stub persists into the next test.
   },
-});
+},);
 ```
 
 ### Verified workaround
@@ -355,11 +368,11 @@ Use `ctx.sinon` from the test context:
 ```ts
 it({
   name: 'stubs cleanly',
-  fn: async ({ sinon }) => {
-    sinon.stub(obj, 'method').returns('mocked');
+  fn: async ({ sinon, },) => {
+    sinon.stub(obj, 'method',).returns('mocked',);
     // Sandbox auto-restores via `await using`.
   },
-});
+},);
 ```
 
 Tradeoff: every test that needs stubs must destructure `sinon` from

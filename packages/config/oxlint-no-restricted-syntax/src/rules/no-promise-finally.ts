@@ -47,8 +47,11 @@ export const noPromiseFinally: CreateOnceRule = {
         const { callee, } = node;
         if ((callee.type !== 'MemberExpression') || callee.computed)
           return;
-        if ((callee.property.type !== 'Identifier') || (callee.property.name !== 'finally'))
+        if ((callee.property.type !== 'Identifier')
+          || (callee.property.name !== 'finally'))
+        {
           return;
+        }
         context.report({
           node,
           messageId: 'forbidden',

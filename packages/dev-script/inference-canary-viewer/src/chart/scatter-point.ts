@@ -45,7 +45,9 @@ export function renderPointElements(points: readonly ScatterPoint[],): string {
       const bottom = point.score * PERCENT;
 
       /** Whether the point should render a vendor icon glyph instead of a plain dot. */
-      const hasIcon = (point.icon !== undefined) && (point.icon !== '') && (!point.failed);
+      const hasIcon = (point.icon !== undefined)
+        && (point.icon !== '')
+        && (!point.failed);
       /** Embedded SVG markup for the optional icon glyph. */
       const iconHtml = hasIcon ? point.icon : '';
 

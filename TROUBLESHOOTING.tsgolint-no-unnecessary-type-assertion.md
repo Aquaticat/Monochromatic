@@ -19,19 +19,20 @@ Minimal observation:
 
 ```ts
 // notNullishOrThrow.ts
-export function notNullishOrThrow<T>(value: T | null | undefined): T {
-  if (value === null || value === undefined) throw new Error('nullish');
+export function notNullishOrThrow<T,>(value: T | null | undefined,): T {
+  if (value === null || value === undefined)
+    throw new Error('nullish',);
   return value;
 }
 
 // repro.ts
-import { notNullishOrThrow } from './notNullishOrThrow.ts';
+import { notNullishOrThrow, } from './notNullishOrThrow.ts';
 
 // oxlint reports: "This assertion is unnecessary since it does not change the type of the expression."
 // oxlint claims: "This expression already has the type 'HTMLFormElement'"
 // Actual type without assertion: Element
 const form = notNullishOrThrow(
-  document.querySelector('.myForm'),
+  document.querySelector('.myForm',),
 ) as HTMLFormElement;
 ```
 
@@ -141,12 +142,12 @@ a post-hoc `as` assertion:
 ```ts
 // Instead of:
 const form = notNullishOrThrow(
-  document.querySelector('.myForm'),
+  document.querySelector('.myForm',),
 ) as HTMLFormElement;
 
 // Use:
 const form = notNullishOrThrow(
-  document.querySelector<HTMLFormElement>('.myForm'),
+  document.querySelector<HTMLFormElement>('.myForm',),
 );
 ```
 
@@ -212,7 +213,7 @@ type **without** contextual typing from the parent
 
 ## Draft upstream issue (kept as reference; revise before filing)
 
-~~~md
+````md
 **Title**: `no-unnecessary-type-assertion` false positive on generic function calls with nullable parameter types
 
 **Labels**: bug, rule:no-unnecessary-type-assertion
@@ -224,15 +225,16 @@ type **without** contextual typing from the parent
 **Reproduction**:
 
 ```ts
-function notNullishOrThrow<T>(value: T | null | undefined): T {
-  if (value === null || value === undefined) throw new Error('nullish');
+function notNullishOrThrow<T,>(value: T | null | undefined,): T {
+  if (value === null || value === undefined)
+    throw new Error('nullish',);
   return value;
 }
 
 // Flagged: "This assertion is unnecessary since it does not change the type of the expression."
 // Claims: "This expression already has the type 'HTMLFormElement'"
 const form = notNullishOrThrow(
-  document.querySelector('.myForm'),
+  document.querySelector('.myForm',),
 ) as HTMLFormElement;
 ```
 
@@ -248,4 +250,4 @@ This is the same fundamental issue as
 **Suggested fix**: extend the IIFE pattern at `internal/rules/no_unnecessary_type_assertion/no_unnecessary_type_assertion.go:235-246` to all generic call expressions, or skip generic function calls entirely (per typescript-eslint's acknowledged limitation).
 
 **Environment**: oxlint 1.55.0, tsgolint 0.16.0, typescript-go `4a59cd78390d`
-~~~
+````

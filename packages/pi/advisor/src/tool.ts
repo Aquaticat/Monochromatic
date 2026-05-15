@@ -5,12 +5,12 @@
  */
 
 import {
+  buildAdvisorSystemPrompt,
   completeAdvisor,
   extractAdvisorText,
-  buildAdvisorSystemPrompt,
 } from './advisor-client.ts';
-import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import { selectAdvisorModel, } from './advisor-selection.ts';
+import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import { buildAdvisorContext, } from './context.ts';
 import {
   renderAdvisorCall,
@@ -76,8 +76,11 @@ export function createAdvisorTool(
       _onUpdate,
       ctx,
     ): Promise<AdvisorToolResult> {
-      if (!toolOptions.getSessionEnabled())
-        throw new Error('advisor: disabled for this session. Run /advisor on to re-enable.',);
+      if (!toolOptions.getSessionEnabled()) {
+        throw new Error(
+          'advisor: disabled for this session. Run /advisor on to re-enable.',
+        );
+      }
 
       /** Runtime config snapshot for this call. */
       const config = toolOptions.getConfig();
@@ -163,7 +166,9 @@ export async function runAdvisor(
   /** Selected Advisor model. */
   const selection = selectAdvisorModel({
     scope,
-    ...(options.requestedSlug === undefined ? {} : { requestedSlug: options.requestedSlug, }),
+    ...(options.requestedSlug === undefined
+      ? {}
+      : { requestedSlug: options.requestedSlug, }),
     config: options.config,
     estimatedInputTokens: advisorContext.estimatedInputTokens,
     modelRegistry: options.ctx.modelRegistry,
@@ -183,7 +188,9 @@ export async function runAdvisor(
   return {
     text,
     details: {
-      ...(selection.requestedSlug === undefined ? {} : { requestedSlug: selection.requestedSlug, }),
+      ...(selection.requestedSlug === undefined
+        ? {}
+        : { requestedSlug: selection.requestedSlug, }),
       selectedSlug: selection.selected.canonicalSlug,
       provider: selection.selected.model.provider,
       scopeSource: scope.source,

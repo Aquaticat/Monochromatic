@@ -68,25 +68,28 @@ export function doPathCreate(
     resolved: {
       kind: 'missing';
       deepest: AST.TOMLNode;
-      consumed: number
+      consumed: number;
     };
   },
 ): TomlEditState {
   /** Segments not yet matched by the AST walk; describe the path to create. */
   const remaining = path.slice(resolved.consumed,);
   /** Deepest ancestor node so the dispatch can pick a strategy. */
-  const {deepest} = resolved;
+  const { deepest, } = resolved;
 
   /** All-string remaining segments; numeric segments are rejected for path-create. */
   const dottedSegments: readonly string[] = remaining.map(function asString(seg,) {
-    if ((typeof seg) !== 'string')
+    if ((typeof seg) !== 'string') {
       throw new TomlImmutableNodeError(
-        `Cannot path-create at numeric segment ${String(seg,)} in path ${formatPath({ path, },)}`,
+        `Cannot path-create at numeric segment ${String(seg,)} in path ${
+          formatPath({ path, },)
+        }`,
       );
+    }
     return seg;
   },);
 
-  if (deepest.type === 'TOMLTopLevelTable')
+  if (deepest.type === 'TOMLTopLevelTable') {
     return doTopLevelDottedKeyInsert({
       edit,
       path,
@@ -94,8 +97,9 @@ export function doPathCreate(
       container: deepest,
       dottedSegments,
     },);
+  }
 
-  if (deepest.type === 'TOMLTable')
+  if (deepest.type === 'TOMLTable') {
     return doTableDottedKeyInsert({
       edit,
       path,
@@ -103,8 +107,9 @@ export function doPathCreate(
       container: deepest,
       dottedSegments,
     },);
+  }
 
-  if (deepest.type === 'TOMLInlineTable')
+  if (deepest.type === 'TOMLInlineTable') {
     return doInlineTableExtend({
       edit,
       path,
@@ -112,6 +117,7 @@ export function doPathCreate(
       inlineTable: deepest,
       dottedSegments,
     },);
+  }
 
   throw new TomlImmutableNodeError(
     `Cannot path-create through ${deepest.type} at path ${formatPath({ path, },)}`,
@@ -157,14 +163,18 @@ function doTopLevelDottedKeyInsert(
     existing: undefined,
   },);
   /** Dotted key spelling so each segment is encoded once. */
-  const dottedKey = dottedSegments.map(function each(s,) {
-    return encodeKey({ key: s, },);
-  },).join('.',);
+  const dottedKey = dottedSegments
+    .map(function each(s,) {
+      return encodeKey({ key: s, },);
+    },)
+    .join('.',);
 
   /** First `[foo]` header so the insertion can anchor before it. */
-  const firstTable = container.body.find(function isTable(child,): child is AST.TOMLTable {
-    return child.type === 'TOMLTable';
-  },);
+  const firstTable = container.body.find(
+    function isTable(child,): child is AST.TOMLTable {
+      return child.type === 'TOMLTable';
+    },
+  );
 
   /** Anchor: before the first table header, or EOF when there are no headers. */
   const anchor: AnchorKind = firstTable !== undefined
@@ -235,9 +245,11 @@ function doTableDottedKeyInsert(
     existing: undefined,
   },);
   /** Dotted key spelling so each segment is encoded once. */
-  const dottedKey = dottedSegments.map(function each(s,) {
-    return encodeKey({ key: s, },);
-  },).join('.',);
+  const dottedKey = dottedSegments
+    .map(function each(s,) {
+      return encodeKey({ key: s, },);
+    },)
+    .join('.',);
 
   /** Leading newline only when the source ends mid-line. */
   const prefix = edit.source.endsWith('\n',) ? '' : '\n';
@@ -284,11 +296,14 @@ function doInlineTableExtend(
   },
 ): TomlEditState {
   /** Destructured parent so the type guard can read it once. */
-  const {parent} = inlineTable;
-  if ((parent === null) || (parent.type !== 'TOMLKeyValue'))
+  const { parent, } = inlineTable;
+  if ((parent === null) || (parent.type !== 'TOMLKeyValue')) {
     throw new TomlImmutableNodeError(
-      `tomlSet at ${formatPath({ path, },)}: extending an inline table nested inside an array is not supported in v1`,
+      `tomlSet at ${
+        formatPath({ path, },)
+      }: extending an inline table nested inside an array is not supported in v1`,
     );
+  }
 
   assertNoInlineTableCollision({
     body: inlineTable.body,
@@ -303,9 +318,11 @@ function doInlineTableExtend(
     existing: undefined,
   },);
   /** Dotted key spelling so each segment is encoded once. */
-  const extraKey = dottedSegments.map(function each(s,) {
-    return encodeKey({ key: s, },);
-  },).join('.',);
+  const extraKey = dottedSegments
+    .map(function each(s,) {
+      return encodeKey({ key: s, },);
+    },)
+    .join('.',);
 
   /** Re-emitted inline-table text with the new entry appended. */
   const newText = emitInlineTableWithExtra({
@@ -358,15 +375,18 @@ function mergeDottedSegments(
     value: unknown;
   },
 ): Record<string, unknown> {
-  if (segments.length === 0) return base;
+  if (segments.length === 0)
+    return base;
   /** Current segment so each recursion step shrinks `segments` by one. */
   const [head,] = segments;
-  if (head === undefined) return base;
-  if (segments.length === 1)
+  if (head === undefined)
+    return base;
+  if (segments.length === 1) {
     return {
       ...base,
       [head]: value,
     };
+  }
   /** Snapshot prior subtree so it can be merged into rather than overwritten. */
   const existing = base[head];
   /** Default to an empty object when the existing slot is not a plain object. */

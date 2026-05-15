@@ -209,15 +209,16 @@ export type AdvisorRunOptions = {
 };
 
 /** Advisor tool definition type with concrete parameters and details. */
-export type AdvisorToolDefinition<TParameters extends TSchema = TSchema> = ToolDefinition<
-  TParameters,
-  AdvisorDetails
->;
+export type AdvisorToolDefinition<TParameters extends TSchema = TSchema,> =
+  ToolDefinition<
+    TParameters,
+    AdvisorDetails
+  >;
 
 /** Tool result shape returned by Advisor execution. */
 export type AdvisorToolResult = AgentToolResult<AdvisorDetails>;
 
 /** Extracted static parameter type for typebox schemas. */
-export type ToolParamsFor<TParameters extends TSchema> = Static<TParameters>;
+export type ToolParamsFor<TParameters extends TSchema,> = Static<TParameters>;
 
 //endregion Tool and command results

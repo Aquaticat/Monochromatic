@@ -35,17 +35,18 @@ export async function getIgnoreContent(): Promise<string> {
     l,
   },);
   /** Directory entries or undefined when the ignore directory is missing. */
-  const filesInDir = await (async function readIgnoreDir(): Promise<Dirent[] | undefined> {
-    try {
-      return await readdir(
-        IGNORE_PATH,
-        { withFileTypes: true, },
-      );
-    }
-    catch {
-      return undefined;
-    }
-  })();
+  const filesInDir =
+    await (async function readIgnoreDir(): Promise<Dirent[] | undefined> {
+      try {
+        return await readdir(
+          IGNORE_PATH,
+          { withFileTypes: true, },
+        );
+      }
+      catch {
+        return undefined;
+      }
+    })();
   if (filesInDir === undefined) {
     innerL.debug('ignore directory not found',);
     return '';

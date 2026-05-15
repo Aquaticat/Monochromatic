@@ -737,7 +737,7 @@ feedback at a granularity finer than Re:Post. If a Re:Post post would
 help future searchers find the diagnosis, the draft below is the
 content. Do not file as-is.
 
-~~~md
+````md
 **Title:** CloudFront `InvalidViewerCertificate` error string does not
 mention unsupported key algorithm when ACM cert uses EC_secp384r1
 
@@ -758,7 +758,7 @@ plus ECDSA prime256v1
 **Suggested fix:** Add the supported-algorithm set to the error string
 when the ARN, region, validity, and chain are all valid but the key
 algorithm is not in the supported set.
-~~~
+````
 
 ### Issue 4: ACM validation CNAME deterministic per (account, domain), docs gap
 

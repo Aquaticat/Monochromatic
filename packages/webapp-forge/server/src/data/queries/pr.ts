@@ -135,7 +135,8 @@ export async function createPullRequestWithEvent(row: {
   await db.exec('BEGIN IMMEDIATE',);
   try {
     await run({
-      sql: `INSERT INTO issues(id, repo_id, number, author_id, title, body, state, created_at, updated_at)
+      sql:
+        `INSERT INTO issues(id, repo_id, number, author_id, title, body, state, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, 'open', ?, ?)`,
       params: [
         row.issueId,

@@ -62,10 +62,11 @@ await describe({
         expect(addExplicit([
           'add',
           'packages/cli/git/src/index.ts',
-        ],),).toEqual([
-          'add',
-          'packages/cli/git/src/index.ts',
-        ],);
+        ],),)
+          .toEqual([
+            'add',
+            'packages/cli/git/src/index.ts',
+          ],);
       },
     },),
     it({
@@ -75,10 +76,11 @@ await describe({
           'add',
           '.',
           '--no-enforce-bulk-add',
-        ],),).toEqual([
-          'add',
-          '.',
-        ],);
+        ],),)
+          .toEqual([
+            'add',
+            '.',
+          ],);
       },
     },),
     it({
@@ -107,7 +109,9 @@ await describe({
           ],);
 
           expect(caught,).toBeInstanceOf(Error,);
-          expect((caught as Error).message,).toContain(`bulk-staging patterns (${pattern})`,);
+          expect((caught as Error).message,).toContain(
+            `bulk-staging patterns (${pattern})`,
+          );
         },
       },);
     },),

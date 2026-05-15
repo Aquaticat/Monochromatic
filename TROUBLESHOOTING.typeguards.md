@@ -11,16 +11,16 @@ caller's type information is gone:
 const richObject = {
   parse: x => x,
   weight: 100,
-  metadata: { version: '1.0' },
+  metadata: { version: '1.0', },
   validator: customValidator,
   cache: new Map(),
 };
 
-if (isSchema(richObject as unknown)) {
-  richObject.weight;     // Error: 'weight' does not exist on type 'Schema'
-  richObject.metadata;   // Error
-  richObject.validator;  // Error
-  richObject.cache;      // Error
+if (isSchema(richObject as unknown,)) {
+  richObject.weight; // Error: 'weight' does not exist on type 'Schema'
+  richObject.metadata; // Error
+  richObject.validator; // Error
+  richObject.cache; // Error
 }
 ```
 
@@ -91,13 +91,13 @@ Behaviour by guard signature and caller's input type:
 ## Verified workaround: prefer the generic-extends pattern
 
 ```ts
-function isSchema<const T extends Schema = Schema>(
+function isSchema<const T extends Schema = Schema,>(
   value: T,
 ): value is T {
   // runtime validation
 }
 
-function isString<const T extends string = string>(
+function isString<const T extends string = string,>(
   value: T,
 ): value is T {
   return typeof value === 'string';
@@ -123,7 +123,7 @@ Tradeoffs:
 When generics feel heavy:
 
 ```ts
-function isSchema(value: Schema): value is Schema {
+function isSchema(value: Schema,): value is Schema {
   // runtime validation
 }
 ```
@@ -159,11 +159,10 @@ narrower-than-Schema types.
 ### Validating unknown data (trust boundary)
 
 ```ts
-const untrusted: unknown = JSON.parse(data);
+const untrusted: unknown = JSON.parse(data,);
 
-if (isSchema(untrusted as unknown as Schema & typeof untrusted)) {
-  untrusted.parse('test');
-}
+if (isSchema(untrusted as unknown as Schema & typeof untrusted,))
+  untrusted.parse('test',);
 ```
 
 The cast is explicit at the boundary; downstream code sees
@@ -174,9 +173,8 @@ the original type.
 ```ts
 const typed: SchemaWithWeight | string = getValue();
 
-if (isSchema(typed)) {
-  typed.weight;  // preserved when `typed` was `SchemaWithWeight`
-}
+if (isSchema(typed,))
+  typed.weight; // preserved when `typed` was `SchemaWithWeight`
 ```
 
 ### Objects with additional properties

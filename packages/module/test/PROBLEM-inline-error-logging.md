@@ -12,8 +12,8 @@ In `src/it.ts:216-219`:
 
 ```ts
 if (threw) {
-  l.error(`FAIL${runLabel} (${durationMs.toFixed(0,)}ms)`);
-  throw new Error(name, { cause: caughtError });
+  l.error(`FAIL${runLabel} (${durationMs.toFixed(0,)}ms)`,);
+  throw new Error(name, { cause: caughtError, },);
 }
 ```
 
@@ -22,8 +22,8 @@ The `l.error(...)` call outputs only the test name and duration. The `Error` obj
 Similarly, in `src/describe.ts:297-304`, suite-level failures emit only:
 
 ```ts
-l.error(`FAIL${runLabel} (${durationMs.toFixed(0,)}ms)`);
-throw new Error(name, { cause });
+l.error(`FAIL${runLabel} (${durationMs.toFixed(0,)}ms)`,);
+throw new Error(name, { cause, },);
 ```
 
 ### Verified consequences

@@ -72,9 +72,8 @@ export function hiddenFilter(
       readonly ctx: WatchCtx;
     },
   ): boolean {
-    if (allowHidden) {
+    if (allowHidden)
       return true;
-    }
     return !HIDDEN_SEGMENT_PATTERN.test(event.relativePath,);
   };
 }

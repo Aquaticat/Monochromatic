@@ -142,7 +142,11 @@ export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
     const owner = event.context.params?.['owner'];
     /** Raw `:repo.git` segment of the route path. */
     const repoRaw = event.context.params?.['repo'];
-    if ((owner === undefined) || (owner === '') || (repoRaw === undefined) || (repoRaw === '')) {
+    if ((owner === undefined)
+      || (owner === '')
+      || (repoRaw === undefined)
+      || (repoRaw === ''))
+    {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing route params',
@@ -185,7 +189,11 @@ export const gitUploadPackHandler: EventHandlerWithFetch = defineHandler(
     const owner = event.context.params?.['owner'];
     /** Raw `:repo.git` segment of the route path. */
     const repoRaw = event.context.params?.['repo'];
-    if ((owner === undefined) || (owner === '') || (repoRaw === undefined) || (repoRaw === '')) {
+    if ((owner === undefined)
+      || (owner === '')
+      || (repoRaw === undefined)
+      || (repoRaw === ''))
+    {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing route params',
@@ -226,7 +234,11 @@ export const gitReceivePackHandler: EventHandlerWithFetch = defineHandler(
     const owner = event.context.params?.['owner'];
     /** Raw `:repo.git` segment of the route path. */
     const repoRaw = event.context.params?.['repo'];
-    if ((owner === undefined) || (owner === '') || (repoRaw === undefined) || (repoRaw === '')) {
+    if ((owner === undefined)
+      || (owner === '')
+      || (repoRaw === undefined)
+      || (repoRaw === ''))
+    {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing route params',

@@ -19,12 +19,12 @@
  * ```
  */
 
-import type { PackageProbe, } from './probe.ts';
 import {
   acceptsDim,
   DIM_DISPLAY_NAMES,
   TOGGLE_LABELS,
 } from './dim-meta.ts';
+import type { PackageProbe, } from './probe.ts';
 import {
   type ChannelKey,
   type DataDimKey,
@@ -208,18 +208,22 @@ function renderDimDropdown(
   /**
    * One `<option>` per dim, ordered to match {@link DIM_KEYS}; concatenated below into the dropdown body.
    */
-  const options = DIM_KEYS.map(function renderOption(dim,) {
-    /** `true` when the channel accepts this dim type; gates the `disabled` attribute. */
-    const accepted = acceptsDim({
-      channel,
-      dim,
-    },);
-    /** ` selected` suffix when this option matches the channel's current dim, empty otherwise. */
-    const selected = dim === selectedDim ? ' selected' : '';
-    /** ` disabled` suffix when the dim is not accepted by the channel; greys out the option. */
-    const disabled = accepted ? '' : ' disabled';
-    return `<option value="${dim}"${selected}${disabled}>${DIM_DISPLAY_NAMES[dim]}</option>`;
-  },).join('',);
+  const options = DIM_KEYS
+    .map(function renderOption(dim,) {
+      /** `true` when the channel accepts this dim type; gates the `disabled` attribute. */
+      const accepted = acceptsDim({
+        channel,
+        dim,
+      },);
+      /** ` selected` suffix when this option matches the channel's current dim, empty otherwise. */
+      const selected = dim === selectedDim ? ' selected' : '';
+      /** ` disabled` suffix when the dim is not accepted by the channel; greys out the option. */
+      const disabled = accepted ? '' : ' disabled';
+      return `<option value="${dim}"${selected}${disabled}>${
+        DIM_DISPLAY_NAMES[dim]
+      }</option>`;
+    },)
+    .join('',);
   return `<div class="dim-row" data-channel="${channel}">
       <label for="dim-${channel}">${CHANNEL_LABELS[channel]}</label>
       <select id="dim-${channel}">${options}</select>
@@ -254,11 +258,13 @@ function renderToggleRow(
   },
 ): string {
   /** One `<input type="radio">` per allowed value, concatenated to form the toggle's radio group. */
-  const radios = TOGGLE_VALUES.map(function renderRadio(value,) {
-    /** ` checked` suffix when this radio matches `current`, empty otherwise. */
-    const checked = value === current ? ' checked' : '';
-    return `<label><input type="radio" name="toggle-${key}" value="${value}"${checked}>${value}</label>`;
-  },).join('',);
+  const radios = TOGGLE_VALUES
+    .map(function renderRadio(value,) {
+      /** ` checked` suffix when this radio matches `current`, empty otherwise. */
+      const checked = value === current ? ' checked' : '';
+      return `<label><input type="radio" name="toggle-${key}" value="${value}"${checked}>${value}</label>`;
+    },)
+    .join('',);
   return `<fieldset class="toggle-row" data-toggle="${key}">
       <legend>${TOGGLE_LABELS[key]}</legend>${radios}
     </fieldset>`;
@@ -361,11 +367,13 @@ function renderDisplaySection(
   /** ` checked` suffix when the unknown-cluster toggle is on; surfaces probes with missing dim values. */
   const unknown = dt.showUnknownCluster ? ' checked' : '';
   /** One `<option>` per name-label policy, concatenated to form the name-labels dropdown body. */
-  const nameOptions = NAME_LABEL_OPTIONS.map(function renderOption(value,) {
-    /** ` selected` suffix when this option matches the current name-labels policy. */
-    const selected = dt.nameLabels === value ? ' selected' : '';
-    return `<option value="${value}"${selected}>${value}</option>`;
-  },).join('',);
+  const nameOptions = NAME_LABEL_OPTIONS
+    .map(function renderOption(value,) {
+      /** ` selected` suffix when this option matches the current name-labels policy. */
+      const selected = dt.nameLabels === value ? ' selected' : '';
+      return `<option value="${value}"${selected}>${value}</option>`;
+    },)
+    .join('',);
   return `<section class="controls-section" data-section="display">
       <h2>Display</h2>
       <label><input type="checkbox" id="display-wireframe"${wireframe}>Wireframe</label>
@@ -411,32 +419,38 @@ export function renderControls(
   /**
    * Concatenated dim-dropdown rows, one per channel, in {@link CHANNEL_KEYS} order.
    */
-  const dimRows = CHANNEL_KEYS.map(function dropdownFor(channel,) {
-    return renderDimDropdown({
-      channel,
-      selectedDim: state.dimMapping[channel],
-    },);
-  },).join('',);
+  const dimRows = CHANNEL_KEYS
+    .map(function dropdownFor(channel,) {
+      return renderDimDropdown({
+        channel,
+        selectedDim: state.dimMapping[channel],
+      },);
+    },)
+    .join('',);
   /**
    * Concatenated toggle rows, one per boolean filter, in {@link TOGGLE_KEYS} order.
    */
-  const toggleRows = TOGGLE_KEYS.map(function toggleFor(key,) {
-    return renderToggleRow({
-      key,
-      current: state.toggles[key],
-    },);
-  },).join('',);
+  const toggleRows = TOGGLE_KEYS
+    .map(function toggleFor(key,) {
+      return renderToggleRow({
+        key,
+        current: state.toggles[key],
+      },);
+    },)
+    .join('',);
   /** Concatenated range-slider rows, one per channel; computes the dim extent fresh each render. */
-  const rangeRows = CHANNEL_KEYS.map(function rangeFor(channel,) {
-    return renderRangeRow({
-      channel,
-      fullExtent: computeChannelExtent({
-        probes,
-        dim: state.dimMapping[channel],
-      },),
-      current: state.ranges[channel],
-    },);
-  },).join('',);
+  const rangeRows = CHANNEL_KEYS
+    .map(function rangeFor(channel,) {
+      return renderRangeRow({
+        channel,
+        fullExtent: computeChannelExtent({
+          probes,
+          dim: state.dimMapping[channel],
+        },),
+        current: state.ranges[channel],
+      },);
+    },)
+    .join('',);
   /** Total probe count rendered into the visibility-counter; used for both numerator and denominator at first paint. */
   const total = probes.length.toString();
   /** HTML-escaped search string, safe for embedding in the search input's `value` attribute. */
@@ -464,9 +478,11 @@ export function renderControls(
       <h2>Search</h2>
       <input type="text" id="search" placeholder="substring or /regex/" value="${searchAttr}">
     </section>
-    ${renderDisplaySection({
-    state,
-  },)}
+    ${
+    renderDisplaySection({
+      state,
+    },)
+  }
     <section class="controls-section" data-section="info">
       <span id="visibility-counter">${total} of ${total} visible</span>
       <button id="reset" type="button">Reset filters</button>

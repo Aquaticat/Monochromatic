@@ -4,9 +4,7 @@
  * @module
  */
 
-import type {
-  TomlEditState,
-} from './types.ts';
+import type { TomlEditState, } from './types.ts';
 
 /**
  * Set the header comment block.
@@ -52,7 +50,9 @@ export function tomlSetHeaderComment(
 function resolveComment(
   { comment, }: { comment: string | readonly string[] | null; },
 ): string | null {
-  if (comment === null) return null;
-  if ((typeof comment) === 'string') return comment;
+  if (comment === null)
+    return null;
+  if ((typeof comment) === 'string')
+    return comment;
   return comment.join('\n',);
 }

@@ -358,9 +358,9 @@ async function rewriteReferences(
       function applyReplacement(
         acc: string,
         [original, hashed,]: readonly [
-        string,
-        string,
-      ],
+          string,
+          string,
+        ],
       ) {
         return acc.replaceAll(
           original,

@@ -49,5 +49,5 @@ export function toolbarButton(
       onclick: onActivate,
     },
     children: [label,],
-  });
+  },);
 }

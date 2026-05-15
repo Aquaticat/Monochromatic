@@ -140,7 +140,9 @@ await describe({
         ],);
 
         expect(caught,).toBeInstanceOf(Error,);
-        expect((caught as Error).message,).toContain(`Repo root is ${tempDirectory.path}`,);
+        expect((caught as Error).message,).toContain(
+          `Repo root is ${tempDirectory.path}`,
+        );
       },
     },),
     it({
@@ -193,7 +195,9 @@ await describe({
         ],);
 
         expect(caught,).toBeInstanceOf(Error,);
-        expect((caught as Error).message,).toContain(`Repo root is ${tempDirectory.path}`,);
+        expect((caught as Error).message,).toContain(
+          `Repo root is ${tempDirectory.path}`,
+        );
       },
     },),
     it({

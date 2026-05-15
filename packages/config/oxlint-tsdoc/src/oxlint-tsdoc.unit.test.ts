@@ -165,7 +165,8 @@ await describe({
           },
         },),
         it({
-          name: 'reports missing TSDoc on undocumented locals while exempting for-loop bindings',
+          name:
+            'reports missing TSDoc on undocumented locals while exempting for-loop bindings',
           fn: async () => {
             const diagnostics = await lint('invalid/missing-tsdoc-locals.ts',);
             const requireTsdocDiags = diagnostics.filter(

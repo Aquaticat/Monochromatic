@@ -86,7 +86,8 @@ export async function insertEvent(row: {
 },): Promise<number> {
   /** Insert result; `lastInsertRowid` becomes the returned `events.id`. */
   const result = await run({
-    sql: `INSERT INTO events(resource_type, resource_id, kind, payload, sequence_number, created_at)
+    sql:
+      `INSERT INTO events(resource_type, resource_id, kind, payload, sequence_number, created_at)
      VALUES (?, ?, ?, ?, ?, ?)`,
     params: [
       row.resourceType,

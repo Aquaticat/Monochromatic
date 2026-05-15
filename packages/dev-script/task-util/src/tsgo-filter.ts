@@ -332,7 +332,9 @@ catch (error) {
     if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors)
       process.exitCode = subprocessError.exitCode ?? 1;
 
-    if ((subprocessError.signalName !== undefined) && (subprocessError.signalName !== '')) {
+    if ((subprocessError.signalName !== undefined)
+      && (subprocessError.signalName !== ''))
+    {
       console.error(
         `[task-tsgo] tsgo terminated by signal: ${subprocessError.signalName}`,
       );

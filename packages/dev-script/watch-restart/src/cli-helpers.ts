@@ -51,15 +51,12 @@ export function splitCommas(value: string,): string[] {
  * ```
  */
 export function cliEventToInternal(token: string,): WatchEventKind {
-  if (token === 'create') {
+  if (token === 'create')
     return 'add';
-  }
-  if (token === 'change') {
+  if (token === 'change')
     return 'change';
-  }
-  if (token === 'delete') {
+  if (token === 'delete')
     return 'unlink';
-  }
   throw new Error(
     `Unknown --events token "${token}"; expected one of create, change, delete`,
   );
@@ -84,9 +81,8 @@ export function cliEventToInternal(token: string,): WatchEventKind {
  * ```
  */
 export function parseTypeToken(token: string,): WatchEntityType {
-  if ((token === 'file') || (token === 'dir')) {
+  if ((token === 'file') || (token === 'dir'))
     return token;
-  }
   throw new Error(
     `Unknown --type token "${token}"; expected one of file, dir`,
   );
@@ -149,9 +145,8 @@ function isKillSignal(raw: string,): raw is NodeJS.Signals {
  * ```
  */
 export function parseKillSignal(raw: string,): NodeJS.Signals {
-  if (isKillSignal(raw,)) {
+  if (isKillSignal(raw,))
     return raw;
-  }
   throw new Error(
     `Unknown --signal "${raw}"; expected one of ${[...KILL_SIGNALS,].join(', ',)}`,
   );
@@ -219,11 +214,9 @@ export function resolveBoolPair(
       `Cannot pass both --${flag} and --no-${flag} in the same invocation`,
     );
   }
-  if (positive) {
+  if (positive)
     return true;
-  }
-  if (negative) {
+  if (negative)
     return false;
-  }
   return undefined;
 }

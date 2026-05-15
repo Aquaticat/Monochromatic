@@ -34,9 +34,7 @@ import {
   mkdir,
   writeFile,
 } from 'node:fs/promises';
-import {
-  resolve as resolvePath,
-} from 'node:path';
+import { resolve as resolvePath, } from 'node:path';
 
 import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path';
 

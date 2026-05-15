@@ -26,10 +26,11 @@ export function pathEquals(
     b,
   }: {
     a: TomlPath;
-    b: TomlPath
+    b: TomlPath;
   },
 ): boolean {
-  if (a.length !== b.length) return false;
+  if (a.length !== b.length)
+    return false;
   return a.every(function eq(
     seg,
     i,
@@ -58,7 +59,8 @@ export function asStringPath(
   /** Accumulator so an early numeric segment can short-circuit with `null`. */
   const result: string[] = [];
   for (const s of segs) {
-    if ((typeof s) !== 'string') return null;
+    if ((typeof s) !== 'string')
+      return null;
     result.push(s,);
   }
   return result;
@@ -86,15 +88,18 @@ export function mergeAt(
     value: unknown;
   },
 ): Record<string, unknown> {
-  if (segments.length === 0) return base;
+  if (segments.length === 0)
+    return base;
   /** Current segment so each recursion step shrinks `segments` by one. */
   const [head,] = segments;
-  if (head === undefined) return base;
-  if (segments.length === 1)
+  if (head === undefined)
+    return base;
+  if (segments.length === 1) {
     return {
       ...base,
       [head]: value,
     };
+  }
   /** Snapshot the prior subtree so it can be merged into rather than overwritten. */
   const existing = base[head];
   /** Default to an empty object when the existing slot is not a plain object. */

@@ -71,7 +71,10 @@ export function callParseValue(
 } {
   /** Registered dispatch implementation; must be present because parser init runs before any user call. */
   const ref = refRegistry.get('parseValue',);
-  if (ref === undefined)
-    throw new Error('parseValue not registered; registerParseValue must be called before parsing',);
+  if (ref === undefined) {
+    throw new Error(
+      'parseValue not registered; registerParseValue must be called before parsing',
+    );
+  }
   return ref(args,);
 }

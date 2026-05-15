@@ -10,12 +10,12 @@ Approach: per-package fan-out using `spawn-claude` to launch child Claude Code s
 
 ## Policy decisions (locked in, captured in `/var/home/user/Monochromatic/AUDIT.lint-2026-05-14.md`)
 
-| Rule | Decision |
-|----|----|
-| 1900× `stylistic(no-mixed-operators)` | Mechanically wrap in parens, workspace-wide |
-| `tsdoc(require-example)` | Write good realistic examples (no foo/bar placeholders) |
-| `eslint(no-magic-numbers)` time/byte math | Import from `@monochromatic-dev/module-numeric-const` (MS_PER_DAY, BYTES_PER_KIB, etc.) |
-| `no-restricted-syntax(require-destructured-params)` | Workspace-wide; children update cross-package callers with retry on `.git/index.lock` |
+| Rule                                                | Decision                                                                                |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 1900× `stylistic(no-mixed-operators)`               | Mechanically wrap in parens, workspace-wide                                             |
+| `tsdoc(require-example)`                            | Write good realistic examples (no foo/bar placeholders)                                 |
+| `eslint(no-magic-numbers)` time/byte math           | Import from `@monochromatic-dev/module-numeric-const` (MS_PER_DAY, BYTES_PER_KIB, etc.) |
+| `no-restricted-syntax(require-destructured-params)` | Workspace-wide; children update cross-package callers with retry on `.git/index.lock`   |
 
 The 21 cross-package require-destructured-params source functions are catalogued at `/tmp/rdp-survey/cross-pkg.txt`.
 
@@ -51,6 +51,7 @@ That's 14 lint-sweep commits + 2 docs + 1 prep cascade fix = 17 new commits this
 - Root cause confirmed via transcript inspection: **user's Claude API rate limit ("extra usage") was exhausted at 1:20pm America/New_York** mid-batch. Children launched after the limit got HTTP 429 on their first turn and hung waiting for retry until the orchestrator killed them. Evidence in `/home/user/.claude/projects/-var-home-user-Monochromatic/c247fc74-13f4-4ceb-a9e9-1a901ad7b626.jsonl` (module/test child): `"error":"rate_limit"`, `"apiErrorStatus":429`, `"text":"You're out of extra usage · resets 1:20pm (America/New_York)"`.
 
 Per-package partial-progress is preserved in the working tree (uncommitted). Many big packages made substantial progress before timeout:
+
 - dev-script/deps-cube: 602 → 244 warnings
 - module/es: 251 → 43 issues
 - webapp-content/messages-demo: 298 issues → 0 warnings 8 errors
@@ -69,6 +70,7 @@ Full final-status report: `/tmp/lint-orchestrator/final-status.md`.
 - One BLOCKED reason: `dev-script/inference-canary-viewer` was already clean from inherited partial work — child correctly committed nothing and reported BLOCKED.
 
 Prompt template at `/tmp/lint-orchestrator/prompt.txt` was updated to handle inherited partial state from killed children:
+
 - "Run a fresh `mise run //packages/{PKG}:lint` to get CURRENT state. Cached output is stale."
 - "Treat any uncommitted modifications under packages/{PKG}/ as inherited work from your predecessor."
 - Race-safe commit: `git add <paths> && git commit -o <paths>` (the `-o` flag commits only listed paths, ignoring sibling staged work).

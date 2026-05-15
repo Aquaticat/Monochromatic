@@ -359,7 +359,9 @@ if ((input !== null) && (resultsList !== null)) {
 
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        setActiveOption(navState.activeIndex < (count - 1) ? navState.activeIndex + 1 : 0,);
+        setActiveOption(
+          navState.activeIndex < (count - 1) ? navState.activeIndex + 1 : 0,
+        );
         return;
       }
 
@@ -369,7 +371,10 @@ if ((input !== null) && (resultsList !== null)) {
         return;
       }
 
-      if ((event.key === 'Enter') && (navState.activeIndex >= 0) && (navState.activeIndex < count)) {
+      if ((event.key === 'Enter')
+        && (navState.activeIndex >= 0)
+        && (navState.activeIndex < count))
+      {
         event.preventDefault();
         /** Currently active option whose URL is navigated to on Enter. */
         const option = options[navState.activeIndex];

@@ -62,7 +62,8 @@ export function formatPath({ path, }: { path: TomlPath; },): string {
     ) {
       if ((typeof seg) === 'number')
         return `[${String(seg,)}]`;
-      if (i === 0) return seg;
+      if (i === 0)
+        return seg;
       return `.${seg}`;
     },)
     .join('',);
@@ -85,7 +86,7 @@ export function keyMatchesSegment(
     segment,
   }: {
     keyName: string;
-    segment: string | number
+    segment: string | number;
   },
 ): boolean {
   return ((typeof segment) === 'string') && (segment === keyName);

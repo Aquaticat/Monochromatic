@@ -40,37 +40,47 @@ Reproducing that shape directly demonstrates the symptom without needing Claude 
 `writer.mjs`:
 
 ```javascript
-import { writeFile, readFile, } from 'node:fs/promises';
+import {
+  readFile,
+  writeFile,
+} from 'node:fs/promises';
 const path = process.argv[2];
-const N = parseInt(process.argv[3] ?? '5000', 10);
-const content = await readFile(path, 'utf8');
+const N = parseInt(process.argv[3] ?? '5000', 10,);
+const content = await readFile(path, 'utf8',);
 for (let i = 0; i < N; i++)
-  await writeFile(path, content, 'utf8');
+  await writeFile(path, content, 'utf8',);
 ```
 
 `reader.mjs`:
 
 ```javascript
-import { readFile, stat, } from 'node:fs/promises';
+import {
+  readFile,
+  stat,
+} from 'node:fs/promises';
 const path = process.argv[2];
-const N = parseInt(process.argv[3] ?? '5000', 10);
-const expected = (await readFile(path, 'utf8'))
-  .match(/SENTINEL/g)?.length ?? 0;
+const N = parseInt(process.argv[3] ?? '5000', 10,);
+const expected = (await readFile(path, 'utf8',))
+  .match(/SENTINEL/g,)
+  ?.length ?? 0;
 let zeroSize = 0, zeroMatch = 0;
 for (let i = 0; i < N; i++) {
   try {
-    if ((await stat(path)).size === 0) {
+    if ((await stat(path,)).size === 0) {
       zeroSize++;
       continue;
     }
-    const m = ((await readFile(path, 'utf8')).match(/SENTINEL/g) ?? []).length;
-    if (m === 0) zeroMatch++;
+    const m = ((await readFile(path, 'utf8',))
+      .match(/SENTINEL/g,) ?? [])
+      .length;
+    if (m === 0)
+      zeroMatch++;
   }
   catch {
     zeroSize++;
   }
 }
-console.log(JSON.stringify({ N, expected, zeroSize, zeroMatch, }));
+console.log(JSON.stringify({ N, expected, zeroSize, zeroMatch, },),);
 ```
 
 Run both against a copy of a 10 KB file with at least one occurrence of `SENTINEL`:
@@ -101,72 +111,83 @@ which forwards `{encoding: q}` without setting `allowSymlink` or `checkParentDir
 `PRH` body, lightly de-minified for readability:
 
 ```javascript
-function PRH(H, $, q = { encoding: 'utf-8' }) {
+function PRH(H, $, q = { encoding: 'utf-8', },) {
   const fsMod = m$();
   const flags = q.allowSymlink ? 0 : Xw.constants.O_NOFOLLOW;
   let target = H, mode, exists = false;
 
   /* ... allowSymlink / checkParentDir branches; lstat target to fetch mode ... */
 
-  const tempPath = `${target}.tmp.${process.pid}.${Mzq.randomBytes(6).toString('hex')}`;
+  const tempPath = `${target}.tmp.${process.pid}.${
+    Mzq.randomBytes(6,).toString('hex',)
+  }`;
 
   try {
     // Atomic primary path:
-    E(`Writing to temp file: ${tempPath}`);
+    E(`Writing to temp file: ${tempPath}`,);
     const fd = Xw.openSync(
       tempPath,
-      Xw.constants.O_WRONLY | Xw.constants.O_CREAT | Xw.constants.O_EXCL | flags,
+      Xw.constants.O_WRONLY
+        | Xw.constants.O_CREAT
+        | Xw.constants.O_EXCL
+        | flags,
       !exists && q.mode !== undefined ? q.mode : undefined,
     );
     try {
-      Xw.writeFileSync(fd, $, { encoding: q.encoding, });
+      Xw.writeFileSync(fd, $, { encoding: q.encoding, },);
       if (exists && mode !== undefined) {
-        Xw.fchmodSync(fd, mode);
-        E('Applied original permissions to temp file');
+        Xw.fchmodSync(fd, mode,);
+        E('Applied original permissions to temp file',);
       }
-      Xw.fsyncSync(fd);
+      Xw.fsyncSync(fd,);
     }
     finally {
-      Xw.closeSync(fd);
+      Xw.closeSync(fd,);
     }
-    E(`Temp file written successfully, size: ${$.length} bytes`);
-    E(`Renaming ${tempPath} to ${target}`);
-    fsMod.renameSync(tempPath, target);
-    E(`File ${target} written atomically`);
+    E(`Temp file written successfully, size: ${$.length} bytes`,);
+    E(`Renaming ${tempPath} to ${target}`,);
+    fsMod.renameSync(tempPath, target,);
+    E(`File ${target} written atomically`,);
   }
   catch (err) {
-    E(`Failed to write file atomically: ${err}`, { level: 'error', });
+    E(`Failed to write file atomically: ${err}`, { level: 'error', },);
     try {
-      E(`Cleaning up temp file: ${tempPath}`);
-      fsMod.unlinkSync(tempPath);
+      E(`Cleaning up temp file: ${tempPath}`,);
+      fsMod.unlinkSync(tempPath,);
     }
     catch (cleanupErr) {
-      E(`Failed to clean up temp file: ${cleanupErr}`);
+      E(`Failed to clean up temp file: ${cleanupErr}`,);
     }
 
     // Non-atomic fallback path:
-    E(`Falling back to non-atomic write for ${target}`);
+    E(`Falling back to non-atomic write for ${target}`,);
     let fd;
     try {
       fd = Xw.openSync(
         target,
-        Xw.constants.O_WRONLY | Xw.constants.O_CREAT | Xw.constants.O_TRUNC | flags,
+        Xw.constants.O_WRONLY
+          | Xw.constants.O_CREAT
+          | Xw.constants.O_TRUNC
+          | flags,
         !exists && q.mode !== undefined ? q.mode : undefined,
       );
     }
     catch (openErr) {
-      if (j8(openErr) === 'ELOOP')
-        throw new Error(`Refusing to write through symlink: ${target} (O_NOFOLLOW)`);
-      E(`Non-atomic write also failed: ${openErr}`);
+      if (j8(openErr,) === 'ELOOP') {
+        throw new Error(
+          `Refusing to write through symlink: ${target} (O_NOFOLLOW)`,
+        );
+      }
+      E(`Non-atomic write also failed: ${openErr}`,);
       throw openErr;
     }
     try {
-      Xw.writeFileSync(fd, $, { encoding: q.encoding, });
-      Xw.fsyncSync(fd);
-      E(`File ${target} written successfully with non-atomic fallback`);
+      Xw.writeFileSync(fd, $, { encoding: q.encoding, },);
+      Xw.fsyncSync(fd,);
+      E(`File ${target} written successfully with non-atomic fallback`,);
     }
     finally {
-      Xw.closeSync(fd);
+      Xw.closeSync(fd,);
     }
   }
 }

@@ -227,14 +227,14 @@ function mount(root: HTMLElement,): void {
               },
             },
             children: [ll.back(),],
-          }),
+          },),
           el({
             tag: 'h2',
             attrs: {},
             children: [ll.settings(),],
-          }),
+          },),
         ],
-      }),
+      },),
       field({
         label: ll.language(),
         control: langSelect,
@@ -272,12 +272,12 @@ function mount(root: HTMLElement,): void {
           voiceToggle,
           ll.voiceEnabled(),
         ],
-      }),
+      },),
       el({
         tag: 'h2',
         attrs: {},
         children: [ll.provider(),],
-      }),
+      },),
       field({
         label: ll.provider(),
         control: providerSelectEl,
@@ -300,7 +300,7 @@ function mount(root: HTMLElement,): void {
       },),
       ...anthropicWarningChildren,
     ],
-  });
+  },);
   root.append(screen,);
 }
 

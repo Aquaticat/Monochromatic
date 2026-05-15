@@ -20,12 +20,12 @@
 import { join, } from 'node:path';
 import { pathToFileURL, } from 'node:url';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import {
   expect,
   type Page,
   test,
 } from '@playwright/test';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 /**
  * Absolute file URL to the bundled paper2vn page. Resolved off

@@ -111,10 +111,13 @@ await describe({
     it({
       name: 'throws on invalid regex',
       fn: async () => {
-        expect(() => compilePatterns({
-          patterns: ['[invalid',],
-          label: 'test',
-        },)).toThrow();
+        expect(() =>
+          compilePatterns({
+            patterns: ['[invalid',],
+            label: 'test',
+          },)
+        )
+          .toThrow();
       },
     },),
 
@@ -124,7 +127,8 @@ await describe({
         expect(compilePatterns({
           patterns: [],
           label: 'test',
-        },),).toHaveLength(0,);
+        },),)
+          .toHaveLength(0,);
       },
     },),
   ],

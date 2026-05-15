@@ -299,16 +299,18 @@ function countReviewStates(
       counts: ReviewCounts,
       review: { readonly state: string; },
     ): ReviewCounts {
-      if (review.state === 'approved')
+      if (review.state === 'approved') {
         return {
           approved: counts.approved + 1,
           changesRequested: counts.changesRequested,
         };
-      if (review.state === 'changes_requested')
+      }
+      if (review.state === 'changes_requested') {
         return {
           approved: counts.approved,
           changesRequested: counts.changesRequested + 1,
         };
+      }
       return counts;
     },
     {

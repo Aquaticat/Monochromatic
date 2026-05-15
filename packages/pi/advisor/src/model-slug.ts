@@ -64,9 +64,8 @@ export function resolveRequestedModel(
 ): AdvisorModelSelection {
   /** Trimmed requested model slug. */
   const requestedSlug = options.requestedSlug.trim();
-  if (requestedSlug === '') {
+  if (requestedSlug === '')
     throw new Error('advisor: model slug must not be empty',);
-  }
 
   /** Matching scoped model candidates. */
   const scopedMatches = findScopedSlugMatches({
@@ -86,9 +85,11 @@ export function resolveRequestedModel(
   if (scopedMatches.length > 1) {
     throw new Error(
       `advisor: model slug "${requestedSlug}" is ambiguous in scoped models. Matching scoped slugs: ${
-        scopedMatches.map(function mapMatch(match,) {
-          return match.canonicalSlug;
-        },).join(', ')
+        scopedMatches
+          .map(function mapMatch(match,) {
+            return match.canonicalSlug;
+          },)
+          .join(', ',)
       }`,
     );
   }
@@ -98,16 +99,20 @@ export function resolveRequestedModel(
     models: options.modelRegistry.getAll(),
   },)) {
     throw new Error(
-      `advisor: model slug "${requestedSlug}" is not in scoped models. Allowed scoped slugs: ${allowedSlugs(
-        options.scope,
-      )}`,
+      `advisor: model slug "${requestedSlug}" is not in scoped models. Allowed scoped slugs: ${
+        allowedSlugs(
+          options.scope,
+        )
+      }`,
     );
   }
 
   throw new Error(
-    `advisor: model slug "${requestedSlug}" was not found in scoped models. Allowed scoped slugs: ${allowedSlugs(
-      options.scope,
-    )}`,
+    `advisor: model slug "${requestedSlug}" was not found in scoped models. Allowed scoped slugs: ${
+      allowedSlugs(
+        options.scope,
+      )
+    }`,
   );
 }
 
@@ -128,11 +133,12 @@ export function allowedSlugs(
 ): string {
   return scope.entries.length === 0
     ? 'none'
-    : scope.entries
+    : scope
+      .entries
       .map(function mapEntry(entry,) {
         return entry.canonicalSlug;
       },)
-      .join(', ');
+      .join(', ',);
 }
 
 //endregion Public API

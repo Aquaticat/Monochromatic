@@ -90,15 +90,16 @@ export function renderXAxis(timestamps: readonly string[],): string {
   const CENTER_PERCENT = HALF * PERCENT;
 
   /** Indices into `timestamps` at which to emit a tick; stride-limited by `step`. */
-  const tickIndices = Array.from(
-    { length: Math.ceil(timestamps.length / step,), },
-    function indexAt(
-      _unused,
-      k,
-    ): number {
-      return k * step;
-    },
-  )
+  const tickIndices = Array
+    .from(
+      { length: Math.ceil(timestamps.length / step,), },
+      function indexAt(
+        _unused,
+        k,
+      ): number {
+        return k * step;
+      },
+    )
     .filter(function inRange(i,): boolean {
       return i < timestamps.length;
     },);

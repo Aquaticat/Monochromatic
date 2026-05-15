@@ -299,7 +299,7 @@ current vlt HEAD.
 
 ### Draft upstream issue (do not file as-is; re-validate against current vltpkg/vltpkg HEAD before filing)
 
-~~~md
+````md
 **Title:** vlt fails to fetch manifest when dependency spec includes
 semver build metadata `+<hash>` suffix
 
@@ -378,7 +378,7 @@ versions.
 **Tested against:** trigger package
 `@optique/run@1.0.0-dev.1692` declaring
 `"@optique/core": "1.0.0-dev.1692+5c265bd4"`.
-~~~
+````
 
 ### Status
 
@@ -750,7 +750,7 @@ Every pi invocation reaches one or both of these paths:
 - `dist/main.js:408`: `AuthStorage.create()` runs at startup.
 - `dist/core/sdk.js:90,92`, `dist/core/agent-session-services.js:56,57`,
   `dist/core/resource-loader.js:121`, `dist/package-manager-cli.js:304,358`
- ; defaulted SDK construction; same call shape.
+  ; defaulted SDK construction; same call shape.
 - `dist/core/model-registry.js:519`: `await this.authStorage.getApiKey(model.provider, ...)`
   runs during model resolution. `FileAuthStorageBackend.getApiKey` goes through
   `withLockAsync`, which does `release = await lockfile.lock(...)` and

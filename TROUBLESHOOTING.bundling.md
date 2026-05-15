@@ -74,10 +74,11 @@ Reproduce:
 // module-a.ts (workspace package)
 export async function verify(): Promise<boolean> {
   try {
-    const { stat } = await import('node:fs/promises');
-    await stat('/tmp/x');
+    const { stat, } = await import('node:fs/promises');
+    await stat('/tmp/x',);
     return true;
-  } catch {
+  }
+  catch {
     return false;
   }
 }
@@ -93,13 +94,14 @@ error in the browser console even though `verify()` returns
 ```ts
 export async function verify(): Promise<boolean> {
   if (typeof globalThis.process === 'undefined'
-      || typeof globalThis.process.versions?.node === 'undefined') {
+    || typeof globalThis.process.versions?.node === 'undefined')
+  {
     return false;
   }
 
   // Only reached in Node.js
-  const { stat } = await import('node:fs/promises');
-  await stat('/tmp/x');
+  const { stat, } = await import('node:fs/promises');
+  await stat('/tmp/x',);
   return true;
 }
 ```

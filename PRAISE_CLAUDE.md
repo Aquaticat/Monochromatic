@@ -84,7 +84,7 @@ Each fix revealed a new constraint that nobody had documented.
 | V4      | `bash -c` wrapper               | `!` escaped to `\!`           | Extra shell layer corrupts quoting        |
 | V5      | `set -o pipefail &&`            | SIGPIPE exit 141              | `< /dev/null` appended to last command    |
 | V6      | `\|\| (exit $?)` suffix         | `$?` is empty                 | Variables don't expand in suffix position |
-| V7      | `&& true` suffix                | **Works**                     |;                                        |
+| V7      | `&& true` suffix                | **Works**                     | ;                                         |
 
 **The solution:** `set -o pipefail && cmd 2>&1 | bun filter && true`.
 No shell variables, no special syntax, no nested shells.

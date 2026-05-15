@@ -20,33 +20,44 @@ Mutating functions return a fresh state.
 Round-trip a file (splice mode, byte-identical when no edits applied):
 
 ```ts
-import { parseTomlEdit, tomlStringify } from '@monochromatic-dev/module-toml-edit';
+import {
+  parseTomlEdit,
+  tomlStringify,
+} from '@monochromatic-dev/module-toml-edit';
 
-const source = await Bun.file('mise.toml').text();
-const edit = parseTomlEdit({ source });
-const text = tomlStringify({ edit });
+const source = await Bun.file('mise.toml',).text();
+const edit = parseTomlEdit({ source, },);
+const text = tomlStringify({ edit, },);
 // text === source
 ```
 
 Edit a key while preserving comments and original formatting:
 
 ```ts
-import { parseTomlEdit, tomlSet, tomlStringify } from '@monochromatic-dev/module-toml-edit';
+import {
+  parseTomlEdit,
+  tomlSet,
+  tomlStringify,
+} from '@monochromatic-dev/module-toml-edit';
 
-const e0 = parseTomlEdit({ source });
-const e1 = tomlSet({ edit: e0, path: ['tools', 'bun'], value: 'latest' });
-await Bun.write('mise.toml', tomlStringify({ edit: e1 }));
+const e0 = parseTomlEdit({ source, },);
+const e1 = tomlSet({ edit: e0, path: ['tools', 'bun',], value: 'latest', },);
+await Bun.write('mise.toml', tomlStringify({ edit: e1, },),);
 ```
 
 Build a TOML file from scratch (canonical mode):
 
 ```ts
-import { emptyTomlEdit, tomlSet, tomlStringify } from '@monochromatic-dev/module-toml-edit';
+import {
+  emptyTomlEdit,
+  tomlSet,
+  tomlStringify,
+} from '@monochromatic-dev/module-toml-edit';
 
 const e0 = emptyTomlEdit();
-const e1 = tomlSet({ edit: e0, path: ['title'], value: 'Demo' });
-const e2 = tomlSet({ edit: e1, path: ['tools', 'bun'], value: 'latest' });
-const out = tomlStringify({ edit: e2 });
+const e1 = tomlSet({ edit: e0, path: ['title',], value: 'Demo', },);
+const e2 = tomlSet({ edit: e1, path: ['tools', 'bun',], value: 'latest', },);
+const out = tomlStringify({ edit: e2, },);
 ```
 
 ## Modes
@@ -60,18 +71,18 @@ Default is `splice`, which emits unmutated regions verbatim from the source.
 
 `tomlSet` handles five resolution outcomes:
 
--  **Existing key-value or array element**: replaces the value bytes canonically. Style and raw spelling are preserved for unchanged primitives.
--  **Existing `[foo]` table or top-level**: replaces the body's key-values with the entries of the supplied JS object. Sub-tables (`[foo.sub]`) and top-level table headers are preserved. The JS value must be a plain object; arrays, scalars, and `Date` throw `TomlTypeError`. Pass `{}` to clear the body.
--  **Missing path with the deepest parent present**: inserts a fresh entry. Multi-segment tails become dotted-key inserts (`a.b.c = 42` at top-level, `b.c = 42` inside `[a]`). Inline tables are extended in place (`foo = {}` -> `foo = { x = 1 }`). Path-create through a scalar or `TOMLArray` throws.
--  **Existing array-of-tables collection (`[[foo]]`)**: requires an array value `[{...}, {...}, ...]`; one `[[foo]]` block is emitted per element. Pass `[]` to clear every instance. Multiple sibling standard tables under an implicit parent (`[a.b]` / `[a.c]` queried by `['a']`) are still rejected; set per sub-table.
--  **Dotted-key collision** (sibling-table or inline-table key overlap that would not re-parse): rejected with `TomlImmutableNodeError`.
+- **Existing key-value or array element**: replaces the value bytes canonically. Style and raw spelling are preserved for unchanged primitives.
+- **Existing `[foo]` table or top-level**: replaces the body's key-values with the entries of the supplied JS object. Sub-tables (`[foo.sub]`) and top-level table headers are preserved. The JS value must be a plain object; arrays, scalars, and `Date` throw `TomlTypeError`. Pass `{}` to clear the body.
+- **Missing path with the deepest parent present**: inserts a fresh entry. Multi-segment tails become dotted-key inserts (`a.b.c = 42` at top-level, `b.c = 42` inside `[a]`). Inline tables are extended in place (`foo = {}` -> `foo = { x = 1 }`). Path-create through a scalar or `TOMLArray` throws.
+- **Existing array-of-tables collection (`[[foo]]`)**: requires an array value `[{...}, {...}, ...]`; one `[[foo]]` block is emitted per element. Pass `[]` to clear every instance. Multiple sibling standard tables under an implicit parent (`[a.b]` / `[a.c]` queried by `['a']`) are still rejected; set per sub-table.
+- **Dotted-key collision** (sibling-table or inline-table key overlap that would not re-parse): rejected with `TomlImmutableNodeError`.
 
 `tomlDelete` handles four resolution outcomes:
 
--  **A key-value**: removes the entire line plus its trailing inline comment.
--  **A `[foo]` table header**: removes the full block (header line + all body key-values + interleaved comments + trailing newline).
--  **An array-of-tables collection**: removes every matched table block. Path `['foo']` against multiple `[[foo]]` instances clears them all; `['a']` against `[a.b]` + `[a.c]` removes both sub-tables.
--  **An array element** at any depth (inside the direct value of a key-value, or nested inside one or more arrays under that value): walks the parent chain up to the enclosing key-value and rewrites the outermost array via canonical re-emission, omitting the targeted element at the deepest level.
+- **A key-value**: removes the entire line plus its trailing inline comment.
+- **A `[foo]` table header**: removes the full block (header line + all body key-values + interleaved comments + trailing newline).
+- **An array-of-tables collection**: removes every matched table block. Path `['foo']` against multiple `[[foo]]` instances clears them all; `['a']` against `[a.b]` + `[a.c]` removes both sub-tables.
+- **An array element** at any depth (inside the direct value of a key-value, or nested inside one or more arrays under that value): walks the parent chain up to the enclosing key-value and rewrites the outermost array via canonical re-emission, omitting the targeted element at the deepest level.
 
 Sub-path reads (`tomlGetValue` / `tomlHas`) project pending edits through the path: after `tomlDelete({ path: ['arr', 1] })` on `arr = [10, 20, 30]`, `tomlGetValue({ path: ['arr', 1] })` returns `30` (the new array's index 1).
 
@@ -86,9 +97,9 @@ If full canonical re-formatting of parsed source is required (e.g. enforce inden
 
 Both bypass pending deltas. After `tomlSet({ edit, path, value: 'new' })`:
 
--  `tomlGetValue({ edit, path })` returns `'new'` (delta-aware, with cross-path projection for sub-path reads).
--  `tomlGetNode({ edit, path })` returns the parse-time AST node, whose `value` still reads the pre-edit content.
-   This is by design under the immutability invariant: the AST is shared by reference and never mutated; `node.range` correctly indexes into `edit.source`, which is also never mutated.
--  `tomlGetRaw({ edit, path })` returns the parse-time source slice (the pre-edit bytes).
+- `tomlGetValue({ edit, path })` returns `'new'` (delta-aware, with cross-path projection for sub-path reads).
+- `tomlGetNode({ edit, path })` returns the parse-time AST node, whose `value` still reads the pre-edit content.
+  This is by design under the immutability invariant: the AST is shared by reference and never mutated; `node.range` correctly indexes into `edit.source`, which is also never mutated.
+- `tomlGetRaw({ edit, path })` returns the parse-time source slice (the pre-edit bytes).
 
 For paths created by `tomlSet` that did not exist at parse time, neither function can return a node or bytes; `tomlStringify` and reparse first.

@@ -38,16 +38,16 @@ await describe({
           name: 'flags uncited "project doesn\'t use" dismissal',
           fn: async () => {
             const m = findCategoricalDismissal(
-              'All JSX rules: project doesn\'t use JSX.',
+              "All JSX rules: project doesn't use JSX.",
             );
-            expect(m?.phrase.toLowerCase(),).toBe('project doesn\'t use',);
+            expect(m?.phrase.toLowerCase(),).toBe("project doesn't use",);
           },
         },),
         it({
           name: 'flags uncited "we don\'t use" dismissal',
           fn: async () => {
-            const m = findCategoricalDismissal('Skip; we don\'t use enums.',);
-            expect(m?.phrase.toLowerCase(),).toBe('we don\'t use',);
+            const m = findCategoricalDismissal("Skip; we don't use enums.",);
+            expect(m?.phrase.toLowerCase(),).toBe("we don't use",);
           },
         },),
         it({
@@ -66,7 +66,8 @@ await describe({
               findCategoricalDismissal(
                 'Skip; is already handled by dprint (`packages/config/dprint/index.json:103`).',
               ),
-            ).toBe(undefined,);
+            )
+              .toBe(undefined,);
           },
         },),
         it({
@@ -74,9 +75,10 @@ await describe({
           fn: async () => {
             expect(
               findCategoricalDismissal(
-                'Skip; the project doesn\'t use this (AGENTS.md bans it).',
+                "Skip; the project doesn't use this (AGENTS.md bans it).",
               ),
-            ).toBe(undefined,);
+            )
+              .toBe(undefined,);
           },
         },),
         it({
@@ -84,10 +86,11 @@ await describe({
           fn: async () => {
             const text = [
               'A bullet with a real citation: see `packages/foo/bar.ts:42`.',
-              'A separate bullet; project doesn\'t use JSX.',
-            ].join('\n',);
+              "A separate bullet; project doesn't use JSX.",
+            ]
+              .join('\n',);
             const m = findCategoricalDismissal(text,);
-            expect(m?.phrase.toLowerCase(),).toBe('project doesn\'t use',);
+            expect(m?.phrase.toLowerCase(),).toBe("project doesn't use",);
           },
         },),
         it({
@@ -95,17 +98,18 @@ await describe({
           fn: async () => {
             expect(
               findCategoricalDismissal('Just a factual statement, no dismissal.',),
-            ).toBe(undefined,);
+            )
+              .toBe(undefined,);
           },
         },),
         it({
           name: 'flags "codebase doesn\'t have" without citation',
           fn: async () => {
             const m = findCategoricalDismissal(
-              'Skip; the codebase doesn\'t have any Vue files.',
+              "Skip; the codebase doesn't have any Vue files.",
             );
             expect(m?.phrase.toLowerCase(),).toBe(
-              'the codebase doesn\'t have',
+              "the codebase doesn't have",
             );
           },
         },),
@@ -113,9 +117,9 @@ await describe({
           name: 'flags "doesn\'t apply here" without citation',
           fn: async () => {
             const m = findCategoricalDismissal(
-              'Skip; that rule doesn\'t apply here.',
+              "Skip; that rule doesn't apply here.",
             );
-            expect(m?.phrase.toLowerCase(),).toBe('doesn\'t apply here',);
+            expect(m?.phrase.toLowerCase(),).toBe("doesn't apply here",);
           },
         },),
         it({
@@ -125,7 +129,8 @@ await describe({
               findCategoricalDismissal(
                 'Skip; is already covered by dprint at line :103.',
               ),
-            ).toBe(undefined,);
+            )
+              .toBe(undefined,);
           },
         },),
       ],

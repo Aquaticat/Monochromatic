@@ -32,8 +32,8 @@ It is not part of the shipped product and should not be extended with `done`-onl
   output with `with { type: 'text' }`.
 - Component-level Shadow DOM styles in `done` are `$({ rule, decls, children })` calls
   with typed value constructors (`cssRem`, `cssVar`, `cssInt`).
-  In `done-postcss` they are `css(\`@apply --foo; ...\`)` template strings expanded
-  at runtime by `build-tool-css`.
+  In `done-postcss` they are `css(\`@apply --foo; ...\`)`template strings expanded
+  at runtime by`build-tool-css`.
 
 ### Build pipeline
 

@@ -36,11 +36,11 @@ await describe({
     it({
       name: 'throws on non-numeric values',
       fn: async () => {
-        expect(() => numericOrThrow('42',),).toThrow(/number or bigint/,);
-        expect(() => numericOrThrow(true,),).toThrow(/number or bigint/,);
-        expect(() => numericOrThrow(null,),).toThrow(/number or bigint/,);
-        expect(() => numericOrThrow(undefined,),).toThrow(/number or bigint/,);
-        expect(() => numericOrThrow({},),).toThrow(/number or bigint/,);
+        expect(() => numericOrThrow('42',)).toThrow(/number or bigint/,);
+        expect(() => numericOrThrow(true,)).toThrow(/number or bigint/,);
+        expect(() => numericOrThrow(null,)).toThrow(/number or bigint/,);
+        expect(() => numericOrThrow(undefined,)).toThrow(/number or bigint/,);
+        expect(() => numericOrThrow({},)).toThrow(/number or bigint/,);
       },
     },),
 

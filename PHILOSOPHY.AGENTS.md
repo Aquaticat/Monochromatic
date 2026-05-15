@@ -243,6 +243,7 @@ AGENTS.md was compressed from 6693 words / 480 lines to 6672 words / 477 lines (
 The 2026-05-09 pass introduced a pattern of using `**Title.**` bolded paragraphs as section sub-headings (e.g. `**Standards.**`, `**Type system.**` under `### TypeScript`). The user flagged this in the 2026-05-11 pass as misusing bold for titles. Convention now: bold is for inline emphasis only; section sub-headings use proper ATX headers (`####`) one level deeper than the parent `###`.
 
 Converted in this pass:
+
 - `**Zero-match silent failures:**` -> `#### Zero-match silent failures`
 - `**Non-zero-match silent failures (same shape, opposite direction):**` -> `#### Non-zero-match silent failures (same shape, opposite direction)`
 - TypeScript: `**Standards.**`, `**Type system.**`, `**Variables and values.**`, `**Programming patterns.**` -> `#### Standards`, `#### Type system`, `#### Variables and values`, `#### Programming patterns`

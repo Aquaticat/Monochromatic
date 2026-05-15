@@ -573,9 +573,8 @@ export class Child {
    * terminal rather than scrolling under the prior child's logs.
    */
   #spawnAndTrack(): void {
-    if (this.#clear) {
+    if (this.#clear)
       this.#writeClear();
-    }
     /** Freshly spawned process handle; stored on `#current` so subsequent stops can address it. */
     const handle = this.#spawn({
       command: this.#command,

@@ -24,8 +24,8 @@
  * and runtime behavior through TypeScript type checking and intentional @ts-expect-error markers.
  */
 
-import type { Promisable, } from 'type-fest';
 import { wait, } from '@monochromatic-dev/module-async-time';
+import type { Promisable, } from 'type-fest';
 
 //region Real Generic Schema Type Definitions
 

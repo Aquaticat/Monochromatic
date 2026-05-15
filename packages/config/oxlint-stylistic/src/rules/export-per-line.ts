@@ -49,8 +49,11 @@ export const exportPerLine: CreateOnceRule = {
         const exportNode = node as Span & Record<string, unknown>;
 
         /** Skip inline declarations (`export const x = ...`). */
-        if ((exportNode['declaration'] !== null) && (exportNode['declaration'] !== undefined))
+        if ((exportNode['declaration'] !== null)
+          && (exportNode['declaration'] !== undefined))
+        {
           return;
+        }
 
         /** Extract specifiers from the untyped record cast above. */
         const specifiers = exportNode['specifiers'] as Span[] | null | undefined;

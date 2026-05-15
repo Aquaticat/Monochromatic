@@ -109,7 +109,7 @@ constraints: not a defect, no fix, decision: no upstream report.
 ### Symptom
 
 ```toml
-fruit.apple.color = "red"  # implicitly creates [fruit] and [fruit.apple]
+fruit.apple.color = "red" # implicitly creates [fruit] and [fruit.apple]
 
 [fruit.apple] # INVALID -- table already defined via dotted key
 taste = "sweet"
@@ -236,7 +236,7 @@ region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
 
 [prod.deploy.parameters]
-region = "us-east-1"           # must repeat
+region = "us-east-1" # must repeat
 capabilities = "CAPABILITY_IAM" # must repeat
 ```
 

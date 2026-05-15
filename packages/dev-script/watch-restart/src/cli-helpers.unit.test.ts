@@ -33,7 +33,8 @@ await describe({
           fn: async function throwsUnknown() {
             expect(function bogus(): void {
               parseTypeToken('symlink',);
-            },).toThrow(/Unknown --type token "symlink"/,);
+            },)
+              .toThrow(/Unknown --type token "symlink"/,);
           },
         },),
       ],
@@ -58,7 +59,8 @@ await describe({
           fn: async function throwsUnknownSig() {
             expect(function bogus(): void {
               parseKillSignal('SIGNUKE',);
-            },).toThrow(/Unknown --signal "SIGNUKE"/,);
+            },)
+              .toThrow(/Unknown --signal "SIGNUKE"/,);
           },
         },),
         it({
@@ -66,7 +68,8 @@ await describe({
           fn: async function throwsDangerous() {
             expect(function bogus(): void {
               parseKillSignal('SIGSEGV',);
-            },).toThrow(/Unknown --signal/,);
+            },)
+              .toThrow(/Unknown --signal/,);
           },
         },),
       ],
@@ -87,7 +90,8 @@ await describe({
           fn: async function invalid() {
             expect(function bogus(): void {
               compileRegex('(',);
-            },).toThrow();
+            },)
+              .toThrow();
           },
         },),
       ],
@@ -102,7 +106,8 @@ await describe({
               positive: false,
               negative: false,
               flag: 'foo',
-            },),).toBeUndefined();
+            },),)
+              .toBeUndefined();
           },
         },),
         it({
@@ -112,7 +117,8 @@ await describe({
               positive: true,
               negative: false,
               flag: 'foo',
-            },),).toBe(true,);
+            },),)
+              .toBe(true,);
           },
         },),
         it({
@@ -122,7 +128,8 @@ await describe({
               positive: false,
               negative: true,
               flag: 'foo',
-            },),).toBe(false,);
+            },),)
+              .toBe(false,);
           },
         },),
         it({
@@ -134,7 +141,8 @@ await describe({
                 negative: true,
                 flag: 'hidden',
               },);
-            },).toThrow(/Cannot pass both --hidden and --no-hidden/,);
+            },)
+              .toThrow(/Cannot pass both --hidden and --no-hidden/,);
           },
         },),
       ],

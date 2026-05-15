@@ -173,12 +173,10 @@ function validateTimeStrategy({
   if ((value === null) || (value === undefined))
     return 'newest';
   /* oxlint-disable typescript/no-unsafe-type-assertion -- value is validated by Set.has / sh: prefix check before each cast below */
-  if (BUILTIN_STRATEGIES.has(value as BuiltinTimeStrategy,)) {
+  if (BUILTIN_STRATEGIES.has(value as BuiltinTimeStrategy,))
     return value as TimeStrategy;
-  }
-  if (value.startsWith('sh:',)) {
+  if (value.startsWith('sh:',))
     return value as TimeStrategy;
-  }
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   throw new Error(
     `Invalid ${flagName}: "${value}". Must be a builtin (newest, oldest, mean, median) or sh:command.`,

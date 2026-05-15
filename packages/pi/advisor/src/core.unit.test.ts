@@ -157,10 +157,11 @@ await describe({
                 '--models',
                 'cheap/*, expensive/reviewer ',
               ],
-            },),).toEqual([
-              'cheap/*',
-              'expensive/reviewer',
-            ],);
+            },),)
+              .toEqual([
+                'cheap/*',
+                'expensive/reviewer',
+              ],);
           },
         },),
       ],
@@ -180,7 +181,8 @@ await describe({
             },);
             expect(result.map(function mapEntry(entry,) {
               return entry.canonicalSlug;
-            },),).toEqual(['expensive/reviewer',],);
+            },),)
+              .toEqual(['expensive/reviewer',],);
           },
         },),
       ],

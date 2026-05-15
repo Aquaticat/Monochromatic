@@ -149,12 +149,14 @@ function makeMinimalPngDataUri({
   },);
 
   const pngBytes = new Uint8Array([...pngSignature, ...ihdr, ...idat, ...iend,],);
-  const binary = Array.from(
-    pngBytes,
-    function byteToChar(byte,) {
-      return String.fromCodePoint(byte,);
-    },
-  ).join('',);
+  const binary = Array
+    .from(
+      pngBytes,
+      function byteToChar(byte,) {
+        return String.fromCodePoint(byte,);
+      },
+    )
+    .join('',);
   return `data:image/png;base64,${btoa(binary,)}`;
 }
 

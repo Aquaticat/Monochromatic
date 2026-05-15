@@ -33,23 +33,23 @@ await describe({
     it({
       name: 'throws when a recognized container has nonzero size',
       fn: async () => {
-        expect(() => emptyOrThrow('x',),).toThrow(/size 1/,);
-        expect(() => emptyOrThrow([1,],),).toThrow(/size 1/,);
-        expect(() => emptyOrThrow(new Set([1,],),),).toThrow(/size 1/,);
-        expect(() => emptyOrThrow(new Map([['a', 1,],],),),).toThrow(/size 1/,);
-        expect(() => emptyOrThrow({ a: 1, },),).toThrow(/size 1/,);
+        expect(() => emptyOrThrow('x',)).toThrow(/size 1/,);
+        expect(() => emptyOrThrow([1,],)).toThrow(/size 1/,);
+        expect(() => emptyOrThrow(new Set([1,],),)).toThrow(/size 1/,);
+        expect(() => emptyOrThrow(new Map([['a', 1,],],),)).toThrow(/size 1/,);
+        expect(() => emptyOrThrow({ a: 1, },)).toThrow(/size 1/,);
       },
     },),
 
     it({
       name: 'throws when value is not a recognized container',
       fn: async () => {
-        expect(() => emptyOrThrow(null,),).toThrow(/sized container/,);
-        expect(() => emptyOrThrow(undefined,),).toThrow(/sized container/,);
-        expect(() => emptyOrThrow(42,),).toThrow(/sized container/,);
-        expect(() => emptyOrThrow(true,),).toThrow(/sized container/,);
-        expect(() => emptyOrThrow(1n,),).toThrow(/sized container/,);
-        expect(() => emptyOrThrow(Symbol('s',),),).toThrow(/sized container/,);
+        expect(() => emptyOrThrow(null,)).toThrow(/sized container/,);
+        expect(() => emptyOrThrow(undefined,)).toThrow(/sized container/,);
+        expect(() => emptyOrThrow(42,)).toThrow(/sized container/,);
+        expect(() => emptyOrThrow(true,)).toThrow(/sized container/,);
+        expect(() => emptyOrThrow(1n,)).toThrow(/sized container/,);
+        expect(() => emptyOrThrow(Symbol('s',),)).toThrow(/sized container/,);
       },
     },),
   ],

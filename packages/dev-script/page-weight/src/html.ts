@@ -4,9 +4,7 @@
  * Parses an HTML document with rehype-parse and walks the resulting hast tree
  * to collect every local asset URL the page would cause a browser to fetch.
  */
-import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import type {
   Element,
   Node,

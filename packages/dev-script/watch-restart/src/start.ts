@@ -213,12 +213,10 @@ async function buildInternalFilter(
   const types: readonly WatchEntityType[] = options.types ?? ['file',];
   filters.push(typeFilter(types,),);
 
-  if (options.events !== undefined) {
+  if (options.events !== undefined)
     filters.push(buildEventKindFilter(options.events,),);
-  }
-  if ((options.extensions !== undefined) && (options.extensions.length > 0)) {
+  if ((options.extensions !== undefined) && (options.extensions.length > 0))
     filters.push(extFilter(options.extensions,),);
-  }
   if (
     ((options.include !== undefined) && (options.include.length > 0))
     || ((options.exclude !== undefined) && (options.exclude.length > 0))
@@ -241,9 +239,8 @@ async function buildInternalFilter(
         : { exclude: options.excludeRegex, }),
     },),);
   }
-  if (options.hidden !== true) {
+  if (options.hidden !== true)
     filters.push(hiddenFilter(),);
-  }
 
   /**
    * Resolved `.gitignore` roots: only the watch roots when `--gitignore`
@@ -265,12 +262,10 @@ async function buildInternalFilter(
     );
   }
 
-  if (options.contentChanged !== false) {
+  if (options.contentChanged !== false)
     filters.push(contentHashFilter(),);
-  }
-  if (options.filter !== undefined) {
+  if (options.filter !== undefined)
     filters.push(options.filter,);
-  }
 
   return composeFilters(filters,);
 }
@@ -377,9 +372,8 @@ export async function startWatchRestart(
    * fresh event arriving mid-restart cannot see a stale handle.
    */
   function scheduleRestart(): void {
-    if (state.timer !== undefined) {
+    if (state.timer !== undefined)
       clearTimeout(state.timer,);
-    }
     state.timer = setTimeout(
       function fireRestart(): void {
         state.timer = undefined;
@@ -415,9 +409,8 @@ export async function startWatchRestart(
         event,
         ctx,
       },);
-      if (passed) {
+      if (passed)
         scheduleRestart();
-      }
     }
     catch (error) {
       /** Human-readable error string used in the filter-failure log line. */
@@ -445,9 +438,8 @@ export async function startWatchRestart(
 
   await watcher.untilReady();
 
-  if (options.initial !== false) {
+  if (options.initial !== false)
     await child.start();
-  }
 
   /**
    * Tears down the loop. Order matters: abort first so in-flight filter

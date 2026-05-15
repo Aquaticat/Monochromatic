@@ -181,7 +181,6 @@ export function createWriteBuffer({
   flushAtMs = DEFAULT_FLUSH_AT_MS,
   concurrency = DEFAULT_CONCURRENCY,
 }: CreateWriteBufferParams,): WriteBuffer {
-
   /** Pending items keyed by storage key (later wins). */
   const queue = new Map<string, StoragePutItem>();
 

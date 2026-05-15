@@ -54,14 +54,15 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
   /**
    * Names of model directories under {@link LINT_DIR}; `undefined` when the directory is missing.
    */
-  const modelDirs = await (async function tryReadModelDirs(): Promise<string[] | undefined> {
-    try {
-      return await readdir(LINT_DIR,);
-    }
-    catch {
-      return undefined;
-    }
-  })();
+  const modelDirs =
+    await (async function tryReadModelDirs(): Promise<string[] | undefined> {
+      try {
+        return await readdir(LINT_DIR,);
+      }
+      catch {
+        return undefined;
+      }
+    })();
   if (modelDirs === undefined) {
     return {
       probePairs,

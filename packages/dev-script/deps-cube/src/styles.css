@@ -14,7 +14,7 @@
   --fg-muted: #666;
   --border-subtle: #d4d4d4;
   --accent: #2563eb;
-  --accent-fg: #ffffff;
+  --accent-fg: #fff;
   --shadow-pinned: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
   --font-ui: system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
@@ -114,7 +114,7 @@ body {
     }
   }
 
-  & input[type="text"],
+  & input[type='text'],
   & select {
     inline-size: 100%;
     min-block-size: var(--size-touch);
@@ -189,7 +189,7 @@ body {
     }
   }
 
-  & input[type="range"] {
+  & input[type='range'] {
     flex-grow: 1;
     min-block-size: var(--size-touch);
 
@@ -212,7 +212,7 @@ body {
     block-size: var(--size-touch);
 
     &::before {
-      content: "";
+      content: '';
       position: absolute;
       inset-inline: 0;
       inset-block-start: 50%;
@@ -223,7 +223,7 @@ body {
       pointer-events: none;
     }
 
-    & input[type="range"] {
+    & input[type='range'] {
       position: absolute;
       inset-block: 0;
       inset-inline: 0;
@@ -234,7 +234,7 @@ body {
       pointer-events: none;
     }
 
-    & input[type="range"]::-webkit-slider-thumb {
+    & input[type='range']::-webkit-slider-thumb {
       appearance: none;
       pointer-events: auto;
       inline-size: 1.25rem;
@@ -250,7 +250,7 @@ body {
       cursor: pointer;
     }
 
-    & input[type="range"]::-moz-range-thumb {
+    & input[type='range']::-moz-range-thumb {
       pointer-events: auto;
       inline-size: 1.25rem;
       block-size: 1.25rem;
@@ -265,11 +265,11 @@ body {
       cursor: pointer;
     }
 
-    & input[type="range"]::-webkit-slider-runnable-track {
+    & input[type='range']::-webkit-slider-runnable-track {
       background-color: transparent;
     }
 
-    & input[type="range"]::-moz-range-track {
+    & input[type='range']::-moz-range-track {
       background-color: transparent;
     }
   }

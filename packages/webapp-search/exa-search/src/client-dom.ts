@@ -4,9 +4,7 @@ import {
   $ as createObservable,
   type Observable,
 } from '@monochromatic-dev/module-es/create-observable';
-import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import * as v from 'valibot';
 
 import { replicateElementAsContentOf, } from './client-replicate-element.ts';
@@ -32,7 +30,9 @@ const bindings = {
           if (val !== null)
             return val;
           /** Raw prompt response captured before uuid validation gates persistence. */
-          const inputApiKey = nonNullishOrThrow(await prompt({ message: 'Set api key', },),);
+          const inputApiKey = nonNullishOrThrow(
+            await prompt({ message: 'Set api key', },),
+          );
           // Validate BEFORE persisting. The prompt aligns with native window.prompt
           // and resolves '' on OK-with-empty; writing that through to localStorage
           // would leave the page broken on every subsequent load.

@@ -89,7 +89,9 @@ catch (error) {
     // Preserve oxlint's exit code
     process.exitCode = subprocessError.exitCode ?? 1;
 
-    if ((subprocessError.signalName !== undefined) && (subprocessError.signalName !== '')) {
+    if ((subprocessError.signalName !== undefined)
+      && (subprocessError.signalName !== ''))
+    {
       console.error(
         `[task-oxlint] oxlint terminated by signal: ${subprocessError.signalName}`,
       );

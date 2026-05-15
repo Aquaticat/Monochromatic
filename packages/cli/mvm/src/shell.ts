@@ -57,7 +57,9 @@ export async function shell({ name, }: { name: string; },): Promise<void> {
       && ('exitCode' in error))
     {
       /** Forwarded so the shell exit code reflects the virsh console outcome. */
-      const exitCode = ((typeof error.exitCode) === 'number') ? error.exitCode : undefined;
+      const exitCode = ((typeof error.exitCode) === 'number')
+        ? error.exitCode
+        : undefined;
       if (exitCode !== undefined)
         process.exitCode = exitCode;
     }

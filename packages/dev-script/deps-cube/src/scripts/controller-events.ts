@@ -17,11 +17,11 @@
  * ```
  */
 
-import type { PackageProbe, } from '../probe.ts';
 import {
   computeSceneBounds,
   type SceneBounds,
 } from '../deck-config.ts';
+import type { PackageProbe, } from '../probe.ts';
 import {
   el,
   elInput,
@@ -193,7 +193,8 @@ export function wireDimDropdowns(
         const nextDim = DIM_KEYS.find(function match(candidate,) {
           return candidate === raw;
         },);
-        if (nextDim === undefined) return;
+        if (nextDim === undefined)
+          return;
         session.state.dimMapping[channel] = nextDim;
         /** Fresh `[min, max]` for the newly-selected dim; replaces the now-meaningless previous range. */
         const extent = computeRangeExtent({
@@ -246,19 +247,24 @@ export function wireToggles(
 ): void {
   TOGGLE_KEYS.forEach(function bind(key: ToggleKey,) {
     /** Fieldset wrapping the three radios for this toggle; event delegation hangs off it. */
-    const fieldset = document.querySelector<HTMLFieldSetElement>(`[data-toggle="${key}"]`,);
-    if (fieldset === null) return;
+    const fieldset = document.querySelector<HTMLFieldSetElement>(
+      `[data-toggle="${key}"]`,
+    );
+    if (fieldset === null)
+      return;
     fieldset.addEventListener(
       'change',
       function onChange(event,) {
         /** Delegated event target; narrowed to `HTMLInputElement` below before reading `.value`. */
         const input = event.target;
-        if (!(input instanceof HTMLInputElement)) return;
+        if (!(input instanceof HTMLInputElement))
+          return;
         /** Narrowed `ToggleValue` matching the input's value; `undefined` rejects unexpected values. */
         const next = TOGGLE_VALUES.find(function match(candidate,) {
           return candidate === input.value;
         },);
-        if (next === undefined) return;
+        if (next === undefined)
+          return;
         session.state.toggles[key] = next;
         commit();
       },
@@ -396,7 +402,8 @@ export function wireDisplay(
       key,
     }: {
       id: string;
-      key: 'showWireframe' | 'showThresholdPlanes' | 'showAxisLabels' | 'showUnknownCluster';
+      key: 'showWireframe' | 'showThresholdPlanes' | 'showAxisLabels'
+        | 'showUnknownCluster';
     },
   ): void {
     /** Checkbox `<input>` resolved by id; `change` event drives the bound display toggle. */
@@ -432,7 +439,8 @@ export function wireDisplay(
     function onChange() {
       /** Raw `value` from the select; narrowed against the allowed name-label modes below. */
       const raw = nameLabels.value;
-      if ((raw !== 'none') && (raw !== 'topN') && (raw !== 'all')) return;
+      if ((raw !== 'none') && (raw !== 'topN') && (raw !== 'all'))
+        return;
       session.state.displayToggles.nameLabels = raw;
       commit();
     },

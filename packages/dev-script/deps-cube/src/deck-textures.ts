@@ -165,7 +165,9 @@ function paintBackground(
     b,
     a,
   ] = fillColor;
-  ctx.fillStyle = `rgba(${r.toString()}, ${g.toString()}, ${b.toString()}, ${(a / 255).toString()})`;
+  ctx.fillStyle = `rgba(${r.toString()}, ${g.toString()}, ${b.toString()}, ${
+    (a / 255).toString()
+  })`;
   ctx.fillRect(
     0,
     0,
@@ -263,7 +265,7 @@ function paintRotated180(
  * that fits `text` inside `slotWidthPx * SPHERE_SLOT_FILL_FRACTION`.
  *
  * Uses `ctx.measureText` at `FONT_SIZE_PX` and rescales proportionally
- *; text width is linear in font size for a given typeface, so one
+ * ; text width is linear in font size for a given typeface, so one
  * measurement is enough.
  *
  * @param ctx - Target context (must already have `font` set so subsequent measureText returns the correct width).
@@ -289,7 +291,8 @@ function pickFontSize(
   const measuredAtMax = ctx.measureText(text,).width;
   /** Width budget after reserving the fill-fraction margin for the outline. */
   const targetWidth = slotWidthPx * SPHERE_SLOT_FILL_FRACTION;
-  if (measuredAtMax <= targetWidth) return FONT_SIZE_PX;
+  if (measuredAtMax <= targetWidth)
+    return FONT_SIZE_PX;
   /** Proportionally-rescaled font size before clamping to the minimum. */
   const scaled = FONT_SIZE_PX * (targetWidth / measuredAtMax);
   return Math.max(
@@ -356,14 +359,16 @@ export function makeProbeTexture(
   },);
   /** Previously-built canvas for this key, or undefined on first build. */
   const cached = TEXTURE_CACHE.get(key,);
-  if (cached !== undefined) return cached;
+  if (cached !== undefined)
+    return cached;
   /** Fresh canvas sized to the texture dimensions; populated by the painting steps below. */
   const canvas = document.createElement('canvas',);
   canvas.width = TEXTURE_SIZE_PX;
   canvas.height = TEXTURE_SIZE_PX;
   /** Drawing context for the new canvas; nullable when Canvas2D is unavailable. */
   const ctx = canvas.getContext('2d',);
-  if (ctx === null) throw new Error('Canvas2D context unavailable',);
+  if (ctx === null)
+    throw new Error('Canvas2D context unavailable',);
   paintBackground({
     ctx,
     fillColor,
@@ -422,7 +427,8 @@ export function makeProbeTexture(
         y: flippedYPx,
       },);
     }
-  } else {
+  }
+  else {
     ctx.lineWidth = OUTLINE_WIDTH_PX;
     /** Canvas-X centre of the single octahedron stamp; horizontal midpoint of the texture. */
     const centreX = TEXTURE_SIZE_PX * HALF;

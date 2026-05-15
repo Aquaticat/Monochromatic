@@ -111,9 +111,9 @@ export async function getCurrentFiles(): Promise<CurrentFile[]> {
         >;
         /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         return {
-          path: (((typeof result.path) === 'string')) ? result.path : '',
-          filetype: (((typeof result.filetype) === 'string')) ? result.filetype : '',
-          modified: (((typeof result.modified) === 'boolean')) ? result.modified : false,
+          path: ((typeof result.path) === 'string') ? result.path : '',
+          filetype: ((typeof result.filetype) === 'string') ? result.filetype : '',
+          modified: ((typeof result.modified) === 'boolean') ? result.modified : false,
         };
       }
       catch (err: unknown) {

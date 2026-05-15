@@ -80,7 +80,9 @@ await describe({
             import { cat, overwrite } from '${join(import.meta.dirname, 'index.ts',)}';
             await overwrite({
               dest: '${join(tempDir, 'combined.txt',)}',
-              content: await cat(['${join(tempDir, 'a.txt',)}', '${join(tempDir, 'b.txt',)}']),
+              content: await cat(['${join(tempDir, 'a.txt',)}', '${
+          join(tempDir, 'b.txt',)
+        }']),
             });
           `;
         const configPath = join(tempDir, 'concat.config.ts',);

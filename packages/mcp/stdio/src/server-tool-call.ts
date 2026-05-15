@@ -49,7 +49,7 @@ export async function handleToolCall(
   } = request;
 
   /** Tool name extracted from untrusted params; `undefined` triggers an invalid-params error below. */
-  const toolName = (((typeof params?.name) === 'string')) ? params.name : undefined;
+  const toolName = ((typeof params?.name) === 'string') ? params.name : undefined;
   if (toolName === undefined) {
     return respondError({
       id,
@@ -63,7 +63,7 @@ export async function handleToolCall(
   /** Validated argument bag: empty object when params arrived missing, null, an array, or a non-object. */
   const toolArgs: Record<string, unknown> = (rawArgs !== undefined)
       && (rawArgs !== null)
-      && (((typeof rawArgs) === 'object'))
+      && ((typeof rawArgs) === 'object')
       && (!Array.isArray(rawArgs,))
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed from unknown to non-array object above
     ? (rawArgs as Record<string, unknown>)

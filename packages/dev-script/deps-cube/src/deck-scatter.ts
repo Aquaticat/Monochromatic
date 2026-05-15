@@ -31,7 +31,6 @@ import type { Layer, } from '@deck.gl/core';
 import { SimpleMeshLayer, } from '@deck.gl/mesh-layers';
 import type { Geometry, } from '@luma.gl/engine';
 
-import type { PackageProbe, } from './probe.ts';
 import {
   probeFillColor,
   probePosition,
@@ -53,6 +52,7 @@ import {
   type MeshShape,
   type Rgba,
 } from './deck-textures.ts';
+import type { PackageProbe, } from './probe.ts';
 import type { AppState, } from './scripts/state.ts';
 
 //region Constants

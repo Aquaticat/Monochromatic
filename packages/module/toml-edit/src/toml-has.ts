@@ -28,7 +28,7 @@ export function tomlHas(
     path,
   }: {
     edit: TomlEditState;
-    path: TomlPath
+    path: TomlPath;
   },
 ): boolean {
   /** Effective resolution so pending deletes show as absent. */

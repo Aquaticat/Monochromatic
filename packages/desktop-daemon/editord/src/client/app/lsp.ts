@@ -156,7 +156,7 @@ export function wireLsp(
   const renamePosition: {
     current: {
       line: number;
-      character: number
+      character: number;
     } | null;
   } = { current: null, };
 

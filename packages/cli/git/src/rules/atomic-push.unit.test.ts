@@ -28,12 +28,13 @@ await describe({
           'push',
           'origin',
           'main',
-        ],),).toEqual([
-          'push',
-          '--atomic',
-          'origin',
-          'main',
-        ],);
+        ],),)
+          .toEqual([
+            'push',
+            '--atomic',
+            'origin',
+            'main',
+          ],);
       },
     },),
     it({
@@ -45,14 +46,15 @@ await describe({
           'push',
           'origin',
           'main',
-        ],),).toEqual([
-          '-C',
-          '/tmp/repo',
-          'push',
-          '--atomic',
-          'origin',
-          'main',
-        ],);
+        ],),)
+          .toEqual([
+            '-C',
+            '/tmp/repo',
+            'push',
+            '--atomic',
+            'origin',
+            'main',
+          ],);
       },
     },),
     it({

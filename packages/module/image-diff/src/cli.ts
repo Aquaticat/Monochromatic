@@ -36,7 +36,8 @@ const args = runSync(
     help: 'option',
     aboveError: 'help',
     brief: message`image-diff - perceptual image comparison via multimodal embeddings`,
-    footer: message`Set IMAGE_DIFF_VOYAGE_API_KEY, IMAGE_DIFF_GEMINI_API_KEY, or IMAGE_DIFF_OPENROUTER_API_KEY to enable each backend.`,
+    footer:
+      message`Set IMAGE_DIFF_VOYAGE_API_KEY, IMAGE_DIFF_GEMINI_API_KEY, or IMAGE_DIFF_OPENROUTER_API_KEY to enable each backend.`,
   },
 );
 

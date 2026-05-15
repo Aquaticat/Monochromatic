@@ -12,31 +12,33 @@ The package is source-only.
 `./find-monorepo-root` resolves directly to `./src/find-monorepo-root.ts` for consumers that only need that one function.
 `./find-package-root` resolves directly to `./src/find-package-root.ts` for consumers that only need that one function.
 
-| Function                | Source                      | Description                                                                                              |
-| ----------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `dirname`               | `src/index.ts`              | Returns the directory portion of a POSIX path. Delegates to `node:path/posix` when available.            |
-| `join`                  | `src/index.ts`              | Joins path segments with `/` and normalizes the result.                                                  |
-| `resolve`               | `src/index.ts`              | Resolves a sequence of paths to an absolute path.                                                        |
-| `isAbsolute`            | `src/index.ts`              | Whether a POSIX path starts with `/`.                                                                    |
-| `sep`                   | `src/index.ts`              | POSIX path separator (`'/'`).                                                                            |
-| `findMonorepoRoot`      | `src/find-monorepo-root.ts` | Walks upward for a `mise.toml` containing `[monorepo]`. Normalizes `/home/` to `/var/home/` for ostree.  |
-| `findMonorepoRootCached` | `src/find-monorepo-root.ts` | Memoised variant: first resolved root is locked in for the process lifetime; concurrent first callers share one walk. |
-| `findPackageRoot`       | `src/find-package-root.ts`  | Walks upward for a `package.json` whose `name` field matches a given value. Anchors a package on its own root in source and built modes. Node/Bun only. |
-| `findPackageRootCached` | `src/find-package-root.ts`  | Memoised variant of `findPackageRoot`, keyed by `name`. Two modules of the same package share one walk. |
-| `ensureDir`             | `src/ensure.ts`             | Creates a directory recursively when missing, verifies read/write when it exists.                        |
-| `ensureFile`            | `src/ensure.ts`             | Creates a file (and parents) when missing, verifies read/write when it exists.                           |
-| `ensurePath`            | `src/ensure.ts`             | Dispatches to `ensureFile` or `ensureDir` based on whether the path has an extension.                    |
-| `emptyDir`              | `src/empty.ts`              | Removes all entries inside a directory without removing the directory itself.                            |
-| `emptyFile`             | `src/empty.ts`              | Truncates a file to zero bytes. Strips `?query` suffix before opening.                                   |
-| `emptyPath`             | `src/empty.ts`              | Dispatches to `emptyFile` or `emptyDir` based on whether the path has an extension.                      |
-| `removeEmptyFilesInDir` | `src/empty.ts`              | Deletes zero-byte files (after trimming) within a directory; leaves non-files and non-empty files alone. |
-| `trimLeadingSlash`      | `src/trim.ts`               | Removes a leading `/` unless the path is root.                                                           |
-| `trimTrailingSlash`     | `src/trim.ts`               | Removes a trailing `/` unless the path is root.                                                          |
+| Function                 | Source                      | Description                                                                                                                                             |
+| ------------------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dirname`                | `src/index.ts`              | Returns the directory portion of a POSIX path. Delegates to `node:path/posix` when available.                                                           |
+| `join`                   | `src/index.ts`              | Joins path segments with `/` and normalizes the result.                                                                                                 |
+| `resolve`                | `src/index.ts`              | Resolves a sequence of paths to an absolute path.                                                                                                       |
+| `isAbsolute`             | `src/index.ts`              | Whether a POSIX path starts with `/`.                                                                                                                   |
+| `sep`                    | `src/index.ts`              | POSIX path separator (`'/'`).                                                                                                                           |
+| `findMonorepoRoot`       | `src/find-monorepo-root.ts` | Walks upward for a `mise.toml` containing `[monorepo]`. Normalizes `/home/` to `/var/home/` for ostree.                                                 |
+| `findMonorepoRootCached` | `src/find-monorepo-root.ts` | Memoised variant: first resolved root is locked in for the process lifetime; concurrent first callers share one walk.                                   |
+| `findPackageRoot`        | `src/find-package-root.ts`  | Walks upward for a `package.json` whose `name` field matches a given value. Anchors a package on its own root in source and built modes. Node/Bun only. |
+| `findPackageRootCached`  | `src/find-package-root.ts`  | Memoised variant of `findPackageRoot`, keyed by `name`. Two modules of the same package share one walk.                                                 |
+| `ensureDir`              | `src/ensure.ts`             | Creates a directory recursively when missing, verifies read/write when it exists.                                                                       |
+| `ensureFile`             | `src/ensure.ts`             | Creates a file (and parents) when missing, verifies read/write when it exists.                                                                          |
+| `ensurePath`             | `src/ensure.ts`             | Dispatches to `ensureFile` or `ensureDir` based on whether the path has an extension.                                                                   |
+| `emptyDir`               | `src/empty.ts`              | Removes all entries inside a directory without removing the directory itself.                                                                           |
+| `emptyFile`              | `src/empty.ts`              | Truncates a file to zero bytes. Strips `?query` suffix before opening.                                                                                  |
+| `emptyPath`              | `src/empty.ts`              | Dispatches to `emptyFile` or `emptyDir` based on whether the path has an extension.                                                                     |
+| `removeEmptyFilesInDir`  | `src/empty.ts`              | Deletes zero-byte files (after trimming) within a directory; leaves non-files and non-empty files alone.                                                |
+| `trimLeadingSlash`       | `src/trim.ts`               | Removes a leading `/` unless the path is root.                                                                                                          |
+| `trimTrailingSlash`      | `src/trim.ts`               | Removes a trailing `/` unless the path is root.                                                                                                         |
 
 ## Usage
 
 ```ts
-import { findMonorepoRoot, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+import {
+  findMonorepoRoot,
+} from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 
 const root = await findMonorepoRoot();
 ```
@@ -44,13 +46,13 @@ const root = await findMonorepoRoot();
 ```ts
 import {
   dirname,
-  ensureDir,
   emptyDir,
+  ensureDir,
   trimTrailingSlash,
 } from '@monochromatic-dev/module-fs-path';
 
-await ensureDir('dist');
-await emptyDir(trimTrailingSlash(dirname('dist/bundle.js/'),),);
+await ensureDir('dist',);
+await emptyDir(trimTrailingSlash(dirname('dist/bundle.js/',),),);
 ```
 
 ## Runtime support

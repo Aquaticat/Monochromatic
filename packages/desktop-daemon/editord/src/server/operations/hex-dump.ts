@@ -5,9 +5,7 @@
  * offset, hex bytes grouped by 8, ASCII representation.
  */
 
-import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 /** Hexadecimal radix for `toString` and `padStart`. */
 const HEX_RADIX = 16;

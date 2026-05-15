@@ -5,17 +5,17 @@
  */
 
 import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test';
+import {
   mkdir,
   mkdtemp,
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
-import {
-  describe,
-  expect,
-  it,
-} from '@monochromatic-dev/module-test';
 import { loadSettingsScopePatterns, } from './settings-scope.ts';
 
 //region Fixtures
@@ -47,7 +47,8 @@ await describe({
             root,
             'home',
           ),
-        },),).toEqual({},);
+        },),)
+          .toEqual({},);
       },
     },),
     it({
@@ -102,7 +103,7 @@ await describe({
             PROJECT_PATTERN,
           ], },),
         );
-        expect(loadSettingsScopePatterns({ cwd, home, }).patterns,).toEqual([
+        expect(loadSettingsScopePatterns({ cwd, home, },).patterns,).toEqual([
           PROJECT_PATTERN,
         ],);
       },

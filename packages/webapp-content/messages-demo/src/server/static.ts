@@ -33,7 +33,9 @@ import { join, } from 'node:path';
  * if (stats !== undefined) console.log(stats.size);
  * ```
  */
-async function tryStat(id: string,): Promise<Awaited<ReturnType<typeof stat>> | undefined> {
+async function tryStat(
+  id: string,
+): Promise<Awaited<ReturnType<typeof stat>> | undefined> {
   try {
     return await stat(
       join(

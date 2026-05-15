@@ -30,7 +30,7 @@ function mount(root: HTMLElement,): void {
         tag: 'h1',
         attrs: {},
         children: [ll.appName(),],
-      }),
+      },),
       el({
         tag: 'button',
         attrs: {
@@ -40,7 +40,7 @@ function mount(root: HTMLElement,): void {
           },
         },
         children: [ll.start(),],
-      }),
+      },),
       el({
         tag: 'button',
         attrs: {
@@ -49,7 +49,7 @@ function mount(root: HTMLElement,): void {
           },
         },
         children: [ll.saves(),],
-      }),
+      },),
       el({
         tag: 'button',
         attrs: {
@@ -58,9 +58,9 @@ function mount(root: HTMLElement,): void {
           },
         },
         children: [ll.settings(),],
-      }),
+      },),
     ],
-  });
+  },);
   /** Ruka portrait shown alongside the menu so the landing screen has a face. */
   const portrait = el({
     tag: 'img',
@@ -72,7 +72,7 @@ function mount(root: HTMLElement,): void {
       alt: '',
       style: 'block-size: min(70dvb, 30rem); inline-size: auto; align-self: center;',
     },
-  });
+  },);
   /** Outer screen container the router toggles via the `data-screen` selector. */
   const screen = el({
     tag: 'section',
@@ -84,7 +84,7 @@ function mount(root: HTMLElement,): void {
       menu,
       portrait,
     ],
-  });
+  },);
   root.append(screen,);
 }
 

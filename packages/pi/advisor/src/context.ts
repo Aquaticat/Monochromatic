@@ -55,12 +55,15 @@ export function buildAdvisorContext(
   options: BuildAdvisorContextOptions,
 ): AdvisorContext {
   /** Agent messages included in the secondary Advisor request. */
-  const messages = options.branch
+  const messages = options
+    .branch
     .map(function mapEntry(entry,) {
       return entryToMessage({
         entry,
         includePriorAdvisorResults: options.config.includePriorAdvisorResults,
-        ...(options.toolCallId === undefined ? {} : { currentToolCallId: options.toolCallId, }),
+        ...(options.toolCallId === undefined
+          ? {}
+          : { currentToolCallId: options.toolCallId, }),
       },);
     },)
     .filter(function isIncludedMessage(message,): message is AdvisorAgentMessage {
@@ -141,10 +144,12 @@ export function truncateContext(
   const tailText = tailChars === 0 ? '' : text.slice(-tailChars,);
 
   return {
-    text: `${text.slice(
-      0,
-      headChars,
-    )}${CONTEXT_TRUNCATION_MARKER}${tailText}`,
+    text: `${
+      text.slice(
+        0,
+        headChars,
+      )
+    }${CONTEXT_TRUNCATION_MARKER}${tailText}`,
     truncated: true,
   };
 }

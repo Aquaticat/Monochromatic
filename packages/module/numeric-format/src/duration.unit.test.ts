@@ -84,7 +84,6 @@ await describe({
         expect(formatDuration(15_300,),).toBe('15.3s',);
       },
     },),
-
     //endregion 1000ms+ branch: seconds with one decimal
   ],
 },);

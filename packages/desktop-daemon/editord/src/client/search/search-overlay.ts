@@ -193,8 +193,12 @@ export class SearchOverlay extends HTMLElement {
   /** Opens the overlay. */
   #show(): void {
     this.#rootDir = this.getRootDir?.() ?? '';
-    if ((this.#dialog === null) || (this.#input === null) || (this.#resultsContainer === null))
+    if ((this.#dialog === null)
+      || (this.#input === null)
+      || (this.#resultsContainer === null))
+    {
       return;
+    }
     this.#input.value = '';
     this.#resultsContainer.replaceChildren();
     this.#results = [];

@@ -227,7 +227,8 @@ await describe({
     },),
 
     it({
-      name: 'nested-array element delete re-emits the outer array without the targeted element',
+      name:
+        'nested-array element delete re-emits the outer array without the targeted element',
       fn: async () => {
         const source = 'outer = [[1, 2], [3, 4]]\n';
         const e1 = tomlDelete({
@@ -270,7 +271,9 @@ await describe({
           edit: parseTomlEdit({ source, },),
           path: ['outer', 0, 0, 1,],
         },);
-        expect(tomlStringify({ edit: e1, },),).toBe('outer = [ [ [ 1, ], [ 3, ], ], [ ], ]\n',);
+        expect(tomlStringify({ edit: e1, },),).toBe(
+          'outer = [ [ [ 1, ], [ 3, ], ], [ ], ]\n',
+        );
       },
     },),
 
@@ -302,7 +305,8 @@ await describe({
     },),
 
     it({
-      name: 'immutable: nested-array element delete on derived state leaves original intact',
+      name:
+        'immutable: nested-array element delete on derived state leaves original intact',
       fn: async () => {
         const source = 'outer = [[1, 2], [3, 4]]\n';
         const e0 = parseTomlEdit({ source, },);

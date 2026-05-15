@@ -11,8 +11,8 @@ import {
 } from '@monochromatic-dev/module-test';
 
 import { emptyTomlEdit, } from './empty-toml-edit.ts';
-import { tomlSet, } from './toml-set.ts';
 import { tomlSetHeaderComment, } from './toml-set-header-comment.ts';
+import { tomlSet, } from './toml-set.ts';
 import { tomlStringify, } from './toml-stringify.ts';
 
 await describe({

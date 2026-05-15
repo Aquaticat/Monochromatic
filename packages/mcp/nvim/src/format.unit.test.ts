@@ -41,7 +41,9 @@ await describe({
           code: null,
           message: 'Unused variable',
         };
-        expect(formatDiagnostic({ diagnostic, },),).toBe('WARN 3:1 [eslint] Unused variable',);
+        expect(formatDiagnostic({ diagnostic, },),).toBe(
+          'WARN 3:1 [eslint] Unused variable',
+        );
       },
     },),
     it({
@@ -69,7 +71,9 @@ await describe({
           code: 'some-code',
           message: 'Consider refactoring',
         };
-        expect(formatDiagnostic({ diagnostic, },),).toBe('HINT 20:15 Consider refactoring',);
+        expect(formatDiagnostic({ diagnostic, },),).toBe(
+          'HINT 20:15 Consider refactoring',
+        );
       },
     },),
     it({

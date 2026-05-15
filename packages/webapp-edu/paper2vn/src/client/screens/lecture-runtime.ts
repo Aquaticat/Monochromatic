@@ -89,14 +89,14 @@ export function showChapterCard(
           tag: 'h2',
           attrs: {},
           children: [chapter.title,],
-        }),
+        },),
         el({
           tag: 'p',
           attrs: {},
           children: [chapter.summary,],
-        }),
+        },),
       ],
-    }),
+    },),
   );
   chapterCard.hidden = false;
 }

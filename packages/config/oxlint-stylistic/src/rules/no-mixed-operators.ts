@@ -76,8 +76,7 @@ export const noMixedOperators: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      nested:
-        'Nested binary expression with a different operator requires parentheses.',
+      nested: 'Nested binary expression with a different operator requires parentheses.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
@@ -111,12 +110,16 @@ export const noMixedOperators: CreateOnceRule = {
         parent.left,
         parent.right,
       ]) {
-        if (child.operator === undefined) continue;
-        if (child.operator === parent.operator) continue;
+        if (child.operator === undefined)
+          continue;
+        if (child.operator === parent.operator)
+          continue;
         if (hasParens({
           child,
           sourceText,
-        },)) continue;
+        },)) {
+          continue;
+        }
         /** Alias so the fixer closure captures the loop value rather than `child` (which TypeScript widens across the for-of). */
         const offender = child;
         context.report({

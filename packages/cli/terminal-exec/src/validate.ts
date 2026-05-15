@@ -166,7 +166,9 @@ export async function validateEntry({
   }
   //endregion
 
-  if ((entry.tryExec.length > 0) && (!await executableExists({ name: entry.tryExec, },))) {
+  if ((entry.tryExec.length > 0)
+    && (!await executableExists({ name: entry.tryExec, },)))
+  {
     l.debug(`${entryId}: TryExec '${entry.tryExec}' not found`,);
     return null;
   }

@@ -36,11 +36,11 @@ await describe({
     it({
       name: 'throws on non-iterable values',
       fn: async () => {
-        expect(() => iterableOrThrow(42,),).toThrow(/iterable/,);
-        expect(() => iterableOrThrow(true,),).toThrow(/iterable/,);
-        expect(() => iterableOrThrow(null,),).toThrow(/iterable/,);
-        expect(() => iterableOrThrow(undefined,),).toThrow(/iterable/,);
-        expect(() => iterableOrThrow({ a: 1, },),).toThrow(/iterable/,);
+        expect(() => iterableOrThrow(42,)).toThrow(/iterable/,);
+        expect(() => iterableOrThrow(true,)).toThrow(/iterable/,);
+        expect(() => iterableOrThrow(null,)).toThrow(/iterable/,);
+        expect(() => iterableOrThrow(undefined,)).toThrow(/iterable/,);
+        expect(() => iterableOrThrow({ a: 1, },)).toThrow(/iterable/,);
       },
     },),
 

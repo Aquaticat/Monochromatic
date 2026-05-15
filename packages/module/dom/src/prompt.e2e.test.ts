@@ -35,7 +35,7 @@ test.describe('prompt', () => {
     },);
 
     expect(result,).toBe('alice',);
-  },);
+  });
 
   test('OK with empty input resolves to empty string (window.prompt parity)', async ({ page, },) => {
     await loadHarness({ page, },);
@@ -53,7 +53,7 @@ test.describe('prompt', () => {
     },);
 
     expect(result,).toBe('',);
-  },);
+  });
 
   test('Cancel button resolves to null', async ({ page, },) => {
     await loadHarness({ page, },);
@@ -70,7 +70,7 @@ test.describe('prompt', () => {
     },);
 
     expect(result,).toBeNull();
-  },);
+  });
 
   test('Esc resolves to null even when input has text', async ({ page, },) => {
     await loadHarness({ page, },);
@@ -88,7 +88,7 @@ test.describe('prompt', () => {
     },);
 
     expect(result,).toBeNull();
-  },);
+  });
 
   test('default class names are applied when classes option is omitted', async ({ page, },) => {
     await loadHarness({ page, },);
@@ -106,7 +106,7 @@ test.describe('prompt', () => {
     await page.evaluate(async function awaitPrompt() {
       return globalThis.pendingPrompt;
     },);
-  },);
+  });
 
   test('classes option overrides default class names per call', async ({ page, },) => {
     await loadHarness({ page, },);
@@ -128,5 +128,5 @@ test.describe('prompt', () => {
     await page.evaluate(async function awaitPrompt() {
       return globalThis.pendingPrompt;
     },);
-  },);
-},);
+  });
+});

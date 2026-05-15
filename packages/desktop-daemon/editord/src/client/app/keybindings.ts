@@ -143,7 +143,11 @@ export function wireKeybindings({
       },)) {
         return;
       }
-      if ((event.key === 'Tab') && (!event.ctrlKey) && (!event.metaKey) && (!event.altKey)) {
+      if ((event.key === 'Tab')
+        && (!event.ctrlKey)
+        && (!event.metaKey)
+        && (!event.altKey))
+      {
         event.preventDefault();
         if (event.shiftKey)
           unindentLines();

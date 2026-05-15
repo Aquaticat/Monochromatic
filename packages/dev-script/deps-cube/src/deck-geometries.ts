@@ -192,7 +192,8 @@ function buildOctahedronGeometry(): Geometry {
      * Vertex tuple from the canonical table; out-of-range becomes an explicit error rather than a silent `undefined`.
      */
     const v = OCTAHEDRON_VERTICES[i];
-    if (v === undefined) throw new Error(`octahedron vertex index out of range: ${i.toString()}`,);
+    if (v === undefined)
+      throw new Error(`octahedron vertex index out of range: ${i.toString()}`,);
     return v;
   }
   OCTAHEDRON_FACE_INDICES.forEach(function emitFace(

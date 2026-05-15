@@ -178,7 +178,8 @@ await describe({
           const pathEnv = [
             selfBinDir,
             realBinDir,
-          ].join(delimiter,);
+          ]
+            .join(delimiter,);
           /** Resolved executable path returned by cli-git. */
           const resolvedGit = await resolveGit({ pathEnv, },);
 

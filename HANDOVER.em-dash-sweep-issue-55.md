@@ -18,7 +18,7 @@ What's done:
   files). Remaining `--` is CLI args inside code blocks, inline backticks,
   or CLI invocations, preserved by heuristic.
 - ASCII `--` em-dash substitute in `.ts` files (commit `369b73e7`, 248
-  files). Conservative scope: only lines starting with `//` or ` *`
+  files). Conservative scope: only lines starting with `//` or `*`
   comment markers, skipping disable directives.
 - ASCII single-dash (`-`) em-dash substitute in `.md` files (commit
   `78e055b9`, 20 files, 1242 instances replaced). Conservative scope:
@@ -28,10 +28,11 @@ What's done:
   to `Month DD to Month DD`.
 - ASCII single-dash (`-`) em-dash substitute in `.ts` files (commit
   `4978ae4f`, 2 files, 16 instances replaced). Conservative scope: only
-  comment lines (`//` or ` *`) preceded by a close marker, skipping
+  comment lines (`//` or `*`) preceded by a close marker, skipping
   TSDoc tag lines (`@param`, `@returns`, `@throws`, `@example`, etc.)
-  because TSDoc convention uses ` - ` as separator, and skipping
-  ``` fences within TSDoc comments to avoid rewriting code examples.
+  because TSDoc convention uses `-` as separator, and skipping
+  ```fences within TSDoc comments to avoid rewriting code examples.
+  ```
 
 What's left:
 
@@ -67,33 +68,33 @@ The sweep scripts skip these files entirely:
 
 ## Replacement heuristics (for reference)
 
-Em-dash (` — `) was replaced by:
+Em-dash (`—`) was replaced by:
 
-- `: ` when preceded by code/bold/strikethrough/paren/bracket/brace close
+- `:` when preceded by code/bold/strikethrough/paren/bracket/brace close
   (definition / elaboration pattern).
-- `; ` otherwise (linked-clause / fallback pattern).
-- ` ($middle) ` when paired em-dashes bracket a short aside on the same
+- `;` otherwise (linked-clause / fallback pattern).
+- `($middle)` when paired em-dashes bracket a short aside on the same
   line.
 - Coordinate-vertex listings `(a,b) — (c,d)` became `(a,b), (c,d)`.
 
 En-dash (`–`) was replaced by:
 
-- ` to ` for numeric ranges (`14–22` -> `14 to 22`) and letter ranges
+- `to` for numeric ranges (`14–22` -> `14 to 22`) and letter ranges
   (`A–E` -> `A to E`).
-- `, ` for any remaining en-dash (paired-aside fallback).
+- `,` for any remaining en-dash (paired-aside fallback).
 
 ASCII `--` was replaced by the same code-marker-aware heuristic. CLI
 invocations and disable directives were preserved.
 
 ASCII single-dash `-` (markdown) was replaced by:
 
-- `: ` when preceded by a close marker (backtick, `)`, `]`, `}`, `**`,
+- `:` when preceded by a close marker (backtick, `)`, `]`, `}`, `**`,
   `~~`) at line content position (skipping list-bullet position so
   `- item` bullets stay as bullets).
-- `; ` for the focused `**Label**: <value> - <Uppercase>` Status pattern
+- `;` for the focused `**Label**: <value> - <Uppercase>` Status pattern
   (e.g. `**Status**: High Priority - Developer experience` becomes
   `**Status**: High Priority; Developer experience`).
-- ` to ` for month-name date ranges (`August 16 - August 30, 2025` and
+- `to` for month-name date ranges (`August 16 - August 30, 2025` and
   `2024 - 2025`).
 - Skipped for math expressions (`mean - 2*stddev`), list bullets, fenced
   code blocks, and inline backtick spans.
@@ -101,7 +102,7 @@ ASCII single-dash `-` (markdown) was replaced by:
 ASCII single-dash `-` (TypeScript) was replaced by the same close-marker
 heuristic with three additional exclusions: TSDoc tag lines (`@param`,
 `@returns`, `@throws`, `@example`, etc.) because TSDoc convention uses
-` - ` as the name/description separator, ``` fences within TSDoc
+`-` as the name/description separator, ``` fences within TSDoc
 comments (`@example` continuation lines that hold code), and arrow
 notation (`->`).
 
@@ -110,7 +111,7 @@ notation (`->`).
 The mechanical sweep accepts some stylistic imperfection in exchange for
 scope coverage:
 
-- Inside parentheses, ` — ` sometimes maps to `;` where a comma would
+- Inside parentheses, `—` sometimes maps to `;` where a comma would
   read better (e.g. `(2026-05-12, ninth handover; visual-fix iteration)`
   reads slightly off vs `(... ninth handover, visual-fix iteration)`).
 - Headings like `# Done -- Implementation plan` become `# Done;

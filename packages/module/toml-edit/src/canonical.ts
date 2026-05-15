@@ -77,8 +77,9 @@ function canonicalFromEmpty({ edit, }: { edit: TomlEditState; },): string {
     edit.canonical.trailingNewline
     && (result !== '')
     && (!result.endsWith('\n',))
-  )
+  ) {
     return `${result}${edit.canonical.lineBreak}`;
+  }
   return result;
 }
 
@@ -99,7 +100,8 @@ export function emitKey(
     key: AST.TOMLKey;
   },
 ): string {
-  return key.keys
+  return key
+    .keys
     .map(function each(k,) {
       return encodeKey({ key: k.type === 'TOMLBare' ? k.name : k.value, },);
     },)

@@ -199,9 +199,9 @@ export class Watcher {
         ...(options.poll === undefined
           ? {}
           : {
-              usePolling: true,
-              interval: options.poll,
-            }),
+            usePolling: true,
+            interval: options.poll,
+          }),
       },
     );
 
@@ -530,8 +530,9 @@ export class Watcher {
     /** Deepest configured root containing `path`; used to compute the event's relative path. */
     const root = this.#findRoot(path,);
     /** Entity derived from kind once; filters reuse rather than re-derive. */
-    const entity: WatchEntityType =
-      ((kind === 'addDir') || (kind === 'unlinkDir')) ? 'dir' : 'file';
+    const entity: WatchEntityType = ((kind === 'addDir') || (kind === 'unlinkDir'))
+      ? 'dir'
+      : 'file';
     /** Normalised event handed to the orchestrator's `onEvent` callback. */
     const event: WatchEvent = {
       kind,

@@ -102,12 +102,15 @@ function parseAutofillResponse(raw: string,): AutofillResult {
 
     /* oxlint-disable typescript/no-unsafe-type-assertion -- validated by Set.has check */
     /** Priority gated by the allowed-value set; everything else collapses to null. */
-    const priority = ((typeof parsed.priority) === 'string') && VALID_PRIORITIES.has(parsed.priority,)
+    const priority = ((typeof parsed
+        .priority) === 'string') && VALID_PRIORITIES.has(parsed.priority,)
       ? (parsed.priority as TaskPriority)
       : null;
 
     /** Complexity gated by the allowed-value set; everything else collapses to null. */
-    const complexity = ((typeof parsed.complexity) === 'string') && VALID_COMPLEXITIES.has(parsed.complexity,)
+    const complexity = ((typeof parsed
+        .complexity) === 'string') && VALID_COMPLEXITIES
+        .has(parsed.complexity,)
       ? (parsed.complexity as TaskComplexity)
       : null;
     /* oxlint-enable typescript/no-unsafe-type-assertion */

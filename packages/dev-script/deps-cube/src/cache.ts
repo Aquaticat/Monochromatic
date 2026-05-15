@@ -45,7 +45,7 @@ import {
 /**
  * One stored field's payload.
  */
-type CacheValue<T> = {
+type CacheValue<T,> = {
   /** The cached data. */
   value: T;
   /** Epoch milliseconds at which the value was written. */
@@ -80,7 +80,7 @@ export type Cache = {
    *
    * @returns The cached value, or `undefined` if missing/expired/unreadable.
    */
-  read: <T>(
+  read: <T,>(
     {
       name,
       version,
@@ -99,7 +99,7 @@ export type Cache = {
    *
    * @returns Resolves once the file has been renamed into place.
    */
-  write: <T>(
+  write: <T,>(
     {
       name,
       version,
@@ -185,7 +185,8 @@ async function readFileOrEmpty(path: string,): Promise<CacheFile> {
     );
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns `any`; cache files are written only by us.
     return JSON.parse(raw,) as CacheFile;
-  } catch {
+  }
+  catch {
     return {};
   }
 }
@@ -215,7 +216,7 @@ export function createCache(
    *
    * @returns Parsed value, or `undefined` if missing or stale.
    */
-  async function read<T>(
+  async function read<T,>(
     {
       name,
       version,
@@ -235,7 +236,8 @@ export function createCache(
     const file = await readFileOrEmpty(path,);
     /** Stored entry for the requested field, or `undefined` for a miss. */
     const entry = file[field];
-    if (entry === undefined) return undefined;
+    if (entry === undefined)
+      return undefined;
     if ((ttlMs !== null) && ((Date.now() - entry.fetchedAt) > ttlMs))
       return undefined;
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- caller asserts T; cache file shape is opaque at this layer.
@@ -246,7 +248,7 @@ export function createCache(
    * Writes a single field, updating any existing fields in the same file.
    * Uses atomic tmp+rename so torn reads are impossible.
    */
-  async function write<T>(
+  async function write<T,>(
     {
       name,
       version,

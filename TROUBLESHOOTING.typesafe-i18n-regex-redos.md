@@ -73,12 +73,12 @@ Version under test: `typesafe-i18n` 5.27.1.
 Minimal repro:
 
 ```ts
-import { i18nObject } from 'typesafe-i18n/runtime/esm';
-const dict = { bad: '{ "a": [{ "b": [{ "c": "x" }] }] }' };
-const LL = i18nObject('en', { en: dict }, {}, {});
-console.time('lookup');
+import { i18nObject, } from 'typesafe-i18n/runtime/esm';
+const dict = { bad: '{ "a": [{ "b": [{ "c": "x" }] }] }', };
+const LL = i18nObject('en', { en: dict, }, {}, {},);
+console.time('lookup',);
 LL.bad();
-console.timeEnd('lookup');
+console.timeEnd('lookup',);
 ```
 
 Run under Chrome 145 / V8: `lookup` never returns. Run under
@@ -94,17 +94,17 @@ parameter interpolation. Bypass the parser entirely for those
 keys via `rawString` in `i18n/runtime.ts`:
 
 ```ts
-import { loadedLocales } from './i18n-util.ts';
+import { loadedLocales, } from './i18n-util.ts';
 
 type StringKey = {
   [K in keyof Translations]: Translations[K] extends string ? K : never;
 }[keyof Translations];
 
-export function rawString(key: StringKey): string {
+export function rawString(key: StringKey,): string {
   const locale = resolveLocale();
   const value = loadedLocales[locale][key];
   if (typeof value !== 'string')
-    throw new Error(`[i18n] expected string for ${key}, got ${typeof value}`);
+    throw new Error(`[i18n] expected string for ${key}, got ${typeof value}`,);
   return value;
 }
 ```
@@ -255,7 +255,7 @@ Decision: worth filing; draft below is ready.
 
 ## Draft upstream issue (kept as reference; revise before filing)
 
-~~~md
+````md
 **Title**: parser regex catastrophically backtracks on translations containing nested `{}` literals (engine-dependent: V8 hangs)
 
 **Labels**: bug, parser
@@ -269,14 +269,14 @@ The pattern is `/(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g`. The two alternatives in t
 ### Reproduction
 
 ```ts
-import { i18nObject } from 'typesafe-i18n';
+import { i18nObject, } from 'typesafe-i18n';
 
-const en = { bad: '{ "a": [{ "b": [{ "c": "x" }] }] }' };
-const LL = i18nObject('en', { en } as any, {}, {});
+const en = { bad: '{ "a": [{ "b": [{ "c": "x" }] }] }', };
+const LL = i18nObject('en', { en, } as any, {}, {},);
 
-console.time('lookup');
+console.time('lookup',);
 LL.bad(); // hangs in V8, returns immediately in JSC
-console.timeEnd('lookup');
+console.timeEnd('lookup',);
 ```
 
 Run under Chrome (or any V8-based environment, including Node) and the call never returns within a reasonable test timeout. Run under Bun and it returns immediately.
@@ -292,7 +292,7 @@ Replace the alternation pattern with one that does not share a left-factor acros
 ### Workaround
 
 Read the raw string from `loadedLocales[locale][key]` directly when the translation contains literal braces and does not need parameter interpolation. This bypasses the parser entirely.
-~~~
+````
 
 [typesafe-i18n]: https://github.com/ivanhofer/typesafe-i18n
 [redos]: https://en.wikipedia.org/wiki/ReDoS

@@ -12,8 +12,8 @@ import {
 
 import { emptyTomlEdit, } from './empty-toml-edit.ts';
 import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlSet, } from './toml-set.ts';
 import { tomlSetHeaderComment, } from './toml-set-header-comment.ts';
+import { tomlSet, } from './toml-set.ts';
 import { tomlStringify, } from './toml-stringify.ts';
 
 await describe({
@@ -27,7 +27,9 @@ await describe({
         const out = tomlStringify({ edit: e1, },);
         expect(function reparse() {
           parseTomlEdit({ source: out, },);
-        },).not.toThrow();
+        },)
+          .not
+          .toThrow();
       },
     },),
 

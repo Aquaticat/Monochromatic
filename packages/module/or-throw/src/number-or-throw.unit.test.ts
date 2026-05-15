@@ -36,11 +36,11 @@ await describe({
     it({
       name: 'throws on non-number primitives',
       fn: async () => {
-        expect(() => numberOrThrow('42',),).toThrow(/number/,);
-        expect(() => numberOrThrow(true,),).toThrow(/number/,);
-        expect(() => numberOrThrow(1n,),).toThrow(/number/,);
-        expect(() => numberOrThrow(null,),).toThrow(/number/,);
-        expect(() => numberOrThrow(undefined,),).toThrow(/number/,);
+        expect(() => numberOrThrow('42',)).toThrow(/number/,);
+        expect(() => numberOrThrow(true,)).toThrow(/number/,);
+        expect(() => numberOrThrow(1n,)).toThrow(/number/,);
+        expect(() => numberOrThrow(null,)).toThrow(/number/,);
+        expect(() => numberOrThrow(undefined,)).toThrow(/number/,);
       },
     },),
 

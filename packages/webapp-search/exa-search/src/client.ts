@@ -1,8 +1,6 @@
 // oxlint-disable typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression -- DOM string coercions and IIFE-wrapped async handlers
 import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
-import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import * as v from 'valibot';
 
 import { displayResult, } from './client-display-result.ts';
@@ -116,7 +114,9 @@ changeApiKeyButton.addEventListener(
     void (async function promptForNewApiKey(): Promise<void> {
       try {
         /** Raw prompt response validated against `apiKeySchema` before observable assignment. */
-        const inputApiKey = nonNullishOrThrow(await prompt({ message: 'Change api key', },),);
+        const inputApiKey = nonNullishOrThrow(
+          await prompt({ message: 'Change api key', },),
+        );
         apiKey.value = v.parse(
           apiKeySchema,
           inputApiKey,

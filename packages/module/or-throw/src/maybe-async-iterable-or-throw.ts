@@ -43,10 +43,16 @@ export function maybeAsyncIterableOrThrow<T,>(
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- strings are statically known to implement Iterable<string>
     return value as T & (Iterable<unknown> | AsyncIterable<unknown>);
   }
-  if ((value === null) || (value === undefined) || ((typeof value) !== 'object'))
-    throw new Error(`Expected iterable or async iterable, got ${typeof value} ${String(value,)}`,);
-  if ((!(Symbol.iterator in value)) && (!(Symbol.asyncIterator in value)))
-    throw new Error(`Expected iterable or async iterable, got object without either Symbol.iterator or Symbol.asyncIterator`,);
+  if ((value === null) || (value === undefined) || ((typeof value) !== 'object')) {
+    throw new Error(
+      `Expected iterable or async iterable, got ${typeof value} ${String(value,)}`,
+    );
+  }
+  if ((!(Symbol.iterator in value)) && (!(Symbol.asyncIterator in value))) {
+    throw new Error(
+      `Expected iterable or async iterable, got object without either Symbol.iterator or Symbol.asyncIterator`,
+    );
+  }
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- protocol-symbol presence narrows the runtime shape; TypeScript does not propagate this
   return value as T & (Iterable<unknown> | AsyncIterable<unknown>);
 }

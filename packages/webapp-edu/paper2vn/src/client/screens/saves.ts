@@ -37,7 +37,7 @@ function renderRow(summary: SaveSummary,): HTMLElement {
         tag: 'span',
         attrs: { class: 'speaker-name', },
         children: [summary.label,],
-      }),
+      },),
       el({
         tag: 'span',
         attrs: { class: 'muted', },
@@ -45,7 +45,7 @@ function renderRow(summary: SaveSummary,): HTMLElement {
           new Date(summary.updatedAt,)
             .toLocaleString(),
         ],
-      }),
+      },),
       el({
         tag: 'button',
         attrs: {
@@ -58,7 +58,7 @@ function renderRow(summary: SaveSummary,): HTMLElement {
           },
         },
         children: [ll.loadSave(),],
-      }),
+      },),
       el({
         tag: 'button',
         attrs: {
@@ -85,9 +85,9 @@ function renderRow(summary: SaveSummary,): HTMLElement {
           },
         },
         children: [ll.deleteSave(),],
-      }),
+      },),
     ],
-  });
+  },);
 }
 
 /**
@@ -108,7 +108,7 @@ function mount(root: HTMLElement,): void {
         tag: 'p',
         attrs: { class: 'muted', },
         children: [ll.noSaves(),],
-      }),
+      },),
     ]
     : saves.map(function renderEachRow(summary,): HTMLElement {
       return renderRow(summary,);
@@ -134,17 +134,17 @@ function mount(root: HTMLElement,): void {
               },
             },
             children: [ll.back(),],
-          }),
+          },),
           el({
             tag: 'h2',
             attrs: {},
             children: [ll.saves(),],
-          }),
+          },),
         ],
-      }),
+      },),
       ...rows,
     ],
-  });
+  },);
   root.append(screen,);
 }
 

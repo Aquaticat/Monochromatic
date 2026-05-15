@@ -1,7 +1,7 @@
 // Fixture: code that does not trigger any no-restricted-syntax rule.
 // Expected: zero rule violations.
 
-function double(x: number): number {
+function double(x: number,): number {
   return x * 2;
 }
 
@@ -11,27 +11,26 @@ function combine({
 }: {
   left: string;
   right: string;
-}): string {
+},): string {
   return `${left}${right}`;
 }
 
-function sum(items: readonly number[]): number {
+function sum(items: readonly number[],): number {
   return items.reduce(
-    function add(acc, item): number {
+    function add(acc, item,): number {
       return acc + item;
     },
     0,
   );
 }
 
-function classify(kind: 'a' | 'b'): number {
-  if (kind === 'a') {
+function classify(kind: 'a' | 'b',): number {
+  if (kind === 'a')
     return 1;
-  }
   return 0;
 }
 
-function clean(value: string): string {
+function clean(value: string,): string {
   return value.trimStart();
 }
 
@@ -41,12 +40,12 @@ function has({
 }: {
   obj: Record<string, unknown>;
   key: string;
-}): boolean {
-  return Object.hasOwn(obj, key);
+},): boolean {
+  return Object.hasOwn(obj, key,);
 }
 
 function pick(): HTMLInputElement | null {
-  return document.querySelector<HTMLInputElement>('.target');
+  return document.querySelector<HTMLInputElement>('.target',);
 }
 
 void double;

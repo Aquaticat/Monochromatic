@@ -64,7 +64,8 @@ async function readManifestSilent(
       npmName,
       cache,
     },);
-  } catch {
+  }
+  catch {
     return null;
   }
 }
@@ -112,9 +113,11 @@ export async function probeTransitive(
    * `name@version` identity used both as the cycle-breaker key in `visited` and as the cache key.
    */
   const key = `${name}@${version}`;
-  if (visited.has(key,)) return 0;
+  if (visited.has(key,))
+    return 0;
   visited.add(key,);
-  if (depth >= TRANSITIVE_DEPTH_CAP) return 0;
+  if (depth >= TRANSITIVE_DEPTH_CAP)
+    return 0;
 
   /**
    * Cached transitive count from a previous run, if still within {@link TTL_MS}.
@@ -125,16 +128,19 @@ export async function probeTransitive(
     field: 'transitive',
     ttlMs: TTL_MS,
   },);
-  if (cached !== undefined) return cached;
+  if (cached !== undefined)
+    return cached;
 
   /** Full registry manifest for `name`; `null` when the registry fetch failed. */
   const manifest = await readManifestSilent({
     npmName: name,
     cache,
   },);
-  if (manifest === null) return 0;
+  if (manifest === null)
+    return 0;
   /** Manifest entry for the exact requested version, falling back to any first version when the requested version is missing. */
-  const versionManifest = manifest.versions?.[version] ?? Object.values(manifest.versions ?? {},)[0];
+  const versionManifest = manifest.versions?.[version]
+    ?? Object.values(manifest.versions ?? {},)[0];
   /** Direct `dependencies` map from the version manifest; empty when none declared. */
   const deps = versionManifest?.dependencies ?? {};
   /** Direct dependency package names; each recurses into its own latest manifest. */
@@ -148,10 +154,12 @@ export async function probeTransitive(
         npmName: depName,
         cache,
       },);
-      if (depPkg === null) return 0;
+      if (depPkg === null)
+        return 0;
       /** Concrete version string for the direct dep, used as the cache key for the recursive call. */
       const depVersion = depPkg['dist-tags']?.latest;
-      if (depVersion === undefined) return 0;
+      if (depVersion === undefined)
+        return 0;
       return 1 + await probeTransitive({
         name: depName,
         version: depVersion,

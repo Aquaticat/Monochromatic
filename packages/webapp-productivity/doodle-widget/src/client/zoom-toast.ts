@@ -15,7 +15,7 @@ const TOAST_DURATION_MS = 3_000;
  * Stored as an object property so module-root state stays in a `const`
  * container (`no-module-root-let` would otherwise reject a top-level `let`).
  */
-const timerState: { id: ReturnType<typeof setTimeout> | null; } = { id: null };
+const timerState: { id: ReturnType<typeof setTimeout> | null; } = { id: null, };
 
 /**
  * Shows the zoom instruction toast, auto-hiding after a delay.

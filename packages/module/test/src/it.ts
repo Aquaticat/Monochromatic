@@ -221,7 +221,9 @@ async function runIt(
     if (fails !== false) {
       if (threw) {
         l.debug(
-          `PASS${runLabel}: threw as expected${failsReason} (${formatDuration(durationMs,)})`,
+          `PASS${runLabel}: threw as expected${failsReason} (${
+            formatDuration(durationMs,)
+          })`,
         );
         continue;
       }
@@ -230,7 +232,9 @@ async function runIt(
       const failsCause = new Error('Expected test to throw but it passed',);
       // oxlint-disable-next-line no-await-in-loop -- formatFailure is async; await is required before the throw on the next line, and only one loop iteration runs on this path
       l.error(await formatFailure({
-        summary: `FAIL${runLabel}: expected to throw but passed${failsReason} (${formatDuration(durationMs,)})`,
+        summary: `FAIL${runLabel}: expected to throw but passed${failsReason} (${
+          formatDuration(durationMs,)
+        })`,
         value: failsCause,
       },),);
       throw new Error(
@@ -279,7 +283,10 @@ async function runIt(
       );
       // oxlint-disable-next-line no-await-in-loop -- formatFailure is async; await is required before the throw on the next line, and only one loop iteration runs on this path
       l.error(await formatFailure({
-        summary: `FAIL${runLabel}: expected at least one assertion but none were called (${formatDuration(durationMs,)})`,
+        summary:
+          `FAIL${runLabel}: expected at least one assertion but none were called (${
+            formatDuration(durationMs,)
+          })`,
         value: noAssertionsCause,
       },),);
       throw new Error(

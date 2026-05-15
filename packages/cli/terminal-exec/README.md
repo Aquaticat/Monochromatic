@@ -33,7 +33,7 @@ On Windows, no equivalent of `xdg-terminal-exec` exists at all.
 
 ## Usage
 
-```sh
+````sh
 terminal-exec [options] [--] [command [args...]]
 ```text
 
@@ -65,7 +65,7 @@ Create `~/.config/xdg-terminals.list` to explicitly set preferred terminals:
 ```text
 com.mitchellh.ghostty.desktop
 org.kde.konsole.desktop
-```
+````
 
 First valid entry wins. Entries listed here bypass `OnlyShowIn`/`NotShowIn` checks.
 

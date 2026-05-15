@@ -94,10 +94,11 @@ await describe({
                 sourcePattern: 'src/*.ts',
                 destPattern: 'dist/*/*.ts',
                 sourcePath: 'src/a.ts',
-              },),
-            ).toThrow(
-              'Wildcard count mismatch',
-            );
+              },)
+            )
+              .toThrow(
+                'Wildcard count mismatch',
+              );
           },
         },),
         it({
@@ -108,7 +109,7 @@ await describe({
                 sourcePattern: 'src/*.ts',
                 destPattern: 'dist/*.ts',
                 sourcePath: 'lib/index.ts',
-              },),
+              },)
             )
               .toThrow(
                 'does not match pattern',
@@ -123,7 +124,7 @@ await describe({
                 sourcePattern: 'src/*.ts',
                 destPattern: 'dist/*.ts',
                 sourcePath: 'src/index.js',
-              },),
+              },)
             )
               .toThrow(
                 'does not match pattern',

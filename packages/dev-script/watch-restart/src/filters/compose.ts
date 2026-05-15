@@ -50,9 +50,8 @@ export function composeFilters(filters: readonly WatchFilter[],): WatchFilter {
         event,
         ctx,
       },);
-      if (!passed) {
+      if (!passed)
         return false;
-      }
     }
     return true;
   };
@@ -99,9 +98,8 @@ export function anyFilter(filters: readonly WatchFilter[],): WatchFilter {
         event,
         ctx,
       },);
-      if (passed) {
+      if (passed)
         return true;
-      }
     }
     return false;
   };

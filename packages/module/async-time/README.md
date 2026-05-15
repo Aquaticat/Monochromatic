@@ -6,15 +6,18 @@ Async timing primitives.
 
 ### Helpers
 
-| Function      | Behavior                                                                  |
-| ------------- | ------------------------------------------------------------------------- |
-| `wait`        | Resolves after a delay in milliseconds; thin `setTimeout` wrapper         |
+| Function      | Behavior                                                                                |
+| ------------- | --------------------------------------------------------------------------------------- |
+| `wait`        | Resolves after a delay in milliseconds; thin `setTimeout` wrapper                       |
 | `withTimeout` | Races a promise against a deadline; rejects with a labeled `Error` if the deadline wins |
 
 ### Usage
 
 ```ts
-import { wait, withTimeout, } from '@monochromatic-dev/module-async-time';
+import {
+  wait,
+  withTimeout,
+} from '@monochromatic-dev/module-async-time';
 
 await wait(500,);
 

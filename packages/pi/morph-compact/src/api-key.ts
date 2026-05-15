@@ -111,8 +111,8 @@ export async function resolveMorphApiKey(): Promise<string | undefined> {
     return envKey;
 
   // Return cached value if already resolved
-  if (apiKeyCache.has('value'))
-    return apiKeyCache.get('value');
+  if (apiKeyCache.has('value',))
+    return apiKeyCache.get('value',);
 
   // Read from mcp.json and cache
   /** Resolved key from mcp.json; may be undefined when no Morph entry exists. */

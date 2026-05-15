@@ -32,7 +32,8 @@ await describe({
             expect(getTomlProperty({
               path: ['settings', 'theme',],
               content: toml,
-            },),).toBe('dark',);
+            },),)
+              .toBe('dark',);
           },
         },),
         it({
@@ -53,14 +54,18 @@ await describe({
           name: 'stringifies boolean true',
           fn: async () => {
             const toml = 'active = true';
-            expect(getTomlProperty({ path: ['active',], content: toml, },),).toBe('true',);
+            expect(getTomlProperty({ path: ['active',], content: toml, },),).toBe(
+              'true',
+            );
           },
         },),
         it({
           name: 'stringifies boolean false',
           fn: async () => {
             const toml = 'active = false';
-            expect(getTomlProperty({ path: ['active',], content: toml, },),).toBe('false',);
+            expect(getTomlProperty({ path: ['active',], content: toml, },),).toBe(
+              'false',
+            );
           },
         },),
         it({
@@ -89,7 +94,8 @@ await describe({
             expect(getTomlProperty({
               path: ['fruits', 0, 'name',],
               content: toml,
-            },),).toBe('apple',);
+            },),)
+              .toBe('apple',);
           },
         },),
         it({
@@ -99,7 +105,8 @@ await describe({
             expect(getTomlProperty({
               path: ['missing',],
               content: toml,
-            },),).toBeUndefined();
+            },),)
+              .toBeUndefined();
           },
         },),
         it({
@@ -114,7 +121,8 @@ await describe({
         it({
           name: 'throws on invalid TOML input',
           fn: async () => {
-            expect(() => getTomlProperty({ path: ['key',], content: '[[invalid', },)).toThrow();
+            expect(() => getTomlProperty({ path: ['key',], content: '[[invalid', },))
+              .toThrow();
           },
         },),
       ],
@@ -136,7 +144,8 @@ await describe({
               content: toml,
               path: ['name',],
               value: 'Alice',
-            },),).toBe(toml,);
+            },),)
+              .toBe(toml,);
           },
         },),
         it({
@@ -228,12 +237,12 @@ await describe({
                 path: ['key',],
                 value: 'x',
               },)
-            ).toThrow();
+            )
+              .toThrow();
           },
         },),
       ],
     },),
-
     //endregion editTomlKey
   ],
 },);

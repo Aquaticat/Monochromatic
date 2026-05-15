@@ -222,7 +222,9 @@ export async function navigateTier3(
   },);
   setStatus({
     status: input.status,
-    message: `editing chunk ${String(next + 1,)} of ${String(input.state.tier3.chunkCount,)}`,
+    message: `editing chunk ${String(next + 1,)} of ${
+      String(input.state.tier3.chunkCount,)
+    }`,
   },);
 }
 

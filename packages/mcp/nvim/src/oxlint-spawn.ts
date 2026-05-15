@@ -87,7 +87,11 @@ export async function spawnOxlint({
   }
   catch (err: unknown) {
     // oxlint exits non-zero when it finds diagnostics, which is expected
-    if ((err !== null) && (err !== undefined) && (((typeof err) === 'object')) && ('stdout' in err)) {
+    if ((err !== null)
+      && (err !== undefined)
+      && ((typeof err) === 'object')
+      && ('stdout' in err))
+    {
       /** Captured stdout from the failed run; oxlint emits diagnostics here even when exiting non-zero. */
       const stdout = String(err.stdout,);
       if (stdout.trim().length > 0) {

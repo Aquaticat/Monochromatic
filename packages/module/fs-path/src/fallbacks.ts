@@ -186,9 +186,10 @@ export function resolveFallback(segments: readonly string[],): string {
     .join('/',);
 
   /** Current working directory (falls back to `/` in browser) */
-  const cwd = (((typeof process) !== 'undefined') && ((typeof process.cwd) === 'function'))
-    ? process.cwd()
-    : '/';
+  const cwd =
+    (((typeof process) !== 'undefined') && ((typeof process.cwd) === 'function'))
+      ? process.cwd()
+      : '/';
   /** Absolute composition: prepend cwd when no segment supplied a root. */
   const composed = absoluteIndex === (-1) ? `${cwd}/${partial}` : partial;
   /** Normalized absolute path */

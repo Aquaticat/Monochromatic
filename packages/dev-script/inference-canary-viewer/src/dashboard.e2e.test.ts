@@ -36,7 +36,9 @@ const DASHBOARD_URL = pathToFileURL(
  * await expect(overlay,).toBeVisible();
  * ```
  */
-function popoverById({ page, id, }: { page: Page; id: string; },): ReturnType<Page['locator']> {
+function popoverById(
+  { page, id, }: { page: Page; id: string; },
+): ReturnType<Page['locator']> {
   return page.locator(`id=${id}`,);
 }
 

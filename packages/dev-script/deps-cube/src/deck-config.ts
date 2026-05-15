@@ -21,17 +21,16 @@ import {
   OrbitView,
 } from '@deck.gl/core';
 
-import type { PackageProbe, } from './probe.ts';
 import {
   buildAxisCapitalsLayer,
   buildAxisSubtitlesLayer,
   buildOriginLabelLayer,
 } from './deck-labels.ts';
+import { buildAxisTickLayer, } from './deck-layers-ticks.ts';
 import {
   buildAxisArrowheadLayers,
   buildAxisShaftLayer,
 } from './deck-layers.ts';
-import { buildAxisTickLayer, } from './deck-layers-ticks.ts';
 import {
   buildCoordinatePlaneLayers,
   buildThresholdLineLayer,
@@ -41,6 +40,7 @@ import {
   buildNonLeafScatterLayer,
   buildUnknownClusterLayer,
 } from './deck-scatter.ts';
+import type { PackageProbe, } from './probe.ts';
 import {
   type ChannelKey,
   type DimMapping,
@@ -145,11 +145,12 @@ export function computeSceneBounds(
       .filter(function nonNull(value,): value is number {
         return value !== null;
       },);
-    if (values.length === 0)
+    if (values.length === 0) {
       return [
         channel,
         FALLBACK_EXTENT,
       ] as const;
+    }
     return [
       channel,
       [

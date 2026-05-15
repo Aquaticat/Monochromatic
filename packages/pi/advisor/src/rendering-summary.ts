@@ -200,7 +200,7 @@ function formatDuration(
 ): string {
   return durationMs < MILLISECONDS_PER_SECOND
     ? `${durationMs}ms`
-    : `${(durationMs / MILLISECONDS_PER_SECOND).toFixed(1)}s`;
+    : `${(durationMs / MILLISECONDS_PER_SECOND).toFixed(1,)}s`;
 }
 
 /**

@@ -100,8 +100,8 @@ package by kind, then for each task the kind requires calls
 ```ts
 await overwriteTomlKey({
   dest: 'packages/X/Y/mise.toml',
-  path: ['tasks', taskName],
-  value: { extends: taskName },
+  path: ['tasks', taskName,],
+  value: { extends: taskName, },
 },);
 ```
 
@@ -186,18 +186,18 @@ Generator must explicitly never touch `*/mise.local.toml`. Trivial to honor.
 1. **Kind metadata source: probe-only, or also explicit?** Pure filesystem
    probes work for ~80% of cases. The escape hatch and hybrid kinds need a
    declaration somewhere. Three options:
-    - probe-only with a special-cases list inside
-      `file-enforcer.config.ts`
-    - per-package `package.json` field
-      (`"monochromatic": { "kind": "ts-cli", "extras": ["build:js:node"] }`)
-    - sidecar `mise.kind.toml` per package (overkill?)
+   - probe-only with a special-cases list inside
+     `file-enforcer.config.ts`
+   - per-package `package.json` field
+     (`"monochromatic": { "kind": "ts-cli", "extras": ["build:js:node"] }`)
+   - sidecar `mise.kind.toml` per package (overkill?)
 2. **Dragon 9: defer or track?** Pick before v1 implementation.
 3. **Quoting normalization: do the one-time pass on landing, or skip?** If
-    skipped, the mixed quoting persists forever (splice mode preserves it). If
-    done, all 92 files get one structural rewrite commit.
+   skipped, the mixed quoting persists forever (splice mode preserves it). If
+   done, all 92 files get one structural rewrite commit.
 4. **First kind to implement?** Smallest blast radius is probably `ts-library`
-    (modules with no build, just lint + test). Rolling out one kind at a time
-    is safer than 7-at-once.
+   (modules with no build, just lint + test). Rolling out one kind at a time
+   is safer than 7-at-once.
 5. **Watch-mode semantics: re-probe on every file-enforcer run, or cache?**
    Probing is `glob('packages/*/*/<signal-file>')` calls -- cheap. Probably
    re-probe every run; the cost is sub-second.

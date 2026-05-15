@@ -52,8 +52,7 @@ export const noModuleRootLet: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      forbidden:
-        '`let` at module-root scope is mutable across the entire module. '
+      forbidden: '`let` at module-root scope is mutable across the entire module. '
         + 'Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` for mutable containers, '
         + '`memoize()` from `@monochromatic-dev/module-es` for cached computations, '
         + 'or an IIFE assigned to const `const cached = (function init () { let v = null; /* compute */ return v; })()`. '

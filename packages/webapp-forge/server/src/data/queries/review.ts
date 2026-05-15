@@ -45,7 +45,8 @@ export async function insertReview(row: {
   createdAt: number;
 },): Promise<void> {
   await run({
-    sql: `INSERT OR IGNORE INTO reviews(id, pr_issue_id, reviewer_id, state, body, created_at)
+    sql:
+      `INSERT OR IGNORE INTO reviews(id, pr_issue_id, reviewer_id, state, body, created_at)
      VALUES (?, ?, ?, ?, ?, ?)`,
     params: [
       row.id,

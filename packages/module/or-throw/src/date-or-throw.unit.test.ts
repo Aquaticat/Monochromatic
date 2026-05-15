@@ -35,11 +35,11 @@ await describe({
     it({
       name: 'throws on non-Date values',
       fn: async () => {
-        expect(() => dateOrThrow(0,),).toThrow(/Date/,);
-        expect(() => dateOrThrow('2024-01-01',),).toThrow(/Date/,);
-        expect(() => dateOrThrow(null,),).toThrow(/Date/,);
-        expect(() => dateOrThrow(undefined,),).toThrow(/Date/,);
-        expect(() => dateOrThrow({},),).toThrow(/Date/,);
+        expect(() => dateOrThrow(0,)).toThrow(/Date/,);
+        expect(() => dateOrThrow('2024-01-01',)).toThrow(/Date/,);
+        expect(() => dateOrThrow(null,)).toThrow(/Date/,);
+        expect(() => dateOrThrow(undefined,)).toThrow(/Date/,);
+        expect(() => dateOrThrow({},)).toThrow(/Date/,);
       },
     },),
 

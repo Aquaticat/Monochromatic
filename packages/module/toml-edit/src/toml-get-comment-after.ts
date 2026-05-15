@@ -37,7 +37,7 @@ export function tomlGetCommentAfter(
     path,
   }: {
     edit: TomlEditState;
-    path: TomlPath
+    path: TomlPath;
   },
 ): TomlComment | null {
   /** Effective resolution accounts for pending edits and deletes. */
@@ -45,15 +45,16 @@ export function tomlGetCommentAfter(
     edit,
     path,
   },);
-  if ((result.kind === 'missing') || (result.kind === 'deleted'))
+  if ((result.kind === 'missing') || (result.kind === 'deleted')) {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
+  }
   if (result.kind === 'pending-value')
     return null;
   /** Last AoT element is the one a trailing comment would attach to in source. */
   const node = result.kind === 'array-of-tables'
-    ? nonNullishOrThrow(result.nodes.at(-1),)
+    ? nonNullishOrThrow(result.nodes.at(-1,),)
     : result.node;
   return trailingInlineCommentFor({
     node,

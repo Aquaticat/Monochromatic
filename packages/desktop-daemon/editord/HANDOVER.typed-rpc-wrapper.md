@@ -6,20 +6,20 @@ All typed-RPC work landed; lint baseline cleared as a follow-up.
 
 ### Commits
 
--   `f3b7e04a feat(desktop-daemon/editord): type EditorWsClient.request() return by request variant`: `RequestResponseMap` in `src/protocol.ts`, generic signature on `request()`. Single suppression-justified `as` cast remains at the return inside `request()` (wire-id correlation).
--   `c35f5ab8 refactor(desktop-daemon/editord): drop manual narrowing at request() call sites`: 11 files, 18 awaited-`request()` calls. Dead `'X' in result` guards and paired `as` casts removed; behavioral guards kept on optional fields (`mediaInfo`, empty-string `contents`, empty-string `path`).
--   `54351284 chore(desktop-daemon/editord): fix lint errors blocking :lint exit 0`: pre-existing 5 errors fixed (`require-destructured-params` on `diagnosticsEqual`/`hintsEqual`, `tsdoc check-param-names` on `shutdownApp`, two `.catch()` calls on SIGINT/SIGTERM handlers).
--   `a2903a59 refactor(desktop-daemon/editord): convert function-root-let to const ref-objects`: five `let` bindings converted to const ref-objects in `lsp.ts`, `lsp-hover.ts`, `index-routes.ts`. Reduces warning count from 42 to 37.
+- `f3b7e04a feat(desktop-daemon/editord): type EditorWsClient.request() return by request variant`: `RequestResponseMap` in `src/protocol.ts`, generic signature on `request()`. Single suppression-justified `as` cast remains at the return inside `request()` (wire-id correlation).
+- `c35f5ab8 refactor(desktop-daemon/editord): drop manual narrowing at request() call sites`: 11 files, 18 awaited-`request()` calls. Dead `'X' in result` guards and paired `as` casts removed; behavioral guards kept on optional fields (`mediaInfo`, empty-string `contents`, empty-string `path`).
+- `54351284 chore(desktop-daemon/editord): fix lint errors blocking :lint exit 0`: pre-existing 5 errors fixed (`require-destructured-params` on `diagnosticsEqual`/`hintsEqual`, `tsdoc check-param-names` on `shutdownApp`, two `.catch()` calls on SIGINT/SIGTERM handlers).
+- `a2903a59 refactor(desktop-daemon/editord): convert function-root-let to const ref-objects`: five `let` bindings converted to const ref-objects in `lsp.ts`, `lsp-hover.ts`, `index-routes.ts`. Reduces warning count from 42 to 37.
 
 ### Acceptance criteria
 
-1.  ✓ Manual narrowing gone at every awaited-`request()` call site; responses destructured inline.
-2.  ✓ `mise run //packages/desktop-daemon/editord:lint:types` exits 0.
-3.  ✓ `mise run //packages/desktop-daemon/editord:lint` exits 0 (errors fixed from baseline 5 to 0; the oxlint config treats `no-function-root-let` as warn-only so it does not gate the exit code).
-4.  ✓ `mise run //packages/desktop-daemon/editord:build` exits 0.
-5.  ⧗ Manual smoke in browser: not run here. Start `mise run //packages/desktop-daemon/editord:start:server`, open the printed URL, exercise the request matrix (`open`, `save`, `listDir`, `search`, `hover`, `completion`, `format`, `gotoDefinition`, `findReferences`, `inlayHint`, `selectionRange`, `prepareRename`/`rename`, plus the six fs actions).
-6.  ✓ No `package.json` entry changes.
-7.  ✓ Wire-format unchanged: no wire-touching paths (server dispatch, JSON.stringify, JSON.parse, handshake, reconnect) were modified. Manual DevTools capture is the standard final check if you want byte-level confirmation.
+1. ✓ Manual narrowing gone at every awaited-`request()` call site; responses destructured inline.
+2. ✓ `mise run //packages/desktop-daemon/editord:lint:types` exits 0.
+3. ✓ `mise run //packages/desktop-daemon/editord:lint` exits 0 (errors fixed from baseline 5 to 0; the oxlint config treats `no-function-root-let` as warn-only so it does not gate the exit code).
+4. ✓ `mise run //packages/desktop-daemon/editord:build` exits 0.
+5. ⧗ Manual smoke in browser: not run here. Start `mise run //packages/desktop-daemon/editord:start:server`, open the printed URL, exercise the request matrix (`open`, `save`, `listDir`, `search`, `hover`, `completion`, `format`, `gotoDefinition`, `findReferences`, `inlayHint`, `selectionRange`, `prepareRename`/`rename`, plus the six fs actions).
+6. ✓ No `package.json` entry changes.
+7. ✓ Wire-format unchanged: no wire-touching paths (server dispatch, JSON.stringify, JSON.parse, handshake, reconnect) were modified. Manual DevTools capture is the standard final check if you want byte-level confirmation.
 
 ### Remaining lint debt (cosmetic, does not gate lint)
 
@@ -32,9 +32,10 @@ editord is a local-only editor daemon serving a contenteditable PWA over WebSock
 The protocol layer is already RPC-shaped. The one ergonomic gap: `EditorWsClient.request()` at `src/client/ws/client.ts:164` returns `Promise<ServerMessage>` (the full server-message union), so every call site narrows manually:
 
 ```ts
-const result = await client.request({ type: 'open', id, path });
-if (result.type !== 'fileContent') throw new Error('unexpected response');
-const { content, kind } = result;
+const result = await client.request({ type: 'open', id, path, },);
+if (result.type !== 'fileContent')
+  throw new Error('unexpected response',);
+const { content, kind, } = result;
 ```
 
 Closing that narrowing gap is the entire task.
@@ -43,9 +44,9 @@ Closing that narrowing gap is the entire task.
 
 Implement a typed wrapper over `EditorWsClient.request()` that returns the response variant matching the request type. No wire change. No new dependencies. No server refactor.
 
-1.  Define `RequestResponseMap` next to the protocol unions: a mapped type from each `ClientRequest['type']` to its corresponding success-side `ServerMessage` variant.
-2.  Make `EditorWsClient.request()` generic so the return type is `Promise<RequestResponseMap[TReq['type']]>` instead of `Promise<ServerMessage>`. Runtime behavior unchanged; only the type signature narrows.
-3.  Update the call sites to drop their manual `if (result.type !== 'X')` blocks and read response fields directly.
+1. Define `RequestResponseMap` next to the protocol unions: a mapped type from each `ClientRequest['type']` to its corresponding success-side `ServerMessage` variant.
+2. Make `EditorWsClient.request()` generic so the return type is `Promise<RequestResponseMap[TReq['type']]>` instead of `Promise<ServerMessage>`. Runtime behavior unchanged; only the type signature narrows.
+3. Update the call sites to drop their manual `if (result.type !== 'X')` blocks and read response fields directly.
 
 Concrete call-site count, verified via `rg -c "(client|ws)\.(request|notify)\b" src/client/`: 22 calls across 13 files.
 
@@ -53,9 +54,9 @@ Concrete call-site count, verified via `rg -c "(client|ws)\.(request|notify)\b" 
 
 A deeper investigation produced a ranked alternative set. Summary of why path A wins:
 
--   oRPC migration (`@orpc/server/bun-ws` or `experimental_CrosswsHandler`): full typed-procedure framework with end-to-end inferred types and wire-level `ABORT_SIGNAL`. Costs: a new runtime validator dep (Zod, Valibot, or Arktype), losing the working reconnect logic at `src/client/ws/client.ts:288`, replacing the entire wire format, and either dropping h3 from the WS path or adopting `experimental_CrosswsHandler` whose own export name signals API instability. The realised benefit over path A is runtime input validation at the server boundary, which the current `ws-dispatch*.ts` does not currently lack a workaround for.
--   tRPC migration (community Bun adapter, 91 stars, single maintainer): same migration cost as oRPC, plus the official tRPC server-side WebSocket re-implementation was closed not planned at <https://github.com/trpc/trpc/issues/6598> and the project is steering toward SSE. Choosing tRPC for a WebSocket-only daemon picks the library moving away from WebSockets.
--   Do nothing: keep manual narrowing at every call site. No risk, no gain.
+- oRPC migration (`@orpc/server/bun-ws` or `experimental_CrosswsHandler`): full typed-procedure framework with end-to-end inferred types and wire-level `ABORT_SIGNAL`. Costs: a new runtime validator dep (Zod, Valibot, or Arktype), losing the working reconnect logic at `src/client/ws/client.ts:288`, replacing the entire wire format, and either dropping h3 from the WS path or adopting `experimental_CrosswsHandler` whose own export name signals API instability. The realised benefit over path A is runtime input validation at the server boundary, which the current `ws-dispatch*.ts` does not currently lack a workaround for.
+- tRPC migration (community Bun adapter, 91 stars, single maintainer): same migration cost as oRPC, plus the official tRPC server-side WebSocket re-implementation was closed not planned at <https://github.com/trpc/trpc/issues/6598> and the project is steering toward SSE. Choosing tRPC for a WebSocket-only daemon picks the library moving away from WebSockets.
+- Do nothing: keep manual narrowing at every call site. No risk, no gain.
 
 The realised gain of any library migration over path A is ecosystem tooling (codegen, devtools, schema-driven docs). A localhost-only single-consumer daemon (see `PHILOSOPHY.md`) has no consumer for that tooling.
 
@@ -65,20 +66,20 @@ Three triggers would later flip this decision: a second client appears (CLI, hea
 
 In scope:
 
--   Define `RequestResponseMap` mapping each request `type` to its matching success-side response variant.
--   Update `EditorWsClient.request()` return type. Body is unchanged.
--   Remove manual `if (result.type !== 'X')` narrowing at the 22 call sites. Replace with direct destructuring.
--   Update TSDoc on `request()` to reflect the typed return.
+- Define `RequestResponseMap` mapping each request `type` to its matching success-side response variant.
+- Update `EditorWsClient.request()` return type. Body is unchanged.
+- Remove manual `if (result.type !== 'X')` narrowing at the 22 call sites. Replace with direct destructuring.
+- Update TSDoc on `request()` to reflect the typed return.
 
 Out of scope:
 
--   Any change to the wire format on the WebSocket. Bytes on the wire are identical before and after.
--   Any change to server-side dispatch in `src/server/ws-dispatch*.ts` or `src/server/ws.ts`.
--   Any change to reconnect (`src/client/ws/client.ts:274-313`), timeout (`:39`), or token auth.
--   Any introduction of a runtime validator (Zod, Valibot, Arktype).
--   Any introduction of a third-party RPC library.
--   Any change to `notify()`: it already returns `Promise<void>` and that is correct for notifications.
--   Any change to push notifications (`fileChanged`, `diagnostics`): they are already exposed via typed `onFileChanged` / `onDiagnostics` callbacks on `EditorWsClient`.
+- Any change to the wire format on the WebSocket. Bytes on the wire are identical before and after.
+- Any change to server-side dispatch in `src/server/ws-dispatch*.ts` or `src/server/ws.ts`.
+- Any change to reconnect (`src/client/ws/client.ts:274-313`), timeout (`:39`), or token auth.
+- Any introduction of a runtime validator (Zod, Valibot, Arktype).
+- Any introduction of a third-party RPC library.
+- Any change to `notify()`: it already returns `Promise<void>` and that is correct for notifications.
+- Any change to push notifications (`fileChanged`, `diagnostics`): they are already exposed via typed `onFileChanged` / `onDiagnostics` callbacks on `EditorWsClient`.
 
 ## Design sketch
 
@@ -129,33 +130,33 @@ Edge case to handle: the `fsActionDone` response is shared by six request types 
 
 ## Files to touch
 
--   `src/protocol.ts` (or a new `src/request-response-map.ts` re-exported from `protocol.ts`): add `RequestResponseMap`. If adding to `protocol.ts` would push it past max-lines, create the sibling file.
--   `src/client/ws/client.ts`: change `request()` signature only. Do not modify any other method, field, or constant.
--   Roughly 13 files under `src/client/` containing the 22 call sites. Enumerate via `rg -l "(client|ws)\.(request|notify)\b" src/client/`. Each touched site loses its narrowing block but keeps the value destructuring.
--   The TSDoc on `request()` already describes typed correlation; update the `@returns` to name the per-request response.
+- `src/protocol.ts` (or a new `src/request-response-map.ts` re-exported from `protocol.ts`): add `RequestResponseMap`. If adding to `protocol.ts` would push it past max-lines, create the sibling file.
+- `src/client/ws/client.ts`: change `request()` signature only. Do not modify any other method, field, or constant.
+- Roughly 13 files under `src/client/` containing the 22 call sites. Enumerate via `rg -l "(client|ws)\.(request|notify)\b" src/client/`. Each touched site loses its narrowing block but keeps the value destructuring.
+- The TSDoc on `request()` already describes typed correlation; update the `@returns` to name the per-request response.
 
 ## Files to leave alone
 
--   `src/protocol-client.ts`, `src/protocol-server.ts`: the wire schemas. Untouched.
--   `src/server/`: server-side dispatch and operations. Untouched.
--   `src/client/ws/handshake.ts`: the initial handshake is not part of `request()`.
--   The reconnect, timeout, and lifecycle methods in `src/client/ws/client.ts`: `#scheduleReconnect`, `#wireConnection`, `#performHandshake`, `#handleClose`, `ready`, `#reconnectDelay`. The signature of `request()` is the only thing that changes in this file.
+- `src/protocol-client.ts`, `src/protocol-server.ts`: the wire schemas. Untouched.
+- `src/server/`: server-side dispatch and operations. Untouched.
+- `src/client/ws/handshake.ts`: the initial handshake is not part of `request()`.
+- The reconnect, timeout, and lifecycle methods in `src/client/ws/client.ts`: `#scheduleReconnect`, `#wireConnection`, `#performHandshake`, `#handleClose`, `ready`, `#reconnectDelay`. The signature of `request()` is the only thing that changes in this file.
 
 ## Acceptance criteria
 
-1.  Every call site previously doing `if (result.type !== 'X') throw ...` is gone. Each call site reads the typed fields directly without narrowing.
-2.  `mise run //packages/desktop-daemon/editord:lint:types` exits zero.
-3.  `mise run //packages/desktop-daemon/editord:lint` exits zero (catches any new oxlint violations introduced by removing narrowing blocks).
-4.  `mise run //packages/desktop-daemon/editord:build` exits zero.
-5.  Start the dev server via `mise run //packages/desktop-daemon/editord:start:server`, open the printed URL in Chrome, and verify the full feature surface manually: open a file, save, list a directory, search, format, hover, complete, jump to definition, find references, rename, refresh inlay hints, delete and create file tree entries, open in terminal. Type checking does not verify wire behavior; manual smoke is required.
-6.  No new entries in `package.json`. No version changes. `dependencies` and `devDependencies` are identical before and after.
-7.  The wire is unchanged: a network capture of a single `open` round trip before and after the change shows identical JSON.
+1. Every call site previously doing `if (result.type !== 'X') throw ...` is gone. Each call site reads the typed fields directly without narrowing.
+2. `mise run //packages/desktop-daemon/editord:lint:types` exits zero.
+3. `mise run //packages/desktop-daemon/editord:lint` exits zero (catches any new oxlint violations introduced by removing narrowing blocks).
+4. `mise run //packages/desktop-daemon/editord:build` exits zero.
+5. Start the dev server via `mise run //packages/desktop-daemon/editord:start:server`, open the printed URL in Chrome, and verify the full feature surface manually: open a file, save, list a directory, search, format, hover, complete, jump to definition, find references, rename, refresh inlay hints, delete and create file tree entries, open in terminal. Type checking does not verify wire behavior; manual smoke is required.
+6. No new entries in `package.json`. No version changes. `dependencies` and `devDependencies` are identical before and after.
+7. The wire is unchanged: a network capture of a single `open` round trip before and after the change shows identical JSON.
 
 ## Reference material
 
--   The wire protocol is documented in `README.md` of this package.
--   Current request/response correlation: `src/client/ws/client.ts:164-204`.
--   Current reconnect logic: `src/client/ws/client.ts:274-313`.
--   Server-side dispatch entry point: `src/server/ws-dispatch.ts`.
--   Request union: `src/protocol-client.ts`. Response union: `src/protocol-server.ts`.
--   PHILOSOPHY rationale anchoring the no-library choice: `PHILOSOPHY.md` (sections on browser-as-platform, raw contenteditable, no editor framework).
+- The wire protocol is documented in `README.md` of this package.
+- Current request/response correlation: `src/client/ws/client.ts:164-204`.
+- Current reconnect logic: `src/client/ws/client.ts:274-313`.
+- Server-side dispatch entry point: `src/server/ws-dispatch.ts`.
+- Request union: `src/protocol-client.ts`. Response union: `src/protocol-server.ts`.
+- PHILOSOPHY rationale anchoring the no-library choice: `PHILOSOPHY.md` (sections on browser-as-platform, raw contenteditable, no editor framework).

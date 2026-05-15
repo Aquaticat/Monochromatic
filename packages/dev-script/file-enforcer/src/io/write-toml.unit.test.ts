@@ -154,7 +154,9 @@ await describe({
           dest,
           path: ['name',],
           value: 'value',
-        },),).rejects.toThrow();
+        },),)
+          .rejects
+          .toThrow();
         await teardown(tempDir,);
       },
     },),

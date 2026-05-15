@@ -67,7 +67,8 @@ await describe({
         const e0 = parseTomlEdit({ source: 'foo = {}\n', },);
         const e1 = tomlSet({ edit: e0, path: ['foo', 'x',], value: 1, },);
         const node = tomlGetNode({ edit: e1, path: ['foo',], },);
-        if (Array.isArray(node,)) throw new Error('expected single node',);
+        if (Array.isArray(node,))
+          throw new Error('expected single node',);
         if ((!('type' in node)) || (node.type !== 'TOMLInlineTable'))
           throw new Error('expected inline table',);
         expect(node.body,).toEqual([],);

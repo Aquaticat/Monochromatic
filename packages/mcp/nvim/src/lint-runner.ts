@@ -135,19 +135,20 @@ export async function runOxlint(
 
   //region Run fallback invocation without --type-aware for orphaned files
   /** Promise placeholder for the optional fallback oxlint run; resolves to `null` when no orphaned files exist. */
-  const fallbackRun: Promise<Map<string, Diagnostic[]> | null> = (function getFallbackRun() {
-    if (filesWithoutTsconfig.length === 0)
-      return Promise.resolve(null,);
-    notes.push(
-      'Some files have no tsconfig.json in any ancestor directory; '
-        + 'oxlint ran without --type-aware for those files and some type-aware rules may not report.',
-    );
-    return spawnOxlint({
-      cwd: configDir,
-      files: filesWithoutTsconfig,
-      typeAware: false,
-    },);
-  })();
+  const fallbackRun: Promise<Map<string, Diagnostic[]> | null> =
+    (function getFallbackRun() {
+      if (filesWithoutTsconfig.length === 0)
+        return Promise.resolve(null,);
+      notes.push(
+        'Some files have no tsconfig.json in any ancestor directory; '
+          + 'oxlint ran without --type-aware for those files and some type-aware rules may not report.',
+      );
+      return spawnOxlint({
+        cwd: configDir,
+        files: filesWithoutTsconfig,
+        typeAware: false,
+      },);
+    })();
   //endregion Run fallback invocation without --type-aware for orphaned files
 
   /** Tuple of (per-package-root results, optional fallback result); awaited together so both lint groups overlap. */

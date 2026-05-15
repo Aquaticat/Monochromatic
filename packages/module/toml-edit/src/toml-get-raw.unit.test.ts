@@ -10,11 +10,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
+import { emptyTomlEdit, } from './empty-toml-edit.ts';
 import {
   TomlPathNotFoundError,
   TomlSpliceUnavailableError,
 } from './errors.ts';
-import { emptyTomlEdit, } from './empty-toml-edit.ts';
 import { parseTomlEdit, } from './parse-toml-edit.ts';
 import { tomlGetRaw, } from './toml-get-raw.ts';
 
@@ -43,7 +43,8 @@ await describe({
         const edit = parseTomlEdit({ source: 'foo = 1\n', },);
         expect(function lookup() {
           tomlGetRaw({ edit, path: ['missing',], },);
-        },).toThrow(TomlPathNotFoundError,);
+        },)
+          .toThrow(TomlPathNotFoundError,);
       },
     },),
 
@@ -53,7 +54,8 @@ await describe({
         const edit = emptyTomlEdit();
         expect(function lookup() {
           tomlGetRaw({ edit, path: ['foo',], },);
-        },).toThrow(TomlSpliceUnavailableError,);
+        },)
+          .toThrow(TomlSpliceUnavailableError,);
       },
     },),
 
@@ -61,7 +63,7 @@ await describe({
       name: 'returns the parse-time source slice even after a pending tomlSet',
       fn: async () => {
         const e0 = parseTomlEdit({ source: "key = 'literal'\n", },);
-        const {tomlSet} = (await import('./toml-set.ts',));
+        const { tomlSet, } = await import('./toml-set.ts');
         const e1 = tomlSet({ edit: e0, path: ['key',], value: 'new', },);
         expect(tomlGetRaw({ edit: e1, path: ['key',], },),).toBe("'literal'",);
       },

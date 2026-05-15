@@ -125,8 +125,7 @@ export const noFunctionRootLet: CreateOnceRule = {
       recommended: true,
     },
     messages: {
-      forbidden:
-        '`let` at function-body root leaks scope to every subsequent statement. '
+      forbidden: '`let` at function-body root leaks scope to every subsequent statement. '
         + 'Refactor to `const` (ternary, Array.reduce), wrap the mutation in a named-function IIFE '
         + '`(function name () { let x; /* ... */ return x; })()`, or extract a helper function '
         + 'ending in `return <local-binding>`. If genuinely unavoidable, add '

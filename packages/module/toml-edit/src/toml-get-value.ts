@@ -36,7 +36,7 @@ export function tomlGetValue(
     path,
   }: {
     edit: TomlEditState;
-    path: TomlPath
+    path: TomlPath;
   },
 ): unknown {
   /** Effective resolution accounts for pending edits and deletes. */

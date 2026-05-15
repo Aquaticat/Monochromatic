@@ -18,7 +18,9 @@
  * Run: mise run //packages/dev-script/vm-builder:run
  */
 import { exec, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
-import { findMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+import {
+  findMonorepoRootCached,
+} from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 import { findUp, } from 'find-up';
 import { spawn as nodeSpawn, } from 'node:child_process';
 import { once, } from 'node:events';

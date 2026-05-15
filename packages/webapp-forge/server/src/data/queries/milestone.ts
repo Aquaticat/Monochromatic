@@ -30,7 +30,8 @@ export async function insertMilestone(row: {
   dueAt?: number | null;
 },): Promise<void> {
   await run({
-    sql: 'INSERT OR IGNORE INTO milestones(id, repo_id, title, due_at) VALUES (?, ?, ?, ?)',
+    sql:
+      'INSERT OR IGNORE INTO milestones(id, repo_id, title, due_at) VALUES (?, ?, ?, ?)',
     params: [
       row.id,
       row.repoId,

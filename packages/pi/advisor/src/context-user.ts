@@ -41,10 +41,12 @@ export function latestUserPromptExcerpt(
   const text = userMessageText(latestUserEntry.message.content,);
   return text.length <= LATEST_USER_EXCERPT_CHARS
     ? text
-    : `${text.slice(
-      0,
-      LATEST_USER_EXCERPT_CHARS,
-    )}…`;
+    : `${
+      text.slice(
+        0,
+        LATEST_USER_EXCERPT_CHARS,
+      )
+    }…`;
 }
 
 //endregion Public API

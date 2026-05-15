@@ -32,19 +32,19 @@ await describe({
     it({
       name: 'throws on truthy primitives',
       fn: async () => {
-        expect(() => falsyOrThrow('hello',),).toThrow(/falsy/,);
-        expect(() => falsyOrThrow(1,),).toThrow(/falsy/,);
-        expect(() => falsyOrThrow(true,),).toThrow(/falsy/,);
-        expect(() => falsyOrThrow(1n,),).toThrow(/falsy/,);
+        expect(() => falsyOrThrow('hello',)).toThrow(/falsy/,);
+        expect(() => falsyOrThrow(1,)).toThrow(/falsy/,);
+        expect(() => falsyOrThrow(true,)).toThrow(/falsy/,);
+        expect(() => falsyOrThrow(1n,)).toThrow(/falsy/,);
       },
     },),
 
     it({
       name: 'throws on truthy reference types',
       fn: async () => {
-        expect(() => falsyOrThrow({},),).toThrow(/falsy/,);
-        expect(() => falsyOrThrow([],),).toThrow(/falsy/,);
-        expect(() => falsyOrThrow(() => 0,),).toThrow(/falsy/,);
+        expect(() => falsyOrThrow({},)).toThrow(/falsy/,);
+        expect(() => falsyOrThrow([],)).toThrow(/falsy/,);
+        expect(() => falsyOrThrow(() => 0)).toThrow(/falsy/,);
       },
     },),
 

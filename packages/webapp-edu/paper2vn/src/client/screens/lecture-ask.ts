@@ -98,12 +98,12 @@ export function mountAskPanel(
   const input = el({
     tag: 'textarea',
     attrs: { placeholder: labels.placeholder, },
-  });
+  },);
   /** Inline status paragraph for the thinking and error messages. */
   const status = el({
     tag: 'p',
     attrs: { class: 'muted', },
-  });
+  },);
   /** Send button wired to the local async `send`. */
   const sendBtn = el({
     tag: 'button',
@@ -114,7 +114,7 @@ export function mountAskPanel(
       },
     },
     children: [labels.send,],
-  });
+  },);
   /** Close button restoring the dialogue stage. */
   const closeBtn = el({
     tag: 'button',
@@ -125,7 +125,7 @@ export function mountAskPanel(
       },
     },
     children: [labels.back,],
-  });
+  },);
   /** Panel container holding input, status, send, and close. */
   const panel = el({
     tag: 'div',
@@ -142,15 +142,15 @@ export function mountAskPanel(
             tag: 'span',
             attrs: { class: 'speaker-name', },
             children: [labels.prompt,],
-          }),
+          },),
           closeBtn,
         ],
-      }),
+      },),
       input,
       status,
       sendBtn,
     ],
-  });
+  },);
   stage.append(panel,);
 
   /**

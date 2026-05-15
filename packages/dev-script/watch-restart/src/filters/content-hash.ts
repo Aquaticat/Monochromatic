@@ -56,14 +56,12 @@ export function contentHashFilter(): WatchFilter {
     try {
       /** Hash computed off the current file bytes; `null` means the file exceeds the size cap. */
       const fresh = await ctx.hashCache.hashFile(event.path,);
-      if (fresh === null) {
+      if (fresh === null)
         return true;
-      }
       /** Previously stored hash for this path; `undefined` when the watcher has never seen the file. */
       const prior = ctx.hashCache.get(event.path,);
-      if (prior === fresh) {
+      if (prior === fresh)
         return false;
-      }
       ctx.hashCache.set({
         path: event.path,
         hash: fresh,

@@ -27,12 +27,12 @@ await describe({
     it({
       name: 'throws on every non-Set value',
       fn: async () => {
-        expect(() => setOrThrow([],),).toThrow(/Set/,);
-        expect(() => setOrThrow(new Map(),),).toThrow(/Set/,);
-        expect(() => setOrThrow(new WeakSet(),),).toThrow(/Set/,);
-        expect(() => setOrThrow({},),).toThrow(/Set/,);
-        expect(() => setOrThrow('abc',),).toThrow(/Set/,);
-        expect(() => setOrThrow(null,),).toThrow(/Set/,);
+        expect(() => setOrThrow([],)).toThrow(/Set/,);
+        expect(() => setOrThrow(new Map(),)).toThrow(/Set/,);
+        expect(() => setOrThrow(new WeakSet(),)).toThrow(/Set/,);
+        expect(() => setOrThrow({},)).toThrow(/Set/,);
+        expect(() => setOrThrow('abc',)).toThrow(/Set/,);
+        expect(() => setOrThrow(null,)).toThrow(/Set/,);
       },
     },),
 

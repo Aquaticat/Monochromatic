@@ -24,7 +24,8 @@ const DEFAULT_MAX_HASH_SIZE_MIB = 16;
  * const cache = new HashCache({ maxHashSize: DEFAULT_MAX_HASH_SIZE_BYTES, });
  * ```
  */
-export const DEFAULT_MAX_HASH_SIZE_BYTES: number = DEFAULT_MAX_HASH_SIZE_MIB * BYTES_PER_MIB;
+export const DEFAULT_MAX_HASH_SIZE_BYTES: number = DEFAULT_MAX_HASH_SIZE_MIB
+  * BYTES_PER_MIB;
 
 /**
  * Options for constructing a {@link HashCache}.
@@ -118,9 +119,8 @@ export class HashCache {
   async hashFile(absolutePath: string,): Promise<string | null> {
     /** File size pulled from `fstat` to gate the read against `#maxHashSize` before allocating bytes. */
     const { size, } = await stat(absolutePath,);
-    if (size > this.#maxHashSize) {
+    if (size > this.#maxHashSize)
       return null;
-    }
     /** File bytes; Buffer extends Uint8Array, accepted directly by SubtleCrypto */
     const bytes = await readFile(absolutePath,);
     /** Raw SHA-256 digest as an `ArrayBuffer`; hex-encoded immediately below for the cache key. */

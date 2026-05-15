@@ -71,7 +71,7 @@ export function tomlDelete(
     path,
   }: {
     edit: TomlEditState;
-    path: TomlPath
+    path: TomlPath;
   },
 ): TomlEditState {
   /** Direct AST lookup so deletion can branch on the resolution kind. */
@@ -83,18 +83,20 @@ export function tomlDelete(
   if ((resolved.kind === 'missing') || (resolved.kind === 'top-level'))
     return edit;
 
-  if (resolved.kind === 'array-of-tables')
+  if (resolved.kind === 'array-of-tables') {
     return withDeletions({
       edit,
       nodes: resolved.nodes,
     },);
+  }
 
-  if (resolved.kind === 'value')
+  if (resolved.kind === 'value') {
     return deleteArrayElement({
       edit,
       path,
       element: resolved.node,
     },);
+  }
 
   return withDeletion({
     edit,
@@ -177,16 +179,20 @@ function deleteArrayElement(
 ): TomlEditState {
   /** Destructured parent so the type guard can read it once. */
   const { parent, } = element;
-  if ((parent === null) || (parent.type !== 'TOMLArray'))
+  if ((parent === null) || (parent.type !== 'TOMLArray')) {
     throw new TomlImmutableNodeError(
-      `tomlDelete at ${formatPath({ path, },)}: expected an array element, found parent type ${String(parent?.type,)}`,
+      `tomlDelete at ${
+        formatPath({ path, },)
+      }: expected an array element, found parent type ${String(parent?.type,)}`,
     );
+  }
   /** Position of the element to drop; seeds the skip path for the outer walk. */
   const skipIndex = parent.elements.indexOf(element,);
-  if (skipIndex === (-1))
+  if (skipIndex === (-1)) {
     throw new TomlImmutableNodeError(
       `tomlDelete at ${formatPath({ path, },)}: element not found in parent array`,
     );
+  }
   /** Climb the parent chain so the outermost containing key-value is the edit target. */
   const walkResult = walkUpToKeyValue({
     path,
@@ -252,23 +258,26 @@ function walkUpToKeyValue(
 } {
   /** Next ancestor up the AST so the walk can decide whether to recurse. */
   const ancestor = array.parent;
-  if (ancestor === null)
+  if (ancestor === null) {
     throw new TomlImmutableNodeError(
       `tomlDelete at ${formatPath({ path, },)}: array has no parent in the AST`,
     );
-  if (ancestor.type === 'TOMLKeyValue')
+  }
+  if (ancestor.type === 'TOMLKeyValue') {
     return {
       keyValue: ancestor,
       outerArray: array,
       skipPath: trailingPath,
     };
+  }
   if (ancestor.type === 'TOMLArray') {
     /** Index of `array` inside its enclosing array; prepended to the skip path. */
     const idx = ancestor.elements.indexOf(array,);
-    if (idx === (-1))
+    if (idx === (-1)) {
       throw new TomlImmutableNodeError(
         `tomlDelete at ${formatPath({ path, },)}: nested array not found in its parent`,
       );
+    }
     return walkUpToKeyValue({
       path,
       array: ancestor,
@@ -279,7 +288,9 @@ function walkUpToKeyValue(
     },);
   }
   throw new TomlImmutableNodeError(
-    `tomlDelete at ${formatPath({ path, },)}: array ancestor is neither TOMLArray nor TOMLKeyValue (unreachable for well-formed parser output)`,
+    `tomlDelete at ${
+      formatPath({ path, },)
+    }: array ancestor is neither TOMLArray nor TOMLKeyValue (unreachable for well-formed parser output)`,
   );
 }
 
@@ -299,32 +310,36 @@ function removeJsAtPath(
     path: readonly number[];
   },
 ): unknown[] {
-  if (path.length === 0)
+  if (path.length === 0) {
     throw new TomlImmutableNodeError(
       'removeJsAtPath: path must not be empty',
     );
+  }
   /** Current outer index; each recursion step strips this off the path. */
   const head = nonNullishOrThrow(path[0],);
   /** Inner-level segments still to traverse. */
   const rest = path.slice(1,);
-  if (rest.length === 0)
+  if (rest.length === 0) {
     return arr.filter(function notSkipped(
       _el,
       i,
     ) {
       return i !== head;
     },);
+  }
   /** Inner array at this level so the recursion can drill in. */
   const target = arr[head];
-  if (!Array.isArray(target,))
+  if (!Array.isArray(target,)) {
     throw new TomlImmutableNodeError(
       `removeJsAtPath: expected array at index ${head}, got ${typeof target}`,
     );
+  }
   return arr.map(function each(
     el,
     i,
   ) {
-    if (i !== head) return el;
+    if (i !== head)
+      return el;
     return removeJsAtPath({
       arr: target as readonly unknown[],
       path: rest,

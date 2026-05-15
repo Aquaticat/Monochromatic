@@ -12,9 +12,7 @@ import {
   resolve as pathResolve,
 } from 'node:path';
 
-import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 /**
  * Resolves a reference string to an absolute path under the dist root.

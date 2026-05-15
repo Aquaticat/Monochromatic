@@ -110,7 +110,8 @@ export function createLspParser({
           /**
            * Header text decoded as ASCII so the Content-Length scan stays cheap.
            */
-          const header = state.buffer
+          const header = state
+            .buffer
             .subarray(
               0,
               headerEnd,
@@ -141,7 +142,8 @@ export function createLspParser({
         /**
          * Body bytes decoded as UTF-8 for `JSON.parse` below.
          */
-        const json = state.buffer
+        const json = state
+          .buffer
           .subarray(
             0,
             state.contentLength,

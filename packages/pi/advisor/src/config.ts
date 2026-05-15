@@ -8,15 +8,15 @@ import { readFileSync, } from 'node:fs';
 import { join, } from 'node:path';
 import * as v from 'valibot';
 import {
+  type AdvisorConfigFile,
+  AdvisorConfigFileSchema,
+} from './config-schemas.ts';
+import {
   CONFIG_FILE_NAME,
   DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS,
   DEFAULT_MAX_CONTEXT_CHARS,
   DEFAULT_TIMEOUT_MS,
 } from './constants.ts';
-import {
-  type AdvisorConfigFile,
-  AdvisorConfigFileSchema,
-} from './config-schemas.ts';
 import type { AdvisorConfig, } from './types.ts';
 
 //region Defaults
@@ -161,10 +161,13 @@ function mergeConfigFiles(
         enabled: config.enabled ?? accumulator.enabled,
         timeoutMs: config.timeoutMs ?? accumulator.timeoutMs,
         maxContextChars: config.maxContextChars ?? accumulator.maxContextChars,
-        maxAdvisorOutputTokens: config.maxAdvisorOutputTokens ?? accumulator.maxAdvisorOutputTokens,
+        maxAdvisorOutputTokens: config.maxAdvisorOutputTokens
+          ?? accumulator.maxAdvisorOutputTokens,
         includePriorAdvisorResults: config.includePriorAdvisorResults
           ?? accumulator.includePriorAdvisorResults,
-        ...(config.systemPrompt === undefined ? {} : { systemPrompt: config.systemPrompt, }),
+        ...(config.systemPrompt === undefined
+          ? {}
+          : { systemPrompt: config.systemPrompt, }),
       };
     },
     defaults,

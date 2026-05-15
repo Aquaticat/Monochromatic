@@ -147,7 +147,7 @@ function findFirstShortValueOptionIndex(arg: string,): number | undefined {
   /** Short-option letters after leading dash. */
   const optionCluster = arg.slice(SHORT_OPTION_PREFIX.length,);
   /** Indexes of value-taking options present inside cluster. */
-  const valueOptionIndexes = [...SHORT_VALUE_TAKING_OPTIONS]
+  const valueOptionIndexes = [...SHORT_VALUE_TAKING_OPTIONS,]
     .map(function mapValueOptionIndex(shortOption,) {
       return optionCluster.indexOf(shortOption,);
     },)
@@ -270,11 +270,12 @@ function stripCommitOptionValues(args: readonly string[],): readonly string[] {
   /** Tokens after current token. */
   const remainingArgs = args.slice(1,);
 
-  if (consumesSeparateValue(arg,))
+  if (consumesSeparateValue(arg,)) {
     return [
       arg,
       ...stripCommitOptionValues(remainingArgs.slice(1,),),
     ];
+  }
 
   return [
     arg,
@@ -299,11 +300,12 @@ function splitPathspecSeparator(args: readonly string[],): PathspecSplit {
   /** Index of `--`, or -1 when invocation has no explicit pathspec separator. */
   const separatorIndex = args.indexOf(PATHSPEC_SEPARATOR,);
 
-  if (separatorIndex === (-1))
+  if (separatorIndex === (-1)) {
     return {
       beforeSeparator: args,
       afterSeparator: [],
     };
+  }
 
   return {
     beforeSeparator: args.slice(
@@ -344,7 +346,8 @@ function isPlainPathspec(arg: string,): boolean {
  * ```
  */
 function isPathspecFromFileOption(arg: string,): boolean {
-  return (arg === PATHSPEC_FROM_FILE_OPTION) || arg.startsWith(PATHSPEC_FROM_FILE_PREFIX,);
+  return (arg === PATHSPEC_FROM_FILE_OPTION)
+    || arg.startsWith(PATHSPEC_FROM_FILE_PREFIX,);
 }
 
 /**

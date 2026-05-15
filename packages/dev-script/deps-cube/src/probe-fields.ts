@@ -118,7 +118,8 @@ const PERMISSIVE_LICENSES = new Set([
  * ```
  */
 export function parseRepository(repoField: NpmVersion['repository'],): RepositoryInfo {
-  if ((repoField === undefined) || (repoField === null)) return null;
+  if ((repoField === undefined) || (repoField === null))
+    return null;
 
   /** `true` when the `repository` field is a plain string (vs the `{url, ...}` object form). */
   const isStringForm = (typeof repoField) === 'string';
@@ -127,14 +128,16 @@ export function parseRepository(repoField: NpmVersion['repository'],): Repositor
   /** Optional monorepo sub-directory; only objects carry one, plain-string entries don't. */
   const directory = isStringForm ? undefined : repoField.directory;
 
-  if (rawString === '') return null;
+  if (rawString === '')
+    return null;
 
   /** Match result for the `github:owner/repo` shorthand syntax; preferred over the URL form when present. */
   const shortMatch = /^github:([^/]+)\/(.+?)(?:\.git)?$/i.exec(rawString,);
   if (shortMatch !== null) {
     /** `[full, owner, repo]` captured groups from `shortMatch`; full match discarded. */
     const [, owner, repo,] = shortMatch;
-    if ((owner === undefined) || (repo === undefined)) return null;
+    if ((owner === undefined) || (repo === undefined))
+      return null;
     return {
       host: 'github',
       owner,
@@ -153,7 +156,8 @@ export function parseRepository(repoField: NpmVersion['repository'],): Repositor
   if (match !== null) {
     /** `[full, owner, repo]` captured groups from `match`; full match discarded. */
     const [, owner, repo,] = match;
-    if ((owner === undefined) || (repo === undefined)) return null;
+    if ((owner === undefined) || (repo === undefined))
+      return null;
     return {
       host: 'github',
       owner,
@@ -204,7 +208,8 @@ export function resolveVersion(
     pkg: NpmPackage;
   },
 ): string | undefined {
-  if (/^\d+\.\d+\.\d+/.test(range,) && (pkg.versions?.[range] !== undefined)) return range;
+  if (/^\d+\.\d+\.\d+/.test(range,) && (pkg.versions?.[range] !== undefined))
+    return range;
   return pkg['dist-tags']?.latest;
 }
 
@@ -234,12 +239,23 @@ export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
   const unnormalised = isStringForm ? license : (license?.type ?? '');
   /** Normalised license string: object form unwrapped, uppercased, trimmed, ready for set/prefix checks. */
   const raw = unnormalised.toUpperCase().trim();
-  if (raw === '') return 'unknown';
-  if (PERMISSIVE_LICENSES.has(raw,)) return 'permissive';
-  if (raw.startsWith('GPL',) || raw.startsWith('LGPL',) || raw.startsWith('AGPL',) || raw.includes('COPYLEFT',))
+  if (raw === '')
+    return 'unknown';
+  if (PERMISSIVE_LICENSES.has(raw,))
+    return 'permissive';
+  if (raw.startsWith('GPL',)
+    || raw.startsWith('LGPL',)
+    || raw.startsWith('AGPL',)
+    || raw.includes('COPYLEFT',))
+  {
     return 'copyleft';
-  if ((raw === 'UNLICENSED') || raw.startsWith('SEE LICENSE',) || raw.startsWith('PROPRIETARY',))
+  }
+  if ((raw === 'UNLICENSED')
+    || raw.startsWith('SEE LICENSE',)
+    || raw.startsWith('PROPRIETARY',))
+  {
     return 'non-oss';
+  }
   return 'unknown';
 }
 
@@ -256,7 +272,7 @@ export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
  *
  * @throws When the request times out, network errors, or HTTP status is not 2xx.
  */
-async function fetchJson<T>(url: string,): Promise<T> {
+async function fetchJson<T,>(url: string,): Promise<T> {
   /** HTTP response from `fetch`; aborted if it doesn't complete within `HTTP_TIMEOUT_MS`. */
   const response = await fetch(
     url,
@@ -264,7 +280,8 @@ async function fetchJson<T>(url: string,): Promise<T> {
       signal: AbortSignal.timeout(HTTP_TIMEOUT_MS,),
     },
   );
-  if (!response.ok) throw new Error(`HTTP ${response.status.toString()} on ${url}`,);
+  if (!response.ok)
+    throw new Error(`HTTP ${response.status.toString()} on ${url}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response.json() is `unknown`; caller asserts T.
   return await response.json() as T;
 }
@@ -278,7 +295,7 @@ async function fetchJson<T>(url: string,): Promise<T> {
  *
  * @throws When `gh` exits non-zero (rate limit, auth failure, not found).
  */
-async function ghApi<T>(path: string,): Promise<T> {
+async function ghApi<T,>(path: string,): Promise<T> {
   /** `gh api` subprocess result; `stdout` holds the JSON payload, throws on non-zero exit. */
   const result = await spawn(
     'gh',
@@ -330,7 +347,8 @@ export async function probePackageManifest(
     field: 'registry',
     ttlMs: TTL_MS,
   },);
-  if (cached !== undefined) return cached;
+  if (cached !== undefined)
+    return cached;
   /**
    * Percent-encoded npm name preserving `@` for scoped packages (so `@scope/name` becomes `@scope%2Fname` not `%40scope%2Fname`).
    */
@@ -381,7 +399,8 @@ export async function probeDownloads(
     field: 'downloads',
     ttlMs: TTL_MS,
   },);
-  if (cached !== undefined) return cached.downloads;
+  if (cached !== undefined)
+    return cached.downloads;
   try {
     /**
      * Percent-encoded npm name preserving `@` for scoped packages so the URL matches the npm API's expected shape.
@@ -401,7 +420,8 @@ export async function probeDownloads(
       value: fetched,
     },);
     return fetched.downloads;
-  } catch {
+  }
+  catch {
     return 0;
   }
 }
@@ -442,10 +462,13 @@ export async function probeLanguages(
     field: 'languages',
     ttlMs: TTL_FOREVER,
   },);
-  if (cached !== undefined) return cached;
+  if (cached !== undefined)
+    return cached;
   try {
     /** Fresh Linguist response; on error the catch returns `null` to signal "unknown" upstream. */
-    const fetched = await ghApi<Record<string, number>>(`repos/${owner}/${repo}/languages`,);
+    const fetched = await ghApi<Record<string, number>>(
+      `repos/${owner}/${repo}/languages`,
+    );
     await cache.write({
       name: key,
       version: '_repo',
@@ -453,7 +476,8 @@ export async function probeLanguages(
       value: fetched,
     },);
     return fetched;
-  } catch {
+  }
+  catch {
     return null;
   }
 }
@@ -501,7 +525,8 @@ export async function probeLastCommit(
     field,
     ttlMs: TTL_MS,
   },);
-  if (cached !== undefined) return cached;
+  if (cached !== undefined)
+    return cached;
 
   try {
     if (directory === undefined) {
@@ -516,12 +541,15 @@ export async function probeLastCommit(
       return repoMeta.pushed_at;
     }
     /** Path-scoped commit list (most-recent first); only the first entry's author date is consumed. */
-    const commits = await ghApi<readonly { commit?: { author?: { date?: string; }; }; }[]>(
+    const commits = await ghApi<
+      readonly { commit?: { author?: { date?: string; }; }; }[]
+    >(
       `repos/${owner}/${repo}/commits?path=${encodeURIComponent(directory,)}&per_page=1`,
     );
     /** Author date of the most-recent path-scoped commit; `undefined` when the response is shaped unexpectedly. */
     const date = commits[0]?.commit?.author?.date;
-    if (date === undefined) return null;
+    if (date === undefined)
+      return null;
     await cache.write({
       name: key,
       version: '_repo',
@@ -529,7 +557,8 @@ export async function probeLastCommit(
       value: date,
     },);
     return date;
-  } catch {
+  }
+  catch {
     return null;
   }
 }

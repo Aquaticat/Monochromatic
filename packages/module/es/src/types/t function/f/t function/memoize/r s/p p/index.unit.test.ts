@@ -207,7 +207,8 @@ await describe({
       fn: async () => {
         const customStore = createSyncStore({ storeId: 'custom', },);
         const fn = (x: number,): number => x * 2;
-        const memoized = $({ fn, keyFn: (x: number,) => String(x,), store: customStore, },);
+        const memoized = $({ fn, keyFn: (x: number,) => String(x,),
+          store: customStore, },);
 
         memoized({ args: [5,], salt: 'v1', },);
         expect(customStore.get<number>('5:v1',),).toBe(10,);

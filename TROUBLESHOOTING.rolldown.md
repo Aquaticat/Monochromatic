@@ -17,7 +17,7 @@ Upstream issue:
 A static import using import attributes:
 
 ```ts
-import sql from './schema.sql' with { type: 'text' };
+import sql from './schema.sql' with { type: 'text', };
 ```
 
 emits `PARSE_ERROR` because rolldown parses `.sql` as
@@ -152,9 +152,8 @@ TypeScript discriminated-union narrowing does not work:
 
 ```ts
 // Does NOT narrow; "Literal" is not a discriminant in the declared union
-if (node.source.type === 'Literal') {
-  node.source.value;  // TypeScript error: 'value' does not exist on type 'Expression'
-}
+if (node.source.type === 'Literal')
+  node.source.value; // TypeScript error: 'value' does not exist on type 'Expression'
 ```
 
 ### Root cause
@@ -260,10 +259,10 @@ export default defineConfig({
   platform: 'neutral',
   inputOptions: {
     resolve: {
-      mainFields: ['module', 'main'],
+      mainFields: ['module', 'main',],
     },
   },
-});
+},);
 ```
 
 Tradeoff: must be remembered for every neutral-platform
@@ -376,12 +375,12 @@ importing any `node:` subpath under `platform: 'neutral'`.
 
 ```ts
 // Before; breaks under platform: 'neutral'
-import { parse } from 'node:path/posix';
-parse(somePath);
+import { parse, } from 'node:path/posix';
+parse(somePath,);
 
 // After; resolves on all platforms
-import { posix } from 'node:path';
-posix.parse(somePath);
+import { posix, } from 'node:path';
+posix.parse(somePath,);
 ```
 
 Tradeoff: imports the entire parent module's surface; loses

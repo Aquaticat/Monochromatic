@@ -29,15 +29,17 @@ await describe({
     it({
       name: 'throws on non-RegExp values',
       fn: async () => {
-        expect(() => regExpOrThrow('abc',),).toThrow(/RegExp/,);
+        expect(() => regExpOrThrow('abc',)).toThrow(/RegExp/,);
         expect(() =>
           regExpOrThrow({
             test() {
               return true;
             },
-          },),).toThrow(/RegExp/,);
-        expect(() => regExpOrThrow(null,),).toThrow(/RegExp/,);
-        expect(() => regExpOrThrow(undefined,),).toThrow(/RegExp/,);
+          },)
+        )
+          .toThrow(/RegExp/,);
+        expect(() => regExpOrThrow(null,)).toThrow(/RegExp/,);
+        expect(() => regExpOrThrow(undefined,)).toThrow(/RegExp/,);
       },
     },),
 

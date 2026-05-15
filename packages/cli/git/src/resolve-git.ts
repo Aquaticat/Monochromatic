@@ -63,7 +63,7 @@ async function isShimForSelf(candidatePath: string,): Promise<boolean> {
       candidatePath,
       'utf8',
     );
-    return [...SELF_SHIM_MARKERS].some(function hasSelfShimMarker(marker,) {
+    return [...SELF_SHIM_MARKERS,].some(function hasSelfShimMarker(marker,) {
       return content.includes(marker,);
     },);
   }

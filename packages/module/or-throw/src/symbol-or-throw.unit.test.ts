@@ -29,11 +29,11 @@ await describe({
     it({
       name: 'throws on non-symbol values',
       fn: async () => {
-        expect(() => symbolOrThrow('sym',),).toThrow(/symbol/,);
-        expect(() => symbolOrThrow(0,),).toThrow(/symbol/,);
-        expect(() => symbolOrThrow(null,),).toThrow(/symbol/,);
-        expect(() => symbolOrThrow(undefined,),).toThrow(/symbol/,);
-        expect(() => symbolOrThrow({},),).toThrow(/symbol/,);
+        expect(() => symbolOrThrow('sym',)).toThrow(/symbol/,);
+        expect(() => symbolOrThrow(0,)).toThrow(/symbol/,);
+        expect(() => symbolOrThrow(null,)).toThrow(/symbol/,);
+        expect(() => symbolOrThrow(undefined,)).toThrow(/symbol/,);
+        expect(() => symbolOrThrow({},)).toThrow(/symbol/,);
       },
     },),
 

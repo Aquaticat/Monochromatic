@@ -110,14 +110,18 @@ async function bundleController(): Promise<string> {
   },);
   if (!result.success) {
     /** Newline-joined bundler diagnostic messages; surfaced in the thrown error so the CLI can print them. */
-    const messages = result.logs.map(function describeLog(log,) {
-      return log.message;
-    },).join('\n',);
+    const messages = result
+      .logs
+      .map(function describeLog(log,) {
+        return log.message;
+      },)
+      .join('\n',);
     throw new Error(`Failed to bundle controller for HTML inlining:\n${messages}`,);
   }
   /** First (and only) output artifact from the single-entrypoint build; further `outputs[0..n]` are unused. */
   const [output,] = result.outputs;
-  if (output === undefined) throw new Error('Bun.build returned no outputs for controller entry point',);
+  if (output === undefined)
+    throw new Error('Bun.build returned no outputs for controller entry point',);
   return await output.text();
 }
 

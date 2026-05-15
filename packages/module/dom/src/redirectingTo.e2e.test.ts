@@ -19,7 +19,8 @@ import { loadHarness, } from './test-setup.ts';
 /** Absolute file URL of the redirect target used by the match-path test. */
 const TARGET_URL = pathToFileURL(
   join(import.meta.dirname, '..', 'test', 'fixtures', 'redirect-target.html',),
-).href;
+)
+  .href;
 
 test.describe('onLoadRedirectingTo', () => {
   test('is a no-op when no a.redirectingTo element exists', async ({ page, },) => {
@@ -35,7 +36,7 @@ test.describe('onLoadRedirectingTo', () => {
     await page.waitForTimeout(100,);
 
     expect(page.url(),).toBe(urlBefore,);
-  },);
+  });
 
   test('replaces location with the anchor href after the delay', async ({ page, },) => {
     await loadHarness({ page, },);
@@ -52,5 +53,5 @@ test.describe('onLoadRedirectingTo', () => {
     await page.waitForURL(TARGET_URL,);
     const marker = await page.locator('#marker',).textContent();
     expect(marker,).toBe('redirect-target-reached',);
-  },);
-},);
+  });
+});

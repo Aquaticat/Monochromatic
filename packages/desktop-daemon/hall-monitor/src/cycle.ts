@@ -131,7 +131,8 @@ export async function cycle(): Promise<void> {
     ];
     /* oxlint-enable no-magic-numbers */
     /** Count of unproductive verdicts in the current 5-cycle window; surfaced in the log line as `streak: N/5`. */
-    const streakCount = state.decisions
+    const streakCount = state
+      .decisions
       .filter(function checkUnproductive(d,) {
         return isUnproductive(d,);
       },)

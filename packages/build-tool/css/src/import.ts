@@ -59,7 +59,7 @@ function resolveSpecifier({
 }: {
   specifier: string;
   fromFile: string;
-}): string {
+},): string {
   /** Directory containing the importing file */
   const fromDir = dirname(fromFile,);
 
@@ -165,7 +165,7 @@ function inlineImports({
   root: Root;
   fromFile: string;
   imported: Set<string>;
-}): void {
+},): void {
   // Collect @import nodes first to avoid mutating the tree while walking
   /**
    * All \@import at-rules in the current root.

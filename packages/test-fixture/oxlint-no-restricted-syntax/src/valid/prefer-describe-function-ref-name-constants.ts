@@ -7,7 +7,7 @@ function describe({
   name,
 }: {
   name: string;
-}): void {
+},): void {
   void name;
 }
 
@@ -19,15 +19,15 @@ const SETTINGS = {
 
 describe({
   name: 'MANAGERS',
-});
+},);
 
 describe({
   name: 'FEED_PAGE_SIZE',
-});
+},);
 
 describe({
   name: 'SETTINGS',
-});
+},);
 
 void MANAGERS;
 void FEED_PAGE_SIZE;

@@ -41,8 +41,9 @@ export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
     (edit.edits.size === 0)
     && (edit.insertions.length === 0)
     && (edit.deletions.size === 0)
-  )
+  ) {
     return edit.source;
+  }
 
   /** Local event shape for the sorted-emit stream. */
   type SortedEvent =
@@ -50,33 +51,35 @@ export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
       kind: 'replace';
       start: number;
       end: number;
-      text: string
+      text: string;
     }
     | {
       kind: 'delete';
       start: number;
-      end: number
+      end: number;
     }
     | {
       kind: 'insert';
       at: number;
-      text: string
+      text: string;
     };
 
   /** Accumulator for all deltas so a single sort orders the emission. */
   const events: SortedEvent[] = [];
 
-  for (const [node, edit_,] of edit.edits)
+  for (const [node, edit_,] of edit.edits) {
     events.push(computeReplaceEvent({
       node,
       edit: edit_,
     },),);
+  }
 
-  for (const node of edit.deletions)
+  for (const node of edit.deletions) {
     events.push(computeDeleteEvent({
       node,
       state: edit,
     },),);
+  }
 
   for (const ins of edit.insertions) {
     /** Resolved byte offset so insertions can join the sorted-by-offset stream. */
@@ -110,24 +113,29 @@ export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
       c,
       ev,
     ) {
-    if (ev.kind === 'insert') {
-      if (ev.at > c) out.push(edit.source.slice(
-        c,
-        ev.at,
-      ),);
-      out.push(ev.text,);
-      return Math.max(
-        c,
-        ev.at,
-      );
-    }
-    if (ev.start > c) out.push(edit.source.slice(
-      c,
-      ev.start,
-    ),);
-    if (ev.kind === 'replace') out.push(ev.text,);
-    return ev.end;
-  },
+      if (ev.kind === 'insert') {
+        if (ev.at > c) {
+          out.push(edit.source.slice(
+            c,
+            ev.at,
+          ),);
+        }
+        out.push(ev.text,);
+        return Math.max(
+          c,
+          ev.at,
+        );
+      }
+      if (ev.start > c) {
+        out.push(edit.source.slice(
+          c,
+          ev.start,
+        ),);
+      }
+      if (ev.kind === 'replace')
+        out.push(ev.text,);
+      return ev.end;
+    },
     0,
   );
 
@@ -148,13 +156,13 @@ function computeReplaceEvent(
     edit,
   }: {
     node: AST.TOMLNode;
-    edit: Edit
+    edit: Edit;
   },
 ): {
   kind: 'replace';
   start: number;
   end: number;
-  text: string
+  text: string;
 } {
   if (edit.kind === 'replace-value') {
     /** Narrow to the value's bytes so the key and `=` stay in place. */
@@ -181,7 +189,7 @@ function computeReplaceEvent(
  */
 function valueRangeOf({ node, }: { node: AST.TOMLNode; },): readonly [
   number,
-  number
+  number,
 ] {
   if (node.type === 'TOMLKeyValue')
     return node.value.range;
@@ -199,12 +207,12 @@ function computeDeleteEvent(
     state,
   }: {
     node: AST.TOMLNode;
-    state: TomlEditState
+    state: TomlEditState;
   },
 ): {
   kind: 'delete';
   start: number;
-  end: number
+  end: number;
 } {
   return computeDeletionRange({
     node,
@@ -230,12 +238,12 @@ function computeDeletionRange(
     state,
   }: {
     node: AST.TOMLNode;
-    state: TomlEditState
+    state: TomlEditState;
   },
 ): {
   kind: 'delete';
   start: number;
-  end: number
+  end: number;
 } {
   /** Start offset of the deletion; the end is computed below to absorb the trailing line. */
   const [start,] = node.range;
@@ -280,16 +288,17 @@ function resolveAnchor(
     state,
   }: {
     anchor: AnchorKind;
-    state: TomlEditState
+    state: TomlEditState;
   },
 ): number {
   if (anchor === 'eof')
     return state.source.length;
-  if (anchor.position === 'after-node')
+  if (anchor.position === 'after-node') {
     return endOfLineAt({
       source: state.source,
       at: anchor.node.range[1],
     },);
+  }
   if (anchor.position === 'before-node')
     return anchor.node.range[0];
   if (anchor.position === 'same-line-after')
@@ -310,7 +319,7 @@ function endOfLineAt({
   at,
 }: {
   source: string;
-  at: number
+  at: number;
 },): number {
   /** Newline index; `-1` means EOF, so callers fall back to `source.length`. */
   const nl = source.indexOf(
@@ -331,19 +340,20 @@ function resolveInsideTable(
     source,
   }: {
     table: AST.TOMLTable | AST.TOMLTopLevelTable;
-    source: string
+    source: string;
   },
 ): number {
   if (table.body.length === 0) {
-    if (table.type === 'TOMLTable')
+    if (table.type === 'TOMLTable') {
       return endOfLineAt({
         source,
         at: table.key.range[1],
       },);
+    }
     return 0;
   }
   /** Last existing body entry so the insertion lands on the next line after it. */
-  const last = nonNullishOrThrow(table.body.at(-1),);
+  const last = nonNullishOrThrow(table.body.at(-1,),);
   return endOfLineAt({
     source,
     at: last.range[1],

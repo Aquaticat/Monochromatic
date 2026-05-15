@@ -5,10 +5,10 @@
  */
 
 import {
-  Type,
   type TObject,
   type TOptional,
   type TString,
+  Type,
 } from 'typebox';
 import type { AdvisorToolParams, } from './types.ts';
 
@@ -69,7 +69,7 @@ export function prepareAdvisorArguments(
     return key !== 'model';
   },);
   if (extraKeys.length > 0)
-    throw new Error(`advisor: unsupported argument fields: ${extraKeys.join(', ')}`,);
+    throw new Error(`advisor: unsupported argument fields: ${extraKeys.join(', ',)}`,);
 
   if ((!('model' in args)) || (args.model === undefined))
     return {};

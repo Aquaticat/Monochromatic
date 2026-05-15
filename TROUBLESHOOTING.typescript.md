@@ -933,7 +933,7 @@ HEAD before filing in case the path got fixed in the meantime.
 
 ### Draft upstream issue (do not file as-is; re-validate against current microsoft/typescript-go HEAD before filing)
 
-~~~md
+````md
 **Title:** LSP panics on ScriptKindUnknown when non-source file reaches parser via compilerHost.GetSourceFile
 
 **Labels:** bug, LSP
@@ -1020,7 +1020,7 @@ panicking).
   completions code path.
 - denoland/deno#31423: CSS imports causing the same panic.
 - neovim/nvim-lspconfig#4018: filetype mismatch in LSP.
-~~~
+````
 
 ## Related Documentation
 

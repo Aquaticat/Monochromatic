@@ -120,34 +120,34 @@ predicate function. This is a deliberate design choice; see
 
 ```ts
 import {
-  startWatchRestart,
+  anyFilter,
+  composeFilters,
   contentHashFilter,
   extFilter,
-  globFilter,
-  regexFilter,
-  typeFilter,
-  hiddenFilter,
   gitignoreFilter,
-  composeFilters,
-  anyFilter,
-  type WatchEvent,
+  globFilter,
+  hiddenFilter,
+  regexFilter,
+  startWatchRestart,
+  typeFilter,
   type WatchCtx,
-  type WatchFilter,
   type WatchEntityType,
+  type WatchEvent,
   type WatchEventKind,
+  type WatchFilter,
 } from '@monochromatic-dev/dev-script-watch-restart';
 
 const handle = await startWatchRestart({
-  paths: ['src/server'],
+  paths: ['src/server',],
   command: 'bun',
-  args: ['src/server/index.ts'],
-  extensions: ['.ts'],
+  args: ['src/server/index.ts',],
+  extensions: ['.ts',],
   contentChanged: true,
   debounce: 100,
   stopTimeout: 5000,
   killSignal: 'SIGTERM',
   processGroup: true,
-});
+},);
 
 // later:
 await handle.stop();

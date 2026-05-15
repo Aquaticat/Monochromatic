@@ -90,10 +90,11 @@ export function tomlSet(
     value: unknown;
   },
 ): TomlEditState {
-  if ((value === null) || (value === undefined))
+  if ((value === null) || (value === undefined)) {
     throw new TomlTypeError(
       `Cannot set ${formatPath({ path, },)} to ${String(value,)}; use tomlDelete`,
     );
+  }
 
   /** Direct AST lookup so the setter can branch on the resolution kind. */
   const resolved = resolveByPath({
@@ -137,21 +138,23 @@ export function tomlSet(
     },);
   }
 
-  if (resolved.kind === 'array-of-tables')
+  if (resolved.kind === 'array-of-tables') {
     return doAotReplace({
       edit,
       path,
       value,
       nodes: resolved.nodes,
     },);
+  }
 
-  if ((resolved.kind === 'table') || (resolved.kind === 'top-level'))
+  if ((resolved.kind === 'table') || (resolved.kind === 'top-level')) {
     return doTableReplace({
       edit,
       path,
       value,
       container: resolved.node,
     },);
+  }
 
   return doPathCreate({
     edit,
@@ -180,10 +183,15 @@ function doTableReplace(
     container: AST.TOMLTable | AST.TOMLTopLevelTable;
   },
 ): TomlEditState {
-  if (!isPlainObject(value,))
+  if (!isPlainObject(value,)) {
     throw new TomlTypeError(
-      `tomlSet at ${formatPath({ path, },)} requires a plain object to replace a table body; got ${describeNonObject({ value, },)}`,
+      `tomlSet at ${
+        formatPath({ path, },)
+      } requires a plain object to replace a table body; got ${
+        describeNonObject({ value, },)
+      }`,
     );
+  }
 
   /** Existing body key-values so they can be marked for deletion. */
   const bodyKvs = container.body.filter(function isKv(child,): child is AST.TOMLKeyValue {
@@ -245,21 +253,25 @@ function anchorForTableReplace(
     container: AST.TOMLTable | AST.TOMLTopLevelTable;
   },
 ): AnchorKind {
-  if (container.type === 'TOMLTable')
+  if (container.type === 'TOMLTable') {
     return {
       position: 'inside-table',
       table: container,
       atEnd: true,
     };
+  }
   /** First `[foo]` header after the top-level body so insertions land before it. */
-  const firstTable = container.body.find(function isTable(child,): child is AST.TOMLTable {
-    return child.type === 'TOMLTable';
-  },);
-  if (firstTable !== undefined)
+  const firstTable = container.body.find(
+    function isTable(child,): child is AST.TOMLTable {
+      return child.type === 'TOMLTable';
+    },
+  );
+  if (firstTable !== undefined) {
     return {
       position: 'before-node',
       node: firstTable,
     };
+  }
   return 'eof';
 }
 
@@ -271,10 +283,14 @@ function anchorForTableReplace(
 function describeNonObject(
   { value, }: { value: unknown; },
 ): string {
-  if (value === null) return 'null';
-  if (Array.isArray(value,)) return 'array';
-  if (value instanceof Date) return 'Date';
-  if ((typeof value) === 'object') return 'non-plain-object';
+  if (value === null)
+    return 'null';
+  if (Array.isArray(value,))
+    return 'array';
+  if (value instanceof Date)
+    return 'Date';
+  if ((typeof value) === 'object')
+    return 'non-plain-object';
   return typeof value;
 }
 
@@ -312,18 +328,22 @@ function doAotReplace(
   const allAot = nodes.every(function isAot(n,) {
     return n.kind === 'array';
   },);
-  if (!allAot)
+  if (!allAot) {
     throw new TomlImmutableNodeError(
       `tomlSet on the sibling tables at ${formatPath({ path, },)} is not supported; `
-      + `the path matches multiple standard tables under an implicit parent, not a true array-of-tables. `
-      + `Set per sub-table with tomlSet({ path: [...subpath], value }) instead.`,
+        + `the path matches multiple standard tables under an implicit parent, not a true array-of-tables. `
+        + `Set per sub-table with tomlSet({ path: [...subpath], value }) instead.`,
     );
+  }
 
-  if (!Array.isArray(value,))
+  if (!Array.isArray(value,)) {
     throw new TomlTypeError(
-      `tomlSet on an array-of-tables at ${formatPath({ path, },)} requires an array value; `
-      + `got ${describeNonObject({ value, },)}. Pass [] to clear all instances.`,
+      `tomlSet on an array-of-tables at ${
+        formatPath({ path, },)
+      } requires an array value; `
+        + `got ${describeNonObject({ value, },)}. Pass [] to clear all instances.`,
     );
+  }
 
   /** Aliased so the iteration site reads as `elements` not `value`. */
   const elements: readonly unknown[] = value;
@@ -331,10 +351,13 @@ function doAotReplace(
   /** Encoded dotted header so each `[[a.b]]` line shares one spelling. */
   const encodedHeader = path
     .map(function each(seg,) {
-      if ((typeof seg) !== 'string')
+      if ((typeof seg) !== 'string') {
         throw new TomlImmutableNodeError(
-          `tomlSet on an array-of-tables at ${formatPath({ path, },)}: numeric path segment is not allowed on the array path`,
+          `tomlSet on an array-of-tables at ${
+            formatPath({ path, },)
+          }: numeric path segment is not allowed on the array path`,
         );
+      }
       return encodeKey({ key: seg, },);
     },)
     .join('.',);
@@ -354,13 +377,17 @@ function doAotReplace(
     el,
     i,
   ) {
-    if (!isPlainObject(el,))
+    if (!isPlainObject(el,)) {
       throw new TomlTypeError(
-        `tomlSet on an array-of-tables at ${formatPath({ path, },)} requires every element to be a plain object; `
-        + `element at index ${i} is ${describeNonObject({ value: el, },)}.`,
+        `tomlSet on an array-of-tables at ${
+          formatPath({ path, },)
+        } requires every element to be a plain object; `
+          + `element at index ${i} is ${describeNonObject({ value: el, },)}.`,
       );
+    }
     /** Encoded body lines for this AOT element. */
-    const bodyText = Object.entries(el,)
+    const bodyText = Object
+      .entries(el,)
       .map(function eachEntry([k, v,],) {
         return `${encodeKey({ key: k, },)} = ${
           jsValueToTomlText({
@@ -394,4 +421,3 @@ function doAotReplace(
     ],
   };
 }
-

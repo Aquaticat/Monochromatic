@@ -23,7 +23,7 @@ const r7 = (a === b) || (c === 1);
 const r8 = (a === b) || ((c === 1) && (a !== c));
 
 // Whitespace inside parens still counts as parenthesised
-const r9 = ( a + b ) * c;
+const r9 = (a + b) * c;
 
 // Identifier / literal operands never trigger the check
 const r10 = a + b;
@@ -31,6 +31,8 @@ const r11 = x && y;
 
 export {
   r1,
+  r10,
+  r11,
   r2,
   r3,
   r4,
@@ -39,6 +41,4 @@ export {
   r7,
   r8,
   r9,
-  r10,
-  r11,
 };

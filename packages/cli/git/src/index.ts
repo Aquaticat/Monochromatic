@@ -149,9 +149,11 @@ try {
     },);
 
   /** True when `git status` is in a machine-readable mode (`-s`, `--short`, `--porcelain`, `--porcelain=v*`, `-z`); the cli-git note would corrupt this output and is suppressed. */
-  const isStatusMachineReadable = postSubcommand.some(function isMachineReadableFlag(arg,) {
-    return STATUS_MACHINE_READABLE_FLAGS.has(arg,) || arg.startsWith('--porcelain=',);
-  },);
+  const isStatusMachineReadable = postSubcommand.some(
+    function isMachineReadableFlag(arg,) {
+      return STATUS_MACHINE_READABLE_FLAGS.has(arg,) || arg.startsWith('--porcelain=',);
+    },
+  );
 
   /** True when the caller has explicitly configured git's status hints (checked on rawArgs so the wrapper's own injection does not register); mirroring the rule's user-override path, the note is also suppressed. */
   const userOverrodeStatusHints = hasExplicitStatusHintsOverride(rawArgs,);
@@ -161,13 +163,17 @@ try {
     && (!isStatusMachineReadable)
     && (!userOverrodeStatusHints);
 
-  if (isVersionRequest)
-    console.log('cli-git wrapper (require-root, add-explicit, atomic-push, commit-only, status-hints-off)',);
-  else if (shouldPrintStatusNote)
+  if (isVersionRequest) {
+    console.log(
+      'cli-git wrapper (require-root, add-explicit, atomic-push, commit-only, status-hints-off)',
+    );
+  }
+  else if (shouldPrintStatusNote) {
     console.log(
       'cli-git: bulk-add patterns (`.`, `*`, `-A`, `-u`) and `git commit -a` are rejected; '
         + 'stage with `git add <path>` and commit with `git commit -m <msg> <path>`.',
     );
+  }
 }
 catch (error) {
   if (error instanceof SubprocessError)

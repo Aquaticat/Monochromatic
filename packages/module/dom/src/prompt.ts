@@ -180,9 +180,8 @@ export async function prompt(
             && (event.clientY >= rect.top)
             && (event.clientY <= rect.bottom);
 
-          if (!clickedInDialog) {
+          if (!clickedInDialog)
             dialog.close();
-          }
         }
       },
     );

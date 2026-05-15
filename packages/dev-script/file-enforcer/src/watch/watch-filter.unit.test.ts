@@ -106,9 +106,10 @@ await describe({
               filename: 'AGENTS.md',
               watchedDir: '/repo',
               configPath: '/repo/config.ts',
-            },),).toBe(
-              'source',
-            );
+            },),)
+              .toBe(
+                'source',
+              );
           },
         },),
         it({
@@ -120,9 +121,10 @@ await describe({
               filename: 'config.ts',
               watchedDir: '/repo',
               configPath: '/repo/config.ts',
-            },),).toBe(
-              'source',
-            );
+            },),)
+              .toBe(
+                'source',
+              );
           },
         },),
         it({
@@ -250,9 +252,10 @@ await describe({
               filename: 'README.md',
               watchedDir: '/repo',
               configPath: '/repo/config.ts',
-            },),).toBe(
-              'ignore',
-            );
+            },),)
+              .toBe(
+                'ignore',
+              );
           },
         },),
         it({
@@ -278,9 +281,10 @@ await describe({
               filename: 'dual.md',
               watchedDir: tempDir,
               configPath: '/repo/config.ts',
-            },),).toBe(
-              'ignore',
-            );
+            },),)
+              .toBe(
+                'ignore',
+              );
           },
         },),
       ],
@@ -303,9 +307,10 @@ await describe({
               filename: 'AGENTS.md',
               watchedDir: '/repo',
               configPath: '/repo/config.ts',
-            },),).toBe(
-              true,
-            );
+            },),)
+              .toBe(
+                true,
+              );
           },
         },),
         it({
@@ -332,9 +337,10 @@ await describe({
               filename: 'stale.md',
               watchedDir: tempDir,
               configPath: '/repo/config.ts',
-            },),).toBe(
-              true,
-            );
+            },),)
+              .toBe(
+                true,
+              );
           },
         },),
         it({
@@ -346,9 +352,10 @@ await describe({
               filename: 'random.txt',
               watchedDir: '/repo',
               configPath: '/repo/config.ts',
-            },),).toBe(
-              false,
-            );
+            },),)
+              .toBe(
+                false,
+              );
           },
         },),
         it({
@@ -372,9 +379,10 @@ await describe({
               filename: 'echo.md',
               watchedDir: tempDir,
               configPath: '/repo/config.ts',
-            },),).toBe(
-              false,
-            );
+            },),)
+              .toBe(
+                false,
+              );
           },
         },),
       ],

@@ -12,9 +12,7 @@ import {
 import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 
-import {
-  nonNullishOrThrow,
-} from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 import {
   l,

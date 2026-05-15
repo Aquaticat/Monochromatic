@@ -12,7 +12,7 @@ Affected patterns:
 
 ```ts
 // Breaking from a streaming response
-const response = await fetch(url);
+const response = await fetch(url,);
 for await (const chunk of response.body!) {
   // process chunk
   break; // process hangs here -- Bun keeps the HTTP connection alive
@@ -20,8 +20,10 @@ for await (const chunk of response.body!) {
 
 // OpenAI SDK streaming (uses fetch internally)
 const stream = await client.chat.completions.create({
-  model, messages, stream: true,
-});
+  model,
+  messages,
+  stream: true,
+},);
 for await (const chunk of stream) {
   // process chunk
 }
@@ -83,9 +85,10 @@ Reproduce against any SSE endpoint that holds keep-alive after
 `[DONE]`:
 
 ```ts
-const response = await fetch('https://example.com/sse-endpoint');
+const response = await fetch('https://example.com/sse-endpoint',);
 for await (const chunk of response.body!) {
-  if (someCondition(chunk)) break;
+  if (someCondition(chunk,))
+    break;
 }
 // Process does not exit; SIGINT required.
 ```
@@ -105,10 +108,10 @@ import whyIsNodeRunning from 'why-is-node-running';
 
 const WATCHDOG_TIMEOUT_SECONDS = 5;
 const watchdog = setTimeout(() => {
-  console.error('process did not exit naturally, dumping active handles:');
+  console.error('process did not exit naturally, dumping active handles:',);
   whyIsNodeRunning();
-  process.exit(0);
-}, WATCHDOG_TIMEOUT_SECONDS * 1000);
+  process.exit(0,);
+}, WATCHDOG_TIMEOUT_SECONDS * 1000,);
 watchdog.unref(); // the watchdog itself must not prevent exit
 ```
 
@@ -130,7 +133,7 @@ connection directly:
 
 ```ts
 const controller = new AbortController();
-const response = await fetch(url, { signal: controller.signal });
+const response = await fetch(url, { signal: controller.signal, },);
 for await (const chunk of response.body!) {
   // process chunk
 }

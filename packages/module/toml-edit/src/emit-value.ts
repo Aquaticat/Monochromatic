@@ -14,8 +14,8 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import type { AST, } from 'toml-eslint-parser';
 
 import { TomlImmutableNodeError, } from './errors.ts';
-import { encodeKey, } from './values.ts';
 import type { CanonicalOptions, } from './types.ts';
+import { encodeKey, } from './values.ts';
 
 /**
  * Emit `node` as TOML text per its parse-time fields.
@@ -40,12 +40,13 @@ export function emitContentNode(
 ): string {
   if (node.type === 'TOMLValue')
     return emitValueLeaf({ node, },);
-  if (node.type === 'TOMLArray')
+  if (node.type === 'TOMLArray') {
     return emitArray({
       node,
       options,
       depth,
     },);
+  }
   return emitInlineTable({
     node,
     options,
@@ -75,7 +76,8 @@ function emitValueLeaf({ node, }: { node: AST.TOMLValue; },): string {
  */
 function emitStringValue({ node, }: { node: AST.TOMLStringValue; },): string {
   if (node.style === 'literal') {
-    if (node.multiline) return `'''${node.value}'''`;
+    if (node.multiline)
+      return `'''${node.value}'''`;
     return `'${node.value}'`;
   }
   if (node.multiline)
@@ -196,7 +198,8 @@ export function emitArrayWithoutIndex(
   },
 ): string {
   /** Per-element text with the targeted index dropped before encoding. */
-  const parts = array.elements
+  const parts = array
+    .elements
     .filter(function notSkipped(
       _el,
       i,
@@ -260,39 +263,43 @@ export function emitArrayWithSkipPath(
     depth: number;
   },
 ): string {
-  if (skipPath.length === 0)
+  if (skipPath.length === 0) {
     throw new TomlImmutableNodeError(
       'emitArrayWithSkipPath: skipPath must not be empty',
     );
+  }
 
   /** Current outer index; selects which child array to recurse into. */
   const head = nonNullishOrThrow(skipPath[0],);
   /** Remaining inner-level indices. */
   const rest = skipPath.slice(1,);
 
-  if (rest.length === 0)
+  if (rest.length === 0) {
     return emitArrayWithoutIndex({
       array,
       skipIndex: head,
       options,
       depth,
     },);
+  }
 
   /** Per-element text where the matching child gets a recursive skip-path emit. */
   const parts = array.elements.map(function each(
     el,
     i,
   ) {
-    if (i !== head)
+    if (i !== head) {
       return emitContentNode({
         node: el,
         options,
         depth: depth + 1,
       },);
-    if (el.type !== 'TOMLArray')
+    }
+    if (el.type !== 'TOMLArray') {
       throw new TomlImmutableNodeError(
         `emitArrayWithSkipPath: expected TOMLArray at index ${head}, got ${el.type}`,
       );
+    }
     return emitArrayWithSkipPath({
       array: el,
       skipPath: rest,
@@ -329,15 +336,20 @@ function assembleArrayParts(
   if (
     (parts.length <= options.arrayInlineThreshold)
     && (inlineCandidate.length <= options.arrayInlineMaxColumns)
-  )
+  ) {
     return inlineCandidate;
+  }
   /** Indent for each element when the array goes multi-line. */
   const indent = ' '.repeat(options.indent * (depth + 1),);
   /** Closing bracket sits at the parent's indent level. */
   const closingIndent = ' '.repeat(options.indent * depth,);
-  return `[\n${parts.map(function withIndent(p,) {
-    return `${indent}${p},`;
-  },).join('\n',)}\n${closingIndent}]`;
+  return `[\n${
+    parts
+      .map(function withIndent(p,) {
+        return `${indent}${p},`;
+      },)
+      .join('\n',)
+  }\n${closingIndent}]`;
 }
 
 /**
@@ -430,7 +442,9 @@ function emitInlineTableBodyParts(
 ): readonly string[] {
   return body.map(function each(kv,) {
     /** Encoded key chain joined with `.` so dotted keys reuse their original spelling. */
-    const keyText = kv.key.keys
+    const keyText = kv
+      .key
+      .keys
       .map(function each2(k,) {
         return encodeKey({ key: k.type === 'TOMLBare' ? k.name : k.value, },);
       },)

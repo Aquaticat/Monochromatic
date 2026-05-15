@@ -54,7 +54,8 @@ function makeError({
     ...frames.map(function indentFrame(frame,) {
       return `    ${frame}`;
     },),
-  ].join('\n',);
+  ]
+    .join('\n',);
   return error;
 }
 
@@ -131,7 +132,8 @@ await describe({
          * specific substring `node_modules/chai/` (with literal slash
          * after `chai`) is absent from chai-as-promised paths.
          */
-        const path = 'node_modules/.pnpm/chai-as-promised@8.0.2_chai@6.2.2/node_modules/chai-as-promised/lib/chai-as-promised.js:340:16';
+        const path =
+          'node_modules/.pnpm/chai-as-promised@8.0.2_chai@6.2.2/node_modules/chai-as-promised/lib/chai-as-promised.js:340:16';
         expect(path.includes('node_modules/chai/',),).toBe(false,);
         expect(path.includes('node_modules/chai-as-promised/',),).toBe(true,);
       },
@@ -307,7 +309,6 @@ await describe({
         expect(firstLine,).toContain('packages/foo/src/bar.ts',);
       },
     },),
-
     //endregion formatFailure summary fusion
   ],
 },);

@@ -38,7 +38,7 @@ const PREVIEW_MAX_LENGTH = 200;
  */
 export function compileInline(body: string,): Compiled {
   /** Per-chunk rendered output; returned on the `chunks` field so the caller can PUT each row. */
-  const chunks = [...renderChunks(body,)].map(function copy(chunk,) {
+  const chunks = [...renderChunks(body,),].map(function copy(chunk,) {
     return {
       md: chunk.md,
       html: chunk.html,
@@ -58,9 +58,11 @@ export function compileInline(body: string,): Compiled {
     0,
   );
   /** Concatenated HTML; tier-1 sends inspect this for empty-result fallbacks. */
-  const html = chunks.map(function pickHtml(chunk,) {
-    return chunk.html;
-  },).join('',);
+  const html = chunks
+    .map(function pickHtml(chunk,) {
+      return chunk.html;
+    },)
+    .join('',);
   return {
     html,
     chunkCount: chunks.length,

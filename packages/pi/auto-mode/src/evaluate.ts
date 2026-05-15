@@ -124,7 +124,9 @@ async function evaluate(
   if (!judgeResult.ok) {
     innerL.error(
       `judge model resolution failed: ${
-        judgeResult.err instanceof Error ? judgeResult.err.message : String(judgeResult.err,)
+        judgeResult.err instanceof Error
+          ? judgeResult.err.message
+          : String(judgeResult.err,)
       }`,
     );
     return askUser({

@@ -145,7 +145,8 @@ function base64UrlDecode(value: string,): string {
       '/',
     );
   /** Number of `=` characters needed to reach the next 4-group boundary. */
-  const padLength = (BASE64_GROUP_SIZE - (unpadded.length % BASE64_GROUP_SIZE)) % BASE64_GROUP_SIZE;
+  const padLength = (BASE64_GROUP_SIZE - (unpadded.length % BASE64_GROUP_SIZE))
+    % BASE64_GROUP_SIZE;
   /** Base64 input ready for `atob`; trailing `=` restored to a 4-group boundary. */
   const padded = unpadded + '='.repeat(padLength,);
   /** Latin-1 string of decoded bytes; rewrapped into a Uint8Array below for `TextDecoder`. */
