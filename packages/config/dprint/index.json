@@ -23,11 +23,11 @@
     "packages/test-fixture/toml-edit/src/valid/number-exponent01-with-sign-input.toml",
     "packages/test-fixture/toml-edit/src/valid/offset-date-time-sample03-omitted-seconds-input.toml",
     "packages/test-fixture/toml-edit/src/valid/string-sample01-1.1-basic-strings-input.toml",
-    "packages/test-fixture/toml-edit/src/valid/invalid24-newline-in-inline-table-input.toml",
-    "packages/test-fixture/toml-edit/src/valid/invalid25-newline-in-inline-table-input.toml",
-    "packages/test-fixture/toml-edit/src/valid/invalid26-newline-in-inline-table-input.toml",
-    "packages/test-fixture/toml-edit/src/valid/invalid27-newline-in-inline-table-input.toml",
-    "packages/test-fixture/toml-edit/src/valid/invalid28-inline-table-trailing-comma-input.toml"
+    "packages/test-fixture/toml-edit/src/valid/toml10-invalid-toml11-valid-invalid24-newline-in-inline-table-input.toml",
+    "packages/test-fixture/toml-edit/src/valid/toml10-invalid-toml11-valid-invalid25-newline-in-inline-table-input.toml",
+    "packages/test-fixture/toml-edit/src/valid/toml10-invalid-toml11-valid-invalid26-newline-in-inline-table-input.toml",
+    "packages/test-fixture/toml-edit/src/valid/toml10-invalid-toml11-valid-invalid27-newline-in-inline-table-input.toml",
+    "packages/test-fixture/toml-edit/src/valid/toml10-invalid-toml11-valid-invalid28-inline-table-trailing-comma-input.toml"
   ],
   "lineWidth": 90,
   "useTabs": false,
