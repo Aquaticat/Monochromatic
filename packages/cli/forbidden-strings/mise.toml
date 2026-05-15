@@ -6,6 +6,10 @@ run = "cargo build --release"
 description = "Build the forbidden-strings binary in debug mode"
 run = "cargo build"
 
+[tasks."generate:rules"]
+description = "Regenerate the root forbidden-strings.local.example.txt baseline from the vendored betterleaks config"
+run = "bun src/mise.port-betterleaks.ts"
+
 [tasks.lint]
 description = "cargo check (no codegen)"
 run = "cargo check"

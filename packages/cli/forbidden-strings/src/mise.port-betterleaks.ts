@@ -122,7 +122,7 @@ function escapeResharpOnlyMeta({ pattern, }: { pattern: string; },): string {
     /** Current character under the cursor; shorthand to avoid repeating `pattern[i]!`. */
     const c = pattern[i]!;
     // Pass an escape sequence through unmodified (consumes two chars).
-    if (c === '\\' && i + 1 < pattern.length) {
+    if ((c === '\\') && (i + 1) < pattern.length) {
       out += pattern.slice(
         i,
         i + 2,
@@ -153,7 +153,7 @@ function escapeResharpOnlyMeta({ pattern, }: { pattern: string; },): string {
       continue;
     }
     // Inside class.
-    if (c === ']' && i !== classBodyStart) {
+    if ((c === ']') && (i !== classBodyStart)) {
       inClass = false;
       out += c;
       i += 1;
@@ -218,7 +218,7 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
     /** Accumulator for the multi-line body; first slot holds the opening-line remainder. */
     const parts: string[] = [initial,];
     i += 1;
-    while (i < lines.length && !lines[i]!.includes("'''",)) {
+    while ((i < lines.length) && (!lines[i]!.includes("'''",))) {
       parts.push(lines[i]!,);
       i += 1;
     }
@@ -270,8 +270,8 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
             hasRequired = true;
           i += 1;
           while (
-            i < lines.length
-            && !/^\[/.test(lines[i]!,)
+            (i < lines.length)
+            && (!/^\[/.test(lines[i]!,))
           ) {
             i += 1;
           }
@@ -332,9 +332,9 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
         i += 1;
       }
       if (
-        id !== undefined
-        && description !== undefined
-        && regex !== undefined
+        (id !== undefined)
+        && (description !== undefined)
+        && (regex !== undefined)
       ) {
         out.push({
           id,
@@ -417,12 +417,17 @@ function renderRule({ rule, }: { rule: RawRule; },): string {
   const relaxation = RELAXATIONS.get(rule.id,);
   /** Working regex, starting from the upstream form and possibly relaxed below. */
   let pattern = rule.regex;
-  if (relaxation !== undefined) {
+  if (relaxation?.transform !== undefined) {
     pattern = relaxation.transform(pattern,);
     lines.push(`# RELAXATION: ${relaxation.note}`,);
   }
-  /** Resharp-compatible form of the pattern, ready to emit as `/.../`. */
-  const converted = pcreToResharp({ pattern, },);
+  else if (relaxation !== undefined) {
+    lines.push(`# RELAXATION: ${relaxation.note}`,);
+  }
+  /** Resharp-compatible form of the pattern, ready for final relaxation. */
+  const convertedBase = pcreToResharp({ pattern, },);
+  /** Final emitted resharp form, including engine-specific algebra relaxations. */
+  const converted = relaxation?.convertedTransform?.(convertedBase,) ?? convertedBase;
   lines.push(`/${converted}/`,);
   lines.push('',);
   return lines.join('\n',);
@@ -441,7 +446,7 @@ const HEADER = `# forbidden-strings deny-list (committed example).
 # plus the upstream TOML at
 # packages/cli/forbidden-strings/data/betterleaks-default-config.toml.
 # Re-generate via:
-#   bun packages/cli/forbidden-strings/src/mise.port-betterleaks.ts
+#   mise run //packages/cli/forbidden-strings:generate:rules
 #
 # Composition:
 #   - This file (the committed example) ports the betterleaks default

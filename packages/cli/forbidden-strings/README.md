@@ -145,13 +145,18 @@ Resharp extends standard regex with two top-level set operators that pure-PCRE e
 Combined, these express "match X but not Y" without lookaround. Example: ban any
 five-digit key except the all-zeros placeholder:
 
-```
+```text
 /key_[0-9]{5}&~(key_0{5})/
 ```
 
 This flags `key_12345` and `key_99999` but lets `key_00000` through. Class-level forms
 `[A&&B]` (intersection) and `[A~~B]` (symmetric difference) are also available inside
 character classes.
+
+When an algebra operand needs a literal underscore, prefer `\x5f` or `[_]` instead of
+`\_`. Plain regex rules match `\_` as a literal underscore, but resharp 0.5.x does not
+match `\_` consistently once the pattern is composed with `&` / `~(...)`. The generated
+GitHub PAT relaxation therefore writes `ghp\x5f...&~(ghp\x5f0{36})`.
 
 The scanner extracts a leading literal prefix from each regex rule and folds it into a
 shared Aho-Corasick gate so the regex engine only runs on files that contain the prefix.
@@ -188,7 +193,7 @@ shapes fail at compile time:
 `forbidden-strings` detects every shape above at rule load time and reports the
 specific trigger:
 
-```
+```text
 forbidden-strings: rule on line 42 (resharp): complement body contains \b;
 resharp 0.5.x rewrites it to an internal lookaround which the reverse pass
 refuses. Replace with \W ... See TROUBLESHOOTING.resharp.md for workarounds.
@@ -267,7 +272,7 @@ events run `hk check` against changed files, push-to-main additionally runs `--a
 
 For each violation:
 
-```
+```text
 PATH:LINE:COL_START..COL_END rule=N
 ```
 

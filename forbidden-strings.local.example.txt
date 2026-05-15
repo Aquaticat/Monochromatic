@@ -5,7 +5,7 @@
 # plus the upstream TOML at
 # packages/cli/forbidden-strings/data/betterleaks-default-config.toml.
 # Re-generate via:
-#   bun packages/cli/forbidden-strings/src/mise.port-betterleaks.ts
+#   mise run //packages/cli/forbidden-strings:generate:rules
 #
 # Composition:
 #   - This file (the committed example) ports the betterleaks default
@@ -101,7 +101,8 @@
 # Identified an AWS access key ID paired with a secret access key, which together can provide full access to AWS services.
 # NOTE: upstream requires another rule's match nearby ([[rules.required]]).
 #       Forbidden-strings cannot enforce composite proximity rules; the regex fires standalone.
-/\b((?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[A-Z2-7]{16})\b/
+# RELAXATION: excluded documented placeholder `AKIA2222222222222222` via resharp intersection/complement.
+/\b((?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[A-Z2-7]{16})\b&~(AKIA2{16})/
 # === aws-amazon-bedrock-api-key-long-lived ===
 # Identified a pattern that may indicate long-lived Amazon Bedrock API keys, risking unauthorized Amazon Bedrock usage
 /\b(ABSK[A-Za-z0-9+/]{109,269}={0,2})(?:\\?['"\x60]|[\s;]|\\[nr]|$)/
@@ -316,7 +317,8 @@
 /gho\_[0-9a-zA-Z]{36}/
 # === github-pat ===
 # Uncovered a GitHub Personal Access Token, potentially leading to unauthorized repository access and sensitive content exposure.
-/ghp\_[0-9a-zA-Z]{36}/
+# RELAXATION: excluded documented placeholder `ghp_000000000000000000000000000000000000` via resharp intersection/complement.
+/ghp\x5f[0-9a-zA-Z]{36}&~(ghp\x5f0{36})/
 # === github-refresh-token ===
 # Detected a GitHub Refresh Token, which could allow prolonged unauthorized access to GitHub services.
 /ghr\_[0-9a-zA-Z]{36}/

@@ -1,21 +1,24 @@
-/** Per-rule relaxations applied before {@link pcreToResharp}. Each entry
- *  maps a rule id to a function that rewrites the upstream regex into a
- *  resharp-compatible form. The relaxation comment travels with the rule
- *  in the emitted output so the lossy step is visible in the example
- *  file. */
+/** Per-rule relaxations applied around {@link pcreToResharp}. Each entry
+ *  maps a rule id to functions that rewrite the upstream regex before
+ *  conversion or the converted regex after conversion. The relaxation
+ *  comment travels with the rule in the emitted output so the lossy step
+ *  is visible in the example file. */
 export type Relaxation = {
+  /** Human-readable explanation emitted above generated rule. */
   readonly note: string;
-  readonly transform: (regex: string,) => string;
+  /** Optional rewrite applied before PCRE-to-resharp conversion. */
+  readonly transform?: (regex: string,) => string;
+  /** Optional rewrite applied after PCRE-to-resharp conversion. */
+  readonly convertedTransform?: (regex: string,) => string;
 };
 
 /**
- * Rule-id to relaxation lookup applied before {@link pcreToResharp} converts
- * the upstream regex.
+ * Rule-id to relaxation lookup applied around {@link pcreToResharp}.
  *
- * Each entry pairs the upstream betterleaks rule id with a transform that
- * rewrites the regex into a resharp-acceptable form plus a human-readable
- * note explaining what was lost. The note is emitted alongside the rule in
- * the generated example file so the lossy step stays visible.
+ * Each entry pairs the upstream betterleaks rule id with rewrite hooks plus
+ * a human-readable note explaining what changed. The note is emitted
+ * alongside the rule in the generated example file so the change stays
+ * visible.
  */
 export const RELAXATIONS: ReadonlyMap<string, Relaxation> = new Map([
   // `(?:^|[X])` start-anchor alternation: drop the `^|` arm. Loses the
@@ -114,6 +117,19 @@ export const RELAXATIONS: ReadonlyMap<string, Relaxation> = new Map([
       },
     },
   ],
+  // Resharp set algebra can express inline placeholder exceptions without
+  // introducing a scanner-level allowlist. Keep the upstream AWS access key
+  // shape, then subtract the documented all-2s fixture used in tests.
+  [
+    'aws-access-token',
+    {
+      note:
+        'excluded documented placeholder `AKIA2222222222222222` via resharp intersection/complement.',
+      convertedTransform: function excludeAwsPlaceholder(r,): string {
+        return String.raw`${r}&~(AKIA2{16})`;
+      },
+    },
+  ],
   // Strip the optional query-string-and-fragment tail (the `(?:\?\w+=
   // ...)?` portion) plus the trailing `\b` arm. The connection-string
   // shape `mongodb://user:pass@host[/authdb]` still fires.
@@ -125,6 +141,22 @@ export const RELAXATIONS: ReadonlyMap<string, Relaxation> = new Map([
       transform: function relaxMongo(_r,): string {
         return String
           .raw`\b(mongodb(?:\+srv)?://(?:[!-9;-~]{3,50}):(?:[!-?A-~]{3,88})@(?:(?:[a-zA-Z0-9][\w.-]+|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d{1,5})?(?:,(?:[a-zA-Z0-9][\w.-]+|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d{1,5})?)*)/?(?:[\w-]+)?)(?:['"\s;\x60]|\\[nr]|$)`;
+      },
+    },
+  ],
+  // Keep the upstream GitHub PAT shape, then subtract the all-zeros fixture.
+  [
+    'github-pat',
+    {
+      note:
+        'excluded documented placeholder `ghp_000000000000000000000000000000000000` via resharp intersection/complement.',
+      convertedTransform: function excludeGitHubPatPlaceholder(r,): string {
+        /** Pattern with literal underscores expressed via hex escapes for resharp algebra operands. */
+        const literalUnderscorePattern = r.replaceAll(
+          String.raw`\_`,
+          String.raw`\x5f`,
+        );
+        return String.raw`${literalUnderscorePattern}&~(ghp\x5f0{36})`;
       },
     },
   ],

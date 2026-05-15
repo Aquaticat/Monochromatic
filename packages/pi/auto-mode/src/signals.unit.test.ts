@@ -52,7 +52,9 @@ await describe({
     it({
       name: 'does not flag path under cwd',
       fn: async () => {
-        expect(pathSignals({ filePath: './src/index.ts', ctx: DEFAULT_CTX, },),).toBe(false,);
+        expect(pathSignals({ filePath: './src/index.ts', ctx: DEFAULT_CTX, },),).toBe(
+          false,
+        );
       },
     },),
 
@@ -61,7 +63,10 @@ await describe({
       fn: async () => {
         // This was a false positive in upstream: isSystemPath flagged /var
         // but the path is under cwd
-        expect(pathSignals({ filePath: '/var/home/user/project/file', ctx: VAR_HOME_CTX, },),).toBe(false,);
+        expect(
+          pathSignals({ filePath: '/var/home/user/project/file', ctx: VAR_HOME_CTX, },),
+        )
+          .toBe(false,);
       },
     },),
 
@@ -80,10 +85,12 @@ await describe({
       name: 'flags path in another project',
       fn: async () => {
         expect(
-          pathSignals({ filePath: '/var/home/user/other-project/file', ctx: DEFAULT_CTX, },),
-        ).toBe(
-          true,
-        );
+          pathSignals({ filePath: '/var/home/user/other-project/file',
+            ctx: DEFAULT_CTX, },),
+        )
+          .toBe(
+            true,
+          );
       },
     },),
 
@@ -94,7 +101,8 @@ await describe({
     it({
       name: 'flags home dotfile',
       fn: async () => {
-        expect(pathSignals({ filePath: '~/.ssh/authorized_keys', ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(pathSignals({ filePath: '~/.ssh/authorized_keys', ctx: DEFAULT_CTX, },),)
+          .toBe(true,);
       },
     },),
 
@@ -112,7 +120,9 @@ await describe({
     it({
       name: 'flags id_rsa path',
       fn: async () => {
-        expect(pathSignals({ filePath: '~/.ssh/id_rsa', ctx: DEFAULT_CTX, },),).toBe(true,);
+        expect(pathSignals({ filePath: '~/.ssh/id_rsa', ctx: DEFAULT_CTX, },),).toBe(
+          true,
+        );
       },
     },),
 
@@ -139,7 +149,9 @@ await describe({
     it({
       name: 'returns true for child path',
       fn: async () => {
-        expect(isUnder({ resolved: '/home/user/project', dir: '/home/user', },),).toBe(true,);
+        expect(isUnder({ resolved: '/home/user/project', dir: '/home/user', },),).toBe(
+          true,
+        );
       },
     },),
 
@@ -166,7 +178,8 @@ await describe({
       name: 'detects .ssh directory',
       fn: async () => {
         expect(
-          isHomeDotfile({ resolved: '/var/home/user/.ssh/authorized_keys', home: '/var/home/user', },),
+          isHomeDotfile({ resolved: '/var/home/user/.ssh/authorized_keys',
+            home: '/var/home/user', },),
         )
           .toBe(true,);
       },
@@ -176,10 +189,12 @@ await describe({
       name: 'does not flag non-dotfile in home',
       fn: async () => {
         expect(
-          isHomeDotfile({ resolved: '/var/home/user/project/file', home: '/var/home/user', },),
-        ).toBe(
-          false,
-        );
+          isHomeDotfile({ resolved: '/var/home/user/project/file',
+            home: '/var/home/user', },),
+        )
+          .toBe(
+            false,
+          );
       },
     },),
   ],
@@ -346,14 +361,14 @@ await describe({
     it({
       name: 'detects GitHub PAT',
       fn: async () => {
-        expect(contentSignals('ghp_AaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaA',),).toBe(true,);
+        expect(contentSignals('ghp_000000000000000000000000000000000000',),).toBe(true,);
       },
     },),
 
     it({
       name: 'detects AWS access key',
       fn: async () => {
-        expect(contentSignals('AKIAIOSFODNN7EXAMPLE',),).toBe(true,);
+        expect(contentSignals('AKIA2222222222222222',),).toBe(true,);
       },
     },),
 
@@ -449,21 +464,27 @@ await describe({
       name: 'resolves ~ to home directory',
       fn: async () => {
         const expectedHome = process.env.HOME ?? '/home/user';
-        expect(resolvePath({ filePath: '~/.bashrc', cwd: '/project', },),).toBe(`${expectedHome}/.bashrc`,);
+        expect(resolvePath({ filePath: '~/.bashrc', cwd: '/project', },),).toBe(
+          `${expectedHome}/.bashrc`,
+        );
       },
     },),
 
     it({
       name: 'resolves relative path to cwd',
       fn: async () => {
-        expect(resolvePath({ filePath: 'src/index.ts', cwd: '/project', },),).toBe('/project/src/index.ts',);
+        expect(resolvePath({ filePath: 'src/index.ts', cwd: '/project', },),).toBe(
+          '/project/src/index.ts',
+        );
       },
     },),
 
     it({
       name: 'preserves absolute paths',
       fn: async () => {
-        expect(resolvePath({ filePath: '/etc/passwd', cwd: '/project', },),).toBe('/etc/passwd',);
+        expect(resolvePath({ filePath: '/etc/passwd', cwd: '/project', },),).toBe(
+          '/etc/passwd',
+        );
       },
     },),
   ],
