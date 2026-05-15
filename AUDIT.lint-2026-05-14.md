@@ -62,7 +62,7 @@ The workspace appears to have recently accumulated stricter lint rules without a
 
 For your reference when reviewing diffs. Numbers are `warnings / errors` from oxlint, plus `T:N` for TS type errors.
 
-```
+```text
 build-tool/css                72 / 7   (T:3 → 0 after a10df401)
 cli/fy                          2 / 0
 cli/git                         5 / 0

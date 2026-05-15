@@ -73,7 +73,9 @@ export async function prompt(
     classes?: PromptClassNames;
   },
 ): Promise<string | null> {
-  /** Per-call classes merged with {@link DEFAULT_PROMPT_CLASSES} so unset fields stay defaulted. */
+  /**
+   * Per-call classes merged with {@link DEFAULT_PROMPT_CLASSES} so unset fields stay defaulted.
+   */
   const resolvedClasses = {
     ...DEFAULT_PROMPT_CLASSES,
     ...classes,

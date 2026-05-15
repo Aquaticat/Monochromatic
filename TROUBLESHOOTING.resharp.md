@@ -8,7 +8,7 @@ fails at compile time when its complement body contains a word-boundary
 or text-anchor assertion. The compile-time error surfaces with one of
 two variants depending on which rewrite path the offending atom takes:
 
-```
+```text
 forbidden-strings: rule on line N (resharp): Algebra(UnsupportedPattern)
 forbidden-strings: rule on line N (resharp): Parse(ParseError { kind: UnsupportedResharpRegex, ... })
 ```
@@ -21,7 +21,7 @@ patterns hit which variant.
 
 User-facing patterns that trigger the failure:
 
-```
+```text
 /em-dash&~(.*\bnpm\b.*)/
 /em-dash&~(.*\B.*)/
 /em-dash&~(^foo$)/
@@ -300,7 +300,7 @@ and the count axis had no measured ceiling within practical bounds.
 
 ### Replace `\b` with literal whitespace inside complement bodies
 
-```
+```text
 # fails
 /^.*[a-z] -- [a-z].*$&~(.*(\bnpm\b|\bgit\b).*)/
 
@@ -315,7 +315,7 @@ mid-line, this is acceptable.
 
 ### Replace `\b` with `\W` character class inside complement bodies
 
-```
+```text
 # fails
 /em&~(.*\bnpm\b.*)/
 
@@ -331,7 +331,7 @@ Tokens at the absolute start or end of the scanned content
 
 ### Use `\A`/`\z` instead of `^`/`$` inside complement bodies
 
-```
+```text
 # fails
 /em&~(^foo$)/
 
@@ -349,7 +349,7 @@ If the rule's intent allows asserting the boundary at the match site rather
 than inside the excluded set,
 lift `\bword\b` out of `~(...)` and place it in the main concatenation:
 
-```
+```text
 # fails
 /em&~(.*\bword\b.*)/
 
@@ -541,6 +541,4 @@ use `\A`/`\z` in place of `^`/`$` when whole-content semantics are
 acceptable. Move boundary assertions to the match site outside the
 complement when the rule's intent permits.
 
-```
 [resharp]: https://github.com/ieviev/resharp
-```

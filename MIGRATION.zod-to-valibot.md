@@ -4,7 +4,7 @@ Status: decided 2026-05-09. Migration not started.
 
 ## Decision
 
-New schemas use [valibot] starting today.
+New schemas use [valibot][valibot] starting today.
 Existing zod schemas migrate as files are touched for other reasons; no big-bang rewrite.
 When the last consumer of zod is removed, drop zod from the catalog.
 
@@ -25,7 +25,7 @@ Zod is sponsorship-funded side work; 67 sponsors at 64% of his stated "enough to
 (391 of 423 in the last 12 months).
 colinhacks only NOT_PLANNED-closes 5%.
 When a request gets rejected, the bot does it, often without the maintainer ever responding.
-Issue [#3751] (TypeScript `isolatedDeclarations` support) is the pattern, not the exception:
+Issue [#3751][#3751] (TypeScript `isolatedDeclarations` support) is the pattern, not the exception:
 bradzacher (TypeScript-ESLint maintainer) pushed back "still very relevant",
 altano provided a workaround,
 the bot pinged colinhacks who never responded,
@@ -55,7 +55,7 @@ but the rejection-lane governance and the maintainer's stated focus on a separat
   (analogous to `z.ZodType<T>` but officially documented as the workaround).
   Fabian engages constructively in the related threads,
   including explicitly flagging the trade-off that the workaround loses inference detail.
-  Contrast with Zod, where [#3751] sat three months without a maintainer comment before bot-autoclosure.
+  Contrast with Zod, where [#3751][#3751] sat three months without a maintainer comment before bot-autoclosure.
   This directly addresses our use case (`isolatedDeclarations: true` is set workspace-wide).
 
 ## Risks accepted
@@ -114,7 +114,7 @@ A targeted "funny business" sweep on 2026-05-09 (code samples, issue triage, PR 
 security advisories, org-transfer integrity, RFCs) returned a `minor concerns` verdict.
 The substantive finding worth pinning here:
 
-### Standard Schema result-shape violation (Valibot [#1343])
+### Standard Schema result-shape violation (Valibot [#1343][#1343])
 
 Valibot's `safeParse` and the `~standard.validate` adapter return `{typed, success, output, issues}` unconditionally.
 When validation partially succeeds, both `output` (a.k.a. `value` under the StandardSchemaV1 contract) and `issues` are populated.
@@ -164,8 +164,6 @@ Two `@ts-expect-error` in `string.ts` are scoped, intentional internal narrowing
 Big-bang executed on 2026-05-10 after the touch-based plan was overtaken by the
 decision to drop zod entirely. All 14 zod consumers were migrated in a single
 commit and zod was removed from the catalog.
-
-[`PHILOSOPHY.tool-choices.md`]: ./PHILOSOPHY.tool-choices.md
 
 The zod-mini to valibot translation map below applied uniformly across the surface.
 
@@ -264,7 +262,7 @@ export const postFrontmatterSchema: v.GenericSchema<
 
 **Result-shape difference.** `v.safeParse` returns `{success, output, issues}`,
 not zod's `{success, data, error}`. Update result consumers accordingly. Per
-Standard Schema #1343, both `output` and `issues` may be populated when
+Standard Schema [#1343][#1343], both `output` and `issues` may be populated when
 validation partially succeeds; discriminate on `'issues' in result`, not
 `'output' in result`.
 

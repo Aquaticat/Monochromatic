@@ -21,7 +21,7 @@ The 21 cross-package require-destructured-params source functions are catalogued
 
 ## Commits landed (in order, most recent first)
 
-```
+```text
 9598fea8 docs(audit): finalize policy table after user directives
 ec6a3af1 fix(mcp/nvim): lint sweep
 d23d5bdb fix(typeface/aquaticat): lint sweep

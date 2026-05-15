@@ -13,9 +13,10 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import type { AST, } from 'toml-eslint-parser';
 
+import { emitStringValue, } from './emit-value-string.ts';
 import { TomlImmutableNodeError, } from './errors.ts';
+import { encodeKey, } from './keys.ts';
 import type { CanonicalOptions, } from './types.ts';
-import { encodeKey, } from './values.ts';
 
 /**
  * Emit `node` as TOML text per its parse-time fields.
@@ -67,76 +68,6 @@ function emitValueLeaf({ node, }: { node: AST.TOMLValue; },): string {
   if (node.kind === 'boolean')
     return node.value ? 'true' : 'false';
   return node.datetime;
-}
-
-/**
- * Emit a `TOMLStringValue` per its style and `multiline` flag.
- *
- * @returns Computed string.
- */
-function emitStringValue({ node, }: { node: AST.TOMLStringValue; },): string {
-  if (node.style === 'literal') {
-    if (node.multiline)
-      return `'''${node.value}'''`;
-    return `'${node.value}'`;
-  }
-  if (node.multiline)
-    return `"""${escapeBasicMultiline({ value: node.value, },)}"""`;
-  return `"${escapeBasic({ value: node.value, },)}"`;
-}
-
-/**
- * Escape a string for emission inside a basic single-line `"..."` literal.
- *
- * @returns Computed string.
- */
-function escapeBasic({ value, }: { value: string; },): string {
-  return value
-    .replaceAll(
-      '\\',
-      String.raw`\\`,
-    )
-    .replaceAll(
-      '"',
-      String.raw`\"`,
-    )
-    .replaceAll(
-      '\b',
-      String.raw`\b`,
-    )
-    .replaceAll(
-      '\f',
-      String.raw`\f`,
-    )
-    .replaceAll(
-      '\n',
-      String.raw`\n`,
-    )
-    .replaceAll(
-      '\r',
-      String.raw`\r`,
-    )
-    .replaceAll(
-      '\t',
-      String.raw`\t`,
-    );
-}
-
-/**
- * Escape a string for emission inside a `"""..."""` multiline basic literal.
- *
- * @returns Computed string.
- */
-function escapeBasicMultiline({ value, }: { value: string; },): string {
-  return value
-    .replaceAll(
-      '\\',
-      String.raw`\\`,
-    )
-    .replaceAll(
-      '"""',
-      String.raw`\"\"\"`,
-    );
 }
 
 /**

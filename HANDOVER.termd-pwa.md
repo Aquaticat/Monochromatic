@@ -282,14 +282,14 @@ implementation, and the failure data documents the architectural reasons concret
 ## References
 
 - Editord: `packages/desktop-daemon/editord/README.md`
-- wterm GitHub: https://github.com/vercel-labs/wterm
-- wterm local-shell example: https://github.com/vercel-labs/wterm/tree/main/examples/local
-- xterm.js viewport / scrolling: https://deepwiki.com/xtermjs/xterm.js/4.5-viewport-and-scrolling
-- Neovide: https://github.com/neovide/neovide
-- Ghostty: https://github.com/ghostty-org/ghostty
+- wterm GitHub: <https://github.com/vercel-labs/wterm>
+- wterm local-shell example: <https://github.com/vercel-labs/wterm/tree/main/examples/local>
+- xterm.js viewport / scrolling: <https://deepwiki.com/xtermjs/xterm.js/4.5-viewport-and-scrolling>
+- Neovide: <https://github.com/neovide/neovide>
+- Ghostty: <https://github.com/ghostty-org/ghostty>
 - Chrome wheel-event-regions / passive-listener optimization: see
-  https://developer.chrome.com/blog/scrolling-intervention and
-  https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#passive
+  <https://developer.chrome.com/blog/scrolling-intervention> and
+  <https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#passive>
 
 ## Open questions for the plan agent
 

@@ -349,7 +349,7 @@ AST selector: `VariableDeclaration[kind='let']`.
 
 AST selector:
 
-```
+```text
 FunctionDeclaration > BlockStatement > VariableDeclaration[kind='let'],
 FunctionExpression > BlockStatement > VariableDeclaration[kind='let'],
 ArrowFunctionExpression > BlockStatement > VariableDeclaration[kind='let']

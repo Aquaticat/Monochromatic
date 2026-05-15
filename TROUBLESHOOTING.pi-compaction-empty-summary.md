@@ -12,7 +12,7 @@ firing when the entire conversation fits within
 every section and writes a useless compaction entry to the
 session file:
 
-```
+```text
 [compaction]
 
 Compacted from 10,857 tokens

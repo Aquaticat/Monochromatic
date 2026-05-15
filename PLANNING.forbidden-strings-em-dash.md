@@ -20,7 +20,7 @@ self-match handling for the unicode case, single-dash (`-`) handling.
 
 Bare literal lines for `—` and `–` in the rule file work directly:
 
-```
+```text
 —
 –
 ```
@@ -39,7 +39,7 @@ hyphens, `--watch`, `user-facing`, and ASCII `--` separators passed through clea
 Two regex rules verified to match em-dash shapes
 while skipping high-confidence legitimate uses:
 
-```
+```text
 /[a-z]--[a-z]/
 /^.*[a-z] -- [a-z].*$&~(.*npm.*)&~(.*git.*)/
 ```
@@ -113,7 +113,7 @@ Verified 2026-05-10 by sweeping rules through the release binary:
 
 The two patterns that earlier failed:
 
-```
+```text
 /(?<=[a-z]) -- (?=[a-z])&_*&~(.*\b(npm|bun|...|forbidden-strings)\b.*)/
 /^.*[a-z] -- [a-z].*$&~(.*[`].*)&~(.*npm.*)&~(.*bun.*)&~(.*git.*)&~(.*mise.*)&~(.*cargo.*)&~(.*gh\b.*)/
 ```

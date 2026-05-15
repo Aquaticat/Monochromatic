@@ -11,10 +11,12 @@
 import type { AST, } from 'toml-eslint-parser';
 
 import { TomlTypeError, } from './errors.ts';
+import { encodeKey, } from './keys.ts';
 import type {
   CanonicalOptions,
   TomlWrappedInput,
 } from './types.ts';
+export { encodeKey, } from './keys.ts';
 
 /**
  * Encode a JS value as TOML text suitable for assignment after `=`.
@@ -374,34 +376,6 @@ function encodeInlineTable(
     }`;
   },);
   return `{ ${parts.join(', ',)}${parts.length === 0 ? '' : ', '}}`;
-}
-
-/**
- * Encode a key string. Bare when matches `[A-Za-z0-9_-]+`, basic-quoted
- * otherwise.
- *
- * @returns Computed string.
- *
- * @example
- * ```ts
- * encodeKey({ key: 'tools', },);  // 'tools'
- * encodeKey({ key: 'my key', },); // '"my key"'
- * ```
- */
-export function encodeKey({ key, }: { key: string; },): string {
-  if (/^[A-Za-z0-9_-]+$/.test(key,) && (key.length > 0))
-    return key;
-  return `"${
-    key
-      .replaceAll(
-        '\\',
-        String.raw`\\`,
-      )
-      .replaceAll(
-        '"',
-        String.raw`\"`,
-      )
-  }"`;
 }
 
 /**

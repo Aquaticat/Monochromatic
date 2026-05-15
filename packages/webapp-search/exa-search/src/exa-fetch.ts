@@ -7,6 +7,8 @@
  * @see https://docs.exa.ai/reference/search
  */
 
+import * as v from 'valibot';
+
 /** Per-result content-retrieval flags sent in the `contents` field. */
 export type ExaContentsOptions = {
   text?: boolean;
@@ -30,20 +32,43 @@ export type ExaSearchOptions = {
 export type ExaSearchResult = {
   title: string | null;
   url: string;
-  publishedDate?: string;
-  author?: string;
+  publishedDate?: string | undefined;
+  author?: string | undefined;
   text: string;
   summary: string;
   highlights: string[];
-  favicon?: string;
-  image?: string;
+  favicon?: string | undefined;
+  image?: string | undefined;
 };
 
 /** Top-level shape of an Exa `/search` response. */
 export type ExaSearchResponse = {
   results: ExaSearchResult[];
-  costDollars?: { total?: number; };
+  costDollars?: { total?: number | undefined; } | undefined;
 };
+
+/** Runtime schema for one Exa search result, used to narrow fetched JSON. */
+const ExaSearchResultSchema: v.GenericSchema<ExaSearchResult> = v.object({
+  title: v.nullable(v.string(),),
+  url: v.string(),
+  publishedDate: v.optional(v.string(),),
+  author: v.optional(v.string(),),
+  text: v.string(),
+  summary: v.string(),
+  highlights: v.array(v.string(),),
+  favicon: v.optional(v.string(),),
+  image: v.optional(v.string(),),
+},);
+
+/** Runtime schema for Exa `/search` responses, used to narrow fetched JSON. */
+const ExaSearchResponseSchema: v.GenericSchema<ExaSearchResponse> = v.object({
+  results: v.array(ExaSearchResultSchema,),
+  costDollars: v.optional(
+    v.object({
+      total: v.optional(v.number(),),
+    },),
+  ),
+},);
 
 /**
  * POSTs the query merged with options to the `/search` endpoint of `baseUrl`
@@ -108,7 +133,10 @@ export async function searchExa({
     );
   }
 
-  /** Parsed body typed as `unknown` before the explicit narrowing assertion. */
+  /** Parsed body typed as `unknown` before Valibot narrows it to the response schema. */
   const data: unknown = await response.json();
-  return data as ExaSearchResponse;
+  return v.parse(
+    ExaSearchResponseSchema,
+    data,
+  );
 }
