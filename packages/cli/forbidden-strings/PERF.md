@@ -6,6 +6,95 @@ against the binary built from this package's `src/`.
 
 ## Last benched
 
+**2026-05-15 (post-algebra-complement-gate-fix)**, hyperfine 1.20.0, same
+hardware (AMD Ryzen 7 8700F, 16 threads). Binary:
+`packages/cli/forbidden-strings/target/release/forbidden-strings` built from
+this package's `src/` after `src/rules/atom.rs` started treating `~(...)`
+complement operands as non-contributing gates and `src/rules/walker.rs`
+started treating `&` as a transparent intersection separator.
+
+### 2026-05-15 realistic ruleset on Monochromatic, 30 runs
+
+Corpus: Monochromatic git-tracked content, 3,454 files, 47.2 MiB. Same example
+ruleset (`forbidden-strings.local.example.txt`, 259 regex rules, 853 total
+lines). The scan produced no rule hits.
+
+```text
+example-startup    9.4 ms ± 0.8 ms     (user 37.9 ms,  sys 12.7 ms)
+example-all       50.4 ms ± 2.6 ms     (user 331.4 ms, sys 95.4 ms)
+                                      8.5x parallelism, ~936 MiB/s wall
+```
+
+Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`, 3 runs):
+
+```text
+phase 0 read_rules_file:           0.0 to 0.1 ms
+phase 1 classify+regex_compile:    4.0 to 4.9 ms
+phase 2 extract_gating_substrings: 0.2 ms
+phase 3 ac_build:                  0.4 to 0.5 ms
+phase 4 residual_shards:           0.0 ms
+```
+
+Bucket breakdown (`FORBIDDEN_STRINGS_DEBUG_BUCKETS=1`):
+
+```text
+ac_cs_lit=0
+ac_cs_regex_prefix=157
+ac_ci_regex_prefix=171
+residual=4 (in 4 single + 0 combined shards)
+regex_rules_total=259
+```
+
+### 2026-05-15 Linux kernel corpus, 5 runs each
+
+Fresh shallow clone of `torvalds/linux` to `/tmp/claude/linux`, commit
+`70eda6866` (92,549 git-tracked files, 1.47 GiB). Same binary, same example
+ruleset.
+
+```text
+linux-startup    9.1 ms ± 0.9 ms      (user 33.6 ms,   sys 16.6 ms)
+linux-all        1.836 s ± 0.051 s    (user 22.975 s,  sys 1.284 s)
+                                      13.2x parallelism, ~822 MiB/s wall
+```
+
+Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`, 2 runs):
+
+```text
+phase 0 read_rules_file:           0.1 ms
+phase 1 classify+regex_compile:    4.0 to 4.9 ms
+phase 2 extract_gating_substrings: 0.2 ms
+phase 3 ac_build:                  0.4 ms
+phase 4 residual_shards:           0.0 ms
+```
+
+Two rule hits were present in the kernel test fixtures:
+
+```text
+./drivers/of/unittest-data/tests-phandle.dtsi:9:3..33 rule=404
+./tools/testing/selftests/sgx/sign_key.pem:1:1..31 rule=621
+```
+
+These are corpus fixtures matching the example ruleset, not regressions from
+the algebra extractor fix.
+
+### Comparison with 2026-05-10
+
+```text
+Monochromatic startup   9.0 ms ± 0.7 ms     9.4 ms ± 0.8 ms     within sigma
+Monochromatic --all    47.3 ms ± 2.9 ms    50.4 ms ± 2.6 ms     +3.1 ms
+Linux startup           8.9 ms ± 0.7 ms     9.1 ms ± 0.9 ms     within sigma
+Linux --all             2.250 s ± 0.253 s   1.836 s ± 0.051 s   -414 ms
+```
+
+The algebra extractor change runs in Phase 2, which remains 0.2 ms on both
+corpora. The current Linux shallow clone has 92,549 files and 1.47 GiB, versus
+the 2026-05-10 clone's 93,697 files and 1.48 GiB; this bench did not isolate
+which corpus or cache differences account for the lower `linux-all` wall time.
+Monochromatic `--all` remains near the previous wall time despite tracked content
+growing to 47.2 MiB.
+
+---
+
 **2026-05-10 (post-utf8-walker-fix)**, hyperfine 1.20.0, same hardware
 (AMD Ryzen 7 8700F, 16 threads). The walker fix in `src/rules/atom.rs`
 rewrites `walk_literal_bytes` to iterate by `char` rather than casting
