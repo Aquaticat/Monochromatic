@@ -1,7 +1,7 @@
 # Monochromatic
 
-A TypeScript monorepo (48 packages) for web applications, design systems,
-developer tooling, and AI integrations.
+A TypeScript monorepo (96 packages) for web applications, design systems,
+developer tooling, AI integrations, local agent tooling, and infrastructure automation.
 
 ## Highlights
 
@@ -142,25 +142,32 @@ mise run //packages/webapp-productivity/done:build
 
 ```text
 packages/
-  audit/                    Compliance audits (oph-common-look-and-feel)
+  audit/                    Compliance audits (1 package)
   build-tool/               Build tooling (CSS processor)
-  claude-code-plugins/      Claude Code IDE plugins (7 packages)
+  claude-code-plugins/      Claude Code plugins and shared hook source (10 packages)
   cli/                      CLI tools (git wrapper, mvm, vmsync,
                               terminal-exec, cli-fy, rgffplay)
   config/                   Shared configurations (dprint, oxlint,
                               stylelint, tofu, tsdown, typescript)
-  desktop-daemon/           Background services (hall-monitor)
+  desktop-daemon/           Background services (editord, hall-monitor)
   dev-script/               Developer utilities (file-enforcer, inference-canary,
-                              catalog-tighten, backup-path)
+                              catalog-tighten, page-weight, task utilities)
+  figma-parsers/            Figma and Penpot parsing experiments
   mcp/                      Model Context Protocol servers (stdio, nvim, mvm)
-  module/                   Core libraries (es -- functional utilities)
+  module/                   Core libraries (functional utilities, test harness,
+                              logger, path helpers, image diff, TOML editing)
+  pi/                       Pi coding-agent extensions and utilities
   rolldown-plugins/         Rolldown/tsdown plugins (import-attributes)
   runtime-error/            Runtime error reproductions (bun)
+  shim/                     API-compatible dependency shims
+  stub/                     Dependency blocklist stubs
   stylesheet/               Design system (monochromatic CSS framework)
   test-fixture/             Test fixtures for CSS imports and oxlint rules
   typeface/                 Custom fonts (aquaticat geometric typeface)
-  webapp-content/           Content sites (astro-test)
-  webapp-productivity/      Productivity apps (done, flashcard quiz, rss)
+  webapp-content/           Content sites and demos
+  webapp-edu/               Education web applications
+  webapp-forge/             Forge server, seed data, and stress tooling
+  webapp-productivity/      Productivity apps (done, doodle widget, rss)
   webapp-search/            Search apps (ai-tree, exa-search)
 ```
 
@@ -168,7 +175,7 @@ packages/
 
 - **Task runner**: [Mise](https://mise.jdx.dev/) with nushell for cross-platform task execution
 - **Runtime**: [Bun](https://bun.sh/) (migrating away from Bun-specific APIs toward Node.js standards)
-- **Package manager**: Bun workspaces with `catalog:` dependency management
+- **Package manager**: [pnpm](https://pnpm.io/) workspaces with catalog dependency management and isolated node_modules
 - **Bundler**: [tsdown](https://tsdown.dev/) (Rolldown-based)
 - **Language**: TypeScript with `tsgo` for type checking
 - **Linters**: Oxlint (with custom JS plugins for TSDoc and restricted syntax), Stylelint, Harper (prose)
@@ -184,4 +191,4 @@ Development targets Linux (Fedora). Use WSL2 on Windows: some tools
 
 ## License
 
-[Apache-2.0](LICENSE)
+[LGPL-3.0-or-later](LICENSE) for code, with root package metadata also declaring CC-BY-SA-4.0 for shareable documentation/content.
