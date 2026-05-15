@@ -256,7 +256,7 @@ Pipes in the Bash tool are unreliable; the Claude Code issue tracking the bug is
 
 Do not wrap routine verification commands in an external `timeout` binary. Use the command tool's session/polling behavior first; if a process truly remains after producing its useful output, inspect the PID and stop that specific stale process. Reserve external timeout wrappers for commands whose own behavior is specifically being tested or for commands with a known unbounded runtime and no narrower kill mechanism.
 
-Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool. Without a path argument, `rg` detects non-TTY stdin in the sandbox and switches to stdin-reading mode. Combined with command chains (`&&`, `;`), the `< /dev/null` redirect misapplies to the last command, leaving `rg` blocking forever on a socket that never sends EOF. See `PIPE-BUG.md`.
+Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
 
 The Glob tool is denylisted (does not respect .gitignore); unlikely to change.
 
