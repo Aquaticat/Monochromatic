@@ -36,6 +36,15 @@ This does not relax other constraints. Destructive or shared-state actions still
 
 The cue: you are about to write "want me to also..." or "should I go ahead and..." about a step the conversation has already authorized. Skip the prompt and do the step.
 
+### Task tracking granularity
+
+For broad requests that span multiple evidence areas, split the work into separate task-list items for each major area instead of one umbrella item.
+Each task should have concrete completion criteria that can be verified independently:
+inventory, tooling, architecture, tests, security, documentation, synthesis,
+or whatever categories the request demands.
+The cue: a single task subject would hide multiple kinds of evidence gathering
+or make it unclear what "done" means.
+
 ### Pre-response checklist
 
 Before sending any response with substantive claims:
