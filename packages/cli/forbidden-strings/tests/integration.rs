@@ -256,6 +256,59 @@ fn unicode_shorthand_matches_nbsp_under_ci() {
     let _ = fs::remove_dir_all(&dir);
 }
 
+// What:     `#[test] fn windows_style_path_does_not_basename_skip()`.
+//           BUG 11 regression test. Pre-fix the skip-set check did
+//           `path.rsplit('/').next()` to extract a basename, which on
+//           a Windows-style path like `sub\forbidden-strings.local.txt`
+//           returns the full string -- there's no `/` to split on. So
+//           the basename comparison failed in a way that depended on
+//           the host's path separator: the same logical bug as BUG 6
+//           (basename collision skips legitimate files), but triggered
+//           by a different surface (the missing separator type). Post-
+//           fix the skip check uses `std::fs::canonicalize` + `PathBuf`
+//           equality, which is separator-agnostic and OS-aware.
+//
+//           Construct a target file under a subdirectory using a name
+//           that has no path separator INSIDE it (the directory
+//           separator is the host's, but the leaf carries no `/`).
+//           This exercises the path-anchored matching on the exact
+//           shape that broke the old rsplit-based code.
+// Why:      Document BUG 11 as a distinct test even though the fix
+//           overlaps BUG 6. Future readers grepping for "BUG 11" land
+//           on a concrete check rather than a comment-only entry.
+// TS map:   `test("Windows-style path leaf does not basename-skip", ...)`.
+#[test]
+fn windows_style_path_does_not_basename_skip() {
+    let dir = unique_tmp("bug11");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write rules");
+    // Leaf filename contains no separator at all -- mirrors the failure
+    // mode where rsplit('/') yielded the entire path on Windows-style
+    // input. The BUG 6 integration test exercises a directory hierarchy
+    // built with forward slashes; this one uses a flat single file at
+    // tempdir root so the leaf itself is the rsplit fallthrough.
+    let target = dir.join("forbidden-strings.local.txt");
+    fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
+
+    let output = Command::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .output()
+        .expect("spawn binary");
+
+    assert!(
+        !output.status.success(),
+        "BUG 11: explicit positional arg matching the skip basename must \
+         still be scanned (path-anchored not basename-anchored); got success.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+
+    let _ = fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn nul_byte_in_file_does_not_skip_scan() {
     let dir = unique_tmp("bug5");
