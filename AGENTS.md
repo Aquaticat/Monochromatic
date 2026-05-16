@@ -425,6 +425,15 @@ Write comprehensive TSDoc for **all** declarations (exported or not, including l
 - No `switch` statements: use if/else chains or `Record` lookups; if/else avoids `break` boilerplate and fallthrough bugs; `Record` is preferred when mapping a discriminant to a value.
 - Composition over inheritance; `readonly` and `#private` by default; `unknown` over `any`.
 
+#### Regular expressions
+
+- Do not introduce a regular expression when an index scan, parser, or string API expresses the same rule clearly.
+- Every regex literal, `RegExp` constructor call, or string method using a regex must have a nearby TSDoc or line
+  comment explaining why regex is the right tool, what input shape bounds it, and why it cannot backtrack or rescan
+  unbounded prefixes/suffixes. If no useful justification exists, do not use regex.
+- For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap the input
+  or prove linear behaviour in the comment and regression tests.
+
 ## Before declaring work complete
 
 ### Package completeness
