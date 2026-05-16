@@ -527,6 +527,7 @@ pub(super) fn skip_atom_with_extract(
             if j > 2 && j < bytes.len() && bytes[j] == b':' {
                 let flags = &s[2..j];
                 let mut body_ci = ci;
+                let mut body_x = false;
                 let mut after_dash = false;
                 for fc in flags.bytes() {
                     if fc == b'-' {
@@ -536,6 +537,32 @@ pub(super) fn skip_atom_with_extract(
                     if fc == b'i' {
                         body_ci = !after_dash;
                     }
+                    // What:     `if fc == b'x'` tracks the free-spacing
+                    //           flag for the scoped body. `x` enables
+                    //           "extended" mode where unescaped whitespace
+                    //           in the regex source is ignored and `#`
+                    //           starts a line comment until newline. A
+                    //           `(?x:foo bar)` body matches `foobar`, not
+                    //           `foo bar`; `(?x:foo # ignore\nbar)` also
+                    //           matches `foobar`.
+                    // Why:      Closes BUG 9. Pre-fix the body was passed
+                    //           verbatim to `extract_scope`, which walked
+                    //           the literal bytes and registered the space
+                    //           as part of the gating substring. AC then
+                    //           looked for the space in file content but
+                    //           the actual rule match never contained one
+                    //           -- silent gate-never-fires. The body's
+                    //           true literal projection under `x` mode
+                    //           cannot be computed without an `x`-aware
+                    //           rewrite of the extractor; the safe move
+                    //           is to extract NOTHING from such a body
+                    //           and let outer literals (if any) carry
+                    //           the gate. `-x` is the inverse (turn off
+                    //           extended mode); supported for symmetry
+                    //           with `-i`.
+                    if fc == b'x' {
+                        body_x = !after_dash;
+                    }
                 }
                 let close_idx = find_matching_close_paren(s)?;
                 let body_start = j + 1;
@@ -543,7 +570,7 @@ pub(super) fn skip_atom_with_extract(
                 let after = &s[close_idx + 1..];
                 let after_quant = skip_any_quantifier(after);
                 let quant_required = quantifier_is_required(after);
-                let extraction = if quant_required {
+                let extraction = if quant_required && !body_x {
                     extract_scope(body, body_ci)
                 } else {
                     None

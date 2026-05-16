@@ -983,3 +983,68 @@ fn inline_negated_flag_clears_ci_for_subsequent_literal() {
         "BUG 1 (symmetric): inline (?-i) must clear the outer (?i) for subsequent literals"
     );
 }
+
+// What:     `#[test] fn scoped_extended_flag_disables_body_extraction()`.
+//           BUG 9 regression test. A scoped flag group `(?x:body)`
+//           enables free-spacing mode for `body`: whitespace inside
+//           the body is treated as comment/ignore, NOT as literal
+//           text. Pre-fix the scoped-flag arm of `skip_atom_with_extract`
+//           passed the body verbatim to `extract_scope`, which read
+//           the spaces as literal bytes and registered the substring
+//           `foo bar` (with the space) in the AC bucket. AC then
+//           looked for the literal `foo bar` in file content, but
+//           the rule actually matches `foobar` (no space). The gate
+//           never fires; the regex's `find_all` never runs; the
+//           rule is silently disabled while appearing to take the
+//           AC fast path.
+// Why:      Soundness contract from the `extract_gating_substrings`
+//           docstring: registered substrings must byte-for-byte
+//           match what the regex would consume. `(?x:...)` makes
+//           that mapping non-trivial without a full `x`-aware
+//           rewrite of the extractor, so the safe thing is to
+//           extract NOTHING from such a body and let the rule
+//           fall through to residual scanning.
+// TS map:   `test("(?x:body) disables body extraction", () => { ... })`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test("(?x:body) disables body extraction", () => {
+//   const subs = extractGatingSubstrings("required_(?x:foo bar)");
+//   expect(subs?.[0]?.sub).toBe("required_");
+//   const onlyX = extractGatingSubstrings("(?x:foo bar)");
+//   expect(onlyX).toBeNull();
+// });
+// ```
+#[test]
+fn scoped_extended_flag_disables_body_extraction() {
+    // What:     A scoped `(?x:foo bar)` as the entire pattern has no
+    //           surrounding literal to anchor on. With `x` set, the
+    //           spaces inside are ignored by the regex engine -- the
+    //           body matches `foobar` -- and the only candidates the
+    //           extractor could safely register are `foo` and `bar`
+    //           individually. Rather than open that complexity, we
+    //           skip extraction on any `x`-scoped body and return
+    //           None so the rule routes to residual.
+    // Why:      Forces residual fall-through; AC gate cannot soundly
+    //           represent the body.
+    // TS map:   `expect(extractGatingSubstrings("(?x:foo bar)")).toBeNull();`.
+    assert!(
+        extract_gating_substrings("(?x:foo bar)").is_none(),
+        "BUG 9: scoped (?x:body) must not extract any substring"
+    );
+
+    // What:     `required_(?x:foo bar)` has a usable literal prefix
+    //           `required_` outside the `(?x:...)` scope; that prefix
+    //           must still be extracted, but the body must not
+    //           contribute anything. The literal `required_` is
+    //           long enough to pass `MIN_PREFIX_LEN`.
+    // Why:      Regression guard: a future fix that bailed the whole
+    //           rule on seeing `(?x:` would lose the outer-prefix
+    //           extraction. We want the outer literal to keep its
+    //           AC slot, only the body to be suppressed.
+    // TS map:   `expect(extractGatingSubstrings("required_(?x:foo bar)")[0].sub).toBe("required_");`.
+    let subs = extract_gating_substrings("required_(?x:foo bar)")
+        .expect("outer literal must still extract even with (?x:body) after");
+    assert_eq!(subs.len(), 1, "expected exactly one substring (outer literal)");
+    assert_eq!(subs[0].0.as_bytes(), b"required_");
+}
