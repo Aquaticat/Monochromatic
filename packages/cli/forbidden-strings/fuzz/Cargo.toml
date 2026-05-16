@@ -39,8 +39,8 @@ panic = "unwind"
 panic = "unwind"
 
 [[bin]]
-name = "fuzz_target_1"
-path = "fuzz_targets/fuzz_target_1.rs"
+name = "fuzz_extract_gate_soundness"
+path = "fuzz_targets/fuzz_extract_gate_soundness.rs"
 test = false
 doc = false
 bench = false
