@@ -141,6 +141,62 @@ fn read_error_surfaces_as_hit_and_nonzero_exit() {
 // ```ts
 // test("NUL byte does not skip scan", () => { ... });
 // ```
+// What:     `#[test] fn explicit_arg_with_skip_basename_is_still_scanned()`.
+//           BUG 6 regression test. The pre-fix `is_skipped_file` matched
+//           by basename anywhere in the tree, so an explicit argument
+//           like `sub/forbidden-strings.local.txt` was silently skipped
+//           even though it lives in a different directory than the
+//           scanner's actual rule file. Post-fix the skip logic is
+//           path-anchored AND only applied to walker output (--all
+//           mode), not to explicit positional args.
+// Why:      "The user asked" -- positional args are an explicit request
+//           that overrides every basename-based heuristic. The pre-fix
+//           skip was an over-aggressive guard that hid real positive
+//           findings under CI invocations like
+//           `forbidden-strings <path>` for paths whose basenames
+//           happened to collide.
+// TS map:   `test("explicit args bypass skip basename heuristic", () => { ... });`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test("explicit arg with skip-basename is still scanned", () => { ... });
+// ```
+#[test]
+fn explicit_arg_with_skip_basename_is_still_scanned() {
+    let dir = unique_tmp("bug6");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write rules");
+    // Create a subdir whose target file's basename collides with the
+    // hardcoded skip list. Pre-fix the scanner skipped it silently.
+    let sub = dir.join("sub");
+    fs::create_dir_all(&sub).expect("create sub");
+    let target = sub.join("forbidden-strings.local.txt");
+    fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
+
+    let output = Command::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .output()
+        .expect("spawn binary");
+
+    assert!(
+        !output.status.success(),
+        "BUG 6: explicit positional arg must be scanned regardless of basename; got success.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("forbidden-strings.local.txt"),
+        "BUG 6: stderr must reference the target file; got: {}",
+        stderr
+    );
+
+    let _ = fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn nul_byte_in_file_does_not_skip_scan() {
     let dir = unique_tmp("bug5");

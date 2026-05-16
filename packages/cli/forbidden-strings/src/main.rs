@@ -121,75 +121,155 @@ use crate::rules::load_ruleset;
 use crate::scan::scan_content;
 use crate::walk::list_files;
 
-// What:     `fn is_skipped_file(path: &str) -> bool` returns true when
-//           the file's basename is one of the scanner's own rule
-//           inputs or the upstream-vendored source TOML.
-//           `Path::new(path).file_name()` returns `Option<&OsStr>` (the
-//           last path component, or None for paths ending in `..` or
-//           `/`); `.and_then(|s| s.to_str())` lifts that into
-//           `Option<&str>` if it's valid UTF-8; `.unwrap_or("")` falls
-//           back to the empty string when both prior calls returned
-//           `None`. `matches!` is a macro that returns `true` if the
-//           value matches any one of the listed literal patterns.
-// Why:      The scanner reads its rule file then walks the working
-//           tree. Several files in the working tree ARE the rule
-//           definitions themselves (or their upstream source). If any
-//           of them end up in the scanned set, every rule that matches
-//           a literal in its own definition would self-match.
-//           Specifically:
-//             - `forbidden-strings.local.example.txt` (committed)
-//               contains rules like `/bedrock-api-key-...{base64}/`
-//               whose body is a literal substring of the rule itself.
-//             - `forbidden-strings.local.txt` is the runtime rule file.
-//             - `forbidden-strings.append.local.txt` is the per-repo
-//               additions file.
-//             - `betterleaks-default-config.toml` is the upstream
-//               provenance bundled under `data/`; it contains example
-//               literals (e.g. `AIza...` GCP-key shapes used by an
-//               allowlist) that the ported rules detect.
-//             - `port-betterleaks-relaxations.ts` holds the regex-source
-//               strings used during the upstream port (e.g. mongodb
-//               connection-string shape, sourcegraph token form). These
-//               are the rule definitions in TypeScript form; the same
-//               self-match risk applies as for the example-rules file.
-//           Skip all five basenames unconditionally so `--all` runs
-//           don't fire on the scanner's own infrastructure.
-// TS map:   `function isSkippedFile(path: string): boolean { return [...names].includes(basename(path)); }`.
+// What:     `fn build_skip_set(rules_path: &str) -> HashSet<PathBuf>`
+//           returns the set of CANONICAL absolute paths to skip when
+//           walking the tree in `--all` mode. Pre-fix this logic was a
+//           basename check (`is_skipped_file`) that matched anywhere in
+//           the tree, so an unrelated `sub/forbidden-strings.local.txt`
+//           was silently dropped along with the actual rule file. Path-
+//           anchored matching pins each skip to its specific filesystem
+//           location.
+// Why:      Closes BUG 6 (basename skip applies to arbitrary explicit
+//           args) and BUG 11 (Windows path basename via rsplit('/')) in
+//           one shape change. Path-anchoring removes both failure modes:
+//           the basename collision cannot trigger because we compare
+//           full canonical paths, and the Windows backslash separator
+//           is handled inside `std::fs::canonicalize` / `PathBuf::eq`.
+//
+//           Skip set composition:
+//             - The actual rules file (whatever the user passed via
+//               `--rules` or `FORBIDDEN_STRINGS_RULES`; falls back to
+//               the default `forbidden-strings.local.txt` in cwd).
+//             - Three canonical generated-source paths at their
+//               expected locations relative to repo root. If running
+//               from a different cwd they fail to canonicalize and are
+//               silently dropped from the set; matching is still
+//               correct for the rules file alone.
+//
+//           The caller separately decides WHEN to apply the skip:
+//           explicit positional args are NEVER skipped (the user asked
+//           for them); only walker output in --all mode is filtered.
+// TS map:   `function buildSkipSet(rulesPath: string): Set<string>`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// import { basename } from "node:path";
-// function isSkippedFile(path: string): boolean {
-//   const name = basename(path);
-//   return name === "forbidden-strings.local.example.txt"
-//       || name === "forbidden-strings.local.txt"
-//       || name === "forbidden-strings.append.local.txt"
-//       || name === "betterleaks-default-config.toml"
-//       || name === "port-betterleaks-relaxations.ts";
+// function buildSkipSet(rulesPath: string): Set<string> {
+//   const set = new Set<string>();
+//   try { set.add(fs.realpathSync(rulesPath)); } catch {}
+//   for (const k of CANONICAL_GENERATED) {
+//     try { set.add(fs.realpathSync(k)); } catch {}
+//   }
+//   return set;
 // }
 // ```
-fn is_skipped_file(path: &str) -> bool {
-    // What:     `path.rsplit('/').next().unwrap_or(path)` walks the
-    //           string from the END until it hits the first `/`,
-    //           returning the suffix after that `/` (or the whole
-    //           string when no `/` is present). Substantially faster
-    //           than `Path::new(path).file_name()`, which iterates
-    //           through every path component to reach the last one.
-    // Why:      `is_skipped_file` is called for every file in the
-    //           working tree (~2700 calls on Mono `--all`). The
-    //           Path-based basename extraction was a measurable
-    //           fraction of the total wall time when scan dropped
-    //           to ~37 ms via unicode(false). `rsplit` is one
-    //           memchr-style pass over the basename suffix only.
-    let basename = path.rsplit('/').next().unwrap_or(path);
-    matches!(
-        basename,
-        "forbidden-strings.local.example.txt"
-            | "forbidden-strings.local.txt"
-            | "forbidden-strings.append.local.txt"
-            | "betterleaks-default-config.toml"
-            | "port-betterleaks-relaxations.ts"
-    )
+fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::PathBuf> {
+    // What:     `let mut set: HashSet<PathBuf> = HashSet::new();` -- the
+    //           usual mutable-empty-collection pattern.
+    // Why:      Accumulate canonical-form paths we want to skip.
+    // TS map:   `const set = new Set<string>();`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const set = new Set<string>();
+    // ```
+    let mut set: std::collections::HashSet<std::path::PathBuf> =
+        std::collections::HashSet::new();
+
+    // What:     `if let Ok(p) = std::fs::canonicalize(rules_path) { set.insert(p); }`.
+    //           `canonicalize` resolves symlinks AND makes the path
+    //           absolute; identical files reached via different
+    //           relative paths compare equal at the canonical level.
+    //           A missing rules file would fail to canonicalize -- the
+    //           loader will surface that error separately via
+    //           `load_ruleset`, so we silently skip the insertion here.
+    // Why:      Anchor the skip on the actual filesystem identity of
+    //           the rules file rather than its basename.
+    // TS map:   `try { set.add(fs.realpathSync(rulesPath)); } catch {}`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { set.add(fs.realpathSync(rulesPath)); } catch {}
+    // ```
+    if let Ok(p) = std::fs::canonicalize(rules_path) {
+        set.insert(p);
+    }
+    // What:     Canonical generated-source paths relative to the repo
+    //           root. Each is a file we know contains literal copies of
+    //           rule bodies -- scanning them in --all mode would
+    //           produce self-matches. Pinned by their expected location
+    //           so the matcher does not fire on unrelated files of the
+    //           same name elsewhere in the tree.
+    // Why:      Same anti-self-match guard as the previous basename
+    //           list, but anchored to specific paths. If the binary is
+    //           run from outside the monorepo or these files have been
+    //           relocated, canonicalize fails and the entry is dropped
+    //           -- still no false negative because the file does not
+    //           exist at the expected location, so the walker would
+    //           not encounter it either.
+    // TS map:   constant string array of canonical paths.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const CANONICAL_GENERATED = [ "...", "...", "..." ];
+    // ```
+    let canonical_generated = [
+        "packages/cli/forbidden-strings/data/betterleaks-default-config.toml",
+        "packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts",
+        "packages/cli/forbidden-strings/forbidden-strings.local.example.txt",
+    ];
+    for k in canonical_generated {
+        if let Ok(p) = std::fs::canonicalize(k) {
+            set.insert(p);
+        }
+    }
+    set
+}
+
+// What:     `fn is_walker_skipped(path: &str, skip_set: &HashSet<PathBuf>) -> bool`
+//           returns true when the path's canonical form matches a
+//           skip-set entry. Used ONLY for walker output in --all mode;
+//           explicit positional args bypass this check entirely.
+// Why:      Closes BUG 6: the previous `is_skipped_file` ran on every
+//           queued path regardless of source, hiding real positive
+//           findings on `sub/forbidden-strings.local.txt`-style explicit
+//           args. The path-anchored form here is consulted only when
+//           the caller knows the path came from the walker.
+// TS map:   `function isWalkerSkipped(path: string, skipSet: Set<string>): boolean`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function isWalkerSkipped(path: string, skipSet: Set<string>): boolean {
+//   try {
+//     const canonical = fs.realpathSync(path);
+//     return skipSet.has(canonical);
+//   } catch { return false; }
+// }
+// ```
+fn is_walker_skipped(
+    path: &str,
+    skip_set: &std::collections::HashSet<std::path::PathBuf>,
+) -> bool {
+    // What:     Canonicalize per file and lookup in the skip set. A
+    //           canonicalize failure (broken symlink, vanished file)
+    //           returns false -- if we cannot resolve the path, we are
+    //           definitely not skipping it. The downstream `fs::read`
+    //           will surface any read error via the BUG 4 fix.
+    // Why:      Per-file canonicalize is one stat syscall; with the
+    //           ~2700-file walked corpus, that's a few ms total --
+    //           well under the scan cost itself.
+    // TS map:   try/catch around realpathSync.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try {
+    //   const canonical = fs.realpathSync(path);
+    //   return skipSet.has(canonical);
+    // } catch { return false; }
+    // ```
+    if let Ok(canonical) = std::fs::canonicalize(path) {
+        return skip_set.contains(&canonical);
+    }
+    false
 }
 
 // What:     `fn main() -> ExitCode` is the program entry point. `ExitCode`
@@ -636,31 +716,51 @@ fn main() -> ExitCode {
     //   files.map(async (p) => scanContent(p, await readFileFastest(p), ruleset))
     // )).flat();
     // ```
+    // What:     Build the canonical-path skip set once at startup
+    //           (rather than per-file). The set captures the actual
+    //           rules file plus the canonical generated-source paths;
+    //           empty when none of them resolve. Used only in --all
+    //           mode to filter walker output.
+    // Why:      Closes BUG 6: explicit positional args are never
+    //           skipped; only walker output is filtered, and the filter
+    //           is path-anchored (not basename-anchored), so
+    //           `sub/forbidden-strings.local.txt` no longer collides
+    //           with the actual rules file path.
+    // TS map:   `const skipSet = buildSkipSet(rulesPath);`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const skipSet = buildSkipSet(rulesPath);
+    // ```
+    let skip_set = if all { build_skip_set(&rules_path) } else { std::collections::HashSet::new() };
+
     let hits: Vec<String> = files
         .par_iter()
         .flat_map_iter(|p| {
-            // What:     `if is_skipped_file(p) { return Vec::new(); }`
-            //           early-returns an empty `Vec<String>` when the
-            //           file matches the scanner's own rule-file
-            //           naming. `Vec::new()` is the empty vector
-            //           constructor; returning it produces zero hits
-            //           for this file. The closure's overall return
-            //           type is `Vec<String>` (matching what
-            //           `scan_content` returns), so the empty-vector
-            //           early return is type-compatible with the
-            //           normal-path return.
-            // Why:      The example file (committed) and the runtime
-            //           rules file would self-match if scanned (their
-            //           regex bodies contain the very literals they
-            //           detect). Skip them unconditionally so `--all`
-            //           runs are clean.
-            // TS map:   `if (isSkippedFile(p)) return [];`.
+            // What:     `if all && is_walker_skipped(p, &skip_set) { return Vec::new(); }`.
+            //           Only runs the skip check on walker output
+            //           (--all mode). For explicit positional args
+            //           (`forbidden-strings <path>...` without --all),
+            //           the file is ALWAYS scanned -- the user asked.
+            // Why:      Closes BUG 6: the previous basename-based skip
+            //           hid real findings on
+            //           `sub/forbidden-strings.local.txt` and friends
+            //           passed as explicit args. The new check applies
+            //           only when the walker discovered the file
+            //           automatically.
+            //
+            //           Inside the conditional, `is_walker_skipped`
+            //           canonicalizes the path and compares against
+            //           the pre-built skip set. Path-anchored matching
+            //           also closes BUG 11 (Windows backslash basename)
+            //           by routing through `std::fs::canonicalize`.
+            // TS map:   `if (all && isWalkerSkipped(p, skipSet)) return [];`.
             //
             // In TS you'd write (pseudocode):
             // ```ts
-            // if (isSkippedFile(p)) return [];
+            // if (all && isWalkerSkipped(p, skipSet)) return [];
             // ```
-            if is_skipped_file(p) {
+            if all && is_walker_skipped(p, &skip_set) {
                 return Vec::new();
             }
             // What:     `let content = fs::read(p).unwrap_or_default();`.
