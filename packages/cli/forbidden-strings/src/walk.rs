@@ -383,6 +383,33 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
             .map(|p| p.trim_start_matches("./").to_string())
             .collect();
         for entry in index.entries() {
+            // What:     Filter index entries by `Mode`. Only regular
+            //           files (`Mode::FILE`, `Mode::FILE_EXECUTABLE`)
+            //           are scannable; `Mode::COMMIT` is a submodule
+            //           gitlink whose path on disk is a directory (or
+            //           absent), `Mode::SYMLINK` would let `fs::read`
+            //           follow into content outside the repo, and
+            //           `Mode::DIR` (sparse-checkout) is non-content.
+            //           Without this filter, every tracked submodule
+            //           surfaces as a `"./<sub>: Is a directory"` hit
+            //           via BUG 4's read-error path; on the Linux
+            //           kernel that produces ~12 false-positive lines
+            //           per scan.
+            // Why:      Match the original subprocess semantics.
+            //           `git ls-files --cached --ignored
+            //           --exclude-standard -z` filtered to gitignored
+            //           entries; submodules are almost never
+            //           gitignored, so the subprocess output naturally
+            //           excluded them. The in-process replacement
+            //           reads ALL index entries, so we must mode-filter
+            //           explicitly.
+            // TS map:   `if (entry.mode !== FILE && entry.mode !== FILE_EXECUTABLE) continue;`.
+            let mode = entry.mode;
+            if !mode.contains(gix_index::entry::Mode::FILE)
+                && !mode.contains(gix_index::entry::Mode::FILE_EXECUTABLE)
+            {
+                continue;
+            }
             // What:     `entry.path(&index)` resolves the entry's path
             //           backing range into a `&BStr` (byte string) slice
             //           of the index's shared path-storage buffer. The
@@ -569,6 +596,74 @@ mod tests {
             basenames.iter().any(|b| b == "tracked.ignored"),
             "BUG 3: force-added gitignored file must be listed; got {:?}",
             basenames
+        );
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn list_files_excludes_submodule_gitlink_entries() {
+        // What:     Sets up a fixture git repo, then injects a submodule
+        //           gitlink (mode 0o160000) directly into the index via
+        //           `git update-index --add --cacheinfo`. The on-disk
+        //           path for the submodule does not exist as a real
+        //           submodule clone -- the gitlink is just a tracked
+        //           index entry pointing at an arbitrary object id.
+        //           `list_files(dir)` must skip the gitlink because
+        //           our gix-index path filters non-FILE/FILE_EXECUTABLE
+        //           entries.
+        // Why:      The gix-index replacement for the previous
+        //           `git ls-files --cached --ignored --exclude-standard`
+        //           subprocess reads ALL index entries. Without a mode
+        //           filter, tracked submodules would surface as
+        //           "Is a directory" read-error hits via BUG 4's
+        //           surface (~12 false positives on the Linux kernel
+        //           per scan). This test pins the filter against
+        //           silent regression.
+        // TS map:   `test("submodule entries are filtered", () => { ... })`.
+        let dir = unique_tmp("gix-mode-filter");
+        run_git(&dir, &["init", "-q"]);
+        run_git(&dir, &["config", "user.email", "t@t"]);
+        run_git(&dir, &["config", "user.name", "t"]);
+        // What:     Create one real tracked file to keep the index
+        //           non-empty after our cacheinfo injection.
+        fs::write(dir.join("real.txt"), "ordinary").expect("write real.txt");
+        run_git(&dir, &["add", "-f", "real.txt"]);
+        // What:     `git update-index --add --cacheinfo
+        //           160000,<sha>,vendor/sub` adds an entry with
+        //           Mode::COMMIT (gitlink). The SHA must be 40 hex
+        //           chars; the value need not refer to a real commit
+        //           for the index to accept the entry.
+        // Why:      Mirrors a tracked submodule without the complexity
+        //           of creating a real second repository.
+        run_git(
+            &dir,
+            &[
+                "update-index",
+                "--add",
+                "--cacheinfo",
+                "160000,0000000000000000000000000000000000000001,vendor/sub",
+            ],
+        );
+        run_git(
+            &dir,
+            &["commit", "-q", "-m", "initial", "real.txt"],
+        );
+
+        let files = list_files(dir.to_str().expect("dir utf8")).expect("list_files");
+        let normalized: Vec<String> = files
+            .iter()
+            .map(|p| p.trim_start_matches("./").to_string())
+            .collect();
+        assert!(
+            normalized.iter().any(|p| p.ends_with("real.txt")),
+            "regular tracked file must still be listed; got {:?}",
+            normalized
+        );
+        assert!(
+            !normalized.iter().any(|p| p.ends_with("vendor/sub")),
+            "submodule gitlink (Mode::COMMIT) must NOT be listed; got {:?}",
+            normalized
         );
 
         let _ = fs::remove_dir_all(&dir);
