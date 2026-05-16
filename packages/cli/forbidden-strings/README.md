@@ -397,6 +397,16 @@ Three architectural choices account for most of the per-byte gap:
 The speed gap is not free; see "When to pick something else" for the capabilities
 betterleaks ships that `forbidden-strings` deliberately omits.
 
+## Fuzzing
+
+Coverage-guided fuzzing for the scanner's regex routing, AC-gate extractor,
+walker helpers, residual-shard partitioner, and hit formatter lives in
+[`fuzz/`](./fuzz/). Targets are exercised locally and on demand only;
+CI integration is deferred. See [FUZZING.md](./FUZZING.md) for prerequisites,
+the seven-target invariant list, mise commands, the bounded-container
+wrapper, corpus and artifact policy, crash reproduction guidance, and
+the soundness-by-revert validation step.
+
 ## Architecture
 
 - **Two-phase pipeline.** Rule loading (regex compile + AC build) and file walking
