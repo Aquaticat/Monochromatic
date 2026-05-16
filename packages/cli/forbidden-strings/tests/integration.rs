@@ -466,3 +466,397 @@ fn large_binary_file_secret_after_probe_is_acceptably_missed() {
 
     let _ = fs::remove_dir_all(&dir);
 }
+
+// What:     `#[test] fn help_long_flag_exits_zero_and_lists_usage()`.
+//           `--help` must exit 0 (success) and print the usage block --
+//           `USAGE:`, the binary name, and at least one flag header --
+//           to stdout. Convention matches `cargo`, `rustc`, every
+//           POSIX-shaped CLI.
+// Why:      A regression that, say, accidentally redirected the help
+//           text to stderr or returned exit 2 would break shells and
+//           wrappers that pipe `--help` through a pager and assert on
+//           the exit code. Pins both the channel and the exit shape.
+#[test]
+fn help_long_flag_exits_zero_and_lists_usage() {
+    let output = Command::new(BIN)
+        .arg("--help")
+        .output()
+        .expect("spawn binary");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        output.status.success(),
+        "--help must exit 0; stdout: {}\nstderr: {}",
+        stdout,
+        String::from_utf8_lossy(&output.stderr),
+    );
+    assert!(stdout.contains("forbidden-strings"), "help missing program name; stdout: {}", stdout);
+    assert!(stdout.contains("USAGE:"), "help missing USAGE block; stdout: {}", stdout);
+    assert!(stdout.contains("--rules"), "help missing --rules flag; stdout: {}", stdout);
+    assert!(stdout.contains("--all"), "help missing --all flag; stdout: {}", stdout);
+}
+
+// What:     `-h` short alias must behave identically to `--help`.
+// Why:      Argv parsing in main.rs is a manual while-loop. A typo or
+//           dropped branch on `-h` would silently fall through to the
+//           "unknown flag" arm and exit 2; this test pins the alias.
+#[test]
+fn help_short_flag_exits_zero_and_lists_usage() {
+    let output = Command::new(BIN)
+        .arg("-h")
+        .output()
+        .expect("spawn binary");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        output.status.success(),
+        "-h must exit 0; stdout: {}\nstderr: {}",
+        stdout,
+        String::from_utf8_lossy(&output.stderr),
+    );
+    assert!(stdout.contains("USAGE:"), "short -h missing USAGE; stdout: {}", stdout);
+}
+
+// What:     `--version` exits 0 and prints `forbidden-strings <semver>`
+//           on stdout. The semver baked in via `env!("CARGO_PKG_VERSION")`
+//           is the version Cargo.toml declares for this crate.
+// Why:      Tools (mise, asdf, package managers) parse `--version`
+//           output to verify which build is installed. A regression
+//           that swapped the channel or dropped the prefix would break
+//           those tools silently.
+#[test]
+fn version_long_flag_exits_zero_and_prints_version_line() {
+    let output = Command::new(BIN)
+        .arg("--version")
+        .output()
+        .expect("spawn binary");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        output.status.success(),
+        "--version must exit 0; stdout: {}\nstderr: {}",
+        stdout,
+        String::from_utf8_lossy(&output.stderr),
+    );
+    assert!(
+        stdout.starts_with("forbidden-strings "),
+        "version output must begin with program name; got: {}",
+        stdout,
+    );
+    // Crude semver shape check: must contain at least one digit (the
+    // major version). Avoids hardcoding the current version here, which
+    // would force this test to update on every release.
+    assert!(
+        stdout.chars().any(|c| c.is_ascii_digit()),
+        "version output must contain at least one digit; got: {}",
+        stdout,
+    );
+}
+
+#[test]
+fn version_short_flag_exits_zero_and_prints_version_line() {
+    let output = Command::new(BIN)
+        .arg("-V")
+        .output()
+        .expect("spawn binary");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        output.status.success(),
+        "-V must exit 0; stdout: {}\nstderr: {}",
+        stdout,
+        String::from_utf8_lossy(&output.stderr),
+    );
+    assert!(
+        stdout.starts_with("forbidden-strings "),
+        "short -V must print version line; got: {}",
+        stdout,
+    );
+}
+
+// What:     `--rules <missing-file>` must exit 2 (config error) and
+//           emit a `forbidden-strings: ...` error on stderr.
+// Why:      A "rules path I cannot read" is a deployment / wiring
+//           failure, not a code-level violation. Exit 2 is the agreed
+//           channel for "the scanner could not run", distinct from 1
+//           ("ran fine, found violations") and 0 ("ran fine, clean").
+//           CI wrappers branch on this distinction.
+#[test]
+fn missing_rules_file_exits_with_config_error() {
+    let dir = unique_tmp("missing-rules");
+    let rules = dir.join("does-not-exist.txt");
+    let output = Command::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .output()
+        .expect("spawn binary");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let code = output.status.code().unwrap_or(-1);
+    assert_eq!(
+        code, 2,
+        "missing rules file must exit 2; got {}.\nstderr: {}",
+        code, stderr,
+    );
+    assert!(
+        stderr.contains("forbidden-strings:"),
+        "stderr must carry the program-prefixed error; got: {}",
+        stderr,
+    );
+    let _ = fs::remove_dir_all(&dir);
+}
+
+// What:     `--rules` argument must win over `FORBIDDEN_STRINGS_RULES`
+//           env var when both are set. Set the env to a literal that
+//           DOES match the target; set --rules to a different file whose
+//           literal does NOT match. Only --rules should be consulted, so
+//           the run exits 0.
+// Why:      Documented precedence in README: "--rules flag, then env
+//           var, then default". A regression that swapped them would
+//           silently use the wrong ruleset in CI. The user catches it
+//           when a known-bad string slips through; the test catches it
+//           before that.
+#[test]
+fn rules_flag_wins_over_env_var() {
+    let dir = unique_tmp("rules-precedence");
+    let env_rules = dir.join("env-rules.txt");
+    fs::write(&env_rules, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write env rules");
+    let flag_rules = dir.join("flag-rules.txt");
+    // Literal that does not appear in the target file.
+    fs::write(&flag_rules, "UNRELATED_LITERAL_NEVER_PRESENT\n").expect("write flag rules");
+    let target = dir.join("target.txt");
+    fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
+
+    let output = Command::new(BIN)
+        .env("FORBIDDEN_STRINGS_RULES", &env_rules)
+        .args(["--rules"])
+        .arg(&flag_rules)
+        .arg(&target)
+        .output()
+        .expect("spawn binary");
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        output.status.success(),
+        "--rules must win: when flag rules don't match target, exit must be 0.\n\
+         stdout: {}\nstderr: {}",
+        stdout,
+        stderr,
+    );
+    let _ = fs::remove_dir_all(&dir);
+}
+
+// What:     With `FORBIDDEN_STRINGS_RULES` set and no `--rules` flag,
+//           the scanner must use the env-pointed rules file. Set it to
+//           a rules file whose literal MATCHES the target; expect a
+//           non-zero exit and a hit on stderr.
+// Why:      Pins the "env var is the second-priority source" half of
+//           the precedence rule. Without this test, swapping precedence
+//           (env wins over --rules) would still pass `rules_flag_wins_
+//           over_env_var` if the env var were silently ignored.
+#[test]
+fn env_var_supplies_rules_when_no_flag() {
+    let dir = unique_tmp("env-supplies-rules");
+    let env_rules = dir.join("env-rules.txt");
+    fs::write(&env_rules, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write env rules");
+    let target = dir.join("target.txt");
+    fs::write(&target, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write target");
+
+    let output = Command::new(BIN)
+        .env("FORBIDDEN_STRINGS_RULES", &env_rules)
+        .arg(&target)
+        .output()
+        .expect("spawn binary");
+
+    assert!(
+        !output.status.success(),
+        "env-supplied rules must drive matching; expected non-zero exit.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+    let _ = fs::remove_dir_all(&dir);
+}
+
+// What:     A short (<7-byte) bare literal rule matches a standalone
+//           occurrence but NOT a glued substring. Rule "ACR" must hit
+//           "see ACR here" but miss "ACRYLIC" (trailing 'Y' is a word
+//           char, no boundary).
+// Why:      README "Match semantics depend on length" + `SUBSTRING_
+//           THRESHOLD` in `src/rules/types.rs`. A regression that drops
+//           the conditional word-boundary check would suddenly fire on
+//           every short acronym occurring inside any longer
+//           identifier -- silent flood of false positives.
+#[test]
+fn short_literal_respects_word_boundary() {
+    let dir = unique_tmp("short-boundary");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "ACR\n").expect("write rules");
+
+    // (1) Standalone occurrence: must match.
+    let hit_file = dir.join("hit.txt");
+    fs::write(&hit_file, "see ACR here\n").expect("write hit file");
+    let hit_output = Command::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&hit_file)
+        .output()
+        .expect("spawn binary");
+    assert!(
+        !hit_output.status.success(),
+        "short literal `ACR` must match standalone occurrence; exit was success.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&hit_output.stdout),
+        String::from_utf8_lossy(&hit_output.stderr),
+    );
+
+    // (2) Glued occurrence: must miss. ACRYL has trailing word char `Y`.
+    let miss_file = dir.join("miss.txt");
+    fs::write(&miss_file, "see ACRYLIC here\n").expect("write miss file");
+    let miss_output = Command::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&miss_file)
+        .output()
+        .expect("spawn binary");
+    assert!(
+        miss_output.status.success(),
+        "short literal `ACR` must NOT match inside `ACRYLIC` (no right-side boundary).\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&miss_output.stdout),
+        String::from_utf8_lossy(&miss_output.stderr),
+    );
+
+    let _ = fs::remove_dir_all(&dir);
+}
+
+// What:     `--all` mode must skip the configured rules file. The skip
+//           set in main.rs canonicalizes the resolved rules path; the
+//           walker's output is filtered against that set. Setup: git-
+//           init a fresh repo, write rules containing a deny-listed
+//           literal that ALSO appears literally inside the rules file
+//           (the rule body itself). Run `--all` from that repo. The
+//           rules file is the only tracked content; since it is the
+//           configured rules file, the walker output filters it out.
+//           Exit must be 0.
+// Why:      Without the skip the rules file self-matches every rule it
+//           declares -- every `--all` run on a repo that includes a
+//           rules file would fail with hits on the rules file itself.
+//           The skip-set canonicalization is the fix; this test pins
+//           it through the binary.
+#[test]
+fn all_mode_skips_configured_rules_file() {
+    let dir = unique_tmp("all-skip-rules");
+
+    // What:     Resolve real git binary path. The dev environment in
+    //           this repo wraps `git` with a CLI policy enforcer that
+    //           rejects bulk-add `.` shapes; tests need direct access
+    //           to the real binary so the setup steps run unmodified.
+    //           Mirrors the helper in src/walk.rs tests.
+    let git_bin = if std::path::Path::new("/usr/bin/git").exists() {
+        "/usr/bin/git"
+    } else {
+        "git"
+    };
+    let init_status = Command::new(git_bin)
+        .args(["init", "-q"])
+        .current_dir(&dir)
+        .status()
+        .expect("git init");
+    assert!(init_status.success(), "git init must succeed in {:?}", dir);
+
+    // The rule body must be at least the substring-threshold byte
+    // length so a literal copy of it in the rules file would self-match
+    // were the file scanned. 30 bytes here -- well past the 7-byte
+    // threshold.
+    let rules_path = dir.join("myrules.txt");
+    fs::write(&rules_path, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write rules");
+    let add_status = Command::new(git_bin)
+        .args(["add", "myrules.txt"])
+        .current_dir(&dir)
+        .status()
+        .expect("git add");
+    assert!(add_status.success(), "git add must succeed");
+
+    let output = Command::new(BIN)
+        .current_dir(&dir)
+        .args(["--rules"])
+        .arg(&rules_path)
+        .arg("--all")
+        .output()
+        .expect("spawn binary");
+
+    assert!(
+        output.status.success(),
+        "--all must skip configured rules file; got non-zero exit.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("myrules.txt"),
+        "rules file must not appear as a hit; stderr: {}",
+        stderr,
+    );
+
+    let _ = fs::remove_dir_all(&dir);
+}
+
+// What:     An unknown flag (`--no-such-flag`) must exit 2 (usage
+//           error) and surface the offending token on stderr.
+// Why:      Argv parsing falls through to a generic `--`/`-`-prefix
+//           reject arm. A regression that silently treated unknowns as
+//           positional file args would cause `forbidden-strings
+//           --typo-flag` to scan a file named `--typo-flag` -- a confusing
+//           silent failure, since the file does not exist and the
+//           downstream read would surface as a "read error" hit. Exit 2
+//           plus a "unknown flag" message is the right shape.
+#[test]
+fn unknown_flag_exits_with_usage_error() {
+    let output = Command::new(BIN)
+        .arg("--no-such-flag")
+        .output()
+        .expect("spawn binary");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let code = output.status.code().unwrap_or(-1);
+    assert_eq!(
+        code, 2,
+        "unknown flag must exit 2; got {}.\nstderr: {}",
+        code, stderr,
+    );
+    assert!(
+        stderr.contains("unknown flag"),
+        "stderr must mention unknown flag; got: {}",
+        stderr,
+    );
+    assert!(
+        stderr.contains("--no-such-flag"),
+        "stderr must name the offending token; got: {}",
+        stderr,
+    );
+}
+
+// What:     `--rules` with no following argument must exit 2 (usage
+//           error) and emit a clear "needs an argument" message on
+//           stderr.
+// Why:      The argv loop advances by 2 when it sees `--rules`; if the
+//           value is missing it must short-circuit before indexing
+//           past the end. A regression that panicked here would crash
+//           the process with a backtrace instead of a clean usage
+//           error.
+#[test]
+fn rules_flag_without_value_exits_with_usage_error() {
+    let output = Command::new(BIN)
+        .arg("--rules")
+        .output()
+        .expect("spawn binary");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let code = output.status.code().unwrap_or(-1);
+    assert_eq!(
+        code, 2,
+        "--rules without value must exit 2; got {}.\nstderr: {}",
+        code, stderr,
+    );
+    assert!(
+        stderr.contains("--rules"),
+        "stderr must mention the flag; got: {}",
+        stderr,
+    );
+}
