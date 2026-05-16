@@ -59,3 +59,10 @@ path = "fuzz_targets/fuzz_regex_engine_dispatch.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "fuzz_regex_syntax_walkers"
+path = "fuzz_targets/fuzz_regex_syntax_walkers.rs"
+test = false
+doc = false
+bench = false
