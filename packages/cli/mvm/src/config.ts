@@ -63,6 +63,72 @@ export const WINDOWS_TEMPLATE_AGENT_TIMEOUT_MS = 2_400_000;
 export const VIRTIO_VERIFY_AGENT_TIMEOUT_MS = 300_000;
 
 /**
+ * Checks whether `c` is an ASCII alphanumeric character.
+ *
+ * @param c - single-character string to inspect
+ *
+ * @returns whether `c` is `[A-Za-z0-9]`
+ *
+ * @example
+ * ```ts
+ * isAlphaNum('a'); // true
+ * isAlphaNum('-'); // false
+ * ```
+ */
+function isAlphaNum(c: string,): boolean {
+  return ((c >= 'a') && (c <= 'z'))
+    || ((c >= 'A') && (c <= 'Z'))
+    || ((c >= '0') && (c <= '9'));
+}
+
+/**
+ * Checks whether `c` is allowed in non-leading positions of a VM name.
+ *
+ * @param c - single-character string to inspect
+ *
+ * @returns whether `c` is alphanumeric, underscore, or hyphen
+ *
+ * @example
+ * ```ts
+ * isNameBodyChar('_'); // true
+ * isNameBodyChar('.'); // false
+ * ```
+ */
+function isNameBodyChar(c: string,): boolean {
+  return isAlphaNum(c,) || (c === '_') || (c === '-');
+}
+
+/**
+ * Checks whether `name` matches the original regex
+ * `/^[A-Za-z0-9][A-Za-z0-9_-]*$/`.
+ *
+ * Empty input fails the leading-alphanumeric requirement; all subsequent
+ * characters must be alphanumeric, underscore, or hyphen.
+ *
+ * @param name - candidate VM name
+ *
+ * @returns whether name is a valid VM identifier
+ *
+ * @example
+ * ```ts
+ * isValidVmName('my-vm-01'); // true
+ * isValidVmName('-leading'); // false
+ * isValidVmName('');         // false
+ * ```
+ */
+function isValidVmName(name: string,): boolean {
+  if (name.length === 0)
+    return false;
+  if (!isAlphaNum(name.charAt(0,),))
+    return false;
+  for (const c of name.slice(1,)) {
+    if (!isNameBodyChar(c,))
+      return false;
+  }
+  return true;
+}
+
+/**
  * Validates a VM name contains only safe characters.
  *
  * @param name - VM name to validate
@@ -76,7 +142,7 @@ export const VIRTIO_VERIFY_AGENT_TIMEOUT_MS = 300_000;
  * ```
  */
 export function validateName(name: string,): void {
-  if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(name,)) {
+  if (!isValidVmName(name,)) {
     throw new Error(
       `invalid VM name: ${name} (must start with alphanumeric, contain only alphanumerics, hyphens, underscores)`,
     );
