@@ -83,17 +83,65 @@ Linux startup          9.1 ms ± 0.9 ms      9.8 ms ± 0.4 ms      within sigma
 Linux --all            1.836 s ± 0.051 s    2.334 s ± 0.112 s    +498 ms (+27%)
 ```
 
-Both `--all` benches regressed; the cause is BUG 8's source-level
-expansion of `\s` to `(?:\s|<Unicode-WS-bytes>)`. The alternation
-grows the per-rule NFA size for the 191 rules that use `\s`, so each
-`find_all` triggered by an AC prefix hit walks more states per byte.
-Startup is unchanged because phase 1 (regex compile) stays at ~5 ms;
-the cost is entirely in per-file scan when prefix hits fire.
+Both `--all` benches regressed. The cause is **not** BUG 8's
+source-level expansion of `\s` to `(?:\s|<Unicode-WS-bytes>)`,
+despite the temporal correlation; an earlier draft of this section
+attributed the regression there in error. The expansion is within
+sigma of zero on Mono, confirmed by empirical A/B bisect (30 runs
+each, the shipped binary vs the same binary with
+`expand_unicode_whitespace` patched to return its input verbatim):
 
-Magnitude difference between corpora: Monochromatic has more code
-files with frequent literal-prefix hits for `\s`-bearing rules (4.5x
-regression); Linux has many clean files where AC never fires, so the
-larger NFAs only matter on a smaller subset (1.27x regression).
+```text
+                                              Mono --all wall (30 runs)
+HEAD (4289cdb3 = expansion shipped)           227.5 ± 10.1 ms
+HEAD with expand_unicode_whitespace no-op'd   222.5 ± 12.5 ms
+                                              1.02x ± 0.07 (within sigma)
+```
+
+Per-commit bisect on Mono `--all` (hyperfine 30 runs, same hardware)
+attributes the regression to earlier audit commits:
+
+```text
+                                                  Mono --all      Δ vs pre-audit
+pre-audit (50b96ce0)                              51.3 ± 3.6 ms   baseline
+pre-7377c6f6 (after BUGs 1, 2, 4)                 53.8 ± 4.8 ms   within sigma
+7377c6f6 walker union (BUG 3)                     138.0 ± 3.8 ms  +84 ms
+559123c3 remove is_likely_binary (BUG 5)          202.9 ± 11.9 ms +65 ms more
+HEAD (4289cdb3 = expansion shipped)               220.8 ± 9.3 ms  +18 ms more
+```
+
+Decomposition of the three audit-era costs:
+
+- **+84 ms (BUG 3, commit 7377c6f6)**: the `--all` walker now unions
+  with `git ls-files --cached --ignored --exclude-standard -z` to
+  recover force-added gitignored files. Standalone hyperfine on
+  the Mono repo:
+
+  ```text
+  git -C . ls-files --cached --ignored --exclude-standard -z
+                                            88.7 ± 0.8 ms (10 runs)
+  ```
+
+  The walker pass itself is ~10 ms on Mono; the cost is the
+  subprocess fork+exec+index-walk inside git, not the walker.
+  Standalone Linux kernel measurement: 350.7 ± 3.6 ms (accounts
+  for most of the +498 ms Linux regression below).
+
+- **+65 ms (BUG 5, commit 559123c3)**: removing `is_likely_binary`
+  short-circuit means binary content (50 files / 31.8 MiB on Mono)
+  now flows through AC + per-prefix `find_all`. AC scan over the
+  binary volume is ~6 ms; the rest is regex `find_all` triggered
+  by coincidental short-prefix hits in random bytes.
+
+- **+18 ms residual**: extractor changes for `(?u)` / `(?x:)` /
+  bare `_`, engine-error surface, plus measurement noise from
+  the expansion (the expansion itself is within sigma of zero).
+
+Corpus-magnitude difference is therefore about binary-scan ratio
+(BUG 5) and subprocess wall under file-count load (BUG 3), not
+NFA growth. Linux's larger `--all` regression (+498 ms vs Mono's
++175 ms) tracks its larger subprocess time (350 ms standalone
+vs Mono's 89 ms) and its much larger binary content surface.
 
 The original BUG 8 fix (commit 0479371a) forced rules containing
 `\s/\S/\w/\W/\d/\D/\b/\B` shorthand onto `unicode(true)` compile;
@@ -102,6 +150,41 @@ which exceeds the re-bench threshold for "20 ms startup, 150 ms
 --all". The source-level expansion that shipped on 2026-05-16 (commit
 4289cdb3) restores startup to within-sigma of baseline and keeps
 `--all` under 300 ms on Mono with full Unicode whitespace coverage.
+
+### Option A (rayon::join walker + subprocess): investigated, rejected
+
+Parallelising the walker pass and `git ls-files` subprocess via
+`rayon::join` was investigated under the hypothesis that the ~88 ms
+subprocess could hide behind walker time. Instrumentation showed:
+
+```text
+walker_arm:        10 ms
+git_arm:           92 ms
+rayon::join total: 94 ms      (max(walker, git) + ~2 ms join overhead)
+```
+
+`rayon::join` did parallelise (total ≈ max not sum), but the walker
+is too fast (~10 ms) to fill the subprocess window. The ceiling for
+savings is ~10 ms, within measurement sigma. Apples-to-apples bench:
+
+```text
+                       Mono --all (30 runs)
+HEAD                   226.3 ± 8.1 ms
+HEAD + rayon::join     223.8 ± 9.0 ms
+                       1.01x ± 0.05 (within sigma)
+```
+
+The change added a `move ||` wrapper, a paired closure, and a
+`rayon::join` call to `walk.rs::list_files` for no measurable win.
+Reverted; not shipped.
+
+The actual lever to remove BUG 3's +84 ms is replacing the
+subprocess with an in-process git-index reader (`gix-index` from
+gitoxide, already a workspace ecosystem dep candidate). Trade:
+one transitive dep plus ~10 KiB binary size against ~80 ms wall
+on every `--all` run inside a git repo. Not pursued in this
+audit; documented here as the next perf step if subprocess wall
+becomes a CI bottleneck.
 
 ### Soundness tradeoff: shorthand atom semantics
 
@@ -116,8 +199,8 @@ cost required choosing per-atom semantics:
   alternation covers every Unicode whitespace code point's UTF-8
   bytes (U+00A0, U+1680, U+180E, U+2000..U+200A, U+2028..U+2029,
   U+202F, U+205F, U+3000, U+FEFF). Sound for the NBSP repro and the
-  rest of the Unicode whitespace set; cost is the per-rule NFA-size
-  growth in `find_all`.
+  rest of the Unicode whitespace set. Wall cost: within measurement
+  sigma per the A/B bisect above (1.02x ± 0.07 vs no-op'd expansion).
 - **`\S`, `\w`, `\W`, `\d`, `\D`, `\b`, `\B`: byte-level under
   `unicode(false)`.** Behaviour matches PCRE's default (ASCII-only).
   Practical scope on the betterleaks corpus:
