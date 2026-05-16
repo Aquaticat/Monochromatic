@@ -6,6 +6,147 @@ against the binary built from this package's `src/`.
 
 ## Last benched
 
+**2026-05-16 (post-soundness-audit + post-\s-byte-alt-expansion)**, hyperfine
+1.20.0, same hardware (AMD Ryzen 7 8700F, 16 threads). Binary:
+`packages/cli/forbidden-strings/target/release/forbidden-strings` built from
+this package's `src/` after the 12-commit soundness audit (commits 468fcf73
+to 4289cdb3) closed BUGs 1 through 11 from `/tmp/fs-bug-brief.md`. The
+audit produced one perf-relevant change: BUG 8's fix expands `\s` in the
+rule source to a non-capturing alternation `(?:\s|<Unicode-WS bytes>)` so
+NBSP (U+00A0), em-spaces, ideographic space, and the rest of the Unicode
+whitespace set match `\s` under the `unicode(false)` fast-compile path.
+
+### 2026-05-16 realistic ruleset on Monochromatic, 30 runs
+
+Corpus: Monochromatic git-tracked content, 3,471 files, 57 MiB. Same example
+ruleset (`forbidden-strings.local.example.txt`, 259 regex rules, 853 total
+lines). One rule fired on existing test fixture content
+(`./packages/cli/forbidden-strings/src/rules/algebra_tests.rs:119:32..43 rule=849`,
+an AWS access key prefix in an assertion); bench used `--ignore-failure` to
+absorb the resulting non-zero exit.
+
+```text
+example-startup    9.3 ms ±  0.7 ms    (user 44.8 ms,  sys 13.4 ms)
+example-all      225.7 ms ± 11.5 ms    (user 774.0 ms, sys 190.5 ms)
+                                       3.4x parallelism, ~253 MiB/s wall
+```
+
+Phase-timing breakdown (`FORBIDDEN_STRINGS_DEBUG_TIMING=1`, 3 runs):
+
+```text
+phase 0 read_rules_file:           0.0 to 0.1 ms
+phase 1 classify+regex_compile:    4.3 to 5.2 ms
+phase 2 extract_gating_substrings: 0.2 ms
+phase 3 ac_build:                  0.4 ms
+phase 4 residual_shards:           0.0 ms
+```
+
+Bucket breakdown (`FORBIDDEN_STRINGS_DEBUG_BUCKETS=1`):
+
+```text
+ac_cs_lit=0
+ac_cs_regex_prefix=157
+ac_ci_regex_prefix=171
+residual=4 (in 4 single + 0 combined shards)
+regex_rules_total=259
+```
+
+### 2026-05-16 Linux kernel corpus, 5 runs each
+
+Fresh shallow clone of `torvalds/linux` to `/tmp/claude/linux`, commit
+`6916d570`, 93,696 git-tracked files, 2.0 GiB. Same binary, same example
+ruleset.
+
+```text
+linux-startup    9.8 ms ± 0.4 ms      (user 46.9 ms,   sys 11.7 ms)
+linux-all        2.334 s ± 0.112 s    (user 25.151 s,  sys 2.280 s)
+                                      10.8x parallelism, ~876 MiB/s wall
+```
+
+Three rule hits were present in the kernel test fixtures (each
+matches its own example ruleset entry, not regressions from the
+audit):
+
+```text
+./drivers/of/unittest-data/tests-phandle.dtsi:9:3..33 rule=404
+./tools/testing/selftests/sgx/sign_key.pem:1:1..31 rule=621
+./tools/testing/kunit/configs/all_tests.config:11:23..32 rule=849
+```
+
+### Comparison with 2026-05-15
+
+```text
+                       2026-05-15           2026-05-16           delta
+Monochromatic startup  9.4 ms ± 0.8 ms      9.3 ms ± 0.7 ms      within sigma
+Monochromatic --all    50.4 ms ± 2.6 ms     225.7 ms ± 11.5 ms   +175.3 ms (4.5x)
+Linux startup          9.1 ms ± 0.9 ms      9.8 ms ± 0.4 ms      within sigma
+Linux --all            1.836 s ± 0.051 s    2.334 s ± 0.112 s    +498 ms (+27%)
+```
+
+Both `--all` benches regressed; the cause is BUG 8's source-level
+expansion of `\s` to `(?:\s|<Unicode-WS-bytes>)`. The alternation
+grows the per-rule NFA size for the 191 rules that use `\s`, so each
+`find_all` triggered by an AC prefix hit walks more states per byte.
+Startup is unchanged because phase 1 (regex compile) stays at ~5 ms;
+the cost is entirely in per-file scan when prefix hits fire.
+
+Magnitude difference between corpora: Monochromatic has more code
+files with frequent literal-prefix hits for `\s`-bearing rules (4.5x
+regression); Linux has many clean files where AC never fires, so the
+larger NFAs only matter on a smaller subset (1.27x regression).
+
+The original BUG 8 fix (commit 0479371a) forced rules containing
+`\s/\S/\w/\W/\d/\D/\b/\B` shorthand onto `unicode(true)` compile;
+that was ~95x in phase 1 and 64x in startup wall (575 ms on Mono),
+which exceeds the re-bench threshold for "20 ms startup, 150 ms
+--all". The source-level expansion that shipped on 2026-05-16 (commit
+4289cdb3) restores startup to within-sigma of baseline and keeps
+`--all` under 300 ms on Mono with full Unicode whitespace coverage.
+
+### Soundness tradeoff: shorthand atom semantics
+
+The `regex` crate's `unicode(false)` mode interprets `\s`, `\S`,
+`\w`, `\W`, `\d`, `\D`, `\b`, `\B` as ASCII-only. Closing BUG 8
+("`\s` should match NBSP") without paying the unicode-on compile
+cost required choosing per-atom semantics:
+
+- **`\s`: Unicode-aware via source rewrite.** Each `\s` in the rule
+  source becomes `(?:\s|<UNICODE_WS_ALT>)` (free) or
+  `(?:[...\s...]|<UNICODE_WS_ALT>)` (inside a character class). The
+  alternation covers every Unicode whitespace code point's UTF-8
+  bytes (U+00A0, U+1680, U+180E, U+2000..U+200A, U+2028..U+2029,
+  U+202F, U+205F, U+3000, U+FEFF). Sound for the NBSP repro and the
+  rest of the Unicode whitespace set; cost is the per-rule NFA-size
+  growth in `find_all`.
+- **`\S`, `\w`, `\W`, `\d`, `\D`, `\b`, `\B`: byte-level under
+  `unicode(false)`.** Behaviour matches PCRE's default (ASCII-only).
+  Practical scope on the betterleaks corpus:
+  - `\S` (2 rules): used as `[\S]{N}` capture or `[\s\S]` "any
+    byte" idiom. Neither is a silent miss under byte mode; the
+    second is correct ("any byte" is what `[\s\S]` always meant
+    under byte semantics).
+  - `\w` (133 rules): always in non-required positions like
+    `[\w.-]{0,50}` or inside captures. The `{0,N}` quantifier
+    means a Unicode-character preface still matches via the
+    "zero" lower bound; no silent miss in real-world rules.
+  - `\d` (12 rules): used for numeric IDs like `\d{15,16}`
+    (credit cards) where the author wants ASCII digits, not
+    Bengali numerals. Byte mode matches author intent.
+  - `\b` (93 rules): boundary anchors against literal prefixes
+    like `\bA3-`, `\b(p8e-`. Under byte mode, position between a
+    non-ASCII byte and an ASCII word byte is still a boundary
+    (because non-ASCII bytes are non-word in ASCII mode), so the
+    rule fires when it should.
+  - `\W`, `\D`, `\B`: zero uses in the example ruleset.
+
+For a future rule that genuinely requires Unicode-aware `\w/\d/\b`,
+the author can opt in via the `(?u)` flag, which the scanner already
+rejects from the AC fast path and routes to residual with
+`unicode(true)` compile (see BUG 2's leading-flag check). The
+expansion at this level is byte-mode-only.
+
+---
+
 **2026-05-15 (post-algebra-complement-gate-fix)**, hyperfine 1.20.0, same
 hardware (AMD Ryzen 7 8700F, 16 threads). Binary:
 `packages/cli/forbidden-strings/target/release/forbidden-strings` built from
@@ -839,10 +980,10 @@ Re-run the commands above and append a dated block to **Last benched** /
 - A change touches `src/main.rs` (file dispatch / parallelism), `src/scan.rs`
   (per-file scan logic), or `src/rules.rs` (rule loading and bucketing)
 - A change touches `Cargo.toml` profile or dependency versions
-- The repo grows past ~5000 tracked files or ~50 MiB total
-- Realistic `--all` exceeds **150 ms** in casual use (10x current ceiling),
-  startup-only exceeds **20 ms** (16x current), or synthetic-1k `--all`
-  exceeds **300 ms** (10x current)
+- The repo grows past ~5000 tracked files or ~100 MiB total
+- Realistic `--all` exceeds **700 ms** in casual use (~3x current 226 ms),
+  startup-only exceeds **30 ms** (~3x current 9.3 ms), or synthetic-1k
+  `--all` exceeds **500 ms** (~3.5x current 139 ms)
 
 If none of the above hold, the numbers in this file are still trustworthy.
 

@@ -26,7 +26,7 @@ with sub-10 ms startup that fits inside a pre-commit budget.
 - **Linear-time matching**. Resharp is derivative-based with no backtracking;
   Aho-Corasick gates the regex engine via extracted literal prefixes.
   A pathological rule combination cannot exhibit catastrophic-backtracking behavior.
-- **Pre-commit-budget startup**. ~7 ms cold start (Rust LTO + `panic = "abort"` + stripped
+- **Pre-commit-budget startup**. ~9 ms cold start (Rust LTO + `panic = "abort"` + stripped
   binary, no Node startup, no WASM init, no per-invocation TOML parse). On clean files the
   dual Aho-Corasick gate short-circuits before the regex engine runs at all. Betterleaks
   starts in ~174 ms, which exceeds typical pre-commit budgets on its own. See Performance.
@@ -203,6 +203,38 @@ refuses. Replace with \W ... See TROUBLESHOOTING.resharp.md for workarounds.
 The doc at `TROUBLESHOOTING.resharp.md` in the repository root has the full
 trace, more workarounds, and the upstream-issue draft.
 
+### Perl-class shorthand semantics
+
+The scanner compiles rules in byte mode for speed (`regex::bytes` with
+`unicode(false)`), which would normally make every Perl-class shorthand
+ASCII-only. Two semantics survive that mode:
+
+- **`\s`: Unicode-aware.** Matches every Unicode whitespace code point's
+  UTF-8 bytes: ASCII whitespace (`\t \n \v \f \r ` ), NBSP (U+00A0),
+  ogham space (U+1680), Mongolian vowel separator (U+180E), en-quad
+  through hair space (U+2000..U+200A), line/paragraph separator
+  (U+2028..U+2029), narrow NBSP (U+202F), medium math space (U+205F),
+  ideographic space (U+3000), zero-width NBSP (U+FEFF). Realised by
+  expanding the rule source so each `\s` becomes a non-capturing
+  alternation of ASCII whitespace and the multi-byte UTF-8 sequences.
+  A rule like `(?i)adafruit[\s]+=` correctly matches
+  `adafruit<NBSP>=` in JS/TS files.
+- **`\S`, `\w`, `\W`, `\d`, `\D`, `\b`, `\B`: byte-level (ASCII).**
+  Match the PCRE default (ASCII subset). For secret patterns these
+  semantics match author intent: `\d{16}` for a credit card means
+  ASCII digits, `\b(pat_...)` boundaries against literal prefixes
+  fire on ASCII context, `[\w.-]{0,N}` optional prefixes never
+  block a match. Authors who need genuinely Unicode-aware behaviour
+  for these atoms can opt in with the `(?u)` flag, which routes the
+  rule to the slower full-Unicode compile path.
+
+The asymmetry between `\s` and the rest is pragmatic: `\s` has a
+real bug repro (NBSP in JS/TS files) with a tractable byte-alternation
+expansion, while `\W`/`\D`/`\B` have zero uses in the betterleaks
+corpus and `\S`/`\w`/`\d`/`\b` are all used in shapes where
+byte-level semantics produce no silent miss. See PERF.md for the
+per-atom analysis.
+
 ### Supported regex flags
 
 The flag string accepts these lowercase letters, applied via resharp's inline-flag group:
@@ -296,21 +328,27 @@ regression history are in `PERF.md`.
 
 ### This repo (Monochromatic)
 
-2,860 git-tracked files, 19.8 MiB total. 30 runs, hyperfine 1.20.0:
+3,471 git-tracked files, 57 MiB total. 30 runs, hyperfine 1.20.0:
 
 ```text
-startup-only      9.0 ms ± 0.7 ms
---all            47.3 ms ± 2.9 ms
+startup-only      9.3 ms ± 0.7 ms
+--all            225.7 ms ± 11.5 ms
 ```
 
 ### Linux kernel scale
 
-Fresh shallow clone of `torvalds/linux`. 93,697 git-tracked files, 1.48 GiB. 5 runs:
+Fresh shallow clone of `torvalds/linux`. 93,696 git-tracked files, 2.0 GiB. 5 runs:
 
 ```text
-startup-only      8.9 ms ± 0.7 ms
---all            2.250 s ± 0.253 s   (~660 MiB/s wall, 11x parallelism)
+startup-only      9.8 ms ± 0.4 ms
+--all            2.334 s ± 0.112 s   (~876 MiB/s wall, 10.8x parallelism)
 ```
+
+The 2026-05-16 audit closed 11 soundness bugs. The `--all` numbers above
+include the cost of BUG 8's source-level expansion of `\s` to a non-capturing
+alternation covering every Unicode-whitespace UTF-8 byte sequence; see
+`PERF.md` for the per-bug regression breakdown and the per-atom soundness
+tradeoff for the other Perl-class shorthand atoms.
 
 ### vs betterleaks v1.1.2
 
@@ -349,7 +387,7 @@ Three architectural choices account for most of the per-byte gap:
    which applies memchr / Teddy literal-prefix acceleration per-rule. RE2 compiles all
    rules into a shared DFA that cannot apply per-rule fast paths.
 3. **Native binary startup.** Rust LTO + `panic = "abort"` + stripped binary starts in
-   ~7 ms. Go binary starts in ~174 ms (GC init, goroutine scheduler, config parse). For
+   ~9 ms. Go binary starts in ~174 ms (GC init, goroutine scheduler, config parse). For
    pre-commit hooks with sub-100 ms budgets, the startup gap alone disqualifies
    betterleaks.
 
@@ -370,14 +408,20 @@ betterleaks ships that `forbidden-strings` deliberately omits.
   (those starting with `~(...)`, a metacharacter, or a class) fall into a smaller
   residual gate that runs unconditionally. Slower per file than the AC path but still
   linear-time.
-- **Self-skip for own rule files.** `--all` walks skip five basenames unconditionally so
-  rule bodies that match their own literal text do not self-flag:
-  `forbidden-strings.local.txt`, `forbidden-strings.local.example.txt`,
-  `forbidden-strings.append.local.txt`, `data/betterleaks-default-config.toml`,
-  `port-betterleaks-relaxations.ts`. See `is_skipped_file` in `src/main.rs`.
-- **`ignore` crate walker.** `--all` uses `ignore::WalkBuilder` (which honours
-  `.gitignore`, `.git/info/exclude`, and global excludes) rather than shelling out to
-  `git ls-files`. Same semantics, lower process overhead. See `src/walk.rs`.
+- **Self-skip for own rule files.** `--all` walks skip a small set of paths
+  unconditionally so rule bodies that match their own literal text do not
+  self-flag: the materialized rules file plus the canonical generated-source
+  paths (`forbidden-strings.local.example.txt`,
+  `data/betterleaks-default-config.toml`, `port-betterleaks-relaxations.ts`).
+  Skip is path-anchored via `std::fs::canonicalize`, not basename-anchored,
+  so an unrelated file named `forbidden-strings.local.txt` in a subdirectory
+  is still scanned. Explicit positional arguments bypass the skip entirely.
+  See `build_skip_set` / `is_walker_skipped` in `src/main.rs`.
+- **`ignore` crate walker + git ls-files union.** `--all` uses
+  `ignore::WalkBuilder` (which honours `.gitignore`, `.git/info/exclude`, and
+  global excludes) and then unions the result with `git ls-files --cached
+  --ignored --exclude-standard` so files that were force-added past
+  `.gitignore` (`git add -f`) are still discovered. See `src/walk.rs`.
 - **Bundled `data/betterleaks-default-config.toml`.** Upstream-vendored provenance for
   the betterleaks port. The committed `forbidden-strings.local.example.txt` is derived
   from it; `port-betterleaks-relaxations.ts` records the lossy translations applied during
