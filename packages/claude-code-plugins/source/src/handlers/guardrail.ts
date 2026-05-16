@@ -3,6 +3,10 @@ import type {
   PreToolUseOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 
+import {
+  isWhitespace,
+  isWordChar,
+} from '../lib/text-scan.ts';
 import { parseHookJson, } from '../runtime/handler-runtime.ts';
 
 /**
@@ -26,15 +30,36 @@ function isGeneralPurpose(subagentType: unknown,): boolean {
 }
 
 /**
+ * Whether `c` is a shell command separator that introduces a new command
+ * segment.
+ *
+ * @param c - one-character string to inspect
+ *
+ * @returns whether `c` is one of `\n`, `;`, `|`, `&`, `(`
+ *
+ * @example
+ * ```ts
+ * isCommandBoundary(';'); // true
+ * isCommandBoundary(' '); // false
+ * ```
+ */
+function isCommandBoundary(c: string,): boolean {
+  return (c === '\n')
+    || (c === ';')
+    || (c === '|')
+    || (c === '&')
+    || (c === '(');
+}
+
+/**
  * Whether the given Bash command starts with `bun test` at a command-segment boundary.
  *
- * The leading anchor `(^|[\n;|&(])` only fires when `bun test` follows a real
- * command separator (start-of-string, newline, `;`, `|`, `&`, or `(`), so
- * quoted occurrences like `echo "bun test"` are not matched. The trailing
- * `\b` allows shell terminators like `)`, space, or end-of-string while
- * preventing matches against `bun tests` or `bun test_runner`. `bun run test`,
- * `bunx test`, and `bun build` are also unaffected because the pattern
- * requires literal `bun` then whitespace then `test`.
+ * Mirrors the original regex `(?:^|[\n;|&(])\s*bun\s+test\b`: matches only
+ * when `bun test` follows a real command separator (start-of-string, newline,
+ * `;`, `|`, `&`, or `(`), so quoted occurrences like `echo "bun test"` are
+ * not matched. A word-boundary check on the character after `test` keeps
+ * `bun tests` and `bun test_runner` out; the required whitespace between
+ * `bun` and `test` keeps `bun build`, `bun run test`, `bunx test` out.
  *
  * @param command - Shell command from the Bash tool's `tool_input.command`
  *
@@ -52,7 +77,86 @@ function isGeneralPurpose(subagentType: unknown,): boolean {
  * ```
  */
 function invokesBunTest(command: string,): boolean {
-  return /(?:^|[\n;|&(])\s*bun\s+test\b/.test(command,);
+  /** Literal segment-leading word the matcher looks for. */
+  const BUN = 'bun';
+  /** Literal subcommand the matcher looks for after `bun` + whitespace. */
+  const TEST = 'test';
+  /**
+   * Advances past consecutive whitespace from `idx`.
+   *
+   * @param idx - candidate scan offset
+   *
+   * @returns first index whose character is not whitespace
+   *
+   * @example
+   * ```ts
+   * skipWhitespace(0); // 2 for command === '  bun'
+   * ```
+   */
+  function skipWhitespace(idx: number,): number {
+    if (idx >= command.length)
+      return idx;
+    if (!isWhitespace(command.charAt(idx,),))
+      return idx;
+    return skipWhitespace(idx + 1,);
+  }
+  /**
+   * Checks whether `pos` (taken as a segment start) is followed by
+   * optional whitespace, `bun`, whitespace, `test`, then a word boundary.
+   *
+   * @param pos - segment start position
+   *
+   * @returns whether the segment runs `bun test` at its head
+   *
+   * @example
+   * ```ts
+   * matchesAt(0); // true for command === 'bun test foo'
+   * ```
+   */
+  function matchesAt(pos: number,): boolean {
+    /** Position of the `bun` token candidate. */
+    const bunStart = skipWhitespace(pos,);
+    if (!command.startsWith(
+      BUN,
+      bunStart,
+    ))
+      return false;
+    /** Position immediately after the candidate `bun`. */
+    const afterBun = bunStart + BUN.length;
+    if ((afterBun >= command.length) || (!isWhitespace(command.charAt(afterBun,),)))
+      return false;
+    /** Position of the `test` token candidate. */
+    const testStart = skipWhitespace(afterBun,);
+    if (!command.startsWith(
+      TEST,
+      testStart,
+    ))
+      return false;
+    /** Position immediately after the candidate `test`. */
+    const afterTest = testStart + TEST.length;
+    return (afterTest >= command.length) || (!isWordChar(command.charAt(afterTest,),));
+  }
+  /**
+   * Scans `command` for boundary characters; reports success when any
+   * boundary is followed by a `bun test` segment.
+   *
+   * @param idx - candidate scan offset
+   *
+   * @returns whether a `bun test` segment is found at any boundary
+   *
+   * @example
+   * ```ts
+   * scanForBoundary(0); // true for command === 'cd x && bun test'
+   * ```
+   */
+  function scanForBoundary(idx: number,): boolean {
+    if (idx >= command.length)
+      return false;
+    if (isCommandBoundary(command.charAt(idx,),) && matchesAt(idx + 1,))
+      return true;
+    return scanForBoundary(idx + 1,);
+  }
+  return matchesAt(0,) || scanForBoundary(0,);
 }
 
 /**

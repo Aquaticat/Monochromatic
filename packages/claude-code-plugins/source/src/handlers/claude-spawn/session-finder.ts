@@ -14,6 +14,7 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 
+import { splitWhitespace, } from '../../lib/text-scan.ts';
 import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
   BY_PID_DIR,
@@ -48,7 +49,7 @@ function readParentPid(pid: number,): number | null {
       return null;
 
     return Number.parseInt(
-      ppidLine.split(/\s+/,)[1] ?? '0',
+      splitWhitespace(ppidLine,)[1] ?? '0',
       10,
     );
   }

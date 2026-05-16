@@ -34,6 +34,7 @@ import {
   type SpawnState,
 } from '../handlers/claude-spawn/paths.ts';
 import { findCallingSession, } from '../handlers/claude-spawn/session-finder.ts';
+import { splitWhitespace, } from '../lib/text-scan.ts';
 
 /**
  * Optique parser for the spawn-claude CLI.
@@ -97,11 +98,7 @@ else {
   const cwd = args.cwd ?? process.cwd();
 
   /** Extra args split on whitespace, filtering empty strings. */
-  const extraArgs = (args.extraArguments ?? '')
-    .split(/\s+/,)
-    .filter(function nonEmpty(s,) {
-      return s.length > 0;
-    },);
+  const extraArgs = splitWhitespace(args.extraArguments ?? '',);
 
   mkdirSync(
     SPAWNS_DIR,

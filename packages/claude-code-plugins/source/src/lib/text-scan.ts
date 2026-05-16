@@ -288,7 +288,7 @@ function containsWordBoundedPhrase(
     phrase,
   }: {
     haystack: string;
-    phrase: string
+    phrase: string;
   },
 ): boolean {
   if (phrase.length === 0)
@@ -322,8 +322,9 @@ function containsWordBoundedPhrase(
       haystack: lowerHay,
       phrase: lowerPhrase,
       index: next,
-    },))
+    },)) {
       return true;
+    }
     return checkFrom(next + 1,);
   }
 
@@ -363,8 +364,9 @@ function containsAnyOfWordBounded(
     if (containsWordBoundedPhrase({
       haystack,
       phrase,
-    },))
+    },)) {
       return { phrase, };
+    }
   }
   return undefined;
 }
@@ -506,7 +508,7 @@ function stripLinesStartingWith(
     prefix,
   }: {
     text: string;
-    prefix: string
+    prefix: string;
   },
 ): string {
   return text

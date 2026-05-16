@@ -108,13 +108,17 @@ function checkCompletedChildren(
       SPAWNS_DIR,
       filename,
     );
-    /** Sibling `.reported` path used to consume the entry atomically via rename. */
+    /**
+     * Sibling `.reported` path used to consume the entry atomically via rename.
+     * The `if (!filename.endsWith('.json')) continue;` guard above means the
+     * slice always drops the `.json` suffix.
+     */
     const reportedPath = join(
       SPAWNS_DIR,
-      filename.replace(
-        /\.json$/,
-        '.reported',
-      ),
+      `${filename.slice(
+        0,
+        -'.json'.length,
+      )}.reported`,
     );
 
     try {
