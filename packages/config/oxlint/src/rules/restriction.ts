@@ -96,6 +96,11 @@ export const restrictionRules: DummyRuleMap = {
   // e.g. document.querySelector<HTMLInputElement>('.my-input') instead of document.querySelector('.my-input').
   'no-restricted-syntax/require-queryselector-generic': 'error',
 
+  // Regex usage must be rare and justified at the use site. Prefer index scans,
+  // parsers, or string APIs; necessary regex sites use a scoped disable with
+  // why-regex, input-bound, and backtracking-safety rationale.
+  'no-restricted-syntax/require-regex-justification': 'error',
+
   //region no-disable -- prevent inline oxlint-disable for rules with no legitimate exceptions
   'no-restricted-syntax/no-disable-require-tsdoc': 'error',
   'no-restricted-syntax/no-disable-no-switch': 'error',
