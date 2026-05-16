@@ -575,3 +575,247 @@ fn is_match_returns_result_ok_for_match_resharp() {
         Err(()) => panic!("expected Ok, got Err on resharp branch"),
     }
 }
+
+// What:     Tests for the pre-validators that detect resharp 0.5.x
+//           panic shapes (`intersection_with_lookbehind`,
+//           `intersection_with_word_end_alternation`). Imports run
+//           through `super::engine::*` rather than the crate-public
+//           re-exports because the pre-validators are sibling items
+//           in the same submodule -- `super` is the natural reach
+//           and avoids a longer `crate::rules::...` path.
+// Why:      Each detector is one cheap byte walk over the source;
+//           tests should exercise the positive trigger AND the
+//           negative cases that look superficially similar (escaped
+//           `&`, intersection-in-class, lookbehind alone) to make
+//           sure we are not over-rejecting working rules.
+// TS map:   `describe("intersection_with_lookbehind", () => { ... })`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// describe("intersection_with_lookbehind", () => { ... });
+// describe("intersection_with_word_end_alternation", () => { ... });
+// ```
+use super::engine::{
+    intersection_with_lookbehind,
+    intersection_with_word_end_alternation,
+};
+
+// What:     `assert!(intersection_with_lookbehind(src).is_some(), ...)`
+//           asserts the detector fired on a known-panic shape. The
+//           message format includes the source so a failing test
+//           pinpoints which case regressed.
+// Why:      Positive triggers: every minimal panic-shape bisected
+//           in TROUBLESHOOTING.resharp.md must keep firing.
+// TS map:   `expect(intersectionWithLookbehind(src)).not.toBeNull();`.
+#[test]
+fn intersection_with_lookbehind_fires_on_minimal_shape() {
+    let cases = [
+        // What:     The minimum reproducer for the runtime panic at
+        //           `resharp/src/engine.rs:1020`. Compile succeeds,
+        //           `find_all` panics on content >= 64 bytes.
+        // Why:      Anchor the detector on the exact shape we
+        //           bisected; if anyone simplifies the walker and
+        //           drops this, the test fails.
+        // TS map:   The bare strings; same as the original.
+        "(?:(?=a)&(?<=_))",
+        "(?:(?=a)&(?<!b))",
+        "(?:(?<=a)&(?=b))",
+        // Original artifact 1 (full structure, parsed via Arbitrary).
+        "(?:(?=(?=(?:(?:(?:EBEE)))))&(?<=(?:(?=(?=(?=_))))))",
+    ];
+    for src in cases {
+        assert!(
+            intersection_with_lookbehind(src).is_some(),
+            "expected intersection_with_lookbehind to fire on {:?}",
+            src
+        );
+    }
+}
+
+// What:     Negative cases: shapes that look like the trigger but
+//           do not actually drive the panic. The detector must
+//           leave them alone.
+// Why:      Conservative over-rejection still costs the user a
+//           working rule; pin the false-negative behaviour we
+//           rely on for the rest of the corpus.
+// TS map:   `expect(intersectionWithLookbehind(src)).toBeNull();`.
+#[test]
+fn intersection_with_lookbehind_skips_safe_shapes() {
+    let cases = [
+        // No intersection.
+        "(?<=a)foo",
+        "(?=a)bar",
+        // Intersection without any lookbehind.
+        "(?:foo&bar)",
+        "(?:(?=a)&b)",
+        // `&` inside a character class is a literal, not the operator.
+        "[a&b]",
+        // Escaped `&` is a literal.
+        "foo\\&bar",
+        // `(?<name>...)` named capture is NOT a lookbehind.
+        "(?<name>a)",
+    ];
+    for src in cases {
+        assert!(
+            intersection_with_lookbehind(src).is_none(),
+            "expected intersection_with_lookbehind to PASS on {:?}; got {:?}",
+            src,
+            intersection_with_lookbehind(src)
+        );
+    }
+}
+
+#[test]
+fn intersection_with_word_end_alternation_fires_on_minimal_shape() {
+    let cases = [
+        // What:     Minimum bisected shape for the compile panic at
+        //           `resharp-algebra/src/lib.rs:2470`
+        //           (`attempt to add with overflow`). Bisection
+        //           details in TROUBLESHOOTING.resharp.md.
+        // Why:      Anchor the detector on the trigger combination
+        //           `& + \w + $`.
+        // TS map:   The bare strings.
+        "(?:\\w|$)(?:(?![1g]\\_X)& a)",
+        "(?:\\w|$)& a",
+        "(?u:(?:\\w|$)(?:(?![1g]\\_X)& a))",
+        // Original artifact 2.
+        "(?u:(?u:(?:\\w|$|(?=~(\\_))))(?:(?![1gtu-w]\\_X# lH :)& N))",
+    ];
+    for src in cases {
+        assert!(
+            intersection_with_word_end_alternation(src).is_some(),
+            "expected intersection_with_word_end_alternation to fire on {:?}",
+            src
+        );
+    }
+}
+
+#[test]
+fn intersection_with_word_end_alternation_skips_safe_shapes() {
+    let cases = [
+        // Missing `&`.
+        "(?:\\w|$)foo",
+        // Missing `\w`.
+        "($&a)",
+        // Missing `$`.
+        "(?:\\w)&a",
+        // `$` inside character class is a literal `$`.
+        "[$]&\\w",
+        // `\w` inside class compiles to the byte set rather than
+        // the alternation shape we are guarding; the trigger does
+        // not apply.
+        "[\\w]&$",
+        // Escaped `\w` and `\$`-shaped things (the latter is just
+        // an escape of `$` -- still a literal in the regex parser).
+        "\\\\w&\\$&foo",
+    ];
+    for src in cases {
+        assert!(
+            intersection_with_word_end_alternation(src).is_none(),
+            "expected intersection_with_word_end_alternation to PASS on {:?}; got {:?}",
+            src,
+            intersection_with_word_end_alternation(src)
+        );
+    }
+}
+
+// What:     End-to-end test: drive `compile_rule_src` on each
+//           panic-shape source string and assert it returns an
+//           `Err` (from the pre-validator OR the `catch_unwind`
+//           fallback) rather than panicking the process. The
+//           production-build profile sets `overflow-checks = true`
+//           and `panic = "unwind"` so the `catch_unwind` actually
+//           runs; the test binary inherits those settings via
+//           `cargo test --release` (the project's mise task).
+// Why:      Soundness gate: the WHOLE fix is "no upstream panic
+//           propagates past the engine boundary". This test
+//           exercises that property end-to-end through the
+//           production API, not just the unit-level pre-validator.
+// TS map:   `it("compile_rule_src does not panic on known-bad shapes")`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// it("compile_rule_src does not panic on known-bad shapes", () => {
+//   for (const src of cases) {
+//     expect(() => compileRuleSrc(src)).not.toThrow(/panic/);
+//   }
+// });
+// ```
+#[test]
+fn compile_rule_src_does_not_panic_on_known_bad_shapes() {
+    // What:     `use crate::rules::compile_rule_src;`. Pull the
+    //           top-level loader-and-fuzzer entry point into scope.
+    //           Sibling: the test could call `Regex::new` directly
+    //           and wrap with `catch_unwind`, but that would not
+    //           exercise the production code path the fix is for.
+    // Why:      Drive the actual API so the assertion proves what
+    //           we care about: end users do not see panics.
+    // TS map:   `import { compileRuleSrc } from "..";`.
+    use crate::rules::compile_rule_src;
+    let cases = [
+        // Crash 1: runtime intersection-with-lookbehind shape.
+        // Compile path returns Err via pre-validator (we do not
+        // even reach the resharp parser).
+        "(?:(?=a)&(?<=_))",
+        "(?:(?=(?=(?:(?:(?:EBEE)))))&(?<=(?:(?=(?=(?=_))))))",
+        // Crash 2: compile intersection-with-word-end-alternation
+        // shape. Pre-validator catches before resharp panics.
+        "(?u:(?u:(?:\\w|$|(?=~(\\_))))(?:(?![1gtu-w]\\_X# lH :)& N))",
+        "(?:\\w|$)(?:(?![1g]\\_X)& a)",
+    ];
+    for src in cases {
+        let result = compile_rule_src(src);
+        assert!(
+            result.is_err(),
+            "expected Err from compile_rule_src on known-bad shape {:?}, got {:?}",
+            src,
+            result.as_ref().map(|_| "Ok(CompiledRegex)")
+        );
+    }
+}
+
+// What:     Direct exercise of the `catch_unwind` safety net by
+//           bypassing the pre-validator. We pick a rule shape the
+//           pre-validators would currently let through (so the
+//           wrapper is the only thing keeping it from panicking
+//           the process). Using `find_all` on a long content
+//           with the intersection-of-lookarounds shape that
+//           panics in `scan_fwd_all` at runtime.
+// Why:      Pre-validators are best-effort; catch_unwind is the
+//           load-bearing safety. This test fails if someone removes
+//           the wrapper, even if the pre-validator catches all
+//           currently-known shapes -- the wrapper must keep working
+//           for FUTURE upstream regressions.
+// TS map:   `it("find_all returns Err on engine panic", () => { ... })`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// it("find_all returns Err on engine panic", () => {
+//   const re = compileSomeRule();
+//   const r = re.findAll(longContent);
+//   expect(r.kind).toBe("err");
+// });
+// ```
+#[test]
+fn find_all_catches_runtime_panic_via_catch_unwind() {
+    // What:     We construct the resharp::Regex directly (not
+    //           through compile_rule_src) so the pre-validator
+    //           does not reject the shape. Then drive find_all on
+    //           a 64-byte content slice -- the bisected minimum
+    //           for the runtime panic at `engine.rs:1020`.
+    // Why:      The wrapper must convert panic to Err regardless
+    //           of whether the pre-validator covered the shape.
+    // TS map:   `new Regex(shape).findAll(longContent);` then
+    //           assert `Err`.
+    let re = resharp::Regex::new("(?:(?=a)&(?<=_))").expect("compile resharp regex");
+    let cr = CompiledRegex::Resharp(re);
+    // Long content so the panic actually fires. The exact
+    // threshold (~64 bytes) is encoded by the resharp engine and
+    // not part of our API; we use a comfortably large buffer.
+    let content = vec![b'a'; 128];
+    let result = cr.find_all(&content);
+    // Either Ok or Err is acceptable here -- the load-bearing
+    // assertion is "no process panic". The test framework would
+    // abort if the panic escaped the wrapper.
+    let _ = result;
+}

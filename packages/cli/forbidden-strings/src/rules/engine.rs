@@ -15,6 +15,66 @@
 // ```
 use resharp::Regex;
 
+// What:     `use std::panic::{catch_unwind, AssertUnwindSafe};` brings
+//           the panic-recovery primitives into scope.
+//           - `catch_unwind(closure)` runs the closure on the current
+//             thread. If the closure panics, the panic is INTERCEPTED
+//             instead of propagating: the call returns
+//             `Err(Box<dyn Any + Send>)` carrying the panic payload.
+//             Successful returns are wrapped in `Ok(value)`. The
+//             intercepted panic does NOT cause the process to abort or
+//             the thread to die -- execution continues after the call.
+//           - `AssertUnwindSafe(value)` is a transparent wrapper that
+//             asserts to the compiler "I have personally verified this
+//             value's invariants survive a panic crossing my
+//             closure". Required because Rust's `UnwindSafe` is an
+//             AUTO-TRAIT (the compiler derives it structurally): it is
+//             NOT implemented for `&T where T: !RefUnwindSafe`, and
+//             `&resharp::Regex` is NOT `RefUnwindSafe` because
+//             `Regex` holds a `Mutex<RegexInner>` (the lazy-DFA cache
+//             from `resharp`'s lazy-determinisation strategy).
+//             `AssertUnwindSafe` is sound for our usage because:
+//             (a) every `Regex` instance is owned by exactly one
+//                 `CompiledRegex` and lives the entire scanner run, so
+//                 there is no shared interior state for a panic to
+//                 corrupt across calls;
+//             (b) a poisoned `Mutex` after a caught panic returns
+//                 `PoisonError` on the next lock attempt, which
+//                 resharp converts into one of its own `Error`
+//                 variants -- our `.map_err(|_| ())` already swallows
+//                 those into `Err(())`, exactly the same shape callers
+//                 already handle (synthetic "engine error" hit in
+//                 `scan.rs`); the failure stays inside the engine
+//                 boundary;
+//             (c) we never look at the panic payload, so payload-
+//                 specific UnwindSafe concerns do not apply.
+//             Siblings: `RefUnwindSafe` (same idea, for shared
+//             references); `panic::resume_unwind` (re-throws a caught
+//             payload -- we never want this here because we are the
+//             top of the engine boundary, not a transparent passthrough).
+// Why:      Resharp 0.5.3 panics on a handful of fuzzer-discovered
+//           rule shapes -- one during `Regex::new` (algebra
+//           overflow), one during `find_all` (engine "unexpected
+//           end" assertion). Both crashes are inside upstream code
+//           we do not own. `Result::map_err` cannot catch panics;
+//           only `catch_unwind` can. Without this wrapper an
+//           upstream panic propagates through our process, libFuzzer
+//           records a crash, and (more importantly) a production
+//           scanner run on the same rule + content pair aborts the
+//           process instead of degrading gracefully to "skip this
+//           rule on this file". The scanner is a CI gate: an aborted
+//           run silently passes the gate.
+// TS map:   `try { ... } catch (e) { ... }` -- TS exceptions are
+//           always caught structurally; Rust panics require an
+//           explicit unwind barrier.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // No equivalent. Rust requires catch_unwind + AssertUnwindSafe to
+// // intercept panics across a closure boundary.
+// ```
+use std::panic::{catch_unwind, AssertUnwindSafe};
+
 // What:     `use regex::bytes::Regex as PlainRegex;` imports the
 //           standard `regex` crate's byte-mode regex type under an
 //           alias to disambiguate from `resharp::Regex`. The `regex`
@@ -126,14 +186,56 @@ impl CompiledRegex {
     // ```
     pub fn find_all(&self, content: &[u8]) -> Result<Vec<ScanMatch>, ()> {
         match self {
-            CompiledRegex::Resharp(re) => re
-                .find_all(content)
-                .map(|ms| {
-                    ms.into_iter()
+            // What:     `catch_unwind(AssertUnwindSafe(|| re.find_all(content)))`.
+            //           - The outer `catch_unwind` runs the inner
+            //             closure with an unwind barrier; any panic
+            //             inside (resharp 0.5.3 has a `panic!` in
+            //             `scan_fwd_all` at `engine.rs:1020` that fires
+            //             on `(?:lookahead&lookbehind)` shapes) is
+            //             intercepted and returned as the outer `Err`
+            //             arm of a `Result<_, Box<dyn Any + Send>>`.
+            //           - `AssertUnwindSafe(...)` wraps the closure so
+            //             the compiler accepts that we have manually
+            //             verified the captured `&Regex` (which is
+            //             NOT `RefUnwindSafe` because it owns a
+            //             `Mutex<RegexInner>` for lazy DFA growth) is
+            //             safe to use across the panic boundary in
+            //             our usage -- see the import-site comment
+            //             for the full soundness argument.
+            //           - The double-nested `match` flattens the
+            //             two-level `Result<Result<_, _>, _>` into a
+            //             single `Result<_, ()>`: an outer `Err`
+            //             (caught panic), an inner `Err` (resharp's
+            //             own `Error`), and the inner `Ok` are all
+            //             distinct paths but the engine boundary
+            //             erases the difference -- callers already
+            //             treat `Err(())` as "engine refused; emit
+            //             synthetic hit".
+            // Why:      Defense in depth against upstream panics. A
+            //           resharp panic without this wrapper would
+            //           abort the whole scanner process; with it the
+            //           panic stays inside the engine boundary,
+            //           degrades the rule on this file only, and lets
+            //           the rest of the scan proceed.
+            // TS map:   `try { return { ok: true, value: this.re.findAll(content) }; } catch { return { ok: false }; }`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // try {
+            //   return { ok: true, value: this.re.findAll(content).map(m => ({ start: m.start, end: m.end })) };
+            // } catch { return { ok: false }; }
+            // ```
+            CompiledRegex::Resharp(re) => {
+                let caught = catch_unwind(AssertUnwindSafe(|| re.find_all(content)));
+                match caught {
+                    Ok(Ok(ms)) => Ok(ms
+                        .into_iter()
                         .map(|m| ScanMatch { start: m.start, end: m.end })
-                        .collect()
-                })
-                .map_err(|_| ()),
+                        .collect()),
+                    Ok(Err(_)) => Err(()),
+                    Err(_) => Err(()),
+                }
+            }
             CompiledRegex::Plain(re) => Ok(re
                 .find_iter(content)
                 .map(|m| ScanMatch { start: m.start(), end: m.end() })
@@ -170,7 +272,36 @@ impl CompiledRegex {
     // ```
     pub fn is_match(&self, content: &[u8]) -> Result<bool, ()> {
         match self {
-            CompiledRegex::Resharp(re) => re.is_match(content).map_err(|_| ()),
+            // What:     Same `catch_unwind(AssertUnwindSafe(...))`
+            //           shape as `find_all`. `is_match` reuses the
+            //           same resharp engine internals (lazy DFA),
+            //           so the same `scan_fwd_*` panic surface is
+            //           reachable from here -- on the gate path of
+            //           a Combined residual shard, an `is_match` call
+            //           against a content slice that trips resharp's
+            //           assertion would abort the whole scanner
+            //           process pre-fix. Post-fix it returns
+            //           `Err(())`, and `scan.rs`'s existing
+            //           `Err(()) => fall back to per-member find_all`
+            //           branch handles the rest.
+            // Why:      Symmetry with `find_all` -- any caller-
+            //           visible engine surface must be unwind-safe
+            //           or upstream panics escape the boundary.
+            // TS map:   `try { return { ok: true, value: this.re.isMatch(content) }; } catch { return { ok: false }; }`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // try { return { ok: true, value: this.re.isMatch(content) }; }
+            // catch { return { ok: false }; }
+            // ```
+            CompiledRegex::Resharp(re) => {
+                let caught = catch_unwind(AssertUnwindSafe(|| re.is_match(content)));
+                match caught {
+                    Ok(Ok(v)) => Ok(v),
+                    Ok(Err(_)) => Err(()),
+                    Err(_) => Err(()),
+                }
+            }
             CompiledRegex::Plain(re) => Ok(re.is_match(content)),
         }
     }
@@ -485,6 +616,206 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
                 paren_stack.pop();
                 i += 1;
                 continue;
+            }
+        }
+        i += 1;
+    }
+    None
+}
+
+// What:     `pub fn intersection_with_lookbehind(src: &str) -> Option<String>`
+//           detects rule shapes that match resharp 0.5.x's
+//           lookahead-vs-lookbehind intersection panic at
+//           `resharp-0.5.3/src/engine.rs:1020` (`unexpected end
+//           0 > N`). The minimal reproducer is
+//           `(?:(?=a)&(?<=_))` driven against a content slice of
+//           at least 64 bytes; the panic fires inside
+//           `scan_fwd_all` during the runtime forward scan, not
+//           at compile. The detector reports the shape at
+//           compile time so callers get an actionable error
+//           BEFORE the rule reaches the scan path.
+// Why:      Catch-and-convert via `catch_unwind` in
+//           `CompiledRegex::find_all` already keeps the scanner
+//           process alive; this pre-validator gives the rule
+//           author a clean message ("intersection involving a
+//           lookbehind") instead of a generic engine-error
+//           synthetic hit. Bisection (see TROUBLESHOOTING.resharp.md)
+//           narrowed the trigger to "intersection (`&` outside
+//           class) where at least one operand contains a
+//           lookbehind `(?<=` or `(?<!`". The two-lookahead
+//           variant (`(?:(?=a)&(?=b))`) does not panic; it
+//           returns `Algebra(UnsupportedPattern)` -- only the
+//           lookbehind path hits the assertion. Detection is
+//           conservative: any presence of intersection + any
+//           lookbehind anywhere outside a class triggers; we
+//           accept rare false positives on contrived shapes
+//           (rule authors get a friendlier "rewrite without
+//           intersecting a lookbehind" message instead of the
+//           opaque assertion) in exchange for not having to walk
+//           operand boundaries.
+// TS map:   `function intersectionWithLookbehind(src: string): string | null`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function intersectionWithLookbehind(src: string): string | null {
+//   // walk bytes outside character classes; set hasIntersection on
+//   // bare `&`; set hasLookbehind on `(?<=` or `(?<!`. Return
+//   // a reason when both are seen, null otherwise.
+// }
+// ```
+pub fn intersection_with_lookbehind(src: &str) -> Option<String> {
+    // What:     Single-pass walker: track `in_class` membership;
+    //           on bare `&` outside class set `has_intersection`;
+    //           on `(?<=` or `(?<!` outside class set
+    //           `has_lookbehind`. Return early as soon as both
+    //           are seen (no need to finish the walk).
+    // Why:      Avoid the cost of a second pass; the source
+    //           strings we process are short (rule lines) and
+    //           a single linear scan is plenty.
+    // TS map:   Same shape; one for-loop with two booleans.
+    let bytes = src.as_bytes();
+    let mut i = 0usize;
+    let mut in_class = false;
+    let mut has_intersection = false;
+    let mut has_lookbehind = false;
+    while i < bytes.len() {
+        let c = bytes[i];
+        // What:     Escape sequence `\X` -- skip two bytes, do
+        //           not interpret the second byte as a structural
+        //           character.
+        // Why:      `\&` and `\(` inside the source are literal
+        //           bytes the regex parser treats as the actual
+        //           character, not as the metacharacter.
+        // TS map:   `if (c === 0x5c) { i += 2; continue; }`.
+        if c == b'\\' {
+            i += 2;
+            continue;
+        }
+        if !in_class && c == b'[' {
+            in_class = true;
+            i += 1;
+            continue;
+        }
+        if in_class && c == b']' {
+            in_class = false;
+            i += 1;
+            continue;
+        }
+        if !in_class {
+            if c == b'&' {
+                has_intersection = true;
+            }
+            // What:     `(?<=` or `(?<!` lookbehind detection.
+            //           The `?<` prefix can also start a named
+            //           capture `(?<name>...)`; the discriminator
+            //           is the byte after `<` -- `=` or `!`
+            //           means lookbehind, any other byte means
+            //           named capture (which the regex / resharp
+            //           parsers both accept without panic).
+            // Why:      Match the same shape `lookaround_in_complement`
+            //           uses; keeps detection rules consistent
+            //           across pre-validators.
+            // TS map:   `if (c === '(' && b[i+1] === '?' && b[i+2] === '<' && (b[i+3] === '=' || b[i+3] === '!'))`.
+            if c == b'(' && i + 3 < bytes.len() && bytes[i + 1] == b'?' && bytes[i + 2] == b'<' {
+                let kind = bytes[i + 3];
+                if kind == b'=' || kind == b'!' {
+                    has_lookbehind = true;
+                }
+            }
+            if has_intersection && has_lookbehind {
+                return Some(format!(
+                    "intersection (`&`) involving a lookbehind triggers a known resharp 0.5.x panic in `scan_fwd_all` (`engine.rs:1020`). Rewrite the rule to lift the lookbehind outside the intersection (e.g. anchor it as a prefix), or replace the lookbehind with an explicit consume of the preceding byte. {}",
+                    TROUBLESHOOT_REF
+                ));
+            }
+        }
+        i += 1;
+    }
+    None
+}
+
+// What:     `pub fn intersection_with_word_end_alternation(src: &str) -> Option<String>`
+//           detects rule shapes that match resharp 0.5.x's
+//           algebra arithmetic-overflow panic at
+//           `resharp-algebra-0.5.3/src/lib.rs:2470`
+//           (`attempt to add with overflow` inside
+//           `attempt_rw_concat_2`). The minimum bisected
+//           reproducer is `(?:\w|$)(?:(?![1g]\_X)& a)`: an
+//           alternation containing both `\w` and the end-anchor
+//           `$` concatenated with an intersection whose operand
+//           contains a negative lookahead enclosing a character
+//           class followed by additional literal bytes. The
+//           overflow happens during DFA derivative construction,
+//           reached from `Regex::new`.
+// Why:      Bisection (see TROUBLESHOOTING.resharp.md) showed
+//           the trigger is robust to the specific lookahead
+//           class contents and the surrounding scoped-flag wrap.
+//           The cheapest stable signal is "intersection (`&`
+//           outside class) co-occurring with both `\w`
+//           shorthand and `$` end-anchor (outside class) in the
+//           same rule source". Real secret-detection rules
+//           rarely combine all three -- they are either pure
+//           literal-prefix patterns or simple character classes
+//           -- so the false-positive rate is low. The catch_unwind
+//           wrap in `compile_rule_src` is the load-bearing
+//           safety net; this pre-validator turns the panic into
+//           an actionable message for the common shape.
+// TS map:   `function intersectionWithWordEndAlternation(src: string): string | null`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function intersectionWithWordEndAlternation(src: string): string | null {
+//   // walk bytes outside character classes; flag `&` outside class,
+//   // flag `\w`, flag `$`. Return reason when all three are present.
+// }
+// ```
+pub fn intersection_with_word_end_alternation(src: &str) -> Option<String> {
+    let bytes = src.as_bytes();
+    let mut i = 0usize;
+    let mut in_class = false;
+    let mut has_intersection = false;
+    let mut has_word_shorthand = false;
+    let mut has_end_anchor = false;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if c == b'\\' && i + 1 < bytes.len() {
+            // What:     Detect `\w` (and `\W`) as the word
+            //           shorthand. Inside a character class the
+            //           same escape compiles to the byte-set
+            //           definition rather than the alternation
+            //           shape; the panic correlate appears only
+            //           outside a class, so we gate on
+            //           `!in_class`.
+            // Why:      Match the shape we bisected to a panic.
+            // TS map:   `if (b[i+1] === 'w' || b[i+1] === 'W')`.
+            if !in_class && (bytes[i + 1] == b'w' || bytes[i + 1] == b'W') {
+                has_word_shorthand = true;
+            }
+            i += 2;
+            continue;
+        }
+        if !in_class && c == b'[' {
+            in_class = true;
+            i += 1;
+            continue;
+        }
+        if in_class && c == b']' {
+            in_class = false;
+            i += 1;
+            continue;
+        }
+        if !in_class {
+            if c == b'&' {
+                has_intersection = true;
+            }
+            if c == b'$' {
+                has_end_anchor = true;
+            }
+            if has_intersection && has_word_shorthand && has_end_anchor {
+                return Some(format!(
+                    "intersection (`&`) co-occurring with `\\w` shorthand and `$` end-anchor triggers a known resharp 0.5.x arithmetic-overflow panic in `attempt_rw_concat_2` (`resharp-algebra/src/lib.rs:2470`). Rewrite the rule to avoid this combination -- typically by replacing `\\w` with an explicit character class (`[A-Za-z0-9_]`) or by lifting the end-anchor outside the intersection. {}",
+                    TROUBLESHOOT_REF
+                ));
             }
         }
         i += 1;

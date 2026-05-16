@@ -46,9 +46,42 @@ rayon = "1"
 regex = "1"
 resharp = "0.5.2"
 
+# Why `panic = "unwind"` and `overflow-checks = true` instead of the smaller
+# "abort" + default-off overflow checks:
+#
+# `src/rules/engine.rs` and `src/rules.rs` use `std::panic::catch_unwind`
+# to intercept panics inside the resharp 0.5.x algebra / engine, which
+# panics on a handful of fuzzer-discovered rule shapes:
+#   - `attempt to add with overflow` inside resharp-algebra
+#     `attempt_rw_concat_2` (compile path; `Regex::new` on shapes like
+#     `(?u:...~(\_)...)` with nested constructs);
+#   - `unexpected end 0 > 56` inside resharp `scan_fwd_all` (runtime
+#     path; `find_all` on shapes like `(?:lookahead&lookbehind)`).
+#
+# Two profile settings are load-bearing here:
+#
+# 1. `panic = "unwind"`: `catch_unwind` only intercepts when the process
+#    unwinds. Under `panic = "abort"` the process dies before the unwind
+#    barrier runs, and the scanner -- a CI gate -- aborts instead of
+#    surfacing the bad rule.
+#
+# 2. `overflow-checks = true`: the algebra panic is Rust's standard
+#    checked-arithmetic panic from a `+` on `usize`. Cargo's default
+#    release profile disables overflow checks for speed; without this
+#    setting the `add` silently wraps, resharp builds the wrong DFA,
+#    and the rule fails open (zero hits on content that should match).
+#    That is the worst case for a secret scanner: a corrupt rule
+#    silently passes CI. With this setting the wrap becomes a real
+#    panic that catch_unwind can intercept and convert to "rule=N
+#    engine error", which `scan.rs` already emits as a fail-closed
+#    synthetic hit.
+#
+# See TROUBLESHOOTING.resharp.md for the full panic shapes and the
+# pre-validator coverage in `src/rules.rs` / `src/rules/engine.rs`.
 [profile.release]
 lto = true
 codegen-units = 1
 opt-level = 3
-panic = "abort"
+panic = "unwind"
+overflow-checks = true
 strip = true

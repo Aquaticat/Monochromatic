@@ -63,7 +63,13 @@ mod extract_tests;
 // ```ts
 // export { CompiledRegex, ScanMatch, requiresResharp } from "./rules/engine";
 // ```
-pub use engine::{lookaround_in_complement, requires_resharp, CompiledRegex};
+pub use engine::{
+    intersection_with_lookbehind,
+    intersection_with_word_end_alternation,
+    lookaround_in_complement,
+    requires_resharp,
+    CompiledRegex,
+};
 pub use extract::extract_gating_substrings;
 pub use parse::{parse_rule_source, ParsedRule};
 pub use shards::build_residual_shards;
@@ -162,6 +168,38 @@ use rayon::prelude::*;
 // import { Regex } from "resharp";
 // ```
 use resharp::Regex;
+
+// What:     `use std::panic::{catch_unwind, AssertUnwindSafe};` brings
+//           the panic-recovery primitives into scope for the
+//           compile-time wrap on `Regex::new`. Full primer at the
+//           same import in `src/rules/engine.rs`. Short version:
+//           `catch_unwind(closure)` runs the closure with an unwind
+//           barrier; an inner `panic!` becomes the outer `Err` arm
+//           instead of propagating through the call stack.
+//           `AssertUnwindSafe(...)` asserts to the compiler that
+//           the captures are sound across the panic boundary --
+//           `&str` already is `UnwindSafe`, but `catch_unwind` still
+//           wants the wrapper at the closure boundary for the
+//           future-`Send` requirement, so we keep the symmetric
+//           shape with `engine.rs`.
+// Why:      Resharp 0.5.3's `Regex::new` panics on some rule shapes
+//           the fuzzer discovered (e.g. `(?u:...~(\_)...)` triggers
+//           an arithmetic overflow inside resharp-algebra's
+//           `attempt_rw_concat_2`). Without `catch_unwind` the
+//           panic aborts the scanner process during the parallel
+//           regex-compile phase, taking every other in-flight
+//           compile down with it. With `catch_unwind` the bad rule
+//           returns a normal `Err(String)` that the loader bubbles
+//           up to the user with the same `rule on line N (resharp): ...`
+//           prefix as every other compile failure.
+// TS map:   `try { ... } catch (e) { ... }`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // No equivalent. Rust requires catch_unwind + AssertUnwindSafe to
+// // intercept panics across a closure boundary.
+// ```
+use std::panic::{catch_unwind, AssertUnwindSafe};
 
 // What:     `pub fn load_ruleset(path: &str) -> Result<RuleSet, String>`
 //           reads the rules file, classifies each line, parallel-compiles
@@ -493,6 +531,39 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         if let Some(reason) = lookaround_in_complement(src) {
             return Err(format!("(resharp): {}", reason));
         }
+        // What:     Two additional pre-validators for resharp 0.5.x
+        //           panic shapes the fuzzer discovered. Both are
+        //           defined alongside `lookaround_in_complement` in
+        //           `engine.rs`; each returns `Some(reason)` when its
+        //           known-bad shape is detected and `None` otherwise.
+        //           Returning early surfaces an actionable message
+        //           before resharp's `Regex::new` reaches the
+        //           panicking code path.
+        // Why:      `catch_unwind` below is the load-bearing safety
+        //           net for arbitrary upstream panics, but the panic
+        //           messages it surfaces are generic ("panic during
+        //           compile") and tell the rule author nothing about
+        //           why the rule is bad. These pre-validators name
+        //           the structural trigger for the two shapes we
+        //           have bisected and let the author rewrite the
+        //           rule into a supported form. See
+        //           TROUBLESHOOTING.resharp.md for the bisection
+        //           record and rewrite recipes.
+        // TS map:   `for (const check of [intersectionWithLookbehind, intersectionWithWordEndAlternation]) { const r = check(src); if (r) throw new Error(`(resharp): ${r}`); }`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // for (const check of [intersectionWithLookbehind, intersectionWithWordEndAlternation]) {
+        //   const r = check(src);
+        //   if (r) throw new Error(`(resharp): ${r}`);
+        // }
+        // ```
+        if let Some(reason) = intersection_with_lookbehind(src) {
+            return Err(format!("(resharp): {}", reason));
+        }
+        if let Some(reason) = intersection_with_word_end_alternation(src) {
+            return Err(format!("(resharp): {}", reason));
+        }
         // What:     `Regex::new(src).map(CompiledRegex::Resharp).map_err(...)`.
         //           `Regex::new` is resharp's compile constructor;
         //           `.map(CompiledRegex::Resharp)` wraps the
@@ -510,9 +581,56 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // try { return { kind: "resharp", re: new Regex(src) }; }
         // catch (e) { throw new Error(`(resharp): ${e}`); }
         // ```
-        return Regex::new(src)
-            .map(CompiledRegex::Resharp)
-            .map_err(|e| format!("(resharp): {:?}", e));
+        // What:     `catch_unwind(AssertUnwindSafe(|| Regex::new(src)))`.
+        //           - The outer `catch_unwind` runs the inner closure
+        //             under an unwind barrier. If `Regex::new` panics
+        //             during DFA construction (resharp-algebra 0.5.3
+        //             has an `attempt to add with overflow` panic at
+        //             `lib.rs:2470` reachable from some fuzzer-
+        //             discovered rule shapes), the panic is caught
+        //             and we surface a normal error string instead of
+        //             aborting the scanner.
+        //           - `AssertUnwindSafe(...)` wraps the closure so the
+        //             type-checker accepts the closure's captures
+        //             across the panic boundary. `&str` (the `src`
+        //             capture) IS `UnwindSafe`, but the wrapper is
+        //             still required because we capture by reference
+        //             and `catch_unwind`'s closure bound is `FnOnce()
+        //             + UnwindSafe`.
+        //           - The nested `match caught` flattens the two-level
+        //             `Result<Result<Regex, resharp::Error>, Box<dyn Any + Send>>`
+        //             into a single `Result<CompiledRegex, String>`:
+        //             outer `Err` (panic) becomes `(resharp): panic
+        //             during compile`, inner `Err` becomes the
+        //             standard `(resharp): <error>` shape, inner `Ok`
+        //             wraps into `CompiledRegex::Resharp(...)`. The
+        //             actionable detail (which rule shape) lives in
+        //             `src`, which the outer loader already prepends
+        //             via the `rule on line N` prefix.
+        // Why:      Defense in depth. The pre-validator below catches
+        //           every known panicking shape and surfaces a
+        //           specific message; this wrapper is the fallback
+        //           for shapes the pre-validator does not yet know
+        //           about. Without the wrapper a single bad rule
+        //           crashes the whole scanner; with it, the rule's
+        //           line is named in the error and every other rule
+        //           continues to compile.
+        // TS map:   `try { return new Regex(src); } catch (e) { throw new Error(`(resharp): ${e}`); }`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // try { return { kind: "resharp", re: new Regex(src) }; }
+        // catch (e) { throw new Error(`(resharp): ${e}`); }
+        // ```
+        let caught = catch_unwind(AssertUnwindSafe(|| Regex::new(src)));
+        return match caught {
+            Ok(Ok(re)) => Ok(CompiledRegex::Resharp(re)),
+            Ok(Err(e)) => Err(format!("(resharp): {:?}", e)),
+            Err(_) => Err(
+                "(resharp): panic during compile (upstream resharp 0.5.x bug). See TROUBLESHOOTING.resharp.md."
+                    .to_string()
+            ),
+        };
     }
     compile_plain_rule_to_compiled(src)
 }
