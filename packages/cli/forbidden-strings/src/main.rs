@@ -685,10 +685,37 @@ fn main() -> ExitCode {
             // In TS you'd write (pseudocode):
             // ```ts
             // let content: Uint8Array;
-            // try { content = await readFile(p); } catch { content = new Uint8Array(); }
+            // try { content = await readFile(p); }
+            // catch (e) { return [`${p}: read error: ${e.message}`]; }
             // return scanContent(p, content, ruleset);
             // ```
-            let content = fs::read(p).unwrap_or_default();
+            // What:     `match fs::read(p) { Ok(c) => ..., Err(e) => ... }`.
+            //           Read error path now emits a synthetic "hit"
+            //           string formatted as `{path}: read error: {err}`
+            //           instead of silently substituting empty content.
+            //           The synthetic entry makes the file appear in the
+            //           output report AND keeps the exit code at 1 (hits
+            //           non-empty -> ExitCode::from(1) downstream).
+            // Why:      Closes BUG 4. Pre-fix, `fs::read(p).unwrap_or_default()`
+            //           dropped every io::Error: permissions, missing
+            //           file, broken symlink, /proc EACCES, etc. became
+            //           "empty content", the scan emitted zero hits, and
+            //           the run exited 0. A secret-scanning CI control
+            //           must NOT silently pass on unreadable files; the
+            //           operator needs to know they had no signal.
+            // TS map:   `try { ... } catch (e) { return [makeError(p, e)] }`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // try { content = await readFile(p); }
+            // catch (e) { return [`${p}: read error: ${e}`]; }
+            // ```
+            let content = match fs::read(p) {
+                Ok(c) => c,
+                Err(e) => {
+                    return vec![format!("{}: read error: {}", p, e)];
+                }
+            };
             // What:     `scan_content(p, &content, &ruleset)` is a function
             //           call. `&content` and `&ruleset` are BORROW
             //           expressions: we lend the vec and ruleset to the
