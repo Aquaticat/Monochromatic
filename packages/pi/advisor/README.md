@@ -75,7 +75,6 @@ Example:
 {
   "enabled": true,
   "timeoutMs": 120000,
-  "maxContextChars": 180000,
   "maxAdvisorOutputTokens": 4096,
   "includePriorAdvisorResults": true,
   "systemPrompt": "Focus on test coverage gaps and incorrect assumptions."
