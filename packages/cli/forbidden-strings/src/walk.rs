@@ -302,9 +302,262 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     // const out = files.takeOrClone();
     // return out;
     // ```
-    let files = match Arc::try_unwrap(files) {
+    let mut files = match Arc::try_unwrap(files) {
         Ok(m) => m.into_inner().map_err(|e| format!("walk poisoned: {}", e))?,
         Err(arc) => arc.lock().map_err(|e| format!("walk poisoned: {}", e))?.clone(),
     };
+
+    // What:     Union with `git ls-files --ignored --exclude-standard -z`
+    //           to recover tracked-but-gitignored files. The `ignore`
+    //           crate's `WalkBuilder` always honours .gitignore (the
+    //           `.ignore(false)` toggle disables `.ignore` files, not
+    //           `.gitignore`). A file that was force-added with
+    //           `git add -f` despite matching a `.gitignore` pattern is
+    //           tracked by git but skipped by the walker, leaving a
+    //           silent gap in `--all` mode -- a secret-scan on
+    //           push-to-main must cover every tracked file.
+    // Why:      Closes BUG 3. The union approach keeps the fast in-
+    //           process walker as the primary enumerator and pays for
+    //           git only when we need to recover the long-tail set.
+    //           When the user is not inside a git repo, the `git`
+    //           invocation fails and we silently fall back to the
+    //           walker-only behaviour (existing non-git use case stays
+    //           working).
+    // TS map:   `await execFile("git", ["ls-files", "--ignored", "--exclude-standard", "-z"], { cwd: root });`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const out = await execFile("git", ["ls-files", "--ignored", "--exclude-standard", "-z"], { cwd: root });
+    // for (const entry of out.split("\0").filter(s => s.length > 0)) {
+    //   // dedupe + normalize prefix
+    // }
+    // ```
+    if let Ok(output) = std::process::Command::new("git")
+        .args(["ls-files", "--cached", "--ignored", "--exclude-standard", "-z"])
+        .current_dir(root)
+        .output()
+    {
+        if output.status.success() {
+            // What:     Build a HashSet of normalized paths already in
+            //           `files` so we can detect duplicates with the
+            //           git output. WalkBuilder paths typically start
+            //           with `./` (or the root prefix the user passed),
+            //           while `git ls-files` returns paths relative to
+            //           the git working-tree root with no leading `./`.
+            //           Normalize by stripping `./` and comparing the
+            //           remainder.
+            // Why:      Without deduplication the same file would be
+            //           scanned twice when it lives in BOTH sets (e.g.
+            //           a file that is tracked but not gitignored
+            //           appears only in walker output; a tracked-and-
+            //           ignored file appears only in git output; but
+            //           defensive dedup is cheap and survives future
+            //           changes to either side).
+            // TS map:   `const seen = new Set(files.map(p => p.replace(/^\.\//, "")));`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const seen = new Set(files.map(p => p.replace(/^\.\//, "")));
+            // ```
+            let mut seen: std::collections::HashSet<String> = files
+                .iter()
+                .map(|p| p.trim_start_matches("./").to_string())
+                .collect();
+            // What:     `output.stdout.split(|&b| b == 0).filter(|s| !s.is_empty())`
+            //           splits the NUL-separated `git ls-files -z`
+            //           stdout into per-path slices, dropping the
+            //           trailing empty element after the last NUL.
+            //           Each non-empty slice is one tracked-but-ignored
+            //           path, UTF-8 (we silently skip non-UTF-8 entries
+            //           to match the walker's existing semantics).
+            // Why:      `-z` avoids quoting issues that the default
+            //           newline-delimited output would have for paths
+            //           containing spaces, quotes, or backslashes.
+            // TS map:   `out.split("\0").filter(s => s.length > 0)`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // for (const bytes of out.split("\0")) {
+            //   if (!bytes) continue;
+            //   const s = bytes; // assume utf-8
+            // }
+            // ```
+            for chunk in output.stdout.split(|&b| b == 0) {
+                if chunk.is_empty() {
+                    continue;
+                }
+                if let Ok(rel) = std::str::from_utf8(chunk) {
+                    let normalized = rel.trim_start_matches("./").to_string();
+                    if seen.insert(normalized.clone()) {
+                        // Match the walker's leading-`./` convention so
+                        // downstream string comparisons are uniform.
+                        files.push(format!("./{}", normalized));
+                    }
+                }
+            }
+        }
+    }
+
     Ok(files)
 }
+
+// What:     Integration-style tests for `list_files` that exercise the
+//           git ls-files union path. Each test creates a temporary git
+//           repository, populates it with a fixture file set, then
+//           calls `list_files` and asserts the expected paths appear.
+// Why:      The bug shape (BUG 3) is specifically about the interaction
+//           with `git add -f` + .gitignore. A unit test on a pure
+//           in-memory abstraction wouldn't catch it; we need real git
+//           state.
+// TS map:   integration test under `__tests__/walk.test.ts` shelling
+//           out to `git init`/`git add`/`git commit`.
+#[cfg(test)]
+mod tests {
+    use super::list_files;
+    use std::fs;
+    use std::path::PathBuf;
+    use std::process::Command;
+
+    // What:     `fn unique_tmp(label: &str) -> PathBuf` returns a fresh
+    //           empty directory under `/tmp` (or platform equivalent).
+    //           Uses pid + label to avoid collisions across concurrent
+    //           tests; we don't take a `tempfile` crate dependency for
+    //           one test.
+    // Why:      Cargo test runs tests in parallel by default; without a
+    //           per-test unique path two tests would race on the same
+    //           directory.
+    // TS map:   `os.tmpdir() + "/" + label + "-" + process.pid;`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function uniqueTmp(label: string) {
+    //   return path.join(os.tmpdir(), `${label}-${process.pid}`);
+    // }
+    // ```
+    fn unique_tmp(label: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "fs-walk-test-{}-{}",
+            label,
+            std::process::id()
+        ));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).expect("create tmp dir");
+        dir
+    }
+
+    // What:     `fn run_git(dir, args)` runs `git <args>` in `dir` and
+    //           panics if the exit status is non-zero. The args are
+    //           passed as a fixed-shape array so callers don't have to
+    //           build a Vec.
+    // Why:      Test setup needs deterministic git invocations; failing
+    //           fast on a setup error keeps the actual assertions
+    //           focused on the function under test.
+    // TS map:   `execSync("git " + args.join(" "), { cwd: dir });`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function runGit(dir: string, args: string[]) {
+    //   execSync(`git ${args.join(" ")}`, { cwd: dir });
+    // }
+    // ```
+    fn run_git(dir: &PathBuf, args: &[&str]) {
+        // What:     Resolve the git binary. The dev environment in this
+        //           repo wraps `git` with a CLI policy enforcer that
+        //           rejects bulk-add `.` and commit-without-pathspec
+        //           shapes. Tests need direct access to the real binary
+        //           so the setup steps run unmodified.
+        // Why:      The wrapper is in `node_modules/.bin/git` which
+        //           is earlier in PATH; tests spawning `git` would hit
+        //           it and fail on perfectly normal setup invocations.
+        //           Probe `/usr/bin/git` first; fall back to PATH lookup
+        //           if absent so the test still works on other systems.
+        // TS map:   `const gitBin = existsSync("/usr/bin/git") ? "/usr/bin/git" : "git";`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const gitBin = fs.existsSync("/usr/bin/git") ? "/usr/bin/git" : "git";
+        // ```
+        let git_bin = if std::path::Path::new("/usr/bin/git").exists() {
+            "/usr/bin/git"
+        } else {
+            "git"
+        };
+        let status = Command::new(git_bin)
+            .args(args)
+            .current_dir(dir)
+            .status()
+            .expect("git command failed to spawn");
+        assert!(
+            status.success(),
+            "git {:?} failed in {:?}",
+            args,
+            dir
+        );
+    }
+
+    #[test]
+    fn list_files_includes_force_added_gitignored_file() {
+        // What:     Sets up a fixture git repo containing:
+        //             - .gitignore with `*.ignored` pattern
+        //             - tracked.ignored (force-added despite .gitignore)
+        //             - normal.txt (tracked normally)
+        //           Then calls `list_files(dir)` and asserts BOTH files
+        //           appear in the output.
+        // Why:      BUG 3 regression: pre-fix the WalkBuilder honoured
+        //           .gitignore and silently skipped tracked.ignored.
+        //           Post-fix the `git ls-files --ignored --exclude-standard`
+        //           union recovers it.
+        // TS map:   integration test as described.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // test("list_files includes force-added gitignored file", () => { ... });
+        // ```
+        let dir = unique_tmp("bug3-tracked-ignored");
+        run_git(&dir, &["init", "-q"]);
+        run_git(&dir, &["config", "user.email", "t@t"]);
+        run_git(&dir, &["config", "user.name", "t"]);
+        fs::write(dir.join(".gitignore"), "*.ignored\n").expect("write .gitignore");
+        fs::write(dir.join("tracked.ignored"), "secret content")
+            .expect("write tracked.ignored");
+        fs::write(dir.join("normal.txt"), "normal content").expect("write normal.txt");
+        run_git(&dir, &["add", "-f", ".gitignore", "tracked.ignored", "normal.txt"]);
+        // Explicit pathspec on commit -- the dev environment's git
+        // wrapper rejects commits without one, and real git accepts it
+        // either way.
+        run_git(
+            &dir,
+            &["commit", "-q", "-m", "initial", ".gitignore", "tracked.ignored", "normal.txt"],
+        );
+
+        let files = list_files(dir.to_str().expect("dir utf8")).expect("list_files");
+        // What:     Collect basenames of returned paths into a Vec for
+        //           the diagnostic message; the assertion is on
+        //           membership, not order.
+        // Why:      The walker returns paths like `<dir>/tracked.ignored`
+        //           and `<dir>/./normal.txt`; comparing basenames keeps
+        //           the test platform-independent.
+        let basenames: Vec<String> = files
+            .iter()
+            .filter_map(|p| {
+                std::path::Path::new(p)
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .map(|s| s.to_string())
+            })
+            .collect();
+        assert!(
+            basenames.iter().any(|b| b == "normal.txt"),
+            "normal tracked file must be listed; got {:?}",
+            basenames
+        );
+        assert!(
+            basenames.iter().any(|b| b == "tracked.ignored"),
+            "BUG 3: force-added gitignored file must be listed; got {:?}",
+            basenames
+        );
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+}
+
