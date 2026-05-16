@@ -11,6 +11,7 @@ cargo-fuzz = true
 libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
 arbitrary = { version = "1", features = ["derive"] }
 sha2 = "0.10"
+rayon = "1"
 
 [dependencies.forbidden-strings]
 path = ".."
@@ -41,6 +42,13 @@ panic = "unwind"
 [[bin]]
 name = "fuzz_extract_gate_soundness"
 path = "fuzz_targets/fuzz_extract_gate_soundness.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fuzz_ruleset_scan_invariants"
+path = "fuzz_targets/fuzz_ruleset_scan_invariants.rs"
 test = false
 doc = false
 bench = false

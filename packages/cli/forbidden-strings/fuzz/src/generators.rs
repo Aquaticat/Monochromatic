@@ -230,6 +230,144 @@ impl<'a> Arbitrary<'a> for RuleAndContent {
 
 //endregion Top-level pair
 
+//region Top-level multi-rule pair
+
+// What:     `pub const MAX_RULES: usize = 8;`. Cap on rules per
+//           ruleset for the multi-rule fuzz inputs.
+// Why:      Plan §7.2 / §7.6 use a "bounded ruleset". 8 rules is
+//           plenty to exercise rule-order invariance without
+//           blowing libFuzzer's byte budget per iteration.
+// TS map:   `export const MAX_RULES = 8;`.
+pub const MAX_RULES: usize = 8;
+
+// What:     `#[derive(Debug)] pub struct RulesetAndContent { ... }`.
+//           Bundles a bounded collection of `RuleSrc` values
+//           (each renderable to a file-form `/body/flags` line)
+//           with a content slice seeded from the rules' literals.
+// Why:      `fuzz_ruleset_scan_invariants` and `fuzz_residual_shards`
+//           need many rules at once; one-shot
+//           `load_ruleset_from_source` makes the input shape match
+//           production.
+// TS map:   `type RulesetAndContent = { rules: RuleSrc[]; content: Uint8Array };`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// type RulesetAndContent = { rules: RuleSrc[]; content: Uint8Array };
+// ```
+#[derive(Debug)]
+pub struct RulesetAndContent {
+    pub rules: Vec<RuleSrc>,
+    pub content: Vec<u8>,
+}
+
+impl<'a> Arbitrary<'a> for RulesetAndContent {
+    fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
+        // What:     `let n = u.int_in_range(1usize..=MAX_RULES)?;`. At
+        //           least one rule, at most MAX_RULES. Reading the
+        //           count up-front keeps libFuzzer mutations on the
+        //           ruleset shape stable.
+        // Why:      Empty rulesets are uninteresting (no scan work);
+        //           start at 1.
+        // TS map:   `const n = u.intInRange(1, MAX_RULES);`.
+        let n = u.int_in_range(1usize..=MAX_RULES)?;
+        let mut rules: Vec<RuleSrc> = Vec::with_capacity(n);
+        for _ in 0..n {
+            rules.push(RuleSrc::arbitrary(u)?);
+        }
+        // What:     Synth content: walk each rule, collect literals,
+        //           interleave with random filler, apply few-byte
+        //           mutations. Implementation reuses `Node::collect_literals`
+        //           via per-rule iteration.
+        // Why:      Plan correlation rule: independent content rarely
+        //           matches; bias toward the rules' rendered literals.
+        let mut literals: Vec<Vec<u8>> = Vec::new();
+        for r in &rules {
+            r.body.collect_literals(&mut literals);
+        }
+        let content = synth_content_from_literals(&literals, u)?;
+        Ok(RulesetAndContent { rules, content })
+    }
+}
+
+// What:     `fn synth_content_from_literals(literals, u) -> Result<Vec<u8>>`.
+//           Same shape as `synth_content` but takes a pre-collected
+//           literal pool instead of a single rule.
+// Why:      Shared bytes-generation helper for the multi-rule case.
+fn synth_content_from_literals(
+    literals: &[Vec<u8>],
+    u: &mut Unstructured<'_>,
+) -> Result<Vec<u8>> {
+    let mut out: Vec<u8> = Vec::with_capacity(256);
+    let prefix_len = u.int_in_range(0usize..=64)?;
+    for _ in 0..prefix_len {
+        out.push(u.int_in_range(b'a'..=b'z')?);
+    }
+    if !literals.is_empty() {
+        for lit in literals {
+            if out.len() + lit.len() > MAX_CONTENT_BYTES {
+                break;
+            }
+            out.extend_from_slice(lit);
+            let gap = u.int_in_range(0usize..=4)?;
+            for _ in 0..gap {
+                if out.len() >= MAX_CONTENT_BYTES {
+                    break;
+                }
+                out.push(u.int_in_range(b'a'..=b'z')?);
+            }
+        }
+    }
+    let trailing = u.int_in_range(0usize..=64)?;
+    for _ in 0..trailing {
+        if out.len() >= MAX_CONTENT_BYTES {
+            break;
+        }
+        out.push(u.int_in_range(b'a'..=b'z')?);
+    }
+    let mutations = u.int_in_range(0u8..=4)?;
+    for _ in 0..mutations {
+        if out.is_empty() {
+            break;
+        }
+        let idx = u.int_in_range(0usize..=(out.len() - 1))?;
+        out[idx] = u.int_in_range(0u8..=255)?;
+    }
+    out.truncate(MAX_CONTENT_BYTES);
+    Ok(out)
+}
+
+// What:     `impl RulesetAndContent { pub fn file_source(&self) -> String }`.
+//           Renders the rules into a multi-line rules-file string
+//           that `load_ruleset_from_source` can consume directly.
+//           Rules whose flags include negation (no file-form
+//           expression) or whose body contains `/` (which would
+//           confuse the parser) are dropped.
+// Why:      Drop-not-error keeps the fuzz iteration alive even when
+//           a particular rule shape isn't expressible in file form;
+//           we still get useful coverage on the surviving rules.
+// TS map:   `function fileSource(rs: RulesetAndContent): string`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function fileSource(rs) {
+//   return rs.rules.map(fileFormLine).filter(Boolean).join("\n");
+// }
+// ```
+impl RulesetAndContent {
+    pub fn file_source(&self) -> String {
+        let mut out = String::new();
+        for r in &self.rules {
+            if let Some(line) = r.file_form_line() {
+                out.push_str(&line);
+                out.push('\n');
+            }
+        }
+        out
+    }
+}
+
+//endregion Top-level multi-rule pair
+
 //region RuleSrc + flags
 
 // What:     `#[derive(Debug)] pub struct RuleSrc { ... }`. A regex
@@ -456,6 +594,72 @@ impl RuleSrc {
         // TS map:   `this.body.render(out);`.
         self.body.render(&mut out);
         out
+    }
+
+    // What:     `pub fn file_form_line(&self) -> Option<String>`.
+    //           Renders into the file-form `/body/flags` shape
+    //           `parse_rule_source` recognises, returning `None`
+    //           when the flags include negation (no file-form
+    //           expression for `(?-i)`) or when the body would
+    //           contain a `/` byte (the file-form parser anchors
+    //           on the LAST `/`, so a body `/` would mis-parse).
+    //           Sibling: `render()` (internal form for
+    //           `compile_rule_src`).
+    // Why:      Targets that drive the full ruleset loader need a
+    //           multi-line file-form source. Internal form
+    //           `(?flags)body` isn't accepted by
+    //           `parse_rule_source`.
+    // TS map:   `function fileFormLine(rule: RuleSrc): string | null`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // function fileFormLine(rule: RuleSrc): string | null {
+    //   if (rule.flags?.negate_i) return null;
+    //   const body = renderBody(rule.body);
+    //   if (body.includes("/")) return null;
+    //   const flags = (rule.flags?.include_i ? "i" : "") + (rule.flags?.include_u ? "u" : "");
+    //   return `/${body}/${flags}`;
+    // }
+    // ```
+    pub fn file_form_line(&self) -> Option<String> {
+        if let Some(flags) = &self.flags {
+            if flags.negate_i {
+                return None;
+            }
+        }
+        let mut body = String::new();
+        self.body.render(&mut body);
+        if body.contains('/') {
+            return None;
+        }
+        if body.is_empty() {
+            return None;
+        }
+        let mut flag_str = String::new();
+        if let Some(flags) = &self.flags {
+            if flags.include_i {
+                flag_str.push('i');
+            }
+            if flags.include_u {
+                flag_str.push('u');
+            }
+        }
+        // What:     `let mut out = String::new();` and build
+        //           `/body/flags`.
+        let mut out = String::with_capacity(body.len() + flag_str.len() + 2);
+        out.push('/');
+        out.push_str(&body);
+        out.push('/');
+        out.push_str(&flag_str);
+        // What:     `Some(out)`. Wrap the assembled line in Some.
+        // Why:      Hand the caller a usable rules-file line.
+        // TS map:   `return out;` (TS null-vs-Some convention).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // return out;
+        // ```
+        Some(out)
     }
 }
 
