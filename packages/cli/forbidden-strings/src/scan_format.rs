@@ -190,3 +190,58 @@ pub fn format_hit(
 ) -> String {
     format!("{}:{}:{}..{} rule={}", path, line, col_start, col_end, rule_idx)
 }
+
+// What:     `pub fn emit_hit(li, path, start, end, rule_idx) -> String`
+//           composes the three-step (line, col_start, col_end) compute
+//           and `format_hit` call that every hit-emission site in
+//           `scan.rs` previously inlined. Takes `&[usize]` (the
+//           already-initialised line-start index) so the lazy
+//           `OnceLock::get_or_init` invariant stays at each call site.
+// Why:      `scan.rs::scan_content` emits hits from four near-identical
+//           code paths (AC literal, prefix-matched par_iter, residual
+//           Single shard, residual Combined par_iter). Each previously
+//           spelled out: `line_and_col_indexed` for start, then
+//           `end_in_line_indexed` to clamp multi-line matches to one
+//           line, then a second `line_and_col_indexed` on `end - 1` (or
+//           0 when `end` is 0) to derive col_end, then `format_hit`.
+//           Centralising the sequence here removes ~60 logic lines from
+//           `scan.rs` and ensures every site emits the same
+//           `path:line:col_start..col_end rule=N` shape. `#[inline]`
+//           guarantees the helper compiles to the same machine code the
+//           inlined version produced (private to this crate, called
+//           from one consumer, LTO already inlines tiny crate-internal
+//           helpers, but the attribute removes any doubt on the hot
+//           path).
+// TS map:   `function emitHit(li: number[], path: string, start: number, end: number, ruleIdx: number): string`.
+// Gotcha:   This helper does NOT skip empty-span matches (`start ==
+//           end`). The three regex-result emission sites in scan.rs
+//           guard that with `if m.start == m.end { continue; }` before
+//           calling emit_hit; the AC literal site does not need the
+//           guard because AC patterns are non-empty by construction.
+//           Keeping the guard at the call site preserves that
+//           asymmetry and lets the `continue` skip the push entirely
+//           instead of building a hit string we would discard.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function emitHit(li, path, start, end, ruleIdx) {
+//   const [line, colStart] = lineAndColIndexed(li, start);
+//   const endInLine = endInLineIndexed(li, start, end);
+//   const [, colEnd] = lineAndColIndexed(li, endInLine > 0 ? endInLine - 1 : 0);
+//   return formatHit(path, line, colStart, colEnd, ruleIdx);
+// }
+// ```
+#[inline]
+pub fn emit_hit(
+    li: &[usize],
+    path: &str,
+    start: usize,
+    end: usize,
+    rule_idx: usize,
+) -> String {
+    let (line, col_start) = line_and_col_indexed(li, start);
+    let end_in_line = end_in_line_indexed(li, start, end);
+    let (_, col_end) =
+        line_and_col_indexed(li, if end_in_line > 0 { end_in_line - 1 } else { 0 });
+    format_hit(path, line, col_start, col_end, rule_idx)
+}

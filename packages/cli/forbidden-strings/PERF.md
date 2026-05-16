@@ -6,6 +6,44 @@ against the binary built from this package's `src/`.
 
 ## Last benched
 
+**2026-05-16 (post-emit-hit-consolidation, A/B vs immediate predecessor)**,
+hyperfine 1.20.0, same hardware. Apples-to-apples A/B between two binaries
+built from the same commit modulo the `scan.rs` consolidation: the
+"baseline" is HEAD pre-refactor (the post-perf-fix block below); the
+"refactor" extracts a private `emit_hit(li, path, start, end, rule_idx)`
+helper in `scan_format.rs` and replaces the four near-identical
+line/col-compute + push sequences in `scan.rs::scan_content` (AC literal
+phase, prefix-matched par_iter, residual Single shard, residual Combined
+par_iter) with one call each. The helper is `#[inline]`; with
+`lto = true` and `codegen-units = 1`, LTO already inlines tiny crate-
+internal helpers, so the attribute is belt-and-suspenders.
+
+```text
+                   baseline           refactor           delta
+Mono startup       9.8 ms ± 0.8 ms    9.4 ms ± 0.8 ms    within sigma
+Mono --all         60.3 ms ± 4.3 ms   56.6 ms ± 3.1 ms   within sigma
+Linux --all        2.024 s ± 0.109 s  1.989 s ± 0.246 s  within sigma
+```
+
+Mono runs: 30 per binary. Linux runs: 15 per binary. The `--all` benches
+used `--ignore-failure` to absorb the one rule that fires on existing
+test-fixture content (AWS access key prefix in `algebra_tests.rs:119`)
+on Mono and three pre-existing kernel-fixture rule hits on Linux.
+
+Notes from the bench:
+
+- A sporadic large-outlier event (single ~750-950 ms wall on Mono `--all`)
+  hit whichever binary ran second in the back-to-back hyperfine session,
+  regardless of which one. Order-reversed reruns reproduced the outlier
+  on the other binary, confirming it is system noise unrelated to the
+  refactor (hyperfine itself flagged it: "Statistical outliers were
+  detected. Consider re-running this benchmark on a quiet system").
+  Numbers reported above are from clean runs.
+- All three deltas trend slightly faster post-refactor but every delta is
+  smaller than the combined sigma; treat the refactor as null-cost.
+
+---
+
 **2026-05-16 (post-perf-fix: gix-index + binary-tail-cap)**, hyperfine
 1.20.0, same hardware (AMD Ryzen 7 8700F, 16 threads). Binary:
 `packages/cli/forbidden-strings/target/release/forbidden-strings` built

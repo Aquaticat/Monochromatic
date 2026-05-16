@@ -74,9 +74,7 @@ use std::sync::OnceLock;
 // import { isWordByte, AcMeta, type RuleSet } from "./rules";
 // ```
 use crate::rules::{is_word_byte, AcMeta, ResidualShard, RuleSet};
-use crate::scan_format::{
-    build_line_index, end_in_line_indexed, format_hit, line_and_col_indexed,
-};
+use crate::scan_format::{build_line_index, emit_hit};
 
 // What:     `pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String>`
 //           scans one file's contents against the full ruleset and
@@ -232,11 +230,7 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
                         continue;
                     }
                     let li = line_index.get_or_init(|| build_line_index(content));
-                    let (line, col_start) = line_and_col_indexed(li, m.start());
-                    let end = end_in_line_indexed(li, m.start(), m.end());
-                    let (_, col_end) =
-                        line_and_col_indexed(li, if end > 0 { end - 1 } else { 0 });
-                    hits.push(format_hit(path, line, col_start, col_end, *idx));
+                    hits.push(emit_hit(li, path, m.start(), m.end(), *idx));
                 }
                 AcMeta::RegexPrefix { rule_pos } => {
                     prefix_matched.insert(*rule_pos);
@@ -330,13 +324,7 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
                             if m.start == m.end {
                                 continue;
                             }
-                            let (line, col_start) = line_and_col_indexed(li, m.start);
-                            let end = end_in_line_indexed(li, m.start, m.end);
-                            let (_, col_end) = line_and_col_indexed(
-                                li,
-                                if end > 0 { end - 1 } else { 0 },
-                            );
-                            local.push(format_hit(path, line, col_start, col_end, rr.idx));
+                            local.push(emit_hit(li, path, m.start, m.end, rr.idx));
                         }
                     }
                     Err(()) => {
@@ -386,13 +374,7 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
                                 if m.start == m.end {
                                     continue;
                                 }
-                                let (line, col_start) = line_and_col_indexed(li, m.start);
-                                let end = end_in_line_indexed(li, m.start, m.end);
-                                let (_, col_end) = line_and_col_indexed(
-                                    li,
-                                    if end > 0 { end - 1 } else { 0 },
-                                );
-                                hits.push(format_hit(path, line, col_start, col_end, rr.idx));
+                                hits.push(emit_hit(li, path, m.start, m.end, rr.idx));
                             }
                         }
                     }
@@ -434,16 +416,7 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
                                         if m.start == m.end {
                                             continue;
                                         }
-                                        let (line, col_start) =
-                                            line_and_col_indexed(li, m.start);
-                                        let end = end_in_line_indexed(li, m.start, m.end);
-                                        let (_, col_end) = line_and_col_indexed(
-                                            li,
-                                            if end > 0 { end - 1 } else { 0 },
-                                        );
-                                        local.push(format_hit(
-                                            path, line, col_start, col_end, rr.idx,
-                                        ));
+                                        local.push(emit_hit(li, path, m.start, m.end, rr.idx));
                                     }
                                 }
                                 Err(()) => {
