@@ -141,28 +141,37 @@ impl CompiledRegex {
         }
     }
 
-    // What:     `pub fn is_match(&self, content: &[u8]) -> bool` is the
-    //           short-circuit "any match anywhere" check. Used by the
-    //           Combined residual shard's gate.
-    // Why:      Some engines short-circuit on first match much faster
-    //           than collecting all matches; expose `is_match`
-    //           explicitly so the gate path uses the engine's fast
-    //           path. Errors are folded into `false` (treat as no
-    //           match) -- the same conservative-no-match behaviour as
-    //           `find_all`'s `Err`.
-    // TS map:   `isMatch(content: Uint8Array): boolean`.
+    // What:     `pub fn is_match(&self, content: &[u8]) -> Result<bool, ()>`
+    //           is the short-circuit "any match anywhere" check. Used by
+    //           the Combined residual shard's gate. Returns `Ok(true)` on
+    //           a match, `Ok(false)` on a clean miss, and `Err(())` when
+    //           the engine itself refuses to evaluate (resharp can return
+    //           `Error::TooLarge` on pathological inputs).
+    // Why:      Closes BUG 7: pre-fix the function folded engine errors
+    //           into `false` via `unwrap_or(false)`, indistinguishable
+    //           from a real "no match". For a secret-scanning tool that
+    //           failure mode is fail-open -- a file the engine could not
+    //           evaluate exits with zero hits, silently passing CI. Post-
+    //           fix callers see the `Err` and emit a synthetic hit (or
+    //           fall back to per-member evaluation when this is the gate
+    //           of a multi-rule shard).
+    // TS map:   `isMatch(content: Uint8Array): Result<boolean>`. TS has
+    //           no Result; the equivalent would throw on engine error.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // isMatch(content: Uint8Array): boolean {
-    //   if (this.kind === "resharp") return this.re.isMatch(content);
-    //   return this.re.isMatch(content);
+    // isMatch(content: Uint8Array): { ok: true; value: boolean } | { ok: false } {
+    //   if (this.kind === "resharp") {
+    //     try { return { ok: true, value: this.re.isMatch(content) }; }
+    //     catch { return { ok: false }; }
+    //   }
+    //   return { ok: true, value: this.re.isMatch(content) };
     // }
     // ```
-    pub fn is_match(&self, content: &[u8]) -> bool {
+    pub fn is_match(&self, content: &[u8]) -> Result<bool, ()> {
         match self {
-            CompiledRegex::Resharp(re) => re.is_match(content).unwrap_or(false),
-            CompiledRegex::Plain(re) => re.is_match(content),
+            CompiledRegex::Resharp(re) => re.is_match(content).map_err(|_| ()),
+            CompiledRegex::Plain(re) => Ok(re.is_match(content)),
         }
     }
 }

@@ -309,17 +309,41 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
             .flat_map_iter(|&pos| {
                 let rr = &rs.regex_rules[pos];
                 let mut local: Vec<String> = Vec::new();
-                if let Ok(matches) = rr.re.find_all(content) {
-                    let li = line_index.get_or_init(|| build_line_index(content));
-                    for m in matches {
-                        if m.start == m.end {
-                            continue;
+                // What:     `match rr.re.find_all(content) { Ok(...) =>
+                //           ..., Err(()) => synthetic-hit }`. BUG 7 fix:
+                //           the engine layer returns `Result<_, ()>` so
+                //           callers can detect refusal. On `Err` push a
+                //           per-rule synthetic hit (`rule=N engine
+                //           error`) into the local hits so the file
+                //           cannot exit clean when the engine refused
+                //           to evaluate.
+                // Why:      Pre-fix `if let Ok(...)` silently dropped the
+                //           `Err` arm, so a rule that hit a resharp
+                //           runtime limit reported zero hits -- fail-
+                //           open against a secret-scanning tool.
+                // TS map:   `const r = rr.re.findAll(content); if (r.ok)
+                //           { ... } else { local.push(...) }`.
+                match rr.re.find_all(content) {
+                    Ok(matches) => {
+                        let li = line_index.get_or_init(|| build_line_index(content));
+                        for m in matches {
+                            if m.start == m.end {
+                                continue;
+                            }
+                            let (line, col_start) = line_and_col_indexed(li, m.start);
+                            let end = end_in_line_indexed(li, m.start, m.end);
+                            let (_, col_end) = line_and_col_indexed(
+                                li,
+                                if end > 0 { end - 1 } else { 0 },
+                            );
+                            local.push(format_hit(path, line, col_start, col_end, rr.idx));
                         }
-                        let (line, col_start) = line_and_col_indexed(li, m.start);
-                        let end = end_in_line_indexed(li, m.start, m.end);
-                        let (_, col_end) =
-                            line_and_col_indexed(li, if end > 0 { end - 1 } else { 0 });
-                        local.push(format_hit(path, line, col_start, col_end, rr.idx));
+                    }
+                    Err(()) => {
+                        local.push(format!(
+                            "{}: rule={} engine error",
+                            path, rr.idx
+                        ));
                     }
                 }
                 local
@@ -347,44 +371,86 @@ pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
         match shard {
             ResidualShard::Single { rule_pos } => {
                 let rr = &rs.regex_rules[*rule_pos];
-                if let Ok(matches) = rr.re.find_all(content) {
-                    if !matches.is_empty() {
-                        let li = line_index.get_or_init(|| build_line_index(content));
-                        for m in matches {
-                            if m.start == m.end {
-                                continue;
+                // What:     Same Result-pattern as the prefix-matched
+                //           loop above. On `Err` emit a synthetic hit so
+                //           the file cannot exit clean when the engine
+                //           refused to evaluate this rule.
+                // Why:      BUG 7: a Single shard whose rule errored out
+                //           silently produced zero hits under the
+                //           pre-fix `if let Ok(...)` arm.
+                match rr.re.find_all(content) {
+                    Ok(matches) => {
+                        if !matches.is_empty() {
+                            let li = line_index.get_or_init(|| build_line_index(content));
+                            for m in matches {
+                                if m.start == m.end {
+                                    continue;
+                                }
+                                let (line, col_start) = line_and_col_indexed(li, m.start);
+                                let end = end_in_line_indexed(li, m.start, m.end);
+                                let (_, col_end) = line_and_col_indexed(
+                                    li,
+                                    if end > 0 { end - 1 } else { 0 },
+                                );
+                                hits.push(format_hit(path, line, col_start, col_end, rr.idx));
                             }
-                            let (line, col_start) = line_and_col_indexed(li, m.start);
-                            let end = end_in_line_indexed(li, m.start, m.end);
-                            let (_, col_end) = line_and_col_indexed(
-                                li,
-                                if end > 0 { end - 1 } else { 0 },
-                            );
-                            hits.push(format_hit(path, line, col_start, col_end, rr.idx));
                         }
+                    }
+                    Err(()) => {
+                        hits.push(format!(
+                            "{}: rule={} engine error",
+                            path, rr.idx
+                        ));
                     }
                 }
             }
             ResidualShard::Combined { gate, positions } => {
-                if gate.is_match(content) {
+                // What:     The Combined-shard gate's `is_match` now
+                //           returns `Result<bool, ()>`. `Ok(true)` fans
+                //           out to per-member `find_all`; `Ok(false)`
+                //           short-circuits the shard (no member can
+                //           match if the union does not). `Err(())` is
+                //           the new BUG 7 fallback: if the gate refused
+                //           to evaluate, we cannot trust the short-
+                //           circuit, so run every member's `find_all`
+                //           individually. The synthetic-hit path inside
+                //           the per-member loop already handles any
+                //           per-member errors.
+                // Why:      Without the fallback, an errored gate would
+                //           silently skip the entire shard -- exactly
+                //           the fail-open shape the bug describes.
+                let gate_result = gate.is_match(content);
+                let should_evaluate = matches!(gate_result, Ok(true) | Err(()));
+                if should_evaluate {
                     let regex_hits: Vec<String> = positions
                         .par_iter()
                         .flat_map_iter(|&pos| {
                             let rr = &rs.regex_rules[pos];
                             let mut local: Vec<String> = Vec::new();
-                            if let Ok(matches) = rr.re.find_all(content) {
-                                let li = line_index.get_or_init(|| build_line_index(content));
-                                for m in matches {
-                                    if m.start == m.end {
-                                        continue;
+                            match rr.re.find_all(content) {
+                                Ok(matches) => {
+                                    let li = line_index.get_or_init(|| build_line_index(content));
+                                    for m in matches {
+                                        if m.start == m.end {
+                                            continue;
+                                        }
+                                        let (line, col_start) =
+                                            line_and_col_indexed(li, m.start);
+                                        let end = end_in_line_indexed(li, m.start, m.end);
+                                        let (_, col_end) = line_and_col_indexed(
+                                            li,
+                                            if end > 0 { end - 1 } else { 0 },
+                                        );
+                                        local.push(format_hit(
+                                            path, line, col_start, col_end, rr.idx,
+                                        ));
                                     }
-                                    let (line, col_start) = line_and_col_indexed(li, m.start);
-                                    let end = end_in_line_indexed(li, m.start, m.end);
-                                    let (_, col_end) = line_and_col_indexed(
-                                        li,
-                                        if end > 0 { end - 1 } else { 0 },
-                                    );
-                                    local.push(format_hit(path, line, col_start, col_end, rr.idx));
+                                }
+                                Err(()) => {
+                                    local.push(format!(
+                                        "{}: rule={} engine error",
+                                        path, rr.idx
+                                    ));
                                 }
                             }
                             local

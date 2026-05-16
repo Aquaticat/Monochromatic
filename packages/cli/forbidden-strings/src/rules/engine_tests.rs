@@ -455,3 +455,77 @@ fn rule_without_complement_accepted_even_with_lookaround() {
 fn plain_literal_accepted() {
     assert_accepted("AKIA1234567890ABCDEF");
 }
+
+// What:     `use super::engine::CompiledRegex;` imports the unified
+//           compiled-regex container so we can construct values and
+//           call inherent methods on it.
+// Why:      The BUG 7 regression tests below need to assert the new
+//           `is_match` shape (`Result<bool, ()>` rather than `bool`).
+// TS map:   `import { CompiledRegex } from "./engine";`.
+use super::engine::CompiledRegex;
+use regex::bytes::Regex as PlainRegex;
+
+// What:     `#[test] fn is_match_returns_result_ok_for_match()`. BUG 7
+//           regression test. The fix changes `CompiledRegex::is_match`
+//           from `fn(&self, &[u8]) -> bool` to `fn(&self, &[u8]) ->
+//           Result<bool, ()>`. Pre-fix the function silently swallowed
+//           engine errors via `unwrap_or(false)`, so a regex engine
+//           that panicked under load or hit a runtime limit would be
+//           indistinguishable from a no-match -- a fail-open shape
+//           against a secret-scanning tool. Post-fix callers MUST
+//           pattern-match on `Ok`/`Err` and can therefore emit a
+//           synthetic hit when the engine refuses to evaluate. This
+//           test documents the new contract by destructuring the
+//           returned value into `Ok(bool)`; it would fail to compile
+//           if the signature regressed to bare `bool`.
+// Why:      A unit test on the type shape is the deterministic regression
+//           we can write without constructing a real engine error
+//           (resharp errors only fire on specific pathological inputs
+//           that are hard to bake into a stable test). Integration
+//           coverage at the binary boundary is impractical here for
+//           the same reason; the signature-level test still catches
+//           any future change that silently re-folds errors into
+//           `false`.
+// TS map:   `test("is_match returns Result shape", () => { ... });`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test("is_match returns Result shape", () => {
+//   const cr: CompiledRegex = { kind: "plain", re: new RegExp("foo") };
+//   const r = cr.isMatch(new TextEncoder().encode("foo"));
+//   if (r.kind !== "ok") throw new Error("expected Ok");
+//   expect(r.value).toBe(true);
+// });
+// ```
+#[test]
+fn is_match_returns_result_ok_for_match_plain() {
+    let re = PlainRegex::new("foo").expect("compile plain regex");
+    let cr = CompiledRegex::Plain(re);
+    match cr.is_match(b"hello foo world") {
+        Ok(true) => {}
+        Ok(false) => panic!("expected match on plain branch"),
+        Err(()) => panic!("expected Ok, got Err on plain branch"),
+    }
+}
+
+#[test]
+fn is_match_returns_result_ok_for_no_match_plain() {
+    let re = PlainRegex::new("foo").expect("compile plain regex");
+    let cr = CompiledRegex::Plain(re);
+    match cr.is_match(b"hello world") {
+        Ok(false) => {}
+        Ok(true) => panic!("expected no match on plain branch"),
+        Err(()) => panic!("expected Ok, got Err on plain branch"),
+    }
+}
+
+#[test]
+fn is_match_returns_result_ok_for_match_resharp() {
+    let re = resharp::Regex::new("foo&_*").expect("compile resharp regex");
+    let cr = CompiledRegex::Resharp(re);
+    match cr.is_match(b"hello foo world") {
+        Ok(true) => {}
+        Ok(false) => panic!("expected match on resharp branch"),
+        Err(()) => panic!("expected Ok, got Err on resharp branch"),
+    }
+}
