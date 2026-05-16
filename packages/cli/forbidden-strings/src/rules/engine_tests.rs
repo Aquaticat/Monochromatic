@@ -235,6 +235,52 @@ fn plain_regex_no_lookaround_does_not_trigger() {
     run_case(&Case { pattern: r"hvb\.[\w-]{138,300}", expected: false });
 }
 
+#[test]
+fn bare_underscore_wildcard_triggers() {
+    // What:     `_` outside a character class is resharp's universal
+    //           wildcard (matches any single character), distinct from
+    //           a literal underscore. The `regex` crate treats `_` as a
+    //           literal byte, so routing a rule like `pre_post` to the
+    //           `regex` crate compiles a matcher that searches for the
+    //           literal seven-byte sequence `pre_post` -- semantically
+    //           opposite to what the rule author wrote.
+    // Why:      Closes BUG 10. Pre-fix `requires_resharp("pre_post")`
+    //           returned false and the rule routed to the `regex` crate,
+    //           silently corrupting the rule's meaning. Post-fix the
+    //           function detects bare `_` and routes to resharp where
+    //           the wildcard semantics are preserved.
+    // TS map:   `runCase({ pattern: "pre_post", expected: true });`.
+    run_case(&Case { pattern: "pre_post", expected: true });
+}
+
+#[test]
+fn escaped_underscore_does_not_trigger() {
+    // What:     `pre\_post` -- the backslash makes the underscore a
+    //           literal character, identical between resharp and the
+    //           `regex` crate. The escape walker consumes the `\_` as
+    //           a two-byte unit and never visits the `_` byte directly.
+    // Why:      Regression guard: hundreds of GitHub-PAT-shaped rules
+    //           in the betterleaks corpus use `ghp\_[0-9a-zA-Z]{36}` --
+    //           with the underscore explicitly escaped. Those must stay
+    //           on the `regex` crate fast path.
+    // TS map:   `runCase({ pattern: String.raw\`pre\\_post\`, expected: false });`.
+    run_case(&Case { pattern: r"pre\_post", expected: false });
+}
+
+#[test]
+fn in_class_underscore_does_not_trigger() {
+    // What:     `[_]` is a character class containing the literal byte
+    //           `_`. Inside a class, the `_` does NOT carry resharp's
+    //           wildcard semantics -- the class is a set of literal
+    //           bytes regardless of the engine. Class-internal `_`
+    //           must not route to resharp.
+    // Why:      Regression guard against future changes that would
+    //           drop the in_class tracking and false-positive on
+    //           every `[A-Z_]`-shaped class.
+    // TS map:   `runCase({ pattern: "[A-Z_]+", expected: false });`.
+    run_case(&Case { pattern: "[A-Z_]+", expected: false });
+}
+
 // What:     Tests for `super::engine::lookaround_in_complement`. The
 //           function rejects patterns that would make resharp 0.5.x
 //           fail at compile time inside a `~(...)` body; this section

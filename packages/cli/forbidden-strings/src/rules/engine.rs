@@ -178,13 +178,23 @@ impl CompiledRegex {
 
 // What:     `fn requires_resharp(src: &str) -> bool` returns `true` when
 //           `src` contains any feature the `regex` crate cannot parse
-//           but resharp can. Two feature families trigger true:
+//           OR would parse with semantics different from resharp's.
+//           Three feature families trigger true:
 //           1. Set-algebra operators: unescaped `&` or `~(` outside a
 //              character class (resharp's intersection / complement).
 //           2. Lookaround groups: `(?=`, `(?!`, `(?<=`, `(?<!`. The
 //              `regex` crate rejects these with "look-around, including
 //              look-ahead and look-behind, is not supported"; resharp
 //              accepts them.
+//           3. Bare `_` outside a character class. Resharp treats `_`
+//              as a universal wildcard (matches any single character),
+//              while the `regex` crate treats it as a literal underscore.
+//              Routing a rule like `pre_post` to the `regex` crate
+//              would silently change its meaning -- the rule author
+//              wrote a wildcard pattern, the matcher searched for a
+//              literal seven-byte string. Escaped (`\_`) and class-
+//              internal `_` ([_], [A-Z_]) stay literal in both engines
+//              and do not trigger this branch.
 //           Conservative: any of the above triggers true, even if the
 //           resharp parser would have accepted a sequence the regex
 //           crate also accepts (no false-positive cost beyond using the
@@ -232,6 +242,9 @@ pub fn requires_resharp(src: &str) -> bool {
         }
         if !in_class {
             if c == b'&' {
+                return true;
+            }
+            if c == b'_' {
                 return true;
             }
             if c == b'~' && i + 1 < bytes.len() && bytes[i + 1] == b'(' {
