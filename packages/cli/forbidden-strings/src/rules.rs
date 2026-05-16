@@ -69,6 +69,38 @@ pub use parse::{parse_rule_source, ParsedRule};
 pub use shards::build_residual_shards;
 pub use types::{is_word_byte, AcMeta, RegexRule, ResidualShard, RuleSet, SUBSTRING_THRESHOLD};
 
+// What:     Crate-local re-exports gated behind the `fuzzing` Cargo
+//           feature. Each item is a `pub(crate)` helper inside the
+//           rules submodule; the re-export pulls it up to
+//           `crate::rules::*` so `crate::fuzz_api` can import it
+//           without learning the submodule layout. Production
+//           consumers compile with this feature off and see no
+//           change to the public API surface.
+// Why:      Avoid widening to `pub`/`pub(crate)` everywhere just so
+//           fuzz_api can reach two atom helpers and five regex-
+//           syntax walkers. The cfg gate keeps the re-export
+//           invisible outside the fuzzing build.
+// TS map:   `export { walkLiteralBytes, skipAtomWithExtract } from "./rules/atom";`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// export { walkLiteralBytes, skipAtomWithExtract } from "./atom";
+// export {
+//   groupBodyStart, findMatchingCloseParen, skipAnyQuantifier,
+//   quantifierIsRequired, skipClassBody,
+// } from "./regex_syntax";
+// ```
+#[cfg(feature = "fuzzing")]
+pub use atom::{skip_atom_with_extract, walk_literal_bytes};
+#[cfg(feature = "fuzzing")]
+pub use regex_syntax::{
+    find_matching_close_paren,
+    group_body_start,
+    quantifier_is_required,
+    skip_any_quantifier,
+    skip_class_body,
+};
+
 // What:     `use std::fs;` brings the filesystem module into scope. We
 //           use `fs::read_to_string` to slurp the rules file.
 // Why:      Reading rules is sync and tiny; no need for streaming.
@@ -390,7 +422,118 @@ fn expand_unicode_whitespace(src: &str) -> String {
     out
 }
 
-fn compile_plain_rule(src: &str, idx: usize) -> Result<RegexRule, String> {
+// What:     `pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String>`
+//           is the single source of truth for the regex compile
+//           decision. It walks the routing classifier
+//           (`requires_resharp`), runs the lookaround-in-complement
+//           pre-flight guard when routing to resharp, and dispatches
+//           to the resharp `Regex::new` or the unicode-fallback
+//           `regex` builder. Returns `CompiledRegex` directly --
+//           callers that need a line-indexed `RegexRule` (the
+//           production loader) wrap it with the `idx` themselves.
+// Why:      The plan requires fuzz_api and production to share the
+//           same compile path so the AC-gate soundness fuzzer
+//           exercises identical behaviour. Splitting into a thin
+//           "wrap with idx" outer layer + a `compile_rule_src`
+//           core gives both call sites that property.
+// TS map:   `function compileRuleSrc(src: string): CompiledRegex`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function compileRuleSrc(src: string): CompiledRegex {
+//   if (requiresResharp(src)) {
+//     const reason = lookaroundInComplement(src);
+//     if (reason) throw new Error(`(resharp): ${reason}`);
+//     try { return { kind: "resharp", re: new Regex(src) }; }
+//     catch (e) { throw new Error(`(resharp): ${e}`); }
+//   }
+//   return compilePlainToCompiled(src);
+// }
+// ```
+pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
+    // What:     `if requires_resharp(src) { ... } else { ... }` runs
+    //           the cheap routing classifier first. Resharp-only
+    //           constructs (set algebra `A&B`, complement `~(A)`,
+    //           lookarounds `(?=`/`(?!`/`(?<=`/`(?<!`, bare `_`
+    //           wildcard outside a class) route to resharp; every
+    //           other rule rides the faster `regex` crate.
+    // Why:      Match the production dispatch decision exactly --
+    //           fuzz targets that compile a generated source must
+    //           hit the same branch the user would.
+    // TS map:   `if (requiresResharp(src)) ... else ...`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (requiresResharp(src)) {
+    //   // resharp path
+    // } else {
+    //   // regex-crate path
+    // }
+    // ```
+    if requires_resharp(src) {
+        // What:     `if let Some(reason) = lookaround_in_complement(src)`
+        //           runs the resharp pre-flight guard. The function
+        //           returns `Some(reason_string)` when the source
+        //           contains a `~(...)` complement whose body holds
+        //           a `\b`/`\B`/`^`/`$` or user-explicit lookaround
+        //           (resharp 0.5 rejects those shapes with opaque
+        //           errors). Returning early here surfaces an
+        //           actionable message instead of resharp's
+        //           internal error.
+        // Why:      Identical pre-flight to production. The fuzzer
+        //           must trip exactly the same guard the user would
+        //           when authoring a complement-body lookaround.
+        // TS map:   `const reason = lookaroundInComplement(src); if (reason) throw new Error(...);`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const reason = lookaroundInComplement(src);
+        // if (reason) throw new Error(`(resharp): ${reason}`);
+        // ```
+        if let Some(reason) = lookaround_in_complement(src) {
+            return Err(format!("(resharp): {}", reason));
+        }
+        // What:     `Regex::new(src).map(CompiledRegex::Resharp).map_err(...)`.
+        //           `Regex::new` is resharp's compile constructor;
+        //           `.map(CompiledRegex::Resharp)` wraps the
+        //           successful `Regex` into the `Resharp` variant
+        //           (the function reference is used in place of an
+        //           explicit closure). `.map_err(...)` turns
+        //           resharp's `Error` into our `String` error
+        //           channel, prefixed with `(resharp):` so the
+        //           outer caller can prepend `rule on line N`.
+        // Why:      Produce a `CompiledRegex` ready to consume.
+        // TS map:   `try { return { kind: "resharp", re: new Regex(src) }; } catch (e) { throw new Error(`(resharp): ${e}`); }`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // try { return { kind: "resharp", re: new Regex(src) }; }
+        // catch (e) { throw new Error(`(resharp): ${e}`); }
+        // ```
+        return Regex::new(src)
+            .map(CompiledRegex::Resharp)
+            .map_err(|e| format!("(resharp): {:?}", e));
+    }
+    compile_plain_rule_to_compiled(src)
+}
+
+// What:     `fn compile_plain_rule_to_compiled(src: &str) -> Result<CompiledRegex, String>`
+//           is the unicode-off / unicode-on fallback compile path
+//           for rules that did NOT route to resharp. Identical to
+//           the previous `compile_plain_rule` body, but returns a
+//           `CompiledRegex` without the rule index so it composes
+//           into `compile_rule_src`.
+// Why:      Keep the "fast path -> retry with unicode" mechanic
+//           in one place. `compile_plain_rule` is now a thin
+//           wrapper that calls this and decorates the error
+//           with `rule on line N` for diagnostics.
+// TS map:   `function compilePlainToCompiled(src: string): CompiledRegex`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function compilePlainToCompiled(src: string): CompiledRegex { ... }
+// ```
+fn compile_plain_rule_to_compiled(src: &str) -> Result<CompiledRegex, String> {
     // What:     `let src = &expand_unicode_whitespace(src);`. Rewrite
     //           the rule source so `\s` (free or in a class) matches
     //           Unicode whitespace UTF-8 byte sequences under the
@@ -449,30 +592,28 @@ fn compile_plain_rule(src: &str, idx: usize) -> Result<RegexRule, String> {
         // ```ts
         // return { idx, re: { kind: "plain", re } };
         // ```
-        return Ok(RegexRule { idx, re: CompiledRegex::Plain(re) });
+        return Ok(CompiledRegex::Plain(re));
     }
     }
     // Fall back to unicode-aware mode for rules with unicode features
     // OR rules that opted out of the fast path via needs_unicode_shorthand.
-    // What:     `builder.build().map(|re| ...).map_err(|e| ...)` is a
-    //           method chain on `Result`. `.map(closure)` transforms the
-    //           `Ok` payload via the closure; `.map_err(closure)`
-    //           transforms the `Err` payload. The result is still a
-    //           `Result`, but with the success type now `RegexRule` and
-    //           the error type now `String`. The `|re|` and `|e|` syntax
-    //           is Rust's closure form (TS arrow `(re) => ...`).
-    // Why:      We want the success path to produce a `RegexRule` and
-    //           the failure path to produce a human-readable error string
-    //           with the rule's line index for diagnostics.
-    // TS map:   `try { return { ok: true, value: { idx, re: ... } }; } catch (e) { return { ok: false, error: ... } }`.
+    // What:     `builder.build().map(CompiledRegex::Plain).map_err(|e| ...)`.
+    //           Same fluent-builder mechanic as the fast path, but with
+    //           `.unicode(true)`. On success the `Regex` is wrapped into
+    //           `CompiledRegex::Plain`; on failure we format the error
+    //           with `(regex):` so the outer caller can prepend the
+    //           line number.
+    // Why:      Some rules need unicode-aware semantics (`(?u)`, certain
+    //           class shorthands); they fall through here.
+    // TS map:   `try { return { kind: "plain", re: build(src, { unicode: true }) }; } catch (e) { throw new Error(`(regex): ${e}`); }`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // try {
     //   const re = buildRegex(src, { unicode: true, sizeLimit: 256 * 1024 * 1024 });
-    //   return { idx, re: { kind: "plain", re } };
+    //   return { kind: "plain", re };
     // } catch (e) {
-    //   throw new Error(`rule on line ${idx} (regex): ${e}`);
+    //   throw new Error(`(regex): ${e}`);
     // }
     // ```
     regex::bytes::RegexBuilder::new(src)
@@ -480,11 +621,74 @@ fn compile_plain_rule(src: &str, idx: usize) -> Result<RegexRule, String> {
         .size_limit(256 * 1024 * 1024)
         .dfa_size_limit(256 * 1024 * 1024)
         .build()
-        .map(|re| RegexRule { idx, re: CompiledRegex::Plain(re) })
-        .map_err(|e| format!("rule on line {} (regex): {:?}", idx, e))
+        .map(CompiledRegex::Plain)
+        .map_err(|e| format!("(regex): {:?}", e))
 }
 
+// What:     `pub fn load_ruleset(path: &str) -> Result<RuleSet, String>`
+//           reads the rules file at `path`, surfaces the I/O error
+//           with a friendly message if the read fails, and hands
+//           the contents to `load_ruleset_from_source`. The
+//           production CLI calls this; fuzz targets that want to
+//           drive the loader with a generated in-memory source
+//           call `load_ruleset_from_source` directly.
+// Why:      Keep the file-read split out from the loader proper so
+//           it can be exercised from fuzz tests without writing a
+//           tempfile per iteration.
+// TS map:   `async function loadRuleset(path: string): Promise<RuleSet>`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// async function loadRuleset(path: string): Promise<RuleSet> {
+//   const content = await readFile(path, "utf8");
+//   return loadRulesetFromSource(content, path);
+// }
+// ```
 pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
+    // What:     `fs::read_to_string(path).map_err(|e| ...)?`. Slurp the
+    //           rules file into an owned `String`. `?` propagates the
+    //           formatted error early so the caller sees a friendly
+    //           "read rules PATH: ERROR" message instead of an opaque
+    //           `io::Error`.
+    // Why:      Centralise file-read error formatting in one place.
+    // TS map:   `const content = await readFile(path, "utf8");`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const content = await readFile(path, "utf8");
+    // ```
+    let timing = std::env::var("FORBIDDEN_STRINGS_DEBUG_TIMING").is_ok();
+    let t_start = std::time::Instant::now();
+    let content = fs::read_to_string(path)
+        .map_err(|e| format!("read rules {}: {}", path, e))?;
+    if timing {
+        let dt = std::time::Instant::now().duration_since(t_start).as_secs_f64() * 1000.0;
+        eprintln!("load_ruleset phase 0 read_rules_file: {:.1}ms", dt);
+    }
+    load_ruleset_from_source(&content, path)
+}
+
+// What:     `pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, String>`
+//           runs the loader pipeline (classify -> compile regex
+//           rules in parallel -> extract gating substrings -> build
+//           the AC indices -> build the residual shards) against an
+//           in-memory rule source. The `_label` parameter exists for
+//           future error-context use; it is currently unused but
+//           kept so callers can pass an identifying string (path,
+//           "fuzz-input", "test-fixture").
+// Why:      Fuzz targets need to drive the loader without touching
+//           the filesystem. Splitting the file-read out of the
+//           pipeline gives them an entry point that takes a
+//           generated source directly.
+// TS map:   `function loadRulesetFromSource(content: string, label: string): RuleSet`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function loadRulesetFromSource(content: string, label: string): RuleSet {
+//   /* classify, compile, build indices, return RuleSet */
+// }
+// ```
+pub fn load_ruleset_from_source(content: &str, _label: &str) -> Result<RuleSet, String> {
     // What:     `let timing = std::env::var("FORBIDDEN_STRINGS_DEBUG_TIMING").is_ok();`
     //           reads an env var ONCE; subsequent phase boundaries log
     //           elapsed wall time when this is true. The closure
@@ -516,30 +720,6 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
         eprintln!("load_ruleset phase {}: {:.1}ms", label, dt);
         t_phase = now;
     };
-
-    // What:     `fs::read_to_string(path).map_err(|e| ...)?`. `read_to_string`
-    //           returns `Result<String, io::Error>`. `.map_err(closure)`
-    //           transforms the error type from `io::Error` into our
-    //           `String` error type via `format!`. The trailing `?`
-    //           operator UNWRAPS the success value or PROPAGATES the
-    //           error: if `Result` is `Ok(v)`, `?` evaluates to `v`;
-    //           if `Err(e)`, the function early-returns `Err(e)` from
-    //           THIS function. `?` is Rust's "throw the error if any"
-    //           operator (only legal when the surrounding function
-    //           returns a compatible `Result`).
-    // Why:      Slurp the rules file into memory; on I/O failure,
-    //           surface a friendly message and abort the load.
-    // TS map:   `const content = await readFile(path, "utf8").catch(e => { throw new Error(`read rules ${path}: ${e}`); });`.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // let content: string;
-    // try { content = await readFile(path, "utf8"); }
-    // catch (e) { throw new Error(`read rules ${path}: ${e}`); }
-    // ```
-    let content = fs::read_to_string(path)
-        .map_err(|e| format!("read rules {}: {}", path, e))?;
-    phase("0 read_rules_file");
 
     // Phase 1: sequential classification. Cheap (string ops only).
     // What:     `let mut literal_specs: Vec<(usize, String)> = Vec::new();`
@@ -675,47 +855,37 @@ pub fn load_ruleset(path: &str) -> Result<RuleSet, String> {
     //   return compilePlainRule(src, idx);
     // }));
     // ```
+    // What:     `regex_specs.par_iter().map(...).collect()`. Every
+    //           per-rule compile delegates to `compile_rule_src`, the
+    //           single source of truth for the route+compile decision
+    //           (also reached by `fuzz_api::compile_rule_src`). The
+    //           closure wraps the returned `CompiledRegex` with the
+    //           rule's line index, and decorates compile errors with
+    //           the same `rule on line N` prefix the loader has
+    //           always produced. Suffix shape comes from
+    //           `compile_rule_src` itself: `(resharp): ...` or
+    //           `(regex): ...`.
+    // Why:      The plan requires fuzz and production to exercise an
+    //           identical compile path. Routing both through
+    //           `compile_rule_src` makes that property structural,
+    //           not a documented invariant.
+    // TS map:   `regexRules = await Promise.all(regexSpecs.map(([idx, src]) => compileRuleSrc(src).then(re => ({ idx, re })).catch(e => { throw new Error(`rule on line ${idx} ${e.message}`); })));`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const regexRules: RegexRule[] = await Promise.all(
+    //   regexSpecs.map(([idx, src]) => {
+    //     try { return { idx, re: compileRuleSrc(src) }; }
+    //     catch (e) { throw new Error(`rule on line ${idx} ${e.message}`); }
+    //   }),
+    // );
+    // ```
     let regex_rules: Vec<RegexRule> = regex_specs
         .par_iter()
         .map(|(idx, src)| {
-            if requires_resharp(src) {
-                // What:     Pre-flight check before handing the rule to
-                //           resharp. `lookaround_in_complement` returns
-                //           `Some(reason)` when the source contains a
-                //           `~(...)` whose body holds a known-broken
-                //           atom (`\b`, `\B`, `^`, `$`, or a user-
-                //           explicit lookaround). Resharp 0.5.x rejects
-                //           every such shape with one of two opaque
-                //           error variants; this guard converts the
-                //           opaque rejection into an actionable message
-                //           that names the surface trigger and points
-                //           at the troubleshooting doc.
-                // Why:      Without this guard, the user gets either
-                //           `Algebra(UnsupportedPattern)` (rendered as
-                //           "unsupported lookaround pattern", with no
-                //           hint at the actual offending byte) or
-                //           `Parse(UnsupportedResharpRegex)` (no hint
-                //           at the offending shape either). Both
-                //           variants force the user to reverse-engineer
-                //           their own input against the resharp source.
-                //           Diagnosing at our boundary saves that round-
-                //           trip.
-                // TS map:   `const reason = lookaroundInComplement(src); if (reason) return { ok: false, error: ... };`.
-                //
-                // In TS you'd write (pseudocode):
-                // ```ts
-                // const reason = lookaroundInComplement(src);
-                // if (reason) return { ok: false, error: `rule on line ${idx} (resharp): ${reason}` };
-                // ```
-                if let Some(reason) = lookaround_in_complement(src) {
-                    return Err(format!("rule on line {} (resharp): {}", idx, reason));
-                }
-                Regex::new(src)
-                    .map(|re| RegexRule { idx: *idx, re: CompiledRegex::Resharp(re) })
-                    .map_err(|e| format!("rule on line {} (resharp): {:?}", idx, e))
-            } else {
-                compile_plain_rule(src, *idx)
-            }
+            compile_rule_src(src)
+                .map(|re| RegexRule { idx: *idx, re })
+                .map_err(|e| format!("rule on line {} {}", idx, e))
         })
         .collect::<Result<Vec<_>, _>>()?;
     phase("1 classify+regex_compile");

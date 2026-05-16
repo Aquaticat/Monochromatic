@@ -43,7 +43,7 @@ use super::walker::extract_scope;
 //   return { remainder: tail };
 // }
 // ```
-pub(super) fn walk_literal_bytes<'a>(
+pub fn walk_literal_bytes<'a>(
     input: &'a str,
     out: &mut String,
     remainder: &mut &'a str,
@@ -363,7 +363,7 @@ pub(super) fn walk_literal_bytes<'a>(
 // pairs + optional ci update); aliasing it to a `type Extracted<'a>` would
 // only rename the noise.
 #[allow(clippy::type_complexity)]
-pub(super) fn skip_atom_with_extract(
+pub fn skip_atom_with_extract(
     s: &str,
     ci: bool,
 ) -> Option<(&str, Option<Vec<(String, bool)>>, Option<bool>)> {

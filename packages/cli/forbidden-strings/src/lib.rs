@@ -32,6 +32,26 @@ mod scan;
 mod scan_format;
 mod walk;
 
+// What:     `#[cfg(feature = "fuzzing")] pub mod fuzz_api;` registers
+//           the curated re-export module ONLY when the `fuzzing`
+//           Cargo feature is on. The bin target leaves the feature
+//           off and never sees this module; fuzz targets (in
+//           `fuzz/Cargo.toml`) enable the feature and use
+//           `forbidden_strings::fuzz_api::*` to import internals.
+// Why:      Keep the production public surface unchanged while
+//           letting fuzz targets reach the internal helpers they
+//           need.
+// TS map:   `if (process.env.FUZZING) { export * as fuzzApi from "./fuzz_api"; }`
+//           in spirit; no clean 1:1 equivalent because TS has no
+//           compile-time feature gates.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // No clean equivalent; conditional re-export at build time.
+// ```
+#[cfg(feature = "fuzzing")]
+pub mod fuzz_api;
+
 // What:     `use std::env;` imports the std `env` module so we can
 //           reference `env::args` / `env::var`.
 // Why:      Reading argv and environment variables.

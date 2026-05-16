@@ -18,7 +18,7 @@
 //   return 1;  // fallback: best-effort
 // }
 // ```
-pub(super) fn group_body_start(s: &str) -> Option<usize> {
+pub fn group_body_start(s: &str) -> Option<usize> {
     // What:     `let bytes = s.as_bytes();`. Borrowed `&[u8]` view of
     //           `s`'s UTF-8 bytes. No allocation. `b'('` is a byte
     //           literal -- the `b` prefix on a char literal makes it a
@@ -97,7 +97,7 @@ pub(super) fn group_body_start(s: &str) -> Option<usize> {
 //   return null;
 // }
 // ```
-pub(super) fn find_matching_close_paren(s: &str) -> Option<usize> {
+pub fn find_matching_close_paren(s: &str) -> Option<usize> {
     let bytes = s.as_bytes();
     if bytes.is_empty() || bytes[0] != b'(' {
         return None;
@@ -155,7 +155,7 @@ pub(super) fn find_matching_close_paren(s: &str) -> Option<usize> {
 // ```ts
 // function skipAnyQuantifier(s: string): string { /* ... */ }
 // ```
-pub(super) fn skip_any_quantifier(s: &str) -> &str {
+pub fn skip_any_quantifier(s: &str) -> &str {
     let bytes = s.as_bytes();
     if bytes.is_empty() {
         return s;
@@ -223,7 +223,7 @@ pub(super) fn skip_any_quantifier(s: &str) -> &str {
 // ```ts
 // function quantifierIsRequired(s: string): boolean { /* ... */ }
 // ```
-pub(super) fn quantifier_is_required(s: &str) -> bool {
+pub fn quantifier_is_required(s: &str) -> bool {
     let bytes = s.as_bytes();
     if bytes.is_empty() {
         return true; // no quantifier -> exactly one match -> required
@@ -299,7 +299,7 @@ pub(super) fn quantifier_is_required(s: &str) -> bool {
 //   // then characters and `\X` escapes until the matching `]`.
 // }
 // ```
-pub(super) fn skip_class_body(s: &str) -> Option<&str> {
+pub fn skip_class_body(s: &str) -> Option<&str> {
     let bytes = s.as_bytes();
     if bytes.is_empty() || bytes[0] != b'[' {
         return None;
