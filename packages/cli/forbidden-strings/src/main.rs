@@ -43,12 +43,15 @@ mod walk;
 // ```
 use std::env;
 
-// What:     `use std::fs;` imports the filesystem module for `fs::read`
-//           inside the per-thread fused read+scan loop.
-// Why:      We slurp every input file into memory and scan it.
-//           `fs::read` is empirically faster than `mmap`-based access
-//           on this workload (many small files; per-file VMA setup
-//           cost dominates the saved alloc) -- the E2 mmap experiment
+// What:     `std::fs::canonicalize` is referenced via the full path at
+//           three sites (rules-path skip set, walker skip lookup); no
+//           bare `use std::fs;` because the per-file `fs::read` slurp
+//           moved into `read_with_binary_check` which uses
+//           `std::fs::File` directly.
+// Why:      Background on file-reading performance choices: `fs::read`
+//           is empirically faster than `mmap`-based access on this
+//           workload (many small files; per-file VMA setup cost
+//           dominates the saved alloc) -- the E2 mmap experiment
 //           regressed wall time by 35% on Mono and 43% on the Linux
 //           kernel. See PERF.md "Mmap experiment (rejected)".
 //           Thread-local scratch buffers were also tried 2026-05-03;
@@ -59,13 +62,8 @@ use std::env;
 //           triggering a `RefCell already borrowed` panic. The
 //           per-file alloc cost is dwarfed by the unicode-mode
 //           speedup; not worth the re-entrancy hazard.
-// TS map:   `import * as fs from "node:fs";`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// import * as fs from "node:fs";
-// ```
-use std::fs;
+// TS map:   N/A (no import line; `std::fs::canonicalize` is fully
+//           qualified at use sites).
 
 // What:     `use std::io::Write;` imports the `Write` TRAIT (interface-
 //           like). Methods declared by a trait are only callable when
@@ -270,6 +268,80 @@ fn is_walker_skipped(
         return skip_set.contains(&canonical);
     }
     false
+}
+
+// What:     `BIN_PROBE_SIZE` is the byte length read up-front from every
+//           file before deciding whether the file is binary. 8 KiB is
+//           the same probe size the pre-BUG-5 `is_likely_binary`
+//           heuristic used; it matches `git diff`'s "binary or text"
+//           heuristic threshold.
+// Why:      The probe length tunes a tradeoff: smaller probe lets a
+//           binary file with a leading text header (PDF header,
+//           machine-O header) sneak past as text; larger probe wastes
+//           memory on small files. 8 KiB catches the common cases
+//           (PNG, JPG, ELF, WASM, zip, ZSTD frames) and is the
+//           established convention.
+const BIN_PROBE_SIZE: usize = 8192;
+
+// What:     `read_with_binary_check(path)` reads a file under a binary
+//           heuristic:
+//             1. Always read the first `BIN_PROBE_SIZE` bytes.
+//             2. If the file is smaller than that, return what we got.
+//             3. If the probe contains a NUL byte and the file is
+//                larger than the probe, return only the probe (the
+//                rest is treated as binary tail and not scanned).
+//             4. Otherwise (probe is NUL-free), read and return the
+//                full file.
+// Why:      Closes the BUG-5 regression without re-introducing the
+//           soundness gap that BUG 5 fixed. BUG 5 removed a heuristic
+//           that threw away the WHOLE file when the first 8 KiB
+//           contained a NUL byte; that masked secrets sitting BEFORE
+//           the NUL. This rule keeps that signal (the first 8 KiB is
+//           always scanned), but caps the per-file work on large
+//           binary blobs (firmware images, vmlinuz, font caches, lock
+//           sidecars) at 8 KiB instead of full content. Acceptable
+//           miss: a secret living AFTER a NUL byte in a file that is
+//           ALSO larger than 8 KiB. Acceptable: those files are the
+//           "binary blob with bytes that happen to spell a secret"
+//           case, and the secret-leak risk is dominated by source
+//           files and small lock files which still scan in full.
+// TS map:   `function readWithBinaryCheck(path: string): Buffer`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function readWithBinaryCheck(path: string): Buffer {
+//   const fd = fs.openSync(path, "r");
+//   try {
+//     const probe = Buffer.alloc(BIN_PROBE_SIZE);
+//     const n = fs.readSync(fd, probe, 0, BIN_PROBE_SIZE, null);
+//     if (n < BIN_PROBE_SIZE) return probe.subarray(0, n);
+//     if (probe.indexOf(0) !== -1) return probe;
+//     return Buffer.concat([probe, fs.readSync.readRestOf(fd)]);
+//   } finally {
+//     fs.closeSync(fd);
+//   }
+// }
+// ```
+fn read_with_binary_check(path: &str) -> Result<Vec<u8>, std::io::Error> {
+    use std::fs::File;
+    use std::io::Read;
+
+    let mut file = File::open(path)?;
+    let mut buf: Vec<u8> = Vec::with_capacity(BIN_PROBE_SIZE);
+    (&mut file)
+        .take(BIN_PROBE_SIZE as u64)
+        .read_to_end(&mut buf)?;
+
+    if buf.len() < BIN_PROBE_SIZE {
+        return Ok(buf);
+    }
+
+    if memchr::memchr(0, &buf).is_some() {
+        return Ok(buf);
+    }
+
+    file.read_to_end(&mut buf)?;
+    Ok(buf)
 }
 
 // What:     `fn main() -> ExitCode` is the program entry point. `ExitCode`
@@ -810,7 +882,7 @@ fn main() -> ExitCode {
             // try { content = await readFile(p); }
             // catch (e) { return [`${p}: read error: ${e}`]; }
             // ```
-            let content = match fs::read(p) {
+            let content = match read_with_binary_check(p) {
                 Ok(c) => c,
                 Err(e) => {
                     return vec![format!("{}: read error: {}", p, e)];
