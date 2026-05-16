@@ -11,6 +11,64 @@ type ArrowParamsNode = {
   typeParameters?: unknown;
 };
 
+/** Async keyword that may prefix arrow function source text. */
+const ASYNC_KEYWORD = 'async';
+
+/** Whitespace characters consumed after an async arrow-function prefix. */
+const ASYNC_PREFIX_WHITESPACE = [
+  ' ',
+  '\t',
+  '\n',
+  '\r',
+  '\f',
+  '\v',
+] as const;
+
+/**
+ * Checks whether a character is JavaScript whitespace for the async prefix scanner.
+ *
+ * The source text starts at an AST node boundary, so the scanner only needs
+ * to consume the whitespace between `async` and the parameter/generic start.
+ *
+ * @param char - single character to inspect
+ *
+ * @returns whether character is whitespace
+ *
+ * @example
+ * ```ts
+ * isWhitespaceCharacter({ char: ' ' }); // true
+ * ```
+ */
+function isWhitespaceCharacter({ char, }: { char: string; },): boolean {
+  return ASYNC_PREFIX_WHITESPACE.some(function isMatchingWhitespace(candidate,): boolean {
+    return candidate === char;
+  },);
+}
+
+/**
+ * Finds the index after a leading async keyword and its following whitespace.
+ *
+ * @param fullText - source text of an async arrow function
+ *
+ * @returns first index after `async` whitespace, or zero when no prefix exists
+ *
+ * @example
+ * ```ts
+ * indexAfterAsyncPrefix({ fullText: 'async  (x) => x' }); // 7
+ * ```
+ */
+function indexAfterAsyncPrefix({ fullText, }: { fullText: string; },): number {
+  if (!fullText.startsWith(ASYNC_KEYWORD,))
+    return 0;
+  /** Cursor after the async keyword, advanced across following whitespace. */
+  let index = ASYNC_KEYWORD.length;
+  if (!isWhitespaceCharacter({ char: fullText[index] ?? '', },))
+    return 0;
+  while (isWhitespaceCharacter({ char: fullText[index] ?? '', },))
+    index++;
+  return index;
+}
+
 /**
  * Extracts the parameter list text (including parentheses) from an arrow
  * function's source text.
@@ -47,12 +105,8 @@ export function extractParamsText(
 ): string {
   /** Skip `async ` prefix if present. */
   let start = 0;
-  if (node.async) {
-    /** Leading `async ` keyword match, used to advance `start` past it. */
-    const asyncMatch = /^async\s+/.exec(fullText,);
-    if (asyncMatch !== null)
-      start = asyncMatch[0].length;
-  }
+  if (node.async)
+    start = indexAfterAsyncPrefix({ fullText, },);
 
   /**
    * Skip type parameters `<...>` if present.

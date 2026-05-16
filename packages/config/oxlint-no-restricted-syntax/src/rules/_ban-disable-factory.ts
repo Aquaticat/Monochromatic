@@ -4,8 +4,28 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-/** Pattern matching oxlint-disable directives (file-level or next-line). */
-const DISABLE_DIRECTIVE_PATTERN = /oxlint-disable(?:-next-line)?\b/;
+/** Text prefix common to every oxlint disable directive. */
+const DISABLE_DIRECTIVE_PREFIX = 'oxlint-disable';
+
+/**
+ * Checks whether a comment contains an oxlint disable directive.
+ *
+ * `oxlint-disable` and `oxlint-disable-next-line` both start with the
+ * same directive prefix. A string includes check is sufficient because the
+ * follow-up rule-id check still gates reports to real target suppressions.
+ *
+ * @param value - comment text without comment delimiters
+ *
+ * @returns whether comment text contains an oxlint disable directive
+ *
+ * @example
+ * ```ts
+ * hasOxlintDisableDirective({ value: ' oxlint-disable-next-line no-switch' });
+ * ```
+ */
+function hasOxlintDisableDirective({ value, }: { value: string; },): boolean {
+  return value.includes(DISABLE_DIRECTIVE_PREFIX,);
+}
 
 /**
  * Creates an oxlint rule that bans inline disable directives
@@ -53,7 +73,7 @@ export function banDisableRule({
       return {
         Program(): void {
           context.sourceCode.getAllComments().forEach(function checkComment(comment,) {
-            if (DISABLE_DIRECTIVE_PATTERN.test(comment.value,)
+            if (hasOxlintDisableDirective({ value: comment.value, },)
               && comment.value.includes(ruleId,))
             {
               context.report({

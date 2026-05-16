@@ -27,6 +27,11 @@ This plugin provides individual rules for each banned syntax pattern instead.
 - **no-variable-function-expression**: bans `const x = function() {}`, use a function declaration instead
 - **require-destructured-params**: function declarations with 2+ params must use a single destructured object
 - **require-queryselector-generic**: requires explicit generic typing for querySelector-style calls
+- **require-regex-justification**: requires regex usage to be justified through a scoped `oxlint-disable` comment
+
+`require-regex-justification` is available for opt-in migration.
+The shared `@monochromatic-dev/config-oxlint` package does not enable it yet because existing regex sites need
+triage, either replacing unnecessary regex or adding scoped disable justifications.
 
 ## Ban-disable rules
 

@@ -48,6 +48,7 @@ import {
 } from './rules/prefer-describe-function-ref-name.ts';
 import { requireDestructuredParams, } from './rules/require-destructured-params.ts';
 import { requireQueryselectorGeneric, } from './rules/require-queryselector-generic.ts';
+import { requireRegexJustification, } from './rules/require-regex-justification.ts';
 
 /**
  * Oxlint JS plugin implementing `no-restricted-syntax` rules
@@ -92,6 +93,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'prefer-describe-function-ref-name': preferDescribeFunctionRefName,
     'require-destructured-params': requireDestructuredParams,
     'require-queryselector-generic': requireQueryselectorGeneric,
+    'require-regex-justification': requireRegexJustification,
     //endregion Syntax rules
 
     //region Ban-disable rules -- prevent inline oxlint-disable for specific rules
