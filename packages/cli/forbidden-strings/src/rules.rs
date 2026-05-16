@@ -181,7 +181,75 @@ use resharp::Regex;
 //   }
 // }
 // ```
+// What:     `fn needs_unicode_shorthand(src: &str) -> bool` returns
+//           `true` when `src` contains any of the unicode-aware
+//           shorthand atoms `\s`, `\S`, `\w`, `\W`, `\d`, `\D`,
+//           `\b`, `\B`. Walks the bytes once, advances past any
+//           `\\X` escape, and reports the moment it sees one of
+//           the magic escapees.
+// Why:      Closes BUG 8. The `regex` crate's `unicode(false)`
+//           mode reinterprets these shorthand atoms as ASCII-only
+//           classes -- `\s` becomes `[ \t\n\v\f\r]` instead of
+//           the full Unicode whitespace class. The `unicode(false)`
+//           build STILL SUCCEEDS for such a rule (no parse error
+//           to fall through on), so the original try-and-fallback
+//           pattern compiled the wrong semantics silently. NBSP
+//           (U+00A0) between tokens slipped past `[\s]+`. Detect
+//           the shorthand at the source level and skip the fast
+//           path so the rule routes straight to `unicode(true)`.
+//           Bare-literal unicode characters (e.g. `émoji`) and
+//           plain ASCII rules without these shorthand atoms still
+//           take the fast path -- the speedup only loses to
+//           correctness for rules that explicitly use these
+//           shorthand classes.
+// TS map:   `function needsUnicodeShorthand(src: string): boolean`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function needsUnicodeShorthand(src: string): boolean {
+//   let i = 0;
+//   while (i < src.length) {
+//     if (src.charCodeAt(i) === 0x5c /* \\ */ && i + 1 < src.length) {
+//       const c = src.charCodeAt(i + 1);
+//       if (c === 0x73 || c === 0x53 || // s S
+//           c === 0x77 || c === 0x57 || // w W
+//           c === 0x64 || c === 0x44 || // d D
+//           c === 0x62 || c === 0x42)   // b B
+//         return true;
+//       i += 2; continue;
+//     }
+//     i += 1;
+//   }
+//   return false;
+// }
+// ```
+fn needs_unicode_shorthand(src: &str) -> bool {
+    let bytes = src.as_bytes();
+    let mut i = 0usize;
+    while i < bytes.len() {
+        if bytes[i] == b'\\' && i + 1 < bytes.len() {
+            match bytes[i + 1] {
+                b's' | b'S' | b'w' | b'W' | b'd' | b'D' | b'b' | b'B' => return true,
+                _ => {}
+            }
+            i += 2;
+            continue;
+        }
+        i += 1;
+    }
+    false
+}
+
 fn compile_plain_rule(src: &str, idx: usize) -> Result<RegexRule, String> {
+    // What:     `if !needs_unicode_shorthand(src) { try unicode(false) }`.
+    //           Only attempt the fast path when the source has no
+    //           unicode-aware shorthand atoms; for rules containing
+    //           `\s/\S/\w/\W/\d/\D/\b/\B`, skip straight to the
+    //           `unicode(true)` build below.
+    // Why:      `unicode(false)` builds succeed for shorthand-containing
+    //           rules but silently change the semantics to ASCII-only,
+    //           producing a silent false-negative (see BUG 8).
+    if !needs_unicode_shorthand(src) {
     // What:     `if let Ok(re) = builder.build() { ... }` is a one-arm
     //           pattern match against `Result<Regex, Error>`. The block
     //           runs ONLY when `build()` returned `Ok`, binding the
@@ -229,7 +297,9 @@ fn compile_plain_rule(src: &str, idx: usize) -> Result<RegexRule, String> {
         // ```
         return Ok(RegexRule { idx, re: CompiledRegex::Plain(re) });
     }
-    // Fall back to unicode-aware mode for rules with unicode features.
+    }
+    // Fall back to unicode-aware mode for rules with unicode features
+    // OR rules that opted out of the fast path via needs_unicode_shorthand.
     // What:     `builder.build().map(|re| ...).map_err(|e| ...)` is a
     //           method chain on `Result`. `.map(closure)` transforms the
     //           `Ok` payload via the closure; `.map_err(closure)`

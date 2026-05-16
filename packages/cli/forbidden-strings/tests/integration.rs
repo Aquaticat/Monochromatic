@@ -197,6 +197,65 @@ fn explicit_arg_with_skip_basename_is_still_scanned() {
     let _ = fs::remove_dir_all(&dir);
 }
 
+// What:     `#[test] fn unicode_shorthand_matches_nbsp_under_ci()`.
+//           BUG 8 regression test. Rule `(?i)adafruit[\s]+=` is
+//           compiled by `regex::bytes::RegexBuilder`. The pre-fix
+//           path tried `unicode(false)` first and silently
+//           succeeded -- but the resulting matcher's `\s` is
+//           ASCII-only (`[ \t\n\v\f\r]`), so a non-breaking space
+//           (U+00A0, UTF-8 `\xc2\xa0`) between `adafruit` and `=`
+//           is invisible to the matcher and the file exits clean
+//           even though it carries the deny-listed pattern.
+//           Post-fix the compile path detects unicode-aware
+//           shorthand (`\s/\w/\d/\b` and their negations) in the
+//           rule source, skips the `unicode(false)` fast path for
+//           those rules, and compiles with `unicode(true)` so
+//           `\s` matches the full Unicode whitespace class --
+//           including NBSP.
+// Why:      Secret-scanning CI must catch every form of separator
+//           between a label and its value. An attacker (or careless
+//           commit) can swap a regular space for NBSP to hide a
+//           leak from a naive grep; the scanner had a matching
+//           blind spot pre-fix.
+// TS map:   `test("(?i)\\s+ matches NBSP between tokens", ...)`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test("(?i)\\s+ matches NBSP", () => { ... });
+// ```
+#[test]
+fn unicode_shorthand_matches_nbsp_under_ci() {
+    let dir = unique_tmp("bug8");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "/(?i)adafruit[\\s]+=/\n").expect("write rules");
+    let target = dir.join("nbsp.txt");
+    // Literal `const adafruit<NBSP>= "x"` -- the NBSP is `\xc2\xa0`.
+    fs::write(&target, b"const adafruit\xc2\xa0= \"x\"\n").expect("write target");
+
+    let output = Command::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .output()
+        .expect("spawn binary");
+
+    assert!(
+        !output.status.success(),
+        "BUG 8: rule with \\s must match NBSP under unicode(true); got success.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("nbsp.txt"),
+        "BUG 8: stderr must reference the target file; got: {}",
+        stderr
+    );
+
+    let _ = fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn nul_byte_in_file_does_not_skip_scan() {
     let dir = unique_tmp("bug5");
