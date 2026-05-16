@@ -9,16 +9,20 @@
  */
 
 import {
+  isWhitespace,
+  isWordChar,
+} from '../../lib/text-scan.ts';
+import {
   ALT_CWD_PREFIX,
   CWD_PREFIX,
   DEDUP_THRESHOLD,
-  GIT_FILE_MODE_PATTERN,
-  GIT_TRANSPORT_PROGRESS_PATTERNS,
+  GIT_TRANSPORT_PROGRESS_PREDICATES,
   HOME_DIR,
+  isGitFileModeLine,
   MAX_LINE_LENGTH,
   MAX_REPEATED_CHARS,
   REAL_HOME_DIR,
-  SANDBOX_NOISE_PATTERNS,
+  SANDBOX_NOISE_PREDICATES,
 } from './filter-patterns.ts';
 
 //region Line stripping
@@ -37,15 +41,15 @@ import {
  * ```
  */
 function shouldStripLine(line: string,): boolean {
-  if (GIT_FILE_MODE_PATTERN.test(line,))
+  if (isGitFileModeLine(line,))
     return true;
-  if (SANDBOX_NOISE_PATTERNS.some(function patternTest(pattern,) {
-    return pattern.test(line,);
+  if (SANDBOX_NOISE_PREDICATES.some(function predicateTest(predicate,) {
+    return predicate(line,);
   },)) {
     return true;
   }
-  return GIT_TRANSPORT_PROGRESS_PATTERNS.some(function patternTest(pattern,) {
-    return pattern.test(line,);
+  return GIT_TRANSPORT_PROGRESS_PREDICATES.some(function predicateTest(predicate,) {
+    return predicate(line,);
   },);
 }
 
@@ -53,9 +57,34 @@ function shouldStripLine(line: string,): boolean {
 
 //region Character collapsing
 
+/** Minimum consecutive identical non-word, non-whitespace characters before collapsing. */
+const COLLAPSE_THRESHOLD = 10;
+
+/**
+ * Whether `c` should participate in a collapsible run: any character that is
+ * neither a word character (`\w`) nor whitespace. Mirrors the original
+ * regex's `[^\w\s]` character class.
+ *
+ * @param c - one-character string to inspect
+ *
+ * @returns whether `c` is a punctuation/symbol candidate for collapse
+ *
+ * @example
+ * ```ts
+ * isCollapseCandidate('=');  // true
+ * isCollapseCandidate('a');  // false (word char)
+ * isCollapseCandidate(' ');  // false (whitespace)
+ * ```
+ */
+function isCollapseCandidate(c: string,): boolean {
+  return (!isWordChar(c,)) && (!isWhitespace(c,));
+}
+
 /**
  * Collapses runs of repeated characters beyond {@link MAX_REPEATED_CHARS}.
- * Only collapses runs of 10+ non-alphanumeric, non-whitespace characters.
+ * Only collapses runs of {@link COLLAPSE_THRESHOLD}+ non-word, non-whitespace
+ * characters. Mirrors the original regex `([^\w\s])\1{9,}` without invoking
+ * the regex engine.
  *
  * @param line - line to process
  *
@@ -68,15 +97,78 @@ function shouldStripLine(line: string,): boolean {
  * ```
  */
 function collapseRepeatedChars(line: string,): string {
-  return line.replaceAll(
-    /([^\w\s])\1{9,}/g,
-    function collapseRun(
-      match,
-      char: string,
-    ) {
-      return `${char.repeat(MAX_REPEATED_CHARS,)} (x${match.length})`;
+  /**
+   * Recursive walker that accumulates the collapsed output without `let`.
+   *
+   * @param idx - current scan position in `line`
+   *
+   * @param acc - output string built up so far
+   *
+   * @returns final collapsed output once `idx` runs past the end of the line
+   *
+   * @example
+   * ```ts
+   * walk({ idx: 0, acc: '' }); // '==== (x20)' for line === '===...==='
+   * ```
+   */
+  function walk(
+    {
+      idx,
+      acc,
+    }: {
+      idx: number;
+      acc: string;
     },
-  );
+  ): string {
+    if (idx >= line.length)
+      return acc;
+    /** Character under the cursor; gates whether a run is even considered. */
+    const c = line.charAt(idx,);
+    if (!isCollapseCandidate(c,))
+      return walk({
+        idx: idx + 1,
+        acc: acc + c,
+      },);
+    /**
+     * Walks forward while the current cursor still sees the same character.
+     *
+     * @param end - candidate end offset
+     *
+     * @returns exclusive end of the run starting at `idx`
+     *
+     * @example
+     * ```ts
+     * findRunEnd(idx + 1); // first non-`c` index at or after `idx + 1`
+     * ```
+     */
+    function findRunEnd(end: number,): number {
+      if (end >= line.length)
+        return end;
+      if (line.charAt(end,) !== c)
+        return end;
+      return findRunEnd(end + 1,);
+    }
+    /** Exclusive end of the current run of `c`. */
+    const runEnd = findRunEnd(idx + 1,);
+    /** Length of the current run; gates the collapse vs. emit-verbatim choice. */
+    const runLength = runEnd - idx;
+    if (runLength >= COLLAPSE_THRESHOLD)
+      return walk({
+        idx: runEnd,
+        acc: `${acc}${c.repeat(MAX_REPEATED_CHARS,)} (x${runLength})`,
+      },);
+    return walk({
+      idx: runEnd,
+      acc: acc + line.slice(
+        idx,
+        runEnd,
+      ),
+    },);
+  }
+  return walk({
+    idx: 0,
+    acc: '',
+  },);
 }
 
 //endregion
