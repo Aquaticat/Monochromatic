@@ -20,6 +20,14 @@ features = ["fuzzing"]
 [workspace]
 members = ["."]
 
+# Library target hosting the shared structured generator used by
+# every fuzz target via `use forbidden_strings_fuzz::generators::*;`.
+# Cargo would auto-detect `src/lib.rs` even without this section; we
+# spell it out so the rename / path-override surface is explicit.
+[lib]
+name = "forbidden_strings_fuzz"
+path = "src/lib.rs"
+
 # Override the parent crate's `panic = "abort"` so libFuzzer can capture
 # and minimize crashes via unwinding. Without this override, panics
 # abort the process before libFuzzer gets a chance to record a
