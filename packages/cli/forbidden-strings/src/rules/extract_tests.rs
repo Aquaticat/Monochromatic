@@ -833,3 +833,83 @@ fn prose_em_dash_pattern_round_trips_through_aho_corasick() {
         "match should start at byte offset 5 (after `hello`)"
     );
 }
+
+// What:     `#[test] fn inline_flag_propagates_ci_to_subsequent_literal()`.
+//           BUG 1 regression test. Inline `(?i)` mid-rule must update the
+//           ci context for all subsequent literals at the same scope.
+// Why:      Pre-fix, `skip_atom_with_extract`'s inline-flag arm returned
+//           `Some((rest, None))` without telling `extract_branch` that ci
+//           had changed. The caller kept tagging subsequent literals with
+//           the original ci. So `/literalA(?i)keyword-suffix/` extracted
+//           `keyword-suffix` tagged ci=false, registering it in the case-
+//           sensitive AC bucket; the regex itself matched `KEYWORD-SUFFIX`
+//           case-insensitively but the AC gate did not, and the rule
+//           silently missed. Post-fix the inline-flag arm bubbles the
+//           updated ci to the caller, and `keyword-suffix` is tagged ci=true.
+// TS map:   `test("inline (?i) propagates ci to subsequent literal", () => { ... })`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test("inline (?i) propagates ci to subsequent literal", () => {
+//   const subs = extractGatingSubstrings("literalA(?i)keyword-suffix")!;
+//   expect(subs[0].sub).toBe("keyword-suffix");
+//   expect(subs[0].ci).toBe(true);
+// });
+// ```
+#[test]
+fn inline_flag_propagates_ci_to_subsequent_literal() {
+    // What:     `literalA(?i)keyword-suffix` -- ASCII literal `literalA`
+    //           (8 bytes), then an inline-flag group `(?i)` that turns on
+    //           case-insensitive mode for everything that follows, then
+    //           literal `keyword-suffix` (14 bytes).
+    // Why:      `keyword-suffix` is the longer of the two literals so the
+    //           walker picks it as the best candidate. The bug shape: its
+    //           ci tag must reflect the (?i) flag set by the inline group
+    //           BEFORE it appeared in source order.
+    // TS map:   `extractGatingSubstrings("literalA(?i)keyword-suffix")`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("literalA(?i)keyword-suffix")!;
+    // ```
+    let subs = extract_gating_substrings("literalA(?i)keyword-suffix")
+        .expect("expected Some for literal + inline-flag + literal pattern");
+    assert_eq!(subs.len(), 1, "walker should pick a single best literal");
+    let (substring, ci) = &subs[0];
+    assert_eq!(
+        substring.as_bytes(),
+        b"keyword-suffix",
+        "longer literal `keyword-suffix` (14 bytes) wins over `literalA` (8 bytes)"
+    );
+    assert!(
+        *ci,
+        "BUG 1: ci must be true after the inline (?i) flag; pre-fix this was false"
+    );
+}
+
+#[test]
+fn inline_negated_flag_clears_ci_for_subsequent_literal() {
+    // What:     `(?i)shorty(?-i)keyword-suffix` -- outer (?i) sets ci=true
+    //           for the rest of the rule. Then `shorty` (6 bytes) is
+    //           walked tagged ci=true. Then `(?-i)` inline group CLEARS
+    //           ci for subsequent atoms. Then `keyword-suffix` (14 bytes)
+    //           wins as the longer literal; it should be tagged ci=false.
+    // Why:      Symmetric coverage for the (?-i) variant of the inline
+    //           flag. Same bubble-up requirement, opposite direction.
+    // TS map:   `extractGatingSubstrings("(?i)shorty(?-i)keyword-suffix")`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const subs = extractGatingSubstrings("(?i)shorty(?-i)keyword-suffix")!;
+    // expect(subs[0].ci).toBe(false);
+    // ```
+    let subs = extract_gating_substrings("(?i)shorty(?-i)keyword-suffix")
+        .expect("expected Some for outer (?i) + inline (?-i) + literal");
+    assert_eq!(subs.len(), 1);
+    let (substring, ci) = &subs[0];
+    assert_eq!(substring.as_bytes(), b"keyword-suffix");
+    assert!(
+        !*ci,
+        "BUG 1 (symmetric): inline (?-i) must clear the outer (?i) for subsequent literals"
+    );
+}

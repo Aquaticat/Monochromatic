@@ -287,13 +287,16 @@ pub(super) fn walk_literal_bytes<'a>(
     *remainder = tail;
 }
 
-// What:     `fn skip_atom_with_extract(s, ci) -> Option<(&str, Option<Vec<(String, bool)>>)>`
+// What:     `fn skip_atom_with_extract(s, ci) -> Option<(&str, Option<Vec<(String, bool)>>, Option<bool>)>`
 //           recognizes one head atom, advances past it AND its
 //           quantifier, and optionally returns a Vec of (substring, ci)
 //           pairs extracted from a `(?:body)` / `(body)` / `(?flags:body)`
 //           group whose body's recursive `extract_scope` returned
-//           `Some`. Returns `None` only when the head is not a
-//           recognised atom (so the outer walker should stop).
+//           `Some`. The third tuple element is `Some(new_ci)` when the
+//           atom was an inline `(?flags)` group that changed the ci
+//           context for subsequent atoms; `None` otherwise. Returns
+//           `None` only when the head is not a recognised atom (so the
+//           outer walker should stop).
 //
 //           Recognised heads:
 //           - `[ ... ]<quantifier>` (character class with any quantifier)
@@ -306,7 +309,9 @@ pub(super) fn walk_literal_bytes<'a>(
 //             body without extracting from it because complement
 //             bytes are excluded, not required.
 //           - `(?flags)`: inline flag group, no body. Transparent atom,
-//             no extraction.
+//             no extraction, BUT signals the caller via the third tuple
+//             element that ci should update for subsequent atoms at the
+//             same scope.
 //           - `(?flags:body)<quantifier>`: scoped flag group. Computes
 //             the body's effective ci by applying `i` / `-i` flags to
 //             the caller's ci, then recurses into body via
@@ -330,16 +335,24 @@ pub(super) fn walk_literal_bytes<'a>(
 //           required keyword sits inside a `(?-i:...)` or `(?i:...)`
 //           scope (e.g. L135 `(?-i:[Mm]eraki|MERAKI)` -> drains to cs
 //           AC under `Meraki`/`meraki`/`MERAKI`).
-// TS map:   `function skipAtomWithExtract(s: string, ci: boolean): { remainder: string; extracted: Array<{sub:string; ci:boolean}> | null } | null`.
 //
-// Clippy lint suppressed: the return tuple's two-level Option/Vec/tuple is
-// the natural shape (remainder slice + optional list of (substring, ci)
-// pairs); aliasing it to a `type Extracted<'a>` would only rename the noise.
+//           Inline-flag ci propagation (BUG 1) is bubbled to the caller
+//           via the third tuple element. Previously this arm returned
+//           `Some((rest, None))` silently, leaving the caller's ci
+//           unchanged so subsequent literals at the same scope were
+//           tagged with the original ci, breaking AC routing for rules
+//           shaped like `/literalA(?i)keyword-suffix/`.
+// TS map:   `function skipAtomWithExtract(s: string, ci: boolean): { remainder: string; extracted: Array<{sub:string; ci:boolean}> | null; ciUpdate: boolean | null } | null`.
+//
+// Clippy lint suppressed: the return tuple's three-level Option/Vec/tuple
+// is the natural shape (remainder slice + optional list of (substring, ci)
+// pairs + optional ci update); aliasing it to a `type Extracted<'a>` would
+// only rename the noise.
 #[allow(clippy::type_complexity)]
 pub(super) fn skip_atom_with_extract(
     s: &str,
     ci: bool,
-) -> Option<(&str, Option<Vec<(String, bool)>>)> {
+) -> Option<(&str, Option<Vec<(String, bool)>>, Option<bool>)> {
     let bytes = s.as_bytes();
     if bytes.is_empty() {
         return None;
@@ -349,7 +362,7 @@ pub(super) fn skip_atom_with_extract(
     if bytes[0] == b'[' {
         let after_class = skip_class_body(s)?;
         let after_quant = skip_any_quantifier(after_class);
-        return Some((after_quant, None));
+        return Some((after_quant, None, None));
     }
 
     // Perl-class escape `\d`, `\w`, `\s`, `\D`, `\W`, `\S`
@@ -357,7 +370,7 @@ pub(super) fn skip_atom_with_extract(
         match bytes[1] {
             b'd' | b'w' | b's' | b'D' | b'W' | b'S' => {
                 let after_quant = skip_any_quantifier(&s[2..]);
-                return Some((after_quant, None));
+                return Some((after_quant, None, None));
             }
             _ => {}
         }
@@ -384,7 +397,7 @@ pub(super) fn skip_atom_with_extract(
         let close_idx = 1 + find_matching_close_paren(&s[1..])?;
         let after = &s[close_idx + 1..];
         let after_quant = skip_any_quantifier(after);
-        return Some((after_quant, None));
+        return Some((after_quant, None, None));
     }
 
     // What:     Group: `(?:body)`, `(body)`, or inline `(?flags)`.
@@ -430,9 +443,75 @@ pub(super) fn skip_atom_with_extract(
                 j += 1;
             }
             // Inline `(?flags)` -- requires at least one flag char and
-            // immediate `)` after the run.
+            // immediate `)` after the run. Bubble the updated ci back to
+            // the caller so subsequent literals at this scope are tagged
+            // with the new ci context. Same dash-aware logic as the
+            // scoped form below: a `-` divides set-flags from clear-
+            // flags; `i` sets case-insensitive, `-i` clears it. Other
+            // flags (`s`, `m`, `x`, `U`) don't affect ci tracking.
             if j > 2 && j < bytes.len() && bytes[j] == b')' {
-                return Some((&s[j + 1..], None));
+                // What:     `let flags = &s[2..j];`. Borrowed sub-slice
+                //           covering the flag-letter run between `(?`
+                //           and `)`. May include a `-` separator.
+                // Why:      We need to inspect each flag byte to compute
+                //           the updated ci context.
+                // TS map:   `const flags = s.slice(2, j);`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // const flags = s.slice(2, j);
+                // ```
+                let flags = &s[2..j];
+                // What:     `let mut new_ci = ci;` plus `let mut after_dash = false;`.
+                //           Start from the caller's ci and walk the flag
+                //           letters in order, tracking whether we've
+                //           crossed the `-` divider. Standard PCRE/regex_syntax
+                //           inline-flag semantics.
+                // Why:      Mirror the scoped-flag arm below; only the
+                //           bubble-up direction differs.
+                // TS map:   `let newCi = ci; let afterDash = false;`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // let newCi = ci;
+                // let afterDash = false;
+                // for (const fc of flags) {
+                //   if (fc === '-') { afterDash = true; continue; }
+                //   if (fc === 'i') newCi = !afterDash;
+                // }
+                // ```
+                let mut new_ci = ci;
+                let mut after_dash = false;
+                for fc in flags.bytes() {
+                    if fc == b'-' {
+                        after_dash = true;
+                        continue;
+                    }
+                    if fc == b'i' {
+                        new_ci = !after_dash;
+                    }
+                }
+                // What:     `Some((&s[j + 1..], None, Some(new_ci)))`.
+                //           Third tuple element is `Some(new_ci)`: the
+                //           caller's `extract_branch` reads it and
+                //           updates its mutable ci binding so subsequent
+                //           literals walked at this scope inherit the
+                //           new ci tag. We do NOT short-circuit `new_ci
+                //           == ci` because the caller's overwrite is
+                //           idempotent in that case anyway.
+                // Why:      Closes BUG 1: the previous return shape
+                //           `Some((rest, None))` left the caller's ci
+                //           unchanged, so `/literalA(?i)keyword-suffix/`
+                //           tagged `keyword-suffix` with the original
+                //           ci=false instead of ci=true, mis-routing it
+                //           to the case-sensitive AC bucket.
+                // TS map:   `return { remainder: rest, extracted: null, ciUpdate: newCi };`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // return { remainder: s.slice(j + 1), extracted: null, ciUpdate: newCi };
+                // ```
+                return Some((&s[j + 1..], None, Some(new_ci)));
             }
             // Scoped `(?flags:body)` -- non-zero flag run followed by
             // `:`. Compute the body's effective ci by applying the
@@ -469,7 +548,7 @@ pub(super) fn skip_atom_with_extract(
                 } else {
                     None
                 };
-                return Some((after_quant, extraction));
+                return Some((after_quant, extraction, None));
             }
 
             // What:     Lookaround detection. Four shapes:
@@ -603,7 +682,7 @@ pub(super) fn skip_atom_with_extract(
                 // ```ts
                 // return { remainder: afterQuant, extracted: null };
                 // ```
-                return Some((after_quant, None));
+                return Some((after_quant, None, None));
             }
         }
 
@@ -635,7 +714,7 @@ pub(super) fn skip_atom_with_extract(
         } else {
             None
         };
-        return Some((after_quant, extraction));
+        return Some((after_quant, extraction, None));
     }
 
     None

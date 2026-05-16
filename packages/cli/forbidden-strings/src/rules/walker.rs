@@ -94,6 +94,23 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
     // let s = sParam;
     // ```
     let mut s = s;
+    // What:     `let mut ci = ci;`. Same shadow-into-mut pattern as
+    //           the `s` rebinding above. We need ci to be mutable so
+    //           that an inline `(?flags)` group encountered mid-branch
+    //           can update the ci context for subsequent literals at
+    //           this scope.
+    // Why:      Closes BUG 1: previously `ci` was a function parameter
+    //           used unchanged through the loop, so inline-flag changes
+    //           did not propagate forward. Subsequent literals walked
+    //           after an inline `(?i)` were tagged with the original ci.
+    // TS map:   `let ci = ciParam;` -- TS allows direct mutation of
+    //           function parameters, no rebinding needed.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // let ci = ciParam;
+    // ```
+    let mut ci = ci;
     let mut best: Vec<(String, bool)> = Vec::new();
     let mut best_score: usize = 0;
     // What:     `let mut current_lit = String::new();`. Empty owned
@@ -204,8 +221,28 @@ fn extract_branch(s: &str, ci: bool) -> Option<Vec<(String, bool)>> {
             s = rest;
             continue;
         }
-        if let Some((rest, contribution)) = skip_atom_with_extract(s, ci) {
+        if let Some((rest, contribution, ci_update)) = skip_atom_with_extract(s, ci) {
             s = rest;
+            // What:     `if let Some(new_ci) = ci_update { ci = new_ci; }`
+            //           applies the bubble-up signal from
+            //           `skip_atom_with_extract`. The third tuple
+            //           element is `Some(new_ci)` only when the atom
+            //           we just consumed was an inline `(?flags)`
+            //           group; for every other atom it is `None`.
+            // Why:      Closes BUG 1: subsequent calls to
+            //           `walk_literal_bytes` push into `current_lit`
+            //           which then becomes `(_, ci)` -- the ci tag
+            //           reflects what's been declared at this point
+            //           in source order, including inline flag changes.
+            // TS map:   `if (ciUpdate !== null) ci = ciUpdate;`.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // if (ciUpdate !== null) ci = ciUpdate;
+            // ```
+            if let Some(new_ci) = ci_update {
+                ci = new_ci;
+            }
             if let Some(candidate) = contribution {
                 let score = candidate.iter().map(|(x, _)| x.len()).min().unwrap_or(0);
                 if score > best_score {
