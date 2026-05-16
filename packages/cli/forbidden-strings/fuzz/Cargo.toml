@@ -73,3 +73,10 @@ path = "fuzz_targets/fuzz_scan_format.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "fuzz_residual_shards"
+path = "fuzz_targets/fuzz_residual_shards.rs"
+test = false
+doc = false
+bench = false
