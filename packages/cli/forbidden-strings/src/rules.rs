@@ -260,17 +260,19 @@ fn scan_class(bytes: &[u8], start: usize) -> Option<(usize, bool)> {
 
 // What:     `fn utf8_width(leading: u8) -> usize` returns how many
 //           bytes the UTF-8 sequence starting with `leading` occupies.
-//           ASCII -> 1, two-byte leading (0xc0-0xdf) -> 2, three-byte
-//           (0xe0-0xef) -> 3, four-byte (0xf0-0xf7) -> 4.
+//           ASCII (< 0x80) -> 1, two-byte leading (0xc0-0xdf) -> 2,
+//           three-byte (0xe0-0xef) -> 3, four-byte (0xf0-0xf7) -> 4.
+//           A continuation byte (0x80-0xbf) is not a valid leading byte
+//           in well-formed UTF-8; the function returns 1 defensively so
+//           a single-byte step advances the cursor and the caller does
+//           not stall on malformed input.
 // Why:      The source rewrite must copy multi-byte UTF-8 sequences
 //           verbatim. A bare `bytes[i] as char` cast would mojibake
 //           non-ASCII bytes; using `&src[i..i+width]` preserves the
 //           UTF-8 encoding.
 // TS map:   `function utf8Width(b: number): number`.
 fn utf8_width(leading: u8) -> usize {
-    if leading < 0x80 {
-        1
-    } else if leading < 0xc0 {
+    if leading < 0xc0 {
         1
     } else if leading < 0xe0 {
         2

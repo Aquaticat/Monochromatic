@@ -103,7 +103,7 @@ fn detect_index_hash_kind(repo_root: &std::path::Path) -> gix_hash::Kind {
         // Why:      Git config supports both comment prefixes; the
         //           value before the comment is the only signal.
         let line = raw
-            .split(|c: char| c == '#' || c == ';')
+            .split(['#', ';'])
             .next()
             .unwrap_or("")
             .trim();
@@ -542,6 +542,7 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
 mod tests {
     use super::list_files;
     use std::fs;
+    use std::path::Path;
     use std::path::PathBuf;
     use std::process::Command;
 
@@ -760,7 +761,7 @@ mod tests {
     //           Used by the `detect_index_hash_kind` unit tests below.
     // Why:      Each test exercises a different config shape; a helper
     //           keeps the test bodies focused on the shape they test.
-    fn write_config(dir: &PathBuf, contents: &str) {
+    fn write_config(dir: &Path, contents: &str) {
         let git_dir = dir.join(".git");
         fs::create_dir_all(&git_dir).expect("create .git");
         fs::write(git_dir.join("config"), contents).expect("write .git/config");

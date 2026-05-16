@@ -90,7 +90,7 @@ fn read_error_surfaces_as_hit_and_nonzero_exit() {
     // fs.chmodSync(target, 0);
     // ```
     use std::os::unix::fs::PermissionsExt;
-    fs::set_permissions(&target, fs::Permissions::from_mode(0))
+    fs::set_permissions(&target, fs::Permissions::from_mode(0o000))
         .expect("chmod 000");
 
     let output = Command::new(BIN)
@@ -359,7 +359,7 @@ fn large_text_file_secret_after_probe_is_matched() {
     fs::write(&rules, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write rules");
     let target = dir.join("large_text.txt");
     let mut content = Vec::with_capacity(9000 + 32);
-    content.extend(std::iter::repeat(b'X').take(9000));
+    content.extend(std::iter::repeat_n(b'X', 9000));
     content.extend_from_slice(b"SECRET_NEEDLE_XYZ_LONG_ENOUGH");
     fs::write(&target, &content).expect("write target");
 
@@ -402,7 +402,7 @@ fn large_binary_file_secret_in_probe_before_nul_is_matched() {
     let mut content: Vec<u8> = Vec::with_capacity(9000);
     content.extend_from_slice(b"SECRET_NEEDLE_XYZ_LONG_ENOUGH");
     content.push(0);
-    content.extend(std::iter::repeat(b'X').take(9000));
+    content.extend(std::iter::repeat_n(b'X', 9000));
     fs::write(&target, &content).expect("write target");
 
     let output = Command::new(BIN)
@@ -442,9 +442,9 @@ fn large_binary_file_secret_after_probe_is_acceptably_missed() {
     fs::write(&rules, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write rules");
     let target = dir.join("binary_secret_in_tail.bin");
     let mut content: Vec<u8> = Vec::with_capacity(9000 + 32);
-    content.extend(std::iter::repeat(b'X').take(100));
+    content.extend(std::iter::repeat_n(b'X', 100));
     content.push(0);
-    content.extend(std::iter::repeat(b'X').take(8900));
+    content.extend(std::iter::repeat_n(b'X', 8900));
     content.extend_from_slice(b"SECRET_NEEDLE_XYZ_LONG_ENOUGH");
     fs::write(&target, &content).expect("write target");
 
