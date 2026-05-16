@@ -3,6 +3,8 @@ import type {
   UserPromptSubmitOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 
+import { containsAnyOfWordBounded, } from '../lib/text-scan.ts';
+
 //region Patterns
 
 /**
@@ -14,30 +16,108 @@ import type {
  * spot of the claim it replaced. The pattern this hook targets is treating
  * a correction as a small patch rather than an approach-change moment that
  * warrants concrete re-verification.
+ *
+ * Stored as lowercase phrase literals so {@link containsAnyOfWordBounded} can
+ * scan with word-boundary checks. Each apostrophe-bearing variant is paired
+ * with its no-apostrophe form to mirror the original regexes' `['']?`
+ * optional marker (e.g. both `you're wrong` and `youre wrong`).
  */
-const CORRECTION_PATTERNS: readonly RegExp[] = [
-  /\bdemonstrably (?:false|wrong)\b/i,
-  /\byou missed\b/i,
-  /\bdidn['']?t you\b/i,
-  /\byou['']?re wrong\b/i,
-  /\byou are wrong\b/i,
-  /\bshouldn['']?t have\b/i,
-  /\bshould not have\b/i,
-  /\bwhy would you\b/i,
-  /\bthat['']?s wrong\b/i,
-  /\bthis is wrong\b/i,
-  /\byou got (?:that|this|it) wrong\b/i,
-  /\byou['']?re not (?:feeling|paying) (?:well|attention)\b/i,
-  /\bplease be more careful\b/i,
-  /\b(?:are you|aren['']?t you) (?:not )?paying attention\b/i,
+const CORRECTION_PHRASES: readonly string[] = [
+  // \bdemonstrably (?:false|wrong)\b
+  'demonstrably false',
+  'demonstrably wrong',
+  // \byou missed\b
+  'you missed',
+  // \bdidn['']?t you\b
+  "didn't you",
+  'didnt you',
+  // \byou['']?re wrong\b
+  "you're wrong",
+  'youre wrong',
+  // \byou are wrong\b
+  'you are wrong',
+  // \bshouldn['']?t have\b
+  "shouldn't have",
+  'shouldnt have',
+  // \bshould not have\b
+  'should not have',
+  // \bwhy would you\b
+  'why would you',
+  // \bthat['']?s wrong\b
+  "that's wrong",
+  'thats wrong',
+  // \bthis is wrong\b
+  'this is wrong',
+  // \byou got (?:that|this|it) wrong\b
+  'you got that wrong',
+  'you got this wrong',
+  'you got it wrong',
+  // \byou['']?re not (?:feeling|paying) (?:well|attention)\b
+  "you're not feeling well",
+  "you're not feeling attention",
+  "you're not paying well",
+  "you're not paying attention",
+  'youre not feeling well',
+  'youre not feeling attention',
+  'youre not paying well',
+  'youre not paying attention',
+  // \bplease be more careful\b
+  'please be more careful',
+  // \b(?:are you|aren['']?t you) (?:not )?paying attention\b
+  'are you paying attention',
+  'are you not paying attention',
+  "aren't you paying attention",
+  "aren't you not paying attention",
+  'arent you paying attention',
+  'arent you not paying attention',
 ];
 
 //endregion
 
 //region Detection
 
+/** Unicode left single quotation mark (`U+2018`). */
+const LEFT_SINGLE_QUOTE = '‘';
+
+/** Unicode right single quotation mark (`U+2019`). */
+const RIGHT_SINGLE_QUOTE = '’';
+
+/**
+ * Normalises curly quotation marks (`U+2018`, `U+2019`) to ASCII apostrophes
+ * so phrase lookups stay simple.
+ *
+ * Replaces the original regexes' `['']?` optional marker (which accepted
+ * either apostrophe shape); after normalisation the phrase list only needs
+ * the straight-apostrophe form for each variant.
+ *
+ * @param prompt - raw user input
+ *
+ * @returns prompt with curly single quotes replaced by `'`
+ *
+ * @example
+ * ```ts
+ * normaliseApostrophes('that’s wrong'); // => "that's wrong"
+ * ```
+ */
+function normaliseApostrophes(prompt: string,): string {
+  return prompt
+    .replaceAll(
+      LEFT_SINGLE_QUOTE,
+      '\'',
+    )
+    .replaceAll(
+      RIGHT_SINGLE_QUOTE,
+      '\'',
+    );
+}
+
 /**
  * Tests whether a user prompt matches any correction-phrase pattern.
+ *
+ * Apostrophes are normalised first so curly-quote prompts match the
+ * straight-quote phrase list entries. Lookup is delegated to
+ * {@link containsAnyOfWordBounded}, which scans case-insensitively with
+ * `\b<phrase>\b` semantics.
  *
  * @param prompt - raw user input from the UserPromptSubmit event
  *
@@ -53,11 +133,10 @@ const CORRECTION_PATTERNS: readonly RegExp[] = [
  * ```
  */
 function detectCorrection(prompt: string,): boolean {
-  for (const pattern of CORRECTION_PATTERNS) {
-    if (pattern.test(prompt,))
-      return true;
-  }
-  return false;
+  return containsAnyOfWordBounded({
+    haystack: normaliseApostrophes(prompt,),
+    phrases: CORRECTION_PHRASES,
+  },) !== undefined;
 }
 
 //endregion

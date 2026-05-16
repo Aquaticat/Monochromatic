@@ -110,8 +110,8 @@ await describe({
             const out = correctionReminderHandler(
               makeEvent("That's demonstrably false.",),
             );
-            expect(out.hookSpecificOutput?.additionalContext,).toMatch(
-              /correction-detected/,
+            expect(out.hookSpecificOutput?.additionalContext,).toContain(
+              'correction-detected',
             );
           },
         },),
@@ -121,8 +121,8 @@ await describe({
             const out = correctionReminderHandler(
               makeEvent('You missed the JSX runtime.',),
             );
-            expect(out.hookSpecificOutput?.additionalContext,).toMatch(
-              /self-review is not/,
+            expect(out.hookSpecificOutput?.additionalContext,).toContain(
+              'self-review is not',
             );
           },
         },),
@@ -132,8 +132,8 @@ await describe({
             const out = correctionReminderHandler(
               makeEvent('Why would you include that rule?',),
             );
-            expect(out.hookSpecificOutput?.additionalContext,).toMatch(
-              /item 11/,
+            expect(out.hookSpecificOutput?.additionalContext,).toContain(
+              'item 11',
             );
           },
         },),
@@ -184,7 +184,8 @@ await describe({
               },
             },);
             expect(written.endsWith('\n',),).toBe(false,);
-            expect(written,).toMatch(/^{.*}$/,);
+            expect(written.startsWith('{',),).toBe(true,);
+            expect(written.endsWith('}',),).toBe(true,);
           },
         },),
       ],
