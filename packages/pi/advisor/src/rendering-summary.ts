@@ -114,6 +114,8 @@ export function isAdvisorDetails(
     && Array.isArray(value.scopedSlugs,)
     && ('durationMs' in value)
     && ((typeof value.durationMs) === 'number')
+    && ('contextBudgetChars' in value)
+    && ((typeof value.contextBudgetChars) === 'number')
     && ('contextChars' in value)
     && ((typeof value.contextChars) === 'number')
     && ('estimatedInputTokens' in value)
@@ -141,6 +143,7 @@ export function fallbackDetails(): AdvisorDetails {
     scopeSource: 'available',
     scopedSlugs: [],
     durationMs: 0,
+    contextBudgetChars: 0,
     contextChars: 0,
     estimatedInputTokens: 0,
     truncated: false,
@@ -215,7 +218,11 @@ function formatContext(
 ): string {
   /** Truncation marker for concise output. */
   const truncated = details.truncated ? 'truncated' : 'full';
-  return `${details.provider} ${details.contextChars} chars ${details.estimatedInputTokens} tokens ${truncated}`;
+  return [
+    `${details.provider} ${details.contextChars}/${details.contextBudgetChars} chars`,
+    `${details.estimatedInputTokens} tokens`,
+    truncated,
+  ].join(' ',);
 }
 
 //endregion Internal helpers

@@ -5,6 +5,10 @@
  */
 
 import type { SessionEntry, } from '@earendil-works/pi-coding-agent';
+import type {
+  Api,
+  Model,
+} from '@earendil-works/pi-ai';
 import {
   describe,
   expect,
@@ -14,6 +18,7 @@ import { DEFAULT_CONFIG, } from './config.ts';
 import { ADVISOR_MESSAGE_TYPE, } from './constants.ts';
 import {
   buildAdvisorContext,
+  maxContextCharsForAdvisorModel,
   truncateContext,
 } from './context.ts';
 import type { AdvisorConfig, } from './types.ts';
@@ -26,6 +31,21 @@ const TRUNCATION_BUDGET = 5;
 /** Stable timestamp for fixture entries. */
 const TIMESTAMP = '2026-05-15T00:00:00.000Z';
 
+/** Small model context window used in budget tests. */
+const SMALL_CONTEXT_WINDOW = 5_000;
+
+/** Large model context window used in budget tests. */
+const LARGE_CONTEXT_WINDOW = 10_000;
+
+/** Fixture max output tokens. */
+const MAX_TOKENS = 1_000;
+
+/** Output token budget used in context-budget tests. */
+const OUTPUT_TOKEN_BUDGET = 100;
+
+/** Configured context cap used in context-budget tests. */
+const CONFIGURED_CONTEXT_CAP = 10;
+
 /** Advisor config fixture with prior Advisor results omitted. */
 const omitPriorAdvisorConfig: AdvisorConfig = {
   ...DEFAULT_CONFIG,
@@ -36,6 +56,18 @@ const omitPriorAdvisorConfig: AdvisorConfig = {
     globalLoaded: false,
     projectLoaded: false,
   },
+};
+
+/** Advisor config fixture with no configured context cap. */
+const dynamicBudgetConfig: AdvisorConfig = {
+  ...omitPriorAdvisorConfig,
+  maxAdvisorOutputTokens: OUTPUT_TOKEN_BUDGET,
+};
+
+/** Advisor config fixture with configured context cap. */
+const cappedBudgetConfig: AdvisorConfig = {
+  ...dynamicBudgetConfig,
+  maxContextChars: CONFIGURED_CONTEXT_CAP,
 };
 
 /** Advisor custom message from a previous manual `/advisor` run. */
@@ -59,6 +91,35 @@ const otherCustomMessage: SessionEntry = {
   content: 'other extension text',
   display: true,
 };
+
+/**
+ * Build fixture Advisor model.
+ *
+ * @param contextWindow - token context window
+ *
+ * @returns fixture model
+ */
+function fixtureModel(
+  contextWindow: number,
+): Model<Api> {
+  return {
+    id: 'reviewer',
+    name: 'Reviewer',
+    api: 'faux',
+    provider: 'faux-provider',
+    baseUrl: 'https://example.invalid',
+    reasoning: false,
+    input: ['text',],
+    cost: {
+      input: 1,
+      output: 1,
+      cacheRead: 0,
+      cacheWrite: 0,
+    },
+    contextWindow,
+    maxTokens: MAX_TOKENS,
+  } satisfies Model<Api>;
+}
 
 //endregion Fixtures
 
@@ -97,6 +158,39 @@ await describe({
         expect(result.text,).toContain(
           'advisor: middle of serialized conversation omitted',
         );
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: maxContextCharsForAdvisorModel.name,
+  children: [
+    it({
+      name: 'derives a larger budget for a larger model context window',
+      fn: async () => {
+        const smallBudget = maxContextCharsForAdvisorModel({
+          config: dynamicBudgetConfig,
+          model: fixtureModel(SMALL_CONTEXT_WINDOW,),
+          advisorSystemPrompt: 'review carefully',
+        },);
+        const largeBudget = maxContextCharsForAdvisorModel({
+          config: dynamicBudgetConfig,
+          model: fixtureModel(LARGE_CONTEXT_WINDOW,),
+          advisorSystemPrompt: 'review carefully',
+        },);
+        expect(largeBudget,).toBeGreaterThan(smallBudget,);
+      },
+    },),
+    it({
+      name: 'honors configured context cap below model-derived budget',
+      fn: async () => {
+        const budget = maxContextCharsForAdvisorModel({
+          config: cappedBudgetConfig,
+          model: fixtureModel(LARGE_CONTEXT_WINDOW,),
+          advisorSystemPrompt: 'review carefully',
+        },);
+        expect(budget,).toBe(CONFIGURED_CONTEXT_CAP,);
       },
     },),
   ],

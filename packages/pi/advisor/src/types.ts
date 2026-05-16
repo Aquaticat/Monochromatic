@@ -40,8 +40,8 @@ export type AdvisorConfig = {
   enabled: boolean;
   /** Provider request timeout in milliseconds. */
   timeoutMs: number;
-  /** Maximum serialized context characters sent to Advisor. */
-  maxContextChars: number;
+  /** Optional hard cap for serialized context characters sent to Advisor. */
+  maxContextChars?: number;
   /** Maximum output tokens requested from the advisor model. */
   maxAdvisorOutputTokens: number;
   /** Whether prior Advisor tool results stay in serialized context. */
@@ -132,6 +132,8 @@ export type AdvisorModelSelection = {
 export type AdvisorContext = {
   /** Serialized conversation after deterministic truncation. */
   text: string;
+  /** Effective serialized-context character budget used for truncation. */
+  maxContextChars: number;
   /** Serialized conversation length before truncation. */
   originalChars: number;
   /** Serialized conversation length after truncation. */
@@ -172,6 +174,8 @@ export type AdvisorDetails = {
   defaultSelectionReason?: string;
   /** Duration in milliseconds for provider call and local preparation. */
   durationMs: number;
+  /** Effective serialized-context character budget for selected model. */
+  contextBudgetChars: number;
   /** Final serialized context character count. */
   contextChars: number;
   /** Estimated input tokens for the advisor request. */

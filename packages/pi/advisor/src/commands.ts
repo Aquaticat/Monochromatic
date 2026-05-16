@@ -8,8 +8,10 @@ import type {
   ExtensionAPI,
   ExtensionCommandContext,
 } from '@earendil-works/pi-coding-agent';
+import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import { sendAdvisorMessage, } from './command-message.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
+import { maxContextCharsForAdvisorModel, } from './context.ts';
 import { selectDefaultModel, } from './model-cost.ts';
 import { resolveEffectiveScope, } from './scope-resolver.ts';
 import { runAdvisor, } from './tool.ts';
@@ -147,6 +149,24 @@ export function buildAdvisorStatus(
       estimatedInputTokens: 0,
       maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
     },);
+  /** Advisor model system prompt used for budget reserve estimate. */
+  const advisorSystemPrompt = buildAdvisorSystemPrompt(config,);
+  /** Effective context budget for status default model. */
+  const defaultContextBudget = defaultSelection === undefined
+    ? undefined
+    : maxContextCharsForAdvisorModel({
+      config,
+      model: defaultSelection.selected.model,
+      advisorSystemPrompt,
+    },);
+  /** Effective context budget shown when present. */
+  const defaultContextBudgetText = defaultContextBudget === undefined
+    ? 'none'
+    : `${defaultContextBudget} chars`;
+  /** Configured context cap shown when present. */
+  const configuredContextCap = config.maxContextChars === undefined
+    ? 'none'
+    : `${config.maxContextChars} chars`;
 
   return [
     `Advisor: ${enabled ? 'on' : 'off'}`,
@@ -164,7 +184,11 @@ export function buildAdvisorStatus(
     `Config: global=${
       config.source.globalLoaded ? config.source.globalPath : 'absent'
     } project=${config.source.projectLoaded ? config.source.projectPath : 'absent'}`,
-    `Context budget: ${config.maxContextChars} chars, ${config.maxAdvisorOutputTokens} output tokens`,
+    [
+      `Context budget: ${defaultContextBudgetText} effective for default model,`,
+      `cap=${configuredContextCap},`,
+      `${config.maxAdvisorOutputTokens} output tokens`,
+    ].join(' '),
     `Prior Advisor results: ${
       config.includePriorAdvisorResults ? 'included' : 'omitted'
     }`,

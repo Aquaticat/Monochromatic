@@ -38,6 +38,26 @@ const THINKING_LEVELS = [
 /** Valid pi thinking-level suffixes as strings for runtime checks. */
 const THINKING_LEVEL_SET: ReadonlySet<string> = new Set(THINKING_LEVELS,);
 
+/** Digits in pi model date suffixes. */
+const DATE_SUFFIX_DIGITS = 8;
+
+/** Total characters in pi model date suffix including leading hyphen. */
+const DATE_SUFFIX_TOTAL_LENGTH = DATE_SUFFIX_DIGITS + 1;
+
+/** ASCII digit characters accepted in pi model date suffixes. */
+const ASCII_DIGITS: ReadonlySet<string> = new Set([
+  '0',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+],);
+
 //endregion Types and constants
 
 //region Public helpers
@@ -277,9 +297,59 @@ function isThinkingLevel(
 function isAlias(
   id: string,
 ): boolean {
-  /** Date suffix pattern used by pi model resolver. */
-  const datePattern = /-\d{8}$/;
-  return (id.endsWith('-latest',)) || (!datePattern.test(id,));
+  return (id.endsWith('-latest',)) || (!hasDateSuffix(id,));
+}
+
+/**
+ * Check whether a model id ends with pi's date suffix shape.
+ *
+ * @param id - model id
+ *
+ * @returns whether id ends with hyphen followed by eight ASCII digits
+ */
+function hasDateSuffix(
+  id: string,
+): boolean {
+  if (id.length < DATE_SUFFIX_TOTAL_LENGTH)
+    return false;
+
+  /** Index of leading hyphen for suffix candidate. */
+  const suffixHyphenIndex = id.length - DATE_SUFFIX_TOTAL_LENGTH;
+  if (id.at(suffixHyphenIndex,) !== '-')
+    return false;
+
+  /** Candidate date suffix without leading hyphen. */
+  const dateSuffix = id.slice(suffixHyphenIndex + 1,);
+  return isAsciiDigitString(dateSuffix,);
+}
+
+/**
+ * Check whether bounded string contains only ASCII digits.
+ *
+ * @param value - candidate digit string
+ *
+ * @returns whether every character is an ASCII digit
+ */
+function isAsciiDigitString(
+  value: string,
+): boolean {
+  if (value === '')
+    return true;
+
+  return isAsciiDigit(value.at(0,) ?? '',) && isAsciiDigitString(value.slice(1,),);
+}
+
+/**
+ * Check whether one character is an ASCII digit.
+ *
+ * @param character - single-character string
+ *
+ * @returns whether character is between zero and nine inclusive
+ */
+function isAsciiDigit(
+  character: string,
+): boolean {
+  return ASCII_DIGITS.has(character,);
 }
 
 //endregion Internal helpers

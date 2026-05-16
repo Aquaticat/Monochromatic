@@ -32,6 +32,16 @@ export type SelectDefaultModelOptions = {
   maxAdvisorOutputTokens: number;
 };
 
+/** Options for default model selection with per-model context estimates. */
+export type SelectDefaultModelFromContextEstimatesOptions = {
+  /** Effective scoped model set. */
+  scope: EffectiveModelScope;
+  /** Estimated input tokens keyed by canonical scoped model slug. */
+  estimatedInputTokensBySlug: ReadonlyMap<string, number>;
+  /** Maximum output tokens requested from Advisor. */
+  maxAdvisorOutputTokens: number;
+};
+
 /**
  * Estimate Advisor request input tokens using pi's message token estimator.
  *
@@ -73,6 +83,39 @@ export function estimateAdvisorInputTokens(
 export function selectDefaultModel(
   options: SelectDefaultModelOptions,
 ): DefaultModelSelection {
+  /** Shared token estimate applied to every scoped model. */
+  const estimatedInputTokensBySlug = new Map(
+    options.scope.entries.map(function mapEntry(entry,) {
+      return [
+        entry.canonicalSlug,
+        options.estimatedInputTokens,
+      ] as const;
+    },),
+  );
+  return selectDefaultModelFromContextEstimates({
+    scope: options.scope,
+    estimatedInputTokensBySlug,
+    maxAdvisorOutputTokens: options.maxAdvisorOutputTokens,
+  },);
+}
+
+/**
+ * Select most expensive scoped model using each candidate's context estimate.
+ *
+ * @param options - scope and per-candidate request-size inputs
+ *
+ * @returns selected model and sorted cost ranking
+ *
+ * @throws when scope is empty or a candidate has no estimate
+ *
+ * @example
+ * ```typescript
+ * selectDefaultModelFromContextEstimates({ scope, estimatedInputTokensBySlug, maxAdvisorOutputTokens });
+ * ```
+ */
+export function selectDefaultModelFromContextEstimates(
+  options: SelectDefaultModelFromContextEstimatesOptions,
+): DefaultModelSelection {
   if (options.scope.entries.length === 0)
     throw new Error('advisor: no scoped models with configured auth',);
 
@@ -81,9 +124,18 @@ export function selectDefaultModel(
     .scope
     .entries
     .map(function scoreEntry(entry,) {
+      /** Input-token estimate for this scoped model's effective context budget. */
+      const estimatedInputTokens = options.estimatedInputTokensBySlug.get(
+        entry.canonicalSlug,
+      );
+      if (estimatedInputTokens === undefined) {
+        throw new Error(
+          `advisor: missing input-token estimate for ${entry.canonicalSlug}`,
+        );
+      }
       return scoreModel({
         entry,
-        estimatedInputTokens: options.estimatedInputTokens,
+        estimatedInputTokens,
         maxAdvisorOutputTokens: options.maxAdvisorOutputTokens,
       },);
     },)
@@ -204,7 +256,11 @@ function buildSelectionReason(
     score: ModelCostScore;
   },
 ): string {
-  return `highest expected cost: ${score.slug} = ${score.inputTokens} input tokens * ${score.inputCost} + ${score.maxOutputTokens} output tokens * ${score.outputCost}`;
+  return [
+    `highest expected cost: ${score.slug} =`,
+    `${score.inputTokens} input tokens * ${score.inputCost} +`,
+    `${score.maxOutputTokens} output tokens * ${score.outputCost}`,
+  ].join(' ',);
 }
 
 //endregion Internal helpers

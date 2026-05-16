@@ -4,14 +4,22 @@
  * @module
  */
 
+import type {
+  ModelRegistry,
+  SessionEntry,
+} from '@earendil-works/pi-coding-agent';
 import {
   buildAdvisorSystemPrompt,
   completeAdvisor,
   extractAdvisorText,
 } from './advisor-client.ts';
-import { selectAdvisorModel, } from './advisor-selection.ts';
+import {
+  buildAdvisorContext,
+  maxContextCharsForAdvisorModel,
+} from './context.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
-import { buildAdvisorContext, } from './context.ts';
+import { selectDefaultModelFromContextEstimates, } from './model-cost.ts';
+import { resolveRequestedModel, } from './model-slug.ts';
 import {
   renderAdvisorCall,
   renderAdvisorResult,
@@ -23,10 +31,14 @@ import {
 } from './tool-params.ts';
 import type {
   AdvisorConfig,
+  AdvisorContext,
+  AdvisorModelSelection,
   AdvisorRunOptions,
   AdvisorRunResult,
   AdvisorToolDefinition,
   AdvisorToolResult,
+  EffectiveModelScope,
+  ScopedAdvisorModel,
 } from './types.ts';
 
 //region Public API
@@ -156,23 +168,23 @@ export async function runAdvisor(
 
   /** Advisor model system prompt. */
   const advisorSystemPrompt = buildAdvisorSystemPrompt(options.config,);
-  /** Serialized conversation context. */
-  const advisorContext = buildAdvisorContext({
+  /** Selected Advisor model and model-budgeted serialized context. */
+  const selectionContext = selectAdvisorRunContext({
     branch: options.ctx.sessionManager.getBranch(),
     config: options.config,
     advisorSystemPrompt,
-    ...(options.toolCallId === undefined ? {} : { toolCallId: options.toolCallId, }),
-  },);
-  /** Selected Advisor model. */
-  const selection = selectAdvisorModel({
     scope,
+    modelRegistry: options.ctx.modelRegistry,
     ...(options.requestedSlug === undefined
       ? {}
       : { requestedSlug: options.requestedSlug, }),
-    config: options.config,
-    estimatedInputTokens: advisorContext.estimatedInputTokens,
-    modelRegistry: options.ctx.modelRegistry,
+    ...(options.toolCallId === undefined ? {} : { toolCallId: options.toolCallId, }),
   },);
+  /** Selected Advisor model and serialized conversation context. */
+  const {
+    selection,
+    advisorContext,
+  } = selectionContext;
 
   /** Provider response from selected secondary model. */
   const response = await completeAdvisor({
@@ -201,6 +213,7 @@ export async function runAdvisor(
         ? {}
         : { defaultSelectionReason: selection.defaultSelection.reason, }),
       durationMs: Date.now() - startedAt,
+      contextBudgetChars: advisorContext.maxContextChars,
       contextChars: advisorContext.finalChars,
       estimatedInputTokens: advisorContext.estimatedInputTokens,
       truncated: advisorContext.truncated,
@@ -214,3 +227,156 @@ export async function runAdvisor(
 }
 
 //endregion Public API
+
+//region Context selection
+
+/** Selected model paired with serialized context built for that model. */
+type AdvisorSelectionContext = {
+  /** Advisor model selection. */
+  selection: AdvisorModelSelection;
+  /** Serialized context using selected model budget. */
+  advisorContext: AdvisorContext;
+};
+
+/** Options for selecting model and model-budgeted context together. */
+type SelectAdvisorRunContextOptions = {
+  /** Session branch entries from pi. */
+  branch: readonly SessionEntry[];
+  /** Runtime Advisor configuration. */
+  config: AdvisorConfig;
+  /** Advisor model system prompt. */
+  advisorSystemPrompt: string;
+  /** Effective scoped model set. */
+  scope: EffectiveModelScope;
+  /** Global model registry for explicit slug validation. */
+  modelRegistry: ModelRegistry;
+  /** Optional user-requested model slug. */
+  requestedSlug?: string;
+  /** Current Advisor tool call id to omit. */
+  toolCallId?: string;
+};
+
+/** Options for building context for one scoped Advisor model. */
+type BuildContextForScopedModelOptions = {
+  /** Session branch entries from pi. */
+  branch: readonly SessionEntry[];
+  /** Runtime Advisor configuration. */
+  config: AdvisorConfig;
+  /** Advisor model system prompt. */
+  advisorSystemPrompt: string;
+  /** Scoped Advisor model. */
+  scopedModel: ScopedAdvisorModel;
+  /** Current Advisor tool call id to omit. */
+  toolCallId?: string;
+};
+
+/** Context candidate for a scoped Advisor model. */
+type AdvisorContextCandidate = {
+  /** Scoped Advisor model. */
+  scopedModel: ScopedAdvisorModel;
+  /** Serialized context using scoped model budget. */
+  advisorContext: AdvisorContext;
+};
+
+/**
+ * Select Advisor model and build context with that model's context budget.
+ *
+ * @param options - branch, config, scope, and model-selection inputs
+ *
+ * @returns selected model and serialized context
+ */
+function selectAdvisorRunContext(
+  options: SelectAdvisorRunContextOptions,
+): AdvisorSelectionContext {
+  if (options.requestedSlug !== undefined) {
+    /** Explicit Advisor model selection. */
+    const selection = resolveRequestedModel({
+      scope: options.scope,
+      requestedSlug: options.requestedSlug,
+      modelRegistry: options.modelRegistry,
+    },);
+    return {
+      selection,
+      advisorContext: buildContextForScopedModel({
+        branch: options.branch,
+        config: options.config,
+        advisorSystemPrompt: options.advisorSystemPrompt,
+        scopedModel: selection.selected,
+        ...(options.toolCallId === undefined ? {} : { toolCallId: options.toolCallId, }),
+      },),
+    };
+  }
+
+  /** Context candidates using each scoped model's effective context budget. */
+  const candidates = options.scope.entries.map(function mapScopedModel(scopedModel,) {
+    return {
+      scopedModel,
+      advisorContext: buildContextForScopedModel({
+        branch: options.branch,
+        config: options.config,
+        advisorSystemPrompt: options.advisorSystemPrompt,
+        scopedModel,
+        ...(options.toolCallId === undefined ? {} : { toolCallId: options.toolCallId, }),
+      },),
+    } satisfies AdvisorContextCandidate;
+  },);
+  /** Input token estimates keyed by canonical scoped model slug. */
+  const estimatedInputTokensBySlug = new Map(
+    candidates.map(function mapCandidate(candidate,) {
+      return [
+        candidate.scopedModel.canonicalSlug,
+        candidate.advisorContext.estimatedInputTokens,
+      ] as const;
+    },),
+  );
+  /** Default Advisor model selection using each candidate's own estimate. */
+  const defaultSelection = selectDefaultModelFromContextEstimates({
+    scope: options.scope,
+    estimatedInputTokensBySlug,
+    maxAdvisorOutputTokens: options.config.maxAdvisorOutputTokens,
+  },);
+  /** Context candidate matching selected default model. */
+  const selectedCandidate = candidates.find(function matchesSelection(candidate,) {
+    return candidate.scopedModel.canonicalSlug
+      === defaultSelection.selected.canonicalSlug;
+  },);
+  if (selectedCandidate === undefined) {
+    throw new Error(
+      `advisor: selected model ${defaultSelection.selected.canonicalSlug} context disappeared`,
+    );
+  }
+  return {
+    selection: {
+      selected: defaultSelection.selected,
+      defaultSelection,
+    },
+    advisorContext: selectedCandidate.advisorContext,
+  };
+}
+
+/**
+ * Build serialized Advisor context for one scoped model.
+ *
+ * @param options - branch, config, prompt, scoped model, and current tool call
+ *
+ * @returns serialized context truncated for scoped model
+ */
+function buildContextForScopedModel(
+  options: BuildContextForScopedModelOptions,
+): AdvisorContext {
+  /** Effective serialized-context character budget for selected model. */
+  const maxContextChars = maxContextCharsForAdvisorModel({
+    config: options.config,
+    model: options.scopedModel.model,
+    advisorSystemPrompt: options.advisorSystemPrompt,
+  },);
+  return buildAdvisorContext({
+    branch: options.branch,
+    config: options.config,
+    advisorSystemPrompt: options.advisorSystemPrompt,
+    maxContextChars,
+    ...(options.toolCallId === undefined ? {} : { toolCallId: options.toolCallId, }),
+  },);
+}
+
+//endregion Context selection

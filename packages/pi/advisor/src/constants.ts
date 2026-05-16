@@ -22,8 +22,8 @@ export const CONFIG_FILE_NAME = 'pi-advisor.json';
 /** Default provider request timeout in milliseconds. */
 export const DEFAULT_TIMEOUT_MS = 120_000;
 
-/** Default serialized-context character budget. */
-export const DEFAULT_MAX_CONTEXT_CHARS = 180_000;
+/** Provider and message-framing reserve subtracted from model context windows. */
+export const DEFAULT_CONTEXT_OVERHEAD_TOKENS = 256;
 
 /** Default maximum output tokens requested from the advisor model. */
 export const DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS = 4_096;

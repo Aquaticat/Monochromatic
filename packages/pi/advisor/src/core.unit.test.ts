@@ -16,7 +16,10 @@ import {
 } from '@monochromatic-dev/module-test';
 
 import { parseArgvModelPatterns, } from './argv-scope.ts';
-import { selectDefaultModel, } from './model-cost.ts';
+import {
+  selectDefaultModel,
+  selectDefaultModelFromContextEstimates,
+} from './model-cost.ts';
 import { resolveRequestedModel, } from './model-slug.ts';
 import { resolveModelPatterns, } from './scope-patterns.ts';
 import { prepareAdvisorArguments, } from './tool-params.ts';
@@ -41,6 +44,12 @@ const OUTPUT_BUDGET = 10;
 
 /** Input token estimate used in cost-selection tests. */
 const INPUT_TOKENS = 20;
+
+/** Large input token estimate used for per-model cost-selection tests. */
+const LARGE_INPUT_TOKENS = 1_000;
+
+/** Empty input token estimate used for per-model cost-selection tests. */
+const EMPTY_INPUT_TOKENS = 0;
 
 /** Context window for fixture models. */
 const CONTEXT_WINDOW = 1_000;
@@ -233,6 +242,31 @@ await describe({
               maxAdvisorOutputTokens: OUTPUT_BUDGET,
             },);
             expect(result.selected.canonicalSlug,).toBe('expensive/reviewer',);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: selectDefaultModelFromContextEstimates.name,
+      children: [
+        it({
+          name: 'scores each model with its own input-token estimate',
+          fn: async () => {
+            const result = selectDefaultModelFromContextEstimates({
+              scope: twoModelScope,
+              estimatedInputTokensBySlug: new Map([
+                [
+                  'cheap/reviewer',
+                  LARGE_INPUT_TOKENS,
+                ],
+                [
+                  'expensive/reviewer',
+                  EMPTY_INPUT_TOKENS,
+                ],
+              ],),
+              maxAdvisorOutputTokens: OUTPUT_BUDGET,
+            },);
+            expect(result.selected.canonicalSlug,).toBe('cheap/reviewer',);
           },
         },),
       ],

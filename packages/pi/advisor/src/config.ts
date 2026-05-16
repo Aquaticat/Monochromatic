@@ -14,7 +14,6 @@ import {
 import {
   CONFIG_FILE_NAME,
   DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS,
-  DEFAULT_MAX_CONTEXT_CHARS,
   DEFAULT_TIMEOUT_MS,
 } from './constants.ts';
 import type { AdvisorConfig, } from './types.ts';
@@ -25,7 +24,6 @@ import type { AdvisorConfig, } from './types.ts';
 export const DEFAULT_CONFIG: Omit<AdvisorConfig, 'source'> = {
   enabled: true,
   timeoutMs: DEFAULT_TIMEOUT_MS,
-  maxContextChars: DEFAULT_MAX_CONTEXT_CHARS,
   maxAdvisorOutputTokens: DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS,
   includePriorAdvisorResults: true,
 };
@@ -157,14 +155,16 @@ function mergeConfigFiles(
     ) {
       if (config === undefined)
         return accumulator;
+      /** Merged context cap, omitted when neither scope configures one. */
+      const maxContextChars = config.maxContextChars ?? accumulator.maxContextChars;
       return {
         enabled: config.enabled ?? accumulator.enabled,
         timeoutMs: config.timeoutMs ?? accumulator.timeoutMs,
-        maxContextChars: config.maxContextChars ?? accumulator.maxContextChars,
         maxAdvisorOutputTokens: config.maxAdvisorOutputTokens
           ?? accumulator.maxAdvisorOutputTokens,
         includePriorAdvisorResults: config.includePriorAdvisorResults
           ?? accumulator.includePriorAdvisorResults,
+        ...(maxContextChars === undefined ? {} : { maxContextChars, }),
         ...(config.systemPrompt === undefined
           ? {}
           : { systemPrompt: config.systemPrompt, }),

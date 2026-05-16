@@ -4,7 +4,11 @@
  * @module
  */
 
-import type { AssistantMessage, } from '@earendil-works/pi-ai';
+import type {
+  Api,
+  AssistantMessage,
+  Model,
+} from '@earendil-works/pi-ai';
 import {
   convertToLlm,
   serializeConversation,
@@ -14,6 +18,8 @@ import {
   ADVISOR_MESSAGE_TYPE,
   ADVISOR_TOOL_NAME,
   CONTEXT_TRUNCATION_MARKER,
+  DEFAULT_CONTEXT_OVERHEAD_TOKENS,
+  TOKEN_ESTIMATE_CHARS_PER_TOKEN,
 } from './constants.ts';
 import { latestUserPromptExcerpt, } from './context-user.ts';
 import { estimateAdvisorInputTokens, } from './model-cost.ts';
@@ -35,8 +41,20 @@ export type BuildAdvisorContextOptions = {
   config: AdvisorConfig;
   /** Advisor-model system prompt used for token estimate. */
   advisorSystemPrompt: string;
+  /** Effective serialized-context character budget. */
+  maxContextChars?: number;
   /** Current tool call id to omit from serialized context. */
   toolCallId?: string;
+};
+
+/** Options for deriving context budget from selected Advisor model. */
+export type MaxContextCharsForAdvisorModelOptions = {
+  /** Runtime Advisor configuration. */
+  config: AdvisorConfig;
+  /** Selected Advisor model. */
+  model: Model<Api>;
+  /** Advisor-model system prompt used for token reserve estimate. */
+  advisorSystemPrompt: string;
 };
 
 /**
@@ -72,10 +90,14 @@ export function buildAdvisorContext(
 
   /** Serialized conversation produced by pi's compaction utility. */
   const serialized = serializeConversation(convertToLlm(messages,),);
+  /** Effective truncation budget supplied by model-aware caller or config cap. */
+  const maxContextChars = options.maxContextChars
+    ?? options.config.maxContextChars
+    ?? Number.MAX_SAFE_INTEGER;
   /** Truncated serialized conversation and metadata. */
   const truncation = truncateContext({
     text: serialized,
-    maxChars: options.config.maxContextChars,
+    maxChars: maxContextChars,
   },);
   /** Estimated request input tokens. */
   const estimatedInputTokens = estimateAdvisorInputTokens({
@@ -88,6 +110,7 @@ export function buildAdvisorContext(
 
   return {
     text: truncation.text,
+    maxContextChars,
     originalChars: serialized.length,
     finalChars: truncation.text.length,
     truncated: truncation.truncated,
@@ -95,6 +118,45 @@ export function buildAdvisorContext(
     estimatedInputTokens,
     ...(latestExcerpt === undefined ? {} : { latestUserPromptExcerpt: latestExcerpt, }),
   };
+}
+
+/**
+ * Derive serialized-context character budget for selected Advisor model.
+ *
+ * @param options - config, selected model, and system prompt
+ *
+ * @returns effective context character budget after output and overhead reserves
+ *
+ * @example
+ * ```typescript
+ * maxContextCharsForAdvisorModel({ config, model, advisorSystemPrompt });
+ * ```
+ */
+export function maxContextCharsForAdvisorModel(
+  options: MaxContextCharsForAdvisorModelOptions,
+): number {
+  /** Input tokens consumed before serialized conversation content. */
+  const reservedInputTokens = estimateAdvisorInputTokens({
+    systemPrompt: options.advisorSystemPrompt,
+    contextText: '',
+  },) + DEFAULT_CONTEXT_OVERHEAD_TOKENS;
+  /** Input tokens left for serialized conversation content. */
+  const availableContextTokens = Math.max(
+    1,
+    options.model.contextWindow
+      - options.config.maxAdvisorOutputTokens
+      - reservedInputTokens,
+  );
+  /** Model-derived serialized conversation character budget. */
+  const modelContextChars = Math.max(
+    1,
+    availableContextTokens * TOKEN_ESTIMATE_CHARS_PER_TOKEN,
+  );
+
+  return Math.min(
+    options.config.maxContextChars ?? modelContextChars,
+    modelContextChars,
+  );
 }
 
 /**
