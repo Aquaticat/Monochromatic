@@ -25,10 +25,10 @@ ${
       ...(await Array.fromAsync(glob('packages/*/*/node_modules/.bin',),)),
     ]
       .map(function quote(dir,): string {
-        return `"${dir}"`;
+        return `  "${dir}"`;
       },)
       .join(',\n',)
-  }
+  },
 ]
 `;
   await overwrite({
