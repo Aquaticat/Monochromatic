@@ -1,0 +1,38 @@
+[package]
+name = "forbidden-strings-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
+arbitrary = { version = "1", features = ["derive"] }
+sha2 = "0.10"
+
+[dependencies.forbidden-strings]
+path = ".."
+features = ["fuzzing"]
+
+# Use independent workspace for fuzzers
+[workspace]
+members = ["."]
+
+# Override the parent crate's `panic = "abort"` so libFuzzer can capture
+# and minimize crashes via unwinding. Without this override, panics
+# abort the process before libFuzzer gets a chance to record a
+# reproducer.
+[profile.release]
+panic = "unwind"
+
+[profile.dev]
+panic = "unwind"
+
+[[bin]]
+name = "fuzz_target_1"
+path = "fuzz_targets/fuzz_target_1.rs"
+test = false
+doc = false
+bench = false

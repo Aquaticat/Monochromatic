@@ -353,3 +353,4 @@ packages/webapp-forge/*/data/
 # These must appear AFTER the global patterns to take effect.
 !/forbidden-strings.local.example.txt
 !/packages/cli/forbidden-strings/Cargo.lock
+!/packages/cli/forbidden-strings/fuzz/Cargo.lock
