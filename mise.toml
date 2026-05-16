@@ -38,6 +38,12 @@ ripgrep = "latest"
 # Replacing strings
 "cargo:fastmod" = "latest"
 
+# Coverage-guided fuzzing for forbidden-strings (see packages/cli/forbidden-strings/fuzz/).
+# Pinned to 0.13.1 because the API around `--fuzzing-workspace=true` and
+# the libfuzzer-sys integration has shifted across point releases; this
+# version is what was verified locally for the rollout.
+"cargo:cargo-fuzz" = "0.13.1"
+
 # Needed by some packages that depend on Node APIs
 node = "latest"
 

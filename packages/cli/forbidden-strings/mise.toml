@@ -29,3 +29,42 @@ run = "cargo publish"
 [tasks.test]
 description = "cargo test"
 run = "cargo test --release"
+
+[tasks."fuzz:list"]
+description = "List all fuzz targets in fuzz/"
+env.RUSTUP_TOOLCHAIN = "nightly"
+run = "cargo fuzz list"
+
+[tasks."fuzz:build"]
+description = "Build all fuzz targets (nightly required)"
+env.RUSTUP_TOOLCHAIN = "nightly"
+run = "cargo fuzz build"
+
+[tasks."fuzz:smoke"]
+description = "Run every fuzz target for 30s with the dictionary as a smoke test"
+env.RUSTUP_TOOLCHAIN = "nightly"
+run = """
+let targets = (cargo fuzz list | lines | where {|t| ($t | str trim) != "" })
+for target in $targets {
+  print $"--- ($target) ---"
+  cargo fuzz run $target -- -max_total_time=30 -rss_limit_mb=2048 -dict=fuzz/dictionaries/forbidden-strings.dict
+}
+"""
+
+[tasks."fuzz:run"]
+description = "Run one fuzz target (pass the target name and libFuzzer args after --)"
+env.RUSTUP_TOOLCHAIN = "nightly"
+usage = """
+arg "target" help="Fuzz target name (e.g. fuzz_extract_gate_soundness)"
+arg "[args]" var=#true help="Extra libFuzzer args to pass through"
+"""
+run = """
+let target = $env.usage_target
+let extras = ($env.usage_args? | default '' | str trim | split row ' ' | where {|p| $p != '' })
+cargo fuzz run $target -- -dict=fuzz/dictionaries/forbidden-strings.dict ...$extras
+"""
+
+[tasks."fuzz:seed"]
+description = "Regenerate the curated corpus from rules/<area>_tests.rs"
+env.RUSTUP_TOOLCHAIN = "nightly"
+run = "cd fuzz; cargo run --release --bin seed-from-tests"
