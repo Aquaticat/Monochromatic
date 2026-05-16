@@ -887,6 +887,76 @@ fn inline_flag_propagates_ci_to_subsequent_literal() {
     );
 }
 
+// What:     `#[test] fn unicode_flag_disables_extraction()`. BUG 2
+//           regression test. The `u` flag in the leading flag group
+//           must route the rule to residual scanning instead of the AC
+//           gate path.
+// Why:      Pre-fix, `(?iu)cafésecret` had its literal extracted into
+//           the AC-CI bucket. aho-corasick's ASCII case-fold leaves
+//           `É` and `é` mismatched, so a file containing `CAFÉSECRET`
+//           never fired the gate, the regex's find_all never ran, and
+//           the rule silently missed. Post-fix `extract_gating_substrings`
+//           returns None when the leading flag set contains `u`, and the
+//           rule falls back to the residual resharp scan which handles
+//           Unicode case-folding correctly.
+// TS map:   `test("(?u) or (?iu) leading flag disables extraction", () => { ... })`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test("(?u) leading flag disables extraction", () => {
+//   expect(extractGatingSubstrings("(?iu)cafésecret")).toBeNull();
+// });
+// ```
+#[test]
+fn unicode_flag_disables_extraction() {
+    // What:     Both leading-flag forms that combine Unicode mode with
+    //           case-insensitive matching must return None so the rule
+    //           goes to the residual scanner.
+    // Why:      The AC-CI gate uses aho-corasick's ascii_case_insensitive
+    //           which only folds ASCII letters; non-ASCII case-folded
+    //           variants (É <-> é, Á <-> á, etc.) would be missed,
+    //           making the gate unsound for the (?iu)/(?ui)/(?u) rules.
+    // TS map:   `expect(extractGatingSubstrings("(?iu)cafésecret")).toBeNull();`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(extractGatingSubstrings("(?iu)cafésecret")).toBeNull();
+    // expect(extractGatingSubstrings("(?ui)cafésecret")).toBeNull();
+    // expect(extractGatingSubstrings("(?u)cafésecret")).toBeNull();
+    // ```
+    assert!(
+        extract_gating_substrings("(?iu)cafésecret").is_none(),
+        "BUG 2: (?iu) leading flag must disable extraction"
+    );
+    assert!(
+        extract_gating_substrings("(?ui)cafésecret").is_none(),
+        "BUG 2: (?ui) leading flag must disable extraction"
+    );
+    assert!(
+        extract_gating_substrings("(?u)cafésecret").is_none(),
+        "BUG 2: (?u) leading flag must disable extraction (conservative)"
+    );
+
+    // What:     Plain `(?i)` (no `u`) MUST still extract -- this is the
+    //           common case-insensitive shape that drains hundreds of
+    //           betterleaks rules onto the AC-CI fast path. The fix
+    //           must not regress it.
+    // Why:      Regression guard. Without this assertion a future
+    //           change that disabled extraction on ANY `i` flag would
+    //           pass the negative tests but blow up perf on the corpus.
+    // TS map:   `expect(extractGatingSubstrings("(?i)keyword-suffix")).not.toBeNull();`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // expect(extractGatingSubstrings("(?i)keyword-suffix")).not.toBeNull();
+    // ```
+    let subs = extract_gating_substrings("(?i)keyword-suffix")
+        .expect("plain (?i) without u flag must still extract");
+    assert_eq!(subs.len(), 1);
+    assert_eq!(subs[0].0.as_bytes(), b"keyword-suffix");
+    assert!(subs[0].1, "ci should be true for plain (?i)");
+}
+
 #[test]
 fn inline_negated_flag_clears_ci_for_subsequent_literal() {
     // What:     `(?i)shorty(?-i)keyword-suffix` -- outer (?i) sets ci=true

@@ -112,6 +112,42 @@ pub fn extract_gating_substrings(src: &str) -> Option<Vec<(String, bool)>> {
             let is_flag_group = !flags.is_empty()
                 && flags.chars().all(|c| c.is_ascii_alphabetic() || c == '-');
             if is_flag_group {
+                // What:     `if flags.contains('u') { return None; }`.
+                //           Leading `(?u)` (or `(?iu)`, `(?ui)`, any flag
+                //           set containing `u`) enables Unicode-aware
+                //           regex semantics. When combined with `(?i)`,
+                //           case-folding becomes Unicode-aware (É <-> é).
+                //           The AC-CI bucket uses aho-corasick's
+                //           `ascii_case_insensitive(true)` which only
+                //           folds ASCII letters, so a Unicode-cased
+                //           variant in file content would not fire the
+                //           gate. Plain `(?u)` without `(?i)` is fine in
+                //           principle (literal extraction is byte-
+                //           verbatim and Unicode mode does not enable
+                //           case-folding by itself), but the simplest
+                //           safe fix is to skip extraction for ANY `u`
+                //           flag and let the residual resharp scan run
+                //           the rule. The conservative drop avoids
+                //           subtle cases where a future change to the
+                //           extraction walker might intersect with `u`
+                //           semantics; the perf cost is bounded because
+                //           `u`-flagged rules are rare in the bundled
+                //           corpus.
+                // Why:      Closes BUG 2: pre-fix, `(?iu)cafésecret`
+                //           registered `cafésecret` into the AC-CI
+                //           bucket; a file containing `CAFÉSECRET`
+                //           never fired the gate, the regex's find_all
+                //           was never invoked, and the rule silently
+                //           missed.
+                // TS map:   `if (flags.includes('u')) return null;`.
+                //
+                // In TS you'd write (pseudocode):
+                // ```ts
+                // if (flags.includes('u')) return null;
+                // ```
+                if flags.contains('u') {
+                    return None;
+                }
                 if flags.contains('i') {
                     ci = true;
                 }
