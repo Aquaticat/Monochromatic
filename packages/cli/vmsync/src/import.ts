@@ -107,7 +107,33 @@ async function validateUefi(
 }
 
 /**
+ * Whether `c` is a character permitted in a VM-name identifier.
+ *
+ * @param c - one-character string to inspect
+ *
+ * @returns whether `c` is alphanumeric, underscore, or hyphen
+ *
+ * @example
+ * ```ts
+ * isNameChar('a'); // true
+ * isNameChar('.'); // false
+ * ```
+ */
+function isNameChar(c: string,): boolean {
+  return ((c >= 'a') && (c <= 'z'))
+    || ((c >= 'A') && (c <= 'Z'))
+    || ((c >= '0') && (c <= '9'))
+    || (c === '_')
+    || (c === '-');
+}
+
+/**
  * Derives a VM name from an image file path by stripping the extension.
+ *
+ * Mirrors the original `.replace(/\.[^.]+$/, '').replaceAll(/[^a-zA-Z0-9_-]/g, '-')`
+ * pipeline: drops the last `.<ext>` (only when the dot is not the leading
+ * character, preserving dotfiles) and rewrites every disallowed character
+ * to `-`.
  *
  * @param imagePath - Path to the source image
  *
@@ -119,15 +145,30 @@ async function validateUefi(
  * ```
  */
 export function nameFromPath(imagePath: string,): string {
-  return basename(imagePath,)
-    .replace(
-      /\.[^.]+$/,
-      '',
-    )
-    .replaceAll(
-      /[^a-zA-Z0-9_-]/g,
-      '-',
+  /** File-name portion of the path; the input we sanitise. */
+  const base = basename(imagePath,);
+  /** Position of the extension separator; `<= 0` means no extension to strip. */
+  const dotIdx = base.lastIndexOf('.',);
+  /** Base name with the last extension dropped, or the base itself when no dot is found. */
+  const noExt = (dotIdx <= 0)
+    ? base
+    : base.slice(
+      0,
+      dotIdx,
     );
+  return Array.from(
+    { length: noExt.length, },
+    function sanitiseChar(
+      _: undefined,
+      idx: number,
+    ): string {
+      /** Char being inspected at this index; replaced when disallowed. */
+      const c = noExt.charAt(idx,);
+      return isNameChar(c,)
+        ? c
+        : '-';
+    },
+  ).join('',);
 }
 
 /**

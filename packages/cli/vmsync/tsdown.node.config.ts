@@ -11,9 +11,9 @@ const config: UserConfig = defineConfig({
   deps: {
     ...base.deps,
     alwaysBundle: [
-      /^@monochromatic-dev\//,
-      /^@optique\//,
-      /^nano-spawn$/,
+      '@monochromatic-dev/**',
+      '@optique/**',
+      'nano-spawn',
     ],
   },
 },);

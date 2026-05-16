@@ -15,7 +15,6 @@ import {
   BYTES_PER_GIB,
   BYTES_PER_MIB,
 } from '@monochromatic-dev/module-numeric-const';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 import {
   detectHypervisor,
@@ -313,22 +312,90 @@ async function bootHyperv(name: string,): Promise<void> {
  * ```
  */
 export function parseMemoryToBytes(memory: string,): number {
-  /** Regex match for number + unit suffix. */
-  const match = /^(\d+)\s*([GM])$/i.exec(memory,);
-  if (match === null) {
+  /** Decimal base for `Number.parseInt`. */
+  const DECIMAL_RADIX = 10;
+  /**
+   * Reports a malformed input with the same message shape the old regex
+   * version produced. Centralised so every failure path stays in sync.
+   *
+   * @throws Error with the canonical "invalid memory format" message
+   *
+   * @example
+   * ```ts
+   * fail(); // throws Error("invalid memory format: ...")
+   * ```
+   */
+  function fail(): never {
     throw new Error(
       `invalid memory format: "${memory}" (expected e.g. "4G" or "2048M")`,
     );
   }
-
+  /**
+   * Locates the exclusive end of the leading run of ASCII digits.
+   *
+   * @param idx - candidate scan offset; advances while digits are seen
+   *
+   * @returns first index whose character is not `0`-`9`
+   *
+   * @example
+   * ```ts
+   * findDigitsEnd(0); // 4 for memory === '2048M'
+   * ```
+   */
+  function findDigitsEnd(idx: number,): number {
+    if (idx >= memory.length)
+      return idx;
+    /** Char under the cursor; stops the scan when non-digit. */
+    const c = memory.charAt(idx,);
+    if ((c < '0') || (c > '9'))
+      return idx;
+    return findDigitsEnd(idx + 1,);
+  }
+  /**
+   * Skips ASCII space and tab characters starting at `idx`.
+   *
+   * @param idx - candidate scan offset; advances while whitespace is seen
+   *
+   * @returns first index whose character is not space or tab
+   *
+   * @example
+   * ```ts
+   * skipWhitespace(4); // 5 for memory === '2048 M'
+   * ```
+   */
+  function skipWhitespace(idx: number,): number {
+    if (idx >= memory.length)
+      return idx;
+    /** Char under the cursor; stops the skip when non-whitespace. */
+    const c = memory.charAt(idx,);
+    if ((c !== ' ') && (c !== '\t'))
+      return idx;
+    return skipWhitespace(idx + 1,);
+  }
+  /** Exclusive end of the leading digit run; `0` means no digits were present. */
+  const digitsEnd = findDigitsEnd(0,);
+  if (digitsEnd === 0)
+    fail();
+  /** Digit substring used as the numeric portion. */
+  const digitsPart = memory.slice(
+    0,
+    digitsEnd,
+  );
+  /** Cursor positioned at the unit token after any inter-token whitespace. */
+  const unitStart = skipWhitespace(digitsEnd,);
+  /** Unit portion of the input; must be exactly one character. */
+  const unitPart = memory.slice(unitStart,);
+  if (unitPart.length !== 1)
+    fail();
+  /** Unit suffix, normalized to uppercase. */
+  const unit = unitPart.toUpperCase();
+  if ((unit !== 'G') && (unit !== 'M'))
+    fail();
   /** Numeric part of the memory string. */
   const value = Number.parseInt(
-    nonNullishOrThrow(match[1],),
-    10,
+    digitsPart,
+    DECIMAL_RADIX,
   );
-  /** Unit suffix, normalized to uppercase. */
-  const unit = nonNullishOrThrow(match[2],).toUpperCase();
-
   return unit === 'G'
     ? value * BYTES_PER_GIB
     : value * BYTES_PER_MIB;

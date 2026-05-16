@@ -258,7 +258,7 @@ await describe({
           name: 'appends name to data directory',
           fn: async () => {
             const result = vmDir('alpine',);
-            expect(result,).toMatch(/vmsync\/alpine$/,);
+            expect(result.endsWith('vmsync/alpine',),).toBe(true,);
           },
         },),
 
@@ -266,7 +266,7 @@ await describe({
           name: 'handles name with hyphens',
           fn: async () => {
             const result = vmDir('fedora-dev',);
-            expect(result,).toMatch(/vmsync\/fedora-dev$/,);
+            expect(result.endsWith('vmsync/fedora-dev',),).toBe(true,);
           },
         },),
       ],
@@ -278,7 +278,7 @@ await describe({
           name: 'appends config filename to VM directory',
           fn: async () => {
             const result = vmConfigPath('alpine',);
-            expect(result,).toMatch(/vmsync\/alpine\/vmsync\.jsonc$/,);
+            expect(result.endsWith('vmsync/alpine/vmsync.jsonc',),).toBe(true,);
           },
         },),
       ],

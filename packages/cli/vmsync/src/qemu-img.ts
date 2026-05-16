@@ -298,9 +298,31 @@ export async function checksum(imagePath: string,): Promise<string> {
     command: 'sha256sum',
     args: [imagePath,],
   },);
+  /**
+   * Locates the exclusive end of the leading non-whitespace run in `raw`.
+   *
+   * @param idx - candidate scan offset
+   *
+   * @returns first index whose character is whitespace, or `raw.length`
+   *
+   * @example
+   * ```ts
+   * findFirstWhitespace(0); // 64 for raw === '<64-char hash>  file'
+   * ```
+   */
+  function findFirstWhitespace(idx: number,): number {
+    if (idx >= raw.length)
+      return idx;
+    /** Char under the cursor; stops at the first whitespace. */
+    const c = raw.charAt(idx,);
+    if ((c === ' ') || (c === '\t') || (c === '\n') || (c === '\r'))
+      return idx;
+    return findFirstWhitespace(idx + 1,);
+  }
   /** Hash portion before the filename separator. */
-  const hash = nonNullishOrThrow(
-    raw.split(/\s+/,)[0],
+  const hash = raw.slice(
+    0,
+    findFirstWhitespace(0,),
   );
   return `sha256:${hash}`;
 }
