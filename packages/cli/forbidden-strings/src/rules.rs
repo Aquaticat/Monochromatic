@@ -181,75 +181,227 @@ use resharp::Regex;
 //   }
 // }
 // ```
-// What:     `fn needs_unicode_shorthand(src: &str) -> bool` returns
-//           `true` when `src` contains any of the unicode-aware
-//           shorthand atoms `\s`, `\S`, `\w`, `\W`, `\d`, `\D`,
-//           `\b`, `\B`. Walks the bytes once, advances past any
-//           `\\X` escape, and reports the moment it sees one of
-//           the magic escapees.
-// Why:      Closes BUG 8. The `regex` crate's `unicode(false)`
-//           mode reinterprets these shorthand atoms as ASCII-only
-//           classes -- `\s` becomes `[ \t\n\v\f\r]` instead of
-//           the full Unicode whitespace class. The `unicode(false)`
-//           build STILL SUCCEEDS for such a rule (no parse error
-//           to fall through on), so the original try-and-fallback
-//           pattern compiled the wrong semantics silently. NBSP
-//           (U+00A0) between tokens slipped past `[\s]+`. Detect
-//           the shorthand at the source level and skip the fast
-//           path so the rule routes straight to `unicode(true)`.
-//           Bare-literal unicode characters (e.g. `émoji`) and
-//           plain ASCII rules without these shorthand atoms still
-//           take the fast path -- the speedup only loses to
-//           correctness for rules that explicitly use these
-//           shorthand classes.
-// TS map:   `function needsUnicodeShorthand(src: string): boolean`.
+// What:     The byte alternation that matches every Unicode whitespace
+//           code point as its UTF-8 byte sequence. Each `\xHH` literal
+//           in the regex source compiles to one byte under the regex
+//           crate's `unicode(false)` mode; the alternation is then a
+//           cheap NFA branch (no per-codepoint table). Coverage:
+//           - U+00A0 NBSP                       `\xc2\xa0`
+//           - U+1680 OGHAM SPACE MARK           `\xe1\x9a\x80`
+//           - U+180E MONGOLIAN VOWEL SEPARATOR  `\xe1\xa0\x8e`
+//           - U+2000..U+200A (en quad..hair)    `\xe2\x80[\x80-\x8a]`
+//           - U+2028 LINE SEPARATOR             `\xe2\x80\xa8`
+//           - U+2029 PARAGRAPH SEPARATOR        `\xe2\x80\xa9`
+//           - U+202F NARROW NO-BREAK SPACE      `\xe2\x80\xaf`
+//           - U+205F MEDIUM MATH SPACE          `\xe2\x81\x9f`
+//           - U+3000 IDEOGRAPHIC SPACE          `\xe3\x80\x80`
+//           - U+FEFF ZERO-WIDTH NO-BREAK SPACE  `\xef\xbb\xbf`
+// Why:      Closes BUG 8 without forcing rules onto `unicode(true)`
+//           compile. Pre-fix, `(?i)adafruit[\s]+=` against `adafruit\xc2\xa0=`
+//           silently missed because `unicode(false)` treats `\s` as the
+//           ASCII subset `[\t\n\v\f\r\x20]`. The previous fix forced
+//           those rules to `unicode(true)` -- correct but ~90x more
+//           expensive to compile (224 rules -> 478 ms phase 1, 64x
+//           wall-time regression). Source-level expansion keeps every
+//           rule on the `unicode(false)` fast path while widening the
+//           class to cover the Unicode whitespace bytes.
+// TS map:   `const UNICODE_WS_ALT = "\\xc2\\xa0|...";`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// function needsUnicodeShorthand(src: string): boolean {
-//   let i = 0;
-//   while (i < src.length) {
-//     if (src.charCodeAt(i) === 0x5c /* \\ */ && i + 1 < src.length) {
-//       const c = src.charCodeAt(i + 1);
-//       if (c === 0x73 || c === 0x53 || // s S
-//           c === 0x77 || c === 0x57 || // w W
-//           c === 0x64 || c === 0x44 || // d D
-//           c === 0x62 || c === 0x42)   // b B
-//         return true;
-//       i += 2; continue;
-//     }
-//     i += 1;
-//   }
-//   return false;
-// }
+// const UNICODE_WS_ALT = String.raw`\xc2\xa0|...`;
 // ```
-fn needs_unicode_shorthand(src: &str) -> bool {
-    let bytes = src.as_bytes();
-    let mut i = 0usize;
-    while i < bytes.len() {
-        if bytes[i] == b'\\' && i + 1 < bytes.len() {
-            match bytes[i + 1] {
-                b's' | b'S' | b'w' | b'W' | b'd' | b'D' | b'b' | b'B' => return true,
-                _ => {}
+const UNICODE_WS_ALT: &str = r"\xc2\xa0|\xe1\x9a\x80|\xe1\xa0\x8e|\xe2\x80[\x80-\x8a\xa8\xa9\xaf]|\xe2\x81\x9f|\xe3\x80\x80|\xef\xbb\xbf";
+
+// What:     `fn scan_class(bytes, start) -> Option<(usize, bool)>`
+//           walks a character class starting at `bytes[start] == b'['`
+//           and returns `(close_offset, contains_s)` -- the index of
+//           the matching `]` AND whether the class contains an
+//           unescaped `\s` shorthand. Handles the corner cases:
+//           - Leading `[^` (negation flag) does not start a body.
+//           - A literal `]` at body-start position (`[]a-z]` or
+//             `[^]a-z]`) is not the terminator.
+//           - `\X` escapes consume two bytes (so `\]` inside the class
+//             does NOT terminate it).
+// Why:      The source rewrite below needs to know two things about
+//           each class: where it ends (so we can splice in the
+//           Unicode-WS alternation around it) and whether it actually
+//           contains `\s` (so we only widen classes that need it).
+//           Returns `None` for an unterminated class -- the caller
+//           treats this as "do not rewrite; let the regex compiler
+//           emit its own parse error."
+// TS map:   `function scanClass(bytes: Uint8Array, start: number)
+//                              : { close: number; containsS: boolean } | null`.
+fn scan_class(bytes: &[u8], start: usize) -> Option<(usize, bool)> {
+    let mut j = start + 1;
+    if j < bytes.len() && bytes[j] == b'^' {
+        j += 1;
+    }
+    if j < bytes.len() && bytes[j] == b']' {
+        j += 1;
+    }
+    let mut contains_s = false;
+    while j < bytes.len() {
+        let b = bytes[j];
+        if b == b'\\' && j + 1 < bytes.len() {
+            if bytes[j + 1] == b's' {
+                contains_s = true;
             }
-            i += 2;
+            j += 2;
             continue;
         }
+        if b == b']' {
+            return Some((j, contains_s));
+        }
+        j += 1;
+    }
+    None
+}
+
+// What:     `fn utf8_width(leading: u8) -> usize` returns how many
+//           bytes the UTF-8 sequence starting with `leading` occupies.
+//           ASCII -> 1, two-byte leading (0xc0-0xdf) -> 2, three-byte
+//           (0xe0-0xef) -> 3, four-byte (0xf0-0xf7) -> 4.
+// Why:      The source rewrite must copy multi-byte UTF-8 sequences
+//           verbatim. A bare `bytes[i] as char` cast would mojibake
+//           non-ASCII bytes; using `&src[i..i+width]` preserves the
+//           UTF-8 encoding.
+// TS map:   `function utf8Width(b: number): number`.
+fn utf8_width(leading: u8) -> usize {
+    if leading < 0x80 {
+        1
+    } else if leading < 0xc0 {
+        1
+    } else if leading < 0xe0 {
+        2
+    } else if leading < 0xf0 {
+        3
+    } else {
+        4
+    }
+}
+
+// What:     `fn expand_unicode_whitespace(src) -> String` rewrites the
+//           regex source so `\s` matches Unicode whitespace under
+//           `unicode(false)` compile mode. Transformations:
+//           - `\s` outside a character class -> `(?:\s|<UNICODE_WS_ALT>)`.
+//             The `\s` inside the group still expands to ASCII WS
+//             under `unicode(false)`; the alternation adds the
+//             multi-byte UTF-8 sequences for the remaining whitespace
+//             code points.
+//           - `[...\s...]` (class containing unescaped `\s`) ->
+//             `(?:[...\s...]|<UNICODE_WS_ALT>)`. The class itself is
+//             preserved (matches its ASCII subset under
+//             `unicode(false)`); the wrapping group adds the
+//             multi-byte sequences. Semantic shift: under PCRE/Unicode
+//             a class character takes one position, while the
+//             expanded multi-byte UTF-8 here also occupies one
+//             alternation slot. Quantifiers on the wrapped group
+//             treat NBSP as a single match, which is closer to
+//             author intent than the pre-fix "single byte" view.
+//           - Other escape sequences (`\X`, `\n`, `\xHH`) and literal
+//             characters pass through verbatim. Multi-byte UTF-8
+//             literals are preserved using `utf8_width`.
+// Why:      Source-level expansion keeps every rule on the
+//           `unicode(false)` fast path (~5ms phase 1) while making
+//           `\s` honour the user's authoring intent that a rule like
+//           `(?i)adafruit[\s]+=` matches `adafruit<NBSP>=`. The
+//           previous BUG 8 fix forced these rules to `unicode(true)`,
+//           costing ~478 ms phase 1 (95x regression). The rewrite
+//           costs microseconds and lands the same correctness.
+//           `\S` is intentionally NOT expanded: a sound "not Unicode
+//           whitespace" would require subtracting multi-byte byte
+//           sequences from a negated byte class, which has no clean
+//           source representation. Rules using `\S` keep ASCII-only
+//           semantics; document in PERF.md.
+// TS map:   `function expandUnicodeWhitespace(src: string): string`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function expandUnicodeWhitespace(src: string): string {
+//   let out = "";
+//   let i = 0;
+//   while (i < src.length) {
+//     // ... handle \s, [...], escapes, multi-byte literals ...
+//   }
+//   return out;
+// }
+// ```
+fn expand_unicode_whitespace(src: &str) -> String {
+    let bytes = src.as_bytes();
+    let mut out = String::with_capacity(src.len() + 64);
+    let mut i = 0;
+    while i < bytes.len() {
+        let b = bytes[i];
+        // Escape sequence: copy verbatim, with one exception (`\s`).
+        if b == b'\\' && i + 1 < bytes.len() {
+            let next = bytes[i + 1];
+            if next == b's' {
+                out.push_str("(?:\\s|");
+                out.push_str(UNICODE_WS_ALT);
+                out.push(')');
+                i += 2;
+                continue;
+            }
+            let escapee_width = utf8_width(next);
+            out.push_str(&src[i..i + 1 + escapee_width]);
+            i += 1 + escapee_width;
+            continue;
+        }
+        // Character class: check for `\s` inside and wrap if needed.
+        if b == b'[' {
+            match scan_class(bytes, i) {
+                Some((close_idx, contains_s)) => {
+                    let class_slice = &src[i..=close_idx];
+                    if contains_s {
+                        out.push_str("(?:");
+                        out.push_str(class_slice);
+                        out.push('|');
+                        out.push_str(UNICODE_WS_ALT);
+                        out.push(')');
+                    } else {
+                        out.push_str(class_slice);
+                    }
+                    i = close_idx + 1;
+                    continue;
+                }
+                None => {
+                    // Unterminated class -- pass through and let the
+                    // regex compiler report the parse error.
+                    out.push('[');
+                    i += 1;
+                    continue;
+                }
+            }
+        }
+        // Multi-byte UTF-8 literal: copy verbatim.
+        if b >= 0x80 {
+            let width = utf8_width(b);
+            out.push_str(&src[i..i + width]);
+            i += width;
+            continue;
+        }
+        // ASCII literal byte.
+        out.push(b as char);
         i += 1;
     }
-    false
+    out
 }
 
 fn compile_plain_rule(src: &str, idx: usize) -> Result<RegexRule, String> {
-    // What:     `if !needs_unicode_shorthand(src) { try unicode(false) }`.
-    //           Only attempt the fast path when the source has no
-    //           unicode-aware shorthand atoms; for rules containing
-    //           `\s/\S/\w/\W/\d/\D/\b/\B`, skip straight to the
-    //           `unicode(true)` build below.
-    // Why:      `unicode(false)` builds succeed for shorthand-containing
-    //           rules but silently change the semantics to ASCII-only,
-    //           producing a silent false-negative (see BUG 8).
-    if !needs_unicode_shorthand(src) {
+    // What:     `let src = &expand_unicode_whitespace(src);`. Rewrite
+    //           the rule source so `\s` (free or in a class) matches
+    //           Unicode whitespace UTF-8 byte sequences under the
+    //           `unicode(false)` compile path. See the helper's
+    //           docstring for the transformation rules.
+    // Why:      Closes BUG 8 cheaply. The previous fix forced rules
+    //           containing `\s` (and friends) onto `unicode(true)`,
+    //           regressing phase 1 from ~5 ms to ~478 ms on the
+    //           example ruleset (95x). The source-level expansion
+    //           costs microseconds and stays on the fast path.
+    let expanded = expand_unicode_whitespace(src);
+    let src = expanded.as_str();
+    {
     // What:     `if let Ok(re) = builder.build() { ... }` is a one-arm
     //           pattern match against `Result<Regex, Error>`. The block
     //           runs ONLY when `build()` returned `Ok`, binding the
