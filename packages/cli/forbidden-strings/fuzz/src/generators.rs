@@ -1279,6 +1279,41 @@ impl Node {
         }
     }
 
+    // What:     `pub fn has_resharp_features(&self) -> bool`. Walks
+    //           the tree looking for nodes that `requires_resharp`
+    //           classifies as resharp-only: set-algebra (Intersect,
+    //           Complement), lookarounds, and bare underscore. The
+    //           generator produces these AST shapes; production's
+    //           string-walking classifier needs to agree.
+    // Why:      `fuzz_regex_engine_dispatch` compares the routing
+    //           decision against the AST-level truth. AST is the
+    //           ground truth here: WE choose to emit `&`, we KNOW
+    //           the source has algebra.
+    // TS map:   `function hasResharpFeatures(node: Node): boolean`.
+    pub fn has_resharp_features(&self) -> bool {
+        match self {
+            Node::Intersect(_, _)
+            | Node::Complement(_)
+            | Node::Lookaround(_, _)
+            | Node::BareUnderscore => true,
+            Node::Literal(_)
+            | Node::Class(_)
+            | Node::NegClass(_)
+            | Node::EscapedUnderscore
+            | Node::UnderscoreClass
+            | Node::EscapedLookalike(_)
+            | Node::UnicodeWs(_)
+            | Node::Shorthand(_)
+            | Node::Anchor(_) => false,
+            Node::Concat(parts) | Node::Alt(parts) => {
+                parts.iter().any(|p| p.has_resharp_features())
+            }
+            Node::NonCap(body)
+            | Node::ScopedFlag(_, body)
+            | Node::Quant(body, _) => body.has_resharp_features(),
+        }
+    }
+
     // What:     `pub fn collect_literals(&self, out: &mut Vec<Vec<u8>>)`.
     //           Walks the tree and records every `Literal` payload
     //           plus the Unicode-WS bytes, NBSP, etc. into the

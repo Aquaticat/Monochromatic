@@ -52,3 +52,10 @@ path = "fuzz_targets/fuzz_ruleset_scan_invariants.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "fuzz_regex_engine_dispatch"
+path = "fuzz_targets/fuzz_regex_engine_dispatch.rs"
+test = false
+doc = false
+bench = false
