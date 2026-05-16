@@ -54,6 +54,90 @@ use ignore::WalkState;
 // ```
 use std::sync::{Arc, Mutex};
 
+// What:     `fn detect_index_hash_kind(repo_root) -> gix_hash::Kind`
+//           reads `.git/config` and returns `Sha256` when the repository
+//           was initialized with `git init --object-format=sha256`,
+//           otherwise `Sha1`. Detection runs in a few hundred
+//           microseconds (config files are tiny).
+// Why:      `gix_index::File::at(...)` parses entries based on the
+//           hash kind: 20-byte object IDs and 20-byte trailer for
+//           Sha1, 32-byte for Sha256. Calling with the wrong kind on
+//           a Sha256 index produces silently corrupted paths because
+//           each entry's flags + path offsets land 12 bytes off. We
+//           never compute hashes ourselves (skip_hash = true) but we
+//           must still know the right ID length to parse correctly.
+//           Configurations using SHA-256 are still rare today, but
+//           Git's SHA-256 transition is moving forward; supporting
+//           the case keeps BUG 3's fix sound across object formats.
+// TS map:   `function detectIndexHashKind(repoRoot: string): "sha1" | "sha256"`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function detectIndexHashKind(repoRoot: string): "sha1" | "sha256" {
+//   const config = fs.readFileSync(path.join(repoRoot, ".git/config"), "utf8");
+//   let inExtensions = false;
+//   for (const raw of config.split("\n")) {
+//     const line = raw.split(/[#;]/, 1)[0].trim();
+//     if (line === "") continue;
+//     const section = line.match(/^\[(.+?)(?:\s.+)?\]$/);
+//     if (section) { inExtensions = section[1].toLowerCase() === "extensions"; continue; }
+//     if (!inExtensions) continue;
+//     const eq = line.indexOf("=");
+//     if (eq < 0) continue;
+//     if (line.slice(0, eq).trim().toLowerCase() === "objectformat" &&
+//         line.slice(eq + 1).trim().toLowerCase() === "sha256") {
+//       return "sha256";
+//     }
+//   }
+//   return "sha1";
+// }
+// ```
+fn detect_index_hash_kind(repo_root: &std::path::Path) -> gix_hash::Kind {
+    let config_path = repo_root.join(".git/config");
+    let Ok(config) = std::fs::read_to_string(&config_path) else {
+        return gix_hash::Kind::Sha1;
+    };
+    let mut in_extensions = false;
+    for raw in config.lines() {
+        // What:     Strip line comments (`# ...`, `; ...`) and trim.
+        // Why:      Git config supports both comment prefixes; the
+        //           value before the comment is the only signal.
+        let line = raw
+            .split(|c: char| c == '#' || c == ';')
+            .next()
+            .unwrap_or("")
+            .trim();
+        if line.is_empty() {
+            continue;
+        }
+        // What:     Section headers look like `[section]` or
+        //           `[section "subsection"]`. We only care whether the
+        //           current section name (case-insensitive) is
+        //           `extensions`; subsections are ignored.
+        // Why:      `objectformat` lives directly under `[extensions]`
+        //           in git's standard config layout; subsections would
+        //           be a custom shape we don't speak.
+        if let Some(rest) = line.strip_prefix('[') {
+            let section = rest.trim_end_matches(']').trim();
+            let name = section.split_whitespace().next().unwrap_or("");
+            in_extensions = name.eq_ignore_ascii_case("extensions");
+            continue;
+        }
+        if !in_extensions {
+            continue;
+        }
+        let Some((key, value)) = line.split_once('=') else {
+            continue;
+        };
+        if key.trim().eq_ignore_ascii_case("objectformat")
+            && value.trim().eq_ignore_ascii_case("sha256")
+        {
+            return gix_hash::Kind::Sha256;
+        }
+    }
+    gix_hash::Kind::Sha1
+}
+
 // What:     `pub fn list_files(root: &str) -> Result<Vec<String>, String>`
 //           walks the working tree starting at `root` and returns an
 //           owned vector of file paths (UTF-8). `pub` makes it visible
@@ -347,10 +431,12 @@ pub fn list_files(root: &str) -> Result<Vec<String>, String> {
     //   // dedupe + normalize prefix as before
     // }
     // ```
-    let index_path = std::path::Path::new(root).join(".git/index");
+    let root_path = std::path::Path::new(root);
+    let index_path = root_path.join(".git/index");
+    let hash_kind = detect_index_hash_kind(root_path);
     if let Ok(index) = gix_index::File::at(
         &index_path,
-        gix_index::hash::Kind::Sha1,
+        hash_kind,
         // What:     `true` skips the trailing-checksum verification
         //           that `gix-index` would otherwise re-hash the entire
         //           file to validate. We do not need integrity here;
@@ -664,6 +750,144 @@ mod tests {
             !normalized.iter().any(|p| p.ends_with("vendor/sub")),
             "submodule gitlink (Mode::COMMIT) must NOT be listed; got {:?}",
             normalized
+        );
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    // What:     Helper `write_config(dir, contents)` materialises a
+    //           `.git/config` file under `dir` with the given contents.
+    //           Used by the `detect_index_hash_kind` unit tests below.
+    // Why:      Each test exercises a different config shape; a helper
+    //           keeps the test bodies focused on the shape they test.
+    fn write_config(dir: &PathBuf, contents: &str) {
+        let git_dir = dir.join(".git");
+        fs::create_dir_all(&git_dir).expect("create .git");
+        fs::write(git_dir.join("config"), contents).expect("write .git/config");
+    }
+
+    #[test]
+    fn detect_sha256_in_standard_config_shape() {
+        let dir = unique_tmp("detect-sha256-standard");
+        write_config(
+            &dir,
+            "[extensions]\n\tobjectformat = sha256\n[core]\n\tbare = false\n",
+        );
+        assert_eq!(super::detect_index_hash_kind(&dir), gix_hash::Kind::Sha256);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detect_sha1_when_extensions_absent() {
+        let dir = unique_tmp("detect-sha1-default");
+        write_config(&dir, "[core]\n\tbare = false\n[user]\n\temail = t@t\n");
+        assert_eq!(super::detect_index_hash_kind(&dir), gix_hash::Kind::Sha1);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detect_sha1_when_config_missing() {
+        let dir = unique_tmp("detect-sha1-noconfig");
+        // No .git/config written -- read_to_string returns Err, helper
+        // must default to Sha1.
+        assert_eq!(super::detect_index_hash_kind(&dir), gix_hash::Kind::Sha1);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detect_sha256_with_comments_and_irregular_whitespace() {
+        let dir = unique_tmp("detect-sha256-comments");
+        write_config(
+            &dir,
+            // What:     Mixed-case section, `#` and `;` comments,
+            //           tab and space variation, mid-line comment.
+            // Why:      Git config tolerates all of these; our parser
+            //           must too.
+            "# comment line\n[Extensions]\n  ObjectFormat=  sha256  ; trailing\n[core]\n",
+        );
+        assert_eq!(super::detect_index_hash_kind(&dir), gix_hash::Kind::Sha256);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detect_sha1_when_objectformat_is_outside_extensions_section() {
+        let dir = unique_tmp("detect-sha1-wrong-section");
+        // What:     `objectformat` lives under `[core]` here; our
+        //           parser must NOT treat that as a Sha256 signal.
+        // Why:      Bogus configs should default-to-Sha1 rather than
+        //           silently break parsing on real Sha1 indexes.
+        write_config(
+            &dir,
+            "[core]\n\tobjectformat = sha256\n",
+        );
+        assert_eq!(super::detect_index_hash_kind(&dir), gix_hash::Kind::Sha1);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detect_sha256_with_extensions_subsection() {
+        let dir = unique_tmp("detect-sha256-subsection");
+        // What:     `[extensions "foo"]` is a subsection; our parser
+        //           treats it as `extensions` proper (`split_whitespace`
+        //           strips the subsection name).
+        // Why:      Git itself reads `extensions.objectformat` under
+        //           any subsection; our detection should match.
+        write_config(
+            &dir,
+            "[extensions \"weird\"]\n\tobjectformat = sha256\n",
+        );
+        assert_eq!(super::detect_index_hash_kind(&dir), gix_hash::Kind::Sha256);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn list_files_handles_sha256_repo_force_added_gitignored() {
+        // What:     End-to-end test on a fresh `git init
+        //           --object-format=sha256` repo with a force-added
+        //           gitignored file. `list_files` must return both the
+        //           ordinary tracked file AND the force-added one;
+        //           gix-index must parse the Sha256 index correctly via
+        //           our `detect_index_hash_kind` plumbing.
+        // Why:      Pre-fix the in-process index reader was hard-wired
+        //           to Sha1, so a Sha256 index either failed to parse
+        //           (Err fall-through to walker-only, missing the
+        //           force-added file) or produced garbage paths.
+        //           Without this regression test the SHA-256 path could
+        //           silently break next time we touch walk.rs.
+        let dir = unique_tmp("sha256-force-added");
+        run_git(&dir, &["init", "--object-format=sha256", "-q"]);
+        run_git(&dir, &["config", "user.email", "t@t"]);
+        run_git(&dir, &["config", "user.name", "t"]);
+        fs::write(dir.join(".gitignore"), "*.ignored\n").expect("write .gitignore");
+        fs::write(dir.join("tracked.ignored"), "secret content")
+            .expect("write tracked.ignored");
+        fs::write(dir.join("normal.txt"), "normal content").expect("write normal.txt");
+        run_git(&dir, &["add", "-f", ".gitignore", "tracked.ignored", "normal.txt"]);
+        run_git(
+            &dir,
+            &["commit", "-q", "-m", "initial", ".gitignore", "tracked.ignored", "normal.txt"],
+        );
+
+        let files = list_files(dir.to_str().expect("dir utf8")).expect("list_files");
+        let basenames: Vec<String> = files
+            .iter()
+            .filter_map(|p| {
+                std::path::Path::new(p)
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .map(|s| s.to_string())
+            })
+            .collect();
+        assert!(
+            basenames.iter().any(|b| b == "normal.txt"),
+            "sha256 repo: normal tracked file must be listed; got {:?}",
+            basenames
+        );
+        assert!(
+            basenames.iter().any(|b| b == "tracked.ignored"),
+            "sha256 repo: force-added gitignored file must be listed via \
+             gix-index path; got {:?}",
+            basenames
         );
 
         let _ = fs::remove_dir_all(&dir);
