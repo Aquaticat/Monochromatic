@@ -201,12 +201,139 @@ function quotedFormat(
   };
 }
 
+/** Wrapper commands stripped together with the following argument token. */
+const COMMAND_NOISE_WRAPPERS: ReadonlySet<string> = new Set([
+  'timeout',
+  'env',
+  'nice',
+  'nohup',
+],);
+
 /**
- * Matches leading noise in shell commands: env-var assignments and wrapper
- * commands (`timeout 10`, `env`, `nice`, `nohup`) with their argument.
- * Anchored at start; repeats to strip stacked prefixes like `env timeout 10`.
+ * Whether `c` is ASCII whitespace as recognised by the shell-prefix stripper
+ * (space or tab; tools rarely insert other whitespace at the command boundary).
+ *
+ * @param c - one-character string to inspect
+ *
+ * @returns whether `c` is a space or tab
+ *
+ * @example
+ * ```ts
+ * isShellWs(' ');  // true
+ * isShellWs('a');  // false
+ * ```
  */
-const COMMAND_NOISE_RE = /^(?:(?!-)\S+=\S*\s+|(?:timeout|env|nice|nohup)\s+\S+\s+)*/;
+function isShellWs(c: string,): boolean {
+  return (c === ' ') || (c === '\t');
+}
+
+/**
+ * Strips leading noise from a shell command: env-var assignments
+ * (`FOO=bar`) and wrapper commands (`timeout 10`, `env`, `nice`, `nohup`)
+ * with their argument token. Repeats until no more strippable prefix is
+ * found at the cursor.
+ *
+ * Mirrors the original regex `/^(?:(?!-)\S+=\S*\s+|(?:timeout|env|nice|nohup)\s+\S+\s+)*\/`. Returns
+ * the original string when the cursor still points at unstrippable input;
+ * never throws.
+ *
+ * @param command - full bash command string
+ *
+ * @returns command with all matching noise prefixes removed
+ *
+ * @example
+ * ```ts
+ * stripCommandNoise('NODE_ENV=prod env timeout 5 ls -la');
+ * // => '5 ls -la' (matches the legacy regex; `5` is treated as the timeout arg,
+ * //               so the next pass sees `5` as the new leading token which is
+ * //               not strippable)
+ * ```
+ */
+function stripCommandNoise(command: string,): string {
+  /**
+   * Walks `command` forward to the first character that is NOT a strippable
+   * prefix, returning the slice from that position to the end.
+   *
+   * @param idx - candidate scan offset (starts at 0)
+   *
+   * @returns slice of `command` after every matched prefix
+   *
+   * @example
+   * ```ts
+   * stripFrom(0); // '5 ls -la' for 'NODE_ENV=prod env timeout 5 ls -la'
+   * ```
+   */
+  function stripFrom(idx: number,): string {
+    if (idx >= command.length)
+      return '';
+    /**
+     * Locates the exclusive end of the token starting at `at` (first whitespace).
+     *
+     * @param at - candidate scan offset
+     *
+     * @returns first whitespace index, or `command.length`
+     *
+     * @example
+     * ```ts
+     * findTokenEnd(0); // 13 for 'NODE_ENV=prod ...'
+     * ```
+     */
+    function findTokenEnd(at: number,): number {
+      if (at >= command.length)
+        return at;
+      if (isShellWs(command.charAt(at,),))
+        return at;
+      return findTokenEnd(at + 1,);
+    }
+    /**
+     * Skips whitespace from `at`.
+     *
+     * @param at - candidate scan offset
+     *
+     * @returns first non-whitespace index, or `command.length`
+     *
+     * @example
+     * ```ts
+     * skipWs(13); // 14 for 'NODE_ENV=prod foo'
+     * ```
+     */
+    function skipWs(at: number,): number {
+      if (at >= command.length)
+        return at;
+      if (!isShellWs(command.charAt(at,),))
+        return at;
+      return skipWs(at + 1,);
+    }
+    /** Exclusive end of the candidate first token. */
+    const tokenEnd = findTokenEnd(idx,);
+    if (tokenEnd === idx)
+      return command.slice(idx,);
+    /** Position past the token's trailing whitespace; must advance for a match. */
+    const afterTokenWs = skipWs(tokenEnd,);
+    if (afterTokenWs === tokenEnd)
+      return command.slice(idx,);
+    /** Candidate first token. */
+    const token = command.slice(
+      idx,
+      tokenEnd,
+    );
+    if ((!token.startsWith('-',)) && token.includes('=',))
+      return stripFrom(afterTokenWs,);
+    if (COMMAND_NOISE_WRAPPERS.has(token,)) {
+      /** Exclusive end of the wrapper's argument token. */
+      const argEnd = findTokenEnd(afterTokenWs,);
+      if (argEnd === afterTokenWs)
+        return command.slice(idx,);
+      /** Position past the argument's trailing whitespace; required for the match. */
+      const afterArgWs = skipWs(argEnd,);
+      if (afterArgWs === argEnd)
+        return command.slice(idx,);
+      return stripFrom(afterArgWs,);
+    }
+    return command.slice(idx,);
+  }
+  return stripFrom(0,);
+}
 
 /**
  * Extracts first meaningful token from a bash command for display.
@@ -217,14 +344,11 @@ const COMMAND_NOISE_RE = /^(?:(?!-)\S+=\S*\s+|(?:timeout|env|nice|nohup)\s+\S+\s
  *
  * @example
  * ```ts
- * shortCommand('NODE_ENV=prod env timeout 5 ls -la'); // 'ls -la'
+ * shortCommand('NODE_ENV=prod env timeout 5 ls -la'); // '5 ls -la'
  * ```
  */
 function shortCommand(command: string,): string {
-  return command.replace(
-    COMMAND_NOISE_RE,
-    '',
-  );
+  return stripCommandNoise(command,);
 }
 
 export type {
