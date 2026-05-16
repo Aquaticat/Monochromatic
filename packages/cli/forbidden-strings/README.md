@@ -331,24 +331,27 @@ regression history are in `PERF.md`.
 3,471 git-tracked files, 57 MiB total. 30 runs, hyperfine 1.20.0:
 
 ```text
-startup-only      9.3 ms ± 0.7 ms
---all            225.7 ms ± 11.5 ms
+startup-only      8.8 ms ± 0.5 ms
+--all            58.6 ms ± 3.4 ms    (~973 MiB/s wall, 6.3x parallelism)
 ```
 
 ### Linux kernel scale
 
-Fresh shallow clone of `torvalds/linux`. 93,696 git-tracked files, 2.0 GiB. 5 runs:
+Fresh shallow clone of `torvalds/linux`. 93,696 git-tracked files, 2.0 GiB. 15 runs:
 
 ```text
 startup-only      9.8 ms ± 0.4 ms
---all            2.334 s ± 0.112 s   (~876 MiB/s wall, 10.8x parallelism)
+--all            1.901 s ± 0.190 s   (~1.05 GiB/s wall, 12.2x parallelism)
 ```
 
-The 2026-05-16 audit closed 11 soundness bugs. The `--all` numbers above
-include the cost of BUG 8's source-level expansion of `\s` to a non-capturing
-alternation covering every Unicode-whitespace UTF-8 byte sequence; see
-`PERF.md` for the per-bug regression breakdown and the per-atom soundness
-tradeoff for the other Perl-class shorthand atoms.
+The 2026-05-16 audit closed 11 soundness bugs, then a perf-fix pass
+restored `--all` wall to within 7 ms of the pre-audit baseline by
+replacing the `git ls-files` subprocess with an in-process `gix-index`
+read and bounding per-file binary-scan cost at 8 KiB (see
+`PERF.md` "post-perf-fix" block for the bench tables). The
+remaining soundness work (`\s` expansion, force-added gitignored
+files, NUL-bearing text files with secrets in the first 8 KiB,
+read errors as hits) is preserved end-to-end.
 
 ### vs betterleaks v1.1.2
 

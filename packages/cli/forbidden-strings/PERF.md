@@ -6,6 +6,63 @@ against the binary built from this package's `src/`.
 
 ## Last benched
 
+**2026-05-16 (post-perf-fix: gix-index + binary-tail-cap)**, hyperfine
+1.20.0, same hardware (AMD Ryzen 7 8700F, 16 threads). Binary:
+`packages/cli/forbidden-strings/target/release/forbidden-strings` built
+from this package's `src/` after two perf changes landed on top of the
+soundness audit:
+
+- `walk.rs` now reads `.git/index` in-process via `gix-index` instead of
+  forking `git ls-files --cached --ignored --exclude-standard -z`. The
+  subprocess cost (88.7 ± 0.8 ms standalone on Mono, 350.7 ± 3.6 ms on
+  Linux per invocation) is replaced with a single-digit-millisecond
+  index read.
+- `main.rs::read_with_binary_check` caps per-file scan at 8 KiB for
+  files larger than that whose first 8 KiB contains a NUL byte. The
+  first 8 KiB is always scanned, so secrets in the leading window still
+  fire (closes BUG 5's soundness intent); the tail past 8 KiB is
+  skipped for binary files (recovers the ~65 ms binary-scan cost on
+  Mono).
+
+### 2026-05-16 (post-perf-fix) realistic ruleset on Monochromatic, 30 runs
+
+Corpus: Monochromatic git-tracked content, 3,471 files, 57 MiB. Same
+example ruleset (`forbidden-strings.local.example.txt`, 259 regex
+rules). One rule fires on existing test-fixture content (AWS access key
+prefix in `algebra_tests.rs:119`); bench used `--ignore-failure`.
+
+```text
+example-startup    8.8 ms ±  0.5 ms    (user 44.1 ms,  sys 13.0 ms)
+example-all       58.6 ms ±  3.4 ms    (user 371.0 ms, sys 139.1 ms)
+                                       6.3x parallelism, ~973 MiB/s wall
+```
+
+### 2026-05-16 (post-perf-fix) Linux kernel corpus, 15 runs
+
+Same shallow clone of `torvalds/linux` to `/tmp/claude/linux`,
+93,696 files, 2.0 GiB. Same binary, same example ruleset.
+
+```text
+linux-all         1.901 s ± 0.190 s    (user 23.310 s, sys 2.096 s)
+                                       12.2x parallelism, ~1.05 GiB/s wall
+```
+
+### Comparison with 2026-05-16 (post-soundness-audit, pre-perf-fix)
+
+```text
+                       pre-perf-fix       post-perf-fix    delta
+Monochromatic startup  9.3 ms ± 0.7 ms    8.8 ± 0.5 ms     within sigma
+Monochromatic --all    225.7 ± 11.5 ms    58.6 ± 3.4 ms    -167 ms (3.85x)
+Linux --all            2.334 ± 0.112 s    1.901 ± 0.190 s  -433 ms (1.23x)
+```
+
+Mono `--all` now sits 7 ms above the pre-audit baseline (51.3 ± 3.6 ms
+on 2026-05-15) -- the residual gap is the binary-scan cost on files
+≤ 8 KiB (BUG 5 soundness is preserved for that range). The audit's
+ten remaining soundness fixes ride for free in wall-time terms.
+
+---
+
 **2026-05-16 (post-soundness-audit + post-\s-byte-alt-expansion)**, hyperfine
 1.20.0, same hardware (AMD Ryzen 7 8700F, 16 threads). Binary:
 `packages/cli/forbidden-strings/target/release/forbidden-strings` built from
@@ -179,12 +236,10 @@ The change added a `move ||` wrapper, a paired closure, and a
 Reverted; not shipped.
 
 The actual lever to remove BUG 3's +84 ms is replacing the
-subprocess with an in-process git-index reader (`gix-index` from
-gitoxide, already a workspace ecosystem dep candidate). Trade:
-one transitive dep plus ~10 KiB binary size against ~80 ms wall
-on every `--all` run inside a git repo. Not pursued in this
-audit; documented here as the next perf step if subprocess wall
-becomes a CI bottleneck.
+subprocess with an in-process git-index reader. Shipped as a
+follow-up commit using `gix-index` (`default-features = false` +
+`sha1` only) -- see the "post-perf-fix" block at the top for the
+new numbers; the subprocess is gone.
 
 ### Soundness tradeoff: shorthand atom semantics
 
@@ -1064,8 +1119,8 @@ Re-run the commands above and append a dated block to **Last benched** /
   (per-file scan logic), or `src/rules.rs` (rule loading and bucketing)
 - A change touches `Cargo.toml` profile or dependency versions
 - The repo grows past ~5000 tracked files or ~100 MiB total
-- Realistic `--all` exceeds **700 ms** in casual use (~3x current 226 ms),
-  startup-only exceeds **30 ms** (~3x current 9.3 ms), or synthetic-1k
+- Realistic `--all` exceeds **180 ms** in casual use (~3x current 58.6 ms),
+  startup-only exceeds **30 ms** (~3x current 8.8 ms), or synthetic-1k
   `--all` exceeds **500 ms** (~3.5x current 139 ms)
 
 If none of the above hold, the numbers in this file are still trustworthy.
