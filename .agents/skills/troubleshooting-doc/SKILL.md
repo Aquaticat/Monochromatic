@@ -88,15 +88,22 @@ reads "plausible" or "likely" rather than a definitive yes), do not
 stop at "constraint 5: not yet" and report the gate failed. Prototype
 the minimal fix yourself before declaring the audit done:
 
-1. Clone the upstream source if not already cloned (use `gh repo
-   clone` into `/tmp/<repo>`; reuse an existing clone if present).
-2. Apply the smallest change that addresses the cause identified in
+1. Clone the upstream source into a fresh, private, unpredictable
+   directory created with `mktemp -d` (or an equivalently private
+   throwaway workspace). Never reuse an existing `/tmp/<repo>` clone or
+   any other pre-existing directory for this step.
+2. Confirm the clone's `origin` URL and checked-out commit/tag match the
+   upstream source cited in the doc before editing.
+3. Apply the smallest change that addresses the cause identified in
    "Root cause." Keep it to the line(s) constraint 2 named.
-3. Verify by running the tool's own test suite, an existing
-   reproduction harness, or a targeted minimal program. Whatever you
-   pick must surface the failure pre-patch and the success post-patch;
-   "it compiles" is not verification.
-4. Record the result, the verification command, and the verification
+4. Verify with the least-trusting harness that proves the change: prefer
+   a targeted minimal program or existing reproduction harness over the
+   upstream package's full test/build scripts. Run upstream scripts only
+   inside a secret-free sandbox or container with no ambient credentials
+   and no write access to this repository. Whatever you pick must surface
+   the failure pre-patch and the success post-patch; "it compiles" is
+   not verification.
+5. Record the result, the verification command, and the verification
    output inline in the doc. For the diff itself: if it is small
    (single hunk, roughly under 20 lines including context), embed it
    inline in a fenced `diff` block. If it is larger (multiple hunks,
@@ -122,10 +129,11 @@ revise the audit. The prototype is also a probe; a failed probe is
 useful data, not a wasted step.
 
 AGENTS.md's "never modify files in cloned third-party repositories"
-rule applies to local workarounds (where editing source bypasses the
-intended boundary). Prototyping an upstream patch in a `/tmp` clone
-to generate a diff for filing is the intended use of source
-modification and is not what that rule restricts.
+rule still applies to local workarounds (where editing source bypasses
+the intended boundary). The only allowed exception here is a disposable
+prototype clone created fresh for the upstream patch diff, after origin
+verification, and verified without exposing credentials or this
+repository to third-party scripts.
 
 The consumer-side workaround belongs at our boundary (e.g. a parse-time
 guard in the consuming crate) where it solves the user-facing problem
