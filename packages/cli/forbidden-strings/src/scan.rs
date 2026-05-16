@@ -75,7 +75,7 @@ use std::sync::OnceLock;
 // ```
 use crate::rules::{is_word_byte, AcMeta, ResidualShard, RuleSet};
 use crate::scan_format::{
-    build_line_index, end_in_line_indexed, format_hit, is_likely_binary, line_and_col_indexed,
+    build_line_index, end_in_line_indexed, format_hit, line_and_col_indexed,
 };
 
 // What:     `pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String>`
@@ -97,10 +97,24 @@ use crate::scan_format::{
 // }
 // ```
 pub fn scan_content(path: &str, content: &[u8], rs: &RuleSet) -> Vec<String> {
+    // What:     The previous binary-skip heuristic (`is_likely_binary`
+    //           short-circuit on a NUL byte in the first 8 KiB) has been
+    //           removed. Aho-Corasick scans raw bytes content-agnostic,
+    //           and the redacted output format means "binary blob leaks
+    //           secret" is a useful signal -- exactly the shape a CI
+    //           deny-list scanner should catch (lockfile sidecars,
+    //           bundled artifacts, accidentally-committed images).
+    // Why:      Closes BUG 5. Pre-fix, a file whose content was
+    //           `SECRET_NEEDLE\0...` exited the scanner with zero hits
+    //           even though the literal appeared BEFORE the NUL byte;
+    //           the heuristic produced silent false negatives.
+    // TS map:   the removal is in-place; no remaining check.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // // (no binary-skip; scan all files unconditionally)
+    // ```
     let mut hits: Vec<String> = Vec::new();
-    if is_likely_binary(content) {
-        return hits;
-    }
 
     // What:     `let mut prefix_matched: BTreeSet<usize> = BTreeSet::new();`
     //           accumulates indices into `rs.regex_rules` whose

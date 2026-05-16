@@ -122,3 +122,55 @@ fn read_error_surfaces_as_hit_and_nonzero_exit() {
 
     let _ = fs::remove_dir_all(&dir);
 }
+
+// What:     `#[test] fn nul_byte_in_file_does_not_skip_scan()`. BUG 5
+//           regression test. Creates a file whose content begins with
+//           the deny-listed literal then a NUL byte. Pre-fix, the
+//           presence of NUL in the first 8 KiB caused `is_likely_binary`
+//           to return true and the entire scan to short-circuit, so
+//           the literal was never detected even though it appeared
+//           BEFORE the NUL. Post-fix the binary-skip is removed and AC
+//           scans raw bytes content-agnostic.
+// Why:      A redacted secret in a binary blob (lockfile sidecar,
+//           bundled artifact, accidentally-committed image) is exactly
+//           the kind of thing a deny-list scanner should catch. The
+//           skip-on-NUL heuristic was an unsound shortcut.
+// TS map:   `test("NUL byte does not skip scan", () => { ... });`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test("NUL byte does not skip scan", () => { ... });
+// ```
+#[test]
+fn nul_byte_in_file_does_not_skip_scan() {
+    let dir = unique_tmp("bug5");
+    let rules = dir.join("rules.txt");
+    fs::write(&rules, "SECRET_NEEDLE_XYZ_LONG_ENOUGH\n").expect("write rules");
+    let target = dir.join("with_nul.txt");
+    // Literal + NUL + tail. The literal is entirely before the NUL.
+    fs::write(&target, b"SECRET_NEEDLE_XYZ_LONG_ENOUGH\0and then more")
+        .expect("write target");
+
+    let output = Command::new(BIN)
+        .args(["--rules"])
+        .arg(&rules)
+        .arg(&target)
+        .output()
+        .expect("spawn binary");
+
+    assert!(
+        !output.status.success(),
+        "BUG 5: file containing NUL must still be scanned; got success.\n\
+         stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("with_nul.txt"),
+        "BUG 5: stderr must reference the target file; got: {}",
+        stderr
+    );
+
+    let _ = fs::remove_dir_all(&dir);
+}

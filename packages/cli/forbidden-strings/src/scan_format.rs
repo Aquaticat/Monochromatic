@@ -17,29 +17,14 @@
 // ```
 use memchr::memchr_iter;
 
-// What:     `pub fn is_likely_binary(content: &[u8]) -> bool` takes a
-//           borrowed byte slice and returns `true` if a NUL byte appears
-//           in the first 8KB.
-// Why:      Plain-text source code never contains NUL; binaries
-//           commonly do near the start. Skipping these files avoids
-//           regex cost on content with no meaningful "line:col" output
-//           and prevents accidentally-tracked blobs (qcow2 fragments,
-//           bundled images, lockfile-with-blob) from blowing up scan
-//           time.
-// TS map:   `function isLikelyBinary(content: Uint8Array): boolean`.
-//
-// In TS you'd write (pseudocode):
-// ```ts
-// function isLikelyBinary(content: Uint8Array): boolean {
-//   const probeLen = Math.min(content.length, 8192);
-//   for (let i = 0; i < probeLen; i++) if (content[i] === 0) return true;
-//   return false;
-// }
-// ```
-pub fn is_likely_binary(content: &[u8]) -> bool {
-    let probe_len = content.len().min(8192);
-    content[..probe_len].contains(&0u8)
-}
+// What:     The previous `is_likely_binary` heuristic lived here. It
+//           was removed (see BUG 5): a NUL byte in the first 8 KiB
+//           caused the entire scan to short-circuit, producing silent
+//           false negatives when a deny-listed literal appeared before
+//           a NUL in the file. AC scans raw bytes content-agnostic and
+//           the redacted output format makes a "binary file leaks
+//           secret" report useful; the perf saving from skipping
+//           binaries does not justify the soundness gap.
 
 // What:     `pub fn build_line_index(content: &[u8]) -> Vec<usize>`
 //           produces a sorted `Vec<usize>` of byte offsets where each
