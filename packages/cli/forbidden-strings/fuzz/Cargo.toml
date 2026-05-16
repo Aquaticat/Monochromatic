@@ -66,3 +66,10 @@ path = "fuzz_targets/fuzz_regex_syntax_walkers.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "fuzz_scan_format"
+path = "fuzz_targets/fuzz_scan_format.rs"
+test = false
+doc = false
+bench = false
