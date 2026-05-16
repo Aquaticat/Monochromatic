@@ -61,6 +61,10 @@ export type MutableDesktopEntry = {
 /**
  * Expands desktop entry string escapes (`\s`, `\n`, `\t`, `\r`, `\\`).
  *
+ * Walks `s` character by character: on backslash, consumes the next
+ * character and looks it up in {@link ESCAPE_MAP}; otherwise emits the
+ * character verbatim. A trailing lone backslash is emitted as-is.
+ *
  * @param s - Raw value from a desktop entry key.
  *
  * @returns Expanded string with escapes resolved.
@@ -71,15 +75,50 @@ export type MutableDesktopEntry = {
  * ```
  */
 export function expandEscapes({ s, }: { s: string; },): string {
-  return s.replaceAll(
-    /\\(.)/g,
-    function replaceEscape(
-      _match,
-      char: string,
-    ) {
-      return ESCAPE_MAP[char] ?? char;
+  /**
+   * Recursive walker that accumulates the expanded string without `let`.
+   *
+   * @param idx - current scan position
+   *
+   * @param acc - expanded output built up so far
+   *
+   * @returns final expanded string once the cursor exceeds `s.length`
+   *
+   * @example
+   * ```ts
+   * walk({ idx: 0, acc: '' }); // 'hello world' for s === 'hello\\sworld'
+   * ```
+   */
+  function walk(
+    {
+      idx,
+      acc,
+    }: {
+      idx: number;
+      acc: string;
     },
-  );
+  ): string {
+    if (idx >= s.length)
+      return acc;
+    /** Current character under the cursor. */
+    const c = s.charAt(idx,);
+    if ((c === '\\') && ((idx + 1) < s.length)) {
+      /** Character following the backslash; looked up in the escape map. */
+      const next = s.charAt(idx + 1,);
+      return walk({
+        idx: idx + 2,
+        acc: acc + (ESCAPE_MAP[next] ?? next),
+      },);
+    }
+    return walk({
+      idx: idx + 1,
+      acc: acc + c,
+    },);
+  }
+  return walk({
+    idx: 0,
+    acc: '',
+  },);
 }
 
 /**
