@@ -37,7 +37,7 @@ export default {
 
     'unit-no-unknown': [
       true,
-      { ignoreUnits: [/--[\w\-_]+/,], },
+      { ignoreUnits: [String.raw`/--[\w\-_]+/`,], },
     ],
 
     //endregion Unknown
@@ -98,9 +98,13 @@ export default {
     //region Media
 
     'media-feature-name-disallowed-list': [
-      // Always use <= or > syntax
-      /^max-[\w-]+$/,
-      /^min-[\w-]+$/,
+      // Always use <= or > syntax.
+      // Strings here are interpreted by stylelint as regular expressions
+      // (matching the `media-feature-name-unit-allowed-list` convention
+      // below); String.raw preserves the `\w` regex escape literally so
+      // it reaches stylelint as `[\w-]+` instead of `[w-]+`.
+      String.raw`/^max-[\w-]+$/`,
+      String.raw`/^min-[\w-]+$/`,
     ],
 
     'media-feature-name-unit-allowed-list': {

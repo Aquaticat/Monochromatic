@@ -46,10 +46,10 @@ const _default_1: UserConfig = defineConfig({
   },
   deps: {
     alwaysBundle: [
-      /^@monochromatic-dev\//,
-      /^@lezer\//,
-      /^lezer-/,
-      /^jspdf$/,
+      '@monochromatic-dev/**',
+      '@lezer/**',
+      'lezer-**',
+      'jspdf',
     ],
   },
   minify: {

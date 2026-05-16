@@ -24,9 +24,9 @@ const _default_1: UserConfig = defineConfig({
   platform: 'node',
   deps: {
     alwaysBundle: [
-      /^@monochromatic-dev\//,
-      /^find-up$/,
-      /^nano-spawn$/,
+      '@monochromatic-dev/**',
+      'find-up',
+      'nano-spawn',
     ],
     neverBundle: [
       // Pi extension peer deps: provided by the pi runtime at load time.

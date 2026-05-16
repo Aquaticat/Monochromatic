@@ -61,8 +61,9 @@ export const propertyDisallowedList = [
 
   'list-style',
 
-  /* Anchored to exclude custom properties (--*-margin) */
-  /^(?!--)[\w-]*margin$/,
+  /* Anchored to exclude custom properties (--*-margin); String.raw keeps the
+     `\w` regex escape literal so stylelint receives `[\w-]` rather than `[w-]`. */
+  String.raw`/^(?!--)[\w-]*margin$/`,
 
   'mask',
 
@@ -74,10 +75,10 @@ export const propertyDisallowedList = [
 
   'overscroll-behavior',
 
-  /* Anchored to exclude custom properties (--*-padding) */
-  /^(?!--)[\w-]*padding$/,
+  /* Anchored to exclude custom properties (--*-padding). */
+  String.raw`/^(?!--)[\w-]*padding$/`,
 
-  /^place-[\w-]+$/,
+  String.raw`/^place-[\w-]+$/`,
 
   'scroll-timeline',
 
@@ -103,12 +104,12 @@ export const propertyDisallowedList = [
   'contain-intrinsic-height',
   'max-height',
 
-  /^(?!--)[\w-]+-top$/,
+  String.raw`/^(?!--)[\w-]+-top$/`,
 
-  /^(?!--)[\w-]+-left$/,
+  String.raw`/^(?!--)[\w-]+-left$/`,
 
-  /^(?!--)[\w-]+-right$/,
+  String.raw`/^(?!--)[\w-]+-right$/`,
 
-  /^(?!--)[\w-]+-bottom$/,
+  String.raw`/^(?!--)[\w-]+-bottom$/`,
   //endregion Non-logical
 ];

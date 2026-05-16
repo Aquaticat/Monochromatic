@@ -30,7 +30,7 @@ const _default_1: UserConfig = defineConfig({
     },
   },
   deps: {
-    alwaysBundle: [/^@monochromatic-dev\//,],
+    alwaysBundle: ['@monochromatic-dev/**',],
   },
   minify: {
     compress: true,
