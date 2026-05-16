@@ -235,9 +235,23 @@ pub(super) fn walk_literal_bytes<'a>(
         // ```ts
         // if ('.*+?()[]{}$^&~'.includes(c)) break;
         // ```
+        // What:     `_` is added to the meta-break list as part of the
+        //           BUG 10 fix. Resharp treats unescaped `_` as a
+        //           universal wildcard (matches any single character);
+        //           the literal walker must stop at it so the byte is
+        //           NOT pushed into `out`. The escaped form `\_` is
+        //           handled by the `c == '\\'` arm above, where it
+        //           falls through `is_ascii_alphanumeric() == false`
+        //           and gets pushed as a literal byte -- preserving
+        //           the betterleaks `ghp\_[...]` gating shape.
+        // Why:      Pre-fix the walker greedily consumed `pre_post`
+        //           as a literal seven-byte string. AC then looked for
+        //           that literal in file content, but the rule's
+        //           actual match is `pre<anychar>post` -- silent gate-
+        //           never-fires. Closes the extract-side half of BUG 10.
         if matches!(
             c,
-            '.' | '*' | '+' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '$' | '^' | '&' | '~'
+            '.' | '*' | '+' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '$' | '^' | '&' | '~' | '_'
         ) {
             break;
         }
@@ -374,6 +388,33 @@ pub(super) fn skip_atom_with_extract(
             }
             _ => {}
         }
+    }
+
+    // What:     Resharp universal wildcard `_` -- matches any single
+    //           character. Treat as a zero-contribution atom: advance
+    //           past the `_` and any quantifier (`_+`, `_*`, `_?`,
+    //           `_{N,M}`), contribute nothing to the gating substring
+    //           list. The walker can then continue extracting from
+    //           surrounding literals on either side.
+    // Why:      Closes the extract-side half of BUG 10. Without this
+    //           branch, after walk_literal_bytes breaks on `_` the
+    //           outer walker calls skip_atom_with_extract, falls
+    //           through to the function's tail `None`, and returns
+    //           early -- losing any post-`_` literal that could
+    //           contribute a longer gating substring. With this
+    //           branch, `pre_post` extracts `post` (the longer side)
+    //           and `pre_post_suffix` extracts `suffix`.
+    // TS map:   `if (s.startsWith("_")) return { remainder: skipAnyQuantifier(s.slice(1)), extracted: null };`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (bytes[0] === '_'.charCodeAt(0)) {
+    //   return { remainder: skipAnyQuantifier(s.slice(1)), extracted: null, ciUpdate: null };
+    // }
+    // ```
+    if bytes[0] == b'_' {
+        let after_quant = skip_any_quantifier(&s[1..]);
+        return Some((after_quant, None, None));
     }
 
     // What:     Resharp complement `~(body)` is a zero-contribution

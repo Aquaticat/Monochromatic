@@ -104,9 +104,28 @@ fn complement_only_pattern_has_no_required_gate() {
 
 #[test]
 fn build_placeholder_complement_does_not_supply_gate() {
+    // What:     `BUILD_[0-9]{6}&~(BUILD_000000)` -- the bare `_` in
+    //           `BUILD_` is a resharp universal wildcard, not a
+    //           literal underscore. Pre-fix the walker greedily
+    //           consumed `_` as a literal byte and registered the
+    //           AC gate as `BUILD_`. Post-fix the walker stops at
+    //           the wildcard and registers `BUILD` (5 bytes, the
+    //           literal prefix guaranteed to appear in every match)
+    //           as the gate. The point of THIS test is that the
+    //           complement body `~(BUILD_000000)` contributes no
+    //           gating substring -- and that contract still holds.
+    // Why:      Closes the AC-gate-soundness arm of BUG 10. The
+    //           pre-fix gate `BUILD_` failed to fire on legitimate
+    //           matches like `BUILDX123456` (where `X` is any
+    //           non-underscore byte) because AC searched for the
+    //           literal `_` while the rule matched a wildcard.
     let subs = extract(r"BUILD_[0-9]{6}&~(BUILD_000000)");
     assert_eq!(subs.len(), 1);
-    assert_eq!(subs[0].0.as_bytes(), b"BUILD_");
+    assert_eq!(
+        subs[0].0.as_bytes(),
+        b"BUILD",
+        "BUG 10: bare `_` is resharp wildcard; gate excludes it"
+    );
 }
 
 #[test]

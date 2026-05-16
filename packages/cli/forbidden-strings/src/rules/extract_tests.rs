@@ -1033,18 +1033,92 @@ fn scoped_extended_flag_disables_body_extraction() {
         "BUG 9: scoped (?x:body) must not extract any substring"
     );
 
-    // What:     `required_(?x:foo bar)` has a usable literal prefix
-    //           `required_` outside the `(?x:...)` scope; that prefix
-    //           must still be extracted, but the body must not
-    //           contribute anything. The literal `required_` is
-    //           long enough to pass `MIN_PREFIX_LEN`.
+    // What:     `required\_(?x:foo bar)` has a literal-underscore
+    //           prefix outside the `(?x:...)` scope. The `\_` keeps
+    //           the underscore as a literal byte (BUG 10's escape
+    //           handling), so the gate is `required_` (9 bytes).
+    //           If the rule used bare `_` instead, the walker would
+    //           stop at the wildcard and the gate would become
+    //           `required` (8 bytes) -- still long enough but a
+    //           different shape; this test specifically exercises
+    //           the "outer literal + scoped x body" interaction
+    //           with the escape form so the assertion stays stable
+    //           across BUG 10's wildcard change.
     // Why:      Regression guard: a future fix that bailed the whole
     //           rule on seeing `(?x:` would lose the outer-prefix
     //           extraction. We want the outer literal to keep its
     //           AC slot, only the body to be suppressed.
-    // TS map:   `expect(extractGatingSubstrings("required_(?x:foo bar)")[0].sub).toBe("required_");`.
-    let subs = extract_gating_substrings("required_(?x:foo bar)")
+    // TS map:   `expect(extractGatingSubstrings(String.raw\`required\\_(?x:foo bar)\`)?.[0].sub).toBe("required_");`.
+    let subs = extract_gating_substrings(r"required\_(?x:foo bar)")
         .expect("outer literal must still extract even with (?x:body) after");
     assert_eq!(subs.len(), 1, "expected exactly one substring (outer literal)");
     assert_eq!(subs[0].0.as_bytes(), b"required_");
+}
+
+// What:     `#[test] fn bare_underscore_wildcard_does_not_appear_in_gate()`.
+//           BUG 10 (extract side). Resharp treats unescaped `_` as a
+//           universal wildcard. The engine-level fix routes rules
+//           containing bare `_` to resharp, but the extract pipeline
+//           also needs awareness: pre-fix the literal walker greedily
+//           consumed `_` as a literal byte, so a rule like `pre_post`
+//           registered the substring `pre_post` (with `_`) into AC.
+//           AC then looked for that literal in file content, but the
+//           rule actually matches `preXpost` (where `X` is any byte) --
+//           silent gate-never-fires. Post-fix the walker breaks on
+//           unescaped `_` and treats it as a zero-contribution
+//           wildcard atom, allowing extraction to continue past it to
+//           pick up surrounding literals.
+// Why:      Without this, the engine-side fix is half-completed: the
+//           rule routes correctly to resharp but never gets a chance
+//           to run because the AC gate is registered against the
+//           wrong literal.
+// TS map:   `test("bare _ wildcard skipped by extractor", () => { ... })`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// test("bare _ wildcard skipped by extractor", () => {
+//   const subs = extractGatingSubstrings("pre_post");
+//   for (const [sub] of subs ?? []) {
+//     expect(sub).not.toContain("_");
+//   }
+// });
+// ```
+#[test]
+fn bare_underscore_wildcard_does_not_appear_in_gate() {
+    // What:     `pre_post` -- `pre` and `post` flank the wildcard. The
+    //           walker should pick the longer side (`post`, 4 bytes)
+    //           as the gating substring. `pre` is also valid (3 bytes,
+    //           meets MIN_PREFIX_LEN) but the extractor picks one --
+    //           the longest. Either way, the result MUST NOT contain
+    //           the literal `_`.
+    // Why:      The literal `_` is wildcard in resharp; including it
+    //           in the AC pattern makes the gate look for a byte that
+    //           the rule does not actually require.
+    // TS map:   `expect(subs[0].sub).not.toContain("_");`.
+    let subs = extract_gating_substrings("pre_post")
+        .expect("expected Some -- some literal side of the wildcard must extract");
+    for (sub, _ci) in &subs {
+        assert!(
+            !sub.contains('_'),
+            "BUG 10: gating substring {:?} must not contain bare `_` (resharp wildcard)",
+            sub
+        );
+    }
+
+    // What:     `\_` (escaped) is a literal underscore. Walker pushes
+    //           `_` as literal and the gate carries it through. This
+    //           regression guard prevents a future change from
+    //           dropping the escape-handling path.
+    // Why:      Hundreds of betterleaks GitHub PAT rules use `ghp\_`
+    //           shapes; they must keep extracting `ghp_` (with the
+    //           literal underscore) as their gate.
+    // TS map:   `expect(extractGatingSubstrings(String.raw\`pre\\_post\`)?.[0].sub).toContain("_");`.
+    let subs = extract_gating_substrings(r"pre\_post")
+        .expect("expected Some for escaped-underscore literal");
+    assert_eq!(subs.len(), 1, "expected one substring (the full literal)");
+    assert_eq!(
+        subs[0].0.as_bytes(),
+        b"pre_post",
+        "BUG 10 regression: escaped \\_ must keep the underscore as literal"
+    );
 }
