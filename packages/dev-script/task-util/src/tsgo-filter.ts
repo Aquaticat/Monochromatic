@@ -69,22 +69,50 @@ async function removeStaleBuildInfo(): Promise<void> {
 
 //region Diagnostic line detection
 
+/** Literal text that opens the error code on every tsgo diagnostic line. */
+const ERROR_CODE_TOKEN = '): error TS';
+
 /**
- * Pattern matching tsgo diagnostic lines.
+ * Walks the run of ASCII digits in `s` starting at `from`.
  *
- * Diagnostics follow the format:
- * `path/to/file.ts(line,col): error TS1234: message`
+ * @param s - input string
  *
- * @example
- * ```ts
- * DIAGNOSTIC_PATTERN.test('src/index.ts(1,1): error TS2304: Cannot find name.');
- * // true
- * ```
+ * @param from - cursor into `s`
+ *
+ * @returns exclusive end of the digit run
  */
-const DIAGNOSTIC_PATTERN = /\(\d+,\d+\): error TS\d+:/;
+function endOfDigitRun({
+  s,
+  from,
+}: {
+  s: string;
+  from: number;
+},): number {
+  /**
+   * Recursive walker.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @returns first non-digit position (or `s.length`)
+   */
+  function step(idx: number,): number {
+    if (idx >= s.length)
+      return idx;
+    /** Char at cursor; only ASCII digits advance the run. */
+    const c = s.charAt(idx,);
+    if ((c < '0') || (c > '9'))
+      return idx;
+    return step(idx + 1,);
+  }
+  return step(from,);
+}
 
 /**
  * Tests whether a line is a tsgo diagnostic line.
+ *
+ * Mirrors `/\(\d+,\d+\): error TS\d+:/` with a linear `indexOf` walk:
+ * locate `): error TS`, then require digit runs flanking the surrounding
+ * `(<digits>,<digits>)` prefix and a trailing `<digits>:`.
  *
  * @param line - single line of tsgo output
  *
@@ -99,7 +127,61 @@ const DIAGNOSTIC_PATTERN = /\(\d+,\d+\): error TS\d+:/;
  * ```
  */
 export function isDiagnosticLine(line: string,): boolean {
-  return DIAGNOSTIC_PATTERN.test(line,);
+  /**
+   * Recursive scan that tests every occurrence of `ERROR_CODE_TOKEN` in
+   * `line` for the required `(digits,digits)` prefix and `digits:` suffix.
+   *
+   * @param from - cursor index for the next `indexOf` call
+   *
+   * @returns true on the first valid diagnostic header
+   */
+  function scan(from: number,): boolean {
+    /** Position of the literal error-code token; `-1` ends the search. */
+    const codeIdx = line.indexOf(
+      ERROR_CODE_TOKEN,
+      from,
+    );
+    if (codeIdx === (-1))
+      return false;
+    /** Exclusive end of the trailing digit run; must be followed by `:` to match. */
+    const codeEnd = endOfDigitRun({
+      s: line,
+      from: codeIdx + ERROR_CODE_TOKEN.length,
+    },);
+    if ((codeEnd === (codeIdx + ERROR_CODE_TOKEN.length))
+      || (line.charAt(codeEnd,) !== ':'))
+    {
+      return scan(codeIdx + 1,);
+    }
+    /** Exclusive end of the digits in `<col>` (between the `,` and `): error TS`). */
+    const colEnd = codeIdx;
+    /**
+     * Walks digits backwards from `pos - 1` to locate the start of a run.
+     *
+     * @param pos - cursor (one past the last digit so far)
+     *
+     * @returns inclusive start of the digit run
+     */
+    function startOfDigitsBackwards(pos: number,): number {
+      if (pos <= 0)
+        return 0;
+      /** Char at the candidate position; non-digit ends the back-walk. */
+      const c = line.charAt(pos - 1,);
+      if ((c < '0') || (c > '9'))
+        return pos;
+      return startOfDigitsBackwards(pos - 1,);
+    }
+    /** Inclusive start of the column digit run; comma boundary must sit just before. */
+    const colStart = startOfDigitsBackwards(colEnd,);
+    if ((colStart === colEnd) || (line.charAt(colStart - 1,) !== ','))
+      return scan(codeIdx + 1,);
+    /** Inclusive start of the line digit run; opening `(` must sit just before. */
+    const lineStart = startOfDigitsBackwards(colStart - 1,);
+    if ((lineStart === (colStart - 1)) || (line.charAt(lineStart - 1,) !== '('))
+      return scan(codeIdx + 1,);
+    return true;
+  }
+  return scan(0,);
 }
 
 /**
@@ -141,7 +223,10 @@ export function isNodeModulesDiagnostic(line: string,): boolean {
  * ```
  */
 export function isI18nGeneratedDiagnostic(line: string,): boolean {
-  return /[\\/]i18n[\\/]/.test(line,);
+  return line.includes('/i18n/',)
+    || line.includes('/i18n\\',)
+    || line.includes('\\i18n/',)
+    || line.includes('\\i18n\\',);
 }
 
 /**
