@@ -70,6 +70,7 @@ pub use engine::{
     lookaround_in_alternation_with_sibling,
     lookaround_in_complement,
     nested_chain_in_lookaround_body,
+    nested_complement,
     nested_grouped_quantifier,
     nested_lookahead_in_quantified_group,
     nested_quantifier_after_wildcard,
@@ -843,6 +844,37 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         if let Some(reason) = nested_chain_in_lookaround_body(src) {
             eprintln!(
                 "forbidden-strings: pre-validator nested_chain_in_lookaround_body rejected rule {:?}",
+                src
+            );
+            return Err(format!("(resharp): {}", reason));
+        }
+        // What:     `nested_complement` catches rule shapes containing
+        //           one complement `~(...)` whose body contains another
+        //           complement. Decoded from
+        //           `timeout-95f5e661c596e4b5a12e9841cda2e3ba242ecf7a`
+        //           (the new-generator counterpart to slow-unit-4eab).
+        //           Probed compile times: 916ms for `~(~(X))` and
+        //           913ms for `~((?:~(X)))` (transparent-group form);
+        //           1.84ms for single `~(X)`.
+        // Why:      Resharp's algebra simplifier walks both derivative
+        //           chains in complement-of-complement. Under ASAN
+        //           the 900ms cost amplifies past libFuzzer's 10s
+        //           timeout (the timeout artifact reproduced in 31s
+        //           through the fuzz binary). Source-shape rejection
+        //           is the only way to keep the fuzz target moving.
+        //           Sibling complements `~(...)&~(...)` (production
+        //           shape) are NOT caught -- the inner complement is
+        //           detected only when an outer one is open.
+        // TS map:   `const reason = nestedComplement(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const reason = nestedComplement(src);
+        // if (reason) throw new Error(`(resharp): ${reason}`);
+        // ```
+        if let Some(reason) = nested_complement(src) {
+            eprintln!(
+                "forbidden-strings: pre-validator nested_complement rejected rule {:?}",
                 src
             );
             return Err(format!("(resharp): {}", reason));

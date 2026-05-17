@@ -2632,6 +2632,131 @@ fn count_close_quant_chain_after(bytes: &[u8], start: usize) -> usize {
     chain
 }
 
+// What:     `pub fn nested_complement(src: &str) -> Option<String>`
+//           detects rule shapes containing one resharp complement
+//           `~(...)` whose body contains another `~(...)` complement
+//           (back-to-back `~(~(...))` or transparent-group-separated
+//           `~((?:~(...)))`). Decoded from artifact
+//           `timeout-95f5e661c596e4b5a12e9841cda2e3ba242ecf7a` after
+//           the bias commit's generator now produces such shapes.
+// Why:      Resharp's algebra simplifier computes a complement via
+//           DFA derivative; computing the complement of a complement
+//           does not short-circuit to identity in 0.6.x and instead
+//           walks both derivative chains. Probed compile time:
+//             - `~(~(quantified_ws_chain))` -- 916 ms
+//             - `~((?:~(quantified_ws_chain)))` -- 913 ms
+//             - `~(quantified_ws_chain)` (single) -- 1.84 ms
+//           Under cargo-fuzz's ASAN build the 900 ms compile
+//           amplifies past libFuzzer's 10 s per-input timeout (the
+//           timeout artifact reproduced in 31 s through the fuzz
+//           binary). Source-shape rejection avoids the wall-clock
+//           burn.
+//
+//           Detection criterion (single-pass byte walker with a
+//           per-paren is-complement-frame stack):
+//             - Walk `src`, skipping escape pairs `\X` and class
+//               interiors `[...]`.
+//             - On `~(`, FIRST check whether any open frame is a
+//               complement; if so, return Some(reason). Then push
+//               a "complement" frame onto the stack.
+//             - On `(` (without preceding `~`), push a "non-
+//               complement" frame; skip the `?` after `(` so the
+//               body walk doesn't misread group prefixes.
+//             - On `)`, pop the top frame.
+//
+//           The check-before-push order is critical: it ensures the
+//           OUTER complement is still on the stack when the INNER
+//           complement is detected. Reversing the order would miss
+//           the back-to-back case (the outer's frame would be
+//           pushed, then immediately the inner's, with no
+//           opportunity to detect that the inner is INSIDE the
+//           outer's body).
+//
+//           Sibling complements (`~(...)&~(...)` shape used by the
+//           production rule
+//           `RELEASE_TAG_[a-f0-9]{32}&~(RELEASE_TAG_(00){16})&~(...)`)
+//           do NOT trigger this detector: the first complement
+//           closes (popping its frame) before the second opens, so
+//           the second `~(` sees a stack with no complement frames.
+//
+//           Place the call in `compile_rule_src`'s resharp branch:
+//           `~(` is itself a `requires_resharp` trigger, so the
+//           validator only fires for rules that would route to
+//           resharp anyway.
+// TS map:   `function nestedComplement(src: string): string | null`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function nestedComplement(src: string): string | null {
+//   // walk bytes; maintain stack of bool (true=complement frame);
+//   // skip \X escapes and [class] bodies;
+//   // on `~(`: check `stack.some(b => b)` first (return if true);
+//   //   then push true; skip 2 bytes;
+//   // on `(`: push false; skip 1 byte; skip `?` after `(`;
+//   // on `)`: pop.
+// }
+// ```
+pub fn nested_complement(src: &str) -> Option<String> {
+    let bytes = src.as_bytes();
+    let mut i = 0usize;
+    let mut in_class = false;
+    let mut stack: Vec<bool> = Vec::new();
+    while i < bytes.len() {
+        let c = bytes[i];
+        if c == b'\\' {
+            i += 2;
+            continue;
+        }
+        if !in_class && c == b'[' {
+            in_class = true;
+            i += 1;
+            continue;
+        }
+        if in_class {
+            if c == b']' {
+                in_class = false;
+            }
+            i += 1;
+            continue;
+        }
+        // What:     `~(` opens a complement. Check first whether we
+        //           are inside another complement; if so, fire.
+        //           Otherwise push a "complement" frame and skip
+        //           past `~(`.
+        // Why:      Resharp's complement-of-complement evaluation
+        //           walks both derivative chains and takes
+        //           hundreds of milliseconds; under ASAN that
+        //           amplifies past libFuzzer's timeout.
+        // TS map:   `if (c === 0x7e && bytes[i+1] === 0x28) { if (stack.some(b => b)) return reason; stack.push(true); i += 2; continue; }`.
+        if c == b'~' && bytes.get(i + 1).copied() == Some(b'(') {
+            if stack.iter().any(|&b| b) {
+                return Some(format!(
+                    "nested complement `~(~(...))` at byte offset {}: a complement appears inside another complement's body. Resharp's algebra simplifier computes complements via DFA derivative; complement-of-complement walks both derivative chains without identity short-circuit, taking hundreds of milliseconds to compile. Under ASAN the cost amplifies past libFuzzer's 10s per-input timeout. Flatten the nesting (one complement at a time, joined via `&` if combining), or eliminate the outer complement.",
+                    i
+                ));
+            }
+            stack.push(true);
+            i += 2;
+            continue;
+        }
+        if c == b'(' {
+            stack.push(false);
+            i += 1;
+            if i < bytes.len() && bytes[i] == b'?' {
+                i += 1;
+            }
+            continue;
+        }
+        if c == b')' {
+            stack.pop();
+            i += 1;
+            continue;
+        }
+        i += 1;
+    }
+    None
+}
+
 // What:     `fn is_lookaround_opener(bytes: &[u8], i: usize) -> bool`
 //           returns true if `bytes[i..]` starts with `(?!`/`(?=`/
 //           `(?<!`/`(?<=`.

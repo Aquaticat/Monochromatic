@@ -1819,3 +1819,99 @@ fn compile_rule_src_rejects_lookaround_chain_slow_shape_fast() {
         "compile_rule_src on lookaround-chain shape took {elapsed:?}; expected <100ms",
     );
 }
+
+use super::engine::nested_complement;
+
+// What:     Positive triggers for `nested_complement`. Both the
+//           back-to-back form `~(~(...))` and the transparent-group
+//           form `~((?:~(...)))` are confirmed slow via probe.
+// Why:      The detector must fire on any inner complement that
+//           sits inside an open outer complement's body, regardless
+//           of intermediate `(?:`/`(?i:`/etc. group wrappers.
+// TS map:   `it("nestedComplement fires", ...)`.
+#[test]
+fn nested_complement_fires() {
+    let cases: &[&str] = &[
+        // Back-to-back: `~(~(X))`.
+        "~(~(abc))",
+        // Group-transparent: `~((?:~(X)))`.
+        "~((?:~(abc)))",
+        // Multiple levels of transparent group wrapping.
+        "~((?:(?i:~(abc))))",
+        // Full timeout-95f5 artifact shape.
+        "(?-i)(?:~(~((?:(?:\\s){5,14}){3,10}))){3,10}",
+        // Group-transparent form of the same.
+        "(?-i)(?:~((?:~((?:(?:\\s){5,14}){3,10})))){3,10}",
+        // Deeper: triple complement.
+        "~(~(~(abc)))",
+    ];
+    for case in cases {
+        assert!(
+            nested_complement(case).is_some(),
+            "expected nested_complement to fire on {case:?}",
+        );
+    }
+}
+
+// What:     Negative cases for `nested_complement`. Shapes that
+//           must NOT trip the detector.
+// Why:      Sibling complements `~(...)&~(...)` are the production
+//           shape (`forbidden-strings.local.txt` line 5); rejecting
+//           them would break the RELEASE_TAG rule.
+// TS map:   `it("nestedComplement skips safe shapes", ...)`.
+#[test]
+fn nested_complement_skips_safe_shapes() {
+    let cases: &[&str] = &[
+        "",
+        "abc",
+        "(?:a)*",
+        // Single complement.
+        "~(abc)",
+        "~((?:(?:\\s){5,14}){3,10})",
+        // Sibling complements separated by `&` (production shape).
+        "~(abc)&~(def)",
+        "(?:~(abc)|~(def))",
+        // The production RELEASE_TAG rule.
+        "RELEASE_TAG_[a-f0-9]{32}&~(RELEASE_TAG_(00){16})&~(RELEASE_TAG_(de|ad|be|ef){8})",
+        // Complement inside a class (`~` is just a literal byte).
+        "[~()abc]",
+        // Escaped `~(` is literal.
+        "\\~(abc)~(def)",
+        // Complement after another complement (sequence, not nested).
+        "~(abc)x~(def)",
+    ];
+    for case in cases {
+        assert!(
+            nested_complement(case).is_none(),
+            "expected nested_complement to PASS on {case:?}; got {:?}",
+            nested_complement(case),
+        );
+    }
+}
+
+// What:     End-to-end check: `compile_rule_src` rejects the
+//           nested-complement timeout shape with a `(resharp):` error.
+// Why:      The pre-validator must beat resharp's ~900ms compile so
+//           the fuzz target's timeout budget is not consumed by the
+//           ASAN-amplified shape.
+// TS map:   `it("compile_rule_src rejects nested-complement timeout shape fast", ...)`.
+#[test]
+fn compile_rule_src_rejects_nested_complement_timeout_shape_fast() {
+    use std::time::Instant;
+    let src = "(?-i)(?:~(~((?:(?:\\s){5,14}){3,10}))){3,10}";
+    let started = Instant::now();
+    let result = crate::rules::compile_rule_src(src);
+    let elapsed = started.elapsed();
+    let err = match result {
+        Ok(_) => panic!("expected nested-complement rejection, got Ok"),
+        Err(e) => e,
+    };
+    assert!(
+        err.contains("complement"),
+        "expected error mentioning `complement`, got {err:?}",
+    );
+    assert!(
+        elapsed.as_millis() < 100,
+        "compile_rule_src on nested-complement shape took {elapsed:?}; expected <100ms",
+    );
+}
