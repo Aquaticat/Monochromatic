@@ -70,6 +70,7 @@ pub use engine::{
     lookaround_in_alternation_with_sibling,
     lookaround_in_complement,
     nested_grouped_quantifier,
+    nested_lookahead_in_quantified_group,
     requires_resharp,
     stacked_quantifier,
     CompiledRegex,
@@ -694,6 +695,33 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = complement_intersection_quantified_group(src) {
+            return Err(format!("(resharp): {}", reason));
+        }
+        // What:     `nested_lookahead_in_quantified_group` catches the
+        //           shape `(?:(?:(?!X)){m,n}){p,q}` (and `(?:(?!X){m,n}){p,q}`)
+        //           where the outer quantifier has min >= 2. Bisected from
+        //           `crash-06d9dd9fa1abfeec72a8154c09434b237dfc7f38` and
+        //           `crash-df95fcd52de76d952ee3db291f59434ece2c0b81`. Both
+        //           reproduce a u32 addition overflow at
+        //           `resharp-algebra/src/lib.rs:2470` during `Regex::new`.
+        //           libfuzzer-sys's panic hook calls abort before
+        //           `catch_unwind` can intercept, so the structural
+        //           pre-validator is the only way to keep the fuzz target
+        //           moving past these shapes.
+        // Why:      Without this guard the fuzz target halted with a
+        //           crash artifact instead of continuing to the
+        //           soundness-by-revert verification. In production
+        //           (debug-assertions OFF) the same shape silently wraps
+        //           to 0 and likely produces wrong matches -- another
+        //           reason to reject at the boundary.
+        // TS map:   `const reason = nestedLookaheadInQuantifiedGroup(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const reason = nestedLookaheadInQuantifiedGroup(src);
+        // if (reason) throw new Error(`(resharp): ${reason}`);
+        // ```
+        if let Some(reason) = nested_lookahead_in_quantified_group(src) {
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `Regex::new(src).map(CompiledRegex::Resharp).map_err(...)`.

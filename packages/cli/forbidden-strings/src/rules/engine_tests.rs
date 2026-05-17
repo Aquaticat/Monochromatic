@@ -1348,3 +1348,122 @@ fn compile_rule_src_rejects_grouped_fuzz_slow_unit_fast() {
         "compile_rule_src on grouped slow-unit took {elapsed:?}; expected <100ms",
     );
 }
+
+use super::engine::nested_lookahead_in_quantified_group;
+
+// What:     Positive triggers for `nested_lookahead_in_quantified_group`.
+//           Each shape was bisected to the minimum reproducer for the
+//           u32 add overflow panic at `resharp-algebra/src/lib.rs:2470`.
+// Why:      The fuzz target hit `crash-06d9dd9fa1abfeec72a8154c09434b237dfc7f38`
+//           and `crash-df95fcd52de76d952ee3db291f59434ece2c0b81` on this
+//           shape; the panic propagates around `catch_unwind` because
+//           libfuzzer-sys's panic hook calls abort before our handler.
+//           A pre-validator is the only way to keep the fuzz target on
+//           the soundness path.
+// TS map:   `it("nestedLookaheadInQuantifiedGroup fires", ...)`.
+#[test]
+fn nested_lookahead_in_quantified_group_fires() {
+    let cases = [
+        // Base case: lookahead in inner quantified group, outer min=2.
+        "(?:(?:(?!\\?)){1,5}){2,4}",
+        // Fixed outer min=max=2.
+        "(?:(?:(?!\\?)){1,5}){2,2}",
+        // Single wrap on quantified lookahead, outer min=3.
+        "(?:(?!\\?){1,2}){3}",
+        "(?:(?!\\?){1,2}){3,5}",
+        // Triple nest, outermost min=2.
+        "(?:(?:(?:(?!\\?)){1,5}){1,3}){2,4}",
+        // Middle level has min=2.
+        "(?:(?:(?:(?!\\?)){1,5}){2,3}){1,4}",
+        // Sibling lookahead inside outer group (still fires).
+        "(?:(?=a)(?:(?!\\?)){1,5}){2,4}",
+        // Positive lookahead also triggers.
+        "(?:(?:(?=\\?)){1,5}){2,4}",
+        // Lookahead body is a class.
+        "(?:(?:(?![ab])){1,5}){2,4}",
+        // Full crash-1 artifact source.
+        "(?-i)(?i:(?x:\\_))(?u:(?:(?:(?!(?:\\?){1,5})){1,5}){2,4})(?i:(?i:(?i:(?i:(?:a)*))))a",
+        // Full crash-2 artifact source.
+        "(?:(?u:(?:(?u:(?:\\?)+)|(?:(?:\\?){3,7}){1,5}|(?:\\?\\?\\?){1,5}))|(?:(?:(?:(?!\\?)){1,7})+){3,5}|\\_)\\_\\__",
+    ];
+    for src in cases {
+        assert!(
+            nested_lookahead_in_quantified_group(src).is_some(),
+            "expected nested_lookahead_in_quantified_group to fire on {:?}; got None",
+            src
+        );
+    }
+}
+
+// What:     Negative cases for `nested_lookahead_in_quantified_group`.
+//           Shapes that compile cleanly through resharp MUST pass.
+// Why:      Avoid false positives on lookahead shapes that don't have
+//           the specific structure that overflows the rel counter.
+//           The check is narrower than `complement_intersection_...`
+//           because Bug F is more structurally constrained.
+// TS map:   `it("nestedLookaheadInQuantifiedGroup skips", ...)`.
+#[test]
+fn nested_lookahead_in_quantified_group_skips_safe_shapes() {
+    let cases = [
+        // Outer min=1 (kleene-equivalent) -- compiles OK upstream.
+        "(?:(?:(?!\\?)){1,5}){1,5}",
+        "(?:(?:(?!\\?)){1,5}){1,4}",
+        // No inner quantifier -- compiles OK upstream.
+        "(?:(?!\\?)){2,4}",
+        // Literal sibling content breaks the derivative chain.
+        "(?:a(?:(?!\\?)){1,5}){2,4}",
+        "(?:(?:(?!\\?)){1,5}a){2,4}",
+        "(?:a(?:(?!\\?)){1,5}a){2,4}",
+        // Alternation sibling breaks it.
+        "(?:(?:(?!\\?)){1,5}|a){2,4}",
+        // Quantifier inside lookahead body (not wrapping the lookahead).
+        "(?:(?!a*)){2,4}",
+        // No lookahead at all.
+        "(?:(?:a){1,5}){2,4}",
+        // Empty / simple.
+        "",
+        "abc",
+        "(?:a)*",
+        "(?!\\?)",
+        // Bare quantified lookahead, no extra wrap.
+        "(?!\\?){2,3}",
+    ];
+    for src in cases {
+        assert!(
+            nested_lookahead_in_quantified_group(src).is_none(),
+            "expected nested_lookahead_in_quantified_group to PASS on {:?}; got {:?}",
+            src,
+            nested_lookahead_in_quantified_group(src)
+        );
+    }
+}
+
+// What:     End-to-end check: `compile_rule_src` rejects the Bug F
+//           crash shape with a `(resharp):` error mentioning
+//           "lookahead" and "overflow". The pre-validator must beat
+//           resharp to the punch so libfuzzer's panic hook never sees
+//           the abort.
+// Why:      The fuzz target relies on this pre-validator to keep
+//           moving past Bug F shapes; the soundness-by-revert phase
+//           cannot fire if the run halts on every Bug F crash.
+// TS map:   `it("compile_rule_src rejects bug-f shape fast", ...)`.
+#[test]
+fn compile_rule_src_rejects_bug_f_shape_fast() {
+    use std::time::Instant;
+    let src = "(?:(?:(?!\\?)){1,5}){2,4}";
+    let started = Instant::now();
+    let result = crate::rules::compile_rule_src(src);
+    let elapsed = started.elapsed();
+    let err = match result {
+        Ok(_) => panic!("expected nested-lookahead rejection, got Ok"),
+        Err(e) => e,
+    };
+    assert!(
+        err.contains("lookahead") && err.contains("overflow"),
+        "expected error mentioning `lookahead` and `overflow`, got {err:?}",
+    );
+    assert!(
+        elapsed.as_millis() < 100,
+        "compile_rule_src on bug-f shape took {elapsed:?}; expected <100ms",
+    );
+}
