@@ -145,11 +145,14 @@ use crate::walk::list_files;
 //             - The actual rules file (whatever the user passed via
 //               `--rules` or `FORBIDDEN_STRINGS_RULES`; falls back to
 //               the default `forbidden-strings.local.txt` in cwd).
-//             - Three canonical generated-source paths at their
-//               expected locations relative to repo root. If running
-//               from a different cwd they fail to canonicalize and are
-//               silently dropped from the set; matching is still
-//               correct for the rules file alone.
+//             - Four canonical self-match paths at their expected
+//               locations relative to repo root. Each file contains
+//               literal copies of rule bodies (generated source) or
+//               documented example matches (rules-engine test
+//               fixtures); scanning them in --all mode produces noise.
+//               If running from a different cwd they fail to
+//               canonicalize and are silently dropped from the set;
+//               matching is still correct for the rules file alone.
 //
 //           The caller separately decides WHEN to apply the skip:
 //           explicit positional args are NEVER skipped (the user asked
@@ -161,7 +164,7 @@ use crate::walk::list_files;
 // function buildSkipSet(rulesPath: string): Set<string> {
 //   const set = new Set<string>();
 //   try { set.add(fs.realpathSync(rulesPath)); } catch {}
-//   for (const k of CANONICAL_GENERATED) {
+//   for (const k of CANONICAL_SELF_MATCH_PATHS) {
 //     try { set.add(fs.realpathSync(k)); } catch {}
 //   }
 //   return set;
@@ -198,12 +201,13 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
     if let Ok(p) = std::fs::canonicalize(rules_path) {
         set.insert(p);
     }
-    // What:     Canonical generated-source paths relative to the repo
-    //           root. Each is a file we know contains literal copies of
-    //           rule bodies -- scanning them in --all mode would
-    //           produce self-matches. Pinned by their expected location
-    //           so the matcher does not fire on unrelated files of the
-    //           same name elsewhere in the tree.
+    // What:     Canonical self-match paths relative to the repo root.
+    //           Each is a file we know contains literal copies of rule
+    //           bodies (generated source) or documented example match
+    //           strings (rules-engine test fixtures); scanning them in
+    //           --all mode would produce self-matches. Pinned by their
+    //           expected location so the matcher does not fire on
+    //           unrelated files of the same name elsewhere in the tree.
     // Why:      Same anti-self-match guard as the previous basename
     //           list, but anchored to specific paths. If the binary is
     //           run from outside the monorepo or these files have been
@@ -215,14 +219,15 @@ fn build_skip_set(rules_path: &str) -> std::collections::HashSet<std::path::Path
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // const CANONICAL_GENERATED = [ "...", "...", "..." ];
+    // const CANONICAL_SELF_MATCH_PATHS = [ "...", "...", "...", "..." ];
     // ```
-    let canonical_generated = [
+    let canonical_self_match_paths = [
         "packages/cli/forbidden-strings/data/betterleaks-default-config.toml",
         "packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts",
-        "packages/cli/forbidden-strings/forbidden-strings.local.example.txt",
+        "forbidden-strings.local.example.txt",
+        "packages/cli/forbidden-strings/src/rules/algebra_tests.rs",
     ];
-    for k in canonical_generated {
+    for k in canonical_self_match_paths {
         if let Ok(p) = std::fs::canonicalize(k) {
             set.insert(p);
         }

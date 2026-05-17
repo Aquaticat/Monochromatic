@@ -564,11 +564,14 @@ the soundness-by-revert validation step.
   linear-time.
 - **Self-skip for own rule files.** `--all` walks skip a small set of paths
   unconditionally so rule bodies that match their own literal text do not
-  self-flag: the materialized rules file plus three canonical
-  package-anchored generated-source paths
+  self-flag: the materialized rules file plus four canonical
+  self-match paths
   (`packages/cli/forbidden-strings/data/betterleaks-default-config.toml`,
   `packages/cli/forbidden-strings/src/port-betterleaks-relaxations.ts`,
-  `packages/cli/forbidden-strings/forbidden-strings.local.example.txt`).
+  `forbidden-strings.local.example.txt` at repo root,
+  and the rules-engine test-fixture file
+  `packages/cli/forbidden-strings/src/rules/algebra_tests.rs` which
+  documents an example match for the bundled set-algebra demo rule).
   Skip is path-anchored via `std::fs::canonicalize`, not basename-anchored,
   so an unrelated file named `forbidden-strings.local.txt` in a subdirectory
   is still scanned. Explicit positional arguments bypass the skip entirely.
