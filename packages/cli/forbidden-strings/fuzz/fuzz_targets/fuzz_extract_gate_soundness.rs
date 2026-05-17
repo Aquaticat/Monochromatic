@@ -166,8 +166,16 @@ fn install_resharp_panic_filter() {
                 Some(loc) => {
                     let file = loc.file();
                     let line = loc.line();
+                    // Bug F: cargo dependency path is
+                    // `.../resharp-algebra-<ver>/src/lib.rs:2470`.
                     (file.contains("resharp-algebra") && file.ends_with("src/lib.rs") && line == 2470)
-                        || (file.contains("resharp-engine") && file.ends_with("src/engine.rs") && line == 1020)
+                        // Bug B: cargo dependency path is
+                        // `.../resharp-<ver>/src/engine.rs:1020`. The
+                        // `-` after `resharp` distinguishes from
+                        // unrelated crates that might contain "resharp"
+                        // in their name; `ends_with("src/engine.rs")`
+                        // narrows further.
+                        || (file.contains("/resharp-") && file.ends_with("src/engine.rs") && line == 1020)
                 }
                 None => false,
             };
