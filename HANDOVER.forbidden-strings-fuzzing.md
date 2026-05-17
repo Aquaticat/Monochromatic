@@ -765,9 +765,23 @@ no raw content bytes) when run against the reverted commit. The
 same artifact passes on main. The target is therefore PROVEN to
 catch the bug class commit e49d8694 closed.
 
-**Test count: 144 unit tests in fuzz crate + 147 unit tests in
-main crate + 3 new fuzz/src/generators tests + 19 integration =
-all green. Clippy clean.**
+**Test count: 147 unit tests in main crate + 3 unit tests in
+fuzz crate (new this session, covering the renderer fix) + 19
+integration tests = all green. Clippy clean.**
+
+**Sentinel verification (post-fix):**
+
+- `find . -maxdepth 1 \( -name HEAD -o -name config -o ... \)` -- no
+  fuzz output escaped gitignore.
+- `git check-ignore -v packages/cli/forbidden-strings/fuzz/Cargo.lock`
+  exits 1 (not ignored — correct; the root .gitignore re-includes
+  the lockfile so it remains tracked).
+- The post-fix fuzz log shows the panic immediately after
+  `seed corpus: files: 18278 ...` with no intervening `INITED` or
+  `#N` lines, confirming the SOUNDNESS VIOLATION fired during
+  corpus replay (before libfuzzer's mutation budget started).
+  Stronger result than mutation-finds-it: the warm corpus already
+  encoded the bug under the fixed renderer.
 
 **Status:**
 
