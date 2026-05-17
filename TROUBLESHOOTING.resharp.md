@@ -975,7 +975,7 @@ re-visit of a node already seen in the same `calc_prefix_sets_inner`
 call clears `result` and breaks, mirroring the pre-existing
 "self-loop" handling at `target == node`.
 
-Applied against the same upstream HEAD, the v3 variant:
+Applied against the same upstream HEAD, the additive variant:
 
 - compiles `abc~(\w)&(?:aaa)*` in milliseconds and the resulting
   regex returns `false` from `is_match` on every probe input in
@@ -1043,12 +1043,24 @@ Prototyped against `https://github.com/ieviev/resharp.git` HEAD
 in `Cargo.toml`, 2026-05-15) in a fresh `mktemp -d` clone. The
 initially-proposed single-line patch regressed 9 of 46 active cases
 in `resharp-engine/tests/prefix.toml`; the verified prototype is a
-two-line additive variant (`visited` set plus fresh-revisit clear)
+two-hunk additive variant (`visited` set plus fresh-revisit clear)
 that passes `cargo test --workspace --no-fail-fast` with 228 passed,
 0 failed, 19 ignored. See Bug E's "Suggested upstream fix" subsection
 above for the diff, the audit method, and the language-emptiness
 check on the Bug E trigger pattern. Draft upstream issue body is
 below.
+
+Re-evaluation of constraints 2 and 4 in light of the obstacle:
+
+- **Constraint 2 (can upstream fix?)** Downgrades from "single
+  line" to "two hunks adding four lines (one new `BTreeSet` plus
+  one bounded check); additive only, no behaviour change in any
+  existing exit path." Still small and contained to one function.
+- **Constraint 4 (will they likely fix?)** Unchanged at "plausible."
+  The fix sits inside a function the project already maintains
+  (the `redundant` set is the prior author's own cycle-detection
+  scaffolding), and the patch reuses the same vocabulary. No
+  algebraic-core changes.
 
 ### Draft upstream issue body for Bug E (ready to file)
 
@@ -1092,11 +1104,39 @@ use resharp::Regex;
 let _ = Regex::new(r"abc~(\w)&(?:aaa)*");  // never returns
 ```
 
-The reproducer included as
-`resharp-engine/tests/bug_e_repro.rs::bug_e_trigger_compiles_within_timeout`
-in the prototype branch runs `Regex::new` on a worker thread and asserts
-the thread reports back within a 10 s timeout; on unmodified `main` it
-fails the timeout, on the proposed patch it returns in milliseconds.
+Easiest way to reproduce as a regression test (worker thread with a
+hard timeout, since `Regex::new` does not return on the trigger
+pattern and no compile timeout is exposed):
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+use std::time::Duration;
+
+#[test]
+fn bug_e_trigger_compiles_within_timeout() {
+    const TRIGGER: &str = r"abc~(\w)&(?:aaa)*";
+    let (tx, rx) = mpsc::channel();
+    thread::Builder::new()
+        .name("bug_e_compile".into())
+        .stack_size(8 * 1024 * 1024)
+        .spawn(move || {
+            let _ = resharp::Regex::new(TRIGGER);
+            let _ = tx.send(());
+        })
+        .unwrap();
+    assert!(
+        rx.recv_timeout(Duration::from_secs(10)).is_ok(),
+        "Regex::new({TRIGGER:?}) hung",
+    );
+}
+```
+
+On unmodified `main` the test fails the 10 s timeout; on the
+proposed patch it returns in milliseconds. A companion test that
+calls `is_match` against `{"", "abc", "aaa", "abcaaa", "aaaaaa",
+"abc!", "abcaaab"}` returns `false` for every input, consistent with
+the empty language `abc~(\w) & (?:aaa)*` represents.
 
 Stack trace at the hang point (captured 3 s into compile):
 
