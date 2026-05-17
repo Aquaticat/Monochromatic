@@ -29,6 +29,7 @@
   "sideEffects": false,
   "dependencies": {
     "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",
+    "@monochromatic-dev/module-current-time-context": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:"
   },

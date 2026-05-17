@@ -574,6 +574,9 @@ importers:
       '@monochromatic-dev/claude-code-plugins-hook-types':
         specifier: workspace:*
         version: link:../hook-types
+      '@monochromatic-dev/module-current-time-context':
+        specifier: workspace:*
+        version: link:../../module/current-time-context
       '@optique/core':
         specifier: 'catalog:'
         version: 1.0.0-dev.1692
@@ -1456,6 +1459,21 @@ importers:
         specifier: 'catalog:'
         version: 6.0.2
 
+  packages/module/current-time-context:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
+
   packages/module/dom:
     devDependencies:
       '@monochromatic-dev/config-tsdown':
@@ -1924,6 +1942,28 @@ importers:
       typebox:
         specifier: ^1.1.34
         version: 1.1.34
+
+  packages/pi/current-time-context:
+    dependencies:
+      '@monochromatic-dev/module-current-time-context':
+        specifier: workspace:*
+        version: link:../../module/current-time-context
+    devDependencies:
+      '@earendil-works/pi-coding-agent':
+        specifier: 'catalog:'
+        version: 0.75.0(ws@8.20.0)(zod@4.3.6)
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
 
   packages/pi/morph-compact:
     devDependencies:

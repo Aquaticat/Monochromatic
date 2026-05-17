@@ -3,48 +3,8 @@ import type {
   UserPromptSubmitOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 
+import { formatTimeContext, } from '@monochromatic-dev/module-current-time-context';
 import { parseHookJson, } from '../runtime/handler-runtime.ts';
-
-/**
- * Pads a non-negative integer to two digits with a leading zero.
- *
- * @param n - integer in `[0, 99]`
- *
- * @returns two-character zero-padded decimal string
- *
- * @example
- * ```ts
- * pad2(7);  // "07"
- * pad2(20); // "20"
- * ```
- */
-function pad2(n: number,): string {
-  return n.toString().padStart(
-    2,
-    '0',
-  );
-}
-
-/**
- * Formats a `Date` as the additionalContext payload `<time>HH:MM</time>` in
- * the system's local 24-hour clock.
- *
- * Pure function; separated from {@link promptTimeHandler} so unit tests can
- * pin a fixed `Date` and assert on the exact tag.
- *
- * @param now - timestamp to format
- *
- * @returns `<time>HH:MM</time>` literal with zero-padded hour and minute
- *
- * @example
- * ```ts
- * formatTimeContext(new Date('2026-05-01T20:48:00'));
- * // "<time>20:48</time>"
- * ```
- */
-function formatTimeContext(now: Date,): string {
-  return `<time>${pad2(now.getHours(),)}:${pad2(now.getMinutes(),)}</time>`;
-}
 
 /**
  * Output of the prompt-time handler.
