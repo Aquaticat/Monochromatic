@@ -3,6 +3,70 @@
 oxlint 1.55.0 + oxlint-tsgolint 0.16.0 (typescript-go commit
 `4a59cd78390d`).
 
+## Status: fixed upstream in tsgolint v0.17.2 (PR #824) and refined in v0.17.3 (PR #826)
+
+The workspace catalog floor is `oxlint-tsgolint >= 0.16.0` (`pnpm-workspace.yaml`),
+but pnpm currently resolves it to `oxlint-tsgolint@0.19.0`, which already includes
+both upstream commits. Existing installs do not exhibit the bug; the catalog
+floor should be raised to `>= 0.17.3` opportunistically (separate change; not
+part of this troubleshooting entry).
+
+The remainder of this document preserves the root-cause analysis of the v0.16.0
+behaviour for historical record and to keep the audit trail of the 5-constraint
+upstream-filing check.
+
+Empirical verification (this entry's prototype step):
+
+- Fresh clone: `https://github.com/oxc-project/tsgolint.git` at
+  `1dcd2a6f4138f4b9a273a231def838995ac589e5` (origin and HEAD captured before
+  the build).
+- Reproducer file (`repro.ts`):
+
+  ```ts
+  interface Element { tagName: string; }
+  interface HTMLFormElement extends Element { action: string; method: string; elements: unknown; }
+  declare const document: {
+    querySelector<E extends Element = Element>(selectors: string): E | null;
+  };
+  function notNullishOrThrow<T>(value: T | null | undefined): T {
+    if (value === null || value === undefined) throw new Error('nullish');
+    return value;
+  }
+  export const form = notNullishOrThrow(document.querySelector('.myForm')) as HTMLFormElement;
+  ```
+
+- Built `tsgolint` binary at `v0.16.0` and at HEAD with the standard
+  `git submodule update --init`, `git am --3way --no-gpg-sign patches/*.patch`,
+  collections copy, `go build ./cmd/tsgolint` sequence.
+- `tsgolint --tsconfig tsconfig.json` at v0.16.0 reports
+  `no-unnecessary-type-assertion`: "This assertion is unnecessary since it does
+  not change the type of the expression." on `as HTMLFormElement` (the
+  false positive under audit).
+- `tsgolint --tsconfig tsconfig.json` at HEAD does **not** report
+  `no-unnecessary-type-assertion` on the same reproducer. The fix lands.
+
+### Side effect at HEAD: `no-unsafe-type-assertion` fires instead
+
+At HEAD the same reproducer produces a different diagnostic from a sibling rule:
+
+```
+no-unsafe-type-assertion - Unsafe assertion from `any` detected: consider using
+type guards or a safer assertion.
+```
+
+The `no-unsafe-type-assertion` rule uses `GetTypeAtLocation` on the inner
+expression (`internal/rules/no_unsafe_type_assertion/no_unsafe_type_assertion.go:60`),
+not the new context-free path. The rule existed in v0.16.0 and did **not** fire
+on this reproducer there. The behaviour change between the two builds is not in
+`no-unsafe-type-assertion` itself; the typescript-go submodule pinned by each
+tsgolint version differs, and the inferred type of
+`notNullishOrThrow(document.querySelector('.myForm'))` (without the contextual
+hint that the AsExpression supplied) is reported as `any` at HEAD. The original
+`no-unnecessary-type-assertion` bug is gone, but the wrapper-around-generic-call
+shape is not in PR #824's regression test set. This side effect is out of scope
+for this troubleshooting entry; documenting here so the next investigator does
+not retread the same path.
+
 ## Symptom
 
 tsgolint (the type-aware backend behind oxlint
@@ -136,6 +200,9 @@ overrides the inferred type parameter.
 
 ## Verified workaround
 
+> Applies only when pinned to oxlint-tsgolint v0.16.0 to v0.17.1. Versions
+> v0.17.2 and later include the upstream fix.
+
 Use the generic type parameter on `querySelector` instead of
 a post-hoc `as` assertion:
 
@@ -176,44 +243,128 @@ and the assertion must remain (with an
   assertion; the explicit default does not bypass the
   contextual inference.
 
-## Why we would file this upstream
+## Why we would have filed this upstream (audit trail; already fixed)
 
-All 5 constraints hold:
+The 5-constraint check below is preserved for audit purposes. The fix is
+already shipped upstream; do not file.
 
 1. **Is it really upstream's fault?** Yes; `getUncastType`'s
-   use of `GetTypeAtLocation` is the defect.
-2. **Can upstream fix it?** Yes; three approaches sketched
-   below.
+   use of `GetTypeAtLocation` was the defect.
+2. **Can upstream fix it?** Yes; the change ended up as a tightly-scoped
+   conditional in `getUncastType` (single-hunk in PR #824, refined by one
+   hunk in PR #826).
 3. **Are they supporting this use case?** Yes; the rule is
    shipped and the case is in scope.
-4. **Will they likely fix it?** Plausible; the IIFE workaround
-   already exists for a related issue.
-5. **Have we prototyped a minimal fix?** Architectural sketch
-   below; no PR yet.
+4. **Will they likely fix it?** Already fixed: PR #824 (commit `599e150`,
+   first tagged in v0.17.2) introduced the context-free type path for
+   call-like expressions; PR #826 (commit `f8a6ae2`, first tagged in v0.17.3)
+   extended it to await-wrapped calls.
+5. **Have we prototyped a minimal fix?** Verified upstream patch via
+   approach 3 (see below). No local PR needed; the change was already merged
+   and released by the time the prototype step ran.
 
-Decision: worth filing.
+Decision: do **not** file. The fix is already in the version the workspace is
+actually consuming (v0.19.0 via the `>=0.16.0` catalog floor).
 
-### Suggested fix for tsgolint
+### Suggested fix for tsgolint: approach 3 verified upstream
 
 The `getUncastType` function should compute the expression's
 type **without** contextual typing from the parent
-`AsExpression`. Possible approaches:
+`AsExpression`. Three approaches were considered when the doc was first
+written:
 
 1. **Extend the IIFE pattern to all generic calls**: use
    `getResolvedSignature` + `GetReturnTypeOfSignature` for any
    call expression, not just IIFEs. Avoids `GetTypeAtLocation`
-   entirely for calls.
+   entirely for calls. Not pursued upstream.
 2. **Check for generic function calls**: if the callee has
    generic type parameters, skip the rule (the same approach
    typescript-eslint acknowledged in
    [typescript-eslint#528](https://github.com/typescript-eslint/typescript-eslint/issues/528)).
+   Not pursued upstream.
 3. **Strip contextual type**: temporarily remove the
    `AsExpression` parent before calling `GetTypeAtLocation`,
-   or use a checker API that excludes contextual typing.
+   or use a checker API that excludes contextual typing. **Verified
+   upstream choice.** PR #824 introduced a call-like branch that consults
+   `Checker_getContextFreeTypeOfExpression` before falling back to
+   `GetTypeAtLocation`; PR #826 widened the branch to cover `await`-wrapped
+   calls. The upstream PR titles framed the fix against
+   [oxc-project/oxc#20656](https://github.com/oxc-project/oxc/issues/20656)
+   (`querySelector` with a defaulted type parameter), not against this doc's
+   union-with-null shape, but the same `getContextFreeTypeOfExpression` code
+   path resolves both classes of false positive.
 
-## Draft upstream issue (kept as reference; revise before filing)
+Combined upstream diff (PR #824 + PR #826) on
+`internal/rules/no_unnecessary_type_assertion/no_unnecessary_type_assertion.go`:
+
+```diff
+@@ -228,6 +228,18 @@ var NoUnnecessaryTypeAssertionRule = rule.Rule{
+ 			callee := ast.SkipParentheses(expression.AsCallExpression().Expression)
+ 			return ast.IsArrowFunction(callee) || ast.IsFunctionExpression(callee)
+ 		}
++		var isContextSensitiveCallLikeExpression func(expression *ast.Node) bool
++		isContextSensitiveCallLikeExpression = func(expression *ast.Node) bool {
++			if ast.IsCallExpression(expression) || ast.IsNewExpression(expression) || ast.IsTaggedTemplateExpression(expression) {
++				return true
++			}
++
++			if ast.IsAwaitExpression(expression) {
++				return isContextSensitiveCallLikeExpression(ast.SkipParentheses(expression.Expression()))
++			}
++
++			return false
++		}
+
+ 		getUncastType := func(node *ast.Node) *checker.Type {
+ 			expression := ast.SkipParentheses(node.Expression())
+@@ -245,6 +257,15 @@ var NoUnnecessaryTypeAssertionRule = rule.Rule{
+ 				}
+ 			}
+
++			// For call-like expressions, use the context-free expression type so
++			// contextual typing from the assertion itself doesn't leak into generic
++			// inference for the original expression.
++			if isContextSensitiveCallLikeExpression(expression) {
++				if t := checker.Checker_getContextFreeTypeOfExpression(ctx.TypeChecker, expression); t != nil {
++					return t
++				}
++			}
++
+ 			return ctx.TypeChecker.GetTypeAtLocation(expression)
+ 		}
+```
+
+Verification command (run against the fresh clone in `/tmp/tmp.zGzIFb5u6J/`):
+
+```sh
+# Pre-fix at v0.16.0
+cd "$(mktemp -d)" && gh repo clone oxc-project/tsgolint && cd tsgolint
+git checkout v0.16.0
+git submodule update --init --recursive
+(cd typescript-go && git am --3way --no-gpg-sign ../patches/*.patch)
+mkdir -p internal/collections && find ./typescript-go/internal/collections -type f ! -name '*_test.go' -exec cp {} internal/collections/ \;
+go build -o /tmp/tsgolint-v0.16.0 ./cmd/tsgolint
+/tmp/tsgolint-v0.16.0 --tsconfig <repro-dir>/tsconfig.json   # reports no-unnecessary-type-assertion
+
+# Post-fix at HEAD (1dcd2a6f4138f4b9a273a231def838995ac589e5 at time of writing)
+git checkout main
+# repeat submodule init, am, collections copy, then:
+go build -o /tmp/tsgolint-HEAD ./cmd/tsgolint
+/tmp/tsgolint-HEAD --tsconfig <repro-dir>/tsconfig.json      # no no-unnecessary-type-assertion
+```
+
+## Draft upstream issue (kept for audit; **do not file**)
 
 ````md
+**STATUS: ALREADY FIXED UPSTREAM. DO NOT FILE.** The diagnosis below was
+written against tsgolint v0.16.0. PR
+[oxc-project/tsgolint#824](https://github.com/oxc-project/tsgolint/pull/824)
+(merged 2026-03-23, released in v0.17.2) and PR
+[oxc-project/tsgolint#826](https://github.com/oxc-project/tsgolint/pull/826)
+(merged 2026-03-24, released in v0.17.3) implement approach 3 from the
+"Suggested fix" subsection above. The draft is preserved so the audit trail
+of the 5-constraint check remains reproducible.
+
 **Title**: `no-unnecessary-type-assertion` false positive on generic function calls with nullable parameter types
 
 **Labels**: bug, rule:no-unnecessary-type-assertion
