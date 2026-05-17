@@ -180,6 +180,62 @@ async function runContainer(args: readonly string[],): Promise<string> {
 //region Mise registry
 
 /**
+ * Returns the leading non-whitespace token of `line`. Whitespace is
+ * defined the same way as regex `\s` (space, tab, newline, carriage
+ * return, form feed, vertical tab); empty input returns an empty token.
+ *
+ * @param line - input line
+ *
+ * @returns first non-whitespace token (possibly empty)
+ */
+function firstWhitespaceToken(line: string,): string {
+  /**
+   * Recursive walker advancing while the cursor sits on whitespace.
+   *
+   * @param idx - cursor into `line`
+   *
+   * @returns index of the first non-whitespace position (or `line.length`)
+   */
+  function skipWs(idx: number,): number {
+    if (idx >= line.length)
+      return idx;
+    /** Char at cursor; only ASCII whitespace advances the scan. */
+    const c = line.charAt(idx,);
+    /** Whether the cursor sits on regex `\s`. */
+    const ws = (c === ' ') || (c === '\t') || (c === '\n')
+      || (c === '\r') || (c === '\f') || (c === '\v');
+    if (ws)
+      return skipWs(idx + 1,);
+    return idx;
+  }
+  /**
+   * Recursive walker advancing while the cursor sits on non-whitespace.
+   *
+   * @param idx - cursor into `line`
+   *
+   * @returns exclusive end of the token
+   */
+  function scanToken(idx: number,): number {
+    if (idx >= line.length)
+      return idx;
+    /** Char at cursor; whitespace ends the token. */
+    const c = line.charAt(idx,);
+    /** Whether the cursor sits on regex `\s`. */
+    const ws = (c === ' ') || (c === '\t') || (c === '\n')
+      || (c === '\r') || (c === '\f') || (c === '\v');
+    if (ws)
+      return idx;
+    return scanToken(idx + 1,);
+  }
+  /** Cursor positioned at the first non-whitespace character. */
+  const start = skipWs(0,);
+  return line.slice(
+    start,
+    scanToken(start,),
+  );
+}
+
+/**
  * Loads the mise tool registry and returns a set of tool names.
  * Includes tools from all backends (aqua, cargo, npm, github, etc.)
  * since any tool in the registry can be installed via mise instead
@@ -197,8 +253,8 @@ async function loadMiseRegistry(): Promise<ReadonlySet<string>> {
   const names = new Set<string>();
   for (const line of result.stdout.split('\n',)) {
     /** First whitespace-separated token of `line`; tool name on `mise registry` output. */
-    const [name,] = line.split(/\s+/,);
-    if ((name !== undefined) && (name !== ''))
+    const name = firstWhitespaceToken(line,);
+    if (name !== '')
       names.add(name.toLowerCase(),);
   }
   console.log(`[generate-index] loaded ${names.size} mise registry entries`,);

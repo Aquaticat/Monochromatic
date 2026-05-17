@@ -5,8 +5,34 @@ import {
 } from 'node:path';
 import readdirGlob from 'tiny-readdir-glob';
 
-/** Index of the first glob metacharacter in a pattern string */
-const GLOB_META = /[*?{[]/;
+/** Glob metacharacters that mark where a static prefix ends. */
+const GLOB_META_CHARS = '*?{[';
+
+/**
+ * Returns the index of the first glob metacharacter in `s`, or `-1`
+ * when no metacharacters are present.
+ *
+ * @param s - candidate glob pattern
+ *
+ * @returns first metacharacter index
+ */
+function firstGlobMetaIndex(s: string,): number {
+  /**
+   * Recursive scan returning the cursor at the first metacharacter.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @returns metacharacter index (or `-1` for none)
+   */
+  function scan(idx: number,): number {
+    if (idx >= s.length)
+      return -1;
+    if (GLOB_META_CHARS.includes(s.charAt(idx,),))
+      return idx;
+    return scan(idx + 1,);
+  }
+  return scan(0,);
+}
 
 /**
  * Splits a glob pattern into a static base directory, a relative glob suffix,
@@ -35,7 +61,7 @@ function splitGlob(
   originalPrefix: string,
 ] {
   /** Position of the first metacharacter */
-  const metaIndex = pattern.search(GLOB_META,);
+  const metaIndex = firstGlobMetaIndex(pattern,);
 
   if (metaIndex === (-1)) {
     // No wildcards: treat entire pattern as a literal path

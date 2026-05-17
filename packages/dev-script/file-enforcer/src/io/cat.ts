@@ -47,8 +47,18 @@ export function globResults(
   ) as unknown as GlobResults;
 }
 
-/** Glob characters that trigger pattern expansion inside cat-array paths */
-const GLOB_CHARS = /[*?]/;
+/**
+ * Returns true when `path` contains a `*` or `?` glob metacharacter
+ * (the two characters the cat-array fast-path uses to decide between
+ * literal-path and glob-expansion handling).
+ *
+ * @param path - candidate path or pattern
+ *
+ * @returns whether the path needs glob expansion
+ */
+function hasGlobChars(path: string,): boolean {
+  return path.includes('*',) || path.includes('?',);
+}
 
 /**
  * Reads files by glob pattern, keeping them separate for `overwriteEach()`.
@@ -110,7 +120,7 @@ export async function cat(
       function expandOnePath(
         path: string,
       ): Promise<readonly string[]> {
-        if (GLOB_CHARS.test(path,))
+        if (hasGlobChars(path,))
           return expandGlob(path,);
         return Promise.resolve([path,],);
       },
