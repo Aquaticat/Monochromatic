@@ -1,0 +1,37 @@
+{
+  "name": "@monochromatic-dev/pi-thinking-defaults",
+  "description": "Model-aware thinking default extension for pi: GPT models use xhigh while other models use high",
+  "type": "module",
+  "private": true,
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/pi/thinking-defaults"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts"
+  },
+  "pi": {
+    "extensions": ["./dist/final/node/index.mjs"]
+  },
+  "files": [
+    "dist/final",
+    "src"
+  ],
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "catalog:",
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:"
+  }
+}
