@@ -13,6 +13,76 @@ import type {
 import { createTsdocVisitor, } from './tsdoc-visitors.ts';
 
 /**
+ * Returns true when `c` is ASCII whitespace per regex `\s` semantics.
+ *
+ * @param c - candidate character
+ *
+ * @returns whether the character is whitespace
+ */
+function isWhitespaceChar(c: string,): boolean {
+  return (c === ' ') || (c === '\t') || (c === '\n')
+    || (c === '\r') || (c === '\f') || (c === '\v');
+}
+
+/**
+ * Returns true when `tag` appears in `text` preceded by start-of-string
+ * or whitespace and followed by whitespace, end-of-string, or `*`.
+ *
+ * Replaces the prior `new RegExp((?:^|\s)<tag>(?:\s|$|\*))` test with a
+ * single linear pass: each candidate position is found by `indexOf`, the
+ * surrounding characters are checked in constant time, and the cursor
+ * advances past every match attempt so the worst-case work is bounded by
+ * the length of `text`.
+ *
+ * @param text - haystack searched for the tag
+ *
+ * @param tag - literal tag including the leading `@` (e.g. `'@public'`)
+ *
+ * @returns whether the bounded tag occurs at least once in `text`
+ */
+function containsBoundedAccessTag({
+  text,
+  tag,
+}: {
+  text: string;
+  tag: string;
+},): boolean {
+  /**
+   * Recursive scan that tests every occurrence of `tag` in `text` for
+   * matching boundary conditions before reporting a hit.
+   *
+   * @param from - cursor index for the next `indexOf` call
+   *
+   * @returns true on the first occurrence with valid boundaries
+   */
+  function scan(from: number,): boolean {
+    /** Position of the next literal occurrence of `tag`; -1 ends the search. */
+    const idx = text.indexOf(
+      tag,
+      from,
+    );
+    if (idx === (-1))
+      return false;
+    /** Char immediately before the match; start-of-string acts as whitespace. */
+    const before = idx === 0 ? '' : text.charAt(idx - 1,);
+    /** Whether the preceding char satisfies the `(?:^|\s)` anchor. */
+    const beforeOk = (before === '') || isWhitespaceChar(before,);
+    if (!beforeOk)
+      return scan(idx + 1,);
+    /** Index immediately after the match; used to inspect the trailing char. */
+    const afterIdx = idx + tag.length;
+    /** Char immediately after the match; end-of-string acts as a valid terminator. */
+    const after = afterIdx >= text.length ? '' : text.charAt(afterIdx,);
+    /** Whether the trailing char satisfies the `(?:\s|$|\*)` anchor. */
+    const afterOk = (after === '') || (after === '*') || isWhitespaceChar(after,);
+    if (afterOk)
+      return true;
+    return scan(idx + 1,);
+  }
+  return scan(0,);
+}
+
+/**
  * Validates access modifier tags in TSDoc comments.
  *
  * Reports conflicting access modifiers (e.g., public and internal together).
@@ -44,25 +114,14 @@ export const checkAccess: CreateOnceRule = {
         _node,
         comment,
       ): void {
-        /** Accumulator of access tags actually present in the comment; multiple entries are a conflict. */
-        const found: string[] = [];
-        /** Raw comment body searched once per access tag with the boundary-anchored pattern below. */
+        /** Raw comment body searched once per access tag with the boundary-anchored predicate below. */
         const text = comment.value;
-        accessTags.forEach(function findTag(tag,): void {
-          // Match tag at word boundary to avoid false positives
-          /**
-           * Tag with `\@` escaped for use inside the dynamic regex literal.
-           */
-          const escapedTag = tag.replace(
-            '@',
-            String.raw`\@`,
-          );
-          /** Compiled regex that requires whitespace or line boundary around the tag. */
-          const pattern = new RegExp(
-            String.raw`(?:^|\s)${escapedTag}(?:\s|$|\*)`,
-          );
-          if (pattern.test(text,))
-            found.push(tag,);
+        /** Subset of `accessTags` whose bounded form actually appears; multiple entries are a conflict. */
+        const found = accessTags.filter(function isPresent(tag,): boolean {
+          return containsBoundedAccessTag({
+            text,
+            tag,
+          },);
         },);
 
         if (found.length > 1) {

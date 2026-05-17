@@ -14,10 +14,61 @@ import type {
 } from '@oxlint/plugins';
 
 import {
-  COMMENT_LINE_PREFIX,
   createTsdocVisitor,
   getCommentLines,
+  stripCommentLineMarker,
 } from './tsdoc-visitors.ts';
+
+/**
+ * Returns true when `c` is an ASCII word character (alphanumeric or `_`).
+ *
+ * @param c - candidate character
+ *
+ * @returns true when the character qualifies as `\w` in regex semantics
+ */
+function isWordChar(c: string,): boolean {
+  return ((c >= '0') && (c <= '9'))
+    || ((c >= 'a') && (c <= 'z'))
+    || ((c >= 'A') && (c <= 'Z'))
+    || (c === '_');
+}
+
+/**
+ * Extracts the leading `@word` token from `s`, including the `@`.
+ *
+ * Linear scan: walks word characters starting at index 1 (just past `@`)
+ * and stops at the first non-word char. Mirrors `/^(@\w+)/`.
+ *
+ * @param s - line content (with the leading `*` already stripped and trimmed)
+ *
+ * @returns captured tag (e.g. `'@param'`) or `null` when `s` does not begin with `@word`
+ */
+function extractLeadingTag(s: string,): string | null {
+  if (!s.startsWith('@',))
+    return null;
+  /**
+   * Advances through the run of word characters following the `@`.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @returns exclusive end of the tag-name run
+   */
+  function scan(idx: number,): number {
+    if (idx >= s.length)
+      return idx;
+    if (!isWordChar(s.charAt(idx,),))
+      return idx;
+    return scan(idx + 1,);
+  }
+  /** Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign. */
+  const end = scan(1,);
+  if (end === 1)
+    return null;
+  return s.slice(
+    0,
+    end,
+  );
+}
 
 /**
  * Enforces consistent spacing between TSDoc tags.
@@ -71,13 +122,7 @@ export const tagLines: CreateOnceRule = {
           if (index === 0)
             return;
           /** Current line stripped of indent and the leading `*`, ready for tag matching. */
-          const trimmed = line
-            .trimStart()
-            .replace(
-              COMMENT_LINE_PREFIX,
-              '',
-            )
-            .trimStart();
+          const trimmed = stripCommentLineMarker(line.trimStart(),).trimStart();
           if (!trimmed.startsWith('@',))
             return;
           // Check if previous line is blank
@@ -86,22 +131,12 @@ export const tagLines: CreateOnceRule = {
           if (prevLine === undefined)
             return;
           /** Previous line stripped of indent and `*`; empty string means the tag is preceded by blank. */
-          const prevTrimmed = prevLine
-            .trimStart()
-            .replace(
-              COMMENT_LINE_PREFIX,
-              '',
-            )
-            .trimStart();
+          const prevTrimmed = stripCommentLineMarker(prevLine.trimStart(),).trimStart();
           if (prevTrimmed.length > 0) {
-            /**
-             * Match for the leading `\@tag` on the current line; null when not a tag line.
-             */
-            const tagMatch = (/^(@\w+)/).exec(trimmed,);
             /**
              * Resolved tag string for the error message, with `\@unknown` fallback for the impossible-null case.
              */
-            const tag = (tagMatch !== null) ? (tagMatch[1] ?? '@unknown') : '@unknown';
+            const tag = extractLeadingTag(trimmed,) ?? '@unknown';
 
             /**
              * Line number of the tag line in the source file (1-based).

@@ -21,8 +21,28 @@ import {
   type TsdocParseResult,
 } from '../tsdoc-utils.ts';
 
-/** Regex matching a TSDoc block comment line prefix ` * `. */
-export const COMMENT_LINE_PREFIX: RegExp = /^ *\*/;
+/**
+ * Strips the leading `*` marker from a TSDoc block-comment line whose
+ * indentation has already been removed by `String.prototype.trimStart`.
+ *
+ * Returns the input verbatim when the line does not begin with `*`,
+ * matching the prior leading-asterisk strip on a trimmed line (the
+ * indentation spaces are already gone so the only meaningful match is
+ * a single asterisk at index 0).
+ *
+ * @param s - line text after `trimStart`
+ *
+ * @returns line text with the leading `*` removed if present
+ *
+ * @example
+ * ```ts
+ * stripCommentLineMarker('* @param x foo'); // '@param x foo'
+ * stripCommentLineMarker('@param x foo'); // '@param x foo'
+ * ```
+ */
+export function stripCommentLineMarker(s: string,): string {
+  return s.startsWith('*',) ? s.slice(1,) : s;
+}
 
 /**
  * Splits a block comment value into its constituent lines.

@@ -13,10 +13,110 @@ import type {
 } from '@oxlint/plugins';
 
 import {
-  COMMENT_LINE_PREFIX,
   createTsdocVisitor,
   getCommentLines,
+  stripCommentLineMarker,
 } from './tsdoc-visitors.ts';
+
+/**
+ * Returns true when `c` is an ASCII word character (alphanumeric or `_`).
+ *
+ * @param c - candidate character
+ *
+ * @returns true when the character qualifies as `\w` in regex semantics
+ */
+function isWordChar(c: string,): boolean {
+  return ((c >= '0') && (c <= '9'))
+    || ((c >= 'a') && (c <= 'z'))
+    || ((c >= 'A') && (c <= 'Z'))
+    || (c === '_');
+}
+
+/**
+ * Returns true when `c` is ASCII horizontal or vertical whitespace
+ * (`\s` regex semantics).
+ *
+ * @param c - candidate character
+ *
+ * @returns true when the character is whitespace
+ */
+function isWhitespaceChar(c: string,): boolean {
+  return (c === ' ') || (c === '\t') || (c === '\n')
+    || (c === '\r') || (c === '\f') || (c === '\v');
+}
+
+/**
+ * Parsed shape of a tagged TSDoc line; `null` when the line is not
+ * `@tag <text>` form.
+ */
+type TaggedLine = {
+  /** Captured tag including the leading at-sign. */
+  tag: string;
+  /** Content following the whitespace gap. */
+  rest: string;
+};
+
+/**
+ * Parses a TSDoc line of the form `@tag <whitespace> <rest>`.
+ *
+ * Linear scan over the leading `@word` run, the whitespace gap, and the
+ * remainder; no backtracking. Mirrors `/^(@\w+)\s+(.+)/`.
+ *
+ * @param s - line content (with the leading `*` already stripped)
+ *
+ * @returns parsed tag + rest, or `null` when the shape does not match
+ */
+function parseTaggedLine(s: string,): TaggedLine | null {
+  if (!s.startsWith('@',))
+    return null;
+  /**
+   * Advances through the run of word characters following the `@`.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @returns exclusive end of the tag-name run
+   */
+  function scanTag(idx: number,): number {
+    if (idx >= s.length)
+      return idx;
+    if (!isWordChar(s.charAt(idx,),))
+      return idx;
+    return scanTag(idx + 1,);
+  }
+  /** Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign. */
+  const tagEnd = scanTag(1,);
+  if (tagEnd === 1)
+    return null;
+  /**
+   * Advances through the run of whitespace characters following the tag.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @returns first non-whitespace position
+   */
+  function scanWhitespace(idx: number,): number {
+    if (idx >= s.length)
+      return idx;
+    if (!isWhitespaceChar(s.charAt(idx,),))
+      return idx;
+    return scanWhitespace(idx + 1,);
+  }
+  /** First index past the inter-token whitespace; rest starts here. */
+  const restStart = scanWhitespace(tagEnd,);
+  if (restStart === tagEnd)
+    return null;
+  /** Remaining content; must be non-empty to match `(.+)`. */
+  const rest = s.slice(restStart,);
+  if (rest.length === 0)
+    return null;
+  return {
+    tag: s.slice(
+      0,
+      tagEnd,
+    ),
+    rest,
+  };
+}
 
 /**
  * Enforces that TSDoc tags which should not have content are empty.
@@ -67,29 +167,19 @@ export const emptyTags: CreateOnceRule = {
           /**
            * Line stripped of indent and `*` so the leading `\@tag` (if any) is at column 0.
            */
-          const trimmed = line
-            .trimStart()
-            .replace(
-              COMMENT_LINE_PREFIX,
-              '',
-            )
-            .trimStart();
+          const trimmed = stripCommentLineMarker(line.trimStart(),).trimStart();
           /**
-           * Match of `\@tag <text>`; null when the line carries no tag with trailing text.
+           * Parsed `\@tag <text>` shape; null when the line carries no tag with trailing text.
            */
-          const tagMatch = (/^(@\w+)\s+(.+)/).exec(trimmed,);
+          const tagMatch = parseTaggedLine(trimmed,);
           if (tagMatch === null)
             return;
           /** Captured tag name and remainder; both populate the diagnostic and gate the report. */
           const {
-            1: tag,
-            2: rest,
+            tag,
+            rest,
           } = tagMatch;
-          if ((tag !== undefined)
-            && modifierTags.has(tag,)
-            && (rest !== undefined)
-            && (rest.trim().length > 0))
-          {
+          if (modifierTags.has(tag,) && (rest.trim().length > 0)) {
             context.report({
               loc: {
                 start: {

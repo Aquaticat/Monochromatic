@@ -13,10 +13,47 @@ import type {
 } from '@oxlint/plugins';
 
 import {
-  COMMENT_LINE_PREFIX,
   createTsdocVisitor,
   getCommentLines,
+  stripCommentLineMarker,
 } from './tsdoc-visitors.ts';
+
+/**
+ * Returns true when `trimmed` contains an unescaped `*\/` sequence
+ * (i.e. one whose preceding character is not a backslash).
+ *
+ * Linear scan: each candidate `*\/` is found by `indexOf`, the previous
+ * character is checked, and the cursor advances past the match before the
+ * next `indexOf` call, so worst-case work is bounded by the length of `s`.
+ *
+ * @param s - line content (with the leading `*` already stripped)
+ *
+ * @returns whether an unescaped comment closer appears in `s`
+ */
+function hasUnescapedCommentClose(s: string,): boolean {
+  /**
+   * Recursive scanner advancing through every `*\/` occurrence.
+   *
+   * @param from - cursor index for the next `indexOf` call
+   *
+   * @returns true on the first unescaped match
+   */
+  function scan(from: number,): boolean {
+    /** Position of the next `*\/`; -1 means the rest of the string is safe. */
+    const idx = s.indexOf(
+      '*/',
+      from,
+    );
+    if (idx === (-1))
+      return false;
+    /** Char immediately before the match; backslash means the closer is escaped. */
+    const prev = idx === 0 ? '' : s.charAt(idx - 1,);
+    if (prev !== '\\')
+      return true;
+    return scan(idx + 2,);
+  }
+  return scan(0,);
+}
 
 /**
  * Enforces that `*\/` inside TSDoc content is escaped as `*\\/`.
@@ -57,12 +94,9 @@ export const escapeInlineTags: CreateOnceRule = {
             if ((index === 0) && line.trimEnd().endsWith('*',))
               return;
             /** Line stripped of indent and `*` so an embedded `*\/` becomes detectable in content. */
-            const trimmed = line.trimStart().replace(
-              COMMENT_LINE_PREFIX,
-              '',
-            );
+            const trimmed = stripCommentLineMarker(line.trimStart(),);
             // Look for `*/` not preceded by backslash inside content
-            if (/(?<!\\)\*\//.test(trimmed,)) {
+            if (hasUnescapedCommentClose(trimmed,)) {
               context.report({
                 loc: {
                   start: {
