@@ -834,3 +834,219 @@ pub fn intersection_with_word_end_alternation(src: &str) -> Option<String> {
     }
     None
 }
+
+// What:     `pub fn stacked_quantifier(src: &str) -> Option<String>`
+//           detects two regex quantifier suffixes appearing back-to-back
+//           without an atom or group between them: `a**`, `\D{5,11}{5,11}`,
+//           `(?:a){2}{3}`, `a*?+`, `a*??`. Returns `Some(reason)` when the
+//           shape is found and `None` otherwise.
+// Why:      Stacked quantifiers expand multiplicatively in NFA-based
+//           regex engines. The `regex` crate parses `a{5,11}{5,11}` as
+//           "5-11 reps of (5-11 reps of `a`)" -- 25-121 reps -- and
+//           five-deep stacking like the fuzz-discovered slow-unit
+//           `\D{5,11}{5,11}{5,11}{5,11}{5,11}\D*****aa` reaches 5^5
+//           through 11^5 (~161,051 reps). With `(?u)` widening `\D`
+//           to the full non-decimal-digit Unicode class, NFA size
+//           exceeds the crate's 256 MB limit and `RegexBuilder::build`
+//           wall-clocks at 1.4-1.5 seconds before erroring with
+//           `CompiledTooBig`. The plain path tries `unicode(false)`
+//           first then `unicode(true)`, so the total compile call
+//           takes ~2.9s -- well past libFuzzer's `report_slow_units`
+//           threshold of 10s once ASAN overhead and the fuzz-corpus
+//           replay loop are accounted for. The resharp parser rejects
+//           stacked quantifiers in microseconds with
+//           `UnsupportedResharpRegex`, but the slow-unit shape lacks
+//           any `requires_resharp` trigger (no `&`, `_`, `~(`,
+//           lookaround), so it never reaches resharp.
+//
+//           Stacked quantifiers are virtually never a legitimate
+//           authored pattern: the regex crate accepts them by treating
+//           the outer as a quantifier on the inner-quantified atom,
+//           but no realistic secret-detection rule needs this shape.
+//           Rejecting at the pre-validator level is conservative and
+//           keeps the fuzz target moving past inputs that would
+//           otherwise burn the entire budget on one compile attempt.
+//
+//           Detection runs as a single-pass byte walker over `src`
+//           and skips:
+//             - escape pairs `\X` (so `\{` is a literal `{`, not a
+//               quantifier-brace start);
+//             - character class interiors `[...]` (where the
+//               metacharacters are literal bytes);
+//             - the `?` byte immediately after `(` (so `(?:`, `(?i)`,
+//               `(?<=`, `(?P<name>` are not counted as a `?`
+//               quantifier).
+//           A quantifier is recognised as one of `*`, `+`, `?`, or
+//           `{` followed by an ASCII digit (so a literal `{abc}` is
+//           NOT treated as a quantifier). After a primary quantifier,
+//           a single trailing `?` (lazy) or `+` (possessive) modifier
+//           is consumed as part of the same quantifier; a second
+//           quantifier byte after that is the stacked case we flag.
+//
+//           Place the call BEFORE `requires_resharp` in
+//           `compile_rule_src` so the rejection reads as "this
+//           pattern is structurally bad", not "the plain path
+//           specifically dislikes it". Either engine would either
+//           reject the shape outright (resharp) or wall-clock on it
+//           (regex crate); the structural rejection is the honest
+//           framing.
+// TS map:   `function stackedQuantifier(src: string): string | null`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function stackedQuantifier(src: string): string | null {
+//   // walk bytes; track in_class and just_consumed_quant;
+//   // skip \X escapes and class interiors and `(?` group prefixes;
+//   // when a quantifier start is seen and just_consumed_quant is true,
+//   // return Some(reason); otherwise consume the quantifier and any
+//   // single trailing `?`/`+` modifier, set just_consumed_quant=true.
+// }
+// ```
+pub fn stacked_quantifier(src: &str) -> Option<String> {
+    let bytes = src.as_bytes();
+    let mut i = 0usize;
+    let mut in_class = false;
+    // What:     `just_consumed_quant` tracks whether the previous byte
+    //           span consumed a full quantifier (`*`/`+`/`?`/`{N,M}`
+    //           plus optional `?`/`+` modifier). The next quantifier
+    //           start while this is `true` is the stacked case.
+    //           Resets to `false` on any non-quantifier byte: a literal
+    //           byte starts a fresh atom; `(`, `|`, `)`, anchors all
+    //           re-anchor the parse state to "atom may follow".
+    // Why:      The stacked-quantifier failure is exactly two
+    //           quantifier suffixes back-to-back; the state-machine
+    //           pinpoints that adjacency without parsing the regex.
+    // TS map:   `let justConsumedQuant = false;`.
+    let mut just_consumed_quant = false;
+    while i < bytes.len() {
+        let c = bytes[i];
+        // What:     `if c == b'\\' { i += 2; ... }` skips the escape
+        //           pair. `\{`, `\}`, `\*`, `\+`, `\?` are all literal
+        //           bytes, NOT quantifier starts. Resetting
+        //           `just_consumed_quant = false` is correct: the
+        //           escape pair represents an atom (a single
+        //           literal/shorthand), so a quantifier may follow it
+        //           but the escape itself is not a quantifier.
+        // Why:      Without this skip, `\{` would be mis-detected as a
+        //           bounded-quantifier start and the algorithm would
+        //           walk past the `}` of a literal byte sequence.
+        // TS map:   `if (c === 0x5c) { i += 2; justConsumedQuant = false; continue; }`.
+        if c == b'\\' {
+            i += 2;
+            just_consumed_quant = false;
+            continue;
+        }
+        // What:     Character class entry / exit. Inside a class,
+        //           `*`/`+`/`?`/`{` are literal bytes; we don't
+        //           reason about quantifiers there.
+        // Why:      `[*+?{]` is a five-byte literal class, not five
+        //           stacked quantifiers.
+        // TS map:   `if (!inClass && c === 0x5b) { inClass = true; ... }`.
+        if !in_class && c == b'[' {
+            in_class = true;
+            just_consumed_quant = false;
+            i += 1;
+            continue;
+        }
+        if in_class {
+            if c == b']' {
+                in_class = false;
+            }
+            i += 1;
+            continue;
+        }
+        // What:     `(?` group prefix. The `?` is part of the group
+        //           syntax (non-capturing `(?:`, inline flags `(?i)`,
+        //           lookarounds `(?=`/`(?!`/`(?<=`/`(?<!`, named
+        //           captures `(?P<name>`/`(?<name>`, comments
+        //           `(?#...)`). Skipping the two bytes prevents the
+        //           `?` from being misread as a `?` quantifier on the
+        //           preceding atom -- which it is not, because the
+        //           preceding atom is `(`, which starts a new
+        //           sub-expression rather than ending one.
+        // Why:      Without the skip, `(?:a)*` would parse as
+        //           "open-paren, lazy-quantifier-on-open-paren, ..."
+        //           which is structurally wrong and would falsely flag
+        //           any `(?:...){...}` shape as stacked.
+        // TS map:   `if (c === 0x28 && b[i+1] === 0x3f) { i += 2; ... }`.
+        if c == b'(' && i + 1 < bytes.len() && bytes[i + 1] == b'?' {
+            i += 2;
+            just_consumed_quant = false;
+            continue;
+        }
+        // What:     Recognise a quantifier start. `{` is only a
+        //           quantifier start if followed by an ASCII digit;
+        //           otherwise it is a literal `{` (e.g. `{abc}` is
+        //           treated as the four literal bytes `{abc}` by the
+        //           regex crate when the contents do not parse as a
+        //           repetition spec).
+        // Why:      The fuzz generator never emits literal `{` outside
+        //           a class, but real rules sometimes do (e.g. JSON-
+        //           shaped literals like `{"key":`). Requiring the
+        //           digit lookahead keeps the algorithm well-defined
+        //           on real inputs.
+        // TS map:   `const isQuant = c === 0x2a || c === 0x2b || c === 0x3f || (c === 0x7b && isDigit(b[i+1]));`.
+        let is_quant_start = matches!(c, b'*' | b'+' | b'?')
+            || (c == b'{'
+                && i + 1 < bytes.len()
+                && bytes[i + 1].is_ascii_digit());
+        if is_quant_start {
+            if just_consumed_quant {
+                return Some(format!(
+                    "stacked quantifier at byte offset {}: `{}` follows another quantifier suffix. Stacked quantifiers (e.g. `a**`, `\\D{{5,11}}{{5,11}}`, `(?:a){{2}}{{3}}`) cause NFA size explosion in the `regex` crate (compile reaches the 256 MB DFA limit before erroring) and are rejected outright by resharp's parser. Group the inner quantified atom and apply at most one quantifier per level, or rewrite to a single bounded-or-unbounded repetition.",
+                    i, c as char
+                ));
+            }
+            // What:     Consume the quantifier. For `{N}` / `{N,}` /
+            //           `{N,M}` we walk to the matching `}`; for the
+            //           single-byte `*`/`+`/`?` we just advance one.
+            //           Then absorb an optional lazy `?` or possessive
+            //           `+` modifier so `a*?` is NOT counted as two
+            //           stacked quantifiers (it is one lazy `*`).
+            // Why:      The lazy/possessive modifier is part of the
+            //           same quantifier in regex syntax. Treating it
+            //           as a separate quantifier would false-positive
+            //           every lazy quantifier in the corpus.
+            // TS map:   `if (c === 0x7b) { while (i < len && b[i] !== 0x7d) i++; if (i < len) i++; } else { i++; }`.
+            if c == b'{' {
+                while i < bytes.len() && bytes[i] != b'}' {
+                    i += 1;
+                }
+                if i < bytes.len() {
+                    i += 1;
+                }
+            } else {
+                i += 1;
+            }
+            // What:     Optional `?` lazy modifier suffix. The regex
+            //           crate does NOT support possessive `+`
+            //           modifier (e.g. `a*+`, `a++`); the trailing
+            //           `+` always represents a fresh quantifier on
+            //           the previously-quantified atom and is
+            //           therefore stacked.
+            // Why:      `a*?` is a complete lazy quantifier; the `?`
+            //           is part of it. A SECOND `?` (so `a*??`) is
+            //           the stacked case, caught on the next
+            //           iteration. `a*+` is treated as `*` followed
+            //           by stacked `+`, the same way the regex crate
+            //           parses it.
+            if i < bytes.len() && bytes[i] == b'?' {
+                i += 1;
+            }
+            just_consumed_quant = true;
+            continue;
+        }
+        // What:     Any other byte (atom, anchor, `(`, `)`, `|`, ...)
+        //           resets `just_consumed_quant` to `false`. A
+        //           quantifier may follow this byte but the byte
+        //           itself is not a quantifier suffix.
+        // Why:      Re-anchor the state machine to "atom may now be
+        //           quantified". `(a)*` is fine: `(` starts a group,
+        //           `)` closes it (group becomes an atom), `*`
+        //           quantifies the group; only ONE quantifier follows
+        //           the group close.
+        i += 1;
+        just_consumed_quant = false;
+    }
+    None
+}

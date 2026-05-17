@@ -68,6 +68,7 @@ pub use engine::{
     intersection_with_word_end_alternation,
     lookaround_in_complement,
     requires_resharp,
+    stacked_quantifier,
     CompiledRegex,
 };
 pub use extract::extract_gating_substrings;
@@ -492,6 +493,41 @@ fn expand_unicode_whitespace(src: &str) -> String {
 // }
 // ```
 pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
+    // What:     `if let Some(reason) = stacked_quantifier(src)` runs
+    //           the structural pre-validator first. The detector flags
+    //           two regex quantifier suffixes appearing back-to-back
+    //           without an atom between them (`a**`,
+    //           `\D{5,11}{5,11}`, `(?:a){2}{3}`). Both engines reject
+    //           or wall-clock on the shape: the `regex` crate's
+    //           NFA-construction reaches the 256 MB DFA size limit and
+    //           takes ~1.4-1.5 seconds to error on the first attempt
+    //           and the same again on the unicode(true) retry --
+    //           ~2.9 seconds total per `compile_rule_src` call, which
+    //           libFuzzer's `report_slow_units` flags after ASAN
+    //           overhead pushes a single fuzz iteration past 10s.
+    //           Resharp's parser rejects the same shape in
+    //           microseconds with `UnsupportedResharpRegex`, but the
+    //           shape lacks any `requires_resharp` trigger and never
+    //           reaches that engine in production. The pre-validator
+    //           closes the gap.
+    // Why:      Stacked quantifiers are virtually never authored
+    //           intentionally; rejecting them at the source-level
+    //           pre-validator surfaces a clear error in microseconds
+    //           instead of burning the libFuzzer slow-unit budget on
+    //           one input. Placed BEFORE `requires_resharp` so the
+    //           error namespace reads as "the source shape is
+    //           structurally bad", not "the plain path specifically
+    //           dislikes it".
+    // TS map:   `const reason = stackedQuantifier(src); if (reason) throw new Error(`(regex): ${reason}`);`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const reason = stackedQuantifier(src);
+    // if (reason) throw new Error(`(regex): ${reason}`);
+    // ```
+    if let Some(reason) = stacked_quantifier(src) {
+        return Err(format!("(regex): {}", reason));
+    }
     // What:     `if requires_resharp(src) { ... } else { ... }` runs
     //           the cheap routing classifier first. Resharp-only
     //           constructs (set algebra `A&B`, complement `~(A)`,

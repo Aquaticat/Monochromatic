@@ -821,3 +821,160 @@ fn find_all_catches_runtime_panic_via_catch_unwind() {
     // abort if the panic escaped the wrapper.
     let _ = result;
 }
+
+use super::engine::stacked_quantifier;
+
+// What:     Positive triggers: every shape that must fire
+//           `stacked_quantifier`. Covers `*` followed by another
+//           quantifier, bounded-after-bounded, and the
+//           fuzz-discovered five-deep nesting that motivated the
+//           pre-validator.
+// Why:      Each case is a compile-blowup shape the fuzz target
+//           previously wall-clocked on. Regression-test that the
+//           detector stays sensitive as the algorithm evolves.
+// TS map:   `it("stackedQuantifier fires on minimal shapes", ...)`.
+#[test]
+fn stacked_quantifier_fires_on_minimal_shapes() {
+    let cases = [
+        // Two stars back-to-back. Each `*` is a quantifier suffix;
+        // the second applies to the first-quantified atom.
+        "a**",
+        // Five-star nesting from the fuzz-discovered slow-unit.
+        "\\D*****aa",
+        // Bounded after star.
+        "a*{5,11}",
+        // Star after bounded.
+        "a{5,11}*",
+        // Two adjacent bounded quantifiers (the most common
+        // fuzz-evolved shape).
+        "a{5,11}{5,11}",
+        // Five-deep bounded stacking -- the literal slow-unit
+        // rendered body after stripping flags and trailing
+        // literals. Compiles in 1.4-1.5s before this fix.
+        "\\D{5,11}{5,11}{5,11}{5,11}{5,11}",
+        // The full slow-unit body, with both nesting shapes.
+        "\\D{5,11}{5,11}{5,11}{5,11}{5,11}\\D*****aa",
+        // Bounded after plus.
+        "a+{5,11}",
+        // Plus after bounded. The regex crate does NOT support
+        // possessive quantifiers, so this is a fresh stacked `+`,
+        // not a possessive modifier on `{5,11}`.
+        "a{5,11}+",
+        // Plus after star -- not a possessive in the regex crate.
+        "a*+",
+        // Plus after plus -- same reasoning.
+        "a++",
+        // Star after star.
+        "a**",
+        // `?` quantifier after `*?` lazy -- the second `?` is a
+        // fresh quantifier on the lazy-quantified atom.
+        "a*??",
+        // Group-close followed by stacked quantifiers.
+        "(?:a){2}{3}",
+        // Non-capturing group with stacked outer quantifiers.
+        "(?:a*?){2}{3}",
+    ];
+    for case in cases {
+        assert!(
+            stacked_quantifier(case).is_some(),
+            "expected stacked_quantifier to fire on {case:?}",
+        );
+    }
+}
+
+// What:     Negative cases the detector must NOT flag. Lazy
+//           modifiers, possessive modifiers, single bounded
+//           quantifiers, group-prefixed `(?` constructs, literal
+//           braces inside classes and after escapes, and the
+//           classic-grouped pattern `(a*)*` (single quantifier on
+//           a group whose body is itself quantified -- different
+//           NFA shape from stacked, supported by both engines).
+// Why:      False positives would reject legitimate rules at
+//           compile time. Each case here is a real or plausible
+//           secret-detection rule shape; the detector must let
+//           them through.
+// TS map:   `it("stackedQuantifier does not fire on safe shapes", ...)`.
+#[test]
+fn stacked_quantifier_skips_safe_shapes() {
+    let cases = [
+        // Lazy modifier on each primary quantifier.
+        "a*?",
+        "a+?",
+        "a??",
+        // Single quantifier on a grouped quantified body. The
+        // group close re-anchors the parser state to "atom may now
+        // be quantified", so only ONE quantifier follows the
+        // group.
+        "(a*)*",
+        "(?:a*)*",
+        // Non-capturing group + flags + named captures + comments
+        // -- the `?` in each is group syntax, not a quantifier.
+        "(?:a)*",
+        "(?i)a*",
+        "(?<=a)b*",
+        "(?P<name>a)*",
+        "(?#comment)a*",
+        // Single bounded quantifier alone.
+        "\\D{5,11}",
+        "a{50}",
+        "a{1,2}",
+        // Literal `{` inside class (not a quantifier).
+        "[{}]*",
+        // Escaped `{` is a literal byte, then `*` is the single
+        // quantifier on the escaped atom.
+        "\\{*",
+        // Empty pattern -- no quantifiers at all.
+        "",
+        "abc",
+        // Alternation does not affect the detector.
+        "a*|b*",
+        // Atom between quantifiers resets state.
+        "a*b*c*",
+        // Anchors are not quantifiers.
+        "^a*$",
+        // Word boundary between quantified atoms.
+        "a*\\bb*",
+    ];
+    for case in cases {
+        assert!(
+            stacked_quantifier(case).is_none(),
+            "stacked_quantifier should NOT fire on {case:?}, got {:?}",
+            stacked_quantifier(case),
+        );
+    }
+}
+
+// What:     End-to-end check: `compile_rule_src` rejects the
+//           fuzz-discovered slow-unit shape in microseconds with a
+//           `(regex):` error string. Compares against the previous
+//           timeout behaviour by bounding the call duration.
+// Why:      The load-bearing claim of this fix is "compile rejects
+//           stacked-quantifier shapes fast". A regression that
+//           routed the same shape through the regex crate again
+//           would put the call back at 1.4-1.5s.
+// TS map:   `it("compile_rule_src rejects fuzz slow-unit fast", ...)`.
+#[test]
+fn compile_rule_src_rejects_fuzz_slow_unit_fast() {
+    use std::time::Instant;
+    // The slow-unit shape decoded from
+    // fuzz/artifacts/fuzz_extract_gate_soundness/slow-unit-0cfbc4b8b9945074fe5214a96c503f6e994e3b97.
+    let src = "(?iu)\\D{5,11}{5,11}{5,11}{5,11}{5,11}\\D*****aa";
+    let started = Instant::now();
+    let result = crate::rules::compile_rule_src(src);
+    let elapsed = started.elapsed();
+    let err = match result {
+        Ok(_) => panic!("expected stacked-quantifier rejection, got Ok"),
+        Err(e) => e,
+    };
+    assert!(
+        err.contains("stacked quantifier"),
+        "expected `stacked quantifier` in error, got {err:?}",
+    );
+    // 100 ms is generous; the pre-validator should run in
+    // microseconds. Anything close to a second means the slow path
+    // is reachable again.
+    assert!(
+        elapsed.as_millis() < 100,
+        "compile_rule_src on slow-unit took {elapsed:?}; expected <100ms",
+    );
+}

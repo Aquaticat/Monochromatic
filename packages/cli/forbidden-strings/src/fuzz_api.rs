@@ -69,6 +69,7 @@ pub use crate::rules::{
     skip_any_quantifier,
     skip_atom_with_extract,
     skip_class_body,
+    stacked_quantifier,
     walk_literal_bytes,
     AcMeta,
     CompiledRegex,
