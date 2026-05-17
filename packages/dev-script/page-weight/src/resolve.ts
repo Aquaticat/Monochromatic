@@ -14,6 +14,8 @@ import {
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
+import { startsWithUriScheme, } from './url-detect.ts';
+
 /**
  * Resolves a reference string to an absolute path under the dist root.
  *
@@ -55,7 +57,7 @@ export function resolveReference(
   const trimmed = nonNullishOrThrow(withoutFragment.split('?',)[0],);
   if (trimmed === '')
     return null;
-  if (trimmed.startsWith('//',) || /^[a-z][a-z0-9+.-]*:/i.test(trimmed,))
+  if (trimmed.startsWith('//',) || startsWithUriScheme(trimmed,))
     return null;
 
   /** Canonical absolute form of the dist root used as the containment boundary. */

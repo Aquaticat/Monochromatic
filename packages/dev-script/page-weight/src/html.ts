@@ -5,6 +5,8 @@
  * to collect every local asset URL the page would cause a browser to fetch.
  */
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+
+import { startsWithUriScheme, } from './url-detect.ts';
 import type {
   Element,
   Node,
@@ -98,7 +100,65 @@ function firstSrcsetUrl(srcset: string,): string | null {
   const first = srcset.split(',',)[0]?.trim();
   if ((first === undefined) || (first === ''))
     return null;
-  return nonNullishOrThrow(first.split(/\s+/,)[0],);
+  /** Leading URL token from the candidate; descriptor like `2x` is dropped. */
+  const url = firstNonWhitespaceToken(first,);
+  return nonNullishOrThrow(url === '' ? undefined : url,);
+}
+
+/**
+ * Returns the leading non-whitespace token of `line`. Linear scan: a single
+ * walker skips leading whitespace, then captures characters until the next
+ * whitespace. Empty input or a whitespace-only line returns an empty token.
+ *
+ * @param line - input line
+ *
+ * @returns first non-whitespace token (possibly empty)
+ */
+function firstNonWhitespaceToken(line: string,): string {
+  /**
+   * Recursive walker advancing while the cursor sits on whitespace.
+   *
+   * @param idx - cursor into `line`
+   *
+   * @returns first non-whitespace position (or `line.length`)
+   */
+  function skipWs(idx: number,): number {
+    if (idx >= line.length)
+      return idx;
+    /** Char at cursor; only ASCII whitespace advances the scan. */
+    const c = line.charAt(idx,);
+    /** Whether the cursor sits on regex `\s`. */
+    const ws = (c === ' ') || (c === '\t') || (c === '\n')
+      || (c === '\r') || (c === '\f') || (c === '\v');
+    if (ws)
+      return skipWs(idx + 1,);
+    return idx;
+  }
+  /**
+   * Recursive walker advancing while the cursor sits on non-whitespace.
+   *
+   * @param idx - cursor into `line`
+   *
+   * @returns exclusive end of the token
+   */
+  function scanToken(idx: number,): number {
+    if (idx >= line.length)
+      return idx;
+    /** Char at cursor; whitespace ends the token. */
+    const c = line.charAt(idx,);
+    /** Whether the cursor sits on regex `\s`. */
+    const ws = (c === ' ') || (c === '\t') || (c === '\n')
+      || (c === '\r') || (c === '\f') || (c === '\v');
+    if (ws)
+      return idx;
+    return scanToken(idx + 1,);
+  }
+  /** Cursor positioned at the first non-whitespace character. */
+  const start = skipWs(0,);
+  return line.slice(
+    start,
+    scanToken(start,),
+  );
 }
 
 /**
@@ -123,7 +183,7 @@ function addIfLocal(
   const trimmed = raw.trim();
   if ((trimmed === '') || trimmed.startsWith('#',))
     return;
-  if (trimmed.startsWith('//',) || /^[a-z][a-z0-9+.-]*:/i.test(trimmed,))
+  if (trimmed.startsWith('//',) || startsWithUriScheme(trimmed,))
     return;
   target.add(trimmed,);
 }

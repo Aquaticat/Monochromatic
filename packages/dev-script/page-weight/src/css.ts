@@ -6,6 +6,7 @@
  * (rather than a full AST parser) because the only structure we need is
  * the flat list of URLs the stylesheet references.
  */
+import { startsWithUriScheme, } from './url-detect.ts';
 import {
   type CSSToken,
   isTokenAtKeyword,
@@ -70,7 +71,7 @@ function addIfLocal(
   const trimmed = raw.trim();
   if ((trimmed === '') || trimmed.startsWith('#',))
     return;
-  if (trimmed.startsWith('//',) || /^[a-z][a-z0-9+.-]*:/i.test(trimmed,))
+  if (trimmed.startsWith('//',) || startsWithUriScheme(trimmed,))
     return;
   target.add(trimmed,);
 }
