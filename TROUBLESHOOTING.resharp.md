@@ -901,23 +901,95 @@ classes), so the false-positive risk is theoretical only.
 
 ### Suggested upstream fix
 
-Add a single line to `calc_prefix_sets_inner` so the visited-set
-accumulates across loop iterations:
+The initial proposal was a single line:
 
 ```rust
-loop {
-    if !result.is_empty() && redundant.contains(&node) {
-        break;
-    }
-    // ... existing body ...
-    node = target;
-    redundant.insert(node);   // ADD THIS LINE
-}
+node = target;
+redundant.insert(node);   // ADD THIS LINE
 ```
 
-This is a minimal-patch candidate that satisfies all five filing
-constraints; we should file this upstream (see "Why we do not file
-Bugs B-D upstream" section below -- Bug E is the exception).
+Prototyped against a fresh clone at
+`https://github.com/ieviev/resharp.git` HEAD
+`6f445d71b194161adc0efe968d723312b6856a26` (2026-05-15, declared
+version 0.6.0 in `Cargo.toml`). The single-line variant DOES make
+`abc~(\w)&(?:aaa)*` compile in milliseconds, but it regresses
+9 of the 46 active cases in `resharp-engine/tests/prefix.toml`:
+
+```text
+unsat/prefix_rev:               expected="",          got="o"
+alt-neg-la/prefix_rev:          expected="N;F;D",     got="N"
+prefix_twain/prefix_rev:        expected="n;i;a;w;T", got="n"
+prefix_la1/prefix_rev:          expected="b;a",       got="b"
+prefix_huck/prefix_rev:         expected="k;c;u;H",   got="k"
+prefix_hello/prefix_rev:        expected="o;l;l;e;h", got="o"
+prefix_lookahead/prefix_rev:    expected="a;a;a",     got="a"
+prefix_bounded_repeat/prefix_rev: expected="c;b;b",   got="c"
+prefix_dotdot_g/prefix_rev:     expected="g;.;.",     got="g"
+```
+
+Root of the regression: pre-patch, `redundant` is a "boundary" set
+seeded with `BOT` and `start`; the outer check at line 28
+(`!result.is_empty() && redundant.contains(&node)`) fires only when
+the derivative chain wraps back to one of those boundary nodes and
+KEEPS the accumulated result. Inserting every visited node into the
+same set makes that check fire on the iteration after the very first
+push, so multi-character anchored prefixes are truncated to their
+first character. The proposed single-line patch conflates two
+different exit semantics (boundary-wrap-keeps-result vs.
+fresh-node-revisit-implies-cycle).
+
+The minimal compatible fix keeps the two semantics separate by
+tracking fresh visits in a second set and clearing the result on a
+fresh-node revisit, while leaving the original boundary-wrap path
+untouched:
+
+```diff
+--- a/resharp-engine/src/prefix.rs
++++ b/resharp-engine/src/prefix.rs
+@@ -23,12 +23,18 @@ pub(crate) fn calc_prefix_sets_inner(
+     let mut redundant = BTreeSet::new();
+     redundant.insert(NodeId::BOT);
+     redundant.insert(start);
++    let mut visited: BTreeSet<NodeId> = BTreeSet::new();
+
+     loop {
+         if !result.is_empty() && redundant.contains(&node) {
+             break;
+         }
+
++        if !result.is_empty() && !visited.insert(node) {
++            result.clear();
++            break;
++        }
++
+         if b.any_nonbegin_nullable(node) {
+             break;
+         }
+```
+
+`visited.insert(node)` is gated on `!result.is_empty()` so the very
+first iteration (where `node == start`) never enters `visited`; this
+preserves the wrap-to-start semantics (still caught by the existing
+`redundant.contains(&node)` check, which keeps `result`). Any later
+re-visit of a node already seen in the same `calc_prefix_sets_inner`
+call clears `result` and breaks, mirroring the pre-existing
+"self-loop" handling at `target == node`.
+
+Applied against the same upstream HEAD, the v3 variant:
+
+- compiles `abc~(\w)&(?:aaa)*` in milliseconds and the resulting
+  regex returns `false` from `is_match` on every probe input in
+  `{"", "abc", "aaa", "abcaaa", "aaaaaa", "abc!", "abcaaab"}`,
+  consistent with the empty language `abc~(\w) & (?:aaa)*`
+  represents;
+- passes all 46 active prefix.toml cases (audited via a
+  catch_unwind-per-case harness, output:
+  `prefix audit: 46 active cases all OK (no failures, no hangs)`);
+- passes `cargo test --workspace --no-fail-fast` clean:
+  228 passed; 0 failed; 19 ignored across all crates
+  (`resharp-engine` per-binary totals: 1 + 2 + 1 + 95 + 0 + 72 + 3
+  + 1 + 36 + 1 + 5 + 11; `resharp-algebra`, `resharp-parser`,
+  `resharp-ffi`: empty/empty/empty).
 
 ### Verification
 
@@ -965,9 +1037,135 @@ prototype exists. Until then the pre-validators and profile settings
 are the durable consumer-side fix.
 
 Bug E (the `calc_prefix_sets_inner` non-termination) is the exception:
-we have a minimal-patch prototype (a single `redundant.insert(node)`
-inside the loop). Bug E should be filed upstream as soon as we draft
-the issue text and verify the patch against the resharp test suite
-in `/tmp/resharp-src/`.
+we have a minimal-patch prototype that satisfies constraint 5.
+Prototyped against `https://github.com/ieviev/resharp.git` HEAD
+`6f445d71b194161adc0efe968d723312b6856a26` (declared version 0.6.0
+in `Cargo.toml`, 2026-05-15) in a fresh `mktemp -d` clone. The
+initially-proposed single-line patch regressed 9 of 46 active cases
+in `resharp-engine/tests/prefix.toml`; the verified prototype is a
+two-line additive variant (`visited` set plus fresh-revisit clear)
+that passes `cargo test --workspace --no-fail-fast` with 228 passed,
+0 failed, 19 ignored. See Bug E's "Suggested upstream fix" subsection
+above for the diff, the audit method, and the language-emptiness
+check on the Bug E trigger pattern. Draft upstream issue body is
+below.
+
+### Draft upstream issue body for Bug E (ready to file)
+
+~~~md
+**Title:** non-termination in `prefix::calc_prefix_sets_inner` for `~(...)&(...)*` patterns
+
+**Labels:** `bug`, `engine`
+
+## Description
+
+`resharp::Regex::new` does not return for patterns combining a literal
+prefix, a complement (`~(...)`), an intersection (`&`), and a
+quantified group (`(...)*`, `(...)+`, `(...){N}`, etc.). The hot loop
+is at `resharp-engine/src/prefix.rs:27` inside
+`calc_prefix_sets_inner`:
+
+```rust
+let mut redundant = BTreeSet::new();
+redundant.insert(NodeId::BOT);
+redundant.insert(start);
+
+loop {
+    if !result.is_empty() && redundant.contains(&node) {
+        break;
+    }
+    // ... computes der, picks a single target ...
+    node = target;
+}
+```
+
+`redundant` is seeded with `BOT` and `start` and never updated. For
+the trigger shape, the derivative chain produces a sequence of unique
+fresh nodes that never wraps back to a seeded boundary node, never
+becomes nullable, never self-loops, and never narrows to multiple
+targets. The loop therefore runs without termination.
+
+Minimum reproducer (bisected from a libFuzzer timeout artefact):
+
+```rust
+use resharp::Regex;
+let _ = Regex::new(r"abc~(\w)&(?:aaa)*");  // never returns
+```
+
+The reproducer included as
+`resharp-engine/tests/bug_e_repro.rs::bug_e_trigger_compiles_within_timeout`
+in the prototype branch runs `Regex::new` on a worker thread and asserts
+the thread reports back within a 10 s timeout; on unmodified `main` it
+fails the timeout, on the proposed patch it returns in milliseconds.
+
+Stack trace at the hang point (captured 3 s into compile):
+
+```
+#0 resharp_algebra::RegexBuilder::collect_der_targets
+#1 resharp_algebra::RegexBuilder::collect_der_targets
+#2 resharp_algebra::RegexBuilder::collect_der_targets
+#3 resharp::prefix::calc_prefix_sets_inner
+#4 resharp::prefix::select_prefix
+#5 resharp::Regex::from_node_inner
+#6 resharp::Regex::with_options
+#7 resharp::Regex::new
+```
+
+## Suggested fix
+
+The intent of the existing outer check is to detect "the chain wrapped
+back to a boundary node," which keeps the accumulated `result`. A
+separate "fresh revisit" check is needed to detect "the chain entered
+a cycle through previously visited non-boundary nodes," which should
+clear `result` (matching the existing `target == node` self-loop
+clearing semantics). Keeping these two semantics separate is what
+makes the patch additive and non-regressive:
+
+```diff
+--- a/resharp-engine/src/prefix.rs
++++ b/resharp-engine/src/prefix.rs
+@@ -23,12 +23,18 @@ pub(crate) fn calc_prefix_sets_inner(
+     let mut redundant = BTreeSet::new();
+     redundant.insert(NodeId::BOT);
+     redundant.insert(start);
++    let mut visited: BTreeSet<NodeId> = BTreeSet::new();
+
+     loop {
+         if !result.is_empty() && redundant.contains(&node) {
+             break;
+         }
+
++        if !result.is_empty() && !visited.insert(node) {
++            result.clear();
++            break;
++        }
++
+         if b.any_nonbegin_nullable(node) {
+             break;
+         }
+```
+
+A simpler one-line variant (inserting every `target` into the
+existing `redundant` set after `node = target`) was prototyped first
+and rejected: it conflates the boundary-wrap and fresh-revisit
+semantics, breaks 9 of 46 active cases in
+`resharp-engine/tests/prefix.toml` (all anchored multi-character
+`prefix_rev` cases collapse to their first character, e.g.
+`prefix_twain` `"n;i;a;w;T"` -> `"n"`, and `unsat` flips from `""` to
+`"o"`).
+
+## Verification
+
+Tested against `main` at
+`6f445d71b194161adc0efe968d723312b6856a26`.
+
+```text
+cargo test --workspace --no-fail-fast
+# 228 passed; 0 failed; 19 ignored
+```
+
+Prototype clone, reproducer, and audit harness are available on
+request.
+~~~
 
 [resharp]: https://github.com/ieviev/resharp
