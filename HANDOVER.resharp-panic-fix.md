@@ -107,6 +107,55 @@ TROUBLESHOOTING.resharp.md Bug E for the full writeup).
    `synth_content` to produce Unicode case-flipped variants.
 3. File Bug E upstream at github.com/ieviev/resharp.
 
+### Late-2026-05-16 session (~23:00): Bug F + case-flip bias + widened B
+
+**Commits landed since previous handover:**
+
+```
+a08b45ed fuzz(forbidden-strings): bias synth_content for Unicode case-flip
+214c03b1 fix(forbidden-strings): widen alt-lookaround validator threshold
+6ff333f1 fix(forbidden-strings): pre-validate Bug F nested-lookahead overflow
+```
+
+**Bug F discovered (NEW resharp bug):**
+
+- `attempt to add with overflow` at `resharp-algebra/src/lib.rs:2470`
+  (`tail_rel + la_rel`, both u32). Lookahead-chain `rel` length
+  saturates to u32::MAX and the next add overflows under
+  debug-assertions. Production (debug-assertions=off) silently wraps
+  to 0; likely produces wrong matches but won't visibly panic.
+- Added `nested_lookahead_in_quantified_group` pre-validator catching
+  the nested-quant + outer-min≥2 shape (e.g. `(?:(?:(?!X)){1,5}){2,4}`).
+- Documented in TROUBLESHOOTING.resharp.md Bug F (see next-session
+  todo to add).
+- **Status:** validator is too narrow; the broader trigger class
+  (quantified lookahead followed by short trailing literal) is not
+  yet caught. See "KNOWN GAP" in HANDOVER.forbidden-strings-fuzzing.md.
+
+**Bug B widened (`lookaround_in_alternation_with_sibling`):**
+
+Dropped the `total_lookarounds >= 2` requirement. Bisected from
+`crash-c3c364eb3a03114a52015721c02cba0bf20eb496` which has only
+ONE lookaround inside the alternation but trips engine.rs:1020 at
+find_all time. The compile succeeds; the panic is input-dependent.
+
+**Case-flip bias landed:**
+
+When rule has both `(?i)` and `(?u)` flags, `synth_content` with 50%
+probability flips embedded é/ñ/ü/ö/ç to É/Ñ/Ü/Ö/Ç in the content
+buffer. This bias closes the gap between "soundness panic IS reachable
+via direct probe" and "fuzz never discovers it via random mutation".
+
+**TODO for next session:**
+
+1. Widen `nested_lookahead_in_quantified_group` to also catch
+   "quantified lookahead group + trailing content" (Bug F broader
+   class). Bisect probes in `/tmp/probe-slow-unit/src/bin/bisect_f7,
+   bisect_f8.rs` document the exact triggers.
+2. Sync to worktree, re-fuzz. Expect SOUNDNESS PANIC.
+3. Add Bug F section to TROUBLESHOOTING.resharp.md.
+4. File Bug E upstream at github.com/ieviev/resharp (still pending).
+
 ---
 
 Original (pre-late-session) outstanding section preserved below for

@@ -276,6 +276,91 @@ prototypes and stay deferred.
    minimal-patch prototype documented in TROUBLESHOOTING.resharp.md.
    Verify the patch against the resharp test suite in
    `/tmp/resharp-src/` before filing.
+
+### Late-2026-05-16 session (~23:00): Bug F discovered + 3 more commits
+
+**Commits landed today, most recent first:**
+
+```
+a08b45ed fuzz(forbidden-strings): bias synth_content for Unicode case-flip
+214c03b1 fix(forbidden-strings): widen alt-lookaround validator threshold
+6ff333f1 fix(forbidden-strings): pre-validate Bug F nested-lookahead overflow
+```
+
+**Bug F discovered (NEW resharp bug):**
+
+- Panic: `attempt to add with overflow` at
+  `resharp-algebra/src/lib.rs:2470` (`tail_rel + la_rel`, both u32).
+  Triggered when a lookahead-chain `rel` length saturates to u32::MAX
+  and the next add overflows. Under cargo-fuzz's debug-assertions=on,
+  this panics. Production (debug-assertions=off) silently wraps to 0
+  and likely produces wrong matches.
+- First two artifacts:
+  `crash-06d9dd9fa1abfeec72a8154c09434b237dfc7f38` (rendered
+  `(?:(?:(?!\?)){1,5}){2,4}`-style) and
+  `crash-df95fcd52de76d952ee3db291f59434ece2c0b81`. Added
+  `nested_lookahead_in_quantified_group` (6ff333f1).
+- Third artifact `crash-c3c364eb3a03114a52015721c02cba0bf20eb496`
+  (engine.rs:1020, NOT Bug F) had a single lookaround in alternation;
+  widened the existing `lookaround_in_alternation_with_sibling`
+  validator (214c03b1) to drop `total_lookarounds >= 2`.
+- Added Unicode case-flip bias (a08b45ed): when rule has (?iu),
+  with 50% probability flip embedded é/ñ/ü/ö/ç to É/Ñ/Ü/Ö/Ç in
+  content. Manual probe confirms the soundness panic shape
+  `(?iu)café` vs `CAFÉ` IS reachable; the gap was random mutations.
+
+**KNOWN GAP — Bug F validator is too narrow:**
+
+After biasing case-flip, the 240s fuzz hit YET ANOTHER Bug F shape:
+`crash-a219859099426658d70e90bc97f560b85f2cf256` rendered as
+`(?u-i)\+\+\+\+\+\+(?:_|_|\u{3000})ñöa#3vaarññ (?:(?!ñññAtsöéaañ)){4,12}~(ññM aaaaaaaa)aaaaaa`.
+
+Bisected (probes `bisect_f5..bisect_f8.rs`) to:
+- `(?:(?!abc)){4,12}a` PANICS (quantified lookahead followed by trailing literal)
+- `(?:(?!abc)){4,12}` alone OK
+- `(?:(?!abc)){2}a` OK (exact quantifier)
+- `(?:(?!abc)){4,12}aaaaaa` OK (long trailing)
+- `(?:(?!abc)){4,12}aa` PANICS (short trailing)
+- `(?:(?!abc)){1,4}a` PANICS (min=1 with trailing)
+- `(?:(?!abc)){2,3}a` PANICS
+
+Pattern: **quantified lookahead with VARIABLE quant (m<n) + SHORT
+trailing content** also triggers Bug F. My validator only catches
+"nested quant + outer min ≥ 2 + no siblings"; misses the "single
+quant + trailing literal" case.
+
+**Resume work next session:**
+
+1. **Widen nested_lookahead_in_quantified_group** to also catch
+   "quantified lookahead group + trailing content at parent depth".
+   Bisect first to nail the exact criterion (variable-quant vs
+   trailing-length interaction). Probes are at
+   `/tmp/probe-slow-unit/src/bin/bisect_f5..f8.rs`.
+   Alternatively, just widen broadly: fire on any
+   quantified-lookahead-bearing group that has any sibling content
+   at parent depth. Accept false positives (the user already endorsed
+   this trade-off).
+2. Sync new validator to `/tmp/fs-soundness-revert/`, clear crashes,
+   re-run 120s fuzz. Expect either soundness panic (success) or
+   another novel resharp shape (decode + add another pre-validator).
+3. Once fuzz halts cleanly on SOUNDNESS PANIC, complete Phase 11.
+
+**Diagnostic infrastructure in /tmp/probe-slow-unit/:**
+
+- `Cargo.toml` currently points at `/tmp/fs-soundness-revert/.../forbidden-strings` (worktree). The original main-branch path is in `Cargo.toml.bak`. To probe MAIN's compile_rule_src, restore from bak.
+- Probes built so far (RUSTFLAGS="-C debug-assertions=on" required):
+  `probe` (main entry, decodes artifact), `bisect_f`, `bisect_f2..f8`
+  (Bug F bisection), `bisect_b2` (Bug B alt-lookaround bisection),
+  `verify_soundness` (direct soundness check on hand-crafted shapes).
+
+**Verification status as of this commit:**
+
+- 137 unit tests pass (3 new added for Bug F validator).
+- Clippy clean.
+- Main branch 60s fuzz: clean.
+- Worktree 240s fuzz: still hits Bug F shapes my validator misses.
+- Soundness panic NOT yet observed via fuzz (but verified reachable
+  via direct probe; case-flip bias is in place).
 - Crash artifacts at `/tmp/fs-crash-artifacts/` were re-verified against
   the 0.6.0+fix binary (`128221b7`); both run in 0ms with no crash. See
   `HANDOVER.resharp-panic-fix.md` for details.
