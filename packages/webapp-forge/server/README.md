@@ -1,5 +1,9 @@
 # webapp-forge-server
 
+## Status: development paused
+
+Active development is paused pending repo-wide work. `mise run //packages/webapp-forge/server:lint` currently reports 13 errors from `no-restricted-syntax/require-regex-justification` across `src/server/routes/{me,read}.ts`, `src/storage/adapter-s3.ts`, `src/storage/write-buffer.unit.test.ts`, `src/worker/render-phase2.ts`, and `src/worker/render.ts`. The refactor is deferred; resume by completing the require-regex sweep documented in `HANDOVER.require-regex-justification.md`.
+
 GitHub-alternative forge with **rebuild-on-write fragment cache**.
 
 Issues, pull requests, repository pages, file trees, blobs, diffs, and filter lists
