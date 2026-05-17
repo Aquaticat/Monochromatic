@@ -1,6 +1,7 @@
 # Draft bug report for vltpkg/vltpkg
 
 Filed from: Monochromatic monorepo, vlt 1.0.0-rc.24, Node.js v25.9.0, Linux x86_64
+Re-verified at vltpkg/vltpkg commit `8ece488d` (tag `v1.0.0-rc.29-1`), Node v26.1.0, Linux x86_64
 
 ---
 
@@ -98,7 +99,7 @@ When `bareSpec` is `"1.0.0-dev.1692+5c265bd4"`, `registrySpec` retains the `+` s
 
 ### 2. Manifest URL includes unstripped build metadata
 
-`src/package-info/src/index.ts:405-407`:
+`src/package-info/src/index.ts:476-478` (rc.29; was `:405-407` at rc.24):
 
 ```ts
 const version = hasLeadingRange ? registrySpec.slice(1,) : registrySpec;
@@ -110,7 +111,7 @@ in the path component. The npm registry does not serve versions at paths contain
 
 ### 3. Single-version fast path is the only affected code path
 
-`src/package-info/src/index.ts:601-603`:
+`src/package-info/src/index.ts:714-716` (rc.29; was `:601-603` at rc.24):
 
 ```ts
 const mani = spec.range?.isSingle
@@ -149,7 +150,47 @@ Both options align with SemVer 2.0.0 spec items 10-11:
 > "Build metadata MUST be ignored when determining version precedence."
 
 The `conventionalRegistryTarball` getter (which constructs the guessed tarball URL)
-has the same issue and would also need patching if Option A is chosen.
+may also need patching for completeness. In the verified end-to-end repro,
+Option A alone unblocks `vlt install`: the registry's manifest response carries
+the build-metadata-stripped `dist.tarball`, so the guessed tarball URL is
+not exercised on the success path. Patch it if you want belt-and-suspenders
+coverage for registries that omit `dist.tarball`.
+
+### Verification of Option A
+
+Cloned `vltpkg/vltpkg` at commit `8ece488d` (`v1.0.0-rc.29-1`) into a fresh
+`mktemp -d` workspace, bootstrapped with the published rc.29 (`vlt install`
+in the monorepo), then ran the source-tree
+`scripts/bins/vlt` against a one-line `package.json`
+(`{"dependencies":{"@optique/run":"1.0.0-dev.1692"}}`).
+
+Pre-patch, `vlt install` failed:
+
+```text
+Resolve Error: failed to fetch manifest
+  While fetching: https://registry.npmjs.org/@optique/core/1.0.0-dev.1692+5c265bd4
+  Response: { statusCode: 404, … }
+```
+
+Post-Option-A patch, `vlt install` exited 0, added both
+`@optique/run@1.0.0-dev.1692` and `@optique/core@1.0.0-dev.1692`,
+and wrote a valid `vlt-lock.json`. The fetched `@optique/core` tarball's
+own `package.json` still records `"version": "1.0.0-dev.1692+5c265bd4"`,
+which is preserved unchanged on disk.
+
+The existing leading-prefix-strip test
+(`src/package-info/test/index.ts:661`, "manifest strips leading semver
+characters") covers the same URL-construction block this patch extends
+and remains green under Option A; it exercises `=/^/~/v` prefixes and
+the new `+`-suffix strip slots in alongside without altering that
+behaviour.
+
+`src/package-info` test suite under Node v26.1.0: 141 of 148 pass
+post-patch, identical pre-patch. The 7 failures (`cache hit - manifest
+returned from cache` and 6 sibling subtests in `cache manifests`) hit
+`The property 'options.recursive' is no longer supported. Received true`,
+the Node v26 removal of `recursive` from `fs.cp` / `fs.cpSync`. They are
+unrelated to manifest URL construction.
 
 ## Why this is rare
 
@@ -165,7 +206,16 @@ before making registry requests.
 
 ## Environment
 
+Original report:
+
 - vlt: 1.0.0-rc.24
 - Node.js: v25.9.0
 - OS: Linux 6.17.7-ba29.fc43.x86_64 (Fedora/Bazzite)
+- Registry: <https://registry.npmjs.org/>
+
+Constraint-5 re-verification (2026-05-17):
+
+- vlt: 1.0.0-rc.29 + 1 commit, source tree at `8ece488d`
+- Node.js: v26.1.0
+- OS: Linux 6.19.14-ogc5.1.fc44.x86_64 (Fedora/Bazzite)
 - Registry: <https://registry.npmjs.org/>

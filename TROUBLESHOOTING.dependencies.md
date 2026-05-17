@@ -138,7 +138,7 @@ preserving the `+5c265bd4` suffix from the dependency declaration.
 
 **Trigger: single-version fast path:**
 
-`src/package-info/src/index.ts:601-603`:
+`src/package-info/src/index.ts:714-716` (rc.29; was `:601-603` at rc.24):
 
 ```ts
 const mani = spec.range?.isSingle
@@ -151,7 +151,7 @@ not a range operator), so vlt takes the fast path instead of fetching the full p
 
 **Failure: URL construction:**
 
-`src/package-info/src/index.ts:405-407`:
+`src/package-info/src/index.ts:476-478` (rc.29; was `:405-407` at rc.24):
 
 ```ts
 const version = hasLeadingRange ? registrySpec.slice(1,) : registrySpec;
@@ -171,14 +171,17 @@ and the npm registry does not recognize the resulting path.
 const spec = hydrate(node.id, node.name, options,);
 ```
 
-The DepID is built from `mani.version` (`src/dep-id/src/browser.ts:537-542`).
+The DepID is built from `mani.version` (`src/dep-id/src/browser.ts:537-542`,
+verified intact at rc.29).
 When the manifest comes from the npm registry packument, `mani.version` is
 `"1.0.0-dev.1692"` (no build metadata), so the hydrated spec is clean.
 But when the manifest comes from a dependency declaration that includes build metadata
 (e.g. `@optique/run`'s dep on `@optique/core@1.0.0-dev.1692+5c265bd4`),
-the spec flows through `fetchManifestsForDeps` (`src/graph/src/ideal/append-nodes.ts:590`)
+the spec flows through `fetchManifestsForDeps`
+(`Spec.parse` call at `src/graph/src/ideal/append-nodes.ts:590`)
 where `Spec.parse(name, bareSpec, options)` preserves the `+` suffix.
-Graph modifiers apply at lines 271-288 of the same file but are scoped
+Graph modifiers apply at `src/graph/src/ideal/append-nodes.ts:269-288`
+of the same file but are scoped
 to the graph-building phase; the extraction code path at `extract-node.ts`
 creates specs independently and does not consult modifiers.
 
@@ -197,8 +200,11 @@ through normal npm publishing workflows.
 
 ### Verification
 
-Version under test: `vlt` from the `vltpkg/vltpkg` monorepo, file paths
-in this document are relative to that monorepo's `src/` tree.
+Originally reported at vlt 1.0.0-rc.24 (line numbers above match rc.24
+and have been annotated with the current rc.29 lines where they shifted).
+Re-verified at vlt `1.0.0-rc.29-1` (commit `8ece488d`,
+`v1.0.0-rc.29-1-g8ece488d`, fetched 2026-05-17). File paths in this
+document are relative to that monorepo's `src/` tree.
 
 Trigger package: `@optique/run@1.0.0-dev.1692` declaring
 `"@optique/core": "1.0.0-dev.1692+5c265bd4"`.
@@ -218,7 +224,7 @@ Catalogues:
   `"#@optique/run": ">=1.0.0-dev.0"`). Both run with
   `overridden: false` because the failure is in the extraction path
   (`src/graph/src/reify/extract-node.ts:57`), which is downstream of
-  modifier application (`src/graph/src/ideal/append-nodes.ts:271-288`).
+  modifier application (`src/graph/src/ideal/append-nodes.ts:269-288`).
 - **Fails (no recovery)**: lockfile restoration. vlt re-resolves
   specs during install.
 - **Fails (no recovery)**: cache clearing
@@ -275,7 +281,7 @@ Walked against the 5-constraint upstream-filing check.
    by stripping `+` from version keys at publish time
    (npm/npm#6379, 2014); vlt's URL construction does not.
 2. **Can upstream fix it?** Yes; one-line fix in
-   `src/package-info/src/index.ts:405-407` to strip `+.*$` before URL
+   `src/package-info/src/index.ts:476-478` (rc.29) to strip `+.*$` before URL
    construction, or a broader fix in `src/spec/src/browser.ts:644` so
    all downstream consumers see clean versions. Both are tractable
    given the cited code.
@@ -286,16 +292,67 @@ Walked against the 5-constraint upstream-filing check.
    change is small. The issue tracker has no existing report for this
    pattern (issues #260, #1263, #1534 are all different "failed to
    fetch manifest" causes). Acceptance is likely but not guaranteed.
-5. **Minimal-fix prototype?** Yes (the patch above). Tests against
-   non-trivial set: the trigger package
-   `@optique/run@1.0.0-dev.1692` reproduces; a synthetic minimal
-   reproduction with any package that pins a build-metadata dependency
-   would suffice.
+5. **Minimal-fix prototype?** Yes. Cloned `vltpkg/vltpkg` at commit
+   `8ece488d` (tag `v1.0.0-rc.29-1`) into a fresh `mktemp -d`
+   workspace, ran `vlt install` (via the bootstrap published rc.29) to
+   resolve the workspace, then exercised the source-tree
+   `scripts/bins/vlt` against a one-line `package.json` declaring
+   `"@optique/run": "1.0.0-dev.1692"`.
 
-**Decision: file upstream.** All five constraints hold. A draft bug
-report is kept at `BUG-REPORT.vlt-build-metadata.md` (referenced below);
-do not file as-is without re-validating the constraints against the
-current vlt HEAD.
+   Pre-patch (verbatim):
+
+   ```text
+   Resolve Error: failed to fetch manifest
+     While fetching: https://registry.npmjs.org/@optique/core/1.0.0-dev.1692+5c265bd4
+     Response: { statusCode: 404, … }
+   ```
+
+   Applied the single-hunk patch:
+
+   ```diff
+   diff --git a/src/package-info/src/index.ts b/src/package-info/src/index.ts
+   --- a/src/package-info/src/index.ts
+   +++ b/src/package-info/src/index.ts
+   @@ -475,7 +475,8 @@ export class PackageInfoClient {
+        )
+        const version =
+          hasLeadingRange ? registrySpec.slice(1) : registrySpec
+   -    const pakuURL = new URL(`${name}/${version}`, registry)
+   +    const versionClean = version.replace(/\+.*$/, '')
+   +    const pakuURL = new URL(`${name}/${versionClean}`, registry)
+        const response = await this.registryClient.request(pakuURL, {
+          headers: {
+            accept: 'application/json',
+   ```
+
+   Post-patch `vlt install` succeeded with exit 0, adding both
+   `@optique/run@1.0.0-dev.1692` and `@optique/core@1.0.0-dev.1692`
+   (the build-metadata suffix is stripped only from the URL; the
+   fetched tarball's `package.json` still records
+   `"version": "1.0.0-dev.1692+5c265bd4"`, which the registry tolerates).
+   The fix did not require touching `conventionalRegistryTarball`: the
+   manifest fetch returns the registry-stripped `dist.tarball`, so the
+   guessed-URL fallback is not exercised on the success path.
+
+   `src/package-info` test suite under Node v26.1.0: 141 of 148 pass
+   post-patch. The 7 failures (`cache hit - manifest returned from
+   cache` and 6 sibling subtests) are pre-existing at HEAD and
+   identical pre- and post-patch; they fail with
+   `The property 'options.recursive' is no longer supported. Received true`,
+   which is the Node v26 removal of the `recursive` option from
+   `fs.cp` / `fs.cpSync`, unrelated to manifest URL construction.
+   The existing leading-prefix-strip test
+   (`src/package-info/test/index.ts:661`, "manifest strips leading
+   semver characters") exercises the same URL-construction block this
+   patch extends and remains green; the new `+`-strip slots in
+   immediately after the existing `=/^/~/v` strip.
+
+**Decision: file upstream.** All five constraints hold with verified
+evidence. A draft bug report is kept at
+`BUG-REPORT.vlt-build-metadata.md` (referenced below); the verified
+diff and verification commands above can be carried into the upstream
+issue as-is. Re-validate line numbers against the then-current vlt HEAD
+before filing if more than a few weeks have passed.
 
 ### Draft upstream issue (do not file as-is; re-validate against current vltpkg/vltpkg HEAD before filing)
 
@@ -338,13 +395,13 @@ The registry returns 404 for paths containing `+`. Compare:
 `npm install`, `pnpm install`, `yarn install` all succeed against the
 same trigger package.
 
-**Code trace:**
+**Code trace** (line numbers as of `8ece488d` / `v1.0.0-rc.29-1`):
 
 - `src/spec/src/browser.ts:644` sets `registrySpec = bareSpec`
   verbatim, preserving `+5c265bd4`.
-- `src/package-info/src/index.ts:601-603`: version with `+` parses as
+- `src/package-info/src/index.ts:714-716`: version with `+` parses as
   `isSingle === true`, so vlt takes the fast path.
-- `src/package-info/src/index.ts:405-407`:
+- `src/package-info/src/index.ts:476-478`:
 
   ```ts
   const version = hasLeadingRange ? registrySpec.slice(1,) : registrySpec;
@@ -357,8 +414,8 @@ same trigger package.
 - `src/graph/src/reify/extract-node.ts:57` hydrates the spec from the
   node's DepID; the extraction-time spec is built from
   `fetchManifestsForDeps`
-  (`src/graph/src/ideal/append-nodes.ts:590`), which preserves the
-  `+` suffix.
+  (`Spec.parse` call at `src/graph/src/ideal/append-nodes.ts:590`),
+  which preserves the `+` suffix.
 
 **Suggested fix:**
 
@@ -382,9 +439,11 @@ versions.
 
 ### Status
 
-No upstream issue filed yet as of 2026-04-04.
-See the draft bug report in `BUG-REPORT.vlt-build-metadata.md` and the
-in-line draft above.
+No upstream issue filed yet as of 2026-04-04. Constraint-5 prototype
+re-verified at vlt commit `8ece488d` (`v1.0.0-rc.29-1`) on 2026-05-17;
+patch verified end-to-end on a fresh clone (pre-patch 404, post-patch
+exit 0). See `BUG-REPORT.vlt-build-metadata.md` and the in-line draft
+above; both now carry the rc.29 line numbers.
 
 ## Package Management Warnings
 
