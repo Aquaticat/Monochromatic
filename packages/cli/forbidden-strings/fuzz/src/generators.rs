@@ -1109,33 +1109,99 @@ fn gen_leaf(u: &mut Unstructured<'_>) -> Result<Node> {
 
 // What:     `fn gen_literal_bytes(u) -> Result<Vec<u8>>`. Reads a
 //           short slice (≤MAX_LITERAL_BYTES) and filters it to a
-//           safe ASCII subset so the renderer doesn't have to
-//           escape every byte.
-// Why:      Keeps generated literals well-formed UTF-8 with no
-//           regex metacharacters.
+//           safe alphabet so the renderer doesn't have to escape
+//           every byte. Six picks: lowercase ASCII, uppercase
+//           ASCII, digit, symbol, space, and a Unicode lowercase
+//           letter pair (`é`/`ñ`/`ü`/`ö`/`ç`). The Unicode pick
+//           writes BOTH UTF-8 bytes of the chosen letter so the
+//           resulting literal stays valid UTF-8 even when the
+//           surrounding bytes are ASCII.
+// Why:      The case-fold extraction soundness bug fixed by
+//           commit `e49d8694` requires a regex literal containing
+//           a non-ASCII letter whose Unicode-cased variant lives
+//           outside aho-corasick's ASCII-only case-fold (e.g.
+//           `é` <-> `É`). Without a non-ASCII source in the
+//           alphabet, the fuzz target `fuzz_extract_gate_soundness`
+//           cannot construct an input that triggers the bug class,
+//           and the soundness-by-revert phase 11 validation cannot
+//           panic. The Unicode pick is one of six (~17% per
+//           byte position) so the bulk of generated patterns
+//           stay ASCII; the rare non-ASCII literal exercises the
+//           Unicode case-fold path. Five letters cover the
+//           common Latin extended range; the small set keeps
+//           libFuzzer's mutation surface small while still
+//           providing enough variety for the dictionary plus
+//           CrossOver mutations to reach the case-flipped
+//           content shape `synth_content` produces.
 // TS map:   `function genLiteralBytes(u): Uint8Array`.
 fn gen_literal_bytes(u: &mut Unstructured<'_>) -> Result<Vec<u8>> {
+    // What:     UTF-8 byte pairs for five Unicode lowercase Latin
+    //           letters with distinct uppercase forms under
+    //           Unicode case-fold. `synth_content` runs random
+    //           single-byte mutations after embedding the
+    //           literal, so libFuzzer can evolve content from
+    //           `é` (0xC3 0xA9) toward `É` (0xC3 0x89) by
+    //           flipping the second byte at the right index.
+    // Why:      A static slice avoids re-deriving the bytes per
+    //           call. Each entry is exactly the 2-byte UTF-8
+    //           encoding of the lowercase letter:
+    //             é  -> U+00E9 -> 0xC3 0xA9 (uppercase É 0xC3 0x89)
+    //             ñ  -> U+00F1 -> 0xC3 0xB1 (uppercase Ñ 0xC3 0x91)
+    //             ü  -> U+00FC -> 0xC3 0xBC (uppercase Ü 0xC3 0x9C)
+    //             ö  -> U+00F6 -> 0xC3 0xB6 (uppercase Ö 0xC3 0x96)
+    //             ç  -> U+00E7 -> 0xC3 0xA7 (uppercase Ç 0xC3 0x87)
+    // TS map:   `const UNICODE_LETTERS: ReadonlyArray<Uint8Array> = [...];`.
+    const UNICODE_LETTERS: &[&[u8]] = &[
+        b"\xC3\xA9", // é
+        b"\xC3\xB1", // ñ
+        b"\xC3\xBC", // ü
+        b"\xC3\xB6", // ö
+        b"\xC3\xA7", // ç
+    ];
     let n = u.int_in_range(1usize..=MAX_LITERAL_BYTES)?;
     let mut out: Vec<u8> = Vec::with_capacity(n);
     for _ in 0..n {
         // Reserve a small "safe" alphabet: lowercase, uppercase,
         // digits, plus a handful of symbol bytes that aren't regex
-        // metacharacters.
-        let pick = u.int_in_range(0u8..=4)?;
-        let b = match pick {
-            0 => b'a' + u.int_in_range(0u8..=25)?,
-            1 => b'A' + u.int_in_range(0u8..=25)?,
-            2 => b'0' + u.int_in_range(0u8..=9)?,
-            3 => match u.int_in_range(0u8..=4)? {
-                0 => b'-',
-                1 => b':',
-                2 => b'@',
-                3 => b'#',
-                _ => b'!',
-            },
-            _ => b' ',
-        };
-        out.push(b);
+        // metacharacters; the new pick=5 branch emits a 2-byte
+        // Unicode lowercase letter (BOTH bytes written together to
+        // keep UTF-8 valid).
+        let pick = u.int_in_range(0u8..=5)?;
+        match pick {
+            0 => out.push(b'a' + u.int_in_range(0u8..=25)?),
+            1 => out.push(b'A' + u.int_in_range(0u8..=25)?),
+            2 => out.push(b'0' + u.int_in_range(0u8..=9)?),
+            3 => {
+                let sym = match u.int_in_range(0u8..=4)? {
+                    0 => b'-',
+                    1 => b':',
+                    2 => b'@',
+                    3 => b'#',
+                    _ => b'!',
+                };
+                out.push(sym);
+            }
+            4 => out.push(b' '),
+            // What:     `_ => { let pair = ...; out.extend_from_slice(pair); }`.
+            //           The pick=5 (and any future numeric drift)
+            //           branch emits a multi-byte Unicode letter.
+            //           Using `extend_from_slice` keeps the two
+            //           UTF-8 bytes adjacent; this matters because
+            //           `synth_content`'s mutation step picks a
+            //           single byte index to overwrite, and the
+            //           soundness violation requires both bytes
+            //           to remain together in the literal source.
+            // Why:      Without the adjacent-byte guarantee, a
+            //           split between the 0xC3 lead and the 0xA9
+            //           continuation would produce an invalid
+            //           UTF-8 source string and the regex parser
+            //           would reject it early -- defeating the
+            //           coverage purpose.
+            _ => {
+                let idx = u.int_in_range(0usize..=(UNICODE_LETTERS.len() - 1))?;
+                out.extend_from_slice(UNICODE_LETTERS[idx]);
+            }
+        }
     }
     Ok(out)
 }
