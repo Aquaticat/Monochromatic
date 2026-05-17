@@ -57,6 +57,137 @@ const BUNDLE_PATH: string = join(
 const bundleSourceCache = new Map<string, string>();
 
 /**
+ * Tests whether `c` is `\s` whitespace (space, tab, newline, carriage
+ * return, form feed, vertical tab).
+ *
+ * @param c - single character
+ *
+ * @returns whether `c` is whitespace
+ */
+function isWhitespaceChar(c: string,): boolean {
+  return (c === ' ')
+    || (c === '\t')
+    || (c === '\n')
+    || (c === '\r')
+    || (c === '\f')
+    || (c === '\v');
+}
+
+/**
+ * Returns the largest index strictly less than `end` whose char is
+ * non-whitespace; `-1` when only whitespace precedes `end`.
+ *
+ * @param s - source string
+ *
+ * @param end - exclusive upper bound for the scan
+ *
+ * @returns rightmost non-whitespace index, or `-1` when none found
+ */
+function lastNonWhitespaceIndex({
+  s,
+  end,
+}: {
+  s: string;
+  end: number;
+},): number {
+  if (end <= 0)
+    return -1;
+  if (!isWhitespaceChar(s.charAt(end - 1,),))
+    return end - 1;
+  return lastNonWhitespaceIndex({
+    s,
+    end: end - 1,
+  },);
+}
+
+/**
+ * Tests whether `c` qualifies as a `\w` word char (alphanumeric or `_`);
+ * used to verify `export` sits on a word boundary.
+ *
+ * @param c - single character
+ *
+ * @returns whether `c` is a word char
+ */
+function isWordChar(c: string,): boolean {
+  return ((c >= 'a') && (c <= 'z'))
+    || ((c >= 'A') && (c <= 'Z'))
+    || ((c >= '0') && (c <= '9'))
+    || (c === '_');
+}
+
+/**
+ * Locates the trailing `export { ... }` clause of a rolldown bundle and
+ * extracts the named-export list.
+ *
+ * Mirrors the shape of `/export\s*\{\s*([^}]+)\s*\}\s*;?\s*$/`: walks
+ * back from end-of-string, skips trailing whitespace and an optional
+ * `;`, requires `}`, finds the matching `{`, then verifies `export`
+ * sits at a word boundary immediately before the `{`.
+ *
+ * @param source - bundle source text
+ *
+ * @returns named-export list and the byte offset of `export`, or `null`
+ *   when the trailing clause is missing or malformed
+ */
+function parseTrailingExportClause(source: string,): {
+  namedExports: string;
+  clauseStart: number;
+} | null {
+  /** Last non-whitespace position; `-1` means the source is empty/whitespace-only. */
+  const lastIdx = lastNonWhitespaceIndex({
+    s: source,
+    end: source.length,
+  },);
+  if (lastIdx === (-1))
+    return null;
+  /** Position of the closing `}`; the semicolon is optional in the original regex. */
+  const closeBrace = (source.charAt(lastIdx,) === ';')
+    ? lastNonWhitespaceIndex({
+      s: source,
+      end: lastIdx,
+    },)
+    : lastIdx;
+  if ((closeBrace === (-1)) || (source.charAt(closeBrace,) !== '}'))
+    return null;
+  /** Position of the matching `{`; the original regex requires `[^}]+` between, so the last `{` before `}` is correct. */
+  const openBrace = source.lastIndexOf(
+    '{',
+    closeBrace - 1,
+  );
+  if (openBrace === (-1))
+    return null;
+  /** Position immediately before `{`, skipping intervening whitespace; the `export` keyword should end here. */
+  const beforeOpen = lastNonWhitespaceIndex({
+    s: source,
+    end: openBrace,
+  },);
+  /** Literal keyword the clause must lead with. */
+  const EXPORT = 'export';
+  if (beforeOpen < (EXPORT.length - 1))
+    return null;
+  /** Inclusive start of the `export` keyword candidate; the byte before it must not be a word char. */
+  const wordStart = (beforeOpen - EXPORT.length) + 1;
+  if (
+    source.slice(
+      wordStart,
+      beforeOpen + 1,
+    ) !== EXPORT
+  ) {
+    return null;
+  }
+  if ((wordStart > 0) && isWordChar(source.charAt(wordStart - 1,),))
+    return null;
+  return {
+    namedExports: source.slice(
+      openBrace + 1,
+      closeBrace,
+    )
+      .trim(),
+    clauseStart: wordStart,
+  };
+}
+
+/**
  * Reads the built bundle, rewrites its trailing `export ` ... ` `
  * statement into a `globalThis.moduleDom = ` ... ` ` assignment, and
  * returns the resulting module source ready for inline injection.
@@ -84,26 +215,21 @@ async function bundleAsGlobalAssignment(): Promise<string> {
     BUNDLE_PATH,
     'utf8',
   );
-  /** Match for the trailing `export { ... }` so its body can be re-emitted as a global assignment. */
-  const exportMatch = /export\s*\{\s*([^}]+)\s*\}\s*;?\s*$/.exec(source,);
-  if (exportMatch === null) {
+  /** Parsed trailing `export { ... }` clause; throws when the bundle shape is unexpected. */
+  const clause = parseTrailingExportClause(source,);
+  if (clause === null) {
     throw new Error(
       'test setup: could not locate trailing `export { ... }` in bundle; rebuild may have failed',
     );
   }
 
-  /** Destructured export list extracted from the matched `export { ... }` clause. */
-  const [
-    ,
-    namedExports,
-  ] = exportMatch;
   /** Bundle text with the trailing `export { ... }` removed; ready for global rewrite. */
   const stripped = source.slice(
     0,
-    exportMatch.index,
+    clause.clauseStart,
   );
   /** Final bundle text where the named exports are assigned to `globalThis.moduleDom` for inline-script consumption. */
-  const rewritten = `${stripped}globalThis.moduleDom = { ${namedExports} };`;
+  const rewritten = `${stripped}globalThis.moduleDom = { ${clause.namedExports} };`;
   bundleSourceCache.set(
     BUNDLE_PATH,
     rewritten,

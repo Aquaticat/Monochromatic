@@ -217,20 +217,49 @@ export function parseDataUri(dataUri: string,): {
   mimeType: string;
   data: string;
 } {
-  /** Match of `data:<mime>;base64,<data>`; capture groups 1 and 2 hold the MIME type and payload. */
-  const match = /^data:([^;]+);base64,(.+)$/.exec(dataUri,);
-  if ((match === null) || (match[1] === undefined) || (match[2] === undefined)) {
+  /** Literal scheme prefix; everything before the MIME type. */
+  const SCHEME = 'data:';
+  /** Literal payload separator joining the MIME type and the encoded body. */
+  const SEPARATOR = ';base64,';
+  /** Maximum chars of `dataUri` echoed back in error messages so they stay readable. */
+  const ERROR_PREVIEW_LENGTH = 50;
+
+  /**
+   * Throws a normalised `Invalid data URI format` error with the truncated input.
+   *
+   * @throws Error describing the expected shape and the truncated input
+   */
+  function reject(): never {
     throw new Error(
       `Invalid data URI format: expected "data:<mime>;base64,<data>", got "${
         dataUri.slice(
           0,
-          50,
+          ERROR_PREVIEW_LENGTH,
         )
       }..."`,
     );
   }
+
+  if (!dataUri.startsWith(SCHEME,))
+    reject();
+  /** Cursor at the first MIME-type character. */
+  const mimeStart = SCHEME.length;
+  /** Position of `;base64,` separator; `-1` means the URI lacks the base64 marker. */
+  const sepIdx = dataUri.indexOf(
+    SEPARATOR,
+    mimeStart,
+  );
+  if ((sepIdx === (-1)) || (sepIdx === mimeStart))
+    reject();
+  /** Cursor at the first payload byte after the separator. */
+  const dataStart = sepIdx + SEPARATOR.length;
+  if (dataStart >= dataUri.length)
+    reject();
   return {
-    mimeType: match[1],
-    data: match[2],
+    mimeType: dataUri.slice(
+      mimeStart,
+      sepIdx,
+    ),
+    data: dataUri.slice(dataStart,),
   };
 }

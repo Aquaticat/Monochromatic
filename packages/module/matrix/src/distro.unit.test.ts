@@ -145,7 +145,7 @@ await describe({
               manager: 'dnf',
               user: 'root',
             },);
-            expect(cmd,).toMatch(/^dnf install/,);
+            expect(cmd.startsWith('dnf install',),).toBe(true,);
           },
         },),
 
@@ -156,7 +156,7 @@ await describe({
               manager: 'apk',
               user: 'root',
             },);
-            expect(cmd,).toMatch(/^apk add/,);
+            expect(cmd.startsWith('apk add',),).toBe(true,);
             expect(cmd,).toContain('bash',);
           },
         },),
@@ -168,7 +168,7 @@ await describe({
               manager: 'pacman',
               user: 'root',
             },);
-            expect(cmd,).toMatch(/^pacman -Sy/,);
+            expect(cmd.startsWith('pacman -Sy',),).toBe(true,);
           },
         },),
 
