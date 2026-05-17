@@ -131,6 +131,8 @@ function parseSections(response: string,): readonly string[] {
  * @returns normalised output where every `---` opens its own line
  */
 function forceDashSeparatorsToOwnLine(s: string,): string {
+  /** Length of the `---` separator literal; used as the cursor step. */
+  const DASH_SEPARATOR_LENGTH = '---'.length;
   /**
    * Recursive accumulator: copies non-matching text verbatim and inserts
    * a synthetic newline before each `---` that needs one.
@@ -154,17 +156,17 @@ function forceDashSeparatorsToOwnLine(s: string,): string {
       from,
     );
     if (idx === (-1))
-      return acc + s.slice(from,);
+      return `${acc}${s.slice(from,)}`;
     /** Char immediately before the match (or `'\n'` for start-of-string). */
     const prev = idx === 0 ? '\n' : s.charAt(idx - 1,);
     /** Inserted newline keeps the regex's `$1\n---` rewrite semantics. */
     const insertion = prev === '\n' ? '' : '\n';
     return walk({
-      from: idx + 3,
-      acc: acc + s.slice(
+      from: idx + DASH_SEPARATOR_LENGTH,
+      acc: `${acc}${s.slice(
         from,
         idx,
-      ) + insertion + '---',
+      )}${insertion}---`,
     },);
   }
   return walk({

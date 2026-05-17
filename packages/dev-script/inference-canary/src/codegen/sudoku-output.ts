@@ -26,34 +26,42 @@ export function splitOutputSections(output: string,): string[] {
 }
 
 /**
- * Splits `s` on lines that consist entirely of one or more `-` characters
- * (the separator the model is expected to emit between puzzles). Mirrors
- * `s.split(/\n-+\n/)`: a separator must be flanked by newlines on both
- * sides, and the body between newlines must be at least one `-`.
+ * Returns true when `line` is a non-empty run of only `-` characters
+ * (the inter-puzzle separator shape the model is expected to emit).
+ *
+ * @param line - candidate line
+ *
+ * @returns whether the line consists solely of one or more `-`
+ *
+ * @example
+ * ```ts
+ * isDashLine('---'); // true
+ * isDashLine('-x-'); // false
+ * isDashLine('');    // false
+ * ```
+ */
+function isDashLine(line: string,): boolean {
+  if (line.length === 0)
+    return false;
+  for (const c of line) {
+    if (c !== '-')
+      return false;
+  }
+  return true;
+}
+
+/**
+ * Splits `s` on lines consisting entirely of one or more `-` characters
+ * (the separator the model is expected to emit between puzzles). A
+ * separator must be flanked by newlines on both sides.
  *
  * @param s - trimmed multi-puzzle output
  *
  * @returns ordered list of inter-separator sections
  */
 function splitOnDashLines(s: string,): string[] {
-  /** Lines after a primary `\n` split; separator lines are detected by `isDashLine` below. */
+  /** Lines after a primary newline split; separator lines are detected by `isDashLine`. */
   const lines = s.split('\n',);
-  /**
-   * Returns true when `line` is a non-empty run of only `-` characters.
-   *
-   * @param line - candidate line
-   *
-   * @returns whether the line satisfies `-+`
-   */
-  function isDashLine(line: string,): boolean {
-    if (line.length === 0)
-      return false;
-    for (const c of line) {
-      if (c !== '-')
-        return false;
-    }
-    return true;
-  }
   /**
    * Recursive walker that joins consecutive non-separator lines into a
    * section and flushes the section on every dash-only line.

@@ -54,7 +54,7 @@ function collapseHorizontalRuns(s: string,): string {
       return walk({
         idx: idx + 1,
         inRun: true,
-        acc: inRun ? acc : acc + ' ',
+        acc: inRun ? acc : `${acc} `,
       },);
     }
     return walk({
@@ -108,7 +108,7 @@ function collapseExcessNewlines(s: string,): string {
       return walk({
         idx: idx + 1,
         runLength: runLength + 1,
-        acc: runLength >= MAX_CONSECUTIVE_NEWLINES ? acc : acc + '\n',
+        acc: runLength >= MAX_CONSECUTIVE_NEWLINES ? acc : `${acc}\n`,
       },);
     }
     return walk({

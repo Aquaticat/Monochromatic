@@ -11,6 +11,65 @@ import { MS_PER_DAY, } from '@monochromatic-dev/module-numeric-const';
 /** 24 hours in milliseconds */
 export const TWENTY_FOUR_HOURS_MS: number = MS_PER_DAY;
 
+//region Date-format constants
+
+/** Number of digits in the year portion (`YYYY`). */
+const YEAR_DIGITS = 4;
+/** Position of the separator char immediately after the year. */
+const YEAR_END = YEAR_DIGITS;
+/** Minimum slug length: year digits + 1-char separator. */
+const YEAR_HYPHEN_PREFIX_LENGTH = YEAR_DIGITS + 1;
+/** Position of the first month digit. */
+const MONTH_START = YEAR_HYPHEN_PREFIX_LENGTH;
+/** Position of the separator char immediately after the month (`YYYY:MM` is 7 chars). */
+const MONTH_END = 7;
+/** Position of the first day digit. */
+const DAY_START = 8;
+/** Position immediately after the day digits (`YYYY:MM:DD` is 10 chars). */
+const DAY_END = 10;
+
+//endregion Date-format constants
+
+//region Year-hyphen prefix predicate
+
+/**
+ * Tests whether `s` starts with four ASCII digits followed by `-`,
+ * matching the `\d{4}-` shape every timestamp slug shares.
+ *
+ * @param s - candidate slug
+ *
+ * @returns whether the slug satisfies the year-prefix shape
+ *
+ * @example
+ * ```ts
+ * hasYearHyphenPrefix('2026-03-06T12-00-00.000Z'); // true
+ * hasYearHyphenPrefix('not-a-year');               // false
+ * ```
+ */
+function hasYearHyphenPrefix(s: string,): boolean {
+  if (s.length < YEAR_HYPHEN_PREFIX_LENGTH)
+    return false;
+  /**
+   * Walks the year digits, returning whether the slug ends them with `-`.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @returns whether the first `YEAR_DIGITS` chars are digits and `s[YEAR_END]` is `-`
+   */
+  function checkDigits(idx: number,): boolean {
+    if (idx >= YEAR_DIGITS)
+      return s.charAt(YEAR_END,) === '-';
+    /** Char at the cursor; only ASCII digits advance the scan. */
+    const c = s.charAt(idx,);
+    if ((c < '0') || (c > '9'))
+      return false;
+    return checkDigits(idx + 1,);
+  }
+  return checkDigits(0,);
+}
+
+//endregion Year-hyphen prefix predicate
+
 /**
  * Result of scanning artifact directories for recent activity.
  * Contains both per-probe pairs and whole-model failures so the runner can
@@ -57,35 +116,6 @@ export type ArtifactDirParts = {
  */
 export function parseArtifactDir(name: string,): ArtifactDirParts | null {
   /**
-   * Returns true when `s` starts with four ASCII digits followed by `-`,
-   * matching the `\d{4}-` anchor of the original timestamp capture.
-   *
-   * @param s - candidate timestamp slug
-   *
-   * @returns whether the slug satisfies the year-prefix shape
-   */
-  function looksLikeTimestamp(s: string,): boolean {
-    if (s.length < 5)
-      return false;
-    /**
-     * Walks the first four characters checking each is an ASCII digit.
-     *
-     * @param idx - cursor into `s`
-     *
-     * @returns whether the first four chars are digits
-     */
-    function checkDigits(idx: number,): boolean {
-      if (idx >= 4)
-        return s.charAt(4,) === '-';
-      /** Char at cursor; only ASCII digits qualify. */
-      const c = s.charAt(idx,);
-      if ((c < '0') || (c > '9'))
-        return false;
-      return checkDigits(idx + 1,);
-    }
-    return checkDigits(0,);
-  }
-  /**
    * Searches `name` for `-<pass>-` followed by a timestamp slug.
    *
    * @param marker - one of `-initial-` or `-fix-`
@@ -112,7 +142,7 @@ export function parseArtifactDir(name: string,): ArtifactDirParts | null {
         return null;
       /** Slug after the marker; must satisfy the year-prefix shape to count. */
       const tail = name.slice(idx + marker.length,);
-      if (!looksLikeTimestamp(tail,))
+      if (!hasYearHyphenPrefix(tail,))
         return scan(idx - 1,);
       return {
         probe: name.slice(
@@ -152,25 +182,7 @@ export function parseFailureDir(name: string,): { timestamp: string; } | null {
     return null;
   /** Slug after the prefix; must start with four digits and a hyphen. */
   const tail = name.slice(PREFIX.length,);
-  if (tail.length < 5)
-    return null;
-  /**
-   * Walks the first four characters checking each is an ASCII digit.
-   *
-   * @param idx - cursor into `tail`
-   *
-   * @returns whether the first four chars are digits
-   */
-  function checkDigits(idx: number,): boolean {
-    if (idx >= 4)
-      return tail.charAt(4,) === '-';
-    /** Char at cursor; only ASCII digits qualify. */
-    const c = tail.charAt(idx,);
-    if ((c < '0') || (c > '9'))
-      return false;
-    return checkDigits(idx + 1,);
-  }
-  if (!checkDigits(0,))
+  if (!hasYearHyphenPrefix(tail,))
     return null;
   return { timestamp: tail, };
 }
@@ -247,18 +259,18 @@ function rewriteDateColons(s: string,): string {
     return step(0,);
   }
   if (
-    !isDigitRun({
+    (!isDigitRun({
       start: 0,
-      count: 4,
-    },)
-    || (s.charAt(4,) !== ':')
+      count: YEAR_DIGITS,
+    },))
+    || (s.charAt(YEAR_END,) !== ':')
     || (!isDigitRun({
-      start: 5,
+      start: MONTH_START,
       count: 2,
     },))
-    || (s.charAt(7,) !== ':')
+    || (s.charAt(MONTH_END,) !== ':')
     || (!isDigitRun({
-      start: 8,
+      start: DAY_START,
       count: 2,
     },))
   ) {
@@ -266,14 +278,14 @@ function rewriteDateColons(s: string,): string {
   }
   return `${s.slice(
     0,
-    4,
+    YEAR_END,
   )}-${s.slice(
-    5,
-    7,
+    MONTH_START,
+    MONTH_END,
   )}-${s.slice(
-    8,
-    10,
-  )}${s.slice(10,)}`;
+    DAY_START,
+    DAY_END,
+  )}${s.slice(DAY_END,)}`;
 }
 
 /**

@@ -22,9 +22,9 @@ const FENCE_LANG_TAGS: readonly string[] = [
 ];
 
 /**
- * Finds the first opening fence (`` ``` `` optionally followed by `typescript`
- * or `ts`, then a newline) and returns its byte offset just past the
- * newline, or `-1` when no such fence exists.
+ * Finds the first opening markdown fence (three backticks, optionally
+ * followed by `typescript` or `ts`, then a newline) and returns the byte
+ * offset just past the newline, or `-1` when no such fence exists.
  *
  * @param response - raw model output
  *
@@ -66,13 +66,14 @@ function findOpeningFenceEnd(response: string,): number {
 }
 
 /**
- * Extracts the body of a fenced code block, mirroring
- * `/```(?:typescript|ts)?\n([\s\S]*?)```/` (closing variant) or
- * `/```(?:typescript|ts)?\n([\s\S]*)/` (open variant) without regex.
+ * Extracts the body of a fenced code block bounded by triple-backtick
+ * fences. When `closing` is true the closing fence terminates the body;
+ * when false the body extends to the end of `response` (salvages
+ * mid-stream output when the model truncated).
  *
  * @param response - raw model output
  *
- * @param closing - whether to require a closing `` ``` ``
+ * @param closing - whether to require a closing triple-backtick fence
  *
  * @returns captured body, or `null` when no matching fence exists
  */

@@ -9,9 +9,9 @@
  */
 
 /**
- * Returns `s` with every ASCII whitespace character removed. Mirrors
- * `s.replaceAll(/\s/g, '')`: ' ', '\t', '\n', '\r', '\f', and '\v' are
- * dropped; everything else passes through verbatim.
+ * Returns `s` with every ASCII whitespace character (space, tab, newline,
+ * carriage return, form feed, vertical tab) removed; everything else
+ * passes through verbatim.
  *
  * @param s - input string
  *
@@ -53,32 +53,38 @@ function stripAllWhitespace(s: string,): string {
 }
 
 /**
- * Splits `s` on runs of newlines separated only by horizontal whitespace.
- * Mirrors `s.split(/\n\s*\n/)`: any sequence of `\n` followed by optional
- * spaces/tabs followed by `\n` is treated as a paragraph separator.
+ * Returns true when every char of `line` is a space or tab; matches the
+ * horizontal-whitespace gap between paragraph-separator newlines.
+ *
+ * @param line - candidate line
+ *
+ * @returns whether the line is whitespace-only or empty
+ *
+ * @example
+ * ```ts
+ * isBlankLine('   '); // true
+ * isBlankLine('  x'); // false
+ * ```
+ */
+function isBlankLine(line: string,): boolean {
+  for (const c of line) {
+    if ((c !== ' ') && (c !== '\t'))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * Splits `s` on paragraph separators: a newline, optional horizontal
+ * whitespace, then another newline.
  *
  * @param s - input text
  *
  * @returns paragraph blocks (separator chars dropped)
  */
 function splitOnBlankLines(s: string,): string[] {
-  /** Lines after a primary split on `\n`; blank-line groups become empty entries. */
+  /** Lines after a primary split on newline; blank-line groups become empty entries. */
   const lines = s.split('\n',);
-  /**
-   * Returns true when every char of `line` is a space or tab; matches the
-   * `\s*` between the two `\n` anchors in the original regex.
-   *
-   * @param line - candidate line
-   *
-   * @returns whether the line is whitespace-only or empty
-   */
-  function isBlankLine(line: string,): boolean {
-    for (const c of line) {
-      if ((c !== ' ') && (c !== '\t'))
-        return false;
-    }
-    return true;
-  }
   /**
    * Recursive walker that joins consecutive non-blank lines into a block
    * and flushes the block on every blank line.

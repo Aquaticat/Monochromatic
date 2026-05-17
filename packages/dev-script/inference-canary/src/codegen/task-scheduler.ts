@@ -26,6 +26,59 @@ const EXPECTED_C_TIME = 150;
 const TOTAL_CHECKS = 4;
 
 /**
+ * Returns the digit run that follows the first at-sign marker in `line`.
+ * Locates the at-sign, then accumulates ASCII digits until the first
+ * non-digit; empty when the line lacks an at-sign-then-digits field.
+ *
+ * @param line - candidate output line
+ *
+ * @returns digit run (empty when no at-sign-then-digits field exists)
+ *
+ * @example
+ * ```ts
+ * extractAtDigits('DONE A \@100'); // '100'
+ * extractAtDigits('TOTAL 150');    // ''
+ * ```
+ */
+function extractAtDigits(line: string,): string {
+  /** Position of the at-sign marker; `-1` ends the search. */
+  const at = line.indexOf('@',);
+  if (at === (-1))
+    return '';
+  /**
+   * Walks the run of ASCII digits starting at `from`.
+   *
+   * @param from - cursor index
+   *
+   * @param acc - digits collected so far
+   *
+   * @returns digit run
+   */
+  function collect({
+    from,
+    acc,
+  }: {
+    from: number;
+    acc: string;
+  },): string {
+    if (from >= line.length)
+      return acc;
+    /** Char at cursor; only ASCII digits keep accumulating. */
+    const c = line.charAt(from,);
+    if ((c < '0') || (c > '9'))
+      return acc;
+    return collect({
+      from: from + 1,
+      acc: acc + c,
+    },);
+  }
+  return collect({
+    from: at + 1,
+    acc: '',
+  },);
+}
+
+/**
  * {@inheritDoc Probe}
  */
 export const taskScheduler: Probe = createCodeGenProbe({
@@ -64,53 +117,6 @@ export const taskScheduler: Probe = createCodeGenProbe({
     const lines = result.stdout.trim().split('\n',).map(function trimLine(line,): string {
       return line.trim();
     },);
-
-    /**
-     * Returns the digit run that follows the first `@` marker in `line`.
-     * Mirrors `/@(\d+)/.exec(line)?.[1]` with a single linear scan: locate
-     * the `@`, then accumulate ASCII digits until the first non-digit.
-     *
-     * @param line - candidate output line
-     *
-     * @returns digit run (empty when no `@<digits>` field exists)
-     */
-    function extractAtDigits(line: string,): string {
-      /** Position of the `@` marker; `-1` ends the search. */
-      const at = line.indexOf('@',);
-      if (at === (-1))
-        return '';
-      /**
-       * Walks the run of ASCII digits starting at `from`.
-       *
-       * @param from - cursor index
-       *
-       * @param acc - digits collected so far
-       *
-       * @returns digit run
-       */
-      function collect({
-        from,
-        acc,
-      }: {
-        from: number;
-        acc: string;
-      },): string {
-        if (from >= line.length)
-          return acc;
-        /** Char at cursor; only ASCII digits keep accumulating. */
-        const c = line.charAt(from,);
-        if ((c < '0') || (c > '9'))
-          return acc;
-        return collect({
-          from: from + 1,
-          acc: acc + c,
-        },);
-      }
-      return collect({
-        from: at + 1,
-        acc: '',
-      },);
-    }
 
     if ((!lines.some(function hasDoneA(line,): boolean {
       return line.startsWith('DONE A',);
