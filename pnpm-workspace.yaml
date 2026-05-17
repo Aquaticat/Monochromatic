@@ -2,9 +2,9 @@ packages:
 - 'packages/*/*'
 
 allowBuilds:
-  '@vscode/ripgrep': set this to true or false
+  '@vscode/ripgrep': false
   core-js: false
-  protobufjs: set this to true or false
+  protobufjs: false
   sharp: true
 
 autoInstallPeers: false
