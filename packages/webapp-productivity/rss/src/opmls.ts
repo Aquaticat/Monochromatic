@@ -29,7 +29,8 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
         function isHttpDomainUrl(s,) {
           /** Parsed URL so the protocol and hostname can be checked independently. */
           const u = new URL(s,);
-          return /^https?:$/.test(u.protocol,) && v.DOMAIN_REGEX.test(u.hostname,);
+          return ((u.protocol === 'http:') || (u.protocol === 'https:'))
+            && v.DOMAIN_REGEX.test(u.hostname,);
         },
         'Invalid HTTP(S) URL with valid domain',
       ),
@@ -45,7 +46,7 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
             return false;
           if (DOT_ENV_PATH !== undefined)
             return s.length > 0;
-          return /^file:\/{3}/.test(s,);
+          return s.startsWith('file:///',);
         },
         'Invalid file URL',
       ),

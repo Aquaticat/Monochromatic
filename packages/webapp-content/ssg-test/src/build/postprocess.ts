@@ -55,6 +55,7 @@ import readdir from 'tiny-readdir-glob';
 
 import { sha256, } from '../lib/cache-hash.ts';
 
+import { isLeafExcluded, } from './postprocess-excludes.ts';
 import { DIST, } from './write-page.ts';
 
 export {}; // module boundary marker
@@ -70,6 +71,7 @@ const l = tagged({
 /** Number of hex characters to use from the SHA-256 digest. */
 const HASH_LENGTH = 10;
 
+/* oxlint-disable no-restricted-syntax/require-regex-justification -- fingerprinted-filename anchored suffix matchers; the input is a basename (bounded by filesystem name length) and both patterns anchor at `$`. `{10}` is a constant repetition count and `[^.]+` is linear with no nesting; no backtracking risk. */
 /**
  * Regex matching a previously fingerprinted filename.
  * Matches `name.{10 hex chars}.ext` patterns.
@@ -81,6 +83,7 @@ const STALE_HASH_PATTERN = /\.[0-9a-f]{10}\.[^.]+$/;
  * Matches `name.{10 hex chars}.ext.zst` patterns.
  */
 const STALE_HASH_ZST_PATTERN = /\.[0-9a-f]{10}\.[^.]+\.zst$/;
+/* oxlint-enable no-restricted-syntax/require-regex-justification */
 
 //region Helper functions
 
@@ -482,32 +485,13 @@ const staleFiles = fullScan.files.filter(function isStale(filePath,) {
 
 await cleanStaleFingerprints({ staleFiles, },);
 
-/** Patterns to exclude from leaf asset fingerprinting. */
-const LEAF_EXCLUDES = [
-  /\.html$/,
-  /styles\.css$/,
-  /pagefind\//,
-  /node_modules\//,
-  /\/\.[^/]+\//,
-  /final\//,
-  /manifest\.webmanifest$/,
-  /robots\.txt$/,
-  /rss\.xml$/,
-  /\.mdx$/,
-  /\.tsbuildinfo$/,
-  /\.jsonl$/,
-  /\.zst$/,
-];
-
 /** Leaf assets eligible for fingerprinting (excludes HTML, CSS, pagefind, etc.). */
 const leafAssetFiles = fullScan.files.filter(function isLeafAsset(filePath,) {
   /** Basename used for the stale-fingerprint pattern check independent of the full path. */
   const name = basename(filePath,);
   if (STALE_HASH_PATTERN.test(name,) || STALE_HASH_ZST_PATTERN.test(name,))
     return false;
-  return !LEAF_EXCLUDES.some(function matchesExclude(pattern,) {
-    return pattern.test(filePath,);
-  },);
+  return !isLeafExcluded(filePath,);
 },);
 
 /**

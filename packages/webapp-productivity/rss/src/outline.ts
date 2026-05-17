@@ -77,7 +77,8 @@ export async function getOutlinesFromOpmls(
               function isHttpDomainUrl(s,) {
                 /** Parsed URL so the protocol and hostname can be checked independently. */
                 const u = new URL(s,);
-                return /^https?:$/.test(u.protocol,) && v.DOMAIN_REGEX.test(u.hostname,);
+                return ((u.protocol === 'http:') || (u.protocol === 'https:'))
+                  && v.DOMAIN_REGEX.test(u.hostname,);
               },
               'Invalid HTTP(S) URL with valid domain',
             ),

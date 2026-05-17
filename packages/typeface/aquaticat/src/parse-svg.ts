@@ -46,9 +46,25 @@ function attr({
   attrs: string;
   name: string;
 },): string | undefined {
-  /** First regex match for the named attribute; capture group 1 is its value. */
-  const match = new RegExp(`${name}="([^"]*)"`,).exec(attrs,);
-  return match?.[1];
+  /** Literal token to locate; the value starts immediately after this prefix. */
+  const needle = `${name}="`;
+  /** Index of the first occurrence of `name="`; -1 when the attribute is absent. */
+  const start = attrs.indexOf(needle,);
+  if (start === (-1))
+    return undefined;
+  /** First char of the value, just past the `"` opener. */
+  const valueStart = start + needle.length;
+  /** Closing-quote position bounded by value start; -1 when the SVG is malformed. */
+  const valueEnd = attrs.indexOf(
+    '"',
+    valueStart,
+  );
+  if (valueEnd === (-1))
+    return undefined;
+  return attrs.slice(
+    valueStart,
+    valueEnd,
+  );
 }
 
 /**
@@ -69,8 +85,10 @@ function attr({
 export function parseSvg(svgContent: string,): Cell[] {
   /** Accumulator of parsed cells, filled in strip order as `<rect>` tags are encountered. */
   const cells: Cell[] = [];
+  /* oxlint-disable no-restricted-syntax/require-regex-justification -- SVG element tokenizer scoped to two literal tag names; lazy `([^>]*?)` is bounded by the next `/>` and the input is a Figma-exported master strip (bounded size). Linear: every char is visited at most twice across the alternation. */
   /** Matches a self-closing `<rect ... />` or `<path ... />` tag and captures its tag name and attributes. */
   const elementRegex = /<(rect|path)\s+([^>]*?)\/>/g;
+  /* oxlint-enable no-restricted-syntax/require-regex-justification */
 
   // oxlint-disable-next-line no-restricted-syntax -- regex exec loop is the idiomatic way to iterate matches
   for (let match = elementRegex.exec(svgContent,); match !== null;
@@ -87,8 +105,10 @@ export function parseSvg(svgContent: string,): Cell[] {
         attrs,
         name: 'transform',
       },);
+      /* oxlint-disable no-restricted-syntax/require-regex-justification -- canonical SVG `translate(N)` shape parser; the input is one attribute value bounded by the SVG element tokenizer above. No nested quantifiers; `\d+(?:\.\d+)?` is linear in the number's digit count. */
       /** Captured numeric argument of the `translate(...)` transform, or undefined when absent. */
       const translateMatch = transform?.match(/translate\((\d+(?:\.\d+)?)\)/,);
+      /* oxlint-enable no-restricted-syntax/require-regex-justification */
       /** Parsed X offset of this cell rect; falls back to 0 when no translate is present. */
       const xOffset = (translateMatch !== undefined) && (translateMatch !== null)
         ? Number(translateMatch[1] ?? '0',)
@@ -184,8 +204,10 @@ export type SVGPathCommand =
 export function parseSvgPathD(d: string,): SVGPathCommand[] {
   /** Accumulator of parsed commands, returned to the caller in path order. */
   const commands: SVGPathCommand[] = [];
+  /* oxlint-disable no-restricted-syntax/require-regex-justification -- SVG path tokenizer; the alternation either matches one command letter or one signed decimal in linear time, and the input is a bounded `d=` attribute value (Aquaticat master strip). No backtracking risk on either branch. */
   /** Matches either a command letter (M/L/H/V/Z) or a signed decimal number. */
   const tokenRegex = /([MLHVZ])|(-?\d+(?:\.\d+)?)/g;
+  /* oxlint-enable no-restricted-syntax/require-regex-justification */
 
   /**
    * Last command letter seen, which determines how subsequent number tokens are consumed.
