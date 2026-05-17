@@ -410,11 +410,59 @@ pub struct RuleSrc {
 // ```ts
 // type FlagSet = { i: boolean; u: boolean; negateI: boolean };
 // ```
-#[derive(Debug, Arbitrary)]
+#[derive(Debug)]
 pub struct FlagSet {
     pub include_i: bool,
     pub include_u: bool,
     pub negate_i: bool,
+}
+
+// What:     `impl<'a> Arbitrary<'a> for FlagSet`. Manual impl that
+//           biases toward `(?iu)` (i=true, u=true, negate_i=false).
+//           The uniform-random derive made `(?iu)` ~12.5%; biasing
+//           to ~50% concentrates fuzz effort on the case-fold
+//           soundness shape that requires both flags.
+// Why:      The soundness panic (target's reason for existing)
+//           requires a rule with `(?iu)` PLUS a Unicode literal in
+//           the body PLUS case-flipped content. Random flag
+//           generation diluted the relevant combo too much; 90k
+//           iterations against the biased generator (plus
+//           case-flipped content) failed to fire the soundness
+//           assertion. Biasing flag generation is the cheapest
+//           lever (no body/content changes needed) to concentrate
+//           fuzz cycles on the bug class.
+// TS map:   `class FlagSet { static arbitrary(u: Unstructured): FlagSet { ... } }`.
+impl<'a> Arbitrary<'a> for FlagSet {
+    fn arbitrary(u: &mut Unstructured<'a>) -> Result<Self> {
+        // What:     `u.int_in_range(0u8..=3)?`. Two-bit tag picks
+        //           one of four pre-defined flag shapes; reads 1
+        //           byte instead of the 3 the derive would.
+        // Why:      Concentrate 50% of fuzz iterations on the
+        //           soundness-relevant `(?iu)` shape; leave a
+        //           quarter for `(?i)` alone, an eighth for `(?u)`
+        //           alone, and the remaining eighth for `(?-i)`
+        //           (negate). The original uniform random reached
+        //           `(?iu)` only ~12.5% of the time and other
+        //           combos (e.g. `(?iu)` with `negate_i=true`)
+        //           rendered confusingly; this pruned set is more
+        //           productive for the target's bug class.
+        let tag = u.int_in_range(0u8..=7)?;
+        let (include_i, include_u, negate_i) = match tag {
+            // 4/8 of cases land on the soundness shape `(?iu)`.
+            0..=3 => (true, true, false),
+            // 2/8 stay on `(?i)` alone (existing case-fold coverage).
+            4..=5 => (true, false, false),
+            // 1/8 emits `(?u)` alone.
+            6 => (false, true, false),
+            // 1/8 emits `(?-i)` (negate).
+            _ => (false, false, true),
+        };
+        Ok(Self {
+            include_i,
+            include_u,
+            negate_i,
+        })
+    }
 }
 
 // What:     `impl FlagSet { fn render(...) }`. Renders the struct
@@ -1158,6 +1206,36 @@ fn gen_literal_bytes(u: &mut Unstructured<'_>) -> Result<Vec<u8>> {
         b"\xC3\xB6", // ö
         b"\xC3\xA7", // ç
     ];
+    // What:     With ~25% probability emit a pre-shaped "soundness
+    //           seed" literal: ASCII prefix + Unicode lowercase
+    //           letter + ASCII suffix. Shapes like `abécret`, `café`,
+    //           `secñred`. These are exactly the literal pattern the
+    //           gate extractor needs to produce a gate substring
+    //           that contains a Unicode letter; the case-flipped
+    //           content then fires the soundness mismatch when the
+    //           rule has `(?iu)` flags.
+    // Why:      Random byte-pick reaches such shapes with very low
+    //           probability (need 3+ random picks landing on
+    //           ASCII-Unicode-ASCII in order; each has ~1/6 chance
+    //           for Unicode). After 90k iterations the fuzz still
+    //           hadn't found the soundness shape; this targeted
+    //           pre-shape brings it to the top of the bias.
+    let soundness_pick = u.int_in_range(0u8..=3)?;
+    if soundness_pick == 0 {
+        // Emit one of a few short ASCII-Unicode-ASCII shapes.
+        const SHAPES: &[&[u8]] = &[
+            b"caf\xC3\xA9",       // café
+            b"a\xC3\xA9c",         // aéc
+            b"sec\xC3\xB1ret",     // secñret
+            b"\xC3\xB6ber",        // öber
+            b"se\xC3\xA7ret",      // seçret
+            b"ab\xC3\xA9cret",     // abécret
+            b"r\xC3\xBCmm",        // rümm
+            b"k\xC3\xB6ln",        // köln
+        ];
+        let idx = u.int_in_range(0usize..=(SHAPES.len() - 1))?;
+        return Ok(SHAPES[idx].to_vec());
+    }
     let n = u.int_in_range(1usize..=MAX_LITERAL_BYTES)?;
     let mut out: Vec<u8> = Vec::with_capacity(n);
     for _ in 0..n {
