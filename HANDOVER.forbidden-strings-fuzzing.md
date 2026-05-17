@@ -277,6 +277,117 @@ prototypes and stay deferred.
    Verify the patch against the resharp test suite in
    `/tmp/resharp-src/` before filing.
 
+### 2026-05-17 session: tightened Bug F validator, pre-validator warnings, Bug G discovered
+
+**Commits landed today, most recent first:**
+
+```
+29f5f495 fix(forbidden-strings): tighten Bug F validator + emit pre-validator warnings
+241286f8 fix(forbidden-strings): widen Bug F validator for trailing-content shape
+```
+
+**What happened (chronological):**
+
+1. Added `quantified_lookahead_with_sibling_content` (241286f8) covering
+   the second Bug F shape (single quantified-LA + trailing). Initially
+   broad: fire on any quantified-LA + ANY sibling content at parent
+   depth. User pushed back that this rejects legitimate production
+   patterns like `(?:(?!X)){n}<atom>` (exact quant, compiles cleanly)
+   and `(?:(?!X)){m,n}aaa` (3+ trail, also compiles cleanly).
+
+2. Tightened (29f5f495) to be PRECISE — fires only on shapes that
+   actually panic upstream:
+   - VARIABLE bound `{m,n}` with m < n (and `*`/`+`/`?` which are
+     variable). EXACT `{n}` does NOT arm.
+   - EXACTLY 1 or 2 trailing atoms at parent depth. 3+ atoms disarms.
+   - Atom = literal byte, escape, char class, group, anchor.
+   No accepted false positives. Negative tests now explicitly
+   enumerate the previously-false-positive shapes.
+
+3. Added eprintln warnings to ALL 7 pre-validator rejection sites in
+   `compile_rule_src` (per user request "emit a warning whenever the
+   validator flags something"). Each warning names the validator and
+   quotes the source so users see why a rule was rejected without
+   parsing the error string.
+
+**Bug G discovered (NEW upstream resharp bug, separate from Bug F):**
+
+Same overflow line (`resharp-algebra/src/lib.rs:2470`) but DIFFERENT
+upstream trigger — NO lookahead, just alternation+complement+intersection.
+
+- Artifact: `crash-7e654294d4daaa18073ed3117a54546af32b3a54`
+- Minimal: `(?:$|x)(?u:(?:$&y))aa`
+- Required pieces (bisected via `bisect_g.rs`, `bisect_g2.rs`):
+  - Alternation `(?:$|...)` with `$` anchor as one branch
+  - Wrapped group containing `$&literal` (`&` is resharp intersection)
+  - Trailing content NOT required
+- Stack trace identical to Bug F: `attempt_rw_concat_2` →
+  `mk_concat` → `mk_binary_inner` (recursive) → `der` → `Regex::new`.
+- NOT yet pre-validated. Needs its own validator if we go the iterative
+  route. Probably the simplest detection: alternation containing
+  `$`/`^` + co-occurring `&` outside character class.
+
+**Long-trail + long-LA-body Bug F variant escapes tightened validator:**
+
+The full crash-a219 artifact `(?:(?!ñññAtsöéaañ)){4,12}~(ññM aaaaaaaa)
+aaaaaa` has 8+ trailing atoms after the quantified-LA, so the tightened
+validator correctly doesn't fire (it would be a false positive on the
+"3+ trail OK" rule). But upstream still panics — bisect shows the
+TRIGGER depends on LA body length AND complement body length, both
+above some threshold. Minimal panicking shape:
+`(?:(?!aaaaaaaaaaaaa)){4,12}~(def)aaa`.
+
+This isn't trivially structurally detectable. The right architectural
+fix is to install a custom panic hook in the fuzz target (see "Next
+session priority" below) rather than chase iterative validators per
+upstream-bug-shape.
+
+**Resume work next session — priority:**
+
+1. **Install a custom panic hook in the fuzz target.** libfuzzer-sys
+   currently calls `abort()` from its panic hook BEFORE unwinding
+   starts, so `compile_rule_src`'s `catch_unwind` never gets a chance
+   to catch resharp panics. Solution: in `fuzz_extract_gate_soundness.rs`,
+   replace libfuzzer's hook (use `std::panic::set_hook`) with one that:
+   - For panics at known resharp locations
+     (`resharp-algebra/src/lib.rs:2470`, `resharp-engine/src/engine.rs:1020`)
+     → no-op, let unwinding proceed (catch_unwind catches it).
+   - For all other panics → call default hook + abort (preserves
+     normal fuzz crash semantics).
+   This single change unblocks both remaining Bug F variants AND Bug G
+   AND any future upstream variant at the same locations.
+
+2. Once panic hook is in place, re-run 180s soundness-by-revert fuzz.
+   Expected: SOUNDNESS PANIC at the assertion in
+   `fuzz_extract_gate_soundness.rs:290`.
+
+3. Once fuzz halts on SOUNDNESS PANIC, complete Phase 11. The verbose
+   output should include the rule and content that triggered the
+   violation (the `e49d8694` bug).
+
+4. File Bug E, Bug F, Bug G upstream at github.com/ieviev/resharp.
+
+**Diagnostic infrastructure (continued):**
+
+- `/tmp/probe-slow-unit/src/bin/`:
+  - `bisect_complement.rs` — complement-after-LA variants
+  - `bisect_artifact.rs` — artifact vs minimal divergence
+  - `bisect_g.rs`, `bisect_g2.rs` — Bug G triggers
+  - `verify_tightened.rs` — confirms tightened validator behavior
+  - `decode_7e6.rs` — decodes Bug G crash artifact
+  - `verify_a219.rs` — confirms Bug F a219 artifact handling
+
+**Verification status:**
+
+- 138 unit tests pass (3 new for Bug F variant, modified test set for
+  tightened semantics).
+- Clippy clean.
+- Warnings stream to stderr on every pre-validator rejection (visible
+  in fuzz log and CLI runs).
+- Worktree fuzz: two open crashes (`a219` Bug F long-trail variant
+  and `7e65` Bug G) — both blocked on panic-hook fix, not validator
+  widening.
+
 ### Late-2026-05-16 session (~23:00): Bug F discovered + 3 more commits
 
 **Commits landed today, most recent first:**
