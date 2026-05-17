@@ -192,99 +192,90 @@ Run in order:
 
 ### Phase 11 partial status (post resharp 0.6.0 bump, 2026-05-16)
 
-- Steps 1-4 PASS against resharp 0.6.0 (121 unit + 19 integration tests,
+- Steps 1-4 PASS against resharp 0.6.0 (132 unit + 19 integration tests,
   zero lint warnings, zero clippy warnings).
 - Step 6 (fuzz:build) PASSES against resharp 0.6.0. Resolved a
   cargo-fuzz 0.13.1 vs musl-vs-ASAN incompatibility by threading
   `--target x86_64-unknown-linux-gnu` through `fuzz:build`,
   `fuzz:smoke`, and `fuzz:run` in commit `7b2caf88`.
-- `fuzz:run` arg-spread bug fixed in commit `202ed6b6`. Root cause:
-  mise/usage formats the `[args]` variadic env var as a shell-quoted
-  concatenation (`'-a' '-b'`) so a downstream POSIX shell can re-split
-  safely; the nushell `split row ' '` split on every space and kept
-  the surrounding quotes inside each element, so cargo forwarded them
-  to libfuzzer as `'-max_total_time=10'` (literal). libfuzzer treated
-  anything not starting with `-` as a corpus directory and errored.
-  Fix: split on the inter-arg separator `"' '"` and trim the lone
-  outer quotes off the first and last elements.
-- Step 5, 7-9 NOT YET RUN against 0.6.0.
-- Step 10 (soundness-by-revert) STILL BLOCKED, and the 60 s fuzz
-  gate on main is now BROKEN. Late-2026-05-16 session findings, in
-  the order they crystallised:
+- `fuzz:run` arg-spread bug fixed in commit `202ed6b6`.
 
-  - `cd9b2dbf` (stacked-quantifier pre-validator) catches
-    bare-stacked source (`a**`, `\D{5,11}{5,11}`) but the fuzz
-    target's `Node::Quant` renderer at
-    `fuzz/src/generators.rs:1292-1300` always wraps the
-    quantified atom in `(?:...)`. So the fuzz NEVER emits
-    bare-stacked; the pre-validator is a no-op for the fuzz
-    target. Its unit tests pass because they hand-write
-    bare-stacked sources the fuzz cannot produce. The actual
-    slow shape the fuzz hits is **grouped-via-`(?:)` nested
-    quantifiers** at depth 4+. `compile_rule_src` on
-    `(?iu)(?:(?:(?:(?:(?:\d){5,11}){5,11}){5,11}){5,11}){5,11}(?:(?:(?:(?:(?:\d)*)*)*)*)*aa`
-    (the rendered form of the original slow-unit) takes ~3.26 s
-    and errors with `CompiledTooBig`. The pre-validator must
-    catch this grouped shape, not just bare-stacked.
+### Late-2026-05-16 session: 5 pre-validators landed, fuzz hardened
 
-  - `2f4d27b0` (Unicode literal alphabet widening) is necessary
-    for phase 11's case-fold path. It also exposed two
-    pre-existing crashes the fuzz now reaches within ~30 s on
-    main:
-    1. resharp `engine.rs:1020` `debug_assert!` panic on `&` +
-       lookahead (`(?=`, `(?!`); covered today only for
-       lookBEHIND by `intersection_with_lookbehind`.
-    2. The grouped-quantifier slow-unit (above) re-saved at
-       `slow-unit-0cfbc4b8b9945074fe5214a96c503f6e994e3b97`.
+**Commits landed today, most recent first:**
 
-  - 60 s `fuzz:run fuzz_extract_gate_soundness` on main:
-    BEFORE widening (commits through `cd9b2dbf`), TWO
-    consecutive runs completed cleanly (9561 + 3858
-    iterations). AFTER widening (`2f4d27b0` / re-applied as
-    `4d5563cb`), the same command exits with libfuzzer
-    status 77 within ~60 s on the new crash and slow-unit.
-    The user explicitly chose to keep the widening
-    ("Don't revert it") and continue fixing the exposed
-    issues in a follow-up session. Revert commit `1976d0b9`
-    is superseded by `4d5563cb`.
+```
+cbc1616e fix(forbidden-strings): widen intersection+quant hang detector
+3d996936 docs(forbidden-strings): trace resharp hang to prefix.rs visited-set bug
+e5ab8c6f fix(forbidden-strings): pre-validate resharp algebra-hang shape
+4fb14f4c fix(forbidden-strings): pre-validate alt-lookaround sibling shape
+9ac0b3a9 fix(forbidden-strings): pre-validate nested grouped quantifiers
+091e0015 docs(handover): record late-session findings
+4d5563cb Reapply widening (un-revert)
+2f4d27b0 feat: widen fuzz literal alphabet
+cd9b2dbf fix: pre-validate stacked quantifiers
+```
 
-  - Manual probe (`/tmp/probe-slow-unit/`) against the
-    reverted worktree confirms the e49d8694 soundness bug
-    class IS reachable: `(?iu)café` vs content `CAFÉ`
-    panics with the expected redacted reproducer.
-    `synth_content`'s uniform-random byte mutations do not
-    reliably converge on the `0xA9` -> `0x89` flip that turns
-    `é` into `É`, which is why libfuzzer doesn't naturally
-    find the shape even after widening. A bias in
-    `synth_content`, or a deterministic seed in
-    `fuzz/corpus/fuzz_extract_gate_soundness/`, would unblock.
+**Pre-validators now in `compile_rule_src` (resharp path):**
 
-  **Resume work for next session, in priority order:**
-  1. Add a `nested_grouped_quantifier` pre-validator (or
-     extend `stacked_quantifier`) so the fuzz's
-     grouped-quantifier source shape rejects in microseconds
-     instead of taking ~3 s + ASAN overhead. Algorithm: walk
-     paren depth; count chains of `){quant}` adjacency;
-     flag at depth 4+. Test against
-     `fuzz/artifacts/fuzz_extract_gate_soundness/slow-unit-0cfbc4b8b9945074fe5214a96c503f6e994e3b97`.
-  2. Generalise `intersection_with_lookbehind` to fire on
-     intersection + lookaround in either direction (lookahead
-     OR lookbehind). Test against
-     `fuzz/artifacts/fuzz_extract_gate_soundness/crash-8cba104f0805ccb567513aff895398a4f652200c`.
-  3. Confirm 60 s fuzz on main is clean again. This is the
-     load-bearing gate.
-  4. Re-run 120 s soundness-by-revert in the disposable
-     worktree (recipe in commit `cd9b2dbf`'s body). If a
-     SOUNDNESS PANIC still does not fire, the remaining gap
-     is `synth_content` mutation coverage -- bias it to
-     emit Unicode-case-flipped variants of any non-ASCII
-     bytes in the rule's literals.
+1. `stacked_quantifier` (cd9b2dbf) -- bare-stacked `a**`/`\D{5,11}{5,11}`.
+2. `nested_grouped_quantifier` (9ac0b3a9) -- grouped-via-`(?:)` chain
+   of `){quant}` adjacencies at depth 4+. Probe shows slow-unit
+   `(?iu)(?:(?:(?:(?:(?:\d){5,11}){5,11}){5,11}){5,11}){5,11}(?:(?:(?:(?:(?:\d)*)*)*)*)*aa`
+   rejects in 4.98us (was 3.26s).
+3. `intersection_with_lookbehind` (4fb14f4c) -- widened to cover any
+   lookaround direction (was lookbehind-only).
+4. `lookaround_in_alternation_with_sibling` (4fb14f4c) -- catches
+   `(a|(?![_]))(?!a)` shape that hits resharp `engine.rs:1020`
+   `debug_assert!` during `scan_fwd_all`. Bisected from
+   `crash-8cba104f0805ccb567513aff895398a4f652200c`. Probe rejects
+   in 8.89us (was compile-OK then find_all-panic).
+5. `complement_intersection_quantified_group` (e5ab8c6f, widened
+   cbc1616e) -- catches `&` + quantified group (`)*`/`)+`/etc.)
+   anywhere in source. Bisected from
+   `timeout-00179d433e26fbcc3bedf2b7b38b6ce1ff9e6438` and
+   `timeout-0815a95346bfa16ae0c6454162d9af0b8c05779c`.
 
-  The user's original task description ("content of many
-  identical bytes (e.g. `a` * N, `r` * N)" as the slow-unit
-  trigger) was inaccurate: the trigger is the regex's
-  nested-quantifier shape; content size is incidental. Probe
-  shows bare `a*a` on 100,000 `a`-bytes runs in 0.3 ms.
+**Bug E -- new finding documented in TROUBLESHOOTING.resharp.md:**
+
+The intersection+quantified-group hang traces (via gdb attach to a
+hung probe) to `resharp-engine/src/prefix.rs:27` in
+`calc_prefix_sets_inner`. The `redundant` set is initialized with
+`{BOT, start}` and never updated inside the loop; derivative chains
+that produce unique nodes indefinitely never terminate. This has a
+minimal-patch prototype (`redundant.insert(node)`) so it should be
+filed upstream. The 4 other resharp bugs (B, C, D) lack patch
+prototypes and stay deferred.
+
+**Verification status:**
+
+- 60s fuzz on main: PASSED 34328 runs cleanly (verified after the
+  first 4 pre-validators landed).
+- 120s fuzz in reverted worktree: HIT timeout shape
+  `(?i) ###(?:\s&üü)(?:####)+...` (no complement, intersection +
+  quant). Widened the validator in cbc1616e but haven't re-run yet.
+
+**Resume work for next session, in priority order:**
+
+1. **Re-run 120s soundness-by-revert** in `/tmp/fs-soundness-revert`
+   (worktree exists, was reverted of `e49d8694`). Sync sources first:
+   `cp /var/home/user/Monochromatic/packages/cli/forbidden-strings/src/{fuzz_api,rules}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/` then `cp src/rules/{engine,engine_tests}.rs .../src/rules/`.
+   Clear stale timeout: `rm /tmp/fs-soundness-revert/packages/cli/forbidden-strings/fuzz/artifacts/fuzz_extract_gate_soundness/timeout-*`.
+   Run: `cd /tmp/fs-soundness-revert/packages/cli/forbidden-strings && mise run fuzz:run fuzz_extract_gate_soundness -max_total_time=120 -timeout=10`.
+   Expect SOUNDNESS PANIC. If hit another non-soundness halt, decode
+   via `/tmp/probe-slow-unit/target/release/probe <artifact-path>`
+   and bisect with `bisect2.rs..bisect6.rs` style probes.
+2. **If soundness panic doesn't fire after fuzz completes 120s clean,**
+   bias `synth_content` in `fuzz/src/generators.rs` to emit
+   Unicode-case-flipped variants of any non-ASCII bytes in the rule's
+   literals. Manual probe confirms `(?iu)café` vs `CAFÉ` panics with
+   the expected redacted reproducer when e49d8694 is reverted; the
+   gap is that uniform-random byte mutations don't reliably converge
+   on the `0xA9` -> `0x89` (é -> É) byte-pair flip.
+3. **File Bug E upstream** at github.com/ieviev/resharp using
+   minimal-patch prototype documented in TROUBLESHOOTING.resharp.md.
+   Verify the patch against the resharp test suite in
+   `/tmp/resharp-src/` before filing.
 - Crash artifacts at `/tmp/fs-crash-artifacts/` were re-verified against
   the 0.6.0+fix binary (`128221b7`); both run in 0ms with no crash. See
   `HANDOVER.resharp-panic-fix.md` for details.

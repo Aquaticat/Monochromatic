@@ -59,7 +59,58 @@ workaround is `--target x86_64-unknown-linux-gnu` explicitly on
 `cargo fuzz build` / `cargo fuzz run`. Threaded through the mise
 tasks (`fuzz:build`, `fuzz:smoke`, `fuzz:run`) in commit `7b2caf88`.
 
-Still outstanding:
+### Late-2026-05-16 session update: 5 pre-validators landed, fuzz hardened
+
+**Status:** 60s fuzz on main now PASSES cleanly (34328 iterations).
+120s fuzz in reverted worktree still in progress -- hit a second
+timeout shape (`(?i) ###(?:\s&üü)(?:####)+...`) without complement,
+fixed by widening `complement_intersection_quantified_group` in
+cbc1616e (drop the complement requirement; intersection + quantified
+group anywhere is enough to trigger the hang).
+
+**Pre-validators added/widened today (newest first):**
+
+```
+cbc1616e fix: widen intersection+quant hang detector
+3d996936 docs: trace resharp hang to prefix.rs visited-set bug
+e5ab8c6f fix: pre-validate resharp algebra-hang shape
+4fb14f4c fix: pre-validate alt-lookaround sibling shape
+9ac0b3a9 fix: pre-validate nested grouped quantifiers
+```
+
+**Bug E (new) -- root cause traced via gdb:**
+
+The intersection+quantified-group hang traces to
+`resharp-engine/src/prefix.rs:27` in `calc_prefix_sets_inner`. The
+`redundant` set is initialized with `{BOT, start}` and never updated
+inside the loop; derivative chains producing unique nodes
+indefinitely never terminate. Minimal-patch prototype:
+`redundant.insert(node);` at end of each loop iteration. This is
+the first resharp bug with a viable upstream patch (see
+TROUBLESHOOTING.resharp.md Bug E for the full writeup).
+
+**Resume work next session:**
+
+1. Re-run 120s soundness-by-revert in `/tmp/fs-soundness-revert`.
+   Sync src first, clear stale timeout artifacts:
+   ```
+   cp /var/home/user/Monochromatic/packages/cli/forbidden-strings/src/{fuzz_api,rules}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/
+   cp /var/home/user/Monochromatic/packages/cli/forbidden-strings/src/rules/{engine,engine_tests}.rs /tmp/fs-soundness-revert/packages/cli/forbidden-strings/src/rules/
+   rm /tmp/fs-soundness-revert/packages/cli/forbidden-strings/fuzz/artifacts/fuzz_extract_gate_soundness/timeout-*
+   cd /tmp/fs-soundness-revert/packages/cli/forbidden-strings
+   mise run fuzz:run fuzz_extract_gate_soundness -max_total_time=120 -timeout=10
+   ```
+   Expect SOUNDNESS PANIC. If still hitting non-soundness halts,
+   decode via `/tmp/probe-slow-unit/target/release/probe <path>` and
+   add another pre-validator.
+2. If panic still doesn't fire after fuzz runs 120s clean, bias
+   `synth_content` to produce Unicode case-flipped variants.
+3. File Bug E upstream at github.com/ieviev/resharp.
+
+---
+
+Original (pre-late-session) outstanding section preserved below for
+historical context only:
 
 - Soundness-by-revert phase 11 validation: **partial progress; 60s
   gate now broken; multiple follow-up pre-validators needed.**
