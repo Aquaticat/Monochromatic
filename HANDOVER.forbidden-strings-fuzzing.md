@@ -383,10 +383,51 @@ upstream-bug-shape.
   tightened semantics).
 - Clippy clean.
 - Warnings stream to stderr on every pre-validator rejection (visible
-  in fuzz log and CLI runs).
-- Worktree fuzz: two open crashes (`a219` Bug F long-trail variant
-  and `7e65` Bug G) — both blocked on panic-hook fix, not validator
-  widening.
+  in fuzz log and CLI runs); trimmed to one line per rejection to
+  avoid log spam (b9ce2811).
+- Panic-hook installed (66b1b007) and corrected to match
+  `resharp-0.6.0/src/engine.rs` Bug B path (68c4cf92).
+- 600s fuzz with hook in place: 90,129 iterations, zero crashes, zero
+  soundness violations. Hook is working (no upstream-bug halts) but
+  random mutation + case-flip bias isn't converging on the
+  soundness-triggering shape within that budget.
+- Soundness shape IS still reachable via direct probe: `(?iu)café`
+  vs `CAFÉ` and `(?iu)abécret` vs `abÉcret` both fire SOUNDNESS
+  VIOLATION via `/tmp/probe-slow-unit/target/release/verify_soundness`.
+
+**Next session: bias the fuzz harder toward the soundness shape.**
+
+The fuzz's coverage feedback alone hasn't found the right (?iu)
++ Unicode-literal + case-flipped-content combo in 90k iterations.
+Three orthogonal levers:
+
+1. **Seed the corpus with crafted bytes** that decode (via
+   `RuleAndContent::arbitrary`) close to the soundness shape. Started
+   with 5 seeds at `/tmp/fs-soundness-revert/.../seed-soundness-*`
+   (via `/tmp/seed_soundness.sh`) embedding `\xc3\xa9` (é) and
+   `\xc3\x89` (É) byte pairs. The Arbitrary decoder will partition
+   these between rule/content; coverage-guided mutation evolves from
+   there. Next session, expand the seed set with longer prefixes
+   (`abc<é>def<É>ret`) and explicit flag bytes corresponding to
+   `(?iu)` rendering.
+
+2. **Bias FlagSet's Arbitrary impl** so `(?iu)` (i=true, u=true,
+   negate_i=false) is overrepresented. Currently each bool is
+   uniform-random so the right combo is ~12.5% probability. A
+   manual `Arbitrary` impl that reads one byte and biases the i+u
+   case to ~50% would help.
+
+3. **Bias gen_literal_bytes** so multi-char Unicode-flanked
+   literals (`abc<é>def` shape) appear more often than single
+   Unicode chars (single-char doesn't get a gate extracted; the
+   shape needs ASCII context around the Unicode letter for the
+   AC gate to include it).
+
+Lower-effort first: try (1) with a richer seed set. If 30-min
+fuzz against the larger seed set doesn't fire, do (2) and (3) in
+the generator.
+
+### 2026-05-16 late session (~23:00): Bug F discovered + 3 more commits
 
 ### Late-2026-05-16 session (~23:00): Bug F discovered + 3 more commits
 
