@@ -12,8 +12,43 @@ const IGNORED_NAMES = new Set([
   'Thumbs.db',
 ],);
 
-/** Pattern matching editor swap/temp files. */
-const IGNORED_PATTERN = /\.swp$|~$|^\.#|^#.*#$|^4913$/;
+/** Vim's atomic-save sentinel filename; ignored verbatim. */
+const VIM_SENTINEL = '4913';
+
+/** Minimum length for the legacy emacs `#name#` lock-file shape. */
+const EMACS_LOCK_MIN_LENGTH = 2;
+
+/**
+ * Returns whether `name` looks like an editor swap or temp file.
+ * Matches the same set the original regex did:
+ * - ends with `.swp` (vim swap)
+ * - ends with `~` (gedit/vim backup)
+ * - starts with `.#` (emacs file lock)
+ * - starts and ends with `#` with at least two characters (legacy emacs lock)
+ * - equals `4913` (vim's atomic-save sentinel)
+ *
+ * @param name - entry name
+ *
+ * @returns true when the name is a known editor swap/temp shape
+ */
+function isEditorSwapName(name: string,): boolean {
+  if (name === VIM_SENTINEL)
+    return true;
+  if (name.endsWith('.swp',))
+    return true;
+  if (name.endsWith('~',))
+    return true;
+  if (name.startsWith('.#',))
+    return true;
+  if (
+    (name.length >= EMACS_LOCK_MIN_LENGTH)
+    && name.startsWith('#',)
+    && name.endsWith('#',)
+  ) {
+    return true;
+  }
+  return false;
+}
 
 /**
  * Returns whether a filename should be silently ignored by the watcher.
@@ -28,7 +63,7 @@ const IGNORED_PATTERN = /\.swp$|~$|^\.#|^#.*#$|^4913$/;
  * ```
  */
 export function isIgnored({ name, }: { name: string; },): boolean {
-  return IGNORED_NAMES.has(name,) || IGNORED_PATTERN.test(name,);
+  return IGNORED_NAMES.has(name,) || isEditorSwapName(name,);
 }
 
 /**
@@ -52,13 +87,63 @@ export const AWAIT_WRITE_FINISH_POLL_MS = 25;
  */
 export const SUPPRESS_MS = 500;
 
+/** Substring marking the boundary between basename and hex token in editord temps. */
+const EDITORD_TAG = '.editord.';
+
 /**
- * Pattern matching the temp filenames produced by {@link writeFileAtomic}.
- * Used to sweep orphaned editord temps from a directory before watching it.
+ * Returns whether `c` is an ASCII lowercase hex digit (`0`-`9` or `a`-`f`).
+ *
+ * @param c - candidate character
+ *
+ * @returns true when the character is a lowercase hex digit
+ */
+function isLowerHexChar(c: string,): boolean {
+  return ((c >= '0') && (c <= '9')) || ((c >= 'a') && (c <= 'f'));
+}
+
+/**
+ * Returns whether `name` matches the temp-filename shape produced by
+ * `writeFileAtomic`: starts with `.`, contains `.editord.`, then a
+ * non-empty run of lowercase hex digits followed by a trailing `~`.
+ *
+ * @param name - entry name to test
+ *
+ * @returns true when the name looks like an editord atomic-write temp
  *
  * @example
  * ```ts
- * const result = EDITORD_TEMP_PATTERN.test('.foo.ts.editord.a1b2c3d4e5f6~');
+ * const result = isEditordTempFile('.foo.ts.editord.a1b2c3d4e5f6~');
  * ```
  */
-export const EDITORD_TEMP_PATTERN = /^\..*\.editord\.[0-9a-f]+~$/;
+export function isEditordTempFile(name: string,): boolean {
+  if (!name.startsWith('.',))
+    return false;
+  if (!name.endsWith('~',))
+    return false;
+  /** Right-most occurrence of the tag; chosen so embedded `.editord.` substrings do not throw off the hex span. */
+  const tagIdx = name.lastIndexOf(EDITORD_TAG,);
+  if (tagIdx === (-1))
+    return false;
+  /** First index of the hex span; immediately after the trailing `.` of the tag. */
+  const hexStart = tagIdx + EDITORD_TAG.length;
+  /** Exclusive end of the hex span; immediately before the trailing `~`. */
+  const hexEnd = name.length - 1;
+  if (hexEnd <= hexStart)
+    return false;
+  /**
+   * Recursive verifier that confirms every character in `[idx, hexEnd)` is a
+   * lowercase hex digit.
+   *
+   * @param idx - cursor into `name`
+   *
+   * @returns true when the entire span is hex
+   */
+  function checkHexRun(idx: number,): boolean {
+    if (idx >= hexEnd)
+      return true;
+    if (!isLowerHexChar(name.charAt(idx,),))
+      return false;
+    return checkHexRun(idx + 1,);
+  }
+  return checkHexRun(hexStart,);
+}

@@ -18,6 +18,34 @@ const OPENING_BRACKETS = new Set([
 ],);
 
 /**
+ * Returns the leading run of ASCII space characters from `s`.
+ *
+ * @param s - input line
+ *
+ * @returns prefix of `s` containing only `' '` characters
+ */
+function leadingSpaces(s: string,): string {
+  /**
+   * Recursive walker advancing while the cursor sits on a space.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @returns index of the first non-space character (or `s.length`)
+   */
+  function scan(idx: number,): number {
+    if (idx >= s.length)
+      return s.length;
+    if (s.charAt(idx,) !== ' ')
+      return idx;
+    return scan(idx + 1,);
+  }
+  return s.slice(
+    0,
+    scan(0,),
+  );
+}
+
+/**
  * Computes the indentation string for a newly created line.
  *
  * Matches the previous line's leading whitespace, then adds
@@ -36,10 +64,8 @@ const OPENING_BRACKETS = new Set([
  * ```
  */
 export function computeIndent({ lineText, }: { lineText: string; },): string {
-  /** Regex match capturing the leading spaces; null only when the regex itself fails. */
-  const match = /^( *)/.exec(lineText,);
   /** Whitespace at the start of the previous line; carried over to align the new line. */
-  const baseIndent = match?.[1] ?? '';
+  const baseIndent = leadingSpaces(lineText,);
   /** Line text with trailing whitespace stripped; needed to inspect the meaningful last char. */
   const trimmed = lineText.trimEnd();
   /** Final non-whitespace char of the previous line; decides whether to add a deeper indent. */

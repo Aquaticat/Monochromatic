@@ -39,6 +39,79 @@ function linuxFsId({ path, }: { path: string; },): string {
 /** Length of a Windows drive root prefix (e.g. `"C:\"`). */
 const DRIVE_ROOT_LENGTH = 3;
 
+/** Lowercase form of the `vol` command's serial-line label; matched case-insensitively. */
+const SERIAL_LABEL = 'serial number is';
+
+/**
+ * Extracts the non-whitespace serial token that follows
+ * `'Serial Number is'` (case-insensitively) in the `vol` output.
+ *
+ * @param output - raw `cmd /c vol` output
+ *
+ * @returns serial token, or empty string when not present
+ */
+function parseVolumeSerial(output: string,): string {
+  /** Lower-cased copy used for the label scan; offsets line up with `output`. */
+  const lower = output.toLowerCase();
+  /** Position of the label; -1 means the locale or shell output is unexpected. */
+  const idx = lower.indexOf(SERIAL_LABEL,);
+  if (idx === (-1))
+    return '';
+  /**
+   * Advances past inline whitespace (`' '` / `'\t'`) starting at `from`.
+   *
+   * @param from - cursor index
+   *
+   * @returns first non-space/tab position
+   */
+  function skipInlineWs(from: number,): number {
+    if (from >= output.length)
+      return from;
+    /** Char at cursor; only ASCII space and tab advance the cursor. */
+    const c = output.charAt(from,);
+    if ((c === ' ') || (c === '\t'))
+      return skipInlineWs(from + 1,);
+    return from;
+  }
+  /**
+   * Accumulates non-whitespace characters from `from` into `acc`.
+   *
+   * @param from - cursor index
+   *
+   * @param acc - characters collected so far
+   *
+   * @returns serial token
+   */
+  function collectToken({
+    from,
+    acc,
+  }: {
+    from: number;
+    acc: string;
+  },): string {
+    if (from >= output.length)
+      return acc;
+    /** Char at cursor; any whitespace ends the token. */
+    const c = output.charAt(from,);
+    if (
+      (c === ' ') || (c === '\t') || (c === '\n')
+      || (c === '\r') || (c === '\f') || (c === '\v')
+    ) {
+      return acc;
+    }
+    return collectToken({
+      from: from + 1,
+      acc: acc + c,
+    },);
+  }
+  /** Cursor positioned at the first byte after the label. */
+  const afterLabel = idx + SERIAL_LABEL.length;
+  return collectToken({
+    from: skipInlineWs(afterLabel,),
+    acc: '',
+  },);
+}
+
 /**
  * Reads the volume serial number on Windows via the `vol` command.
  *
@@ -64,11 +137,11 @@ function windowsFsId({ path, }: { path: string; },): string {
       encoding: 'utf8',
     },
   );
-  /** Regex capture of the serial token; failure means the locale or shell output is unexpected. */
-  const match = /Serial Number is\s+(\S+)/i.exec(output,);
-  if (match === null)
+  /** Captured serial token; empty string means the locale or shell output is unexpected. */
+  const serial = parseVolumeSerial(output,);
+  if (serial === '')
     throw new Error(`failed to parse volume serial from: ${output}`,);
-  return match[1] ?? '';
+  return serial;
 }
 
 /**

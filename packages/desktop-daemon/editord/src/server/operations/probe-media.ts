@@ -20,15 +20,33 @@ const probeLog = tagged({
 },);
 
 /**
- * Regex matching the start of the useful ffprobe output.
- * Everything before the first `Input #` line is version/build noise.
+ * Literal prefix marking the start of the useful ffprobe output line.
+ * Everything before this on a line of its own is version/build noise.
  *
  * @example
  * ```
  * Input #0, png_pipe, from '/path/to/file.png':
  * ```
  */
-const INPUT_LINE_PATTERN = /^Input #/m;
+const INPUT_LINE_PREFIX = 'Input #';
+
+/**
+ * Finds the start offset of the first line in `text` that begins with
+ * `INPUT_LINE_PREFIX`.
+ *
+ * @param text - ffprobe stderr output
+ *
+ * @returns line-start offset, or -1 when no matching line exists
+ */
+function findInputLineStart(text: string,): number {
+  if (text.startsWith(INPUT_LINE_PREFIX,))
+    return 0;
+  /** Index of the matched prefix when it lives on a non-first line; -1 means none. */
+  const idx = text.indexOf(`\n${INPUT_LINE_PREFIX}`,);
+  if (idx === (-1))
+    return -1;
+  return idx + 1;
+}
 
 /** Probe timeout in milliseconds. */
 const TIMEOUT_MS = 5_000;
@@ -57,15 +75,15 @@ function extractMetadata(
     return null;
   }
 
-  /** Anchor in stderr at which the useful `Input #...` metadata begins. */
-  const match = INPUT_LINE_PATTERN.exec(stderr,);
-  if (match === null) {
+  /** Anchor in stderr at which the useful `Input #...` metadata begins; -1 means none. */
+  const startIdx = findInputLineStart(stderr,);
+  if (startIdx === (-1)) {
     probeLog.info(`no Input line found for: ${path}`,);
     return null;
   }
 
   /** Metadata-only slice, trailing whitespace removed for tidy display. */
-  const trimmed = stderr.slice(match.index,).trimEnd();
+  const trimmed = stderr.slice(startIdx,).trimEnd();
   probeLog.info(`probed: ${path}`,);
   return trimmed;
 }

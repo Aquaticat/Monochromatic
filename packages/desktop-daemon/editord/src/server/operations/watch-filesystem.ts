@@ -41,7 +41,7 @@ import {
 import {
   AWAIT_WRITE_FINISH_MS,
   AWAIT_WRITE_FINISH_POLL_MS,
-  EDITORD_TEMP_PATTERN,
+  isEditordTempFile,
   isIgnored,
   SUPPRESS_MS,
 } from './watch-filesystem-filter.ts';
@@ -104,7 +104,7 @@ async function sweepOrphanTemps(
     /** Stale temp files left over from interrupted writes; subset of `entries`. */
     const orphans = entries.filter(
       function isOrphan(name,): boolean {
-        return EDITORD_TEMP_PATTERN.test(name,);
+        return isEditordTempFile(name,);
       },
     );
     if (orphans.length === 0)

@@ -32,18 +32,32 @@ export function formatHintLabel({ hint, }: { hint: InlayHint; },): string {
   const PARAMETER_KIND = 2;
   /** Type hints (kind=1) carry a leading ` : ` prefix that duplicates the padding. */
   const TYPE_KIND = 1;
-  /** Without parentheses: no-nested-ternary lint error for ambiguous precedence. */
-  const label = hint.kind === PARAMETER_KIND
-    ? hint.label.replace(
-      /:$/,
-      '',
-    )
-    : (hint.kind === TYPE_KIND
-      ? hint.label.replace(
-        /^: /,
-        '',
-      )
-      : hint.label);
+  /** Leading `': '` prefix stripped from type hints so the duplicated padding is removed. */
+  const TYPE_HINT_PREFIX = ': ';
+  /**
+   * Strips kind-specific decoration from the raw inlay label.
+   *
+   * Parameter hints carry a trailing `:`; type hints carry a leading `': '`.
+   * Other kinds (return type, enum member, etc.) pass through untouched.
+   *
+   * @returns label ready for concatenation between the pad characters
+   */
+  function strippedLabel(): string {
+    if (hint.kind === PARAMETER_KIND) {
+      return hint.label.endsWith(':',) ? hint.label.slice(
+        0,
+        -1,
+      ) : hint.label;
+    }
+    if (hint.kind === TYPE_KIND) {
+      return hint.label.startsWith(TYPE_HINT_PREFIX,)
+        ? hint.label.slice(TYPE_HINT_PREFIX.length,)
+        : hint.label;
+    }
+    return hint.label;
+  }
+  /** Label after kind-specific decoration is removed. */
+  const label = strippedLabel();
   return `${padLeft}${label}${padRight}`;
 }
 

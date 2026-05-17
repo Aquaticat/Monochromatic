@@ -20,8 +20,81 @@ export {
 /** Header separator between Content-Length header and JSON body. */
 const HEADER_SEPARATOR = '\r\n\r\n';
 
-/** Pattern to extract the content length from the header block. */
-const CONTENT_LENGTH_PATTERN = /Content-Length:\s*(\d+)/i;
+/** Lowercase form of the LSP framing header; matched case-insensitively. */
+const CONTENT_LENGTH_LABEL = 'content-length:';
+
+/**
+ * Parses the Content-Length value from an LSP header block.
+ * Case-insensitive on the label; tolerates spaces/tabs between the
+ * label and the digits, and requires at least one digit to follow.
+ *
+ * @param header - ASCII-decoded header block (without `\r\n\r\n`)
+ *
+ * @returns parsed length, or `null` when no Content-Length is present
+ */
+function parseContentLength(header: string,): number | null {
+  /** Lower-cased copy so the label scan is case-insensitive. */
+  const lower = header.toLowerCase();
+  /** Position of the label; -1 means the header lacks Content-Length. */
+  const labelIdx = lower.indexOf(CONTENT_LENGTH_LABEL,);
+  if (labelIdx === (-1))
+    return null;
+  /**
+   * Advances past inline whitespace (`' '` / `'\t'`) starting at `from`.
+   *
+   * @param from - cursor index
+   *
+   * @returns first non-space/tab position
+   */
+  function skipInlineWs(from: number,): number {
+    if (from >= header.length)
+      return from;
+    /** Char at cursor; only ASCII space and tab advance the cursor. */
+    const c = header.charAt(from,);
+    if ((c === ' ') || (c === '\t'))
+      return skipInlineWs(from + 1,);
+    return from;
+  }
+  /**
+   * Accumulates the contiguous run of ASCII digits starting at `from`.
+   *
+   * @param from - cursor index
+   *
+   * @param acc - digits collected so far
+   *
+   * @returns digit run
+   */
+  function collectDigits({
+    from,
+    acc,
+  }: {
+    from: number;
+    acc: string;
+  },): string {
+    if (from >= header.length)
+      return acc;
+    /** Char at cursor; non-digit stops accumulation. */
+    const c = header.charAt(from,);
+    if ((c < '0') || (c > '9'))
+      return acc;
+    return collectDigits({
+      from: from + 1,
+      acc: acc + c,
+    },);
+  }
+  /** Cursor positioned at the first byte after the label. */
+  const afterLabel = labelIdx + CONTENT_LENGTH_LABEL.length;
+  /** Cursor advanced past inline whitespace; first digit (if any) lives here. */
+  const digitStart = skipInlineWs(afterLabel,);
+  /** Digit run accumulated from `digitStart`. */
+  const digits = collectDigits({
+    from: digitStart,
+    acc: '',
+  },);
+  if (digits === '')
+    return null;
+  return Number(digits,);
+}
 
 /**
  * Creates a streaming parser that extracts complete LSP messages
@@ -120,14 +193,14 @@ export function createLspParser({
           /**
            * null means the header lacks Content-Length; skip past it and resume.
            */
-          const match = CONTENT_LENGTH_PATTERN.exec(header,);
-          if (match === null) {
+          const len = parseContentLength(header,);
+          if (len === null) {
             state.buffer = state.buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
             state.totalLength = state.buffer.byteLength;
             continue;
           }
 
-          state.contentLength = Number(match[1],);
+          state.contentLength = len;
           state.buffer = state.buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
           state.totalLength = state.buffer.byteLength;
         }
