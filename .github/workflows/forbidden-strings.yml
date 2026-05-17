@@ -21,28 +21,13 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Set up mise (skip auto-install of all tools)
-      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
-      with:
-        install: false
-        cache: true
-
-    - name: Install only the tools this workflow needs
-      # The root mise.toml lists ~25 tools (including llama.cpp, which
-      # intermittently lacks a Linux release at install time). This scan
-      # only needs hk (the runner) and pkl (hk's config language). The
-      # scanner binary itself is downloaded prebuilt from GitHub releases
-      # (see Download step below), so no rust toolchain is needed here.
-      run: mise install 'aqua:jdx/hk' 'aqua:apple/pkl'
-
     - name: Download prebuilt forbidden-strings binary
       # The cargo-publish.yml workflow uploads SLSA-attested binaries for
       # x86_64-unknown-linux-gnu (and six other targets) on every
-      # Cargo.toml version bump merged to main. Downloading is seconds;
-      # building from source is minutes. We try the Cargo.toml version
-      # first so the scanner matches the source tree, then fall back to
-      # the latest release to cover the window between a version-bump PR
-      # merging and cargo-publish.yml finishing.
+      # Cargo.toml version bump merged to main. We try the Cargo.toml
+      # version first so the scanner matches the source tree, then fall
+      # back to the latest release to cover the window between a
+      # version-bump PR merging and cargo-publish.yml finishing.
       env:
         GH_TOKEN: ${{ github.token }}
         REPO: ${{ github.repository }}
@@ -72,16 +57,18 @@ jobs:
         # asset would fail this step.
         gh attestation verify "$archive" --repo "$REPO"
 
-        # hk.pkl line 3 and the push-to-main full-tree-scan step both
-        # hard-code this path. Match it exactly so neither needs editing.
-        target_dir='packages/cli/forbidden-strings/target/release'
-        mkdir -p "$target_dir"
+        # Install to a path on PATH so downstream steps invoke the binary
+        # as plain `forbidden-strings`. Lives under RUNNER_TEMP so it
+        # doesn't pollute the working tree.
+        bin_dir="$RUNNER_TEMP/forbidden-strings"
+        mkdir -p "$bin_dir"
         tar -xzf "$archive" \
           --strip-components=1 \
-          -C "$target_dir" \
+          -C "$bin_dir" \
           "forbidden-strings-${version}-x86_64-unknown-linux-gnu/forbidden-strings"
-        chmod +x "$target_dir/forbidden-strings"
-        "$target_dir/forbidden-strings" --version
+        chmod +x "$bin_dir/forbidden-strings"
+        echo "$bin_dir" >> "$GITHUB_PATH"
+        "$bin_dir/forbidden-strings" --version
 
     - name: Materialize deny-list
       # Mirror the local file-enforcer composition: always seed from the
@@ -101,13 +88,25 @@ jobs:
           echo "::notice::FORBIDDEN_STRINGS_LIST secret not set; baseline-only scan."
         fi
 
-    - name: Run hk check (changed files only)
+    - name: Scan changed files (PR and merge_group only)
+      # Skipped on push-to-main because the full-tree scan below already
+      # covers everything; on push events `git diff origin/main...HEAD`
+      # is a no-op anyway (HEAD == origin/main after the push). Replaces
+      # the previous `mise exec -- hk check` step, which was forcing mise
+      # to auto-install ~25 unrelated tools (including cargo crates that
+      # compile from source) before running the actual scan.
+      if: github.event_name != 'push'
       run: |
-        mise exec -- hk check --from-ref origin/main
+        set -euo pipefail
+        mapfile -t changed < <(git diff --name-only --diff-filter=ACMRT origin/main...HEAD)
+        if [ ${#changed[@]} -eq 0 ]; then
+          echo "No changed files vs origin/main; nothing to scan."
+          exit 0
+        fi
+        printf 'Scanning %d changed file(s):\n' "${#changed[@]}"
+        printf '  %s\n' "${changed[@]}"
+        forbidden-strings --rules forbidden-strings.local.txt "${changed[@]}"
 
-    - name: Run forbidden-strings full-tree scan (push to main only)
+    - name: Scan full tree (push to main only)
       if: github.event_name == 'push'
-      run: |
-        packages/cli/forbidden-strings/target/release/forbidden-strings \
-          --rules forbidden-strings.local.txt \
-          --all
+      run: forbidden-strings --rules forbidden-strings.local.txt --all
