@@ -194,13 +194,17 @@ Run in order:
 
 - Steps 1-4 PASS against resharp 0.6.0 (121 unit + 19 integration tests,
   zero lint warnings, zero clippy warnings).
-- Step 6 (fuzz:build) PASSES if `--target x86_64-unknown-linux-gnu` is
-  passed explicitly; cargo-fuzz 0.13.1 defaults to musl which conflicts
-  with ASAN (`sanitizer is incompatible with statically linked libc`).
-  The `fuzz:build` / `fuzz:smoke` / `fuzz:run` mise tasks need to be
-  updated to thread the target flag through. Workaround for ad-hoc
-  runs: `cd <package>; RUSTUP_TOOLCHAIN=nightly cargo fuzz run <target>
-  --target x86_64-unknown-linux-gnu -- <libfuzzer-args>`.
+- Step 6 (fuzz:build) PASSES against resharp 0.6.0. Resolved a
+  cargo-fuzz 0.13.1 vs musl-vs-ASAN incompatibility by threading
+  `--target x86_64-unknown-linux-gnu` through `fuzz:build`,
+  `fuzz:smoke`, and `fuzz:run` in commit `7b2caf88`.
+- Separate pre-existing bug uncovered while verifying the above: the
+  `fuzz:run` task's nushell spread of `$extras` adds literal single
+  quotes around each variadic positional, so libfuzzer treats e.g.
+  `'-max_total_time=10'` as a corpus directory rather than a flag.
+  Workaround: invoke cargo fuzz directly. Real fix: rework the
+  `usage` / `$env.usage_args` handling to avoid the per-arg quote
+  wrapping.
 - Step 5, 7-9 NOT YET RUN against 0.6.0.
 - Step 10 (soundness-by-revert) PARTIAL: a 2026-05-16 attempt against a
   disposable worktree (`/tmp/fs-soundness-revert`, reverted `e49d8694`)

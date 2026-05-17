@@ -55,11 +55,9 @@ in ~45 seconds against resharp 0.6.0, zero new crashes.
 cargo-fuzz infrastructure note: cargo-fuzz 0.13.1 defaults to the musl
 target which is incompatible with the ASAN flags it sets via RUSTFLAGS
 (`sanitizer is incompatible with statically linked libc`). The
-workaround is to pass `--target x86_64-unknown-linux-gnu` explicitly to
-`cargo fuzz build` / `cargo fuzz run`. The mise tasks
-(`fuzz:build`, `fuzz:smoke`, `fuzz:run`) should be updated to thread
-this flag through; not done in this commit because the fix is a
-mise-task change rather than a forbidden-strings package change.
+workaround is `--target x86_64-unknown-linux-gnu` explicitly on
+`cargo fuzz build` / `cargo fuzz run`. Threaded through the mise
+tasks (`fuzz:build`, `fuzz:smoke`, `fuzz:run`) in commit `7b2caf88`.
 
 Still outstanding:
 
@@ -71,12 +69,17 @@ Still outstanding:
   our scanner/extractor/regex path, not in resharp). Needs either a
   targeted seed for the (?u) shape, or fixing the slow-unit so the
   fuzz can explore Unicode patterns within budget.
-- mise fuzz tasks need `--target x86_64-unknown-linux-gnu` (see note
-  above).
-- Remove `/tmp/fs-fuzz-validate` worktree, `/tmp/fs-soundness-revert`
-  worktree, and `/tmp/fs-crash-artifacts/` after final cleanup.
-- The probe binary `/tmp/probe-resharp-06/` is preserved as a quick
-  reproducer for future resharp bumps; remove if desired.
+- `/tmp/fs-fuzz-validate`, `/tmp/fs-soundness-revert`,
+  `/tmp/fs-crash-artifacts/`, and `/tmp/probe-resharp-06/` all
+  removed during cleanup.
+- Separately noted: the `fuzz:run` task has a pre-existing arg-spread
+  quoting bug (nushell wraps each variadic positional in literal single
+  quotes before passing to cargo, so libfuzzer treats e.g.
+  `'-max_total_time=10'` as a corpus directory rather than a flag).
+  Independent of the resharp bump or the gnu-target threading; uncovered
+  while verifying the gnu-target fix. Workaround: invoke cargo fuzz
+  directly with `RUSTUP_TOOLCHAIN=nightly cargo fuzz run <target>
+  --target x86_64-unknown-linux-gnu -- <libfuzzer-args>`.
 
 ---
 
