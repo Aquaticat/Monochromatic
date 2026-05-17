@@ -4,91 +4,19 @@ State of the lint-failure refactor triggered by the oxlint rule
 `no-restricted-syntax/require-regex-justification`. Resume from here after
 compaction.
 
-## Status: in progress
+## Status: nearly complete, final verification pending
 
-Original task: "Fix /tmp/pi-bash-25cddcf1ce4714e4.log" (114 errors across 4
-packages). All 114 of those are resolved. After the first pass cleared the
-original failure set, `mise //:lint` surfaced more packages that hit the
-same rule. The user said "Continue, fix all lint issues." so the scope
-expanded; that work is mostly done but two task-util sites remain and
-watch-restart has not been started.
+All packages directly inspected this session pass per-package
+`mise run //packages/<path>:lint` with 0 errors and 0 warnings, EXCEPT
+the final full-workspace `mise run //:lint` cross-check was interrupted
+before being captured. Run that first on resume.
 
 ## Original task: done
 
-All 114 errors from `/tmp/pi-bash-25cddcf1ce4714e4.log` plus 18 additional
-out-of-scope errors in `config/stylelint` + `config/tsdown` are resolved.
-Tests pass for every package that has a `test:unit` task.
-
-## Newly-surfaced packages (after the original failure set cleared)
-
-### Cleared
-
-- `//packages/dev-script/catalog-tighten:lint` — 3 errors, refactored.
-  YAML catalog parser rewritten; `>=` range matcher rewritten.
-- `//packages/desktop-daemon/hall-monitor:lint` — 3 errors, refactored.
-- `//packages/desktop-daemon/editord:lint` — 8 errors, refactored.
-- `//packages/config/oxlint-tsdoc:lint` — 10 errors, refactored.
-- `//packages/config/oxlint-stylistic:lint` — 12 errors, refactored.
-- `//packages/dev-script/file-enforcer:lint` — 3 errors, refactored.
-- `//packages/dev-script/page-weight:lint` — 4 errors, refactored.
-- `//packages/dev-script/deps-cube:lint` — 10 errors, refactored.
-  Includes the user-typed `/regex/` search in `scripts/filter.ts` which
-  keeps regex with a justification disable + 256-char length cap.
-- `//packages/dev-script/inference-canary-viewer:lint` — 5 errors, refactored.
-- `//packages/dev-script/inference-canary:lint` — 16 errors, refactored.
-  Passes lint (0 errors) but carries 44 warnings introduced by the refactor
-  (magic numbers, prefer-template, consistent-function-scoping, multiline-
-  blocks, tsdoc-code-span-empty/missing-delimiter/unnecessary-backslash);
-  see "Pending" below.
-- `//packages/dev-script/task-util:lint` — 5 errors → **2 left** (see Pending).
-
-### Pending
-
-- `//packages/dev-script/task-util:lint` — **2 errors** in
-  `src/oxlint-augment.ts`:
-  - Line 30: `ANSI_PATTERN = /\[\d+(?:;\d+)*m/g` — strip ANSI escape
-    sequences.
-  - Line 94: `DIAGNOSTIC_HEADER_PATTERN = /[x!]\s+\S+\(([\w-]+)\)\s*:/` —
-    extract oxlint rule name from diagnostic header line.
-
-  **Important**: previous attempts to Edit these failed because the file
-  contains a literal `` 6-character JS escape sequence and the Edit
-  tool's JSON unescape pipeline normalised it to the ESC byte, causing the
-  search not to match. Workaround: read the file with awk/od to confirm
-  the literal bytes, then use the Write tool to overwrite the entire
-  file. Refactor approach for line 30 already designed (see prior session
-  transcript): walker that finds ESC bytes via `text.indexOf(ESC_CHAR)`,
-  validates `[` + `<digits>(;<digits>)*m` body. Line 94 is similar:
-  predicate that walks the line for `x` or `!`, then whitespace, then a
-  `plugin-name(rule-name): ` shape; returns the captured rule name.
-
-- `//packages/dev-script/watch-restart:lint` — **18 errors**, not yet
-  inspected. Run the per-package lint to see the regex sites.
-
-- **`//packages/dev-script/inference-canary:lint` warnings** (44 total),
-  all introduced by my refactor in this session:
-  - linter-artifacts-timestamp.ts: magic numbers `4`, `5`, `7` need named
-    constants (`YEAR_DIGITS = 4`, `MIN_SLUG_LENGTH = 5`, etc.). Plus a
-    `no-mixed-operators` warning at line 250 needing extra parens.
-    `consistent-function-scoping` on `looksLikeTimestamp` (defined inside
-    `parseArtifactDir`; move to module scope).
-  - css-mixin-verify.ts: two `prefer-template` (string concat → template
-    literal).
-  - extract-code.ts: TSDoc warnings on the helper function comments
-    (`tsdoc-code-span-empty`, `tsdoc-code-fence-opening-indent`,
-    `tsdoc-unnecessary-backslash`) — rewrite docs to avoid embedded
-    backticks + nested code-spans.
-  - sudoku-grid.ts:75: `consistent-function-scoping` on `isBlankLine`
-    (move to module scope).
-  - sudoku-output.ts:48: `consistent-function-scoping` on `isDashLine`
-    (move to module scope).
-  - task-scheduler.ts:78: `tsdoc(multiline-blocks)` on single-line TSDoc
-    that contains a tag inside backticks. Same as
-    task-scheduler.ts:77 `consistent-function-scoping` on `extractAtDigits`.
-  - stak-simulation.ts:164: `prefer-template`.
-
-  None of these block the lint (warnings only) but the user said "fix
-  all lint issues", so they should be addressed before declaring done.
+All 114 errors from `/tmp/pi-bash-25cddcf1ce4714e4.log` plus the
+follow-on packages surfaced by repeated `mise //:lint` runs are
+addressed. Tests pass for every package that has a `test:unit` task
+and was directly touched.
 
 ## All commits landed (in order)
 
@@ -118,16 +46,62 @@ cc9ee7f8 refactor(deps-cube): replace regex with parsers; gate user regex
 79064823 refactor(inference-canary-viewer): replace SVG regex with parsers
 bbf6f892 refactor(inference-canary): replace regex with linear parsers
 0b983f79 refactor(task-util): replace 3/5 regex sites with parsers
+cbc2fa74 docs(handover): pre-compact handover update
+bfdf63b9 refactor(task-util): replace last 2 regex sites with linear scanners
+a81c3032 refactor(watch-restart): replace regex with walker, helpers, string matchers
+9eafee1a fix(task-util): silence prefer-string-raw on i18n path separators
+b659f414 fix(inference-canary): clear 44 warnings introduced by regex refactor
+500dfd39 refactor(module): replace regex with parsers across 4 packages
+bb012d4f refactor(workspace): clear require-regex-justification across 7 packages
+db8a7293 refactor(plugins,terminal-title): clear final require-regex sites
 ```
+
+## Per-package lint state (verified individually this session)
+
+All pass with 0 warnings, 0 errors:
+
+- `//packages/dev-script/task-util`
+- `//packages/dev-script/watch-restart`
+- `//packages/dev-script/inference-canary`
+- `//packages/module/dom`
+- `//packages/module/hyperscript`
+- `//packages/module/image-diff`
+- `//packages/module/matrix`
+- `//packages/module/es`
+- `//packages/module/or-throw`
+- `//packages/module/test`
+- `//packages/module/toml-edit`
+- `//packages/module/zip-writer`
+- `//packages/pi/auto-mode`
+- `//packages/pi/morph-compact`
+- `//packages/pi/terminal-title`
+- `//packages/rolldown-plugins/import-attributes`
+
+Plus everything previously cleared (listed in earlier handover sections
+above; see git log for chronology).
 
 ## Critical conventions captured during this session
 
-(Carries forward from earlier handovers; the new entries are at the
-bottom.)
+(Carries forward from earlier handovers; new entries are at the bottom.)
 
-- **Block-disable syntax** (unused but verified):
+- **Block-disable syntax**:
   `/* oxlint-disable rule -- justification */ ... /* oxlint-enable rule */`
-  with `--` justification. We refactored throughout instead.
+  with `--` justification.
+- **`oxlint-disable-next-line` strict semantics**: applies to the literal
+  NEXT line of source, not the next NON-COMMENT line. Stacking two
+  `oxlint-disable-next-line` comments back-to-back results in the first
+  suppressing the second comment line (wasted), with only the second
+  suppressing the actual code. When stacking is needed, combine all rule
+  names in one comment (`// oxlint-disable-next-line ruleA ruleB -- ...`)
+  or use the block-disable form.
+- **`oxlint-disable-next-line` with multi-line expressions**: the
+  directive targets only the line literally after it. For:
+  ```ts
+  const x =
+    /regex/;
+  ```
+  the disable must sit on the line containing `/regex/`, NOT on the line
+  with `const x =`.
 - **`no-non-null-assertion` is enforced workspace-wide**: avoid `s[idx]!`;
   use `s.charAt(idx)` (returns `''` for out-of-bounds) or `s.at(-1) ?? ''`.
 - **`prefer-at` rule fires for `s.charAt(s.length - 1)`** but NOT for
@@ -151,12 +125,16 @@ bottom.)
   reads the `@` as a tag, even when wrapped in backticks. Triggers
   `tsdoc(multiline-blocks)`. Either rephrase to drop the `@` (e.g. "at-
   sign" or "leading at sign") or split to multiline form.
+- **TSDoc `@` inside fenced code blocks**: `tsdoc(check-tag-names)` still
+  parses `@<word>` inside ``` ```ts ``` blocks as a tag and rejects
+  unknown tags. Escape as `\@` (e.g. `extractAtDigits('DONE A \@100')`).
 - **TSDoc helper-stacking trap**: when inserting a new helper function
   above an existing one, ensure the existing function's TSDoc comment
   stays directly before its declaration. Don't insert new TSDoc-bearing
   helpers between an existing TSDoc and the function it documents — the
   TSDoc will bind to your new helper and the original function will be
-  reported as missing TSDoc.
+  reported as missing TSDoc. (Hit again this session in
+  `rolldown-plugins/import-attributes/transform-helpers.ts`.)
 - **stylelint accepts regex-shaped strings** (`'/^max-/'`, etc.). Use
   ``String.raw`/.../`  `` to preserve regex escapes through the JS string
   layer.
@@ -170,6 +148,8 @@ bottom.)
   classifier denies it. Use `mise run //:format`.
 - **`cli-git` pre-commit hook requires explicit pathspecs**:
   `git commit -m '...' <files>`, not bare `git commit -m '...'`.
+- **`cli-git` rejects `git add -A` and `git add .`**: pass explicit
+  paths instead.
 - **`mise run //:lint` runs the full workspace**: surfacing unrelated
   failures (other packages still using regex) was the trigger for the
   scope expansion in this session.
@@ -177,7 +157,8 @@ bottom.)
   a `require-regex-justification` disable. The justification should
   (a) name why regex is the right tool, (b) name the input bounds
   (e.g. length cap), (c) name the backtracking-safety story. Example
-  in `packages/dev-script/deps-cube/src/scripts/filter.ts`.
+  in `packages/dev-script/deps-cube/src/scripts/filter.ts` and
+  `packages/dev-script/watch-restart/src/cli-helpers.ts`.
 - **`array-element-per-line`** fires on multi-element arrays even when
   using `[...acc, token]`. Restructure to per-line:
   ```ts
@@ -192,12 +173,30 @@ bottom.)
 - **`prefer-spread` vs `array-element-per-line` conflict**: avoid
   `acc.slice()` and `acc.concat(token)` (prefer-spread fires); use the
   per-line spread form above instead.
-- **Edit tool's `` handling**: when the file source contains a
-  literal `` 6-char JS escape sequence (rather than the actual ESC
-  byte), the Edit tool's JSON unescape pipeline normalises the search
-  pattern to the ESC byte, causing the match to fail. Workaround: use
-  Write to overwrite the whole file with the new content. Affects
-  `packages/dev-script/task-util/src/oxlint-augment.ts` line 30.
+- **Write tool & Unicode-escape source**: literal `''` in tool-call
+  content normalises to a 1-byte ESC byte when written through the
+  Write tool, because the JSON pipeline interprets `` as a
+  Unicode escape. Use `'\x1B'` (preserves as 4-char source because
+  JSON does not interpret `\x`), or `String.fromCodePoint(0x1B,)`
+  (avoids the literal escape entirely). `'\x1B'` then trips
+  `eslint-plugin-unicorn(no-hex-escape)` so the `String.fromCodePoint`
+  form with a named code-point constant is the cleanest.
+- **`String.raw\`...\``** template literals **cannot end with a single
+  backslash**: the closing backtick is consumed as an escape target,
+  producing "Invalid Unicode escape sequence" at parse time. For path
+  separators like `\\i18n\\`, the plain `'\\i18n\\'` form is the only
+  option; add a scoped `eslint-plugin-unicorn/prefer-string-raw`
+  disable with the reason.
+- **`chai`'s `.to.throw(string)` does substring matching** (verified in
+  `packages/module/test/src/expect.unit.test.ts:99-105`). So
+  `.toThrow(/foo/,)` swaps cleanly to `.toThrow('foo',)`. Similarly
+  `.toMatch(/foo/,)` swaps to `.toContain('foo',)` when the regex was
+  a pure substring check. For anchor checks (`/^foo/`), use
+  `expect(s.startsWith('foo')).toBe(true)`.
+- **The `toMatch` matcher constructor itself trips the rule**: when
+  callers pass a string, chai's `a.to.match` requires a RegExp, so the
+  matcher's body wraps `expected` in `new RegExp(expected)`. This
+  needs a scoped disable in `expect-matchers.ts` (already added).
 
 ## Working-tree state at handover
 
@@ -226,50 +225,78 @@ unless the user asks otherwise.
 
 ### Immediate next steps (in order)
 
-1. **Finish task-util**: overwrite `oxlint-augment.ts` via Write to
-   replace the two remaining regex literals. The replacement approach
-   for both is described in "Pending" above. Use Write (not Edit)
-   because of the `` issue.
+1. **Full workspace lint sanity check**: `mise run //:lint > /tmp/full-lint-final.log 2>&1; tail -5 /tmp/full-lint-final.log; grep -E 'ERROR task failed' /tmp/full-lint-final.log`.
+   If clean, the require-regex sweep is done. If new packages surface,
+   they'll need the same treatment (refactor where feasible, scoped
+   disable with the four-part justification — why regex, input bounds,
+   backtracking safety, why no string-API alternative — otherwise).
 
-2. **Refactor watch-restart**: 18 errors. Run
-   `mise run //packages/dev-script/watch-restart:lint 2>&1 | grep -A 4 require-regex`
-   to enumerate.
+2. **Closing out**: when `mise run //:lint` is fully clean, delete this
+   `HANDOVER.*` file (the user reviews and decides whether to keep it).
 
-3. **Clean up inference-canary warnings**: 44 warnings introduced by
-   this session's refactor; see the bulleted list in "Pending".
+### Justification template for new disables
 
-4. **Final workspace lint**: `mise run //:lint` should hit 0 across the
-   board. Capture the output and compare against `/tmp/lint-final3.log`
-   to confirm nothing else regressed.
+```text
+// oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- <why regex is the right tool for THIS site>; <what bounds the pattern/input>; <why matching stays safe (no nested quantifiers, no backtracking)>.
+```
 
-5. **Commit per logical unit**: one commit per package per AGENTS.md.
-   Use the commit-message shape that already landed (e.g. the
-   inference-canary commit).
+### Patterns established this session for common refactors
 
-6. **Optional**: per-package `:test:unit` for the packages that have
-   one. The packages I touched that have `test:unit`:
-   - vmsync (passed in earlier sessions)
-   - source (passed)
-   - deps-cube (catalog.unit.test.ts and render-html.unit.test.ts were
-     edited; run `mise run //packages/dev-script/deps-cube:test:unit`)
-   - oxlint-stylistic (oxlint-stylistic.unit.test.ts edited; run
-     `mise run //packages/config/oxlint-stylistic:test:unit`)
+- Whitespace-and-newline grammar: dedicated `isWhitespaceChar`/
+  `lastNonWhitespaceIndex` walker (see `module/dom/test-setup.ts`,
+  `module/toml-edit/comments.ts`).
+- Data URI / "literal prefix + body" parsing: `startsWith` +
+  `indexOf` + `slice` (see `module/image-diff/encoding.ts`).
+- Bare-key / identifier validation: per-char predicate walker
+  (`isBareKey` in `module/toml-edit/keys.ts`).
+- camelCase → kebab-case: recursive walker emitting `-<lower>` on
+  uppercase letters (see `module/hyperscript/html/index.ts`).
+- Test `.toThrow(/.../,)` substring matchers: swap to `.toThrow('...',)`
+  (chai substring match). For anchors: `startsWith` + `.toBe(true)`.
+- Test fixtures that MUST be regex literals (testing regex APIs):
+  block-level disable wrapping the whole file (see
+  `module/es/.../regexp/t global/.unit.test.ts`,
+  `module/or-throw/regexp-or-throw.unit.test.ts`).
+
+### Files where source-of-truth IS regex (kept with disables)
+
+- `packages/dev-script/deps-cube/src/scripts/filter.ts` (user-typed
+  regex search; bounded to 256 chars).
+- `packages/dev-script/watch-restart/src/cli-helpers.ts:compileRegex`
+  (user-typed CLI regex source).
+- `packages/module/es/src/types/t object/t regexp/...` (entire
+  regex-tooling subtree).
+- `packages/pi/auto-mode/src/constants.ts` (secret-detection patterns;
+  block disable around the content-signal region).
+- `packages/pi/auto-mode/src/budget-model-version.ts` (model-id
+  tokeniser; block disable).
+- `packages/pi/auto-mode/src/config.ts:compilePatterns` (user-supplied
+  config patterns).
+- `packages/pi/terminal-title/src/formatter-utils.ts:COMMAND_NOISE_RE`
+  (negative lookahead disambiguating `--foo=bar` from `FOO=bar`).
+- `packages/dev-script/inference-canary-viewer` (the `\p{Upper}`/
+  `\p{Lower}` Unicode property classes have no string-API equivalent).
+- `packages/module/test/src/expect-matchers.ts:toMatch` (the matcher's
+  contract is RegExp).
 
 ### If a downstream test fails
 
-- `UncertaintyMatch.pattern` field was dropped in an earlier commit.
-  Only consumer outside `uncertainty*.ts` is `stop-reminders/index.ts`,
-  which reads `.phrase`. No other readers exist.
+- `UncertaintyMatch.pattern` field was dropped earlier in this overall
+  task. Only consumer outside `uncertainty*.ts` is
+  `stop-reminders/index.ts`, which reads `.phrase`. No other readers.
 - `linter-artifacts-timestamp.ts` exports changed from
   `ARTIFACT_DIR_PATTERN` / `FAILURE_DIR_PATTERN` (RegExp) to
   `parseArtifactDir` / `parseFailureDir` (functions returning parsed
-  parts). Only consumer is `linter-artifacts-recent.ts`, which was
-  updated in the same commit.
+  parts). Only consumer is `linter-artifacts-recent.ts`, updated in the
+  same commit.
 - `watch-filesystem-filter.ts` (editord) export changed from
   `EDITORD_TEMP_PATTERN` (RegExp) to `isEditordTempFile` (predicate).
   Only consumer was `watch-filesystem.ts`, updated in the same commit.
-
-### Closing out
-
-When all pending items are done, delete this `HANDOVER.*` file (the
-user reviews and decides whether to keep it).
+- `module/dom/test-setup.ts`: `parseTrailingExportClause` replaces the
+  inline regex; same throw on missing trailing `export { ... }`.
+- `module/image-diff/encoding.ts:parseDataUri`: same throw on missing
+  scheme/separator/payload; behaviour preserved.
+- `module/toml-edit/keys.ts:encodeKey`: same behaviour for bare-key and
+  quoted-key paths.
+- `module/toml-edit/comments.ts`: `isAttachedGap` replaces
+  `ATTACHED_GAP_PATTERN.test`; same single-newline semantics.
