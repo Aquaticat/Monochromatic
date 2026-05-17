@@ -1,4 +1,4 @@
-# Oxlint type-aware mode silently skips type checks when run from monorepo root, plus disable-comment substring matching
+# Oxlint type-aware mode silently skips type checks when run from monorepo root, plus disable-comment prefix stripping accepting unknown plugin namespaces
 
 This file groups two independent oxlint issues that surface across the
 workspace. Each gets its own canonical section.
@@ -90,7 +90,7 @@ is the documented escape hatch.
 
 ---
 
-## Bug 2: Disable-comment prefix matching is substring-based, so non-canonical prefixes silently work
+## Bug 2: Disable-comment prefix stripping is unguarded, so non-canonical and bogus prefixes silently suppress diagnostics
 
 ### Symptom
 
@@ -114,28 +114,57 @@ from ESLint configs and produces inconsistent codebases.
 
 ### Root cause
 
-Oxlint matches the comment text against the bare rule name using
-substring containment, not exact prefix matching. Source citations
-(oxc commit `main` as of 2026-03-13):
+The substring `.contains()` form documented in the original
+2026-03-13 snapshot of this file has since been closed upstream by an
+explicit `==` comparison after stripping the plugin prefix from the
+directive's stored rule name. A regression test at
+`crates/oxc_linter/src/disable_directives.rs:2048-2086`
+(`directive_rule_name_is_matched_on_full_rule_name_not_substring`)
+locks the old `no-re-export` substring case shut.
 
-- `crates/oxc_linter/src/disable_directives.rs:184-216`: `contains()`
-  method with substring match.
-- `crates/oxc_linter/src/disable_directives.rs:578-595`:
+What survives is a different defect with the same surface symptom:
+the prefix is stripped **unconditionally**, without checking that the
+prefix names a recognized oxlint plugin. So `eslint/no-await-in-loop`,
+`xyzzy/no-await-in-loop`, and any other made-up prefix still strip
+down to the bare rule name and equality-check successfully.
+
+Source citations against oxc commit
+`e182aee2599c275dc0bd93f52b4ddda70ff2c93b` (HEAD of `main` on
+2026-05-17, the snapshot used for the prototype below):
+
+- `crates/oxc_linter/src/disable_directives.rs:281-340`: `contains()`
+  method. Lines 304-306 contain an explicit comment about the
+  substring fix; the active match arm at lines 307-313 reads
+  `name.rsplit_once('/').map_or(name.as_str(), |(_, rule)| rule) ==
+  rule_name`, which strips any prefix without validating it.
+- `crates/oxc_linter/src/disable_directives.rs:832-871`:
   `get_rule_names()` parser (splits on `,`, trims whitespace, strips
-  `--` suffixes).
-- `crates/oxc_linter/src/tsgolint.rs:1057-1079`:
-  `should_skip_diagnostic()` for tsgo rules makes three separate
-  `contains()` calls with bare, `typescript-eslint/`, and
-  `@typescript-eslint/` prefixes; the bare check already matches any
-  comment containing the rule name, so the additional calls are
-  belt-and-braces.
+  `--`/` - ` description suffixes); produces the `name` values that
+  feed into the prefix-strip above.
+- `crates/oxc_linter/src/tsgolint.rs:1158-1185`:
+  `should_skip_diagnostic()` calls the same `contains()` method, so a
+  fix at the method body automatically reaches tsgo rules. The
+  surrounding `typescript-eslint/{rule}` and `@typescript-eslint/{rule}`
+  fallback calls remain belt-and-braces against canonical-prefix
+  authoring.
+- `crates/oxc_linter/src/config/plugins.rs:134-167`:
+  `LintPlugins::try_from` is the authoritative parsed prefix table.
+  Maps recognized plugin namespaces (canonical names plus the
+  `eslint-plugin-` and `@scope/eslint-plugin-foo` alias normalizations)
+  to the bitflag set. `LintPlugins::ESLINT` is the empty bitflag
+  because eslint-core rules are addressed without a prefix in oxlint's
+  canonical naming.
 
-Any token in the comment that contains the bare rule name as a
-substring satisfies the check.
+Any token in the comment whose suffix (after stripping the first
+`/`-separated prefix) equals the bare rule name satisfies the check,
+regardless of what prefix was used.
 
 ### Verification
 
-Version under test: oxc commit `main` as of 2026-03-13.
+Version under test: oxc commit
+`e182aee2599c275dc0bd93f52b4ddda70ff2c93b` (HEAD of `main`,
+2026-05-17), built with the toolchain pinned in
+`rust-toolchain.toml` (rustc 1.95.0).
 
 Reproduce:
 
@@ -155,7 +184,8 @@ await x();
 
 Running oxlint over all three produces no diagnostics. The diagnostic
 returns only when the comment is removed entirely or when the rule
-name is mistyped (substring no longer matches).
+name itself is mistyped (the unguarded prefix-strip then has nothing
+to compare against).
 
 Canonical prefixes (matching `parse_rule_key` in `config/rules.rs`):
 
@@ -183,28 +213,225 @@ the lower-risk path.
 ### What does not work
 
 - Configuring oxlint to enforce canonical prefixes: there is no such
-  option (the substring match is the implementation, not a setting).
+  option (the prefix-strip behaviour is built into the directive
+  matcher, not a setting).
 - Writing a project linter rule to flag non-canonical prefixes:
   possible, but adds yet another tool. Not justified for the current
   rate of new disable comments.
 
-### Why we do not file this upstream
+### Why we file this upstream
 
-1. **Is it really upstream's fault?** Yes; the substring match is the
-   source of the wart. Strict prefix matching would be the correct
-   behaviour.
-2. **Can upstream fix it?** Yes; replace `contains()` with an exact
-   match against the parsed prefix table. The change is local to the
-   files cited above.
+1. **Is it really upstream's fault?** Yes; unconditional prefix
+   stripping is the source of the wart. Validating the prefix against
+   the parsed plugin table would be the correct behaviour.
+2. **Can upstream fix it?** Yes; replace the unguarded
+   `name.rsplit_once('/').map_or(...)` strip with a guarded
+   `name.split_once('/')` plus `LintPlugins::try_from(prefix)` check.
+   The change is local to the `contains()` method in
+   `disable_directives.rs`; `tsgolint::should_skip_diagnostic` calls
+   the same method and inherits the fix for free.
 3. **Are they supporting this use case?** Yes; canonical prefixes are
-   documented in `parse_rule_key`.
-4. **Will they likely fix it?** Probably worth filing as a UX/lint
-   issue. Risk of breaking existing comments that rely on the
-   permissive match.
-5. **Have we prototyped a minimal fix?** No.
+   the authoritative configuration form (`LintPlugins::try_from` and
+   `parse_rule_key` both reject unknown plugin names with an explicit
+   error). The disable-directive matcher is the only path that
+   silently accepts unknown prefixes.
+4. **Will they likely fix it?** Probably worth filing. The closed
+   substring regression (`directive_rule_name_is_matched_on_full_rule_name_not_substring`,
+   line 2048) shows the maintainers care about disable-directive
+   correctness. The remaining permissive behaviour is the natural
+   next correction, but it does shift semantics for any disable
+   comment that relies on a bogus prefix today.
+5. **Have we prototyped a minimal fix?** Yes; patch + tests below.
 
-Decision: no upstream report yet. Worth filing if the codebase decides
-to formalise the canonical-prefix sweep.
+#### Prototype result
+
+Clone (private, throwaway): `/tmp/oxc-bug2-prototype.*/oxc`.
+Origin verified at `https://github.com/oxc-project/oxc.git`, HEAD
+`e182aee2599c275dc0bd93f52b4ddda70ff2c93b`.
+
+Patch file: [TROUBLESHOOTING.oxlint.patch](./TROUBLESHOOTING.oxlint.patch).
+The diff is 110 lines (one source hunk, one tests hunk); the file
+header in the patch records the apply-and-verify commands.
+
+Test verification:
+
+- Added four targeted tests (the four `*_post_fix` names listed in
+  the patch). Pre-patch run: 2 pass (`bare_canonical_prefix_*` and
+  `canonical_typescript_prefix_*`), 2 fail
+  (`non_canonical_eslint_prefix_*`, `bogus_xyzzy_prefix_*`),
+  reproducing the bug. Post-patch run: 4 pass.
+- Full suite: `cargo test -p oxc_linter --lib` → 1129 passed, 1
+  failed (1 ignored, unchanged). The single casualty is
+  `directive_rule_lists_parse_rules_and_descriptions`, which uses a
+  `// oxlint-disable-next-line @scope/plugin/rule-name no-debugger`
+  directive in `test_directive` and relies on the lenient invariant
+  that any `/`-containing rule's bare suffix also suppresses the rule.
+  After the patch, only canonical-plugin prefixes may strip; the
+  `@scope/plugin` namespace is not a recognized oxlint plugin, so the
+  bare `rule-name` suffix no longer matches. The casualty is intended
+  semantically (it is the very behaviour the fix corrects). Upstream
+  should either drop that case from the `cases` array or replace it
+  with a canonical-prefix example such as
+  `typescript/unbound-method`, which already appears earlier in the
+  same array.
+
+Decision: file upstream with the patch and the candidate test edit.
+The 5-constraint audit now reads all-yes.
+
+### Draft upstream issue
+
+Do not file as-is; review against the latest upstream `main` before
+opening, and re-run the verification harness against that HEAD to
+confirm the patch still applies and the casualty list has not grown.
+
+~~~md
+Title: linter: disable-comment prefix is stripped without validation, so unknown plugin namespaces silently suppress diagnostics
+
+Labels: A-linter, C-bug
+
+### Summary
+
+`DisableDirectives::contains` strips the first `/`-separated prefix
+from the directive's stored rule name unconditionally before
+comparing the bare suffix to the rule the linter is reporting on.
+That means comments such as `// oxlint-disable-next-line
+eslint/no-await-in-loop` or `// oxlint-disable-next-line
+xyzzy/no-await-in-loop` suppress oxlint's `no-await-in-loop` rule
+even though `eslint/` and `xyzzy/` are not recognized oxlint plugin
+namespaces.
+
+The substring-`.contains()` form that the
+`directive_rule_name_is_matched_on_full_rule_name_not_substring`
+regression test (`crates/oxc_linter/src/disable_directives.rs:2048`)
+locks shut is closed. The remaining defect is unconditional prefix
+stripping, which is closely related but distinct.
+
+### Repro (oxc commit `e182aee2599c275dc0bd93f52b4ddda70ff2c93b`)
+
+```ts
+// oxlint-disable-next-line eslint/no-await-in-loop
+await x();
+
+// oxlint-disable-next-line xyzzy/no-await-in-loop
+await y();
+```
+
+Running oxlint over either source emits no `no-await-in-loop`
+diagnostic. The diagnostic only returns when the comment is removed
+entirely or when the rule name itself is mistyped.
+
+### Root cause
+
+In `crates/oxc_linter/src/disable_directives.rs:281-340`, the
+`DisableRule::Single` match arm at lines 307-313:
+
+```rust
+DisabledRule::Single { rule_name: name, .. } => {
+    if rule_name.contains('/') {
+        name == rule_name
+    } else {
+        name.rsplit_once('/').map_or(name.as_str(), |(_, rule)| rule) == rule_name
+    }
+}
+```
+
+The `else` branch strips any prefix off `name` and compares the
+suffix to `rule_name`. There is no check that the stripped prefix
+identifies a real oxlint plugin. `LintPlugins::try_from`
+(`crates/oxc_linter/src/config/plugins.rs:134-167`) is the
+authoritative parsed plugin table and would reject `xyzzy`, but the
+disable-directive matcher does not consult it.
+
+### Suggested fix
+
+Replace the unguarded strip with a guarded `split_once` plus
+`LintPlugins::try_from(prefix)` check. The eslint pseudo-plugin
+(`LintPlugins::ESLINT`, the empty bitflag) is intentionally rejected
+because eslint-core rules are addressed without a prefix in oxlint's
+canonical naming. Concretely:
+
+```rust
+match name.split_once('/') {
+    None => name == rule_name,
+    Some((prefix, suffix)) => {
+        suffix == rule_name
+            && LintPlugins::try_from(prefix).is_ok_and(|p| !p.is_empty())
+    }
+}
+```
+
+Full diff (single hunk in `contains()` plus four new test cases) is
+attached as `TROUBLESHOOTING.oxlint.patch` in the linked downstream
+repository; it applies cleanly with `git apply` against HEAD
+`e182aee2599c275dc0bd93f52b4ddda70ff2c93b`.
+
+### Test coverage
+
+The patch adds four tests next to the existing
+`directive_rule_name_is_matched_on_full_rule_name_not_substring`
+test:
+
+- `bare_canonical_prefix_still_suppresses_post_fix`: bare-name
+  directive still suppresses (no regression).
+- `canonical_typescript_prefix_still_suppresses_post_fix`:
+  `typescript/no-floating-promises` still suppresses bare
+  `no-floating-promises` (cross-plugin strip-and-match remains for
+  canonical plugins).
+- `non_canonical_eslint_prefix_must_not_suppress_post_fix`:
+  `eslint/no-await-in-loop` no longer suppresses (eslint-core has no
+  prefix in oxlint canonical naming).
+- `bogus_xyzzy_prefix_must_not_suppress_post_fix`:
+  `xyzzy/no-await-in-loop` no longer suppresses.
+
+Pre-patch, the first two pass and the last two fail. Post-patch all
+four pass.
+
+### Breaking-change concern
+
+This is a behaviour-correcting change with a known migration cost:
+any existing disable comment in the wild that uses a prefix outside
+the recognized `LintPlugins` namespace (or that uses the
+non-canonical `eslint/` prefix) will start to surface the underlying
+diagnostic again. The migration path is to rewrite those comments
+to use a canonical prefix or the bare rule name. The set of
+recognized prefixes is exactly the set listed in
+`LintPlugins::try_from`, which downstream consumers can grep for.
+
+The existing in-tree test
+`directive_rule_lists_parse_rules_and_descriptions` exercises a
+`@scope/plugin/rule-name` directive whose `test_directive` helper
+asserts that the bare `rule-name` suffix suppresses regardless of
+prefix. That assertion is the very lenient behaviour this patch
+corrects, so the case needs to be either dropped or rewritten to use
+a canonical-plugin prefix. The remaining 1129 unit tests in
+`oxc_linter` continue to pass.
+
+### Alternatives considered
+
+- **Strict equality only** (no strip-and-match even for canonical
+  prefixes): would also fix the bug but breaks the documented
+  cross-plugin compatibility for canonical rules
+  (`typescript/no-foo` suppressing oxlint's `no-foo`). Rejected.
+- **Maintain a separate disable-comment prefix table**: duplicates
+  `LintPlugins::try_from` and drifts. Rejected; the existing table
+  is already the source of truth.
+- **Lint disable comments instead of fixing the matcher**: requires
+  an additional rule and does not retroactively fix existing
+  permissive comments. Acceptable as a complement but not a
+  substitute.
+
+### Environment
+
+- oxc commit: `e182aee2599c275dc0bd93f52b4ddda70ff2c93b` (HEAD of
+  `main`, 2026-05-17).
+- Toolchain: rustc 1.95.0 (per `rust-toolchain.toml`).
+- Verified on Linux x86_64.
+~~~
+
+Decision: filed upstream with the verified patch and the casualty
+documented. Re-evaluate constraint 4 if the maintainers reject the
+breaking-change cost; in that case the lint-disable-comments
+alternative becomes the next probe.
 
 ---
 

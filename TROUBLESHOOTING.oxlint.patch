@@ -1,0 +1,183 @@
+# TROUBLESHOOTING.oxlint Bug 2: disable-comment prefix-match prototype patch
+#
+# Target upstream: oxc-project/oxc
+# Verified against: commit e182aee2599c275dc0bd93f52b4ddda70ff2c93b
+#                   (`fix(linter): allow dialogs and popovers for no_autofocus
+#                    (#22289)`, 2026-05-17). HEAD of `main` at clone time.
+# Build/test toolchain: rustc 1.95.0 (rust-toolchain.toml pins channel 1.95.0).
+#
+# Apply with `git apply` from the oxc repo root:
+#
+#     git apply path/to/TROUBLESHOOTING.oxlint.patch
+#
+# Verify with:
+#
+#     cargo test -p oxc_linter --lib post_fix -- --test-threads=1
+#       # 4 new tests must pass
+#     cargo test -p oxc_linter --lib
+#       # Expect 1 casualty: `directive_rule_lists_parse_rules_and_descriptions`
+#       # fails on the `@scope/plugin/rule-name no-debugger` case. The
+#       # `test_directive` helper asserts that for any rule containing a `/`,
+#       # the bare suffix also suppresses, which is the very lenient-prefix
+#       # behaviour this patch corrects. Replace that case with an oxlint
+#       # canonical prefix (e.g. `typescript/unbound-method`, already present
+#       # earlier in the same `cases` array) or drop it before filing.
+#
+# What this patch changes:
+#
+# The pre-patch `DisableDirectives::contains` implementation strips ANY
+# prefix from the directive's stored rule name before equality-checking
+# against the bare rule the linter is reporting on. As a result, comments
+# such as `// oxlint-disable-next-line eslint/no-await-in-loop` or
+# `// oxlint-disable-next-line xyzzy/no-await-in-loop` silently suppress
+# the bare `no-await-in-loop` rule even though `eslint/` and `xyzzy/` are
+# not recognized oxlint plugin namespaces.
+#
+# After the patch, the prefix-strip branch additionally checks the prefix
+# against `LintPlugins::try_from`, accepting only recognized non-eslint
+# plugin namespaces (eslint-core rules are addressed without a prefix in
+# oxlint's canonical naming, so the `eslint` pseudo-plugin is intentionally
+# rejected). Comments using a canonical prefix continue to work; comments
+# using bogus or pseudo-eslint prefixes start surfacing the underlying
+# diagnostic.
+#
+# Known breaking-change concern: any existing disable comment in the wild
+# that uses a non-canonical prefix (anything outside the recognized
+# `LintPlugins` namespace plus the rejected `eslint/`) will start to fail
+# to suppress. The migration path is to rewrite those comments to use a
+# canonical prefix or the bare rule name.
+#
+# -------------------------- diff begins below --------------------------
+
+diff --git a/crates/oxc_linter/src/disable_directives.rs b/crates/oxc_linter/src/disable_directives.rs
+index c09b95ad4f..5b584d9218 100644
+--- a/crates/oxc_linter/src/disable_directives.rs
++++ b/crates/oxc_linter/src/disable_directives.rs
+@@ -6,7 +6,7 @@ use oxc_span::Span;
+ use rust_lapper::{Interval, Lapper};
+ use rustc_hash::FxHashMap;
+ 
+-use crate::{FixKind, fixer::Fix};
++use crate::{FixKind, LintPlugins, fixer::Fix};
+ 
+ #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
+ pub enum DirectivePrefix {
+@@ -308,7 +308,21 @@ impl DisableDirectives {
+                     if rule_name.contains('/') {
+                         name == rule_name
+                     } else {
+-                        name.rsplit_once('/').map_or(name.as_str(), |(_, rule)| rule) == rule_name
++                        // The caller's `rule_name` is bare. The directive's `name` may be bare
++                        // or `<prefix>/<bare>`. Only allow the strip-and-compare when `<prefix>`
++                        // matches a recognized oxlint plugin namespace; otherwise a typo or a
++                        // misleading `xyzzy/no-foo` would silently suppress oxlint's `no-foo`.
++                        // `LintPlugins::ESLINT` is the empty bitflag (eslint-core rules are
++                        // addressed without a prefix in oxlint's canonical naming), so a bare
++                        // `eslint/<rule>` prefix is not accepted as canonical.
++                        match name.split_once('/') {
++                            None => name == rule_name,
++                            Some((prefix, suffix)) => {
++                                suffix == rule_name
++                                    && LintPlugins::try_from(prefix)
++                                        .is_ok_and(|p| !p.is_empty())
++                            }
++                        }
+                     }
+                 }
+             };
+@@ -2084,4 +2098,95 @@ function test() {
+             "`import/export` directive must suppress the `export` rule"
+         );
+     }
++
++    /// Bug 2 prototype tests (see `TROUBLESHOOTING.oxlint.md` in the consuming
++    /// repository). The pre-patch implementation strips ANY prefix from the
++    /// directive's rule name before equality-checking against the bare rule the
++    /// linter is reporting on, so prefixes that do not correspond to a real
++    /// oxlint plugin (e.g. `eslint/`, `xyzzy/`) silently suppress diagnostics.
++    /// After the patch, only prefixes that name a recognized oxlint plugin
++    /// (excluding the `eslint` pseudo-plugin, whose rules are addressed without
++    /// a prefix) may strip-and-match.
++    ///
++    /// Pass-after-patch invariants:
++    /// - bare `no-await-in-loop` still suppresses
++    /// - canonical `typescript/no-floating-promises` still suppresses
++    ///   `no-floating-promises`
++    /// - non-canonical `eslint/no-await-in-loop` no longer suppresses
++    /// - bogus `xyzzy/no-await-in-loop` no longer suppresses
++    #[test]
++    fn bare_canonical_prefix_still_suppresses_post_fix() {
++        let source_text = r"
++            // oxlint-disable-next-line no-await-in-loop
++            await x();
++        ";
++        let allocator = Allocator::default();
++        let semantic = process_source(&allocator, source_text);
++        let directives =
++            DisableDirectivesBuilder::new().build(semantic.source_text(), semantic.comments());
++        #[expect(clippy::cast_possible_truncation)]
++        let target_start = source_text.find("await x()").unwrap() as u32;
++        let target_span = Span::sized(target_start, 9);
++        assert!(
++            directives.contains("no-await-in-loop", target_span),
++            "bare-name canonical directive must still suppress"
++        );
++    }
++
++    #[test]
++    fn canonical_typescript_prefix_still_suppresses_post_fix() {
++        let source_text = r"
++            // oxlint-disable-next-line typescript/no-floating-promises
++            doStuff();
++        ";
++        let allocator = Allocator::default();
++        let semantic = process_source(&allocator, source_text);
++        let directives =
++            DisableDirectivesBuilder::new().build(semantic.source_text(), semantic.comments());
++        #[expect(clippy::cast_possible_truncation)]
++        let target_start = source_text.find("doStuff()").unwrap() as u32;
++        let target_span = Span::sized(target_start, 9);
++        assert!(
++            directives.contains("no-floating-promises", target_span),
++            "canonical `typescript/` prefix must continue to strip-and-match"
++        );
++    }
++
++    #[test]
++    fn non_canonical_eslint_prefix_must_not_suppress_post_fix() {
++        let source_text = r"
++            // oxlint-disable-next-line eslint/no-await-in-loop
++            await x();
++        ";
++        let allocator = Allocator::default();
++        let semantic = process_source(&allocator, source_text);
++        let directives =
++            DisableDirectivesBuilder::new().build(semantic.source_text(), semantic.comments());
++        #[expect(clippy::cast_possible_truncation)]
++        let target_start = source_text.find("await x()").unwrap() as u32;
++        let target_span = Span::sized(target_start, 9);
++        assert!(
++            !directives.contains("no-await-in-loop", target_span),
++            "`eslint/` is not a canonical oxlint plugin prefix; the directive must not suppress"
++        );
++    }
++
++    #[test]
++    fn bogus_xyzzy_prefix_must_not_suppress_post_fix() {
++        let source_text = r"
++            // oxlint-disable-next-line xyzzy/no-await-in-loop
++            await x();
++        ";
++        let allocator = Allocator::default();
++        let semantic = process_source(&allocator, source_text);
++        let directives =
++            DisableDirectivesBuilder::new().build(semantic.source_text(), semantic.comments());
++        #[expect(clippy::cast_possible_truncation)]
++        let target_start = source_text.find("await x()").unwrap() as u32;
++        let target_span = Span::sized(target_start, 9);
++        assert!(
++            !directives.contains("no-await-in-loop", target_span),
++            "`xyzzy/` is not a recognized oxlint plugin; the directive must not suppress"
++        );
++    }
+ }
