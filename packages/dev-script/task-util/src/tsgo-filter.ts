@@ -223,10 +223,12 @@ export function isNodeModulesDiagnostic(line: string,): boolean {
  * ```
  */
 export function isI18nGeneratedDiagnostic(line: string,): boolean {
+  // oxlint-disable eslint-plugin-unicorn/prefer-string-raw -- String.raw template literals cannot end with `\` (the trailing backtick is consumed as an escape target); plain '\\' string escapes are the only option for these path separators.
   return line.includes('/i18n/',)
     || line.includes('/i18n\\',)
     || line.includes('\\i18n/',)
     || line.includes('\\i18n\\',);
+  // oxlint-enable eslint-plugin-unicorn/prefer-string-raw
 }
 
 /**
