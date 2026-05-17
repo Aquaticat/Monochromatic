@@ -23,12 +23,17 @@ export type ParsedRange = {
 
 //region Semver parsing
 
-/** Regex matching a `>=` range, optionally preceded by an npm alias prefix. */
-const RANGE_RE = /^(?<prefix>.*?)>=(?<version>.+)$/;
+/** Literal token that separates the optional alias prefix from the version. */
+const RANGE_TOKEN = '>=';
 
 /**
  * Extracts the `>=` version and any alias prefix from a catalog value.
  * Returns `undefined` for values that are not `>=` ranges.
+ *
+ * Linear: a single `indexOf` locates the leftmost `>=` (matching the lazy
+ * `^.*?` semantics of the prior regex), and the substrings on either side
+ * become the prefix and version. The version must be non-empty for the
+ * value to count as a range.
  *
  * @param value - raw catalog entry value, e.g. `">=1.2.3"` or `"npm:@jsr/foo@>=1.0.0"`
  *
@@ -42,15 +47,18 @@ const RANGE_RE = /^(?<prefix>.*?)>=(?<version>.+)$/;
  * ```
  */
 export function parseRange(value: string,): ParsedRange | undefined {
-  /** Regex match result; `null` means the value isn't a `>=` range so the caller should treat it as opaque. */
-  const match = RANGE_RE.exec(value,);
-  if (match === null)
+  /** Leftmost index of `>=`; `-1` means the value isn't a `>=` range so the caller treats it as opaque. */
+  const idx = value.indexOf(RANGE_TOKEN,);
+  if (idx === (-1))
     return undefined;
-  /** Substring captured before `>=`, preserved verbatim so the npm alias prefix round-trips into the rewritten range. */
-  const prefix = match.groups?.['prefix'];
-  /** Substring captured after `>=`, used as the semver to compare against installed versions. */
-  const version = match.groups?.['version'];
-  if ((prefix === undefined) || (version === undefined))
+  /** Substring before `>=`, preserved verbatim so the npm alias prefix round-trips into the rewritten range. */
+  const prefix = value.slice(
+    0,
+    idx,
+  );
+  /** Substring after `>=`, used as the semver to compare against installed versions. */
+  const version = value.slice(idx + RANGE_TOKEN.length,);
+  if (version.length === 0)
     return undefined;
   return {
     prefix,

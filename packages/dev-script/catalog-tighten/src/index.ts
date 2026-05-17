@@ -71,8 +71,172 @@ const workspaceYamlContent = readFileSync(
 );
 
 /**
- * Extracts `catalog:` entries from pnpm-workspace.yaml using regex.
- * Avoids a YAML parser dependency for this simple key-value structure.
+ * Returns true when `c` is a space or tab character.
+ *
+ * @param c - candidate character
+ *
+ * @returns whether the character is horizontal whitespace
+ */
+function isSpaceOrTab(c: string,): boolean {
+  return (c === ' ') || (c === '\t');
+}
+
+/**
+ * Returns true when every char in `s` is ASCII whitespace (space, tab,
+ * newline, carriage return, form feed, vertical tab). Empty strings are
+ * vacuously whitespace-only, matching `\s*$` semantics for a blank trailing
+ * tail.
+ *
+ * @param s - candidate string
+ *
+ * @returns whether `s` consists solely of whitespace
+ */
+function isWhitespaceOnly(s: string,): boolean {
+  for (const c of s) {
+    /** Whether the current char satisfies regex `\s`. */
+    const ok = (c === ' ') || (c === '\t') || (c === '\n')
+      || (c === '\r') || (c === '\f') || (c === '\v');
+    if (!ok)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * Collects the contiguous block of indented (space/tab-leading) non-empty
+ * lines starting at `from`. Mirrors `((?:[ \t]+.+\n)*)` against a
+ * line-oriented input: every member line must begin with space/tab and
+ * contain at least one further char before its trailing `\n`.
+ *
+ * @param lines - file content split on `\n`
+ *
+ * @param from - cursor index into `lines`
+ *
+ * @returns ordered slice of indented entry lines
+ */
+function collectIndentedBlock({
+  lines,
+  from,
+}: {
+  lines: readonly string[];
+  from: number;
+},): readonly string[] {
+  /**
+   * Recursive accumulator that stops at the first non-indented or empty
+   * line, mirroring the regex's `[ \t]+.+\n` requirement.
+   *
+   * @param idx - cursor index into `lines`
+   *
+   * @param acc - lines collected so far
+   *
+   * @returns final block
+   */
+  function walk({
+    idx,
+    acc,
+  }: {
+    idx: number;
+    acc: readonly string[];
+  },): readonly string[] {
+    if (idx >= lines.length)
+      return acc;
+    /** Line at the cursor; checked for indented + non-empty before joining the block. */
+    const line = lines[idx];
+    if (line === undefined)
+      return acc;
+    /** First character of the line; non-space/tab ends the block. */
+    const first = line.charAt(0,);
+    if ((line.length === 0) || (!isSpaceOrTab(first,)))
+      return acc;
+    /** Line body after the leading indent; must be non-empty to count. */
+    const rest = line.slice(1,);
+    if (rest.length === 0)
+      return acc;
+    return walk({
+      idx: idx + 1,
+      acc: [
+        ...acc,
+        line,
+      ],
+    },);
+  }
+  return walk({
+    idx: from,
+    acc: [],
+  },);
+}
+
+/**
+ * Parsed `key: value` shape from one catalog entry line; `null` for lines
+ * that do not match the expected indented `key: value` form.
+ */
+type CatalogEntry = {
+  /** Unquoted key. */
+  key: string;
+  /** Unquoted value. */
+  value: string;
+};
+
+/**
+ * Strips a single layer of matching ASCII double quotes from `s`. Returns
+ * `s` unchanged when the wrapping quotes are not present.
+ *
+ * @param s - candidate token
+ *
+ * @returns token with the wrapping quotes removed if any
+ */
+function unquote(s: string,): string {
+  if ((s.length >= 2) && s.startsWith('"',) && s.endsWith('"',))
+    return s.slice(
+      1,
+      -1,
+    );
+  return s;
+}
+
+/**
+ * Parses one indented catalog entry line into its key/value pair.
+ *
+ * Mirrors `/^\s+"?([^":]+)"?\s*:\s*"?([^"\n]+)"?\s*$/` without regex: trims
+ * whitespace, splits on the first `:`, unquotes both sides. The key must
+ * be non-empty and contain no embedded `:`; the value must be non-empty.
+ *
+ * @param line - raw indented line from the catalog block
+ *
+ * @returns parsed entry, or `null` when the line shape is unexpected
+ */
+function parseCatalogEntry(line: string,): CatalogEntry | null {
+  /** Whitespace-trimmed line; surrounding indentation and trailing CR/space are dropped. */
+  const trimmed = line.trim();
+  if (trimmed.length === 0)
+    return null;
+  /** Position of the colon separator; `-1` indicates a malformed line. */
+  const colonIdx = trimmed.indexOf(':',);
+  if (colonIdx <= 0)
+    return null;
+  /** Raw key segment before the colon, trailing whitespace stripped. */
+  const rawKey = trimmed.slice(
+    0,
+    colonIdx,
+  ).trimEnd();
+  /** Raw value segment after the colon, surrounding whitespace stripped. */
+  const rawValue = trimmed.slice(colonIdx + 1,).trim();
+  /** Key with one layer of wrapping quotes removed if present. */
+  const key = unquote(rawKey,);
+  /** Value with one layer of wrapping quotes removed if present. */
+  const value = unquote(rawValue,);
+  if ((key.length === 0) || (value.length === 0))
+    return null;
+  return {
+    key,
+    value,
+  };
+}
+
+/**
+ * Extracts `catalog:` entries from pnpm-workspace.yaml using a small
+ * line-oriented parser. Avoids a YAML parser dependency for this simple
+ * key-value structure.
  * Matches lines like `  "package-name": ">=1.2.3"` or `  package-name: ">=1.2.3"` under `catalog:`.
  *
  * @param content - Raw YAML file content to parse.
@@ -80,28 +244,33 @@ const workspaceYamlContent = readFileSync(
  * @returns Map of package names to version range strings found under the `catalog:` section.
  */
 function parseCatalogFromYaml(content: string,): Record<string, string> {
-  /** Accumulator mapping each catalog package name to its raw range value; mutated in place during scanning. */
-  const result: Record<string, string> = {};
-  /** Block-level match locating the `catalog:` section and capturing its indented body for entry scanning. */
-  const catalogMatch = /^catalog:\s*\n((?:[ \t]+.+\n)*)/m.exec(content,);
-  if (catalogMatch === null)
-    return result;
-  /** Indented body of the `catalog:` block; each line inside is one `name: range` entry. */
-  const [, catalogBlock,] = catalogMatch;
-  if (catalogBlock === undefined)
-    return result;
-  /** Stateful regex over the catalog block; the `g` flag advances `lastIndex` across `.exec` calls. */
-  const entryPattern = /^\s+"?([^":]+)"?\s*:\s*"?([^"\n]+)"?\s*$/gm;
-  /** Current entry match; `null` ends the scan loop. */
-  let match = entryPattern.exec(catalogBlock,);
-  while (match !== null) {
-    /** Package name and version range captured from one entry line. */
-    const [, name, value,] = match;
-    if ((name !== undefined) && (value !== undefined))
-      result[name] = value;
-    match = entryPattern.exec(catalogBlock,);
-  }
-  return result;
+  /** Content split into lines; preserves the file's order so the regex anchor semantics translate cleanly. */
+  const lines = content.split('\n',);
+  /** Index of the first line whose trimmed-right form is exactly `catalog:`; `-1` ends the search. */
+  const headerIdx = lines.findIndex(function isCatalogHeader(line,): boolean {
+    return line.trimEnd() === 'catalog:';
+  },);
+  if (headerIdx === (-1))
+    return {};
+  /** Indented body of the `catalog:` block; each line is one `name: range` entry. */
+  const block = collectIndentedBlock({
+    lines,
+    from: headerIdx + 1,
+  },);
+  return block.reduce(
+    function appendEntry(
+      acc: Record<string, string>,
+      line,
+    ): Record<string, string> {
+      /** Parsed entry; `null` when the line shape does not match the catalog convention. */
+      const entry = parseCatalogEntry(line,);
+      if (entry === null)
+        return acc;
+      acc[entry.key] = entry.value;
+      return acc;
+    },
+    {},
+  );
 }
 
 /** Workspace catalog mapping package names to version ranges. */
