@@ -36,6 +36,162 @@ const kimiFixed = kimiSvg.replace(
   '<rect width="24" height="24" rx="3" fill="#888"/><path',
 );
 
+/** Default viewBox used when an SVG omits the attribute on its root element. */
+const DEFAULT_VIEWBOX = '0 0 24 24';
+
+/**
+ * Extracts the `viewBox` attribute value from the first opening `<svg>` tag.
+ * Mirrors `/viewBox="([^"]+)"/.exec(raw)?.[1]` with a linear `indexOf` walk:
+ * locate the literal `viewBox="`, then read until the next `"`.
+ *
+ * @param raw - raw SVG document
+ *
+ * @returns viewBox value, or `undefined` when the attribute is absent
+ */
+function extractViewBox(raw: string,): string | undefined {
+  /** Position of the opening of the attribute literal; `-1` ends the search. */
+  const open = raw.indexOf('viewBox="',);
+  if (open === (-1))
+    return undefined;
+  /** Position of the closing quote; `-1` means the attribute is unterminated. */
+  const close = raw.indexOf(
+    '"',
+    open + 'viewBox="'.length,
+  );
+  if (close === (-1))
+    return undefined;
+  return raw.slice(
+    open + 'viewBox="'.length,
+    close,
+  );
+}
+
+/**
+ * Strips the opening `<svg ...>` tag from the front of `raw`. Mirrors
+ * `raw.replace(/^<svg[^>]*>/, '')`: requires the string to start with
+ * `<svg`, then drops everything through (and including) the next `>`.
+ *
+ * @param raw - raw SVG document
+ *
+ * @returns SVG body without the opening `<svg>` tag
+ */
+function stripOpeningSvgTag(raw: string,): string {
+  if (!raw.startsWith('<svg',))
+    return raw;
+  /** Position of the `>` that closes the opening tag; `-1` means malformed input. */
+  const gt = raw.indexOf(
+    '>',
+    '<svg'.length,
+  );
+  if (gt === (-1))
+    return raw;
+  return raw.slice(gt + 1,);
+}
+
+/**
+ * Strips the trailing `</svg>` tag (plus any trailing whitespace) from
+ * `s`. Mirrors `s.replace(/<\/svg>\s*$/, '')`: trims trailing whitespace,
+ * then drops the final `</svg>` if present.
+ *
+ * @param s - SVG body that may end with a closing tag
+ *
+ * @returns body without the trailing `</svg>`
+ */
+function stripClosingSvgTag(s: string,): string {
+  /** Trailing whitespace stripped; matches `\s*$` semantics of the prior regex. */
+  const trimmed = s.trimEnd();
+  if (!trimmed.endsWith('</svg>',))
+    return trimmed;
+  return trimmed.slice(
+    0,
+    -('</svg>'.length),
+  );
+}
+
+/**
+ * Result of {@link extractAndStripDefs}: hoisted defs body and the
+ * surrounding markup with each `<defs>` block removed.
+ */
+type DefsPartition = {
+  /** Concatenated bodies of every `<defs>` block discovered. */
+  defs: string;
+  /** Source markup with the `<defs>` blocks removed. */
+  content: string;
+};
+
+/**
+ * Walks `s` and partitions it into the concatenated contents of every
+ * `<defs>...</defs>` block plus the remainder (with the blocks removed).
+ * Mirrors a single pass of both `matchAll(/<defs>([\s\S]*?)<\/defs>/g)`
+ * and `replaceAll(/<defs>[\s\S]*?<\/defs>/g, '')` without regex; the
+ * cursor never revisits any byte.
+ *
+ * @param s - SVG inner markup
+ *
+ * @returns hoisted defs content plus the markup with defs blocks removed
+ */
+function extractAndStripDefs(s: string,): DefsPartition {
+  /**
+   * Recursive walker accumulating both partitions.
+   *
+   * @param from - cursor index for the next `indexOf` call
+   *
+   * @param defsAcc - hoisted `<defs>` content collected so far
+   *
+   * @param contentAcc - content outside the `<defs>` blocks
+   *
+   * @returns final partition pair
+   */
+  function walk({
+    from,
+    defsAcc,
+    contentAcc,
+  }: {
+    from: number;
+    defsAcc: string;
+    contentAcc: string;
+  },): DefsPartition {
+    /** Position of the next `<defs>` opener; `-1` ends the scan. */
+    const open = s.indexOf(
+      '<defs>',
+      from,
+    );
+    if (open === (-1)) {
+      return {
+        defs: defsAcc,
+        content: contentAcc + s.slice(from,),
+      };
+    }
+    /** Position of the matching `</defs>`; `-1` means the block is unterminated. */
+    const close = s.indexOf(
+      '</defs>',
+      open + '<defs>'.length,
+    );
+    if (close === (-1)) {
+      return {
+        defs: defsAcc,
+        content: contentAcc + s.slice(from,),
+      };
+    }
+    return walk({
+      from: close + '</defs>'.length,
+      defsAcc: defsAcc + s.slice(
+        open + '<defs>'.length,
+        close,
+      ),
+      contentAcc: contentAcc + s.slice(
+        from,
+        open,
+      ),
+    },);
+  }
+  return walk({
+    from: 0,
+    defsAcc: '',
+    contentAcc: '',
+  },);
+}
+
 /** Raw SVG sources keyed by OpenRouter vendor prefix */
 const RAW_SVGS: Record<string, string> = {
   anthropic: claudeSvg,
@@ -64,20 +220,10 @@ function parseSvg(raw: string,): {
   viewBox: string;
   inner: string;
 } {
-  /** Regex match for the root `viewBox` attribute on the outer `<svg>` element. */
-  const viewBoxMatch = /viewBox="([^"]+)"/.exec(raw,);
-  /** Extracted viewBox value; falls back to the lobehub icon default `0 0 24 24`. */
-  const viewBox = viewBoxMatch?.[1] ?? '0 0 24 24';
+  /** Extracted viewBox value; falls back to the lobehub icon default. */
+  const viewBox = extractViewBox(raw,) ?? DEFAULT_VIEWBOX;
   /** SVG body with the outer `<svg>` opening and closing tags stripped. */
-  const inner = raw
-    .replace(
-      /^<svg[^>]*>/,
-      '',
-    )
-    .replace(
-      /<\/svg>\s*$/,
-      '',
-    );
+  const inner = stripClosingSvgTag(stripOpeningSvgTag(raw,),);
   return {
     viewBox,
     inner,
@@ -103,21 +249,7 @@ function extractDefs(inner: string,): {
   defs: string;
   content: string;
 } {
-  /** Every `<defs>` body discovered, joined to form the hoisted defs string. */
-  const defs = [...inner.matchAll(/<defs>([\s\S]*?)<\/defs>/g,),]
-    .map(function pickContent(match,): string {
-      return match[1] ?? '';
-    },)
-    .join('',);
-  /** Inner markup with all `<defs>` blocks removed; their content is captured in `defs`. */
-  const content = inner.replaceAll(
-    /<defs>[\s\S]*?<\/defs>/g,
-    '',
-  );
-  return {
-    defs,
-    content,
-  };
+  return extractAndStripDefs(inner,);
 }
 
 /** Parsed symbol data for a single vendor icon */
