@@ -704,3 +704,92 @@ In `compile_rule_src` order (both branches considered):
 
 (Counted to 12 above. The 8th and 9th overlap conceptually but each
 catches a distinct upstream-bug shape; both kept.)
+
+### 2026-05-17 late session: PHASE 11 COMPLETE — soundness-by-revert verified
+
+**Commits landed this session, most recent first:**
+
+```
+099bfe84 fuzz(forbidden-strings): fix Unicode-literal renderer mojibake
+97aa1bf2 docs(handover): record three new pre-validators landed this session
+f5bc49c6 fix(forbidden-strings): pre-validate nested complement `~(~(...))`
+9c3e06cd fix(forbidden-strings): pre-validate two slow-compile resharp shapes
+```
+
+**THE bug that gated Phase 11: Unicode-literal renderer mojibake (099bfe84).**
+
+`Node::Literal`, `Node::Class`, and `Node::NegClass` rendered byte
+sequences via `out.push(b as char)`, which converts each byte to
+its Latin-1 codepoint. For multi-byte UTF-8 sequences like é
+(0xC3 0xA9) the result was mojibake `Ã©` (chars U+00C3 + U+00A9,
+re-encoded by String's UTF-8 storage as bytes 0xC3 0x83 0xC2 0xA9).
+
+Pre-fix consequence: every Unicode-literal rule the generator
+emitted had source bytes that did NOT match the content's real
+UTF-8 bytes. `find_all` returned 0 matches on every Unicode rule,
+so the fuzz target's soundness check could never fire. The
+063512ea biases (50% (?iu) flag, 25% Unicode-shape literal, 50%
+case-flip) all stacked the deck to ~3% of iterations hitting
+soundness shape — but every one of those rejected at find_all=0.
+
+Root cause confirmed via `/tmp/probe-slow-unit/src/bin/check_render.rs`:
+pre-fix rendered source for `é` literal had bytes
+`c3 83 c2 a9` (mojibake), content had `c3 a9` (real UTF-8),
+find_all=0. Post-fix: source has `c3 a9`, content has `c3 a9`,
+find_all=1, gate `café` (CI=true) extracted, contains_under_ci
+checks "café" against content "cafÉ" → ASCII case-fold mismatch
+on bytes a9 vs 89 → SOUNDNESS VIOLATION.
+
+**Phase 11 verification (load-bearing Done criterion):**
+
+1. Reverted worktree at `/tmp/fs-soundness-revert/` (e49d8694 fix
+   reverted via commit 52aa8a46).
+2. 5-min fuzz with fixed renderer + warm corpus (18,278 files):
+   panic fired during corpus replay (before mutation budget kicked
+   in).
+3. Crash artifact: `crash-6dcd4ce23d88e2ee9568ba546c007c63d9131c1b`
+   (1-byte input).
+4. Decoded reproducer:
+   - rendered src: `(?iu)café` (10 bytes)
+   - content: `cafÉ` (5 bytes: `99 97 102 195 137` = `c a f c3 89`)
+   - compile OK, find_all = 1 match, gates = [("café", true)]
+   - contains_under_ci("café", content="cafÉ", ci=true) = false
+   - SOUNDNESS VIOLATION at fuzz_target.rs:377
+5. Same crash artifact replayed against MAIN's fuzz binary
+   (e49d8694 fix in place): runs in 4ms, no crash, no panic.
+
+**This is the load-bearing soundness-by-revert evidence:** the fuzz
+target reports a SOUNDNESS PANIC with a redacted reproducer (rule
+source, content length, content SHA-256, match count, gate count;
+no raw content bytes) when run against the reverted commit. The
+same artifact passes on main. The target is therefore PROVEN to
+catch the bug class commit e49d8694 closed.
+
+**Test count: 144 unit tests in fuzz crate + 147 unit tests in
+main crate + 3 new fuzz/src/generators tests + 19 integration =
+all green. Clippy clean.**
+
+**Status:**
+
+| Phase | Status |
+| ----- | ------ |
+| 1-10  | DONE   |
+| 11    | DONE — soundness-by-revert verified; crash artifact triggers panic on reverted worktree, runs clean on main |
+
+**Next-session cleanup tasks:**
+
+1. **Remove the disposable worktree** at `/tmp/fs-soundness-revert/`
+   (per Phase 11 step 11.10 "Remove the worktree"). Save the crash
+   artifact + decode metadata to repo first if you want it
+   preserved.
+2. **Decode and address `timeout-dba8a535...`** (the new timeout
+   that escaped my validators during the pre-fix 30-min fuzz). It
+   was added under the old broken renderer; may decode to something
+   entirely different now and may not need a validator at all.
+   Verify before adding more pre-validators.
+3. **Optional**: Document the pre-validators in `FUZZING.md` per
+   plan §10. Defer if not blocking other work.
+4. **Optional**: Commit the pre-existing uncommitted README +
+   fuzz/Cargo.toml + fuzz/dictionaries/forbidden-strings.dict
+   changes (the dictionary fix is a real bug fix; the others are
+   small/cosmetic).
