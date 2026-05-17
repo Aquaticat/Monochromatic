@@ -98,6 +98,24 @@ jobs:
           packages/cli/forbidden-strings/target
         key: cargo-publish-${{ runner.os }}-${{ hashFiles('packages/cli/forbidden-strings/Cargo.lock') }}
 
+    # `cargo package` verifies by compiling the packaged crate and leaves
+    # the .crate at target/package/. We attest THESE bytes, then upload
+    # with `cargo publish --no-verify` which uses the existing .crate
+    # without re-packaging or deleting it (verified locally: file sha256
+    # is byte-identical before and after `cargo publish --no-verify`).
+    # We cannot attest after `cargo publish` because cargo deletes the
+    # .crate as part of its post-upload cleanup when --no-verify is NOT
+    # passed; that was the 0.1.6 failure mode.
+    - name: Build .crate package (verifies by compile)
+      working-directory: packages/cli/forbidden-strings
+      run: mise exec rust -- cargo package
+
+    - name: Attest .crate provenance
+      if: ${{ !inputs.dry-run }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: 'packages/cli/forbidden-strings/target/package/forbidden-strings-${{ needs.detect.outputs.version }}.crate'
+
     - name: Authenticate with crates.io (Trusted Publishing)
       if: ${{ !inputs.dry-run }}
       id: auth
@@ -106,64 +124,17 @@ jobs:
     - name: Publish (dry run)
       if: ${{ inputs.dry-run }}
       working-directory: packages/cli/forbidden-strings
-      run: cargo publish --dry-run
+      run: mise exec rust -- cargo publish --dry-run --no-verify
 
     - name: Publish
       if: ${{ !inputs.dry-run }}
       working-directory: packages/cli/forbidden-strings
       env:
         CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
-      run: cargo publish
-
-    # Attest after publish: the .crate file cargo just packaged and uploaded
-    # is sitting at target/package/. Attesting those bytes guarantees the
-    # attestation digest matches the artifact on crates.io. (Attesting a
-    # separately-packaged .crate beforehand would assume byte-determinism
-    # between two `cargo package` runs; if that ever breaks, the attestation
-    # would be orphaned against the uploaded artifact.) Recovery if this
-    # step fails after a successful publish: re-run the workflow or run
-    # `cargo package` locally and `gh attestation generate` against the
-    # resulting .crate.
-    - name: Attest .crate provenance
-      if: ${{ !inputs.dry-run }}
-      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
-      with:
-        subject-path: 'packages/cli/forbidden-strings/target/package/forbidden-strings-${{ needs.detect.outputs.version }}.crate'
-
-  create-release:
-    needs: detect
-    if: ${{ needs.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-    - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        fetch-depth: 1
-
-    - name: Create GitHub release (empty)
-      env:
-        GH_TOKEN: ${{ github.token }}
-        VERSION: ${{ needs.detect.outputs.version }}
-        SHA: ${{ github.sha }}
-      run: |
-        set -euo pipefail
-        tag="forbidden-strings-v${VERSION}"
-        # Idempotent: re-running the workflow on a published version
-        # finds the existing release and reuses it; build-binary will
-        # re-upload assets with --clobber.
-        if gh release view "$tag" >/dev/null 2>&1; then
-          echo "Release $tag already exists; reusing."
-        else
-          gh release create "$tag" \
-            --title "forbidden-strings v${VERSION}" \
-            --notes "forbidden-strings v${VERSION}. crates.io: https://crates.io/crates/forbidden-strings/${VERSION}" \
-            --target "$SHA"
-        fi
+      run: mise exec rust -- cargo publish --no-verify
 
   build-binary:
-    needs: [detect, create-release]
+    needs: detect
     if: ${{ needs.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
     strategy:
       fail-fast: false
@@ -187,7 +158,7 @@ jobs:
           runner: windows-latest
     runs-on: ${{ matrix.runner }}
     permissions:
-      contents: write
+      contents: read
       id-token: write
       attestations: write
     steps:
@@ -243,24 +214,57 @@ jobs:
         archive_path="dist/${archive}"
         echo "archive_path=${archive_path}" >> "$GITHUB_OUTPUT"
         echo "archive_name=${archive}" >> "$GITHUB_OUTPUT"
-        ls -la "dist/"
+        ls -la dist/
 
     # Attest each binary archive: the SLSA build-provenance signature binds
-    # the archive's sha256 to this workflow run, so consumers can run
-    # `gh attestation verify <archive> -R Aquaticat/Monochromatic` after
-    # downloading from the release page.
+    # the archive's sha256 to this workflow run. Since the artifact transit
+    # (upload-artifact -> download-artifact -> gh release create) is
+    # byte-preserving, the digest still matches when consumers download
+    # from the release page and run `gh attestation verify`.
     - name: Attest binary provenance
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
       with:
         subject-path: ${{ steps.pkg.outputs.archive_path }}
 
-    - name: Upload to GitHub release
-      shell: bash
+    - name: Upload archive as workflow artifact
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: bin-${{ matrix.target }}
+        path: ${{ steps.pkg.outputs.archive_path }}
+        if-no-files-found: error
+        retention-days: 7
+
+  # Immutable releases (repo setting) means `gh release create` must include
+  # every asset at creation time; you cannot add files later. So we wait for
+  # every matrix entry to finish, collect all archives, then create the
+  # release in one shot with all files attached.
+  create-release:
+    needs: [detect, build-binary]
+    if: ${{ needs.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+    - name: Download all binary archives
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        pattern: bin-*
+        path: assets
+        merge-multiple: true
+
+    - name: Create GitHub release with all archives
       env:
         GH_TOKEN: ${{ github.token }}
         VERSION: ${{ needs.detect.outputs.version }}
-        ARCHIVE: ${{ steps.pkg.outputs.archive_path }}
+        SHA: ${{ github.sha }}
+        REPO: ${{ github.repository }}
       run: |
         set -euo pipefail
         tag="forbidden-strings-v${VERSION}"
-        gh release upload "$tag" "$ARCHIVE" --clobber
+        ls -la assets/
+        gh release create "$tag" assets/* \
+          --repo "$REPO" \
+          --title "forbidden-strings v${VERSION}" \
+          --notes "forbidden-strings v${VERSION}. crates.io: https://crates.io/crates/forbidden-strings/${VERSION}" \
+          --target "$SHA"
