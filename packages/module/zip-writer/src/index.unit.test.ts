@@ -165,35 +165,35 @@ await describe({
           name: 'rejects empty path',
           fn: async () => {
             const zip = new ZipWriter();
-            expect(() => zip.add('', 'x',)).toThrow(/non-empty/,);
+            expect(() => zip.add('', 'x',)).toThrow('non-empty',);
           },
         },),
         it({
           name: 'rejects path with NUL byte',
           fn: async () => {
             const zip = new ZipWriter();
-            expect(() => zip.add('foo\0bar', 'x',)).toThrow(/NUL/,);
+            expect(() => zip.add('foo\0bar', 'x',)).toThrow('NUL',);
           },
         },),
         it({
           name: 'rejects path with backslash',
           fn: async () => {
             const zip = new ZipWriter();
-            expect(() => zip.add(String.raw`foo\bar`, 'x',)).toThrow(/backslash/,);
+            expect(() => zip.add(String.raw`foo\bar`, 'x',)).toThrow('backslash',);
           },
         },),
         it({
           name: 'rejects leading slash',
           fn: async () => {
             const zip = new ZipWriter();
-            expect(() => zip.add('/foo', 'x',)).toThrow(/leading slash/,);
+            expect(() => zip.add('/foo', 'x',)).toThrow('leading slash',);
           },
         },),
         it({
           name: 'rejects parent-directory segment',
           fn: async () => {
             const zip = new ZipWriter();
-            expect(() => zip.add('foo/../bar', 'x',)).toThrow(/parent-directory/,);
+            expect(() => zip.add('foo/../bar', 'x',)).toThrow('parent-directory',);
           },
         },),
         it({
@@ -201,7 +201,7 @@ await describe({
           fn: async () => {
             const zip = new ZipWriter();
             zip.add('foo', 'x',);
-            expect(() => zip.add('foo', 'y',)).toThrow(/duplicate/,);
+            expect(() => zip.add('foo', 'y',)).toThrow('duplicate',);
           },
         },),
       ],
@@ -245,7 +245,7 @@ await describe({
             zip.add('binary.bin', new Uint8Array([0, 1, 2, 255,],),);
             const bytes = zip.build();
             const { stdout, } = await verifyZipIntegrity(bytes,);
-            expect(stdout,).toMatch(/No errors detected/,);
+            expect(stdout,).toContain('No errors detected',);
           },
         },),
         it({

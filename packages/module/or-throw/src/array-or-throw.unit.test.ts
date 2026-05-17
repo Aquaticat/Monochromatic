@@ -29,12 +29,12 @@ await describe({
     it({
       name: 'throws on every non-array value',
       fn: async () => {
-        expect(() => arrayOrThrow('abc',)).toThrow(/array/,);
-        expect(() => arrayOrThrow(42,)).toThrow(/array/,);
-        expect(() => arrayOrThrow(null,)).toThrow(/array/,);
-        expect(() => arrayOrThrow(undefined,)).toThrow(/array/,);
-        expect(() => arrayOrThrow({ length: 0, },)).toThrow(/array/,);
-        expect(() => arrayOrThrow(new Set(),)).toThrow(/array/,);
+        expect(() => arrayOrThrow('abc',)).toThrow('array',);
+        expect(() => arrayOrThrow(42,)).toThrow('array',);
+        expect(() => arrayOrThrow(null,)).toThrow('array',);
+        expect(() => arrayOrThrow(undefined,)).toThrow('array',);
+        expect(() => arrayOrThrow({ length: 0, },)).toThrow('array',);
+        expect(() => arrayOrThrow(new Set(),)).toThrow('array',);
       },
     },),
 

@@ -33,13 +33,13 @@ await describe({
     it({
       name: 'throws on every falsy value',
       fn: async () => {
-        expect(() => truthyOrThrow(false,)).toThrow(/truthy/,);
-        expect(() => truthyOrThrow(0,)).toThrow(/truthy/,);
-        expect(() => truthyOrThrow(0n,)).toThrow(/truthy/,);
-        expect(() => truthyOrThrow('',)).toThrow(/truthy/,);
-        expect(() => truthyOrThrow(null,)).toThrow(/truthy/,);
-        expect(() => truthyOrThrow(undefined,)).toThrow(/truthy/,);
-        expect(() => truthyOrThrow(Number.NaN,)).toThrow(/truthy/,);
+        expect(() => truthyOrThrow(false,)).toThrow('truthy',);
+        expect(() => truthyOrThrow(0,)).toThrow('truthy',);
+        expect(() => truthyOrThrow(0n,)).toThrow('truthy',);
+        expect(() => truthyOrThrow('',)).toThrow('truthy',);
+        expect(() => truthyOrThrow(null,)).toThrow('truthy',);
+        expect(() => truthyOrThrow(undefined,)).toThrow('truthy',);
+        expect(() => truthyOrThrow(Number.NaN,)).toThrow('truthy',);
       },
     },),
 

@@ -27,11 +27,11 @@ await describe({
     it({
       name: 'throws on every non-WeakSet value',
       fn: async () => {
-        expect(() => weakSetOrThrow(new Set(),)).toThrow(/WeakSet/,);
-        expect(() => weakSetOrThrow(new WeakMap(),)).toThrow(/WeakSet/,);
-        expect(() => weakSetOrThrow([],)).toThrow(/WeakSet/,);
-        expect(() => weakSetOrThrow({},)).toThrow(/WeakSet/,);
-        expect(() => weakSetOrThrow(null,)).toThrow(/WeakSet/,);
+        expect(() => weakSetOrThrow(new Set(),)).toThrow('WeakSet',);
+        expect(() => weakSetOrThrow(new WeakMap(),)).toThrow('WeakSet',);
+        expect(() => weakSetOrThrow([],)).toThrow('WeakSet',);
+        expect(() => weakSetOrThrow({},)).toThrow('WeakSet',);
+        expect(() => weakSetOrThrow(null,)).toThrow('WeakSet',);
       },
     },),
 

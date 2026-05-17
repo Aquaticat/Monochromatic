@@ -31,19 +31,19 @@ await describe({
     it({
       name: 'throws on null',
       fn: async () => {
-        expect(() => objectOrThrow(null,)).toThrow(/non-null object/,);
+        expect(() => objectOrThrow(null,)).toThrow('non-null object',);
       },
     },),
 
     it({
       name: 'throws on primitives',
       fn: async () => {
-        expect(() => objectOrThrow(0,)).toThrow(/non-null object/,);
-        expect(() => objectOrThrow('abc',)).toThrow(/non-null object/,);
-        expect(() => objectOrThrow(true,)).toThrow(/non-null object/,);
-        expect(() => objectOrThrow(undefined,)).toThrow(/non-null object/,);
-        expect(() => objectOrThrow(Symbol('s',),)).toThrow(/non-null object/,);
-        expect(() => objectOrThrow(1n,)).toThrow(/non-null object/,);
+        expect(() => objectOrThrow(0,)).toThrow('non-null object',);
+        expect(() => objectOrThrow('abc',)).toThrow('non-null object',);
+        expect(() => objectOrThrow(true,)).toThrow('non-null object',);
+        expect(() => objectOrThrow(undefined,)).toThrow('non-null object',);
+        expect(() => objectOrThrow(Symbol('s',),)).toThrow('non-null object',);
+        expect(() => objectOrThrow(1n,)).toThrow('non-null object',);
       },
     },),
 
@@ -51,7 +51,7 @@ await describe({
       name: 'throws on functions (functions are typeof "function", not "object")',
       fn: async () => {
         function noop(): void {}
-        expect(() => objectOrThrow(noop,)).toThrow(/non-null object/,);
+        expect(() => objectOrThrow(noop,)).toThrow('non-null object',);
       },
     },),
 

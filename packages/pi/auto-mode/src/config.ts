@@ -276,6 +276,7 @@ function compilePatterns(
   return patterns.map(
     function compilePattern(p,) {
       try {
+        // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- user-supplied auto-mode config patterns: source comes from config file, compiled to RegExp for the scanner; the function's purpose IS user-pattern-to-regex compilation.
         return new RegExp(p,);
       }
       catch (err) {

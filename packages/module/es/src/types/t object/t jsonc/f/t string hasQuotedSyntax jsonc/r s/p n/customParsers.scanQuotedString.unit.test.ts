@@ -72,7 +72,7 @@ await describe({
       fn: async () => {
         const input = '"abc' as FragmentStringJsonc;
         expect(() => $({ value: input, },)).toThrow(
-          /malformed jsonc, unterminated string/,
+          'malformed jsonc, unterminated string',
         );
       },
     },),
@@ -82,7 +82,7 @@ await describe({
       fn: async () => {
         const input = 'abc' as FragmentStringJsonc;
         expect(() => $({ value: input, },)).toThrow(
-          /expected a double quote to start a JSON string/,
+          'expected a double quote to start a JSON string',
         );
       },
     },),

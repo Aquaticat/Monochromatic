@@ -329,7 +329,7 @@ await describe({
                   '/* unterminated block comment no star slash' as FragmentStringJsonc,
               },)
             )
-              .toThrow(/incomplete block comment is not jsonc/,);
+              .toThrow('incomplete block comment is not jsonc',);
           },
         },),
 
@@ -337,7 +337,7 @@ await describe({
           name: 'throws error for empty unterminated block comment',
           fn: async () => {
             expect(() => $({ value: '/* {}' as FragmentStringJsonc, },)).toThrow(
-              /incomplete block comment is not jsonc/,
+              'incomplete block comment is not jsonc',
             );
           },
         },),

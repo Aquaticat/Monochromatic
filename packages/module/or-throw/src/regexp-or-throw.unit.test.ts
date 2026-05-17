@@ -13,6 +13,8 @@ import {
 
 import { regExpOrThrow, } from './regexp-or-throw.ts';
 
+/* oxlint-disable no-restricted-syntax/require-regex-justification -- this file tests regExpOrThrow; every test must construct a regex literal or RegExp instance as input. The regex sites here ARE the test fixtures. */
+
 await describe({
   name: regExpOrThrow.name,
   children: [
@@ -29,7 +31,7 @@ await describe({
     it({
       name: 'throws on non-RegExp values',
       fn: async () => {
-        expect(() => regExpOrThrow('abc',)).toThrow(/RegExp/,);
+        expect(() => regExpOrThrow('abc',)).toThrow('RegExp',);
         expect(() =>
           regExpOrThrow({
             test() {
@@ -37,9 +39,9 @@ await describe({
             },
           },)
         )
-          .toThrow(/RegExp/,);
-        expect(() => regExpOrThrow(null,)).toThrow(/RegExp/,);
-        expect(() => regExpOrThrow(undefined,)).toThrow(/RegExp/,);
+          .toThrow('RegExp',);
+        expect(() => regExpOrThrow(null,)).toThrow('RegExp',);
+        expect(() => regExpOrThrow(undefined,)).toThrow('RegExp',);
       },
     },),
 
@@ -53,3 +55,5 @@ await describe({
     },),
   ],
 },);
+
+/* oxlint-enable no-restricted-syntax/require-regex-justification */

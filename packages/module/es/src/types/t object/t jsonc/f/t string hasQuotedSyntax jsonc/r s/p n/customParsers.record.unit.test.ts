@@ -134,7 +134,7 @@ await describe({
       name: 'missing colon after key',
       fn: async () => {
         expect(() => $({ value: '{"a" 1}' as FragmentStringJsonc, },)).toThrow(
-          /expected ':' after key/,
+          `expected ':' after key`,
         );
       },
     },),
@@ -143,7 +143,7 @@ await describe({
       name: 'missing comma between pairs',
       fn: async () => {
         expect(() => $({ value: '{"a":1 "b":2}' as FragmentStringJsonc, },)).toThrow(
-          /expected ',' or '}/,
+          `expected ',' or '}`,
         );
       },
     },),

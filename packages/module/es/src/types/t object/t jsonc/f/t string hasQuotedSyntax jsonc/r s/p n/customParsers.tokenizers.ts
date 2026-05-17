@@ -105,6 +105,7 @@ export function parseNumberToken(
    * JSON number grammar (no leading +, leading 0 rules, optional fraction and exponent).
    * Matches the longest valid numeric prefix at position 0.
    */
+  // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- standard JSON number grammar (sign, integer with no-leading-zero rule, optional fraction, optional exponent); regex is the cleanest expression of "longest valid numeric prefix at position 0" and the input is bounded by the surrounding JSONC parser. No nested quantifiers, linear matching.
   const NUMBER_RE = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[Ee][+-]?\d+)?/;
   /** Regex match result for numeric token anchored at start. */
   const match = NUMBER_RE.exec(value,);

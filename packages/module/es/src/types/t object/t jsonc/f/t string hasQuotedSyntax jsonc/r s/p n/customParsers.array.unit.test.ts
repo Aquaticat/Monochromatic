@@ -100,7 +100,7 @@ await describe({
       name: 'missing comma between elements',
       fn: async () => {
         expect(() => $({ value: '[1 2]' as FragmentStringJsonc, },)).toThrow(
-          /expected ',' or ']'/,
+          `expected ',' or ']'`,
         );
       },
     },),

@@ -91,10 +91,9 @@ function resolvePath(
   if (filePath.startsWith('~',)) {
     return nodePath.resolve(
       process.env.HOME ?? '/home',
-      filePath.slice(1,).replace(
-        /^\//,
-        '',
-      ),
+      filePath.slice(1,).startsWith('/',)
+        ? filePath.slice(2,)
+        : filePath.slice(1,),
     );
   }
   return nodePath.resolve(
@@ -154,11 +153,12 @@ function isHomeDotfile(
   },)) {
     return false;
   }
+  /** Slice of `resolved` after the home prefix; the leading `/` (if any) is consumed below. */
+  const afterHome = resolved.slice(home.length,);
   /** Home-relative path; first segment determines whether this is a dotfile/dotdir under `~`. */
-  const relative = resolved.slice(home.length,).replace(
-    /^\//,
-    '',
-  );
+  const relative = afterHome.startsWith('/',)
+    ? afterHome.slice(1,)
+    : afterHome;
   /** Default `''` covers the empty-relative case (path equals home directory). */
   const [first = '',] = relative.split('/',);
   return first.startsWith('.',);

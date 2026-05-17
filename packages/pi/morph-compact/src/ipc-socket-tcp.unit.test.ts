@@ -87,6 +87,7 @@ await describe({
           fn: async () => {
             using server = usingTcpServer(await createOneShotTcpServer('test',),);
 
+            // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- format check on `host:port`; the test asserts exact loopback IP shape with a numeric port suffix. Input length is bounded by IP+port format, no nested quantifiers.
             expect(server.address,).toMatch(/^127\.0\.0\.1:\d+$/,);
           },
         },),

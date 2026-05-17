@@ -15,6 +15,22 @@ import { startsWithComment, } from './customParsers.startsWithComment.ts';
 const MAX_ERROR_PREVIEW_LENGTH = 48;
 
 /**
+ * Tests whether `c` is a JSON-whitespace character (space, tab, newline,
+ * carriage return). JSON's whitespace alphabet is narrower than
+ * JavaScript's `\s`; this predicate covers exactly the JSON set.
+ *
+ * @param c - single character
+ *
+ * @returns whether `c` is JSON whitespace
+ */
+function isJsonWhitespace(c: string,): boolean {
+  return (c === ' ')
+    || (c === '\t')
+    || (c === '\n')
+    || (c === '\r');
+}
+
+/**
  * Sentinel indicating fast-path optimization cannot be applied.
  *
  * @remarks
@@ -110,8 +126,12 @@ function tryContainerFastPath(
   /** Cursor that walks back from the closing character to detect a trailing-comma pattern; cursor state held on an object so the function root stays const-only. */
   const cursor = { searchIndex: trimmed.length - closingChar.length, };
   // Skip whitespace before the closing character
-  while ((cursor.searchIndex > 0) && /\s/.test(trimmed[cursor.searchIndex - 1] ?? '',))
+  while (
+    (cursor.searchIndex > 0)
+    && isJsonWhitespace(trimmed[cursor.searchIndex - 1] ?? '',)
+  ) {
     cursor.searchIndex--;
+  }
 
   /** Local copy of the final cursor position used by the comma/end checks below. */
   const { searchIndex, } = cursor;

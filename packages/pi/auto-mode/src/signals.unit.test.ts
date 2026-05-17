@@ -405,6 +405,7 @@ await describe({
           text: 'deploy to production',
           config: {
             enabled: true,
+            // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- test fixture: textSignals consumes user-configured RegExp[] from config; this literal IS the test's pattern.
             patterns: [/production/,],
             commands: [],
             judgeModel: { strategy: 'same-provider', costRatio: 0.5, majorVersions: 1, },

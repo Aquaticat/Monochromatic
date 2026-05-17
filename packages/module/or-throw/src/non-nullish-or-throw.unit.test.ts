@@ -35,14 +35,14 @@ await describe({
     it({
       name: 'throws when value is null',
       fn: async () => {
-        expect(() => nonNullishOrThrow(null,)).toThrow(/non-nullish/,);
+        expect(() => nonNullishOrThrow(null,)).toThrow('non-nullish',);
       },
     },),
 
     it({
       name: 'throws when value is undefined',
       fn: async () => {
-        expect(() => nonNullishOrThrow(undefined,)).toThrow(/non-nullish/,);
+        expect(() => nonNullishOrThrow(undefined,)).toThrow('non-nullish',);
       },
     },),
 

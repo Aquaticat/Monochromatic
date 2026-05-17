@@ -27,14 +27,14 @@ await describe({
     it({
       name: 'throws on non-string values',
       fn: async () => {
-        expect(() => stringOrThrow(42,)).toThrow(/string/,);
-        expect(() => stringOrThrow(true,)).toThrow(/string/,);
-        expect(() => stringOrThrow(1n,)).toThrow(/string/,);
-        expect(() => stringOrThrow(Symbol('s',),)).toThrow(/string/,);
-        expect(() => stringOrThrow(null,)).toThrow(/string/,);
-        expect(() => stringOrThrow(undefined,)).toThrow(/string/,);
-        expect(() => stringOrThrow({},)).toThrow(/string/,);
-        expect(() => stringOrThrow([],)).toThrow(/string/,);
+        expect(() => stringOrThrow(42,)).toThrow('string',);
+        expect(() => stringOrThrow(true,)).toThrow('string',);
+        expect(() => stringOrThrow(1n,)).toThrow('string',);
+        expect(() => stringOrThrow(Symbol('s',),)).toThrow('string',);
+        expect(() => stringOrThrow(null,)).toThrow('string',);
+        expect(() => stringOrThrow(undefined,)).toThrow('string',);
+        expect(() => stringOrThrow({},)).toThrow('string',);
+        expect(() => stringOrThrow([],)).toThrow('string',);
       },
     },),
 

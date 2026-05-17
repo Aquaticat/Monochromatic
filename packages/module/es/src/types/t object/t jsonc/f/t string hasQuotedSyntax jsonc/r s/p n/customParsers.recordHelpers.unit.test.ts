@@ -127,7 +127,7 @@ await describe({
           name: 'error on non-quoted key',
           fn: async () => {
             expect(() => parseRecordKey('unquoted: 1' as FragmentStringJsonc,)).toThrow(
-              /expected quoted key/,
+              'expected quoted key',
             );
           },
         },),
@@ -159,7 +159,7 @@ await describe({
           name: 'error when colon missing',
           fn: async () => {
             expect(() => expectColonAfterKey(' 1' as FragmentStringJsonc,)).toThrow(
-              /expected ':' after key/,
+              `expected ':' after key`,
             );
           },
         },),

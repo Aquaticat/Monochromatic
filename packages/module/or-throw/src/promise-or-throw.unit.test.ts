@@ -27,11 +27,11 @@ await describe({
     it({
       name: 'throws on non-promise values',
       fn: async () => {
-        expect(() => promiseOrThrow(42,)).toThrow(/Promise/,);
-        expect(() => promiseOrThrow(null,)).toThrow(/Promise/,);
-        expect(() => promiseOrThrow(undefined,)).toThrow(/Promise/,);
-        expect(() => promiseOrThrow([],)).toThrow(/Promise/,);
-        expect(() => promiseOrThrow('not a promise',)).toThrow(/Promise/,);
+        expect(() => promiseOrThrow(42,)).toThrow('Promise',);
+        expect(() => promiseOrThrow(null,)).toThrow('Promise',);
+        expect(() => promiseOrThrow(undefined,)).toThrow('Promise',);
+        expect(() => promiseOrThrow([],)).toThrow('Promise',);
+        expect(() => promiseOrThrow('not a promise',)).toThrow('Promise',);
       },
     },),
 

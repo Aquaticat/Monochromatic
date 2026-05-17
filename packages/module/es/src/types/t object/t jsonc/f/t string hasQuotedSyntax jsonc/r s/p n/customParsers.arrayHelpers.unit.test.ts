@@ -86,9 +86,7 @@ await describe({
           name: 'invalid: identifier right after literal (boundary handled by separator)',
           fn: async () => {
             expect(() => parseArrayElements({ tail: 'nullY]' as FragmentStringJsonc, },))
-              .toThrow(
-                /expected ',' or ']'/,
-              );
+              .toThrow(`expected ',' or ']'`,);
           },
         },),
       ],

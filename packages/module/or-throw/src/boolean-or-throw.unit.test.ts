@@ -27,12 +27,12 @@ await describe({
     it({
       name: 'throws on truthy/falsy values that are not literal booleans',
       fn: async () => {
-        expect(() => booleanOrThrow(1,)).toThrow(/boolean/,);
-        expect(() => booleanOrThrow(0,)).toThrow(/boolean/,);
-        expect(() => booleanOrThrow('true',)).toThrow(/boolean/,);
-        expect(() => booleanOrThrow('',)).toThrow(/boolean/,);
-        expect(() => booleanOrThrow(null,)).toThrow(/boolean/,);
-        expect(() => booleanOrThrow(undefined,)).toThrow(/boolean/,);
+        expect(() => booleanOrThrow(1,)).toThrow('boolean',);
+        expect(() => booleanOrThrow(0,)).toThrow('boolean',);
+        expect(() => booleanOrThrow('true',)).toThrow('boolean',);
+        expect(() => booleanOrThrow('',)).toThrow('boolean',);
+        expect(() => booleanOrThrow(null,)).toThrow('boolean',);
+        expect(() => booleanOrThrow(undefined,)).toThrow('boolean',);
       },
     },),
 

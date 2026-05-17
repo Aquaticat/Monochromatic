@@ -27,12 +27,12 @@ await describe({
     it({
       name: 'throws on every non-Map value',
       fn: async () => {
-        expect(() => mapOrThrow([],)).toThrow(/Map/,);
-        expect(() => mapOrThrow(new Set(),)).toThrow(/Map/,);
-        expect(() => mapOrThrow(new WeakMap(),)).toThrow(/Map/,);
-        expect(() => mapOrThrow({},)).toThrow(/Map/,);
-        expect(() => mapOrThrow('abc',)).toThrow(/Map/,);
-        expect(() => mapOrThrow(null,)).toThrow(/Map/,);
+        expect(() => mapOrThrow([],)).toThrow('Map',);
+        expect(() => mapOrThrow(new Set(),)).toThrow('Map',);
+        expect(() => mapOrThrow(new WeakMap(),)).toThrow('Map',);
+        expect(() => mapOrThrow({},)).toThrow('Map',);
+        expect(() => mapOrThrow('abc',)).toThrow('Map',);
+        expect(() => mapOrThrow(null,)).toThrow('Map',);
       },
     },),
 

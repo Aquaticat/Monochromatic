@@ -18,8 +18,57 @@ import type {
   TomlEditState,
 } from './types.ts';
 
-/** Whitespace-and-single-newline pattern used to recognise "attached" gaps. */
-const ATTACHED_GAP_PATTERN = /^[ \t]*\n[ \t]*$/;
+/**
+ * Tests whether `s` consists entirely of spaces/tabs surrounding exactly
+ * one newline. Mirrors the shape of `/^[ \t]*\n[ \t]*$/` with a linear
+ * scan; used to detect "attached" comment gaps (a single line break with
+ * no blank line between).
+ *
+ * @param s - candidate gap string
+ *
+ * @returns whether the gap is space/tab-only with exactly one newline
+ */
+function isAttachedGap(s: string,): boolean {
+  /**
+   * Recursive walker tracking the running newline count.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @param newlineCount - newlines seen so far; aborts on a second one
+   *
+   * @returns whether the rest of `s` satisfies the gap shape
+   */
+  function walk({
+    idx,
+    newlineCount,
+  }: {
+    idx: number;
+    newlineCount: number;
+  },): boolean {
+    if (idx >= s.length)
+      return newlineCount === 1;
+    /** Char at the cursor; only space, tab, or a single newline qualify. */
+    const c = s.charAt(idx,);
+    if (c === '\n') {
+      if (newlineCount >= 1)
+        return false;
+      return walk({
+        idx: idx + 1,
+        newlineCount: newlineCount + 1,
+      },);
+    }
+    if ((c !== ' ') && (c !== '\t'))
+      return false;
+    return walk({
+      idx: idx + 1,
+      newlineCount,
+    },);
+  }
+  return walk({
+    idx: 0,
+    newlineCount: 0,
+  },);
+}
 
 /**
  * The block of `Block` comments immediately preceding `node` with no blank
@@ -101,7 +150,7 @@ function collectAttached(
       comment.range[1],
       c,
     );
-    if (!ATTACHED_GAP_PATTERN.test(between,))
+    if (!isAttachedGap(between,))
       return collected;
     collected.unshift(comment,);
     return loop(

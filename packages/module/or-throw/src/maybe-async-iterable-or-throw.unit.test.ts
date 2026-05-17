@@ -39,10 +39,10 @@ await describe({
     it({
       name: 'throws on values that implement neither protocol',
       fn: async () => {
-        expect(() => maybeAsyncIterableOrThrow(42,)).toThrow(/iterable/,);
-        expect(() => maybeAsyncIterableOrThrow(null,)).toThrow(/iterable/,);
-        expect(() => maybeAsyncIterableOrThrow(undefined,)).toThrow(/iterable/,);
-        expect(() => maybeAsyncIterableOrThrow({ a: 1, },)).toThrow(/iterable/,);
+        expect(() => maybeAsyncIterableOrThrow(42,)).toThrow('iterable',);
+        expect(() => maybeAsyncIterableOrThrow(null,)).toThrow('iterable',);
+        expect(() => maybeAsyncIterableOrThrow(undefined,)).toThrow('iterable',);
+        expect(() => maybeAsyncIterableOrThrow({ a: 1, },)).toThrow('iterable',);
       },
     },),
   ],

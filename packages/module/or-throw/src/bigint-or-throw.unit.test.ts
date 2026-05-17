@@ -28,11 +28,11 @@ await describe({
     it({
       name: 'throws on non-bigint values, including numeric numbers',
       fn: async () => {
-        expect(() => bigintOrThrow(42,)).toThrow(/bigint/,);
-        expect(() => bigintOrThrow('42',)).toThrow(/bigint/,);
-        expect(() => bigintOrThrow(true,)).toThrow(/bigint/,);
-        expect(() => bigintOrThrow(null,)).toThrow(/bigint/,);
-        expect(() => bigintOrThrow(undefined,)).toThrow(/bigint/,);
+        expect(() => bigintOrThrow(42,)).toThrow('bigint',);
+        expect(() => bigintOrThrow('42',)).toThrow('bigint',);
+        expect(() => bigintOrThrow(true,)).toThrow('bigint',);
+        expect(() => bigintOrThrow(null,)).toThrow('bigint',);
+        expect(() => bigintOrThrow(undefined,)).toThrow('bigint',);
       },
     },),
 

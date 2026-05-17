@@ -167,6 +167,8 @@ export const LONG_FLAGS: Record<string, string> = {
 
 //endregion
 
+/* oxlint-disable no-restricted-syntax/require-regex-justification -- this module defines auto-mode's secret-detection patterns; the regex literals ARE the rule set. Each pattern is anchored to a known credential format (length-bounded character classes) or surrounded by anchor-like boundaries, so no nested quantifiers and no backtracking risk. Input is bounded by the surrounding scanner. */
+
 //region Content signal patterns
 
 /** Pattern matching private key PEM headers. */
@@ -219,6 +221,8 @@ export const SECRET_PATH_PATTERN: RegExp =
   /(?:^|[/\\._-])(?:secret|credential|password|passwd|token|private[._-]?key|\.env(?:\.|$)|\.dev\.vars(?:$|[/\\])|id_rsa|id_ed25519|id_ecdsa|authorized_keys|known_hosts)|\.(?:pem|key)$/i;
 
 //endregion
+
+/* oxlint-enable no-restricted-syntax/require-regex-justification */
 
 //region Relevant tools
 

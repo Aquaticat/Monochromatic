@@ -37,10 +37,10 @@ await describe({
     it({
       name: 'throws on non-Error values, including error-shaped plain objects',
       fn: async () => {
-        expect(() => errorOrThrow('boom',)).toThrow(/Error/,);
-        expect(() => errorOrThrow({ message: 'boom', },)).toThrow(/Error/,);
-        expect(() => errorOrThrow(null,)).toThrow(/Error/,);
-        expect(() => errorOrThrow(undefined,)).toThrow(/Error/,);
+        expect(() => errorOrThrow('boom',)).toThrow('Error',);
+        expect(() => errorOrThrow({ message: 'boom', },)).toThrow('Error',);
+        expect(() => errorOrThrow(null,)).toThrow('Error',);
+        expect(() => errorOrThrow(undefined,)).toThrow('Error',);
       },
     },),
 

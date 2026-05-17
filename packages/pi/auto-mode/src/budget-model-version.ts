@@ -8,6 +8,8 @@
  * @module
  */
 
+/* oxlint-disable no-restricted-syntax/require-regex-justification -- this module tokenises arbitrary model-id strings and recognises numeric runs; the regexes are bounded character classes (no nested quantifiers, no backtracking risk) applied to model-id strings whose length is bounded by the model name. */
+
 import type {
   Api,
   Model,
@@ -233,3 +235,5 @@ export {
   extractVersionNumbers,
   findCheapestInMajorVersions,
 };
+
+/* oxlint-enable no-restricted-syntax/require-regex-justification */

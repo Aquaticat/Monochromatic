@@ -49,11 +49,11 @@ await describe({
     it({
       name: 'throws on non-callable values',
       fn: async () => {
-        expect(() => functionOrThrow({},)).toThrow(/function/,);
-        expect(() => functionOrThrow([],)).toThrow(/function/,);
-        expect(() => functionOrThrow('fn',)).toThrow(/function/,);
-        expect(() => functionOrThrow(null,)).toThrow(/function/,);
-        expect(() => functionOrThrow(undefined,)).toThrow(/function/,);
+        expect(() => functionOrThrow({},)).toThrow('function',);
+        expect(() => functionOrThrow([],)).toThrow('function',);
+        expect(() => functionOrThrow('fn',)).toThrow('function',);
+        expect(() => functionOrThrow(null,)).toThrow('function',);
+        expect(() => functionOrThrow(undefined,)).toThrow('function',);
       },
     },),
 
