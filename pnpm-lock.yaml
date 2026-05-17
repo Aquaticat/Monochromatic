@@ -350,6 +350,9 @@ importers:
       '@monochromatic-dev/claude-code-plugins-claude-spawn':
         specifier: workspace:*
         version: link:packages/claude-code-plugins/claude-spawn
+      '@monochromatic-dev/claude-code-plugins-correction-reminder':
+        specifier: workspace:*
+        version: link:packages/claude-code-plugins/correction-reminder
       '@monochromatic-dev/claude-code-plugins-guardrail':
         specifier: workspace:*
         version: link:packages/claude-code-plugins/guardrail
