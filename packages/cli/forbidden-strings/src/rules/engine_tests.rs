@@ -978,3 +978,155 @@ fn compile_rule_src_rejects_fuzz_slow_unit_fast() {
         "compile_rule_src on slow-unit took {elapsed:?}; expected <100ms",
     );
 }
+
+use super::engine::nested_grouped_quantifier;
+
+// What:     Positive triggers for `nested_grouped_quantifier`. Each
+//           case has a chain of four or more consecutive
+//           `){quant})` adjacencies, the actual shape the fuzz
+//           target's `Node::Quant` renderer emits (always wrapping
+//           quantified atoms in `(?:...)`). The motivating artifact
+//           is `slow-unit-0cfbc4b8b9945074fe5214a96c503f6e994e3b97`,
+//           which decodes to a rule containing two five-deep chains
+//           back-to-back.
+// Why:      `stacked_quantifier` catches `a{5,11}{5,11}` but NOT
+//           `(?:(?:a){5,11}){5,11}` -- the (?:) wrapping defeats
+//           adjacency detection. This sibling pre-validator covers
+//           the grouped form. Each case is a shape the fuzz target
+//           would wall-clock the regex crate on.
+// TS map:   `it("nestedGroupedQuantifier fires on minimal shapes", ...)`.
+#[test]
+fn nested_grouped_quantifier_fires_on_minimal_shapes() {
+    let cases: &[&str] = &[
+        // Depth 4 -- the threshold case. Four consecutive `){quant})`
+        // adjacencies starting from the innermost group close.
+        "(?:(?:(?:(?:a)*)*)*)*",
+        // Depth 5 with `*` -- the second half of the slow-unit body.
+        "(?:(?:(?:(?:(?:a)*)*)*)*)*",
+        // Depth 5 with `{5,11}` -- the first half of the slow-unit body.
+        "(?:(?:(?:(?:(?:a){5,11}){5,11}){5,11}){5,11}){5,11}",
+        // The exact rendered source from the slow-unit artifact (with
+        // `\d` and `(?iu)` flags). The two halves concatenated
+        // followed by literal `aa`.
+        "(?iu)(?:(?:(?:(?:(?:\\d){5,11}){5,11}){5,11}){5,11}){5,11}(?:(?:(?:(?:(?:\\d)*)*)*)*)*aa",
+        // Mixed quantifier kinds in the chain.
+        "(?:(?:(?:(?:a)*){2,3})+)?*",
+        // Capturing groups (not just non-capturing).
+        "(((((a)*)*)*)*)*",
+        // Lazy modifiers on the quantifiers still count -- the chain
+        // is about close+quant adjacency, not about greediness.
+        "(?:(?:(?:(?:a)*?)*?)*?)*?",
+        // Bounded quantifier shape with `{N,}` (no upper bound).
+        "(?:(?:(?:(?:(?:a){5,}){5,}){5,}){5,}){5,}",
+        // Bounded quantifier shape with `{N}` (fixed count).
+        "(?:(?:(?:(?:(?:a){3}){3}){3}){3}){3}",
+    ];
+    for case in cases {
+        assert!(
+            nested_grouped_quantifier(case).is_some(),
+            "expected nested_grouped_quantifier to fire on {case:?}",
+        );
+    }
+}
+
+// What:     Negative cases for `nested_grouped_quantifier`. Includes
+//           depth-3 nestings (just under threshold), single quantified
+//           groups, sequential (non-nested) quantified groups, and
+//           shapes with atoms or alternation between close+quant
+//           pairs that break adjacency.
+// Why:      A false positive here would reject legitimate authored
+//           rules. Real secret-detection patterns rarely nest beyond
+//           2 quantifier levels; the depth-3 case is the boundary
+//           case the detector must NOT trip.
+// TS map:   `it("nestedGroupedQuantifier does not fire on safe shapes", ...)`.
+#[test]
+fn nested_grouped_quantifier_skips_safe_shapes() {
+    let cases: &[&str] = &[
+        // Empty / trivial patterns.
+        "",
+        "abc",
+        "a*",
+        "(?:a)*",
+        "(a)*",
+        // Depth-2 nesting -- one level under threshold.
+        "(?:(?:a)*)*",
+        "((a)*)*",
+        // Depth-3 nesting -- still under threshold of 4.
+        "(?:(?:(?:a)*)*)*",
+        "(((a)*)*)*",
+        // Sequential quantified groups (not nested -- each `(` resets).
+        "(?:a)*(?:b)*(?:c)*(?:d)*(?:e)*",
+        // Quantified groups separated by atoms -- atoms reset chain.
+        "(?:a)*b(?:c)*d(?:e)*f(?:g)*h(?:i)*",
+        // Quantified groups separated by alternation.
+        "(?:a)*|(?:b)*|(?:c)*|(?:d)*",
+        // Groups with atom-internal quantifiers but no close+quant chain.
+        "(?:a*b*c*d*)",
+        // Named captures and inline flags -- the `?` is group syntax.
+        "(?P<a>x)(?P<b>y)(?P<c>z)(?P<d>w)",
+        "(?i)abc",
+        // Lookarounds -- `(` then `?` then `=`/`!`/`<`; the close has
+        // no quantifier so chain breaks.
+        "(?=a)(?=b)(?=c)(?=d)",
+        "(?<=a)(?<=b)(?<=c)(?<=d)",
+        // Mixed depth-3 with literal atoms between groups.
+        "(?:(?:(?:foo)*)*)*bar",
+        // Group close followed by literal, NOT a quantifier -- chain
+        // resets even though there is a `)`.
+        "(?:a)b(?:c)d(?:e)f(?:g)h(?:i)",
+        // Anchors and word-boundaries between groups.
+        "(?:a)*\\b(?:b)*\\B(?:c)*^(?:d)*$",
+        // Class containing `)` is literal byte, not a real close.
+        "[)]*[)]*[)]*[)]*[)]*",
+        // Escaped close is literal.
+        "\\)*\\)*\\)*\\)*\\)*",
+    ];
+    for case in cases {
+        assert!(
+            nested_grouped_quantifier(case).is_none(),
+            "nested_grouped_quantifier should NOT fire on {case:?}, got {:?}",
+            nested_grouped_quantifier(case),
+        );
+    }
+}
+
+// What:     End-to-end check: `compile_rule_src` rejects the
+//           ACTUAL fuzz-rendered slow-unit shape (with `(?:)`
+//           wrapping) in microseconds. The bare-stacked variant is
+//           covered by `compile_rule_src_rejects_fuzz_slow_unit_fast`;
+//           this test covers the grouped variant the fuzz generator
+//           emits.
+// Why:      The fuzz target's `Node::Quant` renderer at
+//           `fuzz/src/generators.rs:1292-1300` always wraps quantified
+//           atoms in `(?:...)`, so the slow-unit's rendered source is
+//           the grouped shape. Probe at /tmp/probe-slow-unit showed
+//           that the artifact decodes to exactly this source and that
+//           compile_rule_src previously took ~3.26s on it.
+// TS map:   `it("compile_rule_src rejects grouped fuzz slow-unit fast", ...)`.
+#[test]
+fn compile_rule_src_rejects_grouped_fuzz_slow_unit_fast() {
+    use std::time::Instant;
+    // The actual rendered source from
+    // fuzz/artifacts/fuzz_extract_gate_soundness/slow-unit-0cfbc4b8b9945074fe5214a96c503f6e994e3b97
+    // after decoding via Arbitrary and calling rule.render(). The
+    // (?:) wrapping comes from Node::Quant's renderer.
+    let src = "(?iu)(?:(?:(?:(?:(?:\\d){5,11}){5,11}){5,11}){5,11}){5,11}(?:(?:(?:(?:(?:\\d)*)*)*)*)*aa";
+    let started = Instant::now();
+    let result = crate::rules::compile_rule_src(src);
+    let elapsed = started.elapsed();
+    let err = match result {
+        Ok(_) => panic!("expected nested-grouped-quantifier rejection, got Ok"),
+        Err(e) => e,
+    };
+    assert!(
+        err.contains("nested grouped quantifier"),
+        "expected `nested grouped quantifier` in error, got {err:?}",
+    );
+    // 100 ms is generous; the pre-validator should run in microseconds.
+    // Anything close to a second means the regex crate's slow path is
+    // reachable again.
+    assert!(
+        elapsed.as_millis() < 100,
+        "compile_rule_src on grouped slow-unit took {elapsed:?}; expected <100ms",
+    );
+}

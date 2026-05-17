@@ -67,6 +67,7 @@ pub use engine::{
     intersection_with_lookbehind,
     intersection_with_word_end_alternation,
     lookaround_in_complement,
+    nested_grouped_quantifier,
     requires_resharp,
     stacked_quantifier,
     CompiledRegex,
@@ -526,6 +527,35 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
     // if (reason) throw new Error(`(regex): ${reason}`);
     // ```
     if let Some(reason) = stacked_quantifier(src) {
+        return Err(format!("(regex): {}", reason));
+    }
+    // What:     `if let Some(reason) = nested_grouped_quantifier(src)`
+    //           catches the GROUPED form of multiplicative quantifier
+    //           blowup: chains of `){quant})` adjacencies four or more
+    //           deep, the shape the fuzz target's `Node::Quant`
+    //           renderer actually emits (always wraps in `(?:...)`).
+    //           Without this guard, the slow-unit shape
+    //           `(?iu)(?:(?:(?:(?:(?:\d){5,11}){5,11}){5,11}){5,11}){5,11}(?:(?:(?:(?:(?:\d)*)*)*)*)*aa`
+    //           takes ~3 seconds to error with `CompiledTooBig` -- well
+    //           past the libFuzzer slow-unit threshold under ASAN.
+    //           Placed alongside `stacked_quantifier` (both are
+    //           structural shape pre-validators that apply regardless
+    //           of engine routing).
+    // Why:      `stacked_quantifier` catches `\D*****` and
+    //           `a{5,11}{5,11}` (bare back-to-back quantifier
+    //           suffixes); `nested_grouped_quantifier` catches the
+    //           wrapped form `(?:(?:a){5,11}){5,11}`-deep that the
+    //           generator actually produces. Both are needed because
+    //           the regex-source-shape space is wider than either
+    //           detector alone covers.
+    // TS map:   `const reason = nestedGroupedQuantifier(src); if (reason) throw new Error(`(regex): ${reason}`);`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const reason = nestedGroupedQuantifier(src);
+    // if (reason) throw new Error(`(regex): ${reason}`);
+    // ```
+    if let Some(reason) = nested_grouped_quantifier(src) {
         return Err(format!("(regex): {}", reason));
     }
     // What:     `if requires_resharp(src) { ... } else { ... }` runs

@@ -63,6 +63,7 @@ pub use crate::rules::{
     is_word_byte,
     load_ruleset_from_source,
     lookaround_in_complement,
+    nested_grouped_quantifier,
     parse_rule_source,
     quantifier_is_required,
     requires_resharp,
