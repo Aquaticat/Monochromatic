@@ -12,25 +12,183 @@
  * @module
  */
 
-//region ANSI handling
+//region Character predicates
+
+/** ASCII code 27 (0x1B) for the ESC byte that opens every ANSI control sequence; named to satisfy `no-magic-numbers`. */
+const ESC_CODE_POINT = 0x1B;
+/** ESC byte string; located via `indexOf(ESC_CHAR, ...)` instead of a regex. */
+const ESC_CHAR = String.fromCodePoint(ESC_CODE_POINT,);
 
 /**
- * Pattern matching ANSI escape sequences used for terminal colors and formatting.
+ * Tests whether `c` is an ASCII digit (`0`-`9`).
  *
- * Uses `\u001B` hex escape instead of `\u001B` to satisfy `no-control-regex`
- * while remaining functionally identical.
+ * @param c - single character
+ *
+ * @returns whether `c` is an ASCII digit
  *
  * @example
  * ```ts
- * '\u001B[31merror\u001B[0m'.replace(ANSI_PATTERN, '');
- * // 'error'
+ * isAsciiDigit('7'); // true
+ * isAsciiDigit('a'); // false
  * ```
  */
-// oxlint-disable-next-line no-control-regex -- intentional ANSI escape sequence matching
-const ANSI_PATTERN = /\u001B\[\d+(?:;\d+)*m/g;
+function isAsciiDigit(c: string,): boolean {
+  return (c >= '0') && (c <= '9');
+}
+
+/**
+ * Tests whether `c` is an ASCII letter (`a`-`z` or `A`-`Z`).
+ *
+ * @param c - single character
+ *
+ * @returns whether `c` is an ASCII letter
+ *
+ * @example
+ * ```ts
+ * isAsciiLetter('a'); // true
+ * isAsciiLetter('1'); // false
+ * ```
+ */
+function isAsciiLetter(c: string,): boolean {
+  return ((c >= 'a') && (c <= 'z'))
+    || ((c >= 'A') && (c <= 'Z'));
+}
+
+/**
+ * Tests whether `c` qualifies as a `\w` word char (alphanumeric or `_`).
+ *
+ * @param c - single character
+ *
+ * @returns whether `c` is a word char
+ *
+ * @example
+ * ```ts
+ * isWordChar('_'); // true
+ * isWordChar('-'); // false
+ * ```
+ */
+function isWordChar(c: string,): boolean {
+  return isAsciiLetter(c,) || isAsciiDigit(c,) || (c === '_');
+}
+
+/**
+ * Tests whether `c` is permitted inside an oxlint rule name (`[\w-]`).
+ *
+ * @param c - single character
+ *
+ * @returns whether `c` may appear inside a rule name
+ *
+ * @example
+ * ```ts
+ * isRuleNameChar('-'); // true
+ * isRuleNameChar('('); // false
+ * ```
+ */
+function isRuleNameChar(c: string,): boolean {
+  return isWordChar(c,) || (c === '-');
+}
+
+/**
+ * Tests whether `c` is `\s` whitespace (space, tab, newline, return,
+ * form feed, vertical tab).
+ *
+ * @param c - single character
+ *
+ * @returns whether `c` is whitespace
+ *
+ * @example
+ * ```ts
+ * isWhitespace(' '); // true
+ * isWhitespace('x'); // false
+ * ```
+ */
+function isWhitespace(c: string,): boolean {
+  return (c === ' ')
+    || (c === '\t')
+    || (c === '\n')
+    || (c === '\r')
+    || (c === '\f')
+    || (c === '\v');
+}
+
+//endregion Character predicates
+
+//region ANSI handling
+
+/**
+ * Returns the length of a valid ANSI CSI sequence starting at
+ * `text[start]`, or `-1` when no valid sequence begins there.
+ *
+ * Mirrors the shape of `/\x1B\[\d+(?:;\d+)*m/` with a linear scan:
+ * after `ESC[`, accept one or more digits, optionally followed by
+ * `;<digits>` runs, ending at `m`.
+ *
+ * @param text - input string
+ *
+ * @param start - cursor at the candidate ESC byte
+ *
+ * @returns matched length, or `-1` for no match
+ *
+ * @example
+ * ```ts
+ * ansiEscapeLength({ text: '\x1B[31m', start: 0 }); // 5
+ * ansiEscapeLength({ text: 'plain', start: 0 });    // -1
+ * ```
+ */
+function ansiEscapeLength({
+  text,
+  start,
+}: {
+  text: string;
+  start: number;
+},): number {
+  if (text.charAt(start,) !== ESC_CHAR)
+    return -1;
+  if (text.charAt(start + 1,) !== '[')
+    return -1;
+
+  /**
+   * Walks zero or more digits, then dispatches on the next char.
+   * `m` ends the sequence; `;` requires another digit run.
+   *
+   * @param idx - cursor inside the digit run
+   *
+   * @returns matched length, or `-1` for no match
+   */
+  function afterDigits(idx: number,): number {
+    /** Current char at the cursor; drives the state transition. */
+    const c = text.charAt(idx,);
+    if (isAsciiDigit(c,))
+      return afterDigits(idx + 1,);
+    if (c === 'm')
+      return (idx - start) + 1;
+    if (c === ';')
+      return digitRun(idx + 1,);
+    return -1;
+  }
+
+  /**
+   * Requires at least one digit at `idx`, then delegates to {@link afterDigits}.
+   *
+   * @param idx - cursor at the expected first digit
+   *
+   * @returns matched length, or `-1` for no match
+   */
+  function digitRun(idx: number,): number {
+    if (!isAsciiDigit(text.charAt(idx,),))
+      return -1;
+    return afterDigits(idx + 1,);
+  }
+
+  return digitRun(start + 2,);
+}
 
 /**
  * Strips ANSI escape codes from a string for reliable text matching.
+ *
+ * Invalid ESC bytes (e.g. non-CSI escapes) are preserved so the caller
+ * can still see them; only `\x1B[<digits>(;<digits>)*m` sequences are
+ * stripped.
  *
  * @param text - string potentially containing ANSI escape sequences
  *
@@ -38,15 +196,70 @@ const ANSI_PATTERN = /\u001B\[\d+(?:;\d+)*m/g;
  *
  * @example
  * ```ts
- * stripAnsi('\u001B[31merror\u001B[0m');
+ * stripAnsi('\x1B[31merror\x1B[0m');
  * // 'error'
  * ```
  */
 export function stripAnsi(text: string,): string {
-  return text.replace(
-    ANSI_PATTERN,
-    '',
-  );
+  /**
+   * Recursive walker emitting non-escape chunks.
+   *
+   * @param idx - cursor into `text`
+   *
+   * @param acc - accumulated output chunks
+   *
+   * @returns chunks to join
+   */
+  function walk({
+    idx,
+    acc,
+  }: {
+    idx: number;
+    acc: readonly string[];
+  },): readonly string[] {
+    /** Position of the next ESC byte; `-1` means no further ANSI sequences. */
+    const escIdx = text.indexOf(
+      ESC_CHAR,
+      idx,
+    );
+    if (escIdx === (-1)) {
+      return [
+        ...acc,
+        text.slice(idx,),
+      ];
+    }
+    /** Length of the ANSI sequence at `escIdx`, or `-1` when invalid. */
+    const escLen = ansiEscapeLength({
+      text,
+      start: escIdx,
+    },);
+    if (escLen === (-1)) {
+      return walk({
+        idx: escIdx + 1,
+        acc: [
+          ...acc,
+          text.slice(
+            idx,
+            escIdx + 1,
+          ),
+        ],
+      },);
+    }
+    return walk({
+      idx: escIdx + escLen,
+      acc: [
+        ...acc,
+        text.slice(
+          idx,
+          escIdx,
+        ),
+      ],
+    },);
+  }
+  return walk({
+    idx: 0,
+    acc: [],
+  },).join('',);
 }
 
 //endregion ANSI handling
@@ -80,18 +293,229 @@ export const RULE_GUIDANCE: Record<string, string> = {
 //region Diagnostic detection
 
 /**
- * Pattern matching oxlint diagnostic header lines.
+ * Walks consecutive whitespace chars starting at `idx`, returning the
+ * first non-whitespace position (or `text.length`).
  *
- * Oxlint uses `x` for errors and `!` for warnings,
- * followed by `plugin(rule-name): message`.
+ * @param text - input string
+ *
+ * @param idx - cursor at the candidate whitespace
+ *
+ * @returns first non-whitespace position
  *
  * @example
  * ```ts
- * DIAGNOSTIC_HEADER_PATTERN.exec('  x typescript-eslint(no-misused-promises): Promise-returning function ...');
- * // match[1] === 'no-misused-promises'
+ * skipWhitespace({ text: '   x', idx: 0 }); // 3
+ * skipWhitespace({ text: 'x', idx: 0 });    // 0
  * ```
  */
-const DIAGNOSTIC_HEADER_PATTERN = /[x!]\s+\S+\(([\w-]+)\)\s*:/;
+function skipWhitespace({
+  text,
+  idx,
+}: {
+  text: string;
+  idx: number;
+},): number {
+  if (idx >= text.length)
+    return idx;
+  if (!isWhitespace(text.charAt(idx,),))
+    return idx;
+  return skipWhitespace({
+    text,
+    idx: idx + 1,
+  },);
+}
+
+/**
+ * Walks consecutive rule-name chars starting at `idx`, returning the
+ * exclusive end of the run.
+ *
+ * @param text - input string
+ *
+ * @param idx - cursor at the candidate rule-name char
+ *
+ * @returns exclusive end of the rule-name run
+ *
+ * @example
+ * ```ts
+ * skipRuleNameChars({ text: 'no-magic-numbers)', idx: 0 }); // 16
+ * skipRuleNameChars({ text: ')', idx: 0 });                 // 0
+ * ```
+ */
+function skipRuleNameChars({
+  text,
+  idx,
+}: {
+  text: string;
+  idx: number;
+},): number {
+  if (idx >= text.length)
+    return idx;
+  if (!isRuleNameChar(text.charAt(idx,),))
+    return idx;
+  return skipRuleNameChars({
+    text,
+    idx: idx + 1,
+  },);
+}
+
+/**
+ * Tests whether every char in `[start, end)` is non-whitespace.
+ *
+ * @param text - input string
+ *
+ * @param start - inclusive start
+ *
+ * @param end - exclusive end
+ *
+ * @returns whether the range is non-empty and contains no whitespace
+ *
+ * @example
+ * ```ts
+ * allNonWhitespaceBetween({ text: 'abc def', start: 0, end: 3 }); // true
+ * allNonWhitespaceBetween({ text: 'a c', start: 0, end: 3 });     // false
+ * ```
+ */
+function allNonWhitespaceBetween({
+  text,
+  start,
+  end,
+}: {
+  text: string;
+  start: number;
+  end: number;
+},): boolean {
+  if (start >= end)
+    return true;
+  if (isWhitespace(text.charAt(start,),))
+    return false;
+  return allNonWhitespaceBetween({
+    text,
+    start: start + 1,
+    end,
+  },);
+}
+
+/**
+ * Attempts to parse an oxlint diagnostic header anchored at the `x` or
+ * `!` punctuation char.
+ *
+ * Mirrors `/[x!]\s+\S+\(([\w-]+)\)\s*:/` (anchored at the punctuation):
+ * whitespace, plugin name, `(`, rule name, `)`, optional whitespace, `:`.
+ *
+ * @param text - input string (typically ANSI-stripped)
+ *
+ * @param punctIdx - cursor at the candidate `x` or `!`
+ *
+ * @returns captured rule name, or `null` when no match
+ *
+ * @example
+ * ```ts
+ * matchHeaderAt({ text: 'x foo(bar): baz', punctIdx: 0 }); // 'bar'
+ * matchHeaderAt({ text: 'x foo: baz', punctIdx: 0 });      // null
+ * ```
+ */
+function matchHeaderAt({
+  text,
+  punctIdx,
+}: {
+  text: string;
+  punctIdx: number;
+},): string | null {
+  if (!isWhitespace(text.charAt(punctIdx + 1,),))
+    return null;
+
+  /** Cursor past the run of whitespace following the punctuation. */
+  const afterWs = skipWhitespace({
+    text,
+    idx: punctIdx + 2,
+  },);
+
+  /** Position of the `(` that opens the rule name; bounds the plugin-name run. */
+  const openParen = text.indexOf(
+    '(',
+    afterWs,
+  );
+  if ((openParen === (-1)) || (openParen === afterWs))
+    return null;
+  if (
+    !allNonWhitespaceBetween({
+      text,
+      start: afterWs,
+      end: openParen,
+    },)
+  ) {
+    return null;
+  }
+
+  /** Cursor at the first char inside the parens; rule name starts here. */
+  const ruleStart = openParen + 1;
+  /** Exclusive end of the rule-name char run. */
+  const ruleEnd = skipRuleNameChars({
+    text,
+    idx: ruleStart,
+  },);
+  if (ruleEnd === ruleStart)
+    return null;
+
+  if (text.charAt(ruleEnd,) !== ')')
+    return null;
+
+  /** Cursor past optional whitespace after `)`; the next char must be `:`. */
+  const afterRule = skipWhitespace({
+    text,
+    idx: ruleEnd + 1,
+  },);
+  if (text.charAt(afterRule,) !== ':')
+    return null;
+
+  return text.slice(
+    ruleStart,
+    ruleEnd,
+  );
+}
+
+/**
+ * Returns the position of the next `x` or `!` at or after `idx`, or
+ * `-1` when neither remains in `text`.
+ *
+ * @param text - input string
+ *
+ * @param idx - cursor to begin searching from
+ *
+ * @returns position of the next candidate punctuation char, or `-1`
+ *
+ * @example
+ * ```ts
+ * findNextPunctChar({ text: '  x foo', idx: 0 }); // 2
+ * findNextPunctChar({ text: 'abc', idx: 0 });     // -1
+ * ```
+ */
+function findNextPunctChar({
+  text,
+  idx,
+}: {
+  text: string;
+  idx: number;
+},): number {
+  /** Next `x` at or after `idx`, or `-1` when absent. */
+  const xIdx = text.indexOf(
+    'x',
+    idx,
+  );
+  /** Next `!` at or after `idx`, or `-1` when absent. */
+  const bangIdx = text.indexOf(
+    '!',
+    idx,
+  );
+  if (xIdx === (-1))
+    return bangIdx;
+  if (bangIdx === (-1))
+    return xIdx;
+  return Math.min(
+    xIdx,
+    bangIdx,
+  );
+}
 
 /**
  * Extracts the rule name from an oxlint diagnostic header line.
@@ -112,11 +536,36 @@ const DIAGNOSTIC_HEADER_PATTERN = /[x!]\s+\S+\(([\w-]+)\)\s*:/;
  * ```
  */
 export function extractRuleName(line: string,): string | null {
-  /** Regex match against the ANSI-stripped line; capture group 1 holds the rule name when the header pattern fires. */
-  const match = DIAGNOSTIC_HEADER_PATTERN.exec(stripAnsi(line,),);
-  if (match === null)
-    return null;
-  return match[1] ?? null;
+  /** ANSI-stripped working copy; the matcher operates on plain text. */
+  const stripped = stripAnsi(line,);
+
+  /**
+   * Recursive scan: try {@link matchHeaderAt} at every `x`/`!` occurrence
+   * and return the first captured rule name.
+   *
+   * @param idx - cursor for the next candidate search
+   *
+   * @returns captured rule name, or `null`
+   */
+  function tryFrom(idx: number,): string | null {
+    /** Next candidate `x` or `!` position; `-1` ends the search. */
+    const next = findNextPunctChar({
+      text: stripped,
+      idx,
+    },);
+    if (next === (-1))
+      return null;
+    /** Header-match attempt anchored at the candidate; `null` retries from `next + 1`. */
+    const result = matchHeaderAt({
+      text: stripped,
+      punctIdx: next,
+    },);
+    if (result !== null)
+      return result;
+    return tryFrom(next + 1,);
+  }
+
+  return tryFrom(0,);
 }
 
 /**
