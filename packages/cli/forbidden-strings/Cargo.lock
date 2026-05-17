@@ -183,7 +183,7 @@ checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
 
 [[package]]
 name = "forbidden-strings"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "aho-corasick",
  "gix-hash",
