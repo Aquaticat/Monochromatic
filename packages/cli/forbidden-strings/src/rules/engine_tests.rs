@@ -1099,6 +1099,85 @@ fn nested_grouped_quantifier_skips_safe_shapes() {
     }
 }
 
+use super::engine::complement_intersection_quantified_group;
+
+// What:     Positive triggers for `complement_intersection_quantified_group`.
+//           Each case has all three: a complement `~(...)`, an
+//           intersection `&`, and a quantified group `)*`/`)+`/
+//           `)?`/`){N}`. These shapes hang resharp's algebra
+//           simplifier for tens of seconds or indefinitely.
+// Why:      Regression-test for the specific compile hangs the
+//           pre-validator targets. Without these tests, a future
+//           refactor could drop one of the three trigger conditions
+//           and break the protection silently.
+// TS map:   `it("complementIntersectionQuantifiedGroup fires", ...)`.
+#[test]
+fn complement_intersection_quantified_group_fires() {
+    let cases = [
+        // Minimum bisected reproducer.
+        "abc~(\\w)&(?:aaa)*",
+        // Variations confirmed to hang via probe bisection.
+        "xyz~(\\w)&(?:aaaaaaaaaaaaa)*",
+        "[_]\u{00f1}e-XM1[^42v]~(\\w)&(?:aaaaaaaaaaaaa)*",
+        "(?:[^a]~(\\w)&(?:aaaaaaaaaaaaa)*)",
+        // Original timeout artifact source.
+        "(?:[_]\u{00f1}e-XM1[^42v]~(\\w)&(?:aaaaaaaaaaaaa)*)",
+        // Other quantifier kinds on the group close.
+        "x~(\\w)&(?:a)+",
+        "x~(\\w)&(?:a){5,11}",
+        // The detector is conservative -- it also fires on the OK
+        // cases from the bisection (e.g. `~(\\w)&(?:a)*`) because
+        // distinguishing OK vs HANG requires a deeper structural
+        // walk than the heuristic justifies. The trade-off is
+        // documented in the function docstring.
+        "~(\\w)&(?:a)*",
+    ];
+    for src in cases {
+        assert!(
+            complement_intersection_quantified_group(src).is_some(),
+            "expected complement_intersection_quantified_group to fire on {:?}",
+            src
+        );
+    }
+}
+
+// What:     Negative cases for `complement_intersection_quantified_group`.
+//           Shapes missing one or more of the three triggers MUST
+//           pass.
+// Why:      Avoid false positives on real authored rules. The
+//           production corpus has zero rules with all three; the
+//           detector should not creep onto the rest.
+// TS map:   `it("complementIntersectionQuantifiedGroup skips", ...)`.
+#[test]
+fn complement_intersection_quantified_group_skips_safe_shapes() {
+    let cases = [
+        // Missing complement.
+        "abc&(?:aaa)*",
+        // Missing intersection.
+        "abc~(\\w)(?:aaa)*",
+        // Missing quantified group.
+        "abc~(\\w)&def",
+        // `~` inside class is literal.
+        "[~]&(?:a)*",
+        // `&` inside class is literal.
+        "abc~(\\w)[a&b](?:a)*",
+        // No complement at all.
+        "abc(?:a)*",
+        // Empty / simple.
+        "",
+        "abc",
+        "(?:a)*",
+    ];
+    for src in cases {
+        assert!(
+            complement_intersection_quantified_group(src).is_none(),
+            "expected complement_intersection_quantified_group to PASS on {:?}; got {:?}",
+            src,
+            complement_intersection_quantified_group(src)
+        );
+    }
+}
+
 use super::engine::lookaround_in_alternation_with_sibling;
 
 // What:     Positive triggers for `lookaround_in_alternation_with_sibling`.

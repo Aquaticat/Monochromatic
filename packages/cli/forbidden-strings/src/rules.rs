@@ -64,6 +64,7 @@ mod extract_tests;
 // export { CompiledRegex, ScanMatch, requiresResharp } from "./rules/engine";
 // ```
 pub use engine::{
+    complement_intersection_quantified_group,
     intersection_with_lookbehind,
     intersection_with_word_end_alternation,
     lookaround_in_alternation_with_sibling,
@@ -668,6 +669,31 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = lookaround_in_alternation_with_sibling(src) {
+            return Err(format!("(resharp): {}", reason));
+        }
+        // What:     `complement_intersection_quantified_group` catches
+        //           the shape `<prefix>~(\w)&(?:...)*` that causes
+        //           resharp's algebra simplifier to hang for tens of
+        //           seconds or indefinitely during `Regex::new`.
+        //           Bisected from
+        //           `timeout-00179d433e26fbcc3bedf2b7b38b6ce1ff9e6438`.
+        //           catch_unwind below cannot catch non-termination,
+        //           and resharp does not expose a compile timeout,
+        //           so structural rejection is the only safe option.
+        // Why:      The compile hangs past libFuzzer's per-input
+        //           timeout (default 1200s, our fuzz run uses 10s
+        //           per input), halting the run entirely. The shape
+        //           is virtually never authored by humans (no rule
+        //           in the production corpus combines `&` and `~(`),
+        //           so the false-positive risk is theoretical only.
+        // TS map:   `const reason = complementIntersectionQuantifiedGroup(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const reason = complementIntersectionQuantifiedGroup(src);
+        // if (reason) throw new Error(`(resharp): ${reason}`);
+        // ```
+        if let Some(reason) = complement_intersection_quantified_group(src) {
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `Regex::new(src).map(CompiledRegex::Resharp).map_err(...)`.

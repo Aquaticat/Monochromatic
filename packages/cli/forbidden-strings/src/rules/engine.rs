@@ -1290,6 +1290,123 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
     None
 }
 
+// What:     `pub fn complement_intersection_quantified_group(src: &str) -> Option<String>`
+//           detects rule shapes that cause resharp's algebra
+//           simplification to hang for tens of seconds or
+//           indefinitely. The minimum bisected reproducer from
+//           `fuzz/artifacts/fuzz_extract_gate_soundness/timeout-00179d433e26fbcc3bedf2b7b38b6ce1ff9e6438`
+//           is `abc~(\w)&(?:aaa)*` -- a multi-char literal prefix
+//           outside any group, followed by `~(...)&` complement +
+//           intersection, followed by a quantified non-capturing
+//           group `(?:...)*`. The compile call to resharp's
+//           `Regex::new` does not terminate within libFuzzer's
+//           10s per-input timeout.
+//
+//           Shapes confirmed to hang (>5s each via probe bisection):
+//             - `abc~(\w)&(?:aaa)*`
+//             - `xyz~(\w)&(?:aaaaaaaaaaaaa)*`
+//             - `[_]ñe-XM1[^42v]~(\w)&(?:aaaaaaaaaaaaa)*` (original artifact)
+//             - `(?:[^a]~(\w)&(?:aaaaaaaaaaaaa)*)` (with negated-class prefix)
+//
+//           Shapes that compile in milliseconds:
+//             - `~(\w)&(?:a)*` (no prefix)
+//             - `abc~(\w)&def` (no quantified group)
+//             - `(?:abc~(\w)&(?:aaa)*)` (wrapped in single outer group)
+//             - `x~(\w)&(?:a)*` (1-char prefix and 1-char quantified body)
+//
+//           The exact algebraic interaction inside resharp is
+//           opaque; the heuristic the pre-validator uses is the
+//           coarser "source contains a complement (`~(`),
+//           intersection (`&`), AND a quantified group (`)*`,
+//           `)+`, `)?`, `){...}`) outside character classes". This
+//           is conservative: it would flag the OK cases above too.
+//           That trade-off is acceptable because:
+//             1. The production rule corpus contains zero rules
+//                with both `&` and `~(` (intersection requires
+//                resharp set-algebra, which is virtually never
+//                authored by humans; the only `&` in the example
+//                betterleaks config is inside character classes or
+//                as `&amp;` HTML-escape literals).
+//             2. The fuzz target only authors these shapes
+//                accidentally via the structured generator; it
+//                never needs them to discover the real bugs.
+//             3. The cost of a false positive is "skip this rule
+//                and continue"; the cost of a missed hang is
+//                "libFuzzer reports a timeout and halts the run",
+//                which blocks progress entirely.
+// Why:      catch_unwind protects against panics but not against
+//           non-termination. resharp does not expose a compile
+//           timeout, and we can't safely cancel a running compile
+//           from outside. The pre-validator is the only safe way
+//           to skip the slow shapes without modifying resharp.
+// TS map:   `function complementIntersectionQuantifiedGroup(src: string): string | null`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function complementIntersectionQuantifiedGroup(src: string): string | null {
+//   // walk bytes outside character classes; set hasComplement on `~(`,
+//   // set hasIntersection on `&`, set hasQuantifiedGroup on `)` followed
+//   // by `*`/`+`/`?`/`{N`. Return reason when all three are present.
+// }
+// ```
+pub fn complement_intersection_quantified_group(src: &str) -> Option<String> {
+    let bytes = src.as_bytes();
+    let mut i = 0usize;
+    let mut in_class = false;
+    let mut has_complement = false;
+    let mut has_intersection = false;
+    let mut has_quantified_group = false;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if c == b'\\' {
+            i += 2;
+            continue;
+        }
+        if !in_class && c == b'[' {
+            in_class = true;
+            i += 1;
+            continue;
+        }
+        if in_class && c == b']' {
+            in_class = false;
+            i += 1;
+            continue;
+        }
+        if !in_class {
+            if c == b'&' {
+                has_intersection = true;
+            }
+            if c == b'~' && i + 1 < bytes.len() && bytes[i + 1] == b'(' {
+                has_complement = true;
+            }
+            // What:     `)` followed by `*`/`+`/`?`/`{N` is a
+            //           quantified group close. Same recognition
+            //           rule used by `nested_grouped_quantifier`.
+            // Why:      The trigger shape needs the quantified
+            //           group; bare `)` not followed by a
+            //           quantifier doesn't reproduce the hang.
+            if c == b')' && i + 1 < bytes.len() {
+                let next = bytes[i + 1];
+                if matches!(next, b'*' | b'+' | b'?')
+                    || (next == b'{'
+                        && i + 2 < bytes.len()
+                        && bytes[i + 2].is_ascii_digit())
+                {
+                    has_quantified_group = true;
+                }
+            }
+            if has_complement && has_intersection && has_quantified_group {
+                return Some(format!(
+                    "complement (`~(...)`) intersected (`&`) with a quantified group (`(...)`*/+/?/{{N}}) triggers a known resharp 0.5.x through 0.6.x algebra-simplification hang during `Regex::new`. The compile does not terminate within libFuzzer's per-input timeout. Bisected reproducer: `abc~(\\w)&(?:aaa)*`. Rewrite the rule to avoid combining all three operators -- typically by replacing the complement with an explicit negative class, or by inlining the quantified group's body into the intersection operand. {}",
+                    TROUBLESHOOT_REF
+                ));
+            }
+        }
+        i += 1;
+    }
+    None
+}
+
 // What:     `pub fn nested_grouped_quantifier(src: &str) -> Option<String>`
 //           detects regex source containing four or more consecutive
 //           `)`+quantifier adjacencies. The shape the fuzz target

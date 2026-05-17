@@ -56,6 +56,7 @@
 // ```
 pub use crate::rules::{
     build_residual_shards,
+    complement_intersection_quantified_group,
     compile_rule_src,
     extract_gating_substrings,
     find_matching_close_paren,
