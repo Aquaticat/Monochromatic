@@ -1,0 +1,83 @@
+## Bug 1: forward --no-meta, --filter-prog, --fs-events from `mise watch` to watchexec
+
+Prototype patch against `https://github.com/jdx/mise.git` HEAD `70c2f0ba06bca99417d3f0e416ef0363ec91bf2e`
+(`v2026.5.11-1-g70c2f0b`). Applies cleanly with `git apply` from the mise repo root.
+
+```diff
+diff --git a/src/cli/watch.rs b/src/cli/watch.rs
+index f66a665..a87a01b 100644
+--- a/src/cli/watch.rs
++++ b/src/cli/watch.rs
+@@ -176,6 +176,39 @@ impl Watch {
+                 args.push(pattern.to_string());
+             }
+         }
++        if self.watchexec.filter_fs_meta {
++            args.push("--no-meta".to_string());
++        }
++        // Forward --fs-events only when the user picked a non-default set.
++        // The clap default (create,remove,rename,modify,metadata) matches
++        // watchexec's own default, so an unset --fs-events is identical to
++        // omitting the flag. Forwarding the default unconditionally would
++        // also conflict with watchexec's `--no-meta` because both ship
++        // event-filter state.
++        if !self.watchexec.filter_fs_events.is_empty()
++            && self.watchexec.filter_fs_events.as_slice() != DEFAULT_FS_EVENTS
++        {
++            args.push("--fs-events".to_string());
++            args.push(
++                self.watchexec
++                    .filter_fs_events
++                    .iter()
++                    .map(|e| {
++                        e.to_possible_value()
++                            .expect("FsEvent variants all have ValueEnum names")
++                            .get_name()
++                            .to_string()
++                    })
++                    .collect::<Vec<_>>()
++                    .join(","),
++            );
++        }
++        if !self.watchexec.filter_programs.is_empty() {
++            for prog in &self.watchexec.filter_programs {
++                args.push("--filter-prog".to_string());
++                args.push(prog.clone());
++            }
++        }
+         if let Some(watch_file) = &self.watchexec.watch_file {
+             args.push("--watch-file".to_string());
+             args.push(watch_file.to_string_lossy().to_string());
+@@ -1238,6 +1271,17 @@ pub enum FsEvent {
+     Metadata,
+ }
+
++/// Mirror of the `--fs-events` clap default. Kept in sync with the
++/// `default_value` on `WatchexecArgs::filter_fs_events` so the forward path
++/// can recognise an unchanged value and omit the flag.
++const DEFAULT_FS_EVENTS: &[FsEvent] = &[
++    FsEvent::Create,
++    FsEvent::Remove,
++    FsEvent::Rename,
++    FsEvent::Modify,
++    FsEvent::Metadata,
++];
++
+ #[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
+ #[clap(rename_all = "lower")]
+ pub enum ShellCompletion {
+```
+
+Mise advertises `-J` as its CLI-facing alias because lowercase `-j` is mise's own `--jobs`
+flag. The patch emits the long form `--filter-prog` to the subprocess (unambiguous and
+accepted by watchexec), so no `-J` to `-j` translation is needed.
+
+Forwarding is gated for `--fs-events`: the clap default
+`create,remove,rename,modify,metadata` matches watchexec's own default, so passing it
+unconditionally would add redundant noise (and would collide with `--no-meta` when both
+defaults are populated by clap).
+
+`cargo test --release -p mise` (filtered to `cli::watch`): 4/4 pass post-patch
+(`merge_dedupes_across_tasks`, `merge_does_not_let_one_task_exclude_anothers_include`,
+`merge_single_task_splits_pos_and_neg`, `merge_unescapes_literal_bang`).
+Full mise binary unit suite (`cargo test --release -p mise --bins`): 956/956 pass.

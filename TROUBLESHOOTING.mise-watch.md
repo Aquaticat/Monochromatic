@@ -58,9 +58,14 @@ Note the flag difference: use lowercase `-j` (watchexec native) not uppercase `-
 
 ### Verification
 
-Version under test: mise 2026.3.8 linux-x64; watchexec 2.5.0.
+Versions under test:
 
-### Why we do not file this upstream
+- mise 2026.3.8 linux-x64 (original report)
+- mise HEAD `70c2f0ba06bca99417d3f0e416ef0363ec91bf2e` (`v2026.5.11-1-g70c2f0b`),
+  re-verified 2026-05-17. Same bug shape; the forwarding gap is unchanged.
+- watchexec 2.5.0 (original) and 2.5.1 (HEAD).
+
+### Why we would file this upstream
 
 1. **Is it really upstream's fault?** Yes; advertised but
    silently dropped flags.
@@ -69,10 +74,176 @@ Version under test: mise 2026.3.8 linux-x64; watchexec 2.5.0.
 3. **Are they supporting this use case?** Implicitly; the
    flags appear in `--help`.
 4. **Will they likely fix it?** Plausible.
-5. **Have we prototyped a minimal fix?** No.
+5. **Have we prototyped a minimal fix?** Yes; patch + DEBUG output
+   comparison below. Diff lives in
+   [TROUBLESHOOTING.mise-watch.patch](TROUBLESHOOTING.mise-watch.patch).
 
 Decision: worth raising as an issue; the calling-watchexec-
 directly workaround removes the urgency.
+
+#### Verified DEBUG output comparison
+
+Reproducer scaffolding (used by both runs):
+
+```sh
+FRESH=$(mktemp -d)
+echo "true" > "$FRESH/minimal.jaq"
+cat > "$FRESH/mise.toml" <<'EOF'
+[tasks.echo-hi]
+run = "echo hi"
+EOF
+mise trust "$FRESH/mise.toml"
+```
+
+Pre-patch (HEAD `70c2f0b`, `cargo build --release -p mise`):
+
+```text
+$ mise -vv watch -w "$FRESH" --fs-events create,modify -J @"$FRESH/minimal.jaq" echo-hi
+DEBUG [src/cli/watch.rs:225] $ watchexec --watch /tmp/tmp.MF9OvLfNoe -- /tmp/.../mise run echo-hi
+
+$ mise -vv watch -w "$FRESH" --no-meta -J @"$FRESH/minimal.jaq" echo-hi
+DEBUG [src/cli/watch.rs:225] $ watchexec --watch /tmp/tmp.MF9OvLfNoe -- /tmp/.../mise run echo-hi
+
+$ mise -vv watch -w "$FRESH" -J @"$FRESH/minimal.jaq" echo-hi
+DEBUG [src/cli/watch.rs:225] $ watchexec --watch /tmp/tmp.MF9OvLfNoe -- /tmp/.../mise run echo-hi
+```
+
+Every filter flag is silently dropped: the spawned `watchexec` argv has only `--watch`
+and the trailing task command.
+
+Post-patch (same HEAD plus the diff in `TROUBLESHOOTING.mise-watch.patch`):
+
+```text
+$ mise -vv watch -w "$FRESH" --fs-events create,modify -J @"$FRESH/minimal.jaq" echo-hi
+DEBUG [src/cli/watch.rs:258] $ watchexec --watch /tmp/tmp.MF9OvLfNoe --fs-events create,modify --filter-prog @/tmp/tmp.MF9OvLfNoe/minimal.jaq -- /tmp/.../mise run echo-hi
+
+$ mise -vv watch -w "$FRESH" --no-meta -J @"$FRESH/minimal.jaq" echo-hi
+DEBUG [src/cli/watch.rs:258] $ watchexec --watch /tmp/tmp.MF9OvLfNoe --no-meta --filter-prog @/tmp/tmp.MF9OvLfNoe/minimal.jaq -- /tmp/.../mise run echo-hi
+
+$ mise -vv watch -w "$FRESH" -J @"$FRESH/minimal.jaq" echo-hi
+DEBUG [src/cli/watch.rs:258] $ watchexec --watch /tmp/tmp.MF9OvLfNoe --filter-prog @/tmp/tmp.MF9OvLfNoe/minimal.jaq -- /tmp/.../mise run echo-hi
+```
+
+Both `--no-meta` and `--fs-events` reach watchexec, and the jaq filter program is forwarded
+as `--filter-prog @file` (watchexec's long form for `-j`; mise reserves `-j` for `--jobs`,
+so it advertises `-J` to its own users and the patch translates by emitting the unambiguous
+long flag).
+
+`--fs-events` is forwarded only when the user-provided set differs from the clap default
+(`create,remove,rename,modify,metadata`). Forwarding the default unconditionally would
+collide with `--no-meta` because watchexec also rejects both being given together.
+
+Tests passing post-patch (`cargo test --release -p mise`, filtered to `cli::watch`):
+
+```text
+running 4 tests
+test cli::watch::tests::merge_dedupes_across_tasks ... ok
+test cli::watch::tests::merge_does_not_let_one_task_exclude_anothers_include ... ok
+test cli::watch::tests::merge_single_task_splits_pos_and_neg ... ok
+test cli::watch::tests::merge_unescapes_literal_bang ... ok
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 952 filtered out
+```
+
+Broader sanity check (`cargo test --release -p mise --bins`): 956 / 956 pass.
+
+### Draft upstream issue (kept as reference; revise before filing)
+
+To file against `jdx/mise`:
+
+~~~md
+Title: `mise watch` silently drops `--no-meta`, `--filter-prog`/`-J`, and `--fs-events` when spawning watchexec
+
+Labels: bug
+
+#### Summary
+
+`mise watch` parses several watchexec passthrough flags on its own CLI surface
+(they appear in `mise watch --help` under the Filtering option set) but does not
+forward them when constructing the underlying `watchexec` argv. Affected flags
+observed at HEAD `70c2f0ba06bca99417d3f0e416ef0363ec91bf2e`
+(`v2026.5.11-1-g70c2f0b`):
+
+- `--no-meta`
+- `--filter-prog` / `-J` (jaq filter program; mise's `-J` short alias for watchexec's `-j` because mise reserves `-j` for `--jobs`)
+- `--fs-events` (kernel-level event-type filter)
+
+`src/cli/watch.rs` parses every flag into `WatchexecArgs` via clap derive but the
+section that builds the spawned `args: Vec<String>` (around the
+`debug!("$ watchexec ...")` site) skips `filter_fs_meta`, `filter_programs`, and
+`filter_fs_events` entirely. The end result is that the user-supplied flags are
+silently no-ops.
+
+#### Reproducer (no editord plumbing, scratch dir only)
+
+```sh
+FRESH=$(mktemp -d)
+echo "true" > "$FRESH/minimal.jaq"
+cat > "$FRESH/mise.toml" <<'EOF'
+[tasks.echo-hi]
+run = "echo hi"
+EOF
+mise trust "$FRESH/mise.toml"
+cd "$FRESH"
+
+mise -vv watch -w "$FRESH" --fs-events create,modify -J "@$FRESH/minimal.jaq" echo-hi
+# DEBUG $ watchexec --watch /tmp/<scratch> -- /path/to/mise run echo-hi
+# (expected: --fs-events create,modify --filter-prog @... are present)
+
+mise -vv watch -w "$FRESH" --no-meta -J "@$FRESH/minimal.jaq" echo-hi
+# DEBUG $ watchexec --watch /tmp/<scratch> -- /path/to/mise run echo-hi
+# (expected: --no-meta --filter-prog @... are present)
+```
+
+#### Suggested fix
+
+Extend the args-building block in `src/cli/watch.rs::Watch::run` to push the
+three missing flags after `filter_patterns`:
+
+```rust
+if self.watchexec.filter_fs_meta {
+    args.push("--no-meta".to_string());
+}
+if !self.watchexec.filter_fs_events.is_empty()
+    && self.watchexec.filter_fs_events.as_slice() != DEFAULT_FS_EVENTS
+{
+    args.push("--fs-events".to_string());
+    args.push(
+        self.watchexec
+            .filter_fs_events
+            .iter()
+            .map(|e| e.to_possible_value().expect("FsEvent has ValueEnum names").get_name().to_string())
+            .collect::<Vec<_>>()
+            .join(","),
+    );
+}
+if !self.watchexec.filter_programs.is_empty() {
+    for prog in &self.watchexec.filter_programs {
+        args.push("--filter-prog".to_string());
+        args.push(prog.clone());
+    }
+}
+```
+
+Where `DEFAULT_FS_EVENTS` mirrors the clap `default_value` so a user who has not
+touched `--fs-events` does not get a redundant flag forwarded (and avoids the
+`--no-meta` vs `--fs-events` clap conflict that watchexec also enforces).
+
+Emitting `--filter-prog` (the long form) rather than `-j` keeps the subprocess
+argv unambiguous; the short form `-j` works equally on watchexec's side but the
+long form is self-documenting.
+
+#### Verified in
+
+- mise HEAD `70c2f0ba06bca99417d3f0e416ef0363ec91bf2e` (`v2026.5.11-1-g70c2f0b`),
+  release build with `cargo build --release -p mise`.
+- Pre-patch: filter flags missing from the spawned `watchexec` argv per the
+  `DEBUG $ watchexec ...` log line at `src/cli/watch.rs:225`.
+- Post-patch: same DEBUG line shows `--no-meta`, `--fs-events <set>`, and
+  `--filter-prog @...` forwarded as expected.
+- `cargo test --release -p mise` (filtered to `cli::watch`): 4 / 4 pass.
+- Broader mise binary unit suite (`cargo test --release -p mise --bins`):
+  956 / 956 pass.
+~~~
 
 ---
 
