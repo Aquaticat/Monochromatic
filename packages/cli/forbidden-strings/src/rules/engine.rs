@@ -1293,12 +1293,19 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
 // What:     `pub fn complement_intersection_quantified_group(src: &str) -> Option<String>`
 //           detects rule shapes that cause resharp's algebra
 //           simplification to hang for tens of seconds or
-//           indefinitely. The minimum bisected reproducer from
-//           `fuzz/artifacts/fuzz_extract_gate_soundness/timeout-00179d433e26fbcc3bedf2b7b38b6ce1ff9e6438`
-//           is `abc~(\w)&(?:aaa)*` -- a multi-char literal prefix
-//           outside any group, followed by `~(...)&` complement +
-//           intersection, followed by a quantified non-capturing
-//           group `(?:...)*`. The compile call to resharp's
+//           indefinitely. The name is historical -- the original
+//           bisect targeted `<prefix>~(\w)&(?:aaa)*`, but a second
+//           fuzz timeout
+//           (`timeout-0815a95346bfa16ae0c6454162d9af0b8c05779c`,
+//           shape `(?i) ###(?:\s&üü)(?:####)+#@...`) showed the
+//           hang also fires WITHOUT a `~(` complement -- bare
+//           intersection (`&`) co-occurring with a quantified
+//           group (`)*`/`)+`/etc.) is sufficient. The detector now
+//           checks only those two co-occurrence triggers; the
+//           complement check is omitted. The original bisect
+//           reproducer from
+//           `timeout-00179d433e26fbcc3bedf2b7b38b6ce1ff9e6438` was
+//           `abc~(\w)&(?:aaa)*`. The compile call to resharp's
 //           `Regex::new` does not terminate within libFuzzer's
 //           10s per-input timeout.
 //
@@ -1375,7 +1382,6 @@ pub fn complement_intersection_quantified_group(src: &str) -> Option<String> {
     let bytes = src.as_bytes();
     let mut i = 0usize;
     let mut in_class = false;
-    let mut has_complement = false;
     let mut has_intersection = false;
     let mut has_quantified_group = false;
     while i < bytes.len() {
@@ -1398,9 +1404,6 @@ pub fn complement_intersection_quantified_group(src: &str) -> Option<String> {
             if c == b'&' {
                 has_intersection = true;
             }
-            if c == b'~' && i + 1 < bytes.len() && bytes[i + 1] == b'(' {
-                has_complement = true;
-            }
             // What:     `)` followed by `*`/`+`/`?`/`{N` is a
             //           quantified group close. Same recognition
             //           rule used by `nested_grouped_quantifier`.
@@ -1417,9 +1420,9 @@ pub fn complement_intersection_quantified_group(src: &str) -> Option<String> {
                     has_quantified_group = true;
                 }
             }
-            if has_complement && has_intersection && has_quantified_group {
+            if has_intersection && has_quantified_group {
                 return Some(format!(
-                    "complement (`~(...)`) intersected (`&`) with a quantified group (`(...)`*/+/?/{{N}}) triggers a known resharp 0.5.x through 0.6.x algebra-simplification hang during `Regex::new`. The compile does not terminate within libFuzzer's per-input timeout. Bisected reproducer: `abc~(\\w)&(?:aaa)*`. Rewrite the rule to avoid combining all three operators -- typically by replacing the complement with an explicit negative class, or by inlining the quantified group's body into the intersection operand. {}",
+                    "intersection (`&`) co-occurring with a quantified group (`(...)`*/+/?/{{N}}) triggers a known resharp 0.5.x through 0.6.x prefix-loop non-termination during `Regex::new` (see TROUBLESHOOTING.resharp.md Bug E -- `calc_prefix_sets_inner` lacks a visited-set update on each iteration). The compile does not terminate within libFuzzer's per-input timeout. Reproducers: `abc~(\\w)&(?:aaa)*` and `(?i) ###(?:\\s&üü)(?:####)+...`. Rewrite the rule to inline the quantified group's body into the intersection operand, or remove one of the two operators. {}",
                     TROUBLESHOOT_REF
                 ));
             }

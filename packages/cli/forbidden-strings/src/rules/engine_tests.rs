@@ -1114,7 +1114,7 @@ use super::engine::complement_intersection_quantified_group;
 #[test]
 fn complement_intersection_quantified_group_fires() {
     let cases = [
-        // Minimum bisected reproducer.
+        // Minimum bisected reproducer (with complement).
         "abc~(\\w)&(?:aaa)*",
         // Variations confirmed to hang via probe bisection.
         "xyz~(\\w)&(?:aaaaaaaaaaaaa)*",
@@ -1125,12 +1125,17 @@ fn complement_intersection_quantified_group_fires() {
         // Other quantifier kinds on the group close.
         "x~(\\w)&(?:a)+",
         "x~(\\w)&(?:a){5,11}",
-        // The detector is conservative -- it also fires on the OK
-        // cases from the bisection (e.g. `~(\\w)&(?:a)*`) because
-        // distinguishing OK vs HANG requires a deeper structural
-        // walk than the heuristic justifies. The trade-off is
-        // documented in the function docstring.
+        // The detector is conservative -- it also fires on shapes
+        // that compile in milliseconds (e.g. `~(\\w)&(?:a)*`).
+        // The trade-off is documented in the function docstring.
         "~(\\w)&(?:a)*",
+        // Second timeout artifact source: intersection + quantified
+        // group WITHOUT complement still hangs. Confirms the
+        // detector's widened check (no complement requirement).
+        "(?i) ###(?:\\s&\u{00fc}\u{00fc})(?:####)+#@(?u:0\u{00e7}308-11aaaaaaaa)aa",
+        // Minimal version without complement.
+        "abc&(?:aaa)*",
+        "(?:\\s&a)(?:b)+",
     ];
     for src in cases {
         assert!(
@@ -1151,18 +1156,16 @@ fn complement_intersection_quantified_group_fires() {
 #[test]
 fn complement_intersection_quantified_group_skips_safe_shapes() {
     let cases = [
-        // Missing complement.
-        "abc&(?:aaa)*",
         // Missing intersection.
         "abc~(\\w)(?:aaa)*",
         // Missing quantified group.
         "abc~(\\w)&def",
-        // `~` inside class is literal.
-        "[~]&(?:a)*",
+        "abc&def",
         // `&` inside class is literal.
-        "abc~(\\w)[a&b](?:a)*",
-        // No complement at all.
-        "abc(?:a)*",
+        "abc[a&b](?:a)*",
+        "abc\\&(?:aaa)*",
+        // No quantified group at all.
+        "abc&def(?:aaa)",
         // Empty / simple.
         "",
         "abc",
