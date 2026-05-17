@@ -67,9 +67,30 @@ arg "target" help="Fuzz target name (e.g. fuzz_extract_gate_soundness)"
 arg "[args]" var=#true help="Extra libFuzzer args to pass through"
 """
 # `--target x86_64-unknown-linux-gnu` rationale: see fuzz:build.
+#
+# `usage_args` arrives shell-quoted: mise/usage formats the variadic
+# `[args]` collection as `'-flag1=v1' '-flag2=v2'` so a downstream shell
+# can re-split safely. Nushell's `split row ' '` splits on every space
+# and keeps the surrounding quotes as part of each element, so cargo
+# then forwards them to libfuzzer as `'-max_total_time=10'` (literal
+# quote chars). libfuzzer treats anything not starting with `-` as a
+# corpus directory, so the run fails with
+# "The required directory '-max_total_time=10' does not exist".
+#
+# Fix: split on the inter-arg separator `"' '"` (quote space quote)
+# and then trim the lone outer quotes off the first and last elements.
+# Limitation: libfuzzer flags must not contain literal single quotes;
+# they never do in practice (numbers and flag names only).
 run = """
 let target = $env.usage_target
-let extras = ($env.usage_args? | default '' | str trim | split row ' ' | where {|p| $p != '' })
+let extras = (
+  $env.usage_args?
+  | default ''
+  | str trim
+  | split row "' '"
+  | each {|p| $p | str trim --char "'" }
+  | where {|p| $p != '' }
+)
 cargo fuzz run $target --target x86_64-unknown-linux-gnu -- -dict=fuzz/dictionaries/forbidden-strings.dict ...$extras
 """
 
