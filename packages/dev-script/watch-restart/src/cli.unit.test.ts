@@ -227,7 +227,7 @@ await describe({
             expect(function callWithEmptyRest(): void {
               argsToOptions(args,);
             },)
-              .toThrow(/No command supplied/,);
+              .toThrow('No command supplied',);
           },
         },),
         it({
@@ -245,7 +245,7 @@ await describe({
             expect(function callWithBogusEvent(): void {
               argsToOptions(args,);
             },)
-              .toThrow(/Unknown --events token/,);
+              .toThrow('Unknown --events token',);
           },
         },),
       ],
@@ -415,7 +415,7 @@ await describe({
             expect(function callWithConflict(): void {
               argsToOptions(args,);
             },)
-              .toThrow(/Cannot pass both --hidden and --no-hidden/,);
+              .toThrow('Cannot pass both --hidden and --no-hidden',);
           },
         },),
         it({
@@ -433,7 +433,7 @@ await describe({
             expect(function callWithBogusType(): void {
               argsToOptions(args,);
             },)
-              .toThrow(/Unknown --type token "symlink"/,);
+              .toThrow('Unknown --type token "symlink"',);
           },
         },),
         it({
@@ -451,7 +451,7 @@ await describe({
             expect(function callWithBogusSignal(): void {
               argsToOptions(args,);
             },)
-              .toThrow(/Unknown --signal/,);
+              .toThrow('Unknown --signal',);
           },
         },),
         it({

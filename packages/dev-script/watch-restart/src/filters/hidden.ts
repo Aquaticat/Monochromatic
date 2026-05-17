@@ -5,24 +5,137 @@ import type {
 } from '../types.ts';
 
 /**
- * Matches paths whose any segment starts with a literal `.` followed by
- * a non-separator non-dot character (i.e. an actual hidden file or
- * directory: `.swp`, `.cache`, `.config.ts`).
+ * Tests whether `c` is a path separator (`/` or `\`); both forms support
+ * Windows checkouts observed without normalisation.
  *
- * Pattern reads: "start-of-string or separator, then literal `.`, then a
- * character that is neither `.` nor a separator." That admits `.foo`,
- * `path/.git/index`, `.cache/data` while excluding the path navigators
- * `.` (alone) and `..` (the second `.` after `\.` would have to be a
- * non-dot to qualify; `..` does not).
+ * @param c - single character
  *
- * Supports both `/` and `\` separators so a path observed on a Windows
- * checkout (`src\.swp`) still matches without callers normalising first.
- * Compiled once at module scope; the hot path on every event runs a
- * single `RegExp.test` call.
+ * @returns whether `c` is `/` or `\`
+ *
+ * @example
+ * ```ts
+ * isPathSeparator('/');  // true
+ * isPathSeparator('a');  // false
+ * ```
  */
-const HIDDEN_SEGMENT_PATTERN: RegExp = new RegExp(
-  String.raw`(?:^|[/\\])\.[^./\\]`,
-);
+function isPathSeparator(c: string,): boolean {
+  return (c === '/') || (c === '\\');
+}
+
+/**
+ * Tests whether `c` is a valid first char of a hidden segment body, i.e.
+ * neither `.` (so `..` does not count) nor a separator (so `./` does not
+ * count).
+ *
+ * @param c - single character
+ *
+ * @returns whether `c` continues a hidden segment after the leading `.`
+ *
+ * @example
+ * ```ts
+ * isHiddenBodyChar('s'); // true (matches '.swp')
+ * isHiddenBodyChar('.'); // false (rejects '..')
+ * isHiddenBodyChar('/'); // false (rejects './')
+ * ```
+ */
+function isHiddenBodyChar(c: string,): boolean {
+  return (c !== '.') && (!isPathSeparator(c,));
+}
+
+/**
+ * Tests whether `path` has a hidden segment at `idx`: literal `.`
+ * followed by a non-`.` non-separator char. Bounds-safe (returns false
+ * past the end).
+ *
+ * @param path - path under inspection
+ *
+ * @param idx - candidate start of the hidden segment body
+ *
+ * @returns whether `path[idx..idx+2)` opens a hidden segment
+ */
+function hasHiddenSegmentAt({
+  path,
+  idx,
+}: {
+  path: string;
+  idx: number;
+},): boolean {
+  return (path.charAt(idx,) === '.')
+    && isHiddenBodyChar(path.charAt(idx + 1,),);
+}
+
+/**
+ * Tests whether `path` contains any hidden segment.
+ *
+ * Mirrors the shape of `/(?:^|[/\\])\.[^./\\]/`: hidden-segment at
+ * position 0, or after any separator. Admits `.foo`, `src/.git/index`,
+ * and `.cache/data`; rejects `.` (alone) and `..` (the body char would
+ * have to be non-`.`).
+ *
+ * Hot path on every event: a linear scan + `indexOf` chain, no regex
+ * backtracking risk.
+ *
+ * @param path - relative path under inspection
+ *
+ * @returns whether `path` contains any hidden segment
+ *
+ * @example
+ * ```ts
+ * containsHiddenSegment('.config.ts');       // true
+ * containsHiddenSegment('src/.cache/data');  // true
+ * containsHiddenSegment('src/foo.ts');       // false
+ * containsHiddenSegment('./foo.ts');         // false (only '.' at root, no body)
+ * ```
+ */
+function containsHiddenSegment(path: string,): boolean {
+  if (hasHiddenSegmentAt({
+    path,
+    idx: 0,
+  },)) {
+    return true;
+  }
+
+  /**
+   * Recursive scan: at each separator position, test whether the next two
+   * chars open a hidden segment.
+   *
+   * @param from - cursor for the next `indexOf` call
+   *
+   * @returns whether a hidden segment exists at or after `from`
+   */
+  function scanFromSeparator(from: number,): boolean {
+    /** Next `/` at or after `from`, or `-1` when absent. */
+    const slashIdx = path.indexOf(
+      '/',
+      from,
+    );
+    /** Next `\` at or after `from`, or `-1` when absent. */
+    const backslashIdx = path.indexOf(
+      '\\',
+      from,
+    );
+    /** Earliest separator position; `-1` when neither remains. */
+    const sepIdx = ((slashIdx === (-1))
+      ? backslashIdx
+      : ((backslashIdx === (-1))
+        ? slashIdx
+        : Math.min(
+          slashIdx,
+          backslashIdx,
+        )));
+    if (sepIdx === (-1))
+      return false;
+    if (hasHiddenSegmentAt({
+      path,
+      idx: sepIdx + 1,
+    },)) {
+      return true;
+    }
+    return scanFromSeparator(sepIdx + 1,);
+  }
+
+  return scanFromSeparator(0,);
+}
 
 /**
  * Builds a {@link WatchFilter} that rejects events whose `relativePath`
@@ -74,6 +187,6 @@ export function hiddenFilter(
   ): boolean {
     if (allowHidden)
       return true;
-    return !HIDDEN_SEGMENT_PATTERN.test(event.relativePath,);
+    return !containsHiddenSegment(event.relativePath,);
   };
 }

@@ -34,7 +34,7 @@ await describe({
             expect(function bogus(): void {
               parseTypeToken('symlink',);
             },)
-              .toThrow(/Unknown --type token "symlink"/,);
+              .toThrow('Unknown --type token "symlink"',);
           },
         },),
       ],
@@ -60,7 +60,7 @@ await describe({
             expect(function bogus(): void {
               parseKillSignal('SIGNUKE',);
             },)
-              .toThrow(/Unknown --signal "SIGNUKE"/,);
+              .toThrow('Unknown --signal "SIGNUKE"',);
           },
         },),
         it({
@@ -69,7 +69,7 @@ await describe({
             expect(function bogus(): void {
               parseKillSignal('SIGSEGV',);
             },)
-              .toThrow(/Unknown --signal/,);
+              .toThrow('Unknown --signal',);
           },
         },),
       ],
@@ -142,7 +142,7 @@ await describe({
                 flag: 'hidden',
               },);
             },)
-              .toThrow(/Cannot pass both --hidden and --no-hidden/,);
+              .toThrow('Cannot pass both --hidden and --no-hidden',);
           },
         },),
       ],

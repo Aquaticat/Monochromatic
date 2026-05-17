@@ -3,6 +3,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test';
+import { compileRegex, } from '../cli-helpers.ts';
 import { HashCache, } from '../hash-cache.ts';
 import { l as defaultLogger, } from '../log.ts';
 import type {
@@ -73,7 +74,7 @@ await describe({
       name: 'include only: passes when at least one include matches',
       fn: async function includeMatches() {
         const filter = regexFilter({
-          include: [new RegExp(String.raw`^src/.*\.ts$`,),],
+          include: [compileRegex(String.raw`^src/.*\.ts$`,),],
         },);
         const matched = await filter({
           event: makeEvent({ relativePath: 'src/server/index.ts', },),
@@ -93,8 +94,8 @@ await describe({
       fn: async function multipleIncludesOr() {
         const filter = regexFilter({
           include: [
-            new RegExp(String.raw`\.ts$`,),
-            new RegExp(String.raw`\.tsx$`,),
+            compileRegex(String.raw`\.ts$`,),
+            compileRegex(String.raw`\.tsx$`,),
           ],
         },);
         const ts = await filter({
@@ -119,7 +120,7 @@ await describe({
       name: 'exclude only: rejects when an exclude matches, passes otherwise',
       fn: async function excludeOnly() {
         const filter = regexFilter({
-          exclude: [new RegExp(String.raw`\.test\.ts$`,),],
+          exclude: [compileRegex(String.raw`\.test\.ts$`,),],
         },);
         const test = await filter({
           event: makeEvent({ relativePath: 'src/foo.test.ts', },),
@@ -138,8 +139,8 @@ await describe({
       name: 'both include and exclude: exclude wins on overlap',
       fn: async function excludeWins() {
         const filter = regexFilter({
-          include: [new RegExp(String.raw`^src/.*\.ts$`,),],
-          exclude: [new RegExp(String.raw`\.test\.ts$`,),],
+          include: [compileRegex(String.raw`^src/.*\.ts$`,),],
+          exclude: [compileRegex(String.raw`\.test\.ts$`,),],
         },);
         const overlap = await filter({
           event: makeEvent({ relativePath: 'src/foo.test.ts', },),
@@ -164,7 +165,7 @@ await describe({
       fn: async function anchoredAlternation() {
         const filter = regexFilter({
           exclude: [
-            new RegExp(String.raw`\.(test|spec|fixture)\.[jt]sx?$`,),
+            compileRegex(String.raw`\.(test|spec|fixture)\.[jt]sx?$`,),
           ],
         },);
         const test = await filter({

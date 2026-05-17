@@ -172,6 +172,7 @@ export function parseKillSignal(raw: string,): NodeJS.Signals {
  * ```
  */
 export function compileRegex(pattern: string,): RegExp {
+  // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- user-supplied CLI regex source: the pattern shape is user-defined (filename matchers like \.story\.ts$) so no string-API substitute fits; input is bounded by argv length, and the regex runs against relative paths (bounded by filesystem path limits) on each event with no nested quantifiers introduced by this site.
   return new RegExp(pattern,);
 }
 
