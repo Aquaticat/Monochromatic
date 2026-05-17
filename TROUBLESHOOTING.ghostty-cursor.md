@@ -156,19 +156,149 @@ Code does not use terminfo at all). It affects different
 applications, but the root cause is in Ghostty's terminfo
 definition.
 
-### Why we do not file this upstream (Ghostty)
+### Upstream filing audit (Ghostty)
 
 1. **Is it really upstream's fault?** Yes; `Se` should encode
    "reset to default" (`\E[0 q`), not "steady block".
-2. **Can upstream fix it?** Yes; one-line change in
-   `ghostty.zig:116`.
+2. **Can upstream fix it?** Yes; one-line value change at
+   `src/terminfo/ghostty.zig:116`.
 3. **Are they supporting this use case?** Yes; Ghostty's mission
    includes accurate terminfo.
-4. **Will they likely fix it?** Plausible; Ghostty is actively
-   maintained and accepts terminfo corrections.
-5. **Have we prototyped a minimal fix?** Not yet.
+4. **Will they likely fix it?** Yes (already accepted; see
+   "Upstream status" below).
+5. **Have we prototyped a minimal fix?** Yes. The minimal patch is
+   the one-line value swap below, identical to the upstream
+   commit `6c68650920804a202a3208d7d355368c9dd28a46`:
 
-Decision: this finding is worth filing when someone has the
-bandwidth to prototype the one-line patch and a minimal
-reproduction in vim or tmux. Until then, kept here for
-reference.
+   ```diff
+   --- a/src/terminfo/ghostty.zig
+   +++ b/src/terminfo/ghostty.zig
+   @@ -112,8 +112,8 @@ pub const ghostty: Source = .{
+            // Cursor styles
+            .{ .name = "Ss", .value = .{ .string = "\\E[%p1%d q" } },
+
+   -        // Cursor style reset
+   -        .{ .name = "Se", .value = .{ .string = "\\E[2 q" } },
+   +        // Cursor style reset (to user configured default)
+   +        .{ .name = "Se", .value = .{ .string = "\\E[0 q" } },
+
+            // OSC 52 Clipboard
+            .{ .name = "Ms", .value = .{ .string = "\\E]52;%p1%s;%p2%s\\007" } },
+   ```
+
+   Verification: the patch changes only the user-defined extended
+   capability `Se`, which round-trips byte-for-byte through `tic` to
+   a binary terminfo database and back through `infocmp -L -x`. This
+   was checked at the terminfo-source level rather than via the full
+   `build_data_exe +terminfo` pipeline because the changed line is
+   exactly one capability value in
+   `Source.encode()`'s output; nothing in the encoder, tic compiler,
+   or infocmp decoder transforms the value string. The targeted
+   harness was a minimal `.ti` file with the broken vs fixed `Se`
+   plus the `Ss` parameterised setter (so `tic` accepts both as a
+   pair):
+
+   ```sh
+   $ tic -x -o "$DB" broken.ti  # ghostty-broken with Se=\E[2 q
+   $ tic -x -o "$DB" fixed.ti   # ghostty-fixed   with Se=\E[0 q
+   $ diff \
+       <(TERMINFO="$DB" infocmp -1 -x ghostty-broken) \
+       <(TERMINFO="$DB" infocmp -1 -x ghostty-fixed)
+   1,3c1,3
+   < #     Reconstructed via infocmp from file: .../db/./g/ghostty-broken
+   < ghostty-broken|Ghostty before Se fix,
+   <       Se=\E[2 q,
+   ---
+   > #     Reconstructed via infocmp from file: .../db/./g/ghostty-fixed
+   > ghostty-fixed|Ghostty after Se fix,
+   >       Se=\E[0 q,
+   ```
+
+   The only inter-file difference is exactly the byte the patch
+   changes; the existing Ghostty `stream_handler.zig:874-888` handler
+   already maps `\E[0 q` to "restore `default_cursor_style` from
+   config" (cited in the Verification section above), so the cursor
+   behaviour on real terminals follows from the terminfo emission
+   without a separate runtime probe.
+
+Decision: already fixed upstream; no new issue to file. See next
+subsection for the upstream artefacts and the release window.
+
+### Upstream status (Ghostty)
+
+The fix was filed and merged before this audit ran:
+
+- Issue: [Inconsistent terminfo entry for resetting cursor style
+  (#12482)][gh-issue-12482] (opened 2026-04-26, closed 2026-04-27).
+- PR: [fix: update Se terminfo entry to reset cursor to configured
+  default (#12487)][gh-pr-12487] (merged 2026-04-27 by upstream
+  contributor Kyle Sower).
+- Merged commit on `main`: `6c68650920804a202a3208d7d355368c9dd28a46`.
+
+The fix is not yet in any tagged release. As of audit time, the
+latest tag is `v1.3.1`, which still ships `Se=\E[2 q`; upstream
+`main` is 842 commits ahead of `v1.3.1` and carries the corrected
+value. Users on releases hit the bug until the next tag; users
+building from `main` are already covered.
+
+Audit verified against upstream clone `ghostty-org/ghostty` at
+commit `e90b7c9fadadb5b7f936506dfd4f995729093108` (`origin`
+`https://github.com/ghostty-org/ghostty.git`).
+
+[gh-issue-12482]: https://github.com/ghostty-org/ghostty/issues/12482
+[gh-pr-12487]: https://github.com/ghostty-org/ghostty/pull/12487
+
+### Draft upstream issue (kept for audit trail, do not file)
+
+Do not file: duplicates closed [#12482][gh-issue-12482], fixed by
+merged PR [#12487][gh-pr-12487]. Kept here so the 5-constraint
+audit above has the draft it would have produced, and so a future
+session reading this doc can see what the proposed report would
+have looked like.
+
+~~~md
+Title: terminfo: `Se` should be `\E[0 q` (reset to default) instead of `\E[2 q` (steady block)
+
+Labels: bug, terminfo
+
+## Description
+
+`src/terminfo/ghostty.zig:116` defines the `Se` (reset cursor
+style) capability as `\E[2 q`, which is the DECSCUSR "steady block"
+sequence. The semantic intent of `Se` in terminfo is "reset to the
+user-configured default", which Ghostty implements as `\E[0 q`
+inside the stream handler:
+
+- `src/terminfo/ghostty.zig:116`:
+  `.{ .name = "Se", .value = .{ .string = "\E[2 q" } }`
+- `src/terminal/stream_handler.zig:874-888`: `\E[0 q` restores
+  `default_cursor_style` from config; `\E[2 q` forces steady block.
+
+Consequence: applications that consult terminfo (vim, neovim,
+tmux) emit `Se` to restore the cursor after a mode switch, and end
+up with steady block regardless of the user's `cursor-style`
+setting.
+
+## Reproduction
+
+1. Set `cursor-style = bar` in `~/.config/ghostty/config`.
+2. Launch a Ghostty window; confirm bar cursor at the shell prompt.
+3. Run `tput cnorm`, or open vim/neovim and exit, or open tmux and
+   detach. Each of these emits `Se`.
+4. Observe the cursor is now steady block instead of bar.
+
+## Suggested fix
+
+```diff
+--- a/src/terminfo/ghostty.zig
++++ b/src/terminfo/ghostty.zig
+@@ -112,8 +112,8 @@ pub const ghostty: Source = .{
+         // Cursor styles
+         .{ .name = "Ss", .value = .{ .string = "\E[%p1%d q" } },
+
+-        // Cursor style reset
+-        .{ .name = "Se", .value = .{ .string = "\E[2 q" } },
++        // Cursor style reset (to user configured default)
++        .{ .name = "Se", .value = .{ .string = "\E[0 q" } },
+```
+~~~
