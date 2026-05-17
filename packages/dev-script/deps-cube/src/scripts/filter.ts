@@ -114,6 +114,8 @@ const LARGE_SOURCE_BYTES_THRESHOLD = 10_000;
 const RECENT_DAYS_THRESHOLD = 365;
 /** Floor used in log scaling; values `<=` floor map to `log10(floor)` to avoid `-Infinity`. */
 const LOG_FLOOR = 1;
+/** Maximum allowed length of a user-typed `/regex/` body; protects against pathological patterns. */
+const MAX_USER_REGEX_LEN = 256;
 /** Numeric code for license classes; matches the `licenseClassNumeric` dim. */
 const LICENSE_CODES: Record<PackageProbe['licenseClass'], number> = {
   permissive: 0,
@@ -411,13 +413,29 @@ export function searchMatches(
   /** Lowercased npm name so the substring/regex test is case-insensitive. */
   const name = probe.npmName.toLowerCase();
   if ((search.length >= 2) && search.startsWith('/',) && search.endsWith('/',)) {
+    /** Body between the `/.../` delimiters; capped to a benign length so a pathological pattern cannot hang the page. */
+    const body = search.slice(
+      1,
+      -1,
+    );
+    if (body.length > MAX_USER_REGEX_LEN)
+      return false;
     try {
-      /** Regex parsed from the `/.../` delimiters; an invalid pattern is caught and falls back to "no match". */
+      /**
+       * Regex parsed from the `/.../` delimiters; an invalid pattern is
+       * caught and falls back to "no match".
+       *
+       * Why regex: this is the canonical user-typed regex search exposed by
+       * the dataviz UI. Users explicitly opt in to regex mode via the
+       * `/.../` delimiters; supporting it without `RegExp` is impossible.
+       * Bounded by the {@link MAX_USER_REGEX_LEN} cap above so a pathological
+       * pattern cannot hang the page; the `try`/`catch` swallows invalid
+       * syntax. Runs only on the local probe-name strings (short fixed
+       * vocabulary), never on attacker-controlled input.
+       */
+      // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- user-typed regex via `/.../`; length-capped by MAX_USER_REGEX_LEN; matched against short local probe names
       const pattern = new RegExp(
-        search.slice(
-          1,
-          -1,
-        ),
+        body,
         'i',
       );
       return pattern.test(name,);

@@ -26,6 +26,95 @@ import { renderHtml, } from './render-html.ts';
 
 const FIXTURE_BUNDLE = 'console.log("stubbed-controller");';
 
+/**
+ * Returns true when `htmlLower` contains a `<script ... src=...>` opening
+ * tag (case-insensitive on the tag name; the caller pre-lowercases the
+ * HTML). Replaces a `/<script\s+[^>]*\bsrc=/i` test with a linear
+ * `indexOf` walk: each `<script` is paired with the next `>`, and the
+ * intervening attribute span is scanned for the `src=` token preceded by a
+ * whitespace boundary.
+ *
+ * @param htmlLower - lower-cased HTML document
+ *
+ * @returns whether any `<script>` tag carries a `src=` attribute
+ */
+function hasScriptSrcAttribute(htmlLower: string,): boolean {
+  /**
+   * Recursive walker that scans every `<script` opening tag and gives up
+   * on the first one that carries a whitespace-bounded `src=` attribute.
+   *
+   * @param from - cursor index for the next `indexOf` call
+   *
+   * @returns true on the first matching tag
+   */
+  function scan(from: number,): boolean {
+    /** Position of the next `<script`; `-1` ends the search. */
+    const openIdx = htmlLower.indexOf(
+      '<script',
+      from,
+    );
+    if (openIdx === (-1))
+      return false;
+    /** Position of the closing `>` of the opening tag; `-1` ends the search. */
+    const closeIdx = htmlLower.indexOf(
+      '>',
+      openIdx,
+    );
+    if (closeIdx === (-1))
+      return false;
+    /** Attribute span between `<script` and `>`; trailing whitespace is preserved. */
+    const attrs = htmlLower.slice(
+      openIdx + '<script'.length,
+      closeIdx,
+    );
+    /** Each candidate `src=` position; must follow a whitespace byte to count. */
+    function findBoundedSrc(scanFrom: number,): boolean {
+      /** Position of the next `src=`; `-1` ends the per-tag search. */
+      const srcIdx = attrs.indexOf(
+        'src=',
+        scanFrom,
+      );
+      if (srcIdx === (-1))
+        return false;
+      /** Char preceding the `src=` token; whitespace satisfies the original `\bsrc=` anchor. */
+      const prev = srcIdx === 0 ? '' : attrs.charAt(srcIdx - 1,);
+      /** Whether the preceding char is whitespace or beginning of the attribute span. */
+      const bounded = (prev === '') || (prev === ' ') || (prev === '\t')
+        || (prev === '\n') || (prev === '\r') || (prev === '\f') || (prev === '\v');
+      if (bounded)
+        return true;
+      return findBoundedSrc(srcIdx + 1,);
+    }
+    if (findBoundedSrc(0,))
+      return true;
+    return scan(closeIdx + 1,);
+  }
+  return scan(0,);
+}
+
+/**
+ * Returns true when `html` contains a non-empty `<style>...</style>`
+ * block. Replaces `/<style>[\s\S]+<\/style>/` with a linear `indexOf`
+ * walk: the first `<style>` is paired with the next `</style>`, and the
+ * intervening span must hold at least one character.
+ *
+ * @param html - HTML document
+ *
+ * @returns whether at least one non-empty style block exists
+ */
+function hasNonEmptyStyleBlock(html: string,): boolean {
+  /** Position of the first `<style>`; `-1` ends the search. */
+  const open = html.indexOf('<style>',);
+  if (open === (-1))
+    return false;
+  /** Position of the matching `</style>`; `-1` means the block is unterminated. */
+  const close = html.indexOf(
+    '</style>',
+    open + '<style>'.length,
+  );
+  return (close !== (-1)) && (close > (open + '<style>'.length));
+}
+
 const PROBES: readonly PackageProbe[] = [
   {
     catalogKey: 'preact',
@@ -75,8 +164,11 @@ await describe({
         expect(html,).toContain('name="viewport"',);
         expect(html,).toContain('<title>',);
 
-        expect(html,).not.toMatch(/<link\s+[^>]*rel=["']stylesheet["']/i,);
-        expect(html,).not.toMatch(/<script\s+[^>]*\bsrc=/i,);
+        /** Lower-cased copy so the case-insensitive presence checks below stay simple. */
+        const htmlLower = html.toLowerCase();
+        expect(htmlLower.includes('rel="stylesheet"',)).toBe(false,);
+        expect(htmlLower.includes("rel='stylesheet'",)).toBe(false,);
+        expect(hasScriptSrcAttribute(htmlLower,),).toBe(false,);
 
         expect(html,).toContain('window.__PROBES__ =',);
         expect(html,).toContain('"preact"',);
@@ -90,7 +182,7 @@ await describe({
         // styles.css is inlined as a <style>…</style> block; verify the
         // <style> tag is present (we deliberately don't assert content,
         // since the CSS file is governed elsewhere).
-        expect(html,).toMatch(/<style>[\s\S]+<\/style>/,);
+        expect(hasNonEmptyStyleBlock(html,),).toBe(true,);
       },
     },),
 

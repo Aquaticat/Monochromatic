@@ -213,7 +213,11 @@ await describe({
           }
         })();
         expect(caught,).toBeInstanceOf(Error,);
-        expect(String(caught,),).toMatch(/pnpm-workspace\.yaml|locate/i,);
+        /** Error message lower-cased for case-insensitive substring checks below. */
+        const msgLower = String(caught,).toLowerCase();
+        expect(
+          msgLower.includes('pnpm-workspace.yaml',) || msgLower.includes('locate',),
+        ).toBe(true,);
       },
     },),
 
@@ -239,7 +243,7 @@ await describe({
           }
         })();
         expect(caught,).toBeInstanceOf(Error,);
-        expect(String(caught,),).toMatch(/catalog/i,);
+        expect(String(caught,).toLowerCase(),).toContain('catalog',);
       },
     },),
     //endregion readCatalog

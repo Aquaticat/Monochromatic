@@ -368,6 +368,42 @@ export function decodeState(
 
 //region Hash helpers
 
+/** Literal token preceding the URL-encoded payload in the location hash. */
+const STATE_PARAM = 'state=';
+
+/**
+ * Extracts the URL-encoded `state` parameter from a hash-stripped query
+ * string. Returns `''` when the parameter is absent. Mirrors
+ * `/(?:^|&)state=([^&]+)/` with a linear `indexOf` walk: locate either
+ * a leading `state=` or a preceding `&state=`, then read until the next
+ * `&` (or end of string).
+ *
+ * @param s - hash string with the leading `#` already removed
+ *
+ * @returns captured payload, or `''` when no `state=` parameter exists
+ */
+function extractStateParam(s: string,): string {
+  /** Cursor at which the payload starts, or `-1` when no parameter is present. */
+  const payloadStart = s.startsWith(STATE_PARAM,)
+    ? STATE_PARAM.length
+    : (function findAfterAmp(): number {
+      /** Position of `&state=`; `-1` ends the search. */
+      const ampIdx = s.indexOf(`&${STATE_PARAM}`,);
+      return ampIdx === (-1) ? (-1) : (ampIdx + 1 + STATE_PARAM.length);
+    })();
+  if (payloadStart === (-1))
+    return '';
+  /** Exclusive end of the payload at the next `&` (or string end). */
+  const ampEnd = s.indexOf(
+    '&',
+    payloadStart,
+  );
+  return s.slice(
+    payloadStart,
+    ampEnd === (-1) ? s.length : ampEnd,
+  );
+}
+
 /**
  * Extracts the `state=` payload from a hash string (with or without
  * leading `#`) and decodes it, falling back to `fallback` on any
@@ -398,16 +434,9 @@ export function readStateFromHash(
 ): AppState {
   /** Hash with the leading `#` removed so `state=` always appears at offset 0 or after `&`. */
   const stripped = hash.startsWith('#',) ? hash.slice(1,) : hash;
-  /** Regex match groups for the `state=` parameter; `null` means no payload to decode. */
-  const match = /(?:^|&)state=([^&]+)/.exec(stripped,);
-  if (match === null)
-    return fallback;
-  /** Captured URL-encoded payload from the `state=` parameter. */
-  const [
-    ,
-    encoded,
-  ] = match;
-  if (encoded === undefined)
+  /** URL-encoded payload from the `state=` parameter; `''` when absent. */
+  const encoded = extractStateParam(stripped,);
+  if (encoded === '')
     return fallback;
   /** Round-tripped state, or `null` when the payload fails to parse or validate. */
   const decoded = decodeState({
