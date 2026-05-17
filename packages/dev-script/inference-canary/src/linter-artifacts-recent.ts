@@ -13,9 +13,9 @@ import {
 import { join, } from 'node:path';
 
 import {
-  ARTIFACT_DIR_PATTERN,
-  FAILURE_DIR_PATTERN,
   isRecentTimestamp,
+  parseArtifactDir,
+  parseFailureDir,
   type RecentArtifactScan,
   TWENTY_FOUR_HOURS_MS,
 } from './linter-artifacts-timestamp.ts';
@@ -88,14 +88,14 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
 
     for (const dirName of artifactDirs) {
       //region Failure artifact detection: whole-model failures like 429 or auth errors
-      /** Regex match for the `failure-<timestamp>` directory naming convention; null when the dir is a per-probe artifact. */
-      const failureMatch = FAILURE_DIR_PATTERN.exec(dirName,);
-      if ((failureMatch !== null) && (failureMatch.groups !== undefined)) {
+      /** Parsed `failure-<timestamp>` directory parts; `null` when the dir is a per-probe artifact. */
+      const failureParts = parseFailureDir(dirName,);
+      if (failureParts !== null) {
         /**
          * Timestamp segment captured from the failure directory name; checked against {@link cutoff} for recency.
          */
-        const rawTimestamp = failureMatch.groups['timestamp'];
-        if ((rawTimestamp !== undefined) && isRecentTimestamp({
+        const rawTimestamp = failureParts.timestamp;
+        if (isRecentTimestamp({
           rawTimestamp,
           cutoff,
         },)) {
@@ -129,19 +129,17 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       //endregion Failure artifact detection
 
       //region Per-probe artifact detection: individual probe results
-      /** Regex match for the per-probe artifact directory naming convention; null when the dir is unrelated. */
-      const match = ARTIFACT_DIR_PATTERN.exec(dirName,);
-      if ((match === null) || (match.groups === undefined))
+      /** Parsed per-probe artifact directory parts; `null` when the dir is unrelated. */
+      const parts = parseArtifactDir(dirName,);
+      if (parts === null)
         continue;
-      if (match.groups['pass'] !== 'initial')
+      if (parts.pass !== 'initial')
         continue;
 
       /**
        * Timestamp segment captured from the artifact directory name; checked against {@link cutoff}.
        */
-      const rawTimestamp = match.groups['timestamp'];
-      if (rawTimestamp === undefined)
-        continue;
+      const rawTimestamp = parts.timestamp;
       if (!isRecentTimestamp({
         rawTimestamp,
         cutoff,

@@ -66,8 +66,34 @@ type InvocationRecord = {
   readonly parentChain: readonly ProcessFrame[];
 };
 
-/** Pattern matching env var keys whose values must not be hashed verbatim. */
-const SECRET_KEY_PATTERN = /KEY|TOKEN|SECRET|PASSWORD|PASSWD|CREDENTIAL/i;
+/** Upper-cased substrings whose presence in an env-var key marks the value as secret. */
+const SECRET_KEY_MARKERS: readonly string[] = [
+  'KEY',
+  'TOKEN',
+  'SECRET',
+  'PASSWORD',
+  'PASSWD',
+  'CREDENTIAL',
+];
+
+/**
+ * Returns true when `key` carries any of the {@link SECRET_KEY_MARKERS}
+ * substrings (case-insensitively). Replaces the prior
+ * `SECRET_KEY_PATTERN = /KEY|TOKEN|.../i` regex with an explicit
+ * upper-cased `includes` check; the upper-case copy is computed once and
+ * each marker test is O(n).
+ *
+ * @param key - env var name
+ *
+ * @returns whether the value should be hashed by length rather than verbatim
+ */
+function isSecretKey(key: string,): boolean {
+  /** Upper-cased key so the marker check matches the prior `/.../i` flag. */
+  const upper = key.toUpperCase();
+  return SECRET_KEY_MARKERS.some(function carriesMarker(marker,): boolean {
+    return upper.includes(marker,);
+  },);
+}
 
 /** Maximum depth to walk the parent chain before giving up. */
 const PARENT_CHAIN_MAX_DEPTH = 32;
@@ -250,7 +276,7 @@ function hashEnvironment(env: NodeJS.ProcessEnv,): string {
     .map(function envLine(key,): string {
       /** Env value for `key`; defaults to '' so unset keys still hash deterministically. */
       const value = env[key] ?? '';
-      return SECRET_KEY_PATTERN.test(key,)
+      return isSecretKey(key,)
         ? `${key}=<len:${String(value.length,)}>\n`
         : `${key}=${value}\n`;
     },);

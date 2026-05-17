@@ -65,6 +65,53 @@ export const taskScheduler: Probe = createCodeGenProbe({
       return line.trim();
     },);
 
+    /**
+     * Returns the digit run that follows the first `@` marker in `line`.
+     * Mirrors `/@(\d+)/.exec(line)?.[1]` with a single linear scan: locate
+     * the `@`, then accumulate ASCII digits until the first non-digit.
+     *
+     * @param line - candidate output line
+     *
+     * @returns digit run (empty when no `@<digits>` field exists)
+     */
+    function extractAtDigits(line: string,): string {
+      /** Position of the `@` marker; `-1` ends the search. */
+      const at = line.indexOf('@',);
+      if (at === (-1))
+        return '';
+      /**
+       * Walks the run of ASCII digits starting at `from`.
+       *
+       * @param from - cursor index
+       *
+       * @param acc - digits collected so far
+       *
+       * @returns digit run
+       */
+      function collect({
+        from,
+        acc,
+      }: {
+        from: number;
+        acc: string;
+      },): string {
+        if (from >= line.length)
+          return acc;
+        /** Char at cursor; only ASCII digits keep accumulating. */
+        const c = line.charAt(from,);
+        if ((c < '0') || (c > '9'))
+          return acc;
+        return collect({
+          from: from + 1,
+          acc: acc + c,
+        },);
+      }
+      return collect({
+        from: at + 1,
+        acc: '',
+      },);
+    }
+
     if ((!lines.some(function hasDoneA(line,): boolean {
       return line.startsWith('DONE A',);
     },))
@@ -98,10 +145,11 @@ export const taskScheduler: Probe = createCodeGenProbe({
       if (line === undefined)
         return undefined;
       /**
-       * RegExp capture of the elapsed-ms field after the `@` marker.
+       * Elapsed-ms digit run captured immediately after the `@` marker;
+       * empty when the line lacks a valid `@<digits>` field.
        */
-      const match = /@(\d+)/.exec(line,);
-      return match !== null ? Number(match[1],) : undefined;
+      const digits = extractAtDigits(line,);
+      return digits === '' ? undefined : Number(digits,);
     }
 
     /** Elapsed ms reported for task A; undefined when the line was missing or malformed. */

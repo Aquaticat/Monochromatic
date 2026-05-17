@@ -100,6 +100,28 @@ export type ExecuteOpOptions = {
 };
 
 /**
+ * Returns true when `op` is an optionally-negative ASCII integer literal
+ * (mirrors `/^-?\d+$/`). Empty strings and non-digit runs return false.
+ *
+ * @param op - candidate opcode literal
+ *
+ * @returns whether `op` is a parseable integer literal
+ */
+function isIntegerLiteral(op: string,): boolean {
+  if (op.length === 0)
+    return false;
+  /** Cursor: skip a leading `-` so the rest is checked for digits only. */
+  const start = op.startsWith('-',) ? 1 : 0;
+  if (start >= op.length)
+    return false;
+  for (const c of op.slice(start,)) {
+    if ((c < '0') || (c > '9'))
+      return false;
+  }
+  return true;
+}
+
+/**
  * Executes a single Stak instruction, mutating the stack and environment.
  *
  * @param op - opcode string (e.g. "ADD", "JUMP", or a numeric literal)
@@ -132,8 +154,7 @@ export function executeOp({
   env,
   labels,
 }: ExecuteOpOptions,): ExecutionStep {
-  // oxlint-disable-next-line prefer-named-capture-group -- detection heuristic, not data extraction
-  if (/^-?\d+$/.test(op,)) {
+  if (isIntegerLiteral(op,)) {
     stack.push(Number(op,),);
     return {};
   }

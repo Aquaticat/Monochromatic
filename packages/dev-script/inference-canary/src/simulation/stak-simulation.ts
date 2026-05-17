@@ -113,15 +113,131 @@ function buildSimulationPrompt(): string {
  */
 function parseSections(response: string,): readonly string[] {
   /** Response with `---` separators forced onto their own line so the split below stays uniform. */
-  const normalized = response.replaceAll(
-    /([^\n])---/g,
-    '$1\n---',
-  );
-  return normalized
-    .split(/^---$/m,)
+  const normalized = forceDashSeparatorsToOwnLine(response,);
+  return splitOnDashOnlyLines(normalized,)
     .map(function trimSection(section,): string {
       return section.trim();
     },);
+}
+
+/**
+ * Inserts `\n` immediately before every `---` not already preceded by
+ * `\n` (or start-of-string). Mirrors
+ * `s.replaceAll(/([^\n])---/g, '$1\n---')` with a linear `indexOf` walk
+ * that never revisits a byte.
+ *
+ * @param s - raw model output
+ *
+ * @returns normalised output where every `---` opens its own line
+ */
+function forceDashSeparatorsToOwnLine(s: string,): string {
+  /**
+   * Recursive accumulator: copies non-matching text verbatim and inserts
+   * a synthetic newline before each `---` that needs one.
+   *
+   * @param from - cursor index for the next `indexOf` call
+   *
+   * @param acc - normalised text collected so far
+   *
+   * @returns final normalised string
+   */
+  function walk({
+    from,
+    acc,
+  }: {
+    from: number;
+    acc: string;
+  },): string {
+    /** Position of the next `---`; `-1` ends the scan. */
+    const idx = s.indexOf(
+      '---',
+      from,
+    );
+    if (idx === (-1))
+      return acc + s.slice(from,);
+    /** Char immediately before the match (or `'\n'` for start-of-string). */
+    const prev = idx === 0 ? '\n' : s.charAt(idx - 1,);
+    /** Inserted newline keeps the regex's `$1\n---` rewrite semantics. */
+    const insertion = prev === '\n' ? '' : '\n';
+    return walk({
+      from: idx + 3,
+      acc: acc + s.slice(
+        from,
+        idx,
+      ) + insertion + '---',
+    },);
+  }
+  return walk({
+    from: 0,
+    acc: '',
+  },);
+}
+
+/**
+ * Splits `s` on lines that contain exactly `---` (and nothing else).
+ * Mirrors `s.split(/^---$/m)`: requires the separator to sit alone on its
+ * own line, neither prefixed nor suffixed.
+ *
+ * @param s - normalised text with `---` separators on their own lines
+ *
+ * @returns ordered list of inter-separator sections
+ */
+function splitOnDashOnlyLines(s: string,): string[] {
+  /** Lines after a primary `\n` split; separator lines are detected below. */
+  const lines = s.split('\n',);
+  /**
+   * Recursive walker that flushes the current section on each line that is
+   * exactly `---`.
+   *
+   * @param idx - cursor into `lines`
+   *
+   * @param section - lines accumulated since the last separator
+   *
+   * @param acc - completed sections so far
+   *
+   * @returns final section list
+   */
+  function walk({
+    idx,
+    section,
+    acc,
+  }: {
+    idx: number;
+    section: readonly string[];
+    acc: readonly string[];
+  },): string[] {
+    if (idx >= lines.length) {
+      return [
+        ...acc,
+        section.join('\n',),
+      ];
+    }
+    /** Line at the cursor. */
+    const line = lines[idx] ?? '';
+    if (line === '---') {
+      return walk({
+        idx: idx + 1,
+        section: [],
+        acc: [
+          ...acc,
+          section.join('\n',),
+        ],
+      },);
+    }
+    return walk({
+      idx: idx + 1,
+      section: [
+        ...section,
+        line,
+      ],
+      acc,
+    },);
+  }
+  return walk({
+    idx: 0,
+    section: [],
+    acc: [],
+  },);
 }
 
 /**

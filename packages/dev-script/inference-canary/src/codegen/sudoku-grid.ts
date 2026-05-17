@@ -8,6 +8,136 @@
  * any specific puzzle instance.
  */
 
+/**
+ * Returns `s` with every ASCII whitespace character removed. Mirrors
+ * `s.replaceAll(/\s/g, '')`: ' ', '\t', '\n', '\r', '\f', and '\v' are
+ * dropped; everything else passes through verbatim.
+ *
+ * @param s - input string
+ *
+ * @returns `s` with whitespace stripped
+ */
+function stripAllWhitespace(s: string,): string {
+  /**
+   * Recursive accumulator: copies non-whitespace chars to `acc`.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @param acc - characters collected so far
+   *
+   * @returns stripped string
+   */
+  function walk({
+    idx,
+    acc,
+  }: {
+    idx: number;
+    acc: string;
+  },): string {
+    if (idx >= s.length)
+      return acc;
+    /** Char at cursor; whitespace is dropped, everything else is kept. */
+    const c = s.charAt(idx,);
+    /** Whether the char satisfies regex `\s`. */
+    const ws = (c === ' ') || (c === '\t') || (c === '\n')
+      || (c === '\r') || (c === '\f') || (c === '\v');
+    return walk({
+      idx: idx + 1,
+      acc: ws ? acc : acc + c,
+    },);
+  }
+  return walk({
+    idx: 0,
+    acc: '',
+  },);
+}
+
+/**
+ * Splits `s` on runs of newlines separated only by horizontal whitespace.
+ * Mirrors `s.split(/\n\s*\n/)`: any sequence of `\n` followed by optional
+ * spaces/tabs followed by `\n` is treated as a paragraph separator.
+ *
+ * @param s - input text
+ *
+ * @returns paragraph blocks (separator chars dropped)
+ */
+function splitOnBlankLines(s: string,): string[] {
+  /** Lines after a primary split on `\n`; blank-line groups become empty entries. */
+  const lines = s.split('\n',);
+  /**
+   * Returns true when every char of `line` is a space or tab; matches the
+   * `\s*` between the two `\n` anchors in the original regex.
+   *
+   * @param line - candidate line
+   *
+   * @returns whether the line is whitespace-only or empty
+   */
+  function isBlankLine(line: string,): boolean {
+    for (const c of line) {
+      if ((c !== ' ') && (c !== '\t'))
+        return false;
+    }
+    return true;
+  }
+  /**
+   * Recursive walker that joins consecutive non-blank lines into a block
+   * and flushes the block on every blank line.
+   *
+   * @param idx - cursor into `lines`
+   *
+   * @param block - lines accumulated since the last blank line
+   *
+   * @param acc - completed blocks so far
+   *
+   * @returns final block list
+   */
+  function walk({
+    idx,
+    block,
+    acc,
+  }: {
+    idx: number;
+    block: readonly string[];
+    acc: readonly string[];
+  },): string[] {
+    if (idx >= lines.length) {
+      return block.length === 0
+        ? [...acc,]
+        : [
+          ...acc,
+          block.join('\n',),
+        ];
+    }
+    /** Line at the cursor. */
+    const line = lines[idx] ?? '';
+    if (isBlankLine(line,)) {
+      return walk({
+        idx: idx + 1,
+        block: [],
+        acc: block.length === 0
+          ? acc
+          : [
+            ...acc,
+            block.join('\n',),
+          ],
+      },);
+    }
+    return walk({
+      idx: idx + 1,
+      block: [
+        ...block,
+        line,
+      ],
+      acc,
+    },);
+  }
+  return walk({
+    idx: 0,
+    block: [],
+    acc: [],
+  },);
+}
+
 /** Standard sudoku grid dimension */
 const GRID_SIZE = 9;
 
@@ -80,10 +210,7 @@ export function parseGrid(text: string,): number[][] | undefined {
     /** Digits extracted by stripping whitespace and converting each character */
     // oxlint-disable-next-line unicorn/prefer-spread -- spreading a string triggers no-misused-spread; Array.from is correct for ASCII digit iteration
     const digits = Array
-      .from(line.replaceAll(
-        /\s/g,
-        '',
-      ),)
+      .from(stripAllWhitespace(line,),)
       .map(Number,);
     return (digits.length === GRID_SIZE)
         && digits.every(function validDigit(digit,): boolean {
@@ -321,8 +448,7 @@ export function gridToString(grid: number[][],): string {
  * ```
  */
 export function splitSolutions(section: string,): string[] {
-  return section
-    .split(/\n\s*\n/,)
+  return splitOnBlankLines(section,)
     .map(function trimBlock(block,): string {
       return block.trim();
     },)

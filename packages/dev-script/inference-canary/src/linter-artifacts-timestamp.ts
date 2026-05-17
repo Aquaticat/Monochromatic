@@ -24,30 +24,156 @@ export type RecentArtifactScan = {
 };
 
 /**
- * Regex to parse artifact directory names into (probe, pass, timestamp) components.
- * Matches: `<probe>-<pass>-<timestamp>` where pass is "initial" or "fix".
- * The timestamp has colons replaced with hyphens by `timestampSlug`.
- *
- * @example
- * ```ts
- * ARTIFACT_DIR_PATTERN.exec('csv-rfc4180-initial-2026-03-06T12-00-00.000Z');
- * // groups: { probe: 'csv-rfc4180', pass: 'initial', timestamp: '2026-03-06T12-00-00.000Z' }
- * ```
+ * Parsed components of an artifact directory name; `null` when the
+ * directory name does not follow the `probe-pass-timestamp` convention.
  */
-export const ARTIFACT_DIR_PATTERN: RegExp =
-  /^(?<probe>.+)-(?<pass>initial|fix)-(?<timestamp>\d{4}-.+)$/;
+export type ArtifactDirParts = {
+  /** Probe name (everything up to the pass marker). */
+  probe: string;
+  /** Pass marker, one of `'initial'` or `'fix'`. */
+  pass: 'initial' | 'fix';
+  /** Filesystem-safe timestamp slug starting with a four-digit year. */
+  timestamp: string;
+};
 
 /**
- * Regex to parse failure artifact directory names into timestamp components.
- * Matches: `failure-<timestamp>` where the timestamp has colons replaced with hyphens.
+ * Parses an artifact directory name into its `probe`, `pass`, and
+ * `timestamp` components.
+ *
+ * Mirrors `/^(?<probe>.+)-(?<pass>initial|fix)-(?<timestamp>\d{4}-.+)$/`
+ * with a linear search: locate the rightmost `-initial-` or `-fix-`
+ * boundary whose tail starts with four digits and a `-`, then carve
+ * the three substrings. Returns `null` when no boundary qualifies.
+ *
+ * @param name - directory basename
+ *
+ * @returns parsed components or `null`
  *
  * @example
  * ```ts
- * FAILURE_DIR_PATTERN.exec('failure-2026-03-06T12-00-00.000Z');
- * // groups: { timestamp: '2026-03-06T12-00-00.000Z' }
+ * parseArtifactDir('csv-rfc4180-initial-2026-03-06T12-00-00.000Z');
+ * // { probe: 'csv-rfc4180', pass: 'initial', timestamp: '2026-03-06T12-00-00.000Z' }
  * ```
  */
-export const FAILURE_DIR_PATTERN: RegExp = /^failure-(?<timestamp>\d{4}-.+)$/;
+export function parseArtifactDir(name: string,): ArtifactDirParts | null {
+  /**
+   * Returns true when `s` starts with four ASCII digits followed by `-`,
+   * matching the `\d{4}-` anchor of the original timestamp capture.
+   *
+   * @param s - candidate timestamp slug
+   *
+   * @returns whether the slug satisfies the year-prefix shape
+   */
+  function looksLikeTimestamp(s: string,): boolean {
+    if (s.length < 5)
+      return false;
+    /**
+     * Walks the first four characters checking each is an ASCII digit.
+     *
+     * @param idx - cursor into `s`
+     *
+     * @returns whether the first four chars are digits
+     */
+    function checkDigits(idx: number,): boolean {
+      if (idx >= 4)
+        return s.charAt(4,) === '-';
+      /** Char at cursor; only ASCII digits qualify. */
+      const c = s.charAt(idx,);
+      if ((c < '0') || (c > '9'))
+        return false;
+      return checkDigits(idx + 1,);
+    }
+    return checkDigits(0,);
+  }
+  /**
+   * Searches `name` for `-<pass>-` followed by a timestamp slug.
+   *
+   * @param marker - one of `-initial-` or `-fix-`
+   *
+   * @returns matching parts, or `null` when the marker does not yield a timestamp
+   */
+  function tryMarker(marker: '-initial-' | '-fix-',): ArtifactDirParts | null {
+    /**
+     * Recursive walker that tests every occurrence of `marker` in `name`
+     * (right-to-left) so the longest valid probe prefix wins; matches
+     * the original regex's greedy `.+` capture for the probe field.
+     *
+     * @param from - search end index (`lastIndexOf` stops at or before this)
+     *
+     * @returns matching parts, or `null` when no occurrence yields a timestamp
+     */
+    function scan(from: number,): ArtifactDirParts | null {
+      /** Right-most occurrence of `marker` at or before `from`; `-1` ends the search. */
+      const idx = name.lastIndexOf(
+        marker,
+        from,
+      );
+      if (idx <= 0)
+        return null;
+      /** Slug after the marker; must satisfy the year-prefix shape to count. */
+      const tail = name.slice(idx + marker.length,);
+      if (!looksLikeTimestamp(tail,))
+        return scan(idx - 1,);
+      return {
+        probe: name.slice(
+          0,
+          idx,
+        ),
+        pass: marker === '-initial-' ? 'initial' : 'fix',
+        timestamp: tail,
+      };
+    }
+    return scan(name.length,);
+  }
+  return tryMarker('-initial-',) ?? tryMarker('-fix-',);
+}
+
+/**
+ * Parses a failure-artifact directory name into its `timestamp`
+ * component.
+ *
+ * Mirrors `/^failure-(?<timestamp>\d{4}-.+)$/` with a linear check:
+ * requires the `failure-` prefix and a four-digit-year-anchored tail.
+ *
+ * @param name - directory basename
+ *
+ * @returns timestamp slug or `null`
+ *
+ * @example
+ * ```ts
+ * parseFailureDir('failure-2026-03-06T12-00-00.000Z');
+ * // { timestamp: '2026-03-06T12-00-00.000Z' }
+ * ```
+ */
+export function parseFailureDir(name: string,): { timestamp: string; } | null {
+  /** Literal prefix consumed before the timestamp slug. */
+  const PREFIX = 'failure-';
+  if (!name.startsWith(PREFIX,))
+    return null;
+  /** Slug after the prefix; must start with four digits and a hyphen. */
+  const tail = name.slice(PREFIX.length,);
+  if (tail.length < 5)
+    return null;
+  /**
+   * Walks the first four characters checking each is an ASCII digit.
+   *
+   * @param idx - cursor into `tail`
+   *
+   * @returns whether the first four chars are digits
+   */
+  function checkDigits(idx: number,): boolean {
+    if (idx >= 4)
+      return tail.charAt(4,) === '-';
+    /** Char at cursor; only ASCII digits qualify. */
+    const c = tail.charAt(idx,);
+    if ((c < '0') || (c > '9'))
+      return false;
+    return checkDigits(idx + 1,);
+  }
+  if (!checkDigits(0,))
+    return null;
+  return { timestamp: tail, };
+}
 
 /**
  * Restores an ISO timestamp from its filesystem-safe slug form.
@@ -70,10 +196,84 @@ function restoreTimestamp(rawTimestamp: string,): string {
       'T',
     );
   // Fix the date part: year:MM:DD -> year-MM-DD (first two colons after year are date separators)
-  return withColons.replace(
-    /^(\d{4}):(\d{2}):(\d{2})/,
-    '$1-$2-$3',
-  );
+  return rewriteDateColons(withColons,);
+}
+
+/**
+ * Replaces the two colons in a `YYYY:MM:DD` prefix with hyphens to restore
+ * the ISO date shape. Mirrors `s.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3')`
+ * with explicit index checks; returns `s` unchanged when the prefix does
+ * not match.
+ *
+ * @param s - candidate timestamp string
+ *
+ * @returns `s` with the leading date colons replaced, or `s` verbatim
+ */
+function rewriteDateColons(s: string,): string {
+  if (s.length < 'YYYY:MM:DD'.length)
+    return s;
+  /**
+   * Returns true when chars `[start, start + count)` are all ASCII digits.
+   *
+   * @param start - inclusive start index
+   *
+   * @param count - number of chars to check
+   *
+   * @returns whether the substring is purely numeric
+   */
+  function isDigitRun({
+    start,
+    count,
+  }: {
+    start: number;
+    count: number;
+  },): boolean {
+    /**
+     * Recursive walker.
+     *
+     * @param offset - relative offset into the candidate run
+     *
+     * @returns whether each char is an ASCII digit
+     */
+    function step(offset: number,): boolean {
+      if (offset >= count)
+        return true;
+      /** Char at the absolute index. */
+      const c = s.charAt(start + offset,);
+      if ((c < '0') || (c > '9'))
+        return false;
+      return step(offset + 1,);
+    }
+    return step(0,);
+  }
+  if (
+    !isDigitRun({
+      start: 0,
+      count: 4,
+    },)
+    || (s.charAt(4,) !== ':')
+    || (!isDigitRun({
+      start: 5,
+      count: 2,
+    },))
+    || (s.charAt(7,) !== ':')
+    || (!isDigitRun({
+      start: 8,
+      count: 2,
+    },))
+  ) {
+    return s;
+  }
+  return `${s.slice(
+    0,
+    4,
+  )}-${s.slice(
+    5,
+    7,
+  )}-${s.slice(
+    8,
+    10,
+  )}${s.slice(10,)}`;
 }
 
 /**

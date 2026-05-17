@@ -37,8 +37,114 @@ const regexViolationCache = new Map<string, boolean>();
  * ```
  */
 function detectsRegexUsage(source: string,): boolean {
-  // oxlint-disable-next-line prefer-named-capture-group -- detection heuristic, not data extraction
-  return /\/(\\.|[^/\n])\/[gimsuy]*|new\s+RegExp\s*\(/.test(source,);
+  return hasRegexConstructorCall(source,) || hasSingleCharRegexLiteral(source,);
+}
+
+/**
+ * Returns true when `source` contains a `new RegExp` constructor call,
+ * allowing the prior regex's `\s*` between the identifier and the
+ * opening parenthesis.
+ *
+ * @param source - candidate TypeScript source
+ *
+ * @returns whether `source` shows a `new RegExp` invocation
+ */
+function hasRegexConstructorCall(source: string,): boolean {
+  /**
+   * Recursive walker testing every occurrence of `new RegExp` for the
+   * required `\s*\(` continuation.
+   *
+   * @param from - cursor index for the next `indexOf` call
+   *
+   * @returns true on the first occurrence with `(` after optional whitespace
+   */
+  function scan(from: number,): boolean {
+    /** Position of the next `new RegExp`; `-1` ends the search. */
+    const idx = source.indexOf(
+      'new RegExp',
+      from,
+    );
+    if (idx === (-1))
+      return false;
+    /**
+     * Advances past inline whitespace starting at `pos`.
+     *
+     * @param pos - cursor index
+     *
+     * @returns first non-whitespace position
+     */
+    function skipWs(pos: number,): number {
+      if (pos >= source.length)
+        return pos;
+      /** Char at cursor; only ASCII whitespace advances. */
+      const c = source.charAt(pos,);
+      if (
+        (c === ' ') || (c === '\t') || (c === '\n')
+        || (c === '\r') || (c === '\f') || (c === '\v')
+      ) {
+        return skipWs(pos + 1,);
+      }
+      return pos;
+    }
+    /** Cursor after the literal `new RegExp`. */
+    const afterToken = idx + 'new RegExp'.length;
+    /** Cursor after any inline whitespace; the next char must be `(` to count. */
+    const afterWs = skipWs(afterToken,);
+    if (source.charAt(afterWs,) === '(')
+      return true;
+    return scan(idx + 1,);
+  }
+  return scan(0,);
+}
+
+/**
+ * Returns true when `source` contains a one-char regex literal of the
+ * form `'/X/[flags]'`, where `X` is either a single non-`/` non-newline
+ * character or a backslash-escape sequence. Mirrors the prior
+ * `/\/(\\.|[^/\n])\/[gimsuy]*\/` heuristic; preserves its (deliberately
+ * narrow) one-char-body shape.
+ *
+ * @param source - candidate TypeScript source
+ *
+ * @returns whether `source` contains a one-char regex literal
+ */
+function hasSingleCharRegexLiteral(source: string,): boolean {
+  /**
+   * Walks every `/` in `source` and tests it as a candidate regex
+   * opener. The match shape is:
+   *   - opener `/`
+   *   - body of either one non-`/` non-`\n` char OR `\<any>` (2 chars)
+   *   - closing `/`
+   *   - zero or more regex flag chars
+   *
+   * @param from - cursor index for the next `indexOf` call
+   *
+   * @returns true on the first valid one-char regex literal
+   */
+  function scan(from: number,): boolean {
+    /** Position of the next `/`; `-1` ends the search. */
+    const open = source.indexOf(
+      '/',
+      from,
+    );
+    if (open === (-1))
+      return false;
+    /** Body length: `2` for `\X`, `1` for a plain char. */
+    const bodyLen = source.charAt(open + 1,) === '\\' ? 2 : 1;
+    /** Char before the closing slash; required to satisfy the body slot. */
+    const bodyEnd = open + 1 + bodyLen;
+    if (bodyEnd >= source.length)
+      return false;
+    /** Body char (or escape target) checked against the `[^/\n]` constraint. */
+    const body = source.charAt(open + 1,);
+    if ((bodyLen === 1) && ((body === '/') || (body === '\n')))
+      return scan(open + 1,);
+    /** Closing slash; must sit immediately after the body slot. */
+    if (source.charAt(bodyEnd,) !== '/')
+      return scan(open + 1,);
+    return true;
+  }
+  return scan(0,);
 }
 
 /** Constraint violation message prepended to the fix prompt when regex is detected */
