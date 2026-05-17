@@ -329,6 +329,7 @@ overrides:
   '@earendil-works/pi-coding-agent>@mariozechner/clipboard': '-'
   '@earendil-works/pi-coding-agent>marked': '-'
   '@earendil-works/pi-tui>chalk': '-'
+  '@earendil-works/pi-tui>koffi': '-'
   '@earendil-works/pi-tui>mime-types': '-'
   abort-controller: '-'
   dprint: '-'
@@ -4959,9 +4960,6 @@ packages:
     resolution: {integrity: sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==}
     engines: {node: '>=0.10.0'}
 
-  koffi@2.16.2:
-    resolution: {integrity: sha512-owU0MRwv6xkrVqCd+33uw6BaYppkTRXbO/rVdJNI2dvZG0gzyRhYwW25eWtc5pauwK8TGh3AbkFONSezdykfSA==}
-
   ktx-parse@0.7.1:
     resolution: {integrity: sha512-FeA3g56ksdFNwjXJJsc1CCc7co+AJYDp6ipIp878zZ2bU8kWROatLYf39TQEd4/XRSUvBXovQ8gaVKWPXsCLEQ==}
 
@@ -6311,15 +6309,11 @@ snapshots:
       '@types/mime-types': 2.1.4
       get-east-asian-width: 1.5.0
       marked: 15.0.12
-    optionalDependencies:
-      koffi: 2.16.2
 
   '@earendil-works/pi-tui@0.75.0':
     dependencies:
       get-east-asian-width: 1.5.0
       marked: 15.0.12
-    optionalDependencies:
-      koffi: 2.16.2
 
   '@emnapi/core@1.10.0':
     dependencies:
@@ -8141,9 +8135,6 @@ snapshots:
       '@keyv/serialize': 1.1.1
 
   kind-of@6.0.3: {}
-
-  koffi@2.16.2:
-    optional: true
 
   ktx-parse@0.7.1: {}
 

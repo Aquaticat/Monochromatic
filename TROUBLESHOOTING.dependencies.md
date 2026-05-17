@@ -545,8 +545,18 @@ re-exports through a module with a static import was removed from the
 override list: `chalk`, `cli-highlight`, `diff`, `extract-zip`,
 `file-type`, `glob`, `hosted-git-info`, `ignore`, `jiti` (imported as
 `jiti/static`), `minimatch`, `proper-lockfile`, `strip-ansi`, `uuid`,
-`yaml`. The same applies to pi-tui's `get-east-asian-width`
-(`utils.js`), `koffi` (`terminal.js`), and `marked` (`markdown.js`).
+`yaml`. The same applies to pi-tui's `get-east-asian-width` (`utils.js`)
+and `marked` (`markdown.js`).
+
+`@earendil-works/pi-tui>koffi` is removed. The package declares `koffi`
+as an optional dependency, and `dist/terminal.js` only reaches it inside
+`enableWindowsVTInput()`: the method returns immediately unless
+`process.platform === "win32"`, then wraps `cjsRequire("koffi")` in
+`try`/`catch`. If the require fails, pi-tui degrades Windows VT input
+support so Shift+Tab is not distinguishable from Tab; Linux and macOS
+never reach the import. Parent-scoped removal is therefore the lightest
+blocklist mechanism: no native FFI package reaches `node_modules`, and
+pi-tui's documented fallback path remains intact.
 
 The overrides retained for pi-coding-agent are:
 
@@ -566,7 +576,8 @@ workspace. Run-the-binary, not just import-the-library, is part of the
 "reachable from each pi-* package's entry" audit. The override is gone.
 
 The overrides retained for pi-tui are `chalk` and `mime-types`, neither
-of which the dist statically imports.
+of which the dist statically imports. `koffi` is removed for the optional
+Windows-only fallback described above.
 
 After this cleanup, `mise run //packages/pi/{auto-mode,morph-compact}:test:unit`
 both pass. `packages/pi/terminal-title:test:unit` fails on unrelated string
