@@ -428,8 +428,10 @@ a canonical-plugin prefix. The remaining 1129 unit tests in
 - Verified on Linux x86_64.
 ~~~
 
-Decision: filed upstream with the verified patch and the casualty
-documented. Re-evaluate constraint 4 if the maintainers reject the
+Decision: ready to file upstream once a maintainer re-runs the
+verification harness against the latest `main` (no issue has been
+opened yet from this repository). The casualty is documented and
+intended. Re-evaluate constraint 4 if the maintainers reject the
 breaking-change cost; in that case the lint-disable-comments
 alternative becomes the next probe.
 
