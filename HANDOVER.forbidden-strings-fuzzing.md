@@ -208,15 +208,29 @@ Run in order:
   Fix: split on the inter-arg separator `"' '"` and trim the lone
   outer quotes off the first and last elements.
 - Step 5, 7-9 NOT YET RUN against 0.6.0.
-- Step 10 (soundness-by-revert) PARTIAL: a 2026-05-16 attempt against a
-  disposable worktree (`/tmp/fs-soundness-revert`, reverted `e49d8694`)
-  hit a pre-existing slow-unit (input shape `a` * N, takes >60s per
-  input even with `-timeout=60`) before reaching the (?u)-shape that
-  would trigger the soundness panic. The slow-unit lives in our
-  scanner/extractor path, NOT in resharp; unrelated to the 0.5.x→0.6.0
-  bump. To complete the validation: (a) seed the fuzz corpus with a
-  small (?u)-shape input so libfuzzer reaches the bug fast, or (b) fix
-  the slow-unit so the fuzz has budget to explore Unicode patterns.
+- Step 10 (soundness-by-revert) PARTIAL: the original blocker (the
+  bare-stacked-quantifier slow-unit) is resolved by commit `cd9b2dbf`
+  (stacked-quantifier pre-validator) and `2f4d27b0` (fuzz literal
+  alphabet widening to include Unicode lowercase letters). The 60 s
+  fuzz on main now completes cleanly (9561 iterations, zero halt).
+  However, with e49d8694 reverted, the fuzz hits NEW shapes that
+  block reaching the soundness assertion: a grouped-quantifier slow
+  shape (`(?:(?:(?:(?:[X]){N,M}){N,M}){N,M}){N,M}`, ~19 s/iteration,
+  NOT caught by the current `stacked_quantifier` because the grouping
+  parens reset the just-consumed state) and a resharp
+  `engine.rs:1020` panic on `&` + lookahead `(?=`/`(?!`. The
+  pre-existing `intersection_with_lookbehind` covers lookBEHIND only.
+  Both follow-ups (extend stacked detector to grouped nesting,
+  generalise the intersection pre-validator to lookaround in either
+  direction) are needed before phase 11 produces a SOUNDNESS PANIC.
+  Manual probe `/tmp/probe-slow-unit/` confirms the soundness bug
+  class is real and reachable: `(?iu)café` vs content `CAFÉ` panics
+  with the expected redacted-reproducer message in the reverted
+  worktree. The fuzz target's coverage path to that shape just
+  isn't open yet. The user's task description claim that fixing the
+  slow path alone would unblock phase 11 is inaccurate -- the
+  generator widening was also load-bearing, and additional
+  pre-validators are still needed for the remaining blockers.
 - Crash artifacts at `/tmp/fs-crash-artifacts/` were re-verified against
   the 0.6.0+fix binary (`128221b7`); both run in 0ms with no crash. See
   `HANDOVER.resharp-panic-fix.md` for details.
