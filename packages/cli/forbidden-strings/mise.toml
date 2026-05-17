@@ -38,16 +38,24 @@ run = "cargo fuzz list"
 [tasks."fuzz:build"]
 description = "Build all fuzz targets (nightly required)"
 env.RUSTUP_TOOLCHAIN = "nightly"
-run = "cargo fuzz build"
+# `--target x86_64-unknown-linux-gnu` is load-bearing: cargo-fuzz 0.13.1
+# defaults to `x86_64-unknown-linux-musl` on Linux, but the ASAN flags it
+# sets via RUSTFLAGS conflict with musl's static libc
+# (`sanitizer is incompatible with statically linked libc, disable it
+# using -C target-feature=-crt-static`). Forcing gnu picks a target where
+# dynamic libc satisfies the sanitizer. macOS / Windows hosts cannot use
+# this task as-written; would need a per-platform target switch.
+run = "cargo fuzz build --target x86_64-unknown-linux-gnu"
 
 [tasks."fuzz:smoke"]
 description = "Run every fuzz target for 30s with the dictionary as a smoke test"
 env.RUSTUP_TOOLCHAIN = "nightly"
+# `--target x86_64-unknown-linux-gnu` rationale: see fuzz:build.
 run = """
 let targets = (cargo fuzz list | lines | where {|t| ($t | str trim) != "" })
 for target in $targets {
   print $"--- ($target) ---"
-  cargo fuzz run $target -- -max_total_time=30 -rss_limit_mb=2048 -dict=fuzz/dictionaries/forbidden-strings.dict
+  cargo fuzz run $target --target x86_64-unknown-linux-gnu -- -max_total_time=30 -rss_limit_mb=2048 -dict=fuzz/dictionaries/forbidden-strings.dict
 }
 """
 
@@ -58,10 +66,11 @@ usage = """
 arg "target" help="Fuzz target name (e.g. fuzz_extract_gate_soundness)"
 arg "[args]" var=#true help="Extra libFuzzer args to pass through"
 """
+# `--target x86_64-unknown-linux-gnu` rationale: see fuzz:build.
 run = """
 let target = $env.usage_target
 let extras = ($env.usage_args? | default '' | str trim | split row ' ' | where {|p| $p != '' })
-cargo fuzz run $target -- -dict=fuzz/dictionaries/forbidden-strings.dict ...$extras
+cargo fuzz run $target --target x86_64-unknown-linux-gnu -- -dict=fuzz/dictionaries/forbidden-strings.dict ...$extras
 """
 
 [tasks."fuzz:seed"]
