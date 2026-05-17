@@ -427,6 +427,40 @@ Lower-effort first: try (1) with a richer seed set. If 30-min
 fuzz against the larger seed set doesn't fire, do (2) and (3) in
 the generator.
 
+**Update: biases (2) and (3) landed in 063512ea this session.**
+A 11-min fuzz with the biases + 5 seeded corpus entries ran 54,960
+iterations on a 12504-file corpus (grew from 9929). The biases are
+working (`café`-shaped literals visible in saved dictionary entries
+like `caf\303\243caf\303\243`), but the soundness panic still
+didn't fire. Slow-units (13-17 s each) ate throughput, dropping
+exec/s from 175 to ~83.
+
+**Next session priorities (in order):**
+
+1. **Add a slow-unit pre-validator** for the intersection-of-large-classes
+   shape that ate fuzz cycles this session (e.g. `(?i)(?!(?:(?:(?:ñ
+   ×10&ñ×10)&ñ×10)|\s))`). Add a check like
+   "intersection involving classes/literals of length >= 10 inside a
+   lookahead" so the fuzz rejects them in microseconds instead of 13s.
+   The slow-unit artifacts at
+   `fuzz/artifacts/fuzz_extract_gate_soundness/slow-unit-293a*` and
+   `slow-unit-7a84*` decode the exact shape.
+
+2. **Run 30-60 min fuzz on the warm corpus.** With the slow-unit
+   validator removing the throughput drain, expected exec/s should
+   return to ~200-300. Combined with the 12504-file corpus and the
+   biases, the soundness panic should fire within that budget.
+
+3. **If still not firing, write a brute-force soundness searcher.**
+   Iterate over short byte sequences passed through
+   `RuleAndContent::arbitrary`; check each decoded pair against the
+   soundness contract directly (no libfuzzer harness). The byte
+   space for the simplest triggering shape is small enough to
+   enumerate exhaustively up to ~100 bytes.
+
+4. **Phase 11 completion:** when soundness panic fires, capture the
+   redacted reproducer + clean up worktree per the original plan.
+
 ### 2026-05-16 late session (~23:00): Bug F discovered + 3 more commits
 
 ### Late-2026-05-16 session (~23:00): Bug F discovered + 3 more commits
