@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       dry-run:
-        description: 'Dry run (package + verify, no upload, no attestation)'
+        description: 'Dry run (package + verify, no crates.io upload, no GH release, no attestation)'
         type: boolean
         default: true
   push:
@@ -15,13 +15,19 @@ on:
 permissions:
   contents: read
 
+# Serialize runs so a second version bump landing while a publish is still
+# uploading does not race the first. cancel-in-progress=false keeps the
+# running publish alive; the second run queues.
+concurrency:
+  group: cargo-publish
+  cancel-in-progress: false
+
 jobs:
-  publish:
+  detect:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-      attestations: write
+    outputs:
+      should_publish: ${{ steps.detect.outputs.should_publish }}
+      version: ${{ steps.detect.outputs.version }}
     steps:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -60,19 +66,30 @@ jobs:
           echo "should_publish=false" >> "$GITHUB_OUTPUT"
         fi
 
+  publish-crate:
+    needs: detect
+    if: ${{ needs.detect.outputs.should_publish == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
     - name: Set up mise (skip auto-install of all tools)
-      if: ${{ steps.detect.outputs.should_publish == 'true' }}
       uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
       with:
         install: false
         cache: true
 
     - name: Install only the tools this workflow needs
-      if: ${{ steps.detect.outputs.should_publish == 'true' }}
       run: mise install rust
 
     - name: Cache cargo registry + build
-      if: ${{ steps.detect.outputs.should_publish == 'true' }}
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
         path: |
@@ -82,17 +99,17 @@ jobs:
         key: cargo-publish-${{ runner.os }}-${{ hashFiles('packages/cli/forbidden-strings/Cargo.lock') }}
 
     - name: Authenticate with crates.io (Trusted Publishing)
-      if: ${{ steps.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+      if: ${{ !inputs.dry-run }}
       id: auth
       uses: rust-lang/crates-io-auth-action@bbd81622f20ce9e2dd9622e3218b975523e45bbe
 
     - name: Publish (dry run)
-      if: ${{ steps.detect.outputs.should_publish == 'true' && inputs.dry-run }}
+      if: ${{ inputs.dry-run }}
       working-directory: packages/cli/forbidden-strings
       run: cargo publish --dry-run
 
     - name: Publish
-      if: ${{ steps.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+      if: ${{ !inputs.dry-run }}
       working-directory: packages/cli/forbidden-strings
       env:
         CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
@@ -108,7 +125,142 @@ jobs:
     # `cargo package` locally and `gh attestation generate` against the
     # resulting .crate.
     - name: Attest .crate provenance
-      if: ${{ steps.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+      if: ${{ !inputs.dry-run }}
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
       with:
-        subject-path: 'packages/cli/forbidden-strings/target/package/forbidden-strings-${{ steps.detect.outputs.version }}.crate'
+        subject-path: 'packages/cli/forbidden-strings/target/package/forbidden-strings-${{ needs.detect.outputs.version }}.crate'
+
+  create-release:
+    needs: detect
+    if: ${{ needs.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Create GitHub release (empty)
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ needs.detect.outputs.version }}
+        SHA: ${{ github.sha }}
+      run: |
+        set -euo pipefail
+        tag="forbidden-strings-v${VERSION}"
+        # Idempotent: re-running the workflow on a published version
+        # finds the existing release and reuses it; build-binary will
+        # re-upload assets with --clobber.
+        if gh release view "$tag" >/dev/null 2>&1; then
+          echo "Release $tag already exists; reusing."
+        else
+          gh release create "$tag" \
+            --title "forbidden-strings v${VERSION}" \
+            --notes "forbidden-strings v${VERSION}. crates.io: https://crates.io/crates/forbidden-strings/${VERSION}" \
+            --target "$SHA"
+        fi
+
+  build-binary:
+    needs: [detect, create-release]
+    if: ${{ needs.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - target: x86_64-unknown-linux-gnu
+          runner: ubuntu-latest
+        - target: x86_64-unknown-linux-musl
+          runner: ubuntu-latest
+          needs_musl: true
+        - target: aarch64-unknown-linux-gnu
+          runner: ubuntu-24.04-arm
+        - target: aarch64-unknown-linux-musl
+          runner: ubuntu-24.04-arm
+          needs_musl: true
+        - target: x86_64-apple-darwin
+          runner: macos-latest
+        - target: aarch64-apple-darwin
+          runner: macos-latest
+        - target: x86_64-pc-windows-msvc
+          runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        fetch-depth: 1
+
+    - name: Install musl tools
+      if: ${{ matrix.needs_musl }}
+      run: sudo apt-get update && sudo apt-get install -y musl-tools
+
+    - name: Add rust target
+      shell: bash
+      run: rustup target add ${{ matrix.target }}
+
+    - name: Build binary
+      shell: bash
+      working-directory: packages/cli/forbidden-strings
+      run: cargo build --release --target ${{ matrix.target }}
+
+    - name: Package binary archive
+      id: pkg
+      shell: bash
+      env:
+        VERSION: ${{ needs.detect.outputs.version }}
+        TARGET: ${{ matrix.target }}
+      run: |
+        set -euo pipefail
+        bin='forbidden-strings'
+        ext=''
+        case "$TARGET" in
+          *windows*) ext='.exe' ;;
+        esac
+        stage_dir="forbidden-strings-${VERSION}-${TARGET}"
+        mkdir -p "dist/${stage_dir}"
+        cp "packages/cli/forbidden-strings/target/${TARGET}/release/${bin}${ext}" "dist/${stage_dir}/"
+        # README is decoration; if it ever moves or is renamed, ship the
+        # binary anyway rather than failing the whole release pipeline.
+        if [ -f packages/cli/forbidden-strings/README.md ]; then
+          cp packages/cli/forbidden-strings/README.md "dist/${stage_dir}/"
+        fi
+        case "$TARGET" in
+          *windows*)
+            archive="${stage_dir}.zip"
+            (cd dist && 7z a "${archive}" "${stage_dir}" >/dev/null)
+            ;;
+          *)
+            archive="${stage_dir}.tar.gz"
+            (cd dist && tar czf "${archive}" "${stage_dir}")
+            ;;
+        esac
+        archive_path="dist/${archive}"
+        echo "archive_path=${archive_path}" >> "$GITHUB_OUTPUT"
+        echo "archive_name=${archive}" >> "$GITHUB_OUTPUT"
+        ls -la "dist/"
+
+    # Attest each binary archive: the SLSA build-provenance signature binds
+    # the archive's sha256 to this workflow run, so consumers can run
+    # `gh attestation verify <archive> -R Aquaticat/Monochromatic` after
+    # downloading from the release page.
+    - name: Attest binary provenance
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: ${{ steps.pkg.outputs.archive_path }}
+
+    - name: Upload to GitHub release
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ needs.detect.outputs.version }}
+        ARCHIVE: ${{ steps.pkg.outputs.archive_path }}
+      run: |
+        set -euo pipefail
+        tag="forbidden-strings-v${VERSION}"
+        gh release upload "$tag" "$ARCHIVE" --clobber
