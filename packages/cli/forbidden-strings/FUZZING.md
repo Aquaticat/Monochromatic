@@ -21,12 +21,21 @@ alternatives are recorded in
   C++ runtime that the targets link against.
 - `podman` (or `docker`) for the bounded-container wrapper
   described below.
+- `resharp = "0.6"` is the pinned engine version (was 0.5.2). Replays of every
+  0.5.2-era crash are recorded in
+  [`docs/decisions/forbidden-strings-fuzzing.md`](../../../docs/decisions/forbidden-strings-fuzzing.md).
 
 ## Target list
 
 Each target encodes one invariant. Failures are libFuzzer crashes
 with a redacted reproducer (pattern source + content SHA-256, no
 raw bytes).
+
+All seven targets share a single tuned dictionary at
+`fuzz/dictionaries/forbidden-strings.dict` (one dictionary, not per-target). Each
+target has its own per-target seed corpus under `fuzz/corpus/<target>/`. Crash
+output uses a Unicode-literal-aware printable renderer (the May 2026 mojibake fix
+in commit `099bfe84`).
 
 - **`fuzz_extract_gate_soundness`** -- load-bearing primary.
   For every successful regex match, at least one extracted gate
@@ -115,7 +124,15 @@ prebuilt image isn't handy.
 
 The local deny-list (`/forbidden-strings.local.txt`) must NEVER
 enter the corpus, dictionary, or reproducer text. The seeder's
-guard (`git check-ignore`) blocks this; do not bypass it.
+guard is narrower than that policy: it runs `git check-ignore -v` on
+`../forbidden-strings.local.txt` before reading anything, and bails
+if the file exists and is NOT gitignored (see
+`fuzz/src/bin/seed-from-tests.rs:119-154`). The seeder itself only
+reads files in `TEST_FILES`, so the guard is defence-in-depth against a
+future edit that adds the deny-list to that list. Hand-curated
+corpus / dictionary / reproducer edits remain entirely the
+contributor's responsibility — the guard cannot detect a deny-list
+byte sequence copied into one of those artifacts by hand.
 
 ## Crash reproduction and minimization
 
@@ -140,6 +157,24 @@ When a target reports a crash:
    message printed by every target already includes pattern
    source + content length + SHA-256 -- that is the reproducer
    shape to share.
+
+## Panic filter for known resharp upstream bugs
+
+Each fuzz target installs a `std::panic::set_hook` that catches resharp engine
+panics matching known upstream bug shapes (Bug B at `resharp/src/engine.rs:1020`,
+Bug F at `resharp-algebra/src/lib.rs:2470`, plus the intersection-quant hang
+shapes) and lets them unwind quietly so `compile_rule_src`'s `catch_unwind` can
+intercept them and the fuzz run can move on to the next input. Genuine panics
+in our own code still call the default hook and `abort()` so libFuzzer records a
+crash. The installation is `Once`-guarded so the hook installs exactly once per
+process. See `fuzz/fuzz_targets/fuzz_extract_gate_soundness.rs:147-192` for the
+implementation and
+[`docs/decisions/forbidden-strings-fuzzing.md`](../../../docs/decisions/forbidden-strings-fuzzing.md)
+for the full bug list.
+
+The pre-validators added on top of resharp catch most of these shapes before
+resharp sees them; the panic filter is belt-and-suspenders for new shapes the
+pre-validators do not yet cover.
 
 ## Corpus refresh trigger
 

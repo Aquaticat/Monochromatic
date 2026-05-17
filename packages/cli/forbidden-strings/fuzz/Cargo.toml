@@ -1,17 +1,17 @@
 [package]
 name = "forbidden-strings-fuzz"
 version = "0.0.0"
-publish = false
 edition = "2021"
+publish = false
 
 [package.metadata]
 cargo-fuzz = true
 
 [dependencies]
-libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
 arbitrary = { version = "1", features = ["derive"] }
-sha2 = "0.10"
+libfuzzer-sys = { version = "0.4", features = ["arbitrary-derive"] }
 rayon = "1"
+sha2 = "0.10"
 
 [dependencies.forbidden-strings]
 path = ".."
@@ -29,10 +29,13 @@ members = ["."]
 name = "forbidden_strings_fuzz"
 path = "src/lib.rs"
 
-# Override the parent crate's `panic = "abort"` so libFuzzer can capture
-# and minimize crashes via unwinding. Without this override, panics
-# abort the process before libFuzzer gets a chance to record a
-# reproducer.
+# Inherit `panic = "unwind"` from the parent crate so libFuzzer can capture
+# and minimize crashes via unwinding. The parent currently also uses `unwind`
+# (load-bearing for the resharp-panic safety wrapper, see ../Cargo.toml:49-97),
+# so these settings do not currently change the panic strategy. They are spelled
+# out anyway so the fuzz harness keeps working if the parent's setting changes
+# again — under `panic = "abort"`, panics would abort the process before
+# libFuzzer gets a chance to record a reproducer.
 [profile.release]
 panic = "unwind"
 

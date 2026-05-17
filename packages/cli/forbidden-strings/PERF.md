@@ -4,6 +4,32 @@ Measured wall-clock budget for the `forbidden-strings` scanner.
 Numbers below are not aspirational targets; they are reproducible measurements
 against the binary built from this package's `src/`.
 
+## Headline numbers
+
+Post-emit-hit-consolidation, 2026-05-16. On AMD Ryzen 7 8700F (16 threads),
+hyperfine 1.20.0:
+
+- This repo cold start: **9.4 ms ± 0.8 ms**
+- This repo full `--all`: **56.6 ms ± 3.1 ms**
+- Linux kernel full `--all`: **1.989 s ± 0.246 s**
+
+These are the same numbers quoted in README.md. If you change them, change README.md too.
+
+The release profile is `lto = true`, `codegen-units = 1`, `opt-level = 3`,
+`panic = "unwind"`, `overflow-checks = true`, `strip = true`. The unwind +
+overflow-checks pair is load-bearing for the resharp-panic safety wrapper in
+`src/rules/engine.rs` and `src/rules.rs`: under `panic = "abort"` the process
+dies before `catch_unwind` runs (silent fail-open on a corrupt rule);
+without overflow checks Rust's `+` silently wraps and resharp builds a wrong
+DFA (also silent fail-open). See `Cargo.toml:49-97` for the full rationale.
+
+The `--all` walker reads `.git/index` in process via `gix-index`; the
+previous `git ls-files --cached --ignored --exclude-standard -z` subprocess
+was removed on 2026-05-16 (recovered ~167 ms on Mono, ~433 ms on Linux).
+Historical blocks below still describe the subprocess as the contemporary
+implementation — that wording is preserved deliberately as the regression
+history is the file's reason for existing.
+
 ## Last benched
 
 **2026-05-16 (post-emit-hit-consolidation, A/B vs immediate predecessor)**,
@@ -1040,18 +1066,19 @@ Betterleaks `dir` walks the entire directory tree; it does not respect
 of content instead of the 21 MiB of git-tracked source:
 
 ```text
-forbidden-strings   --all            43 ms    (git ls-files; 21 MiB)
+forbidden-strings   --all            43 ms    (working tree + .gitignore + gix-index; 21 MiB)
 betterleaks         dir              86.5 s   (full tree walk; 4.28 GB)
 ```
 
 Wall-clock ratio: **~2000x**. The ratio is dominated by the 200x data
 volume difference, not the engine; but the data volume difference is
-real and user-observable. Forbidden-strings uses `git ls-files` (via the
-`ignore` crate's parallel walker, which honours `.gitignore`) so it
-skips generated and vendored content by design. Betterleaks' `git`
-command scans git history (patches), which is a different (and more
-expensive) workflow; its `dir` command is the closest comparable mode
-for working-tree-only scanning.
+real and user-observable. Forbidden-strings walks the working tree via
+the `ignore` crate (which honours `.gitignore`) and unions with an
+in-process `.git/index` read (`gix-index`) to recover force-added
+gitignored files, so it skips generated and vendored content by
+default. Betterleaks' `git` command scans git history (patches), which
+is a different (and more expensive) workflow; its `dir` command is the
+closest comparable mode for working-tree-only scanning.
 
 ### Why forbidden-strings is faster per byte
 
@@ -1073,11 +1100,14 @@ Three architectural choices account for most of the per-byte gap:
    matters on large corpora where many files contain a short prefix hit
    but don't match the full rule.
 
-3. **Native binary startup.** The Rust binary (LTO + `panic = "abort"` +
-   stripped) starts in ~7 ms. The Go binary starts in ~174 ms (GC init,
-   goroutine scheduler, config parse). For the pre-commit hook use case
-   (scan a handful of staged files, sub-5 ms budget), the startup gap
-   alone makes betterleaks unsuitable regardless of per-byte throughput.
+3. **Native binary startup.** The Rust binary (LTO + `codegen-units = 1` +
+   `panic = "unwind"` + `overflow-checks = true` + `strip = true`) starts
+   in ~9 ms. The Go binary starts in ~174 ms (GC init, goroutine scheduler,
+   config parse). For the pre-commit hook use case (scan a handful of
+   staged files, sub-5 ms budget), the startup gap alone makes betterleaks
+   unsuitable regardless of per-byte throughput. The unwind +
+   overflow-checks pair is load-bearing for the resharp-panic safety
+   wrapper; see `Cargo.toml:49-97`.
 
 ### What betterleaks does that forbidden-strings does not
 
@@ -1153,8 +1183,10 @@ cd /path/to/monochromatic && time betterleaks dir .
 Re-run the commands above and append a dated block to **Last benched** /
 **Results** (do not overwrite: regressions need history) when **any** of:
 
-- A change touches `src/main.rs` (file dispatch / parallelism), `src/scan.rs`
-  (per-file scan logic), or `src/rules.rs` (rule loading and bucketing)
+- A change touches `src/lib.rs` (CLI dispatch + file fan-out; `src/main.rs` is a
+  five-line wrapper around `run_cli_from_env`), `src/scan.rs` (per-file scan logic),
+  `src/walk.rs` (walker + gix-index union), or `src/rules.rs` (rule loading and
+  bucketing)
 - A change touches `Cargo.toml` profile or dependency versions
 - The repo grows past ~5000 tracked files or ~100 MiB total
 - Realistic `--all` exceeds **180 ms** in casual use (~3x current 58.6 ms),

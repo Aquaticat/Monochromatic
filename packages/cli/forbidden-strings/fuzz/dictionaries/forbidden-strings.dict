@@ -1,7 +1,12 @@
 # libFuzzer dictionary for forbidden-strings fuzz targets.
 # Format: one entry per line as `name="value"` or just `"value"`.
-# Bytes inside the quotes are taken literally; `\xHH` for binary
-# bytes. The tokens here cover parser branches the bug class behind
+# Only THREE escape sequences are accepted inside the quotes:
+#   - `\\`     -> single backslash byte
+#   - `\"`     -> double-quote byte
+#   - `\xHH`   -> hex byte
+# To emit a literal `\b` (regex word-boundary, two bytes 0x5C 0x62),
+# write `"\\b"` -- libFuzzer's parser sees `\\` -> `\`, then `b`.
+# The tokens here cover parser branches the bug class behind
 # e49d8694 / e100659f / 9b41fca0 / 1463c59b exercised.
 
 # Inline flags
@@ -36,17 +41,17 @@
 "[a-z]"
 "[0-9]"
 
-# Anchors and shorthands
-"\b"
-"\B"
-"\s"
-"\S"
-"\w"
-"\W"
-"\d"
-"\D"
-"\A"
-"\z"
+# Anchors and shorthands (regex `\X` sequences encoded as `\\X` for libFuzzer)
+"\\b"
+"\\B"
+"\\s"
+"\\S"
+"\\w"
+"\\W"
+"\\d"
+"\\D"
+"\\A"
+"\\z"
 "^"
 "$"
 
@@ -59,8 +64,7 @@
 
 # Wildcard underscore triad
 "_"
-"\_"
-"[_]"
+"\\_"
 
 # Quantifiers and metacharacters
 "*"
@@ -73,27 +77,27 @@
 "."
 
 # Content fixtures (multi-byte / boundary-relevant)
-"\xc2\xa0"          # NBSP U+00A0
-"\xe2\x80\x94"      # em dash U+2014
-"\xe2\x80\x9c"      # left smart double quote
-"\xe2\x80\x9d"      # right smart double quote
-"\xe2\x80\x98"      # left smart single quote
-"\xe2\x80\x99"      # right smart single quote
-"\xe2\x80\x83"      # em space U+2003
-"\xe3\x80\x80"      # ideographic space U+3000
-"\x00"              # NUL
+"\xc2\xa0"
+"\xe2\x80\x94"
+"\xe2\x80\x9c"
+"\xe2\x80\x9d"
+"\xe2\x80\x98"
+"\xe2\x80\x99"
+"\xe2\x80\x83"
+"\xe3\x80\x80"
+"\x00"
 
 # Common rule-source motifs from test corpus
-"—password"
-"—token"
-"(?i)—Password"
-"(?:—password|—token)"
+"\xe2\x80\x94password"
+"\xe2\x80\x94token"
+"(?i)\xe2\x80\x94Password"
+"(?:\xe2\x80\x94password|\xe2\x80\x94token)"
 "(?<=foo)bar"
 "foo(?=x)bar"
-"required\_(?x:foo bar)"
+"required\\_(?x:foo bar)"
 "pre_post"
 "literalA(?i)keyword-suffix"
 "cohere"
 "CO_API_KEY"
-"étudiant"
-"cafésecret"
+"\xc3\xa9tudiant"
+"caf\xc3\xa9secret"
