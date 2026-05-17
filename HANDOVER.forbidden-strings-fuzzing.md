@@ -609,3 +609,98 @@ quant + trailing literal" case.
   in extractor), `9b41fca0` (route bare `_` to resharp), `1463c59b`
   (scoped `(?x:body)`), `0479371a` (unicode for `\s/\w/\d/\b`),
   `4289cdb3` (expand `\s` to Unicode-WS bytes).
+
+### 2026-05-17 evening session: three new slow-compile pre-validators landed
+
+**Commits landed this session, most recent first:**
+
+```
+f5bc49c6 fix(forbidden-strings): pre-validate nested complement `~(~(...))`
+9c3e06cd fix(forbidden-strings): pre-validate two slow-compile resharp shapes
+```
+
+**Three new pre-validators in `compile_rule_src`'s resharp branch:**
+
+1. `nested_quantifier_after_wildcard` (9c3e06cd) -- chain >= 3 of
+   `){quant}` adjacencies immediately following a bare `_` wildcard
+   outside a class. Decoded from `slow-unit-8c41` (compile 409ms +
+   scan 1.16s) and `slow-unit-709c` (compile 4.33s). Innermost atom
+   is `_` triad (wildcard); nesting depth 3+ explodes resharp's NFA.
+
+2. `nested_chain_in_lookaround_body` (9c3e06cd) -- chain >= 3 of
+   `){quant}` pairs occurring while any open lookaround frame
+   (`(?!`/`(?=`/`(?<!`/`(?<=`) remains higher up the stack. Decoded
+   from `slow-unit-4eab` (compile 1.9s, errors with
+   `Algebra(UnsupportedPattern)`). Resharp's algebra walks derivative
+   shapes per-prefix per-suffix inside lookarounds.
+
+3. `nested_complement` (f5bc49c6) -- inner `~(...)` complement
+   nested inside an open outer `~(...)`. Both back-to-back
+   `~(~(...))` and group-transparent `~((?:~(...)))` forms caught
+   (probed both at ~915ms). Decoded from
+   `timeout-95f5e661c596e4b5a12e9841cda2e3ba242ecf7a` (the new
+   biased-generator counterpart). Sibling complements
+   `~(...)&~(...)` (production shape, e.g. RELEASE_TAG rule) are
+   NOT caught: the inner complement is checked only when an outer
+   complement frame is still on the stack.
+
+**Verification status:**
+
+- 147 unit tests pass (3 new for each of the validators above; 9
+  new total).
+- Clippy clean against `-D warnings`.
+- Main branch test suite green.
+- Sources synced to worktree at `/tmp/fs-soundness-revert/`.
+- Stale slow-unit-* and crash-* artifacts cleared from worktree
+  fuzz/artifacts/fuzz_extract_gate_soundness/.
+- Initial post-validator fuzz run hit the
+  `timeout-95f5e661c596e4b5a12e9841cda2e3ba242ecf7a` shape after
+  the first 2 validators landed (~12s in). After adding validator
+  #3, ran a 5-min fuzz to verify no novel slow shapes appear.
+
+**Resume work next session, in priority order:**
+
+1. **Wait for 5-min fuzz result** (started at end of this session, log
+   at `/tmp/fuzz-soundness-5min.log`). If clean, run a 30-60 min
+   fuzz with `mise run fuzz:run fuzz_extract_gate_soundness
+   -max_total_time=1800 -timeout=10`. Expect SOUNDNESS PANIC.
+
+2. **If yet ANOTHER novel slow shape appears**, the advisor flagged
+   that validator count is at 10 and "structural-validator approach
+   has hit its limit". Switch to generator-side anti-bias: modify
+   `RuleSrc::arbitrary` in `fuzz/src/generators.rs` to use rejection
+   sampling against known slow shapes (`~(~(`, deep nested chains,
+   etc.). Coverage is preserved if the rejection happens at decode
+   time, before the input enters the corpus. Cap validator-side
+   additions at this round.
+
+3. **Phase 11 completion:** when SOUNDNESS PANIC fires, capture the
+   redacted reproducer + clean up worktree per the original plan.
+
+**Diagnostic infrastructure additions:**
+
+- `/tmp/probe-slow-unit/src/bin/test_nested_complement.rs` --
+  timing probe for the back-to-back and group-transparent
+  complement forms. Confirms both compile in ~915ms (1000x slower
+  than single complement); confirms the production RELEASE_TAG
+  rule is rejected by a separate validator and would not be
+  affected.
+
+**Pre-validator inventory (full list, 10 total):**
+
+In `compile_rule_src` order (both branches considered):
+1. `stacked_quantifier` (regex branch + resharp) -- `a**` / `\D{5,11}{5,11}` bare-stacked shapes.
+2. `nested_grouped_quantifier` (regex branch + resharp) -- chain >= 4 of `){quant}` pairs anywhere.
+3. `lookaround_in_complement` (resharp only) -- `\b`/`^`/`$`/lookaround inside `~(...)`.
+4. `intersection_with_lookbehind` (resharp only) -- `&` with any lookaround.
+5. `intersection_with_word_end_alternation` (resharp only).
+6. `lookaround_in_alternation_with_sibling` (resharp only) -- `(a|(?![X]))(?!Y)` shape.
+7. `complement_intersection_quantified_group` (resharp only) -- `&` + quantified group + `~(`.
+8. `nested_lookahead_in_quantified_group` (resharp only) -- Bug F core: nested LA in quantified group, outer min >= 2.
+9. `quantified_lookahead_with_sibling_content` (resharp only) -- Bug F variant: quantified LA + short trailing.
+10. `nested_quantifier_after_wildcard` (resharp only) -- chain >= 3 immediately after bare `_` (new this session).
+11. `nested_chain_in_lookaround_body` (resharp only) -- chain >= 3 inside open lookaround body (new this session).
+12. `nested_complement` (resharp only) -- `~(...)` body contains another `~(...)` (new this session).
+
+(Counted to 12 above. The 8th and 9th overlap conceptually but each
+catches a distinct upstream-bug shape; both kept.)
