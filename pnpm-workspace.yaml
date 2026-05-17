@@ -48,7 +48,6 @@ catalog:
   '@types/sinon': '>=21.0.1'
   '@types/sinon-chai': '>=4.0.0'
   '@typescript/native-preview': '>=7.0.0-dev.20260421.2'
-  '@ungap/structured-clone': '>=1.3.0'
   'aws4fetch': '>=1.0.20'
   'better-auth': '>=1.6.9'
   'browserslist': '>=4.28.1'
@@ -198,6 +197,23 @@ overrides:
   # See docs/decisions/readable-stream-shim.md for the full audit, including
   # the enumerated consumer surface and the verification plan.
   'readable-stream': 'link:packages/shim/readable-stream'
+  # Substitute @ungap/structured-clone@1.3.0 with a workspace shim that
+  # re-exports globalThis.structuredClone (the native function on Node 17+,
+  # Bun, and every browser meeting the Firefox ESR 140 baseline). The
+  # upstream is a ponyfill carrying a published CWE-502 deprecation
+  # ("Potential CWE-502 - Update to 1.3.1 or higher") and is reached
+  # transitively from packages/webapp-content/ssg-test through
+  # mdast-util-to-hast (lib/state.js lines 263, 271, 381; lib/footer.js
+  # line 235) and rehype-autolink-headings (lib/index.js line 156). Both
+  # consumers import the default export and call it as structuredClone(value)
+  # with one argument; no transferables, no { lossy } / { json } modes are
+  # used, so re-exporting the native global is API-equivalent by
+  # construction. Only the default export is consumed; named serialize /
+  # deserialize are intentionally omitted and can be added if a future
+  # transitive dep reaches in.
+  # See packages/shim/ungap-structured-clone/README.md and
+  # TROUBLESHOOTING.dependencies.md for the audit trail.
+  '@ungap/structured-clone': 'link:packages/shim/ungap-structured-clone'
   # Drop @earendil-works/pi-* transitive deps that this workspace does not
   # exercise: either unused in the published dist, or loaded only via lazy
   # `import()` inside provider modules. Statically-imported deps that are
