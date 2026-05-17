@@ -30,24 +30,34 @@ timeout.
 
 `typesafe-i18n` parses every translation lazily on first
 access using a regex defined in
-`parser/src/parse-rule.mts` (compiled into
-`runtime/dist/i18n.object.js`):
+`packages/parser/src/basic.mts:117` (compiled into
+`dist/i18n.object.js`):
 
 ```js
-var REGEX_BRACKETS_SPLIT = /(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g;
+const REGEX_BRACKETS_SPLIT = /(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g
 ```
 
 Source path in node_modules:
-`node_modules/.pnpm/typesafe-i18n@5.27.1_typescript@6.0.2/node_modules/typesafe-i18n/dist/i18n.object.js:60`.
+`node_modules/.pnpm/typesafe-i18n@5.27.1_typescript@6.0.2/node_modules/typesafe-i18n/dist/i18n.object.js:58`.
+
+(Earlier readings cited `parser/src/parse-rule.mts` and bundle
+line 60; both wrong. The actual source-of-truth is
+`packages/parser/src/basic.mts:117`, bundled to `dist/i18n.object.js:58`,
+verified against `codingcommons/typesafe-i18n` HEAD at tag
+`5.27.1` commit `462f7118`.)
 
 The pattern is a textbook
 [catastrophic-backtracking][redos] case. The outer group
 allows arbitrary alternation between `[^{}]+` (non-brace
 text) and a nested `\{(?:[^{}]+)*\}` (one level of nesting).
-Both branches share the same `[^{}]+` cost, so on input with
-three or more nesting levels (exactly what a JSON schema
-string contains) the engine explores every interleaving
-before declaring no match.
+Both branches share `[^{}]+` cost and the nested
+`(?:[^{}]+)*` introduces a second unbounded quantifier; on
+input that exceeds the regex's one-nested-level capacity,
+the engine has exponentially many ways to split each
+non-brace run between the two layers, and explores all of
+them before declaring no match. See Verification for the
+exact trigger (depth alone is not sufficient; depth ×
+non-brace-text-length per level is).
 
 V8 (Chrome) handles the regex via a backtracking interpreter
 and pins for minutes. JavaScriptCore (Bun, Safari) and
@@ -68,23 +78,38 @@ is where it fails.
 
 ## Verification
 
-Version under test: `typesafe-i18n` 5.27.1.
+Version under test: `typesafe-i18n` 5.27.1 (`codingcommons`
+HEAD `462f7118`).
 
-Minimal repro:
+Minimal repro (Node 26.1.0 / V8 14.6.202.34):
 
 ```ts
-import { i18nObject, } from 'typesafe-i18n/runtime/esm';
-const dict = { bad: '{ "a": [{ "b": [{ "c": "x" }] }] }', };
-const LL = i18nObject('en', { en: dict, }, {}, {},);
-console.time('lookup',);
-LL.bad();
-console.timeEnd('lookup',);
+const REGEX = /(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g;
+const chapterInstruction =
+  "Split the paper into 3 to 8 chapters that follow the paper's logical structure. " +
+  'Return JSON with shape `{ "title": string, "chapters": [{ "title": string, "summary": string, ' +
+  '"dialogue": [{ "text": string, "pose": "neutral" | "thinking" | "happy" }] }] }`. ' +
+  'Each chapter should have 3 to 6 dialogue beats; each beat is one to three sentences.';
+console.time('split');
+chapterInstruction.split(REGEX);
+console.timeEnd('split');
 ```
 
-Run under Chrome 145 / V8: `lookup` never returns. Run under
-Bun 1.x or SpiderMonkey: sub-millisecond. The threshold is
-roughly three levels of nested `{}`; two levels stay within
-practical bounds even in V8.
+Run under Node / V8: `split` does not return within a 30s
+timeout (exit 124). Run under Bun 1.x or SpiderMonkey:
+sub-millisecond.
+
+The trigger is **not** depth alone. A compact 3-level input
+like `{ "a": [{ "b": [{ "c": "x" }] }] }` (36 chars,
+mostly braces) completes in 0.28 ms even under V8 14.6:
+there are too few non-brace chars per level for the
+catastrophic combinatorial path to explode. The trigger is
+the product of (depth that exceeds the regex's one-nested-
+level capacity) and (length of non-brace text between
+braces): more text-per-level means more ways the engine can
+split a failing attempt, so the explosion shows up.
+`chapterInstruction` has 3+ levels and dozens of non-brace
+chars between most braces, which is enough.
 
 ## Verified workaround: `rawString` for static, parameter-free translations
 
@@ -119,6 +144,15 @@ strings. Translation keys that need parameters (`{name}`,
 plurals, formatters) must keep using `LL()`. A comment in
 the source points at this doc so the next reader knows why
 the bypass exists.
+
+Even with the upstream regex patch below applied, the
+`rawString` workaround is still required for translations
+containing literal `{}`. The patch turns the V8 hang into a
+terminating but semantically-wrong parse (the parser
+splits at the deepest `{...}` block it can match and feeds
+that substring through `parseArgumentPart`, producing
+garbage `BasicArgumentPart` objects). Both behaviours misread
+the translation; the patch only fixes the hang.
 
 ## Alternatives we considered and rejected
 
@@ -192,9 +226,11 @@ We evaluated dropping `typesafe-i18n` entirely. Decision:
   assume a quick fix.
 - The bug is latent and unreported. No public CVE exists.
   Anyone introducing a new translation with three or more
-  levels of nested `{}` reproduces the V8 hang silently. The
-  `rawString` workaround comment and this doc are the only
-  guards.
+  levels of nested `{}` *and* substantial non-brace text
+  between braces (long English prose plus an embedded JSON
+  schema, e.g. an LLM-prompt translation) reproduces the V8
+  hang silently. The `rawString` workaround comment and this
+  doc are the only guards.
 - Effective maintainer bus factor is one (Ivan Hofer authored
   1231 of ~1300 commits; current top contributor
   `benjaminstrasser` has 6). If the codingcommons revival
@@ -240,18 +276,51 @@ All 5 constraints hold:
 1. **Is it really upstream's fault?** Yes; the regex is
    pathological for an input class the library is meant to
    accept.
-2. **Can upstream fix it?** Yes; replace the regex with a
-   recursive-descent parser (linear time), or restrict the
-   regex's nesting depth and emit a clearer error.
+2. **Can upstream fix it?** Yes; the catastrophic-
+   backtracking shape is eliminated by reshaping the regex
+   itself so that the inner alternation no longer has a
+   shared left-factor with a nested quantifier. One-line
+   change to `packages/parser/src/basic.mts:117`.
 3. **Are they supporting this use case?** Yes; the library
    accepts arbitrary translation strings.
 4. **Will they likely fix it?** Codingcommons revival is
    focused on plumbing; no bug-fix commits since the revival.
    Possible but not assured.
-5. **Have we prototyped a minimal fix?** Architectural
-   sketch only; no code prototype.
+5. **Have we prototyped a minimal fix?** Yes. One-line
+   regex change at `packages/parser/src/basic.mts:117`.
+   Preserves matching contract: 45/45 parser tests, 122/122
+   runtime tests, 100/100 generator tests pass on a fresh
+   `codingcommons/typesafe-i18n` clone at tag `5.27.1`
+   (commit `462f7118`). Pre-patch: `chapterInstruction`
+   reproducer does not return within 30 s under Node 26 /
+   V8 14.6 (exit 124). Post-patch: 0.055 ms on the same
+   input. Patch inline below.
 
-Decision: worth filing; draft below is ready.
+```diff
+--- a/packages/parser/src/basic.mts
++++ b/packages/parser/src/basic.mts
+@@ -114,7 +114,7 @@ export const parseCases = (text: string): Record<string, string> =>
+
+ // --------------------------------------------------------------------------------------------------------------------
+
+-const REGEX_BRACKETS_SPLIT = /(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g
++const REGEX_BRACKETS_SPLIT = /(\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})/g
+
+ export const removeOuterBrackets = (text: string) => text.substring(1, text.length - 1)
+```
+
+The new shape is `\{ text (block text)* \}`: a single outer
+brace pair containing alternating non-brace text and
+non-recursive nested `{...}` blocks. Each iteration of the
+inner `*` consumes either a maximal run of non-brace chars
+or one literal `{[^{}]*}` block, so the engine has at most
+one way to match each iteration. No shared left-factor, no
+catastrophic explosion. Behaviour on legitimate parameter,
+plural, and switch-case syntax is identical (verified by the
+test suites above).
+
+Decision: worth filing; draft below is ready, with the patch
+attached.
 
 ## Draft upstream issue (kept as reference; revise before filing)
 
@@ -262,24 +331,28 @@ Decision: worth filing; draft below is ready.
 
 ### Description
 
-`REGEX_BRACKETS_SPLIT` in `parser/src/parse-rule.mts` exhibits catastrophic backtracking on translation values that contain three or more levels of nested `{}` literals. The hang is engine-dependent: JavaScriptCore (Bun, Safari) returns sub-millisecond; V8 (Chrome, Edge) pins a CPU and never returns within practical timeouts.
+`REGEX_BRACKETS_SPLIT` at `packages/parser/src/basic.mts:117` (bundled to `dist/i18n.object.js:58`) exhibits catastrophic backtracking on translation values that contain literal `{}` interleaved with non-brace text past one level of nesting. The hang is engine-dependent: JavaScriptCore (Bun, Safari) returns sub-millisecond; V8 (Chrome, Edge, Node) pins a CPU and does not return within practical timeouts.
 
-The pattern is `/(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g`. The two alternatives in the inner non-capturing group share `[^{}]+`, so the engine explores every interleaving when neither alternative matches, which is what happens on input shaped like an embedded JSON schema.
+The pattern is `/(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g`. The two alternatives in the inner non-capturing group share `[^{}]+`, and the nested `(?:[^{}]+)*` introduces a second layer of unbounded quantification; together they let the engine explore exponentially many splittings of non-brace text when no overall match exists.
+
+Depth alone is not the trigger. A compact `{ "a": [{ "b": [{ "c": "x" }] }] }` (mostly braces) completes sub-millisecond even under V8. A real-world prompt with the same nesting depth but dozens of non-brace chars per level (an embedded JSON schema literal in an LLM-prompt translation) hangs.
 
 ### Reproduction
 
-```ts
-import { i18nObject, } from 'typesafe-i18n';
-
-const en = { bad: '{ "a": [{ "b": [{ "c": "x" }] }] }', };
-const LL = i18nObject('en', { en, } as any, {}, {},);
-
-console.time('lookup',);
-LL.bad(); // hangs in V8, returns immediately in JSC
-console.timeEnd('lookup',);
+```js
+// Standalone — no library install needed.
+const REGEX = /(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g;
+const input =
+  "Split the paper into 3 to 8 chapters that follow the paper's logical structure. " +
+  'Return JSON with shape `{ "title": string, "chapters": [{ "title": string, "summary": string, ' +
+  '"dialogue": [{ "text": string, "pose": "neutral" | "thinking" | "happy" }] }] }`. ' +
+  'Each chapter should have 3 to 6 dialogue beats; each beat is one to three sentences.';
+console.time('split');
+input.split(REGEX); // hangs in V8, returns sub-millisecond in JSC
+console.timeEnd('split');
 ```
 
-Run under Chrome (or any V8-based environment, including Node) and the call never returns within a reasonable test timeout. Run under Bun and it returns immediately.
+Run under Node 26 / V8 14.6: `split` does not return within 30 s (`timeout 30 node ...` exits 124). Run under Bun: returns immediately.
 
 ### Why this matters
 
@@ -287,9 +360,31 @@ LLM-app boilerplate often stores model instructions as translations so the promp
 
 ### Suggested fix
 
-Replace the alternation pattern with one that does not share a left-factor across branches, e.g. parse `{...}` sections with a recursive-descent helper that runs in linear time instead of relying on a regex to handle nesting. A short-term mitigation could replace the regex with one that bails out on more than two levels of nesting and reports a clearer error.
+Reshape the regex so the inner alternation no longer has a shared left-factor with a nested quantifier:
 
-### Workaround
+```diff
+--- a/packages/parser/src/basic.mts
++++ b/packages/parser/src/basic.mts
+@@ -114,7 +114,7 @@ export const parseCases = (text: string): Record<string, string> =>
+
+ // --------------------------------------------------------------------------------------------------------------------
+
+-const REGEX_BRACKETS_SPLIT = /(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g
++const REGEX_BRACKETS_SPLIT = /(\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\})/g
+
+ export const removeOuterBrackets = (text: string) => text.substring(1, text.length - 1)
+```
+
+The new shape is `\{ text (block text)* \}`: a single outer brace pair containing alternating non-brace text and non-recursive nested `{...}` blocks. Each iteration of the inner `*` consumes either a maximal `[^{}]*` run or one literal `{[^{}]*}` block; the engine has at most one way to match each iteration, so no catastrophic explosion is possible.
+
+Verified on the cloned repo at tag `5.27.1` (commit `462f7118`):
+
+- Parser tests: 45/45 pass.
+- Runtime tests: 122/122 pass.
+- Generator tests: 100/100 pass.
+- Reproducer above: pre-patch hangs >30 s under Node 26 / V8 14.6 (exit 124); post-patch 0.055 ms.
+
+### Workaround (for consumers stuck on 5.27.1)
 
 Read the raw string from `loadedLocales[locale][key]` directly when the translation contains literal braces and does not need parameter interpolation. This bypasses the parser entirely.
 ````
