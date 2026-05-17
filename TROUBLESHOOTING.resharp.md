@@ -751,26 +751,211 @@ asserts the pre-validator catches it before resharp sees it.
 
 ---
 
-## Why we do not file Bugs B and C upstream (yet)
+## Bug D: alternation containing a lookaround + sibling lookaround triggers `debug_assert!` in `scan_fwd_all`
+
+### Symptom
+
+A rule whose source has an alternation containing a lookaround AND
+another lookaround somewhere else in the source compiles cleanly via
+`Regex::new`, but `find_all` panics during the forward DFA pass:
+
+```text
+thread 'main' panicked at resharp-0.6.0/src/engine.rs:1020:17:
+unexpected end 0 > N
+```
+
+The minimum reproducer bisected from the fuzzer's
+`crash-8cba104f0805ccb567513aff895398a4f652200c` artifact is:
+
+```
+(a|(?![_]))(?!a)
+```
+
+Confirmed-equivalent shapes:
+
+- `(a|(?![X]))(?!Y)` for X in `_`, `0`, `.`, `-`, `|`, `^a`
+- `(?:a|(?![_]))(?!a)` (non-capturing first group)
+- `((?![_])|a)(?!a)` (lookaround as first alt branch)
+- `(a|(?<!_))(?<!a)` (lookbehind direction; same root cause)
+
+Shapes that do NOT trigger:
+
+- `(a|(?!a))(?!a)` -- first lookaround has a bare atom, not a class
+- `(a|(?![ab]))(?!a)` -- class has two chars
+- `(?!a)(a|(?!a))` -- lookaround BEFORE alternation, not after
+- `(?!a)b(?!c)` -- atom between two lookaheads, no alternation
+
+### Root cause
+
+The same line as Bug B (`engine.rs:1020`'s `debug_assert!(...)`) fires
+for a different shape: the algebra simplification leaves a node whose
+forward DFA construction reaches an "unexpected end" state when one
+operand of an alternation is a lookaround whose body is a single-char
+class. The `debug_assert!` shape means release builds silently return
+wrong matches; under libFuzzer-sys's panic hook (which calls `abort()`
+before `catch_unwind`'s unwind barrier intercepts), the fuzz target
+aborts on every iteration that hits this shape.
+
+### Defense
+
+The pre-validator `lookaround_in_alternation_with_sibling` in
+`packages/cli/forbidden-strings/src/rules/engine.rs` walks per-paren
+depth `(has_alt, has_la)` flags, tracks total lookaround count, and
+fires at end-of-walk when any closed group had alt+la AND total
+lookarounds >= 2. The deferred check handles both "sibling appears
+before the alt+la group" and "sibling appears after" cases.
+
+The detector is direction-agnostic (covers both lookahead and
+lookbehind) and conservative (a few shapes that compile OK at scan
+time also fire). The trade-off is intentional: false positives here
+cost a skipped iteration; missed positives cost a fuzz-target abort.
+
+### Verification
+
+The probe binary at `/tmp/probe-slow-unit/src/bin/bisect2.rs` and
+`bisect3.rs` reproduces the panic across all confirmed-triggering
+shapes with `RUSTFLAGS="-C debug-assertions=on"`. The in-tree tests
+`lookaround_in_alternation_with_sibling_fires` and
+`compile_rule_src_rejects_alt_lookaround_sibling_shape` in
+`packages/cli/forbidden-strings/src/rules/engine_tests.rs` exercise
+the pre-validator and the end-to-end compile rejection path.
+
+---
+
+## Bug E: complement + intersection + quantified group hangs `prefix::calc_prefix_sets_inner`
+
+### Symptom
+
+A rule whose source contains a complement (`~(...)`), intersection
+(`&`), AND a quantified group (`(...)*`/`(...)+`/`(...)?`/`(...){N}`)
+hangs during `Regex::new`; the compile call does not return within
+libFuzzer's per-input timeout (10s in our fuzz run). The minimum
+reproducer bisected from
+`timeout-00179d433e26fbcc3bedf2b7b38b6ce1ff9e6438` is:
+
+```
+abc~(\w)&(?:aaa)*
+```
+
+The hang scales with the surrounding shape: a 1-char prefix and a
+1-char-body quantified group compile in milliseconds; 3+ char prefix
+with 3+ char quantified group never terminate within minutes. Wrapping
+the entire source in a single non-capturing group (`(?:...)`) avoids
+the hang -- the wrapping changes how the simplified AST enters the
+prefix-selection phase.
+
+### Root cause
+
+Traced via `gdb -p $HUNG_PID -ex 'thread apply all bt'` plus reading
+the cloned resharp source. The hot loop is at
+`resharp-engine/src/prefix.rs:27` in `calc_prefix_sets_inner`:
+
+```rust
+let mut redundant = BTreeSet::new();
+redundant.insert(NodeId::BOT);
+redundant.insert(start);
+
+loop {
+    if !result.is_empty() && redundant.contains(&node) {
+        break;
+    }
+    // ... compute derivative, set node = target ...
+}
+```
+
+The `redundant` set is initialized with `BOT` and the original `start`
+node, then never updated inside the loop. The loop assigns `node =
+target` each iteration, but new targets are not added to `redundant`.
+For the trigger shape, the derivative chain produces a sequence of
+unique single-target nodes that never visits `BOT` or `start`, so the
+loop never terminates.
+
+Stack trace at hang point (3s after compile start):
+
+```
+#0 resharp_algebra::RegexBuilder::collect_der_targets
+#1 resharp_algebra::RegexBuilder::collect_der_targets   (recursion through TRegex ITE)
+#2 resharp_algebra::RegexBuilder::collect_der_targets
+#3 resharp::prefix::calc_prefix_sets_inner
+#4 resharp::prefix::select_prefix
+#5 resharp::Regex::from_node_inner
+#6 resharp::Regex::with_options
+#7 resharp::Regex::new
+```
+
+### Defense
+
+`catch_unwind` does not protect against non-termination, and resharp
+does not expose a compile timeout we could wrap from outside. The
+pre-validator `complement_intersection_quantified_group` in
+`packages/cli/forbidden-strings/src/rules/engine.rs` walks the source
+looking for the three co-occurring features and rejects the rule
+before `Regex::new` is called.
+
+The detector is conservative: shapes like `~(\w)&(?:a)*` (no literal
+prefix) compile in milliseconds but the detector still flags them.
+The trade-off is safe because the production rule corpus contains
+zero rules combining `&` and `~(` (the only `&` in the example
+betterleaks config is escaped HTML `&amp;` or inside character
+classes), so the false-positive risk is theoretical only.
+
+### Suggested upstream fix
+
+Add a single line to `calc_prefix_sets_inner` so the visited-set
+accumulates across loop iterations:
+
+```rust
+loop {
+    if !result.is_empty() && redundant.contains(&node) {
+        break;
+    }
+    // ... existing body ...
+    node = target;
+    redundant.insert(node);   // ADD THIS LINE
+}
+```
+
+This is a minimal-patch candidate that satisfies all five filing
+constraints; we should file this upstream (see "Why we do not file
+Bugs B-D upstream" section below -- Bug E is the exception).
+
+### Verification
+
+The probe binary at `/tmp/probe-slow-unit/src/bin/bisect5.rs` and
+`bisect6.rs` reproduces the hang via a separate thread with a
+configurable timeout. The probe at `bisect5.rs` confirms many
+variations of the trigger shape; `hangtrace.rs` plus the instrumented
+resharp under `/tmp/resharp-src-instrumented/` were used to locate
+the exact loop. The in-tree tests
+`complement_intersection_quantified_group_fires` and the end-to-end
+pipeline verify the pre-validator skips the trigger.
+
+---
+
+## Why we do not file Bugs B-D upstream (yet)
 
 Same five-constraint policy applies (see Bug A's "Why we do not file
 this upstream" subsection). For Bug B (debug_assert with release
-silent-corruption) and Bug C (algebra arithmetic overflow), the
-constraints land:
+silent-corruption), Bug C (algebra arithmetic overflow), and Bug D
+(alt+lookaround+sibling, same engine.rs:1020 line as Bug B but a
+different trigger shape), the constraints land:
 
-1. **Upstream's fault?** Yes for both. A `debug_assert!` whose absence
-   produces silently corrupted output is a defect; an algebra add that
-   overflows for a parser-reachable input shape is a defect.
-2. **Can upstream fix?** Yes. Bug B is a one-line bound check that
-   needs to fire in release (replace `debug_assert!` with `assert!`,
-   or fix the underlying invariant so the assertion never trips).
-   Bug C is locating which add overflows in `attempt_rw_concat_2`
-   and either widening the type or adding a checked-add path.
-3. **Supporting this use case?** Mixed. Intersection (`&`) is a
-   headline feature of resharp; combining it with lookarounds is the
-   natural way to write the "match A but not when X" exclusion pattern.
-   No documented restriction.
-4. **Likely to fix?** Unknown. The 0.6.0 release did not touch either
+1. **Upstream's fault?** Yes for all three. A `debug_assert!` whose
+   absence produces silently corrupted output is a defect; an algebra
+   add that overflows for a parser-reachable input shape is a defect;
+   alt+lookaround+sibling reaching the same defective assertion is a
+   defect.
+2. **Can upstream fix?** Yes. Bug B and D are one-line bound checks
+   that need to fire in release (replace `debug_assert!` with
+   `assert!`, or fix the underlying invariant so the assertion never
+   trips). Bug C is locating which add overflows in
+   `attempt_rw_concat_2` and either widening the type or adding a
+   checked-add path.
+3. **Supporting this use case?** Mixed. Intersection (`&`) and
+   complement (`~`) are headline features of resharp; combining them
+   with lookarounds is the natural way to write the "match A but not
+   when X" exclusion pattern. No documented restriction.
+4. **Likely to fix?** Unknown. The 0.6.0 release did not touch any
    of these lines (verified by diffing the relevant source paths).
 5. **Have we prototyped a minimal fix?** No. We have minimum
    reproducers and source-line citations but no candidate patch.
@@ -778,5 +963,11 @@ constraints land:
 We fail constraint 5 clearly. We defer filing until a minimal-patch
 prototype exists. Until then the pre-validators and profile settings
 are the durable consumer-side fix.
+
+Bug E (the `calc_prefix_sets_inner` non-termination) is the exception:
+we have a minimal-patch prototype (a single `redundant.insert(node)`
+inside the loop). Bug E should be filed upstream as soon as we draft
+the issue text and verify the patch against the resharp test suite
+in `/tmp/resharp-src/`.
 
 [resharp]: https://github.com/ieviev/resharp

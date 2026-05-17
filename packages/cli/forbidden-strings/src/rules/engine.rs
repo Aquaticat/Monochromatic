@@ -1314,12 +1314,31 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
 //             - `(?:abc~(\w)&(?:aaa)*)` (wrapped in single outer group)
 //             - `x~(\w)&(?:a)*` (1-char prefix and 1-char quantified body)
 //
-//           The exact algebraic interaction inside resharp is
-//           opaque; the heuristic the pre-validator uses is the
-//           coarser "source contains a complement (`~(`),
-//           intersection (`&`), AND a quantified group (`)*`,
-//           `)+`, `)?`, `){...}`) outside character classes". This
-//           is conservative: it would flag the OK cases above too.
+//           Root cause traced via gdb-attach to a hung probe plus
+//           reading the cloned resharp source: the hang is in
+//           `resharp::prefix::calc_prefix_sets_inner` at
+//           `resharp-engine/src/prefix.rs:27`. The function walks a
+//           chain of regex derivatives in a `loop { ... }` searching
+//           for a fixed prefix, but its `redundant` set only ever
+//           holds the original `start` node and `NodeId::BOT` --
+//           freshly visited nodes are never added back. For the
+//           trigger shape `<prefix>~(\w)&(?:aaa)*`, the derivative
+//           chain produces a sequence of unique single-target
+//           nodes indefinitely (each `der` step rotates the
+//           star+intersection state but never lands back on `start`
+//           or `BOT`), so the loop runs without bound. The shape
+//           `(?:<prefix>~(\w)&(?:aaa)*)` wrapped in a group skips
+//           the slow path because the outer non-capturing group
+//           changes the simplified node form that enters
+//           `select_prefix`, making the derivative chain visit
+//           `BOT` early. Filed upstream: see TROUBLESHOOTING.resharp.md
+//           for the issue link.
+//
+//           The pre-validator uses a coarse structural heuristic:
+//           "source contains a complement (`~(`), intersection
+//           (`&`), AND a quantified group (`)*`, `)+`, `)?`,
+//           `){...}`) outside character classes". This is
+//           conservative: it would flag the OK cases above too.
 //           That trade-off is acceptable because:
 //             1. The production rule corpus contains zero rules
 //                with both `&` and `~(` (intersection requires
@@ -1339,6 +1358,9 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
 //           timeout, and we can't safely cancel a running compile
 //           from outside. The pre-validator is the only safe way
 //           to skip the slow shapes without modifying resharp.
+//           Upstream fix would be adding `redundant.insert(node);`
+//           on each loop iteration in `calc_prefix_sets_inner`
+//           so the visited-set actually accumulates across the walk.
 // TS map:   `function complementIntersectionQuantifiedGroup(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
