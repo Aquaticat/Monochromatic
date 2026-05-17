@@ -1170,6 +1170,14 @@ fn complement_intersection_quantified_group_skips_safe_shapes() {
         "",
         "abc",
         "(?:a)*",
+        // Regression: the FOOTER demonstration rule emitted by
+        // `mise.port-betterleaks.ts` after inlining its quantified
+        // groups. Intersection (`&`) is present, but the quantifier
+        // bodies are inlined: `0{32}` is a quantified literal (not a
+        // quantified group), and the deadbeef placeholder is written
+        // as 16 concatenated unquantified groups -- no `)` is
+        // followed by `*`/`+`/`?`/`{N`, so the detector must NOT fire.
+        "RELEASE_TAG_[a-f0-9]{32}&~(RELEASE_TAG_0{32})&~(RELEASE_TAG_(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef)(de|ad|be|ef))",
     ];
     for src in cases {
         assert!(
