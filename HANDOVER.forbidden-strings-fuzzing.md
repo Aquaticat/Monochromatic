@@ -198,13 +198,15 @@ Run in order:
   cargo-fuzz 0.13.1 vs musl-vs-ASAN incompatibility by threading
   `--target x86_64-unknown-linux-gnu` through `fuzz:build`,
   `fuzz:smoke`, and `fuzz:run` in commit `7b2caf88`.
-- Separate pre-existing bug uncovered while verifying the above: the
-  `fuzz:run` task's nushell spread of `$extras` adds literal single
-  quotes around each variadic positional, so libfuzzer treats e.g.
-  `'-max_total_time=10'` as a corpus directory rather than a flag.
-  Workaround: invoke cargo fuzz directly. Real fix: rework the
-  `usage` / `$env.usage_args` handling to avoid the per-arg quote
-  wrapping.
+- `fuzz:run` arg-spread bug fixed in commit `202ed6b6`. Root cause:
+  mise/usage formats the `[args]` variadic env var as a shell-quoted
+  concatenation (`'-a' '-b'`) so a downstream POSIX shell can re-split
+  safely; the nushell `split row ' '` split on every space and kept
+  the surrounding quotes inside each element, so cargo forwarded them
+  to libfuzzer as `'-max_total_time=10'` (literal). libfuzzer treated
+  anything not starting with `-` as a corpus directory and errored.
+  Fix: split on the inter-arg separator `"' '"` and trim the lone
+  outer quotes off the first and last elements.
 - Step 5, 7-9 NOT YET RUN against 0.6.0.
 - Step 10 (soundness-by-revert) PARTIAL: a 2026-05-16 attempt against a
   disposable worktree (`/tmp/fs-soundness-revert`, reverted `e49d8694`)

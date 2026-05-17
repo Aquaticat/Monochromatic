@@ -72,14 +72,11 @@ Still outstanding:
 - `/tmp/fs-fuzz-validate`, `/tmp/fs-soundness-revert`,
   `/tmp/fs-crash-artifacts/`, and `/tmp/probe-resharp-06/` all
   removed during cleanup.
-- Separately noted: the `fuzz:run` task has a pre-existing arg-spread
-  quoting bug (nushell wraps each variadic positional in literal single
-  quotes before passing to cargo, so libfuzzer treats e.g.
-  `'-max_total_time=10'` as a corpus directory rather than a flag).
-  Independent of the resharp bump or the gnu-target threading; uncovered
-  while verifying the gnu-target fix. Workaround: invoke cargo fuzz
-  directly with `RUSTUP_TOOLCHAIN=nightly cargo fuzz run <target>
-  --target x86_64-unknown-linux-gnu -- <libfuzzer-args>`.
+- `fuzz:run` arg-spread fixed in commit `202ed6b6`: mise's `usage_args`
+  arrives shell-quoted (`'-a' '-b'`); the previous `split row ' '`
+  kept the surrounding quotes as part of each element, so libfuzzer
+  treated `'-max_total_time=10'` as a corpus directory. Now splits on
+  the inter-arg `"' '"` boundary and trims the lone outer quotes.
 
 ---
 
