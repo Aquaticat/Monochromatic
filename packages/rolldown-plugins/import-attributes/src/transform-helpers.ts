@@ -29,6 +29,36 @@ export type Replacement = {
 //region Clause scanning
 
 /**
+ * Returns the cursor past any space/tab/newline/carriage-return run at
+ * `idx`. Used to skip the whitespace gap between an import path and the
+ * `with`/`assert` keyword.
+ *
+ * @param s - source string
+ *
+ * @param idx - cursor to begin scanning from
+ *
+ * @returns first non-whitespace position at or after `idx`
+ */
+function skipWithClauseWhitespace({
+  s,
+  idx,
+}: {
+  s: string;
+  idx: number;
+},): number {
+  if (idx >= s.length)
+    return idx;
+  /** Char at the cursor; only the four whitespace chars permitted in the with-clause prefix advance the scan. */
+  const c = s.charAt(idx,);
+  if ((c !== ' ') && (c !== '\t') && (c !== '\n') && (c !== '\r'))
+    return idx;
+  return skipWithClauseWhitespace({
+    s,
+    idx: idx + 1,
+  },);
+}
+
+/**
  * Finds the start of the `with`/`assert` clause after a source literal
  * by scanning whitespace then checking for the keyword.
  *
@@ -45,9 +75,24 @@ function findWithClauseStart({
   code: string;
   fromPos: number;
 },): number {
-  /** Detects whether the trailing slot begins with a `with`/`assert` keyword. */
-  const match = /^[ \t\n\r]*(?:with|assert)/.exec(code.slice(fromPos,),);
-  return match === null ? -1 : fromPos;
+  /** Position past the whitespace gap, where the `with`/`assert` keyword would begin. */
+  const keywordStart = skipWithClauseWhitespace({
+    s: code,
+    idx: fromPos,
+  },);
+  if (
+    (!code.startsWith(
+      'with',
+      keywordStart,
+    ))
+    && (!code.startsWith(
+      'assert',
+      keywordStart,
+    ))
+  ) {
+    return -1;
+  }
+  return fromPos;
 }
 
 /**
