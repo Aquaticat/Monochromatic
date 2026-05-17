@@ -1497,6 +1497,64 @@ fn synth_content(rule: &RuleSrc, u: &mut Unstructured<'_>) -> Result<Vec<u8>> {
         out.push(u.int_in_range(b'a'..=b'z')?);
     }
 
+    // What:     Unicode case-flip bias. When the rule has BOTH `(?i)`
+    //           AND `(?u)` flags (effective unicode case-insensitive
+    //           matching), with ~50% probability flip every embedded
+    //           Unicode lowercase letter in `out` to its uppercase form.
+    //           This drives the soundness-by-revert phase 11 trigger:
+    //             - Rule `(?iu)cafésecret` registers `cafésecret` in
+    //               the AC-CI bucket (after the e49d8694 revert).
+    //             - File content `CAFÉSECRET` doesn't fire the gate
+    //               (AC uses aho-corasick's ASCII-only case-fold;
+    //               É <-> é is outside that fold).
+    //             - regex's find_all DOES match (under (?iu) the regex
+    //               engine uses Unicode-aware case-fold).
+    //             - SOUNDNESS VIOLATION: rule matched, but no gate
+    //               substring is present in content.
+    //           Without this bias, `synth_content` embeds the literal
+    //           bytes verbatim and the gate substring is always
+    //           present in content, so the soundness contract holds
+    //           trivially. Random single-byte mutations almost never
+    //           land on the right index AND write the right byte
+    //           (specifically 0xA9 -> 0x89 for the 'é' continuation),
+    //           so libFuzzer cannot evolve the case-flip without
+    //           help. The bias keeps non-flipped iterations productive
+    //           too (the regex still matches when content has the
+    //           original literal).
+    // Why:      Soundness-by-revert phase 11 was completing 120s runs
+    //           clean without ever discovering the panic. The fuzz
+    //           generator is the only knob; adding a targeted bias
+    //           closes the gap.
+    if let Some(flags) = rule.flags.as_ref() {
+        if flags.include_i && flags.include_u {
+            // What:     `u.int_in_range(0u8..=1)? == 0` is the 50%
+            //           coin flip controlled by libFuzzer's mutator.
+            // Why:      Not 100% so the non-flipped path stays
+            //           exercised too (extract returns gate; regex
+            //           matches; gate appears; no panic; iteration
+            //           is still useful for coverage).
+            let flip = u.int_in_range(0u8..=1)? == 0;
+            if flip {
+                let mut idx = 0;
+                while idx + 1 < out.len() {
+                    if out[idx] == 0xC3 {
+                        match out[idx + 1] {
+                            0xA9 => out[idx + 1] = 0x89, // é -> É
+                            0xB1 => out[idx + 1] = 0x91, // ñ -> Ñ
+                            0xBC => out[idx + 1] = 0x9C, // ü -> Ü
+                            0xB6 => out[idx + 1] = 0x96, // ö -> Ö
+                            0xA7 => out[idx + 1] = 0x87, // ç -> Ç
+                            _ => {}
+                        }
+                        idx += 2;
+                    } else {
+                        idx += 1;
+                    }
+                }
+            }
+        }
+    }
+
     // What:     Single-byte mutations. Plan §6 final bullet: bias
     //           toward rendered literals plus single-byte mutations.
     let mutations = u.int_in_range(0u8..=4)?;
