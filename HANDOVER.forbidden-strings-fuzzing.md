@@ -194,12 +194,28 @@ Run in order:
 
 - Steps 1-4 PASS against resharp 0.6.0 (121 unit + 19 integration tests,
   zero lint warnings, zero clippy warnings).
-- Step 5-9 NOT YET RUN against 0.6.0; the rest of phase 11 stayed deferred
-  through the resharp-panic-fix commit (`23ca7a1f`) and the 0.6.0 bump
-  follow-up.
-- Step 10 (soundness-by-revert) STILL OUTSTANDING. The fuzz target file
-  set (`fuzz/fuzz_targets/*.rs`) and ignore rules are unchanged across
-  the 0.5.x → 0.6.0 bump.
+- Step 6 (fuzz:build) PASSES if `--target x86_64-unknown-linux-gnu` is
+  passed explicitly; cargo-fuzz 0.13.1 defaults to musl which conflicts
+  with ASAN (`sanitizer is incompatible with statically linked libc`).
+  The `fuzz:build` / `fuzz:smoke` / `fuzz:run` mise tasks need to be
+  updated to thread the target flag through. Workaround for ad-hoc
+  runs: `cd <package>; RUSTUP_TOOLCHAIN=nightly cargo fuzz run <target>
+  --target x86_64-unknown-linux-gnu -- <libfuzzer-args>`.
+- Step 5, 7-9 NOT YET RUN against 0.6.0.
+- Step 10 (soundness-by-revert) PARTIAL: a 2026-05-16 attempt against a
+  disposable worktree (`/tmp/fs-soundness-revert`, reverted `e49d8694`)
+  hit a pre-existing slow-unit (input shape `a` * N, takes >60s per
+  input even with `-timeout=60`) before reaching the (?u)-shape that
+  would trigger the soundness panic. The slow-unit lives in our
+  scanner/extractor path, NOT in resharp; unrelated to the 0.5.x→0.6.0
+  bump. To complete the validation: (a) seed the fuzz corpus with a
+  small (?u)-shape input so libfuzzer reaches the bug fast, or (b) fix
+  the slow-unit so the fuzz has budget to explore Unicode patterns.
+- Crash artifacts at `/tmp/fs-crash-artifacts/` were re-verified against
+  the 0.6.0+fix binary (`128221b7`); both run in 0ms with no crash. See
+  `HANDOVER.resharp-panic-fix.md` for details.
+- Fresh bounded fuzz run (`fuzz_extract_gate_soundness` for ~45s
+  against 0.6.0+fix) completed 4714 iterations with zero new crashes.
 - During the 0.6.0 verification, a side-finding was recorded in
   `HANDOVER.resharp-panic-fix.md`: shape 2 (`scan_fwd_all` panic at
   `engine.rs:1020`) is behind a `debug_assert!` that compiles out in

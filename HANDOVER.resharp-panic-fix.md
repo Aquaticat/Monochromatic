@@ -37,19 +37,46 @@ The pre-validators and `catch_unwind` net both remain load-bearing.
   rules/engine_tests.rs,lib.rs}` updated to read "resharp 0.5.x
   through 0.6.x" so future readers know the bugs are not fixed.
 
-Still outstanding (deferred during original session, not yet done):
+Verified post-fix against the preserved crash artifacts:
 
-- Re-run fuzz with resharp 0.6.0 against preserved crash artifacts
-  at `/tmp/fs-crash-artifacts/` and document any NEW panic shapes
-  discovered against 0.6.0.
-- Soundness-by-revert validation (revert e49d8694, re-fuzz,
-  expect original soundness panic).
-- Update `HANDOVER.forbidden-strings-fuzzing.md` phase 11 status.
-- Remove `/tmp/fs-fuzz-validate` worktree and `/tmp/fs-crash-artifacts/`
-  after the above finishes.
+- `crash-aba4ef4e00b9a1cde5962347c98cccd0b29b9174` (shape 1, runtime
+  panic in 0.5.x): runs in 0ms against the 0.6.0+fix binary; no crash.
+- `crash-ecaf28b2bdba9b7ae1f7b465ea6ff2bc77b8458a` (shape 2, compile
+  panic in 0.5.x): runs in 0ms against the 0.6.0+fix binary; no crash.
+
+Both artifacts now exit cleanly. Combined with the direct probe showing
+0.6.0 still panics on the same source lines when invoked without our
+guards, this is the proof that the pre-validators + catch_unwind +
+profile settings handle the 0.5.x crash inputs correctly against 0.6.0.
+
+Bounded fresh fuzz run: 4714 iterations of `fuzz_extract_gate_soundness`
+in ~45 seconds against resharp 0.6.0, zero new crashes.
+
+cargo-fuzz infrastructure note: cargo-fuzz 0.13.1 defaults to the musl
+target which is incompatible with the ASAN flags it sets via RUSTFLAGS
+(`sanitizer is incompatible with statically linked libc`). The
+workaround is to pass `--target x86_64-unknown-linux-gnu` explicitly to
+`cargo fuzz build` / `cargo fuzz run`. The mise tasks
+(`fuzz:build`, `fuzz:smoke`, `fuzz:run`) should be updated to thread
+this flag through; not done in this commit because the fix is a
+mise-task change rather than a forbidden-strings package change.
+
+Still outstanding:
+
+- Soundness-by-revert phase 11 validation: a partial attempt on
+  2026-05-16 hit a pre-existing slow-unit (input of `a` * N takes >60s
+  per input, even with `-timeout=60`); the fuzz target halted before
+  reaching the (?u)-shape that would trigger the actual soundness
+  panic. The slow-unit is unrelated to the 0.5.x→0.6.0 bump (lives in
+  our scanner/extractor/regex path, not in resharp). Needs either a
+  targeted seed for the (?u) shape, or fixing the slow-unit so the
+  fuzz can explore Unicode patterns within budget.
+- mise fuzz tasks need `--target x86_64-unknown-linux-gnu` (see note
+  above).
+- Remove `/tmp/fs-fuzz-validate` worktree, `/tmp/fs-soundness-revert`
+  worktree, and `/tmp/fs-crash-artifacts/` after final cleanup.
 - The probe binary `/tmp/probe-resharp-06/` is preserved as a quick
-  reproducer; remove during final cleanup or keep for future resharp
-  bumps as a sanity check.
+  reproducer for future resharp bumps; remove if desired.
 
 ---
 
