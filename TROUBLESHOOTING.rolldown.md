@@ -467,12 +467,39 @@ have moved or been removed.
 
 ### What does not work
 
-- Adding `node:path/posix` to rolldown's `external` array:
-  externalisation applies after resolution, and the
-  specifier fails during resolution.
 - Setting `resolve.builtinModules` manually: this option is
   not exposed in rolldown's public `InputOptions`; it is
   derived internally from `platform`.
+
+### Workaround that started not working but works now: `external` array with exact subpaths
+
+Listing the exact subpath in `external` does suppress the
+warning as of rolldown HEAD `14f967a43`:
+
+```ts
+inputOptions: {
+  external: ['node:path/posix', 'node:path',],
+},
+```
+
+`crates/rolldown_plugin/src/utils/resolve_id_check_external.rs:33-34`
+calls `bundle_options.external.call(specifier, importer, false)`
+**before** the resolver runs. `IsExternal::StringOrRegex` does a
+literal string match, so `external: ['node:path/posix']` short
+circuits and externalises before oxc-resolver ever sees the
+specifier. (The earlier reading that "externalisation applies
+after resolution, and the specifier fails during resolution"
+was true for an older revision and no longer holds; the
+prototype fixture re-runs cleanly when the same `_config.json`
+is given an `external` list.)
+
+Tradeoff: must enumerate each subpath; missed entries still
+trigger the warning. For a small fixed set of `node:`
+subpaths this is workable, but it does not generalise (e.g.
+to a glob covering every `node:*/promises` entry); a
+function-form `external: (id) => id.startsWith('node:')`
+generalises but loses the static analysis upstream consumers
+might rely on.
 
 ### Prototype: the one-line gate flip is too coarse
 
@@ -640,9 +667,10 @@ Affected specifiers include `node:path/posix`, `node:path/win32`, `node:stream/p
 `node:stream/consumers`, `node:stream/web`, `node:dns/promises`,
 `node:readline/promises`, `node:timers/promises`, and every other entry in
 `nodejs_built_in_modules::BUILTINS` that has a `/` in its name. Bare parent specifiers
-(`node:path`, `node:assert`) hit the same warning; users typically silence those by
-listing them in `external`, but `external` does not match subpaths and cannot rescue
-`node:path/posix`.
+(`node:path`, `node:assert`) hit the same warning. Users can suppress per-specifier
+warnings by enumerating each one in `external` (the literal-string match in
+`IsExternal::StringOrRegex` short-circuits before the resolver runs), but that does not
+scale to a project importing many `node:*/promises`-style subpaths.
 
 ## Reproduction
 
