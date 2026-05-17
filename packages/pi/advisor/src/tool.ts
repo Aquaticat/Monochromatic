@@ -13,11 +13,11 @@ import {
   completeAdvisor,
   extractAdvisorText,
 } from './advisor-client.ts';
+import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import {
   buildAdvisorContext,
   maxContextCharsForAdvisorModel,
 } from './context.ts';
-import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import { selectDefaultModelFromContextEstimates, } from './model-cost.ts';
 import { resolveRequestedModel, } from './model-slug.ts';
 import {

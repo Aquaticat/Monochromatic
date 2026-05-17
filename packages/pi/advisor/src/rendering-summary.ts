@@ -222,7 +222,8 @@ function formatContext(
     `${details.provider} ${details.contextChars}/${details.contextBudgetChars} chars`,
     `${details.estimatedInputTokens} tokens`,
     truncated,
-  ].join(' ',);
+  ]
+    .join(' ',);
 }
 
 //endregion Internal helpers

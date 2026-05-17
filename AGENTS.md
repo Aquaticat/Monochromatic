@@ -250,15 +250,9 @@ When discovering something that would not be immediately obvious to a future rea
 
 When the user asks to spawn something in another terminal, window, or session, use a real terminal launcher. For arbitrary commands, including Codex, use `terminal-exec -- <command> ...`. Use `spawn-claude` only for Claude Code child sessions. `spawn_agent` is not an OS terminal, and a PTY/TTY is not the same as a visible terminal emulator window.
 
-Do not run `terminal-exec --help` as a probe. `terminal-exec` does not implement a help flag; its parser ignores unknown options and then opens the default terminal. Verify usage by reading `packages/cli/terminal-exec/README.md` or `packages/cli/terminal-exec/src/cli.ts`.
-
-Pipes in the Bash tool are unreliable; the Claude Code issue tracking the bug is treated as wontfix. Workaround: redirect to a file then read the file.
-
 Do not wrap routine verification commands in an external `timeout` binary. Use the command tool's session/polling behavior first; if a process truly remains after producing its useful output, inspect the PID and stop that specific stale process. Reserve external timeout wrappers for commands whose own behavior is specifically being tested or for commands with a known unbounded runtime and no narrower kill mechanism.
 
 Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
-
-The Glob tool is denylisted (does not respect .gitignore); unlikely to change.
 
 Clone entire git repo of a package to a temp dir whenever investigating source code. Use `gh repo clone` instead of `git clone`; `gh` handles authentication and fork remotes automatically.
 
@@ -386,6 +380,7 @@ Write comprehensive TSDoc for **all** declarations (exported or not, including l
 - No rest parameters (`...args`) in functions we control; accept an array parameter instead.
 - Export immediately at declaration; avoid `Object.assign` for extending typed objects.
 - Throw and return early; use overloads (most specific first).
+- No regex unless necessary.
 
 #### Type system
 

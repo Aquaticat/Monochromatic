@@ -260,7 +260,8 @@ function buildSelectionReason(
     `highest expected cost: ${score.slug} =`,
     `${score.inputTokens} input tokens * ${score.inputCost} +`,
     `${score.maxOutputTokens} output tokens * ${score.outputCost}`,
-  ].join(' ',);
+  ]
+    .join(' ',);
 }
 
 //endregion Internal helpers

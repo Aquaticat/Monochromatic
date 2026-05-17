@@ -188,7 +188,8 @@ export function buildAdvisorStatus(
       `Context budget: ${defaultContextBudgetText} effective for default model,`,
       `cap=${configuredContextCap},`,
       `${config.maxAdvisorOutputTokens} output tokens`,
-    ].join(' '),
+    ]
+      .join(' ',),
     `Prior Advisor results: ${
       config.includePriorAdvisorResults ? 'included' : 'omitted'
     }`,

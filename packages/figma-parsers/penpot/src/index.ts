@@ -1151,9 +1151,9 @@ function convertNode(
   /** Y position lifted out of the transform's translation component. */
   const y = (typeof transform.f) === 'number' ? transform.f : 0;
   /** Width pulled from the optional size struct, 0 when missing. */
-  const width = size && (typeof size.x) === 'number' ? size.x : 0;
+  const width = size && ((typeof size.x) === 'number') ? size.x : 0;
   /** Height pulled from the optional size struct, 0 when missing. */
-  const height = size && (typeof size.y) === 'number' ? size.y : 0;
+  const height = size && ((typeof size.y) === 'number') ? size.y : 0;
 
   /** Branch flag: true only when the node has a measurable bounding rect; paths/vectors without bounds skip the rect-based branch below. */
   const hasGeometry = (width > 0) && (height > 0);
@@ -1285,7 +1285,7 @@ function convertNode(
   };
 
   // Opacity
-  if ((typeof nc.opacity) === 'number' && (nc.opacity !== 1))
+  if (((typeof nc.opacity) === 'number') && (nc.opacity !== 1))
     shape.opacity = nc.opacity;
 
   // Visible/hidden
@@ -1299,7 +1299,7 @@ function convertNode(
     shape.shapes = [];
 
     // Border radius
-    if ((typeof nc.cornerRadius) === 'number' && (nc.cornerRadius > 0)) {
+    if (((typeof nc.cornerRadius) === 'number') && (nc.cornerRadius > 0)) {
       shape.r1 = nc.cornerRadius;
       shape.r2 = nc.cornerRadius;
       shape.r3 = nc.cornerRadius;
@@ -1320,12 +1320,12 @@ function convertNode(
     shape.boolType = 'union';
     /** Boolean operation geometry from Figma; its first path is taken as the shape's content. */
     const fillGeometry = (nc.fillGeometry ?? []) as Record<string, unknown>[];
-    if ((fillGeometry.length > 0) && (typeof fillGeometry[0]!.path) === 'string')
+    if ((fillGeometry.length > 0) && ((typeof fillGeometry[0]!.path) === 'string'))
       shape.content = fillGeometry[0]!.path;
   }
 
   if (penpotType === 'rect') {
-    if ((typeof nc.cornerRadius) === 'number' && (nc.cornerRadius > 0)) {
+    if (((typeof nc.cornerRadius) === 'number') && (nc.cornerRadius > 0)) {
       shape.r1 = nc.cornerRadius;
       shape.r2 = nc.cornerRadius;
       shape.r3 = nc.cornerRadius;
@@ -1339,10 +1339,13 @@ function convertNode(
     const fillGeometry = (nc.fillGeometry ?? []) as Record<string, unknown>[];
     /** Stroke-only geometry used as a fallback when fillGeometry is absent (open paths, lines). */
     const strokeGeometry = (nc.strokeGeometry ?? []) as Record<string, unknown>[];
-    if ((fillGeometry.length > 0) && (typeof fillGeometry[0]!.path) === 'string')
+    if ((fillGeometry.length > 0) && ((typeof fillGeometry[0]!.path) === 'string'))
       shape.content = fillGeometry[0]!.path;
-    else if ((strokeGeometry.length > 0) && (typeof strokeGeometry[0]!.path) === 'string')
+    else if ((strokeGeometry.length > 0)
+      && ((typeof strokeGeometry[0]!.path) === 'string'))
+    {
       shape.content = strokeGeometry[0]!.path;
+    }
   }
 
   if (penpotType === 'text') {

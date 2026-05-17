@@ -200,7 +200,7 @@ function applyBlocklist({ pkg, },) {
 
   for (const field of DEP_FIELDS) {
     const deps = pkg[field];
-    if ((deps === null) || (deps === undefined) || (typeof deps) !== 'object')
+    if ((deps === null) || (deps === undefined) || ((typeof deps) !== 'object'))
       continue;
     for (const [name, currentSpec,] of Object.entries(deps,)) {
       const policy = POLICY[name];
