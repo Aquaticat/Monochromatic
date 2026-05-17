@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  attestations: read
 
 jobs:
   scan:
@@ -29,21 +30,58 @@ jobs:
     - name: Install only the tools this workflow needs
       # The root mise.toml lists ~25 tools (including llama.cpp, which
       # intermittently lacks a Linux release at install time). This scan
-      # only needs rust (for the cargo build), hk (the runner), and pkl
-      # (hk's config language).
-      run: mise install rust 'aqua:jdx/hk' 'aqua:apple/pkl'
+      # only needs hk (the runner) and pkl (hk's config language). The
+      # scanner binary itself is downloaded prebuilt from GitHub releases
+      # (see Download step below), so no rust toolchain is needed here.
+      run: mise install 'aqua:jdx/hk' 'aqua:apple/pkl'
 
-    - name: Cache cargo registry + scanner build
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
-      with:
-        path: |
-          ~/.cargo/registry
-          ~/.cargo/git
-          packages/cli/forbidden-strings/target
-        key: forbidden-strings-${{ runner.os }}-${{ hashFiles('packages/cli/forbidden-strings/Cargo.toml') }}
+    - name: Download prebuilt forbidden-strings binary
+      # The cargo-publish.yml workflow uploads SLSA-attested binaries for
+      # x86_64-unknown-linux-gnu (and six other targets) on every
+      # Cargo.toml version bump merged to main. Downloading is seconds;
+      # building from source is minutes. We try the Cargo.toml version
+      # first so the scanner matches the source tree, then fall back to
+      # the latest release to cover the window between a version-bump PR
+      # merging and cargo-publish.yml finishing.
+      env:
+        GH_TOKEN: ${{ github.token }}
+        REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
 
-    - name: Build forbidden-strings
-      run: mise run //packages/cli/forbidden-strings:build
+        cargo_toml='packages/cli/forbidden-strings/Cargo.toml'
+        version=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
+        tag="forbidden-strings-v${version}"
+        if ! gh release view "$tag" --repo "$REPO" >/dev/null 2>&1; then
+          echo "::notice::Release $tag not yet published; falling back to latest forbidden-strings-v* release."
+          tag=$(gh release list --repo "$REPO" --limit 50 --json tagName \
+            --jq '[.[].tagName | select(startswith("forbidden-strings-v"))][0] // ""')
+          if [ -z "$tag" ]; then
+            echo "::error::No forbidden-strings-v* release found in $REPO." >&2
+            exit 1
+          fi
+          version="${tag#forbidden-strings-v}"
+          echo "Using fallback release: $tag"
+        fi
+
+        archive="forbidden-strings-${version}-x86_64-unknown-linux-gnu.tar.gz"
+        gh release download "$tag" --repo "$REPO" --pattern "$archive"
+
+        # SLSA build-provenance: binds the archive's sha256 to the
+        # cargo-publish.yml run that produced it. A swapped-out release
+        # asset would fail this step.
+        gh attestation verify "$archive" --repo "$REPO"
+
+        # hk.pkl line 3 and the push-to-main full-tree-scan step both
+        # hard-code this path. Match it exactly so neither needs editing.
+        target_dir='packages/cli/forbidden-strings/target/release'
+        mkdir -p "$target_dir"
+        tar -xzf "$archive" \
+          --strip-components=1 \
+          -C "$target_dir" \
+          "forbidden-strings-${version}-x86_64-unknown-linux-gnu/forbidden-strings"
+        chmod +x "$target_dir/forbidden-strings"
+        "$target_dir/forbidden-strings" --version
 
     - name: Materialize deny-list
       # Mirror the local file-enforcer composition: always seed from the
