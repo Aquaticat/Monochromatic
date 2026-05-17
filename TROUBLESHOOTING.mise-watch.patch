@@ -81,3 +81,76 @@ defaults are populated by clap).
 (`merge_dedupes_across_tasks`, `merge_does_not_let_one_task_exclude_anothers_include`,
 `merge_single_task_splits_pos_and_neg`, `merge_unescapes_literal_bang`).
 Full mise binary unit suite (`cargo test --release -p mise --bins`): 956/956 pass.
+
+## Bug 5: break the Arc cycle keeping FilterProgs alive past shutdown
+
+Prototype patch against `https://github.com/watchexec/watchexec.git` HEAD
+`9d8e3443ee5fbbf07baa0e0bff2c2c63d40f1a4f` (the doc's cited reference; both
+files cited are byte-identical to the 2.5.1 release tag). Applies cleanly with
+`git apply` from the watchexec repo root.
+
+```diff
+diff --git a/crates/cli/src/config.rs b/crates/cli/src/config.rs
+index 1765544..1f6d69c 100644
+--- a/crates/cli/src/config.rs
++++ b/crates/cli/src/config.rs
+@@ -98,7 +98,12 @@ pub fn make_config(args: &Args, state: &State) -> Result<Config> {
+        let clear = args.output.screen_clear;
+
+        let emit_events_to = args.events.emit_events_to;
+-       let state = state.clone();
++       // Break the Arc<Config> -> action-handler-closure -> Arc<InnerState> ->
++       // OnceLock<Arc<Watchexec>> -> Arc<Config> reference cycle that otherwise
++       // keeps Config alive past runtime shutdown, pinning FilterProgs' Sender
++       // and parking its spawn_blocking thread in receiver.blocking_recv()
++       // forever (manifests as a SIGINT hang when `-j` is used).
++       let state = Arc::downgrade(state);
+
+        if args.only_emit_events {
+                config.on_action(move |mut action| {
+@@ -206,7 +211,14 @@ pub fn make_config(args: &Args, state: &State) -> Result<Config> {
+        config.on_action_async(move |mut action| {
+                let add_envs = add_envs.clone();
+                let command = command.clone();
+-               let state = state.clone();
++               // `state` is `Weak<InnerState>` (see make_config above); upgrade for
++               // this invocation. The handler only runs while the runtime is live,
++               // so a `None` here means we are mid-shutdown and the safe response is
++               // to return the action untouched.
++               let Some(state) = state.upgrade() else {
++                       debug!("InnerState dropped before action; skipping handler");
++                       return Box::new(async move { action });
++               };
+                let queued = queued.clone();
+                let quit_again = quit_again.clone();
+                let paused = paused.clone();
+```
+
+The patch breaks the strong-reference cycle by capturing `Weak<InnerState>` in
+the action-handler closure and upgrading per-invocation. During normal
+operation the upgrade always succeeds (the handler only runs while the runtime
+is alive). At shutdown, the closure no longer pins `Arc<InnerState>`, so the
+`Arc<Watchexec>` -> `Arc<Config>` -> `Arc<WatchexecFilterer>` -> `Sender`
+chain drops, the `FilterProgs` blocking thread sees `None`, and the runtime
+exits.
+
+Verification (scripted SIGINT-hang reproducer at `repro/sigint-check.sh`
+inside the prototype workspace; sends SIGINT, polls for exit, SIGKILLs and
+reports HANG if the process is still alive after 6s):
+
+```text
+[prepatch/inline] HANG: alive 5.67s after SIGINT; killing with SIGKILL
+[prepatch/file]   HANG: alive 5.87s after SIGINT; killing with SIGKILL
+[postpatch/inline] OK: exited within 0.21s after SIGINT (rc=0)
+[postpatch/file]   OK: exited within 0.00s after SIGINT (rc=0)
+```
+
+Control runs (same invocation without `-j`) exit in 0.00s both pre- and
+post-patch, confirming the bug is specific to the `-j` code path and the
+patch does not regress the non-`-j` shutdown.
+
+`cargo test --workspace --release` post-patch: all suites pass
+(`watchexec_signals` 5/5, `watchexec_supervisor` 8/8, doc-tests across
+`watchexec_cli`, `watchexec_events`, `watchexec_filterer_globset`,
+`watchexec_filterer_ignore` clean; full log saved at
+`/tmp/watchexec-fix-SoZlgn/cargo-test.log` during the prototype session).

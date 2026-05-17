@@ -657,10 +657,44 @@ All 5 constraints hold:
    first-class CLI feature.
 4. **Will they likely fix it?** Plausible; watchexec is
    actively maintained.
-5. **Have we prototyped a minimal fix?** Architectural
-   sketches in the draft; not coded up.
+5. **Have we prototyped a minimal fix?** Yes; the Weak-capture
+   variant from the draft. See "Verified prototype" below.
 
 Decision: worth filing.
+
+### Verified prototype
+
+Fresh clone of `https://github.com/watchexec/watchexec.git` at HEAD
+`9d8e3443ee5fbbf07baa0e0bff2c2c63d40f1a4f` (the post-2.5.1 commit cited in
+"Source-level trace"; cited files byte-identical to v2.5.1). Two pre/post
+binaries built at `target/release/watchexec`, scripted SIGINT-hang
+reproducer at `repro/sigint-check.sh` inside the prototype workspace.
+
+Pre/post timings (deadline +6s after SIGINT, SIGKILL on overrun):
+
+```text
+[prepatch/inline] HANG: alive 5.67s after SIGINT; killing with SIGKILL
+[prepatch/file]   HANG: alive 5.87s after SIGINT; killing with SIGKILL
+[postpatch/inline] OK: exited within 0.21s after SIGINT (rc=0)
+[postpatch/file]   OK: exited within 0.00s after SIGINT (rc=0)
+```
+
+Control runs without `-j` exit in 0.00s both pre- and post-patch, confirming
+the patch is targeted (no regression on the non-`-j` shutdown path).
+
+`cargo test --workspace --release` post-patch: all suites pass
+(`watchexec_signals` 5/5, `watchexec_supervisor` 8/8, doc-tests across
+`watchexec_cli`, `watchexec_events`, `watchexec_filterer_globset`,
+`watchexec_filterer_ignore` clean).
+
+Full patch text in `TROUBLESHOOTING.mise-watch.patch` (sibling at repo
+root), section "Bug 5". Two hunks in `crates/cli/src/config.rs`: change
+`make_config`'s `let state = state.clone();` to `let state =
+Arc::downgrade(state);`, and rewrite the matching `let state =
+state.clone();` inside `on_action_async` to `let Some(state) =
+state.upgrade() else { debug!(...); return Box::new(async move { action })
+};`. Comments inline name the cycle being broken and the upgrade-fails
+path.
 
 ### Draft upstream issue (kept as reference; revise before filing)
 
@@ -740,4 +774,56 @@ Either break the cycle or give `FilterProgs` an explicit shutdown path:
   impl that calls `mpsc::Sender::downgrade` or sends a sentinel to break
   out of the blocking loop. A `tokio::sync::Notify` wired into the loop
   would also work.
+
+#### Verified patch (Weak capture)
+
+Applies cleanly to HEAD `9d8e3443`. Two hunks in `crates/cli/src/config.rs`;
+the second adds a `state.upgrade()` early return that runs only during
+shutdown:
+
+```diff
+--- a/crates/cli/src/config.rs
++++ b/crates/cli/src/config.rs
+@@ -98,7 +98,12 @@ pub fn make_config(args: &Args, state: &State) -> Result<Config> {
+        let clear = args.output.screen_clear;
+
+        let emit_events_to = args.events.emit_events_to;
+-       let state = state.clone();
++       let state = Arc::downgrade(state);
+
+        if args.only_emit_events {
+                config.on_action(move |mut action| {
+@@ -206,7 +211,14 @@ pub fn make_config(args: &Args, state: &State) -> Result<Config> {
+        config.on_action_async(move |mut action| {
+                let add_envs = add_envs.clone();
+                let command = command.clone();
+-               let state = state.clone();
++               let Some(state) = state.upgrade() else {
++                       debug!("InnerState dropped before action; skipping handler");
++                       return Box::new(async move { action });
++               };
+                let queued = queued.clone();
+                let quit_again = quit_again.clone();
+                let paused = paused.clone();
+```
+
+(Source comments naming the cycle being broken are kept in the full
+sibling patch at `TROUBLESHOOTING.mise-watch.patch`; trimmed here for
+issue-readability.)
+
+#### Verification
+
+Scripted SIGINT-hang reproducer; deadline +6s after SIGINT, SIGKILL on
+overrun:
+
+```text
+prepatch  inline: HANG  (alive 5.67s after SIGINT; SIGKILL fired)
+prepatch  file:   HANG  (alive 5.87s after SIGINT; SIGKILL fired)
+postpatch inline: OK    (exited within 0.21s of SIGINT, rc=0)
+postpatch file:   OK    (exited within 0.00s of SIGINT, rc=0)
+```
+
+`cargo test --workspace --release`: all suites pass post-patch
+(`watchexec_signals` 5/5, `watchexec_supervisor` 8/8, doc-tests clean).
+Control runs without `-j` exit in 0.00s pre- and post-patch.
 ````
