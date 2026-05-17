@@ -115,6 +115,74 @@ use forbidden_strings_fuzz::generators::RuleAndContent;
 // ```
 use sha2::{Digest, Sha256};
 
+// What:     `install_resharp_panic_filter()` -- one-time installation of
+//           a panic hook that swallows panics originating at known
+//           resharp upstream-bug locations while preserving normal
+//           crash semantics for all other panics.
+// Why:      libfuzzer-sys installs a panic hook that calls
+//           `std::process::abort()` after the default hook (see
+//           libfuzzer-sys-0.4.12/src/lib.rs:91-95). The abort happens
+//           BEFORE unwinding starts, so `compile_rule_src`'s
+//           `catch_unwind` never gets a chance to catch resharp
+//           panics. Each new upstream-bug shape would halt the fuzz
+//           until we added a pre-validator for it.
+//
+//           This filter inspects the panic location: if it matches
+//           one of the known upstream resharp bug sites (Bug F at
+//           `resharp-algebra/.../lib.rs:2470` overflow; Bug B at
+//           `resharp-engine/.../engine.rs:1020` debug_assert), it
+//           does nothing -- the panic unwinds normally and
+//           `compile_rule_src`'s `catch_unwind` returns Err, which
+//           the fuzz target treats as "skip this input" via the
+//           `Err(_) => return` arm.
+//
+//           For all OTHER panics (our own bugs, the soundness
+//           assertion, anything new), it calls the default hook
+//           (which prints the stack) and then `abort()` -- preserving
+//           libfuzzer's crash reporting.
+//
+//           Installed exactly once via `Once` so repeated calls from
+//           the fuzz_target! closure are idempotent.
+// TS map:   `installResharpPanicFilter()` -- runtime hook override.
+fn install_resharp_panic_filter() {
+    use std::sync::Once;
+    static INIT: Once = Once::new();
+    INIT.call_once(|| {
+        let default_hook = std::panic::take_hook();
+        std::panic::set_hook(Box::new(move |panic_info| {
+            // What:     Inspect the panic's source location. Known
+            //           upstream resharp bugs:
+            //             - `resharp-algebra-*/src/lib.rs:2470` (Bug F:
+            //               attempt to add with overflow on lookahead
+            //               chain `rel`)
+            //             - `resharp-engine-*/src/engine.rs:1020` (Bug B:
+            //               debug_assert! "unexpected end N > M")
+            //           Both have stable file paths (the version
+            //           number changes but the file name and line
+            //           number are sticky across 0.5.x to 0.6.x).
+            //           Match on the suffix to avoid binding to a
+            //           specific version directory.
+            let is_known_upstream_bug = match panic_info.location() {
+                Some(loc) => {
+                    let file = loc.file();
+                    let line = loc.line();
+                    (file.contains("resharp-algebra") && file.ends_with("src/lib.rs") && line == 2470)
+                        || (file.contains("resharp-engine") && file.ends_with("src/engine.rs") && line == 1020)
+                }
+                None => false,
+            };
+            if !is_known_upstream_bug {
+                // Real panic -- preserve libfuzzer semantics.
+                default_hook(panic_info);
+                std::process::abort();
+            }
+            // Known upstream bug: no-op. The panic unwinds, the inner
+            // catch_unwind catches it, and we proceed to the next
+            // fuzz input.
+        }));
+    });
+}
+
 // What:     `fuzz_target!(|input: RuleAndContent| { ... });`. The macro
 //           accepts a closure whose argument type drives
 //           libfuzzer-sys's `Arbitrary` decoding. Each invocation:
@@ -131,6 +199,17 @@ use sha2::{Digest, Sha256};
 // });
 // ```
 fuzz_target!(|input: RuleAndContent| {
+    // What:     `install_resharp_panic_filter()`. Idempotent thanks to
+    //           the internal `Once`. Replaces libfuzzer-sys's
+    //           abort-on-panic hook with one that lets known
+    //           resharp upstream-bug panics unwind so
+    //           `compile_rule_src`'s `catch_unwind` catches them.
+    //           See the function definition above for the rationale.
+    // Why:      Without this hook installation, libfuzzer-sys's
+    //           `abort()` call fires before unwinding starts and
+    //           every new upstream-bug shape halts the fuzz run.
+    install_resharp_panic_filter();
+
     // What:     `let RuleAndContent { rule, content } = input;`.
     //           Struct-destructuring let-binding. Moves the fields
     //           out of `input` (we no longer use `input` after this).
