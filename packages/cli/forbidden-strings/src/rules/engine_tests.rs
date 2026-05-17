@@ -1598,3 +1598,224 @@ fn compile_rule_src_rejects_bug_f_trailing_shape_fast() {
         "compile_rule_src on bug-f trailing shape took {elapsed:?}; expected <100ms",
     );
 }
+
+use super::engine::nested_quantifier_after_wildcard;
+
+// What:     Positive triggers for `nested_quantifier_after_wildcard`.
+//           Each shape was decoded from a fuzz slow-unit artifact.
+// Why:      The detector must fire on chain >= 3 immediately
+//           following a bare `_` outside a class.
+// TS map:   `it("nestedQuantifierAfterWildcard fires", ...)`.
+#[test]
+fn nested_quantifier_after_wildcard_fires() {
+    let cases: &[&str] = &[
+        // Minimal chain-3 shape.
+        "_){5,6}){5,12})+",
+        // Chain-3 shape from slow-unit-8c41 (full rendered substring).
+        "(?:(?:(?:(?:_){5,6}){5,12})+",
+        // Chain-3 shape from slow-unit-709c.
+        "(?:(?:(?:(?:_){3,4}){5,12})+",
+        // Chain-3 with all `*` quantifiers.
+        "_)*)*)*",
+        // Chain-3 with all `?` quantifiers.
+        "_)?)?)?",
+        // Chain-3 with mixed quantifiers.
+        "_){5,6})+)*",
+        // Chain-4 (one above threshold).
+        "_)*)*)*)*",
+        // Lazy modifiers don't break the chain.
+        "_)*?)*?)*?",
+        // The full slow-unit-8c41 rendered source.
+        "(?:(?:a|(?:(?:(?:(?:_){5,6}){5,12})+|(?:\\s|(?:(?:_){5,6})+)|(?:(?:(?:_){5,6}){5,6}){5,6}))){5,6}",
+        // The full slow-unit-709c rendered source.
+        "(?:(?:a|(?:(?:(?:(?:_){3,4}){5,12})+|(?:\\s|_)|(?:(?:(?:_){5,6}){5,6}){5,6}))){5,6}",
+    ];
+    for case in cases {
+        assert!(
+            nested_quantifier_after_wildcard(case).is_some(),
+            "expected nested_quantifier_after_wildcard to fire on {case:?}",
+        );
+    }
+}
+
+// What:     Negative cases for `nested_quantifier_after_wildcard`.
+//           Shapes that must NOT trip the detector.
+// Why:      A false positive here would reject legitimate authored
+//           rules. The `_` triad is the scanner's wildcard syntax;
+//           bare `_` outside chain-3 must compile through.
+// TS map:   `it("nestedQuantifierAfterWildcard skips safe shapes", ...)`.
+#[test]
+fn nested_quantifier_after_wildcard_skips_safe_shapes() {
+    let cases: &[&str] = &[
+        "",
+        "_",
+        "_*",
+        "(?:_)*",
+        "(?:_){5,12}",
+        // Chain-2 after `_` -- below threshold.
+        "_)*)*",
+        "(?:(?:_){5,6}){5,12}",
+        // `_` inside a class is a literal underscore, not the wildcard
+        // triad.
+        "[_]){5,6}){5,12})+",
+        "[_]){5,6}){5,12})*",
+        // Escaped underscore `\_` is a literal byte.
+        "\\_){5,6}){5,12})+",
+        // Chain-3 NOT immediately after `_` -- safe.
+        "a){5,6}){5,12})+",
+        "(?:(?:(?:(?:a)*)*)*)*",
+        // `_` followed by literal, then chain.
+        "_a){5,6}){5,12})+",
+        // `_` followed by `(`, breaking the chain start.
+        "_(){5,6}){5,12})+",
+        // No `_` at all.
+        "abc",
+        "(?:a){5,12}",
+        "[abc]",
+    ];
+    for case in cases {
+        assert!(
+            nested_quantifier_after_wildcard(case).is_none(),
+            "expected nested_quantifier_after_wildcard to PASS on {case:?}; got {:?}",
+            nested_quantifier_after_wildcard(case),
+        );
+    }
+}
+
+// What:     End-to-end check: `compile_rule_src` rejects the
+//           slow-unit-8c41 shape with a `(resharp):` error.
+// Why:      The pre-validator must beat resharp's slow compile path
+//           so the fuzz target's throughput is not halved by
+//           replaying these slow units.
+// TS map:   `it("compile_rule_src rejects wildcard-chain slow shape fast", ...)`.
+#[test]
+fn compile_rule_src_rejects_wildcard_chain_slow_shape_fast() {
+    use std::time::Instant;
+    let src = "(?:(?:a|(?:(?:(?:(?:_){5,6}){5,12})+|(?:\\s|(?:(?:_){5,6})+)|(?:(?:(?:_){5,6}){5,6}){5,6}))){5,6}";
+    let started = Instant::now();
+    let result = crate::rules::compile_rule_src(src);
+    let elapsed = started.elapsed();
+    let err = match result {
+        Ok(_) => panic!("expected wildcard-chain rejection, got Ok"),
+        Err(e) => e,
+    };
+    assert!(
+        err.contains("wildcard") && err.contains("_"),
+        "expected error mentioning `wildcard` and `_`, got {err:?}",
+    );
+    assert!(
+        elapsed.as_millis() < 100,
+        "compile_rule_src on wildcard-chain shape took {elapsed:?}; expected <100ms",
+    );
+}
+
+use super::engine::nested_chain_in_lookaround_body;
+
+// What:     Positive triggers for `nested_chain_in_lookaround_body`.
+//           Each shape was decoded from a fuzz slow-unit artifact or
+//           constructed to expose the trigger.
+// Why:      The detector must fire on chain >= 3 anywhere inside an
+//           open lookaround body (any of `(?!`/`(?=`/`(?<!`/`(?<=`).
+// TS map:   `it("nestedChainInLookaroundBody fires", ...)`.
+#[test]
+fn nested_chain_in_lookaround_body_fires() {
+    let cases: &[&str] = &[
+        // Minimal chain-3 inside `(?!...)`.
+        "(?!(?:(?:(?:a){2}){2}){2})",
+        // Chain-3 inside `(?=...)`.
+        "(?=(?:(?:(?:a){2}){2}){2})",
+        // Chain-3 inside `(?<!...)`.
+        "(?<!(?:(?:(?:a){2}){2}){2})",
+        // Chain-3 inside `(?<=...)`.
+        "(?<=(?:(?:(?:a){2}){2}){2})",
+        // Chain-3 nested two levels inside the outer lookaround (the
+        // 4eab shape: inner `(?!...)` body is innocuous; the chain sits
+        // in the OUTER lookaround alongside the inner LA).
+        "(?!(?!aaa)(?:(?:(?:a){5,14}){5,14}){4,12})",
+        // Chain-3 with `*` quantifiers inside `(?!`.
+        "(?!(?:(?:(?:a)*)*)*)",
+        // Chain-3 with `?` quantifiers inside `(?!`.
+        "(?!(?:(?:(?:a)?)?)?)",
+        // Chain-4 inside lookaround (one above threshold; must still fire).
+        "(?!(?:(?:(?:(?:a){2}){2}){2}){2})",
+    ];
+    for case in cases {
+        assert!(
+            nested_chain_in_lookaround_body(case).is_some(),
+            "expected nested_chain_in_lookaround_body to fire on {case:?}",
+        );
+    }
+}
+
+// What:     Negative cases for `nested_chain_in_lookaround_body`.
+//           Shapes that must NOT trip the detector.
+// Why:      A false positive here would reject legitimate authored
+//           rules that use lookarounds without slow-compile shapes.
+// TS map:   `it("nestedChainInLookaroundBody skips safe shapes", ...)`.
+#[test]
+fn nested_chain_in_lookaround_body_skips_safe_shapes() {
+    let cases: &[&str] = &[
+        "",
+        "abc",
+        "(?:a)*",
+        // Chain-3 OUTSIDE any lookaround -- safe.
+        "(?:(?:(?:a)*)*)*",
+        "(?:(?:(?:(?:a)*)*)*)*",
+        // Chain-2 inside a lookaround -- below threshold.
+        "(?!(?:(?:a)*)*)",
+        "(?=(?:(?:a)*)*)",
+        // Lookaround containing a single quantified group -- chain 1.
+        "(?!(?:abc){5,12})",
+        // Single lookaround with literal body.
+        "(?!abc)",
+        "(?=xyz)",
+        // Sequential lookarounds (each closes before the next).
+        "(?!a)(?=b)(?<!c)(?<=d)",
+        // Nested lookarounds without chain inside.
+        "(?!(?=a))",
+        // Lookaround already closed before chain starts -- chain at
+        // top level outside any open lookaround.
+        "(?!abc)(?:(?:(?:a)*)*)*",
+        // Chain-3 in non-lookaround group, then unrelated lookaround.
+        "(?:(?:(?:a)*)*)*(?!xyz)",
+        // Production-shape: bounded class with single quantifier and a
+        // lookaround that has no chain.
+        "(?:(?!\\?)){2,4}",
+    ];
+    for case in cases {
+        assert!(
+            nested_chain_in_lookaround_body(case).is_none(),
+            "expected nested_chain_in_lookaround_body to PASS on {case:?}; got {:?}",
+            nested_chain_in_lookaround_body(case),
+        );
+    }
+}
+
+// What:     End-to-end check: `compile_rule_src` rejects the
+//           lookaround-chain shape with a `(resharp):` error.
+// Why:      Mirror of the wildcard-chain test for the second
+//           slow-unit family.
+// TS map:   `it("compile_rule_src rejects lookaround-chain slow shape fast", ...)`.
+#[test]
+fn compile_rule_src_rejects_lookaround_chain_slow_shape_fast() {
+    use std::time::Instant;
+    // Minimal shape that triggers the validator (the full 4eab artifact
+    // is too noisy for a test). The shape is the 4eab structure
+    // distilled to its load-bearing chain-in-lookaround.
+    let src = "(?!(?:(?:(?:a){5,14}){5,14}){4,12})";
+    let started = Instant::now();
+    let result = crate::rules::compile_rule_src(src);
+    let elapsed = started.elapsed();
+    let err = match result {
+        Ok(_) => panic!("expected lookaround-chain rejection, got Ok"),
+        Err(e) => e,
+    };
+    assert!(
+        err.contains("lookaround"),
+        "expected error mentioning `lookaround`, got {err:?}",
+    );
+    assert!(
+        elapsed.as_millis() < 100,
+        "compile_rule_src on lookaround-chain shape took {elapsed:?}; expected <100ms",
+    );
+}

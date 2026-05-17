@@ -69,8 +69,10 @@ pub use engine::{
     intersection_with_word_end_alternation,
     lookaround_in_alternation_with_sibling,
     lookaround_in_complement,
+    nested_chain_in_lookaround_body,
     nested_grouped_quantifier,
     nested_lookahead_in_quantified_group,
+    nested_quantifier_after_wildcard,
     quantified_lookahead_with_sibling_content,
     requires_resharp,
     stacked_quantifier,
@@ -785,6 +787,62 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         if let Some(reason) = quantified_lookahead_with_sibling_content(src) {
             eprintln!(
                 "forbidden-strings: pre-validator quantified_lookahead_with_sibling_content rejected rule {:?}",
+                src
+            );
+            return Err(format!("(resharp): {}", reason));
+        }
+        // What:     `nested_quantifier_after_wildcard` catches the
+        //           depth-3 nested-quantifier-on-`_`-wildcard shape
+        //           decoded from slow-unit artifacts
+        //           `slow-unit-8c4172d7d381b5c64c5aba568217c38c5ce94945`
+        //           (compile 409ms + scan 1.16s) and
+        //           `slow-unit-709cb39b5255ddf0721c435159191d03aa0498ea`
+        //           (compile 4.33s). Catches at chain >= 3 immediately
+        //           after a bare `_` outside a class.
+        // Why:      The `_` triad expands to wildcard; nesting depth
+        //           3+ quantifiers on it explodes resharp's NFA
+        //           construction. libFuzzer keeps these slow units in
+        //           the corpus and replays them, halving exec/s
+        //           throughput. Catching at the source-shape level
+        //           rejects the rule in microseconds.
+        // TS map:   `const reason = nestedQuantifierAfterWildcard(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const reason = nestedQuantifierAfterWildcard(src);
+        // if (reason) throw new Error(`(resharp): ${reason}`);
+        // ```
+        if let Some(reason) = nested_quantifier_after_wildcard(src) {
+            eprintln!(
+                "forbidden-strings: pre-validator nested_quantifier_after_wildcard rejected rule {:?}",
+                src
+            );
+            return Err(format!("(resharp): {}", reason));
+        }
+        // What:     `nested_chain_in_lookaround_body` catches the
+        //           depth-3 nested-quantifier shape sitting inside a
+        //           lookaround body, decoded from
+        //           `slow-unit-4eabfd5c52969dcc20c2170cd30947eccf8ae62f`
+        //           (compile 1.9s before resharp errors with
+        //           `Algebra(UnsupportedPattern)`).
+        // Why:      Even with a literal innermost atom, resharp's
+        //           algebra simplifier walks derivative shapes per-
+        //           prefix per-suffix inside lookarounds, multiplying
+        //           the chain's NFA cost by the lookaround context
+        //           size. The compile wall-clocks past libFuzzer's
+        //           slow-unit threshold even though the eventual
+        //           outcome is `Err`. Source-shape rejection avoids
+        //           the wall-clock burn.
+        // TS map:   `const reason = nestedChainInLookaroundBody(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const reason = nestedChainInLookaroundBody(src);
+        // if (reason) throw new Error(`(resharp): ${reason}`);
+        // ```
+        if let Some(reason) = nested_chain_in_lookaround_body(src) {
+            eprintln!(
+                "forbidden-strings: pre-validator nested_chain_in_lookaround_body rejected rule {:?}",
                 src
             );
             return Err(format!("(resharp): {}", reason));
