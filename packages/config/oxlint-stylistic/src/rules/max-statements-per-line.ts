@@ -62,8 +62,27 @@ const STATEMENT_TYPES = [
   'ExportAllDeclaration',
 ];
 
-/** Matches inter-statement slices that consist only of whitespace and semicolons. */
-const SAFE_TO_FIX = /^[\s;]*$/u;
+/**
+ * Returns true when every character in `s` is either ASCII whitespace
+ * (space, tab, newline, carriage return, form feed, vertical tab) or `;`.
+ * Empty strings return true (vacuously). Linear: single pass over the
+ * input, no regex backtracking.
+ *
+ * @param s - candidate slice (typically the source between two statements)
+ *
+ * @returns whether the slice is safe to replace verbatim
+ */
+function isOnlyWhitespaceOrSemicolon(s: string,): boolean {
+  for (const c of s) {
+    /** Whether the current char is acceptable filler under the autofix shape. */
+    const ok = (c === ' ') || (c === '\t') || (c === '\n')
+      || (c === '\r') || (c === '\f') || (c === '\v')
+      || (c === ';');
+    if (!ok)
+      return false;
+  }
+  return true;
+}
 
 /**
  * Enforces at most one statement per source line.
@@ -200,7 +219,7 @@ export const maxStatementsPerLine: CreateOnceRule = {
             currStart,
           );
           /** Whether the inter-statement slice is trivially replaceable (no nested span, only whitespace/semicolons). */
-          const canFix = (!nested) && SAFE_TO_FIX.test(between,);
+          const canFix = (!nested) && isOnlyWhitespaceOrSemicolon(between,);
 
           context.report({
             node: curr,

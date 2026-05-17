@@ -437,7 +437,7 @@ await describe({
             // Trailing commas should be preserved on all items including the last
             expect(fixedContent,).toContain('  name: string,',);
             expect(fixedContent,).toContain('  age: number,',);
-            expect(fixedContent,).toMatch(/\s+3,\n/,);
+            expect(fixedContent,).toContain('  3,\n',);
             expect(fixedContent,).toContain('  port: 3000,',);
             expect(fixedContent,).toContain('  port,',);
 
@@ -482,20 +482,20 @@ await describe({
             // After fix, multi-param function should have params on separate lines.
             // No trailing comma since the original had none.
             expect(fixedContent,).toContain('  name: string,',);
-            expect(fixedContent,).toMatch(/\s+age: number\n/,);
+            expect(fixedContent,).toContain('  age: number\n',);
 
             // Array elements should be on separate lines
-            expect(fixedContent,).toMatch(/\[\n\s+1,\n\s+2,\n\s+3,?\n/,);
+            expect(fixedContent,).toContain('[\n  1,\n  2,\n  3',);
 
             // Object properties should be on separate lines
             expect(fixedContent,).toContain("  host: 'localhost',",);
-            expect(fixedContent,).toMatch(/\s+port: 3000\n/,);
+            expect(fixedContent,).toContain('  port: 3000\n',);
 
             // Multi-declarator declaration should be split across lines.
-            expect(fixedContent,).toMatch(/const m = 1,\n\s+n = 2;/,);
+            expect(fixedContent,).toContain('const m = 1,\n  n = 2;',);
 
             // Two statements on a line should be split across lines.
-            expect(fixedContent,).toMatch(/const p = 10;\nconst q = 20;/,);
+            expect(fixedContent,).toContain('const p = 10;\nconst q = 20;',);
 
             cleanupFile(fixableCopy,);
           },

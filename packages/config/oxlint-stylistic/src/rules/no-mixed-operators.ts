@@ -17,6 +17,10 @@ import type {
  * before `start` and after `end` and tolerates intermediate whitespace
  * (e.g. `( a + b )`).
  *
+ * `String.prototype.trimEnd` / `trimStart` strip exactly the `\s*` runs the
+ * prior regex anchored against; using them keeps the check strictly linear
+ * with no regex backtracking surface.
+ *
  * @param child - AST node to inspect
  *
  * @param sourceText - full source text of the file
@@ -36,11 +40,14 @@ function hasParens({
   child: Span;
   sourceText: string;
 },): boolean {
-  return /\(\s*$/.test(sourceText.slice(
+  /** Source slice before the operand; trailing whitespace stripped so the `(` lands at the end. */
+  const before = sourceText.slice(
     0,
     child.start,
-  ),)
-    && /^\s*\)/.test(sourceText.slice(child.end,),);
+  ).trimEnd();
+  /** Source slice after the operand; leading whitespace stripped so the `)` lands at the start. */
+  const after = sourceText.slice(child.end,).trimStart();
+  return before.endsWith('(',) && after.startsWith(')',);
 }
 
 /**

@@ -5,6 +5,7 @@ import type {
   Span,
 } from '@oxlint/plugins';
 
+import { leadingWhitespace, } from './indent.ts';
 import {
   at,
   rangeOf,
@@ -146,7 +147,7 @@ export function buildPerLineFix({
     openPos,
   );
   /** Whitespace prefix extracted from the open-bracket line; defaults to empty when the bracket starts the line. */
-  const baseIndent = /^(\s*)/.exec(linePrefix,)?.[1] ?? '';
+  const baseIndent = leadingWhitespace(linePrefix,);
   /** Two-space continuation indent for items inside the brackets. */
   const childIndent = `${baseIndent}  `;
 

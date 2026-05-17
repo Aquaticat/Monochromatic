@@ -1,4 +1,55 @@
 /**
+ * Returns true when `c` is ASCII whitespace per regex `\s` semantics
+ * (space, tab, newline, carriage return, form feed, vertical tab).
+ *
+ * @param c - candidate character
+ *
+ * @returns whether the character is whitespace
+ */
+function isWhitespaceChar(c: string,): boolean {
+  return (c === ' ') || (c === '\t') || (c === '\n')
+    || (c === '\r') || (c === '\f') || (c === '\v');
+}
+
+/**
+ * Returns the leading run of ASCII whitespace from `s`.
+ *
+ * Linear scan: walks character by character until the first non-whitespace
+ * position, then slices once. Replaces the prior `/^(\s*)/.exec` capture
+ * with a strictly O(n) implementation suitable for hot lint paths.
+ *
+ * @param s - input string
+ *
+ * @returns prefix of `s` consisting solely of whitespace characters
+ *
+ * @example
+ * ```ts
+ * leadingWhitespace('  foo'); // '  '
+ * leadingWhitespace('bar'); // ''
+ * ```
+ */
+export function leadingWhitespace(s: string,): string {
+  /**
+   * Recursive walker advancing while the cursor sits on whitespace.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @returns first non-whitespace position (or `s.length`)
+   */
+  function scan(idx: number,): number {
+    if (idx >= s.length)
+      return s.length;
+    if (!isWhitespaceChar(s.charAt(idx,),))
+      return idx;
+    return scan(idx + 1,);
+  }
+  return s.slice(
+    0,
+    scan(0,),
+  );
+}
+
+/**
  * Parameters for {@link baseIndentAt}.
  */
 export type BaseIndentAtParams = {
@@ -18,7 +69,7 @@ export type BaseIndentAtParams = {
  *
  * @example
  * ```ts
- * baseIndentAt({ sourceText: '  foo(a, b);', offset: 6 }) // → '  '
+ * baseIndentAt({ sourceText: '  foo(a, b);', offset: 6 }) // -> '  '
  * ```
  */
 export function baseIndentAt({
@@ -30,10 +81,10 @@ export function baseIndentAt({
     '\n',
     offset - 1,
   ) + 1;
-  /** Substring from line start to `offset`; the regex pulls only its leading whitespace. */
+  /** Substring from line start to `offset`; the helper returns just its leading whitespace. */
   const linePrefix = sourceText.slice(
     lineStart,
     offset,
   );
-  return /^(\s*)/.exec(linePrefix,)?.[1] ?? '';
+  return leadingWhitespace(linePrefix,);
 }

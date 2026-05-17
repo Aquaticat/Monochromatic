@@ -21,8 +21,27 @@ const FOR_PARENT_TYPES = new Set([
   'ForOfStatement',
 ],);
 
-/** Matches inter-declarator slices that consist only of whitespace and commas. */
-const SAFE_TO_FIX = /^[\s,]*$/u;
+/**
+ * Returns true when every character in `s` is either ASCII whitespace
+ * (space, tab, newline, carriage return, form feed, vertical tab) or `,`.
+ * Empty strings return true (vacuously). Linear: single pass over the
+ * input, no regex backtracking.
+ *
+ * @param s - candidate slice (typically the source between two declarators)
+ *
+ * @returns whether the slice is safe to replace verbatim
+ */
+function isOnlyWhitespaceOrComma(s: string,): boolean {
+  for (const c of s) {
+    /** Whether the current char is acceptable filler under the autofix shape. */
+    const ok = (c === ' ') || (c === '\t') || (c === '\n')
+      || (c === '\r') || (c === '\f') || (c === '\v')
+      || (c === ',');
+    if (!ok)
+      return false;
+  }
+  return true;
+}
 
 /**
  * Enforces one declarator per line in `var`/`let`/`const`/`using` declarations.
@@ -135,7 +154,7 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
           currRange[0],
         );
         /** Whether the inter-declarator slice contains only whitespace and commas (i.e. no comments to preserve). */
-        const canFix = SAFE_TO_FIX.test(between,);
+        const canFix = isOnlyWhitespaceOrComma(between,);
 
         context.report({
           node: curr,
