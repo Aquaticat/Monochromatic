@@ -508,8 +508,17 @@ Commit immediately after every minimum logical unit of work, before moving to th
 
 Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. Scope: package name or `*` for multi-package changes.
 
-- Group related changes by type; be specific about what changed.
-- Focus on "what" and "why".
+Group related changes by type; be specific about what changed.
+
+Two lines per group. Example:
+
+```txt
+fix(package1): <what>
+<why>
+
+fix(package2): <what>
+<why>
+```
 
 If you notice a commit message is inaccurate after committing, do not amend (harness rule). Surface the inaccuracy to the user and ask them to push (pushing is a shared-state action that needs explicit authorization; do not push yourself unless the user said so), then post a commit comment via `gh api repos/<OWNER>/<REPO>/commits/<SHA>/comments -X POST -f body='<correction>'`. The comment renders alongside the commit on GitHub and survives history rewrites. Do not silently let an inaccurate commit message stand: future readers see only the message, not the conversation that produced it. The cue: you are about to write "the commit message overstates scope" or similar in chat as a one-off note instead of recording it where the commit lives.
 
