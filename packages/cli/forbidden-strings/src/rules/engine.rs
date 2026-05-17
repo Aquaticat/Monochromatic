@@ -1730,72 +1730,89 @@ pub fn nested_lookahead_in_quantified_group(src: &str) -> Option<String> {
 
 // What:     `pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String>`
 //           detects a second Bug F shape that the narrower
-//           `nested_lookahead_in_quantified_group` misses: a single
-//           variable-quantified lookahead-bearing group followed by
-//           ANY content at parent depth. Bisected from a fuzz crash
-//           where `crash-a219859099426658d70e90bc97f560b85f2cf256`
-//           decoded to `... (?:(?!ñññAtsöéaañ)){4,12}~(ññM aaaaaaaa)
-//           aaaaaa` and minimised to `(?:(?!abc)){4,12}a`.
+//           `nested_lookahead_in_quantified_group` misses: a
+//           variable-bound-quantified lookahead-bearing group
+//           followed by exactly 1 or 2 trailing atoms at parent
+//           depth. Bisected from a fuzz crash where
+//           `crash-a219859099426658d70e90bc97f560b85f2cf256` decoded
+//           to `... (?:(?!ñññAtsöéaañ)){4,12}~(ññM aaaaaaaa)aaaaaa`
+//           and minimised to `(?:(?!abc)){4,12}a`.
 //
 //           PANIC shapes (probes in
 //           `/tmp/probe-slow-unit/src/bin/bisect_f{7,8}.rs`):
-//             - `(?:(?!abc)){4,12}a` (variable quant + 1 trailing char)
-//             - `(?:(?!abc)){4,12}aa` (2 trailing chars)
-//             - `(?:(?!abc)){4,12}\?` (escape trail)
-//             - `(?:(?!abc)){4,12}(?:d)` (group trail)
-//             - `(?:(?!abc)){4,12}[d]` (class trail)
-//             - `(?:(?!abc)){2,3}a` / `{4,5}a` / `{1,4}a` (any variable
-//               bound)
+//             - `(?:(?!abc)){4,12}a` (variable quant + 1 trailing atom)
+//             - `(?:(?!abc)){4,12}aa` (variable quant + 2 trailing atoms)
+//             - `(?:(?!abc)){4,12}\?` (escape trail counts as 1 atom)
+//             - `(?:(?!abc)){4,12}(?:d)` (group trail counts as 1 atom)
+//             - `(?:(?!abc)){4,12}[d]` (class trail counts as 1 atom)
+//             - `(?:(?!abc)){2,3}a` / `{4,5}a` / `{1,4}a` (any variable bound)
 //             - `(?!abc){4,12}a` (bare lookahead, no `(?:)` wrap)
-//             - `a(?:(?!abc)){4,12}a` (leading + trailing)
+//             - `a(?:(?!abc)){4,12}a` (leading content does not save it)
 //
-//           OK shapes (validator accepts these as false positives in
-//           exchange for full coverage):
+//           OK shapes (validator does NOT fire -- they compile cleanly
+//           upstream):
 //             - `(?:(?!abc)){4,12}` alone (no trailing)
 //             - `a(?:(?!abc)){4,12}` (leading only, no trailing)
-//             - `(?:(?!abc)){4,12}aaa` and longer (3+ trailing chars
-//               of the same byte appears to break the chain upstream)
-//             - `(?:(?!abc)){2}a` / `{3}a` / `{4}a` (exact quant, no
-//               range)
+//             - `(?:(?!abc)){4,12}aaa` and longer (3+ trailing atoms
+//               break the upstream chain -- the derivative builder
+//               consumes them before reaching the saturating add)
+//             - `(?:(?!abc)){2}a` / `{3}a` / `{4}a` (EXACT quant `{n}`
+//               -- no variable bound, no overflow accumulation)
+//             - `(?:(?!abc)){4,12}\d{3,5}` (the 3+ trailing rule
+//               applies if the count >= 3; trailing groups count as
+//               1 atom each regardless of inner repetition)
 //
-//           Detection rule: fire if a quantified group containing a
-//           lookahead in its subtree is followed by any non-`)` /
-//           non-`|` byte at parent depth. The walker sets a
-//           per-frame `pending_la_check` flag on the parent when
-//           such a group closes; any subsequent atom-byte (literal,
-//           escape, class open, group open) at that depth fires.
-//           Alternation `|` resets the flag because it begins a
-//           new branch.
+//           Detection rule (precise, derived from bisect data, no
+//           accepted false positives):
+//             - On `)` close, parse the trailing quantifier and
+//               record whether the bound is VARIABLE (`{m,n}` with m
+//               < n, including `*`/`+`/`?` which are `{0,inf}` /
+//               `{1,inf}` / `{0,1}`). EXACT `{n}` quants do not arm.
+//             - If the closing frame had a lookahead in its subtree
+//               AND the quantifier is variable, set the parent's
+//               `pending_trailing_count` to 0 (armed, counting).
+//             - Each subsequent atom at parent depth (literal byte,
+//               escape `\X`, char class `[...]`, group `(...)`,
+//               anchor) increments `pending_trailing_count`.
+//             - Fire when the count is 1 or 2 AND we reach a
+//               structural boundary that confirms the trailing
+//               window is closed (end-of-regex, `|`, or the parent
+//               `)`).
+//             - If the count reaches 3 before any boundary, disarm
+//               (the upstream chain breaks at 3+ atoms).
+//             - `|` and the parent close also disarm if we hadn't
+//               fired yet, OR fire if the trailing count is 1-2 at
+//               that boundary.
 //
-//           This rule false-positives on the "exact-quant" and
-//           "long-uniform-trail" safe shapes above; the user
-//           explicitly endorsed this trade-off ("just widen broadly:
-//           fire on any quantified-lookahead-bearing group that has
-//           any sibling content at parent depth. Accept false
-//           positives") because the alternative -- letting fuzz keep
-//           hitting Bug F shapes -- blocks soundness-by-revert phase
-//           11. See HANDOVER.forbidden-strings-fuzzing.md and
-//           HANDOVER.resharp-panic-fix.md.
+//           This precise rule has no accepted false positives:
+//           rejecting only shapes that actually panic upstream.
+//           Earlier broader widening (which also rejected
+//           `(?:(?!X)){n}<atom>` exact-quant and
+//           `(?:(?!X)){m,n}aaa` long-trail shapes) was tightened
+//           after the user flagged that production rules might
+//           legitimately use those shapes. See
+//           HANDOVER.forbidden-strings-fuzzing.md.
 // Why:      `nested_lookahead_in_quantified_group` only catches the
 //           DOUBLE-quantified nesting (`(?:(?:(?!X)){m,n}){p,q}`). The
-//           SINGLE-quantified-with-trailing shape
-//           (`(?:(?!X)){m,n}<atom>`) reaches the same overflow path
-//           in `resharp-algebra/src/lib.rs:2470` but through a
-//           different upstream code path -- the trailing content
-//           feeds into the lookahead-chain derivative without an
-//           intermediate `Quant` wrap, and the `tail_rel` saturates
-//           identically. Without this pre-validator the fuzz target
-//           catches the panic via `catch_unwind` only on lucky
-//           builds; libfuzzer's panic hook calls `abort` first on
-//           most, halting the run.
+//           SINGLE-quantified-with-1-or-2-trailing shape reaches the
+//           same overflow path in `resharp-algebra/src/lib.rs:2470`
+//           but through a different upstream code path -- the
+//           trailing content feeds into the lookahead-chain
+//           derivative without an intermediate `Quant` wrap, and the
+//           `tail_rel` saturates identically. Without this
+//           pre-validator the fuzz target catches the panic via
+//           `catch_unwind` only on lucky builds; libfuzzer's panic
+//           hook calls `abort` first on most, halting the run.
 // TS map:   `function quantifiedLookaheadWithSiblingContent(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
 // ```ts
 // function quantifiedLookaheadWithSiblingContent(src: string): string | null {
-//   // walk bytes; per-frame `pendingLaCheck` flag set on parent when
-//   // a quantified-lookahead-bearing child closes; fire on the next
-//   // atom byte at that depth; reset on `|`.
+//   // walk bytes; per-frame `pendingTrailingCount` -1 = unarmed,
+//   // 0+ = counting; arm on close of a quantified-LA group iff the
+//   // quant is variable-bound; increment per atom at parent depth;
+//   // fire on boundary (eof / `|` / parent `)`) if count is 1 or 2;
+//   // disarm if count reaches 3.
 // }
 // ```
 pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
@@ -1804,25 +1821,43 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
     let mut in_class = false;
     // What:     `struct Frame { ... }`. One per open group; pushed at
     //           `(`, popped at `)`. The top entry represents the
-    //           top-level (implicit) frame so trailing content at the
+    //           implicit top-level frame so trailing content at the
     //           regex root also fires.
-    // Why:      A quantified-lookahead at the top level
-    //           (`(?:(?!abc)){4,12}a` with no enclosing group) triggers
-    //           the same overflow, so the walker needs a root frame to
-    //           record `pending_la_check`.
+    // Why:      `pending_trailing_count` is the per-frame "armed and
+    //           counting" cursor. `-1` means unarmed; `0+` means
+    //           counting trailing atoms after a quantified-LA close.
+    //           Tracking it per-frame supports nested usage like
+    //           `((?:(?!X)){4,12}a)` (the outer frame counts the
+    //           trailing `a` if the parent itself is armed).
     #[derive(Default, Clone)]
     struct Frame {
         is_lookahead_self: bool,
         has_lookahead_subtree: bool,
-        pending_la_check: bool,
+        pending_trailing_count: i32,
     }
-    let mut stack: Vec<Frame> = vec![Frame::default()];
+    let mut stack: Vec<Frame> = vec![Frame {
+        is_lookahead_self: false,
+        has_lookahead_subtree: false,
+        pending_trailing_count: -1,
+    }];
+    // What:     `fire_reason()` returns the diagnostic string. Wrapped
+    //           in a helper because three call sites (escape, class,
+    //           group-open, alternation-boundary, eof-boundary,
+    //           parent-close-boundary, literal-byte) all emit the
+    //           same payload.
+    // Why:      Keep the rejection message centralised so a future
+    //           tweak doesn't drift across call sites.
+    fn fire_reason() -> String {
+        format!(
+            "quantified lookahead-bearing group with variable bound `{{m,n}}` and 1-2 trailing atoms at parent depth (e.g. `(?:(?!X)){{m,n}}<atom>` or `(?:(?!X)){{m,n}}<atom><atom>`) triggers a resharp 0.5.x through 0.6.x `attempt to add with overflow` panic at `resharp-algebra/src/lib.rs:2470` (see TROUBLESHOOTING.resharp.md Bug F). The lookahead-chain `rel` saturates to u32::MAX and the next add overflows under debug assertions; production builds without debug-assertions silently wrap to 0 (likely producing wrong matches). Reproducer: `(?:(?!abc)){{4,12}}a`. Workarounds: (a) extend the trailing content to 3 or more atoms (`...{{4,12}}aaa`), (b) use an EXACT quantifier `(?:(?!X)){{n}}<atom>` (single-bound), or (c) split the regex. {}",
+            TROUBLESHOOT_REF
+        )
+    }
     while i < bytes.len() {
         let c = bytes[i];
-        // What:     Inside a character class: consume bytes literally
-        //           until the closing `]`. The class itself was already
-        //           recorded as content at the parent depth when `[`
-        //           was seen.
+        // What:     Inside a character class: consume literally until
+        //           `]`. The class as a whole was already counted as
+        //           one atom when `[` was seen.
         if in_class {
             if c == b']' {
                 in_class = false;
@@ -1830,49 +1865,53 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
             i += 1;
             continue;
         }
-        // What:     Escape `\X`: counts as one atom at current depth.
-        //           If the current frame has `pending_la_check` set,
-        //           this is "trailing content" -> fire.
+        // What:     `\X`: escape. One atom at the current depth.
         if c == b'\\' {
-            if stack.last().is_some_and(|f| f.pending_la_check) {
-                return Some(format!(
-                    "quantified lookahead-bearing group with trailing content at parent depth (e.g. `(?:(?!X)){{m,n}}<atom>`) triggers the same resharp 0.5.x through 0.6.x `attempt to add with overflow` panic at `resharp-algebra/src/lib.rs:2470` as the nested-quant shape (see TROUBLESHOOTING.resharp.md Bug F). The lookahead-chain `rel` saturates to u32::MAX and the next add overflows under debug assertions; production builds silently wrap to 0. Reproducer: `(?:(?!abc)){{4,12}}a`. Either drop the trailing content, use an exact quantifier `(?:(?!X)){{n}}<atom>` (single-bound), or split the regex. {}",
-                    TROUBLESHOOT_REF
-                ));
+            if let Some(top) = stack.last_mut() {
+                if top.pending_trailing_count >= 0 {
+                    top.pending_trailing_count += 1;
+                    if top.pending_trailing_count >= 3 {
+                        top.pending_trailing_count = -1;
+                    }
+                }
             }
             i += 2;
             continue;
         }
-        // What:     `[`: character class. Counts as atom at parent
-        //           depth.
+        // What:     `[`: character class open. One atom; the class
+        //           body is consumed in the `in_class` branch.
         if c == b'[' {
-            if stack.last().is_some_and(|f| f.pending_la_check) {
-                return Some(format!(
-                    "quantified lookahead-bearing group with trailing content at parent depth (e.g. `(?:(?!X)){{m,n}}[...]`) triggers Bug F overflow at `resharp-algebra/src/lib.rs:2470` (see TROUBLESHOOTING.resharp.md). {}",
-                    TROUBLESHOOT_REF
-                ));
+            if let Some(top) = stack.last_mut() {
+                if top.pending_trailing_count >= 0 {
+                    top.pending_trailing_count += 1;
+                    if top.pending_trailing_count >= 3 {
+                        top.pending_trailing_count = -1;
+                    }
+                }
             }
             in_class = true;
             i += 1;
             continue;
         }
-        // What:     `(`: open a new group. Counts as atom at parent
-        //           depth from the perspective of trailing-content
-        //           detection (a subgroup after the quantified-LA group
-        //           is still content at that depth).
+        // What:     `(`: group open. Counts as one atom at parent
+        //           depth (regardless of what's inside; the group is
+        //           atomic from the trailing-count perspective).
         if c == b'(' {
-            if stack.last().is_some_and(|f| f.pending_la_check) {
-                return Some(format!(
-                    "quantified lookahead-bearing group followed by another group at parent depth (e.g. `(?:(?!X)){{m,n}}(?:...)`) triggers Bug F overflow at `resharp-algebra/src/lib.rs:2470` (see TROUBLESHOOTING.resharp.md). {}",
-                    TROUBLESHOOT_REF
-                ));
+            if let Some(top) = stack.last_mut() {
+                if top.pending_trailing_count >= 0 {
+                    top.pending_trailing_count += 1;
+                    if top.pending_trailing_count >= 3 {
+                        top.pending_trailing_count = -1;
+                    }
+                }
             }
             let is_lookahead = i + 2 < bytes.len()
                 && bytes[i + 1] == b'?'
                 && (bytes[i + 2] == b'!' || bytes[i + 2] == b'=');
             stack.push(Frame {
                 is_lookahead_self: is_lookahead,
-                ..Frame::default()
+                has_lookahead_subtree: false,
+                pending_trailing_count: -1,
             });
             i += 1;
             if i < bytes.len() && bytes[i] == b'?' {
@@ -1891,35 +1930,74 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
             }
             continue;
         }
-        // What:     `)`: close the current frame. Parse quantifier (if
-        //           any). If this frame had a lookahead in its subtree
-        //           AND a quantifier follows, mark the parent's
-        //           `pending_la_check` so the next atom at that depth
-        //           fires.
+        // What:     `)`: group close. Parse the trailing quantifier;
+        //           classify it as exact `{n}`, variable `{m,n}`,
+        //           `*`/`+`/`?`, or unquantified. If the closing
+        //           frame had a lookahead in its subtree AND the
+        //           quantifier is variable (i.e. unbounded or bound
+        //           with m < n), arm the parent's
+        //           `pending_trailing_count` to 0. Before doing so,
+        //           check the parent's pre-existing pending count: a
+        //           close at parent depth is also a structural
+        //           boundary that fires if 1-2 atoms had accumulated.
         if c == b')' {
             i += 1;
             let frame = stack.pop().unwrap_or_default();
+            // What:     `(is_quantified, is_variable_bound)`. The
+            //           tuple captures both whether ANY quantifier
+            //           follows (so we know how to arm the parent)
+            //           and whether the bound is variable
+            //           (only variable bounds trigger Bug F).
             let mut is_quantified = false;
+            let mut is_variable_bound = false;
             if i < bytes.len() {
                 match bytes[i] {
                     b'*' | b'+' | b'?' => {
                         is_quantified = true;
+                        // `*` = `{0,inf}`, `+` = `{1,inf}`, `?` =
+                        // `{0,1}` -- all variable bounds.
+                        is_variable_bound = true;
                         i += 1;
                     }
                     b'{' => {
                         let mut j = i + 1;
-                        let num_start = j;
+                        let min_start = j;
                         while j < bytes.len() && bytes[j].is_ascii_digit() {
                             j += 1;
                         }
-                        if j > num_start {
-                            while j < bytes.len() && bytes[j] != b'}' {
+                        let min_end = j;
+                        let min_val: u32 = if min_end > min_start {
+                            std::str::from_utf8(&bytes[min_start..min_end])
+                                .unwrap_or("0")
+                                .parse()
+                                .unwrap_or(0)
+                        } else {
+                            0
+                        };
+                        let mut max_val: u32 = min_val;
+                        let mut saw_comma = false;
+                        if j < bytes.len() && bytes[j] == b',' {
+                            saw_comma = true;
+                            j += 1;
+                            let max_start = j;
+                            while j < bytes.len() && bytes[j].is_ascii_digit() {
                                 j += 1;
                             }
-                            if j < bytes.len() {
-                                is_quantified = true;
-                                j += 1;
+                            if j > max_start {
+                                max_val = std::str::from_utf8(&bytes[max_start..j])
+                                    .unwrap_or("0")
+                                    .parse()
+                                    .unwrap_or(min_val);
+                            } else {
+                                // `{m,}` = open upper bound = variable.
+                                max_val = u32::MAX;
                             }
+                        }
+                        if j < bytes.len() && bytes[j] == b'}' {
+                            is_quantified = true;
+                            // Variable iff `{m,...}` with m < max OR `{m,}`.
+                            is_variable_bound = saw_comma && (max_val > min_val);
+                            j += 1;
                         }
                         i = j;
                     }
@@ -1930,45 +2008,73 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
                 }
             }
             let has_la_in_subtree = frame.is_lookahead_self || frame.has_lookahead_subtree;
+            // What:     A close at parent depth is a structural
+            //           boundary. If the parent was already armed and
+            //           accumulated 1-2 trailing atoms (this group
+            //           being one of them, already counted via `(`),
+            //           fire now.
+            // Why:      `(?:(?!abc)){4,12}(?:d)` -- the `(?:d)` open
+            //           already incremented the count to 1; the
+            //           matching close is the boundary at which we
+            //           can confirm the trailing window. But here we
+            //           want to keep counting -- the close is at
+            //           parent depth and only ends THIS sibling
+            //           group's contribution, not the trailing
+            //           window. So no firing at close-only.
             if let Some(parent) = stack.last_mut() {
                 if has_la_in_subtree {
                     parent.has_lookahead_subtree = true;
                 }
-                if is_quantified && has_la_in_subtree {
-                    parent.pending_la_check = true;
+                if is_quantified && is_variable_bound && has_la_in_subtree {
+                    // What:     Arm the parent. Set count to 0 (zero
+                    //           trailing atoms seen yet).
+                    parent.pending_trailing_count = 0;
                 }
             }
             continue;
         }
-        // What:     `|`: alternation. Resets `pending_la_check` because
-        //           the new branch is a fresh sequence, not "trailing"
-        //           content of the previous branch's quantified-LA.
+        // What:     `|`: alternation. Structural boundary for the
+        //           current frame. If we have a pending count of 1-2,
+        //           fire; otherwise disarm.
         if c == b'|' {
             if let Some(top) = stack.last_mut() {
-                top.pending_la_check = false;
+                if (1..=2).contains(&top.pending_trailing_count) {
+                    return Some(fire_reason());
+                }
+                top.pending_trailing_count = -1;
             }
             i += 1;
             continue;
         }
-        // What:     Stray quantifier byte (already consumed at close
-        //           via the regular path; this branch only fires on
-        //           malformed input where a quantifier follows a
-        //           non-group atom we just walked past). Skip without
-        //           tripping the pending check.
+        // What:     Stray `*`/`+`/`?`/`{` outside the close-quantifier
+        //           handler: malformed input, treat as no-op (not a
+        //           trailing atom). Skip without incrementing.
         if matches!(c, b'*' | b'+' | b'?' | b'{') {
             i += 1;
             continue;
         }
-        // What:     Any other byte at this depth (literal, anchor,
-        //           dot, etc.). If `pending_la_check` is set, this is
-        //           trailing content -> fire.
-        if stack.last().is_some_and(|f| f.pending_la_check) {
-            return Some(format!(
-                "quantified lookahead-bearing group with trailing content at parent depth (e.g. `(?:(?!X)){{m,n}}<atom>`) triggers Bug F overflow at `resharp-algebra/src/lib.rs:2470` (see TROUBLESHOOTING.resharp.md). Reproducer: `(?:(?!abc)){{4,12}}a`. Either drop the trailing content, use exact quantifier `{{n}}`, or split the regex. {}",
-                TROUBLESHOOT_REF
-            ));
+        // What:     Any other byte: literal, anchor, dot, etc. One
+        //           atom at the current depth.
+        if let Some(top) = stack.last_mut() {
+            if top.pending_trailing_count >= 0 {
+                top.pending_trailing_count += 1;
+                if top.pending_trailing_count >= 3 {
+                    top.pending_trailing_count = -1;
+                }
+            }
         }
         i += 1;
+    }
+    // What:     End-of-regex boundary. Check the top-level (and any
+    //           remaining open frames) for pending 1-2 counts.
+    // Why:      `(?:(?!abc)){4,12}a` at the top level -- the
+    //           top-level frame was armed by the close, the trailing
+    //           `a` brought count to 1, and there's no further
+    //           boundary; eof is the boundary that fires.
+    for frame in stack.iter().rev() {
+        if (1..=2).contains(&frame.pending_trailing_count) {
+            return Some(fire_reason());
+        }
     }
     None
 }

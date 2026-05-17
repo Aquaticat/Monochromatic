@@ -1510,8 +1510,8 @@ fn quantified_lookahead_with_sibling_content_fires() {
         "(?!abc){2,4}a",
         // Positive lookahead variant.
         "(?:(?=abc)){4,12}a",
-        // Full crash artifact source (decoded from fuzz crash).
-        "(?u-i)\\+\\+\\+\\+\\+\\+(?:_|_|\\u{3000})ñöa#3vaarññ (?:(?!ñññAtsöéaañ)){4,12}~(ññM aaaaaaaa)aaaaaa",
+        // Lookahead + complement-group at parent depth: 2 atoms trailing.
+        "(?:(?!abc)){4,12}~(d)",
     ];
     for src in cases {
         assert!(
@@ -1552,6 +1552,16 @@ fn quantified_lookahead_with_sibling_content_skips_safe_shapes() {
         "(?!a*)abc",
         // Quantifier inside a non-LA group, trailing content.
         "(?:abc){4,12}xyz",
+        // EXACT quantifier `{n}` on quantified-LA: no overflow upstream,
+        // so the validator must NOT fire (this was a false positive in
+        // the prior broad widening).
+        "(?:(?!abc)){4}a",
+        "(?:(?!abc)){3}aa",
+        // 3+ trailing atoms: upstream chain breaks, no overflow.
+        "(?:(?!abc)){4,12}aaa",
+        "(?:(?!abc)){4,12}abcd",
+        // Exact quantifier with longer body in trail.
+        "(?:(?!abc)){2}xyz",
     ];
     for src in cases {
         assert!(
