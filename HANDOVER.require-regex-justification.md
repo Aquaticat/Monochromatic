@@ -4,19 +4,32 @@ State of the lint-failure refactor triggered by the oxlint rule
 `no-restricted-syntax/require-regex-justification`. Resume from here after
 compaction.
 
-## Status: nearly complete, final verification pending
+## Status: sweep complete; 3 packages paused
 
-All packages directly inspected this session pass per-package
-`mise run //packages/<path>:lint` with 0 errors and 0 warnings, EXCEPT
-the final full-workspace `mise run //:lint` cross-check was interrupted
-before being captured. Run that first on resume.
+Full-workspace `mise run //:lint` cross-check is now green for every
+non-paused package. Final pass landed these fixes in this resume turn:
+doodle-widget, webapp-productivity/rss, typeface/aquaticat,
+webapp-content/ssg-test (with helper extraction to
+`postprocess-excludes.ts` to stay under the max-lines limit).
+
+Three packages are paused at the user's direction; each has a
+"Status: development paused" section in its README pointing back here:
+
+- `packages/webapp-edu/paper2vn` -- 5 sites
+- `packages/webapp-content/messages-demo` -- 13 sites
+- `packages/webapp-forge/server` -- 13 sites
+
+To resume any of those, apply the patterns documented below (the
+"Patterns established this session for common refactors" section
+covers every refactor shape used in this sweep) and remove the
+paused-status block from the README.
 
 ## Original task: done
 
 All 114 errors from `/tmp/pi-bash-25cddcf1ce4714e4.log` plus the
 follow-on packages surfaced by repeated `mise //:lint` runs are
-addressed. Tests pass for every package that has a `test:unit` task
-and was directly touched.
+addressed (modulo the 3 paused packages above). Tests pass for every
+package that has a `test:unit` task and was directly touched.
 
 ## All commits landed (in order)
 
