@@ -182,10 +182,13 @@ use resharp::Regex;
 //           wants the wrapper at the closure boundary for the
 //           future-`Send` requirement, so we keep the symmetric
 //           shape with `engine.rs`.
-// Why:      Resharp 0.5.3's `Regex::new` panics on some rule shapes
-//           the fuzzer discovered (e.g. `(?u:...~(\_)...)` triggers
-//           an arithmetic overflow inside resharp-algebra's
-//           `attempt_rw_concat_2`). Without `catch_unwind` the
+// Why:      Resharp 0.5.x through 0.6.x `Regex::new` panics on some
+//           rule shapes the fuzzer discovered (e.g. `(?:\w|$)(?:(?![1g]
+//           \_X)& a)` triggers an arithmetic overflow inside
+//           resharp-algebra's `attempt_rw_concat_2` at
+//           `resharp-algebra/src/lib.rs:2470`; verified unchanged
+//           between 0.5.3 and 0.6.0 by `/tmp/probe-resharp-06`).
+//           Without `catch_unwind` the
 //           panic aborts the scanner process during the parallel
 //           regex-compile phase, taking every other in-flight
 //           compile down with it. With `catch_unwind` the bad rule
@@ -514,8 +517,8 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         //           returns `Some(reason_string)` when the source
         //           contains a `~(...)` complement whose body holds
         //           a `\b`/`\B`/`^`/`$` or user-explicit lookaround
-        //           (resharp 0.5 rejects those shapes with opaque
-        //           errors). Returning early here surfaces an
+        //           (resharp 0.5.x through 0.6.x rejects those shapes
+        //           with opaque errors). Returning early here surfaces an
         //           actionable message instead of resharp's
         //           internal error.
         // Why:      Identical pre-flight to production. The fuzzer
@@ -531,14 +534,20 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         if let Some(reason) = lookaround_in_complement(src) {
             return Err(format!("(resharp): {}", reason));
         }
-        // What:     Two additional pre-validators for resharp 0.5.x
-        //           panic shapes the fuzzer discovered. Both are
+        // What:     Two additional pre-validators for resharp panic /
+        //           silent-corruption shapes the fuzzer discovered in
+        //           0.5.x and re-verified against 0.6.0. Both are
         //           defined alongside `lookaround_in_complement` in
         //           `engine.rs`; each returns `Some(reason)` when its
         //           known-bad shape is detected and `None` otherwise.
         //           Returning early surfaces an actionable message
         //           before resharp's `Regex::new` reaches the
-        //           panicking code path.
+        //           panicking / corrupting code path. Note: one of the
+        //           two shapes (`intersection_with_lookbehind`) panics
+        //           in `engine.rs:1020` behind a `debug_assert!`; in
+        //           release that path returns wrong matches instead of
+        //           panicking, so the pre-validator is the only defense
+        //           (catch_unwind cannot catch what does not panic).
         // Why:      `catch_unwind` below is the load-bearing safety
         //           net for arbitrary upstream panics, but the panic
         //           messages it surfaces are generic ("panic during
@@ -584,11 +593,14 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // What:     `catch_unwind(AssertUnwindSafe(|| Regex::new(src)))`.
         //           - The outer `catch_unwind` runs the inner closure
         //             under an unwind barrier. If `Regex::new` panics
-        //             during DFA construction (resharp-algebra 0.5.3
-        //             has an `attempt to add with overflow` panic at
-        //             `lib.rs:2470` reachable from some fuzzer-
-        //             discovered rule shapes), the panic is caught
-        //             and we surface a normal error string instead of
+        //             during DFA construction (resharp-algebra 0.5.x
+        //             through 0.6.x has an `attempt to add with overflow`
+        //             panic at `lib.rs:2470` reachable from some
+        //             fuzzer-discovered rule shapes; the
+        //             `overflow-checks = true` profile setting in
+        //             Cargo.toml is load-bearing for the panic to fire
+        //             in release), the panic is caught and we surface
+        //             a normal error string instead of
         //             aborting the scanner.
         //           - `AssertUnwindSafe(...)` wraps the closure so the
         //             type-checker accepts the closure's captures
@@ -627,7 +639,7 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
             Ok(Ok(re)) => Ok(CompiledRegex::Resharp(re)),
             Ok(Err(e)) => Err(format!("(resharp): {:?}", e)),
             Err(_) => Err(
-                "(resharp): panic during compile (upstream resharp 0.5.x bug). See TROUBLESHOOTING.resharp.md."
+                "(resharp): panic during compile (upstream resharp 0.5.x through 0.6.x bug). See TROUBLESHOOTING.resharp.md."
                     .to_string()
             ),
         };

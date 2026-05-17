@@ -1,10 +1,59 @@
 # HANDOVER.resharp-panic-fix
 
-State of the fix for two upstream `resharp` 0.5.x panics surfaced by
-`fuzz_extract_gate_soundness`. Written at compact threshold; the user
-has signalled **resharp 6.0 just released**, so the FIRST action after
-compact is to bump resharp and re-validate -- many of the 0.5.x-shape
-findings below may evaporate against 6.0.
+State of the fix for two upstream `resharp` panics surfaced by
+`fuzz_extract_gate_soundness`. Originally written against resharp 0.5.x;
+post-compact verification against resharp 0.6.0 (2026-05-16) confirmed
+**both panic shapes still exist unchanged at the same source lines**.
+The pre-validators and `catch_unwind` net both remain load-bearing.
+
+## Post-compact verification (resharp 0.6.0, 2026-05-16)
+
+- Bumped `resharp = "0.5.2"` → `resharp = "0.6"` in
+  `packages/cli/forbidden-strings/Cargo.toml`. Clean build (19s),
+  no API breakage; `Regex::new` / `find_all` / `is_match` / `Match`
+  signatures unchanged across the 0.5.x → 0.6.0 bump.
+- 121 unit + 19 integration tests all pass against 0.6.0.
+- Direct probe at `/tmp/probe-resharp-06` (resharp 0.6, RUSTFLAGS
+  matching cargo-fuzz defaults) reproduces BOTH crashes at the SAME
+  source lines:
+  - Shape 1 (compile, `attempt to add with overflow`):
+    `resharp-algebra/src/lib.rs:2470`
+  - Shape 2 (runtime, `unexpected end 0 > N`):
+    `resharp/src/engine.rs:1020`
+- Discovered during 0.6.0 probing: shape 2's panic is behind a
+  `debug_assert!`. With `debug_assertions` OFF (release default,
+  which is our build config), the path does NOT panic; instead it
+  returns corrupted matches. The probe shows 62 spurious matches on
+  a 64-byte input. **This means `catch_unwind` cannot help in
+  release for shape 2; the pre-validator is the only defense.**
+- Decision: KEEP both layers (pre-validators + catch_unwind +
+  profile settings). All three are load-bearing for at least one
+  shape; none are now-redundant.
+- Updated `TROUBLESHOOTING.resharp.md` to add Bug B (intersection
+  with lookbehind, silent-corruption-in-release) and Bug C
+  (intersection with `\w` and `$`, overflow-checks-load-bearing).
+- Version-pinned comments in
+  `packages/cli/forbidden-strings/src/{rules.rs,rules/engine.rs,
+  rules/engine_tests.rs,lib.rs}` updated to read "resharp 0.5.x
+  through 0.6.x" so future readers know the bugs are not fixed.
+
+Still outstanding (deferred during original session, not yet done):
+
+- Re-run fuzz with resharp 0.6.0 against preserved crash artifacts
+  at `/tmp/fs-crash-artifacts/` and document any NEW panic shapes
+  discovered against 0.6.0.
+- Soundness-by-revert validation (revert e49d8694, re-fuzz,
+  expect original soundness panic).
+- Update `HANDOVER.forbidden-strings-fuzzing.md` phase 11 status.
+- Remove `/tmp/fs-fuzz-validate` worktree and `/tmp/fs-crash-artifacts/`
+  after the above finishes.
+- The probe binary `/tmp/probe-resharp-06/` is preserved as a quick
+  reproducer; remove during final cleanup or keep for future resharp
+  bumps as a sanity check.
+
+---
+
+## Original session notes (against resharp 0.5.x, pre-compact)
 
 ## What the user asked for
 
@@ -29,16 +78,16 @@ findings below may evaporate against 6.0.
 - [x] Add tests for both crash shapes (6 new tests in
       `src/rules/engine_tests.rs`)
 - [x] Verify with mise tasks (build, test, lint, lint:clippy -- all pass)
+- [x] Commit fixes (committed as `23ca7a1f` -- single commit, not the
+      two-commit split originally planned, due to time pressure)
+- [x] Bump to resharp 0.6.0 and re-verify (post-compact 2026-05-16)
+- [x] Update `TROUBLESHOOTING.resharp.md` with 0.6.0 verification
+      and the two new Bug B / Bug C sections
 - [ ] Re-run both fuzz crash artifacts against the fix
-      **(SKIPPED: bumping resharp 6.0 will likely change crash shapes)**
-- [ ] Commit fixes as separate logical units
-      **(DEFERRED: see "Resume after compact" below)**
-- [ ] Update `TROUBLESHOOTING.resharp.md`
-      **(DEFERRED: write against resharp 6.0 shapes, not 0.5.x)**
-- [ ] Soundness-by-revert validation
-      **(DEFERRED: run after the resharp 6.0 bump)**
+      **(deferred to post-bump cleanup pass)**
+- [ ] Soundness-by-revert validation **(deferred)**
 - [ ] Update `HANDOVER.forbidden-strings-fuzzing.md` and clean up
-      worktree/artifacts **(DEFERRED)**
+      worktree/artifacts **(deferred)**
 
 ## What's landed in the working tree (uncommitted)
 

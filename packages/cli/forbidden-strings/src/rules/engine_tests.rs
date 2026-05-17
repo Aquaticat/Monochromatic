@@ -283,7 +283,8 @@ fn in_class_underscore_does_not_trigger() {
 
 // What:     Tests for `super::engine::lookaround_in_complement`. The
 //           function rejects patterns that would make resharp 0.5.x
-//           fail at compile time inside a `~(...)` body; this section
+//           through 0.6.x fail at compile time inside a `~(...)` body;
+//           this section
 //           covers every documented failing shape plus the boundary
 //           cases (escaped triggers, class interiors, anchors outside
 //           any complement) where the function MUST stay quiet.
@@ -484,8 +485,8 @@ fn plain_set_algebra_without_triggers_accepted() {
 #[test]
 fn rule_without_complement_accepted_even_with_lookaround() {
     // What:     Lookarounds outside any `~(...)` body compile cleanly
-    //           in resharp 0.5.x; the restriction is complement-of-
-    //           lookaround specifically.
+    //           in resharp 0.5.x through 0.6.x; the restriction is
+    //           complement-of-lookaround specifically.
     // Why:      Guard must not reject the prose-em-dash pattern
     //           verified in `prose_em_dash_pattern_triggers`.
     // TS map:   `assertAccepted("(?<=[a-z]) -- (?=[a-z])");`.
@@ -577,7 +578,8 @@ fn is_match_returns_result_ok_for_match_resharp() {
 }
 
 // What:     Tests for the pre-validators that detect resharp 0.5.x
-//           panic shapes (`intersection_with_lookbehind`,
+//           through 0.6.x panic / silent-corruption shapes
+//           (`intersection_with_lookbehind`,
 //           `intersection_with_word_end_alternation`). Imports run
 //           through `super::engine::*` rather than the crate-public
 //           re-exports because the pre-validators are sibling items

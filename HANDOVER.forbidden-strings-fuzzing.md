@@ -37,19 +37,19 @@ cfc33f68 refactor(forbidden-strings): extract library boundary with run_cli_from
 
 ## Plan phases — status
 
-| Phase | Plan §                                | Status        | Notes |
-| ----- | ------------------------------------- | ------------- | ----- |
-| 1     | Prepare editing context               | DONE          | dum-dum-non-ts SKILL.md read; package scouted. |
-| 2     | Decision doc                          | DONE          | `docs/decisions/forbidden-strings-fuzzing.md` committed (5ebe3ed1). |
-| 3     | Library extraction                    | DONE          | `src/lib.rs` + `run_cli_from_env()` committed (cfc33f68). Integration tests pass. |
-| 4     | Fuzz-only API surface                 | DONE          | `[features] fuzzing = []`, `src/fuzz_api.rs`, `compile_rule_src`, `load_ruleset_from_source`. Committed (4225d7ef). `cargo check --features fuzzing` passes. |
-| 5     | Scaffold cargo-fuzz                   | PARTIAL       | Workspace materialized via `cargo +nightly fuzz init --fuzzing-workspace=true`. Cargo.toml wired for the `fuzzing` feature + arbitrary + sha2 + panic=unwind. `fuzz/.gitignore` ignores corpus growth, keeps `seed-*` files. Root `.gitignore` re-includes `fuzz/Cargo.lock`. Committed (4a1fe951). **PLACEHOLDER `fuzz_targets/fuzz_target_1.rs` STILL PRESENT** — delete it when phase 7 lands. |
-| 6     | Shared structured generator           | TODO          | `fuzz/src/generators.rs` (the file does not exist yet — `src/` dir is unmaterialized). |
-| 7     | Prioritized fuzz targets              | TODO          | None of the 7 targets written. Each goes in `fuzz/fuzz_targets/`. |
-| 8     | Dictionary and curated seeds          | TODO          | `fuzz/dictionaries/forbidden-strings.dict` + `fuzz/src/bin/seed-from-tests.rs`. |
-| 9     | Tooling integration                   | TODO          | Root `mise.toml` `[tools]` `cargo:cargo-fuzz = "0.13.1"` not yet added. Per-package nightly pinning not yet added. Package `mise.toml` tasks not yet added. |
-| 10    | Documentation                         | TODO          | README/FUZZING/PERF updates. |
-| 11    | Final verification (incl. soundness-by-revert) | TODO | The soundness validation is the load-bearing Done criterion — proves `fuzz_extract_gate_soundness` is real. Use a disposable worktree, revert `e49d8694`, run for 120s, confirm failure with a redacted reproducer. |
+| Phase | Plan §                                         | Status  | Notes                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----- | ---------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Prepare editing context                        | DONE    | dum-dum-non-ts SKILL.md read; package scouted.                                                                                                                                                                                                                                                                                                                                                    |
+| 2     | Decision doc                                   | DONE    | `docs/decisions/forbidden-strings-fuzzing.md` committed (5ebe3ed1).                                                                                                                                                                                                                                                                                                                               |
+| 3     | Library extraction                             | DONE    | `src/lib.rs` + `run_cli_from_env()` committed (cfc33f68). Integration tests pass.                                                                                                                                                                                                                                                                                                                 |
+| 4     | Fuzz-only API surface                          | DONE    | `[features] fuzzing = []`, `src/fuzz_api.rs`, `compile_rule_src`, `load_ruleset_from_source`. Committed (4225d7ef). `cargo check --features fuzzing` passes.                                                                                                                                                                                                                                      |
+| 5     | Scaffold cargo-fuzz                            | PARTIAL | Workspace materialized via `cargo +nightly fuzz init --fuzzing-workspace=true`. Cargo.toml wired for the `fuzzing` feature + arbitrary + sha2 + panic=unwind. `fuzz/.gitignore` ignores corpus growth, keeps `seed-*` files. Root `.gitignore` re-includes `fuzz/Cargo.lock`. Committed (4a1fe951). **PLACEHOLDER `fuzz_targets/fuzz_target_1.rs` STILL PRESENT** — delete it when phase 7 lands. |
+| 6     | Shared structured generator                    | TODO    | `fuzz/src/generators.rs` (the file does not exist yet — `src/` dir is unmaterialized).                                                                                                                                                                                                                                                                                                            |
+| 7     | Prioritized fuzz targets                       | TODO    | None of the 7 targets written. Each goes in `fuzz/fuzz_targets/`.                                                                                                                                                                                                                                                                                                                                 |
+| 8     | Dictionary and curated seeds                   | TODO    | `fuzz/dictionaries/forbidden-strings.dict` + `fuzz/src/bin/seed-from-tests.rs`.                                                                                                                                                                                                                                                                                                                   |
+| 9     | Tooling integration                            | TODO    | Root `mise.toml` `[tools]` `cargo:cargo-fuzz = "0.13.1"` not yet added. Per-package nightly pinning not yet added. Package `mise.toml` tasks not yet added.                                                                                                                                                                                                                                       |
+| 10    | Documentation                                  | TODO    | README/FUZZING/PERF updates.                                                                                                                                                                                                                                                                                                                                                                      |
+| 11    | Final verification (incl. soundness-by-revert) | TODO    | The soundness validation is the load-bearing Done criterion — proves `fuzz_extract_gate_soundness` is real. Use a disposable worktree, revert `e49d8694`, run for 120s, confirm failure with a redacted reproducer.                                                                                                                                                                               |
 
 ## What's in the scaffolded fuzz/ directory right now
 
@@ -189,6 +189,24 @@ Run in order:
     - Confirm the target reports a soundness failure with a redacted
       reproducer (no raw secret-like bytes).
     - Remove the worktree.
+
+### Phase 11 partial status (post resharp 0.6.0 bump, 2026-05-16)
+
+- Steps 1-4 PASS against resharp 0.6.0 (121 unit + 19 integration tests,
+  zero lint warnings, zero clippy warnings).
+- Step 5-9 NOT YET RUN against 0.6.0; the rest of phase 11 stayed deferred
+  through the resharp-panic-fix commit (`23ca7a1f`) and the 0.6.0 bump
+  follow-up.
+- Step 10 (soundness-by-revert) STILL OUTSTANDING. The fuzz target file
+  set (`fuzz/fuzz_targets/*.rs`) and ignore rules are unchanged across
+  the 0.5.x → 0.6.0 bump.
+- During the 0.6.0 verification, a side-finding was recorded in
+  `HANDOVER.resharp-panic-fix.md`: shape 2 (`scan_fwd_all` panic at
+  `engine.rs:1020`) is behind a `debug_assert!` that compiles out in
+  release. The pre-validator therefore stays as the primary defense for
+  shape 2 in production; `catch_unwind` only matters in test/CI builds
+  where `debug_assertions` is on. See `TROUBLESHOOTING.resharp.md` Bug B
+  for details.
 
 ## Open questions / gotchas to remember
 

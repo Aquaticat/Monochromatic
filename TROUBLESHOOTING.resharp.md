@@ -1,12 +1,48 @@
-# Resharp: `\b`, `\B`, `^`, `$` inside complement bodies fail with `Algebra(UnsupportedPattern)`
+# Resharp: upstream bugs and forbidden-strings workarounds
 
-## Symptom
+This document tracks the upstream resharp bugs that `forbidden-strings`
+defends against, the consumer-side guards that block each, and the
+verification path for each finding. Three bugs are tracked, all
+confirmed unchanged from resharp 0.5.3 through 0.6.0:
 
-A rule passed to [`resharp`][resharp] 0.5.x (via the consumer crate
-`forbidden-strings` 0.1.0 in this workspace, but the bug is upstream)
-fails at compile time when its complement body contains a word-boundary
-or text-anchor assertion. The compile-time error surfaces with one of
-two variants depending on which rewrite path the offending atom takes:
+- **Bug A**: `\b`/`\B`/`^`/`$` inside `~(...)` complement bodies fail with
+  `Algebra(UnsupportedPattern)`. Defense: `lookaround_in_complement`.
+- **Bug B**: intersection (`&`) involving a lookbehind triggers a
+  `debug_assert!` in `scan_fwd_all` (`resharp/src/engine.rs:1020`).
+  In release the assertion is compiled out and the path silently returns
+  corrupted matches. Defense: `intersection_with_lookbehind` pre-validator.
+  `catch_unwind` does NOT help in release because there is no panic to catch.
+- **Bug C**: intersection (`&`) co-occurring with `\w` and `$` end-anchor
+  overflows in `attempt_rw_concat_2` (`resharp-algebra/src/lib.rs:2470`).
+  Panics in release ONLY when `overflow-checks = true` is set in the
+  release profile; without it the add wraps silently and corrupts the DFA.
+  Defense: `intersection_with_word_end_alternation` pre-validator plus
+  the `overflow-checks = true` + `panic = "unwind"` profile combo that
+  promotes the wrap to a catchable panic + the `catch_unwind` net in
+  `compile_rule_src` that converts it to a fail-closed `Err(String)`.
+
+Bugs B and C were discovered by `fuzz_extract_gate_soundness` against
+0.5.3 and re-verified panicking unchanged in 0.6.0 by a standalone probe
+binary built with the same `RUSTFLAGS='-C overflow-checks=on
+-C debug-assertions=on'` that cargo-fuzz uses by default.
+
+We do not file these bugs upstream (yet); see "Why we do not file these
+upstream" near the end. The `intersection_with_*` pre-validators in
+`packages/cli/forbidden-strings/src/rules/engine.rs` are the durable
+consumer-side fix.
+
+---
+
+## Bug A: `\b`, `\B`, `^`, `$` inside complement bodies fail with `Algebra(UnsupportedPattern)`
+
+### Symptom
+
+A rule passed to [`resharp`][resharp] 0.5.x through 0.6.x (via the
+consumer crate `forbidden-strings` 0.1.0 in this workspace, but the bug
+is upstream) fails at compile time when its complement body contains a
+word-boundary or text-anchor assertion. The compile-time error surfaces
+with one of two variants depending on which rewrite path the offending
+atom takes:
 
 ```text
 forbidden-strings: rule on line N (resharp): Algebra(UnsupportedPattern)
@@ -212,6 +248,11 @@ build targets, and a prefix-engine bugfix; none touch the `Kind::Compl`
 arm of `reverse`, which lives at `resharp-algebra/src/lib.rs:2234-2235`
 in 0.5.2 (previously quoted as `:2233-2239` against an earlier checkout;
 slight line drift only).
+
+Re-verified 2026-05-16 against `resharp 0.6.0` (published 2026-05-15)
+via the same probe path. The `Kind::Compl` arm of `reverse` and the
+parser rewrites at `resharp-parser/src/lib.rs:1305-1346`,
+`:1419-1424`, and `:1425-1441` are all unchanged in 0.6.0.
 
 Test harness (binary route):
 
@@ -540,5 +581,202 @@ Replace `\b` with literal whitespace or `\W` inside complement bodies;
 use `\A`/`\z` in place of `^`/`$` when whole-content semantics are
 acceptable. Move boundary assertions to the match site outside the
 complement when the rule's intent permits.
+
+---
+
+## Bug B: intersection with lookbehind triggers `debug_assert!` in `scan_fwd_all` (silent corruption in release)
+
+### Symptom
+
+A rule whose source contains both intersection (`&`) and a lookbehind
+assertion (`(?<=...)` or `(?<!...)`) at the same scope (i.e. both outside
+character classes, in the same compiled regex) and which is then matched
+against an input of about 64 bytes or longer causes one of two
+divergent outcomes depending on the build profile:
+
+```text
+# Test profile (debug-assertions ON):
+thread 'main' panicked at resharp/src/engine.rs:1020:
+unexpected end 0 > 1
+
+# Release profile (debug-assertions OFF, our forbidden-strings default):
+# (no panic; silently returns wrong/spurious matches)
+```
+
+The minimum reproducer captured by the `fuzz_extract_gate_soundness`
+fuzz target is the pattern `(?:(?=a)&(?<=_))` driven by a 64-byte input
+ending in `_`; the standalone probe at `/tmp/probe-resharp-06`
+reproduces this against resharp 0.5.3 and 0.6.0 with exactly the same
+behaviour (the only difference is the rendered `N` value in the
+`unexpected end 0 > N` panic message: 56 in 0.5.3, 1 in 0.6.0).
+
+### Root cause
+
+`resharp/src/engine.rs:1020` (line stable from 0.5.3 through 0.6.0):
+
+```rust
+debug_assert!(
+    l_max_end >= nulls[i],
+    "unexpected end {} > {}",
+    l_max_end,
+    nulls[i]
+);
+matches.push(Match {
+    start: nulls[i],
+    end: l_max_end,
+});
+```
+
+The DFA's intersection-of-(lookahead, lookbehind) construction produces
+a `nulls[i]` value that exceeds `l_max_end` on certain input shapes.
+The `debug_assert!` catches this in test/fuzz builds but is compiled
+out of release; the path falls through and the `matches.push` records
+a `Match { start: nulls[i], end: l_max_end }` with `start > end`.
+Downstream consumers (including our `scan.rs`) then see absurd ranges
+or stack of spurious matches; in our probe a 64-byte input produced
+62 garbage matches.
+
+The intersection-of-(lookahead, lookbehind) and intersection-of-
+(lookbehind, lookahead) shapes are algebraically symmetric to resharp
+but the bug only fires when a lookbehind is one of the intersection
+operands; pure lookahead intersections do not trigger.
+
+### Defense
+
+The pre-validator `intersection_with_lookbehind` in
+`packages/cli/forbidden-strings/src/rules/engine.rs` walks the source
+byte-by-byte tracking character-class membership and rejects any rule
+where `&` and `(?<=` (or `(?<!`) co-occur outside any `[...]`. The
+rejection produces an actionable error pointing here.
+
+The `catch_unwind` net in `CompiledRegex::find_all` exists primarily
+for test/CI runs (debug-assertions on) and as a future-regression hedge;
+it does not help in release because `debug_assert!` is compiled out and
+no panic fires for the corruption path to catch.
+
+Enabling `debug-assertions = true` in `[profile.release]` is deliberately
+NOT done: `regex`, `ignore`, and `rayon` have hot-path debug_asserts and
+the perf cost was not measured. The pre-validator covers known shapes;
+the fuzz target covers unknown variants. New variants would be caught
+by fuzzing (which runs with debug-assertions on by default) before they
+reach a release run.
+
+### Verification
+
+```bash
+# Run inside the probe project at /tmp/probe-resharp-06/:
+RUSTFLAGS='-C overflow-checks=on -C debug-assertions=on' \
+  cargo run --release
+```
+
+The probe constructs `resharp::Regex::new("(?:(?=a)&(?<=_))")` directly
+(bypassing `compile_rule_src` and the pre-validator) then calls
+`find_all` on a 64-byte buffer ending in `_`. Output line for shape 2
+reads `[shape2-findall ...] PANIC (resharp 0.6 still crashes)` when
+debug-assertions are on; reads `[shape2-findall ...] OK (find_all
+Ok(62 matches))` when debug-assertions are off.
+
+The in-tree regression test
+`find_all_catches_runtime_panic_via_catch_unwind` in
+`packages/cli/forbidden-strings/src/rules/engine_tests.rs` exercises
+the same shape through `CompiledRegex::find_all` and asserts no panic
+escapes; it runs under `cargo test`'s default (debug-assertions on)
+so it does catch the panic that release would silently corrupt.
+
+---
+
+## Bug C: intersection with `\w` and `$` end-anchor overflows in `attempt_rw_concat_2`
+
+### Symptom
+
+A rule whose source contains intersection (`&`), `\w` shorthand, and
+the `$` end-anchor at the same scope panics at compile time during
+`Regex::new` when the release profile has `overflow-checks = true`:
+
+```text
+thread 'main' panicked at resharp-algebra/src/lib.rs:2470:
+attempt to add with overflow
+```
+
+When the release profile has `overflow-checks = false` (cargo's
+default), the add silently wraps and the constructed regex
+silently misbehaves at match time. Either outcome is a soundness
+problem for a CI gate. The minimum reproducer is the pattern
+`(?:\w|$)(?:(?![1g]\_X)& a)`; the standalone probe at
+`/tmp/probe-resharp-06` reproduces this against resharp 0.5.3 and
+0.6.0 with identical panic message and source line.
+
+### Root cause
+
+`resharp-algebra/src/lib.rs:2470` (line stable from 0.5.3 through
+0.6.0) inside `attempt_rw_concat_2` does a `+` on `usize` values
+derived from a node-tree traversal where one operand can be near
+`usize::MAX` for the algebra rewrites triggered by intersection-of-
+(word-shorthand-alternation, end-anchor-bearing-expression). The
+overflow is a true bug, not a sentinel; the wrap produces a DFA that
+fails to match content that should match (fail-open).
+
+### Defense
+
+The pre-validator `intersection_with_word_end_alternation` in
+`packages/cli/forbidden-strings/src/rules/engine.rs` walks the source
+byte-by-byte tracking character-class membership and rejects any rule
+where `&`, `\w`, and `$` co-occur outside any `[...]`. The rejection
+produces an actionable error pointing here.
+
+The `catch_unwind` net in `compile_rule_src` exists as belt-and-
+suspenders: if a new shape evades the pre-validator and `overflow-
+checks = true` is set (it is, in our `Cargo.toml`), the resulting
+panic gets converted to a fail-closed `Err(String)` instead of
+aborting the scanner process or returning wrong results.
+
+The release profile's `panic = "unwind"` and `overflow-checks = true`
+settings are both load-bearing: `panic = "abort"` would skip the
+unwind barrier and abort the process before `catch_unwind` runs;
+`overflow-checks = false` (cargo's default) would let the add wrap
+silently, producing the fail-open behaviour with no panic to catch.
+
+### Verification
+
+The probe binary at `/tmp/probe-resharp-06` calls
+`resharp::Regex::new("(?:\\w|$)(?:(?![1g]\\_X)& a)")` directly. With
+`overflow-checks = true` in the project's release profile (or via
+`RUSTFLAGS='-C overflow-checks=on'`), the call panics with the message
+above. With `overflow-checks = false` the call returns Ok but the
+constructed regex misbehaves.
+
+The in-tree regression test `compile_rule_src_does_not_panic_on_known_
+bad_shapes` exercises the same shape through `compile_rule_src` and
+asserts the pre-validator catches it before resharp sees it.
+
+---
+
+## Why we do not file Bugs B and C upstream (yet)
+
+Same five-constraint policy applies (see Bug A's "Why we do not file
+this upstream" subsection). For Bug B (debug_assert with release
+silent-corruption) and Bug C (algebra arithmetic overflow), the
+constraints land:
+
+1. **Upstream's fault?** Yes for both. A `debug_assert!` whose absence
+   produces silently corrupted output is a defect; an algebra add that
+   overflows for a parser-reachable input shape is a defect.
+2. **Can upstream fix?** Yes. Bug B is a one-line bound check that
+   needs to fire in release (replace `debug_assert!` with `assert!`,
+   or fix the underlying invariant so the assertion never trips).
+   Bug C is locating which add overflows in `attempt_rw_concat_2`
+   and either widening the type or adding a checked-add path.
+3. **Supporting this use case?** Mixed. Intersection (`&`) is a
+   headline feature of resharp; combining it with lookarounds is the
+   natural way to write the "match A but not when X" exclusion pattern.
+   No documented restriction.
+4. **Likely to fix?** Unknown. The 0.6.0 release did not touch either
+   of these lines (verified by diffing the relevant source paths).
+5. **Have we prototyped a minimal fix?** No. We have minimum
+   reproducers and source-line citations but no candidate patch.
+
+We fail constraint 5 clearly. We defer filing until a minimal-patch
+prototype exists. Until then the pre-validators and profile settings
+are the durable consumer-side fix.
 
 [resharp]: https://github.com/ieviev/resharp

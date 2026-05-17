@@ -44,19 +44,23 @@ ignore = "0.4"
 memchr = "2"
 rayon = "1"
 regex = "1"
-resharp = "0.5.2"
+resharp = "0.6"
 
 # Why `panic = "unwind"` and `overflow-checks = true` instead of the smaller
 # "abort" + default-off overflow checks:
 #
 # `src/rules/engine.rs` and `src/rules.rs` use `std::panic::catch_unwind`
-# to intercept panics inside the resharp 0.5.x algebra / engine, which
-# panics on a handful of fuzzer-discovered rule shapes:
+# to intercept panics inside the resharp algebra / engine, which still
+# panics on a handful of fuzzer-discovered rule shapes (verified
+# unchanged from 0.5.3 through 0.6.0 at the same source lines:
+# `resharp-algebra/src/lib.rs:2470` and `resharp/src/engine.rs:1020`):
 #   - `attempt to add with overflow` inside resharp-algebra
 #     `attempt_rw_concat_2` (compile path; `Regex::new` on shapes like
-#     `(?u:...~(\_)...)` with nested constructs);
-#   - `unexpected end 0 > 56` inside resharp `scan_fwd_all` (runtime
-#     path; `find_all` on shapes like `(?:lookahead&lookbehind)`).
+#     `(?:\w|$)(?:(?![1g]\_X)& a)` mixing intersection (`&`),
+#     `\w` shorthand, and an end-anchor alternation);
+#   - `unexpected end 0 > N` inside resharp `scan_fwd_all` (runtime
+#     path; `find_all` on shapes like `(?:(?=a)&(?<=_))` mixing
+#     intersection (`&`) with lookbehind, content >= 64 bytes).
 #
 # Two profile settings are load-bearing here:
 #
@@ -75,6 +79,19 @@ resharp = "0.5.2"
 #    panic that catch_unwind can intercept and convert to "rule=N
 #    engine error", which `scan.rs` already emits as a fail-closed
 #    synthetic hit.
+#
+# Note about `debug-assertions`: deliberately left at the release default
+# of OFF. The second crash shape (`engine.rs:1020`) lives behind a
+# `debug_assert!`. With debug-assertions OFF in release, that shape does
+# NOT panic; instead it returns wrong (corrupted) matches -- the
+# probe in /tmp/probe-resharp-06 demonstrates 62 spurious matches on a
+# 64-byte input for shape `(?:(?=a)&(?<=_))`. The pre-validator
+# `intersection_with_lookbehind` in `src/rules/engine.rs` is therefore
+# load-bearing for that shape: it must reject the input BEFORE resharp
+# sees it, because the catch_unwind net cannot help when there is no
+# panic. We do not turn debug-assertions on in release because the
+# `regex`, `ignore`, and `rayon` deps have hot-path debug_asserts and
+# the perf cost was not measured to be acceptable on the CI gate.
 #
 # See TROUBLESHOOTING.resharp.md for the full panic shapes and the
 # pre-validator coverage in `src/rules.rs` / `src/rules/engine.rs`.

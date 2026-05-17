@@ -595,7 +595,7 @@ pub fn run_cli_from_env() -> Result<i32, String> {
                     "    # ...                  -> comment\n",
                     "    Empty line             -> skipped\n",
                     "\n",
-                    "RESHARP 0.5.x LIMITATIONS:\n",
+                    "RESHARP LIMITATIONS (0.5.x through 0.6.x):\n",
                     "    A `~(...)` complement body cannot contain `\\b`, `\\B`, `^`, `$`,\n",
                     "    or any user-explicit lookaround. Use `\\W` or literal whitespace for\n",
                     "    `\\b`; `\\A`/`\\z` for `^`/`$` when whole-content semantics fit; or\n",

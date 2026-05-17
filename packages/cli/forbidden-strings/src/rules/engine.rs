@@ -52,16 +52,20 @@ use resharp::Regex;
 //             references); `panic::resume_unwind` (re-throws a caught
 //             payload -- we never want this here because we are the
 //             top of the engine boundary, not a transparent passthrough).
-// Why:      Resharp 0.5.3 panics on a handful of fuzzer-discovered
-//           rule shapes -- one during `Regex::new` (algebra
-//           overflow), one during `find_all` (engine "unexpected
-//           end" assertion). Both crashes are inside upstream code
-//           we do not own. `Result::map_err` cannot catch panics;
-//           only `catch_unwind` can. Without this wrapper an
-//           upstream panic propagates through our process, libFuzzer
-//           records a crash, and (more importantly) a production
-//           scanner run on the same rule + content pair aborts the
-//           process instead of degrading gracefully to "skip this
+// Why:      Resharp 0.5.x through 0.6.x panics on a handful of fuzzer-
+//           discovered rule shapes -- one during `Regex::new` (algebra
+//           overflow at `resharp-algebra/src/lib.rs:2470`), one during
+//           `find_all` (engine "unexpected end" assertion at
+//           `resharp/src/engine.rs:1020`, behind a `debug_assert!`
+//           that fires in test profile but is compiled out of release;
+//           release silently returns corrupted matches instead).
+//           Both crashes are inside upstream code we do not own.
+//           `Result::map_err` cannot catch panics; only `catch_unwind`
+//           can. Without this wrapper an upstream panic propagates
+//           through our process, libFuzzer records a crash, and
+//           (more importantly) a production scanner run on the same
+//           rule + content pair aborts the process instead of
+//           degrading gracefully to "skip this
 //           rule on this file". The scanner is a CI gate: an aborted
 //           run silently passes the gate.
 // TS map:   `try { ... } catch (e) { ... }` -- TS exceptions are
@@ -189,10 +193,13 @@ impl CompiledRegex {
             // What:     `catch_unwind(AssertUnwindSafe(|| re.find_all(content)))`.
             //           - The outer `catch_unwind` runs the inner
             //             closure with an unwind barrier; any panic
-            //             inside (resharp 0.5.3 has a `panic!` in
-            //             `scan_fwd_all` at `engine.rs:1020` that fires
-            //             on `(?:lookahead&lookbehind)` shapes) is
-            //             intercepted and returned as the outer `Err`
+            //             inside (resharp 0.5.x through 0.6.x has a
+            //             `debug_assert!` in `scan_fwd_all` at
+            //             `engine.rs:1020` that fires on
+            //             `(?:lookahead&lookbehind)` shapes -- only
+            //             when `debug_assertions` is on; in release
+            //             that path returns corrupted matches instead)
+            //             is intercepted and returned as the outer `Err`
             //             arm of a `Result<_, Box<dyn Any + Send>>`.
             //           - `AssertUnwindSafe(...)` wraps the closure so
             //             the compiler accepts that we have manually
@@ -422,7 +429,7 @@ const TROUBLESHOOT_REF: &str = "See TROUBLESHOOTING.resharp.md for workarounds."
 
 // What:     `pub fn lookaround_in_complement(src: &str) -> Option<String>`
 //           returns `Some(reason)` when `src` contains a `~(...)` whose
-//           body holds an atom that resharp 0.5.x cannot handle, and
+//           body holds an atom that resharp 0.5.x through 0.6.x cannot handle, and
 //           `None` otherwise. The detected atoms are:
 //             - `\b` (rewritten to a lookaround pair, then refused by
 //               the reverse pass at `resharp-algebra/src/lib.rs:2234`)
@@ -511,13 +518,13 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
                 match bytes[i + 1] {
                     b'b' => {
                         return Some(format!(
-                            "complement body contains \\b; resharp 0.5.x rewrites it to an internal lookaround which the reverse pass refuses. Replace with \\W (consumes a char on each side) or literal whitespace, or move the boundary check outside the complement. {}",
+                            "complement body contains \\b; resharp 0.5.x through 0.6.x rewrites it to an internal lookaround which the reverse pass refuses. Replace with \\W (consumes a char on each side) or literal whitespace, or move the boundary check outside the complement. {}",
                             TROUBLESHOOT_REF
                         ));
                     }
                     b'B' => {
                         return Some(format!(
-                            "complement body contains \\B; resharp 0.5.x rejects it at parse time when its neighbours are unclassifiable. Restructure the rule to avoid \\B inside the complement. {}",
+                            "complement body contains \\B; resharp 0.5.x through 0.6.x rejects it at parse time when its neighbours are unclassifiable. Restructure the rule to avoid \\B inside the complement. {}",
                             TROUBLESHOOT_REF
                         ));
                     }
@@ -559,13 +566,13 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
             if in_complement {
                 if c == b'^' {
                     return Some(format!(
-                        "complement body contains ^; resharp 0.5.x rewrites it to a lookbehind in default-multiline mode, which the reverse pass refuses. Use \\A for whole-content start-anchor semantics, or move the anchor outside the complement. {}",
+                        "complement body contains ^; resharp 0.5.x through 0.6.x rewrites it to a lookbehind in default-multiline mode, which the reverse pass refuses. Use \\A for whole-content start-anchor semantics, or move the anchor outside the complement. {}",
                         TROUBLESHOOT_REF
                     ));
                 }
                 if c == b'$' {
                     return Some(format!(
-                        "complement body contains $; resharp 0.5.x rewrites it to a lookahead in default-multiline mode, which the reverse pass refuses. Use \\z for whole-content end-anchor semantics, or move the anchor outside the complement. {}",
+                        "complement body contains $; resharp 0.5.x through 0.6.x rewrites it to a lookahead in default-multiline mode, which the reverse pass refuses. Use \\z for whole-content end-anchor semantics, or move the anchor outside the complement. {}",
                         TROUBLESHOOT_REF
                     ));
                 }
@@ -624,10 +631,13 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
 }
 
 // What:     `pub fn intersection_with_lookbehind(src: &str) -> Option<String>`
-//           detects rule shapes that match resharp 0.5.x's
-//           lookahead-vs-lookbehind intersection panic at
-//           `resharp-0.5.3/src/engine.rs:1020` (`unexpected end
-//           0 > N`). The minimal reproducer is
+//           detects rule shapes that match resharp 0.5.x through 0.6.x's
+//           lookahead-vs-lookbehind intersection debug_assert at
+//           `resharp/src/engine.rs:1020` (`unexpected end 0 > N`,
+//           where N varies by content length: 56 in 0.5.3, 1 in 0.6.0,
+//           the assertion lives behind `debug_assert!` so release
+//           returns corrupted matches silently instead). The minimal
+//           reproducer is
 //           `(?:(?=a)&(?<=_))` driven against a content slice of
 //           at least 64 bytes; the panic fires inside
 //           `scan_fwd_all` during the runtime forward scan, not
@@ -724,7 +734,7 @@ pub fn intersection_with_lookbehind(src: &str) -> Option<String> {
             }
             if has_intersection && has_lookbehind {
                 return Some(format!(
-                    "intersection (`&`) involving a lookbehind triggers a known resharp 0.5.x panic in `scan_fwd_all` (`engine.rs:1020`). Rewrite the rule to lift the lookbehind outside the intersection (e.g. anchor it as a prefix), or replace the lookbehind with an explicit consume of the preceding byte. {}",
+                    "intersection (`&`) involving a lookbehind triggers a known resharp 0.5.x through 0.6.x debug_assert in `scan_fwd_all` (`engine.rs:1020`); behind a `debug_assert!` so release silently returns wrong matches. Rewrite the rule to lift the lookbehind outside the intersection (e.g. anchor it as a prefix), or replace the lookbehind with an explicit consume of the preceding byte. {}",
                     TROUBLESHOOT_REF
                 ));
             }
@@ -735,11 +745,13 @@ pub fn intersection_with_lookbehind(src: &str) -> Option<String> {
 }
 
 // What:     `pub fn intersection_with_word_end_alternation(src: &str) -> Option<String>`
-//           detects rule shapes that match resharp 0.5.x's
+//           detects rule shapes that match resharp 0.5.x through 0.6.x's
 //           algebra arithmetic-overflow panic at
-//           `resharp-algebra-0.5.3/src/lib.rs:2470`
+//           `resharp-algebra/src/lib.rs:2470`
 //           (`attempt to add with overflow` inside
-//           `attempt_rw_concat_2`). The minimum bisected
+//           `attempt_rw_concat_2`; the `overflow-checks = true`
+//           profile setting in our Cargo.toml is load-bearing for
+//           this panic to fire in release). The minimum bisected
 //           reproducer is `(?:\w|$)(?:(?![1g]\_X)& a)`: an
 //           alternation containing both `\w` and the end-anchor
 //           `$` concatenated with an intersection whose operand
@@ -813,7 +825,7 @@ pub fn intersection_with_word_end_alternation(src: &str) -> Option<String> {
             }
             if has_intersection && has_word_shorthand && has_end_anchor {
                 return Some(format!(
-                    "intersection (`&`) co-occurring with `\\w` shorthand and `$` end-anchor triggers a known resharp 0.5.x arithmetic-overflow panic in `attempt_rw_concat_2` (`resharp-algebra/src/lib.rs:2470`). Rewrite the rule to avoid this combination -- typically by replacing `\\w` with an explicit character class (`[A-Za-z0-9_]`) or by lifting the end-anchor outside the intersection. {}",
+                    "intersection (`&`) co-occurring with `\\w` shorthand and `$` end-anchor triggers a known resharp 0.5.x through 0.6.x arithmetic-overflow panic in `attempt_rw_concat_2` (`resharp-algebra/src/lib.rs:2470`). Rewrite the rule to avoid this combination -- typically by replacing `\\w` with an explicit character class (`[A-Za-z0-9_]`) or by lifting the end-anchor outside the intersection. {}",
                     TROUBLESHOOT_REF
                 ));
             }
