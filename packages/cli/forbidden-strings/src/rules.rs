@@ -71,6 +71,7 @@ pub use engine::{
     lookaround_in_complement,
     nested_grouped_quantifier,
     nested_lookahead_in_quantified_group,
+    quantified_lookahead_with_sibling_content,
     requires_resharp,
     stacked_quantifier,
     CompiledRegex,
@@ -722,6 +723,38 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
         // if (reason) throw new Error(`(resharp): ${reason}`);
         // ```
         if let Some(reason) = nested_lookahead_in_quantified_group(src) {
+            return Err(format!("(resharp): {}", reason));
+        }
+        // What:     `quantified_lookahead_with_sibling_content` catches a
+        //           second Bug F shape: `(?:(?!X)){m,n}<atom>` (a
+        //           single variable-quantified lookahead-bearing
+        //           group followed by any content at parent depth).
+        //           Bisected from `crash-a219859099426658d70e90bc97f560b85f2cf256`
+        //           which minimised to `(?:(?!abc)){4,12}a`. Same
+        //           overflow path at `resharp-algebra/src/lib.rs:2470`
+        //           as the nested-quant shape but a different upstream
+        //           trigger (the trailing content feeds into the
+        //           lookahead-chain derivative without an intermediate
+        //           `Quant` wrap). The validator is intentionally
+        //           broad: it false-positives on the safe "exact-quant"
+        //           shape `(?:(?!X)){n}<atom>` and the
+        //           "long-uniform-trail" shape `(?:(?!X)){m,n}aaa`,
+        //           but full coverage is required to keep the fuzz
+        //           target moving past Bug F. See
+        //           HANDOVER.forbidden-strings-fuzzing.md for the
+        //           trade-off discussion.
+        // Why:      Without this guard the soundness-by-revert phase
+        //           11 fuzz run halts on the trailing-content Bug F
+        //           shape before reaching the (?u)-Unicode case-fold
+        //           soundness panic the target was built to catch.
+        // TS map:   `const reason = quantifiedLookaheadWithSiblingContent(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const reason = quantifiedLookaheadWithSiblingContent(src);
+        // if (reason) throw new Error(`(resharp): ${reason}`);
+        // ```
+        if let Some(reason) = quantified_lookahead_with_sibling_content(src) {
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `Regex::new(src).map(CompiledRegex::Resharp).map_err(...)`.

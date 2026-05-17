@@ -68,6 +68,7 @@ pub use crate::rules::{
     nested_grouped_quantifier,
     nested_lookahead_in_quantified_group,
     parse_rule_source,
+    quantified_lookahead_with_sibling_content,
     quantifier_is_required,
     requires_resharp,
     skip_any_quantifier,

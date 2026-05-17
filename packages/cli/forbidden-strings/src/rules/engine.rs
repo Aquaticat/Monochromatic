@@ -1728,6 +1728,251 @@ pub fn nested_lookahead_in_quantified_group(src: &str) -> Option<String> {
     None
 }
 
+// What:     `pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String>`
+//           detects a second Bug F shape that the narrower
+//           `nested_lookahead_in_quantified_group` misses: a single
+//           variable-quantified lookahead-bearing group followed by
+//           ANY content at parent depth. Bisected from a fuzz crash
+//           where `crash-a219859099426658d70e90bc97f560b85f2cf256`
+//           decoded to `... (?:(?!ñññAtsöéaañ)){4,12}~(ññM aaaaaaaa)
+//           aaaaaa` and minimised to `(?:(?!abc)){4,12}a`.
+//
+//           PANIC shapes (probes in
+//           `/tmp/probe-slow-unit/src/bin/bisect_f{7,8}.rs`):
+//             - `(?:(?!abc)){4,12}a` (variable quant + 1 trailing char)
+//             - `(?:(?!abc)){4,12}aa` (2 trailing chars)
+//             - `(?:(?!abc)){4,12}\?` (escape trail)
+//             - `(?:(?!abc)){4,12}(?:d)` (group trail)
+//             - `(?:(?!abc)){4,12}[d]` (class trail)
+//             - `(?:(?!abc)){2,3}a` / `{4,5}a` / `{1,4}a` (any variable
+//               bound)
+//             - `(?!abc){4,12}a` (bare lookahead, no `(?:)` wrap)
+//             - `a(?:(?!abc)){4,12}a` (leading + trailing)
+//
+//           OK shapes (validator accepts these as false positives in
+//           exchange for full coverage):
+//             - `(?:(?!abc)){4,12}` alone (no trailing)
+//             - `a(?:(?!abc)){4,12}` (leading only, no trailing)
+//             - `(?:(?!abc)){4,12}aaa` and longer (3+ trailing chars
+//               of the same byte appears to break the chain upstream)
+//             - `(?:(?!abc)){2}a` / `{3}a` / `{4}a` (exact quant, no
+//               range)
+//
+//           Detection rule: fire if a quantified group containing a
+//           lookahead in its subtree is followed by any non-`)` /
+//           non-`|` byte at parent depth. The walker sets a
+//           per-frame `pending_la_check` flag on the parent when
+//           such a group closes; any subsequent atom-byte (literal,
+//           escape, class open, group open) at that depth fires.
+//           Alternation `|` resets the flag because it begins a
+//           new branch.
+//
+//           This rule false-positives on the "exact-quant" and
+//           "long-uniform-trail" safe shapes above; the user
+//           explicitly endorsed this trade-off ("just widen broadly:
+//           fire on any quantified-lookahead-bearing group that has
+//           any sibling content at parent depth. Accept false
+//           positives") because the alternative -- letting fuzz keep
+//           hitting Bug F shapes -- blocks soundness-by-revert phase
+//           11. See HANDOVER.forbidden-strings-fuzzing.md and
+//           HANDOVER.resharp-panic-fix.md.
+// Why:      `nested_lookahead_in_quantified_group` only catches the
+//           DOUBLE-quantified nesting (`(?:(?:(?!X)){m,n}){p,q}`). The
+//           SINGLE-quantified-with-trailing shape
+//           (`(?:(?!X)){m,n}<atom>`) reaches the same overflow path
+//           in `resharp-algebra/src/lib.rs:2470` but through a
+//           different upstream code path -- the trailing content
+//           feeds into the lookahead-chain derivative without an
+//           intermediate `Quant` wrap, and the `tail_rel` saturates
+//           identically. Without this pre-validator the fuzz target
+//           catches the panic via `catch_unwind` only on lucky
+//           builds; libfuzzer's panic hook calls `abort` first on
+//           most, halting the run.
+// TS map:   `function quantifiedLookaheadWithSiblingContent(src: string): string | null`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function quantifiedLookaheadWithSiblingContent(src: string): string | null {
+//   // walk bytes; per-frame `pendingLaCheck` flag set on parent when
+//   // a quantified-lookahead-bearing child closes; fire on the next
+//   // atom byte at that depth; reset on `|`.
+// }
+// ```
+pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
+    let bytes = src.as_bytes();
+    let mut i = 0usize;
+    let mut in_class = false;
+    // What:     `struct Frame { ... }`. One per open group; pushed at
+    //           `(`, popped at `)`. The top entry represents the
+    //           top-level (implicit) frame so trailing content at the
+    //           regex root also fires.
+    // Why:      A quantified-lookahead at the top level
+    //           (`(?:(?!abc)){4,12}a` with no enclosing group) triggers
+    //           the same overflow, so the walker needs a root frame to
+    //           record `pending_la_check`.
+    #[derive(Default, Clone)]
+    struct Frame {
+        is_lookahead_self: bool,
+        has_lookahead_subtree: bool,
+        pending_la_check: bool,
+    }
+    let mut stack: Vec<Frame> = vec![Frame::default()];
+    while i < bytes.len() {
+        let c = bytes[i];
+        // What:     Inside a character class: consume bytes literally
+        //           until the closing `]`. The class itself was already
+        //           recorded as content at the parent depth when `[`
+        //           was seen.
+        if in_class {
+            if c == b']' {
+                in_class = false;
+            }
+            i += 1;
+            continue;
+        }
+        // What:     Escape `\X`: counts as one atom at current depth.
+        //           If the current frame has `pending_la_check` set,
+        //           this is "trailing content" -> fire.
+        if c == b'\\' {
+            if stack.last().is_some_and(|f| f.pending_la_check) {
+                return Some(format!(
+                    "quantified lookahead-bearing group with trailing content at parent depth (e.g. `(?:(?!X)){{m,n}}<atom>`) triggers the same resharp 0.5.x through 0.6.x `attempt to add with overflow` panic at `resharp-algebra/src/lib.rs:2470` as the nested-quant shape (see TROUBLESHOOTING.resharp.md Bug F). The lookahead-chain `rel` saturates to u32::MAX and the next add overflows under debug assertions; production builds silently wrap to 0. Reproducer: `(?:(?!abc)){{4,12}}a`. Either drop the trailing content, use an exact quantifier `(?:(?!X)){{n}}<atom>` (single-bound), or split the regex. {}",
+                    TROUBLESHOOT_REF
+                ));
+            }
+            i += 2;
+            continue;
+        }
+        // What:     `[`: character class. Counts as atom at parent
+        //           depth.
+        if c == b'[' {
+            if stack.last().is_some_and(|f| f.pending_la_check) {
+                return Some(format!(
+                    "quantified lookahead-bearing group with trailing content at parent depth (e.g. `(?:(?!X)){{m,n}}[...]`) triggers Bug F overflow at `resharp-algebra/src/lib.rs:2470` (see TROUBLESHOOTING.resharp.md). {}",
+                    TROUBLESHOOT_REF
+                ));
+            }
+            in_class = true;
+            i += 1;
+            continue;
+        }
+        // What:     `(`: open a new group. Counts as atom at parent
+        //           depth from the perspective of trailing-content
+        //           detection (a subgroup after the quantified-LA group
+        //           is still content at that depth).
+        if c == b'(' {
+            if stack.last().is_some_and(|f| f.pending_la_check) {
+                return Some(format!(
+                    "quantified lookahead-bearing group followed by another group at parent depth (e.g. `(?:(?!X)){{m,n}}(?:...)`) triggers Bug F overflow at `resharp-algebra/src/lib.rs:2470` (see TROUBLESHOOTING.resharp.md). {}",
+                    TROUBLESHOOT_REF
+                ));
+            }
+            let is_lookahead = i + 2 < bytes.len()
+                && bytes[i + 1] == b'?'
+                && (bytes[i + 2] == b'!' || bytes[i + 2] == b'=');
+            stack.push(Frame {
+                is_lookahead_self: is_lookahead,
+                ..Frame::default()
+            });
+            i += 1;
+            if i < bytes.len() && bytes[i] == b'?' {
+                i += 1;
+                if i < bytes.len()
+                    && matches!(bytes[i], b':' | b'!' | b'=' | b'<' | b'P' | b'i' | b'x' | b'u' | b'-' | b's' | b'm' | b'a' | b'R')
+                {
+                    i += 1;
+                    if bytes[i - 1] == b'<'
+                        && i < bytes.len()
+                        && (bytes[i] == b'=' || bytes[i] == b'!')
+                    {
+                        i += 1;
+                    }
+                }
+            }
+            continue;
+        }
+        // What:     `)`: close the current frame. Parse quantifier (if
+        //           any). If this frame had a lookahead in its subtree
+        //           AND a quantifier follows, mark the parent's
+        //           `pending_la_check` so the next atom at that depth
+        //           fires.
+        if c == b')' {
+            i += 1;
+            let frame = stack.pop().unwrap_or_default();
+            let mut is_quantified = false;
+            if i < bytes.len() {
+                match bytes[i] {
+                    b'*' | b'+' | b'?' => {
+                        is_quantified = true;
+                        i += 1;
+                    }
+                    b'{' => {
+                        let mut j = i + 1;
+                        let num_start = j;
+                        while j < bytes.len() && bytes[j].is_ascii_digit() {
+                            j += 1;
+                        }
+                        if j > num_start {
+                            while j < bytes.len() && bytes[j] != b'}' {
+                                j += 1;
+                            }
+                            if j < bytes.len() {
+                                is_quantified = true;
+                                j += 1;
+                            }
+                        }
+                        i = j;
+                    }
+                    _ => {}
+                }
+                if is_quantified && i < bytes.len() && bytes[i] == b'?' {
+                    i += 1;
+                }
+            }
+            let has_la_in_subtree = frame.is_lookahead_self || frame.has_lookahead_subtree;
+            if let Some(parent) = stack.last_mut() {
+                if has_la_in_subtree {
+                    parent.has_lookahead_subtree = true;
+                }
+                if is_quantified && has_la_in_subtree {
+                    parent.pending_la_check = true;
+                }
+            }
+            continue;
+        }
+        // What:     `|`: alternation. Resets `pending_la_check` because
+        //           the new branch is a fresh sequence, not "trailing"
+        //           content of the previous branch's quantified-LA.
+        if c == b'|' {
+            if let Some(top) = stack.last_mut() {
+                top.pending_la_check = false;
+            }
+            i += 1;
+            continue;
+        }
+        // What:     Stray quantifier byte (already consumed at close
+        //           via the regular path; this branch only fires on
+        //           malformed input where a quantifier follows a
+        //           non-group atom we just walked past). Skip without
+        //           tripping the pending check.
+        if matches!(c, b'*' | b'+' | b'?' | b'{') {
+            i += 1;
+            continue;
+        }
+        // What:     Any other byte at this depth (literal, anchor,
+        //           dot, etc.). If `pending_la_check` is set, this is
+        //           trailing content -> fire.
+        if stack.last().is_some_and(|f| f.pending_la_check) {
+            return Some(format!(
+                "quantified lookahead-bearing group with trailing content at parent depth (e.g. `(?:(?!X)){{m,n}}<atom>`) triggers Bug F overflow at `resharp-algebra/src/lib.rs:2470` (see TROUBLESHOOTING.resharp.md). Reproducer: `(?:(?!abc)){{4,12}}a`. Either drop the trailing content, use exact quantifier `{{n}}`, or split the regex. {}",
+                TROUBLESHOOT_REF
+            ));
+        }
+        i += 1;
+    }
+    None
+}
+
 // What:     `pub fn nested_grouped_quantifier(src: &str) -> Option<String>`
 //           detects regex source containing four or more consecutive
 //           `)`+quantifier adjacencies. The shape the fuzz target

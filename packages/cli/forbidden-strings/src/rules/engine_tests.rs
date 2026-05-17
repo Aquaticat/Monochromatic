@@ -1470,3 +1470,121 @@ fn compile_rule_src_rejects_bug_f_shape_fast() {
         "compile_rule_src on bug-f shape took {elapsed:?}; expected <100ms",
     );
 }
+
+use super::engine::quantified_lookahead_with_sibling_content;
+
+// What:     Positive triggers for
+//           `quantified_lookahead_with_sibling_content`. Each shape
+//           was confirmed to panic via the bisect probes at
+//           `/tmp/probe-slow-unit/src/bin/bisect_f{7,8}.rs`.
+// Why:      The second Bug F shape (single quantified lookahead +
+//           trailing content) reaches the same overflow at
+//           `resharp-algebra/src/lib.rs:2470` through a different
+//           upstream path than the nested-quant shape; the narrower
+//           `nested_lookahead_in_quantified_group` doesn't catch it.
+// TS map:   `it("quantifiedLookaheadWithSiblingContent fires", ...)`.
+#[test]
+fn quantified_lookahead_with_sibling_content_fires() {
+    let cases = [
+        // Minimal bisected reproducer: variable quant + 1 trailing char.
+        "(?:(?!abc)){4,12}a",
+        // Two trailing chars.
+        "(?:(?!abc)){4,12}aa",
+        // Different trailing literal.
+        "(?:(?!abc)){4,12}x",
+        "(?:(?!abc)){4,12}bc",
+        // Trailing escape.
+        "(?:(?!abc)){4,12}\\?",
+        // Trailing group.
+        "(?:(?!abc)){4,12}(?:d)",
+        // Trailing class.
+        "(?:(?!abc)){4,12}[d]",
+        // Leading + trailing content.
+        "a(?:(?!abc)){4,12}a",
+        // Smaller variable bounds.
+        "(?:(?!abc)){2,3}a",
+        "(?:(?!abc)){1,4}a",
+        "(?:(?!abc)){2,4}a",
+        // Bare lookahead (no `(?:)` wrap) + variable quant + trailing.
+        "(?!abc){4,12}a",
+        "(?!abc){2,4}a",
+        // Positive lookahead variant.
+        "(?:(?=abc)){4,12}a",
+        // Full crash artifact source (decoded from fuzz crash).
+        "(?u-i)\\+\\+\\+\\+\\+\\+(?:_|_|\\u{3000})ñöa#3vaarññ (?:(?!ñññAtsöéaañ)){4,12}~(ññM aaaaaaaa)aaaaaa",
+    ];
+    for src in cases {
+        assert!(
+            quantified_lookahead_with_sibling_content(src).is_some(),
+            "expected quantified_lookahead_with_sibling_content to fire on {:?}; got None",
+            src
+        );
+    }
+}
+
+// What:     Negative cases. The validator intentionally false-positives
+//           on safe `(?:(?!X)){n}<atom>` (exact quant) and
+//           `(?:(?!X)){m,n}aaa` (long-uniform trail) shapes per the
+//           user-endorsed broad-widening trade-off, so those are NOT
+//           in the negative list. The cases here are shapes where no
+//           quantified-lookahead is present at all, or there is no
+//           content at parent depth.
+// Why:      Avoid catastrophic false positives that would reject every
+//           reasonable lookahead pattern.
+// TS map:   `it("quantifiedLookaheadWithSiblingContent skips", ...)`.
+#[test]
+fn quantified_lookahead_with_sibling_content_skips_safe_shapes() {
+    let cases = [
+        // No trailing content (the actual safe case for this validator).
+        "(?:(?!abc)){4,12}",
+        "(?!abc){4,12}",
+        "(?:(?!abc))",
+        // Leading content only, no trailing.
+        "a(?:(?!abc)){4,12}",
+        // Plain regex, no lookahead.
+        "abc",
+        "(?:abc){4,12}a",
+        // Empty.
+        "",
+        // Lookahead inside an alternation branch with no quant on the LA group.
+        "(?!abc)|(?:abc){4,12}a",
+        // Lookahead body has a quantifier but the LA itself isn't quantified.
+        "(?!a*)abc",
+        // Quantifier inside a non-LA group, trailing content.
+        "(?:abc){4,12}xyz",
+    ];
+    for src in cases {
+        assert!(
+            quantified_lookahead_with_sibling_content(src).is_none(),
+            "expected quantified_lookahead_with_sibling_content to PASS on {:?}; got {:?}",
+            src,
+            quantified_lookahead_with_sibling_content(src)
+        );
+    }
+}
+
+// What:     End-to-end check: `compile_rule_src` rejects the
+//           trailing-content Bug F shape with a `(resharp):` error.
+// Why:      Same as the nested-quant variant: pre-validator must beat
+//           resharp to the punch so libfuzzer never sees the abort.
+// TS map:   `it("compile_rule_src rejects bug-f trailing shape fast", ...)`.
+#[test]
+fn compile_rule_src_rejects_bug_f_trailing_shape_fast() {
+    use std::time::Instant;
+    let src = "(?:(?!abc)){4,12}a";
+    let started = Instant::now();
+    let result = crate::rules::compile_rule_src(src);
+    let elapsed = started.elapsed();
+    let err = match result {
+        Ok(_) => panic!("expected quantified-lookahead-with-trailing rejection, got Ok"),
+        Err(e) => e,
+    };
+    assert!(
+        err.contains("lookahead") && err.contains("overflow"),
+        "expected error mentioning `lookahead` and `overflow`, got {err:?}",
+    );
+    assert!(
+        elapsed.as_millis() < 100,
+        "compile_rule_src on bug-f trailing shape took {elapsed:?}; expected <100ms",
+    );
+}
