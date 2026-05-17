@@ -23,7 +23,7 @@ description = "Build the crates.io package tarball"
 run = "cargo package"
 
 [tasks.publish]
-description = "Publish the crate to crates.io"
+description = "Fallback local publish. Canonical path is .github/workflows/cargo-publish.yml (OIDC Trusted Publishing + SLSA build provenance attestation); use this task only when CI cannot."
 run = "cargo publish"
 
 [tasks.test]

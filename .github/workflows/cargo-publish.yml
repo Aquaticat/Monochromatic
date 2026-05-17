@@ -1,0 +1,114 @@
+name: cargo-publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Dry run (package + verify, no upload, no attestation)'
+        type: boolean
+        default: true
+  push:
+    branches: ['main']
+    paths:
+      - 'packages/cli/forbidden-strings/Cargo.toml'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        # need before+after revs to detect a version bump on push events.
+        # fetch-depth: 2 is enough for normal pushes; the detect step
+        # degrades gracefully on first-push (no `before`) or force-push.
+        fetch-depth: 2
+
+    - name: Detect version bump
+      id: detect
+      env:
+        BEFORE_SHA: ${{ github.event.before }}
+        EVENT_NAME: ${{ github.event_name }}
+      run: |
+        set -euo pipefail
+        cargo_toml='packages/cli/forbidden-strings/Cargo.toml'
+        after=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
+        before=''
+        if [ -n "${BEFORE_SHA:-}" ] \
+          && [ "$BEFORE_SHA" != '0000000000000000000000000000000000000000' ] \
+          && git cat-file -e "${BEFORE_SHA}:${cargo_toml}" 2>/dev/null; then
+          before=$(git show "${BEFORE_SHA}:${cargo_toml}" | awk -F'"' '/^version = / { print $2; exit }')
+        fi
+        printf 'before=%s\nafter=%s\n' "$before" "$after"
+        if [ -z "$after" ]; then
+          echo 'No version found in Cargo.toml; refusing to publish.' >&2
+          exit 1
+        fi
+        if [ "$EVENT_NAME" = 'workflow_dispatch' ] || [ "$before" != "$after" ]; then
+          {
+            echo "should_publish=true"
+            echo "version=$after"
+          } >> "$GITHUB_OUTPUT"
+        else
+          echo "should_publish=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Set up mise (skip auto-install of all tools)
+      if: ${{ steps.detect.outputs.should_publish == 'true' }}
+      uses: jdx/mise-action@1648a7812b9aeae629881980618f079932869151
+      with:
+        install: false
+        cache: true
+
+    - name: Install only the tools this workflow needs
+      if: ${{ steps.detect.outputs.should_publish == 'true' }}
+      run: mise install rust
+
+    - name: Cache cargo registry + build
+      if: ${{ steps.detect.outputs.should_publish == 'true' }}
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          packages/cli/forbidden-strings/target
+        key: cargo-publish-${{ runner.os }}-${{ hashFiles('packages/cli/forbidden-strings/Cargo.lock') }}
+
+    - name: Authenticate with crates.io (Trusted Publishing)
+      if: ${{ steps.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+      id: auth
+      uses: rust-lang/crates-io-auth-action@bbd81622f20ce9e2dd9622e3218b975523e45bbe
+
+    - name: Publish (dry run)
+      if: ${{ steps.detect.outputs.should_publish == 'true' && inputs.dry-run }}
+      working-directory: packages/cli/forbidden-strings
+      run: cargo publish --dry-run
+
+    - name: Publish
+      if: ${{ steps.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+      working-directory: packages/cli/forbidden-strings
+      env:
+        CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+      run: cargo publish
+
+    # Attest after publish: the .crate file cargo just packaged and uploaded
+    # is sitting at target/package/. Attesting those bytes guarantees the
+    # attestation digest matches the artifact on crates.io. (Attesting a
+    # separately-packaged .crate beforehand would assume byte-determinism
+    # between two `cargo package` runs; if that ever breaks, the attestation
+    # would be orphaned against the uploaded artifact.) Recovery if this
+    # step fails after a successful publish: re-run the workflow or run
+    # `cargo package` locally and `gh attestation generate` against the
+    # resulting .crate.
+    - name: Attest .crate provenance
+      if: ${{ steps.detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+      uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
+      with:
+        subject-path: 'packages/cli/forbidden-strings/target/package/forbidden-strings-${{ steps.detect.outputs.version }}.crate'
