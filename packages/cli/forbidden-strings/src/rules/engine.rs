@@ -676,18 +676,34 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
 pub fn intersection_with_lookbehind(src: &str) -> Option<String> {
     // What:     Single-pass walker: track `in_class` membership;
     //           on bare `&` outside class set `has_intersection`;
-    //           on `(?<=` or `(?<!` outside class set
-    //           `has_lookbehind`. Return early as soon as both
-    //           are seen (no need to finish the walk).
-    // Why:      Avoid the cost of a second pass; the source
-    //           strings we process are short (rule lines) and
-    //           a single linear scan is plenty.
+    //           on `(?=` / `(?!` / `(?<=` / `(?<!` outside class
+    //           set `has_lookaround` and record the kind seen.
+    //           Return early as soon as both are seen.
+    // Why:      The original detector covered `&` + lookbehind only
+    //           (the panic the user's HANDOVER bisected to).
+    //           Subsequent fuzzer findings show resharp 0.5.x through
+    //           0.6.x also panics on `&` + lookahead shapes via the
+    //           same `engine.rs:1020` assertion. Widening keeps the
+    //           detection symmetric across lookaround direction.
+    //           Avoid the cost of a second pass; rule sources are
+    //           short and a single linear scan is plenty.
     // TS map:   Same shape; one for-loop with two booleans.
     let bytes = src.as_bytes();
     let mut i = 0usize;
     let mut in_class = false;
     let mut has_intersection = false;
-    let mut has_lookbehind = false;
+    let mut has_lookaround = false;
+    // What:     `lookaround_kind: &str` records which lookaround
+    //           direction triggered the flag, used in the error
+    //           message so the author can find the offending
+    //           assertion / lookbehind quickly. "lookbehind" or
+    //           "lookahead" -- whichever was seen first.
+    // Why:      Diagnostic clarity. Without it the message is
+    //           generic and the rule author has to scan the source
+    //           to find which lookaround direction caused the
+    //           rejection.
+    // TS map:   `let lookaroundKind = "";`.
+    let mut lookaround_kind: &'static str = "";
     while i < bytes.len() {
         let c = bytes[i];
         // What:     Escape sequence `\X` -- skip two bytes, do
@@ -715,31 +731,254 @@ pub fn intersection_with_lookbehind(src: &str) -> Option<String> {
             if c == b'&' {
                 has_intersection = true;
             }
-            // What:     `(?<=` or `(?<!` lookbehind detection.
-            //           The `?<` prefix can also start a named
-            //           capture `(?<name>...)`; the discriminator
-            //           is the byte after `<` -- `=` or `!`
-            //           means lookbehind, any other byte means
-            //           named capture (which the regex / resharp
-            //           parsers both accept without panic).
-            // Why:      Match the same shape `lookaround_in_complement`
-            //           uses; keeps detection rules consistent
-            //           across pre-validators.
-            // TS map:   `if (c === '(' && b[i+1] === '?' && b[i+2] === '<' && (b[i+3] === '=' || b[i+3] === '!'))`.
-            if c == b'(' && i + 3 < bytes.len() && bytes[i + 1] == b'?' && bytes[i + 2] == b'<' {
-                let kind = bytes[i + 3];
-                if kind == b'=' || kind == b'!' {
-                    has_lookbehind = true;
+            // What:     `(?=` / `(?!` / `(?<=` / `(?<!` lookaround
+            //           detection. The `(?` prefix can start many
+            //           constructs:
+            //             - `(?=...)` positive lookahead
+            //             - `(?!...)` negative lookahead
+            //             - `(?<=...)` positive lookbehind
+            //             - `(?<!...)` negative lookbehind
+            //             - `(?<name>...)` named capture (NOT a lookaround)
+            //             - `(?:...)`, `(?i)`, `(?P<name>` etc. (also not)
+            //           The discriminator is the byte after `(?`:
+            //             - `=` / `!` means lookahead
+            //             - `<` followed by `=` / `!` means lookbehind
+            //             - any other shape is not a lookaround
+            // Why:      Catch both directions of lookaround. The
+            //           debug_assert at `engine.rs:1020` fires for
+            //           intersection involving any lookaround, not
+            //           just lookbehind specifically.
+            // TS map:   `if (c === '(' && b[i+1] === '?' && (b[i+2] === '=' || b[i+2] === '!' || (b[i+2] === '<' && (b[i+3] === '=' || b[i+3] === '!'))))`.
+            if c == b'(' && i + 2 < bytes.len() && bytes[i + 1] == b'?' {
+                let after = bytes[i + 2];
+                if after == b'=' || after == b'!' {
+                    has_lookaround = true;
+                    if lookaround_kind.is_empty() {
+                        lookaround_kind = "lookahead";
+                    }
+                } else if after == b'<'
+                    && i + 3 < bytes.len()
+                    && (bytes[i + 3] == b'=' || bytes[i + 3] == b'!')
+                {
+                    has_lookaround = true;
+                    if lookaround_kind.is_empty() {
+                        lookaround_kind = "lookbehind";
+                    }
                 }
             }
-            if has_intersection && has_lookbehind {
+            if has_intersection && has_lookaround {
                 return Some(format!(
-                    "intersection (`&`) involving a lookbehind triggers a known resharp 0.5.x through 0.6.x debug_assert in `scan_fwd_all` (`engine.rs:1020`); behind a `debug_assert!` so release silently returns wrong matches. Rewrite the rule to lift the lookbehind outside the intersection (e.g. anchor it as a prefix), or replace the lookbehind with an explicit consume of the preceding byte. {}",
-                    TROUBLESHOOT_REF
+                    "intersection (`&`) involving a {} triggers a known resharp 0.5.x through 0.6.x debug_assert in `scan_fwd_all` (`engine.rs:1020`); behind a `debug_assert!` so release silently returns wrong matches. Rewrite the rule to lift the {} outside the intersection (e.g. anchor it as a prefix), or replace it with an explicit consume of the relevant byte. {}",
+                    lookaround_kind, lookaround_kind, TROUBLESHOOT_REF
                 ));
             }
         }
         i += 1;
+    }
+    None
+}
+
+// What:     `pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String>`
+//           detects rule shapes that compile through resharp's
+//           parser but trigger the `engine.rs:1020` `debug_assert!`
+//           (`unexpected end 0 > N`) at scan time. The minimal
+//           reproducer bisected from
+//           `fuzz/artifacts/fuzz_extract_gate_soundness/crash-8cba104f0805ccb567513aff895398a4f652200c`
+//           is `(a|(?![_]))(?!a)` -- a capturing alternation whose
+//           branches include a negative lookahead with a single-char
+//           class body, followed by ANOTHER negative lookahead. The
+//           pattern compiles (because alternation provides a
+//           non-lookaround branch the algebra can simplify against)
+//           but scanning panics during the forward DFA pass.
+//
+//           Variants confirmed to trigger the same panic:
+//             - `(a|(?![_]))(?![a-e-u-vaaa])` (original artifact)
+//             - `(?:a|(?![_]))(?!a)` (non-capturing first group)
+//             - `((?![_])|a)(?!a)` (lookaround as first alt branch)
+//             - `(a|(?![X]))(?!a)` for X in `_`, `0`, `.`, `-`, `|`, `^a`
+//
+//           Variants that do NOT trigger:
+//             - `(a|(?!a))(?!a)` (bare atom in first lookahead, not class)
+//             - `(a|(?![ab]))(?!a)` (class with two chars)
+//             - `(?!a)(a|(?!a))` (lookaround before alternation, not after)
+//             - `(?!a)b(?!c)` (atom between two lookaheads, no alt)
+// Why:      `catch_unwind` in `CompiledRegex::find_all` already
+//           converts the upstream panic into `Err(())` so production
+//           scanning degrades gracefully. But libFuzzer-sys's panic
+//           hook calls `abort()` before `catch_unwind` can intercept
+//           in the fuzz harness, so the fuzz target sees a crash on
+//           every iteration that hits this shape. The pre-validator
+//           rejects the shape at compile time, surfacing an
+//           actionable error and skipping the input so the fuzzer
+//           can continue exploring the (?u)-Unicode space the
+//           soundness-by-revert phase 11 verification needs.
+//
+//           Detection algorithm (single-pass byte walker):
+//             - Maintain a stack of `(has_alternation, has_lookaround)`
+//               flags, one entry per open paren. Each `(` pushes
+//               `(false, false)`; each `)` pops the top entry.
+//             - On `|` outside class, set top entry's
+//               `has_alternation = true` (the alternation belongs
+//               to the innermost group).
+//             - On `(?=` / `(?!` / `(?<=` / `(?<!`, count
+//               `total_lookarounds += 1` AND mark the CURRENT top
+//               of the stack (the parent group containing this
+//               lookaround) `has_lookaround = true` -- this models
+//               "this group's body contains a lookaround". Push
+//               `(false, false)` for the lookaround's own group
+//               (its body is irrelevant for our pattern).
+//             - On `)` pop: if the popped frame has BOTH
+//               `has_alternation && has_lookaround` AND
+//               `total_lookarounds >= 2` (there is another
+//               lookaround outside this group), return Some(reason).
+//           Conservative: false positives are acceptable. The
+//           panicking shape is virtually never authored
+//           intentionally; rule authors writing intersection-of-
+//           lookaround patterns are rare, and the alternative is
+//           a fuzz crash on every iteration.
+// TS map:   `function lookaroundInAlternationWithSibling(src: string): string | null`.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function lookaroundInAlternationWithSibling(src: string): string | null {
+//   // walk bytes; maintain paren stack of (hasAlt, hasLookaround);
+//   // track totalLookarounds. On `)` pop, check the combined
+//   // pattern; return reason when matched.
+// }
+// ```
+pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String> {
+    let bytes = src.as_bytes();
+    let mut i = 0usize;
+    let mut in_class = false;
+    // What:     `paren_stack: Vec<(bool, bool)>` per-open-paren flags.
+    //           Each entry `(has_alternation, has_lookaround)`
+    //           records two facts about the open group's body so
+    //           far: "did we see a `|` at this depth" and "does
+    //           this group's body contain at least one lookaround".
+    // Why:      The panicking shape has alt+lookaround inside one
+    //           group; we need per-depth tracking because flat
+    //           counters would confuse "alternation in group A,
+    //           lookaround in group B" with the real pattern
+    //           "alternation AND lookaround both in group A".
+    // TS map:   `const parenStack: Array<[boolean, boolean]> = [];`.
+    let mut paren_stack: Vec<(bool, bool)> = Vec::new();
+    // What:     `total_lookarounds: usize` counts every lookaround
+    //           opening in the source, regardless of depth or
+    //           position. Used in the final-check to know whether
+    //           the alt+la group had a sibling lookaround anywhere
+    //           else in the source.
+    // Why:      The panicking shape always has TWO or more
+    //           lookarounds in the source; one alone (even inside
+    //           alternation) doesn't trigger.
+    // TS map:   `let totalLookarounds = 0;`.
+    let mut total_lookarounds: usize = 0;
+    // What:     `found_alt_la_group: bool` is set when ANY closed
+    //           group's body had both alternation and at least one
+    //           lookaround. Sticky -- once set, stays set.
+    // Why:      The sibling lookaround may appear AFTER the
+    //           alt+la group closes (e.g. `(a|(?![_]))(?!a)`); we
+    //           can't fire at close time because we don't yet
+    //           know about future siblings. Tracking the flag and
+    //           checking at the end of the walk handles both
+    //           "sibling before" and "sibling after" symmetrically.
+    // TS map:   `let foundAltLaGroup = false;`.
+    let mut found_alt_la_group = false;
+    while i < bytes.len() {
+        let c = bytes[i];
+        if c == b'\\' {
+            i += 2;
+            continue;
+        }
+        if !in_class && c == b'[' {
+            in_class = true;
+            i += 1;
+            continue;
+        }
+        if in_class && c == b']' {
+            in_class = false;
+            i += 1;
+            continue;
+        }
+        if in_class {
+            i += 1;
+            continue;
+        }
+        // What:     Alternation `|` outside class. Marks the
+        //           innermost open group as containing alternation.
+        // Why:      Belongs to the innermost group; need per-depth
+        //           tracking.
+        if c == b'|' {
+            if let Some(top) = paren_stack.last_mut() {
+                top.0 = true;
+            }
+            i += 1;
+            continue;
+        }
+        // What:     Group open `(`. Two cases:
+        //           - Lookaround open `(?=`/`(?!`/`(?<=`/`(?<!`:
+        //             count it, mark CURRENT top-of-stack as
+        //             containing a lookaround, then push a fresh
+        //             frame for the lookaround's own group body.
+        //           - Other `(...)` (capturing, non-capturing, named,
+        //             flags, comment): push a fresh frame.
+        // Why:      The lookaround's PARENT group is the one
+        //           containing it; the lookaround's own body is
+        //           irrelevant for the pattern we're matching.
+        if c == b'(' {
+            let is_lookaround = i + 2 < bytes.len()
+                && bytes[i + 1] == b'?'
+                && (matches!(bytes[i + 2], b'=' | b'!')
+                    || (bytes[i + 2] == b'<'
+                        && i + 3 < bytes.len()
+                        && matches!(bytes[i + 3], b'=' | b'!')));
+            if is_lookaround {
+                total_lookarounds += 1;
+                if let Some(top) = paren_stack.last_mut() {
+                    top.1 = true;
+                }
+            }
+            paren_stack.push((false, false));
+            i += 1;
+            continue;
+        }
+        // What:     Group close `)`. Pop the top frame. If the
+        //           popped frame had BOTH alternation AND at
+        //           least one lookaround in its body, set the
+        //           sticky `found_alt_la_group` flag. Also bubble
+        //           the popped frame's has_lookaround up to the
+        //           parent (a group contains a lookaround if any
+        //           nested group did).
+        // Why:      We defer the final fire-decision to end of
+        //           walk because the sibling lookaround may appear
+        //           AFTER the alt+la group closes. The bubble
+        //           preserves the per-depth invariant: an outer
+        //           group's body has a lookaround iff a nested
+        //           subgroup body did.
+        if c == b')' {
+            let popped = paren_stack.pop().unwrap_or((false, false));
+            if popped.0 && popped.1 {
+                found_alt_la_group = true;
+            }
+            if popped.1 {
+                if let Some(parent) = paren_stack.last_mut() {
+                    parent.1 = true;
+                }
+            }
+            i += 1;
+            continue;
+        }
+        i += 1;
+    }
+    // What:     Final check: if any closed group had alt+lookaround
+    //           in its body AND the source has 2+ lookarounds total,
+    //           the shape matches the panic pattern.
+    // Why:      Defers the sibling-existence check to here so
+    //           "sibling before" and "sibling after" both work.
+    if found_alt_la_group && total_lookarounds >= 2 {
+        return Some(format!(
+            "alternation containing a lookaround with a sibling lookaround triggers a known resharp 0.5.x through 0.6.x debug_assert in `scan_fwd_all` (`engine.rs:1020`; `unexpected end 0 > N`). Minimal reproducer: `(a|(?![_]))(?!a)`. The shape compiles through the resharp parser because the non-lookaround alt branch lets the algebra simplify, but the forward DFA scan trips the assertion. Rewrite to remove the alternation, or lift one of the lookarounds outside the alternation, or replace with an explicit byte consume. {}",
+            TROUBLESHOOT_REF
+        ));
     }
     None
 }

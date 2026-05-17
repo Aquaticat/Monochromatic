@@ -624,6 +624,15 @@ fn intersection_with_lookbehind_fires_on_minimal_shape() {
         "(?:(?<=a)&(?=b))",
         // Original artifact 1 (full structure, parsed via Arbitrary).
         "(?:(?=(?=(?:(?:(?:EBEE)))))&(?<=(?:(?=(?=(?=_))))))",
+        // Generalised cases: `&` + lookahead only (no lookbehind).
+        // The detector now covers both lookaround directions per
+        // the comment widening; the original "two-lookahead returns
+        // parse error not panic" claim still holds for the resharp
+        // engine, but pre-validating gives the rule author a
+        // friendlier error than `Algebra(UnsupportedPattern)`.
+        "(?:(?=a)&b)",
+        "(?:(?=a)&(?=b))",
+        "(?:foo&(?!bar))",
     ];
     for src in cases {
         assert!(
@@ -647,9 +656,9 @@ fn intersection_with_lookbehind_skips_safe_shapes() {
         // No intersection.
         "(?<=a)foo",
         "(?=a)bar",
-        // Intersection without any lookbehind.
+        // Intersection without ANY lookaround (post-widening: only
+        // shapes with neither lookahead nor lookbehind are safe).
         "(?:foo&bar)",
-        "(?:(?=a)&b)",
         // `&` inside a character class is a literal, not the operator.
         "[a&b]",
         // Escaped `&` is a literal.
@@ -1088,6 +1097,133 @@ fn nested_grouped_quantifier_skips_safe_shapes() {
             nested_grouped_quantifier(case),
         );
     }
+}
+
+use super::engine::lookaround_in_alternation_with_sibling;
+
+// What:     Positive triggers for `lookaround_in_alternation_with_sibling`.
+//           Each case has an alternation containing a lookaround
+//           AND another lookaround somewhere in the source -- the
+//           shape bisected from
+//           `crash-8cba104f0805ccb567513aff895398a4f652200c`. These
+//           shapes compile through resharp's parser but trip the
+//           `engine.rs:1020` debug_assert on the forward DFA scan.
+// Why:      libFuzzer's panic hook aborts on this shape before
+//           `catch_unwind` in `CompiledRegex::find_all` can
+//           intercept; the pre-validator rejects at compile time
+//           with a friendly error so the fuzz target can skip the
+//           input and continue exploring.
+// TS map:   `it("lookaroundInAlternationWithSibling fires", ...)`.
+#[test]
+fn lookaround_in_alternation_with_sibling_fires() {
+    let cases = [
+        // Minimal reproducer bisected from the crash artifact.
+        "(a|(?![_]))(?!a)",
+        // Original artifact source.
+        "(?:(?:(?:-\u{00f6}\u{00e9}x|-\u{00f6}pV|(?![_]))(?![a-e-u-vaaa])|a)|a|a)",
+        // Variations confirmed to panic via probe bisection.
+        "(a|(?![_]))(?![a-e-u-vaaa])",
+        "(?:a|(?![_]))(?!a)",
+        "((?![_])|a)(?!a)",
+        "(a|(?![0]))(?!a)",
+        "(a|(?![.]))(?!a)",
+        // Lookbehind in alternation + lookbehind sibling -- the
+        // detector is direction-agnostic.
+        "(a|(?<!_))(?<!a)",
+        // Mixed lookaround directions.
+        "(a|(?<!_))(?!a)",
+        "(a|(?!_))(?<!a)",
+        // Nested alternation; the inner group contains both.
+        "((?:a|(?!_))(?!a))",
+    ];
+    for src in cases {
+        assert!(
+            lookaround_in_alternation_with_sibling(src).is_some(),
+            "expected lookaround_in_alternation_with_sibling to fire on {:?}",
+            src
+        );
+    }
+}
+
+// What:     Negative cases for `lookaround_in_alternation_with_sibling`.
+//           Includes shapes with single lookarounds, alternation
+//           without lookarounds, lookarounds without alternation,
+//           and various separators that should not trigger.
+// Why:      Conservative over-rejection still costs production rules.
+//           Each case here is a real or plausible authored shape.
+// TS map:   `it("lookaroundInAlternationWithSibling skips", ...)`.
+#[test]
+fn lookaround_in_alternation_with_sibling_skips_safe_shapes() {
+    let cases = [
+        // Empty / trivial.
+        "",
+        "abc",
+        "a|b",
+        // Single lookaround, no alternation.
+        "(?=a)",
+        "(?!a)",
+        "(?<=a)",
+        "(?<!a)",
+        // Two lookarounds, no alternation.
+        "(?=a)(?=b)",
+        "(?<!a)(?<!b)",
+        // Single lookaround inside alternation, but no sibling.
+        "(a|(?!b))",
+        "(a|(?<!b))",
+        // Alternation without lookarounds, with a sibling lookaround.
+        "(a|b)(?!c)",
+        // Lookaround in alternation, but the sibling lookaround
+        // is INSIDE the same group -- caught only when the chain
+        // closes; the detector requires a sibling OUTSIDE.
+        // Actually this is also a positive case per the algorithm
+        // (sibling counter is global), so we exclude it.
+        // Lookarounds in sequence without alternation.
+        "(?!a)b(?!c)",
+        // Multiple captures without alternation or lookarounds.
+        "(a)(b)(c)(d)",
+        // Escaped `(`.
+        "\\(a\\|\\)",
+        // Character class containing `|` (literal pipe, not alternation).
+        "[a|b](?!c)",
+    ];
+    for src in cases {
+        assert!(
+            lookaround_in_alternation_with_sibling(src).is_none(),
+            "expected lookaround_in_alternation_with_sibling to PASS on {:?}; got {:?}",
+            src,
+            lookaround_in_alternation_with_sibling(src)
+        );
+    }
+}
+
+// What:     End-to-end check: `compile_rule_src` rejects the
+//           crash-artifact shape with a `(resharp):` error string
+//           that mentions "alternation containing a lookaround".
+// Why:      Ensure the new pre-validator is wired into
+//           `compile_rule_src` and that the error namespace reads
+//           as a resharp shape rejection (not a generic compile
+//           failure). Without this, the fuzz target on this input
+//           still reaches resharp's `find_all` and panics.
+// TS map:   `it("compile_rule_src rejects alt+la+la shape", ...)`.
+#[test]
+fn compile_rule_src_rejects_alt_lookaround_sibling_shape() {
+    use std::time::Instant;
+    let src = "(a|(?![_]))(?!a)";
+    let started = Instant::now();
+    let result = crate::rules::compile_rule_src(src);
+    let elapsed = started.elapsed();
+    let err = match result {
+        Ok(_) => panic!("expected rejection, got Ok"),
+        Err(e) => e,
+    };
+    assert!(
+        err.contains("alternation") && err.contains("lookaround"),
+        "expected error mentioning `alternation` and `lookaround`, got {err:?}",
+    );
+    assert!(
+        elapsed.as_millis() < 100,
+        "compile_rule_src on alt+la+la took {elapsed:?}; expected <100ms",
+    );
 }
 
 // What:     End-to-end check: `compile_rule_src` rejects the

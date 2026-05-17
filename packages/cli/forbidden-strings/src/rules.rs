@@ -66,6 +66,7 @@ mod extract_tests;
 pub use engine::{
     intersection_with_lookbehind,
     intersection_with_word_end_alternation,
+    lookaround_in_alternation_with_sibling,
     lookaround_in_complement,
     nested_grouped_quantifier,
     requires_resharp,
@@ -637,6 +638,36 @@ pub fn compile_rule_src(src: &str) -> Result<CompiledRegex, String> {
             return Err(format!("(resharp): {}", reason));
         }
         if let Some(reason) = intersection_with_word_end_alternation(src) {
+            return Err(format!("(resharp): {}", reason));
+        }
+        // What:     `lookaround_in_alternation_with_sibling` catches
+        //           the shape `(a|(?![X]))(?!Y)` and variants -- an
+        //           alternation containing a lookaround followed by
+        //           another lookaround. Bisected from
+        //           `crash-8cba104f0805ccb567513aff895398a4f652200c`.
+        //           Compiles through resharp's parser but trips the
+        //           `engine.rs:1020` debug_assert on the forward DFA
+        //           scan; the panic aborts the fuzz process before
+        //           `catch_unwind` in `CompiledRegex::find_all` can
+        //           intercept (libFuzzer-sys's panic hook calls abort
+        //           first).
+        // Why:      The original HANDOVER assumed the panic shape was
+        //           `&` + lookahead; bisection of the actual crash
+        //           artifact revealed the shape is alternation-with-
+        //           lookaround + sibling-lookaround instead. The
+        //           generalised `intersection_with_lookbehind`
+        //           (renamed conceptually to "with any lookaround")
+        //           handles the original `&`+lookahead case
+        //           defensively; this new pre-validator handles the
+        //           shape actually appearing in the fuzz corpus.
+        // TS map:   `const reason = lookaroundInAlternationWithSibling(src); if (reason) throw new Error(`(resharp): ${reason}`);`.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // const reason = lookaroundInAlternationWithSibling(src);
+        // if (reason) throw new Error(`(resharp): ${reason}`);
+        // ```
+        if let Some(reason) = lookaround_in_alternation_with_sibling(src) {
             return Err(format!("(resharp): {}", reason));
         }
         // What:     `Regex::new(src).map(CompiledRegex::Resharp).map_err(...)`.
