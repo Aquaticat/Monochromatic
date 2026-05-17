@@ -969,14 +969,27 @@ pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String> {
         }
         i += 1;
     }
-    // What:     Final check: if any closed group had alt+lookaround
-    //           in its body AND the source has 2+ lookarounds total,
-    //           the shape matches the panic pattern.
-    // Why:      Defers the sibling-existence check to here so
-    //           "sibling before" and "sibling after" both work.
-    if found_alt_la_group && total_lookarounds >= 2 {
+    // What:     Final check: fire when any closed group had both
+    //           alternation AND a lookaround in its body. The
+    //           `total_lookarounds` counter is retained for debugging
+    //           but is no longer required to gate the fire decision.
+    // Why:      The original detector required `total_lookarounds >= 2`
+    //           on the theory that the shape always has a sibling
+    //           lookaround. Bisection of
+    //           `crash-c3c364eb3a03114a52015721c02cba0bf20eb496` (rendered
+    //           as `(?:        4qÃ¼Vk|o\w|\s(?![_]))23o:aaaaaaaaaaaaaaa`)
+    //           showed that a SINGLE lookaround inside an alternation
+    //           followed by literal content can also trip
+    //           `engine.rs:1020` at find-all time -- the compile
+    //           succeeds, the panic fires during `scan_fwd_all`. The
+    //           threshold of 2 was an over-narrow heuristic from the
+    //           first crash shape; widening to "any alt+la group"
+    //           accepts a small false-positive rate in exchange for
+    //           defense against the broader panic class.
+    let _ = total_lookarounds;
+    if found_alt_la_group {
         return Some(format!(
-            "alternation containing a lookaround with a sibling lookaround triggers a known resharp 0.5.x through 0.6.x debug_assert in `scan_fwd_all` (`engine.rs:1020`; `unexpected end 0 > N`). Minimal reproducer: `(a|(?![_]))(?!a)`. The shape compiles through the resharp parser because the non-lookaround alt branch lets the algebra simplify, but the forward DFA scan trips the assertion. Rewrite to remove the alternation, or lift one of the lookarounds outside the alternation, or replace with an explicit byte consume. {}",
+            "alternation containing a lookaround triggers a known resharp 0.5.x through 0.6.x debug_assert in `scan_fwd_all` (`engine.rs:1020`; `unexpected end 0 > N`). Minimal reproducers: `(a|(?![_]))(?!a)` and `(?:literal|other|x(?![_]))trailing`. The shape compiles through the resharp parser because the non-lookaround alt branch lets the algebra simplify, but the forward DFA scan trips the assertion when the input drives the engine into the lookaround branch. Rewrite to remove the alternation, lift the lookaround outside, replace with an explicit byte consume, or split the rule into two separate patterns. {}",
             TROUBLESHOOT_REF
         ));
     }

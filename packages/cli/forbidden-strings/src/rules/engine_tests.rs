@@ -1217,6 +1217,17 @@ fn lookaround_in_alternation_with_sibling_fires() {
         "(a|(?!_))(?<!a)",
         // Nested alternation; the inner group contains both.
         "((?:a|(?!_))(?!a))",
+        // New shape from crash-c3c364eb3a03114a52015721c02cba0bf20eb496:
+        // single lookaround in alternation followed by literal sibling
+        // also trips engine.rs:1020 at find_all time.
+        "(?:        4qÃ¼Vk|o\\w|\\s(?![_]))23o:aaaaaaaaaaaaaaa",
+        "(?:a|(?!b))c",
+        // Single lookaround in alternation, no sibling -- widened to
+        // fire because the underlying upstream bug is shape-dependent
+        // on the input (compile OK, panic at find_all). Cheaper to
+        // reject all alt+la shapes than to bisect the exact triggers.
+        "(a|(?!b))",
+        "(a|(?<!b))",
     ];
     for src in cases {
         assert!(
@@ -1249,16 +1260,8 @@ fn lookaround_in_alternation_with_sibling_skips_safe_shapes() {
         // Two lookarounds, no alternation.
         "(?=a)(?=b)",
         "(?<!a)(?<!b)",
-        // Single lookaround inside alternation, but no sibling.
-        "(a|(?!b))",
-        "(a|(?<!b))",
         // Alternation without lookarounds, with a sibling lookaround.
         "(a|b)(?!c)",
-        // Lookaround in alternation, but the sibling lookaround
-        // is INSIDE the same group -- caught only when the chain
-        // closes; the detector requires a sibling OUTSIDE.
-        // Actually this is also a positive case per the algorithm
-        // (sibling counter is global), so we exclude it.
         // Lookarounds in sequence without alternation.
         "(?!a)b(?!c)",
         // Multiple captures without alternation or lookarounds.
