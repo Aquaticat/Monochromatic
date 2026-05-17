@@ -83,6 +83,88 @@ export function acquireLock(): Promise<boolean> {
 }
 
 /**
+ * Returns true when every character in `s` is an ASCII digit `0`-`9`.
+ * Empty string returns false so PID-shape gates do not accept it.
+ *
+ * @param s - candidate string
+ *
+ * @returns whether `s` is one or more digits
+ */
+function isAllDigits(s: string,): boolean {
+  if (s.length === 0)
+    return false;
+  for (const c of s) {
+    if ((c < '0') || (c > '9'))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * Splits `s` on runs of horizontal whitespace, dropping empty leading or
+ * trailing tokens; mirrors `.split(/\s+/)` semantics for a trimmed input.
+ *
+ * @param s - text to split
+ *
+ * @returns array of non-empty whitespace-separated tokens
+ */
+function splitOnWhitespace(s: string,): string[] {
+  /**
+   * Recursive walker accumulating tokens; carries the in-progress token
+   * and the completed accumulator so no `let` is needed.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @param token - characters accumulated since the last whitespace
+   *
+   * @param acc - completed tokens so far
+   *
+   * @returns final token list
+   */
+  function walk({
+    idx,
+    token,
+    acc,
+  }: {
+    idx: number;
+    token: string;
+    acc: readonly string[];
+  },): string[] {
+    if (idx >= s.length) {
+      return token === '' ? [...acc,] : [
+        ...acc,
+        token,
+      ];
+    }
+    /** Current char; whitespace breaks the in-progress token. */
+    const c = s.charAt(idx,);
+    if (
+      (c === ' ') || (c === '\t') || (c === '\n')
+      || (c === '\r') || (c === '\f') || (c === '\v')
+    ) {
+      return walk({
+        idx: idx + 1,
+        token: '',
+        acc: token === '' ? acc : [
+          ...acc,
+          token,
+        ],
+      },);
+    }
+    return walk({
+      idx: idx + 1,
+      token: token + c,
+      acc,
+    },);
+  }
+  return walk({
+    idx: 0,
+    token: '',
+    acc: [],
+  },);
+}
+
+/**
  * Finds the PID of the process holding the hall-monitor abstract socket
  * by cross-referencing `/proc/net/unix` inodes with `/proc/{pid}/fd` symlinks.
  *
@@ -101,12 +183,12 @@ async function findSocketOwnerPid(): Promise<number | null> {
   if (line === undefined)
     return null;
   /** Whitespace-separated `/proc/net/unix` columns used to extract the inode. */
-  const fields = line.trim().split(/\s+/,);
+  const fields = splitOnWhitespace(line.trim(),);
   /** Inode number that links the socket row to a `/proc/{pid}/fd` symlink target. */
   const inode = fields[INODE_FIELD_INDEX];
 
   for (const pid of await readdir('/proc',)) {
-    if (!/^\d+$/.test(pid,))
+    if (!isAllDigits(pid,))
       continue;
     try {
       /** Open file descriptors of the candidate process; scanned for a matching socket inode. */

@@ -76,6 +76,63 @@ function buildImageEntry(
   };
 }
 
+/** Literal keyword that prefixes the canonical verdict line in LLM output. */
+const VERDICT_PREFIX = 'VERDICT:';
+
+/**
+ * Returns the position just after any horizontal whitespace starting at `from`.
+ *
+ * @param s - haystack
+ *
+ * @param from - starting index
+ *
+ * @returns first non-space/tab position at or after `from`
+ */
+function skipSpacesAndTabs({
+  s,
+  from,
+}: {
+  s: string;
+  from: number;
+},): number {
+  if (from >= s.length)
+    return from;
+  /** Char at the current cursor; advanced when it is horizontal whitespace. */
+  const c = s.charAt(from,);
+  if ((c === ' ') || (c === '\t'))
+    return skipSpacesAndTabs({
+      s,
+      from: from + 1,
+    },);
+  return from;
+}
+
+/**
+ * Locates the literal verdict token after `VERDICT:` in an upper-cased line.
+ *
+ * @param upper - upper-cased LLM response
+ *
+ * @returns `'PRODUCTIVE'` / `'UNPRODUCTIVE'` when present; `undefined` otherwise
+ */
+function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | undefined {
+  /** Index of the canonical `VERDICT:` literal; -1 means the line is missing. */
+  const idx = upper.indexOf(VERDICT_PREFIX,);
+  if (idx === (-1))
+    return undefined;
+  /** Cursor after `VERDICT:` and any inline whitespace; verdict word starts here. */
+  const start = skipSpacesAndTabs({
+    s: upper,
+    from: idx + VERDICT_PREFIX.length,
+  },);
+  /** Substring beginning at `start`; checked against the longer alternative first. */
+  const tail = upper.slice(start,);
+  if (tail.startsWith('UNPRODUCTIVE',))
+    return 'UNPRODUCTIVE';
+  if (tail.startsWith('PRODUCTIVE',))
+    return 'PRODUCTIVE';
+  return undefined;
+}
+
 /**
  * Extracts a PRODUCTIVE or UNPRODUCTIVE verdict from the LLM response text.
  * Looks for the canonical `VERDICT: ...` line first, falls back to keyword matching.
@@ -93,12 +150,10 @@ function buildImageEntry(
 export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
   /** Upper-cased copy of the response so verdict matching is case-insensitive. */
   const upper = result.toUpperCase();
-  /** Regex match for the canonical `VERDICT: ...` line; null when only fallback keyword matching can apply. */
-  const match = /VERDICT:\s*(PRODUCTIVE|UNPRODUCTIVE)/.exec(upper,);
-  if (match !== null) {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- regex capture group matches the union exactly
-    return match[1] as 'PRODUCTIVE' | 'UNPRODUCTIVE';
-  }
+  /** Parsed verdict from the canonical line; undefined when only fallback keyword matching can apply. */
+  const verdict = findVerdictToken(upper,);
+  if (verdict !== undefined)
+    return verdict;
   if (upper.includes('UNPRODUCTIVE',))
     return 'UNPRODUCTIVE';
   return 'PRODUCTIVE';
