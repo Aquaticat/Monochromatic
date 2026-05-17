@@ -208,29 +208,83 @@ Run in order:
   Fix: split on the inter-arg separator `"' '"` and trim the lone
   outer quotes off the first and last elements.
 - Step 5, 7-9 NOT YET RUN against 0.6.0.
-- Step 10 (soundness-by-revert) PARTIAL: the original blocker (the
-  bare-stacked-quantifier slow-unit) is resolved by commit `cd9b2dbf`
-  (stacked-quantifier pre-validator) and `2f4d27b0` (fuzz literal
-  alphabet widening to include Unicode lowercase letters). The 60 s
-  fuzz on main now completes cleanly (9561 iterations, zero halt).
-  However, with e49d8694 reverted, the fuzz hits NEW shapes that
-  block reaching the soundness assertion: a grouped-quantifier slow
-  shape (`(?:(?:(?:(?:[X]){N,M}){N,M}){N,M}){N,M}`, ~19 s/iteration,
-  NOT caught by the current `stacked_quantifier` because the grouping
-  parens reset the just-consumed state) and a resharp
-  `engine.rs:1020` panic on `&` + lookahead `(?=`/`(?!`. The
-  pre-existing `intersection_with_lookbehind` covers lookBEHIND only.
-  Both follow-ups (extend stacked detector to grouped nesting,
-  generalise the intersection pre-validator to lookaround in either
-  direction) are needed before phase 11 produces a SOUNDNESS PANIC.
-  Manual probe `/tmp/probe-slow-unit/` confirms the soundness bug
-  class is real and reachable: `(?iu)café` vs content `CAFÉ` panics
-  with the expected redacted-reproducer message in the reverted
-  worktree. The fuzz target's coverage path to that shape just
-  isn't open yet. The user's task description claim that fixing the
-  slow path alone would unblock phase 11 is inaccurate -- the
-  generator widening was also load-bearing, and additional
-  pre-validators are still needed for the remaining blockers.
+- Step 10 (soundness-by-revert) STILL BLOCKED, and the 60 s fuzz
+  gate on main is now BROKEN. Late-2026-05-16 session findings, in
+  the order they crystallised:
+
+  - `cd9b2dbf` (stacked-quantifier pre-validator) catches
+    bare-stacked source (`a**`, `\D{5,11}{5,11}`) but the fuzz
+    target's `Node::Quant` renderer at
+    `fuzz/src/generators.rs:1292-1300` always wraps the
+    quantified atom in `(?:...)`. So the fuzz NEVER emits
+    bare-stacked; the pre-validator is a no-op for the fuzz
+    target. Its unit tests pass because they hand-write
+    bare-stacked sources the fuzz cannot produce. The actual
+    slow shape the fuzz hits is **grouped-via-`(?:)` nested
+    quantifiers** at depth 4+. `compile_rule_src` on
+    `(?iu)(?:(?:(?:(?:(?:\d){5,11}){5,11}){5,11}){5,11}){5,11}(?:(?:(?:(?:(?:\d)*)*)*)*)*aa`
+    (the rendered form of the original slow-unit) takes ~3.26 s
+    and errors with `CompiledTooBig`. The pre-validator must
+    catch this grouped shape, not just bare-stacked.
+
+  - `2f4d27b0` (Unicode literal alphabet widening) is necessary
+    for phase 11's case-fold path. It also exposed two
+    pre-existing crashes the fuzz now reaches within ~30 s on
+    main:
+    1. resharp `engine.rs:1020` `debug_assert!` panic on `&` +
+       lookahead (`(?=`, `(?!`); covered today only for
+       lookBEHIND by `intersection_with_lookbehind`.
+    2. The grouped-quantifier slow-unit (above) re-saved at
+       `slow-unit-0cfbc4b8b9945074fe5214a96c503f6e994e3b97`.
+
+  - 60 s `fuzz:run fuzz_extract_gate_soundness` on main:
+    BEFORE widening (commits through `cd9b2dbf`), TWO
+    consecutive runs completed cleanly (9561 + 3858
+    iterations). AFTER widening (`2f4d27b0` / re-applied as
+    `4d5563cb`), the same command exits with libfuzzer
+    status 77 within ~60 s on the new crash and slow-unit.
+    The user explicitly chose to keep the widening
+    ("Don't revert it") and continue fixing the exposed
+    issues in a follow-up session. Revert commit `1976d0b9`
+    is superseded by `4d5563cb`.
+
+  - Manual probe (`/tmp/probe-slow-unit/`) against the
+    reverted worktree confirms the e49d8694 soundness bug
+    class IS reachable: `(?iu)café` vs content `CAFÉ`
+    panics with the expected redacted reproducer.
+    `synth_content`'s uniform-random byte mutations do not
+    reliably converge on the `0xA9` -> `0x89` flip that turns
+    `é` into `É`, which is why libfuzzer doesn't naturally
+    find the shape even after widening. A bias in
+    `synth_content`, or a deterministic seed in
+    `fuzz/corpus/fuzz_extract_gate_soundness/`, would unblock.
+
+  **Resume work for next session, in priority order:**
+  1. Add a `nested_grouped_quantifier` pre-validator (or
+     extend `stacked_quantifier`) so the fuzz's
+     grouped-quantifier source shape rejects in microseconds
+     instead of taking ~3 s + ASAN overhead. Algorithm: walk
+     paren depth; count chains of `){quant}` adjacency;
+     flag at depth 4+. Test against
+     `fuzz/artifacts/fuzz_extract_gate_soundness/slow-unit-0cfbc4b8b9945074fe5214a96c503f6e994e3b97`.
+  2. Generalise `intersection_with_lookbehind` to fire on
+     intersection + lookaround in either direction (lookahead
+     OR lookbehind). Test against
+     `fuzz/artifacts/fuzz_extract_gate_soundness/crash-8cba104f0805ccb567513aff895398a4f652200c`.
+  3. Confirm 60 s fuzz on main is clean again. This is the
+     load-bearing gate.
+  4. Re-run 120 s soundness-by-revert in the disposable
+     worktree (recipe in commit `cd9b2dbf`'s body). If a
+     SOUNDNESS PANIC still does not fire, the remaining gap
+     is `synth_content` mutation coverage -- bias it to
+     emit Unicode-case-flipped variants of any non-ASCII
+     bytes in the rule's literals.
+
+  The user's original task description ("content of many
+  identical bytes (e.g. `a` * N, `r` * N)" as the slow-unit
+  trigger) was inaccurate: the trigger is the regex's
+  nested-quantifier shape; content size is incidental. Probe
+  shows bare `a*a` on 100,000 `a`-bytes runs in 0.3 ms.
 - Crash artifacts at `/tmp/fs-crash-artifacts/` were re-verified against
   the 0.6.0+fix binary (`128221b7`); both run in 0ms with no crash. See
   `HANDOVER.resharp-panic-fix.md` for details.
