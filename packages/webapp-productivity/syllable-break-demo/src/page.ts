@@ -95,12 +95,12 @@ function renderColumn(
     note,
     outputId,
     extraClass,
-  }: {
+  }: Readonly<{
     heading: string;
     note: string;
     outputId: string;
     extraClass: string;
-  },
+  }>,
 ): string {
   return h({
     tag: 'div',
@@ -177,10 +177,10 @@ export function renderPage(
   {
     css,
     js,
-  }: {
+  }: Readonly<{
     css: string;
     js: string;
-  },
+  }>,
 ): string {
   return `<!DOCTYPE html>\n${
     h({
