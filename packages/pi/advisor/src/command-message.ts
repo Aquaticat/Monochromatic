@@ -5,6 +5,7 @@
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
+import type { ReadonlyDeep, } from 'type-fest';
 import { ADVISOR_MESSAGE_TYPE, } from './constants.ts';
 import type { AdvisorRunResult, } from './types.ts';
 
@@ -27,8 +28,8 @@ export function sendAdvisorMessage(
     pi,
     result,
   }: {
-    pi: ExtensionAPI;
-    result: AdvisorRunResult;
+    readonly pi: ReadonlyDeep<ExtensionAPI>;
+    readonly result: AdvisorRunResult;
   },
 ): void {
   pi.sendMessage({

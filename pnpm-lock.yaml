@@ -1890,6 +1890,9 @@ importers:
       minimatch:
         specifier: ^10.2.3
         version: 10.2.5
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.5.0
       valibot:
         specifier: 'catalog:'
         version: 1.4.0(typescript@6.0.3)

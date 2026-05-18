@@ -9,6 +9,7 @@ import type {
   UserMessage,
 } from '@earendil-works/pi-ai';
 import type { SessionEntry, } from '@earendil-works/pi-coding-agent';
+import type { ReadonlyDeep, } from 'type-fest';
 import { LATEST_USER_EXCERPT_CHARS, } from './constants.ts';
 
 //region Public API
@@ -61,7 +62,7 @@ export function latestUserPromptExcerpt(
  * @returns plain text from text blocks
  */
 function userMessageText(
-  content: UserMessage['content'],
+  content: ReadonlyDeep<UserMessage['content']>,
 ): string {
   if ((typeof content) === 'string')
     return content;
@@ -85,8 +86,8 @@ function userMessageText(
 function isUserMessageEntry(
   entry: SessionEntry,
 ): entry is SessionEntry & {
-  type: 'message';
-  message: UserMessage;
+  readonly type: 'message';
+  readonly message: UserMessage;
 } {
   return (entry.type === 'message') && (entry.message.role === 'user');
 }

@@ -9,8 +9,10 @@ import type {
   Model,
 } from '@earendil-works/pi-ai';
 import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
+import type { ReadonlyDeep, } from 'type-fest';
 import type {
   AdvisorModelSelection,
+  AdvisorReadonlyModel,
   EffectiveModelScope,
   ScopedAdvisorModel,
 } from './types.ts';
@@ -20,11 +22,11 @@ import type {
 /** Options for resolving an explicit model slug. */
 export type ResolveRequestedModelOptions = {
   /** Effective scoped model set. */
-  scope: EffectiveModelScope;
+  readonly scope: EffectiveModelScope;
   /** User supplied slug. */
-  requestedSlug: string;
+  readonly requestedSlug: string;
   /** Global model registry used to distinguish out-of-scope slugs. */
-  modelRegistry: ModelRegistry;
+  readonly modelRegistry: ReadonlyDeep<ModelRegistry>;
 };
 
 /**
@@ -40,7 +42,7 @@ export type ResolveRequestedModelOptions = {
  * ```
  */
 export function canonicalSlug(
-  model: Model<Api>,
+  model: AdvisorReadonlyModel,
 ): string {
   return `${model.provider}/${model.id}`;
 }
@@ -159,8 +161,8 @@ function findScopedSlugMatches(
     scope,
     requestedSlug,
   }: {
-    scope: EffectiveModelScope;
-    requestedSlug: string;
+    readonly scope: EffectiveModelScope;
+    readonly requestedSlug: string;
   },
 ): ScopedAdvisorModel[] {
   if (requestedSlug.includes('/',)) {
@@ -199,8 +201,8 @@ function slugExistsGlobally(
     requestedSlug,
     models,
   }: {
-    requestedSlug: string;
-    models: readonly Model<Api>[];
+    readonly requestedSlug: string;
+    readonly models: readonly AdvisorReadonlyModel[];
   },
 ): boolean {
   if (requestedSlug.includes('/',)) {
@@ -224,20 +226,16 @@ function slugExistsGlobally(
 function uniqueScopedModels(
   models: readonly ScopedAdvisorModel[],
 ): ScopedAdvisorModel[] {
-  return models.reduce(
-    function collectUnique(
-      accumulator: ScopedAdvisorModel[],
-      model,
-    ) {
-      if (!accumulator.some(function alreadyAdded(entry,) {
-        return entry.canonicalSlug === model.canonicalSlug;
-      },)) {
-        accumulator.push(model,);
-      }
-      return accumulator;
-    },
-    [],
-  );
+  /** Locally-owned accumulator built without mutating the input. */
+  const result: ScopedAdvisorModel[] = [];
+  for (const model of models) {
+    if (result.some(function alreadyAdded(entry,) {
+      return entry.canonicalSlug === model.canonicalSlug;
+    },))
+      continue;
+    result.push(model,);
+  }
+  return result;
 }
 
 //endregion Matching

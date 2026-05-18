@@ -12,6 +12,7 @@ import {
   type Component,
   Text,
 } from '@earendil-works/pi-tui';
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   fallbackDetails,
   isAdvisorDetails,
@@ -43,8 +44,8 @@ export function renderAdvisorCall(
     args,
     theme,
   }: {
-    args: AdvisorToolParams;
-    theme: Theme;
+    readonly args: AdvisorToolParams;
+    readonly theme: ReadonlyDeep<Theme>;
   },
 ): Component {
   /** Requested target displayed before execution resolves. */
@@ -93,9 +94,9 @@ export function renderAdvisorResult(
     expanded,
     theme,
   }: {
-    result: AgentToolResult<AdvisorDetails>;
-    expanded: boolean;
-    theme: Theme;
+    readonly result: ReadonlyDeep<AgentToolResult<AdvisorDetails>>;
+    readonly expanded: boolean;
+    readonly theme: ReadonlyDeep<Theme>;
   },
 ): Component {
   /** Text block returned to primary model. */
@@ -136,12 +137,12 @@ export function renderAdvisorMessage(
     expanded,
     theme,
   }: {
-    message: {
-      content: unknown;
-      details?: unknown;
+    readonly message: {
+      readonly content: unknown;
+      readonly details?: unknown;
     };
-    expanded: boolean;
-    theme: Theme;
+    readonly expanded: boolean;
+    readonly theme: ReadonlyDeep<Theme>;
   },
 ): Component {
   /** Message text from custom message content. */

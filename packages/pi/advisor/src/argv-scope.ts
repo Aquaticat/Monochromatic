@@ -9,7 +9,7 @@
 /** Options for parsing `--models` from argv. */
 export type ParseArgvModelsOptions = {
   /** Process arguments excluding or including executable prefix. */
-  argv: readonly string[];
+  readonly argv: readonly string[];
 };
 
 /**

@@ -8,6 +8,7 @@ import type {
   ExtensionAPI,
   ExtensionCommandContext,
 } from '@earendil-works/pi-coding-agent';
+import type { ReadonlyDeep, } from 'type-fest';
 import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import { sendAdvisorMessage, } from './command-message.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
@@ -19,20 +20,57 @@ import type { AdvisorConfig, } from './types.ts';
 
 //region Types
 
-/** Mutable Advisor session state controlled by slash commands. */
+/**
+ * Session-scoped Advisor toggle controlled by `/advisor on` and `/advisor off`.
+ *
+ * Exposes a readonly handle pair (`getEnabled` / `setEnabled`) backed by a
+ * closure-private boolean so parameter types stay readonly while the toggle
+ * mutation remains intentional and centralised in {@link createAdvisorSessionState}.
+ */
 export type AdvisorSessionState = {
-  /** Whether Advisor is enabled for this session. */
-  enabled: boolean;
+  /** Read current session-enable flag. */
+  readonly getEnabled: () => boolean;
+  /** Update session-enable flag. */
+  readonly setEnabled: (enabled: boolean) => void;
 };
+
+/**
+ * Build an {@link AdvisorSessionState} handle around a private mutable flag.
+ *
+ * @param initialEnabled - starting toggle value
+ *
+ * @returns session-state handle with readonly getter and setter
+ *
+ * @example
+ * ```typescript
+ * const state = createAdvisorSessionState(true);
+ * ```
+ */
+export function createAdvisorSessionState(
+  initialEnabled: boolean,
+): AdvisorSessionState {
+  /** Closure-private session-enable flag. */
+  let enabled = initialEnabled;
+  /** Handle exposing getter and setter over the closure-private flag. */
+  const state: AdvisorSessionState = {
+    getEnabled: function getEnabled() {
+      return enabled;
+    },
+    setEnabled: function setEnabled(value: boolean) {
+      enabled = value;
+    },
+  };
+  return state;
+}
 
 /** Options for command registration. */
 export type RegisterAdvisorCommandsOptions = {
   /** Pi extension API. */
-  pi: ExtensionAPI;
+  readonly pi: ExtensionAPI;
   /** Runtime config accessor. */
-  getConfig: () => AdvisorConfig;
+  readonly getConfig: () => AdvisorConfig;
   /** Session enablement state. */
-  state: AdvisorSessionState;
+  readonly state: AdvisorSessionState;
 };
 
 //endregion Types
@@ -90,8 +128,8 @@ export function syncAdvisorActiveTool(
     pi,
     enabled,
   }: {
-    pi: ExtensionAPI;
-    enabled: boolean;
+    readonly pi: ReadonlyDeep<ExtensionAPI>;
+    readonly enabled: boolean;
   },
 ): void {
   /** Current active tool names. */
@@ -134,9 +172,9 @@ export function buildAdvisorStatus(
     config,
     enabled,
   }: {
-    ctx: ExtensionCommandContext;
-    config: AdvisorConfig;
-    enabled: boolean;
+    readonly ctx: ReadonlyDeep<ExtensionCommandContext>;
+    readonly config: AdvisorConfig;
+    readonly enabled: boolean;
   },
 ): string {
   /** Effective model scope for status. */
@@ -204,15 +242,15 @@ export function buildAdvisorStatus(
 /** Options for the command handler. */
 type HandleAdvisorCommandOptions = {
   /** Raw command args. */
-  args: string;
+  readonly args: string;
   /** Command context. */
-  ctx: ExtensionCommandContext;
+  readonly ctx: ExtensionCommandContext;
   /** Pi extension API. */
-  pi: ExtensionAPI;
+  readonly pi: ExtensionAPI;
   /** Runtime config accessor. */
-  getConfig: () => AdvisorConfig;
+  readonly getConfig: () => AdvisorConfig;
   /** Mutable session state. */
-  state: AdvisorSessionState;
+  readonly state: AdvisorSessionState;
 };
 
 /**
@@ -229,13 +267,13 @@ async function handleAdvisorCommand(
     options.ctx.ui.notify(buildAdvisorStatus({
       ctx: options.ctx,
       config: options.getConfig(),
-      enabled: options.state.enabled,
+      enabled: options.state.getEnabled(),
     },),);
     return;
   }
 
   if (trimmed === 'off') {
-    options.state.enabled = false;
+    options.state.setEnabled(false,);
     syncAdvisorActiveTool({
       pi: options.pi,
       enabled: false,
@@ -245,7 +283,7 @@ async function handleAdvisorCommand(
   }
 
   if (trimmed === 'on') {
-    options.state.enabled = true;
+    options.state.setEnabled(true,);
     syncAdvisorActiveTool({
       pi: options.pi,
       enabled: true,
@@ -254,7 +292,7 @@ async function handleAdvisorCommand(
     return;
   }
 
-  if (!options.state.enabled) {
+  if (!options.state.getEnabled()) {
     options.ctx.ui.notify(
       'Advisor is disabled for this session. Run /advisor on to re-enable.',
       'error',
@@ -278,10 +316,10 @@ async function runImmediateAdvisor(
     config,
     requestedSlug,
   }: {
-    ctx: ExtensionCommandContext;
-    pi: ExtensionAPI;
-    config: AdvisorConfig;
-    requestedSlug?: string | undefined;
+    readonly ctx: ReadonlyDeep<ExtensionCommandContext>;
+    readonly pi: ReadonlyDeep<ExtensionAPI>;
+    readonly config: AdvisorConfig;
+    readonly requestedSlug?: string | undefined;
   },
 ): Promise<void> {
   await ctx.waitForIdle();

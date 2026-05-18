@@ -11,23 +11,23 @@ import * as v from 'valibot';
 /** Raw configuration file shape before defaults are applied. */
 export type AdvisorConfigFile = {
   /** Whether Advisor starts enabled. */
-  enabled?: boolean | undefined;
+  readonly enabled?: boolean | undefined;
   /** Provider timeout in milliseconds. */
-  timeoutMs?: number | undefined;
+  readonly timeoutMs?: number | undefined;
   /** Maximum serialized context characters. */
-  maxContextChars?: number | undefined;
+  readonly maxContextChars?: number | undefined;
   /** Maximum Advisor output tokens. */
-  maxAdvisorOutputTokens?: number | undefined;
+  readonly maxAdvisorOutputTokens?: number | undefined;
   /** Whether prior Advisor results stay in context. */
-  includePriorAdvisorResults?: boolean | undefined;
+  readonly includePriorAdvisorResults?: boolean | undefined;
   /** Project-specific Advisor prompt suffix. */
-  systemPrompt?: string | undefined;
+  readonly systemPrompt?: string | undefined;
 };
 
 /** Settings file subset needed for scoped-model reconstruction. */
 export type AdvisorSettingsFile = {
   /** Pi model-cycle patterns. */
-  enabledModels?: string[] | undefined;
+  readonly enabledModels?: readonly string[] | undefined;
 };
 
 //endregion Types

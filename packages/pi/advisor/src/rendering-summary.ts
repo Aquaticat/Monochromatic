@@ -5,6 +5,7 @@
  */
 
 import type { Theme, } from '@earendil-works/pi-coding-agent';
+import type { ReadonlyDeep, } from 'type-fest';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import type { AdvisorDetails, } from './types.ts';
 
@@ -38,10 +39,10 @@ export function renderAdvisorSummary(
     expanded,
     theme,
   }: {
-    text: string;
-    details: AdvisorDetails;
-    expanded: boolean;
-    theme: Theme;
+    readonly text: string;
+    readonly details: AdvisorDetails;
+    readonly expanded: boolean;
+    readonly theme: ReadonlyDeep<Theme>;
   },
 ): string {
   /** Header line with model and duration metadata. */
@@ -169,8 +170,8 @@ function formatHeader(
     details,
     theme,
   }: {
-    details: AdvisorDetails;
-    theme: Theme;
+    readonly details: AdvisorDetails;
+    readonly theme: ReadonlyDeep<Theme>;
   },
 ): string {
   /** Styled tool name. */

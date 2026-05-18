@@ -4,13 +4,10 @@
  * @module
  */
 
-import type {
-  Api,
-  Model,
-} from '@earendil-works/pi-ai';
 import { canonicalSlug, } from './model-slug.ts';
 import { findExactModelReferenceMatch, } from './scope-exact.ts';
 import type {
+  AdvisorReadonlyModel,
   ScopedAdvisorModel,
   ScopedThinkingLevel,
 } from './types.ts';
@@ -20,9 +17,9 @@ import type {
 /** Result of parsing a single model scope pattern. */
 export type PatternResolution = {
   /** Matched model, or `undefined` when no model matched. */
-  model?: Model<Api>;
+  readonly model?: AdvisorReadonlyModel;
   /** Thinking level suffix, when present. */
-  thinkingLevel?: ScopedThinkingLevel;
+  readonly thinkingLevel?: ScopedThinkingLevel;
 };
 
 /** Valid pi thinking-level suffixes. */
@@ -81,8 +78,8 @@ export function parseModelPattern(
     pattern,
     availableModels,
   }: {
-    pattern: string;
-    availableModels: readonly Model<Api>[];
+    readonly pattern: string;
+    readonly availableModels: readonly AdvisorReadonlyModel[];
   },
 ): PatternResolution {
   /** Exact match with full pattern. */
@@ -140,8 +137,8 @@ export function parseModelPattern(
 export function splitThinkingSuffix(
   pattern: string,
 ): {
-  pattern: string;
-  thinkingLevel?: ScopedThinkingLevel;
+  readonly pattern: string;
+  readonly thinkingLevel?: ScopedThinkingLevel;
 } {
   /** Last colon, used for optional suffix parsing. */
   const colonIndex = pattern.lastIndexOf(':',);
@@ -205,8 +202,8 @@ export function scopedModelFromModel(
     model,
     thinkingLevel,
   }: {
-    model: Model<Api>;
-    thinkingLevel?: ScopedThinkingLevel;
+    readonly model: AdvisorReadonlyModel;
+    readonly thinkingLevel?: ScopedThinkingLevel;
   },
 ): ScopedAdvisorModel {
   return {
@@ -234,10 +231,10 @@ function tryMatchModel(
     pattern,
     availableModels,
   }: {
-    pattern: string;
-    availableModels: readonly Model<Api>[];
+    readonly pattern: string;
+    readonly availableModels: readonly AdvisorReadonlyModel[];
   },
-): Model<Api> | undefined {
+): AdvisorReadonlyModel | undefined {
   /** Exact match by canonical slug or bare id. */
   const exact = findExactModelReferenceMatch({
     modelReference: pattern,

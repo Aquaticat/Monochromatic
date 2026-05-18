@@ -5,9 +5,14 @@
  */
 
 import type {
+  AgentToolResult,
+  ExtensionContext,
   ModelRegistry,
   SessionEntry,
+  Theme,
+  ToolRenderResultOptions,
 } from '@earendil-works/pi-coding-agent';
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   buildAdvisorSystemPrompt,
   completeAdvisor,
@@ -32,6 +37,7 @@ import {
 import type {
   AdvisorConfig,
   AdvisorContext,
+  AdvisorDetails,
   AdvisorModelSelection,
   AdvisorRunOptions,
   AdvisorRunResult,
@@ -46,9 +52,9 @@ import type {
 /** Options for creating the registered Advisor tool. */
 export type CreateAdvisorToolOptions = {
   /** Return current runtime config. */
-  getConfig: () => AdvisorConfig;
+  readonly getConfig: () => AdvisorConfig;
   /** Return current session enablement. */
-  getSessionEnabled: () => boolean;
+  readonly getSessionEnabled: () => boolean;
 };
 
 /**
@@ -82,11 +88,11 @@ export function createAdvisorTool(
     executionMode: 'sequential',
     prepareArguments: prepareAdvisorArguments,
     execute: async function executeAdvisorTool(
-      toolCallId,
-      params,
-      signal,
-      _onUpdate,
-      ctx,
+      toolCallId: string,
+      params: { readonly model?: string; },
+      signal: ReadonlyDeep<AbortSignal> | undefined,
+      _onUpdate: unknown,
+      ctx: ReadonlyDeep<ExtensionContext>,
     ): Promise<AdvisorToolResult> {
       if (!toolOptions.getSessionEnabled()) {
         throw new Error(
@@ -116,21 +122,23 @@ export function createAdvisorTool(
         details: result.details,
       };
     },
+    // oxlint-disable-next-line unicorn/consistent-function-scoping -- ToolDefinition.renderCall expects positional args; require-destructured-params forbids extracting this to a module-level declaration.
     renderCall: function renderCall(
-      args,
-      theme,
-      _context,
+      args: { readonly model?: string; },
+      theme: ReadonlyDeep<Theme>,
+      _context: unknown,
     ) {
       return renderAdvisorCall({
         args,
         theme,
       },);
     },
+    // oxlint-disable-next-line unicorn/consistent-function-scoping -- ToolDefinition.renderResult expects positional args; require-destructured-params forbids extracting this to a module-level declaration.
     renderResult: function renderResult(
-      result,
-      renderOptions,
-      theme,
-      _context,
+      result: ReadonlyDeep<AgentToolResult<AdvisorDetails>>,
+      renderOptions: ReadonlyDeep<ToolRenderResultOptions>,
+      theme: ReadonlyDeep<Theme>,
+      _context: unknown,
     ) {
       return renderAdvisorResult({
         result,
@@ -233,49 +241,49 @@ export async function runAdvisor(
 /** Selected model paired with serialized context built for that model. */
 type AdvisorSelectionContext = {
   /** Advisor model selection. */
-  selection: AdvisorModelSelection;
+  readonly selection: AdvisorModelSelection;
   /** Serialized context using selected model budget. */
-  advisorContext: AdvisorContext;
+  readonly advisorContext: AdvisorContext;
 };
 
 /** Options for selecting model and model-budgeted context together. */
 type SelectAdvisorRunContextOptions = {
   /** Session branch entries from pi. */
-  branch: readonly SessionEntry[];
+  readonly branch: readonly SessionEntry[];
   /** Runtime Advisor configuration. */
-  config: AdvisorConfig;
+  readonly config: AdvisorConfig;
   /** Advisor model system prompt. */
-  advisorSystemPrompt: string;
+  readonly advisorSystemPrompt: string;
   /** Effective scoped model set. */
-  scope: EffectiveModelScope;
+  readonly scope: EffectiveModelScope;
   /** Global model registry for explicit slug validation. */
-  modelRegistry: ModelRegistry;
+  readonly modelRegistry: ReadonlyDeep<ModelRegistry>;
   /** Optional user-requested model slug. */
-  requestedSlug?: string;
+  readonly requestedSlug?: string;
   /** Current Advisor tool call id to omit. */
-  toolCallId?: string;
+  readonly toolCallId?: string;
 };
 
 /** Options for building context for one scoped Advisor model. */
 type BuildContextForScopedModelOptions = {
   /** Session branch entries from pi. */
-  branch: readonly SessionEntry[];
+  readonly branch: readonly SessionEntry[];
   /** Runtime Advisor configuration. */
-  config: AdvisorConfig;
+  readonly config: AdvisorConfig;
   /** Advisor model system prompt. */
-  advisorSystemPrompt: string;
+  readonly advisorSystemPrompt: string;
   /** Scoped Advisor model. */
-  scopedModel: ScopedAdvisorModel;
+  readonly scopedModel: ScopedAdvisorModel;
   /** Current Advisor tool call id to omit. */
-  toolCallId?: string;
+  readonly toolCallId?: string;
 };
 
 /** Context candidate for a scoped Advisor model. */
 type AdvisorContextCandidate = {
   /** Scoped Advisor model. */
-  scopedModel: ScopedAdvisorModel;
+  readonly scopedModel: ScopedAdvisorModel;
   /** Serialized context using scoped model budget. */
-  advisorContext: AdvisorContext;
+  readonly advisorContext: AdvisorContext;
 };
 
 /**

@@ -96,7 +96,7 @@ function modelRegistryWith(
     getAll() {
       return [...models,];
     },
-  } as ModelRegistry;
+  } as unknown as ModelRegistry;
 }
 
 /**

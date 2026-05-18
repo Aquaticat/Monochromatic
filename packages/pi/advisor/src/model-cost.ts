@@ -17,29 +17,35 @@ import type {
 /** Options for estimating Advisor request input tokens. */
 export type EstimateAdvisorTokensOptions = {
   /** Advisor model system prompt. */
-  systemPrompt: string;
+  readonly systemPrompt: string;
   /** Serialized conversation context. */
-  contextText: string;
+  readonly contextText: string;
 };
 
 /** Options for default model selection. */
 export type SelectDefaultModelOptions = {
   /** Effective scoped model set. */
-  scope: EffectiveModelScope;
+  readonly scope: EffectiveModelScope;
   /** Estimated input tokens for this Advisor request. */
-  estimatedInputTokens: number;
+  readonly estimatedInputTokens: number;
   /** Maximum output tokens requested from Advisor. */
-  maxAdvisorOutputTokens: number;
+  readonly maxAdvisorOutputTokens: number;
+};
+
+/** Read-only lookup interface for slug→tokens mapping. */
+type ReadonlySlugTokensMap = {
+  /** Look up the estimated input-token count for a canonical model slug. */
+  readonly get: (slug: string) => number | undefined;
 };
 
 /** Options for default model selection with per-model context estimates. */
 export type SelectDefaultModelFromContextEstimatesOptions = {
   /** Effective scoped model set. */
-  scope: EffectiveModelScope;
+  readonly scope: EffectiveModelScope;
   /** Estimated input tokens keyed by canonical scoped model slug. */
-  estimatedInputTokensBySlug: ReadonlyMap<string, number>;
+  readonly estimatedInputTokensBySlug: ReadonlySlugTokensMap;
   /** Maximum output tokens requested from Advisor. */
-  maxAdvisorOutputTokens: number;
+  readonly maxAdvisorOutputTokens: number;
 };
 
 /**
@@ -140,8 +146,8 @@ export function selectDefaultModelFromContextEstimates(
       },);
     },)
     .toSorted(function compareScoreCallback(
-      left,
-      right,
+      left: ModelCostScore,
+      right: ModelCostScore,
     ) {
       return compareScores({
         left,
@@ -189,9 +195,9 @@ function scoreModel(
     estimatedInputTokens,
     maxAdvisorOutputTokens,
   }: {
-    entry: ScopedAdvisorModel;
-    estimatedInputTokens: number;
-    maxAdvisorOutputTokens: number;
+    readonly entry: ScopedAdvisorModel;
+    readonly estimatedInputTokens: number;
+    readonly maxAdvisorOutputTokens: number;
   },
 ): ModelCostScore {
   /** Input-token price from model metadata. */
@@ -227,8 +233,8 @@ function compareScores(
     left,
     right,
   }: {
-    left: ModelCostScore;
-    right: ModelCostScore;
+    readonly left: ModelCostScore;
+    readonly right: ModelCostScore;
   },
 ): number {
   if (right.expectedCost !== left.expectedCost)
@@ -253,7 +259,7 @@ function buildSelectionReason(
   {
     score,
   }: {
-    score: ModelCostScore;
+    readonly score: ModelCostScore;
   },
 ): string {
   return [

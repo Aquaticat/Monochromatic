@@ -4,11 +4,8 @@
  * @module
  */
 
-import type {
-  Api,
-  Model,
-} from '@earendil-works/pi-ai';
 import { canonicalSlug, } from './model-slug.ts';
+import type { AdvisorReadonlyModel, } from './types.ts';
 
 //region Public API
 
@@ -31,10 +28,10 @@ export function findExactModelReferenceMatch(
     modelReference,
     availableModels,
   }: {
-    modelReference: string;
-    availableModels: readonly Model<Api>[];
+    readonly modelReference: string;
+    readonly availableModels: readonly AdvisorReadonlyModel[];
   },
-): Model<Api> | undefined {
+): AdvisorReadonlyModel | undefined {
   /** Trimmed user reference. */
   const trimmedReference = modelReference.trim();
   if (trimmedReference === '')
@@ -84,10 +81,10 @@ function matchProviderModelReference(
     trimmedReference,
     availableModels,
   }: {
-    trimmedReference: string;
-    availableModels: readonly Model<Api>[];
+    readonly trimmedReference: string;
+    readonly availableModels: readonly AdvisorReadonlyModel[];
   },
-): Model<Api> | undefined {
+): AdvisorReadonlyModel | undefined {
   /** Slash index used to parse provider/model references. */
   const slashIndex = trimmedReference.indexOf('/',);
   if (slashIndex === (-1))

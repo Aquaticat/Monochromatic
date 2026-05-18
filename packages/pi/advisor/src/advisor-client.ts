@@ -13,10 +13,12 @@ import {
   type ProviderStreamOptions,
 } from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
+import type { ReadonlyDeep, } from 'type-fest';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
 import type {
   AdvisorConfig,
   AdvisorContext,
+  AdvisorReadonlyModel,
 } from './types.ts';
 
 //region Types
@@ -24,15 +26,15 @@ import type {
 /** Options for invoking the selected Advisor model. */
 export type CompleteAdvisorOptions = {
   /** Pi extension context, used for auth lookup. */
-  ctx: ExtensionContext;
+  readonly ctx: ReadonlyDeep<ExtensionContext>;
   /** Selected Advisor model. */
-  model: Model<Api>;
+  readonly model: AdvisorReadonlyModel;
   /** Runtime Advisor config. */
-  config: AdvisorConfig;
+  readonly config: AdvisorConfig;
   /** Serialized Advisor context. */
-  advisorContext: AdvisorContext;
+  readonly advisorContext: AdvisorContext;
   /** Abort signal from tool or command mode. */
-  signal?: AbortSignal | undefined;
+  readonly signal?: ReadonlyDeep<AbortSignal> | undefined;
 };
 
 //endregion Types
@@ -56,8 +58,12 @@ export type CompleteAdvisorOptions = {
 export async function completeAdvisor(
   options: CompleteAdvisorOptions,
 ): Promise<AssistantMessage> {
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- pi-ai APIs require non-readonly Model; prefer-readonly-parameter-types forces our parent type to be deep-readonly. */
+  /** Mutable view of the advisor model for external pi-ai API calls. */
+  const mutableModel = options.model as Model<Api>;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
   /** Request auth resolved through pi's model registry. */
-  const auth = await options.ctx.modelRegistry.getApiKeyAndHeaders(options.model,);
+  const auth = await options.ctx.modelRegistry.getApiKeyAndHeaders(mutableModel,);
   if (!auth.ok) {
     throw new Error(
       `advisor: auth failed for ${options.model.provider}/${options.model.id}: ${auth.error}`,
@@ -88,7 +94,7 @@ export async function completeAdvisor(
 
   try {
     return await complete(
-      options.model,
+      mutableModel,
       {
         systemPrompt: buildAdvisorSystemPrompt(options.config,),
         messages: [userMessage,],
@@ -170,8 +176,8 @@ function combinedSignal(
     signal,
     timeoutMs,
   }: {
-    signal?: AbortSignal;
-    timeoutMs: number;
+    readonly signal?: ReadonlyDeep<AbortSignal>;
+    readonly timeoutMs: number;
   },
 ): AbortSignal {
   /** Timeout signal for this Advisor call. */

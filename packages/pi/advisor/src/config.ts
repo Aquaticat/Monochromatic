@@ -35,9 +35,9 @@ export const DEFAULT_CONFIG: Omit<AdvisorConfig, 'source'> = {
 /** Options for loading Advisor config. */
 export type LoadConfigOptions = {
   /** Current working directory used for project config lookup. */
-  cwd: string;
+  readonly cwd: string;
   /** Home directory override for tests. */
-  home?: string | undefined;
+  readonly home?: string | undefined;
 };
 
 /**
@@ -104,8 +104,8 @@ export function loadMergedConfig(
 export function getConfigPaths(
   options: LoadConfigOptions,
 ): {
-  globalPath: string;
-  projectPath: string;
+  readonly globalPath: string;
+  readonly projectPath: string;
 } {
   /** Home directory used by pi for global agent config. */
   const home = options.home ?? process.env.HOME ?? '~';
@@ -144,14 +144,14 @@ function mergeConfigFiles(
     defaults,
     configs,
   }: {
-    defaults: Omit<AdvisorConfig, 'source'>;
-    configs: readonly (AdvisorConfigFile | undefined)[];
+    readonly defaults: Omit<AdvisorConfig, 'source'>;
+    readonly configs: readonly (AdvisorConfigFile | undefined)[];
   },
 ): Omit<AdvisorConfig, 'source'> {
   return configs.reduce(
     function mergeConfig(
       accumulator: Omit<AdvisorConfig, 'source'>,
-      config,
+      config: AdvisorConfigFile | undefined,
     ) {
       if (config === undefined)
         return accumulator;
@@ -188,8 +188,8 @@ function loadConfigFile(
     path,
     label,
   }: {
-    path: string;
-    label: string;
+    readonly path: string;
+    readonly label: string;
   },
 ): AdvisorConfigFile | undefined {
   /** Raw JSON data, or `undefined` when file is absent. */
@@ -220,8 +220,8 @@ function readJsonFile(
     path,
     label,
   }: {
-    path: string;
-    label: string;
+    readonly path: string;
+    readonly label: string;
   },
 ): unknown {
   try {
@@ -261,9 +261,9 @@ function parseConfigFile(
     path,
     label,
   }: {
-    raw: unknown;
-    path: string;
-    label: string;
+    readonly raw: unknown;
+    readonly path: string;
+    readonly label: string;
   },
 ): AdvisorConfigFile {
   /** Validation result from valibot. */

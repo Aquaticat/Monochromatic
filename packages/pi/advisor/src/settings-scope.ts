@@ -17,17 +17,17 @@ import {
 /** Options for reading pi settings files. */
 export type LoadSettingsScopeOptions = {
   /** Current working directory for project settings lookup. */
-  cwd: string;
+  readonly cwd: string;
   /** Home directory override for tests. */
-  home?: string | undefined;
+  readonly home?: string | undefined;
 };
 
 /** Reconstructed enabled-model patterns from pi settings. */
 export type SettingsScopePatterns = {
   /** Effective enabled-model patterns, or `undefined` when unrestricted. */
-  patterns?: string[] | undefined;
+  readonly patterns?: readonly string[] | undefined;
   /** Settings file path that supplied the effective patterns. */
-  sourcePath?: string | undefined;
+  readonly sourcePath?: string | undefined;
 };
 
 //endregion Types
@@ -96,8 +96,8 @@ export function loadSettingsScopePatterns(
 export function getSettingsPaths(
   options: LoadSettingsScopeOptions,
 ): {
-  globalPath: string;
-  projectPath: string;
+  readonly globalPath: string;
+  readonly projectPath: string;
 } {
   /** Home directory used by pi for global settings. */
   const home = options.home ?? process.env.HOME ?? '~';
@@ -134,8 +134,8 @@ function loadSettingsFile(
     path,
     label,
   }: {
-    path: string;
-    label: string;
+    readonly path: string;
+    readonly label: string;
   },
 ): AdvisorSettingsFile | undefined {
   /** Raw parsed JSON object, or `undefined` when absent. */
@@ -172,8 +172,8 @@ function readJsonFile(
     path,
     label,
   }: {
-    path: string;
-    label: string;
+    readonly path: string;
+    readonly label: string;
   },
 ): unknown {
   try {
@@ -204,7 +204,7 @@ function readJsonFile(
  * @returns cleaned model patterns
  */
 function cleanPatterns(
-  patterns: string[],
+  patterns: readonly string[],
 ): string[] {
   return patterns
     .map(function trimPattern(pattern,) {

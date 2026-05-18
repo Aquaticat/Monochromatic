@@ -26,6 +26,7 @@ import { estimateAdvisorInputTokens, } from './model-cost.ts';
 import type {
   AdvisorConfig,
   AdvisorContext,
+  AdvisorReadonlyModel,
 } from './types.ts';
 
 //region Public API
@@ -36,25 +37,25 @@ type AdvisorAgentMessage = Parameters<typeof convertToLlm>[0][number];
 /** Options for building Advisor context. */
 export type BuildAdvisorContextOptions = {
   /** Session branch entries from pi. */
-  branch: readonly SessionEntry[];
+  readonly branch: readonly SessionEntry[];
   /** Runtime Advisor configuration. */
-  config: AdvisorConfig;
+  readonly config: AdvisorConfig;
   /** Advisor-model system prompt used for token estimate. */
-  advisorSystemPrompt: string;
+  readonly advisorSystemPrompt: string;
   /** Effective serialized-context character budget. */
-  maxContextChars?: number;
+  readonly maxContextChars?: number;
   /** Current tool call id to omit from serialized context. */
-  toolCallId?: string;
+  readonly toolCallId?: string;
 };
 
 /** Options for deriving context budget from selected Advisor model. */
 export type MaxContextCharsForAdvisorModelOptions = {
   /** Runtime Advisor configuration. */
-  config: AdvisorConfig;
+  readonly config: AdvisorConfig;
   /** Selected Advisor model. */
-  model: Model<Api>;
+  readonly model: AdvisorReadonlyModel;
   /** Advisor-model system prompt used for token reserve estimate. */
-  advisorSystemPrompt: string;
+  readonly advisorSystemPrompt: string;
 };
 
 /**
@@ -178,12 +179,12 @@ export function truncateContext(
     text,
     maxChars,
   }: {
-    text: string;
-    maxChars: number;
+    readonly text: string;
+    readonly maxChars: number;
   },
 ): {
-  text: string;
-  truncated: boolean;
+  readonly text: string;
+  readonly truncated: boolean;
 } {
   if (text.length <= maxChars) {
     return {
@@ -237,9 +238,9 @@ function entryToMessage(
     includePriorAdvisorResults,
     currentToolCallId,
   }: {
-    entry: SessionEntry;
-    includePriorAdvisorResults: boolean;
-    currentToolCallId?: string;
+    readonly entry: SessionEntry;
+    readonly includePriorAdvisorResults: boolean;
+    readonly currentToolCallId?: string;
   },
 ): AdvisorAgentMessage | undefined {
   if (entry.type === 'message') {
@@ -301,9 +302,9 @@ function filterMessage(
     includePriorAdvisorResults,
     currentToolCallId,
   }: {
-    message: AdvisorAgentMessage;
-    includePriorAdvisorResults: boolean;
-    currentToolCallId?: string;
+    readonly message: AdvisorAgentMessage;
+    readonly includePriorAdvisorResults: boolean;
+    readonly currentToolCallId?: string;
   },
 ): AdvisorAgentMessage | undefined {
   if (message.role === 'toolResult') {
@@ -330,7 +331,7 @@ function filterMessage(
   return {
     ...message,
     content,
-  } satisfies AssistantMessage;
+  };
 }
 
 //endregion Entry conversion

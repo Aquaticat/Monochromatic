@@ -17,7 +17,10 @@ import {
   scopedModelFromModel,
   splitThinkingSuffix,
 } from './scope-match.ts';
-import type { ScopedAdvisorModel, } from './types.ts';
+import type {
+  AdvisorReadonlyModel,
+  ScopedAdvisorModel,
+} from './types.ts';
 
 //region Public API
 
@@ -40,32 +43,32 @@ export function resolveModelPatterns(
     patterns,
     availableModels,
   }: {
-    patterns: readonly string[];
-    availableModels: readonly Model<Api>[];
+    readonly patterns: readonly string[];
+    readonly availableModels: readonly AdvisorReadonlyModel[];
   },
 ): ScopedAdvisorModel[] {
-  return patterns.reduce(
-    function collectPattern(
-      accumulator: ScopedAdvisorModel[],
-      pattern,
-    ) {
-      /** Models matched by this pattern. */
-      const matches = patternHasGlob(pattern,)
-        ? resolveGlobPattern({
-          pattern,
-          availableModels,
-        },)
-        : resolveLiteralPattern({
-          pattern,
-          availableModels,
-        },);
-      return appendUniqueMatches({
-        accumulator,
-        matches,
+  /** Accumulated unique matches across patterns. */
+  const accumulator: ScopedAdvisorModel[] = [];
+  for (const pattern of patterns) {
+    /** Models matched by this pattern. */
+    const matches = patternHasGlob(pattern,)
+      ? resolveGlobPattern({
+        pattern,
+        availableModels,
+      },)
+      : resolveLiteralPattern({
+        pattern,
+        availableModels,
       },);
-    },
-    [],
-  );
+    /** Updated accumulator with new unique matches appended. */
+    const next = appendUniqueMatches({
+      accumulator,
+      matches,
+    },);
+    accumulator.length = 0;
+    accumulator.push(...next,);
+  }
+  return accumulator;
 }
 
 //endregion Public API
@@ -86,8 +89,8 @@ function resolveGlobPattern(
     pattern,
     availableModels,
   }: {
-    pattern: string;
-    availableModels: readonly Model<Api>[];
+    readonly pattern: string;
+    readonly availableModels: readonly AdvisorReadonlyModel[];
   },
 ): ScopedAdvisorModel[] {
   /** Pattern split into glob body and optional thinking suffix. */
@@ -130,8 +133,8 @@ function resolveLiteralPattern(
     pattern,
     availableModels,
   }: {
-    pattern: string;
-    availableModels: readonly Model<Api>[];
+    readonly pattern: string;
+    readonly availableModels: readonly AdvisorReadonlyModel[];
   },
 ): ScopedAdvisorModel[] {
   /** Parsed model pattern. */
@@ -163,21 +166,29 @@ function appendUniqueMatches(
     accumulator,
     matches,
   }: {
-    accumulator: ScopedAdvisorModel[];
-    matches: readonly ScopedAdvisorModel[];
+    readonly accumulator: readonly ScopedAdvisorModel[];
+    readonly matches: readonly ScopedAdvisorModel[];
   },
 ): ScopedAdvisorModel[] {
+  /** Fresh accumulator seeded from input to avoid mutating the caller's array. */
+  const result: ScopedAdvisorModel[] = [...accumulator,];
   for (const match of matches) {
-    if (!accumulator.some(function alreadyAdded(entry,) {
+    if (result.some(function alreadyAdded(entry,) {
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- pi-ai `modelsAreEqual` accepts mutable `Model<Api>`; prefer-readonly-parameter-types requires our entry.model to be deep-readonly. */
+      /** Mutable view of entry model for external pi-ai API. */
+      const entryModel = entry.model as Model<Api>;
+      /** Mutable view of match model for external pi-ai API. */
+      const matchModel = match.model as Model<Api>;
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
       return modelsAreEqual(
-        entry.model,
-        match.model,
+        entryModel,
+        matchModel,
       );
-    },)) {
-      accumulator.push(match,);
-    }
+    },))
+      continue;
+    result.push(match,);
   }
-  return accumulator;
+  return result;
 }
 
 //endregion Pattern resolution

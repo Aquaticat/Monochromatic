@@ -14,10 +14,11 @@ import type {
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import type { ReadonlyDeep, } from 'type-fest';
 import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import {
-  type AdvisorSessionState,
   buildAdvisorStatus,
+  createAdvisorSessionState,
   registerAdvisorCommands,
   syncAdvisorActiveTool,
 } from './commands.ts';
@@ -62,18 +63,16 @@ export default function advisor(
   /** Runtime config loaded at extension startup. */
   const config = loadMergedConfig({ cwd: process.cwd(), },);
   /** Mutable session state controlled by `/advisor on` and `/advisor off`. */
-  const state: AdvisorSessionState = {
-    enabled: config.enabled,
-  };
+  const state = createAdvisorSessionState(config.enabled,);
 
-  innerL.info(`advisor extension loaded; enabled=${String(state.enabled,)}`,);
+  innerL.info(`advisor extension loaded; enabled=${String(state.getEnabled(),)}`,);
 
   pi.registerTool(createAdvisorTool({
     getConfig: function getConfig() {
       return config;
     },
     getSessionEnabled: function getSessionEnabled() {
-      return state.enabled;
+      return state.getEnabled();
     },
   },),);
 
@@ -105,7 +104,7 @@ export default function advisor(
     function handleSessionStart() {
       syncAdvisorActiveTool({
         pi,
-        enabled: state.enabled,
+        enabled: state.getEnabled(),
       },);
     },
   );
@@ -113,10 +112,10 @@ export default function advisor(
   pi.on(
     'before_agent_start',
     function handleBeforeAgentStart(
-      event: BeforeAgentStartEvent,
-      ctx: ExtensionContext,
+      event: ReadonlyDeep<BeforeAgentStartEvent>,
+      ctx: ReadonlyDeep<ExtensionContext>,
     ): BeforeAgentStartEventResult | undefined {
-      if (!state.enabled)
+      if (!state.getEnabled())
         return undefined;
 
       /** Advisor guidance appended to the main model system prompt. */
@@ -154,8 +153,8 @@ function buildMainModelGuidance(
     ctx,
     config,
   }: {
-    ctx: ExtensionContext;
-    config: ReturnType<typeof loadMergedConfig>;
+    readonly ctx: ReadonlyDeep<ExtensionContext>;
+    readonly config: ReturnType<typeof loadMergedConfig>;
   },
 ): string {
   /** Effective scoped model set. */

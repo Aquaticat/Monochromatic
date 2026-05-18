@@ -5,6 +5,7 @@
  */
 
 import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
+import type { ReadonlyDeep, } from 'type-fest';
 import { selectDefaultModel, } from './model-cost.ts';
 import { resolveRequestedModel, } from './model-slug.ts';
 import type {
@@ -43,11 +44,11 @@ export function selectAdvisorModel(
     estimatedInputTokens,
     modelRegistry,
   }: {
-    scope: EffectiveModelScope;
-    requestedSlug?: string;
-    config: AdvisorConfig;
-    estimatedInputTokens: number;
-    modelRegistry: ModelRegistry;
+    readonly scope: EffectiveModelScope;
+    readonly requestedSlug?: string;
+    readonly config: AdvisorConfig;
+    readonly estimatedInputTokens: number;
+    readonly modelRegistry: ReadonlyDeep<ModelRegistry>;
   },
 ): AdvisorModelSelection {
   if ((requestedSlug !== undefined) && (requestedSlug.trim() !== '')) {

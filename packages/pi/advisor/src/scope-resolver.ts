@@ -4,16 +4,14 @@
  * @module
  */
 
-import type {
-  Api,
-  Model,
-} from '@earendil-works/pi-ai';
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
+import type { ReadonlyDeep, } from 'type-fest';
 import { parseArgvModelPatterns, } from './argv-scope.ts';
 import { canonicalSlug, } from './model-slug.ts';
 import { resolveModelPatterns, } from './scope-patterns.ts';
 import { loadSettingsScopePatterns, } from './settings-scope.ts';
 import type {
+  AdvisorReadonlyModel,
   EffectiveModelScope,
   ScopedAdvisorModel,
   ScopedThinkingLevel,
@@ -24,19 +22,19 @@ import type {
 /** Options for resolving Advisor model scope. */
 export type ResolveEffectiveScopeOptions = {
   /** Pi extension context. */
-  ctx: ExtensionContext;
+  readonly ctx: ReadonlyDeep<ExtensionContext>;
   /** Process argv override for tests. */
-  argv?: readonly string[];
+  readonly argv?: readonly string[];
   /** Home directory override for tests. */
-  home?: string;
+  readonly home?: string;
 };
 
 /** Raw live scope item shapes accepted by the detector. */
-type RawLiveScopeItem = Model<Api> | {
+type RawLiveScopeItem = AdvisorReadonlyModel | {
   /** Pi model object. */
-  model: Model<Api>;
+  readonly model: AdvisorReadonlyModel;
   /** Optional thinking level carried by pi. */
-  thinkingLevel?: ScopedThinkingLevel;
+  readonly thinkingLevel?: ScopedThinkingLevel;
 };
 
 //endregion Types
@@ -122,7 +120,7 @@ export function resolveEffectiveScope(
  * @returns live scoped models, or `undefined` when unavailable
  */
 function readLiveScope(
-  ctx: ExtensionContext,
+  ctx: ReadonlyDeep<ExtensionContext>,
 ): ScopedAdvisorModel[] | undefined {
   /** Raw live scope value from method or property. */
   const rawScope = liveScopeRawValue(ctx,);
@@ -153,7 +151,7 @@ function readLiveScope(
  * @returns raw live-scope value, when exposed
  */
 function liveScopeRawValue(
-  ctx: ExtensionContext,
+  ctx: ReadonlyDeep<ExtensionContext>,
 ): unknown {
   if (hasLiveScopeGetter(ctx,))
     return ctx.getScopedModels();
@@ -168,8 +166,8 @@ function liveScopeRawValue(
  * @returns whether context exposes a live-scope getter
  */
 function hasLiveScopeGetter(
-  ctx: ExtensionContext,
-): ctx is ExtensionContext & { getScopedModels: () => unknown; } {
+  ctx: ReadonlyDeep<ExtensionContext>,
+): ctx is ReadonlyDeep<ExtensionContext> & { readonly getScopedModels: () => unknown; } {
   return ('getScopedModels' in ctx) && ((typeof ctx.getScopedModels) === 'function');
 }
 
@@ -181,8 +179,8 @@ function hasLiveScopeGetter(
  * @returns whether context exposes a live-scope property
  */
 function hasLiveScopeProperty(
-  ctx: ExtensionContext,
-): ctx is ExtensionContext & { scopedModels: unknown; } {
+  ctx: ReadonlyDeep<ExtensionContext>,
+): ctx is ReadonlyDeep<ExtensionContext> & { readonly scopedModels: unknown; } {
   return 'scopedModels' in ctx;
 }
 
@@ -214,7 +212,7 @@ function isRawLiveScopeItem(
  */
 function isModel(
   value: unknown,
-): value is Model<Api> {
+): value is AdvisorReadonlyModel {
   if ((value === null) || ((typeof value) !== 'object'))
     return false;
   return ('id' in value)
@@ -248,8 +246,8 @@ function scopedModelFromModel(
     model,
     thinkingLevel,
   }: {
-    model: Model<Api>;
-    thinkingLevel?: ScopedThinkingLevel;
+    readonly model: AdvisorReadonlyModel;
+    readonly thinkingLevel?: ScopedThinkingLevel;
   },
 ): ScopedAdvisorModel {
   return {

@@ -97,6 +97,45 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
   },
   {
     from: 'package',
+    package: '@earendil-works/pi-coding-agent',
+    name: [
+      // pi-coding-agent SDK types are visitor inputs for extension code; the
+      // host owns their shape. ExtensionAPI carries registry mutators
+      // (registerTool, registerCommand, setActiveTools), SessionEntry
+      // variants retain writable fields, ModelRegistry exposes auth lookup,
+      // and ExtensionContext/ExtensionCommandContext are passed through to
+      // host components whose contracts predate readonly conventions.
+      'ExtensionAPI',
+      'ExtensionContext',
+      'ExtensionCommandContext',
+      'SessionEntry',
+      'ModelRegistry',
+    ],
+  },
+  {
+    from: 'package',
+    package: '@earendil-works/pi-ai',
+    name: [
+      // pi-ai provider/message types are dictated by the upstream SDK;
+      // AssistantMessage carries a mutable `content` array of TextContent/
+      // ThinkingContent/ToolCall blocks that the upstream type does not
+      // mark readonly.
+      'AssistantMessage',
+    ],
+  },
+  {
+    from: 'package',
+    package: '@earendil-works/pi-agent-core',
+    name: [
+      // pi-agent-core defines AgentMessage as the union of pi-ai Message
+      // variants plus host-augmented CustomAgentMessages (BashExecution,
+      // BranchSummary, etc.); the union members are owned by their
+      // respective packages and carry mutable content arrays.
+      'AgentMessage',
+    ],
+  },
+  {
+    from: 'package',
     package: 'estree',
     name: [
       'Node',
