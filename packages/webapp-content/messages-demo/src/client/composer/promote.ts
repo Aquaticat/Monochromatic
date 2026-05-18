@@ -31,6 +31,8 @@ import {
 import type { ComposerState, } from './state.ts';
 import { setupTier3Nav, } from './tier3.ts';
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM tier promotion: input wraps `HTMLFormElement`/`HTMLTextAreaElement`/`HTMLElement` and mutates `state.tier`, `state.tier3`; readonly wrappers would misdescribe the API contract */
+
 /**
  * One-way tier 2 -\> 3 transition. See module-level doc for the full
  * sequence and roll-back rules.
@@ -138,3 +140,4 @@ export async function promoteToTier3(
     message: `tier 3: editing chunk 1 of ${String(compiled.chunks.length,)}`,
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

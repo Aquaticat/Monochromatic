@@ -173,8 +173,8 @@ function synthesizeBody(
     targetBytes,
     seed,
   }: {
-    targetBytes: number;
-    seed: number;
+    readonly targetBytes: number;
+    readonly seed: number;
   },
 ): string {
   /**
@@ -257,8 +257,8 @@ function pickWords({
   seed,
   count,
 }: {
-  seed: number;
-  count: number;
+  readonly seed: number;
+  readonly count: number;
 },): string {
   /** Accumulator of selected words; joined with spaces below. */
   const words: string[] = [];
@@ -283,8 +283,8 @@ function pickWords({
  */
 async function createMessage(
   input: {
-    body: string;
-    userId: string;
+    readonly body: string;
+    readonly userId: string;
   },
 ): Promise<number> {
   /** Pre-allocated draft id reused by chunk PUTs and finalize. */

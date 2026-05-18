@@ -41,6 +41,7 @@ const DECIMAL_RADIX = 10;
  * increments `revision`. Returns 409 when the revision cap is reached.
  */
 export const editMessageHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   async function handleEditMessage(event,) {
     /** Parsed `:id` path param; throws 400 when missing or non-positive. */
     const messageId = parseMessageId(event.context.params,);
@@ -69,9 +70,9 @@ export const editMessageHandler: EventHandlerWithFetch = defineHandler(
       key: 'preview',
     },);
     /** Raw `char_count`; narrowed to number below before the edit call. */
-    const charCount = body['char_count'];
+    const charCount = body.char_count;
     /** Raw `chunk_count`; narrowed to number below before the edit call. */
-    const chunkCount = body['chunk_count'];
+    const chunkCount = body.chunk_count;
     if (
       (userId === null)
       || (newDraftId === null)
@@ -140,6 +141,7 @@ export const editMessageHandler: EventHandlerWithFetch = defineHandler(
  * exclude it via the partial index, and `/m/:id/c/:idx` returns 410.
  */
 export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   async function handleDeleteMessage(event,) {
     /** Parsed `:id` path param; throws 400 when missing or non-positive. */
     const messageId = parseMessageId(event.context.params,);
@@ -206,9 +208,9 @@ export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
  *
  * @throws `HTTPError` 400 when missing or not a positive integer
  */
-function parseMessageId(params: Record<string, string> | undefined,): number {
+function parseMessageId(params: Readonly<Record<string, string>> | undefined,): number {
   /** Raw `:id` path param; empty or undefined trips the 400 below. */
-  const raw = params?.['id'];
+  const raw = params?.id;
   if ((raw === undefined) || (raw === '')) {
     throw new HTTPError({
       status: HTTP_BAD_REQUEST,
@@ -264,8 +266,8 @@ function stringField({
   body,
   key,
 }: {
-  body: Record<string, unknown>;
-  key: string;
+  readonly body: Readonly<Record<string, unknown>>;
+  readonly key: string;
 },): string | null {
   /** Indexed once so the typeof narrow and the return both reference the same value. */
   const value = body[key];

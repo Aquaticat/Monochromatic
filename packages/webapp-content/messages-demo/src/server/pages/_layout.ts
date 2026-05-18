@@ -160,9 +160,9 @@ function renderSiteHeader(): string {
  */
 function renderComposerFooter(
   options: {
-    editMessageId: number | undefined;
+    readonly editMessageId: number | undefined;
     // oxlint-disable-next-line eslint/no-magic-numbers -- tier discriminant
-    initialTier: 1 | 2 | 3 | undefined;
+    readonly initialTier: 1 | 2 | 3 | undefined;
   },
 ): string {
   /** Pre-rendered `<option>` HTML for the identity select, in seed-list order. */
@@ -257,8 +257,8 @@ export function renderPage(options: PageOptions,): string {
  */
 export function renderSimplePage(
   options: {
-    title: string;
-    body: string;
+    readonly title: string;
+    readonly body: string;
   },
 ): string {
   return renderPage({

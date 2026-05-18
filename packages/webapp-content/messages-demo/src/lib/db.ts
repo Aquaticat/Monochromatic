@@ -104,8 +104,8 @@ export default db;
  */
 export async function run(
   input: {
-    sql: string;
-    params?: readonly unknown[];
+    readonly sql: string;
+    readonly params?: readonly unknown[];
   },
 ): Promise<{
   changes: number;
@@ -135,8 +135,8 @@ export async function run(
  */
 export async function get<T = Record<string, unknown>,>(
   input: {
-    sql: string;
-    params?: readonly unknown[];
+    readonly sql: string;
+    readonly params?: readonly unknown[];
   },
 ): Promise<T | undefined> {
   /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
@@ -162,8 +162,8 @@ export async function get<T = Record<string, unknown>,>(
  */
 export async function all<T = Record<string, unknown>,>(
   input: {
-    sql: string;
-    params?: readonly unknown[];
+    readonly sql: string;
+    readonly params?: readonly unknown[];
   },
 ): Promise<T[]> {
   /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */

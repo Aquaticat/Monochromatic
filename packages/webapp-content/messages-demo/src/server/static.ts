@@ -58,10 +58,17 @@ async function tryStat(
  * ```
  */
 export const staticHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   function handleStaticAsset(event,) {
     return serveStatic(
       event,
       {
+        // The inline form relies on contextual typing to bridge Node's
+        // `Buffer<ArrayBufferLike>` from `readFile` to h3's
+        // `Promise<BodyInit | ...>`; extracting to a module-scope
+        // function loses that bridge and forces a structural mismatch
+        // between Node and DOM typings.
+        // oxlint-disable-next-line eslint-plugin-unicorn/consistent-function-scoping -- contextual typing only works inline
         getContents: function readContents(id,) {
           return readFile(
             join(
@@ -70,15 +77,16 @@ export const staticHandler: EventHandlerWithFetch = defineHandler(
             ),
           );
         },
+        // oxlint-disable-next-line eslint-plugin-unicorn/consistent-function-scoping -- contextual typing fits the return shape to h3's `StaticAssetMeta | undefined`
         getMeta: async function getMetadata(id,) {
           /** Resolved stat result or `undefined` when the file does not exist or is inaccessible. */
           const stats = await tryStat(id,);
-          if ((stats === undefined) || (!stats.isFile()))
-            return;
-          return {
-            size: Number(stats.size,),
-            mtime: stats.mtime,
-          };
+          return ((stats !== undefined) && stats.isFile())
+            ? {
+              size: Number(stats.size,),
+              mtime: stats.mtime,
+            }
+            : undefined;
         },
       },
     );

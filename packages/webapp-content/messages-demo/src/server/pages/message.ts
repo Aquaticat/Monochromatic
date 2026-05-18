@@ -91,9 +91,9 @@ function tierFor(charCount: number,): 1 | 2 | 3 {
  */
 export async function renderMessageChunk(
   input: {
-    messageId: number;
-    chunkIndex: number;
-    ifNoneMatch: string | null;
+    readonly messageId: number;
+    readonly chunkIndex: number;
+    readonly ifNoneMatch: string | null;
   },
 ): Promise<Response> {
   await db.exec('BEGIN DEFERRED',);
@@ -234,9 +234,9 @@ export async function renderMessageChunk(
  */
 function renderChunkBody(
   input: {
-    snapshot: MessageSnapshot;
-    chunkIndex: number;
-    chunkHtml: string;
+    readonly snapshot: MessageSnapshot;
+    readonly chunkIndex: number;
+    readonly chunkHtml: string;
   },
 ): string {
   /** Destructured early so the chunk-nav branches read the fields directly. */

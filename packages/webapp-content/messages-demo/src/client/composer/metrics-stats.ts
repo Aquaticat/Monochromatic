@@ -27,8 +27,8 @@ const MEDIAN_SPLIT = 0.5;
  */
 export function percentile(
   input: {
-    sortedAsc: readonly number[];
-    p: number;
+    readonly sortedAsc: readonly number[];
+    readonly p: number;
   },
 ): number {
   if (input.sortedAsc.length === 0)

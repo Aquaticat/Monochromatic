@@ -11,6 +11,7 @@ import type { ComposerState, } from './state.ts';
 /** Decimal radix for `parseInt`. */
 const DECIMAL_RADIX = 10;
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `state.editor` is mutated via `setText`; `textarea` is a `HTMLTextAreaElement` with mutating DOM methods by design */
 /**
  * Writes `text` into the body surface, updating both the hidden
  * textarea (which downstream code reads synchronously) and the custom
@@ -36,6 +37,7 @@ export function writeBody(
   if (input.state.editor !== null)
     void input.state.editor.setText(input.text,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /** Range for the random-id fallback when `crypto.randomUUID` is unavailable. */
 const RANDOM_ID_RANGE = 1e9;
@@ -52,9 +54,9 @@ const RANDOM_ID_RANGE = 1e9;
  */
 export async function postCreateDraft(
   input: {
-    id: string;
-    userId: string;
-    parentId: string | null;
+    readonly id: string;
+    readonly userId: string;
+    readonly parentId: string | null;
   },
 ): Promise<void> {
   /** Awaited so the `!ok` branch can read the body before throwing. */
@@ -96,8 +98,10 @@ export async function fetchChunkCount(messageId: number,): Promise<number> {
   const response = await fetch(`/m/${String(messageId,)}/c/0`,);
   /** Full HTML of the chunk-0 nav, scanned for the chunk-count regex. */
   const text = await response.text();
+  /* oxlint-disable no-restricted-syntax/require-regex-justification -- parses "chunk N of M" from server-rendered nav fragment; bounded captures over server-controlled HTML, linear in input length */
   /** Holds the regex match so the count can be parsed from capture group 1. */
-  const match = /chunk\s+\d+\s+of\s+(\d+)/.exec(text,);
+  const match = /chunk\s+\d+\s+of\s+(\d+)/u.exec(text,);
+  /* oxlint-enable no-restricted-syntax/require-regex-justification */
   /** Extracted before the undefined check so the call site sees one narrowed string. */
   const captured = match?.[1];
   if (captured === undefined)
@@ -153,6 +157,7 @@ export function randomId(): string {
   }`;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `HTMLFormElement` has mutating DOM methods by design */
 /**
  * Reads the current identity from the form's select element. Used by
  * the edit-mode setup before the composer state object is built.
@@ -169,6 +174,7 @@ export function randomId(): string {
 export function getIdentity(form: HTMLFormElement,): string {
   return form.querySelector<HTMLSelectElement>('.composer-identity',)?.value ?? '';
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Parses the optional `data-edit-message-id` attribute off the form.
@@ -194,6 +200,7 @@ export function parseEditId(raw: string | undefined,): number | null {
   return Number.isFinite(value,) && (value > 0) ? value : null;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `HTMLFormElement` has mutating DOM methods by design */
 /**
  * Appends a small status `<div>` below the composer if one is not
  * already there.
@@ -218,7 +225,9 @@ export function appendStatusElement(form: HTMLFormElement,): HTMLElement {
   form.append(status,);
   return status;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `status` is `HTMLElement` whose `textContent` is mutated below */
 /**
  * Updates the composer's status indicator. The composer uses this for
  * "saved", "uploading", "error", etc.
@@ -238,7 +247,9 @@ export function setStatus(
 ): void {
   input.status.textContent = input.message;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `HTMLFormElement` has mutating DOM methods by design */
 /**
  * Adds the "volatile mode" badge when persistent storage is unavailable
  * so the user knows their unsent buffer is in-memory.
@@ -258,3 +269,4 @@ export function appendVolatileBadge(form: HTMLFormElement,): void {
   badge.title = 'No persistent storage available; unsent edits are lost on reload';
   form.append(badge,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

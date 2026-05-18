@@ -52,6 +52,7 @@ const PENDING_BUFFER_MULTIPLE = 2;
  * the hard cap (extremely unlikely for prose), 5xx on internal errors.
  */
 export const importHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   async function handleImport(event,) {
     /** Identity sent via `x-user-id` header because the body is the upload payload. */
     const userId = event.req.headers.get('x-user-id',);

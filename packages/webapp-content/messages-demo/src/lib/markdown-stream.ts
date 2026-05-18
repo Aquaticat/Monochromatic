@@ -64,7 +64,8 @@ export type RenderedChunk = {
  * @returns `true` if the line is a code fence delimiter, `false` otherwise
  */
 function isCodeFence(line: string,): boolean {
-  return /^ {0,3}(```|~~~)/.test(line,);
+  // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- anchored prefix on one line of bounded length; matches CommonMark fence opener (0-3 spaces + ```/~~~) without backtracking
+  return /^ {0,3}(```|~~~)/u.test(line,);
 }
 
 /**
@@ -246,44 +247,46 @@ export function extractPreview({
   md,
   maxLength,
 }: {
-  md: string;
-  maxLength: number;
+  readonly md: string;
+  readonly maxLength: number;
 },): string {
+  /* oxlint-disable no-restricted-syntax/require-regex-justification -- preview extractor strips markdown structural markup from a chunk-sized excerpt (capped well below the chunk hard cap). Each pattern uses lazy quantifiers or negated character classes, so matching is linear in input length with no nested unbounded quantifiers. */
   /** Successively stripped form; built up by chained replaces before length check. */
   const stripped = md
     .replaceAll(
-      /```[\s\S]*?```/g,
+      /```[\s\S]*?```/gu,
       ' ',
     )
     .replaceAll(
-      /~~~[\s\S]*?~~~/g,
+      /~~~[\s\S]*?~~~/gu,
       ' ',
     )
     .replaceAll(
-      /`[^`]*`/g,
+      /`[^`]*`/gu,
       ' ',
     )
     .replaceAll(
-      /!\[[^\]]*\]\([^)]*\)/g,
+      /!\[[^\]]*\]\([^)]*\)/gu,
       ' ',
     )
     .replaceAll(
-      /\[([^\]]*)\]\([^)]*\)/g,
+      /\[([^\]]*)\]\([^)]*\)/gu,
       '$1',
     )
     .replaceAll(
-      /^[ \t]*[#>*\-+][ \t]+/gm,
+      /^[ \t]*[#>*\-+][ \t]+/gmu,
       '',
     )
     .replaceAll(
-      /[*_~]+/g,
+      /[*_~]+/gu,
       '',
     )
     .replaceAll(
-      /\s+/g,
+      /\s+/gu,
       ' ',
     )
     .trim();
+  /* oxlint-enable no-restricted-syntax/require-regex-justification */
   if (stripped.length === 0)
     return '(no text preview)';
   return stripped.length <= maxLength

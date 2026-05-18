@@ -19,12 +19,14 @@
  * `data-line` index attribute we use to recover its line number.
  */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM editor surface: every entry point takes a `Node`/`HTMLElement` (or wraps one), which has mutating DOM methods by design; readonly wrappers would misdescribe the API contract */
+
 /** Public selection handle returned by `mountSelection`. */
 export type Selection = {
   /** Read the current selection, or `null` if not in this surface. */
   get(): {
-    from: number;
-    to: number;
+    readonly from: number;
+    readonly to: number;
   } | null;
   /**
    * Write a selection. `from === to` means a collapsed cursor.
@@ -32,8 +34,8 @@ export type Selection = {
    * @param input - half-open offset range
    */
   set(input: {
-    from: number;
-    to: number;
+    readonly from: number;
+    readonly to: number;
   },): void;
   /** Detach event listeners and clear pending state. */
   destroy(): void;
@@ -111,7 +113,7 @@ export function mountSelection(
       return null;
     /** Parsed line index from the enclosing element's `data-line` attribute. */
     const lineIndex = Number.parseInt(
-      line.dataset['line'] ?? '',
+      line.dataset.line ?? '',
       10,
     );
     if (Number.isNaN(lineIndex,))
@@ -132,7 +134,7 @@ export function mountSelection(
       ) {
         /** Parsed line index of the candidate; comparison with `lineIndex` decides whether to stop. */
         const candidateIndex = Number.parseInt(
-          candidate.dataset['line'] ?? '',
+          candidate.dataset.line ?? '',
           10,
         );
         if (Number.isNaN(candidateIndex,) || (candidateIndex >= lineIndex))
@@ -335,3 +337,4 @@ export function mountSelection(
     },
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -62,13 +62,14 @@ function emptyMetrics(): CompilePipelineMetrics {
  */
 function row(
   input: {
-    label: string;
-    value: string;
+    readonly label: string;
+    readonly value: string;
   },
 ): string {
   return `<div class="composer-metrics-row"><span>${input.label}</span><span>${input.value}</span></div>`;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `parent` is `HTMLElement` with mutating DOM methods (append); `state.metrics` is mutated in place */
 /**
  * Builds the overlay DOM and returns a function that re-renders it
  * from the latest `state.metrics` snapshot.
@@ -91,7 +92,7 @@ function mountMetricsOverlay(
   /** Overlay container appended to the parent; re-rendered on every metrics update. */
   const overlay = document.createElement('div',);
   overlay.className = 'composer-metrics-overlay';
-  overlay.dataset['testid'] = 'metrics-overlay';
+  overlay.dataset.testid = 'metrics-overlay';
   input.parent.append(overlay,);
   return function render(): void {
     /** Snapshot of state metrics, falling back to empty when not yet seeded. */
@@ -131,6 +132,7 @@ function mountMetricsOverlay(
     }`;
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /** Folded shape of the worker `metrics` payload after type narrowing. */
 type WorkerMetricsPayload = {
@@ -171,8 +173,8 @@ function asMetricsPayload(data: unknown,): WorkerMetricsPayload | null {
  */
 function foldCounters(
   input: {
-    current: CompilePipelineMetrics;
-    payload: WorkerMetricsPayload;
+    readonly current: Readonly<CompilePipelineMetrics>;
+    readonly payload: Readonly<WorkerMetricsPayload>;
   },
 ): CompilePipelineMetrics {
   /** Running snapshot; replaced with widened copies as each payload field folds in. */
@@ -195,6 +197,7 @@ function foldCounters(
   return next;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `parent` is `HTMLElement` with mutating DOM methods (append); `state.metrics` is mutated in place */
 /**
  * Attaches the metrics overlay and seeds `state.metrics`. Returns
  * helpers the composer holds onto for the worker / promotion sites
@@ -291,3 +294,4 @@ export function attachMetricsOverlay(
     },
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

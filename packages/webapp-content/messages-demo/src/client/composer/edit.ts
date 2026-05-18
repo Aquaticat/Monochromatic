@@ -23,6 +23,8 @@ import { saveCurrentTier3Chunk, } from './tier3.ts';
 /** Maximum length of the message preview, in characters. */
 const PREVIEW_MAX_LENGTH = 200;
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM edit send: `status` is `HTMLElement` and `state.tier3` is mutated by the inherit-walk; readonly wrappers would misdescribe the API contract */
+
 /**
  * Inline-edit send: build a child draft from the new body and POST the
  * edit endpoint to atomically swap pointers.
@@ -165,11 +167,11 @@ export async function sendTier3Edit(
       }`,
       { method: 'GET', },
     );
+    /** Original markdown fetched from the message-chunk endpoint; shared by the inherit-PUT branch and the already-uploaded char-count rollup. */
+    const origMd = await fetch(
+      `/m/${String(input.state.editMessageId,)}/c/${String(seq,)}/md`,
+    );
     if (newChunkResp.status === HTTP_NOT_FOUND) {
-      /** Original markdown fetched from the message-chunk endpoint for the inherit-PUT body. */
-      const origMd = await fetch(
-        `/m/${String(input.state.editMessageId,)}/c/${String(seq,)}/md`,
-      );
       /** Original rendered HTML fetched for the inherit-PUT body. */
       const origHtml = await fetch(
         `/m/${String(input.state.editMessageId,)}/c/${String(seq,)}/raw`,
@@ -198,18 +200,12 @@ export async function sendTier3Edit(
       if (seq === 0)
         firstMd = md;
     }
-    else {
-      /** Reread of the original markdown so the aggregate char count includes this slot too. */
-      const origMd = await fetch(
-        `/m/${String(input.state.editMessageId,)}/c/${String(seq,)}/md`,
-      );
-      if (origMd.ok) {
-        /** Body of the original markdown re-read for char-count aggregation. */
-        const md = await origMd.text();
-        aggregateCharCount += md.length;
-        if (seq === 0)
-          firstMd = md;
-      }
+    else if (origMd.ok) {
+      /** Body of the original markdown re-read for char-count aggregation. */
+      const md = await origMd.text();
+      aggregateCharCount += md.length;
+      if (seq === 0)
+        firstMd = md;
     }
   }
   /* oxlint-enable eslint/no-await-in-loop */
@@ -247,3 +243,4 @@ export async function sendTier3Edit(
     return;
   globalThis.location.assign(result.location,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

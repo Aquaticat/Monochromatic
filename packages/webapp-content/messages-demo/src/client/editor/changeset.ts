@@ -48,8 +48,8 @@ export type Changeset = {
  */
 export function invertChangeset(
   input: {
-    changeset: Changeset;
-    before: string;
+    readonly changeset: Changeset;
+    readonly before: string;
   },
 ): Changeset {
   /** Pre-edit substring captured so the inverse can re-insert it on undo. */
@@ -79,8 +79,8 @@ export function invertChangeset(
  */
 export function applyChangeset(
   input: {
-    changeset: Changeset;
-    before: string;
+    readonly changeset: Changeset;
+    readonly before: string;
   },
 ): string {
   return input.before.slice(
@@ -120,8 +120,8 @@ export function applyChangeset(
  */
 export function mapOffsetThroughChangeset(
   input: {
-    changeset: Changeset;
-    offset: number;
+    readonly changeset: Changeset;
+    readonly offset: number;
   },
 ): number {
   if (input.offset <= input.changeset.from)
@@ -162,8 +162,8 @@ export function mapOffsetThroughChangeset(
  */
 export function composeChangesets(
   input: {
-    a: Changeset;
-    b: Changeset;
+    readonly a: Changeset;
+    readonly b: Changeset;
   },
 ): Changeset | null {
   /** Offset where `a` ends after its insert; composition is only legal when `b` lands here. */

@@ -47,15 +47,17 @@ export type Viewport = {
   destroy(): void;
   /** Convert a buffer offset to a (line, col) pair for selection placement. */
   offsetToLineCol(offset: number,): {
-    line: number;
-    col: number;
+    readonly line: number;
+    readonly col: number;
   };
   /** Convert a (line, col) pair back to a buffer offset. */
   lineColToOffset(input: {
-    line: number;
-    col: number;
+    readonly line: number;
+    readonly col: number;
   },): number;
 };
+
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM viewport: every entry takes a `HTMLElement` (host) or wraps DOM mutations; readonly wrappers would misdescribe the API contract */
 
 /**
  * Mounts the viewport DOM into `host` and renders `initialText`.
@@ -172,7 +174,7 @@ export function mountViewport(
       /** One absolutely-positioned `<div>` per visible line; appended to the fragment. */
       const lineDiv = document.createElement('div',);
       lineDiv.className = 'ce-line';
-      lineDiv.dataset['line'] = String(line,);
+      lineDiv.dataset.line = String(line,);
       lineDiv.style.position = 'absolute';
       lineDiv.style.insetBlockStart = `${String(line * lineHeight,)}px`;
       lineDiv.style.insetInlineStart = '0';
@@ -251,8 +253,8 @@ export function mountViewport(
    */
   function lineColToOffset(
     target: {
-      line: number;
-      col: number;
+      readonly line: number;
+      readonly col: number;
     },
   ): number {
     /** Clamped line index so out-of-range inputs collapse to the nearest valid line. */
@@ -298,3 +300,4 @@ export function mountViewport(
     },
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

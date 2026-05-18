@@ -78,6 +78,7 @@ type OutboundMessage =
     readonly message: string;
   };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- worker dispatch: `MessageEvent` is shaped by the platform `addEventListener('message')` contract and outbound payloads need to flow through `postMessage`; readonly wrappers would misdescribe the API */
 /**
  * Main worker dispatch. Discriminates on `kind` and runs the requested
  * pipeline. Errors are caught and sent back as `{ kind: 'error' }`.
@@ -394,3 +395,4 @@ function post(message: OutboundMessage,): void {
   self.postMessage(message,);
   /* oxlint-enable eslint-plugin-unicorn/require-post-message-target-origin */
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

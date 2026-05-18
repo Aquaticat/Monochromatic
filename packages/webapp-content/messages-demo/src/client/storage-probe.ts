@@ -25,6 +25,7 @@ const PROBE_KEY = '__messages_demo_storage_probe__';
 /** Cap on each individual probe in milliseconds. */
 const PROBE_TIMEOUT_MS = 500;
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `Promise<boolean>` is a built-in SDK type with `.then`/`.catch` chaining; readonly wrappers would misdescribe the API contract */
 /**
  * Wraps a probe promise so a hung backend never delays startup beyond
  * `PROBE_TIMEOUT_MS` and any rejection (timeout or backend error) becomes
@@ -47,8 +48,8 @@ async function capProbe(
     probe,
     label,
   }: {
-    probe: Promise<boolean>;
-    label: string;
+    readonly probe: Promise<boolean>;
+    readonly label: string;
   },
 ): Promise<boolean> {
   try {
@@ -62,6 +63,7 @@ async function capProbe(
     return false;
   }
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Runs all three probes in parallel. Resolves with the cap matrix.

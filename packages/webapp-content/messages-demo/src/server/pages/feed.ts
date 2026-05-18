@@ -50,8 +50,8 @@ import { renderPage, } from './_layout.ts';
  */
 export async function renderFeed(
   input: {
-    cursorToken: string | null;
-    ifNoneMatch: string | null;
+    readonly cursorToken: string | null;
+    readonly ifNoneMatch: string | null;
   },
 ): Promise<Response> {
   /** Aggregate signature fed into the ETag; matches against `If-None-Match` for 304s. */

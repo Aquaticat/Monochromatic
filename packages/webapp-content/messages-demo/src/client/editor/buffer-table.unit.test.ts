@@ -312,6 +312,7 @@ await describe({
         it({
           name: 'throws on out-of-range from/to',
           fn: async () => {
+            /* oxlint-disable no-restricted-syntax/require-regex-justification -- asserts the buffer table rejects each out-of-range changeset with the documented `invalid changeset` message; literal phrase match, no backtracking */
             const table = freshTable('abc',);
             expect(function bogusFrom() {
               applyToTable({
@@ -323,7 +324,7 @@ await describe({
                 },
               },);
             },)
-              .toThrow(/invalid changeset/,);
+              .toThrow(/invalid changeset/u,);
             expect(function bogusOrder() {
               applyToTable({
                 table,
@@ -334,7 +335,7 @@ await describe({
                 },
               },);
             },)
-              .toThrow(/invalid changeset/,);
+              .toThrow(/invalid changeset/u,);
             expect(function bogusTo() {
               applyToTable({
                 table,
@@ -345,7 +346,8 @@ await describe({
                 },
               },);
             },)
-              .toThrow(/invalid changeset/,);
+              .toThrow(/invalid changeset/u,);
+            /* oxlint-enable no-restricted-syntax/require-regex-justification */
           },
         },),
 

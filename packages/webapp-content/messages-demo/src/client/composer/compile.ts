@@ -22,6 +22,8 @@ import type {
 /** Maximum length of the message preview, in characters. */
 const PREVIEW_MAX_LENGTH = 200;
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- callbacks receive `RenderedChunk` and `MessageEvent`, both shaped by external APIs (`Array.map`/`reduce` and `Worker.postMessage`); `state.worker` is also mutated to hold the lazy worker handle */
+
 /**
  * Compiles markdown to HTML on the main thread. Used by tier-1 and
  * tier-3 single-chunk paths where we know the input is small enough to
@@ -179,3 +181,4 @@ export function compileViaWorker(
     /* oxlint-enable eslint-plugin-unicorn/require-post-message-target-origin */
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

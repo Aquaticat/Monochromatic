@@ -110,6 +110,7 @@ function base64UrlEncode(value: string,): string {
       },
     )
     .join('',);
+  /* oxlint-disable no-restricted-syntax/require-regex-justification -- trailing `=` padding strip on a fixed-length base64 string; anchored to end, no backtracking risk */
   return globalThis
     .btoa(binary,)
     .replaceAll(
@@ -121,9 +122,10 @@ function base64UrlEncode(value: string,): string {
       '_',
     )
     .replace(
-      /=+$/,
+      /=+$/u,
       '',
     );
+  /* oxlint-enable no-restricted-syntax/require-regex-justification */
 }
 
 /**

@@ -56,7 +56,7 @@ export const DELETED_TTL_MS: number = DELETED_TTL_DAYS
  * ```
  */
 export async function sweepOrphans(
-  scope: { userId: string | null; },
+  scope: { readonly userId: string | null; },
 ): Promise<void> {
   /** Threshold; drafts older than this and still unfinalised are reaped. */
   const cutoff = Date.now() - ORPHAN_TTL_MS;

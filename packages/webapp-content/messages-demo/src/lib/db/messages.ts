@@ -67,14 +67,14 @@ export async function listFeed(cursor: Cursor | null,): Promise<FeedMessage[]> {
   /** Raw SQL rows from the cursor or non-cursor query; mapped to the FeedMessage shape below. */
   const rows = cursor === null
     ? await all<{
-      id: number;
-      user_id: string;
-      user_name: string;
-      created_at: number;
-      updated_at: number;
-      revision: number;
-      chunk_count: number;
-      preview: string;
+      readonly id: number;
+      readonly user_id: string;
+      readonly user_name: string;
+      readonly created_at: number;
+      readonly updated_at: number;
+      readonly revision: number;
+      readonly chunk_count: number;
+      readonly preview: string;
     }>({
       sql: `SELECT m.id, m.user_id, u.name AS user_name, m.created_at, m.updated_at,
                 m.revision, m.chunk_count, m.preview
@@ -85,14 +85,14 @@ export async function listFeed(cursor: Cursor | null,): Promise<FeedMessage[]> {
       params: [FEED_PAGE_SIZE,],
     },)
     : await all<{
-      id: number;
-      user_id: string;
-      user_name: string;
-      created_at: number;
-      updated_at: number;
-      revision: number;
-      chunk_count: number;
-      preview: string;
+      readonly id: number;
+      readonly user_id: string;
+      readonly user_name: string;
+      readonly created_at: number;
+      readonly updated_at: number;
+      readonly revision: number;
+      readonly chunk_count: number;
+      readonly preview: string;
     }>({
       sql: `SELECT m.id, m.user_id, u.name AS user_name, m.created_at, m.updated_at,
                 m.revision, m.chunk_count, m.preview
@@ -247,8 +247,8 @@ export type ChunkRow = {
  */
 export async function getChunk(
   input: {
-    messageId: number;
-    chunkIndex: number;
+    readonly messageId: number;
+    readonly chunkIndex: number;
   },
 ): Promise<ChunkRow | null> {
   // Turso does not implement recursive CTEs, so we walk the chain in
@@ -328,12 +328,12 @@ export type EditOutcome =
  */
 export async function editMessage(
   input: {
-    messageId: number;
-    userId: string;
-    newDraftId: string;
-    charCount: number;
-    chunkCount: number;
-    preview: string;
+    readonly messageId: number;
+    readonly userId: string;
+    readonly newDraftId: string;
+    readonly charCount: number;
+    readonly chunkCount: number;
+    readonly preview: string;
   },
 ): Promise<EditOutcome> {
   await db.exec('BEGIN IMMEDIATE',);
@@ -429,8 +429,8 @@ export type DeleteOutcome =
  */
 export async function softDeleteMessage(
   input: {
-    messageId: number;
-    userId: string;
+    readonly messageId: number;
+    readonly userId: string;
   },
 ): Promise<DeleteOutcome> {
   /** Current message row; absent or already-deleted becomes `not-found`, mismatched user becomes `forbidden`. */

@@ -27,6 +27,8 @@ import { saveCurrentTier3Chunk, } from './tier3.ts';
 /** Maximum length of the message preview, in characters. */
 const PREVIEW_MAX_LENGTH = 200;
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM send dispatcher: every entry takes `HTMLFormElement`/`HTMLTextAreaElement`/`HTMLSelectElement`/`HTMLButtonElement`/`HTMLElement` with mutating DOM methods (disabled flag, value writes) and folds chunks via Array callbacks; readonly wrappers would misdescribe the API contract */
+
 /**
  * Send / edit dispatcher. Picks the right path based on tier and mode
  * and re-enables the send button after either branch.
@@ -270,3 +272,4 @@ async function sendTier3New(
     throw new Error('finalize returned no location',);
   globalThis.location.assign(result.location,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -336,6 +336,7 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | null> {
   return null;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `IDBDatabase` is an external SDK class whose `transaction` mutates connection state by design; `queue` is mutated in place by `splice` below */
 /**
  * Drops every queue entry whose `(draftId, seq)` is implied by the
  * server's ack (`seq <= ack`) and removes the same entries from IDB.
@@ -519,3 +520,4 @@ async function deleteAcked(
   store.delete(range,);
   await idbTransactionDone(tx,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

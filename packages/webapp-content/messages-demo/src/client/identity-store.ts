@@ -47,8 +47,8 @@ export function loadIdentity(available: boolean,): string | null {
  */
 export function saveIdentity(
   input: {
-    identity: string;
-    available: boolean;
+    readonly identity: string;
+    readonly available: boolean;
   },
 ): void {
   if ((!input.available) || (input.identity === ''))

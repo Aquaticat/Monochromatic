@@ -28,9 +28,9 @@ import type { RenderedChunk, } from '../markdown-stream.ts';
  */
 export async function createDraft(
   draft: {
-    id: string;
-    userId: string;
-    parentId: string | null;
+    readonly id: string;
+    readonly userId: string;
+    readonly parentId: string | null;
   },
 ): Promise<void> {
   /** Captured once so created_at and updated_at start as the same value. */
@@ -61,9 +61,9 @@ export async function createDraft(
  */
 export async function putChunk(
   input: {
-    draftId: string;
-    seq: number;
-    chunk: RenderedChunk;
+    readonly draftId: string;
+    readonly seq: number;
+    readonly chunk: RenderedChunk;
   },
 ): Promise<void> {
   /** Captured before the upsert so the chunks write and the drafts-update see the same timestamp. */
@@ -171,11 +171,11 @@ export async function hasChunks(draftId: string,): Promise<boolean> {
  */
 export async function finalizeDraft(
   input: {
-    draftId: string;
-    userId: string;
-    charCount: number;
-    chunkCount: number;
-    preview: string;
+    readonly draftId: string;
+    readonly userId: string;
+    readonly charCount: number;
+    readonly chunkCount: number;
+    readonly preview: string;
   },
 ): Promise<number | null> {
   /** Owner row used to cross-check identity before doing any write. */
@@ -212,7 +212,7 @@ export async function finalizeDraft(
       params: [input.draftId,],
     },);
     await db.exec('COMMIT',);
-    return Number(insert.lastInsertRowid,);
+    return insert.lastInsertRowid;
   }
   catch (error) {
     await db.exec('ROLLBACK',);
@@ -236,8 +236,8 @@ export async function finalizeDraft(
  */
 export async function cancelDraft(
   input: {
-    draftId: string;
-    userId: string;
+    readonly draftId: string;
+    readonly userId: string;
   },
 ): Promise<boolean> {
   /** Delete result; `changes > 0` indicates a draft row was actually removed. */

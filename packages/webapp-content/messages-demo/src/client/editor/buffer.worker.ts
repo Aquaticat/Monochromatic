@@ -169,7 +169,7 @@ function scheduleCollapseIfNeeded(): void {
  *
  * @param input - the undo entry to record
  */
-function pushUndo(input: { entry: UndoEntry; },): void {
+function pushUndo(input: { readonly entry: UndoEntry; },): void {
   undoStack.push(input.entry,);
   if (undoStack.length > MAX_UNDO)
     undoStack.shift();
@@ -188,6 +188,7 @@ function post(message: OutboundMessage,): void {
   /* oxlint-enable eslint-plugin-unicorn/require-post-message-target-origin */
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `MessageEvent` is shaped by the platform `addEventListener('message')` contract; readonly wrappers would misdescribe the API */
 /**
  * Handles one inbound message. Dispatches by `kind` and reports any
  * error back on the outbound `error` channel with the request id so
@@ -349,6 +350,7 @@ self.addEventListener(
     onMessage(event,);
   },
 );
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /** Worker entry has no exports; everything is by message channel. */
 export {};

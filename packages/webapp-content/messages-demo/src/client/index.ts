@@ -65,6 +65,7 @@ function attachComposerLoaders(): void {
   // re-dispatch after bootstrap.
   form.addEventListener(
     'submit',
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is a DOM `SubmitEvent` whose `preventDefault` is the entire point of this handler; readonly wrappers would misdescribe the API
     function onSubmit(event,) {
       if (composerBooted)
         return;

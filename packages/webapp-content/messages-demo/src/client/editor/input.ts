@@ -34,6 +34,8 @@ import type { Selection, } from './selection.ts';
 /** Input layer destructor. */
 type InputCleanup = () => void;
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM input layer: every handler takes a `HTMLElement`, `InputEvent`, `CompositionEvent`, or `ClipboardEvent`, all of which expose mutating DOM methods by design; readonly wrappers would misdescribe the API contract */
+
 /**
  * Attaches input handlers to the surface. Returns a cleanup function
  * that removes every listener.
@@ -375,3 +377,4 @@ export function attachInput(
     );
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

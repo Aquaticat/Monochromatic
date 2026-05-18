@@ -87,7 +87,7 @@ export type ChunkCacheCaps = {
  * ```
  */
 export async function createChunkCache(
-  input: { caps: ChunkCacheCaps; },
+  input: { readonly caps: ChunkCacheCaps; },
 ): Promise<ChunkCache> {
   if (input.caps.opfs) {
     try {
@@ -247,6 +247,7 @@ function opfsName(key: ChunkCacheKey,): string {
   return `${String(key.messageId,)}-${String(key.revision,)}-${String(key.idx,)}.html`;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `FileSystemDirectoryHandle`/`IDBDatabase` are external SDK classes whose methods mutate filesystem / connection state by design */
 /**
  * Lists every file in the cache directory whose `messageId` matches
  * `key` but whose `revision` differs, and removes them. Bounded by the
@@ -289,11 +290,13 @@ async function evictOpfsStale(
     }
   }
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion
 
 //region IDB helpers
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `IDBDatabase` is an external SDK class whose methods (`transaction`, etc.) mutate connection state by design */
 /** 9 007 199 254 740 991 (`Number.MAX_SAFE_INTEGER`); ceiling for revision/idx in the messageId-only key range. */
 const HUGE_KEY_CEILING = Number.MAX_SAFE_INTEGER;
 
@@ -487,5 +490,6 @@ async function evictIdbStale(
   );
   await idbTransactionDone(tx,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion

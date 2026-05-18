@@ -99,11 +99,11 @@ export type TierTransition =
 export function decideTierTransition(
   input: {
     /* oxlint-disable eslint/no-magic-numbers -- tier discriminant union */
-    tier: 1 | 2 | 3;
+    readonly tier: 1 | 2 | 3;
     /* oxlint-enable eslint/no-magic-numbers */
-    length: number;
-    tier3Active: boolean;
-    inEditMode: boolean;
+    readonly length: number;
+    readonly tier3Active: boolean;
+    readonly inEditMode: boolean;
   },
 ): TierTransition {
   if ((input.tier === 1) && (input.length >= TIER_2_THRESHOLD))
@@ -121,6 +121,8 @@ export function decideTierTransition(
 
 /** Decimal radix for `parseInt`. */
 const DECIMAL_RADIX = 10;
+
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM composer: every entry takes a `HTMLFormElement`/`HTMLTextAreaElement`/`HTMLElement` (or an event), all of which expose mutating DOM methods by design; readonly wrappers would misdescribe the API contract */
 
 /**
  * Bootstraps the composer. Idempotent: if called multiple times on the
@@ -142,9 +144,9 @@ export async function attachComposer({
   form: HTMLFormElement;
   caps: StorageCaps;
 },): Promise<void> {
-  if (form.dataset['composerAttached'] === '1')
+  if (form.dataset.composerAttached === '1')
     return;
-  form.dataset['composerAttached'] = '1';
+  form.dataset.composerAttached = '1';
 
   /** Identity select; null aborts the attach so a half-mounted form is not left behind. */
   const select = form.querySelector<HTMLSelectElement>('.composer-identity',);
@@ -188,13 +190,13 @@ export async function attachComposer({
   const state: ComposerState = {
     /* oxlint-disable eslint/no-magic-numbers, typescript/no-unsafe-type-assertion -- tier discriminant cast */
     tier: Number.parseInt(
-      form.dataset['initialTier'] ?? '1',
+      form.dataset.initialTier ?? '1',
       DECIMAL_RADIX,
     ) as 1 | 2 | 3,
     /* oxlint-enable eslint/no-magic-numbers, typescript/no-unsafe-type-assertion */
     worker: null,
     caps,
-    editMessageId: parseEditId(form.dataset['editMessageId'],),
+    editMessageId: parseEditId(form.dataset.editMessageId,),
     outbox,
     cache,
     metrics: null,
@@ -433,3 +435,4 @@ export async function bootstrap(): Promise<void> {
     caps,
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

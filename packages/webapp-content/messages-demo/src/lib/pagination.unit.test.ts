@@ -23,7 +23,8 @@ await describe({
               createdAt: 1_714_080_000_000,
               id: 1_042,
             },);
-            expect(token,).not.toMatch(/[+/=]/,);
+            // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- assertion verifies absence of base64url-forbidden chars; bounded literal class, no backtracking
+            expect(token,).not.toMatch(/[+/=]/u,);
           },
         },),
 
@@ -102,6 +103,7 @@ await describe({
         it({
           name: 'throws on token with no colon separator',
           fn: async () => {
+            /* oxlint-disable no-restricted-syntax/require-regex-justification -- builds a malformed-but-base64url-shaped fixture by stripping `=` padding (anchored, no backtracking) and asserts the decoder throws the documented `malformed cursor` message */
             const token = globalThis
               .btoa('abcdef',)
               .replaceAll(
@@ -113,19 +115,21 @@ await describe({
                 '_',
               )
               .replace(
-                /=+$/,
+                /=+$/u,
                 '',
               );
             expect(function decodeMalformed() {
               decodeCursor(token,);
             },)
-              .toThrow(/malformed cursor/,);
+              .toThrow(/malformed cursor/u,);
+            /* oxlint-enable no-restricted-syntax/require-regex-justification */
           },
         },),
 
         it({
           name: 'throws on token with non-numeric coordinates',
           fn: async () => {
+            /* oxlint-disable no-restricted-syntax/require-regex-justification -- builds a base64url-shaped fixture with a non-numeric `:` body (anchored `=+$` strip, no backtracking) and asserts the documented decoder error */
             const token = globalThis
               .btoa('abc:def',)
               .replaceAll(
@@ -137,13 +141,14 @@ await describe({
                 '_',
               )
               .replace(
-                /=+$/,
+                /=+$/u,
                 '',
               );
             expect(function decodeMalformed() {
               decodeCursor(token,);
             },)
-              .toThrow(/malformed cursor/,);
+              .toThrow(/malformed cursor/u,);
+            /* oxlint-enable no-restricted-syntax/require-regex-justification */
           },
         },),
 

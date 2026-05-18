@@ -71,10 +71,10 @@ const uniqueId = (function makeUniqueId() {
  */
 async function makeMessage(
   input: {
-    draftId: string;
-    userId: string;
-    md: string;
-    html: string;
+    readonly draftId: string;
+    readonly userId: string;
+    readonly md: string;
+    readonly html: string;
   },
 ): Promise<number> {
   await createDraft({

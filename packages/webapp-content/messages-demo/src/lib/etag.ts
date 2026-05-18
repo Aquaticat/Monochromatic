@@ -30,8 +30,8 @@ export function etagForChunk(
     revision,
     chunkIndex,
   }: {
-    revision: number;
-    chunkIndex: number;
+    readonly revision: number;
+    readonly chunkIndex: number;
   },
 ): string {
   return `"r${String(revision,)}-${String(chunkIndex,)}"`;
@@ -62,8 +62,8 @@ export function etagForFeed(
     maxId,
     maxUpdatedAt,
   }: {
-    maxId: number;
-    maxUpdatedAt: number;
+    readonly maxId: number;
+    readonly maxUpdatedAt: number;
   },
 ): string {
   return `"f${String(maxId,)}-${String(maxUpdatedAt,)}"`;
@@ -85,8 +85,8 @@ export function etagForFeed(
  */
 export function matches(
   input: {
-    ifNoneMatch: string | null | undefined;
-    etag: string;
+    readonly ifNoneMatch: string | null | undefined;
+    readonly etag: string;
   },
 ): boolean {
   if ((input.ifNoneMatch === undefined) || (input.ifNoneMatch === null))

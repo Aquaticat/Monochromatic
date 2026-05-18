@@ -61,7 +61,7 @@ type DisposableOutbox = {
  */
 async function makeDisposableOutbox(
   options: {
-    idbAvailable: boolean;
+    readonly idbAvailable: boolean;
   },
 ): Promise<DisposableOutbox> {
   const outbox = await createOutbox(options,);
@@ -103,6 +103,7 @@ await describe({
       children: [
         it({
           name: 'in-memory mode: enqueue + flushed sends one PUT and drains the queue',
+          // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `{ sinon, expect }` is the test-context shape supplied by @monochromatic-dev/module-test; the framework owns the type signature
           fn: async ({ sinon, expect: scoped, },) => {
             const fetchStub = sinon
               .stub(globalThis, 'fetch',)
@@ -122,13 +123,16 @@ await describe({
 
         it({
           name: 'ack drops every queue entry whose seq <= ack for that draft',
+          // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `{ sinon, expect }` is the test-context shape supplied by @monochromatic-dev/module-test; the framework owns the type signature
           fn: async ({ sinon, expect: scoped, },) => {
             let ack = -1;
             const fetchStub = sinon.stub(globalThis, 'fetch',).callsFake(
+              // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `url` is the `RequestInfo|URL` value sinon supplies to a `fetch` callsFake; the framework owns the type
               function fakeFetch(url,) {
                 if ((typeof url) !== 'string')
                   throw new Error('expected string url',);
-                const match = /\/chunks\/(\d+)/.exec(url,);
+                // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- extracts the chunk seq from a test fixture URL of the shape `/chunks/<int>`; single bounded capture, no nested quantifiers
+                const match = /\/chunks\/(\d+)/u.exec(url,);
                 if (match === null)
                   throw new Error('no seq',);
                 const seq = Number.parseInt(
@@ -172,6 +176,7 @@ await describe({
         it({
           name:
             'pause on terminal PUT failure: queue keeps the entry, flushed stays pending',
+          // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `{ sinon, expect }` is the test-context shape supplied by @monochromatic-dev/module-test; the framework owns the type signature
           fn: async ({ sinon, expect: scoped, },) => {
             sinon
               .stub(globalThis, 'fetch',)
@@ -213,6 +218,7 @@ await describe({
 
         it({
           name: 'idbAvailable=true with no IDB present falls back to in-memory silently',
+          // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `{ sinon }` is the test-context shape supplied by @monochromatic-dev/module-test; the framework owns the type signature
           fn: async ({ sinon, },) => {
             sinon
               .stub(globalThis, 'fetch',)

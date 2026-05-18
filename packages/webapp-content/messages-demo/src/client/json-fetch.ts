@@ -7,6 +7,7 @@
  * rule with a single justification.
  */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `Response` is an external SDK class whose `json()` method consumes the body stream; readonly wrappers would misdescribe the API contract */
 /**
  * Awaits `response.json()` and casts the result to the caller-supplied
  * shape. Caller is responsible for narrowing the optional fields before
@@ -25,3 +26,4 @@ export async function readJson<T,>(response: Response,): Promise<T> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Response.json returns any
   return await response.json() as T;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

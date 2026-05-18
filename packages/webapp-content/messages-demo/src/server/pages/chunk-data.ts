@@ -77,9 +77,9 @@ type ChunkFields = {
  */
 export async function renderChunkRaw(
   input: {
-    messageId: number;
-    chunkIndex: number;
-    ifNoneMatch: string | null;
+    readonly messageId: number;
+    readonly chunkIndex: number;
+    readonly ifNoneMatch: string | null;
   },
 ): Promise<Response> {
   return await renderChunkData({
@@ -105,9 +105,9 @@ export async function renderChunkRaw(
  */
 export async function renderChunkMd(
   input: {
-    messageId: number;
-    chunkIndex: number;
-    ifNoneMatch: string | null;
+    readonly messageId: number;
+    readonly chunkIndex: number;
+    readonly ifNoneMatch: string | null;
   },
 ): Promise<Response> {
   return await renderChunkData({
@@ -129,11 +129,11 @@ export async function renderChunkMd(
  */
 async function renderChunkData(
   input: {
-    messageId: number;
-    chunkIndex: number;
-    contentType: string;
-    pickField: (chunk: ChunkFields,) => string;
-    ifNoneMatch: string | null;
+    readonly messageId: number;
+    readonly chunkIndex: number;
+    readonly contentType: string;
+    readonly pickField: (chunk: ChunkFields,) => string;
+    readonly ifNoneMatch: string | null;
   },
 ): Promise<Response> {
   /** Snapshot of the message; null returns 410 Gone (deleted or never existed). */

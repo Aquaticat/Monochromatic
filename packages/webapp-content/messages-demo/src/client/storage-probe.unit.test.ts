@@ -18,12 +18,12 @@ import { probeStorage, } from './storage-probe.ts';
  * Minimal localStorage shape the probe uses.
  */
 type FakeStorage = {
-  setItem(
+  readonly setItem: (
     key: string,
     value: string,
-  ): void;
-  getItem(key: string,): string | null;
-  removeItem(key: string,): void;
+  ) => void;
+  readonly getItem: (key: string,) => string | null;
+  readonly removeItem: (key: string,) => void;
 };
 
 /**
