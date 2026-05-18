@@ -34,6 +34,7 @@ const DISPATCHABLE_KINDS: ReadonlySet<EventKind> = new Set<EventKind>([
 /** Default batch size for the event-drain loop. */
 const DEFAULT_BATCH_SIZE = 256;
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Storage and WriteBuffer are sinks with mutator methods (`put`, `enqueue`, `flush`) by design; we delegate to them through the same contract. */
 /**
  * Drains every event newer than `afterEventId`, dispatching each one in
  * id order, then waits for the write buffer to flush.
@@ -53,10 +54,10 @@ const DEFAULT_BATCH_SIZE = 256;
  * ```
  */
 export async function dispatchAndFlush(row: {
-  afterEventId: number;
-  storage: Storage;
-  writeBuffer: WriteBuffer;
-  batchSize?: number;
+  readonly afterEventId: number;
+  readonly storage: Storage;
+  readonly writeBuffer: WriteBuffer;
+  readonly batchSize?: number;
 },): Promise<number> {
   /** Bounded page size protects the loop from unbounded backlog. */
   const batchSize = row.batchSize ?? DEFAULT_BATCH_SIZE;
@@ -113,6 +114,7 @@ export async function dispatchAndFlush(row: {
   await row.writeBuffer.flush();
   return cursor;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Extracts the `commentId` field from a `comment.created` event's

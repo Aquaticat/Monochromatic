@@ -61,8 +61,8 @@ export type IssueDetailData = {
  * ```
  */
 function labelBadge(props: {
-  name: string;
-  color: string;
+  readonly name: string;
+  readonly color: string;
 },): SafeHtml {
   return jsx(
     'span',
@@ -87,9 +87,9 @@ function labelBadge(props: {
  * ```
  */
 function commentBlock(props: {
-  authorLogin: string;
-  body: string;
-  createdAt: string;
+  readonly authorLogin: string;
+  readonly body: string;
+  readonly createdAt: string;
 },): SafeHtml {
   return jsx(
     'article',

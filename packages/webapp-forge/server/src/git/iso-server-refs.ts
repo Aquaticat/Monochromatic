@@ -42,8 +42,8 @@ export const ZERO_OID = '0000000000000000000000000000000000000000';
  * ```
  */
 export async function ensureRepoExists(row: {
-  owner: string;
-  repo: string;
+  readonly owner: string;
+  readonly repo: string;
 },): Promise<string> {
   /** Resolved gitdir path used both for mkdir and the init call below. */
   const gitdir = repoGitdir(row,);
@@ -96,7 +96,7 @@ const PACK_TAG_BYTES = 16;
  * const refs = await listAllRefs({ gitdir });
  * ```
  */
-export async function listAllRefs(row: { gitdir: string; },): Promise<RefPair[]> {
+export async function listAllRefs(row: { readonly gitdir: string; },): Promise<RefPair[]> {
   /** Raw ref names under `refs/` reported by isomorphic-git. */
   const refsBelow = await git.listRefs({
     fs: nodeFs,
@@ -131,6 +131,7 @@ export async function listAllRefs(row: { gitdir: string; },): Promise<RefPair[]>
   return out;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array buffer is read-only consumed (`writeFile` and `git.indexPack` only read bytes); the rule cannot model TypedArray immutability. */
 /**
  * Writes `packBytes` to a temp file under the gitdir's pack directory,
  * then asks isomorphic-git to index it.
@@ -143,8 +144,8 @@ export async function listAllRefs(row: { gitdir: string; },): Promise<RefPair[]>
  * ```
  */
 export async function indexPackData(row: {
-  gitdir: string;
-  packBytes: Uint8Array;
+  readonly gitdir: string;
+  readonly packBytes: Uint8Array;
 },): Promise<void> {
   /** Pack directory under the gitdir; created on demand. */
   const packDir = join(
@@ -192,6 +193,7 @@ export async function indexPackData(row: {
     throw err;
   }
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Applies one ref update triplet. Validates that the current ref value
@@ -211,11 +213,11 @@ export async function indexPackData(row: {
  * ```
  */
 export async function applyRefUpdate(row: {
-  gitdir: string;
-  triplet: {
-    oldOid: string;
-    newOid: string;
-    refName: string;
+  readonly gitdir: string;
+  readonly triplet: {
+    readonly oldOid: string;
+    readonly newOid: string;
+    readonly refName: string;
   };
 },): Promise<RefUpdateResultLite> {
   /** Destructured for ergonomic access through the validation branches. */

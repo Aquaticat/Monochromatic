@@ -55,9 +55,9 @@ const RECEIVE_PACK_CAPS: readonly string[] = [
  * ```
  */
 export async function buildInfoRefsAdvertisement(row: {
-  owner: string;
-  repo: string;
-  service: 'git-upload-pack' | 'git-receive-pack';
+  readonly owner: string;
+  readonly repo: string;
+  readonly service: 'git-upload-pack' | 'git-receive-pack';
 },): Promise<Uint8Array> {
   /** On-disk repo path the advertisement is built against. */
   const gitdir = await ensureRepoExists({
@@ -91,6 +91,7 @@ export async function buildInfoRefsAdvertisement(row: {
   return concatChunks(chunks,);
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array has mutator methods (`set`, `copyWithin`); rule cannot infer that this helper only reads from chunks and writes into the output buffer. */
 /**
  * Concatenates byte chunks into a single `Uint8Array`. Local-only because
  * `iso-server.ts` ships its own copy.
@@ -122,3 +123,4 @@ function concatChunks(chunks: readonly Uint8Array[],): Uint8Array {
   }
   return out;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

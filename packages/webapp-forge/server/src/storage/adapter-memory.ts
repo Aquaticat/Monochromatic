@@ -31,6 +31,7 @@ import type {
 export function createMemoryStorage(): Storage {
   /** Backing map closed over by every method on the returned adapter. */
   const map = new Map<string, Uint8Array>();
+  /* oxlint-disable typescript/prefer-readonly-parameter-types -- Storage interface methods (`put`, `putBatch`) accept `Uint8Array` bodies; the contract guarantees implementations consume them read-only. */
   return {
     put(
       key: string,
@@ -68,4 +69,5 @@ export function createMemoryStorage(): Storage {
       );
     },
   };
+  /* oxlint-enable typescript/prefer-readonly-parameter-types */
 }

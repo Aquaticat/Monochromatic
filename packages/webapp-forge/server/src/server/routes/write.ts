@@ -52,6 +52,7 @@ type CreateCommentPayload = {
  * include `title`; `body` and `number` are optional.
  */
 export const createIssueHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleCreateIssue(event,) {
     /** Owner login segment of the route path. */
     const owner = requireParam({
@@ -121,6 +122,7 @@ export const createIssueHandler: EventHandlerWithFetch = defineHandler(
  * comment to an existing issue. Body must include `body`.
  */
 export const createCommentHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleCreateComment(event,) {
     /** Owner login segment of the route path. */
     const owner = requireParam({
@@ -201,6 +203,7 @@ export const createCommentHandler: EventHandlerWithFetch = defineHandler(
  * fires every call so filter list fragments still rebuild.
  */
 export const labelIssueHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleLabelIssue(event,) {
     /** Owner login segment of the route path. */
     const owner = requireParam({

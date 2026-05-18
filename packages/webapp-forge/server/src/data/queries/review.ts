@@ -37,12 +37,12 @@ import type { Review, } from './types.ts';
  * ```
  */
 export async function insertReview(row: {
-  id: string;
-  prIssueId: string;
-  reviewerId: string;
-  state: string;
-  body?: string;
-  createdAt: number;
+  readonly id: string;
+  readonly prIssueId: string;
+  readonly reviewerId: string;
+  readonly state: string;
+  readonly body?: string;
+  readonly createdAt: number;
 },): Promise<void> {
   await run({
     sql:
@@ -80,12 +80,12 @@ export async function insertReview(row: {
  * ```
  */
 export async function submitReviewWithEvent(row: {
-  id: string;
-  prIssueId: string;
-  reviewerId: string;
-  state: string;
-  body?: string;
-  createdAt: number;
+  readonly id: string;
+  readonly prIssueId: string;
+  readonly reviewerId: string;
+  readonly state: string;
+  readonly body?: string;
+  readonly createdAt: number;
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {

@@ -95,7 +95,7 @@ function renderChild(child: unknown,): string {
  *
  * @returns space-prefixed attribute string (empty string if no attributes)
  */
-function renderAttrs(props: Record<string, unknown>,): string {
+function renderAttrs(props: Readonly<Record<string, unknown>>,): string {
   /** Accumulator for the rendered attribute string. */
   let result = '';
   for (const [key, value,] of Object.entries(props,)) {
@@ -138,7 +138,7 @@ function renderAttrs(props: Record<string, unknown>,): string {
  * Fragment({ children: ['a', 'b', 'c'] });
  * ```
  */
-export function Fragment(props: { children?: unknown; },): SafeHtml {
+export function Fragment(props: { readonly children?: unknown; },): SafeHtml {
   return { html: renderChild(props.children,), };
 }
 
@@ -147,8 +147,8 @@ export function Fragment(props: { children?: unknown; },): SafeHtml {
  * (`jsx(type, props, key)` called positionally by the TS JSX transform).
  */
 type JsxFactory = (
-  type: string | ((props: Record<string, unknown>,) => SafeHtml),
-  props: Record<string, unknown>,
+  type: string | ((props: Readonly<Record<string, unknown>>,) => SafeHtml),
+  props: Readonly<Record<string, unknown>>,
   _key?: string,
 ) => SafeHtml;
 
@@ -174,8 +174,8 @@ function jsxImpl(
     type,
     props,
   }: {
-    type: string | ((props: Record<string, unknown>,) => SafeHtml);
-    props: Record<string, unknown>;
+    readonly type: string | ((props: Readonly<Record<string, unknown>>,) => SafeHtml);
+    readonly props: Readonly<Record<string, unknown>>;
   },
 ): SafeHtml {
   if ((typeof type) === 'function')

@@ -49,8 +49,8 @@ export function gitdirRoot(): string {
  * ```
  */
 export function repoGitdir(row: {
-  owner: string;
-  repo: string;
+  readonly owner: string;
+  readonly repo: string;
 },): string {
   return join(
     gitdirRoot(),

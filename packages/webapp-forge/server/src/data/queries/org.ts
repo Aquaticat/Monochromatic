@@ -23,9 +23,9 @@ import type { Org, } from './types.ts';
  * ```
  */
 export async function insertOrg(row: {
-  id: string;
-  name: string;
-  createdAt: number;
+  readonly id: string;
+  readonly name: string;
+  readonly createdAt: number;
 },): Promise<void> {
   await run({
     sql: 'INSERT OR IGNORE INTO orgs(id, name, created_at) VALUES (?, ?, ?)',

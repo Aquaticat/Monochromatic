@@ -36,11 +36,11 @@ import type { PullRequest, } from './types.ts';
  * ```
  */
 export async function insertPullRequest(row: {
-  issueId: string;
-  baseRef: string;
-  headRef: string;
-  headSha: string;
-  mergeable?: string;
+  readonly issueId: string;
+  readonly baseRef: string;
+  readonly headRef: string;
+  readonly headSha: string;
+  readonly mergeable?: string;
 },): Promise<void> {
   await run({
     sql: `INSERT OR IGNORE INTO prs(issue_id, base_ref, head_ref, head_sha, mergeable)
@@ -121,16 +121,16 @@ export async function listPullRequestsByHeadSha(
  * ```
  */
 export async function createPullRequestWithEvent(row: {
-  issueId: string;
-  repoId: string;
-  number: number;
-  authorId: string;
-  title: string;
-  body?: string;
-  baseRef: string;
-  headRef: string;
-  headSha: string;
-  createdAt: number;
+  readonly issueId: string;
+  readonly repoId: string;
+  readonly number: number;
+  readonly authorId: string;
+  readonly title: string;
+  readonly body?: string;
+  readonly baseRef: string;
+  readonly headRef: string;
+  readonly headSha: string;
+  readonly createdAt: number;
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
@@ -201,10 +201,10 @@ export async function createPullRequestWithEvent(row: {
  * ```
  */
 export async function pushPullRequestHead(row: {
-  issueId: string;
-  headSha: string;
-  mergeable?: string;
-  createdAt: number;
+  readonly issueId: string;
+  readonly headSha: string;
+  readonly mergeable?: string;
+  readonly createdAt: number;
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {

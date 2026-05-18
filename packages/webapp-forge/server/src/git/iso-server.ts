@@ -44,8 +44,8 @@ const HEX_PREFIX_LEN = 2;
 
 /** Argument bundle for repo identification. */
 type RepoArgs = {
-  owner: string;
-  repo: string;
+  readonly owner: string;
+  readonly repo: string;
 };
 
 /**
@@ -60,6 +60,7 @@ export type ReceivePackOutcome = {
   readonly applied: readonly RefUpdateTriplet[];
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array body buffer is read-only consumed (parseUploadPackBody only calls `.subarray`); the rule cannot model TypedArray immutability. */
 /**
  * Handles a `POST /x/y.git/git-upload-pack` request.
  *
@@ -73,7 +74,7 @@ export type ReceivePackOutcome = {
  * ```
  */
 export async function handleUploadPack(
-  row: RepoArgs & { body: Uint8Array; },
+  row: RepoArgs & { readonly body: Uint8Array; },
 ): Promise<Uint8Array> {
   /** Resolved gitdir for the requested repo. */
   const gitdir = await ensureRepoExists(row,);
@@ -112,7 +113,9 @@ export async function handleUploadPack(
   },);
   return concatChunks(chunks,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array body buffer is read-only consumed (parseReceivePackBody only calls `.subarray`); the rule cannot model TypedArray immutability. */
 /**
  * Handles a `POST /x/y.git/git-receive-pack` request.
  *
@@ -127,7 +130,7 @@ export async function handleUploadPack(
  * ```
  */
 export async function handleReceivePack(
-  row: RepoArgs & { body: Uint8Array; },
+  row: RepoArgs & { readonly body: Uint8Array; },
 ): Promise<ReceivePackOutcome> {
   /** Resolved gitdir for the requested repo. */
   const gitdir = await ensureRepoExists(row,);
@@ -239,6 +242,7 @@ export async function handleReceivePack(
     applied,
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Reads the contents of a single ref. Returns `undefined` when the
@@ -254,7 +258,7 @@ export async function handleReceivePack(
  * ```
  */
 export async function getRef(
-  row: RepoArgs & { ref: string; },
+  row: RepoArgs & { readonly ref: string; },
 ): Promise<string | undefined> {
   /** Resolved gitdir; created on demand by `ensureRepoExists`. */
   const gitdir = await ensureRepoExists(row,);
@@ -283,7 +287,7 @@ export async function getRef(
  * ```
  */
 export async function listRefs(
-  row: RepoArgs & { filepath: string; },
+  row: RepoArgs & { readonly filepath: string; },
 ): Promise<readonly string[]> {
   /** Resolved gitdir; created on demand by `ensureRepoExists`. */
   const gitdir = await ensureRepoExists(row,);
@@ -308,7 +312,7 @@ export async function listRefs(
  * ```
  */
 export async function readLooseObjectBytes(
-  row: RepoArgs & { oid: string; },
+  row: RepoArgs & { readonly oid: string; },
 ): Promise<Uint8Array> {
   /** Resolved gitdir; created on demand by `ensureRepoExists`. */
   const gitdir = await ensureRepoExists(row,);
@@ -325,6 +329,7 @@ export async function readLooseObjectBytes(
   return new Uint8Array(await readFile(path,),);
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array has mutator methods (`set`, `copyWithin`); rule cannot infer that this helper only reads from chunks and writes into the output buffer. */
 /**
  * Concatenates byte chunks into a single `Uint8Array`.
  *
@@ -355,3 +360,4 @@ function concatChunks(chunks: readonly Uint8Array[],): Uint8Array {
   }
   return out;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

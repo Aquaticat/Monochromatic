@@ -15,20 +15,20 @@ import {
  * Fields accepted by {@link provisionUser}.
  */
 export type ProvisionUserRow = {
-  id: string;
-  login: string;
-  email?: string | null;
-  createdAt?: number;
+  readonly id: string;
+  readonly login: string;
+  readonly email?: string | null;
+  readonly createdAt?: number;
 };
 
 /**
  * Fields accepted by {@link provisionRepo}.
  */
 export type ProvisionRepoRow = {
-  id: string;
-  ownerId: string;
-  name: string;
-  createdAt?: number;
+  readonly id: string;
+  readonly ownerId: string;
+  readonly name: string;
+  readonly createdAt?: number;
 };
 
 /**

@@ -55,6 +55,7 @@ export type ProcessEventResult = {
   readonly discarded: number;
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `sink: Storage | WriteBuffer` has mutator methods (`put`, `enqueue`) by interface contract; we delegate to them through the same contract. */
 /**
  * Turns one event into rebuilds.
  *
@@ -74,18 +75,18 @@ export type ProcessEventResult = {
  */
 export async function processEvent(row: {
   /** Event header to dispatch. */
-  event: EventInput;
+  readonly event: EventInput;
   /**
    * Per-resource sequence number that produced the event. Unused after
    * the sequence guard moved to `events.id`; kept on the signature so
    * callers do not have to change as the dispatcher learns to publish
    * per-resource metrics in Phase 2+.
    */
-  sequenceNumber: number;
+  readonly sequenceNumber: number;
   /** Generated `events.id`; doubles as the global monotonic sequence guard for `fragment_index`. */
-  eventId: number;
+  readonly eventId: number;
   /** Storage destination (write buffer in production, adapter in tests). */
-  sink: Storage | WriteBuffer;
+  readonly sink: Storage | WriteBuffer;
 },): Promise<ProcessEventResult> {
   /** Aliases destructured up front so loop branches stay readable. */
   const {
@@ -191,6 +192,7 @@ export async function processEvent(row: {
     discarded: counters.discarded,
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Loads the metadata that the dependency graph needs for an issue event.

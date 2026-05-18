@@ -44,8 +44,8 @@ export type IssueStateFacet = 'open' | 'closed';
  * ```
  */
 export function issueDetailKey(row: {
-  repoId: string;
-  issueId: string;
+  readonly repoId: string;
+  readonly issueId: string;
 },): string {
   return `issues/${row.repoId}/${row.issueId}/detail`;
 }
@@ -66,9 +66,9 @@ export function issueDetailKey(row: {
  * ```
  */
 export function filterListKey(row: {
-  repoId: string;
-  labelId: string;
-  state: IssueStateFacet;
+  readonly repoId: string;
+  readonly labelId: string;
+  readonly state: IssueStateFacet;
 },): string {
   return `repos/${row.repoId}/filters/${row.labelId}/${row.state}/list`;
 }
@@ -87,8 +87,8 @@ export function filterListKey(row: {
  * ```
  */
 export function prDetailKey(row: {
-  repoId: string;
-  issueId: string;
+  readonly repoId: string;
+  readonly issueId: string;
 },): string {
   return `prs/${row.repoId}/${row.issueId}/detail`;
 }
@@ -107,8 +107,8 @@ export function prDetailKey(row: {
  * ```
  */
 export function reviewThreadKey(row: {
-  repoId: string;
-  issueId: string;
+  readonly repoId: string;
+  readonly issueId: string;
 },): string {
   return `prs/${row.repoId}/${row.issueId}/reviews`;
 }
@@ -127,8 +127,8 @@ export function reviewThreadKey(row: {
  * ```
  */
 export function mergeStatusKey(row: {
-  repoId: string;
-  issueId: string;
+  readonly repoId: string;
+  readonly issueId: string;
 },): string {
   return `prs/${row.repoId}/${row.issueId}/merge-status`;
 }
@@ -172,9 +172,9 @@ export function commentKey(commentId: string,): string {
  * ```
  */
 export function fileTreeKey(row: {
-  repoId: string;
-  ref: string;
-  path: string;
+  readonly repoId: string;
+  readonly ref: string;
+  readonly path: string;
 },): string {
   return `repos/${row.repoId}/tree/${row.ref}/${row.path}`;
 }
@@ -193,9 +193,9 @@ export function fileTreeKey(row: {
  * ```
  */
 export function blobKey(row: {
-  repoId: string;
-  ref: string;
-  path: string;
+  readonly repoId: string;
+  readonly ref: string;
+  readonly path: string;
 },): string {
   return `repos/${row.repoId}/blob/${row.ref}/${row.path}`;
 }
@@ -214,9 +214,9 @@ export function blobKey(row: {
  * ```
  */
 export function diffKey(row: {
-  repoId: string;
-  baseSha: string;
-  headSha: string;
+  readonly repoId: string;
+  readonly baseSha: string;
+  readonly headSha: string;
 },): string {
   return `repos/${row.repoId}/diff/${row.baseSha}/${row.headSha}`;
 }

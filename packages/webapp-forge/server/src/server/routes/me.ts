@@ -83,6 +83,7 @@ type DeltaPayload = {
   };
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Web `Headers` has `set`/`delete` mutators by spec; we only read via `.get`. */
 /**
  * Resolves the actor identity from a Better Auth session, falling back
  * to the legacy `X-Forge-User` dev header in non-production environments.
@@ -122,6 +123,7 @@ async function resolveActor(headers: Headers,): Promise<DeltaActor | null> {
     login: fallbackUser.login,
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Parsed `(owner, repo, kind, number?)` view of a path the delta
@@ -137,8 +139,10 @@ function parseDeltaPath(path: string,): {
   readonly kind: 'issue-detail' | 'filter-list';
   readonly number: number | null;
 } | null {
+  /* oxlint-disable no-restricted-syntax/require-regex-justification -- URL path parser; input is a request path bounded by Node URL parsing, anchored with no nested quantifiers so no catastrophic backtracking is possible. */
   /** Issue-detail path match; non-null returns the parsed shape below. */
-  const issueDetailMatch = /^\/([^/]+)\/([^/]+)\/issues\/(\d+)\/?$/.exec(path,);
+  const issueDetailMatch = /^\/([^/]+)\/([^/]+)\/issues\/(\d+)\/?$/u.exec(path,);
+  /* oxlint-enable no-restricted-syntax/require-regex-justification */
   if (issueDetailMatch !== null) {
     return {
       owner: issueDetailMatch[1] ?? '',
@@ -150,8 +154,10 @@ function parseDeltaPath(path: string,): {
       ),
     };
   }
+  /* oxlint-disable no-restricted-syntax/require-regex-justification -- URL path parser; input is a request path bounded by Node URL parsing, anchored with no nested quantifiers so no catastrophic backtracking is possible. */
   /** Filter-list path match; non-null returns the parsed shape below. */
-  const filterListMatch = /^\/([^/]+)\/([^/]+)\/issues\/?$/.exec(path,);
+  const filterListMatch = /^\/([^/]+)\/([^/]+)\/issues\/?$/u.exec(path,);
+  /* oxlint-enable no-restricted-syntax/require-regex-justification */
   if (filterListMatch !== null) {
     return {
       owner: filterListMatch[1] ?? '',
@@ -175,11 +181,11 @@ function parseDeltaPath(path: string,): {
  * @returns payload populated for the issue-detail path
  */
 async function buildIssueDetailDelta(row: {
-  owner: string;
-  repo: string;
-  number: number;
-  actor: DeltaActor;
-  path: string;
+  readonly owner: string;
+  readonly repo: string;
+  readonly number: number;
+  readonly actor: DeltaActor;
+  readonly path: string;
 },): Promise<DeltaPayload> {
   /** Repo row identified by owner login + repo name. */
   const repo = await getRepoByOwnerLogin({
@@ -265,10 +271,10 @@ async function buildIssueDetailDelta(row: {
  * @returns payload populated for the filter-list path
  */
 async function buildFilterListDelta(row: {
-  owner: string;
-  repo: string;
-  actor: DeltaActor;
-  path: string;
+  readonly owner: string;
+  readonly repo: string;
+  readonly actor: DeltaActor;
+  readonly path: string;
 },): Promise<DeltaPayload> {
   /** Repo row identified by owner login + repo name. */
   const repo = await getRepoByOwnerLogin({
@@ -325,6 +331,7 @@ async function buildFilterListDelta(row: {
  * ```
  */
 export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleMeDelta(event,) {
     /** Request URL parsed once so query params are reachable below. */
     const url = new URL(event.req.url,);

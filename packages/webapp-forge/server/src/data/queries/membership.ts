@@ -27,9 +27,9 @@ import type {
  * ```
  */
 export async function upsertRepoMember(row: {
-  repoId: string;
-  userId: string;
-  role: string;
+  readonly repoId: string;
+  readonly userId: string;
+  readonly role: string;
 },): Promise<void> {
   await run({
     sql: `INSERT INTO repo_members(repo_id, user_id, role) VALUES (?, ?, ?)
@@ -53,8 +53,8 @@ export async function upsertRepoMember(row: {
  * ```
  */
 export async function removeRepoMember(row: {
-  repoId: string;
-  userId: string;
+  readonly repoId: string;
+  readonly userId: string;
 },): Promise<void> {
   await run({
     sql: 'DELETE FROM repo_members WHERE repo_id = ? AND user_id = ?',
@@ -78,8 +78,8 @@ export async function removeRepoMember(row: {
  * ```
  */
 export async function getRepoMember(row: {
-  repoId: string;
-  userId: string;
+  readonly repoId: string;
+  readonly userId: string;
 },): Promise<RepoMember | undefined> {
   return await get<RepoMember>({
     sql: 'SELECT * FROM repo_members WHERE repo_id = ? AND user_id = ?',
@@ -120,8 +120,8 @@ export async function listRepoMembers(repoId: string,): Promise<RepoMember[]> {
  * ```
  */
 export async function assignUserToIssue(row: {
-  issueId: string;
-  userId: string;
+  readonly issueId: string;
+  readonly userId: string;
 },): Promise<void> {
   await run({
     sql: 'INSERT OR IGNORE INTO issue_assignees(issue_id, user_id) VALUES (?, ?)',
@@ -143,8 +143,8 @@ export async function assignUserToIssue(row: {
  * ```
  */
 export async function unassignUserFromIssue(row: {
-  issueId: string;
-  userId: string;
+  readonly issueId: string;
+  readonly userId: string;
 },): Promise<void> {
   await run({
     sql: 'DELETE FROM issue_assignees WHERE issue_id = ? AND user_id = ?',

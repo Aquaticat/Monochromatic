@@ -24,6 +24,7 @@ import { auth, } from '../../lib/auth.ts';
  * ```
  */
 export const authHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleAuth(event,) {
     return await auth.handler(event.req,);
   },

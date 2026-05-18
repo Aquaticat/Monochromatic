@@ -20,6 +20,7 @@ import {
   type PktLine,
 } from './pkt-line.ts';
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array chunks are read-only consumed; the rule cannot model TypedArray immutability. */
 /**
  * Concatenates pkt-line bytes into a single `Uint8Array`.
  *
@@ -47,6 +48,7 @@ function concat(chunks: readonly Uint8Array[],): Uint8Array {
   }
   return out;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 await describe({
   name: 'pkt-line',

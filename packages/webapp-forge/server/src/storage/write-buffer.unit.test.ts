@@ -103,7 +103,8 @@ await describe({
                 body: encoder.encode('1',),
               },);
             },)
-              .toThrow(/closed/,);
+              // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- Test assertion matches a short literal substring in a thrown error message; expect API requires a RegExp.
+              .toThrow(/closed/u,);
           },
         },),
         it({

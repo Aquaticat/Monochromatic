@@ -85,6 +85,7 @@ export type UploadPackRequest = {
   readonly done: boolean;
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array has mutator methods; this parser only reads from `body` via `subarray`. */
 /**
  * Decodes a `git-receive-pack` request body.
  *
@@ -197,7 +198,9 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
     packfile,
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array has mutator methods; this parser only reads from `body` via `subarray`. */
 /**
  * Decodes a `git-upload-pack` request body.
  *
@@ -279,3 +282,4 @@ export function parseUploadPackBody(body: Uint8Array,): UploadPackRequest {
     done: scanResult.done,
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -35,17 +35,19 @@ export type RenderResult = {
   readonly contentHash: string;
 };
 
+/* oxlint-disable no-restricted-syntax/require-regex-justification -- Fragment key parser; inputs are canonical keys produced by fragment-keys.ts (bounded path segments without slashes), regex is anchored with no nested quantifiers so no catastrophic backtracking is possible. */
 /** Pattern for PR detail fragment keys. */
-const PR_DETAIL_PATTERN = /^prs\/([^/]+)\/([^/]+)\/detail$/;
+const PR_DETAIL_PATTERN = /^prs\/([^/]+)\/([^/]+)\/detail$/u;
 
 /** Pattern for PR review-thread fragment keys. */
-const REVIEW_THREAD_PATTERN = /^prs\/([^/]+)\/([^/]+)\/reviews$/;
+const REVIEW_THREAD_PATTERN = /^prs\/([^/]+)\/([^/]+)\/reviews$/u;
 
 /** Pattern for merge-status fragment keys. */
-const MERGE_STATUS_PATTERN = /^prs\/([^/]+)\/([^/]+)\/merge-status$/;
+const MERGE_STATUS_PATTERN = /^prs\/([^/]+)\/([^/]+)\/merge-status$/u;
 
 /** Pattern for standalone comment fragment keys. */
-const COMMENT_PATTERN = /^comments\/(.+)$/;
+const COMMENT_PATTERN = /^comments\/(.+)$/u;
+/* oxlint-enable no-restricted-syntax/require-regex-justification */
 
 /** Default required-approvals threshold for the merge-status panel. */
 const DEFAULT_REQUIRED_APPROVALS = 1;
@@ -274,8 +276,8 @@ async function renderCommentByKey(commentId: string,): Promise<RenderResult> {
  * Aggregated counts used by both the PR-detail and merge-status renderers.
  */
 type ReviewCounts = {
-  approved: number;
-  changesRequested: number;
+  readonly approved: number;
+  readonly changesRequested: number;
 };
 
 /**

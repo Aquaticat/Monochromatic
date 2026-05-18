@@ -40,9 +40,9 @@ import {
  */
 export function requireParam(row: {
   /** h3 route parameter record. */
-  params: Record<string, string> | undefined;
+  readonly params: Readonly<Record<string, string>> | undefined;
   /** Parameter name to extract. */
-  name: string;
+  readonly name: string;
 },): string {
   /** Raw param value; missing/empty triggers the 400 below. */
   const value = row.params?.[row.name];
@@ -59,8 +59,8 @@ export function requireParam(row: {
  * Minimal subset of the h3 event used by {@link requireActor}.
  */
 export type ActorEvent = {
-  req: {
-    headers: Headers;
+  readonly req: {
+    readonly headers: Headers;
   };
 };
 
@@ -72,6 +72,7 @@ export type Actor = {
   login: string;
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- ActorEvent wraps a Web `Headers` whose `set`/`delete` methods are mutators by spec; we only read via `.get`. */
 /**
  * Resolves the actor identity from a Better Auth session, falling back
  * to the legacy `X-Forge-User: <login>` header in non-production
@@ -130,6 +131,7 @@ export async function requireActor(event: ActorEvent,): Promise<Actor> {
     login: user.login,
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Drains every event newer than the in-memory cursor and flushes the

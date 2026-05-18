@@ -51,12 +51,12 @@ export type FilterListData = {
  * ```
  */
 function issueRow(props: {
-  ownerLogin: string;
-  repoName: string;
-  number: number;
-  title: string;
-  updatedAt: string;
-  state: string;
+  readonly ownerLogin: string;
+  readonly repoName: string;
+  readonly number: number;
+  readonly title: string;
+  readonly updatedAt: string;
+  readonly state: string;
 },): SafeHtml {
   return jsx(
     'li',

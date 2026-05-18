@@ -44,13 +44,13 @@ import type {
  * ```
  */
 export async function createIssueWithEvent(row: {
-  id: string;
-  repoId: string;
-  number: number;
-  authorId: string;
-  title: string;
-  body?: string;
-  createdAt: number;
+  readonly id: string;
+  readonly repoId: string;
+  readonly number: number;
+  readonly authorId: string;
+  readonly title: string;
+  readonly body?: string;
+  readonly createdAt: number;
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
@@ -110,9 +110,9 @@ export async function createIssueWithEvent(row: {
  * ```
  */
 export async function labelIssueWithEvent(row: {
-  issueId: string;
-  labelId: string;
-  createdAt: number;
+  readonly issueId: string;
+  readonly labelId: string;
+  readonly createdAt: number;
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
@@ -173,11 +173,11 @@ export async function labelIssueWithEvent(row: {
  * ```
  */
 export async function createCommentWithEvent(row: {
-  id: string;
-  issueId: string;
-  authorId: string;
-  body: string;
-  createdAt: number;
+  readonly id: string;
+  readonly issueId: string;
+  readonly authorId: string;
+  readonly body: string;
+  readonly createdAt: number;
 },): Promise<number> {
   await db.exec('BEGIN IMMEDIATE',);
   try {
@@ -277,8 +277,8 @@ export async function getComment(id: string,): Promise<Comment | undefined> {
  * ```
  */
 export async function getIssueByNumber(row: {
-  repoId: string;
-  number: number;
+  readonly repoId: string;
+  readonly number: number;
 },): Promise<Issue | undefined> {
   return await get<Issue>({
     sql: 'SELECT * FROM issues WHERE repo_id = ? AND number = ?',
@@ -343,9 +343,9 @@ export async function listIssueLabels(issueId: string,): Promise<Label[]> {
  * ```
  */
 export async function listIssueIdsForFilter(row: {
-  repoId: string;
-  labelId: string | null;
-  state: string;
+  readonly repoId: string;
+  readonly labelId: string | null;
+  readonly state: string;
 },): Promise<IssueIdRow[]> {
   if (row.labelId === null) {
     return await all<IssueIdRow>({

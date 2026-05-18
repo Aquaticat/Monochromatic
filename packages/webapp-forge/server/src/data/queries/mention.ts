@@ -24,8 +24,8 @@ import {
  * ```
  */
 export async function addMention(row: {
-  userId: string;
-  fragmentKey: string;
+  readonly userId: string;
+  readonly fragmentKey: string;
 },): Promise<void> {
   await run({
     sql: 'INSERT OR IGNORE INTO mention_index(user_id, fragment_key) VALUES (?, ?)',
@@ -47,8 +47,8 @@ export async function addMention(row: {
  * ```
  */
 export async function removeMention(row: {
-  userId: string;
-  fragmentKey: string;
+  readonly userId: string;
+  readonly fragmentKey: string;
 },): Promise<void> {
   await run({
     sql: 'DELETE FROM mention_index WHERE user_id = ? AND fragment_key = ?',
@@ -78,8 +78,8 @@ export async function removeMention(row: {
  * ```
  */
 export async function replaceMentionsForFragment(row: {
-  fragmentKey: string;
-  userIds: readonly string[];
+  readonly fragmentKey: string;
+  readonly userIds: readonly string[];
 },): Promise<void> {
   await run({
     sql: 'DELETE FROM mention_index WHERE fragment_key = ?',

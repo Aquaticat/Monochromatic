@@ -77,10 +77,10 @@ function toUser(row: UserRow,): User {
  * ```
  */
 export async function insertUser(row: {
-  id: string;
-  login: string;
-  email?: string | null;
-  createdAt: number;
+  readonly id: string;
+  readonly login: string;
+  readonly email?: string | null;
+  readonly createdAt: number;
 },): Promise<void> {
   /** ISO timestamp shared by both `createdAt` and `updatedAt` columns. */
   const createdAtIso = new Date(row.createdAt,).toISOString();
@@ -113,10 +113,10 @@ export async function insertUser(row: {
  * ```
  */
 export async function insertRepo(row: {
-  id: string;
-  ownerId: string;
-  name: string;
-  createdAt: number;
+  readonly id: string;
+  readonly ownerId: string;
+  readonly name: string;
+  readonly createdAt: number;
 },): Promise<void> {
   await run({
     sql:
@@ -143,10 +143,10 @@ export async function insertRepo(row: {
  * ```
  */
 export async function insertLabel(row: {
-  id: string;
-  repoId: string;
-  name: string;
-  color?: string;
+  readonly id: string;
+  readonly repoId: string;
+  readonly name: string;
+  readonly color?: string;
 },): Promise<void> {
   await run({
     sql: 'INSERT OR IGNORE INTO labels(id, repo_id, name, color) VALUES (?, ?, ?, ?)',
@@ -233,8 +233,8 @@ export async function getRepo(id: string,): Promise<Repo | undefined> {
  * ```
  */
 export async function getRepoByOwnerLogin(row: {
-  ownerLogin: string;
-  name: string;
+  readonly ownerLogin: string;
+  readonly name: string;
 },): Promise<Repo | undefined> {
   return await get<Repo>({
     sql: `SELECT r.* FROM repos r

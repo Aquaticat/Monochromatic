@@ -5,7 +5,7 @@
  * `render-phase2.ts` can import without a cycle.
  */
 
-/* oxlint-disable eslint/no-magic-numbers, unicorn/prefer-math-trunc -- FNV-1a constants */
+/* oxlint-disable eslint/no-magic-numbers, unicorn/prefer-math-trunc, typescript/prefer-readonly-parameter-types -- FNV-1a constants; Uint8Array body is read-only iterated by `for...of`. */
 /**
  * FNV-1a 64-bit hash of a byte string.
  *
@@ -68,4 +68,4 @@ export function fnv1a64(bytes: Uint8Array,): string {
     '0',
   );
 }
-/* oxlint-enable eslint/no-magic-numbers, unicorn/prefer-math-trunc */
+/* oxlint-enable eslint/no-magic-numbers, unicorn/prefer-math-trunc, typescript/prefer-readonly-parameter-types */

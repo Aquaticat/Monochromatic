@@ -113,6 +113,7 @@ function stripGitSuffix(raw: string,): string {
   );
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Web Request is dictated by the platform fetch API and has mutable methods (`text`, `arrayBuffer`); rule cannot model their idempotent semantics. */
 /**
  * Reads the request body in full. h3 hands us a Web `Request`; using
  * `req.bytes()` gives a `Uint8Array` directly without buffering through
@@ -132,16 +133,18 @@ async function readRequestBytes(request: Request,): Promise<Uint8Array> {
   const buf = await request.arrayBuffer();
   return new Uint8Array(buf,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * `GET /:owner/:repo.git/info/refs?service=git-upload-pack|git-receive-pack`.
  */
 export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleInfoRefs(event,) {
     /** Owner login segment of the route path. */
-    const owner = event.context.params?.['owner'];
+    const owner = event.context.params?.owner;
     /** Raw `:repo.git` segment of the route path. */
-    const repoRaw = event.context.params?.['repo'];
+    const repoRaw = event.context.params?.repo;
     if ((owner === undefined)
       || (owner === '')
       || (repoRaw === undefined)
@@ -184,11 +187,12 @@ export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
  * `POST /:owner/:repo.git/git-upload-pack`: clone/fetch.
  */
 export const gitUploadPackHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleUploadPackRoute(event,) {
     /** Owner login segment of the route path. */
-    const owner = event.context.params?.['owner'];
+    const owner = event.context.params?.owner;
     /** Raw `:repo.git` segment of the route path. */
-    const repoRaw = event.context.params?.['repo'];
+    const repoRaw = event.context.params?.repo;
     if ((owner === undefined)
       || (owner === '')
       || (repoRaw === undefined)
@@ -229,11 +233,12 @@ export const gitUploadPackHandler: EventHandlerWithFetch = defineHandler(
  * scope: real auth and DB-side repo creation come with Better Auth.
  */
 export const gitReceivePackHandler: EventHandlerWithFetch = defineHandler(
+  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleReceivePackRoute(event,) {
     /** Owner login segment of the route path. */
-    const owner = event.context.params?.['owner'];
+    const owner = event.context.params?.owner;
     /** Raw `:repo.git` segment of the route path. */
-    const repoRaw = event.context.params?.['repo'];
+    const repoRaw = event.context.params?.repo;
     if ((owner === undefined)
       || (owner === '')
       || (repoRaw === undefined)

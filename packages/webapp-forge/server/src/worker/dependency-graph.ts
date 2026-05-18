@@ -102,9 +102,9 @@ const ALL_STATES: readonly IssueStateFacet[] = [
  */
 export function dependenciesFor(row: {
   /** Event header used for routing decisions. */
-  event: EventInput;
+  readonly event: EventInput;
   /** Issue context (repo, labels, state) needed for fanning out filter-list keys. */
-  context: ResolvedEventContext;
+  readonly context: ResolvedEventContext;
 },): Set<string> {
   /** Aliases destructured up front so the fanning-out branches stay readable. */
   const {

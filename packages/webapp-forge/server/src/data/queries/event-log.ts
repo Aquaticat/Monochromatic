@@ -31,9 +31,9 @@ import type {
  */
 export async function nextSequence(row: {
   /** Resource discriminant. */
-  resourceType: ResourceType;
+  readonly resourceType: ResourceType;
   /** Resource id. */
-  resourceId: string;
+  readonly resourceId: string;
 },): Promise<number> {
   await run({
     sql: `INSERT INTO sequences(resource_type, resource_id, current)
@@ -77,12 +77,12 @@ export async function nextSequence(row: {
  * ```
  */
 export async function insertEvent(row: {
-  resourceType: ResourceType;
-  resourceId: string;
-  kind: EventKind;
-  payload: Readonly<Record<string, unknown>>;
-  sequenceNumber: number;
-  createdAt: number;
+  readonly resourceType: ResourceType;
+  readonly resourceId: string;
+  readonly kind: EventKind;
+  readonly payload: Readonly<Record<string, unknown>>;
+  readonly sequenceNumber: number;
+  readonly createdAt: number;
 },): Promise<number> {
   /** Insert result; `lastInsertRowid` becomes the returned `events.id`. */
   const result = await run({
@@ -115,9 +115,9 @@ export async function insertEvent(row: {
  */
 export async function listEventsAfter(row: {
   /** Exclusive lower bound on `events.id`. */
-  afterId: number;
+  readonly afterId: number;
   /** Maximum number of rows to return. */
-  limit: number;
+  readonly limit: number;
 },): Promise<EventRow[]> {
   return await all<EventRow>({
     sql: 'SELECT * FROM events WHERE id > ? ORDER BY id ASC LIMIT ?',

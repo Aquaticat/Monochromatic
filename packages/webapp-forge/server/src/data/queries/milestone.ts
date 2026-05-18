@@ -24,10 +24,10 @@ import type { Milestone, } from './types.ts';
  * ```
  */
 export async function insertMilestone(row: {
-  id: string;
-  repoId: string;
-  title: string;
-  dueAt?: number | null;
+  readonly id: string;
+  readonly repoId: string;
+  readonly title: string;
+  readonly dueAt?: number | null;
 },): Promise<void> {
   await run({
     sql:
@@ -91,8 +91,8 @@ export async function listRepoMilestones(repoId: string,): Promise<Milestone[]> 
  * ```
  */
 export async function setIssueMilestone(row: {
-  issueId: string;
-  milestoneId: string;
+  readonly issueId: string;
+  readonly milestoneId: string;
 },): Promise<void> {
   await run({
     sql: `INSERT INTO issue_milestone(issue_id, milestone_id) VALUES (?, ?)

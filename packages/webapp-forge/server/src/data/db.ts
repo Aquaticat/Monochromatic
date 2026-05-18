@@ -147,9 +147,9 @@ export default db;
  */
 export async function run(row: {
   /** SQL with `?` parameter placeholders. */
-  sql: string;
+  readonly sql: string;
   /** Bind parameters; defaults to none. */
-  params?: readonly unknown[];
+  readonly params?: readonly unknown[];
 },): Promise<{
   changes: number;
   lastInsertRowid: number;
@@ -180,9 +180,9 @@ export async function run(row: {
  */
 export async function get<T = Record<string, unknown>,>(row: {
   /** SQL with `?` parameter placeholders. */
-  sql: string;
+  readonly sql: string;
   /** Bind parameters; defaults to none. */
-  params?: readonly unknown[];
+  readonly params?: readonly unknown[];
 },): Promise<T | undefined> {
   /** Prepared statement for the single-row fetch. */
   const stmt = db.prepare(row.sql,);
@@ -211,9 +211,9 @@ export async function get<T = Record<string, unknown>,>(row: {
  */
 export async function all<T = Record<string, unknown>,>(row: {
   /** SQL with `?` parameter placeholders. */
-  sql: string;
+  readonly sql: string;
   /** Bind parameters; defaults to none. */
-  params?: readonly unknown[];
+  readonly params?: readonly unknown[];
 },): Promise<T[]> {
   /** Prepared statement for the multi-row fetch. */
   const stmt = db.prepare(row.sql,);

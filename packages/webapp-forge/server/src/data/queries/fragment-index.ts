@@ -53,11 +53,11 @@ export async function getFragmentIndex(
  * ```
  */
 export async function upsertFragmentIndexIfNewer(row: {
-  fragmentKey: string;
-  contentHash: string;
-  lastBuiltAt: number;
-  sourceEventId: number;
-  sourceEventSequence: number;
+  readonly fragmentKey: string;
+  readonly contentHash: string;
+  readonly lastBuiltAt: number;
+  readonly sourceEventId: number;
+  readonly sourceEventSequence: number;
 },): Promise<boolean> {
   /** Upsert result; `changes > 0` means our row won the sequence guard. */
   const result = await run({

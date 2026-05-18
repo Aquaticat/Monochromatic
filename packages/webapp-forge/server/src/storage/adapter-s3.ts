@@ -27,6 +27,7 @@ import type {
   StoragePutItem,
 } from './adapter.ts';
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `fetch` signature follows the platform fetch API contract; `Request` and `RequestInit` carry mutator methods by spec. */
 /**
  * HTTP client used to issue signed S3 requests.
  */
@@ -46,6 +47,7 @@ export type S3FetchClient = {
     init?: RequestInit,
   ): Promise<Response>;
 };
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Options accepted by {@link createS3Storage}.
@@ -113,9 +115,9 @@ export function encodeS3Key(key: string,): string {
  * ```
  */
 function objectUrl(row: {
-  endpoint: string;
-  bucket: string;
-  key: string;
+  readonly endpoint: string;
+  readonly bucket: string;
+  readonly key: string;
 },): string {
   return `${row.endpoint}/${row.bucket}/${encodeS3Key(row.key,)}`;
 }
@@ -140,8 +142,10 @@ function objectUrl(row: {
 function parseKeys(xml: string,): string[] {
   /** Accumulator for the matched `<Key>` values in document order. */
   const keys: string[] = [];
+  /* oxlint-disable no-restricted-syntax/require-regex-justification -- Streaming XML extractor over an S3 ListObjectsV2 response body bounded by `maxKeys`; non-greedy quantifier with no alternation prevents catastrophic backtracking. */
   /** Pattern matching `<Key>...</Key>` non-greedily so adjacent tags do not merge. */
-  const pattern = /<Key>(.+?)<\/Key>/g;
+  const pattern = /<Key>(.+?)<\/Key>/gu;
+  /* oxlint-enable no-restricted-syntax/require-regex-justification */
   for (const match of xml.matchAll(pattern,)) {
     if (match[1] !== undefined)
       keys.push(decodeXmlEntities(match[1],),);
@@ -163,12 +167,16 @@ function parseKeys(xml: string,): string[] {
  * ```
  */
 function parseContinuationToken(xml: string,): string | undefined {
+  /* oxlint-disable no-restricted-syntax/require-regex-justification -- Extracts S3 pagination control fields from a ListObjectsV2 response body bounded by AWS; non-greedy single-capture pattern with no alternation prevents catastrophic backtracking. */
   /** IsTruncated flag; absent or false means the response is the final page. */
-  const truncated = /<IsTruncated>(.+?)<\/IsTruncated>/.exec(xml,);
+  const truncated = /<IsTruncated>(.+?)<\/IsTruncated>/u.exec(xml,);
+  /* oxlint-enable no-restricted-syntax/require-regex-justification */
   if (truncated?.[1] !== 'true')
     return undefined;
+  /* oxlint-disable no-restricted-syntax/require-regex-justification -- Extracts S3 pagination control fields from a ListObjectsV2 response body bounded by AWS; non-greedy single-capture pattern with no alternation prevents catastrophic backtracking. */
   /** Raw continuation token; XML-escaped values are decoded before returning. */
-  const token = /<NextContinuationToken>(.+?)<\/NextContinuationToken>/.exec(xml,);
+  const token = /<NextContinuationToken>(.+?)<\/NextContinuationToken>/u.exec(xml,);
+  /* oxlint-enable no-restricted-syntax/require-regex-justification */
   return token?.[1] === undefined ? undefined : decodeXmlEntities(token[1],);
 }
 
@@ -209,6 +217,7 @@ function decodeXmlEntities(value: string,): string {
     );
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Web `Response` has mutator-looking methods (`text`, `arrayBuffer`); we only read via `.status`, `.text()`, `.arrayBuffer()`. */
 /**
  * Throws when an S3 response is non-2xx (and not 404 for GET/HEAD).
  *
@@ -220,9 +229,9 @@ function decodeXmlEntities(value: string,): string {
  * ```
  */
 async function throwOnError(row: {
-  response: Response;
-  operation: string;
-  key: string;
+  readonly response: Response;
+  readonly operation: string;
+  readonly key: string;
 },): Promise<void> {
   if ((row.response.status >= HTTP_OK) && (row.response.status < HTTP_REDIRECT))
     return;
@@ -234,7 +243,9 @@ async function throwOnError(row: {
     } ${row.response.statusText} ${body}`,
   );
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `client` is the platform fetch client whose `fetch` method has mutable signature; we only call `.fetch`. */
 /**
  * Issues a single ListObjectsV2 page request.
  *
@@ -254,11 +265,11 @@ async function throwOnError(row: {
  * ```
  */
 async function listOnePage(row: {
-  client: S3FetchClient;
-  endpoint: string;
-  bucket: string;
-  prefix: string;
-  continuationToken: string | undefined;
+  readonly client: S3FetchClient;
+  readonly endpoint: string;
+  readonly bucket: string;
+  readonly prefix: string;
+  readonly continuationToken: string | undefined;
 },): Promise<{
   keys: string[];
   nextToken: string | undefined;
@@ -302,7 +313,9 @@ async function listOnePage(row: {
     nextToken: parseContinuationToken(xml,),
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `options.client` is the platform fetch client; the Storage methods accept `Uint8Array` bodies the interface guarantees as read-only. */
 /**
  * Creates an S3-compatible Storage adapter.
  *
@@ -349,8 +362,8 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
       key,
       body,
     }: {
-      key: string;
-      body: Uint8Array;
+      readonly key: string;
+      readonly body: Uint8Array;
     },
   ): Promise<void> {
     /** Fully qualified S3 object URL for the PUT request. */
@@ -532,3 +545,4 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
     list,
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

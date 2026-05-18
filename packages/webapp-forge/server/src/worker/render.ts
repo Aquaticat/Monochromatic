@@ -28,11 +28,13 @@ import {
 import { fnv1a64, } from './render-hash.ts';
 import { tryRenderPhase2, } from './render-phase2.ts';
 
+/* oxlint-disable no-restricted-syntax/require-regex-justification -- Fragment key parser; inputs are canonical keys produced by fragment-keys.ts (bounded path segments without slashes), regex is anchored with no nested quantifiers so no catastrophic backtracking is possible. */
 /** Pattern for issue detail fragment keys. */
-const ISSUE_DETAIL_PATTERN = /^issues\/([^/]+)\/([^/]+)\/detail$/;
+const ISSUE_DETAIL_PATTERN = /^issues\/([^/]+)\/([^/]+)\/detail$/u;
 
 /** Pattern for filter list fragment keys. */
-const FILTER_LIST_PATTERN = /^repos\/([^/]+)\/filters\/([^/]+)\/([^/]+)\/list$/;
+const FILTER_LIST_PATTERN = /^repos\/([^/]+)\/filters\/([^/]+)\/([^/]+)\/list$/u;
+/* oxlint-enable no-restricted-syntax/require-regex-justification */
 
 /**
  * Result of {@link renderFragment}: the body bytes plus a content hash.
@@ -188,9 +190,9 @@ async function renderIssueDetailByKey(issueId: string,): Promise<RenderResult> {
  * @returns rendered body + hash
  */
 async function renderFilterListByKey(row: {
-  repoId: string;
-  labelId: string;
-  state: IssueStateFacet;
+  readonly repoId: string;
+  readonly labelId: string;
+  readonly state: IssueStateFacet;
 },): Promise<RenderResult> {
   /** Owning repo row; provides name for the rendered list. */
   const repo = await getRepo(row.repoId,);
@@ -226,6 +228,7 @@ async function renderFilterListByKey(row: {
   );
   /** Non-null summaries forming the rendered list. */
   const summaries: FilterListData['issues'][number][] = issuesLoaded
+    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Array.prototype.filter callback signature is dictated by the built-in array type; `value` carries the element type as the JS engine sees it.
     .filter(function notNull(value,) {
       return value !== null;
     },);

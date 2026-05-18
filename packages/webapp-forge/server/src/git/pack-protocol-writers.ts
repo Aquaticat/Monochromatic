@@ -54,6 +54,7 @@ export type RefUpdateResult = {
   readonly error?: string;
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array payload is read-only consumed via `.subarray`; the rule cannot model TypedArray immutability. */
 /**
  * Splits `payload` into sideband-multiplexed pkt-lines on the given channel.
  *
@@ -69,9 +70,9 @@ export type RefUpdateResult = {
  * ```
  */
 export function multiplexSideband(row: {
-  payload: Uint8Array;
-  channel: number;
-  useSideBand64k: boolean;
+  readonly payload: Uint8Array;
+  readonly channel: number;
+  readonly useSideBand64k: boolean;
 },): Uint8Array[] {
   /** Per-frame payload ceiling depends on which sideband flavour was negotiated. */
   const max = row.useSideBand64k ? MAX_SIDEBAND_64K_PAYLOAD : MAX_SIDEBAND_PAYLOAD;
@@ -97,7 +98,9 @@ export function multiplexSideband(row: {
   }
   return out;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array packfile is read-only consumed; the rule cannot model TypedArray immutability. */
 /**
  * Builds a complete `git-upload-pack` response stream.
  *
@@ -120,10 +123,10 @@ export function multiplexSideband(row: {
  * ```
  */
 export function writeUploadPackResponse(row: {
-  packfile: Uint8Array;
-  useSideBand: boolean;
-  useSideBand64k: boolean;
-  progress?: string;
+  readonly packfile: Uint8Array;
+  readonly useSideBand: boolean;
+  readonly useSideBand64k: boolean;
+  readonly progress?: string;
 },): Uint8Array[] {
   /** Response chunks; starts with the mandatory NAK acknowledging no common bases. */
   const chunks: Uint8Array[] = [encodePkt('NAK\n',),];
@@ -148,7 +151,9 @@ export function writeUploadPackResponse(row: {
   chunks.push(row.packfile,);
   return chunks;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array chunks in reduce callbacks are read-only consumed; the rule cannot model TypedArray immutability. */
 /**
  * Builds a `git-receive-pack` status report.
  *
@@ -186,13 +191,13 @@ export function writeUploadPackResponse(row: {
  * ```
  */
 export function writeReceivePackResponse(row: {
-  unpackOk: boolean;
-  unpackError?: string;
-  refResults: readonly RefUpdateResult[];
+  readonly unpackOk: boolean;
+  readonly unpackError?: string;
+  readonly refResults: readonly RefUpdateResult[];
   /** Whether the client negotiated `side-band` or `side-band-64k`. */
-  useSideBand?: boolean;
+  readonly useSideBand?: boolean;
   /** Whether the client negotiated `side-band-64k` specifically. */
-  useSideBand64k?: boolean;
+  readonly useSideBand64k?: boolean;
 },): Uint8Array[] {
   /** Status report chunks; sideband wrapping is applied later when negotiated. */
   const report: Uint8Array[] = [
@@ -243,6 +248,7 @@ export function writeReceivePackResponse(row: {
     flushPkt(),
   ];
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /** Sideband channel constants exported for tests and `iso-server.ts`. */
 export const SidebandChannels: {

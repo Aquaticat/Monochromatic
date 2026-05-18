@@ -37,9 +37,9 @@ const EMPTY_SET: ReadonlySet<string> = new Set<string>();
  * ```
  */
 export async function collectReachable(row: {
-  gitdir: string;
-  wants: readonly string[];
-  haves: readonly string[];
+  readonly gitdir: string;
+  readonly wants: readonly string[];
+  readonly haves: readonly string[];
 },): Promise<string[]> {
   /** Collected OIDs that will be packed for the client. */
   const visited = new Set<string>();
@@ -67,6 +67,7 @@ export async function collectReachable(row: {
   return [...visited,];
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `bag` is a Set that this helper deliberately mutates as the BFS accumulator; the rule cannot model that contract. */
 /**
  * Marks every commit, tree, and blob reachable from `oid` into `bag`.
  * Stops at any oid already present in `excluded`.
@@ -79,10 +80,10 @@ export async function collectReachable(row: {
  * ```
  */
 async function markReachable(row: {
-  gitdir: string;
-  oid: string;
-  bag: Set<string>;
-  excluded: ReadonlySet<string>;
+  readonly gitdir: string;
+  readonly oid: string;
+  readonly bag: Set<string>;
+  readonly excluded: ReadonlySet<string>;
 },): Promise<void> {
   /** BFS frontier; pop one, push its parents. */
   const queue: string[] = [row.oid,];
@@ -133,10 +134,10 @@ async function markReachable(row: {
  * ```
  */
 async function markTree(row: {
-  gitdir: string;
-  oid: string;
-  bag: Set<string>;
-  excluded: ReadonlySet<string>;
+  readonly gitdir: string;
+  readonly oid: string;
+  readonly bag: Set<string>;
+  readonly excluded: ReadonlySet<string>;
 },): Promise<void> {
   if (row.bag.has(row.oid,) || row.excluded.has(row.oid,))
     return;
@@ -164,3 +165,4 @@ async function markTree(row: {
     // Submodule entries (`type === 'commit'`) live in another repo; skip.
   }
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
