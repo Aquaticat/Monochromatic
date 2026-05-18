@@ -1,0 +1,31 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/module-i18n-compose",
+  "description": "Type-safe, no-codegen i18n composition. Renders localized UI text from explicit semantic grammar nodes for ca, en, zh; consumer owns vocabulary, library owns language mechanics.",
+  "type": "module",
+  "version": "0.0.1",
+  "private": false,
+  "module": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  },
+  "files": [
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/module/i18n-compose"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
