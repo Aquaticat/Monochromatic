@@ -22,7 +22,7 @@ import {
  *
  * @example
  * ```ts
- * TICKER_QUOTES.length // 6
+ * TICKER_QUOTES.length // 9
  * ```
  */
 const TICKER_QUOTES = [
@@ -30,8 +30,6 @@ const TICKER_QUOTES = [
   'flavor text flavored flavorless',
   // AI slop: "slop" as slang for low-effort AI-generated content
   'sloppiest sloppy slop',
-  // Original tautology in the style of government warning labels
-  'drinking drinks may make drinkers drunk',
   // SpongeBob, the Krusty Krab training video: "the finest dining establishment ever established for dining"
   'programmable blogging program programmed for blogging',
   // Recursive error message: an error handler that errors while handling errors
@@ -83,7 +81,7 @@ const SCROLL_DURATION = 0.5;
  *
  * @example
  * ```ts
- * TOTAL_DURATION // 21
+ * TOTAL_DURATION // 31.5
  * ```
  */
 const TOTAL_DURATION = QUOTE_COUNT * (HOLD_DURATION + SCROLL_DURATION);

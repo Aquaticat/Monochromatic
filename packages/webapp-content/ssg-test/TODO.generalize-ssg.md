@@ -143,7 +143,6 @@ export default defineConfig({
   tickerQuotes: [
     'flavor text flavored flavorless',
     'sloppiest sloppy slop',
-    'drinking drinks may make drinkers drunk',
     'programmable blogging program programmed for blogging',
     'ErrorError: ErrorError in erroring Error to ErrorError',
     'pipeline operator stuck in pipeline',
