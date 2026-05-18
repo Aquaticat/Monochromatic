@@ -45,7 +45,7 @@ original_command 2>&1 | bun ccbof-filter.js; _bof=${PIPESTATUS[0]}; (exit $_bof)
 3. **Long line truncation**: lines over 500 characters are truncated with
    `... [N chars]` marker
 4. **Consecutive duplicate collapsing**: 3+ identical consecutive lines become
-   `line (x6)` notation
+   `line (x6 repeated lines)` notation
 5. **Trailing whitespace**: spaces and tabs at end of lines are removed
 
 ## Denylist

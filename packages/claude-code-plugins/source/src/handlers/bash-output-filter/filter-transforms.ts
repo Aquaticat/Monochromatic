@@ -93,7 +93,7 @@ function isCollapseCandidate(c: string,): boolean {
  * @example
  * ```ts
  * collapseRepeatedChars('====================');
- * // '==== (x20)'
+ * // '==== (x20 repeated characters)'
  * ```
  */
 function collapseRepeatedChars(line: string,): string {
@@ -108,7 +108,7 @@ function collapseRepeatedChars(line: string,): string {
    *
    * @example
    * ```ts
-   * walk({ idx: 0, acc: '' }); // '==== (x20)' for line === '===...==='
+   * walk({ idx: 0, acc: '' }); // '==== (x20 repeated characters)' for line === '===...==='
    * ```
    */
   function walk(
@@ -156,7 +156,7 @@ function collapseRepeatedChars(line: string,): string {
     if (runLength >= COLLAPSE_THRESHOLD) {
       return walk({
         idx: runEnd,
-        acc: `${acc}${c.repeat(MAX_REPEATED_CHARS,)} (x${runLength})`,
+        acc: `${acc}${c.repeat(MAX_REPEATED_CHARS,)} (x${runLength} repeated characters)`,
       },);
     }
     return walk({
@@ -299,7 +299,7 @@ function truncateLine(line: string,): string {
  * @example
  * ```ts
  * const out: string[] = [];
- * flushRepeated({ result: out, line: 'foo', count: 5, },); // out: ['foo (x5)']
+ * flushRepeated({ result: out, line: 'foo', count: 5, },); // out: ['foo (x5 repeated lines)']
  * ```
  */
 function flushRepeated(
@@ -316,7 +316,7 @@ function flushRepeated(
   if (count === 0)
     return;
   if (count >= DEDUP_THRESHOLD)
-    result.push(`${line} (x${count})`,);
+    result.push(`${line} (x${count} repeated lines)`,);
   else {
     for (let i = 0; i < count; i++)
       result.push(line,);

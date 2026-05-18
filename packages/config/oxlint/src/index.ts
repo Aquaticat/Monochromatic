@@ -35,6 +35,13 @@ const config: OxlintConfig = defineConfig({
     style: 'warn',
   },
 
+  options: {
+    denyWarnings: true,
+    reportUnusedDisableDirectives: 'warn',
+    typeAware: true,
+    typeCheck: true
+  },
+
   plugins: [
     'unicorn',
     'typescript',

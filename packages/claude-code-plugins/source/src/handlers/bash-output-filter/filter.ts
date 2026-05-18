@@ -29,7 +29,7 @@ import {
  *
  * @example
  * ```ts
- * filterOutput('hello\nhello\nworld'); // 'hello (x2)\nworld'
+ * filterOutput('hello\nhello\nworld'); // 'hello (x2 repeated lines)\nworld'
  * ```
  */
 function filterOutput(input: string,): string {
