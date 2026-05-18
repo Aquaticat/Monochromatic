@@ -619,6 +619,8 @@ _.path = [
   "packages/webapp-forge/stress/node_modules/.bin",
   "packages/webapp-forge/server/node_modules/.bin",
   "packages/webapp-edu/paper2vn/node_modules/.bin",
+  "packages/pi/current-time-context/node_modules/.bin",
+  "packages/pi/thinking-defaults/node_modules/.bin",
   "packages/pi/advisor/node_modules/.bin",
   "packages/pi/auto-mode/node_modules/.bin",
   "packages/pi/terminal-title/node_modules/.bin",

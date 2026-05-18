@@ -58,7 +58,7 @@ Before sending any response with substantive claims:
 7. Confident factual claim about your environment, an external tool, or source code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
 8. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
 9. Quoted a clause or doc passage and drawn a conclusion from it? Restate the subject and object in plain English before relying on the conclusion. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
-10. About to ask the user to perform a manual action? Apply "Handing off manual actions": try the bridging path first; if you must hand off, write it in HANDOVER format.
+10. About to ask the user to perform a manual action? Apply "Handing off manual actions": try the bridging path first; if you must hand off, invoke the `runbook` skill.
 11. Revising a substantive claim the user just corrected? Treat the correction as evidence that your previous verification path was insufficient. Re-read primary sources, run concrete commands, or use a genuinely separate reviewer when the user asks for independent review. Do not run a same-session self-review, local "advisor" skill, or magic `Advisor pass: ...` ritual; self-review is not independent evidence. See `docs/agent-self-review.md`. User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
 
 ### Measure-vs-ask
@@ -131,38 +131,9 @@ Report findings at each layer before drawing the conclusion. A recommendation gi
 
 When a ToS, README, spec, or other source document explicitly references another document where the substantive provisions live ("Services are governed by separate subscription agreements, not these Website Terms," "see Y agreement for those terms," "details in the linked spec"), fetch the referenced document before drawing conclusions about its contents. Hedging about a named, fetchable target is the failure mode; the cue is writing "likely contains," "almost certainly addresses," or "probably covers" about a document one tool call away. The pointer is the research lead, not the stopping point.
 
-### Vet vendor recommendations across problem layers
+### Choosing technology and vendors
 
-Before research, identify **context-fork questions**: facts about the user's deployment, role, or constraints that would push the recommendation in completely different directions (primary delivery vs backup, personal vs business-critical, self-hosted vs serverless, free-only vs willing-to-pay, geography or compliance). If unspecified and the answer would change the candidate set itself, ask via AskUserQuestion. One clarifying turn is far cheaper than researching the wrong tree.
-
-Once context is set, complete every layer before naming any candidate:
-
-1. **Layoffs and headcount** (24mo): TechCrunch tracker, Crunchbase, Glassdoor.
-2. **Customer reviews**: Trustpilot, G2, Capterra. Look for account-suspension patterns, billing-automation horror stories, support-quality complaints.
-3. **Recent outages** (12mo): official status page plus an aggregator (statusgator, isdown).
-4. **Funding and business model**: bootstrapped vs VC vs PE; recent M&A or offers received. Affects shareholder pressure to extract from existing customers.
-5. **Signup-friction signals**: email-domain blocks, KYC, geography blocks. Correlate with heavy-handed automation that produces post-signup account-policy issues.
-6. **Security and abuse history**: breaches, phishing-host reputation, abuse-report responsiveness.
-
-Report findings inline with the recommendation; do not lead with the candidate name and bury concerns in trailing caveats. A recommendation made after checking only "do they satisfy the constraints" is a guess; the user catches the gap when they sign up and discover the problem themselves.
-
-### Constraint-fit before stack-fit, tool-fit before first-principles
-
-When evaluating tools for this repository, treat open-source licensing as a default constraint unless the user explicitly asks for commercial or proprietary options. Do not recommend closed-source SaaS or proprietary tools ahead of open-source alternatives for repo workflows. If a closed-source option is still worth mentioning, label it as an exception and explain why the open-source options fail the stated constraints.
-
-When the user states a hard performance, scale, latency, or compatibility constraint, let the constraint pick the technology, not the surrounding monorepo or your familiarity. Greenfield projects: existing stack is a soft preference, not a constraint. The phrases "since you're already using X" or "to match your stack" are evidence this rule is firing and you are about to violate it.
-
-When the problem class has existing tools, surface them before proposing a hand-rolled solution. Graphics/rendering/many-entity work: name game engines (Bevy, Godot, Unreal). Databases: name existing engines. Collaboration: name CRDT libraries (Yjs, Automerge). Build from scratch only when an existing tool's constraints conflict with stated requirements, and state the conflict.
-
-The same rule fires for dependency replacements, not just greenfield choices. When recommending swapping out an existing package, survey ready-to-use alternative packages first; "write our own thin wrapper" is the last option, not the first. Search the npm registry by keyword, search GitHub by topic, and name every meaningful candidate inline. The cue you are about to violate this rule: about to recommend a hand-rolled module without having named at least two real packages and the concrete reason each fails the constraints.
-
-Remediation when proposing a technology: name at least two alternatives with concrete reasons (cite the specific incompatibility, not "doesn't fit") for not picking each. Maintain a decision document (`docs/decisions/<project>.md` or co-located with the package) capturing rejected alternatives and reasons. Without it, the same rejected paths get re-proposed and the user pushes back again.
-
-Signal you are about to violate this rule:
-
-- proposing a technology without listing alternatives;
-- skipping the decision-doc update after the user picks;
-- silent anchoring: defaulting without writing the default down for inspection. The verbalized form ("since you're already using X") is the easy catch; the silent form is the common failure (the assumption never reaches the response, so neither you nor the user can see it). Remedy: write the candidate set explicitly even when one option feels obvious.
+When recommending a SaaS vendor, picking a library, framework, or build tool, the `choosing-technology` skill encodes context-fork questions, the six vendor vetting layers (layoffs, reviews, outages, funding, signup friction, security), open-source default, constraint-fit before stack-fit, the alternative survey rule (name at least two with rejection reasons), and the `docs/decisions/<project>.md` maintenance rule; invoke it when proposing or evaluating any external dependency or service.
 
 ### Before claiming inability
 
@@ -176,17 +147,9 @@ The same applies to research-exhaustion claims. When a narrow search returns "no
 
 "You'll need to do X yourself" is the same shape as "I cannot read this file format" (see "Before claiming inability"): a capability claim about the whole toolset, not about Claude's reach. Many actions that feel manual have a bridging path. GUI clicks: `agent-browser` drives most web UIs; `xdotool` / `wtype` / `ydotool` drive native UIs; "click" actions usually have a keyboard shortcut to synthesise, or a backing HTTP/IPC endpoint that bypasses the UI entirely. Interactive auth: scripted with `expect`, or skipped via API tokens. Hardware activation: almost always a CLI. Try the bridging path before asking; if you ask, state the bridges you tried so the user can tell an unconsidered handoff from a real one.
 
-When the bridges genuinely fail and the user must execute, write the handoff as a verification script for a stranger who has never seen this UI:
+When the bridges genuinely fail and the user must execute, the `runbook` skill encodes the required sections (Setup, Steps, What to check, Restore), the bold-every-UI-element rule, the expected-outcome-per-step rule, and the exact-strings-not-paraphrases rule; invoke it when writing any manual-action document. Canonical example: `packages/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`.
 
-- Numbered steps; one observable action per step.
-- **Bold** every UI element: keystroke (`**F12**`, `**Ctrl+L**`, `**Shift+F6**`), menu or button label (`**Console**`, `**Delete**`, `**New File**`), tab name. Name both the key and the menu when both exist (`Open Chrome DevTools (**F12**)`, not just `open DevTools`).
-- After every state-changing step, state what the user should see: a logged line, a refreshed pane, a closed dialog. No implied feedback.
-- Separate `### Setup` (what to bring up first), `### Steps` (numbered actions), `### What to check` (expected outcome with the exact strings to grep or filter for), `### Restore` (how to undo any test state). Multi-section handoffs get a `Status: TODO | DONE` line per section so the user can interrupt and resume.
-- Use concrete strings, not paraphrases: filter for `"type":"fileChanged"`; expect `editord listening on port 4400`; expect `{ "zeroSize": 0, "zeroMatch": 0 }`. Paraphrasing forces the user to re-derive the exact string when their eyes scan the output.
-
-Canonical example: `packages/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`. Match its shape: status markers, what-this-proves intent, numbered steps with bold UI elements, what-to-check, restore.
-
-The cue you are about to violate the rule: about to write "you'll need to" or "please open" without naming the bridges you tried; "open DevTools" instead of "Open DevTools (**F12**)"; "find the menu" instead of "right-click an entry, pick **New File**"; a step without an expected outcome; a paraphrase ("look for the rename event") instead of an exact filter string (`"type":"fileChanged"`).
+The cue you are about to violate the rule: about to write "you'll need to" or "please open" without naming the bridges you tried.
 
 ### Name the verification step
 
@@ -340,17 +303,7 @@ No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissiv
 
 ### CSS
 
-- Use native platform features: `<dialog>`, Popover API, CSS nesting, `@layer`, `@scope`, container queries.
-- Browser baseline: Firefox ESR 140 (June 2025); see `PHILOSOPHY.browser-support.md`.
-- `rem` for all sizing (use `calc()` for derivation); never `px` except device-pixel-dependent contexts.
-- Logical properties everywhere (`margin-inline-start`, `inset-block-start`, `text-align: start`).
-- No shorthand properties that combine unrelated axes or sub-properties (e.g. `margin`, `padding`, `border`, `background`); longhand is easier to scan and diff. Single-axis or single-concept shorthands are fine (`padding-inline`, `margin-block`, `border-radius`, `inset`, `gap`).
-- All colors via CSS custom properties from the design token system; no `var()` fallbacks (exception: user-configurable properties).
-- Minimal declarations; no `!important`; fluid approaches over breakpoints.
-- `:focus-visible` on all interactive elements; `48px` minimum touch targets via `min-inline-size`/`min-block-size`.
-- Small composable mixins named by what they do (not what they style).
-- Native CSS nesting; shallow depth (3 levels max).
-- Data attributes for state/variant styling instead of BEM modifiers.
+When editing CSS, the `css` skill encodes the platform-feature defaults (native dialog, popover API, nesting, `@layer`, `@scope`, container queries), Firefox ESR 140 browser baseline, `rem`-only sizing, logical properties, longhand shorthand rules, design-token colors, and the 48px touch-target / focus-visible accessibility floor; invoke it when touching any CSS.
 
 ### TSDoc comments
 
