@@ -1,20 +1,20 @@
 ---
 name: dum-dum-non-ts
-description: >
-  Write and edit code in non-TypeScript general-purpose programming languages
-  using the simplest possible constructs, with a labelled comment block (What
-  / Why / TS map / optional Gotcha) and a TypeScript pseudocode equivalent
-  above every concept-introducing line. Use when writing or editing source
-  files in C, C++, Rust, Go, Python, Java, Kotlin, Swift, Ruby, PHP, Lua,
-  Zig, Nim, Haskell, OCaml, Elixir, Clojure, Scala, F# — or any other
-  non-TypeScript general-purpose programming language. Do NOT use for
-  TypeScript / JavaScript, declarative or data formats (HTML, CSS, JSON,
-  YAML, TOML, SQL, Dockerfile, mise.toml), generated code, vendored
-  third-party code, or single-character mechanical edits in an existing
-  non-TS file.
+description: Use when writing or editing source files in non-TypeScript general-purpose languages.
 ---
 
 # Dum-dum non-TS
+
+Fires when writing or editing source files in non-TypeScript general-purpose
+programming languages: C, C++, Rust, Go, Python, Java, Kotlin, Swift, Ruby,
+PHP, Lua, Zig, Nim, Haskell, OCaml, Elixir, Clojure, Scala, F#, or any other.
+
+The skill encodes two rules (simplest possible constructs; comments on every
+concept-introducing line) and a comment template (What, Why, TS map, optional
+Gotcha) with a TypeScript pseudocode equivalent above every concept-introducing
+line.
+
+See "Out of scope" at the bottom for file types this skill does not apply to.
 
 ## Audience
 

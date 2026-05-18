@@ -1,16 +1,21 @@
 ---
 name: troubleshooting-doc
-description: >
-  Use when writing or updating a TROUBLESHOOTING.<topic>.md file at the
-  repo root to document an external tool's bug, quirk, surprising
-  behaviour, or documentation gap. Triggers: user asks to "document this",
-  "write it up", "add a troubleshooting entry"; or self-initiated after
-  finishing an investigation. Encodes required sections, the source-trace
-  rule, and the 5-constraint upstream-filing check that gates the draft
-  GitHub issue at the end.
+description: Use when writing or updating a TROUBLESHOOTING.<topic>.md file at the repo root.
 ---
 
 # Writing a TROUBLESHOOTING file
+
+Fires when documenting an external tool's bug, quirk, surprising behaviour,
+or documentation gap. Walk this skill end-to-end whenever the task involves
+writing or updating a TROUBLESHOOTING.<topic>.md file at the repo root.
+
+Other surface phrases that should trigger the skill:
+"document this", "write it up", "add a troubleshooting entry";
+or self-initiated after finishing an investigation.
+
+The skill encodes the required sections, the source-trace rule,
+and the 5-constraint upstream-filing check that gates the draft GitHub
+issue at the end.
 
 A TROUBLESHOOTING file is the durable artefact of investigating an
 external tool. Future sessions and external readers must be able to

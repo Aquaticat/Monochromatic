@@ -1,12 +1,16 @@
 ---
 name: testing-practices
-description: >
-  Testing practices for the monorepo covering the module-test harness,
-  describe/it API, test file conventions, coverage,
-  parameterized tests, async patterns, and sinon integration.
+description: Use when writing or reviewing tests in this monorepo using the module-test harness.
 ---
 
 # Testing practices
+
+Fires when writing or modifying tests, picking a test pattern, or reviewing
+test code in this monorepo.
+
+The skill covers the module-test harness, the describe/it API, test file
+conventions, coverage, parameterized tests, async patterns, and sinon
+integration.
 
 ## Test framework
 

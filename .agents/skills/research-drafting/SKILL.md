@@ -1,12 +1,13 @@
 ---
 name: research-drafting
-description: >
-  Use when drafting research documents, reference docs, or analysis reports
-  on a topic. Covers gathering sources, structuring sections, maintaining
-  source quality awareness, and writing to professional editorial standards.
+description: Use when drafting research documents, reference docs, or analysis reports on a topic.
 ---
 
 # Research drafting
+
+Fires when drafting research documents, reference docs, or analysis reports on a topic.
+Covers gathering sources, structuring sections, maintaining source quality awareness,
+and writing to professional editorial standards.
 
 Structured process for producing reference-quality research documents.
 The benchmark is professional tech journalism (Ars Technica, The Verge longform) --

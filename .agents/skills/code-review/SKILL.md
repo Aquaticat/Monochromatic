@@ -1,7 +1,6 @@
 ---
 name: code-review
-description: >
-  Review code
+description: Review code
 ---
 
 # Code review
