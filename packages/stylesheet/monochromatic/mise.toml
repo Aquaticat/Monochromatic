@@ -1,5 +1,2 @@
 [tasks.lint]
-extends = "lint"
-
-[tasks."lint:oxlint"]
-extends = "lint:oxlint"
+run = "print 'No lintable TypeScript sources.'"
