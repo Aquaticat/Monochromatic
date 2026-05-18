@@ -22,6 +22,8 @@ export const styleRules: DummyRuleMap = {
 
   // unicorn/no-negated-condition isn't enabled because early fail is the practice.
   'unicorn/no-negated-condition': 'off',
+  // Same preference as the unicorn variant above.
+  'eslint/no-negated-condition': 'off',
 
   // Three-way conflict: bare `return;` triggers TS7030 + no-useless-return;
   // omitting return triggers TS7030; `return undefined;` triggers this rule.
@@ -91,6 +93,9 @@ export const styleRules: DummyRuleMap = {
     'as-needed',
   ],
 
+  // Named callbacks in fixed property slots, such as test harness `fn`, keep useful stack traces.
+  'eslint/func-name-matching': 'off',
+
   // Switch statements are banned; switch-case-braces is moot.
   'unicorn/switch-case-braces': 'off',
 
@@ -103,6 +108,9 @@ export const styleRules: DummyRuleMap = {
   // for...in is banned entirely by no-restricted-syntax/no-for-in; guard-for-in is moot.
   'eslint/guard-for-in': 'off',
   'eslint/no-continue': 'off',
+
+  // Leading underscores mark intentionally unused bindings, including disposable guards.
+  'eslint/no-underscore-dangle': 'off',
 
   // oxlint supports ignoring specific values.
   'eslint/no-magic-numbers': [
