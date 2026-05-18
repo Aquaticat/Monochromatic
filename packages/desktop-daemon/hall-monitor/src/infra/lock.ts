@@ -139,8 +139,12 @@ function splitOnWhitespace(s: string,): string[] {
     /** Current char; whitespace breaks the in-progress token. */
     const c = s.charAt(idx,);
     if (
-      (c === ' ') || (c === '\t') || (c === '\n')
-      || (c === '\r') || (c === '\f') || (c === '\v')
+      (c === ' ')
+      || (c === '\t')
+      || (c === '\n')
+      || (c === '\r')
+      || (c === '\f')
+      || (c === '\v')
     ) {
       return walk({
         idx: idx + 1,

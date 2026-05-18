@@ -94,8 +94,12 @@ function parseVolumeSerial(output: string,): string {
     /** Char at cursor; any whitespace ends the token. */
     const c = output.charAt(from,);
     if (
-      (c === ' ') || (c === '\t') || (c === '\n')
-      || (c === '\r') || (c === '\f') || (c === '\v')
+      (c === ' ')
+      || (c === '\t')
+      || (c === '\n')
+      || (c === '\r')
+      || (c === '\f')
+      || (c === '\v')
     ) {
       return acc;
     }

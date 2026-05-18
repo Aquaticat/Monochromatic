@@ -583,7 +583,9 @@ function hasStateBuiltin(cmd: string,): boolean {
 function isSourceShorthand(cmd: string,): boolean {
   /** Minimum length: dot plus whitespace. */
   const MIN_LENGTH = 2;
-  return (cmd.length >= MIN_LENGTH) && cmd.startsWith('.',) && isWhitespace(cmd.charAt(1,),);
+  return (cmd.length >= MIN_LENGTH)
+    && cmd.startsWith('.',)
+    && isWhitespace(cmd.charAt(1,),);
 }
 
 /**

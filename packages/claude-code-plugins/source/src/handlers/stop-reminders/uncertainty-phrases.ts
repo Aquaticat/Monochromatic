@@ -33,11 +33,11 @@ function normaliseApostrophes(text: string,): string {
   return text
     .replaceAll(
       LEFT_SINGLE_QUOTE,
-      '\'',
+      "'",
     )
     .replaceAll(
       RIGHT_SINGLE_QUOTE,
-      '\'',
+      "'",
     );
 }
 
@@ -150,15 +150,15 @@ function findErThanMost(text: string,): string | undefined {
     if (idx === (-1))
       return undefined;
     if (idx === 0)
-      return search(idx + 1);
+      return search(idx + 1,);
     /** Character immediately before the `e`; must be a word char for the match. */
     const before = lower.charAt(idx - 1,);
     if (!isWordChar(before,))
-      return search(idx + 1);
+      return search(idx + 1,);
     /** Position one past the trailing `t` of `most`; checked for a word boundary below. */
     const endIdx = idx + ER_THAN_MOST_PHRASE.length;
     if ((endIdx < lower.length) && isWordChar(lower.charAt(endIdx,),))
-      return search(idx + 1);
+      return search(idx + 1,);
     /**
      * Walks backward to the start of the word that ends in `er`.
      *
@@ -218,24 +218,24 @@ function containsErThanMost(text: string,): boolean {
  */
 const DISMISSAL_PHRASES: readonly string[] = [
   // \b(?:the )?project doesn['']?t use\b
-  'the project doesn\'t use',
+  "the project doesn't use",
   'the project doesnt use',
-  'project doesn\'t use',
+  "project doesn't use",
   'project doesnt use',
   // \bwe don['']?t use\b
-  'we don\'t use',
+  "we don't use",
   'we dont use',
   // \b(?:the )?codebase doesn['']?t (?:use|have)\b
-  'the codebase doesn\'t use',
-  'the codebase doesn\'t have',
+  "the codebase doesn't use",
+  "the codebase doesn't have",
   'the codebase doesnt use',
   'the codebase doesnt have',
-  'codebase doesn\'t use',
-  'codebase doesn\'t have',
+  "codebase doesn't use",
+  "codebase doesn't have",
   'codebase doesnt use',
   'codebase doesnt have',
   // \bdoesn['']?t apply here\b
-  'doesn\'t apply here',
+  "doesn't apply here",
   'doesnt apply here',
   // \bis already (?:handled|covered) by\b
   'is already handled by',

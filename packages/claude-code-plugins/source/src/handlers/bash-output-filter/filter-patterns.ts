@@ -147,9 +147,11 @@ const GIT_TRANSPORT_PROGRESS_PREFIXES: readonly string[] = [
  * ```
  */
 function hasGitTransportPrefix(line: string,): boolean {
-  return GIT_TRANSPORT_PROGRESS_PREFIXES.some(function startsWithPrefix(prefix,): boolean {
-    return line.startsWith(prefix,);
-  },);
+  return GIT_TRANSPORT_PROGRESS_PREFIXES.some(
+    function startsWithPrefix(prefix,): boolean {
+      return line.startsWith(prefix,);
+    },
+  );
 }
 
 /** Literal prefix for git `Total <N>` summary lines whose first character after the space must be a digit. */
@@ -306,8 +308,9 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
   if (!line.startsWith(
     MISE_WARN_TOKEN,
     afterBracket,
-  ))
+  )) {
     return false;
+  }
   /** Position immediately after the `mise WARN` literal. */
   const afterToken = afterBracket + MISE_WARN_TOKEN.length;
   /** Position after the required whitespace following `mise WARN`. */
@@ -317,8 +320,9 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
   if (!line.startsWith(
     MISE_WARN_FAILED,
     afterTokenWs,
-  ))
+  )) {
     return false;
+  }
   /** Position right after the `failed to write cache file:` literal. */
   const afterFailed = afterTokenWs + MISE_WARN_FAILED.length;
   return line.slice(afterFailed,).includes(MISE_WARN_RO_FS,);

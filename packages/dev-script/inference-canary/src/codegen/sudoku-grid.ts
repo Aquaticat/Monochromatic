@@ -39,8 +39,12 @@ function stripAllWhitespace(s: string,): string {
     /** Char at cursor; whitespace is dropped, everything else is kept. */
     const c = s.charAt(idx,);
     /** Whether the char satisfies regex `\s`. */
-    const ws = (c === ' ') || (c === '\t') || (c === '\n')
-      || (c === '\r') || (c === '\f') || (c === '\v');
+    const ws = (c === ' ')
+      || (c === '\t')
+      || (c === '\n')
+      || (c === '\r')
+      || (c === '\f')
+      || (c === '\v');
     return walk({
       idx: idx + 1,
       acc: ws ? acc : acc + c,

@@ -301,8 +301,8 @@ prototypes and stay deferred.
      variable). EXACT `{n}` does NOT arm.
    - EXACTLY 1 or 2 trailing atoms at parent depth. 3+ atoms disarms.
    - Atom = literal byte, escape, char class, group, anchor.
-   No accepted false positives. Negative tests now explicitly
-   enumerate the previously-false-positive shapes.
+     No accepted false positives. Negative tests now explicitly
+     enumerate the previously-false-positive shapes.
 
 3. Added eprintln warnings to ALL 7 pre-validator rejection sites in
    `compile_rule_src` (per user request "emit a warning whenever the
@@ -354,8 +354,8 @@ upstream-bug-shape.
      → no-op, let unwinding proceed (catch_unwind catches it).
    - For all other panics → call default hook + abort (preserves
      normal fuzz crash semantics).
-   This single change unblocks both remaining Bug F variants AND Bug G
-   AND any future upstream variant at the same locations.
+     This single change unblocks both remaining Bug F variants AND Bug G
+     AND any future upstream variant at the same locations.
 
 2. Once panic hook is in place, re-run 180s soundness-by-revert fuzz.
    Expected: SOUNDNESS PANIC at the assertion in
@@ -398,8 +398,9 @@ upstream-bug-shape.
 **Next session: bias the fuzz harder toward the soundness shape.**
 
 The fuzz's coverage feedback alone hasn't found the right (?iu)
-+ Unicode-literal + case-flipped-content combo in 90k iterations.
-Three orthogonal levers:
+
+- Unicode-literal + case-flipped-content combo in 90k iterations.
+  Three orthogonal levers:
 
 1. **Seed the corpus with crafted bytes** that decode (via
    `RuleAndContent::arbitrary`) close to the soundness shape. Started
@@ -502,6 +503,7 @@ After biasing case-flip, the 240s fuzz hit YET ANOTHER Bug F shape:
 `(?u-i)\+\+\+\+\+\+(?:_|_|\u{3000})ñöa#3vaarññ (?:(?!ñññAtsöéaañ)){4,12}~(ññM aaaaaaaa)aaaaaa`.
 
 Bisected (probes `bisect_f5..bisect_f8.rs`) to:
+
 - `(?:(?!abc)){4,12}a` PANICS (quantified lookahead followed by trailing literal)
 - `(?:(?!abc)){4,12}` alone OK
 - `(?:(?!abc)){2}a` OK (exact quantifier)
@@ -689,6 +691,7 @@ f5bc49c6 fix(forbidden-strings): pre-validate nested complement `~(~(...))`
 **Pre-validator inventory (full list, 10 total):**
 
 In `compile_rule_src` order (both branches considered):
+
 1. `stacked_quantifier` (regex branch + resharp) -- `a**` / `\D{5,11}{5,11}` bare-stacked shapes.
 2. `nested_grouped_quantifier` (regex branch + resharp) -- chain >= 4 of `){quant}` pairs anywhere.
 3. `lookaround_in_complement` (resharp only) -- `\b`/`^`/`$`/lookaround inside `~(...)`.
@@ -785,9 +788,9 @@ integration tests = all green. Clippy clean.**
 
 **Status:**
 
-| Phase | Status |
-| ----- | ------ |
-| 1-10  | DONE   |
+| Phase | Status                                                                                                      |
+| ----- | ----------------------------------------------------------------------------------------------------------- |
+| 1-10  | DONE                                                                                                        |
 | 11    | DONE — soundness-by-revert verified; crash artifact triggers panic on reverted worktree, runs clean on main |
 
 **Next-session cleanup tasks:**

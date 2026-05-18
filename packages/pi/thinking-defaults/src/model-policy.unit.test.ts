@@ -108,7 +108,8 @@ await describe({
               getThinkingDefaultForModel({
                 model: { id: testCase.modelId, },
               },),
-            ).toBe(testCase.expected,);
+            )
+              .toBe(testCase.expected,);
           },
         },);
       },),

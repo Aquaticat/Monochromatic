@@ -163,10 +163,12 @@ function forceDashSeparatorsToOwnLine(s: string,): string {
     const insertion = prev === '\n' ? '' : '\n';
     return walk({
       from: idx + DASH_SEPARATOR_LENGTH,
-      acc: `${acc}${s.slice(
-        from,
-        idx,
-      )}${insertion}---`,
+      acc: `${acc}${
+        s.slice(
+          from,
+          idx,
+        )
+      }${insertion}---`,
     },);
   }
   return walk({

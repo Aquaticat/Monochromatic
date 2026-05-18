@@ -64,10 +64,13 @@ const GITHUB_DOMAIN = 'github.com';
 function parseGithubShorthand(s: string,): GithubOwnerRepo | null {
   if (s.length <= GITHUB_SHORTHAND_PREFIX.length)
     return null;
-  if (s.slice(
-    0,
-    GITHUB_SHORTHAND_PREFIX.length,
-  ).toLowerCase() !== GITHUB_SHORTHAND_PREFIX) {
+  if (s
+    .slice(
+      0,
+      GITHUB_SHORTHAND_PREFIX.length,
+    )
+    .toLowerCase() !== GITHUB_SHORTHAND_PREFIX)
+  {
     return null;
   }
   /** Substring after the `github:` prefix; split into owner/repo on the first `/`. */

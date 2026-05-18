@@ -276,16 +276,22 @@ function rewriteDateColons(s: string,): string {
   ) {
     return s;
   }
-  return `${s.slice(
-    0,
-    YEAR_END,
-  )}-${s.slice(
-    MONTH_START,
-    MONTH_END,
-  )}-${s.slice(
-    DAY_START,
-    DAY_END,
-  )}${s.slice(DAY_END,)}`;
+  return `${
+    s.slice(
+      0,
+      YEAR_END,
+    )
+  }-${
+    s.slice(
+      MONTH_START,
+      MONTH_END,
+    )
+  }-${
+    s.slice(
+      DAY_START,
+      DAY_END,
+    )
+  }${s.slice(DAY_END,)}`;
 }
 
 /**

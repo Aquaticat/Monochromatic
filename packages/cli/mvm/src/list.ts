@@ -102,11 +102,12 @@ function splitOnWhitespace(s: string,): readonly string[] {
       return acc;
     /** Current char under the cursor; whitespace skips, non-whitespace starts a token. */
     const c = s.charAt(idx,);
-    if (isWhitespaceChar(c,))
+    if (isWhitespaceChar(c,)) {
       return walk({
         idx: idx + 1,
         acc,
       },);
+    }
     /**
      * Locates the exclusive end of the token starting at the calling cursor.
      *

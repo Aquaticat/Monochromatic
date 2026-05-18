@@ -73,11 +73,12 @@ export function applyThinkingDefault(
   const target = getThinkingDefaultForModel({ model, },);
   /** Current level read from pi before deciding whether to write. */
   const current = options.getThinkingLevel();
-  if (current === target)
+  if (current === target) {
     return {
       changed: false,
       target,
     };
+  }
 
   options.setThinkingLevel(target,);
   return {

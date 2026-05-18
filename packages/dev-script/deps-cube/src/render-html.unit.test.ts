@@ -79,8 +79,13 @@ function hasScriptSrcAttribute(htmlLower: string,): boolean {
       /** Char preceding the `src=` token; whitespace satisfies the original `\bsrc=` anchor. */
       const prev = srcIdx === 0 ? '' : attrs.charAt(srcIdx - 1,);
       /** Whether the preceding char is whitespace or beginning of the attribute span. */
-      const bounded = (prev === '') || (prev === ' ') || (prev === '\t')
-        || (prev === '\n') || (prev === '\r') || (prev === '\f') || (prev === '\v');
+      const bounded = (prev === '')
+        || (prev === ' ')
+        || (prev === '\t')
+        || (prev === '\n')
+        || (prev === '\r')
+        || (prev === '\f')
+        || (prev === '\v');
       if (bounded)
         return true;
       return findBoundedSrc(srcIdx + 1,);
@@ -166,8 +171,8 @@ await describe({
 
         /** Lower-cased copy so the case-insensitive presence checks below stay simple. */
         const htmlLower = html.toLowerCase();
-        expect(htmlLower.includes('rel="stylesheet"',)).toBe(false,);
-        expect(htmlLower.includes("rel='stylesheet'",)).toBe(false,);
+        expect(htmlLower.includes('rel="stylesheet"',),).toBe(false,);
+        expect(htmlLower.includes("rel='stylesheet'",),).toBe(false,);
         expect(hasScriptSrcAttribute(htmlLower,),).toBe(false,);
 
         expect(html,).toContain('window.__PROBES__ =',);

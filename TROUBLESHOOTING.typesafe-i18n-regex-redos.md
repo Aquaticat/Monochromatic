@@ -34,7 +34,7 @@ access using a regex defined in
 `dist/i18n.object.js`):
 
 ```js
-const REGEX_BRACKETS_SPLIT = /(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g
+const REGEX_BRACKETS_SPLIT = /(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g;
 ```
 
 Source path in node_modules:
@@ -86,13 +86,13 @@ Minimal repro (Node 26.1.0 / V8 14.6.202.34):
 ```ts
 const REGEX = /(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g;
 const chapterInstruction =
-  "Split the paper into 3 to 8 chapters that follow the paper's logical structure. " +
-  'Return JSON with shape `{ "title": string, "chapters": [{ "title": string, "summary": string, ' +
-  '"dialogue": [{ "text": string, "pose": "neutral" | "thinking" | "happy" }] }] }`. ' +
-  'Each chapter should have 3 to 6 dialogue beats; each beat is one to three sentences.';
-console.time('split');
-chapterInstruction.split(REGEX);
-console.timeEnd('split');
+  "Split the paper into 3 to 8 chapters that follow the paper's logical structure. "
+  + 'Return JSON with shape `{ "title": string, "chapters": [{ "title": string, "summary": string, '
+  + '"dialogue": [{ "text": string, "pose": "neutral" | "thinking" | "happy" }] }] }`. '
+  + 'Each chapter should have 3 to 6 dialogue beats; each beat is one to three sentences.';
+console.time('split',);
+chapterInstruction.split(REGEX,);
+console.timeEnd('split',);
 ```
 
 Run under Node / V8: `split` does not return within a 30s
@@ -343,13 +343,13 @@ Depth alone is not the trigger. A compact `{ "a": [{ "b": [{ "c": "x" }] }] }` (
 // Standalone — no library install needed.
 const REGEX = /(\{(?:[^{}]+|\{(?:[^{}]+)*\})*\})/g;
 const input =
-  "Split the paper into 3 to 8 chapters that follow the paper's logical structure. " +
-  'Return JSON with shape `{ "title": string, "chapters": [{ "title": string, "summary": string, ' +
-  '"dialogue": [{ "text": string, "pose": "neutral" | "thinking" | "happy" }] }] }`. ' +
-  'Each chapter should have 3 to 6 dialogue beats; each beat is one to three sentences.';
-console.time('split');
-input.split(REGEX); // hangs in V8, returns sub-millisecond in JSC
-console.timeEnd('split');
+  "Split the paper into 3 to 8 chapters that follow the paper's logical structure. "
+  + 'Return JSON with shape `{ "title": string, "chapters": [{ "title": string, "summary": string, '
+  + '"dialogue": [{ "text": string, "pose": "neutral" | "thinking" | "happy" }] }] }`. '
+  + 'Each chapter should have 3 to 6 dialogue beats; each beat is one to three sentences.';
+console.time('split',);
+input.split(REGEX,); // hangs in V8, returns sub-millisecond in JSC
+console.timeEnd('split',);
 ```
 
 Run under Node 26 / V8 14.6: `split` does not return within 30 s (`timeout 30 node ...` exits 124). Run under Bun: returns immediately.

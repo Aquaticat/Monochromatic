@@ -259,7 +259,8 @@ export function stripAnsi(text: string,): string {
   return walk({
     idx: 0,
     acc: [],
-  },).join('',);
+  },)
+    .join('',);
 }
 
 //endregion ANSI handling

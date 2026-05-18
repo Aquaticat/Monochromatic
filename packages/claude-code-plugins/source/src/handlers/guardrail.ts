@@ -119,8 +119,9 @@ function invokesBunTest(command: string,): boolean {
     if (!command.startsWith(
       BUN,
       bunStart,
-    ))
+    )) {
       return false;
+    }
     /** Position immediately after the candidate `bun`. */
     const afterBun = bunStart + BUN.length;
     if ((afterBun >= command.length) || (!isWhitespace(command.charAt(afterBun,),)))
@@ -130,8 +131,9 @@ function invokesBunTest(command: string,): boolean {
     if (!command.startsWith(
       TEST,
       testStart,
-    ))
+    )) {
       return false;
+    }
     /** Position immediately after the candidate `test`. */
     const afterTest = testStart + TEST.length;
     return (afterTest >= command.length) || (!isWordChar(command.charAt(afterTest,),));

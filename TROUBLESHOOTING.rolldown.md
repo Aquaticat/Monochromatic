@@ -402,10 +402,10 @@ Reproduction fixture
 
 ```js
 // main.js
-import { parse } from 'node:path/posix';
-import { posix } from 'node:path';
+import { posix, } from 'node:path';
+import { parse, } from 'node:path/posix';
 
-console.log(parse('/a/b'), posix.parse('/a/b'));
+console.log(parse('/a/b',), posix.parse('/a/b',),);
 ```
 
 ```json
@@ -525,7 +525,7 @@ Patch applied to a fresh upstream clone
 Effect on the reproduction fixture (the warnings block
 disappears, the emitted module is unchanged):
 
-```diff
+````diff
 --- pre-patch/artifacts.snap
 +++ post-patch/artifacts.snap
 @@ -1,32 +1,3 @@
@@ -548,7 +548,7 @@ disappears, the emitted module is unchanged):
  # Assets
 
  ## main.js
-```
+````
 
 Broader integration-test impact
 (`cargo test -p rolldown --test integration`,
@@ -578,7 +578,7 @@ patch updated 9 existing snapshots in the same run:
   applies, and the bundler emits a runtime `__require("fs")`
   instead of the disabled empty stub:
 
-```diff
+````diff
 --- pre-patch/artifacts.snap
 +++ post-patch/artifacts.snap
 @@ -8,10 +8,7 @@ source: crates/rolldown_testing/src/integration_test.rs
@@ -593,7 +593,7 @@ patch updated 9 existing snapshots in the same run:
 +	const fs = __require("fs");
  	module.exports = function() {
  		return fs.readFile();
-```
+````
 
 The gate flip therefore solves the documented `node:`-prefix
 symptom but bypasses browser-field disabling for bare
@@ -640,7 +640,7 @@ both inform the report.
 
 ### Draft upstream issue (do not file as-is)
 
-~~~md
+````md
 ## Title
 
 resolver: `node:` subpath imports fail under `platform: 'neutral' | 'browser'` because `builtin_modules` is gated on `Platform::Node`
@@ -683,9 +683,9 @@ Fixture under `crates/rolldown/tests/rolldown/resolve/`:
 
 ```js
 // main.js
-import { parse } from 'node:path/posix';
-import { posix } from 'node:path';
-console.log(parse('/a/b'), posix.parse('/a/b'));
+import { posix, } from 'node:path';
+import { parse, } from 'node:path/posix';
+console.log(parse('/a/b',), posix.parse('/a/b',),);
 ```
 
 Run: `cargo test -p rolldown --test integration <fixture-name>`. The snapshot
@@ -749,4 +749,4 @@ the reproduction fixture above and leaves
 - The misleading "Main fields" help text in `resolve_utils.rs:123-125` could also
   be tightened so it only fires for specifiers that look like package names, not
   ones prefixed with `node:`.
-~~~
+````

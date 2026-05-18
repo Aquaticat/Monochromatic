@@ -111,15 +111,15 @@ function hasFilePathWithExtension(line: string,): boolean {
       if (idx === (-1))
         return false;
       if (idx === 0)
-        return search(idx + 1);
+        return search(idx + 1,);
       /** Char immediately before the dot; must be a path char per the original regex. */
       const before = line.charAt(idx - 1,);
       if (!isPathChar(before,))
-        return search(idx + 1);
+        return search(idx + 1,);
       /** Position one past the extension; checked below for a word boundary. */
       const endIdx = idx + token.length;
       if ((endIdx < line.length) && isWordChar(line.charAt(endIdx,),))
-        return search(idx + 1);
+        return search(idx + 1,);
       return true;
     }
     return search(0,);
@@ -215,7 +215,9 @@ function hasLineNumberSuffix(line: string,): boolean {
       at: colonIdx + 1,
       count: 0,
     },);
-    if ((digitCount >= LINE_NUMBER_MIN_DIGITS) && (digitCount <= LINE_NUMBER_MAX_DIGITS)) {
+    if ((digitCount >= LINE_NUMBER_MIN_DIGITS)
+      && (digitCount <= LINE_NUMBER_MAX_DIGITS))
+    {
       /** Position one past the digit run; checked for a word boundary below. */
       const afterIdx = colonIdx + 1 + digitCount;
       if ((afterIdx >= line.length) || (!isWordChar(line.charAt(afterIdx,),)))

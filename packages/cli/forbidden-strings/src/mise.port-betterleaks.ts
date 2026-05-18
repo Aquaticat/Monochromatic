@@ -508,7 +508,9 @@ const FOOTER = `# === resharp set-algebra demonstrations (engine-specific) ===
 # hangs \`calc_prefix_sets_inner\`; see TROUBLESHOOTING.resharp.md
 # Bug E) and is enforced by the
 # \`complement_intersection_quantified_group\` pre-validator.
-/RELEASE_TAG_[a-f0-9]{32}&~(RELEASE_TAG_0{32})&~(RELEASE_TAG_${'(de|ad|be|ef)'.repeat(16,)})/
+/RELEASE_TAG_[a-f0-9]{32}&~(RELEASE_TAG_0{32})&~(RELEASE_TAG_${
+  '(de|ad|be|ef)'.repeat(16,)
+})/
 `;
 
 /** Entry point. */

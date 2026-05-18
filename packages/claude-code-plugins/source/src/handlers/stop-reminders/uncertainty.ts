@@ -290,8 +290,9 @@ function findTrailingQuestion(prose: string,): QuestionMatch | undefined {
     if (startsWithWordBounded({
       s: lower,
       prefix,
-    },))
+    },)) {
       return undefined;
+    }
   }
   return { sentence, };
 }

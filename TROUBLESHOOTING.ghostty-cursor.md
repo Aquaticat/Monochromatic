@@ -256,7 +256,7 @@ audit above has the draft it would have produced, and so a future
 session reading this doc can see what the proposed report would
 have looked like.
 
-~~~md
+````md
 Title: terminfo: `Se` should be `\E[0 q` (reset to default) instead of `\E[2 q` (steady block)
 
 Labels: bug, terminfo
@@ -301,4 +301,4 @@ setting.
 +        // Cursor style reset (to user configured default)
 +        .{ .name = "Se", .value = .{ .string = "\E[0 q" } },
 ```
-~~~
+````

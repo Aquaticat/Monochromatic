@@ -150,7 +150,7 @@ Broader sanity check (`cargo test --release -p mise --bins`): 956 / 956 pass.
 
 To file against `jdx/mise`:
 
-~~~md
+````md
 Title: `mise watch` silently drops `--no-meta`, `--filter-prog`/`-J`, and `--fs-events` when spawning watchexec
 
 Labels: bug
@@ -243,7 +243,7 @@ long form is self-documenting.
 - `cargo test --release -p mise` (filtered to `cli::watch`): 4 / 4 pass.
 - Broader mise binary unit suite (`cargo test --release -p mise --bins`):
   956 / 956 pass.
-~~~
+````
 
 ---
 

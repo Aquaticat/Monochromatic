@@ -202,8 +202,12 @@ function firstWhitespaceToken(line: string,): string {
     /** Char at cursor; only ASCII whitespace advances the scan. */
     const c = line.charAt(idx,);
     /** Whether the cursor sits on regex `\s`. */
-    const ws = (c === ' ') || (c === '\t') || (c === '\n')
-      || (c === '\r') || (c === '\f') || (c === '\v');
+    const ws = (c === ' ')
+      || (c === '\t')
+      || (c === '\n')
+      || (c === '\r')
+      || (c === '\f')
+      || (c === '\v');
     if (ws)
       return skipWs(idx + 1,);
     return idx;
@@ -221,8 +225,12 @@ function firstWhitespaceToken(line: string,): string {
     /** Char at cursor; whitespace ends the token. */
     const c = line.charAt(idx,);
     /** Whether the cursor sits on regex `\s`. */
-    const ws = (c === ' ') || (c === '\t') || (c === '\n')
-      || (c === '\r') || (c === '\f') || (c === '\v');
+    const ws = (c === ' ')
+      || (c === '\t')
+      || (c === '\n')
+      || (c === '\r')
+      || (c === '\f')
+      || (c === '\v');
     if (ws)
       return idx;
     return scanToken(idx + 1,);

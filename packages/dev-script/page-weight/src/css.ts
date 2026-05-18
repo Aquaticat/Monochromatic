@@ -6,7 +6,6 @@
  * (rather than a full AST parser) because the only structure we need is
  * the flat list of URLs the stylesheet references.
  */
-import { startsWithUriScheme, } from './url-detect.ts';
 import {
   type CSSToken,
   isTokenAtKeyword,
@@ -21,6 +20,7 @@ import {
   type TokenURL,
 } from '@csstools/css-tokenizer';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { startsWithUriScheme, } from './url-detect.ts';
 
 /**
  * Tuple index of the "extra data" field in a CSS token.

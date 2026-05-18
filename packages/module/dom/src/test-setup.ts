@@ -178,10 +178,11 @@ function parseTrailingExportClause(source: string,): {
   if ((wordStart > 0) && isWordChar(source.charAt(wordStart - 1,),))
     return null;
   return {
-    namedExports: source.slice(
-      openBrace + 1,
-      closeBrace,
-    )
+    namedExports: source
+      .slice(
+        openBrace + 1,
+        closeBrace,
+      )
       .trim(),
     clauseStart: wordStart,
   };

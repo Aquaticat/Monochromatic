@@ -988,8 +988,8 @@ Applied against the same upstream HEAD, the additive variant:
 - passes `cargo test --workspace --no-fail-fast` clean:
   228 passed; 0 failed; 19 ignored across all crates
   (`resharp-engine` per-binary totals: 1 + 2 + 1 + 95 + 0 + 72 + 3
-  + 1 + 36 + 1 + 5 + 11; `resharp-algebra`, `resharp-parser`,
-  `resharp-ffi`: empty/empty/empty).
+  - 1 + 36 + 1 + 5 + 11; `resharp-algebra`, `resharp-parser`,
+    `resharp-ffi`: empty/empty/empty).
 
 ### Verification
 
@@ -1064,7 +1064,7 @@ Re-evaluation of constraints 2 and 4 in light of the obstacle:
 
 ### Draft upstream issue body for Bug E (ready to file)
 
-~~~md
+````md
 **Title:** non-termination in `prefix::calc_prefix_sets_inner` for `~(...)&(...)*` patterns
 
 **Labels:** `bug`, `engine`
@@ -1206,6 +1206,6 @@ cargo test --workspace --no-fail-fast
 
 Prototype clone, reproducer, and audit harness are available on
 request.
-~~~
+````
 
 [resharp]: https://github.com/ieviev/resharp

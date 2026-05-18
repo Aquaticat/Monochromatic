@@ -23,16 +23,25 @@ Empirical verification (this entry's prototype step):
 - Reproducer file (`repro.ts`):
 
   ```ts
-  interface Element { tagName: string; }
-  interface HTMLFormElement extends Element { action: string; method: string; elements: unknown; }
+  interface Element {
+    tagName: string;
+  }
+  interface HTMLFormElement extends Element {
+    action: string;
+    method: string;
+    elements: unknown;
+  }
   declare const document: {
-    querySelector<E extends Element = Element>(selectors: string): E | null;
+    querySelector<E extends Element = Element,>(selectors: string,): E | null;
   };
-  function notNullishOrThrow<T>(value: T | null | undefined): T {
-    if (value === null || value === undefined) throw new Error('nullish');
+  function notNullishOrThrow<T,>(value: T | null | undefined,): T {
+    if (value === null || value === undefined)
+      throw new Error('nullish',);
     return value;
   }
-  export const form = notNullishOrThrow(document.querySelector('.myForm')) as HTMLFormElement;
+  export const form = notNullishOrThrow(
+    document.querySelector('.myForm',),
+  ) as HTMLFormElement;
   ```
 
 - Built `tsgolint` binary at `v0.16.0` and at HEAD with the standard

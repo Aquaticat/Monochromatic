@@ -39,8 +39,12 @@ function isWordChar(c: string,): boolean {
  * @returns true when the character is whitespace
  */
 function isWhitespaceChar(c: string,): boolean {
-  return (c === ' ') || (c === '\t') || (c === '\n')
-    || (c === '\r') || (c === '\f') || (c === '\v');
+  return (c === ' ')
+    || (c === '\t')
+    || (c === '\n')
+    || (c === '\r')
+    || (c === '\f')
+    || (c === '\v');
 }
 
 /**

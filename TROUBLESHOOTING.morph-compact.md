@@ -82,17 +82,25 @@ The `session-start.js` handler imports only Node.js built-ins:
 `hooks/session-start.js:1-3` (upstream HEAD `06f96f0`):
 
 ```js
-import { text } from "node:stream/consumers";
-import { readFile, unlink } from "node:fs/promises";
-import { stateFile, log, fileExists, emitContext } from "./lib/state.js";
+import {
+  readFile,
+  unlink,
+} from 'node:fs/promises';
+import { text, } from 'node:stream/consumers';
+import {
+  emitContext,
+  fileExists,
+  log,
+  stateFile,
+} from './lib/state.js';
 ```
 
 `hooks/lib/state.js:1-3`:
 
 ```js
-import { join } from "node:path";
-import { tmpdir } from "node:os";
-import { access } from "node:fs/promises";
+import { access, } from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
 ```
 
 Neither file imports from `node_modules`. `@morphllm/morphsdk` (the
@@ -396,7 +404,7 @@ event, blocking startup for minutes on OSTree-based distros
 
 Labels: `bug`, `performance`, `hooks`
 
-~~~md
+````md
 ## Description
 
 `hooks/hooks.json` wires `SessionStart` and `PreCompact` events to
@@ -530,7 +538,7 @@ compounds catastrophically.
 
 Disable the plugin in `~/.claude/settings.json` `enabledPlugins` until
 this lands.
-~~~
+````
 
 The full patch as applied during prototyping:
 

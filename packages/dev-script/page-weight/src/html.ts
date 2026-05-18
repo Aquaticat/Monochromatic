@@ -6,7 +6,6 @@
  */
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
-import { startsWithUriScheme, } from './url-detect.ts';
 import type {
   Element,
   Node,
@@ -16,6 +15,7 @@ import type {
 } from 'hast';
 import rehypeParse from 'rehype-parse';
 import { unified, } from 'unified';
+import { startsWithUriScheme, } from './url-detect.ts';
 
 /** Reusable unified parser configured for full HTML documents. */
 const parser = unified().use(rehypeParse,);
@@ -128,8 +128,12 @@ function firstNonWhitespaceToken(line: string,): string {
     /** Char at cursor; only ASCII whitespace advances the scan. */
     const c = line.charAt(idx,);
     /** Whether the cursor sits on regex `\s`. */
-    const ws = (c === ' ') || (c === '\t') || (c === '\n')
-      || (c === '\r') || (c === '\f') || (c === '\v');
+    const ws = (c === ' ')
+      || (c === '\t')
+      || (c === '\n')
+      || (c === '\r')
+      || (c === '\f')
+      || (c === '\v');
     if (ws)
       return skipWs(idx + 1,);
     return idx;
@@ -147,8 +151,12 @@ function firstNonWhitespaceToken(line: string,): string {
     /** Char at cursor; whitespace ends the token. */
     const c = line.charAt(idx,);
     /** Whether the cursor sits on regex `\s`. */
-    const ws = (c === ' ') || (c === '\t') || (c === '\n')
-      || (c === '\r') || (c === '\f') || (c === '\v');
+    const ws = (c === ' ')
+      || (c === '\t')
+      || (c === '\n')
+      || (c === '\r')
+      || (c === '\f')
+      || (c === '\v');
     if (ws)
       return idx;
     return scanToken(idx + 1,);

@@ -77,7 +77,7 @@ packages/pi/current-time-context/
 return {
   message: {
     customType: 'current-time-context',
-    content: formatTimeContext(new Date()),
+    content: formatTimeContext(new Date(),),
     display: false,
   },
 };

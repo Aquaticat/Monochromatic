@@ -528,15 +528,15 @@ Three env vars print phase / bucket diagnostics to stderr; none affect output co
 so they are safe to enable in CI when investigating slow scans.
 
 - `FORBIDDEN_STRINGS_DEBUG_TIMING=1`
-    Per-phase wall time: `read_rules_file`, `classify+regex_compile`,
-    `extract_gating_substrings`, `ac_build`, `residual_shards`.
+  Per-phase wall time: `read_rules_file`, `classify+regex_compile`,
+  `extract_gating_substrings`, `ac_build`, `residual_shards`.
 - `FORBIDDEN_STRINGS_DEBUG_BUCKETS=1`
-    Counts of literal rules, case-sensitive regex prefixes, case-insensitive regex
-    prefixes, and residual rules (rules without an extractable literal prefix). Useful
-    when tuning rule patterns to land more rules on the AC fast path.
+  Counts of literal rules, case-sensitive regex prefixes, case-insensitive regex
+  prefixes, and residual rules (rules without an extractable literal prefix). Useful
+  when tuning rule patterns to land more rules on the AC fast path.
 - `FORBIDDEN_STRINGS_DEBUG_RESIDUAL_LIST=1`
-    Implies `BUCKETS`. Adds the line number of every residual rule so you can look up
-    which rules are paying the slower per-file scan.
+  Implies `BUCKETS`. Adds the line number of every residual rule so you can look up
+  which rules are paying the slower per-file scan.
 
 ## Fuzzing
 

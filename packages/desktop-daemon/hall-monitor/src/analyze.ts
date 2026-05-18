@@ -99,11 +99,12 @@ function skipSpacesAndTabs({
     return from;
   /** Char at the current cursor; advanced when it is horizontal whitespace. */
   const c = s.charAt(from,);
-  if ((c === ' ') || (c === '\t'))
+  if ((c === ' ') || (c === '\t')) {
     return skipSpacesAndTabs({
       s,
       from: from + 1,
     },);
+  }
   return from;
 }
 

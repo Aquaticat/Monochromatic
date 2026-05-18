@@ -115,14 +115,14 @@ function containsHiddenSegment(path: string,): boolean {
       from,
     );
     /** Earliest separator position; `-1` when neither remains. */
-    const sepIdx = ((slashIdx === (-1))
+    const sepIdx = (slashIdx === (-1))
       ? backslashIdx
       : ((backslashIdx === (-1))
         ? slashIdx
         : Math.min(
           slashIdx,
           backslashIdx,
-        )));
+        ));
     if (sepIdx === (-1))
       return false;
     if (hasHiddenSegmentAt({

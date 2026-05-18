@@ -502,6 +502,7 @@ mise run //packages/cli/forbidden-strings:test
 ```
 
 Likely fallout to expect:
+
 - `resharp::Error` variants may have moved or been renamed
   (used in `engine.rs` via `.map_err(|_| ())` -- which is
   variant-agnostic, so probably fine).
@@ -532,6 +533,7 @@ skill.
 **Step 4: keep the load-bearing infrastructure.**
 
 Regardless of resharp 6.0's bug fixes, **do NOT revert**:
+
 - The `panic = "unwind"` + `overflow-checks = true` profile
   settings. These cost ~5% binary size for the safety net every
   future resharp release deserves.
@@ -543,6 +545,7 @@ Regardless of resharp 6.0's bug fixes, **do NOT revert**:
 The pre-validators (`intersection_with_lookbehind`,
 `intersection_with_word_end_alternation`) are the 0.5.x-specific
 parts. Decide their fate based on the resharp 6.0 fuzz run:
+
 - If 6.0 fixes both shapes → consider removing the pre-validators
   (smaller surface area, less to maintain). Keep their tests as
   "shapes that used to crash 0.5.x and now compile/error cleanly".

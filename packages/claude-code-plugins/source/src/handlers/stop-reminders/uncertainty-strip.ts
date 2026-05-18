@@ -106,8 +106,8 @@ function stripQuotedStrings(text: string,): string {
       closeDelim: '"',
       disallowedInside: '\n',
     },),
-    openDelim: '\'',
-    closeDelim: '\'',
+    openDelim: "'",
+    closeDelim: "'",
     disallowedInside: '\n',
   },);
 }

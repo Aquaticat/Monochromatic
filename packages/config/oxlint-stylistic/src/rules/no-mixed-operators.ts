@@ -41,10 +41,12 @@ function hasParens({
   sourceText: string;
 },): boolean {
   /** Source slice before the operand; trailing whitespace stripped so the `(` lands at the end. */
-  const before = sourceText.slice(
-    0,
-    child.start,
-  ).trimEnd();
+  const before = sourceText
+    .slice(
+      0,
+      child.start,
+    )
+    .trimEnd();
   /** Source slice after the operand; leading whitespace stripped so the `)` lands at the start. */
   const after = sourceText.slice(child.end,).trimStart();
   return before.endsWith('(',) && after.startsWith(')',);

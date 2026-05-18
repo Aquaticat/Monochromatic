@@ -217,7 +217,8 @@ await describe({
         const msgLower = String(caught,).toLowerCase();
         expect(
           msgLower.includes('pnpm-workspace.yaml',) || msgLower.includes('locate',),
-        ).toBe(true,);
+        )
+          .toBe(true,);
       },
     },),
 

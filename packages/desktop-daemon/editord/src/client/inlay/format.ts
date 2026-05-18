@@ -44,10 +44,12 @@ export function formatHintLabel({ hint, }: { hint: InlayHint; },): string {
    */
   function strippedLabel(): string {
     if (hint.kind === PARAMETER_KIND) {
-      return hint.label.endsWith(':',) ? hint.label.slice(
-        0,
-        -1,
-      ) : hint.label;
+      return hint.label.endsWith(':',)
+        ? hint.label.slice(
+          0,
+          -1,
+        )
+        : hint.label;
     }
     if (hint.kind === TYPE_KIND) {
       return hint.label.startsWith(TYPE_HINT_PREFIX,)

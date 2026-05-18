@@ -103,11 +103,11 @@ function normaliseApostrophes(prompt: string,): string {
   return prompt
     .replaceAll(
       LEFT_SINGLE_QUOTE,
-      '\'',
+      "'",
     )
     .replaceAll(
       RIGHT_SINGLE_QUOTE,
-      '\'',
+      "'",
     );
 }
 

@@ -124,11 +124,12 @@ function collapseRepeatedChars(line: string,): string {
       return acc;
     /** Character under the cursor; gates whether a run is even considered. */
     const c = line.charAt(idx,);
-    if (!isCollapseCandidate(c,))
+    if (!isCollapseCandidate(c,)) {
       return walk({
         idx: idx + 1,
         acc: acc + c,
       },);
+    }
     /**
      * Walks forward while the current cursor still sees the same character.
      *
@@ -152,11 +153,12 @@ function collapseRepeatedChars(line: string,): string {
     const runEnd = findRunEnd(idx + 1,);
     /** Length of the current run; gates the collapse vs. emit-verbatim choice. */
     const runLength = runEnd - idx;
-    if (runLength >= COLLAPSE_THRESHOLD)
+    if (runLength >= COLLAPSE_THRESHOLD) {
       return walk({
         idx: runEnd,
         acc: `${acc}${c.repeat(MAX_REPEATED_CHARS,)} (x${runLength})`,
       },);
+    }
     return walk({
       idx: runEnd,
       acc: acc + line.slice(

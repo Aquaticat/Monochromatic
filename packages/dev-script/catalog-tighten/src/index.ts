@@ -94,8 +94,12 @@ function isSpaceOrTab(c: string,): boolean {
 function isWhitespaceOnly(s: string,): boolean {
   for (const c of s) {
     /** Whether the current char satisfies regex `\s`. */
-    const ok = (c === ' ') || (c === '\t') || (c === '\n')
-      || (c === '\r') || (c === '\f') || (c === '\v');
+    const ok = (c === ' ')
+      || (c === '\t')
+      || (c === '\n')
+      || (c === '\r')
+      || (c === '\f')
+      || (c === '\v');
     if (!ok)
       return false;
   }
@@ -186,11 +190,12 @@ type CatalogEntry = {
  * @returns token with the wrapping quotes removed if any
  */
 function unquote(s: string,): string {
-  if ((s.length >= 2) && s.startsWith('"',) && s.endsWith('"',))
+  if ((s.length >= 2) && s.startsWith('"',) && s.endsWith('"',)) {
     return s.slice(
       1,
       -1,
     );
+  }
   return s;
 }
 
@@ -215,10 +220,12 @@ function parseCatalogEntry(line: string,): CatalogEntry | null {
   if (colonIdx <= 0)
     return null;
   /** Raw key segment before the colon, trailing whitespace stripped. */
-  const rawKey = trimmed.slice(
-    0,
-    colonIdx,
-  ).trimEnd();
+  const rawKey = trimmed
+    .slice(
+      0,
+      colonIdx,
+    )
+    .trimEnd();
   /** Raw value segment after the colon, surrounding whitespace stripped. */
   const rawValue = trimmed.slice(colonIdx + 1,).trim();
   /** Key with one layer of wrapping quotes removed if present. */

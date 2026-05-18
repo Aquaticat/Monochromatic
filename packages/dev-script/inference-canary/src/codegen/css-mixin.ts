@@ -79,8 +79,12 @@ function hasRegexConstructorCall(source: string,): boolean {
       /** Char at cursor; only ASCII whitespace advances. */
       const c = source.charAt(pos,);
       if (
-        (c === ' ') || (c === '\t') || (c === '\n')
-        || (c === '\r') || (c === '\f') || (c === '\v')
+        (c === ' ')
+        || (c === '\t')
+        || (c === '\n')
+        || (c === '\r')
+        || (c === '\f')
+        || (c === '\v')
       ) {
         return skipWs(pos + 1,);
       }

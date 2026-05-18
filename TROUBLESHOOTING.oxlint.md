@@ -139,7 +139,7 @@ Source citations against oxc commit
   rule_name`, which strips any prefix without validating it.
 - `crates/oxc_linter/src/disable_directives.rs:832-871`:
   `get_rule_names()` parser (splits on `,`, trims whitespace, strips
-  `--`/` - ` description suffixes); produces the `name` values that
+  `--`/`-` description suffixes); produces the `name` values that
   feed into the prefix-strip above.
 - `crates/oxc_linter/src/tsgolint.rs:1158-1185`:
   `should_skip_diagnostic()` calls the same `contains()` method, so a
@@ -284,7 +284,7 @@ Do not file as-is; review against the latest upstream `main` before
 opening, and re-run the verification harness against that HEAD to
 confirm the patch still applies and the casualty list has not grown.
 
-~~~md
+````md
 Title: linter: disable-comment prefix is stripped without validation, so unknown plugin namespaces silently suppress diagnostics
 
 Labels: A-linter, C-bug
@@ -426,7 +426,7 @@ a canonical-plugin prefix. The remaining 1129 unit tests in
   `main`, 2026-05-17).
 - Toolchain: rustc 1.95.0 (per `rust-toolchain.toml`).
 - Verified on Linux x86_64.
-~~~
+````
 
 Decision: ready to file upstream once a maintainer re-runs the
 verification harness against the latest `main` (no issue has been

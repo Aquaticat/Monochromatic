@@ -115,10 +115,12 @@ function checkCompletedChildren(
      */
     const reportedPath = join(
       SPAWNS_DIR,
-      `${filename.slice(
-        0,
-        -'.json'.length,
-      )}.reported`,
+      `${
+        filename.slice(
+          0,
+          -'.json'.length,
+        )
+      }.reported`,
     );
 
     try {

@@ -47,7 +47,9 @@ export function startsWithUriScheme(s: string,): boolean {
     /** Whether the cursor sits on a scheme-body character. */
     const ok = ((c >= 'a') && (c <= 'z'))
       || ((c >= '0') && (c <= '9'))
-      || (c === '+') || (c === '.') || (c === '-');
+      || (c === '+')
+      || (c === '.')
+      || (c === '-');
     if (ok)
       return scanRest(idx + 1,);
     return idx;

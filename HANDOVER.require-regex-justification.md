@@ -110,8 +110,7 @@ above; see git log for chronology).
 - **`oxlint-disable-next-line` with multi-line expressions**: the
   directive targets only the line literally after it. For:
   ```ts
-  const x =
-    /regex/;
+  const x = /regex/;
   ```
   the disable must sit on the line containing `/regex/`, NOT on the line
   with `const x =`.
@@ -139,7 +138,7 @@ above; see git log for chronology).
   `tsdoc(multiline-blocks)`. Either rephrase to drop the `@` (e.g. "at-
   sign" or "leading at sign") or split to multiline form.
 - **TSDoc `@` inside fenced code blocks**: `tsdoc(check-tag-names)` still
-  parses `@<word>` inside ``` ```ts ``` blocks as a tag and rejects
+  parses `@<word>` inside ``ts ``` blocks as a tag and rejects
   unknown tags. Escape as `\@` (e.g. `extractAtDigits('DONE A \@100')`).
 - **TSDoc helper-stacking trap**: when inserting a new helper function
   above an existing one, ensure the existing function's TSDoc comment
@@ -149,7 +148,7 @@ above; see git log for chronology).
   reported as missing TSDoc. (Hit again this session in
   `rolldown-plugins/import-attributes/transform-helpers.ts`.)
 - **stylelint accepts regex-shaped strings** (`'/^max-/'`, etc.). Use
-  ``String.raw`/.../`  `` to preserve regex escapes through the JS string
+  `` String.raw`/.../` `` to preserve regex escapes through the JS string
   layer.
 - **tsdown accepts strings in `alwaysBundle`**: non-`/`-fenced strings go
   through `picomatch` (`'@scope/**'`) or exact-match (`'jspdf'`).
@@ -197,8 +196,8 @@ above; see git log for chronology).
 - **`String.raw\`...\``** template literals **cannot end with a single
   backslash**: the closing backtick is consumed as an escape target,
   producing "Invalid Unicode escape sequence" at parse time. For path
-  separators like `\\i18n\\`, the plain `'\\i18n\\'` form is the only
-  option; add a scoped `eslint-plugin-unicorn/prefer-string-raw`
+  separators like`\\i18n\\`, the plain`'\\i18n\\'`form is the only
+  option; add a scoped`eslint-plugin-unicorn/prefer-string-raw`
   disable with the reason.
 - **`chai`'s `.to.throw(string)` does substring matching** (verified in
   `packages/module/test/src/expect.unit.test.ts:99-105`). So

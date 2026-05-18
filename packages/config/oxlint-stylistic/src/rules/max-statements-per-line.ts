@@ -75,8 +75,12 @@ const STATEMENT_TYPES = [
 function isOnlyWhitespaceOrSemicolon(s: string,): boolean {
   for (const c of s) {
     /** Whether the current char is acceptable filler under the autofix shape. */
-    const ok = (c === ' ') || (c === '\t') || (c === '\n')
-      || (c === '\r') || (c === '\f') || (c === '\v')
+    const ok = (c === ' ')
+      || (c === '\t')
+      || (c === '\n')
+      || (c === '\r')
+      || (c === '\f')
+      || (c === '\v')
       || (c === ';');
     if (!ok)
       return false;

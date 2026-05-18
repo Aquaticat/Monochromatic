@@ -20,9 +20,11 @@
  * ```
  */
 export function splitOutputSections(output: string,): string[] {
-  return splitOnDashLines(output.trim(),).map(function trimSection(puzzleSection,): string {
-    return puzzleSection.trim();
-  },);
+  return splitOnDashLines(output.trim(),).map(
+    function trimSection(puzzleSection,): string {
+      return puzzleSection.trim();
+    },
+  );
 }
 
 /**

@@ -10,7 +10,7 @@ on:
   push:
     branches: ['main']
     paths:
-      - 'packages/cli/forbidden-strings/Cargo.toml'
+    - 'packages/cli/forbidden-strings/Cargo.toml'
 
 permissions:
   contents: read

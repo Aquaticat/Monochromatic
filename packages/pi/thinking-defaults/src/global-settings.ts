@@ -4,12 +4,12 @@
  * @module
  */
 
+import { getAgentDir, } from '@earendil-works/pi-coding-agent';
 import {
   readFileSync,
   writeFileSync,
 } from 'node:fs';
 import { join, } from 'node:path';
-import { getAgentDir, } from '@earendil-works/pi-coding-agent';
 import type { ThinkingDefaultLevel, } from './model-policy.ts';
 
 //region Constants
@@ -148,11 +148,13 @@ export function restoreGlobalDefaultThinkingLevel(
 
   parsedSettings.defaultThinkingLevel = defaultLevel;
   /** Pretty-printed settings JSON written back to disk. */
-  const nextSettings = `${JSON.stringify(
-    parsedSettings,
-    null,
-    2,
-  )}\n`;
+  const nextSettings = `${
+    JSON.stringify(
+      parsedSettings,
+      null,
+      2,
+    )
+  }\n`;
   writeSettingsFile(
     settingsPath,
     nextSettings,
