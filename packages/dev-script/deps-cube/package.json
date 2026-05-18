@@ -25,7 +25,7 @@
     "@types/bun": "catalog:"
   },
   "dependencies": {
-    "@cspotcode/outdent": "catalog:",
+    "string-dedent": "catalog:",
     "@deck.gl/core": "catalog:",
     "@deck.gl/layers": "catalog:",
     "@deck.gl/mesh-layers": "catalog:",

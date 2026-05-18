@@ -11,7 +11,6 @@ autoInstallPeers: false
 
 catalog:
   '@anthropic-ai/sdk': '0.92.0'
-  '@cspotcode/outdent': 'npm:outdent@>=0.8.0'
   '@csstools/css-tokenizer': '>=4.0.0'
   '@deck.gl/core': '>=9.3.2'
   '@deck.gl/layers': '>=9.3.2'
@@ -109,6 +108,7 @@ catalog:
   'sinon': '>=22.0.0'
   'sinon-chai': '>=4.0.1'
   'smol-toml': '>=1.6.0'
+  'string-dedent': '>=3.0.2'
   'stylelint': '>=17.1.1'
   'stylelint-config-standard': '>=40.0.0'
   'superjson': '>=2.2.6'

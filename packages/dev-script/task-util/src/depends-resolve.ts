@@ -10,8 +10,8 @@
 
 import { stat, } from 'node:fs/promises';
 
-import { outdent, } from '@cspotcode/outdent';
 import spawn from 'nano-spawn';
+import dedent from 'string-dedent';
 
 import {
   extractCommand,
@@ -171,7 +171,7 @@ async function resolveShellCommand({
   }
   catch (error) {
     throw new Error(
-      outdent`
+      dedent`
         ${position} sh: "${command}" failed with non-zero exit code
         Commands must succeed and output a timestamp (unix epoch, ISO 8601, Infinity, or -Infinity)
         Example: sh:${command} && echo Infinity || echo -Infinity
@@ -184,7 +184,7 @@ async function resolveShellCommand({
   const parsed = parseTimestamp(stdout,);
   if (parsed === undefined) {
     throw new Error(
-      outdent`
+      dedent`
         ${position} sh: "${command}" returned unparseable output: "${stdout}"
         Commands must output a timestamp (unix epoch, ISO 8601, Infinity, or -Infinity)
       `,

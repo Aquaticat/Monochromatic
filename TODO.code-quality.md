@@ -194,7 +194,7 @@ expect(isError(new Error(),),).toBe(true,);
 
 - **NEVER use process.exit()**: throw errors instead
 - **Combine console.log/error messages into thrown errors**
-- **Use outdent for multi-line error messages**
+- **Use string-dedent for multi-line error messages**
 - **Always log errors in catch blocks**
 - **Document expected errors with comments**
 

@@ -180,7 +180,7 @@ Rules that are non-obvious or project-specific were retained as terse single-lin
 - Unused variable underscore-prefix convention
 - `process.exitCode` only for non-standard codes
 - "Combine console.log/error messages into thrown errors"
-- `outdent` import path (`@cspotcode/outdent`)
+- `dedent` import path (`string-dedent`)
 - Generic `Function` type ban; unused Generator params
 
 ### Skill file structure change

@@ -19,7 +19,7 @@
     "@types/bun": "catalog:"
   },
   "dependencies": {
-    "@cspotcode/outdent": "catalog:",
+    "string-dedent": "catalog:",
     "@monochromatic-dev/module-numeric-const": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:",

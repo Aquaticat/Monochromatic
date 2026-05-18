@@ -25,7 +25,6 @@ JSR packages that have npm equivalents are referenced by their npm versions:
 
 - `@optique/core`, `@optique/run`: published to both npm and JSR (use npm `dev` tag for 1.x)
 - `valibot`: on npm as `valibot@>=1.4.0` (Standard Schema-compatible)
-- `@cspotcode/outdent`: aliased to `outdent` on npm (same author)
 
 ### Why no GitHub deps
 

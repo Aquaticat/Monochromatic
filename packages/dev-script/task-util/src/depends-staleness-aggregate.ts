@@ -7,8 +7,8 @@
  * @module
  */
 
-import { outdent, } from '@cspotcode/outdent';
 import spawn from 'nano-spawn';
+import dedent from 'string-dedent';
 
 import {
   builtinStrategies,
@@ -89,7 +89,7 @@ async function runStrategyCommand({
   }
   catch (error) {
     throw new Error(
-      outdent`
+      dedent`
         Strategy sh: "${command}" failed with non-zero exit code
         Strategy commands must succeed and output a single timestamp
       `,
@@ -110,7 +110,7 @@ async function runStrategyCommand({
     const num = Number(stdout,);
     if (Number.isNaN(num,)) {
       throw new Error(
-        outdent`
+        dedent`
           Strategy sh: "${command}" returned unparseable output: "${stdout}"
           Strategy commands receive millisecond timestamps and must return a millisecond timestamp, Infinity, or -Infinity
         `,

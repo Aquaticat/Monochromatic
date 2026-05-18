@@ -110,7 +110,6 @@ The prototype's improvement over the hand-tuned config came from three sources:
 
 ### Dead dependencies
 
-- `@cspotcode/outdent` declared in `packages/dev-script/task-util/package.json` but unused
 - `the-new-css-reset` declared in `packages/stylesheet/monochromatic/package.json` but unused
 - `rehype-parse`, `rehype-stringify`, `unified`, `p-limit` declared in packages
   that do not import them but are used in **other** packages, suggesting
@@ -120,7 +119,7 @@ The prototype's improvement over the hand-tuned config came from three sources:
 ### Unlisted dependencies
 
 A handful of packages imported but not declared in any `package.json`,
-including `tailwindcss` and `outdent`.
+including `tailwindcss`.
 These resolve today via root hoisting or transitive dependencies.
 
 (The original 2026-04-28 audit listed eighteen packages including the now-removed

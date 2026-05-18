@@ -222,7 +222,7 @@ These rules come from `AGENTS.md`; the implementer should re-read it but these s
 - `const` over `let`. Module-root `let` is hard-banned by oxlint; use `Map`/`WeakMap`/IIFE-into-const. Function-root `let` is also banned outside the named-IIFE escape hatch.
 - No `switch`. Use if/else or `Record` lookups.
 - `async`/`await` only; no `.then()`/`.catch()`. `using`/`await using` for cleanup; no `try...finally`.
-- `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!`. `outdent` from `@cspotcode/outdent` for multi-line error messages. Both already in `package.json`.
+- `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!`. Use `dedent` from `string-dedent` if multi-line error messages are added; it is not currently a dependency.
 - Throw on unreachable branches. Never silently discard unexpected states.
 - File max-lines is enforced; remediate by splitting (re-export from `index.ts`, move helpers to siblings, types to `types.ts`). Never disable or work around.
 

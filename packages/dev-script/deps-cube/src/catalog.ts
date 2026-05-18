@@ -64,8 +64,8 @@ type WorkspaceYaml = {
  *
  * @example
  * ```ts
- * decodeAlias({ key: '\@cspotcode/outdent', value: 'npm:outdent\@0.8.0' });
- * // → { npmName: 'outdent', range: '0.8.0' }
+ * decodeAlias({ key: 'local-alias', value: 'npm:aliased-target\@0.8.0' });
+ * // → { npmName: 'aliased-target', range: '0.8.0' }
  * decodeAlias({ key: 'preact', value: '^10.26.0' });
  * // → { npmName: 'preact', range: '^10.26.0' }
  * ```

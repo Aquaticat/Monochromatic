@@ -32,7 +32,6 @@
  * ```
  */
 
-import { outdent, } from '@cspotcode/outdent';
 import { object, } from '@optique/core/constructs';
 import {
   multiple,
@@ -44,6 +43,7 @@ import {
 } from '@optique/core/primitives';
 import { string, } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
+import dedent from 'string-dedent';
 
 import { executeWithCollapsedOutput, } from './depends-exec.ts';
 import {
@@ -205,7 +205,7 @@ const [command, ...commandArgs] = args.rest;
 
 if ((command === undefined) || (command === '')) {
   throw new Error(
-    outdent`
+    dedent`
       No command specified after --
       Usage: task-depends -s "src/*" -o "dist/*" -- command args...
       Usage: task-depends -o "sh:podman image exists img" -- command args...

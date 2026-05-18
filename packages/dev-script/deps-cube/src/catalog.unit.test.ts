@@ -14,7 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
-import { outdent, } from '@cspotcode/outdent';
+import dedent from 'string-dedent';
 
 import {
   mkdtemp,
@@ -66,9 +66,9 @@ await describe({
     it({
       name: 'decodeAlias resolves npm: alias with explicit @range',
       fn: async () => {
-        expect(decodeAlias({ key: '@cspotcode/outdent', value: 'npm:outdent@0.8.0', },),)
+        expect(decodeAlias({ key: 'local-alias', value: 'npm:aliased-target@0.8.0', },),)
           .toEqual({
-            npmName: 'outdent',
+            npmName: 'aliased-target',
             range: '0.8.0',
           },);
       },
@@ -102,7 +102,7 @@ await describe({
         await using temp = await tempWorkspace();
         await writeFile(
           join(temp.dir, 'pnpm-workspace.yaml',),
-          outdent`
+          dedent`
             packages:
               - 'packages/*'
             catalog:
@@ -134,7 +134,7 @@ await describe({
         await using temp = await tempWorkspace();
         await writeFile(
           join(temp.dir, 'pnpm-workspace.yaml',),
-          outdent`
+          dedent`
             catalog:
               preact: ^10.26.0
             catalogs:
@@ -183,17 +183,17 @@ await describe({
         await using temp = await tempWorkspace();
         await writeFile(
           join(temp.dir, 'pnpm-workspace.yaml',),
-          outdent`
+          dedent`
             catalog:
-              '@cspotcode/outdent': 'npm:outdent@0.8.0'
+              'local-alias': 'npm:aliased-target@0.8.0'
           `,
           'utf8',
         );
         const entries = await readCatalog({ startDir: temp.dir, },);
         expect(entries.length,).toBe(1,);
         expect(entries[0],).toMatchObject({
-          catalogKey: '@cspotcode/outdent',
-          npmName: 'outdent',
+          catalogKey: 'local-alias',
+          npmName: 'aliased-target',
           range: '0.8.0',
         },);
       },
@@ -228,7 +228,7 @@ await describe({
         await using temp = await tempWorkspace();
         await writeFile(
           join(temp.dir, 'pnpm-workspace.yaml',),
-          outdent`
+          dedent`
             packages:
               - 'packages/*'
           `,

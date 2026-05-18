@@ -128,7 +128,7 @@ Lint, types, and tests all clean (0 errors; 473 stylistic warnings; two more tha
 
 Done:
 
-- ~~Task 1 (scaffold)~~: `package.json` (bin `deps-cube` → `src/cli.ts`, deps on `@deck.gl/core`, `@deck.gl/layers`, `@cspotcode/outdent`, `@monochromatic-dev/module-es`, `find-up`, `nano-spawn`, `p-limit`, `yaml`), `mise.toml`, `tsconfig.json`, `README.md`.
+- ~~Task 1 (scaffold)~~: `package.json` (bin `deps-cube` → `src/cli.ts`, deps on `@deck.gl/core`, `@deck.gl/layers`, `string-dedent`, `@monochromatic-dev/module-es`, `find-up`, `nano-spawn`, `p-limit`, `yaml`), `mise.toml`, `tsconfig.json`, `README.md`.
 - ~~Task 2 (catalog entry)~~: `pnpm-workspace.yaml` carries `@deck.gl/core: '>=9.3.2'` and `@deck.gl/layers: '>=9.3.2'`.
 - ~~Task 3 (catalog parser)~~: `src/catalog.ts` exports `readCatalog({ startDir? })` parsing both default `catalog:` block and named `catalogs.<name>:` blocks; alias decoder exported as `decodeAlias`.
 - ~~Task 4 (cache)~~: `src/cache.ts` exports `createCache({ rootDir? })`. JSON file per (name, version) at `~/.cache/monochromatic/deps-cube/<name>/<version>.json`; per-field `{ value, fetchedAt }`; atomic tmp+rename writes.

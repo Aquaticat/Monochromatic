@@ -64,11 +64,11 @@ in `node_modules/.bin`. Dev-only dependency.
 - `@tursodatabase/database-darwin-arm64@0.5.3`: transitive platform binary for turso
 - `@tursodatabase/database-win32-x64-msvc@0.5.3`: transitive platform binary for turso
 
-#### Unmaintained (>3 years without updates, 34 packages)
+#### Unmaintained (>3 years without updates, 33 packages)
 
-- argparse, json-schema-traverse, fast-deep-equal, inherits, resolve-from, is-extglob, shebang-command, normalize-path, safe-buffer, to-regex-range, string_decoder, util-deprecate, extend, kind-of, require-from-string, merge2, run-parallel, queue-microtask, is-number, text-hex, lodash.truncate, astral-regex, cssesc, is-plain-object, global-modules, globjoin, svg-tags, tree-kill, enabled, fn.name, kuler, one-time, tiny-inflate, outdent
+- argparse, json-schema-traverse, fast-deep-equal, inherits, resolve-from, is-extglob, shebang-command, normalize-path, safe-buffer, to-regex-range, string_decoder, util-deprecate, extend, kind-of, require-from-string, merge2, run-parallel, queue-microtask, is-number, text-hex, lodash.truncate, astral-regex, cssesc, is-plain-object, global-modules, globjoin, svg-tags, tree-kill, enabled, fn.name, kuler, one-time, tiny-inflate
 
-All 34 are transitive dependencies except `outdent@0.8.0` (direct, aliased as `@cspotcode/outdent`).
+All 33 are transitive dependencies.
 Count reduced from 54 in the previous scan after removing remark-cli, gray-matter, and @npmcli/* transitive trees.
 
 **Note on behavioral categories:**
@@ -224,7 +224,7 @@ Remaining dependencies to audit, ordered by priority.
 - [ ] preact-render-to-string
 - ~~watcher~~: rejected 2026-05 for `packages/dev-script/watch-restart/`; chokidar adopted instead (atomic-save + `awaitWriteFinish` stability window, larger production track record, active maintenance whereas watcher's last commit was 2024-07)
 - [ ] @csstools/css-tokenizer
-- [ ] @cspotcode/outdent
+- [ ] string-dedent
 - [ ] serialize-error
 - [x] chokidar; evaluated 2026-05; adopted by `packages/dev-script/watch-restart/` (one transitive dep `readdirp`, `atomic: true` for rename+create, `awaitWriteFinish` for chunked writes, cross-platform recursion via FSEvents/inotify/ReadDirectoryChangesW)
 - [x] ignore (kaelzhang/node-ignore): evaluated 2026-05; adopted by `packages/dev-script/watch-restart/src/filters/gitignore.ts` for `--gitignore` / `--ignore-file` parsing (zero runtime deps, mirrors git's own semantics including negation `!`, anchored leading `/`, directory-only trailing `/`, and `**`; cheaper than reimplementing the spec)

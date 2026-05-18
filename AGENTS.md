@@ -366,7 +366,7 @@ Write comprehensive TSDoc for **all** declarations (exported or not, including l
 - `Promise.all()` for concurrent ops; `Promise.allSettled()` when all results needed; `AbortController` for cancellation.
 - `using`/`await using` for cleanup; no `try...finally`.
 - Custom error classes; throw over error codes/null/result types; `@throws` in TSDoc.
-- `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!` operator; `outdent` from `@cspotcode/outdent` for multi-line error messages.
+- `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw` instead of `!` operator; `dedent` from `string-dedent` for multi-line error messages.
 - Combine console.log/error messages into thrown errors; use `process.exitCode` only for non-standard exit codes.
 - Never `process.exit()`: throw errors instead; always `console.error()` in catch blocks.
 - Never silently discard unexpected states; throw on unreachable branches.

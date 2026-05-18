@@ -31,7 +31,6 @@
  * ```
  */
 
-import { outdent, } from '@cspotcode/outdent';
 import { object, } from '@optique/core/constructs';
 import {
   multiple,
@@ -47,6 +46,7 @@ import {
 } from '@optique/core/valueparser';
 import { runSync, } from '@optique/run';
 import spawn from 'nano-spawn';
+import dedent from 'string-dedent';
 import { match, } from 'ts-pattern';
 
 export {};
@@ -87,7 +87,7 @@ const [command, ...commandArgs] = args.rest;
 
 if ((command === undefined) || (command === '')) {
   throw new Error(
-    outdent`
+    dedent`
       No command specified after --
       ${
       JSON.stringify(
