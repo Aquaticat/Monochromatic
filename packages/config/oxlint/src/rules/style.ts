@@ -97,6 +97,9 @@ export const styleRules: DummyRuleMap = {
   // TypeScript function overloads work better with function declarations.
   'eslint/func-style': 'off',
 
+  // Named function callbacks keep traces readable and match repository style.
+  'prefer-arrow-callback': 'off',
+
   // for...in is banned entirely by no-restricted-syntax/no-for-in; guard-for-in is moot.
   'eslint/guard-for-in': 'off',
   'eslint/no-continue': 'off',
