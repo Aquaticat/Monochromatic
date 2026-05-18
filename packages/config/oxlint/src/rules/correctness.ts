@@ -41,6 +41,117 @@ export const correctnessRules: DummyRuleMap = {
   // option, so the whole rule is turned off.
   'typescript/no-unnecessary-condition': 'off',
 
+  // The rule fundamentally cannot model immutability of Web platform types
+  // (TypedArrays carry a mutable numeric index signature, DOM nodes carry
+  // mutator methods, fetch types have stream-consuming methods marked
+  // mutable), nor third-party SDK types where the library owns the
+  // signature. Whitelist those families via the upstream `allow` option
+  // and turn on `ignoreInferredTypes` so callbacks whose signature is
+  // dictated by an external lib (e.g. h3 EventHandlerWithFetch) are not
+  // flagged when the parameter is left un-annotated. `treatMethodsAsReadonly`
+  // is intentionally left at the default `false` because it silently passes
+  // legitimate Set/Map/class-state mutations (verified empirically against
+  // /tmp/oxlint-prerod fixture, 2026-05-18). Real mutable plain objects
+  // (`{ value: string }`) and arrays (`string[]`) are still flagged.
+  'typescript/prefer-readonly-parameter-types': [
+    'warn',
+    {
+      allow: [
+        {
+          from: 'lib',
+          name: [
+            'Uint8Array',
+            'Uint8ClampedArray',
+            'Uint16Array',
+            'Uint32Array',
+            'Int8Array',
+            'Int16Array',
+            'Int32Array',
+            'Float32Array',
+            'Float64Array',
+            'BigInt64Array',
+            'BigUint64Array',
+            'ArrayBuffer',
+            'SharedArrayBuffer',
+            'DataView',
+          ],
+        },
+        {
+          from: 'lib',
+          name: [
+            'Request',
+            'Response',
+            'Headers',
+            'Body',
+            'Blob',
+            'FormData',
+            'AbortSignal',
+            'AbortController',
+            'ReadableStream',
+            'WritableStream',
+            'ReadableStreamDefaultReader',
+            'WritableStreamDefaultWriter',
+            'URL',
+            'URLSearchParams',
+            'MessageEvent',
+            'MessagePort',
+          ],
+        },
+        {
+          from: 'lib',
+          name: [
+            'EventTarget',
+            'Event',
+            'KeyboardEvent',
+            'MouseEvent',
+            'FocusEvent',
+            'InputEvent',
+            'Node',
+            'Element',
+            'Document',
+            'HTMLElement',
+            'HTMLAnchorElement',
+            'HTMLButtonElement',
+            'HTMLDialogElement',
+            'HTMLFormElement',
+            'HTMLInputElement',
+            'HTMLOptionElement',
+            'HTMLSelectElement',
+            'HTMLTextAreaElement',
+          ],
+        },
+        {
+          from: 'package',
+          package: 'h3',
+          name: [
+            'H3Event',
+            'H3EventContext',
+            'H3EventResponse',
+            'EventHandler',
+            'EventHandlerObject',
+            'EventHandlerWithFetch',
+          ],
+        },
+        {
+          from: 'package',
+          package: 'srvx',
+          name: [
+            'ServeHandle',
+          ],
+        },
+        {
+          from: 'package',
+          package: '@libsql/client',
+          name: [
+            'Client',
+            'Database',
+          ],
+        },
+      ],
+      ignoreInferredTypes: true,
+    },
+  ],
+
   //region correctness
 
   // import/default, import/named, import/namespace aren't enabled because TypeScript already checks for those.

@@ -168,6 +168,8 @@ const testOverride = {
     'typescript/no-unsafe-type-assertion': 'off',
     // Tests use `any` for mocking and edge-case coverage.
     'typescript/no-explicit-any': 'off',
+    // Test callbacks often receive framework-owned mutable objects.
+    'typescript/prefer-readonly-parameter-types': 'off',
 
     // Test TSDoc doesn't need full tag formatting but declarations still require TSDoc.
     'tsdoc/tag-lines': 'off',
