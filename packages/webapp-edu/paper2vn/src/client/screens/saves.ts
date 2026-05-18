@@ -18,6 +18,11 @@ import {
 } from '../state.ts';
 import type { SaveSummary, } from '../types.ts';
 
+/** Navigation handler for the back button: routes back to the menu. */
+function goBackToMenu(): void {
+  navigate('menu',);
+}
+
 /**
  * Renders one row inside the saves list.
  *
@@ -25,7 +30,7 @@ import type { SaveSummary, } from '../types.ts';
  *
  * @returns the rendered row element with load and delete actions wired up
  */
-function renderRow(summary: SaveSummary,): HTMLElement {
+function renderRow(summary: Readonly<SaveSummary>,): HTMLElement {
   /** Current locale's translation accessors. */
   // oxlint-disable-next-line new-cap -- typesafe-i18n exports the accessor as LL by convention.
   const ll = LL();
@@ -90,6 +95,7 @@ function renderRow(summary: SaveSummary,): HTMLElement {
   },);
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is the live mount target; the function appends children and mutates the DOM, so a readonly type would misdescribe the contract. */
 /**
  * Mounts the saves screen.
  *
@@ -110,7 +116,7 @@ function mount(root: HTMLElement,): void {
         children: [ll.noSaves(),],
       },),
     ]
-    : saves.map(function renderEachRow(summary,): HTMLElement {
+    : saves.map(function renderEachRow(summary: Readonly<SaveSummary>,): HTMLElement {
       return renderRow(summary,);
     },);
   /** Outer screen container with header and the rendered rows. */
@@ -129,9 +135,7 @@ function mount(root: HTMLElement,): void {
             tag: 'button',
             attrs: {
               'data-variant': 'ghost',
-              onclick: function go(): void {
-                navigate('menu',);
-              },
+              onclick: goBackToMenu,
             },
             children: [ll.back(),],
           },),
@@ -147,6 +151,7 @@ function mount(root: HTMLElement,): void {
   },);
   root.append(screen,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Registers the saves screen with the router.

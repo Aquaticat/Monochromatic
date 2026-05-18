@@ -19,6 +19,7 @@ export type ElAttrs = Record<string, string | EventListener | undefined>;
  */
 export type ElChildren = readonly (Node | string)[];
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `attrs` carries `EventListener` values (functions) and `children` carries live `Node` instances; deep-readonly cannot apply to either, and the function only reads the bag. */
 /**
  * Hyperscript factory. Same shape as React.createElement and
  * `module-hyperscript/h-html`. Creates a real DOM Element with the given
@@ -84,7 +85,9 @@ export function el<K extends keyof TagNameMap,>(
     node.append(child,);
   return node;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `parent` is a live DOM Node that this function mutates by clearing its children; marking it readonly would misdescribe the API contract. */
 /**
  * Removes every child from a node.
  *
@@ -104,3 +107,4 @@ export function clear(parent: Node,): void {
   while (parent.firstChild !== null)
     parent.firstChild.remove();
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

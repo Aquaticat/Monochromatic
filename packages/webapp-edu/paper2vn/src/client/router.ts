@@ -16,8 +16,10 @@ export type ScreenId =
   | 'saves'
   | 'log';
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is a live HTMLElement that screen mount fns mutate (append, replaceChildren, addEventListener); marking it readonly would misdescribe the DOM-mount contract. */
 /** Function that mounts a screen into the given container. */
 export type ScreenRenderer = (root: HTMLElement,) => void;
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /** Function that tears down a previously mounted screen. */
 export type ScreenTeardown = () => void;
@@ -50,6 +52,7 @@ const routerState: {
   currentTeardown: undefined,
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `module` carries mount/unmount function values that deep-readonly cannot describe; the function only reads the bag before registering. */
 /**
  * Registers a screen so {@link navigate} can mount it later.
  *
@@ -76,6 +79,7 @@ export function registerScreen(
     module,
   );
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Switches to the named screen.

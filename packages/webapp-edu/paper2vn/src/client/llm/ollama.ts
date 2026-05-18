@@ -25,27 +25,30 @@ type OllamaResponse = {
   message: { content: string; };
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` so deep-readonly cannot apply; the function never reassigns opts. */
 /** Ollama provider implementation. */
 export const ollama: Provider = {
   id: 'ollama',
   chat: async function chat(opts: ChatOptions,): Promise<string> {
     /** Configured base URL falling back to localhost when unset. */
     const base = opts.baseUrl === '' ? DEFAULT_BASE : opts.baseUrl;
+    /** Provider base URL with any trailing slash removed so the endpoint suffix joins cleanly. */
+    const trimmedBase = base.endsWith('/',)
+      ? base.slice(
+        0,
+        -1,
+      )
+      : base;
     /**
      * Full chat endpoint URL composed from {@link base}.
      */
-    const url = `${
-      base.replace(
-        /\/$/,
-        '',
-      )
-    }/api/chat`;
+    const url = `${trimmedBase}/api/chat`;
     /** Outgoing payload for Ollama's `/api/chat` (model, messages, options). */
     const body: Record<string, unknown> = {
       model: opts.model,
       stream: false,
       messages: opts.messages.map(function toApi(
-        m: Message,
+        m: Readonly<Message>,
       ): {
         role: string;
         content: string;
@@ -60,7 +63,7 @@ export const ollama: Provider = {
       },
     };
     if (opts.expectJson === true)
-      body['format'] = 'json';
+      body.format = 'json';
     /** Raw fetch response so status can gate the JSON read. */
     const res = await fetch(
       url,
@@ -101,3 +104,4 @@ export const ollama: Provider = {
     return json.message.content;
   },
 };
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

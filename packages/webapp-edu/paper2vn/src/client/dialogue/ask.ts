@@ -11,6 +11,7 @@ import { chat, } from '../llm/index.ts';
 /** Same truncation cap as the chapter generator. */
 const PAPER_TEXT_BUDGET = 60_000;
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `signal` is a Web `AbortSignal` (external SDK with mutating methods); deep-readonly cannot apply, and the function only reads the bag before forwarding to `chat`. */
 /**
  * Asks the persona a question grounded in the paper.
  *
@@ -78,3 +79,4 @@ export async function askPersona(
     expectJson: undefined,
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -69,10 +69,10 @@ function readJson<T,>(
   {
     key,
     fallback,
-  }: {
+  }: Readonly<{
     key: string;
     fallback: T;
-  },
+  }>,
 ): T {
   try {
     /** Raw stored JSON string, or `null` when the key is missing. */
@@ -116,10 +116,10 @@ function writeJson(
   {
     key,
     value,
-  }: {
+  }: Readonly<{
     key: string;
     value: unknown;
-  },
+  }>,
 ): void {
   try {
     globalThis.localStorage.setItem(
@@ -341,6 +341,7 @@ export function getActiveSave(): SaveData | undefined {
   return store.activeSave;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `save` is stored verbatim in the module-scoped store; the function does not mutate it but its nested `log` array carries non-readonly internals from the persisted JSON shape. */
 /**
  * Sets the active save in memory; does not write through to disk yet.
  *
@@ -357,6 +358,7 @@ export function setActiveSave(save: SaveData,): void {
   store.activeSaveId = save.id;
   emit();
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Clears the active save (does not delete the persisted slot).
@@ -405,7 +407,7 @@ export function persistActiveSave(): void {
     updatedAt: updated.updatedAt,
   };
   /** Existing index minus the entry being replaced. */
-  const next = store.saves.filter(function isOther(s,): boolean {
+  const next = store.saves.filter(function isOther(s: Readonly<SaveSummary>,): boolean {
     return s.id !== updated.id;
   },);
   store.saves = [
@@ -458,7 +460,7 @@ export function loadSave(id: string,): SaveData | undefined {
  */
 export function deleteSave(id: string,): void {
   removeKey(`${STORAGE_KEY_SAVE_PREFIX}${id}`,);
-  store.saves = store.saves.filter(function isOther(s,): boolean {
+  store.saves = store.saves.filter(function isOther(s: Readonly<SaveSummary>,): boolean {
     return s.id !== id;
   },);
   writeJson({
@@ -470,6 +472,7 @@ export function deleteSave(id: string,): void {
   emit();
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `patch` is spread into the store and never mutated; its inner `log` array is a non-readonly tuple coming from the persisted JSON shape. */
 /**
  * Mutates the active save in memory (does not persist).
  *
@@ -489,3 +492,4 @@ export function patchActiveSave(patch: Partial<SaveData>,): void {
   };
   emit();
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

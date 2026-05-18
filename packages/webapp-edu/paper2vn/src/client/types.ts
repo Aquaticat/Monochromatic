@@ -110,10 +110,10 @@ export function coerceLocale(
   {
     value,
     fallback,
-  }: {
+  }: Readonly<{
     value: string;
     fallback: Locale;
-  },
+  }>,
 ): Locale {
   for (const candidate of LOCALE_VALUES) {
     if (candidate === value)
@@ -142,10 +142,10 @@ export function coerceProviderId(
   {
     value,
     fallback,
-  }: {
+  }: Readonly<{
     value: string;
     fallback: ProviderId;
-  },
+  }>,
 ): ProviderId {
   for (const candidate of PROVIDER_ID_VALUES) {
     if (candidate === value)

@@ -129,7 +129,7 @@ export function rawString(key: StringKey,): string {
   const value = translations[key];
   if ((typeof value) !== 'string') {
     throw new Error(
-      `[i18n] expected string for ${String(key,)}, got ${typeof value}`,
+      `[i18n] expected string for ${key}, got ${typeof value}`,
     );
   }
   return value;

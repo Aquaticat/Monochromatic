@@ -95,10 +95,10 @@ export function getCharacterPose(
   {
     characterId,
     pose,
-  }: {
+  }: Readonly<{
     characterId: string;
     pose: string;
-  },
+  }>,
 ): string {
   /** Cached manifest used to resolve the character and pose. */
   const m = loadSpritePack();
@@ -108,7 +108,7 @@ export function getCharacterPose(
   if (character === undefined)
     throw new Error('[sprite-pack] no characters defined in manifest',);
   return character.poses[pose]
-    ?? character.poses['neutral']
+    ?? character.poses.neutral
     ?? Object.values(character.poses,)[0]
     ?? '';
 }

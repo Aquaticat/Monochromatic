@@ -17,6 +17,7 @@ import {
 } from '../tts.ts';
 import type { LogEntry, } from '../types.ts';
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `onLog` is a function value and `stage`/`dialogueText`/`speakerName` are live `HTMLElement` references that the panel mutates by appending and rewriting children; deep-readonly cannot describe either, and the function only reads the bag. */
 /**
  * Localised labels and runtime hooks consumed by the ask panel.
  */
@@ -211,3 +212,4 @@ export function mountAskPanel(
 
   return panel;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

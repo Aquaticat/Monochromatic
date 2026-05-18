@@ -16,6 +16,7 @@ const MIN_INTERVAL_MS = 8;
 /** Milliseconds per second, used to convert chars-per-second to interval. */
 const MS_PER_SECOND = 1_000;
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `target` is a live `HTMLElement` whose `textContent` is mutated each tick; deep-readonly cannot describe the DOM-mount contract. */
 /**
  * Reveals `text` into `target` one character at a time.
  *
@@ -106,3 +107,4 @@ export function typewrite(
     done,
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

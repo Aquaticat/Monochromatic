@@ -73,11 +73,11 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 function asBeat(value: unknown,): DialogueBeat | undefined {
   if (!isRecord(value,))
     return undefined;
-  if ((typeof value['text']) !== 'string')
+  if ((typeof value.text) !== 'string')
     return undefined;
   return {
-    text: value['text'],
-    pose: asPose(value['pose'],),
+    text: value.text,
+    pose: asPose(value.pose,),
   };
 }
 
@@ -91,26 +91,27 @@ function asBeat(value: unknown,): DialogueBeat | undefined {
 function asChapter(value: unknown,): Chapter | undefined {
   if (!isRecord(value,))
     return undefined;
-  if (((typeof value['title']) !== 'string')
-    || ((typeof value['summary']) !== 'string'))
+  if (((typeof value.title) !== 'string')
+    || ((typeof value.summary) !== 'string'))
   {
     return undefined;
   }
-  if (!Array.isArray(value['dialogue'],))
+  if (!Array.isArray(value.dialogue,))
     return undefined;
   /**
    * Validated beat list dropped to {@link DialogueBeat} entries only.
    */
-  const dialogue = value['dialogue']
+  const dialogue = value
+    .dialogue
     .map(asBeat,)
-    .filter(function isBeat(b,): b is DialogueBeat {
+    .filter(function isBeat(b: Readonly<DialogueBeat> | undefined,): b is DialogueBeat {
       return b !== undefined;
     },);
   if (dialogue.length === 0)
     return undefined;
   return {
-    title: value['title'],
-    summary: value['summary'],
+    title: value.title,
+    summary: value.summary,
     dialogue,
   };
 }
@@ -124,6 +125,7 @@ export type Generation = {
   chapters: readonly Chapter[];
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `signal` is a Web `AbortSignal` (external SDK with mutating methods); deep-readonly cannot apply, and the function only reads the bag before forwarding to `chat`. */
 /**
  * Sends the paper text to the LLM and returns parsed chapters.
  *
@@ -219,7 +221,7 @@ export async function generateChapters(
   const chapters = parsed
     .chapters
     .map(asChapter,)
-    .filter(function isChapter(c,): c is Chapter {
+    .filter(function isChapter(c: Readonly<Chapter> | undefined,): c is Chapter {
       return c !== undefined;
     },);
   if (chapters.length === 0)
@@ -233,6 +235,7 @@ export async function generateChapters(
     chapters,
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Strips Markdown JSON code fences (lines starting with three backticks)
@@ -247,16 +250,18 @@ function stripJsonFence(text: string,): string {
   /** Input with surrounding whitespace removed, used to detect the fence. */
   const trimmed = text.trim();
   if (trimmed.startsWith('```',)) {
+    /* oxlint-disable no-restricted-syntax/require-regex-justification -- Two anchored regex strip the Markdown JSON code fence prefix (``` or ```json + whitespace) and suffix (``` + trailing whitespace) around an LLM JSON response. Regex is the clearest way to express the optional `json` tag and anchored whitespace tokens; LLM output is bounded so no backtracking surface. */
     /** Fenceless body returned when a Markdown JSON fence wrapped the input. */
     const stripped = trimmed
       .replace(
-        /^```(?:json)?\s*/,
+        /^```(?:json)?\s*/u,
         '',
       )
       .replace(
-        /```\s*$/,
+        /```\s*$/u,
         '',
       );
+    /* oxlint-enable no-restricted-syntax/require-regex-justification */
     return stripped.trim();
   }
   return trimmed;

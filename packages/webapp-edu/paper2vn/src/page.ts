@@ -34,11 +34,11 @@ export function renderPage(
     css,
     js,
     spritePackManifest,
-  }: {
+  }: Readonly<{
     css: string;
     js: string;
     spritePackManifest: string;
-  },
+  }>,
 ): string {
   /**
    * Escape `</` as `<\/` to prevent premature script tag closure.

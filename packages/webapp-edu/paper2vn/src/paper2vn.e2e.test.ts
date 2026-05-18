@@ -552,13 +552,13 @@ test.describe('lecture screen with seeded save', () => {
  * fail; CI without a key still runs the rest of the suite.
  */
 const OPENROUTER_API_KEY: string | undefined =
-  (((process.env['PAPER2VN_OPENROUTER_API_KEY'] !== undefined)
-      && (process.env['PAPER2VN_OPENROUTER_API_KEY'] !== ''))
-    ? process.env['PAPER2VN_OPENROUTER_API_KEY']
+  (((process.env.PAPER2VN_OPENROUTER_API_KEY !== undefined)
+      && (process.env.PAPER2VN_OPENROUTER_API_KEY !== ''))
+    ? process.env.PAPER2VN_OPENROUTER_API_KEY
     : undefined)
-    ?? (((process.env['OPENROUTER_API_KEY'] !== undefined)
-        && (process.env['OPENROUTER_API_KEY'] !== ''))
-      ? process.env['OPENROUTER_API_KEY']
+    ?? (((process.env.OPENROUTER_API_KEY !== undefined)
+        && (process.env.OPENROUTER_API_KEY !== ''))
+      ? process.env.OPENROUTER_API_KEY
       : undefined);
 
 /**
@@ -566,9 +566,9 @@ const OPENROUTER_API_KEY: string | undefined =
  * the fallback policy. Override with `PAPER2VN_OPENROUTER_MODEL` to
  * force a single model for a faster local run.
  */
-const LIVE_MODEL = ((process.env['PAPER2VN_OPENROUTER_MODEL'] !== undefined)
-    && (process.env['PAPER2VN_OPENROUTER_MODEL'] !== ''))
-  ? process.env['PAPER2VN_OPENROUTER_MODEL']
+const LIVE_MODEL = ((process.env.PAPER2VN_OPENROUTER_MODEL !== undefined)
+    && (process.env.PAPER2VN_OPENROUTER_MODEL !== ''))
+  ? process.env.PAPER2VN_OPENROUTER_MODEL
   : 'anthropic/claude-haiku-4.5';
 
 /** Tiny paper text mirroring `smoke.ts`. */

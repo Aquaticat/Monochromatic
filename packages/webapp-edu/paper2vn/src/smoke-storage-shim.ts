@@ -47,7 +47,7 @@ if (globalThis.localStorage === undefined) {
     ): void {
       store.set(
         key,
-        String(value,),
+        value,
       );
     },
     removeItem(key,): void {

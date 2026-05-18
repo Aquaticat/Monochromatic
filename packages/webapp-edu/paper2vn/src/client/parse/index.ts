@@ -16,6 +16,7 @@ const MAX_MIB = 30;
 /** Maximum accepted file size in bytes. */
 const MAX_BYTES = MAX_MIB * BYTES_PER_MIB;
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `file` is a Web `File` from the browser file picker; reading consumes the underlying stream so a readonly type would misdescribe the API contract. */
 /**
  * Extracts text from a paper file.
  *
@@ -49,3 +50,4 @@ export async function extractPaperText(file: File,): Promise<string> {
     return await extractText(file,);
   throw new Error(`unsupported file type: ${file.type} (${file.name})`,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

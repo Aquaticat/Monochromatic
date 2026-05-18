@@ -74,7 +74,7 @@ function requireEnv(name: string,): string {
  * any task in this package). Falls back to the unscoped
  * `OPENROUTER_API_KEY` so an ad-hoc one-off run still works.
  */
-const OPENROUTER_API_KEY = process.env['PAPER2VN_OPENROUTER_API_KEY']
+const OPENROUTER_API_KEY = process.env.PAPER2VN_OPENROUTER_API_KEY
   ?? requireEnv('OPENROUTER_API_KEY',);
 
 /**
@@ -90,7 +90,7 @@ const OPENROUTER_API_KEY = process.env['PAPER2VN_OPENROUTER_API_KEY']
  * `PAPER2VN_OPENROUTER_MODEL`.
  */
 /** Raw env override for the OpenRouter model list, validated below before use. */
-const envOpenRouterModel = process.env['PAPER2VN_OPENROUTER_MODEL'];
+const envOpenRouterModel = process.env.PAPER2VN_OPENROUTER_MODEL;
 /**
  * OpenRouter models tried in order during the smoke run; the first that
  * returns a parseable response wins. Override the entire list with a
@@ -140,7 +140,7 @@ consistency criterion is noisy.
 /**
  * Raw env override for the paper body; falls back to {@link DEFAULT_PAPER_TEXT} when unset or empty.
  */
-const envSmokePaper = process.env['PAPER2VN_SMOKE_PAPER'];
+const envSmokePaper = process.env.PAPER2VN_SMOKE_PAPER;
 /** Paper body for the smoke run; env override takes precedence over the default. */
 const PAPER_TEXT = ((envSmokePaper !== undefined) && (envSmokePaper !== ''))
   ? envSmokePaper

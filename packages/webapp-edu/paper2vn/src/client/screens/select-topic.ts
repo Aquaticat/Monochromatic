@@ -25,6 +25,11 @@ import type { SaveData, } from '../types.ts';
 /** Maximum random suffix used by the timestamp-derived save-id fallback. */
 const FALLBACK_ID_SUFFIX_RANGE = 1_000_000;
 
+/** Navigation handler for the back button: routes back to the menu. */
+function goBackToMenu(): void {
+  navigate('menu',);
+}
+
 /**
  * Generates a stable id for new save slots.
  *
@@ -39,6 +44,7 @@ function newSaveId(): string {
   return `save-${Date.now()}-${Math.floor(Math.random() * FALLBACK_ID_SUFFIX_RANGE,)}`;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is the live mount target; the function appends children and mutates the DOM, so a readonly type would misdescribe the contract. */
 /**
  * Mounts the select-topic screen.
  *
@@ -156,9 +162,7 @@ function mount(root: HTMLElement,): void {
             tag: 'button',
             attrs: {
               'data-variant': 'ghost',
-              onclick: function go(): void {
-                navigate('menu',);
-              },
+              onclick: goBackToMenu,
             },
             children: [ll.back(),],
           },),
@@ -199,6 +203,7 @@ function mount(root: HTMLElement,): void {
   },);
   root.append(screen,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Registers the select-topic screen with the router.

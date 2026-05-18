@@ -23,6 +23,7 @@ const ADVANCE_KEYS: ReadonlySet<string> = new Set([
 /** CSS selector used to short-circuit stage clicks on buttons/toolbar. */
 const CONTROLS_SELECTOR = '.stage-controls, .stage-dialogue button';
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- bag carries function callbacks and a mutable runtime ref; deep-readonly cannot describe either, and the handler reads through them on every event. `KeyboardEvent`/`MouseEvent` are Web SDK objects with mutating methods (preventDefault). */
 /**
  * Builds the keyboard handler driving advance/regress shortcuts.
  *
@@ -108,3 +109,4 @@ export function lectureStageClickHandler(
     advance();
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

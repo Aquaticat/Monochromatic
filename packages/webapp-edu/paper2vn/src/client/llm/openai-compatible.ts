@@ -23,6 +23,7 @@ const DEFAULT_TEMPERATURE = 0.7;
 /** Maximum body snippet length included in error messages on non-2xx responses. */
 const ERROR_BODY_PREVIEW_CHARS = 500;
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` so deep-readonly cannot apply; the function only reads. */
 /**
  * POSTs to an OpenAI-compatible chat completions endpoint.
  *
@@ -58,13 +59,15 @@ export async function chatOpenAICompatible(
     opts: ChatOptions;
   },
 ): Promise<string> {
-  /** Full chat-completions endpoint URL built from the provider base URL. */
-  const url = `${
-    baseUrl.replace(
-      /\/$/,
-      '',
+  /** Provider base URL with any trailing slash removed so the endpoint suffix joins cleanly. */
+  const trimmedBase = baseUrl.endsWith('/',)
+    ? baseUrl.slice(
+      0,
+      -1,
     )
-  }/chat/completions`;
+    : baseUrl;
+  /** Full chat-completions endpoint URL built from the provider base URL. */
+  const url = `${trimmedBase}/chat/completions`;
   /** Request headers: JSON content-type, bearer auth, plus provider extras. */
   const headers: Record<string, string> = {
     'content-type': 'application/json',
@@ -75,7 +78,7 @@ export async function chatOpenAICompatible(
   const body: Record<string, unknown> = {
     model: opts.model,
     messages: opts.messages.map(function toApi(
-      m: Message,
+      m: Readonly<Message>,
     ): {
       role: string;
       content: string;
@@ -88,7 +91,7 @@ export async function chatOpenAICompatible(
     temperature: opts.temperature ?? DEFAULT_TEMPERATURE,
   };
   if (opts.expectJson === true)
-    body['response_format'] = { type: 'json_object', };
+    body.response_format = { type: 'json_object', };
   /** Raw fetch response so status can gate the JSON read. */
   const res = await fetch(
     url,
@@ -130,3 +133,4 @@ export async function chatOpenAICompatible(
   const content = json.choices[0]?.message.content ?? '';
   return content;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

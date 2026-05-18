@@ -12,6 +12,22 @@ import {
 } from '../router.ts';
 import { getCharacterPose, } from '../sprite-pack.ts';
 
+/** Navigation handler for the Start button: routes to topic selection. */
+function goToSelectTopic(): void {
+  navigate('select-topic',);
+}
+
+/** Navigation handler for the Saves button: routes to save list. */
+function goToSaves(): void {
+  navigate('saves',);
+}
+
+/** Navigation handler for the Settings button: routes to settings screen. */
+function goToSettings(): void {
+  navigate('settings',);
+}
+
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is the live mount target; the function appends children and mutates the DOM, so a readonly type would misdescribe the contract. */
 /**
  * Mounts the menu into `root`.
  *
@@ -35,27 +51,21 @@ function mount(root: HTMLElement,): void {
         tag: 'button',
         attrs: {
           'data-variant': 'primary',
-          onclick: function go(): void {
-            navigate('select-topic',);
-          },
+          onclick: goToSelectTopic,
         },
         children: [ll.start(),],
       },),
       el({
         tag: 'button',
         attrs: {
-          onclick: function go(): void {
-            navigate('saves',);
-          },
+          onclick: goToSaves,
         },
         children: [ll.saves(),],
       },),
       el({
         tag: 'button',
         attrs: {
-          onclick: function go(): void {
-            navigate('settings',);
-          },
+          onclick: goToSettings,
         },
         children: [ll.settings(),],
       },),
@@ -87,6 +97,7 @@ function mount(root: HTMLElement,): void {
   },);
   root.append(screen,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Registers the menu screen with the router.

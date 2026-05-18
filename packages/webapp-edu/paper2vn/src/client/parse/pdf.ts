@@ -17,6 +17,7 @@ type TextItem = {
   hasEOL?: boolean;
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `file` is a Web `File`/`Blob` from the browser; reading consumes the underlying stream (.arrayBuffer()), so a readonly type would misdescribe the API contract. */
 /**
  * Extracts plain text from a PDF file.
  *
@@ -75,20 +76,23 @@ export async function extractPdf(file: File | Blob,): Promise<string> {
     /** Narrow view of the text-item array used by the join logic below. */
     const items = content.items as readonly TextItem[];
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
+    /* oxlint-disable no-restricted-syntax/require-regex-justification -- Two replaceAll passes normalize whitespace in joined PDF page text: collapse horizontal-whitespace runs to a single space, then cap consecutive newlines at two. Character-class and quantifier regex are the clearest forms; PDF input is bounded so no backtracking surface. */
     return items
-      .map(function pickStr(it,): string {
+      .map(function pickStr(it: Readonly<TextItem>,): string {
         return it.hasEOL === true ? `${it.str}\n` : `${it.str} `;
       },)
       .join('',)
       .replaceAll(
-        /[ \t]+/g,
+        /[ \t]+/gu,
         ' ',
       )
       .replaceAll(
-        /\n{3,}/g,
+        /\n{3,}/gu,
         '\n\n',
       )
       .trim();
+    /* oxlint-enable no-restricted-syntax/require-regex-justification */
   },),);
   return pages.join('\n\n',);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

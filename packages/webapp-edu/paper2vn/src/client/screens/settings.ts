@@ -48,6 +48,106 @@ import {
 } from './settings-helpers.ts';
 
 /**
+ * Persists a new font-scale value and rewrites the CSS variable so previews update.
+ *
+ * @param v - new font-scale value (multiplier)
+ */
+function saveFontScale(v: number,): void {
+  updateSettings({ fontScale: v, },);
+  document.documentElement.style.setProperty(
+    '--font-scale',
+    String(v,),
+  );
+}
+
+/**
+ * Persists the latest text-speed slider value to settings.
+ *
+ * @param v - characters-per-second pacing for the typewriter
+ */
+function saveTextSpeed(v: number,): void {
+  updateSettings({ textSpeed: v, },);
+}
+
+/**
+ * Persists the latest voice-volume slider value to settings.
+ *
+ * @param v - voice utterance volume between 0 and 1
+ */
+function saveVoiceVolume(v: number,): void {
+  updateSettings({ voiceVolume: v, },);
+}
+
+/**
+ * Persists the latest BGM-volume slider value to settings.
+ *
+ * @param v - background music volume between 0 and 1
+ */
+function saveBgmVolume(v: number,): void {
+  updateSettings({ bgmVolume: v, },);
+}
+
+/**
+ * Persists the latest auto-advance delay slider value (ms) to settings.
+ *
+ * @param v - delay between beats in milliseconds
+ */
+function saveAutoAdvanceDelay(v: number,): void {
+  updateSettings({ autoAdvanceDelayMs: v, },);
+}
+
+/**
+ * Persists the voice-enabled checkbox state to settings.
+ *
+ * @param value - whether speech synthesis should be active
+ */
+function saveVoiceEnabled(value: boolean,): void {
+  updateSettings({ voiceEnabled: value, },);
+}
+
+/**
+ * Persists the latest model-name input value to the active provider config.
+ *
+ * @param value - provider-specific model identifier
+ */
+function saveModel(value: string,): void {
+  updateProvider({ model: value, },);
+}
+
+/**
+ * Persists the latest API-key input value to the active provider config.
+ *
+ * @param value - provider API key (kept only in browser storage)
+ */
+function saveApiKey(value: string,): void {
+  updateProvider({ apiKey: value, },);
+}
+
+/**
+ * Persists the latest base-URL input value to the active provider config.
+ *
+ * @param value - provider HTTP base URL
+ */
+function saveBaseUrl(value: string,): void {
+  updateProvider({ baseUrl: value, },);
+}
+
+/**
+ * Persists the Anthropic browser-direct acknowledgement flag to the active provider config.
+ *
+ * @param value - whether the user has acknowledged the browser-direct warning
+ */
+function saveAck(value: boolean,): void {
+  updateProvider({ acknowledgedAnthropicWarning: value, },);
+}
+
+/** Navigation handler for the back button: routes back to the menu. */
+function goBackToMenu(): void {
+  navigate('menu',);
+}
+
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is the live mount target; the function appends children and mutates the DOM, so a readonly type would misdescribe the contract. */
+/**
  * Mounts the settings screen.
  *
  * @param root - host element the screen mounts into
@@ -86,13 +186,7 @@ function mount(root: HTMLElement,): void {
     max: FONT_SCALE_MAX,
     step: FONT_SCALE_STEP,
     initial: settings.fontScale,
-    onValue: function onValue(v,): void {
-      updateSettings({ fontScale: v, },);
-      document.documentElement.style.setProperty(
-        '--font-scale',
-        String(v,),
-      );
-    },
+    onValue: saveFontScale,
   },);
   /** Text-speed slider controlling the lecture screen's typing cadence. */
   const speedInput = range({
@@ -100,9 +194,7 @@ function mount(root: HTMLElement,): void {
     max: TEXT_SPEED_MAX,
     step: TEXT_SPEED_STEP,
     initial: settings.textSpeed,
-    onValue: function onValue(v,): void {
-      updateSettings({ textSpeed: v, },);
-    },
+    onValue: saveTextSpeed,
   },);
   /** Voice-volume slider piped into the speech utterance. */
   const voiceVolInput = range({
@@ -110,9 +202,7 @@ function mount(root: HTMLElement,): void {
     max: 1,
     step: VOLUME_STEP,
     initial: settings.voiceVolume,
-    onValue: function onValue(v,): void {
-      updateSettings({ voiceVolume: v, },);
-    },
+    onValue: saveVoiceVolume,
   },);
   /** BGM-volume slider (background music level, reserved for future audio). */
   const bgmVolInput = range({
@@ -120,9 +210,7 @@ function mount(root: HTMLElement,): void {
     max: 1,
     step: VOLUME_STEP,
     initial: settings.bgmVolume,
-    onValue: function onValue(v,): void {
-      updateSettings({ bgmVolume: v, },);
-    },
+    onValue: saveBgmVolume,
   },);
   /** Auto-advance delay slider used by the lecture screen between beats. */
   const autoDelayInput = range({
@@ -130,17 +218,13 @@ function mount(root: HTMLElement,): void {
     max: AUTO_DELAY_MAX_MS,
     step: AUTO_DELAY_STEP_MS,
     initial: settings.autoAdvanceDelayMs,
-    onValue: function onValue(v,): void {
-      updateSettings({ autoAdvanceDelayMs: v, },);
-    },
+    onValue: saveAutoAdvanceDelay,
   },);
 
   /** Voice-enabled checkbox; change event writes back to settings. */
   const voiceToggle = checkbox({
     initial: settings.voiceEnabled,
-    onChange: function saveVoiceEnabled(value,): void {
-      updateSettings({ voiceEnabled: value, },);
-    },
+    onChange: saveVoiceEnabled,
   },);
 
   /** Provider `<select>` whose change event swaps the active provider id. */
@@ -171,9 +255,7 @@ function mount(root: HTMLElement,): void {
     type: 'text',
     initial: provider.model,
     autocomplete: undefined,
-    onValue: function saveModel(value,): void {
-      updateProvider({ model: value, },);
-    },
+    onValue: saveModel,
   },);
 
   /** API-key password input; input event writes the new key to provider state. */
@@ -181,9 +263,7 @@ function mount(root: HTMLElement,): void {
     type: 'password',
     initial: provider.apiKey,
     autocomplete: 'off',
-    onValue: function saveApiKey(value,): void {
-      updateProvider({ apiKey: value, },);
-    },
+    onValue: saveApiKey,
   },);
 
   /** Base-URL text input; input event writes the new URL to provider state. */
@@ -191,9 +271,7 @@ function mount(root: HTMLElement,): void {
     type: 'text',
     initial: provider.baseUrl,
     autocomplete: undefined,
-    onValue: function saveBaseUrl(value,): void {
-      updateProvider({ baseUrl: value, },);
-    },
+    onValue: saveBaseUrl,
   },);
 
   /** Anthropic-specific opt-in nodes, populated only when that provider is active. */
@@ -201,9 +279,7 @@ function mount(root: HTMLElement,): void {
     provider,
     warningText: ll.anthropicWarning(),
     acceptText: ll.anthropicAccept(),
-    onAcknowledge: function saveAck(value,): void {
-      updateProvider({ acknowledgedAnthropicWarning: value, },);
-    },
+    onAcknowledge: saveAck,
   },);
 
   /** Outer screen container assembling header, fields, and provider section. */
@@ -222,9 +298,7 @@ function mount(root: HTMLElement,): void {
             tag: 'button',
             attrs: {
               'data-variant': 'ghost',
-              onclick: function go(): void {
-                navigate('menu',);
-              },
+              onclick: goBackToMenu,
             },
             children: [ll.back(),],
           },),
@@ -303,6 +377,7 @@ function mount(root: HTMLElement,): void {
   },);
   root.append(screen,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Registers the settings screen with the router.

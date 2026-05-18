@@ -85,12 +85,22 @@ const lectureState: {
   currentTeardown: undefined,
 };
 
+/** Toolbar handler for the Log button: routes to the memory-log screen. */
+function goToLog(): void {
+  navigate('log',);
+}
+
+/** Toolbar handler for the Menu button: routes back to the main menu. */
+function goBackToMenu(): void {
+  navigate('menu',);
+}
+
 /**
  * Persists and appends a log entry to the active save.
  *
  * @param entry - log entry to append to the active save's log
  */
-function appendLog(entry: LogEntry,): void {
+function appendLog(entry: Readonly<LogEntry>,): void {
   /** Active save snapshot used to append `entry` to its log. */
   const save = getActiveSave();
   if (save === undefined)
@@ -103,6 +113,7 @@ function appendLog(entry: LogEntry,): void {
   },);
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is the live mount target; the function appends children and mutates the DOM, so a readonly type would misdescribe the contract. */
 /**
  * Mounts the lecture screen against the active save.
  *
@@ -298,9 +309,7 @@ function mount(root: HTMLElement,): void {
   const logBtn = toolbarButton({
     label: ll.log(),
     variant: 'ghost',
-    onActivate: function go(): void {
-      navigate('log',);
-    },
+    onActivate: goToLog,
   },);
   /** Hide toolbar button toggling dialogue/toolbar visibility. */
   const hideBtn = toolbarButton({
@@ -318,9 +327,7 @@ function mount(root: HTMLElement,): void {
   const menuBtn = toolbarButton({
     label: 'Menu',
     variant: 'ghost',
-    onActivate: function go(): void {
-      navigate('menu',);
-    },
+    onActivate: goBackToMenu,
   },);
   toolbar.append(
     menuBtn,
@@ -362,6 +369,7 @@ function mount(root: HTMLElement,): void {
     );
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Registers the lecture screen with the router.

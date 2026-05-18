@@ -51,35 +51,38 @@ type MessagesResponse = {
  *
  * @returns assistant text from the first text content block
  */
+// oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` (browser SDK with mutating methods); deep-readonly cannot apply, and the function never mutates opts.
 async function callAnthropic(opts: ChatOptions,): Promise<string> {
   if (opts.apiKey === '')
     throw new Error('anthropic: no API key configured',);
   /** Configured base URL falling back to the public Anthropic endpoint. */
   const base = opts.baseUrl === '' ? DEFAULT_BASE : opts.baseUrl;
+  /** Provider base URL with any trailing slash removed so the endpoint suffix joins cleanly. */
+  const trimmedBase = base.endsWith('/',)
+    ? base.slice(
+      0,
+      -1,
+    )
+    : base;
   /**
    * Full `/v1/messages` URL composed from {@link base}.
    */
-  const url = `${
-    base.replace(
-      /\/$/,
-      '',
-    )
-  }/v1/messages`;
+  const url = `${trimmedBase}/v1/messages`;
   /** Leading system turns split out since Anthropic accepts them as a separate field. */
   const systemMessages = opts.messages.filter(function isSystem(
-    m: Message,
+    m: Readonly<Message>,
   ): boolean {
     return m.role === 'system';
   },);
   /** Non-system turns forming the message list payload. */
   const turnMessages = opts.messages.filter(function isTurn(
-    m: Message,
+    m: Readonly<Message>,
   ): boolean {
     return m.role !== 'system';
   },);
   /** Joined system-message text passed via Anthropic's `system` field. */
   const system = systemMessages
-    .map(function toText(m,): string {
+    .map(function toText(m: Readonly<Message>,): string {
       return m.content;
     },)
     .join('\n\n',);
@@ -90,7 +93,7 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
     temperature: opts.temperature ?? DEFAULT_TEMPERATURE,
     system,
     messages: turnMessages.map(function toApi(
-      m,
+      m: Readonly<Message>,
     ): {
       role: string;
       content: string;
@@ -147,7 +150,7 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   /** First `text`-typed content block, the assistant's reply. */
   const textPart = json.content.find(function isText(
-    c,
+    c: Readonly<MessagesResponse['content'][number]>,
   ): boolean {
     return c.type === 'text';
   },);

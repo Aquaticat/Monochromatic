@@ -12,7 +12,14 @@ import {
 } from '../router.ts';
 import { getCharacterName, } from '../sprite-pack.ts';
 import { getActiveSave, } from '../state.ts';
+import type { LogEntry, } from '../types.ts';
 
+/** Navigation handler for the back button: routes to the lecture screen. */
+function goBackToLecture(): void {
+  navigate('lecture',);
+}
+
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is the live mount target; the function appends children and mutates the DOM, so a readonly type would misdescribe the contract. */
 /**
  * Mounts the log screen.
  *
@@ -37,7 +44,7 @@ function mount(root: HTMLElement,): void {
         children: [ll.noLog(),],
       },),
     ]
-    : entries.map(function toRow(entry,): HTMLElement {
+    : entries.map(function toRow(entry: Readonly<LogEntry>,): HTMLElement {
       return el({
         tag: 'div',
         attrs: { class: 'log-entry', },
@@ -73,9 +80,7 @@ function mount(root: HTMLElement,): void {
             tag: 'button',
             attrs: {
               'data-variant': 'ghost',
-              onclick: function go(): void {
-                navigate('lecture',);
-              },
+              onclick: goBackToLecture,
             },
             children: [ll.back(),],
           },),
@@ -91,6 +96,7 @@ function mount(root: HTMLElement,): void {
   },);
   root.append(screen,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Registers the log screen with the router.
