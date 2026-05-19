@@ -217,7 +217,7 @@ Do not wrap routine verification commands in an external `timeout` binary. Use t
 
 Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
 
-Clone entire git repo of a package to a temp dir whenever investigating source code. Use `gh repo clone` instead of `git clone`; `gh` handles authentication and fork remotes automatically.
+Clone git repo of a package to a temp dir whenever investigating source code. Use `gh repo clone` instead of `git clone`; `gh` handles authentication and fork remotes automatically.
 
 ### Bash output path collapse
 
