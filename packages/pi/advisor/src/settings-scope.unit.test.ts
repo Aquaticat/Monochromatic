@@ -1,0 +1,112 @@
+/**
+ * Unit tests for Advisor settings scope loading.
+ *
+ * @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test';
+import {
+  mkdir,
+  mkdtemp,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
+import { loadSettingsScopePatterns, } from './settings-scope.ts';
+
+//region Fixtures
+
+/** Global enabled model pattern fixture. */
+const GLOBAL_PATTERN = 'cheap/*';
+
+/** Project enabled model pattern fixture. */
+const PROJECT_PATTERN = 'expensive/reviewer';
+
+//endregion Fixtures
+
+await describe({
+  name: loadSettingsScopePatterns.name,
+  children: [
+    it({
+      name: 'returns unrestricted scope when settings are absent',
+      fn: async () => {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'pi-advisor-settings-test-',
+        ),);
+        expect(loadSettingsScopePatterns({
+          cwd: join(
+            root,
+            'repo',
+          ),
+          home: join(
+            root,
+            'home',
+          ),
+        },),)
+          .toEqual({},);
+      },
+    },),
+    it({
+      name: 'prefers project enabledModels over global enabledModels',
+      fn: async () => {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'pi-advisor-settings-test-',
+        ),);
+        const home = join(
+          root,
+          'home',
+        );
+        const cwd = join(
+          root,
+          'repo',
+        );
+        await Promise.all([
+          mkdir(
+            join(
+              home,
+              '.pi',
+              'agent',
+            ),
+            { recursive: true, },
+          ),
+          mkdir(
+            join(
+              cwd,
+              '.pi',
+            ),
+            { recursive: true, },
+          ),
+        ],);
+        await writeFile(
+          join(
+            home,
+            '.pi',
+            'agent',
+            'settings.json',
+          ),
+          JSON.stringify({ enabledModels: [GLOBAL_PATTERN,], },),
+        );
+        await writeFile(
+          join(
+            cwd,
+            '.pi',
+            'settings.json',
+          ),
+          JSON.stringify({ enabledModels: [
+            '',
+            PROJECT_PATTERN,
+          ], },),
+        );
+        expect(loadSettingsScopePatterns({ cwd, home, },).patterns,).toEqual([
+          PROJECT_PATTERN,
+        ],);
+      },
+    },),
+  ],
+},);

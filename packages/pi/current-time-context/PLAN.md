@@ -108,7 +108,7 @@ return {
      `build:js:node`, `watch:*`, `lint`, `lint:types`, `lint:oxlint`,
      and `test:unit`.
    - Add `verify:extension` only if the package has a built-extension smoke
-     script.
+     script like `packages/pi/advisor/src/mise.verify-extension.ts`.
 
 ## User-boundary verification
 
