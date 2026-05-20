@@ -2,50 +2,23 @@ import { execFile, } from 'node:child_process';
 import { realpath, } from 'node:fs/promises';
 import { promisify, } from 'node:util';
 
-import {
-  l,
-  tagged,
-} from '../log.ts';
-import { parseGlobalOptions, } from '../parse-global-options.ts';
 import { resolveGit, } from '../resolve-git.ts';
 
-//region Stash worktree enforcement
+//region Git worktree location detection
 
 /* oxlint-disable typescript/strict-void-return -- node:util.promisify intentionally accepts execFile even though execFile also returns a ChildProcess handle; this wrapper only consumes the promise result. */
 /** Promisified child_process.execFile used for read-only git queries. */
 const execFileAsync = promisify(execFile,);
 /* oxlint-enable typescript/strict-void-return */
 
-/** Git subcommand guarded by this rule. */
-const STASH_SUBCOMMAND = 'stash';
-
-/**
- * Wrapper-only escape hatch that suppresses linked-worktree enforcement for one
- * stash invocation. Stripped before forwarding to real git, which would
- * otherwise reject it.
- */
-const ESCAPE_HATCH = '--no-enforce-worktree';
-
 /** Environment variable prefix used by Git-specific controls. */
 const GIT_ENVIRONMENT_PREFIX = 'GIT_';
 
-/** Diagnostic emitted when stash is requested outside real git worktree. */
-const NOT_IN_WORKTREE_MESSAGE =
-  'cli-git: git stash requires the effective working directory to be inside a linked git worktree. '
-  + 'Refusing to run from outside a worktree because git stash can revert filesystem state outside what the caller expected. '
-  + 'cd to a linked worktree root or pass -C <linked-worktree-root> before stash.';
+/** Worktree location classification used by linked-worktree-only rules. */
+export type WorktreeLocation = 'outside-worktree' | 'main-worktree' | 'linked-worktree';
 
-/** Diagnostic emitted when stash is requested from the main git worktree. */
-const MAIN_WORKTREE_MESSAGE =
-  'cli-git: git stash is rejected in the main git worktree. '
-  + 'Refusing to run because git stash can revert primary checkout filesystem state outside what the caller expected. '
-  + 'Use a linked worktree for stash operations.';
-
-/** Stash locations that determine whether stash may proceed. */
-type StashLocation = 'outside-worktree' | 'main-worktree' | 'linked-worktree';
-
-/** Options for detecting where stash would run. */
-type DetectStashLocationOptions = {
+/** Options for detecting where a guarded command would run. */
+type DetectWorktreeLocationOptions = {
   /** Effective cwd after applying pre-subcommand `-C` chaining. */
   readonly effectiveCwd: string;
 };
@@ -202,22 +175,22 @@ async function readGitWorktreeMetadata({
 
 /**
  * Asks real git where effective cwd sits, ignoring explicit `--git-dir`,
- * `--work-tree`, and `GIT_*` environment controls from original stash
+ * `--work-tree`, and `GIT_*` environment controls from original guarded
  * invocation so the guard stays anchored to command launch context.
  *
  * @param effectiveCwd - Effective cwd to query through real git.
  *
- * @returns Stash location classification for effective cwd.
+ * @returns Worktree location classification for effective cwd.
  *
  * @example
  * ```ts
- * await detectStashLocation({ effectiveCwd: '/repo', });
+ * await detectWorktreeLocation({ effectiveCwd: '/repo', });
  * // => 'main-worktree' for a primary checkout
  * ```
  */
-async function detectStashLocation({
+export async function detectWorktreeLocation({
   effectiveCwd,
-}: DetectStashLocationOptions,): Promise<StashLocation> {
+}: DetectWorktreeLocationOptions,): Promise<WorktreeLocation> {
   /** Absolute path to real git binary used for read-only worktree query. */
   const gitPath = await resolveGit();
 
@@ -246,7 +219,7 @@ async function detectStashLocation({
 
   if ((gitDir === undefined) || (gitCommonDir === undefined)) {
     throw new Error(
-      'cli-git: could not classify git stash worktree because git rev-parse returned incomplete metadata.',
+      'cli-git: could not classify git worktree because git rev-parse returned incomplete metadata.',
     );
   }
 
@@ -264,88 +237,4 @@ async function detectStashLocation({
     : 'linked-worktree';
 }
 
-/**
- * Rejects `git stash` unless the effective working directory is inside a
- * linked git worktree. `git stash` can update tracked files in the selected
- * worktree, so allowing main-worktree or outside-worktree forms can revert
- * filesystem state outside what the caller expects from current cwd.
- *
- * The wrapper-only flag `--no-enforce-worktree` is the escape hatch: it is
- * stripped from args before forwarding, and linked-worktree detection is
- * skipped for that invocation.
- *
- * @param args - Git argv to inspect after wrapper invocation.
- *
- * @returns Original argv when command is not `stash` or cwd is linked worktree;
- *   argv with `--no-enforce-worktree` stripped when escape hatch is in use.
- *
- * @throws When `stash` is requested outside linked git worktree.
- *
- * @example
- * ```ts
- * await stashRequiresWorktree(['-C', '/repo-linked', 'stash']);
- * // passes when real git reports /repo-linked is a linked worktree
- *
- * await stashRequiresWorktree(['-C', '/tmp', 'stash', '--no-enforce-worktree']);
- * // => ['-C', '/tmp', 'stash'] (escape hatch consumed)
- *
- * await stashRequiresWorktree(['-C', '/repo-main', 'stash']);
- * // throws when /repo-main is the main worktree
- * ```
- */
-export async function stashRequiresWorktree(
-  args: readonly string[],
-): Promise<readonly string[]> {
-  /** Effective cwd and subcommand index after walking pre-subcommand `-C` chaining. */
-  const {
-    effectiveCwd,
-    subcommandIndex,
-  } = parseGlobalOptions(args,);
-  /** Subcommand at the located index; `undefined` when args have no subcommand. */
-  const subcommand = args[subcommandIndex];
-
-  if (subcommand !== STASH_SUBCOMMAND)
-    return args;
-
-  /** Tagged logger for the stash-requires-worktree rule. */
-  const rl = tagged({
-    tag: stashRequiresWorktree.name,
-    l,
-  },);
-
-  /** Slice of args strictly after the `stash` token; the place where stash subcommands and flags live. */
-  const postSubcommandArgs = args.slice(subcommandIndex + 1,);
-  /** True when the wrapper-only escape hatch appears after the subcommand. */
-  const hasEscapeHatch = postSubcommandArgs.includes(ESCAPE_HATCH,);
-
-  if (hasEscapeHatch) {
-    rl.debug(`${ESCAPE_HATCH} present, stripping and skipping linked-worktree check`,);
-    /** Pre-subcommand region kept verbatim so global options survive the strip. */
-    const preAndSubcommand = args.slice(
-      0,
-      subcommandIndex + 1,
-    );
-    return [
-      ...preAndSubcommand,
-      ...postSubcommandArgs.filter(function isNotEscapeHatch(arg,) {
-        return arg !== ESCAPE_HATCH;
-      },),
-    ];
-  }
-
-  rl.debug(`effective cwd: ${effectiveCwd}`,);
-
-  /** Effective cwd classification for stash safety policy. */
-  const stashLocation = await detectStashLocation({ effectiveCwd, },);
-
-  if (stashLocation === 'outside-worktree')
-    throw new Error(NOT_IN_WORKTREE_MESSAGE,);
-
-  if (stashLocation === 'main-worktree')
-    throw new Error(MAIN_WORKTREE_MESSAGE,);
-
-  rl.debug('linked worktree check passed',);
-  return args;
-}
-
-//endregion Stash worktree enforcement
+//endregion Git worktree location detection

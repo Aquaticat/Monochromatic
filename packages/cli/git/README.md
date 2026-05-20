@@ -15,15 +15,21 @@ directory, the command passes through to real git untouched, so git itself
 reports the missing-repo error if relevant. Exempt subcommands: `init`,
 `clone`, `version`, `help`, and `config` with `--global`/`--system`/`--list`.
 
-**Stash requires linked worktree**: rejects `git stash` unless the effective
-working directory is a linked git worktree root. This blocks the main worktree
-and `--git-dir` / `--work-tree` forms launched from unrelated directories,
-because `git stash` can revert filesystem state outside what the caller expects
-from current cwd. Run stash from a linked worktree root, or pass
-`-C <linked-worktree-root>` before `stash`. Pass `--no-enforce-worktree` after
-`stash` to bypass linked-worktree enforcement for one invocation; the wrapper
-strips the flag before forwarding to real git. The existing require-root rule
-still rejects linked-worktree subdirectories.
+**Linked worktree only for risky worktree commands**: rejects guarded commands
+unless the effective working directory is a linked git worktree root. Guarded
+forms are all `git stash`, state-changing `git clean`, and destructive
+`git reset` modes (`--hard`, `--merge`, `--keep`). This blocks the main
+worktree and `--git-dir` / `--work-tree` forms launched from unrelated
+directories, because these commands can revert, delete, or rewrite filesystem
+state outside what the caller expects from current cwd. `git clean -n` and
+`git clean --dry-run` pass through because Git documents them as inspection
+only; `git clean -i` remains guarded because interactive mode can delete
+selected paths. Run guarded commands from a linked worktree root, or pass
+`-C <linked-worktree-root>` before the subcommand. Pass
+`--no-enforce-worktree` after the guarded subcommand and before any `--`
+pathspec separator to bypass linked-worktree enforcement for one invocation;
+the wrapper strips the flag before forwarding to real git. The existing
+require-root rule still rejects linked-worktree subdirectories.
 
 **Add explicit**: rejects `git add` invocations that use bulk-staging
 patterns (`.`, `./`, `*`, `:/`, `-A`/`--all`, `-u`/`--update`), which sweep

@@ -531,6 +531,147 @@ await describe({
       },
     },),
     it({
+      name: 'allows clean dry-run at main worktree root',
+      fn: async function testCleanDryRunAtMainWorktreeRoot(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeFile(
+          join(
+            tempDirectory.path,
+            'untracked.txt',
+          ),
+          'temporary\n',
+        );
+
+        /** cli-git success for dry-run clean inside main worktree. */
+        const result = await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'clean',
+            '-nd',
+          ],
+        },);
+
+        expect(result.stdout,).toContain('Would remove untracked.txt',);
+      },
+    },),
+    it({
+      name: 'rejects state-changing clean at main worktree root',
+      fn: async function testStateChangingCleanAtMainWorktreeRoot(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeFile(
+          join(
+            tempDirectory.path,
+            'untracked.txt',
+          ),
+          'temporary\n',
+        );
+
+        /** cli-git failure for non-dry-run clean inside main worktree. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: [
+            'clean',
+            '-fd',
+          ],
+        },),);
+
+        expect(error.stderr,).toContain(
+          'cli-git: state-changing git clean is rejected in the main git worktree',
+        );
+
+        /** Repository status after rejected clean, proving untracked file remains. */
+        const status = await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'status',
+            '--short',
+          ],
+        },);
+
+        expect(status.stdout,).toContain('?? untracked.txt',);
+      },
+    },),
+    it({
+      name: 'rejects reset hard at main worktree root',
+      fn: async function testResetHardAtMainWorktreeRoot(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+        await writeFile(
+          join(
+            tempDirectory.path,
+            'tracked.txt',
+          ),
+          'modified\n',
+        );
+
+        /** cli-git failure for reset hard inside main worktree. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: [
+            'reset',
+            '--hard',
+          ],
+        },),);
+
+        expect(error.stderr,).toContain(
+          'cli-git: destructive git reset modes are rejected in the main git worktree',
+        );
+
+        /** Repository status after rejected reset, proving tracked modification remains. */
+        const status = await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'status',
+            '--short',
+          ],
+        },);
+
+        expect(status.stdout,).toContain(' M tracked.txt',);
+      },
+    },),
+    it({
+      name: 'allows reset hard at main worktree root with worktree escape hatch',
+      fn: async function testResetHardAtMainWorktreeRootWithEscapeHatch(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+        await writeFile(
+          join(
+            tempDirectory.path,
+            'tracked.txt',
+          ),
+          'modified\n',
+        );
+
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'reset',
+            '--no-enforce-worktree',
+            '--hard',
+          ],
+        },);
+
+        /** Repository status after escaped reset, proving real git received reset hard. */
+        const status = await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'status',
+            '--short',
+          ],
+        },);
+
+        expect(status.stdout,).toBe('',);
+      },
+    },),
+    it({
       name: 'rejects linked worktree subdirectory because .git is a file',
       fn: async function testLinkedWorktreeSubdirectory(): Promise<void> {
         await using tempDirectory = await createTempDirectory();

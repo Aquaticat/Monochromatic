@@ -14,7 +14,7 @@ import {
 import nanoSpawn from 'nano-spawn';
 
 import { resolveGit, } from '../resolve-git.ts';
-import { stashRequiresWorktree, } from './stash-requires-worktree.ts';
+import { linkedWorktreeOnly, } from './linked-worktree-only.ts';
 
 //region Test fixtures
 
@@ -35,7 +35,7 @@ type RunGitOptions = {
   readonly args: readonly string[];
 };
 
-/** Disposable temporary directory used by stash-requires-worktree tests. */
+/** Disposable temporary directory used by linked-worktree-only tests. */
 type TempDirectory = {
   /** Absolute path to temporary directory. */
   readonly path: string;
@@ -58,7 +58,7 @@ async function createTempDirectory(): Promise<TempDirectory> {
   /** Absolute temporary directory path for one test case. */
   const path = await mkdtemp(join(
     tmpdir(),
-    'cli-git-stash-requires-worktree-',
+    'cli-git-linked-worktree-only-',
   ),);
 
   return {
@@ -173,23 +173,23 @@ async function createInitialCommit({
 }
 
 /**
- * Captures asynchronous error from stash-requires-worktree invocation.
+ * Captures asynchronous error from linked-worktree-only invocation.
  *
- * @param args - Git argv to pass through stash-requires-worktree rule.
+ * @param args - Git argv to pass through linked-worktree-only rule.
  *
  * @returns Error thrown by rule, or `undefined` when rule passes.
  *
  * @example
  * ```ts
- * const caught = await catchStashRequiresWorktreeError(['-C', '/tmp', 'stash']);
+ * const caught = await catchLinkedWorktreeOnlyError(['-C', '/tmp', 'stash']);
  * expect(caught).toBeInstanceOf(Error);
  * ```
  */
-async function catchStashRequiresWorktreeError(
+async function catchLinkedWorktreeOnlyError(
   args: readonly string[],
 ): Promise<unknown> {
   try {
-    await stashRequiresWorktree(args,);
+    await linkedWorktreeOnly(args,);
   }
   catch (error) {
     return error;
@@ -200,11 +200,11 @@ async function catchStashRequiresWorktreeError(
 //endregion Test fixtures
 
 await describe({
-  name: stashRequiresWorktree.name,
+  name: linkedWorktreeOnly.name,
   children: [
     it({
-      name: 'passes through non-stash commands outside a worktree',
-      fn: async function testNonStashOutsideWorktree(): Promise<void> {
+      name: 'passes through unguarded commands outside a worktree',
+      fn: async function testUnguardedOutsideWorktree(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
 
         /** Status argv rooted at directory outside any real worktree. */
@@ -214,7 +214,7 @@ await describe({
           'status',
         ] as const;
 
-        expect(await stashRequiresWorktree(args,),).toBe(args,);
+        expect(await linkedWorktreeOnly(args,),).toBe(args,);
       },
     },),
     it({
@@ -223,7 +223,7 @@ await describe({
         await using tempDirectory = await createTempDirectory();
 
         /** Error thrown for stash argv rooted at directory outside any real worktree. */
-        const caught = await catchStashRequiresWorktreeError([
+        const caught = await catchLinkedWorktreeOnlyError([
           '-C',
           tempDirectory.path,
           'stash',
@@ -250,7 +250,7 @@ await describe({
           'list',
         ] as const;
 
-        expect(await stashRequiresWorktree(args,),).toEqual([
+        expect(await linkedWorktreeOnly(args,),).toEqual([
           '-C',
           tempDirectory.path,
           'stash',
@@ -266,7 +266,7 @@ await describe({
         await initializeRepository({ repoPath: tempDirectory.path, },);
 
         /** Error thrown for stash argv rooted at main worktree root. */
-        const caught = await catchStashRequiresWorktreeError([
+        const caught = await catchLinkedWorktreeOnlyError([
           '-C',
           tempDirectory.path,
           'stash',
@@ -293,7 +293,7 @@ await describe({
         await mkdir(subdirectory,);
 
         /** Error thrown for stash argv rooted below main worktree root. */
-        const caught = await catchStashRequiresWorktreeError([
+        const caught = await catchLinkedWorktreeOnlyError([
           '-C',
           subdirectory,
           'stash',
@@ -344,7 +344,7 @@ await describe({
           'list',
         ] as const;
 
-        expect(await stashRequiresWorktree(args,),).toBe(args,);
+        expect(await linkedWorktreeOnly(args,),).toBe(args,);
       },
     },),
     it({
@@ -366,7 +366,7 @@ await describe({
         await mkdir(launchPath,);
 
         /** Error thrown because `-C` leaves effective cwd outside worktree. */
-        const caught = await catchStashRequiresWorktreeError([
+        const caught = await catchLinkedWorktreeOnlyError([
           '-C',
           launchPath,
           '--git-dir',
@@ -384,6 +384,200 @@ await describe({
         expect((caught as Error).message,).toContain(
           'Refusing to run from outside a worktree because git stash can revert filesystem state outside what the caller expected',
         );
+      },
+    },),
+    it({
+      name: 'passes clean dry-run at main worktree root',
+      fn: async function testCleanDryRunAtMainWorktreeRoot(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+
+        /** Dry-run clean argv rooted at main worktree root. */
+        const args = [
+          '-C',
+          tempDirectory.path,
+          'clean',
+          '-ndX',
+        ] as const;
+
+        expect(await linkedWorktreeOnly(args,),).toBe(args,);
+      },
+    },),
+    it({
+      name: 'rejects state-changing clean at main worktree root',
+      fn: async function testStateChangingCleanAtMainWorktreeRoot(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+
+        /** Error thrown for non-dry-run clean argv rooted at main worktree root. */
+        const caught = await catchLinkedWorktreeOnlyError([
+          '-C',
+          tempDirectory.path,
+          'clean',
+          '-fd',
+        ],);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'cli-git: state-changing git clean is rejected in the main git worktree',
+        );
+      },
+    },),
+    it({
+      name: 'strips clean escape hatch and skips worktree validation',
+      fn: async function testCleanEscapeHatch(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Escaped clean argv rooted at directory outside any real worktree. */
+        const args = [
+          '-C',
+          tempDirectory.path,
+          'clean',
+          '--no-enforce-worktree',
+          '-fd',
+        ] as const;
+
+        expect(await linkedWorktreeOnly(args,),).toEqual([
+          '-C',
+          tempDirectory.path,
+          'clean',
+          '-fd',
+        ],);
+      },
+    },),
+    it({
+      name: 'rejects destructive reset modes at main worktree root',
+      fn: async function testDestructiveResetModesAtMainWorktreeRoot(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+
+        /** Reset modes that update worktree files. */
+        const resetModes = [
+          '--hard',
+          '--merge',
+          '--keep',
+        ] as const;
+        /** Errors thrown for destructive reset modes rooted at main worktree root. */
+        const caughtErrors = await Promise.all(
+          resetModes.map(async function catchResetModeError(mode,): Promise<unknown> {
+            return catchLinkedWorktreeOnlyError([
+              '-C',
+              tempDirectory.path,
+              'reset',
+              mode,
+            ],);
+          },),
+        );
+
+        caughtErrors.forEach(function expectResetError(caught,): void {
+          expect(caught,).toBeInstanceOf(Error,);
+          expect((caught as Error).message,).toContain(
+            'cli-git: destructive git reset modes are rejected in the main git worktree',
+          );
+        },);
+      },
+    },),
+    it({
+      name: 'passes non-destructive reset forms at main worktree root',
+      fn: async function testNonDestructiveResetFormsAtMainWorktreeRoot(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+
+        /** Mixed reset changes index but not worktree files. */
+        const mixedArgs = [
+          '-C',
+          tempDirectory.path,
+          'reset',
+          '--mixed',
+        ] as const;
+        /** Pathspec separator makes `--hard` path text instead of reset mode. */
+        const pathspecArgs = [
+          '-C',
+          tempDirectory.path,
+          'reset',
+          '--',
+          '--hard',
+        ] as const;
+
+        expect(await linkedWorktreeOnly(mixedArgs,),).toBe(mixedArgs,);
+        expect(await linkedWorktreeOnly(pathspecArgs,),).toBe(pathspecArgs,);
+      },
+    },),
+    it({
+      name: 'strips destructive reset escape hatch and skips worktree validation',
+      fn: async function testResetEscapeHatch(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Escaped reset argv rooted at directory outside any real worktree. */
+        const args = [
+          '-C',
+          tempDirectory.path,
+          'reset',
+          '--no-enforce-worktree',
+          '--hard',
+        ] as const;
+
+        expect(await linkedWorktreeOnly(args,),).toEqual([
+          '-C',
+          tempDirectory.path,
+          'reset',
+          '--hard',
+        ],);
+      },
+    },),
+    it({
+      name: 'passes clean and destructive reset at linked worktree root',
+      fn: async function testCleanAndResetAtLinkedWorktreeRoot(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Main repository path that owns linked worktree metadata. */
+        const repoPath = join(
+          tempDirectory.path,
+          'repo',
+        );
+        /** Linked worktree path where guarded worktree commands are allowed. */
+        const linkedWorktreePath = join(
+          tempDirectory.path,
+          'linked',
+        );
+
+        await initializeRepository({ repoPath, },);
+        await createInitialCommit({ repoPath, },);
+        await runRealGit({
+          cwd: repoPath,
+          args: [
+            'worktree',
+            'add',
+            '--detach',
+            '--quiet',
+            linkedWorktreePath,
+            'HEAD',
+          ],
+        },);
+
+        /** State-changing clean argv rooted at linked worktree root. */
+        const cleanArgs = [
+          '-C',
+          linkedWorktreePath,
+          'clean',
+          '-fd',
+        ] as const;
+        /** Destructive reset argv rooted at linked worktree root. */
+        const resetArgs = [
+          '-C',
+          linkedWorktreePath,
+          'reset',
+          '--hard',
+        ] as const;
+
+        expect(await linkedWorktreeOnly(cleanArgs,),).toBe(cleanArgs,);
+        expect(await linkedWorktreeOnly(resetArgs,),).toBe(resetArgs,);
       },
     },),
   ],
