@@ -332,7 +332,7 @@ Tradeoffs:
   the fix "worked." The fix did apply once; it just did not apply
   twice.
 - No code change required; nothing to revisit when upstream lands
-  [oxc#16118][16118] — the second pass becomes a no-op and the test
+  [oxc#16118][16118]: the second pass becomes a no-op and the test
   loop is harmless.
 - The shape extends to any future rule pair that exhibits the same
   conflict; the test infrastructure already handles it.
