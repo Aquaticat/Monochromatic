@@ -20,8 +20,10 @@ working directory is a linked git worktree root. This blocks the main worktree
 and `--git-dir` / `--work-tree` forms launched from unrelated directories,
 because `git stash` can revert filesystem state outside what the caller expects
 from current cwd. Run stash from a linked worktree root, or pass
-`-C <linked-worktree-root>` before `stash`. The existing require-root rule still
-rejects linked-worktree subdirectories.
+`-C <linked-worktree-root>` before `stash`. Pass `--no-enforce-worktree` after
+`stash` to bypass linked-worktree enforcement for one invocation; the wrapper
+strips the flag before forwarding to real git. The existing require-root rule
+still rejects linked-worktree subdirectories.
 
 **Add explicit**: rejects `git add` invocations that use bulk-staging
 patterns (`.`, `./`, `*`, `:/`, `-A`/`--all`, `-u`/`--update`), which sweep

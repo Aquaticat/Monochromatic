@@ -408,6 +408,26 @@ await describe({
       },
     },),
     it({
+      name: 'allows stash list at main worktree root with worktree escape hatch',
+      fn: async function testStashListAtMainWorktreeRootWithEscapeHatch(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+
+        /** cli-git success proves wrapper stripped the unknown-to-git escape hatch. */
+        const result = await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'stash',
+            '--no-enforce-worktree',
+            'list',
+          ],
+        },);
+
+        expect(result.stdout,).toBe('',);
+      },
+    },),
+    it({
       name: 'allows stash list at linked worktree root',
       fn: async function testStashListAtLinkedWorktreeRoot(): Promise<void> {
         await using tempDirectory = await createTempDirectory();

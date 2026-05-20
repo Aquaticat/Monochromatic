@@ -237,6 +237,28 @@ await describe({
       },
     },),
     it({
+      name: 'strips escape hatch and skips worktree validation',
+      fn: async function testWorktreeEscapeHatch(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Escaped stash argv rooted at directory outside any real worktree. */
+        const args = [
+          '-C',
+          tempDirectory.path,
+          'stash',
+          '--no-enforce-worktree',
+          'list',
+        ] as const;
+
+        expect(await stashRequiresWorktree(args,),).toEqual([
+          '-C',
+          tempDirectory.path,
+          'stash',
+          'list',
+        ],);
+      },
+    },),
+    it({
       name: 'rejects stash at main worktree root',
       fn: async function testMainWorktreeRoot(): Promise<void> {
         await using tempDirectory = await createTempDirectory();

@@ -19,6 +19,13 @@ const execFileAsync = promisify(execFile,);
 /** Git subcommand guarded by this rule. */
 const STASH_SUBCOMMAND = 'stash';
 
+/**
+ * Wrapper-only escape hatch that suppresses linked-worktree enforcement for one
+ * stash invocation. Stripped before forwarding to real git, which would
+ * otherwise reject it.
+ */
+const ESCAPE_HATCH = '--no-enforce-worktree';
+
 /** Environment variable prefix used by Git-specific controls. */
 const GIT_ENVIRONMENT_PREFIX = 'GIT_';
 
@@ -263,9 +270,14 @@ async function detectStashLocation({
  * worktree, so allowing main-worktree or outside-worktree forms can revert
  * filesystem state outside what the caller expects from current cwd.
  *
+ * The wrapper-only flag `--no-enforce-worktree` is the escape hatch: it is
+ * stripped from args before forwarding, and linked-worktree detection is
+ * skipped for that invocation.
+ *
  * @param args - Git argv to inspect after wrapper invocation.
  *
- * @returns Original argv when command is not `stash` or cwd is linked worktree.
+ * @returns Original argv when command is not `stash` or cwd is linked worktree;
+ *   argv with `--no-enforce-worktree` stripped when escape hatch is in use.
  *
  * @throws When `stash` is requested outside linked git worktree.
  *
@@ -273,6 +285,9 @@ async function detectStashLocation({
  * ```ts
  * await stashRequiresWorktree(['-C', '/repo-linked', 'stash']);
  * // passes when real git reports /repo-linked is a linked worktree
+ *
+ * await stashRequiresWorktree(['-C', '/tmp', 'stash', '--no-enforce-worktree']);
+ * // => ['-C', '/tmp', 'stash'] (escape hatch consumed)
  *
  * await stashRequiresWorktree(['-C', '/repo-main', 'stash']);
  * // throws when /repo-main is the main worktree
@@ -297,6 +312,26 @@ export async function stashRequiresWorktree(
     tag: stashRequiresWorktree.name,
     l,
   },);
+
+  /** Slice of args strictly after the `stash` token; the place where stash subcommands and flags live. */
+  const postSubcommandArgs = args.slice(subcommandIndex + 1,);
+  /** True when the wrapper-only escape hatch appears after the subcommand. */
+  const hasEscapeHatch = postSubcommandArgs.includes(ESCAPE_HATCH,);
+
+  if (hasEscapeHatch) {
+    rl.debug(`${ESCAPE_HATCH} present, stripping and skipping linked-worktree check`,);
+    /** Pre-subcommand region kept verbatim so global options survive the strip. */
+    const preAndSubcommand = args.slice(
+      0,
+      subcommandIndex + 1,
+    );
+    return [
+      ...preAndSubcommand,
+      ...postSubcommandArgs.filter(function isNotEscapeHatch(arg,) {
+        return arg !== ESCAPE_HATCH;
+      },),
+    ];
+  }
 
   rl.debug(`effective cwd: ${effectiveCwd}`,);
 
