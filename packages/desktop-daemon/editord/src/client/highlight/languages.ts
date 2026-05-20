@@ -32,7 +32,7 @@ import { PARSERS, } from './language-parsers.ts';
  * // noParser === null: CSV is not supported
  * ```
  */
-export function getParserForPath({ path, }: { path: string; },): Parser | null {
+export function getParserForPath({ path, }: { readonly path: string; },): Parser | null {
   /** Index of the final `.` in the path; `-1` means no extension. */
   const dotIndex = path.lastIndexOf('.',);
   if (dotIndex === (-1))

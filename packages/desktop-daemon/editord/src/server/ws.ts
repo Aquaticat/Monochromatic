@@ -40,8 +40,8 @@ const l = tagged({
  */
 function rejectUnauthenticated(
   peer: {
-    send: (data: string,) => void;
-    close: () => void;
+    readonly send: (data: string,) => void;
+    readonly close: () => void;
   },
 ): void {
   sendJson({
@@ -85,12 +85,12 @@ export function createWsHandler(
     connectedPeers,
     dirWatcher,
   }: {
-    authToken: string;
-    rootDir: string;
-    fsId: string;
-    lspManager: LspManager | null;
-    connectedPeers: Set<{ send: (data: string,) => void; }>;
-    dirWatcher: DirWatcher | null;
+    readonly authToken: string;
+    readonly rootDir: string;
+    readonly fsId: string;
+    readonly lspManager: LspManager | null;
+    readonly connectedPeers: Set<{ readonly send: (data: string,) => void; }>;
+    readonly dirWatcher: DirWatcher | null;
   },
 ): EventHandler {
   return defineWebSocketHandler(function resolveHooks(event,) {

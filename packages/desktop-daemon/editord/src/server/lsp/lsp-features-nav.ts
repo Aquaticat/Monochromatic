@@ -38,14 +38,14 @@ export async function requestGotoDefinition({
   line,
   character,
 }: {
-  client: LspClient;
-  path: string;
-  line: number;
-  character: number;
+  readonly client: LspClient;
+  readonly path: string;
+  readonly line: number;
+  readonly character: number;
 },): Promise<{
-  path: string;
-  line: number;
-  character: number;
+  readonly path: string;
+  readonly line: number;
+  readonly character: number;
 } | null> {
   /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
@@ -76,11 +76,11 @@ export async function requestGotoDefinition({
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- narrow from Location shape */
   /** Narrowed Location view used to read the definition coords. */
   const loc = rawLocation as {
-    uri: string;
-    range: {
-      start: {
-        line: number;
-        character: number;
+    readonly uri: string;
+    readonly range: {
+      readonly start: {
+        readonly line: number;
+        readonly character: number;
       };
     };
   };
@@ -119,14 +119,14 @@ export async function requestReferences({
   line,
   character,
 }: {
-  client: LspClient;
-  path: string;
-  line: number;
-  character: number;
+  readonly client: LspClient;
+  readonly path: string;
+  readonly line: number;
+  readonly character: number;
 },): Promise<{
-  path: string;
-  line: number;
-  character: number;
+  readonly path: string;
+  readonly line: number;
+  readonly character: number;
 }[]> {
   /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
@@ -149,11 +149,11 @@ export async function requestReferences({
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP references returns Location[]
   return (result as {
-    uri: string;
-    range: {
-      start: {
-        line: number;
-        character: number;
+    readonly uri: string;
+    readonly range: {
+      readonly start: {
+        readonly line: number;
+        readonly character: number;
       };
     };
   }[])

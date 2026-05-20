@@ -18,7 +18,7 @@ import { findLineForOffset, } from './utils.ts';
  *
  * @returns array of cumulative offsets
  */
-function computeLineStarts({ lines, }: { lines: string[]; },): number[] {
+function computeLineStarts({ lines, }: { readonly lines: readonly string[]; },): number[] {
   /** Accumulator: byte offset of each line's first character, indexed by line number. */
   const lineStarts: number[] = [];
   /** Running byte total walked through `lines`, including the `\n` terminator after each line. */
@@ -52,9 +52,9 @@ export function collectHighlightRanges({
   lines,
   editor,
 }: {
-  tree: Tree;
-  lines: string[];
-  editor: HTMLDivElement;
+  readonly tree: Tree;
+  readonly lines: readonly string[];
+  readonly editor: HTMLDivElement;
 },): Map<string, Range[]> {
   /** Byte offsets of each line, used to translate parse-tree offsets into per-line positions. */
   const lineStarts = computeLineStarts({ lines, },);

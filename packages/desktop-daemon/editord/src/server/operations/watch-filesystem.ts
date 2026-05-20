@@ -49,12 +49,34 @@ import {
 /** Structured filesystem change event emitted to the watcher's consumer. */
 export type FsChangeEvent = {
   /** Absolute path of the changed entry. */
-  path: string;
+  readonly path: string;
   /** Category of the change. */
-  changeType: FsChangeType;
+  readonly changeType: FsChangeType;
   /** Whether the changed entry is a directory. */
-  isDirectory: boolean;
+  readonly isDirectory: boolean;
 };
+
+/**
+ * Options for {@link createDirWatcher}.
+ */
+export type DirWatcherOptions = {
+  /** Callback invoked for each resolved change event. */
+  readonly onChange: (event: FsChangeEvent,) => void;
+  /** Parent logger for tag composition. */
+  readonly l: Logger;
+};
+
+/**
+ * Directory watcher handle returned by {@link createDirWatcher}.
+ */
+export type DirWatcher = Readonly<{
+  /** Starts watching a directory for changes. */
+  readonly watchDir: (event: { readonly path: string; },) => void;
+  /** Temporarily suppresses change events for a file path. */
+  readonly suppressPath: (event: { readonly path: string; },) => void;
+  /** Closes all watchers. */
+  readonly close: () => Promise<void>;
+}>;
 
 /**
  * Adapts a chokidar `ignored` predicate to editord's basename-level
@@ -94,8 +116,8 @@ async function sweepOrphanTemps(
     path,
     l,
   }: {
-    path: string;
-    l: Logger;
+    readonly path: string;
+    readonly l: Logger;
   },
 ): Promise<void> {
   try {
@@ -145,147 +167,75 @@ async function sweepOrphanTemps(
 }
 
 /**
- * Manages per-directory chokidar watchers.
+ * Creates a per-directory chokidar watcher manager.
  *
  * Each watched directory gets one `depth: 0` chokidar instance. Raw chokidar
- * events are filtered through `#suppressed` (for self-triggered saves) and
- * categorised into {@link FsChangeEvent}s before reaching the consumer.
+ * events are filtered through the suppression set for self-triggered saves
+ * and categorised into {@link FsChangeEvent}s before reaching the consumer.
+ *
+ * @param onChange - callback invoked for each filtered change event
+ *
+ * @param l - parent logger for tag composition
+ *
+ * @returns frozen directory watcher handle
+ *
+ * @example
+ * ```ts
+ * const watcher = createDirWatcher({
+ *   onChange: function handleChange(event) { console.info(event.path); },
+ *   l: logger,
+ * });
+ * watcher.watchDir({ path: '/home/user/project/src', });
+ * ```
  */
-export class DirWatcher {
+export function createDirWatcher(
+  {
+    onChange,
+    l,
+  }: DirWatcherOptions,
+): DirWatcher {
   /** Active watchers keyed by directory path. */
-  readonly #watchers = new Map<string, FSWatcher>();
-
+  const watchers = new Map<string, FSWatcher>();
   /** Paths suppressed from emitting events (e.g. after a self-save). */
-  readonly #suppressed = new Set<string>();
-
-  /** Callback invoked for each resolved change event. */
-  readonly #onChange: (event: FsChangeEvent,) => void;
-
+  const suppressed = new Set<string>();
   /** Tagged logger. */
-  readonly #l: Logger;
+  const logger = tagged({
+    tag: 'watcher',
+    l,
+  },);
 
   /**
-   * @param onChange - callback invoked for each filtered change event
+   * Removes and closes a single directory watcher (best-effort on error).
    *
-   * @param l - parent logger for tag composition
+   * @param path - directory path to stop watching
    */
-  constructor(
-    {
-      onChange,
-      l,
-    }: {
-      onChange: (event: FsChangeEvent,) => void;
-      l: Logger;
-    },
-  ) {
-    this.#onChange = onChange;
-    this.#l = tagged({
-      tag: 'watcher',
-      l,
-    },);
-  }
-
-  /**
-   * Starts watching a directory for changes. No-op if already watched.
-   * Triggers a background orphan-temp sweep on first registration.
-   *
-   * @param path - absolute path of the directory to watch
-   */
-  watchDir({ path, }: { path: string; },): void {
-    if (this.#watchers.has(path,))
+  function removeWatcher({ path, }: { readonly path: string; },): void {
+    /** Already-removed watcher returns silently rather than throwing. */
+    const fsWatcher = watchers.get(path,);
+    if (fsWatcher === undefined)
       return;
-
-    /** Per-directory chokidar instance; depth 0 keeps the watch shallow. */
-    const fsWatcher = chokidarWatch(
-      path,
-      {
-        atomic: true,
-        awaitWriteFinish: {
-          stabilityThreshold: AWAIT_WRITE_FINISH_MS,
-          pollInterval: AWAIT_WRITE_FINISH_POLL_MS,
-        },
-        depth: 0,
-        ignoreInitial: true,
-        persistent: true,
-        followSymlinks: false,
-        ignored: chokidarIgnored,
-      },
-    );
-
-    this.#wireEvents({
-      fsWatcher,
-      path,
-    },);
-
-    this.#watchers.set(
-      path,
-      fsWatcher,
-    );
-    this.#l.info(`watching: ${path}`,);
-
-    /**
-     * Run the orphan sweep concurrently with watcher startup. With
-     * `ignoreInitial: true` and the `~$` ignore rule, neither the
-     * pre-existing temp files nor their unlinks emit events.
-     */
-    void sweepOrphanTemps({
-      path,
-      l: this.#l,
-    },);
-  }
-
-  /**
-   * Temporarily suppresses change events for a file path.
-   * Used after saving a file from the editor to avoid self-triggered reloads.
-   *
-   * @param path - absolute file path to suppress
-   */
-  suppressPath({ path, }: { path: string; },): void {
-    /** Captured for the timer callback because `this` rebinds inside `setTimeout`. */
-    const self = this;
-    self.#suppressed.add(path,);
-    globalThis.setTimeout(
-      function clearSuppression() {
-        self.#suppressed.delete(path,);
-      },
-      SUPPRESS_MS,
-    );
-  }
-
-  /** Closes all watchers. */
-  async close(): Promise<void> {
-    /** Settled together so one failed watcher close does not block the others. */
-    const closes = [...this.#watchers.values(),].map(
-      function closeOne(w,) {
-        return w.close();
-      },
-    );
-    this.#watchers.clear();
-    this.#suppressed.clear();
-    await Promise.allSettled(closes,);
+    watchers.delete(path,);
+    void fsWatcher.close();
   }
 
   /**
    * Wires chokidar lifecycle and event listeners for a single watcher.
    * Each listener is a named function declaration; events the watcher would
-   * otherwise echo back to the client are dropped against `#suppressed`.
+   * otherwise echo back to the client are dropped against `suppressed`.
    *
    * @param fsWatcher - the constructed chokidar watcher
    *
    * @param path - directory path this watcher is responsible for
    */
-  #wireEvents(
+  function wireEvents(
     {
       fsWatcher,
       path,
     }: {
-      fsWatcher: FSWatcher;
-      path: string;
+      readonly fsWatcher: FSWatcher;
+      readonly path: string;
     },
   ): void {
-    /** Captured for the listener closures because chokidar invokes them with its own `this`. */
-    const self = this;
-
     /**
      * Emits a change event after suppression check.
      */
@@ -295,14 +245,14 @@ export class DirWatcher {
         changeType,
         isDirectory,
       }: {
-        eventPath: string;
-        changeType: FsChangeType;
-        isDirectory: boolean;
+        readonly eventPath: string;
+        readonly changeType: FsChangeType;
+        readonly isDirectory: boolean;
       },
     ): void {
-      if (self.#suppressed.has(eventPath,))
+      if (suppressed.has(eventPath,))
         return;
-      self.#onChange({
+      onChange({
         path: eventPath,
         changeType,
         isDirectory,
@@ -362,23 +312,93 @@ export class DirWatcher {
     fsWatcher.on(
       'error',
       function handleWatchError(error,) {
-        self.#l.error(`watcher error for ${path}: ${String(error,)}`,);
-        self.#removeWatcher({ path, },);
+        logger.error(`watcher error for ${path}: ${String(error,)}`,);
+        removeWatcher({ path, },);
       },
     );
   }
 
   /**
-   * Removes and closes a single directory watcher (best-effort on error).
+   * Starts watching a directory for changes. No-op if already watched.
+   * Triggers a background orphan-temp sweep on first registration.
    *
-   * @param path - directory path to stop watching
+   * @param path - absolute path of the directory to watch
    */
-  #removeWatcher({ path, }: { path: string; },): void {
-    /** Already-removed watcher returns silently rather than throwing. */
-    const fsWatcher = this.#watchers.get(path,);
-    if (fsWatcher === undefined)
+  function watchDir({ path, }: { readonly path: string; },): void {
+    if (watchers.has(path,))
       return;
-    this.#watchers.delete(path,);
-    void fsWatcher.close();
+
+    /** Per-directory chokidar instance; depth 0 keeps the watch shallow. */
+    const fsWatcher = chokidarWatch(
+      path,
+      {
+        atomic: true,
+        awaitWriteFinish: {
+          stabilityThreshold: AWAIT_WRITE_FINISH_MS,
+          pollInterval: AWAIT_WRITE_FINISH_POLL_MS,
+        },
+        depth: 0,
+        ignoreInitial: true,
+        persistent: true,
+        followSymlinks: false,
+        ignored: chokidarIgnored,
+      },
+    );
+
+    wireEvents({
+      fsWatcher,
+      path,
+    },);
+
+    watchers.set(
+      path,
+      fsWatcher,
+    );
+    logger.info(`watching: ${path}`,);
+
+    /**
+     * Run the orphan sweep concurrently with watcher startup. With
+     * `ignoreInitial: true` and the `~$` ignore rule, neither the
+     * pre-existing temp files nor their unlinks emit events.
+     */
+    void sweepOrphanTemps({
+      path,
+      l: logger,
+    },);
   }
+
+  /**
+   * Temporarily suppresses change events for a file path.
+   * Used after saving a file from the editor to avoid self-triggered reloads.
+   *
+   * @param path - absolute file path to suppress
+   */
+  function suppressPath({ path, }: { readonly path: string; },): void {
+    suppressed.add(path,);
+    globalThis.setTimeout(
+      function clearSuppression() {
+        suppressed.delete(path,);
+      },
+      SUPPRESS_MS,
+    );
+  }
+
+  /** Closes all watchers. */
+  async function close(): Promise<void> {
+    /** Settled together so one failed watcher close does not block the others. */
+    const closes = [...watchers.values(),].map(
+      function closeOne(w,) {
+        return w.close();
+      },
+    );
+    watchers.clear();
+    suppressed.clear();
+    await Promise.allSettled(closes,);
+  }
+
+  return Object.freeze({
+    watchDir,
+    suppressPath,
+    close,
+  },);
 }

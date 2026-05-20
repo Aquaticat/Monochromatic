@@ -28,8 +28,8 @@ export function applyEditsToText({
   text,
   edits,
 }: {
-  text: string;
-  edits: TextEdit[];
+  readonly text: string;
+  readonly edits: readonly TextEdit[];
 },): string {
   /** Editor text split into per-line strings; mutated by `splice` for each applied edit. */
   const lines = text.split('\n',);
@@ -85,11 +85,11 @@ function positionToOffset({
   position,
   lines,
 }: {
-  position: {
-    line: number;
-    character: number;
+  readonly position: {
+    readonly line: number;
+    readonly character: number;
   };
-  lines: readonly string[];
+  readonly lines: readonly string[];
 },): number {
   return lines
     .slice(
@@ -128,11 +128,11 @@ function offsetToPosition({
   offset,
   lines,
 }: {
-  offset: number;
-  lines: readonly string[];
+  readonly offset: number;
+  readonly lines: readonly string[];
 },): {
-  line: number;
-  character: number;
+  readonly line: number;
+  readonly character: number;
 } {
   /**
    * Accumulator for offset remaining as we walk the lines.
@@ -200,16 +200,16 @@ export function mapCursorThroughEdits({
   originalText,
   newText,
 }: {
-  cursor: {
-    line: number;
-    character: number;
+  readonly cursor: {
+    readonly line: number;
+    readonly character: number;
   };
-  edits: TextEdit[];
-  originalText: string;
-  newText: string;
+  readonly edits: readonly TextEdit[];
+  readonly originalText: string;
+  readonly newText: string;
 },): {
-  line: number;
-  character: number;
+  readonly line: number;
+  readonly character: number;
 } {
   /** Pre-edit text split by `\n`; used to translate the original cursor to an absolute offset. */
   const originalLines = originalText.split('\n',);
@@ -247,16 +247,15 @@ export function mapCursorThroughEdits({
       lines: originalLines,
     },);
 
-    if (editEnd <= cursorOffset)
+    if (editEnd <= cursorOffset) {
       shift += edit.newText.length - (editEnd - editStart);
-    else if (editStart < cursorOffset) {
+      continue;
+    }
+    if (editStart < cursorOffset) {
       /** Cursor is inside this edit; clamp to end of replacement text. */
       shift += (editStart + edit.newText.length) - cursorOffset;
-      break;
     }
-    else {
-      break;
-    }
+    break;
   }
 
   /** Post-edit text split by `\n`; basis for translating the shifted offset back to a `(line, character)`. */

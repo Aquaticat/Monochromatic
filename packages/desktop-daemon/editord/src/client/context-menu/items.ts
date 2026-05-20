@@ -14,11 +14,11 @@ import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
  */
 export type ContextMenuItem = {
   /** Display label for the menu item. */
-  label: string;
+  readonly label: string;
   /** Callback invoked when the item is activated (click or Enter in input). */
-  action: (value?: string,) => void;
+  readonly action: (value?: string,) => void;
   /** When set, renders an inline input pre-filled with this value. */
-  defaultValue?: string;
+  readonly defaultValue?: string;
 };
 
 /**
@@ -48,8 +48,8 @@ export function renderButtonItem({
   item,
   onActivate,
 }: {
-  item: ContextMenuItem;
-  onActivate: (action: () => void,) => void;
+  readonly item: ContextMenuItem;
+  readonly onActivate: (action: () => void,) => void;
 },): HTMLElement {
   return h({
     tag: 'div',
@@ -88,8 +88,8 @@ export function renderInputItem({
   item,
   onActivate,
 }: {
-  item: ContextMenuItem;
-  onActivate: (action: () => void,) => void;
+  readonly item: ContextMenuItem;
+  readonly onActivate: (action: () => void,) => void;
 },): HTMLElement {
   /** Text input element captured into a const so the keydown handler can read its value. */
   const input = h({

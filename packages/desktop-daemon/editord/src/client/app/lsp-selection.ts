@@ -10,12 +10,14 @@
  * client stateless and avoiding stale-range bugs.
  */
 
-import type { EditorPane, } from '../editor/editor-pane.ts';
 import { doExpandSelection, } from '../selection/expand.ts';
 import { doShrinkSelection, } from '../selection/shrink.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
 
-import type { GetCurrentFilePathFn, } from './types.ts';
+import type {
+  EditorPaneHandle,
+  EditorWsClientHandle,
+  GetCurrentFilePathFn,
+} from './types.ts';
 
 /**
  * Wires expand/shrink selection onto the editor.
@@ -41,12 +43,12 @@ export function wireSelectionRange({
   editorPane,
   getCurrentFilePath,
 }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  getCurrentFilePath: GetCurrentFilePathFn;
+  readonly ws: EditorWsClientHandle;
+  readonly editorPane: EditorPaneHandle;
+  readonly getCurrentFilePath: GetCurrentFilePathFn;
 },): {
-  expandSelection: () => void;
-  shrinkSelection: () => void;
+  readonly expandSelection: () => void;
+  readonly shrinkSelection: () => void;
 } {
   return {
     expandSelection: function expand(): void {

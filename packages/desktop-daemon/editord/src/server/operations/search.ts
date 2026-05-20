@@ -33,7 +33,7 @@ const MAX_CONTENT_RESULTS = 30;
 /** Result of a search operation. */
 type SearchOperationResult = {
   /** Combined search results (file-path matches first, then content matches). */
-  results: SearchResult[];
+  readonly results: readonly SearchResult[];
 };
 
 /**
@@ -41,11 +41,11 @@ type SearchOperationResult = {
  * Only the fields we use are typed; the rest is ignored.
  */
 type RgJsonMatch = {
-  type: 'match';
-  data: {
-    path: { text: string; };
-    lines: { text: string; };
-    line_number: number;
+  readonly type: 'match';
+  readonly data: {
+    readonly path: { readonly text: string; };
+    readonly lines: { readonly text: string; };
+    readonly line_number: number;
   };
 };
 
@@ -62,7 +62,7 @@ type RgJsonMatch = {
  *
  * @returns whether the query contains an uppercase character
  */
-function hasUpperCase({ query, }: { query: string; },): boolean {
+function hasUpperCase({ query, }: { readonly query: string; },): boolean {
   return query !== query.toLowerCase();
 }
 
@@ -87,9 +87,9 @@ function searchFiles({
   query,
   signal,
 }: {
-  rootDir: string;
-  query: string;
-  signal: AbortSignal | undefined;
+  readonly rootDir: string;
+  readonly query: string;
+  readonly signal: AbortSignal | undefined;
 },): Promise<SearchResult[]> {
   /** Smart-case: an uppercase character in the query enables case sensitivity. */
   const caseSensitive = hasUpperCase({ query, },);
@@ -143,9 +143,9 @@ function searchContents({
   query,
   signal,
 }: {
-  rootDir: string;
-  query: string;
-  signal: AbortSignal | undefined;
+  readonly rootDir: string;
+  readonly query: string;
+  readonly signal: AbortSignal | undefined;
 },): Promise<SearchResult[]> {
   return streamRg({
     args: [
@@ -163,7 +163,7 @@ function searchContents({
       try {
         /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- rg --json output is typed; we only process 'match' entries */
         /** Untyped intermediate so the discriminant can be checked before narrowing. */
-        const parsed = JSON.parse(line,) as RgJsonMatch | { type: string; };
+        const parsed = JSON.parse(line,) as RgJsonMatch | { readonly type: string; };
         /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         if (parsed.type !== 'match')
           return null;
@@ -221,9 +221,9 @@ export async function search({
   query,
   signal,
 }: {
-  rootDir: string;
-  query: string;
-  signal?: AbortSignal;
+  readonly rootDir: string;
+  readonly query: string;
+  readonly signal?: AbortSignal;
 },): Promise<SearchOperationResult> {
   l.info(`searching for "${query}"`,);
 

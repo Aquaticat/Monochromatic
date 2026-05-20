@@ -23,7 +23,7 @@ import type {
  * const result = formatHintLabel({ hint: { position: { line: 5, character: 10 }, label: ": number", kind: 1 }, });
  * ```
  */
-export function formatHintLabel({ hint, }: { hint: InlayHint; },): string {
+export function formatHintLabel({ hint, }: { readonly hint: InlayHint; },): string {
   /** Leading whitespace requested by the hint metadata; empty string when no padding is requested. */
   const padLeft = hint.paddingLeft === true ? ' ' : '';
   /** Trailing whitespace requested by the hint metadata; empty string when no padding is requested. */
@@ -85,7 +85,7 @@ export function formatHintLabel({ hint, }: { hint: InlayHint; },): string {
  * ```
  */
 export function formatDiagnosticLabel(
-  { diagnostic, }: { diagnostic: Diagnostic; },
+  { diagnostic, }: { readonly diagnostic: Diagnostic; },
 ): string {
   /** Severity-with-source tag rendered ahead of the message; falls back to bare severity when the source is empty. */
   const prefix = diagnostic.source !== ''
@@ -118,7 +118,7 @@ const LOWEST_PRIORITY = 4;
  * ```
  */
 export function findWorstSeverity(
-  { diagnostics, }: { diagnostics: Diagnostic[]; },
+  { diagnostics, }: { readonly diagnostics: readonly Diagnostic[]; },
 ): string {
   /** Severity string of the worst diagnostic seen so far; empty until the first match. */
   let worst = '';

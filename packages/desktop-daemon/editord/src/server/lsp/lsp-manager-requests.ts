@@ -63,11 +63,11 @@ async function withClient<T,>({
   fallback,
   request,
 }: {
-  pool: LspPool;
-  serverType: 'tsgo' | 'dprint';
-  path: string;
-  fallback: T;
-  request: (client: LspClient,) => Promise<T>;
+  readonly pool: LspPool;
+  readonly serverType: 'tsgo' | 'dprint';
+  readonly path: string;
+  readonly fallback: T;
+  readonly request: (client: LspClient,) => Promise<T>;
 },): Promise<T> {
   /** Pool-resolved LSP client; `null` when no server is available for this file. */
   const c = await pool.resolve({
@@ -97,7 +97,7 @@ export function managerHover({
   pool,
   ...pos
 }: {
-  pool: LspPool;
+  readonly pool: LspPool;
 } & FilePosition,): Promise<LspHover | null> {
   return withClient({
     pool,
@@ -122,7 +122,7 @@ export function managerCompletion({
   pool,
   ...pos
 }: {
-  pool: LspPool;
+  readonly pool: LspPool;
 } & FilePosition,): Promise<LspCompletionItem[]> {
   return withClient({
     pool,
@@ -147,8 +147,8 @@ export function managerFormat({
   pool,
   path,
 }: {
-  pool: LspPool;
-  path: string;
+  readonly pool: LspPool;
+  readonly path: string;
 },): Promise<LspTextEdit[]> {
   return withClient({
     pool,
@@ -173,7 +173,7 @@ export function managerGotoDefinition({
   pool,
   ...pos
 }: {
-  pool: LspPool;
+  readonly pool: LspPool;
 } & FilePosition,): Promise<FilePosition | null> {
   return withClient({
     pool,
@@ -198,7 +198,7 @@ export function managerReferences({
   pool,
   ...pos
 }: {
-  pool: LspPool;
+  readonly pool: LspPool;
 } & FilePosition,): Promise<FilePosition[]> {
   return withClient({
     pool,
@@ -224,9 +224,9 @@ export function managerInlayHints({
   path,
   range,
 }: {
-  pool: LspPool;
-  path: string;
-  range: LspRange;
+  readonly pool: LspPool;
+  readonly path: string;
+  readonly range: LspRange;
 },): Promise<LspInlayHint[]> {
   return withClient({
     pool,
@@ -253,11 +253,11 @@ export function managerSelectionRange({
   path,
   positions,
 }: {
-  pool: LspPool;
-  path: string;
-  positions: {
-    line: number;
-    character: number;
+  readonly pool: LspPool;
+  readonly path: string;
+  readonly positions: readonly {
+    readonly line: number;
+    readonly character: number;
   }[];
 },): Promise<LspSelectionRange[]> {
   return withClient({
@@ -284,7 +284,7 @@ export function managerPrepareRename({
   pool,
   ...pos
 }: {
-  pool: LspPool;
+  readonly pool: LspPool;
 } & FilePosition,): Promise<PrepareRenameResult | null> {
   return withClient({
     pool,
@@ -312,11 +312,11 @@ export function managerRename({
   character,
   newName,
 }: {
-  pool: LspPool;
-  path: string;
-  line: number;
-  character: number;
-  newName: string;
+  readonly pool: LspPool;
+  readonly path: string;
+  readonly line: number;
+  readonly character: number;
+  readonly newName: string;
 },): Promise<LspWorkspaceEdit | null> {
   return withClient({
     pool,

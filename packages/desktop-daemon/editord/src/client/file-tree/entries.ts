@@ -26,8 +26,8 @@ export function childPath(
     parentPath,
     name,
   }: {
-    parentPath: string;
-    name: string;
+    readonly parentPath: string;
+    readonly name: string;
   },
 ): string {
   return parentPath === '/' ? `/${name}` : `${parentPath}/${name}`;
@@ -50,7 +50,7 @@ export function childPath(
  * ```
  */
 export function buildRecencyIndex(
-  { recentPaths, }: { recentPaths: readonly string[]; },
+  { recentPaths, }: { readonly recentPaths: readonly string[]; },
 ): Map<string, number> {
   /** Position-keyed map; lower index means more recent. */
   const index = new Map<string, number>();
@@ -113,7 +113,7 @@ function isTransientDirName({ name, }: { readonly name: string; },): boolean {
  *
  * @param cache - prefetch cache map to evict from
  */
-function evictPrefetchCache({ cache, }: { cache: Map<string, DirEntry[]>; },): void {
+function evictPrefetchCache({ cache, }: { readonly cache: Map<string, readonly DirEntry[]>; },): void {
   if (cache.size <= MAX_PREFETCH_CACHE_SIZE)
     return;
   /**
@@ -156,10 +156,10 @@ export async function preloadChildren({
   fetchDir,
   prefetchCache,
 }: {
-  parentPath: string;
-  entries: DirEntry[];
-  fetchDir: (path: string,) => Promise<DirEntry[]>;
-  prefetchCache: Map<string, DirEntry[]>;
+  readonly parentPath: string;
+  readonly entries: readonly DirEntry[];
+  readonly fetchDir: (path: string,) => Promise<readonly DirEntry[]>;
+  readonly prefetchCache: Map<string, readonly DirEntry[]>;
 },): Promise<void> {
   await Promise.allSettled(
     entries

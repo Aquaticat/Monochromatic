@@ -20,9 +20,9 @@ import { pathToUri, } from './uri.ts';
 /** Result of a successful `textDocument/prepareRename` request. */
 export type PrepareRenameResult = {
   /** Range of the symbol to rename. */
-  range: LspRange;
+  readonly range: LspRange;
   /** Current name of the symbol (used as placeholder in the rename input). */
-  placeholder: string;
+  readonly placeholder: string;
 };
 
 /**
@@ -50,10 +50,10 @@ export async function requestPrepareRename({
   line,
   character,
 }: {
-  client: LspClient;
-  path: string;
-  line: number;
-  character: number;
+  readonly client: LspClient;
+  readonly path: string;
+  readonly line: number;
+  readonly character: number;
 },): Promise<PrepareRenameResult | null> {
   /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
@@ -131,11 +131,11 @@ export async function requestRename({
   character,
   newName,
 }: {
-  client: LspClient;
-  path: string;
-  line: number;
-  character: number;
-  newName: string;
+  readonly client: LspClient;
+  readonly path: string;
+  readonly line: number;
+  readonly character: number;
+  readonly newName: string;
 },): Promise<LspWorkspaceEdit | null> {
   /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);

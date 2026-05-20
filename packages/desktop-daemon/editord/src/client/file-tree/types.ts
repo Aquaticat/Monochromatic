@@ -11,29 +11,29 @@
  */
 export type ContextAction =
   | {
-    kind: 'delete';
-    path: string;
+    readonly kind: 'delete';
+    readonly path: string;
   }
   | {
-    kind: 'copy';
-    path: string;
-    destPath: string;
+    readonly kind: 'copy';
+    readonly path: string;
+    readonly destPath: string;
   }
   | {
-    kind: 'move';
-    path: string;
-    destPath: string;
+    readonly kind: 'move';
+    readonly path: string;
+    readonly destPath: string;
   }
   | {
-    kind: 'new';
-    parentPath: string;
-    name: string;
+    readonly kind: 'new';
+    readonly parentPath: string;
+    readonly name: string;
   }
   | {
-    kind: 'openInTerminal';
-    path: string;
+    readonly kind: 'openInTerminal';
+    readonly path: string;
   }
   | {
-    kind: 'openInDefaultApp';
-    path: string;
+    readonly kind: 'openInDefaultApp';
+    readonly path: string;
   };

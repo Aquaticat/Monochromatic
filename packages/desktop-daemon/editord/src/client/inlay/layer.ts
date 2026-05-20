@@ -71,9 +71,9 @@ export function applyInlayAnnotations({
   hints,
   diagnostics,
 }: {
-  editor: HTMLElement;
-  hints: InlayHint[];
-  diagnostics: Diagnostic[];
+  readonly editor: HTMLElement;
+  readonly hints: readonly InlayHint[];
+  readonly diagnostics: readonly Diagnostic[];
 },): void {
   /** Inter-to-mono space ratio used when composing per-line annotation strings. */
   const spaceRatio = measureSpaceRatio({ editor, },);
@@ -137,7 +137,7 @@ export function applyInlayAnnotations({
  * clearInlayAnnotations({ editor: editor, });
  * ```
  */
-export function clearInlayAnnotations({ editor, }: { editor: HTMLElement; },): void {
+export function clearInlayAnnotations({ editor, }: { readonly editor: HTMLElement; },): void {
   for (const line of annotatedLines) {
     /** Line div whose annotation attributes are being cleared on this teardown pass. */
     const child = editor.children[line];

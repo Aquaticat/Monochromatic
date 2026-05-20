@@ -31,8 +31,8 @@ export function handleTextEditKey({
   event,
   deps,
 }: {
-  event: KeyboardEvent;
-  deps: TextOpsDeps;
+  readonly event: KeyboardEvent;
+  readonly deps: TextOpsDeps;
 },): boolean {
   if ((event.ctrlKey || event.metaKey) && (!event.shiftKey) && (event.key === 'z')) {
     event.preventDefault();

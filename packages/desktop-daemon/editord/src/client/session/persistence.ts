@@ -5,12 +5,13 @@
  * that persist UI state to localStorage via debounced writes.
  */
 
-import type { EditorPane, } from '../editor/editor-pane.ts';
-import type { FileTree, } from '../file-tree/file-tree.ts';
-import type { SearchOverlay, } from '../search/search-overlay.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
-
-import type { GetCurrentFilePathFn, } from '../app/types.ts';
+import type {
+  EditorPaneHandle,
+  EditorWsClientHandle,
+  FileTreeHandle,
+  GetCurrentFilePathFn,
+  SearchOverlayHandle,
+} from '../app/types.ts';
 import { createDebouncedSave, } from './debounce.ts';
 import type { SessionState, } from './state.ts';
 
@@ -46,14 +47,14 @@ export function wireSessionPersistence(
     getCurrentFilePath,
     getRecentFiles,
   }: {
-    ws: EditorWsClient;
-    editorPane: EditorPane;
-    fileTree: FileTree;
-    searchOverlay: SearchOverlay;
-    getCurrentFilePath: GetCurrentFilePathFn;
-    getRecentFiles: () => string[];
+    readonly ws: EditorWsClientHandle;
+    readonly editorPane: EditorPaneHandle;
+    readonly fileTree: FileTreeHandle;
+    readonly searchOverlay: SearchOverlayHandle;
+    readonly getCurrentFilePath: GetCurrentFilePathFn;
+    readonly getRecentFiles: () => readonly string[];
   },
-): { saveNow: () => void; } {
+): { readonly saveNow: () => void; } {
   /**
    * Captures the current UI state for persistence.
    *

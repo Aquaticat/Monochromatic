@@ -24,15 +24,15 @@ const BINARY_PROBE_SIZE = 8_192;
 /** Result of opening a file. */
 export type OpenResult = {
   /** Content category driving viewer selection. */
-  kind: FileKind;
+  readonly kind: FileKind;
   /** Absolute resolved path. */
-  path: string;
+  readonly path: string;
   /** File content: UTF-8 text, hex dump, or empty string for media. */
-  content: string;
+  readonly content: string;
   /** On-disk file size in bytes, available for text and binary kinds. */
-  size?: number;
+  readonly size?: number;
   /** Trimmed ffprobe output for media files, omitting version/build header. */
-  mediaInfo?: string;
+  readonly mediaInfo?: string;
 };
 
 /**
@@ -57,8 +57,8 @@ export async function openFile(
     rootDir,
     path,
   }: {
-    rootDir: string;
-    path: string;
+    readonly rootDir: string;
+    readonly path: string;
   },
 ): Promise<OpenResult> {
   /** Resolved root-rebased path used by every downstream filesystem call. */

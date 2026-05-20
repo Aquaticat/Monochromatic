@@ -4,12 +4,14 @@
  * Separated from hover wiring to keep files under max-lines.
  */
 
+import type {
+  EditorWsClientHandle,
+  HoverPopupHandle,
+} from '../app/types.ts';
 import {
   l,
   tagged,
 } from '../log.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
-import type { HoverPopup, } from './hover-popup.ts';
 
 /** Tagged logger for hover requests. */
 const hoverLog = tagged({
@@ -48,13 +50,13 @@ export async function doRequestHover({
   x,
   y,
 }: {
-  ws: EditorWsClient;
-  hoverPopup: HoverPopup;
-  path: string;
-  line: number;
-  character: number;
-  x: number;
-  y: number;
+  readonly ws: EditorWsClientHandle;
+  readonly hoverPopup: HoverPopupHandle;
+  readonly path: string;
+  readonly line: number;
+  readonly character: number;
+  readonly x: number;
+  readonly y: number;
 },): Promise<void> {
   try {
     /** Hover text from the language server; empty string means "nothing to show". */

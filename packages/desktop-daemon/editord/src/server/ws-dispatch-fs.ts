@@ -32,7 +32,7 @@ function isFileLockError(error: unknown,): boolean {
   if (((typeof error) !== 'object') || (error === null))
     return false;
   /** Node `errno` code lifted off the caught error so the lock-error check stays local. */
-  const { code, } = error as { code?: string; };
+  const { code, } = error as { readonly code?: string; };
   return (code === 'EBUSY') || (code === 'EPERM');
 }
 
@@ -58,9 +58,9 @@ async function retryOnFileLock<T,>({
   path,
   lspManager,
 }: {
-  operation: () => Promise<T>;
-  path: string;
-  lspManager: LspManager | null;
+  readonly operation: () => Promise<T>;
+  readonly path: string;
+  readonly lspManager: LspManager | null;
 },): Promise<T> {
   try {
     return await operation();
@@ -85,8 +85,8 @@ function sendFsActionDone({
   peer,
   id,
 }: {
-  peer: Peer;
-  id: string;
+  readonly peer: Peer;
+  readonly id: string;
 },): void {
   sendJson({
     peer,
@@ -125,11 +125,11 @@ export async function dispatchFsMessage({
   lspManager,
   dirWatcher,
 }: {
-  peer: Peer;
-  parsed: ClientMessage;
-  rootDir: string;
-  lspManager: LspManager | null;
-  dirWatcher: DirWatcher | null;
+  readonly peer: Peer;
+  readonly parsed: ClientMessage;
+  readonly rootDir: string;
+  readonly lspManager: LspManager | null;
+  readonly dirWatcher: DirWatcher | null;
 },): Promise<boolean> {
   if (parsed.type === 'deleteEntry') {
     /** Resolved absolute path of the deleted entry; required to suppress watcher echoes. */

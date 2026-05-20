@@ -6,16 +6,17 @@
  * and applies the resulting edits.
  */
 
-import type { EditorPane, } from '../editor/editor-pane.ts';
 import {
   l,
   tagged,
 } from '../log.ts';
-import type { RenameInput, } from '../rename/rename-input.ts';
 import { showCursorToast, } from '../toast/toast.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
-
-import type { GetCurrentFilePathFn, } from './types.ts';
+import type {
+  EditorPaneHandle,
+  EditorWsClientHandle,
+  GetCurrentFilePathFn,
+  RenameInputHandle,
+} from './types.ts';
 
 /** Tagged logger for rename operations. */
 const renameLog = tagged({
@@ -46,10 +47,10 @@ export async function initiateRename({
   renameInput,
   getCurrentFilePath,
 }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  renameInput: RenameInput;
-  getCurrentFilePath: GetCurrentFilePathFn;
+  readonly ws: EditorWsClientHandle;
+  readonly editorPane: EditorPaneHandle;
+  readonly renameInput: RenameInputHandle;
+  readonly getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
   /** Skip when no file is open; LSP needs a target. */
   const path = getCurrentFilePath();
@@ -132,12 +133,12 @@ export async function performRename({
   line,
   character,
 }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  getCurrentFilePath: GetCurrentFilePathFn;
-  newName: string;
-  line: number;
-  character: number;
+  readonly ws: EditorWsClientHandle;
+  readonly editorPane: EditorPaneHandle;
+  readonly getCurrentFilePath: GetCurrentFilePathFn;
+  readonly newName: string;
+  readonly line: number;
+  readonly character: number;
 },): Promise<void> {
   /** Skip when no file is open; LSP needs a target. */
   const path = getCurrentFilePath();

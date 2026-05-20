@@ -55,8 +55,8 @@ export function applyHighlights({
   editor,
   parser,
 }: {
-  editor: HTMLDivElement;
-  parser: Parser;
+  readonly editor: HTMLDivElement;
+  readonly parser: Parser;
 },): void {
   /** Per-line text content; needed to map Lezer offsets back to per-line DOM nodes. */
   const lines = getLineTexts({ editor, },);

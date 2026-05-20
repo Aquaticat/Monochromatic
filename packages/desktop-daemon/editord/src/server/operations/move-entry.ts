@@ -35,13 +35,13 @@ export async function moveEntry(
     path,
     destPath,
   }: {
-    rootDir: string;
-    path: string;
-    destPath: string;
+    readonly rootDir: string;
+    readonly path: string;
+    readonly destPath: string;
   },
 ): Promise<{
-  source: string;
-  dest: string;
+  readonly source: string;
+  readonly dest: string;
 }> {
   /** Source rebased so `path/..` cannot escape the root. */
   const absoluteSource = assertWithinRoot({

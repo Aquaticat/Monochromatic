@@ -24,7 +24,7 @@ import {
  * // => 'file:///home/user/project/src/main.ts'
  * ```
  */
-export function pathToUri({ path, }: { path: string; },): string {
+export function pathToUri({ path, }: { readonly path: string; },): string {
   return pathToFileURL(path,).href;
 }
 
@@ -43,6 +43,6 @@ export function pathToUri({ path, }: { path: string; },): string {
  * const result = uriToPath({ uri: 'file:///home/user/project/src/main.ts', });
  * ```
  */
-export function uriToPath({ uri, }: { uri: string; },): string {
+export function uriToPath({ uri, }: { readonly uri: string; },): string {
   return uri.startsWith('file://',) ? fileURLToPath(uri,) : uri;
 }

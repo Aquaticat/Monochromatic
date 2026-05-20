@@ -9,11 +9,13 @@
 import type {
   ClientNotification,
   ClientRequest,
-  Diagnostic,
-  FsChangeType,
   RequestResponseMap,
   ServerMessage,
 } from '../../../protocol.ts';
+import type {
+  ClientDiagnosticsHandler,
+  FileChangedHandler,
+} from '../app/types.ts';
 import {
   l as rootLogger,
   tagged,
@@ -30,10 +32,10 @@ const l = tagged({
 
 /** Pending request awaiting a server response. */
 type PendingRequest = {
-  resolve: (message: ServerMessage,) => void;
-  reject: (error: Error,) => void;
+  readonly resolve: (message: ServerMessage,) => void;
+  readonly reject: (error: Error,) => void;
   /** Timeout handle that rejects the request after {@link REQUEST_TIMEOUT_MS}. */
-  timeoutId: number;
+  readonly timeoutId: number;
 };
 
 /** Maximum time to wait for a server response before rejecting (milliseconds). */
@@ -55,104 +57,124 @@ const RECONNECT_BACKOFF_FACTOR = 2;
 //endregion Reconnect constants
 
 /**
- * Typed WebSocket client for editord communication.
+ * Options for {@link createEditorWsClient}.
+ */
+export type EditorWsClientOptions = {
+  /** Server port number. */
+  readonly port: string;
+  /** Authentication token. */
+  readonly token: string;
+};
+
+/** Mutable WebSocket client state captured by the factory closure. */
+type EditorWsClientState = {
+  /** Underlying WebSocket connection. */
+  ws: WebSocket;
+  /** Counter for generating unique request IDs. */
+  nextId: number;
+  /** Root directory path reported by the server on connection. */
+  rootDir: string;
+  /** Stable filesystem identifier reported by the server on connection. */
+  fsId: string;
+  /** Callback invoked when the server pushes a file change notification. */
+  onFileChanged: FileChangedHandler | null;
+  /** Callback invoked when the server pushes diagnostics for a file. */
+  onDiagnostics: ClientDiagnosticsHandler | null;
+  /** Resolves when the WebSocket connection is established and authenticated. */
+  ready: Promise<void>;
+  /** Current reconnect delay in milliseconds; reset on successful connection. */
+  reconnectDelay: number;
+};
+
+/**
+ * Typed WebSocket client handle returned by {@link createEditorWsClient}.
+ */
+export type EditorWsClient = Readonly<{
+  /** Root directory path reported by the server on connection. */
+  readonly rootDir: string;
+  /** Stable filesystem identifier reported by the server on connection. */
+  readonly fsId: string;
+  /** Resolves when the WebSocket connection is established and authenticated. */
+  readonly ready: Promise<void>;
+  /** Installs file-change push handler. */
+  readonly setFileChangedHandler: (handler: FileChangedHandler | null,) => void;
+  /** Installs diagnostics push handler. */
+  readonly setDiagnosticsHandler: (handler: ClientDiagnosticsHandler | null,) => void;
+  /** Sends a typed request and waits for the correlated response. */
+  readonly request: <const TReq extends ClientRequest,>(
+    message: TReq,
+  ) => Promise<RequestResponseMap[TReq['type']]>;
+  /** Sends a notification to the server. */
+  readonly notify: (message: ClientNotification,) => Promise<void>;
+}>;
+
+/**
+ * Creates a typed WebSocket client for editord communication.
  *
  * Connects to the editord WebSocket endpoint with token authentication,
  * provides `request()` for correlated request/response pairs, and
- * invokes `onFileChanged` for server push notifications.
+ * invokes file change handlers for server push notifications.
  * Pending requests are automatically rejected when the connection closes.
  * Reconnects automatically with exponential backoff when the connection drops.
+ *
+ * @param port - server port number
+ *
+ * @param token - authentication token
+ *
+ * @returns frozen WebSocket client handle
+ *
+ * @example
+ * ```ts
+ * const client = createEditorWsClient({ port: '4400', token: 'dev-token', });
+ * await client.ready;
+ * ```
  */
-export class EditorWsClient {
-  /** Underlying WebSocket connection. */
-  #ws: WebSocket;
-
+export function createEditorWsClient({
+  port,
+  token,
+}: EditorWsClientOptions,): EditorWsClient {
+  /** WebSocket URL for connection and reconnection. */
+  const wsUrl = `ws://localhost:${port}/_ws?token=${token}`;
   /** Map of pending requests keyed by request ID. */
-  readonly #pending = new Map<string, PendingRequest>();
-
-  /** Counter for generating unique request IDs. */
-  #nextId = 0;
-
-  /** Root directory path reported by the server on connection. */
-  rootDir = '';
-
-  /** Stable filesystem identifier reported by the server on connection. */
-  fsId = '';
-
-  /** Callback invoked when the server pushes a file change notification. */
-  onFileChanged:
-    | ((
-      event: {
-        path: string;
-        changeType: FsChangeType;
-        isDirectory: boolean;
-      },
-    ) => void)
-    | null = null;
-
-  /** Callback invoked when the server pushes diagnostics for a file. */
-  onDiagnostics: ((event: {
-    path: string;
-    diagnostics: Diagnostic[];
-  },) => void) | null = null;
-
-  /** Resolves when the WebSocket connection is established and authenticated. */
-  ready: Promise<void>;
-
-  /** WebSocket URL for reconnection. */
-  readonly #wsUrl: string;
-
-  /** Current reconnect delay in milliseconds; reset on successful connection. */
-  #reconnectDelay = RECONNECT_BASE_MS;
+  const pending = new Map<string, PendingRequest>();
+  /** Mutable connection and handler state kept private to this client. */
+  const state: EditorWsClientState = {
+    ws: new WebSocket(wsUrl,),
+    nextId: 0,
+    rootDir: '',
+    fsId: '',
+    onFileChanged: null,
+    onDiagnostics: null,
+    ready: Promise.resolve(),
+    reconnectDelay: RECONNECT_BASE_MS,
+  };
 
   /**
-   * Creates a new WebSocket client and connects to editord.
+   * Installs file-change push handler.
    *
-   * @param port - server port number
+   * @param handler - handler to install, or null to clear
    *
-   * @param token - authentication token
+   * @example
+   * ```ts
+   * client.setFileChangedHandler(function handleChange(event) { console.info(event.path); });
+   * ```
    */
-  constructor({
-    port,
-    token,
-  }: {
-    port: string;
-    token: string;
-  },) {
-    this.#wsUrl = `ws://localhost:${port}/_ws?token=${token}`;
-    this.#ws = new WebSocket(this.#wsUrl,);
-    this.ready = this.#wireConnection();
+  function setFileChangedHandler(handler: FileChangedHandler | null,): void {
+    state.onFileChanged = handler;
   }
 
-  /** Wires message, close, and handshake handlers onto the current WebSocket. */
-  #wireConnection(): Promise<void> {
-    /** Handshake promise returned to the caller so `ready` resolves once authenticated. */
-    const handshakePromise = this.#performHandshake();
-    this.#ws.addEventListener(
-      'message',
-      this.#handleMessage.bind(this,),
-    );
-    this.#ws.addEventListener(
-      'close',
-      this.#handleClose.bind(this,),
-    );
-    return handshakePromise;
-  }
-
-  /** Performs the server handshake using the extracted handshake module. */
-  #performHandshake(): Promise<void> {
-    /** Captured `this` so the handshake callback can mutate instance fields without `this` rebinding. */
-    const client = this;
-    return performHandshake({
-      ws: this.#ws,
-      onConnected: function setFields({
-        rootDir,
-        fsId,
-      },) {
-        client.rootDir = rootDir;
-        client.fsId = fsId;
-      },
-    },);
+  /**
+   * Installs diagnostics push handler.
+   *
+   * @param handler - handler to install, or null to clear
+   *
+   * @example
+   * ```ts
+   * client.setDiagnosticsHandler(function handleDiagnostics(event) { console.info(event.path); });
+   * ```
+   */
+  function setDiagnosticsHandler(handler: ClientDiagnosticsHandler | null,): void {
+    state.onDiagnostics = handler;
   }
 
   /**
@@ -163,7 +185,7 @@ export class EditorWsClient {
    * without manual narrowing. Error responses reject the promise rather than
    * resolving with an error variant.
    *
-   * @param message - client message (without `id`; it is auto-generated)
+   * @param message - client message without `id`; it is auto-generated
    *
    * @returns success-side ServerMessage variant matching request type
    *
@@ -174,20 +196,19 @@ export class EditorWsClient {
    * const { content, kind } = await ws.request({ type: 'open', path });
    * ```
    */
-  async request<TReq extends ClientRequest,>(
+  async function request<const TReq extends ClientRequest,>(
     message: TReq,
   ): Promise<RequestResponseMap[TReq['type']]> {
-    await this.ready;
+    await state.ready;
 
     /** Monotonically increasing correlation ID assigned to this request. */
-    const id = String(this.#nextId++,);
+    const id = String(state.nextId,);
+    state.nextId += 1;
     /** Request payload with the generated `id` attached for server correlation. */
     const fullMessage = {
       ...message,
       id,
     };
-    /** Local alias for the pending-request map so the inner Promise executor closes over it without `this`. */
-    const pending = this.#pending;
 
     /* oxlint-disable eslint-plugin-promise/avoid-new -- pending request tracking requires storing resolve/reject callbacks in a map */
     /** Promise that resolves with the matching response or rejects on timeout/close. */
@@ -221,8 +242,8 @@ export class EditorWsClient {
     );
     /* oxlint-enable eslint-plugin-promise/avoid-new */
 
-    this.#ws.send(JSON.stringify(fullMessage,),);
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- wire correlation by id guarantees resolved value is the success-side variant matching TReq['type']; error variants reject through #handleMessage
+    state.ws.send(JSON.stringify(fullMessage,),);
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- wire correlation by id guarantees resolved value is the success-side variant matching TReq['type']; error variants reject through handleMessage
     return responsePromise as Promise<RequestResponseMap[TReq['type']]>;
   }
 
@@ -230,11 +251,11 @@ export class EditorWsClient {
    * Sends a notification to the server (fire-and-forget, no response expected).
    * Does not include an `id` field and does not await a response.
    *
-   * @param message - notification payload (without `id`)
+   * @param message - notification payload without `id`
    */
-  async notify(message: ClientNotification,): Promise<void> {
-    await this.ready;
-    this.#ws.send(JSON.stringify(message,),);
+  async function notify(message: ClientNotification,): Promise<void> {
+    await state.ready;
+    state.ws.send(JSON.stringify(message,),);
   }
 
   /**
@@ -243,7 +264,7 @@ export class EditorWsClient {
    *
    * @param event - WebSocket message event
    */
-  #handleMessage(event: MessageEvent,): void {
+  function handleMessage(event: MessageEvent,): void {
     /* oxlint-disable eslint/init-declarations -- try/catch initialization with early return requires split declaration */
     /**
      * Parsed message body; declared outside the try block so the catch can short-circuit before assignment.
@@ -266,7 +287,7 @@ export class EditorWsClient {
 
     // Push notifications: no request ID
     if (data.type === 'fileChanged') {
-      this.onFileChanged?.({
+      state.onFileChanged?.({
         path: data.path,
         changeType: data.changeType,
         isDirectory: data.isDirectory,
@@ -274,7 +295,7 @@ export class EditorWsClient {
       return;
     }
     if (data.type === 'diagnostics') {
-      this.onDiagnostics?.({
+      state.onDiagnostics?.({
         path: data.path,
         diagnostics: data.diagnostics,
       },);
@@ -284,55 +305,67 @@ export class EditorWsClient {
     // Correlated response
     if ('id' in data) {
       /** Tracked request matching this response's `id`, or undefined if it already timed out. */
-      const pending = this.#pending.get(data.id,);
-      if (pending !== undefined) {
-        this.#pending.delete(data.id,);
-        clearTimeout(pending.timeoutId,);
+      const pendingRequest = pending.get(data.id,);
+      if (pendingRequest !== undefined) {
+        pending.delete(data.id,);
+        clearTimeout(pendingRequest.timeoutId,);
         if (data.type === 'error')
-          pending.reject(new Error(data.message,),);
+          pendingRequest.reject(new Error(data.message,),);
         else
-          pending.resolve(data,);
+          pendingRequest.resolve(data,);
       }
     }
   }
 
-  /**
-   * Rejects all pending requests when the WebSocket connection closes,
-   * then schedules a reconnection attempt with exponential backoff.
-   */
-  #handleClose(): void {
-    /** Rejection reason shared by every pending request so each caller sees the same close cause. */
-    const closeError = new Error('WebSocket connection closed',);
-    for (const [, pending,] of this.#pending) {
-      clearTimeout(pending.timeoutId,);
-      pending.reject(closeError,);
-    }
-    this.#pending.clear();
-    this.#scheduleReconnect();
+  /** Performs the server handshake using the extracted handshake module. */
+  function performHandshakeForConnection(): Promise<void> {
+    return performHandshake({
+      ws: state.ws,
+      onConnected: function setFields({
+        rootDir,
+        fsId,
+      },) {
+        state.rootDir = rootDir;
+        state.fsId = fsId;
+      },
+    },);
+  }
+
+  /** Wires message, close, and handshake handlers onto the current WebSocket. */
+  function wireConnection(): Promise<void> {
+    /** Handshake promise returned to the caller so `ready` resolves once authenticated. */
+    const handshakePromise = performHandshakeForConnection();
+    state.ws.addEventListener(
+      'message',
+      handleMessage,
+    );
+    state.ws.addEventListener(
+      'close',
+      handleClose,
+    );
+    return handshakePromise;
   }
 
   /**
    * Schedules a reconnection attempt after an exponentially increasing delay.
    * Resets the delay to {@link RECONNECT_BASE_MS} on successful reconnection.
    */
-  #scheduleReconnect(): void {
+  function scheduleReconnect(): void {
     /** Current backoff delay captured before being doubled for the next attempt. */
-    const delay = this.#reconnectDelay;
-    this.#reconnectDelay = Math.min(
+    const delay = state.reconnectDelay;
+    state.reconnectDelay = Math.min(
       delay * RECONNECT_BACKOFF_FACTOR,
       RECONNECT_MAX_MS,
     );
     l.info(`reconnecting in ${delay}ms`,);
-    /** Captured `this` so the timer callback can replace WebSocket/ready fields without `this` rebinding. */
-    const client = this;
     globalThis.setTimeout(
       function attemptReconnect() {
-        client.#ws = new WebSocket(client.#wsUrl,);
-        client.ready = client.#wireConnection();
+        state.ws = new WebSocket(wsUrl,);
+        state.ready = wireConnection();
         void (async function awaitReconnect(): Promise<void> {
           try {
-            await client.ready;
-            client.#reconnectDelay = RECONNECT_BASE_MS;
+            await state.ready;
+            state.reconnectDelay = RECONNECT_BASE_MS;
             l.info('reconnected',);
           }
           catch {
@@ -343,4 +376,52 @@ export class EditorWsClient {
       delay,
     );
   }
+
+  /**
+   * Rejects all pending requests when the WebSocket connection closes,
+   * then schedules a reconnection attempt with exponential backoff.
+   */
+  function handleClose(): void {
+    /** Rejection reason shared by every pending request so each caller sees the same close cause. */
+    const closeError = new Error('WebSocket connection closed',);
+    pending.forEach(function rejectPending(pendingRequest,): void {
+      clearTimeout(pendingRequest.timeoutId,);
+      pendingRequest.reject(closeError,);
+    },);
+    pending.clear();
+    scheduleReconnect();
+  }
+
+  state.ready = wireConnection();
+
+  return Object.freeze({
+    /**
+     * Root directory path reported by the server on connection.
+     *
+     * @returns current root directory
+     */
+    get rootDir(): string {
+      return state.rootDir;
+    },
+    /**
+     * Stable filesystem identifier reported by the server on connection.
+     *
+     * @returns current filesystem identifier
+     */
+    get fsId(): string {
+      return state.fsId;
+    },
+    /**
+     * Resolves when the WebSocket connection is established and authenticated.
+     *
+     * @returns current ready promise
+     */
+    get ready(): Promise<void> {
+      return state.ready;
+    },
+    setFileChangedHandler,
+    setDiagnosticsHandler,
+    request,
+    notify,
+  },);
 }

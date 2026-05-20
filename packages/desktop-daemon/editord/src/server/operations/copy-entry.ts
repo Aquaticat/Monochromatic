@@ -35,9 +35,9 @@ export async function copyEntry(
     path,
     destPath,
   }: {
-    rootDir: string;
-    path: string;
-    destPath: string;
+    readonly rootDir: string;
+    readonly path: string;
+    readonly destPath: string;
   },
 ): Promise<string> {
   /** Validated absolute source path; throws if the input escapes `rootDir`. */

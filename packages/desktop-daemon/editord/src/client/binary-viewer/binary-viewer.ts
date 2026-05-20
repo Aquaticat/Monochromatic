@@ -48,8 +48,8 @@ export class BinaryViewer extends HTMLElement {
     url,
     mediaInfo,
   }: {
-    url: string;
-    mediaInfo?: string;
+    readonly url: string;
+    readonly mediaInfo?: string;
   },): void {
     showImage({
       shadow: this.#shadow,
@@ -71,8 +71,8 @@ export class BinaryViewer extends HTMLElement {
     url,
     mediaInfo,
   }: {
-    url: string;
-    mediaInfo?: string;
+    readonly url: string;
+    readonly mediaInfo?: string;
   },): void {
     showAudio({
       shadow: this.#shadow,
@@ -94,8 +94,8 @@ export class BinaryViewer extends HTMLElement {
     url,
     mediaInfo,
   }: {
-    url: string;
-    mediaInfo?: string;
+    readonly url: string;
+    readonly mediaInfo?: string;
   },): void {
     showVideo({
       shadow: this.#shadow,
@@ -111,7 +111,7 @@ export class BinaryViewer extends HTMLElement {
    *
    * @param content - hex dump text to display
    */
-  showHexDump({ content, }: { content: string; },): void {
+  showHexDump({ content, }: { readonly content: string; },): void {
     this.#clear();
     this.#shadow.append(createHexDumpContent({ content, },),);
     this.style.display = 'flex';

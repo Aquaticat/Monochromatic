@@ -44,10 +44,10 @@ export function streamRg({
   processLine,
   signal,
 }: {
-  args: readonly string[];
-  maxResults: number;
-  processLine: (line: string,) => SearchResult | null;
-  signal: AbortSignal | undefined;
+  readonly args: readonly string[];
+  readonly maxResults: number;
+  readonly processLine: (line: string,) => SearchResult | null;
+  readonly signal: AbortSignal | undefined;
 },): Promise<SearchResult[]> {
   // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping streaming child process events into a promise requires new Promise
   return new Promise<SearchResult[]>(function awaitRg(

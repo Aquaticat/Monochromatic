@@ -22,13 +22,13 @@ const lockLog = tagged({
 
 /** Keyboard Lock API surface on the Keyboard interface. */
 type KeyboardWithLock = {
-  lock: (keyCodes?: string[],) => Promise<void>;
-  unlock: () => void;
+  readonly lock: (keyCodes?: readonly string[],) => Promise<void>;
+  readonly unlock: () => void;
 };
 
 /** Navigator with optional Keyboard Lock API support. */
 type NavigatorWithKeyboard = Navigator & {
-  keyboard?: KeyboardWithLock;
+  readonly keyboard?: KeyboardWithLock;
 };
 
 //endregion Keyboard Lock API type augmentation

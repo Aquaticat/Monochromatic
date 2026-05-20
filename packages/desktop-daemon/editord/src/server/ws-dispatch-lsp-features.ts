@@ -50,10 +50,10 @@ export async function dispatchLspFeatureMessage(
     lspManager,
     dirWatcher,
   }: {
-    peer: Peer;
-    parsed: ClientMessage;
-    lspManager: LspManager | null;
-    dirWatcher: DirWatcher | null;
+    readonly peer: Peer;
+    readonly parsed: ClientMessage;
+    readonly lspManager: LspManager | null;
+    readonly dirWatcher: DirWatcher | null;
   },
 ): Promise<boolean> {
   if (parsed.type === 'gotoDefinition') {

@@ -31,8 +31,8 @@ export async function deleteEntry(
     rootDir,
     path,
   }: {
-    rootDir: string;
-    path: string;
+    readonly rootDir: string;
+    readonly path: string;
   },
 ): Promise<string> {
   /** Validated absolute path; throws if the input escapes `rootDir`. */

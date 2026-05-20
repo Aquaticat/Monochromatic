@@ -33,7 +33,7 @@ function relevantClients(
     oxlint,
     tsgo,
     dprint,
-  }: { languageId: string; } & ServerSlots,
+  }: { readonly languageId: string; } & ServerSlots,
 ): LspClient[] {
   /** Accumulator filled by language-specific gating below. */
   const clients: LspClient[] = [];
@@ -64,10 +64,10 @@ export function didOpen({
   documents,
   servers,
 }: {
-  path: string;
-  text: string;
-  documents: Map<string, DocumentState>;
-  servers: ServerSlots;
+  readonly path: string;
+  readonly text: string;
+  readonly documents: Map<string, DocumentState>;
+  readonly servers: ServerSlots;
 },): void {
   /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
@@ -124,10 +124,10 @@ export function didChange({
   documents,
   servers,
 }: {
-  path: string;
-  text: string;
-  documents: Map<string, DocumentState>;
-  servers: ServerSlots;
+  readonly path: string;
+  readonly text: string;
+  readonly documents: Map<string, DocumentState>;
+  readonly servers: ServerSlots;
 },): void {
   /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
@@ -169,9 +169,9 @@ export function didSave({
   documents,
   servers,
 }: {
-  path: string;
-  documents: Map<string, DocumentState>;
-  servers: ServerSlots;
+  readonly path: string;
+  readonly documents: Map<string, DocumentState>;
+  readonly servers: ServerSlots;
 },): void {
   /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
@@ -205,9 +205,9 @@ export function didClose({
   documents,
   servers,
 }: {
-  path: string;
-  documents: Map<string, DocumentState>;
-  servers: ServerSlots;
+  readonly path: string;
+  readonly documents: Map<string, DocumentState>;
+  readonly servers: ServerSlots;
 },): void {
   /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);

@@ -25,7 +25,7 @@ import type { SelectionCoords, } from './indent.ts';
  * ```
  */
 export function getComposedRange(
-  { shadow, }: { shadow: ShadowRoot; },
+  { shadow, }: { readonly shadow: ShadowRoot; },
 ): StaticRange | null {
   /** Document-wide selection object; null when no document is currently focused. */
   const selection = document.getSelection();
@@ -54,8 +54,8 @@ export function getCursorPosition({
   editor,
   shadow,
 }: {
-  editor: HTMLDivElement;
-  shadow: ShadowRoot;
+  readonly editor: HTMLDivElement;
+  readonly shadow: ShadowRoot;
 },): EditorPosition | null {
   /** Shadow-composed selection range; null when no selection exists. */
   const range = getComposedRange({ shadow, },);
@@ -80,7 +80,7 @@ export function getCursorPosition({
  * const rect = getCursorRect({ shadow: pane.shadowRoot, });
  * ```
  */
-export function getCursorRect({ shadow, }: { shadow: ShadowRoot; },): DOMRect | null {
+export function getCursorRect({ shadow, }: { readonly shadow: ShadowRoot; },): DOMRect | null {
   /** Shadow-composed selection range; null when no selection exists. */
   const sRange = getComposedRange({ shadow, },);
   if (sRange === null)
@@ -117,9 +117,9 @@ export function restoreCursor({
   line,
   character,
 }: {
-  editor: HTMLDivElement;
-  line: number;
-  character: number;
+  readonly editor: HTMLDivElement;
+  readonly line: number;
+  readonly character: number;
 },): void {
   /** Document-wide selection object; null when no document is focused. */
   const selection = document.getSelection();
@@ -157,8 +157,8 @@ export function setSelection({
   editor,
   coords,
 }: {
-  editor: HTMLDivElement;
-  coords: SelectionCoords;
+  readonly editor: HTMLDivElement;
+  readonly coords: SelectionCoords;
 },): void {
   /** Document-wide selection object; null when no document is focused. */
   const selection = document.getSelection();
@@ -204,8 +204,8 @@ export function getSelection({
   editor,
   shadow,
 }: {
-  editor: HTMLDivElement;
-  shadow: ShadowRoot;
+  readonly editor: HTMLDivElement;
+  readonly shadow: ShadowRoot;
 },): SelectionCoords | null {
   /** Shadow-composed selection range; null when no selection exists. */
   const range = getComposedRange({ shadow, },);

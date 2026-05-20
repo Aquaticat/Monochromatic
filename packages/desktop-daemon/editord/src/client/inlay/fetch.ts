@@ -6,14 +6,15 @@
  * file changes during the async request.
  */
 
-import type { EditorPane, } from '../editor/editor-pane.ts';
+import type {
+  EditorPaneHandle,
+  EditorWsClientHandle,
+  GetCurrentFilePathFn,
+} from '../app/types.ts';
 import {
   l,
   tagged,
 } from '../log.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
-
-import type { GetCurrentFilePathFn, } from '../app/types.ts';
 
 /** Tagged logger for inlay hints. */
 const inlayLog = tagged({
@@ -41,9 +42,9 @@ export async function fetchInlayHints({
   editorPane,
   getCurrentFilePath,
 }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  getCurrentFilePath: GetCurrentFilePathFn;
+  readonly ws: EditorWsClientHandle;
+  readonly editorPane: EditorPaneHandle;
+  readonly getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
   /** Skip when no file is open; LSP needs a target. */
   const path = getCurrentFilePath();

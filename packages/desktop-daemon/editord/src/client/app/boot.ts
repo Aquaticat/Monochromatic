@@ -5,18 +5,20 @@
  * initial inlay hints. Extracted from app.ts to stay under max-lines.
  */
 
-import type { EditorPane, } from '../editor/editor-pane.ts';
-import type { FileTree, } from '../file-tree/file-tree.ts';
 import type { RecentFiles, } from '../recent-files.ts';
-import type { SearchOverlay, } from '../search/search-overlay.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
 import type { AppState, } from './events.ts';
 
 import {
   restoreSession,
   wireSessionPersistence,
 } from './session.ts';
-import type { LoadFileFn, } from './types.ts';
+import type {
+  EditorPaneHandle,
+  EditorWsClientHandle,
+  FileTreeHandle,
+  LoadFileFn,
+  SearchOverlayHandle,
+} from './types.ts';
 
 /**
  * Performs session restore and initial state setup after WebSocket is ready.
@@ -56,15 +58,15 @@ export async function bootSession(
     refreshInlayHints,
     queryFilePath,
   }: {
-    ws: EditorWsClient;
-    editorPane: EditorPane;
-    fileTree: FileTree;
-    searchOverlay: SearchOverlay;
-    state: AppState;
-    recentFiles: RecentFiles;
-    loadFileSafe: LoadFileFn;
-    refreshInlayHints: () => void;
-    queryFilePath: string | null;
+    readonly ws: EditorWsClientHandle;
+    readonly editorPane: EditorPaneHandle;
+    readonly fileTree: FileTreeHandle;
+    readonly searchOverlay: SearchOverlayHandle;
+    readonly state: AppState;
+    readonly recentFiles: RecentFiles;
+    readonly loadFileSafe: LoadFileFn;
+    readonly refreshInlayHints: () => void;
+    readonly queryFilePath: string | null;
   },
 ): Promise<void> {
   await ws.ready;

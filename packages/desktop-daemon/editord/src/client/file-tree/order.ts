@@ -32,7 +32,7 @@ const ORDER_BASE = 128;
  * const result = nameToOrder({ name: 'utils.ts', });
  * ```
  */
-export function nameToOrder({ name, }: { name: string; },): number {
+export function nameToOrder({ name, }: { readonly name: string; },): number {
   /** Case-folded copy keeps mixed-case sibling files sorted alphabetically. */
   const lower = name.toLowerCase();
   /** Capped iteration count keeps the accumulator below Number.MAX_SAFE_INTEGER. */

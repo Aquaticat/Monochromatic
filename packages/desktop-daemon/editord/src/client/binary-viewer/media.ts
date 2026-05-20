@@ -27,8 +27,8 @@ function appendMediaInfo(
     shadow,
     mediaInfo,
   }: {
-    shadow: ShadowRoot;
-    mediaInfo: string | undefined;
+    readonly shadow: ShadowRoot;
+    readonly mediaInfo: string | undefined;
   },
 ): void {
   if (mediaInfo === undefined)
@@ -65,11 +65,11 @@ export function showImage({
   url,
   mediaInfo,
 }: {
-  shadow: ShadowRoot;
-  host: HTMLElement;
-  clear: () => void;
-  url: string;
-  mediaInfo: string | undefined;
+  readonly shadow: ShadowRoot;
+  readonly host: HTMLElement;
+  readonly clear: () => void;
+  readonly url: string;
+  readonly mediaInfo: string | undefined;
 },): void {
   clear();
   shadow.append(createImageContent({ url, },),);
@@ -105,11 +105,11 @@ export function showAudio({
   url,
   mediaInfo,
 }: {
-  shadow: ShadowRoot;
-  host: HTMLElement;
-  clear: () => void;
-  url: string;
-  mediaInfo: string | undefined;
+  readonly shadow: ShadowRoot;
+  readonly host: HTMLElement;
+  readonly clear: () => void;
+  readonly url: string;
+  readonly mediaInfo: string | undefined;
 },): void {
   clear();
   shadow.append(createAudioContent({ url, },),);
@@ -145,11 +145,11 @@ export function showVideo({
   url,
   mediaInfo,
 }: {
-  shadow: ShadowRoot;
-  host: HTMLElement;
-  clear: () => void;
-  url: string;
-  mediaInfo: string | undefined;
+  readonly shadow: ShadowRoot;
+  readonly host: HTMLElement;
+  readonly clear: () => void;
+  readonly url: string;
+  readonly mediaInfo: string | undefined;
 },): void {
   clear();
   shadow.append(createVideoContent({ url, },),);

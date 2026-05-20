@@ -23,9 +23,9 @@ import type { Logger, } from '../log.ts';
 /** Cache entry with a timestamp for TTL-based eviction. */
 type IncludesCacheEntry = {
   /** Resolved absolute glob patterns from tsconfig `include`. */
-  patterns: readonly string[];
+  readonly patterns: readonly string[];
   /** Timestamp when the entry was stored (milliseconds since epoch). */
-  storedAt: number;
+  readonly storedAt: number;
 };
 
 /** Time-to-live for cached entries (milliseconds). */
@@ -61,8 +61,8 @@ export async function resolveTsconfigIncludes({
   root,
   l,
 }: {
-  root: string;
-  l: Logger;
+  readonly root: string;
+  readonly l: Logger;
 },): Promise<readonly string[]> {
   /** TTL-gated reuse below avoids respawning tsgo for repeated queries. */
   const cached = includesCache.get(root,);
@@ -91,7 +91,7 @@ export async function resolveTsconfigIncludes({
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- tsgo --showConfig always returns { include?: string[] } */
     /** Parsed tsconfig payload narrowed to the `include` field used below. */
     const config = JSON.parse(result.output,) as {
-      include?: string[];
+      readonly include?: string[];
     };
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     /** Empty fallback so the cache stores a usable array even for unconfigured projects. */
@@ -145,8 +145,8 @@ export function matchesTsconfigIncludes({
   path,
   patterns,
 }: {
-  path: string;
-  patterns: readonly string[];
+  readonly path: string;
+  readonly patterns: readonly string[];
 },): boolean {
   /** Safe fallback: if resolution failed (empty patterns), allow everything through. */
   if (patterns.length === 0)

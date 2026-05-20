@@ -35,7 +35,7 @@ import type {
  * const result = computeDocumentRange({ editor: editor, });
  * ```
  */
-export function computeDocumentRange({ editor, }: { editor: HTMLDivElement; },): Range {
+export function computeDocumentRange({ editor, }: { readonly editor: HTMLDivElement; },): Range {
   /** Zero-based index of the final line; clamped to 0 when the editor has no children. */
   const lastLineIndex = Math.max(
     0,
@@ -91,8 +91,8 @@ export function diagnosticsEqual({
   a,
   b,
 }: {
-  a: Diagnostic[];
-  b: Diagnostic[];
+  readonly a: readonly Diagnostic[];
+  readonly b: readonly Diagnostic[];
 },): boolean {
   if (a.length !== b.length)
     return false;
@@ -135,8 +135,8 @@ export function hintsEqual({
   a,
   b,
 }: {
-  a: InlayHint[];
-  b: InlayHint[];
+  readonly a: readonly InlayHint[];
+  readonly b: readonly InlayHint[];
 },): boolean {
   if (a.length !== b.length)
     return false;

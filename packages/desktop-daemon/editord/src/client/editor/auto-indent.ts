@@ -63,7 +63,7 @@ function leadingSpaces(s: string,): string {
  * // indent === '    '
  * ```
  */
-export function computeIndent({ lineText, }: { lineText: string; },): string {
+export function computeIndent({ lineText, }: { readonly lineText: string; },): string {
   /** Whitespace at the start of the previous line; carried over to align the new line. */
   const baseIndent = leadingSpaces(lineText,);
   /** Line text with trailing whitespace stripped; needed to inspect the meaningful last char. */
@@ -98,8 +98,8 @@ export function createAutoIndentHandler({
   editor,
   shadow,
 }: {
-  editor: HTMLDivElement;
-  shadow: ShadowRoot;
+  readonly editor: HTMLDivElement;
+  readonly shadow: ShadowRoot;
 },): EventListener {
   return function handleAutoIndent(event: Event,): void {
     if (!(event instanceof InputEvent))

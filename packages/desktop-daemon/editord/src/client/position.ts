@@ -8,7 +8,7 @@
 /** 0-based text position in the editor. */
 export type EditorPosition = {
   /** 0-based line index. */
-  line: number;
+  readonly line: number;
   /** 0-based character offset within the line. */
-  character: number;
+  readonly character: number;
 };

@@ -19,115 +19,115 @@ import type {
  */
 export type ClientMessage =
   | {
-    type: 'open';
-    id: string;
-    path: string;
+    readonly type: 'open';
+    readonly id: string;
+    readonly path: string;
   }
   | {
-    type: 'save';
-    id: string;
-    path: string;
-    content: string;
+    readonly type: 'save';
+    readonly id: string;
+    readonly path: string;
+    readonly content: string;
   }
   | {
-    type: 'listDir';
-    id: string;
-    path: string;
+    readonly type: 'listDir';
+    readonly id: string;
+    readonly path: string;
   }
   | {
-    type: 'search';
-    id: string;
-    query: string;
-    scope: string;
-  }
-  | ({
-    type: 'hover';
-    id: string;
-  } & FilePosition)
-  | ({
-    type: 'completion';
-    id: string;
-  } & FilePosition)
-  | {
-    type: 'format';
-    id: string;
-    path: string;
+    readonly type: 'search';
+    readonly id: string;
+    readonly query: string;
+    readonly scope: string;
   }
   | ({
-    type: 'gotoDefinition';
-    id: string;
+    readonly type: 'hover';
+    readonly id: string;
   } & FilePosition)
   | ({
-    type: 'findReferences';
-    id: string;
+    readonly type: 'completion';
+    readonly id: string;
   } & FilePosition)
   | {
-    type: 'inlayHint';
-    id: string;
-    path: string;
-    range: Range;
-  }
-  | {
-    type: 'selectionRange';
-    id: string;
-    path: string;
-    positions: Position[];
-  }
-  | {
-    type: 'deleteEntry';
-    id: string;
-    path: string;
-  }
-  | {
-    type: 'copyEntry';
-    id: string;
-    path: string;
-    destPath: string;
-  }
-  | {
-    type: 'moveEntry';
-    id: string;
-    path: string;
-    destPath: string;
-  }
-  | {
-    type: 'newEntry';
-    id: string;
-    parentPath: string;
-    name: string;
-    isDirectory: boolean;
-  }
-  | {
-    type: 'openInTerminal';
-    id: string;
-    path: string;
-  }
-  | {
-    type: 'openInDefaultApp';
-    id: string;
-    path: string;
+    readonly type: 'format';
+    readonly id: string;
+    readonly path: string;
   }
   | ({
-    type: 'prepareRename';
-    id: string;
+    readonly type: 'gotoDefinition';
+    readonly id: string;
   } & FilePosition)
   | ({
-    type: 'rename';
-    id: string;
-    newName: string;
+    readonly type: 'findReferences';
+    readonly id: string;
   } & FilePosition)
   | {
-    type: 'didChange';
-    path: string;
-    content: string;
+    readonly type: 'inlayHint';
+    readonly id: string;
+    readonly path: string;
+    readonly range: Range;
   }
   | {
-    type: 'didClose';
-    path: string;
+    readonly type: 'selectionRange';
+    readonly id: string;
+    readonly path: string;
+    readonly positions: readonly Position[];
   }
   | {
-    type: 'watchDir';
-    path: string;
+    readonly type: 'deleteEntry';
+    readonly id: string;
+    readonly path: string;
+  }
+  | {
+    readonly type: 'copyEntry';
+    readonly id: string;
+    readonly path: string;
+    readonly destPath: string;
+  }
+  | {
+    readonly type: 'moveEntry';
+    readonly id: string;
+    readonly path: string;
+    readonly destPath: string;
+  }
+  | {
+    readonly type: 'newEntry';
+    readonly id: string;
+    readonly parentPath: string;
+    readonly name: string;
+    readonly isDirectory: boolean;
+  }
+  | {
+    readonly type: 'openInTerminal';
+    readonly id: string;
+    readonly path: string;
+  }
+  | {
+    readonly type: 'openInDefaultApp';
+    readonly id: string;
+    readonly path: string;
+  }
+  | ({
+    readonly type: 'prepareRename';
+    readonly id: string;
+  } & FilePosition)
+  | ({
+    readonly type: 'rename';
+    readonly id: string;
+    readonly newName: string;
+  } & FilePosition)
+  | {
+    readonly type: 'didChange';
+    readonly path: string;
+    readonly content: string;
+  }
+  | {
+    readonly type: 'didClose';
+    readonly path: string;
+  }
+  | {
+    readonly type: 'watchDir';
+    readonly path: string;
   };
 
 /**
@@ -136,7 +136,7 @@ export type ClientMessage =
  * Filters to only variants that have an `id` (excludes notifications).
  */
 export type ClientRequest = ClientMessage extends infer TVariant
-  ? TVariant extends { id: string; } ? Omit<TVariant, 'id'>
+  ? TVariant extends { readonly id: string; } ? Omit<TVariant, 'id'>
   : never
   : never;
 
@@ -144,6 +144,6 @@ export type ClientRequest = ClientMessage extends infer TVariant
  * Client notification payload (messages without an `id` that expect no response).
  */
 export type ClientNotification = Extract<ClientMessage,
-  { type: 'didChange'; } | { type: 'didClose'; } | { type: 'watchDir'; }>;
+  { readonly type: 'didChange'; } | { readonly type: 'didClose'; } | { readonly type: 'watchDir'; }>;
 
 //endregion Client messages

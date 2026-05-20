@@ -62,202 +62,118 @@ const SCRIPT_KIND_PANIC_PATTERN = 'ScriptKind must be specified';
 /** Crash tracking state for a single pool key. */
 type CrashState = {
   /** Number of consecutive unexpected exits without a successful request in between. */
-  count: number;
+  readonly count: number;
   /** Timestamp of last crash (milliseconds since epoch). */
-  lastCrashAt: number;
+  readonly lastCrashAt: number;
   /** Whether the crash was a known deterministic panic (flat retry, no backoff). */
-  deterministic: boolean;
+  readonly deterministic: boolean;
 };
 
-/** Lazily creates and caches LSP clients per `(type, projectRoot)`. */
-export class LspPool {
-  /** Pool: `"type:root"` → client creation promise. */
-  readonly #pool = new Map<string, Promise<LspClient | null>>();
-  /** Crash tracking per pool key for exponential backoff. */
-  readonly #crashes = new Map<string, CrashState>();
-  /** Tagged logger. */
-  readonly #l: Logger;
-  /** Highest directory to search for config files (file tree root). */
-  readonly #ceiling: string;
+/** Server-initiated notification payload with source already attached. */
+type PoolNotification = {
+  /** LSP server source name. */
+  readonly source: string;
+  /** LSP method name. */
+  readonly method: string;
+  /** LSP params. */
+  readonly params: unknown;
+};
+
+/**
+ * Options for {@link createLspPool}.
+ */
+export type LspPoolOptions = {
+  /** Highest directory for config-file search (file tree root). */
+  readonly ceiling: string;
+  /** Parent logger. */
+  readonly l: Logger;
   /** Callback for server-initiated notifications. */
-  readonly #onNotification: (event: {
-    source: string;
-    method: string;
-    params: unknown;
-  },) => void;
+  readonly onNotification: (event: PoolNotification,) => void;
+};
+
+/**
+ * LSP client pool handle returned by {@link createLspPool}.
+ */
+export type LspPool = Readonly<{
+  /** Finds or creates the LSP client for a server type given a file path. */
+  readonly resolve: (opts: {
+    readonly type: ServerType;
+    readonly filePath: string;
+  },) => Promise<LspClient | null>;
+  /** Resolves all three server types for a given file path. */
+  readonly resolveAll: (opts: { readonly path: string; },) => Promise<ServerSlots>;
+  /** Shuts down pooled LSP servers whose project root contains the path. */
+  readonly shutdownForPath: (opts: { readonly path: string; },) => Promise<void>;
+  /** Gracefully shuts down all pooled LSP servers. */
+  readonly shutdown: () => Promise<void>;
+}>;
+
+/**
+ * Creates an LSP client pool.
+ *
+ * @param ceiling - highest directory for config-file search (file tree root)
+ *
+ * @param l - parent logger
+ *
+ * @param onNotification - callback for server-initiated notifications
+ *
+ * @returns frozen LSP pool handle
+ *
+ * @example
+ * ```ts
+ * const pool = createLspPool({
+ *   ceiling: '/home/user/project',
+ *   l: logger,
+ *   onNotification: function handleNotification(event) { console.info(event.source); },
+ * });
+ * ```
+ */
+export function createLspPool({
+  ceiling,
+  l,
+  onNotification,
+}: LspPoolOptions,): LspPool {
+  /** Pool: `"type:root"` to client creation promise. */
+  const pool = new Map<string, Promise<LspClient | null>>();
+  /** Crash tracking per pool key for exponential backoff. */
+  const crashes = new Map<string, CrashState>();
 
   /**
-   * @param ceiling - highest directory for config-file search (file tree root)
+   * Checks whether a pool key is in crash-backoff cooldown.
+   * Returns true when the time since the last crash is less than
+   * the exponential backoff delay for that key's crash count.
    *
-   * @param l - parent logger
+   * @param key - pool map key to check
    *
-   * @param onNotification - callback for server-initiated notifications
+   * @returns true when the server should not be restarted yet
    */
-  constructor({
-    ceiling,
-    l,
-    onNotification,
-  }: {
-    ceiling: string;
-    l: Logger;
-    onNotification: (
-      event: {
-        source: string;
-        method: string;
-        params: unknown;
-      },
-    ) => void;
-  },) {
-    this.#l = l;
-    this.#ceiling = ceiling;
-    this.#onNotification = onNotification;
-  }
-
-  /**
-   * Finds or creates the LSP client for a server type given a file path.
-   * Returns null when the server is in crash-backoff cooldown.
-   *
-   * For tsgo, checks the resolved tsconfig `include` patterns before
-   * spawning a new server; files outside the project's declared scope
-   * are rejected so tsgo never receives an unsupported extension as its
-   * initial trigger, which would cause a ScriptKind panic.
-   *
-   * @returns promise resolving to the client, or null if no project root is found or server is in backoff
-   */
-  resolve(
-    {
-      type,
-      filePath,
-    }: {
-      type: ServerType;
-      filePath: string;
-    },
-  ): Promise<LspClient | null> {
-    /** Project root for this server type; null when no config file found up to the ceiling. */
-    const root = findProjectRoot({
-      startDir: dirname(filePath,),
-      configFiles: CONFIG_FILES[type],
-      ceiling: this.#ceiling,
-    },);
-    if (root === null)
-      return Promise.resolve(null,);
-
+  function isInBackoff({ key, }: { readonly key: string; },): boolean {
+    /** Crash record for this key, or undefined when the server has never crashed. */
+    const state = crashes.get(key,);
+    if (state === undefined)
+      return false;
     /**
-     * For tsgo, ALWAYS check tsconfig includes: both for reuse
-     * and new spawns. Returning an existing tsgo client for a
-     * non-matching file (e.g. `.svg`) is just as dangerous as
-     * spawning a new one: the feature request handler sends the
-     * file URI to tsgo, which creates an inferred project for it
-     * and panics on the unsupported ScriptKind.
+     * Required cooldown for this key's crash history; mirrors the delay computed in `spawnWithCrashRecovery`.
      */
-    if (type === 'tsgo') {
-      return this.#resolveTsgoWithIncludeCheck({
-        filePath,
-        root,
-      },);
-    }
-
-    /** Pool map key encoding `(type, root)` so each pair gets exactly one cached client. */
-    const key = buildPoolKey({
-      type,
-      root,
-    },);
-    /** Cached creation promise for this key, or undefined when no client has been spawned yet. */
-    const existing = this.#pool.get(key,);
-    if (existing !== undefined) {
-      this.#l.info(
-        `${type} resolve: reusing existing client for ${root} (trigger: ${filePath})`,
+    const delay = state.deterministic
+      ? DETERMINISTIC_PANIC_RETRY_MS
+      : Math.min(
+        BASE_RESTART_DELAY_MS * (2 ** (state.count - 1)),
+        MAX_RESTART_DELAY_MS,
       );
-      return existing;
+    /** Time since the last crash; compared against `delay` to decide if the cooldown has elapsed. */
+    const elapsed = Date.now() - state.lastCrashAt;
+    if (elapsed >= delay) {
+      /** Backoff/retry period has elapsed; allow restart. */
+      return false;
     }
-    if (this.#isInBackoff({ key, },))
-      return Promise.resolve(null,);
-
-    this.#l.info(
-      `${type} resolve: spawning NEW client for ${root} (trigger: ${filePath})`,
-    );
-    /** Newly spawned client promise; stored in the pool before awaiting so concurrent callers share it. */
-    const promise = this.#spawnWithCrashRecovery({
-      type,
-      root,
-      key,
-    },);
-    this.#pool.set(
-      key,
-      promise,
-    );
-    return promise;
-  }
-
-  /**
-   * Resolves tsgo with a tsconfig include check gating ALL access.
-   *
-   * Files outside the project's declared include scope get `null`
-   * even when an existing tsgo client is running for that root.
-   * This prevents feature request handlers from sending non-source
-   * file URIs to tsgo, which would trigger inferred-project creation
-   * and a ScriptKind panic on unsupported extensions.
-   *
-   * @param filePath - absolute file path that triggered the resolve
-   *
-   * @param root - project root directory containing tsconfig.json
-   *
-   * @returns existing or new client for matching files, null otherwise
-   */
-  async #resolveTsgoWithIncludeCheck({
-    filePath,
-    root,
-  }: {
-    filePath: string;
-    root: string;
-  },): Promise<LspClient | null> {
-    /** tsconfig `include` glob patterns; gate access so non-source files never reach tsgo. */
-    const patterns = await resolveTsconfigIncludes({
-      root,
-      l: this.#l,
-    },);
-    if (!matchesTsconfigIncludes({
-      path: filePath,
-      patterns,
-    },)) {
-      this.#l.info(`${filePath} excluded by tsconfig includes, skipping tsgo`,);
-      return null;
-    }
-
-    /** Pool map key for the tsgo client at this root; distinct from oxlint/dprint keys at the same root. */
-    const key = buildPoolKey({
-      type: 'tsgo',
-      root,
-    },);
-    /** Cached tsgo creation promise; reused on subsequent matching-file resolves. */
-    const existing = this.#pool.get(key,);
-    if (existing !== undefined) {
-      this.#l.info(
-        `tsgo resolve: reusing existing client for ${root} (trigger: ${filePath})`,
-      );
-      return existing;
-    }
-    if (this.#isInBackoff({ key, },))
-      return null;
-
-    this.#l.info(`tsgo resolve: spawning NEW client for ${root} (trigger: ${filePath})`,);
-    /** New tsgo client promise; stored in the pool before await so concurrent callers share it. */
-    const promise = this.#spawnWithCrashRecovery({
-      type: 'tsgo',
-      root,
-      key,
-    },);
-    this.#pool.set(
-      key,
-      promise,
-    );
-    return promise;
+    return true;
   }
 
   /**
    * Spawns a client and wires up the exit handler for crash recovery.
    * On unexpected exit, removes the dead entry from the pool so the
-   * next {@link resolve} call creates a fresh client (subject to backoff).
+   * next {@link LspPool.resolve} call creates a fresh client (subject to backoff).
    *
    * @param type - server type to spawn
    *
@@ -267,27 +183,20 @@ export class LspPool {
    *
    * @returns initialized client, or null on failure
    */
-  #spawnWithCrashRecovery({
+  function spawnWithCrashRecovery({
     type,
     root,
     key,
   }: {
-    type: ServerType;
-    root: string;
-    key: string;
+    readonly type: ServerType;
+    readonly root: string;
+    readonly key: string;
   },): Promise<LspClient | null> {
-    /** Local alias for `this.#pool`; captured by the `onExit` closure so it can clear dead entries. */
-    const pool = this.#pool;
-    /** Local alias for `this.#crashes`; captured by the `onExit` closure to record backoff state. */
-    const crashes = this.#crashes;
-    /** Local alias for `this.#l`; captured by the `onExit` closure to log crash diagnostics. */
-    const l = this.#l;
-
     return spawnLspClient({
       type,
       root,
       l,
-      onNotification: this.#onNotification,
+      onNotification,
       onExit: function handleCrashRecovery({
         unexpected,
         recentStderr,
@@ -326,35 +235,144 @@ export class LspPool {
   }
 
   /**
-   * Checks whether a pool key is in crash-backoff cooldown.
-   * Returns true when the time since the last crash is less than
-   * the exponential backoff delay for that key's crash count.
+   * Resolves tsgo with a tsconfig include check gating ALL access.
    *
-   * @param key - pool map key to check
+   * Files outside the project's declared include scope get `null`
+   * even when an existing tsgo client is running for that root.
+   * This prevents feature request handlers from sending non-source
+   * file URIs to tsgo, which would trigger inferred-project creation
+   * and a ScriptKind panic on unsupported extensions.
    *
-   * @returns true when the server should not be restarted yet
+   * @param filePath - absolute file path that triggered the resolve
+   *
+   * @param root - project root directory containing tsconfig.json
+   *
+   * @returns existing or new client for matching files, null otherwise
    */
-  #isInBackoff({ key, }: { key: string; },): boolean {
-    /** Crash record for this key, or undefined when the server has never crashed. */
-    const state = this.#crashes.get(key,);
-    if (state === undefined)
-      return false;
-    /**
-     * Required cooldown for this key's crash history; mirrors the delay computed in `#spawnWithCrashRecovery`.
-     */
-    const delay = state.deterministic
-      ? DETERMINISTIC_PANIC_RETRY_MS
-      : Math.min(
-        BASE_RESTART_DELAY_MS * (2 ** (state.count - 1)),
-        MAX_RESTART_DELAY_MS,
-      );
-    /** Time since the last crash; compared against `delay` to decide if the cooldown has elapsed. */
-    const elapsed = Date.now() - state.lastCrashAt;
-    if (elapsed >= delay) {
-      /** Backoff/retry period has elapsed; allow restart. */
-      return false;
+  async function resolveTsgoWithIncludeCheck({
+    filePath,
+    root,
+  }: {
+    readonly filePath: string;
+    readonly root: string;
+  },): Promise<LspClient | null> {
+    /** tsconfig `include` glob patterns; gate access so non-source files never reach tsgo. */
+    const patterns = await resolveTsconfigIncludes({
+      root,
+      l,
+    },);
+    if (!matchesTsconfigIncludes({
+      path: filePath,
+      patterns,
+    },)) {
+      l.info(`${filePath} excluded by tsconfig includes, skipping tsgo`,);
+      return null;
     }
-    return true;
+
+    /** Pool map key for the tsgo client at this root; distinct from oxlint/dprint keys at the same root. */
+    const key = buildPoolKey({
+      type: 'tsgo',
+      root,
+    },);
+    /** Cached tsgo creation promise; reused on subsequent matching-file resolves. */
+    const existing = pool.get(key,);
+    if (existing !== undefined) {
+      l.info(
+        `tsgo resolve: reusing existing client for ${root} (trigger: ${filePath})`,
+      );
+      return existing;
+    }
+    if (isInBackoff({ key, },))
+      return null;
+
+    l.info(`tsgo resolve: spawning NEW client for ${root} (trigger: ${filePath})`,);
+    /** New tsgo client promise; stored in the pool before await so concurrent callers share it. */
+    const promise = spawnWithCrashRecovery({
+      type: 'tsgo',
+      root,
+      key,
+    },);
+    pool.set(
+      key,
+      promise,
+    );
+    return promise;
+  }
+
+  /**
+   * Finds or creates the LSP client for a server type given a file path.
+   * Returns null when the server is in crash-backoff cooldown.
+   *
+   * For tsgo, checks the resolved tsconfig `include` patterns before
+   * spawning a new server; files outside the project's declared scope
+   * are rejected so tsgo never receives an unsupported extension as its
+   * initial trigger, which would cause a ScriptKind panic.
+   *
+   * @returns promise resolving to the client, or null if no project root is found or server is in backoff
+   */
+  function resolve(
+    {
+      type,
+      filePath,
+    }: {
+      readonly type: ServerType;
+      readonly filePath: string;
+    },
+  ): Promise<LspClient | null> {
+    /** Project root for this server type; null when no config file found up to the ceiling. */
+    const root = findProjectRoot({
+      startDir: dirname(filePath,),
+      configFiles: CONFIG_FILES[type],
+      ceiling,
+    },);
+    if (root === null)
+      return Promise.resolve(null,);
+
+    /**
+     * For tsgo, ALWAYS check tsconfig includes: both for reuse
+     * and new spawns. Returning an existing tsgo client for a
+     * non-matching file (e.g. `.svg`) is just as dangerous as
+     * spawning a new one: the feature request handler sends the
+     * file URI to tsgo, which creates an inferred project for it
+     * and panics on the unsupported ScriptKind.
+     */
+    if (type === 'tsgo') {
+      return resolveTsgoWithIncludeCheck({
+        filePath,
+        root,
+      },);
+    }
+
+    /** Pool map key encoding `(type, root)` so each pair gets exactly one cached client. */
+    const key = buildPoolKey({
+      type,
+      root,
+    },);
+    /** Cached creation promise for this key, or undefined when no client has been spawned yet. */
+    const existing = pool.get(key,);
+    if (existing !== undefined) {
+      l.info(
+        `${type} resolve: reusing existing client for ${root} (trigger: ${filePath})`,
+      );
+      return existing;
+    }
+    if (isInBackoff({ key, },))
+      return Promise.resolve(null,);
+
+    l.info(
+      `${type} resolve: spawning NEW client for ${root} (trigger: ${filePath})`,
+    );
+    /** Newly spawned client promise; stored in the pool before awaiting so concurrent callers share it. */
+    const promise = spawnWithCrashRecovery({
+      type,
+      root,
+      key,
+    },);
+    pool.set(
+      key,
+      promise,
+    );
+    return promise;
   }
 
   /**
@@ -366,18 +384,18 @@ export class LspPool {
    *
    * @returns server slots with oxlint, tsgo, and dprint clients
    */
-  async resolveAll({ path, }: { path: string; },): Promise<ServerSlots> {
+  async function resolveAll({ path, }: { readonly path: string; },): Promise<ServerSlots> {
     /** Resolved clients for all three server types in parallel; each slot may be null. */
     const [oxlint, tsgo, dprint,] = await Promise.all([
-      this.resolve({
+      resolve({
         type: 'oxlint',
         filePath: path,
       },),
-      this.resolve({
+      resolve({
         type: 'tsgo',
         filePath: path,
       },),
-      this.resolve({
+      resolve({
         type: 'dprint',
         filePath: path,
       },),
@@ -396,19 +414,26 @@ export class LspPool {
    *
    * @param path - absolute file or directory path
    */
-  async shutdownForPath({ path, }: { path: string; },): Promise<void> {
+  async function shutdownForPath({ path, }: { readonly path: string; },): Promise<void> {
     await shutdownPoolForPath({
-      pool: this.#pool,
+      pool,
       path,
-      l: this.#l,
+      l,
     },);
   }
 
   /** Gracefully shuts down all pooled LSP servers and waits for completion. */
-  async shutdown(): Promise<void> {
+  async function shutdown(): Promise<void> {
     await shutdownAllPooled({
-      pool: this.#pool,
-      l: this.#l,
+      pool,
+      l,
     },);
   }
+
+  return Object.freeze({
+    resolve,
+    resolveAll,
+    shutdownForPath,
+    shutdown,
+  },);
 }

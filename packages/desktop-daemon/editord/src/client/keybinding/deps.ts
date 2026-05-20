@@ -4,9 +4,11 @@
  * Split from app-keybindings.ts to stay under max-lines.
  */
 
-import type { CompletionPopup, } from '../completion/completion-popup.ts';
-import type { HoverPopup, } from '../hover/hover-popup.ts';
-import type { ReferencesPopup, } from '../references/references-popup.ts';
+import type {
+  CompletionPopupHandle,
+  HoverPopupHandle,
+  ReferencesPopupHandle,
+} from '../app/types.ts';
 
 /**
  * Dependencies injected into the keybinding handler.
@@ -52,23 +54,23 @@ import type { ReferencesPopup, } from '../references/references-popup.ts';
  * @param hoverPopup - hover popup to dismiss on Escape
  */
 export type KeybindingDeps = {
-  saveCurrentFile: () => void;
-  formatDocument: () => void;
-  gotoDefinition: () => void;
-  renameAtCursor: () => void;
-  deleteCurrentLine: () => void;
-  selectAndCopyCurrentLine: () => boolean;
-  requestCompletions: () => void;
-  expandSelection: () => void;
-  shrinkSelection: () => void;
-  navigateToRecentFile: (index: number,) => void;
-  indentLines: () => void;
-  unindentLines: () => void;
-  duplicateLineDown: () => void;
-  swapLineDown: () => void;
-  swapLineUp: () => void;
-  openTerminalAtCurrentFile: () => void;
-  completionPopup: CompletionPopup;
-  referencesPopup: ReferencesPopup;
-  hoverPopup: HoverPopup;
+  readonly saveCurrentFile: () => void;
+  readonly formatDocument: () => void;
+  readonly gotoDefinition: () => void;
+  readonly renameAtCursor: () => void;
+  readonly deleteCurrentLine: () => void;
+  readonly selectAndCopyCurrentLine: () => boolean;
+  readonly requestCompletions: () => void;
+  readonly expandSelection: () => void;
+  readonly shrinkSelection: () => void;
+  readonly navigateToRecentFile: (index: number,) => void;
+  readonly indentLines: () => void;
+  readonly unindentLines: () => void;
+  readonly duplicateLineDown: () => void;
+  readonly swapLineDown: () => void;
+  readonly swapLineUp: () => void;
+  readonly openTerminalAtCurrentFile: () => void;
+  readonly completionPopup: CompletionPopupHandle;
+  readonly referencesPopup: ReferencesPopupHandle;
+  readonly hoverPopup: HoverPopupHandle;
 };

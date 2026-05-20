@@ -40,16 +40,16 @@ export async function requestInlayHints({
   path,
   range,
 }: {
-  client: LspClient;
-  path: string;
-  range: {
-    start: {
-      line: number;
-      character: number;
+  readonly client: LspClient;
+  readonly path: string;
+  readonly range: {
+    readonly start: {
+      readonly line: number;
+      readonly character: number;
     };
-    end: {
-      line: number;
-      character: number;
+    readonly end: {
+      readonly line: number;
+      readonly character: number;
     };
   };
 },): Promise<LspInlayHint[]> {
@@ -99,11 +99,11 @@ export async function requestSelectionRange({
   path,
   positions,
 }: {
-  client: LspClient;
-  path: string;
-  positions: {
-    line: number;
-    character: number;
+  readonly client: LspClient;
+  readonly path: string;
+  readonly positions: readonly {
+    readonly line: number;
+    readonly character: number;
   }[];
 },): Promise<LspSelectionRange[]> {
   /** LSP wire format expects a URI, not a filesystem path. */

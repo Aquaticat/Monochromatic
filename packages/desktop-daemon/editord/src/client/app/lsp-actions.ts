@@ -2,15 +2,15 @@
  * LSP actions: formatting and Ctrl+Click go-to-definition wiring.
  */
 
-import type { EditorPane, } from '../editor/editor-pane.ts';
 import {
   l,
   tagged,
 } from '../log.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
 
 import { doGotoDefinition, } from './lsp-goto-definition.ts';
 import type {
+  EditorPaneHandle,
+  EditorWsClientHandle,
   GetCurrentFilePathFn,
   LoadFileFn,
 } from './types.ts';
@@ -43,9 +43,9 @@ export async function formatDocument({
   editorPane,
   getCurrentFilePath,
 }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  getCurrentFilePath: GetCurrentFilePathFn;
+  readonly ws: EditorWsClientHandle;
+  readonly editorPane: EditorPaneHandle;
+  readonly getCurrentFilePath: GetCurrentFilePathFn;
 },): Promise<void> {
   /** Current file path; null when no buffer is open, in which case formatting has no target. */
   const path = getCurrentFilePath();
@@ -88,10 +88,10 @@ export function wireGotoDefinition(
     getCurrentFilePath,
     loadFileSafe,
   }: {
-    ws: EditorWsClient;
-    editorPane: EditorPane;
-    getCurrentFilePath: GetCurrentFilePathFn;
-    loadFileSafe: LoadFileFn;
+    readonly ws: EditorWsClientHandle;
+    readonly editorPane: EditorPaneHandle;
+    readonly getCurrentFilePath: GetCurrentFilePathFn;
+    readonly loadFileSafe: LoadFileFn;
   },
 ): void {
   editorPane.addEventListener(

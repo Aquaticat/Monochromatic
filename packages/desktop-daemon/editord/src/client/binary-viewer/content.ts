@@ -27,7 +27,7 @@ const REPEAT_ICON_SVG =
  * const result = createImageContent({ url: '/_raw?token=tok\&path=/src/image.png', });
  * ```
  */
-export function createImageContent({ url, }: { url: string; },): HTMLElement {
+export function createImageContent({ url, }: { readonly url: string; },): HTMLElement {
   return h({
     tag: 'img',
     attrs: {
@@ -49,7 +49,7 @@ export function createImageContent({ url, }: { url: string; },): HTMLElement {
  * const result = createAudioContent({ url: '/_raw?token=tok\&path=/src/image.png', });
  * ```
  */
-export function createAudioContent({ url, }: { url: string; },): HTMLElement {
+export function createAudioContent({ url, }: { readonly url: string; },): HTMLElement {
   /** Native `<audio controls>` element; its `loop` flag is toggled by `repeatBtn`. */
   const audio = h({
     tag: 'audio',
@@ -101,7 +101,7 @@ export function createAudioContent({ url, }: { url: string; },): HTMLElement {
  * const result = createVideoContent({ url: '/_raw?token=tok\&path=/src/image.png', });
  * ```
  */
-export function createVideoContent({ url, }: { url: string; },): HTMLElement {
+export function createVideoContent({ url, }: { readonly url: string; },): HTMLElement {
   return h({
     tag: 'video',
     attrs: {
@@ -123,7 +123,7 @@ export function createVideoContent({ url, }: { url: string; },): HTMLElement {
  * const result = createHexDumpContent({ content: 'const x = 42;', });
  * ```
  */
-export function createHexDumpContent({ content, }: { content: string; },): HTMLElement {
+export function createHexDumpContent({ content, }: { readonly content: string; },): HTMLElement {
   return h({
     tag: 'pre',
     text: content,

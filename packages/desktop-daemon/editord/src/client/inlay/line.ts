@@ -61,10 +61,10 @@ export function applyLineAnnotation({
   lineDiags,
   spaceRatio,
 }: {
-  div: HTMLElement;
-  lineHints: InlayHint[] | undefined;
-  lineDiags: Diagnostic[] | undefined;
-  spaceRatio: number;
+  readonly div: HTMLElement;
+  readonly lineHints: readonly InlayHint[] | undefined;
+  readonly lineDiags: readonly Diagnostic[] | undefined;
+  readonly spaceRatio: number;
 },): void {
   /** Accumulator for the inlay rows joined into the dataset attribute below. */
   const rows: string[] = [];
@@ -111,7 +111,6 @@ export function applyLineAnnotation({
           spaceRatio,
         },);
         rowText += ' '.repeat(spaces,) + label;
-        cursor = charPos + label.length;
       }
       else {
         /** Overlaps previous hint; flush current row and start fresh. */
@@ -121,8 +120,8 @@ export function applyLineAnnotation({
          */
         const indent = ' '.repeat(Math.round(charPos * spaceRatio,),);
         rowText = indent + label;
-        cursor = charPos + label.length;
       }
+      cursor = charPos + label.length;
     }
 
     if (rowText !== '')

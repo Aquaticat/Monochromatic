@@ -54,7 +54,7 @@ const VIDEO_EXTENSIONS = new Set([
  * ```
  */
 export function getMediaKind(
-  { path, }: { path: string; },
+  { path, }: { readonly path: string; },
 ): Extract<FileKind, 'image' | 'audio' | 'video'> | null {
   /** Lowercased extension so the extension sets stay case-insensitive. */
   const ext = extname(path,).toLowerCase();
@@ -103,7 +103,7 @@ const CONTENT_TYPE_MAP: Record<string, string> = {
  * const result = getContentType({ path: '/home/user/project/src/main.ts', });
  * ```
  */
-export function getContentType({ path, }: { path: string; },): string {
+export function getContentType({ path, }: { readonly path: string; },): string {
   /**
    * Lowercased extension keyed against {@link CONTENT_TYPE_MAP} below.
    */

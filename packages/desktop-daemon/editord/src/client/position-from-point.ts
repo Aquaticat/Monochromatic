@@ -37,9 +37,9 @@ export function getPositionFromPoint({
   x,
   y,
 }: {
-  editor: HTMLElement;
-  x: number;
-  y: number;
+  readonly editor: HTMLElement;
+  readonly x: number;
+  readonly y: number;
 },): EditorPosition | null {
   /** Line index and div containing the pointer y, or null when the click missed every line. */
   const lineResult = findLineAtY({
@@ -71,11 +71,11 @@ function findLineAtY({
   editor,
   y,
 }: {
-  editor: HTMLElement;
-  y: number;
+  readonly editor: HTMLElement;
+  readonly y: number;
 },): {
-  line: number;
-  lineDiv: Element;
+  readonly line: number;
+  readonly lineDiv: Element;
 } | null {
   /** Vertically-ordered children; each is one line div whose bounding rect is checked against `y`. */
   const { children, } = editor;

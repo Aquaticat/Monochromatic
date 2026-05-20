@@ -59,9 +59,9 @@ export async function saveFile(
     path,
     content,
   }: {
-    rootDir: string;
-    path: string;
-    content: string;
+    readonly rootDir: string;
+    readonly path: string;
+    readonly content: string;
   },
 ): Promise<string> {
   /** Resolved root-rebased path required by the atomic write below. */

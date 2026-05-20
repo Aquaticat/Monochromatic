@@ -36,7 +36,7 @@ import {
 import { resolveFsId, } from './operations/resolve-fs-id.ts';
 import { resolveRoot, } from './operations/resolve-root.ts';
 import { resolveAuthToken, } from './operations/token-file.ts';
-import { DirWatcher, } from './operations/watch-filesystem.ts';
+import { createDirWatcher, } from './operations/watch-filesystem.ts';
 import { createWsHandler, } from './ws.ts';
 
 export {};
@@ -108,7 +108,7 @@ const lspLog = tagged({
  * Set of connected WebSocket peers for broadcasting diagnostics.
  * Updated by the ws handler on open/close.
  */
-const connectedPeers = new Set<{ send: (data: string,) => void; }>();
+const connectedPeers = new Set<{ readonly send: (data: string,) => void; }>();
 
 /**
  * Pushes diagnostics from LSP servers to all connected WebSocket peers.
@@ -122,8 +122,8 @@ function handleDiagnostics(
     path,
     diagnostics,
   }: {
-    path: string;
-    diagnostics: WireDiagnostic[];
+    readonly path: string;
+    readonly diagnostics: readonly WireDiagnostic[];
   },
 ): void {
   if (connectedPeers.size === 0)
@@ -153,7 +153,7 @@ const lspManager = createLspManager({
  * Broadcasts filesystem change events to all connected WebSocket peers.
  * Watches directories on demand as the client expands them in the tree.
  */
-const dirWatcher = new DirWatcher({
+const dirWatcher = createDirWatcher({
   onChange: function handleFsChange(event,): void {
     if (connectedPeers.size === 0)
       return;
@@ -243,7 +243,7 @@ const SHUTDOWN_MS_PER_SECOND = 1_000;
  * @param deleteTokens - whether to delete the auth token file (true for SIGINT, false for SIGTERM auto-restart)
  */
 async function shutdownApp(
-  { deleteTokens, }: { deleteTokens: boolean; },
+  { deleteTokens, }: { readonly deleteTokens: boolean; },
 ): Promise<void> {
   stopTokenTouch();
   if (deleteTokens)

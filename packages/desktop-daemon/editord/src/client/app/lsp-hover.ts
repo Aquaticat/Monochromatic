@@ -5,20 +5,22 @@
  * and shows/hides the hover popup.
  */
 
-import type { CompletionPopup, } from '../completion/completion-popup.ts';
 import { createDebounced, } from '../debounce.ts';
-import type { EditorPane, } from '../editor/editor-pane.ts';
-import type { HoverPopup, } from '../hover/hover-popup.ts';
 import { doRequestHover, } from '../hover/request.ts';
 import {
   l,
   tagged,
 } from '../log.ts';
-import type { ReferencesPopup, } from '../references/references-popup.ts';
 import { HOVER_DEBOUNCE_MS, } from '../timing.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
 
-import type { GetCurrentFilePathFn, } from './types.ts';
+import type {
+  CompletionPopupHandle,
+  EditorPaneHandle,
+  EditorWsClientHandle,
+  GetCurrentFilePathFn,
+  HoverPopupHandle,
+  ReferencesPopupHandle,
+} from './types.ts';
 
 /** Tagged logger for hover. */
 const hoverLog = tagged({
@@ -55,12 +57,12 @@ export function wireHover(
     referencesPopup,
     getCurrentFilePath,
   }: {
-    ws: EditorWsClient;
-    editorPane: EditorPane;
-    hoverPopup: HoverPopup;
-    completionPopup: CompletionPopup;
-    referencesPopup: ReferencesPopup;
-    getCurrentFilePath: GetCurrentFilePathFn;
+    readonly ws: EditorWsClientHandle;
+    readonly editorPane: EditorPaneHandle;
+    readonly hoverPopup: HoverPopupHandle;
+    readonly completionPopup: CompletionPopupHandle;
+    readonly referencesPopup: ReferencesPopupHandle;
+    readonly getCurrentFilePath: GetCurrentFilePathFn;
   },
 ): void {
   /**

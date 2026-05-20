@@ -45,10 +45,10 @@ export function resolveRefreshContainer({
   rootPath,
   loadedDirs,
 }: {
-  tree: HTMLDivElement;
-  path: string;
-  rootPath: string;
-  loadedDirs: Set<string>;
+  readonly tree: HTMLDivElement;
+  readonly path: string;
+  readonly rootPath: string;
+  readonly loadedDirs: ReadonlySet<string>;
 },): HTMLElement | null {
   /** Container that holds the directory's child entries; resolved branchwise below. */
   let container: HTMLElement | null = null;
@@ -93,10 +93,10 @@ export async function performRefreshDir({
   rootPath,
   state,
 }: {
-  tree: HTMLDivElement;
-  path: string;
-  rootPath: string;
-  state: FileTreeState;
+  readonly tree: HTMLDivElement;
+  readonly path: string;
+  readonly rootPath: string;
+  readonly state: FileTreeState;
 },): Promise<void> {
   if (state.fetchDir === null)
     return;
@@ -156,13 +156,13 @@ export async function refreshDirContents(
     recentPaths,
     preloadFn,
   }: {
-    container: HTMLElement;
-    path: string;
-    fetchDir: (dirPath: string,) => Promise<DirEntry[]>;
-    recentPaths: string[];
-    preloadFn: (opts: {
-      parentPath: string;
-      entries: DirEntry[];
+    readonly container: HTMLElement;
+    readonly path: string;
+    readonly fetchDir: (dirPath: string,) => Promise<readonly DirEntry[]>;
+    readonly recentPaths: readonly string[];
+    readonly preloadFn: (opts: {
+      readonly parentPath: string;
+      readonly entries: readonly DirEntry[];
     },) => void;
   },
 ): Promise<void> {

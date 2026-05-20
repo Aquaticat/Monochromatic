@@ -17,21 +17,21 @@ import { nameToOrder, } from './order.ts';
 /** Detail payload for the `dir-open` CustomEvent. */
 export type DirOpenDetail = {
   /** Absolute directory path. */
-  path: string;
+  readonly path: string;
   /** Container element to populate with children. */
-  childrenContainer: HTMLDivElement;
+  readonly childrenContainer: HTMLDivElement;
 };
 
 /** Detail payload for the `show-context` CustomEvent. */
 export type ShowContextDetail = {
   /** Horizontal click position in pixels. */
-  x: number;
+  readonly x: number;
   /** Vertical click position in pixels. */
-  y: number;
+  readonly y: number;
   /** Absolute entry path. */
-  path: string;
+  readonly path: string;
   /** Whether this is a directory or file entry. */
-  kind: 'dir' | 'file';
+  readonly kind: 'dir' | 'file';
 };
 
 /**
@@ -77,7 +77,7 @@ export class TreeDirEntry extends HTMLElement {
       return;
     this.#initialized = true;
 
-    this.dataset['path'] = this.entryPath;
+    this.dataset.path = this.entryPath;
     this.#childrenContainer = h({
       tag: 'div',
       class: 'children',
@@ -168,8 +168,8 @@ export function createTreeDirEntry(
     path,
     name,
   }: {
-    path: string;
-    name: string;
+    readonly path: string;
+    readonly name: string;
   },
 ): TreeDirEntry {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define */

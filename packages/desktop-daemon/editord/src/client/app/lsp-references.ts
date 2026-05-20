@@ -10,14 +10,13 @@ import {
   l,
   tagged,
 } from '../log.ts';
-import type {
-  ReferenceLocation,
-  ReferencesPopup,
-} from '../references/references-popup.ts';
+import type { ReferenceLocation, } from '../references/references-popup.ts';
 import { showCursorToast, } from '../toast/toast.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
-
-import type { GetCurrentFilePathFn, } from './types.ts';
+import type {
+  EditorWsClientHandle,
+  GetCurrentFilePathFn,
+  ReferencesPopupHandle,
+} from './types.ts';
 
 /** Tagged logger for LSP references. */
 const refLog = tagged({
@@ -55,12 +54,12 @@ export async function showReferences(
     character,
     rect,
   }: {
-    ws: EditorWsClient;
-    referencesPopup: ReferencesPopup;
-    getCurrentFilePath: GetCurrentFilePathFn;
-    line: number;
-    character: number;
-    rect: DOMRect;
+    readonly ws: EditorWsClientHandle;
+    readonly referencesPopup: ReferencesPopupHandle;
+    readonly getCurrentFilePath: GetCurrentFilePathFn;
+    readonly line: number;
+    readonly character: number;
+    readonly rect: DOMRect;
   },
 ): Promise<void> {
   /** Current file path; null when no buffer is open, in which case the request would be meaningless. */

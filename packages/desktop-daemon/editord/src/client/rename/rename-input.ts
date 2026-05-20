@@ -120,9 +120,9 @@ export class RenameInput extends HTMLElement {
     x,
     y,
   }: {
-    placeholder: string;
-    x: number;
-    y: number;
+    readonly placeholder: string;
+    readonly x: number;
+    readonly y: number;
   },): void {
     if (this.#input === null)
       return;

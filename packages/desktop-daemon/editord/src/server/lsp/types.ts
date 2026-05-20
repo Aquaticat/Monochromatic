@@ -34,21 +34,21 @@ export type InlayHintKind = 1 | 2;
 /** Inlay hint from an LSP server. */
 export type LspInlayHint = {
   /** Position in the document where the hint is displayed. */
-  position: LspPosition;
+  readonly position: LspPosition;
   /** Display label (string or structured label parts). */
-  label: string | LspInlayHintLabelPart[];
+  readonly label: string | readonly LspInlayHintLabelPart[];
   /** Kind of inlay hint (1=Type, 2=Parameter). */
-  kind?: InlayHintKind;
+  readonly kind?: InlayHintKind;
   /** Whether to insert padding space before the hint. */
-  paddingLeft?: boolean;
+  readonly paddingLeft?: boolean;
   /** Whether to insert padding space after the hint. */
-  paddingRight?: boolean;
+  readonly paddingRight?: boolean;
 };
 
 /** Structured label part for an inlay hint. */
 export type LspInlayHintLabelPart = {
   /** Text value of this label part. */
-  value: string;
+  readonly value: string;
 };
 
 //endregion Inlay hints
@@ -62,9 +62,9 @@ export type LspInlayHintLabelPart = {
  */
 export type LspSelectionRange = {
   /** Range of this selection level. */
-  range: LspRange;
+  readonly range: LspRange;
   /** Next larger enclosing selection range, or undefined at the outermost scope. */
-  parent?: LspSelectionRange;
+  readonly parent?: LspSelectionRange;
 };
 
 //endregion Selection ranges
@@ -74,25 +74,25 @@ export type LspSelectionRange = {
 /** Server capabilities returned during LSP initialization. */
 export type LspServerCapabilities = {
   /** Document sync mode (0=None, 1=Full, 2=Incremental) or detailed options. */
-  textDocumentSync?: number | {
-    openClose?: boolean;
-    change?: number;
-    save?: boolean | { includeText?: boolean; };
+  readonly textDocumentSync?: number | {
+    readonly openClose?: boolean;
+    readonly change?: number;
+    readonly save?: boolean | { readonly includeText?: boolean; };
   };
   /** Whether hover is supported. */
-  hoverProvider?: boolean;
+  readonly hoverProvider?: boolean;
   /** Completion provider configuration. */
-  completionProvider?: { triggerCharacters?: string[]; };
+  readonly completionProvider?: { readonly triggerCharacters?: readonly string[]; };
   /** Whether document formatting is supported. */
-  documentFormattingProvider?: boolean;
+  readonly documentFormattingProvider?: boolean;
   /** Whether go-to-definition is supported. */
-  definitionProvider?: boolean;
+  readonly definitionProvider?: boolean;
   /** Whether inlay hints are supported. */
-  inlayHintProvider?: boolean | { resolveProvider?: boolean; };
+  readonly inlayHintProvider?: boolean | { readonly resolveProvider?: boolean; };
   /** Whether selection range is supported. */
-  selectionRangeProvider?: boolean;
+  readonly selectionRangeProvider?: boolean;
   /** Whether rename is supported (optionally with prepareProvider). */
-  renameProvider?: boolean | { prepareProvider?: boolean; };
+  readonly renameProvider?: boolean | { readonly prepareProvider?: boolean; };
 };
 
 //endregion Capabilities

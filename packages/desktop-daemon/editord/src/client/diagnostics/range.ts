@@ -26,11 +26,11 @@ export function findTextOffset({
   lineDiv,
   charOffset,
 }: {
-  lineDiv: Element;
-  charOffset: number;
+  readonly lineDiv: Element;
+  readonly charOffset: number;
 },): {
-  node: Text;
-  offset: number;
+  readonly node: Text;
+  readonly offset: number;
 } | null {
   /** SHOW_TEXT walker keeps the loop body free of element-node guards. */
   const walker = document.createTreeWalker(
@@ -83,8 +83,8 @@ export function createDiagnosticRange({
   editor,
   diagnostic,
 }: {
-  editor: HTMLElement;
-  diagnostic: Diagnostic;
+  readonly editor: HTMLElement;
+  readonly diagnostic: Diagnostic;
 },): globalThis.Range | null {
   /** Out-of-bounds line index returns null instead of throwing. */
   const startDiv = editor.children[diagnostic.range.start.line];

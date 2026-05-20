@@ -34,8 +34,8 @@ export function collectAncestorDirs({
   paths,
   rootLength,
 }: {
-  paths: string[];
-  rootLength: number;
+  readonly paths: readonly string[];
+  readonly rootLength: number;
 },): Set<string> {
   /** Set deduplicates ancestors that appear under multiple input paths. */
   const dirs = new Set<string>();
@@ -74,11 +74,11 @@ export function findScrollAnchor({
   tree,
   hostElement,
 }: {
-  tree: HTMLDivElement;
-  hostElement: HTMLElement;
+  readonly tree: HTMLDivElement;
+  readonly hostElement: HTMLElement;
 },): {
-  element: HTMLElement;
-  offsetFromViewport: number;
+  readonly element: HTMLElement;
+  readonly offsetFromViewport: number;
 } | null {
   /** Reused as the viewport reference frame for every candidate compare below. */
   const hostRect = hostElement.getBoundingClientRect();
@@ -117,8 +117,8 @@ export function scrollToFile({
   tree,
   path,
 }: {
-  tree: HTMLDivElement;
-  path: string;
+  readonly tree: HTMLDivElement;
+  readonly path: string;
 },): void {
   /** Null when the file is not yet rendered; scroll skipped in that case. */
   const label = tree.querySelector<HTMLElement>(
@@ -160,11 +160,11 @@ export async function revealFiles(
     paths,
     restoreExpansion,
   }: {
-    tree: HTMLDivElement;
-    hostElement: HTMLElement;
-    rootPath: string;
-    paths: string[];
-    restoreExpansion: (opts: { dirs: string[]; },) => Promise<void>;
+    readonly tree: HTMLDivElement;
+    readonly hostElement: HTMLElement;
+    readonly rootPath: string;
+    readonly paths: readonly string[];
+    readonly restoreExpansion: (opts: { readonly dirs: readonly string[]; },) => Promise<void>;
   },
 ): Promise<void> {
   /** Deduped ancestor directories that need expanding to reveal `paths`. */

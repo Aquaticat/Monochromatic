@@ -16,8 +16,8 @@ import {
   tagged,
 } from '../log.ts';
 import {
+  createDiagnosticStore,
   type DiagnosticsHandler,
-  DiagnosticStore,
   type WireDiagnostic,
 } from './diagnostic-store.ts';
 import type { DocumentState, } from './document-sync.ts';
@@ -40,7 +40,7 @@ import {
   managerRename,
   managerSelectionRange,
 } from './lsp-manager-requests.ts';
-import { LspPool, } from './lsp-pool.ts';
+import { createLspPool, } from './lsp-pool.ts';
 import type {
   LspCompletionItem,
   LspHover,
@@ -67,55 +67,55 @@ export type LspManager = {
    * (didChange, hover, completions, etc.) become no-ops for that path.
    */
   didOpen(opts: {
-    path: string;
-    text: string;
-    size: number;
+    readonly path: string;
+    readonly text: string;
+    readonly size: number;
   },): Promise<void>;
   /** Notifies LSP servers that a file's content changed. */
   didChange(opts: {
-    path: string;
-    text: string;
+    readonly path: string;
+    readonly text: string;
   },): Promise<void>;
   /** Notifies LSP servers that a file was saved. */
-  didSave(opts: { path: string; },): Promise<void>;
+  didSave(opts: { readonly path: string; },): Promise<void>;
   /** Notifies LSP servers that a file was closed. */
-  didClose(opts: { path: string; },): Promise<void>;
+  didClose(opts: { readonly path: string; },): Promise<void>;
   /** Returns hover content, or null when no client is available. */
   hover(opts: FilePosition,): Promise<LspHover | null>;
   /** Returns completion items, or empty array when no client is available. */
-  completion(opts: FilePosition,): Promise<LspCompletionItem[]>;
+  completion(opts: FilePosition,): Promise<readonly LspCompletionItem[]>;
   /** Returns text edits, or empty array when no client is available. */
-  format(opts: { path: string; },): Promise<LspTextEdit[]>;
+  format(opts: { readonly path: string; },): Promise<readonly LspTextEdit[]>;
   /** Returns definition location, or null when no client is available. */
   gotoDefinition(opts: FilePosition,): Promise<FilePosition | null>;
   /** Returns reference locations, or empty array when no client is available. */
-  references(opts: FilePosition,): Promise<FilePosition[]>;
+  references(opts: FilePosition,): Promise<readonly FilePosition[]>;
   /** Returns inlay hints, or empty array when no client is available. */
   inlayHints(opts: {
-    path: string;
-    range: Range;
-  },): Promise<LspInlayHint[]>;
+    readonly path: string;
+    readonly range: Range;
+  },): Promise<readonly LspInlayHint[]>;
   /** Returns selection ranges, or empty array when no client is available. */
   selectionRange(opts: {
-    path: string;
-    positions: {
-      line: number;
-      character: number;
+    readonly path: string;
+    readonly positions: readonly {
+      readonly line: number;
+      readonly character: number;
     }[];
-  },): Promise<LspSelectionRange[]>;
+  },): Promise<readonly LspSelectionRange[]>;
   /** Returns prepare-rename result, or null when symbol is not renamable. */
   prepareRename(opts: FilePosition,): Promise<PrepareRenameResult | null>;
   /** Returns workspace edit for rename, or null when rename failed. */
   rename(opts: {
-    path: string;
-    line: number;
-    character: number;
-    newName: string;
+    readonly path: string;
+    readonly line: number;
+    readonly character: number;
+    readonly newName: string;
   },): Promise<LspWorkspaceEdit | null>;
   /** Gracefully shuts down all pooled LSP servers and waits for completion. */
   shutdown(): Promise<void>;
   /** Shuts down LSP servers whose project root covers the given path. */
-  shutdownForPath(opts: { path: string; },): Promise<void>;
+  shutdownForPath(opts: { readonly path: string; },): Promise<void>;
 };
 
 //endregion LspManager type
@@ -147,9 +147,9 @@ export function createLspManager({
   onDiagnostics,
   l,
 }: {
-  ceiling: string;
-  onDiagnostics: DiagnosticsHandler;
-  l: Logger;
+  readonly ceiling: string;
+  readonly onDiagnostics: DiagnosticsHandler;
+  readonly l: Logger;
 },): LspManager {
   /** Tagged logger forwarded to all subsystems so log lines stay attributable. */
   const managerLog = tagged({
@@ -157,18 +157,18 @@ export function createLspManager({
     l,
   },);
   /** Per-file diagnostic aggregator that fans out to the manager's `onDiagnostics`. */
-  const diagnostics = new DiagnosticStore({ onDiagnostics, },);
+  const diagnostics = createDiagnosticStore({ onDiagnostics, },);
   /** URI-keyed document state shared across the didOpen/didChange/didClose helpers. */
   const documents = new Map<string, DocumentState>();
   /** LSP server pool keyed by `<type>:<root>`; each entry is lazy. */
-  const pool = new LspPool({
+  const pool = createLspPool({
     ceiling,
     l: managerLog,
     onNotification: function handleNotification(
       event: {
-        source: string;
-        method: string;
-        params: unknown;
+        readonly source: string;
+        readonly method: string;
+        readonly params: unknown;
       },
     ): void {
       routeNotification({
@@ -188,7 +188,7 @@ export function createLspManager({
    *
    * @returns true when the file has an active LSP document session
    */
-  function hasDocument({ path, }: { path: string; },): boolean {
+  function hasDocument({ path, }: { readonly path: string; },): boolean {
     return documents.has(pathToUri({ path, },),);
   }
 

@@ -5,9 +5,18 @@
  * entries in the tree sidebar.
  */
 
-import type { ContextMenu, } from '../context-menu/context-menu.ts';
 import type { ContextMenuItem, } from '../context-menu/items.ts';
 import type { ContextAction, } from './types.ts';
+
+/** Context menu surface needed by file-tree context actions. */
+type ContextMenuHandle = {
+  /** Shows menu items at viewport coordinates. */
+  readonly show: (opts: {
+    readonly x: number;
+    readonly y: number;
+    readonly items: readonly ContextMenuItem[];
+  },) => void;
+};
 
 /**
  * Shows a directory context menu at the given coordinates.
@@ -34,11 +43,11 @@ export function showDirContextMenu({
   path,
   onAction,
 }: {
-  contextMenu: ContextMenu;
-  x: number;
-  y: number;
-  path: string;
-  onAction: (action: ContextAction,) => void;
+  readonly contextMenu: ContextMenuHandle;
+  readonly x: number;
+  readonly y: number;
+  readonly path: string;
+  readonly onAction: (action: ContextAction,) => void;
 },): void {
   contextMenu.show({
     x,
@@ -75,11 +84,11 @@ export function showFileContextMenu({
   path,
   onAction,
 }: {
-  contextMenu: ContextMenu;
-  x: number;
-  y: number;
-  path: string;
-  onAction: (action: ContextAction,) => void;
+  readonly contextMenu: ContextMenuHandle;
+  readonly x: number;
+  readonly y: number;
+  readonly path: string;
+  readonly onAction: (action: ContextAction,) => void;
 },): void {
   contextMenu.show({
     x,
@@ -109,8 +118,8 @@ export function buildDirContextItems({
   path,
   onAction,
 }: {
-  path: string;
-  onAction: (action: ContextAction,) => void;
+  readonly path: string;
+  readonly onAction: (action: ContextAction,) => void;
 },): ContextMenuItem[] {
   return [
     {
@@ -191,8 +200,8 @@ export function buildFileContextItems({
   path,
   onAction,
 }: {
-  path: string;
-  onAction: (action: ContextAction,) => void;
+  readonly path: string;
+  readonly onAction: (action: ContextAction,) => void;
 },): ContextMenuItem[] {
   return [
     {

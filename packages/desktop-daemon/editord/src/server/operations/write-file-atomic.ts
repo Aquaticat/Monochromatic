@@ -148,9 +148,9 @@ async function writeContentToTemp(
     content,
     originalMode,
   }: {
-    tempPath: string;
-    content: string;
-    originalMode: number | null;
+    readonly tempPath: string;
+    readonly content: string;
+    readonly originalMode: number | null;
   },
 ): Promise<void> {
   /** `await using` ensures close runs before the caller renames the temp into place. */
@@ -217,8 +217,8 @@ export async function writeFileAtomic(
     path,
     content,
   }: {
-    path: string;
-    content: string;
+    readonly path: string;
+    readonly content: string;
   },
 ): Promise<void> {
   /** Captured up-front so the temp can inherit the target's mode if it existed. */

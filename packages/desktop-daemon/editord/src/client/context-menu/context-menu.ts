@@ -20,47 +20,82 @@ import {
 
 export type { ContextMenuItem, } from './items.ts';
 
-/**
- * Removes the popover element when dismissed by the browser.
- * Without hoisting: consistent-function-scoping lint warning since it captures no parent scope vars.
- *
- * @param event - popover toggle event
- */
-function handlePopoverToggle(event: Event,): void {
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover elements always carries newState
-  if ((event as ToggleEvent).newState === 'closed') {
-    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the popover div */
-    /** Popover element fired the toggle; remove it so the next show creates a fresh one. */
-    const popup = event.currentTarget as HTMLDivElement;
-    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-    popup.remove();
-  }
-}
+/** Mutable context menu state captured by the factory closure. */
+type ContextMenuState = {
+  /** Popover element, or null when hidden. */
+  popup: HTMLDivElement | null;
+};
 
 /**
- * Manages a single context menu instance.
+ * Context menu handle returned by {@link createContextMenu}.
+ */
+export type ContextMenu = Readonly<{
+  /** Shows menu items at viewport coordinates. */
+  readonly show: (opts: {
+    readonly x: number;
+    readonly y: number;
+    readonly items: readonly ContextMenuItem[];
+  },) => void;
+  /** Hides the context menu and cleans up the anchor. */
+  readonly hide: () => void;
+}>;
+
+/**
+ * Creates a context menu instance.
  *
  * The popup lives in the top layer via `popover="auto"`, escaping
  * any overflow clipping. Light dismiss (click outside, Escape)
  * is handled natively by the browser.
+ *
+ * @returns frozen context menu handle
+ *
+ * @example
+ * ```ts
+ * const menu = createContextMenu();
+ * menu.show({ x: 10, y: 20, items: [], });
+ * ```
  */
-export class ContextMenu {
+export function createContextMenu(): ContextMenu {
   /** Invisible anchor div positioned at the click point. */
-  readonly #anchor: HTMLDivElement;
-
-  /** Popover element, or null when hidden. */
-  #popup: HTMLDivElement | null = null;
+  const anchor = h({
+    tag: 'div',
+    class: 'ctx-anchor',
+  },);
+  /** Mutable popup slot kept private to this handle. */
+  const state: ContextMenuState = {
+    popup: null,
+  };
+  /**
+   * Removes the popover element when dismissed by the browser.
+   *
+   * @param event - popover toggle event
+   */
+  function handlePopoverToggle(event: Event,): void {
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover elements always carries newState
+    if ((event as ToggleEvent).newState === 'closed') {
+      /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the popover div */
+      /** Popover element fired the toggle; remove it so the next show creates a fresh one. */
+      const popup = event.currentTarget as HTMLDivElement;
+      /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
+      popup.remove();
+      if (state.popup === popup)
+        state.popup = null;
+    }
+  }
 
   /** Callback fired when the popover is dismissed by the browser. */
-  readonly #onToggleBound: (event: Event,) => void;
+  const onToggleBound = handlePopoverToggle;
 
-  /** Initializes the invisible anchor div and popover toggle handler. */
-  constructor() {
-    this.#anchor = h({
-      tag: 'div',
-      class: 'ctx-anchor',
-    },);
-    this.#onToggleBound = handlePopoverToggle;
+  /** Hides the context menu and cleans up the anchor. */
+  function hide(): void {
+    if (state.popup !== null) {
+      /** Popup captured before clearing state so event callbacks cannot observe a stale handle. */
+      const { popup, } = state;
+      state.popup = null;
+      popup.hidePopover();
+      popup.remove();
+    }
+    anchor.remove();
   }
 
   /**
@@ -72,19 +107,16 @@ export class ContextMenu {
    *
    * @param items - menu items to display
    */
-  show({
+  function show({
     x,
     y,
     items,
   }: {
-    x: number;
-    y: number;
-    items: ContextMenuItem[];
+    readonly x: number;
+    readonly y: number;
+    readonly items: readonly ContextMenuItem[];
   },): void {
-    this.hide();
-
-    /** Captures `this` so the named `onActivate` helper can hide the menu without a bound method. */
-    const self = this;
+    hide();
 
     /**
      * Hides the menu and invokes the given action callback.
@@ -92,7 +124,7 @@ export class ContextMenu {
      * @param action - callback to invoke after hiding
      */
     function onActivate(action: () => void,): void {
-      self.hide();
+      hide();
       action();
     }
 
@@ -110,29 +142,29 @@ export class ContextMenu {
     },);
 
     /** Position the invisible anchor at the click point. */
-    this.#anchor.style.setProperty(
+    anchor.style.setProperty(
       'inset-inline-start',
       `${x}px`,
     );
-    this.#anchor.style.setProperty(
+    anchor.style.setProperty(
       'inset-block-start',
       `${y}px`,
     );
-    document.body.append(this.#anchor,);
+    document.body.append(anchor,);
 
-    this.#popup = h({
+    state.popup = h({
       tag: 'div',
       class: 'ctx-popup',
       attrs: { popover: 'auto', },
       children: menuItems,
     },);
 
-    this.#popup.addEventListener(
+    state.popup.addEventListener(
       'toggle',
-      this.#onToggleBound,
+      onToggleBound,
     );
-    document.body.append(this.#popup,);
-    this.#popup.showPopover();
+    document.body.append(state.popup,);
+    state.popup.showPopover();
 
     /** First rendered row; focused on open so keyboard users land on a real item, not the dialog. */
     const [firstItem,] = menuItems;
@@ -140,13 +172,8 @@ export class ContextMenu {
       firstItem.focus();
   }
 
-  /** Hides the context menu and cleans up the anchor. */
-  hide(): void {
-    if (this.#popup !== null) {
-      this.#popup.hidePopover();
-      this.#popup.remove();
-      this.#popup = null;
-    }
-    this.#anchor.remove();
-  }
+  return Object.freeze({
+    show,
+    hide,
+  },);
 }

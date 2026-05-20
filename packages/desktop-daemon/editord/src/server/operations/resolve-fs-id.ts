@@ -23,7 +23,7 @@ import { platform, } from 'node:os';
  *
  * @returns hex string filesystem identifier (e.g. `"a281dfd5d0534daf"`)
  */
-function linuxFsId({ path, }: { path: string; },): string {
+function linuxFsId({ path, }: { readonly path: string; },): string {
   return execFileSync(
     'stat',
     [
@@ -86,8 +86,8 @@ function parseVolumeSerial(output: string,): string {
     from,
     acc,
   }: {
-    from: number;
-    acc: string;
+    readonly from: number;
+    readonly acc: string;
   },): string {
     if (from >= output.length)
       return acc;
@@ -123,7 +123,7 @@ function parseVolumeSerial(output: string,): string {
  *
  * @returns volume serial string
  */
-function windowsFsId({ path, }: { path: string; },): string {
+function windowsFsId({ path, }: { readonly path: string; },): string {
   /** Extract drive root (e.g. "C:\") from the absolute path. */
   const driveRoot = path.slice(
     0,
@@ -155,7 +155,7 @@ function windowsFsId({ path, }: { path: string; },): string {
  *
  * @returns filesystem identifier string
  */
-function darwinFsId({ path, }: { path: string; },): string {
+function darwinFsId({ path, }: { readonly path: string; },): string {
   return execFileSync(
     'stat',
     [
@@ -189,7 +189,7 @@ function darwinFsId({ path, }: { path: string; },): string {
  * // => "1A2B-3C4D"
  * ```
  */
-export function resolveFsId({ path, }: { path: string; },): string {
+export function resolveFsId({ path, }: { readonly path: string; },): string {
   /** Host OS name from `os.platform()`; dispatched below to the per-OS implementation. */
   const os = platform();
   if (os === 'linux')

@@ -36,221 +36,205 @@ import type { LspServerCapabilities, } from './types.ts';
  */
 export const LSP_FEATURE_TIMEOUT_MS = 10_000;
 
+/** Server-initiated notification callback payload. */
+export type LspClientNotification = {
+  /** LSP notification method name. */
+  readonly method: string;
+  /** LSP notification params. */
+  readonly params: unknown;
+};
+
+/** Child-process exit callback payload. */
+export type LspClientExit = {
+  /** Whether the process exited without an explicit shutdown request. */
+  readonly unexpected: boolean;
+  /** Exit code reported by Node, or null when signal-only. */
+  readonly code: number | null;
+  /** Rolling stderr tail captured before exit. */
+  readonly recentStderr: string;
+};
+
 /**
- * Client for a single LSP server process.
+ * Options for {@link createLspClient}.
+ */
+export type LspClientOptions = {
+  /** Executable path or name. */
+  readonly command: string;
+  /** Command-line arguments. */
+  readonly args: readonly string[];
+  /** Display name for logging. */
+  readonly name: string;
+  /** Working directory for the child process. */
+  readonly cwd: string;
+  /** Environment variables for the child process. */
+  readonly env: Readonly<Record<string, string | undefined>>;
+  /** Parent logger to compose tags from. */
+  readonly l: Logger;
+  /** Callback for server-initiated notifications. */
+  readonly onNotification: (event: LspClientNotification,) => void;
+  /** Callback invoked when the process exits. */
+  readonly onExit: (event: LspClientExit,) => void;
+};
+
+/**
+ * Initialize request payload for {@link LspClient.initialize}.
+ */
+type LspInitializeOptions = {
+  /** Workspace root URI such as `file:///home/user/project`. */
+  readonly rootUri: string;
+  /** Server-specific initialization options. */
+  readonly initializationOptions?: Readonly<Record<string, unknown>>;
+};
+
+/**
+ * JSON-RPC request payload for {@link LspClient.request}.
+ */
+type LspRequestOptions = {
+  /** LSP method name such as `textDocument/hover`. */
+  readonly method: string;
+  /** Method parameters. */
+  readonly params: unknown;
+  /** Optional per-request timeout in milliseconds. */
+  readonly timeoutMs?: number;
+};
+
+/**
+ * JSON-RPC notification payload for {@link LspClient.notify}.
+ */
+type LspNotifyOptions = {
+  /** LSP method name such as `textDocument/didOpen`. */
+  readonly method: string;
+  /** Notification parameters. */
+  readonly params: unknown;
+};
+
+/** Mutable LSP client state captured by the factory closure. */
+type LspClientState = {
+  /** Counter for generating unique JSON-RPC request IDs. */
+  nextId: number;
+  /** Rolling buffer of recent stderr output. */
+  stderrBuffer: string;
+  /** Whether the LSP initialize handshake has completed. */
+  initialized: boolean;
+  /** Whether a graceful shutdown has been initiated. */
+  shuttingDown: boolean;
+  /** Whether the child process has exited. */
+  dead: boolean;
+  /** Server capabilities reported during initialization. */
+  capabilities: LspServerCapabilities;
+};
+
+/** Client for a single LSP server process. */
+export type LspClient = Readonly<{
+  /** Server capabilities reported during initialization. */
+  readonly capabilities: LspServerCapabilities;
+  /** Whether the LSP initialize handshake has completed. */
+  readonly initialized: boolean;
+  /** Whether the child process has exited. */
+  readonly dead: boolean;
+  /** Performs the LSP initialize handshake. */
+  readonly initialize: (opts: LspInitializeOptions,) => Promise<LspServerCapabilities>;
+  /** Sends a JSON-RPC request and waits for the correlated response. */
+  readonly request: (opts: LspRequestOptions,) => Promise<unknown>;
+  /** Sends a JSON-RPC notification. */
+  readonly notify: (opts: LspNotifyOptions,) => void;
+  /** Gracefully shuts down the LSP server. */
+  readonly shutdown: () => Promise<void>;
+}>;
+
+/** Maximum bytes kept in the rolling stderr buffer. */
+const STDERR_BUFFER_LIMIT = 4_096;
+
+/**
+ * Creates a client for a single LSP server process.
  *
  * Spawns the process, manages the JSON-RPC framing over stdio,
  * and provides request/notification methods. Incoming server
  * notifications (e.g. `textDocument/publishDiagnostics`) are
  * forwarded to the `onNotification` callback.
+ *
+ * @param command - executable path or name
+ *
+ * @param args - command-line arguments
+ *
+ * @param name - display name for logging
+ *
+ * @param cwd - working directory for the child process
+ *
+ * @param env - environment variables for the child process
+ *
+ * @param l - parent logger to compose tags from
+ *
+ * @param onNotification - callback for server-initiated notifications
+ *
+ * @param onExit - callback when the child process exits
+ *
+ * @returns frozen LSP client handle
+ *
+ * @example
+ * ```ts
+ * const client = createLspClient({
+ *   command: 'tsgo',
+ *   args: ['--lsp', '--stdio'],
+ *   name: 'tsgo',
+ *   cwd: '/home/user/project',
+ *   env: process.env,
+ *   l: logger,
+ *   onNotification: function handleNotification(event) { console.info(event.method); },
+ *   onExit: function handleExit(event) { console.info(event.code); },
+ * });
+ * ```
  */
-export class LspClient {
-  /** Child process handle. */
-  readonly #proc: ChildProcess;
-
-  /** Map of pending requests keyed by JSON-RPC ID. */
-  readonly #pending = new Map<number, PendingLspRequest>();
-
-  /** Counter for generating unique JSON-RPC request IDs. */
-  #nextId = 0;
-
-  /** Display name for logging (e.g. "oxlint", "tsgo", "dprint"). */
-  readonly #name: string;
-
+export function createLspClient({
+  command,
+  args,
+  name,
+  cwd,
+  env,
+  l,
+  onNotification,
+  onExit,
+}: LspClientOptions,): LspClient {
   /** Tagged logger for this LSP client. */
-  readonly #l: Logger;
-
-  /** Callback for server-initiated notifications. */
-  readonly #onNotification: (event: {
-    method: string;
-    params: unknown;
-  },) => void;
-
-  /** Callback invoked when the process exits. */
-  readonly #onExit: (event: {
-    unexpected: boolean;
-    code: number | null;
-    recentStderr: string;
-  },) => void;
-
-  /**
-   * Rolling buffer of recent stderr output (last ~4 KB).
-   * Used to detect specific panic patterns after an unexpected exit.
-   */
-  #stderrBuffer = '';
-
-  /** Whether the LSP initialize handshake has completed. */
-  #initialized = false;
-
-  /**
-   * Whether a graceful shutdown has been initiated via {@link shutdown}.
-   */
-  #shuttingDown = false;
-
-  /** Whether the child process has exited (gracefully or not). */
-  #dead = false;
-
-  /** Server capabilities reported during initialization. */
-  capabilities: LspServerCapabilities = {};
-
-  /**
-   * Spawns the LSP server process and sets up message parsing.
-   *
-   * @param command - executable path or name
-   *
-   * @param args - command-line arguments
-   *
-   * @param name - display name for logging
-   *
-   * @param cwd - working directory for the child process
-   *
-   * @param env - environment variables for the child process
-   *
-   * @param l - parent logger to compose tags from
-   *
-   * @param onNotification - callback for server-initiated notifications
-   */
-  constructor({
-    command,
-    args,
-    name,
-    cwd,
-    env,
+  const clientLog = tagged({
+    tag: name,
     l,
-    onNotification,
-    onExit,
-  }: {
-    command: string;
-    args: readonly string[];
-    name: string;
-    cwd: string;
-    env: Record<string, string | undefined>;
-    l: Logger;
-    onNotification: (event: {
-      method: string;
-      params: unknown;
-    },) => void;
-    onExit: (event: {
-      unexpected: boolean;
-      code: number | null;
-      recentStderr: string;
-    },) => void;
-  },) {
-    this.#name = name;
-    this.#l = tagged({
-      tag: name,
-      l,
-    },);
-    this.#onNotification = onNotification;
-    this.#onExit = onExit;
-
-    this.#proc = spawn(
-      command,
-      [...args,],
-      {
-        cwd,
-        env,
-        stdio: [
-          'pipe',
-          'pipe',
-          'pipe',
-        ],
-      },
-    );
-
-    /** Local alias for `this.#l`; captured by stream callbacks that cannot bind `this`. */
-    const clientLog = this.#l;
-    /** JSON-RPC framing parser fed from stdout; emits parsed messages or parse errors. */
-    const parser = createLspParser({
-      onMessage: this.#handleMessage.bind(this,),
-      onError: function handleParseError(error,) {
-        clientLog.error(`malformed JSON-RPC message: ${String(error,)}`,);
-      },
-    },);
-    this.#proc.stdout?.on(
-      'data',
-      function handleStdout(chunk: Buffer,) {
-        parser.feed(chunk,);
-      },
-    );
-    /** Maximum bytes kept in the rolling stderr buffer. */
-    const STDERR_BUFFER_LIMIT = 4_096;
-    /** Local alias for `this`; captured by stream callbacks so they can mutate instance state. */
-    const client = this;
-    this.#proc.stderr?.on(
-      'data',
-      function handleStderr(chunk: Buffer,) {
-        /** Decoded stderr chunk with trailing newline stripped; logged and appended to the rolling buffer. */
-        const text = chunk.toString('utf8',).trimEnd();
-        clientLog.error(`stderr: ${text}`,);
-        client.#stderrBuffer += `${text}\n`;
-        if (client.#stderrBuffer.length > STDERR_BUFFER_LIMIT)
-          client.#stderrBuffer = client.#stderrBuffer.slice(-STDERR_BUFFER_LIMIT,);
-      },
-    );
-
-    this.#proc.on(
-      'exit',
-      function handleExit(code,) {
-        client.#dead = true;
-        /** True when the exit was not preceded by an explicit `shutdown()`; signals a crash to `onExit`. */
-        const unexpected = !client.#shuttingDown;
-        if (unexpected) {
-          clientLog.error(`crashed with code ${String(code,)}`,);
-          /** Reject all pending requests so callers don't hang forever. */
-          for (const [, entry,] of client.#pending.entries()) {
-            if (entry.timeoutId !== null)
-              clearTimeout(entry.timeoutId,);
-            entry.reject(new Error(`LSP server crashed (exit code ${String(code,)})`,),);
-          }
-          client.#pending.clear();
-        }
-        else {
-          clientLog.info(`exited with code ${String(code,)}`,);
-        }
-        client.#onExit({
-          unexpected,
-          code,
-          recentStderr: client.#stderrBuffer,
-        },);
-      },
-    );
-  }
+  },);
+  /** Map of pending requests keyed by JSON-RPC ID. */
+  const pending = new Map<number, PendingLspRequest>();
+  /** Mutable lifecycle state kept private to this client. */
+  const state: LspClientState = {
+    nextId: 0,
+    stderrBuffer: '',
+    initialized: false,
+    shuttingDown: false,
+    dead: false,
+    capabilities: {},
+  };
+  /** Child process handle. */
+  const proc: ChildProcess = spawn(
+    command,
+    [...args,],
+    {
+      cwd,
+      env: { ...env, },
+      stdio: [
+        'pipe',
+        'pipe',
+        'pipe',
+      ],
+    },
+  );
 
   /**
-   * Performs the LSP initialize handshake.
-   * Sends `initialize` request, stores capabilities, then sends `initialized` notification.
+   * Writes a JSON-RPC message to the child process stdin.
    *
-   * @param rootUri - workspace root URI (e.g. `file:///home/user/project`)
-   *
-   * @returns server capabilities
+   * @param message - message object to encode and send
    */
-  async initialize({
-    rootUri,
-    initializationOptions,
-  }: {
-    rootUri: string;
-    initializationOptions?: Record<string, unknown>;
-  },): Promise<LspServerCapabilities> {
-    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- LSP initialize always returns { capabilities } */
-    /** Raw initialize response, narrowed to the capabilities shape required by the spec. */
-    const result = await this.request({
-      method: 'initialize',
-      params: buildInitializeParams({
-        rootUri,
-        initializationOptions,
-      },),
-    },) as { capabilities: LspServerCapabilities; };
-    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-
-    this.capabilities = result.capabilities;
-    this.notify({
-      method: 'initialized',
-      params: {},
-    },);
-    this.#initialized = true;
-    this.#l.info('initialized',);
-    return this.capabilities;
+  function send(message: unknown,): void {
+    /** Length-prefixed JSON-RPC frame ready for stdin; produced by the framing encoder. */
+    const encoded = encodeLspMessage({ message, },);
+    proc.stdin?.write(encoded,);
   }
 
   /**
@@ -268,17 +252,14 @@ export class LspClient {
    *
    * @throws when the server responds with a JSON-RPC error or the request times out
    */
-  request({
+  function request({
     method,
     params,
     timeoutMs,
-  }: {
-    method: string;
-    params: unknown;
-    timeoutMs?: number;
-  },): Promise<unknown> {
-    /** Monotonic JSON-RPC request id; post-increment so each request gets a fresh value. */
-    const id = this.#nextId++;
+  }: LspRequestOptions,): Promise<unknown> {
+    /** Monotonic JSON-RPC request id; incremented after capture so each request gets a fresh value. */
+    const id = state.nextId;
+    state.nextId += 1;
     /** Outgoing JSON-RPC request envelope; serialized below and sent over stdin. */
     const message = {
       jsonrpc: '2.0' as const,
@@ -286,10 +267,6 @@ export class LspClient {
       method,
       params,
     };
-    /** Local alias for the pending-request map; captured by the executor closure. */
-    const pending = this.#pending;
-    /** Local alias for the tagged logger; captured by the timeout callback. */
-    const clientLog = this.#l;
 
     /* oxlint-disable eslint-plugin-promise/avoid-new -- request correlation requires storing resolve/reject in a map */
     /** Promise resolved when the matching response arrives, or rejected on timeout/error. */
@@ -327,7 +304,7 @@ export class LspClient {
     );
     /* oxlint-enable eslint-plugin-promise/avoid-new */
 
-    this.#send(message,);
+    send(message,);
     return responsePromise;
   }
 
@@ -338,14 +315,11 @@ export class LspClient {
    *
    * @param params - notification parameters
    */
-  notify({
+  function notify({
     method,
     params,
-  }: {
-    method: string;
-    params: unknown;
-  },): void {
-    this.#send({
+  }: LspNotifyOptions,): void {
+    send({
       jsonrpc: '2.0',
       method,
       params,
@@ -353,12 +327,36 @@ export class LspClient {
   }
 
   /**
-   * Whether the LSP initialize handshake has completed.
+   * Performs the LSP initialize handshake.
+   * Sends `initialize` request, stores capabilities, then sends `initialized` notification.
    *
-   * @returns true if initialized
+   * @param rootUri - workspace root URI (e.g. `file:///home/user/project`)
+   *
+   * @returns server capabilities
    */
-  get initialized(): boolean {
-    return this.#initialized;
+  async function initialize({
+    rootUri,
+    initializationOptions,
+  }: LspInitializeOptions,): Promise<LspServerCapabilities> {
+    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- LSP initialize always returns { capabilities } */
+    /** Raw initialize response, narrowed to the capabilities shape required by the spec. */
+    const result = await request({
+      method: 'initialize',
+      params: buildInitializeParams({
+        rootUri,
+        initializationOptions,
+      },),
+    },) as { readonly capabilities: LspServerCapabilities; };
+    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
+
+    state.capabilities = result.capabilities;
+    notify({
+      method: 'initialized',
+      params: {},
+    },);
+    state.initialized = true;
+    clientLog.info('initialized',);
+    return state.capabilities;
   }
 
   /**
@@ -366,42 +364,22 @@ export class LspClient {
    * Sends `shutdown` request followed by `exit` notification.
    * Falls back to killing the process if shutdown fails.
    */
-  async shutdown(): Promise<void> {
-    this.#shuttingDown = true;
+  async function shutdown(): Promise<void> {
+    state.shuttingDown = true;
     try {
-      await this.request({
+      await request({
         method: 'shutdown',
         params: null,
       },);
-      this.notify({
+      notify({
         method: 'exit',
         params: null,
       },);
     }
     catch (error) {
-      this.#l.error(`shutdown failed, killing process: ${String(error,)}`,);
-      this.#proc.kill();
+      clientLog.error(`shutdown failed, killing process: ${String(error,)}`,);
+      proc.kill();
     }
-  }
-
-  /**
-   * Whether the child process has exited (gracefully or by crashing).
-   *
-   * @returns true when the process is no longer running
-   */
-  get dead(): boolean {
-    return this.#dead;
-  }
-
-  /**
-   * Writes a JSON-RPC message to the child process stdin.
-   *
-   * @param message - message object to encode and send
-   */
-  #send(message: unknown,): void {
-    /** Length-prefixed JSON-RPC frame ready for stdin; produced by the framing encoder. */
-    const encoded = encodeLspMessage({ message, },);
-    this.#proc.stdin?.write(encoded,);
   }
 
   /**
@@ -411,13 +389,96 @@ export class LspClient {
    *
    * @param message - parsed JSON-RPC message
    */
-  #handleMessage(message: JsonRpcMessage,): void {
+  function handleMessage(message: JsonRpcMessage,): void {
     routeJsonRpcMessage({
       message,
-      pending: this.#pending,
-      name: this.#name,
-      send: this.#send.bind(this,),
-      onNotification: this.#onNotification,
+      pending,
+      name,
+      send,
+      onNotification,
     },);
   }
+
+  /** JSON-RPC framing parser fed from stdout; emits parsed messages or parse errors. */
+  const parser = createLspParser({
+    onMessage: handleMessage,
+    onError: function handleParseError(error,) {
+      clientLog.error(`malformed JSON-RPC message: ${String(error,)}`,);
+    },
+  },);
+  proc.stdout?.on(
+    'data',
+    function handleStdout(chunk: Buffer,) {
+      parser.feed(chunk,);
+    },
+  );
+  proc.stderr?.on(
+    'data',
+    function handleStderr(chunk: Buffer,) {
+      /** Decoded stderr chunk with trailing newline stripped; logged and appended to the rolling buffer. */
+      const text = chunk.toString('utf8',).trimEnd();
+      clientLog.error(`stderr: ${text}`,);
+      state.stderrBuffer += `${text}\n`;
+      if (state.stderrBuffer.length > STDERR_BUFFER_LIMIT)
+        state.stderrBuffer = state.stderrBuffer.slice(-STDERR_BUFFER_LIMIT,);
+    },
+  );
+
+  proc.on(
+    'exit',
+    function handleExit(code,) {
+      state.dead = true;
+      /** True when the exit was not preceded by an explicit `shutdown()`; signals a crash to `onExit`. */
+      const unexpected = !state.shuttingDown;
+      if (unexpected) {
+        clientLog.error(`crashed with code ${String(code,)}`,);
+        /** Reject all pending requests so callers don't hang forever. */
+        pending.forEach(function rejectPending(entry,): void {
+          if (entry.timeoutId !== null)
+            clearTimeout(entry.timeoutId,);
+          entry.reject(new Error(`LSP server crashed (exit code ${String(code,)})`,),);
+        },);
+        pending.clear();
+      }
+      else {
+        clientLog.info(`exited with code ${String(code,)}`,);
+      }
+      onExit({
+        unexpected,
+        code,
+        recentStderr: state.stderrBuffer,
+      },);
+    },
+  );
+
+  return Object.freeze({
+    /**
+     * Server capabilities reported during initialization.
+     *
+     * @returns current server capabilities
+     */
+    get capabilities(): LspServerCapabilities {
+      return state.capabilities;
+    },
+    /**
+     * Whether the LSP initialize handshake has completed.
+     *
+     * @returns true when initialized
+     */
+    get initialized(): boolean {
+      return state.initialized;
+    },
+    /**
+     * Whether the child process has exited.
+     *
+     * @returns true when the process is no longer running
+     */
+    get dead(): boolean {
+      return state.dead;
+    },
+    initialize,
+    request,
+    notify,
+    shutdown,
+  },);
 }

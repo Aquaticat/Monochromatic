@@ -23,8 +23,8 @@ export function groupByLine<T,>({
   items,
   keyFn,
 }: {
-  items: T[];
-  keyFn: (item: T,) => number;
+  readonly items: readonly T[];
+  readonly keyFn: (item: T,) => number;
 },): Map<number, T[]> {
   /** Line-keyed map; values are accumulated as items are processed. */
   const groups = new Map<number, T[]>();

@@ -28,12 +28,12 @@ export function deleteLineAt({
   line,
   character,
 }: {
-  editor: HTMLDivElement;
-  line: number;
-  character: number;
+  readonly editor: HTMLDivElement;
+  readonly line: number;
+  readonly character: number;
 },): {
-  line: number;
-  character: number;
+  readonly line: number;
+  readonly character: number;
 } {
   /** Live HTMLCollection so subsequent edits observe the post-removal length. */
   const { children, } = editor;
@@ -90,12 +90,12 @@ export function duplicateLineAt({
   line,
   character,
 }: {
-  editor: HTMLDivElement;
-  line: number;
-  character: number;
+  readonly editor: HTMLDivElement;
+  readonly line: number;
+  readonly character: number;
 },): {
-  line: number;
-  character: number;
+  readonly line: number;
+  readonly character: number;
 } | null {
   /** Source line for the duplicate; null result signals out-of-range. */
   const lineDiv = editor.children[line];
@@ -131,12 +131,12 @@ export function swapLineDown({
   line,
   character,
 }: {
-  editor: HTMLDivElement;
-  line: number;
-  character: number;
+  readonly editor: HTMLDivElement;
+  readonly line: number;
+  readonly character: number;
 },): {
-  line: number;
-  character: number;
+  readonly line: number;
+  readonly character: number;
 } | null {
   /** Length needed before grabbing the neighbour to confirm the move is in range. */
   const { children, } = editor;
@@ -178,12 +178,12 @@ export function swapLineUp({
   line,
   character,
 }: {
-  editor: HTMLDivElement;
-  line: number;
-  character: number;
+  readonly editor: HTMLDivElement;
+  readonly line: number;
+  readonly character: number;
 },): {
-  line: number;
-  character: number;
+  readonly line: number;
+  readonly character: number;
 } | null {
   if (line <= 0)
     return null;

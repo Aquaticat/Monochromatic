@@ -64,8 +64,8 @@ export function setTextContent({
   editor,
   text,
 }: {
-  editor: HTMLDivElement;
-  text: string;
+  readonly editor: HTMLDivElement;
+  readonly text: string;
 },): void {
   editor.replaceChildren(
     ...text.split('\n',).map(function createLineDiv(line,) {
@@ -89,7 +89,7 @@ export function setTextContent({
  * const result = getTextContent({ editor: editor, });
  * ```
  */
-export function getTextContent({ editor, }: { editor: HTMLDivElement; },): string {
+export function getTextContent({ editor, }: { readonly editor: HTMLDivElement; },): string {
   return [...editor.children,]
     .map(function readLine(child,) {
       /* oxlint-disable typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec */
@@ -119,8 +119,8 @@ export function getLineText({
   editor,
   line,
 }: {
-  editor: HTMLDivElement;
-  line: number;
+  readonly editor: HTMLDivElement;
+  readonly line: number;
 },): string | null {
   /** Out-of-range line index returns null rather than throwing. */
   const child = editor.children[line];
@@ -153,8 +153,8 @@ export function scrollLineIntoView({
   editor,
   line,
 }: {
-  editor: HTMLDivElement;
-  line: number;
+  readonly editor: HTMLDivElement;
+  readonly line: number;
 },): void {
   /** Clamped lookup so out-of-range line numbers fall back to first/last instead of throwing. */
   const child = editor.children[

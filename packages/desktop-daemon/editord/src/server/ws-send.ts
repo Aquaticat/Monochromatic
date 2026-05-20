@@ -6,7 +6,7 @@
  */
 
 /** Peer type used throughout message dispatch. */
-export type Peer = { send: (data: string,) => void; };
+export type Peer = { readonly send: (data: string,) => void; };
 
 /**
  * Extracts a human-readable message from an unknown error value.
@@ -21,7 +21,7 @@ export type Peer = { send: (data: string,) => void; };
  * // result === 'file not found'
  * ```
  */
-export function extractErrorMessage({ error, }: { error: unknown; },): string {
+export function extractErrorMessage({ error, }: { readonly error: unknown; },): string {
   return error instanceof Error ? error.message : String(error,);
 }
 
@@ -42,8 +42,8 @@ export function sendJson(
     peer,
     message,
   }: {
-    peer: Peer;
-    message: Record<string, unknown>;
+    readonly peer: Peer;
+    readonly message: Record<string, unknown>;
   },
 ): void {
   peer.send(JSON.stringify(message,),);
@@ -69,8 +69,8 @@ export function replyEmpty(
     peer,
     message,
   }: {
-    peer: Peer;
-    message: Record<string, unknown>;
+    readonly peer: Peer;
+    readonly message: Record<string, unknown>;
   },
 ): true {
   sendJson({

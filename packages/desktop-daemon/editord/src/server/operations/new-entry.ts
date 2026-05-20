@@ -41,10 +41,10 @@ export async function newEntry({
   name,
   isDirectory,
 }: {
-  rootDir: string;
-  parentPath: string;
-  name: string;
-  isDirectory: boolean;
+  readonly rootDir: string;
+  readonly parentPath: string;
+  readonly name: string;
+  readonly isDirectory: boolean;
 },): Promise<string> {
   if (name.includes('/',) || name.includes('\\',))
     throw new Error(`name must be a bare filename, got: ${name}`,);

@@ -22,7 +22,7 @@ import type { CompletionItem, } from '../../../protocol.ts';
  * const result = renderItems({ items: [{ label: "useState", detail: "function" }], });
  * ```
  */
-export function renderItems({ items, }: { items: CompletionItem[]; },): HTMLDivElement[] {
+export function renderItems({ items, }: { readonly items: readonly CompletionItem[]; },): HTMLDivElement[] {
   return items.map(function createItemElement(
     item,
     index,
@@ -63,8 +63,8 @@ export function updateSelection(
     list,
     selectedIndex,
   }: {
-    list: HTMLElement;
-    selectedIndex: number;
+    readonly list: HTMLElement;
+    readonly selectedIndex: number;
   },
 ): void {
   /** Live HTMLCollection of rendered item rows. */

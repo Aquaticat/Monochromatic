@@ -43,20 +43,20 @@ import {
  */
 type PaneApi = {
   /** Returns the contenteditable container, or null before connected. */
-  getEditorElement(): HTMLDivElement | null;
+  readonly getEditorElement: () => HTMLDivElement | null;
   /** Returns the current caret position, or null. */
-  getCursorPosition(): EditorPosition | null;
+  readonly getCursorPosition: () => EditorPosition | null;
   /** Places the caret at the specified position. */
-  restoreCursor(pos: {
-    line: number;
-    character: number;
-  },): void;
+  readonly restoreCursor: (pos: {
+    readonly line: number;
+    readonly character: number;
+  },) => void;
   /** Returns selection coordinates, or null. */
-  getSelection(): SelectionCoords | null;
+  readonly getSelection: () => SelectionCoords | null;
   /** Sets the editor selection. */
-  setSelection(coords: SelectionCoords,): void;
+  readonly setSelection: (coords: SelectionCoords,) => void;
   /** Triggers deferred syntax highlighting. */
-  requestHighlight(): void;
+  readonly requestHighlight: () => void;
   /** Shadow root for composed range resolution. */
   readonly shadowRoot: ShadowRoot | null;
 };
@@ -77,16 +77,14 @@ function performLineOp({
   pane,
   fn,
 }: {
-  pane: PaneApi;
-  fn: (
-    editor: HTMLDivElement,
-    pos: {
-      line: number;
-      character: number;
-    },
-  ) => {
-    line: number;
-    character: number;
+  readonly pane: PaneApi;
+  readonly fn: (opts: {
+    readonly editor: HTMLDivElement;
+    readonly line: number;
+    readonly character: number;
+  },) => {
+    readonly line: number;
+    readonly character: number;
   } | null;
 },): void {
   /** Contenteditable container; null when the pane has not been connected yet. */
@@ -98,10 +96,10 @@ function performLineOp({
   if (pos === null)
     return;
   /** New caret position returned by the operation, or null when the caret should not move. */
-  const result = fn(
+  const result = fn({
     editor,
-    pos,
-  );
+    ...pos,
+  },);
   if (result !== null)
     pane.restoreCursor(result,);
   pane.requestHighlight();
@@ -118,8 +116,8 @@ function performIndentOp({
   pane,
   fn,
 }: {
-  pane: PaneApi;
-  fn: typeof doIndent;
+  readonly pane: PaneApi;
+  readonly fn: typeof doIndent;
 },): void {
   /** Contenteditable container; null when the pane has not been connected yet. */
   const editor = pane.getEditorElement();
@@ -162,18 +160,10 @@ function performIndentOp({
  * performDeleteLine({ pane, });
  * ```
  */
-export function performDeleteLine({ pane, }: { pane: PaneApi; },): void {
+export function performDeleteLine({ pane, }: { readonly pane: PaneApi; },): void {
   performLineOp({
     pane,
-    fn: function op(
-      e,
-      p,
-    ) {
-      return deleteLineAt({
-        editor: e,
-        ...p,
-      },);
-    },
+    fn: deleteLineAt,
   },);
 }
 
@@ -185,18 +175,10 @@ export function performDeleteLine({ pane, }: { pane: PaneApi; },): void {
  * performDuplicateLine({ pane, });
  * ```
  */
-export function performDuplicateLine({ pane, }: { pane: PaneApi; },): void {
+export function performDuplicateLine({ pane, }: { readonly pane: PaneApi; },): void {
   performLineOp({
     pane,
-    fn: function op(
-      e,
-      p,
-    ) {
-      return duplicateLineAt({
-        editor: e,
-        ...p,
-      },);
-    },
+    fn: duplicateLineAt,
   },);
 }
 
@@ -208,18 +190,10 @@ export function performDuplicateLine({ pane, }: { pane: PaneApi; },): void {
  * performSwapDown({ pane, });
  * ```
  */
-export function performSwapDown({ pane, }: { pane: PaneApi; },): void {
+export function performSwapDown({ pane, }: { readonly pane: PaneApi; },): void {
   performLineOp({
     pane,
-    fn: function op(
-      e,
-      p,
-    ) {
-      return doSwapDown({
-        editor: e,
-        ...p,
-      },);
-    },
+    fn: doSwapDown,
   },);
 }
 
@@ -231,18 +205,10 @@ export function performSwapDown({ pane, }: { pane: PaneApi; },): void {
  * performSwapUp({ pane, });
  * ```
  */
-export function performSwapUp({ pane, }: { pane: PaneApi; },): void {
+export function performSwapUp({ pane, }: { readonly pane: PaneApi; },): void {
   performLineOp({
     pane,
-    fn: function op(
-      e,
-      p,
-    ) {
-      return doSwapUp({
-        editor: e,
-        ...p,
-      },);
-    },
+    fn: doSwapUp,
   },);
 }
 
@@ -259,7 +225,7 @@ export function performSwapUp({ pane, }: { pane: PaneApi; },): void {
  * const result = performSelectAndCopy({ pane: pane, });
  * ```
  */
-export function performSelectAndCopy({ pane, }: { pane: PaneApi; },): boolean {
+export function performSelectAndCopy({ pane, }: { readonly pane: PaneApi; },): boolean {
   /** Contenteditable container; bail when the pane is not connected or its shadow is detached. */
   const editor = pane.getEditorElement();
   if ((editor === null) || (pane.shadowRoot === null))
@@ -285,7 +251,7 @@ export function performSelectAndCopy({ pane, }: { pane: PaneApi; },): boolean {
  * performIndent({ pane, });
  * ```
  */
-export function performIndent({ pane, }: { pane: PaneApi; },): void {
+export function performIndent({ pane, }: { readonly pane: PaneApi; },): void {
   performIndentOp({
     pane,
     fn: doIndent,
@@ -300,7 +266,7 @@ export function performIndent({ pane, }: { pane: PaneApi; },): void {
  * performUnindent({ pane, });
  * ```
  */
-export function performUnindent({ pane, }: { pane: PaneApi; },): void {
+export function performUnindent({ pane, }: { readonly pane: PaneApi; },): void {
   performIndentOp({
     pane,
     fn: doUnindent,

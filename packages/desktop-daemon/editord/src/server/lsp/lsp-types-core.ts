@@ -31,15 +31,15 @@ export type DiagnosticSeverity = 1 | 2 | 3 | 4;
 /** Diagnostic message from an LSP server. */
 export type LspDiagnostic = {
   /** Text range where the diagnostic applies. */
-  range: LspRange;
+  readonly range: LspRange;
   /** Severity level (1=Error, 2=Warning, 3=Info, 4=Hint). */
-  severity?: DiagnosticSeverity;
+  readonly severity?: DiagnosticSeverity;
   /** Source tool name (e.g. "oxlint", "typescript"). */
-  source?: string;
+  readonly source?: string;
   /** Human-readable diagnostic message. */
-  message: string;
+  readonly message: string;
   /** Diagnostic code from the source tool. */
-  code?: number | string;
+  readonly code?: number | string;
 };
 
 //endregion Diagnostics
@@ -49,17 +49,17 @@ export type LspDiagnostic = {
 /** Markup content with explicit kind indicator. */
 export type LspMarkupContent = {
   /** Content format: "plaintext" or "markdown". */
-  kind: 'plaintext' | 'markdown';
+  readonly kind: 'plaintext' | 'markdown';
   /** Content value. */
-  value: string;
+  readonly value: string;
 };
 
 /** Hover result from an LSP server. */
 export type LspHover = {
   /** Hover content as structured markup or plain string. */
-  contents: LspMarkupContent | string;
+  readonly contents: LspMarkupContent | string;
   /** Range of text the hover applies to. */
-  range?: LspRange;
+  readonly range?: LspRange;
 };
 
 //endregion Hover
@@ -69,13 +69,13 @@ export type LspHover = {
 /** Completion item from an LSP server. */
 export type LspCompletionItem = {
   /** Display label for the completion. */
-  label: string;
+  readonly label: string;
   /** Kind of completion item (1=Text, 2=Method, 3=Function, etc.). */
-  kind?: number;
+  readonly kind?: number;
   /** Additional detail string shown alongside the label. */
-  detail?: string;
+  readonly detail?: string;
   /** Text to insert when the completion is accepted (defaults to label). */
-  insertText?: string;
+  readonly insertText?: string;
 };
 
 //endregion Completion
@@ -85,9 +85,9 @@ export type LspCompletionItem = {
 /** Text edit returned by formatting or other operations. */
 export type LspTextEdit = {
   /** Range to replace. */
-  range: LspRange;
+  readonly range: LspRange;
   /** New text to insert at the range. */
-  newText: string;
+  readonly newText: string;
 };
 
 //endregion Text edits
@@ -100,7 +100,7 @@ export type LspTextEdit = {
  */
 export type LspWorkspaceEdit = {
   /** Text edits keyed by document URI. */
-  changes?: Record<string, LspTextEdit[]>;
+  readonly changes?: Record<string, readonly LspTextEdit[]>;
 };
 
 //endregion Workspace edits

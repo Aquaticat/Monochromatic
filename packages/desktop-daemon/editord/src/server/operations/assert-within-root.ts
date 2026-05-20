@@ -25,8 +25,8 @@ export function isWithinRoot({
   root,
   path,
 }: {
-  root: string;
-  path: string;
+  readonly root: string;
+  readonly path: string;
 },): boolean {
   /** Trailing separator ensures `/home/userX/...` doesn't match `/home/user`. */
   const rootPrefix = root.endsWith('/',) ? root : `${root}/`;
@@ -58,8 +58,8 @@ export function assertWithinRoot(
     rootDir,
     path,
   }: {
-    rootDir: string;
-    path: string;
+    readonly rootDir: string;
+    readonly path: string;
   },
 ): string {
   /** Canonicalised path; resolves `..` segments before the containment check. */

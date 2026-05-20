@@ -42,10 +42,10 @@ export function registerRoutes({
   authToken,
   rootDir,
 }: {
-  app: H3;
-  packageRoot: string;
-  authToken: string;
-  rootDir: string;
+  readonly app: H3;
+  readonly packageRoot: string;
+  readonly authToken: string;
+  readonly rootDir: string;
 },): void {
   //region HTML entry point
 
@@ -93,7 +93,7 @@ export function registerRoutes({
               /** Filesystem stat used to derive size and mtime for h3's caching headers. */
               const stats = await stat(fullPath,);
               if (!stats.isFile())
-                return;
+                return undefined;
               return {
                 size: stats.size,
                 mtime: stats.mtimeMs,
@@ -106,7 +106,7 @@ export function registerRoutes({
                 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guarded by instanceof Error and 'code' in error above
                 && ((error as NodeJS.ErrnoException).code === 'ENOENT');
               if (isNotFound)
-                return;
+                return undefined;
               throw error;
             }
           },

@@ -38,11 +38,11 @@ export function renderResultElements({
   budget,
   onSelect,
 }: {
-  results: SearchResult[];
-  query: string;
-  rootPrefix: string;
-  budget: number;
-  onSelect: (index: number,) => void;
+  readonly results: readonly SearchResult[];
+  readonly query: string;
+  readonly rootPrefix: string;
+  readonly budget: number;
+  readonly onSelect: (index: number,) => void;
 },): HTMLElement[] {
   return results.map(function createResultElement(
     result,
@@ -124,8 +124,8 @@ export function highlightMatches(
     query,
     container,
   }: {
-    query: string;
-    container: HTMLDivElement;
+    readonly query: string;
+    readonly container: HTMLDivElement;
   },
 ): void {
   if (query === '') {

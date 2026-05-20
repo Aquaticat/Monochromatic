@@ -19,8 +19,8 @@ const VERTICAL_OFFSET = 4;
 
 /** Editor cursor position when the popup was shown. */
 type ShownAt = {
-  line: number;
-  character: number;
+  readonly line: number;
+  readonly character: number;
 };
 
 /**
@@ -34,7 +34,7 @@ export class CompletionPopup extends HTMLElement {
   /** Container for the list items. */
   #list: HTMLDivElement | null = null;
   /** Currently displayed items. */
-  #items: CompletionItem[] = [];
+  #items: readonly CompletionItem[] = [];
   /** Index of the selected item (-1 = none). */
   #selectedIndex = -1;
   /** Cursor position captured at the latest `show()`; null while hidden. */
@@ -72,10 +72,10 @@ export class CompletionPopup extends HTMLElement {
     y,
     cursor,
   }: {
-    items: CompletionItem[];
-    x: number;
-    y: number;
-    cursor: ShownAt;
+    readonly items: readonly CompletionItem[];
+    readonly x: number;
+    readonly y: number;
+    readonly cursor: ShownAt;
   },): void {
     if ((this.#list === null) || (items.length === 0))
       return;
@@ -123,7 +123,7 @@ export class CompletionPopup extends HTMLElement {
   }
 
   /** Moves the selection up or down. */
-  navigate({ direction, }: { direction: 'up' | 'down'; },): void {
+  navigate({ direction, }: { readonly direction: 'up' | 'down'; },): void {
     if (this.#items.length === 0)
       return;
     if (direction === 'up') {

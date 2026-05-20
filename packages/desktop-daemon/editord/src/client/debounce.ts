@@ -28,11 +28,11 @@
  */
 export type DebouncedHandle = {
   /** Debounced wrapper; each call resets the delay timer. */
-  debounced: () => void;
+  readonly debounced: () => void;
   /** Executes the function immediately and cancels any pending timer. */
-  flush: () => void;
+  readonly flush: () => void;
   /** Cancels any pending timer without executing the function. */
-  cancel: () => void;
+  readonly cancel: () => void;
 };
 
 /**
@@ -55,8 +55,8 @@ export function createDebounced(
     fn,
     delayMs,
   }: {
-    fn: () => void;
-    delayMs: number;
+    readonly fn: () => void;
+    readonly delayMs: number;
   },
 ): DebouncedHandle {
   /**

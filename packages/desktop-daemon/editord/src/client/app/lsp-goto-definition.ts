@@ -9,9 +9,8 @@ import {
   l,
   tagged,
 } from '../log.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
-
 import type {
+  EditorWsClientHandle,
   GetCurrentFilePathFn,
   LoadFileFn,
 } from './types.ts';
@@ -54,11 +53,11 @@ export async function doGotoDefinition(
     line,
     character,
   }: {
-    ws: EditorWsClient;
-    getCurrentFilePath: GetCurrentFilePathFn;
-    loadFileSafe: LoadFileFn;
-    line: number;
-    character: number;
+    readonly ws: EditorWsClientHandle;
+    readonly getCurrentFilePath: GetCurrentFilePathFn;
+    readonly loadFileSafe: LoadFileFn;
+    readonly line: number;
+    readonly character: number;
   },
 ): Promise<GotoDefinitionResult> {
   /** Active file path; `null` when no file is open, in which case there is nothing to look up. */

@@ -138,15 +138,20 @@ fixtures.
 1.  `packages/dev-script/watch-restart/src/watcher.ts` -- `Watcher`
 1.  `packages/dev-script/watch-restart/src/child.ts` -- `Child`
 1.  `packages/dev-script/watch-restart/src/hash-cache.ts` -- `HashCache`
+1.  `packages/pi/morph-compact/src/morph-client.ts` -- `MorphCompactClient`
+1.  `packages/module/zip-writer/src/index.ts` -- `ZipWriter`
+1.  `packages/figma-parsers/kiwi/src/index.ts` -- `BinaryReader` (see "Lint blind spot" below)
+
+### Completed in editord
+
+Migrated on 2026-05-20:
+
 1.  `packages/desktop-daemon/editord/src/server/lsp/lsp-pool.ts` -- `LspPool`
 1.  `packages/desktop-daemon/editord/src/server/lsp/lsp-client.ts` -- `LspClient`
 1.  `packages/desktop-daemon/editord/src/server/lsp/diagnostic-store.ts` -- `DiagnosticStore`
 1.  `packages/desktop-daemon/editord/src/server/operations/watch-filesystem.ts` -- `DirWatcher`
 1.  `packages/desktop-daemon/editord/src/client/ws/client.ts` -- `EditorWsClient`
 1.  `packages/desktop-daemon/editord/src/client/context-menu/context-menu.ts` -- `ContextMenu`
-1.  `packages/pi/morph-compact/src/morph-client.ts` -- `MorphCompactClient`
-1.  `packages/module/zip-writer/src/index.ts` -- `ZipWriter`
-1.  `packages/figma-parsers/kiwi/src/index.ts` -- `BinaryReader` (see "Lint blind spot" below)
 1.  `packages/webapp-productivity/done/src/client/components/task-detail-autofill.ts` -- `AutofillManager`
 1.  `packages/webapp-productivity/done-postcss/src/client/components/task-detail-autofill.ts` -- `AutofillController`
 
@@ -212,10 +217,9 @@ immediately above the `class` keyword, not above the TSDoc block.
 ## Verified scope
 
 Counts produced by running `mise run //<pkg>:lint:oxlint` against each
-package below, sum = 21 caught warnings plus 1 unlinted class (BinaryReader):
+package below, sum = 15 remaining caught warnings plus 1 unlinted class (BinaryReader):
 
 - `packages/dev-script/watch-restart`: 5 (`Watcher`, `Child`, `HashCache`, `FakeChild` x2)
-- `packages/desktop-daemon/editord`: 6 (`LspPool`, `LspClient`, `DiagnosticStore`, `DirWatcher`, `EditorWsClient`, `ContextMenu`)
 - `packages/pi/morph-compact`: 5 (`MorphCompactClient`, `EnvRestore`, `FileDisposable`, `TcpServerDisposable`, `SocketServerDisposable`)
 - `packages/webapp-productivity/done`: 1 (`AutofillManager`)
 - `packages/webapp-productivity/done-postcss`: 1 (`AutofillController`)

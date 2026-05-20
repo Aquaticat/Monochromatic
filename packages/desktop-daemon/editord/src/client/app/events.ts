@@ -9,22 +9,20 @@ import type {
   FileKind,
   FsChangeType,
 } from '../../../protocol.ts';
-import type { FileTree, } from '../file-tree/file-tree.ts';
 import {
   l as rootLogger,
   tagged,
 } from '../log.ts';
-import type {
-  ReferenceSelectDetail,
-  ReferencesPopup,
-} from '../references/references-popup.ts';
-import type {
-  ResultSelectDetail,
-  SearchOverlay,
-} from '../search/search-overlay.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
+import type { ReferenceSelectDetail, } from '../references/references-popup.ts';
+import type { ResultSelectDetail, } from '../search/search-overlay.ts';
 
-import type { LoadFileFn, } from './types.ts';
+import type {
+  EditorWsClientHandle,
+  FileTreeHandle,
+  LoadFileFn,
+  ReferencesPopupHandle,
+  SearchOverlayHandle,
+} from './types.ts';
 
 /** Tagged logger for the app events subsystem. */
 const appLog = tagged({
@@ -63,12 +61,12 @@ async function loadFileAndRefreshHints({
   line,
   character,
 }: {
-  state: AppState;
-  loadFileSafe: LoadFileFn;
-  refreshInlayHints: () => void;
-  path: string;
-  line?: number | undefined;
-  character?: number | undefined;
+  readonly state: AppState;
+  readonly loadFileSafe: LoadFileFn;
+  readonly refreshInlayHints: () => void;
+  readonly path: string;
+  readonly line?: number | undefined;
+  readonly character?: number | undefined;
 },): Promise<void> {
   await loadFileSafe({
     path,
@@ -111,13 +109,13 @@ export function wireSelectEvents(
     loadFileSafe,
     refreshInlayHints,
   }: {
-    fileTree: FileTree;
-    searchOverlay: SearchOverlay;
-    referencesPopup: ReferencesPopup;
-    state: AppState;
-    recordFileOpen: (path: string,) => void;
-    loadFileSafe: LoadFileFn;
-    refreshInlayHints: () => void;
+    readonly fileTree: FileTreeHandle;
+    readonly searchOverlay: SearchOverlayHandle;
+    readonly referencesPopup: ReferencesPopupHandle;
+    readonly state: AppState;
+    readonly recordFileOpen: (path: string,) => void;
+    readonly loadFileSafe: LoadFileFn;
+    readonly refreshInlayHints: () => void;
   },
 ): void {
   fileTree.addEventListener(
@@ -125,7 +123,7 @@ export function wireSelectEvents(
     function handleFileSelect(event,) {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- CustomEvent from FileTree */
       /** Custom-event detail destructured to read the selected file path. */
-      const { path, } = (event as CustomEvent<{ path: string; }>).detail;
+      const { path, } = (event as CustomEvent<{ readonly path: string; }>).detail;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       state.currentFilePath = path;
       recordFileOpen(path,);
@@ -205,10 +203,10 @@ export function wireFileWatching({
   state,
   loadFileSafe,
 }: {
-  ws: EditorWsClient;
-  fileTree: FileTree;
-  state: AppState;
-  loadFileSafe: LoadFileFn;
+  readonly ws: EditorWsClientHandle;
+  readonly fileTree: FileTreeHandle;
+  readonly state: AppState;
+  readonly loadFileSafe: LoadFileFn;
 },): void {
   fileTree.onDirExpanded = function handleDirExpanded(path: string,): void {
     void ws.notify({
@@ -216,14 +214,14 @@ export function wireFileWatching({
       path,
     },);
   };
-  ws.onFileChanged = function handleFileChanged(
+  ws.setFileChangedHandler(function handleFileChanged(
     {
       path,
       changeType,
     }: {
-      path: string;
-      changeType: FsChangeType;
-      isDirectory: boolean;
+      readonly path: string;
+      readonly changeType: FsChangeType;
+      readonly isDirectory: boolean;
     },
   ): void {
     appLog.info(`file changed: ${path} (${changeType})`,);
@@ -240,5 +238,5 @@ export function wireFileWatching({
         path.lastIndexOf('/',),
       ), },);
     }
-  };
+  },);
 }

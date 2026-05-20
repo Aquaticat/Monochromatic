@@ -51,8 +51,8 @@ export function loadDirChildren({
   detail,
   state,
 }: {
-  detail: DirOpenDetail;
-  state: FileTreeState;
+  readonly detail: DirOpenDetail;
+  readonly state: FileTreeState;
 },): void {
   /** Destructured up-front so the closure below references stable bindings, not `detail.x` reads. */
   const {
@@ -140,9 +140,9 @@ export function createEntryElements({
   entries,
   recentPaths,
 }: {
-  parentPath: string;
-  entries: DirEntry[];
-  recentPaths: string[];
+  readonly parentPath: string;
+  readonly entries: readonly DirEntry[];
+  readonly recentPaths: readonly string[];
 },): HTMLElement[] {
   /** Built once outside the map so per-entry recency lookups are O(1). */
   const recencyIndex = buildRecencyIndex({ recentPaths, },);

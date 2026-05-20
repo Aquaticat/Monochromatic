@@ -68,8 +68,8 @@ function parseContentLength(header: string,): number | null {
     from,
     acc,
   }: {
-    from: number;
-    acc: string;
+    readonly from: number;
+    readonly acc: string;
   },): string {
     if (from >= header.length)
       return acc;
@@ -122,9 +122,9 @@ export function createLspParser({
   onMessage,
   onError,
 }: {
-  onMessage: (message: JsonRpcMessage,) => void;
-  onError: (error: unknown,) => void;
-},): { feed: (chunk: Buffer,) => void; } {
+  readonly onMessage: (message: JsonRpcMessage,) => void;
+  readonly onError: (error: unknown,) => void;
+},): { readonly feed: (chunk: Buffer,) => void; } {
   /**
    * Closure-shared state for `consolidate` and `feed`.
    *

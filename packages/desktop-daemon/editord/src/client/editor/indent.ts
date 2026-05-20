@@ -10,25 +10,25 @@ import { INDENT_UNIT, } from './text-resolve.ts';
 /** Selection range coordinates for indent adjustment. */
 export type SelectionCoords = {
   /** 0-based start line index. */
-  startLine: number;
+  readonly startLine: number;
   /** 0-based start character offset. */
-  startCharacter: number;
+  readonly startCharacter: number;
   /** 0-based end line index. */
-  endLine: number;
+  readonly endLine: number;
   /** 0-based end character offset. */
-  endCharacter: number;
+  readonly endCharacter: number;
 };
 
 /** Result of an indent/unindent operation. */
 export type IndentResult = {
   /** Whether a selection range should be restored (vs a single cursor). */
-  isSelection: boolean;
+  readonly isSelection: boolean;
   /** Selection coordinates when `isSelection` is true. */
-  selection: SelectionCoords;
+  readonly selection: SelectionCoords;
   /** Cursor coordinates when `isSelection` is false. */
-  cursor: {
-    line: number;
-    character: number;
+  readonly cursor: {
+    readonly line: number;
+    readonly character: number;
   };
 };
 
@@ -56,10 +56,10 @@ export function indentLines({
   cursorCharacter,
   selection,
 }: {
-  editor: HTMLDivElement;
-  cursorLine: number;
-  cursorCharacter: number;
-  selection: SelectionCoords | null;
+  readonly editor: HTMLDivElement;
+  readonly cursorLine: number;
+  readonly cursorCharacter: number;
+  readonly selection: SelectionCoords | null;
 },): IndentResult {
   /** First line affected by the operation; collapses to the cursor line when no selection exists. */
   const startLine = selection !== null ? selection.startLine : cursorLine;
@@ -131,10 +131,10 @@ export function unindentLines({
   cursorCharacter,
   selection,
 }: {
-  editor: HTMLDivElement;
-  cursorLine: number;
-  cursorCharacter: number;
-  selection: SelectionCoords | null;
+  readonly editor: HTMLDivElement;
+  readonly cursorLine: number;
+  readonly cursorCharacter: number;
+  readonly selection: SelectionCoords | null;
 },): IndentResult {
   /** First line affected by the operation; collapses to the cursor line when no selection exists. */
   const startLine = selection !== null ? selection.startLine : cursorLine;

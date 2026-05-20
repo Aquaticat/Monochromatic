@@ -35,9 +35,9 @@ function positionToOffset({
   line,
   character,
 }: {
-  text: string;
-  line: number;
-  character: number;
+  readonly text: string;
+  readonly line: number;
+  readonly character: number;
 },): number {
   /**
    * Absolute string offset walked forward until `currentLine` reaches `line`.
@@ -71,8 +71,8 @@ function applyEditsToString({
   text,
   edits,
 }: {
-  text: string;
-  edits: TextEdit[];
+  readonly text: string;
+  readonly edits: readonly TextEdit[];
 },): string {
   /** Sort edits in reverse document order (end of file first). */
   const sorted = edits.toSorted(
@@ -142,8 +142,8 @@ async function applyEditsToFile({
   filePath,
   wireEdits,
 }: {
-  filePath: string;
-  wireEdits: TextEdit[];
+  readonly filePath: string;
+  readonly wireEdits: readonly TextEdit[];
 },): Promise<void> {
   /** Pre-edit file contents loaded from disk; basis for applying `wireEdits`. */
   const content = await readFile(
@@ -193,9 +193,9 @@ export async function applyWorkspaceEdit({
   currentFilePath,
   dirWatcher,
 }: {
-  workspaceEdit: LspWorkspaceEdit;
-  currentFilePath: string;
-  dirWatcher: DirWatcher | null;
+  readonly workspaceEdit: LspWorkspaceEdit;
+  readonly currentFilePath: string;
+  readonly dirWatcher: DirWatcher | null;
 },): Promise<WorkspaceFileEdit[]> {
   /** URI-keyed edit map carried by the LSP workspace edit; undefined for no-op edits. */
   const { changes, } = workspaceEdit;

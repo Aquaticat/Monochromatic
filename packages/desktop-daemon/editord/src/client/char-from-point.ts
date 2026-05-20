@@ -21,8 +21,8 @@ export function findCharAtX({
   lineDiv,
   x,
 }: {
-  lineDiv: Element;
-  x: number;
+  readonly lineDiv: Element;
+  readonly x: number;
 },): number {
   /* oxlint-disable typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec */
   /** Empty / whitespace-only lines short-circuit to offset 0 below. */
@@ -44,9 +44,9 @@ export function findCharAtX({
   // Mutable accumulator is unavoidable here: TreeWalker is imperative and does not expose a functional iterator
   /** Collect all text nodes with cumulative offsets. */
   const textNodes: {
-    node: Text;
-    start: number;
-    length: number;
+    readonly node: Text;
+    readonly start: number;
+    readonly length: number;
   }[] = [];
   /** Running cumulative offset across collected text nodes. */
   let total = 0;
@@ -112,15 +112,15 @@ function resolveOffset({
   textNodes,
   offset,
 }: {
-  textNodes: {
-    node: Text;
-    start: number;
-    length: number;
+  readonly textNodes: readonly {
+    readonly node: Text;
+    readonly start: number;
+    readonly length: number;
   }[];
-  offset: number;
+  readonly offset: number;
 },): {
-  node: Text;
-  localOffset: number;
+  readonly node: Text;
+  readonly localOffset: number;
 } {
   for (const entry of textNodes) {
     if (offset <= (entry.start + entry.length)) {

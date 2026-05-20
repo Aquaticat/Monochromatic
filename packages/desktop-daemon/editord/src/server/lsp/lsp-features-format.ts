@@ -30,8 +30,8 @@ export async function requestFormat({
   client,
   path,
 }: {
-  client: LspClient;
-  path: string;
+  readonly client: LspClient;
+  readonly path: string;
 },): Promise<LspTextEdit[]> {
   /** `file://` URI form required by LSP `textDocument` identifiers. */
   const uri = pathToUri({ path, },);

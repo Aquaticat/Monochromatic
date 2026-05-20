@@ -5,13 +5,6 @@
  * go-to-definition, references, and inlay hints by delegating to focused modules.
  */
 
-import type { CompletionPopup, } from '../completion/completion-popup.ts';
-import type { EditorPane, } from '../editor/editor-pane.ts';
-import type { HoverPopup, } from '../hover/hover-popup.ts';
-import type { ReferencesPopup, } from '../references/references-popup.ts';
-import type { RenameInput, } from '../rename/rename-input.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
-
 import {
   formatDocument,
   wireGotoDefinition,
@@ -34,8 +27,14 @@ import {
   wireDiagnostics,
 } from './lsp-sync.ts';
 import type {
+  CompletionPopupHandle,
+  EditorPaneHandle,
+  EditorWsClientHandle,
   GetCurrentFilePathFn,
+  HoverPopupHandle,
   LoadFileFn,
+  ReferencesPopupHandle,
+  RenameInputHandle,
 } from './types.ts';
 
 /**
@@ -73,23 +72,23 @@ export function wireLsp(
     getCurrentFilePath,
     loadFileSafe,
   }: {
-    ws: EditorWsClient;
-    editorPane: EditorPane;
-    hoverPopup: HoverPopup;
-    completionPopup: CompletionPopup;
-    referencesPopup: ReferencesPopup;
-    renameInput: RenameInput;
-    getCurrentFilePath: GetCurrentFilePathFn;
-    loadFileSafe: LoadFileFn;
+    readonly ws: EditorWsClientHandle;
+    readonly editorPane: EditorPaneHandle;
+    readonly hoverPopup: HoverPopupHandle;
+    readonly completionPopup: CompletionPopupHandle;
+    readonly referencesPopup: ReferencesPopupHandle;
+    readonly renameInput: RenameInputHandle;
+    readonly getCurrentFilePath: GetCurrentFilePathFn;
+    readonly loadFileSafe: LoadFileFn;
   },
 ): {
-  formatDocument: () => Promise<void>;
-  requestCompletions: () => void;
-  refreshInlayHints: () => void;
-  gotoDefinitionAtCursor: () => void;
-  expandSelection: () => void;
-  shrinkSelection: () => void;
-  renameAtCursor: () => void;
+  readonly formatDocument: () => Promise<void>;
+  readonly requestCompletions: () => void;
+  readonly refreshInlayHints: () => void;
+  readonly gotoDefinitionAtCursor: () => void;
+  readonly expandSelection: () => void;
+  readonly shrinkSelection: () => void;
+  readonly renameAtCursor: () => void;
 } {
   wireContentSync({
     ws,
@@ -155,8 +154,8 @@ export function wireLsp(
    */
   const renamePosition: {
     current: {
-      line: number;
-      character: number;
+      readonly line: number;
+      readonly character: number;
     } | null;
   } = { current: null, };
 
@@ -165,7 +164,7 @@ export function wireLsp(
     function handleRenameConfirm(event,) {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- custom event detail */
       /** Custom-event detail destructured to capture the user-entered new symbol name. */
-      const { newName, } = (event as CustomEvent<{ newName: string; }>).detail;
+      const { newName, } = (event as CustomEvent<{ readonly newName: string; }>).detail;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       /** Cursor position captured at initiation so the rename targets the right symbol. */
       const captured = renamePosition.current;

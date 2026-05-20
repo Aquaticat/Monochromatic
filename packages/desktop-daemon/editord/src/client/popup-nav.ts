@@ -5,28 +5,35 @@
  * Split from app-keybindings.ts to stay under max-lines.
  */
 
-import type { CompletionPopup, } from './completion/completion-popup.ts';
-import type { ReferencesPopup, } from './references/references-popup.ts';
-
 /** Popup that supports keyboard navigation. */
 type NavigablePopup = {
-  navigate: (opts: { direction: 'up' | 'down'; },) => void;
-  hide: () => void;
+  readonly navigate: (opts: { readonly direction: 'up' | 'down'; },) => void;
+  readonly hide: () => void;
+};
+
+/** Completion popup surface needed by keyboard navigation. */
+type CompletionNavPopup = NavigablePopup & {
+  readonly accept: () => string | null;
+};
+
+/** References popup surface needed by keyboard navigation. */
+type ReferencesNavPopup = NavigablePopup & {
+  readonly accept: () => void;
 };
 
 /** Key action for a navigable popup. */
 type PopupKeyAction =
   | {
-    action: 'navigate';
-    direction: 'up' | 'down';
+    readonly action: 'navigate';
+    readonly direction: 'up' | 'down';
   }
   | {
-    action: 'accept';
-    handler: () => void;
+    readonly action: 'accept';
+    readonly handler: () => void;
   }
   | {
-    action: 'dismiss';
-    consumeEvent: boolean;
+    readonly action: 'dismiss';
+    readonly consumeEvent: boolean;
   };
 
 /**
@@ -34,7 +41,7 @@ type PopupKeyAction =
  *
  * @param keyMap - mapping from key name to action
  */
-type PopupKeyMap = Record<string, PopupKeyAction>;
+type PopupKeyMap = Readonly<Record<string, PopupKeyAction>>;
 
 /**
  * Generic popup keyboard navigation handler.
@@ -52,9 +59,9 @@ function handlePopupNav({
   popup,
   keyMap,
 }: {
-  event: KeyboardEvent;
-  popup: NavigablePopup;
-  keyMap: PopupKeyMap;
+  readonly event: KeyboardEvent;
+  readonly popup: NavigablePopup;
+  readonly keyMap: PopupKeyMap;
 },): boolean {
   /** Action descriptor for the pressed key; absent means we don't handle this key. */
   const entry = keyMap[event.key];
@@ -93,8 +100,8 @@ export function handleCompletionNav({
   event,
   completionPopup,
 }: {
-  event: KeyboardEvent;
-  completionPopup: CompletionPopup;
+  readonly event: KeyboardEvent;
+  readonly completionPopup: CompletionNavPopup;
 },): boolean {
   /** Tab accepts the selected completion and inserts its text. */
   function acceptCompletion(): void {
@@ -151,8 +158,8 @@ export function handleReferencesNav({
   event,
   referencesPopup,
 }: {
-  event: KeyboardEvent;
-  referencesPopup: ReferencesPopup;
+  readonly event: KeyboardEvent;
+  readonly referencesPopup: ReferencesNavPopup;
 },): boolean {
   return handlePopupNav({
     event,

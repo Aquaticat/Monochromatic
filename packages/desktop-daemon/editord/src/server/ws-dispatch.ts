@@ -63,11 +63,11 @@ export async function dispatchMessage(
     lspManager,
     dirWatcher,
   }: {
-    peer: Peer;
-    messageText: string;
-    rootDir: string;
-    lspManager: LspManager | null;
-    dirWatcher: DirWatcher | null;
+    readonly peer: Peer;
+    readonly messageText: string;
+    readonly rootDir: string;
+    readonly lspManager: LspManager | null;
+    readonly dirWatcher: DirWatcher | null;
   },
 ): Promise<void> {
   /** Untyped intermediate so the shape can be validated before assertion. */
@@ -75,7 +75,7 @@ export async function dispatchMessage(
   if (((typeof raw) !== 'object')
     || (raw === null)
     || (!('type' in raw))
-    || ((typeof (raw as { type: unknown; }).type) !== 'string'))
+    || ((typeof (raw as { readonly type: unknown; }).type) !== 'string'))
   {
     sendJson({
       peer,
@@ -204,15 +204,15 @@ export async function dispatchMessage(
       return;
     }
 
-    l.error(`unknown message type: ${(parsed as { type: string; }).type}`,);
+    l.error(`unknown message type: ${(parsed as { readonly type: string; }).type}`,);
     sendJson({
       peer,
       message: {
         type: 'error',
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
-        id: (parsed as { id?: string; }).id,
+        id: (parsed as { readonly id?: string; }).id,
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
-        message: `unknown message type: ${(parsed as { type: string; }).type}`,
+        message: `unknown message type: ${(parsed as { readonly type: string; }).type}`,
       },
     },);
   }
@@ -237,7 +237,7 @@ export async function dispatchMessage(
       l.error(`dispatch failed: ${msg}`,);
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- `parsed` is from unvalidated JSON cast; requests have `id`, notifications do not */
     /** Undefined for notifications, suppressing the targeted reply below. */
-    const requestId = 'id' in parsed ? (parsed as { id: string; }).id : undefined;
+    const requestId = 'id' in parsed ? (parsed as { readonly id: string; }).id : undefined;
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     if (requestId !== undefined) {
       sendJson({

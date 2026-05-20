@@ -62,7 +62,7 @@ function isEditorSwapName(name: string,): boolean {
  * const result = isIgnored({ name: 'utils.ts', });
  * ```
  */
-export function isIgnored({ name, }: { name: string; },): boolean {
+export function isIgnored({ name, }: { readonly name: string; },): boolean {
   return IGNORED_NAMES.has(name,) || isEditorSwapName(name,);
 }
 

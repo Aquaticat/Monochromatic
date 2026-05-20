@@ -5,21 +5,20 @@
  * back to showing references when already at the definition.
  */
 
-import type { EditorPane, } from '../editor/editor-pane.ts';
-import type { HoverPopup, } from '../hover/hover-popup.ts';
 import {
   l,
   tagged,
 } from '../log.ts';
-import type { ReferencesPopup, } from '../references/references-popup.ts';
 import { showCursorToast, } from '../toast/toast.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
-
 import { doGotoDefinition, } from './lsp-goto-definition.ts';
 import { showReferences, } from './lsp-references.ts';
 import type {
+  EditorPaneHandle,
+  EditorWsClientHandle,
   GetCurrentFilePathFn,
+  HoverPopupHandle,
   LoadFileFn,
+  ReferencesPopupHandle,
 } from './types.ts';
 
 /** Tagged logger for goto-definition-at-cursor. */
@@ -59,12 +58,12 @@ export function performGotoAtCursor(
     editorPane,
     referencesPopup,
   }: {
-    ws: EditorWsClient;
-    getCurrentFilePath: GetCurrentFilePathFn;
-    loadFileSafe: LoadFileFn;
-    hoverPopup: HoverPopup;
-    editorPane: EditorPane;
-    referencesPopup: ReferencesPopup;
+    readonly ws: EditorWsClientHandle;
+    readonly getCurrentFilePath: GetCurrentFilePathFn;
+    readonly loadFileSafe: LoadFileFn;
+    readonly hoverPopup: HoverPopupHandle;
+    readonly editorPane: EditorPaneHandle;
+    readonly referencesPopup: ReferencesPopupHandle;
   },
 ): void {
   hoverPopup.hide();
@@ -115,13 +114,13 @@ async function navigateOrFindReferences({
   character,
   rect,
 }: {
-  ws: EditorWsClient;
-  getCurrentFilePath: GetCurrentFilePathFn;
-  loadFileSafe: LoadFileFn;
-  referencesPopup: ReferencesPopup;
-  line: number;
-  character: number;
-  rect: DOMRect;
+  readonly ws: EditorWsClientHandle;
+  readonly getCurrentFilePath: GetCurrentFilePathFn;
+  readonly loadFileSafe: LoadFileFn;
+  readonly referencesPopup: ReferencesPopupHandle;
+  readonly line: number;
+  readonly character: number;
+  readonly rect: DOMRect;
 },): Promise<void> {
   /** Outcome literal driving the branch chain below. */
   const result = await doGotoDefinition({

@@ -30,16 +30,16 @@ export async function shutdownPoolForPath({
   path,
   l,
 }: {
-  pool: Map<string, Promise<LspClient | null>>;
-  path: string;
-  l: Logger;
+  readonly pool: Map<string, Promise<LspClient | null>>;
+  readonly path: string;
+  readonly l: Logger;
 },): Promise<void> {
   /** Collect matching entries for concurrent shutdown. */
   const toRemove: string[] = [];
   /** Pool entries whose root contains `path`; each gets its own concurrent shutdown. */
   const matching: {
-    key: string;
-    promise: Promise<LspClient | null>;
+    readonly key: string;
+    readonly promise: Promise<LspClient | null>;
   }[] = [];
 
   for (const [key, promise,] of pool.entries()) {
@@ -94,8 +94,8 @@ export async function shutdownAllPooled({
   pool,
   l,
 }: {
-  pool: Map<string, Promise<LspClient | null>>;
-  l: Logger;
+  readonly pool: Map<string, Promise<LspClient | null>>;
+  readonly l: Logger;
 },): Promise<void> {
   /** Without parallel awaits: independent LSP servers would shut down sequentially, delaying signal-handler completion. */
   await Promise.all(

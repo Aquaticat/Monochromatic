@@ -7,16 +7,17 @@
  * auto-dismisses the popup when the cursor leaves the trigger position.
  */
 
-import type { CompletionPopup, } from '../completion/completion-popup.ts';
 import { getLineText, } from '../editor/editor-pane-dom.ts';
-import type { EditorPane, } from '../editor/editor-pane.ts';
 import {
   l,
   tagged,
 } from '../log.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
-
-import type { GetCurrentFilePathFn, } from './types.ts';
+import type {
+  CompletionPopupHandle,
+  EditorPaneHandle,
+  EditorWsClientHandle,
+  GetCurrentFilePathFn,
+} from './types.ts';
 
 /** Tagged logger for completions. */
 const completionLog = tagged({
@@ -48,8 +49,8 @@ function isInsideStringLiteral({
   line,
   character,
 }: {
-  line: string;
-  character: number;
+  readonly line: string;
+  readonly character: number;
 },): boolean {
   /**
    * Currently-open string delimiter, or null when the walker is outside any string.
@@ -109,10 +110,10 @@ export async function requestCompletions(
     editorPane,
     getCurrentFilePath,
   }: {
-    ws: EditorWsClient;
-    completionPopup: CompletionPopup;
-    editorPane: EditorPane;
-    getCurrentFilePath: GetCurrentFilePathFn;
+    readonly ws: EditorWsClientHandle;
+    readonly completionPopup: CompletionPopupHandle;
+    readonly editorPane: EditorPaneHandle;
+    readonly getCurrentFilePath: GetCurrentFilePathFn;
   },
 ): Promise<void> {
   /** Currently-open file path, or null when no document is loaded. */
@@ -177,8 +178,8 @@ export function wireCompletionTrigger({
   editorPane,
   triggerCompletions,
 }: {
-  editorPane: EditorPane;
-  triggerCompletions: () => void;
+  readonly editorPane: EditorPaneHandle;
+  readonly triggerCompletions: () => void;
 },): void {
   editorPane.addEventListener(
     'keydown',
@@ -241,8 +242,8 @@ export function wireCompletionDismiss({
   completionPopup,
   editorPane,
 }: {
-  completionPopup: CompletionPopup;
-  editorPane: EditorPane;
+  readonly completionPopup: CompletionPopupHandle;
+  readonly editorPane: EditorPaneHandle;
 },): void {
   document.addEventListener(
     'selectionchange',

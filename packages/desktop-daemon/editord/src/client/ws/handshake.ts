@@ -33,10 +33,10 @@ export function performHandshake({
   ws,
   onConnected,
 }: {
-  ws: WebSocket;
-  onConnected: (data: {
-    rootDir: string;
-    fsId: string;
+  readonly ws: WebSocket;
+  readonly onConnected: (data: {
+    readonly rootDir: string;
+    readonly fsId: string;
   },) => void;
 },): Promise<void> {
   // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- wrapping callback-based WebSocket events into a promise requires new Promise

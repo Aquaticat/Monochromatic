@@ -31,9 +31,9 @@ export function spawnDetached(
     args,
     cwd,
   }: {
-    command: string;
-    args: string[];
-    cwd: string;
+    readonly command: string;
+    readonly args: readonly string[];
+    readonly cwd: string;
   },
 ): Promise<void> {
   return new Promise<void>(function awaitSpawn(

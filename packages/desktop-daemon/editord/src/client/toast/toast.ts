@@ -30,7 +30,7 @@ const VERTICAL_OFFSET = 4;
  * showFixedToast({ message: 'File too large to open' });
  * ```
  */
-export function showFixedToast({ message, }: { message: string; },): void {
+export function showFixedToast({ message, }: { readonly message: string; },): void {
   /** Toast element styled by the `[data-variant="fixed"]` selector. */
   const toast = h({
     tag: 'div',
@@ -67,8 +67,8 @@ export function showCursorToast(
     message,
     rect,
   }: {
-    message: string;
-    rect: DOMRect;
+    readonly message: string;
+    readonly rect: DOMRect;
   },
 ): void {
   /** Toast element styled by the `[data-variant="cursor"]` selector. */

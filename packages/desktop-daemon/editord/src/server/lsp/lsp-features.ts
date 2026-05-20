@@ -50,10 +50,10 @@ export async function requestHover({
   line,
   character,
 }: {
-  client: LspClient;
-  path: string;
-  line: number;
-  character: number;
+  readonly client: LspClient;
+  readonly path: string;
+  readonly line: number;
+  readonly character: number;
 },): Promise<LspHover | null> {
   /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
@@ -98,10 +98,10 @@ export async function requestCompletion({
   line,
   character,
 }: {
-  client: LspClient;
-  path: string;
-  line: number;
-  character: number;
+  readonly client: LspClient;
+  readonly path: string;
+  readonly line: number;
+  readonly character: number;
 },): Promise<LspCompletionItem[]> {
   /** LSP wire format expects a URI, not a filesystem path. */
   const uri = pathToUri({ path, },);
@@ -127,7 +127,7 @@ export async function requestCompletion({
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access -- LSP completion can return CompletionList
   if ('items' in (result as Record<string, unknown>)) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrow from CompletionList shape
-    return (result as { items: LspCompletionItem[]; }).items;
+    return (result as { readonly items: LspCompletionItem[]; }).items;
   }
 
   return [];

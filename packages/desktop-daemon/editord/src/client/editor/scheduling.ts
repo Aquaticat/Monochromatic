@@ -43,8 +43,8 @@ export function scheduleDiagnosticHighlights({
   editor,
   diagnostics,
 }: {
-  editor: HTMLDivElement;
-  diagnostics: Diagnostic[];
+  readonly editor: HTMLDivElement;
+  readonly diagnostics: readonly Diagnostic[];
 },): number {
   return requestAnimationFrame(function applyScheduledDiagnostics() {
     if (diagnostics.length === 0) {
@@ -80,9 +80,9 @@ export function scheduleInlayAnnotations({
   hints,
   diagnostics,
 }: {
-  editor: HTMLDivElement;
-  hints: InlayHint[];
-  diagnostics: Diagnostic[];
+  readonly editor: HTMLDivElement;
+  readonly hints: readonly InlayHint[];
+  readonly diagnostics: readonly Diagnostic[];
 },): number {
   return requestAnimationFrame(function applyScheduledInlayAnnotations() {
     if ((hints.length === 0) && (diagnostics.length === 0)) {
@@ -122,8 +122,8 @@ export function scheduleHighlight({
   editor,
   parser,
 }: {
-  editor: HTMLDivElement;
-  parser: Parser | null;
+  readonly editor: HTMLDivElement;
+  readonly parser: Parser | null;
 },): number {
   return requestAnimationFrame(function applyScheduledHighlight() {
     if (parser === null) {
@@ -150,7 +150,7 @@ export function scheduleHighlight({
  * const result = scheduleInlayMeasure({ editor: editor, });
  * ```
  */
-export function scheduleInlayMeasure({ editor, }: { editor: HTMLDivElement; },): number {
+export function scheduleInlayMeasure({ editor, }: { readonly editor: HTMLDivElement; },): number {
   return requestAnimationFrame(function remeasureInlayOffsets() {
     measureInlayOffsets({ editor, },);
   },);

@@ -52,12 +52,12 @@ export function createDebouncedSave({
   rootDir,
   getState,
 }: {
-  fsId: string;
-  rootDir: string;
-  getState: () => SessionState;
+  readonly fsId: string;
+  readonly rootDir: string;
+  readonly getState: () => SessionState;
 },): {
-  debouncedSave: () => void;
-  saveNow: () => void;
+  readonly debouncedSave: () => void;
+  readonly saveNow: () => void;
 } {
   /** Saves state immediately without debouncing. */
   function saveNow(): void {

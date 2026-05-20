@@ -28,8 +28,8 @@ function findLastTextNode({
   lineDiv,
   firstText,
 }: {
-  lineDiv: Element;
-  firstText: Node;
+  readonly lineDiv: Element;
+  readonly firstText: Node;
 },): Node {
   /**
    * Fresh walker so the caller's walker stays at its current position.
@@ -76,9 +76,9 @@ export function selectAndCopyLine({
   line,
   composedRange,
 }: {
-  editor: HTMLDivElement;
-  line: number;
-  composedRange: StaticRange;
+  readonly editor: HTMLDivElement;
+  readonly line: number;
+  readonly composedRange: StaticRange;
 },): boolean {
   if (!composedRange.collapsed)
     return false;

@@ -13,7 +13,10 @@
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import type { DirEntry, } from '../../../protocol.ts';
-import { ContextMenu, } from '../context-menu/context-menu.ts';
+import {
+  createContextMenu,
+  type ContextMenu,
+} from '../context-menu/context-menu.ts';
 import {
   showDirContextMenu,
   showFileContextMenu,
@@ -67,7 +70,7 @@ export class FileTree extends HTMLElement {
    *
    * @returns current fetchDir callback, or null
    */
-  get fetchDir(): ((path: string,) => Promise<DirEntry[]>) | null {
+  get fetchDir(): ((path: string,) => Promise<readonly DirEntry[]>) | null {
     return this.#state.fetchDir;
   }
   /**
@@ -75,7 +78,7 @@ export class FileTree extends HTMLElement {
    *
    * @param fn - fetchDir callback to install
    */
-  set fetchDir(fn: ((path: string,) => Promise<DirEntry[]>) | null,) {
+  set fetchDir(fn: ((path: string,) => Promise<readonly DirEntry[]>) | null,) {
     this.#state.fetchDir = fn;
   }
   /**
@@ -142,7 +145,7 @@ export class FileTree extends HTMLElement {
       tag: 'div',
       class: 'tree',
     },);
-    this.#contextMenu = new ContextMenu();
+    this.#contextMenu = createContextMenu();
     this.#shadow.replaceChildren(
       h({
         tag: 'style',
@@ -256,7 +259,7 @@ export class FileTree extends HTMLElement {
    *
    * @param dirs - absolute paths of directories to expand
    */
-  async restoreExpansion({ dirs, }: { dirs: string[]; },): Promise<void> {
+  async restoreExpansion({ dirs, }: { readonly dirs: readonly string[]; },): Promise<void> {
     if ((this.#tree === null) || (this.#state.fetchDir === null) || (dirs.length === 0))
       return;
     /** Trailing-slash prefix used to drop any restored path that escaped the configured root. */
@@ -279,7 +282,7 @@ export class FileTree extends HTMLElement {
    *
    * @param paths - ordered recent file paths (index 0 = most recent)
    */
-  updateRecency({ paths, }: { paths: string[]; },): void {
+  updateRecency({ paths, }: { readonly paths: readonly string[]; },): void {
     this.#state.recentPaths = paths;
     if (this.#tree !== null) {
       updateRecencyMarkers({
@@ -294,7 +297,7 @@ export class FileTree extends HTMLElement {
    *
    * @param paths - absolute file paths to reveal
    */
-  async revealFiles({ paths, }: { paths: string[]; },): Promise<void> {
+  async revealFiles({ paths, }: { readonly paths: readonly string[]; },): Promise<void> {
     if ((this.#tree === null) || (this.#rootPath === ''))
       return;
     /** Stable reference to `this` so the inline `restore` callback retains the component instance. */
@@ -315,7 +318,7 @@ export class FileTree extends HTMLElement {
    *
    * @param path - absolute file path to scroll into view
    */
-  scrollToFile({ path, }: { path: string; },): void {
+  scrollToFile({ path, }: { readonly path: string; },): void {
     if (this.#tree === null)
       return;
     doScrollToFile({
@@ -329,7 +332,7 @@ export class FileTree extends HTMLElement {
    *
    * @param path - absolute path of the directory to refresh
    */
-  async refreshDir({ path, }: { path: string; },): Promise<void> {
+  async refreshDir({ path, }: { readonly path: string; },): Promise<void> {
     if (this.#tree === null)
       return;
     await performRefreshDir({

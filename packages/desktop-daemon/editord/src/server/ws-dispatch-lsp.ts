@@ -53,11 +53,11 @@ export async function dispatchLspMessage(
     lspManager,
     dirWatcher,
   }: {
-    peer: Peer;
-    parsed: ClientMessage;
-    rootDir: string;
-    lspManager: LspManager | null;
-    dirWatcher: DirWatcher | null;
+    readonly peer: Peer;
+    readonly parsed: ClientMessage;
+    readonly rootDir: string;
+    readonly lspManager: LspManager | null;
+    readonly dirWatcher: DirWatcher | null;
   },
 ): Promise<boolean> {
   if (parsed.type === 'inlayHint') {

@@ -35,8 +35,8 @@ export async function openInTerminal(
     rootDir,
     path,
   }: {
-    rootDir: string;
-    path: string;
+    readonly rootDir: string;
+    readonly path: string;
   },
 ): Promise<void> {
   /** Path validated to live inside `rootDir`; resolved absolute form passed to the OS launcher. */
@@ -98,8 +98,8 @@ export async function openInDefaultApp(
     rootDir,
     path,
   }: {
-    rootDir: string;
-    path: string;
+    readonly rootDir: string;
+    readonly path: string;
   },
 ): Promise<void> {
   /** Path validated to live inside `rootDir`; resolved absolute form passed to the OS launcher. */

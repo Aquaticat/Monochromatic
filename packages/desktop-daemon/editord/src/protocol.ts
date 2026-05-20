@@ -12,9 +12,9 @@ import type { ServerMessage, } from './protocol-server.ts';
 /** Single entry in a directory listing. */
 export type DirEntry = {
   /** File or directory name (no path separator). */
-  name: string;
+  readonly name: string;
   /** Whether entry is a directory. */
-  isDirectory: boolean;
+  readonly isDirectory: boolean;
 };
 
 //endregion Directory types
@@ -27,14 +27,14 @@ export type DirEntry = {
  */
 export type SearchResult =
   | {
-    kind: 'file';
-    path: string;
+    readonly kind: 'file';
+    readonly path: string;
   }
   | {
-    kind: 'content';
-    path: string;
-    line: number;
-    text: string;
+    readonly kind: 'content';
+    readonly path: string;
+    readonly line: number;
+    readonly text: string;
   };
 
 //endregion Search types
@@ -44,53 +44,53 @@ export type SearchResult =
 /** 0-based position in a text document. */
 export type Position = {
   /** 0-based line number. */
-  line: number;
+  readonly line: number;
   /** 0-based character offset. */
-  character: number;
+  readonly character: number;
 };
 
 /** Position within a specific file, combining a file path with a text position. */
 export type FilePosition = Position & {
   /** Absolute file path. */
-  path: string;
+  readonly path: string;
 };
 
 /** Range in a text document (start-inclusive, end-exclusive). */
 export type Range = {
   /** Start position (inclusive). */
-  start: Position;
+  readonly start: Position;
   /** End position (exclusive). */
-  end: Position;
+  readonly end: Position;
 };
 
 /** Diagnostic from a language server, ready for wire transport. */
 export type Diagnostic = {
   /** Text range where the diagnostic applies. */
-  range: Range;
+  readonly range: Range;
   /** Severity level. */
-  severity: 'error' | 'warning' | 'info' | 'hint';
+  readonly severity: 'error' | 'warning' | 'info' | 'hint';
   /** Human-readable diagnostic message. */
-  message: string;
+  readonly message: string;
   /** Source tool name (e.g. "oxlint", "typescript"). */
-  source: string;
+  readonly source: string;
 };
 
 /** Completion item from a language server. */
 export type CompletionItem = {
   /** Display label. */
-  label: string;
+  readonly label: string;
   /** Additional detail string. */
-  detail: string;
+  readonly detail: string;
   /** Text to insert when accepted. */
-  insertText: string;
+  readonly insertText: string;
 };
 
 /** Text edit from a formatting operation. */
 export type TextEdit = {
   /** Range to replace. */
-  range: Range;
+  readonly range: Range;
   /** Replacement text. */
-  newText: string;
+  readonly newText: string;
 };
 
 /** Inlay hint kind: 1 = Type, 2 = Parameter. */
@@ -99,15 +99,15 @@ export type InlayHintKind = 1 | 2;
 /** Inlay hint from a language server, ready for wire transport. */
 export type InlayHint = {
   /** Position where the hint is displayed. */
-  position: Position;
+  readonly position: Position;
   /** Display label text. */
-  label: string;
+  readonly label: string;
   /** Kind of inlay hint (1=Type, 2=Parameter). */
-  kind?: InlayHintKind;
+  readonly kind?: InlayHintKind;
   /** Whether to insert padding space before the hint. */
-  paddingLeft?: boolean;
+  readonly paddingLeft?: boolean;
   /** Whether to insert padding space after the hint. */
-  paddingRight?: boolean;
+  readonly paddingRight?: boolean;
 };
 
 /**
@@ -117,9 +117,9 @@ export type InlayHint = {
  */
 export type SelectionRange = {
   /** Range of this selection level. */
-  range: Range;
+  readonly range: Range;
   /** Next larger enclosing range, or undefined at the outermost scope. */
-  parent?: SelectionRange;
+  readonly parent?: SelectionRange;
 };
 
 /**
@@ -128,9 +128,9 @@ export type SelectionRange = {
  */
 export type WorkspaceFileEdit = {
   /** Absolute file path. */
-  path: string;
+  readonly path: string;
   /** Text edits to apply to this file. */
-  edits: TextEdit[];
+  readonly edits: readonly TextEdit[];
 };
 
 //endregion LSP types
@@ -174,25 +174,25 @@ export type FsChangeType = 'created' | 'modified' | 'deleted';
  * ```
  */
 export type RequestResponseMap = {
-  open: Extract<ServerMessage, { type: 'fileContent'; }>;
-  save: Extract<ServerMessage, { type: 'saved'; }>;
-  listDir: Extract<ServerMessage, { type: 'dirListing'; }>;
-  search: Extract<ServerMessage, { type: 'searchResults'; }>;
-  hover: Extract<ServerMessage, { type: 'hoverResult'; }>;
-  completion: Extract<ServerMessage, { type: 'completionResult'; }>;
-  format: Extract<ServerMessage, { type: 'formatResult'; }>;
-  gotoDefinition: Extract<ServerMessage, { type: 'definitionResult'; }>;
-  findReferences: Extract<ServerMessage, { type: 'referencesResult'; }>;
-  inlayHint: Extract<ServerMessage, { type: 'inlayHintResult'; }>;
-  selectionRange: Extract<ServerMessage, { type: 'selectionRangeResult'; }>;
-  prepareRename: Extract<ServerMessage, { type: 'prepareRenameResult'; }>;
-  rename: Extract<ServerMessage, { type: 'renameResult'; }>;
-  deleteEntry: Extract<ServerMessage, { type: 'fsActionDone'; }>;
-  copyEntry: Extract<ServerMessage, { type: 'fsActionDone'; }>;
-  moveEntry: Extract<ServerMessage, { type: 'fsActionDone'; }>;
-  newEntry: Extract<ServerMessage, { type: 'fsActionDone'; }>;
-  openInTerminal: Extract<ServerMessage, { type: 'fsActionDone'; }>;
-  openInDefaultApp: Extract<ServerMessage, { type: 'fsActionDone'; }>;
+  readonly open: Extract<ServerMessage, { readonly type: 'fileContent'; }>;
+  readonly save: Extract<ServerMessage, { readonly type: 'saved'; }>;
+  readonly listDir: Extract<ServerMessage, { readonly type: 'dirListing'; }>;
+  readonly search: Extract<ServerMessage, { readonly type: 'searchResults'; }>;
+  readonly hover: Extract<ServerMessage, { readonly type: 'hoverResult'; }>;
+  readonly completion: Extract<ServerMessage, { readonly type: 'completionResult'; }>;
+  readonly format: Extract<ServerMessage, { readonly type: 'formatResult'; }>;
+  readonly gotoDefinition: Extract<ServerMessage, { readonly type: 'definitionResult'; }>;
+  readonly findReferences: Extract<ServerMessage, { readonly type: 'referencesResult'; }>;
+  readonly inlayHint: Extract<ServerMessage, { readonly type: 'inlayHintResult'; }>;
+  readonly selectionRange: Extract<ServerMessage, { readonly type: 'selectionRangeResult'; }>;
+  readonly prepareRename: Extract<ServerMessage, { readonly type: 'prepareRenameResult'; }>;
+  readonly rename: Extract<ServerMessage, { readonly type: 'renameResult'; }>;
+  readonly deleteEntry: Extract<ServerMessage, { readonly type: 'fsActionDone'; }>;
+  readonly copyEntry: Extract<ServerMessage, { readonly type: 'fsActionDone'; }>;
+  readonly moveEntry: Extract<ServerMessage, { readonly type: 'fsActionDone'; }>;
+  readonly newEntry: Extract<ServerMessage, { readonly type: 'fsActionDone'; }>;
+  readonly openInTerminal: Extract<ServerMessage, { readonly type: 'fsActionDone'; }>;
+  readonly openInDefaultApp: Extract<ServerMessage, { readonly type: 'fsActionDone'; }>;
 };
 
 //endregion Request/response mapping

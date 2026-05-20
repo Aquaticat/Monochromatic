@@ -36,8 +36,8 @@ export function applyDiagnosticHighlights({
   editor,
   diagnostics,
 }: {
-  editor: HTMLElement;
-  diagnostics: Diagnostic[];
+  readonly editor: HTMLElement;
+  readonly diagnostics: readonly Diagnostic[];
 },): void {
   /** Group diagnostics by severity. */
   const bySeverity = new Map<string, globalThis.Range[]>();

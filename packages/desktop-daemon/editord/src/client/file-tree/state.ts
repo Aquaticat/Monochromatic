@@ -16,15 +16,15 @@ import type { DirEntry, } from '../../../protocol.ts';
  */
 export type FileTreeState = {
   /** Callback to fetch directory contents. */
-  fetchDir: ((path: string,) => Promise<DirEntry[]>) | null;
+  fetchDir: ((path: string,) => Promise<readonly DirEntry[]>) | null;
   /** Callback when a directory is expanded for the first time. */
   onDirExpanded: ((path: string,) => void) | null;
   /** Cache of preloaded directory children. */
-  prefetchCache: Map<string, DirEntry[]>;
+  prefetchCache: Map<string, readonly DirEntry[]>;
   /** Tracks directories whose contents have been loaded. */
   loadedDirs: Set<string>;
   /** In-flight load promises keyed by directory path. */
   loadPromises: Map<string, Promise<void>>;
   /** Current recent file paths (index 0 = most recent). */
-  recentPaths: string[];
+  recentPaths: readonly string[];
 };

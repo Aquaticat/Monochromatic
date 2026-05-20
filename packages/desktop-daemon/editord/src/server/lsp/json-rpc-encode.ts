@@ -9,28 +9,28 @@
 
 /** JSON-RPC request message (client-initiated, expects a response). */
 export type JsonRpcRequest = {
-  jsonrpc: '2.0';
-  id: number;
-  method: string;
-  params?: unknown;
+  readonly jsonrpc: '2.0';
+  readonly id: number;
+  readonly method: string;
+  readonly params?: unknown;
 };
 
 /** JSON-RPC notification message (no response expected). */
 export type JsonRpcNotification = {
-  jsonrpc: '2.0';
-  method: string;
-  params?: unknown;
+  readonly jsonrpc: '2.0';
+  readonly method: string;
+  readonly params?: unknown;
 };
 
 /** JSON-RPC response message (server reply to a request). */
 export type JsonRpcResponse = {
-  jsonrpc: '2.0';
-  id: number;
-  result?: unknown;
-  error?: {
-    code: number;
-    message: string;
-    data?: unknown;
+  readonly jsonrpc: '2.0';
+  readonly id: number;
+  readonly result?: unknown;
+  readonly error?: {
+    readonly code: number;
+    readonly message: string;
+    readonly data?: unknown;
   };
 };
 
@@ -54,7 +54,7 @@ export type JsonRpcMessage = JsonRpcRequest | JsonRpcNotification | JsonRpcRespo
  * const result = encodeLspMessage({ message: 'Operation completed', });
  * ```
  */
-export function encodeLspMessage({ message, }: { message: unknown; },): Buffer {
+export function encodeLspMessage({ message, }: { readonly message: unknown; },): Buffer {
   /** Stringified message; serves as the JSON-RPC body before UTF-8 encoding. */
   const json = JSON.stringify(message,);
   /** UTF-8 encoded body; needed for the Content-Length byte count below. */

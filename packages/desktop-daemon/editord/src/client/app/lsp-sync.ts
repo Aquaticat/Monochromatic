@@ -6,11 +6,13 @@
  */
 
 import { createDebounced, } from '../debounce.ts';
-import type { EditorPane, } from '../editor/editor-pane.ts';
 import { CONTENT_SYNC_DEBOUNCE_MS, } from '../timing.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
 
-import type { GetCurrentFilePathFn, } from './types.ts';
+import type {
+  EditorPaneHandle,
+  EditorWsClientHandle,
+  GetCurrentFilePathFn,
+} from './types.ts';
 
 /**
  * Wires debounced content sync to the server.
@@ -31,9 +33,9 @@ export function wireContentSync({
   editorPane,
   getCurrentFilePath,
 }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  getCurrentFilePath: GetCurrentFilePathFn;
+  readonly ws: EditorWsClientHandle;
+  readonly editorPane: EditorPaneHandle;
+  readonly getCurrentFilePath: GetCurrentFilePathFn;
 },): void {
   editorPane.addEventListener(
     'contentchange',
@@ -74,15 +76,15 @@ export function wireDiagnostics({
   editorPane,
   getCurrentFilePath,
 }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  getCurrentFilePath: GetCurrentFilePathFn;
+  readonly ws: EditorWsClientHandle;
+  readonly editorPane: EditorPaneHandle;
+  readonly getCurrentFilePath: GetCurrentFilePathFn;
 },): void {
-  ws.onDiagnostics = function handleDiagnostics({
+  ws.setDiagnosticsHandler(function handleDiagnostics({
     path,
     diagnostics,
   },): void {
     if (path === getCurrentFilePath())
       editorPane.setDiagnostics(diagnostics,);
-  };
+  },);
 }

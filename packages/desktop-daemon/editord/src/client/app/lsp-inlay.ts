@@ -6,12 +6,14 @@
  */
 
 import { createDebounced, } from '../debounce.ts';
-import type { EditorPane, } from '../editor/editor-pane.ts';
 import { fetchInlayHints, } from '../inlay/fetch.ts';
 import { INLAY_HINT_DEBOUNCE_MS, } from '../timing.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
 
-import type { GetCurrentFilePathFn, } from './types.ts';
+import type {
+  EditorPaneHandle,
+  EditorWsClientHandle,
+  GetCurrentFilePathFn,
+} from './types.ts';
 
 /**
  * Wires inlay hint fetching on content changes with debouncing.
@@ -35,10 +37,10 @@ export function wireInlayHints({
   editorPane,
   getCurrentFilePath,
 }: {
-  ws: EditorWsClient;
-  editorPane: EditorPane;
-  getCurrentFilePath: GetCurrentFilePathFn;
-},): { refresh: () => void; } {
+  readonly ws: EditorWsClientHandle;
+  readonly editorPane: EditorPaneHandle;
+  readonly getCurrentFilePath: GetCurrentFilePathFn;
+},): { readonly refresh: () => void; } {
   editorPane.addEventListener(
     'contentchange',
     createDebounced({

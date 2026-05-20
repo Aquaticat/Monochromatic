@@ -52,7 +52,7 @@ const TOUCH_INTERVAL_MS = 1_000;
  *
  * @returns absolute path to the token file
  */
-function tokenFilePath({ port, }: { port: number; },): string {
+function tokenFilePath({ port, }: { readonly port: number; },): string {
   return join(
     tmpdir(),
     `editord-${String(port,)}.token`,
@@ -66,7 +66,7 @@ function tokenFilePath({ port, }: { port: number; },): string {
  *
  * @returns the token string if fresh, or null if stale/missing
  */
-async function readFreshToken({ path, }: { path: string; },): Promise<string | null> {
+async function readFreshToken({ path, }: { readonly path: string; },): Promise<string | null> {
   try {
     /** Stat record for the token file; throws (caught below) when the file does not exist. */
     const fileStat = await stat(path,);
@@ -104,8 +104,8 @@ async function touchFile({
   path,
   token,
 }: {
-  path: string;
-  token: string;
+  readonly path: string;
+  readonly token: string;
 },): Promise<void> {
   try {
     await writeFile(
@@ -130,8 +130,8 @@ async function cleanupFile({
   path,
   l,
 }: {
-  path: string;
-  l: Logger;
+  readonly path: string;
+  readonly l: Logger;
 },): Promise<void> {
   try {
     await unlink(path,);
@@ -155,12 +155,12 @@ async function writeAndTouch({
   token,
   l,
 }: {
-  path: string;
-  token: string;
-  l: Logger;
+  readonly path: string;
+  readonly token: string;
+  readonly l: Logger;
 },): Promise<{
-  stopTouching: () => void;
-  deleteFile: () => void;
+  readonly stopTouching: () => void;
+  readonly deleteFile: () => void;
 }> {
   await writeFile(
     path,
@@ -219,12 +219,12 @@ export async function resolveAuthToken({
   port,
   l,
 }: {
-  port: number;
-  l: Logger;
+  readonly port: number;
+  readonly l: Logger;
 },): Promise<{
-  token: string;
-  stopTouching: () => void;
-  deleteFile: () => void;
+  readonly token: string;
+  readonly stopTouching: () => void;
+  readonly deleteFile: () => void;
 }> {
   /** Logger scoped with the `token` tag so token lifecycle events are filterable. */
   const tokenLog = tagged({

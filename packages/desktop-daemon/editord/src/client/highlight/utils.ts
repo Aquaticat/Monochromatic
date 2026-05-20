@@ -25,7 +25,7 @@ export const MAX_HIGHLIGHT_BYTES = FILE_SIZE_WARNING_THRESHOLD;
  * const result = getLineTexts({ editor: editor, });
  * ```
  */
-export function getLineTexts({ editor, }: { editor: HTMLDivElement; },): string[] {
+export function getLineTexts({ editor, }: { readonly editor: HTMLDivElement; },): string[] {
   return [...editor.children,].map(function readLine(div,) {
     /* oxlint-disable typescript-eslint/no-unnecessary-condition -- textContent is typed as `string | null` in DOM; null when node has no text */
     /** Defensive default keeps empty divs producing the empty string rather than null. */
@@ -57,8 +57,8 @@ export function findLineForOffset({
   offset,
   lineStarts,
 }: {
-  offset: number;
-  lineStarts: readonly number[];
+  readonly offset: number;
+  readonly lineStarts: readonly number[];
 },): number {
   /**
    * Binary-search lower bound; mutated as the search narrows.

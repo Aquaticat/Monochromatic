@@ -8,7 +8,8 @@
 
 import type { ContextAction, } from '../file-tree/file-tree.ts';
 import { showFixedToast, } from '../toast/toast.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
+
+import type { EditorWsClientHandle, } from './types.ts';
 
 /**
  * Sends the WebSocket request for a filesystem context action.
@@ -29,8 +30,8 @@ export async function dispatchFsAction({
   action,
   ws,
 }: {
-  action: ContextAction;
-  ws: EditorWsClient;
+  readonly action: ContextAction;
+  readonly ws: EditorWsClientHandle;
 },): Promise<void> {
   if (action.kind === 'delete') {
     await ws.request({
@@ -103,8 +104,8 @@ export async function dispatchContextAction({
   action,
   ws,
 }: {
-  action: ContextAction;
-  ws: EditorWsClient;
+  readonly action: ContextAction;
+  readonly ws: EditorWsClientHandle;
 },): Promise<void> {
   try {
     await dispatchFsAction({

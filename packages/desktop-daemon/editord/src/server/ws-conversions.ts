@@ -31,7 +31,7 @@ import type {
  * const result = extractHoverContent({ hover: { contents: { kind: 'markdown', value: '```ts\nconst x: number\n```' } }, });
  * ```
  */
-export function extractHoverContent({ hover, }: { hover: LspHover; },): string {
+export function extractHoverContent({ hover, }: { readonly hover: LspHover; },): string {
   if ((typeof hover.contents) === 'string')
     return hover.contents;
 
@@ -51,7 +51,7 @@ export function extractHoverContent({ hover, }: { hover: LspHover; },): string {
  * ```
  */
 export function toWireCompletionItems(
-  { items, }: { items: LspCompletionItem[]; },
+  { items, }: { readonly items: readonly LspCompletionItem[]; },
 ): CompletionItem[] {
   return items.map(function convertItem(item,) {
     return {
@@ -75,7 +75,7 @@ export function toWireCompletionItems(
  * const result = toWireInlayHints({ hints: [{ position: { line: 3, character: 10 }, label: ': number', kind: 1 }], });
  * ```
  */
-export function toWireInlayHints({ hints, }: { hints: LspInlayHint[]; },): InlayHint[] {
+export function toWireInlayHints({ hints, }: { readonly hints: readonly LspInlayHint[]; },): InlayHint[] {
   return hints.map(function convertHint(hint,) {
     /** Flat label text; structured `label` parts are concatenated since the wire format is plain string. */
     const label = (typeof hint.label) === 'string'
@@ -86,18 +86,14 @@ export function toWireInlayHints({ hints, }: { hints: LspInlayHint[]; },): Inlay
           return part.value;
         },)
         .join('',);
-    /** Wire payload built up incrementally so optional LSP fields stay omitted when absent. */
-    const result: InlayHint = {
+    /** Wire payload with optional LSP fields omitted when absent. */
+    return {
       position: hint.position,
       label,
+      ...(hint.kind !== undefined ? { kind: hint.kind, } : {}),
+      ...(hint.paddingLeft !== undefined ? { paddingLeft: hint.paddingLeft, } : {}),
+      ...(hint.paddingRight !== undefined ? { paddingRight: hint.paddingRight, } : {}),
     };
-    if (hint.kind !== undefined)
-      result.kind = hint.kind;
-    if (hint.paddingLeft !== undefined)
-      result.paddingLeft = hint.paddingLeft;
-    if (hint.paddingRight !== undefined)
-      result.paddingRight = hint.paddingRight;
-    return result;
   },);
 }
 
@@ -115,11 +111,13 @@ export function toWireInlayHints({ hints, }: { hints: LspInlayHint[]; },): Inlay
  * ```
  */
 export function toWireSelectionRange(
-  { lspRange, }: { lspRange: LspSelectionRange; },
+  { lspRange, }: { readonly lspRange: LspSelectionRange; },
 ): SelectionRange {
-  /** Wire payload; the optional `parent` is attached only when the LSP value supplies one. */
-  const result: SelectionRange = { range: lspRange.range, };
-  if (lspRange.parent !== undefined)
-    result.parent = toWireSelectionRange({ lspRange: lspRange.parent, },);
-  return result;
+  /** Wire payload; optional `parent` stays omitted when the LSP value omits it. */
+  return {
+    range: lspRange.range,
+    ...(lspRange.parent !== undefined
+      ? { parent: toWireSelectionRange({ lspRange: lspRange.parent, },), }
+      : {}),
+  };
 }

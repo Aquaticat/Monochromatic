@@ -14,9 +14,9 @@ import { assertWithinRoot, } from './assert-within-root.ts';
 /** Result of listing a directory. */
 type ListDirResult = {
   /** Absolute resolved path. */
-  path: string;
+  readonly path: string;
   /** Directory entries in filesystem order. */
-  entries: DirEntry[];
+  readonly entries: readonly DirEntry[];
 };
 
 /**
@@ -41,8 +41,8 @@ export async function listDir(
     rootDir,
     path,
   }: {
-    rootDir: string;
-    path: string;
+    readonly rootDir: string;
+    readonly path: string;
   },
 ): Promise<ListDirResult> {
   /** Absolute resolved path; throws when `path` escapes `rootDir`, gating the readdir below. */

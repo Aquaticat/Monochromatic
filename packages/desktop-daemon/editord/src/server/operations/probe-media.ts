@@ -66,8 +66,8 @@ function extractMetadata(
     stderr,
     path,
   }: {
-    stderr: string;
-    path: string;
+    readonly stderr: string;
+    readonly path: string;
   },
 ): string | null {
   if (stderr === '') {
@@ -101,7 +101,7 @@ function extractMetadata(
  * const result = await probeMedia({ path: '/home/user/project/src/main.ts', });
  * ```
  */
-export async function probeMedia({ path, }: { path: string; },): Promise<string | null> {
+export async function probeMedia({ path, }: { readonly path: string; },): Promise<string | null> {
   try {
     /** ffprobe writes metadata to stderr even on success. */
     const result = await spawn(
@@ -122,7 +122,7 @@ export async function probeMedia({ path, }: { path: string; },): Promise<string 
     if ((error !== null) && ((typeof error) === 'object') && ('stderr' in error)) {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- narrowed by 'stderr' in check */
       /** Stderr captured by nano-spawn on non-zero exit; still contains the metadata we want. */
-      const { stderr, } = error as { stderr: string; };
+      const { stderr, } = error as { readonly stderr: string; };
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       return extractMetadata({
         stderr,

@@ -10,9 +10,9 @@ import type { SearchResult, } from '../../../protocol.ts';
 /** Detail payload for the `result-select` custom event. */
 export type ResultSelectDetail = {
   /** Absolute file path to open. */
-  path: string;
+  readonly path: string;
   /** 1-based line number to scroll to, present for content matches. */
-  line: number | undefined;
+  readonly line: number | undefined;
 };
 
 /**
@@ -35,9 +35,9 @@ export function handleSearchKeydown({
   moveSelection,
   confirmSelection,
 }: {
-  event: KeyboardEvent;
-  moveSelection: (delta: number,) => void;
-  confirmSelection: () => void;
+  readonly event: KeyboardEvent;
+  readonly moveSelection: (delta: number,) => void;
+  readonly confirmSelection: () => void;
 },): void {
   if (event.key === 'ArrowDown') {
     event.preventDefault();
@@ -77,10 +77,10 @@ export function moveSearchSelection({
   selectedIndex,
   container,
 }: {
-  delta: number;
-  results: SearchResult[];
-  selectedIndex: number;
-  container: HTMLDivElement;
+  readonly delta: number;
+  readonly results: readonly SearchResult[];
+  readonly selectedIndex: number;
+  readonly container: HTMLDivElement;
 },): number {
   if (results.length === 0)
     return selectedIndex;
@@ -91,7 +91,7 @@ export function moveSearchSelection({
   const previous = children[selectedIndex];
   if (previous !== undefined) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- HTMLCollection items are Element; only HTMLElement has dataset
-    delete (previous as HTMLElement).dataset['selected'];
+    delete (previous as HTMLElement).dataset.selected;
   }
 
   /** Wraps the new index modulo length so navigation cycles. */
@@ -101,7 +101,7 @@ export function moveSearchSelection({
   const current = children[newIndex];
   if (current !== undefined) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- HTMLCollection items are Element; only HTMLElement has dataset
-    (current as HTMLElement).dataset['selected'] = '';
+    (current as HTMLElement).dataset.selected = '';
     current.scrollIntoView({ block: 'nearest', },);
   }
 
@@ -127,8 +127,8 @@ export function buildResultDetail({
   index,
   results,
 }: {
-  index: number;
-  results: SearchResult[];
+  readonly index: number;
+  readonly results: readonly SearchResult[];
 },): ResultSelectDetail | null {
   /** Out-of-range index returns null instead of throwing. */
   const result = results[index];

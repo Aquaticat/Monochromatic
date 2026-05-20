@@ -47,7 +47,7 @@ export class TreeFileEntry extends HTMLElement {
       return;
     this.#initialized = true;
 
-    this.dataset['path'] = this.entryPath;
+    this.dataset.path = this.entryPath;
     this.setAttribute(
       'tabindex',
       '0',
@@ -61,7 +61,7 @@ export class TreeFileEntry extends HTMLElement {
     },);
     if (this.recencyIndex !== (-1)) {
       toggle.textContent = String(this.recencyIndex,);
-      this.dataset['recency'] = String(this.recencyIndex,);
+      this.dataset.recency = String(this.recencyIndex,);
     }
 
     this.replaceChildren(
@@ -137,9 +137,9 @@ export function createTreeFileEntry({
   name,
   recencyIndex,
 }: {
-  path: string;
-  name: string;
-  recencyIndex: number;
+  readonly path: string;
+  readonly name: string;
+  readonly recencyIndex: number;
 },): TreeFileEntry {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- guaranteed by customElements.define */
   /** Custom element instance returned to the caller. */

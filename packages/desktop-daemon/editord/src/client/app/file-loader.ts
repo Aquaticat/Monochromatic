@@ -7,15 +7,18 @@
 
 import type { FileKind, } from '../../../protocol.ts';
 import { FILE_SIZE_WARNING_THRESHOLD, } from '../../constants.ts';
-import type { BinaryViewer, } from '../binary-viewer/binary-viewer.ts';
-import type { EditorPane, } from '../editor/editor-pane.ts';
+
 import { getParserForPath, } from '../highlight/languages.ts';
 import {
   l as rootLogger,
   tagged,
 } from '../log.ts';
 import { showFixedToast, } from '../toast/toast.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
+import type {
+  BinaryViewerHandle,
+  EditorPaneHandle,
+  EditorWsClientHandle,
+} from './types.ts';
 
 /** Tagged logger for the file loader subsystem. */
 const appLog = tagged({
@@ -59,13 +62,13 @@ export async function loadFile(
     line,
     character,
   }: {
-    ws: EditorWsClient;
-    editorPane: EditorPane;
-    binaryViewer: BinaryViewer;
-    token: string;
-    path: string;
-    line?: number | undefined;
-    character?: number | undefined;
+    readonly ws: EditorWsClientHandle;
+    readonly editorPane: EditorPaneHandle;
+    readonly binaryViewer: BinaryViewerHandle;
+    readonly token: string;
+    readonly path: string;
+    readonly line?: number | undefined;
+    readonly character?: number | undefined;
   },
 ): Promise<FileKind | null> {
   try {

@@ -18,7 +18,7 @@ export type DocumentState = {
 
 /** Three LSP server slots passed to sync functions. */
 export type ServerSlots = {
-  oxlint: LspClient | null;
-  tsgo: LspClient | null;
-  dprint: LspClient | null;
+  readonly oxlint: LspClient | null;
+  readonly tsgo: LspClient | null;
+  readonly dprint: LspClient | null;
 };

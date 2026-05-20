@@ -10,10 +10,10 @@ import type { SelectionRange, } from '../../../protocol.ts';
 
 /** Range coordinates used for comparison. */
 export type FlatRange = {
-  startLine: number;
-  startCharacter: number;
-  endLine: number;
-  endCharacter: number;
+  readonly startLine: number;
+  readonly startCharacter: number;
+  readonly endLine: number;
+  readonly endCharacter: number;
 };
 
 /**
@@ -29,7 +29,7 @@ export type FlatRange = {
  * const result = flattenChain({ root: '/home/user/project', });
  * ```
  */
-export function flattenChain({ root, }: { root: SelectionRange; },): SelectionRange[] {
+export function flattenChain({ root, }: { readonly root: SelectionRange; },): SelectionRange[] {
   /** Accumulator filled by walking the parent chain below. */
   const result: SelectionRange[] = [];
   /** Walker cursor; undefined exits the loop. */
@@ -61,8 +61,8 @@ export function strictlyContains(
     outer,
     inner,
   }: {
-    outer: FlatRange;
-    inner: FlatRange;
+    readonly outer: FlatRange;
+    readonly inner: FlatRange;
   },
 ): boolean {
   /** True when outer's start is strictly earlier than inner's start. */
@@ -105,7 +105,7 @@ export function strictlyContains(
  * const result = toFlat({ sr: selectionRange, });
  * ```
  */
-export function toFlat({ sr, }: { sr: SelectionRange; },): FlatRange {
+export function toFlat({ sr, }: { readonly sr: SelectionRange; },): FlatRange {
   return {
     startLine: sr.range.start.line,
     startCharacter: sr.range.start.character,

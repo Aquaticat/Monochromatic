@@ -41,7 +41,7 @@ export class ReferencesPopup extends HTMLElement {
   /** Container for the list items. */
   #list: HTMLDivElement | null = null;
   /** Currently displayed locations. */
-  #locations: ReferenceLocation[] = [];
+  #locations: readonly ReferenceLocation[] = [];
   /** Index of the selected item (-1 = none). */
   #selectedIndex = -1;
   /** Invisible anchor div positioned at the editor cursor. */
@@ -102,10 +102,10 @@ export class ReferencesPopup extends HTMLElement {
       y,
       cursorHeight,
     }: {
-      locations: ReferenceLocation[];
-      x: number;
-      y: number;
-      cursorHeight: number;
+      readonly locations: readonly ReferenceLocation[];
+      readonly x: number;
+      readonly y: number;
+      readonly cursorHeight: number;
     },
   ): void {
     if ((this.#list === null) || (locations.length === 0))
@@ -150,7 +150,7 @@ export class ReferencesPopup extends HTMLElement {
   }
 
   /** Moves the selection up or down. */
-  navigate({ direction, }: { direction: 'up' | 'down'; },): void {
+  navigate({ direction, }: { readonly direction: 'up' | 'down'; },): void {
     if ((this.#locations.length === 0) || (this.#list === null))
       return;
     this.#selectedIndex = computeNextIndex({

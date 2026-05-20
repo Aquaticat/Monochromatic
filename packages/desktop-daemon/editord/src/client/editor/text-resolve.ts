@@ -31,12 +31,12 @@ export function resolveTextPosition({
   lineIndex,
   character,
 }: {
-  editor: HTMLDivElement;
-  lineIndex: number;
-  character: number;
+  readonly editor: HTMLDivElement;
+  readonly lineIndex: number;
+  readonly character: number;
 },): {
-  node: Node;
-  offset: number;
+  readonly node: Node;
+  readonly offset: number;
 } | null {
   /** Line element at `lineIndex`; undefined when the index is past the editor's end. */
   const lineDiv = editor.children[lineIndex];
@@ -104,12 +104,12 @@ export function resolveLineCharacter({
   container,
   offset,
 }: {
-  editor: HTMLDivElement;
-  container: Node;
-  offset: number;
+  readonly editor: HTMLDivElement;
+  readonly container: Node;
+  readonly offset: number;
 },): {
-  line: number;
-  character: number;
+  readonly line: number;
+  readonly character: number;
 } | null {
   /**
    * Walk cursor; starts at the caller's container and rises until it hits the editor or runs out.

@@ -65,9 +65,9 @@ export class HoverPopup extends HTMLElement {
     x,
     y,
   }: {
-    text: string;
-    x: number;
-    y: number;
+    readonly text: string;
+    readonly x: number;
+    readonly y: number;
   },): void {
     if (this.#content === null)
       return;

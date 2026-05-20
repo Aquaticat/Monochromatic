@@ -48,7 +48,7 @@ const cache: {
  * const result = measureSpaceRatio({ editor: editor, });
  * ```
  */
-export function measureSpaceRatio({ editor, }: { editor: HTMLElement; },): number {
+export function measureSpaceRatio({ editor, }: { readonly editor: HTMLElement; },): number {
   if (cache.ratio !== null)
     return cache.ratio;
 
@@ -124,10 +124,10 @@ export function interSpacesForGap({
   fallbackCursor,
   spaceRatio,
 }: {
-  charPos: number;
-  rowText: string;
-  fallbackCursor: number;
-  spaceRatio: number;
+  readonly charPos: number;
+  readonly rowText: string;
+  readonly fallbackCursor: number;
+  readonly spaceRatio: number;
 },): number {
   if ((cache.ctx === null) || (cache.monoW === 0) || (cache.interSpW === 0))
     return Math.round((charPos - fallbackCursor) * spaceRatio,);
@@ -163,7 +163,7 @@ export function interSpacesForGap({
  * measureInlayOffsets({ editor: editor, });
  * ```
  */
-export function measureInlayOffsets({ editor, }: { editor: HTMLElement; },): void {
+export function measureInlayOffsets({ editor, }: { readonly editor: HTMLElement; },): void {
   for (const child of editor.children) {
     if ((!(child instanceof HTMLElement)) || (child.dataset.inlay === undefined))
       continue;

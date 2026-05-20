@@ -45,7 +45,7 @@ export type SearchState = {
  * ```
  */
 export function createSearchDebounce(
-  { execute, }: { execute: () => void; },
+  { execute, }: { readonly execute: () => void; },
 ): DebouncedHandle {
   return createDebounced({
     fn: execute,
@@ -69,8 +69,8 @@ export function scheduleSearch({
   state,
   execute,
 }: {
-  state: SearchState;
-  execute: () => void;
+  readonly state: SearchState;
+  readonly execute: () => void;
 },): void {
   state.debouncedSearch ??= createSearchDebounce({ execute, },);
   state.debouncedSearch.debounced();
@@ -98,12 +98,12 @@ export async function performSearch({
   onSearch,
   onResults,
 }: {
-  raw: string;
-  state: SearchState;
-  onSearch: (query: string,) => Promise<SearchResult[]>;
-  onResults: (opts: {
-    results: SearchResult[];
-    query: string;
+  readonly raw: string;
+  readonly state: SearchState;
+  readonly onSearch: (query: string,) => Promise<readonly SearchResult[]>;
+  readonly onResults: (opts: {
+    readonly results: readonly SearchResult[];
+    readonly query: string;
   },) => void;
 },): Promise<void> {
   if (raw.trim() === '') {

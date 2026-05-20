@@ -62,7 +62,7 @@ import { createRecentFiles, } from '../recent-files.ts';
 import type { ReferencesPopup, } from '../references/references-popup.ts';
 import type { RenameInput, } from '../rename/rename-input.ts';
 import type { SearchOverlay, } from '../search/search-overlay.ts';
-import { EditorWsClient, } from '../ws/client.ts';
+import { createEditorWsClient, } from '../ws/client.ts';
 import { bootSession, } from './boot.ts';
 import { dispatchContextAction, } from './context-actions.ts';
 import {
@@ -89,7 +89,7 @@ const filePath = params.get('file',);
 /** Port derived from the current page origin. */
 const { port, } = globalThis.location;
 /** WebSocket client instance. */
-const ws = new EditorWsClient({
+const ws = createEditorWsClient({
   port,
   token,
 },);
@@ -115,7 +115,7 @@ const renameInput = document.createElement('rename-input',) as RenameInput;
 const binaryViewer = document.createElement('binary-viewer',) as BinaryViewer;
 // oxlint-enable typescript-eslint/no-unsafe-type-assertion
 
-fileTree.fetchDir = async function fetchDir(path: string,): Promise<DirEntry[]> {
+fileTree.fetchDir = async function fetchDir(path: string,): Promise<readonly DirEntry[]> {
   /** Directory listing returned by the server; surface goes back as the fetchDir result. */
   const { entries, } = await ws.request({
     type: 'listDir',
@@ -142,7 +142,7 @@ searchOverlay.getRootDir = function getScope(): string {
 };
 searchOverlay.onSearch = async function handleSearch(
   query: string,
-): Promise<SearchResult[]> {
+): Promise<readonly SearchResult[]> {
   /** Directory the search is scoped to; either the file-tree selection or the project root. */
   const scope = resolveSearchScope();
   /** Search hits returned by the server for the given query and scope. */
@@ -193,9 +193,9 @@ async function loadFileSafe(
     line,
     character,
   }: {
-    path: string;
-    line?: number | undefined;
-    character?: number | undefined;
+    readonly path: string;
+    readonly line?: number | undefined;
+    readonly character?: number | undefined;
   },
 ): Promise<void> {
   /** Loaded file's category (`text` vs binary variants); null when the load was rejected. */
@@ -277,7 +277,7 @@ editorPane.addEventListener(
  *
  * @param path - absolute file path to reveal and load
  */
-async function revealAndLoadFile({ path, }: { path: string; },): Promise<void> {
+async function revealAndLoadFile({ path, }: { readonly path: string; },): Promise<void> {
   await fileTree.revealFiles({ paths: [path,], },);
   fileTree.scrollToFile({ path, },);
   await loadFileSafe({ path, },);

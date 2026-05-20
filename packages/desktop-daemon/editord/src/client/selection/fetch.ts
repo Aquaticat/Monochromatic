@@ -6,7 +6,7 @@
  */
 
 import type { SelectionRange, } from '../../../protocol.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
+import type { EditorWsClientHandle, } from '../app/types.ts';
 import { flattenChain, } from './utils.ts';
 
 /**
@@ -34,11 +34,11 @@ export async function fetchChain({
   line,
   character,
 }: {
-  ws: EditorWsClient;
-  path: string;
-  line: number;
-  character: number;
-},): Promise<SelectionRange[]> {
+  readonly ws: EditorWsClientHandle;
+  readonly path: string;
+  readonly line: number;
+  readonly character: number;
+},): Promise<readonly SelectionRange[]> {
   /** Server response: one chain per requested position; only the first is used here. */
   const { ranges, } = await ws.request({
     type: 'selectionRange',

@@ -67,10 +67,10 @@ export function positionAnchor({
   y,
   cursorHeight,
 }: {
-  anchor: HTMLDivElement;
-  x: number;
-  y: number;
-  cursorHeight: number;
+  readonly anchor: HTMLDivElement;
+  readonly x: number;
+  readonly y: number;
+  readonly cursorHeight: number;
 },): void {
   anchor.style.setProperty(
     'inset-inline-start',
@@ -99,7 +99,7 @@ export function positionAnchor({
  * ```
  */
 export function renderReferenceItems(
-  { locations, }: { locations: ReferenceLocation[]; },
+  { locations, }: { readonly locations: readonly ReferenceLocation[]; },
 ): HTMLElement[] {
   return locations.map(function renderItem(
     loc,
@@ -145,8 +145,8 @@ export function updateItemSelection({
   list,
   selectedIndex,
 }: {
-  list: HTMLDivElement;
-  selectedIndex: number;
+  readonly list: HTMLDivElement;
+  readonly selectedIndex: number;
 },): void {
   /** Without querySelectorAll: unsafe type assertion from Element to HTMLElement on children. */
   const items = list.querySelectorAll<HTMLElement>('.item',);
@@ -182,9 +182,9 @@ export function computeNextIndex({
   total,
   direction,
 }: {
-  current: number;
-  total: number;
-  direction: 'up' | 'down';
+  readonly current: number;
+  readonly total: number;
+  readonly direction: 'up' | 'down';
 },): number {
   if (direction === 'up')
     return current <= 0 ? total - 1 : current - 1;

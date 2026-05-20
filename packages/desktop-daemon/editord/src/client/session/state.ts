@@ -21,18 +21,18 @@ const l = tagged({
 /** Persisted UI state for a single editord session. */
 export type SessionState = {
   /** Absolute path of the currently open file, or null if none. */
-  filePath: string | null;
+  readonly filePath: string | null;
   /** Absolute paths of all expanded directories in the file tree. */
-  expandedDirs: string[];
+  readonly expandedDirs: readonly string[];
   /** 0-based cursor position in the editor. */
-  cursor: {
-    line: number;
-    character: number;
+  readonly cursor: {
+    readonly line: number;
+    readonly character: number;
   };
   /** Vertical scroll offset of the editor pane in pixels. */
-  scrollTop: number;
+  readonly scrollTop: number;
   /** Recently opened file paths, index 0 = most recent. May be absent in older saved state. */
-  recentFiles?: string[];
+  readonly recentFiles?: readonly string[];
 };
 
 /**
@@ -48,8 +48,8 @@ function storageKey({
   fsId,
   rootDir,
 }: {
-  fsId: string;
-  rootDir: string;
+  readonly fsId: string;
+  readonly rootDir: string;
 },): string {
   return `editord:${fsId}:${rootDir}`;
 }
@@ -73,9 +73,9 @@ export function saveSessionState({
   rootDir,
   state,
 }: {
-  fsId: string;
-  rootDir: string;
-  state: SessionState;
+  readonly fsId: string;
+  readonly rootDir: string;
+  readonly state: SessionState;
 },): void {
   try {
     /** Composite localStorage key keyed on filesystem id + root dir. */
@@ -111,8 +111,8 @@ export function restoreSessionState({
   fsId,
   rootDir,
 }: {
-  fsId: string;
-  rootDir: string;
+  readonly fsId: string;
+  readonly rootDir: string;
 },): SessionState | null {
   try {
     /** Composite localStorage key keyed on filesystem id + root dir. */

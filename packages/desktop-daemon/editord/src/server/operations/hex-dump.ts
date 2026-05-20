@@ -53,8 +53,8 @@ export function generateHexDump(
     buffer,
     totalSize,
   }: {
-    buffer: Buffer;
-    totalSize?: number;
+    readonly buffer: Buffer;
+    readonly totalSize?: number;
   },
 ): string {
   /** Original file size; differs from buffer length when caller pre-truncated. */

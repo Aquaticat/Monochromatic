@@ -23,8 +23,8 @@ export function buildInitializeParams({
   rootUri,
   initializationOptions,
 }: {
-  rootUri: string;
-  initializationOptions: Record<string, unknown> | undefined;
+  readonly rootUri: string;
+  readonly initializationOptions: Readonly<Record<string, unknown>> | undefined;
 },): unknown {
   return {
     processId: process.pid,

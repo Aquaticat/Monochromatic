@@ -28,100 +28,100 @@ import type {
  */
 export type ServerMessage =
   | {
-    type: 'connected';
-    rootDir: string;
-    fsId: string;
+    readonly type: 'connected';
+    readonly rootDir: string;
+    readonly fsId: string;
   }
   | {
-    type: 'fileContent';
-    id: string;
-    path: string;
-    content: string;
-    kind: FileKind;
-    mediaInfo?: string;
+    readonly type: 'fileContent';
+    readonly id: string;
+    readonly path: string;
+    readonly content: string;
+    readonly kind: FileKind;
+    readonly mediaInfo?: string;
   }
   | {
-    type: 'saved';
-    id: string;
-    path: string;
+    readonly type: 'saved';
+    readonly id: string;
+    readonly path: string;
   }
   | {
-    type: 'dirListing';
-    id: string;
-    path: string;
-    entries: DirEntry[];
+    readonly type: 'dirListing';
+    readonly id: string;
+    readonly path: string;
+    readonly entries: readonly DirEntry[];
   }
   | {
-    type: 'searchResults';
-    id: string;
-    results: SearchResult[];
+    readonly type: 'searchResults';
+    readonly id: string;
+    readonly results: readonly SearchResult[];
   }
   | {
-    type: 'fileChanged';
-    path: string;
-    changeType: FsChangeType;
-    isDirectory: boolean;
+    readonly type: 'fileChanged';
+    readonly path: string;
+    readonly changeType: FsChangeType;
+    readonly isDirectory: boolean;
   }
   | {
-    type: 'diagnostics';
-    path: string;
-    diagnostics: Diagnostic[];
+    readonly type: 'diagnostics';
+    readonly path: string;
+    readonly diagnostics: readonly Diagnostic[];
   }
   | {
-    type: 'hoverResult';
-    id: string;
-    contents: string;
-    range?: Range;
+    readonly type: 'hoverResult';
+    readonly id: string;
+    readonly contents: string;
+    readonly range?: Range;
   }
   | {
-    type: 'completionResult';
-    id: string;
-    items: CompletionItem[];
+    readonly type: 'completionResult';
+    readonly id: string;
+    readonly items: readonly CompletionItem[];
   }
   | {
-    type: 'formatResult';
-    id: string;
-    edits: TextEdit[];
+    readonly type: 'formatResult';
+    readonly id: string;
+    readonly edits: readonly TextEdit[];
   }
   | ({
-    type: 'definitionResult';
-    id: string;
+    readonly type: 'definitionResult';
+    readonly id: string;
   } & FilePosition)
   | {
-    type: 'referencesResult';
-    id: string;
-    locations: FilePosition[];
+    readonly type: 'referencesResult';
+    readonly id: string;
+    readonly locations: readonly FilePosition[];
   }
   | {
-    type: 'inlayHintResult';
-    id: string;
-    hints: InlayHint[];
+    readonly type: 'inlayHintResult';
+    readonly id: string;
+    readonly hints: readonly InlayHint[];
   }
   | {
-    type: 'selectionRangeResult';
-    id: string;
-    ranges: SelectionRange[];
+    readonly type: 'selectionRangeResult';
+    readonly id: string;
+    readonly ranges: readonly SelectionRange[];
   }
   | {
-    type: 'prepareRenameResult';
-    id: string;
-    canRename: boolean;
-    range?: Range;
-    placeholder?: string;
+    readonly type: 'prepareRenameResult';
+    readonly id: string;
+    readonly canRename: boolean;
+    readonly range?: Range;
+    readonly placeholder?: string;
   }
   | {
-    type: 'renameResult';
-    id: string;
-    edits: WorkspaceFileEdit[];
+    readonly type: 'renameResult';
+    readonly id: string;
+    readonly edits: readonly WorkspaceFileEdit[];
   }
   | {
-    type: 'fsActionDone';
-    id: string;
+    readonly type: 'fsActionDone';
+    readonly id: string;
   }
   | {
-    type: 'error';
-    id?: string;
-    message: string;
+    readonly type: 'error';
+    readonly id?: string;
+    readonly message: string;
   };
 
 //endregion Server messages

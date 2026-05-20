@@ -61,9 +61,9 @@ export class EditorPane extends HTMLElement {
   /** Pending highlight rAF ID. */
   #highlightFrame = 0;
   /** Current diagnostics. */
-  #diagnostics: Diagnostic[] = [];
+  #diagnostics: readonly Diagnostic[] = [];
   /** Current inlay hints. */
-  #inlayHints: InlayHint[] = [];
+  #inlayHints: readonly InlayHint[] = [];
   /** Pending resize rAF ID. */
   #resizeMeasureFrame = 0;
   /** Resize observer for re-measurement. */
@@ -171,7 +171,7 @@ export class EditorPane extends HTMLElement {
    *
    * @param line - 1-based line number to scroll to
    */
-  scrollToLine({ line, }: { line: number; },): void {
+  scrollToLine({ line, }: { readonly line: number; },): void {
     if (this.#editor === null)
       return;
     scrollLineIntoView({
@@ -189,7 +189,7 @@ export class EditorPane extends HTMLElement {
    *
    * @param diagnostics - diagnostics from the language server
    */
-  setDiagnostics(diagnostics: Diagnostic[],): void {
+  setDiagnostics(diagnostics: readonly Diagnostic[],): void {
     if (diagnosticsEqual({
       a: diagnostics,
       b: this.#diagnostics,
@@ -206,7 +206,7 @@ export class EditorPane extends HTMLElement {
    *
    * @param hints - inlay hints from the language server
    */
-  setInlayHints(hints: InlayHint[],): void {
+  setInlayHints(hints: readonly InlayHint[],): void {
     if (hintsEqual({
       a: hints,
       b: this.#inlayHints,
@@ -222,7 +222,7 @@ export class EditorPane extends HTMLElement {
    *
    * @param edits - text edits to apply
    */
-  applyTextEdits(edits: TextEdit[],): void {
+  applyTextEdits(edits: readonly TextEdit[],): void {
     if ((this.#editor === null) || (edits.length === 0))
       return;
     /** Capture cursor before setText replaces every line div. */
@@ -313,8 +313,8 @@ export class EditorPane extends HTMLElement {
     line,
     character,
   }: {
-    line: number;
-    character: number;
+    readonly line: number;
+    readonly character: number;
   },): void {
     if (this.#editor === null)
       return;
@@ -352,8 +352,8 @@ export class EditorPane extends HTMLElement {
     x,
     y,
   }: {
-    x: number;
-    y: number;
+    readonly x: number;
+    readonly y: number;
   },): EditorPosition | null {
     if (this.#editor === null)
       return null;
@@ -392,6 +392,20 @@ export class EditorPane extends HTMLElement {
   set editorScrollTop(value: number,) {
     if (this.#editor !== null)
       this.#editor.scrollTop = value;
+  }
+
+  /**
+   * Sets vertical scroll offset through a method surface for readonly capability types.
+   *
+   * @param value - scroll offset in pixels
+   *
+   * @example
+   * ```ts
+   * editorPane.setEditorScrollTop(120);
+   * ```
+   */
+  setEditorScrollTop(value: number,): void {
+    this.editorScrollTop = value;
   }
 
   /**

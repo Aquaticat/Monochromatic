@@ -31,8 +31,8 @@ function isTracked({
   path,
   documents,
 }: {
-  path: string;
-  documents: Map<string, DocumentState>;
+  readonly path: string;
+  readonly documents: Map<string, DocumentState>;
 },): boolean {
   return documents.has(pathToUri({ path, },),);
 }
@@ -59,10 +59,10 @@ export async function managerDidOpen({
   path,
   text,
 }: {
-  pool: LspPool;
-  documents: Map<string, DocumentState>;
-  path: string;
-  text: string;
+  readonly pool: LspPool;
+  readonly documents: Map<string, DocumentState>;
+  readonly path: string;
+  readonly text: string;
 },): Promise<void> {
   syncOpen({
     path,
@@ -94,10 +94,10 @@ export async function managerDidChange({
   path,
   text,
 }: {
-  pool: LspPool;
-  documents: Map<string, DocumentState>;
-  path: string;
-  text: string;
+  readonly pool: LspPool;
+  readonly documents: Map<string, DocumentState>;
+  readonly path: string;
+  readonly text: string;
 },): Promise<void> {
   if (!isTracked({
     path,
@@ -132,9 +132,9 @@ export async function managerDidSave({
   documents,
   path,
 }: {
-  pool: LspPool;
-  documents: Map<string, DocumentState>;
-  path: string;
+  readonly pool: LspPool;
+  readonly documents: Map<string, DocumentState>;
+  readonly path: string;
 },): Promise<void> {
   if (!isTracked({
     path,
@@ -171,10 +171,10 @@ export async function managerDidClose({
   diagnostics,
   path,
 }: {
-  pool: LspPool;
-  documents: Map<string, DocumentState>;
-  diagnostics: DiagnosticStore;
-  path: string;
+  readonly pool: LspPool;
+  readonly documents: Map<string, DocumentState>;
+  readonly diagnostics: DiagnosticStore;
+  readonly path: string;
 },): Promise<void> {
   diagnostics.delete({ uri: pathToUri({ path, },), },);
   syncClose({
@@ -212,17 +212,17 @@ export function routeNotification({
   method,
   params,
 }: {
-  diagnostics: DiagnosticStore;
-  source: string;
-  method: string;
-  params: unknown;
+  readonly diagnostics: DiagnosticStore;
+  readonly source: string;
+  readonly method: string;
+  readonly params: unknown;
 },): void {
   if (method === 'textDocument/publishDiagnostics') {
     /** Narrowed view of `params` for the `publishDiagnostics` LSP notification. */
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP publishDiagnostics shape
     const p = params as {
-      uri: string;
-      diagnostics: LspDiagnostic[];
+      readonly uri: string;
+      readonly diagnostics: LspDiagnostic[];
     };
     diagnostics.update({
       source,

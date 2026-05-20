@@ -10,9 +10,9 @@ import type { JsonRpcMessage, } from './json-rpc.ts';
 /** Pending request awaiting an LSP server response. */
 export type PendingLspRequest = {
   /** Resolves the pending request with the server's result. */
-  resolve: (value: unknown,) => void;
+  readonly resolve: (value: unknown,) => void;
   /** Rejects the pending request with an error. */
-  reject: (error: Error,) => void;
+  readonly reject: (error: Error,) => void;
   /** Timeout handle to clear when the response arrives. */
   timeoutId: ReturnType<typeof setTimeout> | null;
 };
@@ -51,24 +51,24 @@ export function routeJsonRpcMessage({
   send,
   onNotification,
 }: {
-  message: JsonRpcMessage;
-  pending: Map<number, PendingLspRequest>;
-  name: string;
-  send: (message: unknown,) => void;
-  onNotification: (event: {
-    method: string;
-    params: unknown;
+  readonly message: JsonRpcMessage;
+  readonly pending: Map<number, PendingLspRequest>;
+  readonly name: string;
+  readonly send: (message: unknown,) => void;
+  readonly onNotification: (event: {
+    readonly method: string;
+    readonly params: unknown;
   },) => void;
 },): void {
   if (('id' in message) && (!('method' in message))) {
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to response shape */
     /** Narrowed response view used to look up the matching pending request. */
     const response = message as {
-      id: number;
-      result?: unknown;
-      error?: {
-        code: number;
-        message: string;
+      readonly id: number;
+      readonly result?: unknown;
+      readonly error?: {
+        readonly code: number;
+        readonly message: string;
       };
     };
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
@@ -88,8 +88,8 @@ export function routeJsonRpcMessage({
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to notification shape */
     /** Narrowed notification view forwarded to the consumer's handler. */
     const notification = message as {
-      method: string;
-      params?: unknown;
+      readonly method: string;
+      readonly params?: unknown;
     };
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     onNotification({
@@ -100,7 +100,7 @@ export function routeJsonRpcMessage({
   else if (('method' in message) && ('id' in message)) {
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to request shape */
     /** Narrowed request view used only for the response id below. */
-    const request = message as { id: number; };
+    const request = message as { readonly id: number; };
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     send({
       jsonrpc: '2.0',

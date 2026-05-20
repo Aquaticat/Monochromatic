@@ -41,9 +41,9 @@ export async function restoreExpansion({
   dirs,
   loadPromises,
 }: {
-  tree: HTMLDivElement;
-  dirs: string[];
-  loadPromises: Map<string, Promise<void>>;
+  readonly tree: HTMLDivElement;
+  readonly dirs: readonly string[];
+  readonly loadPromises: ReadonlyMap<string, Promise<void>>;
 },): Promise<void> {
   /** Pre-compute depths to avoid O(N log N) split calls inside the comparator. */
   const depthOf = new Map<string, number>(
@@ -79,7 +79,7 @@ export async function restoreExpansion({
     if ((details instanceof HTMLDetailsElement) && (!details.open)) {
       details.open = true;
       details.dispatchEvent(new Event('toggle',),);
-      // oxlint-disable-next-line eslint(no-await-in-loop) -- sequential expansion is intentional: parent directories must render before children can be found in the DOM
+      // oxlint-disable-next-line no-await-in-loop -- sequential expansion is intentional: parent directories must render before children can be found in the DOM
       await loadPromises.get(dirPath,);
     }
   }
@@ -101,8 +101,8 @@ export function updateRecencyMarkers({
   tree,
   paths,
 }: {
-  tree: HTMLDivElement;
-  paths: string[];
+  readonly tree: HTMLDivElement;
+  readonly paths: readonly string[];
 },): void {
   /** Path-to-position lookup so each tree entry can resolve its recency index in O(1). */
   const recencyByPath = new Map<string, number>();
@@ -119,7 +119,7 @@ export function updateRecencyMarkers({
 
   for (const label of tree.querySelectorAll<HTMLElement>('tree-file-entry[data-path]',)) {
     /** Absolute path this entry represents; undefined when the data attribute is missing or empty. */
-    const labelPath = label.dataset['path'];
+    const labelPath = label.dataset.path;
     /** Position in the recency list, or undefined when this path is not among the recent files. */
     const recencyIndex = labelPath !== undefined
       ? recencyByPath.get(labelPath,)
@@ -128,12 +128,12 @@ export function updateRecencyMarkers({
     const toggle = label.querySelector<HTMLElement>('.toggle',);
 
     if (recencyIndex !== undefined) {
-      label.dataset['recency'] = String(recencyIndex,);
+      label.dataset.recency = String(recencyIndex,);
       if (toggle !== null)
         toggle.textContent = String(recencyIndex,);
     }
-    else if (label.dataset['recency'] !== undefined) {
-      delete label.dataset['recency'];
+    else if (label.dataset.recency !== undefined) {
+      delete label.dataset.recency;
       if (toggle !== null)
         toggle.textContent = '';
     }
@@ -153,12 +153,12 @@ export function updateRecencyMarkers({
  * ```
  */
 export function resolveSelectedDir(
-  { lastFocused, }: { lastFocused: HTMLElement | null; },
+  { lastFocused, }: { readonly lastFocused: HTMLElement | null; },
 ): string {
   if (lastFocused === null)
     return '';
   /** Absolute path of the focused entry, or empty when the entry has no data-path attribute. */
-  const itemPath = lastFocused.dataset['path'] ?? '';
+  const itemPath = lastFocused.dataset.path ?? '';
   if (itemPath === '')
     return '';
   if (lastFocused.tagName === 'SUMMARY')
@@ -185,14 +185,14 @@ export function resolveSelectedDir(
  * const dirs = collectExpandedDirs({ tree: treeElement, });
  * ```
  */
-export function collectExpandedDirs({ tree, }: { tree: HTMLDivElement; },): string[] {
+export function collectExpandedDirs({ tree, }: { readonly tree: HTMLDivElement; },): string[] {
   /** Accumulator collecting every expanded directory path encountered during the walk. */
   const dirs: string[] = [];
   for (const details of tree.querySelectorAll<HTMLDetailsElement>('details[open]',)) {
     /** `<summary>` is always the first child of `<details>` (set in TreeDirEntry.connectedCallback). */
     const first = details.firstElementChild;
     /** Path read from the summary's data attribute; empty when the summary lacks a data-path. */
-    const path = first instanceof HTMLElement ? (first.dataset['path'] ?? '') : '';
+    const path = first instanceof HTMLElement ? (first.dataset.path ?? '') : '';
     if (path !== '')
       dirs.push(path,);
   }

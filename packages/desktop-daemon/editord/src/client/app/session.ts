@@ -5,12 +5,14 @@
  * on boot. Session persistence wiring lives in session-persistence.ts.
  */
 
-import type { EditorPane, } from '../editor/editor-pane.ts';
-import type { FileTree, } from '../file-tree/file-tree.ts';
 import { restoreSessionState, } from '../session/state.ts';
-import type { EditorWsClient, } from '../ws/client.ts';
 
-import type { LoadFileFn, } from './types.ts';
+import type {
+  EditorPaneHandle,
+  EditorWsClientHandle,
+  FileTreeHandle,
+  LoadFileFn,
+} from './types.ts';
 
 export { wireSessionPersistence, } from '../session/persistence.ts';
 
@@ -43,15 +45,15 @@ export async function restoreSession(
     loadFileSafe,
     queryFilePath,
   }: {
-    ws: EditorWsClient;
-    editorPane: EditorPane;
-    fileTree: FileTree;
-    loadFileSafe: LoadFileFn;
-    queryFilePath: string | null;
+    readonly ws: EditorWsClientHandle;
+    readonly editorPane: EditorPaneHandle;
+    readonly fileTree: FileTreeHandle;
+    readonly loadFileSafe: LoadFileFn;
+    readonly queryFilePath: string | null;
   },
 ): Promise<{
-  filePath: string | null;
-  recentFiles: string[];
+  readonly filePath: string | null;
+  readonly recentFiles: readonly string[];
 }> {
   /** Saved session state from a previous visit, if any. */
   const saved = restoreSessionState({
@@ -77,7 +79,7 @@ export async function restoreSession(
   /** Restore cursor and scroll position after file and tree are loaded. */
   if ((saved !== null) && (bootFilePath !== null) && (bootFilePath === saved.filePath)) {
     editorPane.restoreCursor(saved.cursor,);
-    editorPane.editorScrollTop = saved.scrollTop;
+    editorPane.setEditorScrollTop(saved.scrollTop,);
   }
 
   return {

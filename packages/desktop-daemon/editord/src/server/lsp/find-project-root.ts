@@ -16,9 +16,9 @@ import {
 /** Cache entry with a timestamp for TTL-based eviction. */
 type CacheEntry = {
   /** Cached result: project root path or null. */
-  value: string | null;
+  readonly value: string | null;
   /** Timestamp when the entry was stored (milliseconds since epoch). */
-  storedAt: number;
+  readonly storedAt: number;
 };
 
 /** Time-to-live for cache entries (milliseconds). */
@@ -83,9 +83,9 @@ export function findProjectRoot({
   configFiles,
   ceiling,
 }: {
-  startDir: string;
-  configFiles: readonly string[];
-  ceiling: string;
+  readonly startDir: string;
+  readonly configFiles: readonly string[];
+  readonly ceiling: string;
 },): string | null {
   /** Composite key encodes startDir, ceiling, and the joined config-file set. */
   const cacheKey = `${startDir}\0${ceiling}\0${getJoinedConfigFiles(configFiles,)}`;

@@ -52,7 +52,7 @@ export class SearchOverlay extends HTMLElement {
   /** 0-based index of the currently highlighted result (-1 = none). */
   #selectedIndex = -1;
   /** Cached search results from the last query. */
-  #results: SearchResult[] = [];
+  #results: readonly SearchResult[] = [];
   /** Root directory path used to compute relative display paths. */
   #rootDir = '';
   /** Width of a single monospace character in pixels for budget calculation. */
@@ -71,7 +71,7 @@ export class SearchOverlay extends HTMLElement {
   /** Bound global keyup handler for cleanup in disconnectedCallback. */
   #boundKeyup: ((event: KeyboardEvent,) => void) | null = null;
   /** Callback that performs a search and returns results. */
-  onSearch: ((query: string,) => Promise<SearchResult[]>) | null = null;
+  onSearch: ((query: string,) => Promise<readonly SearchResult[]>) | null = null;
   /** Callback that returns the current search scope directory. */
   getRootDir: (() => string) | null = null;
 
@@ -282,8 +282,8 @@ export class SearchOverlay extends HTMLElement {
       results,
       query,
     }: {
-      results: SearchResult[];
-      query: string;
+      readonly results: readonly SearchResult[];
+      readonly query: string;
     },
   ): void {
     if (this.#resultsContainer === null)
@@ -326,7 +326,7 @@ export class SearchOverlay extends HTMLElement {
   }
 
   /** Moves the keyboard selection by the given delta. */
-  #moveSelection({ delta, }: { delta: number; },): void {
+  #moveSelection({ delta, }: { readonly delta: number; },): void {
     if (this.#resultsContainer === null)
       return;
     this.#selectedIndex = moveSearchSelection({
@@ -341,7 +341,7 @@ export class SearchOverlay extends HTMLElement {
     this.#selectResult({ index: this.#selectedIndex, },);
   }
   /** Dispatches a `result-select` event for the result at the given index and closes. */
-  #selectResult({ index, }: { index: number; },): void {
+  #selectResult({ index, }: { readonly index: number; },): void {
     /** Event payload for `result-select`; null when `index` is out of range or `results` is empty. */
     const detail = buildResultDetail({
       index,
