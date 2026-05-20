@@ -137,6 +137,7 @@ function uniqueRules(
  */
 const SUBSTANTIVE_RULES = [
   'no-arrow-function',
+  'no-class',
   'no-enum',
   'no-for-in',
   'no-function-root-let',

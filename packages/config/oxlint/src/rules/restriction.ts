@@ -57,6 +57,13 @@ export const restrictionRules: DummyRuleMap = {
   // via inline disable comments.
   'no-restricted-syntax/prefer-describe-function-ref-name': 'warn',
 
+  // Classes are banned except when the direct superclass or the class's own
+  // name ends with a configured suffix (default: Error, Element). Long-lived
+  // stateful objects use a factory returning a frozen object instead.
+  // Initial severity 'warn' to surface existing footprint without blocking
+  // CI; see MIGRATION.no-class.md. Flips to 'error' after migration.
+  'no-restricted-syntax/no-class': 'warn',
+
   // Use using/await using for cleanup instead of try...finally.
   'no-restricted-syntax/no-try-finally': 'error',
 

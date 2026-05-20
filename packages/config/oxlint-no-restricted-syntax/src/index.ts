@@ -4,6 +4,7 @@ import {
 } from '@oxlint/plugins';
 
 import { noArrowFunction, } from './rules/no-arrow-function.ts';
+import { noClass, } from './rules/no-class.ts';
 import { noDisableMaxLines, } from './rules/no-disable-max-lines.ts';
 import { noDisableNoArrowFunction, } from './rules/no-disable-no-arrow-function.ts';
 import { noDisableNoEnum, } from './rules/no-disable-no-enum.ts';
@@ -78,6 +79,7 @@ const plugin: Plugin = eslintCompatPlugin({
   rules: {
     //region Syntax rules
     'no-arrow-function': noArrowFunction,
+    'no-class': noClass,
     'no-enum': noEnum,
     'no-for-in': noForIn,
     'no-function-root-let': noFunctionRootLet,
