@@ -59,8 +59,8 @@ export async function findPackageRoot(
     dir,
     name,
   }: {
-    dir: string;
-    name: string;
+    readonly dir: string;
+    readonly name: string;
   },
 ): Promise<string> {
   /** Path to the manifest tested at the current level before recursing upward. */
@@ -145,8 +145,8 @@ export function findPackageRootCached(
     dir,
     name,
   }: {
-    dir: string;
-    name: string;
+    readonly dir: string;
+    readonly name: string;
   },
 ): Promise<string> {
   /** In-flight or resolved promise from a prior call; presence means another caller is already walking for this `name`. */

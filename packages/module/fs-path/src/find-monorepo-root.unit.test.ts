@@ -1,11 +1,21 @@
 /**
- * Tests for `findMiseMonorepoRoot`.
+ * Tests for repository and workspace root discovery.
  *
- * Runs from inside the Monochromatic monorepo, so the upward walk must succeed
- * and resolve to the directory containing the monorepo's `mise.toml`.
+ * Runs from inside the Monochromatic monorepo, so real-root tests must resolve
+ * to the directory containing root markers. Temp fixture tests verify marker
+ * semantics without depending on this checkout layout.
  *
  * @module
  */
+
+import {
+  mkdir,
+  mkdtemp,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join as nodeJoin, } from 'node:path';
 
 import {
   describe,
@@ -14,10 +24,165 @@ import {
 } from '@monochromatic-dev/module-test';
 
 import {
+  findGitRepoRoot,
+  findGitRepoRootCached,
   findMiseMonorepoRoot,
   findMiseMonorepoRootCached,
+  findPnpmWorkspaceRoot,
+  findPnpmWorkspaceRootCached,
 } from './find-monorepo-root.ts';
 import { isAbsolute, } from './index.ts';
+
+//region Fixture helpers
+
+/** Git marker kinds accepted by {@link findGitRepoRoot}. */
+type GitMarkerKind = 'directory' | 'file';
+
+/** Disposable root fixture with a nested starting directory. */
+type RootFixture = {
+  /** Fixture root containing any marker file or directory. */
+  readonly root: string;
+
+  /** Nested child directory used as root finder `cwd`. */
+  readonly nested: string;
+
+  /** Removes fixture tree after test completion. */
+  [Symbol.asyncDispose](): Promise<void>;
+};
+
+/**
+ * Creates a temporary root fixture with nested child directory.
+ *
+ * @param prefix - temporary directory prefix passed to `mkdtemp`
+ *
+ * @returns disposable fixture paths
+ *
+ * @example
+ * ```ts
+ * await using fixture = await createRootFixture({ prefix: 'fs-path-' });
+ * ```
+ */
+async function createRootFixture({
+  prefix,
+}: {
+  readonly prefix: string;
+},): Promise<RootFixture> {
+  /** Absolute fixture root under system temporary directory. */
+  const root = await mkdtemp(nodeJoin(
+    tmpdir(),
+    prefix,
+  ),);
+  /** Nested directory that forces upward walking before marker discovery. */
+  const nested = nodeJoin(
+    root,
+    'child',
+    'grandchild',
+  );
+  await mkdir(
+    nested,
+    { recursive: true, },
+  );
+
+  return {
+    root,
+    nested,
+    [Symbol.asyncDispose](): Promise<void> {
+      return rm(
+        root,
+        {
+          force: true,
+          recursive: true,
+        },
+      );
+    },
+  };
+}
+
+/**
+ * Creates a Git root fixture with directory or gitfile marker.
+ *
+ * @param markerKind - marker shape to create at fixture root
+ *
+ * @returns disposable Git root fixture
+ *
+ * @throws when marker kind is unsupported
+ *
+ * @example
+ * ```ts
+ * await using fixture = await createGitFixture({ markerKind: 'directory' });
+ * ```
+ */
+async function createGitFixture({
+  markerKind,
+}: {
+  readonly markerKind: GitMarkerKind;
+},): Promise<RootFixture> {
+  /** Fixture root that receives `.git` marker. */
+  const fixture = await createRootFixture({
+    prefix: `fs-path-git-${markerKind}-`,
+  },);
+  /** `.git` marker path at fixture root. */
+  const markerPath = nodeJoin(
+    fixture.root,
+    '.git',
+  );
+
+  if (markerKind === 'directory') {
+    await mkdir(markerPath,);
+    return fixture;
+  }
+
+  await writeFile(
+    markerPath,
+    'gitdir: /tmp/example-gitdir\n',
+  );
+  return fixture;
+}
+
+/**
+ * Creates a pnpm workspace root fixture.
+ *
+ * @returns disposable pnpm workspace fixture
+ *
+ * @example
+ * ```ts
+ * await using fixture = await createPnpmWorkspaceFixture();
+ * ```
+ */
+async function createPnpmWorkspaceFixture(): Promise<RootFixture> {
+  /** Fixture root that receives `pnpm-workspace.yaml`. */
+  const fixture = await createRootFixture({ prefix: 'fs-path-pnpm-', },);
+  await writeFile(
+    nodeJoin(
+      fixture.root,
+      'pnpm-workspace.yaml',
+    ),
+    "packages:\n  - 'packages/*'\n",
+  );
+  return fixture;
+}
+
+/**
+ * Creates a fixture with no root markers.
+ *
+ * @param prefix - temporary directory prefix passed to `mkdtemp`
+ *
+ * @returns disposable markerless fixture
+ *
+ * @example
+ * ```ts
+ * await using fixture = await createMarkerlessFixture({ prefix: 'missing-' });
+ * ```
+ */
+function createMarkerlessFixture({
+  prefix,
+}: {
+  readonly prefix: string;
+},): Promise<RootFixture> {
+  return createRootFixture({ prefix, },);
+}
+
+//endregion Fixture helpers
 
 await describe({
   name: findMiseMonorepoRoot.name,
@@ -25,6 +190,7 @@ await describe({
     it({
       name: 'returns an absolute path when called from inside the monorepo',
       fn: async () => {
+        /** Root discovered from current process directory. */
         const root = await findMiseMonorepoRoot();
         expect(isAbsolute(root,),).toBe(true,);
       },
@@ -33,6 +199,7 @@ await describe({
       name:
         'returns the monorepo directory (Monochromatic) when called from this package',
       fn: async () => {
+        /** Root discovered from this test file directory. */
         const root = await findMiseMonorepoRoot({ cwd: import.meta.dirname, },);
         expect(root.endsWith('/Monochromatic',),).toBe(true,);
       },
@@ -40,6 +207,7 @@ await describe({
     it({
       name: 'normalizes /home/ to /var/home/ on Fedora ostree systems',
       fn: async () => {
+        /** Root discovered from current process directory. */
         const root = await findMiseMonorepoRoot();
         expect(root.startsWith('/home/',),).toBe(false,);
       },
@@ -53,7 +221,9 @@ await describe({
     it({
       name: 'resolves to the same root that findMiseMonorepoRoot returns from process.cwd()',
       fn: async () => {
+        /** Cached mise root from process cwd. */
         const cached = await findMiseMonorepoRootCached();
+        /** Fresh mise root from process cwd. */
         const fresh = await findMiseMonorepoRoot();
         expect(cached,).toBe(fresh,);
       },
@@ -61,8 +231,11 @@ await describe({
     it({
       name: 'returns the same value across sequential calls',
       fn: async () => {
+        /** First cached mise root call. */
         const first = await findMiseMonorepoRootCached();
+        /** Second cached mise root call. */
         const second = await findMiseMonorepoRootCached();
+        /** Third cached mise root call. */
         const third = await findMiseMonorepoRootCached();
         expect(first,).toBe(second,);
         expect(second,).toBe(third,);
@@ -71,21 +244,239 @@ await describe({
     it({
       name: 'resolves concurrent callers to the same value (one walk shared)',
       fn: async () => {
-        const [a, b, c, d,] = await Promise.all([
+        /** Concurrent cached mise root results. */
+        const [rootOne, rootTwo, rootThree, rootFour,] = await Promise.all([
           findMiseMonorepoRootCached(),
           findMiseMonorepoRootCached(),
           findMiseMonorepoRootCached(),
           findMiseMonorepoRootCached(),
         ],);
-        expect(a,).toBe(b,);
-        expect(b,).toBe(c,);
-        expect(c,).toBe(d,);
+        expect(rootOne,).toBe(rootTwo,);
+        expect(rootTwo,).toBe(rootThree,);
+        expect(rootThree,).toBe(rootFour,);
       },
     },),
     it({
       name: 'returns an absolute path',
       fn: async () => {
+        /** Cached mise root from process cwd. */
         const root = await findMiseMonorepoRootCached();
+        expect(isAbsolute(root,),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: findGitRepoRoot.name,
+  children: [
+    it({
+      name: 'returns the repository directory (Monochromatic) from this package',
+      fn: async () => {
+        /** Git root discovered from this test file directory. */
+        const root = await findGitRepoRoot({ cwd: import.meta.dirname, },);
+        expect(root.endsWith('/Monochromatic',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'returns an absolute path when called from inside the repository',
+      fn: async () => {
+        /** Git root discovered from current process directory. */
+        const root = await findGitRepoRoot();
+        expect(isAbsolute(root,),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'finds a temp Git root with .git directory marker',
+      fn: async () => {
+        /** Temporary Git fixture using normal `.git` directory. */
+        await using fixture = await createGitFixture({ markerKind: 'directory', },);
+        /** Git root discovered from nested fixture child. */
+        const root = await findGitRepoRoot({ cwd: fixture.nested, },);
+        expect(root,).toBe(fixture.root,);
+      },
+    },),
+    it({
+      name: 'finds a temp Git root with .git file marker',
+      fn: async () => {
+        /** Temporary Git fixture using gitfile marker. */
+        await using fixture = await createGitFixture({ markerKind: 'file', },);
+        /** Git root discovered from nested fixture child. */
+        const root = await findGitRepoRoot({ cwd: fixture.nested, },);
+        expect(root,).toBe(fixture.root,);
+      },
+    },),
+    it({
+      name: 'throws when no .git marker is found walking up',
+      fails: true,
+      fn: async () => {
+        /** Temporary fixture without Git marker. */
+        await using fixture = await createMarkerlessFixture({
+          prefix: 'fs-path-missing-git-',
+        },);
+        await findGitRepoRoot({ cwd: fixture.nested, },);
+      },
+    },),
+    it({
+      name: 'normalizes /home/ to /var/home/ on Fedora ostree systems',
+      fn: async () => {
+        /** Git root discovered from current process directory. */
+        const root = await findGitRepoRoot();
+        expect(root.startsWith('/home/',),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: findGitRepoRootCached.name,
+  children: [
+    it({
+      name: 'resolves to the same root that findGitRepoRoot returns from process.cwd()',
+      fn: async () => {
+        /** Cached Git root from process cwd. */
+        const cached = await findGitRepoRootCached();
+        /** Fresh Git root from process cwd. */
+        const fresh = await findGitRepoRoot();
+        expect(cached,).toBe(fresh,);
+      },
+    },),
+    it({
+      name: 'returns the same value across sequential calls',
+      fn: async () => {
+        /** First cached Git root call. */
+        const first = await findGitRepoRootCached();
+        /** Second cached Git root call. */
+        const second = await findGitRepoRootCached();
+        /** Third cached Git root call. */
+        const third = await findGitRepoRootCached();
+        expect(first,).toBe(second,);
+        expect(second,).toBe(third,);
+      },
+    },),
+    it({
+      name: 'resolves concurrent callers to the same value (one walk shared)',
+      fn: async () => {
+        /** Concurrent cached Git root results. */
+        const [rootOne, rootTwo, rootThree, rootFour,] = await Promise.all([
+          findGitRepoRootCached(),
+          findGitRepoRootCached(),
+          findGitRepoRootCached(),
+          findGitRepoRootCached(),
+        ],);
+        expect(rootOne,).toBe(rootTwo,);
+        expect(rootTwo,).toBe(rootThree,);
+        expect(rootThree,).toBe(rootFour,);
+      },
+    },),
+    it({
+      name: 'returns an absolute path',
+      fn: async () => {
+        /** Cached Git root from process cwd. */
+        const root = await findGitRepoRootCached();
+        expect(isAbsolute(root,),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: findPnpmWorkspaceRoot.name,
+  children: [
+    it({
+      name: 'returns the workspace directory (Monochromatic) from this package',
+      fn: async () => {
+        /** pnpm workspace root discovered from this test file directory. */
+        const root = await findPnpmWorkspaceRoot({ cwd: import.meta.dirname, },);
+        expect(root.endsWith('/Monochromatic',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'returns an absolute path when called from inside the workspace',
+      fn: async () => {
+        /** pnpm workspace root discovered from current process directory. */
+        const root = await findPnpmWorkspaceRoot();
+        expect(isAbsolute(root,),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'finds a temp pnpm workspace root with pnpm-workspace.yaml',
+      fn: async () => {
+        /** Temporary pnpm workspace fixture. */
+        await using fixture = await createPnpmWorkspaceFixture();
+        /** pnpm workspace root discovered from nested fixture child. */
+        const root = await findPnpmWorkspaceRoot({ cwd: fixture.nested, },);
+        expect(root,).toBe(fixture.root,);
+      },
+    },),
+    it({
+      name: 'throws when no pnpm-workspace.yaml is found walking up',
+      fails: true,
+      fn: async () => {
+        /** Temporary fixture without pnpm workspace marker. */
+        await using fixture = await createMarkerlessFixture({
+          prefix: 'fs-path-missing-pnpm-',
+        },);
+        await findPnpmWorkspaceRoot({ cwd: fixture.nested, },);
+      },
+    },),
+    it({
+      name: 'normalizes /home/ to /var/home/ on Fedora ostree systems',
+      fn: async () => {
+        /** pnpm workspace root discovered from current process directory. */
+        const root = await findPnpmWorkspaceRoot();
+        expect(root.startsWith('/home/',),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: findPnpmWorkspaceRootCached.name,
+  children: [
+    it({
+      name: 'resolves to the same root that findPnpmWorkspaceRoot returns from process.cwd()',
+      fn: async () => {
+        /** Cached pnpm workspace root from process cwd. */
+        const cached = await findPnpmWorkspaceRootCached();
+        /** Fresh pnpm workspace root from process cwd. */
+        const fresh = await findPnpmWorkspaceRoot();
+        expect(cached,).toBe(fresh,);
+      },
+    },),
+    it({
+      name: 'returns the same value across sequential calls',
+      fn: async () => {
+        /** First cached pnpm workspace root call. */
+        const first = await findPnpmWorkspaceRootCached();
+        /** Second cached pnpm workspace root call. */
+        const second = await findPnpmWorkspaceRootCached();
+        /** Third cached pnpm workspace root call. */
+        const third = await findPnpmWorkspaceRootCached();
+        expect(first,).toBe(second,);
+        expect(second,).toBe(third,);
+      },
+    },),
+    it({
+      name: 'resolves concurrent callers to the same value (one walk shared)',
+      fn: async () => {
+        /** Concurrent cached pnpm workspace root results. */
+        const [rootOne, rootTwo, rootThree, rootFour,] = await Promise.all([
+          findPnpmWorkspaceRootCached(),
+          findPnpmWorkspaceRootCached(),
+          findPnpmWorkspaceRootCached(),
+          findPnpmWorkspaceRootCached(),
+        ],);
+        expect(rootOne,).toBe(rootTwo,);
+        expect(rootTwo,).toBe(rootThree,);
+        expect(rootThree,).toBe(rootFour,);
+      },
+    },),
+    it({
+      name: 'returns an absolute path',
+      fn: async () => {
+        /** Cached pnpm workspace root from process cwd. */
+        const root = await findPnpmWorkspaceRootCached();
         expect(isAbsolute(root,),).toBe(true,);
       },
     },),

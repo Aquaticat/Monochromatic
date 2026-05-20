@@ -6,8 +6,8 @@
  * environments where `node:path` does not exist.
  *
  * Exports: {@link dirname}, {@link join}, {@link resolve}, {@link isAbsolute},
- * {@link sep}, and fs-ensuring utilities from `./ensure.ts`, `./empty.ts`,
- * and `./trim.ts`.
+ * {@link sep}, root-discovery helpers from `./find-monorepo-root.ts`, and
+ * fs-ensuring utilities from `./ensure.ts`, `./empty.ts`, and `./trim.ts`.
  */
 
 import {
@@ -29,8 +29,12 @@ export {
 } from './ensure.ts';
 /* oxlint-disable import/no-cycle -- barrel re-export cycle; dirname is fully initialized before findMiseMonorepoRoot runs */
 export {
+  findGitRepoRoot,
+  findGitRepoRootCached,
   findMiseMonorepoRoot,
   findMiseMonorepoRootCached,
+  findPnpmWorkspaceRoot,
+  findPnpmWorkspaceRootCached,
 } from './find-monorepo-root.ts';
 export {
   findPackageRoot,
@@ -48,9 +52,7 @@ export {
  * Whether the runtime provides Node-compatible path APIs.
  * Bun and Node both set `process.versions.node`.
  */
-/* oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined or process.versions may be absent */
 const hasNodePath = ((typeof process) !== 'undefined')
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- process.versions may be absent in non-Node browser polyfills
   && (process.versions?.node !== undefined);
 
 /** Computed import specifier to prevent static bundler resolution */
@@ -65,7 +67,6 @@ const nodePathSpecifier = `node${':path'}`;
  */
 // oxlint-disable-next-line typescript/consistent-type-imports -- dynamic import cannot use `import type` syntax
 const nodePath: typeof import('node:path/posix') | undefined = hasNodePath
-  // oxlint-disable-next-line typescript/consistent-type-imports -- dynamic import type cast
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/consistent-type-imports -- cast dynamic import to known node:path type
   ? (await import(nodePathSpecifier) as typeof import('node:path')).posix
   : undefined;

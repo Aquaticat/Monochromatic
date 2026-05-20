@@ -1,195 +1,189 @@
 /**
- * Monorepo root discovery with cross-runtime filesystem support.
+ * Repository and workspace root discovery with cross-runtime filesystem support.
  *
- * Locates the monorepo root by searching upward for a `mise.toml`
- * containing a `[monorepo]` section. Supports three filesystem backends:
+ * Locates roots by searching upward for marker files or directories:
  *
- * - **Node/Bun**: `node:fs/promises` via dynamic import
- * - **Browser + OPFS**: `happy-opfs` `readTextFile` when OPFS is available
- * - **Browser - OPFS**: stub that always returns `undefined` (search exhausts, throws)
+ * - `mise.toml` containing `[monorepo]`
+ * - `.git` as a Git directory or gitfile marker
+ * - `pnpm-workspace.yaml`
  *
- * Browser backends log a warning through the tagged logger on first use.
+ * Shared walking code lives in `root-discovery.ts`.
+ *
+ * @module
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
-// oxlint-disable-next-line import/no-cycle -- barrel re-export cycle; dirname is fully initialized before findMiseMonorepoRoot runs
-import { dirname, } from './index.ts';
 
-/**
- * Filesystem read function abstraction.
- * Returns file content as a string, or `undefined` when the file does not exist.
- */
-type ReadFileFn = (path: string,) => Promise<string | undefined>;
+import {
+  findRootByWalkingUp,
+  type RootMatcherArgs,
+} from './root-discovery.ts';
 
-/**
- * Cached filesystem backend, resolved once on first call.
- * Stored as an object property so module-root state stays in a `const`
- * container (`no-module-root-let` would otherwise reject a top-level `let`).
- */
-const backendCache: { readFile?: ReadFileFn; } = {};
+//region Types and constants
 
-/** Tagged logger for monorepo root discovery diagnostics. */
-const l = tagged({ tag: 'findMiseMonorepoRoot', },);
+/** Optional starting directory for uncached root finders. */
+type RootSearchOptions = {
+  /** Starting directory for upward search. Defaults to current process cwd. */
+  readonly cwd?: string | undefined;
+};
 
-//region Filesystem backend resolution
+/** Process-lifetime root promise cache used by cached root finders. */
+type RootCache = {
+  /** In-flight or resolved root promise captured on first call. */
+  root?: Promise<string>;
+};
 
-/**
- * Builds a `ReadFileFn` backed by `node:fs/promises`.
- * Dynamic import keeps `node:fs` out of browser bundles.
- *
- * @returns read function that catches `ENOENT` and returns `undefined`
- */
-async function resolveNodeReadFile(): Promise<ReadFileFn> {
-  /** Dynamic import keeps `node:fs/promises` out of browser bundles. */
-  const { readFile, } = await import('node:fs/promises');
-
-  return async function nodeReadFile(path: string,): Promise<string | undefined> {
-    try {
-      return await readFile(
-        path,
-        'utf8',
-      );
-    }
-    catch (error: unknown) {
-      if (Error.isError(error,) && ('code' in error) && (error.code === 'ENOENT'))
-        return undefined;
-      throw error;
-    }
-  };
-}
-
-/**
- * Builds a `ReadFileFn` backed by OPFS via `happy-opfs`.
- * Dynamic import keeps `happy-opfs` out of node bundles.
- *
- * @returns read function that unwraps `AsyncIOResult` and returns `undefined` on error
- */
-async function resolveOpfsReadFile(): Promise<ReadFileFn> {
-  /** Dynamic import keeps `happy-opfs` out of Node bundles where OPFS is unavailable anyway. */
-  const { readTextFile, } = await import('happy-opfs');
-  l.warn(
-    'using OPFS for monorepo root discovery: mise.toml must exist in OPFS to be found',
-  );
-
-  return async function opfsReadFile(path: string,): Promise<string | undefined> {
-    /** `AsyncIOResult` wrapper from `happy-opfs`; unwrapped only on the success branch so errors map to `undefined`. */
-    const result = await readTextFile(path,);
-    if (result.isOk())
-      return result.unwrap();
-    return undefined;
-  };
-}
-
-/**
- * Returns a stub `ReadFileFn` that always returns `undefined`.
- * Used when no filesystem backend is available (browser without OPFS).
- *
- * @returns stub read function
- */
-function resolveEmptyReadFile(): ReadFileFn {
-  l.warn('no filesystem available for monorepo root discovery; search will fail',);
-
-  return function emptyReadFile(): Promise<undefined> {
-    return Promise.resolve(undefined,);
-  };
-}
-
-/**
- * Detects the runtime and returns the appropriate `ReadFileFn`.
- * Result is cached after the first call.
- *
- * @returns filesystem read function for the current runtime
- */
-async function resolveReadFile(): Promise<ReadFileFn> {
-  if (backendCache.readFile !== undefined)
-    return backendCache.readFile;
-
-  // Node/Bun: process.versions.node is set
-  /* oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined */
-  if (((typeof process) !== 'undefined') && (process.versions?.node !== undefined)) {
-    backendCache.readFile = await resolveNodeReadFile();
-    return backendCache.readFile;
-  }
-
-  // Browser: check OPFS support via happy-opfs
-  try {
-    /** Dynamic import so the OPFS probe runs only when no Node fs is available. */
-    const { isOPFSSupported, } = await import('happy-opfs');
-    if (isOPFSSupported()) {
-      backendCache.readFile = await resolveOpfsReadFile();
-      return backendCache.readFile;
-    }
-  }
-  catch {
-    /* happy-opfs import failed; fall through to empty stub */
-  }
-
-  // No filesystem available
-  backendCache.readFile = resolveEmptyReadFile();
-  return backendCache.readFile;
-}
-
-//endregion Filesystem backend resolution
-
-//region Walk-up search
-
-/** Marker string that identifies the monorepo root mise.toml. */
+/** Marker string that identifies the monorepo root `mise.toml`. */
 const MONOREPO_SECTION_MARKER = '\n[monorepo]\n';
 
-/**
- * Walks up the directory tree from `cwd`, checking each directory
- * for a `mise.toml` containing a `[monorepo]` section.
- *
- * @param cwd - starting directory for upward search
- *
- * @param readFile - filesystem read function
- *
- * @returns absolute path to the directory containing the monorepo `mise.toml`,
- * or `undefined` if not found
- */
-async function walkUp({
-  cwd,
-  readFile,
-}: {
-  cwd: string;
-  readFile: ReadFileFn;
-},): Promise<string | undefined> {
-  /** `mise.toml` body at the current level, or `undefined` when the file is missing; the marker check decides whether this level is the root. */
-  const content = await readFile(`${cwd}/mise.toml`,);
-  if ((content !== undefined) && content.includes(MONOREPO_SECTION_MARKER,))
-    return cwd;
+/** Marker path that identifies a Git repository root. */
+const GIT_MARKER_BASENAME = '.git';
 
-  /** Next directory to inspect; equal to `cwd` only at the filesystem root, which terminates recursion with `undefined`. */
-  const parent = dirname(cwd,);
-  if (parent === cwd)
-    return undefined;
-  return walkUp({
-    cwd: parent,
-    readFile,
-  },);
+/** Manifest path that identifies a pnpm workspace root. */
+const PNPM_WORKSPACE_MANIFEST = 'pnpm-workspace.yaml';
+
+/** Error text for missing mise monorepo root. */
+const MISE_ROOT_MISSING_MESSAGE =
+  'Could not find monorepo root (no mise.toml with [monorepo] section found upward)';
+
+/** Error text for missing Git repository root. */
+const GIT_ROOT_MISSING_MESSAGE =
+  'Could not find Git repository root (no .git marker found upward)';
+
+/** Error text for missing pnpm workspace root. */
+const PNPM_ROOT_MISSING_MESSAGE =
+  'Could not find pnpm workspace root (no pnpm-workspace.yaml found upward)';
+
+/** Tagged logger for public root finder entry points. */
+const rootFinderLogger = tagged({ tag: 'findMonorepoRoot', },);
+
+/**
+ * Process-lifetime cache for {@link findMiseMonorepoRootCached}.
+ */
+const miseRootCache: RootCache = {};
+
+/**
+ * Process-lifetime cache for {@link findGitRepoRootCached}.
+ */
+const gitRootCache: RootCache = {};
+
+/**
+ * Process-lifetime cache for {@link findPnpmWorkspaceRootCached}.
+ */
+const pnpmRootCache: RootCache = {};
+
+//endregion Types and constants
+
+//region Matchers
+
+/**
+ * Checks whether a directory contains a monorepo `mise.toml` marker.
+ *
+ * @param dir - candidate directory
+ *
+ * @param fs - filesystem backend
+ *
+ * @returns `true` when candidate is mise monorepo root
+ *
+ * @example
+ * ```ts
+ * await matchesMiseMonorepoRoot({ dir: '/repo', fs });
+ * ```
+ */
+async function matchesMiseMonorepoRoot({
+  dir,
+  fs,
+}: RootMatcherArgs,): Promise<boolean> {
+  /** Candidate `mise.toml` content, or `undefined` when absent. */
+  const content = await fs.readTextFile(`${dir}/mise.toml`,);
+  return (content !== undefined) && content.includes(MONOREPO_SECTION_MARKER,);
 }
 
-//endregion Walk-up search
-
-//region Public API
+/**
+ * Checks whether a directory contains a Git root marker.
+ *
+ * `.git` may be a directory or a gitfile, so existence of any filesystem entry
+ * kind is enough.
+ *
+ * @param dir - candidate directory
+ *
+ * @param fs - filesystem backend
+ *
+ * @returns `true` when candidate is Git repository root
+ *
+ * @example
+ * ```ts
+ * await matchesGitRepoRoot({ dir: '/repo', fs });
+ * ```
+ */
+function matchesGitRepoRoot({
+  dir,
+  fs,
+}: RootMatcherArgs,): Promise<boolean> {
+  return fs.exists(`${dir}/${GIT_MARKER_BASENAME}`,);
+}
 
 /**
- * Finds the monorepo root directory by searching upward from `cwd`
+ * Checks whether a directory contains a pnpm workspace manifest.
+ *
+ * @param dir - candidate directory
+ *
+ * @param fs - filesystem backend
+ *
+ * @returns `true` when candidate is pnpm workspace root
+ *
+ * @example
+ * ```ts
+ * await matchesPnpmWorkspaceRoot({ dir: '/repo', fs });
+ * ```
+ */
+function matchesPnpmWorkspaceRoot({
+  dir,
+  fs,
+}: RootMatcherArgs,): Promise<boolean> {
+  return fs.exists(`${dir}/${PNPM_WORKSPACE_MANIFEST}`,);
+}
+
+/**
+ * Logs start of a public root finder call.
+ *
+ * @param functionName - public finder name used as logger tag
+ *
+ * @param cwd - caller-provided starting directory
+ *
+ * @example
+ * ```ts
+ * logRootSearchStart({ functionName: findGitRepoRoot.name });
+ * ```
+ */
+function logRootSearchStart({
+  functionName,
+  cwd,
+}: {
+  readonly functionName: string;
+  readonly cwd?: string | undefined;
+},): void {
+  /** Logger tagged with current public finder name. */
+  const functionLogger = tagged({
+    tag: functionName,
+    l: rootFinderLogger,
+  },);
+  functionLogger.debug(`searching from ${cwd ?? '<process.cwd()>'}`,);
+}
+
+//endregion Matchers
+
+//region Mise monorepo root
+
+/**
+ * Finds the mise monorepo root directory by searching upward from `cwd`
  * for a `mise.toml` containing `[monorepo]`.
  *
- * Normalizes the result to use `/var/home` instead of `/home` on Fedora ostree,
- * where `/home` is a symlink that breaks `readlink -f` resolution.
+ * Normalizes the result to use `/var/home` instead of `/home` on Fedora ostree.
  *
- * Supports three filesystem backends depending on runtime:
- * - **Node/Bun**: `node:fs/promises` (dynamic import)
- * - **Browser + OPFS**: `happy-opfs` `readTextFile`
- * - **Browser - OPFS**: stub returning `undefined` (search always fails)
+ * @param cwd - starting directory for upward search, defaults to `process.cwd()`
  *
- * Browser backends log a warning on first use.
- *
- * @param cwd - starting directory for upward search (defaults to `process.cwd()`)
- *
- * @returns absolute path to the monorepo root
+ * @returns absolute path to monorepo root
  *
  * @throws when no ancestor directory contains a `mise.toml` with `[monorepo]`
  *
@@ -203,89 +197,156 @@ async function walkUp({
  * const root = await findMiseMonorepoRoot({ cwd: import.meta.dirname });
  * ```
  */
-export async function findMiseMonorepoRoot(
-  { cwd, }: { cwd?: string; } = {},
+export function findMiseMonorepoRoot(
+  { cwd, }: RootSearchOptions = {},
 ): Promise<string> {
-  /* oxlint-disable typescript/no-unnecessary-condition -- process may be undefined in browser */
-  /** Walk origin; falls back to `process.cwd()` on Node/Bun and the filesystem root in browsers without a working directory concept. */
-  const startDir = cwd ?? (((typeof process) !== 'undefined') ? process.cwd() : '/');
-  /* oxlint-enable typescript/no-unnecessary-condition */
-  /** Resolved backend captured once so the walk uses a single read function regardless of how many recursion levels run. */
-  const readFile = await resolveReadFile();
-  /** Walk result before the Fedora ostree `/home` rewrite to `/var/home`; `undefined` means no ancestor matched. */
-  const rawRoot = await walkUp({
-    cwd: startDir,
-    readFile,
+  logRootSearchStart({
+    functionName: findMiseMonorepoRoot.name,
+    cwd,
   },);
-
-  if (rawRoot === undefined) {
-    throw new Error(
-      'Could not find monorepo root (no mise.toml with [monorepo] section found upward)',
-    );
-  }
-
-  /**
-   * Normalize `/home/` to `/var/home/` on Fedora ostree.
-   * `/home` is a symlink to `/var/home` on ostree systems, and using
-   * the symlink path breaks `readlink -f` resolution.
-   */
-  if (rawRoot.startsWith('/home/',)) {
-    return rawRoot.replace(
-      '/home/',
-      '/var/home/',
-    );
-  }
-
-  return rawRoot;
+  return findRootByWalkingUp({
+    cwd,
+    matches: matchesMiseMonorepoRoot,
+    missingMessage: MISE_ROOT_MISSING_MESSAGE,
+  },);
 }
 
 /**
- * Process-lifetime cache for {@link findMiseMonorepoRootCached}.
- * Stored as an object property so module-root state stays in a `const`
- * container (`no-module-root-let` would otherwise reject a top-level `let`).
- * The in-flight promise reference is reused across concurrent first callers
- * so they share one walk.
- */
-const cache: { root?: Promise<string>; } = {};
-
-/**
- * Memoised variant of {@link findMiseMonorepoRoot} that locks in the first
- * resolved root for the lifetime of the process.
+ * Memoised variant of {@link findMiseMonorepoRoot} that locks in first result.
  *
- * Result is captured on first call and returned for every subsequent
- * call, even after `process.chdir`. Callers that need a fresh walk after
- * an intentional cwd change use {@link findMiseMonorepoRoot} directly.
- *
- * Rejections are cached too: when the first call cannot find a monorepo
- * root, the same rejection is returned to every later caller. Matches the
- * process-lifetime invariant (no `mise.toml` with `[monorepo]` will
- * materialise mid-process).
- *
- * Internally calls {@link findMiseMonorepoRoot} with no `cwd`, so the first
- * caller's `process.cwd()` at call time decides the result.
+ * First call starts the walk from current `process.cwd()`. Later calls return
+ * the same in-flight, fulfilled, or rejected promise for process lifetime.
  *
  * @returns absolute path to monorepo root, locked in at first call
  *
- * @throws when no ancestor of `process.cwd()` (at first call) contains a
- *   `mise.toml` with `[monorepo]`; same rejection on every later call
+ * @throws same rejection from first walk when no ancestor contains marker
  *
  * @example
  * ```ts
  * const root = await findMiseMonorepoRootCached();
  * ```
+ */
+export function findMiseMonorepoRootCached(): Promise<string> {
+  miseRootCache.root ??= findMiseMonorepoRoot();
+  return miseRootCache.root;
+}
+
+//endregion Mise monorepo root
+
+//region Git repository root
+
+/**
+ * Finds Git repository root directory by searching upward from `cwd` for `.git`.
+ *
+ * Accepts both normal `.git` directories and gitfile markers used by worktrees
+ * and submodules. Normalizes `/home` roots to `/var/home` on Fedora ostree.
+ *
+ * @param cwd - starting directory for upward search, defaults to `process.cwd()`
+ *
+ * @returns absolute path to Git repository root
+ *
+ * @throws when no ancestor directory contains a `.git` marker
  *
  * @example
  * ```ts
- * // hot path: thousands of calls share one walk
- * for (const file of files) {
- *   const root = await findMiseMonorepoRootCached();
- *   await spawn('git', ['log', '--', file], { cwd: root, });
- * }
+ * const root = await findGitRepoRoot();
+ * ```
+ *
+ * @example
+ * ```ts
+ * const root = await findGitRepoRoot({ cwd: import.meta.dirname });
  * ```
  */
-export function findMiseMonorepoRootCached(): Promise<string> {
-  cache.root ??= findMiseMonorepoRoot();
-  return cache.root;
+export function findGitRepoRoot({ cwd, }: RootSearchOptions = {},): Promise<string> {
+  logRootSearchStart({
+    functionName: findGitRepoRoot.name,
+    cwd,
+  },);
+  return findRootByWalkingUp({
+    cwd,
+    matches: matchesGitRepoRoot,
+    missingMessage: GIT_ROOT_MISSING_MESSAGE,
+  },);
 }
 
-//endregion Public API
+/**
+ * Memoised variant of {@link findGitRepoRoot} that locks in first result.
+ *
+ * First call starts the walk from current `process.cwd()`. Later calls return
+ * the same in-flight, fulfilled, or rejected promise for process lifetime.
+ *
+ * @returns absolute path to Git repository root, locked in at first call
+ *
+ * @throws same rejection from first walk when no ancestor contains `.git`
+ *
+ * @example
+ * ```ts
+ * const root = await findGitRepoRootCached();
+ * ```
+ */
+export function findGitRepoRootCached(): Promise<string> {
+  gitRootCache.root ??= findGitRepoRoot();
+  return gitRootCache.root;
+}
+
+//endregion Git repository root
+
+//region pnpm workspace root
+
+/**
+ * Finds pnpm workspace root directory by searching upward from `cwd` for
+ * `pnpm-workspace.yaml`.
+ *
+ * Normalizes `/home` roots to `/var/home` on Fedora ostree.
+ *
+ * @param cwd - starting directory for upward search, defaults to `process.cwd()`
+ *
+ * @returns absolute path to pnpm workspace root
+ *
+ * @throws when no ancestor directory contains `pnpm-workspace.yaml`
+ *
+ * @example
+ * ```ts
+ * const root = await findPnpmWorkspaceRoot();
+ * ```
+ *
+ * @example
+ * ```ts
+ * const root = await findPnpmWorkspaceRoot({ cwd: import.meta.dirname });
+ * ```
+ */
+export function findPnpmWorkspaceRoot(
+  { cwd, }: RootSearchOptions = {},
+): Promise<string> {
+  logRootSearchStart({
+    functionName: findPnpmWorkspaceRoot.name,
+    cwd,
+  },);
+  return findRootByWalkingUp({
+    cwd,
+    matches: matchesPnpmWorkspaceRoot,
+    missingMessage: PNPM_ROOT_MISSING_MESSAGE,
+  },);
+}
+
+/**
+ * Memoised variant of {@link findPnpmWorkspaceRoot} that locks in first result.
+ *
+ * First call starts the walk from current `process.cwd()`. Later calls return
+ * the same in-flight, fulfilled, or rejected promise for process lifetime.
+ *
+ * @returns absolute path to pnpm workspace root, locked in at first call
+ *
+ * @throws same rejection from first walk when no ancestor contains manifest
+ *
+ * @example
+ * ```ts
+ * const root = await findPnpmWorkspaceRootCached();
+ * ```
+ */
+export function findPnpmWorkspaceRootCached(): Promise<string> {
+  pnpmRootCache.root ??= findPnpmWorkspaceRoot();
+  return pnpmRootCache.root;
+}
+
+//endregion pnpm workspace root
