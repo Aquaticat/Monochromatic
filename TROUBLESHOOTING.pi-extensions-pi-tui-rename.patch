@@ -1,0 +1,110 @@
+diff --git a/packages/shared-qna/pi-tui-loader.ts b/packages/shared-qna/pi-tui-loader.ts
+index ee64396..8c27f45 100644
+--- a/packages/shared-qna/pi-tui-loader.ts
++++ b/packages/shared-qna/pi-tui-loader.ts
+@@ -1,7 +1,7 @@
+ /**
+ <!-- {=sharedQnaPiTuiLoaderOverview} -->
+ 
+-`@ifi/pi-shared-qna` centralizes `@mariozechner/pi-tui` loading so first-party packages reuse one fallback strategy instead of embedding Bun-global lookup logic in multiple runtime modules.
++`@ifi/pi-shared-qna` centralizes pi-tui loading so first-party packages reuse one fallback strategy instead of embedding Bun-global lookup logic in multiple runtime modules. The loader prefers the new `@earendil-works/pi-tui` package and falls back to the deprecated `@mariozechner/pi-tui`.
+ 
+ The shared loader tries the normal package resolution path first, then falls back to Bun global install locations when a project is running outside a conventional dependency layout.
+ 
+@@ -19,12 +19,14 @@ export interface PiTuiLoaderOptions {
+ 	requireFn?: PiTuiRequire;
+ }
+ 
++const PI_TUI_SPECIFIERS = ["@earendil-works/pi-tui", "@mariozechner/pi-tui"] as const;
++
+ /**
+ <!-- {=sharedQnaGetPiTuiFallbackPathsDocs} -->
+ 
+-Return the ordered list of Bun global fallback paths to try for `@mariozechner/pi-tui`.
++Return the ordered list of Bun global fallback paths to try for pi-tui.
+ 
+-The list prefers an explicit `BUN_INSTALL` root when provided and always includes the default `~/.bun/install/global/node_modules/@mariozechner/pi-tui` fallback without duplicates.
++The list prefers an explicit `BUN_INSTALL` root when provided and always includes the default `~/.bun/install/global/node_modules/<scope>/pi-tui` fallback for every supported scope without duplicates. New `@earendil-works/pi-tui` paths come before deprecated `@mariozechner/pi-tui`.
+ 
+ <!-- {/sharedQnaGetPiTuiFallbackPathsDocs} -->
+ */
+@@ -35,45 +37,54 @@ export function getPiTuiFallbackPaths(options: Omit<PiTuiLoaderOptions, "require
+ 		roots.add(options.bunInstallDir);
+ 	}
+ 	roots.add(path.join(homeDir, ".bun"));
+-	return [...roots].map((root) => path.join(root, "install", "global", "node_modules", "@mariozechner", "pi-tui"));
++	const out: string[] = [];
++	for (const root of roots) {
++		for (const specifier of PI_TUI_SPECIFIERS) {
++			const [scope, name] = specifier.split("/");
++			out.push(path.join(root, "install", "global", "node_modules", scope, name));
++		}
++	}
++	return out;
+ }
+ 
+ /**
+ <!-- {=sharedQnaRequirePiTuiModuleDocs} -->
+ 
+-Load `@mariozechner/pi-tui` with a shared fallback strategy.
++Load pi-tui with a shared fallback strategy.
+ 
+-The loader first tries the normal package import path, then walks the Bun-global fallback list, and finally throws a helpful error that names every checked location when none of them resolve.
++Tries `@earendil-works/pi-tui` first (current name), then deprecated `@mariozechner/pi-tui`, then walks the Bun-global fallback list for both scopes. Throws a helpful error naming every checked location when none of them resolve.
+ 
+ <!-- {/sharedQnaRequirePiTuiModuleDocs} -->
+ */
+ export function requirePiTuiModule(options: PiTuiLoaderOptions = {}): unknown {
+ 	const requireFn = options.requireFn ?? createRequire(import.meta.url);
+-	try {
+-		return requireFn("@mariozechner/pi-tui");
+-	} catch (error) {
+-		const code = (error as { code?: string }).code;
+-		if (code !== "MODULE_NOT_FOUND") {
+-			throw error;
++	let lastError: unknown;
++	for (const specifier of PI_TUI_SPECIFIERS) {
++		try {
++			return requireFn(specifier);
++		} catch (error) {
++			const code = (error as { code?: string }).code;
++			if (code !== "MODULE_NOT_FOUND") {
++				throw error;
++			}
++			lastError = error;
+ 		}
++	}
+ 
+-		const fallbackPaths = getPiTuiFallbackPaths(options);
+-		for (const fallbackPath of fallbackPaths) {
+-			try {
+-				return requireFn(fallbackPath);
+-			} catch (fallbackError) {
+-				const fallbackCode = (fallbackError as { code?: string }).code;
+-				if (fallbackCode !== "MODULE_NOT_FOUND") {
+-					throw fallbackError;
+-				}
++	const fallbackPaths = getPiTuiFallbackPaths(options);
++	for (const fallbackPath of fallbackPaths) {
++		try {
++			return requireFn(fallbackPath);
++		} catch (fallbackError) {
++			const fallbackCode = (fallbackError as { code?: string }).code;
++			if (fallbackCode !== "MODULE_NOT_FOUND") {
++				throw fallbackError;
+ 			}
+ 		}
+-
+-		throw new Error(
+-			`Unable to load @mariozechner/pi-tui. Checked the local dependency and Bun global fallbacks: ${fallbackPaths.join(
+-				", ",
+-			)}`,
+-			{ cause: error },
+-		);
+ 	}
++
++	throw new Error(
++		`Unable to load pi-tui. Checked specifiers ${PI_TUI_SPECIFIERS.join(", ")} and Bun global fallbacks: ${fallbackPaths.join(", ")}`,
++		{ cause: lastError },
++	);
+ }
