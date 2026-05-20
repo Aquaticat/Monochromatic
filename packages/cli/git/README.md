@@ -15,11 +15,13 @@ directory, the command passes through to real git untouched, so git itself
 reports the missing-repo error if relevant. Exempt subcommands: `init`,
 `clone`, `version`, `help`, and `config` with `--global`/`--system`/`--list`.
 
-**Stash requires worktree**: rejects `git stash` when the effective working
-directory is not inside a git worktree. This blocks `--git-dir` / `--work-tree`
-forms launched from unrelated directories, because `git stash` can revert
-filesystem state outside what the caller expects from current cwd. Run stash
-from the worktree root, or pass `-C <worktree-root>` before `stash`.
+**Stash requires linked worktree**: rejects `git stash` unless the effective
+working directory is a linked git worktree root. This blocks the main worktree
+and `--git-dir` / `--work-tree` forms launched from unrelated directories,
+because `git stash` can revert filesystem state outside what the caller expects
+from current cwd. Run stash from a linked worktree root, or pass
+`-C <linked-worktree-root>` before `stash`. The existing require-root rule still
+rejects linked-worktree subdirectories.
 
 **Add explicit**: rejects `git add` invocations that use bulk-staging
 patterns (`.`, `./`, `*`, `:/`, `-A`/`--all`, `-u`/`--update`), which sweep

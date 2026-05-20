@@ -387,15 +387,59 @@ await describe({
       },
     },),
     it({
-      name: 'allows stash list at real worktree root',
-      fn: async function testStashListAtRealWorktreeRoot(): Promise<void> {
+      name: 'rejects stash list at main worktree root',
+      fn: async function testStashListAtMainWorktreeRoot(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
 
         await initializeRepository({ repoPath: tempDirectory.path, },);
 
-        /** cli-git success for read-only stash list inside real worktree. */
-        const result = await runWrapper({
+        /** cli-git failure for read-only stash list inside main worktree. */
+        const error = requireSubprocessError(await catchWrapperError({
           cwd: tempDirectory.path,
+          args: [
+            'stash',
+            'list',
+          ],
+        },),);
+
+        expect(error.stderr,).toContain(
+          'cli-git: git stash is rejected in the main git worktree',
+        );
+      },
+    },),
+    it({
+      name: 'allows stash list at linked worktree root',
+      fn: async function testStashListAtLinkedWorktreeRoot(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Main repository path that owns linked worktree metadata. */
+        const repoPath = join(
+          tempDirectory.path,
+          'repo',
+        );
+        /** Linked worktree path where stash remains allowed. */
+        const linkedWorktreePath = join(
+          tempDirectory.path,
+          'linked',
+        );
+
+        await initializeRepository({ repoPath, },);
+        await createInitialCommit({ repoPath, },);
+        await runRealGit({
+          cwd: repoPath,
+          args: [
+            'worktree',
+            'add',
+            '--detach',
+            '--quiet',
+            linkedWorktreePath,
+            'HEAD',
+          ],
+        },);
+
+        /** cli-git success for read-only stash list inside linked worktree. */
+        const result = await runWrapper({
+          cwd: linkedWorktreePath,
           args: [
             'stash',
             'list',
@@ -451,7 +495,7 @@ await describe({
         },),);
 
         expect(error.stderr,).toContain(
-          'cli-git: git stash requires the effective working directory to be inside a git worktree',
+          'cli-git: git stash requires the effective working directory to be inside a linked git worktree',
         );
 
         /** Repository status after rejected stash, proving file contents stayed modified. */
@@ -494,8 +538,10 @@ await describe({
           args: [
             'worktree',
             'add',
+            '--detach',
             '--quiet',
             worktreePath,
+            'HEAD',
           ],
         },);
         await mkdir(subdirectory,);
