@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -7,6 +6,14 @@ import type {
 } from '@oxlint/plugins';
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
+
+/** Type body node shape carrying members under oxlint's type-literal variants. */
+type TypeMemberListNode = Span & {
+  /** Interface body members in source order. */
+  readonly body?: readonly Span[] | null;
+  /** Type literal members in source order. */
+  readonly members?: readonly Span[] | null;
+};
 
 /**
  * Enforces one member per line in type literals and interface bodies
@@ -48,11 +55,15 @@ export const typePropertyPerLine: CreateOnceRule = {
      * @param node - TSTypeLiteral or TSInterfaceBody AST node
      */
     function checkBody(node: Span,): void {
-      /** Widen `node` to index members under either `body` (interface) or `members` (type literal). */
-      const bodyNode = node as Span & Record<string, unknown>;
+      /** Narrowed type-body visitor node used for member access. */
+      const bodyNode = node as TypeMemberListNode;
       /** Members under either key; AST differs between `TSTypeLiteral` and `TSInterfaceBody`. */
-      const members = (bodyNode['body'] as Span[] | null | undefined)
-        ?? (bodyNode['members'] as Span[] | null | undefined);
+      const {
+        body,
+        members: literalMembers,
+      } = bodyNode;
+      /** Combined member list regardless of oxlint's node-shape variant. */
+      const members = body ?? literalMembers;
       if ((members === undefined) || (members === null))
         return;
 
@@ -69,10 +80,9 @@ export const typePropertyPerLine: CreateOnceRule = {
       },);
     }
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       TSTypeLiteral: checkBody,
       TSInterfaceBody: checkBody,
-    } as VisitorWithHooks;
+    };
   },
 };

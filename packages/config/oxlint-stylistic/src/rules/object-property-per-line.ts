@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -7,6 +6,12 @@ import type {
 } from '@oxlint/plugins';
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
+
+/** Object-expression node shape carrying properties for this rule. */
+type ObjectPropertyListNode = Span & {
+  /** Object literal properties in source order. */
+  readonly properties?: readonly Span[] | null;
+};
 
 /**
  * Enforces one property per line in object literals with 2 or more properties.
@@ -40,13 +45,12 @@ export const objectPropertyPerLine: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       ObjectExpression(node: Span,): void {
-        /** Widen `node` to index `properties` without leaving an untyped cast at the call site. */
-        const objNode = node as Span & Record<string, unknown>;
-        /** Extract properties from the untyped record cast above. */
-        const properties = objNode['properties'] as Span[] | null | undefined;
+        /** Narrowed object-expression visitor node used for property access. */
+        const objNode = node as ObjectPropertyListNode;
+        /** Extract properties from the object expression. */
+        const { properties, } = objNode;
         if ((properties === undefined) || (properties === null))
           return;
 
@@ -61,6 +65,6 @@ export const objectPropertyPerLine: CreateOnceRule = {
           },
         },);
       },
-    } as VisitorWithHooks;
+    };
   },
 };

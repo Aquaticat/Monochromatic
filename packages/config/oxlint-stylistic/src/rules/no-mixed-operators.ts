@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -37,8 +36,8 @@ function hasParens({
   child,
   sourceText,
 }: {
-  child: Span;
-  sourceText: string;
+  readonly child: Span;
+  readonly sourceText: string;
 },): boolean {
   /** Source slice before the operand; trailing whitespace stripped so the `(` lands at the end. */
   const before = sourceText
@@ -109,12 +108,14 @@ export const noMixedOperators: CreateOnceRule = {
     function check(node: Span,): void {
       /** Source text is needed for `hasParens` to peek at bytes surrounding the operand spans. */
       const sourceText = context.sourceCode.getText();
-      /** Widen `node` so operator/left/right can be accessed without leaving an untyped cast at every use. */
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- oxlint Span omits operator and operand fields exposed by these visitor nodes */
+      /** Parent expression narrowed to operator-bearing child fields. */
       const parent = node as Span & {
-        operator?: string;
-        left: Span & { operator?: string; };
-        right: Span & { operator?: string; };
+        readonly operator?: string;
+        readonly left: Span & { readonly operator?: string; };
+        readonly right: Span & { readonly operator?: string; };
       };
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
       for (const child of [
         parent.left,
         parent.right,
@@ -156,10 +157,9 @@ export const noMixedOperators: CreateOnceRule = {
       }
     }
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       BinaryExpression: check,
       LogicalExpression: check,
-    } as VisitorWithHooks;
+    };
   },
 };

@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -7,6 +6,12 @@ import type {
 } from '@oxlint/plugins';
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
+
+/** Tuple-type node shape carrying element types for this rule. */
+type TupleElementListNode = Span & {
+  /** Tuple element types in source order. */
+  readonly elementTypes?: readonly Span[] | null;
+};
 
 /**
  * Enforces one element per line in tuple types with 2 or more elements.
@@ -37,13 +42,12 @@ export const tuplePerLine: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       TSTupleType(node: Span,): void {
-        /** Widen `node` to index `elementTypes` without leaving an untyped cast at the call site. */
-        const tupleNode = node as Span & Record<string, unknown>;
-        /** Extract elementTypes from the untyped record cast above. */
-        const elements = tupleNode['elementTypes'] as Span[] | null | undefined;
+        /** Narrowed tuple visitor node used for element type access. */
+        const tupleNode = node as TupleElementListNode;
+        /** Extract elementTypes from the tuple type. */
+        const { elementTypes: elements, } = tupleNode;
         if ((elements === undefined) || (elements === null))
           return;
 
@@ -58,6 +62,6 @@ export const tuplePerLine: CreateOnceRule = {
           },
         },);
       },
-    } as VisitorWithHooks;
+    };
   },
 };

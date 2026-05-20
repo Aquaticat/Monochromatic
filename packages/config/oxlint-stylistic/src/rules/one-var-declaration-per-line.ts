@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -96,14 +95,16 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
      * @param node - VariableDeclaration AST node
      */
     function checkDeclaration(node: Span,): void {
-      /** Destructure to access declarators and the for-statement parent escape hatch in one step. */
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- oxlint Span omits declaration fields exposed by this visitor node */
+      /** Declaration node narrowed to declarator and parent fields. */
       const {
         declarations,
         parent,
       } = node as Span & {
-        declarations: Span[];
-        parent?: { type: string; };
+        readonly declarations: readonly Span[];
+        readonly parent?: { readonly type: string; };
       };
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
       if (
         (parent !== undefined)
         && FOR_PARENT_TYPES.has(parent.type,)
@@ -180,9 +181,8 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
       }
     }
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       VariableDeclaration: checkDeclaration,
-    } as VisitorWithHooks;
+    };
   },
 };

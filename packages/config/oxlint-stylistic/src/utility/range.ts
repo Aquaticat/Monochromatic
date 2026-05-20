@@ -1,13 +1,12 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type { Span, } from '@oxlint/plugins';
 
 /**
- * Extracts the `[start, end]` byte range tuple from an untyped oxlint AST node.
+ * Extracts the `[start, end]` byte range tuple from an oxlint AST node.
  *
- * Every oxlint AST node carries a `.range` property but the plugin API
- * does not include it in the `Span` type.
+ * The installed oxlint plugin API exposes `range` on `Span`, so callers can
+ * share one helper without reasserting the property in each rule.
  *
- * @param node - AST node with an untyped `.range` property
+ * @param node - AST node carrying a `.range` property
  *
  * @returns `[startOffset, endOffset]` byte range
  *
@@ -20,13 +19,7 @@ export function rangeOf(node: Span,): [
   number,
   number,
 ] {
-  return (node as unknown as {
-    range: [
-      number,
-      number,
-    ];
-  })
-    .range;
+  return node.range;
 }
 
 /**
@@ -34,9 +27,9 @@ export function rangeOf(node: Span,): [
  */
 export type AtParams<T,> = {
   /** Source array. */
-  arr: T[];
+  readonly arr: readonly T[];
   /** Numeric index. */
-  index: number;
+  readonly index: number;
 };
 
 /**

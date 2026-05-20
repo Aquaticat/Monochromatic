@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -7,6 +6,12 @@ import type {
 } from '@oxlint/plugins';
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
+
+/** Call-like node shape carrying arguments for this rule. */
+type ArgumentListNode = Span & {
+  /** Arguments passed to call-like syntax. */
+  readonly arguments?: readonly Span[] | null;
+};
 
 /**
  * Enforces one argument per line in function calls with 2 or more arguments.
@@ -48,10 +53,10 @@ export const argumentPerLine: CreateOnceRule = {
      * @param node - call expression AST node
      */
     function checkCall(node: Span,): void {
-      /** Widen `node` to index `arguments` without leaving an untyped cast at the call site. */
-      const callNode = node as Span & Record<string, unknown>;
-      /** Extract arguments from the untyped record cast above. */
-      const args = callNode['arguments'] as Span[] | null | undefined;
+      /** Narrowed call-like visitor node used for argument access. */
+      const callNode = node as ArgumentListNode;
+      /** Extract arguments from the call-like node. */
+      const { arguments: args, } = callNode;
       if ((args === undefined) || (args === null))
         return;
 
@@ -67,10 +72,9 @@ export const argumentPerLine: CreateOnceRule = {
       },);
     }
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       CallExpression: checkCall,
       NewExpression: checkCall,
-    } as VisitorWithHooks;
+    };
   },
 };

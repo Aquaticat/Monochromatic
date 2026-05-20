@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -141,11 +140,11 @@ export const maxStatementsPerLine: CreateOnceRule = {
      * @param node - statement AST node
      */
     function trackStatement(node: Span,): void {
-      /** Destructure to access the parent escape hatch used by the single-child container check. */
+      /** Statement node narrowed to the parent link used for exemptions. */
       const { parent, } = node as Span & {
-        parent?: {
-          type: string;
-          alternate?: Span;
+        readonly parent?: {
+          readonly type: string;
+          readonly alternate?: Span;
         };
       };
       if ((parent !== undefined) && SINGLE_CHILD_ALLOWED.has(parent.type,)) {
@@ -249,7 +248,7 @@ export const maxStatementsPerLine: CreateOnceRule = {
     }
 
     /** Build the visitor: each statement type plus the Program:exit hook. */
-    const visitor: Record<string, unknown> = {
+    const visitor: VisitorWithHooks = {
       'Program:exit': reportExceeding,
       ...Object.fromEntries(STATEMENT_TYPES.map(
         function asEntry(type,): [
@@ -263,6 +262,6 @@ export const maxStatementsPerLine: CreateOnceRule = {
         },
       ),),
     };
-    return visitor as VisitorWithHooks;
+    return visitor;
   },
 };

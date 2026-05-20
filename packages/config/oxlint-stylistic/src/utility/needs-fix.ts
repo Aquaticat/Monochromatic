@@ -11,11 +11,11 @@ import {
  */
 export type NeedsPerLineFixParams = {
   /** Full file source text. */
-  sourceText: string;
+  readonly sourceText: string;
   /** Container AST node. */
-  container: Span;
+  readonly container: Span;
   /** Child items to check (must be non-empty). */
-  items: Span[];
+  readonly items: readonly Span[];
 };
 
 /**

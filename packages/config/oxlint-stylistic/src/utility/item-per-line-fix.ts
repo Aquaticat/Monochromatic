@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-argument, typescript/no-unsafe-return -- oxlint plugin API is untyped; all member access is inherently unsafe
 import type {
   Context,
   Fixer,
@@ -28,9 +27,9 @@ import {
  */
 export type BracketPair = {
   /** Opening bracket character. */
-  open: '(' | '[' | '{';
+  readonly open: '(' | '[' | '{';
   /** Closing bracket character. */
-  close: ')' | ']' | '}';
+  readonly close: ')' | ']' | '}';
 };
 
 /**
@@ -38,13 +37,13 @@ export type BracketPair = {
  */
 export type PerLineFixConfig = {
   /** Fixer instance from the lint report callback. */
-  fixer: Fixer;
+  readonly fixer: Fixer;
   /** Lint context for source text access. */
-  context: Context;
+  readonly context: Context;
   /** Child items to place one per line. */
-  items: Span[];
+  readonly items: readonly Span[];
   /** Full file source text. */
-  sourceText: string;
+  readonly sourceText: string;
   /**
    * Bracket pair that wraps the items.
    *
@@ -52,14 +51,14 @@ export type PerLineFixConfig = {
    * from item positions rather than from the (potentially larger)
    * container node span.
    */
-  bracketPair: BracketPair;
+  readonly bracketPair: BracketPair;
   /**
    * Delimiter to place after each item.
    *
    * Defaults to `','` for comma-separated constructs.
    * Pass `';'` for TypeScript type/interface members.
    */
-  delimiter?: ',' | ';';
+  readonly delimiter?: ',' | ';';
 };
 
 /**

@@ -3,9 +3,9 @@
  */
 export type LineAtParams = {
   /** Full file source text. */
-  sourceText: string;
+  readonly sourceText: string;
   /** Byte offset into source text. */
-  offset: number;
+  readonly offset: number;
 };
 
 /**

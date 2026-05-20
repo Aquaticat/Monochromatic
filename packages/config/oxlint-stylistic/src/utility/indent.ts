@@ -58,9 +58,9 @@ export function leadingWhitespace(s: string,): string {
  */
 export type BaseIndentAtParams = {
   /** Full file source text. */
-  sourceText: string;
+  readonly sourceText: string;
   /** Byte offset on the line whose indentation is wanted. */
-  offset: number;
+  readonly offset: number;
 };
 
 /**

@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -15,6 +14,12 @@ import {
   at,
   rangeOf,
 } from '../utility/range.ts';
+
+/** Function-like node shape carrying parameters for this rule. */
+type FunctionParamListNode = Span & {
+  /** Function parameters in source order. */
+  readonly params?: readonly Span[] | null;
+};
 
 /**
  * Enforces one parameter per line in function declarations, function
@@ -74,10 +79,10 @@ export const paramPerLine: CreateOnceRule = {
      * @param node - function declaration or expression AST node
      */
     function checkFunction(node: Span,): void {
-      /** Widen `node` to index `params` without leaving an untyped cast at the call site. */
-      const fnNode = node as Span & Record<string, unknown>;
-      /** Extract params from the untyped record cast above. */
-      const params = fnNode['params'] as Span[] | null | undefined;
+      /** Narrowed function-like visitor node used for parameter access. */
+      const fnNode = node as FunctionParamListNode;
+      /** Extract params from the function-like node. */
+      const { params, } = fnNode;
       if ((params === undefined) || (params === null) || (params.length < 2))
         return;
 
@@ -133,7 +138,6 @@ export const paramPerLine: CreateOnceRule = {
       },);
     }
 
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       FunctionDeclaration: checkFunction,
       FunctionExpression: checkFunction,
@@ -145,6 +149,6 @@ export const paramPerLine: CreateOnceRule = {
       TSConstructSignatureDeclaration: checkFunction,
       TSConstructorType: checkFunction,
       TSEmptyBodyFunctionExpression: checkFunction,
-    } as VisitorWithHooks;
+    };
   },
 };

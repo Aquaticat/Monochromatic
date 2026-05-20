@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-argument -- oxlint plugin API is untyped
 import type {
   Context,
   Fixer,
@@ -17,13 +16,13 @@ import {
  */
 export type ParamsNeedFixParams = {
   /** Full file source text. */
-  sourceText: string;
+  readonly sourceText: string;
   /** Byte offset of opening `(`. */
-  openParen: number;
+  readonly openParen: number;
   /** Byte offset of closing `)`. */
-  closeParen: number;
+  readonly closeParen: number;
   /** Array of parameter AST nodes. */
-  params: Span[];
+  readonly params: readonly Span[];
 };
 
 /**
@@ -102,17 +101,17 @@ export function paramsNeedFix({
  */
 export type BuildParamFixParams = {
   /** Fixer instance. */
-  fixer: Fixer;
+  readonly fixer: Fixer;
   /** Full file source text. */
-  sourceText: string;
+  readonly sourceText: string;
   /** Byte offset of `(`. */
-  openParen: number;
+  readonly openParen: number;
   /** Byte offset of `)`. */
-  closeParen: number;
+  readonly closeParen: number;
   /** Parameter AST nodes. */
-  params: Span[];
+  readonly params: readonly Span[];
   /** Lint context for source text access. */
-  context: Context;
+  readonly context: Context;
 };
 
 /**

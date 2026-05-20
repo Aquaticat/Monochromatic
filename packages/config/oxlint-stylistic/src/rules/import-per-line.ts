@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -7,6 +6,18 @@ import type {
 } from '@oxlint/plugins';
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
+
+/** Import specifier shape needed to detect named specifiers. */
+type ImportSpecifierNode = Span & {
+  /** ESTree node type discriminator. */
+  readonly type?: string;
+};
+
+/** Import declaration node shape carrying specifiers for this rule. */
+type ImportSpecifierListNode = Span & {
+  /** Import specifiers in source order. */
+  readonly specifiers?: readonly ImportSpecifierNode[] | null;
+};
 
 /**
  * Enforces one specifier per line in import declarations with 2 or more
@@ -42,23 +53,19 @@ export const importPerLine: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       ImportDeclaration(node: Span,): void {
-        /** Widen `node` to index `specifiers` without leaving an untyped cast at the call site. */
-        const importNode = node as Span & Record<string, unknown>;
-        /** Extract specifiers (typed with record access since each entry will be probed for `type`) from the untyped record cast above. */
-        const specifiers = importNode['specifiers'] as
-          | (Span & Record<string, unknown>)[]
-          | null
-          | undefined;
+        /** Narrowed import visitor node used for specifier access. */
+        const importNode = node as ImportSpecifierListNode;
+        /** Extract specifiers from the import declaration. */
+        const { specifiers, } = importNode;
         if ((specifiers === undefined) || (specifiers === null))
           return;
 
         /** Filter to only named import specifiers (skip default and namespace). */
         const namedSpecifiers = specifiers.filter(
-          function isNamed(s,): boolean {
-            return s['type'] === 'ImportSpecifier';
+          function isNamed(specifier,): boolean {
+            return specifier.type === 'ImportSpecifier';
           },
         );
 
@@ -68,7 +75,7 @@ export const importPerLine: CreateOnceRule = {
         checkItemsPerLine({
           context,
           container: importNode,
-          items: namedSpecifiers as Span[],
+          items: namedSpecifiers,
           messageId: 'importPerLine',
           bracketPair: {
             open: '{',
@@ -76,6 +83,6 @@ export const importPerLine: CreateOnceRule = {
           },
         },);
       },
-    } as VisitorWithHooks;
+    };
   },
 };

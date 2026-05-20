@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-argument, typescript/no-unsafe-return -- oxlint plugin API is untyped; all member access is inherently unsafe
 import type {
   Context,
   Fixer,
@@ -27,33 +26,33 @@ import { needsPerLineFix, } from './needs-fix.ts';
  */
 export type ItemPerLineConfig = {
   /** Lint context for reporting and source access. */
-  context: Context;
+  readonly context: Context;
   /** Container AST node (array literal, object expression, params list, etc.). */
-  container: Span;
+  readonly container: Span;
   /** Ordered list of child items that should each appear on their own line. */
-  items: Span[];
+  readonly items: readonly Span[];
   /** Message ID to use when reporting. */
-  messageId: string;
+  readonly messageId: string;
   /**
    * Bracket pair that wraps the items.
    *
    * Used by the fixer to locate the correct opening and closing brackets
    * by scanning from item positions.
    */
-  bracketPair: BracketPair;
+  readonly bracketPair: BracketPair;
   /**
    * Minimum number of items required to trigger the rule.
    *
    * Defaults to 2; single-item lists are never flagged.
    */
-  minItems?: number;
+  readonly minItems?: number;
   /**
    * Delimiter to place after each item in the autofix output.
    *
    * Defaults to `','` for comma-separated constructs.
    * Pass `';'` for TypeScript type/interface members.
    */
-  delimiter?: ',' | ';';
+  readonly delimiter?: ',' | ';';
 };
 
 /**

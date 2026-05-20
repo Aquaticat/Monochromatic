@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -7,6 +6,12 @@ import type {
 } from '@oxlint/plugins';
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
+
+/** Object-pattern node shape carrying destructured properties for this rule. */
+type ObjectPatternListNode = Span & {
+  /** Destructured properties in source order. */
+  readonly properties?: readonly Span[] | null;
+};
 
 /**
  * Enforces one property per line in object destructuring patterns
@@ -38,13 +43,12 @@ export const destructurePerLine: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       ObjectPattern(node: Span,): void {
-        /** Widen `node` to index `properties` without leaving an untyped cast at the call site. */
-        const patternNode = node as Span & Record<string, unknown>;
-        /** Extract properties from the untyped record cast above. */
-        const properties = patternNode['properties'] as Span[] | null | undefined;
+        /** Narrowed object-pattern visitor node used for property access. */
+        const patternNode = node as ObjectPatternListNode;
+        /** Extract properties from the object pattern. */
+        const { properties, } = patternNode;
         if ((properties === undefined) || (properties === null))
           return;
 
@@ -59,6 +63,6 @@ export const destructurePerLine: CreateOnceRule = {
           },
         },);
       },
-    } as VisitorWithHooks;
+    };
   },
 };

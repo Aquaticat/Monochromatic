@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -7,6 +6,14 @@ import type {
 } from '@oxlint/plugins';
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
+
+/** Export declaration node shape carrying named specifiers for this rule. */
+type ExportSpecifierListNode = Span & {
+  /** Inline export declaration, present for `export const` and similar syntax. */
+  readonly declaration?: Span | null;
+  /** Named export specifiers in source order. */
+  readonly specifiers?: readonly Span[] | null;
+};
 
 /**
  * Enforces one specifier per line in named export declarations with
@@ -42,21 +49,25 @@ export const exportPerLine: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       ExportNamedDeclaration(node: Span,): void {
-        /** Widen `node` to index export-specific fields without leaving an untyped cast at the call site. */
-        const exportNode = node as Span & Record<string, unknown>;
+        /** Narrowed export visitor node used for declaration and specifier access. */
+        const exportNode = node as ExportSpecifierListNode;
+
+        /** Export-specific fields used to skip inline declarations and inspect named specifiers. */
+        const {
+          declaration,
+          specifiers,
+        } = exportNode;
 
         /** Skip inline declarations (`export const x = ...`). */
-        if ((exportNode['declaration'] !== null)
-          && (exportNode['declaration'] !== undefined))
+        if ((declaration !== null)
+          && (declaration !== undefined))
         {
           return;
         }
 
-        /** Extract specifiers from the untyped record cast above. */
-        const specifiers = exportNode['specifiers'] as Span[] | null | undefined;
+        // Missing specifiers mean the export declaration has nothing to check.
         if ((specifiers === undefined) || (specifiers === null))
           return;
 
@@ -71,6 +82,6 @@ export const exportPerLine: CreateOnceRule = {
           },
         },);
       },
-    } as VisitorWithHooks;
+    };
   },
 };

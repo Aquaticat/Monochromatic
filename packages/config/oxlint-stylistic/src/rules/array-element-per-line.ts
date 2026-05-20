@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
 import type {
   Context,
   CreateOnceRule,
@@ -7,6 +6,12 @@ import type {
 } from '@oxlint/plugins';
 
 import { checkItemsPerLine, } from '../utility/item-per-line.ts';
+
+/** Array-expression node shape carrying element spans for this rule. */
+type ArrayElementListNode = Span & {
+  /** Array elements as read by the existing rule behavior. */
+  readonly elements?: readonly Span[] | null;
+};
 
 /**
  * Enforces one element per line in array literals with 2 or more elements.
@@ -41,13 +46,12 @@ export const arrayElementPerLine: CreateOnceRule = {
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
     return {
       ArrayExpression(node: Span,): void {
-        /** Widen `node` to index `elements` without leaving an untyped cast at the call site. */
-        const arrayNode = node as Span & Record<string, unknown>;
-        /** Extract elements from the untyped record cast above. */
-        const elements = arrayNode['elements'] as Span[] | null | undefined;
+        /** Narrowed array visitor node used for element access. */
+        const arrayNode = node as ArrayElementListNode;
+        /** Extract elements from the array node. */
+        const { elements, } = arrayNode;
         if ((elements === undefined) || (elements === null))
           return;
 
@@ -62,6 +66,6 @@ export const arrayElementPerLine: CreateOnceRule = {
           },
         },);
       },
-    } as VisitorWithHooks;
+    };
   },
 };

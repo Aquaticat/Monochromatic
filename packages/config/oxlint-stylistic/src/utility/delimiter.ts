@@ -19,9 +19,9 @@ const CLOSE_DELIMITERS: ReadonlySet<string> = new Set([
  */
 export type FindDelimiterParams = {
   /** Source text of the container node. */
-  text: string;
+  readonly text: string;
   /** `'open'` scans forward, `'close'` scans backward. */
-  direction: 'close' | 'open';
+  readonly direction: 'close' | 'open';
 };
 
 /**
