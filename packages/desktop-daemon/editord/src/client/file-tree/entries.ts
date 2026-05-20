@@ -70,6 +70,44 @@ export function buildRecencyIndex(
 const MAX_PREFETCH_CACHE_SIZE = 200;
 
 /**
+ * Directory-name suffixes that strongly imply a short-lived, race-prone directory:
+ * - `.lock`: `proper-lockfile`-style atomic lock dirs (created via `mkdir`,
+ *   removed on release; observed continuously for `~/.claude.json.lock`).
+ * - `.tmp` / `.temp`: common transient-temp conventions.
+ *
+ * Listed once at module scope so the predicate stays cheap inside the loop.
+ */
+const TRANSIENT_DIR_SUFFIXES = [
+  '.lock',
+  '.tmp',
+  '.temp',
+] as const;
+
+/**
+ * Returns whether a directory name matches a known transient-dir shape.
+ * Used by the speculative prefetch to skip directories that are likely to
+ * have already been removed by the time the prefetch listing reaches the
+ * server, which would otherwise produce ENOENT noise.
+ *
+ * @param name - directory entry name (basename, not full path)
+ *
+ * @returns true when the name ends with a known transient suffix
+ *
+ * @example
+ * ```ts
+ * isTransientDirName({ name: '.claude.json.lock', }); // true
+ * isTransientDirName({ name: 'src', }); // false
+ * ```
+ */
+function isTransientDirName({ name, }: { readonly name: string; },): boolean {
+  return TRANSIENT_DIR_SUFFIXES.some(
+    function endsWithSuffix(suffix,) {
+      return name.endsWith(suffix,);
+    },
+  );
+}
+
+/**
  * Evicts the oldest entries from the prefetch cache when it exceeds the size limit.
  * Map iteration order is insertion order, so the first entries are the oldest.
  *
@@ -127,6 +165,9 @@ export async function preloadChildren({
     entries
       .filter(function isDir(entry,) {
         return entry.isDirectory;
+      },)
+      .filter(function isNotTransient(entry,) {
+        return !isTransientDirName({ name: entry.name, },);
       },)
       .map(async function prefetchDir(entry,) {
         /** Joined parent + entry name; cache key for the prefetched listing. */

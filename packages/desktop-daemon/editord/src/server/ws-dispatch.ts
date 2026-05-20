@@ -219,7 +219,22 @@ export async function dispatchMessage(
   catch (error) {
     /** Normalised to a string so the error reply is JSON-safe. */
     const msg = extractErrorMessage({ error, },);
-    l.error(`dispatch failed: ${msg}`,);
+    /**
+     * Filesystem race-condition class: target vanished or changed type between the
+     * client request and the server syscall. Most frequent source is the file-tree's
+     * speculative subdirectory prefetch racing transient lock directories created
+     * by `proper-lockfile` (e.g. `~/.claude.json.lock`), which exist only between
+     * `mkdir` and `rmdir` calls. Logged at `warn` rather than `error` so the
+     * legitimate-error signal is not drowned by expected races.
+     */
+    const code: unknown
+      = ((typeof error) === 'object') && (error !== null) && ('code' in error)
+        ? error.code
+        : undefined;
+    if ((code === 'ENOENT') || (code === 'ENOTDIR'))
+      l.warn(`dispatch failed (transient race): ${msg}`,);
+    else
+      l.error(`dispatch failed: ${msg}`,);
     /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- `parsed` is from unvalidated JSON cast; requests have `id`, notifications do not */
     /** Undefined for notifications, suppressing the targeted reply below. */
     const requestId = 'id' in parsed ? (parsed as { id: string; }).id : undefined;
