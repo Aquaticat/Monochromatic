@@ -426,6 +426,46 @@ await describe({
       },
     },),
     it({
+      name: 'rejects interactive clean even when dry-run appears',
+      fn: async function testInteractiveCleanWithDryRun(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+
+        /** Error thrown because interactive clean can delete selected paths. */
+        const caught = await catchLinkedWorktreeOnlyError([
+          '-C',
+          tempDirectory.path,
+          'clean',
+          '-ni',
+        ],);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'cli-git: state-changing git clean is rejected in the main git worktree',
+        );
+      },
+    },),
+    it({
+      name: 'rejects state-changing clean outside a worktree',
+      fn: async function testStateChangingCleanOutsideWorktree(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Error thrown for clean argv rooted outside any real worktree. */
+        const caught = await catchLinkedWorktreeOnlyError([
+          '-C',
+          tempDirectory.path,
+          'clean',
+          '-fd',
+        ],);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'cli-git: state-changing git clean requires the effective working directory to be inside a linked git worktree',
+        );
+      },
+    },),
+    it({
       name: 'strips clean escape hatch and skips worktree validation',
       fn: async function testCleanEscapeHatch(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
@@ -455,11 +495,14 @@ await describe({
         await initializeRepository({ repoPath: tempDirectory.path, },);
         await createInitialCommit({ repoPath: tempDirectory.path, },);
 
-        /** Reset modes that update worktree files. */
+        /** Reset modes and accepted abbreviations that update worktree files. */
         const resetModes = [
           '--hard',
+          '--h',
           '--merge',
+          '--me',
           '--keep',
+          '--k',
         ] as const;
         /** Errors thrown for destructive reset modes rooted at main worktree root. */
         const caughtErrors = await Promise.all(
@@ -529,6 +572,25 @@ await describe({
           'reset',
           '--hard',
         ],);
+      },
+    },),
+    it({
+      name: 'rejects destructive reset outside a worktree',
+      fn: async function testDestructiveResetOutsideWorktree(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Error thrown for destructive reset argv rooted outside any real worktree. */
+        const caught = await catchLinkedWorktreeOnlyError([
+          '-C',
+          tempDirectory.path,
+          'reset',
+          '--hard',
+        ],);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'cli-git: destructive git reset modes require the effective working directory to be inside a linked git worktree',
+        );
       },
     },),
     it({

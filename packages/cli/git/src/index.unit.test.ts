@@ -596,6 +596,41 @@ await describe({
       },
     },),
     it({
+      name: 'allows state-changing clean at main worktree root with worktree escape hatch',
+      fn: async function testCleanAtMainWorktreeRootWithEscapeHatch(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeFile(
+          join(
+            tempDirectory.path,
+            'untracked.txt',
+          ),
+          'temporary\n',
+        );
+
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'clean',
+            '--no-enforce-worktree',
+            '-fd',
+          ],
+        },);
+
+        /** Repository status after escaped clean, proving real git received clean. */
+        const status = await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'status',
+            '--short',
+          ],
+        },);
+
+        expect(status.stdout,).toBe('',);
+      },
+    },),
+    it({
       name: 'rejects reset hard at main worktree root',
       fn: async function testResetHardAtMainWorktreeRoot(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
