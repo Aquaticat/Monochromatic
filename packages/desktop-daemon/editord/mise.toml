@@ -1,5 +1,6 @@
 [tasks.build]
-extends = "build"
+description = "Build client JavaScript, then global CSS so tsdown cleaning cannot remove generated CSS"
+run = "mise run build:js:client; mise run build:css"
 
 [tasks."build:js"]
 extends = "build:js"

@@ -23,7 +23,7 @@ const GROUP_BOUNDARY = OFFSET_WIDTH;
 const DUMP_LINE_COUNT = 1_024;
 
 /** Maximum bytes to include in the dump before truncating. */
-export const HEX_DUMP_MAX_BYTES = BYTES_PER_LINE * DUMP_LINE_COUNT;
+export const HEX_DUMP_MAX_BYTES: number = BYTES_PER_LINE * DUMP_LINE_COUNT;
 
 /** First printable ASCII code point (space). */
 const ASCII_PRINTABLE_START = 0x20;

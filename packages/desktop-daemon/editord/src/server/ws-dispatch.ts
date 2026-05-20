@@ -35,7 +35,7 @@ const l = tagged({
  * Tracks the `AbortController` for the currently in-flight search per peer.
  * When a new search arrives, the previous one is aborted so its `rg` processes are killed.
  */
-export const peerSearchControllers = new WeakMap<object, AbortController>();
+export const peerSearchControllers: WeakMap<object, AbortController> = new WeakMap<object, AbortController>();
 
 /**
  * Parses and dispatches a single client message against the operation handlers.

@@ -76,4 +76,4 @@ const LIGHT = $({
 },);
 
 /** Combined dark and light theme custom property rules. */
-export const STYLES = DARK + LIGHT;
+export const STYLES: string = DARK + LIGHT;

@@ -28,7 +28,7 @@ const INPUT_PADDING = (2 + 1) / (2 * 2);
 const BACKDROP_ALPHA = 1 / 2;
 
 /** Dialog and input styles for the search overlay. */
-export const DIALOG_STYLES = [
+export const DIALOG_STYLES: string = [
   $({
     rule: 'dialog[open]',
     decls: {

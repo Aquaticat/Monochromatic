@@ -27,7 +27,7 @@ const MAX_HEIGHT_REM = 20;
 const PADDING = 1 / 2;
 
 /** Shadow DOM styles for the hover popup. */
-export const STYLES = [
+export const STYLES: string = [
   $({
     rule: ':host',
     decls: {

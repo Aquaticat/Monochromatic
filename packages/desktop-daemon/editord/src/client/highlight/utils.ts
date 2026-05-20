@@ -9,7 +9,7 @@ import { FILE_SIZE_WARNING_THRESHOLD, } from '../../constants.ts';
 import { HIGHLIGHT_GROUPS, } from './tags.ts';
 
 /** Maximum file size in bytes for syntax highlighting. */
-export const MAX_HIGHLIGHT_BYTES = FILE_SIZE_WARNING_THRESHOLD;
+export const MAX_HIGHLIGHT_BYTES: number = FILE_SIZE_WARNING_THRESHOLD;
 
 /**
  * Extracts line texts from the editor's child divs.

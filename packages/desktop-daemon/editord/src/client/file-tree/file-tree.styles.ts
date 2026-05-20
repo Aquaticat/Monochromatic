@@ -20,7 +20,7 @@ import { ENTRY_STYLES, } from './entry.styles.ts';
 const SIDEBAR_WIDTH = 2 * 2 * 2 * 2;
 
 /** Shadow DOM styles for the file tree. */
-export const STYLES = [
+export const STYLES: string = [
   $({
     rule: ':host',
     decls: {

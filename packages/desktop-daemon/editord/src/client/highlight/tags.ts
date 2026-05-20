@@ -19,13 +19,14 @@
 import {
   tagHighlighter,
   tags,
+  type Highlighter,
 } from '@lezer/highlight';
 
 /**
  * Named highlight groups used with the CSS Custom Highlight API.
  * Each group gets a `::highlight(hl-<name>)` CSS rule and a `--hl-<name>` color variable.
  */
-export const HIGHLIGHT_GROUPS = [
+export const HIGHLIGHT_GROUPS: readonly [
   'keyword',
   'string',
   'comment',
@@ -36,7 +37,18 @@ export const HIGHLIGHT_GROUPS = [
   'heading',
   'link',
   'emphasis',
-] as const;
+] = [
+  'keyword',
+  'string',
+  'comment',
+  'number',
+  'type',
+  'function',
+  'property',
+  'heading',
+  'link',
+  'emphasis',
+];
 
 /** Union type of all highlight group names. */
 export type HighlightGroup = typeof HIGHLIGHT_GROUPS[number];
@@ -53,7 +65,7 @@ export type HighlightGroup = typeof HIGHLIGHT_GROUPS[number];
  * Markdown and HTML tags map to groups that reuse color variables:
  * headings get their own color, links get blue, emphasis/strong get gold.
  */
-export const editorHighlighter = tagHighlighter([
+export const editorHighlighter: Highlighter = tagHighlighter([
   //region Code tags (JS/TS, JSON, CSS, YAML, TOML)
   {
     tag: [

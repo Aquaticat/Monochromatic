@@ -33,7 +33,7 @@ const CENTER_OFFSET = -50;
 const CENTER_POSITION = 50;
 
 /** Global toast styles with nested variant rules. */
-export const STYLES = $({
+export const STYLES: string = $({
   rule: '.toast',
   decls: {
     position: 'fixed',

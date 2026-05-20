@@ -20,7 +20,7 @@ const WIDTH_REM = 20;
 const ITEM_PADDING = 1 / (2 * 2);
 
 /** Shadow DOM styles for the completion popup. */
-export const STYLES = [
+export const STYLES: string = [
   $({
     rule: ':host',
     decls: {

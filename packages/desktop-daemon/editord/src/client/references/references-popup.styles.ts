@@ -27,7 +27,7 @@ const MAX_HEIGHT_REM = 16;
 const ITEM_PADDING = 1 / (2 * 2);
 
 /** Shadow DOM styles for the references popup. */
-export const STYLES = [
+export const STYLES: string = [
   $({
     rule: ':host',
     decls: {

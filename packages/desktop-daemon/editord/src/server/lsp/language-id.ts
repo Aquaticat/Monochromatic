@@ -49,7 +49,7 @@ export function getLanguageId({ path, }: { readonly path: string; },): string {
 }
 
 /** Language IDs that oxlint and tsgo handle (JavaScript/TypeScript family). */
-export const JS_TS_LANGUAGE_IDS = new Set([
+export const JS_TS_LANGUAGE_IDS: ReadonlySet<string> = new Set([
   'javascript',
   'javascriptreact',
   'typescript',

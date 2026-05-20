@@ -33,7 +33,7 @@ const CIRCLE_PERCENT = ((2 * 2) + 1) * ((2 * 2) + 1) * 2;
 const TOUCH_TARGET = 2 + 1;
 
 /** Global fullscreen FAB styles. */
-export const STYLES = $({
+export const STYLES: string = $({
   rule: '.fullscreen-fab',
   decls: {
     position: 'fixed',

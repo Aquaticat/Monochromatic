@@ -19,7 +19,7 @@ import {
 import { MEDIA_STYLES, } from './media.styles.ts';
 
 /** Shadow DOM styles for the binary viewer. */
-export const STYLES = [
+export const STYLES: string = [
   $({
     rule: ':host',
     decls: {

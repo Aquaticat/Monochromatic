@@ -16,7 +16,7 @@ import {
 const LINE_HEIGHT = (2 + 1) / 2;
 
 /** CSS rules for inlay hint annotations. */
-export const INLAY_STYLES = [
+export const INLAY_STYLES: string = [
   $({
     rule: '.editor > div[data-inlay]::after',
     decls: {

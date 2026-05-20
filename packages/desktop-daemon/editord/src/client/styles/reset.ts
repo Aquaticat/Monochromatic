@@ -21,7 +21,7 @@ import { MONO_FONT_FAMILY, } from './tokens.ts';
 const FULL = 100;
 
 /** Global reset and base layout rules. */
-export const STYLES = [
+export const STYLES: string = [
   $({
     rule: '*',
     decls: {

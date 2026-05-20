@@ -33,7 +33,7 @@ const GUTTER_WIDTH = (2 * 2) + 1;
 const LINE_PADDING = (2 + 1) * 2;
 
 /** Shadow DOM styles for the editor pane. */
-export const STYLES = [
+export const STYLES: string = [
   $({
     rule: ':host',
     decls: {

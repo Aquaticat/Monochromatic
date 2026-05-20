@@ -21,7 +21,7 @@ const ENTRY_PADDING_BLOCK = 1 / (2 * 2 * 2);
 const ENTRY_PADDING_INLINE = 1 / 2;
 
 /** Entry-level styles for summaries, file entries, and interaction states. */
-export const ENTRY_STYLES = [
+export const ENTRY_STYLES: string = [
   $({
     rule: 'tree-dir-entry',
     decls: { display: 'contents', },

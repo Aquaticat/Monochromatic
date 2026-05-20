@@ -27,7 +27,7 @@ const MIN_WIDTH = 2 * ((2 * 2) + 1);
 const INPUT_OPACITY = (10 - 2 - 1) / 10;
 
 /** Global context menu styles. */
-export const STYLES = [
+export const STYLES: string = [
   $({
     rule: '.ctx-anchor',
     decls: {

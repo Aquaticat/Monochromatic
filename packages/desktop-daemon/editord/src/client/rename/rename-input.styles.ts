@@ -23,7 +23,7 @@ const INPUT_PADDING = 1 / (2 * 2);
 const OVERLAY_Z_INDEX = 1_000;
 
 /** Shadow DOM styles for the rename input. */
-export const STYLES = [
+export const STYLES: string = [
   $({
     rule: ':host',
     decls: {

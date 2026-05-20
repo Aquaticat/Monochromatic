@@ -21,7 +21,7 @@ const RESULT_PADDING = 1 / 2;
 const RESULT_LINE_HEIGHT = (2 + 1) / 2;
 
 /** Shadow DOM styles for the search overlay. */
-export const STYLES = DIALOG_STYLES + [
+export const STYLES: string = DIALOG_STYLES + [
   $({
     rule: '.results',
     decls: {
