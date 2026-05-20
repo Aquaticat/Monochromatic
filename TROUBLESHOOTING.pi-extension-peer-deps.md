@@ -131,14 +131,42 @@ Version context:
 
 ### Verification scope
 
-The harnesses below verify npm resolver behaviour only. They use `npm install --package-lock-only --ignore-scripts`
+The harnesses below verify package-manager resolver behaviour only. They use lockfile-only installs with ignored scripts
 to avoid running third-party package scripts. They do not prove full runtime compatibility of every extension under
 Pi 0.75.3.
 
-The failed command's exact package root was not recoverable from the available npm report. Pi package roots can differ
-between global npm installs, `/var/home/user/.pi/agent/npm/package.json`, and project-local `.pi/npm/package.json`.
-Apply root `overrides` to the package root npm actually uses for the failing install, then rerun the same install
-command that failed.
+The npm `ERESOLVE` report came from npm, not from the Monochromatic pnpm workspace. Pi package docs say npm sources
+install under `~/.pi/agent/npm/` or `.pi/npm/`, and `settings.md` says `npmCommand` defaults to npm unless configured.
+Pi 0.75.3 source confirms the default command is `npm`:
+`node_modules/.pnpm/@earendil-works+pi-coding-agent@0.75.3_ws@8.20.0_zod@4.3.6/node_modules/@earendil-works/pi-coding-agent/dist/core/package-manager.js:1351-1357`.
+
+```js
+getNpmCommand() {
+    const configuredCommand = this.settingsManager.getNpmCommand();
+    if (!configuredCommand || configuredCommand.length === 0) {
+        return { command: "npm", args: [] };
+    }
+```
+
+The same source builds package install arguments from the configured package-manager name, using npm by default and
+pnpm only when `npmCommand` resolves to `pnpm`:
+`node_modules/.pnpm/@earendil-works+pi-coding-agent@0.75.3_ws@8.20.0_zod@4.3.6/node_modules/@earendil-works/pi-coding-agent/dist/core/package-manager.js:1385-1393`.
+
+```js
+getNpmInstallArgs(specs, installRoot) {
+    const packageManagerName = this.getPackageManagerName();
+    if (packageManagerName === "bun") {
+        return ["install", ...specs, "--cwd", installRoot];
+    }
+    if (packageManagerName === "pnpm") {
+        return ["install", ...specs, "--prefix", installRoot, "--config.strict-dep-builds=false"];
+    }
+    return ["install", ...specs, "--prefix", installRoot];
+}
+```
+
+Apply npm `overrides` only to the Pi-managed npm package root that produced the npm error. For the Monochromatic pnpm
+workspace, use `pnpm-workspace.yaml` guidance below instead.
 
 ### Failing catalogue
 
@@ -290,11 +318,128 @@ up to date, audited 138 packages in 1s
 found 0 vulnerabilities
 ```
 
+#### pnpm workspace install warns, and strict peer checks fail without pnpm rules
+
+Harness:
+
+```sh
+mkdir -p /tmp/pi-peer-pnpm-repro-20260520
+cd /tmp/pi-peer-pnpm-repro-20260520
+cat > package.json <<'JSON'
+{
+  "name": "pi-peer-pnpm-repro",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@earendil-works/pi-coding-agent": "0.75.3",
+    "@aliou/pi-processes": "0.9.1",
+    "@diegopetrucci/pi-openai-fast": "0.1.1",
+    "@aliou/pi-linkup": "0.11.0",
+    "@aliou/pi-synthetic": "0.17.2"
+  }
+}
+JSON
+cat > pnpm-workspace.yaml <<'YAML'
+packages:
+- .
+autoInstallPeers: false
+nodeLinker: isolated
+YAML
+pnpm install --lockfile-only --ignore-scripts
+pnpm peers check
+```
+
+Observed output excerpts:
+
+```text
+[WARN] Issues with peer dependencies found. Run "pnpm peers check" to list them.
+```
+
+```text
+Issues with peer dependencies found
+
+✕ unmet peer @earendil-works/pi-coding-agent
+  Installed: 0.75.3
+  Wanted:
+    0.74.0:
+      @aliou/pi-linkup@0.11.0
+      @aliou/pi-synthetic@0.17.2
+```
+
+With `strictPeerDependencies: true`, `pnpm install --lockfile-only --ignore-scripts` also fails with
+`ERR_PNPM_PEER_DEP_ISSUES`.
+
+#### pnpm workspace rules unblock strict peer checks
+
+Harness:
+
+```sh
+cd /tmp/pi-peer-pnpm-repro-20260520
+cat > pnpm-workspace.yaml <<'YAML'
+packages:
+- .
+autoInstallPeers: false
+nodeLinker: isolated
+strictPeerDependencies: true
+peerDependencyRules:
+  allowedVersions:
+    "@aliou/pi-linkup>@earendil-works/pi-ai": "0.75.3"
+    "@aliou/pi-linkup>@earendil-works/pi-coding-agent": "0.75.3"
+    "@aliou/pi-linkup>@earendil-works/pi-tui": "0.75.3"
+    "@aliou/pi-synthetic>@earendil-works/pi-coding-agent": "0.75.3"
+    "@aliou/pi-synthetic>@earendil-works/pi-tui": "0.75.3"
+YAML
+rm -f pnpm-lock.yaml
+pnpm install --lockfile-only --ignore-scripts
+pnpm peers check
+```
+
+Observed output excerpt:
+
+```text
+Done in 561ms using pnpm v11.1.3
+No peer dependency issues found
+```
+
+pnpm root `overrides` also work when scoped to the problematic package peers. pnpm docs at
+<https://pnpm.io/settings#overriding-peer-dependencies> state that overrides apply to `peerDependencies`.
+
 ## Verified workarounds
 
-### Add root npm overrides for the Pi host packages
+### Add root pnpm peer rules for the Monochromatic workspace
 
-Patch the root `package.json` that npm uses for the extension install:
+If this graph is represented in the Monochromatic pnpm workspace, patch `pnpm-workspace.yaml`, not npm `package.json`.
+The least tree-changing pnpm workaround is `peerDependencyRules.allowedVersions`:
+
+```yaml
+peerDependencyRules:
+  allowedVersions:
+    '@aliou/pi-linkup>@earendil-works/pi-ai': '0.75.3'
+    '@aliou/pi-linkup>@earendil-works/pi-coding-agent': '0.75.3'
+    '@aliou/pi-linkup>@earendil-works/pi-tui': '0.75.3'
+    '@aliou/pi-synthetic>@earendil-works/pi-coding-agent': '0.75.3'
+    '@aliou/pi-synthetic>@earendil-works/pi-tui': '0.75.3'
+```
+
+This passed `pnpm install --lockfile-only --ignore-scripts --strict-peer-dependencies` and `pnpm peers check` in the
+reproduction harness. Tradeoff: it asserts local compatibility; it does not verify runtime compatibility.
+
+Root pnpm `overrides` also pass and actually rewrite the peer ranges during pnpm resolution:
+
+```yaml
+overrides:
+  '@aliou/pi-linkup>@earendil-works/pi-ai': '0.75.3'
+  '@aliou/pi-linkup>@earendil-works/pi-coding-agent': '0.75.3'
+  '@aliou/pi-linkup>@earendil-works/pi-tui': '0.75.3'
+  '@aliou/pi-synthetic>@earendil-works/pi-coding-agent': '0.75.3'
+  '@aliou/pi-synthetic>@earendil-works/pi-tui': '0.75.3'
+```
+
+### Add root npm overrides for Pi's default package installer
+
+Patch the root `package.json` that Pi's default npm installer uses for the extension install. This is usually
+`/var/home/user/.pi/agent/npm/package.json` for user-scoped packages or `.pi/npm/package.json` for project-scoped
+packages, not the Monochromatic pnpm workspace root.
 
 ```json
 {
