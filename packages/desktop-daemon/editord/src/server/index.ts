@@ -257,15 +257,17 @@ async function shutdownApp(
  * Starts a watchdog that force-exits if cleanup hasn't drained the event
  * loop within SHUTDOWN_WATCHDOG_SECONDS. LSP child stdio pipes occasionally
  * remain ref'd after `client.shutdown()` returns; this is the backstop.
+ *
+ * The thrown error propagates to Node's default `uncaughtException` handler,
+ * which prints the stack to stderr and exits the process with code 1.
  */
 function startShutdownWatchdog(): void {
   /** Unref'd timer so it does not by itself keep the event loop alive. */
   const watchdog = setTimeout(
     function shutdownWatchdogTimeout(): void {
-      httpLog.error(
+      throw new Error(
         `shutdown timed out after ${String(SHUTDOWN_WATCHDOG_SECONDS,)}s, forcing exit`,
       );
-      process.exit(0,);
     },
     SHUTDOWN_WATCHDOG_SECONDS * SHUTDOWN_MS_PER_SECOND,
   );
