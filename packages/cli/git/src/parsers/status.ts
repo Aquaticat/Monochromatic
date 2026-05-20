@@ -16,15 +16,24 @@ const ADVICE_KEY_PREFIX = 'advice.statusHints=';
 
 /** Pre-subcommand option parser scoped to the facts the status-hints rule needs. */
 const statusPreParser = object({
-  configValues: multiple(option('-c', string(),),),
+  configValues: multiple(option(
+    '-c',
+    string(),
+  ),),
   positionals: multiple(argument(string(),),),
   unknownOptions: passThrough({ format: 'nextToken', },),
 },);
 
 /** Post-subcommand option parser for `git status` machine-readable detection. */
 const statusPostParser = object({
-  porcelainFlags: multiple(flag('--porcelain', '-z',),),
-  shortFlags: multiple(flag('-s', '--short',),),
+  porcelainFlags: multiple(flag(
+    '--porcelain',
+    '-z',
+  ),),
+  shortFlags: multiple(flag(
+    '-s',
+    '--short',
+  ),),
   positionals: multiple(argument(string(),),),
   unknownOptions: passThrough({ format: 'nextToken', },),
 },);
@@ -63,7 +72,10 @@ export function parseStatusPreRegion(
   preSubcommandArgs: readonly string[],
 ): StatusPreRegion {
   /** Optique parse result over the pre-subcommand region. */
-  const parseResult = parseSync(statusPreParser, preSubcommandArgs,);
+  const parseResult = parseSync(
+    statusPreParser,
+    preSubcommandArgs,
+  );
 
   if (!parseResult.success)
     return { hasStatusHintsOverride: false, };
@@ -103,7 +115,10 @@ export function parseStatusPostRegion(
     return { isMachineReadable: true, };
 
   /** Optique parse result over the post-subcommand region. */
-  const parseResult = parseSync(statusPostParser, postSubcommandArgs,);
+  const parseResult = parseSync(
+    statusPostParser,
+    postSubcommandArgs,
+  );
 
   if (!parseResult.success)
     return { isMachineReadable: false, };

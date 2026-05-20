@@ -557,6 +557,85 @@ await describe({
       },
     },),
     it({
+      name: 'rejects add bulk pathspec after pathspec separator',
+      fn: async function testAddBulkPathspecAfterSeparator(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeFile(
+          join(
+            tempDirectory.path,
+            'file.txt',
+          ),
+          'content\n',
+        );
+
+        /** cli-git failure for `git add -- .` inside main worktree. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: [
+            'add',
+            '--',
+            '.',
+          ],
+        },),);
+
+        expect(error.stderr,).toContain('bulk-staging patterns (.)',);
+
+        /** Repository status after rejected add, proving untracked file remains unstaged. */
+        const status = await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'status',
+            '--short',
+          ],
+        },);
+
+        expect(status.stdout,).toContain('?? file.txt',);
+      },
+    },),
+    it({
+      name: 'rejects clean when no-dry-run follows dry-run',
+      fn: async function testCleanNoDryRunAfterDryRun(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeFile(
+          join(
+            tempDirectory.path,
+            'untracked.txt',
+          ),
+          'temporary\n',
+        );
+
+        /** cli-git failure because Git's later --no-dry-run makes clean destructive. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: tempDirectory.path,
+          args: [
+            'clean',
+            '--dry-run',
+            '--no-dry-run',
+            '-fd',
+          ],
+        },),);
+
+        expect(error.stderr,).toContain(
+          'cli-git: state-changing git clean is rejected in the main git worktree',
+        );
+
+        /** Repository status after rejected clean, proving untracked file remains. */
+        const status = await runRealGit({
+          cwd: tempDirectory.path,
+          args: [
+            'status',
+            '--short',
+          ],
+        },);
+
+        expect(status.stdout,).toContain('?? untracked.txt',);
+      },
+    },),
+    it({
       name: 'rejects state-changing clean at main worktree root',
       fn: async function testStateChangingCleanAtMainWorktreeRoot(): Promise<void> {
         await using tempDirectory = await createTempDirectory();

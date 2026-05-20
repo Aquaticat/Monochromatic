@@ -24,7 +24,10 @@ import {
 const HARD_ALIASES = expandAbbreviations({ longOption: '--hard', },);
 
 /** Aliases for `--merge`. Requires `--me` because `--m` is ambiguous with `--mixed`. */
-const MERGE_ALIASES = expandAbbreviations({ longOption: '--merge', minStemLength: 2, },);
+const MERGE_ALIASES = expandAbbreviations({
+  longOption: '--merge',
+  minStemLength: 2,
+},);
 
 /** Aliases for `--keep`. No other reset long option starts with `--k`. */
 const KEEP_ALIASES = expandAbbreviations({ longOption: '--keep', },);
@@ -45,7 +48,10 @@ const resetRegionParser = object({
   hardFlags: multiple(flag(...HARD_ALIASES,),),
   mergeFlags: multiple(flag(...MERGE_ALIASES,),),
   keepFlags: multiple(flag(...KEEP_ALIASES,),),
-  pathspecFromFile: optional(option('--pathspec-from-file', string(),),),
+  pathspecFromFile: optional(option(
+    '--pathspec-from-file',
+    string(),
+  ),),
   escape: multiple(flag(WORKTREE_ENFORCEMENT_ESCAPE_HATCH,),),
   positionals: multiple(argument(string(),),),
   unknownOptions: passThrough({ format: 'nextToken', },),
@@ -85,7 +91,10 @@ function optionRegion(args: readonly string[],): readonly string[] {
   if (separatorIndex === (-1))
     return args;
 
-  return args.slice(0, separatorIndex,);
+  return args.slice(
+    0,
+    separatorIndex,
+  );
 }
 
 /**
@@ -115,7 +124,10 @@ export function parseResetRegion(
   const region = optionRegion(postSubcommandArgs,);
 
   /** Optique parse result over the cleaned option region. */
-  const parseResult = parseSync(resetRegionParser, region,);
+  const parseResult = parseSync(
+    resetRegionParser,
+    region,
+  );
 
   if (!parseResult.success) {
     return {

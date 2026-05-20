@@ -40,7 +40,10 @@ export type LongOptionAlias = `--${string}`;
 export function expandAbbreviations({
   longOption,
   minStemLength = DEFAULT_SHORTEST_STEM_LENGTH,
-}: ExpandAbbreviationsOptions,): readonly [LongOptionAlias, ...LongOptionAlias[],] {
+}: ExpandAbbreviationsOptions,): readonly [
+  LongOptionAlias,
+  ...LongOptionAlias[],
+] {
   if (!longOption.startsWith(LONG_OPTION_PREFIX,)) {
     throw new Error(
       `expandAbbreviations: long option must start with -- (got ${longOption}).`,
@@ -67,8 +70,16 @@ export function expandAbbreviations({
   /** Aliases generated in descending stem length, full spelling first. */
   const aliases = Array.from(
     { length: aliasCount, },
-    function alias(_v, i,): LongOptionAlias {
-      return `${LONG_OPTION_PREFIX}${stem.slice(0, stem.length - i,)}`;
+    function alias(
+      _v,
+      i,
+    ): LongOptionAlias {
+      return `${LONG_OPTION_PREFIX}${
+        stem.slice(
+          0,
+          stem.length - i,
+        )
+      }`;
     },
   );
 

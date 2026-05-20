@@ -60,10 +60,18 @@ function isExecFileExitError(error: unknown,): error is ExecFileExitError {
  * ```
  */
 function stripTrailingLineBreak(output: string,): string {
-  if (output.endsWith('\r\n',))
-    return output.slice(0, -2,);
-  if (output.endsWith('\n',))
-    return output.slice(0, -1,);
+  if (output.endsWith('\r\n',)) {
+    return output.slice(
+      0,
+      -2,
+    );
+  }
+  if (output.endsWith('\n',)) {
+    return output.slice(
+      0,
+      -1,
+    );
+  }
   return output;
 }
 

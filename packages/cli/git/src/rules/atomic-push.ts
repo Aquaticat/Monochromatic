@@ -61,7 +61,10 @@ export function atomicPush(args: readonly string[],): readonly string[] {
 
   rl.debug('injecting --atomic into push',);
   return [
-    ...args.slice(0, subcommandIndex + 1,),
+    ...args.slice(
+      0,
+      subcommandIndex + 1,
+    ),
     '--atomic',
     ...postSubcommandArgs,
   ];

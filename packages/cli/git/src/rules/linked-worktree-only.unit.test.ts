@@ -426,6 +426,54 @@ await describe({
       },
     },),
     it({
+      name: 'rejects clean when no-dry-run follows dry-run',
+      fn: async function testCleanNoDryRunAfterDryRun(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+
+        /** Error thrown because Git's later --no-dry-run makes the clean destructive. */
+        const caught = await catchLinkedWorktreeOnlyError([
+          '-C',
+          tempDirectory.path,
+          'clean',
+          '--dry-run',
+          '--no-dry-run',
+          '-fd',
+        ],);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'cli-git: state-changing git clean is rejected in the main git worktree',
+        );
+      },
+    },),
+    it({
+      name: 'rejects clean when interactive follows no-interactive',
+      fn: async function testCleanInteractiveAfterNoInteractive(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+
+        /** Error thrown because Git's later --interactive can delete selected paths. */
+        const caught = await catchLinkedWorktreeOnlyError([
+          '-C',
+          tempDirectory.path,
+          'clean',
+          '--no-interactive',
+          '--interactive',
+          '--dry-run',
+          '--no-dry-run',
+          '-fd',
+        ],);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'cli-git: state-changing git clean is rejected in the main git worktree',
+        );
+      },
+    },),
+    it({
       name: 'rejects interactive clean even when dry-run appears',
       fn: async function testInteractiveCleanWithDryRun(): Promise<void> {
         await using tempDirectory = await createTempDirectory();

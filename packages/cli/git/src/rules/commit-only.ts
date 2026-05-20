@@ -89,7 +89,10 @@ export function commitOnly(args: readonly string[],): readonly string[] {
   if (region.hasEscapeHatch) {
     rl.debug(`${ESCAPE_HATCH} present, stripping and skipping injection`,);
     /** Pre-subcommand region kept verbatim so global options survive the strip. */
-    const preAndSubcommand = args.slice(0, subcommandIndex + 1,);
+    const preAndSubcommand = args.slice(
+      0,
+      subcommandIndex + 1,
+    );
     return [
       ...preAndSubcommand,
       ...postSubcommandArgs.filter(function isNotEscapeHatch(arg,) {
@@ -118,7 +121,10 @@ export function commitOnly(args: readonly string[],): readonly string[] {
 
   rl.debug('injecting -o into commit',);
   return [
-    ...args.slice(0, subcommandIndex + 1,),
+    ...args.slice(
+      0,
+      subcommandIndex + 1,
+    ),
     '-o',
     ...postSubcommandArgs,
   ];

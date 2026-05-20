@@ -98,6 +98,20 @@ await describe({
         expect((caught as Error).message,).toContain('bulk-staging patterns (-A)',);
       },
     },),
+    it({
+      name: 'rejects bulk pathspec after pathspec separator',
+      fn: async function testBulkPathspecAfterSeparator(): Promise<void> {
+        /** Error thrown for `git add -- .`. */
+        const caught = catchAddExplicitError([
+          'add',
+          '--',
+          '.',
+        ],);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('bulk-staging patterns (.)',);
+      },
+    },),
     ...BULK_ADD_CASES.map(function mapBulkAddCase(pattern,) {
       return it({
         name: `rejects bulk-staging pattern ${pattern}`,

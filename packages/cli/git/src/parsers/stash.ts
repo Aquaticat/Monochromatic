@@ -29,8 +29,15 @@ import {
  * of the other flags.
  */
 const stashRegionParser = object({
-  message: optional(option('-m', '--message', string(),),),
-  pathspecFromFile: optional(option('--pathspec-from-file', string(),),),
+  message: optional(option(
+    '-m',
+    '--message',
+    string(),
+  ),),
+  pathspecFromFile: optional(option(
+    '--pathspec-from-file',
+    string(),
+  ),),
   escape: multiple(flag(WORKTREE_ENFORCEMENT_ESCAPE_HATCH,),),
   positionals: multiple(argument(string(),),),
   unknownOptions: passThrough({ format: 'nextToken', },),
@@ -68,7 +75,10 @@ function optionRegion(args: readonly string[],): readonly string[] {
   if (separatorIndex === (-1))
     return args;
 
-  return args.slice(0, separatorIndex,);
+  return args.slice(
+    0,
+    separatorIndex,
+  );
 }
 
 /**
@@ -94,7 +104,10 @@ export function parseStashRegion(
   const region = optionRegion(postSubcommandArgs,);
 
   /** Optique parse result over the cleaned option region. */
-  const parseResult = parseSync(stashRegionParser, region,);
+  const parseResult = parseSync(
+    stashRegionParser,
+    region,
+  );
 
   if (!parseResult.success) {
     return {

@@ -9,36 +9,18 @@ import {
 } from '@optique/core/primitives';
 import { string, } from '@optique/core/valueparser';
 
-import { expandAbbreviations, } from '../abbrev.ts';
 import {
   PATHSPEC_SEPARATOR,
   WORKTREE_ENFORCEMENT_ESCAPE_HATCH,
 } from '../escape-hatch.ts';
-
-//region Clean abbreviation tables (git accepts unambiguous prefixes)
-
-/** Aliases that git accepts for `--dry-run` via long-option prefix matching. */
-const DRY_RUN_ALIASES = expandAbbreviations({ longOption: '--dry-run', },);
-
-/** Aliases that git accepts for `--no-dry-run`. Shortest stem is `no-d` for uniqueness across other `--no-*` options. */
-const NO_DRY_RUN_ALIASES = expandAbbreviations({
-  longOption: '--no-dry-run',
-  minStemLength: 4,
-},);
-
-/** Aliases that git accepts for `--interactive`. */
-const INTERACTIVE_ALIASES = expandAbbreviations({ longOption: '--interactive', },);
-
-/** Aliases that git accepts for `--no-interactive`. */
-const NO_INTERACTIVE_ALIASES = expandAbbreviations({
-  longOption: '--no-interactive',
-  minStemLength: 4,
-},);
-
-/** Aliases that git accepts for `--exclude` (separated form). */
-const EXCLUDE_ALIASES = expandAbbreviations({ longOption: '--exclude', },);
-
-//endregion Clean abbreviation tables
+import { scanCleanOptionOrder, } from './clean-option-order.ts';
+import {
+  DRY_RUN_ALIASES,
+  EXCLUDE_ALIASES,
+  INTERACTIVE_ALIASES,
+  NO_DRY_RUN_ALIASES,
+  NO_INTERACTIVE_ALIASES,
+} from './clean-options.ts';
 
 //region Clean post-subcommand optique parser
 
@@ -86,6 +68,10 @@ export type CleanRegion = {
   readonly interactiveCount: number;
   /** Number of `--no-interactive` occurrences (any accepted abbreviation). */
   readonly noInteractiveCount: number;
+  /** Final dry-run state after applying Git's left-to-right ordering. */
+  readonly dryRunActive: boolean;
+  /** Final interactive state after applying Git's left-to-right ordering. */
+  readonly interactiveActive: boolean;
   /** True when wrapper-only escape hatch appears as a real flag. */
   readonly hasEscapeHatch: boolean;
   /** True when optique parse failed; rule should be conservative. */
@@ -113,7 +99,10 @@ function optionRegion(args: readonly string[],): readonly string[] {
   if (separatorIndex === (-1))
     return args;
 
-  return args.slice(0, separatorIndex,);
+  return args.slice(
+    0,
+    separatorIndex,
+  );
 }
 
 /**
@@ -123,9 +112,8 @@ function optionRegion(args: readonly string[],): readonly string[] {
  * value of `-e <pattern>` and unambiguous long-option abbreviations are
  * recognised exactly as git would interpret them.
  *
- * Parse failures (rare; require duplicate values on the same option name)
- * leave `parseFailed: true` so the linked-worktree rule can default to a
- * conservative enforcement decision.
+ * Parse failures leave `parseFailed: true` so the linked-worktree rule can
+ * default to a conservative enforcement decision.
  *
  * @param postSubcommandArgs - Arguments strictly after `clean` subcommand.
  *
@@ -144,7 +132,10 @@ export function parseCleanRegion(
   const region = optionRegion(postSubcommandArgs,);
 
   /** Optique parse result over the cleaned option region. */
-  const parseResult = parseSync(cleanRegionParser, region,);
+  const parseResult = parseSync(
+    cleanRegionParser,
+    region,
+  );
 
   if (!parseResult.success) {
     return {
@@ -152,6 +143,8 @@ export function parseCleanRegion(
       noDryRunCount: 0,
       interactiveCount: 0,
       noInteractiveCount: 0,
+      dryRunActive: false,
+      interactiveActive: false,
       hasEscapeHatch: false,
       parseFailed: true,
     };
@@ -159,12 +152,16 @@ export function parseCleanRegion(
 
   /** Successful parse value with optique-inferred shape. */
   const { value, } = parseResult;
+  /** Ordered dry-run and interactive state matching Git's last-option-wins behavior. */
+  const orderedState = scanCleanOptionOrder(region,);
 
   return {
     dryRunCount: value.dryRunFlags.length,
     noDryRunCount: value.noDryRunFlags.length,
     interactiveCount: value.interactiveFlags.length,
     noInteractiveCount: value.noInteractiveFlags.length,
+    dryRunActive: orderedState.dryRunActive,
+    interactiveActive: orderedState.interactiveActive,
     hasEscapeHatch: value.escape.length > 0,
     parseFailed: false,
   };
@@ -177,9 +174,9 @@ export function parseCleanRegion(
 /**
  * Determines whether a `git clean` invocation can change worktree files.
  *
- * Interactive clean can delete selected paths even when dry-run is also
- * present, so interactive form always enforces the guard. Otherwise the
- * invocation is destructive unless any dry-run signal is present.
+ * Interactive clean can delete selected paths when the final interactive mode
+ * is active, so that form always enforces the guard. Otherwise the invocation
+ * is destructive unless the final dry-run state is active.
  *
  * Conservative under parse failure: treats unknown cases as destructive so
  * the linked-worktree guard runs.
@@ -198,16 +195,10 @@ export function cleanChangesWorktree(region: CleanRegion,): boolean {
   if (region.parseFailed)
     return true;
 
-  /** True when interactive flag fires regardless of dry-run, matching git docs. */
-  const interactiveActive = region.interactiveCount > region.noInteractiveCount;
-
-  if (interactiveActive)
+  if (region.interactiveActive)
     return true;
 
-  /** True when at least one dry-run signal is present (short or long, any abbreviation). */
-  const dryRunActive = region.dryRunCount > 0;
-
-  return !dryRunActive;
+  return !region.dryRunActive;
 }
 
 //endregion Clean destructiveness policy

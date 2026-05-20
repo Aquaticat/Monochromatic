@@ -19,7 +19,10 @@ import { string, } from '@optique/core/valueparser';
  * them.
  */
 const pushRegionParser = object({
-  atomicFlags: multiple(flag('--atomic', '--no-atomic',),),
+  atomicFlags: multiple(flag(
+    '--atomic',
+    '--no-atomic',
+  ),),
   positionals: multiple(argument(string(),),),
   unknownOptions: passThrough({ format: 'nextToken', },),
 },);
@@ -53,7 +56,10 @@ export function parsePushRegion(
   postSubcommandArgs: readonly string[],
 ): PushRegion {
   /** Optique parse result over the post-subcommand region. */
-  const parseResult = parseSync(pushRegionParser, postSubcommandArgs,);
+  const parseResult = parseSync(
+    pushRegionParser,
+    postSubcommandArgs,
+  );
 
   if (!parseResult.success)
     return { hasAtomicChoice: false, };

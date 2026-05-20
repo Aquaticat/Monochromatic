@@ -48,7 +48,10 @@ export function hasExplicitStatusHintsOverride(args: readonly string[],): boolea
   /** Position of the subcommand within args; everything before it is the global-option region scanned for `-c`. */
   const { subcommandIndex, } = parseGlobalOptions(args,);
   /** Slice of args strictly before the subcommand; where pre-subcommand global options live. */
-  const preSubcommandArgs = args.slice(0, subcommandIndex,);
+  const preSubcommandArgs = args.slice(
+    0,
+    subcommandIndex,
+  );
 
   return parseStatusPreRegion(preSubcommandArgs,).hasStatusHintsOverride;
 }
@@ -103,7 +106,10 @@ export function statusHintsOff(args: readonly string[],): readonly string[] {
 
   rl.debug('injecting -c advice.statusHints=false before status',);
   return [
-    ...args.slice(0, subcommandIndex,),
+    ...args.slice(
+      0,
+      subcommandIndex,
+    ),
     ...QUIET_INJECTION,
     ...args.slice(subcommandIndex,),
   ];

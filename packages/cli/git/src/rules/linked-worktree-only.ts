@@ -219,7 +219,10 @@ export async function linkedWorktreeOnly(
   rl.debug(`effective cwd: ${effectiveCwd}, subcommand: ${subcommand}`,);
 
   /** Pre-subcommand argv that captures the caller's repo-selection layer. */
-  const preSubcommandArgs = args.slice(0, subcommandIndex,);
+  const preSubcommandArgs = args.slice(
+    0,
+    subcommandIndex,
+  );
   /** Worktree classification driven by real git replaying the caller's repo selection. */
   const target: EffectiveTarget = await classifyEffectiveTarget({
     preSubcommandArgs,

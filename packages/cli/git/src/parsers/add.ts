@@ -38,6 +38,14 @@ const BULK_TOKENS: ReadonlySet<string> = new Set([
   '--update',
 ],);
 
+/** Bulk pathspec tokens that remain broad after `--` turns later tokens into pathspecs instead of options. */
+const BULK_PATHSPEC_TOKENS: ReadonlySet<string> = new Set([
+  '.',
+  './',
+  '*',
+  ':/',
+],);
+
 /**
  * Optique parser for the post-`add` argv region.
  *
@@ -47,7 +55,10 @@ const BULK_TOKENS: ReadonlySet<string> = new Set([
  * positional list mirrors what real git would see.
  */
 const addRegionParser = object({
-  pathspecFromFile: optional(option('--pathspec-from-file', string(),),),
+  pathspecFromFile: optional(option(
+    '--pathspec-from-file',
+    string(),
+  ),),
   escape: multiple(flag(ADD_ESCAPE_HATCH,),),
   positionals: multiple(argument(string(),),),
   unknownOptions: passThrough({ format: 'nextToken', },),
@@ -59,7 +70,7 @@ const addRegionParser = object({
 
 /** Facts about the post-`add` argv region used by add-explicit policy. */
 export type AddRegion = {
-  /** Literal bulk-staging tokens that appear in the option region. */
+  /** Literal bulk-staging tokens that appear in option or pathspec positions. */
   readonly bulkMatches: readonly string[];
   /** True when wrapper-only escape hatch appears as a real flag. */
   readonly hasEscapeHatch: boolean;
@@ -85,35 +96,76 @@ function optionRegion(args: readonly string[],): readonly string[] {
   if (separatorIndex === (-1))
     return args;
 
-  return args.slice(0, separatorIndex,);
+  return args.slice(
+    0,
+    separatorIndex,
+  );
+}
+
+/**
+ * Splits `args` at the pathspec separator and returns only pathspecs after it.
+ *
+ * @param args - Post-subcommand argv tokens.
+ *
+ * @returns Argv slice strictly after `--`, or an empty slice when absent.
+ *
+ * @example
+ * ```ts
+ * pathspecRegion(['--', '.']);
+ * // => ['.']
+ * ```
+ */
+function pathspecRegion(args: readonly string[],): readonly string[] {
+  /** Position of pathspec separator inside post-subcommand region. */
+  const separatorIndex = args.indexOf(PATHSPEC_SEPARATOR,);
+
+  if (separatorIndex === (-1))
+    return [];
+
+  return args.slice(separatorIndex + 1,);
 }
 
 /** Options for the bulk-pattern scan. */
 type BulkScanOptions = {
-  /** Argv slice strictly before `--`. */
+  /** Argv slice being scanned for broad git add tokens. */
   readonly region: readonly string[];
   /** Index where scanning resumes. */
   readonly index: number;
   /** Accumulated literal bulk-pattern matches. */
   readonly matches: readonly string[];
+  /** Tokens considered broad in the current argv region. */
+  readonly bulkTokens: ReadonlySet<string>;
+  /** True when `--pathspec-from-file` consumes the next token as an option value. */
+  readonly skipPathspecFromFileValues: boolean;
 };
 
 /**
- * Recursive scanner that collects bulk-staging tokens while skipping the
- * value position of `--pathspec-from-file <value>` so the wrapper does not
- * misread a pathspec-file value as a bulk-staging pattern.
+ * Recursive scanner that collects bulk-staging tokens while optionally
+ * skipping the value position of `--pathspec-from-file <value>` so the wrapper
+ * does not misread a pathspec-file value as a bulk-staging pattern.
  *
- * @param region - Argv slice strictly before `--`.
+ * @param region - Argv slice being scanned.
  *
  * @param index - Current scan position.
  *
  * @param matches - Bulk-pattern tokens collected so far.
  *
+ * @param bulkTokens - Tokens considered broad in this region.
+ *
+ * @param skipPathspecFromFileValues - Whether `--pathspec-from-file` consumes
+ *   the next token as an option value.
+ *
  * @returns Literal bulk-pattern matches in argv order.
  *
  * @example
  * ```ts
- * scanBulkTokens({ region: ['-A', '--pathspec-from-file', '-A'], index: 0, matches: [] });
+ * scanBulkTokens({
+ *   region: ['-A', '--pathspec-from-file', '-A'],
+ *   index: 0,
+ *   matches: [],
+ *   bulkTokens: BULK_TOKENS,
+ *   skipPathspecFromFileValues: true,
+ * });
  * // => ['-A']
  * ```
  */
@@ -121,6 +173,8 @@ function scanBulkTokens({
   region,
   index,
   matches,
+  bulkTokens,
+  skipPathspecFromFileValues,
 }: BulkScanOptions,): readonly string[] {
   /** Current argv token at scan position. */
   const arg = region[index];
@@ -128,27 +182,36 @@ function scanBulkTokens({
   if (arg === undefined)
     return matches;
 
-  if (arg === '--pathspec-from-file') {
+  if (skipPathspecFromFileValues && (arg === '--pathspec-from-file')) {
     return scanBulkTokens({
       region,
       index: index + 2,
       matches,
+      bulkTokens,
+      skipPathspecFromFileValues,
     },);
   }
 
-  if (arg.startsWith('--pathspec-from-file=',)) {
+  if (skipPathspecFromFileValues && arg.startsWith('--pathspec-from-file=',)) {
     return scanBulkTokens({
       region,
       index: index + 1,
       matches,
+      bulkTokens,
+      skipPathspecFromFileValues,
     },);
   }
 
-  if (BULK_TOKENS.has(arg,)) {
+  if (bulkTokens.has(arg,)) {
     return scanBulkTokens({
       region,
       index: index + 1,
-      matches: [...matches, arg,],
+      matches: [
+        ...matches,
+        arg,
+      ],
+      bulkTokens,
+      skipPathspecFromFileValues,
     },);
   }
 
@@ -156,6 +219,8 @@ function scanBulkTokens({
     region,
     index: index + 1,
     matches,
+    bulkTokens,
+    skipPathspecFromFileValues,
   },);
 }
 
@@ -179,20 +244,36 @@ export function parseAddRegion(
   postSubcommandArgs: readonly string[],
 ): AddRegion {
   /** Argv slice handed to optique; pathspec region is excluded. */
-  const region = optionRegion(postSubcommandArgs,);
+  const optionArgs = optionRegion(postSubcommandArgs,);
+  /** Pathspecs after `--`; broad pathspecs here still stage many files. */
+  const pathspecArgs = pathspecRegion(postSubcommandArgs,);
 
   /** Optique parse result over the option region; the only fact taken from optique is the escape-hatch presence. */
-  const parseResult = parseSync(addRegionParser, region,);
+  const parseResult = parseSync(
+    addRegionParser,
+    optionArgs,
+  );
   /** Whether wrapper-only escape hatch appears in flag position. */
-  const hasEscapeHatch = parseResult.success
-    && parseResult.value.escape.length > 0;
+  const hasEscapeHatch = (parseResult.success)
+    && (parseResult.value.escape.length > 0);
 
   /** Literal bulk-staging tokens detected by the value-aware scan. */
-  const bulkMatches = scanBulkTokens({
-    region,
-    index: 0,
-    matches: [],
-  },);
+  const bulkMatches = [
+    ...scanBulkTokens({
+      region: optionArgs,
+      index: 0,
+      matches: [],
+      bulkTokens: BULK_TOKENS,
+      skipPathspecFromFileValues: true,
+    },),
+    ...scanBulkTokens({
+      region: pathspecArgs,
+      index: 0,
+      matches: [],
+      bulkTokens: BULK_PATHSPEC_TOKENS,
+      skipPathspecFromFileValues: false,
+    },),
+  ];
 
   return {
     bulkMatches,

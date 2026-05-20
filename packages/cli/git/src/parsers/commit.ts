@@ -52,7 +52,7 @@ const SHORT_VALUE_OPTIONS: ReadonlySet<string> = new Set([
  * ```
  */
 function normaliseInlineShort(token: string,): readonly string[] {
-  if (!token.startsWith('-',) || token.startsWith('--',) || token.length <= 2)
+  if ((!token.startsWith('-',)) || token.startsWith('--',) || (token.length <= 2))
     return [token,];
 
   /** Index of the first value-taking short option inside the cluster. */
@@ -62,9 +62,17 @@ function normaliseInlineShort(token: string,): readonly string[] {
     return [token,];
 
   /** Leading boolean short options (e.g. `a` from `-am`). */
-  const leading = token.slice(1, valueIndex,);
+  const leading = token.slice(
+    1,
+    valueIndex,
+  );
   /** Value-taking short option spelled with leading dash. */
-  const valueOption = `-${token.slice(valueIndex, valueIndex + 1,)}`;
+  const valueOption = `-${
+    token.slice(
+      valueIndex,
+      valueIndex + 1,
+    )
+  }`;
   /** Inline value text that follows the value-taking option letter. */
   const inlineValue = token.slice(valueIndex + 1,);
 
@@ -131,7 +139,10 @@ function normaliseCommitArgs(args: readonly string[],): readonly string[] {
   /** Index of the pathspec separator inside the post-subcommand region. */
   const separatorIndex = args.indexOf(PATHSPEC_SEPARATOR,);
   /** Argv slice subject to normalisation; pathspecs past `--` are preserved. */
-  const optionRegion = separatorIndex === (-1) ? args : args.slice(0, separatorIndex,);
+  const optionRegion = separatorIndex === (-1) ? args : args.slice(
+    0,
+    separatorIndex,
+  );
   /** Pathspec tail kept verbatim, including the leading `--` separator. */
   const pathspecTail = separatorIndex === (-1) ? [] : args.slice(separatorIndex,);
 
@@ -156,25 +167,79 @@ function normaliseCommitArgs(args: readonly string[],): readonly string[] {
  * are captured by `passThrough({ format: 'nextToken' })`.
  */
 const commitRegionParser = object({
-  allFlags: multiple(flag('-a', '--all',),),
-  explicitOnlyFlags: multiple(flag('-o', '--only',),),
+  allFlags: multiple(flag(
+    '-a',
+    '--all',
+  ),),
+  explicitOnlyFlags: multiple(flag(
+    '-o',
+    '--only',
+  ),),
   noOnlyFlags: multiple(flag('--no-only',),),
   amendFlags: multiple(flag('--amend',),),
   allowEmptyFlags: multiple(flag('--allow-empty',),),
-  message: optional(option('-m', '--message', string(),),),
-  file: optional(option('-F', '--file', string(),),),
-  reuseMessage: optional(option('-C', '--reuse-message', string(),),),
-  reeditMessage: optional(option('-c', '--reedit-message', string(),),),
-  squash: optional(option('--squash', string(),),),
-  fixup: optional(option('--fixup', string(),),),
-  author: optional(option('--author', string(),),),
-  date: optional(option('--date', string(),),),
-  cleanup: optional(option('--cleanup', string(),),),
-  trailer: multiple(option('--trailer', string(),),),
-  template: optional(option('-t', '--template', string(),),),
-  unified: optional(option('-U', '--unified', string(),),),
-  interHunkContext: optional(option('--inter-hunk-context', string(),),),
-  pathspecFromFile: optional(option('--pathspec-from-file', string(),),),
+  message: optional(option(
+    '-m',
+    '--message',
+    string(),
+  ),),
+  file: optional(option(
+    '-F',
+    '--file',
+    string(),
+  ),),
+  reuseMessage: optional(option(
+    '-C',
+    '--reuse-message',
+    string(),
+  ),),
+  reeditMessage: optional(option(
+    '-c',
+    '--reedit-message',
+    string(),
+  ),),
+  squash: optional(option(
+    '--squash',
+    string(),
+  ),),
+  fixup: optional(option(
+    '--fixup',
+    string(),
+  ),),
+  author: optional(option(
+    '--author',
+    string(),
+  ),),
+  date: optional(option(
+    '--date',
+    string(),
+  ),),
+  cleanup: optional(option(
+    '--cleanup',
+    string(),
+  ),),
+  trailer: multiple(option(
+    '--trailer',
+    string(),
+  ),),
+  template: optional(option(
+    '-t',
+    '--template',
+    string(),
+  ),),
+  unified: optional(option(
+    '-U',
+    '--unified',
+    string(),
+  ),),
+  interHunkContext: optional(option(
+    '--inter-hunk-context',
+    string(),
+  ),),
+  pathspecFromFile: optional(option(
+    '--pathspec-from-file',
+    string(),
+  ),),
   escape: multiple(flag(COMMIT_ESCAPE_HATCH,),),
   positionals: multiple(argument(string(),),),
   unknownOptions: passThrough({ format: 'nextToken', },),
@@ -229,14 +294,20 @@ export function parseCommitRegion(
   /** Argv slice handed to optique; pathspec region is excluded. */
   const region = separatorIndex === (-1)
     ? normalised
-    : normalised.slice(0, separatorIndex,);
+    : normalised.slice(
+      0,
+      separatorIndex,
+    );
   /** Pathspec slice after `--`; every token here is a pathspec. */
   const pathspecAfterSeparator = separatorIndex === (-1)
     ? []
     : normalised.slice(separatorIndex + 1,);
 
   /** Optique parse result over the cleaned option region. */
-  const parseResult = parseSync(commitRegionParser, region,);
+  const parseResult = parseSync(
+    commitRegionParser,
+    region,
+  );
 
   if (!parseResult.success) {
     return {
@@ -263,7 +334,7 @@ export function parseCommitRegion(
     hasNoOnlyFlag: value.noOnlyFlags.length > 0,
     hasPathlessAllowedFlag: pathlessAllowedCount > 0,
     hasPathspecFromFile: value.pathspecFromFile !== undefined,
-    hasPathspec: value.positionals.length > 0 || pathspecAfterSeparator.length > 0,
+    hasPathspec: (value.positionals.length > 0) || (pathspecAfterSeparator.length > 0),
     hasEscapeHatch: value.escape.length > 0,
   };
 }

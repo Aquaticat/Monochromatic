@@ -24,7 +24,9 @@ directories, because these commands can revert, delete, or rewrite filesystem
 state outside what the caller expects from current cwd. `git clean -n` and
 `git clean --dry-run` pass through because Git documents them as inspection
 only; `git clean -i` remains guarded because interactive mode can delete
-selected paths. Run guarded commands from a linked worktree root, or pass
+selected paths. Clean dry-run, no-dry-run, interactive, and no-interactive
+options are evaluated in argv order to match Git's last-option-wins behavior.
+Run guarded commands from a linked worktree root, or pass
 `-C <linked-worktree-root>` before the subcommand. Pass
 `--no-enforce-worktree` after the guarded subcommand and before any `--`
 pathspec separator to bypass linked-worktree enforcement for one invocation;
@@ -34,8 +36,10 @@ require-root rule still rejects linked-worktree subdirectories.
 **Add explicit**: rejects `git add` invocations that use bulk-staging
 patterns (`.`, `./`, `*`, `:/`, `-A`/`--all`, `-u`/`--update`), which sweep
 up paths the caller did not intend to stage and leave the index in a state
-that does not match a single logical change. Name the paths explicitly, or
-pass `--no-enforce-bulk-add` to bypass for one invocation; the flag is stripped
+that does not match a single logical change. Pathspecs after `--` are still
+scanned for broad pathspecs such as `.` and `*`, so `git add -- .` is rejected
+for the same reason as `git add .`. Name the paths explicitly, or pass
+`--no-enforce-bulk-add` to bypass for one invocation; the flag is stripped
 before forwarding to real git. The rule walks pre-subcommand global options
 the same way atomic-push does.
 

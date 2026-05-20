@@ -61,7 +61,10 @@ export function stripEscapeHatch({
   separateValueOptions,
 }: StripEscapeHatchOptions,): readonly string[] {
   /** Pre-subcommand region and subcommand kept verbatim so global options survive the strip. */
-  const preAndSubcommand = args.slice(0, subcommandIndex + 1,);
+  const preAndSubcommand = args.slice(
+    0,
+    subcommandIndex + 1,
+  );
   /** Slice of args strictly after guarded subcommand. */
   const postSubcommandArgs = args.slice(subcommandIndex + 1,);
   /** Position of pathspec separator inside post-subcommand region. */
@@ -78,7 +81,10 @@ export function stripEscapeHatch({
   }
 
   /** Region before pathspec separator where wrapper-only options are recognized. */
-  const wrapperArgs = postSubcommandArgs.slice(0, separatorIndex,);
+  const wrapperArgs = postSubcommandArgs.slice(
+    0,
+    separatorIndex,
+  );
   /** Pathspec separator and user path text preserved verbatim. */
   const pathspecArgs = postSubcommandArgs.slice(separatorIndex,);
 
