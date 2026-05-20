@@ -77,7 +77,6 @@ export class ReferencesPopup extends HTMLElement {
     this.addEventListener(
       'toggle',
       function handleToggle(event,) {
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover is ToggleEvent
         if ((event as ToggleEvent).newState === 'closed')
           popup.#cleanup();
       },
@@ -165,24 +164,24 @@ export class ReferencesPopup extends HTMLElement {
   }
 
   /**
-   * Accepts the selected location and dispatches a `reference-select` event.
+   * Selects a reference location and dispatches a `reference-select` event.
    *
-   * @returns selected location detail, or null if nothing selected
+   * @param location - reference location to select
+   *
+   * @returns emitted navigation detail
+   *
+   * @example
+   * ```ts
+   * popup.selectReference({ path: '/tmp/a.ts', line: 0, character: 3, label: 'a.ts', });
+   * ```
    */
-  accept(): ReferenceSelectDetail | null {
-    if ((this.#selectedIndex < 0) || (this.#selectedIndex >= this.#locations.length))
-      return null;
-    /** Currently highlighted reference entry; bounds-checked above. */
-    const loc = this.#locations[this.#selectedIndex];
-    if (loc === undefined)
-      return null;
+  selectReference(location: ReferenceLocation,): ReferenceSelectDetail {
     /** Public event detail; line is converted to 1-based to match editor convention. */
     const detail: ReferenceSelectDetail = {
-      path: loc.path,
-      line: loc.line + 1,
-      character: loc.character,
+      path: location.path,
+      line: location.line + 1,
+      character: location.character,
     };
-    this.hide();
     this.dispatchEvent(
       new CustomEvent(
         'reference-select',
@@ -194,6 +193,22 @@ export class ReferencesPopup extends HTMLElement {
       ),
     );
     return detail;
+  }
+
+  /**
+   * Accepts the selected location and dispatches a `reference-select` event.
+   *
+   * @returns selected location detail, or null if nothing selected
+   */
+  accept(): ReferenceSelectDetail | null {
+    if ((this.#selectedIndex < 0) || (this.#selectedIndex >= this.#locations.length))
+      return null;
+    /** Currently highlighted reference entry; bounds-checked above. */
+    const loc = this.#locations[this.#selectedIndex];
+    if (loc === undefined)
+      return null;
+    this.hide();
+    return this.selectReference(loc,);
   }
 }
 

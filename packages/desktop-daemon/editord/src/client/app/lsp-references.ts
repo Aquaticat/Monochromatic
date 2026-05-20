@@ -103,20 +103,8 @@ export async function showReferences(
     if (items.length === 1) {
       /** Without destructuring: prefer-destructuring lint error for index-0 access. */
       const [only,] = items;
-      if (only !== undefined) {
-        referencesPopup.dispatchEvent(new CustomEvent(
-          'reference-select',
-          {
-            detail: {
-              path: only.path,
-              line: only.line + 1,
-              character: only.character,
-            },
-            bubbles: true,
-            composed: true,
-          },
-        ),);
-      }
+      if (only !== undefined)
+        referencesPopup.selectReference(only,);
       return;
     }
 

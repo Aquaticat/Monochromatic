@@ -19,6 +19,10 @@ import type {
 import type { SelectionCoords, } from '../editor/indent.ts';
 import type { ContextAction, } from '../file-tree/types.ts';
 import type { EditorPosition, } from '../position.ts';
+import type {
+  ReferenceLocation,
+  ReferenceSelectDetail,
+} from '../references/types.ts';
 
 /**
  * Shared callback and capability types used across editord client app modules.
@@ -71,6 +75,8 @@ export type EditorPaneHandle = {
   readonly style: CSSStyleDeclaration;
   /** Registers DOM event listeners on the custom element. */
   readonly addEventListener: HTMLElement['addEventListener'];
+  /** Registers scroll listeners on the contenteditable editor child. */
+  readonly addScrollListener: (listener: EventListener,) => void;
   /** Updates syntax parser. */
   readonly setParser: (parser: Parser | null,) => void;
   /** Replaces editor text. */
@@ -95,7 +101,7 @@ export type EditorPaneHandle = {
   /** Applies editor selection. */
   readonly setSelection: (coords: SelectionCoords,) => void;
   /** Reads document range. */
-  readonly getDocumentRange: () => Range;
+  readonly getDocumentRange: () => Range | null;
   /** Applies LSP text edits. */
   readonly applyTextEdits: (edits: readonly TextEdit[],) => void;
   /** Updates diagnostics. */
@@ -199,7 +205,9 @@ export type ReferencesPopupHandle = {
   /** Hides popup. */
   readonly hide: () => void;
   /** Accepts selected reference. */
-  readonly accept: () => void;
+  readonly accept: () => ReferenceSelectDetail | null;
+  /** Selects reference without exposing raw DOM event dispatch. */
+  readonly selectReference: (location: ReferenceLocation,) => ReferenceSelectDetail;
   /** Moves selection. */
   readonly navigate: (opts: { readonly direction: 'up' | 'down'; },) => void;
 };

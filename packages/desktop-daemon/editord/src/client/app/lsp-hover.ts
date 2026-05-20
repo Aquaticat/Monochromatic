@@ -130,8 +130,9 @@ export function wireHover(
   editorPane.addEventListener(
     'mousemove',
     function handleMouseMove(event,) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- mousemove is always a MouseEvent
-      hoverState.latestMouseEvent = event as MouseEvent;
+      if (!(event instanceof MouseEvent))
+        return;
+      hoverState.latestMouseEvent = event;
       scheduleHover();
     },
   );
@@ -140,15 +141,12 @@ export function wireHover(
     'mouseleave',
     function handleMouseLeave(event,) {
       cancelHover();
-      /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- mouseleave is always a MouseEvent */
-      /** Narrowed event for the relatedTarget property used in the popup-overlap check below. */
-      const me = event as MouseEvent;
-      /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-      if ((me.relatedTarget === hoverPopup)
-        || ((me.relatedTarget instanceof Node) && hoverPopup.contains(me.relatedTarget,)))
-      {
+      if (!(event instanceof MouseEvent)) {
+        resetHover();
         return;
       }
+      if ((event.relatedTarget instanceof Node) && hoverPopup.contains(event.relatedTarget,))
+        return;
       resetHover();
     },
   );
