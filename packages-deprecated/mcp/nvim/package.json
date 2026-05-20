@@ -2,9 +2,9 @@
   "license": "LGPL-3.0-or-later",
   "name": "@monochromatic-dev/mcp-nvim",
   "version": "0.1.0",
-  "description": "MCP server that exposes Neovim diagnostics and current file to Factory Droid.",
+  "description": "DEPRECATED. MCP server that exposes Neovim diagnostics and current file to AI agents over stdio. No longer maintained.",
   "type": "module",
-  "private": true,
+  "private": false,
   "module": "dist/final/node/index.mjs",
   "bin": {
     "nvim-mcp": "./dist/final/node/index.mjs"
@@ -20,9 +20,6 @@
     "dist/final",
     "src"
   ],
-  "dependencies": {
-    "neovim": "catalog:"
-  },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
@@ -30,11 +27,15 @@
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:",
     "nano-spawn": "catalog:",
+    "neovim": "catalog:",
     "typescript": "catalog:"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/mcp/nvim"
+    "directory": "packages-deprecated/mcp/nvim"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

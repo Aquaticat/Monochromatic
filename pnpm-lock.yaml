@@ -441,6 +441,33 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
+  packages-deprecated/mcp/nvim:
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../../packages/config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../../packages/config/typescript
+      '@monochromatic-dev/mcp-stdio':
+        specifier: workspace:*
+        version: link:../../../packages/mcp/stdio
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../../packages/module/test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      nano-spawn:
+        specifier: 'catalog:'
+        version: 2.1.0
+      neovim:
+        specifier: 'catalog:'
+        version: 5.4.0
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
   packages/audit/oph-common-look-and-feel: {}
 
   packages/build-tool/css:
@@ -1410,34 +1437,6 @@ importers:
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
-
-  packages/mcp/nvim:
-    dependencies:
-      neovim:
-        specifier: 'catalog:'
-        version: 5.4.0
-    devDependencies:
-      '@monochromatic-dev/config-tsdown':
-        specifier: workspace:*
-        version: link:../../config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@monochromatic-dev/mcp-stdio':
-        specifier: workspace:*
-        version: link:../stdio
-      '@monochromatic-dev/module-test':
-        specifier: workspace:*
-        version: link:../../module/test
-      '@types/bun':
-        specifier: 'catalog:'
-        version: 1.3.11
-      nano-spawn:
-        specifier: 'catalog:'
-        version: 2.1.0
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.3
 
   packages/mcp/stdio:
     devDependencies:

@@ -17,8 +17,11 @@ experimental_monorepo_root = true
 [monorepo]
 # Each packages/*/* directory with a mise.toml becomes its own config root,
 # giving it its own tools, env, and tasks while inheriting from the root.
+# packages-deprecated/*/* mirrors the active layout for archived packages that
+# remain installable (e.g. via npm) but are no longer actively maintained.
 config_roots = [
   "packages/*/*",
+  "packages-deprecated/*/*",
 ]
 
 [tools]
@@ -641,7 +644,6 @@ _.path = [
   "packages/webapp-content/messages-demo/node_modules/.bin",
   "packages/webapp-content/ssg-test/node_modules/.bin",
   "packages/mcp/mvm/node_modules/.bin",
-  "packages/mcp/nvim/node_modules/.bin",
   "packages/dev-script/deps-cube/node_modules/.bin",
   "packages/dev-script/inference-canary-viewer/node_modules/.bin",
   "packages/dev-script/inference-canary/node_modules/.bin",
