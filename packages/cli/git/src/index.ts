@@ -11,6 +11,7 @@ import { addExplicit, } from './rules/add-explicit.ts';
 import { atomicPush, } from './rules/atomic-push.ts';
 import { commitOnly, } from './rules/commit-only.ts';
 import { requireRoot, } from './rules/require-root.ts';
+import { stashRequiresWorktree, } from './rules/stash-requires-worktree.ts';
 import {
   hasExplicitStatusHintsOverride,
   statusHintsOff,
@@ -73,12 +74,14 @@ const STATUS_MACHINE_READABLE_FLAGS: ReadonlySet<string> = new Set([
 
 /**
  * Rules applied in sequence. Each rule may transform args or throw to reject.
- * Order matters: root check runs first (fail fast), then arg transforms.
+ * Order matters: root check runs first (fail fast), stash worktree enforcement
+ * catches explicit worktree forms from outside a worktree, then arg transforms run.
  */
 const RULES: readonly ((
   args: readonly string[],
 ) => readonly string[] | Promise<readonly string[]>)[] = [
   requireRoot,
+  stashRequiresWorktree,
   addExplicit,
   atomicPush,
   commitOnly,
@@ -165,7 +168,7 @@ try {
 
   if (isVersionRequest) {
     console.log(
-      'cli-git wrapper (require-root, add-explicit, atomic-push, commit-only, status-hints-off)',
+      'cli-git wrapper (require-root, stash-requires-worktree, add-explicit, atomic-push, commit-only, status-hints-off)',
     );
   }
   else if (shouldPrintStatusNote) {

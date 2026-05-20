@@ -5,11 +5,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
-import {
-  dirname,
-  join,
-} from 'node:path';
-import { fileURLToPath, } from 'node:url';
+import { join, } from 'node:path';
 
 import {
   describe,
@@ -28,7 +24,7 @@ const realGitPath = await resolveGit();
 
 /** Absolute path to cli-git entry point under test. */
 const WRAPPER_PATH = join(
-  dirname(fileURLToPath(import.meta.url,),),
+  import.meta.dirname,
   'index.ts',
 );
 
@@ -388,6 +384,86 @@ await describe({
         expect(await readLatestSubject({ repoPath: tempDirectory.path, },),).toBe(
           'named path',
         );
+      },
+    },),
+    it({
+      name: 'allows stash list at real worktree root',
+      fn: async function testStashListAtRealWorktreeRoot(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+
+        /** cli-git success for read-only stash list inside real worktree. */
+        const result = await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'stash',
+            'list',
+          ],
+        },);
+
+        expect(result.stdout,).toBe('',);
+      },
+    },),
+    it({
+      name: 'rejects stash with explicit work-tree from unrelated cwd',
+      fn: async function testStashWithExplicitWorkTreeOutsideWorktree(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        /** Repository whose worktree would be reverted if stash reached real git. */
+        const repoPath = join(
+          tempDirectory.path,
+          'repo',
+        );
+        /** Launch directory outside any worktree. */
+        const launchPath = join(
+          tempDirectory.path,
+          'launch',
+        );
+
+        await initializeRepository({ repoPath, },);
+        await createInitialCommit({ repoPath, },);
+        await mkdir(launchPath,);
+        await writeFile(
+          join(
+            repoPath,
+            'tracked.txt',
+          ),
+          'modified\n',
+        );
+
+        /** cli-git failure before explicit --work-tree stash can run. */
+        const error = requireSubprocessError(await catchWrapperError({
+          cwd: launchPath,
+          args: [
+            '--git-dir',
+            join(
+              repoPath,
+              '.git',
+            ),
+            '--work-tree',
+            repoPath,
+            'stash',
+            'push',
+            '--',
+            'tracked.txt',
+          ],
+        },),);
+
+        expect(error.stderr,).toContain(
+          'cli-git: git stash requires the effective working directory to be inside a git worktree',
+        );
+
+        /** Repository status after rejected stash, proving file contents stayed modified. */
+        const status = await runRealGit({
+          cwd: repoPath,
+          args: [
+            'status',
+            '--short',
+          ],
+        },);
+
+        expect(status.stdout,).toContain(' M tracked.txt',);
       },
     },),
     it({
