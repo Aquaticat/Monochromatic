@@ -47,6 +47,19 @@ type ChainBoundary = {
    * since they are detected by a different threshold.
    */
   readonly kind: 'binary' | 'call' | 'member';
+  /**
+   * Whether a newline immediately before this boundary is grammatically safe.
+   *
+   * False only for non-optional computed-member access (`expr[x]`): inserting
+   * `\n` before the `[` triggers `no-unexpected-multiline`, which would parse
+   * the result as `expr` followed by an unrelated `[x]` access on the next
+   * line. Dot members (`.x`), optional members (`?.x`, `?.[x]`), and binary
+   * operators bridge the newline cleanly and stay `true`. Call boundaries
+   * (`(` / `?.(`) carry the same hazard as `[`, but the rule never breaks
+   * before a call, so the call entries inherit `true` to avoid suggesting
+   * otherwise; the fix loop reads this flag only for member entries.
+   */
+  readonly breakable: boolean;
 };
 
 /**
@@ -147,6 +160,7 @@ function binaryBoundaries({
       offset,
       canFix,
       kind: 'binary',
+      breakable: true,
     },);
   }
   return result;
@@ -210,10 +224,18 @@ function memberOrCallBoundaries({
     const kind: 'call' | 'member' = (frame.node.type === 'MemberExpression')
       ? 'member'
       : 'call';
+    /**
+     * Member boundaries opened by `[` are not safe to break before because of
+     * `no-unexpected-multiline`. Calls keep `breakable: true` for consistency
+     * since the rule never breaks before a call; only member entries consult
+     * the flag.
+     */
+    const breakable = (kind === 'call') || (token !== '[');
     result.push({
       offset,
       canFix,
       kind,
+      breakable,
     },);
   }
   return result;
@@ -389,38 +411,49 @@ export const chainPerLine: CreateOnceRule = {
         root,
         sourceText,
       },);
-      /** Member-frame boundaries; counted separately because they drive the deep-access threshold. */
-      const memberBoundaries = boundaries.filter(function isMember(b,): boolean {
-        return b.kind === 'member';
+      /**
+       * Member-frame boundaries safe to break before; non-optional computed
+       * `[` access drops out here because inserting `\n` before `[` triggers
+       * `no-unexpected-multiline`. The dropped boundaries stay attached to
+       * their preceding segment on whichever line that lands on.
+       */
+      const memberBoundaries = boundaries.filter(function isBreakableMember(b,): boolean {
+        return (b.kind === 'member') && b.breakable;
       },);
       /** Call-frame boundaries; counted separately because they drive the method-chain threshold. */
       const callBoundaries = boundaries.filter(function isCall(b,): boolean {
         return b.kind === 'call';
       },);
-      // Threshold: fire on method chains (≥ 2 calls) or deep access (≥ 3 members).
+      // Threshold: fire on method chains (≥ 2 calls) or deep access (≥ 3
+      // breakable members). Non-optional computed `[` access does not count;
+      // a chain made entirely of `[` steps has no break point the fix can
+      // safely emit, so the rule leaves it on one line.
       // Allows common idioms on one line:
       //   `obj.method()`           — 1 call, 1 member.
       //   `obj.foo.bar`            — 0 calls, 2 members.
       //   `context.sc.getText()`   — 1 call, 2 members.
       //   `arr[0][1]`              — 0 calls, 2 members.
+      //   `arr[0][1][2]`           — 0 breakable members; `[` cannot be broken before.
+      //   `foo().bar()[0]`         — 2 calls, 1 breakable member.
       // Splits multi-step patterns:
       //   `arr.map(f).filter(g)`   — 2 calls.
-      //   `obj.a.b.c`              — 3 members.
+      //   `obj.a.b.c`              — 3 breakable members.
       //   `foo().bar().baz()`      — 3 calls.
+      //   `obj.a.b.c[0]`           — 3 breakable members; `[0]` stays attached to `.c`.
       if ((callBoundaries.length < MIN_CALLS_FOR_METHOD_CHAIN)
         && (memberBoundaries.length < MIN_MEMBERS_FOR_DEEP_ACCESS))
       {
         return;
       }
       // Already-split chains (each `.x` boundary on its own line) report no
-      // member-frame boundary sharing a line; further splits would be churn.
+      // breakable member boundary sharing a line; further splits would be churn.
       if (sameLineCount({
         sourceText,
         boundaries: memberBoundaries,
       },) < 2) {
         return;
       }
-      /** Whether every member-frame boundary's inter-segment slice is autofix-safe. */
+      /** Whether every breakable member boundary's inter-segment slice is autofix-safe. */
       const allClean = memberBoundaries.every(function clean(b,): boolean {
         return b.canFix;
       },);

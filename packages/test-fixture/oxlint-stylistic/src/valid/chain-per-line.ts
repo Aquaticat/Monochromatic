@@ -7,6 +7,9 @@ declare const c: number;
 declare const d: number;
 declare const obj: { b: { c: number; }; };
 declare const obj2: { y: number; };
+declare const arr: number[][][];
+declare const result: { content: ReadonlyArray<{ type: string; }>; };
+declare function foo(): { bar(): string[]; };
 
 // Depth-1 binary (1 boundary) — never reports.
 const r1 = a + b;
@@ -31,6 +34,20 @@ const r5 = obj
 const r6 = (a + b) + c;
 const r7 = a + (b + c);
 
+// Non-breakable `[` chain — JavaScript grammar forbids a newline before
+// non-optional `[`, so the rule treats `arr[0][1][2]` as a single inseparable
+// chain and never reports it.
+const r8 = arr[0][1][2];
+
+// 2-call chain ending in `[0]`: one breakable member (`.bar`) sits on the same
+// line as the calls, but the deep-access threshold requires 3+ breakable
+// members; the chain stays on one line.
+const r9 = foo().bar()[0];
+
+// Member chain with mid-chain `[0]`: 2 breakable members (`.content`, `?.type`),
+// below the 3-member deep-access threshold; stays on one line.
+const r10 = result.content[0]?.type;
+
 export {
   r1,
   r2,
@@ -39,4 +56,7 @@ export {
   r5,
   r6,
   r7,
+  r8,
+  r9,
+  r10,
 };

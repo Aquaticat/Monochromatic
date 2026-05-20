@@ -12,7 +12,7 @@ declare const obj: {
   b: { c: { d: number; }; e: number; };
   q?: { r?: { s?: number; }; };
 };
-declare const arr: number[][][];
+declare const nested: { a: { b: { c: number[]; }; }; };
 declare function foo(): { bar(): { baz(): number; }; };
 
 // Same-operator binary chain (3 operands, 2 boundaries)
@@ -27,8 +27,8 @@ const r3 = obj.b.c.d;
 // Optional chaining deep
 const r4 = obj.q?.r?.s;
 
-// Computed member chain deep
-const r5 = arr[0][1][2];
+// Mixed dot + computed: dots split, trailing `[0]` stays attached to its dot member.
+const r5 = nested.a.b.c[0];
 
 // Call chain (3 calls)
 const r6 = foo().bar().baz();
