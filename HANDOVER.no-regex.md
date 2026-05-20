@@ -222,11 +222,6 @@ this task; carry-over from prior sessions and from running
 - `packages/cli/forbidden-strings/fuzz/Cargo.toml`
 - `packages/cli/forbidden-strings/fuzz/dictionaries/forbidden-strings.dict`
 - `packages/figma-parsers/penpot/src/index.ts`
-- `packages/pi/advisor/src/commands.ts`
-- `packages/pi/advisor/src/context.unit.test.ts`
-- `packages/pi/advisor/src/model-cost.ts`
-- `packages/pi/advisor/src/rendering-summary.ts`
-- `packages/pi/advisor/src/tool.ts`
 - `pnpm-lock.yaml`
 
 Every file I changed for this task is committed; leave the above alone
