@@ -36,6 +36,8 @@ export function isWithinRoot({
 /**
  * Resolves a path and asserts it falls within the root directory.
  *
+ * Relative paths resolve against `process.cwd()` (which is always inside rootDir at runtime), not against rootDir. Pass an absolute path for unambiguous semantics.
+ *
  * @param rootDir - absolute path to the allowed root
  *
  * @param path - user-supplied path to validate (may be relative)
@@ -51,6 +53,12 @@ export function isWithinRoot({
  *
  * // Throws: 'path escapes root: /etc/passwd'
  * assertWithinRoot({ rootDir: '/home/user/project', path: '/etc/passwd' });
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Absolute path: unambiguous regardless of cwd.
+ * assertWithinRoot({ rootDir: '/home/user/project', path: '/home/user/project/src/index.ts' });
  * ```
  */
 export function assertWithinRoot(

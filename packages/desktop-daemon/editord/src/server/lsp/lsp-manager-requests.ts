@@ -11,6 +11,10 @@
  */
 
 import type { FilePosition, } from '../../protocol.ts';
+import {
+  l as rootLogger,
+  tagged,
+} from '../log.ts';
 import type { LspClient, } from './lsp-client.ts';
 import {
   type PrepareRenameResult,
@@ -36,6 +40,12 @@ import type {
   LspTextEdit,
   LspWorkspaceEdit,
 } from './types.ts';
+
+/** Tagged logger for the LSP manager request subsystem. */
+const l = tagged({
+  tag: 'lsp-manager-requests',
+  l: rootLogger,
+},);
 
 //region Client resolution helper
 
@@ -79,7 +89,11 @@ async function withClient<T,>({
   try {
     return await request(c,);
   }
-  catch {
+  catch (error) {
+    /** Whether the error message contains the LSP request timeout marker; already logged by LspClient. */
+    const isTimeout = (error instanceof Error) && error.message.includes('timed out',);
+    if (!isTimeout)
+      l.warn(`LSP request failed (non-timeout): ${String(error,)}`,);
     return fallback;
   }
 }

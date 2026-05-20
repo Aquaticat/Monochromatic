@@ -67,8 +67,6 @@ export async function openInTerminal(
         '/c',
         'start',
         'cmd',
-        '/k',
-        `cd /d "${absolutePath}"`,
       ],
       cwd: absolutePath,
     },);

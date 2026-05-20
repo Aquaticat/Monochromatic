@@ -179,13 +179,13 @@ function searchContents({
           text: match.data.lines.text.trimEnd(),
         };
       }
-      catch {
+      catch (error) {
         l.warn(`failed to parse rg JSON line: ${
           line.slice(
             0,
             100,
           )
-        }`,);
+        } (${String(error,)})`,);
         return null;
       }
     },

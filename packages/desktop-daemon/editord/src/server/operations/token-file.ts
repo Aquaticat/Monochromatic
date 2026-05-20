@@ -111,7 +111,10 @@ async function touchFile({
     await writeFile(
       path,
       token,
-      'utf8',
+      {
+        encoding: 'utf8',
+        mode: 0o600,
+      },
     );
   }
   catch {
@@ -165,7 +168,10 @@ async function writeAndTouch({
   await writeFile(
     path,
     token,
-    'utf8',
+    {
+      encoding: 'utf8',
+      mode: 0o600,
+    },
   );
 
   /** Timer handle for the periodic mtime-refresh; cancelled by `stopTouching`/`deleteFile`. */
