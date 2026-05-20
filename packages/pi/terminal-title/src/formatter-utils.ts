@@ -204,7 +204,7 @@ function quotedFormat(
  * commands (`timeout 10`, `env`, `nice`, `nohup`) with their argument.
  * Anchored at start; repeats to strip stacked prefixes like `env timeout 10`.
  */
-// oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- anchored noise-stripper for shell commands; the negative lookahead `(?!-)` disambiguates flag-starting tokens from `VAR=value` assignments, and the alternation lists the four wrapper commands explicitly. Anchored at `^` so matching is bounded by the prefix; no nested quantifiers, no backtracking risk on bounded command-line input.
+// oxlint-disable-next-line no-restricted-syntax/no-regex -- anchored noise-stripper for shell commands; the negative lookahead `(?!-)` disambiguates flag-starting tokens from `VAR=value` assignments, and the alternation lists the four wrapper commands explicitly. Anchored at `^` so matching is bounded by the prefix; no nested quantifiers, no backtracking risk on bounded command-line input.
 const COMMAND_NOISE_RE = /^(?:(?!-)\S+=\S*\s+|(?:timeout|env|nice|nohup)\s+\S+\s+)*/;
 
 /**

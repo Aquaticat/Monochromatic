@@ -23,7 +23,7 @@ const l = tagged({
  * Strips one or more trailing `/` characters from `dir`.
  *
  * Equivalent to `dir.replace(/\/+$/, '')`; written as a recursive trim to
- * avoid a regex literal under the `require-regex-justification` rule.
+ * avoid a regex literal under the `no-regex` rule.
  *
  * @param dir - directory path candidate
  *

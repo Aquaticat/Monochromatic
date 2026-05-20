@@ -1,8 +1,7 @@
-# HANDOVER.require-regex-justification
+# HANDOVER.no-regex
 
 State of the lint-failure refactor triggered by the oxlint rule
-`no-restricted-syntax/require-regex-justification`. Resume from here after
-compaction.
+`no-restricted-syntax/no-regex`. Resume from here after compaction.
 
 ## Status: sweep complete; 3 packages paused
 
@@ -166,7 +165,7 @@ above; see git log for chronology).
   failures (other packages still using regex) was the trigger for the
   scope expansion in this session.
 - **User-typed `/regex/` search** is the canonical legitimate case for
-  a `require-regex-justification` disable. The justification should
+  a `no-regex` disable. The justification should
   (a) name why regex is the right tool, (b) name the input bounds
   (e.g. length cap), (c) name the backtracking-safety story. Example
   in `packages/dev-script/deps-cube/src/scripts/filter.ts` and
@@ -238,7 +237,7 @@ unless the user asks otherwise.
 ### Immediate next steps (in order)
 
 1. **Full workspace lint sanity check**: `mise run //:lint > /tmp/full-lint-final.log 2>&1; tail -5 /tmp/full-lint-final.log; grep -E 'ERROR task failed' /tmp/full-lint-final.log`.
-   If clean, the require-regex sweep is done. If new packages surface,
+   If clean, the no-regex sweep is done. If new packages surface,
    they'll need the same treatment (refactor where feasible, scoped
    disable with the four-part justification — why regex, input bounds,
    backtracking safety, why no string-API alternative — otherwise).
@@ -249,7 +248,7 @@ unless the user asks otherwise.
 ### Justification template for new disables
 
 ```text
-// oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- <why regex is the right tool for THIS site>; <what bounds the pattern/input>; <why matching stays safe (no nested quantifiers, no backtracking)>.
+// oxlint-disable-next-line no-restricted-syntax/no-regex -- <why regex is the right tool for THIS site>; <what bounds the pattern/input>; <why matching stays safe (no nested quantifiers, no backtracking)>.
 ```
 
 ### Patterns established this session for common refactors

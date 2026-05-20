@@ -250,7 +250,7 @@ function stripJsonFence(text: string,): string {
   /** Input with surrounding whitespace removed, used to detect the fence. */
   const trimmed = text.trim();
   if (trimmed.startsWith('```',)) {
-    /* oxlint-disable no-restricted-syntax/require-regex-justification -- Two anchored regex strip the Markdown JSON code fence prefix (``` or ```json + whitespace) and suffix (``` + trailing whitespace) around an LLM JSON response. Regex is the clearest way to express the optional `json` tag and anchored whitespace tokens; LLM output is bounded so no backtracking surface. */
+    /* oxlint-disable no-restricted-syntax/no-regex -- Two anchored regex strip the Markdown JSON code fence prefix (``` or ```json + whitespace) and suffix (``` + trailing whitespace) around an LLM JSON response. Regex is the clearest way to express the optional `json` tag and anchored whitespace tokens; LLM output is bounded so no backtracking surface. */
     /** Fenceless body returned when a Markdown JSON fence wrapped the input. */
     const stripped = trimmed
       .replace(
@@ -261,7 +261,7 @@ function stripJsonFence(text: string,): string {
         /```\s*$/u,
         '',
       );
-    /* oxlint-enable no-restricted-syntax/require-regex-justification */
+    /* oxlint-enable no-restricted-syntax/no-regex */
     return stripped.trim();
   }
   return trimmed;

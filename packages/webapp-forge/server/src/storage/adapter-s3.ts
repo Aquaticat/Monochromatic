@@ -142,10 +142,10 @@ function objectUrl(row: {
 function parseKeys(xml: string,): string[] {
   /** Accumulator for the matched `<Key>` values in document order. */
   const keys: string[] = [];
-  /* oxlint-disable no-restricted-syntax/require-regex-justification -- Streaming XML extractor over an S3 ListObjectsV2 response body bounded by `maxKeys`; non-greedy quantifier with no alternation prevents catastrophic backtracking. */
+  /* oxlint-disable no-restricted-syntax/no-regex -- Streaming XML extractor over an S3 ListObjectsV2 response body bounded by `maxKeys`; non-greedy quantifier with no alternation prevents catastrophic backtracking. */
   /** Pattern matching `<Key>...</Key>` non-greedily so adjacent tags do not merge. */
   const pattern = /<Key>(.+?)<\/Key>/gu;
-  /* oxlint-enable no-restricted-syntax/require-regex-justification */
+  /* oxlint-enable no-restricted-syntax/no-regex */
   for (const match of xml.matchAll(pattern,)) {
     if (match[1] !== undefined)
       keys.push(decodeXmlEntities(match[1],),);
@@ -167,16 +167,16 @@ function parseKeys(xml: string,): string[] {
  * ```
  */
 function parseContinuationToken(xml: string,): string | undefined {
-  /* oxlint-disable no-restricted-syntax/require-regex-justification -- Extracts S3 pagination control fields from a ListObjectsV2 response body bounded by AWS; non-greedy single-capture pattern with no alternation prevents catastrophic backtracking. */
+  /* oxlint-disable no-restricted-syntax/no-regex -- Extracts S3 pagination control fields from a ListObjectsV2 response body bounded by AWS; non-greedy single-capture pattern with no alternation prevents catastrophic backtracking. */
   /** IsTruncated flag; absent or false means the response is the final page. */
   const truncated = /<IsTruncated>(.+?)<\/IsTruncated>/u.exec(xml,);
-  /* oxlint-enable no-restricted-syntax/require-regex-justification */
+  /* oxlint-enable no-restricted-syntax/no-regex */
   if (truncated?.[1] !== 'true')
     return undefined;
-  /* oxlint-disable no-restricted-syntax/require-regex-justification -- Extracts S3 pagination control fields from a ListObjectsV2 response body bounded by AWS; non-greedy single-capture pattern with no alternation prevents catastrophic backtracking. */
+  /* oxlint-disable no-restricted-syntax/no-regex -- Extracts S3 pagination control fields from a ListObjectsV2 response body bounded by AWS; non-greedy single-capture pattern with no alternation prevents catastrophic backtracking. */
   /** Raw continuation token; XML-escaped values are decoded before returning. */
   const token = /<NextContinuationToken>(.+?)<\/NextContinuationToken>/u.exec(xml,);
-  /* oxlint-enable no-restricted-syntax/require-regex-justification */
+  /* oxlint-enable no-restricted-syntax/no-regex */
   return token?.[1] === undefined ? undefined : decodeXmlEntities(token[1],);
 }
 

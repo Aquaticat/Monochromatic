@@ -49,7 +49,7 @@ export function $({
 
     // Count effective double quotes using regex that handles escaped quotes properly
     /** Count of unescaped quotes preceding the start index. */
-    // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- canonical unescaped-quote enumeration; the lookbehind `(?<!\\)(?:\\\\)*` matches a `"` not preceded by an odd number of backslashes — expressing the escape-counting rule via index walk is significantly more code and equally bounded. Input length bounds runtime linearly; no nested quantifiers, no backtracking.
+    // oxlint-disable-next-line no-restricted-syntax/no-regex -- canonical unescaped-quote enumeration; the lookbehind `(?<!\\)(?:\\\\)*` matches a `"` not preceded by an odd number of backslashes — expressing the escape-counting rule via index walk is significantly more code and equally bounded. Input length bounds runtime linearly; no nested quantifiers, no backtracking.
     const effectiveDoubleQuotesInStrBefore = [...strBefore
       .matchAll(/(?<!\\)(?:\\\\)*"/g,),]
       .length;

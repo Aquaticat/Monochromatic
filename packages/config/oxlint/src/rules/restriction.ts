@@ -106,7 +106,7 @@ export const restrictionRules: DummyRuleMap = {
   // Regex usage must be rare and justified at the use site. Prefer index scans,
   // parsers, or string APIs; necessary regex sites use a scoped disable with
   // why-regex, input-bound, and backtracking-safety rationale.
-  'no-restricted-syntax/require-regex-justification': 'error',
+  'no-restricted-syntax/no-regex': 'error',
 
   //region no-disable -- prevent inline oxlint-disable for rules with no legitimate exceptions
   'no-restricted-syntax/no-disable-require-tsdoc': 'error',

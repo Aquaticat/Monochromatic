@@ -64,7 +64,7 @@ export type RenderedChunk = {
  * @returns `true` if the line is a code fence delimiter, `false` otherwise
  */
 function isCodeFence(line: string,): boolean {
-  // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- anchored prefix on one line of bounded length; matches CommonMark fence opener (0-3 spaces + ```/~~~) without backtracking
+  // oxlint-disable-next-line no-restricted-syntax/no-regex -- anchored prefix on one line of bounded length; matches CommonMark fence opener (0-3 spaces + ```/~~~) without backtracking
   return /^ {0,3}(```|~~~)/u.test(line,);
 }
 
@@ -250,7 +250,7 @@ export function extractPreview({
   readonly md: string;
   readonly maxLength: number;
 },): string {
-  /* oxlint-disable no-restricted-syntax/require-regex-justification -- preview extractor strips markdown structural markup from a chunk-sized excerpt (capped well below the chunk hard cap). Each pattern uses lazy quantifiers or negated character classes, so matching is linear in input length with no nested unbounded quantifiers. */
+  /* oxlint-disable no-restricted-syntax/no-regex -- preview extractor strips markdown structural markup from a chunk-sized excerpt (capped well below the chunk hard cap). Each pattern uses lazy quantifiers or negated character classes, so matching is linear in input length with no nested unbounded quantifiers. */
   /** Successively stripped form; built up by chained replaces before length check. */
   const stripped = md
     .replaceAll(
@@ -286,7 +286,7 @@ export function extractPreview({
       ' ',
     )
     .trim();
-  /* oxlint-enable no-restricted-syntax/require-regex-justification */
+  /* oxlint-enable no-restricted-syntax/no-regex */
   if (stripped.length === 0)
     return '(no text preview)';
   return stripped.length <= maxLength

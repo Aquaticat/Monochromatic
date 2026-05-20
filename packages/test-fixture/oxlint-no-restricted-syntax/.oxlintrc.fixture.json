@@ -28,7 +28,7 @@
     "no-restricted-syntax/prefer-describe-function-ref-name": "error",
     "no-restricted-syntax/require-destructured-params": "error",
     "no-restricted-syntax/require-queryselector-generic": "error",
-    "no-restricted-syntax/require-regex-justification": "error",
+    "no-restricted-syntax/no-regex": "error",
     "no-restricted-syntax/no-disable-max-lines": "error",
     "no-restricted-syntax/no-disable-no-arrow-function": "error",
     "no-restricted-syntax/no-disable-no-enum": "error",

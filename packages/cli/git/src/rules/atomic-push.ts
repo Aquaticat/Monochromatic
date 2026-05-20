@@ -3,6 +3,9 @@ import {
   tagged,
 } from '../log.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
+import { parsePushRegion, } from '../parsers/push.ts';
+
+//region Atomic push rule
 
 /**
  * Injects `--atomic` into `git push` commands when not already specified.
@@ -11,12 +14,15 @@ import { parseGlobalOptions, } from '../parse-global-options.ts';
  * `push` token, so pre-subcommand global options (`git -C /repo push`,
  * `git -c key=val push`) are preserved and the rule still fires.
  *
- * Atomic push ensures that either all refs are updated on the remote
- * or none are, preventing partial push failures.
+ * Atomic push ensures that either all refs are updated on the remote or
+ * none are, preventing partial push failures. The post-subcommand region is
+ * parsed by an optique-based parser so the wrapper detects existing
+ * `--atomic`/`--no-atomic` choices uniformly across argv shapes.
  *
  * @param args - Raw git arguments (global options + subcommand + flags).
  *
- * @returns Modified args with `--atomic` injected after `push`, or unmodified args.
+ * @returns Modified args with `--atomic` injected after `push`, or unmodified
+ *   args when the caller has already chosen.
  *
  * @example
  * ```ts
@@ -27,7 +33,7 @@ import { parseGlobalOptions, } from '../parse-global-options.ts';
  * // => ['-C', '/repo', 'push', '--atomic', 'origin', 'main']
  *
  * atomicPush(['push', '--no-atomic', 'origin', 'main']);
- * // => ['push', '--no-atomic', 'origin', 'main'] (unchanged)
+ * // => ['push', '--no-atomic', 'origin', 'main']
  * ```
  */
 export function atomicPush(args: readonly string[],): readonly string[] {
@@ -45,24 +51,20 @@ export function atomicPush(args: readonly string[],): readonly string[] {
 
   /** Slice of args strictly after the `push` token; the place where push flags live. */
   const postSubcommandArgs = args.slice(subcommandIndex + 1,);
+  /** Push region facts parsed by optique. */
+  const region = parsePushRegion(postSubcommandArgs,);
 
-  /** True when args already carry `--atomic` or `--no-atomic` after the subcommand, so no injection should occur. */
-  const hasAtomicFlag = postSubcommandArgs.some(function isAtomicFlag(arg,) {
-    return (arg === '--atomic') || (arg === '--no-atomic');
-  },);
-
-  if (hasAtomicFlag) {
+  if (region.hasAtomicChoice) {
     rl.debug('--atomic or --no-atomic already present, skipping injection',);
     return args;
   }
 
   rl.debug('injecting --atomic into push',);
   return [
-    ...args.slice(
-      0,
-      subcommandIndex + 1,
-    ),
+    ...args.slice(0, subcommandIndex + 1,),
     '--atomic',
     ...postSubcommandArgs,
   ];
 }
+
+//endregion Atomic push rule

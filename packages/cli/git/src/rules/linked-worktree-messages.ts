@@ -1,8 +1,8 @@
 import {
   CLEAN_SUBCOMMAND,
+  type GuardedCommand,
   RESET_SUBCOMMAND,
   STASH_SUBCOMMAND,
-  type GuardedCommand,
 } from './linked-worktree-constants.ts';
 
 //region Linked worktree diagnostics
@@ -45,7 +45,7 @@ export function outsideWorktreeMessage({ command, }: CommandMessageOptions,): st
       + 'cd to a linked worktree root or pass -C <linked-worktree-root> before reset.';
   }
 
-  throw new Error(`cli-git: unhandled linked-worktree command ${String(command,)}.`);
+  throw new Error(`cli-git: unhandled linked-worktree command ${String(command,)}.`,);
 }
 
 /**
@@ -80,7 +80,7 @@ export function mainWorktreeMessage({ command, }: CommandMessageOptions,): strin
       + 'Use a linked worktree for destructive reset operations.';
   }
 
-  throw new Error(`cli-git: unhandled linked-worktree command ${String(command,)}.`);
+  throw new Error(`cli-git: unhandled linked-worktree command ${String(command,)}.`,);
 }
 
 //endregion Linked worktree diagnostics

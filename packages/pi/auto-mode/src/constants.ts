@@ -167,7 +167,7 @@ export const LONG_FLAGS: Record<string, string> = {
 
 //endregion
 
-/* oxlint-disable no-restricted-syntax/require-regex-justification -- this module defines auto-mode's secret-detection patterns; the regex literals ARE the rule set. Each pattern is anchored to a known credential format (length-bounded character classes) or surrounded by anchor-like boundaries, so no nested quantifiers and no backtracking risk. Input is bounded by the surrounding scanner. */
+/* oxlint-disable no-restricted-syntax/no-regex -- this module defines auto-mode's secret-detection patterns; the regex literals ARE the rule set. Each pattern is anchored to a known credential format (length-bounded character classes) or surrounded by anchor-like boundaries, so no nested quantifiers and no backtracking risk. Input is bounded by the surrounding scanner. */
 
 //region Content signal patterns
 
@@ -222,7 +222,7 @@ export const SECRET_PATH_PATTERN: RegExp =
 
 //endregion
 
-/* oxlint-enable no-restricted-syntax/require-regex-justification */
+/* oxlint-enable no-restricted-syntax/no-regex */
 
 //region Relevant tools
 

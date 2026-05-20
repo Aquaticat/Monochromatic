@@ -8,7 +8,7 @@
  * @module
  */
 
-/* oxlint-disable no-restricted-syntax/require-regex-justification -- this module tokenises arbitrary model-id strings and recognises numeric runs; the regexes are bounded character classes (no nested quantifiers, no backtracking risk) applied to model-id strings whose length is bounded by the model name. */
+/* oxlint-disable no-restricted-syntax/no-regex -- this module tokenises arbitrary model-id strings and recognises numeric runs; the regexes are bounded character classes (no nested quantifiers, no backtracking risk) applied to model-id strings whose length is bounded by the model name. */
 
 import type {
   Api,
@@ -236,4 +236,4 @@ export {
   findCheapestInMajorVersions,
 };
 
-/* oxlint-enable no-restricted-syntax/require-regex-justification */
+/* oxlint-enable no-restricted-syntax/no-regex */

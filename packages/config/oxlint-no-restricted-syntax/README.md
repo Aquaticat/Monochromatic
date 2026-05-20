@@ -19,6 +19,7 @@ This plugin provides individual rules for each banned syntax pattern instead.
 - **no-module-root-let**: bans module-root `let` in favor of containers or memoization helpers
 - **no-promise-catch**: bans `.catch()` chaining in favor of `try`/`catch` with `async`/`await`
 - **no-promise-finally**: bans `.finally()` chaining in favor of `using`/`await using`
+- **no-regex**: requires regex usage to be justified through a scoped `oxlint-disable` comment
 - **no-regexp-exec**: bans `RegExp.prototype.exec()` in favor of `str.match()`/`str.matchAll()`
 - **no-rest-params**: bans rest parameters (`...args`) in favor of explicit array parameters
 - **no-switch**: bans `switch` statements in favor of if/else chains or `Record` lookups
@@ -27,11 +28,9 @@ This plugin provides individual rules for each banned syntax pattern instead.
 - **no-variable-function-expression**: bans `const x = function() {}`, use a function declaration instead
 - **require-destructured-params**: function declarations with 2+ params must use a single destructured object
 - **require-queryselector-generic**: requires explicit generic typing for querySelector-style calls
-- **require-regex-justification**: requires regex usage to be justified through a scoped `oxlint-disable` comment
 
-`require-regex-justification` is available for opt-in migration.
-The shared `@monochromatic-dev/config-oxlint` package does not enable it yet because existing regex sites need
-triage, either replacing unnecessary regex or adding scoped disable justifications.
+`no-regex` is enabled by the shared `@monochromatic-dev/config-oxlint` package.
+Necessary regex sites must use scoped disable justifications.
 
 ## Ban-disable rules
 

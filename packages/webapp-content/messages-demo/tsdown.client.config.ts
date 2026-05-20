@@ -42,14 +42,14 @@ const config: UserConfig = defineConfig({
       // RegExp> | NoExternalFn`, but the base config always uses an array.
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- base config invariant
       ...(base.deps?.alwaysBundle as readonly (string | RegExp)[] | undefined ?? []),
-      /* oxlint-disable no-restricted-syntax/require-regex-justification -- anchored package-name matchers consumed by tsdown's alwaysBundle list; each pattern is `^literal` or `^literal-` with no quantifiers, matching one short specifier per dependency at build time */
+      /* oxlint-disable no-restricted-syntax/no-regex -- anchored package-name matchers consumed by tsdown's alwaysBundle list; each pattern is `^literal` or `^literal-` with no quantifiers, matching one short specifier per dependency at build time */
       /^micromark/u,
       /^micromark-/u,
       /^decode-named-character-reference$/u,
       /^debug$/u,
       /^ms$/u,
       /^character-entities/u,
-      /* oxlint-enable no-restricted-syntax/require-regex-justification */
+      /* oxlint-enable no-restricted-syntax/no-regex */
     ],
   },
 },);

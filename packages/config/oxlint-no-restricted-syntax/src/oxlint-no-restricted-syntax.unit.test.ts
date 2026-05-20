@@ -145,6 +145,7 @@ const SUBSTANTIVE_RULES = [
   'no-module-root-let',
   'no-promise-catch',
   'no-promise-finally',
+  'no-regex',
   'no-rest-params',
   'no-switch',
   'no-trim-left-right',
@@ -153,7 +154,6 @@ const SUBSTANTIVE_RULES = [
   'prefer-describe-function-ref-name',
   'require-destructured-params',
   'require-queryselector-generic',
-  'require-regex-justification',
 ] as const;
 
 /**
@@ -233,10 +233,10 @@ await describe({
           },
         },),
         it({
-          name: 'require-regex-justification accepts scoped disable justifications',
+          name: 'no-regex accepts scoped disable justifications',
           fn: async () => {
             const diagnostics = await lint(
-              'valid/require-regex-justification.ts',
+              'valid/no-regex.ts',
             );
             expect(diagnostics,).toEqual([],);
           },
@@ -248,14 +248,14 @@ await describe({
       children: [
         it({
           name:
-            'require-regex-justification reports each regex form with specific guidance',
+            'no-regex reports each regex form with specific guidance',
           fn: async () => {
-            const diagnostics = await lint('invalid/require-regex-justification.ts',);
+            const diagnostics = await lint('invalid/no-regex.ts',);
             expect(diagnostics.map(function message(diagnostic,): string {
               return diagnostic.message;
             },),)
               .toEqual([
-                'Regex literal requires a scoped disable with justification. Prefer an index scan, parser, or string API; if regex is still right, add `oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- <why regex, input bounds, backtracking safety>`.',
+                'Regex literal requires a scoped disable with justification. Prefer an index scan, parser, or string API; if regex is still right, add `oxlint-disable-next-line no-restricted-syntax/no-regex -- <why regex, input bounds, backtracking safety>`.',
                 'RegExp constructor requires a scoped disable with justification. Explain why dynamic regex compilation is needed, what bounds the pattern/input, and why matching stays safe.',
                 'RegExp constructor requires a scoped disable with justification. Explain why dynamic regex compilation is needed, what bounds the pattern/input, and why matching stays safe.',
                 'String#match() with an inline regex requires a scoped disable with justification. Explain why regex is clearer than a string API or parser, and what bounds matching cost.',

@@ -71,7 +71,7 @@ const l = tagged({
 /** Number of hex characters to use from the SHA-256 digest. */
 const HASH_LENGTH = 10;
 
-/* oxlint-disable no-restricted-syntax/require-regex-justification -- fingerprinted-filename anchored suffix matchers; the input is a basename (bounded by filesystem name length) and both patterns anchor at `$`. `{10}` is a constant repetition count and `[^.]+` is linear with no nesting; no backtracking risk. */
+/* oxlint-disable no-restricted-syntax/no-regex -- fingerprinted-filename anchored suffix matchers; the input is a basename (bounded by filesystem name length) and both patterns anchor at `$`. `{10}` is a constant repetition count and `[^.]+` is linear with no nesting; no backtracking risk. */
 /**
  * Regex matching a previously fingerprinted filename.
  * Matches `name.{10 hex chars}.ext` patterns.
@@ -83,7 +83,7 @@ const STALE_HASH_PATTERN = /\.[0-9a-f]{10}\.[^.]+$/;
  * Matches `name.{10 hex chars}.ext.zst` patterns.
  */
 const STALE_HASH_ZST_PATTERN = /\.[0-9a-f]{10}\.[^.]+\.zst$/;
-/* oxlint-enable no-restricted-syntax/require-regex-justification */
+/* oxlint-enable no-restricted-syntax/no-regex */
 
 //region Helper functions
 

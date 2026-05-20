@@ -2,7 +2,7 @@
 
 ## Status: development paused
 
-Active development is paused pending repo-wide work. `mise run //packages/webapp-content/messages-demo:lint` currently reports 13 errors from `no-restricted-syntax/require-regex-justification` across `src/client/composer/helpers.ts`, `src/client/editor/buffer-table.unit.test.ts`, `src/client/outbox.unit.test.ts`, `src/lib/markdown-stream.ts`, `src/lib/pagination.ts`, and `src/lib/pagination.unit.test.ts`. The refactor is deferred; resume by completing the require-regex sweep documented in `HANDOVER.require-regex-justification.md`.
+Active development is paused pending repo-wide work. `mise run //packages/webapp-content/messages-demo:lint` currently reports 13 errors from `no-restricted-syntax/no-regex` across `src/client/composer/helpers.ts`, `src/client/editor/buffer-table.unit.test.ts`, `src/client/outbox.unit.test.ts`, `src/lib/markdown-stream.ts`, `src/lib/pagination.ts`, and `src/lib/pagination.unit.test.ts`. The refactor is deferred; resume by completing the no-regex sweep documented in `HANDOVER.no-regex.md`.
 
 Demo webapp that lists user-submitted markdown messages with two hard-scale targets:
 

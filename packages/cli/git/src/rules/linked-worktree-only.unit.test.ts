@@ -642,5 +642,98 @@ await describe({
         expect(await linkedWorktreeOnly(resetArgs,),).toBe(resetArgs,);
       },
     },),
+    it({
+      name:
+        'rejects clean when abbreviated --excl consumes literal --dry-run as exclude pattern',
+      fn: async function testCleanAbbreviationBypass(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+
+        /** Error thrown because git accepts --excl as --exclude; the next token --dry-run becomes the exclude pattern, leaving -f as the active destructive flag. */
+        const caught = await catchLinkedWorktreeOnlyError([
+          '-C',
+          tempDirectory.path,
+          'clean',
+          '--excl',
+          '--dry-run',
+          '-f',
+        ],);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'state-changing git clean is rejected in the main git worktree',
+        );
+      },
+    },),
+    it({
+      name: 'rejects reset with abbreviated destructive mode at main worktree root',
+      fn: async function testResetAbbreviationBypass(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+
+        /** Error thrown because git accepts --har as --hard; the abbreviation guard must catch it. */
+        const caught = await catchLinkedWorktreeOnlyError([
+          '-C',
+          tempDirectory.path,
+          'reset',
+          '--har',
+          'HEAD',
+        ],);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'destructive git reset modes are rejected in the main git worktree',
+        );
+      },
+    },),
+    it({
+      name: 'rejects reset with positional-first ordering at main worktree root',
+      fn: async function testResetPositionalFirstBypass(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await createInitialCommit({ repoPath: tempDirectory.path, },);
+
+        /** Error thrown because real git accepts `reset HEAD --hard`; the parser must detect --hard regardless of position. */
+        const caught = await catchLinkedWorktreeOnlyError([
+          '-C',
+          tempDirectory.path,
+          'reset',
+          'HEAD',
+          '--hard',
+        ],);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'destructive git reset modes are rejected in the main git worktree',
+        );
+      },
+    },),
+    it({
+      name: 'rejects stash when escape-hatch token sits in a -m value position',
+      fn: async function testEscapeHatchInOptionValueBypass(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+
+        /** Error thrown because `-m --no-enforce-worktree` is `-m` with value `--no-enforce-worktree`, not the escape hatch. */
+        const caught = await catchLinkedWorktreeOnlyError([
+          '-C',
+          tempDirectory.path,
+          'stash',
+          'push',
+          '-m',
+          '--no-enforce-worktree',
+        ],);
+
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain(
+          'git stash is rejected in the main git worktree',
+        );
+      },
+    },),
   ],
 },);

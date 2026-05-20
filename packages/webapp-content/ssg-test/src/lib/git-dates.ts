@@ -168,10 +168,10 @@ async function getGithubSlug(): Promise<string | undefined> {
     ],);
     /** Trimmed remote URL fed to the slug regex. */
     const url = stdout.trim();
-    /* oxlint-disable no-restricted-syntax/require-regex-justification -- anchored at `$` to parse the trailing `owner/repo[.git]` slug from either SSH or HTTPS GitHub URLs. Input is `git remote get-url` output (bounded URL length); `[^/]+` and `[^/.]+` are negated classes so each matches its own slice with no overlap, no backtracking risk. */
+    /* oxlint-disable no-restricted-syntax/no-regex -- anchored at `$` to parse the trailing `owner/repo[.git]` slug from either SSH or HTTPS GitHub URLs. Input is `git remote get-url` output (bounded URL length); `[^/]+` and `[^/.]+` are negated classes so each matches its own slice with no overlap, no backtracking risk. */
     /** Regex capture extracting `owner/repo` from either supported URL form. */
     const match = /github\.com[:/]([^/]+\/[^/.]+)(?:\.git)?$/.exec(url,);
-    /* oxlint-enable no-restricted-syntax/require-regex-justification */
+    /* oxlint-enable no-restricted-syntax/no-regex */
     return match?.[1];
   }
   catch {

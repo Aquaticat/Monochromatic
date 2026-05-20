@@ -13,7 +13,7 @@ import {
 
 import { regExpOrThrow, } from './regexp-or-throw.ts';
 
-/* oxlint-disable no-restricted-syntax/require-regex-justification -- this file tests regExpOrThrow; every test must construct a regex literal or RegExp instance as input. The regex sites here ARE the test fixtures. */
+/* oxlint-disable no-restricted-syntax/no-regex -- this file tests regExpOrThrow; every test must construct a regex literal or RegExp instance as input. The regex sites here ARE the test fixtures. */
 
 await describe({
   name: regExpOrThrow.name,
@@ -56,4 +56,4 @@ await describe({
   ],
 },);
 
-/* oxlint-enable no-restricted-syntax/require-regex-justification */
+/* oxlint-enable no-restricted-syntax/no-regex */

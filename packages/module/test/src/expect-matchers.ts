@@ -225,7 +225,7 @@ export function buildMatchers(
     },
 
     toMatch: function toMatch(expected: string | RegExp,): void {
-      // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- toMatch is the regex matcher API; when callers pass a string, chai's `a.to.match` requires a RegExp, so this constructor IS the matcher's contract. Input is user-supplied test pattern; backtracking safety is the caller's responsibility (test code).
+      // oxlint-disable-next-line no-restricted-syntax/no-regex -- toMatch is the regex matcher API; when callers pass a string, chai's `a.to.match` requires a RegExp, so this constructor IS the matcher's contract. Input is user-supplied test pattern; backtracking safety is the caller's responsibility (test code).
       a.to.match(expected instanceof RegExp ? expected : new RegExp(expected,),);
     },
 

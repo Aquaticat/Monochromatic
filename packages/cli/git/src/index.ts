@@ -10,8 +10,8 @@ import { resolveGit, } from './resolve-git.ts';
 import { addExplicit, } from './rules/add-explicit.ts';
 import { atomicPush, } from './rules/atomic-push.ts';
 import { commitOnly, } from './rules/commit-only.ts';
-import { requireRoot, } from './rules/require-root.ts';
 import { linkedWorktreeOnly, } from './rules/linked-worktree-only.ts';
+import { requireRoot, } from './rules/require-root.ts';
 import {
   hasExplicitStatusHintsOverride,
   statusHintsOff,

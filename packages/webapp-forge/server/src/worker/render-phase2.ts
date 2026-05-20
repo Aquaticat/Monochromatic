@@ -35,7 +35,7 @@ export type RenderResult = {
   readonly contentHash: string;
 };
 
-/* oxlint-disable no-restricted-syntax/require-regex-justification -- Fragment key parser; inputs are canonical keys produced by fragment-keys.ts (bounded path segments without slashes), regex is anchored with no nested quantifiers so no catastrophic backtracking is possible. */
+/* oxlint-disable no-restricted-syntax/no-regex -- Fragment key parser; inputs are canonical keys produced by fragment-keys.ts (bounded path segments without slashes), regex is anchored with no nested quantifiers so no catastrophic backtracking is possible. */
 /** Pattern for PR detail fragment keys. */
 const PR_DETAIL_PATTERN = /^prs\/([^/]+)\/([^/]+)\/detail$/u;
 
@@ -47,7 +47,7 @@ const MERGE_STATUS_PATTERN = /^prs\/([^/]+)\/([^/]+)\/merge-status$/u;
 
 /** Pattern for standalone comment fragment keys. */
 const COMMENT_PATTERN = /^comments\/(.+)$/u;
-/* oxlint-enable no-restricted-syntax/require-regex-justification */
+/* oxlint-enable no-restricted-syntax/no-regex */
 
 /** Default required-approvals threshold for the merge-status panel. */
 const DEFAULT_REQUIRED_APPROVALS = 1;

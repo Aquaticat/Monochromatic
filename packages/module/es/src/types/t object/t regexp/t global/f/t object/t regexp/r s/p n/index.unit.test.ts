@@ -1,4 +1,4 @@
-/* oxlint-disable no-restricted-syntax/require-regex-justification -- this file tests the function that adds the `g` flag to a regex; every test must construct a regex literal as input. The regex literals here ARE the test fixtures. */
+/* oxlint-disable no-restricted-syntax/no-regex -- this file tests the function that adds the `g` flag to a regex; every test must construct a regex literal as input. The regex literals here ARE the test fixtures. */
 
 import { types, } from '@monochromatic-dev/module-es';
 import {
@@ -258,4 +258,4 @@ await describe({
   ],
 },);
 
-/* oxlint-enable no-restricted-syntax/require-regex-justification */
+/* oxlint-enable no-restricted-syntax/no-regex */

@@ -4,7 +4,7 @@
  * Contains threshold values, resolved path constants, and named predicates
  * that identify noise lines to strip from tool output. Predicates replace
  * the previous regex arrays so the filter stays out of the
- * `no-restricted-syntax/require-regex-justification` rule.
+ * `no-restricted-syntax/no-regex` rule.
  *
  * @module
  */

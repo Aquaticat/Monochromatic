@@ -98,10 +98,10 @@ export async function fetchChunkCount(messageId: number,): Promise<number> {
   const response = await fetch(`/m/${String(messageId,)}/c/0`,);
   /** Full HTML of the chunk-0 nav, scanned for the chunk-count regex. */
   const text = await response.text();
-  /* oxlint-disable no-restricted-syntax/require-regex-justification -- parses "chunk N of M" from server-rendered nav fragment; bounded captures over server-controlled HTML, linear in input length */
+  /* oxlint-disable no-restricted-syntax/no-regex -- parses "chunk N of M" from server-rendered nav fragment; bounded captures over server-controlled HTML, linear in input length */
   /** Holds the regex match so the count can be parsed from capture group 1. */
   const match = /chunk\s+\d+\s+of\s+(\d+)/u.exec(text,);
-  /* oxlint-enable no-restricted-syntax/require-regex-justification */
+  /* oxlint-enable no-restricted-syntax/no-regex */
   /** Extracted before the undefined check so the call site sees one narrowed string. */
   const captured = match?.[1];
   if (captured === undefined)

@@ -229,11 +229,11 @@ function isCoveredByParentRegexDiagnostic({ node, }: { node: ESTree.Node; },): b
  * const suffix = /foo$/;
  *
  * // Good: reviewer can inspect why regex is the right tool here.
- * // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- fixed token grammar over one CLI argument; no nested quantifiers, so linear.
+ * // oxlint-disable-next-line no-restricted-syntax/no-regex -- fixed token grammar over one CLI argument; no nested quantifiers, so linear.
  * const token = /^[a-z]+:[0-9]+$/;
  * ```
  */
-export const requireRegexJustification: CreateOnceRule = {
+export const noRegex: CreateOnceRule = {
   meta: {
     type: 'problem',
     docs: {
@@ -243,7 +243,7 @@ export const requireRegexJustification: CreateOnceRule = {
     },
     messages: {
       regexLiteral:
-        'Regex literal requires a scoped disable with justification. Prefer an index scan, parser, or string API; if regex is still right, add `oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- <why regex, input bounds, backtracking safety>`.',
+        'Regex literal requires a scoped disable with justification. Prefer an index scan, parser, or string API; if regex is still right, add `oxlint-disable-next-line no-restricted-syntax/no-regex -- <why regex, input bounds, backtracking safety>`.',
       regexpConstructor:
         'RegExp constructor requires a scoped disable with justification. Explain why dynamic regex compilation is needed, what bounds the pattern/input, and why matching stays safe.',
       stringMethod:

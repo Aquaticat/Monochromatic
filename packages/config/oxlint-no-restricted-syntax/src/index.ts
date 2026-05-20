@@ -37,6 +37,7 @@ import { noHasownproperty, } from './rules/no-hasownproperty.ts';
 import { noModuleRootLet, } from './rules/no-module-root-let.ts';
 import { noPromiseCatch, } from './rules/no-promise-catch.ts';
 import { noPromiseFinally, } from './rules/no-promise-finally.ts';
+import { noRegex, } from './rules/no-regex.ts';
 import { noRestParams, } from './rules/no-rest-params.ts';
 import { noSwitch, } from './rules/no-switch.ts';
 import { noTrimLeftRight, } from './rules/no-trim-left-right.ts';
@@ -49,7 +50,6 @@ import {
 } from './rules/prefer-describe-function-ref-name.ts';
 import { requireDestructuredParams, } from './rules/require-destructured-params.ts';
 import { requireQueryselectorGeneric, } from './rules/require-queryselector-generic.ts';
-import { requireRegexJustification, } from './rules/require-regex-justification.ts';
 
 /**
  * Oxlint JS plugin implementing `no-restricted-syntax` rules
@@ -87,6 +87,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-module-root-let': noModuleRootLet,
     'no-promise-catch': noPromiseCatch,
     'no-promise-finally': noPromiseFinally,
+    'no-regex': noRegex,
     'no-rest-params': noRestParams,
     'no-switch': noSwitch,
     'no-trim-left-right': noTrimLeftRight,
@@ -95,7 +96,6 @@ const plugin: Plugin = eslintCompatPlugin({
     'prefer-describe-function-ref-name': preferDescribeFunctionRefName,
     'require-destructured-params': requireDestructuredParams,
     'require-queryselector-generic': requireQueryselectorGeneric,
-    'require-regex-justification': requireRegexJustification,
     //endregion Syntax rules
 
     //region Ban-disable rules -- prevent inline oxlint-disable for specific rules

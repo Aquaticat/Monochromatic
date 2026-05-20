@@ -113,10 +113,10 @@ export function $(value: unknown,): TypeOf {
               ? false
               : [
                 true,
-                // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- Unicode property class \p{Upper} is the standard way to test for uppercase letters; no string API exposes the Unicode upper-letter set, input is a single grapheme so matching is O(1).
+                // oxlint-disable-next-line no-restricted-syntax/no-regex -- Unicode property class \p{Upper} is the standard way to test for uppercase letters; no string API exposes the Unicode upper-letter set, input is a single grapheme so matching is O(1).
                 /\p{Upper}/v.test(myValue,)
                   ? 'uppercaseLetter'
-                  // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- Unicode property class \p{Lower} is the standard way to test for lowercase letters; no string API exposes the Unicode lower-letter set, input is a single grapheme so matching is O(1).
+                  // oxlint-disable-next-line no-restricted-syntax/no-regex -- Unicode property class \p{Lower} is the standard way to test for lowercase letters; no string API exposes the Unicode lower-letter set, input is a single grapheme so matching is O(1).
                   : (/\p{Lower}/v.test(myValue,)
                     ? 'lowercaseLetter'
                     : 'nonLetter'),

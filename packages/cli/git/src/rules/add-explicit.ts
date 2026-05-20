@@ -3,35 +3,15 @@ import {
   tagged,
 } from '../log.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
+import {
+  ADD_ESCAPE_HATCH,
+  parseAddRegion,
+} from '../parsers/add.ts';
 
-/**
- * Wrapper-only escape hatch that suppresses the bulk-add check for one
- * invocation. Stripped before forwarding to real git, which would otherwise
- * reject it.
- */
-const ESCAPE_HATCH = '--no-enforce-bulk-add';
+//region Add-explicit rule
 
-/**
- * Argv tokens that match every changed path under the effective cwd (or the
- * whole repo), staging untargeted files alongside whatever the caller meant
- * to stage. Each is rejected unless the escape hatch is also present.
- *
- * `.` and `./` walk the current directory recursively. `*` is the literal
- * pathspec form (the shell-glob case usually expands before reaching the
- * wrapper, but a quoted or non-matching glob can survive). `:/` is git's
- * pathspec for the repository root. `-A`/`--all` and `-u`/`--update` are
- * flag forms that bulk-stage even with no positional paths.
- */
-const BULK_ADD_PATTERNS: ReadonlySet<string> = new Set([
-  '.',
-  './',
-  '*',
-  ':/',
-  '-A',
-  '--all',
-  '-u',
-  '--update',
-],);
+/** Wrapper-only flag that suppresses bulk-add enforcement for one invocation. */
+const ESCAPE_HATCH = ADD_ESCAPE_HATCH;
 
 /**
  * Rejects `git add` invocations that use bulk-staging patterns, which sweep
@@ -41,8 +21,11 @@ const BULK_ADD_PATTERNS: ReadonlySet<string> = new Set([
  * wrapper-only flag `--no-enforce-bulk-add` is the escape hatch for legitimate
  * bulk operations and is stripped before forwarding to real git.
  *
- * The rule walks pre-subcommand global options (`git -C /repo add .`,
- * `git -c key=val add -A`) so it still fires for those forms.
+ * Pre-subcommand global options (`git -C /repo add .`, `git -c key=val add -A`)
+ * are walked by the shared parser so the rule still fires for those forms.
+ * The post-subcommand region is parsed by an optique-based parser so option
+ * arity is respected and the escape-hatch token cannot be confused with the
+ * value of `--pathspec-from-file`.
  *
  * @param args - Raw git arguments (global options + subcommand + flags).
  *
@@ -54,13 +37,13 @@ const BULK_ADD_PATTERNS: ReadonlySet<string> = new Set([
  * @example
  * ```ts
  * addExplicit(['add', 'file.ts']);
- * // => ['add', 'file.ts'] (specific path, unchanged)
+ * // => ['add', 'file.ts']
  *
  * addExplicit(['add', '.']);
  * // throws: bulk-staging pattern '.' rejected
  *
  * addExplicit(['add', '.', '--no-enforce-bulk-add']);
- * // => ['add', '.'] (escape hatch consumed)
+ * // => ['add', '.']
  *
  * addExplicit(['-C', '/repo', 'add', '-A']);
  * // throws: bulk-staging pattern '-A' rejected
@@ -81,17 +64,13 @@ export function addExplicit(args: readonly string[],): readonly string[] {
 
   /** Slice of args strictly after the `add` token; the place where pathspecs and flags live. */
   const postSubcommandArgs = args.slice(subcommandIndex + 1,);
+  /** Add region facts parsed by optique. */
+  const region = parseAddRegion(postSubcommandArgs,);
 
-  /** True when the wrapper-only escape hatch appears after the subcommand. */
-  const hasEscapeHatch = postSubcommandArgs.includes(ESCAPE_HATCH,);
-
-  if (hasEscapeHatch) {
+  if (region.hasEscapeHatch) {
     rl.debug(`${ESCAPE_HATCH} present, stripping and skipping check`,);
     /** Pre-subcommand region kept verbatim so global options survive the strip. */
-    const preAndSubcommand = args.slice(
-      0,
-      subcommandIndex + 1,
-    );
+    const preAndSubcommand = args.slice(0, subcommandIndex + 1,);
     return [
       ...preAndSubcommand,
       ...postSubcommandArgs.filter(function isNotEscapeHatch(arg,) {
@@ -100,14 +79,11 @@ export function addExplicit(args: readonly string[],): readonly string[] {
     ];
   }
 
-  /** Bulk-add tokens detected in the post-subcommand region. */
-  const matched = postSubcommandArgs.filter(function isBulkPattern(arg,) {
-    return BULK_ADD_PATTERNS.has(arg,);
-  },);
-
-  if (matched.length > 0) {
+  if (region.bulkMatches.length > 0) {
     throw new Error(
-      `cli-git: git add rejects bulk-staging patterns (${matched.join(', ',)}) `
+      `cli-git: git add rejects bulk-staging patterns (${
+        region.bulkMatches.join(', ',)
+      }) `
         + `because they sweep up paths the caller did not intend to stage, `
         + `leaving the index in a state that does not match a single logical change. `
         + `Name the paths explicitly, or pass ${ESCAPE_HATCH} to bypass for this invocation.`,
@@ -117,3 +93,5 @@ export function addExplicit(args: readonly string[],): readonly string[] {
   rl.debug('no bulk pattern, passing through',);
   return args;
 }
+
+//endregion Add-explicit rule

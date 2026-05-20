@@ -76,7 +76,7 @@ export async function extractPdf(file: File | Blob,): Promise<string> {
     /** Narrow view of the text-item array used by the join logic below. */
     const items = content.items as readonly TextItem[];
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-    /* oxlint-disable no-restricted-syntax/require-regex-justification -- Two replaceAll passes normalize whitespace in joined PDF page text: collapse horizontal-whitespace runs to a single space, then cap consecutive newlines at two. Character-class and quantifier regex are the clearest forms; PDF input is bounded so no backtracking surface. */
+    /* oxlint-disable no-restricted-syntax/no-regex -- Two replaceAll passes normalize whitespace in joined PDF page text: collapse horizontal-whitespace runs to a single space, then cap consecutive newlines at two. Character-class and quantifier regex are the clearest forms; PDF input is bounded so no backtracking surface. */
     return items
       .map(function pickStr(it: Readonly<TextItem>,): string {
         return it.hasEOL === true ? `${it.str}\n` : `${it.str} `;
@@ -91,7 +91,7 @@ export async function extractPdf(file: File | Blob,): Promise<string> {
         '\n\n',
       )
       .trim();
-    /* oxlint-enable no-restricted-syntax/require-regex-justification */
+    /* oxlint-enable no-restricted-syntax/no-regex */
   },),);
   return pages.join('\n\n',);
 }

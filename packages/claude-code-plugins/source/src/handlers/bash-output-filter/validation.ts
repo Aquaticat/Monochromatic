@@ -4,7 +4,7 @@
  * Provides allowlist and denylist checks that determine whether a Bash command
  * should be piped through the output filter. Implemented as named predicate
  * functions rather than regex arrays so each check stays inspectable and
- * stays out of the `no-restricted-syntax/require-regex-justification` rule.
+ * stays out of the `no-restricted-syntax/no-regex` rule.
  *
  * @module
  */

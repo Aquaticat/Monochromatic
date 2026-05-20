@@ -28,13 +28,13 @@ import {
 import { fnv1a64, } from './render-hash.ts';
 import { tryRenderPhase2, } from './render-phase2.ts';
 
-/* oxlint-disable no-restricted-syntax/require-regex-justification -- Fragment key parser; inputs are canonical keys produced by fragment-keys.ts (bounded path segments without slashes), regex is anchored with no nested quantifiers so no catastrophic backtracking is possible. */
+/* oxlint-disable no-restricted-syntax/no-regex -- Fragment key parser; inputs are canonical keys produced by fragment-keys.ts (bounded path segments without slashes), regex is anchored with no nested quantifiers so no catastrophic backtracking is possible. */
 /** Pattern for issue detail fragment keys. */
 const ISSUE_DETAIL_PATTERN = /^issues\/([^/]+)\/([^/]+)\/detail$/u;
 
 /** Pattern for filter list fragment keys. */
 const FILTER_LIST_PATTERN = /^repos\/([^/]+)\/filters\/([^/]+)\/([^/]+)\/list$/u;
-/* oxlint-enable no-restricted-syntax/require-regex-justification */
+/* oxlint-enable no-restricted-syntax/no-regex */
 
 /**
  * Result of {@link renderFragment}: the body bytes plus a content hash.

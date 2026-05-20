@@ -102,7 +102,7 @@ const ASCII_PRINTABLE_MIN = 0x20;
 /** Highest printable ASCII code point (tilde). */
 const ASCII_PRINTABLE_MAX = 0x7E;
 
-/* oxlint-disable no-restricted-syntax/require-regex-justification -- source-code tokenizer scanning project files for `icon('NAME')` call sites; alphabet is constrained to `[a-z][a-z0-9_]*` and the input is bounded by repo source size. Lazy comment patterns (`[\s\S]*?`) are bounded by the next `*\/` or `\n` and only run over project source. No nested quantifiers; linear in input length. */
+/* oxlint-disable no-restricted-syntax/no-regex -- source-code tokenizer scanning project files for `icon('NAME')` call sites; alphabet is constrained to `[a-z][a-z0-9_]*` and the input is bounded by repo source size. Lazy comment patterns (`[\s\S]*?`) are bounded by the next `*\/` or `\n` and only run over project source. No nested quantifiers; linear in input length. */
 /**
  * Matches an `icon('NAME')` or `icon("NAME")` call site in source.
  *
@@ -118,7 +118,7 @@ const BLOCK_COMMENT_REGEX = /\/\*[\s\S]*?\*\//g;
 
 /** Matches `// ...` line comments up to end of line. */
 const LINE_COMMENT_REGEX = /\/\/[^\n]*/g;
-/* oxlint-enable no-restricted-syntax/require-regex-justification */
+/* oxlint-enable no-restricted-syntax/no-regex */
 
 //region Charset extraction
 

@@ -3,25 +3,21 @@ import {
   tagged,
 } from '../log.ts';
 import { parseGlobalOptions, } from '../parse-global-options.ts';
+import { parseStatusPreRegion, } from '../parsers/status.ts';
 
-/**
- * Config key prefix the user can set via `-c <key>=<value>` to override the
- * default git advice. Honoured by skipping the wrapper's injection so the
- * user's choice wins.
- */
-const ADVICE_KEY_PREFIX = 'advice.statusHints=';
+//region Status hints-off rule
 
 /**
  * Argv tokens injected into `git status` so git itself does not print its
  * stock hints. The hints (`use "git add <file>..."`, `use "git commit -a"`)
  * suggest patterns that the wrapper rejects (`add-explicit` bans bulk
- * staging; `commit-only` injects `-o`, which conflicts with `-a`). A
- * cli-git note is printed in the entry point after the spawn so the user
- * sees accurate guidance instead.
+ * staging; `commit-only` injects `-o`, which conflicts with `-a`). A cli-git
+ * note is printed in the entry point after the spawn so the user sees
+ * accurate guidance instead.
  */
 const QUIET_INJECTION: readonly string[] = [
   '-c',
-  `${ADVICE_KEY_PREFIX}false`,
+  'advice.statusHints=false',
 ];
 
 /**
@@ -52,21 +48,9 @@ export function hasExplicitStatusHintsOverride(args: readonly string[],): boolea
   /** Position of the subcommand within args; everything before it is the global-option region scanned for `-c`. */
   const { subcommandIndex, } = parseGlobalOptions(args,);
   /** Slice of args strictly before the subcommand; where pre-subcommand global options live. */
-  const preSubcommandArgs = args.slice(
-    0,
-    subcommandIndex,
-  );
+  const preSubcommandArgs = args.slice(0, subcommandIndex,);
 
-  return preSubcommandArgs.some(function isExplicitOverride(
-    arg,
-    idx,
-  ) {
-    if (arg !== '-c')
-      return false;
-    /** Value paired with this `-c`; `undefined` if `-c` is the final pre-subcommand token. */
-    const value = preSubcommandArgs[idx + 1];
-    return value?.startsWith(ADVICE_KEY_PREFIX,) ?? false;
-  },);
+  return parseStatusPreRegion(preSubcommandArgs,).hasStatusHintsOverride;
 }
 
 /**
@@ -93,10 +77,10 @@ export function hasExplicitStatusHintsOverride(args: readonly string[],): boolea
  * // => ['-C', '/repo', '-c', 'advice.statusHints=false', 'status', 'packages/x']
  *
  * statusHintsOff(['-c', 'advice.statusHints=true', 'status']);
- * // => ['-c', 'advice.statusHints=true', 'status'] (user override honoured)
+ * // => ['-c', 'advice.statusHints=true', 'status']
  *
  * statusHintsOff(['commit', '-m', 'x']);
- * // => ['commit', '-m', 'x'] (not a status invocation)
+ * // => ['commit', '-m', 'x']
  * ```
  */
 export function statusHintsOff(args: readonly string[],): readonly string[] {
@@ -119,11 +103,10 @@ export function statusHintsOff(args: readonly string[],): readonly string[] {
 
   rl.debug('injecting -c advice.statusHints=false before status',);
   return [
-    ...args.slice(
-      0,
-      subcommandIndex,
-    ),
+    ...args.slice(0, subcommandIndex,),
     ...QUIET_INJECTION,
     ...args.slice(subcommandIndex,),
   ];
 }
+
+//endregion Status hints-off rule

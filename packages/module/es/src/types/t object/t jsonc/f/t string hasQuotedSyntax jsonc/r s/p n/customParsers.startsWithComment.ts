@@ -34,7 +34,7 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
   // This handles the unique case where the entire block comment is on the first line
   // Must be lazy else will match 1, /* c *\/ 2, /* d *\/
   /** Matches a `/* ... *\/` comment confined to a single line; lazy so it stops at the first closing delimiter. */
-  // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- the lazy `[^\n]*?` is the simplest expression of "shortest comment body that fits on one line"; expressing both the no-newline and first-`*\/` constraints as a walker triples the code. Input is bounded JSONC source, no nested quantifiers, linear matching.
+  // oxlint-disable-next-line no-restricted-syntax/no-regex -- the lazy `[^\n]*?` is the simplest expression of "shortest comment body that fits on one line"; expressing both the no-newline and first-`*\/` constraints as a walker triples the code. Input is bounded JSONC source, no nested quantifiers, linear matching.
   const FIRST_LINE_BLOCK_COMMENT_REGEX = /\/\*[^\n]*?\*\//;
   /**
    * Single-line block comment match against {@link trimmed}, or null when the comment spans multiple lines.
@@ -50,7 +50,7 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
   // If not on first line, use line-based approach
   // This regex specifically finds *\/ that appear after newlines
   /** Locates a `*\/` sequence anchored to a non-first line; used to skip closes that fall inside `//` line comments. */
-  // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- captures every newline-anchored line containing `*\/` so the loop can filter out closes shadowed by `//`; the `[^\n]*` is bounded by the newline anchor (linear). Input is bounded JSONC source.
+  // oxlint-disable-next-line no-restricted-syntax/no-regex -- captures every newline-anchored line containing `*\/` so the loop can filter out closes shadowed by `//`; the `[^\n]*` is bounded by the newline anchor (linear). Input is bounded JSONC source.
   const NEWLINE_STAR_SLASH_REGEX = /\n[^\n]*\*\//g;
   /** Iterator over every newline-anchored `*\/` candidate; the loop discards those preceded by `//`. */
   const newlineStarSlashMatches = trimmed.matchAll(NEWLINE_STAR_SLASH_REGEX,);

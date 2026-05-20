@@ -1,5 +1,5 @@
 // Fixture: regex usage must use scoped disables with justification.
-// Expected violation: no-restricted-syntax(require-regex-justification)
+// Expected violation: no-restricted-syntax(no-regex)
 
 const literalPattern = /token/;
 const constructorPattern = new RegExp('token',);

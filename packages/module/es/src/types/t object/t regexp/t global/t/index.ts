@@ -3,7 +3,7 @@ export type $ = RegExp & {
   global: true;
 };
 
-/* oxlint-disable no-restricted-syntax/require-regex-justification -- compile-time brand tests: regex literals ARE the test subjects. */
+/* oxlint-disable no-restricted-syntax/no-regex -- compile-time brand tests: regex literals ARE the test subjects. */
 
 /** Compile-time test: global regex passes the brand check. */
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- compile-time test narrowing RegExp to branded Global type
@@ -13,4 +13,4 @@ const _a: $ = /a/g as $;
 // @ts-expect-error; Isn't global
 const _b: $ = /b/;
 
-/* oxlint-enable no-restricted-syntax/require-regex-justification */
+/* oxlint-enable no-restricted-syntax/no-regex */

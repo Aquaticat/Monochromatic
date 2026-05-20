@@ -21,14 +21,14 @@ const config: UserConfig = defineConfig({
    */
   deps: {
     alwaysBundle: [
-      /* oxlint-disable no-restricted-syntax/require-regex-justification -- Anchored prefix/exact match on package names; literal input is a finite list of npm package names, no backtracking surface. */
+      /* oxlint-disable no-restricted-syntax/no-regex -- Anchored prefix/exact match on package names; literal input is a finite list of npm package names, no backtracking surface. */
       /^@monochromatic-dev\//u,
       /^@lezer\//u,
       /^lezer-/u,
       /^jspdf$/u,
       /^typesafe-i18n/u,
       /^pdfjs-dist/u,
-      /* oxlint-enable no-restricted-syntax/require-regex-justification */
+      /* oxlint-enable no-restricted-syntax/no-regex */
     ],
   },
   minify: {

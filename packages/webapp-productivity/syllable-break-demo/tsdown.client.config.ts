@@ -16,7 +16,7 @@ const config: UserConfig = defineConfig({
     ...base.deps,
     alwaysBundle: [
       ...(Array.isArray(base.deps?.alwaysBundle,) ? base.deps.alwaysBundle : []),
-      // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- Anchored prefix match on package names ('hyphen', 'hyphen-en', etc.); literal input is a finite list of npm names, no backtracking surface.
+      // oxlint-disable-next-line no-restricted-syntax/no-regex -- Anchored prefix match on package names ('hyphen', 'hyphen-en', etc.); literal input is a finite list of npm names, no backtracking surface.
       /^hyphen/u,
     ],
   },

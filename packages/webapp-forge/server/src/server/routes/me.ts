@@ -139,10 +139,10 @@ function parseDeltaPath(path: string,): {
   readonly kind: 'issue-detail' | 'filter-list';
   readonly number: number | null;
 } | null {
-  /* oxlint-disable no-restricted-syntax/require-regex-justification -- URL path parser; input is a request path bounded by Node URL parsing, anchored with no nested quantifiers so no catastrophic backtracking is possible. */
+  /* oxlint-disable no-restricted-syntax/no-regex -- URL path parser; input is a request path bounded by Node URL parsing, anchored with no nested quantifiers so no catastrophic backtracking is possible. */
   /** Issue-detail path match; non-null returns the parsed shape below. */
   const issueDetailMatch = /^\/([^/]+)\/([^/]+)\/issues\/(\d+)\/?$/u.exec(path,);
-  /* oxlint-enable no-restricted-syntax/require-regex-justification */
+  /* oxlint-enable no-restricted-syntax/no-regex */
   if (issueDetailMatch !== null) {
     return {
       owner: issueDetailMatch[1] ?? '',
@@ -154,10 +154,10 @@ function parseDeltaPath(path: string,): {
       ),
     };
   }
-  /* oxlint-disable no-restricted-syntax/require-regex-justification -- URL path parser; input is a request path bounded by Node URL parsing, anchored with no nested quantifiers so no catastrophic backtracking is possible. */
+  /* oxlint-disable no-restricted-syntax/no-regex -- URL path parser; input is a request path bounded by Node URL parsing, anchored with no nested quantifiers so no catastrophic backtracking is possible. */
   /** Filter-list path match; non-null returns the parsed shape below. */
   const filterListMatch = /^\/([^/]+)\/([^/]+)\/issues\/?$/u.exec(path,);
-  /* oxlint-enable no-restricted-syntax/require-regex-justification */
+  /* oxlint-enable no-restricted-syntax/no-regex */
   if (filterListMatch !== null) {
     return {
       owner: filterListMatch[1] ?? '',

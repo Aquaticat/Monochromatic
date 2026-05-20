@@ -596,7 +596,8 @@ await describe({
       },
     },),
     it({
-      name: 'allows state-changing clean at main worktree root with worktree escape hatch',
+      name:
+        'allows state-changing clean at main worktree root with worktree escape hatch',
       fn: async function testCleanAtMainWorktreeRootWithEscapeHatch(): Promise<void> {
         await using tempDirectory = await createTempDirectory();
 

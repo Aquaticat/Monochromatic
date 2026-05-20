@@ -4,7 +4,7 @@
  * @module
  */
 
-/* oxlint-disable no-restricted-syntax/require-regex-justification -- this file tests `.toMatch` and `.toThrow` with regex inputs; every test that exercises the regex branch must construct a regex literal. The regex sites here ARE the test fixtures. */
+/* oxlint-disable no-restricted-syntax/no-regex -- this file tests `.toMatch` and `.toThrow` with regex inputs; every test that exercises the regex branch must construct a regex literal. The regex sites here ARE the test fixtures. */
 
 import {
   describe,
@@ -428,4 +428,4 @@ await describe({
   ],
 },);
 
-/* oxlint-enable no-restricted-syntax/require-regex-justification */
+/* oxlint-enable no-restricted-syntax/no-regex */

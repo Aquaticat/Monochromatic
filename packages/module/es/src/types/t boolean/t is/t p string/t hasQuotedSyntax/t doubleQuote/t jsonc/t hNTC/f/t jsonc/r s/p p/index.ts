@@ -37,7 +37,7 @@ import type {
  */
 export function $(value: Jsonc,): value is HasNoTrailingCommas {
   /** Every comma-then-closer match across the input considered for trailing-comma classification. */
-  // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- finds every `,<ws>(}|])` substring; the inQuotes lookup downstream filters out commas inside strings, so this is the wide-net first pass. Input is bounded JSONC source; no nested quantifiers means linear matching.
+  // oxlint-disable-next-line no-restricted-syntax/no-regex -- finds every `,<ws>(}|])` substring; the inQuotes lookup downstream filters out commas inside strings, so this is the wide-net first pass. Input is bounded JSONC source; no nested quantifiers means linear matching.
   const potentialTrailingCommas = value.matchAll(/,\s{0,}[\}\]]/gv,);
 
   for (const potentialTrailingComma of potentialTrailingCommas) {

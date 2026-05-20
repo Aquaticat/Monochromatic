@@ -12,7 +12,7 @@ await describe({
       name: 'returns a valid UUID v4 format',
       fn: async () => {
         const uuidV4Regex =
-          // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- canonical UUIDv4 format validator; the structure (8-4-4-4-12 hex with fixed version/variant nibbles) is the test's contract. Input is a 36-char UUID, no nested quantifiers, linear matching.
+          // oxlint-disable-next-line no-restricted-syntax/no-regex -- canonical UUIDv4 format validator; the structure (8-4-4-4-12 hex with fixed version/variant nibbles) is the test's contract. Input is a 36-char UUID, no nested quantifiers, linear matching.
           /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
         const uuid = $({},);
         expect(uuid,).toMatch(uuidV4Regex,);
@@ -32,7 +32,7 @@ await describe({
       name: 'accepts empty object parameter',
       fn: async () => {
         const uuidV4Regex =
-          // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- canonical UUIDv4 format validator; the structure (8-4-4-4-12 hex with fixed version/variant nibbles) is the test's contract. Input is a 36-char UUID, no nested quantifiers, linear matching.
+          // oxlint-disable-next-line no-restricted-syntax/no-regex -- canonical UUIDv4 format validator; the structure (8-4-4-4-12 hex with fixed version/variant nibbles) is the test's contract. Input is a 36-char UUID, no nested quantifiers, linear matching.
           /^[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
         const uuid = $({},);
         expect(uuid,).toMatch(uuidV4Regex,);

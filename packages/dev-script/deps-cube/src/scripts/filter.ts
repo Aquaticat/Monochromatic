@@ -433,7 +433,7 @@ export function searchMatches(
        * syntax. Runs only on the local probe-name strings (short fixed
        * vocabulary), never on attacker-controlled input.
        */
-      // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- user-typed regex via `/.../`; length-capped by MAX_USER_REGEX_LEN; matched against short local probe names
+      // oxlint-disable-next-line no-restricted-syntax/no-regex -- user-typed regex via `/.../`; length-capped by MAX_USER_REGEX_LEN; matched against short local probe names
       const pattern = new RegExp(
         body,
         'i',

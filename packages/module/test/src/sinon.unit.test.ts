@@ -113,7 +113,7 @@ await describe({
 
         spy('hello world',);
 
-        // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- this test exercises `expect.stringMatching` which is a regex matcher; the regex IS the test fixture.
+        // oxlint-disable-next-line no-restricted-syntax/no-regex -- this test exercises `expect.stringMatching` which is a regex matcher; the regex IS the test fixture.
         expect(spy,).toHaveBeenCalledWith(expect.stringMatching(/^hello/,),);
       },
     },),

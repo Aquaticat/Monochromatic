@@ -1,0 +1,170 @@
+import { object, } from '@optique/core/constructs';
+import {
+  multiple,
+  optional,
+} from '@optique/core/modifiers';
+import { parseSync, } from '@optique/core/parser';
+import {
+  argument,
+  flag,
+  option,
+  passThrough,
+} from '@optique/core/primitives';
+import { string, } from '@optique/core/valueparser';
+
+import { expandAbbreviations, } from '../abbrev.ts';
+import {
+  PATHSPEC_SEPARATOR,
+  WORKTREE_ENFORCEMENT_ESCAPE_HATCH,
+} from '../escape-hatch.ts';
+
+//region Reset abbreviation tables (git accepts unambiguous prefixes)
+
+/** Aliases for `--hard`. No other reset long option starts with `--h`. */
+const HARD_ALIASES = expandAbbreviations({ longOption: '--hard', },);
+
+/** Aliases for `--merge`. Requires `--me` because `--m` is ambiguous with `--mixed`. */
+const MERGE_ALIASES = expandAbbreviations({ longOption: '--merge', minStemLength: 2, },);
+
+/** Aliases for `--keep`. No other reset long option starts with `--k`. */
+const KEEP_ALIASES = expandAbbreviations({ longOption: '--keep', },);
+
+//endregion Reset abbreviation tables
+
+//region Reset post-subcommand optique parser
+
+/**
+ * Optique parser for the post-`reset` argv region.
+ *
+ * Models destructive reset modes plus the value-taking
+ * `--pathspec-from-file <file>` so the wrapper-only escape hatch cannot be
+ * misread when it appears in the value position. Other reset options are
+ * captured by passthrough since they do not influence destructiveness.
+ */
+const resetRegionParser = object({
+  hardFlags: multiple(flag(...HARD_ALIASES,),),
+  mergeFlags: multiple(flag(...MERGE_ALIASES,),),
+  keepFlags: multiple(flag(...KEEP_ALIASES,),),
+  pathspecFromFile: optional(option('--pathspec-from-file', string(),),),
+  escape: multiple(flag(WORKTREE_ENFORCEMENT_ESCAPE_HATCH,),),
+  positionals: multiple(argument(string(),),),
+  unknownOptions: passThrough({ format: 'nextToken', },),
+},);
+
+//endregion Reset post-subcommand optique parser
+
+//region Reset region facts derived from optique parse
+
+/** Facts about the post-`reset` argv region used by linked-worktree policy. */
+export type ResetRegion = {
+  /** True when any destructive reset mode (any abbreviation) appears before pathspecs. */
+  readonly hasDestructiveMode: boolean;
+  /** True when wrapper-only escape hatch appears as a real flag. */
+  readonly hasEscapeHatch: boolean;
+  /** True when optique parse failed; rule should be conservative. */
+  readonly parseFailed: boolean;
+};
+
+/**
+ * Splits `args` at the pathspec separator and returns only the option region.
+ *
+ * @param args - Post-subcommand argv tokens.
+ *
+ * @returns Argv slice strictly before `--`.
+ *
+ * @example
+ * ```ts
+ * optionRegion(['--hard', '--', 'HEAD']);
+ * // => ['--hard']
+ * ```
+ */
+function optionRegion(args: readonly string[],): readonly string[] {
+  /** Position of pathspec separator inside post-subcommand region. */
+  const separatorIndex = args.indexOf(PATHSPEC_SEPARATOR,);
+
+  if (separatorIndex === (-1))
+    return args;
+
+  return args.slice(0, separatorIndex,);
+}
+
+/**
+ * Parses the post-`reset` argv region into a structured fact set used by the
+ * linked-worktree rule. Closes parser-mismatch bypasses by declaring every
+ * accepted abbreviation of the destructive modes and by modelling
+ * `--pathspec-from-file` arity so the escape-hatch token cannot be hidden in
+ * the value slot.
+ *
+ * Parse failures leave `parseFailed: true` so the rule can default to
+ * conservative enforcement.
+ *
+ * @param postSubcommandArgs - Arguments strictly after `reset` subcommand.
+ *
+ * @returns Fact record consumed by reset-worktree policy.
+ *
+ * @example
+ * ```ts
+ * parseResetRegion(['--har', 'HEAD~1']).hasDestructiveMode;
+ * // => true (git accepts --har as --hard)
+ * ```
+ */
+export function parseResetRegion(
+  postSubcommandArgs: readonly string[],
+): ResetRegion {
+  /** Argv slice handed to optique; pathspec region is excluded. */
+  const region = optionRegion(postSubcommandArgs,);
+
+  /** Optique parse result over the cleaned option region. */
+  const parseResult = parseSync(resetRegionParser, region,);
+
+  if (!parseResult.success) {
+    return {
+      hasDestructiveMode: false,
+      hasEscapeHatch: false,
+      parseFailed: true,
+    };
+  }
+
+  /** Successful parse value with optique-inferred shape. */
+  const { value, } = parseResult;
+  /** Sum of destructive-mode flag occurrences (`--hard` + `--merge` + `--keep`, any abbreviation). */
+  const destructiveModeCount = value.hardFlags.length
+    + value.mergeFlags.length
+    + value.keepFlags.length;
+
+  return {
+    hasDestructiveMode: destructiveModeCount > 0,
+    hasEscapeHatch: value.escape.length > 0,
+    parseFailed: false,
+  };
+}
+
+//endregion Reset region facts derived from optique parse
+
+//region Reset destructiveness policy
+
+/**
+ * Determines whether a `git reset` invocation can change worktree files.
+ *
+ * Destructive when any of `--hard`, `--merge`, or `--keep` (or accepted
+ * abbreviations) appears before the pathspec separator. Conservative under
+ * parse failure: treats unknown cases as destructive so the guard runs.
+ *
+ * @param region - Parsed reset region.
+ *
+ * @returns `true` when invocation can change worktree filesystem state.
+ *
+ * @example
+ * ```ts
+ * resetChangesWorktree(parseResetRegion(['--mixed', 'HEAD~1']));
+ * // => false (mixed mode is index-only)
+ * ```
+ */
+export function resetChangesWorktree(region: ResetRegion,): boolean {
+  if (region.parseFailed)
+    return true;
+
+  return region.hasDestructiveMode;
+}
+
+//endregion Reset destructiveness policy

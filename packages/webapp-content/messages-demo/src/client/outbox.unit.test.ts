@@ -131,7 +131,7 @@ await describe({
               function fakeFetch(url,) {
                 if ((typeof url) !== 'string')
                   throw new Error('expected string url',);
-                // oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- extracts the chunk seq from a test fixture URL of the shape `/chunks/<int>`; single bounded capture, no nested quantifiers
+                // oxlint-disable-next-line no-restricted-syntax/no-regex -- extracts the chunk seq from a test fixture URL of the shape `/chunks/<int>`; single bounded capture, no nested quantifiers
                 const match = /\/chunks\/(\d+)/u.exec(url,);
                 if (match === null)
                   throw new Error('no seq',);

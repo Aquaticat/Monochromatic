@@ -8,7 +8,7 @@ Inspired by paper2galgame; OSS, no backend, no login, no telemetry.
 
 ## Status: development paused
 
-Active development is paused pending repo-wide work. `mise run //packages/webapp-edu/paper2vn:lint` currently reports 5 errors from `no-restricted-syntax/require-regex-justification` across `src/client/llm/{anthropic,ollama,openai-compatible}.ts`, `src/client/dialogue/generator.ts`, and `src/client/parse/pdf.ts`. The refactor (string-API replacements for the trailing-slash strip and fence-strip, scoped disables for the PDF normalisers) is deferred. Resume by completing the require-regex sweep documented in `HANDOVER.require-regex-justification.md`.
+Active development is paused pending repo-wide work. `mise run //packages/webapp-edu/paper2vn:lint` currently reports 5 errors from `no-restricted-syntax/no-regex` across `src/client/llm/{anthropic,ollama,openai-compatible}.ts`, `src/client/dialogue/generator.ts`, and `src/client/parse/pdf.ts`. The refactor (string-API replacements for the trailing-slash strip and fence-strip, scoped disables for the PDF normalisers) is deferred. Resume by completing the no-regex sweep documented in `HANDOVER.no-regex.md`.
 
 ## What it does
 

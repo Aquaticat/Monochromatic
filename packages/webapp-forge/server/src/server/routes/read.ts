@@ -187,13 +187,13 @@ export const rawFragmentHandler: EventHandlerWithFetch = defineHandler(
   async function handleRawFragment(event,) {
     /** Request URL parsed once so pathname is reachable below. */
     const url = new URL(event.req.url,);
-    /* oxlint-disable no-restricted-syntax/require-regex-justification -- Anchored literal-prefix strip on a bounded request pathname; one-shot match, no quantifier means linear time. */
+    /* oxlint-disable no-restricted-syntax/no-regex -- Anchored literal-prefix strip on a bounded request pathname; one-shot match, no quantifier means linear time. */
     /** Path under `/_fragments/`, treated as a literal storage key. */
     const path = url.pathname.replace(
       /^\/_fragments\//u,
       '',
     );
-    /* oxlint-enable no-restricted-syntax/require-regex-justification */
+    /* oxlint-enable no-restricted-syntax/no-regex */
     if (path === '') {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,

@@ -61,7 +61,7 @@ function isDigitString(s: string,): boolean {
  * Splits `s` on runs of whitespace, dropping empty fragments.
  *
  * Equivalent to `s.trim().split(/\s+/)` for non-empty results; written as an
- * index walker to avoid a regex literal under the `require-regex-justification`
+ * index walker to avoid a regex literal under the `no-regex`
  * rule.
  *
  * @param s - input string

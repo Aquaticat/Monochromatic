@@ -4,7 +4,7 @@
  * Replaces inline regex calls in `correction-reminder`, `uncertainty`,
  * `bash-output-filter`, `terminal-title`, and `claude-spawn` handlers
  * with named, testable, character-level scans. The repo-wide oxlint rule
- * `no-restricted-syntax/require-regex-justification` pushes consumers
+ * `no-restricted-syntax/no-regex` pushes consumers
  * toward these helpers instead of inline regex.
  *
  * @module

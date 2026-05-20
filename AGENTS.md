@@ -377,7 +377,7 @@ Write comprehensive TSDoc for **all** declarations (exported or not, including l
 
 - Do not introduce a regular expression when an index scan, parser, or string API expresses the same rule clearly.
 - Regex literals, `RegExp` constructor calls, and string methods using regex must be guarded by a scoped
-  `oxlint-disable-next-line no-restricted-syntax/require-regex-justification -- ...` comment. The justification must
+  `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. The justification must
   explain why regex is the right tool, what input shape bounds it, and why it cannot backtrack or rescan unbounded
   prefixes/suffixes. If no useful justification exists, do not use regex.
 - For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap the input
