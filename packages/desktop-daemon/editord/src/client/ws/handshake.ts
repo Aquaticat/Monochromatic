@@ -17,6 +17,9 @@ const l = tagged({
   l: rootLogger,
 },);
 
+/** Maximum time to wait for the server's handshake message before rejecting (milliseconds). */
+const HANDSHAKE_TIMEOUT_MS = 10_000;
+
 /**
  * Performs the WebSocket handshake with the server.
  *
@@ -50,6 +53,7 @@ export function performHandshake({
      * @param event - WebSocket message event containing the server handshake
      */
     function handleFirstMessage(event: MessageEvent,): void {
+      clearTimeout(handshakeTimeoutId,);
       try {
         /** Parsed server message; discriminated below on `data.type`. */
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; runtime type is validated by discriminant checks below
@@ -64,12 +68,27 @@ export function performHandshake({
         else if (data.type === 'error') {
           reject(new Error(data.message,),);
         }
+        else {
+          reject(new Error(`unexpected handshake message: ${data.type}`,),);
+        }
       }
       catch (error) {
         l.error(`invalid server handshake: ${String(error,)}`,);
         reject(new Error('invalid server handshake',),);
       }
     }
+
+    /**
+     * Timer that rejects the handshake if no message arrives within {@link HANDSHAKE_TIMEOUT_MS}.
+     */
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- globalThis.setTimeout returns NodeJS.Timeout when Node types loaded
+    const handshakeTimeoutId = globalThis.setTimeout(
+      function rejectHandshakeTimeout(): void {
+        l.error(`handshake timed out after ${HANDSHAKE_TIMEOUT_MS}ms`,);
+        reject(new Error(`handshake timed out after ${HANDSHAKE_TIMEOUT_MS}ms`,),);
+      },
+      HANDSHAKE_TIMEOUT_MS,
+    ) as unknown as number;
 
     ws.addEventListener(
       'message',

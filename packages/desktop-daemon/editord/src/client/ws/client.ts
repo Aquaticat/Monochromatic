@@ -368,8 +368,8 @@ export function createEditorWsClient({
             state.reconnectDelay = RECONNECT_BASE_MS;
             l.info('reconnected',);
           }
-          catch {
-            l.error('reconnect handshake failed',);
+          catch (error) {
+            l.error(`reconnect handshake failed: ${String(error,)}`,);
           }
         })();
       },

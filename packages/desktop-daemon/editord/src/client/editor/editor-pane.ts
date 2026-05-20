@@ -32,6 +32,11 @@ import {
   scrollLineIntoView,
   setTextContent,
 } from './editor-pane-dom.ts';
+import {
+  cancelEditorPaneFrames,
+  createEditorPaneFrames,
+  dispatchContentChange,
+} from './editor-pane-frames.ts';
 import { STYLES, } from './editor-pane.styles.ts';
 import type { SelectionCoords, } from './indent.ts';
 import {
@@ -58,14 +63,12 @@ export class EditorPane extends HTMLElement {
   #editor: HTMLDivElement | null = null;
   /** Lezer parser for the current file's language. */
   #parser: Parser | null = null;
-  /** Pending highlight rAF ID. */
-  #highlightFrame = 0;
+  /** Pending rAF IDs grouped so disconnect cleanup stays in sync with schedulers. */
+  readonly #frames = createEditorPaneFrames();
   /** Current diagnostics. */
   #diagnostics: readonly Diagnostic[] = [];
   /** Current inlay hints. */
   #inlayHints: readonly InlayHint[] = [];
-  /** Pending resize rAF ID. */
-  #resizeMeasureFrame = 0;
   /** Resize observer for re-measurement. */
   #resizeObserver: ResizeObserver | null = null;
   /** Detects all DOM mutations inside the editor and dispatches `contentchange`. */
@@ -119,8 +122,7 @@ export class EditorPane extends HTMLElement {
     this.#mutationObserver = null;
     this.#resizeObserver?.disconnect();
     this.#resizeObserver = null;
-    cancelAnimationFrame(this.#highlightFrame,);
-    cancelAnimationFrame(this.#resizeMeasureFrame,);
+    cancelEditorPaneFrames({ frames: this.#frames, },);
   }
 
   //endregion Lifecycle
@@ -438,21 +440,14 @@ export class EditorPane extends HTMLElement {
 
   /** MutationObserver callback: dispatches `contentchange` on any editor DOM mutation. */
   #onMutation(): void {
-    this.dispatchEvent(
-      new CustomEvent(
-        'contentchange',
-        {
-          bubbles: true,
-          composed: true,
-        },
-      ),
-    );
+    dispatchContentChange({ target: this, },);
   }
 
   /** Schedules diagnostic highlights. */
   #scheduleDiagnosticHighlights(): void {
+    cancelAnimationFrame(this.#frames.diagnosticHighlight,);
     if (this.#editor !== null) {
-      scheduleDiagnosticHighlights({
+      this.#frames.diagnosticHighlight = scheduleDiagnosticHighlights({
         editor: this.#editor,
         diagnostics: this.#diagnostics,
       },);
@@ -461,8 +456,9 @@ export class EditorPane extends HTMLElement {
 
   /** Schedules inlay annotations. */
   #scheduleInlayAnnotations(): void {
+    cancelAnimationFrame(this.#frames.inlayAnnotation,);
     if (this.#editor !== null) {
-      scheduleInlayAnnotations({
+      this.#frames.inlayAnnotation = scheduleInlayAnnotations({
         editor: this.#editor,
         hints: this.#inlayHints,
         diagnostics: this.#diagnostics,
@@ -473,16 +469,16 @@ export class EditorPane extends HTMLElement {
   /** Schedules inlay re-measurement. */
   #scheduleInlayMeasure(): void {
     if (this.#editor !== null) {
-      cancelAnimationFrame(this.#resizeMeasureFrame,);
-      this.#resizeMeasureFrame = scheduleInlayMeasure({ editor: this.#editor, },);
+      cancelAnimationFrame(this.#frames.resizeMeasure,);
+      this.#frames.resizeMeasure = scheduleInlayMeasure({ editor: this.#editor, },);
     }
   }
 
   /** Schedules syntax highlighting. */
   #scheduleHighlight(): void {
-    cancelAnimationFrame(this.#highlightFrame,);
+    cancelAnimationFrame(this.#frames.highlight,);
     if (this.#editor !== null) {
-      this.#highlightFrame = scheduleHighlight({
+      this.#frames.highlight = scheduleHighlight({
         editor: this.#editor,
         parser: this.#parser,
       },);

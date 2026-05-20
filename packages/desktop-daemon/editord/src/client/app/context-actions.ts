@@ -7,9 +7,19 @@
  */
 
 import type { ContextAction, } from '../file-tree/file-tree.ts';
+import {
+  l,
+  tagged,
+} from '../log.ts';
 import { showFixedToast, } from '../toast/toast.ts';
 
 import type { EditorWsClientHandle, } from './types.ts';
+
+/** Tagged logger for the context-actions dispatcher. */
+const contextLog = tagged({
+  tag: 'context-actions',
+  l,
+},);
 
 /**
  * Sends the WebSocket request for a filesystem context action.
@@ -113,6 +123,7 @@ export async function dispatchContextAction({
     },);
   }
   catch (error) {
+    contextLog.error(`context action failed: ${String(error,)}`,);
     showFixedToast({ message: `Action failed: ${String(error,)}`, },);
   }
 }
