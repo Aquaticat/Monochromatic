@@ -446,9 +446,6 @@ importers:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../../packages/config/tsdown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../../packages/config/typescript
       '@monochromatic-dev/mcp-stdio':
         specifier: workspace:*
         version: link:../../../packages/mcp/stdio
@@ -935,11 +932,7 @@ importers:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
 
-  packages/config/typescript:
-    dependencies:
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: 'link:'
+  packages/config/typescript: {}
 
   packages/desktop-daemon/editord:
     dependencies:
@@ -1510,9 +1503,6 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: 'link:'
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
@@ -1580,9 +1570,6 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@monochromatic-dev/module-hyperscript':
-        specifier: workspace:*
-        version: 'link:'
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test
@@ -1653,9 +1640,6 @@ importers:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
-      '@monochromatic-dev/module-logger':
-        specifier: workspace:*
-        version: 'link:'
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../test

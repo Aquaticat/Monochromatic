@@ -25,7 +25,6 @@
   ],
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
-    "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "type-fest": "catalog:",
     "@types/bun": "catalog:",
