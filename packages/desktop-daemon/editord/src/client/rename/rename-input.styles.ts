@@ -58,7 +58,7 @@ export const STYLES: string = [
     },
   },),
   $({
-    rule: 'input:focus',
+    rule: 'input:focus-visible',
     decls: {
       'border-inline-color': cssVar('accent',),
       'border-block-color': cssVar('accent',),

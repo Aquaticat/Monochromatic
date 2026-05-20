@@ -32,7 +32,7 @@ export function createReferenceAnchor(): HTMLDivElement {
   );
   anchor.style.setProperty(
     'inline-size',
-    '2px',
+    '0.125rem',
   );
   anchor.style.setProperty(
     'pointer-events',

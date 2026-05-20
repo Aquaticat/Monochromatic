@@ -38,7 +38,9 @@ export const STYLES: string = [
     rule: ':host',
     decls: {
       display: 'block',
-      flex: '1',
+      'flex-grow': cssInt(1,),
+      'flex-shrink': cssInt(1,),
+      'flex-basis': cssInt(0,),
       overflow: 'auto',
     },
   },),
@@ -48,7 +50,7 @@ export const STYLES: string = [
       'min-block-size': cssPercent(FULL_HEIGHT,),
       'padding-block': cssVar('editor-padding',),
       'padding-inline': cssVar('editor-padding',),
-      outline: 'none',
+      'outline-style': 'none',
       'white-space': 'pre-wrap',
       'overflow-wrap': 'break-word',
       'font-family': cssCommaList([

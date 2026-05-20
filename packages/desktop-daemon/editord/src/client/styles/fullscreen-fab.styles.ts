@@ -6,6 +6,7 @@
  */
 
 import {
+  cssCommaList,
   cssNum,
   cssPercent,
   cssRem,
@@ -51,7 +52,8 @@ export const STYLES: string = $({
     color: cssVar('bg',),
     cursor: 'pointer',
     opacity: cssNum(DEFAULT_OPACITY,),
-    transition: `opacity ${cssS(TRANSITION_DURATION,)}`,
+    'transition-property': cssCommaList(['opacity',],),
+    'transition-duration': cssS(TRANSITION_DURATION,),
   },
   children: [
     $({

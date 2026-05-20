@@ -51,7 +51,7 @@ export const ENTRY_STYLES: string = [
     decls: { 'background-color': cssVar('tree-hover-bg',), },
   },),
   $({
-    rule: 'summary:focus, tree-file-entry:focus',
+    rule: 'summary:focus-visible, tree-file-entry:focus-visible',
     decls: {
       'background-color': cssVar('tree-selected-bg',),
       'outline-style': 'dashed',
