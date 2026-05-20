@@ -1,9 +1,15 @@
 import {
   copyFileSync,
+  mkdtempSync,
   readFileSync,
-  unlinkSync,
+  rmSync,
 } from 'node:fs';
-import { resolve, } from 'node:path';
+import { tmpdir, } from 'node:os';
+import {
+  isAbsolute,
+  join,
+  resolve,
+} from 'node:path';
 
 import {
   describe,
@@ -30,6 +36,22 @@ type OxlintDiagnostic = {
 type OxlintOutput = {
   /** All reported diagnostics. */
   readonly diagnostics: readonly OxlintDiagnostic[];
+};
+
+/** Disposable temp copy of a fixture file. */
+type TempFixtureFile = {
+  /** Absolute path to copied fixture file. */
+  readonly filePath: string;
+  /** Removes temp directory that contains fixture copy. */
+  [Symbol.dispose](): void;
+};
+
+/** Options for creating a disposable fixture copy. */
+type TempFixtureFileOptions = {
+  /** Basename for copied temp file. */
+  readonly fileName: string;
+  /** Source fixture path to copy into temp directory. */
+  readonly sourcePath: string;
 };
 
 //endregion Types
@@ -72,15 +94,19 @@ const FIXTURE_CONFIG = resolve(
  * Runs oxlint with the fixture config against a fixture path and returns
  * parsed diagnostics.
  *
- * @param fixturePath - path relative to fixture `src/` root
+ * @param fixturePath - path relative to fixture `src/` root, or absolute path
+ *   to a temp fixture
  *
  * @returns array of diagnostics from stylistic rules only
  */
 async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> {
-  const target = resolve(
-    FIXTURES,
-    fixturePath,
-  );
+  /** Resolved lint target; temp fixtures already arrive as absolute paths. */
+  const target = isAbsolute(fixturePath,)
+    ? fixturePath
+    : resolve(
+      FIXTURES,
+      fixturePath,
+    );
 
   // oxlint exits non-zero when violations are found: capture stdout from the error
   async function captureStdout(): Promise<string> {
@@ -115,6 +141,47 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
 }
 
 /**
+ * Creates a temp fixture copy with disposal-backed directory cleanup.
+ *
+ * @param options - fixture source and temp basename
+ *
+ * @returns copied temp fixture file handle
+ */
+function createTempFixtureFile(
+  {
+    fileName,
+    sourcePath,
+  }: TempFixtureFileOptions,
+): TempFixtureFile {
+  /** Unique temp directory owning this fixture copy. */
+  const dirPath = mkdtempSync(
+    join(
+      tmpdir(),
+      'oxlint-stylistic-autofix-',
+    ),
+  );
+  /** Absolute path to temp fixture copy. */
+  const filePath = resolve(
+    dirPath,
+    fileName,
+  );
+  copyFileSync(sourcePath, filePath,);
+
+  return {
+    filePath,
+    [Symbol.dispose]: function cleanup(): void {
+      rmSync(
+        dirPath,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    },
+  };
+}
+
+/**
  * Extracts unique rule codes from a set of diagnostics.
  *
  * @param diagnostics - array of oxlint diagnostics
@@ -128,20 +195,6 @@ function uniqueRules(diagnostics: readonly OxlintDiagnostic[],): readonly string
   const deduped: string[] = [...new Set<string>(codes,),];
   deduped.sort();
   return deduped;
-}
-
-/**
- * Cleans up a temporary file, ignoring errors if it does not exist.
- *
- * @param filePath - absolute path to remove
- */
-function cleanupFile(filePath: string,): void {
-  try {
-    unlinkSync(filePath,);
-  }
-  catch {
-    // file may not exist if test failed before creating it
-  }
 }
 
 //endregion Helpers
@@ -356,20 +409,17 @@ await describe({
         it({
           name: '--fix produces zero violations',
           fn: async () => {
-            /** Temporary copy of fixable.ts that gets modified by --fix. */
+            /** Source fixture copied so --fix never mutates original fixture. */
             const fixableSrc = resolve(
               FIXTURES,
               'invalid',
               'fixable.ts',
             );
-            const fixableCopy = resolve(
-              FIXTURES,
-              'invalid',
-              'fixable.copy.ts',
-            );
-
-            // Copy the fixable fixture so --fix doesn't modify the original
-            copyFileSync(fixableSrc, fixableCopy,);
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using fixableCopy = createTempFixtureFile({
+              fileName: 'fixable.ts',
+              sourcePath: fixableSrc,
+            },);
 
             // Run --fix on the copy
             try {
@@ -379,7 +429,7 @@ await describe({
                   '--fix',
                   '-c',
                   FIXTURE_CONFIG,
-                  fixableCopy,
+                  fixableCopy.filePath,
                 ],
                 { cwd: ROOT, },
               );
@@ -389,7 +439,7 @@ await describe({
             }
 
             // Re-lint the fixed copy
-            const diagnostics = await lint('invalid/fixable.copy.ts',);
+            const diagnostics = await lint(fixableCopy.filePath,);
             const stylisticDiags = diagnostics.filter(
               function isStylistic(d,): boolean {
                 return ((typeof d.code) === 'string')
@@ -397,24 +447,22 @@ await describe({
               },
             );
             expect(stylisticDiags,).toEqual([],);
-
-            cleanupFile(fixableCopy,);
           },
         },),
         it({
           name: '--fix preserves trailing commas',
           fn: async () => {
+            /** Source fixture copied so --fix never mutates original fixture. */
             const trailingSrc = resolve(
               FIXTURES,
               'invalid',
               'fixable-trailing-comma.ts',
             );
-            const trailingCopy = resolve(
-              FIXTURES,
-              'invalid',
-              'fixable-trailing-comma.copy.ts',
-            );
-            copyFileSync(trailingSrc, trailingCopy,);
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using trailingCopy = createTempFixtureFile({
+              fileName: 'fixable-trailing-comma.ts',
+              sourcePath: trailingSrc,
+            },);
 
             try {
               await spawn(
@@ -423,7 +471,7 @@ await describe({
                   '--fix',
                   '-c',
                   FIXTURE_CONFIG,
-                  trailingCopy,
+                  trailingCopy.filePath,
                 ],
                 { cwd: ROOT, },
               );
@@ -432,7 +480,7 @@ await describe({
               // --fix may still exit non-zero
             }
 
-            const fixedContent = readFileSync(trailingCopy, 'utf8',);
+            const fixedContent = readFileSync(trailingCopy.filePath, 'utf8',);
 
             // Trailing commas should be preserved on all items including the last
             expect(fixedContent,).toContain('  name: string,',);
@@ -440,26 +488,22 @@ await describe({
             expect(fixedContent,).toContain('  3,\n',);
             expect(fixedContent,).toContain('  port: 3000,',);
             expect(fixedContent,).toContain('  port,',);
-
-            cleanupFile(trailingCopy,);
           },
         },),
         it({
           name: '--fix places each item on its own line',
           fn: async () => {
-            /** Temporary copy of fixable.ts that gets modified by --fix. */
+            /** Source fixture copied so --fix never mutates original fixture. */
             const fixableSrc = resolve(
               FIXTURES,
               'invalid',
               'fixable.ts',
             );
-            const fixableCopy = resolve(
-              FIXTURES,
-              'invalid',
-              'fixable.copy.ts',
-            );
-
-            copyFileSync(fixableSrc, fixableCopy,);
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using fixableCopy = createTempFixtureFile({
+              fileName: 'fixable.ts',
+              sourcePath: fixableSrc,
+            },);
 
             try {
               await spawn(
@@ -468,7 +512,7 @@ await describe({
                   '--fix',
                   '-c',
                   FIXTURE_CONFIG,
-                  fixableCopy,
+                  fixableCopy.filePath,
                 ],
                 { cwd: ROOT, },
               );
@@ -477,7 +521,7 @@ await describe({
               // --fix may still exit non-zero
             }
 
-            const fixedContent = readFileSync(fixableCopy, 'utf8',);
+            const fixedContent = readFileSync(fixableCopy.filePath, 'utf8',);
 
             // After fix, multi-param function should have params on separate lines.
             // No trailing comma since the original had none.
@@ -496,8 +540,6 @@ await describe({
 
             // Two statements on a line should be split across lines.
             expect(fixedContent,).toContain('const p = 10;\nconst q = 20;',);
-
-            cleanupFile(fixableCopy,);
           },
         },),
       ],
