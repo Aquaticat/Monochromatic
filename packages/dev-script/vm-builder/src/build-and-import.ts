@@ -19,7 +19,7 @@
  */
 import { exec, } from '@monochromatic-dev/dev-script-file-enforcer/ts';
 import {
-  findMonorepoRootCached,
+  findMiseMonorepoRootCached,
 } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 import { findUp, } from 'find-up';
 import { spawn as nodeSpawn, } from 'node:child_process';
@@ -64,7 +64,7 @@ const PACKAGE_DIR = resolve(dirname(packageJson,),);
  * Used as the podman build context so the Containerfile can COPY from
  * sibling packages (e.g. `packages/config/dotfiles/`).
  */
-const MONOREPO_ROOT = await findMonorepoRootCached();
+const MONOREPO_ROOT = await findMiseMonorepoRootCached();
 
 /**
  * Directory where bootc-image-builder writes its output.

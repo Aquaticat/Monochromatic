@@ -12,7 +12,7 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
-// oxlint-disable-next-line import/no-cycle -- barrel re-export cycle; dirname is fully initialized before findMonorepoRoot runs
+// oxlint-disable-next-line import/no-cycle -- barrel re-export cycle; dirname is fully initialized before findMiseMonorepoRoot runs
 import { dirname, } from './index.ts';
 
 /**
@@ -29,7 +29,7 @@ type ReadFileFn = (path: string,) => Promise<string | undefined>;
 const backendCache: { readFile?: ReadFileFn; } = {};
 
 /** Tagged logger for monorepo root discovery diagnostics. */
-const l = tagged({ tag: 'findMonorepoRoot', },);
+const l = tagged({ tag: 'findMiseMonorepoRoot', },);
 
 //region Filesystem backend resolution
 
@@ -195,15 +195,15 @@ async function walkUp({
  *
  * @example
  * ```ts
- * const root = await findMonorepoRoot();
+ * const root = await findMiseMonorepoRoot();
  * ```
  *
  * @example
  * ```ts
- * const root = await findMonorepoRoot({ cwd: import.meta.dirname });
+ * const root = await findMiseMonorepoRoot({ cwd: import.meta.dirname });
  * ```
  */
-export async function findMonorepoRoot(
+export async function findMiseMonorepoRoot(
   { cwd, }: { cwd?: string; } = {},
 ): Promise<string> {
   /* oxlint-disable typescript/no-unnecessary-condition -- process may be undefined in browser */
@@ -240,7 +240,7 @@ export async function findMonorepoRoot(
 }
 
 /**
- * Process-lifetime cache for {@link findMonorepoRootCached}.
+ * Process-lifetime cache for {@link findMiseMonorepoRootCached}.
  * Stored as an object property so module-root state stays in a `const`
  * container (`no-module-root-let` would otherwise reject a top-level `let`).
  * The in-flight promise reference is reused across concurrent first callers
@@ -249,19 +249,19 @@ export async function findMonorepoRoot(
 const cache: { root?: Promise<string>; } = {};
 
 /**
- * Memoised variant of {@link findMonorepoRoot} that locks in the first
+ * Memoised variant of {@link findMiseMonorepoRoot} that locks in the first
  * resolved root for the lifetime of the process.
  *
  * Result is captured on first call and returned for every subsequent
  * call, even after `process.chdir`. Callers that need a fresh walk after
- * an intentional cwd change use {@link findMonorepoRoot} directly.
+ * an intentional cwd change use {@link findMiseMonorepoRoot} directly.
  *
  * Rejections are cached too: when the first call cannot find a monorepo
  * root, the same rejection is returned to every later caller. Matches the
  * process-lifetime invariant (no `mise.toml` with `[monorepo]` will
  * materialise mid-process).
  *
- * Internally calls {@link findMonorepoRoot} with no `cwd`, so the first
+ * Internally calls {@link findMiseMonorepoRoot} with no `cwd`, so the first
  * caller's `process.cwd()` at call time decides the result.
  *
  * @returns absolute path to monorepo root, locked in at first call
@@ -271,20 +271,20 @@ const cache: { root?: Promise<string>; } = {};
  *
  * @example
  * ```ts
- * const root = await findMonorepoRootCached();
+ * const root = await findMiseMonorepoRootCached();
  * ```
  *
  * @example
  * ```ts
  * // hot path: thousands of calls share one walk
  * for (const file of files) {
- *   const root = await findMonorepoRootCached();
+ *   const root = await findMiseMonorepoRootCached();
  *   await spawn('git', ['log', '--', file], { cwd: root, });
  * }
  * ```
  */
-export function findMonorepoRootCached(): Promise<string> {
-  cache.root ??= findMonorepoRoot();
+export function findMiseMonorepoRootCached(): Promise<string> {
+  cache.root ??= findMiseMonorepoRoot();
   return cache.root;
 }
 

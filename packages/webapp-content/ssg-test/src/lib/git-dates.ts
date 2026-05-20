@@ -17,7 +17,7 @@ import { resolve, } from 'node:path';
 import spawn, { type Result, } from 'nano-spawn';
 
 import {
-  findMonorepoRootCached,
+  findMiseMonorepoRootCached,
 } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 
 import type { Logger, } from './types.ts';
@@ -86,7 +86,7 @@ async function runCapture(
  */
 async function runGit(args: readonly string[],): Promise<CommandResult> {
   /** Repository root cached lookup pinning the git cwd. */
-  const root = await findMonorepoRootCached();
+  const root = await findMiseMonorepoRootCached();
   return runCapture({
     cmd: 'git',
     args,
@@ -246,7 +246,7 @@ async function gitLogDates(
  */
 async function getRepoRelativePath(filePath: string,): Promise<string> {
   /** Repository root cached lookup pinning the git cwd. */
-  const root = await findMonorepoRootCached();
+  const root = await findMiseMonorepoRootCached();
   /** Absolute path normalised before handing to `git ls-files --full-name`. */
   const absolute = resolve(
     process.cwd(),

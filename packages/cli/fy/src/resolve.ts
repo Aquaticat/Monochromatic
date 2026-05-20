@@ -2,7 +2,7 @@ import { createRequire, } from 'node:module';
 import { join, } from 'node:path';
 
 import {
-  findMonorepoRootCached,
+  findMiseMonorepoRootCached,
 } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 import {
   l,
@@ -120,26 +120,26 @@ function findGlobalNodeModules(): string | undefined {
 }
 
 /**
- * Wraps {@link findMonorepoRootCached} to swallow discovery errors and emit a single
+ * Wraps {@link findMiseMonorepoRootCached} to swallow discovery errors and emit a single
  * diagnostic log instead. Returns the cached root or `undefined` when the helper throws
- * (i.e. when no `pnpm-workspace.yaml` exists above CWD).
+ * (i.e. when no `mise.toml` with `[monorepo]` exists above CWD).
  *
  * @returns Cached monorepo root, or `undefined` outside a monorepo
  *
  * @example
  * ```ts
- * const root = await tryFindMonorepoRoot();
+ * const root = await tryFindMiseMonorepoRoot();
  * // => '/home/user/Monochromatic' (or undefined outside a workspace)
  * ```
  */
-async function tryFindMonorepoRoot(): Promise<string | undefined> {
+async function tryFindMiseMonorepoRoot(): Promise<string | undefined> {
   /** Tagged logger scoped to this helper so the "no monorepo root" log identifies the call site. */
   const rl = tagged({
-    tag: tryFindMonorepoRoot.name,
+    tag: tryFindMiseMonorepoRoot.name,
     l,
   },);
   try {
-    return await findMonorepoRootCached();
+    return await findMiseMonorepoRootCached();
   }
   catch {
     rl.info('no monorepo root found',);
@@ -187,12 +187,12 @@ export async function resolveSpecifier(
 
   //region Monorepo root resolution
   /**
-   * Cached monorepo root populated by {@link findMonorepoRootCached}.
+   * Cached monorepo root populated by {@link findMiseMonorepoRootCached}.
    *
    * Stays `undefined` outside a monorepo or when discovery throws; reused below to
    * render the diagnostic line for the not-found error.
    */
-  const monorepoRoot = await tryFindMonorepoRoot();
+  const monorepoRoot = await tryFindMiseMonorepoRoot();
   if ((monorepoRoot !== undefined) && (monorepoRoot !== cwd)) {
     rl.info(`trying monorepo root: ${monorepoRoot}`,);
     /** Result of resolution anchored at the monorepo root; tried only when the root differs from CWD. */

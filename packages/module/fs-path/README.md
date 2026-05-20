@@ -19,8 +19,8 @@ The package is source-only.
 | `resolve`                | `src/index.ts`              | Resolves a sequence of paths to an absolute path.                                                                                                       |
 | `isAbsolute`             | `src/index.ts`              | Whether a POSIX path starts with `/`.                                                                                                                   |
 | `sep`                    | `src/index.ts`              | POSIX path separator (`'/'`).                                                                                                                           |
-| `findMonorepoRoot`       | `src/find-monorepo-root.ts` | Walks upward for a `mise.toml` containing `[monorepo]`. Normalizes `/home/` to `/var/home/` for ostree.                                                 |
-| `findMonorepoRootCached` | `src/find-monorepo-root.ts` | Memoised variant: first resolved root is locked in for the process lifetime; concurrent first callers share one walk.                                   |
+| `findMiseMonorepoRoot`       | `src/find-monorepo-root.ts` | Walks upward for a `mise.toml` containing `[monorepo]`. Normalizes `/home/` to `/var/home/` for ostree.                                                 |
+| `findMiseMonorepoRootCached` | `src/find-monorepo-root.ts` | Memoised variant: first resolved root is locked in for the process lifetime; concurrent first callers share one walk.                                   |
 | `findPackageRoot`        | `src/find-package-root.ts`  | Walks upward for a `package.json` whose `name` field matches a given value. Anchors a package on its own root in source and built modes. Node/Bun only. |
 | `findPackageRootCached`  | `src/find-package-root.ts`  | Memoised variant of `findPackageRoot`, keyed by `name`. Two modules of the same package share one walk.                                                 |
 | `ensureDir`              | `src/ensure.ts`             | Creates a directory recursively when missing, verifies read/write when it exists.                                                                       |
@@ -37,10 +37,10 @@ The package is source-only.
 
 ```ts
 import {
-  findMonorepoRoot,
+  findMiseMonorepoRoot,
 } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 
-const root = await findMonorepoRoot();
+const root = await findMiseMonorepoRoot();
 ```
 
 ```ts
@@ -57,7 +57,7 @@ await emptyDir(trimTrailingSlash(dirname('dist/bundle.js/',),),);
 
 ## Runtime support
 
-`findMonorepoRoot` chooses a filesystem backend on first call:
+`findMiseMonorepoRoot` chooses a filesystem backend on first call:
 
 - Node and Bun: `node:fs/promises` via dynamic import.
 - Browser with OPFS support: `happy-opfs` `readTextFile` (logs a warning on first use).

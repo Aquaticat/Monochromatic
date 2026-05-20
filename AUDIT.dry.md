@@ -400,9 +400,9 @@ SQLite-bootstrap module proposed above.
 
 These collapse if the `done` fork is consolidated (see fork finding above).
 
-#### `findRepoRoot` in ssg-test reimplements `findMonorepoRoot`
+#### `findRepoRoot` in ssg-test reimplements `findMiseMonorepoRoot`
 
-**Resolved 2026-05-09**: `git-dates.ts` now imports `findMonorepoRoot` from
+**Resolved 2026-05-09**: `git-dates.ts` now imports `findMiseMonorepoRoot` from
 `@monochromatic-dev/module-es/find-monorepo-root`. The local `findRepoRoot`
 function, its `cachedRepoRoot` cache, and the `access`/`dirname`/`join`
 imports were deleted; the latent ostree bug is fixed by using the shared
@@ -410,13 +410,13 @@ helper's normalization.
 
 `packages/webapp-content/ssg-test/src/lib/git-dates.ts:56` defines `findRepoRoot()`
 walking up looking for `.git`. `packages/module/es/src/path/find-monorepo-root.ts:199`
-already exports `findMonorepoRoot` walking up looking for `mise.toml` containing
+already exports `findMiseMonorepoRoot` walking up looking for `mise.toml` containing
 `[monorepo]`, plus normalizes `/home/...` to `/var/home/...` for Fedora ostree.
 
 The semantic distinction (`.git` vs `mise.toml`) is not exploited and the ostree
 normalization is missing from `findRepoRoot`, which is a latent bug under ostree.
 
-Suggested resolution: import `findMonorepoRoot` from
+Suggested resolution: import `findMiseMonorepoRoot` from
 `@monochromatic-dev/module-es/find-monorepo-root` in `git-dates.ts`.
 
 #### Six `mount(root)` screen functions in paper2vn

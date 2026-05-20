@@ -141,7 +141,7 @@ These are public methods, not `#private` syntax, so oxlint's
 `packages/module/es/src/path/index.ts`, which re-exports `find-monorepo-root.ts`.
 The cycle is **already documented and accepted** in source via
 `// oxlint-disable-next-line import/no-cycle -- barrel re-export cycle;
-dirname is fully initialized before findMonorepoRoot runs`.
+dirname is fully initialized before findMiseMonorepoRoot runs`.
 The prototype config disables fallow's `circular-dependencies` rule
 because oxlint already covers this with explicit suppression.
 

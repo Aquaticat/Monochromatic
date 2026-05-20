@@ -23,7 +23,7 @@
  * @module
  */
 
-import { findMonorepoRootCached, } from '@monochromatic-dev/module-fs-path';
+import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path';
 
 /**
  * Substrings identifying stack frames that belong to the harness's
@@ -67,7 +67,7 @@ const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
 
 /**
  * Resolves the monorepo root directory (with trailing slash) by
- * calling {@link findMonorepoRootCached} from
+ * calling {@link findMiseMonorepoRootCached} from
  * `@monochromatic-dev/module-fs-path`. The shared cached variant
  * memoises the result process-wide, so no local cache is needed.
  * Falls back to `process.cwd()` when the cached variant rejects
@@ -85,7 +85,7 @@ const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
 async function resolveWorkspacePrefix(): Promise<string> {
   try {
     /** Captured root so the trailing slash can be appended exactly once before returning. */
-    const root = await findMonorepoRootCached();
+    const root = await findMiseMonorepoRootCached();
     return `${root}/`;
   }
   catch {

@@ -22,7 +22,7 @@ import {
 } from './container.ts';
 import { discoverTestFiles, } from './discover.ts';
 import { runHost, } from './host.ts';
-import { findMonorepoRootCached, } from './root.ts';
+import { findMiseMonorepoRootCached, } from './root.ts';
 import type {
   Combination,
   ExcludeEntry,
@@ -313,7 +313,7 @@ export async function matrix({
 
   //region Discover monorepo root
   /** Resolved once and threaded into every container invocation as the bind-mount source. */
-  const monorepoRoot = await findMonorepoRootCached();
+  const monorepoRoot = await findMiseMonorepoRootCached();
   l.debug(`monorepo root: ${monorepoRoot}`,);
   //endregion Discover monorepo root
 

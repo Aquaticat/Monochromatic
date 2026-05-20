@@ -10,7 +10,7 @@ import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
-  findMonorepoRootCached,
+  findMiseMonorepoRootCached,
 } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 import spawn from 'nano-spawn';
 
@@ -28,7 +28,7 @@ const FALLBACK_DIRECTORY = 'packages/webapp-productivity/doodle-widget';
 async function resolveRepoUrl(): Promise<string> {
   try {
     /** Monorepo root so `git remote` runs against the correct working tree. */
-    const repoRoot = await findMonorepoRootCached();
+    const repoRoot = await findMiseMonorepoRootCached();
     /** Captured so the trailing `.git` can be trimmed before returning. */
     const result = await spawn(
       'git',

@@ -1,13 +1,13 @@
 /**
  * Re-exports monorepo root discovery from `\@monochromatic-dev/module-fs-path`.
  *
- * @see {@link findMonorepoRoot} for the fresh-walk function
+ * @see {@link findMiseMonorepoRoot} for the fresh-walk function
  *
- * @see {@link findMonorepoRootCached} for the process-lifetime memoised
+ * @see {@link findMiseMonorepoRootCached} for the process-lifetime memoised
  *   variant; prefer it on hot paths
  */
 
 export {
-  findMonorepoRoot,
-  findMonorepoRootCached,
+  findMiseMonorepoRoot,
+  findMiseMonorepoRootCached,
 } from '@monochromatic-dev/module-fs-path/find-monorepo-root';

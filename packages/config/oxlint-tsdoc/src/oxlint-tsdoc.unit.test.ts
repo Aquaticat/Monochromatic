@@ -1,6 +1,6 @@
 import { resolve, } from 'node:path';
 
-import { findMonorepoRoot, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+import { findMiseMonorepoRoot, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
 import {
   describe,
   expect,
@@ -33,7 +33,7 @@ type OxlintOutput = {
 //region Helpers
 
 /** Workspace root. */
-const ROOT = await findMonorepoRoot({ cwd: import.meta.dirname, },);
+const ROOT = await findMiseMonorepoRoot({ cwd: import.meta.dirname, },);
 
 /** Fixture package root. */
 const FIXTURE_PKG = resolve(ROOT, 'packages', 'test-fixture', 'oxlint-tsdoc',);
