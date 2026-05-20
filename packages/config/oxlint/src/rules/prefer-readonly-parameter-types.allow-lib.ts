@@ -152,6 +152,9 @@ export const libAllowSpecifiers: readonly LibSpecifier[] = [
       'DOMStringList',
       'Range',
       'Selection',
+      'Text',
+      'DOMRect',
+      'DOMRectReadOnly',
     ],
   },
   {
@@ -253,6 +256,7 @@ export const libAllowSpecifiers: readonly LibSpecifier[] = [
       'IDBCursor',
       'IDBKeyRange',
       'CSSStyleDeclaration',
+      'CanvasRenderingContext2D',
       'CSSRule',
       'CSSStyleSheet',
       'MediaQueryList',

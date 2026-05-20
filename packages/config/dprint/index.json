@@ -115,9 +115,11 @@
     "typeParameters.trailingCommas": "always",
 
     "arrowFunction.useParentheses": "preferNone",
+
     "binaryExpression.linePerExpression": true,
-    "jsx.bracketPosition": "sameLine",
     "memberExpression.linePerExpression": true,
+
+    "jsx.bracketPosition": "sameLine",
     "commentLine.forceSpaceAfterSlashes": false,
 
     "ignoreNodeCommentText": "formatter-ignore",
