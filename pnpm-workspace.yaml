@@ -151,6 +151,15 @@ overrides:
   # attributes when processEntities is disabled. Only transitive consumer is
   # fast-xml-parser@5.7.2 (`fast-xml-builder: ^1.1.5`); patch-level bump.
   'fast-xml-builder': '>=1.1.7'
+  # Patch GHSA-58qx-3vcg-4xpx / CVE-2026-45736: ws <8.20.1 discloses
+  # uninitialized memory when a non-Uint8Array TypedArray (e.g.
+  # Float32Array) is passed as the reason argument to close(). The
+  # vulnerable API is not reached from any workspace code (all close()
+  # calls pass no reason or a string), but the override ensures the
+  # fixed version is resolved across all transitive consumers (openai,
+  # @libsql/isomorphic-ws, crossws). Patch-level bump is
+  # range-compatible with every consumer's ^8.x constraint.
+  'ws': '>=8.20.1'
   'postcss': '>=8.5.10'
   # Substitute deprecated node-domexception@1.0.0 with a workspace shim that
   # re-exports globalThis.DOMException (the native constructor on Node 17+

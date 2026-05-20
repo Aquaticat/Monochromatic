@@ -314,6 +314,7 @@ overrides:
   fast-uri: '>=3.1.2'
   fast-xml-parser: '>=5.7.0'
   fast-xml-builder: '>=1.1.7'
+  ws: '>=8.20.1'
   postcss: '>=8.5.10'
   node-domexception: link:packages/shim/node-domexception
   proper-lockfile: link:packages/shim/proper-lockfile
@@ -1177,7 +1178,7 @@ importers:
         version: 2.1.0
       openai:
         specifier: 'catalog:'
-        version: 6.33.0(ws@8.20.0)(zod@4.3.6)
+        version: 6.33.0(ws@8.20.1)(zod@4.3.6)
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
@@ -1888,10 +1889,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: ^0.74.0
-        version: 0.74.0(ws@8.20.0)(zod@4.3.6)
+        version: 0.74.0(ws@8.20.1)(zod@4.3.6)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.75.3(ws@8.20.0)(zod@4.3.6)
+        version: 0.75.3(ws@8.20.1)(zod@4.3.6)
       '@earendil-works/pi-tui':
         specifier: ^0.74.0
         version: 0.74.0
@@ -1925,10 +1926,10 @@ importers:
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: ^0.74.0
-        version: 0.74.0(ws@8.20.0)(zod@4.3.6)
+        version: 0.74.0(ws@8.20.1)(zod@4.3.6)
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.75.3(ws@8.20.0)(zod@4.3.6)
+        version: 0.75.3(ws@8.20.1)(zod@4.3.6)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -1956,7 +1957,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.75.3(ws@8.20.0)(zod@4.3.6)
+        version: 0.75.3(ws@8.20.1)(zod@4.3.6)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -1974,7 +1975,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.75.3(ws@8.20.0)(zod@4.3.6)
+        version: 0.75.3(ws@8.20.1)(zod@4.3.6)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -1992,7 +1993,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.75.3(ws@8.20.0)(zod@4.3.6)
+        version: 0.75.3(ws@8.20.1)(zod@4.3.6)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -2010,7 +2011,7 @@ importers:
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
-        version: 0.75.3(ws@8.20.0)(zod@4.3.6)
+        version: 0.75.3(ws@8.20.1)(zod@4.3.6)
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*
         version: link:../../config/tsdown
@@ -5380,7 +5381,7 @@ packages:
     resolution: {integrity: sha512-zd23dbWTjiJ6sSAX6s0HrCZi41JwTA1bQVs0wLQPZ2/5o2gxOJA5wh7yOAUgwYybfhDXyhwlpeQf7Mlgx8EOCA==}
     hasBin: true
     peerDependencies:
-      ws: ^8.18.0
+      ws: '>=8.20.1'
       zod: ^3.25 || ^4.0
     peerDependenciesMeta:
       ws:
@@ -5392,7 +5393,7 @@ packages:
     resolution: {integrity: sha512-xAYN1W3YsDXJWA5F277135YfkEk6H7D3D6vWwRhJ3OEkzRgcyK8z/P5P9Gyi/wB4N8kK9kM5ZjprfvyHagKmpw==}
     hasBin: true
     peerDependencies:
-      ws: ^8.18.0
+      ws: '>=8.20.1'
       zod: ^3.25 || ^4.0
     peerDependenciesMeta:
       ws:
@@ -6113,8 +6114,8 @@ packages:
     resolution: {integrity: sha512-OTIk8iR8/aCRWBqvxrzxR0hgxWpnYBblY1S5hDWBQfk/VFmJwzmJgQFN3WsoUKHISv2eAwe+PpbUzyL1CKTLXg==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
-  ws@8.20.0:
-    resolution: {integrity: sha512-sAt8BhgNbzCtgGbt2OxmpuryO63ZoDk/sqaB/znQm94T4fCEsy/yV+7CdC1kJhOU9lboAEU7R3kquuycDoibVA==}
+  ws@8.20.1:
+    resolution: {integrity: sha512-It4dO0K5v//JtTXuPkfEOaI3uUN87iYPnqo/ZzqCoG3g8uhA66QUMs/SrM0YK7/NAu+r4LMh/9dq2A7k+rHs+w==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -6359,9 +6360,9 @@ snapshots:
       - '@75lb/nature'
       - '@loaders.gl/core'
 
-  '@earendil-works/pi-agent-core@0.75.3(ws@8.20.0)(zod@4.3.6)':
+  '@earendil-works/pi-agent-core@0.75.3(ws@8.20.1)(zod@4.3.6)':
     dependencies:
-      '@earendil-works/pi-ai': 0.75.3(ws@8.20.0)(zod@4.3.6)
+      '@earendil-works/pi-ai': 0.75.3(ws@8.20.1)(zod@4.3.6)
       ignore: 7.0.5
       typebox: 1.1.34
       yaml: 2.8.3
@@ -6370,22 +6371,22 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-ai@0.74.0(ws@8.20.0)(zod@4.3.6)':
+  '@earendil-works/pi-ai@0.74.0(ws@8.20.1)(zod@4.3.6)':
     dependencies:
       '@anthropic-ai/sdk': 0.92.0(zod@4.3.6)
-      openai: 6.26.0(ws@8.20.0)(zod@4.3.6)
+      openai: 6.26.0(ws@8.20.1)(zod@4.3.6)
       partial-json: 0.1.7
       typebox: 1.1.34
     transitivePeerDependencies:
       - ws
       - zod
 
-  '@earendil-works/pi-ai@0.75.3(ws@8.20.0)(zod@4.3.6)':
+  '@earendil-works/pi-ai@0.75.3(ws@8.20.1)(zod@4.3.6)':
     dependencies:
       '@anthropic-ai/sdk': 0.92.0(zod@4.3.6)
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
-      openai: 6.26.0(ws@8.20.0)(zod@4.3.6)
+      openai: 6.26.0(ws@8.20.1)(zod@4.3.6)
       partial-json: 0.1.7
       typebox: 1.1.34
     transitivePeerDependencies:
@@ -6393,10 +6394,10 @@ snapshots:
       - ws
       - zod
 
-  '@earendil-works/pi-coding-agent@0.75.3(ws@8.20.0)(zod@4.3.6)':
+  '@earendil-works/pi-coding-agent@0.75.3(ws@8.20.1)(zod@4.3.6)':
     dependencies:
-      '@earendil-works/pi-agent-core': 0.75.3(ws@8.20.0)(zod@4.3.6)
-      '@earendil-works/pi-ai': 0.75.3(ws@8.20.0)(zod@4.3.6)
+      '@earendil-works/pi-agent-core': 0.75.3(ws@8.20.1)(zod@4.3.6)
+      '@earendil-works/pi-ai': 0.75.3(ws@8.20.1)(zod@4.3.6)
       '@earendil-works/pi-tui': 0.75.3
       '@silvia-odwyer/photon-node': 0.3.4
       chalk: 5.6.2
@@ -6693,7 +6694,7 @@ snapshots:
   '@libsql/isomorphic-ws@0.1.5':
     dependencies:
       '@types/ws': 8.18.1
-      ws: 8.20.0
+      ws: 8.20.1
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -8874,14 +8875,14 @@ snapshots:
     dependencies:
       fn.name: 1.1.0
 
-  openai@6.26.0(ws@8.20.0)(zod@4.3.6):
+  openai@6.26.0(ws@8.20.1)(zod@4.3.6):
     optionalDependencies:
-      ws: 8.20.0
+      ws: 8.20.1
       zod: 4.3.6
 
-  openai@6.33.0(ws@8.20.0)(zod@4.3.6):
+  openai@6.33.0(ws@8.20.1)(zod@4.3.6):
     optionalDependencies:
-      ws: 8.20.0
+      ws: 8.20.1
       zod: 4.3.6
 
   opentype.js@1.3.4:
@@ -9739,7 +9740,7 @@ snapshots:
     dependencies:
       signal-exit: 4.1.0
 
-  ws@8.20.0: {}
+  ws@8.20.1: {}
 
   xml-naming@0.1.0: {}
 
