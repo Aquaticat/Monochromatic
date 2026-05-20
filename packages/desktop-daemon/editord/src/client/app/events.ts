@@ -38,10 +38,20 @@ export type AppState = {
   currentFileKind: FileKind;
 };
 
+/** Callback surface for current-file state owned by app.ts. */
+export type CurrentFileStateAccess = {
+  /** Reads currently open file path without exposing mutable state. */
+  readonly getCurrentFilePath: () => string | null;
+  /** Updates currently open file path without exposing mutable state. */
+  readonly setCurrentFilePath: (path: string | null,) => void;
+  /** Reads currently open file kind after a load completes. */
+  readonly getCurrentFileKind: () => FileKind;
+};
+
 /**
  * Loads a file and refreshes inlay hints when the file is a text file.
  *
- * @param state - mutable app state
+ * @param currentFileState - callback surface for current file state
  *
  * @param loadFileSafe - loads a file from the server
  *
@@ -54,14 +64,14 @@ export type AppState = {
  * @param character - optional character offset within the line
  */
 async function loadFileAndRefreshHints({
-  state,
+  currentFileState,
   loadFileSafe,
   refreshInlayHints,
   path,
   line,
   character,
 }: {
-  readonly state: AppState;
+  readonly currentFileState: Pick<CurrentFileStateAccess, 'getCurrentFileKind'>;
   readonly loadFileSafe: LoadFileFn;
   readonly refreshInlayHints: () => void;
   readonly path: string;
@@ -73,10 +83,11 @@ async function loadFileAndRefreshHints({
     line,
     character,
   },);
-  if (state.currentFileKind === 'text')
+  if (currentFileState.getCurrentFileKind() === 'text')
     refreshInlayHints();
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- select wiring consumes live DOM custom elements whose EventTarget listener APIs are mutable platform handles */
 /**
  * Wires file-select, result-select, and reference-select event handlers.
  *
@@ -86,7 +97,7 @@ async function loadFileAndRefreshHints({
  *
  * @param referencesPopup - references popup component
  *
- * @param state - mutable app state
+ * @param currentFileState - callback surface for current file state
  *
  * @param recordFileOpen - records file open and updates tree
  *
@@ -96,7 +107,7 @@ async function loadFileAndRefreshHints({
  *
  * @example
  * ```ts
- * wireSelectEvents({ fileTree: fileTree, searchOverlay: searchOverlay, referencesPopup: referencesPopup, state: sessionState, recordFileOpen: recordFileOpen, loadFileSafe: loadFileSafe, refreshInlayHints: refreshInlayHints, });
+ * wireSelectEvents({ fileTree: fileTree, searchOverlay: searchOverlay, referencesPopup: referencesPopup, currentFileState: currentFileState, recordFileOpen: recordFileOpen, loadFileSafe: loadFileSafe, refreshInlayHints: refreshInlayHints, });
  * ```
  */
 export function wireSelectEvents(
@@ -104,7 +115,7 @@ export function wireSelectEvents(
     fileTree,
     searchOverlay,
     referencesPopup,
-    state,
+    currentFileState,
     recordFileOpen,
     loadFileSafe,
     refreshInlayHints,
@@ -112,7 +123,7 @@ export function wireSelectEvents(
     readonly fileTree: FileTreeHandle;
     readonly searchOverlay: SearchOverlayHandle;
     readonly referencesPopup: ReferencesPopupHandle;
-    readonly state: AppState;
+    readonly currentFileState: CurrentFileStateAccess;
     readonly recordFileOpen: (path: string,) => void;
     readonly loadFileSafe: LoadFileFn;
     readonly refreshInlayHints: () => void;
@@ -125,10 +136,10 @@ export function wireSelectEvents(
       /** Custom-event detail destructured to read the selected file path. */
       const { path, } = (event as CustomEvent<{ readonly path: string; }>).detail;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-      state.currentFilePath = path;
+      currentFileState.setCurrentFilePath(path,);
       recordFileOpen(path,);
       void loadFileAndRefreshHints({
-        state,
+        currentFileState,
         loadFileSafe,
         refreshInlayHints,
         path,
@@ -145,10 +156,10 @@ export function wireSelectEvents(
         line,
       } = (event as CustomEvent<ResultSelectDetail>).detail;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-      state.currentFilePath = path;
+      currentFileState.setCurrentFilePath(path,);
       recordFileOpen(path,);
       void loadFileAndRefreshHints({
-        state,
+        currentFileState,
         loadFileSafe,
         refreshInlayHints,
         path,
@@ -167,10 +178,10 @@ export function wireSelectEvents(
         character,
       } = (event as CustomEvent<ReferenceSelectDetail>).detail;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-      state.currentFilePath = path;
+      currentFileState.setCurrentFilePath(path,);
       recordFileOpen(path,);
       void loadFileAndRefreshHints({
-        state,
+        currentFileState,
         loadFileSafe,
         refreshInlayHints,
         path,
@@ -180,7 +191,9 @@ export function wireSelectEvents(
     },
   );
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- file watching installs the FileTree onDirExpanded callback and consumes live mutable websocket/file-tree handles */
 /**
  * Wires file-watching event handlers.
  *
@@ -188,24 +201,24 @@ export function wireSelectEvents(
  *
  * @param fileTree - file tree component
  *
- * @param state - mutable app state
+ * @param getCurrentFilePath - reads currently open file path
  *
  * @param loadFileSafe - loads a file from the server
  *
  * @example
  * ```ts
- * wireFileWatching({ ws: ws, fileTree: fileTree, state: sessionState, loadFileSafe: loadFileSafe, });
+ * wireFileWatching({ ws: ws, fileTree: fileTree, getCurrentFilePath: getCurrentFilePath, loadFileSafe: loadFileSafe, });
  * ```
  */
 export function wireFileWatching({
   ws,
   fileTree,
-  state,
+  getCurrentFilePath,
   loadFileSafe,
 }: {
   readonly ws: EditorWsClientHandle;
   readonly fileTree: FileTreeHandle;
-  readonly state: AppState;
+  readonly getCurrentFilePath: () => string | null;
   readonly loadFileSafe: LoadFileFn;
 },): void {
   fileTree.onDirExpanded = function handleDirExpanded(path: string,): void {
@@ -226,7 +239,7 @@ export function wireFileWatching({
   ): void {
     appLog.info(`file changed: ${path} (${changeType})`,);
     if (((changeType === 'modified') || (changeType === 'created'))
-      && (path === state.currentFilePath))
+      && (path === getCurrentFilePath()))
     {
       void loadFileSafe({ path, },);
       if (changeType === 'modified')
@@ -240,3 +253,4 @@ export function wireFileWatching({
     }
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

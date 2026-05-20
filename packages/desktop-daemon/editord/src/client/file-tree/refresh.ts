@@ -71,6 +71,7 @@ export function resolveRefreshContainer({
   return container;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- refresh mutates file-tree state and the live DOM subtree for the target directory */
 /**
  * Performs a full refresh of a directory, resolving the container and updating entries.
  *
@@ -126,6 +127,7 @@ export async function performRefreshDir({
     },
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Re-fetches a directory's listing and updates the DOM.

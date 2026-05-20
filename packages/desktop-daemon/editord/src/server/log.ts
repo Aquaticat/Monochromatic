@@ -9,9 +9,12 @@ import {
   logger,
 } from '@monochromatic-dev/module-logger/logger';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
-import type { Logger, } from '@monochromatic-dev/module-logger/types';
+import type { Logger as ModuleLogger, } from '@monochromatic-dev/module-logger/types';
 
 await initPromise;
+
+/** Logger handle passed through editord server modules. */
+export type Logger = Readonly<ModuleLogger>;
 
 /**
  * Root tagged logger for all editord server subsystems.
@@ -22,5 +25,4 @@ export const l: Logger = tagged({
   l: logger,
 },);
 
-export type { Logger, };
 export { tagged, };

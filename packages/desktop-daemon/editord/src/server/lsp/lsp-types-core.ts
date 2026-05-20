@@ -100,7 +100,7 @@ export type LspTextEdit = {
  */
 export type LspWorkspaceEdit = {
   /** Text edits keyed by document URI. */
-  readonly changes?: Record<string, readonly LspTextEdit[]>;
+  readonly changes?: Readonly<Record<string, readonly LspTextEdit[]>>;
 };
 
 //endregion Workspace edits

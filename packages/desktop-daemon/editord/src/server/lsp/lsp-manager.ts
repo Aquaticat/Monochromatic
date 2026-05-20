@@ -66,56 +66,56 @@ export type LspManager = {
    * skipped; no document is registered, so all subsequent operations
    * (didChange, hover, completions, etc.) become no-ops for that path.
    */
-  didOpen(opts: {
+  readonly didOpen: (opts: {
     readonly path: string;
     readonly text: string;
     readonly size: number;
-  },): Promise<void>;
+  },) => Promise<void>;
   /** Notifies LSP servers that a file's content changed. */
-  didChange(opts: {
+  readonly didChange: (opts: {
     readonly path: string;
     readonly text: string;
-  },): Promise<void>;
+  },) => Promise<void>;
   /** Notifies LSP servers that a file was saved. */
-  didSave(opts: { readonly path: string; },): Promise<void>;
+  readonly didSave: (opts: { readonly path: string; },) => Promise<void>;
   /** Notifies LSP servers that a file was closed. */
-  didClose(opts: { readonly path: string; },): Promise<void>;
+  readonly didClose: (opts: { readonly path: string; },) => Promise<void>;
   /** Returns hover content, or null when no client is available. */
-  hover(opts: FilePosition,): Promise<LspHover | null>;
+  readonly hover: (opts: FilePosition,) => Promise<LspHover | null>;
   /** Returns completion items, or empty array when no client is available. */
-  completion(opts: FilePosition,): Promise<readonly LspCompletionItem[]>;
+  readonly completion: (opts: FilePosition,) => Promise<readonly LspCompletionItem[]>;
   /** Returns text edits, or empty array when no client is available. */
-  format(opts: { readonly path: string; },): Promise<readonly LspTextEdit[]>;
+  readonly format: (opts: { readonly path: string; },) => Promise<readonly LspTextEdit[]>;
   /** Returns definition location, or null when no client is available. */
-  gotoDefinition(opts: FilePosition,): Promise<FilePosition | null>;
+  readonly gotoDefinition: (opts: FilePosition,) => Promise<FilePosition | null>;
   /** Returns reference locations, or empty array when no client is available. */
-  references(opts: FilePosition,): Promise<readonly FilePosition[]>;
+  readonly references: (opts: FilePosition,) => Promise<readonly FilePosition[]>;
   /** Returns inlay hints, or empty array when no client is available. */
-  inlayHints(opts: {
+  readonly inlayHints: (opts: {
     readonly path: string;
     readonly range: Range;
-  },): Promise<readonly LspInlayHint[]>;
+  },) => Promise<readonly LspInlayHint[]>;
   /** Returns selection ranges, or empty array when no client is available. */
-  selectionRange(opts: {
+  readonly selectionRange: (opts: {
     readonly path: string;
     readonly positions: readonly {
       readonly line: number;
       readonly character: number;
     }[];
-  },): Promise<readonly LspSelectionRange[]>;
+  },) => Promise<readonly LspSelectionRange[]>;
   /** Returns prepare-rename result, or null when symbol is not renamable. */
-  prepareRename(opts: FilePosition,): Promise<PrepareRenameResult | null>;
+  readonly prepareRename: (opts: FilePosition,) => Promise<PrepareRenameResult | null>;
   /** Returns workspace edit for rename, or null when rename failed. */
-  rename(opts: {
+  readonly rename: (opts: {
     readonly path: string;
     readonly line: number;
     readonly character: number;
     readonly newName: string;
-  },): Promise<LspWorkspaceEdit | null>;
+  },) => Promise<LspWorkspaceEdit | null>;
   /** Gracefully shuts down all pooled LSP servers and waits for completion. */
-  shutdown(): Promise<void>;
+  readonly shutdown: () => Promise<void>;
   /** Shuts down LSP servers whose project root covers the given path. */
-  shutdownForPath(opts: { readonly path: string; },): Promise<void>;
+  readonly shutdownForPath: (opts: { readonly path: string; },) => Promise<void>;
 };
 
 //endregion LspManager type

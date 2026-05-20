@@ -15,6 +15,7 @@ import type {
 import { createDebouncedSave, } from './debounce.ts';
 import type { SessionState, } from './state.ts';
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- persistence wires live DOM/EventTarget handles and reads mutable UI state through component capabilities */
 /**
  * Installs save triggers that persist UI state on meaningful events.
  * Returns a `saveNow` function for synchronous use in `beforeunload`.
@@ -113,3 +114,4 @@ export function wireSessionPersistence(
 
   return { saveNow, };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

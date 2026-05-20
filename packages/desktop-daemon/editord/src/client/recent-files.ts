@@ -23,8 +23,8 @@ const MAX_RECENT = 10;
 /**
  * Mutable ordered list of recent file paths with push-to-front semantics.
  *
- * The `paths` array is directly mutable for bulk restore from saved state.
- * The `push` function handles deduplication and trimming.
+ * The `paths` array is exposed read-only; callers restore saved state through
+ * `replaceAll` so the tracker keeps ownership of trimming and mutation.
  *
  * @example
  * ```ts
@@ -37,10 +37,12 @@ const MAX_RECENT = 10;
  * ```
  */
 export type RecentFiles = {
-  /** Ordered paths array, index 0 is most recent. Directly mutable for restore. */
-  paths: string[];
+  /** Ordered paths array, index 0 is most recent. */
+  readonly paths: readonly string[];
   /** Adds or promotes a path to position 0, trimming to 10 entries. */
-  push: (path: string,) => void;
+  readonly push: (path: string,) => void;
+  /** Replaces all tracked paths during session restore, trimming to 10 entries. */
+  readonly replaceAll: (paths: readonly string[],) => void;
 };
 
 /**
@@ -81,8 +83,47 @@ export function createRecentFiles(): RecentFiles {
     l.info(`pushed ${path} (${String(paths.length,)} tracked)`,);
   }
 
+  /**
+   * Replaces the tracked path list while preserving tracker ownership.
+   * Saved state is already ordered most-recent-first, so restore keeps that
+   * order and trims overlong historical state to the current cap.
+   *
+   * @param restoredPaths - persisted recent files ordered most-recent-first
+   *
+   * @example
+   * ```ts
+   * recent.replaceAll(['/src/app.ts', '/src/index.ts']);
+   * ```
+   */
+  function replaceAll(restoredPaths: readonly string[],): void {
+    /** Trimmed restore payload so the variadic splice call receives a named list. */
+    const trimmedPaths = restoredPaths.slice(
+      0,
+      MAX_RECENT,
+    );
+    paths.splice(
+      0,
+      paths.length,
+      ...trimmedPaths,
+    );
+    l.info(`restored ${String(paths.length,)} recent file(s)`,);
+  }
+
   return {
-    paths,
+    /**
+     * Exposes ordered recent paths without transferring mutation ownership.
+     *
+     * @returns readonly view of current recent files
+     *
+     * @example
+     * ```ts
+     * const paths = recent.paths;
+     * ```
+     */
+    get paths(): readonly string[] {
+      return paths;
+    },
     push,
+    replaceAll,
   };
 }

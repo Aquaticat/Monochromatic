@@ -16,6 +16,7 @@ import type {
 
 export { wireSessionPersistence, } from '../session/persistence.ts';
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- session restore drives live editor and file-tree components through mutable platform capabilities */
 /**
  * Restores the previous session state from localStorage and applies it.
  * Opens the saved file, restores expanded directories, cursor, and scroll.
@@ -87,3 +88,4 @@ export async function restoreSession(
     recentFiles: saved?.recentFiles ?? [],
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

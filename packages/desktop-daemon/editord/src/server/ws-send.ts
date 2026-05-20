@@ -43,7 +43,7 @@ export function sendJson(
     message,
   }: {
     readonly peer: Peer;
-    readonly message: Record<string, unknown>;
+    readonly message: Readonly<Record<string, unknown>>;
   },
 ): void {
   peer.send(JSON.stringify(message,),);
@@ -70,7 +70,7 @@ export function replyEmpty(
     message,
   }: {
     readonly peer: Peer;
-    readonly message: Record<string, unknown>;
+    readonly message: Readonly<Record<string, unknown>>;
   },
 ): true {
   sendJson({

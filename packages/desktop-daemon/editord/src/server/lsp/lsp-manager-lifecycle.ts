@@ -32,11 +32,12 @@ function isTracked({
   documents,
 }: {
   readonly path: string;
-  readonly documents: Map<string, DocumentState>;
+  readonly documents: ReadonlyMap<string, DocumentState>;
 },): boolean {
   return documents.has(pathToUri({ path, },),);
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- managerDidOpen mutates the shared document Map through document-sync registration */
 /**
  * Notifies servers that a file was opened.
  *
@@ -71,7 +72,9 @@ export async function managerDidOpen({
     servers: await pool.resolveAll({ path, },),
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- managerDidChange mutates tracked document state through document-sync before notifying servers */
 /**
  * Notifies servers that a file's content changed.
  *
@@ -112,6 +115,7 @@ export async function managerDidChange({
     servers: await pool.resolveAll({ path, },),
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Notifies servers that a file was saved.
@@ -133,7 +137,7 @@ export async function managerDidSave({
   path,
 }: {
   readonly pool: LspPool;
-  readonly documents: Map<string, DocumentState>;
+  readonly documents: ReadonlyMap<string, DocumentState>;
   readonly path: string;
 },): Promise<void> {
   if (!isTracked({
@@ -149,6 +153,7 @@ export async function managerDidSave({
   },);
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- managerDidClose removes document state and clears diagnostics for the closing file */
 /**
  * Notifies servers that a file was closed and clears its diagnostics.
  *
@@ -183,6 +188,7 @@ export async function managerDidClose({
     servers: await pool.resolveAll({ path, },),
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Routes an incoming LSP notification to the diagnostic store.

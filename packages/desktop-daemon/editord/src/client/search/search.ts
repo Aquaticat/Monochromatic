@@ -53,6 +53,7 @@ export function createSearchDebounce(
   },);
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- search state owns the debounced callback slot and generation counter mutations */
 /**
  * Schedules a debounced search after the user types.
  *
@@ -75,7 +76,9 @@ export function scheduleSearch({
   state.debouncedSearch ??= createSearchDebounce({ execute, },);
   state.debouncedSearch.debounced();
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- search execution mutates generation state so stale async results cannot replace newer results */
 /**
  * Performs a search with content-only filtering and generation tracking.
  *
@@ -154,3 +157,4 @@ export async function performSearch({
     },);
   }
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -67,6 +67,7 @@ import { bootSession, } from './boot.ts';
 import { dispatchContextAction, } from './context-actions.ts';
 import {
   type AppState,
+  type CurrentFileStateAccess,
   wireFileWatching,
   wireSelectEvents,
 } from './events.ts';
@@ -172,6 +173,55 @@ const state: AppState = {
   currentFileKind: 'text',
 };
 
+/**
+ * Reads currently open file path for modules that should not mutate app state.
+ *
+ * @returns current file path, or null when no file is open
+ *
+ * @example
+ * ```ts
+ * const path = getCurrentFilePath();
+ * ```
+ */
+function getCurrentFilePath(): string | null {
+  return state.currentFilePath;
+}
+
+/**
+ * Updates currently open file path while keeping state ownership in this module.
+ *
+ * @param path - next current file path, or null when no file is open
+ *
+ * @example
+ * ```ts
+ * setCurrentFilePath('/tmp/app.ts');
+ * ```
+ */
+function setCurrentFilePath(path: string | null,): void {
+  state.currentFilePath = path;
+}
+
+/**
+ * Reads the kind of the currently open file after load operations update it.
+ *
+ * @returns current file kind used to gate text-only features
+ *
+ * @example
+ * ```ts
+ * const kind = getCurrentFileKind();
+ * ```
+ */
+function getCurrentFileKind(): FileKind {
+  return state.currentFileKind;
+}
+
+/** Current-file capability passed to modules that should not own app state. */
+const currentFileState: CurrentFileStateAccess = {
+  getCurrentFilePath,
+  setCurrentFilePath,
+  getCurrentFileKind,
+};
+
 /** Tracks recently opened files for recency markers in the file tree. */
 const recentFiles = createRecentFiles();
 
@@ -228,9 +278,7 @@ const {
   completionPopup,
   referencesPopup,
   renameInput,
-  getCurrentFilePath: function get() {
-    return state.currentFilePath;
-  },
+  getCurrentFilePath,
   loadFileSafe,
 },);
 
@@ -238,7 +286,7 @@ wireSelectEvents({
   fileTree,
   searchOverlay,
   referencesPopup,
-  state,
+  currentFileState,
   recordFileOpen,
   loadFileSafe,
   refreshInlayHints,
@@ -336,7 +384,7 @@ wireKeybindings({
     const path = recentFiles.paths[index];
     if (path === undefined)
       return;
-    state.currentFilePath = path;
+    setCurrentFilePath(path,);
     recentFiles.push(path,);
     fileTree.updateRecency({ paths: recentFiles.paths, },);
     void revealAndLoadFile({ path, },);
@@ -349,7 +397,7 @@ wireKeybindings({
 wireFileWatching({
   ws,
   fileTree,
-  state,
+  getCurrentFilePath,
   loadFileSafe,
 },);
 
@@ -358,7 +406,7 @@ await bootSession({
   editorPane,
   fileTree,
   searchOverlay,
-  state,
+  currentFileState,
   recentFiles,
   loadFileSafe,
   refreshInlayHints,

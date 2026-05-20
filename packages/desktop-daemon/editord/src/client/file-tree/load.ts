@@ -31,6 +31,7 @@ const l = tagged({
   l: rootLogger,
 },);
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- file-tree expansion owns mutable loadedDirs, loadPromises, and prefetchCache state */
 /**
  * Handles a `dir-open` event by loading directory children.
  *
@@ -118,6 +119,7 @@ export function loadDirChildren({
     loadPromise,
   );
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Maps server directory entries to web component elements.

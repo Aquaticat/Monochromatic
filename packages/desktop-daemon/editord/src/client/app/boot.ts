@@ -6,7 +6,7 @@
  */
 
 import type { RecentFiles, } from '../recent-files.ts';
-import type { AppState, } from './events.ts';
+import type { CurrentFileStateAccess, } from './events.ts';
 
 import {
   restoreSession,
@@ -20,6 +20,7 @@ import type {
   SearchOverlayHandle,
 } from './types.ts';
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- boot orchestrates live editor, file-tree, search overlay, and recent-files state owners during session restore */
 /**
  * Performs session restore and initial state setup after WebSocket is ready.
  *
@@ -31,7 +32,7 @@ import type {
  *
  * @param searchOverlay - search overlay component
  *
- * @param state - mutable app state
+ * @param currentFileState - callback surface for current file state
  *
  * @param recentFiles - recent files tracker
  *
@@ -43,7 +44,7 @@ import type {
  *
  * @example
  * ```ts
- * await bootSession({ ws: ws, editorPane: editorPane, fileTree: fileTree, searchOverlay: searchOverlay, state: sessionState, recentFiles: recentFiles, loadFileSafe: function handleLoadFileSafe() { l.info("done"); }, refreshInlayHints: refreshInlayHints, queryFilePath: '/home/user/project/src/main.ts', });
+ * await bootSession({ ws: ws, editorPane: editorPane, fileTree: fileTree, searchOverlay: searchOverlay, currentFileState: currentFileState, recentFiles: recentFiles, loadFileSafe: function handleLoadFileSafe() { l.info("done"); }, refreshInlayHints: refreshInlayHints, queryFilePath: '/home/user/project/src/main.ts', });
  * ```
  */
 export async function bootSession(
@@ -52,7 +53,7 @@ export async function bootSession(
     editorPane,
     fileTree,
     searchOverlay,
-    state,
+    currentFileState,
     recentFiles,
     loadFileSafe,
     refreshInlayHints,
@@ -62,7 +63,7 @@ export async function bootSession(
     readonly editorPane: EditorPaneHandle;
     readonly fileTree: FileTreeHandle;
     readonly searchOverlay: SearchOverlayHandle;
-    readonly state: AppState;
+    readonly currentFileState: CurrentFileStateAccess;
     readonly recentFiles: RecentFiles;
     readonly loadFileSafe: LoadFileFn;
     readonly refreshInlayHints: () => void;
@@ -75,9 +76,7 @@ export async function bootSession(
     editorPane,
     fileTree,
     searchOverlay,
-    getCurrentFilePath: function get() {
-      return state.currentFilePath;
-    },
+    getCurrentFilePath: currentFileState.getCurrentFilePath,
     getRecentFiles: function get() {
       return recentFiles.paths;
     },
@@ -90,13 +89,13 @@ export async function bootSession(
     loadFileSafe,
     queryFilePath,
   },);
-  state.currentFilePath = restored.filePath;
-  recentFiles.paths.length = 0;
-  recentFiles.paths.push(...restored.recentFiles,);
-  if (state.currentFilePath !== null)
-    recentFiles.push(state.currentFilePath,);
+  currentFileState.setCurrentFilePath(restored.filePath,);
+  recentFiles.replaceAll(restored.recentFiles,);
+  if (restored.filePath !== null)
+    recentFiles.push(restored.filePath,);
   await fileTree.revealFiles({ paths: recentFiles.paths, },);
   fileTree.updateRecency({ paths: recentFiles.paths, },);
-  if ((state.currentFilePath !== null) && (state.currentFileKind === 'text'))
+  if ((restored.filePath !== null) && (currentFileState.getCurrentFileKind() === 'text'))
     refreshInlayHints();
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
