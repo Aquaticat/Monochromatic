@@ -10,7 +10,6 @@
 import { readFile, } from 'node:fs/promises';
 
 import type {
-  Range,
   TextEdit,
   WorkspaceFileEdit,
 } from '../../protocol.ts';
@@ -215,11 +214,11 @@ export async function applyWorkspaceEdit({
 
     /** Absolute path decoded from the LSP `file://` URI for use with `node:fs` APIs. */
     const filePath = uriToPath({ uri, },);
-    /** Wire-format edits passed to the writer; widens `range` from optional fields to non-null `Range`. */
+    /** Wire-format edits passed to the writer; copies into a mutable array since `LspWorkspaceEdit.changes` holds `readonly LspTextEdit[]`. */
     const wireEdits: TextEdit[] = lspEdits.map(
       function convertEdit(edit,): TextEdit {
         return {
-          range: edit.range as Range,
+          range: edit.range,
           newText: edit.newText,
         };
       },
