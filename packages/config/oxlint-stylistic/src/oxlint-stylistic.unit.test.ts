@@ -235,6 +235,13 @@ await describe({
             expect(diagnostics,).toEqual([],);
           },
         },),
+        it({
+          name: 'chain-per-line valid cases produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/chain-per-line.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
       ],
     },),
 
@@ -373,6 +380,31 @@ await describe({
       ],
     },),
     describe({
+      name: 'chain-per-line',
+      children: [
+        it({
+          name: 'reports chained expressions whose boundaries share a line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/chain-per-line.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(chain-per-line)',);
+          },
+        },),
+        it({
+          name:
+            'reports both chain-per-line and no-mixed-operators on a combined fixture',
+          fn: async () => {
+            const diagnostics = await lint(
+              'invalid/chain-and-mixed-operators.ts',
+            );
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(chain-per-line)',);
+            expect(rules,).toContain('stylistic(no-mixed-operators)',);
+          },
+        },),
+      ],
+    },),
+    describe({
       name: 'one-var-declaration-per-line',
       children: [
         it({
@@ -488,6 +520,99 @@ await describe({
             expect(fixedContent,).toContain('  3,\n',);
             expect(fixedContent,).toContain('  port: 3000,',);
             expect(fixedContent,).toContain('  port,',);
+          },
+        },),
+        it({
+          name: '--fix converges on a chain-per-line fixture (idempotent)',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates original fixture. */
+            const chainSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'chain-per-line.ts',
+            );
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using chainCopy = createTempFixtureFile({
+              fileName: 'chain-per-line.ts',
+              sourcePath: chainSrc,
+            },);
+
+            try {
+              await spawn(
+                'oxlint',
+                [
+                  '--fix',
+                  '-c',
+                  FIXTURE_CONFIG,
+                  chainCopy.filePath,
+                ],
+                { cwd: ROOT, },
+              );
+            }
+            catch {
+              // --fix may exit non-zero when unfixable issues remain
+            }
+
+            const diagnostics = await lint(chainCopy.filePath,);
+            const stylisticDiags = diagnostics.filter(
+              function isStylistic(d,): boolean {
+                return ((typeof d.code) === 'string')
+                  && d.code.startsWith('stylistic(',);
+              },
+            );
+            expect(stylisticDiags,).toEqual([],);
+          },
+        },),
+        it({
+          name:
+            '--fix converges when chain-per-line and no-mixed-operators apply together',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates original fixture. */
+            const combinedSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'chain-and-mixed-operators.ts',
+            );
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using combinedCopy = createTempFixtureFile({
+              fileName: 'chain-and-mixed-operators.ts',
+              sourcePath: combinedSrc,
+            },);
+
+            // Two passes: oxlint applies one fix per overlapping byte region per
+            // pass, so when no-mixed-operators wraps a region containing the
+            // chain-per-line target, chain-per-line waits until the next pass.
+            // Two passes are sufficient for this fixture's rule interaction.
+            for (const _pass of [
+              0,
+              1,
+            ]) {
+              try {
+                // oxlint-disable-next-line eslint/no-await-in-loop -- second pass must read the first pass's output from disk
+                await spawn(
+                  'oxlint',
+                  [
+                    '--fix',
+                    '-c',
+                    FIXTURE_CONFIG,
+                    combinedCopy.filePath,
+                  ],
+                  { cwd: ROOT, },
+                );
+              }
+              catch {
+                // --fix may exit non-zero when unfixable issues remain
+              }
+            }
+
+            const diagnostics = await lint(combinedCopy.filePath,);
+            const stylisticDiags = diagnostics.filter(
+              function isStylistic(d,): boolean {
+                return ((typeof d.code) === 'string')
+                  && d.code.startsWith('stylistic(',);
+              },
+            );
+            expect(stylisticDiags,).toEqual([],);
           },
         },),
         it({

@@ -143,7 +143,9 @@ export function buildParamFix({
   /** Trimmed source text for each param; trailing delimiters are re-added uniformly below. */
   const paramTexts = params.map(
     function getParamText(p,): string {
-      return context.sourceCode.getText(p,).trim();
+      return context.sourceCode
+        .getText(p,)
+        .trim();
     },
   );
 

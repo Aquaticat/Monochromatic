@@ -154,7 +154,9 @@ export function buildPerLineFix({
   const itemTexts = items.map(
     function getItemText(item,): string {
       /** Trimmed source text of the item; the trailing delimiter (if any) is stripped below to be re-added uniformly. */
-      const raw = context.sourceCode.getText(item,).trim();
+      const raw = context.sourceCode
+        .getText(item,)
+        .trim();
       if (raw.endsWith(';',) || raw.endsWith(',',)) {
         return raw.slice(
           0,

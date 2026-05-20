@@ -52,6 +52,28 @@ All per-line rules are auto-fixable via `oxlint --fix`.
   Same-operator chains (`a + b + c`, `x && y && z`) are permitted because they are unambiguous under associativity.
   Mixed operators (`a + b * c`, `x || y && z`) must be disambiguated with explicit parens.
   Not auto-fixable.
+- **chain-per-line**: require one chain segment per source line for binary, logical,
+  member, and call chains.
+  Reports when:
+  - a binary/logical chain has 2 or more same-operator boundaries on a single line, OR
+  - a member/call chain has 2 or more call boundaries (method chain) or 3 or more member
+    boundaries (deep access) on a single line.
+  Common idioms stay on one line: `obj.method()`, `obj.foo.bar`,
+  `context.sourceCode.getText()`, `arr[0][1]`.
+  Multi-step patterns split: `arr.map(f).filter(g)`, `obj.a.b.c`,
+  `foo().bar().baz()`.
+  Covers `BinaryExpression`, `LogicalExpression`, `MemberExpression`, `CallExpression`,
+  including optional chaining (`?.`), computed access (`a[b]`), call chains (`f().g()`),
+  TypeScript type arguments (`a.b<T>().c`), and right-associative `**`.
+  Source-level parens isolate inner chains (`(a + b) + c` keeps `(a + b)` opaque).
+  Same-operator chains are walked because `no-mixed-operators` already wrapped any
+  mismatched precedence.
+  Auto-fix inserts `\n + indent` before each member-frame boundary token, following the
+  project's break-before continuation style; call boundaries stay attached to the
+  preceding member. The fix is suppressed when an inter-segment slice contains a comment
+  or other foreign content.
+  Tagged templates (`` tag`x` ``) and `new` expressions are treated as opaque leaves
+  rather than chain participants.
 
 ## Usage
 
@@ -92,10 +114,12 @@ keeping rule files minimal.
 - `utility/needs-fix.ts`: line-sharing detection between items and container delimiters
 - `utility/delimiter.ts`: opening/closing delimiter scanning
 - `utility/range.ts`: `rangeOf` and `at` helpers for untyped AST node access
+- `utility/has-parens.ts`: source-level paren detection shared between `no-mixed-operators` and `chain-per-line`
+- `utility/chain.ts`: chain-root predicates, chain walkers, boundary-token finders for `chain-per-line`
 
 ## Tests
 
-Fixture-based tests covering all 9 rules plus autofix verification:
+Fixture-based tests covering all rules plus autofix verification:
 
 ```bash
 mise run buildAndTest -- packages/config/oxlint-stylistic/src/oxlint-stylistic.unit.test.ts

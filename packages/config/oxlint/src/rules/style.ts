@@ -179,6 +179,7 @@ export const styleRules: DummyRuleMap = {
 
   //region stylistic: expression structure
   'stylistic/no-mixed-operators': 'warn',
+  'stylistic/chain-per-line': 'warn',
   //endregion stylistic: expression structure
 
   // Formatting concern only.

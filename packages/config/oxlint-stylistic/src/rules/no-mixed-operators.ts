@@ -7,49 +7,7 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-/**
- * Determines whether an AST node's source text is wrapped in matching
- * parentheses, allowing whitespace between the parens and the node span.
- *
- * oxc/ESTree binary expressions do not include surrounding parens in their
- * `start`/`end` range, so this helper peeks at the source text immediately
- * before `start` and after `end` and tolerates intermediate whitespace
- * (e.g. `( a + b )`).
- *
- * `String.prototype.trimEnd` / `trimStart` strip exactly the `\s*` runs the
- * prior regex anchored against; using them keeps the check strictly linear
- * with no regex backtracking surface.
- *
- * @param child - AST node to inspect
- *
- * @param sourceText - full source text of the file
- *
- * @returns true if the node is wrapped in `( ... )` at its boundary
- *
- * @example
- * ```ts
- * // For source `(a + b) * c`, with child = BinaryExpression `a + b`:
- * hasParens({ child, sourceText, }); // true
- * ```
- */
-function hasParens({
-  child,
-  sourceText,
-}: {
-  readonly child: Span;
-  readonly sourceText: string;
-},): boolean {
-  /** Source slice before the operand; trailing whitespace stripped so the `(` lands at the end. */
-  const before = sourceText
-    .slice(
-      0,
-      child.start,
-    )
-    .trimEnd();
-  /** Source slice after the operand; leading whitespace stripped so the `)` lands at the start. */
-  const after = sourceText.slice(child.end,).trimStart();
-  return before.endsWith('(',) && after.startsWith(')',);
-}
+import { hasParens, } from '../utility/has-parens.ts';
 
 /**
  * Reports nested binary or logical expressions whose operator differs from

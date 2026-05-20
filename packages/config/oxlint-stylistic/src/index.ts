@@ -5,6 +5,7 @@ import {
 
 import { argumentPerLine, } from './rules/argument-per-line.ts';
 import { arrayElementPerLine, } from './rules/array-element-per-line.ts';
+import { chainPerLine, } from './rules/chain-per-line.ts';
 import { destructurePerLine, } from './rules/destructure-per-line.ts';
 import { exportPerLine, } from './rules/export-per-line.ts';
 import { importPerLine, } from './rules/import-per-line.ts';
@@ -61,8 +62,9 @@ const plugin: Plugin = eslintCompatPlugin({
     'max-statements-per-line': maxStatementsPerLine,
     //endregion Statement boundaries
 
-    //region Expression structure: enforce explicit parens at operator boundaries
+    //region Expression structure: enforce explicit parens at operator boundaries and break chains across lines
     'no-mixed-operators': noMixedOperators,
+    'chain-per-line': chainPerLine,
     //endregion Expression structure
   },
 },);

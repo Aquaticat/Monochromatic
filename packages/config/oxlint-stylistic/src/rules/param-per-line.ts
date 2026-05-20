@@ -83,8 +83,12 @@ export const paramPerLine: CreateOnceRule = {
       const fnNode = node as FunctionParamListNode;
       /** Extract params from the function-like node. */
       const { params, } = fnNode;
-      if ((params === undefined) || (params === null) || (params.length < 2))
+      if ((params === undefined)
+        || (params === null)
+        || (params.length < 2))
+      {
         return;
+      }
 
       /** Source text is needed for boundary-paren lookup and the fixer call below. */
       const sourceText = context.sourceCode.getText();

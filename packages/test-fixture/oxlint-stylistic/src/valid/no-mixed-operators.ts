@@ -8,11 +8,20 @@ const x = true;
 const y = false;
 const z = true;
 
-// Same-operator chains (Pony-style): unambiguous under associativity
-const r1 = a + b + c;
-const r2 = a * b * c;
-const r3 = x && y && z;
-const r4 = x || y || z;
+// Same-operator chains (Pony-style): unambiguous under associativity.
+// chain-per-line requires the boundaries to be split across source lines.
+const r1 = a
+  + b
+  + c;
+const r2 = a
+  * b
+  * c;
+const r3 = x
+  && y
+  && z;
+const r4 = x
+  || y
+  || z;
 
 // Mixed operators with explicit parens
 const r5 = a + (b * c);

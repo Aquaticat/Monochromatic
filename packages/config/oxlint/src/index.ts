@@ -39,7 +39,7 @@ const config: OxlintConfig = defineConfig({
     denyWarnings: true,
     reportUnusedDisableDirectives: 'warn',
     typeAware: true,
-    typeCheck: true
+    typeCheck: true,
   },
 
   plugins: [

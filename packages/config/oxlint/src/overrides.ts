@@ -190,6 +190,7 @@ const testOverride = {
     'stylistic/type-property-per-line': 'off',
     'stylistic/tuple-per-line': 'off',
     'stylistic/destructure-per-line': 'off',
+    'stylistic/chain-per-line': 'off',
 
     // Test setup/teardown may use init without assignment.
     'eslint/init-declarations': 'off',
