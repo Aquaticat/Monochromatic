@@ -31,12 +31,14 @@ export type EnglishVerbEntry = {
   /** Imperative surface; defaults to `base`. */
   readonly imperative?: string;
   /**
-   * Strategy for question and negation construction.
+   * Strategy for question and complement construction.
    *
-   * `do-support` is the default for ordinary lexical verbs; `copula`
-   * routes `be`-style inversion; `modal` skips do-insertion entirely;
-   * `none` is reserved for cases the builder cannot classify and forces
-   * the renderer to use the bare form.
+   * `do-support` is the default for ordinary lexical verbs and emits
+   * `do`/`does`/`did` plus the base verb in questions. `copula` fronts
+   * the finite verb itself, e.g. `Are you ready?`. `modal` fronts the
+   * base modal and renders nested complements bare, e.g. `Can you save?`.
+   * `none` also skips do-insertion and bare-renders complements for entries
+   * that need caller-supplied surfaces outside the built-in strategies.
    */
   readonly auxiliaryStrategy?: 'do-support' | 'copula' | 'modal' | 'none';
 };

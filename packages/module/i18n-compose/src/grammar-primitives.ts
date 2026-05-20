@@ -36,9 +36,9 @@ export type Tense = 'past' | 'present' | 'future';
  * Noun countability.
  *
  * `countable` accepts a numeric count and a plural form (English `cat/cats`);
- * `mass` rejects bare counts and is rendered with a measure phrase or classifier;
- * `both` (e.g. English `chicken` as meat vs. as an animal) defers to the noun-phrase
- * variant at the call site to decide which behavior applies.
+ * `mass` rejects `noun.counted` because the AST carries only a bare numeric
+ * count; `both` (e.g. English `chicken` as meat vs. as an animal) defers
+ * to the noun-phrase variant at the call site to decide which behavior applies.
  */
 export type Countability = 'countable' | 'mass' | 'both';
 
@@ -90,13 +90,12 @@ export function personNumberKey(
     person,
     number,
   }: {
-    person: Person;
-    number: GrammaticalNumber;
+    readonly person: Person;
+    readonly number: GrammaticalNumber;
   },
 ): PersonNumberKey {
   /** Number shorthand: `s` for singular, `p` for plural. */
   const numberCode = number === 'singular' ? 's' : 'p';
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- template literal of Person digit + 's'/'p' character is exactly the PersonNumberKey union by construction
   return `${person}${numberCode}` as PersonNumberKey;
 }
 

@@ -32,8 +32,8 @@ export function verbSurfaceForTense(
     entry,
     tense,
   }: {
-    entry: ChineseVerbEntry;
-    tense: Tense;
+    readonly entry: ChineseVerbEntry;
+    readonly tense: Tense;
   },
 ): string {
   if (tense === 'past')
@@ -69,9 +69,9 @@ export function makeChineseVerbPhraseRenderer<
     renderNounPhrase,
     renderAdverbials,
   }: {
-    verbs: Readonly<Record<V, ChineseVerbEntry>>;
-    renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
-    renderAdverbials: (
+    readonly verbs: Readonly<Record<V, ChineseVerbEntry>>;
+    readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
+    readonly renderAdverbials: (
       advs: readonly Adverbial<S, N>[] | undefined,
     ) => string | undefined;
   },

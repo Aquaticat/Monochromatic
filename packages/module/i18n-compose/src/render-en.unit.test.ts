@@ -107,6 +107,23 @@ await describe({
               .toBe('{not a template} {time}',);
           },
         },),
+
+        it({
+          name: 'mass nouns reject numeric counted phrases',
+          fn: async () => {
+            /** English spec with one mass-only noun to exercise countability validation. */
+            const localSpec = defineEnglishLocale({
+              labels: enLabels,
+              subjects: enSubjects,
+              nouns: { ...enNouns, cat: { ...enNouns.cat, countability: 'mass', }, },
+              verbs: enVerbs,
+            },);
+            expect(() =>
+              localSpec.renderNounPhrase({ kind: 'noun.counted', count: 2, noun: 'cat', },)
+            )
+              .toThrow('Cannot count mass noun',);
+          },
+        },),
       ],
     },),
 
@@ -254,6 +271,59 @@ await describe({
                 object: { kind: 'noun.counted', count: 1, noun: 'cat', }, },
             },),)
               .toBe('Does they have 1 cat?',);
+          },
+        },),
+
+        it({
+          name: 'copula strategy fronts the finite verb instead of adding do-support',
+          fn: async () => {
+            /** English spec reusing the save key as a copula entry for the regression. */
+            const localSpec = defineEnglishLocale({
+              labels: enLabels,
+              subjects: enSubjects,
+              nouns: enNouns,
+              verbs: { ...enVerbs,
+                save: { base: 'are', present3s: 'is', past: 'was',
+                  auxiliaryStrategy: 'copula', }, },
+            },);
+            expect(localSpec.renderSentence({
+              kind: 'sentence.question.yesNo',
+              subject: { kind: 'subject.key', subject: 'you', },
+              predicate: { kind: 'verbPhrase', verb: 'save',
+                object: { kind: 'noun.externalText', text: 'ready', }, },
+            },),)
+              .toBe('Are you ready?',);
+          },
+        },),
+
+        it({
+          name: 'modal strategy fronts the modal and renders bare complements',
+          fn: async () => {
+            /** English spec reusing the save key as a modal entry for the regression. */
+            const localSpec = defineEnglishLocale({
+              labels: enLabels,
+              subjects: enSubjects,
+              nouns: enNouns,
+              verbs: { ...enVerbs,
+                save: { base: 'can', auxiliaryStrategy: 'modal', }, },
+            },);
+            expect(localSpec.renderSentence({
+              kind: 'sentence.question.yesNo',
+              subject: { kind: 'subject.key', subject: 'you', },
+              predicate: {
+                kind: 'verbPhrase',
+                verb: 'save',
+                complement: {
+                  kind: 'complement.infinitive',
+                  phrase: {
+                    kind: 'verbPhrase',
+                    verb: 'delete',
+                    object: { kind: 'noun.externalText', text: 'README.md', },
+                  },
+                },
+              },
+            },),)
+              .toBe('Can you delete README.md?',);
           },
         },),
       ],

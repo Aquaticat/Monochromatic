@@ -44,10 +44,10 @@ export function finiteVerbSurface(
     tense,
     agreement,
   }: {
-    entry: CatalanVerbEntry;
-    key: string;
-    tense: Tense;
-    agreement: SubjectAgreement;
+    readonly entry: CatalanVerbEntry;
+    readonly key: string;
+    readonly tense: Tense;
+    readonly agreement: SubjectAgreement;
   },
 ): string {
   /** Tense-specific subtable. */
@@ -95,9 +95,9 @@ export function makeCatalanVerbPhraseRenderer<
     renderNounPhrase,
     renderAdverbials,
   }: {
-    verbs: Readonly<Record<V, CatalanVerbEntry>>;
-    renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
-    renderAdverbials: (
+    readonly verbs: Readonly<Record<V, CatalanVerbEntry>>;
+    readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
+    readonly renderAdverbials: (
       advs: readonly Adverbial<S, N>[] | undefined,
     ) => string | undefined;
   },
@@ -116,10 +116,10 @@ export function makeCatalanVerbPhraseRenderer<
     const object = phrase.object === undefined
       ? undefined
       : renderNounPhrase(phrase.object,);
-    /** Optional rendered complement (bare infinitive). */
+    /** Optional rendered complement (bare infinitive phrase). */
     const complement = phrase.complement === undefined
       ? undefined
-      : verbs[phrase.complement.phrase.verb].infinitive;
+      : renderVerbPhrase(phrase.complement.phrase,);
     /** Optional rendered adverbial cluster. */
     const adverbials = renderAdverbials(phrase.adverbials,);
     return joinTokens([

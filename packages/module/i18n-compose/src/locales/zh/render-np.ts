@@ -8,6 +8,7 @@ import type {
   NounPhrase,
   Possessor,
 } from '../../ast.ts';
+import { assertCountableNoun, } from '../../countability.ts';
 import type {
   NounEntry,
   SubjectEntry,
@@ -33,8 +34,8 @@ function countedNoun(
     entry,
     count,
   }: {
-    entry: NounEntry;
-    count: number;
+    readonly entry: NounEntry;
+    readonly count: number;
   },
 ): string {
   if (entry.classifier !== undefined)
@@ -62,8 +63,8 @@ export function makeChineseNounPhraseRenderer<S extends string, N extends string
     nouns,
     subjects,
   }: {
-    nouns: Readonly<Record<N, NounEntry>>;
-    subjects: Readonly<Record<S, SubjectEntry>>;
+    readonly nouns: Readonly<Record<N, NounEntry>>;
+    readonly subjects: Readonly<Record<S, SubjectEntry>>;
   },
 ): (phrase: NounPhrase<S, N>,) => string {
   /**
@@ -89,11 +90,18 @@ export function makeChineseNounPhraseRenderer<S extends string, N extends string
   function renderNounPhrase(phrase: NounPhrase<S, N>,): string {
     if (phrase.kind === 'noun.bare')
       return nouns[phrase.noun].surface;
-    if (phrase.kind === 'noun.counted')
+    if (phrase.kind === 'noun.counted') {
+      /** Resolved noun entry validated before classifier rendering. */
+      const entry = nouns[phrase.noun];
+      assertCountableNoun({
+        entry,
+        noun: phrase.noun,
+      },);
       return countedNoun({
-        entry: nouns[phrase.noun],
+        entry,
         count: phrase.count,
       },);
+    }
     if (phrase.kind === 'noun.definite')
       return `这${nouns[phrase.noun].classifier ?? '个'}${nouns[phrase.noun].surface}`;
     if (phrase.kind === 'noun.indefinite')

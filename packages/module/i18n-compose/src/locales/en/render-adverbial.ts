@@ -28,7 +28,7 @@ export function makeEnglishAdverbialRenderer<S extends string, N extends string,
   {
     renderNounPhrase,
   }: {
-    renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
+    readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
   },
 ): (advs: readonly Adverbial<S, N>[] | undefined,) => string | undefined {
   /**

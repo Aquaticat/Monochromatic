@@ -54,8 +54,8 @@ export function subjectAgreement<S extends string,>(
     ref,
     subjects,
   }: {
-    ref: SubjectRef<S>;
-    subjects: Readonly<Record<S, SubjectEntry>>;
+    readonly ref: SubjectRef<S>;
+    readonly subjects: Readonly<Record<S, SubjectEntry>>;
   },
 ): SubjectAgreement {
   if (ref.kind === 'subject.key') {
@@ -89,8 +89,8 @@ export function subjectSurface<S extends string,>(
     ref,
     subjects,
   }: {
-    ref: SubjectRef<S>;
-    subjects: Readonly<Record<S, SubjectEntry>>;
+    readonly ref: SubjectRef<S>;
+    readonly subjects: Readonly<Record<S, SubjectEntry>>;
   },
 ): string {
   return ref.kind === 'subject.key'

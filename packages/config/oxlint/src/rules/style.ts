@@ -57,6 +57,7 @@ export const styleRules: DummyRuleMap = {
 
   // Nested ternaries work great!
   'eslint/no-nested-ternary': 'off',
+  'unicorn/no-nested-ternary': 'off',
 
   // Conflicts with TypeScript function overloading.
   'eslint/no-redeclare': 'off',

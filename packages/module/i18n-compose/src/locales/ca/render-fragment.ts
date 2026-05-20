@@ -48,8 +48,8 @@ function nonFiniteSurface(
     entry,
     form,
   }: {
-    entry: CatalanVerbEntry;
-    form: VerbFragmentForm;
+    readonly entry: CatalanVerbEntry;
+    readonly form: VerbFragmentForm;
   },
 ): string {
   if (form === 'imperative')
@@ -73,8 +73,8 @@ function capitalize(
     text,
     mode,
   }: {
-    text: string;
-    mode: Parameters<typeof applyCapitalization>[0]['mode'];
+    readonly text: string;
+    readonly mode: Parameters<typeof applyCapitalization>[0]['mode'];
   },
 ): string {
   return applyCapitalization({
@@ -109,6 +109,7 @@ export function makeCatalanFragmentRenderer<
     labels,
     verbs,
     renderNounPhrase,
+    renderVerbPhrase,
     renderAdverbials,
   } = deps;
 
@@ -136,7 +137,7 @@ export function makeCatalanFragmentRenderer<
     /** Optional rendered infinitive complement. */
     const complement = fragment.phrase.complement === undefined
       ? undefined
-      : verbs[fragment.phrase.complement.phrase.verb].infinitive;
+      : renderVerbPhrase(fragment.phrase.complement.phrase,);
     /** Optional rendered adverbial cluster. */
     const adverbials = renderAdverbials(fragment.phrase.adverbials,);
     /** Joined surface before capitalization fixup. */

@@ -125,7 +125,7 @@ export type NounEntry = {
   readonly plural?: NounPlural;
   /** Grammatical gender, consulted by gender-sensitive locales (Catalan). */
   readonly gender?: GrammaticalGender;
-  /** Countability constraint, consulted when validating noun-phrase variants. */
+  /** Countability constraint, validated before rendering `noun.counted` phrases. */
   readonly countability?: Countability;
   /** Classifier surface, used by Chinese-style counted phrases. */
   readonly classifier?: string;

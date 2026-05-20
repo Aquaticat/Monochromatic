@@ -10,16 +10,73 @@ import type {
   NounPhrase,
   VerbPhrase,
 } from '../../ast.ts';
-import type {
-  Person,
-  Tense,
-} from '../../grammar-primitives.ts';
+import type { Tense, } from '../../grammar-primitives.ts';
 import { joinTokens, } from '../../render-helpers.ts';
 import type { EnglishVerbEntry, } from './types.ts';
 
 /** Grammatical-person value used to detect third-person singular agreement; composed from the exempt 1..2 range to satisfy `no-magic-numbers`. */
-// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- `1 + 2` widens to `number`; the cast restores the Person literal
-const THIRD_PERSON: Person = (1 + 2) as Person;
+const THIRD_PERSON = 1 + 2;
+
+/**
+ * Complement rendering mode for English verb phrases.
+ *
+ * Ordinary verbs take infinitive complements with `to`; modal-like verbs
+ * take bare complements, e.g. `can save` rather than `can to save`.
+ */
+export type EnglishComplementForm = 'infinitive' | 'bare';
+
+/**
+ * Question head and retained lexical verb chosen from an English verb entry.
+ */
+export type EnglishQuestionVerbParts = {
+  readonly auxiliary: string;
+  readonly lexicalVerb: string | undefined;
+  readonly complementForm: EnglishComplementForm;
+};
+
+/** Concrete auxiliary strategy after applying the default. */
+type EnglishAuxiliaryStrategy = NonNullable<EnglishVerbEntry['auxiliaryStrategy']>;
+
+/**
+ * Returns the auxiliary strategy for an entry, defaulting lexical verbs to do-support.
+ *
+ * @param entry - English verb entry
+ *
+ * @returns configured strategy or `do-support`
+ */
+function auxiliaryStrategyFor(
+  {
+    entry,
+  }: {
+    readonly entry: EnglishVerbEntry;
+  },
+): EnglishAuxiliaryStrategy {
+  return entry.auxiliaryStrategy ?? 'do-support';
+}
+
+/**
+ * Picks how complements should attach to a verb entry.
+ *
+ * @param entry - English verb entry
+ *
+ * @returns bare mode for modal-like verbs, infinitive mode otherwise
+ *
+ * @example
+ * ```ts
+ * complementFormForVerb({ entry: { base: 'can', auxiliaryStrategy: 'modal' } }); // 'bare'
+ * ```
+ */
+export function complementFormForVerb(
+  {
+    entry,
+  }: {
+    readonly entry: EnglishVerbEntry;
+  },
+): EnglishComplementForm {
+  /** Configured auxiliary strategy after applying the default. */
+  const strategy = auxiliaryStrategyFor({ entry, },);
+  return (strategy === 'modal') || (strategy === 'none') ? 'bare' : 'infinitive';
+}
 
 /**
  * Picks the verb surface for a finite declarative predicate slot.
@@ -48,9 +105,9 @@ export function declarativeVerbSurface(
     tense,
     agreement,
   }: {
-    entry: EnglishVerbEntry;
-    tense: Tense;
-    agreement: SubjectAgreement;
+    readonly entry: EnglishVerbEntry;
+    readonly tense: Tense;
+    readonly agreement: SubjectAgreement;
   },
 ): string {
   if (tense === 'past')
@@ -81,8 +138,8 @@ export function doAuxiliary(
     tense,
     agreement,
   }: {
-    tense: Tense;
-    agreement: SubjectAgreement;
+    readonly tense: Tense;
+    readonly agreement: SubjectAgreement;
   },
 ): string {
   if (tense === 'past')
@@ -92,6 +149,139 @@ export function doAuxiliary(
   if ((agreement.person === THIRD_PERSON) && (agreement.number === 'singular'))
     return 'does';
   return 'do';
+}
+
+/**
+ * Picks the fronted auxiliary and retained lexical verb for an English question.
+ *
+ * @param entry - resolved English verb entry
+ *
+ * @param tense - sentence tense
+ *
+ * @param agreement - subject agreement for do-support and copula finite forms
+ *
+ * @returns question verb parts ready to join around the subject
+ *
+ * @example
+ * ```ts
+ * questionVerbParts({ entry: { base: 'are', present3s: 'is', auxiliaryStrategy: 'copula' }, tense: 'present', agreement: { person: 2, number: 'singular' } });
+ * // { auxiliary: 'are', lexicalVerb: undefined, complementForm: 'infinitive' }
+ * ```
+ */
+export function questionVerbParts(
+  {
+    entry,
+    tense,
+    agreement,
+  }: {
+    readonly entry: EnglishVerbEntry;
+    readonly tense: Tense;
+    readonly agreement: SubjectAgreement;
+  },
+): EnglishQuestionVerbParts {
+  /** Configured auxiliary strategy after applying the default. */
+  const strategy = auxiliaryStrategyFor({ entry, },);
+  if (strategy === 'copula') {
+    if (tense === 'future') {
+      return {
+        auxiliary: 'will',
+        lexicalVerb: entry.base,
+        complementForm: 'infinitive',
+      };
+    }
+    return {
+      auxiliary: declarativeVerbSurface({
+        entry,
+        tense,
+        agreement,
+      },),
+      lexicalVerb: undefined,
+      complementForm: 'infinitive',
+    };
+  }
+  if ((strategy === 'modal') || (strategy === 'none')) {
+    return {
+      auxiliary: tense === 'past' ? entry.past ?? entry.base : entry.base,
+      lexicalVerb: undefined,
+      complementForm: 'bare',
+    };
+  }
+  return {
+    auxiliary: doAuxiliary({
+      tense,
+      agreement,
+    },),
+    lexicalVerb: entry.base,
+    complementForm: 'infinitive',
+  };
+}
+
+/**
+ * Picks the head verb for a wh-subject question.
+ *
+ * @param entry - resolved English verb entry
+ *
+ * @param tense - sentence tense
+ *
+ * @param agreement - wh-subject agreement used for ordinary finite forms
+ *
+ * @returns non-inverted question head such as `sees`, `is`, or `can`
+ *
+ * @example
+ * ```ts
+ * subjectQuestionVerbSurface({ entry: { base: 'can', auxiliaryStrategy: 'modal' }, tense: 'present', agreement: { person: 3, number: 'singular' } });
+ * // 'can'
+ * ```
+ */
+export function subjectQuestionVerbSurface(
+  {
+    entry,
+    tense,
+    agreement,
+  }: {
+    readonly entry: EnglishVerbEntry;
+    readonly tense: Tense;
+    readonly agreement: SubjectAgreement;
+  },
+): string {
+  /** Configured auxiliary strategy after applying the default. */
+  const strategy = auxiliaryStrategyFor({ entry, },);
+  if ((strategy === 'modal') || (strategy === 'none'))
+    return tense === 'past' ? entry.past ?? entry.base : entry.base;
+  if (tense === 'future')
+    return `will ${entry.base}`;
+  return declarativeVerbSurface({
+    entry,
+    tense,
+    agreement,
+  },);
+}
+
+/**
+ * Renders an English nested complement using the head verb's attachment strategy.
+ *
+ * @param entry - head verb entry controlling bare vs infinitive attachment
+ *
+ * @param phrase - nested verb phrase to render
+ *
+ * @param renderVerbPhrase - recursive verb-phrase renderer
+ *
+ * @returns rendered complement surface
+ */
+function renderComplement<S extends string, V extends string, N extends string,>(
+  {
+    entry,
+    phrase,
+    renderVerbPhrase,
+  }: {
+    readonly entry: EnglishVerbEntry;
+    readonly phrase: VerbPhrase<S, V, N>;
+    readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
+  },
+): string {
+  /** Rendered nested verb phrase before complement marker selection. */
+  const rendered = renderVerbPhrase(phrase,);
+  return complementFormForVerb({ entry, },) === 'bare' ? rendered : `to ${rendered}`;
 }
 
 /**
@@ -122,9 +312,9 @@ export function makeEnglishVerbPhraseRenderer<
     renderNounPhrase,
     renderAdverbials,
   }: {
-    verbs: Readonly<Record<V, EnglishVerbEntry>>;
-    renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
-    renderAdverbials: (
+    readonly verbs: Readonly<Record<V, EnglishVerbEntry>>;
+    readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
+    readonly renderAdverbials: (
       advs: readonly Adverbial<S, N>[] | undefined,
     ) => string | undefined;
   },
@@ -137,16 +327,22 @@ export function makeEnglishVerbPhraseRenderer<
    * @returns rendered surface
    */
   function renderVerbPhrase(phrase: VerbPhrase<S, V, N>,): string {
+    /** Verb entry used for the head and complement attachment strategy. */
+    const entry = verbs[phrase.verb];
     /** Verb base form; finite tense is decided by callers that own subject + tense context. */
-    const verb = verbs[phrase.verb].base;
+    const verb = entry.base;
     /** Optional rendered object surface; absent when no object slot was supplied. */
     const object = phrase.object === undefined
       ? undefined
       : renderNounPhrase(phrase.object,);
-    /** Optional rendered infinitive complement (`to + base + ...`). */
+    /** Optional rendered complement, bare for modal-like heads and infinitive otherwise. */
     const complement = phrase.complement === undefined
       ? undefined
-      : `to ${renderVerbPhrase(phrase.complement.phrase,)}`;
+      : renderComplement({
+        entry,
+        phrase: phrase.complement.phrase,
+        renderVerbPhrase,
+      },);
     /** Optional rendered adverbial cluster. */
     const adverbials = renderAdverbials(phrase.adverbials,);
     return joinTokens([

@@ -54,8 +54,8 @@ function renderOptionalObject<S extends string, N extends string,>(
     object,
     renderNounPhrase,
   }: {
-    object: NounPhrase<S, N> | undefined;
-    renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
+    readonly object: NounPhrase<S, N> | undefined;
+    readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
   },
 ): string | undefined {
   return object === undefined ? undefined : renderNounPhrase(object,);
@@ -66,20 +66,20 @@ function renderOptionalObject<S extends string, N extends string,>(
  *
  * @param complement - optional complement AST
  *
- * @param verbs - Catalan verb table
+ * @param renderVerbPhrase - verb-phrase render function
  *
- * @returns infinitive surface or undefined
+ * @returns rendered complement phrase or undefined
  */
-function renderOptionalComplement<V extends string,>(
+function renderOptionalComplement<S extends string, V extends string, N extends string,>(
   {
     complement,
-    verbs,
+    renderVerbPhrase,
   }: {
-    complement: { phrase: { verb: V; }; } | undefined;
-    verbs: Readonly<Record<V, CatalanVerbEntry>>;
+    readonly complement: { readonly phrase: VerbPhrase<S, V, N>; } | undefined;
+    readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
   },
 ): string | undefined {
-  return complement === undefined ? undefined : verbs[complement.phrase.verb].infinitive;
+  return complement === undefined ? undefined : renderVerbPhrase(complement.phrase,);
 }
 
 /**
@@ -138,6 +138,7 @@ export function makeCatalanSentenceRenderer<
     subjects,
     verbs,
     renderNounPhrase,
+    renderVerbPhrase,
     renderAdverbials,
   } = deps;
 
@@ -166,7 +167,7 @@ export function makeCatalanSentenceRenderer<
     /** Finite verb surface. */
     const verb = finiteVerbSurface({
       entry: verbs[sentence.predicate.verb],
-      key: String(sentence.predicate.verb,),
+      key: sentence.predicate.verb,
       tense,
       agreement,
     },);
@@ -178,7 +179,7 @@ export function makeCatalanSentenceRenderer<
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
       complement: sentence.predicate.complement,
-      verbs,
+      renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
     const adverbials = renderAdverbials(sentence.predicate.adverbials,);
@@ -218,7 +219,7 @@ export function makeCatalanSentenceRenderer<
     /** Finite verb surface. */
     const verb = finiteVerbSurface({
       entry: verbs[sentence.predicate.verb],
-      key: String(sentence.predicate.verb,),
+      key: sentence.predicate.verb,
       tense,
       agreement,
     },);
@@ -230,7 +231,7 @@ export function makeCatalanSentenceRenderer<
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
       complement: sentence.predicate.complement,
-      verbs,
+      renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
     const adverbials = renderAdverbials(sentence.predicate.adverbials,);
@@ -260,7 +261,7 @@ export function makeCatalanSentenceRenderer<
     /** Finite verb surface using wh-subject agreement (3s). */
     const verb = finiteVerbSurface({
       entry: verbs[sentence.predicate.verb],
-      key: String(sentence.predicate.verb,),
+      key: sentence.predicate.verb,
       tense,
       agreement: WH_SUBJECT_AGREEMENT,
     },);
@@ -272,7 +273,7 @@ export function makeCatalanSentenceRenderer<
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
       complement: sentence.predicate.complement,
-      verbs,
+      renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
     const adverbials = renderAdverbials(sentence.predicate.adverbials,);
@@ -312,7 +313,7 @@ export function makeCatalanSentenceRenderer<
     /** Finite verb surface. */
     const verb = finiteVerbSurface({
       entry: verbs[sentence.verb],
-      key: String(sentence.verb,),
+      key: sentence.verb,
       tense,
       agreement,
     },);
@@ -353,7 +354,7 @@ export function makeCatalanSentenceRenderer<
     /** Finite verb surface. */
     const verb = finiteVerbSurface({
       entry: verbs[sentence.predicate.verb],
-      key: String(sentence.predicate.verb,),
+      key: sentence.predicate.verb,
       tense,
       agreement,
     },);
@@ -365,7 +366,7 @@ export function makeCatalanSentenceRenderer<
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
       complement: sentence.predicate.complement,
-      verbs,
+      renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
     const adverbials = renderAdverbials(sentence.predicate.adverbials,);
@@ -419,7 +420,7 @@ export function makeCatalanSentenceRenderer<
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
       complement: sentence.predicate.complement,
-      verbs,
+      renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
     const adverbials = renderAdverbials(sentence.predicate.adverbials,);

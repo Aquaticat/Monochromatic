@@ -8,6 +8,7 @@ import type {
   NounPhrase,
   Possessor,
 } from '../../ast.ts';
+import { assertCountableNoun, } from '../../countability.ts';
 import type {
   NounEntry,
   SubjectEntry,
@@ -33,8 +34,8 @@ function nounPlural(
     entry,
     count,
   }: {
-    entry: NounEntry;
-    count: number;
+    readonly entry: NounEntry;
+    readonly count: number;
   },
 ): string {
   if (entry.plural === undefined)
@@ -66,9 +67,9 @@ function articleFor(
     kind,
     number,
   }: {
-    entry: NounEntry;
-    kind: 'definite' | 'indefinite';
-    number: GrammaticalNumber;
+    readonly entry: NounEntry;
+    readonly kind: 'definite' | 'indefinite';
+    readonly number: GrammaticalNumber;
   },
 ): string {
   /** Article subtable for the requested definiteness. */
@@ -98,8 +99,8 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
     nouns,
     subjects,
   }: {
-    nouns: Readonly<Record<N, NounEntry>>;
-    subjects: Readonly<Record<S, SubjectEntry>>;
+    readonly nouns: Readonly<Record<N, NounEntry>>;
+    readonly subjects: Readonly<Record<S, SubjectEntry>>;
   },
 ): (phrase: NounPhrase<S, N>,) => string {
   /**
@@ -126,8 +127,12 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
     if (phrase.kind === 'noun.bare')
       return nouns[phrase.noun].surface;
     if (phrase.kind === 'noun.counted') {
-      /** Resolved noun entry. */
+      /** Resolved noun entry validated before numeric rendering. */
       const entry = nouns[phrase.noun];
+      assertCountableNoun({
+        entry,
+        noun: phrase.noun,
+      },);
       /** Plural surface when count is not 1, singular otherwise. */
       const surface = phrase.count === 1
         ? entry.surface

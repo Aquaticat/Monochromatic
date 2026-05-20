@@ -8,6 +8,7 @@ import type {
   NounPhrase,
   Possessor,
 } from '../../ast.ts';
+import { assertCountableNoun, } from '../../countability.ts';
 import type {
   NounEntry,
   SubjectEntry,
@@ -32,8 +33,8 @@ function nounPlural(
     entry,
     count,
   }: {
-    entry: NounEntry;
-    count: number;
+    readonly entry: NounEntry;
+    readonly count: number;
   },
 ): string {
   if (entry.plural === undefined)
@@ -62,8 +63,8 @@ function countedNoun(
     entry,
     count,
   }: {
-    entry: NounEntry;
-    count: number;
+    readonly entry: NounEntry;
+    readonly count: number;
   },
 ): string {
   return count === 1 ? entry.surface : nounPlural({
@@ -92,8 +93,8 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
     nouns,
     subjects,
   }: {
-    nouns: Readonly<Record<N, NounEntry>>;
-    subjects: Readonly<Record<S, SubjectEntry>>;
+    readonly nouns: Readonly<Record<N, NounEntry>>;
+    readonly subjects: Readonly<Record<S, SubjectEntry>>;
   },
 ): (phrase: NounPhrase<S, N>,) => string {
   /**
@@ -120,9 +121,15 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
     if (phrase.kind === 'noun.bare')
       return nouns[phrase.noun].surface;
     if (phrase.kind === 'noun.counted') {
+      /** Resolved noun entry validated before numeric rendering. */
+      const entry = nouns[phrase.noun];
+      assertCountableNoun({
+        entry,
+        noun: phrase.noun,
+      },);
       /** Counted noun head: singular at count 1, plural otherwise. */
       const head = countedNoun({
-        entry: nouns[phrase.noun],
+        entry,
         count: phrase.count,
       },);
       return `${String(phrase.count,)} ${head}`;

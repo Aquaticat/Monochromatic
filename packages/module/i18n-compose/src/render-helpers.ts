@@ -21,17 +21,22 @@ import type { Capitalization, } from './grammar-primitives.ts';
 export type CaseInvariantSet = ReadonlySet<string>;
 
 /**
+ * Options accepted by {@link applyCapitalization}.
+ */
+type ApplyCapitalizationOptions = Readonly<{
+  readonly text: string;
+  readonly mode: Capitalization | undefined;
+  readonly caseInvariants: ReadonlySet<string>;
+}>;
+
+/**
  * Applies a {@link Capitalization} mode to a rendered string.
  *
  * Only the first character of the first token is touched. Tokens whose
  * exact surface matches a member of `caseInvariants` (e.g. English `I`)
  * are preserved as-is.
  *
- * @param text - already-rendered string
- *
- * @param mode - capitalization mode; `preserve` returns input unchanged
- *
- * @param caseInvariants - tokens whose first character must never be recased
+ * @param options - text, capitalization mode, and case-invariant token set
  *
  * @returns capitalized string
  *
@@ -42,16 +47,14 @@ export type CaseInvariantSet = ReadonlySet<string>;
  * ```
  */
 export function applyCapitalization(
-  {
+  options: ApplyCapitalizationOptions,
+): string {
+  /** Options destructured once so the branch logic reads like the rendered operation. */
+  const {
     text,
     mode,
     caseInvariants,
-  }: {
-    text: string;
-    mode: Capitalization | undefined;
-    caseInvariants: CaseInvariantSet;
-  },
-): string {
+  } = options;
   if ((mode === undefined) || (mode === 'preserve'))
     return text;
   if (text.length === 0)

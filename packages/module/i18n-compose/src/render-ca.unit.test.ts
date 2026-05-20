@@ -85,6 +85,23 @@ await describe({
             );
           },
         },),
+
+        it({
+          name: 'mass nouns reject numeric counted phrases',
+          fn: async () => {
+            /** Catalan spec with one mass-only noun to exercise countability validation. */
+            const localSpec = defineCatalanLocale({
+              labels: caLabels,
+              subjects: caSubjects,
+              nouns: { ...caNouns, cat: { ...caNouns.cat, countability: 'mass', }, },
+              verbs: caVerbs,
+            },);
+            expect(() =>
+              localSpec.renderNounPhrase({ kind: 'noun.counted', count: 2, noun: 'cat', },)
+            )
+              .toThrow('Cannot count mass noun',);
+          },
+        },),
       ],
     },),
 
@@ -187,5 +204,65 @@ await describe({
       ],
     },),
     //endregion Imperatives
+
+    //region Complements
+
+    describe({
+      name: 'complements',
+      children: [
+        it({
+          name: 'sentence complements preserve nested objects',
+          fn: async () => {
+            expect(ca.renderSentence({
+              kind: 'sentence.question.yesNo',
+              subject: { kind: 'subject.key', subject: 'you', },
+              predicate: {
+                kind: 'verbPhrase',
+                verb: 'want',
+                complement: {
+                  kind: 'complement.infinitive',
+                  phrase: { kind: 'verbPhrase', verb: 'delete',
+                    object: { kind: 'noun.externalText', text: 'README.md', }, },
+                },
+              },
+            },),)
+              .toBe('Tu vols esborrar README.md?',);
+          },
+        },),
+
+        it({
+          name: 'verb-phrase complements preserve nested objects',
+          fn: async () => {
+            expect(ca.renderVerbPhrase({
+              kind: 'verbPhrase',
+              verb: 'want',
+              complement: { kind: 'complement.infinitive',
+                phrase: { kind: 'verbPhrase', verb: 'delete',
+                  object: { kind: 'noun.externalText', text: 'README.md', }, }, },
+            },),)
+              .toBe('voler esborrar README.md',);
+          },
+        },),
+
+        it({
+          name: 'fragment complements preserve nested objects',
+          fn: async () => {
+            expect(ca.renderFragment({
+              kind: 'fragment.verbPhrase',
+              form: 'infinitive',
+              phrase: {
+                kind: 'verbPhrase',
+                verb: 'want',
+                complement: { kind: 'complement.infinitive',
+                  phrase: { kind: 'verbPhrase', verb: 'delete',
+                    object: { kind: 'noun.externalText', text: 'README.md', }, }, },
+              },
+            },),)
+              .toBe('voler esborrar README.md',);
+          },
+        },),
+      ],
+    },),
+    //endregion Complements
   ],
 },);

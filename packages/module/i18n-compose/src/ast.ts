@@ -77,9 +77,10 @@ export type ExternalText = {
  *
  * Article intent is carried by the variant, not inferred from the noun
  * entry. `noun.bare` renders without any article; `noun.counted` carries
- * a numeric `count` and triggers plural/classifier logic; `noun.definite`
- * and `noun.indefinite` consult the noun's article table; `noun.possessed`
- * pairs the noun with a possessor; `noun.externalText` is an opaque leaf.
+ * a numeric `count`, triggers plural/classifier logic, and is rejected for
+ * nouns marked `countability: 'mass'`; `noun.definite` and `noun.indefinite`
+ * consult the noun's article table; `noun.possessed` pairs the noun with
+ * a possessor; `noun.externalText` is an opaque leaf.
  */
 export type NounPhrase<S extends string, N extends string,> =
   | {

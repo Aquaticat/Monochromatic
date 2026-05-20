@@ -44,8 +44,8 @@ function renderOptionalObject<S extends string, N extends string,>(
     object,
     renderNounPhrase,
   }: {
-    object: NounPhrase<S, N> | undefined;
-    renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
+    readonly object: NounPhrase<S, N> | undefined;
+    readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
   },
 ): string | undefined {
   return object === undefined ? undefined : renderNounPhrase(object,);
@@ -65,8 +65,8 @@ function renderOptionalComplement<S extends string, V extends string, N extends 
     complement,
     renderVerbPhrase,
   }: {
-    complement: { phrase: VerbPhrase<S, V, N>; } | undefined;
-    renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
+    readonly complement: { readonly phrase: VerbPhrase<S, V, N>; } | undefined;
+    readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
   },
 ): string | undefined {
   return complement === undefined ? undefined : renderVerbPhrase(complement.phrase,);

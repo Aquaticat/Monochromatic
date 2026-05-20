@@ -12,7 +12,9 @@ import {
 } from '@monochromatic-dev/module-test';
 
 import { createI18n, } from './create-i18n.ts';
+import type { LocaleSpec, } from './locale-spec.ts';
 import { defineCatalanLocale, } from './locales/ca/index.ts';
+import { defineCustomLocale, } from './locales/custom.ts';
 import { defineEnglishLocale, } from './locales/en/index.ts';
 import { defineChineseLocale, } from './locales/zh/index.ts';
 import {
@@ -56,6 +58,44 @@ const i18n = createI18n({
   defaultLocale: 'en',
   specs,
 },);
+
+/**
+ * Builds a minimal locale spec for type-level vocabulary tests.
+ *
+ * @returns locale spec whose render methods return deterministic placeholders
+ *
+ * @example
+ * ```ts
+ * passthroughSpec<'label', 'subject', 'verb', 'noun'>();
+ * ```
+ */
+function passthroughSpec<
+  Label extends string,
+  Subject extends string,
+  Verb extends string,
+  Noun extends string,
+>(): LocaleSpec<Label, Subject, Verb, Noun> {
+  return defineCustomLocale<Label, Subject, Verb, Noun>({
+    renderLabel(key,): string {
+      return key;
+    },
+    renderNoun(key,): string {
+      return key;
+    },
+    renderNounPhrase(): string {
+      return 'noun phrase';
+    },
+    renderVerbPhrase(): string {
+      return 'verb phrase';
+    },
+    renderSentence(): string {
+      return 'sentence';
+    },
+    renderFragment(): string {
+      return 'fragment';
+    },
+  },);
+}
 
 await describe({
   name: createI18n.name,
@@ -151,6 +191,34 @@ await describe({
         expect(vp.verb,).toBe('save',);
         expectTypeOf<TestSubject>().toBeString();
         expectTypeOf<TestVerb>().toBeString();
+      },
+    },),
+
+    it({
+      name: 'spec records must expose the same vocabulary in every locale',
+      fn: async () => {
+        /** Config with extra vocabulary in only one locale should fail at the factory boundary. */
+        const mismatchedConfig = {
+          locales: ['left', 'right',],
+          defaultLocale: 'left',
+          specs: {
+            left: passthroughSpec<
+              'sharedLabel' | 'leftOnlyLabel',
+              'sharedSubject' | 'leftOnlySubject',
+              'sharedVerb' | 'leftOnlyVerb',
+              'sharedNoun' | 'leftOnlyNoun'
+            >(),
+            right: passthroughSpec<
+              'sharedLabel',
+              'sharedSubject',
+              'sharedVerb',
+              'sharedNoun'
+            >(),
+          },
+        } as const;
+        // @ts-expect-error -- createI18n rejects locale specs whose vocabulary keys differ.
+        createI18n(mismatchedConfig,);
+        expect(mismatchedConfig.defaultLocale,).toBe('left',);
       },
     },),
   ],

@@ -2,8 +2,9 @@
  * `createI18n` builds the explicit-locale render surface and registry
  * helpers from a set of locale specs.
  *
- * The factory infers the locale union from a `const` list, and infers
- * the consumer's label/subject/verb/noun unions from the spec record
+ * The factory infers the locale union from a `const` list, validates that
+ * every configured locale exposes the same vocabulary keys, and infers the
+ * consumer's label/subject/verb/noun unions from the shared spec surface
  * via {@link LabelOf}/{@link SubjectOf}/{@link VerbOf}/{@link NounOf}.
  *
  * @module
@@ -26,14 +27,82 @@ import type {
 /** Loose `LocaleSpec` upper bound used as the constraint for `Spec` inference; bivariant methods make this a valid supertype of any concrete spec. */
 type AnyLocaleSpec = LocaleSpec<string, string, string, string>;
 
+/** Locale keys from a const locale list that are also present in a spec record. */
+type LocaleKeys<Locales extends readonly string[], Specs,> = Extract<
+  Locales[number],
+  keyof Specs
+>;
+
+/** Locales whose label vocabulary does not include `Key`. */
+type LocalesMissingLabel<Specs, Locale extends keyof Specs, Key extends string,> =
+  Locale extends Locale ? Key extends LabelOf<Specs[Locale]> ? never : Locale : never;
+
+/** Locales whose subject vocabulary does not include `Key`. */
+type LocalesMissingSubject<Specs, Locale extends keyof Specs, Key extends string,> =
+  Locale extends Locale ? Key extends SubjectOf<Specs[Locale]> ? never : Locale : never;
+
+/** Locales whose verb vocabulary does not include `Key`. */
+type LocalesMissingVerb<Specs, Locale extends keyof Specs, Key extends string,> =
+  Locale extends Locale ? Key extends VerbOf<Specs[Locale]> ? never : Locale : never;
+
+/** Locales whose noun vocabulary does not include `Key`. */
+type LocalesMissingNoun<Specs, Locale extends keyof Specs, Key extends string,> =
+  Locale extends Locale ? Key extends NounOf<Specs[Locale]> ? never : Locale : never;
+
+/** Label keys present in every configured locale spec. */
+type SharedLabelOf<Specs, Locale extends keyof Specs,> =
+  LabelOf<Specs[Locale]> extends infer Key extends string
+    ? Key extends string
+      ? [LocalesMissingLabel<Specs, Locale, Key>] extends [never] ? Key : never
+    : never
+    : never;
+
+/** Subject keys present in every configured locale spec. */
+type SharedSubjectOf<Specs, Locale extends keyof Specs,> =
+  SubjectOf<Specs[Locale]> extends infer Key extends string
+    ? Key extends string
+      ? [LocalesMissingSubject<Specs, Locale, Key>] extends [never] ? Key : never
+    : never
+    : never;
+
+/** Verb keys present in every configured locale spec. */
+type SharedVerbOf<Specs, Locale extends keyof Specs,> =
+  VerbOf<Specs[Locale]> extends infer Key extends string
+    ? Key extends string
+      ? [LocalesMissingVerb<Specs, Locale, Key>] extends [never] ? Key : never
+    : never
+    : never;
+
+/** Noun keys present in every configured locale spec. */
+type SharedNounOf<Specs, Locale extends keyof Specs,> =
+  NounOf<Specs[Locale]> extends infer Key extends string
+    ? Key extends string
+      ? [LocalesMissingNoun<Specs, Locale, Key>] extends [never] ? Key : never
+    : never
+    : never;
+
+/** Keys that appear in at least one locale spec but not every locale spec. */
+type VocabularyMismatch<Specs, Locale extends keyof Specs,> =
+  | Exclude<LabelOf<Specs[Locale]>, SharedLabelOf<Specs, Locale>>
+  | Exclude<SubjectOf<Specs[Locale]>, SharedSubjectOf<Specs, Locale>>
+  | Exclude<VerbOf<Specs[Locale]>, SharedVerbOf<Specs, Locale>>
+  | Exclude<NounOf<Specs[Locale]>, SharedNounOf<Specs, Locale>>;
+
+/** Requires all configured locale specs to expose the same vocabulary keys. */
+type EnforceSharedVocabulary<Specs, Locale extends keyof Specs,> =
+  [VocabularyMismatch<Specs, Locale>] extends [never]
+    ? unknown
+    : {
+      readonly __i18nComposeAllLocalesMustShareVocabulary: never;
+    };
+
 /**
  * Configuration accepted by {@link createI18n}.
  *
  * Carries the const locale list, default locale, and per-locale specs.
  * Specs are inferred as their concrete `LocaleSpec<TestLabel, ...>` type,
  * not the loose `AnyLocaleSpec` constraint, because the helper extracts
- * each vocabulary union from `Specs[Locales[number]]` via {@link LabelOf}
- * and friends.
+ * and validates each vocabulary union across every configured locale.
  */
 export type CreateI18nConfig<
   Locales extends readonly string[],
@@ -106,8 +175,8 @@ export type I18n<
  * spec record.
  *
  * The vocabulary unions (`Label`, `Subject`, `Verb`, `Noun`) are inferred
- * from the spec record, so adding a noun key to one locale without adding
- * it to the others is rejected at compile time.
+ * from the shared spec surface, so adding a noun key to one locale without
+ * adding it to the others is rejected at compile time.
  *
  * @param config - locale list, default locale, and per-locale specs
  *
@@ -131,15 +200,16 @@ export type I18n<
  */
 export function createI18n<
   const Locales extends readonly string[],
-  Specs extends Readonly<Record<Locales[number], AnyLocaleSpec>>,
+  const Specs extends Readonly<Record<Locales[number], AnyLocaleSpec>>,
 >(
-  config: CreateI18nConfig<Locales, Specs>,
+  config: CreateI18nConfig<Locales, Specs>
+    & EnforceSharedVocabulary<Specs, LocaleKeys<Locales, Specs>>,
 ): I18n<
   Locales[number],
-  LabelOf<Specs[Locales[number]]>,
-  SubjectOf<Specs[Locales[number]]>,
-  VerbOf<Specs[Locales[number]]>,
-  NounOf<Specs[Locales[number]]>
+  SharedLabelOf<Specs, LocaleKeys<Locales, Specs>>,
+  SharedSubjectOf<Specs, LocaleKeys<Locales, Specs>>,
+  SharedVerbOf<Specs, LocaleKeys<Locales, Specs>>,
+  SharedNounOf<Specs, LocaleKeys<Locales, Specs>>
 > {
   /** Locale union narrowed once and reused across every helper closure. */
   type Locale = Locales[number];
@@ -160,7 +230,7 @@ export function createI18n<
     /** Direct lookup; the type system guarantees presence but the runtime check guards against `Object.create(null)`-shaped misuse. */
     const spec = config.specs[locale];
     if (spec === undefined)
-      throw new Error(`No locale spec registered for ${String(locale,)}`,);
+      throw new Error(`No locale spec registered for ${locale}`,);
     return spec;
   }
 
@@ -187,7 +257,7 @@ export function createI18n<
   function assertLocale(value: string,): Locale {
     if (!isLocale(value,)) {
       throw new Error(
-        `Expected one of ${config.locales.join(', ',)}, got ${String(value,)}`,
+        `Expected one of ${config.locales.join(', ',)}, got ${value}`,
       );
     }
     return value;

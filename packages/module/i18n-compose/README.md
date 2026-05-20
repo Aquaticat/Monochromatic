@@ -26,6 +26,28 @@ The shared package never exports product-message APIs such as `confirmDelete`,
 `selectedCount`, `postedAt`, `siteName`, or `noResults`.
 Those belong in the consuming app, if they exist at all.
 
+## Shared vocabulary across locales
+
+Every locale spec passed to `createI18n` must expose the same label, subject,
+verb, and noun keys.
+The package rejects mismatched spec records at the factory boundary,
+so adding `cat` to English without adding `cat` to Catalan and Chinese fails type checking.
+
+```ts
+const en = defineEnglishLocale({ labels, subjects, nouns, verbs, },);
+const zh = defineChineseLocale({ labels, subjects, nouns, verbs, },);
+const ca = defineCatalanLocale({ labels, subjects, nouns, verbs, },);
+
+createI18n({
+  locales: ['ca', 'en', 'zh',] as const,
+  defaultLocale: 'en',
+  specs: { ca, en, zh, },
+},);
+```
+
+This keeps every public render method safe for every supported locale:
+`i18n.noun(locale, 'cat')` cannot type-check unless all configured specs know `cat`.
+
 ## Explicit locale on every call
 
 Every render call takes the locale as its first argument:
@@ -71,6 +93,8 @@ No `i18n.message(locale, 'Posted at {time}', { time })` and no `postedAt` method
 
 A consuming app composes generic grammar nodes directly;
 the library does not know what a confirmation, route, or product workflow is.
+Nested complements preserve the full nested phrase,
+including objects, complements, and adverbials.
 
 ```ts
 i18n.sentence(locale, {
@@ -92,6 +116,61 @@ i18n.sentence(locale, {
 ```
 
 The library sees grammar plus opaque external text.
+
+## Countability validation
+
+`NounEntry.countability` controls whether a noun may appear in `noun.counted`.
+`countability: 'mass'` rejects numeric counted phrases in every built-in locale,
+because `noun.counted` carries only a bare number and a noun key.
+Model measured amounts as countable measure nouns or pass a preformatted phrase through `noun.externalText`.
+
+```ts
+const nouns = {
+  water: {
+    surface: 'water',
+    countability: 'mass',
+  },
+};
+
+i18n.np('en', { kind: 'noun.counted', count: 2, noun: 'water', },); // throws
+```
+
+## English auxiliary strategies
+
+English verb entries may set `auxiliaryStrategy` for question and complement construction.
+Omitting the field uses `do-support`.
+
+- `do-support` emits `do`, `does`, or `did`, then keeps the lexical verb in base form.
+- `copula` fronts the finite verb itself, such as `Are you ready?`.
+- `modal` fronts the modal surface and renders nested complements bare, such as `Can you save?`.
+- `none` skips do-insertion and renders complements bare for caller-supplied special cases.
+
+```ts
+const verbs = {
+  can: {
+    base: 'can',
+    auxiliaryStrategy: 'modal',
+  },
+  save: {
+    base: 'save',
+    present3s: 'saves',
+    past: 'saved',
+  },
+};
+
+i18n.sentence('en', {
+  kind: 'sentence.question.yesNo',
+  subject: { kind: 'subject.key', subject: 'you', },
+  predicate: {
+    kind: 'verbPhrase',
+    verb: 'can',
+    complement: {
+      kind: 'complement.infinitive',
+      phrase: { kind: 'verbPhrase', verb: 'save', },
+    },
+  },
+},); // Can you save?
+```
 
 ## Locale scope
 

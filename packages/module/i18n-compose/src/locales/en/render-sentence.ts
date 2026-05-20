@@ -22,8 +22,11 @@ import {
   joinTokens,
 } from '../../render-helpers.ts';
 import {
+  complementFormForVerb,
   declarativeVerbSurface,
-  doAuxiliary,
+  questionVerbParts,
+  subjectQuestionVerbSurface,
+  type EnglishComplementForm,
 } from './render-vp.ts';
 import {
   EN_CASE_INVARIANTS,
@@ -57,8 +60,8 @@ function renderOptionalObject<S extends string, N extends string,>(
     object,
     renderNounPhrase,
   }: {
-    object: NounPhrase<S, N> | undefined;
-    renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
+    readonly object: NounPhrase<S, N> | undefined;
+    readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
   },
 ): string | undefined {
   return object === undefined ? undefined : renderNounPhrase(object,);
@@ -71,20 +74,26 @@ function renderOptionalObject<S extends string, N extends string,>(
  *
  * @param renderVerbPhrase - verb-phrase render function
  *
- * @returns rendered surface with `to` prefix, or undefined
+ * @param form - complement attachment mode for the predicate head
+ *
+ * @returns rendered surface with `to` prefix, bare surface, or undefined
  */
 function renderOptionalComplement<S extends string, V extends string, N extends string,>(
   {
     complement,
     renderVerbPhrase,
+    form,
   }: {
-    complement: { phrase: VerbPhrase<S, V, N>; } | undefined;
-    renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
+    readonly complement: { readonly phrase: VerbPhrase<S, V, N>; } | undefined;
+    readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
+    readonly form: EnglishComplementForm;
   },
 ): string | undefined {
-  return complement === undefined
-    ? undefined
-    : `to ${renderVerbPhrase(complement.phrase,)}`;
+  if (complement === undefined)
+    return undefined;
+  /** Rendered nested verb phrase before complement marker selection. */
+  const rendered = renderVerbPhrase(complement.phrase,);
+  return form === 'bare' ? rendered : `to ${rendered}`;
 }
 
 /**
@@ -163,9 +172,11 @@ export function makeEnglishSentenceRenderer<
       ref: sentence.subject,
       subjects,
     },);
+    /** Verb entry used for finite surface and complement attachment. */
+    const entry = verbs[sentence.predicate.verb];
     /** Finite verb surface for this subject + tense. */
     const finite = declarativeVerbSurface({
-      entry: verbs[sentence.predicate.verb],
+      entry,
       tense,
       agreement,
     },);
@@ -180,6 +191,7 @@ export function makeEnglishSentenceRenderer<
     const complement = renderOptionalComplement({
       complement: sentence.predicate.complement,
       renderVerbPhrase,
+      form: complementFormForVerb({ entry, },),
     },);
     /** Rendered adverbial cluster. */
     const adverbials = renderAdverbials(sentence.predicate.adverbials,);
@@ -211,8 +223,9 @@ export function makeEnglishSentenceRenderer<
       ref: sentence.subject,
       subjects,
     },);
-    /** Lowercase auxiliary; sentence-case fixup applied below at position 0. */
-    const aux = doAuxiliary({
+    /** Question verb parts chosen from the entry's auxiliary strategy. */
+    const questionVerb = questionVerbParts({
+      entry: verbs[sentence.predicate.verb],
       tense,
       agreement,
     },);
@@ -221,25 +234,24 @@ export function makeEnglishSentenceRenderer<
       ref: sentence.subject,
       subjects,
     },);
-    /** Base form of the predicate verb after the auxiliary. */
-    const verbBase = verbs[sentence.predicate.verb].base;
     /** Rendered object slot. */
     const object = renderOptionalObject({
       object: sentence.predicate.object,
       renderNounPhrase,
     },);
-    /** Rendered infinitive complement. */
+    /** Rendered infinitive or bare complement. */
     const complement = renderOptionalComplement({
       complement: sentence.predicate.complement,
       renderVerbPhrase,
+      form: questionVerb.complementForm,
     },);
     /** Rendered adverbial cluster. */
     const adverbials = renderAdverbials(sentence.predicate.adverbials,);
     /** Sentence body before sentence-case fixup. */
     const body = joinTokens([
-      aux,
+      questionVerb.auxiliary,
       subj,
-      verbBase,
+      questionVerb.lexicalVerb,
       object,
       complement,
       adverbials,
@@ -259,16 +271,14 @@ export function makeEnglishSentenceRenderer<
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
     const tense = sentence.tense ?? 'present';
-    /** Wh-subject treated as third-person singular for finite agreement. */
-    const finite = declarativeVerbSurface({
-      entry: verbs[sentence.predicate.verb],
+    /** Verb entry used for the finite question head. */
+    const entry = verbs[sentence.predicate.verb];
+    /** Wh-subject treated as third-person singular for ordinary finite agreement. */
+    const verb = subjectQuestionVerbSurface({
+      entry,
       tense,
       agreement: WH_SUBJECT_AGREEMENT,
     },);
-    /** Future wraps in `will` as in declaratives. */
-    const verb = tense === 'future'
-      ? `will ${verbs[sentence.predicate.verb].base}`
-      : finite;
     /** Rendered object slot. */
     const object = renderOptionalObject({
       object: sentence.predicate.object,
@@ -278,6 +288,7 @@ export function makeEnglishSentenceRenderer<
     const complement = renderOptionalComplement({
       complement: sentence.predicate.complement,
       renderVerbPhrase,
+      form: complementFormForVerb({ entry, },),
     },);
     /** Rendered adverbial cluster. */
     const adverbials = renderAdverbials(sentence.predicate.adverbials,);
@@ -309,8 +320,9 @@ export function makeEnglishSentenceRenderer<
       ref: sentence.subject,
       subjects,
     },);
-    /** Lowercase auxiliary placed after the wh-word. */
-    const aux = doAuxiliary({
+    /** Question verb parts chosen from the entry's auxiliary strategy. */
+    const questionVerb = questionVerbParts({
+      entry: verbs[sentence.verb],
       tense,
       agreement,
     },);
@@ -319,16 +331,14 @@ export function makeEnglishSentenceRenderer<
       ref: sentence.subject,
       subjects,
     },);
-    /** Base form of the predicate verb after the auxiliary. */
-    const verbBase = verbs[sentence.verb].base;
     /** Rendered adverbial cluster. */
     const adverbials = renderAdverbials(sentence.adverbials,);
     /** Sentence body with `What` at head. */
     const body = joinTokens([
       'What',
-      aux,
+      questionVerb.auxiliary,
       subj,
-      verbBase,
+      questionVerb.lexicalVerb,
       adverbials,
     ],);
     return `${body}${sentence.terminator ?? '?'}`;
@@ -351,8 +361,9 @@ export function makeEnglishSentenceRenderer<
       ref: sentence.subject,
       subjects,
     },);
-    /** Lowercase auxiliary placed after the wh-word. */
-    const aux = doAuxiliary({
+    /** Question verb parts chosen from the entry's auxiliary strategy. */
+    const questionVerb = questionVerbParts({
+      entry: verbs[sentence.predicate.verb],
       tense,
       agreement,
     },);
@@ -361,8 +372,6 @@ export function makeEnglishSentenceRenderer<
       ref: sentence.subject,
       subjects,
     },);
-    /** Base form of the predicate verb after the auxiliary. */
-    const verbBase = verbs[sentence.predicate.verb].base;
     /** Rendered object slot. */
     const object = renderOptionalObject({
       object: sentence.predicate.object,
@@ -372,6 +381,7 @@ export function makeEnglishSentenceRenderer<
     const complement = renderOptionalComplement({
       complement: sentence.predicate.complement,
       renderVerbPhrase,
+      form: questionVerb.complementForm,
     },);
     /** Rendered adverbial cluster. */
     const adverbials = renderAdverbials(sentence.predicate.adverbials,);
@@ -380,9 +390,9 @@ export function makeEnglishSentenceRenderer<
     /** Sentence body with wh-word at head. */
     const body = joinTokens([
       wh,
-      aux,
+      questionVerb.auxiliary,
       subj,
-      verbBase,
+      questionVerb.lexicalVerb,
       object,
       complement,
       adverbials,
@@ -416,17 +426,19 @@ export function makeEnglishSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.imperative'; }>,
   ): string {
     /** Imperative surface, defaulting to `base` when no dedicated form is supplied. */
-    const verb = verbs[sentence.predicate.verb].imperative
-      ?? verbs[sentence.predicate.verb].base;
+    const entry = verbs[sentence.predicate.verb];
+    /** Verb surface used in the imperative head slot. */
+    const verb = entry.imperative ?? entry.base;
     /** Rendered object slot. */
     const object = renderOptionalObject({
       object: sentence.predicate.object,
       renderNounPhrase,
     },);
-    /** Rendered infinitive complement. */
+    /** Rendered infinitive or bare complement. */
     const complement = renderOptionalComplement({
       complement: sentence.predicate.complement,
       renderVerbPhrase,
+      form: complementFormForVerb({ entry, },),
     },);
     /** Rendered adverbial cluster. */
     const adverbials = renderAdverbials(sentence.predicate.adverbials,);

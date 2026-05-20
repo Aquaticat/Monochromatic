@@ -47,8 +47,8 @@ function capitalize(
     text,
     mode,
   }: {
-    text: string;
-    mode: Parameters<typeof applyCapitalization>[0]['mode'];
+    readonly text: string;
+    readonly mode: Parameters<typeof applyCapitalization>[0]['mode'];
   },
 ): string {
   return applyCapitalization({

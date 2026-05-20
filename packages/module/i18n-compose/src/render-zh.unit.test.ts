@@ -92,6 +92,23 @@ await describe({
               .toBe('{time}',);
           },
         },),
+
+        it({
+          name: 'mass nouns reject numeric counted phrases',
+          fn: async () => {
+            /** Chinese spec with one mass-only noun to exercise countability validation. */
+            const localSpec = defineChineseLocale({
+              labels: zhLabels,
+              subjects: zhSubjects,
+              nouns: { ...zhNouns, cat: { ...zhNouns.cat, countability: 'mass', }, },
+              verbs: zhVerbs,
+            },);
+            expect(() =>
+              localSpec.renderNounPhrase({ kind: 'noun.counted', count: 2, noun: 'cat', },)
+            )
+              .toThrow('Cannot count mass noun',);
+          },
+        },),
       ],
     },),
 

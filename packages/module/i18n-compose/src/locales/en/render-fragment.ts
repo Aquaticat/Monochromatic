@@ -15,6 +15,7 @@ import {
   applyCapitalization,
   joinTokens,
 } from '../../render-helpers.ts';
+import { complementFormForVerb, } from './render-vp.ts';
 import {
   EN_CASE_INVARIANTS,
   type EnglishVerbEntry,
@@ -48,8 +49,8 @@ function nonFiniteSurface(
     entry,
     form,
   }: {
-    entry: EnglishVerbEntry;
-    form: VerbFragmentForm;
+    readonly entry: EnglishVerbEntry;
+    readonly form: VerbFragmentForm;
   },
 ): string {
   if (form === 'imperative')
@@ -73,8 +74,8 @@ function capitalize(
     text,
     mode,
   }: {
-    text: string;
-    mode: Parameters<typeof applyCapitalization>[0]['mode'];
+    readonly text: string;
+    readonly mode: Parameters<typeof applyCapitalization>[0]['mode'];
   },
 ): string {
   return applyCapitalization({
@@ -82,6 +83,33 @@ function capitalize(
     mode,
     caseInvariants: EN_CASE_INVARIANTS,
   },);
+}
+
+/**
+ * Renders a nested fragment complement using the head verb's attachment strategy.
+ *
+ * @param entry - head verb entry controlling bare vs infinitive attachment
+ *
+ * @param phrase - nested verb phrase to render
+ *
+ * @param renderVerbPhrase - verb-phrase renderer
+ *
+ * @returns rendered complement surface
+ */
+function renderComplement<S extends string, V extends string, N extends string,>(
+  {
+    entry,
+    phrase,
+    renderVerbPhrase,
+  }: {
+    readonly entry: EnglishVerbEntry;
+    readonly phrase: VerbPhrase<S, V, N>;
+    readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
+  },
+): string {
+  /** Rendered nested verb phrase before complement marker selection. */
+  const rendered = renderVerbPhrase(phrase,);
+  return complementFormForVerb({ entry, },) === 'bare' ? rendered : `to ${rendered}`;
 }
 
 /**
@@ -134,10 +162,14 @@ export function makeEnglishFragmentRenderer<
     const object = fragment.phrase.object === undefined
       ? undefined
       : renderNounPhrase(fragment.phrase.object,);
-    /** Optional rendered infinitive complement. */
+    /** Optional rendered infinitive or bare complement. */
     const complement = fragment.phrase.complement === undefined
       ? undefined
-      : `to ${renderVerbPhrase(fragment.phrase.complement.phrase,)}`;
+      : renderComplement({
+        entry,
+        phrase: fragment.phrase.complement.phrase,
+        renderVerbPhrase,
+      },);
     /** Optional rendered adverbial cluster. */
     const adverbials = renderAdverbials(fragment.phrase.adverbials,);
     /** Joined surface before capitalization fixup. */
