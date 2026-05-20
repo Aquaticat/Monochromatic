@@ -37,6 +37,7 @@ packages/module/i18n-compose/
     │                              VerbPhrase, NonFiniteComplement,
     │                              DeclarativeSentence, YesNoQuestion, WhQuestion,
     │                              ImperativeSentence, Sentence, Fragment, FragmentPart
+    ├── countability.ts          # assertCountableNoun() for mass-noun validation
     ├── agreement.ts             # SubjectAgreement, subjectAgreement(),
     │                              subjectSurface(), WH_SUBJECT_AGREEMENT
     ├── locale-spec.ts           # LocaleSpec + LabelOf/SubjectOf/VerbOf/NounOf
@@ -51,6 +52,7 @@ packages/module/i18n-compose/
     │   │   ├── render-np.ts     # makeEnglishNounPhraseRenderer
     │   │   ├── render-adverbial.ts
     │   │   ├── render-vp.ts     # declarativeVerbSurface, doAuxiliary,
+    │   │   │                      questionVerbParts, complementFormForVerb,
     │   │   │                      makeEnglishVerbPhraseRenderer
     │   │   ├── render-sentence.ts
     │   │   └── render-fragment.ts
@@ -62,17 +64,49 @@ packages/module/i18n-compose/
 
 Renderer responsibilities per locale:
 
-- English: do-support for yes/no and wh questions (`Do/Does/Did` lowercase mid-sentence, capitalized at position 0 via sentence-case fixup); base form after every auxiliary; future via `will + base`; infinitive complements via `to + base`; sentence-case fixup pins English `I` via `EN_CASE_INVARIANTS`.
-- Chinese: ASCII space between digit and classifier (`1 只猫`); 在/到/从 coverbs for locatives; 之前/之后 for time; `了` for past, `会` for future; `吗？` for yes/no; in-situ wh-words (`谁/什么/在哪里/什么时候/为什么/怎么`) with no `吗` particle; Chinese terminators `。？！`; sequence fragments concatenated with no separator.
-- Catalan: gender/number article tables (`el/els`, `un/uns`, elided `l'`); finite verb forms indexed by tense and {@link PersonNumberKey} via the sparse `entry.finite[tense][pn]` table (missing entries throw); imperative falls back to infinitive; question rendering uses punctuation alone in v1 (no auxiliary inversion); `Qui/Què/On/Quan/Per què/Com` wh-words.
+- English: do-support for ordinary yes/no and wh questions (`Do/Does/Did` lowercase mid-sentence,
+  capitalized at position 0 via sentence-case fixup); `auxiliaryStrategy: 'copula'` fronts the finite verb;
+  `auxiliaryStrategy: 'modal'` fronts the modal and renders nested complements bare;
+  `auxiliaryStrategy: 'none'` skips do-insertion for caller-supplied special cases;
+  base form after every auxiliary; future via `will + base`; ordinary infinitive complements via `to + base`;
+  sentence-case fixup pins English `I` via `EN_CASE_INVARIANTS`.
+- Chinese: ASCII space between digit and classifier (`1 只猫`); 在/到/从 coverbs for locatives;
+  之前/之后 for time; `了` for past, `会` for future; `吗？` for yes/no;
+  in-situ wh-words (`谁/什么/在哪里/什么时候/为什么/怎么`) with no `吗` particle;
+  Chinese terminators `。？！`; sequence fragments concatenated with no separator.
+- Catalan: gender/number article tables (`el/els`, `un/uns`, elided `l'`);
+  finite verb forms indexed by tense and {@link PersonNumberKey} via the sparse `entry.finite[tense][pn]` table,
+  with missing entries throwing; imperative falls back to infinitive;
+  nested complements render the full nested verb phrase, including objects and adverbials;
+  question rendering uses punctuation alone in v1 (no auxiliary inversion); `Qui/Què/On/Quan/Per què/Com` wh-words.
 
-Tests: `*.unit.test.ts` only (no `*.type.test.ts` files; the workspace convention puts type assertions inline via `expectTypeOf` from `@monochromatic-dev/module-test`). Coverage spans every variant of every AST kind: noun phrases (bare, counted, definite, indefinite, possessed, external), declaratives, yes/no questions with do-support across all three tenses, all three wh-slots, imperatives, complements (`want to delete`), fragments (noun-phrase, verb-phrase non-finite forms, sequence), capitalization invariants, Catalan throw-on-missing-form, Chinese absence-of-吗 in wh-questions.
+Every built-in noun-phrase renderer validates `countability: 'mass'` before rendering `noun.counted`
+and throws instead of inventing a measure phrase.
+
+Tests: `*.unit.test.ts` only (no `*.type.test.ts` files; the workspace convention puts type assertions inline
+via `expectTypeOf` from `@monochromatic-dev/module-test`). Coverage spans every variant of every AST kind:
+noun phrases (bare, counted, definite, indefinite, possessed, external), mass-noun rejection, declaratives,
+yes/no questions with do-support across all three tenses, English copula and modal auxiliary strategies,
+all three wh-slots, imperatives, complements (`want to delete`), Catalan full nested-complement preservation
+in sentences, verb phrases, and fragments, fragments (noun-phrase, verb-phrase non-finite forms, sequence),
+capitalization invariants, Catalan throw-on-missing-form, Chinese absence-of-吗 in wh-questions,
+and package-name public import consumption.
 
 ## Footguns encountered
 
 These trapped the first implementation and will trap the next contributor unless they are recorded:
 
-1.  **`createI18n` type-parameter inference is fragile.** The naive `createI18n<Locales, Label, Subject, Verb, Noun>(config)` with `LocaleSpec` arrow-typed methods refuses to compile: the renderer parameters (`key: Label`) are in contravariant position, so `LocaleSpec<TestLabel, ...>` is *not* assignable to `LocaleSpec<string, ...>` (the inferred default when `Label` has no inference source). Method shorthand syntax makes positions bivariant and the assignment works, but then TypeScript widens `Label` to `string` and the consumer loses their literal union. The working pattern is method shorthand for `LocaleSpec` plus a `Spec` generic in `createI18n` constrained against `AnyLocaleSpec = LocaleSpec<string, string, string, string>`, then `LabelOf<Spec>` / `SubjectOf<Spec>` / `VerbOf<Spec>` / `NounOf<Spec>` conditional types pulled out via `infer`. The runtime body still casts payloads through `LocaleSpec<Label, Subject, Verb, Noun>` because the `Spec` generic does not narrow the closure types as expected. Touch this at your peril.
+1.  **`createI18n` type-parameter inference is fragile.** The naive
+    `createI18n<Locales, Label, Subject, Verb, Noun>(config)` with `LocaleSpec` arrow-typed methods refuses
+    to compile: renderer parameters (`key: Label`) are in contravariant position, so `LocaleSpec<TestLabel, ...>`
+    is not assignable to `LocaleSpec<string, ...>` (the inferred default when `Label` has no inference source).
+    Method shorthand syntax makes positions bivariant and the assignment works, but then TypeScript can widen
+    or union vocabulary across locale specs in ways that are unsafe at runtime. The working pattern is method
+    shorthand for `LocaleSpec` plus a `Spec` generic in `createI18n` constrained against
+    `AnyLocaleSpec = LocaleSpec<string, string, string, string>`, conditional `LabelOf` / `SubjectOf` /
+    `VerbOf` / `NounOf` extractors, and `EnforceSharedVocabulary` to reject spec records where one locale has
+    keys another locale lacks. The returned `I18n` surface uses `SharedLabelOf` / `SharedSubjectOf` /
+    `SharedVerbOf` / `SharedNounOf`, not the raw union across `Specs[Locales[number]]`. Touch this at your peril.
 
 2.  **`'who' as Subject` is unsafe and unnecessary.** A first cut threaded `SubjectRef<Subject>` into every verb-form helper, then synthesized `{ kind: 'subject.key', subject: 'who' as Subject }` for wh-subject questions. Oxlint correctly rejects the cast. The fix lives in `agreement.ts`: helpers take `SubjectAgreement = { person, number }`, `subjectAgreement({ ref, subjects })` extracts it from a real subject reference, and `WH_SUBJECT_AGREEMENT` is a pre-built `{ person: 3, number: 'singular' }` constant the wh-subject branches pass directly. The locale's `Subject` union is never abused.
 
@@ -80,9 +114,19 @@ These trapped the first implementation and will trap the next contributor unless
 
 4.  **TSDoc rules are stricter than `or-throw` makes them look.** Every local `const` requires a TSDoc comment (`tsdoc/require-tsdoc`). Every function parameter must be documented by name (`tsdoc/require-param`). For destructured params, each destructured field needs its own `@param <field> - description` line, not a single `@param input - ...` covering the bundle (`tsdoc/check-param-names`). Single-line TSDocs that contain a tag (e.g. `/** Dependency bundle for {@link X}. */`) must be expanded to multi-line (`tsdoc/multiline-blocks`). The `>` character inside TSDoc body text must be replaced with `to` (the helpfully-titled `tsdoc-escape-greater-than` rule). Plan for ~3x the lines you would naively write, and use named extracted helpers when an inner function body would otherwise need 8+ documented locals.
 
-5.  **`eslint/no-magic-numbers` rejects `3` even inside a named-const definition.** AGENTS.md exempts `-2..2`, but Catalan/English needed the third-person literal `3` for agreement checks. The workaround is `const THIRD_PERSON: Person = (1 + 2) as Person` plus an `oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion` justification. Catalan locale stores person as `Person = 1 | 2 | 3` from `grammar-primitives.ts` and consumes the same composed constant when needed.
+5.  **`eslint/no-magic-numbers` rejects `3` even inside a named-const definition.** AGENTS.md exempts
+    `-2..2`, but English needs the third-person literal for agreement checks. Use the composed constant
+    `const THIRD_PERSON = 1 + 2`; do not cast it to `Person`, because type-aware oxlint flags the narrowing
+    assertion as unsafe.
 
-6.  **dprint and oxlint disagree on inline object/array literals.** dprint leaves `{ entry, count, }` on one line when it fits in 90 columns; oxlint's `stylistic/object-property-per-line` and `stylistic/array-element-per-line` (warnings, not errors) want one property/element per line regardless. `mise run //:format:oxlint` (or `oxlint --fix` directly) auto-fixes both rules, but the full-tree `//:format` task fails on unrelated `figma-parsers/kiwi` lint errors before reaching the fixer. Run the package-local fixer directly when working on this package; the fix is autofixable.
+6.  **dprint and oxlint disagree on inline object/array literals.** dprint leaves `{ entry, count, }` on one line
+    when it fits in 90 columns; oxlint's `stylistic/object-property-per-line` and
+    `stylistic/array-element-per-line` (warnings, not errors) want one property/element per line regardless.
+    `mise run //:format:oxlint` (or `oxlint --fix` directly) auto-fixes both rules, but the full-tree
+    `//:format` task fails on unrelated `figma-parsers/kiwi` lint errors before reaching the fixer.
+    Run the package-local fixer directly when working on this package; the fix is autofixable.
+    `unicorn/no-nested-ternary` is disabled in `packages/config/oxlint/src/rules/style.ts` to match the existing
+    project preference for nested ternaries.
 
 7.  **Plan §11 short-form examples are wrong; the AST type is normative.** The §11 examples use `kind: 'counted'`, `kind: 'bare'`, etc., but the actual variant kinds are namespaced (`'noun.counted'`, `'noun.bare'`, ...). The implementation follows the type, not the §11 short-form. Test fixtures and the `ssg-test` migration must use the namespaced form.
 
