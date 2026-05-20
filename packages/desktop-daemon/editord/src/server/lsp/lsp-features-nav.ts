@@ -67,7 +67,6 @@ export async function requestGotoDefinition({
 
   /** LSP definition returns Location | Location[] | null */
   const rawLocation = Array.isArray(result,)
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- array index on LSP result
     ? (result as unknown[])[0]
     : result;
   if ((rawLocation === undefined) || (rawLocation === null))

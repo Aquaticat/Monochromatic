@@ -136,7 +136,6 @@ export async function dispatchMessage(
         await lspManager.didSave({ path: parsed.path, },);
       return;
     }
-    // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
     if (parsed.type === 'listDir') {
       /** Directory entries and metadata returned to the requesting peer. */
       const result = await listDir({
@@ -153,7 +152,6 @@ export async function dispatchMessage(
       },);
       return;
     }
-    // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: parsed is from unvalidated JSON cast
     if (parsed.type === 'search') {
       peerSearchControllers.get(peer,)?.abort();
       /** Stored on the peer so a subsequent search request can cancel this one. */
@@ -211,7 +209,6 @@ export async function dispatchMessage(
         type: 'error',
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
         id: (parsed as { readonly id?: string; }).id,
-        // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- else branch: parsed is an unknown message shape from unvalidated JSON
         message: `unknown message type: ${(parsed as { readonly type: string; }).type}`,
       },
     },);
@@ -235,10 +232,8 @@ export async function dispatchMessage(
       l.warn(`dispatch failed (transient race): ${msg}`,);
     else
       l.error(`dispatch failed: ${msg}`,);
-    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- `parsed` is from unvalidated JSON cast; requests have `id`, notifications do not */
     /** Undefined for notifications, suppressing the targeted reply below. */
     const requestId = 'id' in parsed ? (parsed as { readonly id: string; }).id : undefined;
-    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     if (requestId !== undefined) {
       sendJson({
         peer,

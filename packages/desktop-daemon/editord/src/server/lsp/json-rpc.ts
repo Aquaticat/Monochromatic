@@ -169,7 +169,6 @@ export function createLspParser({
       state.chunks.push(chunk,);
       state.totalLength += chunk.byteLength;
 
-      // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- loop exits via return when buffer is incomplete
       while (true) {
         if (state.contentLength === (-1)) {
           consolidate();

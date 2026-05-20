@@ -78,7 +78,6 @@ export async function dispatchFsAction({
       path: action.path,
     },);
   }
-  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- defensive: exhaustive check against ContextAction union
   else if (action.kind === 'openInDefaultApp') {
     await ws.request({
       type: 'openInDefaultApp',

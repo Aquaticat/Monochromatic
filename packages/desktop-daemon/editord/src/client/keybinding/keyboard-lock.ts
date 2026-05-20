@@ -59,7 +59,6 @@ const LOCKED_KEY_CODES = [
  */
 export async function lockKeyboard(): Promise<void> {
   /** Navigator augmented with the Keyboard Lock API; missing in lib.dom.d.ts so cast locally. */
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- type augmentation for Keyboard Lock API not in lib.dom.d.ts
   const nav = navigator as NavigatorWithKeyboard;
   if (nav.keyboard === undefined) {
     lockLog.info('Keyboard Lock API not available',);

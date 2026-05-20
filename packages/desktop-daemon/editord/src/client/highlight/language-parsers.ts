@@ -13,7 +13,6 @@ import { parser as markdownParser, } from '@lezer/markdown';
 import { parser as rustParser, } from '@lezer/rust';
 import { parser as xmlParser, } from '@lezer/xml';
 import { parser as yamlParser, } from '@lezer/yaml';
-// oxlint-disable-next-line typescript-eslint/no-unsafe-assignment -- community package lacks proper type exports; runtime value is a valid LRParser
 import { parser as tomlParser, } from 'lezer-toml';
 
 import { json5Parser, } from './json5-parser.ts';

@@ -156,6 +156,5 @@ export async function requestRename({
   if ((result === null) || (result === undefined))
     return null;
 
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP rename returns WorkspaceEdit | null
   return result as LspWorkspaceEdit;
 }

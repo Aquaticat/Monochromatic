@@ -92,10 +92,8 @@ export function setTextContent({
 export function getTextContent({ editor, }: { readonly editor: HTMLDivElement; },): string {
   return [...editor.children,]
     .map(function readLine(child,) {
-      /* oxlint-disable typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec */
       /** Defensive default keeps empty divs producing the empty string rather than null. */
       const t = child.textContent ?? '';
-      /* oxlint-enable typescript-eslint/no-unnecessary-condition */
       return t === '\n' ? '' : t;
     },)
     .join('\n',);
@@ -126,10 +124,8 @@ export function getLineText({
   const child = editor.children[line];
   if (child === undefined)
     return null;
-  /* oxlint-disable typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec */
   /** Defensive default keeps empty divs producing the empty string rather than null. */
   const t = child.textContent ?? '';
-  /* oxlint-enable typescript-eslint/no-unnecessary-condition */
   return t === '\n' ? '' : t;
 }
 

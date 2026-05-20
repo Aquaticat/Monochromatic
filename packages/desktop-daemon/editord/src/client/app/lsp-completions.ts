@@ -184,7 +184,6 @@ export function wireCompletionTrigger({
   editorPane.addEventListener(
     'keydown',
     function handleDotKey(event,) {
-      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- keydown is always a KeyboardEvent
       /** Narrowed view of the event so `.key` is reachable without `unknown` checks. */
       const ke = event as KeyboardEvent;
       if (ke.key !== '.')

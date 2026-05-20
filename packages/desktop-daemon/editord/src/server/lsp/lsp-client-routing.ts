@@ -61,7 +61,6 @@ export function routeJsonRpcMessage({
   },) => void;
 },): void {
   if (('id' in message) && (!('method' in message))) {
-    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to response shape */
     /** Narrowed response view used to look up the matching pending request. */
     const response = message as {
       readonly id: number;
@@ -71,7 +70,6 @@ export function routeJsonRpcMessage({
         readonly message: string;
       };
     };
-    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     /** Pending request entry; undefined means the response was orphaned (e.g. timed out). */
     const entry = pending.get(response.id,);
     if (entry !== undefined) {
@@ -85,23 +83,19 @@ export function routeJsonRpcMessage({
     }
   }
   else if (('method' in message) && (!('id' in message))) {
-    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to notification shape */
     /** Narrowed notification view forwarded to the consumer's handler. */
     const notification = message as {
       readonly method: string;
       readonly params?: unknown;
     };
-    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     onNotification({
       method: notification.method,
       params: notification.params,
     },);
   }
   else if (('method' in message) && ('id' in message)) {
-    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- discriminant check above narrows to request shape */
     /** Narrowed request view used only for the response id below. */
     const request = message as { readonly id: number; };
-    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     send({
       jsonrpc: '2.0',
       id: request.id,

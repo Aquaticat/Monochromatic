@@ -124,7 +124,7 @@ export async function requestCompletion({
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP completion can return CompletionItem[]
     return result as LspCompletionItem[];
   }
-  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access -- LSP completion can return CompletionList
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP completion can return CompletionList
   if ('items' in (result as Record<string, unknown>)) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- narrow from CompletionList shape
     return (result as { readonly items: LspCompletionItem[]; }).items;

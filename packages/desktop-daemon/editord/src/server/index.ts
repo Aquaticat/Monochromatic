@@ -265,7 +265,6 @@ function startShutdownWatchdog(): void {
       httpLog.error(
         `shutdown timed out after ${String(SHUTDOWN_WATCHDOG_SECONDS,)}s, forcing exit`,
       );
-      // oxlint-disable-next-line unicorn/no-process-exit -- backstop: LSP children may keep the event loop alive after shutdown
       process.exit(0,);
     },
     SHUTDOWN_WATCHDOG_SECONDS * SHUTDOWN_MS_PER_SECOND,

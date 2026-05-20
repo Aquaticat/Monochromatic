@@ -24,10 +24,8 @@ export function findCharAtX({
   readonly lineDiv: Element;
   readonly x: number;
 },): number {
-  /* oxlint-disable typescript-eslint/no-unnecessary-condition -- defensive: textContent is null for Document/DocumentType nodes per spec */
   /** Empty / whitespace-only lines short-circuit to offset 0 below. */
   const text = lineDiv.textContent ?? '';
-  /* oxlint-enable typescript-eslint/no-unnecessary-condition */
   if ((text.length === 0) || (text === '\n'))
     return 0;
 

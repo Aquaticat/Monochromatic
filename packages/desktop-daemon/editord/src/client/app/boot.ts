@@ -97,7 +97,6 @@ export async function bootSession(
     recentFiles.push(state.currentFilePath,);
   await fileTree.revealFiles({ paths: recentFiles.paths, },);
   fileTree.updateRecency({ paths: recentFiles.paths, },);
-  // oxlint-disable-next-line typescript-eslint/no-unnecessary-condition -- currentFileKind is mutated by loadFileSafe which runs during restoreSession above
   if ((state.currentFilePath !== null) && (state.currentFileKind === 'text'))
     refreshInlayHints();
 }

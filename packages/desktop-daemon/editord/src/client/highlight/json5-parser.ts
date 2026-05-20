@@ -13,7 +13,6 @@ import {
   styleTags,
   tags,
 } from '@lezer/highlight';
-// oxlint-disable-next-line typescript-eslint/no-unsafe-assignment -- community package lacks proper type exports; runtime value is a valid LRParser
 import { parser as json5BaseParser, } from 'lezer-json5';
 
 // oxlint-disable typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-assignment -- community package; runtime type is LRParser with a valid configure method

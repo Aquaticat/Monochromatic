@@ -27,10 +27,8 @@ export const MAX_HIGHLIGHT_BYTES = FILE_SIZE_WARNING_THRESHOLD;
  */
 export function getLineTexts({ editor, }: { readonly editor: HTMLDivElement; },): string[] {
   return [...editor.children,].map(function readLine(div,) {
-    /* oxlint-disable typescript-eslint/no-unnecessary-condition -- textContent is typed as `string | null` in DOM; null when node has no text */
     /** Defensive default keeps empty divs producing the empty string rather than null. */
     const text = div.textContent ?? '';
-    /* oxlint-enable typescript-eslint/no-unnecessary-condition */
     return text === '\n' ? '' : text;
   },);
 }
