@@ -129,6 +129,28 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
     ],
   },
   {
+    // postcss AST nodes (Root/AtRule/ChildNode) are walked in-place by plugin
+    // visitors; the postcss API hands them in mutable and consumers call
+    // node.walk*/append/remove on them, so readonly is wrong here.
+    //
+    // postcss declares each node as `class X_ extends ...` plus an empty
+    // `class X extends X_ {}` re-exported via `export = X`. tsgo resolves a
+    // param typed `Root`/`AtRule` to the BASE symbol (`Root_`/`AtRule_`), so
+    // the matcher needs the underscore names; the plain names are kept too so
+    // the entry self-heals if tsgo stops collapsing to the base. ChildNode is
+    // a plain exported union alias and matches directly. Verified empirically
+    // against tsgolint 0.23.0 with a postcss param probe.
+    from: "package",
+    package: "postcss",
+    name: [
+      "AtRule",
+      "AtRule_",
+      "ChildNode",
+      "Root",
+      "Root_",
+    ],
+  },
+  {
     from: "package",
     package: "toml-eslint-parser",
     name: [
