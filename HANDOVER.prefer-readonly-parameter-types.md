@@ -1,138 +1,117 @@
 # HANDOVER.prefer-readonly-parameter-types
 
-State of the `typescript/prefer-readonly-parameter-types` cleanup when context approached
-compaction. Resume from here.
+State of the `typescript/prefer-readonly-parameter-types` cleanup at compaction. Resume from
+here. Most of the work is committed and verified; one bulk package (mvm) is still being
+finished by a re-launched child, after which two coordinator steps remain.
 
-## Overall task
+## Task
 
 User: "This repo has many prefer-readonly-parameter-types errors. Fix only these. Yes I know
 other lint issues exist. You might want to spawn-claude."
 
-Mid-session the user redirected to deep-dive one sub-problem (why the ESTree allow-list entry
-does not work) and capture it in a troubleshooting doc. That deep-dive is done and committed.
-The broad cleanup itself has not started yet; the user paused it ("the actual task would be
-secondary until we finish with this").
+Repo-wide cleanup of one rule. Original estimate 176 violations / 8 packages was stale; the
+true scope was 167 / 9 packages (the `//packages/...` mise glob silently excludes
+`rolldown-plugins/import-attributes`, which is why the original sweep missed it).
 
-## Approved plan
+## Approach (settled, do not relitigate)
 
-`/home/user/.claude/plans/this-repo-has-many-dreamy-pebble.md` (approved via ExitPlanMode).
-Shape: fix our own params in source with `readonly`; allow-list the external AST families
-centrally; do the shared config change first, then fan out per package.
+1.  External AST/SDK types that cannot be readonly: allow-list centrally in
+    `packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-pkg.ts`. Never
+    inline-suppress an external type.
+2.  Our own params: source fixes. Destructured object param `{ x }: { x: T }` becomes
+    `{ x }: { readonly x: T }`; arrays become `readonly T[]`; own data types get `readonly`
+    fields or `ReadonlyDeep<T>` from `type-fest`.
+3.  A param the function genuinely mutates: prefer refactoring to a return-based immutable
+    shape (leaf accumulators). Only when that is infeasible (shared-recursive visited-set,
+    injected memo cache) use a justified block `oxlint-disable` matching the repo precedent
+    (`packages/webapp-edu/paper2vn/src/client/router.ts` `root`).
 
-## Scope
+## Allow-list families (all committed, all verified)
 
-176 violations across 8 packages, from
-`OXLINT_THREADS=1 mise '//packages/...:lint:oxlint'` captured to `/tmp/prerod-all.txt`
-(re-run to refresh; it may be stale):
+The matcher (tsgolint, oxlint 1.65) keys on the declaring package and the resolved symbol
+name, neither of which is the surface form. Full write-up in
+`TROUBLESHOOTING.oxlint-prefer-readonly-estree.md` (updated this session).
 
-- `cli/mvm` 58
-- `claude-code-plugins/source` 38
-- `cli/terminal-exec` 21
-- `config/oxlint-no-restricted-syntax` 20
-- `cli/vmsync` 19
-- `build-tool/css` 15
-- `cli/fy` 4
-- `cli/rgffplay` 1
+- `@oxlint/plugins` ESTree: `ESTree.Node/Function/PropertyKey` resolve to bundler-renamed
+  `Node$1/Function$1/PropertyKey$1`; added those plus `Statement/Directive/FunctionBody`, and
+  removed a dead `estree`-package block. Commit `0e589bab`. Also `Variable` (scope-manager
+  type) commit `e57ff587`.
+- `@oxc-project/types` ESTree (used via `rolldown/utils` in import-attributes, a different
+  declaring package, no `$1` renaming): commit `918c3283`, plus `StringLiteral` `3dcc9c5c`.
+- `postcss`: `Root`/`AtRule` are empty `export =` subclasses, so tsgo resolves them to the
+  base symbols `Root_`/`AtRule_`; allow-listed both forms plus `ChildNode`. Commit `295e0f79`.
 
-All production code; the rule is `off` for test files (`config/oxlint` `overrides.ts`
-`testOverride`).
+## Per-package source fixes
 
-## Decision boundary (how each violation is fixed)
+Done, committed, and independently re-verified (0 of this rule + `lint:types` exit 0):
 
-1.  Destructured named-param objects (dominant): `{ x }: { x: T }` becomes
-    `{ x }: { readonly x: T }`.
-2.  Arrays and our own data types: `readonly T[]`, `readonly` fields, or `ReadonlyDeep<T>`
-    from `type-fest` (already used repo-wide).
-3.  External AST families (ESTree, postcss): allow-list centrally. Never inline-suppress
-    external types (explicit user directive).
-4.  Wrapper object holding an external type: `{ node }: { node: ESTree.X }` becomes
-    `{ node }: { readonly node: ESTree.X }`. Still a source fix even after the type is
-    allow-listed, because the anonymous wrapper field is mutable.
+- `config/oxlint-no-restricted-syntax` `ee5d828a` (widened reportIfLet union to `ESTree.Node`;
+  readonly wrapper/destructure fields).
+- `build-tool/css` `541338db` (readonly fields + BuildOptions; justified disable for the
+  mutated `imported` Set in inlineImports, a shared-recursive visited-set).
+- `rolldown-plugins/import-attributes` `6c9f6866` (refactored collectStaticReplacements to
+  return its replacements; justified disable for the injected `importerSourceCache` memo Map).
+- `cli/fy` `cebc9bfd` · `cli/rgffplay` `b885d79e`.
+- Children: `cli/terminal-exec` `b28e4915` (21) · `cli/vmsync` `72cba746` (19) ·
+  `claude-code-plugins/source` `789a9f59` (38). All three re-verified by the coordinator.
 
-No DOM/`Event`/`HTMLElement` one-off params exist in the flagged CLI packages (verified).
+The 10 `claude-code-plugins/*` shim packages type-check clean against ccp/source's new
+`ReadonlyDeep` handler signatures (`mise '//packages/claude-code-plugins/...:lint:types'`
+exit 0).
 
-## Done this session
+## In flight: cli/mvm (58 violations)
 
-ESTree allow-list root cause: COMPLETE, committed `3a416e4a` as
-`TROUBLESHOOTING.oxlint-prefer-readonly-estree.md`.
+The first child (`ad1948b2`) died with 7 files partially edited (uncommitted in
+`packages/cli/mvm/src/`). Re-launched as `fedc0501` to finish from the partial state, with the
+heads-up that `template-windows.ts` uses a `ReturnType<typeof tagged>` Logger param the
+allow-list `Logger` entry does not match through; the fix is to mirror
+`packages/cli/vmsync/src/log.ts` (redefine `Logger = Readonly<ModuleLogger>`) in
+`packages/cli/mvm/src/log.ts`. It commits only `packages/cli/mvm/` paths.
 
-`@oxlint/plugins` re-exports `ESTree.Node`/`Function`/`PropertyKey` from internal
-`Node$1`/`Function$1`/`PropertyKey$1` (a `$1` bundler rename, because the package also
-declares an oxc-style top-level `Node`/`Function`). tsgolint's `allow` matcher compares
-`symbol.escapedName` (`Node$1`), so `name: ['Node']` never matches; the rule then recurses
-into the ~200-member union and flags the param. typescript-eslint's own matcher
-(`specifierNameMatches.ts`) shares this design, so the audit lands on do-not-file. Verified
-in a throwaway repro, not by editing the real config.
+A background poller (`b1hm43g47`) watches for the `fix(cli-mvm)` commit (or ~25min timeout)
+and will re-invoke the session. If it times out, mvm stalled again: either re-launch once more
+or finish mvm in-session (the partial edits are sound to build on; re-lint
+`mise run //packages/cli/mvm:lint:oxlint` for the remaining sites).
 
-## Verified ESTree fix (lever 1), NOT YET APPLIED
+## Remaining coordinator steps (after mvm commits), in order
 
-Edit `packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-pkg.ts`, the
-`@oxlint/plugins` entry, adding the `$1` names alongside the existing plain names:
+1.  Verify mvm: `mise run //packages/cli/mvm:lint:oxlint` shows 0
+    `prefer-readonly-parameter-types`, and `mise run //packages/cli/mvm:lint:types` exits 0.
+2.  Commit `pnpm-lock.yaml`. It currently has a 3-line uncommitted addition: the `type-fest`
+    entry under the `packages/claude-code-plugins/source` importer (that child added
+    `type-fest: catalog:` to its `package.json` (committed) but its scope excluded the root
+    lockfile, so `pnpm install --frozen-lockfile` would reject). mvm has NO `type-fest` as of
+    compaction; re-check `git diff -- pnpm-lock.yaml` after mvm in case its child added one,
+    then commit the lockfile (`build` or `chore` scope). Verify with
+    `mise run` of a frozen-lockfile install if practical.
+3.  Final whole-repo verification. Do NOT use `mise '//packages/...:lint:oxlint'` for the
+    pass/fail gate: it silently excludes `rolldown-plugins/import-attributes`. Loop the
+    explicit 9-package list and confirm each is 0:
 
-```typescript
-"Node", "Node$1",
-"Function", "Function$1",
-"PropertyKey", "PropertyKey$1",
-```
+    ```bash
+    for p in cli/mvm claude-code-plugins/source cli/terminal-exec cli/vmsync \
+      config/oxlint-no-restricted-syntax build-tool/css rolldown-plugins/import-attributes \
+      cli/fy cli/rgffplay; do
+      echo -n "$p: "; OXLINT_THREADS=1 mise run //packages/$p:lint:oxlint 2>&1 \
+        | rg -c "prefer-readonly-parameter-types" || echo 0
+    done
+    ```
 
-Keep the plain names too, so the list self-heals if a future `@oxlint/plugins` stops
-renaming. Then verify the drop:
-
-```bash
-mise run //packages/config/oxlint-no-restricted-syntax:lint:oxlint
-```
-
-The 3 `ESTree.Node` and 1 `ESTree.Function` reports should disappear from the package's
-current 20-warning total. The old "lever 2" (filtering in the `task-oxlint` wrapper) is
-unnecessary because lever 1 works; that task was deleted.
-
-## Next steps, in order
-
-1.  Apply the ESTree allow-list fix above, verify the drop, commit. The shared `config/oxlint`
-    change affects all packages' linting, so it must land before the `css` and
-    `oxlint-no-restricted-syntax` source work.
-2.  postcss `Root` in `build-tool/css` is NOT verified. Build the same throwaway-repro shape
-    (`import { Root } from 'postcss'`, a `root: Root` param) and confirm
-    `{ from: 'package', package: 'postcss', name: ['Root', ...] }` actually silences it before
-    trusting it; postcss may or may not share oxc's dual-AST `$1` collision. Add the postcss
-    node-type names to `allow-pkg.ts` if it works.
-3.  Per-package source fixes (categories 1, 2, 4) across the 8 packages. Plan suggests
-    `spawn-claude` fan-out, one child per package. `css` and `oxlint-no-restricted-syntax`
-    children must run after steps 1 and 2 (they depend on the allow-list). Each child: fix
-    only `prefer-readonly-parameter-types`, run `mise run //packages/<path>:lint:oxlint` to
-    zero of this rule, run `mise run //packages/<path>:lint:types`, commit only its own paths
-    (`git commit -o <paths>`).
-4.  Whole-repo verify: re-run the capture and confirm
-    `rg -c prefer-readonly-parameter-types` is 0.
-
-## Key file locations
-
-- `/home/user/.claude/plans/this-repo-has-many-dreamy-pebble.md` (approved plan)
-- `TROUBLESHOOTING.oxlint-prefer-readonly-estree.md` (committed `3a416e4a`)
-- `packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-pkg.ts` (file to edit)
-- `/tmp/prerod-all.txt` (full lint output, 176 violations, per-package; may be stale)
-- `/tmp/prerod-repro.YRhGHt/` (throwaway repro: `test.ts` plus config variants
-  `baseline/pkg/nameonly/file/allnames/span/suffix/pkgsuffix.json`)
-- `/tmp/tsgolint/` at commit `78f9a83` (matcher: `internal/utils/type_matches_specifier.go`,
-  `internal/rules/prefer_readonly_parameter_types/`)
-- `/tmp/tseslint/` (typescript-eslint clone;
-  `packages/type-utils/src/typeOrValueSpecifiers/specifierNameMatches.ts`)
+    All must be 0. Then the task is complete.
 
 ## Operational notes
 
-- `lint:oxlint` = `task-oxlint --type-aware` (`task-util/src/oxlint-wrapper.ts`). oxlint exits
-  non-zero when warnings exist, so a "task failed" line is normal while violations remain.
-- `config/oxlint` is consumed from `src` (no dist build), so edits to `allow-pkg.ts` take
-  effect on the next lint with no rebuild.
-- The bash-output-filter hook collapses long rule names in displayed output (e.g.
-  `prefer-readonly-parameter-types` may show as `n`); it is display-only.
-- General-purpose agents are banned; use `spawn-claude` for the per-package fan-out.
-- Leave the `/tmp` clones and repro in place; the user cleans up `/tmp` artifacts.
+- `lint:oxlint` exits non-zero whenever any warning remains (other rules are out of scope), so
+  a non-zero exit is normal; gate on the `prefer-readonly-parameter-types` count, not exit code.
+- `config/oxlint` is consumed from `src` (no build); allow-pkg.ts edits take effect on next lint.
+- Child completion is injected as PreToolUse hook context on the next tool call. Abnormal child
+  death does not notify (that is why the poller exists; the user flagged the first mvm death).
+- General-purpose agents are banned; use `spawn-claude` for any further fan-out.
+- `/tmp` artifacts (clones, repros, the postcss probe at `/tmp/prerod-postcss-probe`) stay; the
+  user cleans `/tmp`.
 
 ## Task list state
 
-- #1 in_progress: ESTree investigation done, fix known but not applied; postcss unverified.
-- #2 deleted: lever-2 wrapper fallback moot.
-- #3 pending: commit shared allow-list change.
-- #4 pending: per-package source fixes.
-- #5 pending: whole-repo verification.
+- #4 in_progress: bulk fan-out; only mvm (`fedc0501`) outstanding.
+- #5 pending: final whole-repo verification (explicit 9-package list).
+- All allow-list families (#1/#6/#7), the re-sweep (#3), and the tricky packages (#8) complete.
