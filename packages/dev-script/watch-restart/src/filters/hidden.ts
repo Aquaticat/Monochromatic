@@ -72,8 +72,8 @@ function hasHiddenSegmentAt({
  * and `.cache/data`; rejects `.` (alone) and `..` (the body char would
  * have to be non-`.`).
  *
- * Hot path on every event: a linear scan + `indexOf` chain, no regex
- * backtracking risk.
+ * Hot path on every event: a single left-to-right pass, O(n) time and
+ * O(1) stack, no regex backtracking risk.
  *
  * @param path - relative path under inspection
  *
@@ -95,46 +95,19 @@ function containsHiddenSegment(path: string,): boolean {
     return true;
   }
 
-  /**
-   * Recursive scan: at each separator position, test whether the next two
-   * chars open a hidden segment.
-   *
-   * @param from - cursor for the next `indexOf` call
-   *
-   * @returns whether a hidden segment exists at or after `from`
-   */
-  function scanFromSeparator(from: number,): boolean {
-    /** Next `/` at or after `from`, or `-1` when absent. */
-    const slashIdx = path.indexOf(
-      '/',
-      from,
-    );
-    /** Next `\` at or after `from`, or `-1` when absent. */
-    const backslashIdx = path.indexOf(
-      '\\',
-      from,
-    );
-    /** Earliest separator position; `-1` when neither remains. */
-    const sepIdx = (slashIdx === (-1))
-      ? backslashIdx
-      : ((backslashIdx === (-1))
-        ? slashIdx
-        : Math.min(
-          slashIdx,
-          backslashIdx,
-        ));
-    if (sepIdx === (-1))
-      return false;
-    if (hasHiddenSegmentAt({
-      path,
-      idx: sepIdx + 1,
-    },)) {
+  for (let idx = 0; idx < path.length; idx += 1) {
+    if (
+      isPathSeparator(path.charAt(idx,),)
+      && hasHiddenSegmentAt({
+        path,
+        idx: idx + 1,
+      },)
+    ) {
       return true;
     }
-    return scanFromSeparator(sepIdx + 1,);
   }
 
-  return scanFromSeparator(0,);
+  return false;
 }
 
 /**

@@ -55,6 +55,33 @@ function makeEvent(
   };
 }
 
+/**
+ * Reports whether the default (allowHidden off) filter treats `relativePath`
+ * as a hidden segment, i.e. rejects it.
+ *
+ * Inverts the filter result: the filter returns `true` to admit a non-hidden
+ * path, so a rejected (hidden) path negates to `true` here. Keeps the
+ * equivalence assertions below readable as direct hidden/not-hidden facts.
+ *
+ * @param relativePath - event relative path under inspection
+ *
+ * @returns whether `relativePath` contains a hidden segment
+ *
+ * @example
+ * ```ts
+ * await isHidden('.config.ts'); // true
+ * await isHidden('src/foo.ts'); // false
+ * ```
+ */
+async function isHidden(relativePath: string,): Promise<boolean> {
+  const filter = hiddenFilter({},);
+  const passed = await filter({
+    event: makeEvent({ relativePath, },),
+    ctx: makeCtx(),
+  },);
+  return !passed;
+}
+
 await describe({
   name: hiddenFilter.name,
   children: [
@@ -163,6 +190,71 @@ await describe({
           ctx: makeCtx(),
         },);
         expect(dotfile,).toBe(false,);
+      },
+    },),
+    it({
+      name: 'equivalence: empty, whitespace-only, and plain paths are not hidden',
+      fn: async function notHiddenBaseline() {
+        expect(await isHidden('',),).toBe(false,);
+        expect(await isHidden('   ',),).toBe(false,);
+        expect(await isHidden('src/foo.ts',),).toBe(false,);
+        expect(await isHidden('src/a/b/c.ts',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'equivalence: leading separator opens a segment; a bare leading separator does not',
+      fn: async function leadingSeparator() {
+        expect(await isHidden('/.foo',),).toBe(true,);
+        expect(await isHidden('/foo',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'equivalence: trailing separators',
+      fn: async function trailingSeparator() {
+        expect(await isHidden('foo/',),).toBe(false,);
+        // 'foo/.' : the '.' opens a segment and the missing next char
+        // (charAt past end returns '') passes isHiddenBodyChar, so it reads
+        // as hidden. Preserved from the pre-refactor implementation.
+        expect(await isHidden('foo/.',),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'equivalence: unmatched and doubled separators are not hidden',
+      fn: async function unmatchedSeparators() {
+        expect(await isHidden('foo//bar',),).toBe(false,);
+        expect(await isHidden('src\\',),).toBe(false,);
+        expect(await isHidden(String.raw`\\`,),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'equivalence: both separator kinds in one path',
+      fn: async function bothSeparators() {
+        expect(await isHidden(String.raw`a/b\.c`,),).toBe(true,);
+        expect(await isHidden(String.raw`a\b\c`,),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'equivalence: dot-only and dotdot segments',
+      fn: async function dotSegments() {
+        // '.' alone: missing body char (charAt past end returns '') passes the
+        // body test, so it reads as hidden. Preserved pre-refactor behavior.
+        expect(await isHidden('.',),).toBe(true,);
+        expect(await isHidden('..',),).toBe(false,);
+        expect(await isHidden('...',),).toBe(false,);
+        expect(await isHidden('./foo.ts',),).toBe(false,);
+        expect(await isHidden('a/..',),).toBe(false,);
+        expect(await isHidden('a/../b',),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'equivalence: long repeated separator run stays correct, linear, and stack-safe',
+      fn: async function longRepeatedRun() {
+        const sepCount = 50_000;
+        const prefix = 'a/'.repeat(sepCount,);
+        const longNoHit = `${prefix}b`;
+        const longHit = `${prefix}.h`;
+        expect(await isHidden(longNoHit,),).toBe(false,);
+        expect(await isHidden(longHit,),).toBe(true,);
       },
     },),
   ],
