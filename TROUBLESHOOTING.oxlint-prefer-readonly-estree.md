@@ -230,13 +230,13 @@ Tradeoffs:
 This is a consumer-side allow-list correction. It does not touch `@oxlint/plugins` or
 tsgolint and survives regardless of upstream movement.
 
-The throwaway repro verified the `["Node$1", "Function$1"]` shape exempts the affected
-parameters. The literal repo entry above (plain and `$1` names together) has not been run
-against the real `allow-pkg.ts` yet. When applying it, run
-`mise run //packages/config/oxlint-no-restricted-syntax:lint:oxlint` and confirm the bare
-`ESTree.Node` (3 sites) and `ESTree.Function` (1 site) reports drop from the package's
-current 20-warning total. The `ESTree.PropertyKey` entry is included for completeness; no
-repo parameter uses it today.
+Applied and verified. The repo entry above (plain and `$1` names together) is live in
+`allow-pkg.ts`; `mise run //packages/config/oxlint-no-restricted-syntax:lint:oxlint` drops the
+bare `ESTree.Node` (3 sites) and `ESTree.Function` (1 site) reports, taking the package from 20
+to 13 (the remainder are wrapper-object and union cases fixed in source separately). The
+`@oxlint/plugins` `Variable` scope-manager type needed the same allow-list treatment, added by
+plain name (it does not collide with an oxc-style declaration, so no `$1`). `ESTree.PropertyKey`
+is exercised only through a different import source; see Related findings below.
 
 ## What does not work
 
@@ -249,6 +249,72 @@ repo parameter uses it today.
   to track every estree node addition. Allow-listing the union alias `Node$1` is one entry.
 - Editing the rule severity or `treatMethodsAsReadonly`: orthogonal; does not address the
   name mismatch.
+
+## Related findings: the same matcher trips on import source and on `export =` base classes
+
+The same cleanup surfaced two more allow-list gotchas in the same matcher
+(`typeMatchesSpecifier`), both verified against the installed tsgolint 0.23.0 (oxlint 1.65.0),
+not the `78f9a83` clone. Both reduce to the same root: the matcher keys on the declaring
+package and the resolved symbol name, neither of which is the surface form in the source.
+
+### The declaring package follows the import source, not the surface `ESTree.`
+
+`packages/rolldown-plugins/import-attributes` imports `ESTree` from `rolldown/utils`, not
+`@oxlint/plugins`:
+
+```typescript
+import type { ESTree, } from 'rolldown/utils';
+function getPropertyKeyName(key: ESTree.PropertyKey,): string | undefined { /* ... */ }
+```
+
+`rolldown/utils` re-exports `import * as ESTree from "@oxc-project/types"`
+(`rolldown@1.0.1/dist/utils-index.d.mts:3`), so `ESTree.PropertyKey` here resolves to a symbol
+declared in `@oxc-project/types`, a different package from `@oxlint/plugins`. The
+`{ package: "@oxlint/plugins", ... }` specifier never matches it (the package gate fails), so
+these params stayed flagged even after the `$1` fix above. `@oxc-project/types` is the original
+estree module and applies no bundler renaming, so plain names match. The fix is a second
+specifier:
+
+```typescript
+{
+  from: "package",
+  package: "@oxc-project/types",
+  name: ["Expression", "ImportDeclaration", "ImportExpression", "ImportAttribute",
+    "ExportNamedDeclaration", "ExportAllDeclaration", "PropertyKey", "StringLiteral"],
+}
+```
+
+Lesson: before writing a `package:` specifier, read the import statement to learn the declaring
+package, not the `ESTree.` surface namespace. The same surface name resolves to different
+packages in different files.
+
+### postcss `export =` classes resolve to the base symbol name (`Root_`, not `Root`)
+
+`packages/build-tool/css` params typed `Root`/`AtRule` (from `postcss`) stayed flagged after a
+`{ package: "postcss", name: ["Root", "AtRule", "ChildNode"] }` specifier silenced only
+`ChildNode`. postcss declares each node class as an internal base plus an empty public subclass
+re-exported with `export =` (`postcss@8.5.13/lib/root.d.ts`):
+
+```typescript
+declare class Root_ extends Container { /* ... */ }
+declare class Root extends Root_ {}
+export = Root
+```
+
+tsgo resolves a parameter typed `Root` to the base symbol `Root_`, so the matcher needs the
+underscore name. `ChildNode` (a plain `export type ChildNode = ...` union alias) matched by its
+own name. The fix lists both forms so it self-heals:
+
+```typescript
+{ from: "package", package: "postcss", name: ["AtRule", "AtRule_", "ChildNode", "Root", "Root_"] }
+```
+
+Verified by linting a probe file (`function fRoot(root: Root)`, etc.) inside `build-tool/css`
+with candidate configs: the name set `["Root", "AtRule", "ChildNode"]` left `fRoot`/`fAtRule`
+flagged; adding `["Root_", "AtRule_"]` cleared them. In this matcher version a name-only
+specifier also behaved differently from a `package:` specifier in the probe (name-only
+`["Root","AtRule","ChildNode"]` silenced none, while the `package:` form silenced `ChildNode`),
+so the `package:` form is the reliable shape for these third-party AST types.
 
 ## Draft upstream issue
 
