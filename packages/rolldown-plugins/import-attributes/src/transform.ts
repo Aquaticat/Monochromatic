@@ -49,8 +49,8 @@ export function transformImportAttributes({
   code,
   id,
 }: {
-  code: string;
-  id: string;
+  readonly code: string;
+  readonly id: string;
 },): { code: string; } | null {
   if ((!code.includes(' with ',)) && (!code.includes(' with{',)))
     return null;
@@ -72,13 +72,12 @@ export function transformImportAttributes({
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements({
+      replacements.push(...collectStaticReplacements({
         source: node.source,
         attributes: node.attributes,
         attrType,
         code,
-        replacements,
-      },);
+      },),);
     },
 
     ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
@@ -88,13 +87,12 @@ export function transformImportAttributes({
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements({
+      replacements.push(...collectStaticReplacements({
         source: node.source,
         attributes: node.attributes,
         attrType,
         code,
-        replacements,
-      },);
+      },),);
     },
 
     ExportAllDeclaration(node: ESTree.ExportAllDeclaration,): void {
@@ -104,13 +102,12 @@ export function transformImportAttributes({
       const attrType = extractTypeFromAttributes(node.attributes,);
       if (attrType === undefined)
         return;
-      collectStaticReplacements({
+      replacements.push(...collectStaticReplacements({
         source: node.source,
         attributes: node.attributes,
         attrType,
         code,
-        replacements,
-      },);
+      },),);
     },
 
     ImportExpression(node: ESTree.ImportExpression,): void {

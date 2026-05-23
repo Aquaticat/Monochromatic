@@ -54,8 +54,8 @@ export function skipWithClauseWhitespace({
   s,
   idx,
 }: {
-  s: string;
-  idx: number;
+  readonly s: string;
+  readonly idx: number;
 },): number {
   return (function scan(): number {
     /** Cursor; walked right past every with-clause whitespace char so the position is found in one pass. */
@@ -85,8 +85,8 @@ function findWithClauseStart({
   code,
   fromPos,
 }: {
-  code: string;
-  fromPos: number;
+  readonly code: string;
+  readonly fromPos: number;
 },): number {
   /** Position past the whitespace gap, where the `with`/`assert` keyword would begin. */
   const keywordStart = skipWithClauseWhitespace({
@@ -122,8 +122,8 @@ function findWithClauseEnd({
   code,
   afterLastAttr,
 }: {
-  code: string;
-  afterLastAttr: number;
+  readonly code: string;
+  readonly afterLastAttr: number;
 },): number {
   /** Offset of the brace that ends the attributes object; falls through when absent. */
   const closingBrace = code.indexOf(
@@ -146,12 +146,11 @@ function findWithClauseEnd({
  *
  * @param code - full source code
  *
- * @param replacements - mutable array to push replacements into
+ * @returns span replacements for the specifier and any elided with-clause
  *
  * @example
  * ```ts
- * const replacements: Replacement[] = [];
- * collectStaticReplacements(node.source, node.attributes, 'text', code, replacements);
+ * const replacements = collectStaticReplacements({ source: node.source, attributes: node.attributes, attrType: 'text', code, },);
  * ```
  */
 export function collectStaticReplacements({
@@ -159,21 +158,20 @@ export function collectStaticReplacements({
   attributes,
   attrType,
   code,
-  replacements,
 }: {
-  source: ESTree.StringLiteral;
-  attributes: readonly ESTree.ImportAttribute[];
-  attrType: string;
-  code: string;
-  replacements: Replacement[];
-},): void {
+  readonly source: ESTree.StringLiteral;
+  readonly attributes: readonly ESTree.ImportAttribute[];
+  readonly attrType: string;
+  readonly code: string;
+},): readonly Replacement[] {
   /** Quote character preserved so the rewritten specifier matches the source's quoting style. */
   const quote = code[source.start];
-  replacements.push({
+  /** Rewrites the specifier to carry the attribute query; always emitted. */
+  const specifierReplacement: Replacement = {
     start: source.start,
     end: source.end,
     text: `${quote}${source.value}?${ATTR_QUERY_KEY}=${attrType}${quote}`,
-  },);
+  };
 
   /** Start of the `with`/`assert` clause to elide; -1 if no clause is present. */
   const withStart = findWithClauseStart({
@@ -181,19 +179,22 @@ export function collectStaticReplacements({
     fromPos: source.end,
   },);
   if (withStart === (-1))
-    return;
+    return [specifierReplacement,];
   /** Last attribute entry, used to anchor the end-of-clause scan. */
   const lastAttr = attributes.at(-1,);
   if (lastAttr === undefined)
-    return;
+    return [specifierReplacement,];
   /** End offset that completes the elision span past the closing brace. */
   const withEnd = findWithClauseEnd({
     code,
     afterLastAttr: lastAttr.end,
   },);
-  replacements.push({
-    start: withStart,
-    end: withEnd,
-    text: '',
-  },);
+  return [
+    specifierReplacement,
+    {
+      start: withStart,
+      end: withEnd,
+      text: '',
+    },
+  ];
 }

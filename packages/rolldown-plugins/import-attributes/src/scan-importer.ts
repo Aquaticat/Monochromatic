@@ -23,6 +23,7 @@ import {
   getStringLiteralValue,
 } from './ast-extract.ts';
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `importerSourceCache` is an injected memoization cache mutated via `.set` on a miss; threading it immutably would defeat the cache, so deep-readonly cannot apply. */
 /**
  * Scans an importer file's source code to find the import attribute type
  * associated with a given specifier.
@@ -50,8 +51,8 @@ export function scanImporterForAttribute({
   importerPath,
   importerSourceCache,
 }: {
-  specifier: string;
-  importerPath: string;
+  readonly specifier: string;
+  readonly importerPath: string;
   importerSourceCache: Map<string, string>;
 },): string | undefined {
   /** Importer source text; lazily read from disk on cache miss and stored back. */
@@ -129,3 +130,4 @@ export function scanImporterForAttribute({
   visitor.visit(result.program,);
   return found;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
