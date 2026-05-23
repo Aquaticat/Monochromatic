@@ -141,8 +141,8 @@ async function findFiles({
   glob,
   musicDir,
 }: {
-  glob: string;
-  musicDir: string;
+  readonly glob: string;
+  readonly musicDir: string;
 },): Promise<readonly string[]> {
   rlSearch.info(`searching "${musicDir}" with glob "${glob}"`,);
 
