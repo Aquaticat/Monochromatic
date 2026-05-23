@@ -127,6 +127,7 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       "ImportDeclaration",
       "ImportExpression",
       "PropertyKey",
+      "StringLiteral",
     ],
   },
   {
