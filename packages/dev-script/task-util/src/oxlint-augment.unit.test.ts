@@ -13,6 +13,11 @@ import {
   stripAnsi,
 } from './oxlint-augment.ts';
 
+/** Iteration count for long-run equivalence cases; large enough to exercise the linear scan, fast to compare. */
+const LONG_RUN = 100_000;
+/** Sequence count for O(n^2)-sensitive accumulator cases; modest so the pre-refactor array-spread stays fast. */
+const MANY_SEQUENCES = 5_000;
+
 //region augmentOxlintOutput helpers
 
 /** Convenience helper to build a diagnostic block in oxlint's miette format. */
@@ -75,6 +80,79 @@ await describe({
     },),
 
     //endregion stripAnsi
+
+    //region stripAnsi edge cases
+
+    describe({
+      name: 'stripAnsi edge cases',
+      children: [
+        it({
+          name: 'returns all-whitespace input unchanged',
+          fn: async () => {
+            expect(stripAnsi('   ',),).toBe('   ',);
+          },
+        },),
+        it({
+          name: 'preserves a lone ESC not followed by [',
+          fn: async () => {
+            expect(stripAnsi('Z',),).toBe('Z',);
+          },
+        },),
+        it({
+          name: 'preserves an ESC[ sequence with no digits',
+          fn: async () => {
+            expect(stripAnsi('[m',),).toBe('[m',);
+          },
+        },),
+        it({
+          name: 'preserves an ESC[ sequence with an invalid terminator',
+          fn: async () => {
+            expect(stripAnsi('[31x',),).toBe('[31x',);
+          },
+        },),
+        it({
+          name: 'strips a multi-parameter sequence',
+          fn: async () => {
+            expect(stripAnsi('[1;31;42mtext[0m',),).toBe('text',);
+          },
+        },),
+        it({
+          name: 'leaves a long plain run unchanged',
+          fn: async () => {
+            const plain = 'a'.repeat(LONG_RUN,);
+            expect(stripAnsi(plain,),).toBe(plain,);
+          },
+        },),
+        it({
+          name: 'strips a long digit-run sequence',
+          fn: async () => {
+            expect(stripAnsi(`[${'9'.repeat(LONG_RUN,)}mZ`,),).toBe('Z',);
+          },
+        },),
+        it({
+          name: 'preserves a long digit run with an invalid terminator',
+          fn: async () => {
+            const seq = `[${'9'.repeat(LONG_RUN,)}z`;
+            expect(stripAnsi(seq,),).toBe(seq,);
+          },
+        },),
+        it({
+          name: 'strips many consecutive sequences',
+          fn: async () => {
+            expect(stripAnsi('[0m'.repeat(MANY_SEQUENCES,),),).toBe('',);
+          },
+        },),
+        it({
+          name: 'strips many interleaved sequences preserving plain text',
+          fn: async () => {
+            expect(stripAnsi('a[31m'.repeat(MANY_SEQUENCES,),),)
+              .toBe('a'.repeat(MANY_SEQUENCES,),);
+          },
+        },),
+      ],
+    },),
+
+    //endregion stripAnsi edge cases
 
     //region extractRuleName
 
@@ -155,6 +233,77 @@ await describe({
     },),
 
     //endregion extractRuleName
+
+    //region extractRuleName edge cases
+
+    describe({
+      name: 'extractRuleName edge cases',
+      children: [
+        it({
+          name: 'returns null for all-whitespace input',
+          fn: async () => {
+            expect(extractRuleName('     ',),).toBeNull();
+          },
+        },),
+        it({
+          name: 'returns null when an x is not a header marker',
+          fn: async () => {
+            expect(extractRuleName('context line 42',),).toBeNull();
+          },
+        },),
+        it({
+          name: 'returns null when whitespace breaks the plugin name',
+          fn: async () => {
+            expect(extractRuleName('  x type script(no-misused-promises): msg',),)
+              .toBeNull();
+          },
+        },),
+        it({
+          name: 'skips non-header markers before a valid header',
+          fn: async () => {
+            expect(extractRuleName(
+              'xx x typescript-eslint(no-misused-promises): msg',
+            ),)
+              .toBe('no-misused-promises',);
+          },
+        },),
+        it({
+          name: 'returns null for a long run of bare markers',
+          fn: async () => {
+            expect(extractRuleName('x'.repeat(MANY_SEQUENCES,),),).toBeNull();
+          },
+        },),
+        it({
+          name: 'returns null for a long non-marker run',
+          fn: async () => {
+            expect(extractRuleName('a'.repeat(LONG_RUN,),),).toBeNull();
+          },
+        },),
+        it({
+          name: 'matches across a long whitespace gap',
+          fn: async () => {
+            expect(extractRuleName(`x${' '.repeat(LONG_RUN,)}p(rule): msg`,),)
+              .toBe('rule',);
+          },
+        },),
+        it({
+          name: 'matches across a long plugin name',
+          fn: async () => {
+            expect(extractRuleName(`x ${'a'.repeat(LONG_RUN,)}(rule): msg`,),)
+              .toBe('rule',);
+          },
+        },),
+        it({
+          name: 'matches a long rule name',
+          fn: async () => {
+            const rule = 'a'.repeat(LONG_RUN,);
+            expect(extractRuleName(`x p(${rule}): msg`,),).toBe(rule,);
+          },
+        },),
+      ],
+    },),
+
+    //endregion extractRuleName edge cases
 
     //region isHelpLine
 

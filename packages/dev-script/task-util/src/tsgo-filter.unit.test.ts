@@ -22,6 +22,11 @@ import {
 
 const execAsync = promisify(exec,);
 
+/** Iteration count for long-run equivalence cases; large enough to exercise the linear scan, fast to compare. */
+const LONG_RUN = 100_000;
+/** Occurrence count for the scan-walk stress case; many `): error TS` tokens that never form a valid diagnostic. */
+const SCAN_OCCURRENCES = 50_000;
+
 function setup() {
   const testFileDir = import.meta.dirname;
   const cliPath = join(testFileDir, 'tsgo-filter.ts',);
@@ -88,6 +93,115 @@ await describe({
           name: 'rejects summary lines',
           fn: async () => {
             expect(isDiagnosticLine('Found 3 errors in 2 files.',),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'isDiagnosticLine edge cases',
+      children: [
+        it({
+          name: 'rejects an all-whitespace line',
+          fn: async () => {
+            expect(isDiagnosticLine('     ',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'rejects a line with no error-code token',
+          fn: async () => {
+            expect(isDiagnosticLine('just some prose without a diagnostic',),)
+              .toBe(false,);
+          },
+        },),
+        it({
+          name: 'rejects an error code with no leading (line,col) prefix',
+          fn: async () => {
+            expect(isDiagnosticLine('): error TS123:',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'rejects a missing error number',
+          fn: async () => {
+            expect(isDiagnosticLine('src/a.ts(1,2): error TS:',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'rejects a missing trailing colon after the error number',
+          fn: async () => {
+            expect(isDiagnosticLine('src/a.ts(1,2): error TS123',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'rejects an empty column digit run',
+          fn: async () => {
+            expect(isDiagnosticLine('src/a.ts(1,): error TS123:',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'rejects a single number with no comma',
+          fn: async () => {
+            expect(isDiagnosticLine('src/a.ts(1): error TS123:',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'matches a Windows-separator path diagnostic',
+          fn: async () => {
+            expect(isDiagnosticLine(
+              String.raw`src\app.ts(1,15): error TS2304: Cannot find name.`,
+            ),)
+              .toBe(true,);
+          },
+        },),
+        it({
+          name: 'matches an absolute-path diagnostic',
+          fn: async () => {
+            expect(isDiagnosticLine(
+              '/abs/path/app.ts(3,7): error TS2322: Type error.',
+            ),)
+              .toBe(true,);
+          },
+        },),
+        it({
+          name: 'matches a long column digit run',
+          fn: async () => {
+            expect(isDiagnosticLine(
+              `src/a.ts(1,${'9'.repeat(LONG_RUN,)}): error TS2304: x`,
+            ),)
+              .toBe(true,);
+          },
+        },),
+        it({
+          name: 'matches a long line-number digit run',
+          fn: async () => {
+            expect(isDiagnosticLine(
+              `src/a.ts(${'9'.repeat(LONG_RUN,)},1): error TS2304: x`,
+            ),)
+              .toBe(true,);
+          },
+        },),
+        it({
+          name: 'matches a long error-number digit run',
+          fn: async () => {
+            expect(isDiagnosticLine(
+              `src/a.ts(1,1): error TS${'9'.repeat(LONG_RUN,)}: x`,
+            ),)
+              .toBe(true,);
+          },
+        },),
+        it({
+          name: 'rejects many error-code tokens that never form a valid diagnostic',
+          fn: async () => {
+            expect(isDiagnosticLine('): error TSx'.repeat(SCAN_OCCURRENCES,),),)
+              .toBe(false,);
+          },
+        },),
+        it({
+          name: 'matches a valid diagnostic after a long non-matching prefix',
+          fn: async () => {
+            expect(isDiagnosticLine(
+              `${'a'.repeat(LONG_RUN,)}(1,1): error TS2304: x`,
+            ),)
+              .toBe(true,);
           },
         },),
       ],

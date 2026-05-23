@@ -88,23 +88,18 @@ function endOfDigitRun({
   s: string;
   from: number;
 },): number {
-  /**
-   * Recursive walker.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @returns first non-digit position (or `s.length`)
-   */
-  function step(idx: number,): number {
-    if (idx >= s.length)
-      return idx;
-    /** Char at cursor; only ASCII digits advance the run. */
-    const c = s.charAt(idx,);
-    if ((c < '0') || (c > '9'))
-      return idx;
-    return step(idx + 1,);
-  }
-  return step(from,);
+  return (function walk(): number {
+    /** Cursor advanced across the ASCII digit run; stops at the first non-digit or the end of `s`. */
+    let idx = from;
+    while (idx < s.length) {
+      /** Char at the cursor; only ASCII digits advance the run. */
+      const c = s.charAt(idx,);
+      if ((c < '0') || (c > '9'))
+        break;
+      idx += 1;
+    }
+    return idx;
+  })();
 }
 
 /**
@@ -128,14 +123,33 @@ function endOfDigitRun({
  */
 export function isDiagnosticLine(line: string,): boolean {
   /**
-   * Recursive scan that tests every occurrence of `ERROR_CODE_TOKEN` in
-   * `line` for the required `(digits,digits)` prefix and `digits:` suffix.
+   * Walks digits backwards from `pos - 1` to locate the inclusive start of
+   * a run, in a single linear pass.
    *
-   * @param from - cursor index for the next `indexOf` call
+   * @param pos - cursor (one past the last digit so far)
    *
-   * @returns true on the first valid diagnostic header
+   * @returns inclusive start of the digit run (clamped at 0)
    */
-  function scan(from: number,): boolean {
+  function startOfDigitsBackwards(pos: number,): number {
+    return (function walk(): number {
+      if (pos <= 0)
+        return 0;
+      /** Cursor walked left across the ASCII digit run; the loop guard keeps it at or above 0. */
+      let p = pos;
+      while (p > 0) {
+        /** Char just left of the cursor; a non-digit ends the back-walk. */
+        const c = line.charAt(p - 1,);
+        if ((c < '0') || (c > '9'))
+          break;
+        p -= 1;
+      }
+      return p;
+    })();
+  }
+
+  // Single linear walk over each `ERROR_CODE_TOKEN` occurrence; `from` advances
+  // monotonically past every rejected candidate, so no prefix is ever rescanned.
+  for (let from = 0; ; ) {
     /** Position of the literal error-code token; `-1` ends the search. */
     const codeIdx = line.indexOf(
       ERROR_CODE_TOKEN,
@@ -151,37 +165,25 @@ export function isDiagnosticLine(line: string,): boolean {
     if ((codeEnd === (codeIdx + ERROR_CODE_TOKEN.length))
       || (line.charAt(codeEnd,) !== ':'))
     {
-      return scan(codeIdx + 1,);
+      from = codeIdx + 1;
+      continue;
     }
     /** Exclusive end of the digits in `<col>` (between the `,` and `): error TS`). */
     const colEnd = codeIdx;
-    /**
-     * Walks digits backwards from `pos - 1` to locate the start of a run.
-     *
-     * @param pos - cursor (one past the last digit so far)
-     *
-     * @returns inclusive start of the digit run
-     */
-    function startOfDigitsBackwards(pos: number,): number {
-      if (pos <= 0)
-        return 0;
-      /** Char at the candidate position; non-digit ends the back-walk. */
-      const c = line.charAt(pos - 1,);
-      if ((c < '0') || (c > '9'))
-        return pos;
-      return startOfDigitsBackwards(pos - 1,);
-    }
     /** Inclusive start of the column digit run; comma boundary must sit just before. */
     const colStart = startOfDigitsBackwards(colEnd,);
-    if ((colStart === colEnd) || (line.charAt(colStart - 1,) !== ','))
-      return scan(codeIdx + 1,);
+    if ((colStart === colEnd) || (line.charAt(colStart - 1,) !== ',')) {
+      from = codeIdx + 1;
+      continue;
+    }
     /** Inclusive start of the line digit run; opening `(` must sit just before. */
     const lineStart = startOfDigitsBackwards(colStart - 1,);
-    if ((lineStart === (colStart - 1)) || (line.charAt(lineStart - 1,) !== '('))
-      return scan(codeIdx + 1,);
+    if ((lineStart === (colStart - 1)) || (line.charAt(lineStart - 1,) !== '(')) {
+      from = codeIdx + 1;
+      continue;
+    }
     return true;
   }
-  return scan(0,);
 }
 
 /**

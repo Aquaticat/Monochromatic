@@ -147,40 +147,32 @@ function ansiEscapeLength({
   if (text.charAt(start + 1,) !== '[')
     return -1;
 
-  /**
-   * Walks zero or more digits, then dispatches on the next char.
-   * `m` ends the sequence; `;` requires another digit run.
-   *
-   * @param idx - cursor inside the digit run
-   *
-   * @returns matched length, or `-1` for no match
-   */
-  function afterDigits(idx: number,): number {
-    /** Current char at the cursor; drives the state transition. */
-    const c = text.charAt(idx,);
-    if (isAsciiDigit(c,))
-      return afterDigits(idx + 1,);
-    if (c === 'm')
-      return (idx - start) + 1;
-    if (c === ';')
-      return digitRun(idx + 1,);
-    return -1;
-  }
-
-  /**
-   * Requires at least one digit at `idx`, then delegates to {@link afterDigits}.
-   *
-   * @param idx - cursor at the expected first digit
-   *
-   * @returns matched length, or `-1` for no match
-   */
-  function digitRun(idx: number,): number {
+  return (function scan(): number {
+    /** Cursor over the parameter bytes; the sequence requires at least one digit before any terminator. */
+    let idx = start + 2;
     if (!isAsciiDigit(text.charAt(idx,),))
       return -1;
-    return afterDigits(idx + 1,);
-  }
-
-  return digitRun(start + 2,);
+    idx += 1;
+    while (idx < text.length) {
+      /** Current char; drives the digit / terminator / separator transition. */
+      const c = text.charAt(idx,);
+      if (isAsciiDigit(c,)) {
+        idx += 1;
+        continue;
+      }
+      if (c === 'm')
+        return (idx - start) + 1;
+      if (c === ';') {
+        // `;` opens another parameter run, which must begin with a digit.
+        if (!isAsciiDigit(text.charAt(idx + 1,),))
+          return -1;
+        idx += 2;
+        continue;
+      }
+      return -1;
+    }
+    return -1;
+  })();
 }
 
 /**
@@ -201,32 +193,18 @@ function ansiEscapeLength({
  * ```
  */
 export function stripAnsi(text: string,): string {
-  /**
-   * Recursive walker emitting non-escape chunks.
-   *
-   * @param idx - cursor into `text`
-   *
-   * @param acc - accumulated output chunks
-   *
-   * @returns chunks to join
-   */
-  function walk({
-    idx,
-    acc,
-  }: {
-    idx: number;
-    acc: readonly string[];
-  },): readonly string[] {
+  /** Output segments in order; joined once at the end so no intermediate string is recopied per chunk. */
+  const parts: string[] = [];
+  // Single forward pass; `idx` jumps by whole ANSI sequences, so the stride is variable and updated in the body.
+  for (let idx = 0; idx < text.length;) {
     /** Position of the next ESC byte; `-1` means no further ANSI sequences. */
     const escIdx = text.indexOf(
       ESC_CHAR,
       idx,
     );
     if (escIdx === (-1)) {
-      return [
-        ...acc,
-        text.slice(idx,),
-      ];
+      parts.push(text.slice(idx,),);
+      break;
     }
     /** Length of the ANSI sequence at `escIdx`, or `-1` when invalid. */
     const escLen = ansiEscapeLength({
@@ -234,33 +212,23 @@ export function stripAnsi(text: string,): string {
       start: escIdx,
     },);
     if (escLen === (-1)) {
-      return walk({
-        idx: escIdx + 1,
-        acc: [
-          ...acc,
-          text.slice(
-            idx,
-            escIdx + 1,
-          ),
-        ],
-      },);
+      // Invalid escape: keep the ESC byte verbatim and resume just past it.
+      parts.push(text.slice(
+        idx,
+        escIdx + 1,
+      ),);
+      idx = escIdx + 1;
     }
-    return walk({
-      idx: escIdx + escLen,
-      acc: [
-        ...acc,
-        text.slice(
-          idx,
-          escIdx,
-        ),
-      ],
-    },);
+    else {
+      // Valid ANSI sequence: keep the text before it and drop the sequence itself.
+      parts.push(text.slice(
+        idx,
+        escIdx,
+      ),);
+      idx = escIdx + escLen;
+    }
   }
-  return walk({
-    idx: 0,
-    acc: [],
-  },)
-    .join('',);
+  return parts.join('',);
 }
 
 //endregion ANSI handling
@@ -316,14 +284,13 @@ function skipWhitespace({
   text: string;
   idx: number;
 },): number {
-  if (idx >= text.length)
-    return idx;
-  if (!isWhitespace(text.charAt(idx,),))
-    return idx;
-  return skipWhitespace({
-    text,
-    idx: idx + 1,
-  },);
+  return (function walk(): number {
+    /** Cursor advanced across the whitespace run; stops at the first non-whitespace char or the end of `text`. */
+    let cursor = idx;
+    while ((cursor < text.length) && isWhitespace(text.charAt(cursor,),))
+      cursor += 1;
+    return cursor;
+  })();
 }
 
 /**
@@ -349,14 +316,13 @@ function skipRuleNameChars({
   text: string;
   idx: number;
 },): number {
-  if (idx >= text.length)
-    return idx;
-  if (!isRuleNameChar(text.charAt(idx,),))
-    return idx;
-  return skipRuleNameChars({
-    text,
-    idx: idx + 1,
-  },);
+  return (function walk(): number {
+    /** Cursor advanced across the rule-name char run; stops at the first non-rule-name char or the end of `text`. */
+    let cursor = idx;
+    while ((cursor < text.length) && isRuleNameChar(text.charAt(cursor,),))
+      cursor += 1;
+    return cursor;
+  })();
 }
 
 /**
@@ -385,15 +351,16 @@ function allNonWhitespaceBetween({
   start: number;
   end: number;
 },): boolean {
-  if (start >= end)
+  return (function check(): boolean {
+    /** Cursor scanned across `[start, end)`; any whitespace short-circuits to false. */
+    let cursor = start;
+    while (cursor < end) {
+      if (isWhitespace(text.charAt(cursor,),))
+        return false;
+      cursor += 1;
+    }
     return true;
-  if (isWhitespace(text.charAt(start,),))
-    return false;
-  return allNonWhitespaceBetween({
-    text,
-    start: start + 1,
-    end,
-  },);
+  })();
 }
 
 /**
@@ -476,49 +443,6 @@ function matchHeaderAt({
 }
 
 /**
- * Returns the position of the next `x` or `!` at or after `idx`, or
- * `-1` when neither remains in `text`.
- *
- * @param text - input string
- *
- * @param idx - cursor to begin searching from
- *
- * @returns position of the next candidate punctuation char, or `-1`
- *
- * @example
- * ```ts
- * findNextPunctChar({ text: '  x foo', idx: 0 }); // 2
- * findNextPunctChar({ text: 'abc', idx: 0 });     // -1
- * ```
- */
-function findNextPunctChar({
-  text,
-  idx,
-}: {
-  text: string;
-  idx: number;
-},): number {
-  /** Next `x` at or after `idx`, or `-1` when absent. */
-  const xIdx = text.indexOf(
-    'x',
-    idx,
-  );
-  /** Next `!` at or after `idx`, or `-1` when absent. */
-  const bangIdx = text.indexOf(
-    '!',
-    idx,
-  );
-  if (xIdx === (-1))
-    return bangIdx;
-  if (bangIdx === (-1))
-    return xIdx;
-  return Math.min(
-    xIdx,
-    bangIdx,
-  );
-}
-
-/**
  * Extracts the rule name from an oxlint diagnostic header line.
  *
  * Handles ANSI color codes by stripping them before matching.
@@ -540,33 +464,21 @@ export function extractRuleName(line: string,): string | null {
   /** ANSI-stripped working copy; the matcher operates on plain text. */
   const stripped = stripAnsi(line,);
 
-  /**
-   * Recursive scan: try {@link matchHeaderAt} at every `x`/`!` occurrence
-   * and return the first captured rule name.
-   *
-   * @param idx - cursor for the next candidate search
-   *
-   * @returns captured rule name, or `null`
-   */
-  function tryFrom(idx: number,): string | null {
-    /** Next candidate `x` or `!` position; `-1` ends the search. */
-    const next = findNextPunctChar({
-      text: stripped,
-      idx,
-    },);
-    if (next === (-1))
-      return null;
-    /** Header-match attempt anchored at the candidate; `null` retries from `next + 1`. */
-    const result = matchHeaderAt({
-      text: stripped,
-      punctIdx: next,
-    },);
-    if (result !== null)
-      return result;
-    return tryFrom(next + 1,);
+  // Single linear pass over the stripped line; attempt a header match at each `x`/`!` candidate.
+  for (let idx = 0; idx < stripped.length; idx += 1) {
+    /** Char at the cursor; only `x` or `!` can open a diagnostic header. */
+    const c = stripped.charAt(idx,);
+    if ((c === 'x') || (c === '!')) {
+      /** Header-match attempt anchored at the candidate; non-null on the first valid header. */
+      const result = matchHeaderAt({
+        text: stripped,
+        punctIdx: idx,
+      },);
+      if (result !== null)
+        return result;
+    }
   }
-
-  return tryFrom(0,);
+  return null;
 }
 
 /**

@@ -20,26 +20,25 @@ const GLOB_META_CHARS = '*?{[';
  * Returns the index of the first glob metacharacter in `s`, or `-1`
  * when none are present.
  *
+ * Exported for direct equivalence testing of the linear scan.
+ *
  * @param s - candidate glob pattern
  *
  * @returns first metacharacter index
+ *
+ * @example
+ * ```ts
+ * firstGlobMetaIndex('src/*.ts'); // 4
+ * firstGlobMetaIndex('src/index.ts'); // -1
+ * ```
  */
-function firstGlobMetaIndex(s: string,): number {
-  /**
-   * Recursive scan returning the cursor at the first metacharacter.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @returns metacharacter index (or `-1` for none)
-   */
-  function scan(idx: number,): number {
-    if (idx >= s.length)
-      return -1;
+export function firstGlobMetaIndex(s: string,): number {
+  // Single linear pass; returns at the first metacharacter, or -1 once the cursor runs past the end.
+  for (let idx = 0; idx < s.length; idx += 1) {
     if (GLOB_META_CHARS.includes(s.charAt(idx,),))
       return idx;
-    return scan(idx + 1,);
   }
-  return scan(0,);
+  return -1;
 }
 
 /**
