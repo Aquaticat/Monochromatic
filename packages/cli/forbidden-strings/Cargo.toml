@@ -51,15 +51,18 @@ resharp = "0.6"
 #
 # `src/rules/engine.rs` and `src/rules.rs` use `std::panic::catch_unwind`
 # to intercept panics inside the resharp algebra / engine, which still
-# panics on a handful of fuzzer-discovered rule shapes (verified
-# unchanged from 0.5.3 through 0.6.0 at the same source lines:
-# `resharp-algebra/src/lib.rs:2470` and `resharp/src/engine.rs:1020`):
+# panics on a handful of fuzzer-discovered rule shapes (re-verified
+# against 0.6.3 and git HEAD on 2026-05-23; behaviour unchanged from
+# 0.5.3, only source lines drifted):
 #   - `attempt to add with overflow` inside resharp-algebra
-#     `attempt_rw_concat_2` (compile path; `Regex::new` on shapes like
+#     `attempt_rw_concat_2` (`resharp-algebra/src/lib.rs:2479` at HEAD,
+#     `:2470` in 0.6.0; compile path; `Regex::new` on shapes like
 #     `(?:\w|$)(?:(?![1g]\_X)& a)` mixing intersection (`&`),
 #     `\w` shorthand, and an end-anchor alternation);
-#   - `unexpected end 0 > N` inside resharp `scan_fwd_all` (runtime
-#     path; `find_all` on shapes like `(?:(?=a)&(?<=_))` mixing
+#   - `should not contain lookbehind` inside resharp-algebra `strip_lb`
+#     (`resharp-algebra/src/lib.rs:2007` at HEAD; was `unexpected end
+#     0 > N` in resharp `scan_fwd_all` / `engine.rs:1020` through 0.6.0;
+#     runtime path; `find_all` on shapes like `(?:(?=a)&(?<=_))` mixing
 #     intersection (`&`) with lookbehind, content >= 64 bytes).
 #
 # Two profile settings are load-bearing here:
@@ -81,10 +84,11 @@ resharp = "0.6"
 #    synthetic hit.
 #
 # Note about `debug-assertions`: deliberately left at the release default
-# of OFF. The second crash shape (`engine.rs:1020`) lives behind a
-# `debug_assert!`. With debug-assertions OFF in release, that shape does
-# NOT panic; instead it returns wrong (corrupted) matches -- the
-# probe in /tmp/probe-resharp-06 demonstrates 62 spurious matches on a
+# of OFF. The second crash shape (`strip_lb`'s `debug_assert!` at
+# `resharp-algebra/src/lib.rs:2007` at HEAD, formerly `engine.rs:1020`)
+# lives behind a `debug_assert!`. With debug-assertions OFF in release,
+# that shape does NOT panic; instead it returns wrong (corrupted) matches:
+# the 2026-05-23 re-verification reproduced 62 spurious matches on a
 # 64-byte input for shape `(?:(?=a)&(?<=_))`. The pre-validator
 # `intersection_with_lookbehind` in `src/rules/engine.rs` is therefore
 # load-bearing for that shape: it must reject the input BEFORE resharp
