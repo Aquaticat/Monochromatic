@@ -42,7 +42,7 @@ const l = tagged({
  * ```
  */
 export async function parseDesktopEntry(
-  { path, }: { path: string; },
+  { path, }: { readonly path: string; },
 ): Promise<DesktopEntry | null> {
   /** Empty default lets the catch return null without restructuring the read path. */
   let text = '';
@@ -91,11 +91,13 @@ export async function parseDesktopEntry(
     /** Payload after `=`, trimmed before applyKey stores it. */
     const value = line.slice(eqIdx + 1,).trim();
 
-    applyKey({
-      key,
-      value,
+    Object.assign(
       result,
-    },);
+      applyKey({
+        key,
+        value,
+      },),
+    );
   }
 
   l.debug(

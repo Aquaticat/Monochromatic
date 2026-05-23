@@ -32,7 +32,7 @@ const l = tagged({
  * ```
  */
 async function readFileOrNull(
-  { path, }: { path: string; },
+  { path, }: { readonly path: string; },
 ): Promise<string | null> {
   try {
     return await readFile(

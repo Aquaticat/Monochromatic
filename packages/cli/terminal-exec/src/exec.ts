@@ -32,7 +32,7 @@ const EXIT_NOT_FOUND = 127;
  * execvp(\{ command: ['/usr/bin/ghostty', '--gtk-single-instance=true', '-e', 'bash'] \})
  * ```
  */
-export function execvp({ command, }: { command: readonly string[]; },): void {
+export function execvp({ command, }: { readonly command: readonly string[]; },): void {
   if (command.length === 0)
     throw new Error('execvp: empty command array',);
 

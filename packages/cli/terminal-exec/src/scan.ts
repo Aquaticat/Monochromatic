@@ -39,7 +39,7 @@ const l = tagged({
  * ```
  */
 async function readdirOrNull(
-  { current, }: { current: string; },
+  { current, }: { readonly current: string; },
 ): Promise<readonly Dirent[] | null> {
   try {
     return await readdir(
@@ -71,7 +71,7 @@ export type EntryRegistration = {
  *
  * @returns Array of absolute file paths.
  */
-async function findDesktopFiles({ dir, }: { dir: string; },): Promise<readonly string[]> {
+async function findDesktopFiles({ dir, }: { readonly dir: string; },): Promise<readonly string[]> {
   /** Mutable accumulator filled by the inner walk function. */
   const results: string[] = [];
 
@@ -80,7 +80,7 @@ async function findDesktopFiles({ dir, }: { dir: string; },): Promise<readonly s
    *
    * @param current - Directory to walk.
    */
-  async function walk({ current, }: { current: string; },): Promise<void> {
+  async function walk({ current, }: { readonly current: string; },): Promise<void> {
     /** Null when readdir throws (e.g. directory missing or unreadable); skip the directory. */
     const entries = await readdirOrNull({ current, },);
     if (entries === null)
@@ -120,7 +120,7 @@ async function findDesktopFiles({ dir, }: { dir: string; },): Promise<readonly s
  * })
  * ```
  */
-export async function scanEntries({ dirs, }: { dirs: readonly string[]; },): Promise<{
+export async function scanEntries({ dirs, }: { readonly dirs: readonly string[]; },): Promise<{
   readonly registry: ReadonlyMap<string, EntryRegistration>;
   readonly fallbackIds: readonly string[];
 }> {

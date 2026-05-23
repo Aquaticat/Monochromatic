@@ -163,7 +163,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
  * ```
  */
 async function resolveExplicitIds(
-  { configEntryIds, }: { configEntryIds: readonly string[]; },
+  { configEntryIds, }: { readonly configEntryIds: readonly string[]; },
 ): Promise<readonly string[]> {
   if (configEntryIds.length > 0)
     return configEntryIds;
@@ -200,14 +200,14 @@ async function tryEntry({
   isFallback,
   config,
 }: {
-  entryId: string;
-  registry: ReadonlyMap<string, {
+  readonly entryId: string;
+  readonly registry: ReadonlyMap<string, {
     readonly id: string;
     readonly path: string;
   }>;
-  desktops: readonly string[];
-  isFallback: boolean;
-  config: { readonly execArgDefaults: ReadonlyMap<string, string>; };
+  readonly desktops: readonly string[];
+  readonly isFallback: boolean;
+  readonly config: { readonly execArgDefaults: ReadonlyMap<string, string>; };
 },): Promise<ValidatedEntry | null> {
   /** Registry lookup; missing id means we cannot resolve this preference. */
   const reg = registry.get(entryId,);

@@ -7,63 +7,68 @@
  */
 
 import {
+  type DesktopEntry,
   expandEscapes,
-  type MutableDesktopEntry,
 } from './desktop-entry-types.ts';
 
 /**
- * Applies a parsed key-value pair to the result object.
+ * Maps a parsed key-value pair to the desktop-entry field(s) it sets.
  *
  * @param key - Desktop entry key name.
  *
  * @param value - Raw value string.
  *
- * @param result - Mutable result object to populate.
+ * @returns Partial entry with the field(s) this key sets; empty object for unrecognized keys.
  *
  * @example
  * ```ts
- * const result = createEmptyEntry();
- * applyKey({ key: 'Exec', value: '/usr/bin/xterm', result });
+ * applyKey({ key: 'Exec', value: '/usr/bin/xterm' }); // { exec: '/usr/bin/xterm' }
+ * applyKey({ key: 'Unknown', value: 'x' });           // {}
  * ```
  */
 export function applyKey({
   key,
   value,
-  result,
 }: {
-  key: string;
-  value: string;
-  result: MutableDesktopEntry;
-},): void {
+  readonly key: string;
+  readonly value: string;
+},): Partial<DesktopEntry> {
   if (key === 'Exec')
-    result.exec = value;
-  else if (key === 'Categories') {
-    result.isTerminal = value.split(';',).some(function matchTerminal(cat,) {
-      return cat === 'TerminalEmulator';
-    },);
+    return { exec: value, };
+  if (key === 'Categories') {
+    return {
+      isTerminal: value.split(';',).some(function matchTerminal(cat,) {
+        return cat === 'TerminalEmulator';
+      },),
+    };
   }
-  else if (key === 'Hidden')
-    result.hidden = value.toLowerCase() === 'true';
-  else if (key === 'TryExec')
-    result.tryExec = expandEscapes({ s: value, },);
-  else if (key === 'OnlyShowIn') {
-    result.onlyShowIn = value.split(';',).filter(function nonEmpty(s,) {
-      return s.length > 0;
-    },);
+  if (key === 'Hidden')
+    return { hidden: value.toLowerCase() === 'true', };
+  if (key === 'TryExec')
+    return { tryExec: expandEscapes({ s: value, },), };
+  if (key === 'OnlyShowIn') {
+    return {
+      onlyShowIn: value.split(';',).filter(function nonEmpty(s,) {
+        return s.length > 0;
+      },),
+    };
   }
-  else if (key === 'NotShowIn') {
-    result.notShowIn = value.split(';',).filter(function nonEmpty(s,) {
-      return s.length > 0;
-    },);
+  if (key === 'NotShowIn') {
+    return {
+      notShowIn: value.split(';',).filter(function nonEmpty(s,) {
+        return s.length > 0;
+      },),
+    };
   }
-  else if ((key === 'X-TerminalArgExec') || (key === 'TerminalArgExec'))
-    result.execArg = expandEscapes({ s: value, },);
-  else if ((key === 'X-TerminalArgAppId') || (key === 'TerminalArgAppId'))
-    result.appIdArg = expandEscapes({ s: value, },);
-  else if ((key === 'X-TerminalArgTitle') || (key === 'TerminalArgTitle'))
-    result.titleArg = expandEscapes({ s: value, },);
-  else if ((key === 'X-TerminalArgDir') || (key === 'TerminalArgDir'))
-    result.dirArg = expandEscapes({ s: value, },);
-  else if ((key === 'X-TerminalArgHold') || (key === 'TerminalArgHold'))
-    result.holdArg = expandEscapes({ s: value, },);
+  if ((key === 'X-TerminalArgExec') || (key === 'TerminalArgExec'))
+    return { execArg: expandEscapes({ s: value, },), };
+  if ((key === 'X-TerminalArgAppId') || (key === 'TerminalArgAppId'))
+    return { appIdArg: expandEscapes({ s: value, },), };
+  if ((key === 'X-TerminalArgTitle') || (key === 'TerminalArgTitle'))
+    return { titleArg: expandEscapes({ s: value, },), };
+  if ((key === 'X-TerminalArgDir') || (key === 'TerminalArgDir'))
+    return { dirArg: expandEscapes({ s: value, },), };
+  if ((key === 'X-TerminalArgHold') || (key === 'TerminalArgHold'))
+    return { holdArg: expandEscapes({ s: value, },), };
+  return {};
 }

@@ -34,35 +34,37 @@ export type UserOptions = {
 };
 
 /**
- * Appends a terminal argument using the trailing-`=` convention.
- * If the arg key ends with `=`, the value is concatenated as one argument (`--title=My Title`).
- * Otherwise, two separate arguments are added (`--title` `My Title`).
- *
- * @param args - Mutable argument array to append to.
+ * Builds the token(s) for one terminal argument using the trailing-`=` convention.
+ * If the arg key ends with `=`, the value is concatenated as one token (`--title=My Title`).
+ * Otherwise, key and value become two separate tokens (`--title` `My Title`).
  *
  * @param argKey - Terminal argument key (e.g. `--title=` or `--title`).
  *
  * @param value - User-provided value.
+ *
+ * @returns Tokens to append for this argument.
+ *
+ * @example
+ * ```ts
+ * appendArg({ argKey: '--title=', value: 'My Shell' }); // ['--title=My Shell']
+ * appendArg({ argKey: '--title', value: 'My Shell' });  // ['--title', 'My Shell']
+ * ```
  */
 function appendArg(
   {
-    args,
     argKey,
     value,
   }: {
-    args: string[];
-    argKey: string;
-    value: string;
+    readonly argKey: string;
+    readonly value: string;
   },
-): void {
+): readonly string[] {
   if (argKey.endsWith('=',))
-    args.push(`${argKey}${value}`,);
-  else {
-    args.push(
-      argKey,
-      value,
-    );
-  }
+    return [`${argKey}${value}`,];
+  return [
+    argKey,
+    value,
+  ];
 }
 
 /**
@@ -113,45 +115,40 @@ export function buildCommand({
   terminal,
   options,
 }: {
-  terminal: ResolvedTerminal;
-  options: UserOptions;
+  readonly terminal: ResolvedTerminal;
+  readonly options: UserOptions;
 },): readonly string[] {
-  /** Mutable arg accumulator seeded with the kept exec tokens; appended to by the option blocks below. */
-  const args: string[] = terminal.execTokens.filter(keepToken,);
-
-  if ((options.appId.length > 0) && (terminal.appIdArg.length > 0)) {
-    appendArg({
-      args,
-      argKey: terminal.appIdArg,
-      value: options.appId,
-    },);
-  }
-
-  if ((options.title.length > 0) && (terminal.titleArg.length > 0)) {
-    appendArg({
-      args,
-      argKey: terminal.titleArg,
-      value: options.title,
-    },);
-  }
-
-  if ((options.dir.length > 0) && (terminal.dirArg.length > 0)) {
-    appendArg({
-      args,
-      argKey: terminal.dirArg,
-      value: options.dir,
-    },);
-  }
-
-  if (options.hold && (terminal.holdArg.length > 0))
-    args.push(terminal.holdArg,);
-
-  if (options.command.length > 0) {
-    args.push(
-      terminal.execArg,
-      ...options.command,
-    );
-  }
+  /** Immutable command: kept exec tokens followed by the tokens each applicable option block contributes. */
+  const args: readonly string[] = [
+    ...terminal.execTokens.filter(keepToken,),
+    ...(((options.appId.length > 0) && (terminal.appIdArg.length > 0))
+      ? appendArg({
+        argKey: terminal.appIdArg,
+        value: options.appId,
+      },)
+      : []),
+    ...(((options.title.length > 0) && (terminal.titleArg.length > 0))
+      ? appendArg({
+        argKey: terminal.titleArg,
+        value: options.title,
+      },)
+      : []),
+    ...(((options.dir.length > 0) && (terminal.dirArg.length > 0))
+      ? appendArg({
+        argKey: terminal.dirArg,
+        value: options.dir,
+      },)
+      : []),
+    ...((options.hold && (terminal.holdArg.length > 0))
+      ? [terminal.holdArg,]
+      : []),
+    ...((options.command.length > 0)
+      ? [
+        terminal.execArg,
+        ...options.command,
+      ]
+      : []),
+  ];
 
   /** Info-level because the resolved command is user-facing diagnostic output. */
   l.info(`final command: ${JSON.stringify(args,)}`,);

@@ -47,7 +47,7 @@ export type ConfigResult = {
  * ```
  */
 export async function parseConfigFiles(
-  { paths, }: { paths: readonly string[]; },
+  { paths, }: { readonly paths: readonly string[]; },
 ): Promise<ConfigResult> {
   /** Mutable accumulator of explicit entry preferences in priority order. */
   const entryIds: string[] = [];
@@ -81,10 +81,17 @@ export async function parseConfigFiles(
         continue;
 
       if (line.startsWith('/',)) {
-        parseDirective({
-          line,
-          execArgDefaults,
-        },);
+        /** Parsed execarg-default entry; null for non-matching or malformed directives. */
+        const directive = parseDirective({ line, },);
+        if (directive !== null) {
+          /** Entry id and default arg from the matched directive. */
+          const [entryId, defaultArg,] = directive;
+          execArgDefaults.set(
+            entryId,
+            defaultArg,
+          );
+          l.debug(`added TerminalArgExec default '${defaultArg}' for '${entryId}'`,);
+        }
         continue;
       }
 
@@ -119,41 +126,45 @@ export async function parseConfigFiles(
 }
 
 /**
- * Parses a `/`-prefixed directive line from a config file.
+ * Parses a `/`-prefixed directive line into an execarg-default entry.
  *
  * @param line - Raw directive line including the leading `/`.
  *
- * @param execArgDefaults - Mutable map to populate with `/execarg_default` entries.
+ * @returns `[entryId, defaultArg]` for a well-formed `/execarg_default:` directive; `null` for other or malformed directives.
+ *
+ * @example
+ * ```ts
+ * parseDirective({ line: '/execarg_default:org.xterm:-e' }); // ['org.xterm', '-e']
+ * parseDirective({ line: '/unknown' });                      // null
+ * ```
  */
 function parseDirective(
-  {
-    line,
-    execArgDefaults,
-  }: {
-    line: string;
-    execArgDefaults: Map<string, string>;
-  },
-): void {
+  { line, }: { readonly line: string; },
+): readonly [
+  string,
+  string,
+] | null {
   /** Directive prefix lifted to a name for the slice math below. */
   const EXECARG_PREFIX = '/execarg_default:';
-  if (line.startsWith(EXECARG_PREFIX,)) {
-    /** Directive payload; format is `<entryId>:<defaultArg>`. */
-    const rest = line.slice(EXECARG_PREFIX.length,);
-    /** Separator between entry id and default arg; -1 means malformed and skipped. */
-    const colonIdx = rest.indexOf(':',);
-    if (colonIdx !== (-1)) {
-      /** Target entry id for the default. */
-      const entryId = rest.slice(
-        0,
-        colonIdx,
-      );
-      /** Default execarg value associated with the entry id. */
-      const defaultArg = rest.slice(colonIdx + 1,);
-      execArgDefaults.set(
-        entryId,
-        defaultArg,
-      );
-      l.debug(`added TerminalArgExec default '${defaultArg}' for '${entryId}'`,);
-    }
-  }
+  if (!line.startsWith(EXECARG_PREFIX,))
+    return null;
+
+  /** Directive payload; format is `<entryId>:<defaultArg>`. */
+  const rest = line.slice(EXECARG_PREFIX.length,);
+  /** Separator between entry id and default arg; -1 means malformed and skipped. */
+  const colonIdx = rest.indexOf(':',);
+  if (colonIdx === (-1))
+    return null;
+
+  /** Target entry id for the default. */
+  const entryId = rest.slice(
+    0,
+    colonIdx,
+  );
+  /** Default execarg value associated with the entry id. */
+  const defaultArg = rest.slice(colonIdx + 1,);
+  return [
+    entryId,
+    defaultArg,
+  ];
 }

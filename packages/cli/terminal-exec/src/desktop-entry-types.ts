@@ -74,7 +74,7 @@ export type MutableDesktopEntry = {
  * expandEscapes({ s: 'hello\\sworld' }) // → 'hello world'
  * ```
  */
-export function expandEscapes({ s, }: { s: string; },): string {
+export function expandEscapes({ s, }: { readonly s: string; },): string {
   return (function build(): string {
     /** Output segments in order; joined once at the end so the build is O(n) time. */
     const out: string[] = [];

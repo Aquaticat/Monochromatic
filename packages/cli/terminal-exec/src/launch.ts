@@ -45,9 +45,9 @@ export async function launchTerminal({
   command = [],
   title = '',
 }: {
-  dir: string;
-  command?: readonly string[];
-  title?: string;
+  readonly dir: string;
+  readonly command?: readonly string[];
+  readonly title?: string;
 },): Promise<void> {
   /** Platform-specific resolution; the null path raises a user-facing error below. */
   const terminal = await resolveTerminal();

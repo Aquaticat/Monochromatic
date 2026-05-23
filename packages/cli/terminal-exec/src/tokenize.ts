@@ -60,7 +60,7 @@ const FIELD_CODES = new Set([
  * // ['/usr/bin/ghostty', '--gtk-single-instance=true']
  * ```
  */
-export function tokenizeExec({ exec, }: { exec: string; },): readonly string[] | null {
+export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly string[] | null {
   /** Output accumulator; pushed when whitespace ends a token. */
   const tokens: string[] = [];
   /** In-progress token characters; reset on whitespace. */

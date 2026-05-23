@@ -33,7 +33,7 @@ const l = tagged({
  *
  * @returns `true` if the executable is found.
  */
-async function executableExists({ name, }: { name: string; },): Promise<boolean> {
+async function executableExists({ name, }: { readonly name: string; },): Promise<boolean> {
   if (name.startsWith('/',)) {
     try {
       await stat(name,);
@@ -125,11 +125,11 @@ export async function validateEntry({
   isFallback,
   execArgDefault,
 }: {
-  entry: DesktopEntry;
-  entryId: string;
-  desktops: readonly string[];
-  isFallback: boolean;
-  execArgDefault: string;
+  readonly entry: DesktopEntry;
+  readonly entryId: string;
+  readonly desktops: readonly string[];
+  readonly isFallback: boolean;
+  readonly execArgDefault: string;
 },): Promise<ValidatedEntry | null> {
   if (!entry.isTerminal) {
     l.debug(`${entryId}: not a TerminalEmulator`,);

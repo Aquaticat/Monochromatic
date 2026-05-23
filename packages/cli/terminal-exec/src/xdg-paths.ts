@@ -65,7 +65,7 @@ export function stripTrailingSlashes(dir: string,): string {
  * ```
  */
 export function configPaths(
-  { desktops, }: { desktops: readonly string[]; },
+  { desktops, }: { readonly desktops: readonly string[]; },
 ): readonly string[] {
   /** HOME envar fallback for path roots when the variable is unset. */
   const home = process.env['HOME'] ?? '/tmp';

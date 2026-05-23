@@ -33,7 +33,7 @@ const l = tagged({
  * // { title: 'My Shell', command: ['bash', '-l'], appId: '', dir: '', hold: false }
  * ```
  */
-export function parseArgs({ argv, }: { argv: readonly string[]; },): UserOptions {
+export function parseArgs({ argv, }: { readonly argv: readonly string[]; },): UserOptions {
   /** Option accumulator mutated by the parse loop below; let because reassigned conditionally. */
   let appId = '';
   /** Same shape as appId; the parse loop populates each option in turn. */
