@@ -121,6 +121,14 @@ Compress multi-bullet expansions of a single rule into one line when the sub-bul
 
 Example: "Never modify files in cloned third-party repositories; use configuration, env vars, or wrapper scripts" replaces five bullets explaining why modification is bad and what the alternatives are.
 
+### Inline pointers to this philosophy doc
+
+Do not add per-rule "(see PHILOSOPHY.AGENTS.md)" / "(rationale in PHILOSOPHY.AGENTS.md)" pointers to AGENTS.md.
+Normal operation needs the rule, its cue, and the tokens to act, not the rationale; an inline pointer implies the agent must read this doc to operate, which it must not.
+Rationale, mechanism, and examples relocated here stay discoverable through the single global note at the top of AGENTS.md plus the section-name correspondence (each subsection under "Relocated rule rationale" is named for the AGENTS.md section it came from).
+If a rule is genuinely crippled without relocated detail, move the detail back into AGENTS.md rather than pointing here.
+A specific reference (exact section heading) is acceptable only when unavoidable; a vague "see PHILOSOPHY" never is.
+
 ## What was compressed (2025-02-25)
 
 AGENTS.md was reduced from 5839 words to ~1500 words at the time. (As of 2026-05-09, the post-2025 monotonic regrowth had brought it back to 6672 words / 684 lines before the second compression pass; see "What was compressed (2026-05-09)" below.)
@@ -337,9 +345,45 @@ Clone an external tool's source whether you hit the bug yourself, are summarizin
 
 Replacement-audit depth: transitive deps; the src paths that handle the same cases the incumbent mishandles; build provenance for native or wasm modules (compiler flags, wasm import surface, whether upstream sources are checksum-verified); maintenance signals (downloads, stars, last commit, single-maintainer concentration). Without this depth the recommendation swaps a known-flaw dependency for an unknown-flaw one.
 
+#### Choosing technology and vendors: the encoded checklist
+
+The `choosing-technology` skill encodes context-fork questions, the six vendor vetting layers (layoffs, reviews, outages, funding, signup friction, security), the open-source default, constraint-fit before stack-fit, the alternative survey rule (name at least two with rejection reasons), and the `docs/decisions/<project>.md` maintenance rule. AGENTS.md keeps the terse "invoke the skill" rule plus the layer-summary tokens; the enumerated detail lives in the skill.
+
+#### Before claiming inability: how each manual-action bridge works
+
+GUI clicks: `agent-browser` drives most web UIs; `xdotool` / `wtype` / `ydotool` drive native UIs; "click" usually has a keyboard shortcut to synthesise, or a backing HTTP/IPC endpoint that bypasses the UI. Interactive auth: scripted with `expect`, or skipped via API tokens. Hardware activation: almost always a CLI. AGENTS.md keeps the one-line token index (the tools to reach for); this is how each one substitutes for the manual action.
+
+#### Verify on a throwaway: why a guard test needs a throwaway
+
+When the behavior under test is whether a guard blocks a destructive operation, running that operation against real state means a broken guard (the exact failure you are testing for) damages real state, while a passing guard tells you nothing a throwaway would not have. So build both the allowed case and the rejected case as fixtures.
+
+#### Pre-response checklist item 5: categorical-dismissal examples
+
+Categorical dismissals that feel like recall but are one search away: "the project doesn't use X", "X doesn't apply here", "X is already handled by Y". These overlap the hedge-phrase list; the checklist item keeps the rule (measure assumed facts, cite inline) while the examples live here and in the hedge section. AGENTS.md and tsconfig count as confs where X may be wired up.
+
+#### runbook skill: the encoded sections and rules
+
+The `runbook` skill encodes the required sections (Setup, Steps, What to check, Restore), the bold-every-UI-element rule, the expected-outcome-per-step rule, and the exact-strings-not-paraphrases rule. AGENTS.md keeps the "invoke it for any manual-action document" rule and the canonical example path.
+
+#### Match action scope to the request verb: the security-alerts example
+
+"Decide which security alerts we can fix immediately" is triage; the deliverable is the categorized list. Applying the fixes is a separate decision the user has not yet made; surface a concrete proposal and wait for green-light.
+
+#### Test coverage matches the public API surface: the sync/async example
+
+A test file covering sync matchers but skipping async matchers is the same as no async tests; the bug ships silently.
+
+#### Follow document pointers: the worked example
+
+A ToS that says "Services are governed by separate subscription agreements, not these Website Terms" points at a separate document where the substantive provisions live; fetch it before drawing conclusions about its contents.
+
+#### Linting: why the oxlint-disable placement matters
+
+The disable goes before the TSDoc so the TSDoc remains the immediately preceding comment. The enable goes on the very next line after the declaration; leaving a disable open longer than necessary silences unrelated violations. `// oxlint-disable-next-line` applies only to the literal next physical line, so placed between TSDoc and declaration it lands on the TSDoc and the suppression is lost; use the block-level disable + enable pair wrapping TSDoc and declaration tightly instead.
+
 ### Stats and decisions (2026-05-23)
 
-AGENTS.md went from 59244 chars (684-equivalent rich form) to 49690 chars, under the user's hard 50000 target. The split rule: AGENTS.md keeps the terse enforceable rule, its cue, and the tokens/paths/commands needed to act; PHILOSOPHY.AGENTS.md holds the rationale, mechanism, and examples behind each rule. No information was lost across the two files: every original AGENTS.md backtick token survives in the union of the two files except four user-authorized cuts.
+AGENTS.md went from 59244 chars (684-equivalent rich form) to 47696 chars, under the user's hard 50000 target and the ~48000 stretch goal. The split rule: AGENTS.md keeps the terse enforceable rule, its cue, and the tokens/paths/commands needed to act; PHILOSOPHY.AGENTS.md holds the rationale, mechanism, and examples behind each rule. No information was lost across the two files: every original AGENTS.md backtick token survives in the union of the two files except four user-authorized cuts.
 
 Deliberately dropped (not relocated), with the user pointing at each as model-obvious or redundant:
 
@@ -355,3 +399,5 @@ Prose abbreviations applied in AGENTS.md text only, never in backtick tokens, fi
 AGENTS.md prose paragraphs were then broken at sentence and clause boundaries to satisfy the doc's own "break lines at semantic boundaries" markdown rule (the prior single-long-line prose violated it). Numbered checklist items and rule bullets were left single-line: one line per item serves the checklist's quick-scan purpose, and breaking list items into continuation lines is structurally fragile.
 
 The 12 quoted `See "<section>"` cross-reference targets and the moment-of-decision top-level structure were preserved; only "Handing off manual actions" was merged (into "Before claiming inability"), with its one `Apply "..."` reference in pre-response checklist item 10 rewired.
+
+A continuation pass (same date) reached the ~48000 stretch goal by relocating more rationale and illustrative examples into the "Relocated rule rationale" subsections above: the choosing-technology layer enumeration, the manual-action bridge mechanics, the guard-test throwaway rationale, the pre-response item 5 dismissal examples, the runbook section list, the match-action security-alerts example, the test-coverage sync/async example, the follow-document worked example, the oxlint-disable placement rationale, and the exhaust-layers per-layer examples. The user then directed that normal operation must not depend on this doc: every inline "(... in PHILOSOPHY.AGENTS.md)" pointer was removed from AGENTS.md (the newly-added ones plus four pre-existing vague pointers at the measurement-recipes, name-verification, resource-exhaustion, and max-lines rules), leaving each AGENTS.md rule self-sufficient. The relocated content stays here as reference, discoverable through the single global note at the top of AGENTS.md and the section-name correspondence. The rule against re-introducing such pointers is the new "Inline pointers to this philosophy doc" entry under "What does not belong".

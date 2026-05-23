@@ -74,7 +74,7 @@ Before sending any response with substantive claims:
 2.  Described how an external tool works without reading its src? Clone and read (see "Third-party libraries"), or label recall-from-training.
 3.  Estimated difficulty of a fix you have not built? Drop the estimate.
 4.  Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
-5.  Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents, whether a tool/syntax/feature is used, whether a conf already covers the proposed behaviour, whether AGENTS.md already bans/requires the thing weighed) or working pattern in repo artifacts (commit cadence, working hours, defect-recovery rate, concurrent sessions)? Measure it (see "Measure-vs-ask"). Categorical dismissals ("the project doesn't use X", "X doesn't apply here", "X is already handled by Y") feel like recall but are one `rg`/`find`/conf-read/AGENTS.md-grep away; AGENTS.md itself counts as a conf to read. Cite the result inline (file path, line, or conf key); if wrong, fold the option back in.
+5.  Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents, whether a tool/feature is used, whether a conf or AGENTS.md already covers the thing weighed) or working pattern in repo artifacts (commit cadence, hours, defect rate, concurrent sessions)? Measure it (see "Measure-vs-ask"). Categorical dismissals feel like recall but are one `rg`/`find`/conf-read away; AGENTS.md itself counts as a conf to read. Cite the result inline (file path, line, or conf key); if wrong, fold the option back in.
 6.  Assumed a non-measurable preference (which approach, what they value)? Ask.
 7.  Confident factual claim about your environment, an external tool, or src code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
 8.  Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
@@ -86,7 +86,6 @@ Before sending any response with substantive claims:
 
 **Measurable facts: measure.** Codebase size, build time, file count, dependency tree, test count, perf numbers, conf values, file contents.
 Also the user's working pattern in repo artifacts: commit cadence, working hours, defect-recovery rate, concurrent-session evidence.
-Measurement recipes (the exact `git log`/`tokei`/`pnpm ls` invocations) are in PHILOSOPHY.AGENTS.md.
 
 Run the measurement yourself;
 never a quantitative adjective ("small", "large", "fast", "slow", "simple", "complex", "short", "long", "sparse", "dense", "tractable", "trivial", "significant") without one.
@@ -142,8 +141,8 @@ For "should we use X better?" / "are we taking advantage of X?", walk every laye
 Each can flip the conclusion.
 
 1.  **The tool itself**: usage volume, conf.
-2.  **Parallel systems**: where the same need is met outside the tool (markdown roadmaps standing in for issue trackers, ad-hoc scripts for build systems, manual checks for CI).
-3.  **Content of those parallel systems**: not just file count but what is inside (a 40-file TODO dir may be a structured roadmap or a dumping ground; the recommendation is opposite).
+2.  **Parallel systems**: where the same need is met outside the tool.
+3.  **Content of those parallel systems**: not just file count but what is inside.
 4.  **Inline annotations in code**: TODO/FIXME/HACK, deprecation markers, workaround comments. Zero signals discipline (but verify the search ran; see null-search rule); thousands signal debt.
 5.  **Suppressions and exceptions**: lint disables, type-error suppressions, skipped tests. Justified-with-rationale is healthy; bare suppressions are debt.
 6.  **Stated policies in code or conf**: comments declaring intent ("X is tracked via Y, not Z") that may or may not be followed in practice.
@@ -153,15 +152,15 @@ A recommendation given after only checking layer 1 is a guess shaped by the surf
 
 ### Follow document pointers
 
-When a ToS, README, spec, or other source document references another where the substantive provisions live ("Services are governed by separate subscription agreements, not these Website Terms"), fetch the referenced document before drawing conclusions about its contents.
+When a ToS, README, spec, or other source document references another where the substantive provisions live, fetch the referenced document before drawing conclusions about its contents.
 Hedging about a named, fetchable target is the failure mode;
 the cue is writing "likely contains," "almost certainly addresses," or "probably covers" about a document one tool call away.
 The pointer is the research lead, not the stopping point.
 
 ### Choosing technology and vendors
 
-When recommending a SaaS vendor or picking a library, framework, or build tool, the `choosing-technology` skill encodes context-fork questions, the six vendor vetting layers (layoffs, reviews, outages, funding, signup friction, security), open-source default, constraint-fit before stack-fit, the alternative survey rule (name at least two with rejection reasons), and the `docs/decisions/<project>.md` maintenance rule;
-invoke it when proposing or evaluating any external dependency or service.
+When recommending a SaaS vendor or picking a library, framework, or build tool, invoke the `choosing-technology` skill when proposing or evaluating any external dependency or service.
+It encodes the six vendor vetting layers, open-source default, constraint-fit before stack-fit, the alternative survey rule, and `docs/decisions/<project>.md` maintenance.
 
 ### Before claiming inability
 
@@ -171,12 +170,7 @@ Before refusing or handing off, try a bridge: convert the input to a format your
 The browser-claim form is especially sticky;
 whenever about to write any phrasing meaning "can't see / render / interact with a web page," reach for `agent-browser` first.
 
-Manual actions usually have a bridge too.
-GUI clicks: `agent-browser` drives most web UIs;
-`xdotool` / `wtype` / `ydotool` drive native UIs;
-"click" usually has a keyboard shortcut to synthesise, or a backing HTTP/IPC endpoint that bypasses the UI.
-Interactive auth: scripted with `expect`, or skipped via API tokens.
-Hardware activation: almost always a CLI.
+Manual actions usually have a bridge too: GUI clicks (`agent-browser` for web UIs, `xdotool`/`wtype`/`ydotool` for native UIs, a synthesised keyboard shortcut, or a backing HTTP/IPC endpoint), interactive auth (`expect`, or API tokens), hardware activation (almost always a CLI).
 
 Refuse or hand off only after attempting a bridge and confirming no path exists.
 State the bridges you tried;
@@ -189,13 +183,12 @@ Failure shape: "no precedent for Netlify" while LocalStack, MinIO, Dokku, and Co
 State what you searched and what comparable evidence you found;
 an empty result on the narrowest query is not "no precedent."
 
-When the bridges genuinely fail and the user must execute, the `runbook` skill encodes the required sections (Setup, Steps, What to check, Restore), the bold-every-UI-element rule, the expected-outcome-per-step rule, and the exact-strings-not-paraphrases rule;
-invoke it when writing any manual-action document.
+When the bridges genuinely fail and the user must execute, invoke the `runbook` skill when writing any manual-action document (it encodes the required sections and formatting rules).
 Canonical example: `packages/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`.
 
 ### Name the verification step
 
-Confident factual claims about the user's environment, an external tool, or src code must be paired inline with what backs them (examples in PHILOSOPHY.AGENTS.md).
+Confident factual claims about the user's environment, an external tool, or src code must be paired inline with what backs them.
 If you cannot name what backs a claim, downgrade to a labeled guess or do the verification.
 
 ### Treat search results as suspicious until you've verified the shape
@@ -272,7 +265,7 @@ If so, warn the user and state what will happen before proceeding.
 ### Resource-exhaustion isolation
 
 Always run commands that might crash or exhaust the host in a performance-limited container or VM, never directly on the host.
-The "may exhaust the host" set is broader than the destructive-command set: heavy memory/process/file-descriptor allocation, unbounded loops, uncapped subprocess fan-outs, stress/benchmark/load runs (example set in PHILOSOPHY.AGENTS.md).
+The "may exhaust the host" set is broader than the destructive-command set: heavy memory/process/file-descriptor allocation, unbounded loops, uncapped subprocess fan-outs, stress/benchmark/load runs.
 
 Use `podman run --memory=2g --cpus=2 --rm -v $PWD:/work -w /work <image>` for container isolation, or the `mvm` CLI for VM isolation.
 State the bounds explicitly (memory cap, cpu cap, timeout).
@@ -295,11 +288,6 @@ Decision verbs ("decide", "evaluate", "assess", "review", "audit", "triage", "lo
 The deliverable is the answer;
 do not also apply the fixes the answer implies.
 Action verbs ("fix", "implement", "apply", "do", "change", "add", "remove", "update", "refactor") authorize the action.
-
-"Decide which security alerts we can fix immediately" is triage;
-the deliverable is the categorized list.
-Applying the fixes is a separate decision the user has not yet made;
-surface a concrete proposal and wait for green-light.
 
 This holds in Auto Mode: its "prefer action over planning" applies to executing the requested action, not expanding scope;
 it is not authorization to act on adjacent decisions the user has not made.
@@ -324,15 +312,14 @@ When unsure, propose a concrete edit and location.
 - Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
 - Extract and name concepts; start simple, refactor to complexity only when necessary.
 - Simplification progression: imperative loop -> while -> for -> recursive -> higher-order functions/async iterators.
-- Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts` (pattern examples in PHILOSOPHY.AGENTS.md). Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
+- Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts`. Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
 
 ### Linting
 
 - Never violate one rule to satisfy another. Lint rules form a single shape: code that satisfies all of them. When two rules appear to conflict, the remediation is structural (split, extract, rename), never reformatting one rule's surface to silence another. Signal you are violating-to-satisfy: about to undo something the autofix or AGENTS.md prescribed (e.g. compressing args back onto one line to fit max-lines).
 - Prefer `Object.entries` and functional methods over `for...in`.
 - Add `oxlint-disable-next-line` comments with justification for things that can't be implemented without triggering the rules.
-- Block-level `/* oxlint-disable rule */` must wrap tightly. Order with TSDoc: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */`. The disable goes **before** the TSDoc so the TSDoc remains the immediately preceding comment. The enable goes on the **very next line** after the declaration (or closing `);`/`}`). Never at end-of-file or many lines later. Leaving a disable open longer than necessary silences unrelated violations.
-- When a declaration needs both TSDoc and a suppression, use the block-level disable + enable pair wrapping the TSDoc and declaration tightly. Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration: the directive applies only to the literal next physical line, so it lands on the TSDoc instead of the declaration and the suppression is lost.
+- Block-level `/* oxlint-disable rule */` must wrap tightly: `/* oxlint-disable rule */` -> `/** TSDoc */` -> declaration -> `/* oxlint-enable rule */` (disable **before** the TSDoc; enable on the **very next line** after the declaration or closing `);`/`}`, never at end-of-file). Do not use `// oxlint-disable-next-line` between the TSDoc and the declaration: it lands on the TSDoc, not the declaration, so the suppression is lost.
 - Never loosen lint rules without prior approval.
 - Address all lint issues, including but not limited to warnings.
 
@@ -450,8 +437,6 @@ If the implementation has separate branches for sync vs async, string vs object,
 "Tests exist and pass" is not evidence of completeness.
 Compare test names against the implementation's branches;
 confirm no untested path.
-A test file covering sync matchers but skipping async matchers is the same as no async tests;
-the bug ships silently.
 
 ### Verify at the user boundary
 
@@ -473,9 +458,8 @@ Reproduce the real scenario: `mktemp -d` plus `git init` for a repo, a scratch d
 exercise the real artifact against it, delete it afterward.
 Pairs with "Verify at the user boundary": real artifact, throwaway state.
 
-The rule holds even when the command looks idempotent or you have committed first.
-When the behavior under test is whether a guard blocks a destructive operation, running that operation against real state means a broken guard (the exact failure you are testing for) damages real state, while a passing guard tells you nothing a throwaway would not have.
-Build both the allowed case and the rejected case as fixtures.
+The rule holds even when the command looks idempotent or you have committed first;
+when testing whether a guard blocks a destructive operation, build both the allowed case and the rejected case as fixtures.
 
 The cue: about to run `reset --hard`, `clean -fd`, a migration, a bulk delete, an overwrite, or any other state-mutating command against the user's actual repo, cache, or data solely to observe how it behaves.
 Create the throwaway target first.
