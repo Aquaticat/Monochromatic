@@ -262,3 +262,39 @@ The `Documentation standards` and `Markdown conventions` section headers were pl
 The PHILOSOPHY.AGENTS.md "What does not belong" rules were again not opted into; the user chose the Moderate-merge rubric (matching the 2026-05-09 pass). The `Pre-response checklist` item 4 rephrase ("(see X)" -> "(full list: X)") was considered but skipped: the rephrase did not shorten the back-reference and offered no DRY benefit. The proactivity recognition-cue paragraph (post-edit line 23) was retained alongside the action rule (line 19) despite their surface similarity; the cue framing aids recognition.
 
 The `Pre-response checklist` items 3, 5, 6 were not consolidated: tightening these to back-references would strip the remediation verb, which is the checklist's whole value as a quick-scan tool. The verification-step example at `Name the verification step` line 137 ("verified by reading the package's README at the cloned repo") was retained verbatim despite mentioning a cloned repo; it is one of three illustrative examples, not a duplicate rule.
+
+## What was compressed (2026-05-23)
+
+The user opted into the full "What does not belong" rubric above (deferred by the 2026-05-09 and 2026-05-11 moderate-merge passes, which required an explicit opt-in). Goal: AGENTS.md under 50000 chars. Levers applied: telegraphic prose; prose-only abbreviations (config to conf, source to src, documentation to docs, directory to dir, never inside backtick tokens, filenames, code blocks, or the verbatim hedge section); merge "Handing off manual actions" into "Before claiming inability"; cut generic rationale, illustrative example lists, model-obvious syntax, and harness-redundant content; and, per the user's "why belongs to PHILOSOPHY.AGENTS.md" directive, relocate the longer project-specific explanatory passages out of AGENTS.md into the "Relocated rule rationale" section below. PHILOSOPHY.AGENTS.md is treated as a dump doc: anything a future human or agent might need to understand a terse AGENTS.md rule lives here.
+
+### Relocated rule rationale (2026-05-23)
+
+The explanatory "why/how" for each rule below was moved here so AGENTS.md keeps only the terse enforceable rule, cue, and tokens. Headings match the AGENTS.md section they came from.
+
+#### Essential commands: why `bun test` is banned for this harness
+
+`bun test` specifically: never substitute it for a missing mise task. The custom `@monochromatic-dev/module-test` harness runs tests as a side effect of import, so `bun test <file>` prints `PASS` log lines (from the harness) and then reports `0 pass / 0 fail` (bun's runner finds no `bun:test` registrations). The misleading summary suggests the run was broken when in fact every test passed. Use `mise run //packages/<path>:test:unit`; if no such task exists, run the file directly with `bun <file>` (matches `packages/module/test/mise.toml`'s self-test pattern). A `PreToolUse` hook (`ccgr`, source at `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.
+
+#### Type system: why `const` narrowing does not reach function declarations
+
+TypeScript does not propagate `const` narrowing into function declarations (both tsc and tsgo); the compiler only extends flow analysis across `FunctionExpression`, `ArrowFunction`, and method/accessor closures, because declarations are hoisted and could be called before the narrowing guard. Fix: use a helper that returns non-null (`function requireElement<T>(sel): T { ... throw ... }`), or reassign to a new `const` with an explicit type annotation after the null check.
+
+#### Git cleanup and worktree safety reviews: the cli-git tool-cache allowlist
+
+When the review touches `cli-git`'s linked-worktree guard, account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`, currently uv's git cache): repositories whose git-dir resolves under an allowed dir bypass that guard, so destructive git is not actually blocked there.
+
+#### Bash output path collapse: how the substitution works
+
+`~` in Bash tool output is a display substitution for `/var/home/user` or `/home/user` applied by the `bash-output-filter` hook, plus stripping of the current cwd prefix. It applies only at the start of a line, so paths inside JSON or error messages are unaffected. Filesystem values are unchanged; this is display-only. To skip the filter for one command, include any blocklist trigger: `eval 'your command here'` is simplest; others are `export`, `source`, `$(...)`, backticks, `> file` redirect.
+
+#### Resource-exhaustion isolation: the example set
+
+The "may exhaust the host" set is broader than the destructive-command set: anything that allocates much memory, spawns many processes, opens many file descriptors, runs unbounded loops, or consumes resources without a tight upper bound. Examples: stress harnesses and load generators (`mise run //:forge:stress`, `mise run //:test` with thousands of cases, k6/wrk runs); builds that fan out across many packages without concurrency caps; benchmarks that allocate large blobs or fork many workers (`bun bench`, `mitata` runs); scenarios that loop over `git.packObjects` / `git.indexPack` or other heavy isomorphic-git ops; subprocess fan-outs with no `--writers=` / `--concurrency=` ceiling; anything that imports a server runtime that opens libSQL, warms caches, or schedules timers in a tight loop.
+
+#### Simplification: max-lines split pattern examples
+
+Remediate a max-lines violation by splitting: re-export from `index.ts`; move helpers to siblings (e.g. `crc32.ts`, `headers.ts`), constants to `constants.ts`, types to `types.ts`. Pattern examples: `packages/module/hyperscript/src/index.ts` (76 lines, pure re-exports), `packages/module/image-diff/src/index.ts` (75 lines, pure re-exports).
+
+#### Name the verification step: the inline-citation examples
+
+Examples of a confident claim paired inline with what backs it: "the bug is in `ci.py:851` (read the source)"; "the codebase has 158k TS LOC across 1,903 files (`tokei` output above)"; "express 4.x is supported (verified by reading the package's README at the cloned repo)".

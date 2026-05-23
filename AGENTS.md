@@ -1,6 +1,6 @@
 # Development Guidelines for AI Agents
 
-Organized by moment of decision, not topic: at each point in the work (about to respond, run a command, edit code, declare done), the matching section holds every rule that applies. Cross-cutting reference (workspace conventions, enforcement mechanisms, agent skills) appears toward the end.
+Organized by moment of decision, not topic: at each point in the work (about to respond, run a command, edit code, declare done), the matching section holds every rule that applies. Cross-cutting reference (workspace conventions, enforcement mechanisms, agent skills) appears toward the end. Detailed rationale, mechanisms, and examples behind these terse rules live in `PHILOSOPHY.AGENTS.md`.
 
 ## Critical hot paths
 
@@ -143,7 +143,7 @@ When the bridges genuinely fail and the user must execute, the `runbook` skill e
 
 ### Name the verification step
 
-Confident factual claims about the user's environment, an external tool, or src code must be paired inline with what backs them (e.g. "the bug is in `ci.py:851` (read the source)"). If you cannot name what backs a claim, downgrade to a labeled guess or do the verification.
+Confident factual claims about the user's environment, an external tool, or src code must be paired inline with what backs them (examples in PHILOSOPHY.AGENTS.md). If you cannot name what backs a claim, downgrade to a labeled guess or do the verification.
 
 ### Treat search results as suspicious until you've verified the shape
 
@@ -178,7 +178,7 @@ git clean -ndX HEAD config hooks objects refs
 
 Do not rely on `git status`, `git ls-files --others --exclude-standard`, or `rg --files`; those hide ignored files. If any root sentinel exists, cleanup or an exact safe cleanup path is part of the design under review.
 
-When the review touches `cli-git`'s linked-worktree guard, account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`, currently uv's git cache): repositories whose git-dir resolves under an allowed dir bypass that guard, so destructive git is not actually blocked there.
+When the review touches `cli-git`'s linked-worktree guard, account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`): repos whose git-dir resolves under an allowed dir bypass the guard, so destructive git is not blocked there.
 
 ### Document non-obvious findings
 
@@ -207,9 +207,7 @@ Clone the git repo of a package to a temp dir whenever investigating src code. U
 
 ### Bash output path collapse
 
-Do not treat `~` in Bash tool output as a literal tilde. It is a display substitution for `/var/home/user` or `/home/user` by the `bash-output-filter` hook, plus stripping of the current cwd prefix. Applies only at line start, so paths inside JSON or error messages are unaffected; display-only, filesystem values unchanged. Account for the transform when debugging path issues before concluding the path is wrong.
-
-To skip the filter for one command, include any blocklist trigger. Simplest is `eval 'your command here'`. Other triggers: `export`, `source`, `$(...)`, backticks, `> file` redirect.
+Do not treat `~` in Bash tool output as a literal tilde; it is a display substitution for `/var/home/user` or `/home/user` by the `bash-output-filter` hook (display-only, filesystem values unchanged). Account for it when debugging path issues before concluding the path is wrong. To skip the filter for one command, include a blocklist trigger: `eval`, `export`, `source`, `$(...)`, backticks, or `> file`.
 
 ### Physical-harm consideration
 
@@ -217,14 +215,7 @@ Before any action, consider whether it could physically harm a human (blasting a
 
 ### Resource-exhaustion isolation
 
-Always run commands that might crash or exhaust the host in a performance-limited container or VM, never directly on the host. The "may exhaust the host" set is broader than the destructive-command set: anything that allocates much memory, spawns many processes, opens many file descriptors, runs unbounded loops, or consumes resources without a tight upper bound. Examples:
-
-- stress harnesses and load generators (`mise run //:forge:stress`, `mise run //:test` with thousands of cases, k6/wrk runs)
-- builds that fan out across many packages without concurrency caps
-- benchmarks that allocate large blobs or fork many workers (`bun bench`, `mitata` runs)
-- scenarios that loop over `git.packObjects` / `git.indexPack` or other heavy isomorphic-git ops
-- subprocess fan-outs with no `--writers=` / `--concurrency=` ceiling
-- anything that imports a server runtime that opens libSQL, warms caches, or schedules timers in a tight loop
+Always run commands that might crash or exhaust the host in a performance-limited container or VM, never directly on the host. The "may exhaust the host" set is broader than the destructive-command set: heavy memory/process/file-descriptor allocation, unbounded loops, uncapped subprocess fan-outs, stress/benchmark/load runs (example set in PHILOSOPHY.AGENTS.md).
 
 Use `podman run --memory=2g --cpus=2 --rm -v $PWD:/work -w /work <image>` for container isolation, or the `mvm` CLI for VM isolation. State the bounds explicitly (memory cap, cpu cap, timeout). If the user requests one directly, propose the containerised invocation and confirm. Past authorisation does not transfer across commands; each heavy run needs an isolated environment.
 
@@ -261,7 +252,7 @@ Move changes where they belong immediately: different file, new file, gitignore 
 - Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
 - Extract and name concepts; start simple, refactor to complexity only when necessary.
 - Simplification progression: imperative loop -> while -> for -> recursive -> higher-order functions/async iterators.
-- Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings (e.g. `crc32.ts`, `headers.ts`), constants to `constants.ts`, types to `types.ts`. Pattern: `packages/module/hyperscript/src/index.ts` (76 lines, pure re-exports), `packages/module/image-diff/src/index.ts` (75 lines, pure re-exports). Forbidden workarounds (each violates another rule): compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
+- Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts` (pattern examples in PHILOSOPHY.AGENTS.md). Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
 
 ### Linting
 
@@ -330,7 +321,7 @@ Write comprehensive TSDoc for **all** declarations (exported or not, including l
 - `const` generic parameters; `readonly` array parameters; meaningful constraint names (e.g. `TData`).
 - Prefer `as` over angle bracket syntax; use type guards for runtime checking; avoid deep nesting in conditional types.
 - Use assertion functions (`asserts value is T`) for runtime type narrowing.
-- TypeScript does not propagate `const` narrowing into **function declarations** (both tsc and tsgo); the compiler only extends flow analysis across `FunctionExpression`, `ArrowFunction`, and method/accessor closures, because declarations are hoisted and could be called before the narrowing guard. Fix: use a helper that returns non-null (`function requireElement<T>(sel): T { ... throw ... }`), or reassign to a new `const` with an explicit type annotation after the null check.
+- `const` narrowing does not reach **function declarations** (tsc and tsgo). Fix: a helper that returns non-null (`function requireElement<T>(sel): T { ... throw ... }`), or reassign to a new `const` with an explicit type annotation after the null check.
 - Generator overloads: remove `*` (sync) or `async *` (async) from non-implementation signatures.
 
 #### Variables and values
@@ -483,7 +474,7 @@ If a commit message is inaccurate after committing, do not amend (harness rule).
 - Identify the target package and task before running tests; do not reflexively use repo-root `mise run test` for narrow package work.
 - Mise task `run` commands use nushell, not bash. Chain sequentially with `;` (`mise run foo; mise run bar`), not `&&`.
 - All builds and tasks use `mise run`. Never run `pnpm exec` or direct package scripts. Never invoke raw tools (`tsc`, `tsdown`, `bun test`, `oxlint`, etc.) directly; use the corresponding mise task. When no suitable task exists, add one to the target package's `mise.toml` first.
-- `bun test` specifically: never substitute it for a missing mise task. The custom `@monochromatic-dev/module-test` harness runs tests as a side effect of import, so `bun test <file>` prints `PASS` log lines (from the harness) and then reports `0 pass / 0 fail` (bun's runner finds no `bun:test` registrations). The misleading summary suggests the run was broken when in fact every test passed. Use `mise run //packages/<path>:test:unit`; if no such task exists, run the file directly with `bun <file>` (matches `packages/module/test/mise.toml`'s self-test pattern). A `PreToolUse` hook (`ccgr`, source at `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.
+- Never substitute `bun test` for a missing mise task; it misreports (`PASS` lines then `0 pass / 0 fail`) under the `@monochromatic-dev/module-test` harness. Use `mise run //packages/<path>:test:unit`, or run the file directly with `bun <file>` (matches `packages/module/test/mise.toml`'s self-test pattern) if no task exists. A `PreToolUse` hook (`ccgr`, `packages/claude-code-plugins/source/src/handlers/guardrail.ts`) blocks the call when configured.
 - Read `mise.toml` files in root and package directories for available commands. Run a task in a specific package with `mise run //packages/path:task` (not `mise run -C`).
 - There is no `PostToolUse` lint:types hook yet. Run `mise run //packages/<path>:lint:types` manually after editing TypeScript. The hook is on the roadmap but at least a month out.
 - `mise watch -r` takes a bare task name, not a `mise run` invocation. Write `mise watch -w src -r -- start:server`, not `mise watch -w src -r -- mise run start:server`. When a dev task needs watch-restart, split the inner command into its own task (e.g. `start:server`) so `mise watch -r` can reference it by name.
