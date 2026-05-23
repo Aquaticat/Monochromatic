@@ -43,23 +43,24 @@ function isWhitespaceChar(c: string,): boolean {
  * @param tag - literal tag including the leading `@` (e.g. `'@public'`)
  *
  * @returns whether the bounded tag occurs at least once in `text`
+ *
+ * @example
+ * ```ts
+ * containsBoundedAccessTag({ text: 'see @public here', tag: '@public', }); // true
+ * containsBoundedAccessTag({ text: 'mypublic', tag: '@public', }); // false
+ * ```
  */
-function containsBoundedAccessTag({
+export function containsBoundedAccessTag({
   text,
   tag,
 }: {
   text: string;
   tag: string;
 },): boolean {
-  /**
-   * Recursive scan that tests every occurrence of `tag` in `text` for
-   * matching boundary conditions before reporting a hit.
-   *
-   * @param from - cursor index for the next `indexOf` call
-   *
-   * @returns true on the first occurrence with valid boundaries
-   */
-  function scan(from: number,): boolean {
+  // Linear walk: each occurrence of `tag` is located by `indexOf`; the cursor
+  // advances by one past every boundary-rejected candidate, so worst-case work
+  // is bounded by the length of `text` and the stack stays flat.
+  for (let from = 0; from <= text.length;) {
     /** Position of the next literal occurrence of `tag`; -1 ends the search. */
     const idx = text.indexOf(
       tag,
@@ -71,8 +72,10 @@ function containsBoundedAccessTag({
     const before = idx === 0 ? '' : text.charAt(idx - 1,);
     /** Whether the preceding char satisfies the `(?:^|\s)` anchor. */
     const beforeOk = (before === '') || isWhitespaceChar(before,);
-    if (!beforeOk)
-      return scan(idx + 1,);
+    if (!beforeOk) {
+      from = idx + 1;
+      continue;
+    }
     /** Index immediately after the match; used to inspect the trailing char. */
     const afterIdx = idx + tag.length;
     /** Char immediately after the match; end-of-string acts as a valid terminator. */
@@ -81,9 +84,9 @@ function containsBoundedAccessTag({
     const afterOk = (after === '') || (after === '*') || isWhitespaceChar(after,);
     if (afterOk)
       return true;
-    return scan(idx + 1,);
+    from = idx + 1;
   }
-  return scan(0,);
+  return false;
 }
 
 /**

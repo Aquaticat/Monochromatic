@@ -69,8 +69,14 @@ type TaggedLine = {
  * @param s - line content (with the leading `*` already stripped)
  *
  * @returns parsed tag + rest, or `null` when the shape does not match
+ *
+ * @example
+ * ```ts
+ * parseTaggedLine('@param foo'); // { tag: '@param', rest: 'foo' }
+ * parseTaggedLine('@param'); // null
+ * ```
  */
-function parseTaggedLine(s: string,): TaggedLine | null {
+export function parseTaggedLine(s: string,): TaggedLine | null {
   if (!s.startsWith('@',))
     return null;
   /**
@@ -81,11 +87,11 @@ function parseTaggedLine(s: string,): TaggedLine | null {
    * @returns exclusive end of the tag-name run
    */
   function scanTag(idx: number,): number {
-    if (idx >= s.length)
-      return idx;
-    if (!isWordChar(s.charAt(idx,),))
-      return idx;
-    return scanTag(idx + 1,);
+    /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
+    let cursor = idx;
+    while ((cursor < s.length) && isWordChar(s.charAt(cursor,),))
+      cursor += 1;
+    return cursor;
   }
   /** Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign. */
   const tagEnd = scanTag(1,);
@@ -99,11 +105,11 @@ function parseTaggedLine(s: string,): TaggedLine | null {
    * @returns first non-whitespace position
    */
   function scanWhitespace(idx: number,): number {
-    if (idx >= s.length)
-      return idx;
-    if (!isWhitespaceChar(s.charAt(idx,),))
-      return idx;
-    return scanWhitespace(idx + 1,);
+    /** Cursor advanced over the whitespace run; returned as first non-whitespace position. */
+    let cursor = idx;
+    while ((cursor < s.length) && isWhitespaceChar(s.charAt(cursor,),))
+      cursor += 1;
+    return cursor;
   }
   /** First index past the inter-token whitespace; rest starts here. */
   const restStart = scanWhitespace(tagEnd,);

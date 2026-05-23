@@ -58,74 +58,67 @@ function isWhitespaceChar(c: string,): boolean {
  * @param s - line content (already stripped of comment markers and trim)
  *
  * @returns ordered list of captured type bodies (without the braces)
+ *
+ * @example
+ * ```ts
+ * // built by concatenation so this example does not itself trip the no-types rule
+ * findTypeAnnotations('@param ' + '{string}'); // ['string']
+ * ```
  */
-function findTypeAnnotations(s: string,): readonly string[] {
+export function findTypeAnnotations(s: string,): readonly string[] {
   /**
-   * Recursive scan accumulating each `{Type}` body following a `@tag`.
+   * Walks the run of word characters following the `@`.
    *
-   * @param from - cursor index for the next `indexOf` call
+   * @param idx - cursor into `s`
    *
-   * @param acc - bodies collected so far, in source order
-   *
-   * @returns final list of captured type bodies
+   * @returns exclusive end of the tag-name run
    */
-  function scan({
-    from,
-    acc,
-  }: {
-    from: number;
-    acc: readonly string[];
-  },): readonly string[] {
+  function scanTag(idx: number,): number {
+    /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
+    let cursor = idx;
+    while ((cursor < s.length) && isWordChar(s.charAt(cursor,),))
+      cursor += 1;
+    return cursor;
+  }
+  /**
+   * Walks the run of whitespace characters following the tag.
+   *
+   * @param idx - cursor into `s`
+   *
+   * @returns first non-whitespace position
+   */
+  function scanWs(idx: number,): number {
+    /** Cursor advanced over the whitespace run; returned as first non-whitespace position. */
+    let cursor = idx;
+    while ((cursor < s.length) && isWhitespaceChar(s.charAt(cursor,),))
+      cursor += 1;
+    return cursor;
+  }
+  /** Captured type bodies in source order; each omits the surrounding braces. */
+  const out: string[] = [];
+  // Linear walk: each `@` is located by `indexOf`; the tag run, whitespace gap,
+  // and `{...}` body are each measured once and the cursor jumps past every
+  // consumed span, so total work is bounded by the length of `s` and the stack
+  // stays flat. An unterminated `{` halts the scan, matching the prior recursion.
+  for (let from = 0; from < s.length;) {
     /** Position of the next at-sign; -1 ends the scan. */
     const atIdx = s.indexOf(
       '@',
       from,
     );
     if (atIdx === (-1))
-      return acc;
-    /**
-     * Walks the run of word characters following the `@`.
-     *
-     * @param idx - cursor into `s`
-     *
-     * @returns exclusive end of the tag-name run
-     */
-    function scanTag(idx: number,): number {
-      if (idx >= s.length)
-        return idx;
-      if (!isWordChar(s.charAt(idx,),))
-        return idx;
-      return scanTag(idx + 1,);
-    }
+      break;
     /** Exclusive end of the tag-name run; cursor starts at `atIdx + 1` to skip the at-sign. */
     const tagEnd = scanTag(atIdx + 1,);
     if (tagEnd === (atIdx + 1)) {
-      return scan({
-        from: atIdx + 1,
-        acc,
-      },);
-    }
-    /**
-     * Walks the run of whitespace characters following the tag.
-     *
-     * @param idx - cursor into `s`
-     *
-     * @returns first non-whitespace position
-     */
-    function scanWs(idx: number,): number {
-      if (idx >= s.length)
-        return idx;
-      if (!isWhitespaceChar(s.charAt(idx,),))
-        return idx;
-      return scanWs(idx + 1,);
+      from = atIdx + 1;
+      continue;
     }
     /** First index past the inter-token whitespace; `{` must live here for a match. */
     const afterWs = scanWs(tagEnd,);
     if ((afterWs === tagEnd) || (s.charAt(afterWs,) !== '{')) {
-      return scan({
-        from: tagEnd,
-        acc,
-      },);
+      from = tagEnd;
+      continue;
     }
     /** Position of the matching `}`; -1 means the type body is unterminated. */
     const closeIdx = s.indexOf(
@@ -133,30 +126,20 @@ function findTypeAnnotations(s: string,): readonly string[] {
       afterWs + 1,
     );
     if (closeIdx === (-1))
-      return acc;
+      break;
     /** Captured body between `{` and `}` exclusive; must be non-empty per `[^}]+`. */
     const body = s.slice(
       afterWs + 1,
       closeIdx,
     );
     if (body.length === 0) {
-      return scan({
-        from: closeIdx + 1,
-        acc,
-      },);
+      from = closeIdx + 1;
+      continue;
     }
-    return scan({
-      from: closeIdx + 1,
-      acc: [
-        ...acc,
-        body,
-      ],
-    },);
+    out.push(body,);
+    from = closeIdx + 1;
   }
-  return scan({
-    from: 0,
-    acc: [],
-  },);
+  return out;
 }
 
 /**

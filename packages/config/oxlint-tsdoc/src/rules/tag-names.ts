@@ -75,50 +75,44 @@ function isFenceLine(line: string,): boolean {
  * @param s - line content
  *
  * @returns `s` with every backtick-delimited span removed
+ *
+ * @example
+ * ```ts
+ * stripInlineCodeSpans('a `code` b'); // 'a  b'
+ * ```
  */
-function stripInlineCodeSpans(s: string,): string {
-  /**
-   * Recursive accumulator that copies non-code segments and skips bodies.
-   *
-   * @param from - cursor index for the next `indexOf` call
-   *
-   * @param acc - text collected so far
-   *
-   * @returns final stripped string
-   */
-  function scan({
-    from,
-    acc,
-  }: {
-    from: number;
-    acc: string;
-  },): string {
+export function stripInlineCodeSpans(s: string,): string {
+  /** Plain-text segments collected between code spans; joined into the result. */
+  const parts: string[] = [];
+  // Linear walk: each opening backtick is paired with the next closing
+  // backtick; the cursor jumps past the closed span, so each character is
+  // visited a bounded number of times and the stack stays flat.
+  for (let from = 0; from <= s.length;) {
     /** Position of the next opening backtick; -1 means the rest is plain text. */
     const open = s.indexOf(
       INLINE_CODE_DELIMITER,
       from,
     );
-    if (open === (-1))
-      return acc + s.slice(from,);
+    if (open === (-1)) {
+      parts.push(s.slice(from,),);
+      break;
+    }
     /** Position of the closing backtick; -1 means the line ends inside inline code. */
     const close = s.indexOf(
       INLINE_CODE_DELIMITER,
       open + 1,
     );
-    if (close === (-1))
-      return acc + s.slice(from,);
-    return scan({
-      from: close + 1,
-      acc: acc + s.slice(
-        from,
-        open,
-      ),
-    },);
+    if (close === (-1)) {
+      parts.push(s.slice(from,),);
+      break;
+    }
+    parts.push(s.slice(
+      from,
+      open,
+    ),);
+    from = close + 1;
   }
-  return scan({
-    from: 0,
-    acc: '',
-  },);
+  return parts.join('',);
 }
 
 /**
@@ -149,68 +143,53 @@ function stripInlineCodeAndEscapes(line: string,): string {
  * @param stripped - line content with inline code/escapes already removed
  *
  * @returns ordered tag-name list (each without `@`)
+ *
+ * @example
+ * ```ts
+ * collectTags('see @param and @returns'); // ['param', 'returns']
+ * ```
  */
-function collectTags(stripped: string,): readonly string[] {
+export function collectTags(stripped: string,): readonly string[] {
   /**
-   * Recursive scan accumulating every tag word.
+   * Walks the run of word characters following an `@`.
    *
-   * @param from - cursor index for the next `indexOf` call
+   * @param idx - cursor into `stripped`
    *
-   * @param acc - tag words collected so far
-   *
-   * @returns final list of tag words
+   * @returns exclusive end of the tag-name run
    */
-  function scan({
-    from,
-    acc,
-  }: {
-    from: number;
-    acc: readonly string[];
-  },): readonly string[] {
+  function scanTag(idx: number,): number {
+    /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
+    let cursor = idx;
+    while ((cursor < stripped.length) && isWordChar(stripped.charAt(cursor,),))
+      cursor += 1;
+    return cursor;
+  }
+  /** Tag words collected in source order; each entry omits its leading at-sign. */
+  const out: string[] = [];
+  // Linear walk: each `@` is located by `indexOf`, the trailing word run is
+  // measured once, and the cursor jumps past it, so each character is visited a
+  // bounded number of times and the stack stays flat.
+  for (let from = 0; from < stripped.length;) {
     /** Position of the next at-sign; -1 ends the scan. */
     const atIdx = stripped.indexOf(
       '@',
       from,
     );
     if (atIdx === (-1))
-      return acc;
-    /**
-     * Walks the run of word characters following the `@`.
-     *
-     * @param idx - cursor into `stripped`
-     *
-     * @returns exclusive end of the tag-name run
-     */
-    function scanTag(idx: number,): number {
-      if (idx >= stripped.length)
-        return idx;
-      if (!isWordChar(stripped.charAt(idx,),))
-        return idx;
-      return scanTag(idx + 1,);
-    }
+      break;
     /** Exclusive end of the word run; equals `atIdx + 1` when no word follows. */
     const end = scanTag(atIdx + 1,);
     if (end === (atIdx + 1)) {
-      return scan({
-        from: atIdx + 1,
-        acc,
-      },);
+      from = atIdx + 1;
+      continue;
     }
-    return scan({
-      from: end,
-      acc: [
-        ...acc,
-        stripped.slice(
-          atIdx + 1,
-          end,
-        ),
-      ],
-    },);
+    out.push(stripped.slice(
+      atIdx + 1,
+      end,
+    ),);
+    from = end;
   }
-  return scan({
-    from: 0,
-    acc: [],
-  },);
+  return out;
 }
 
 /**

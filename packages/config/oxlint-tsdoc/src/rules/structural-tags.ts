@@ -42,8 +42,14 @@ function isWordChar(c: string,): boolean {
  * @param s - line content (with the leading `*` already stripped and trimmed)
  *
  * @returns captured tag (e.g. `'@param'`) or `null` when `s` does not begin with `@word`
+ *
+ * @example
+ * ```ts
+ * extractLeadingTag('@param foo'); // '@param'
+ * extractLeadingTag('plain text'); // null
+ * ```
  */
-function extractLeadingTag(s: string,): string | null {
+export function extractLeadingTag(s: string,): string | null {
   if (!s.startsWith('@',))
     return null;
   /**
@@ -54,11 +60,11 @@ function extractLeadingTag(s: string,): string | null {
    * @returns exclusive end of the tag-name run
    */
   function scan(idx: number,): number {
-    if (idx >= s.length)
-      return idx;
-    if (!isWordChar(s.charAt(idx,),))
-      return idx;
-    return scan(idx + 1,);
+    /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
+    let cursor = idx;
+    while ((cursor < s.length) && isWordChar(s.charAt(cursor,),))
+      cursor += 1;
+    return cursor;
   }
   /** Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign. */
   const end = scan(1,);

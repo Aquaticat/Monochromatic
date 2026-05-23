@@ -29,16 +29,17 @@ import {
  * @param s - line content (with the leading `*` already stripped)
  *
  * @returns whether an unescaped comment closer appears in `s`
+ *
+ * @example
+ * ```ts
+ * hasUnescapedCommentClose('plain content'); // false
+ * ```
  */
-function hasUnescapedCommentClose(s: string,): boolean {
-  /**
-   * Recursive scanner advancing through every `*\/` occurrence.
-   *
-   * @param from - cursor index for the next `indexOf` call
-   *
-   * @returns true on the first unescaped match
-   */
-  function scan(from: number,): boolean {
+export function hasUnescapedCommentClose(s: string,): boolean {
+  // Linear walk: each `*\/` is located by `indexOf`, the cursor advances past
+  // every escaped match, so total work is bounded by the length of `s` and the
+  // stack stays flat regardless of how many escaped closers appear.
+  for (let from = 0; from <= s.length;) {
     /** Position of the next `*\/`; -1 means the rest of the string is safe. */
     const idx = s.indexOf(
       '*/',
@@ -50,9 +51,9 @@ function hasUnescapedCommentClose(s: string,): boolean {
     const prev = idx === 0 ? '' : s.charAt(idx - 1,);
     if (prev !== '\\')
       return true;
-    return scan(idx + 2,);
+    from = idx + 2;
   }
-  return scan(0,);
+  return false;
 }
 
 /**
