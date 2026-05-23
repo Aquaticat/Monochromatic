@@ -21,9 +21,9 @@ import {
 /** Build options for the CSS processor */
 export type BuildOptions = {
   /** Input CSS file path */
-  input: string;
+  readonly input: string;
   /** Output CSS file path */
-  output: string;
+  readonly output: string;
 };
 
 //endregion Types
@@ -68,8 +68,8 @@ export function applyMixins({
   cssText,
   mixinCssText,
 }: {
-  cssText: string;
-  mixinCssText: string;
+  readonly cssText: string;
+  readonly mixinCssText: string;
 },): string {
   mixins.clear();
 

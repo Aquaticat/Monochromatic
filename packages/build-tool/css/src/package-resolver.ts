@@ -40,8 +40,8 @@ export function findPackageDir({
   startDir,
   packageName,
 }: {
-  startDir: string;
-  packageName: string;
+  readonly startDir: string;
+  readonly packageName: string;
 },):
   | string
   | undefined
@@ -123,8 +123,8 @@ export function resolveExports({
   exports,
   subpath,
 }: {
-  exports: unknown;
-  subpath: string;
+  readonly exports: unknown;
+  readonly subpath: string;
 },): string | undefined {
   if (((typeof exports) !== 'object') || (exports === null))
     return undefined;
@@ -181,8 +181,8 @@ export function resolvePackage({
   specifier,
   fromDir,
 }: {
-  specifier: string;
-  fromDir: string;
+  readonly specifier: string;
+  readonly fromDir: string;
 },): string {
   /** Split decouples package directory lookup from sub-path resolution. */
   const [packageName, subpath,] = splitPackageSpecifier(specifier,);

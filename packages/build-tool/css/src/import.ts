@@ -57,8 +57,8 @@ function resolveSpecifier({
   specifier,
   fromFile,
 }: {
-  specifier: string;
-  fromFile: string;
+  readonly specifier: string;
+  readonly fromFile: string;
 },): string {
   /** Directory containing the importing file */
   const fromDir = dirname(fromFile,);
@@ -139,6 +139,7 @@ export const postcssInlineImport: Plugin = {
   },
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `imported` is a mutable visited-set accumulator shared by reference across recursive calls for whole-tree dedup; the function mutates it via `.add`, so deep-readonly cannot apply. */
 /**
  * Recursively inlines \@import rules in a PostCSS root.
  *
@@ -162,8 +163,8 @@ function inlineImports({
   fromFile,
   imported,
 }: {
-  root: Root;
-  fromFile: string;
+  readonly root: Root;
+  readonly fromFile: string;
   imported: Set<string>;
 },): void {
   // Collect @import nodes first to avoid mutating the tree while walking
@@ -217,5 +218,6 @@ function inlineImports({
       node.remove();
   }
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion PostCSS Plugin
