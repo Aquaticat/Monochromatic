@@ -612,6 +612,9 @@ importers:
       '@optique/run':
         specifier: 'catalog:'
         version: 1.0.2
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.5.0
     devDependencies:
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
