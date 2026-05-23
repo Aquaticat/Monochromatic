@@ -112,6 +112,23 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
     ],
   },
   {
+    // rolldown/utils re-exports `import * as ESTree from "@oxc-project/types"`,
+    // so ESTree.* params in rolldown plugins resolve to @oxc-project/types,
+    // not @oxlint/plugins. These are top-level module exports with no bundler
+    // renaming, so the plain names match (no `$1` suffixes here).
+    from: "package",
+    package: "@oxc-project/types",
+    name: [
+      "ExportAllDeclaration",
+      "ExportNamedDeclaration",
+      "Expression",
+      "ImportAttribute",
+      "ImportDeclaration",
+      "ImportExpression",
+      "PropertyKey",
+    ],
+  },
+  {
     from: "package",
     package: "toml-eslint-parser",
     name: [
