@@ -11,6 +11,7 @@ This section is an index to high-loss rules below; it does not add separate poli
 - **Git cleanup, destructive git guards, or worktree safety reviews**: inspect ignored root artifacts with the sentinel commands before final findings. See "Git cleanup and worktree safety reviews".
 - **Tests**: identify the target package and task before running tests. Do not use repo-root `mise run test` as a reflex for narrow package work. See "Essential commands".
 - **User correction of a substantive claim**: treat the correction as evidence that the previous verification path failed. Re-read primary evidence or use a genuinely separate reviewer if independent review is requested. Do not write a same-session `Advisor pass: ...` as evidence. See "Pre-response checklist".
+- **Verification touching destructive or stateful behavior**: run it against a throwaway fixture you create, never the user's real worktree, cache, or data. See "Verify on a throwaway, not against real state".
 
 ## Before responding to the user
 
