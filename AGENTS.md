@@ -194,6 +194,8 @@ git clean -ndX HEAD config hooks objects refs
 
 Do not rely on `git status`, `git ls-files --others --exclude-standard`, or `rg --files`; those hide ignored files. If any root sentinel exists, cleanup or an exact safe cleanup path is part of the design under review.
 
+When the review touches `cli-git`'s linked-worktree guard, account for the baked-in tool-cache allowlist (`DEFAULT_ALLOWED_WORKTREE_DIRS` in `packages/cli/git/src/allowed-worktree-dirs.ts`, currently uv's git cache): repositories whose git-dir resolves under an allowed directory bypass that guard, so destructive git is not actually blocked there.
+
 ### Document non-obvious findings
 
 When discovering something that would not be immediately obvious to a future reader, document it in the relevant readme or doc file right away: implementation details, behavioral quirks, implicit constraints, anything that required investigation or experimentation to uncover.
@@ -406,6 +408,14 @@ After building, deploying, or installing an artifact, run a verification step th
 - Web page or standalone HTML artifact (including local `file://` docs and demos in `docs/`): load it with `agent-browser`, confirm no console errors, then exercise every interactive element (buttons, checkboxes, tabs) and read back the rendered state via `agent-browser eval`. "Markup balances," "JS parsed in bun," "I fetched the HTML" are prerequisites, not proof. If the task involved rewriting any JS handler, you must drive each rewritten code path through `agent-browser` before declaring done.
 
 The verification must cross the integration boundary between artifact and consumer. "It compiled" / "It installed" alone is not verification.
+
+### Verify on a throwaway, not against real state
+
+When verification means running a state-mutating or destructive operation, run it against a disposable fixture you create for the test, never against the user's real or shared state (the working tree, real tool caches, a populated database, live config). Reproduce the real scenario in the fixture: `mktemp -d` plus `git init` for a repo, a scratch directory, a throwaway branch or worktree, a container, a fresh sqlite file; then exercise the real artifact against it and delete it afterward. This pairs with "Verify at the user boundary": use the real artifact, but point it at throwaway state.
+
+The rule holds even when the command looks idempotent or you have committed first. When the behavior under test is whether a guard blocks a destructive operation, running that operation against real state means a broken guard (the exact failure you are testing for) damages real state, while a passing guard tells you nothing a throwaway would not have. Build both the allowed case and the rejected case as fixtures.
+
+The cue: you are about to run `reset --hard`, `clean -fd`, a migration, a bulk delete, an overwrite, or any other state-mutating command against the user's actual repo, cache, or data solely to observe how it behaves. Create the throwaway target first.
 
 ### Test assumptions before encoding them
 

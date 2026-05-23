@@ -33,6 +33,17 @@ pathspec separator to bypass linked-worktree enforcement for one invocation;
 the wrapper strips the flag before forwarding to real git. The existing
 require-root rule still rejects linked-worktree subdirectories.
 
+Repositories under a baked-in tool-cache directory are exempt from this rule.
+A third-party tool (currently uv, whose git cache resolves from `UV_CACHE_DIR`,
+`$XDG_CACHE_HOME/uv`, or `~/.cache/uv`) owns disposable clones there and runs
+destructive git against them itself, so `git reset --hard` and the other
+guarded forms pass through instead of being rejected as a main worktree. The
+exempt set is `DEFAULT_ALLOWED_WORKTREE_DIRS` in `src/allowed-worktree-dirs.ts`;
+both the configured directory and the repository's git-dir are realpath-resolved
+before a segment-aware containment check, so symlinks such as `/home` aliasing
+`/var/home` do not defeat the match. Add sibling tool caches there when a new
+tool needs the same exemption.
+
 **Add explicit**: rejects `git add` invocations that use bulk-staging
 patterns (`.`, `./`, `*`, `:/`, `-A`/`--all`, `-u`/`--update`), which sweep
 up paths the caller did not intend to stage and leave the index in a state
