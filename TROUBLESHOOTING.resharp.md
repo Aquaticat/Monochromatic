@@ -13,7 +13,7 @@ defaults) and in release (both off). Each still-live bug now has a
 minimal prototype fix verified against HEAD; the combined patch is at
 [TROUBLESHOOTING.resharp.patch](TROUBLESHOOTING.resharp.patch) and the
 single merged upstream issue body is at
-[resharp-merged-issue.md](resharp-merged-issue.md). See the
+the out-of-band local file `resharp-merged-issue.local.md` (gitignored, not committed). See the
 "Prototype fixes" section for the per-bug results. Status:
 
 - **Bug A** (`\b`/`\B`/`^`/`$` or any lookaround inside a `~(...)` complement
@@ -53,9 +53,9 @@ single merged upstream issue body is at
   wrongly claimed it was filed upstream.
 
 Filing summary: per the user's decision not to file separate issues, all
-still-live bugs are merged into one upstream issue
-([resharp-merged-issue.md](resharp-merged-issue.md)) with the combined
-patch attached. Each merged bug has a minimal prototype fix verified
+still-live bugs are merged into one upstream issue. Its body is saved as
+the out-of-band local file `resharp-merged-issue.local.md` (gitignored,
+not committed), with the combined patch attached. Each merged bug has a minimal prototype fix verified
 against HEAD, so the five-constraint gate (constraint 5: prototype) now
 passes for Bugs B, C, E, F and for Bug A's wording sub-issue. Bug A's
 behavioural fix (actually supporting complement-of-lookaround) stays out
@@ -1247,7 +1247,7 @@ hold or sorta-hold, prototype the minimal fix rather than stopping at
 fresh `mktemp -d` clone of `https://github.com/ieviev/resharp` at HEAD
 `e0b8aba` (origin and commit verified before editing). The combined patch is
 [TROUBLESHOOTING.resharp.patch](TROUBLESHOOTING.resharp.patch); the merged
-upstream issue body is [resharp-merged-issue.md](resharp-merged-issue.md).
+upstream issue body is the out-of-band local file `resharp-merged-issue.local.md` (gitignored, not committed).
 
 Each fix was verified with a targeted probe crate (its own program calling
 `resharp`, run in debug and release) showing the failure pre-patch and correct

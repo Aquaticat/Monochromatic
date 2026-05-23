@@ -1354,7 +1354,7 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
 //           `select_prefix`, making the derivative chain visit
 //           `BOT` early. Documented as Bug E in
 //           TROUBLESHOOTING.resharp.md; prototyped and folded into the
-//           merged upstream issue (`resharp-merged-issue.md`), not yet filed.
+//           merged upstream issue (`resharp-merged-issue.local.md`), not yet filed.
 //
 //           The pre-validator uses a coarse structural heuristic:
 //           "source contains a complement (`~(`), intersection
@@ -1517,7 +1517,7 @@ pub fn complement_intersection_quantified_group(src: &str) -> Option<String> {
 //           quantifier's min >= 2. Documented as Bug F in
 //           TROUBLESHOOTING.resharp.md; prototyped (shared saturating_add
 //           with Bug C) and folded into the merged upstream issue
-//           (`resharp-merged-issue.md`), not yet filed.
+//           (`resharp-merged-issue.local.md`), not yet filed.
 // TS map:   `function nestedLookaheadInQuantifiedGroup(src: string): string | null`.
 //
 // In TS you'd write (pseudocode):
