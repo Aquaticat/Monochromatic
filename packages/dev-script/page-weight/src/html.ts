@@ -106,67 +106,62 @@ function firstSrcsetUrl(srcset: string,): string | null {
 }
 
 /**
- * Returns the leading non-whitespace token of `line`. Linear scan: a single
- * walker skips leading whitespace, then captures characters until the next
- * whitespace. Empty input or a whitespace-only line returns an empty token.
+ * Whether `c` is one of the ASCII whitespace characters that bound a token:
+ * space, tab, newline, carriage return, form feed, vertical tab. Matches the
+ * exact set the prior recursive walkers tested (ASCII subset of regex `\s`),
+ * so a non-breaking space and other Unicode spaces are deliberately not
+ * treated as boundaries.
+ *
+ * @param c - single character under inspection
+ *
+ * @returns whether `c` is ASCII whitespace
+ */
+function isWhitespace(c: string,): boolean {
+  return (c === ' ')
+    || (c === '\t')
+    || (c === '\n')
+    || (c === '\r')
+    || (c === '\f')
+    || (c === '\v');
+}
+
+/**
+ * Returns the leading non-whitespace token of `line`. Single linear pass:
+ * skips leading whitespace, then runs to the next whitespace. Empty input or a
+ * whitespace-only line returns an empty token. Exported so its edge-case
+ * behavior can be covered by unit tests directly.
  *
  * @param line - input line
  *
  * @returns first non-whitespace token (possibly empty)
+ *
+ * @example
+ * ```ts
+ * firstNonWhitespaceToken('  a.jpg 2x'); // 'a.jpg'
+ * firstNonWhitespaceToken('   ');        // ''
+ * ```
  */
-function firstNonWhitespaceToken(line: string,): string {
-  /**
-   * Recursive walker advancing while the cursor sits on whitespace.
-   *
-   * @param idx - cursor into `line`
-   *
-   * @returns first non-whitespace position (or `line.length`)
-   */
-  function skipWs(idx: number,): number {
-    if (idx >= line.length)
-      return idx;
-    /** Char at cursor; only ASCII whitespace advances the scan. */
-    const c = line.charAt(idx,);
-    /** Whether the cursor sits on regex `\s`. */
-    const ws = (c === ' ')
-      || (c === '\t')
-      || (c === '\n')
-      || (c === '\r')
-      || (c === '\f')
-      || (c === '\v');
-    if (ws)
-      return skipWs(idx + 1,);
-    return idx;
-  }
-  /**
-   * Recursive walker advancing while the cursor sits on non-whitespace.
-   *
-   * @param idx - cursor into `line`
-   *
-   * @returns exclusive end of the token
-   */
-  function scanToken(idx: number,): number {
-    if (idx >= line.length)
-      return idx;
-    /** Char at cursor; whitespace ends the token. */
-    const c = line.charAt(idx,);
-    /** Whether the cursor sits on regex `\s`. */
-    const ws = (c === ' ')
-      || (c === '\t')
-      || (c === '\n')
-      || (c === '\r')
-      || (c === '\f')
-      || (c === '\v');
-    if (ws)
-      return idx;
-    return scanToken(idx + 1,);
-  }
-  /** Cursor positioned at the first non-whitespace character. */
-  const start = skipWs(0,);
-  return line.slice(
-    start,
-    scanToken(start,),
-  );
+export function firstNonWhitespaceToken(line: string,): string {
+  // Single linear pass over `line`: skip the leading-whitespace run, then
+  // collect characters until the next whitespace. Each character is visited at
+  // most once (O(n) time, O(1) stack, no recursion). Fragments are pushed and
+  // joined once, mirroring the codebase's other linear string scanners.
+  return (function scan(): string {
+    /** Token characters collected after the leading-whitespace run ends; joined once at the end. */
+    const chars: string[] = [];
+    /** Whether the leading-whitespace run has ended and token capture has begun. */
+    let started = false;
+    for (const c of line) {
+      if (isWhitespace(c,)) {
+        if (started)
+          break;
+        continue;
+      }
+      started = true;
+      chars.push(c,);
+    }
+    return chars.join('',);
+  })();
 }
 
 /**

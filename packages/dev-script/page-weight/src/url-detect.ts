@@ -31,17 +31,12 @@ export function startsWithUriScheme(s: string,): boolean {
   const first = lowered.charAt(0,);
   if ((first < 'a') || (first > 'z'))
     return false;
-  /**
-   * Recursive walker advancing while the cursor sits on a scheme-body
-   * character (`a-z`, `0-9`, `+`, `.`, `-`).
-   *
-   * @param idx - cursor into `lowered`
-   *
-   * @returns exclusive end of the scheme-body run
-   */
-  function scanRest(idx: number,): number {
-    if (idx >= lowered.length)
-      return idx;
+  // Linear scan from index 1 over the scheme body; the first non-scheme-body
+  // character decides the result. A scheme is valid only when that terminator
+  // is `:`. Indexed `charAt` (not `for...of`) preserves the prior UTF-16
+  // code-unit semantics: a non-ASCII body char stops the run at its first code
+  // unit, exactly as the recursion did, in O(n) time and O(1) stack.
+  for (let idx = 1; idx < lowered.length; idx += 1) {
     /** Char at cursor; non-scheme characters end the run. */
     const c = lowered.charAt(idx,);
     /** Whether the cursor sits on a scheme-body character. */
@@ -50,11 +45,8 @@ export function startsWithUriScheme(s: string,): boolean {
       || (c === '+')
       || (c === '.')
       || (c === '-');
-    if (ok)
-      return scanRest(idx + 1,);
-    return idx;
+    if (!ok)
+      return c === ':';
   }
-  /** Exclusive end of the scheme body; `:` must follow this index. */
-  const end = scanRest(1,);
-  return (end < lowered.length) && (lowered.charAt(end,) === ':');
+  return false;
 }
