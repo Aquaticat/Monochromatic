@@ -155,9 +155,9 @@ function computeRegion({
  *
  * @param args - Git argv to inspect after wrapper invocation.
  *
- * @returns Original argv when command is unguarded or linked-worktree-safe;
- *   argv with flag-position `--no-enforce-worktree` stripped when escape
- *   hatch is in use.
+ * @returns Original argv when command is unguarded, linked-worktree-safe, or
+ *   targets a baked-in allowlisted tool-cache directory; argv with
+ *   flag-position `--no-enforce-worktree` stripped when escape hatch is in use.
  *
  * @throws When guarded state-changing invocation is requested outside a
  *   linked git worktree.
@@ -235,7 +235,7 @@ export async function linkedWorktreeOnly(
   if (target === 'main-worktree')
     throw new Error(mainWorktreeMessage({ command: subcommand, },),);
 
-  rl.debug('linked worktree check passed',);
+  rl.debug(`effective target ${target}; linked-worktree enforcement not triggered`,);
   return args;
 }
 

@@ -2,6 +2,10 @@ import { execFile, } from 'node:child_process';
 import { realpath, } from 'node:fs/promises';
 import { promisify, } from 'node:util';
 
+import {
+  DEFAULT_ALLOWED_WORKTREE_DIRS,
+  isAllowedWorktreeDir,
+} from './allowed-worktree-dirs.ts';
 import { resolveGit, } from './resolve-git.ts';
 
 //region Effective target classification
@@ -11,8 +15,16 @@ import { resolveGit, } from './resolve-git.ts';
 const execFileAsync = promisify(execFile,);
 /* oxlint-enable typescript/strict-void-return */
 
-/** Worktree location classification used by linked-worktree-only rules. */
-export type EffectiveTarget = 'outside-worktree' | 'main-worktree' | 'linked-worktree';
+/**
+ * Worktree location classification used by linked-worktree-only rules.
+ * `allowlisted` marks a repository under a baked-in tool-cache directory whose
+ * destructive worktree commands are intentionally exempt from enforcement.
+ */
+export type EffectiveTarget =
+  | 'outside-worktree'
+  | 'main-worktree'
+  | 'linked-worktree'
+  | 'allowlisted';
 
 /** Options for classifying the effective target git would operate on. */
 type ClassifyEffectiveTargetOptions = {
@@ -20,6 +32,8 @@ type ClassifyEffectiveTargetOptions = {
   readonly preSubcommandArgs: readonly string[];
   /** Effective cwd after `-C` chaining; supplied so query starts in the same place. */
   readonly effectiveCwd: string;
+  /** Tool-cache roots whose repositories bypass enforcement; injectable for tests, defaults to the baked-in list. */
+  readonly allowedWorktreeDirs?: readonly string[];
 };
 
 /** child_process.execFile error carrying subprocess exit code. */
@@ -152,11 +166,18 @@ async function readGitWorktreeMetadata({
  * `--git-dir`, `--work-tree`, `GIT_DIR`, or `GIT_WORK_TREE` made the wrapper
  * validate one worktree while the destructive command operated on another.
  *
+ * A repository whose resolved git-dir lies under a baked-in tool-cache
+ * directory classifies as `allowlisted`, so the rule lets it through: those
+ * caches belong to tools (e.g. uv) that run destructive git against their own
+ * disposable clones.
+ *
  * @param preSubcommandArgs - Pre-subcommand region of the wrapper invocation.
  *
  * @param effectiveCwd - Cwd after `-C` chaining was applied.
  *
- * @returns Classification used by the linked-worktree-only rule.
+ * @param allowedWorktreeDirs - Tool-cache roots that yield `allowlisted`; defaults to the baked-in list.
+ *
+ * @returns Classification used by the linked-worktree-only rule; `allowlisted` when the resolved git-dir sits under an allowed directory.
  *
  * @throws When git rev-parse returns metadata in an unexpected shape.
  *
@@ -172,6 +193,7 @@ async function readGitWorktreeMetadata({
 export async function classifyEffectiveTarget({
   preSubcommandArgs,
   effectiveCwd,
+  allowedWorktreeDirs = DEFAULT_ALLOWED_WORKTREE_DIRS,
 }: ClassifyEffectiveTargetOptions,): Promise<EffectiveTarget> {
   /** Absolute path to real git binary used for read-only worktree query. */
   const gitPath = await resolveGit();
@@ -214,6 +236,15 @@ export async function classifyEffectiveTarget({
     realpath(gitDir,),
     realpath(gitCommonDir,),
   ],);
+
+  // A repository under a baked-in tool-cache directory is exempt: the owning
+  // tool (e.g. uv) runs destructive git against its own disposable clones, and
+  // the worktree safeguards target the human's repositories, not that plumbing.
+  if (await isAllowedWorktreeDir({
+    candidatePath: resolvedGitDir,
+    allowedDirs: allowedWorktreeDirs,
+  },))
+    return 'allowlisted';
 
   return resolvedGitDir === resolvedGitCommonDir
     ? 'main-worktree'
