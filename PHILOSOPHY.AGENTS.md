@@ -336,3 +336,22 @@ Non-zero-match silent failures (same shape, opposite direction): `head -N` trunc
 Clone an external tool's source whether you hit the bug yourself, are summarizing an undiagnosed tracker issue, or are estimating fix difficulty: a linked issue without diagnosis means nobody has diagnosed it yet, not that it is undiagnosable, and the next investigator can be you.
 
 Replacement-audit depth: transitive deps; the src paths that handle the same cases the incumbent mishandles; build provenance for native or wasm modules (compiler flags, wasm import surface, whether upstream sources are checksum-verified); maintenance signals (downloads, stars, last commit, single-maintainer concentration). Without this depth the recommendation swaps a known-flaw dependency for an unknown-flaw one.
+
+### Stats and decisions (2026-05-23)
+
+AGENTS.md went from 59244 chars (684-equivalent rich form) to 49690 chars, under the user's hard 50000 target. The split rule: AGENTS.md keeps the terse enforceable rule, its cue, and the tokens/paths/commands needed to act; PHILOSOPHY.AGENTS.md holds the rationale, mechanism, and examples behind each rule. No information was lost across the two files: every original AGENTS.md backtick token survives in the union of the two files except four user-authorized cuts.
+
+Deliberately dropped (not relocated), with the user pointing at each as model-obvious or redundant:
+
+- The generic shell-utility example list (`jq`, `magick`, `pdftotext`, and the others) under "Before claiming inability"; `agent-browser` stays because it is named in the actual bridge guidance.
+- The `gh api repos/.../comments` commit-comment invocation; models already know `gh`. The rule (post a commit comment instead of amending) stays.
+- The "logical unit" definition under git commit guidelines; the model knows what a logical commit is.
+- The push-authorization restatement; it duplicates the harness Git Safety Protocol.
+
+Kept verbatim in AGENTS.md: the "Hedge phrases that signal a skipped step" list (it mirrors the hardcoded `ccsr` trigger set in `packages/claude-code-plugins/source/src/handlers/stop-reminders/uncertainty-phrases.ts`, so it cannot be inferred or thinned) and all fenced code blocks (git-cleanup commands, commit-message example).
+
+Prose abbreviations applied in AGENTS.md text only, never in backtick tokens, filenames, code blocks, or the hedge section: config to conf, source to src, documentation to docs, directory to dir.
+
+AGENTS.md prose paragraphs were then broken at sentence and clause boundaries to satisfy the doc's own "break lines at semantic boundaries" markdown rule (the prior single-long-line prose violated it). Numbered checklist items and rule bullets were left single-line: one line per item serves the checklist's quick-scan purpose, and breaking list items into continuation lines is structurally fragile.
+
+The 12 quoted `See "<section>"` cross-reference targets and the moment-of-decision top-level structure were preserved; only "Handing off manual actions" was merged (into "Before claiming inability"), with its one `Apply "..."` reference in pre-response checklist item 10 rewired.
