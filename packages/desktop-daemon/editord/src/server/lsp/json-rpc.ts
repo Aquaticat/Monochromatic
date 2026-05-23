@@ -31,66 +31,53 @@ const CONTENT_LENGTH_LABEL = 'content-length:';
  * @param header - ASCII-decoded header block (without `\r\n\r\n`)
  *
  * @returns parsed length, or `null` when no Content-Length is present
+ *
+ * @example
+ * ```ts
+ * parseContentLength('Content-Length: 42'); // 42
+ * parseContentLength('Content-Type: text/plain'); // null
+ * ```
  */
-function parseContentLength(header: string,): number | null {
+export function parseContentLength(header: string,): number | null {
   /** Lower-cased copy so the label scan is case-insensitive. */
   const lower = header.toLowerCase();
   /** Position of the label; -1 means the header lacks Content-Length. */
   const labelIdx = lower.indexOf(CONTENT_LENGTH_LABEL,);
   if (labelIdx === (-1))
     return null;
-  /**
-   * Advances past inline whitespace (`' '` / `'\t'`) starting at `from`.
-   *
-   * @param from - cursor index
-   *
-   * @returns first non-space/tab position
-   */
-  function skipInlineWs(from: number,): number {
-    if (from >= header.length)
-      return from;
-    /** Char at cursor; only ASCII space and tab advance the cursor. */
-    const c = header.charAt(from,);
-    if ((c === ' ') || (c === '\t'))
-      return skipInlineWs(from + 1,);
-    return from;
-  }
-  /**
-   * Accumulates the contiguous run of ASCII digits starting at `from`.
-   *
-   * @param from - cursor index
-   *
-   * @param acc - digits collected so far
-   *
-   * @returns digit run
-   */
-  function collectDigits({
-    from,
-    acc,
-  }: {
-    readonly from: number;
-    readonly acc: string;
-  },): string {
-    if (from >= header.length)
-      return acc;
-    /** Char at cursor; non-digit stops accumulation. */
-    const c = header.charAt(from,);
-    if ((c < '0') || (c > '9'))
-      return acc;
-    return collectDigits({
-      from: from + 1,
-      acc: acc + c,
-    },);
-  }
   /** Cursor positioned at the first byte after the label. */
   const afterLabel = labelIdx + CONTENT_LENGTH_LABEL.length;
-  /** Cursor advanced past inline whitespace; first digit (if any) lives here. */
-  const digitStart = skipInlineWs(afterLabel,);
-  /** Digit run accumulated from `digitStart`. */
-  const digits = collectDigits({
-    from: digitStart,
-    acc: '',
-  },);
+  /**
+   * Digit run scanned in one linear forward pass from `afterLabel`:
+   * skip inline whitespace (`' '` / `'\t'` only), then accumulate the
+   * contiguous ASCII digit run, stopping at the first non-digit or the
+   * header end. IIFE-with-`let` keeps the forward-only cursor in a tight
+   * scope (no recursion: O(n) time, O(1) stack on adversarial
+   * unbounded-whitespace headers; per-step `push` avoids the recursive
+   * accumulator's repeated string rebuild).
+   */
+  const digits = (function scanDigits(): string {
+    /** Forward-only cursor; never rewinds, so the whole scan is one linear pass. */
+    let idx = afterLabel;
+    while (idx < header.length) {
+      /** Char at cursor; only ASCII space and tab precede the digits. */
+      const c = header.charAt(idx,);
+      if ((c !== ' ') && (c !== '\t'))
+        break;
+      idx += 1;
+    }
+    /** Digit characters collected in order; joined once so the run is never rebuilt per step. */
+    const collected: string[] = [];
+    while (idx < header.length) {
+      /** Char at cursor; a non-digit ends the run. */
+      const c = header.charAt(idx,);
+      if ((c < '0') || (c > '9'))
+        break;
+      collected.push(c,);
+      idx += 1;
+    }
+    return collected.join('',);
+  })();
   if (digits === '')
     return null;
   return Number(digits,);

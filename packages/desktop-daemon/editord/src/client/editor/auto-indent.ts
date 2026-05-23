@@ -23,25 +23,29 @@ const OPENING_BRACKETS = new Set([
  * @param s - input line
  *
  * @returns prefix of `s` containing only `' '` characters
+ *
+ * @example
+ * ```ts
+ * leadingSpaces('    indented'); // '    '
+ * leadingSpaces('\ttab'); // '' (tabs are not leading spaces)
+ * ```
  */
-function leadingSpaces(s: string,): string {
+export function leadingSpaces(s: string,): string {
   /**
-   * Recursive walker advancing while the cursor sits on a space.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @returns index of the first non-space character (or `s.length`)
+   * End index of the leading-space run, found in one linear forward pass.
+   * IIFE-with-`let` keeps the forward-only cursor in a tight scope
+   * (no recursion: O(n) time, O(1) stack on long space runs).
    */
-  function scan(idx: number,): number {
-    if (idx >= s.length)
-      return s.length;
-    if (s.charAt(idx,) !== ' ')
-      return idx;
-    return scan(idx + 1,);
-  }
+  const end = (function scanSpaces(): number {
+    /** Forward-only cursor; stops at the first non-space or the string end. */
+    let idx = 0;
+    while ((idx < s.length) && (s.charAt(idx,) === ' '))
+      idx += 1;
+    return idx;
+  })();
   return s.slice(
     0,
-    scan(0,),
+    end,
   );
 }
 

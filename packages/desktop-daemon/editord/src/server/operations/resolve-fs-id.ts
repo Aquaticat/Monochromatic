@@ -49,71 +49,61 @@ const SERIAL_LABEL = 'serial number is';
  * @param output - raw `cmd /c vol` output
  *
  * @returns serial token, or empty string when not present
+ *
+ * @example
+ * ```ts
+ * parseVolumeSerial(' Volume Serial Number is 1A2B-3C4D\r\n'); // '1A2B-3C4D'
+ * parseVolumeSerial('no serial line here'); // ''
+ * ```
  */
-function parseVolumeSerial(output: string,): string {
+export function parseVolumeSerial(output: string,): string {
   /** Lower-cased copy used for the label scan; offsets line up with `output`. */
   const lower = output.toLowerCase();
   /** Position of the label; -1 means the locale or shell output is unexpected. */
   const idx = lower.indexOf(SERIAL_LABEL,);
   if (idx === (-1))
     return '';
-  /**
-   * Advances past inline whitespace (`' '` / `'\t'`) starting at `from`.
-   *
-   * @param from - cursor index
-   *
-   * @returns first non-space/tab position
-   */
-  function skipInlineWs(from: number,): number {
-    if (from >= output.length)
-      return from;
-    /** Char at cursor; only ASCII space and tab advance the cursor. */
-    const c = output.charAt(from,);
-    if ((c === ' ') || (c === '\t'))
-      return skipInlineWs(from + 1,);
-    return from;
-  }
-  /**
-   * Accumulates non-whitespace characters from `from` into `acc`.
-   *
-   * @param from - cursor index
-   *
-   * @param acc - characters collected so far
-   *
-   * @returns serial token
-   */
-  function collectToken({
-    from,
-    acc,
-  }: {
-    readonly from: number;
-    readonly acc: string;
-  },): string {
-    if (from >= output.length)
-      return acc;
-    /** Char at cursor; any whitespace ends the token. */
-    const c = output.charAt(from,);
-    if (
-      (c === ' ')
-      || (c === '\t')
-      || (c === '\n')
-      || (c === '\r')
-      || (c === '\f')
-      || (c === '\v')
-    ) {
-      return acc;
-    }
-    return collectToken({
-      from: from + 1,
-      acc: acc + c,
-    },);
-  }
   /** Cursor positioned at the first byte after the label. */
   const afterLabel = idx + SERIAL_LABEL.length;
-  return collectToken({
-    from: skipInlineWs(afterLabel,),
-    acc: '',
-  },);
+  /**
+   * Serial token scanned in one linear forward pass from `afterLabel`:
+   * skip inline whitespace (`' '` / `'\t'` only), then accumulate the
+   * non-whitespace token, stopping at any of the six ASCII whitespace
+   * characters or the output end. IIFE-with-`let` keeps the forward-only
+   * cursor in a tight scope (no recursion: O(n) time, O(1) stack on long
+   * `vol` output; per-step `push` avoids the recursive accumulator's
+   * repeated string rebuild).
+   */
+  return (function scanToken(): string {
+    /** Forward-only cursor; never rewinds, so the whole scan is one linear pass. */
+    let cursor = afterLabel;
+    while (cursor < output.length) {
+      /** Char at cursor; only ASCII space and tab precede the token. */
+      const c = output.charAt(cursor,);
+      if ((c !== ' ') && (c !== '\t'))
+        break;
+      cursor += 1;
+    }
+    /** Token characters collected in order; joined once so the token is never rebuilt per step. */
+    const collected: string[] = [];
+    while (cursor < output.length) {
+      /** Char at cursor; any ASCII whitespace ends the token. */
+      const c = output.charAt(cursor,);
+      if (
+        (c === ' ')
+        || (c === '\t')
+        || (c === '\n')
+        || (c === '\r')
+        || (c === '\f')
+        || (c === '\v')
+      ) {
+        break;
+      }
+      collected.push(c,);
+      cursor += 1;
+    }
+    return collected.join('',);
+  })();
 }
 
 /**
