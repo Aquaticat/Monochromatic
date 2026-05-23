@@ -14,7 +14,17 @@ minimal prototype fix verified against HEAD; the combined patch is at
 [TROUBLESHOOTING.resharp.patch](TROUBLESHOOTING.resharp.patch) and the
 single merged upstream issue body is at
 the out-of-band local file `resharp-merged-issue.local.md` (gitignored, not committed). See the
-"Prototype fixes" section for the per-bug results. Status:
+"Prototype fixes" section for the per-bug results.
+
+Update (2026-05-23, post-filing): the maintainer responded on the merged
+issue and published resharp 0.6.4 the same day, reporting the bug fixed
+there. We have not re-verified 0.6.4 (no re-probe, no re-fuzz); the
+verification below stays against published 0.6.3 and HEAD `e0b8aba`
+(which predates the 0.6.4 release), and the per-bug statuses are
+unchanged pending a re-fuzz. See "Upstream response (2026-05-23)" below
+for the reply, the version facts, and the wait-then-re-fuzz plan.
+
+Status:
 
 - **Bug A** (`\b`/`\B`/`^`/`$` or any lookaround inside a `~(...)` complement
   body fails to compile): unchanged from 0.6.0 through 0.6.3/HEAD.
@@ -83,6 +93,77 @@ and companion fuzz and bisect probes. The `intersection_with_*` and other
 pre-validators in `packages/cli/forbidden-strings/src/rules/engine.rs` are
 the durable consumer-side fix and stay in place regardless of upstream
 status; over-rejection is fail-closed-safe.
+
+## Upstream response (2026-05-23): maintainer reports fix in v0.6.4
+
+The maintainer (`ieviev`) responded to the merged issue
+[ieviev/resharp#5](https://github.com/ieviev/resharp/issues/5) the same
+day it was filed, in two comments:
+
+- 15:18 UTC: "Will go over them soon, thanks!"
+- 15:27 UTC
+  ([`#issuecomment-4525801205`](https://github.com/ieviev/resharp/issues/5#issuecomment-4525801205)):
+  "This restricted a few edge case patterns which i will rewrite
+  properly to allow them again in the coming days. Bug itself is fixed
+  in v0.6.4 now. Thanks again!"
+
+Version facts (crates.io, checked 2026-05-23): resharp 0.6.4 was
+published at 2026-05-23T15:24:24Z, between the two comments and minutes
+before the "fixed in v0.6.4" reply. It is the latest version as of
+2026-05-23; the "coming days" follow-up release that re-allows the
+restricted edge-case patterns is not yet published. The repository
+publishes no git tags, so crates.io is the version of record (consistent
+with this doc otherwise tracking HEAD commits).
+
+### What this changes, and what it does not
+
+- Not verified by us. We have not re-probed or re-fuzzed against 0.6.4.
+  "Fixed in v0.6.4" is the maintainer's claim, not ours; the verification
+  catalogues in each bug section remain against published 0.6.3 and HEAD
+  `e0b8aba` (which predates the 0.6.4 release). The merged issue covered
+  three distinct DFA-construction defects (Bug B, the shared Bug C / Bug F
+  overflow, and Bug E) plus Bug A's error-message wording nudge. The
+  maintainer's singular "bug ... is fixed" does not disclose which of
+  those four 0.6.4 addresses; re-fuzzing after a bump determines per-bug
+  coverage.
+- The prototype patch is now historical.
+  [TROUBLESHOOTING.resharp.patch](TROUBLESHOOTING.resharp.patch) was
+  verified against `e0b8aba`; its status against 0.6.4 is unverified and
+  likely superseded, since the maintainer's "restricted a few edge case
+  patterns" wording points to a reject-more fix rather than the
+  support-more shape some of our prototypes took. Do not re-apply it to
+  current `main` without re-checking against the live source.
+- The restriction direction matches our defenses. "Restricted a few edge
+  case patterns" means the 0.6.4 fix is partly a reject-more-shapes
+  change, the same fail-closed direction as the `intersection_with_*` and
+  related pre-validators. Whether 0.6.4's restrictions overlap our
+  production rule corpus or extend beyond it is one of the things the
+  re-fuzz will determine; the pre-validators stay in place regardless.
+- Supporting more patterns waits for the follow-up release. Loosening a
+  pre-validator to accept a shape it currently rejects is only safe once
+  the maintainer's "rewrite properly to allow them again" release ships
+  and we confirm the shape compiles and matches correctly there.
+
+### Plan (decided 2026-05-23)
+
+Hold the lockfile at resharp 0.6.3 (the current `Cargo.lock` pin; the
+`resharp = "0.6"` requirement in
+`packages/cli/forbidden-strings/Cargo.toml` would otherwise let
+`cargo update -p resharp` pull 0.6.4). Do not bump to 0.6.4 in isolation.
+Wait for the maintainer's "coming days" follow-up release that re-allows
+the restricted patterns, then in one pass:
+
+- Bump to that release (update `Cargo.lock`, raise the `resharp`
+  requirement floor if needed).
+- Re-run the fuzz targets (`fuzz_extract_gate_soundness` and companions)
+  and the per-bug probe crates against the new version.
+- Decide per-bug, from the re-fuzz results, whether each pre-validator can
+  be loosened to support more patterns or must stay a fail-closed guard.
+
+Until that re-fuzz lands, treat every bug below as live-and-defended at
+our boundary: the pre-validators and the `overflow-checks = true` +
+`panic = "unwind"` + `catch_unwind` profile combo remain the durable
+consumer-side fix regardless of upstream movement.
 
 ---
 
@@ -1311,6 +1392,10 @@ not file this upstream" subsection) to the two that remain. For Bug B
 4. **Likely to fix?** Unknown. The 0.6.0 to 0.6.3 releases relocated
    Bug B's assertion (into `strip_lb`) but did not resolve it, and did
    not touch Bug C's overflowing add beyond line drift.
+   Retrospectively resolved 2026-05-23: the maintainer reported the bug
+   fixed in 0.6.4 the same day the issue was filed (see "Upstream
+   response (2026-05-23)" above); per-bug coverage across B, C, E, and F
+   is pending our re-fuzz.
 5. **Have we prototyped a minimal fix?** Yes, as of 2026-05-23. Bug B:
    fail-closed `Err` in `strip_lb`. Bug C: `saturating_add` in
    `attempt_rw_concat_2` (shared with Bug F). Both verified against HEAD
@@ -1348,7 +1433,10 @@ Re-evaluation of constraints 2 and 4 in light of the obstacle:
   The fix sits inside a function the project already maintains
   (the `redundant` set is the prior author's own cycle-detection
   scaffolding), and the patch reuses the same vocabulary. No
-  algebraic-core changes.
+  algebraic-core changes. Retrospectively borne out: the maintainer
+  reported a fix in 0.6.4 the day the merged issue was filed (see
+  "Upstream response (2026-05-23)" above); whether 0.6.4 resolves the
+  Bug E hang specifically is pending our re-fuzz.
 
 ### Draft upstream issue body for Bug E (filed in merged issue #5)
 
