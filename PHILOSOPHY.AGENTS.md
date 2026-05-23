@@ -298,3 +298,41 @@ Remediate a max-lines violation by splitting: re-export from `index.ts`; move he
 #### Name the verification step: the inline-citation examples
 
 Examples of a confident claim paired inline with what backs it: "the bug is in `ci.py:851` (read the source)"; "the codebase has 158k TS LOC across 1,903 files (`tokei` output above)"; "express 4.x is supported (verified by reading the package's README at the cloned repo)".
+
+#### Communication style: cite-the-right-source detail
+
+The harness system prompt's rule sources include the Git Safety Protocol, tool-use guidelines, and format instructions. A rule can sound like it lives in any source, and a quick recall feels like enough; it is not. Failure shape: writing "AGENTS.md says never amend" when "never amend" lives in the harness Git Safety Protocol; the user asks "which line?" and the grep returns nothing.
+
+#### Communication style: AGENTS.md growth discipline
+
+Never substitute "I'll keep it in mind" or any promise to a future self: sessions have no memory; rules persist only in AGENTS.md, a skill, or a hook. The mechanism is monotonic by default (every unmet expectation adds rules), leading to unbounded growth. Counteract: AGENTS.md should grow only when no existing rule covers the failure mode.
+
+#### Proactivity calibration: the git-commit guardrail example
+
+The git-commit guardrail typifies the harness "too proactive" defaults this project overrides: "It is VERY IMPORTANT to only commit when explicitly asked, otherwise the user will feel that you are being too proactive." The same calibration applies to every similar default.
+
+#### Measure-vs-ask: measurement recipes
+
+- Codebase size: `tokei` or `find . -name '*.ts' | xargs wc -l`
+- Build time: `time mise run build`
+- Test count: count test files or run with reporter
+- Dependency count: `pnpm ls --depth=0` or count entries in `package.json`
+- Fix complexity: read the src code path that would change
+- User commit cadence: `git log --format='%aI' --since=<date> | cut -dT -f1 | uniq -c` for commits-per-day distribution
+- Daily commit span (proxy for working hours): per-day min and max hour from `git log --format='%aI'`
+- Defect-recovery rate: count of `revert`/`regression`/`fix.*broken` commits over total commits in the window
+- Concurrent-session evidence: compare `git log --since=<conversation-start>` timestamps against this conversation's UserPromptSubmit hook times
+
+#### Treat search results as suspicious: failure modes
+
+Every search result carries two claims: (a) the search ran correctly, (b) the lines you're seeing are the matches. Both can fail silently.
+
+Zero-match silent failures: invalid `--type` argument (e.g. `rg --type tsx`, where `tsx` is not a registered ripgrep type; the `ts` type already covers `*.tsx`); wrong path or glob excluding the intended files; `2>/dev/null` masking the actual error message; stale or empty target dir; stdin-reading mode triggered by missing path argument (see "Before running a command").
+
+Non-zero-match silent failures (same shape, opposite direction): `head -N` truncating before later files have a chance, where one noisy file consumes the cap and buries everything alphabetically later (remove or raise the cap, or surface that the result is truncated); denylist filters (`rg -v 'a|b|c'`) hide whatever you forgot to keep and discard whatever you forgot to include (prefer allowlist patterns: a positive shape like literal `' cat '` with surrounding spaces for prose-form English usage of a word that is also a shell command); `-l` (filenames only) hides the context needed to tell real matches from noise (default to full lines, switch to `-l` only after confirming the noise cost is concrete); narrow `--type` on the first pass feels thorough but skips matches in unexpected file kinds (widen first).
+
+#### Third-party libraries: investigation and replacement-audit detail
+
+Clone an external tool's source whether you hit the bug yourself, are summarizing an undiagnosed tracker issue, or are estimating fix difficulty: a linked issue without diagnosis means nobody has diagnosed it yet, not that it is undiagnosable, and the next investigator can be you.
+
+Replacement-audit depth: transitive deps; the src paths that handle the same cases the incumbent mishandles; build provenance for native or wasm modules (compiler flags, wasm import surface, whether upstream sources are checksum-verified); maintenance signals (downloads, stars, last commit, single-maintainer concentration). Without this depth the recommendation swaps a known-flaw dependency for an unknown-flaw one.

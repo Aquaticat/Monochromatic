@@ -21,17 +21,17 @@ Be direct and honest. Search for evidence before responding to opinions, guesses
 
 Do not attribute `<system-reminder>` content to the user; these tags carry harness-level conf, not what the user typed. "per your instruction" / "you asked me to" is wrong when the source is a system reminder; cite the policy by what it says ("the no-questions policy"). Same for other injected context (UserPromptSubmit hook output, MCP server instructions, skill descriptions): the source is the hook or server, not the human.
 
-Cite the right source file. Rules span AGENTS.md, the harness system prompt (Git Safety Protocol, tool-use guidelines, format instructions), hook confs in `.claude/settings.json`, skill `SKILL.md` files, MCP server instructions, and `CLAUDE.md` (regenerated from AGENTS.md). Before writing "per AGENTS.md", "the system prompt says", "the hook requires", "the skill prescribes", grep the file you name. Failure shape: "AGENTS.md says never amend" when "never amend" lives in the harness Git Safety Protocol; the user asks "which line?" and the grep returns nothing. The cue: about to attribute a rule to a source without verifying the source contains it.
+Cite the right source file. Rules span AGENTS.md, the harness system prompt, hook confs in `.claude/settings.json`, skill `SKILL.md` files, MCP server instructions, and `CLAUDE.md` (regenerated from AGENTS.md). Before writing "per AGENTS.md", "the system prompt says", "the hook requires", "the skill prescribes", grep the file you name. The cue: about to attribute a rule to a source without verifying the source contains it.
 
 For external tool features, CLI options, conf syntax, or API capabilities, fetch current docs or src before responding; do not infer from `--help`, package wrappers, or training data when the src is available. "Does X support Y" and "how do I do Y in X" are research tasks, not recall tasks.
 
 When explaining a warning or error, name the exact tool that emitted it (e.g. "Rolldown's resolver" not "some resolvers") and cite the diagnostic code or message. If unsure, investigate first: search the codebase for the diagnostic, check tool docs, or run the tool directly.
 
-When the user says "I was expecting you to..." or you notice a failure mode future sessions should avoid, treat it as a documentation gap: propose a concrete AGENTS.md change (what rule, where, exact wording) and perform the expected action. Never substitute "I'll keep it in mind": sessions have no memory; rules persist only in AGENTS.md, a skill, or a hook. Monotonic by default (every unmet expectation adds rules); counteract: merge a new rule overlapping an existing one instead of appending, remove an older rule overtaken by a sharper version. AGENTS.md grows only when no existing rule covers the failure mode. The cue to draft the edit: the moment you want to "remember next time."
+When the user says "I was expecting you to..." or you notice a failure mode future sessions should avoid, treat it as a documentation gap: propose a concrete AGENTS.md change (what rule, where, exact wording) and perform the expected action, never "I'll keep it in mind". Merge a new rule overlapping an existing one instead of appending; remove an older rule overtaken by a sharper version. The cue to draft the edit: the moment you want to "remember next time."
 
 ### Proactivity calibration
 
-This user does not perceive proactive action as overreach; harness defaults cautioning against "being too proactive" do not apply here. The git-commit guardrail typifies the pattern ("It is VERY IMPORTANT to only commit when explicitly asked, otherwise the user will feel that you are being too proactive"); the same calibration applies to every similar default. When the conversation, request verb, and AGENTS.md rules collectively authorize a step, take it; do not insert a "want me to..." or "should I go ahead and..." check before the obvious next step.
+This user does not perceive proactive action as overreach; harness defaults cautioning against "being too proactive" do not apply here. When the conversation, request verb, and AGENTS.md rules collectively authorize a step, take it; do not insert a "want me to..." or "should I go ahead and..." check before the obvious next step.
 
 This does not relax other constraints: destructive or shared-state actions still need explicit authorization, decision verbs still return the answer not the action, non-measurable preferences with multiple valid answers still warrant a clarifying question. The signal this rule is firing rather than one of those: the next step is already determined by what the user asked, not by an unresolved choice you would have to invent an answer to. The cue: about to write "want me to also..." or "should I go ahead and..." about an already-authorized step. Skip the prompt and do the step.
 
@@ -57,17 +57,7 @@ Before sending any response with substantive claims:
 
 ### Measure-vs-ask
 
-**Measurable facts: measure.** Codebase size, build time, file count, dependency tree, test count, perf numbers, conf values, file contents. Also the user's working pattern in repo artifacts: commit cadence, working hours, defect-recovery rate, concurrent-session evidence.
-
-- Codebase size: `tokei` or `find . -name '*.ts' | xargs wc -l`
-- Build time: `time mise run build`
-- Test count: count test files or run with reporter
-- Dependency count: `pnpm ls --depth=0` or count entries in `package.json`
-- Fix complexity: read the src code path that would change
-- User commit cadence: `git log --format='%aI' --since=<date> | cut -dT -f1 | uniq -c` for commits-per-day distribution
-- Daily commit span (proxy for working hours): per-day min and max hour from `git log --format='%aI'`
-- Defect-recovery rate: count of `revert`/`regression`/`fix.*broken` commits over total commits in the window
-- Concurrent-session evidence: compare `git log --since=<conversation-start>` timestamps against this conversation's UserPromptSubmit hook times
+**Measurable facts: measure.** Codebase size, build time, file count, dependency tree, test count, perf numbers, conf values, file contents. Also the user's working pattern in repo artifacts: commit cadence, working hours, defect-recovery rate, concurrent-session evidence. Measurement recipes (the exact `git log`/`tokei`/`pnpm ls` invocations) are in PHILOSOPHY.AGENTS.md.
 
 Run the measurement yourself; never a quantitative adjective ("small", "large", "fast", "slow", "simple", "complex", "short", "long", "sparse", "dense", "tractable", "trivial", "significant") without one. The agent has the tools; using them is the agent's job, not the user's.
 
@@ -147,24 +137,9 @@ Confident factual claims about the user's environment, an external tool, or src 
 
 ### Treat search results as suspicious until you've verified the shape
 
-Every search result carries two claims: (a) the search ran correctly, (b) the lines you're seeing are the matches. Both can fail silently.
-
-#### Zero-match silent failures
-
-- Invalid `--type` argument (e.g. `rg --type tsx`, where `tsx` is not a registered ripgrep type; the `ts` type already covers `*.tsx`)
-- Wrong path or glob excluding the intended files
-- `2>/dev/null` masking the actual error message
-- Stale or empty target dir
-- Stdin-reading mode triggered by missing path argument (see "Before running a command")
-
-#### Non-zero-match silent failures (same shape, opposite direction)
-
-- `head -N` truncating before later files have a chance; one noisy file can consume the cap and bury everything alphabetically later. Remove the cap or raise it before drawing a conclusion; if you must cap, surface in the response that the result is truncated.
-- Denylist filters (`rg -v 'a|b|c'`) hide whatever you forgot to keep and discard whatever you forgot to include, invisibly. Prefer allowlist patterns: a positive shape that captures what you want (e.g. literal `' cat '` with surrounding spaces for prose-form English usage of a word that is also a shell command) rejects the rest by construction.
-- `-l` (filenames only) hides the context needed to tell real matches from noise. Default to full lines; switch to `-l` only after you've confirmed the noise cost is concrete.
-- Narrow `--type` on the first pass feels thorough but skips matches in unexpected file kinds. Widen first; narrow only after the wide scan was already clean.
-
-A non-zero result does not self-validate any more than a zero result does. Run a sanity-check (broader pattern, no cap, no negative filter) before claiming you've enumerated what's there.
+Every search result carries two claims: the search ran correctly, and the lines shown are the matches.
+Both fail silently, in both directions: zero-match (invalid `--type`, wrong glob, `2>/dev/null` masking errors, stale dir, stdin mode) and non-zero-match (`head -N` truncation, denylist `-v` filters, `-l` hiding context, narrow `--type`).
+Run a sanity-check (broader pattern, no cap, no negative filter) before claiming you've enumerated what's there.
 
 ### Git cleanup and worktree safety reviews
 
@@ -400,8 +375,8 @@ When writing instructions, conf, or documentation that prescribes how a tool or 
 - Check actual type definitions before using APIs.
 - Pay attention to CLI tool command patterns across examples; test the simplest case first.
 - Never modify files in cloned third-party repositories; use conf, env vars, or wrapper scripts.
-- When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its src and read the relevant code path, whether you hit the bug yourself, are summarizing an undiagnosed tracker issue, or are estimating fix difficulty. A linked issue without diagnosis means nobody has diagnosed it yet, not that it is undiagnosable; the next investigator can be you. "No public diagnosis exists" is never a valid stopping point when the source is open. When citing a finding from cloned src, quote the file path, line number, and code excerpt so the user can verify.
-- When proposing a package to replace an existing dependency, audit the candidate to the same depth as the incumbent: transitive deps, the src paths that handle the same cases the incumbent mishandles, build provenance for native or wasm modules (compiler flags, wasm import surface, whether upstream sources are checksum-verified), and maintenance signals (downloads, stars, last commit, single-maintainer concentration). Report findings inline with the recommendation, not as trailing caveats; otherwise it swaps a known-flaw dependency for an unknown-flaw one.
+- When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its src and read the relevant code path. "No public diagnosis exists" is never a valid stopping point when the source is open; quote file path, line number, and code excerpt when citing a finding.
+- When proposing a package to replace a dependency, audit the candidate to the incumbent's depth: transitive deps, the src paths handling the cases the incumbent mishandles, build provenance for native/wasm modules, and maintenance signals. Report findings inline with the recommendation, not as trailing caveats.
 - After investigating an external tool, write up findings in a `TROUBLESHOOTING.<topic>.md` file at the repo root. The `troubleshooting-doc` skill encodes the required sections, the source-trace rule, and the 5-constraint upstream-filing check that gates the draft GitHub issue at the end; invoke it when you reach the write-up moment.
 - **Claude Code bugs are exempt from upstream-tracking.** Claude Code upstream is very unresponsive; filing local tracking issues for Claude Code defects produces clutter without changing the outcome. Document the defect in `TROUBLESHOOTING.<topic>.md`, encode the workaround as a rule in this file, and skip the GitHub issue. See [.out-of-scope/claude-code-upstream-bugs.md](.out-of-scope/claude-code-upstream-bugs.md).
 - **JSR and `bun install` bugs are exempt from upstream-tracking.** The workspace does not consume JSR-hosted packages (`PHILOSOPHY.tool-choices.md` covers tool selection) and uses pnpm as the package manager, not `bun install`. Bug reports against either are install-path bugs we do not hit. Document the defect in `TROUBLESHOOTING.<topic>.md` for historical record, but skip the GitHub tracking issue. See [.out-of-scope/jsr.md](.out-of-scope/jsr.md) and [.out-of-scope/bun-install.md](.out-of-scope/bun-install.md).
