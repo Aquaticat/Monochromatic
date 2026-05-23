@@ -146,18 +146,26 @@ function parseGithubUrl(s: string,): GithubOwnerRepo | null {
   /**
    * Walks the repo span until the first `/`, `?`, or `#` delimiter.
    *
-   * @param idx - cursor into `tail`
+   * Single linear pass: the cursor advances one char at a time and never
+   * revisits a byte, so it stays O(n) time and O(1) stack. The prior
+   * recursive `return scanRepoEnd(idx + 1)` grew stack depth with the repo
+   * length and overflowed on V8, which has no tail-call elimination.
+   *
+   * @param from - cursor into `tail` where the repo span begins
    *
    * @returns exclusive end of the repo span
    */
-  function scanRepoEnd(idx: number,): number {
-    if (idx >= tail.length)
-      return idx;
-    /** Char at cursor; URL delimiters end the repo span. */
-    const c = tail.charAt(idx,);
-    if ((c === '/') || (c === '?') || (c === '#'))
-      return idx;
-    return scanRepoEnd(idx + 1,);
+  function scanRepoEnd(from: number,): number {
+    /** Scan cursor; walked forward to the first URL delimiter or end of `tail`. */
+    let end = from;
+    while (end < tail.length) {
+      /** Char at cursor; URL delimiters end the repo span. */
+      const c = tail.charAt(end,);
+      if ((c === '/') || (c === '?') || (c === '#'))
+        break;
+      end += 1;
+    }
+    return end;
   }
   /** Repo span before any URL delimiter. */
   const repoRaw = tail.slice(
@@ -301,18 +309,26 @@ function looksLikePinnedSemver(s: string,): boolean {
   /**
    * Walks the run of ASCII digits starting at `from`.
    *
-   * @param idx - cursor into `s`
+   * Single linear pass: the cursor advances one char at a time and never
+   * revisits a byte, so it stays O(n) time and O(1) stack. The prior
+   * recursive `return scanDigits(idx + 1)` grew stack depth with the digit
+   * run length and overflowed on V8, which has no tail-call elimination.
+   *
+   * @param from - cursor into `s` where the digit run begins
    *
    * @returns exclusive end of the digit run
    */
-  function scanDigits(idx: number,): number {
-    if (idx >= s.length)
-      return idx;
-    /** Char at cursor; only ASCII digits advance. */
-    const c = s.charAt(idx,);
-    if ((c < '0') || (c > '9'))
-      return idx;
-    return scanDigits(idx + 1,);
+  function scanDigits(from: number,): number {
+    /** Scan cursor; walked forward over each ASCII digit from `from`. */
+    let end = from;
+    while (end < s.length) {
+      /** Char at cursor; only ASCII digits advance. */
+      const c = s.charAt(end,);
+      if ((c < '0') || (c > '9'))
+        break;
+      end += 1;
+    }
+    return end;
   }
   /** Exclusive end of the major digit run. */
   const major = scanDigits(0,);
