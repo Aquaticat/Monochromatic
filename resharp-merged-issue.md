@@ -12,17 +12,18 @@ resharp's main branch moves quickly. Update the commit hash below to whatever
 
 ---
 
-**Title:** Four DFA-construction bugs in 0.6.3, with proposed fixes (prefix hang, algebra overflow, lookbehind soundness)
+**Title:** Three DFA-construction bugs in 0.6.3 plus an error-message nudge, with proposed fixes
 
 **Labels:** `bug`, `engine`, `algebra`
 
 ## Summary
 
 While using resharp as the regex engine for a CI secret-scanner (rules combine
-intersection `&` and complement `~` heavily), fuzzing surfaced four distinct
-DFA-construction defects that persist in published 0.6.3 and on `main`
-(`e0b8aba`). Each is reproduced below with a minimal pattern, the source
-location of the cause, and a proposed minimal fix. The four fixes together are
+intersection `&` and complement `~` heavily), fuzzing surfaced three distinct
+DFA-construction defects (plus a minor error-message legibility issue) that
+persist in published 0.6.3 and on `main` (`e0b8aba`). Each is reproduced below
+with a minimal pattern, the source location of the cause, and a proposed minimal
+fix. The four fixes together are
 attached as a single patch; applied to `main` they make every reproducer below
 behave correctly and leave `cargo test --workspace --no-fail-fast` at
 `231 passed; 0 failed; 19 ignored`, identical to the unpatched baseline (purely
@@ -181,10 +182,13 @@ elsewhere, rather than a result that violates the post-condition. Every caller o
 
 With this applied, `Regex::new("(?:(?=a)&(?<=_))")` returns
 `Err(UnsupportedPattern)` cleanly in both debug and release: no panic, no
-spurious matches. This is a conservative fix (it rejects the pattern rather than
-correctly supporting intersection-with-lookbehind); if you would rather support
-the shape, the real fix is in `strip_lb_inner`'s intersection handling, which is
-larger.
+spurious matches. Note this is an observable behaviour change: a pattern of this
+shape that previously compiled and returned (incorrect) matches now errors at
+`Regex::new`. Those matches were unsound, so we do not expect correct usage to
+depend on them, but the change is visible to callers. This is a conservative fix
+(it rejects the pattern rather than correctly supporting
+intersection-with-lookbehind); if you would rather support the shape, the real
+fix is in `strip_lb_inner`'s intersection handling, which is larger.
 
 ## Bug 4 (minor): generic error message for unsupported patterns
 
