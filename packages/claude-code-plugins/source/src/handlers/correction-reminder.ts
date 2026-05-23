@@ -2,6 +2,7 @@ import type {
   UserPromptSubmitInput,
   UserPromptSubmitOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type { ReadonlyDeep, } from 'type-fest';
 
 import { containsAnyOfWordBounded, } from '../lib/text-scan.ts';
 
@@ -194,7 +195,7 @@ type CorrectionReminderOutput = UserPromptSubmitOutput;
  * ```
  */
 function correctionReminderHandler(
-  event: UserPromptSubmitInput,
+  event: ReadonlyDeep<UserPromptSubmitInput>,
 ): CorrectionReminderOutput {
   /** True when the user's prompt contains a correction phrase; gates the reminder text. */
   const triggered = detectCorrection(event.prompt,);
@@ -241,7 +242,7 @@ function correctionReminderParser(raw: string,): UserPromptSubmitInput {
  * // => '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":""}}'
  * ```
  */
-function correctionReminderWriter(output: CorrectionReminderOutput,): string {
+function correctionReminderWriter(output: ReadonlyDeep<CorrectionReminderOutput>,): string {
   return JSON.stringify(output,);
 }
 

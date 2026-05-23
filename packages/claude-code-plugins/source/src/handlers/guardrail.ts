@@ -2,6 +2,7 @@ import type {
   PreToolUseInput,
   PreToolUseOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type { ReadonlyDeep, } from 'type-fest';
 
 import {
   isWhitespace,
@@ -204,7 +205,7 @@ type GuardrailOutput = PreToolUseOutput | Record<string, never>;
  * guardrailHandler({ tool_name: 'Bash', tool_input: { command: 'mise run //pkg:test' }, ... });
  * ```
  */
-function guardrailHandler(event: PreToolUseInput,): GuardrailOutput {
+function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutput {
   if (event.tool_name === 'Bash') {
     /** Bash command string extracted defensively; `undefined` when the field is absent. */
     const command = 'command' in event.tool_input
@@ -313,7 +314,7 @@ function guardrailParser(raw: string,): PreToolUseInput {
  * process.stdout.write(guardrailWriter({}));
  * ```
  */
-function guardrailWriter(output: GuardrailOutput,): string {
+function guardrailWriter(output: ReadonlyDeep<GuardrailOutput>,): string {
   return JSON.stringify(output,);
 }
 

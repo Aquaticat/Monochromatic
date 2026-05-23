@@ -20,8 +20,8 @@ const MAX_PATTERN_LENGTH = 30;
  * (PreToolUse), `post` after completion (PostToolUse).
  */
 type TenseLabels = {
-  pre: string;
-  post: string;
+  readonly pre: string;
+  readonly post: string;
 };
 
 /**
@@ -30,7 +30,7 @@ type TenseLabels = {
  * `fallback` provides tense-specific defaults when `extract` returns `undefined`.
  */
 type ToolTitleEntry = {
-  extract: (input: GenericToolInput,) => string | undefined;
+  extract: (input: Readonly<GenericToolInput>,) => string | undefined;
   format: (
     value: string,
     tense: 'pre' | 'post',
@@ -59,8 +59,8 @@ function truncate(
     value,
     maxLength,
   }: {
-    value: string;
-    maxLength: number;
+    readonly value: string;
+    readonly maxLength: number;
   },
 ): string {
   if (value.length <= maxLength)
@@ -109,8 +109,8 @@ function stringField(
     input,
     key,
   }: {
-    input: GenericToolInput;
-    key: string;
+    readonly input: Readonly<GenericToolInput>;
+    readonly key: string;
   },
 ): string | undefined {
   /** Property value read from the tool input; non-string shapes fall through to `undefined`. */
@@ -133,8 +133,8 @@ function stringField(
  * get({ command: 'ls' }); // 'ls'
  * ```
  */
-function field(key: string,): (input: GenericToolInput,) => string | undefined {
-  return function extractField(input: GenericToolInput,) {
+function field(key: string,): (input: Readonly<GenericToolInput>,) => string | undefined {
+  return function extractField(input: Readonly<GenericToolInput>,) {
     return stringField({
       input,
       key,

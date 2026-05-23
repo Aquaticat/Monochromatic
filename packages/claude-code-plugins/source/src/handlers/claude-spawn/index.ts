@@ -15,6 +15,7 @@ import type {
   HookInput,
   HookOutputBase,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   readFileSync,
   writeFileSync,
@@ -65,8 +66,8 @@ function updateChildOnStop(
     sessionId,
     lastMessage,
   }: {
-    sessionId: string;
-    lastMessage: string | undefined;
+    readonly sessionId: string;
+    readonly lastMessage: string | undefined;
   },
 ): void {
   /** Spawn correlation id injected by the CLI when this Claude was a child; absent in normal runs. */
@@ -122,7 +123,7 @@ function updateChildOnStop(
  * @returns block decision with child results, or empty pass-through
  */
 function stopResponse(
-  event: Extract<HookInput, { hook_event_name: 'Stop'; }>,
+  event: ReadonlyDeep<Extract<HookInput, { hook_event_name: 'Stop'; }>>,
 ): ClaudeSpawnOutput {
   if (!event.stop_hook_active) {
     /** Formatted child-result text consumed atomically; `null` when nothing pending. */
@@ -156,7 +157,7 @@ function stopResponse(
  *
  * @returns hook response carrying child-result text, or empty pass-through
  */
-function additionalContextResponse(event: HookInput,): ClaudeSpawnOutput {
+function additionalContextResponse(event: ReadonlyDeep<HookInput>,): ClaudeSpawnOutput {
   /** Formatted child-result text consumed atomically; `null` when no completion is pending. */
   const context = checkCompletedChildren({
     parentSessionId: event.session_id,
@@ -196,7 +197,7 @@ function additionalContextResponse(event: HookInput,): ClaudeSpawnOutput {
  * claudeSpawnHandler({ hook_event_name: 'SessionEnd', session_id: 'abc', ... });
  * ```
  */
-function claudeSpawnHandler(event: HookInput,): ClaudeSpawnOutput {
+function claudeSpawnHandler(event: ReadonlyDeep<HookInput>,): ClaudeSpawnOutput {
   if (event.hook_event_name === 'SessionStart') {
     /** Raw SessionStart warning text emitted directly to stdout. */
     const text = handleSessionStart({
@@ -257,7 +258,7 @@ function claudeSpawnParser(raw: string,): HookInput {
  * process.stdout.write(claudeSpawnWriter({ kind: 'json', payload: {} }));
  * ```
  */
-function claudeSpawnWriter(output: ClaudeSpawnOutput,): string {
+function claudeSpawnWriter(output: ReadonlyDeep<ClaudeSpawnOutput>,): string {
   if (output.kind === 'raw')
     return output.text;
   return JSON.stringify(output.payload,);

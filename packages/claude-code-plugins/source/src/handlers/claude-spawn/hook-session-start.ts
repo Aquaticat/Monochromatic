@@ -59,9 +59,9 @@ function handleSessionStart({
   transcriptPath,
   hookDir,
 }: {
-  sessionId: string;
-  transcriptPath: string;
-  hookDir: string;
+  readonly sessionId: string;
+  readonly transcriptPath: string;
+  readonly hookDir: string;
 },): string {
   mkdirSync(
     BY_PID_DIR,

@@ -1,6 +1,7 @@
 import type {
   SessionStartInput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   glob,
   lstat,
@@ -199,7 +200,7 @@ type SessionStartHousekeepingOutput = void;
  * ```
  */
 async function sessionStartHousekeepingHandler(
-  event: SessionStartInput,
+  event: ReadonlyDeep<SessionStartInput>,
 ): Promise<SessionStartHousekeepingOutput> {
   /** Monorepo root, derived from the SessionStart event's `cwd` field. */
   const workspaceRoot = event.cwd;

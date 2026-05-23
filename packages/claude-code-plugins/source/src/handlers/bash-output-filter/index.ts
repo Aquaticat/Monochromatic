@@ -3,6 +3,7 @@ import type {
   PreToolUseInput,
   PreToolUseOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type { ReadonlyDeep, } from 'type-fest';
 
 import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
@@ -23,7 +24,7 @@ import {
  * isBashToolInput({ file_path: 'x' }); // false
  * ```
  */
-function isBashToolInput(input: Record<string, unknown>,): input is BashToolInput {
+function isBashToolInput(input: Readonly<Record<string, unknown>>,): input is BashToolInput {
   return (typeof input.command) === 'string';
 }
 
@@ -64,7 +65,7 @@ type BashOutputFilterOutput = PreToolUseOutput | Record<string, never>;
  * bashOutputFilterHandler({ tool_name: 'Bash', tool_input: { command: 'ls' }, ... });
  * ```
  */
-function bashOutputFilterHandler(event: PreToolUseInput,): BashOutputFilterOutput {
+function bashOutputFilterHandler(event: ReadonlyDeep<PreToolUseInput>,): BashOutputFilterOutput {
   if ((event.tool_name !== 'Bash') || (!isBashToolInput(event.tool_input,)))
     return {};
 
@@ -128,7 +129,7 @@ function bashOutputFilterParser(raw: string,): PreToolUseInput {
  * process.stdout.write(bashOutputFilterWriter({}));
  * ```
  */
-function bashOutputFilterWriter(output: BashOutputFilterOutput,): string {
+function bashOutputFilterWriter(output: ReadonlyDeep<BashOutputFilterOutput>,): string {
   return JSON.stringify(output,);
 }
 

@@ -170,8 +170,8 @@ function startsWithWordBounded(
     s,
     prefix,
   }: {
-    s: string;
-    prefix: string;
+    readonly s: string;
+    readonly prefix: string;
   },
 ): boolean {
   if (!s.startsWith(prefix,))

@@ -244,40 +244,43 @@ function truncateLine(line: string,): string {
 //region Deduplication
 
 /**
- * Appends a run of repeated lines to the result array. Collapses runs of
- * {@link DEDUP_THRESHOLD}+ identical lines to `line (xN)`.
- *
- * @param result - accumulator array to push onto
+ * Builds the lines representing a run of repeated lines. Collapses runs of
+ * {@link DEDUP_THRESHOLD}+ identical lines to a single `line (xN)` marker.
  *
  * @param line - repeated line content
  *
  * @param count - how many consecutive times `line` appeared
  *
+ * @returns lines to append: empty for a zero-count run, one collapsed marker
+ *   once the run reaches the threshold, otherwise `count` copies of `line`
+ *
  * @example
  * ```ts
- * const out: string[] = [];
- * flushRepeated({ result: out, line: 'foo', count: 5, },); // out: ['foo (x5 repeated lines)']
+ * flushRepeated({ line: 'foo', count: 5, },); // ['foo (x5 repeated lines)']
+ * flushRepeated({ line: 'bar', count: 2, },); // ['bar', 'bar']
  * ```
  */
 function flushRepeated(
   {
-    result,
     line,
     count,
   }: {
-    result: string[];
-    line: string;
-    count: number;
+    readonly line: string;
+    readonly count: number;
   },
-): void {
+): readonly string[] {
   if (count === 0)
-    return;
+    return [];
   if (count >= DEDUP_THRESHOLD)
-    result.push(`${line} (x${count} repeated lines)`,);
-  else {
-    for (let i = 0; i < count; i++)
-      result.push(line,);
-  }
+    return [
+      `${line} (x${count} repeated lines)`,
+    ];
+  return Array.from(
+    { length: count, },
+    function repeatLine(): string {
+      return line;
+    },
+  );
 }
 
 //endregion

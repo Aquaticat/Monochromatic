@@ -2,6 +2,7 @@ import type {
   UserPromptSubmitInput,
   UserPromptSubmitOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type { ReadonlyDeep, } from 'type-fest';
 
 import { formatTimeContext, } from '@monochromatic-dev/module-current-time-context';
 import { parseHookJson, } from '../runtime/handler-runtime.ts';
@@ -39,7 +40,7 @@ type PromptTimeOutput = UserPromptSubmitOutput;
  * //                         additionalContext: '<time>20:48</time>' } }
  * ```
  */
-function promptTimeHandler(_event: UserPromptSubmitInput,): PromptTimeOutput {
+function promptTimeHandler(_event: ReadonlyDeep<UserPromptSubmitInput>,): PromptTimeOutput {
   return {
     hookSpecificOutput: {
       hookEventName: 'UserPromptSubmit',
@@ -80,7 +81,7 @@ function promptTimeParser(raw: string,): UserPromptSubmitInput {
  * process.stdout.write(promptTimeWriter(output));
  * ```
  */
-function promptTimeWriter(output: PromptTimeOutput,): string {
+function promptTimeWriter(output: ReadonlyDeep<PromptTimeOutput>,): string {
   return JSON.stringify(output,);
 }
 

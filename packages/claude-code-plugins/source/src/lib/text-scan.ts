@@ -197,9 +197,9 @@ function boundariesSatisfied(
     phrase,
     index,
   }: {
-    haystack: string;
-    phrase: string;
-    index: number;
+    readonly haystack: string;
+    readonly phrase: string;
+    readonly index: number;
   },
 ): boolean {
   /** Character immediately before the candidate occurrence; empty string when at the start of `haystack`. */
@@ -249,8 +249,8 @@ function containsWordBoundedPhrase(
     haystack,
     phrase,
   }: {
-    haystack: string;
-    phrase: string;
+    readonly haystack: string;
+    readonly phrase: string;
   },
 ): boolean {
   if (phrase.length === 0)
@@ -311,8 +311,8 @@ function containsAnyOfWordBounded(
     haystack,
     phrases,
   }: {
-    haystack: string;
-    phrases: readonly string[];
+    readonly haystack: string;
+    readonly phrases: readonly string[];
   },
 ): { phrase: string; } | undefined {
   for (const phrase of phrases) {
@@ -363,10 +363,10 @@ function stripBetweenDelims(
     closeDelim,
     disallowedInside,
   }: {
-    text: string;
-    openDelim: string;
-    closeDelim: string;
-    disallowedInside?: string;
+    readonly text: string;
+    readonly openDelim: string;
+    readonly closeDelim: string;
+    readonly disallowedInside?: string;
   },
 ): string {
   /** Output segments, joined once at the end so the accumulator is never recopied per span. */
@@ -448,8 +448,8 @@ function stripLinesStartingWith(
     text,
     prefix,
   }: {
-    text: string;
-    prefix: string;
+    readonly text: string;
+    readonly prefix: string;
   },
 ): string {
   return text

@@ -3,6 +3,7 @@ import type {
   PostToolUseInput,
   PreToolUseInput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type { ReadonlyDeep, } from 'type-fest';
 import {
   closeSync,
   openSync,
@@ -31,7 +32,7 @@ const TITLE_PREFIX = '✳';
  *
  * @returns descriptive title like "Reading index.ts" (pre) or "Read index.ts" (post)
  */
-function titleForTool(event: PreToolUseInput | PostToolUseInput,): string {
+function titleForTool(event: ReadonlyDeep<PreToolUseInput | PostToolUseInput>,): string {
   /** Tool name and input pulled from the hook event for downstream formatting. */
   const {
     tool_name: toolName,
@@ -72,7 +73,7 @@ function shortPath(filePath: string,): string {
  *
  * @returns short descriptive title for the terminal tab
  */
-function titleForEvent(hookEvent: HookInput,): string {
+function titleForEvent(hookEvent: ReadonlyDeep<HookInput>,): string {
   if ((hookEvent.hook_event_name === 'PreToolUse')
     || (hookEvent.hook_event_name === 'PostToolUse'))
   {
@@ -160,7 +161,7 @@ type TerminalTitleOutput = void;
  * terminalTitleHandler({ hook_event_name: 'PreToolUse', tool_name: 'Read', ... });
  * ```
  */
-function terminalTitleHandler(event: HookInput,): TerminalTitleOutput {
+function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): TerminalTitleOutput {
   /** Title text derived from the event before prefixing and truncation. */
   const title = titleForEvent(event,);
   setTerminalTitle(truncate({

@@ -53,7 +53,7 @@ function filterOutput(input: string,): string {
  * const out = collapseLines(['hello', 'hello', 'world']);
  * ```
  */
-function collapseLines(lines: string[],): string[] {
+function collapseLines(lines: readonly string[],): string[] {
   /** Output buffer that receives each line (or `(xN)` marker) once duplicates are flushed. */
   const result: string[] = [];
   /** Last line emitted, compared against the next line to detect runs of duplicates. */
@@ -80,21 +80,23 @@ function collapseLines(lines: string[],): string[] {
     if ((processed === prevLine) && (repeatCount > 0))
       repeatCount++;
     else {
-      flushRepeated({
-        result,
-        line: prevLine,
-        count: repeatCount,
-      },);
+      result.push(
+        ...flushRepeated({
+          line: prevLine,
+          count: repeatCount,
+        },),
+      );
       prevLine = processed;
       repeatCount = 1;
     }
   }
 
-  flushRepeated({
-    result,
-    line: prevLine,
-    count: repeatCount,
-  },);
+  result.push(
+    ...flushRepeated({
+      line: prevLine,
+      count: repeatCount,
+    },),
+  );
 
   return result;
 }

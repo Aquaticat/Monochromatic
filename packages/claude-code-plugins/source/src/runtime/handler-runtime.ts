@@ -78,9 +78,9 @@ async function runHookPlugin<TInput, TOutput,>(
     handler,
     writer,
   }: {
-    parser: Parser<TInput>;
-    handler: HookHandler<TInput, TOutput>;
-    writer: Writer<TOutput>;
+    readonly parser: Parser<TInput>;
+    readonly handler: HookHandler<TInput, TOutput>;
+    readonly writer: Writer<TOutput>;
   },
 ): Promise<void> {
   /** Full stdin payload from Claude Code, awaited to EOF before parsing. */

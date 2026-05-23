@@ -2,6 +2,7 @@ import type {
   StopInput,
   StopOutput,
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type { ReadonlyDeep, } from 'type-fest';
 
 import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
@@ -47,7 +48,7 @@ type StopRemindersOutput = StopOutput | Record<string, never>;
  * stopRemindersHandler({ stop_hook_active: false, last_assistant_message: 'Done?' });
  * ```
  */
-function stopRemindersHandler(event: StopInput,): StopRemindersOutput {
+function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOutput {
   if (event.stop_hook_active)
     return {};
 
@@ -136,7 +137,7 @@ function stopRemindersParser(raw: string,): StopInput {
  * process.stdout.write(stopRemindersWriter({}));
  * ```
  */
-function stopRemindersWriter(output: StopRemindersOutput,): string {
+function stopRemindersWriter(output: ReadonlyDeep<StopRemindersOutput>,): string {
   return JSON.stringify(output,);
 }
 

@@ -79,8 +79,8 @@ function checkCompletedChildren(
     parentSessionId,
     consume,
   }: {
-    parentSessionId: string;
-    consume: boolean;
+    readonly parentSessionId: string;
+    readonly consume: boolean;
   },
 ): string | null {
   /** Filenames in `SPAWNS_DIR`; `null` when the directory is missing or unreadable. */

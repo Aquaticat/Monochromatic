@@ -31,7 +31,8 @@
     "@monochromatic-dev/claude-code-plugins-hook-types": "workspace:*",
     "@monochromatic-dev/module-current-time-context": "workspace:*",
     "@optique/core": "catalog:",
-    "@optique/run": "catalog:"
+    "@optique/run": "catalog:",
+    "type-fest": "catalog:"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
