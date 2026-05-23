@@ -4,31 +4,38 @@ This document tracks the upstream resharp bugs that `forbidden-strings`
 defends against, the consumer-side guards that block each, and the
 verification path for each finding.
 
-Five bugs are tracked (A through E). All were re-verified on 2026-05-23
+Six bugs are tracked (A through F). All were re-verified on 2026-05-23
 against published resharp 0.6.3 and against git HEAD `e0b8aba`
 (`https://github.com/ieviev/resharp`, 2 commits past the 0.6.3 release
 commit `0b7732c`), using standalone probe crates built in debug
 (debug-assertions and overflow-checks both on, matching cargo-fuzz
-defaults) and in release (both off). Status as of that re-verification:
+defaults) and in release (both off). Each still-live bug now has a
+minimal prototype fix verified against HEAD; the combined patch is at
+[TROUBLESHOOTING.resharp.patch](TROUBLESHOOTING.resharp.patch) and the
+single merged upstream issue body is at
+[resharp-merged-issue.md](resharp-merged-issue.md). See the
+"Prototype fixes" section for the per-bug results. Status:
 
 - **Bug A** (`\b`/`\B`/`^`/`$` or any lookaround inside a `~(...)` complement
   body fails to compile): unchanged from 0.6.0 through 0.6.3/HEAD.
-  Defense: `lookaround_in_complement`. Not fileable (no prototyped fix).
+  Defense: `lookaround_in_complement`. The behavioural fix (supporting the
+  shape) stays un-prototyped (architectural); only the error-message
+  wording is prototyped (legibility nudge).
 - **Bug B** (intersection `&` with a lookbehind): still reproduces, but the
   defect now surfaces earlier in the pipeline. The panic moved from the
   matching engine (`resharp/src/engine.rs:1020` in 0.6.0) to a
   `debug_assert!` in the new `strip_lb` lookbehind-stripping rewrite
   (`resharp-algebra/src/lib.rs:2007` at HEAD, `:2006` in 0.6.3). In release
   the assertion is compiled out and `find_all` silently returns corrupted
-  matches. Defense: `intersection_with_lookbehind`. Not fileable (no
-  prototyped fix).
+  matches. Defense: `intersection_with_lookbehind`. Prototyped fix:
+  fail-closed `Err` in `strip_lb`.
 - **Bug C** (intersection `&` with `\w` and `$` end-anchor): still overflows
   in `attempt_rw_concat_2` (`resharp-algebra/src/lib.rs:2479` at HEAD,
   `:2478` in 0.6.3; was `:2470` in 0.6.0). Release wraps silently without
   `overflow-checks = true`. Defense: `intersection_with_word_end_alternation`
   plus the `overflow-checks = true` + `panic = "unwind"` profile combo and
-  the `catch_unwind` net in `compile_rule_src`. Not fileable (no prototyped
-  fix).
+  the `catch_unwind` net in `compile_rule_src`. Prototyped fix:
+  `saturating_add` (shared with Bug F).
 - **Bug D** (alternation containing a lookaround plus a sibling lookaround):
   the documented symptom no longer reproduces in 0.6.3/HEAD. `find_all`
   returns clean results in both debug and release; the shape no longer
@@ -36,34 +43,39 @@ defaults) and in release (both off). Status as of that re-verification:
   upstream). Defense `lookaround_in_alternation_with_sibling` is now
   belt-and-suspenders rather than a live guard.
 - **Bug E** (complement `~` + intersection `&` + quantified group): still
-  hangs `Regex::new` in `prefix::calc_prefix_sets_inner`. The two-hunk
-  prototype patch in this doc was re-validated against HEAD `e0b8aba`: the
-  literal diff applies cleanly, the trigger then compiles in milliseconds,
-  and the workspace test suite is 231 passed / 0 failed / 19 ignored both
-  with and without the patch (purely additive). Ready to file.
+  hangs `Regex::new` in `prefix::calc_prefix_sets_inner`. Prototyped fix:
+  `visited`-set cycle break, re-validated against HEAD `e0b8aba` (diff
+  applies cleanly, trigger then compiles in milliseconds).
+- **Bug F** (nested lookahead inside a quantified group, outer min >= 2):
+  overflows in the same `attempt_rw_concat_2` add as Bug C. Defense:
+  `nested_lookahead_in_quantified_group`. Prototyped fix: the shared
+  `saturating_add`. Previously undocumented; the `engine.rs` pre-validator
+  wrongly claimed it was filed upstream.
 
-Filing summary for the planned upstream issues: file Bug E (constraint 5
-met, prototype re-validated against current HEAD). Do not file Bug D (the
-symptom is fixed in 0.6.x; filing it reports an already-resolved defect,
-which the five-constraint policy treats as a publicity incident). Bugs A,
-B, and C stay deferred under that policy because no prototyped fix exists;
-the one constraint-light exception is Bug A's error-message-wording
-sub-issue (suggested fix 2 in its draft), which can be filed on its own.
+Filing summary: per the user's decision not to file separate issues, all
+still-live bugs are merged into one upstream issue
+([resharp-merged-issue.md](resharp-merged-issue.md)) with the combined
+patch attached. Each merged bug has a minimal prototype fix verified
+against HEAD, so the five-constraint gate (constraint 5: prototype) now
+passes for Bugs B, C, E, F and for Bug A's wording sub-issue. Bug A's
+behavioural fix (actually supporting complement-of-lookaround) stays out
+of the issue: it is an architectural change with no prototype. Bug D is
+excluded (fixed upstream; filing it would report a resolved defect, which
+the policy treats as a publicity incident).
 
 Upstream tracker checked 2026-05-23 (`gh issue list -R ieviev/resharp
 --state all`): the repository has four issues total and none cover Bugs A
-through F, so none of these would be a duplicate. The closed issue #3
+through F, so the merged issue is not a duplicate. The closed issue #3
 ("find_all / is_match false positives for fixed-length patterns with a
 literal prefix", 2026-04-02) sits in the same prefix-selection code as
 Bug E and shows the maintainer actively fixes bugs there, which
-strengthens the Bug E filing case. Note that the
-`nested_lookahead_in_quantified_group` pre-validator in `engine.rs` claims
-"Filed upstream: see TROUBLESHOOTING.resharp.md Bug F for the issue link",
-but no Bug F issue exists upstream and no Bug F section exists in this doc;
-that comment is inaccurate, and the overflow shape it guards is currently
-undocumented and unfiled.
+strengthens the case. The `nested_lookahead_in_quantified_group`
+pre-validator in `engine.rs` previously claimed "Filed upstream: see
+TROUBLESHOOTING.resharp.md Bug F for the issue link"; that was false (no
+such issue, no such section). Bug F is now documented below and folded
+into the merged issue.
 
-Bugs B through E were originally surfaced by `fuzz_extract_gate_soundness`
+Bugs B through F were originally surfaced by `fuzz_extract_gate_soundness`
 and companion fuzz and bisect probes. The `intersection_with_*` and other
 pre-validators in `packages/cli/forbidden-strings/src/rules/engine.rs` are
 the durable consumer-side fix and stay in place regardless of upstream
@@ -540,12 +552,14 @@ restriction:
 We fail constraints 1, 4, and 5 clearly; 2 and 3 are equivocal at best.
 The decision is to not file the behavioural fix upstream.
 
-One part is separable: suggested fix 2 below (improve the error message
-to name the surface trigger) is a wording change, not an algebra change,
-so the "no prototyped fix" constraint does not really bind it. If any of
-these issues is to be filed, that error-message sub-issue is the only
-A/B/C item the policy does not block; it can be filed on its own without
-the architectural prototype the behavioural fix would need.
+One part is separable and is now prototyped: suggested fix 2 below
+(improve the error message to name the surface trigger) is a wording
+change, not an algebra change, so it cleared constraint 5 trivially (see
+"Prototype fixes") and is folded into the merged upstream issue. Only the
+behavioural fix (actually supporting complement-of-lookaround), which
+would touch the algebraic core, stays out of the issue. Bugs B, C, E, and
+F are likewise prototyped and merged; Bug A's behaviour is the single
+item held back.
 
 The consumer-side workaround is implemented in `forbidden-strings` as a
 parse-time guard (`engine::lookaround_in_complement`) that rejects every
@@ -1179,7 +1193,98 @@ seven-input probe set, and `cargo test --workspace --no-fail-fast` is
 
 ---
 
-## Why we do not file Bugs B and C upstream (yet)
+## Bug F: nested lookahead inside a quantified group overflows `attempt_rw_concat_2`
+
+### Symptom
+
+A rule that nests a lookahead inside a quantified group whose outer quantifier
+has min >= 2 panics at compile time during `Regex::new` under `overflow-checks`
+(and silently wraps without it), at the same site as Bug C:
+
+```text
+thread 'main' panicked at resharp-algebra/src/lib.rs:2479:   # :2470 in 0.6.0
+attempt to add with overflow
+```
+
+Reproducers (all confirmed panicking on unpatched HEAD `e0b8aba`, 2026-05-23):
+
+```text
+(?:(?!\?){1,2}){3}
+(?:(?:(?!\?)){1,5}){2,4}
+(?:(?!abc)){4,12}a
+```
+
+### Root cause
+
+The same overflowing add as Bug C: `tail_rel + la_rel` (both `u32`) in
+`attempt_rw_concat_2` (`resharp-algebra/src/lib.rs:2479` at HEAD). The
+nested-lookahead-in-quantified-group shape drives the lookahead-chain `rel` to
+saturate, and the next add exceeds `u32::MAX`. Bug C and Bug F are two surface
+triggers reaching one defective add, so one fix resolves both.
+
+### Defense
+
+The pre-validator `nested_lookahead_in_quantified_group` in
+`packages/cli/forbidden-strings/src/rules/engine.rs` rejects the shape before
+`Regex::new`. Its doc comment previously claimed this was "Filed upstream: see
+TROUBLESHOOTING.resharp.md Bug F"; that was inaccurate (no upstream issue, no
+such section) until this section and the merged issue were written.
+
+### Prototype fix
+
+Shared with Bug C: `tail_rel.saturating_add(la_rel)`. See "Prototype fixes".
+
+### Verification
+
+Probe crate against the patched HEAD clone: all three reproducers move from
+`COMPILE-PANIC` (unpatched) to `COMPILE-OK` (patched), in debug and release.
+
+## Prototype fixes (verified 2026-05-23)
+
+Per the `troubleshooting-doc` skill's auto-prototype rule (when constraints 1-4
+hold or sorta-hold, prototype the minimal fix rather than stopping at
+"constraint 5: not yet"), each still-live bug has a minimal fix prototyped in a
+fresh `mktemp -d` clone of `https://github.com/ieviev/resharp` at HEAD
+`e0b8aba` (origin and commit verified before editing). The combined patch is
+[TROUBLESHOOTING.resharp.patch](TROUBLESHOOTING.resharp.patch); the merged
+upstream issue body is [resharp-merged-issue.md](resharp-merged-issue.md).
+
+Each fix was verified with a targeted probe crate (its own program calling
+`resharp`, run in debug and release) showing the failure pre-patch and correct
+behaviour post-patch. The combined patch was then regression-checked:
+
+```text
+git apply --check TROUBLESHOOTING.resharp.patch   # applies cleanly to e0b8aba
+cargo test --workspace --no-fail-fast
+# 231 passed; 0 failed; 19 ignored  (identical to the unpatched baseline)
+```
+
+resharp has no `build.rs`, so the test run executed no upstream build scripts; it
+ran on the host (the skill's sandbox rule targets untrusted build scripts).
+
+- **Bug E** (`resharp-engine/src/prefix.rs`): add a `visited` set and
+  clear-and-break on a fresh revisit, keeping the boundary-wrap path separate.
+  Trigger `abc~(\w)&(?:aaa)*` goes from hang to compiling in milliseconds;
+  `is_match` returns `false` on all probe inputs (the empty language).
+- **Bug C + F** (`resharp-algebra/src/lib.rs:2479`): `tail_rel + la_rel` becomes
+  `tail_rel.saturating_add(la_rel)`. The `else` arm already uses `u32::MAX` as
+  the unbounded sentinel, so this is the existing semantics. Every Bug C and Bug
+  F reproducer goes from COMPILE-PANIC to COMPILE-OK.
+- **Bug B** (`resharp-algebra/src/lib.rs` `strip_lb`): replace the
+  post-condition `debug_assert!` with a real
+  `if self.contains_lookbehind(result) { return Err(UnsupportedPattern) }`. All
+  five callers already handle the `Err` path. `(?:(?=a)&(?<=_))` goes from
+  debug-panic / release-62-spurious-matches to a clean `Err(UnsupportedPattern)`
+  at `Regex::new` in both profiles: fail-closed, no corruption.
+- **Bug A wording** (`resharp-algebra/src/lib.rs:35`): improve the
+  `UnsupportedPattern` render string to name the common triggers. Honest scope:
+  the variant is constructed at six sites with one shared static string, so this
+  is a legibility nudge, not a per-site trigger-naming fix; the latter needs
+  splitting the variant or threading context (larger, still localized). The
+  behavioural Bug A fix (actually supporting complement-of-lookaround) is the
+  architectural change in Bug A's draft and is deliberately NOT prototyped.
+
+## Five-constraint audit for Bugs B and C (now prototyped, in the merged issue)
 
 Bug D was in this deferred set in the earlier write-up but is now fixed
 upstream (see Bug D's status note); it is dropped here and must not be
@@ -1203,15 +1308,19 @@ not file this upstream" subsection) to the two that remain. For Bug B
 4. **Likely to fix?** Unknown. The 0.6.0 to 0.6.3 releases relocated
    Bug B's assertion (into `strip_lb`) but did not resolve it, and did
    not touch Bug C's overflowing add beyond line drift.
-5. **Have we prototyped a minimal fix?** No. We have minimum
-   reproducers and source-line citations but no candidate patch.
+5. **Have we prototyped a minimal fix?** Yes, as of 2026-05-23. Bug B:
+   fail-closed `Err` in `strip_lb`. Bug C: `saturating_add` in
+   `attempt_rw_concat_2` (shared with Bug F). Both verified against HEAD
+   `e0b8aba` and regression-clean; see the "Prototype fixes" section.
 
-We fail constraint 5 clearly for both. We defer filing until a
-minimal-patch prototype exists. Until then the pre-validators and profile
-settings are the durable consumer-side fix.
+All five constraints now pass for Bugs B and C, so they are folded into
+the merged upstream issue rather than deferred. The pre-validators and
+profile settings remain the durable consumer-side fix regardless of
+upstream movement.
 
-Bug E (the `calc_prefix_sets_inner` non-termination) is the exception:
-we have a minimal-patch prototype that satisfies constraint 5.
+Bug E (the `calc_prefix_sets_inner` non-termination) was the first with a
+minimal-patch prototype satisfying constraint 5; Bugs B, C, and F now have
+prototypes too (see "Prototype fixes").
 Prototyped against `https://github.com/ieviev/resharp.git` HEAD
 `6f445d71b194161adc0efe968d723312b6856a26` (declared version 0.6.0
 in `Cargo.toml`, 2026-05-15) in a fresh `mktemp -d` clone. The

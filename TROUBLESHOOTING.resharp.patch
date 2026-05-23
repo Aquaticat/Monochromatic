@@ -1,0 +1,69 @@
+diff --git a/resharp-algebra/src/lib.rs b/resharp-algebra/src/lib.rs
+index cd3979e..12569d6 100644
+--- a/resharp-algebra/src/lib.rs
++++ b/resharp-algebra/src/lib.rs
+@@ -32,7 +32,10 @@ impl std::fmt::Display for ResharpError {
+             ResharpError::StateSpaceExplosion => {
+                 write!(f, "too many states, likely infinite state space")
+             }
+-            ResharpError::UnsupportedPattern => write!(f, "unsupported lookaround pattern"),
++            ResharpError::UnsupportedPattern => write!(
++                f,
++                "unsupported lookaround pattern (lookaround, word boundary, or `^`/`$` anchor inside a complement `~(...)`, or a lookbehind operand of an intersection `&`)"
++            ),
+         }
+     }
+ }
+@@ -2004,11 +2007,12 @@ impl RegexBuilder {
+             return self.strip_lb(node_id.right(self));
+         }
+         let result = self.strip_lb_inner(true, node_id)?;
+-        debug_assert!(
+-            !self.contains_lookbehind(result),
+-            "should not contain lookbehind: {:?}",
+-            self.pp(result)
+-        );
++        // fail closed: if the strip could not remove every lookbehind (e.g. a
++        // lookbehind operand of an intersection), returning it builds a wrong DFA
++        // (silent in release; the prior debug_assert only caught it in debug).
++        if self.contains_lookbehind(result) {
++            return Err(ResharpError::UnsupportedPattern);
++        }
+         Ok(result)
+     }
+ 
+@@ -2476,7 +2480,10 @@ impl RegexBuilder {
+             let la_rel = self.get_lookahead_rel(head);
+             let la_rel = if new_la_tail.is_kind(self, Kind::Lookahead) {
+                 let tail_rel = self.get_lookahead_rel(new_la_tail);
+-                tail_rel + la_rel
++                // saturate: the `else` arm already uses u32::MAX as the unbounded
++                // sentinel, and tail_rel + la_rel can exceed u32::MAX (overflow
++                // panic under overflow-checks, silent wrap otherwise).
++                tail_rel.saturating_add(la_rel)
+             } else {
+                 u32::MAX
+             };
+diff --git a/resharp-engine/src/prefix.rs b/resharp-engine/src/prefix.rs
+index 9d05b69..2b7e6e5 100644
+--- a/resharp-engine/src/prefix.rs
++++ b/resharp-engine/src/prefix.rs
+@@ -23,12 +23,18 @@ pub(crate) fn calc_prefix_sets_inner(
+     let mut redundant = BTreeSet::new();
+     redundant.insert(NodeId::BOT);
+     redundant.insert(start);
++    let mut visited: BTreeSet<NodeId> = BTreeSet::new();
+ 
+     loop {
+         if !result.is_empty() && redundant.contains(&node) {
+             break;
+         }
+ 
++        if !result.is_empty() && !visited.insert(node) {
++            result.clear();
++            break;
++        }
++
+         if b.any_nonbegin_nullable(node) {
+             break;
+         }
