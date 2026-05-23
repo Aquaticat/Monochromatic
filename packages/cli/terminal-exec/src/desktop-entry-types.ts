@@ -75,50 +75,27 @@ export type MutableDesktopEntry = {
  * ```
  */
 export function expandEscapes({ s, }: { s: string; },): string {
-  /**
-   * Recursive walker that accumulates the expanded string without `let`.
-   *
-   * @param idx - current scan position
-   *
-   * @param acc - expanded output built up so far
-   *
-   * @returns final expanded string once the cursor exceeds `s.length`
-   *
-   * @example
-   * ```ts
-   * walk({ idx: 0, acc: '' }); // 'hello world' for s === 'hello\\sworld'
-   * ```
-   */
-  function walk(
-    {
-      idx,
-      acc,
-    }: {
-      idx: number;
-      acc: string;
-    },
-  ): string {
-    if (idx >= s.length)
-      return acc;
-    /** Current character under the cursor. */
-    const c = s.charAt(idx,);
-    if ((c === '\\') && ((idx + 1) < s.length)) {
-      /** Character following the backslash; looked up in the escape map. */
-      const next = s.charAt(idx + 1,);
-      return walk({
-        idx: idx + 2,
-        acc: acc + (ESCAPE_MAP[next] ?? next),
-      },);
+  return (function build(): string {
+    /** Output segments in order; joined once at the end so the build is O(n) time. */
+    const out: string[] = [];
+    /** Scan cursor; advances by 2 across a resolved escape, by 1 otherwise. */
+    let idx = 0;
+    while (idx < s.length) {
+      /** Current character under the cursor. */
+      const c = s.charAt(idx,);
+      if ((c === '\\') && ((idx + 1) < s.length)) {
+        /** Character following the backslash; looked up in the escape map. */
+        const next = s.charAt(idx + 1,);
+        out.push(ESCAPE_MAP[next] ?? next,);
+        idx += 2;
+      }
+      else {
+        out.push(c,);
+        idx += 1;
+      }
     }
-    return walk({
-      idx: idx + 1,
-      acc: acc + c,
-    },);
-  }
-  return walk({
-    idx: 0,
-    acc: '',
-  },);
+    return out.join('',);
+  })();
 }
 
 /**

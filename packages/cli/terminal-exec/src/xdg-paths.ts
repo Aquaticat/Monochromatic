@@ -22,8 +22,8 @@ const l = tagged({
 /**
  * Strips one or more trailing `/` characters from `dir`.
  *
- * Equivalent to `dir.replace(/\/+$/, '')`; written as a recursive trim to
- * avoid a regex literal under the `no-regex` rule.
+ * Scans left from the end past any `/`, then slices once: a single linear
+ * pass with no recursion. An all-slash string collapses to empty.
  *
  * @param dir - directory path candidate
  *
@@ -36,13 +36,17 @@ const l = tagged({
  * stripTrailingSlashes('/usr/share');    // '/usr/share'
  * ```
  */
-function stripTrailingSlashes(dir: string,): string {
-  if (!dir.endsWith('/',))
-    return dir;
-  return stripTrailingSlashes(dir.slice(
-    0,
-    -1,
-  ),);
+export function stripTrailingSlashes(dir: string,): string {
+  return (function trim(): string {
+    /** Cut point; walked left past every trailing slash so the slice runs once. */
+    let end = dir.length;
+    while ((end > 0) && (dir.charAt(end - 1,) === '/'))
+      end -= 1;
+    return dir.slice(
+      0,
+      end,
+    );
+  })();
 }
 
 /**
