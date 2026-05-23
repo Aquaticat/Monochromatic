@@ -24,22 +24,30 @@ function isPathSeparator(c: string,): boolean {
 
 /**
  * Tests whether `c` is a valid first char of a hidden segment body, i.e.
+ * present (so a trailing `.` with nothing after it does not count),
  * neither `.` (so `..` does not count) nor a separator (so `./` does not
  * count).
  *
- * @param c - single character
+ * `charAt` past the end of a string returns `''`; rejecting `''` keeps a
+ * dot at end-of-string (`.`, `foo/.`) from reading as a hidden segment,
+ * matching the original regex's `[^./\\]` which required a present char.
+ *
+ * @param c - single character (or `''` when the body char is absent)
  *
  * @returns whether `c` continues a hidden segment after the leading `.`
  *
  * @example
  * ```ts
  * isHiddenBodyChar('s'); // true (matches '.swp')
+ * isHiddenBodyChar('');  // false (rejects a trailing '.' with no body)
  * isHiddenBodyChar('.'); // false (rejects '..')
  * isHiddenBodyChar('/'); // false (rejects './')
  * ```
  */
 function isHiddenBodyChar(c: string,): boolean {
-  return (c !== '.') && (!isPathSeparator(c,));
+  return (c !== '')
+    && (c !== '.')
+    && (!isPathSeparator(c,));
 }
 
 /**

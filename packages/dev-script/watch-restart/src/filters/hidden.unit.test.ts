@@ -212,10 +212,9 @@ await describe({
       name: 'equivalence: trailing separators',
       fn: async function trailingSeparator() {
         expect(await isHidden('foo/',),).toBe(false,);
-        // 'foo/.' : the '.' opens a segment and the missing next char
-        // (charAt past end returns '') passes isHiddenBodyChar, so it reads
-        // as hidden. Preserved from the pre-refactor implementation.
-        expect(await isHidden('foo/.',),).toBe(true,);
+        expect(await isHidden('foo/.',),).toBe(false,);
+        expect(await isHidden('a/.',),).toBe(false,);
+        expect(await isHidden('src/foo/.',),).toBe(false,);
       },
     },),
     it({
@@ -236,9 +235,7 @@ await describe({
     it({
       name: 'equivalence: dot-only and dotdot segments',
       fn: async function dotSegments() {
-        // '.' alone: missing body char (charAt past end returns '') passes the
-        // body test, so it reads as hidden. Preserved pre-refactor behavior.
-        expect(await isHidden('.',),).toBe(true,);
+        expect(await isHidden('.',),).toBe(false,);
         expect(await isHidden('..',),).toBe(false,);
         expect(await isHidden('...',),).toBe(false,);
         expect(await isHidden('./foo.ts',),).toBe(false,);
