@@ -215,11 +215,12 @@ function findLastSentenceStart(text: string,): number {
    * ```
    */
   function skipWs(idx: number,): number {
-    if (idx >= text.length)
-      return idx;
-    if (!isWhitespace(text.charAt(idx,),))
-      return idx;
-    return skipWs(idx + 1,);
+    /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
+    let at = idx;
+    while ((at < text.length) && isWhitespace(text.charAt(at,),)) {
+      at += 1;
+    }
+    return at;
   }
   /**
    * Walks backward from `at` looking for a terminator-then-whitespace
@@ -235,13 +236,15 @@ function findLastSentenceStart(text: string,): number {
    * ```
    */
   function walk(at: number,): number {
-    if (at <= 0)
-      return 0;
-    /** Character just before the cursor; checked for sentence-terminator membership. */
-    const prev = text.charAt(at - 1,);
-    if (SENTENCE_TERMINATORS.includes(prev,) && isWhitespace(text.charAt(at,),))
-      return skipWs(at,);
-    return walk(at - 1,);
+    // Walk backward from `at`; the first terminator-then-whitespace boundary
+    // marks the start of the trailing sentence (after its leading whitespace).
+    for (let cursor = at; cursor > 0; cursor -= 1) {
+      /** Character just before the cursor; checked for sentence-terminator membership. */
+      const prev = text.charAt(cursor - 1,);
+      if (SENTENCE_TERMINATORS.includes(prev,) && isWhitespace(text.charAt(cursor,),))
+        return skipWs(cursor,);
+    }
+    return 0;
   }
   return walk(text.length - 1,);
 }

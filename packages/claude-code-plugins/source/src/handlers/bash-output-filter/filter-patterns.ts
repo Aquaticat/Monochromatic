@@ -265,11 +265,12 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
    * ```
    */
   function skipWs(idx: number,): number {
-    if (idx >= line.length)
-      return idx;
-    if (!isWhitespace(line.charAt(idx,),))
-      return idx;
-    return skipWs(idx + 1,);
+    /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
+    let at = idx;
+    while ((at < line.length) && isWhitespace(line.charAt(at,),)) {
+      at += 1;
+    }
+    return at;
   }
   /** Position after any leading whitespace. */
   const afterLeadingWs = skipWs(0,);

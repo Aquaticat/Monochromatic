@@ -129,63 +129,41 @@ const ER_THAN_MOST_PHRASE = 'er than most';
 function findErThanMost(text: string,): string | undefined {
   /** Lower-cased text used for the case-insensitive substring scan. */
   const lower = text.toLowerCase();
-  /**
-   * Recursive search across all `er than most` occurrences.
-   *
-   * @param fromIdx - candidate scan offset
-   *
-   * @returns matched fragment, or `undefined` when exhausted
-   *
-   * @example
-   * ```ts
-   * search(0); // first matching fragment in the text
-   * ```
-   */
-  function search(fromIdx: number,): string | undefined {
-    /** Position of the next candidate `er than most`, or `-1` when exhausted. */
-    const idx = lower.indexOf(
+  // Walk every `er than most` occurrence in order (monotonic `indexOf`, no
+  // rescan of earlier text). The first occurrence with a word-char prefix and a
+  // word boundary after `most` yields the matched fragment; others are skipped.
+  for (
+    let idx = lower.indexOf(
       ER_THAN_MOST_PHRASE,
-      fromIdx,
+      0,
     );
-    if (idx === (-1))
-      return undefined;
+    idx !== (-1);
+    idx = lower.indexOf(
+      ER_THAN_MOST_PHRASE,
+      idx + 1,
+    )
+  ) {
     if (idx === 0)
-      return search(idx + 1,);
+      continue;
     /** Character immediately before the `e`; must be a word char for the match. */
     const before = lower.charAt(idx - 1,);
     if (!isWordChar(before,))
-      return search(idx + 1,);
+      continue;
     /** Position one past the trailing `t` of `most`; checked for a word boundary below. */
     const endIdx = idx + ER_THAN_MOST_PHRASE.length;
     if ((endIdx < lower.length) && isWordChar(lower.charAt(endIdx,),))
-      return search(idx + 1,);
-    /**
-     * Walks backward to the start of the word that ends in `er`.
-     *
-     * @param at - candidate offset; the function steps back while the char is a word char
-     *
-     * @returns inclusive start of the word
-     *
-     * @example
-     * ```ts
-     * findWordStart(idx - 1); // 0 for 'bigger than most' when idx points to the `e` of `er`
-     * ```
-     */
-    function findWordStart(at: number,): number {
-      if (at < 0)
-        return 0;
-      if (!isWordChar(text.charAt(at,),))
-        return at + 1;
-      return findWordStart(at - 1,);
+      continue;
+    /** Inclusive start of the word that ends in `er`, found by scanning back over word chars. */
+    let wordStart = idx - 1;
+    while ((wordStart > 0) && isWordChar(text.charAt(wordStart - 1,),)) {
+      wordStart -= 1;
     }
-    /** Inclusive start of the word; the slice covers `<word>er than most`. */
-    const wordStart = findWordStart(idx - 1,);
     return text.slice(
       wordStart,
       endIdx,
     );
   }
-  return search(0,);
+  return undefined;
 }
 
 /**

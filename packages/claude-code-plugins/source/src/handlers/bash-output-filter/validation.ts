@@ -125,57 +125,33 @@ function hasBinaryTool(cmd: string,): boolean {
  * ```
  */
 function hasFileRedirect(cmd: string,): boolean {
-  /**
-   * Walks `cmd` looking for `>` followed by optional whitespace, then a
-   * non-whitespace, non-pipe, non-amp, non-semi character.
-   *
-   * @param fromIdx - candidate scan offset
-   *
-   * @returns whether a matching redirect was found at or after `fromIdx`
-   *
-   * @example
-   * ```ts
-   * check(0); // true for 'cat > out.txt'
-   * ```
-   */
-  function check(fromIdx: number,): boolean {
-    /** Next `>` position in `cmd` from `fromIdx`, or `-1` when exhausted. */
-    const gtIdx = cmd.indexOf(
+  // Walk each `>` in order (monotonic `indexOf`, no rescan of earlier text).
+  // For each, skip optional whitespace and test the next char; a redirect to a
+  // real target (not `|`, `&`, `;`, or whitespace) marks a file redirect.
+  for (
+    let gtIdx = cmd.indexOf(
       '>',
-      fromIdx,
+      0,
     );
-    if (gtIdx === (-1))
-      return false;
-    /**
-     * Skips ASCII whitespace from `at` onwards.
-     *
-     * @param at - candidate scan offset
-     *
-     * @returns first index whose character is not whitespace
-     *
-     * @example
-     * ```ts
-     * skipWs(0); // 2 for cmd === '  foo'
-     * ```
-     */
-    function skipWs(at: number,): number {
-      if (at >= cmd.length)
-        return at;
-      if (!isWhitespace(cmd.charAt(at,),))
-        return at;
-      return skipWs(at + 1,);
+    gtIdx !== (-1);
+    gtIdx = cmd.indexOf(
+      '>',
+      gtIdx + 1,
+    )
+  ) {
+    /** Position of the candidate destination char, advanced past whitespace after `>`. */
+    let afterWs = gtIdx + 1;
+    while ((afterWs < cmd.length) && isWhitespace(cmd.charAt(afterWs,),)) {
+      afterWs += 1;
     }
-    /** Position of the candidate destination char, or past EOS. */
-    const afterWs = skipWs(gtIdx + 1,);
     if (afterWs < cmd.length) {
       /** Char immediately following the optional whitespace; classified below. */
       const next = cmd.charAt(afterWs,);
       if ((next !== '|') && (next !== '&') && (next !== ';') && (!isWhitespace(next,)))
         return true;
     }
-    return check(gtIdx + 1,);
   }
-  return check(0,);
+  return false;
 }
 
 /**
@@ -329,22 +305,9 @@ function isTtyFlag(token: string,): boolean {
 function hasTtyContainerInvoke(cmd: string,): boolean {
   /** Whitespace-separated tokens of the command. */
   const tokens = splitWhitespace(cmd,);
-  /**
-   * Walks pairs of adjacent tokens looking for `(runtime, subcommand)` then
-   * a later TTY flag.
-   *
-   * @param idx - candidate offset for the runtime token
-   *
-   * @returns whether a TTY container invocation begins at or after `idx`
-   *
-   * @example
-   * ```ts
-   * check(0); // true when tokens contain docker/podman exec/run + -it
-   * ```
-   */
-  function check(idx: number,): boolean {
-    if ((idx + 1) >= tokens.length)
-      return false;
+  // Scan adjacent token pairs for `(runtime, subcommand)`; on a hit, look for a
+  // later TTY flag among the remaining tokens.
+  for (let idx = 0; (idx + 1) < tokens.length; idx += 1) {
     /** Candidate container runtime token. */
     const runtime = tokens[idx] ?? '';
     /** Candidate subcommand token immediately following the runtime. */
@@ -355,9 +318,8 @@ function hasTtyContainerInvoke(cmd: string,): boolean {
           return true;
       }
     }
-    return check(idx + 1,);
   }
-  return check(0,);
+  return false;
 }
 
 /**
@@ -377,26 +339,12 @@ function hasTtyContainerInvoke(cmd: string,): boolean {
 function hasBunBuild(cmd: string,): boolean {
   /** Whitespace-separated tokens of the command. */
   const tokens = splitWhitespace(cmd,);
-  /**
-   * Walks adjacent token pairs looking for `bun` then `build`.
-   *
-   * @param idx - candidate offset for the `bun` token
-   *
-   * @returns whether the pair appears at or after `idx`
-   *
-   * @example
-   * ```ts
-   * check(0); // true for tokens ['bun', 'build']
-   * ```
-   */
-  function check(idx: number,): boolean {
-    if ((idx + 1) >= tokens.length)
-      return false;
+  // Scan adjacent token pairs for `bun` immediately followed by `build`.
+  for (let idx = 0; (idx + 1) < tokens.length; idx += 1) {
     if ((tokens[idx] === 'bun') && (tokens[idx + 1] === 'build'))
       return true;
-    return check(idx + 1,);
   }
-  return check(0,);
+  return false;
 }
 
 /**
@@ -479,61 +427,36 @@ function hasProcessSubstitution(cmd: string,): boolean {
  * ```
  */
 function hasHeredoc(cmd: string,): boolean {
-  /**
-   * Walks `cmd` looking for `<<` openers followed by optional `<`/`-`,
-   * optional whitespace, then a non-whitespace body char.
-   *
-   * @param fromIdx - candidate scan offset
-   *
-   * @returns whether a matching heredoc opener was found at or after `fromIdx`
-   *
-   * @example
-   * ```ts
-   * check(0); // true for 'cat <<EOF'
-   * ```
-   */
-  function check(fromIdx: number,): boolean {
-    /** Next `<<` position from `fromIdx`, or `-1` when exhausted. */
-    const idx = cmd.indexOf(
+  /** Length of the base `<<` opener; characters consumed before any variant marker. */
+  const OPENER_LENGTH = '<<'.length;
+  // Walk each `<<` opener in order; skip an optional `<`/`-` variant marker and
+  // any whitespace, then require a non-whitespace body char.
+  for (
+    let idx = cmd.indexOf(
       '<<',
-      fromIdx,
+      0,
     );
-    if (idx === (-1))
-      return false;
-    /** Length of the base `<<` opener; characters consumed before any variant marker. */
-    const OPENER_LENGTH = '<<'.length;
+    idx !== (-1);
+    idx = cmd.indexOf(
+      '<<',
+      idx + 1,
+    )
+  ) {
     /** Char after the `<<`; may indicate `<<<` or `<<-` variants. */
     const afterOpener = cmd.charAt(idx + OPENER_LENGTH,);
     /** Cursor past the optional variant marker. */
     const afterMarker = ((afterOpener === '<') || (afterOpener === '-'))
       ? (idx + OPENER_LENGTH + 1)
       : (idx + OPENER_LENGTH);
-    /**
-     * Skips ASCII whitespace from `at`.
-     *
-     * @param at - candidate scan offset
-     *
-     * @returns first index whose character is not whitespace
-     *
-     * @example
-     * ```ts
-     * skipWs(0); // 1 for ' x'
-     * ```
-     */
-    function skipWs(at: number,): number {
-      if (at >= cmd.length)
-        return at;
-      if (!isWhitespace(cmd.charAt(at,),))
-        return at;
-      return skipWs(at + 1,);
+    /** Position of the candidate body char, advanced past whitespace after the marker. */
+    let afterWs = afterMarker;
+    while ((afterWs < cmd.length) && isWhitespace(cmd.charAt(afterWs,),)) {
+      afterWs += 1;
     }
-    /** Position of the candidate body char. */
-    const afterWs = skipWs(afterMarker,);
     if ((afterWs < cmd.length) && (!isWhitespace(cmd.charAt(afterWs,),)))
       return true;
-    return check(idx + 1,);
   }
-  return check(0,);
+  return false;
 }
 
 /** Shell built-ins that change shell state in ways the filter cannot follow. */

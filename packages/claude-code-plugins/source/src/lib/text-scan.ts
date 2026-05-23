@@ -141,67 +141,29 @@ function isWhitespace(c: string,): boolean {
  * ```
  */
 function splitWhitespace(s: string,): string[] {
-  /**
-   * Recursive walker that emits tokens between whitespace runs without using `let`.
-   *
-   * @param idx - current scan position in the input string
-   *
-   * @param current - characters accumulated for the in-progress token
-   *
-   * @param acc - tokens emitted so far
-   *
-   * @returns final ordered list of non-empty tokens
-   *
-   * @example
-   * ```ts
-   * walk({ idx: 0, current: '', acc: [] }); // ['a', 'b'] for input 'a b'
-   * ```
-   */
-  function walk(
-    {
-      idx,
-      current,
-      acc,
-    }: {
-      idx: number;
-      current: string;
-      acc: readonly string[];
-    },
-  ): readonly string[] {
-    if (idx >= s.length) {
-      return current === ''
-        ? acc
-        : [
-          ...acc,
-          current,
-        ];
+  /** Emitted tokens; each is sliced out whole, so no per-character copy accumulates. */
+  const tokens: string[] = [];
+  // Single forward pass; whitespace advances one char, a non-whitespace run is
+  // sliced out in one piece. `idx` jumps over each token, so the stride varies.
+  for (let idx = 0; idx < s.length;) {
+    if (isWhitespace(s.charAt(idx,),)) {
+      idx += 1;
+      continue;
     }
-    /** Current character under inspection during the walk. */
-    const ch = s.charAt(idx,);
-    if (isWhitespace(ch,)) {
-      return walk({
-        idx: idx + 1,
-        current: '',
-        acc: current === ''
-          ? acc
-          : [
-            ...acc,
-            current,
-          ],
-      },);
+    /** Inclusive start of the current non-whitespace token. */
+    const start = idx;
+    /** Exclusive end of the token, advanced to the next whitespace or end of input. */
+    let end = idx + 1;
+    while ((end < s.length) && (!isWhitespace(s.charAt(end,),))) {
+      end += 1;
     }
-    return walk({
-      idx: idx + 1,
-      current: current + ch,
-      acc,
-    },);
+    tokens.push(s.slice(
+      start,
+      end,
+    ),);
+    idx = end;
   }
-
-  return [...walk({
-    idx: 0,
-    current: '',
-    acc: [],
-  },),];
+  return tokens;
 }
 
 //endregion Splitting
@@ -298,37 +260,30 @@ function containsWordBoundedPhrase(
   /** Lower-cased phrase for case-insensitive lookup. */
   const lowerPhrase = phrase.toLowerCase();
 
-  /**
-   * Recursive scan over `indexOf` matches, checking boundaries at each hit.
-   *
-   * @param idx - position in `lowerHay` from which to start searching
-   *
-   * @returns whether a word-bounded match was found at or after `idx`
-   *
-   * @example
-   * ```ts
-   * checkFrom(0); // true when the phrase appears word-bounded anywhere in the haystack
-   * ```
-   */
-  function checkFrom(idx: number,): boolean {
-    /** Index of the next candidate match, or `-1` when exhausted. */
-    const next = lowerHay.indexOf(
+  // Walk every `indexOf` match in order; the cursor advances by one past each
+  // hit (monotonic, no rescan of earlier text) until a word-bounded match is
+  // found or the matches are exhausted.
+  for (
+    let idx = lowerHay.indexOf(
       lowerPhrase,
-      idx,
+      0,
     );
-    if (next === (-1))
-      return false;
+    idx !== (-1);
+    idx = lowerHay.indexOf(
+      lowerPhrase,
+      idx + 1,
+    )
+  ) {
     if (boundariesSatisfied({
       haystack: lowerHay,
       phrase: lowerPhrase,
-      index: next,
+      index: idx,
     },)) {
       return true;
     }
-    return checkFrom(next + 1,);
   }
 
-  return checkFrom(0,);
+  return false;
 }
 
 /**
@@ -414,36 +369,24 @@ function stripBetweenDelims(
     disallowedInside?: string;
   },
 ): string {
-  /**
-   * Recursive walker that accumulates a stripped output without `let`.
-   *
-   * @param idx - current scan position in the input string
-   *
-   * @param acc - output string built up so far
-   *
-   * @returns final stripped output once `idx` runs past the end
-   *
-   * @example
-   * ```ts
-   * walk({ idx: 0, acc: '' }); // 'a  b' for text 'a `code` b'
-   * ```
-   */
-  function walk(
-    {
-      idx,
-      acc,
-    }: {
-      idx: number;
-      acc: string;
-    },
-  ): string {
-    /** Index of next opening delimiter from `idx`, or `-1` when none remains. */
-    const openIdx = text.indexOf(
+  /** Output segments, joined once at the end so the accumulator is never recopied per span. */
+  const parts: string[] = [];
+  /** Cursor; advances monotonically past each emitted or stripped span. */
+  let idx = 0;
+  // Walk each opener in order. The remainder from `idx` is flushed once after
+  // the loop, covering both terminal cases: no further opener, and an unmatched
+  // opener (which breaks out without consuming the rest).
+  for (
+    let openIdx = text.indexOf(
+      openDelim,
+      0,
+    );
+    openIdx !== (-1);
+    openIdx = text.indexOf(
       openDelim,
       idx,
-    );
-    if (openIdx === (-1))
-      return acc + text.slice(idx,);
+    )
+  ) {
     /** Search start for the matching close delimiter (must skip the entire opener). */
     const closeSearchStart = openIdx + openDelim.length;
     /** Index of the closing delimiter, or `-1` when the opener is unmatched. */
@@ -452,36 +395,34 @@ function stripBetweenDelims(
       closeSearchStart,
     );
     if (closeIdx === (-1))
-      return acc + text.slice(idx,);
+      break;
     /** Span between the delimiters (exclusive of both ends). */
     const inside = text.slice(
       closeSearchStart,
       closeIdx,
     );
     if ((disallowedInside !== undefined) && inside.includes(disallowedInside,)) {
-      // Skip just past this opener and resume searching; this preserves the
-      // opener verbatim instead of treating it as a strip start.
-      return walk({
-        idx: closeSearchStart,
-        acc: acc + text.slice(
-          idx,
-          closeSearchStart,
-        ),
-      },);
+      // Disallowed char inside: keep the opener verbatim and resume just past it
+      // instead of treating it as a strip start.
+      parts.push(text.slice(
+        idx,
+        closeSearchStart,
+      ),);
+      idx = closeSearchStart;
     }
-    return walk({
-      idx: closeIdx + closeDelim.length,
-      acc: acc + text.slice(
+    else {
+      // Strip the delimited span: emit up to the opener, resume past the close.
+      parts.push(text.slice(
         idx,
         openIdx,
-      ),
-    },);
+      ),);
+      idx = closeIdx + closeDelim.length;
+    }
   }
-
-  return walk({
-    idx: 0,
-    acc: '',
-  },);
+  parts.push(text.slice(idx,),);
+  /** Joined output; bound to a name so the helper-function shape suppresses the root `let idx`. */
+  const result = parts.join('',);
+  return result;
 }
 
 /**

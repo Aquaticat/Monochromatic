@@ -94,11 +94,12 @@ function invokesBunTest(command: string,): boolean {
    * ```
    */
   function skipWhitespace(idx: number,): number {
-    if (idx >= command.length)
-      return idx;
-    if (!isWhitespace(command.charAt(idx,),))
-      return idx;
-    return skipWhitespace(idx + 1,);
+    /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
+    let at = idx;
+    while ((at < command.length) && isWhitespace(command.charAt(at,),)) {
+      at += 1;
+    }
+    return at;
   }
   /**
    * Checks whether `pos` (taken as a segment start) is followed by
@@ -142,7 +143,7 @@ function invokesBunTest(command: string,): boolean {
    * Scans `command` for boundary characters; reports success when any
    * boundary is followed by a `bun test` segment.
    *
-   * @param idx - candidate scan offset
+   * @param fromIdx - candidate scan offset
    *
    * @returns whether a `bun test` segment is found at any boundary
    *
@@ -151,12 +152,14 @@ function invokesBunTest(command: string,): boolean {
    * scanForBoundary(0); // true for command === 'cd x && bun test'
    * ```
    */
-  function scanForBoundary(idx: number,): boolean {
-    if (idx >= command.length)
-      return false;
-    if (isCommandBoundary(command.charAt(idx,),) && matchesAt(idx + 1,))
-      return true;
-    return scanForBoundary(idx + 1,);
+  function scanForBoundary(fromIdx: number,): boolean {
+    // Scan every position from `fromIdx`; a command separator immediately
+    // followed by a `bun test` segment confirms the invocation.
+    for (let idx = fromIdx; idx < command.length; idx += 1) {
+      if (isCommandBoundary(command.charAt(idx,),) && matchesAt(idx + 1,))
+        return true;
+    }
+    return false;
   }
   return matchesAt(0,) || scanForBoundary(0,);
 }

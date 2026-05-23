@@ -90,39 +90,33 @@ function hasFilePathWithExtension(line: string,): boolean {
   function checkExt(ext: string,): boolean {
     /** Search token: leading dot plus the extension. */
     const token = `.${ext}`;
-    /**
-     * Recursive `indexOf` walk over `token` matches in `lower`.
-     *
-     * @param fromIdx - candidate scan offset
-     *
-     * @returns whether a valid match exists at or after `fromIdx`
-     *
-     * @example
-     * ```ts
-     * search(0); // true when a valid path.<ext> appears in the line
-     * ```
-     */
-    function search(fromIdx: number,): boolean {
-      /** Position of the next candidate, or `-1` when exhausted. */
-      const idx = lower.indexOf(
+    // Walk every `.<ext>` occurrence in order (monotonic `indexOf`). A valid
+    // path context (path-char prefix, word boundary after the extension)
+    // confirms a file path; other occurrences are skipped.
+    for (
+      let idx = lower.indexOf(
         token,
-        fromIdx,
+        0,
       );
-      if (idx === (-1))
-        return false;
+      idx !== (-1);
+      idx = lower.indexOf(
+        token,
+        idx + 1,
+      )
+    ) {
       if (idx === 0)
-        return search(idx + 1,);
+        continue;
       /** Char immediately before the dot; must be a path char per the original regex. */
       const before = line.charAt(idx - 1,);
       if (!isPathChar(before,))
-        return search(idx + 1,);
+        continue;
       /** Position one past the extension; checked below for a word boundary. */
       const endIdx = idx + token.length;
       if ((endIdx < line.length) && isWordChar(line.charAt(endIdx,),))
-        return search(idx + 1,);
+        continue;
       return true;
     }
-    return search(0,);
+    return false;
   }
   return FILE_EXTENSIONS.some(function checkExtension(ext,): boolean {
     return checkExt(ext,);
@@ -156,65 +150,46 @@ const LINE_NUMBER_MAX_DIGITS = 5;
  */
 function hasLineNumberSuffix(line: string,): boolean {
   /**
-   * Recursive scan across `:` occurrences.
+   * Counts consecutive ASCII digits starting at `at`, capped at
+   * {@link LINE_NUMBER_MAX_DIGITS} to mirror the original regex. The cap makes
+   * this a constant-bounded scan; it never recurses on input length.
    *
-   * @param fromIdx - candidate scan offset
+   * @param at - first offset to inspect
    *
-   * @returns whether a `:N` suffix exists at or after `fromIdx`
+   * @returns digits matched, in `[0, LINE_NUMBER_MAX_DIGITS]`
    *
    * @example
    * ```ts
-   * search(0); // true when a `:42` shape appears later in the line
+   * countDigits(colonIdx + 1); // 2 for ':42 trailing'
    * ```
    */
-  function search(fromIdx: number,): boolean {
-    /** Position of the next `:`, or `-1` when exhausted. */
-    const colonIdx = line.indexOf(
-      ':',
-      fromIdx,
-    );
-    if (colonIdx === (-1))
-      return false;
-    /**
-     * Counts consecutive ASCII digits starting at `at`, capped at
-     * {@link LINE_NUMBER_MAX_DIGITS} to mirror the original regex.
-     *
-     * @param at - candidate scan offset
-     *
-     * @param count - digits matched so far
-     *
-     * @returns total digits matched
-     *
-     * @example
-     * ```ts
-     * countDigits({ at: colonIdx + 1, count: 0 }); // 2 for ':42 trailing'
-     * ```
-     */
-    function countDigits(
-      {
-        at,
-        count,
-      }: {
-        at: number;
-        count: number;
-      },
-    ): number {
-      if (count >= LINE_NUMBER_MAX_DIGITS)
-        return count;
-      if (at >= line.length)
-        return count;
-      if (!isDigit(line.charAt(at,),))
-        return count;
-      return countDigits({
-        at: at + 1,
-        count: count + 1,
-      },);
+  function countDigits(at: number,): number {
+    /** Running digit tally; returned as the helper-shape binding. */
+    let count = 0;
+    while (
+      (count < LINE_NUMBER_MAX_DIGITS)
+      && ((at + count) < line.length)
+      && isDigit(line.charAt(at + count,),)
+    ) {
+      count += 1;
     }
+    return count;
+  }
+  // Walk every `:` in order (monotonic `indexOf`). A run of 1-5 digits ending at
+  // a word boundary marks a line-number suffix; other colons are skipped.
+  for (
+    let colonIdx = line.indexOf(
+      ':',
+      0,
+    );
+    colonIdx !== (-1);
+    colonIdx = line.indexOf(
+      ':',
+      colonIdx + 1,
+    )
+  ) {
     /** Number of digits found right after the colon. */
-    const digitCount = countDigits({
-      at: colonIdx + 1,
-      count: 0,
-    },);
+    const digitCount = countDigits(colonIdx + 1,);
     if ((digitCount >= LINE_NUMBER_MIN_DIGITS)
       && (digitCount <= LINE_NUMBER_MAX_DIGITS))
     {
@@ -223,9 +198,8 @@ function hasLineNumberSuffix(line: string,): boolean {
       if ((afterIdx >= line.length) || (!isWordChar(line.charAt(afterIdx,),)))
         return true;
     }
-    return search(colonIdx + 1,);
   }
-  return search(0,);
+  return false;
 }
 
 //endregion

@@ -251,88 +251,86 @@ function isShellWs(c: string,): boolean {
  */
 function stripCommandNoise(command: string,): string {
   /**
-   * Walks `command` forward to the first character that is NOT a strippable
-   * prefix, returning the slice from that position to the end.
+   * Locates the exclusive end of the token starting at `at`: the first shell
+   * whitespace at or after `at`, else the end of `command`.
    *
-   * @param idx - candidate scan offset (starts at 0)
+   * @param at - first offset to inspect
    *
-   * @returns slice of `command` after every matched prefix
+   * @returns first whitespace index at or after `at`, or `command.length`
    *
    * @example
    * ```ts
-   * stripFrom(0); // '5 ls -la' for 'NODE_ENV=prod env timeout 5 ls -la'
+   * findTokenEnd(0); // 13 for 'NODE_ENV=prod ...'
    * ```
    */
-  function stripFrom(idx: number,): string {
-    if (idx >= command.length)
-      return '';
-    /**
-     * Locates the exclusive end of the token starting at `at` (first whitespace).
-     *
-     * @param at - candidate scan offset
-     *
-     * @returns first whitespace index, or `command.length`
-     *
-     * @example
-     * ```ts
-     * findTokenEnd(0); // 13 for 'NODE_ENV=prod ...'
-     * ```
-     */
-    function findTokenEnd(at: number,): number {
-      if (at >= command.length)
-        return at;
-      if (isShellWs(command.charAt(at,),))
-        return at;
-      return findTokenEnd(at + 1,);
+  function findTokenEnd(at: number,): number {
+    /** Cursor advanced to the token's end; returned as the helper-shape binding. */
+    let end = at;
+    while ((end < command.length) && (!isShellWs(command.charAt(end,),))) {
+      end += 1;
     }
-    /**
-     * Skips whitespace from `at`.
-     *
-     * @param at - candidate scan offset
-     *
-     * @returns first non-whitespace index, or `command.length`
-     *
-     * @example
-     * ```ts
-     * skipWs(13); // 14 for 'NODE_ENV=prod foo'
-     * ```
-     */
-    function skipWs(at: number,): number {
-      if (at >= command.length)
-        return at;
-      if (!isShellWs(command.charAt(at,),))
-        return at;
-      return skipWs(at + 1,);
+    return end;
+  }
+  /**
+   * Skips shell whitespace from `at`.
+   *
+   * @param at - first offset to inspect
+   *
+   * @returns first non-whitespace index at or after `at`, or `command.length`
+   *
+   * @example
+   * ```ts
+   * skipWs(13); // 14 for 'NODE_ENV=prod foo'
+   * ```
+   */
+  function skipWs(at: number,): number {
+    /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
+    let cursor = at;
+    while ((cursor < command.length) && isShellWs(command.charAt(cursor,),)) {
+      cursor += 1;
     }
+    return cursor;
+  }
+  /** Cursor advanced past each stripped prefix; bound to a name so the helper-function shape suppresses the root `let`. */
+  let idx = 0;
+  // Strip leading env-var assignments (`FOO=bar`) and wrapper-plus-argument
+  // pairs (`timeout 5`, `env ...`) until the cursor reaches a token that is
+  // neither, then return the remainder verbatim.
+  while (idx < command.length) {
     /** Exclusive end of the candidate first token. */
     const tokenEnd = findTokenEnd(idx,);
     if (tokenEnd === idx)
-      return command.slice(idx,);
+      break;
     /** Position past the token's trailing whitespace; must advance for a match. */
     const afterTokenWs = skipWs(tokenEnd,);
     if (afterTokenWs === tokenEnd)
-      return command.slice(idx,);
+      break;
     /** Candidate first token. */
     const token = command.slice(
       idx,
       tokenEnd,
     );
-    if ((!token.startsWith('-',)) && token.includes('=',))
-      return stripFrom(afterTokenWs,);
-    if (COMMAND_NOISE_WRAPPERS.has(token,)) {
-      /** Exclusive end of the wrapper's argument token. */
-      const argEnd = findTokenEnd(afterTokenWs,);
-      if (argEnd === afterTokenWs)
-        return command.slice(idx,);
-      /** Position past the argument's trailing whitespace; required for the match. */
-      const afterArgWs = skipWs(argEnd,);
-      if (afterArgWs === argEnd)
-        return command.slice(idx,);
-      return stripFrom(afterArgWs,);
+    if ((!token.startsWith('-',)) && token.includes('=',)) {
+      idx = afterTokenWs;
+      continue;
     }
-    return command.slice(idx,);
+    if (!COMMAND_NOISE_WRAPPERS.has(token,))
+      break;
+    /** Exclusive end of the wrapper's argument token. */
+    const argEnd = findTokenEnd(afterTokenWs,);
+    if (argEnd === afterTokenWs)
+      break;
+    /** Position past the argument's trailing whitespace; required for the match. */
+    const afterArgWs = skipWs(argEnd,);
+    if (afterArgWs === argEnd)
+      break;
+    idx = afterArgWs;
   }
-  return stripFrom(0,);
+  /** Remainder after every stripped prefix; empty when the cursor ran past the end. */
+  const result = (idx >= command.length)
+    ? ''
+    : command.slice(idx,);
+  return result;
 }
 
 /**

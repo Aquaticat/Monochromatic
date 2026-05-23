@@ -134,6 +134,18 @@ await describe({
             expect(splitWhitespace('   \t\n  ',),).toEqual([],);
           },
         },),
+        it({
+          name: 'tokenises a very large input in linear time',
+          fn: async () => {
+            /** Token count large enough that the former O(n^2) array-spread accumulator stalled. */
+            const count = 200_000;
+            /** Result of tokenising `count` single-character tokens separated by spaces. */
+            const result = splitWhitespace('a '.repeat(count,),);
+            expect(result.length,).toBe(count,);
+            expect(result[0],).toBe('a',);
+            expect(result.at(-1,),).toBe('a',);
+          },
+        },),
       ],
     },),
     describe({

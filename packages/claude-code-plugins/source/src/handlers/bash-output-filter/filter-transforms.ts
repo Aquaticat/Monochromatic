@@ -97,80 +97,37 @@ function isCollapseCandidate(c: string,): boolean {
  * ```
  */
 function collapseRepeatedChars(line: string,): string {
-  /**
-   * Recursive walker that accumulates the collapsed output without `let`.
-   *
-   * @param idx - current scan position in `line`
-   *
-   * @param acc - output string built up so far
-   *
-   * @returns final collapsed output once `idx` runs past the end of the line
-   *
-   * @example
-   * ```ts
-   * walk({ idx: 0, acc: '' }); // '==== (x20 repeated characters)' for line === '===...==='
-   * ```
-   */
-  function walk(
-    {
-      idx,
-      acc,
-    }: {
-      idx: number;
-      acc: string;
-    },
-  ): string {
-    if (idx >= line.length)
-      return acc;
+  /** Output segments, joined once at the end so no intermediate string is recopied per character. */
+  const parts: string[] = [];
+  // Single forward pass; `idx` jumps by whole runs, so the stride is variable
+  // and the update happens in the body rather than a fixed `for` step.
+  for (let idx = 0; idx < line.length;) {
     /** Character under the cursor; gates whether a run is even considered. */
     const c = line.charAt(idx,);
     if (!isCollapseCandidate(c,)) {
-      return walk({
-        idx: idx + 1,
-        acc: acc + c,
-      },);
+      parts.push(c,);
+      idx += 1;
+      continue;
     }
-    /**
-     * Walks forward while the current cursor still sees the same character.
-     *
-     * @param end - candidate end offset
-     *
-     * @returns exclusive end of the run starting at `idx`
-     *
-     * @example
-     * ```ts
-     * findRunEnd(idx + 1); // first non-`c` index at or after `idx + 1`
-     * ```
-     */
-    function findRunEnd(end: number,): number {
-      if (end >= line.length)
-        return end;
-      if (line.charAt(end,) !== c)
-        return end;
-      return findRunEnd(end + 1,);
+    /** Exclusive end of the current run of `c`, advanced by a linear scan. */
+    let runEnd = idx + 1;
+    while ((runEnd < line.length) && (line.charAt(runEnd,) === c)) {
+      runEnd += 1;
     }
-    /** Exclusive end of the current run of `c`. */
-    const runEnd = findRunEnd(idx + 1,);
     /** Length of the current run; gates the collapse vs. emit-verbatim choice. */
     const runLength = runEnd - idx;
     if (runLength >= COLLAPSE_THRESHOLD) {
-      return walk({
-        idx: runEnd,
-        acc: `${acc}${c.repeat(MAX_REPEATED_CHARS,)} (x${runLength} repeated characters)`,
-      },);
+      parts.push(`${c.repeat(MAX_REPEATED_CHARS,)} (x${runLength} repeated characters)`,);
     }
-    return walk({
-      idx: runEnd,
-      acc: acc + line.slice(
+    else {
+      parts.push(line.slice(
         idx,
         runEnd,
-      ),
-    },);
+      ),);
+    }
+    idx = runEnd;
   }
-  return walk({
-    idx: 0,
-    acc: '',
-  },);
+  return parts.join('',);
 }
 
 //endregion

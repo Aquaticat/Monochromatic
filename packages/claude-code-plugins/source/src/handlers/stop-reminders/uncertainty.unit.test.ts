@@ -153,6 +153,28 @@ await describe({
             );
           },
         },),
+        it({
+          name: 'flags a question that spans the whole message (sentence start at 0)',
+          fn: async () => {
+            const m = findTrailingQuestion('Want me to commit?',);
+            expect(m?.sentence,).toBe('Want me to commit?',);
+          },
+        },),
+        it({
+          name: 'finds the sentence start after a terminator and multiple spaces',
+          fn: async () => {
+            const m = findTrailingQuestion('Done!   Should I proceed?',);
+            expect(m?.sentence,).toBe('Should I proceed?',);
+          },
+        },),
+        it({
+          name: 'ignores a rhetorical trailing question',
+          fn: async () => {
+            expect(findTrailingQuestion('I fixed it. Why would anyone object?',),).toBe(
+              undefined,
+            );
+          },
+        },),
       ],
     },),
     describe({
