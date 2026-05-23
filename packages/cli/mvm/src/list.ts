@@ -60,8 +60,8 @@ function isDigitString(s: string,): boolean {
 /**
  * Splits `s` on runs of whitespace, dropping empty fragments.
  *
- * Equivalent to `s.trim().split(/\s+/)` for non-empty results; written as an
- * index walker to avoid a regex literal under the `no-regex`
+ * Equivalent to `s.trim().split(/\s+/)` for non-empty results; written as a
+ * single linear index pass to avoid a regex literal under the `no-regex`
  * rule.
  *
  * @param s - input string
@@ -74,76 +74,34 @@ function isDigitString(s: string,): boolean {
  * splitOnWhitespace('   ');       // []
  * ```
  */
-function splitOnWhitespace(s: string,): readonly string[] {
-  /**
-   * Walks `s` from `idx`, accumulating tokens.
-   *
-   * @param idx - current scan offset
-   *
-   * @param acc - tokens collected so far
-   *
-   * @returns final token list once the cursor exceeds `s.length`
-   *
-   * @example
-   * ```ts
-   * walk({ idx: 0, acc: [] }); // ['a', 'b'] for s === 'a b'
-   * ```
-   */
-  function walk(
-    {
-      idx,
-      acc,
-    }: {
-      idx: number;
-      acc: readonly string[];
-    },
-  ): readonly string[] {
-    if (idx >= s.length)
-      return acc;
-    /** Current char under the cursor; whitespace skips, non-whitespace starts a token. */
-    const c = s.charAt(idx,);
-    if (isWhitespaceChar(c,)) {
-      return walk({
-        idx: idx + 1,
-        acc,
-      },);
-    }
-    /**
-     * Locates the exclusive end of the token starting at the calling cursor.
-     *
-     * @param end - candidate end index; advanced until whitespace or EOS
-     *
-     * @returns exclusive token end
-     *
-     * @example
-     * ```ts
-     * findTokenEnd(0); // 2 for s === 'ab cd'
-     * ```
-     */
-    function findTokenEnd(end: number,): number {
-      if (end >= s.length)
-        return end;
-      if (isWhitespaceChar(s.charAt(end,),))
-        return end;
-      return findTokenEnd(end + 1,);
-    }
-    /** Exclusive end of the token that begins at `idx`. */
-    const tokenEnd = findTokenEnd(idx + 1,);
-    return walk({
-      idx: tokenEnd,
-      acc: [
-        ...acc,
-        s.slice(
+export function splitOnWhitespace(s: string,): readonly string[] {
+  return (function collect(): readonly string[] {
+    /** Tokens in order; appended once per non-whitespace run so the result is never rebuilt each step. */
+    const tokens: string[] = [];
+    /** Scan cursor over `s`; advances monotonically to `s.length` (single linear pass: O(n) time, O(1) stack, no recursion). */
+    let idx = 0;
+    while (idx < s.length) {
+      if (isWhitespaceChar(s.charAt(idx,),)) {
+        idx += 1;
+      }
+      else {
+        /** Inclusive start of the non-whitespace run under the cursor; the run is sliced out once its end is reached. */
+        const start = idx;
+        while (idx < s.length) {
+          if (isWhitespaceChar(s.charAt(idx,),))
+            break;
+          idx += 1;
+        }
+        /** Non-whitespace run from `start` to the cursor; one slice per token keeps total work linear. */
+        const token = s.slice(
+          start,
           idx,
-          tokenEnd,
-        ),
-      ],
-    },);
-  }
-  return walk({
-    idx: 0,
-    acc: [],
-  },);
+        );
+        tokens.push(token,);
+      }
+    }
+    return tokens;
+  })();
 }
 
 /**
