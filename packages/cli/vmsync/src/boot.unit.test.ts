@@ -6,6 +6,9 @@ import {
 
 import { parseMemoryToBytes, } from './boot.ts';
 
+/** Iteration count for the long-run stack-safety cases; far exceeds the V8 recursion depth the old digit/whitespace walkers would have overflowed at, yet computes instantly. */
+const LONG_RUN = 100_000;
+
 //region parseMemoryToBytes: converts human-readable memory strings to byte counts
 
 await describe({
@@ -93,6 +96,70 @@ await describe({
           parseMemoryToBytes('4.5G',);
         },)
           .toThrow('invalid memory format',);
+      },
+    },),
+
+    it({
+      name: 'parses a value with a space before the unit',
+      fn: async () => {
+        expect(parseMemoryToBytes('2048 M',),).toBe(2_048 * 1_048_576,);
+      },
+    },),
+
+    it({
+      name: 'parses a value with a tab before the unit',
+      fn: async () => {
+        expect(parseMemoryToBytes('4\tG',),).toBe(4 * 1_073_741_824,);
+      },
+    },),
+
+    it({
+      name: 'rejects leading whitespace',
+      fn: async () => {
+        expect(() => {
+          parseMemoryToBytes(' 4G',);
+        },)
+          .toThrow('invalid memory format',);
+      },
+    },),
+
+    it({
+      name: 'rejects trailing whitespace after the unit',
+      fn: async () => {
+        expect(() => {
+          parseMemoryToBytes('4G ',);
+        },)
+          .toThrow('invalid memory format',);
+      },
+    },),
+
+    it({
+      name: 'rejects all-whitespace input',
+      fn: async () => {
+        expect(() => {
+          parseMemoryToBytes('   ',);
+        },)
+          .toThrow('invalid memory format',);
+      },
+    },),
+
+    it({
+      name: 'handles a long whitespace run between value and unit without stack overflow',
+      fn: async () => {
+        expect(parseMemoryToBytes(`4${' '.repeat(LONG_RUN,)}G`,),).toBe(
+          4 * 1_073_741_824,
+        );
+      },
+    },),
+
+    it({
+      name: 'handles a long digit run without stack overflow',
+      fn: async () => {
+        expect(() => {
+          parseMemoryToBytes(`${'9'.repeat(LONG_RUN,)}G`,);
+        },)
+          .not
+          .toThrow();
       },
     },),
   ],

@@ -343,13 +343,16 @@ export function parseMemoryToBytes(memory: string,): number {
    * ```
    */
   function findDigitsEnd(idx: number,): number {
-    if (idx >= memory.length)
-      return idx;
-    /** Char under the cursor; stops the scan when non-digit. */
-    const c = memory.charAt(idx,);
-    if ((c < '0') || (c > '9'))
-      return idx;
-    return findDigitsEnd(idx + 1,);
+    /** Scan cursor; starts at `idx` and advances past each leading ASCII digit in one linear pass. */
+    let cursor = idx;
+    while (cursor < memory.length) {
+      /** Char under the cursor; stops the scan when non-digit. */
+      const c = memory.charAt(cursor,);
+      if ((c < '0') || (c > '9'))
+        break;
+      cursor += 1;
+    }
+    return cursor;
   }
   /**
    * Skips ASCII space and tab characters starting at `idx`.
@@ -364,13 +367,16 @@ export function parseMemoryToBytes(memory: string,): number {
    * ```
    */
   function skipWhitespace(idx: number,): number {
-    if (idx >= memory.length)
-      return idx;
-    /** Char under the cursor; stops the skip when non-whitespace. */
-    const c = memory.charAt(idx,);
-    if ((c !== ' ') && (c !== '\t'))
-      return idx;
-    return skipWhitespace(idx + 1,);
+    /** Scan cursor; starts at `idx` and advances past each space or tab in one linear pass. */
+    let cursor = idx;
+    while (cursor < memory.length) {
+      /** Char under the cursor; stops the skip when non-whitespace. */
+      const c = memory.charAt(cursor,);
+      if ((c !== ' ') && (c !== '\t'))
+        break;
+      cursor += 1;
+    }
+    return cursor;
   }
   /** Exclusive end of the leading digit run; `0` means no digits were present. */
   const digitsEnd = findDigitsEnd(0,);

@@ -254,6 +254,36 @@ export async function commitOverlay(overlayPath: string,): Promise<void> {
 }
 
 /**
+ * Locates the exclusive end of the leading non-whitespace run in `text`.
+ *
+ * Scans once from offset 0, stopping at the first space, tab, newline, or
+ * carriage return; returns `text.length` when no whitespace is present.
+ * Single linear pass, stack-safe on arbitrarily long input.
+ *
+ * @param text - string to scan from offset 0
+ *
+ * @returns index of first whitespace character, or `text.length`
+ *
+ * @example
+ * ```ts
+ * firstWhitespaceIndex('abcdef  file'); // 6
+ * firstWhitespaceIndex('nowhitespace'); // 12
+ * ```
+ */
+export function firstWhitespaceIndex(text: string,): number {
+  /** Scan cursor; advances past each leading non-whitespace character in one linear pass. */
+  let cursor = 0;
+  while (cursor < text.length) {
+    /** Char under the cursor; stops the scan at the first whitespace (space, tab, newline, or carriage return). */
+    const c = text.charAt(cursor,);
+    if (' \t\n\r'.includes(c,))
+      break;
+    cursor += 1;
+  }
+  return cursor;
+}
+
+/**
  * Computes the SHA-256 checksum of a disk image file.
  * Uses `sha256sum` on Linux and `certutil` on Windows.
  *
@@ -298,31 +328,10 @@ export async function checksum(imagePath: string,): Promise<string> {
     command: 'sha256sum',
     args: [imagePath,],
   },);
-  /**
-   * Locates the exclusive end of the leading non-whitespace run in `raw`.
-   *
-   * @param idx - candidate scan offset
-   *
-   * @returns first index whose character is whitespace, or `raw.length`
-   *
-   * @example
-   * ```ts
-   * findFirstWhitespace(0); // 64 for raw === '<64-char hash>  file'
-   * ```
-   */
-  function findFirstWhitespace(idx: number,): number {
-    if (idx >= raw.length)
-      return idx;
-    /** Char under the cursor; stops at the first whitespace. */
-    const c = raw.charAt(idx,);
-    if ((c === ' ') || (c === '\t') || (c === '\n') || (c === '\r'))
-      return idx;
-    return findFirstWhitespace(idx + 1,);
-  }
   /** Hash portion before the filename separator. */
   const hash = raw.slice(
     0,
-    findFirstWhitespace(0,),
+    firstWhitespaceIndex(raw,),
   );
   return `sha256:${hash}`;
 }
