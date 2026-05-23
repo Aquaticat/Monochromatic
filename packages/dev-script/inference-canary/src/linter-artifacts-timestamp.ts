@@ -30,6 +30,62 @@ const DAY_END = 10;
 
 //endregion Date-format constants
 
+//region ASCII digit-run predicate
+
+/**
+ * Options for {@link isAsciiDigitRun}.
+ */
+type IsAsciiDigitRunOptions = {
+  /** String whose chars are inspected. */
+  readonly s: string;
+  /** Inclusive start index of the run. */
+  readonly start: number;
+  /** Number of chars to check from `start`. */
+  readonly count: number;
+};
+
+/**
+ * Tests whether the `count` chars of `s` starting at `start` are all ASCII
+ * digits, in one linear left-to-right pass with no recursion.
+ *
+ * Out-of-range indices read as `''` via `charAt`, which fails the digit
+ * check, so a run extending past the end returns `false`.
+ *
+ * @param s - string whose chars are inspected
+ *
+ * @param start - inclusive start index of the run
+ *
+ * @param count - number of chars to check from `start`
+ *
+ * @returns whether every char in the run is `0`-`9`
+ *
+ * @example
+ * ```ts
+ * isAsciiDigitRun({ s: '2026', start: 0, count: 4 }); // true
+ * isAsciiDigitRun({ s: '20x6', start: 0, count: 4 }); // false
+ * ```
+ */
+function isAsciiDigitRun({
+  s,
+  start,
+  count,
+}: IsAsciiDigitRunOptions,): boolean {
+  return (function scanDigits(): boolean {
+    /** Offset into the run; advances one char per iteration. */
+    let offset = 0;
+    while (offset < count) {
+      /** Char at the absolute index; only ASCII digits keep the run alive. */
+      const c = s.charAt(start + offset,);
+      if ((c < '0') || (c > '9'))
+        return false;
+      offset += 1;
+    }
+    return true;
+  })();
+}
+
+//endregion ASCII digit-run predicate
+
 //region Year-hyphen prefix predicate
 
 /**
@@ -49,23 +105,11 @@ const DAY_END = 10;
 function hasYearHyphenPrefix(s: string,): boolean {
   if (s.length < YEAR_HYPHEN_PREFIX_LENGTH)
     return false;
-  /**
-   * Walks the year digits, returning whether the slug ends them with `-`.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @returns whether the first `YEAR_DIGITS` chars are digits and `s[YEAR_END]` is `-`
-   */
-  function checkDigits(idx: number,): boolean {
-    if (idx >= YEAR_DIGITS)
-      return s.charAt(YEAR_END,) === '-';
-    /** Char at the cursor; only ASCII digits advance the scan. */
-    const c = s.charAt(idx,);
-    if ((c < '0') || (c > '9'))
-      return false;
-    return checkDigits(idx + 1,);
-  }
-  return checkDigits(0,);
+  return isAsciiDigitRun({
+    s,
+    start: 0,
+    count: YEAR_DIGITS,
+  },) && (s.charAt(YEAR_END,) === '-');
 }
 
 //endregion Year-hyphen prefix predicate
@@ -123,37 +167,37 @@ export function parseArtifactDir(name: string,): ArtifactDirParts | null {
    * @returns matching parts, or `null` when the marker does not yield a timestamp
    */
   function tryMarker(marker: '-initial-' | '-fix-',): ArtifactDirParts | null {
-    /**
-     * Recursive walker that tests every occurrence of `marker` in `name`
-     * (right-to-left) so the longest valid probe prefix wins; matches
-     * the original regex's greedy `.+` capture for the probe field.
-     *
-     * @param from - search end index (`lastIndexOf` stops at or before this)
-     *
-     * @returns matching parts, or `null` when no occurrence yields a timestamp
-     */
-    function scan(from: number,): ArtifactDirParts | null {
-      /** Right-most occurrence of `marker` at or before `from`; `-1` ends the search. */
-      const idx = name.lastIndexOf(
-        marker,
-        from,
-      );
-      if (idx <= 0)
-        return null;
-      /** Slug after the marker; must satisfy the year-prefix shape to count. */
-      const tail = name.slice(idx + marker.length,);
-      if (!hasYearHyphenPrefix(tail,))
-        return scan(idx - 1,);
-      return {
-        probe: name.slice(
-          0,
-          idx,
-        ),
-        pass: marker === '-initial-' ? 'initial' : 'fix',
-        timestamp: tail,
-      };
-    }
-    return scan(name.length,);
+    return (function scanMarkers(): ArtifactDirParts | null {
+      // Walk every occurrence of `marker` right-to-left (longest valid probe
+      // prefix wins, matching the original regex's greedy `.+` capture) in a
+      // single linear pass: each step moves the cursor strictly left of the
+      // previous match, so no frame stacks up the way the recursion did.
+      /** Search end index; `lastIndexOf` stops at or before it, then moves left of each non-matching occurrence. */
+      let from = name.length;
+      while (from >= 0) {
+        /** Right-most occurrence of `marker` at or before `from`; `-1` (and index 0, an empty probe) ends the search. */
+        const idx = name.lastIndexOf(
+          marker,
+          from,
+        );
+        if (idx <= 0)
+          return null;
+        /** Slug after the marker; must satisfy the year-prefix shape to count. */
+        const tail = name.slice(idx + marker.length,);
+        if (hasYearHyphenPrefix(tail,)) {
+          return {
+            probe: name.slice(
+              0,
+              idx,
+            ),
+            pass: marker === '-initial-' ? 'initial' : 'fix',
+            timestamp: tail,
+          };
+        }
+        from = idx - 1;
+      }
+      return null;
+    })();
   }
   return tryMarker('-initial-',) ?? tryMarker('-fix-',);
 }
@@ -224,52 +268,21 @@ function restoreTimestamp(rawTimestamp: string,): string {
 function rewriteDateColons(s: string,): string {
   if (s.length < 'YYYY:MM:DD'.length)
     return s;
-  /**
-   * Returns true when chars `[start, start + count)` are all ASCII digits.
-   *
-   * @param start - inclusive start index
-   *
-   * @param count - number of chars to check
-   *
-   * @returns whether the substring is purely numeric
-   */
-  function isDigitRun({
-    start,
-    count,
-  }: {
-    start: number;
-    count: number;
-  },): boolean {
-    /**
-     * Recursive walker.
-     *
-     * @param offset - relative offset into the candidate run
-     *
-     * @returns whether each char is an ASCII digit
-     */
-    function step(offset: number,): boolean {
-      if (offset >= count)
-        return true;
-      /** Char at the absolute index. */
-      const c = s.charAt(start + offset,);
-      if ((c < '0') || (c > '9'))
-        return false;
-      return step(offset + 1,);
-    }
-    return step(0,);
-  }
   if (
-    (!isDigitRun({
+    (!isAsciiDigitRun({
+      s,
       start: 0,
       count: YEAR_DIGITS,
     },))
     || (s.charAt(YEAR_END,) !== ':')
-    || (!isDigitRun({
+    || (!isAsciiDigitRun({
+      s,
       start: MONTH_START,
       count: 2,
     },))
     || (s.charAt(MONTH_END,) !== ':')
-    || (!isDigitRun({
+    || (!isAsciiDigitRun({
+      s,
       start: DAY_START,
       count: 2,
     },))

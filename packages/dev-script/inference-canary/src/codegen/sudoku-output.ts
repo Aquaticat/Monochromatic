@@ -60,61 +60,31 @@ function isDashLine(line: string,): boolean {
  * @param s - trimmed multi-puzzle output
  *
  * @returns ordered list of inter-separator sections
+ *
+ * @example
+ * ```ts
+ * splitOnDashLines('a\n---\nb'); // ['a', 'b']
+ * ```
  */
-function splitOnDashLines(s: string,): string[] {
+export function splitOnDashLines(s: string,): string[] {
   /** Lines after a primary newline split; separator lines are detected by `isDashLine`. */
   const lines = s.split('\n',);
-  /**
-   * Recursive walker that joins consecutive non-separator lines into a
-   * section and flushes the section on every dash-only line.
-   *
-   * @param idx - cursor into `lines`
-   *
-   * @param section - lines accumulated since the last separator
-   *
-   * @param acc - completed sections so far
-   *
-   * @returns final section list
-   */
-  function walk({
-    idx,
-    section,
-    acc,
-  }: {
-    idx: number;
-    section: readonly string[];
-    acc: readonly string[];
-  },): string[] {
-    if (idx >= lines.length) {
-      return [
-        ...acc,
-        section.join('\n',),
-      ];
-    }
-    /** Line at the cursor. */
-    const line = lines[idx] ?? '';
+  /** Completed sections in order; a separator (and the final line) always flushes one, even when empty, so consecutive and edge separators yield empty sections. */
+  const sections: string[] = [];
+  /** Lines since the last separator; flushed into `sections` and cleared on each separator so the accumulator is never copied (O(n) total). */
+  const current: string[] = [];
+
+  for (const line of lines) {
     if (isDashLine(line,)) {
-      return walk({
-        idx: idx + 1,
-        section: [],
-        acc: [
-          ...acc,
-          section.join('\n',),
-        ],
-      },);
+      sections.push(current.join('\n',),);
+      current.length = 0;
     }
-    return walk({
-      idx: idx + 1,
-      section: [
-        ...section,
-        line,
-      ],
-      acc,
-    },);
+    else {
+      current.push(line,);
+    }
   }
-  return walk({
-    idx: 0,
-    section: [],
-    acc: [],
-  },);
+
+  sections.push(current.join('\n',),);
+
+  return sections;
 }

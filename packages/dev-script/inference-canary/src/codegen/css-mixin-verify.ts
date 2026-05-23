@@ -24,50 +24,31 @@ const MAX_CONSECUTIVE_NEWLINES = 2;
  * @param s - input text
  *
  * @returns text with horizontal whitespace runs collapsed
+ *
+ * @example
+ * ```ts
+ * collapseHorizontalRuns('a    b'); // 'a b'
+ * ```
  */
-function collapseHorizontalRuns(s: string,): string {
-  /**
-   * Recursive accumulator.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @param inRun - whether the previous char was a space or tab
-   *
-   * @param acc - normalised text collected so far
-   *
-   * @returns final collapsed string
-   */
-  function walk({
-    idx,
-    inRun,
-    acc,
-  }: {
-    idx: number;
-    inRun: boolean;
-    acc: string;
-  },): string {
-    if (idx >= s.length)
-      return acc;
-    /** Char at cursor; space or tab feeds into the run-collapser. */
-    const c = s.charAt(idx,);
-    if ((c === ' ') || (c === '\t')) {
-      return walk({
-        idx: idx + 1,
-        inRun: true,
-        acc: inRun ? acc : `${acc} `,
-      },);
+export function collapseHorizontalRuns(s: string,): string {
+  return (function build(): string {
+    /** Output fragments in order; joined once at the end so the accumulator is never rebuilt per char (O(n), no recursion). */
+    const out: string[] = [];
+    /** Whether the previous char was a space or tab; a run emits a single space at its start only. */
+    let inRun = false;
+    for (const c of s) {
+      if ((c === ' ') || (c === '\t')) {
+        if (!inRun)
+          out.push(' ',);
+        inRun = true;
+      }
+      else {
+        out.push(c,);
+        inRun = false;
+      }
     }
-    return walk({
-      idx: idx + 1,
-      inRun: false,
-      acc: acc + c,
-    },);
-  }
-  return walk({
-    idx: 0,
-    inRun: false,
-    acc: '',
-  },);
+    return out.join('',);
+  })();
 }
 
 /**
@@ -78,50 +59,31 @@ function collapseHorizontalRuns(s: string,): string {
  * @param s - input text
  *
  * @returns text with at most two consecutive newlines anywhere
+ *
+ * @example
+ * ```ts
+ * collapseExcessNewlines('a\n\n\n\nb'); // 'a\n\nb'
+ * ```
  */
-function collapseExcessNewlines(s: string,): string {
-  /**
-   * Recursive accumulator tracking the current run length of `\n` chars.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @param runLength - consecutive `\n` chars already emitted into `acc`
-   *
-   * @param acc - normalised text collected so far
-   *
-   * @returns final collapsed string
-   */
-  function walk({
-    idx,
-    runLength,
-    acc,
-  }: {
-    idx: number;
-    runLength: number;
-    acc: string;
-  },): string {
-    if (idx >= s.length)
-      return acc;
-    /** Char at cursor; newlines update the run, anything else resets it. */
-    const c = s.charAt(idx,);
-    if (c === '\n') {
-      return walk({
-        idx: idx + 1,
-        runLength: runLength + 1,
-        acc: runLength >= MAX_CONSECUTIVE_NEWLINES ? acc : `${acc}\n`,
-      },);
+export function collapseExcessNewlines(s: string,): string {
+  return (function build(): string {
+    /** Output fragments in order; joined once at the end so the accumulator is never rebuilt per char (O(n), no recursion). */
+    const out: string[] = [];
+    /** Consecutive `\n` chars already seen in the current run; only the first `MAX_CONSECUTIVE_NEWLINES` are emitted. */
+    let runLength = 0;
+    for (const c of s) {
+      if (c === '\n') {
+        if (runLength < MAX_CONSECUTIVE_NEWLINES)
+          out.push('\n',);
+        runLength += 1;
+      }
+      else {
+        out.push(c,);
+        runLength = 0;
+      }
     }
-    return walk({
-      idx: idx + 1,
-      runLength: 0,
-      acc: acc + c,
-    },);
-  }
-  return walk({
-    idx: 0,
-    runLength: 0,
-    acc: '',
-  },);
+    return out.join('',);
+  })();
 }
 
 /**

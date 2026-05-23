@@ -31,74 +31,97 @@ const regexViolationCache = new Map<string, boolean>();
  *
  * @example
  * ```ts
- * detectsRegexUsage('const re = /foo/g;'); // true
+ * detectsRegexUsage('const re = /a/g;'); // true (one-char body)
+ * detectsRegexUsage('const re = /foo/g;'); // false (multi-char body; literal detection is deliberately narrow)
  * detectsRegexUsage('const re = new RegExp("foo");'); // true
  * detectsRegexUsage('source.indexOf("foo")'); // false
  * ```
  */
-function detectsRegexUsage(source: string,): boolean {
+export function detectsRegexUsage(source: string,): boolean {
   return hasRegexConstructorCall(source,) || hasSingleCharRegexLiteral(source,);
 }
 
 /**
+ * Returns the first index at or after `from` in `s` that is not one of the
+ * six ASCII whitespace chars, scanning left-to-right in one linear pass with
+ * no recursion. Returns `s.length` when the tail from `from` is all
+ * whitespace.
+ *
+ * @param s - string whose chars are scanned
+ *
+ * @param from - index to start scanning from
+ *
+ * @returns first non-whitespace index at or after `from`, or `s.length`
+ *
+ * @example
+ * ```ts
+ * skipInlineWhitespace({ s: 'a   b', from: 1 }); // 4
+ * skipInlineWhitespace({ s: 'ab', from: 1 });    // 1
+ * ```
+ */
+function skipInlineWhitespace({
+  s,
+  from,
+}: {
+  readonly s: string;
+  readonly from: number;
+},): number {
+  return (function advance(): number {
+    /** Cursor advanced over each whitespace char; the first non-whitespace index is returned. */
+    let pos = from;
+    while (pos < s.length) {
+      /** Char at the cursor; only the six ASCII whitespace chars advance the scan. */
+      const c = s.charAt(pos,);
+      if (
+        (c !== ' ')
+        && (c !== '\t')
+        && (c !== '\n')
+        && (c !== '\r')
+        && (c !== '\f')
+        && (c !== '\v')
+      ) {
+        return pos;
+      }
+      pos += 1;
+    }
+    return pos;
+  })();
+}
+
+/**
  * Returns true when `source` contains a `new RegExp` constructor call,
- * allowing the prior regex's `\s*` between the identifier and the
- * opening parenthesis.
+ * allowing whitespace between the identifier and the opening parenthesis.
+ * Scans every `new RegExp` occurrence left-to-right in one linear pass; no
+ * recursion, so a long run of occurrences cannot overflow the stack.
  *
  * @param source - candidate TypeScript source
  *
  * @returns whether `source` shows a `new RegExp` invocation
  */
 function hasRegexConstructorCall(source: string,): boolean {
-  /**
-   * Recursive walker testing every occurrence of `new RegExp` for the
-   * required `\s*\(` continuation.
-   *
-   * @param from - cursor index for the next `indexOf` call
-   *
-   * @returns true on the first occurrence with `(` after optional whitespace
-   */
-  function scan(from: number,): boolean {
-    /** Position of the next `new RegExp`; `-1` ends the search. */
-    const idx = source.indexOf(
-      'new RegExp',
-      from,
+  /** Constructor identifier whose `(`-after-whitespace continuation marks an invocation. */
+  const TOKEN = 'new RegExp';
+  return (function scanTokens(): boolean {
+    /** Index of the candidate `new RegExp`; advances one past each non-matching occurrence. */
+    let idx = source.indexOf(
+      TOKEN,
+      0,
     );
-    if (idx === (-1))
-      return false;
-    /**
-     * Advances past inline whitespace starting at `pos`.
-     *
-     * @param pos - cursor index
-     *
-     * @returns first non-whitespace position
-     */
-    function skipWs(pos: number,): number {
-      if (pos >= source.length)
-        return pos;
-      /** Char at cursor; only ASCII whitespace advances. */
-      const c = source.charAt(pos,);
-      if (
-        (c === ' ')
-        || (c === '\t')
-        || (c === '\n')
-        || (c === '\r')
-        || (c === '\f')
-        || (c === '\v')
-      ) {
-        return skipWs(pos + 1,);
-      }
-      return pos;
+    while (idx !== (-1)) {
+      /** First non-whitespace index after the token; its char must be `(` to count as a call. */
+      const afterWs = skipInlineWhitespace({
+        s: source,
+        from: idx + TOKEN.length,
+      },);
+      if (source.charAt(afterWs,) === '(')
+        return true;
+      idx = source.indexOf(
+        TOKEN,
+        idx + 1,
+      );
     }
-    /** Cursor after the literal `new RegExp`. */
-    const afterToken = idx + 'new RegExp'.length;
-    /** Cursor after any inline whitespace; the next char must be `(` to count. */
-    const afterWs = skipWs(afterToken,);
-    if (source.charAt(afterWs,) === '(')
-      return true;
-    return scan(idx + 1,);
-  }
-  return scan(0,);
+    return false;
+  })();
 }
 
 /**
@@ -113,42 +136,36 @@ function hasRegexConstructorCall(source: string,): boolean {
  * @returns whether `source` contains a one-char regex literal
  */
 function hasSingleCharRegexLiteral(source: string,): boolean {
-  /**
-   * Walks every `/` in `source` and tests it as a candidate regex
-   * opener. The match shape is:
-   *   - opener `/`
-   *   - body of either one non-`/` non-`\n` char OR `\<any>` (2 chars)
-   *   - closing `/`
-   *   - zero or more regex flag chars
-   *
-   * @param from - cursor index for the next `indexOf` call
-   *
-   * @returns true on the first valid one-char regex literal
-   */
-  function scan(from: number,): boolean {
-    /** Position of the next `/`; `-1` ends the search. */
-    const open = source.indexOf(
+  // Walk every `/` left-to-right as a candidate regex opener in one linear
+  // pass; no recursion, so a long run of slashes cannot overflow the stack.
+  // The match shape is: opener `/`, then either one non-`/` non-`\n` char OR
+  // a `\<any>` escape (2 chars), then a closing `/`.
+  return (function scanSlashes(): boolean {
+    /** Index of the candidate opener `/`; advances one past each occurrence that fails the shape. */
+    let open = source.indexOf(
       '/',
-      from,
+      0,
     );
-    if (open === (-1))
-      return false;
-    /** Body length: `2` for `\X`, `1` for a plain char. */
-    const bodyLen = source.charAt(open + 1,) === '\\' ? 2 : 1;
-    /** Char before the closing slash; required to satisfy the body slot. */
-    const bodyEnd = open + 1 + bodyLen;
-    if (bodyEnd >= source.length)
-      return false;
-    /** Body char (or escape target) checked against the `[^/\n]` constraint. */
-    const body = source.charAt(open + 1,);
-    if ((bodyLen === 1) && ((body === '/') || (body === '\n')))
-      return scan(open + 1,);
-    /** Closing slash; must sit immediately after the body slot. */
-    if (source.charAt(bodyEnd,) !== '/')
-      return scan(open + 1,);
-    return true;
-  }
-  return scan(0,);
+    while (open !== (-1)) {
+      /** Body length: `2` for `\X`, `1` for a plain char. */
+      const bodyLen = source.charAt(open + 1,) === '\\' ? 2 : 1;
+      /** Index of the closing-slash slot, just past the body. */
+      const bodyEnd = open + 1 + bodyLen;
+      if (bodyEnd >= source.length)
+        return false;
+      /** Body char (or escape lead) checked against the `[^/\n]` constraint. */
+      const body = source.charAt(open + 1,);
+      /** Whether a one-char body is itself `/` or newline, which the shape forbids. */
+      const bodyIsForbidden = (bodyLen === 1) && ((body === '/') || (body === '\n'));
+      if ((!bodyIsForbidden) && (source.charAt(bodyEnd,) === '/'))
+        return true;
+      open = source.indexOf(
+        '/',
+        open + 1,
+      );
+    }
+    return false;
+  })();
 }
 
 /** Constraint violation message prepended to the fix prompt when regex is detected */

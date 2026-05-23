@@ -40,42 +40,30 @@ const TOTAL_CHECKS = 4;
  * extractAtDigits('TOTAL 150');    // ''
  * ```
  */
-function extractAtDigits(line: string,): string {
+export function extractAtDigits(line: string,): string {
   /** Position of the at-sign marker; `-1` ends the search. */
   const at = line.indexOf('@',);
   if (at === (-1))
     return '';
-  /**
-   * Walks the run of ASCII digits starting at `from`.
-   *
-   * @param from - cursor index
-   *
-   * @param acc - digits collected so far
-   *
-   * @returns digit run
-   */
-  function collect({
-    from,
-    acc,
-  }: {
-    from: number;
-    acc: string;
-  },): string {
-    if (from >= line.length)
-      return acc;
-    /** Char at cursor; only ASCII digits keep accumulating. */
-    const c = line.charAt(from,);
-    if ((c < '0') || (c > '9'))
-      return acc;
-    return collect({
-      from: from + 1,
-      acc: acc + c,
-    },);
-  }
-  return collect({
-    from: at + 1,
-    acc: '',
-  },);
+  /** First index of the digit run, just past the at-sign. */
+  const start = at + 1;
+  return (function collectDigits(): string {
+    // Walk right past every ASCII digit, then slice the run once: a single
+    // linear pass with no recursion and no per-char accumulator rebuild.
+    /** Cursor advanced over each ASCII digit; marks one-past the end of the run. */
+    let end = start;
+    while (end < line.length) {
+      /** Char at the cursor; the run stops at the first non-digit. */
+      const c = line.charAt(end,);
+      if ((c < '0') || (c > '9'))
+        break;
+      end += 1;
+    }
+    return line.slice(
+      start,
+      end,
+    );
+  })();
 }
 
 /**

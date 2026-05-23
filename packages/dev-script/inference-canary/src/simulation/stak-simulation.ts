@@ -121,60 +121,60 @@ function parseSections(response: string,): readonly string[] {
 }
 
 /**
- * Inserts `\n` immediately before every `---` not already preceded by
- * `\n` (or start-of-string). Mirrors
- * `s.replaceAll(/([^\n])---/g, '$1\n---')` with a linear `indexOf` walk
- * that never revisits a byte.
+ * Inserts `\n` immediately before every `---` that is not already preceded
+ * by `\n` (or start-of-string), scanning left-to-right in one linear pass.
+ *
+ * Matches come from a non-overlapping `indexOf` walk that advances three
+ * chars past each `---`, so a glued run like `------` becomes two separators
+ * (`---\n---`), not the overlapping rewrite a `/([^\n])---/g` regex would
+ * produce. No recursion, so a long run of separators cannot overflow the
+ * stack.
  *
  * @param s - raw model output
  *
  * @returns normalised output where every `---` opens its own line
+ *
+ * @example
+ * ```ts
+ * forceDashSeparatorsToOwnLine('a---b');  // 'a\n---b'
+ * forceDashSeparatorsToOwnLine('------'); // '---\n---'
+ * ```
  */
-function forceDashSeparatorsToOwnLine(s: string,): string {
+export function forceDashSeparatorsToOwnLine(s: string,): string {
   /** Length of the `---` separator literal; used as the cursor step. */
   const DASH_SEPARATOR_LENGTH = '---'.length;
-  /**
-   * Recursive accumulator: copies non-matching text verbatim and inserts
-   * a synthetic newline before each `---` that needs one.
-   *
-   * @param from - cursor index for the next `indexOf` call
-   *
-   * @param acc - normalised text collected so far
-   *
-   * @returns final normalised string
-   */
-  function walk({
-    from,
-    acc,
-  }: {
-    from: number;
-    acc: string;
-  },): string {
-    /** Position of the next `---`; `-1` ends the scan. */
-    const idx = s.indexOf(
+  return (function build(): string {
+    /** Output fragments in order; joined once so the accumulator is never rebuilt per match (O(n), no recursion). */
+    const out: string[] = [];
+    /** Start of the not-yet-emitted text; advances three chars past each `---`. */
+    let from = 0;
+    /** Position of the next `---` at or after `from`; `-1` ends the scan. */
+    let idx = s.indexOf(
       '---',
       from,
     );
-    if (idx === (-1))
-      return `${acc}${s.slice(from,)}`;
-    /** Char immediately before the match (or `'\n'` for start-of-string). */
-    const prev = idx === 0 ? '\n' : s.charAt(idx - 1,);
-    /** Inserted newline keeps the regex's `$1\n---` rewrite semantics. */
-    const insertion = prev === '\n' ? '' : '\n';
-    return walk({
-      from: idx + DASH_SEPARATOR_LENGTH,
-      acc: `${acc}${
+    while (idx !== (-1)) {
+      /** Char immediately before the match (or `'\n'` for start-of-string). */
+      const prev = idx === 0 ? '\n' : s.charAt(idx - 1,);
+      /** Synthetic newline inserted unless the match already opens a line. */
+      const insertion = prev === '\n' ? '' : '\n';
+      out.push(
         s.slice(
           from,
           idx,
-        )
-      }${insertion}---`,
-    },);
-  }
-  return walk({
-    from: 0,
-    acc: '',
-  },);
+        ),
+      );
+      out.push(insertion,);
+      out.push('---',);
+      from = idx + DASH_SEPARATOR_LENGTH;
+      idx = s.indexOf(
+        '---',
+        from,
+      );
+    }
+    out.push(s.slice(from,),);
+    return out.join('',);
+  })();
 }
 
 /**
@@ -185,63 +185,33 @@ function forceDashSeparatorsToOwnLine(s: string,): string {
  * @param s - normalised text with `---` separators on their own lines
  *
  * @returns ordered list of inter-separator sections
+ *
+ * @example
+ * ```ts
+ * splitOnDashOnlyLines('a\n---\nb'); // ['a', 'b']
+ * ```
  */
-function splitOnDashOnlyLines(s: string,): string[] {
-  /** Lines after a primary `\n` split; separator lines are detected below. */
+export function splitOnDashOnlyLines(s: string,): string[] {
+  /** Lines after a primary `\n` split; separator lines are exactly `---`. */
   const lines = s.split('\n',);
-  /**
-   * Recursive walker that flushes the current section on each line that is
-   * exactly `---`.
-   *
-   * @param idx - cursor into `lines`
-   *
-   * @param section - lines accumulated since the last separator
-   *
-   * @param acc - completed sections so far
-   *
-   * @returns final section list
-   */
-  function walk({
-    idx,
-    section,
-    acc,
-  }: {
-    idx: number;
-    section: readonly string[];
-    acc: readonly string[];
-  },): string[] {
-    if (idx >= lines.length) {
-      return [
-        ...acc,
-        section.join('\n',),
-      ];
-    }
-    /** Line at the cursor. */
-    const line = lines[idx] ?? '';
+  /** Completed sections in order; a separator line (and the final line) always flushes one, even when empty, so consecutive and edge separators yield empty sections. */
+  const sections: string[] = [];
+  /** Lines since the last separator; flushed into `sections` and cleared on each separator so the accumulator is never copied (O(n) total). */
+  const current: string[] = [];
+
+  for (const line of lines) {
     if (line === '---') {
-      return walk({
-        idx: idx + 1,
-        section: [],
-        acc: [
-          ...acc,
-          section.join('\n',),
-        ],
-      },);
+      sections.push(current.join('\n',),);
+      current.length = 0;
     }
-    return walk({
-      idx: idx + 1,
-      section: [
-        ...section,
-        line,
-      ],
-      acc,
-    },);
+    else {
+      current.push(line,);
+    }
   }
-  return walk({
-    idx: 0,
-    section: [],
-    acc: [],
-  },);
+
+  sections.push(current.join('\n',),);
+
+  return sections;
 }
 
 /**

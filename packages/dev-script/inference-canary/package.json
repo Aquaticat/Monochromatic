@@ -6,6 +6,7 @@
   "main": "src/index.ts",
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:",
     "why-is-node-running": "^3.2.2"
   },

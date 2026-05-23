@@ -16,44 +16,29 @@
  * @param s - input string
  *
  * @returns `s` with whitespace stripped
+ *
+ * @example
+ * ```ts
+ * stripAllWhitespace('a b\tc'); // 'abc'
+ * ```
  */
-function stripAllWhitespace(s: string,): string {
-  /**
-   * Recursive accumulator: copies non-whitespace chars to `acc`.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @param acc - characters collected so far
-   *
-   * @returns stripped string
-   */
-  function walk({
-    idx,
-    acc,
-  }: {
-    idx: number;
-    acc: string;
-  },): string {
-    if (idx >= s.length)
-      return acc;
-    /** Char at cursor; whitespace is dropped, everything else is kept. */
-    const c = s.charAt(idx,);
-    /** Whether the char satisfies regex `\s`. */
+export function stripAllWhitespace(s: string,): string {
+  /** Non-whitespace chars in order; joined once at the end so the accumulator is never rebuilt per char (single linear pass: O(n) time, no recursion). */
+  const kept: string[] = [];
+
+  for (const c of s) {
+    /** Whether the char satisfies regex `\s`; whitespace is dropped, everything else is kept. */
     const ws = (c === ' ')
       || (c === '\t')
       || (c === '\n')
       || (c === '\r')
       || (c === '\f')
       || (c === '\v');
-    return walk({
-      idx: idx + 1,
-      acc: ws ? acc : acc + c,
-    },);
+    if (!ws)
+      kept.push(c,);
   }
-  return walk({
-    idx: 0,
-    acc: '',
-  },);
+
+  return kept.join('',);
 }
 
 /**
@@ -85,67 +70,36 @@ function isBlankLine(line: string,): boolean {
  * @param s - input text
  *
  * @returns paragraph blocks (separator chars dropped)
+ *
+ * @example
+ * ```ts
+ * splitOnBlankLines('a\nb\n\nc'); // ['a\nb', 'c']
+ * ```
  */
-function splitOnBlankLines(s: string,): string[] {
+export function splitOnBlankLines(s: string,): string[] {
   /** Lines after a primary split on newline; blank-line groups become empty entries. */
   const lines = s.split('\n',);
-  /**
-   * Recursive walker that joins consecutive non-blank lines into a block
-   * and flushes the block on every blank line.
-   *
-   * @param idx - cursor into `lines`
-   *
-   * @param block - lines accumulated since the last blank line
-   *
-   * @param acc - completed blocks so far
-   *
-   * @returns final block list
-   */
-  function walk({
-    idx,
-    block,
-    acc,
-  }: {
-    idx: number;
-    block: readonly string[];
-    acc: readonly string[];
-  },): string[] {
-    if (idx >= lines.length) {
-      return block.length === 0
-        ? [...acc,]
-        : [
-          ...acc,
-          block.join('\n',),
-        ];
-    }
-    /** Line at the cursor. */
-    const line = lines[idx] ?? '';
+  /** Completed blocks in order; each is a run of consecutive non-blank lines joined by newline. */
+  const blocks: string[] = [];
+  /** Lines since the last blank line; flushed into `blocks` and cleared on each blank line so the accumulator is never copied (O(n) total). */
+  const current: string[] = [];
+
+  for (const line of lines) {
     if (isBlankLine(line,)) {
-      return walk({
-        idx: idx + 1,
-        block: [],
-        acc: block.length === 0
-          ? acc
-          : [
-            ...acc,
-            block.join('\n',),
-          ],
-      },);
+      if (current.length > 0) {
+        blocks.push(current.join('\n',),);
+        current.length = 0;
+      }
     }
-    return walk({
-      idx: idx + 1,
-      block: [
-        ...block,
-        line,
-      ],
-      acc,
-    },);
+    else {
+      current.push(line,);
+    }
   }
-  return walk({
-    idx: 0,
-    block: [],
-    acc: [],
-  },);
+
+  if (current.length > 0)
+    blocks.push(current.join('\n',),);
+
+  return blocks;
 }
 
 /** Standard sudoku grid dimension */
