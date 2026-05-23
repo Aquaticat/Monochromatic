@@ -4,7 +4,7 @@
 
 Compact AGENTS.md without losing information.
 Hard target: under 50000 chars. User stretch goal: ~48000 chars.
-Current: AGENTS.md is 49690 chars (under 50k, NOT yet at 48k). Work remains.
+COMPLETE: AGENTS.md is 47696 chars, under the 50k hard ceiling and the ~48000 stretch goal. No work remains.
 
 ## Approach (agreed with user)
 
@@ -16,6 +16,8 @@ Current: AGENTS.md is 49690 chars (under 50k, NOT yet at 48k). Work remains.
 
 Commits, newest first:
 
+- 092b74aa continuation: relocate remaining rationale to ~48k, then drop all inline PHILOSOPHY pointers so AGENTS.md is self-sufficient for normal operation (user directive: normal operation needs the rule, not the rationale). Final size 47696 chars.
+- 40123d3d this handover doc
 - 9bb073e6 philosophy changelog (Stats and decisions 2026-05-23)
 - 964a38a9 semantic line breaks on AGENTS.md prose
 - cf45db4b finish relocation; AGENTS.md under 50k
@@ -34,9 +36,9 @@ What changed:
 
 ## Remaining work
 
-1.  Cut roughly 1700+ more chars from AGENTS.md to reach ~48000, by relocating more why/detail to PHILOSOPHY.AGENTS.md (same split method). Candidate passages whose detail can still move while leaving a terse rule in AGENTS.md: the "Before claiming inability" GUI/auth/hardware bridge specifics (`xdotool`/`wtype`/`ydotool`/`expect`); follow-document-pointers example; verify-on-throwaway guard-blocking rationale (second paragraph); choosing-technology six vendor layers; the Linting block-level oxlint-disable ordering detail; the `const` over `let` lint-rule remediation sub-bullets.
-2.  Keep verbatim in AGENTS.md: the "Hedge phrases that signal a skipped step" list (mirrors the hardcoded `ccsr` trigger set in `packages/claude-code-plugins/source/src/handlers/stop-reminders/uncertainty-phrases.ts`), all fenced code blocks, the 12 quoted `See "<section>"` cross-reference targets, and the moment-of-decision top-level section order.
-3.  After reaching ~48k: regenerate CLAUDE.md, run markdownlint, commit, then a final advisor review.
+None. The ~48000 stretch goal is met (47696 chars) and the user's self-sufficiency directive is applied (no inline PHILOSOPHY pointers; rule against re-introducing them encoded under "What does not belong" -> "Inline pointers to this philosophy doc"). All verification passed: union-token check (only the authorized `gh api` drop missing), cross-reference integrity, hedge list intact, code blocks identical, markdownlint 0 errors, CLAUDE.md regenerated.
+
+If a future pass reopens compaction, keep verbatim in AGENTS.md: the "Hedge phrases that signal a skipped step" list (mirrors the hardcoded `ccsr` trigger set in `packages/claude-code-plugins/source/src/handlers/stop-reminders/uncertainty-phrases.ts`), all fenced code blocks, the 12 quoted `See "<section>"` cross-reference targets, the moment-of-decision top-level section order, and the actionable rule layer (do not relocate ordering/remediation rules; only rationale and examples move). Do not add inline "(... in PHILOSOPHY.AGENTS.md)" pointers.
 
 ## Verification (run before and after each batch)
 
