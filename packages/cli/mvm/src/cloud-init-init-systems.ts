@@ -146,8 +146,8 @@ export function vmAutologin({
   initSystem,
   user,
 }: {
-  initSystem: InitSystem;
-  user: string;
+  readonly initSystem: InitSystem;
+  readonly user: string;
 },): string {
   if (initSystem === 'openrc')
     return vmAutologinOpenrc(user,);

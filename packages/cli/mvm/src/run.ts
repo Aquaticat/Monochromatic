@@ -61,8 +61,8 @@ export async function run(
     command,
     from,
   }: {
-    command: string;
-    from: string | undefined;
+    readonly command: string;
+    readonly from: string | undefined;
   },
 ): Promise<ExecResult> {
   /** Logger scoped to this run call so VM lifecycle steps log under the right name. */

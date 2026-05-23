@@ -39,8 +39,8 @@ export function generateAutounattend({
   hostname,
   imageIndex,
 }: {
-  hostname: string;
-  imageIndex: number;
+  readonly hostname: string;
+  readonly imageIndex: number;
 },): string {
   return `<?xml version="1.0" encoding="utf-8"?>
 <unattend xmlns="urn:schemas-microsoft-com:unattend">
@@ -139,8 +139,8 @@ export function createAutounattendIso({
   hostname,
   imageIndex,
 }: {
-  hostname: string;
-  imageIndex: number;
+  readonly hostname: string;
+  readonly imageIndex: number;
 },): Uint8Array {
   /** Tagged logger so ISO-creation messages name the call site. */
   const rl = tagged({

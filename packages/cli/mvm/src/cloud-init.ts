@@ -56,8 +56,8 @@ function vmUserData({
   guest,
   name,
 }: {
-  guest: GuestConfig;
-  name: string;
+  readonly guest: GuestConfig;
+  readonly name: string;
 },): string {
   /** Guest config narrowed to Linux; lets us read `initSystem`, `shell`, and `defaultUser`. */
   const linux = asLinux(guest,);
@@ -101,8 +101,8 @@ function templateUserData(
     guest,
     name,
   }: {
-    guest: GuestConfig;
-    name: string;
+    readonly guest: GuestConfig;
+    readonly name: string;
   },
 ): string {
   /** Guest config narrowed to Linux; lets us read `initSystem`, `shell`, and `defaultUser`. */
@@ -159,10 +159,10 @@ export async function createSeedIso({
   template = false,
   vmDir,
 }: {
-  guest: GuestConfig;
-  name: string;
-  template?: boolean;
-  vmDir: string;
+  readonly guest: GuestConfig;
+  readonly name: string;
+  readonly template?: boolean;
+  readonly vmDir: string;
 },): Promise<string | undefined> {
   if (guest.osFamily === 'windows') {
     /** Logger for the Windows skip-path; namespaced so the info line is attributable. */

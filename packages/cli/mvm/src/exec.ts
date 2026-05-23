@@ -53,8 +53,8 @@ export async function exec(
     command,
     name,
   }: {
-    command: string;
-    name: string;
+    readonly command: string;
+    readonly name: string;
   },
 ): Promise<ExecResult> {
   validateName(name,);

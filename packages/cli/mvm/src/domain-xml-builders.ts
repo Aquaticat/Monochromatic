@@ -114,7 +114,7 @@ export function clockElement(osFamily: OsFamily,): string {
  * ```
  */
 export function ideCdromDevices(
-  cdroms: readonly { path: string; }[],
+  cdroms: readonly { readonly path: string; }[],
 ): readonly string[] {
   /** IDE device name sequence: hda through hdd. */
   const ideDevNames = [

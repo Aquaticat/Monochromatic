@@ -48,8 +48,8 @@ export async function waitForGuestAgent({
   name,
   timeoutMs = DEFAULT_AGENT_TIMEOUT_MS,
 }: {
-  name: string;
-  timeoutMs?: number;
+  readonly name: string;
+  readonly timeoutMs?: number;
 },): Promise<void> {
   /** Logger scoped to this call so retry logs are namespaced. */
   const rl = tagged({
@@ -112,7 +112,7 @@ export async function waitForGuestAgent({
  * await shutdownVm({ name: 'dev-01' });
  * ```
  */
-export async function shutdownVm({ name, }: { name: string; },): Promise<void> {
+export async function shutdownVm({ name, }: { readonly name: string; },): Promise<void> {
   /** Logger scoped to this shutdown call so the diagnostic catch is namespaced. */
   const rl = tagged({
     tag: shutdownVm.name,
@@ -148,7 +148,7 @@ export async function shutdownVm({ name, }: { name: string; },): Promise<void> {
  * await waitForShutdown({ name: 'dev-01' });
  * ```
  */
-export async function waitForShutdown({ name, }: { name: string; },): Promise<void> {
+export async function waitForShutdown({ name, }: { readonly name: string; },): Promise<void> {
   /** Logger scoped to this call so polling logs are namespaced. */
   const rl = tagged({
     tag: waitForShutdown.name,

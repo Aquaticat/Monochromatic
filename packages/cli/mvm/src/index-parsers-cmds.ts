@@ -82,9 +82,9 @@ export const createCmd: SubcommandParser = command(
     },),
     function toCreateArgs(
       v: {
-        name: string;
-        from: string | undefined;
-        image: string | undefined;
+        readonly name: string;
+        readonly from: string | undefined;
+        readonly image: string | undefined;
       },
     ): MvmArgs {
       return {
@@ -103,7 +103,7 @@ export const shellCmd: SubcommandParser = command(
   'shell',
   map(
     object({ name: argument(name,), },),
-    function toShellArgs(v: { name: string; },): MvmArgs {
+    function toShellArgs(v: { readonly name: string; },): MvmArgs {
       return {
         cmd: 'shell',
         ...v,
@@ -155,7 +155,7 @@ const destroyAllParser = map(
 /** Parser for `destroy <name>` -- destroys a single VM by name */
 const destroyNameParser = map(
   object({ name: argument(name,), },),
-  function toDestroyNameArgs(v: { name: string; },): MvmArgs {
+  function toDestroyNameArgs(v: { readonly name: string; },): MvmArgs {
     return {
       cmd: 'destroy',
       name: v.name,
@@ -193,8 +193,8 @@ export const execCmd: SubcommandParser = command(
       args: multiple(argument(commandToken,),),
     },),
     function toExecArgs(v: {
-      name: string;
-      args: readonly string[];
+      readonly name: string;
+      readonly args: readonly string[];
     },): MvmArgs {
       return {
         cmd: 'exec',
@@ -216,8 +216,8 @@ export const runCmd: SubcommandParser = command(
     },),
     function toRunArgs(
       v: {
-        from: string | undefined;
-        args: readonly string[];
+        readonly from: string | undefined;
+        readonly args: readonly string[];
       },
     ): MvmArgs {
       return {
@@ -256,9 +256,9 @@ export const pushCmd: SubcommandParser = command(
     },),
     function toPushArgs(
       v: {
-        name: string;
-        hostPath: string;
-        guestPath: string;
+        readonly name: string;
+        readonly hostPath: string;
+        readonly guestPath: string;
       },
     ): MvmArgs {
       return {
@@ -283,9 +283,9 @@ export const pullCmd: SubcommandParser = command(
     },),
     function toPullArgs(
       v: {
-        name: string;
-        guestPath: string;
-        hostPath: string;
+        readonly name: string;
+        readonly guestPath: string;
+        readonly hostPath: string;
       },
     ): MvmArgs {
       return {

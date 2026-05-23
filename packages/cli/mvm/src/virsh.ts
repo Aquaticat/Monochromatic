@@ -27,7 +27,7 @@ import { spawn, } from './spawn.ts';
  * const output = await virsh({ args: ['list', '--all'] });
  * ```
  */
-export function virsh({ args, }: { args: readonly string[]; },): Promise<string> {
+export function virsh({ args, }: { readonly args: readonly string[]; },): Promise<string> {
   return spawn({
     command: 'virsh',
     args: [
@@ -56,8 +56,8 @@ export async function defineVm(
     vmDir,
     xml,
   }: {
-    vmDir: string;
-    xml: string;
+    readonly vmDir: string;
+    readonly xml: string;
   },
 ): Promise<void> {
   /** XML written to disk because virsh define expects a file path, not stdin. */
@@ -85,7 +85,7 @@ export async function defineVm(
  * await startVm({ name: 'win11' });
  * ```
  */
-export async function startVm({ name, }: { name: string; },): Promise<void> {
+export async function startVm({ name, }: { readonly name: string; },): Promise<void> {
   await virsh({ args: [
     'start',
     `${VM_PREFIX}${name}`,
@@ -102,7 +102,7 @@ export async function startVm({ name, }: { name: string; },): Promise<void> {
  * await destroyVm({ name: 'win11' });
  * ```
  */
-export async function destroyVm({ name, }: { name: string; },): Promise<void> {
+export async function destroyVm({ name, }: { readonly name: string; },): Promise<void> {
   await virsh({ args: [
     'destroy',
     `${VM_PREFIX}${name}`,
@@ -119,7 +119,7 @@ export async function destroyVm({ name, }: { name: string; },): Promise<void> {
  * await undefineVm({ name: 'win11' });
  * ```
  */
-export async function undefineVm({ name, }: { name: string; },): Promise<void> {
+export async function undefineVm({ name, }: { readonly name: string; },): Promise<void> {
   await virsh({ args: [
     'undefine',
     `${VM_PREFIX}${name}`,

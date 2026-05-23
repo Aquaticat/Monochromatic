@@ -73,9 +73,9 @@ export async function pushFile(
     hostPath,
     guestPath,
   }: {
-    name: string;
-    hostPath: string;
-    guestPath: string;
+    readonly name: string;
+    readonly hostPath: string;
+    readonly guestPath: string;
   },
 ): Promise<string> {
   validateName(name,);
@@ -160,8 +160,8 @@ export async function pullFile(
     name,
     guestPath,
   }: {
-    name: string;
-    guestPath: string;
+    readonly name: string;
+    readonly guestPath: string;
   },
 ): Promise<Buffer> {
   validateName(name,);

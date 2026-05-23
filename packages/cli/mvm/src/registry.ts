@@ -43,13 +43,13 @@ export type InitSystem = 'openrc' | 'systemd';
  */
 export type LinuxGuestConfig = {
   /** Discriminant identifying this as a Linux guest. */
-  osFamily: 'linux';
+  readonly osFamily: 'linux';
   /** Default login user created by cloud-init for this distro. */
-  defaultUser: string;
+  readonly defaultUser: string;
   /** Init system for service management (systemd or openrc). */
-  initSystem: InitSystem;
+  readonly initSystem: InitSystem;
   /** Login shell path for the default user. */
-  shell: string;
+  readonly shell: string;
 };
 
 /**
@@ -69,11 +69,11 @@ export type LinuxGuestConfig = {
  */
 export type WindowsGuestConfig = {
   /** Discriminant identifying this as a Windows guest. */
-  osFamily: 'windows';
+  readonly osFamily: 'windows';
   /** Default admin user created during unattended install. */
-  defaultUser: string;
+  readonly defaultUser: string;
   /** Shell executable for guest-exec commands (powershell.exe or cmd.exe). */
-  shell: string;
+  readonly shell: string;
 };
 
 /**
@@ -108,11 +108,11 @@ export type GuestConfig = LinuxGuestConfig | WindowsGuestConfig;
  */
 export type LinuxImageSpec = LinuxGuestConfig & {
   /** Cached qcow2 cloud image filename under `~/.local/share/mvm/images/`. */
-  fileName: string;
+  readonly fileName: string;
   /** Template filename derived from this image (e.g. `template-ubuntu.qcow2`). */
-  templateFileName: string;
+  readonly templateFileName: string;
   /** Remote URL to download the cloud image from. */
-  url: string;
+  readonly url: string;
 };
 
 /**
@@ -128,13 +128,13 @@ export type LinuxImageSpec = LinuxGuestConfig & {
  */
 export type WindowsImageSpec = WindowsGuestConfig & {
   /** Cached ISO filename under `~/.local/share/mvm/images/`. */
-  fileName: string;
+  readonly fileName: string;
   /** Template filename derived from this image (e.g. `template-windows.qcow2`). */
-  templateFileName: string;
+  readonly templateFileName: string;
   /** Remote URL to download the evaluation ISO from. */
-  url: string;
+  readonly url: string;
   /** WIM image index for unattended install (1-based, selects the OS edition). */
-  imageIndex: number;
+  readonly imageIndex: number;
 };
 
 /**

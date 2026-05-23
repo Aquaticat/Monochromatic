@@ -57,8 +57,8 @@ export async function clone(
     destination,
     source,
   }: {
-    destination: string;
-    source: string;
+    readonly destination: string;
+    readonly source: string;
   },
 ): Promise<void> {
   validateName(source,);

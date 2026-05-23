@@ -30,6 +30,7 @@ import {
 } from './image.ts';
 import {
   l,
+  type Logger,
   tagged,
 } from './log.ts';
 import type { WindowsImageSpec, } from './registry.ts';
@@ -215,7 +216,7 @@ const GUEST_EXEC_POLL_MS = 500;
 async function guestExecWait({
   command,
 }: {
-  command: string;
+  readonly command: string;
 },): Promise<number> {
   /** Full VM name with prefix. */
   const fullName = `${VM_PREFIX}${TEMPLATE_VM_NAME}`;
@@ -295,8 +296,8 @@ async function guestFilePush({
   guestPath,
   hostPath,
 }: {
-  guestPath: string;
-  hostPath: string;
+  readonly guestPath: string;
+  readonly hostPath: string;
 },): Promise<void> {
   /** Prefixed libvirt domain name; matches what `defineVm` registered. */
   const fullName = `${VM_PREFIX}${TEMPLATE_VM_NAME}`;
@@ -381,8 +382,8 @@ async function installVirtioFs({
   rl,
   winfspMsiPath,
 }: {
-  rl: ReturnType<typeof tagged>;
-  winfspMsiPath: string;
+  readonly rl: Logger;
+  readonly winfspMsiPath: string;
 },): Promise<void> {
   // Push WinFsp MSI to guest via file transfer (not on virtio-win ISO)
   rl.info('pushing WinFsp MSI to guest...',);

@@ -52,9 +52,9 @@ export function execArgs({
   osFamily,
   shell,
 }: {
-  command: string;
-  osFamily: string;
-  shell: string;
+  readonly command: string;
+  readonly osFamily: string;
+  readonly shell: string;
 },): {
   arg: readonly string[];
   path: string;

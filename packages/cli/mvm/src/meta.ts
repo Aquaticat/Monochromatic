@@ -73,9 +73,9 @@ export async function writeVmMeta({
   image,
   vmDir,
 }: {
-  guest: GuestConfig;
-  image: string;
-  vmDir: string;
+  readonly guest: GuestConfig;
+  readonly image: string;
+  readonly vmDir: string;
 },): Promise<void> {
   /** Logger scoped to this writer so legacy-file fallbacks log with context. */
   const rl = tagged({

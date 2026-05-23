@@ -23,7 +23,7 @@ import {
  * windowsPeSection({ imageIndex: 1 }); // => '  <settings pass="windowsPE">...'
  * ```
  */
-export function windowsPeSection({ imageIndex, }: { imageIndex: number; },): string {
+export function windowsPeSection({ imageIndex, }: { readonly imageIndex: number; },): string {
   return `  <settings pass="windowsPE">
     <component name="Microsoft-Windows-International-Core-WinPE" ${COMPONENT_ATTRS}>
       <SetupUILanguage>

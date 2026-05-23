@@ -53,9 +53,9 @@ async function downloadIfMissing({
   tag,
   url,
 }: {
-  destPath: string;
-  tag: string;
-  url: string;
+  readonly destPath: string;
+  readonly tag: string;
+  readonly url: string;
 },): Promise<string> {
   /** Logger scoped to the caller's tag so download progress is attributed to the right caller. */
   const rl = tagged({

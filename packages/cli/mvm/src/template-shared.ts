@@ -31,7 +31,7 @@ export const TEMPLATE_VM_NAME = 'template-setup';
  * ```
  */
 export function templateVmGuard(
-  rl: { debug: (msg: string,) => void; },
+  rl: { readonly debug: (msg: string,) => void; },
 ): AsyncDisposable {
   return {
     async [Symbol.asyncDispose](): Promise<void> {
@@ -51,7 +51,7 @@ export function templateVmGuard(
  * await cleanupTemplateVm(rl);
  * ```
  */
-async function cleanupTemplateVm(rl: { debug: (msg: string,) => void; },): Promise<void> {
+async function cleanupTemplateVm(rl: { readonly debug: (msg: string,) => void; },): Promise<void> {
   rl.debug('cleaning up template VM...',);
   try {
     await destroyVm({ name: TEMPLATE_VM_NAME, },);

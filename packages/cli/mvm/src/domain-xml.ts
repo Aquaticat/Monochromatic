@@ -29,7 +29,7 @@ import type { OsFamily, } from './registry.ts';
  */
 export type CdromSpec = {
   /** Absolute path to the ISO file. */
-  path: string;
+  readonly path: string;
 };
 
 //endregion CDROM type
@@ -98,9 +98,9 @@ export function domainXml(
     sharedDir,
   }: {
     /** Boot device: `hd` for normal operation, `cdrom` for ISO-based installation. */
-    bootDev?: 'cdrom' | 'hd';
+    readonly bootDev?: 'cdrom' | 'hd';
     /** Additional IDE CDROMs (Windows ISO, autounattend, virtio-win). */
-    cdroms?: readonly CdromSpec[];
+    readonly cdroms?: readonly CdromSpec[];
     /**
      * Bus type for the primary disk.
      * Use `virtio` for production VMs (best performance).
@@ -108,17 +108,17 @@ export function domainXml(
      * SAN policy (policy 4: offline shared bus) which makes VirtIO disks
      * appear offline in WinPE, blocking unattended installation.
      */
-    diskBus?: 'sata' | 'virtio';
+    readonly diskBus?: 'sata' | 'virtio';
     /** Absolute path to the VM disk image. */
-    diskPath: string;
+    readonly diskPath: string;
     /** VM name without the mvm- prefix. */
-    name: string;
+    readonly name: string;
     /** Guest OS family for platform-specific optimizations. */
-    osFamily?: OsFamily;
+    readonly osFamily?: OsFamily;
     /** Absolute path to the cloud-init seed ISO (Linux only, omitted for Windows). */
-    seedIsoPath?: string | undefined;
+    readonly seedIsoPath?: string | undefined;
     /** Absolute path to a host directory shared via virtiofs. */
-    sharedDir?: string | undefined;
+    readonly sharedDir?: string | undefined;
   },
 ): string {
   /** Mutable buffer because Windows pushes Hyper-V enlightenments on top of ACPI. */

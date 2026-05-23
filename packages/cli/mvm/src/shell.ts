@@ -22,7 +22,7 @@ import {
  * await shell({ name: 'dev-01' });
  * ```
  */
-export async function shell({ name, }: { name: string; },): Promise<void> {
+export async function shell({ name, }: { readonly name: string; },): Promise<void> {
   validateName(name,);
   /** Tagged logger so console-session messages name the call site. */
   const rl = tagged({

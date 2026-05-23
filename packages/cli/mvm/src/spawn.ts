@@ -27,8 +27,8 @@ export async function spawn(
     args,
     command,
   }: {
-    args: readonly string[];
-    command: string;
+    readonly args: readonly string[];
+    readonly command: string;
   },
 ): Promise<string> {
   /** Tagged logger so the debug line names the spawn call site. */

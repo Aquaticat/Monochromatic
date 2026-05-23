@@ -129,10 +129,10 @@ export function writeStr({
   offset,
   str,
 }: {
-  buf: Uint8Array;
-  len: number;
-  offset: number;
-  str: string;
+  readonly buf: Uint8Array;
+  readonly len: number;
+  readonly offset: number;
+  readonly str: string;
 },): void {
   for (let idx = 0; idx < len; idx++) {
     /* oxlint-disable-next-line unicorn/prefer-code-point -- ISO 9660 uses single-byte ASCII; charCodeAt is correct for byte-level buffer operations */
@@ -160,9 +160,9 @@ export function writeBoth16({
   value,
   view,
 }: {
-  offset: number;
-  value: number;
-  view: DataView;
+  readonly offset: number;
+  readonly value: number;
+  readonly view: DataView;
 },): void {
   view.setUint16(
     offset,
@@ -196,9 +196,9 @@ export function writeBoth32({
   value,
   view,
 }: {
-  offset: number;
-  value: number;
-  view: DataView;
+  readonly offset: number;
+  readonly value: number;
+  readonly view: DataView;
 },): void {
   view.setUint32(
     offset,
@@ -229,8 +229,8 @@ export function writeTimestamp7({
   buf,
   offset,
 }: {
-  buf: Uint8Array;
-  offset: number;
+  readonly buf: Uint8Array;
+  readonly offset: number;
 },): void {
   buf[offset] = TIMESTAMP_YEAR_SINCE_1900;
   buf[offset + 1] = 1; // month
@@ -254,8 +254,8 @@ export function writeTimestamp17({
   buf,
   offset,
 }: {
-  buf: Uint8Array;
-  offset: number;
+  readonly buf: Uint8Array;
+  readonly offset: number;
 },): void {
   writeStr({
     buf,

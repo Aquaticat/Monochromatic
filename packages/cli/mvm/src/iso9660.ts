@@ -52,13 +52,13 @@ function writeDirEntry({
   size,
   view,
 }: {
-  buf: Uint8Array;
-  isDir: boolean;
-  name: string;
-  offset: number;
-  sector: number;
-  size: number;
-  view: DataView;
+  readonly buf: Uint8Array;
+  readonly isDir: boolean;
+  readonly name: string;
+  readonly offset: number;
+  readonly sector: number;
+  readonly size: number;
+  readonly view: DataView;
 },): number {
   /** ISO9660 file identifier length; the special "self" and "parent" entries collapse to a single byte. */
   const nameLen = ((name === '\u0000') || (name === '\u0001')) ? 1 : name.length;
@@ -137,11 +137,11 @@ export function createIso({
   files,
   volumeId,
 }: {
-  files: readonly {
-    data: Uint8Array;
-    name: string;
+  readonly files: readonly {
+    readonly data: Uint8Array;
+    readonly name: string;
   }[];
-  volumeId: string;
+  readonly volumeId: string;
 },): Uint8Array {
   /** Cursor advancing across file-data sectors; assigned to each entry then incremented. */
   let nextSector = L.FIRST_FILE_DATA_SECTOR;

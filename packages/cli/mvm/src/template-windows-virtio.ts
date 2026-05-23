@@ -41,9 +41,9 @@ export async function verifyVirtioBoot({
   diskPath,
   rl,
 }: {
-  vmDir: string;
-  diskPath: string;
-  rl: { info: (msg: string,) => void; };
+  readonly vmDir: string;
+  readonly diskPath: string;
+  readonly rl: { readonly info: (msg: string,) => void; };
 },): Promise<void> {
   rl.info('guest agent ready on SATA, switching to VirtIO disk bus...',);
   await shutdownVm({ name: TEMPLATE_VM_NAME, },);

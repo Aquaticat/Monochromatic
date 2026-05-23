@@ -49,8 +49,8 @@ async function setWindowsHostname({
   hostname,
   name,
 }: {
-  hostname: string;
-  name: string;
+  readonly hostname: string;
+  readonly name: string;
 },): Promise<void> {
   /** Logger scoped to this helper so the rename invocation is namespaced. */
   const rl = tagged({
@@ -101,8 +101,8 @@ export async function create({
   image = DEFAULT_IMAGE,
   name,
 }: {
-  image?: string | undefined;
-  name: string;
+  readonly image?: string | undefined;
+  readonly name: string;
 },): Promise<void> {
   validateName(name,);
   /** Logger scoped to this create call so step logs are namespaced. */

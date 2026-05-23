@@ -35,10 +35,10 @@ async function destroyOne(
     name,
     rl,
   }: {
-    name: string;
-    rl: {
-      debug: (msg: string,) => void;
-      info: (msg: string,) => void;
+    readonly name: string;
+    readonly rl: {
+      readonly debug: (msg: string,) => void;
+      readonly info: (msg: string,) => void;
     };
   },
 ): Promise<void> {
@@ -82,7 +82,7 @@ async function destroyOne(
  * await destroy({ name: 'dev-01' });
  * ```
  */
-export async function destroy({ name, }: { name: string; },): Promise<void> {
+export async function destroy({ name, }: { readonly name: string; },): Promise<void> {
   validateName(name,);
   /** Tagged logger so destroy entries are scoped to `destroy` in the output. */
   const rl = tagged({

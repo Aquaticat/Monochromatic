@@ -41,10 +41,10 @@ async function pollProgress({
   signal,
   totalStr,
 }: {
-  contentLength: number;
-  destPath: string;
-  signal: AbortSignal;
-  totalStr: string;
+  readonly contentLength: number;
+  readonly destPath: string;
+  readonly signal: AbortSignal;
+  readonly totalStr: string;
 },): Promise<void> {
   /** Milliseconds between file size polls for progress display. */
   const POLL_INTERVAL_MS = 500;
@@ -103,9 +103,9 @@ export async function writeWithProgress({
   response,
   rl,
 }: {
-  destPath: string;
-  response: Response;
-  rl: { info: (msg: string,) => void; };
+  readonly destPath: string;
+  readonly response: Response;
+  readonly rl: { readonly info: (msg: string,) => void; };
 },): Promise<void> {
   /** Expected total bytes from the `content-length` header; 0 when the server omits it. */
   const contentLength = Number(response.headers.get('content-length',) ?? 0,);
