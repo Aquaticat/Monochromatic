@@ -27,47 +27,29 @@ import type {
  * @param s - candidate gap string
  *
  * @returns whether the gap is space/tab-only with exactly one newline
+ *
+ * @example
+ * ```ts
+ * isAttachedGap('\n',);   // true  (single line break attaches)
+ * isAttachedGap('\n\n',); // false (blank line breaks attachment)
+ * ```
  */
-function isAttachedGap(s: string,): boolean {
-  /**
-   * Recursive walker tracking the running newline count.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @param newlineCount - newlines seen so far; aborts on a second one
-   *
-   * @returns whether the rest of `s` satisfies the gap shape
-   */
-  function walk({
-    idx,
-    newlineCount,
-  }: {
-    idx: number;
-    newlineCount: number;
-  },): boolean {
-    if (idx >= s.length)
-      return newlineCount === 1;
-    /** Char at the cursor; only space, tab, or a single newline qualify. */
-    const c = s.charAt(idx,);
-    if (c === '\n') {
-      if (newlineCount >= 1)
+export function isAttachedGap(s: string,): boolean {
+  return (function scan(): boolean {
+    /** Running count of newlines; a second one disqualifies the gap. */
+    let newlineCount = 0;
+    for (const char of s) {
+      if (char === '\n') {
+        if (newlineCount >= 1)
+          return false;
+        newlineCount += 1;
+        continue;
+      }
+      if ((char !== ' ') && (char !== '\t'))
         return false;
-      return walk({
-        idx: idx + 1,
-        newlineCount: newlineCount + 1,
-      },);
     }
-    if ((c !== ' ') && (c !== '\t'))
-      return false;
-    return walk({
-      idx: idx + 1,
-      newlineCount,
-    },);
-  }
-  return walk({
-    idx: 0,
-    newlineCount: 0,
-  },);
+    return newlineCount === 1;
+  })();
 }
 
 /**
@@ -123,45 +105,36 @@ function collectAttached(
     cursor: number;
   },
 ): readonly TomlComment[] {
-  /** Accumulator filled in source order via `unshift`. */
-  const collected: TomlComment[] = [];
-  /** Last comment whose end falls before the cursor; starting point for the walk. */
+  /** Last comment whose end falls before the cursor; starting point for the backward walk. */
   const initialIdx = lastCommentBefore({
     comments,
     offset: cursor,
   },);
-  /** IIFE-into-const so the recursive walker satisfies the no-let-root rule. */
-  const fold = (function loop(
-    i: number,
-    c: number,
-  ): TomlComment[] {
-    if (i < 0)
-      return collected;
-    /** Candidate comment so the gap check can decide if it is still attached. */
-    const comment = nonNullishOrThrow(comments[i],);
-    if (comment.range[1] >= c) {
-      return loop(
-        i - 1,
-        c,
+  /** IIFE scopes the moving cursor so no `let` survives at the function-body root. */
+  return (function walk(): TomlComment[] {
+    /** Cursor that retreats to each attached comment's start as the block grows. */
+    let cursorPos = cursor;
+    /** Filled nearest-first while walking back, reversed to source order on return. */
+    const collected: TomlComment[] = [];
+    for (let idx = initialIdx; idx >= 0; idx--) {
+      /** Candidate comment so the gap check can decide if it is still attached. */
+      const comment = nonNullishOrThrow(comments[idx],);
+      /** Start and end offsets of the candidate comment. */
+      const [commentStart, commentEnd,] = comment.range;
+      if (commentEnd >= cursorPos)
+        continue;
+      /** Source between the comment and the cursor; whitespace-only means still attached. */
+      const between = source.slice(
+        commentEnd,
+        cursorPos,
       );
+      if (!isAttachedGap(between,))
+        break;
+      collected.push(comment,);
+      cursorPos = commentStart;
     }
-    /** Source between the comment and the cursor; whitespace-only means still attached. */
-    const between = source.slice(
-      comment.range[1],
-      c,
-    );
-    if (!isAttachedGap(between,))
-      return collected;
-    collected.unshift(comment,);
-    return loop(
-      i - 1,
-      comment.range[0],
-    );
-  })(
-    initialIdx,
-    cursor,
-  );
-  return fold;
+    return collected.toReversed();
+  })();
 }
 
 /**

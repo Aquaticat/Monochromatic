@@ -33,21 +33,11 @@ function isBareKeyChar(c: string,): boolean {
 function isBareKey(key: string,): boolean {
   if (key.length === 0)
     return false;
-  /**
-   * Recursive walker: every char must satisfy `isBareKeyChar`.
-   *
-   * @param idx - cursor into `key`
-   *
-   * @returns whether the suffix from `idx` is all bare-key chars
-   */
-  function walk(idx: number,): boolean {
-    if (idx >= key.length)
-      return true;
-    if (!isBareKeyChar(key.charAt(idx,),))
+  for (const char of key) {
+    if (!isBareKeyChar(char,))
       return false;
-    return walk(idx + 1,);
   }
-  return walk(0,);
+  return true;
 }
 
 /**
