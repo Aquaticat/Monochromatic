@@ -85,10 +85,10 @@ export async function convert(
     targetPath,
     targetFormat,
   }: {
-    sourcePath: string;
-    sourceFormat: string;
-    targetPath: string;
-    targetFormat: string;
+    readonly sourcePath: string;
+    readonly sourceFormat: string;
+    readonly targetPath: string;
+    readonly targetFormat: string;
   },
 ): Promise<void> {
   /** Function-tagged logger so traces show which qemu-img call produced each line. */
@@ -139,8 +139,8 @@ export async function createOverlay(
     overlayPath,
     backingPath,
   }: {
-    overlayPath: string;
-    backingPath: string;
+    readonly overlayPath: string;
+    readonly backingPath: string;
   },
 ): Promise<void> {
   /** Function-tagged logger so traces show which qemu-img call produced each line. */

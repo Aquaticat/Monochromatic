@@ -35,9 +35,9 @@ export async function updateConfig(
     memory,
     cpus,
   }: {
-    name: string;
-    memory: string | undefined;
-    cpus: number | undefined;
+    readonly name: string;
+    readonly memory: string | undefined;
+    readonly cpus: number | undefined;
   },
 ): Promise<void> {
   /** Tagged logger so config-update entries are scoped to `updateConfig` in the output. */

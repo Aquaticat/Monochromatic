@@ -33,8 +33,8 @@ export async function spawn(
     args,
     command,
   }: {
-    args: readonly string[];
-    command: string;
+    readonly args: readonly string[];
+    readonly command: string;
   },
 ): Promise<string> {
   /** Tagged logger so spawn entries are scoped to `spawn` in the output. */

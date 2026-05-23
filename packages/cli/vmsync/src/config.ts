@@ -21,6 +21,7 @@ import {
 import {
   CONFIG_FILENAME,
   type Hypervisor,
+  type SyncState,
   type VmsyncConfig,
 } from './types.ts';
 
@@ -290,8 +291,10 @@ export async function writeConfig(
     name,
     config,
   }: {
-    name: string;
-    config: VmsyncConfig;
+    readonly name: string;
+    readonly config: Omit<VmsyncConfig, 'state'> & {
+      readonly state: Readonly<SyncState>;
+    };
   },
 ): Promise<void> {
   /** Tagged logger so write-config entries are scoped to `writeConfig` in the output. */

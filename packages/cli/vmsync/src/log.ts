@@ -3,9 +3,17 @@ import {
   logger,
 } from '@monochromatic-dev/module-logger/logger';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
-import type { Logger, } from '@monochromatic-dev/module-logger/types';
+import type { Logger as ModuleLogger, } from '@monochromatic-dev/module-logger/types';
 
 await initPromise;
+
+/**
+ * Readonly logger handle passed through vmsync subsystems.
+ * Wraps the upstream mutable {@link ModuleLogger} so loggers travel as
+ * call-only handles: `prefer-readonly-parameter-types` accepts them
+ * without recursing into the upstream method properties.
+ */
+export type Logger = Readonly<ModuleLogger>;
 
 /**
  * Root tagged logger for all vmsync subsystems.
@@ -22,5 +30,4 @@ export const l: Logger = tagged({
   l: logger,
 },);
 
-export type { Logger, };
 export { tagged, };

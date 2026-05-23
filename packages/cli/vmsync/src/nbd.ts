@@ -11,6 +11,7 @@ import { access, } from 'node:fs/promises';
 
 import {
   l,
+  type Logger,
   tagged,
 } from './log.ts';
 import { spawn, } from './spawn.ts';
@@ -113,8 +114,8 @@ async function checkDeviceFree(
     sysfsSize,
     rl,
   }: {
-    sysfsSize: string;
-    rl: ReturnType<typeof tagged>;
+    readonly sysfsSize: string;
+    readonly rl: Logger;
   },
 ): Promise<boolean> {
   try {
@@ -189,10 +190,10 @@ export async function connectDisposable(
     readOnly,
     format,
   }: {
-    imagePath: string;
-    device: string;
-    readOnly: boolean;
-    format: string;
+    readonly imagePath: string;
+    readonly device: string;
+    readonly readOnly: boolean;
+    readonly format: string;
   },
 ): Promise<NbdConnection> {
   /** Function-tagged logger so connect/disconnect events are paired in traces. */
@@ -267,9 +268,9 @@ export async function patchBlocks(
     targetDevice,
     changedRegions,
   }: {
-    sourceDevice: string;
-    targetDevice: string;
-    changedRegions: readonly QemuMapRegion[];
+    readonly sourceDevice: string;
+    readonly targetDevice: string;
+    readonly changedRegions: readonly QemuMapRegion[];
   },
 ): Promise<void> {
   /** Function-tagged logger so per-region copy operations are traceable. */
@@ -330,10 +331,10 @@ async function transferRegion(
     region,
     rl,
   }: {
-    sourceDevice: string;
-    targetDevice: string;
-    region: QemuMapRegion;
-    rl: ReturnType<typeof tagged>;
+    readonly sourceDevice: string;
+    readonly targetDevice: string;
+    readonly region: QemuMapRegion;
+    readonly rl: Logger;
   },
 ): Promise<void> {
   if (((region.start % SECTOR_SIZE) !== 0) || ((region.length % SECTOR_SIZE) !== 0)) {

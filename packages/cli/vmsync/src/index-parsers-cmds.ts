@@ -79,8 +79,8 @@ export const importCmd: SubcommandParser = command(
     },),
     function toImportArgs(
       v: {
-        imagePath: string;
-        name: string | undefined;
+        readonly imagePath: string;
+        readonly name: string | undefined;
       },
     ): VmsyncArgs {
       return {
@@ -102,7 +102,7 @@ export const bootCmd: SubcommandParser = command(
     object({
       name: argument(name,),
     },),
-    function toBootArgs(v: { name: string; },): VmsyncArgs {
+    function toBootArgs(v: { readonly name: string; },): VmsyncArgs {
       return {
         cmd: 'boot',
         name: v.name,
@@ -121,7 +121,7 @@ export const syncCmd: SubcommandParser = command(
     object({
       name: argument(name,),
     },),
-    function toSyncArgs(v: { name: string; },): VmsyncArgs {
+    function toSyncArgs(v: { readonly name: string; },): VmsyncArgs {
       return {
         cmd: 'sync',
         name: v.name,
@@ -140,7 +140,7 @@ export const statusCmd: SubcommandParser = command(
     object({
       name: argument(name,),
     },),
-    function toStatusArgs(v: { name: string; },): VmsyncArgs {
+    function toStatusArgs(v: { readonly name: string; },): VmsyncArgs {
       return {
         cmd: 'status',
         name: v.name,
@@ -195,9 +195,9 @@ export const configCmd: SubcommandParser = command(
     },),
     function toConfigArgs(
       v: {
-        name: string;
-        memory: string | undefined;
-        cpus: number | undefined;
+        readonly name: string;
+        readonly memory: string | undefined;
+        readonly cpus: number | undefined;
       },
     ): VmsyncArgs {
       return {

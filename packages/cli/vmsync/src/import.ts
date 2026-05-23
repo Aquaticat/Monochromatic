@@ -21,6 +21,7 @@ import {
 } from './config.ts';
 import {
   l,
+  type Logger,
   tagged,
 } from './log.ts';
 import {
@@ -64,8 +65,8 @@ async function validateUefi(
     imagePath,
     format,
   }: {
-    imagePath: string;
-    format: string;
+    readonly imagePath: string;
+    readonly format: string;
   },
 ): Promise<void> {
   /** Tagged logger so UEFI-validation entries are scoped to `validateUefi` in the output. */
@@ -198,8 +199,8 @@ export async function importImage(
     imagePath,
     name,
   }: {
-    imagePath: string;
-    name: string | undefined;
+    readonly imagePath: string;
+    readonly name: string | undefined;
   },
 ): Promise<void> {
   /** Tagged logger so import entries are scoped to `importImage` in the output. */
@@ -321,11 +322,11 @@ async function convertSourceImage(
     vhdxPath,
     rl,
   }: {
-    absPath: string;
-    format: string;
-    qcow2Path: string;
-    vhdxPath: string;
-    rl: ReturnType<typeof tagged>;
+    readonly absPath: string;
+    readonly format: string;
+    readonly qcow2Path: string;
+    readonly vhdxPath: string;
+    readonly rl: Logger;
   },
 ): Promise<void> {
   if (format === 'qcow2') {

@@ -154,9 +154,9 @@ async function patchVhdxFromOverlay(
     vhdxPath,
     changedRegions,
   }: {
-    overlayPath: string;
-    vhdxPath: string;
-    changedRegions: readonly QemuMapRegion[];
+    readonly overlayPath: string;
+    readonly vhdxPath: string;
+    readonly changedRegions: readonly QemuMapRegion[];
   },
 ): Promise<void> {
   await ensureNbdModule();

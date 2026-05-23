@@ -16,6 +16,7 @@ import {
 } from './config.ts';
 import {
   l,
+  type Logger,
   tagged,
 } from './log.ts';
 import { CONFIG_FILENAME, } from './types.ts';
@@ -27,7 +28,7 @@ import { CONFIG_FILENAME, } from './types.ts';
  *
  * @returns Directory entries, or empty array on missing directory
  */
-async function safeReaddir(rl: ReturnType<typeof tagged>,): Promise<string[]> {
+async function safeReaddir(rl: Logger,): Promise<string[]> {
   try {
     return await readdir(DATA_DIR,);
   }
