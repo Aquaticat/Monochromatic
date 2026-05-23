@@ -149,38 +149,16 @@ type HOptions = {
  * ```
  */
 function camelToKebab(property: string,): string {
-  /**
-   * Recursive walker: emits each char unchanged unless uppercase, in
-   * which case it prepends `-` and lowercases.
-   *
-   * @param idx - cursor into `property`
-   *
-   * @param acc - characters collected so far
-   *
-   * @returns kebab-cased string
-   */
-  function walk({
-    idx,
-    acc,
-  }: {
-    idx: number;
-    acc: string;
-  },): string {
-    if (idx >= property.length)
-      return acc;
-    /** Char at the cursor; uppercase chars are rewritten, everything else passes through. */
-    const c = property.charAt(idx,);
+  /** Per-character kebab fragments, joined once at the end so the accumulator is never rebuilt each step (single linear pass: O(n) time, O(1) stack, no recursion). */
+  const fragments: string[] = [];
+
+  for (const c of property) {
     /** True when `c` is an ASCII uppercase letter (`A`-`Z`). */
     const isUpper = (c >= 'A') && (c <= 'Z');
-    return walk({
-      idx: idx + 1,
-      acc: isUpper ? `${acc}-${c.toLowerCase()}` : `${acc}${c}`,
-    },);
+    fragments.push(isUpper ? `-${c.toLowerCase()}` : c,);
   }
-  return walk({
-    idx: 0,
-    acc: '',
-  },);
+
+  return fragments.join('',);
 }
 
 /**
