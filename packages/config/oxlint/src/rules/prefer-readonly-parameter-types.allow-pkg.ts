@@ -97,6 +97,7 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       "Token",
       "TryStatement",
       "TSEnumDeclaration",
+      "Variable",
       "VariableDeclaration",
       // The matcher compares `symbol.escapedName`, not the surface name. The
       // ESTree namespace re-exports three types under bundler-renamed aliases
