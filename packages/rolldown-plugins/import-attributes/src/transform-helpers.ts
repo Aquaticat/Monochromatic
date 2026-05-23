@@ -33,29 +33,42 @@ export type Replacement = {
  * `idx`. Used to skip the whitespace gap between an import path and the
  * `with`/`assert` keyword.
  *
+ * Single linear pass with no recursion: the cursor walks right past every
+ * with-clause whitespace char, so a long run is O(n) time and O(1) stack.
+ * The prior recursive scan was O(n) stack and overflowed on long input
+ * under engines without tail-call elimination (V8/Node).
+ *
  * @param s - source string
  *
  * @param idx - cursor to begin scanning from
  *
  * @returns first non-whitespace position at or after `idx`
+ *
+ * @example
+ * ```ts
+ * skipWithClauseWhitespace({ s: '   with', idx: 0 }); // 3
+ * skipWithClauseWhitespace({ s: 'with', idx: 0 }); // 0
+ * ```
  */
-function skipWithClauseWhitespace({
+export function skipWithClauseWhitespace({
   s,
   idx,
 }: {
   s: string;
   idx: number;
 },): number {
-  if (idx >= s.length)
-    return idx;
-  /** Char at the cursor; only the four whitespace chars permitted in the with-clause prefix advance the scan. */
-  const c = s.charAt(idx,);
-  if ((c !== ' ') && (c !== '\t') && (c !== '\n') && (c !== '\r'))
-    return idx;
-  return skipWithClauseWhitespace({
-    s,
-    idx: idx + 1,
-  },);
+  return (function scan(): number {
+    /** Cursor; walked right past every with-clause whitespace char so the position is found in one pass. */
+    let cursor = idx;
+    while (cursor < s.length) {
+      /** Char at the cursor; only the four whitespace chars permitted in the with-clause prefix advance the scan. */
+      const c = s.charAt(cursor,);
+      if ((c !== ' ') && (c !== '\t') && (c !== '\n') && (c !== '\r'))
+        return cursor;
+      cursor += 1;
+    }
+    return cursor;
+  })();
 }
 
 /**
