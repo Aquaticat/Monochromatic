@@ -52,11 +52,14 @@ the out-of-band local file `resharp-merged-issue.local.md` (gitignored, not comm
   `saturating_add`. Previously undocumented; the `engine.rs` pre-validator
   wrongly claimed it was filed upstream.
 
-Filing summary: per the user's decision not to file separate issues, all
-still-live bugs are merged into one upstream issue. Its body is saved as
-the out-of-band local file `resharp-merged-issue.local.md` (gitignored,
-not committed), with the combined patch attached. Each merged bug has a minimal prototype fix verified
-against HEAD, so the five-constraint gate (constraint 5: prototype) now
+Filing summary: filed 2026-05-23 as ieviev/resharp#5
+(`https://github.com/ieviev/resharp/issues/5`). Per the user's decision
+not to file separate issues, all still-live bugs were merged into that one
+upstream issue. Its body is the out-of-band local file
+`resharp-merged-issue.local.md` (gitignored, not committed), with the
+combined patch attached. Each merged bug has a minimal prototype fix
+verified against HEAD, so the five-constraint gate (constraint 5:
+prototype) now
 passes for Bugs B, C, E, F and for Bug A's wording sub-issue. Bug A's
 behavioural fix (actually supporting complement-of-lookaround) stays out
 of the issue: it is an architectural change with no prototype. Bug D is
@@ -65,7 +68,7 @@ the policy treats as a publicity incident).
 
 Upstream tracker checked 2026-05-23 (`gh issue list -R ieviev/resharp
 --state all`): the repository has four issues total and none cover Bugs A
-through F, so the merged issue is not a duplicate. The closed issue #3
+through F, so the merged issue (filed as #5) was not a duplicate. The closed issue #3
 ("find_all / is_match false positives for fixed-length patterns with a
 literal prefix", 2026-04-02) sits in the same prefix-selection code as
 Bug E and shows the maintainer actively fixes bugs there, which
@@ -1003,7 +1006,7 @@ in debug and release builds. The control shapes `abc~(\w)&(?:a)*`
 (1-char body) and `~(\w)&(?:aaa)*` (no literal prefix) return in
 milliseconds, matching the scaling described above. This is the only one
 of the five bugs that is both still live and has a re-validated prototype
-fix, so it is the one issue ready to file.
+fix; it was filed (with the others) in the merged issue ieviev/resharp#5.
 
 ### Root cause
 
@@ -1347,13 +1350,13 @@ Re-evaluation of constraints 2 and 4 in light of the obstacle:
   scaffolding), and the patch reuses the same vocabulary. No
   algebraic-core changes.
 
-### Draft upstream issue body for Bug E (ready to file)
+### Draft upstream issue body for Bug E (filed in merged issue #5)
 
-Before filing, re-run `git apply --check` of the diff below against the
-current `ieviev/resharp` `main` and re-run the trigger: resharp's main
-branch moves fast, and the clean-apply plus `231/0/19` result was
-confirmed against HEAD `e0b8aba` on 2026-05-23. Update the commit hash in
-the Verification section to whatever `main` resolves to at filing time.
+This per-bug draft was folded into the merged upstream issue
+ieviev/resharp#5 (filed 2026-05-23 against HEAD `e0b8aba`); it is kept
+here as a standalone reference. If a maintainer re-tests against a later
+`main`, re-run `git apply --check` of the diff below first, since
+resharp's main branch moves fast.
 
 ````md
 **Title:** non-termination in `prefix::calc_prefix_sets_inner` for `~(...)&(...)*` patterns
