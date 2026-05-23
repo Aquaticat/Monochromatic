@@ -16,13 +16,15 @@ single merged upstream issue body is at
 the out-of-band local file `resharp-merged-issue.local.md` (gitignored, not committed). See the
 "Prototype fixes" section for the per-bug results.
 
-Update (2026-05-23, post-filing): the maintainer responded on the merged
-issue and published resharp 0.6.4 the same day, reporting the bug fixed
-there. We have not re-verified 0.6.4 (no re-probe, no re-fuzz); the
-verification below stays against published 0.6.3 and HEAD `e0b8aba`
-(which predates the 0.6.4 release), and the per-bug statuses are
-unchanged pending a re-fuzz. See "Upstream response (2026-05-23)" below
-for the reply, the version facts, and the wait-then-re-fuzz plan.
+Update (2026-05-23, post-filing): the maintainer responded the same day
+and published resharp 0.6.4, whose sole fix commit (`bd780ef`) reproduces
+our prototype patch (source-verified: the Bug A render string is
+byte-for-byte identical to ours and the Bug B/C/E/F hunks match). The
+verification catalogues below stay against published 0.6.3 and HEAD
+`e0b8aba` (which predates 0.6.4); a behavioural re-fuzz against the
+published 0.6.4 build is still pending. See "Upstream response
+(2026-05-23)" below for the reply, the source diff, and the
+wait-then-bump-then-re-fuzz plan.
 
 Status:
 
@@ -94,7 +96,7 @@ pre-validators in `packages/cli/forbidden-strings/src/rules/engine.rs` are
 the durable consumer-side fix and stay in place regardless of upstream
 status; over-rejection is fail-closed-safe.
 
-## Upstream response (2026-05-23): maintainer reports fix in v0.6.4
+## Upstream response (2026-05-23): v0.6.4 fix reproduces our prototype patch
 
 The maintainer (`ieviev`) responded to the merged issue
 [ieviev/resharp#5](https://github.com/ieviev/resharp/issues/5) the same
@@ -117,41 +119,57 @@ with this doc otherwise tracking HEAD commits).
 
 ### What this changes, and what it does not
 
-- Not verified by us. We have not re-probed or re-fuzzed against 0.6.4.
-  "Fixed in v0.6.4" is the maintainer's claim, not ours; the verification
-  catalogues in each bug section remain against published 0.6.3 and HEAD
-  `e0b8aba` (which predates the 0.6.4 release). The merged issue covered
-  three distinct DFA-construction defects (Bug B, the shared Bug C / Bug F
-  overflow, and Bug E) plus Bug A's error-message wording nudge. The
-  maintainer's singular "bug ... is fixed" does not disclose which of
-  those four 0.6.4 addresses; re-fuzzing after a bump determines per-bug
-  coverage.
-- The prototype patch is now historical.
-  [TROUBLESHOOTING.resharp.patch](TROUBLESHOOTING.resharp.patch) was
-  verified against `e0b8aba`; its status against 0.6.4 is unverified and
-  likely superseded, since the maintainer's "restricted a few edge case
-  patterns" wording points to a reject-more fix rather than the
-  support-more shape some of our prototypes took. Do not re-apply it to
-  current `main` without re-checking against the live source.
-- The restriction direction matches our defenses. "Restricted a few edge
-  case patterns" means the 0.6.4 fix is partly a reject-more-shapes
-  change, the same fail-closed direction as the `intersection_with_*` and
-  related pre-validators. Whether 0.6.4's restrictions overlap our
-  production rule corpus or extend beyond it is one of the things the
-  re-fuzz will determine; the pre-validators stay in place regardless.
-- Supporting more patterns waits for the follow-up release. Loosening a
-  pre-validator to accept a shape it currently rejects is only safe once
-  the maintainer's "rewrite properly to allow them again" release ships
-  and we confirm the shape compiles and matches correctly there.
+- Source-verified: 0.6.4 is our patch. The sole fix commit
+  (`bd780ef "edge case bugfix"`, the immediate parent of the
+  `3d48f1c "bump ver"` commit crates.io published as 0.6.4) reproduces
+  [TROUBLESHOOTING.resharp.patch](TROUBLESHOOTING.resharp.patch) with our
+  explanatory comments stripped. Read against a fresh clone: Bug B is the
+  fail-closed `Err(UnsupportedPattern)` in `strip_lb`
+  (`resharp-algebra/src/lib.rs:2011`), Bug C / Bug F is
+  `tail_rel.saturating_add(la_rel)` (`:2480`), Bug E is the `visited` set
+  plus clear-and-break (`resharp-engine/src/prefix.rs:33`), and Bug A is
+  the expanded `UnsupportedPattern` render string (Display arm at `:35`),
+  byte-for-byte identical to our patch's. All three filed
+  DFA-construction defects plus the Bug A wording nudge are addressed, by
+  our prototype: the patch attached to the filing is the patch the
+  maintainer shipped, which is the troubleshooting-doc auto-prototype rule
+  paying off.
+- Still pending: behavioural re-confirmation against the published build.
+  We read the 0.6.4 source but have not re-run the probe crates or fuzz
+  targets against 0.6.4, and have not bumped; the catalogues in each bug
+  section stay against 0.6.3 and `e0b8aba`. `git apply --check` of our
+  patch against 0.6.4 fails because the fix lines are already present,
+  confirming the patch is superseded by being upstreamed, not replaced by
+  a divergent approach.
+- The "restricted a few edge case patterns" is the Bug B fail-closed
+  `Err`. The same `strip_lb` change that stops the silent corruption also
+  rejects some patterns that previously compiled; the maintainer commented
+  out HTML-attribute, word-boundary, and user-agent tests with "TODO:
+  reallow once guaranteed 2 be correct". Our Bug B prototype makes the
+  identical restriction, and the `intersection_with_lookbehind`
+  pre-validator rejects the same shapes earlier with a clearer message.
+  The maintainer's "rewrite properly to allow them again" follow-up is
+  future work neither 0.6.4 nor our prototype does: correctly supporting a
+  lookbehind operand of an intersection in `strip_lb`.
+- Supporting more patterns. Bug C, F, and E carry their fix code in 0.6.4
+  (the `saturating_add` and `visited`-set patches, which compiled the
+  triggers correctly on `e0b8aba`), not a restriction, so their
+  pre-validators are candidates to loosen once a re-fuzz confirms the
+  published 0.6.4 build matches correctly.
+  Bug B's pre-validator stays until the follow-up re-allows
+  lookbehind-in-intersection; until then it agrees with upstream's own
+  rejection.
 
 ### Plan (decided 2026-05-23)
 
 Hold the lockfile at resharp 0.6.3 (the current `Cargo.lock` pin; the
 `resharp = "0.6"` requirement in
 `packages/cli/forbidden-strings/Cargo.toml` would otherwise let
-`cargo update -p resharp` pull 0.6.4). Do not bump to 0.6.4 in isolation.
-Wait for the maintainer's "coming days" follow-up release that re-allows
-the restricted patterns, then in one pass:
+`cargo update -p resharp` pull 0.6.4). 0.6.4 already carries the Bug C, F,
+and E fix code (source-verified above); waiting for the maintainer's
+"coming days" follow-up release (which re-allows the Bug B restricted
+patterns) folds the Bug B re-allow into a single bump and re-fuzz rather
+than bumping twice. When that release ships, in one pass:
 
 - Bump to that release (update `Cargo.lock`, raise the `resharp`
   requirement floor if needed).
@@ -1392,10 +1410,12 @@ not file this upstream" subsection) to the two that remain. For Bug B
 4. **Likely to fix?** Unknown. The 0.6.0 to 0.6.3 releases relocated
    Bug B's assertion (into `strip_lb`) but did not resolve it, and did
    not touch Bug C's overflowing add beyond line drift.
-   Retrospectively resolved 2026-05-23: the maintainer reported the bug
-   fixed in 0.6.4 the same day the issue was filed (see "Upstream
-   response (2026-05-23)" above); per-bug coverage across B, C, E, and F
-   is pending our re-fuzz.
+   Resolved 2026-05-23: the maintainer shipped our prototype as the 0.6.4
+   fix the same day the issue was filed. Bug B is the fail-closed `Err` in
+   `strip_lb` (`resharp-algebra/src/lib.rs:2011`) and Bug C is
+   `saturating_add` (`:2480`); see "Upstream response (2026-05-23)" above.
+   Behavioural re-confirmation against the published build is the only
+   step left.
 5. **Have we prototyped a minimal fix?** Yes, as of 2026-05-23. Bug B:
    fail-closed `Err` in `strip_lb`. Bug C: `saturating_add` in
    `attempt_rw_concat_2` (shared with Bug F). Both verified against HEAD
@@ -1433,10 +1453,11 @@ Re-evaluation of constraints 2 and 4 in light of the obstacle:
   The fix sits inside a function the project already maintains
   (the `redundant` set is the prior author's own cycle-detection
   scaffolding), and the patch reuses the same vocabulary. No
-  algebraic-core changes. Retrospectively borne out: the maintainer
-  reported a fix in 0.6.4 the day the merged issue was filed (see
-  "Upstream response (2026-05-23)" above); whether 0.6.4 resolves the
-  Bug E hang specifically is pending our re-fuzz.
+  algebraic-core changes. Borne out: 0.6.4 shipped this exact two-hunk
+  `visited`-set patch (`resharp-engine/src/prefix.rs:33`) the day the
+  issue was filed (see "Upstream response (2026-05-23)" above);
+  behavioural re-confirmation against the published build is the only step
+  left.
 
 ### Draft upstream issue body for Bug E (filed in merged issue #5)
 
