@@ -129,67 +129,55 @@ type DefsPartition = {
  * @param s - SVG inner markup
  *
  * @returns hoisted defs content plus the markup with defs blocks removed
+ *
+ * @example
+ * ```ts
+ * const { defs, content } = extractAndStripDefs('<defs><stop/></defs><path/>');
+ * // defs === '<stop/>', content === '<path/>'
+ * ```
  */
-function extractAndStripDefs(s: string,): DefsPartition {
-  /**
-   * Recursive walker accumulating both partitions.
-   *
-   * @param from - cursor index for the next `indexOf` call
-   *
-   * @param defsAcc - hoisted `<defs>` content collected so far
-   *
-   * @param contentAcc - content outside the `<defs>` blocks
-   *
-   * @returns final partition pair
-   */
-  function walk({
-    from,
-    defsAcc,
-    contentAcc,
-  }: {
-    from: number;
-    defsAcc: string;
-    contentAcc: string;
-  },): DefsPartition {
-    /** Position of the next `<defs>` opener; `-1` ends the scan. */
-    const open = s.indexOf(
-      '<defs>',
-      from,
-    );
-    if (open === (-1)) {
-      return {
-        defs: defsAcc,
-        content: contentAcc + s.slice(from,),
-      };
-    }
-    /** Position of the matching `</defs>`; `-1` means the block is unterminated. */
-    const close = s.indexOf(
-      '</defs>',
-      open + '<defs>'.length,
-    );
-    if (close === (-1)) {
-      return {
-        defs: defsAcc,
-        content: contentAcc + s.slice(from,),
-      };
-    }
-    return walk({
-      from: close + '</defs>'.length,
-      defsAcc: defsAcc + s.slice(
+export function extractAndStripDefs(s: string,): DefsPartition {
+  return (function partition(): DefsPartition {
+    /** Hoisted `<defs>` block bodies in document order; joined once at the end so the build is O(n) time. */
+    const defs: string[] = [];
+    /** Markup chunks outside every `<defs>` block; joined once at the end. */
+    const content: string[] = [];
+    /** Scan cursor; advances past each `</defs>` so no byte is ever revisited (single linear pass, O(1) stack). */
+    let from = 0;
+    while (from <= s.length) {
+      /** Position of the next `<defs>` opener; `-1` ends the scan. */
+      const open = s.indexOf(
+        '<defs>',
+        from,
+      );
+      if (open === (-1)) {
+        content.push(s.slice(from,),);
+        break;
+      }
+      /** Position of the matching `</defs>`; `-1` means the block is unterminated. */
+      const close = s.indexOf(
+        '</defs>',
         open + '<defs>'.length,
-        close,
-      ),
-      contentAcc: contentAcc + s.slice(
+      );
+      if (close === (-1)) {
+        content.push(s.slice(from,),);
+        break;
+      }
+      content.push(s.slice(
         from,
         open,
-      ),
-    },);
-  }
-  return walk({
-    from: 0,
-    defsAcc: '',
-    contentAcc: '',
-  },);
+      ),);
+      defs.push(s.slice(
+        open + '<defs>'.length,
+        close,
+      ),);
+      from = close + '</defs>'.length;
+    }
+    return {
+      defs: defs.join('',),
+      content: content.join('',),
+    };
+  })();
 }
 
 /** Raw SVG sources keyed by OpenRouter vendor prefix */
