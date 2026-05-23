@@ -104,68 +104,56 @@ function isAllDigits(s: string,): boolean {
  * Splits `s` on runs of horizontal whitespace, dropping empty leading or
  * trailing tokens; mirrors `.split(/\s+/)` semantics for a trimmed input.
  *
+ * Single linear pass: a cursor records each token's start index and slices
+ * once at the closing whitespace (or end of input). Build is O(n) time and
+ * O(1) stack, allocating only the output array plus one slice per token,
+ * versus the prior recursive walker which was O(n) stack and O(n^2) time
+ * from per-token `[...acc, token]` array spreads. Exported for unit tests.
+ *
  * @param s - text to split
  *
  * @returns array of non-empty whitespace-separated tokens
+ *
+ * @example
+ * ```ts
+ * splitOnWhitespace('  a  b\tc '); // ['a', 'b', 'c']
+ * ```
  */
-function splitOnWhitespace(s: string,): string[] {
-  /**
-   * Recursive walker accumulating tokens; carries the in-progress token
-   * and the completed accumulator so no `let` is needed.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @param token - characters accumulated since the last whitespace
-   *
-   * @param acc - completed tokens so far
-   *
-   * @returns final token list
-   */
-  function walk({
-    idx,
-    token,
-    acc,
-  }: {
-    idx: number;
-    token: string;
-    acc: readonly string[];
-  },): string[] {
-    if (idx >= s.length) {
-      return token === '' ? [...acc,] : [
-        ...acc,
-        token,
-      ];
+export function splitOnWhitespace(s: string,): string[] {
+  return (function build(): string[] {
+    /** Completed tokens in order; one push and one slice per token keeps the build O(n). */
+    const tokens: string[] = [];
+    /** Start index of the in-progress token, or `(-1)` while between tokens. */
+    let tokenStart = -1;
+    /** Scan cursor advanced one character at a time across `s`. */
+    let idx = 0;
+    while (idx < s.length) {
+      /** Current char; whitespace closes the in-progress token. */
+      const c = s.charAt(idx,);
+      if (
+        (c === ' ')
+        || (c === '\t')
+        || (c === '\n')
+        || (c === '\r')
+        || (c === '\f')
+        || (c === '\v')
+      ) {
+        if (tokenStart !== (-1)) {
+          tokens.push(s.slice(
+            tokenStart,
+            idx,
+          ),);
+          tokenStart = -1;
+        }
+      }
+      else if (tokenStart === (-1))
+        tokenStart = idx;
+      idx += 1;
     }
-    /** Current char; whitespace breaks the in-progress token. */
-    const c = s.charAt(idx,);
-    if (
-      (c === ' ')
-      || (c === '\t')
-      || (c === '\n')
-      || (c === '\r')
-      || (c === '\f')
-      || (c === '\v')
-    ) {
-      return walk({
-        idx: idx + 1,
-        token: '',
-        acc: token === '' ? acc : [
-          ...acc,
-          token,
-        ],
-      },);
-    }
-    return walk({
-      idx: idx + 1,
-      token: token + c,
-      acc,
-    },);
-  }
-  return walk({
-    idx: 0,
-    token: '',
-    acc: [],
-  },);
+    if (tokenStart !== (-1))
+      tokens.push(s.slice(tokenStart,),);
+    return tokens;
+  })();
 }
 
 /**

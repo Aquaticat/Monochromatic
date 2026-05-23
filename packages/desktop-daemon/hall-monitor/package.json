@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:"
   },
   "version": "0.0.1",

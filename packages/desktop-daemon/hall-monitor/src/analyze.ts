@@ -82,30 +82,39 @@ const VERDICT_PREFIX = 'VERDICT:';
 /**
  * Returns the position just after any horizontal whitespace starting at `from`.
  *
+ * Single linear pass: a cursor walks forward over each space or tab, so the
+ * scan is O(n) time and O(1) stack rather than the prior one recursive frame
+ * per skipped character (which overflows on a long blank run under engines
+ * without tail-call elimination). Exported for unit tests.
+ *
  * @param s - haystack
  *
  * @param from - starting index
  *
  * @returns first non-space/tab position at or after `from`
+ *
+ * @example
+ * ```ts
+ * skipSpacesAndTabs({ s: 'a   b', from: 1 }); // 4
+ * ```
  */
-function skipSpacesAndTabs({
+export function skipSpacesAndTabs({
   s,
   from,
 }: {
-  s: string;
-  from: number;
+  readonly s: string;
+  readonly from: number;
 },): number {
-  if (from >= s.length)
-    return from;
-  /** Char at the current cursor; advanced when it is horizontal whitespace. */
-  const c = s.charAt(from,);
-  if ((c === ' ') || (c === '\t')) {
-    return skipSpacesAndTabs({
-      s,
-      from: from + 1,
-    },);
-  }
-  return from;
+  return (function scan(): number {
+    /** Cursor walked forward past each leading space or tab; the first non-blank position. */
+    let cursor = from;
+    while (
+      (cursor < s.length)
+      && ((s.charAt(cursor,) === ' ') || (s.charAt(cursor,) === '\t'))
+    )
+      cursor += 1;
+    return cursor;
+  })();
 }
 
 /**
