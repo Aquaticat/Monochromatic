@@ -50,6 +50,19 @@ B, and C stay deferred under that policy because no prototyped fix exists;
 the one constraint-light exception is Bug A's error-message-wording
 sub-issue (suggested fix 2 in its draft), which can be filed on its own.
 
+Upstream tracker checked 2026-05-23 (`gh issue list -R ieviev/resharp
+--state all`): the repository has four issues total and none cover Bugs A
+through F, so none of these would be a duplicate. The closed issue #3
+("find_all / is_match false positives for fixed-length patterns with a
+literal prefix", 2026-04-02) sits in the same prefix-selection code as
+Bug E and shows the maintainer actively fixes bugs there, which
+strengthens the Bug E filing case. Note that the
+`nested_lookahead_in_quantified_group` pre-validator in `engine.rs` claims
+"Filed upstream: see TROUBLESHOOTING.resharp.md Bug F for the issue link",
+but no Bug F issue exists upstream and no Bug F section exists in this doc;
+that comment is inaccurate, and the overflow shape it guards is currently
+undocumented and unfiled.
+
 Bugs B through E were originally surfaced by `fuzz_extract_gate_soundness`
 and companion fuzz and bisect probes. The `intersection_with_*` and other
 pre-validators in `packages/cli/forbidden-strings/src/rules/engine.rs` are
@@ -1226,6 +1239,12 @@ Re-evaluation of constraints 2 and 4 in light of the obstacle:
   algebraic-core changes.
 
 ### Draft upstream issue body for Bug E (ready to file)
+
+Before filing, re-run `git apply --check` of the diff below against the
+current `ieviev/resharp` `main` and re-run the trigger: resharp's main
+branch moves fast, and the clean-apply plus `231/0/19` result was
+confirmed against HEAD `e0b8aba` on 2026-05-23. Update the commit hash in
+the Verification section to whatever `main` resolves to at filing time.
 
 ````md
 **Title:** non-termination in `prefix::calc_prefix_sets_inner` for `~(...)&(...)*` patterns
