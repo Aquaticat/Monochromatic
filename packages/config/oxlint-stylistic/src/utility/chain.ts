@@ -400,30 +400,30 @@ export function effectiveEnd({
     return node.end;
   }
   /**
-   * Recursive scan that advances past whitespace from `node.end` until the
-   * closing paren character.
+   * Linear scan that advances past whitespace from `idx` until the closing
+   * paren character. Single forward pass: O(n) time, O(1) stack, no recursion.
    *
-   * @param idx - cursor position
+   * @param idx - cursor start position
    *
    * @returns position of the `)` byte, or `-1` if absent
    */
   function findClose(idx: number,): number {
-    if (idx >= sourceText.length)
-      return -1;
-    /** Current character; tolerates whitespace between the inner span and the closing paren. */
-    const c = sourceText.charAt(idx,);
-    if (c === ')')
-      return idx;
-    /** Whether the current character is whitespace and the scan can continue. */
-    const isWs = (c === ' ')
-      || (c === '\t')
-      || (c === '\n')
-      || (c === '\r')
-      || (c === '\f')
-      || (c === '\v');
-    if (!isWs)
-      return -1;
-    return findClose(idx + 1,);
+    for (let cursor = idx; cursor < sourceText.length; cursor += 1) {
+      /** Current character; tolerates whitespace between the inner span and the closing paren. */
+      const c = sourceText.charAt(cursor,);
+      if (c === ')')
+        return cursor;
+      /** Whether the current character is whitespace and the scan can continue. */
+      const isWs = (c === ' ')
+        || (c === '\t')
+        || (c === '\n')
+        || (c === '\r')
+        || (c === '\f')
+        || (c === '\v');
+      if (!isWs)
+        return -1;
+    }
+    return -1;
   }
   /** Position of the closing paren, or -1 when the scan failed. */
   const closeIdx = findClose(node.end,);
@@ -550,7 +550,8 @@ export function isInterSegmentClean({
   const taEnd = hasTypeArgs ? typeArguments.end : from;
 
   /**
-   * Recursive whitespace scan over `[lo, hi)`.
+   * Linear whitespace scan over `[lo, hi)`. Single forward pass: O(n) time,
+   * O(1) stack, no recursion.
    *
    * @param lo - inclusive lower bound
    *
@@ -565,23 +566,20 @@ export function isInterSegmentClean({
     readonly lo: number;
     readonly hi: number;
   },): boolean {
-    if (lo >= hi)
-      return true;
-    /** Current character; tested against the ASCII whitespace set used elsewhere. */
-    const c = sourceText.charAt(lo,);
-    /** Whether the current character is allowable filler. */
-    const ok = (c === ' ')
-      || (c === '\t')
-      || (c === '\n')
-      || (c === '\r')
-      || (c === '\f')
-      || (c === '\v');
-    if (!ok)
-      return false;
-    return scan({
-      lo: lo + 1,
-      hi,
-    },);
+    for (let idx = lo; idx < hi; idx += 1) {
+      /** Current character; tested against the ASCII whitespace set used elsewhere. */
+      const c = sourceText.charAt(idx,);
+      /** Whether the current character is allowable filler. */
+      const ok = (c === ' ')
+        || (c === '\t')
+        || (c === '\n')
+        || (c === '\r')
+        || (c === '\f')
+        || (c === '\v');
+      if (!ok)
+        return false;
+    }
+    return true;
   }
 
   if (!scan({

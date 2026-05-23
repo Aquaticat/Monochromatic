@@ -34,22 +34,22 @@ function isWhitespaceChar(c: string,): boolean {
  */
 export function leadingWhitespace(s: string,): string {
   /**
-   * Recursive walker advancing while the cursor sits on whitespace.
-   *
-   * @param idx - cursor into `s`
+   * Linear scan returning the first non-whitespace index, or `s.length` when
+   * `s` is empty or entirely whitespace. Single forward pass: O(n) time, O(1)
+   * stack, no recursion.
    *
    * @returns first non-whitespace position (or `s.length`)
    */
-  function scan(idx: number,): number {
-    if (idx >= s.length)
-      return s.length;
-    if (!isWhitespaceChar(s.charAt(idx,),))
-      return idx;
-    return scan(idx + 1,);
+  function scan(): number {
+    for (let idx = 0; idx < s.length; idx += 1) {
+      if (!isWhitespaceChar(s.charAt(idx,),))
+        return idx;
+    }
+    return s.length;
   }
   return s.slice(
     0,
-    scan(0,),
+    scan(),
   );
 }
 
