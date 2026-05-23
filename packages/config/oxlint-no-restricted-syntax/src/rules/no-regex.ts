@@ -81,7 +81,7 @@ function isRegExpConstructorExpression(
  * ```
  */
 function getStaticMethodName(
-  { node, }: { node: ESTree.MemberExpression; },
+  { node, }: { readonly node: ESTree.MemberExpression; },
 ): string | undefined {
   if (!node.computed) {
     if (node.property.type !== 'Identifier')
@@ -108,7 +108,7 @@ function getStaticMethodName(
  * ```
  */
 function isRegexAcceptingStringMethod(
-  { methodName, }: { methodName: string; },
+  { methodName, }: { readonly methodName: string; },
 ): boolean {
   return REGEX_ACCEPTING_STRING_METHODS.some(
     function isMatchingMethod(candidate,): boolean {
@@ -150,7 +150,7 @@ function isInlineRegexExpression(node: ESTree.Node,): boolean {
  * isStringMethodRegexCall({ node }); // true for text.match(/x/)
  * ```
  */
-function isStringMethodRegexCall({ node, }: { node: ESTree.CallExpression; },): boolean {
+function isStringMethodRegexCall({ node, }: { readonly node: ESTree.CallExpression; },): boolean {
   if (node.callee.type !== 'MemberExpression')
     return false;
   /** Method name resolved from static or string-literal member syntax. */
@@ -178,7 +178,7 @@ function isStringMethodRegexCall({ node, }: { node: ESTree.CallExpression; },): 
  * stringRegexMethodName({ node }); // "replace"
  * ```
  */
-function stringRegexMethodName({ node, }: { node: ESTree.CallExpression; },): string {
+function stringRegexMethodName({ node, }: { readonly node: ESTree.CallExpression; },): string {
   if (node.callee.type !== 'MemberExpression')
     return 'unknown';
   return getStaticMethodName({ node: node.callee, },) ?? 'unknown';
@@ -197,7 +197,7 @@ function stringRegexMethodName({ node, }: { node: ESTree.CallExpression; },): st
  * isCoveredByParentRegexDiagnostic({ node }); // true for /x/ in text.match(/x/)
  * ```
  */
-function isCoveredByParentRegexDiagnostic({ node, }: { node: ESTree.Node; },): boolean {
+function isCoveredByParentRegexDiagnostic({ node, }: { readonly node: ESTree.Node; },): boolean {
   /** Parent expression that may own the more specific diagnostic. */
   const { parent, } = node;
   if (parent === null)

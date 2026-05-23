@@ -6,9 +6,9 @@
  */
 type ArrowParamsNode = {
   /** Whether the function is async. */
-  async: boolean;
+  readonly async: boolean;
   /** Generic type parameter list, if present. */
-  typeParameters?: unknown;
+  readonly typeParameters?: unknown;
 };
 
 /** Async keyword that may prefix arrow function source text. */
@@ -39,7 +39,7 @@ const ASYNC_PREFIX_WHITESPACE = [
  * isWhitespaceCharacter({ char: ' ' }); // true
  * ```
  */
-function isWhitespaceCharacter({ char, }: { char: string; },): boolean {
+function isWhitespaceCharacter({ char, }: { readonly char: string; },): boolean {
   return ASYNC_PREFIX_WHITESPACE.some(function isMatchingWhitespace(candidate,): boolean {
     return candidate === char;
   },);
@@ -57,7 +57,7 @@ function isWhitespaceCharacter({ char, }: { char: string; },): boolean {
  * indexAfterAsyncPrefix({ fullText: 'async  (x) => x' }); // 7
  * ```
  */
-function indexAfterAsyncPrefix({ fullText, }: { fullText: string; },): number {
+function indexAfterAsyncPrefix({ fullText, }: { readonly fullText: string; },): number {
   if (!fullText.startsWith(ASYNC_KEYWORD,))
     return 0;
   /** Cursor after the async keyword, advanced across following whitespace. */
@@ -99,8 +99,8 @@ export function extractParamsText(
     fullText,
     node,
   }: {
-    fullText: string;
-    node: ArrowParamsNode;
+    readonly fullText: string;
+    readonly node: ArrowParamsNode;
   },
 ): string {
   /** Skip `async ` prefix if present. */

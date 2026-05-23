@@ -23,7 +23,7 @@ const DISABLE_DIRECTIVE_PREFIX = 'oxlint-disable';
  * hasOxlintDisableDirective({ value: ' oxlint-disable-next-line no-switch' });
  * ```
  */
-function hasOxlintDisableDirective({ value, }: { value: string; },): boolean {
+function hasOxlintDisableDirective({ value, }: { readonly value: string; },): boolean {
   return value.includes(DISABLE_DIRECTIVE_PREFIX,);
 }
 
@@ -54,9 +54,9 @@ export function banDisableRule({
   description,
   message,
 }: {
-  ruleId: string;
-  description: string;
-  message: string;
+  readonly ruleId: string;
+  readonly description: string;
+  readonly message: string;
 },): CreateOnceRule {
   return {
     meta: {

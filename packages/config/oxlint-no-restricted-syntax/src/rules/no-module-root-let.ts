@@ -64,9 +64,12 @@ export const noModuleRootLet: CreateOnceRule = {
     /**
      * Reports a node if it is a non-ambient `let` VariableDeclaration.
      *
-     * @param decl - Statement-level node to inspect.
+     * @param decl - Statement-level node from `Program.body` or
+     * `ExportNamedDeclaration.declaration`. Typed `ESTree.Node` rather than the
+     * narrower `Directive | Statement` because an inline union of external alias
+     * types flattens and cannot be allow-listed for prefer-readonly.
      */
-    function reportIfLet(decl: ESTree.Directive | ESTree.Statement,): void {
+    function reportIfLet(decl: ESTree.Node,): void {
       if (decl.type !== 'VariableDeclaration')
         return;
       if (decl.kind !== 'let')

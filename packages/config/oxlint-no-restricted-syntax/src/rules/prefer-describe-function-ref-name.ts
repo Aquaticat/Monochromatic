@@ -60,8 +60,8 @@ function classifyExportedName(
     sourcePath,
     name,
   }: {
-    sourcePath: string;
-    name: string;
+    readonly sourcePath: string;
+    readonly name: string;
   },
 ): 'callable' | 'const' | 'reexport' | 'unknown' {
   /** Source text of the imported file; empty when the read fails so callers can short-circuit. */
@@ -150,8 +150,8 @@ function isCallableBinding(
     variable,
     currentFile,
   }: {
-    variable: Variable;
-    currentFile: string;
+    readonly variable: Variable;
+    readonly currentFile: string;
   },
 ): boolean {
   /** First definition site of the binding; absent for implicit globals the rule does not target. */
