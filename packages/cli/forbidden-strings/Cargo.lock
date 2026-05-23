@@ -819,9 +819,9 @@ checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
 
 [[package]]
 name = "resharp"
-version = "0.6.0"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d01d2d65691c23c3bda3688720fbcbaa356ad0abaa806b3d20a95d38c875a959"
+checksum = "1ac125ea747e6edefb163a76c5a2e906fc6b32121e3ea474ba7ba777fa15acd4"
 dependencies = [
  "resharp-algebra",
  "resharp-parser",
@@ -830,18 +830,18 @@ dependencies = [
 
 [[package]]
 name = "resharp-algebra"
-version = "0.6.0"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32d69fe954934c0a4a635f6fbbe02cf3358cee047d137dd5d29d1371d24ef738"
+checksum = "aa8b08c520ee79edd8729b1f5ab983491626b33f34498949be37d08f1b27fb39"
 dependencies = [
  "rustc-hash",
 ]
 
 [[package]]
 name = "resharp-parser"
-version = "0.6.0"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "349812d78324cb4cb27f162e2aa738dc8dbe6653f5c6f455e24e84afb2272c49"
+checksum = "7404e581e4bd81c71e7ae52dee7631539675f3ed292f45e860c466354d958b9b"
 dependencies = [
  "regex-syntax",
  "resharp-algebra",
