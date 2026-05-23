@@ -17,6 +17,7 @@
 import spawn from 'nano-spawn';
 import { writeFileSync, } from 'node:fs';
 import { resolve, } from 'node:path';
+import { firstWhitespaceToken, } from './registry-parse.ts';
 
 /** Container image name for the repology-updater environment. */
 const IMAGE_NAME = 'repology-updater';
@@ -178,70 +179,6 @@ async function runContainer(args: readonly string[],): Promise<string> {
 //endregion Container operations
 
 //region Mise registry
-
-/**
- * Returns the leading non-whitespace token of `line`. Whitespace is
- * defined the same way as regex `\s` (space, tab, newline, carriage
- * return, form feed, vertical tab); empty input returns an empty token.
- *
- * @param line - input line
- *
- * @returns first non-whitespace token (possibly empty)
- */
-function firstWhitespaceToken(line: string,): string {
-  /**
-   * Recursive walker advancing while the cursor sits on whitespace.
-   *
-   * @param idx - cursor into `line`
-   *
-   * @returns index of the first non-whitespace position (or `line.length`)
-   */
-  function skipWs(idx: number,): number {
-    if (idx >= line.length)
-      return idx;
-    /** Char at cursor; only ASCII whitespace advances the scan. */
-    const c = line.charAt(idx,);
-    /** Whether the cursor sits on regex `\s`. */
-    const ws = (c === ' ')
-      || (c === '\t')
-      || (c === '\n')
-      || (c === '\r')
-      || (c === '\f')
-      || (c === '\v');
-    if (ws)
-      return skipWs(idx + 1,);
-    return idx;
-  }
-  /**
-   * Recursive walker advancing while the cursor sits on non-whitespace.
-   *
-   * @param idx - cursor into `line`
-   *
-   * @returns exclusive end of the token
-   */
-  function scanToken(idx: number,): number {
-    if (idx >= line.length)
-      return idx;
-    /** Char at cursor; whitespace ends the token. */
-    const c = line.charAt(idx,);
-    /** Whether the cursor sits on regex `\s`. */
-    const ws = (c === ' ')
-      || (c === '\t')
-      || (c === '\n')
-      || (c === '\r')
-      || (c === '\f')
-      || (c === '\v');
-    if (ws)
-      return idx;
-    return scanToken(idx + 1,);
-  }
-  /** Cursor positioned at the first non-whitespace character. */
-  const start = skipWs(0,);
-  return line.slice(
-    start,
-    scanToken(start,),
-  );
-}
 
 /**
  * Loads the mise tool registry and returns a set of tool names.

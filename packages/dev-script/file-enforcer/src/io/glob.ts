@@ -10,28 +10,31 @@ const GLOB_META_CHARS = '*?{[';
 
 /**
  * Returns the index of the first glob metacharacter in `s`, or `-1`
- * when no metacharacters are present.
+ * when no metacharacters are present. Exported for direct unit testing.
+ *
+ * Single left-to-right pass over UTF-16 code units. The returned index
+ * feeds `slice` in {@link splitGlob}, so positions are measured in code
+ * units (via `charAt`), matching `slice`, rather than code points; this
+ * keeps astral characters before a metacharacter from shifting the split.
+ * O(n) time, O(1) stack, no recursion (stack-safe under engines without
+ * tail-call elimination).
  *
  * @param s - candidate glob pattern
  *
  * @returns first metacharacter index
+ *
+ * @example
+ * ```ts
+ * firstGlobMetaIndex('src/*.ts');    // 4
+ * firstGlobMetaIndex('src/index.ts'); // -1
+ * ```
  */
-function firstGlobMetaIndex(s: string,): number {
-  /**
-   * Recursive scan returning the cursor at the first metacharacter.
-   *
-   * @param idx - cursor into `s`
-   *
-   * @returns metacharacter index (or `-1` for none)
-   */
-  function scan(idx: number,): number {
-    if (idx >= s.length)
-      return -1;
+export function firstGlobMetaIndex(s: string,): number {
+  for (let idx = 0; idx < s.length; idx += 1) {
     if (GLOB_META_CHARS.includes(s.charAt(idx,),))
       return idx;
-    return scan(idx + 1,);
   }
-  return scan(0,);
+  return -1;
 }
 
 /**

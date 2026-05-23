@@ -13,6 +13,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import {
   expandGlob,
+  firstGlobMetaIndex,
   mirrorGlobPath,
 } from './glob.ts';
 
@@ -254,5 +255,92 @@ await describe({
       ],
     },),
     //endregion expandGlob
+
+    //region firstGlobMetaIndex
+
+    describe({
+      name: firstGlobMetaIndex.name,
+      children: [
+        it({
+          name: 'returns -1 for an empty string',
+          fn: async function emptyString() {
+            expect(firstGlobMetaIndex('',),).toBe(-1,);
+          },
+        },),
+        it({
+          name: 'returns -1 when no metacharacter is present',
+          fn: async function noMetacharacter() {
+            expect(firstGlobMetaIndex('src/index.ts',),).toBe(-1,);
+          },
+        },),
+        it({
+          name: 'returns 0 when the first character is a metacharacter',
+          fn: async function metacharacterAtStart() {
+            expect(firstGlobMetaIndex('*foo',),).toBe(0,);
+          },
+        },),
+        it({
+          name: 'returns the index of a metacharacter in the middle',
+          fn: async function metacharacterInMiddle() {
+            expect(firstGlobMetaIndex('src/*.ts',),).toBe(4,);
+          },
+        },),
+        it({
+          name: 'detects each metacharacter kind',
+          fn: async function eachMetacharacterKind() {
+            expect(firstGlobMetaIndex('a*b',),).toBe(1,);
+            expect(firstGlobMetaIndex('a?b',),).toBe(1,);
+            expect(firstGlobMetaIndex('a{b',),).toBe(1,);
+            expect(firstGlobMetaIndex('a[b',),).toBe(1,);
+          },
+        },),
+        it({
+          name: 'returns the earliest index when several metacharacters appear',
+          fn: async function earliestOfSeveral() {
+            expect(firstGlobMetaIndex('a*b?c',),).toBe(1,);
+            expect(firstGlobMetaIndex('ab[c]*',),).toBe(2,);
+          },
+        },),
+        it({
+          name: 'returns the index of a trailing metacharacter',
+          fn: async function trailingMetacharacter() {
+            expect(firstGlobMetaIndex('abc*',),).toBe(3,);
+          },
+        },),
+        it({
+          name: 'treats path separators as ordinary characters, not metacharacters',
+          fn: async function pathSeparatorsAreNotMeta() {
+            expect(firstGlobMetaIndex(String.raw`a/b\c`,),).toBe(-1,);
+          },
+        },),
+        it({
+          name: 'measures the metacharacter index in UTF-16 code units, not code points',
+          fn: async function codeUnitIndexing() {
+            // The astral emoji is two UTF-16 code units, so the metacharacter
+            // after it sits at code-unit index 2. splitGlob slices on this
+            // index, so code-unit positions must be preserved.
+            expect(firstGlobMetaIndex('\u{1F600}*',),).toBe(2,);
+          },
+        },),
+        it({
+          name: 'returns -1 over a long run with no metacharacter, linear and stack-safe',
+          fn: async function longRunNoMatch() {
+            const runLength = 100_000;
+            expect(firstGlobMetaIndex('a'.repeat(runLength,),),).toBe(-1,);
+          },
+        },),
+        it({
+          name: 'finds a metacharacter at the end of a long run, linear and stack-safe',
+          fn: async function longRunTrailingMatch() {
+            const runLength = 100_000;
+            expect(
+              firstGlobMetaIndex(`${'a'.repeat(runLength,)}*`,),
+            ).toBe(runLength,);
+          },
+        },),
+      ],
+    },),
+
+    //endregion firstGlobMetaIndex
   ],
 },);
