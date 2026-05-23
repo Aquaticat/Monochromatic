@@ -19,7 +19,7 @@ import {
  * coerceArg({ arg: '[1,2]' }); // => [1, 2]
  * ```
  */
-export function coerceArg({ arg, }: { arg: string; },): unknown {
+export function coerceArg({ arg, }: { readonly arg: string; },): unknown {
   /** Tagged logger scoped to this function so log lines identify the coercion call site. */
   const rl = tagged({
     tag: coerceArg.name,

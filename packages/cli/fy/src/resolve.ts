@@ -30,8 +30,8 @@ function resolveFrom(
     specifier,
     baseDir,
   }: {
-    specifier: string;
-    baseDir: string;
+    readonly specifier: string;
+    readonly baseDir: string;
   },
 ): string | undefined {
   /** Tagged logger scoped to this function so log lines identify the call site. */
@@ -164,7 +164,7 @@ async function tryFindMiseMonorepoRoot(): Promise<string | undefined> {
  * ```
  */
 export async function resolveSpecifier(
-  { specifier, }: { specifier: string; },
+  { specifier, }: { readonly specifier: string; },
 ): Promise<string> {
   /** Tagged logger scoped to this function so log lines identify the call site. */
   const rl = tagged({

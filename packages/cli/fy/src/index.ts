@@ -31,9 +31,9 @@ const argParser = string({ metavar: 'ARG', },);
 
 /** Parsed CLI arguments */
 type CliArgs = {
-  specifier: string;
-  exportName: string;
-  callArgs: readonly string[];
+  readonly specifier: string;
+  readonly exportName: string;
+  readonly callArgs: readonly string[];
 };
 
 /** Top-level parser: <specifier> <export> [args...] */
