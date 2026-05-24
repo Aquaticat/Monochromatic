@@ -2,5 +2,6 @@
 <project version="4">
   <component name="DprintProjectConfiguration">
     <option name="enabled" value="true" />
+    <option name="executableLocation" value="$PROJECT_DIR$/../.local/share/mise/shims/dprint" />
   </component>
 </project>
