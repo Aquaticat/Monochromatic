@@ -1,3 +1,6 @@
 {
   "extends": "@monochromatic-dev/config-typescript/dom",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./.cache/typescript/root.tsbuildinfo",
+  },
 }

@@ -9,10 +9,16 @@
  * and `plugins` are not inherited.
  */
 
-import { defineConfig, } from 'oxlint';
+import {
+  defineConfig,
+  type OxlintConfig,
+} from 'oxlint';
 
 import base from '@monochromatic-dev/config-oxlint';
 
-export default defineConfig({
+/** Root oxlint configuration with an explicit public export type for isolated declarations. */
+const config: OxlintConfig = defineConfig({
   ...base,
 },);
+
+export default config;

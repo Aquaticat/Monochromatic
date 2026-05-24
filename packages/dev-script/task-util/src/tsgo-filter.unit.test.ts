@@ -11,6 +11,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join, } from 'node:path';
+import { pathToFileURL, } from 'node:url';
 import { promisify, } from 'node:util';
 
 import {
@@ -20,6 +21,7 @@ import {
   isNodeModulesDiagnostic,
 } from './tsgo-filter.ts';
 
+// oxlint-disable-next-line typescript/strict-void-return -- Node's promisify typing treats exec callback shape as void-context even though the promisified command result is intentionally consumed in these CLI integration tests.
 const execAsync = promisify(exec,);
 
 /** Iteration count for long-run equivalence cases; large enough to exercise the linear scan, fast to compare. */
@@ -448,6 +450,27 @@ await describe({
             const { stdout, } = await execAsync(`bun ${cliPath} --version`,);
 
             expect(stdout.trim().length,).toBeGreaterThan(0,);
+
+            teardown(fixtures,);
+          },
+        },),
+        it({
+          name: 'does not execute the CLI path when imported',
+          fn: async () => {
+            const fixtures = setup();
+            const { cliPath, testDir, } = fixtures;
+            const importProbe = join(testDir, 'import-probe.ts',);
+            writeFileSync(
+              importProbe,
+              `import ${
+                JSON.stringify(pathToFileURL(cliPath,).href,)
+              };\nconsole.log('imported only');\n`,
+            );
+
+            const { stdout, stderr, } = await execAsync(`bun ${importProbe}`,);
+
+            expect(stdout,).toBe('imported only\n',);
+            expect(stderr,).toBe('',);
 
             teardown(fixtures,);
           },

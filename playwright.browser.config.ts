@@ -1,9 +1,11 @@
 import {
   defineConfig,
   devices,
+  type PlaywrightTestConfig,
 } from '@playwright/test';
 
-export default defineConfig({
+/** Browser Playwright configuration with an explicit public export type for isolated declarations. */
+const config: PlaywrightTestConfig = defineConfig({
   testDir: './packages',
   testMatch: [
     'module/es/src/**/*.browser.test.ts',
@@ -41,3 +43,5 @@ export default defineConfig({
     },
   ],
 },);
+
+export default config;

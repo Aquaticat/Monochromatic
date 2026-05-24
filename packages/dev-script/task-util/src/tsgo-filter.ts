@@ -40,8 +40,14 @@ import spawn from 'nano-spawn';
 
 //region Incremental cache cleanup
 
+/** Glob patterns for TypeScript incremental caches that `task-tsgo` refreshes before each run. */
+const BUILD_INFO_GLOBS = [
+  'dist/**/*.tsbuildinfo',
+  '.cache/typescript/**/*.tsbuildinfo',
+] as const;
+
 /**
- * Removes all `.tsbuildinfo` files under `dist/` in the current working directory.
+ * Removes all `.tsbuildinfo` files emitted by TypeScript in the current working directory.
  *
  * `composite: true` implies `incremental: true`, which produces `.tsbuildinfo` caches.
  * tsgo's `--build` mode has a cache invalidation bug (#2666) where stale `.tsbuildinfo`
@@ -49,17 +55,23 @@ import spawn from 'nano-spawn';
  * forces a clean check while preserving all other `composite` benefits
  * (rootDir defaulting, include enforcement, declaration defaulting).
  *
+ * The root tsconfig redirects build metadata to `.cache/typescript/root.tsbuildinfo`
+ * so root type checks do not create an ignored `dist/` directory just to hold metadata.
+ *
  * @example
  * ```ts
  * await removeStaleBuildInfo();
- * // All dist/**\/*.tsbuildinfo files in cwd are now deleted
+ * // All configured build-info cache files in cwd are now deleted
  * ```
  */
 async function removeStaleBuildInfo(): Promise<void> {
-  /** Buffered tsbuildinfo paths collected from the async glob; unlinked concurrently below. */
-  const entries: string[] = [];
-  for await (const entry of glob('dist/**/*.tsbuildinfo',))
-    entries.push(entry,);
+  /** Buffered tsbuildinfo paths collected from every configured async glob; unlinked concurrently below. */
+  const entries = (await Promise.all(
+    BUILD_INFO_GLOBS.map(function collectBuildInfo(pattern,): Promise<string[]> {
+      return Array.fromAsync(glob(pattern,),);
+    },),
+  ))
+    .flat();
   await Promise.all(entries.map(function unlinkEntry(entry,) {
     return unlink(entry,);
   },),);
@@ -85,8 +97,8 @@ function endOfDigitRun({
   s,
   from,
 }: {
-  s: string;
-  from: number;
+  readonly s: string;
+  readonly from: number;
 },): number {
   return (function walk(): number {
     /** Cursor advanced across the ASCII digit run; stops at the first non-digit or the end of `s`. */
@@ -149,7 +161,7 @@ export function isDiagnosticLine(line: string,): boolean {
 
   // Single linear walk over each `ERROR_CODE_TOKEN` occurrence; `from` advances
   // monotonically past every rejected candidate, so no prefix is ever rescanned.
-  for (let from = 0; ; ) {
+  for (let from = 0;;) {
     /** Position of the literal error-code token; `-1` ends the search. */
     const codeIdx = line.indexOf(
       ERROR_CODE_TOKEN,
@@ -364,81 +376,98 @@ export function filterTsgoOutput(output: string,): {
 
 //region Main execution
 
-/** Arguments forwarded to tsgo, defaulting to `--build` when none are provided */
-const tsgoArgs = process.argv.length > 2
-  ? process.argv.slice(2,)
-  : ['--build',];
+/**
+ * Runs the `task-tsgo` command-line wrapper.
+ *
+ * @example
+ * ```ts
+ * await main();
+ * ```
+ */
+async function main(): Promise<void> {
+  /** Arguments forwarded to tsgo, defaulting to `--build` when none are provided. */
+  const tsgoArgs = process.argv.length > 2
+    ? process.argv.slice(2,)
+    : ['--build',];
 
-// tsgo #2666: stale .tsbuildinfo causes false negatives; clean before each build
-await removeStaleBuildInfo();
+  // tsgo #2666: stale .tsbuildinfo causes false negatives; clean before each build
+  await removeStaleBuildInfo();
 
-try {
-  /** Successful spawn result; stdout/stderr are forwarded unfiltered when tsgo exits 0. */
-  const result = await spawn(
-    'tsgo',
-    [...tsgoArgs,],
-  );
+  try {
+    /** Successful spawn result; stdout/stderr are forwarded unfiltered when tsgo exits 0. */
+    const result = await spawn(
+      'tsgo',
+      [...tsgoArgs,],
+    );
 
-  // tsgo succeeded (exit 0): pass output through unfiltered
-  if (result.stdout.length > 0)
-    process.stdout.write(result.stdout,);
-  if (result.stderr.length > 0)
-    process.stderr.write(result.stderr,);
-}
-catch (error) {
-  if ((error !== null) && ((typeof error) === 'object') && ('exitCode' in error)) {
-    /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape */
-    /** Subprocess failure narrowed to the shape exposed by the bun/node spawn libraries; carries the streams to filter. */
-    const subprocessError = error as {
-      stdout?: string;
-      stderr?: string;
-      exitCode?: number;
-      signalName?: string;
-    };
-    /* oxlint-enable typescript/no-unsafe-type-assertion */
+    // tsgo succeeded (exit 0): pass output through unfiltered
+    if (result.stdout.length > 0)
+      process.stdout.write(result.stdout,);
+    if (result.stderr.length > 0)
+      process.stderr.write(result.stderr,);
+  }
+  catch (error) {
+    if (
+      (error !== null)
+      && ((typeof error) === 'object')
+      && ('exitCode' in error)
+    ) {
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape */
+      /** Subprocess failure narrowed to the shape exposed by the bun/node spawn libraries; carries the streams to filter. */
+      const subprocessError = error as {
+        stdout?: string;
+        stderr?: string;
+        exitCode?: number;
+        signalName?: string;
+      };
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
 
-    /** Filtered stdout payload with low-value tsgo diagnostics suppressed; written below when non-empty. */
-    // Filter stdout (where tsgo writes diagnostics)
-    const stdoutResult = filterTsgoOutput(subprocessError.stdout ?? '',);
-    /** Filtered stderr payload with low-value tsgo diagnostics suppressed; written below when non-empty. */
-    // Filter stderr as well in case tsgo writes diagnostics there
-    const stderrResult = filterTsgoOutput(subprocessError.stderr ?? '',);
+      /** Filtered stdout payload with low-value tsgo diagnostics suppressed; written below when non-empty. */
+      // Filter stdout (where tsgo writes diagnostics)
+      const stdoutResult = filterTsgoOutput(subprocessError.stdout ?? '',);
+      /** Filtered stderr payload with low-value tsgo diagnostics suppressed; written below when non-empty. */
+      // Filter stderr as well in case tsgo writes diagnostics there
+      const stderrResult = filterTsgoOutput(subprocessError.stderr ?? '',);
 
-    if (stdoutResult.filtered.length > 0) {
-      process.stdout.write(stdoutResult.filtered,);
-      // Ensure trailing newline for clean terminal output
-      if (!stdoutResult.filtered.endsWith('\n',))
-        process.stdout.write('\n',);
+      if (stdoutResult.filtered.length > 0) {
+        process.stdout.write(stdoutResult.filtered,);
+        // Ensure trailing newline for clean terminal output
+        if (!stdoutResult.filtered.endsWith('\n',))
+          process.stdout.write('\n',);
+      }
+
+      if (stderrResult.filtered.length > 0) {
+        process.stderr.write(stderrResult.filtered,);
+        if (!stderrResult.filtered.endsWith('\n',))
+          process.stderr.write('\n',);
+      }
+
+      // Exit non-zero only if non-suppressed errors remain
+      if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors)
+        process.exitCode = subprocessError.exitCode ?? 1;
+
+      if ((subprocessError.signalName !== undefined)
+        && (subprocessError.signalName !== ''))
+      {
+        console.error(
+          `[task-tsgo] tsgo terminated by signal: ${subprocessError.signalName}`,
+        );
+        process.exitCode = 1;
+      }
     }
-
-    if (stderrResult.filtered.length > 0) {
-      process.stderr.write(stderrResult.filtered,);
-      if (!stderrResult.filtered.endsWith('\n',))
-        process.stderr.write('\n',);
-    }
-
-    // Exit non-zero only if non-suppressed errors remain
-    if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors)
-      process.exitCode = subprocessError.exitCode ?? 1;
-
-    if ((subprocessError.signalName !== undefined)
-      && (subprocessError.signalName !== ''))
-    {
+    else {
+      // Non-subprocess error (e.g. tsgo not found)
       console.error(
-        `[task-tsgo] tsgo terminated by signal: ${subprocessError.signalName}`,
+        `[task-tsgo] failed to execute tsgo: ${
+          error instanceof Error ? error.message : String(error,)
+        }`,
       );
       process.exitCode = 1;
     }
   }
-  else {
-    // Non-subprocess error (e.g. tsgo not found)
-    console.error(
-      `[task-tsgo] failed to execute tsgo: ${
-        error instanceof Error ? error.message : String(error,)
-      }`,
-    );
-    process.exitCode = 1;
-  }
 }
+
+if (import.meta.main)
+  await main();
 
 //endregion Main execution
