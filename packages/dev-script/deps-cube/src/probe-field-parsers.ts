@@ -389,7 +389,8 @@ export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
     return 'copyleft';
   }
   if ((raw === 'UNLICENSED')
-    || raw.startsWith('SEE LGPL-3.0-or-later.txt',)
+    || raw.startsWith('SEE LICENSE',)
+    || raw.startsWith('SEE LGPL-3.0-OR-LATER.TXT',)
     || raw.startsWith('PROPRIETARY',))
   {
     return 'non-oss';

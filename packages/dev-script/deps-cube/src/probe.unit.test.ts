@@ -198,10 +198,16 @@ await describe({
     },),
 
     it({
-      name: 'classifyLicense maps UNLICENSED + SEE LGPL-3.0-or-later.txt to non-oss',
+      name: 'classifyLicense maps custom-license markers to non-oss',
       fn: async () => {
-        expect(classifyLicense('UNLICENSED',),).toBe('non-oss',);
-        expect(classifyLicense('SEE LGPL-3.0-or-later.txt IN LGPL-3.0-or-later.txt.md',),).toBe('non-oss',);
+        for (const lic of [
+          'UNLICENSED',
+          'PROPRIETARY Foo',
+          'SEE LICENSE IN LICENSE.md',
+          'see license in license.md',
+          'SEE LGPL-3.0-or-later.txt IN LGPL-3.0-or-later.txt.md',
+        ])
+          expect(classifyLicense(lic,),).toBe('non-oss',);
       },
     },),
 
