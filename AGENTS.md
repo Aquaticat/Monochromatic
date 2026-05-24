@@ -36,8 +36,7 @@ Rules span AGENTS.md, the harness system prompt, hook confs in `.claude/settings
 Before writing "per AGENTS.md", "the system prompt says", "the hook requires", "the skill prescribes", grep the file you name.
 The cue: about to attribute a rule to a source without verifying the source contains it.
 
-For external tool features, CLI options, conf syntax, or API capabilities, fetch current docs or src before responding;
-do not infer from `--help`, package wrappers, or training data when the src is available.
+For external tool features, CLI options, conf syntax, or API capabilities, fetch current docs or src before responding.
 "Does X support Y" and "how do I do Y in X" are research tasks, not recall tasks.
 
 When explaining a warning or error, name the exact tool that emitted it (e.g. "Rolldown's resolver" not "some resolvers") and cite the diagnostic code or message.
