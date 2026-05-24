@@ -12,7 +12,6 @@
 - [**Performance & Optimization**](TODO.performance.md): Build performance, runtime optimization
 - [**Automation & DevOps**](TODO.automation.md): CI/CD, development automation, release management
 - [**VM Dev Environment**](TODO.vm-dev-environment.md): Portable immutable VM image ([rationale](PHILOSOPHY.vm-dev-environment.md))
-- [**Completed Tasks**](TODO.completed.md): Reference for finished work
 
 ## Priority Overview
 
@@ -96,12 +95,3 @@ Nice-to-have features and experimental improvements.
 - **Performance**: Build system optimization → [Performance Todo](TODO.performance.md#build-performance)
 - **Documentation**: API documentation automation → [Documentation Todo](TODO.documentation.md#api-documentation)
 - **Automation**: CI/CD pipeline enhancement → [Automation Todo](TODO.automation.md#cicd-pipeline)
-
-## Recent Completions
-
-- Husky to mise migration (June 2025) → [Completed Tasks](TODO.completed.md)
-- Pre-commit hook implementation → [Completed Tasks](TODO.completed.md)
-- TypeScript baseUrl configuration fixes → [Completed Tasks](TODO.completed.md)
-- MCP stdio package initial implementation (March 2026)
-
-*For detailed information on completed tasks, see [Completed Tasks](TODO.completed.md)*
