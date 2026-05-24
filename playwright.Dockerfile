@@ -8,7 +8,7 @@
 # @playwright/test stays in the host catalog for type checking and IDE support
 # (test files import { test, expect } from it). Do not remove it from package.json.
 #
-# The version tag MUST match the @playwright/test version in bun.lock.
+# The version tag MUST match the @playwright/test resolution in pnpm-lock.yaml.
 # Find available tags: https://mcr.microsoft.com/v2/playwright/tags/list
 FROM mcr.microsoft.com/playwright:v1.59.1-noble@sha256:b0ab6f3cb99aa7803adbc14d9027ec1785fc6e433b97e134e0f8fe61683b6b53
 
