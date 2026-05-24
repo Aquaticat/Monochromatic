@@ -12,6 +12,11 @@ Every dotted-prefix family lives in `docs/<family>/`.
 The repository root keeps only the files tools and newcomers expect there:
 `README.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, and `LICENSES/`.
 
+One directory is exempt.
+`.out-of-scope/` stays at the root because it is already a tidy subdirectory,
+not a flat dotted-prefix family, so it was never part of the sprawl this move targets;
+relocating it under `docs/` would be churn for no decluttering payoff.
+
 The rejected alternative was a hybrid: move the bulk families (troubleshooting, audit, handover)
 into `docs/` but keep the constitution (`AGENTS.md`, `CLAUDE.md`, the philosophy family)
 and the family hubs at the root, where they are opened constantly.
