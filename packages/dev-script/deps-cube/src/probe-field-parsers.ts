@@ -161,7 +161,9 @@ function parseGithubUrl(s: string,): GithubOwnerRepo | null {
     while (end < tail.length) {
       /** Char at cursor; URL delimiters end the repo span. */
       const c = tail.charAt(end,);
-      if ((c === '/') || (c === '?') || (c === '#'))
+      if ((c === '/')
+        || (c === '?')
+        || (c === '#'))
         break;
       end += 1;
     }
@@ -372,7 +374,9 @@ export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
   /** Raw license string before normalisation, either field itself or `.type` subfield. */
   const unnormalised = isStringForm ? license : (license?.type ?? '');
   /** Normalised license string, object form unwrapped, uppercased, trimmed, ready for checks. */
-  const raw = unnormalised.toUpperCase().trim();
+  const raw = unnormalised
+    .toUpperCase()
+    .trim();
   if (raw === '')
     return 'unknown';
   if (PERMISSIVE_LICENSES.has(raw,))
@@ -385,7 +389,7 @@ export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
     return 'copyleft';
   }
   if ((raw === 'UNLICENSED')
-    || raw.startsWith('SEE LICENSE',)
+    || raw.startsWith('SEE LGPL-3.0-or-later.txt',)
     || raw.startsWith('PROPRIETARY',))
   {
     return 'non-oss';

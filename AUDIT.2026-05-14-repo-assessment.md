@@ -190,7 +190,7 @@ Risks and remediations applied:
   in commit `fdea6d18`.
 - `README.md` omitted several current package categories.
   I updated the project structure list in commit `fdea6d18`.
-- `README.md` linked the license as Apache-2.0, while `LICENSE` is LGPL-3.0
+- `README.md` linked the license as Apache-2.0, while `LGPL-3.0-or-later.txt` is LGPL-3.0
   and `package.json` declares `LGPL-3.0-or-later AND CC-BY-SA-4.0`.
   I updated the license section in commit `fdea6d18`.
 
