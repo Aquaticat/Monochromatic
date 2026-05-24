@@ -437,13 +437,9 @@ await describe({
         // the failure and emits a failedProbe with unknownReason='private-or-404'.
         await using cacheDir = await tempPopulatedCache({ entries: {}, },);
         const cache = createCache({ rootDir: cacheDir.rootDir, },);
-        /* oxlint-disable typescript-eslint/no-unsafe-call -- sinon's overload set doesn't unify with the fetch global type. */
-        /* oxlint-disable typescript-eslint/no-unsafe-member-access -- .rejects chain on a typed stub. */
         sinon.stub(globalThis, 'fetch',).rejects(
           new Error('network disabled for test',),
         );
-        /* oxlint-enable typescript-eslint/no-unsafe-member-access */
-        /* oxlint-enable typescript-eslint/no-unsafe-call */
         const [probe,] = await probeAll({
           entries: [
             { catalogKey: 'definitely-not-real', npmName: 'definitely-not-real',

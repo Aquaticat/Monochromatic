@@ -286,8 +286,8 @@ export function resolveVersion(
     range,
     pkg,
   }: {
-    range: string;
-    pkg: NpmPackage;
+    readonly range: string;
+    readonly pkg: NpmPackage;
   },
 ): string | undefined {
   if (looksLikePinnedSemver(range,) && (pkg.versions?.[range] !== undefined))

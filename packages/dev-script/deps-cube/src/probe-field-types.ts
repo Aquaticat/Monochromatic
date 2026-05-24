@@ -13,25 +13,25 @@
  * Subset of npm registry package-level response that the probe consumes.
  */
 export type NpmPackage = {
-  'dist-tags'?: { latest?: string; };
-  time?: { created?: string; };
-  versions?: Record<string, NpmVersion>;
+  readonly 'dist-tags'?: { readonly latest?: string; };
+  readonly time?: { readonly created?: string; };
+  readonly versions?: Readonly<Record<string, NpmVersion>>;
 };
 
 /**
  * Subset of one version's manifest.
  */
 export type NpmVersion = {
-  repository?:
+  readonly repository?:
     | string
     | {
-      type?: string;
-      url?: string;
-      directory?: string;
+      readonly type?: string;
+      readonly url?: string;
+      readonly directory?: string;
     };
-  dependencies?: Record<string, string>;
-  dist?: { unpackedSize?: number; };
-  license?: string | { type?: string; };
+  readonly dependencies?: Readonly<Record<string, string>>;
+  readonly dist?: { readonly unpackedSize?: number; };
+  readonly license?: string | { readonly type?: string; };
 };
 
 /**
