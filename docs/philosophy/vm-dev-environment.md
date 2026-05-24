@@ -1,6 +1,6 @@
 # Portable VM dev environment
 
-Reasoning behind the architecture and decisions in [TODO.vm-dev-environment.md](../todo/vm-dev-environment.md).
+Reasoning behind the architecture and decisions in [docs/todo/vm-dev-environment.md](../todo/vm-dev-environment.md).
 
 ## Why a VM at all
 

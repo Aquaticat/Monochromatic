@@ -13,7 +13,7 @@ No single CSS tool handles all three requirements at once:
 The package uses only **PostCSS** for all CSS processing: AST walking for `@import` inlining, `@mixin` collection, and `@apply` expansion.
 A custom `@import` plugin handles monorepo-aware resolution (package.json `exports`, `node_modules`, workspace packages).
 
-See [TROUBLESHOOTING.css-tooling.md](../../../docs/troubleshooting/css-tooling.md) for the full chronicle.
+See [docs/troubleshooting/css-tooling.md](../../../docs/troubleshooting/css-tooling.md) for the full chronicle.
 
 ## Usage
 

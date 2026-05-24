@@ -4,7 +4,7 @@ Generated 2026-05-09 from a mechanical sweep of the 83 packages under `packages/
 
 This audit covers behaviorally equivalent code or config copies (DRY).
 Structural drift across same-class files (package naming, README headings, version fields,
-`private` field presence) is already covered by [AUDIT.consistency.md](consistency.md);
+`private` field presence) is already covered by [the consistency audit](consistency.md);
 findings are not duplicated here.
 
 ## Scope
@@ -1688,6 +1688,6 @@ templates it wants from the root.
 
 For non-DRY structural inconsistencies (package naming drift, README heading drift,
 `version` and `private` field presence drift, missing required files), see
-[AUDIT.consistency.md](consistency.md).
+[the consistency audit](consistency.md).
 For dependency-security findings (Socket CLI scan, dependency source-code audits), see
-[AUDIT.md](README.md).
+[the audit index](README.md).
