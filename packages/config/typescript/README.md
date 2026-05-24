@@ -114,4 +114,4 @@ Examples:
 ## Troubleshooting
 
 Known TypeScript gotchas across this monorepo:
-see [`TROUBLESHOOTING.typescript.md`](../../../TROUBLESHOOTING.typescript.md) at the repository root.
+see [`TROUBLESHOOTING.typescript.md`](../../../docs/troubleshooting/typescript.md) at the repository root.

@@ -607,7 +607,7 @@ use super::engine::{
 //           message format includes the source so a failing test
 //           pinpoints which case regressed.
 // Why:      Positive triggers: every minimal panic-shape bisected
-//           in TROUBLESHOOTING.resharp.md must keep firing.
+//           in docs/troubleshooting/resharp.md must keep firing.
 // TS map:   `expect(intersectionWithLookbehind(src)).not.toBeNull();`.
 #[test]
 fn intersection_with_lookbehind_fires_on_minimal_shape() {
@@ -682,7 +682,7 @@ fn intersection_with_word_end_alternation_fires_on_minimal_shape() {
         // What:     Minimum bisected shape for the compile panic at
         //           `resharp-algebra/src/lib.rs:2470`
         //           (`attempt to add with overflow`). Bisection
-        //           details in TROUBLESHOOTING.resharp.md.
+        //           details in docs/troubleshooting/resharp.md.
         // Why:      Anchor the detector on the trigger combination
         //           `& + \w + $`.
         // TS map:   The bare strings.

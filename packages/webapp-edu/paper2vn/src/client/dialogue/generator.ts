@@ -178,7 +178,7 @@ export async function generateChapters(
    * backtracks on that input under V8; the page hangs for minutes
    * before any fetch is dispatched. Bypassing the template parser
    * makes the prompt build sub-millisecond. Documented in
-   * TROUBLESHOOTING.typesafe-i18n-regex-redos.md.
+   * docs/troubleshooting/typesafe-i18n-regex-redos.md.
    */
   /** Persona prompt plus chapter-instruction schema, used as the system message. */
   const systemMessage = `${rawString('persona',)}\n\n${rawString('chapterInstruction',)}`;

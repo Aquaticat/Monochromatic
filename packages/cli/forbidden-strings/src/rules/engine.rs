@@ -423,9 +423,9 @@ pub fn requires_resharp(src: &str) -> bool {
 //
 // In TS you'd write (pseudocode):
 // ```ts
-// const TROUBLESHOOT_REF = "See TROUBLESHOOTING.resharp.md for workarounds.";
+// const TROUBLESHOOT_REF = "See docs/troubleshooting/resharp.md for workarounds.";
 // ```
-const TROUBLESHOOT_REF: &str = "See TROUBLESHOOTING.resharp.md for workarounds.";
+const TROUBLESHOOT_REF: &str = "See docs/troubleshooting/resharp.md for workarounds.";
 
 // What:     `pub fn lookaround_in_complement(src: &str) -> Option<String>`
 //           returns `Some(reason)` when `src` contains a `~(...)` whose
@@ -649,7 +649,7 @@ pub fn lookaround_in_complement(src: &str) -> Option<String> {
 //           process alive; this pre-validator gives the rule
 //           author a clean message ("intersection involving a
 //           lookbehind") instead of a generic engine-error
-//           synthetic hit. Bisection (see TROUBLESHOOTING.resharp.md)
+//           synthetic hit. Bisection (see docs/troubleshooting/resharp.md)
 //           narrowed the trigger to "intersection (`&` outside
 //           class) where at least one operand contains a
 //           lookbehind `(?<=` or `(?<!`". The two-lookahead
@@ -1012,7 +1012,7 @@ pub fn lookaround_in_alternation_with_sibling(src: &str) -> Option<String> {
 //           class followed by additional literal bytes. The
 //           overflow happens during DFA derivative construction,
 //           reached from `Regex::new`.
-// Why:      Bisection (see TROUBLESHOOTING.resharp.md) showed
+// Why:      Bisection (see docs/troubleshooting/resharp.md) showed
 //           the trigger is robust to the specific lookahead
 //           class contents and the surrounding scoped-flag wrap.
 //           The cheapest stable signal is "intersection (`&`
@@ -1353,7 +1353,7 @@ pub fn stacked_quantifier(src: &str) -> Option<String> {
 //           changes the simplified node form that enters
 //           `select_prefix`, making the derivative chain visit
 //           `BOT` early. Documented as Bug E in
-//           TROUBLESHOOTING.resharp.md; prototyped and folded into the
+//           docs/troubleshooting/resharp.md; prototyped and folded into the
 //           merged upstream issue (`resharp-merged-issue.local.md`), filed upstream as ieviev/resharp#5.
 //
 //           The pre-validator uses a coarse structural heuristic:
@@ -1437,7 +1437,7 @@ pub fn complement_intersection_quantified_group(src: &str) -> Option<String> {
             }
             if has_intersection && has_quantified_group {
                 return Some(format!(
-                    "intersection (`&`) co-occurring with a quantified group (`(...)`*/+/?/{{N}}) triggers a known resharp 0.5.x through 0.6.x prefix-loop non-termination during `Regex::new` (see TROUBLESHOOTING.resharp.md Bug E -- `calc_prefix_sets_inner` lacks a visited-set update on each iteration). The compile does not terminate within libFuzzer's per-input timeout. Reproducers: `abc~(\\w)&(?:aaa)*` and `(?i) ###(?:\\s&üü)(?:####)+...`. Rewrite the rule to inline the quantified group's body into the intersection operand, or remove one of the two operators. {}",
+                    "intersection (`&`) co-occurring with a quantified group (`(...)`*/+/?/{{N}}) triggers a known resharp 0.5.x through 0.6.x prefix-loop non-termination during `Regex::new` (see docs/troubleshooting/resharp.md Bug E -- `calc_prefix_sets_inner` lacks a visited-set update on each iteration). The compile does not terminate within libFuzzer's per-input timeout. Reproducers: `abc~(\\w)&(?:aaa)*` and `(?i) ###(?:\\s&üü)(?:####)+...`. Rewrite the rule to inline the quantified group's body into the intersection operand, or remove one of the two operators. {}",
                     TROUBLESHOOT_REF
                 ));
             }
@@ -1515,7 +1515,7 @@ pub fn complement_intersection_quantified_group(src: &str) -> Option<String> {
 //           decode to a quantified group containing a lookahead
 //           inside another quantified group, with the outer
 //           quantifier's min >= 2. Documented as Bug F in
-//           TROUBLESHOOTING.resharp.md; prototyped (shared saturating_add
+//           docs/troubleshooting/resharp.md; prototyped (shared saturating_add
 //           with Bug C) and folded into the merged upstream issue
 //           (`resharp-merged-issue.local.md`), filed upstream as ieviev/resharp#5.
 // TS map:   `function nestedLookaheadInQuantifiedGroup(src: string): string | null`.
@@ -1695,7 +1695,7 @@ pub fn nested_lookahead_in_quantified_group(src: &str) -> Option<String> {
                 && !frame.has_alternation
             {
                 return Some(format!(
-                    "nested lookahead inside a quantified group with outer quantifier min >= 2 (e.g. `(?:(?:(?!X)){{1,5}}){{2,4}}`) triggers a known resharp 0.5.x through 0.6.x algebra-overflow panic during `Regex::new` (see TROUBLESHOOTING.resharp.md Bug F -- `attempt to add with overflow` at `resharp-algebra/src/lib.rs:2479`; the lookahead-chain `rel` length saturates to u32::MAX and the next add overflows under debug assertions). Production builds without debug-assertions silently wrap to 0 (likely producing wrong matches). Reproducers: `(?:(?:(?!\\?)){{1,5}}){{2,4}}` and `(?:(?!\\?){{1,2}}){{3}}`. Either lower the outer quantifier's min below 2, drop the inner quantifier wrap, or insert a literal / alt sibling alongside the lookahead-bearing inner group. {}",
+                    "nested lookahead inside a quantified group with outer quantifier min >= 2 (e.g. `(?:(?:(?!X)){{1,5}}){{2,4}}`) triggers a known resharp 0.5.x through 0.6.x algebra-overflow panic during `Regex::new` (see docs/troubleshooting/resharp.md Bug F -- `attempt to add with overflow` at `resharp-algebra/src/lib.rs:2479`; the lookahead-chain `rel` length saturates to u32::MAX and the next add overflows under debug assertions). Production builds without debug-assertions silently wrap to 0 (likely producing wrong matches). Reproducers: `(?:(?:(?!\\?)){{1,5}}){{2,4}}` and `(?:(?!\\?){{1,2}}){{3}}`. Either lower the outer quantifier's min below 2, drop the inner quantifier wrap, or insert a literal / alt sibling alongside the lookahead-bearing inner group. {}",
                     TROUBLESHOOT_REF
                 ));
             }
@@ -1795,7 +1795,7 @@ pub fn nested_lookahead_in_quantified_group(src: &str) -> Option<String> {
 //           `(?:(?!X)){m,n}aaa` long-trail shapes) was tightened
 //           after the user flagged that production rules might
 //           legitimately use those shapes. See
-//           HANDOVER.forbidden-strings-fuzzing.md.
+//           docs/handover/forbidden-strings-fuzzing.md.
 // Why:      `nested_lookahead_in_quantified_group` only catches the
 //           DOUBLE-quantified nesting (`(?:(?:(?!X)){m,n}){p,q}`). The
 //           SINGLE-quantified-with-1-or-2-trailing shape reaches the
@@ -1853,7 +1853,7 @@ pub fn quantified_lookahead_with_sibling_content(src: &str) -> Option<String> {
     //           tweak doesn't drift across call sites.
     fn fire_reason() -> String {
         format!(
-            "quantified lookahead-bearing group with variable bound `{{m,n}}` and 1-2 trailing atoms at parent depth (e.g. `(?:(?!X)){{m,n}}<atom>` or `(?:(?!X)){{m,n}}<atom><atom>`) triggers a resharp 0.5.x through 0.6.x `attempt to add with overflow` panic at `resharp-algebra/src/lib.rs:2479` (see TROUBLESHOOTING.resharp.md Bug F). The lookahead-chain `rel` saturates to u32::MAX and the next add overflows under debug assertions; production builds without debug-assertions silently wrap to 0 (likely producing wrong matches). Reproducer: `(?:(?!abc)){{4,12}}a`. Workarounds: (a) extend the trailing content to 3 or more atoms (`...{{4,12}}aaa`), (b) use an EXACT quantifier `(?:(?!X)){{n}}<atom>` (single-bound), or (c) split the regex. {}",
+            "quantified lookahead-bearing group with variable bound `{{m,n}}` and 1-2 trailing atoms at parent depth (e.g. `(?:(?!X)){{m,n}}<atom>` or `(?:(?!X)){{m,n}}<atom><atom>`) triggers a resharp 0.5.x through 0.6.x `attempt to add with overflow` panic at `resharp-algebra/src/lib.rs:2479` (see docs/troubleshooting/resharp.md Bug F). The lookahead-chain `rel` saturates to u32::MAX and the next add overflows under debug assertions; production builds without debug-assertions silently wrap to 0 (likely producing wrong matches). Reproducer: `(?:(?!abc)){{4,12}}a`. Workarounds: (a) extend the trailing content to 3 or more atoms (`...{{4,12}}aaa`), (b) use an EXACT quantifier `(?:(?!X)){{n}}<atom>` (single-bound), or (c) split the regex. {}",
             TROUBLESHOOT_REF
         )
     }

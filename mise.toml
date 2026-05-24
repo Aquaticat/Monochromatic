@@ -93,7 +93,7 @@ deno = "latest"
 "npm:socket" = "latest"
 "aqua:betterleaks/betterleaks" = "latest"
 
-# Git hook runner (forbidden-strings enforcement, see TODO.forbidden-strings.md)
+# Git hook runner (forbidden-strings enforcement, see docs/todo/forbidden-strings.md)
 "aqua:jdx/hk" = "latest"
 # Pkl: hk's config language
 "aqua:apple/pkl" = "latest"
@@ -414,7 +414,7 @@ if ($args | is-empty) {
 # appended user-supplied paths via `--`, the dot is passed verbatim to globby,
 # which then walks every file in the tree, including binaries the config-level
 # ignores do not exclude, and OOMs reading large files into a 4 GB Node heap.
-# See TROUBLESHOOTING.markdownlint-cli2.md.
+# See docs/troubleshooting/markdownlint-cli2.md.
 [tasks."lint:markdownlint"]
 hide = true
 description = "Lint Markdown with markdownlint-cli2, optionally restricted to specific files"

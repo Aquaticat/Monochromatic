@@ -43,7 +43,7 @@ export const restrictionRules: DummyRuleMap = {
   // `let` at function-body root leaks scope to every subsequent statement.
   // IIFE callees and helper-function shape (ends with `return <root-binding>`)
   // are allowlisted by AST heuristic. Initial severity is 'warn' to surface
-  // the existing footprint without blocking CI; see AUDIT.let.md.
+  // the existing footprint without blocking CI; see docs/audit/let.md.
   'no-restricted-syntax/no-function-root-let': 'warn',
 
   // `let` at module root is mutable across the entire module. No allowlist;
@@ -61,7 +61,7 @@ export const restrictionRules: DummyRuleMap = {
   // name ends with a configured suffix (default: Error, Element). Long-lived
   // stateful objects use a factory returning a frozen object instead.
   // Initial severity 'warn' to surface existing footprint without blocking
-  // CI; see MIGRATION.no-class.md. Flips to 'error' after migration.
+  // CI; see docs/migration/no-class.md. Flips to 'error' after migration.
   'no-restricted-syntax/no-class': 'warn',
 
   // Use using/await using for cleanup instead of try...finally.

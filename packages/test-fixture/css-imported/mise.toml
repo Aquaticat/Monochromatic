@@ -1,2 +1,2 @@
 # lint omitted -- CSS-only package with no TypeScript inputs;
-# lint:oxlint ineffective due to BUG-REPORT.oxlint-ignorePatterns-cwd.md
+# lint:oxlint ineffective due to docs/troubleshooting/oxlint.md

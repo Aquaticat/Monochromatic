@@ -20,7 +20,7 @@ issue at the end.
 A TROUBLESHOOTING file is the durable artefact of investigating an
 external tool. Future sessions and external readers must be able to
 reproduce, verify, and act on every claim. The canonical worked example
-is [TROUBLESHOOTING.resharp.md](../../../TROUBLESHOOTING.resharp.md);
+is [TROUBLESHOOTING.resharp.md](../../../docs/troubleshooting/resharp.md);
 match its shape unless the topic genuinely lacks a section.
 
 ## File naming

@@ -97,7 +97,7 @@ resharp = "0.6"
 # `regex`, `ignore`, and `rayon` deps have hot-path debug_asserts and
 # the perf cost was not measured to be acceptable on the CI gate.
 #
-# See TROUBLESHOOTING.resharp.md for the full panic shapes and the
+# See docs/troubleshooting/resharp.md for the full panic shapes and the
 # pre-validator coverage in `src/rules.rs` / `src/rules/engine.rs`.
 [profile.release]
 lto = true

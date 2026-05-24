@@ -106,7 +106,7 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       // oxc-style top-level Node/Function/PropertyKey. A param typed
       // `ESTree.Node` therefore carries escapedName `Node$1`, so the plain
       // names above match only the top-level (non-namespace) forms. See
-      // TROUBLESHOOTING.oxlint-prefer-readonly-estree.md.
+      // docs/troubleshooting/oxlint-prefer-readonly-estree.md.
       "Node$1",
       "Function$1",
       "PropertyKey$1",

@@ -172,7 +172,7 @@ overrides:
   # constructor, so removal would crash node-fetch at module load. The shim
   # is API-identical-by-construction, eliminating pnpm's install-time
   # deprecation warning without altering runtime behaviour.
-  # See TROUBLESHOOTING.dependencies.md and docs/dependency-blocklist.md.
+  # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
   'node-domexception': 'link:packages/shim/node-domexception'
   # Substitute proper-lockfile@4.1.2 with a workspace shim that implements
   # lockSync/lock via node:fs.mkdirSync atomic-dir locking. The upstream is
@@ -187,7 +187,7 @@ overrides:
   # on `await release` because the stub's Proxy treats every property access
   # (including .then) as a self-return.
   # See docs/decisions/proper-lockfile-removal.md and
-  # TROUBLESHOOTING.dependencies.md.
+  # docs/troubleshooting/dependencies.md.
   'proper-lockfile': 'link:packages/shim/proper-lockfile'
   # Substitute readable-stream@3 (winston, winston-transport) and
   # readable-stream@4 (isomorphic-git) with a single workspace shim that
@@ -225,7 +225,7 @@ overrides:
   # deserialize are intentionally omitted and can be added if a future
   # transitive dep reaches in.
   # See packages/shim/ungap-structured-clone/README.md and
-  # TROUBLESHOOTING.dependencies.md for the audit trail.
+  # docs/troubleshooting/dependencies.md for the audit trail.
   '@ungap/structured-clone': 'link:packages/shim/ungap-structured-clone'
   # Drop @earendil-works/pi-* transitive deps that this workspace does not
   # exercise: either unused in the published dist, loaded only via lazy
@@ -238,7 +238,7 @@ overrides:
   # `packages/pi/{morph-compact,terminal-title}` use pi-coding-agent type-only
   # and re-implement the runtime helpers locally in
   # `packages/pi/morph-compact/src/pi-utils.ts`.
-  # See TROUBLESHOOTING.dependencies.md for the audit.
+  # See docs/troubleshooting/dependencies.md for the audit.
   '@earendil-works/pi-ai>@aws-sdk/client-bedrock-runtime': '-'
   '@earendil-works/pi-ai>@google/genai': '-'
   '@earendil-works/pi-ai>@mistralai/mistralai': '-'
@@ -263,7 +263,7 @@ overrides:
   # native constructor before the require evaluates. Removing the package
   # also drops the sole importer of event-target-shim (1739 LOC,
   # last commit 2021-01, abandoned), reducing supply-chain surface.
-  # See TROUBLESHOOTING.dependencies.md and docs/dependency-blocklist.md.
+  # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
   'abort-controller': '-'
   # Remove dprint globally. The npm distribution is a Node wrapper that re-execs
   # the native binary; each invocation pays the Node startup cost (multiple
@@ -274,7 +274,7 @@ overrides:
   # current tree; the override exists to keep it that way. If a future change
   # adds `dprint` to a package.json, pnpm silently drops it and the binary
   # never reaches node_modules, surfacing as a clear `Cannot find package`
-  # error at the call site. See TROUBLESHOOTING.dprint.md (Bug 1) and
+  # error at the call site. See docs/troubleshooting/dprint.md (Bug 1) and
   # packages/config/dprint/README.md for the policy and VSCode-extension
   # workaround. Refs #163.
   'dprint': '-'
@@ -288,7 +288,7 @@ overrides:
   # packages/webapp-content/ssg-test/src/lib/content.ts). Removing argparse
   # leaves the library APIs intact and drops 4214 LOC of supply-chain surface
   # (last commit 2022-05).
-  # See TROUBLESHOOTING.dependencies.md and docs/dependency-blocklist.md.
+  # See docs/troubleshooting/dependencies.md and docs/dependency-blocklist.md.
   'argparse': '-'
 packageImportMethod: hardlink
 preferWorkspacePackages: true

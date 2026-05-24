@@ -31,7 +31,7 @@ without scanning a barrel.
   not against `module/es`. The per-helper issues already filed (covered by tracking
   issue `#185`) will be retargeted as part of the split.
 - **For existing code in `module/es`**: migrate package-by-package per
-  [PLANNING.extract-refactor-guardrail.md](../PLANNING.extract-refactor-guardrail.md):
+  [PLANNING.extract-refactor-guardrail.md](../docs/planning/extract-refactor-guardrail.md):
   land the new package as a verified additive change, migrate consumers, then
   delete the `module/es` symbol.
 - **For consumers**: import from the smallest specific package, never from
