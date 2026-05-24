@@ -36,7 +36,8 @@
   "plugins": [
     "https://plugins.dprint.dev/toml-0.7.0.wasm",
     "https://plugins.dprint.dev/g-plane/markup_fmt-v0.23.1.wasm",
-    "https://plugins.dprint.dev/typescript-0.95.9.wasm",
+    // Disabled: to be replaced by our oxlint-stylistic
+    //    "https://plugins.dprint.dev/typescript-0.95.9.wasm",
     "https://plugins.dprint.dev/g-plane/malva-v0.14.1.wasm",
     "https://plugins.dprint.dev/g-plane/pretty_yaml-v0.5.1.wasm",
     "https://plugins.dprint.dev/json-0.20.0.wasm",
@@ -99,8 +100,8 @@
     "quotes": "preferSingle",
     "indentBlockSequenceInMap": false,
     "ignoreCommentDirective": "formatter-ignore"
-  },
-  "typescript": {
+  }
+  /* "typescript": {
     "semiColons": "always",
     "quoteStyle": "preferSingle",
     "quoteProps": "asNeeded",
@@ -131,5 +132,5 @@
     "typeParameters.preferHanging": "always",
     "arguments.preferHanging": "always",
     "parameters.preferHanging": "always"
-  }
+  }*/
 }
