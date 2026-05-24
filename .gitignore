@@ -288,6 +288,9 @@ out/
 !.vscode/extensions.json
 !.vscode/*.code-snippets
 
+### Zed ###
+.zed/settings.json
+
 # Local History for Visual Studio Code
 .history
 
