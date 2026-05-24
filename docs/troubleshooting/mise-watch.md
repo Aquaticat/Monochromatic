@@ -76,7 +76,7 @@ Versions under test:
 4. **Will they likely fix it?** Plausible.
 5. **Have we prototyped a minimal fix?** Yes; patch + DEBUG output
    comparison below. Diff lives in
-   [TROUBLESHOOTING.mise-watch.patch](../../TROUBLESHOOTING.mise-watch.patch).
+   [mise-watch.patch](mise-watch.patch).
 
 Decision: worth raising as an issue; the calling-watchexec-
 directly workaround removes the urgency.
@@ -111,7 +111,7 @@ DEBUG [src/cli/watch.rs:225] $ watchexec --watch /tmp/tmp.MF9OvLfNoe -- /tmp/...
 Every filter flag is silently dropped: the spawned `watchexec` argv has only `--watch`
 and the trailing task command.
 
-Post-patch (same HEAD plus the diff in `TROUBLESHOOTING.mise-watch.patch`):
+Post-patch (same HEAD plus the diff in `mise-watch.patch`):
 
 ```text
 $ mise -vv watch -w "$FRESH" --fs-events create,modify -J @"$FRESH/minimal.jaq" echo-hi
@@ -687,8 +687,7 @@ the patch is targeted (no regression on the non-`-j` shutdown path).
 `watchexec_cli`, `watchexec_events`, `watchexec_filterer_globset`,
 `watchexec_filterer_ignore` clean).
 
-Full patch text in `TROUBLESHOOTING.mise-watch.patch` (sibling at repo
-root), section "Bug 5". Two hunks in `crates/cli/src/config.rs`: change
+Full patch text in `mise-watch.patch` (sibling file), section "Bug 5". Two hunks in `crates/cli/src/config.rs`: change
 `make_config`'s `let state = state.clone();` to `let state =
 Arc::downgrade(state);`, and rewrite the matching `let state =
 state.clone();` inside `on_action_async` to `let Some(state) =
@@ -808,7 +807,7 @@ shutdown:
 ```
 
 (Source comments naming the cycle being broken are kept in the full
-sibling patch at `TROUBLESHOOTING.mise-watch.patch`; trimmed here for
+sibling patch at `mise-watch.patch`; trimmed here for
 issue-readability.)
 
 #### Verification

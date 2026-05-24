@@ -410,7 +410,7 @@ cp /tmp/oh-pi-prototype-jBg5zK/packages/shared-qna/pi-tui-loader.ts \
 ```
 
 The full diff is recorded at
-[`TROUBLESHOOTING.pi-extensions-pi-tui-rename.patch`](../../TROUBLESHOOTING.pi-extensions-pi-tui-rename.patch).
+[`pi-extensions-pi-tui-rename.patch`](pi-extensions-pi-tui-rename.patch).
 This is the same change a future `@ifi/pi-shared-qna@0.5.2`
 release should ship, so it is the most upstream-shaped local fix.
 
@@ -492,7 +492,7 @@ Tradeoffs:
    plausible within days of the report landing.
 5. **Have we prototyped a minimal fix compatible with their
    architecture?** Yes — see the loader patch at
-   [`TROUBLESHOOTING.pi-extensions-pi-tui-rename.patch`](../../TROUBLESHOOTING.pi-extensions-pi-tui-rename.patch).
+   [`pi-extensions-pi-tui-rename.patch`](pi-extensions-pi-tui-rename.patch).
    The patch:
    - Touches one file (`packages/shared-qna/pi-tui-loader.ts`).
    - Preserves the public function signatures

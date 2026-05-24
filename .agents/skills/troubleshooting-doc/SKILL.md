@@ -1,13 +1,13 @@
 ---
 name: troubleshooting-doc
-description: Use when writing or updating a TROUBLESHOOTING.<topic>.md file at the repo root.
+description: Use when writing or updating a docs/troubleshooting/<topic>.md file.
 ---
 
 # Writing a TROUBLESHOOTING file
 
 Fires when documenting an external tool's bug, quirk, surprising behaviour,
 or documentation gap. Walk this skill end-to-end whenever the task involves
-writing or updating a TROUBLESHOOTING.<topic>.md file at the repo root.
+writing or updating a docs/troubleshooting/<topic>.md file.
 
 Other surface phrases that should trigger the skill:
 "document this", "write it up", "add a troubleshooting entry";
@@ -20,12 +20,12 @@ issue at the end.
 A TROUBLESHOOTING file is the durable artefact of investigating an
 external tool. Future sessions and external readers must be able to
 reproduce, verify, and act on every claim. The canonical worked example
-is [TROUBLESHOOTING.resharp.md](../../../docs/troubleshooting/resharp.md);
+is [docs/troubleshooting/resharp.md](../../../docs/troubleshooting/resharp.md);
 match its shape unless the topic genuinely lacks a section.
 
 ## File naming
 
-`TROUBLESHOOTING.<topic>.md` at the repo root. `<topic>` is kebab-case,
+`docs/troubleshooting/<topic>.md`. `<topic>` is kebab-case,
 specific enough to distinguish from sibling docs (`bun-fetch-streaming`,
 not `bun`). One bug or one cluster of related bugs per file.
 
@@ -113,9 +113,10 @@ the minimal fix yourself before declaring the audit done:
    (single hunk, roughly under 20 lines including context), embed it
    inline in a fenced `diff` block. If it is larger (multiple hunks,
    multiple files, or long enough that inline embedding would crowd
-   the doc), save it as a sibling file at the repo root named
-   `TROUBLESHOOTING.<topic>.patch` (matching the doc's `<topic>`) and
-   link to it from the doc with a relative path. The inline-vs-file
+   the doc), save it beside the doc as
+   `docs/troubleshooting/<topic>.patch` (matching the doc's `<topic>`,
+   prefix dropped since the directory names the family) and link to it
+   from the doc with a relative path (the bare filename, same directory). The inline-vs-file
    threshold is about readability, not significance; either form
    satisfies constraint 5 as long as the patch is reproducible from
    what is recorded. With this recording in place, the audit ends

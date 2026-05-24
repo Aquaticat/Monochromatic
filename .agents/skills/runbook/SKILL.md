@@ -132,6 +132,13 @@ when their eyes scan the output.
 - Expect `editord listening on port 4400`, not "the daemon should start".
 - Expect `{ "zeroSize": 0, "zeroMatch": 0 }`, not "the size check passes".
 
+## File placement
+
+A runbook or handover that spans the whole repo lives in `docs/handover/<topic>.md`,
+kebab-case, with no `HANDOVER.` prefix (the directory names the family).
+A runbook tied to one package stays beside that package's code and keeps the
+`HANDOVER.<topic>.md` form, where the prefix still namespaces it among source files.
+
 ## Canonical example
 
 `packages/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md` is the reference runbook.

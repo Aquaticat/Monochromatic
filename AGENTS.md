@@ -2,7 +2,7 @@
 
 Organized by moment of decision, not topic: at each point in the work (about to respond, run a command, edit code, declare done), the matching section holds every rule that applies.
 Cross-cutting reference (workspace conventions, enforcement mechanisms, agent skills) appears toward the end.
-Detailed rationale, mechanisms, and examples behind these terse rules live in `PHILOSOPHY.AGENTS.md`.
+Detailed rationale, mechanisms, and examples behind these terse rules live in `docs/philosophy/agents.md`.
 
 ## Critical hot paths
 
@@ -183,6 +183,7 @@ State what you searched and what comparable evidence you found;
 an empty result on the narrowest query is not "no precedent."
 
 When the bridges genuinely fail and the user must execute, invoke the `runbook` skill when writing any manual-action document (it encodes the required sections and formatting rules).
+Repo-wide handovers live in `docs/handover/<topic>.md`; package-specific handovers stay beside the code they document.
 Canonical example: `packages/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`.
 
 ### Name the verification step
@@ -480,9 +481,9 @@ Applies to agent prompts, README guidance, CI scripts, and any artifact future s
 - Never modify files in cloned third-party repositories; use conf, env vars, or wrapper scripts.
 - When investigating an external tool's behavior, bug, capability, or fix difficulty, clone its src and read the relevant code path. "No public diagnosis exists" is never a valid stopping point when the source is open; quote file path, line number, and code excerpt when citing a finding.
 - When proposing a package to replace a dependency, audit the candidate to the incumbent's depth: transitive deps, the src paths handling the cases the incumbent mishandles, build provenance for native/wasm modules, and maintenance signals. Report findings inline with the recommendation, not as trailing caveats.
-- After investigating an external tool, write up findings in a `TROUBLESHOOTING.<topic>.md` file at the repo root. The `troubleshooting-doc` skill encodes the required sections, the source-trace rule, and the 5-constraint upstream-filing check that gates the draft GitHub issue at the end; invoke it when you reach the write-up moment.
-- **Claude Code bugs are exempt from upstream-tracking.** Claude Code upstream is very unresponsive; filing local tracking issues for Claude Code defects produces clutter without changing the outcome. Document the defect in `TROUBLESHOOTING.<topic>.md`, encode the workaround as a rule in this file, and skip the GitHub issue. See [.out-of-scope/claude-code-upstream-bugs.md](.out-of-scope/claude-code-upstream-bugs.md).
-- **JSR and `bun install` bugs are exempt from upstream-tracking.** The workspace does not consume JSR-hosted packages (`PHILOSOPHY.tool-choices.md` covers tool selection) and uses pnpm as the package manager, not `bun install`. Bug reports against either are install-path bugs we do not hit. Document the defect in `TROUBLESHOOTING.<topic>.md` for historical record, but skip the GitHub tracking issue. See [.out-of-scope/jsr.md](.out-of-scope/jsr.md) and [.out-of-scope/bun-install.md](.out-of-scope/bun-install.md).
+- After investigating an external tool, write up findings in a `docs/troubleshooting/<topic>.md` file. The `troubleshooting-doc` skill encodes the required sections, the source-trace rule, and the 5-constraint upstream-filing check that gates the draft GitHub issue at the end; invoke it when you reach the write-up moment.
+- **Claude Code bugs are exempt from upstream-tracking.** Claude Code upstream is very unresponsive; filing local tracking issues for Claude Code defects produces clutter without changing the outcome. Document the defect in `docs/troubleshooting/<topic>.md`, encode the workaround as a rule in this file, and skip the GitHub issue. See [.out-of-scope/claude-code-upstream-bugs.md](.out-of-scope/claude-code-upstream-bugs.md).
+- **JSR and `bun install` bugs are exempt from upstream-tracking.** The workspace does not consume JSR-hosted packages (`docs/philosophy/tool-choices.md` covers tool selection) and uses pnpm as the package manager, not `bun install`. Bug reports against either are install-path bugs we do not hit. Document the defect in `docs/troubleshooting/<topic>.md` for historical record, but skip the GitHub tracking issue. See [.out-of-scope/jsr.md](.out-of-scope/jsr.md) and [.out-of-scope/bun-install.md](.out-of-scope/bun-install.md).
 
 ## When committing or documenting
 
@@ -505,6 +506,20 @@ Applies to agent prompts, README guidance, CI scripts, and any artifact future s
 - Reference-style links for repeated URLs; relative links for internal docs.
 - No tables; use headings or lists instead.
 - ATX headers, max 4 levels, blank line before headers, lines under 120 chars.
+
+### Doc placement
+
+Repo-wide docs live under `docs/<family>/`, one directory per dotted-prefix family (`docs/troubleshooting/`, `docs/philosophy/`, `docs/todo/`, `docs/handover/`, and so on).
+The repo root keeps only `README.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, and `LICENSES/`.
+Package-specific docs stay beside the code they document; this rule governs root-level families, not a package's own `README.md`, `TODO.md`, or `HANDOVER.*.md`.
+
+1.  Naming: a `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping the now-redundant prefix; a second dotted segment stays flat in the filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not a deeper directory. Use kebab-case for multi-word topics.
+2.  Hubs: a bare `PREFIX.md` index becomes `docs/<family>/README.md`, keeping its curated prose.
+3.  Bug reports fold into the most relevant `docs/troubleshooting/<topic>.md` as a section rather than getting their own family.
+4.  Delete verifiably-finished docs once their work lands; git history is the backstop, so removal is not destructive. Read each before deleting.
+5.  Reference source files by repo-relative path, not a pinned GitHub blob URL; a blob URL also breaks when the target moves.
+
+No enforcement hook guards root regression; this rule is the cure. A warn-only `PreToolUse` hook is a possible future addition, not built now.
 
 ### Handling external changes
 

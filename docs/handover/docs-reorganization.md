@@ -99,8 +99,9 @@ Option A as the chosen path.
   rejection is silent then and you will believe a revert succeeded when it did not.
 - Migration scripts live in `/tmp` (`migrate-docs.ts`, `check-links.ts`, `fix-moved-links.ts`),
   not committed. `check-links.ts` is reusable for verifying link integrity.
-- The 427 broken links are pre-existing and out of scope; do not try to fix them.
-- `TROUBLESHOOTING.*.patch` files stayed at repo root (not `.md`, not docs). References to
-  them were re-relativized. Moving them into `docs/troubleshooting/` is optional tidying.
-- `resharp-merged-issue.local.md` is gitignored and was correctly left untouched.
+- The 426 broken links are pre-existing and out of scope; do not try to fix them.
+- `TROUBLESHOOTING.*.patch` files moved into `docs/troubleshooting/<topic>.patch` beside their docs,
+  prefix stripped; every reference was rewritten, including the oxlint patch's own apply-command comment.
+- `resharp-merged-issue.local.md` is gitignored (not committed); its `resharp.patch` and `resharp.md`
+  references were updated to repo-relative paths when the patches moved.
 - The 4 finished-but-referenced docs can be deleted later with reference cleanup if the user wants.

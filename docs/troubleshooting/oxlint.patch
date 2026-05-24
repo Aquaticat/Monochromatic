@@ -8,7 +8,7 @@
 #
 # Apply with `git apply` from the oxc repo root:
 #
-#     git apply path/to/TROUBLESHOOTING.oxlint.patch
+#     git apply path/to/oxlint.patch
 #
 # Verify with:
 #

@@ -11,7 +11,7 @@ commit `0b7732c`), using standalone probe crates built in debug
 (debug-assertions and overflow-checks both on, matching cargo-fuzz
 defaults) and in release (both off). Each still-live bug now has a
 minimal prototype fix verified against HEAD; the combined patch is at
-[TROUBLESHOOTING.resharp.patch](../../TROUBLESHOOTING.resharp.patch) and the
+[resharp.patch](resharp.patch) and the
 single merged upstream issue body is at
 the out-of-band local file `resharp-merged-issue.local.md` (gitignored, not committed). See the
 "Prototype fixes" section for the per-bug results.
@@ -122,7 +122,7 @@ with this doc otherwise tracking HEAD commits).
 - Source-verified: 0.6.4 is our patch. The sole fix commit
   (`bd780ef "edge case bugfix"`, the immediate parent of the
   `3d48f1c "bump ver"` commit crates.io published as 0.6.4) reproduces
-  [TROUBLESHOOTING.resharp.patch](../../TROUBLESHOOTING.resharp.patch) with our
+  [resharp.patch](resharp.patch) with our
   explanatory comments stripped. Read against a fresh clone: Bug B is the
   fail-closed `Err(UnsupportedPattern)` in `strip_lb`
   (`resharp-algebra/src/lib.rs:2011`), Bug C / Bug F is
@@ -1348,7 +1348,7 @@ hold or sorta-hold, prototype the minimal fix rather than stopping at
 "constraint 5: not yet"), each still-live bug has a minimal fix prototyped in a
 fresh `mktemp -d` clone of `https://github.com/ieviev/resharp` at HEAD
 `e0b8aba` (origin and commit verified before editing). The combined patch is
-[TROUBLESHOOTING.resharp.patch](../../TROUBLESHOOTING.resharp.patch); the merged
+[resharp.patch](resharp.patch); the merged
 upstream issue body is the out-of-band local file `resharp-merged-issue.local.md` (gitignored, not committed).
 
 Each fix was verified with a targeted probe crate (its own program calling
@@ -1356,7 +1356,7 @@ Each fix was verified with a targeted probe crate (its own program calling
 behaviour post-patch. The combined patch was then regression-checked:
 
 ```text
-git apply --check TROUBLESHOOTING.resharp.patch   # applies cleanly to e0b8aba
+git apply --check resharp.patch   # applies cleanly to e0b8aba
 cargo test --workspace --no-fail-fast
 # 231 passed; 0 failed; 19 ignored  (identical to the unpatched baseline)
 ```

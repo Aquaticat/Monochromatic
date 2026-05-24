@@ -249,7 +249,7 @@ Clone (private, throwaway): `/tmp/oxc-bug2-prototype.*/oxc`.
 Origin verified at `https://github.com/oxc-project/oxc.git`, HEAD
 `e182aee2599c275dc0bd93f52b4ddda70ff2c93b`.
 
-Patch file: [TROUBLESHOOTING.oxlint.patch](../../TROUBLESHOOTING.oxlint.patch).
+Patch file: [oxlint.patch](oxlint.patch).
 The diff is 110 lines (one source hunk, one tests hunk); the file
 header in the patch records the apply-and-verify commands.
 
@@ -361,7 +361,7 @@ match name.split_once('/') {
 ```
 
 Full diff (single hunk in `contains()` plus four new test cases) is
-attached as `TROUBLESHOOTING.oxlint.patch` in the linked downstream
+attached as `oxlint.patch` in the linked downstream
 repository; it applies cleanly with `git apply` against HEAD
 `e182aee2599c275dc0bd93f52b4ddda70ff2c93b`.
 
