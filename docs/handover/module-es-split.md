@@ -6,7 +6,7 @@ context compaction.
 
 ## Current state
 
-Three of the four new packages are implemented, verified (build, lint with zero warnings, tests pass), and
+All four new packages are implemented, verified (build, lint with zero warnings, tests pass), and
 committed on `feat/module-es-split`:
 
 - `46d05616 feat(module-kv-store)`: extracted from module-es. Flat `src/` layout. Public exports:
@@ -21,14 +21,17 @@ committed on `feat/module-es-split`:
 - `dd48b752 feat(module-observable)`: `createObservable`, `createObservableAsync`, `Observable`,
   `ObservableAsync`. Public API deliberately changed to methods `getValue()` / `setValue()`. Async
   `setValue` awaits `onChange` so rejections propagate (a behavior change from the old fire-and-forget).
+- `f54aa3ce refactor(module-kv-store)`: marked `Store`/`SyncStore` methods (`set`/`get`/`delete`/`clear`)
+  `readonly`. Required so memoize's option types pass `prefer-readonly-parameter-types` (see lint patterns
+  below). kv-store re-verified 0/0 and tests pass after the change.
+- `440c876a feat(module-memoize)`: `memoize`, `memoizeAsync`, plus option/call/result types and
+  `DEFAULT_MAX_CACHE_SIZE`. Renamed module-es's positional `$` entry points to `memoize`/`memoizeAsync`,
+  kept `buildCacheKey` internal. Added the undefined-recomputation test (both variants) that module-es
+  omitted; renamed the misleading "evicts cache entry on rejection" test to name the real mechanism
+  (inflight cleanup, never a cache eviction). Imports kv-store from its package root.
 
 `async-iter` and `observable` were produced by two `spawn-claude` children (specs at
 `/tmp/spec-async-iter.md` and `/tmp/spec-observable.md`), then independently re-verified before commit.
-
-The `packages/module/memoize/` scaffold (package.json, mise.toml, tsconfig.json, two tsdown configs) exists
-but is untracked: no `src/`, tests, or README yet. The committed lockfile already references
-`@monochromatic-dev/module-memoize`, so it is slightly ahead of the committed manifests; this is harmless
-and resolves when memoize is committed.
 
 ## Environment learnings (do not rediscover)
 
@@ -64,19 +67,30 @@ and resolves when memoize is committed.
   implementation with no TSDoc, a `// oxlint-disable-next-line rule -- ...` directly above works.
 - After fixing one layer, re-lint: more warnings surface once types resolve, and previously needed disables
   can become unused (an unused directive is itself an error to remove).
+- `prefer-readonly-parameter-types` is deep: a param type embedding another type (memoize's `store?: Store`)
+  fails unless that embedded type's data fields **and methods** are all `readonly`. Marking the option
+  property `readonly store?` is not enough; the `Store`/`SyncStore` methods themselves had to become
+  `readonly` in kv-store (commit `f54aa3ce`). Fix at the source type, not with a disable at the consumer.
+- Rest params (`...args: TArgs`) in a callback **type** signature (`(this: void, ...args: TArgs) => string`)
+  are not flagged: `no-restricted-syntax/no-rest-params` only visits `FunctionDeclaration`/`FunctionExpression`,
+  not `TSFunctionType`. Do not add a disable for them; it would be unused, and `no-disable-no-rest-params`
+  bans disabling that rule anyway.
+- A whole family of rules cannot be disabled inline (`no-disable-*` meta-rules in
+  `packages/config/oxlint/src/rules/restriction.ts` lines 111 to 129): `require-destructured-params`,
+  `no-rest-params`, `no-arrow-function`, `require-tsdoc`, `no-switch`, `no-for-in`, `no-enum`, etc. When one
+  fires, restructure the code; you cannot suppress it. For memoize's "multi-arg" test, a positional
+  `fn(a, b)` is impossible (rule fires, no disable allowed) and `memoize` calls `fn(...args)` positionally,
+  so the test uses a single destructured-object argument (`fn({ a, b })`, called as `args: [{ a, b }]`).
+- Same-module value + type imports must be merged into one statement with an inline `type` qualifier
+  (`import { createSyncStore, type SyncStore } from '...'`); separate `import {}` + `import type {}` from the
+  same module trips `no-duplicate-imports`.
+- A function destructuring its single object param (`function memoized({ args, salt }: ...)`) must document
+  each destructured field (`@param args`, `@param salt`), not the synthetic param name; otherwise
+  `tsdoc(check-param-names)` errors.
 
 ## Remaining steps (plan implementation order)
 
-2. Implement `memoize`. Port from module-es (full source was read this session):
-   `packages/module/es/src/types/t function/f/t function/memoize/{r a/p n,r s/p n,t,cacheKey}`. Public
-   exports: `memoize`, `memoizeAsync`, `MemoizedFunction`, `MemoizedAsyncFunction`, and the option/call
-   types (`MemoizeOptions`, `MemoizeAsyncOptions`, `MemoizedCallOptions`, `MemoizeNamedOptions`,
-   `MemoizeAsyncNamedOptions`). Import `createStore`, `createSyncStore`, and types `Store`, `SyncStore`
-   from `@monochromatic-dev/module-kv-store` (package root). Keep `buildCacheKey` internal. Apply `readonly`
-   to option-type properties up front. Tests must cover sync and async, LRU, store injection, clear,
-   delete, size, salt, in-flight dedup, error retry, and the `undefined`-recomputation behavior. Preserve
-   the `${argKey}:${salt}` key format and stored-`undefined`-is-a-miss behavior. Commit per package.
-3. (async-iter) done. 4. (observable) done.
+2. (memoize) done. 3. (async-iter) done. 4. (observable) done.
 5. Migrate `webapp-productivity/rss`: `feed.ts`, `ignore.ts`, `opml-text.ts` import `mapIterableAsync` from
    `@monochromatic-dev/module-async-iter`; `index.ts` imports `memoizeAsync` from
    `@monochromatic-dev/module-memoize`. Add both deps, remove `@monochromatic-dev/module-es`.
