@@ -83,6 +83,194 @@ const PATHLESS_ALLOWED_CASES: readonly {
   },
 ];
 
+/** Commit argv forms where no-value options appear before positional pathspecs. */
+const NO_VALUE_FLAG_PATHSPEC_CASES: readonly {
+  /** Human-readable case name shown in test output. */
+  readonly name: string;
+  /** Git argv passed to commit-only rule. */
+  readonly args: readonly string[];
+  /** Expected argv after commit-only injection. */
+  readonly expected: readonly string[];
+}[] = [
+  {
+    name: '-q before pathspec',
+    args: [
+      'commit',
+      '-q',
+      'file.ts',
+      '-F',
+      'message.txt',
+    ],
+    expected: [
+      'commit',
+      '-o',
+      '-q',
+      'file.ts',
+      '-F',
+      'message.txt',
+    ],
+  },
+  {
+    name: '-v before pathspec',
+    args: [
+      'commit',
+      '-v',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+    expected: [
+      'commit',
+      '-o',
+      '-v',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+  },
+  {
+    name: '-n before pathspec',
+    args: [
+      'commit',
+      '-n',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+    expected: [
+      'commit',
+      '-o',
+      '-n',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+  },
+  {
+    name: '--no-verify before pathspec',
+    args: [
+      'commit',
+      '--no-verify',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+    expected: [
+      'commit',
+      '-o',
+      '--no-verify',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+  },
+  {
+    name: '--dry-run before pathspec',
+    args: [
+      'commit',
+      '--dry-run',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+    expected: [
+      'commit',
+      '-o',
+      '--dry-run',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+  },
+];
+
+/** Commit argv forms where separated-value options appear before positional pathspecs. */
+const VALUE_OPTION_PATHSPEC_CASES: readonly {
+  /** Human-readable case name shown in test output. */
+  readonly name: string;
+  /** Git argv passed to commit-only rule. */
+  readonly args: readonly string[];
+  /** Expected argv after commit-only injection. */
+  readonly expected: readonly string[];
+}[] = [
+  {
+    name: '--author before pathspec',
+    args: [
+      'commit',
+      '--author',
+      'Author <author@example.invalid>',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+    expected: [
+      'commit',
+      '-o',
+      '--author',
+      'Author <author@example.invalid>',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+  },
+  {
+    name: '--cleanup before pathspec',
+    args: [
+      'commit',
+      '--cleanup',
+      'strip',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+    expected: [
+      'commit',
+      '-o',
+      '--cleanup',
+      'strip',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+  },
+  {
+    name: '--trailer before pathspec',
+    args: [
+      'commit',
+      '--trailer',
+      'Reviewed-by: Author <author@example.invalid>',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+    expected: [
+      'commit',
+      '-o',
+      '--trailer',
+      'Reviewed-by: Author <author@example.invalid>',
+      'file.ts',
+      '-m',
+      'message',
+    ],
+  },
+  {
+    name: '--fixup before pathspec',
+    args: [
+      'commit',
+      '--fixup',
+      'HEAD',
+      'file.ts',
+    ],
+    expected: [
+      'commit',
+      '-o',
+      '--fixup',
+      'HEAD',
+      'file.ts',
+    ],
+  },
+];
+
 /** Commit argv forms that should be rejected before git emits opaque errors. */
 const REJECTED_CASES: readonly {
   /** Human-readable case name shown in test output. */
@@ -129,6 +317,17 @@ const REJECTED_CASES: readonly {
       'message',
     ],
     message: 'rejects -a/--all',
+  },
+  {
+    name: 'pathless separated author option',
+    args: [
+      'commit',
+      '--author',
+      'Author <author@example.invalid>',
+      '-m',
+      'message',
+    ],
+    message: 'requires an explicit pathspec',
   },
 ];
 
@@ -306,6 +505,40 @@ await describe({
             '-dash-file',
           ],);
       },
+    },),
+    it({
+      name: 'treats lone dash before -- as pathspec',
+      fn: async function testLoneDashPathspec(): Promise<void> {
+        expect(commitOnly([
+          'commit',
+          '-m',
+          'message',
+          '-',
+        ],),)
+          .toEqual([
+            'commit',
+            '-o',
+            '-m',
+            'message',
+            '-',
+          ],);
+      },
+    },),
+    ...NO_VALUE_FLAG_PATHSPEC_CASES.map(function mapNoValueFlagPathspecCase(pathspecCase,) {
+      return it({
+        name: `detects pathspec after no-value flag ${pathspecCase.name}`,
+        fn: async function testNoValueFlagPathspecCase(): Promise<void> {
+          expect(commitOnly(pathspecCase.args,),).toEqual(pathspecCase.expected,);
+        },
+      },);
+    },),
+    ...VALUE_OPTION_PATHSPEC_CASES.map(function mapValueOptionPathspecCase(pathspecCase,) {
+      return it({
+        name: `detects pathspec after value option ${pathspecCase.name}`,
+        fn: async function testValueOptionPathspecCase(): Promise<void> {
+          expect(commitOnly(pathspecCase.args,),).toEqual(pathspecCase.expected,);
+        },
+      },);
     },),
     ...PATHLESS_ALLOWED_CASES.map(function mapPathlessAllowedCase(pathlessCase,) {
       return it({

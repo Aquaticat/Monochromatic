@@ -387,6 +387,74 @@ await describe({
       },
     },),
     it({
+      name: 'commits quiet named path before message-file option',
+      fn: async function testQuietNamedPathBeforeMessageFile(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeAndStageFile({
+          repoPath: tempDirectory.path,
+          fileName: 'file.txt',
+          content: 'content\n',
+        },);
+
+        /** Path to message file consumed by `git commit -F`. */
+        const messagePath = join(
+          tempDirectory.path,
+          'message.txt',
+        );
+
+        await writeFile(
+          messagePath,
+          'quiet named path\n',
+        );
+
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'commit',
+            '-q',
+            'file.txt',
+            '-F',
+            'message.txt',
+          ],
+        },);
+
+        expect(await readLatestSubject({ repoPath: tempDirectory.path, },),).toBe(
+          'quiet named path',
+        );
+      },
+    },),
+    it({
+      name: 'commits named path after separated author option',
+      fn: async function testNamedPathAfterSeparatedAuthor(): Promise<void> {
+        await using tempDirectory = await createTempDirectory();
+
+        await initializeRepository({ repoPath: tempDirectory.path, },);
+        await writeAndStageFile({
+          repoPath: tempDirectory.path,
+          fileName: 'file.txt',
+          content: 'content\n',
+        },);
+
+        await runWrapper({
+          cwd: tempDirectory.path,
+          args: [
+            'commit',
+            '--author',
+            'Alt Author <alt@example.invalid>',
+            'file.txt',
+            '-m',
+            'author path',
+          ],
+        },);
+
+        expect(await readLatestSubject({ repoPath: tempDirectory.path, },),).toBe(
+          'author path',
+        );
+      },
+    },),
+    it({
       name: 'rejects stash list at main worktree root',
       fn: async function testStashListAtMainWorktreeRoot(): Promise<void> {
         await using tempDirectory = await createTempDirectory();

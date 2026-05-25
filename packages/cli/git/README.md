@@ -68,8 +68,10 @@ implicitly. Pathless commits remain valid when git permits them with `--amend`,
 `--allow-empty`, or `--pathspec-from-file`. Skipped when `-o`, `--only`, or
 `--no-only` is already present (the user has made an explicit choice). Escape
 hatch for a single invocation: pass `--no-enforce-only`, which is stripped
-before forwarding to real git. The rule walks pre-subcommand global options the
-same way atomic-push does.
+before forwarding to real git. Pathspec detection uses a scanner for known
+separated-value commit options, so no-value flags such as `-q` and `--dry-run`
+do not consume the following pathspec while wrapper-only validation runs. The
+rule walks pre-subcommand global options the same way atomic-push does.
 
 **Status hints off**: injects `-c advice.statusHints=false` before `git status`
 so git suppresses its stock hints, which suggest patterns the wrapper rejects
