@@ -316,6 +316,32 @@ specifier also behaved differently from a `package:` specifier in the probe (nam
 `["Root","AtRule","ChildNode"]` silenced none, while the `package:` form silenced `ChildNode`),
 so the `package:` form is the reliable shape for these third-party AST types.
 
+### h3 `H3` resolves to the bundler-renamed class `H3$1`
+
+`packages/webapp-productivity/done/src/server-api-routes.ts` types `registerApiRoutes(app: H3)`
+with `H3` from `h3` 2.0.1-rc.20. The shared allow-list already listed `"H3"` under
+`package: 'h3'`, yet the parameter stayed flagged. h3's bundled `.d.mts` renames the app class
+and re-exports it as a type alias (`node_modules/.pnpm/h3@2.0.1-rc.20/node_modules/h3/dist/h3-D76FUMrE.d.mts`):
+
+```typescript
+declare class H3$1 extends H3Core$1 { /* ... */ }   // line 666
+type H3 = H3$1;                                      // line 832
+```
+
+A parameter typed `app: H3` resolves to the class symbol `H3$1` (the alias is not preserved),
+so `typeMatchesStringSpecifier` compares `["H3"]` against `"H3$1"` and fails, exactly like the
+`Node$1` and `Root_` cases above. Only `H3` carries the rename; `H3Event`, `H3EventContext`,
+and the rest are declared under their plain names and matched already. The fix adds `"H3$1"`
+alongside `"H3"` in the `h3` specifier so the entry self-heals if a future h3 release drops the
+rename:
+
+```typescript
+{ from: "package", package: "h3", name: [ /* ... */ "H3", "H3$1" ] }
+```
+
+Verified: with `"H3$1"` added, `registerApiRoutes(app: H3)` and a probe `function f(app: H3)`
+both clear.
+
 ## Draft upstream issue
 
 Do not file as-is. The 5-constraint audit below concludes do-not-file; the draft is kept so a
