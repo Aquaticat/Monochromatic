@@ -165,7 +165,7 @@ export async function overwriteIfNotExists(
   const existing = await readExisting(dest,);
   if (existing !== undefined) {
     trackDest(dest,);
-    l.info(`skip (exists): ${dest}`,);
+    l.debug(`skip (exists): ${dest}`,);
     return;
   }
   await writeIfChanged({
