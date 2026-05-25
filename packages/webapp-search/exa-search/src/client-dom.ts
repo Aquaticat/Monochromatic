@@ -1,9 +1,9 @@
 // oxlint-disable typescript/strict-boolean-expressions, no-magic-numbers, no-warning-comments, eslint/prefer-destructuring -- DOM string coercions and a pre-existing TODO marker
 import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
 import {
-  $ as createObservable,
+  createObservable,
   type Observable,
-} from '@monochromatic-dev/module-es/create-observable';
+} from '@monochromatic-dev/module-observable';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import * as v from 'valibot';
 

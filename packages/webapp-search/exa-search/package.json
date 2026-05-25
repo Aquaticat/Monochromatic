@@ -9,8 +9,8 @@
   "dependencies": {
     "@monochromatic-dev/module-dom": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
+    "@monochromatic-dev/module-observable": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
     "h3": "catalog:"
   },

@@ -2824,15 +2824,15 @@ importers:
       '@monochromatic-dev/module-dom':
         specifier: workspace:*
         version: link:../../module/dom
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/module-observable':
+        specifier: workspace:*
+        version: link:../../module/observable
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../../module/or-throw

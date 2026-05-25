@@ -26,7 +26,8 @@ searchForm.addEventListener(
     event.preventDefault();
     void (async function onSearchAsync(): Promise<void> {
       try {
-        numTotalSearches.value++;
+        numTotalSearches.setValue(numTotalSearches.getValue()
+          + 1,);
         resultsSection.setAttribute(
           'hidden',
           'true',
@@ -45,13 +46,13 @@ searchForm.addEventListener(
 
         /** Exa search response feeding the cost display and per-result population. */
         const results = await searchExa({
-          apiKey: apiKey.value,
+          apiKey: apiKey.getValue(),
           baseUrl,
           query: searchInput.value
             .trim(),
           options: {
             type: 'auto',
-            numResults: numResults.value,
+            numResults: numResults.getValue(),
             contents: {
               text: true,
               summary: true,
@@ -122,10 +123,10 @@ changeApiKeyButton.addEventListener(
         const inputApiKey = nonNullishOrThrow(
           await prompt({ message: 'Change api key', },),
         );
-        apiKey.value = v.parse(
+        apiKey.setValue(v.parse(
           apiKeySchema,
           inputApiKey,
-        );
+        ),);
       }
       catch (error: unknown) {
         console.error(
@@ -140,7 +141,7 @@ changeApiKeyButton.addEventListener(
 numResultsInput.addEventListener(
   'input',
   function setNewNumResults() {
-    numResults.value = Number(numResultsInput.value,);
+    numResults.setValue(Number(numResultsInput.value,),);
   },
 );
 
