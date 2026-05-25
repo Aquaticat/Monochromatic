@@ -52,7 +52,8 @@ export class CompletionPopup extends HTMLElement {
       tag: 'div',
       class: 'list',
     },);
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,
@@ -77,17 +78,22 @@ export class CompletionPopup extends HTMLElement {
     readonly y: number;
     readonly cursor: ShownAt;
   },): void {
-    if ((this.#list === null) || (items.length === 0))
+    if ((this.#list
+      === null) || (items.length
+      === 0))
       return;
     this.#items = items;
     this.#selectedIndex = 0;
     this.#shownAt = cursor;
-    this.#list.replaceChildren(...renderItems({ items, },),);
-    this.style.setProperty(
+    this.#list
+      .replaceChildren(...renderItems({ items, },),);
+    this.style
+      .setProperty(
       'inset-inline-start',
       `${x}px`,
     );
-    this.style.setProperty(
+    this.style
+      .setProperty(
       'inset-block-start',
       `${y + VERTICAL_OFFSET}px`,
     );
@@ -124,19 +130,28 @@ export class CompletionPopup extends HTMLElement {
 
   /** Moves the selection up or down. */
   navigate({ direction, }: { readonly direction: 'up' | 'down'; },): void {
-    if (this.#items.length === 0)
+    if (this.#items
+      .length
+      === 0)
       return;
     if (direction === 'up') {
-      this.#selectedIndex = this.#selectedIndex <= 0
-        ? this.#items.length - 1
-        : this.#selectedIndex - 1;
+      this.#selectedIndex = this.#selectedIndex
+        <= 0
+        ? this.#items
+          .length
+          - 1
+        : this.#selectedIndex
+          - 1;
     }
     else {
-      this.#selectedIndex = this.#selectedIndex >= (this.#items.length - 1)
+      this.#selectedIndex = this.#selectedIndex
+        >= (this.#items.length - 1)
         ? 0
-        : this.#selectedIndex + 1;
+        : this.#selectedIndex
+          + 1;
     }
-    if (this.#list !== null) {
+    if (this.#list
+      !== null) {
       updateSelection({
         list: this.#list,
         selectedIndex: this.#selectedIndex,
@@ -150,7 +165,11 @@ export class CompletionPopup extends HTMLElement {
    * @returns insert text, or null if nothing selected
    */
   accept(): string | null {
-    if ((this.#selectedIndex < 0) || (this.#selectedIndex >= this.#items.length))
+    if ((this.#selectedIndex
+      < 0) || (this.#selectedIndex
+      >= this
+      .#items
+      .length))
       return null;
     /** Currently highlighted completion entry; bounds-checked above. */
     const item = this.#items[this.#selectedIndex];

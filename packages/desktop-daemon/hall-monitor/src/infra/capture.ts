@@ -97,7 +97,8 @@ export async function captureScreenshot(): Promise<Buffer> {
   );
   /** Accumulated JPEG byte chunks streamed from ffmpeg's stdout. */
   const chunks: Buffer[] = [];
-  proc.stdout.on(
+  proc.stdout
+    .on(
     'data',
     function collectChunk(chunk: Buffer,) {
       chunks.push(chunk,);
@@ -109,7 +110,8 @@ export async function captureScreenshot(): Promise<Buffer> {
   );
   /** Concatenated screenshot buffer; rejected when ffmpeg produced no output. */
   const buf = Buffer.concat(chunks,);
-  if (buf.length === 0)
+  if (buf.length
+    === 0)
     throw new Error('Screenshot resize produced empty output',);
   return buf;
 }
@@ -157,7 +159,8 @@ export async function captureWebcam(): Promise<Buffer> {
   );
   /** Accumulated JPEG byte chunks streamed from ffmpeg's stdout. */
   const chunks: Buffer[] = [];
-  proc.stdout.on(
+  proc.stdout
+    .on(
     'data',
     function collectChunk(chunk: Buffer,) {
       chunks.push(chunk,);
@@ -169,7 +172,8 @@ export async function captureWebcam(): Promise<Buffer> {
   );
   /** Concatenated webcam frame buffer; rejected when ffmpeg produced no output. */
   const buf = Buffer.concat(chunks,);
-  if (buf.length === 0)
+  if (buf.length
+    === 0)
     throw new Error('Webcam capture produced empty output',);
   return buf;
 }

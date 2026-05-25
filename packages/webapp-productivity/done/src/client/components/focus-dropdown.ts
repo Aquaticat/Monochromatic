@@ -34,7 +34,8 @@ class FocusDropdown extends HTMLElement {
 
   /** Reads the `value` attribute and renders the dropdown. */
   connectedCallback(): void {
-    this.#value = this.getAttribute('value',) ?? 'Select focus...';
+    this.#value = this.getAttribute('value',)
+      ?? 'Select focus...';
     this.#render();
   }
 
@@ -75,7 +76,8 @@ class FocusDropdown extends HTMLElement {
       text: this.#value,
     },);
     /** Pre-bound selector so each option click fires with the correct `this`. */
-    const selectFn = this.#selectPreset.bind(this,);
+    const selectFn = this.#selectPreset
+      .bind(this,);
 
     /** Popover menu captured so the option callback can close it after selection. */
     const menu = h({
@@ -100,7 +102,8 @@ class FocusDropdown extends HTMLElement {
       },),
     },);
 
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: FOCUS_DROPDOWN_STYLES,

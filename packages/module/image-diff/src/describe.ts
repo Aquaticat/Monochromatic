@@ -90,8 +90,9 @@ function resolveOpenRouterApiKey(): string | undefined {
     l,
   },);
   /** Resolved API key from preferred-then-fallback env var; treated as missing when blank. */
-  const key = process.env['IMAGE_DIFF_OPENROUTER_API_KEY']
-    ?? process.env['OPENROUTER_API_KEY'];
+  const key = process.env.IMAGE_DIFF_OPENROUTER_API_KEY
+    ?? process
+    .env.OPENROUTER_API_KEY;
   if ((key === undefined) || (key === '')) {
     rl.debug('no OpenRouter API key found, skipping description',);
     return undefined;
@@ -213,7 +214,8 @@ export async function describeImageDifference({
     throw new Error('OpenRouter API returned no choices',);
 
   /** Model's textual diff description; returned directly to the caller after a debug-log of its length. */
-  const description = choice.message.content;
+  const description = choice.message
+    .content;
   rl.debug(`received description (${String(description.length,)} chars)`,);
   return description;
 }

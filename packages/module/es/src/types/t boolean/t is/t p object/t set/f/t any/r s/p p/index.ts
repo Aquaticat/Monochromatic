@@ -35,7 +35,10 @@ import type { $ as Is, } from '@_/types/t function/t is/t/r s/p p/index.ts';
 export function $<const MyValue,>(
   value: MyValue,
 ): value is MyValue extends Set<infer T> ? MyValue & Set<T> : MyValue & Set<unknown> {
-  return Object.prototype.toString.call(value,) === '[object Set]';
+  return Object.prototype
+    .toString
+    .call(value,)
+    === '[object Set]';
 }
 
 /** Compile-time test: function satisfies the type guard interface. */

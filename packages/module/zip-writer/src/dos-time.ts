@@ -60,11 +60,15 @@ export function dosDateTime(date: Date,): DosDateTime {
   /** Packed DOS date word ready to write to the archive. */
   const dosDate = ((year - DOS_EPOCH_YEAR) << DOS_DATE_YEAR_SHIFT)
     | ((date.getUTCMonth() + MONTH_OFFSET_TO_ONE_BASED) << DOS_DATE_MONTH_SHIFT)
-    | date.getUTCDate();
+    | date
+    .getUTCDate();
   /** Packed DOS time word ready to write to the archive. */
-  const dosTime = (date.getUTCHours() << DOS_TIME_HOUR_SHIFT)
-    | (date.getUTCMinutes() << DOS_TIME_MINUTE_SHIFT)
-    | (date.getUTCSeconds() >>> DOS_TIME_SECOND_SHIFT);
+  const dosTime = (date.getUTCHours()
+    << DOS_TIME_HOUR_SHIFT)
+    | (date.getUTCMinutes()
+      << DOS_TIME_MINUTE_SHIFT)
+    | (date.getUTCSeconds()
+      >>> DOS_TIME_SECOND_SHIFT);
   return {
     date: dosDate,
     time: dosTime,

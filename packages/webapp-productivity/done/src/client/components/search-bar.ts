@@ -31,8 +31,10 @@ class SearchBar extends HTMLElement {
    */
   get value(): string {
     /** Shadow-DOM lookup; null until `connectedCallback` runs. */
-    const input = this.#shadow.querySelector<HTMLInputElement>('input',);
-    return input?.value ?? '';
+    const input = this.#shadow
+      .querySelector<HTMLInputElement>('input',);
+    return input?.value
+      ?? '';
   }
 
   /**
@@ -42,7 +44,8 @@ class SearchBar extends HTMLElement {
    */
   set value(text: string,) {
     /** Shadow-DOM lookup; silently ignored before `connectedCallback` runs. */
-    const input = this.#shadow.querySelector<HTMLInputElement>('input',);
+    const input = this.#shadow
+      .querySelector<HTMLInputElement>('input',);
     if (input !== null)
       input.value = text;
   }
@@ -50,7 +53,8 @@ class SearchBar extends HTMLElement {
   /** Renders the back button and search input, wires up debounced search dispatch. */
   connectedCallback(): void {
     /** Initial query forwarded as the input's starting value. */
-    const query = this.getAttribute('value',) ?? '';
+    const query = this.getAttribute('value',)
+      ?? '';
 
     // SVG back arrow built via innerHTML on a container because h() targets
     // HTMLElement creation: SVG elements require the SVG namespace.
@@ -77,7 +81,8 @@ class SearchBar extends HTMLElement {
 
     // Debounced search dispatch
     /** Pre-bound dispatcher so the timeout fires without losing `this`. */
-    const dispatchFn = this.dispatchEvent.bind(this,);
+    const dispatchFn = this.dispatchEvent
+      .bind(this,);
     /** Container for the shared timer handle so the binding stays `const` while the handle is reassigned on every keystroke. */
     const timer: { handle: ReturnType<typeof setTimeout> | undefined; } = {
       handle: undefined,
@@ -92,7 +97,8 @@ class SearchBar extends HTMLElement {
               new CustomEvent(
                 'search',
                 {
-                  detail: { query: input.value.trim(), },
+                  detail: { query: input.value
+                    .trim(), },
                   bubbles: true,
                 },
               ),
@@ -103,7 +109,8 @@ class SearchBar extends HTMLElement {
       },
     );
 
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: SEARCH_BAR_STYLES,

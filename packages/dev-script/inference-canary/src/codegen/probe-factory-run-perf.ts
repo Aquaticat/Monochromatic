@@ -71,9 +71,11 @@ export function cacheAndComputePerfMultiplier({
   caches,
   perfResult,
 }: CacheAndComputePerfMultiplierOptions,): number {
-  if ((config.perfTest === undefined) || (perfResult === undefined))
+  if ((config.perfTest
+    === undefined) || (perfResult === undefined))
     return 1;
-  caches.perf.set(
+  caches.perf
+    .set(
     context.label,
     perfResult,
   );

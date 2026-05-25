@@ -51,7 +51,8 @@ function auxiliaryStrategyFor(
     readonly entry: EnglishVerbEntry;
   },
 ): EnglishAuxiliaryStrategy {
-  return entry.auxiliaryStrategy ?? 'do-support';
+  return entry.auxiliaryStrategy
+    ?? 'do-support';
 }
 
 /**
@@ -111,11 +112,15 @@ export function declarativeVerbSurface(
   },
 ): string {
   if (tense === 'past')
-    return entry.past ?? `${entry.base}ed`;
+    return entry.past
+      ?? `${entry.base}ed`;
   if (tense === 'future')
     return entry.base;
-  if ((agreement.person === THIRD_PERSON) && (agreement.number === 'singular'))
-    return entry.present3s ?? `${entry.base}s`;
+  if ((agreement.person
+    === THIRD_PERSON) && (agreement.number
+    === 'singular'))
+    return entry.present3s
+      ?? `${entry.base}s`;
   return entry.base;
 }
 
@@ -146,7 +151,9 @@ export function doAuxiliary(
     return 'did';
   if (tense === 'future')
     return 'will';
-  if ((agreement.person === THIRD_PERSON) && (agreement.number === 'singular'))
+  if ((agreement.person
+    === THIRD_PERSON) && (agreement.number
+    === 'singular'))
     return 'does';
   return 'do';
 }
@@ -201,7 +208,9 @@ export function questionVerbParts(
   }
   if ((strategy === 'modal') || (strategy === 'none')) {
     return {
-      auxiliary: tense === 'past' ? entry.past ?? entry.base : entry.base,
+      auxiliary: tense === 'past' ? entry.past
+        ?? entry
+        .base : entry.base,
       lexicalVerb: undefined,
       complementForm: 'bare',
     };
@@ -247,7 +256,9 @@ export function subjectQuestionVerbSurface(
   /** Configured auxiliary strategy after applying the default. */
   const strategy = auxiliaryStrategyFor({ entry, },);
   if ((strategy === 'modal') || (strategy === 'none'))
-    return tense === 'past' ? entry.past ?? entry.base : entry.base;
+    return tense === 'past' ? entry.past
+      ?? entry
+      .base : entry.base;
   if (tense === 'future')
     return `will ${entry.base}`;
   return declarativeVerbSurface({
@@ -281,7 +292,8 @@ function renderComplement<S extends string, V extends string, N extends string,>
 ): string {
   /** Rendered nested verb phrase before complement marker selection. */
   const rendered = renderVerbPhrase(phrase,);
-  return complementFormForVerb({ entry, },) === 'bare' ? rendered : `to ${rendered}`;
+  return complementFormForVerb({ entry, },)
+    === 'bare' ? rendered : `to ${rendered}`;
 }
 
 /**
@@ -332,15 +344,18 @@ export function makeEnglishVerbPhraseRenderer<
     /** Verb base form; finite tense is decided by callers that own subject + tense context. */
     const verb = entry.base;
     /** Optional rendered object surface; absent when no object slot was supplied. */
-    const object = phrase.object === undefined
+    const object = phrase.object
+      === undefined
       ? undefined
       : renderNounPhrase(phrase.object,);
     /** Optional rendered complement, bare for modal-like heads and infinitive otherwise. */
-    const complement = phrase.complement === undefined
+    const complement = phrase.complement
+      === undefined
       ? undefined
       : renderComplement({
         entry,
-        phrase: phrase.complement.phrase,
+        phrase: phrase.complement
+          .phrase,
         renderVerbPhrase,
       },);
     /** Optional rendered adverbial cluster. */

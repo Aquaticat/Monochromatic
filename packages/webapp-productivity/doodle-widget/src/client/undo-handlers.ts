@@ -149,16 +149,20 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
     'keydown',
     function handleUndoRedoKey(event: KeyboardEvent,): void {
       /** Skip when focus is inside a text input to preserve native text undo */
-      if (event.target instanceof HTMLInputElement)
+      if (event.target
+        instanceof HTMLInputElement)
         return;
 
       /** Either control or meta gates the shortcut so it does not fire on bare keys. */
-      const hasModifier = event.ctrlKey || event.metaKey;
+      const hasModifier = event.ctrlKey
+        || event
+        .metaKey;
       if (!hasModifier)
         return;
 
       /** Lower-cased so the comparison matches regardless of caps-lock or shift-induced casing. */
-      const key = event.key.toLowerCase();
+      const key = event.key
+        .toLowerCase();
       if (key === 'z') {
         event.preventDefault();
         /** Shift inverts the direction so Ctrl+Shift+Z redoes instead of undoing. */

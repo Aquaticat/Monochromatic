@@ -26,7 +26,8 @@ export type ExecutionStep = {
  * @throws if the stack is empty
  */
 function pop(stack: number[],): number {
-  if (stack.length === 0)
+  if (stack.length
+    === 0)
     throw new Error('stack underflow',);
   /** Popped top-of-stack value; the explicit undefined check is for `noUncheckedIndexedAccess`. */
   const value = stack.pop();
@@ -108,11 +109,13 @@ export type ExecuteOpOptions = {
  * @returns whether `op` is a parseable integer literal
  */
 function isIntegerLiteral(op: string,): boolean {
-  if (op.length === 0)
+  if (op.length
+    === 0)
     return false;
   /** Cursor: skip a leading `-` so the rest is checked for digits only. */
   const start = op.startsWith('-',) ? 1 : 0;
-  if (start >= op.length)
+  if (start >= op
+    .length)
     return false;
   for (const c of op.slice(start,)) {
     if ((c < '0') || (c > '9'))

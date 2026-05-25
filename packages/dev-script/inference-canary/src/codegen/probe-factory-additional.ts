@@ -65,7 +65,8 @@ export function executeAdditionalRuns({
   /** Per-run container promises with optional source transforms applied */
   const promises = runs.map(function launchRun(run,): Promise<ContainerResult> {
     /** Source with per-run transform applied (e.g. injected CLI flags) */
-    const runSource = run.transformSource !== undefined
+    const runSource = run.transformSource
+      !== undefined
       ? run.transformSource(source,)
       : source;
     return runInContainer({
@@ -132,14 +133,17 @@ export function cacheAdditionalResults({
   label,
 }: CacheAdditionalResultsOptions,): void {
   for (const [index, result,] of results.entries()) {
-    containerCaches[index]?.set(
+    containerCaches[index]
+      ?.set(
       label,
       result,
     );
     /** Run configuration for this index, used to call verify on successful containers */
     const run = runs[index];
-    if ((run !== undefined) && (result.exitCode === 0) && (!result.timedOut)) {
-      verifyCaches[index]?.set(
+    if ((run !== undefined) && (result.exitCode === 0)
+      && (!result.timedOut)) {
+      verifyCaches[index]
+        ?.set(
         label,
         run.verify(result,),
       );
@@ -207,9 +211,12 @@ export function computeAdditionalCorrectnesses({
     result,
     index,
   ): number {
-    if (result.timedOut || (result.exitCode !== 0)) {
+    if (result.timedOut
+      || (result.exitCode !== 0)) {
       /** Run name for the log message, falls back to numeric index */
-      const runName = runs[index]?.name ?? String(index,);
+      const runName = runs[index]
+        ?.name
+        ?? String(index,);
       /** Run-specific logger for container failure messages. */
       const rl = tagged({
         tag: runName,
@@ -228,6 +235,9 @@ export function computeAdditionalCorrectnesses({
       );
       return 0;
     }
-    return verifyCaches[index]?.get(label,)?.correctness ?? 0;
+    return verifyCaches[index]
+      ?.get(label,)
+      ?.correctness
+      ?? 0;
   },);
 }

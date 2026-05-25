@@ -34,7 +34,9 @@ export function itemToFeed(
     feed,
   } = itemWDate;
   /** Optional iframe markup omitted when description is absent so empty content stays unrendered. */
-  const descriptionIframe = (item.description !== undefined) && (item.description !== '')
+  const descriptionIframe = (item.description
+    !== undefined) && (item.description
+    !== '')
     ? h({
       tag: 'iframe',
       class: 'feed__description',
@@ -66,8 +68,10 @@ export function itemToFeed(
               h({
                 tag: 'a',
                 class: 'feed__link',
-                attrs: { href: item.link ?? '#', },
-                text: item.title ?? 'Untitled',
+                attrs: { href: item.link
+                  ?? '#', },
+                text: item.title
+                  ?? 'Untitled',
               },),
             ],
           },),
@@ -84,9 +88,12 @@ export function itemToFeed(
               h({
                 tag: 'span',
                 class: 'feed__itemTitle',
-                text: feed.title ?? 'Unknown',
+                text: feed.title
+                  ?? 'Unknown',
               },),
-              ...(((feed.description !== undefined) && (feed.description !== ''))
+              ...(((feed.description
+                !== undefined) && (feed.description
+                !== ''))
                 ? [h({
                   tag: 'span',
                   class: 'feed__itemDescription',

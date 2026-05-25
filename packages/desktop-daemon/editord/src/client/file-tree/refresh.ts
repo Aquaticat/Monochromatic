@@ -61,7 +61,8 @@ export function resolveRefreshContainer({
     );
     if (summary === null)
       return null;
-    container = summary.parentElement?.querySelector<HTMLElement>(':scope > .children',)
+    container = summary.parentElement
+      ?.querySelector<HTMLElement>(':scope > .children',)
       ?? null;
   }
   if (container === null)
@@ -99,7 +100,8 @@ export async function performRefreshDir({
   readonly rootPath: string;
   readonly state: FileTreeState;
 },): Promise<void> {
-  if (state.fetchDir === null)
+  if (state.fetchDir
+    === null)
     return;
   /** DOM container for the refreshed directory; null when the path is not currently expanded. */
   const container = resolveRefreshContainer({
@@ -116,7 +118,8 @@ export async function performRefreshDir({
     fetchDir: state.fetchDir,
     recentPaths: state.recentPaths,
     preloadFn: function preload(opts,) {
-      if (state.fetchDir !== null) {
+      if (state.fetchDir
+        !== null) {
         void preloadChildren({
           ...opts,
           fetchDir: state.fetchDir,
@@ -176,7 +179,8 @@ export async function refreshDirContents(
   for (const dirEntry of container.querySelectorAll<TreeDirEntry>(
     ':scope > tree-dir-entry',
   )) {
-    if (dirEntry.entryPath !== '') {
+    if (dirEntry.entryPath
+      !== '') {
       existingDirs.set(
         dirEntry.entryPath,
         dirEntry,
@@ -209,7 +213,8 @@ export async function refreshDirContents(
     return createTreeFileEntry({
       path: fullPath,
       name: entry.name,
-      recencyIndex: recencyMap.get(fullPath,) ?? (-1),
+      recencyIndex: recencyMap.get(fullPath,)
+        ?? (-1),
     },);
   },);
 

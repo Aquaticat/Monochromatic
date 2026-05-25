@@ -24,7 +24,8 @@
  * ```
  */
 export function validatePath(path: string,): void {
-  if (path.length === 0)
+  if (path.length
+    === 0)
     throw new Error('zip-writer: path must be non-empty',);
   if (path.includes('\0',))
     throw new Error(`zip-writer: path contains NUL byte: ${JSON.stringify(path,)}`,);

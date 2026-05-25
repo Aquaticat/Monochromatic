@@ -162,7 +162,8 @@ function computeChannelExtent(
     .filter(function nonNull(value,): value is number {
       return value !== null;
     },);
-  if (values.length === 0) {
+  if (values.length
+    === 0) {
     return [
       0,
       0,
@@ -370,7 +371,8 @@ function renderDisplaySection(
   const nameOptions = NAME_LABEL_OPTIONS
     .map(function renderOption(value,) {
       /** ` selected` suffix when this option matches the current name-labels policy. */
-      const selected = dt.nameLabels === value ? ' selected' : '';
+      const selected = dt.nameLabels
+        === value ? ' selected' : '';
       return `<option value="${value}"${selected}>${value}</option>`;
     },)
     .join('',);
@@ -452,7 +454,8 @@ export function renderControls(
     },)
     .join('',);
   /** Total probe count rendered into the visibility-counter; used for both numerator and denominator at first paint. */
-  const total = probes.length.toString();
+  const total = probes.length
+    .toString();
   /** HTML-escaped search string, safe for embedding in the search input's `value` attribute. */
   const searchAttr = escapeAttr(state.search,);
   return `<aside id="controls" class="controls">

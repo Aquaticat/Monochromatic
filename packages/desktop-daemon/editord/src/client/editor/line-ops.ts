@@ -37,7 +37,8 @@ export function deleteLineAt({
 } {
   /** Live HTMLCollection so subsequent edits observe the post-removal length. */
   const { children, } = editor;
-  if (children.length <= 1) {
+  if (children.length
+    <= 1) {
     /** Single line: clear it instead of removing. */
     const [only,] = children;
     if (only !== undefined)
@@ -61,7 +62,8 @@ export function deleteLineAt({
   /** Place cursor on the line that now occupies the deleted index, or the new last line. */
   const nextLine = Math.min(
     line,
-    children.length - 1,
+    children.length
+      - 1,
   );
   return {
     line: nextLine,
@@ -140,7 +142,8 @@ export function swapLineDown({
 } | null {
   /** Length needed before grabbing the neighbour to confirm the move is in range. */
   const { children, } = editor;
-  if (line >= (children.length - 1))
+  if (line >= (children.length
+    - 1))
     return null;
 
   /** Element being moved past its successor. */

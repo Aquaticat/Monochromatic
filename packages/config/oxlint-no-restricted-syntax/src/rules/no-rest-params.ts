@@ -50,7 +50,8 @@ export const noRestParams: CreateOnceRule = {
      */
     function checkFunction(node: ESTree.Function,): void {
       for (const param of node.params) {
-        if (param.type === 'RestElement') {
+        if (param.type
+          === 'RestElement') {
           context.report({
             node: param,
             messageId: 'forbidden',

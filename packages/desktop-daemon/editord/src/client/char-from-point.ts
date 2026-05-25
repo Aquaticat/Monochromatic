@@ -25,8 +25,10 @@ export function findCharAtX({
   readonly x: number;
 },): number {
   /** Empty / whitespace-only lines short-circuit to offset 0 below. */
-  const text = lineDiv.textContent ?? '';
-  if ((text.length === 0) || (text === '\n'))
+  const text = lineDiv.textContent
+    ?? '';
+  if ((text.length
+    === 0) || (text === '\n'))
     return 0;
 
   /** Get the first text node in the line. */
@@ -52,7 +54,9 @@ export function findCharAtX({
   let current: Node | null = firstTextNode;
   while (current !== null) {
     /** Defensive default keeps the cumulative offset advancing past nodes with null content. */
-    const len = current.textContent?.length ?? 0;
+    const len = current.textContent
+      ?.length
+      ?? 0;
     textNodes.push({
       // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TreeWalker SHOW_TEXT yields Text nodes
       node: current as Text,
@@ -92,7 +96,8 @@ export function findCharAtX({
     /** Layout box of the empty range gives the cursor x for that offset. */
     const rect = range.getBoundingClientRect();
 
-    if (rect.left < x)
+    if (rect.left
+      < x)
       lo = mid + 1;
     else
       hi = mid;
@@ -121,10 +126,13 @@ function resolveOffset({
   readonly localOffset: number;
 } {
   for (const entry of textNodes) {
-    if (offset <= (entry.start + entry.length)) {
+    if (offset <= (entry.start
+      + entry
+      .length)) {
       return {
         node: entry.node,
-        localOffset: offset - entry.start,
+        localOffset: offset - entry
+          .start,
       };
     }
   }

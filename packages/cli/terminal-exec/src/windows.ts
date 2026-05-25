@@ -33,7 +33,8 @@ async function which(name: string,): Promise<string | null> {
   /** Dynamic import keeps the Windows-only path cold on other platforms. */
   const { access, } = await import('node:fs/promises');
   /** Empty PATH fallback yields an empty dirs list, which returns null cleanly. */
-  const pathEnv = process.env['PATH'] ?? '';
+  const pathEnv = process.env.PATH
+    ?? '';
   /** Per-platform PATH delimiter; semicolon on Windows. */
   const dirs = pathEnv.split(delimiter,);
   for (const dir of dirs) {

@@ -119,7 +119,10 @@ function capitalizeBody(body: string,): string {
  * @returns wh-word with the first character uppercased
  */
 function capitalizeWh(wh: string,): string {
-  return wh.charAt(0,).toUpperCase() + wh.slice(1,);
+  return wh.charAt(0,)
+    .toUpperCase()
+    + wh
+    .slice(1,);
 }
 
 /**
@@ -161,7 +164,8 @@ export function makeEnglishSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.declarative'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Agreement metadata extracted from the subject reference. */
     const agreement = subjectAgreement({
       ref: sentence.subject,
@@ -173,7 +177,8 @@ export function makeEnglishSentenceRenderer<
       subjects,
     },);
     /** Verb entry used for finite surface and complement attachment. */
-    const entry = verbs[sentence.predicate.verb];
+    const entry = verbs[sentence.predicate
+      .verb];
     /** Finite verb surface for this subject + tense. */
     const finite = declarativeVerbSurface({
       entry,
@@ -184,17 +189,20 @@ export function makeEnglishSentenceRenderer<
     const verb = tense === 'future' ? `will ${finite}` : finite;
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
       form: complementFormForVerb({ entry, },),
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body before terminator. */
     const body = joinTokens([
       subj,
@@ -203,7 +211,8 @@ export function makeEnglishSentenceRenderer<
       complement,
       adverbials,
     ],);
-    return `${capitalizeBody(body,)}${sentence.terminator ?? '.'}`;
+    return `${capitalizeBody(body,)}${sentence.terminator
+      ?? '.'}`;
   }
 
   /**
@@ -217,7 +226,8 @@ export function makeEnglishSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.question.yesNo'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Agreement metadata. */
     const agreement = subjectAgreement({
       ref: sentence.subject,
@@ -225,7 +235,8 @@ export function makeEnglishSentenceRenderer<
     },);
     /** Question verb parts chosen from the entry's auxiliary strategy. */
     const questionVerb = questionVerbParts({
-      entry: verbs[sentence.predicate.verb],
+      entry: verbs[sentence.predicate
+        .verb],
       tense,
       agreement,
     },);
@@ -236,17 +247,20 @@ export function makeEnglishSentenceRenderer<
     },);
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered infinitive or bare complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
       form: questionVerb.complementForm,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body before sentence-case fixup. */
     const body = joinTokens([
       questionVerb.auxiliary,
@@ -256,7 +270,8 @@ export function makeEnglishSentenceRenderer<
       complement,
       adverbials,
     ],);
-    return `${capitalizeBody(body,)}${sentence.terminator ?? '?'}`;
+    return `${capitalizeBody(body,)}${sentence.terminator
+      ?? '?'}`;
   }
 
   /**
@@ -270,9 +285,11 @@ export function makeEnglishSentenceRenderer<
     sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.subject'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Verb entry used for the finite question head. */
-    const entry = verbs[sentence.predicate.verb];
+    const entry = verbs[sentence.predicate
+      .verb];
     /** Wh-subject treated as third-person singular for ordinary finite agreement. */
     const verb = subjectQuestionVerbSurface({
       entry,
@@ -281,17 +298,20 @@ export function makeEnglishSentenceRenderer<
     },);
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
       form: complementFormForVerb({ entry, },),
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body with `Who` at head. */
     const body = joinTokens([
       'Who',
@@ -300,7 +320,8 @@ export function makeEnglishSentenceRenderer<
       complement,
       adverbials,
     ],);
-    return `${body}${sentence.terminator ?? '?'}`;
+    return `${body}${sentence.terminator
+      ?? '?'}`;
   }
 
   /**
@@ -314,7 +335,8 @@ export function makeEnglishSentenceRenderer<
     sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.object'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Agreement metadata. */
     const agreement = subjectAgreement({
       ref: sentence.subject,
@@ -341,7 +363,8 @@ export function makeEnglishSentenceRenderer<
       questionVerb.lexicalVerb,
       adverbials,
     ],);
-    return `${body}${sentence.terminator ?? '?'}`;
+    return `${body}${sentence.terminator
+      ?? '?'}`;
   }
 
   /**
@@ -355,7 +378,8 @@ export function makeEnglishSentenceRenderer<
     sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.adverbial'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Agreement metadata. */
     const agreement = subjectAgreement({
       ref: sentence.subject,
@@ -363,7 +387,8 @@ export function makeEnglishSentenceRenderer<
     },);
     /** Question verb parts chosen from the entry's auxiliary strategy. */
     const questionVerb = questionVerbParts({
-      entry: verbs[sentence.predicate.verb],
+      entry: verbs[sentence.predicate
+        .verb],
       tense,
       agreement,
     },);
@@ -374,17 +399,20 @@ export function makeEnglishSentenceRenderer<
     },);
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
       form: questionVerb.complementForm,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Wh-word capitalized in the head position. */
     const wh = capitalizeWh(sentence.wh,);
     /** Sentence body with wh-word at head. */
@@ -397,7 +425,8 @@ export function makeEnglishSentenceRenderer<
       complement,
       adverbials,
     ],);
-    return `${body}${sentence.terminator ?? '?'}`;
+    return `${body}${sentence.terminator
+      ?? '?'}`;
   }
 
   /**
@@ -408,9 +437,11 @@ export function makeEnglishSentenceRenderer<
    * @returns rendered surface
    */
   function renderWh(sentence: WhQuestion<S, V, N>,): string {
-    if (sentence.kind === 'sentence.question.wh.subject')
+    if (sentence.kind
+      === 'sentence.question.wh.subject')
       return renderWhSubject(sentence,);
-    if (sentence.kind === 'sentence.question.wh.object')
+    if (sentence.kind
+      === 'sentence.question.wh.object')
       return renderWhObject(sentence,);
     return renderWhAdverbial(sentence,);
   }
@@ -426,22 +457,28 @@ export function makeEnglishSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.imperative'; }>,
   ): string {
     /** Imperative surface, defaulting to `base` when no dedicated form is supplied. */
-    const entry = verbs[sentence.predicate.verb];
+    const entry = verbs[sentence.predicate
+      .verb];
     /** Verb surface used in the imperative head slot. */
-    const verb = entry.imperative ?? entry.base;
+    const verb = entry.imperative
+      ?? entry
+      .base;
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered infinitive or bare complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
       form: complementFormForVerb({ entry, },),
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body before sentence-case fixup. */
     const body = joinTokens([
       verb,
@@ -449,7 +486,8 @@ export function makeEnglishSentenceRenderer<
       complement,
       adverbials,
     ],);
-    return `${capitalizeBody(body,)}${sentence.terminator ?? '.'}`;
+    return `${capitalizeBody(body,)}${sentence.terminator
+      ?? '.'}`;
   }
 
   /**
@@ -460,11 +498,14 @@ export function makeEnglishSentenceRenderer<
    * @returns rendered surface
    */
   function renderSentence(sentence: Sentence<S, V, N>,): string {
-    if (sentence.kind === 'sentence.declarative')
+    if (sentence.kind
+      === 'sentence.declarative')
       return renderDeclarative(sentence,);
-    if (sentence.kind === 'sentence.question.yesNo')
+    if (sentence.kind
+      === 'sentence.question.yesNo')
       return renderYesNo(sentence,);
-    if (sentence.kind === 'sentence.imperative')
+    if (sentence.kind
+      === 'sentence.imperative')
       return renderImperative(sentence,);
     return renderWh(sentence,);
   }

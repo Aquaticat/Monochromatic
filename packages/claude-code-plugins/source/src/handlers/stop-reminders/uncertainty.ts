@@ -74,7 +74,8 @@ function findUncertainty(prose: string,): UncertaintyMatch | undefined {
     return { phrase: phraseHit.phrase, };
   if (containsErThanMost(prose,)) {
     /** Recovered comparative fragment for the diagnostic ("bigger than most" etc.). */
-    const fragment = findErThanMost(prose,) ?? 'er than most';
+    const fragment = findErThanMost(prose,)
+      ?? 'er than most';
     return { phrase: fragment, };
   }
   return undefined;
@@ -176,7 +177,9 @@ function startsWithWordBounded(
 ): boolean {
   if (!s.startsWith(prefix,))
     return false;
-  if (s.length === prefix.length)
+  if (s.length
+    === prefix
+    .length)
     return true;
   /** Character immediately after the prefix; must not be alphanumeric to mark a boundary. */
   const next = s.charAt(prefix.length,);
@@ -217,7 +220,8 @@ function findLastSentenceStart(text: string,): number {
   function skipWs(idx: number,): number {
     /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
     let at = idx;
-    while ((at < text.length) && isWhitespace(text.charAt(at,),)) {
+    while ((at < text
+      .length) && isWhitespace(text.charAt(at,),)) {
       at += 1;
     }
     return at;
@@ -241,12 +245,14 @@ function findLastSentenceStart(text: string,): number {
     for (let cursor = at; cursor > 0; cursor -= 1) {
       /** Character just before the cursor; checked for sentence-terminator membership. */
       const prev = text.charAt(cursor - 1,);
-      if (SENTENCE_TERMINATORS.includes(prev,) && isWhitespace(text.charAt(cursor,),))
+      if (SENTENCE_TERMINATORS.includes(prev,)
+        && isWhitespace(text.charAt(cursor,),))
         return skipWs(cursor,);
     }
     return 0;
   }
-  return walk(text.length - 1,);
+  return walk(text.length
+    - 1,);
 }
 
 /**
@@ -281,7 +287,8 @@ function findTrailingQuestion(prose: string,): QuestionMatch | undefined {
   const sentenceStart = findLastSentenceStart(trimmed,);
   /** Trailing sentence text including the terminating `?`. */
   const sentence = trimmed.slice(sentenceStart,);
-  if (sentence.length === 0)
+  if (sentence.length
+    === 0)
     return undefined;
   /** Sentence-leading character; must be an uppercase ASCII letter to qualify. */
   const firstChar = sentence.charAt(0,);

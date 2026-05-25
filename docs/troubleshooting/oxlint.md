@@ -443,8 +443,8 @@ ESLint was fully replaced by oxlint on 2026-03-13. The project will not
 re-adopt ESLint; the disable-comment prefix sweep applies only to the
 non-canonical residue from the pre-oxlint era.
 
-
 ## Upstream bug: ignorePatterns resolved from CWD
+
 **Note:** The monorepo has since migrated from `.oxlintrc.json` to `oxlint.config.ts`.
 The bug report below is preserved as-is since it documents a real upstream issue.
 

@@ -6,7 +6,9 @@ export default defineConfig({
   deps: {
     ...base.deps,
     alwaysBundle: [
-      ...(base.deps?.alwaysBundle ?? []),
+      ...(base.deps
+        ?.alwaysBundle
+        ?? []),
       'neovim',
     ],
   },

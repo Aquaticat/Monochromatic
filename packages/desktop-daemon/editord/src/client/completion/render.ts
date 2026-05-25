@@ -33,7 +33,8 @@ export function renderItems({ items, }: { readonly items: readonly CompletionIte
       class: 'item',
     },);
     el.textContent = item.label;
-    if (item.detail !== '') {
+    if (item.detail
+      !== '') {
       el.append(h({
         tag: 'span',
         class: 'detail',
@@ -41,7 +42,8 @@ export function renderItems({ items, }: { readonly items: readonly CompletionIte
       },),);
     }
     if (index === 0)
-      el.dataset.selected = '';
+      el.dataset
+        .selected = '';
     return el;
   },);
 }
@@ -69,16 +71,19 @@ export function updateSelection(
 ): void {
   /** Live HTMLCollection of rendered item rows. */
   const { children, } = list;
-  for (let i = 0; i < children.length; i++) {
+  for (let i = 0; i < children
+    .length; i++) {
     /** Per-row element; the dataset flag flips based on whether i matches the selection. */
     const child = children[i];
     if (child instanceof HTMLElement) {
       if (i === selectedIndex) {
-        child.dataset.selected = '';
+        child.dataset
+          .selected = '';
         child.scrollIntoView({ block: 'nearest', },);
       }
       else {
-        delete child.dataset.selected;
+        delete child.dataset
+          .selected;
       }
     }
   }

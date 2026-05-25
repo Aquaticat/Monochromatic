@@ -37,7 +37,8 @@ import {
  * vectors with components `(±1/√3, ±1/√3, ±1/√3)`; precomputing the
  * factor keeps the loop body free of `Math.sqrt`.
  */
-const SQRT_3_INV = 1 / Math.sqrt(3,);
+const SQRT_3_INV = 1 / Math
+  .sqrt(3,);
 
 /** Latitude divisions for the sphere mesh; 16 keeps the silhouette smooth without exploding the vertex count. */
 const SPHERE_NLAT = 16;
@@ -219,11 +220,14 @@ function buildOctahedronGeometry(): Geometry {
       vCz,
     ] = vertexAt(c,);
     /** Face-centroid sum component × `SQRT_3_INV` = octahedral unit normal. */
-    const nx = (vAx + vBx + vCx) * SQRT_3_INV;
+    const nx = (vAx + vBx
+      + vCx) * SQRT_3_INV;
     /** Y component of the same face normal. */
-    const ny = (vAy + vBy + vCy) * SQRT_3_INV;
+    const ny = (vAy + vBy
+      + vCy) * SQRT_3_INV;
     /** Z component of the same face normal. */
-    const nz = (vAz + vBz + vCz) * SQRT_3_INV;
+    const nz = (vAz + vBz
+      + vCz) * SQRT_3_INV;
     /** Byte-flat write cursor for the position buffer; advances three vec3 slots per face. */
     const posOffset = faceIndex * FLOATS_PER_FACE_VEC3;
     positions[posOffset + 0] = vAx;

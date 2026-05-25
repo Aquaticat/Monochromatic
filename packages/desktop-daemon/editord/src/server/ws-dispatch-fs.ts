@@ -66,7 +66,8 @@ async function retryOnFileLock<T,>({
     return await operation();
   }
   catch (error) {
-    if (isFileLockError(error,) && (lspManager !== null)) {
+    if (isFileLockError(error,)
+      && (lspManager !== null)) {
       await lspManager.shutdownForPath({ path, },);
       return await operation();
     }
@@ -131,7 +132,8 @@ export async function dispatchFsMessage({
   readonly lspManager: LspManager | null;
   readonly dirWatcher: DirWatcher | null;
 },): Promise<boolean> {
-  if (parsed.type === 'deleteEntry') {
+  if (parsed.type
+    === 'deleteEntry') {
     /** Resolved absolute path of the deleted entry; required to suppress watcher echoes. */
     const absolutePath = await retryOnFileLock({
       operation: function del() {
@@ -151,7 +153,8 @@ export async function dispatchFsMessage({
     },);
     return true;
   }
-  if (parsed.type === 'copyEntry') {
+  if (parsed.type
+    === 'copyEntry') {
     /** Resolved absolute destination path; required to suppress watcher echoes for the new entry. */
     const absoluteDest = await copyEntry({
       rootDir,
@@ -166,7 +169,8 @@ export async function dispatchFsMessage({
     },);
     return true;
   }
-  if (parsed.type === 'moveEntry') {
+  if (parsed.type
+    === 'moveEntry') {
     /** Resolved source and destination paths from the move; both feed into watcher suppression. */
     const {
       source,
@@ -192,7 +196,8 @@ export async function dispatchFsMessage({
     },);
     return true;
   }
-  if (parsed.type === 'newEntry') {
+  if (parsed.type
+    === 'newEntry') {
     /** Resolved absolute path of the new entry; needed to suppress watcher echoes for the creation. */
     const absolutePath = await newEntry({
       rootDir,
@@ -208,7 +213,8 @@ export async function dispatchFsMessage({
     },);
     return true;
   }
-  if (parsed.type === 'openInTerminal') {
+  if (parsed.type
+    === 'openInTerminal') {
     await openInTerminal({
       rootDir,
       path: parsed.path,
@@ -219,7 +225,8 @@ export async function dispatchFsMessage({
     },);
     return true;
   }
-  if (parsed.type === 'openInDefaultApp') {
+  if (parsed.type
+    === 'openInDefaultApp') {
     await openInDefaultApp({
       rootDir,
       path: parsed.path,

@@ -46,6 +46,7 @@ export function nameToOrder({ name, }: { readonly name: string; },): number {
    */
   let order = 0;
   for (let index = 0; index < limit; index++)
-    order = (order * ORDER_BASE) + (lower.codePointAt(index,) ?? 0);
+    order = (order * ORDER_BASE) + (lower.codePointAt(index,)
+      ?? 0);
   return order;
 }

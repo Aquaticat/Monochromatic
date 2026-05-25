@@ -109,7 +109,8 @@ export function parseNumberToken(
   const NUMBER_RE = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[Ee][+-]?\d+)?/;
   /** Regex match result for numeric token anchored at start. */
   const match = NUMBER_RE.exec(value,);
-  if ((!match) || (match.index !== 0))
+  if ((!match) || (match.index
+    !== 0))
     throw new Error('malformed jsonc, non-number after number marker',);
   /** Span consumed for the number token (kept as fragment for immutability). */
   const consumed = match[0] as FragmentStringJsonc;

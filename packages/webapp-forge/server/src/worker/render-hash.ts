@@ -48,7 +48,9 @@ export function fnv1a64(bytes: Uint8Array,): string {
       const highMul = Math.imul(
         hi,
         PRIME_LO,
-      ) + Math.imul(
+      )
+        + Math
+        .imul(
         lo,
         PRIME_HI,
       );
@@ -60,10 +62,16 @@ export function fnv1a64(bytes: Uint8Array,): string {
       lo,
     };
   })();
-  return finalState.hi.toString(16,).padStart(
+  return finalState.hi
+    .toString(16,)
+    .padStart(
     8,
     '0',
-  ) + finalState.lo.toString(16,).padStart(
+  )
+    + finalState
+    .lo
+    .toString(16,)
+    .padStart(
     8,
     '0',
   );

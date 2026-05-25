@@ -107,7 +107,8 @@ function asChapter(value: unknown,): Chapter | undefined {
     .filter(function isBeat(b: Readonly<DialogueBeat> | undefined,): b is DialogueBeat {
       return b !== undefined;
     },);
-  if (dialogue.length === 0)
+  if (dialogue.length
+    === 0)
     return undefined;
   return {
     title: value.title,
@@ -162,7 +163,8 @@ export async function generateChapters(
   /**
    * Paper body capped to {@link PAPER_TEXT_BUDGET} with a truncation notice.
    */
-  const truncated = paperText.length > PAPER_TEXT_BUDGET
+  const truncated = paperText.length
+    > PAPER_TEXT_BUDGET
     ? `${
       paperText.slice(
         0,
@@ -224,10 +226,13 @@ export async function generateChapters(
     .filter(function isChapter(c: Readonly<Chapter> | undefined,): c is Chapter {
       return c !== undefined;
     },);
-  if (chapters.length === 0)
+  if (chapters.length
+    === 0)
     throw new Error('generator: no valid chapters in response',);
   /** LLM-provided paper title, falling back to the locale default when missing. */
-  const title = (((typeof parsed.title) === 'string') && (parsed.title.length > 0))
+  const title = (((typeof parsed.title) === 'string') && (parsed.title
+    .length
+    > 0))
     ? parsed.title
     : ll.defaultPaperTitle();
   return {

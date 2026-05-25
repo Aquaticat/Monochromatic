@@ -37,5 +37,8 @@ export function $<const MyValue,>(
 ): value is MyValue extends Record<infer K, infer V> ? MyValue & Record<K, V>
   : MyValue & Record<string | number | symbol, unknown>
 {
-  return Object.prototype.toString.call(value,) === '[object Object]';
+  return Object.prototype
+    .toString
+    .call(value,)
+    === '[object Object]';
 }

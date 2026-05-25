@@ -120,7 +120,9 @@ function verifyOverrideTest(output: string,): boolean {
   );
   /** Offset of the last `display:` declaration in the block, used to identify the cascade winner. */
   const lastDisplay = block.lastIndexOf('display:',);
-  return (lastDisplay !== (-1)) && block.slice(lastDisplay,).includes('grid',);
+  return (lastDisplay !== (-1)) && block
+    .slice(lastDisplay,)
+    .includes('grid',);
 }
 
 /**
@@ -144,25 +146,37 @@ export function verifyCssMixin(result: ContainerResult,): { correctness: number;
   const output = collapseExcessNewlines(collapseHorizontalRuns(result.stdout,),);
 
   /** Count of `display: flex` declarations; the mixin must expand into three call sites. */
-  const flexOccurrences = output.split('display: flex',).length - 1;
+  const flexOccurrences = output.split('display: flex',)
+    .length
+    - 1;
   /**
    * Boolean correctness invariants for each scoring criterion; their sum divided by {@link CSS_MIXIN_TOTAL_CHECKS} is the score.
    */
   const checks = [
     !output.includes('@mixin',),
     !output.includes('@apply',),
-    output.includes('margin: 0',) && output.includes('padding: 0',),
-    output.includes('display: flex',) && output.includes('align-items: center',),
-    output.includes('padding-block: 1rem',) && output.includes('padding-inline: 2rem',),
+    output.includes('margin: 0',)
+      && output
+      .includes('padding: 0',),
+    output.includes('display: flex',)
+      && output
+      .includes('align-items: center',),
+    output.includes('padding-block: 1rem',)
+      && output
+      .includes('padding-inline: 2rem',),
     output.includes('border-radius: 0.5rem',),
     output.includes('color: var(--link-fg)',),
     output.includes('background-color: var(--surface-bg)',),
-    output.includes('clip-path: inset(50%)',) && output.includes('overflow: hidden',),
+    output.includes('clip-path: inset(50%)',)
+      && output
+      .includes('overflow: hidden',),
     // flex-center should expand into .card, .nav .link, and .hero
     flexOccurrences >= MIN_FLEX_OCCURRENCES,
     // Later property overrides mixin property: either both present in order or only winner kept
     verifyOverrideTest(output,),
   ];
 
-  return { correctness: checks.filter(Boolean,).length / CSS_MIXIN_TOTAL_CHECKS, };
+  return { correctness: checks.filter(Boolean,)
+    .length
+    / CSS_MIXIN_TOTAL_CHECKS, };
 }

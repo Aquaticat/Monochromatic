@@ -47,21 +47,25 @@ export class TreeFileEntry extends HTMLElement {
       return;
     this.#initialized = true;
 
-    this.dataset.path = this.entryPath;
+    this.dataset
+      .path = this.entryPath;
     this.setAttribute(
       'tabindex',
       '0',
     );
-    this.style.order = String(nameToOrder({ name: this.entryName, },),);
+    this.style
+      .order = String(nameToOrder({ name: this.entryName, },),);
 
     /** Recency badge slot rendered to the left of the entry name. */
     const toggle = h({
       tag: 'span',
       class: 'toggle',
     },);
-    if (this.recencyIndex !== (-1)) {
+    if (this.recencyIndex
+      !== (-1)) {
       toggle.textContent = String(this.recencyIndex,);
-      this.dataset.recency = String(this.recencyIndex,);
+      this.dataset
+        .recency = String(this.recencyIndex,);
     }
 
     this.replaceChildren(
@@ -92,7 +96,8 @@ export class TreeFileEntry extends HTMLElement {
     this.addEventListener(
       'mouseup',
       function handleFileContext(event: MouseEvent,) {
-        if (event.button !== 2)
+        if (event.button
+          !== 2)
           return;
         event.preventDefault();
         entry.dispatchEvent(new CustomEvent(

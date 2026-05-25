@@ -56,13 +56,15 @@ export function computeThreshold({
   /** Non-failed overall scores used as the statistical sample. */
   const scores = entries
     .filter(function matchLabel(entry,): boolean {
-      return (entry.label === label) && (!entry.failed) && hasMultipleProbes(entry,);
+      return (entry.label === label) && (!entry.failed)
+        && hasMultipleProbes(entry,);
     },)
     .map(function getScore(entry,): number {
       return entry.overallScore;
     },);
 
-  if (scores.length < MIN_SAMPLES) {
+  if (scores.length
+    < MIN_SAMPLES) {
     return {
       model: label,
       mean: 0,
@@ -81,7 +83,9 @@ export function computeThreshold({
       return sum + score;
     },
     0,
-  ) / scores.length;
+  )
+    / scores
+    .length;
   /** Squared-deviation average underlying the standard deviation. */
   const variance = scores.reduce(
     function addVariance(
@@ -91,7 +95,9 @@ export function computeThreshold({
       return sum + ((score - mean) ** 2);
     },
     0,
-  ) / scores.length;
+  )
+    / scores
+    .length;
   /** Sample standard deviation used to space the threshold below the mean. */
   const stddev = Math.sqrt(variance,);
   /** Floored degradation threshold returned to callers. */

@@ -31,5 +31,6 @@ export function $(value: string,): value is SingleQuotedSyntax {
   const firstEffectiveQuoteMatch = /(?<!\\)(?:\\\\)*["'`]/.exec(value,);
 
   // assert that's a single quote
-  return firstEffectiveQuoteMatch?.[0] === "'";
+  return firstEffectiveQuoteMatch?.[0]
+    === "'";
 }

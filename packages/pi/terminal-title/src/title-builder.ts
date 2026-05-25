@@ -94,20 +94,25 @@ function titleForTool(
 const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string> = {
   tool_execution_start(data,) {
     return titleForTool({
-      toolName: data.toolName ?? 'unknown',
-      args: data.args ?? {},
+      toolName: data.toolName
+        ?? 'unknown',
+      args: data.args
+        ?? {},
       tense: 'pre',
     },);
   },
   tool_execution_end(data,) {
     return titleForTool({
-      toolName: data.toolName ?? 'unknown',
-      args: data.args ?? {},
+      toolName: data.toolName
+        ?? 'unknown',
+      args: data.args
+        ?? {},
       tense: 'post',
     },);
   },
   session_start(data,) {
-    return `Session ${data.reason ?? 'started'}`;
+    return `Session ${data.reason
+      ?? 'started'}`;
   },
   session_shutdown() {
     return 'Session ended';
@@ -117,10 +122,13 @@ const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string
   },
   before_agent_start(data,) {
     /** Pending user prompt sourced from the event; empty string when absent so truncate stays defined. */
-    const prompt = data.prompt ?? '';
+    const prompt = data.prompt
+      ?? '';
     return truncate({
       value: prompt,
-      maxLength: MAX_TITLE_LENGTH - TITLE_PREFIX.length - 1,
+      maxLength: MAX_TITLE_LENGTH - TITLE_PREFIX
+        .length
+        - 1,
     },);
   },
 };

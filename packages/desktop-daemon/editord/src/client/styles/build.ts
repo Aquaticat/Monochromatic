@@ -51,7 +51,10 @@ const OUT_FILE = join(
 );
 
 /** Combined CSS from all global style modules. */
-const css = THEME_STYLES + RESET_STYLES + TOAST_STYLES + FAB_STYLES + CTX_MENU_STYLES;
+const css = THEME_STYLES + RESET_STYLES
+  + TOAST_STYLES
+  + FAB_STYLES
+  + CTX_MENU_STYLES;
 
 await mkdir(
   OUT_DIR,

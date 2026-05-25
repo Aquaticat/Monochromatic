@@ -57,7 +57,8 @@ export function getMediaKind(
   { path, }: { readonly path: string; },
 ): Extract<FileKind, 'image' | 'audio' | 'video'> | null {
   /** Lowercased extension so the extension sets stay case-insensitive. */
-  const ext = extname(path,).toLowerCase();
+  const ext = extname(path,)
+    .toLowerCase();
   if (IMAGE_EXTENSIONS.has(ext,))
     return 'image';
   if (AUDIO_EXTENSIONS.has(ext,))
@@ -107,6 +108,8 @@ export function getContentType({ path, }: { readonly path: string; },): string {
   /**
    * Lowercased extension keyed against {@link CONTENT_TYPE_MAP} below.
    */
-  const ext = extname(path,).toLowerCase();
-  return CONTENT_TYPE_MAP[ext] ?? 'application/octet-stream';
+  const ext = extname(path,)
+    .toLowerCase();
+  return CONTENT_TYPE_MAP[ext]
+    ?? 'application/octet-stream';
 }

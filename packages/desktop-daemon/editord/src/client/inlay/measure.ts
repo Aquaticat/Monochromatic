@@ -49,7 +49,8 @@ const cache: {
  * ```
  */
 export function measureSpaceRatio({ editor, }: { readonly editor: HTMLElement; },): number {
-  if (cache.ratio !== null)
+  if (cache.ratio
+    !== null)
     return cache.ratio;
 
   /**
@@ -73,13 +74,15 @@ export function measureSpaceRatio({ editor, }: { readonly editor: HTMLElement; }
   /**
    * Width of a single space rendered in JetBrains Mono at the editor's font size.
    */
-  const monoSpace = ctx.measureText(' ',).width;
+  const monoSpace = ctx.measureText(' ',)
+    .width;
 
   ctx.font = `${fontSize} 'Inter', sans-serif`;
   /**
    * Width of a single space rendered in Inter at the same font size, used as the divisor.
    */
-  const interSpace = ctx.measureText(' ',).width;
+  const interSpace = ctx.measureText(' ',)
+    .width;
 
   cache.ratio = interSpace > 0 ? monoSpace / interSpace : 1;
   cache.monoW = monoSpace;
@@ -129,23 +132,28 @@ export function interSpacesForGap({
   readonly fallbackCursor: number;
   readonly spaceRatio: number;
 },): number {
-  if ((cache.ctx === null) || (cache.monoW === 0) || (cache.interSpW === 0))
+  if ((cache.ctx === null) || (cache.monoW === 0)
+    || (cache.interSpW === 0))
     return Math.round((charPos - fallbackCursor) * spaceRatio,);
 
   /**
    * Pixel column the hint should land on, derived from the monospace character offset.
    */
-  const targetPx = charPos * cache.monoW;
+  const targetPx = charPos * cache
+    .monoW;
   /**
    * Actual pixel width the existing Inter-rendered row already occupies.
    */
-  const rowPx = cache.ctx.measureText(rowText,).width;
+  const rowPx = cache.ctx
+    .measureText(rowText,)
+    .width;
   /**
    * Number of Inter spaces that bridge the remaining gap; clamped at zero for short rows.
    */
   const gap = Math.max(
     0,
-    Math.round((targetPx - rowPx) / cache.interSpW,),
+    Math.round((targetPx - rowPx) / cache
+      .interSpW,),
   );
   return gap;
 }
@@ -165,7 +173,9 @@ export function interSpacesForGap({
  */
 export function measureInlayOffsets({ editor, }: { readonly editor: HTMLElement; },): void {
   for (const child of editor.children) {
-    if ((!(child instanceof HTMLElement)) || (child.dataset.inlay === undefined))
+    if ((!(child instanceof HTMLElement)) || (child.dataset
+      .inlay
+      === undefined))
       continue;
 
     /** Rendered height of the `::before` annotation; drives the line-number offset variable. */
@@ -175,7 +185,8 @@ export function measureInlayOffsets({ editor, }: { readonly editor: HTMLElement;
     )
       .height;
     if ((beforeHeight !== 'auto') && (beforeHeight !== '0px')) {
-      child.style.setProperty(
+      child.style
+        .setProperty(
         '--line-num-offset',
         beforeHeight,
       );

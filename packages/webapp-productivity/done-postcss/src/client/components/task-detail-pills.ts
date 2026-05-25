@@ -53,7 +53,8 @@ export function buildPillData(
   return [
     {
       field: 'tags',
-      text: tags.length > 0 ? `# ${tags.join(', ',)}` : '# ?',
+      text: tags.length
+        > 0 ? `# ${tags.join(', ',)}` : '# ?',
     },
     {
       field: 'tracked',
@@ -61,7 +62,8 @@ export function buildPillData(
     },
     {
       field: 'locations',
-      text: locations.length > 0
+      text: locations.length
+        > 0
         ? `where: ${locations.join(', ',)}`
         : 'where: ?',
     },
@@ -71,7 +73,8 @@ export function buildPillData(
     },
     {
       field: 'due',
-      text: `due: ${task.dueDate ?? '?'}`,
+      text: `due: ${task.dueDate
+        ?? '?'}`,
     },
     {
       field: 'complexity',
@@ -79,14 +82,19 @@ export function buildPillData(
     },
     {
       field: 'reminders',
-      text: task.reminders.length > 0
+      text: task.reminders
+        .length
+        > 0
         ? `reminders: ${task.reminders[0]}`
         : 'reminders: None',
     },
     {
       field: 'blockedBy',
-      text: task.blockedBy.length > 0
-        ? `blockedBy: ${String(task.blockedBy.length,)}`
+      text: task.blockedBy
+        .length
+        > 0
+        ? `blockedBy: ${String(task.blockedBy
+          .length,)}`
         : 'blockedBy: none',
     },
   ];
@@ -128,9 +136,9 @@ export function buildPillElements(
         text: pill.text,
       },);
       if (loading)
-        element.dataset['loading'] = '';
+        element.dataset.loading = '';
       else if (autofilled.has(pill.field,))
-        element.dataset['autofilled'] = '';
+        element.dataset.autofilled = '';
       return element;
     },
   );

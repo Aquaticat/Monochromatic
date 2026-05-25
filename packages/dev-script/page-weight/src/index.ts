@@ -79,7 +79,8 @@ function humanBytes(bytes: number,): string {
     let scaledValue = bytes;
     /** Working position in `BYTE_UNITS`; renamed to avoid clashing with the destructured `unitIndex`. */
     let scaledIndex = 0;
-    while ((scaledValue >= BYTES_PER_KIB) && (scaledIndex < (BYTE_UNITS.length - 1))) {
+    while ((scaledValue >= BYTES_PER_KIB) && (scaledIndex < (BYTE_UNITS.length
+      - 1))) {
       scaledValue /= BYTES_PER_KIB;
       scaledIndex += 1;
     }
@@ -96,7 +97,8 @@ function humanBytes(bytes: number,): string {
 //region Main
 
 /** Command-line arguments after `bun script.ts`. */
-const args = process.argv.slice(2,);
+const args = process.argv
+  .slice(2,);
 
 /** First positional argument: the dist directory to scan. */
 const [distArg,] = args;
@@ -114,7 +116,9 @@ const found = await readdir(
   '**/*.html',
   { cwd: root, },
 );
-if (found.files.length === 0) {
+if (found.files
+  .length
+  === 0) {
   console.error(`no HTML files under ${root}`,);
   process.exitCode = EXIT_USAGE;
   throw new Error('empty page set',);
@@ -122,7 +126,8 @@ if (found.files.length === 0) {
 
 /** Weighed-page results, computed concurrently. */
 const weights: PageWeight[] = await Promise.all(
-  found.files.map(function weigh(htmlPath: string,): Promise<PageWeight> {
+  found.files
+    .map(function weigh(htmlPath: string,): Promise<PageWeight> {
     return weighPage({
       htmlPath,
       root,
@@ -135,7 +140,9 @@ const sorted = weights.toSorted(function byTotalDescending(
   a: PageWeight,
   b: PageWeight,
 ): number {
-  return b.totalBytes - a.totalBytes;
+  return b.totalBytes
+    - a
+    .totalBytes;
 },);
 
 /** Aggregate min/max/mean/median summary over page totals. */
@@ -149,21 +156,24 @@ const stats = summarize(totals,);
 const pageColumnWidth = Math.max(
   'page'.length,
   ...sorted.map(function pageLength(entry: PageWeight,): number {
-    return entry.page.length;
+    return entry.page
+      .length;
   },),
 );
 /** Column width for the bytes column. */
 const bytesColumnWidth = Math.max(
   'bytes'.length,
   ...sorted.map(function bytesLength(entry: PageWeight,): number {
-    return humanBytes(entry.totalBytes,).length;
+    return humanBytes(entry.totalBytes,)
+      .length;
   },),
 );
 /** Column width for the resource count. */
 const resourcesColumnWidth = Math.max(
   'assets'.length,
   ...sorted.map(function resourcesLength(entry: PageWeight,): number {
-    return String(entry.resourceCount,).length;
+    return String(entry.resourceCount,)
+      .length;
   },),
 );
 
@@ -178,9 +188,12 @@ console.log(header,);
 for (const entry of sorted) {
   /** Pre-padded report row joined for terminal-aligned columns. */
   const row = [
-    entry.page.padEnd(pageColumnWidth,),
-    humanBytes(entry.totalBytes,).padStart(bytesColumnWidth,),
-    String(entry.resourceCount,).padStart(resourcesColumnWidth,),
+    entry.page
+      .padEnd(pageColumnWidth,),
+    humanBytes(entry.totalBytes,)
+      .padStart(bytesColumnWidth,),
+    String(entry.resourceCount,)
+      .padStart(resourcesColumnWidth,),
   ]
     .join('  ',);
   console.log(row,);
@@ -199,7 +212,8 @@ for (const entry of weights) {
   for (const ref of entry.missing)
     missingAll.add(ref,);
 }
-if (missingAll.size > 0) {
+if (missingAll.size
+  > 0) {
   console.error('',);
   console.error(
     `warn: ${missingAll.size} unresolved references (dead links or external)`,

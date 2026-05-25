@@ -19,8 +19,10 @@ import type { Span, } from '@oxlint/plugins';
 function unwrapMethodDefinition(
   node: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
-  if ((node.type === 'MethodDefinition')
-    || (node.type === 'TSAbstractMethodDefinition'))
+  if ((node.type
+    === 'MethodDefinition')
+    || (node.type
+      === 'TSAbstractMethodDefinition'))
   {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return node.value as Record<string, unknown> | undefined;
@@ -43,7 +45,8 @@ function extractRawParams(
   if (target === undefined)
     return [];
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-  return target.params as Record<string, unknown>[] | undefined ?? [];
+  return target.params as Record<string, unknown>[] | undefined
+    ?? [];
 }
 
 /**
@@ -64,11 +67,13 @@ function collectDestructuredNames({
   pattern,
   names,
 }: CollectDestructuredNamesParams,): void {
-  if (pattern.type === 'Identifier') {
+  if (pattern.type
+    === 'Identifier') {
     // Named params are handled by extractParamNames, skip here
     return;
   }
-  if (pattern.type === 'AssignmentPattern') {
+  if (pattern.type
+    === 'AssignmentPattern') {
     // `{ a = defaultValue }`: unwrap to the left side
     /** Binding side of `name = default`; recurse on this to collect the actual names. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
@@ -79,7 +84,8 @@ function collectDestructuredNames({
     },);
     return;
   }
-  if (pattern.type === 'RestElement') {
+  if (pattern.type
+    === 'RestElement') {
     // `...rest` inside destructuring
     /** Inner binding pattern of `...rest`; recurse on this to extract its names. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
@@ -90,7 +96,8 @@ function collectDestructuredNames({
     },);
     return;
   }
-  if (pattern.type === 'TSParameterProperty') {
+  if (pattern.type
+    === 'TSParameterProperty') {
     /** Inner parameter of a TS constructor `public/private` param; recurse on this. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const parameter = pattern.parameter as Record<string, unknown>;
@@ -100,14 +107,16 @@ function collectDestructuredNames({
     },);
     return;
   }
-  if (pattern.type === 'ObjectPattern') {
+  if (pattern.type
+    === 'ObjectPattern') {
     /** Property list of the `{ a, b }` pattern; iterated to collect named keys. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const properties = pattern.properties as Record<string, unknown>[] | undefined;
     if (properties === undefined)
       return;
     for (const prop of properties) {
-      if (prop.type === 'RestElement') {
+      if (prop.type
+        === 'RestElement') {
         // `{ ...rest }` inside object destructuring
         collectDestructuredNames({
           pattern: prop,
@@ -119,7 +128,8 @@ function collectDestructuredNames({
         /** Key node of a destructured property; only `Identifier` keys contribute a name. */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const key = prop.key as Record<string, unknown> | undefined;
-        if ((key !== undefined) && (key.type === 'Identifier')) {
+        if ((key !== undefined) && (key.type
+          === 'Identifier')) {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           names.add(key.name as string,);
         }
@@ -127,7 +137,8 @@ function collectDestructuredNames({
     }
     return;
   }
-  if (pattern.type === 'ArrayPattern') {
+  if (pattern.type
+    === 'ArrayPattern') {
     // Array destructuring: `[a, b]`: elements are binding patterns
     /** Slot list of `[a, , c]`; `null` slots represent holes that contribute no name. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped

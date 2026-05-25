@@ -31,7 +31,7 @@ const server = createMcpServer({
         description:
           'Returns diagnostics from both LSP and oxlint CLI across all buffers in every running Neovim instance, '
           + 'merged and deduplicated, grouped by file path. '
-          + 'Use when you need a project-wide view of errors and warnings.',
+            + 'Use when you need a project-wide view of errors and warnings.',
         handler: handleGetAllDiagnostics,
       },
     },),

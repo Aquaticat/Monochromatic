@@ -15,7 +15,8 @@ import {
 const COLOR_PICKER_SIZE = 2;
 
 /** Stroke width slider track length */
-const SLIDER_INLINE_SIZE = 2 + 2 + 2;
+const SLIDER_INLINE_SIZE = 2 + 2
+  + 2;
 
 /**
  * Generates CSS rules for the export group and draw settings controls.
@@ -74,8 +75,10 @@ export function renderToolbarControlStyles(): string[] {
       decls: {
         'inline-size': cssRem(COLOR_PICKER_SIZE,),
         'block-size': cssRem(COLOR_PICKER_SIZE,),
-        'padding-block': cssRem(1 / (2 * 2 * 2),),
-        'padding-inline': cssRem(1 / (2 * 2 * 2),),
+        'padding-block': cssRem(1 / (2 * 2
+          * 2),),
+        'padding-inline': cssRem(1 / (2 * 2
+          * 2),),
       },
     },),
 

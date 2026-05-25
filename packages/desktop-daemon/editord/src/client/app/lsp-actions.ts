@@ -57,7 +57,8 @@ export async function formatDocument({
       type: 'format',
       path,
     },);
-    if (edits.length > 0)
+    if (edits.length
+      > 0)
       editorPane.applyTextEdits(edits,);
   }
   catch (error) {

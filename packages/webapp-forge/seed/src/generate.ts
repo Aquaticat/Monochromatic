@@ -124,16 +124,21 @@ export async function seedUsers(row: {
   count: number;
   baseTimestamp: number;
 },): Promise<number> {
-  for (let i = 0; i < row.count; i += 1) {
+  for (let i = 0; i < row
+    .count; i += 1) {
     // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statement is not safe for concurrent re-execution
     await insertUser({
       id: deterministicId({
         prefix: 'user',
-        seed: row.seed + i,
+        seed: row.seed
+          + i,
       },),
-      login: `user-${String(row.seed + i,)}`,
-      email: `user-${String(row.seed + i,)}@forge.test`,
-      createdAt: row.baseTimestamp + i,
+      login: `user-${String(row.seed
+        + i,)}`,
+      email: `user-${String(row.seed
+        + i,)}@forge.test`,
+      createdAt: row.baseTimestamp
+        + i,
     },);
   }
   return row.count;
@@ -160,29 +165,35 @@ export async function seedRepos(row: {
 },): Promise<string[]> {
   /** Collected repo ids returned to the caller for downstream seeding. */
   const repoIds: string[] = [];
-  for (let i = 0; i < row.repoCount; i += 1) {
+  for (let i = 0; i < row
+    .repoCount; i += 1) {
     /** Deterministic user-table index used to pick the repo owner. */
     const ownerIndex = rngInt({
-      seed: row.seed + i,
+      seed: row.seed
+        + i,
       lo: 0,
       hi: row.userCount,
     },);
     /** Composed owner id mapped through the user namespace offset. */
     const ownerId = deterministicId({
       prefix: 'user',
-      seed: row.userBaseSeed + ownerIndex,
+      seed: row.userBaseSeed
+        + ownerIndex,
     },);
     /** Composed repo id reused by the insert and the returned id list. */
     const repoId = deterministicId({
       prefix: 'repo',
-      seed: row.seed + i,
+      seed: row.seed
+        + i,
     },);
     // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statement is not safe for concurrent re-execution
     await insertRepo({
       id: repoId,
       ownerId,
-      name: `repo-${String(row.seed + i,)}`,
-      createdAt: row.baseTimestamp + i,
+      name: `repo-${String(row.seed
+        + i,)}`,
+      createdAt: row.baseTimestamp
+        + i,
     },);
     repoIds.push(repoId,);
   }
@@ -223,7 +234,8 @@ export async function seedLabels(row: {
       /** Composed label id reused by the insert and the per-repo list. */
       const labelId = deterministicId({
         prefix: `label-${repoId}`,
-        seed: row.seed + index,
+        seed: row.seed
+          + index,
       },);
       // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statement is not safe for concurrent re-execution
       await insertLabel({
@@ -245,7 +257,8 @@ export async function seedLabels(row: {
       sum,
       labels,
     ) {
-      return sum + labels.length;
+      return sum + labels
+        .length;
     },
     0,
   );
@@ -289,7 +302,8 @@ export async function seedIssuesForRepo(row: {
   /** Long-tail-distributed issue count drawn from the seed before any cap is applied. */
   const requested = sampleIssueCount(row.seed,);
   /** Final per-repo issue count, capped by the optional maxIssues argument when set. */
-  const issueCount = row.maxIssues === undefined
+  const issueCount = row.maxIssues
+    === undefined
     ? requested
     : Math.min(
       requested,
@@ -301,7 +315,8 @@ export async function seedIssuesForRepo(row: {
   const commentCounts: number[] = [];
   for (let i = 0; i < issueCount; i += 1) {
     /** Per-issue sub-seed multiplied to spread issues across the seed space. */
-    const issueSeed = (row.seed * ISSUE_SEED_MULTIPLIER) + i;
+    const issueSeed = (row.seed
+      * ISSUE_SEED_MULTIPLIER) + i;
     /** Deterministic user-table index used to pick the issue author. */
     const authorIndex = rngInt({
       seed: issueSeed,
@@ -311,7 +326,8 @@ export async function seedIssuesForRepo(row: {
     /** Composed author id mapped through the user namespace offset. */
     const authorId = deterministicId({
       prefix: 'user',
-      seed: row.userBaseSeed + authorIndex,
+      seed: row.userBaseSeed
+        + authorIndex,
     },);
     /** Composed issue id reused by the insert, the label call, and the returned id list. */
     const issueId = deterministicId({
@@ -339,11 +355,14 @@ export async function seedIssuesForRepo(row: {
       authorId,
       title,
       body,
-      createdAt: row.baseTimestamp + i,
+      createdAt: row.baseTimestamp
+        + i,
     },);
     issueIds.push(issueId,);
     // Optionally pin a label.
-    if (row.labelIds.length > 0) {
+    if (row.labelIds
+      .length
+      > 0) {
       /** Optional label id picked from the per-repo palette; null/undefined skips the insert. */
       const labelId = rngPick({
         seed: issueSeed + ISSUE_TO_LABEL_SEED_OFFSET,
@@ -354,7 +373,8 @@ export async function seedIssuesForRepo(row: {
         await labelIssueWithEvent({
           issueId,
           labelId,
-          createdAt: row.baseTimestamp + i,
+          createdAt: row.baseTimestamp
+            + i,
         },);
       }
     }
@@ -374,7 +394,8 @@ export async function seedIssuesForRepo(row: {
       /** Composed comment author id mapped through the user namespace offset. */
       const commentAuthorId = deterministicId({
         prefix: 'user',
-        seed: row.userBaseSeed + commentAuthorIndex,
+        seed: row.userBaseSeed
+          + commentAuthorIndex,
       },);
       /** Composed comment id reused only by the insert. */
       const commentId = deterministicId({
@@ -396,7 +417,9 @@ export async function seedIssuesForRepo(row: {
         issueId,
         authorId: commentAuthorId,
         body: commentBody,
-        createdAt: row.baseTimestamp + i + c,
+        createdAt: row.baseTimestamp
+          + i
+          + c,
       },);
     }
     commentCounts.push(commentCount,);

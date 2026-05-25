@@ -90,11 +90,13 @@ export class ZipWriter {
     content: string | Uint8Array,
   ): void {
     validatePath(path,);
-    if (this.#entries.has(path,))
+    if (this.#entries
+      .has(path,))
       throw new Error(`zip-writer: duplicate entry at \`${path}\``,);
     /** UTF-8 path encoding shared between the size check and the stored entry. */
     const nameBytes = TEXT_ENCODER.encode(path,);
-    if (nameBytes.length > MAX_UINT16) {
+    if (nameBytes.length
+      > MAX_UINT16) {
       throw new Error(
         `zip-writer: path too long when UTF-8 encoded (${nameBytes.length} bytes, max ${MAX_UINT16}): ${path}`,
       );
@@ -103,12 +105,14 @@ export class ZipWriter {
     const data = ((typeof content) === 'string')
       ? TEXT_ENCODER.encode(content,)
       : content;
-    if (data.length > MAX_UINT32) {
+    if (data.length
+      > MAX_UINT32) {
       throw new Error(
         `zip-writer: file too large for legacy ZIP (${data.length} bytes, max ${MAX_UINT32}): ${path}`,
       );
     }
-    this.#entries.set(
+    this.#entries
+      .set(
       path,
       {
         nameBytes,
@@ -125,7 +129,8 @@ export class ZipWriter {
    * @returns Count of entries added so far
    */
   get size(): number {
-    return this.#entries.size;
+    return this.#entries
+      .size;
   }
 
   /**

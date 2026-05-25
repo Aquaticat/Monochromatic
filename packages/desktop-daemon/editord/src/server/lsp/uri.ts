@@ -25,7 +25,8 @@ import {
  * ```
  */
 export function pathToUri({ path, }: { readonly path: string; },): string {
-  return pathToFileURL(path,).href;
+  return pathToFileURL(path,)
+    .href;
 }
 
 /**

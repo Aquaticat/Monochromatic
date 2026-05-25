@@ -73,7 +73,8 @@ function isInsideStringLiteral({
       continue;
     }
     if (active === null) {
-      if ((ch === '"') || (ch === "'") || (ch === '`'))
+      if ((ch === '"') || (ch === "'")
+        || (ch === '`'))
         active = ch;
     }
     else if (ch === active) {
@@ -138,14 +139,19 @@ export async function requestCompletions(
     if (responsePos === null)
       return;
     if (
-      (responsePos.line !== requestPos.line)
-      || (responsePos.character !== requestPos.character)
+      (responsePos.line
+        !== requestPos
+        .line)
+      || (responsePos.character
+        !== requestPos
+        .character)
     ) {
       return;
     }
     /** Caret rectangle in viewport coordinates; popup is anchored to its bottom-left corner. */
     const rect = editorPane.getCursorRect();
-    if ((items.length === 0) || (rect === null))
+    if ((items.length
+      === 0) || (rect === null))
       return;
     completionPopup.show({
       items,
@@ -186,7 +192,8 @@ export function wireCompletionTrigger({
     function handleDotKey(event,) {
       /** Narrowed view of the event so `.key` is reachable without `unknown` checks. */
       const ke = event as KeyboardEvent;
-      if (ke.key !== '.')
+      if (ke.key
+        !== '.')
         return;
       globalThis.setTimeout(
         function deferredTrigger() {
@@ -206,7 +213,8 @@ export function wireCompletionTrigger({
           if (lineText === null)
             return;
           /** The dot has already been inserted; check the position before it. */
-          const dotIndex = pos.character - 1;
+          const dotIndex = pos.character
+            - 1;
           if (dotIndex < 0)
             return;
           if (isInsideStringLiteral({
@@ -257,7 +265,11 @@ export function wireCompletionDismiss({
       const pos = editorPane.getCursorPosition();
       if (pos === null)
         return;
-      if ((pos.line !== shownAt.line) || (pos.character !== shownAt.character))
+      if ((pos.line
+        !== shownAt
+        .line) || (pos.character
+        !== shownAt
+        .character))
         completionPopup.hide();
     },
   );

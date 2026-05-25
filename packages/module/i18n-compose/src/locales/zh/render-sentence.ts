@@ -128,7 +128,8 @@ export function makeChineseSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.declarative'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Subject surface used in the leading position. */
     const subj = subjectSurface({
       ref: sentence.subject,
@@ -136,21 +137,25 @@ export function makeChineseSentenceRenderer<
     },);
     /** Tense-marked verb surface. */
     const verb = verbSurfaceForTense({
-      entry: verbs[sentence.predicate.verb],
+      entry: verbs[sentence.predicate
+        .verb],
       tense,
     },);
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body before terminator. */
     const body = joinTokens([
       subj,
@@ -173,7 +178,8 @@ export function makeChineseSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.question.yesNo'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Subject surface. */
     const subj = subjectSurface({
       ref: sentence.subject,
@@ -181,21 +187,25 @@ export function makeChineseSentenceRenderer<
     },);
     /** Tense-marked verb surface. */
     const verb = verbSurfaceForTense({
-      entry: verbs[sentence.predicate.verb],
+      entry: verbs[sentence.predicate
+        .verb],
       tense,
     },);
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body before particle and terminator. */
     const body = joinTokens([
       subj,
@@ -218,24 +228,29 @@ export function makeChineseSentenceRenderer<
     sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.subject'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Tense-marked verb surface. */
     const verb = verbSurfaceForTense({
-      entry: verbs[sentence.predicate.verb],
+      entry: verbs[sentence.predicate
+        .verb],
       tense,
     },);
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body with `谁` at head. */
     const body = joinTokens([
       '谁',
@@ -258,7 +273,8 @@ export function makeChineseSentenceRenderer<
     sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.object'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Subject surface. */
     const subj = subjectSurface({
       ref: sentence.subject,
@@ -292,7 +308,8 @@ export function makeChineseSentenceRenderer<
     sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.adverbial'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Subject surface. */
     const subj = subjectSurface({
       ref: sentence.subject,
@@ -300,21 +317,25 @@ export function makeChineseSentenceRenderer<
     },);
     /** Tense-marked verb surface. */
     const verb = verbSurfaceForTense({
-      entry: verbs[sentence.predicate.verb],
+      entry: verbs[sentence.predicate
+        .verb],
       tense,
     },);
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Chinese wh-word matched to the AST relation. */
     const wh = chineseWhWord(sentence.wh,);
     /** Sentence body with the wh-word in the adverbial slot. */
@@ -337,9 +358,11 @@ export function makeChineseSentenceRenderer<
    * @returns rendered surface
    */
   function renderWh(sentence: WhQuestion<S, V, N>,): string {
-    if (sentence.kind === 'sentence.question.wh.subject')
+    if (sentence.kind
+      === 'sentence.question.wh.subject')
       return renderWhSubject(sentence,);
-    if (sentence.kind === 'sentence.question.wh.object')
+    if (sentence.kind
+      === 'sentence.question.wh.object')
       return renderWhObject(sentence,);
     return renderWhAdverbial(sentence,);
   }
@@ -355,19 +378,23 @@ export function makeChineseSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.imperative'; }>,
   ): string {
     /** Imperative renders the bare verb surface. */
-    const verb = verbs[sentence.predicate.verb].surface;
+    const verb = verbs[sentence.predicate.verb]
+      .surface;
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body before terminator. */
     const body = joinTokens([
       adverbials,
@@ -376,7 +403,8 @@ export function makeChineseSentenceRenderer<
       complement,
     ],);
     /** Chinese imperative terminator: `！` for emphasis, otherwise `。`. */
-    const terminator = sentence.terminator === '!' ? '！' : '。';
+    const terminator = sentence.terminator
+      === '!' ? '！' : '。';
     return `${body}${terminator}`;
   }
 
@@ -388,11 +416,14 @@ export function makeChineseSentenceRenderer<
    * @returns rendered surface
    */
   function renderSentence(sentence: Sentence<S, V, N>,): string {
-    if (sentence.kind === 'sentence.declarative')
+    if (sentence.kind
+      === 'sentence.declarative')
       return renderDeclarative(sentence,);
-    if (sentence.kind === 'sentence.question.yesNo')
+    if (sentence.kind
+      === 'sentence.question.yesNo')
       return renderYesNo(sentence,);
-    if (sentence.kind === 'sentence.imperative')
+    if (sentence.kind
+      === 'sentence.imperative')
       return renderImperative(sentence,);
     return renderWh(sentence,);
   }

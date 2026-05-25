@@ -68,7 +68,9 @@ export async function parseDesktopEntry(
 
     if (line.startsWith('[',)) {
       inDesktopEntry = line === '[Desktop Entry]';
-      if ((!inDesktopEntry) && (result.exec.length > 0))
+      if ((!inDesktopEntry) && (result.exec
+        .length
+        > 0))
         break;
       continue;
     }
@@ -89,7 +91,8 @@ export async function parseDesktopEntry(
       )
       .trim();
     /** Payload after `=`, trimmed before applyKey stores it. */
-    const value = line.slice(eqIdx + 1,).trim();
+    const value = line.slice(eqIdx + 1,)
+      .trim();
 
     Object.assign(
       result,

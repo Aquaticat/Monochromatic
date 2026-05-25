@@ -37,7 +37,8 @@ function nounPlural(
     readonly count: number;
   },
 ): string {
-  if (entry.plural === undefined)
+  if (entry.plural
+    === undefined)
     return `${entry.surface}s`;
   if ((typeof entry.plural) === 'string')
     return entry.plural;
@@ -105,8 +106,10 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
    * @returns possessive surface to drop into the rendered phrase
    */
   function renderPossessor(p: Possessor<S>,): string {
-    if (p.kind === 'possessor.subject')
-      return subjects[p.subject].possessive;
+    if (p.kind
+      === 'possessor.subject')
+      return subjects[p.subject]
+        .possessive;
     return `${p.text}'s`;
   }
 
@@ -118,9 +121,12 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
    * @returns rendered surface
    */
   function renderNounPhrase(phrase: NounPhrase<S, N>,): string {
-    if (phrase.kind === 'noun.bare')
-      return nouns[phrase.noun].surface;
-    if (phrase.kind === 'noun.counted') {
+    if (phrase.kind
+      === 'noun.bare')
+      return nouns[phrase.noun]
+        .surface;
+    if (phrase.kind
+      === 'noun.counted') {
       /** Resolved noun entry validated before numeric rendering. */
       const entry = nouns[phrase.noun];
       assertCountableNoun({
@@ -134,18 +140,32 @@ export function makeEnglishNounPhraseRenderer<S extends string, N extends string
       },);
       return `${String(phrase.count,)} ${head}`;
     }
-    if (phrase.kind === 'noun.definite') {
+    if (phrase.kind
+      === 'noun.definite') {
       /** Definite-article singular form, defaults to `the` when the entry omits it. */
-      const article = nouns[phrase.noun].articles?.definite?.singular ?? 'the';
-      return `${article} ${nouns[phrase.noun].surface}`;
+      const article = nouns[phrase.noun]
+        .articles
+        ?.definite
+        ?.singular
+        ?? 'the';
+      return `${article} ${nouns[phrase.noun]
+        .surface}`;
     }
-    if (phrase.kind === 'noun.indefinite') {
+    if (phrase.kind
+      === 'noun.indefinite') {
       /** Indefinite-article singular form, defaults to `a` (no a/an inference). */
-      const article = nouns[phrase.noun].articles?.indefinite?.singular ?? 'a';
-      return `${article} ${nouns[phrase.noun].surface}`;
+      const article = nouns[phrase.noun]
+        .articles
+        ?.indefinite
+        ?.singular
+        ?? 'a';
+      return `${article} ${nouns[phrase.noun]
+        .surface}`;
     }
-    if (phrase.kind === 'noun.possessed')
-      return `${renderPossessor(phrase.possessor,)} ${nouns[phrase.noun].surface}`;
+    if (phrase.kind
+      === 'noun.possessed')
+      return `${renderPossessor(phrase.possessor,)} ${nouns[phrase.noun]
+        .surface}`;
     return phrase.text;
   }
 

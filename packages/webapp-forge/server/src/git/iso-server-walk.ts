@@ -87,14 +87,20 @@ async function markReachable(row: {
 },): Promise<void> {
   /** BFS frontier; pop one, push its parents. */
   const queue: string[] = [row.oid,];
-  while (queue.length > 0) {
+  while (queue.length
+    > 0) {
     /** Current frontier OID; the empty-queue branch above guards `undefined`. */
     const oid = queue.shift();
     if (oid === undefined)
       break;
-    if (row.bag.has(oid,) || row.excluded.has(oid,))
+    if (row.bag
+      .has(oid,)
+      || row
+      .excluded
+      .has(oid,))
       continue;
-    row.bag.add(oid,);
+    row.bag
+      .add(oid,);
     /** Resolved commit object, or `undefined` when the OID is a tag/tree/blob. */
     let commit: Awaited<ReturnType<typeof git.readCommit>> | undefined = undefined;
     try {
@@ -109,12 +115,14 @@ async function markReachable(row: {
       // Not a commit; assume it's already covered as a tree or blob via earlier walk.
       continue;
     }
-    for (const parent of commit.commit.parent)
+    for (const parent of commit.commit
+      .parent)
       queue.push(parent,);
     // oxlint-disable-next-line no-await-in-loop -- single tree walk per commit; cheaper than parallelizing
     await markTree({
       gitdir: row.gitdir,
-      oid: commit.commit.tree,
+      oid: commit.commit
+        .tree,
       bag: row.bag,
       excluded: row.excluded,
     },);
@@ -139,9 +147,14 @@ async function markTree(row: {
   readonly bag: Set<string>;
   readonly excluded: ReadonlySet<string>;
 },): Promise<void> {
-  if (row.bag.has(row.oid,) || row.excluded.has(row.oid,))
+  if (row.bag
+    .has(row.oid,)
+    || row
+    .excluded
+    .has(row.oid,))
     return;
-  row.bag.add(row.oid,);
+  row.bag
+    .add(row.oid,);
   /** Resolved tree object; entries drive the per-child branch below. */
   const tree = await git.readTree({
     fs: nodeFs,
@@ -149,11 +162,16 @@ async function markTree(row: {
     oid: row.oid,
   },);
   for (const entry of tree.tree) {
-    if (entry.type === 'blob') {
-      if ((!row.bag.has(entry.oid,)) && (!row.excluded.has(entry.oid,)))
-        row.bag.add(entry.oid,);
+    if (entry.type
+      === 'blob') {
+      if ((!row.bag
+        .has(entry.oid,)) && (!row.excluded
+        .has(entry.oid,)))
+        row.bag
+          .add(entry.oid,);
     }
-    else if (entry.type === 'tree') {
+    else if (entry.type
+      === 'tree') {
       // oxlint-disable-next-line no-await-in-loop -- recursion via shared state
       await markTree({
         gitdir: row.gitdir,

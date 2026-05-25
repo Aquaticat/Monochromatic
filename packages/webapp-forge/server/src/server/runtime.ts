@@ -55,6 +55,7 @@ export function getEventCursor(): number {
  * ```
  */
 export function setEventCursor(eventId: number,): void {
-  if (eventId > eventCursor.lastProcessedEventId)
+  if (eventId > eventCursor
+    .lastProcessedEventId)
     eventCursor.lastProcessedEventId = eventId;
 }

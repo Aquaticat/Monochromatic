@@ -119,7 +119,8 @@ export function createNewTaskDialog(): NewTaskDialog {
           if (action === 'save') {
             /** Title with leading/trailing whitespace stripped; empty trim aborts the save. */
             const trimmedTitle = title.trim();
-            if (trimmedTitle.length === 0)
+            if (trimmedTitle.length
+              === 0)
               return;
 
             /** Current metadata snapshot from the detail component, included in the POST body. */
@@ -130,7 +131,8 @@ export function createNewTaskDialog(): NewTaskDialog {
                 method: 'POST',
                 body: JSON.stringify({
                   title: trimmedTitle,
-                  description: description.length === 0 ? null : description,
+                  description: description.length
+                    === 0 ? null : description,
                   tags: metadata.tags,
                   locations: metadata.locations,
                   priority: metadata.priority,
@@ -138,7 +140,8 @@ export function createNewTaskDialog(): NewTaskDialog {
                 },),
               },
             },);
-            globalThis.location.reload();
+            globalThis.location
+              .reload();
           }
         }
         catch (error: unknown) {
@@ -165,13 +168,14 @@ export function createNewTaskDialog(): NewTaskDialog {
     fab.hidden = true;
 
     // Restart the expand animation by toggling the data attribute
-    delete panel.dataset['animating'];
+    delete panel.dataset.animating;
     panel.showPopover();
     requestAnimationFrame(function focusTitleInput() {
-      panel.dataset['animating'] = '';
+      panel.dataset.animating = '';
       /* oxlint-disable typescript/no-unsafe-type-assertion -- shadowRoot querySelector returns the input we created */
       /** Title input from inside the detail's shadow root; focused after the expand frame. */
-      const titleInput = detail.shadowRoot?.querySelector<HTMLInputElement>(
+      const titleInput = detail.shadowRoot
+        ?.querySelector<HTMLInputElement>(
         '.title-input',
       ) as HTMLInputElement | null;
       /* oxlint-enable typescript/no-unsafe-type-assertion */

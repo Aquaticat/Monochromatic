@@ -56,9 +56,11 @@ function resolveDatabasePath(): string {
   /** `--db=PATH` CLI argument when supplied; highest priority source. */
   const argumentPath = getArgumentValue('db',);
   /** `DB_PATH` environment variable; second priority source. */
-  const environmentPath = process.env.DB_PATH;
+  const environmentPath = process.env
+    .DB_PATH;
   /** Selected raw path; falls back to the compile-time default. */
-  const rawPath = argumentPath ?? environmentPath ?? DEFAULT_DATABASE_PATH;
+  const rawPath = argumentPath ?? environmentPath
+    ?? DEFAULT_DATABASE_PATH;
   return normalizeDatabasePath(rawPath,);
 }
 
@@ -123,7 +125,9 @@ const reposSchemaRow = await reposSchemaStmt.get(
 
 if (
   (reposSchemaRow === undefined)
-  || (reposSchemaRow.s.includes('REFERENCES users',))
+  || (reposSchemaRow
+    .s
+    .includes('REFERENCES users',))
 ) {
   await db.exec(migration0004,);
 }
@@ -157,7 +161,8 @@ export async function run(row: {
   /** Prepared statement for the one-shot execution. */
   const stmt = db.prepare(row.sql,);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- libSQL typed result
-  return await stmt.run(...(row.params ?? []),) as {
+  return await stmt.run(...(row.params
+    ?? []),) as {
     changes: number;
     lastInsertRowid: number;
   };
@@ -188,7 +193,8 @@ export async function get<T = Record<string, unknown>,>(row: {
   const stmt = db.prepare(row.sql,);
   /* oxlint-disable typescript/no-unsafe-assignment -- libSQL returns any */
   /** First row returned by the statement; undefined when no rows match. */
-  const value = await stmt.get(...(row.params ?? []),);
+  const value = await stmt.get(...(row.params
+    ?? []),);
   /* oxlint-enable typescript/no-unsafe-assignment */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- libSQL typed row
   return ((value === undefined) || (value === null)) ? undefined : value as T;
@@ -218,5 +224,6 @@ export async function all<T = Record<string, unknown>,>(row: {
   /** Prepared statement for the multi-row fetch. */
   const stmt = db.prepare(row.sql,);
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- libSQL typed rows
-  return await stmt.all(...(row.params ?? []),) as T[];
+  return await stmt.all(...(row.params
+    ?? []),) as T[];
 }

@@ -90,8 +90,11 @@ function resolvePath(
 ): string {
   if (filePath.startsWith('~',)) {
     return nodePath.resolve(
-      process.env.HOME ?? '/home',
-      filePath.slice(1,).startsWith('/',)
+      process.env
+        .HOME
+        ?? '/home',
+      filePath.slice(1,)
+        .startsWith('/',)
         ? filePath.slice(2,)
         : filePath.slice(1,),
     );
@@ -124,7 +127,8 @@ function isUnder(
 ): boolean {
   /** Trailing slash prevents `/foo` from matching `/foobar` via `startsWith`. */
   const norm = dir.endsWith('/',) ? dir : `${dir}/`;
-  return (resolved === dir) || resolved.startsWith(norm,);
+  return (resolved === dir) || resolved
+    .startsWith(norm,);
 }
 
 /**

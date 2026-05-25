@@ -62,7 +62,9 @@ function findEnclosingLine(start: Node,): HTMLElement | null {
   while (runner !== null) {
     if (
       (runner instanceof HTMLElement)
-      && runner.classList.contains('ce-line',)
+      && runner
+        .classList
+        .contains('ce-line',)
     ) {
       return runner;
     }
@@ -113,7 +115,9 @@ export function mountSelection(
       return null;
     /** Parsed line index from the enclosing element's `data-line` attribute. */
     const lineIndex = Number.parseInt(
-      line.dataset.line ?? '',
+      line.dataset
+        .line
+        ?? '',
       10,
     );
     if (Number.isNaN(lineIndex,))
@@ -124,7 +128,8 @@ export function mountSelection(
     // textContent matches the buffer slice the viewport rendered.
     /** Materialised line list so the walk can compare indices and break early. */
     const lines = [
-      ...input.surface.querySelectorAll<HTMLElement>('.ce-line',),
+      ...input.surface
+        .querySelectorAll<HTMLElement>('.ce-line',),
     ];
     /** Sum of preceding-line lengths plus newlines; runs over `lines` and stops at `lineIndex`. */
     const absolute = lines.reduce(
@@ -134,12 +139,17 @@ export function mountSelection(
       ) {
         /** Parsed line index of the candidate; comparison with `lineIndex` decides whether to stop. */
         const candidateIndex = Number.parseInt(
-          candidate.dataset.line ?? '',
+          candidate.dataset
+            .line
+            ?? '',
           10,
         );
-        if (Number.isNaN(candidateIndex,) || (candidateIndex >= lineIndex))
+        if (Number.isNaN(candidateIndex,)
+          || (candidateIndex >= lineIndex))
           return acc;
-        return acc + (candidate.textContent ?? '').length + 1;
+        return acc + (candidate.textContent ?? '')
+          .length
+          + 1;
       },
       0,
     );
@@ -169,13 +179,17 @@ export function mountSelection(
       function walk(node: Node,): void {
         if (foundTarget)
           return;
-        if (node === domInput.node) {
+        if (node === domInput
+          .node) {
           withinLine += domInput.offset;
           foundTarget = true;
           return;
         }
-        if (node.nodeType === Node.TEXT_NODE) {
-          withinLine += (node.textContent ?? '').length;
+        if (node.nodeType
+          === Node
+          .TEXT_NODE) {
+          withinLine += (node.textContent
+            ?? '').length;
           return;
         }
         for (const child of node.childNodes)
@@ -203,13 +217,15 @@ export function mountSelection(
   function refresh(): void {
     /** Browser-managed selection; null when no selection or no document scope. */
     const sel = document.getSelection();
-    if ((sel === null) || (sel.rangeCount === 0)) {
+    if ((sel === null) || (sel.rangeCount
+      === 0)) {
       cached = null;
       return;
     }
     /** First range; the editor uses single-range selections only. */
     const range = sel.getRangeAt(0,);
-    if (!input.surface.contains(range.startContainer,)) {
+    if (!input.surface
+      .contains(range.startContainer,)) {
       cached = null;
       return;
     }
@@ -261,7 +277,8 @@ export function mountSelection(
   } | null {
     /** Materialised line list so the walk can break out as soon as the target is bracketed. */
     const lines = [
-      ...input.surface.querySelectorAll<HTMLElement>('.ce-line',),
+      ...input.surface
+        .querySelectorAll<HTMLElement>('.ce-line',),
     ];
     /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor: `cursor` is the running buffer offset advanced by line-length + 1 per iteration and read inside the loop body to decide whether the target falls in the current line */
     /** Running buffer offset; advances by line length + 1 (newline) per iteration. */
@@ -269,16 +286,21 @@ export function mountSelection(
     /* oxlint-enable no-restricted-syntax/no-function-root-let */
     for (const line of lines) {
       /** Current line's character length, derived from its rendered text content. */
-      const lineLength = (line.textContent ?? '').length;
+      const lineLength = (line.textContent
+        ?? '').length;
       /** Buffer offset where this line ends (exclusive of trailing newline). */
       const lineEnd = cursor + lineLength;
-      if (target.offset <= lineEnd) {
+      if (target.offset
+        <= lineEnd) {
         /** First child as the preferred text node; falls back to the line element when missing. */
         const text = line.firstChild;
-        if ((text !== null) && (text.nodeType === Node.TEXT_NODE)) {
+        if ((text !== null) && (text.nodeType
+          === Node
+          .TEXT_NODE)) {
           return {
             node: text,
-            offset: target.offset - cursor,
+            offset: target.offset
+              - cursor,
           };
         }
         return {

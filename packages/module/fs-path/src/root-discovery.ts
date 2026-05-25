@@ -278,11 +278,14 @@ function resolveEmptyRootFilesystem(): RootFilesystem {
  * ```
  */
 export async function resolveRootFilesystem(): Promise<RootFilesystem> {
-  if (backendCache.fs !== undefined)
+  if (backendCache.fs
+    !== undefined)
     return backendCache.fs;
 
   // Node/Bun: process.versions.node is set.
-  if (((typeof process) !== 'undefined') && (process.versions?.node !== undefined)) {
+  if (((typeof process) !== 'undefined') && (process.versions
+    ?.node
+    !== undefined)) {
     backendCache.fs = await resolveNodeRootFilesystem();
     return backendCache.fs;
   }

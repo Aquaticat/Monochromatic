@@ -31,7 +31,8 @@ export class BinaryViewer extends HTMLElement {
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
-    this.#shadow.append(h({
+    this.#shadow
+      .append(h({
       tag: 'style',
       text: STYLES,
     },),);
@@ -54,7 +55,8 @@ export class BinaryViewer extends HTMLElement {
     showImage({
       shadow: this.#shadow,
       host: this,
-      clear: this.#clear.bind(this,),
+      clear: this.#clear
+        .bind(this,),
       url,
       mediaInfo,
     },);
@@ -77,7 +79,8 @@ export class BinaryViewer extends HTMLElement {
     showAudio({
       shadow: this.#shadow,
       host: this,
-      clear: this.#clear.bind(this,),
+      clear: this.#clear
+        .bind(this,),
       url,
       mediaInfo,
     },);
@@ -100,7 +103,8 @@ export class BinaryViewer extends HTMLElement {
     showVideo({
       shadow: this.#shadow,
       host: this,
-      clear: this.#clear.bind(this,),
+      clear: this.#clear
+        .bind(this,),
       url,
       mediaInfo,
     },);
@@ -113,23 +117,29 @@ export class BinaryViewer extends HTMLElement {
    */
   showHexDump({ content, }: { readonly content: string; },): void {
     this.#clear();
-    this.#shadow.append(createHexDumpContent({ content, },),);
-    this.style.display = 'flex';
+    this.#shadow
+      .append(createHexDumpContent({ content, },),);
+    this.style
+      .display = 'flex';
   }
 
   /** Hides the viewer and removes displayed content. */
   hide(): void {
     this.#clear();
-    this.style.display = 'none';
+    this.style
+      .display = 'none';
   }
 
   /** Removes all content nodes from the shadow root, keeping the style element. */
   #clear(): void {
     /** Captured `<style>` node so it can be re-attached after `replaceChildren()` wipes the shadow root. */
-    const style = this.#shadow.querySelector<HTMLStyleElement>('style',);
-    this.#shadow.replaceChildren();
+    const style = this.#shadow
+      .querySelector<HTMLStyleElement>('style',);
+    this.#shadow
+      .replaceChildren();
     if (style !== null)
-      this.#shadow.append(style,);
+      this.#shadow
+        .append(style,);
   }
 }
 

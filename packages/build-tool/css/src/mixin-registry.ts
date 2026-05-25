@@ -15,7 +15,8 @@ import type {
  * @returns Whether the node is an AtRule
  */
 function isAtRule(node: ChildNode,): node is AtRule {
-  return node.type === 'atrule';
+  return node.type
+    === 'atrule';
 }
 
 //endregion Type Guards
@@ -56,16 +57,19 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
       result,
       node,
     ) {
-      if (isAtRule(node,) && (node.name === 'apply')) {
+      if (isAtRule(node,)
+        && (node.name === 'apply')) {
         /** Trimmed at-rule parameter identifying which mixin to inline */
-        const mixinName = node.params.trim();
+        const mixinName = node.params
+          .trim();
         /** Stored body nodes for the referenced mixin */
         const mixinNodes = mixins.get(mixinName,);
 
         if (mixinNodes === undefined)
           throw new Error(`Unknown mixin referenced in nested @apply: ${mixinName}`,);
 
-        if (mixinNodes.length > 0) {
+        if (mixinNodes.length
+          > 0) {
           /** Recursively expanded clones of the mixin body */
           const expanded = expandApplyInNodes(
             mixinNodes.map(function cloneChild(childNode,) {
@@ -75,10 +79,12 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
           result.push(...expanded,);
         }
       }
-      else if (('nodes' in node) && Array.isArray(node.nodes,)) {
+      else if (('nodes' in node) && Array
+        .isArray(node.nodes,)) {
         /** Deep clone so mutations don't affect the original mixin registry */
         const cloned = node.clone();
-        cloned.nodes = expandApplyInNodes(node.nodes.map(function cloneChild(childNode,) {
+        cloned.nodes = expandApplyInNodes(node.nodes
+          .map(function cloneChild(childNode,) {
           return childNode.clone();
         },),);
         result.push(cloned,);

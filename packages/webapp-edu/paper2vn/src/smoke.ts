@@ -74,7 +74,8 @@ function requireEnv(name: string,): string {
  * any task in this package). Falls back to the unscoped
  * `OPENROUTER_API_KEY` so an ad-hoc one-off run still works.
  */
-const OPENROUTER_API_KEY = process.env.PAPER2VN_OPENROUTER_API_KEY
+const OPENROUTER_API_KEY = process.env
+  .PAPER2VN_OPENROUTER_API_KEY
   ?? requireEnv('OPENROUTER_API_KEY',);
 
 /**
@@ -90,7 +91,8 @@ const OPENROUTER_API_KEY = process.env.PAPER2VN_OPENROUTER_API_KEY
  * `PAPER2VN_OPENROUTER_MODEL`.
  */
 /** Raw env override for the OpenRouter model list, validated below before use. */
-const envOpenRouterModel = process.env.PAPER2VN_OPENROUTER_MODEL;
+const envOpenRouterModel = process.env
+  .PAPER2VN_OPENROUTER_MODEL;
 /**
  * OpenRouter models tried in order during the smoke run; the first that
  * returns a parseable response wins. Override the entire list with a
@@ -140,7 +142,8 @@ consistency criterion is noisy.
 /**
  * Raw env override for the paper body; falls back to {@link DEFAULT_PAPER_TEXT} when unset or empty.
  */
-const envSmokePaper = process.env.PAPER2VN_SMOKE_PAPER;
+const envSmokePaper = process.env
+  .PAPER2VN_SMOKE_PAPER;
 /** Paper body for the smoke run; env override takes precedence over the default. */
 const PAPER_TEXT = ((envSmokePaper !== undefined) && (envSmokePaper !== ''))
   ? envSmokePaper
@@ -229,14 +232,16 @@ async function runWithFallback(): Promise<{
       return {
         model,
         generation,
-        durationMs: Date.now() - t0,
+        durationMs: Date.now()
+          - t0,
       };
     }
     catch (err) {
       /** Normalised error message stashed for the eventual aggregate throw. */
       const message = err instanceof Error ? err.message : String(err,);
       console.error(
-        `[smoke] ${model} failed after ${Date.now() - t0}ms: ${message}`,
+        `[smoke] ${model} failed after ${Date.now()
+          - t0}ms: ${message}`,
       );
       errors.push(`${model}: ${message}`,);
     }
@@ -256,22 +261,27 @@ const {
 } = await runWithFallback();
 
 step(
-  `chapters generated in ${durationMs}ms via ${model}: title="${generation.title}" chapters=${generation.chapters.length}`,
+  `chapters generated in ${durationMs}ms via ${model}: title="${generation.title}" chapters=${generation.chapters
+    .length}`,
 );
 for (
   const [
     i,
     chapter,
-  ] of generation.chapters.entries()
+  ] of generation.chapters
+    .entries()
 ) {
   console.error(
     `[smoke]   chapter ${
       i + 1
-    }: title="${chapter.title}" beats=${chapter.dialogue.length}`,
+    }: title="${chapter.title}" beats=${chapter.dialogue
+      .length}`,
   );
 }
 
-if (generation.chapters.length === 0)
+if (generation.chapters
+  .length
+  === 0)
   throw new Error('smoke: model returned zero chapters',);
 
 //region Sanity-check the first beat
@@ -285,7 +295,9 @@ if (generation.chapters.length === 0)
 const firstChapter = nonNullishOrThrow(generation.chapters[0],);
 /** First dialogue beat of the first chapter, checked for non-empty text below. */
 const [firstBeat,] = firstChapter.dialogue;
-if ((firstBeat === undefined) || (firstBeat.text.trim() === '')) {
+if ((firstBeat === undefined) || (firstBeat.text
+  .trim()
+  === '')) {
   throw new Error(
     'smoke: first chapter has no usable dialogue beat',
   );
@@ -294,10 +306,13 @@ if ((firstBeat === undefined) || (firstBeat.text.trim() === '')) {
 /** Number of characters to log from the first beat as a smoke preview. */
 const FIRST_BEAT_PREVIEW_CHARS = 80;
 /** Total elapsed time for the smoke run, reported in the PASS log. */
-const tookMs = Date.now() - startedAt;
+const tookMs = Date.now()
+  - startedAt;
 console.error(
-  `[smoke] PASS in ${tookMs}ms (model: ${model}, chapters: ${generation.chapters.length}, first beat: "${
-    firstBeat.text.slice(
+  `[smoke] PASS in ${tookMs}ms (model: ${model}, chapters: ${generation.chapters
+    .length}, first beat: "${
+    firstBeat.text
+      .slice(
       0,
       FIRST_BEAT_PREVIEW_CHARS,
     )

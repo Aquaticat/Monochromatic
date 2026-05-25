@@ -66,7 +66,8 @@ async function verifyBuiltExtension(): Promise<string> {
   const harness = fakePiApi();
   await mod.default(harness.api,);
 
-  if (!harness.registrations.includes(EXPECTED_REGISTRATION,)) {
+  if (!harness.registrations
+    .includes(EXPECTED_REGISTRATION,)) {
     throw new Error(
       `missing current-time-context registration: ${EXPECTED_REGISTRATION}`,
     );
@@ -125,7 +126,8 @@ function verifyMessage(result: BeforeAgentStartEventResult,): void {
   const { message, } = result;
   if (message === undefined)
     throw new Error('current-time-context handler returned no message',);
-  if (message.customType !== EXPECTED_CUSTOM_TYPE) {
+  if (message.customType
+    !== EXPECTED_CUSTOM_TYPE) {
     throw new Error(
       `unexpected custom type: ${message.customType}`,
     );

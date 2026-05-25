@@ -82,7 +82,8 @@ export function renderScatterChart({
   hideTable?: boolean;
   tableDisplay?: TableDisplayOptions;
 },): string {
-  if (points.length === 0) {
+  if (points.length
+    === 0) {
     return h({
       tag: 'p',
       class: 'chart-empty-state',

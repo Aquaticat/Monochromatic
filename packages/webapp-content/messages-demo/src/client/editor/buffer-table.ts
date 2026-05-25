@@ -55,18 +55,26 @@ export function resetTable(
     text: string;
   },
 ): void {
-  input.table.original = input.text;
-  input.table.add = '';
-  input.table.pieces = input.text.length === 0
+  input.table
+    .original = input.text;
+  input.table
+    .add = '';
+  input.table
+    .pieces = input.text
+    .length
+    === 0
     ? []
     : [
       {
         source: 'original',
         start: 0,
-        length: input.text.length,
+        length: input.text
+          .length,
       },
     ];
-  input.table.length = input.text.length;
+  input.table
+    .length = input.text
+    .length;
 }
 
 /**
@@ -86,14 +94,20 @@ export function resetTable(
 export function materialise(input: { table: Table; },): string {
   /** Accumulator for the materialised text; grows by `piece.length` per iteration. */
   let out = '';
-  for (const piece of input.table.pieces) {
+  for (const piece of input.table
+    .pieces) {
     /** Resolved backing buffer for this piece: `original` for source text, `add` for inserts. */
-    const source = piece.source === 'original'
-      ? input.table.original
-      : input.table.add;
+    const source = piece.source
+      === 'original'
+      ? input.table
+        .original
+      : input.table
+        .add;
     out += source.slice(
       piece.start,
-      piece.start + piece.length,
+      piece.start
+        + piece
+        .length,
     );
   }
   return out;
@@ -125,7 +139,8 @@ export function substring(
     0,
     Math.min(
       input.from,
-      input.table.length,
+      input.table
+        .length,
     ),
   );
   /** Clamped upper bound; guaranteed to be at least `lo` so the slice is well-formed. */
@@ -133,7 +148,8 @@ export function substring(
     lo,
     Math.min(
       input.to,
-      input.table.length,
+      input.table
+        .length,
     ),
   );
   if (lo === hi)
@@ -142,9 +158,11 @@ export function substring(
   let out = '';
   /** Running document-relative offset; tracks each piece's start position. */
   let cursor = 0;
-  for (const piece of input.table.pieces) {
+  for (const piece of input.table
+    .pieces) {
     /** End of the current piece in document space; used to skip pieces fully before `lo`. */
-    const pieceEnd = cursor + piece.length;
+    const pieceEnd = cursor + piece
+      .length;
     if (pieceEnd <= lo) {
       cursor = pieceEnd;
       continue;
@@ -162,12 +180,17 @@ export function substring(
       hi - cursor,
     );
     /** Resolved backing buffer for this piece (`original` or `add`). */
-    const source = piece.source === 'original'
-      ? input.table.original
-      : input.table.add;
+    const source = piece.source
+      === 'original'
+      ? input.table
+        .original
+      : input.table
+        .add;
     out += source.slice(
-      piece.start + sliceFrom,
-      piece.start + sliceTo,
+      piece.start
+        + sliceFrom,
+      piece.start
+        + sliceTo,
     );
     cursor = pieceEnd;
   }
@@ -195,37 +218,55 @@ export function splitAt(
     at: number;
   },
 ): number {
-  if (input.at <= 0)
+  if (input.at
+    <= 0)
     return 0;
-  if (input.at >= input.table.length)
-    return input.table.pieces.length;
+  if (input.at
+    >= input
+    .table
+    .length)
+    return input.table
+      .pieces
+      .length;
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor advanced per iteration: `cursor` tracks the running document offset for the piece-table walk and is reassigned at the end of every loop body that doesn't return */
   /** Running document offset that tracks the start of `piece` per iteration. */
   let cursor = 0;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
-  for (let index = 0; index < input.table.pieces.length; index += 1) {
+  for (let index = 0; index < input
+    .table
+    .pieces
+    .length; index += 1) {
     /** Currently-visited piece; null sentinel breaks the loop on sparse arrays. */
-    const piece = input.table.pieces[index];
+    const piece = input.table
+      .pieces[index];
     if (piece === undefined)
       break;
     /** End-of-piece offset used to decide whether the split lands inside this piece. */
-    const pieceEnd = cursor + piece.length;
-    if (input.at === cursor)
+    const pieceEnd = cursor + piece
+      .length;
+    if (input.at
+      === cursor)
       return index;
-    if (input.at < pieceEnd) {
+    if (input.at
+      < pieceEnd) {
       /** Left half of the split; retains the original start and shortened length. */
       const left: Piece = {
         source: piece.source,
         start: piece.start,
-        length: input.at - cursor,
+        length: input.at
+          - cursor,
       };
       /** Right half of the split; offsets adjusted so it picks up where `left` ends. */
       const right: Piece = {
         source: piece.source,
-        start: piece.start + (input.at - cursor),
-        length: pieceEnd - input.at,
+        start: piece.start
+          + (input.at - cursor),
+        length: pieceEnd - input
+          .at,
       };
-      input.table.pieces.splice(
+      input.table
+        .pieces
+        .splice(
         index,
         1,
         left,
@@ -235,7 +276,9 @@ export function splitAt(
     }
     cursor = pieceEnd;
   }
-  return input.table.pieces.length;
+  return input.table
+    .pieces
+    .length;
 }
 
 /**
@@ -274,7 +317,7 @@ export function applyToTable(
   if (
     (changeset.from < 0)
     || (changeset.to < changeset.from)
-    || (changeset.to > table.length)
+      || (changeset.to > table.length)
   ) {
     throw new Error(
       `invalid changeset: from=${String(changeset.from,)} to=${
@@ -300,16 +343,21 @@ export function applyToTable(
     table,
     at: changeset.to,
   },);
-  table.pieces.splice(
+  table.pieces
+    .splice(
     startIndex,
     endIndex - startIndex,
   );
 
-  if (changeset.insert.length > 0) {
+  if (changeset.insert
+    .length
+    > 0) {
     /** Append-buffer offset of the inserted slice before extending `table.add`. */
-    const addStart = table.add.length;
+    const addStart = table.add
+      .length;
     table.add += changeset.insert;
-    table.pieces.splice(
+    table.pieces
+      .splice(
       startIndex,
       0,
       {
@@ -320,11 +368,16 @@ export function applyToTable(
     );
   }
 
-  table.length += changeset.insert.length - (changeset.to - changeset.from);
+  table.length += changeset.insert
+    .length
+    - (changeset.to - changeset.from);
 
   return {
     from: changeset.from,
-    to: changeset.from + changeset.insert.length,
+    to: changeset.from
+      + changeset
+      .insert
+      .length,
     insert: removed,
   };
 }

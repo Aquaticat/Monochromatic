@@ -117,7 +117,8 @@ function issueRow(props: {
  */
 export function renderFilterList(data: FilterListData,): SafeHtml {
   /** Per-issue row HTML rendered into the filter list. */
-  const rows = data.issues.map(function eachIssue(issue,) {
+  const rows = data.issues
+    .map(function eachIssue(issue,) {
     return issueRow({
       ownerLogin: data.ownerLogin,
       repoName: data.repoName,
@@ -131,7 +132,8 @@ export function renderFilterList(data: FilterListData,): SafeHtml {
     'section',
     {
       className: 'forge-filter-list',
-      'data-count': String(data.issues.length,),
+      'data-count': String(data.issues
+        .length,),
       children: [
         jsx(
           'header',
@@ -142,7 +144,9 @@ export function renderFilterList(data: FilterListData,): SafeHtml {
             ),
           },
         ),
-        data.issues.length === 0
+        data.issues
+          .length
+          === 0
           ? jsx(
             'p',
             {

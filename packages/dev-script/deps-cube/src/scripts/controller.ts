@@ -120,14 +120,18 @@ function getProbes(): readonly PackageProbe[] {
  * @returns The picked probe, or `null` when no probe is under the cursor.
  */
 function pickedProbe(info: PickingInfo,): PackageProbe | null {
-  if ((info.object === undefined) || (info.object === null))
+  if ((info.object
+    === undefined) || (info.object
+    === null))
     return null;
   if ((typeof info.object) !== 'object')
     return null;
-  if (!('probe' in info.object))
+  if (!('probe' in info
+    .object))
     return null;
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access -- ScatterplotLayer is fed ScatterDatum from layer factories; .probe is always a PackageProbe. */
-  return info.object.probe as PackageProbe;
+  return info.object
+    .probe as PackageProbe;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access */
 }
 
@@ -154,16 +158,23 @@ function recomputeVisibility(
 ): void {
   session.visibleIndices = computeVisibleIndices({
     probes,
-    toggles: session.state.toggles,
-    ranges: session.state.ranges,
-    search: session.state.search,
-    dimMapping: session.state.dimMapping,
+    toggles: session.state
+      .toggles,
+    ranges: session.state
+      .ranges,
+    search: session.state
+      .search,
+    dimMapping: session.state
+      .dimMapping,
   },);
   /** Counter element under the canvas; missing in tests / partial pages, so we no-op when absent. */
   const counter = document.querySelector<HTMLElement>('#visibility-counter',);
   if (counter !== null) {
     counter.textContent =
-      `${session.visibleIndices.size.toString()} of ${probes.length.toString()} visible`;
+      `${session.visibleIndices
+        .size
+        .toString()} of ${probes.length
+        .toString()} visible`;
   }
 }
 
@@ -192,7 +203,8 @@ function rerenderLayers(
     bounds: session.bounds,
     chrome: session.chrome,
   },);
-  session.deck.setProps({
+  session.deck
+    .setProps({
     layers: [...layers,],
   },);
 }
@@ -277,7 +289,8 @@ function createSession(
   /* oxlint-disable eslint-plugin-unicorn/prefer-global-this -- `window.location` is the canonical name; aliasing to `globalThis.location` only obscures intent for a browser-only file. */
   /** Initial `AppState`; uses any bookmarked URL hash, otherwise falls back to the data-driven defaults. */
   const initial = readStateFromHash({
-    hash: window.location.hash,
+    hash: window.location
+      .hash,
     fallback: defaultState({
       probes,
     },),
@@ -328,11 +341,14 @@ function createSession(
     onViewStateChange: function onViewStateChange(params,) {
       /** Latest view-state delta from deck.gl; copied into the session so hash sync can serialise it. */
       const v = params.viewState;
-      session.state.viewState = {
+      session.state
+        .viewState = {
         target: v.target,
         zoom: v.zoom,
-        rotationOrbit: v.rotationOrbit ?? 0,
-        rotationX: v.rotationX ?? 0,
+        rotationOrbit: v.rotationOrbit
+          ?? 0,
+        rotationX: v.rotationX
+          ?? 0,
       };
       syncHash({
         session,

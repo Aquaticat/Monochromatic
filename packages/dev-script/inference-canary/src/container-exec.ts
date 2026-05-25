@@ -83,7 +83,8 @@ export async function execContainer({
     },
   },);
 
-  if ((result.exitCode !== 0) || result.killed) {
+  if ((result.exitCode !== 0) || result
+    .killed) {
     /** Container-specific logger for execution failure messages. */
     const rl = tagged({
       tag: 'container',
@@ -92,10 +93,13 @@ export async function execContainer({
     rl.error(
       `exit=${String(result.exitCode,)} timedOut=${String(result.killed,)}`,
     );
-    if (result.stderr.length > 0) {
+    if (result.stderr
+      .length
+      > 0) {
       rl.error(
         `stderr: ${
-          result.stderr.slice(
+          result.stderr
+            .slice(
             0,
             STDERR_PREVIEW_LENGTH,
           )

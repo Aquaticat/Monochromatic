@@ -60,7 +60,9 @@ export function resolveTextPosition({
   let textNode = walker.nextNode();
   while (textNode !== null) {
     /** Length of the current text node; treat null textContent as 0. */
-    const len = textNode.textContent?.length ?? 0;
+    const len = textNode.textContent
+      ?.length
+      ?? 0;
     if (remaining <= len) {
       return {
         node: textNode,
@@ -76,7 +78,9 @@ export function resolveTextPosition({
   if (lastChild !== null) {
     return {
       node: lastChild,
-      offset: lastChild.textContent?.length ?? 0,
+      offset: lastChild.textContent
+        ?.length
+        ?? 0,
     };
   }
   return null;
@@ -122,7 +126,8 @@ export function resolveLineCharacter({
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- ancestor-walk cursor: `lineDiv` is set inside the loop when the editor-child ancestor is found
   let lineDiv: HTMLElement | null = null;
   while ((node !== null) && (node !== editor)) {
-    if ((node.parentNode === editor) && (node instanceof HTMLElement)) {
+    if ((node.parentNode
+      === editor) && (node instanceof HTMLElement)) {
       lineDiv = node;
       break;
     }
@@ -132,7 +137,9 @@ export function resolveLineCharacter({
     return null;
 
   /** Zero-based line index of `lineDiv`; -1 when the element is not actually under the editor. */
-  const line = Array.prototype.indexOf.call(
+  const line = Array.prototype
+    .indexOf
+    .call(
     editor.children,
     lineDiv,
   );
@@ -161,7 +168,9 @@ export function resolveLineCharacter({
       character += offset;
       break;
     }
-    character += textNode.textContent?.length ?? 0;
+    character += textNode.textContent
+      ?.length
+      ?? 0;
     textNode = walker.nextNode();
   }
 

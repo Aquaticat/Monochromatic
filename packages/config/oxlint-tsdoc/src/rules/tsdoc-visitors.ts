@@ -57,7 +57,8 @@ export function stripCommentLineMarker(s: string,): string {
  * ```
  */
 export function getCommentLines(comment: Comment,): readonly string[] {
-  return comment.value.split('\n',);
+  return comment.value
+    .split('\n',);
 }
 
 /**
@@ -131,7 +132,9 @@ export function createTsdocVisitor({
     PropertyDefinition: check,
     TSEnumMember: check,
     Property(node,): void {
-      if ((node.kind === 'get') || (node.kind === 'set'))
+      if ((node.kind
+        === 'get') || (node.kind
+        === 'set'))
         check(node,);
     },
   } as VisitorWithHooks;

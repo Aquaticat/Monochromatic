@@ -40,7 +40,8 @@ export function idbRequestResult<T,>(request: IDBRequest<T>,): Promise<T> {
     request.addEventListener(
       'error',
       function onError(): void {
-        reject(request.error ?? new Error('IDB request failed',),);
+        reject(request.error
+          ?? new Error('IDB request failed',),);
       },
     );
   },);
@@ -74,7 +75,8 @@ export function idbTransactionDone(tx: IDBTransaction,): Promise<void> {
     tx.addEventListener(
       'error',
       function onError(): void {
-        reject(tx.error ?? new Error('IDB transaction failed',),);
+        reject(tx.error
+          ?? new Error('IDB transaction failed',),);
       },
     );
   },);
@@ -131,7 +133,8 @@ export function idbOpen(
     request.addEventListener(
       'error',
       function onError(): void {
-        reject(request.error ?? new Error('IDB open failed',),);
+        reject(request.error
+          ?? new Error('IDB open failed',),);
       },
     );
   },);

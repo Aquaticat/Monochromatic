@@ -33,6 +33,7 @@ export function assertCountableNoun(
     readonly noun: string;
   },
 ): void {
-  if (entry.countability === 'mass')
+  if (entry.countability
+    === 'mass')
     throw new Error(`Cannot count mass noun '${noun}' with noun.counted`,);
 }

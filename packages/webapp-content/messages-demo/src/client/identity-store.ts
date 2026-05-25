@@ -51,7 +51,8 @@ export function saveIdentity(
     readonly available: boolean;
   },
 ): void {
-  if ((!input.available) || (input.identity === ''))
+  if ((!input.available) || (input.identity
+    === ''))
     return;
   try {
     localStorage.setItem(

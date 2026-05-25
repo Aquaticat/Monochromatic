@@ -68,9 +68,11 @@ export function buildAxisTickLayer(
     bounds,
   },);
   /** Tick mark length on the X axis in world units; reused for Z ticks since both share the X extent. */
-  const tx = g.dx * TICK_LENGTH_FRACTION;
+  const tx = g.dx
+    * TICK_LENGTH_FRACTION;
   /** Tick mark length on the Y axis in world units. */
-  const ty = g.dy * TICK_LENGTH_FRACTION;
+  const ty = g.dy
+    * TICK_LENGTH_FRACTION;
   /** `[0, 1/N, …, 1]` normalised positions for the `TICK_COUNT + 1` evenly-spaced ticks. */
   const ts: readonly number[] = Array.from(
     {
@@ -86,22 +88,27 @@ export function buildAxisTickLayer(
   /** Flattened tick paths: three perpendicular segments per `t` value, one per axis. */
   const ticks: PathDatum[] = ts.flatMap(function tickTriple(t,) {
     /** World-space X coordinate of the tick on the X axis for parameter `t`. */
-    const xAt = g.xMin + (g.dx * t);
+    const xAt = g.xMin
+      + (g.dx * t);
     /** World-space Y coordinate of the tick on the Y axis for parameter `t`. */
-    const yAt = g.yMin + (g.dy * t);
+    const yAt = g.yMin
+      + (g.dy * t);
     /** World-space Z coordinate of the tick on the Z axis for parameter `t`. */
-    const zAt = g.zMin + (g.dz * t);
+    const zAt = g.zMin
+      + (g.dz * t);
     return [
       {
         path: [
           [
             xAt,
-            g.yMin - ty,
+            g.yMin
+              - ty,
             g.zMin,
           ],
           [
             xAt,
-            g.yMin + ty,
+            g.yMin
+              + ty,
             g.zMin,
           ],
         ],
@@ -109,12 +116,14 @@ export function buildAxisTickLayer(
       {
         path: [
           [
-            g.xMin - tx,
+            g.xMin
+              - tx,
             yAt,
             g.zMin,
           ],
           [
-            g.xMin + tx,
+            g.xMin
+              + tx,
             yAt,
             g.zMin,
           ],
@@ -124,12 +133,14 @@ export function buildAxisTickLayer(
         path: [
           [
             g.xMin,
-            g.yMin - ty,
+            g.yMin
+              - ty,
             zAt,
           ],
           [
             g.xMin,
-            g.yMin + ty,
+            g.yMin
+              + ty,
             zAt,
           ],
         ],

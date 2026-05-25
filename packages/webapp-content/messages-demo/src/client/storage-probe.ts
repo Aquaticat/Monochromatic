@@ -121,7 +121,8 @@ function probeIdb(): Promise<boolean> {
     request.addEventListener(
       'upgradeneeded',
       function onUpgrade(): void {
-        request.result.createObjectStore('probe',);
+        request.result
+          .createObjectStore('probe',);
       },
     );
     request.addEventListener(
@@ -182,13 +183,16 @@ async function probeOpfs(): Promise<boolean> {
   // is feature-detection plus a write attempt because some browsers
   // expose the API but reject writes (e.g. Safari private mode).
   if (((typeof navigator) === 'undefined')
-    || (navigator.storage?.getDirectory === undefined))
+    || (navigator.storage
+      ?.getDirectory
+      === undefined))
   {
     return false;
   }
   try {
     /** OPFS root acquired once and reused by the file handle below. */
-    const root = await navigator.storage.getDirectory();
+    const root = await navigator.storage
+      .getDirectory();
     /** Probe file handle, created if absent; deleted in the cleanup below. */
     const handle = await root.getFileHandle(
       PROBE_KEY,

@@ -140,13 +140,20 @@ export function parseResetRegion(
   /** Successful parse value with optique-inferred shape. */
   const { value, } = parseResult;
   /** Sum of destructive-mode flag occurrences (`--hard` + `--merge` + `--keep`, any abbreviation). */
-  const destructiveModeCount = value.hardFlags.length
-    + value.mergeFlags.length
-    + value.keepFlags.length;
+  const destructiveModeCount = value.hardFlags
+    .length
+    + value
+    .mergeFlags
+    .length
+    + value
+    .keepFlags
+    .length;
 
   return {
     hasDestructiveMode: destructiveModeCount > 0,
-    hasEscapeHatch: value.escape.length > 0,
+    hasEscapeHatch: value.escape
+      .length
+      > 0,
     parseFailed: false,
   };
 }

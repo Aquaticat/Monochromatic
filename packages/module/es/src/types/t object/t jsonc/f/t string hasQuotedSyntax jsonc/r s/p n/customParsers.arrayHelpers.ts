@@ -72,7 +72,8 @@ export function expectArraySeparatorOrEnd(
   /** Leading comments/whitespace after previous element value. */
   const after = startsWithComment({ value, },);
   /** Tail trimmed to detect ',' or ']' token. */
-  const rc = after.remainingContent.trimStart() as FragmentStringJsonc;
+  const rc = after.remainingContent
+    .trimStart() as FragmentStringJsonc;
 
   if (rc.startsWith(']',)) {
     return {
@@ -87,7 +88,8 @@ export function expectArraySeparatorOrEnd(
     /** Comments/whitespace before the next potential element. */
     const next = startsWithComment({ value: afterComma, },);
     /** Start of the next token inside the array. */
-    const nextToken = next.remainingContent.trimStart() as FragmentStringJsonc;
+    const nextToken = next.remainingContent
+      .trimStart() as FragmentStringJsonc;
     if (nextToken.startsWith(']',)) {
       return {
         kind: 'end',

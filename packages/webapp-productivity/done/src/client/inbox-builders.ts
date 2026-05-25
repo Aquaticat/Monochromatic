@@ -58,8 +58,10 @@ export function buildTaskList(
     },),);
 
     /** Tasks blocked by `task`; empty when nothing depends on it. */
-    const childLinks = blockedTasksByBlocker[task.id] ?? [];
-    if (childLinks.length > 0) {
+    const childLinks = blockedTasksByBlocker[task.id]
+      ?? [];
+    if (childLinks.length
+      > 0) {
       list.append(
         h({
           tag: 'div',

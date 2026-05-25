@@ -71,7 +71,8 @@ export function effectiveAt(
   },
 ): EffectiveResult {
   /** Exact-path pending insertion wins before any walk, per the resolution policy. */
-  const exactInsertion = edit.insertions.find(function matchesPath(ins,) {
+  const exactInsertion = edit.insertions
+    .find(function matchesPath(ins,) {
     return (ins.path !== undefined) && pathEquals({
       a: ins.path,
       b: path,
@@ -122,7 +123,8 @@ function missingFor(
 ): ResolveResult {
   return {
     kind: 'missing',
-    deepest: edit.program.body[0],
+    deepest: edit.program
+      .body[0],
     consumed: 0,
   };
 }
@@ -155,7 +157,8 @@ function projectPendingAtPrefix(
     const rest = path.slice(prefixLen,);
 
     /** Pending insertion that covers this prefix exactly, if any. */
-    const matchingIns = edit.insertions.find(function matches(ins,) {
+    const matchingIns = edit.insertions
+      .find(function matches(ins,) {
       return (ins.path !== undefined) && pathEquals({
         a: ins.path,
         b: prefix,
@@ -177,11 +180,14 @@ function projectPendingAtPrefix(
     /** AST node a pending edit could be keyed on. */
     const pendingNode = nodeFromResolved({ resolved: baseAtPrefix, },);
     if (pendingNode !== null) {
-      if (edit.deletions.has(pendingNode,))
+      if (edit.deletions
+        .has(pendingNode,))
         return { kind: 'deleted', };
       /** Pending edit's jsValue is the surface to navigate. */
-      const pendingEdit = edit.edits.get(pendingNode,);
-      if ((pendingEdit !== undefined) && (pendingEdit.jsValue !== undefined)) {
+      const pendingEdit = edit.edits
+        .get(pendingNode,);
+      if ((pendingEdit !== undefined) && (pendingEdit.jsValue
+        !== undefined)) {
         return navigateJsValue({
           edit,
           value: pendingEdit.jsValue,
@@ -206,9 +212,13 @@ function projectPendingAtPrefix(
 function nodeFromResolved(
   { resolved, }: { resolved: ResolveResult; },
 ): AST.TOMLNode | null {
-  if ((resolved.kind === 'keyvalue') || (resolved.kind === 'value'))
+  if ((resolved.kind
+    === 'keyvalue') || (resolved.kind
+    === 'value'))
     return resolved.node;
-  if ((resolved.kind === 'table') || (resolved.kind === 'top-level'))
+  if ((resolved.kind
+    === 'table') || (resolved.kind
+    === 'top-level'))
     return resolved.node;
   return null;
 }
@@ -238,7 +248,9 @@ function synthesiseSubtree(
     const insPath = ins.path;
     if (insPath === undefined)
       continue;
-    if (insPath.length <= path.length)
+    if (insPath.length
+      <= path
+      .length)
       continue;
     /** True when `path` is a strict prefix of `insPath`. */
     const matches = path.every(function eq(
@@ -283,7 +295,8 @@ function navigateJsValue(
     rest: TomlPath;
   },
 ): EffectiveResult {
-  if (rest.length === 0) {
+  if (rest.length
+    === 0) {
     if (value === undefined)
       return missingFor({ edit, },);
     return {
@@ -332,11 +345,14 @@ function resolveAst(
     edit,
     path,
   },);
-  if (base.kind === 'keyvalue') {
-    if (edit.deletions.has(base.node,))
+  if (base.kind
+    === 'keyvalue') {
+    if (edit.deletions
+      .has(base.node,))
       return { kind: 'deleted', };
     /** Pending replace-value edit on this keyvalue, if any. */
-    const pending = edit.edits.get(base.node,);
+    const pending = edit.edits
+      .get(base.node,);
     if (pending !== undefined) {
       return {
         kind: 'pending-value',
@@ -344,9 +360,11 @@ function resolveAst(
       };
     }
   }
-  if (base.kind === 'value') {
+  if (base.kind
+    === 'value') {
     /** Pending element edit on this content node, if any. */
-    const pending = edit.edits.get(base.node,);
+    const pending = edit.edits
+      .get(base.node,);
     if (pending !== undefined) {
       return {
         kind: 'pending-value',
@@ -354,11 +372,15 @@ function resolveAst(
       };
     }
   }
-  if ((base.kind === 'table') && edit.deletions.has(base.node,))
+  if ((base.kind === 'table') && edit
+    .deletions
+    .has(base.node,))
     return { kind: 'deleted', };
   if (
     (base.kind === 'array-of-tables')
-    && base.nodes.every(function isDeleted(n,) {
+    && base
+      .nodes
+      .every(function isDeleted(n,) {
       return edit.deletions.has(n,);
     },)
   ) {

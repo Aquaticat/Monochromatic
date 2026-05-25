@@ -89,7 +89,8 @@ export function doPathCreate(
     return seg;
   },);
 
-  if (deepest.type === 'TOMLTopLevelTable') {
+  if (deepest.type
+    === 'TOMLTopLevelTable') {
     return doTopLevelDottedKeyInsert({
       edit,
       path,
@@ -99,7 +100,8 @@ export function doPathCreate(
     },);
   }
 
-  if (deepest.type === 'TOMLTable') {
+  if (deepest.type
+    === 'TOMLTable') {
     return doTableDottedKeyInsert({
       edit,
       path,
@@ -109,7 +111,8 @@ export function doPathCreate(
     },);
   }
 
-  if (deepest.type === 'TOMLInlineTable') {
+  if (deepest.type
+    === 'TOMLInlineTable') {
     return doInlineTableExtend({
       edit,
       path,
@@ -170,7 +173,8 @@ function doTopLevelDottedKeyInsert(
     .join('.',);
 
   /** First `[foo]` header so the insertion can anchor before it. */
-  const firstTable = container.body.find(
+  const firstTable = container.body
+    .find(
     function isTable(child,): child is AST.TOMLTable {
       return child.type === 'TOMLTable';
     },
@@ -191,7 +195,9 @@ function doTopLevelDottedKeyInsert(
   /** Leading newline only when the EOF insertion would land mid-line. */
   const prefix = firstTable !== undefined
     ? ''
-    : ((edit.source === '') || edit.source.endsWith('\n',)
+    : ((edit.source === '') || edit
+      .source
+      .endsWith('\n',)
       ? ''
       : '\n');
 
@@ -232,7 +238,9 @@ function doTableDottedKeyInsert(
   },
 ): TomlEditState {
   assertNoSiblingTableCollision({
-    programBody: edit.program.body[0].body,
+    programBody: edit.program
+      .body[0]
+      .body,
     basePath: container.resolvedKey,
     dottedSegments,
     path,
@@ -252,7 +260,8 @@ function doTableDottedKeyInsert(
     .join('.',);
 
   /** Leading newline only when the source ends mid-line. */
-  const prefix = edit.source.endsWith('\n',) ? '' : '\n';
+  const prefix = edit.source
+    .endsWith('\n',) ? '' : '\n';
 
   return withInsertion({
     edit,
@@ -297,7 +306,8 @@ function doInlineTableExtend(
 ): TomlEditState {
   /** Destructured parent so the type guard can read it once. */
   const { parent, } = inlineTable;
-  if ((parent === null) || (parent.type !== 'TOMLKeyValue')) {
+  if ((parent === null) || (parent.type
+    !== 'TOMLKeyValue')) {
     throw new TomlImmutableNodeError(
       `tomlSet at ${
         formatPath({ path, },)
@@ -375,13 +385,15 @@ function mergeDottedSegments(
     value: unknown;
   },
 ): Record<string, unknown> {
-  if (segments.length === 0)
+  if (segments.length
+    === 0)
     return base;
   /** Current segment so each recursion step shrinks `segments` by one. */
   const [head,] = segments;
   if (head === undefined)
     return base;
-  if (segments.length === 1) {
+  if (segments.length
+    === 1) {
     return {
       ...base,
       [head]: value,

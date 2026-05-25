@@ -57,7 +57,9 @@ export function globResults(
  * @returns whether the path needs glob expansion
  */
 function hasGlobChars(path: string,): boolean {
-  return path.includes('*',) || path.includes('?',);
+  return path.includes('*',)
+    || path
+    .includes('?',);
 }
 
 /**
@@ -129,7 +131,8 @@ export async function cat(
 
   /** File contents read in parallel */
   const contents = await Promise.all(
-    expandedGroups.flat().map(function readOneFile(filePath: string,): Promise<string> {
+    expandedGroups.flat()
+      .map(function readOneFile(filePath: string,): Promise<string> {
       trackRead(filePath,);
       return readCached(filePath,);
     },),

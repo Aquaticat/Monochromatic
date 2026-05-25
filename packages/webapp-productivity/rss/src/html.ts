@@ -51,9 +51,14 @@ export async function getIndexHtmlBody(
   const ignoredLinks = parseIgnoredLinks(ignoreContent,);
   /** Items remaining after the ignore-link filter, before the page limit slice. */
   const filteredItems = items.filter(function notIgnored(item,) {
-    if ((item.item.link === undefined) || (item.item.link === ''))
+    if ((item.item
+      .link
+      === undefined) || (item.item
+      .link
+      === ''))
       return true;
-    return !ignoredLinks.has(item.item.link,);
+    return !ignoredLinks.has(item.item
+      .link,);
   },);
 
   innerL.debug(

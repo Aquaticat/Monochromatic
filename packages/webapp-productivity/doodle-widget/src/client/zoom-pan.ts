@@ -111,22 +111,30 @@ export function continuePan({
     return false;
 
   /** Pointer displacement on the x axis since the gesture began. */
-  const dx = event.clientX - panState.panStartPointerX;
+  const dx = event.clientX
+    - panState
+    .panStartPointerX;
   /**
    * Companion to {@link dx} on the y axis.
    */
-  const dy = event.clientY - panState.panStartPointerY;
+  const dy = event.clientY
+    - panState
+    .panStartPointerY;
 
   if (!panState.dragExceededThreshold) {
-    if ((Math.abs(dx,) > DRAG_THRESHOLD) || (Math.abs(dy,) > DRAG_THRESHOLD))
+    if ((Math.abs(dx,)
+      > DRAG_THRESHOLD) || (Math.abs(dy,)
+      > DRAG_THRESHOLD))
       panState.dragExceededThreshold = true;
     else
       return false;
   }
 
   setPan({
-    x: panState.panStartOffsetX + dx,
-    y: panState.panStartOffsetY + dy,
+    x: panState.panStartOffsetX
+      + dx,
+    y: panState.panStartOffsetY
+      + dy,
   },);
   clampPan({
     containerWidth,

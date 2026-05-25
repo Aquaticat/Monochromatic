@@ -38,7 +38,8 @@ export function showFixedToast({ message, }: { readonly message: string; },): vo
     text: message,
     attrs: { 'data-variant': 'fixed', },
   },);
-  document.body.append(toast,);
+  document.body
+    .append(toast,);
 
   globalThis.setTimeout(
     function dismissToast() {
@@ -80,16 +81,19 @@ export function showCursorToast(
   },);
 
   /** Dynamic position properties that vary per toast instance. */
-  toast.style.setProperty(
+  toast.style
+    .setProperty(
     'inset-inline-start',
     `${rect.left}px`,
   );
-  toast.style.setProperty(
+  toast.style
+    .setProperty(
     'inset-block-start',
     `${rect.bottom + VERTICAL_OFFSET}px`,
   );
 
-  document.body.append(toast,);
+  document.body
+    .append(toast,);
 
   globalThis.setTimeout(
     function dismissToast() {

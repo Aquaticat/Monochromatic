@@ -92,7 +92,8 @@ export async function dispatchMessage(
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
   try {
-    if (parsed.type === 'open') {
+    if (parsed.type
+      === 'open') {
       /** File contents and metadata returned to the requesting peer. */
       const result = await openFile({
         rootDir,
@@ -106,16 +107,19 @@ export async function dispatchMessage(
           ...result,
         },
       },);
-      if ((lspManager !== null) && (result.kind === 'text')) {
+      if ((lspManager !== null) && (result.kind
+        === 'text')) {
         await lspManager.didOpen({
           path: parsed.path,
           text: result.content,
-          size: result.size ?? 0,
+          size: result.size
+            ?? 0,
         },);
       }
       return;
     }
-    if (parsed.type === 'save') {
+    if (parsed.type
+      === 'save') {
       /** Resolved path used to suppress the matching watcher event below. */
       const absolutePath = await saveFile({
         rootDir,
@@ -136,7 +140,8 @@ export async function dispatchMessage(
         await lspManager.didSave({ path: parsed.path, },);
       return;
     }
-    if (parsed.type === 'listDir') {
+    if (parsed.type
+      === 'listDir') {
       /** Directory entries and metadata returned to the requesting peer. */
       const result = await listDir({
         rootDir,
@@ -152,8 +157,10 @@ export async function dispatchMessage(
       },);
       return;
     }
-    if (parsed.type === 'search') {
-      peerSearchControllers.get(peer,)?.abort();
+    if (parsed.type
+      === 'search') {
+      peerSearchControllers.get(peer,)
+        ?.abort();
       /** Stored on the peer so a subsequent search request can cancel this one. */
       const controller = new AbortController();
       peerSearchControllers.set(
@@ -170,7 +177,8 @@ export async function dispatchMessage(
         query: parsed.query,
         signal: controller.signal,
       },);
-      if (!controller.signal.aborted) {
+      if (!controller.signal
+        .aborted) {
         sendJson({
           peer,
           message: {
@@ -225,7 +233,8 @@ export async function dispatchMessage(
      * legitimate-error signal is not drowned by expected races.
      */
     const code: unknown
-      = ((typeof error) === 'object') && (error !== null) && ('code' in error)
+      = ((typeof error) === 'object') && (error !== null)
+        && ('code' in error)
         ? error.code
         : undefined;
     if ((code === 'ENOENT') || (code === 'ENOTDIR'))

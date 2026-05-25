@@ -37,9 +37,11 @@ export function verbSurfaceForTense(
   },
 ): string {
   if (tense === 'past')
-    return entry.past ?? `${entry.surface}了`;
+    return entry.past
+      ?? `${entry.surface}了`;
   if (tense === 'future')
-    return entry.future ?? `会${entry.surface}`;
+    return entry.future
+      ?? `会${entry.surface}`;
   return entry.surface;
 }
 
@@ -85,15 +87,19 @@ export function makeChineseVerbPhraseRenderer<
    */
   function renderVerbPhrase(phrase: VerbPhrase<S, V, N>,): string {
     /** Verb base surface; tense decoration handled by callers that own tense context. */
-    const verb = verbs[phrase.verb].surface;
+    const verb = verbs[phrase.verb]
+      .surface;
     /** Optional rendered object surface. */
-    const object = phrase.object === undefined
+    const object = phrase.object
+      === undefined
       ? undefined
       : renderNounPhrase(phrase.object,);
     /** Optional rendered complement. */
-    const complement = phrase.complement === undefined
+    const complement = phrase.complement
+      === undefined
       ? undefined
-      : renderVerbPhrase(phrase.complement.phrase,);
+      : renderVerbPhrase(phrase.complement
+        .phrase,);
     /** Optional rendered adverbial cluster. */
     const adverbials = renderAdverbials(phrase.adverbials,);
     return joinTokens([

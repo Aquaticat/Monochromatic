@@ -65,7 +65,8 @@ export function resolveRequestedModel(
   options: ResolveRequestedModelOptions,
 ): AdvisorModelSelection {
   /** Trimmed requested model slug. */
-  const requestedSlug = options.requestedSlug.trim();
+  const requestedSlug = options.requestedSlug
+    .trim();
   if (requestedSlug === '')
     throw new Error('advisor: model slug must not be empty',);
 
@@ -74,7 +75,8 @@ export function resolveRequestedModel(
     scope: options.scope,
     requestedSlug,
   },);
-  if (scopedMatches.length === 1) {
+  if (scopedMatches.length
+    === 1) {
     /** Only scoped match after length guard. */
     const [selected,] = scopedMatches;
     if (selected === undefined)
@@ -84,7 +86,8 @@ export function resolveRequestedModel(
       requestedSlug,
     };
   }
-  if (scopedMatches.length > 1) {
+  if (scopedMatches.length
+    > 1) {
     throw new Error(
       `advisor: model slug "${requestedSlug}" is ambiguous in scoped models. Matching scoped slugs: ${
         scopedMatches
@@ -98,7 +101,8 @@ export function resolveRequestedModel(
 
   if (slugExistsGlobally({
     requestedSlug,
-    models: options.modelRegistry.getAll(),
+    models: options.modelRegistry
+      .getAll(),
   },)) {
     throw new Error(
       `advisor: model slug "${requestedSlug}" is not in scoped models. Allowed scoped slugs: ${
@@ -133,7 +137,9 @@ export function resolveRequestedModel(
 export function allowedSlugs(
   scope: EffectiveModelScope,
 ): string {
-  return scope.entries.length === 0
+  return scope.entries
+    .length
+    === 0
     ? 'none'
     : scope
       .entries
@@ -166,17 +172,20 @@ function findScopedSlugMatches(
   },
 ): ScopedAdvisorModel[] {
   if (requestedSlug.includes('/',)) {
-    return scope.entries.filter(function matchCanonical(entry,) {
+    return scope.entries
+      .filter(function matchCanonical(entry,) {
       return entry.canonicalSlug === requestedSlug;
     },);
   }
 
   /** Bare id matches inside scope. */
-  const idMatches = scope.entries.filter(function matchId(entry,) {
+  const idMatches = scope.entries
+    .filter(function matchId(entry,) {
     return entry.model.id === requestedSlug;
   },);
   /** Model display-name matches inside scope. */
-  const nameMatches = scope.entries.filter(function matchName(entry,) {
+  const nameMatches = scope.entries
+    .filter(function matchName(entry,) {
     return entry.model.name === requestedSlug;
   },);
   /** Unique matches across both bare forms. */
@@ -207,12 +216,15 @@ function slugExistsGlobally(
 ): boolean {
   if (requestedSlug.includes('/',)) {
     return models.some(function matchesCanonical(model,) {
-      return canonicalSlug(model,) === requestedSlug;
+      return canonicalSlug(model,)
+        === requestedSlug;
     },);
   }
 
   return models.some(function matchesBareModel(model,) {
-    return (model.id === requestedSlug) || (model.name === requestedSlug);
+    return (model.id
+      === requestedSlug) || (model.name
+      === requestedSlug);
   },);
 }
 
@@ -230,7 +242,9 @@ function uniqueScopedModels(
   const result: ScopedAdvisorModel[] = [];
   for (const model of models) {
     if (result.some(function alreadyAdded(entry,) {
-      return entry.canonicalSlug === model.canonicalSlug;
+      return entry.canonicalSlug
+        === model
+        .canonicalSlug;
     },))
       continue;
     result.push(model,);

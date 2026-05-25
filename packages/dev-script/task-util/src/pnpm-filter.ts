@@ -23,7 +23,8 @@ import { filterPnpmOutput, } from './pnpm-output-filter.ts';
 //region Main execution
 
 /** Arguments forwarded to pnpm. */
-const pnpmArgs = process.argv.slice(2,);
+const pnpmArgs = process.argv
+  .slice(2,);
 
 /**
  * Options for {@link writeFiltered}.
@@ -59,11 +60,13 @@ function writeFiltered({
   raw,
   stream,
 }: WriteFilteredOptions,): void {
-  if (raw.length === 0)
+  if (raw.length
+    === 0)
     return;
   /** Output with allowed pnpm cycle warnings stripped; may be empty if every line was a known-benign warning. */
   const filtered = filterPnpmOutput(raw,);
-  if (filtered.length > 0)
+  if (filtered.length
+    > 0)
     stream.write(filtered,);
 }
 
@@ -84,7 +87,8 @@ try {
   },);
 }
 catch (error) {
-  if ((error !== null) && ((typeof error) === 'object') && ('exitCode' in error)) {
+  if ((error !== null) && ((typeof error) === 'object')
+    && ('exitCode' in error)) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows error to the captured-subprocess shape */
     /** Re-typed thrown error so its captured stdout, stderr, and exit fields can be forwarded after filtering. */
     const subprocessError = error as {
@@ -96,18 +100,23 @@ catch (error) {
     /* oxlint-enable typescript/no-unsafe-type-assertion */
 
     writeFiltered({
-      raw: subprocessError.stdout ?? '',
+      raw: subprocessError.stdout
+        ?? '',
       stream: process.stdout,
     },);
     writeFiltered({
-      raw: subprocessError.stderr ?? '',
+      raw: subprocessError.stderr
+        ?? '',
       stream: process.stderr,
     },);
 
-    process.exitCode = subprocessError.exitCode ?? 1;
+    process.exitCode = subprocessError.exitCode
+      ?? 1;
 
-    if ((subprocessError.signalName !== undefined)
-      && (subprocessError.signalName !== ''))
+    if ((subprocessError.signalName
+      !== undefined)
+      && (subprocessError.signalName
+        !== ''))
     {
       console.error(
         `[task-pnpm] pnpm terminated by signal: ${subprocessError.signalName}`,

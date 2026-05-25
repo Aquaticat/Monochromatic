@@ -103,7 +103,8 @@ export function logTiming({
     l,
   },);
   /** Total stream duration rendered as seconds with one decimal, suitable for terse human log lines. */
-  const totalSeconds = (timing.totalMs / MS_PER_SECOND).toFixed(1,);
+  const totalSeconds = (timing.totalMs
+    / MS_PER_SECOND).toFixed(1,);
   rl.info(
     `ttfc=${String(timing.timeToFirstChunkMs,)}ms`
       + ` total=${totalSeconds}s`,
@@ -132,7 +133,8 @@ export function parseUsage(
   return {
     promptTokens: raw.prompt_tokens,
     completionTokens: raw.completion_tokens,
-    reasoningTokens: raw.completion_tokens_details?.reasoning_tokens,
+    reasoningTokens: raw.completion_tokens_details
+      ?.reasoning_tokens,
     totalTokens: raw.total_tokens,
   };
 }

@@ -90,7 +90,8 @@ export type RegisterAdvisorCommandsOptions = {
 export function registerAdvisorCommands(
   options: RegisterAdvisorCommandsOptions,
 ): void {
-  options.pi.registerCommand(
+  options.pi
+    .registerCommand(
     ADVISOR_TOOL_NAME,
     {
       description:
@@ -180,7 +181,9 @@ export function buildAdvisorStatus(
   /** Effective model scope for status. */
   const scope = resolveEffectiveScope({ ctx, },);
   /** Empty-context default ranking for status display. */
-  const defaultSelection = scope.entries.length === 0
+  const defaultSelection = scope.entries
+    .length
+    === 0
     ? undefined
     : selectDefaultModel({
       scope,
@@ -194,7 +197,8 @@ export function buildAdvisorStatus(
     ? undefined
     : maxContextCharsForAdvisorModel({
       config,
-      model: defaultSelection.selected.model,
+      model: defaultSelection.selected
+        .model,
       advisorSystemPrompt,
     },);
   /** Effective context budget shown when present. */
@@ -202,7 +206,8 @@ export function buildAdvisorStatus(
     ? 'none'
     : `${defaultContextBudget} chars`;
   /** Configured context cap shown when present. */
-  const configuredContextCap = config.maxContextChars === undefined
+  const configuredContextCap = config.maxContextChars
+    === undefined
     ? 'none'
     : `${config.maxContextChars} chars`;
 
@@ -210,18 +215,27 @@ export function buildAdvisorStatus(
     `Advisor: ${enabled ? 'on' : 'off'}`,
     `Scope source: ${scope.source}`,
     `Scoped models: ${
-      scope.entries.length === 0 ? 'none' : scope
+      scope.entries
+        .length
+        === 0 ? 'none' : scope
         .entries
         .map(function mapEntry(entry,) {
           return entry.canonicalSlug;
         },)
         .join(', ',)
     }`,
-    `Default model: ${defaultSelection?.selected.canonicalSlug ?? 'none'}`,
-    `Default ranking: ${defaultSelection?.reason ?? 'none'}`,
+    `Default model: ${defaultSelection?.selected
+      .canonicalSlug
+      ?? 'none'}`,
+    `Default ranking: ${defaultSelection?.reason
+      ?? 'none'}`,
     `Config: global=${
-      config.source.globalLoaded ? config.source.globalPath : 'absent'
-    } project=${config.source.projectLoaded ? config.source.projectPath : 'absent'}`,
+      config.source
+        .globalLoaded ? config.source
+        .globalPath : 'absent'
+    } project=${config.source
+      .projectLoaded ? config.source
+      .projectPath : 'absent'}`,
     [
       `Context budget: ${defaultContextBudgetText} effective for default model,`,
       `cap=${configuredContextCap},`,
@@ -262,7 +276,8 @@ async function handleAdvisorCommand(
   options: HandleAdvisorCommandOptions,
 ): Promise<void> {
   /** Trimmed command args. */
-  const trimmed = options.args.trim();
+  const trimmed = options.args
+    .trim();
   if (trimmed === 'status') {
     options
       .ctx
@@ -270,13 +285,15 @@ async function handleAdvisorCommand(
       .notify(buildAdvisorStatus({
       ctx: options.ctx,
       config: options.getConfig(),
-      enabled: options.state.getEnabled(),
+      enabled: options.state
+        .getEnabled(),
     },),);
     return;
   }
 
   if (trimmed === 'off') {
-    options.state.setEnabled(false,);
+    options.state
+      .setEnabled(false,);
     syncAdvisorActiveTool({
       pi: options.pi,
       enabled: false,
@@ -289,7 +306,8 @@ async function handleAdvisorCommand(
   }
 
   if (trimmed === 'on') {
-    options.state.setEnabled(true,);
+    options.state
+      .setEnabled(true,);
     syncAdvisorActiveTool({
       pi: options.pi,
       enabled: true,
@@ -301,7 +319,8 @@ async function handleAdvisorCommand(
     return;
   }
 
-  if (!options.state.getEnabled()) {
+  if (!options.state
+    .getEnabled()) {
     options
       .ctx
       .ui
@@ -341,7 +360,8 @@ async function runImmediateAdvisor(
       ctx,
       config,
       ...(requestedSlug === undefined ? {} : { requestedSlug, }),
-      ...(ctx.signal === undefined ? {} : { signal: ctx.signal, }),
+      ...(ctx.signal
+        === undefined ? {} : { signal: ctx.signal, }),
     },);
     sendAdvisorMessage({
       pi,
@@ -349,14 +369,18 @@ async function runImmediateAdvisor(
     },);
   }
   catch (error) {
-    if (ctx.signal?.aborted === true) {
-      ctx.ui.notify(
+    if (ctx.signal
+      ?.aborted
+      === true) {
+      ctx.ui
+        .notify(
         'Advisor review cancelled.',
         'warning',
       );
       return;
     }
-    ctx.ui.notify(
+    ctx.ui
+      .notify(
       `Advisor review failed: ${error instanceof Error ? error.message : String(error,)}`,
       'error',
     );

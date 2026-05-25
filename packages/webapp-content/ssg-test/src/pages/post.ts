@@ -76,7 +76,8 @@ export function postPage(
     children: [
       h({
         tag: 'h1',
-        text: post.data.title,
+        text: post.data
+          .title,
       },),
       h({
         tag: 'article',
@@ -86,10 +87,12 @@ export function postPage(
   },);
 
   return pageLayout({
-    title: post.data.title,
+    title: post.data
+      .title,
     lang,
     content,
-    description: post.data.description,
+    description: post.data
+      .description,
     canonicalUrl,
     searchable: true,
     currentName: name,

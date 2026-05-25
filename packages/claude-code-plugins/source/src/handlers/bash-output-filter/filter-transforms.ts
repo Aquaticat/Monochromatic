@@ -101,7 +101,8 @@ function collapseRepeatedChars(line: string,): string {
   const parts: string[] = [];
   // Single forward pass; `idx` jumps by whole runs, so the stride is variable
   // and the update happens in the body rather than a fixed `for` step.
-  for (let idx = 0; idx < line.length;) {
+  for (let idx = 0; idx < line
+    .length;) {
     /** Character under the cursor; gates whether a run is even considered. */
     const c = line.charAt(idx,);
     if (!isCollapseCandidate(c,)) {
@@ -111,7 +112,9 @@ function collapseRepeatedChars(line: string,): string {
     }
     /** Exclusive end of the current run of `c`, advanced by a linear scan. */
     let runEnd = idx + 1;
-    while ((runEnd < line.length) && (line.charAt(runEnd,) === c)) {
+    while ((runEnd < line
+      .length) && (line.charAt(runEnd,)
+      === c)) {
       runEnd += 1;
     }
     /** Length of the current run; gates the collapse vs. emit-verbatim choice. */
@@ -155,7 +158,9 @@ function collapseCwdPaths(line: string,): string {
     return line;
 
   if (ALT_CWD_PREFIX !== '') {
-    if (ALT_CWD_PREFIX.length >= CWD_PREFIX.length) {
+    if (ALT_CWD_PREFIX.length
+      >= CWD_PREFIX
+      .length) {
       if (line.startsWith(ALT_CWD_PREFIX,))
         return line.slice(ALT_CWD_PREFIX.length,);
       if (line.startsWith(CWD_PREFIX,))
@@ -193,7 +198,9 @@ function collapseHomePaths(line: string,): string {
     return line;
 
   if (REAL_HOME_DIR !== '') {
-    if (REAL_HOME_DIR.length >= HOME_DIR.length) {
+    if (REAL_HOME_DIR.length
+      >= HOME_DIR
+      .length) {
       if (line.startsWith(REAL_HOME_DIR,))
         return `~${line.slice(REAL_HOME_DIR.length,)}`;
       if (line.startsWith(HOME_DIR,))
@@ -229,7 +236,8 @@ function collapseHomePaths(line: string,): string {
  * ```
  */
 function truncateLine(line: string,): string {
-  if (line.length <= MAX_LINE_LENGTH)
+  if (line.length
+    <= MAX_LINE_LENGTH)
     return line;
   return `${
     line.slice(

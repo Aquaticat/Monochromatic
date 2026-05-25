@@ -266,7 +266,7 @@ function resolveApiKey({
     return explicit;
   /** Browser-safe fallback to process env when the runtime exposes one. */
   const envKey = ((typeof process) !== 'undefined')
-    ? process.env['MORPH_API_KEY']
+    ? process.env.MORPH_API_KEY
     : undefined;
   if ((envKey !== undefined) && (envKey !== ''))
     return envKey;
@@ -290,24 +290,31 @@ function resolveApiKey({
 function buildRequestBody(input: CompactInput,): Record<string, unknown> {
   /** Mutable accumulator filled with API-shape keys; one of input/messages added below. */
   const body: Record<string, unknown> = {
-    compression_ratio: input.compressionRatio ?? DEFAULT_COMPRESSION_RATIO,
-    preserve_recent: input.preserveRecent ?? DEFAULT_PRESERVE_RECENT,
-    model: input.model ?? DEFAULT_MODEL,
-    include_line_ranges: input.includeLineRanges ?? true,
-    include_markers: input.includeMarkers ?? true,
+    compression_ratio: input.compressionRatio
+      ?? DEFAULT_COMPRESSION_RATIO,
+    preserve_recent: input.preserveRecent
+      ?? DEFAULT_PRESERVE_RECENT,
+    model: input.model
+      ?? DEFAULT_MODEL,
+    include_line_ranges: input.includeLineRanges
+      ?? true,
+    include_markers: input.includeMarkers
+      ?? true,
   };
-  if (input.query !== undefined)
-    body['query'] = input.query;
-  if (input.messages !== undefined) {
-    body['messages'] = input.messages;
+  if (input.query
+    !== undefined)
+    body.query = input.query;
+  if (input.messages
+    !== undefined) {
+    body.messages = input.messages;
     return body;
   }
   if ((typeof input.input) === 'string') {
-    body['input'] = input.input;
+    body.input = input.input;
     return body;
   }
   if (Array.isArray(input.input,)) {
-    body['messages'] = input.input;
+    body.messages = input.input;
     return body;
   }
   throw new MorphInvalidInputError();
@@ -392,8 +399,10 @@ export class MorphCompactClient {
   constructor(config: CompactConfig = {},) {
     this.#config = {
       morphApiKey: config.morphApiKey,
-      morphApiUrl: config.morphApiUrl ?? DEFAULT_API_URL,
-      timeout: config.timeout ?? DEFAULT_TIMEOUT_MS,
+      morphApiUrl: config.morphApiUrl
+        ?? DEFAULT_API_URL,
+      timeout: config.timeout
+        ?? DEFAULT_TIMEOUT_MS,
     };
   }
 
@@ -417,15 +426,18 @@ export class MorphCompactClient {
    */
   async compact(input: CompactInput,): Promise<CompactResult> {
     /** Late-bound key resolution so env overrides can surface per call. */
-    const apiKey = resolveApiKey({ explicit: this.#config.morphApiKey, },);
+    const apiKey = resolveApiKey({ explicit: this.#config
+      .morphApiKey, },);
     /** Fully qualified compact endpoint resolved against the configured base URL. */
-    const url = `${this.#config.morphApiUrl}/v1/compact`;
+    const url = `${this.#config
+      .morphApiUrl}/v1/compact`;
     /** Wire-shape JSON payload built from caller input. */
     const body = buildRequestBody(input,);
     /** Composite signal so either caller-cancel or timeout aborts fetch. */
     const signal = buildSignal({
       caller: input.signal,
-      timeoutMs: this.#config.timeout,
+      timeoutMs: this.#config
+        .timeout,
     },);
     /** Raw fetch response inspected for status and parsed below. */
     const response = await fetch(

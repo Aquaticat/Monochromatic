@@ -161,7 +161,8 @@ export function acceptsDim(
     dim: DataDimKey;
   },
 ): boolean {
-  return CHANNEL_ACCEPTED_KINDS[channel].includes(DIM_KINDS[dim],);
+  return CHANNEL_ACCEPTED_KINDS[channel]
+    .includes(DIM_KINDS[dim],);
 }
 
 //endregion Helpers

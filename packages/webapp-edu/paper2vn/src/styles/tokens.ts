@@ -26,7 +26,8 @@ import {
 const EIGHTH: number = QUARTER / 2;
 
 /** Tight line height for primary headings (h1) */
-export const LINE_HEIGHT_TIGHT: number = 1 + (1 / (1 + 2 + 2));
+export const LINE_HEIGHT_TIGHT: number = 1 + (1 / (1 + 2
+  + 2));
 
 /** Snug line height for secondary headings (h2) */
 export const LINE_HEIGHT_SNUG: number = 1 + (1 / (1 + 2));

@@ -26,5 +26,8 @@
 export function $(
   value: unknown,
 ): value is RegExp {
-  return Object.prototype.toString.call(value,) === '[object RegExp]';
+  return Object.prototype
+    .toString
+    .call(value,)
+    === '[object RegExp]';
 }

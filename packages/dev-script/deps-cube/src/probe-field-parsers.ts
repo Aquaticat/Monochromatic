@@ -62,14 +62,17 @@ const GITHUB_DOMAIN = 'github.com';
  * @returns owner/repo pair, or `null` when the shape does not match
  */
 function parseGithubShorthand(s: string,): GithubOwnerRepo | null {
-  if (s.length <= GITHUB_SHORTHAND_PREFIX.length)
+  if (s.length
+    <= GITHUB_SHORTHAND_PREFIX
+    .length)
     return null;
   if (s
     .slice(
       0,
       GITHUB_SHORTHAND_PREFIX.length,
     )
-    .toLowerCase() !== GITHUB_SHORTHAND_PREFIX)
+    .toLowerCase()
+    !== GITHUB_SHORTHAND_PREFIX)
   {
     return null;
   }
@@ -125,8 +128,10 @@ function parseGithubUrl(s: string,): GithubOwnerRepo | null {
   if (ghIdx === (-1))
     return null;
   /** Index immediately after the domain; the separator byte must live here. */
-  const afterDomain = ghIdx + GITHUB_DOMAIN.length;
-  if (afterDomain >= s.length)
+  const afterDomain = ghIdx + GITHUB_DOMAIN
+    .length;
+  if (afterDomain >= s
+    .length)
     return null;
   /** Separator char between domain and path; per the URL forms must be `/` or `:`. */
   const sep = s.charAt(afterDomain,);
@@ -158,7 +163,8 @@ function parseGithubUrl(s: string,): GithubOwnerRepo | null {
   function scanRepoEnd(from: number,): number {
     /** Scan cursor; walked forward to the first URL delimiter or end of `tail`. */
     let end = from;
-    while (end < tail.length) {
+    while (end < tail
+      .length) {
       /** Char at cursor; URL delimiters end the repo span. */
       const c = tail.charAt(end,);
       if ((c === '/')
@@ -218,7 +224,8 @@ export function parseRepository(repoField: NpmVersion['repository'],): Repositor
   /** `true` when `repository` field is a plain string instead of an object. */
   const isStringForm = (typeof repoField) === 'string';
   /** Unified string form of `repository`, regardless of plain-string or object shape. */
-  const rawString = isStringForm ? repoField : (repoField.url ?? '');
+  const rawString = isStringForm ? repoField : (repoField.url
+    ?? '');
   /** Optional monorepo sub-directory; only object-form entries carry one. */
   const directory = isStringForm ? undefined : repoField.directory;
 
@@ -290,9 +297,11 @@ export function resolveVersion(
     readonly pkg: NpmPackage;
   },
 ): string | undefined {
-  if (looksLikePinnedSemver(range,) && (pkg.versions?.[range] !== undefined))
+  if (looksLikePinnedSemver(range,)
+    && (pkg.versions?.[range] !== undefined))
     return range;
-  return pkg['dist-tags']?.latest;
+  return pkg['dist-tags']
+    ?.latest;
 }
 
 /**
@@ -323,7 +332,8 @@ function looksLikePinnedSemver(s: string,): boolean {
   function scanDigits(from: number,): number {
     /** Scan cursor; walked forward over each ASCII digit from `from`. */
     let end = from;
-    while (end < s.length) {
+    while (end < s
+      .length) {
       /** Char at cursor; only ASCII digits advance. */
       const c = s.charAt(end,);
       if ((c < '0') || (c > '9'))
@@ -336,13 +346,15 @@ function looksLikePinnedSemver(s: string,): boolean {
   const major = scanDigits(0,);
   if (major === 0)
     return false;
-  if (s.charAt(major,) !== '.')
+  if (s.charAt(major,)
+    !== '.')
     return false;
   /** Exclusive end of the minor digit run. */
   const minor = scanDigits(major + 1,);
   if (minor === (major + 1))
     return false;
-  if (s.charAt(minor,) !== '.')
+  if (s.charAt(minor,)
+    !== '.')
     return false;
   /** Exclusive end of the patch digit run. */
   const patch = scanDigits(minor + 1,);
@@ -372,7 +384,8 @@ export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
   /** `true` when `license` field is a plain SPDX string instead of object form. */
   const isStringForm = (typeof license) === 'string';
   /** Raw license string before normalisation, either field itself or `.type` subfield. */
-  const unnormalised = isStringForm ? license : (license?.type ?? '');
+  const unnormalised = isStringForm ? license : (license?.type
+    ?? '');
   /** Normalised license string, object form unwrapped, uppercased, trimmed, ready for checks. */
   const raw = unnormalised
     .toUpperCase()
@@ -382,16 +395,22 @@ export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
   if (PERMISSIVE_LICENSES.has(raw,))
     return 'permissive';
   if (raw.startsWith('GPL',)
-    || raw.startsWith('LGPL',)
-    || raw.startsWith('AGPL',)
-    || raw.includes('COPYLEFT',))
+    || raw
+    .startsWith('LGPL',)
+    || raw
+    .startsWith('AGPL',)
+    || raw
+    .includes('COPYLEFT',))
   {
     return 'copyleft';
   }
   if ((raw === 'UNLICENSED')
-    || raw.startsWith('SEE LICENSE',)
-    || raw.startsWith('SEE LGPL-3.0-OR-LATER.TXT',)
-    || raw.startsWith('PROPRIETARY',))
+    || raw
+    .startsWith('SEE LICENSE',)
+    || raw
+    .startsWith('SEE LGPL-3.0-OR-LATER.TXT',)
+    || raw
+    .startsWith('PROPRIETARY',))
   {
     return 'non-oss';
   }

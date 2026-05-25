@@ -88,10 +88,13 @@ export function chooseCompressionRatio(
     contextWindow: number;
   },
 ): number {
-  if ((contextUsage === undefined) || (contextUsage.tokens === null))
+  if ((contextUsage === undefined) || (contextUsage.tokens
+    === null))
     return RATIO_HIGH;
   /** Pressure proxy chosen for adaptive ratio selection. */
-  const fraction = contextUsage.tokens / contextUsage.contextWindow;
+  const fraction = contextUsage.tokens
+    / contextUsage
+    .contextWindow;
   if (fraction > THRESHOLD_CRITICAL)
     return RATIO_CRITICAL;
   if (fraction > THRESHOLD_HIGH)
@@ -166,11 +169,13 @@ export async function attemptMorphCompaction({
   // When there are no new messages but a previous summary exists,
   // Morph can still re-compress the previous summary to save space.
   // The index.ts handler already cancels when both are empty.
-  if ((allMessages.length === 0) && (previousSummary === undefined))
+  if ((allMessages.length
+    === 0) && (previousSummary === undefined))
     return { kind: 'fallback', };
 
   /** Serialized conversation used as Morph input; empty when re-compressing summary alone. */
-  const conversationText = allMessages.length > 0
+  const conversationText = allMessages.length
+    > 0
     ? serializeConversation(convertToLlm(allMessages,),)
     : '';
   /** Final prompt body sent to Morph; merges prior summary with new content. */
@@ -178,7 +183,8 @@ export async function attemptMorphCompaction({
     serializedConversation: conversationText,
     previousSummary,
   },);
-  if (input.trim() === '')
+  if (input.trim()
+    === '')
     return { kind: 'fallback', };
 
   /** Latest user intent forwarded to Morph for relevance ranking. */
@@ -221,7 +227,8 @@ export async function attemptMorphCompaction({
   },);
 
   /** Trimmed compacted body; empty payload triggers fallback. */
-  const output = result.output?.trim();
+  const output = result.output
+    ?.trim();
   if ((output === undefined) || (output === ''))
     return { kind: 'fallback', };
 
@@ -239,12 +246,17 @@ export async function attemptMorphCompaction({
   }`;
 
   /** Optional Morph telemetry rolled into details for the UI panel. */
-  const morphUsage = result.usage !== undefined
+  const morphUsage = result.usage
+    !== undefined
     ? {
-      inputTokens: result.usage.input_tokens,
-      outputTokens: result.usage.output_tokens,
-      compressionRatio: result.usage.compression_ratio,
-      processingTimeMs: result.usage.processing_time_ms,
+      inputTokens: result.usage
+        .input_tokens,
+      outputTokens: result.usage
+        .output_tokens,
+      compressionRatio: result.usage
+        .compression_ratio,
+      processingTimeMs: result.usage
+        .processing_time_ms,
     }
     : undefined;
 
@@ -255,7 +267,9 @@ export async function attemptMorphCompaction({
     query,
     compressionRatio: ratio,
     ...(morphUsage !== undefined ? { morphUsage, } : {}),
-    compactedLineRanges: result.messages?.[0]?.compacted_line_ranges ?? [],
+    compactedLineRanges: result.messages?.[0]
+      ?.compacted_line_ranges
+      ?? [],
     readFiles,
     modifiedFiles,
   };

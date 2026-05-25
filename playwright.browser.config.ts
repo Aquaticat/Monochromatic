@@ -12,7 +12,8 @@ const config: PlaywrightTestConfig = defineConfig({
     'module/logger/src/**/*.browser.test.ts',
   ],
   fullyParallel: true,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env
+    .CI ? 2 : 0,
   reporter: [
     ['dot',],
     [
@@ -29,7 +30,8 @@ const config: PlaywrightTestConfig = defineConfig({
   webServer: {
     command: 'bun playwright/serve.ts',
     url: 'http://localhost:3005',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: !process.env
+      .CI,
   },
 
   projects: [

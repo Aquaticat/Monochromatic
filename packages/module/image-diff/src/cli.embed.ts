@@ -63,7 +63,8 @@ export async function handleEmbed({
     console.log(JSON.stringify(
       {
         provider,
-        dimensions: result.embedding.length,
+        dimensions: result.embedding
+          .length,
         usage: result.usage,
         embedding: result.embedding,
       },
@@ -80,9 +81,13 @@ export async function handleEmbed({
       results.map(function formatEntry(entry,) {
         return {
           provider: entry.provider,
-          dimensions: entry.result.embedding.length,
-          usage: entry.result.usage,
-          embedding: entry.result.embedding,
+          dimensions: entry.result
+            .embedding
+            .length,
+          usage: entry.result
+            .usage,
+          embedding: entry.result
+            .embedding,
         };
       },),
       null,

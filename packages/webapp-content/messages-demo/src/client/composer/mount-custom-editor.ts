@@ -39,28 +39,36 @@ export async function mountCustomEditor(
   host.className = 'composer-body--custom';
   // Hide the textarea but leave it in DOM so reads of
   // `textarea.value` continue to work.
-  input.textarea.hidden = true;
-  input.textarea.parentNode?.insertBefore(
+  input.textarea
+    .hidden = true;
+  input.textarea
+    .parentNode
+    ?.insertBefore(
     host,
     input.textarea,
   );
   /** URL-flag override that surfaces editor-internal trace logs in the browser console. */
-  const debug = new URLSearchParams(globalThis.location.search,).get('debug',) === '1';
+  const debug = new URLSearchParams(globalThis.location.search,).get('debug',)
+    === '1';
   /** Saved on composer state so later send/promote steps can read editor text or unmount it. */
   const editor = await mountEditor({
     host,
-    initialText: input.textarea.value,
+    initialText: input.textarea
+      .value,
     debug,
   },);
-  input.state.editor = editor;
+  input.state
+    .editor = editor;
   editor.on(
     'change',
     function mirror() {
-      input.textarea.value = editor.text;
+      input.textarea
+        .value = editor.text;
       // Dispatch a synthetic `input` event so `queueTierPromotionCheck`
       // (which is registered on the textarea) still fires for typing
       // through the custom editor.
-      input.textarea.dispatchEvent(new Event(
+      input.textarea
+        .dispatchEvent(new Event(
         'input',
         { bubbles: true, },
       ),);

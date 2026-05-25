@@ -36,7 +36,8 @@ export {};
 const INFRA_FLAGS: ReadonlySet<string> = new Set(['--verbose',],);
 
 /** Raw args after the script name. */
-const rawArgs = process.argv.slice(2,);
+const rawArgs = process.argv
+  .slice(2,);
 
 /**
  * Index of the `--` separator, or end-of-args when absent.
@@ -76,8 +77,10 @@ const args = runSync(
   },
 );
 
-if (args.cmd === 'create') {
-  await (args.from !== undefined
+if (args.cmd
+  === 'create') {
+  await (args.from
+    !== undefined
     ? clone({
       destination: args.name,
       source: args.from,
@@ -87,45 +90,61 @@ if (args.cmd === 'create') {
       name: args.name,
     },));
 }
-else if (args.cmd === 'shell')
+else if (args.cmd
+  === 'shell')
   await shell({ name: args.name, },);
-else if (args.cmd === 'list') {
+else if (args.cmd
+  === 'list') {
   /** All managed VMs queried from libvirt. */
   const vms = await list();
-  if (vms.length === 0)
+  if (vms.length
+    === 0)
     console.error('no VMs found',);
   else {
     /** Column width for aligned output. */
     const NAME_COL_WIDTH = 24;
     vms.forEach(function printVm(vm,) {
-      console.log(`${vm.name.padEnd(NAME_COL_WIDTH,)} ${vm.state}`,);
+      console.log(`${vm.name
+        .padEnd(NAME_COL_WIDTH,)} ${vm.state}`,);
     },);
   }
 }
-else if (args.cmd === 'update')
+else if (args.cmd
+  === 'update')
   await update();
-else if (args.cmd === 'destroy') {
+else if (args.cmd
+  === 'destroy') {
   if (args.all)
     await destroyAll();
-  else if (args.name !== undefined)
+  else if (args.name
+    !== undefined)
     await destroy({ name: args.name, },);
   else
     throw new Error('usage: mvm destroy <name> | --all',);
 }
-else if (args.cmd === 'exec') {
+else if (args.cmd
+  === 'exec') {
   /** Execution result with stdout, stderr, and exit code. */
   const result = await exec({
     command: args.command,
     name: args.name,
   },);
-  if (result.stdout.length > 0)
-    process.stdout.write(result.stdout,);
-  if (result.stderr.length > 0)
-    process.stderr.write(result.stderr,);
-  if (result.exitCode !== 0)
+  if (result.stdout
+    .length
+    > 0)
+    process.stdout
+      .write(result.stdout,);
+  if (result.stderr
+    .length
+    > 0)
+    process.stderr
+      .write(result.stderr,);
+  if (result.exitCode
+    !== 0)
     process.exitCode = result.exitCode;
 }
-else if (args.cmd === 'push') {
+else if (args.cmd
+  === 'push') {
   /** Guest path where the file is accessible inside the VM. */
   const guestFilePath = await pushFile({
     name: args.name,
@@ -134,7 +153,8 @@ else if (args.cmd === 'push') {
   },);
   console.log(`pushed ${args.hostPath} -> ${guestFilePath} in VM ${args.name}`,);
 }
-else if (args.cmd === 'pull') {
+else if (args.cmd
+  === 'pull') {
   /** File content retrieved from the guest. */
   const content = await pullFile({
     name: args.name,
@@ -154,11 +174,18 @@ else {
     command: args.command,
     from: args.from,
   },);
-  if (result.stdout.length > 0)
-    process.stdout.write(result.stdout,);
-  if (result.stderr.length > 0)
-    process.stderr.write(result.stderr,);
-  if (result.exitCode !== 0)
+  if (result.stdout
+    .length
+    > 0)
+    process.stdout
+      .write(result.stdout,);
+  if (result.stderr
+    .length
+    > 0)
+    process.stderr
+      .write(result.stderr,);
+  if (result.exitCode
+    !== 0)
     process.exitCode = result.exitCode;
 }
 

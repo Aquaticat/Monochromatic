@@ -53,7 +53,8 @@ export function addExplicit(args: readonly string[],): readonly string[] {
   /** Position of the `add` (or other) subcommand within args. */
   const { subcommandIndex, } = parseGlobalOptions(args,);
 
-  if (args[subcommandIndex] !== 'add')
+  if (args[subcommandIndex]
+    !== 'add')
     return args;
 
   /** Tagged logger for the add-explicit rule. */
@@ -82,10 +83,13 @@ export function addExplicit(args: readonly string[],): readonly string[] {
     ];
   }
 
-  if (region.bulkMatches.length > 0) {
+  if (region.bulkMatches
+    .length
+    > 0) {
     throw new Error(
       `cli-git: git add rejects bulk-staging patterns (${
-        region.bulkMatches.join(', ',)
+        region.bulkMatches
+          .join(', ',)
       }) `
         + `because they sweep up paths the caller did not intend to stage, `
         + `leaving the index in a state that does not match a single logical change. `

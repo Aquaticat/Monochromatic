@@ -74,15 +74,20 @@ import { queryAllBackendsSync, } from './backends.ts';
  */
 export function $(config: SyncStoreConfig = {},): SyncStore {
   /** Caller-supplied identifier or freshly minted UUID; used in debug logs to disambiguate stores. */
-  const storeId = config.storeId ?? crypto.randomUUID();
+  const storeId = config.storeId
+    ?? crypto
+    .randomUUID();
   /** Serializer applied on every `set`; defaults to superjson so structured values round-trip through string backends. */
-  const serializer: Serializer = config.serializer ?? superjsonStringify;
+  const serializer: Serializer = config.serializer
+    ?? superjsonStringify;
   /**
    * Deserializer applied on every `get`; paired with {@link serializer}'s default so superjson output decodes correctly.
    */
-  const deserializer: Deserializer = config.deserializer ?? superjsonParse;
+  const deserializer: Deserializer = config.deserializer
+    ?? superjsonParse;
   /** When `true`, circular structures are serialized lossily instead of throwing; opt-in safety net for graph-shaped values. */
-  const lossyForCircular = config.lossyForCircular ?? true;
+  const lossyForCircular = config.lossyForCircular
+    ?? true;
   /** Non-empty list of storage backends queried in order; defaults to a single in-memory Map for ad-hoc stores. */
   const backends: readonly [
     SyncStorageBackend,
@@ -91,11 +96,13 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
     ?? [new Map<string, string>(),];
 
   /** Configured eviction policies; empty array means unbounded growth. */
-  const policies = config.eviction ?? [];
+  const policies = config.eviction
+    ?? [];
   /** First LRU policy in the list, or undefined when LRU is not configured. */
   const lruPolicy = policies.find(function isLru(p,) {
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- future-proofing: more eviction policies will be added
-    return p.policy === 'lru';
+    return p.policy
+      === 'lru';
   },);
   /**
    * LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or undefined when LRU is not configured.

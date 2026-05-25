@@ -49,7 +49,9 @@ async function main(): Promise<void> {
       const file = await parseFigmaFile(path,);
 
       // Verify file type
-      if (file.fileType !== test.type) {
+      if (file.fileType
+        !== test
+        .type) {
         console.error(`  FAIL: expected type "${test.type}", got "${file.fileType}"`,);
         failed++;
         continue;
@@ -58,28 +60,43 @@ async function main(): Promise<void> {
 
       // Verify schema
       /** Total number of schema definitions; used in the summary line and as a sanity floor. */
-      const totalDefs = file.schema.definitions.length;
+      const totalDefs = file.schema
+        .definitions
+        .length;
       /** Count of ENUM-kind definitions for the summary line. */
-      const enums = file.schema.definitions.filter(d => d.kind === 'ENUM').length;
+      const enums = file.schema
+        .definitions
+        .filter(d => d.kind === 'ENUM')
+        .length;
       /** Count of STRUCT-kind definitions for the summary line. */
-      const structs = file.schema.definitions.filter(d => d.kind === 'STRUCT').length;
+      const structs = file.schema
+        .definitions
+        .filter(d => d.kind === 'STRUCT')
+        .length;
       /** Count of MESSAGE-kind definitions for the summary line. */
-      const messages = file.schema.definitions.filter(d => d.kind === 'MESSAGE').length;
+      const messages = file.schema
+        .definitions
+        .filter(d => d.kind === 'MESSAGE')
+        .length;
       console.log(
         `  Schema: ${totalDefs} definitions (${enums} enums, ${structs} structs, ${messages} messages)`,
       );
 
       // Verify key schema definitions exist
       /** NodeType enum lookup; required because the DOCUMENT field is the canary the rest of the test relies on. */
-      const nodeType = file.schema.enumByName.get('NodeType',);
+      const nodeType = file.schema
+        .enumByName
+        .get('NodeType',);
       if (!nodeType) {
         console.error('  FAIL: NodeType enum not found',);
         failed++;
         continue;
       }
       /** DOCUMENT entry of NodeType; its value must equal 1 to confirm enum decoding is correct. */
-      const docField = nodeType.fields.find(f => f.name === 'DOCUMENT');
-      if ((!docField) || (docField.value !== 1)) {
+      const docField = nodeType.fields
+        .find(f => f.name === 'DOCUMENT');
+      if ((!docField) || (docField.value
+        !== 1)) {
         console.error(
           `  FAIL: NodeType.DOCUMENT not found or wrong value: ${docField?.value}`,
         );
@@ -95,7 +112,8 @@ async function main(): Promise<void> {
       }
 
       /** Top-level message discriminator; every fixture is expected to be a NODE_CHANGES payload. */
-      const msgType = file.document.type as string | undefined;
+      const msgType = file.document
+        .type as string | undefined;
       if (msgType !== 'MessageType.NODE_CHANGES') {
         console.error(`  FAIL: expected MessageType.NODE_CHANGES, got ${msgType}`,);
         failed++;
@@ -103,7 +121,8 @@ async function main(): Promise<void> {
       }
 
       /** Array of node-change records; presence and array shape are asserted before iterating. */
-      const nodeChanges = file.document.nodeChanges as
+      const nodeChanges = file.document
+        .nodeChanges as
         | Record<string, unknown>[]
         | undefined;
       if ((!nodeChanges) || (!Array.isArray(nodeChanges,))) {
@@ -114,22 +133,27 @@ async function main(): Promise<void> {
       console.log(`  Document: ${nodeChanges.length} node changes`,);
 
       // Print first few nodes
-      for (let i = 0; i < Math.min(
+      for (let i = 0; i < Math
+        .min(
         3,
         nodeChanges.length,
       ); i++) {
         /** Current node-change record from the preview loop; cast through `any` upstream is unavoidable. */
         const nc = nodeChanges[i]!;
         /** Display name pulled from the node; falls back to `?` so missing names do not break the log. */
-        const name = nc.name as string ?? '?';
+        const name = nc.name as string
+          ?? '?';
         /** Display type pulled from the node; falls back to `?` for the same reason as `name`. */
-        const type = nc.type as string ?? '?';
+        const type = nc.type as string
+          ?? '?';
         console.log(`    Node ${i + 1}: type=${type} name="${name}"`,);
       }
 
       // Verify images
-      console.log(`  Images: ${file.images.size}`,);
-      console.log(`  Meta: fileName="${file.meta.fileName}"`,);
+      console.log(`  Images: ${file.images
+        .size}`,);
+      console.log(`  Meta: fileName="${file.meta
+        .fileName}"`,);
 
       passed++;
     }
@@ -144,7 +168,8 @@ async function main(): Promise<void> {
     process.exitCode = 1;
 }
 
-main().catch(err => {
+main()
+  .catch(err => {
   console.error(err,);
   process.exitCode = 1;
 },);

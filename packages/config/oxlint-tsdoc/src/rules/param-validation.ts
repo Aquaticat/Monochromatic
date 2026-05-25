@@ -39,7 +39,10 @@ export const requireParamName: CreateOnceRule = {
         _node,
         result,
       ): void {
-        result.docComment.params.blocks.forEach(function checkBlock(block,): void {
+        result.docComment
+          .params
+          .blocks
+          .forEach(function checkBlock(block,): void {
           if (block.parameterName.trim().length === 0) {
             context.report({
               node: result.comment,
@@ -88,7 +91,10 @@ export const requireParamDescription: CreateOnceRule = {
         _node,
         result,
       ): void {
-        result.docComment.params.blocks.forEach(function checkBlock(block,): void {
+        result.docComment
+          .params
+          .blocks
+          .forEach(function checkBlock(block,): void {
           if (!PlainTextEmitter.hasAnyTextContent(block.content,)) {
             context.report({
               node: result.comment,

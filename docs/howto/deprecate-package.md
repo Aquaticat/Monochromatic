@@ -188,7 +188,7 @@ mise run file-enforcer
 In `packages-deprecated/<cat>/<name>/package.json`:
 
 - `"private": false`
-- `"description"`: prefix with `DEPRECATED. ` (this becomes the
+- `"description"`: prefix with `DEPRECATED.` (this becomes the
   human-readable summary on the npm page)
 - `"repository": { "type": "git", "url": "...", "directory": "packages-deprecated/<cat>/<name>" }`
 - `"publishConfig": { "access": "public" }` for scoped packages

@@ -162,11 +162,13 @@ function mount(root: HTMLElement,): void {
 
   /** Cancels any in-flight typewriter, auto timer, or speech. */
   function clearTimers(): void {
-    if (runtime.typewriterCancel !== undefined) {
+    if (runtime.typewriterCancel
+      !== undefined) {
       runtime.typewriterCancel();
       runtime.typewriterCancel = undefined;
     }
-    if (runtime.autoTimer !== undefined) {
+    if (runtime.autoTimer
+      !== undefined) {
       globalThis.clearTimeout(runtime.autoTimer,);
       runtime.autoTimer = undefined;
     }
@@ -184,7 +186,8 @@ function mount(root: HTMLElement,): void {
     const live = getActiveSave();
     if (live === undefined)
       return;
-    if (live.beatIndex === 0) {
+    if (live.beatIndex
+      === 0) {
       showChapterCard({
         chapterCard,
         chapter: currentChapter(),
@@ -195,7 +198,8 @@ function mount(root: HTMLElement,): void {
     }
     characterImg.src = getCharacterPose({
       characterId: 'ruka',
-      pose: beat.pose ?? 'neutral',
+      pose: beat.pose
+        ?? 'neutral',
     },);
     /** Settings snapshot used to pick the typewriter speed. */
     const settings = getSettings();
@@ -221,7 +225,8 @@ function mount(root: HTMLElement,): void {
       return;
     /** Fresh settings read after speech/log so the latest values drive auto-advance. */
     const settingsAfter = getSettings();
-    if (settingsAfter.autoAdvanceByVoice && (speakPromise !== undefined)) {
+    if (settingsAfter.autoAdvanceByVoice
+      && (speakPromise !== undefined)) {
       await (async function waitForSpeech(): Promise<void> {
         try {
           await speakPromise;
@@ -255,7 +260,8 @@ function mount(root: HTMLElement,): void {
   /** Toggles auto-advance and immediately advances once when turning on. */
   function toggleAuto(): void {
     runtime.auto = !runtime.auto;
-    autoBtn.dataset.variant = runtime.auto ? 'primary' : 'ghost';
+    autoBtn.dataset
+      .variant = runtime.auto ? 'primary' : 'ghost';
     if (runtime.auto) {
       // Kick the auto loop forward immediately when toggled on.
       advance();
@@ -271,7 +277,8 @@ function mount(root: HTMLElement,): void {
 
   /** Opens the ask-the-persona panel; no-op when one is already open. */
   function openAsk(): void {
-    if (runtime.askPanel !== undefined)
+    if (runtime.askPanel
+      !== undefined)
       return;
     runtime.askPanel = mountAskPanel({
       labels: {
@@ -386,7 +393,8 @@ export function registerLecture(): void {
     module: {
       mount,
       unmount: function unmount(): void {
-        if (lectureState.currentTeardown !== undefined) {
+        if (lectureState.currentTeardown
+          !== undefined) {
           lectureState.currentTeardown();
           lectureState.currentTeardown = undefined;
         }

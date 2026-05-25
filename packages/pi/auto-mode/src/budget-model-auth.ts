@@ -68,7 +68,9 @@ class NoBudgetModelError extends Error {
       "Tried to auto-detect a budget model for a background task, but couldn't find one.",
       `Reason: ${reason}`,
     ];
-    if ((candidates.sameProvider !== undefined) && (candidates.sameProvider !== null)) {
+    if ((candidates.sameProvider
+      !== undefined) && (candidates.sameProvider
+      !== null)) {
       /** Local alias for the same-provider candidate so the template strings stay readable. */
       const c = candidates.sameProvider;
       lines.push(
@@ -78,7 +80,9 @@ class NoBudgetModelError extends Error {
     if (
       (candidates.cheapestOverall !== undefined)
       && (candidates.cheapestOverall !== null)
-      && candidates.cheapestOverall.hasApiKey
+        && candidates
+        .cheapestOverall
+        .hasApiKey
     ) {
       /** Local alias for the cheapest-overall candidate so the template strings stay readable. */
       const c = candidates.cheapestOverall;
@@ -93,8 +97,10 @@ class NoBudgetModelError extends Error {
     super(lines.join('\n',),);
     this.name = 'NoBudgetModelError';
     this.reason = reason;
-    this.sameProvider = candidates.sameProvider ?? null;
-    this.cheapestOverall = candidates.cheapestOverall ?? null;
+    this.sameProvider = candidates.sameProvider
+      ?? null;
+    this.cheapestOverall = candidates.cheapestOverall
+      ?? null;
   }
 }
 
@@ -126,9 +132,12 @@ function toCandidate(
   return {
     provider,
     modelId: model.id,
-    costInput: model.cost.input,
-    costOutput: model.cost.output,
-    hasApiKey: ctx.modelRegistry.hasConfiguredAuth(model,),
+    costInput: model.cost
+      .input,
+    costOutput: model.cost
+      .output,
+    hasApiKey: ctx.modelRegistry
+      .hasConfiguredAuth(model,),
   };
 }
 
@@ -158,7 +167,8 @@ async function resolveAuth(
 } | null> {
   try {
     /** Registry response carrying `ok` plus optional `apiKey` and `headers`. */
-    const result = await ctx.modelRegistry.getApiKeyAndHeaders(model,);
+    const result = await ctx.modelRegistry
+      .getApiKeyAndHeaders(model,);
     if (!result.ok)
       return null;
     /** Output auth object assembled field-by-field so omitted keys stay undefined rather than `null`. */
@@ -166,9 +176,11 @@ async function resolveAuth(
       apiKey?: string;
       headers?: Record<string, string>;
     } = {};
-    if (result.apiKey !== undefined)
+    if (result.apiKey
+      !== undefined)
       auth.apiKey = result.apiKey;
-    if (result.headers !== undefined)
+    if (result.headers
+      !== undefined)
       auth.headers = result.headers;
     return auth;
   }
@@ -248,7 +260,12 @@ async function findCheapestCandidate(
       const [firstCandidate,] = candidates;
       if (firstCandidate === undefined)
         return acc;
-      if ((acc === null) || (firstCandidate.cost.input < acc.model.cost.input)) {
+      if ((acc === null) || (firstCandidate.cost
+        .input
+        < acc
+        .model
+        .cost
+        .input)) {
         return {
           model: firstCandidate,
           provider,

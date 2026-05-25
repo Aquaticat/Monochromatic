@@ -80,17 +80,21 @@ export function tomlDelete(
     path,
   },);
 
-  if ((resolved.kind === 'missing') || (resolved.kind === 'top-level'))
+  if ((resolved.kind
+    === 'missing') || (resolved.kind
+    === 'top-level'))
     return edit;
 
-  if (resolved.kind === 'array-of-tables') {
+  if (resolved.kind
+    === 'array-of-tables') {
     return withDeletions({
       edit,
       nodes: resolved.nodes,
     },);
   }
 
-  if (resolved.kind === 'value') {
+  if (resolved.kind
+    === 'value') {
     return deleteArrayElement({
       edit,
       path,
@@ -179,7 +183,8 @@ function deleteArrayElement(
 ): TomlEditState {
   /** Destructured parent so the type guard can read it once. */
   const { parent, } = element;
-  if ((parent === null) || (parent.type !== 'TOMLArray')) {
+  if ((parent === null) || (parent.type
+    !== 'TOMLArray')) {
     throw new TomlImmutableNodeError(
       `tomlDelete at ${
         formatPath({ path, },)
@@ -187,7 +192,8 @@ function deleteArrayElement(
     );
   }
   /** Position of the element to drop; seeds the skip path for the outer walk. */
-  const skipIndex = parent.elements.indexOf(element,);
+  const skipIndex = parent.elements
+    .indexOf(element,);
   if (skipIndex === (-1)) {
     throw new TomlImmutableNodeError(
       `tomlDelete at ${formatPath({ path, },)}: element not found in parent array`,
@@ -263,16 +269,19 @@ function walkUpToKeyValue(
       `tomlDelete at ${formatPath({ path, },)}: array has no parent in the AST`,
     );
   }
-  if (ancestor.type === 'TOMLKeyValue') {
+  if (ancestor.type
+    === 'TOMLKeyValue') {
     return {
       keyValue: ancestor,
       outerArray: array,
       skipPath: trailingPath,
     };
   }
-  if (ancestor.type === 'TOMLArray') {
+  if (ancestor.type
+    === 'TOMLArray') {
     /** Index of `array` inside its enclosing array; prepended to the skip path. */
-    const idx = ancestor.elements.indexOf(array,);
+    const idx = ancestor.elements
+      .indexOf(array,);
     if (idx === (-1)) {
       throw new TomlImmutableNodeError(
         `tomlDelete at ${formatPath({ path, },)}: nested array not found in its parent`,
@@ -310,7 +319,8 @@ function removeJsAtPath(
     path: readonly number[];
   },
 ): unknown[] {
-  if (path.length === 0) {
+  if (path.length
+    === 0) {
     throw new TomlImmutableNodeError(
       'removeJsAtPath: path must not be empty',
     );
@@ -319,7 +329,8 @@ function removeJsAtPath(
   const head = nonNullishOrThrow(path[0],);
   /** Inner-level segments still to traverse. */
   const rest = path.slice(1,);
-  if (rest.length === 0) {
+  if (rest.length
+    === 0) {
     return arr.filter(function notSkipped(
       _el,
       i,

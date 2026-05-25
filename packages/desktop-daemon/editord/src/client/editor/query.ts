@@ -39,12 +39,15 @@ export function computeDocumentRange({ editor, }: { readonly editor: HTMLDivElem
   /** Zero-based index of the final line; clamped to 0 when the editor has no children. */
   const lastLineIndex = Math.max(
     0,
-    editor.children.length - 1,
+    editor.children
+      .length
+      - 1,
   );
   /** DOM element representing the final line; used to measure its trailing length. */
   const lastLineEl = editor.children[lastLineIndex];
   /** Text content of the final line, defaulting to `''` when the element is missing. */
-  const lastLineText = lastLineEl?.textContent ?? '';
+  const lastLineText = lastLineEl?.textContent
+    ?? '';
   /** Effective length of the final line; lone newlines render as length 0 to match document semantics. */
   const lastLineLength = lastLineText === '\n' ? 0 : lastLineText.length;
   return {
@@ -94,7 +97,9 @@ export function diagnosticsEqual({
   readonly a: readonly Diagnostic[];
   readonly b: readonly Diagnostic[];
 },): boolean {
-  if (a.length !== b.length)
+  if (a.length
+    !== b
+    .length)
     return false;
   return a.every(function matchDiagnostic(
     da,
@@ -104,13 +109,43 @@ export function diagnosticsEqual({
     const db = b[i];
     if (db === undefined)
       return false;
-    return (da.message === db.message)
-      && (da.severity === db.severity)
-      && (da.source === db.source)
-      && (da.range.start.line === db.range.start.line)
-      && (da.range.start.character === db.range.start.character)
-      && (da.range.end.line === db.range.end.line)
-      && (da.range.end.character === db.range.end.character);
+    return (da.message
+      === db
+      .message)
+      && (da.severity
+        === db
+        .severity)
+      && (da.source
+        === db
+        .source)
+      && (da.range
+        .start
+        .line
+        === db
+        .range
+        .start
+        .line)
+      && (da.range
+        .start
+        .character
+        === db
+        .range
+        .start
+        .character)
+      && (da.range
+        .end
+        .line
+        === db
+        .range
+        .end
+        .line)
+      && (da.range
+        .end
+        .character
+        === db
+        .range
+        .end
+        .character);
   },);
 }
 
@@ -138,7 +173,9 @@ export function hintsEqual({
   readonly a: readonly InlayHint[];
   readonly b: readonly InlayHint[];
 },): boolean {
-  if (a.length !== b.length)
+  if (a.length
+    !== b
+    .length)
     return false;
   return a.every(function matchHint(
     ha,
@@ -148,12 +185,28 @@ export function hintsEqual({
     const hb = b[i];
     if (hb === undefined)
       return false;
-    return (ha.label === hb.label)
-      && (ha.kind === hb.kind)
-      && (ha.position.line === hb.position.line)
-      && (ha.position.character === hb.position.character)
-      && (ha.paddingLeft === hb.paddingLeft)
-      && (ha.paddingRight === hb.paddingRight);
+    return (ha.label
+      === hb
+      .label)
+      && (ha.kind
+        === hb
+        .kind)
+      && (ha.position
+        .line
+        === hb
+        .position
+        .line)
+      && (ha.position
+        .character
+        === hb
+        .position
+        .character)
+      && (ha.paddingLeft
+        === hb
+        .paddingLeft)
+      && (ha.paddingRight
+        === hb
+        .paddingRight);
   },);
 }
 

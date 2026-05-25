@@ -70,7 +70,8 @@ export function renderYAxis(): string {
  * ```
  */
 export function renderXAxis(timestamps: readonly string[],): string {
-  if (timestamps.length === 0)
+  if (timestamps.length
+    === 0)
     return '';
 
   /** Maximum number of X axis labels to show before skipping */
@@ -78,7 +79,8 @@ export function renderXAxis(timestamps: readonly string[],): string {
   /** Index stride between rendered ticks so the axis stays uncluttered. */
   const step = Math.max(
     1,
-    Math.ceil(timestamps.length / MAX_LABELS,),
+    Math.ceil(timestamps.length
+      / MAX_LABELS,),
   );
 
   /** Date/time formatter chosen by the data's span. */
@@ -92,7 +94,8 @@ export function renderXAxis(timestamps: readonly string[],): string {
   /** Indices into `timestamps` at which to emit a tick; stride-limited by `step`. */
   const tickIndices = Array
     .from(
-      { length: Math.ceil(timestamps.length / step,), },
+      { length: Math.ceil(timestamps.length
+        / step,), },
       function indexAt(
         _unused,
         k,
@@ -101,12 +104,14 @@ export function renderXAxis(timestamps: readonly string[],): string {
       },
     )
     .filter(function inRange(i,): boolean {
-      return i < timestamps.length;
+      return i < timestamps
+        .length;
     },);
 
   /** Formatted label per tick, pre-computed so consecutive-duplicate suppression can index-compare. */
   const tickLabels = tickIndices.map(function format(i,): string {
-    return formatter(timestamps[i] ?? '',);
+    return formatter(timestamps[i]
+      ?? '',);
   },);
 
   /** Rendered tick spans, joined into the axis HTML on return. */
@@ -115,18 +120,23 @@ export function renderXAxis(timestamps: readonly string[],): string {
     idx,
   ): string {
     /** Horizontal position percentage for this tick along the inline axis. */
-    const left = timestamps.length === 1
+    const left = timestamps.length
+      === 1
       ? CENTER_PERCENT
-      : (i / (timestamps.length - 1)) * PERCENT;
+      : (i / (timestamps.length
+        - 1)) * PERCENT;
     /** Formatted label for this tick. */
-    const label = tickLabels[idx] ?? '';
+    const label = tickLabels[idx]
+      ?? '';
     /** Suppress consecutive duplicate labels so the axis stays readable */
-    const displayLabel = (idx > 0) && (tickLabels[idx - 1] === label) ? '' : label;
+    const displayLabel = (idx > 0) && (tickLabels[idx - 1]
+      === label) ? '' : label;
     return h({
       tag: 'span',
       class: 'tick',
       style: { left: `${left.toFixed(2,)}%`, },
-      attrs: { title: timestamps[i] ?? '', },
+      attrs: { title: timestamps[i]
+        ?? '', },
       text: displayLabel,
     },);
   },);
@@ -150,7 +160,8 @@ function chooseFormatter(timestamps: readonly string[],): (ts: string,) => strin
       10,
     );
   },),);
-  if (uniqueDates.size <= 1)
+  if (uniqueDates.size
+    <= 1)
     return formatTime;
   return formatDate;
 }
@@ -172,7 +183,8 @@ function formatTime(timestamp: string,): string {
   const TIME_START = 11;
   /** End index for the HH:MM slice extracted from the ISO timestamp. */
   const TIME_END = 16;
-  if (timestamp.length < TIME_END)
+  if (timestamp.length
+    < TIME_END)
     return timestamp;
   return timestamp.slice(
     TIME_START,
@@ -194,7 +206,8 @@ function formatTime(timestamp: string,): string {
  * ```
  */
 function formatDate(timestamp: string,): string {
-  if (timestamp.length < 10)
+  if (timestamp.length
+    < 10)
     return timestamp;
   /** Extract YYYY-MM-DD from the ISO string */
   const datePart = timestamp.slice(
@@ -202,7 +215,8 @@ function formatDate(timestamp: string,): string {
     10,
   );
   /** Local current year used to detect the same-year shortening case. */
-  const currentYear = new Date().getFullYear().toString();
+  const currentYear = new Date().getFullYear()
+    .toString();
   if (datePart.startsWith(currentYear,)) {
     // Same year: show MM-DD only; skip "YYYY-" prefix
     /** Length of the leading "YYYY-" prefix that gets trimmed for same-year labels. */

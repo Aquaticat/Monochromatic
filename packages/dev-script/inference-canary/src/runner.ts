@@ -43,7 +43,8 @@ function collectScores(result: ProbeResult,): number[] {
   const scores = [
     result.meanScore,
   ];
-  if (result.pass2Score !== undefined)
+  if (result.pass2Score
+    !== undefined)
     scores.push(result.pass2Score,);
   return scores;
 }
@@ -68,7 +69,8 @@ function computeCategoryScores(results: readonly ProbeResult[],): Record<string,
     ] {
       /** Probe results scoped to one category; their scores are averaged for that bucket. */
       const categoryResults = results.filter(function matchCategory(result,): boolean {
-        return result.category === category;
+        return result.category
+          === category;
       },);
       return [
         category,
@@ -135,14 +137,21 @@ export async function runCanary({
   /** Probes left after filtering against the recent-artifact skip list. */
   const probesToRun = probes.filter(
     function notSkipped(probe,): boolean {
-      return mergedConfig.skipProbes?.get(mergedConfig.label,)?.has(probe.name,) !== true;
+      return mergedConfig.skipProbes
+        ?.get(mergedConfig.label,)
+        ?.has(probe.name,)
+        !== true;
     },
   );
 
-  if (probesToRun.length < probes.length) {
+  if (probesToRun.length
+    < probes
+    .length) {
     rl.info(
       `skipping ${
-        String(probes.length - probesToRun.length,)
+        String(probes.length
+          - probesToRun
+          .length,)
       } probe(s) with recent results`,
     );
   }

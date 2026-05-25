@@ -63,7 +63,8 @@ async function setWindowsHostname({
     command: `Rename-Computer -NewName '${hostname}' -Force`,
     name,
   },);
-  if (result.exitCode !== 0) {
+  if (result.exitCode
+    !== 0) {
     rl.info(
       `hostname change returned exit code ${String(result.exitCode,)}: ${result.stderr}`,
     );
@@ -125,14 +126,16 @@ export async function create({
   );
 
   /** Backing template path; registry images go through the bake pipeline, custom ones are used directly. */
-  const templateImage = resolved.kind === 'registry'
+  const templateImage = resolved.kind
+    === 'registry'
     ? await ensureTemplate(resolved.spec,)
     : resolved.customTemplatePath;
 
   /**
    * Guest config (osFamily, shell, etc.); falls back to {@link CUSTOM_GUEST_DEFAULTS} for custom templates.
    */
-  const guest = resolved.kind === 'registry'
+  const guest = resolved.kind
+    === 'registry'
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;
 
@@ -142,7 +145,8 @@ export async function create({
     'disk.qcow2',
   );
   /** Disk capacity for the new VM; Windows needs a larger image so it gets bumped up. */
-  const diskSize = guest.osFamily === 'windows' ? WINDOWS_DISK_SIZE : DEFAULT_DISK_SIZE;
+  const diskSize = guest.osFamily
+    === 'windows' ? WINDOWS_DISK_SIZE : DEFAULT_DISK_SIZE;
 
   rl.info('creating disk from template image...',);
   await spawn({
@@ -198,7 +202,8 @@ export async function create({
   await waitForGuestAgent({ name, },);
 
   // Windows VMs do not use cloud-init; set hostname via guest agent
-  if (guest.osFamily === 'windows') {
+  if (guest.osFamily
+    === 'windows') {
     await setWindowsHostname({
       hostname: name,
       name,

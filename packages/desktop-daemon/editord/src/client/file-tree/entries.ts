@@ -115,12 +115,14 @@ function isTransientDirName({ name, }: { readonly name: string; },): boolean {
  * @param cache - prefetch cache map to evict from
  */
 function evictPrefetchCache({ cache, }: { readonly cache: Map<string, readonly DirEntry[]>; },): void {
-  if (cache.size <= MAX_PREFETCH_CACHE_SIZE)
+  if (cache.size
+    <= MAX_PREFETCH_CACHE_SIZE)
     return;
   /**
    * Number of oldest entries to drop so the cache returns under cap.
    */
-  const excess = cache.size - MAX_PREFETCH_CACHE_SIZE;
+  const excess = cache.size
+    - MAX_PREFETCH_CACHE_SIZE;
   /**
    * First-N keys in insertion order; Maps preserve insertion order, so
    * slicing here selects the oldest entries to evict.

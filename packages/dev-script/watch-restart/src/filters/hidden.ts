@@ -68,7 +68,8 @@ function hasHiddenSegmentAt({
   path: string;
   idx: number;
 },): boolean {
-  return (path.charAt(idx,) === '.')
+  return (path.charAt(idx,)
+    === '.')
     && isHiddenBodyChar(path.charAt(idx + 1,),);
 }
 
@@ -103,10 +104,11 @@ function containsHiddenSegment(path: string,): boolean {
     return true;
   }
 
-  for (let idx = 0; idx < path.length; idx += 1) {
+  for (let idx = 0; idx < path
+    .length; idx += 1) {
     if (
       isPathSeparator(path.charAt(idx,),)
-      && hasHiddenSegmentAt({
+        && hasHiddenSegmentAt({
         path,
         idx: idx + 1,
       },)

@@ -129,7 +129,8 @@ async function sweepOrphanTemps(
         return isEditordTempFile(name,);
       },
     );
-    if (orphans.length === 0)
+    if (orphans.length
+      === 0)
       return;
     /** Settled results so a single unlink failure does not mask the rest. */
     const results = await Promise.allSettled(
@@ -147,10 +148,12 @@ async function sweepOrphanTemps(
     /** Rejected promises only; surfaced in the warn branch below. */
     const failed = results.filter(
       function isRejection(r,): boolean {
-        return r.status === 'rejected';
+        return r.status
+          === 'rejected';
       },
     );
-    if (failed.length > 0) {
+    if (failed.length
+      > 0) {
       l.warn(
         `orphan sweep: ${String(failed.length,)}/${
           String(orphans.length,)

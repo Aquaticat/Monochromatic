@@ -59,7 +59,8 @@ function filterTypeErrors({
 }: FilterTypeErrorsOptions,): readonly string[] {
   /** Path fragment that uniquely identifies this probe's canary.ts; used to ignore unrelated diagnostics. */
   const marker = `canary-lint/${subdirId}/canary.ts`;
-  return output.split('\n',).filter(function matchLine(line,): boolean {
+  return output.split('\n',)
+    .filter(function matchLine(line,): boolean {
     return line.includes(marker,) && line.includes('error TS',);
   },);
 }
@@ -82,7 +83,8 @@ export async function runAndParseTypeCheck(lintDir: string,): Promise<TsgoResult
   /** Filter key: "model-slug/probe-pass" identifies this probe's file uniquely */
   // split() always returns a non-empty array; pop() is therefore never undefined here
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- split always returns non-empty array; pop is safe
-  const relativeSuffix = lintDir.split('canary-lint/',).pop() as string;
+  const relativeSuffix = lintDir.split('canary-lint/',)
+    .pop() as string;
 
   try {
     /** Separate tsconfig that only includes src/canary-lint/ to isolate generated code */

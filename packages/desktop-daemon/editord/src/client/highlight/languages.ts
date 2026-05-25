@@ -42,5 +42,6 @@ export function getParserForPath({ path, }: { readonly path: string; },): Parser
    * Extension including the leading dot, matched against {@link PARSERS} keys.
    */
   const extension = path.slice(dotIndex,);
-  return PARSERS[extension] ?? null;
+  return PARSERS[extension]
+    ?? null;
 }

@@ -34,21 +34,35 @@ export type TaskCardOptions = {
 export function buildChipTexts(task: Task,): string[] {
   /** Chip strings accumulated in display order; each block below pushes conditionally. */
   const chips: string[] = [];
-  if (task.tags.length > 0)
-    chips.push(`# ${task.tags.join(', ',)}`,);
+  if (task.tags
+    .length
+    > 0)
+    chips.push(`# ${task.tags
+      .join(', ',)}`,);
   chips.push(`tracked: ${formatRunningTrackedTime(task,)}`,);
-  if (task.locations.length > 0)
-    chips.push(`where: ${task.locations.join(', ',)}`,);
-  if (task.priority !== null)
+  if (task.locations
+    .length
+    > 0)
+    chips.push(`where: ${task.locations
+      .join(', ',)}`,);
+  if (task.priority
+    !== null)
     chips.push(`priority: ${task.priority}`,);
-  if (task.dueDate !== null)
+  if (task.dueDate
+    !== null)
     chips.push(`due: ${task.dueDate}`,);
-  if (task.complexity !== null)
+  if (task.complexity
+    !== null)
     chips.push(`complexity: ${task.complexity}`,);
-  if (task.reminders.length > 0)
+  if (task.reminders
+    .length
+    > 0)
     chips.push(`reminders: ${task.reminders[0]}`,);
-  if (task.blockedBy.length > 0)
-    chips.push(`blockedBy: ${String(task.blockedBy.length,)}`,);
+  if (task.blockedBy
+    .length
+    > 0)
+    chips.push(`blockedBy: ${String(task.blockedBy
+      .length,)}`,);
   else
     chips.push('blockedBy: none',);
   return chips;
@@ -80,7 +94,8 @@ export function renderTaskCardContent(
   },
 ): void {
   /** Rendered chip elements; the optional blocked badge is appended below when requested. */
-  const chipElements: HTMLElement[] = buildChipTexts(task,).map(
+  const chipElements: HTMLElement[] = buildChipTexts(task,)
+    .map(
     function createChip(text,): HTMLElement {
       return h({
         tag: 'span',
@@ -89,7 +104,8 @@ export function renderTaskCardContent(
       },);
     },
   );
-  if (options.showBlockedBadge === true) {
+  if (options.showBlockedBadge
+    === true) {
     chipElements.push(h({
       tag: 'span',
       class: 'chip blocked',

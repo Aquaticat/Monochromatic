@@ -65,7 +65,8 @@ export async function buildInfoRefsAdvertisement(row: {
     repo: row.repo,
   },);
   /** Capability set advertised depends on which service the client requested. */
-  const caps = row.service === 'git-upload-pack' ? UPLOAD_PACK_CAPS : RECEIVE_PACK_CAPS;
+  const caps = row.service
+    === 'git-upload-pack' ? UPLOAD_PACK_CAPS : RECEIVE_PACK_CAPS;
   /** Existing refs decide between empty-repo placeholder and standard layout. */
   const refs = await listAllRefs({ gitdir, },);
   /** Accumulator for the response body parts in protocol order. */
@@ -73,7 +74,8 @@ export async function buildInfoRefsAdvertisement(row: {
     encodePkt(`# service=${row.service}\n`,),
     flushPkt(),
   ];
-  if (refs.length === 0) {
+  if (refs.length
+    === 0) {
     /** Synthetic `capabilities^{}` pkt-line is required when no refs exist. */
     const head = `${ZERO_OID} capabilities^{}\0${caps.join(' ',)}\n`;
     chunks.push(encodePkt(head,),);

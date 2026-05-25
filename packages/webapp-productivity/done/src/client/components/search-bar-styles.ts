@@ -21,7 +21,9 @@ import {
 const BACK_FONT_SIZE = 1 + (1 / 2);
 
 /** Focus outline offset in rem (-1/8). */
-const FOCUS_OFFSET = -(1 / 2 / 2 / 2);
+const FOCUS_OFFSET = -(1 / 2
+  / 2
+  / 2);
 
 /** Full percentage for input block-size. */
 const FULL_PERCENT = 100;

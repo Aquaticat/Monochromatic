@@ -41,7 +41,8 @@ function readParentPid(pid: number,): number | null {
       'utf8',
     );
     /** First line beginning with `PPid:`; remains `undefined` on unrecognised status formats. */
-    const ppidLine = statusContent.split('\n',).find(function isPpidLine(line,) {
+    const ppidLine = statusContent.split('\n',)
+      .find(function isPpidLine(line,) {
       return line.startsWith('PPid:',);
     },);
 
@@ -49,7 +50,8 @@ function readParentPid(pid: number,): number | null {
       return null;
 
     return Number.parseInt(
-      splitWhitespace(ppidLine,)[1] ?? '0',
+      splitWhitespace(ppidLine,)[1]
+        ?? '0',
       10,
     );
   }
@@ -189,7 +191,8 @@ function findByMostRecent(): PidMapping | null {
 
       try {
         /** Modification time used to rank against the running accumulator. */
-        const mtime = statSync(filePath,).mtimeMs;
+        const mtime = statSync(filePath,)
+          .mtimeMs;
         /** Raw file contents fed to `parseHookJson` below. */
         const raw = readFileSync(
           filePath,
@@ -198,7 +201,8 @@ function findByMostRecent(): PidMapping | null {
         /** Parsed mapping that replaces the accumulator when its `mtime` is newer. */
         const mapping = parseHookJson<PidMapping>(raw,);
 
-        if ((current === null) || (mtime > current.mtime)) {
+        if ((current === null) || (mtime > current
+          .mtime)) {
           return {
             mapping,
             mtime,
@@ -214,7 +218,8 @@ function findByMostRecent(): PidMapping | null {
     null,
   );
 
-  return newest?.mapping ?? null;
+  return newest?.mapping
+    ?? null;
 }
 
 /**
@@ -233,7 +238,8 @@ function findByMostRecent(): PidMapping | null {
  * ```
  */
 function findCallingSession(): PidMapping | null {
-  return findByProcessTree() ?? findByMostRecent();
+  return findByProcessTree()
+    ?? findByMostRecent();
 }
 
 export {

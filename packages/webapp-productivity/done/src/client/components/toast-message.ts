@@ -71,7 +71,8 @@ class ToastMessage extends HTMLElement {
   connectedCallback(): void {
     this.#render();
     /** Pre-bound `remove` so the timeout fires without losing `this`. */
-    const removeFn = this.remove.bind(this,);
+    const removeFn = this.remove
+      .bind(this,);
     this.#timer = setTimeout(
       function dismiss(): void {
         removeFn();
@@ -89,7 +90,8 @@ class ToastMessage extends HTMLElement {
    * ```
    */
   disconnectedCallback(): void {
-    if (this.#timer !== null) {
+    if (this.#timer
+      !== null) {
       clearTimeout(this.#timer,);
       this.#timer = null;
     }
@@ -98,8 +100,10 @@ class ToastMessage extends HTMLElement {
   /** Renders the toast content into the shadow root. */
   #render(): void {
     /** Resolved at render time so empty-attribute elements still produce a valid toast. */
-    const message = this.getAttribute('message',) ?? '';
-    this.#shadow.replaceChildren(
+    const message = this.getAttribute('message',)
+      ?? '';
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,
@@ -130,7 +134,8 @@ customElements.define(
  * ```
  */
 export function showToast(message: string,): void {
-  document.querySelector<HTMLElement>('toast-message',)?.remove();
+  document.querySelector<HTMLElement>('toast-message',)
+    ?.remove();
 
   /** Freshly constructed element so the new message replaces the previous one. */
   const toast = document.createElement('toast-message',);
@@ -138,5 +143,6 @@ export function showToast(message: string,): void {
     'message',
     message,
   );
-  document.body.append(toast,);
+  document.body
+    .append(toast,);
 }

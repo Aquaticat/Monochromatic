@@ -234,7 +234,8 @@ export function createLspClient({
   function send(message: unknown,): void {
     /** Length-prefixed JSON-RPC frame ready for stdin; produced by the framing encoder. */
     const encoded = encodeLspMessage({ message, },);
-    proc.stdin?.write(encoded,);
+    proc.stdin
+      ?.write(encoded,);
   }
 
   /**
@@ -406,7 +407,8 @@ export function createLspClient({
       clientLog.error(`malformed JSON-RPC message: ${String(error,)}`,);
     },
   },);
-  proc.stdout?.on(
+  proc.stdout
+    ?.on(
     'data',
     function handleStdout(chunk: Buffer,) {
       parser.feed(chunk,);
@@ -416,11 +418,15 @@ export function createLspClient({
     'data',
     function handleStderr(chunk: Buffer,) {
       /** Decoded stderr chunk with trailing newline stripped; logged and appended to the rolling buffer. */
-      const text = chunk.toString('utf8',).trimEnd();
+      const text = chunk.toString('utf8',)
+        .trimEnd();
       clientLog.error(`stderr: ${text}`,);
       state.stderrBuffer += `${text}\n`;
-      if (state.stderrBuffer.length > STDERR_BUFFER_LIMIT)
-        state.stderrBuffer = state.stderrBuffer.slice(-STDERR_BUFFER_LIMIT,);
+      if (state.stderrBuffer
+        .length
+        > STDERR_BUFFER_LIMIT)
+        state.stderrBuffer = state.stderrBuffer
+          .slice(-STDERR_BUFFER_LIMIT,);
     },
   );
 
@@ -434,7 +440,8 @@ export function createLspClient({
         clientLog.error(`crashed with code ${String(code,)}`,);
         /** Reject all pending requests so callers don't hang forever. */
         pending.forEach(function rejectPending(entry,): void {
-          if (entry.timeoutId !== null)
+          if (entry.timeoutId
+            !== null)
             clearTimeout(entry.timeoutId,);
           entry.reject(new Error(`LSP server crashed (exit code ${String(code,)})`,),);
         },);

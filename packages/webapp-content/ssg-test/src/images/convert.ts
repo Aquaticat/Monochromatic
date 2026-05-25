@@ -61,7 +61,8 @@ export async function fileExists(
   }
   catch (error) {
     // Expected for missing files; log unexpected access errors for diagnostics
-    if ((!isNodeError(error,)) || (error.code !== 'ENOENT')) {
+    if ((!isNodeError(error,)) || (error.code
+      !== 'ENOENT')) {
       /** Fallback to console so diagnostic still surfaces when no logger is supplied. */
       const target = l ?? console;
       target.error(

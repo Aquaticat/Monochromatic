@@ -29,7 +29,9 @@ export function pathEquals(
     b: TomlPath;
   },
 ): boolean {
-  if (a.length !== b.length)
+  if (a.length
+    !== b
+    .length)
     return false;
   return a.every(function eq(
     seg,
@@ -88,13 +90,15 @@ export function mergeAt(
     value: unknown;
   },
 ): Record<string, unknown> {
-  if (segments.length === 0)
+  if (segments.length
+    === 0)
     return base;
   /** Current segment so each recursion step shrinks `segments` by one. */
   const [head,] = segments;
   if (head === undefined)
     return base;
-  if (segments.length === 1) {
+  if (segments.length
+    === 1) {
     return {
       ...base,
       [head]: value,

@@ -77,8 +77,10 @@ export async function buildFixPromptImpl({
   const base = await buildCodeGenFixPrompt({
     response,
     context,
-    priorLint: caches.lint.get(context.label,),
-    priorContainer: caches.container.get(context.label,),
+    priorLint: caches.lint
+      .get(context.label,),
+    priorContainer: caches.container
+      .get(context.label,),
   },);
 
   // Append additional run diagnostics when runs failed or produced incorrect output
@@ -93,7 +95,8 @@ export async function buildFixPromptImpl({
 
   // Apply probe-specific customization (e.g. constraint violation messages)
   /** Fix prompt after probe-specific customizeFixPrompt hook */
-  const customized = config.customizeFixPrompt !== undefined
+  const customized = config.customizeFixPrompt
+    !== undefined
     ? config.customizeFixPrompt(
       withAdditional,
       context,
@@ -101,10 +104,12 @@ export async function buildFixPromptImpl({
     : withAdditional;
 
   // Append perf diagnostics when a perf test is configured and the result was slow
-  if (config.perfTest === undefined)
+  if (config.perfTest
+    === undefined)
     return customized;
   /** Cached perf result for this model */
-  const perf = caches.perf.get(context.label,);
+  const perf = caches.perf
+    .get(context.label,);
   if (perf === undefined)
     return customized;
   /** Formatted performance diagnostic text, undefined when perf was acceptable */

@@ -102,12 +102,14 @@ export function tomlSet(
     path,
   },);
 
-  if (resolved.kind === 'keyvalue') {
+  if (resolved.kind
+    === 'keyvalue') {
     /** Encoded replacement text for an existing key-value's value. */
     const newText = jsValueToTomlText({
       input: value,
       options: edit.canonical,
-      existing: resolved.node.value,
+      existing: resolved.node
+        .value,
     },);
     return withEditOn({
       edit,
@@ -120,7 +122,8 @@ export function tomlSet(
     },);
   }
 
-  if (resolved.kind === 'value') {
+  if (resolved.kind
+    === 'value') {
     /** Encoded replacement text for an array element or inline-table value. */
     const newText = jsValueToTomlText({
       input: value,
@@ -138,7 +141,8 @@ export function tomlSet(
     },);
   }
 
-  if (resolved.kind === 'array-of-tables') {
+  if (resolved.kind
+    === 'array-of-tables') {
     return doAotReplace({
       edit,
       path,
@@ -147,7 +151,9 @@ export function tomlSet(
     },);
   }
 
-  if ((resolved.kind === 'table') || (resolved.kind === 'top-level')) {
+  if ((resolved.kind
+    === 'table') || (resolved.kind
+    === 'top-level')) {
     return doTableReplace({
       edit,
       path,
@@ -194,7 +200,8 @@ function doTableReplace(
   }
 
   /** Existing body key-values so they can be marked for deletion. */
-  const bodyKvs = container.body.filter(function isKv(child,): child is AST.TOMLKeyValue {
+  const bodyKvs = container.body
+    .filter(function isKv(child,): child is AST.TOMLKeyValue {
     return child.type === 'TOMLKeyValue';
   },);
 
@@ -253,7 +260,8 @@ function anchorForTableReplace(
     container: AST.TOMLTable | AST.TOMLTopLevelTable;
   },
 ): AnchorKind {
-  if (container.type === 'TOMLTable') {
+  if (container.type
+    === 'TOMLTable') {
     return {
       position: 'inside-table',
       table: container,
@@ -261,7 +269,8 @@ function anchorForTableReplace(
     };
   }
   /** First `[foo]` header after the top-level body so insertions land before it. */
-  const firstTable = container.body.find(
+  const firstTable = container.body
+    .find(
     function isTable(child,): child is AST.TOMLTable {
       return child.type === 'TOMLTable';
     },
@@ -326,7 +335,8 @@ function doAotReplace(
 ): TomlEditState {
   /** True when every node is a `[[foo]]` instance rather than a sibling standard table. */
   const allAot = nodes.every(function isAot(n,) {
-    return n.kind === 'array';
+    return n.kind
+      === 'array';
   },);
   if (!allAot) {
     throw new TomlImmutableNodeError(

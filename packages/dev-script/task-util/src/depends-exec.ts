@@ -150,13 +150,21 @@ function dumpAndHandleError({
     };
 
     // Dump captured output so the user can see what happened
-    if ((subprocessError.stdout !== undefined) && (subprocessError.stdout !== ''))
-      process.stdout.write(`${subprocessError.stdout}\n`,);
-    if ((subprocessError.stderr !== undefined) && (subprocessError.stderr !== ''))
-      process.stderr.write(`${subprocessError.stderr}\n`,);
+    if ((subprocessError.stdout
+      !== undefined) && (subprocessError.stdout
+      !== ''))
+      process.stdout
+        .write(`${subprocessError.stdout}\n`,);
+    if ((subprocessError.stderr
+      !== undefined) && (subprocessError.stderr
+      !== ''))
+      process.stderr
+        .write(`${subprocessError.stderr}\n`,);
 
-    if ((subprocessError.signalName !== undefined)
-      && (subprocessError.signalName !== ''))
+    if ((subprocessError.signalName
+      !== undefined)
+      && (subprocessError.signalName
+        !== ''))
     {
       console.error(
         `[task-depends] command terminated by signal: ${subprocessError.signalName}`,
@@ -164,7 +172,8 @@ function dumpAndHandleError({
     }
 
     if (!allowFailure)
-      process.exitCode = subprocessError.exitCode ?? 1;
+      process.exitCode = subprocessError.exitCode
+        ?? 1;
     return;
   }
 

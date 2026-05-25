@@ -52,7 +52,9 @@ type UserRow = {
 function toUser(row: UserRow,): User {
   return {
     id: row.id,
-    login: row.login ?? row.id,
+    login: row.login
+      ?? row
+      .id,
     email: row.email,
     created_at: new Date(row.createdAt,).getTime(),
   };
@@ -85,7 +87,8 @@ export async function insertUser(row: {
   /** ISO timestamp shared by both `createdAt` and `updatedAt` columns. */
   const createdAtIso = new Date(row.createdAt,).toISOString();
   /** Email defaults to a synthesised value so the NOT NULL column is satisfied. */
-  const email = row.email ?? `${row.login}@forge.test`;
+  const email = row.email
+    ?? `${row.login}@forge.test`;
   await run({
     sql:
       `INSERT OR IGNORE INTO user(id, name, email, emailVerified, createdAt, updatedAt, username, displayUsername)
@@ -154,7 +157,8 @@ export async function insertLabel(row: {
       row.id,
       row.repoId,
       row.name,
-      row.color ?? '888888',
+      row.color
+        ?? '888888',
     ],
   },);
 }

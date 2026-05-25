@@ -115,16 +115,19 @@ function syncCursorToTool(): void {
   /** Cached so each branch can compare without re-invoking the getter. */
   const mode = getToolMode();
   if ((mode === 'draw') || (mode === 'erase')) {
-    canvas.style.cursor = 'crosshair';
+    canvas.style
+      .cursor = 'crosshair';
     discardActiveInput();
   }
   else if (mode === 'zoom') {
-    canvas.style.cursor = 'zoom-in';
+    canvas.style
+      .cursor = 'zoom-in';
     discardActiveInput();
     showZoomToast(zoomToast,);
   }
   else {
-    canvas.style.cursor = 'text';
+    canvas.style
+      .cursor = 'text';
   }
 }
 

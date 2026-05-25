@@ -53,7 +53,8 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
     return {};
 
   /** Final assistant message with code blocks, inline code, and quotes stripped before scanning. */
-  const prose = stripNonProseRegions(event.last_assistant_message ?? '',);
+  const prose = stripNonProseRegions(event.last_assistant_message
+    ?? '',);
   /** First hedging-phrase hit, if any; populates the uncertainty reminder when defined. */
   const match = findUncertainty(prose,);
   /** First uncited categorical-dismissal hit; populates the dismissal reminder when defined. */
@@ -95,7 +96,8 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
     );
   }
 
-  if (reasons.length > 0) {
+  if (reasons.length
+    > 0) {
     return {
       decision: 'block',
       reason: reasons.join(' ',),

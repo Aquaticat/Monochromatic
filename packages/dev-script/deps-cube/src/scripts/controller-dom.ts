@@ -138,14 +138,17 @@ export function syncDomFromState(
   { state, }: { state: AppState; },
 ): void {
   CHANNEL_KEYS.forEach(function syncDim(channel,) {
-    elSelect(`dim-${channel}`,).value = state.dimMapping[channel];
+    elSelect(`dim-${channel}`,)
+      .value = state.dimMapping[channel];
     /** Range slider bounds for this channel: lower (`lo`) and upper (`hi`) ends pushed into the two number inputs below. */
     const [
       lo,
       hi,
     ] = state.ranges[channel];
-    elInput(`range-${channel}-min`,).value = lo.toString();
-    elInput(`range-${channel}-max`,).value = hi.toString();
+    elInput(`range-${channel}-min`,)
+      .value = lo.toString();
+    elInput(`range-${channel}-max`,)
+      .value = hi.toString();
   },);
   TOGGLE_KEYS.forEach(function syncToggle(key: ToggleKey,) {
     /** Current 3-state toggle value (`'any'`/`'yes'`/`'no'`) used to pick the matching radio below. */
@@ -157,12 +160,23 @@ export function syncDomFromState(
     if (radio !== null)
       radio.checked = true;
   },);
-  elInput('search',).value = state.search;
-  elInput('display-wireframe',).checked = state.displayToggles.showWireframe;
-  elInput('display-planes',).checked = state.displayToggles.showThresholdPlanes;
-  elInput('display-axis-labels',).checked = state.displayToggles.showAxisLabels;
-  elInput('display-unknown',).checked = state.displayToggles.showUnknownCluster;
-  elSelect('name-labels',).value = state.displayToggles.nameLabels;
+  elInput('search',)
+    .value = state.search;
+  elInput('display-wireframe',)
+    .checked = state.displayToggles
+    .showWireframe;
+  elInput('display-planes',)
+    .checked = state.displayToggles
+    .showThresholdPlanes;
+  elInput('display-axis-labels',)
+    .checked = state.displayToggles
+    .showAxisLabels;
+  elInput('display-unknown',)
+    .checked = state.displayToggles
+    .showUnknownCluster;
+  elSelect('name-labels',)
+    .value = state.displayToggles
+    .nameLabels;
 }
 
 //endregion State → DOM sync

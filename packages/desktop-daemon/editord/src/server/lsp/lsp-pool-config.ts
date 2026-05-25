@@ -171,7 +171,9 @@ export async function spawnLspClient({
   /** Environment passed to the child; PATH gets the project bin dir prepended. */
   const env = {
     ...process.env,
-    PATH: `${binPath}${delimiter}${process.env.PATH ?? ''}`,
+    PATH: `${binPath}${delimiter}${process.env
+      .PATH
+      ?? ''}`,
   };
 
   /** LSP wire format expects a URI for the workspace root. */

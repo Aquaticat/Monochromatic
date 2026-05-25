@@ -39,15 +39,18 @@ export function handleSearchKeydown({
   readonly moveSelection: (delta: number,) => void;
   readonly confirmSelection: () => void;
 },): void {
-  if (event.key === 'ArrowDown') {
+  if (event.key
+    === 'ArrowDown') {
     event.preventDefault();
     moveSelection(1,);
   }
-  else if (event.key === 'ArrowUp') {
+  else if (event.key
+    === 'ArrowUp') {
     event.preventDefault();
     moveSelection(-1,);
   }
-  else if (event.key === 'Enter') {
+  else if (event.key
+    === 'Enter') {
     event.preventDefault();
     confirmSelection();
   }
@@ -82,7 +85,8 @@ export function moveSearchSelection({
   readonly selectedIndex: number;
   readonly container: HTMLDivElement;
 },): number {
-  if (results.length === 0)
+  if (results.length
+    === 0)
     return selectedIndex;
 
   /** Live collection of rendered result rows. */
@@ -91,17 +95,20 @@ export function moveSearchSelection({
   const previous = children[selectedIndex];
   if (previous !== undefined) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- HTMLCollection items are Element; only HTMLElement has dataset
-    delete (previous as HTMLElement).dataset.selected;
+    delete (previous as HTMLElement).dataset
+      .selected;
   }
 
   /** Wraps the new index modulo length so navigation cycles. */
-  const newIndex = (selectedIndex + delta + results.length) % results.length;
+  const newIndex = (selectedIndex + delta + results.length) % results
+    .length;
 
   /** Newly-selected row receiving the `data-selected` flag and viewport scroll. */
   const current = children[newIndex];
   if (current !== undefined) {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- HTMLCollection items are Element; only HTMLElement has dataset
-    (current as HTMLElement).dataset.selected = '';
+    (current as HTMLElement).dataset
+      .selected = '';
     current.scrollIntoView({ block: 'nearest', },);
   }
 
@@ -137,6 +144,7 @@ export function buildResultDetail({
 
   return {
     path: result.path,
-    line: result.kind === 'content' ? result.line : undefined,
+    line: result.kind
+      === 'content' ? result.line : undefined,
   };
 }

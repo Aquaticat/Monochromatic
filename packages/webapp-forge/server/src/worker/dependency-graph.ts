@@ -142,7 +142,8 @@ export function dependenciesFor(row: {
   // label's filter list; we approximate by always including each repo
   // label in the current state to cover the "issue removed from filter"
   // case as well as the "issue added to filter" case.
-  if (event.kind === 'issue.labeled') {
+  if (event.kind
+    === 'issue.labeled') {
     for (const labelId of context.repoLabelIds) {
       keysIterable.push(filterListKey({
         repoId: context.repoId,
@@ -154,7 +155,9 @@ export function dependenciesFor(row: {
 
   // `comment.created` rebuilds the standalone comment fragment so swap
   // targets and permalinks have the new HTML available.
-  if ((event.kind === 'comment.created') && (event.commentId !== undefined))
+  if ((event.kind
+    === 'comment.created') && (event.commentId
+    !== undefined))
     keysIterable.push(commentKey(event.commentId,),);
 
   // PR-lifecycle events fan out to the PR-specific fragments (detail,
@@ -163,9 +166,9 @@ export function dependenciesFor(row: {
   if (
     (event.kind === 'pr.opened')
     || (event.kind === 'pr.merged')
-    || (event.kind === 'pr.closed')
-    || (event.kind === 'review.submitted')
-    || (event.kind === 'push')
+      || (event.kind === 'pr.closed')
+      || (event.kind === 'review.submitted')
+      || (event.kind === 'push')
   ) {
     keysIterable.push(prDetailKey({
       repoId: context.repoId,
@@ -182,8 +185,8 @@ export function dependenciesFor(row: {
   if (
     (event.kind === 'review.submitted')
     || (event.kind === 'pr.opened')
-    || (event.kind === 'pr.merged')
-    || (event.kind === 'pr.closed')
+      || (event.kind === 'pr.merged')
+      || (event.kind === 'pr.closed')
   ) {
     keysIterable.push(reviewThreadKey({
       repoId: context.repoId,

@@ -70,11 +70,14 @@ export const noModuleRootLet: CreateOnceRule = {
      * types flattens and cannot be allow-listed for prefer-readonly.
      */
     function reportIfLet(decl: ESTree.Node,): void {
-      if (decl.type !== 'VariableDeclaration')
+      if (decl.type
+        !== 'VariableDeclaration')
         return;
-      if (decl.kind !== 'let')
+      if (decl.kind
+        !== 'let')
         return;
-      if (decl.declare === true)
+      if (decl.declare
+        === true)
         return;
       context.report({
         node: decl,
@@ -85,8 +88,10 @@ export const noModuleRootLet: CreateOnceRule = {
     return {
       Program(node: ESTree.Program,): void {
         for (const stmt of node.body) {
-          if (stmt.type === 'ExportNamedDeclaration') {
-            if (stmt.declaration !== null)
+          if (stmt.type
+            === 'ExportNamedDeclaration') {
+            if (stmt.declaration
+              !== null)
               reportIfLet(stmt.declaration,);
             continue;
           }

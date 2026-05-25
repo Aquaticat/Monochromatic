@@ -42,7 +42,8 @@ export type StdoutWriter = {
 function processStdoutWriter(): StdoutWriter {
   return {
     write(data: Uint8Array,): number {
-      process.stdout.write(data,);
+      process.stdout
+        .write(data,);
       return data.byteLength;
     },
   };
@@ -88,7 +89,9 @@ export async function serve(
   const encoder = new TextEncoder();
 
   for await (const line of readLines(input,)) {
-    if (line.trim().length === 0)
+    if (line.trim()
+      .length
+      === 0)
       continue;
 
     /**

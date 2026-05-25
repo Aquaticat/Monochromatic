@@ -62,7 +62,8 @@ export function assertNoSiblingTableCollision(
     path: TomlPath;
   },
 ): void {
-  if (dottedSegments.length === 0)
+  if (dottedSegments.length
+    === 0)
     return;
   /** Full path the dotted key would create so equality checks are direct. */
   const newLeafPath: TomlPath = [
@@ -71,7 +72,8 @@ export function assertNoSiblingTableCollision(
   ];
   /** Each implicit table the dotted key would introduce so they can be checked individually. */
   const implicitPaths: readonly TomlPath[] = Array.from(
-    { length: dottedSegments.length - 1, },
+    { length: dottedSegments.length
+      - 1, },
     function buildImplicit(
       _v,
       i,
@@ -86,7 +88,8 @@ export function assertNoSiblingTableCollision(
     },
   );
   for (const child of programBody) {
-    if (child.type !== 'TOMLTable')
+    if (child.type
+      !== 'TOMLTable')
       continue;
     /** Sibling's resolved key so equality and prefix checks reuse one binding. */
     const rk = child.resolvedKey;
@@ -169,7 +172,7 @@ export function assertNoInlineTableCollision(
         haystack: existing,
         needle: newSegments,
       },)
-      || startsWithInclusive({
+        || startsWithInclusive({
         haystack: newSegments,
         needle: existing,
       },)
@@ -219,7 +222,9 @@ function pathsEqual(
     b: TomlPath;
   },
 ): boolean {
-  if (a.length !== b.length)
+  if (a.length
+    !== b
+    .length)
     return false;
   return a.every(function eq(
     seg,
@@ -243,7 +248,9 @@ function startsWith(
     needle: TomlPath;
   },
 ): boolean {
-  if (haystack.length <= needle.length)
+  if (haystack.length
+    <= needle
+    .length)
     return false;
   return needle.every(function eq(
     seg,
@@ -267,7 +274,9 @@ function startsWithInclusive(
     needle: readonly (string | number)[];
   },
 ): boolean {
-  if (haystack.length < needle.length)
+  if (haystack.length
+    < needle
+    .length)
     return false;
   return needle.every(function eq(
     seg,

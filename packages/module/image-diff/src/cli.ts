@@ -41,7 +41,8 @@ const args = runSync(
   },
 );
 
-await (args.cmd === 'compare'
+await (args.cmd
+  === 'compare'
   ? handleCompare({
     imageA: args.imageA,
     imageB: args.imageB,

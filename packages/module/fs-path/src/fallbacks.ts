@@ -26,9 +26,11 @@ export function normalize(filePath: string,): string {
   /** Unicode code point for `/` */
   const SLASH_CODE_POINT = 47;
   /** Whether the input is rooted */
-  const isRoot = filePath.codePointAt(0,) === SLASH_CODE_POINT;
+  const isRoot = filePath.codePointAt(0,)
+    === SLASH_CODE_POINT;
   /** Whether the input ends with a trailing slash */
-  const trailingSlash = filePath.codePointAt(filePath.length - 1,) === SLASH_CODE_POINT;
+  const trailingSlash = filePath.codePointAt(filePath.length - 1,)
+    === SLASH_CODE_POINT;
 
   /** Path segments split on `/` */
   const parts = filePath.split('/',);
@@ -40,7 +42,9 @@ export function normalize(filePath: string,): string {
       continue;
     if (part === '..') {
       // Don't pop past root
-      if ((resolved.length > 0) && (resolved.at(-1,) !== '..'))
+      if ((resolved.length
+        > 0) && (resolved.at(-1,)
+        !== '..'))
         resolved.pop();
       else if (!isRoot)
         resolved.push('..',);
@@ -87,16 +91,21 @@ export function dirnameFallback(filePath: string,): string {
   /** Unicode code point for `/` */
   const SLASH_CODE_POINT = 47;
   /** Whether the input path is rooted */
-  const isRoot = filePath.codePointAt(0,) === SLASH_CODE_POINT;
+  const isRoot = filePath.codePointAt(0,)
+    === SLASH_CODE_POINT;
   /**
    * Highest index to consider when searching backward for the separator:
    * one before a trailing slash, otherwise the last character. Skipping
    * any trailing slash keeps it from being picked as the directory boundary.
    */
-  const searchEnd = ((filePath.length > 1)
-      && (filePath.codePointAt(filePath.length - 1,) === SLASH_CODE_POINT))
-    ? filePath.length - 2
-    : filePath.length - 1;
+  const searchEnd = ((filePath.length
+    > 1)
+      && (filePath.codePointAt(filePath.length - 1,)
+        === SLASH_CODE_POINT))
+    ? filePath.length
+      - 2
+    : filePath.length
+      - 1;
   /** Index of the last meaningful slash, or -1 when none exists. */
   const lastSlash = filePath.lastIndexOf(
     '/',
@@ -132,7 +141,8 @@ export function dirnameFallback(filePath: string,): string {
  * ```
  */
 export function joinFallback(segments: readonly string[],): string {
-  if (segments.length === 0)
+  if (segments.length
+    === 0)
     return '.';
   /** Raw concatenation of all non-empty segments */
   const joined = segments
@@ -173,7 +183,8 @@ export function resolveFallback(segments: readonly string[],): string {
    * discards everything to its left.
    */
   const absoluteIndex = segments.findLastIndex(function isAbsoluteSegment(segment,) {
-    return (segment !== '') && (segment.codePointAt(0,) === SLASH_CODE_POINT);
+    return (segment !== '') && (segment.codePointAt(0,)
+      === SLASH_CODE_POINT);
   },);
 
   /** Segments from the rightmost absolute (or start when none) to end. */
@@ -196,8 +207,10 @@ export function resolveFallback(segments: readonly string[],): string {
   const normalized = normalize(composed,);
 
   if (
-    (normalized.length > 1)
-    && (normalized.codePointAt(normalized.length - 1,) === SLASH_CODE_POINT)
+    (normalized.length
+      > 1)
+    && (normalized.codePointAt(normalized.length - 1,)
+      === SLASH_CODE_POINT)
   ) {
     return normalized.slice(
       0,

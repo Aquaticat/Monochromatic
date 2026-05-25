@@ -131,7 +131,7 @@ elements.forEach(function bindScrollIgnore(element,) {
                 ),
                 anchor.href,
               )
-              .success
+            .success
             ? { link: anchor.href, }
             : { metadataOuterHtml: metadata.outerHTML, };
 
@@ -153,7 +153,8 @@ elements.forEach(function bindScrollIgnore(element,) {
           /** Response text persisted for the success log line. */
           const text = await response.text();
           console.error(`ignored: ${text}`,);
-          element.dataset.ignored = '';
+          element.dataset
+            .ignored = '';
         }
         catch (error: unknown) {
           console.error(

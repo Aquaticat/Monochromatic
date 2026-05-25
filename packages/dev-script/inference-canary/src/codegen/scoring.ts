@@ -86,13 +86,15 @@ export function combinedScore({
     return 0;
 
   /** Total lint penalty after capping each rule at `MAX_PENALTY_PER_RULE`; subtracted from the perfect-score baseline. */
-  const lintPenalty = [...lint.perRulePenalty.values(),]
+  const lintPenalty = [...lint.perRulePenalty
+    .values(),]
     .reduce(
       function capAndSum(
         sum,
         uncapped,
       ): number {
-        return sum + Math.min(
+        return sum + Math
+          .min(
           uncapped,
           MAX_PENALTY_PER_RULE,
         );
@@ -101,10 +103,12 @@ export function combinedScore({
     );
 
   /** Flat per-error penalty for tsgo diagnostics; no cap since each type error is treated as distinct. */
-  const typePenalty = lint.typeErrors * TYPE_ERROR_PENALTY;
+  const typePenalty = lint.typeErrors
+    * TYPE_ERROR_PENALTY;
   return Math.max(
     0,
-    1 - lintPenalty - typePenalty,
+    1 - lintPenalty
+      - typePenalty,
   );
 }
 
@@ -162,7 +166,9 @@ export async function lintAndLog({
       timestamp: context.timestamp,
     },
   },);
-  if (lint.linterRan || lint.typeCheckerRan) {
+  if (lint.linterRan
+    || lint
+    .typeCheckerRan) {
     /** Probe-specific logger for lint result summary. */
     const rl = tagged({
       tag: probeName,
@@ -173,14 +179,18 @@ export async function lintAndLog({
     },);
     /** Oxlint portion of the one-line log summary; "skipped" when the linter never ran. */
     const lintSummary = lint.linterRan
-      ? `lint=${String(lint.severity.errors,)}err/${String(lint.severity.warnings,)}warn`
+      ? `lint=${String(lint.severity
+        .errors,)}err/${String(lint.severity
+        .warnings,)}warn`
       : 'lint=skipped';
     /** Tsgo portion of the one-line log summary; "skipped" when the type checker never ran. */
     const typeSummary = lint.typeCheckerRan
       ? `type=${String(lint.typeErrors,)}err`
       : 'type=skipped';
     /** Top `MAX_DISPLAYED_RULES` violated rule IDs in a parenthetical; empty when nothing violated. */
-    const rulesSummary = lint.violatedRules.length > 0
+    const rulesSummary = lint.violatedRules
+      .length
+      > 0
       ? ` (${
         lint
           .violatedRules

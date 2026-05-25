@@ -35,7 +35,8 @@ export function inspect<const TValue,>(value: TValue,): TValue {
       2,
     );
   rl.info(
-    preview.length > INSPECT_PREVIEW_LENGTH
+    preview.length
+      > INSPECT_PREVIEW_LENGTH
       ? `${
         preview.slice(
           0,

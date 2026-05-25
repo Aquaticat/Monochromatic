@@ -114,9 +114,12 @@ export async function enrichArtifact({
     usage: completion.usage,
     finishReason: completion.finishReason,
     config: snapshotConfig(config,),
-    ...(options?.fixPrompt !== undefined ? { fixPrompt: options.fixPrompt, } : {}),
-    ...(options?.partial === true ? { partial: true, } : {}),
-    ...(options?.error !== undefined ? { error: options.error, } : {}),
+    ...(options?.fixPrompt
+      !== undefined ? { fixPrompt: options.fixPrompt, } : {}),
+    ...(options?.partial
+      === true ? { partial: true, } : {}),
+    ...(options?.error
+      !== undefined ? { error: options.error, } : {}),
   };
   await writeEnrichedArtifact({
     enriched,

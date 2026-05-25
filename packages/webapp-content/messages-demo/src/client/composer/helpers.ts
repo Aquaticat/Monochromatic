@@ -33,9 +33,14 @@ export function writeBody(
     text: string;
   },
 ): void {
-  input.textarea.value = input.text;
-  if (input.state.editor !== null)
-    void input.state.editor.setText(input.text,);
+  input.textarea
+    .value = input.text;
+  if (input.state
+    .editor
+    !== null)
+    void input.state
+      .editor
+      .setText(input.text,);
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
@@ -153,7 +158,8 @@ export function randomId(): string {
   if (((typeof crypto) !== 'undefined') && ((typeof crypto.randomUUID) === 'function'))
     return crypto.randomUUID();
   return `d-${String(Date.now(),)}-${
-    String(Math.floor(Math.random() * RANDOM_ID_RANGE,),)
+    String(Math.floor(Math.random()
+      * RANDOM_ID_RANGE,),)
   }`;
 }
 
@@ -172,7 +178,9 @@ export function randomId(): string {
  * ```
  */
 export function getIdentity(form: HTMLFormElement,): string {
-  return form.querySelector<HTMLSelectElement>('.composer-identity',)?.value ?? '';
+  return form.querySelector<HTMLSelectElement>('.composer-identity',)
+    ?.value
+    ?? '';
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
@@ -197,7 +205,8 @@ export function parseEditId(raw: string | undefined,): number | null {
     raw,
     DECIMAL_RADIX,
   );
-  return Number.isFinite(value,) && (value > 0) ? value : null;
+  return Number.isFinite(value,)
+    && (value > 0) ? value : null;
 }
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `HTMLFormElement` has mutating DOM methods by design */
@@ -245,7 +254,8 @@ export function setStatus(
     message: string;
   },
 ): void {
-  input.status.textContent = input.message;
+  input.status
+    .textContent = input.message;
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 

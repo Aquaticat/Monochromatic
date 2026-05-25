@@ -72,13 +72,15 @@ export function createContextMenu(): ContextMenu {
    */
   function handlePopoverToggle(event: Event,): void {
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- toggle event on popover elements always carries newState
-    if ((event as ToggleEvent).newState === 'closed') {
+    if ((event as ToggleEvent).newState
+      === 'closed') {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- currentTarget is always the popover div */
       /** Popover element fired the toggle; remove it so the next show creates a fresh one. */
       const popup = event.currentTarget as HTMLDivElement;
       /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
       popup.remove();
-      if (state.popup === popup)
+      if (state.popup
+        === popup)
         state.popup = null;
     }
   }
@@ -88,7 +90,8 @@ export function createContextMenu(): ContextMenu {
 
   /** Hides the context menu and cleans up the anchor. */
   function hide(): void {
-    if (state.popup !== null) {
+    if (state.popup
+      !== null) {
       /** Popup captured before clearing state so event callbacks cannot observe a stale handle. */
       const { popup, } = state;
       state.popup = null;
@@ -130,7 +133,8 @@ export function createContextMenu(): ContextMenu {
 
     /** Rendered DOM rows for every item; each row is either an input or a button row. */
     const menuItems = items.map(function renderItem(item,) {
-      return item.defaultValue !== undefined
+      return item.defaultValue
+        !== undefined
         ? renderInputItem({
           item,
           onActivate,
@@ -142,15 +146,18 @@ export function createContextMenu(): ContextMenu {
     },);
 
     /** Position the invisible anchor at the click point. */
-    anchor.style.setProperty(
+    anchor.style
+      .setProperty(
       'inset-inline-start',
       `${x}px`,
     );
-    anchor.style.setProperty(
+    anchor.style
+      .setProperty(
       'inset-block-start',
       `${y}px`,
     );
-    document.body.append(anchor,);
+    document.body
+      .append(anchor,);
 
     state.popup = h({
       tag: 'div',
@@ -159,12 +166,15 @@ export function createContextMenu(): ContextMenu {
       children: menuItems,
     },);
 
-    state.popup.addEventListener(
+    state.popup
+      .addEventListener(
       'toggle',
       onToggleBound,
     );
-    document.body.append(state.popup,);
-    state.popup.showPopover();
+    document.body
+      .append(state.popup,);
+    state.popup
+      .showPopover();
 
     /** First rendered row; focused on open so keyboard users land on a real item, not the dialog. */
     const [firstItem,] = menuItems;

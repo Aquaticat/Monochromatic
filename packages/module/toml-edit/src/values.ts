@@ -133,12 +133,15 @@ function encodeValue(
 function encodeWrapped(
   { wrapped, }: { wrapped: TomlWrappedInput; },
 ): string {
-  if (wrapped.tomlKind === 'integer') {
+  if (wrapped.tomlKind
+    === 'integer') {
     return (typeof wrapped.value) === 'bigint'
-      ? wrapped.value.toString()
+      ? wrapped.value
+        .toString()
       : String(wrapped.value,);
   }
-  if (wrapped.tomlKind === 'float') {
+  if (wrapped.tomlKind
+    === 'float') {
     /** Numeric form so finiteness and NaN can be checked. */
     const n = Number(wrapped.value,);
     if (!Number.isFinite(n,)) {
@@ -148,7 +151,11 @@ function encodeWrapped(
     }
     /** String form so the float-marker check can scan once. */
     const s = String(n,);
-    return s.includes('.',) || s.includes('e',) || s.includes('E',) ? s : `${s}.0`;
+    return s.includes('.',)
+      || s
+      .includes('e',)
+      || s
+      .includes('E',) ? s : `${s}.0`;
   }
   return String(wrapped.value,);
 }
@@ -170,8 +177,8 @@ function encodeString(
   if (
     (existing !== undefined)
     && (existing.type === 'TOMLValue')
-    && (existing.kind === 'string')
-    && (existing.value === value)
+      && (existing.kind === 'string')
+      && (existing.value === value)
   ) {
     return encodeStringWithStyle({
       value,
@@ -276,8 +283,8 @@ function encodeNumber(
   if (
     (existing !== undefined)
     && (existing.type === 'TOMLValue')
-    && ((existing.kind === 'integer') || (existing.kind === 'float'))
-    && (existing.value === value)
+      && ((existing.kind === 'integer') || (existing.kind === 'float'))
+      && (existing.value === value)
   ) {
     return existing.number;
   }
@@ -286,7 +293,9 @@ function encodeNumber(
       return 'nan';
     return value > 0 ? 'inf' : '-inf';
   }
-  if (Number.isInteger(value,) && Number.isSafeInteger(value,))
+  if (Number.isInteger(value,)
+    && Number
+    .isSafeInteger(value,))
     return String(value,);
   return String(value,);
 }
@@ -310,7 +319,8 @@ function encodeArray(
   },
 ): string {
   /** Existing per-element AST so encoder can reuse spelling when value matches. */
-  const elementExistings = (existing !== undefined) && (existing.type === 'TOMLArray')
+  const elementExistings = (existing !== undefined) && (existing.type
+    === 'TOMLArray')
     ? existing.elements
     : null;
   /** Encoded element strings so the result can be both inline-tested and multi-line-emitted. */
@@ -326,17 +336,24 @@ function encodeArray(
     },);
   },);
   /** Speculative inline form so the column budget check can decide the layout. */
-  const inlineCandidate = `[ ${encoded.join(', ',)}${encoded.length === 0 ? '' : ', '}]`;
+  const inlineCandidate = `[ ${encoded.join(', ',)}${encoded.length
+    === 0 ? '' : ', '}]`;
   if (
-    (encoded.length <= options.arrayInlineThreshold)
-    && (inlineCandidate.length <= options.arrayInlineMaxColumns)
+    (encoded.length
+      <= options
+      .arrayInlineThreshold)
+    && (inlineCandidate.length
+      <= options
+      .arrayInlineMaxColumns)
   ) {
     return inlineCandidate;
   }
   /** Indent for each element when the array goes multi-line. */
-  const indent = ' '.repeat(options.indent * (depth + 1),);
+  const indent = ' '.repeat(options.indent
+    * (depth + 1),);
   /** Closing bracket sits at the parent's indent level for legibility. */
-  const closingIndent = ' '.repeat(options.indent * depth,);
+  const closingIndent = ' '.repeat(options.indent
+    * depth,);
   return `[\n${
     encoded
       .map(function withIndent(e,) {
@@ -375,7 +392,8 @@ function encodeInlineTable(
       },)
     }`;
   },);
-  return `{ ${parts.join(', ',)}${parts.length === 0 ? '' : ', '}}`;
+  return `{ ${parts.join(', ',)}${parts.length
+    === 0 ? '' : ', '}}`;
 }
 
 /**
@@ -389,8 +407,8 @@ function isWrappedInput(value: unknown,): value is TomlWrappedInput {
   return (
     ((typeof value) === 'object')
     && (value !== null)
-    && ('tomlKind' in value)
-    && ((typeof (value as { tomlKind: unknown; }).tomlKind) === 'string')
+      && ('tomlKind' in value)
+      && ((typeof (value as { tomlKind: unknown; }).tomlKind) === 'string')
   );
 }
 
@@ -414,5 +432,6 @@ export function isPlainObject(value: unknown,): value is Record<string, unknown>
     return false;
   /** Prototype lookup so class instances and built-ins are rejected. */
   const proto: unknown = Object.getPrototypeOf(value,);
-  return (proto === Object.prototype) || (proto === null);
+  return (proto === Object
+    .prototype) || (proto === null);
 }

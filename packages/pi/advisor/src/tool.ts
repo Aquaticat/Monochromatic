@@ -106,12 +106,15 @@ export function createAdvisorTool(
       const result = await runAdvisor({
         ctx,
         config,
-        ...(params.model === undefined ? {} : { requestedSlug: params.model, }),
+        ...(params.model
+          === undefined ? {} : { requestedSlug: params.model, }),
         toolCallId,
         ...(signal === undefined ? {} : { signal, }),
       },);
 
-      if (result.details.stopReason === 'aborted')
+      if (result.details
+        .stopReason
+        === 'aborted')
         throw new Error('advisor: advisor call was aborted',);
 
       return {
@@ -168,7 +171,9 @@ export async function runAdvisor(
   const startedAt = Date.now();
   /** Effective scoped model set. */
   const scope = resolveEffectiveScope({ ctx: options.ctx, },);
-  if (scope.entries.length === 0) {
+  if (scope.entries
+    .length
+    === 0) {
     throw new Error(
       'advisor: no scoped models with configured auth. Check --models, enabledModels, /scoped-models, or provider login.',
     );
@@ -185,11 +190,14 @@ export async function runAdvisor(
     config: options.config,
     advisorSystemPrompt,
     scope,
-    modelRegistry: options.ctx.modelRegistry,
-    ...(options.requestedSlug === undefined
+    modelRegistry: options.ctx
+      .modelRegistry,
+    ...(options.requestedSlug
+      === undefined
       ? {}
       : { requestedSlug: options.requestedSlug, }),
-    ...(options.toolCallId === undefined ? {} : { toolCallId: options.toolCallId, }),
+    ...(options.toolCallId
+      === undefined ? {} : { toolCallId: options.toolCallId, }),
   },);
   /** Selected Advisor model and serialized conversation context. */
   const {
@@ -200,42 +208,55 @@ export async function runAdvisor(
   /** Provider response from selected secondary model. */
   const response = await completeAdvisor({
     ctx: options.ctx,
-    model: selection.selected.model,
+    model: selection.selected
+      .model,
     config: options.config,
     advisorContext,
-    ...(options.signal === undefined ? {} : { signal: options.signal, }),
+    ...(options.signal
+      === undefined ? {} : { signal: options.signal, }),
   },);
   /** Extracted advisor text. */
-  const text = extractAdvisorText(response,) || '(advisor returned no text)';
+  const text = extractAdvisorText(response,)
+    || '(advisor returned no text)';
 
   return {
     text,
     details: {
-      ...(selection.requestedSlug === undefined
+      ...(selection.requestedSlug
+        === undefined
         ? {}
         : { requestedSlug: selection.requestedSlug, }),
-      selectedSlug: selection.selected.canonicalSlug,
+      selectedSlug: selection.selected
+        .canonicalSlug,
       provider: selection
         .selected
         .model
         .provider,
       scopeSource: scope.source,
-      scopedSlugs: scope.entries.map(function mapEntry(entry,) {
+      scopedSlugs: scope.entries
+        .map(function mapEntry(entry,) {
         return entry.canonicalSlug;
       },),
-      ...(selection.defaultSelection?.reason === undefined
+      ...(selection.defaultSelection
+        ?.reason
+        === undefined
         ? {}
-        : { defaultSelectionReason: selection.defaultSelection.reason, }),
-      durationMs: Date.now() - startedAt,
+        : { defaultSelectionReason: selection.defaultSelection
+          .reason, }),
+      durationMs: Date.now()
+        - startedAt,
       contextBudgetChars: advisorContext.maxContextChars,
       contextChars: advisorContext.finalChars,
       estimatedInputTokens: advisorContext.estimatedInputTokens,
       truncated: advisorContext.truncated,
       stopReason: response.stopReason,
       usage: response.usage,
-      ...(selection.defaultSelection?.ranking === undefined
+      ...(selection.defaultSelection
+        ?.ranking
+        === undefined
         ? {}
-        : { costRanking: selection.defaultSelection.ranking, }),
+        : { costRanking: selection.defaultSelection
+          .ranking, }),
     },
   };
 }
@@ -302,7 +323,8 @@ type AdvisorContextCandidate = {
 function selectAdvisorRunContext(
   options: SelectAdvisorRunContextOptions,
 ): AdvisorSelectionContext {
-  if (options.requestedSlug !== undefined) {
+  if (options.requestedSlug
+    !== undefined) {
     /** Explicit Advisor model selection. */
     const selection = resolveRequestedModel({
       scope: options.scope,
@@ -316,7 +338,8 @@ function selectAdvisorRunContext(
         config: options.config,
         advisorSystemPrompt: options.advisorSystemPrompt,
         scopedModel: selection.selected,
-        ...(options.toolCallId === undefined ? {} : { toolCallId: options.toolCallId, }),
+        ...(options.toolCallId
+          === undefined ? {} : { toolCallId: options.toolCallId, }),
       },),
     };
   }
@@ -333,7 +356,8 @@ function selectAdvisorRunContext(
         config: options.config,
         advisorSystemPrompt: options.advisorSystemPrompt,
         scopedModel,
-        ...(options.toolCallId === undefined ? {} : { toolCallId: options.toolCallId, }),
+        ...(options.toolCallId
+          === undefined ? {} : { toolCallId: options.toolCallId, }),
       },),
     } satisfies AdvisorContextCandidate;
   },);
@@ -341,8 +365,10 @@ function selectAdvisorRunContext(
   const estimatedInputTokensBySlug = new Map(
     candidates.map(function mapCandidate(candidate,) {
       return [
-        candidate.scopedModel.canonicalSlug,
-        candidate.advisorContext.estimatedInputTokens,
+        candidate.scopedModel
+          .canonicalSlug,
+        candidate.advisorContext
+          .estimatedInputTokens,
       ] as const;
     },),
   );
@@ -350,16 +376,21 @@ function selectAdvisorRunContext(
   const defaultSelection = selectDefaultModelFromContextEstimates({
     scope: options.scope,
     estimatedInputTokensBySlug,
-    maxAdvisorOutputTokens: options.config.maxAdvisorOutputTokens,
+    maxAdvisorOutputTokens: options.config
+      .maxAdvisorOutputTokens,
   },);
   /** Context candidate matching selected default model. */
   const selectedCandidate = candidates.find(function matchesSelection(candidate,) {
-    return candidate.scopedModel.canonicalSlug
-      === defaultSelection.selected.canonicalSlug;
+    return candidate.scopedModel
+      .canonicalSlug
+      === defaultSelection
+      .selected
+      .canonicalSlug;
   },);
   if (selectedCandidate === undefined) {
     throw new Error(
-      `advisor: selected model ${defaultSelection.selected.canonicalSlug} context disappeared`,
+      `advisor: selected model ${defaultSelection.selected
+        .canonicalSlug} context disappeared`,
     );
   }
   return {
@@ -384,7 +415,8 @@ function buildContextForScopedModel(
   /** Effective serialized-context character budget for selected model. */
   const maxContextChars = maxContextCharsForAdvisorModel({
     config: options.config,
-    model: options.scopedModel.model,
+    model: options.scopedModel
+      .model,
     advisorSystemPrompt: options.advisorSystemPrompt,
   },);
   return buildAdvisorContext({
@@ -392,7 +424,8 @@ function buildContextForScopedModel(
     config: options.config,
     advisorSystemPrompt: options.advisorSystemPrompt,
     maxContextChars,
-    ...(options.toolCallId === undefined ? {} : { toolCallId: options.toolCallId, }),
+    ...(options.toolCallId
+      === undefined ? {} : { toolCallId: options.toolCallId, }),
   },);
 }
 

@@ -107,7 +107,8 @@ export function* segmentBlocks(md: string,): Generator<string, void, void> {
    * ```
    */
   function* flush(): Generator<string, void, void> {
-    if (buffer.length > 0) {
+    if (buffer.length
+      > 0) {
       yield buffer;
       buffer = '';
     }
@@ -121,7 +122,9 @@ export function* segmentBlocks(md: string,): Generator<string, void, void> {
   const lines = md.split('\n',);
   for (const line of lines) {
     /** Blank-line detection drives the block-boundary cut outside fences. */
-    const isBlank = line.trim().length === 0;
+    const isBlank = line.trim()
+      .length
+      === 0;
 
     if (isCodeFence(line,)) {
       inFence = !inFence;
@@ -178,7 +181,8 @@ export function* renderChunks(md: string,): Generator<RenderedChunk, void, void>
    * ```
    */
   function* emit(): Generator<RenderedChunk, void, void> {
-    if (pendingMd.length === 0)
+    if (pendingMd.length
+      === 0)
       return;
     yield {
       md: pendingMd,
@@ -196,7 +200,8 @@ export function* renderChunks(md: string,): Generator<RenderedChunk, void, void>
     // A single block over the hard cap still ships as its own chunk;
     // we never split inside a block. Flush any pending chunk first so
     // the oversized block lands alone.
-    if (blockHtml.length > CHUNK_HARD_CAP_BYTES) {
+    if (blockHtml.length
+      > CHUNK_HARD_CAP_BYTES) {
       yield* emit();
       yield {
         md: block,
@@ -208,7 +213,9 @@ export function* renderChunks(md: string,): Generator<RenderedChunk, void, void>
 
     // If adding this block would push the running HTML past the hard cap,
     // flush the pending chunk before adding.
-    if ((pendingHtml.length + blockHtml.length) > CHUNK_HARD_CAP_BYTES)
+    if ((pendingHtml.length
+      + blockHtml
+      .length) > CHUNK_HARD_CAP_BYTES)
       yield* emit();
 
     pendingMd += block;
@@ -216,7 +223,8 @@ export function* renderChunks(md: string,): Generator<RenderedChunk, void, void>
 
     // Soft target: emit when reaching the target threshold. Subsequent
     // blocks start a new chunk.
-    if (pendingHtml.length >= CHUNK_TARGET_BYTES)
+    if (pendingHtml.length
+      >= CHUNK_TARGET_BYTES)
       yield* emit();
   }
 
@@ -287,9 +295,11 @@ export function extractPreview({
     )
     .trim();
   /* oxlint-enable no-restricted-syntax/no-regex */
-  if (stripped.length === 0)
+  if (stripped.length
+    === 0)
     return '(no text preview)';
-  return stripped.length <= maxLength
+  return stripped.length
+    <= maxLength
     ? stripped
     : stripped.slice(
       0,

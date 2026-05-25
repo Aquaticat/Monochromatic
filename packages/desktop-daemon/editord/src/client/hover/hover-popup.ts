@@ -38,7 +38,8 @@ export class HoverPopup extends HTMLElement {
       tag: 'div',
       class: 'content',
     },);
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,
@@ -69,15 +70,19 @@ export class HoverPopup extends HTMLElement {
     readonly x: number;
     readonly y: number;
   },): void {
-    if (this.#content === null)
+    if (this.#content
+      === null)
       return;
 
-    this.#content.textContent = text;
-    this.style.setProperty(
+    this.#content
+      .textContent = text;
+    this.style
+      .setProperty(
       'inset-inline-start',
       `${x}px`,
     );
-    this.style.setProperty(
+    this.style
+      .setProperty(
       'inset-block-start',
       `${y + VERTICAL_OFFSET}px`,
     );

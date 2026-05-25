@@ -129,7 +129,9 @@ export async function runAndReport({
 
   /** Reports that produced at least one probe result, including timed-out probes (score 0). */
   const reportsWithResults = reports.filter(function hasResults(report,): boolean {
-    return report.results.length > 0;
+    return report.results
+      .length
+      > 0;
   },);
   /** Reports that recorded a whole-model failure such as a 429 or auth error. */
   const failedReports = reports.filter(function isFailed(report,): boolean {
@@ -139,7 +141,9 @@ export async function runAndReport({
   // Only skip the report when all probes were cached and nothing actually ran or failed.
   // Probe-level timeouts now produce zero-score results rather than failing the model,
   // so they appear in reportsWithResults and are never silently dropped.
-  if ((reportsWithResults.length === 0) && (failedReports.length === 0)) {
+  if ((reportsWithResults.length
+    === 0) && (failedReports.length
+    === 0)) {
     l.info(
       'all probes skipped due to recent results. Use --retest-all to force re-run.',
     );

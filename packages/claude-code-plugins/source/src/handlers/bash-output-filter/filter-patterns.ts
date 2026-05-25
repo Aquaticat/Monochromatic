@@ -36,7 +36,8 @@ const MAX_REPEATED_CHARS = 3;
  * string if `$HOME` is unset, which disables path collapsing without breaking
  * the filter.
  */
-const HOME_DIR: string = process.env['HOME'] ?? '';
+const HOME_DIR: string = process.env.HOME
+  ?? '';
 
 /**
  * Canonical (real) path to the home directory, following symlinks. Resolved
@@ -80,7 +81,8 @@ const CWD_PREFIX: string = (function resolveCwdPrefix(): string {
  * this computes the alternate by swapping the home-directory prefix.
  */
 const ALT_CWD_PREFIX: string = (function resolveAltCwdPrefix(): string {
-  if ((CWD_PREFIX === '') || (REAL_HOME_DIR === '') || (HOME_DIR === ''))
+  if ((CWD_PREFIX === '') || (REAL_HOME_DIR === '')
+    || (HOME_DIR === ''))
     return '';
 
   if (CWD_PREFIX.startsWith(`${REAL_HOME_DIR}/`,))
@@ -267,7 +269,8 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
   function skipWs(idx: number,): number {
     /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
     let at = idx;
-    while ((at < line.length) && isWhitespace(line.charAt(at,),)) {
+    while ((at < line
+      .length) && isWhitespace(line.charAt(at,),)) {
       at += 1;
     }
     return at;
@@ -289,7 +292,8 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
    * ```
    */
   function maybeSkipBracket(idx: number,): number {
-    if (line.charAt(idx,) !== '[')
+    if (line.charAt(idx,)
+      !== '[')
       return idx;
     /** Position of the closing bracket of the optional `[...]` segment. */
     const closeIdx = line.indexOf(
@@ -300,7 +304,8 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
       return idx;
     /** Position right after the closing bracket. */
     const afterBracket = closeIdx + 1;
-    if ((afterBracket >= line.length) || (!isWhitespace(line.charAt(afterBracket,),)))
+    if ((afterBracket >= line
+      .length) || (!isWhitespace(line.charAt(afterBracket,),)))
       return idx;
     return skipWs(afterBracket,);
   }
@@ -313,7 +318,8 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
     return false;
   }
   /** Position immediately after the `mise WARN` literal. */
-  const afterToken = afterBracket + MISE_WARN_TOKEN.length;
+  const afterToken = afterBracket + MISE_WARN_TOKEN
+    .length;
   /** Position after the required whitespace following `mise WARN`. */
   const afterTokenWs = skipWs(afterToken,);
   if (afterTokenWs === afterToken)
@@ -325,8 +331,10 @@ function isSandboxMiseCacheNoise(line: string,): boolean {
     return false;
   }
   /** Position right after the `failed to write cache file:` literal. */
-  const afterFailed = afterTokenWs + MISE_WARN_FAILED.length;
-  return line.slice(afterFailed,).includes(MISE_WARN_RO_FS,);
+  const afterFailed = afterTokenWs + MISE_WARN_FAILED
+    .length;
+  return line.slice(afterFailed,)
+    .includes(MISE_WARN_RO_FS,);
 }
 
 /**

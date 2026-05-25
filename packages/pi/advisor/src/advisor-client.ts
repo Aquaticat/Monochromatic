@@ -69,7 +69,9 @@ export async function completeAdvisor(
     .getApiKeyAndHeaders(mutableModel,);
   if (!auth.ok) {
     throw new Error(
-      `advisor: auth failed for ${options.model.provider}/${options.model.id}: ${auth.error}`,
+      `advisor: auth failed for ${options.model
+        .provider}/${options.model
+        .id}: ${auth.error}`,
     );
   }
 
@@ -78,7 +80,8 @@ export async function completeAdvisor(
     role: 'user',
     content: [{
       type: 'text',
-      text: `## Serialized conversation\n\n${options.advisorContext.text}`,
+      text: `## Serialized conversation\n\n${options.advisorContext
+        .text}`,
     },],
     timestamp: Date.now(),
   };
@@ -86,13 +89,19 @@ export async function completeAdvisor(
   /** Provider options built field-by-field for exact optional property types. */
   const providerOptions: ProviderStreamOptions = {
     signal: combinedSignal({
-      ...(options.signal === undefined ? {} : { signal: options.signal, }),
-      timeoutMs: options.config.timeoutMs,
+      ...(options.signal
+        === undefined ? {} : { signal: options.signal, }),
+      timeoutMs: options.config
+        .timeoutMs,
     },),
-    timeoutMs: options.config.timeoutMs,
-    maxTokens: options.config.maxAdvisorOutputTokens,
-    ...(auth.apiKey === undefined ? {} : { apiKey: auth.apiKey, }),
-    ...(auth.headers === undefined ? {} : { headers: auth.headers, }),
+    timeoutMs: options.config
+      .timeoutMs,
+    maxTokens: options.config
+      .maxAdvisorOutputTokens,
+    ...(auth.apiKey
+      === undefined ? {} : { apiKey: auth.apiKey, }),
+    ...(auth.headers
+      === undefined ? {} : { headers: auth.headers, }),
   };
 
   try {
@@ -107,7 +116,9 @@ export async function completeAdvisor(
   }
   catch (error) {
     throw new Error(
-      `advisor: provider call failed for ${options.model.provider}/${options.model.id}: ${
+      `advisor: provider call failed for ${options.model
+        .provider}/${options.model
+        .id}: ${
         error instanceof Error ? error.message : String(error,)
       }`,
       { cause: error, },
@@ -133,7 +144,8 @@ export function extractAdvisorText(
   return message
     .content
     .filter(function keepText(block,) {
-      return block.type === 'text';
+      return block.type
+        === 'text';
     },)
     .map(function mapText(block,) {
       return block.text;
@@ -156,7 +168,10 @@ export function extractAdvisorText(
 export function buildAdvisorSystemPrompt(
   config: AdvisorConfig,
 ): string {
-  return (config.systemPrompt === undefined) || (config.systemPrompt.trim() === '')
+  return (config.systemPrompt
+    === undefined) || (config.systemPrompt
+    .trim()
+    === '')
     ? ADVISOR_SYSTEM_PROMPT
     : `${ADVISOR_SYSTEM_PROMPT}\n\n## Project-specific instructions\n\n${config.systemPrompt}`;
 }

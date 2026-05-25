@@ -32,7 +32,8 @@ type SearchPageData = {
  * @param taskId - ID of task to open
  */
 function handleOpen(taskId: string,): void {
-  globalThis.location.href = `/tasks/${taskId}`;
+  globalThis.location
+    .href = `/tasks/${taskId}`;
 }
 
 injectCSS(globalStyles,);
@@ -56,14 +57,18 @@ document.querySelector<HTMLElement>('search-bar',)?.addEventListener(
   (function handleSearch(event: CustomEvent<{ query: string; }>,) {
     /** Search-bar query text destructured for the URL builder below. */
     const { query, } = event.detail;
-    globalThis.location.href = query.length === 0
+    globalThis.location
+      .href = query.length
+      === 0
       ? '/search'
       : `/search?q=${encodeURIComponent(query,)}`;
   }) as EventListener,
 );
 /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
-if (pageData.query.length === 0) {
+if (pageData.query
+  .length
+  === 0) {
   app.append(
     h({
       tag: 'p',
@@ -74,7 +79,8 @@ if (pageData.query.length === 0) {
 
   /** Tags surfaced as quick-pick chips when the user has not typed anything yet. */
   const { availableTags, } = pageData;
-  if (availableTags.length > 0) {
+  if (availableTags.length
+    > 0) {
     app.append(
       h({
         tag: 'div',
@@ -86,7 +92,8 @@ if (pageData.query.length === 0) {
             text: `# ${tag}`,
             on: {
               click: function handleTagClick() {
-                globalThis.location.href = `/search?q=${encodeURIComponent(`#${tag}`,)}`;
+                globalThis.location
+                  .href = `/search?q=${encodeURIComponent(`#${tag}`,)}`;
               },
             },
           },);
@@ -114,14 +121,17 @@ else {
               path: `/api/tasks/${taskId}/complete`,
               options: { method: 'POST', },
             },);
-            globalThis.location.reload();
+            globalThis.location
+              .reload();
           },
         },
       },),
     );
   }
 
-  if (pageData.results.length === 0) {
+  if (pageData.results
+    .length
+    === 0) {
     app.append(h({
       tag: 'p',
       class: 'empty',

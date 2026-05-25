@@ -62,7 +62,8 @@ export function extractLeadingTag(s: string,): string | null {
   function scan(idx: number,): number {
     /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
     let cursor = idx;
-    while ((cursor < s.length) && isWordChar(s.charAt(cursor,),))
+    while ((cursor < s
+      .length) && isWordChar(s.charAt(cursor,),))
       cursor += 1;
     return cursor;
   }
@@ -104,14 +105,18 @@ export const tagLines: CreateOnceRule = {
         const lines = getCommentLines(comment,);
         /** Minimum line count for a comment that can contain tag spacing issues. */
         const minContentLines = 3;
-        if (lines.length < minContentLines)
+        if (lines.length
+          < minContentLines)
           return;
 
         /**
          * Indentation for blank comment lines: spaces + `*`.
          * Matches the opener's `*` column (column of `/*` + 1).
          */
-        const blankLineIndent = ' '.repeat(comment.loc.start.column + 1,);
+        const blankLineIndent = ' '.repeat(comment.loc
+          .start
+          .column
+          + 1,);
         /** Pre-built ` * ` blank-line text inserted by the autofixer when spacing is missing. */
         const blankCommentLine = `${blankLineIndent}*`;
 
@@ -128,7 +133,8 @@ export const tagLines: CreateOnceRule = {
           if (index === 0)
             return;
           /** Current line stripped of indent and the leading `*`, ready for tag matching. */
-          const trimmed = stripCommentLineMarker(line.trimStart(),).trimStart();
+          const trimmed = stripCommentLineMarker(line.trimStart(),)
+            .trimStart();
           if (!trimmed.startsWith('@',))
             return;
           // Check if previous line is blank
@@ -137,18 +143,25 @@ export const tagLines: CreateOnceRule = {
           if (prevLine === undefined)
             return;
           /** Previous line stripped of indent and `*`; empty string means the tag is preceded by blank. */
-          const prevTrimmed = stripCommentLineMarker(prevLine.trimStart(),).trimStart();
-          if (prevTrimmed.length > 0) {
+          const prevTrimmed = stripCommentLineMarker(prevLine.trimStart(),)
+            .trimStart();
+          if (prevTrimmed.length
+            > 0) {
             /**
              * Resolved tag string for the error message, with `\@unknown` fallback for the impossible-null case.
              */
-            const tag = extractLeadingTag(trimmed,) ?? '@unknown';
+            const tag = extractLeadingTag(trimmed,)
+              ?? '@unknown';
 
             /**
              * Line number of the tag line in the source file (1-based).
              * `index` is 0-based within contentLines; +1 for the opener line, +1 for 1-based.
              */
-            const tagLineNumber = comment.loc.start.line + index + 1;
+            const tagLineNumber = comment.loc
+              .start
+              .line
+              + index
+              + 1;
 
             context.report({
               loc: {
@@ -165,7 +178,8 @@ export const tagLines: CreateOnceRule = {
                  * Use `getIndexFromLoc` to find the byte offset of the tag line start,
                  * then insert the blank line text ending with a newline.
                  */
-                const insertOffset = context.sourceCode.getIndexFromLoc({
+                const insertOffset = context.sourceCode
+                  .getIndexFromLoc({
                   line: tagLineNumber,
                   column: 0,
                 },);

@@ -73,7 +73,9 @@ async function readFreshToken({ path, }: { readonly path: string; },): Promise<s
     /**
      * Age of the token file in milliseconds; compared against {@link FRESHNESS_THRESHOLD_MS}.
      */
-    const ageMs = Date.now() - fileStat.mtimeMs;
+    const ageMs = Date.now()
+      - fileStat
+      .mtimeMs;
     if (ageMs > FRESHNESS_THRESHOLD_MS)
       return null;
     /** Raw file contents; trimmed below to strip any trailing newline written by editors. */
@@ -83,7 +85,8 @@ async function readFreshToken({ path, }: { readonly path: string; },): Promise<s
     );
     /** Token string with surrounding whitespace removed; empty after trimming counts as no token. */
     const token = content.trim();
-    if (token.length === 0)
+    if (token.length
+      === 0)
       return null;
     return token;
   }
@@ -241,8 +244,10 @@ export async function resolveAuthToken({
   const path = tokenFilePath({ port, },);
 
   /** Override token from the environment; takes precedence over file reuse and fresh generation. */
-  const envToken = process.env.EDITORD_TOKEN;
-  if ((envToken !== undefined) && (envToken.length > 0)) {
+  const envToken = process.env
+    .EDITORD_TOKEN;
+  if ((envToken !== undefined) && (envToken.length
+    > 0)) {
     tokenLog.info('using token from EDITORD_TOKEN env var',);
     /** Lifecycle handles returned by `writeAndTouch`; merged into the resolveAuthToken return value. */
     const handles = await writeAndTouch({

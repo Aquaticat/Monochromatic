@@ -37,25 +37,29 @@ export function applyKey({
     return { exec: value, };
   if (key === 'Categories') {
     return {
-      isTerminal: value.split(';',).some(function matchTerminal(cat,) {
+      isTerminal: value.split(';',)
+        .some(function matchTerminal(cat,) {
         return cat === 'TerminalEmulator';
       },),
     };
   }
   if (key === 'Hidden')
-    return { hidden: value.toLowerCase() === 'true', };
+    return { hidden: value.toLowerCase()
+      === 'true', };
   if (key === 'TryExec')
     return { tryExec: expandEscapes({ s: value, },), };
   if (key === 'OnlyShowIn') {
     return {
-      onlyShowIn: value.split(';',).filter(function nonEmpty(s,) {
+      onlyShowIn: value.split(';',)
+        .filter(function nonEmpty(s,) {
         return s.length > 0;
       },),
     };
   }
   if (key === 'NotShowIn') {
     return {
-      notShowIn: value.split(';',).filter(function nonEmpty(s,) {
+      notShowIn: value.split(';',)
+        .filter(function nonEmpty(s,) {
         return s.length > 0;
       },),
     };

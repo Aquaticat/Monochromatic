@@ -26,7 +26,7 @@ import {
 import { fileURLToPath, } from 'node:url';
 
 /** Absolute directory of this module, used to locate the sibling codepoints file. */
-const HERE = dirname(fileURLToPath(import.meta.url,),);
+const HERE = import.meta.dirname;
 
 /** Raw text contents of the upstream `codepoints` file. */
 const raw = readFileSync(

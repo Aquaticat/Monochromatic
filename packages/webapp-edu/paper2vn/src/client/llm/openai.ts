@@ -18,7 +18,8 @@ export const openai: Provider = {
   id: 'openai',
   chat: function chat(opts: ChatOptions,): Promise<string> {
     return chatOpenAICompatible({
-      baseUrl: opts.baseUrl === '' ? DEFAULT_BASE : opts.baseUrl,
+      baseUrl: opts.baseUrl
+        === '' ? DEFAULT_BASE : opts.baseUrl,
       extraHeaders: {},
       opts,
     },);

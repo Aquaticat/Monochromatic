@@ -146,7 +146,9 @@ async function executeSearch(query: string,): Promise<void> {
   if (resultsList === null)
     return;
 
-  if (query.trim().length === 0) {
+  if (query.trim()
+    .length
+    === 0) {
     hideResults();
     return;
   }
@@ -169,13 +171,16 @@ async function executeSearch(query: string,): Promise<void> {
   if (response === null)
     return;
 
-  if (response.results.length === 0) {
+  if (response.results
+    .length
+    === 0) {
     hideResults();
     return;
   }
 
   /** Capped slice of best matches; over-large result sets get truncated to MAX_RESULTS. */
-  const topResults = response.results.slice(
+  const topResults = response.results
+    .slice(
     0,
     MAX_RESULTS,
   );
@@ -215,14 +220,16 @@ function setActiveOption(index: number,): void {
   /** Previously active option whose data attribute is cleared before the new one is set. */
   const previous = options[navState.activeIndex];
   if (previous !== undefined)
-    delete previous.dataset.active;
+    delete previous.dataset
+      .active;
 
   navState.activeIndex = index;
 
   /** Newly active option marked with `data-active` and scrolled into view. */
   const option = options[navState.activeIndex];
   if (option !== undefined) {
-    option.dataset.active = '';
+    option.dataset
+      .active = '';
     option.scrollIntoView({ block: 'nearest', },);
     input.setAttribute(
       'aria-activedescendant',
@@ -260,7 +267,10 @@ function renderResults(results: readonly PagefindResultData[],): void {
       index,
     ) {
       /** Escaped result title; falls back to the URL when the page has no `<title>`. */
-      const title = escapeHtml(result.meta.title ?? result.url,);
+      const title = escapeHtml(result.meta
+        .title
+        ?? result
+        .url,);
       /** Escaped href used both on the link element and on the option's `data-url`. */
       const url = escapeHtml(result.url,);
       return [
@@ -348,7 +358,8 @@ if ((input !== null) && (resultsList !== null)) {
       /** Cached length used by every navigation branch. */
       const count = options.length;
 
-      if (event.key === 'Escape') {
+      if (event.key
+        === 'Escape') {
         hideResults();
         input.blur();
         return;
@@ -357,23 +368,32 @@ if ((input !== null) && (resultsList !== null)) {
       if (count === 0)
         return;
 
-      if (event.key === 'ArrowDown') {
+      if (event.key
+        === 'ArrowDown') {
         event.preventDefault();
         setActiveOption(
-          navState.activeIndex < (count - 1) ? navState.activeIndex + 1 : 0,
+          navState.activeIndex
+            < (count - 1) ? navState.activeIndex
+            + 1 : 0,
         );
         return;
       }
 
-      if (event.key === 'ArrowUp') {
+      if (event.key
+        === 'ArrowUp') {
         event.preventDefault();
-        setActiveOption(navState.activeIndex > 0 ? navState.activeIndex - 1 : count - 1,);
+        setActiveOption(navState.activeIndex
+          > 0 ? navState.activeIndex
+          - 1 : count - 1,);
         return;
       }
 
-      if ((event.key === 'Enter')
-        && (navState.activeIndex >= 0)
-        && (navState.activeIndex < count))
+      if ((event.key
+        === 'Enter')
+        && (navState.activeIndex
+          >= 0)
+        && (navState.activeIndex
+          < count))
       {
         event.preventDefault();
         /** Currently active option whose URL is navigated to on Enter. */
@@ -382,7 +402,8 @@ if ((input !== null) && (resultsList !== null)) {
           /** Destructured `data-url` attribute storing the result href. */
           const { url, } = option.dataset;
           if (url !== undefined)
-            globalThis.location.href = url;
+            globalThis.location
+              .href = url;
         }
       }
     },

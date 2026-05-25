@@ -66,7 +66,9 @@ export async function restoreSession(
    * File to open on boot: query param takes precedence (explicit navigation),
    * then saved state (session restore), then nothing.
    */
-  const bootFilePath = queryFilePath ?? saved?.filePath ?? null;
+  const bootFilePath = queryFilePath ?? saved
+    ?.filePath
+    ?? null;
 
   if (bootFilePath !== null)
     await loadFileSafe({ path: bootFilePath, },);
@@ -74,18 +76,22 @@ export async function restoreSession(
   await fileTree.expandRoot(ws.rootDir,);
 
   /** Restore expanded directories from saved state after the root has been rendered. */
-  if ((saved !== null) && (saved.expandedDirs.length > 0))
+  if ((saved !== null) && (saved.expandedDirs
+    .length
+    > 0))
     await fileTree.restoreExpansion({ dirs: saved.expandedDirs, },);
 
   /** Restore cursor and scroll position after file and tree are loaded. */
-  if ((saved !== null) && (bootFilePath !== null) && (bootFilePath === saved.filePath)) {
+  if ((saved !== null) && (bootFilePath !== null)
+    && (bootFilePath === saved.filePath)) {
     editorPane.restoreCursor(saved.cursor,);
     editorPane.setEditorScrollTop(saved.scrollTop,);
   }
 
   return {
     filePath: bootFilePath,
-    recentFiles: saved?.recentFiles ?? [],
+    recentFiles: saved?.recentFiles
+      ?? [],
   };
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

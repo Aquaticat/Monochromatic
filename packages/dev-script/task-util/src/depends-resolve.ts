@@ -81,7 +81,8 @@ async function resolveGlob({
   /** Files matched by the glob; an empty result yields an empty timestamp set rather than an error. */
   const files = await resolveGlobFiles(pattern,);
 
-  if (files.length === 0) {
+  if (files.length
+    === 0) {
     if (verbose)
       console.error(`[task-depends] ${position} glob "${pattern}" matched no files`,);
     return [];
@@ -167,7 +168,8 @@ async function resolveShellCommand({
       command,
       { shell: true, },
     );
-    stdout = result.stdout.trim();
+    stdout = result.stdout
+      .trim();
   }
   catch (error) {
     throw new Error(

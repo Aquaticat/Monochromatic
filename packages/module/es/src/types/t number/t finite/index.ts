@@ -1,4 +1,4 @@
 export * as zero from './t 0/index.ts';
 export * as float from './t float/index.ts';
 export * as int from './t int/index.ts';
-export * as type from './t/index.ts';
+export type * as type from './t/index.ts';

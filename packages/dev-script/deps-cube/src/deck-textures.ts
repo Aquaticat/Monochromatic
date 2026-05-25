@@ -288,7 +288,8 @@ function pickFontSize(
   },
 ): number {
   /** Measured width at the maximum font size; one measurement is enough since width scales linearly. */
-  const measuredAtMax = ctx.measureText(text,).width;
+  const measuredAtMax = ctx.measureText(text,)
+    .width;
   /** Width budget after reserving the fill-fraction margin for the outline. */
   const targetWidth = slotWidthPx * SPHERE_SLOT_FILL_FRACTION;
   if (measuredAtMax <= targetWidth)

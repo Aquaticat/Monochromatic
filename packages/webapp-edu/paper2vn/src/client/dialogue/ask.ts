@@ -47,7 +47,8 @@ export async function askPersona(
   /**
    * Paper body capped to {@link PAPER_TEXT_BUDGET} so prompts fit context windows.
    */
-  const truncated = paperText.length > PAPER_TEXT_BUDGET
+  const truncated = paperText.length
+    > PAPER_TEXT_BUDGET
     ? paperText.slice(
       0,
       PAPER_TEXT_BUDGET,

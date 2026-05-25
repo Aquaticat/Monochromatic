@@ -73,7 +73,8 @@ export function computeLocalXBounds({
     /** Absolute point coordinates for this path (H/V already expanded). */
     const points = resolveAbsolutePoints(commands,);
     /** Half the stroke width: the amount each point's bounding box extends past the centreline. */
-    const halfStroke = pathData.strokeWidth / 2;
+    const halfStroke = pathData.strokeWidth
+      / 2;
 
     points.forEach(function updateBounds([px,],) {
       /** Point X translated into cell-local coordinates so bounds are independent of cell position. */
@@ -145,7 +146,8 @@ export function addFilledPath({
   let cy = 0;
 
   commands.forEach(function traceFilledCommand(cmd,) {
-    if (cmd.type === 'M') {
+    if (cmd.type
+      === 'M') {
       cx = cmd.x;
       cy = cmd.y;
       otPath.moveTo(
@@ -153,7 +155,8 @@ export function addFilledPath({
         fontY(cy,),
       );
     }
-    else if (cmd.type === 'L') {
+    else if (cmd.type
+      === 'L') {
       cx = cmd.x;
       cy = cmd.y;
       otPath.lineTo(
@@ -161,14 +164,16 @@ export function addFilledPath({
         fontY(cy,),
       );
     }
-    else if (cmd.type === 'H') {
+    else if (cmd.type
+      === 'H') {
       cx = cmd.x;
       otPath.lineTo(
         (cx - cellX) + xShift,
         fontY(cy,),
       );
     }
-    else if (cmd.type === 'V') {
+    else if (cmd.type
+      === 'V') {
       cy = cmd.y;
       otPath.lineTo(
         (cx - cellX) + xShift,
@@ -176,7 +181,8 @@ export function addFilledPath({
       );
     }
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- SVG command type discriminant is checked exhaustively
-    else if (cmd.type === 'Z') {
+    else if (cmd.type
+      === 'Z') {
       otPath.close();
     }
   },);

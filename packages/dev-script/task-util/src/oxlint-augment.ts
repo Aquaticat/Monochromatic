@@ -68,7 +68,9 @@ function isAsciiLetter(c: string,): boolean {
  * ```
  */
 function isWordChar(c: string,): boolean {
-  return isAsciiLetter(c,) || isAsciiDigit(c,) || (c === '_');
+  return isAsciiLetter(c,)
+    || isAsciiDigit(c,)
+    || (c === '_');
 }
 
 /**
@@ -85,7 +87,8 @@ function isWordChar(c: string,): boolean {
  * ```
  */
 function isRuleNameChar(c: string,): boolean {
-  return isWordChar(c,) || (c === '-');
+  return isWordChar(c,)
+    || (c === '-');
 }
 
 /**
@@ -142,9 +145,11 @@ function ansiEscapeLength({
   text: string;
   start: number;
 },): number {
-  if (text.charAt(start,) !== ESC_CHAR)
+  if (text.charAt(start,)
+    !== ESC_CHAR)
     return -1;
-  if (text.charAt(start + 1,) !== '[')
+  if (text.charAt(start + 1,)
+    !== '[')
     return -1;
 
   return (function scan(): number {
@@ -153,7 +158,8 @@ function ansiEscapeLength({
     if (!isAsciiDigit(text.charAt(idx,),))
       return -1;
     idx += 1;
-    while (idx < text.length) {
+    while (idx < text
+      .length) {
       /** Current char; drives the digit / terminator / separator transition. */
       const c = text.charAt(idx,);
       if (isAsciiDigit(c,)) {
@@ -196,7 +202,8 @@ export function stripAnsi(text: string,): string {
   /** Output segments in order; joined once at the end so no intermediate string is recopied per chunk. */
   const parts: string[] = [];
   // Single forward pass; `idx` jumps by whole ANSI sequences, so the stride is variable and updated in the body.
-  for (let idx = 0; idx < text.length;) {
+  for (let idx = 0; idx < text
+    .length;) {
     /** Position of the next ESC byte; `-1` means no further ANSI sequences. */
     const escIdx = text.indexOf(
       ESC_CHAR,
@@ -287,7 +294,8 @@ function skipWhitespace({
   return (function walk(): number {
     /** Cursor advanced across the whitespace run; stops at the first non-whitespace char or the end of `text`. */
     let cursor = idx;
-    while ((cursor < text.length) && isWhitespace(text.charAt(cursor,),))
+    while ((cursor < text
+      .length) && isWhitespace(text.charAt(cursor,),))
       cursor += 1;
     return cursor;
   })();
@@ -319,7 +327,8 @@ function skipRuleNameChars({
   return (function walk(): number {
     /** Cursor advanced across the rule-name char run; stops at the first non-rule-name char or the end of `text`. */
     let cursor = idx;
-    while ((cursor < text.length) && isRuleNameChar(text.charAt(cursor,),))
+    while ((cursor < text
+      .length) && isRuleNameChar(text.charAt(cursor,),))
       cursor += 1;
     return cursor;
   })();
@@ -425,7 +434,8 @@ function matchHeaderAt({
   if (ruleEnd === ruleStart)
     return null;
 
-  if (text.charAt(ruleEnd,) !== ')')
+  if (text.charAt(ruleEnd,)
+    !== ')')
     return null;
 
   /** Cursor past optional whitespace after `)`; the next char must be `:`. */
@@ -433,7 +443,8 @@ function matchHeaderAt({
     text,
     idx: ruleEnd + 1,
   },);
-  if (text.charAt(afterRule,) !== ':')
+  if (text.charAt(afterRule,)
+    !== ':')
     return null;
 
   return text.slice(
@@ -465,7 +476,8 @@ export function extractRuleName(line: string,): string | null {
   const stripped = stripAnsi(line,);
 
   // Single linear pass over the stripped line; attempt a header match at each `x`/`!` candidate.
-  for (let idx = 0; idx < stripped.length; idx += 1) {
+  for (let idx = 0; idx < stripped
+    .length; idx += 1) {
     /** Char at the cursor; only `x` or `!` can open a diagnostic header. */
     const c = stripped.charAt(idx,);
     if ((c === 'x') || (c === '!')) {
@@ -495,7 +507,9 @@ export function extractRuleName(line: string,): string | null {
  * ```
  */
 export function isHelpLine(line: string,): boolean {
-  return stripAnsi(line,).trimStart().startsWith('help:',);
+  return stripAnsi(line,)
+    .trimStart()
+    .startsWith('help:',);
 }
 
 //endregion Diagnostic detection
@@ -548,7 +562,8 @@ export function formatGuidanceLine(guidance: string,): string {
  * ```
  */
 export function augmentOxlintOutput(output: string,): string {
-  if (output.length === 0)
+  if (output.length
+    === 0)
     return '';
 
   /** Source output split per line so each diagnostic's header, body, and trailing blank can be inspected individually. */
@@ -567,21 +582,26 @@ export function augmentOxlintOutput(output: string,): string {
     /** Rule name extracted from the current line when it matches a diagnostic header; otherwise null. */
     const ruleName = extractRuleName(line,);
     if (ruleName !== null) {
-      activeGuidance = (RULE_GUIDANCE[ruleName] !== undefined) ? ruleName : null;
+      activeGuidance = (RULE_GUIDANCE[ruleName]
+        !== undefined) ? ruleName : null;
       injected = false;
     }
 
     // Inject after help line when guidance is pending
-    if ((activeGuidance !== null) && (!injected) && isHelpLine(line,)) {
+    if ((activeGuidance !== null) && (!injected)
+      && isHelpLine(line,)) {
       result.push(line,);
-      result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance] ?? '',),);
+      result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
+        ?? '',),);
       injected = true;
       continue;
     }
 
     // Inject before blank line (end of diagnostic) if no help line was found
-    if ((activeGuidance !== null) && (!injected) && (stripAnsi(line,).trim() === '')) {
-      result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance] ?? '',),);
+    if ((activeGuidance !== null) && (!injected)
+      && (stripAnsi(line,).trim() === '')) {
+      result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
+        ?? '',),);
       injected = true;
       activeGuidance = null;
     }
@@ -591,7 +611,8 @@ export function augmentOxlintOutput(output: string,): string {
 
   // Handle trailing diagnostic with no blank line at end
   if ((activeGuidance !== null) && (!injected))
-    result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance] ?? '',),);
+    result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
+      ?? '',),);
 
   return result.join('\n',);
 }

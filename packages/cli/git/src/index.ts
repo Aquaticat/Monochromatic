@@ -28,7 +28,8 @@ const rl = tagged({
 },);
 
 /** Raw arguments passed after the script name. */
-const rawArgs: readonly string[] = process.argv.slice(2,);
+const rawArgs: readonly string[] = process.argv
+  .slice(2,);
 
 /**
  * Pre-subcommand argv tokens that request version information and cause git
@@ -148,14 +149,17 @@ try {
 
   /** True when this invocation asks git for its version, in any of the supported forms (subcommand, global flag, with or without `-C` chaining). */
   const isVersionRequest = (subcommand === 'version')
-    || preSubcommand.some(function isVersionFlag(arg,) {
+    || preSubcommand
+    .some(function isVersionFlag(arg,) {
       return VERSION_FLAGS.has(arg,);
     },);
 
   /** True when `git status` is in a machine-readable mode (`-s`, `--short`, `--porcelain`, `--porcelain=v*`, `-z`); the cli-git note would corrupt this output and is suppressed. */
   const isStatusMachineReadable = postSubcommand.some(
     function isMachineReadableFlag(arg,) {
-      return STATUS_MACHINE_READABLE_FLAGS.has(arg,) || arg.startsWith('--porcelain=',);
+      return STATUS_MACHINE_READABLE_FLAGS.has(arg,)
+        || arg
+        .startsWith('--porcelain=',);
     },
   );
 
@@ -181,7 +185,8 @@ try {
 }
 catch (error) {
   if (error instanceof SubprocessError)
-    process.exitCode = error.exitCode ?? 1;
+    process.exitCode = error.exitCode
+      ?? 1;
   else if (error instanceof Error) {
     console.error(error.message,);
     process.exitCode = 1;

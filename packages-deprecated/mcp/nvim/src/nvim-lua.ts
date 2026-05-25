@@ -52,7 +52,8 @@ export function mapRawDiagnostic(d: Record<string, unknown>,): Diagnostic {
     : null;
 
   return {
-    severity: SEVERITY_MAP[severity] ?? `UNKNOWN(${String(severity,)})`,
+    severity: SEVERITY_MAP[severity]
+      ?? `UNKNOWN(${String(severity,)})`,
     lnum: lnum + 1,
     col: col + 1,
     end_lnum: endLnum + 1,

@@ -12,7 +12,9 @@
 const DEFAULT_COMPLETIONS_URL = 'http://localhost:8080/v1/chat/completions';
 
 /** Resolved endpoint URL, evaluated once at import time. */
-const completionsUrl = process.env.CHAT_COMPLETIONS_URL ?? DEFAULT_COMPLETIONS_URL;
+const completionsUrl = process.env
+  .CHAT_COMPLETIONS_URL
+  ?? DEFAULT_COMPLETIONS_URL;
 
 //endregion Configuration
 
@@ -42,14 +44,18 @@ const requestTimestamps: number[] = [];
  */
 function isRateLimited(): boolean {
   /** Boundary timestamp; any entry older than this is expired and discarded. */
-  const cutoff = Date.now() - WINDOW_DURATION_MS;
+  const cutoff = Date.now()
+    - WINDOW_DURATION_MS;
 
   // Discard entries older than the window
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- array index 0 is checked via length guard
-  while ((requestTimestamps.length > 0) && ((requestTimestamps[0] as number) < cutoff))
+  while ((requestTimestamps.length
+    > 0) && ((requestTimestamps[0] as number)
+    < cutoff))
     requestTimestamps.shift();
 
-  return requestTimestamps.length >= MAX_REQUESTS_PER_WINDOW;
+  return requestTimestamps.length
+    >= MAX_REQUESTS_PER_WINDOW;
 }
 
 /** Records the current timestamp in the sliding window. */
@@ -142,13 +148,16 @@ export async function chatCompletion(
   /** Request payload accumulated below; optional fields are conditionally added. */
   const body: Record<string, unknown> = {
     messages: options.messages,
-    temperature: options.temperature ?? 0,
+    temperature: options.temperature
+      ?? 0,
   };
 
-  if (options.maxTokens !== undefined)
+  if (options.maxTokens
+    !== undefined)
     body.max_tokens = options.maxTokens;
 
-  if (options.jsonMode === true)
+  if (options.jsonMode
+    === true)
     body.response_format = { type: 'json_object', };
 
   try {
@@ -193,7 +202,8 @@ export async function chatCompletion(
 
     return {
       ok: true,
-      content: firstChoice.message.content,
+      content: firstChoice.message
+        .content,
     };
   }
   catch (caughtError: unknown) {

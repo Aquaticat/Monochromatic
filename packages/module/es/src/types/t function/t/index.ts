@@ -5,4 +5,4 @@
 export type $ = (...args: any[]) => any;
 // oxlint-enable typescript/no-explicit-any
 
-export * as async from './r a/index.ts';
+export type * as async from './r a/index.ts';

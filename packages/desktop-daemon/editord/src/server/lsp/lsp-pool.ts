@@ -158,11 +158,14 @@ export function createLspPool({
     const delay = state.deterministic
       ? DETERMINISTIC_PANIC_RETRY_MS
       : Math.min(
-        BASE_RESTART_DELAY_MS * (2 ** (state.count - 1)),
+        BASE_RESTART_DELAY_MS * (2 ** (state.count
+          - 1)),
         MAX_RESTART_DELAY_MS,
       );
     /** Time since the last crash; compared against `delay` to decide if the cooldown has elapsed. */
-    const elapsed = Date.now() - state.lastCrashAt;
+    const elapsed = Date.now()
+      - state
+      .lastCrashAt;
     if (elapsed >= delay) {
       /** Backoff/retry period has elapsed; allow restart. */
       return false;
@@ -209,7 +212,8 @@ export function createLspPool({
         /** Prior crash record for this key, or undefined on the first crash. */
         const prev = crashes.get(key,);
         /** Crash counter incremented for this exit; drives exponential backoff in the non-deterministic branch. */
-        const count = (prev?.count ?? 0) + 1;
+        const count = (prev?.count
+          ?? 0) + 1;
         crashes.set(
           key,
           {

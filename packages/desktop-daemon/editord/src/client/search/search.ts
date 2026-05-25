@@ -74,7 +74,8 @@ export function scheduleSearch({
   readonly execute: () => void;
 },): void {
   state.debouncedSearch ??= createSearchDebounce({ execute, },);
-  state.debouncedSearch.debounced();
+  state.debouncedSearch
+    .debounced();
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
@@ -109,7 +110,8 @@ export async function performSearch({
     readonly query: string;
   },) => void;
 },): Promise<void> {
-  if (raw.trim() === '') {
+  if (raw.trim()
+    === '') {
     onResults({
       results: [],
       query: '',
@@ -121,7 +123,8 @@ export async function performSearch({
    */
   const isContentOnly = raw.startsWith('%',);
   /** Trimmed pattern sent to the server; empty short-circuits to no-op. */
-  const query = isContentOnly ? raw.slice(1,).trim() : raw.trim();
+  const query = isContentOnly ? raw.slice(1,)
+    .trim() : raw.trim();
   if (query === '') {
     onResults({
       results: [],
@@ -134,12 +137,14 @@ export async function performSearch({
   try {
     /** Raw mixed-kind results before the content-only filter below. */
     const results = await onSearch(query,);
-    if (generation !== state.searchGeneration)
+    if (generation !== state
+      .searchGeneration)
       return;
     /** Mode-gated subset surfaced to the consumer. */
     const filtered = isContentOnly
       ? results.filter(function isContent(r,) {
-        return r.kind === 'content';
+        return r.kind
+          === 'content';
       },)
       : results;
     onResults({
@@ -148,7 +153,8 @@ export async function performSearch({
     },);
   }
   catch (error) {
-    if (generation !== state.searchGeneration)
+    if (generation !== state
+      .searchGeneration)
       return;
     l.error(`search failed: ${String(error,)}`,);
     onResults({

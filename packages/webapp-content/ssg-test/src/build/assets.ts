@@ -69,7 +69,8 @@ export async function generateAssets(
   /** Per-language RSS write promises kicked off concurrently. */
   const rssWrites = validLangs.map(function writeRss(lang,) {
     /** Posts narrowed to this locale; absent locales yield an empty feed instead of an error. */
-    const langPosts = byLang[lang] ?? [];
+    const langPosts = byLang[lang]
+      ?? [];
     /** Pre-rendered XML body written to `{lang}/rss.xml`. */
     const rssXml = generateLanguageRss({
       lang,

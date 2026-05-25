@@ -29,7 +29,8 @@ export function rng(seed: number,): number {
     value ^ (value >>> 15),
     value | 1,
   );
-  temp ^= temp + Math.imul(
+  temp ^= temp + Math
+    .imul(
     temp ^ (temp >>> 7),
     temp | 61,
   );
@@ -54,9 +55,13 @@ export function rngInt(row: {
   lo: number;
   hi: number;
 },): number {
-  if (row.hi <= row.lo)
+  if (row.hi
+    <= row
+    .lo)
     return row.lo;
-  return row.lo + Math.floor(rng(row.seed,) * (row.hi - row.lo),);
+  return row.lo
+    + Math
+    .floor(rng(row.seed,) * (row.hi - row.lo),);
 }
 
 /**
@@ -75,7 +80,12 @@ export function rngPick<T,>(row: {
   seed: number;
   items: readonly T[];
 },): T | undefined {
-  if (row.items.length === 0)
+  if (row.items
+    .length
+    === 0)
     return undefined;
-  return row.items[Math.floor(rng(row.seed,) * row.items.length,)];
+  return row.items[Math.floor(rng(row.seed,)
+    * row
+    .items
+    .length,)];
 }

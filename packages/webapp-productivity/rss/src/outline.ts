@@ -51,11 +51,14 @@ export async function getOutlinesFromOpmls(
   const parsed = parseSafe(texts,);
   /** Top-level outline groups extracted from each OPML body. */
   const outerOutlines = parsed.flatMap(function extractBody(opml,) {
-    return opml.body?.outlines ?? [];
+    return opml.body
+      ?.outlines
+      ?? [];
   },);
   /** Nested feed outlines unwrapped one level so the validate step sees flat entries. */
   const innerOutlines = outerOutlines.flatMap(function extractInner(outline,) {
-    return outline.outlines ?? [];
+    return outline.outlines
+      ?? [];
   },);
   /** Outlines whose xmlUrl passes HTTP-domain validation, returned as the function output. */
   const result = innerOutlines.filter(
@@ -65,7 +68,8 @@ export async function getOutlinesFromOpmls(
       /** Destructured xmlUrl so the empty/undefined gate reads on a named binding. */
       const { xmlUrl, } = outline;
       if ((xmlUrl === undefined) || (xmlUrl === '')) {
-        innerL.warn(`outline ${outline.text ?? 'unnamed'} has no xmlUrl`,);
+        innerL.warn(`outline ${outline.text
+          ?? 'unnamed'} has no xmlUrl`,);
         return false;
       }
       try {
@@ -78,7 +82,9 @@ export async function getOutlinesFromOpmls(
                 /** Parsed URL so the protocol and hostname can be checked independently. */
                 const u = new URL(s,);
                 return ((u.protocol === 'http:') || (u.protocol === 'https:'))
-                  && v.DOMAIN_REGEX.test(u.hostname,);
+                  && v
+                  .DOMAIN_REGEX
+                  .test(u.hostname,);
               },
               'Invalid HTTP(S) URL with valid domain',
             ),

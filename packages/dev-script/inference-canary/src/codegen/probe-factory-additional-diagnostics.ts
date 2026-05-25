@@ -70,7 +70,8 @@ export function appendAdditionalRunDiagnostics({
   verifyCaches,
   label,
 }: AppendAdditionalRunDiagnosticsOptions,): string | undefined {
-  if ((runs === undefined) || (runs.length === 0))
+  if ((runs === undefined) || (runs.length
+    === 0))
     return base;
 
   /** Diagnostic text sections for runs that failed or produced incorrect output */
@@ -80,24 +81,30 @@ export function appendAdditionalRunDiagnostics({
       index,
     ): string | undefined {
       /** Cached container result for this run and model */
-      const container = containerCaches[index]?.get(label,);
+      const container = containerCaches[index]
+        ?.get(label,);
       if (container === undefined)
         return undefined;
       if (container.timedOut)
         return `=== ${run.name} ===\nProcess timed out.`;
-      if (container.exitCode !== 0) {
+      if (container.exitCode
+        !== 0) {
         return `=== ${run.name} ===\nExited with code ${String(container.exitCode,)}.\n${
-          container.stderr.slice(
+          container.stderr
+            .slice(
             0,
             MAX_ADDITIONAL_OUTPUT,
           )
         }`;
       }
       /** Cached verification result for this run and model */
-      const verify = verifyCaches[index]?.get(label,);
-      if ((verify !== undefined) && (verify.correctness < 1)) {
+      const verify = verifyCaches[index]
+        ?.get(label,);
+      if ((verify !== undefined) && (verify.correctness
+        < 1)) {
         return `=== ${run.name} (incorrect output) ===\n${
-          container.stdout.slice(
+          container.stdout
+            .slice(
             0,
             MAX_ADDITIONAL_OUTPUT,
           )
@@ -109,7 +116,8 @@ export function appendAdditionalRunDiagnostics({
       return diagSection !== undefined;
     },);
 
-  if (diagSections.length === 0)
+  if (diagSections.length
+    === 0)
     return base;
   /** Combined diagnostic text from all failing additional runs */
   const combined = diagSections.join('\n\n',);

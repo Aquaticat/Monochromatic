@@ -65,7 +65,8 @@ export function el<K extends keyof TagNameMap,>(
   ) {
     if (value === undefined)
       continue;
-    if (key.startsWith('on',) && ((typeof value) === 'function')) {
+    if (key.startsWith('on',)
+      && ((typeof value) === 'function')) {
       node.addEventListener(
         key
           .slice(2,)
@@ -104,7 +105,9 @@ export function clear(parent: Node,): void {
     parent.replaceChildren();
     return;
   }
-  while (parent.firstChild !== null)
-    parent.firstChild.remove();
+  while (parent.firstChild
+    !== null)
+    parent.firstChild
+      .remove();
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

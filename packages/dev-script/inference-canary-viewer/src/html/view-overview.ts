@@ -47,7 +47,8 @@ export function renderOverview({
   summaries: readonly ModelSummary[];
   entries: readonly ViewerEntry[];
 },): string {
-  if (summaries.length === 0) {
+  if (summaries.length
+    === 0) {
     return h({
       tag: 'p',
       text: 'No history data available. Run the canary first.',
@@ -123,11 +124,14 @@ export function renderOverview({
           },),
           h({
             tag: 'td',
-            html: summary.latestScore.toFixed(2,) + inlineStatus,
+            html: summary.latestScore
+              .toFixed(2,)
+              + inlineStatus,
           },),
           h({
             tag: 'td',
-            text: summary.latestTimestamp.slice(
+            text: summary.latestTimestamp
+              .slice(
               0,
               10,
             ),
@@ -138,7 +142,8 @@ export function renderOverview({
           },),
           h({
             tag: 'td',
-            text: summary.threshold.toFixed(2,),
+            text: summary.threshold
+              .toFixed(2,),
           },),
         ],
       },);

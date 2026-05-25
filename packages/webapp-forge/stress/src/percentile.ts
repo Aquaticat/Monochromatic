@@ -21,7 +21,9 @@ export function percentile(row: {
   samples: readonly number[];
   p: number;
 },): number {
-  if (row.samples.length === 0)
+  if (row.samples
+    .length
+    === 0)
     return 0;
   /** Ascending copy preserves the caller's readonly input while enabling positional lookup. */
   const sorted = [...row.samples,].toSorted(function compareAsc(
@@ -32,11 +34,15 @@ export function percentile(row: {
   },);
   /** Clamped position so out-of-range fractions still resolve to a real sample. */
   const index = Math.min(
-    sorted.length - 1,
+    sorted.length
+      - 1,
     Math.max(
       0,
-      Math.floor(row.p * sorted.length,),
+      Math.floor(row.p
+        * sorted
+        .length,),
     ),
   );
-  return sorted[index] ?? 0;
+  return sorted[index]
+    ?? 0;
 }

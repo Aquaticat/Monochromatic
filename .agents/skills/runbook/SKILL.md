@@ -51,7 +51,7 @@ not about any single tool.
 Every runbook has these four sections in this order.
 Status markers per section let the user interrupt and resume.
 
-~~~md
+```md
 ### Setup
 
 Status: TODO | DONE
@@ -80,7 +80,7 @@ Status: TODO | DONE
 
 How to undo any test state, return the system to its pre-runbook configuration,
 or delete created resources.
-~~~
+```
 
 The `Status: TODO | DONE` line per section lets the user cross out `TODO`
 and leave `DONE` to signal section completion.
@@ -151,21 +151,25 @@ restore section.
 The reference's section headers, copied verbatim
 so the skill is self-contained if the example file moves:
 
-~~~md
+```md
 ## What this proves
 
 ## Setup
+
 Status: TODO
 
 ## Steps
+
 Status: TODO
 
 ## What to check
+
 Status: TODO
 
 ## Restore
+
 Status: TODO
-~~~
+```
 
 ## Cues you are violating the rules
 

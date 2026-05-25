@@ -22,7 +22,8 @@ export function $({ regexp, }: { regexp: RegExp; },): Global {
   /* oxlint-disable no-restricted-syntax/no-regex -- the function's purpose is regex transformation (add `g` flag); the RegExp constructor is the only way to produce a new RegExp from an existing one's source+flags. */
   return new RegExp(
     regexp.source,
-    regexp.flags.includes('g',) ? regexp.flags : `${regexp.flags}g`,
+    regexp.flags
+      .includes('g',) ? regexp.flags : `${regexp.flags}g`,
   ) as Global;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   /* oxlint-enable no-restricted-syntax/no-regex */

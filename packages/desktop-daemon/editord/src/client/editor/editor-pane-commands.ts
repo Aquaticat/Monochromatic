@@ -131,7 +131,11 @@ function performIndentOp({
   const sel = pane.getSelection();
   /** Same selection narrowed to multi-position ranges; null when the selection is collapsed. */
   const nonCollapsed = (sel !== null)
-      && (!((sel.startLine === sel.endLine) && (sel.startCharacter === sel.endCharacter)))
+      && (!((sel.startLine
+        === sel
+        .endLine) && (sel.startCharacter
+        === sel
+        .endCharacter)))
     ? sel
     : null;
   /** Outcome of the indent/unindent run, expressed as either an updated selection or a new caret. */
@@ -228,7 +232,8 @@ export function performSwapUp({ pane, }: { readonly pane: PaneApi; },): void {
 export function performSelectAndCopy({ pane, }: { readonly pane: PaneApi; },): boolean {
   /** Contenteditable container; bail when the pane is not connected or its shadow is detached. */
   const editor = pane.getEditorElement();
-  if ((editor === null) || (pane.shadowRoot === null))
+  if ((editor === null) || (pane.shadowRoot
+    === null))
     return false;
   /** Caret position needed to identify which line should be copied. */
   const pos = pane.getCursorPosition();

@@ -85,7 +85,8 @@ export function firstAdvisoryLine(
     },)
     .find(function keepLine(line,) {
       return line !== '';
-    },) ?? '(advisor returned no text)';
+    },)
+    ?? '(advisor returned no text)';
 }
 
 /**
@@ -112,7 +113,8 @@ export function isAdvisorDetails(
     && ('scopeSource' in value)
     && ((typeof value.scopeSource) === 'string')
     && ('scopedSlugs' in value)
-    && Array.isArray(value.scopedSlugs,)
+    && Array
+    .isArray(value.scopedSlugs,)
     && ('durationMs' in value)
     && ((typeof value.durationMs) === 'number')
     && ('contextBudgetChars' in value)

@@ -54,7 +54,8 @@ const DECIMAL_RADIX = 10;
  */
 function resolvePort(): number {
   /** Raw env value (undefined when unset) gates the parse below. */
-  const environmentPort = process.env.PORT;
+  const environmentPort = process.env
+    .PORT;
   if (environmentPort === undefined)
     return DEFAULT_PORT;
 
@@ -126,7 +127,8 @@ function handleDiagnostics(
     readonly diagnostics: readonly WireDiagnostic[];
   },
 ): void {
-  if (connectedPeers.size === 0)
+  if (connectedPeers.size
+    === 0)
     return;
   /** Stringified once and reused across all peers in the broadcast loop. */
   const message = JSON.stringify({
@@ -155,7 +157,8 @@ const lspManager = createLspManager({
  */
 const dirWatcher = createDirWatcher({
   onChange: function handleFsChange(event,): void {
-    if (connectedPeers.size === 0)
+    if (connectedPeers.size
+      === 0)
       return;
     /** Stringified once and reused across all peers in the broadcast loop. */
     const message = JSON.stringify({

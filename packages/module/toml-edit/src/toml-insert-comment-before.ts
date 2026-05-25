@@ -48,7 +48,9 @@ export function tomlInsertCommentBefore(
     edit,
     path,
   },);
-  if ((resolved.kind === 'missing') || (resolved.kind === 'top-level')) {
+  if ((resolved.kind
+    === 'missing') || (resolved.kind
+    === 'top-level')) {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
@@ -64,7 +66,8 @@ export function tomlInsertCommentBefore(
     .join('',);
 
   /** Anchor records placement so the emitter can splice in source order. */
-  const anchor: Insertion['anchor'] = resolved.kind === 'array-of-tables'
+  const anchor: Insertion['anchor'] = resolved.kind
+    === 'array-of-tables'
     ? {
       position: 'before-node',
       node: nonNullishOrThrow(resolved.nodes[0],),

@@ -57,7 +57,8 @@ export function applyCapitalization(
   } = options;
   if ((mode === undefined) || (mode === 'preserve'))
     return text;
-  if (text.length === 0)
+  if (text.length
+    === 0)
     return text;
   /** First whitespace-delimited token, used to consult `caseInvariants`. */
   const firstSpace = text.indexOf(' ',);
@@ -70,7 +71,9 @@ export function applyCapitalization(
     return text;
   /** First Unicode code point of the rendered text. */
   const firstChar = text.charAt(0,);
-  return firstChar.toUpperCase() + text.slice(1,);
+  return firstChar.toUpperCase()
+    + text
+    .slice(1,);
 }
 
 /**

@@ -37,11 +37,13 @@ const REGEX_ACCEPTING_STRING_METHODS = [
  * ```
  */
 function isRegExpLiteral(node: ESTree.Node,): node is ESTree.RegExpLiteral {
-  if (node.type !== 'Literal')
+  if (node.type
+    !== 'Literal')
     return false;
   if (!('regex' in node))
     return false;
-  return node.regex !== undefined;
+  return node.regex
+    !== undefined;
 }
 
 /**
@@ -62,10 +64,16 @@ function isRegExpLiteral(node: ESTree.Node,): node is ESTree.RegExpLiteral {
 function isRegExpConstructorExpression(
   node: ESTree.Node,
 ): node is ESTree.CallExpression | ESTree.NewExpression {
-  if ((node.type !== 'CallExpression') && (node.type !== 'NewExpression'))
+  if ((node.type
+    !== 'CallExpression') && (node.type
+    !== 'NewExpression'))
     return false;
-  return (node.callee.type === 'Identifier')
-    && (node.callee.name === REGEXP_CONSTRUCTOR_NAME);
+  return (node.callee
+    .type
+    === 'Identifier')
+    && (node.callee
+      .name
+      === REGEXP_CONSTRUCTOR_NAME);
 }
 
 /**
@@ -84,15 +92,22 @@ function getStaticMethodName(
   { node, }: { readonly node: ESTree.MemberExpression; },
 ): string | undefined {
   if (!node.computed) {
-    if (node.property.type !== 'Identifier')
+    if (node.property
+      .type
+      !== 'Identifier')
       return undefined;
-    return node.property.name;
+    return node.property
+      .name;
   }
-  if (node.property.type !== 'Literal')
+  if (node.property
+    .type
+    !== 'Literal')
     return undefined;
-  if ((typeof node.property.value) !== 'string')
+  if ((typeof node.property
+    .value) !== 'string')
     return undefined;
-  return node.property.value;
+  return node.property
+    .value;
 }
 
 /**
@@ -130,7 +145,8 @@ function isRegexAcceptingStringMethod(
  * ```
  */
 function isInlineRegexExpression(node: ESTree.Node,): boolean {
-  return isRegExpLiteral(node,) || isRegExpConstructorExpression(node,);
+  return isRegExpLiteral(node,)
+    || isRegExpConstructorExpression(node,);
 }
 
 /**
@@ -151,7 +167,9 @@ function isInlineRegexExpression(node: ESTree.Node,): boolean {
  * ```
  */
 function isStringMethodRegexCall({ node, }: { readonly node: ESTree.CallExpression; },): boolean {
-  if (node.callee.type !== 'MemberExpression')
+  if (node.callee
+    .type
+    !== 'MemberExpression')
     return false;
   /** Method name resolved from static or string-literal member syntax. */
   const methodName = getStaticMethodName({ node: node.callee, },);
@@ -179,9 +197,12 @@ function isStringMethodRegexCall({ node, }: { readonly node: ESTree.CallExpressi
  * ```
  */
 function stringRegexMethodName({ node, }: { readonly node: ESTree.CallExpression; },): string {
-  if (node.callee.type !== 'MemberExpression')
+  if (node.callee
+    .type
+    !== 'MemberExpression')
     return 'unknown';
-  return getStaticMethodName({ node: node.callee, },) ?? 'unknown';
+  return getStaticMethodName({ node: node.callee, },)
+    ?? 'unknown';
 }
 
 /**
@@ -202,7 +223,8 @@ function isCoveredByParentRegexDiagnostic({ node, }: { readonly node: ESTree.Nod
   const { parent, } = node;
   if (parent === null)
     return false;
-  if (parent.type !== 'CallExpression')
+  if (parent.type
+    !== 'CallExpression')
     return false;
   return isStringMethodRegexCall({ node: parent, },)
     || isRegExpConstructorExpression(parent,);

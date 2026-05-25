@@ -67,9 +67,11 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
     ) {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- pi event args are typed as `any` */
       /** Event arguments coerced to a string-keyed record so the title builder can sample fields by name. */
-      const args = (event.args ?? {}) as Record<string, unknown>;
+      const args = (event.args
+        ?? {}) as Record<string, unknown>;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
-      ctx.ui.setTitle(
+      ctx.ui
+        .setTitle(
         titleForEvent({
           eventType: 'tool_execution_start',
           data: {
@@ -88,7 +90,8 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       },
       ctx: TitleContext,
     ) {
-      ctx.ui.setTitle(
+      ctx.ui
+        .setTitle(
         titleForEvent({
           eventType: 'tool_execution_end',
           data: {
@@ -104,7 +107,8 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       event: SessionStartEvent,
       ctx: TitleContext,
     ) {
-      ctx.ui.setTitle(
+      ctx.ui
+        .setTitle(
         titleForEvent({
           eventType: 'session_start',
           data: {
@@ -120,7 +124,8 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       _event: SessionShutdownEvent,
       ctx: TitleContext,
     ) {
-      ctx.ui.setTitle(
+      ctx.ui
+        .setTitle(
         titleForEvent({
           eventType: 'session_shutdown',
           data: {},
@@ -134,7 +139,8 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       _event: AgentEndEvent,
       ctx: TitleContext,
     ) {
-      ctx.ui.setTitle(
+      ctx.ui
+        .setTitle(
         titleForEvent({
           eventType: 'agent_end',
           data: {},
@@ -148,7 +154,8 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
       event: BeforeAgentStartEvent,
       ctx: TitleContext,
     ) {
-      ctx.ui.setTitle(
+      ctx.ui
+        .setTitle(
         titleForEvent({
           eventType: 'before_agent_start',
           data: {

@@ -77,7 +77,8 @@ export function renderResultElements({
       },),
     ];
 
-    if (result.kind === 'content') {
+    if (result.kind
+      === 'content') {
       children.push(
         h({
           tag: 'span',
@@ -129,7 +130,8 @@ export function highlightMatches(
   },
 ): void {
   if (query === '') {
-    CSS.highlights.delete('hl-search-match',);
+    CSS.highlights
+      .delete('hl-search-match',);
     return;
   }
 
@@ -153,7 +155,8 @@ export function highlightMatches(
   let node = walker.nextNode();
   while (node !== null) {
     /** Raw text of the current node; empty string falls back when textContent is null. */
-    const text = node.textContent ?? '';
+    const text = node.textContent
+      ?? '';
     /** Lowercase version of `text` for case-insensitive `indexOf` comparisons. */
     const lowerText = text.toLowerCase();
     /** Cursor advanced past each match so overlapping matches are not re-reported. */
@@ -185,13 +188,16 @@ export function highlightMatches(
     node = walker.nextNode();
   }
 
-  if (ranges.length > 0) {
-    CSS.highlights.set(
+  if (ranges.length
+    > 0) {
+    CSS.highlights
+      .set(
       'hl-search-match',
       new Highlight(...ranges,),
     );
   }
   else {
-    CSS.highlights.delete('hl-search-match',);
+    CSS.highlights
+      .delete('hl-search-match',);
   }
 }

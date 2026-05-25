@@ -44,7 +44,9 @@ const args = runSync(
   },
 );
 
-if (args.files.length === 0)
+if (args.files
+  .length
+  === 0)
   throw new Error('At least one FILE argument is required',);
 
 /** Model override from `--model` flag, or `undefined` for the default. */
@@ -54,7 +56,8 @@ const config = model !== undefined ? { model, } : {};
 
 /** Token count results for all files, resolved concurrently. */
 const results = await Promise.all(
-  args.files.map(function countFile(filePath: string,) {
+  args.files
+    .map(function countFile(filePath: string,) {
     return countFileTokens({
       filePath,
       config,
@@ -63,20 +66,24 @@ const results = await Promise.all(
 );
 
 for (const result of results)
-  console.log(`${String(result.inputTokens,).padStart(PAD_WIDTH,)} ${result.filePath}`,);
+  console.log(`${String(result.inputTokens,)
+    .padStart(PAD_WIDTH,)} ${result.filePath}`,);
 
-if (results.length > 1) {
+if (results.length
+  > 1) {
   /** Aggregate across files so the trailing summary line matches `wc -l`-style output. */
   const total = results.reduce(
     function sumTokens(
       sum,
       r,
     ) {
-      return sum + r.inputTokens;
+      return sum + r
+        .inputTokens;
     },
     0,
   );
-  console.log(`${String(total,).padStart(PAD_WIDTH,)} total`,);
+  console.log(`${String(total,)
+    .padStart(PAD_WIDTH,)} total`,);
 }
 
 //endregion CLI

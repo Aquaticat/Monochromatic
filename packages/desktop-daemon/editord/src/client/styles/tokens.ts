@@ -50,7 +50,8 @@ export type PopupHostDecls = PopupBorderDecls & {
 };
 
 /** Font size in rem: 13/16. */
-export const POPUP_FONT_SIZE: number = (16 - 2 - 1) / 16;
+export const POPUP_FONT_SIZE: number = (16 - 2
+  - 1) / 16;
 
 /** Line height multiplier: 3/2. */
 export const CODE_LINE_HEIGHT: number = (2 + 1) / 2;

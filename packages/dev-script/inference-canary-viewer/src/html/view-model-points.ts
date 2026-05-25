@@ -66,7 +66,8 @@ export function buildOverallPoints({
           color,
           icon: vendorIcon(openrouterId,),
           title: `${label} ${
-            entry.timestamp.slice(
+            entry.timestamp
+              .slice(
               0,
               10,
             )
@@ -131,14 +132,16 @@ export function buildProbePoints({
 },): readonly ScatterPoint[] {
   return entries
     .filter(function hasProbe(entry,): boolean {
-      return probe in entry.probeScores;
+      return probe in entry
+        .probeScores;
     },)
     .map(function toPoint(
       entry,
       index,
     ): ScatterPoint {
       /** Probe-specific initial-pass score with zero fallback. */
-      const score = entry.probeScores[probe] ?? 0;
+      const score = entry.probeScores[probe]
+        ?? 0;
       /** Probe-specific fix-pass score; undefined when no fix was attempted. */
       const pass2Score = entry.pass2Scores?.[probe];
       /** Stable id linking the probe point to its probe-detail overlay. */
@@ -152,7 +155,8 @@ export function buildProbePoints({
         color,
         icon: vendorIcon(openrouterId,),
         title: `${probe} ${
-          entry.timestamp.slice(
+          entry.timestamp
+            .slice(
             0,
             10,
           )

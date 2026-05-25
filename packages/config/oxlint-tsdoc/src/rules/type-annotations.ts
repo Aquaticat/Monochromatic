@@ -76,7 +76,8 @@ export function findTypeAnnotations(s: string,): readonly string[] {
   function scanTag(idx: number,): number {
     /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
     let cursor = idx;
-    while ((cursor < s.length) && isWordChar(s.charAt(cursor,),))
+    while ((cursor < s
+      .length) && isWordChar(s.charAt(cursor,),))
       cursor += 1;
     return cursor;
   }
@@ -90,7 +91,8 @@ export function findTypeAnnotations(s: string,): readonly string[] {
   function scanWs(idx: number,): number {
     /** Cursor advanced over the whitespace run; returned as first non-whitespace position. */
     let cursor = idx;
-    while ((cursor < s.length) && isWhitespaceChar(s.charAt(cursor,),))
+    while ((cursor < s
+      .length) && isWhitespaceChar(s.charAt(cursor,),))
       cursor += 1;
     return cursor;
   }
@@ -100,7 +102,8 @@ export function findTypeAnnotations(s: string,): readonly string[] {
   // and `{...}` body are each measured once and the cursor jumps past every
   // consumed span, so total work is bounded by the length of `s` and the stack
   // stays flat. An unterminated `{` halts the scan, matching the prior recursion.
-  for (let from = 0; from < s.length;) {
+  for (let from = 0; from < s
+    .length;) {
     /** Position of the next at-sign; -1 ends the scan. */
     const atIdx = s.indexOf(
       '@',
@@ -116,7 +119,8 @@ export function findTypeAnnotations(s: string,): readonly string[] {
     }
     /** First index past the inter-token whitespace; `{` must live here for a match. */
     const afterWs = scanWs(tagEnd,);
-    if ((afterWs === tagEnd) || (s.charAt(afterWs,) !== '{')) {
+    if ((afterWs === tagEnd) || (s.charAt(afterWs,)
+      !== '{')) {
       from = tagEnd;
       continue;
     }
@@ -132,7 +136,8 @@ export function findTypeAnnotations(s: string,): readonly string[] {
       afterWs + 1,
       closeIdx,
     );
-    if (body.length === 0) {
+    if (body.length
+      === 0) {
       from = closeIdx + 1;
       continue;
     }
@@ -171,18 +176,23 @@ export const noTypes: CreateOnceRule = {
          * Comment body split into lines; each is scanned for the disallowed JSDoc-style
          * curly-braced type annotation that follows a tag.
          */
-        const lines = comment.value.split('\n',);
+        const lines = comment.value
+          .split('\n',);
         lines.forEach(function checkLine(
           line,
           index,
         ): void {
           /** Line stripped of indent and leading `*` so the scan matches at the start of the content. */
-          const trimmed = stripCommentLineMarker(line.trimStart(),).trimStart();
+          const trimmed = stripCommentLineMarker(line.trimStart(),)
+            .trimStart();
           for (const body of findTypeAnnotations(trimmed,)) {
             context.report({
               loc: {
                 start: {
-                  line: comment.loc.start.line + index,
+                  line: comment.loc
+                    .start
+                    .line
+                    + index,
                   column: 0,
                 },
               },

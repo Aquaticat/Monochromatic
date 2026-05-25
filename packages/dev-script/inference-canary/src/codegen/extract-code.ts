@@ -36,7 +36,8 @@ function findOpeningFenceEnd(response: string,): number {
   if (tickIdx === (-1))
     return -1;
   /** Cursor at the byte immediately after the backticks. */
-  const afterTicks = tickIdx + '```'.length;
+  const afterTicks = tickIdx + '```'
+    .length;
   /**
    * Walks the language-tag alternatives, returning the first tag that
    * matches the substring after the backticks.
@@ -46,17 +47,22 @@ function findOpeningFenceEnd(response: string,): number {
    * @returns byte offset of the newline byte, or `-1` when no tag matches
    */
   function tryLangTag(idx: number,): number {
-    if (idx >= FENCE_LANG_TAGS.length)
+    if (idx >= FENCE_LANG_TAGS
+      .length)
       return -1;
     /** Candidate language tag; empty string represents the no-tag form. */
-    const tag = FENCE_LANG_TAGS[idx] ?? '';
+    const tag = FENCE_LANG_TAGS[idx]
+      ?? '';
     /** Cursor immediately after the candidate tag in `response`. */
-    const after = afterTicks + tag.length;
+    const after = afterTicks + tag
+      .length;
     if (
       (response.slice(
         afterTicks,
         after,
-      ) === tag) && (response.charAt(after,) === '\n')
+      )
+        === tag) && (response.charAt(after,)
+        === '\n')
     ) {
       return after + 1;
     }
@@ -173,5 +179,6 @@ export function tryExtractCode(response: string,): ExtractResult {
  * ```
  */
 export function extractCode(response: string,): string {
-  return tryExtractCode(response,).source;
+  return tryExtractCode(response,)
+    .source;
 }

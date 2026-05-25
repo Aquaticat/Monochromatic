@@ -56,11 +56,13 @@ export function collectIndentedBlock({
   for (const line of lines.slice(from,)) {
     /** First character of the line; non-space/tab ends the block. */
     const first = line.charAt(0,);
-    if ((line.length === 0) || (!isSpaceOrTab(first,)))
+    if ((line.length
+      === 0) || (!isSpaceOrTab(first,)))
       break;
     /** Line body after the leading indent; must be non-empty to count. */
     const rest = line.slice(1,);
-    if (rest.length === 0)
+    if (rest.length
+      === 0)
       break;
     block.push(line,);
   }
@@ -89,8 +91,10 @@ type CatalogEntry = {
 function unquote(s: string,): string {
   if (
     (s.length >= 2)
-    && s.startsWith('"',)
-    && s.endsWith('"',)
+    && s
+      .startsWith('"',)
+      && s
+      .endsWith('"',)
   ) {
     return s.slice(
       1,
@@ -114,7 +118,8 @@ function unquote(s: string,): string {
 function parseCatalogEntry(line: string,): CatalogEntry | null {
   /** Whitespace-trimmed line; surrounding indentation and trailing CR/space are dropped. */
   const trimmed = line.trim();
-  if (trimmed.length === 0)
+  if (trimmed.length
+    === 0)
     return null;
   /** Position of the colon separator; `-1` indicates a malformed line. */
   const colonIdx = trimmed.indexOf(':',);
@@ -135,7 +140,9 @@ function parseCatalogEntry(line: string,): CatalogEntry | null {
   const key = unquote(rawKey,);
   /** Value with one layer of wrapping quotes removed if present. */
   const value = unquote(rawValue,);
-  if ((key.length === 0) || (value.length === 0))
+  if ((key.length
+    === 0) || (value.length
+    === 0))
     return null;
   return {
     key,
@@ -163,7 +170,8 @@ export function parseCatalogFromYaml(content: string,): Record<string, string> {
   const lines = content.split('\n',);
   /** Index of the first line whose trimmed-right form is exactly `catalog:`; `-1` ends the search. */
   const headerIdx = lines.findIndex(function isCatalogHeader(line,): boolean {
-    return line.trimEnd() === 'catalog:';
+    return line.trimEnd()
+      === 'catalog:';
   },);
   if (headerIdx === (-1))
     return {};

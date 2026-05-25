@@ -105,19 +105,25 @@ export function buildMatchers(
 ): MatcherSet {
   return {
     toBe: function toBe(expected: unknown,): void {
-      a.to.equal(expected,);
+      a.to
+        .equal(expected,);
     },
 
     toEqual: function toEqual(expected: unknown,): void {
-      a.to.deep.equal(expected,);
+      a.to
+        .deep
+        .equal(expected,);
     },
 
     toContain: function toContain(expected: unknown,): void {
-      a.to.include(expected,);
+      a.to
+        .include(expected,);
     },
 
     toContainEqual: function toContainEqual(expected: unknown,): void {
-      a.to.deep.include(expected,);
+      a.to
+        .deep
+        .include(expected,);
     },
 
     toThrow: function toThrow(
@@ -125,10 +131,12 @@ export function buildMatchers(
     ): void {
       if (expected !== undefined) {
         // oxlint-disable-next-line no-unsafe-type-assertion -- chai's throw() accepts string|RegExp|ErrorConstructor but the union type doesn't narrow cleanly
-        a.to.throw(expected as Parameters<typeof a.to.throw>[0],);
+        a.to
+          .throw(expected as Parameters<typeof a.to.throw>[0],);
       }
       else {
-        a.to.throw();
+        a.to
+          .throw();
       }
     },
 
@@ -143,70 +151,101 @@ export function buildMatchers(
       const delta = Math.pow(
         10,
         -precision,
-      ) * HALF;
+      )
+        * HALF;
       /* oxlint-enable prefer-exponentiation-operator */
 
-      a.to.be.closeTo(
+      a.to
+        .be
+        .closeTo(
         expected,
         delta,
       );
     },
 
     toBeGreaterThan: function toBeGreaterThan(expected: number,): void {
-      a.to.be.above(expected,);
+      a.to
+        .be
+        .above(expected,);
     },
 
     toBeGreaterThanOrEqual: function toBeGreaterThanOrEqual(expected: number,): void {
-      a.to.be.at.least(expected,);
+      a.to
+        .be
+        .at
+        .least(expected,);
     },
 
     toBeLessThan: function toBeLessThan(expected: number,): void {
-      a.to.be.below(expected,);
+      a.to
+        .be
+        .below(expected,);
     },
 
     toBeLessThanOrEqual: function toBeLessThanOrEqual(expected: number,): void {
-      a.to.be.at.most(expected,);
+      a.to
+        .be
+        .at
+        .most(expected,);
     },
 
     toBeDefined: function toBeDefined(): void {
       // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.not.be.undefined;
+      a.to
+        .not
+        .be
+        .undefined;
     },
 
     toBeUndefined: function toBeUndefined(): void {
       // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.be.undefined;
+      a.to
+        .be
+        .undefined;
     },
 
     toBeNaN: function toBeNaN(): void {
       // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.be.NaN;
+      a.to
+        .be
+        .NaN;
     },
 
     toBeNull: function toBeNull(): void {
       // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.be.null;
+      a.to
+        .be
+        .null;
     },
 
     toBeTruthy: function toBeTruthy(): void {
       // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.be.ok;
+      a.to
+        .be
+        .ok;
     },
 
     toBeFalsy: function toBeFalsy(): void {
       // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to.not.be.ok;
+      a.to
+        .not
+        .be
+        .ok;
     },
 
     toBeTypeOf: function toBeTypeOf(
       expected: 'bigint' | 'boolean' | 'function' | 'number' | 'object' | 'string'
         | 'symbol' | 'undefined',
     ): void {
-      a.to.be.a(expected,);
+      a.to
+        .be
+        .a(expected,);
     },
 
     toHaveLength: function toHaveLength(expected: number,): void {
-      a.to.have.lengthOf(expected,);
+      a.to
+        .have
+        .lengthOf(expected,);
     },
 
     toHaveProperty: function toHaveProperty(
@@ -214,44 +253,61 @@ export function buildMatchers(
       value?: unknown,
     ): void {
       if (value !== undefined) {
-        a.to.have.nested.property(
+        a.to
+          .have
+          .nested
+          .property(
           path,
           value,
         );
       }
       else {
-        a.to.have.nested.property(path,);
+        a.to
+          .have
+          .nested
+          .property(path,);
       }
     },
 
     toMatch: function toMatch(expected: string | RegExp,): void {
       // oxlint-disable-next-line no-restricted-syntax/no-regex -- toMatch is the regex matcher API; when callers pass a string, chai's `a.to.match` requires a RegExp, so this constructor IS the matcher's contract. Input is user-supplied test pattern; backtracking safety is the caller's responsibility (test code).
-      a.to.match(expected instanceof RegExp ? expected : new RegExp(expected,),);
+      a.to
+        .match(expected instanceof RegExp ? expected : new RegExp(expected,),);
     },
 
     toMatchObject: function toMatchObject(expected: Record<string, unknown>,): void {
-      a.to.deep.include(expected,);
+      a.to
+        .deep
+        .include(expected,);
     },
 
     toBeInstanceOf: function toBeInstanceOf(
       expected: abstract new(...args: never) => unknown,
     ): void {
-      a.to.be.instanceOf(expected,);
+      a.to
+        .be
+        .instanceOf(expected,);
     },
 
     toSatisfy: function toSatisfy(predicate: (value: unknown,) => boolean,): void {
-      a.to.satisfy(predicate,);
+      a.to
+        .satisfy(predicate,);
     },
 
     toStrictEqual: function toStrictEqual(expected: unknown,): void {
-      a.to.deep.equal(expected,);
+      a.to
+        .deep
+        .equal(expected,);
     },
 
     //region sinon-chai matchers
 
     toHaveBeenCalled: function toHaveBeenCalled(): void {
       // oxlint-disable-next-line no-unused-expressions -- sinon-chai property assertion
-      a.to.have.been.called;
+      a.to
+        .have
+        .been
+        .called;
     },
 
     toHaveBeenCalledExactlyOnceWith: function toHaveBeenCalledExactlyOnceWith(
@@ -268,17 +324,25 @@ export function buildMatchers(
       )
         .to
         .equal(1,);
-      chaiExpect(spy.firstCall.args,).to.deep.equal([...args,],);
+      chaiExpect(spy.firstCall.args,)
+        .to
+        .deep
+        .equal([...args,],);
     },
 
     toHaveBeenCalledTimes: function toHaveBeenCalledTimes(count: number,): void {
-      a.to.have.callCount(count,);
+      a.to
+        .have
+        .callCount(count,);
     },
 
     toHaveBeenCalledWith: function toHaveBeenCalledWith(
       ...args: readonly unknown[]
     ): void {
-      a.to.have.been.calledWith(...args,);
+      a.to
+        .have
+        .been
+        .calledWith(...args,);
     },
 
     toHaveBeenLastCalledWith: function toHaveBeenLastCalledWith(
@@ -298,7 +362,10 @@ export function buildMatchers(
         .to
         .not
         .equal(null,);
-      chaiExpect(lastCall.args,).to.deep.equal([...args,],);
+      chaiExpect(lastCall.args,)
+        .to
+        .deep
+        .equal([...args,],);
     },
 
     toHaveBeenNthCalledWith: function toHaveBeenNthCalledWith(
@@ -319,7 +386,10 @@ export function buildMatchers(
         .to
         .not
         .equal(null,);
-      chaiExpect(nthCall.args,).to.deep.equal([...args,],);
+      chaiExpect(nthCall.args,)
+        .to
+        .deep
+        .equal([...args,],);
     },
 
     toHaveReturned: function toHaveReturned(): void {
@@ -328,7 +398,8 @@ export function buildMatchers(
       const spy = actual as SinonSpy;
       /* oxlint-enable no-unsafe-type-assertion */
       /** Captured returned-at-least-once flag reused inside the chai assertion below. */
-      const hasReturned = spy.getCalls().some(function didReturn(call,) {
+      const hasReturned = spy.getCalls()
+        .some(function didReturn(call,) {
         return call.exception === undefined;
       },);
 
@@ -351,7 +422,8 @@ export function buildMatchers(
       const returnCount = spy
         .getCalls()
         .filter(function didReturn(call,) {
-          return call.exception === undefined;
+          return call.exception
+            === undefined;
         },)
         .length;
 
@@ -364,7 +436,9 @@ export function buildMatchers(
     },
 
     toHaveReturnedWith: function toHaveReturnedWith(expected: unknown,): void {
-      a.to.have.returned(expected,);
+      a.to
+        .have
+        .returned(expected,);
     },
 
     toHaveLastReturnedWith: function toHaveLastReturnedWith(expected: unknown,): void {
@@ -382,7 +456,10 @@ export function buildMatchers(
         .to
         .not
         .equal(null,);
-      chaiExpect(lastCall.returnValue,).to.deep.equal(expected,);
+      chaiExpect(lastCall.returnValue,)
+        .to
+        .deep
+        .equal(expected,);
     },
 
     toHaveNthReturnedWith: function toHaveNthReturnedWith(
@@ -403,7 +480,10 @@ export function buildMatchers(
         .to
         .not
         .equal(null,);
-      chaiExpect(nthCall.returnValue,).to.deep.equal(expected,);
+      chaiExpect(nthCall.returnValue,)
+        .to
+        .deep
+        .equal(expected,);
     },
     //endregion sinon-chai matchers
   };

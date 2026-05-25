@@ -163,8 +163,10 @@ export function mountAskPanel(
     if (live === undefined)
       return;
     /** Trimmed question text; empty value short-circuits the send. */
-    const question = input.value.trim();
-    if (question.length === 0)
+    const question = input.value
+      .trim();
+    if (question.length
+      === 0)
       return;
     status.textContent = labels.thinking;
     sendBtn.setAttribute(

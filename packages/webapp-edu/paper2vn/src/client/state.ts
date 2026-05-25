@@ -76,7 +76,8 @@ function readJson<T,>(
 ): T {
   try {
     /** Raw stored JSON string, or `null` when the key is missing. */
-    const raw = globalThis.localStorage.getItem(key,);
+    const raw = globalThis.localStorage
+      .getItem(key,);
     if (raw === null)
       return fallback;
     /*
@@ -122,7 +123,8 @@ function writeJson(
   }>,
 ): void {
   try {
-    globalThis.localStorage.setItem(
+    globalThis.localStorage
+      .setItem(
       key,
       JSON.stringify(value,),
     );
@@ -143,7 +145,8 @@ function writeJson(
  */
 function removeKey(key: string,): void {
   try {
-    globalThis.localStorage.removeItem(key,);
+    globalThis.localStorage
+      .removeItem(key,);
   }
   catch (err) {
     console.error(
@@ -387,7 +390,8 @@ export function clearActiveSave(): void {
  * ```
  */
 export function persistActiveSave(): void {
-  if (store.activeSave === undefined)
+  if (store.activeSave
+    === undefined)
     return;
   /** Active save with refreshed `updatedAt` so the persisted copy reflects the write. */
   const updated: SaveData = {
@@ -407,7 +411,8 @@ export function persistActiveSave(): void {
     updatedAt: updated.updatedAt,
   };
   /** Existing index minus the entry being replaced. */
-  const next = store.saves.filter(function isOther(s: Readonly<SaveSummary>,): boolean {
+  const next = store.saves
+    .filter(function isOther(s: Readonly<SaveSummary>,): boolean {
     return s.id !== updated.id;
   },);
   store.saves = [
@@ -460,14 +465,16 @@ export function loadSave(id: string,): SaveData | undefined {
  */
 export function deleteSave(id: string,): void {
   removeKey(`${STORAGE_KEY_SAVE_PREFIX}${id}`,);
-  store.saves = store.saves.filter(function isOther(s: Readonly<SaveSummary>,): boolean {
+  store.saves = store.saves
+    .filter(function isOther(s: Readonly<SaveSummary>,): boolean {
     return s.id !== id;
   },);
   writeJson({
     key: STORAGE_KEY_SAVES,
     value: store.saves,
   },);
-  if (store.activeSaveId === id)
+  if (store.activeSaveId
+    === id)
     clearActiveSave();
   emit();
 }
@@ -484,7 +491,8 @@ export function deleteSave(id: string,): void {
  * ```
  */
 export function patchActiveSave(patch: Partial<SaveData>,): void {
-  if (store.activeSave === undefined)
+  if (store.activeSave
+    === undefined)
     return;
   store.activeSave = {
     ...store.activeSave,

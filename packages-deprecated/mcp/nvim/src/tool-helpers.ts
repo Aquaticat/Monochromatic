@@ -35,9 +35,11 @@ export function modifiedCaveat(files: readonly CurrentFile[],): string {
       return file.path;
     },);
 
-  if (modifiedPaths.length === 0)
+  if (modifiedPaths.length
+    === 0)
     return '';
-  if (modifiedPaths.length === 1) {
+  if (modifiedPaths.length
+    === 1) {
     return `buffer has unsaved changes; CLI lint results reflect the saved file, not the current buffer: ${
       modifiedPaths[0]
     }`;
@@ -61,7 +63,8 @@ export function modifiedCaveat(files: readonly CurrentFile[],): string {
  * ```
  */
 export function formatNotes(notes: readonly string[],): string {
-  if (notes.length === 0)
+  if (notes.length
+    === 0)
     return '';
   /** Notes wrapped in `(note: ...)` markers and joined newline-separated; prefixed with a blank line by the caller. */
   const formattedNotes = notes
@@ -88,7 +91,8 @@ export function formatNotes(notes: readonly string[],): string {
 export function buildHeader(files: readonly CurrentFile[],): string {
   /** First entry; used for the single-instance shortcut path that emits a vertical key/value block. */
   const [firstFile,] = files;
-  if ((files.length === 1) && (firstFile !== undefined))
+  if ((files.length
+    === 1) && (firstFile !== undefined))
     return `path: ${firstFile.path}\nfiletype: ${firstFile.filetype}\nmodified: ${firstFile.modified}`;
 
   return files

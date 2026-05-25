@@ -90,7 +90,8 @@ function handleSessionStart({
    * stale `CLAUDE_SPAWN_ID` env vars (inherited from the terminal after a
    * previous child exited) see a non-empty `sessionId` and skip.
    */
-  const spawnId = process.env.CLAUDE_SPAWN_ID;
+  const spawnId = process.env
+    .CLAUDE_SPAWN_ID;
 
   if (spawnId !== undefined) {
     /** Path to the spawn-state JSON pre-created by the CLI for this child. */
@@ -108,7 +109,8 @@ function handleSessionStart({
       /** Parsed spawn state; an empty `sessionId` field signals an unclaimed slot. */
       const state = parseHookJson<SpawnState>(raw,);
 
-      if (state.sessionId === '') {
+      if (state.sessionId
+        === '') {
         /** Genuine child: claim ownership by filling in session identity. */
         const updated: SpawnState = {
           ...state,
@@ -197,7 +199,9 @@ function autoSetupCli(hookDir: string,): string | null {
 
   /** Standard XDG user-local bin directory. */
   const localBin = join(
-    process.env.HOME ?? '/tmp',
+    process.env
+      .HOME
+      ?? '/tmp',
     '.local',
     'bin',
   );
@@ -232,7 +236,9 @@ function autoSetupCli(hookDir: string,): string | null {
     );
 
     /** Verify ~/.local/bin is on PATH so the symlink is discoverable. */
-    const pathDirs = (process.env.PATH ?? '').split(':',);
+    const pathDirs = (process.env
+      .PATH
+      ?? '').split(':',);
     return pathDirs.includes(localBin,)
       ? null
       : [

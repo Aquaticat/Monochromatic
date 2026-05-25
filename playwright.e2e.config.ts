@@ -8,7 +8,8 @@ import {
 const config: PlaywrightTestConfig = defineConfig({
   testMatch: '**/*.e2e.test.ts',
   fullyParallel: true,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env
+    .CI ? 2 : 0,
   reporter: [
     ['dot',],
     [

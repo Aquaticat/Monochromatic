@@ -189,7 +189,9 @@ export async function listIssueAssignees(issueId: string,): Promise<User[]> {
   return rows.map(function rowToUser(row,) {
     return {
       id: row.id,
-      login: row.login ?? row.id,
+      login: row.login
+        ?? row
+        .id,
       email: row.email,
       created_at: new Date(row.createdAt,).getTime(),
     };

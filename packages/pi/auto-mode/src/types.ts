@@ -89,7 +89,8 @@ function isTrustEntry(
   type: string;
   data: string | null;
 } {
-  return entry.type === TRUST_ENTRY_TYPE;
+  return entry.type
+    === TRUST_ENTRY_TYPE;
 }
 
 /**
@@ -115,7 +116,8 @@ function isVerdictEntry(
   type: string;
   data: VerdictData;
 } {
-  return entry.type === VERDICT_ENTRY_TYPE;
+  return entry.type
+    === VERDICT_ENTRY_TYPE;
 }
 
 //endregion

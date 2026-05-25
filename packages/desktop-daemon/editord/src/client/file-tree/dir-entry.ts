@@ -77,7 +77,8 @@ export class TreeDirEntry extends HTMLElement {
       return;
     this.#initialized = true;
 
-    this.dataset.path = this.entryPath;
+    this.dataset
+      .path = this.entryPath;
     this.#childrenContainer = h({
       tag: 'div',
       class: 'children',
@@ -96,7 +97,8 @@ export class TreeDirEntry extends HTMLElement {
       },),],
       on: {
         mouseup: function handleDirContext(event: MouseEvent,) {
-          if (event.button !== 2)
+          if (event.button
+            !== 2)
             return;
           event.preventDefault();
           entry.dispatchEvent(new CustomEvent(
@@ -144,7 +146,9 @@ export class TreeDirEntry extends HTMLElement {
       },
     },);
 
-    this.#details.style.order = String(nameToOrder({ name: this.entryName, },),);
+    this.#details
+      .style
+      .order = String(nameToOrder({ name: this.entryName, },),);
     this.append(this.#details,);
   }
 }

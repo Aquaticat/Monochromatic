@@ -82,7 +82,8 @@ const appLog = tagged({
   l,
 },);
 /** URL query parameters from the page URL. */
-const params = new URLSearchParams(globalThis.location.search,);
+const params = new URLSearchParams(globalThis.location
+  .search,);
 /** Auth token passed by editord on startup. */
 const token = nonNullishOrThrow(params.get('token',),);
 /** File path to open, passed as `?file=...` query parameter. */
@@ -136,7 +137,8 @@ fileTree.onContextAction = function handleContextAction(action: ContextAction,):
  * @returns absolute directory path to scope the search within
  */
 function resolveSearchScope(): string {
-  return fileTree.selectedDir !== '' ? fileTree.selectedDir : ws.rootDir;
+  return fileTree.selectedDir
+    !== '' ? fileTree.selectedDir : ws.rootDir;
 }
 searchOverlay.getRootDir = function getScope(): string {
   return resolveSearchScope();
@@ -294,7 +296,9 @@ wireSelectEvents({
 
 /** Saves the current editor content to the server. Skips non-text files. */
 async function saveCurrentFile(): Promise<void> {
-  if ((state.currentFilePath === null) || (state.currentFileKind !== 'text'))
+  if ((state.currentFilePath
+    === null) || (state.currentFileKind
+    !== 'text'))
     return;
   try {
     await ws.request({
@@ -329,7 +333,8 @@ async function revealAndLoadFile({ path, }: { readonly path: string; },): Promis
   await fileTree.revealFiles({ paths: [path,], },);
   fileTree.scrollToFile({ path, },);
   await loadFileSafe({ path, },);
-  if (state.currentFileKind === 'text')
+  if (state.currentFileKind
+    === 'text')
     refreshInlayHints();
 }
 
@@ -365,8 +370,10 @@ wireKeybindings({
   },
   openTerminalAtCurrentFile: function openTerminal() {
     /** Directory to spawn the terminal in: the open file's parent, or the project root when nothing is open. */
-    const dir = state.currentFilePath !== null
-      ? state.currentFilePath.slice(
+    const dir = state.currentFilePath
+      !== null
+      ? state.currentFilePath
+        .slice(
         0,
         state.currentFilePath.lastIndexOf('/',),
       )

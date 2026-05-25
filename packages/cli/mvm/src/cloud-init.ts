@@ -164,7 +164,8 @@ export async function createSeedIso({
   readonly template?: boolean;
   readonly vmDir: string;
 },): Promise<string | undefined> {
-  if (guest.osFamily === 'windows') {
+  if (guest.osFamily
+    === 'windows') {
     /** Logger for the Windows skip-path; namespaced so the info line is attributable. */
     const rl = tagged({
       tag: createSeedIso.name,

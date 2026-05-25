@@ -197,7 +197,8 @@ function bashExecutionToText(
   /** Per-section pieces joined with newlines to produce the final summary text. */
   const sections: string[] = [
     `Ran \`${msg.command}\``,
-    (msg.output !== '')
+    (msg.output
+      !== '')
       ? `\`\`\`\n${msg.output}\n\`\`\``
       : '(no output)',
   ];
@@ -206,14 +207,14 @@ function bashExecutionToText(
   else if (
     (msg.exitCode !== null)
     && (msg.exitCode !== undefined)
-    && (msg.exitCode !== 0)
+      && (msg.exitCode !== 0)
   ) {
     sections.push(`\nCommand exited with code ${msg.exitCode}`,);
   }
   if (
     msg.truncated
-    && (msg.fullOutputPath !== undefined)
-    && (msg.fullOutputPath !== '')
+      && (msg.fullOutputPath !== undefined)
+      && (msg.fullOutputPath !== '')
   ) {
     sections.push(`\n[Output truncated. Full output: ${msg.fullOutputPath}]`,);
   }
@@ -244,10 +245,12 @@ function truncateForSummary({
   text: string;
   maxChars: number;
 },): string {
-  if (text.length <= maxChars)
+  if (text.length
+    <= maxChars)
     return text;
   /** Dropped-character count surfaced in the truncation marker. */
-  const truncatedChars = text.length - maxChars;
+  const truncatedChars = text.length
+    - maxChars;
   return `${
     text.slice(
       0,
@@ -307,8 +310,10 @@ type CompactionSummaryAgentMessage = {
 function toLlmMessage(
   m: AgentMessage,
 ): Message | undefined {
-  if (m.role === 'bashExecution') {
-    if (m.excludeFromContext === true)
+  if (m.role
+    === 'bashExecution') {
+    if (m.excludeFromContext
+      === true)
       return undefined;
     return {
       role: 'user',
@@ -319,7 +324,8 @@ function toLlmMessage(
       timestamp: m.timestamp,
     };
   }
-  if (m.role === 'custom') {
+  if (m.role
+    === 'custom') {
     /** Normalized content array; raw strings are wrapped before forwarding. */
     const content = ((typeof m.content) === 'string')
       ? [{
@@ -333,27 +339,34 @@ function toLlmMessage(
       timestamp: m.timestamp,
     };
   }
-  if (m.role === 'branchSummary') {
+  if (m.role
+    === 'branchSummary') {
     return {
       role: 'user',
       content: [{
         type: 'text',
-        text: BRANCH_SUMMARY_PREFIX + m.summary + BRANCH_SUMMARY_SUFFIX,
+        text: BRANCH_SUMMARY_PREFIX + m
+          .summary
+          + BRANCH_SUMMARY_SUFFIX,
       },],
       timestamp: m.timestamp,
     };
   }
-  if (m.role === 'compactionSummary') {
+  if (m.role
+    === 'compactionSummary') {
     return {
       role: 'user',
       content: [{
         type: 'text',
-        text: COMPACTION_SUMMARY_PREFIX + m.summary + COMPACTION_SUMMARY_SUFFIX,
+        text: COMPACTION_SUMMARY_PREFIX + m
+          .summary
+          + COMPACTION_SUMMARY_SUFFIX,
       },],
       timestamp: m.timestamp,
     };
   }
-  if ((m.role === 'user') || (m.role === 'assistant') || (m.role === 'toolResult'))
+  if ((m.role === 'user') || (m.role === 'assistant')
+    || (m.role === 'toolResult'))
     return m;
   throw new Error(`convertToLlm: unhandled message role: ${JSON.stringify(m,)}`,);
 }
@@ -410,7 +423,8 @@ function userTextFromContent(
     return content;
   return content
     .filter(function isText(c,): c is TextContent {
-      return c.type === 'text';
+      return c.type
+        === 'text';
     },)
     .map(function readText(c,) {
       return c.text;
@@ -443,14 +457,16 @@ export function serializeConversation(
   /** Top-level accumulator joined into the final serialized transcript. */
   const parts: string[] = [];
   for (const msg of messages) {
-    if (msg.role === 'user') {
+    if (msg.role
+      === 'user') {
       /** User-role text harvested from raw string or structured content. */
       const content = userTextFromContent(msg.content,);
       if (content)
         parts.push(`[User]: ${content}`,);
       continue;
     }
-    if (msg.role === 'assistant') {
+    if (msg.role
+      === 'assistant') {
       /** Per-message accumulator for visible assistant text blocks. */
       const textParts: string[] = [];
       /** Per-message accumulator for hidden reasoning blocks. */
@@ -458,15 +474,18 @@ export function serializeConversation(
       /** Per-message accumulator for formatted tool-call signatures. */
       const toolCalls: string[] = [];
       for (const block of msg.content) {
-        if (block.type === 'text') {
+        if (block.type
+          === 'text') {
           textParts.push(block.text,);
           continue;
         }
-        if (block.type === 'thinking') {
+        if (block.type
+          === 'thinking') {
           thinkingParts.push(block.thinking,);
           continue;
         }
-        if (block.type === 'toolCall') {
+        if (block.type
+          === 'toolCall') {
           /** Human-readable argument string injected into the tool-call signature. */
           const argsStr = Object
             .entries(block.arguments,)
@@ -477,20 +496,25 @@ export function serializeConversation(
           toolCalls.push(`${block.name}(${argsStr})`,);
         }
       }
-      if (thinkingParts.length > 0)
+      if (thinkingParts.length
+        > 0)
         parts.push(`[Assistant thinking]: ${thinkingParts.join('\n',)}`,);
-      if (textParts.length > 0)
+      if (textParts.length
+        > 0)
         parts.push(`[Assistant]: ${textParts.join('\n',)}`,);
-      if (toolCalls.length > 0)
+      if (toolCalls.length
+        > 0)
         parts.push(`[Assistant tool calls]: ${toolCalls.join('; ',)}`,);
       continue;
     }
-    if (msg.role === 'toolResult') {
+    if (msg.role
+      === 'toolResult') {
       /** Concatenated text payload after filtering out image blocks. */
       const content = msg
         .content
         .filter(function isText(c,): c is TextContent {
-          return c.type === 'text';
+          return c.type
+            === 'text';
         },)
         .map(function readText(c,) {
           return c.text;

@@ -88,7 +88,8 @@ export async function execPromise({
   options = {},
 }: ExecPromiseOptions,): Promise<string> {
   /** Forwarded exec options; the `timeout` key is omitted when undefined so callers can detect the unset state downstream. */
-  const execOptions = options.timeout !== undefined ? { timeout: options.timeout, } : {};
+  const execOptions = options.timeout
+    !== undefined ? { timeout: options.timeout, } : {};
   /** Raw exec result; inspected below to surface non-zero exits as thrown errors with stdout/stderr attached. */
   const result = await execBun({
     command,
@@ -96,7 +97,8 @@ export async function execPromise({
     options: execOptions,
   },);
 
-  if (result.exitCode !== 0) {
+  if (result.exitCode
+    !== 0) {
     throw Object.assign(
       new Error(
         `${command} exited ${String(result.exitCode,)}${

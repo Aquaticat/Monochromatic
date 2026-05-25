@@ -158,19 +158,25 @@ function isCallableBinding(
   const [def,] = variable.defs;
   if (def === undefined)
     return false;
-  if ((def.type === 'FunctionName') || (def.type === 'ClassName'))
+  if ((def.type
+    === 'FunctionName') || (def.type
+    === 'ClassName'))
     return true;
-  if (def.type === 'ImportBinding') {
+  if (def.type
+    === 'ImportBinding') {
     /** Walk up to the enclosing ImportDeclaration to inspect the source. */
     const { node, } = def;
     /** Resolved enclosing ImportDeclaration, or the non-import parent when scope-manager hands back something unexpected. */
-    const decl = node.type === 'ImportDeclaration'
+    const decl = node.type
+      === 'ImportDeclaration'
       ? node
       : node.parent;
-    if ((decl === null) || (decl === undefined) || (decl.type !== 'ImportDeclaration'))
+    if ((decl === null) || (decl === undefined)
+      || (decl.type !== 'ImportDeclaration'))
       return !ALL_CAPS_SNAKE.test(variable.name,);
     /** Literal source string of the import, typed as `string | null` by ESTree to cover non-conforming nodes. */
-    const sourceValue = decl.source.value;
+    const sourceValue = decl.source
+      .value;
     if ((typeof sourceValue) !== 'string')
       return !ALL_CAPS_SNAKE.test(variable.name,);
     if (!sourceValue.startsWith('.',))
@@ -181,11 +187,13 @@ function isCallableBinding(
       sourceValue,
     );
     /** Imports use the alias's local name; the source may export under a different identifier. */
-    const sourceName = (node.type === 'ImportSpecifier') && ('imported' in node)
+    const sourceName = (node.type
+      === 'ImportSpecifier') && ('imported' in node)
       ? (function getImportedName(): string {
         /** Imported-name slot on the specifier; an Identifier or string Literal per ESTree. */
         const { imported, } = node;
-        if (imported.type === 'Identifier')
+        if (imported.type
+          === 'Identifier')
           return imported.name;
         return variable.name;
       })()
@@ -201,10 +209,12 @@ function isCallableBinding(
       return false;
     return !ALL_CAPS_SNAKE.test(variable.name,);
   }
-  if (def.type === 'Variable') {
+  if (def.type
+    === 'Variable') {
     /** VariableDeclarator AST node carrying the initializer to inspect for callability. */
     const declarator = def.node;
-    if (declarator.type !== 'VariableDeclarator')
+    if (declarator.type
+      !== 'VariableDeclarator')
       return false;
     /** Right-hand initializer; absent for `let x;`-style declarations the rule treats as non-callable. */
     const { init, } = declarator;
@@ -213,7 +223,7 @@ function isCallableBinding(
     return (
       (init.type === 'FunctionExpression')
       || (init.type === 'ArrowFunctionExpression')
-      || (init.type === 'ClassExpression')
+        || (init.type === 'ClassExpression')
     );
   }
   return false;
@@ -302,34 +312,51 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
      * @param node - The `CallExpression` AST node.
      */
     function checkCall(node: ESTree.CallExpression,): void {
-      if ((node.callee.type !== 'Identifier') || (node.callee.name !== 'describe'))
+      if ((node.callee
+        .type
+        !== 'Identifier') || (node.callee
+        .name
+        !== 'describe'))
         return;
       /** First argument of the call, or `undefined` when none was passed. */
       const [firstArg,] = node.arguments;
-      if ((firstArg === undefined) || (firstArg.type !== 'ObjectExpression'))
+      if ((firstArg === undefined) || (firstArg.type
+        !== 'ObjectExpression'))
         return;
       for (const prop of firstArg.properties) {
-        if (prop.type !== 'Property')
+        if (prop.type
+          !== 'Property')
           continue;
         if (prop.computed)
           continue;
         if (prop.shorthand)
           continue;
-        if ((prop.key.type !== 'Identifier') || (prop.key.name !== 'name'))
+        if ((prop.key
+          .type
+          !== 'Identifier') || (prop.key
+          .name
+          !== 'name'))
           continue;
-        if ((prop.value.type !== 'Literal') || ((typeof prop.value.value) !== 'string'))
+        if ((prop.value
+          .type
+          !== 'Literal') || ((typeof prop.value
+          .value) !== 'string'))
           continue;
         /** String value of the `name` property. */
-        const stringValue = prop.value.value;
+        const stringValue = prop.value
+          .value;
         if (stringValue === '')
           return;
         for (
-          let scope: Scope | null = context.sourceCode.getScope(node,);
-          (scope !== null) && (scope.type !== 'global');
+          let scope: Scope | null = context.sourceCode
+            .getScope(node,);
+          (scope !== null) && (scope.type
+            !== 'global');
           scope = scope.upper
         ) {
           /** Binding registered in this scope under `stringValue`, or `undefined` when the scope has none. */
-          const variable = scope.set.get(stringValue,);
+          const variable = scope.set
+            .get(stringValue,);
           if (variable === undefined)
             continue;
           if (isCallableBinding({

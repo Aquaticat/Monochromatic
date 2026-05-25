@@ -42,9 +42,12 @@ export const noTrimLeftRight: CreateOnceRule = {
       CallExpression(node: ESTree.CallExpression,): void {
         /** Call target; only `x.trimLeft()` / `x.trimRight()` member calls trigger the rule. */
         const { callee, } = node;
-        if ((callee.type !== 'MemberExpression') || callee.computed)
+        if ((callee.type !== 'MemberExpression') || callee
+          .computed)
           return;
-        if (callee.property.type !== 'Identifier')
+        if (callee.property
+          .type
+          !== 'Identifier')
           return;
         /** Member-access identifier name; matched against the deprecated trim aliases. */
         const { name, } = callee.property;

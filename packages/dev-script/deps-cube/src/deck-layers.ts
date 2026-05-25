@@ -315,24 +315,31 @@ export function buildAxisArrowheadLayers(
     bounds,
   },);
   /** X arrowhead cone length in world units; scales with X extent so cones stay proportional. */
-  const coneLengthX = g.dx * ARROWHEAD_LENGTH_FRACTION;
+  const coneLengthX = g.dx
+    * ARROWHEAD_LENGTH_FRACTION;
   /** Y arrowhead cone length; same fraction as X but applied to the Y extent. */
-  const coneLengthY = g.dy * ARROWHEAD_LENGTH_FRACTION;
+  const coneLengthY = g.dy
+    * ARROWHEAD_LENGTH_FRACTION;
   /** Z arrowhead cone length; same fraction as X but applied to the Z extent. */
-  const coneLengthZ = g.dz * ARROWHEAD_LENGTH_FRACTION;
+  const coneLengthZ = g.dz
+    * ARROWHEAD_LENGTH_FRACTION;
   /** X arrowhead cone base radius; visually balances the cone length. */
-  const coneRadiusX = g.dx * ARROWHEAD_RADIUS_FRACTION;
+  const coneRadiusX = g.dx
+    * ARROWHEAD_RADIUS_FRACTION;
   /** Y arrowhead cone base radius. */
-  const coneRadiusY = g.dy * ARROWHEAD_RADIUS_FRACTION;
+  const coneRadiusY = g.dy
+    * ARROWHEAD_RADIUS_FRACTION;
   /** Z arrowhead cone base radius. */
-  const coneRadiusZ = g.dz * ARROWHEAD_RADIUS_FRACTION;
+  const coneRadiusZ = g.dz
+    * ARROWHEAD_RADIUS_FRACTION;
   return [
     new SimpleMeshLayer<ArrowheadDatum>({
       id: 'arrowhead-x',
       data: [
         {
           position: [
-            g.tipX - coneLengthX,
+            g.tipX
+              - coneLengthX,
             g.yMin,
             g.zMin,
           ],
@@ -354,7 +361,8 @@ export function buildAxisArrowheadLayers(
         {
           position: [
             g.xMin,
-            g.tipY - coneLengthY,
+            g.tipY
+              - coneLengthY,
             g.zMin,
           ],
         },
@@ -376,7 +384,8 @@ export function buildAxisArrowheadLayers(
           position: [
             g.xMin,
             g.yMin,
-            g.tipZ - coneLengthZ,
+            g.tipZ
+              - coneLengthZ,
           ],
         },
       ],

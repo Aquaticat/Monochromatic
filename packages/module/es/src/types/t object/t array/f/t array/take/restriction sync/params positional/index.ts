@@ -89,7 +89,8 @@
 
   for (const element of iterable) {
     result.push(element,);
-    if (result.length >= count)
+    if (result.length
+      >= count)
       break;
   }
 

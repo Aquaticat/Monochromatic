@@ -100,14 +100,17 @@ function fnv1a32(input: string,): string {
   /** Running hash accumulator; intermediate state must be mutable per the FNV-1a algorithm. */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- FNV-1a algorithm requires in-place XOR/multiply across the loop
   let hash = FNV_OFFSET_32;
-  for (let i = 0; i < input.length; i++) {
-    hash ^= input.codePointAt(i,) ?? 0;
+  for (let i = 0; i < input
+    .length; i++) {
+    hash ^= input.codePointAt(i,)
+      ?? 0;
     hash = Math.imul(
       hash,
       FNV_PRIME_32,
     );
   }
-  return (Math.trunc(hash,)).toString(HEX_RADIX,).padStart(
+  return (Math.trunc(hash,)).toString(HEX_RADIX,)
+    .padStart(
     HEX_DIGITS_32,
     '0',
   );
@@ -140,7 +143,8 @@ function deriveQuestionId(props: QuestionProps,): string {
   const parts = [toHtmlString(props.scenario,),];
   for (const opt of props.options) {
     parts.push(toHtmlString(opt.label,),);
-    parts.push(opt.correct === true ? '1' : '0',);
+    parts.push(opt.correct
+      === true ? '1' : '0',);
   }
   return fnv1a32(parts.join('\u0000',),);
 }
@@ -163,16 +167,20 @@ const MIN_CORRECT_COUNT = 1;
  * @throws if option count is below {@link MIN_OPTIONS} or correct count is below {@link MIN_CORRECT_COUNT}
  */
 function validate(props: QuestionProps,): void {
-  if (props.options.length < MIN_OPTIONS) {
+  if (props.options
+    .length
+    < MIN_OPTIONS) {
     throw new Error(
-      `Question needs at least ${MIN_OPTIONS} options; got ${props.options.length}.`,
+      `Question needs at least ${MIN_OPTIONS} options; got ${props.options
+        .length}.`,
     );
   }
   /** Number of options marked correct; checked against MIN_CORRECT_COUNT for validity. */
   const correctCount = props
     .options
     .filter(function isCorrect(o,) {
-      return o.correct === true;
+      return o.correct
+        === true;
     },)
     .length;
   if (correctCount < MIN_CORRECT_COUNT) {
@@ -216,7 +224,8 @@ function renderOption(
     name: `q-${qId}`,
     id: inputId,
   };
-  if (opt.correct === true)
+  if (opt.correct
+    === true)
     inputProps['data-correct'] = '';
   return jsx(
     'div',
@@ -286,7 +295,8 @@ export function QuestionCheckbox(props: QuestionProps,): SafeHtml {
         jsx(
           'fieldset',
           {
-            children: props.options.map(function mapOption(
+            children: props.options
+              .map(function mapOption(
               opt,
               idx,
             ) {

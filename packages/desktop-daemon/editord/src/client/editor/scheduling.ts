@@ -47,7 +47,8 @@ export function scheduleDiagnosticHighlights({
   readonly diagnostics: readonly Diagnostic[];
 },): number {
   return requestAnimationFrame(function applyScheduledDiagnostics() {
-    if (diagnostics.length === 0) {
+    if (diagnostics.length
+      === 0) {
       clearDiagnosticHighlights();
       return;
     }
@@ -85,7 +86,9 @@ export function scheduleInlayAnnotations({
   readonly diagnostics: readonly Diagnostic[];
 },): number {
   return requestAnimationFrame(function applyScheduledInlayAnnotations() {
-    if ((hints.length === 0) && (diagnostics.length === 0)) {
+    if ((hints.length
+      === 0) && (diagnostics.length
+      === 0)) {
       clearInlayAnnotations({ editor, },);
       return;
     }

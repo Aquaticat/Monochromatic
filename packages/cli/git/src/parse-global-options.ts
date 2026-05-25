@@ -87,7 +87,8 @@ function walkGlobalOptions({
   readonly index: number;
   readonly cwd: string;
 },): GlobalOptionLayout {
-  if (index >= args.length) {
+  if (index >= args
+    .length) {
     return {
       effectiveCwd: cwd,
       subcommandIndex: args.length,

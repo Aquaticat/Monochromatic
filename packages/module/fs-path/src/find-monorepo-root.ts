@@ -96,7 +96,8 @@ async function matchesMiseMonorepoRoot({
 }: RootMatcherArgs,): Promise<boolean> {
   /** Candidate `mise.toml` content, or `undefined` when absent. */
   const content = await fs.readTextFile(`${dir}/mise.toml`,);
-  return (content !== undefined) && content.includes(MONOREPO_SECTION_MARKER,);
+  return (content !== undefined) && content
+    .includes(MONOREPO_SECTION_MARKER,);
 }
 
 /**

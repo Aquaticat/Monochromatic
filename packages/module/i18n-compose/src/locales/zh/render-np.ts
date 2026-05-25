@@ -38,7 +38,8 @@ function countedNoun(
     readonly count: number;
   },
 ): string {
-  if (entry.classifier !== undefined)
+  if (entry.classifier
+    !== undefined)
     return `${String(count,)} ${entry.classifier}${entry.surface}`;
   return `${String(count,)} ${entry.surface}`;
 }
@@ -75,8 +76,10 @@ export function makeChineseNounPhraseRenderer<S extends string, N extends string
    * @returns possessive surface
    */
   function renderPossessor(p: Possessor<S>,): string {
-    if (p.kind === 'possessor.subject')
-      return subjects[p.subject].possessive;
+    if (p.kind
+      === 'possessor.subject')
+      return subjects[p.subject]
+        .possessive;
     return `${p.text}的`;
   }
 
@@ -88,9 +91,12 @@ export function makeChineseNounPhraseRenderer<S extends string, N extends string
    * @returns rendered surface
    */
   function renderNounPhrase(phrase: NounPhrase<S, N>,): string {
-    if (phrase.kind === 'noun.bare')
-      return nouns[phrase.noun].surface;
-    if (phrase.kind === 'noun.counted') {
+    if (phrase.kind
+      === 'noun.bare')
+      return nouns[phrase.noun]
+        .surface;
+    if (phrase.kind
+      === 'noun.counted') {
       /** Resolved noun entry validated before classifier rendering. */
       const entry = nouns[phrase.noun];
       assertCountableNoun({
@@ -102,12 +108,22 @@ export function makeChineseNounPhraseRenderer<S extends string, N extends string
         count: phrase.count,
       },);
     }
-    if (phrase.kind === 'noun.definite')
-      return `这${nouns[phrase.noun].classifier ?? '个'}${nouns[phrase.noun].surface}`;
-    if (phrase.kind === 'noun.indefinite')
-      return `一${nouns[phrase.noun].classifier ?? '个'}${nouns[phrase.noun].surface}`;
-    if (phrase.kind === 'noun.possessed')
-      return `${renderPossessor(phrase.possessor,)}${nouns[phrase.noun].surface}`;
+    if (phrase.kind
+      === 'noun.definite')
+      return `这${nouns[phrase.noun]
+        .classifier
+        ?? '个'}${nouns[phrase.noun]
+        .surface}`;
+    if (phrase.kind
+      === 'noun.indefinite')
+      return `一${nouns[phrase.noun]
+        .classifier
+        ?? '个'}${nouns[phrase.noun]
+        .surface}`;
+    if (phrase.kind
+      === 'noun.possessed')
+      return `${renderPossessor(phrase.possessor,)}${nouns[phrase.noun]
+        .surface}`;
     return phrase.text;
   }
 

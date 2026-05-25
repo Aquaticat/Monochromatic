@@ -72,7 +72,9 @@ export function banDisableRule({
     createOnce(context: Context,): VisitorWithHooks {
       return {
         Program(): void {
-          context.sourceCode.getAllComments().forEach(function checkComment(comment,) {
+          context.sourceCode
+            .getAllComments()
+            .forEach(function checkComment(comment,) {
             if (hasOxlintDisableDirective({ value: comment.value, },)
               && comment.value.includes(ruleId,))
             {

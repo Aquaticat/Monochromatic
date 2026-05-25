@@ -147,8 +147,10 @@ export async function feedAggregates(): Promise<{
        FROM messages WHERE deleted_at IS NULL`,
   },);
   return {
-    maxId: row?.max_id ?? 0,
-    maxUpdatedAt: row?.max_updated_at ?? 0,
+    maxId: row?.max_id
+      ?? 0,
+    maxUpdatedAt: row?.max_updated_at
+      ?? 0,
   };
 }
 
@@ -187,7 +189,8 @@ export async function getSnapshot(messageId: number,): Promise<MessageSnapshot |
        WHERE m.id = ?`,
     params: [messageId,],
   },);
-  if ((row === undefined) || (row.deleted_at !== null))
+  if ((row === undefined) || (row.deleted_at
+    !== null))
     return null;
   return {
     id: row.id,
@@ -219,7 +222,8 @@ export async function messageExists(messageId: number,): Promise<boolean> {
     sql: 'SELECT EXISTS(SELECT 1 FROM messages WHERE id = ?) AS "exists"',
     params: [messageId,],
   },);
-  return (row?.exists ?? 0) === 1;
+  return (row?.exists
+    ?? 0) === 1;
 }
 
 /** Pre-rendered chunk fields returned to the read path. */
@@ -289,7 +293,8 @@ export async function getChunk(
       sql: 'SELECT parent_id FROM drafts WHERE id = ?',
       params: [cursor,],
     },);
-    cursor = parentRow?.parent_id ?? null;
+    cursor = parentRow?.parent_id
+      ?? null;
   }
   /* oxlint-enable eslint/no-await-in-loop */
   return null;
@@ -347,15 +352,19 @@ export async function editMessage(
       sql: 'SELECT user_id, revision, deleted_at FROM messages WHERE id = ?',
       params: [input.messageId,],
     },);
-    if ((message === undefined) || (message.deleted_at !== null)) {
+    if ((message === undefined) || (message.deleted_at
+      !== null)) {
       await db.exec('ROLLBACK',);
       return { kind: 'not-found', };
     }
-    if (message.user_id !== input.userId) {
+    if (message.user_id
+      !== input
+      .userId) {
       await db.exec('ROLLBACK',);
       return { kind: 'forbidden', };
     }
-    if (message.revision >= MAX_REVISIONS) {
+    if (message.revision
+      >= MAX_REVISIONS) {
       await db.exec('ROLLBACK',);
       return { kind: 'capped', };
     }
@@ -367,7 +376,9 @@ export async function editMessage(
       sql: 'SELECT user_id, finalized FROM drafts WHERE id = ?',
       params: [input.newDraftId,],
     },);
-    if ((newDraft === undefined) || (newDraft.user_id !== input.userId)) {
+    if ((newDraft === undefined) || (newDraft.user_id
+      !== input
+      .userId)) {
       await db.exec('ROLLBACK',);
       return { kind: 'forbidden', };
     }
@@ -375,7 +386,8 @@ export async function editMessage(
     /** Captured before the UPDATE so messages.updated_at reflects the commit moment. */
     const now = Date.now();
     /** Incremented revision returned to the handler so it can echo the new value. */
-    const newRevision = message.revision + 1;
+    const newRevision = message.revision
+      + 1;
     await run({
       sql: `UPDATE messages
          SET draft_id = ?, revision = ?, updated_at = ?,
@@ -443,9 +455,12 @@ export async function softDeleteMessage(
   },);
   if (message === undefined)
     return { kind: 'not-found', };
-  if (message.deleted_at !== null)
+  if (message.deleted_at
+    !== null)
     return { kind: 'not-found', };
-  if (message.user_id !== input.userId)
+  if (message.user_id
+    !== input
+    .userId)
     return { kind: 'forbidden', };
   /** Captured before the UPDATE so deleted_at and updated_at land at the same instant. */
   const now = Date.now();

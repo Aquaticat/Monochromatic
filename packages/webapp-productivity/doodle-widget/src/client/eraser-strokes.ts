@@ -113,7 +113,9 @@ export function eraseStrokesAt({
      */
     let prevStrokePy = 0;
 
-    for (let i = 0; i < stroke.points.length; i++) {
+    for (let i = 0; i < stroke
+      .points
+      .length; i++) {
       /** Skipped when undefined so sparse arrays do not break segment math. */
       const p = stroke.points[i];
       if (p === undefined)
@@ -161,7 +163,8 @@ export function eraseStrokesAt({
 
       if (shouldErase) {
         strokeModified = true;
-        if (currentSegment.length >= MIN_SEGMENT_POINTS)
+        if (currentSegment.length
+          >= MIN_SEGMENT_POINTS)
           segments.push(currentSegment,);
         currentSegment = [];
       }
@@ -173,7 +176,8 @@ export function eraseStrokesAt({
       prevStrokePy = py;
     }
 
-    if (currentSegment.length >= MIN_SEGMENT_POINTS)
+    if (currentSegment.length
+      >= MIN_SEGMENT_POINTS)
       segments.push(currentSegment,);
 
     if (strokeModified) {

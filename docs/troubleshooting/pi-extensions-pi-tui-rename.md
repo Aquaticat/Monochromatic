@@ -523,7 +523,7 @@ Repository: `https://github.com/ifiokjr/oh-pi/issues`. Title:
 
 The body, ready to paste:
 
-~~~md
+````md
 ## Summary
 
 `@ifi/pi-shared-qna@0.5.1`, `@ifi/pi-plan@0.5.1`, and
@@ -631,4 +631,4 @@ ln -s ../@earendil-works/pi-tui \
 
 This restores plan-mode without source edits, at the cost of
 needing to reapply after each `pi install`/`pi update`.
-~~~
+````

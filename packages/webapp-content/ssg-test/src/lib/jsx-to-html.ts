@@ -68,7 +68,8 @@ function isSafeHtml(value: unknown,): value is SafeHtml {
  * @returns `true` if value has the `{ __html: string }` shape
  */
 function isDangerousHtml(value: unknown,): value is { readonly __html: string; } {
-  if ((value === null) || ((typeof value) !== 'object') || (!('__html' in value)))
+  if ((value === null) || ((typeof value) !== 'object')
+    || (!('__html' in value)))
     return false;
   return (typeof value.__html) === 'string';
 }
@@ -88,7 +89,8 @@ function isDangerousHtml(value: unknown,): value is { readonly __html: string; }
  * @returns HTML string
  */
 function renderChild(child: unknown,): string {
-  if ((child === null) || (child === undefined) || ((typeof child) === 'boolean'))
+  if ((child === null) || (child === undefined)
+    || ((typeof child) === 'boolean'))
     return '';
   if (isSafeHtml(child,))
     return child.html;
@@ -123,14 +125,17 @@ function renderAttrs(props: Record<string, unknown>,): string {
   for (const [key, value,] of Object.entries(props,)) {
     if ((key === 'children') || (key === 'dangerouslySetInnerHTML'))
       continue;
-    if ((value === null) || (value === undefined) || (value === false))
+    if ((value === null) || (value === undefined)
+      || (value === false))
       continue;
     /** Resolved HTML attribute name; PROP_TO_ATTR rewrites JSX-isms like `className` to `class`. */
-    const name = PROP_TO_ATTR[key] ?? key;
+    const name = PROP_TO_ATTR[key]
+      ?? key;
     if (value === true)
       result += ` ${name}`;
     else if ((typeof value) === 'object')
-      result += ` ${name}="${escapeHtml(JSON.stringify(value,) ?? '',)}"`;
+      result += ` ${name}="${escapeHtml(JSON.stringify(value,)
+        ?? '',)}"`;
     else if ((typeof value) === 'string')
       result += ` ${name}="${escapeHtml(value,)}"`;
     else if (((typeof value) === 'number')
@@ -212,7 +217,8 @@ function jsxImpl(
 
   /** Element body chosen between raw HTML escape hatch and rendered children. */
   const inner = isDangerousHtml(props.dangerouslySetInnerHTML,)
-    ? props.dangerouslySetInnerHTML.__html
+    ? props.dangerouslySetInnerHTML
+      .__html
     : renderChild(props.children,);
 
   return { html: `<${type}${attrs}>${inner}</${type}>`, };

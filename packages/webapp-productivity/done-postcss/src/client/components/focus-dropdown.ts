@@ -32,7 +32,8 @@ class FocusDropdown extends HTMLElement {
 
   /** Reads initial value from attribute and renders the dropdown. */
   connectedCallback(): void {
-    this.#value = this.getAttribute('value',) ?? 'Select focus...';
+    this.#value = this.getAttribute('value',)
+      ?? 'Select focus...';
     this.#render();
   }
 
@@ -81,7 +82,8 @@ class FocusDropdown extends HTMLElement {
       ),
     },);
 
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: FOCUS_DROPDOWN_STYLES,

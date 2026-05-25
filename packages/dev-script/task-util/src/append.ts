@@ -147,7 +147,9 @@ const args = runSync(
   },
 );
 
-if (args.lines.length === 0)
+if (args.lines
+  .length
+  === 0)
   throw new Error(ERROR_MESSAGES.noTextProvided,);
 
 // Validate the target file

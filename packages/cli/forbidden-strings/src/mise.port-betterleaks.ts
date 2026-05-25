@@ -118,11 +118,13 @@ function escapeResharpOnlyMeta({ pattern, }: { pattern: string; },): string {
     '_',
     '&',
   ],);
-  while (i < pattern.length) {
+  while (i < pattern
+    .length) {
     /** Current character under the cursor; shorthand to avoid repeating `pattern[i]!`. */
     const c = pattern[i]!;
     // Pass an escape sequence through unmodified (consumes two chars).
-    if ((c === '\\') && ((i + 1) < pattern.length)) {
+    if ((c === '\\') && ((i + 1) < pattern
+      .length)) {
       out += pattern.slice(
         i,
         i + 2,
@@ -136,7 +138,8 @@ function escapeResharpOnlyMeta({ pattern, }: { pattern: string; },): string {
         out += c;
         i += 1;
         // After `[`, an optional `^` belongs to the class header.
-        if (pattern[i] === '^') {
+        if (pattern[i]
+          === '^') {
           out += pattern[i];
           i += 1;
         }
@@ -218,11 +221,14 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
     /** Accumulator for the multi-line body; first slot holds the opening-line remainder. */
     const parts: string[] = [initial,];
     i += 1;
-    while ((i < lines.length) && (!lines[i]!.includes("'''",))) {
+    while ((i < lines
+      .length) && (!lines[i]!
+      .includes("'''",))) {
       parts.push(lines[i]!,);
       i += 1;
     }
-    if (i < lines.length) {
+    if (i < lines
+      .length) {
       /** Closing line containing the terminating `'''`. */
       const close = lines[i]!;
       /** Position of `'''` inside `close`, used to trim the trailing content. */
@@ -236,7 +242,8 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
     return parts.join('\n',);
   }
 
-  while (i < lines.length) {
+  while (i < lines
+    .length) {
     /** Current TOML line at the cursor, tested for table headers. */
     const line = lines[i]!;
     // Look for top-level rule opener `[[rules]]` (not `[[rules.something]]`).
@@ -257,7 +264,8 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
       /** Set when the rule body contains `[[rules.required]]`; preserved as a note. */
       let hasRequired = false;
       // Scan rule body until the next top-level table marker.
-      while (i < lines.length) {
+      while (i < lines
+        .length) {
         /** Current line inside the rule body. */
         const rl = lines[i]!;
         // Sub-tables of the current rule: `[[rules.required]]` /
@@ -266,12 +274,14 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
         /** Capture of any `[[rules.<name>]]` sub-table header at the cursor. */
         const subTableMatch = /^\[\[rules\.([\w]+)]]\s*$/.exec(rl,);
         if (subTableMatch !== null) {
-          if (subTableMatch[1] === 'required')
+          if (subTableMatch[1]
+            === 'required')
             hasRequired = true;
           i += 1;
           while (
-            (i < lines.length)
-            && (!/^\[/.test(lines[i]!,))
+            (i < lines
+              .length)
+            && (!(lines[i]!).startsWith("[",))
           ) {
             i += 1;
           }
@@ -291,7 +301,8 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
         /** Match for the `description = "..."` field; capture handles `\"` escapes. */
         const descM = /^description\s*=\s*"((?:[^"\\]|\\.)*)"/.exec(rl,);
         if (descM !== null) {
-          description = descM[1]!.replaceAll(
+          description = descM[1]!
+            .replaceAll(
             String.raw`\"`,
             '"',
           );
@@ -302,7 +313,8 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
         const regexOpen = /^regex\s*=\s*'''/.exec(rl,);
         if (regexOpen !== null) {
           /** Remainder of the opening line after `regex = '''`, passed to the body reader. */
-          const initial = rl.slice(regexOpen[0]!.length,);
+          const initial = rl.slice(regexOpen[0]!
+            .length,);
           regex = readTripleQuoted({ initial, },);
           continue;
         }
@@ -310,7 +322,8 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
         const pathOpen = /^path\s*=\s*'''/.exec(rl,);
         if (pathOpen !== null) {
           /** Remainder of the opening line after `path = '''`, passed to the body reader. */
-          const initial = rl.slice(pathOpen[0]!.length,);
+          const initial = rl.slice(pathOpen[0]!
+            .length,);
           pathScope = readTripleQuoted({ initial, },);
           continue;
         }
@@ -334,7 +347,7 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
       if (
         (id !== undefined)
         && (description !== undefined)
-        && (regex !== undefined)
+          && (regex !== undefined)
       ) {
         out.push({
           id,
@@ -389,7 +402,8 @@ function renderRule({ rule, }: { rule: RawRule; },): string {
   const lines: string[] = [];
   lines.push(`# === ${rule.id} ===`,);
   lines.push(`# ${rule.description}`,);
-  if (rule.pathScope !== undefined) {
+  if (rule.pathScope
+    !== undefined) {
     lines.push(
       `# NOTE: upstream restricts this rule to files matching: ${rule.pathScope}`,
     );
@@ -397,7 +411,8 @@ function renderRule({ rule, }: { rule: RawRule; },): string {
       '#       Forbidden-strings has no per-rule path scoping; the rule fires on every scanned file.',
     );
   }
-  if (rule.secretGroup !== undefined) {
+  if (rule.secretGroup
+    !== undefined) {
     lines.push(
       `# NOTE: upstream extracts capture group ${rule.secretGroup} as the secret for redaction.`,
     );
@@ -417,7 +432,8 @@ function renderRule({ rule, }: { rule: RawRule; },): string {
   const relaxation = RELAXATIONS.get(rule.id,);
   /** Working regex, starting from the upstream form and possibly relaxed below. */
   let pattern = rule.regex;
-  if (relaxation?.transform !== undefined) {
+  if (relaxation?.transform
+    !== undefined) {
     pattern = relaxation.transform(pattern,);
     lines.push(`# RELAXATION: ${relaxation.note}`,);
   }
@@ -427,7 +443,8 @@ function renderRule({ rule, }: { rule: RawRule; },): string {
   /** Resharp-compatible form of the pattern, ready for final relaxation. */
   const convertedBase = pcreToResharp({ pattern, },);
   /** Final emitted resharp form, including engine-specific algebra relaxations. */
-  const converted = relaxation?.convertedTransform?.(convertedBase,) ?? convertedBase;
+  const converted = relaxation?.convertedTransform?.(convertedBase,)
+    ?? convertedBase;
   lines.push(`/${converted}/`,);
   lines.push('',);
   return lines.join('\n',);
@@ -516,7 +533,7 @@ const FOOTER = `# === resharp set-algebra demonstrations (engine-specific) ===
 /** Entry point. */
 async function main(): Promise<void> {
   /** Directory holding this script, used as the anchor for path resolution. */
-  const here = dirname(fileURLToPath(import.meta.url,),);
+  const here = import.meta.dirname;
   // mise.port-betterleaks.ts lives in packages/cli/forbidden-strings/src/.
   // Walk up four levels to land at the repo root.
   /** Repository root, four levels above this script. */
@@ -593,7 +610,8 @@ async function main(): Promise<void> {
   console.log(
     `wrote ${outPath} (${kept.length} rules kept, ${dropped.length} dropped)`,
   );
-  if (dropped.length > 0) {
+  if (dropped.length
+    > 0) {
     // oxlint-disable-next-line no-console -- CLI script user-facing output
     console.log('  dropped:',);
     for (const {

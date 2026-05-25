@@ -79,8 +79,10 @@ export function buildAdvisorContext(
     .map(function mapEntry(entry,) {
       return entryToMessage({
         entry,
-        includePriorAdvisorResults: options.config.includePriorAdvisorResults,
-        ...(options.toolCallId === undefined
+        includePriorAdvisorResults: options.config
+          .includePriorAdvisorResults,
+        ...(options.toolCallId
+          === undefined
           ? {}
           : { currentToolCallId: options.toolCallId, }),
       },);
@@ -93,8 +95,11 @@ export function buildAdvisorContext(
   const serialized = serializeConversation(convertToLlm(messages,),);
   /** Effective truncation budget supplied by model-aware caller or config cap. */
   const maxContextChars = options.maxContextChars
-    ?? options.config.maxContextChars
-    ?? Number.MAX_SAFE_INTEGER;
+    ?? options
+    .config
+    .maxContextChars
+    ?? Number
+    .MAX_SAFE_INTEGER;
   /** Truncated serialized conversation and metadata. */
   const truncation = truncateContext({
     text: serialized,
@@ -113,7 +118,8 @@ export function buildAdvisorContext(
     text: truncation.text,
     maxContextChars,
     originalChars: serialized.length,
-    finalChars: truncation.text.length,
+    finalChars: truncation.text
+      .length,
     truncated: truncation.truncated,
     includedMessageCount: messages.length,
     estimatedInputTokens,
@@ -140,12 +146,16 @@ export function maxContextCharsForAdvisorModel(
   const reservedInputTokens = estimateAdvisorInputTokens({
     systemPrompt: options.advisorSystemPrompt,
     contextText: '',
-  },) + DEFAULT_CONTEXT_OVERHEAD_TOKENS;
+  },)
+    + DEFAULT_CONTEXT_OVERHEAD_TOKENS;
   /** Input tokens left for serialized conversation content. */
   const availableContextTokens = Math.max(
     1,
-    options.model.contextWindow
-      - options.config.maxAdvisorOutputTokens
+    options.model
+      .contextWindow
+      - options
+      .config
+      .maxAdvisorOutputTokens
       - reservedInputTokens,
   );
   /** Model-derived serialized conversation character budget. */
@@ -155,7 +165,9 @@ export function maxContextCharsForAdvisorModel(
   );
 
   return Math.min(
-    options.config.maxContextChars ?? modelContextChars,
+    options.config
+      .maxContextChars
+      ?? modelContextChars,
     modelContextChars,
   );
 }
@@ -186,7 +198,8 @@ export function truncateContext(
   readonly text: string;
   readonly truncated: boolean;
 } {
-  if (text.length <= maxChars) {
+  if (text.length
+    <= maxChars) {
     return {
       text,
       truncated: false,
@@ -196,7 +209,8 @@ export function truncateContext(
   /** Character budget left after the omission marker. */
   const remainingChars = Math.max(
     0,
-    maxChars - CONTEXT_TRUNCATION_MARKER.length,
+    maxChars - CONTEXT_TRUNCATION_MARKER
+      .length,
   );
   /** Head segment length. */
   const headChars = Math.ceil(remainingChars / 2,);
@@ -243,7 +257,8 @@ function entryToMessage(
     readonly currentToolCallId?: string;
   },
 ): AdvisorAgentMessage | undefined {
-  if (entry.type === 'message') {
+  if (entry.type
+    === 'message') {
     return filterMessage({
       message: entry.message,
       includePriorAdvisorResults,
@@ -251,7 +266,8 @@ function entryToMessage(
     },);
   }
 
-  if (entry.type === 'compaction') {
+  if (entry.type
+    === 'compaction') {
     return {
       role: 'compactionSummary',
       summary: entry.summary,
@@ -260,7 +276,8 @@ function entryToMessage(
     };
   }
 
-  if (entry.type === 'branch_summary') {
+  if (entry.type
+    === 'branch_summary') {
     return {
       role: 'branchSummary',
       summary: entry.summary,
@@ -269,8 +286,10 @@ function entryToMessage(
     };
   }
 
-  if (entry.type === 'custom_message') {
-    if ((!includePriorAdvisorResults) && (entry.customType === ADVISOR_MESSAGE_TYPE))
+  if (entry.type
+    === 'custom_message') {
+    if ((!includePriorAdvisorResults) && (entry.customType
+      === ADVISOR_MESSAGE_TYPE))
       return undefined;
     return {
       role: 'custom',
@@ -307,26 +326,32 @@ function filterMessage(
     readonly currentToolCallId?: string;
   },
 ): AdvisorAgentMessage | undefined {
-  if (message.role === 'toolResult') {
-    if ((currentToolCallId !== undefined) && (message.toolCallId === currentToolCallId))
+  if (message.role
+    === 'toolResult') {
+    if ((currentToolCallId !== undefined) && (message.toolCallId
+      === currentToolCallId))
       return undefined;
-    if ((!includePriorAdvisorResults) && (message.toolName === ADVISOR_TOOL_NAME))
+    if ((!includePriorAdvisorResults) && (message.toolName
+      === ADVISOR_TOOL_NAME))
       return undefined;
     return message;
   }
 
-  if (message.role !== 'assistant')
+  if (message.role
+    !== 'assistant')
     return message;
 
   /** Assistant content with current Advisor placeholder tool call omitted. */
-  const content = message.content.filter(function keepContentBlock(block,) {
+  const content = message.content
+    .filter(function keepContentBlock(block,) {
     return !(
       (block.type === 'toolCall')
       && (block.name === ADVISOR_TOOL_NAME)
       && (block.id === currentToolCallId)
     );
   },);
-  if (content.length === 0)
+  if (content.length
+    === 0)
     return undefined;
   return {
     ...message,

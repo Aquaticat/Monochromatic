@@ -65,7 +65,9 @@ function isAsciiDigit(value: string,): boolean {
  * ```
  */
 function isTimeContextContent(value: string,): boolean {
-  if (value.length !== TIME_CONTEXT_TEMPLATE.length)
+  if (value.length
+    !== TIME_CONTEXT_TEMPLATE
+    .length)
     return false;
   if (!value.startsWith(TIME_CONTEXT_OPEN_TAG,))
     return false;
@@ -75,12 +77,15 @@ function isTimeContextContent(value: string,): boolean {
   /** Middle `HH:MM` segment inside the time context tags. */
   const middle = value.slice(
     TIME_CONTEXT_OPEN_TAG.length,
-    value.length - TIME_CONTEXT_CLOSE_TAG.length,
+    value.length
+      - TIME_CONTEXT_CLOSE_TAG
+      .length,
   );
 
   return isAsciiDigit(middle.charAt(FIRST_HOUR_DIGIT_INDEX,),)
     && isAsciiDigit(middle.charAt(SECOND_HOUR_DIGIT_INDEX,),)
-    && (middle.charAt(TIME_SEPARATOR_INDEX,) === ':')
+    && (middle.charAt(TIME_SEPARATOR_INDEX,)
+      === ':')
     && isAsciiDigit(middle.charAt(FIRST_MINUTE_DIGIT_INDEX,),)
     && isAsciiDigit(middle.charAt(SECOND_MINUTE_DIGIT_INDEX,),);
 }

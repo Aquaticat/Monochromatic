@@ -57,13 +57,19 @@ function formatOxlintDiagnostics(diagnostics: readonly OxlintDiagnostic[],): str
   return diagnostics
     .map(function formatDiag(diagnostic,): string {
       /** Source line of the first label, or '?' when oxlint omits the span (e.g. file-level rules). */
-      const line = diagnostic.labels?.[0]?.span?.line ?? '?';
+      const line = diagnostic.labels?.[0]
+        ?.span
+        ?.line
+        ?? '?';
       /** Severity word for the human-readable line; defaults to 'error' so unset entries are conservatively flagged. */
-      const severity = diagnostic.severity ?? 'error';
+      const severity = diagnostic.severity
+        ?? 'error';
       /** Rule identifier; falls back to 'unknown' for diagnostics that don't expose a code. */
-      const code = diagnostic.code ?? 'unknown';
+      const code = diagnostic.code
+        ?? 'unknown';
       /** Diagnostic message body; empty string keeps the formatted line shape stable. */
-      const message = diagnostic.message ?? '';
+      const message = diagnostic.message
+        ?? '';
       return `line ${String(line,)}: ${severity} [${code}] ${message}`;
     },)
     .join('\n',);
@@ -95,24 +101,28 @@ function parseOxlintJson(jsonOutput: string,): OxlintResult {
       diagnostics?: readonly OxlintDiagnostic[];
     };
     /** Diagnostic list flattened from the envelope; empty when oxlint reported no violations. */
-    const diagnostics = parsed.diagnostics ?? [];
+    const diagnostics = parsed.diagnostics
+      ?? [];
     /** Total diagnostics with severity 'error'; surfaced as `errors` on the parsed result. */
     const errors = diagnostics
       .filter(function isError(d,): boolean {
-        return d.severity === 'error';
+        return d.severity
+          === 'error';
       },)
       .length;
     /** Total diagnostics with severity 'warning'; surfaced as `warnings` on the parsed result. */
     const warnings = diagnostics
       .filter(function isWarning(d,): boolean {
-        return d.severity === 'warning';
+        return d.severity
+          === 'warning';
       },)
       .length;
     /** Distinct rule IDs that appear in the diagnostics, minus the 'unknown' fallback. */
     const violatedRules = [
       ...new Set(diagnostics
         .map(function getCode(d,): string {
-          return d.code ?? 'unknown';
+          return d.code
+            ?? 'unknown';
         },)
         .filter(function notUnknown(code,): boolean {
           return code !== 'unknown';
@@ -126,13 +136,16 @@ function parseOxlintJson(jsonOutput: string,): OxlintResult {
     const penaltyAccumulator = new Map<string, number>();
     diagnostics.forEach(function accumPenalty(diagnostic,): void {
       /** Rule ID used as the accumulator key; 'unknown' bucket catches code-less diagnostics. */
-      const rule = diagnostic.code ?? 'unknown';
+      const rule = diagnostic.code
+        ?? 'unknown';
       /** Per-occurrence penalty; warnings cost less than errors. */
-      const penaltyPerOccurrence = diagnostic.severity === 'warning'
+      const penaltyPerOccurrence = diagnostic.severity
+        === 'warning'
         ? LINT_WARNING_PENALTY
         : LINT_ERROR_PENALTY;
       /** Running penalty for this rule before adding the current occurrence. */
-      const current = penaltyAccumulator.get(rule,) ?? 0;
+      const current = penaltyAccumulator.get(rule,)
+        ?? 0;
       penaltyAccumulator.set(
         rule,
         current + penaltyPerOccurrence,

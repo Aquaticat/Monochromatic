@@ -53,7 +53,8 @@ export async function restoreExpansion({
     ] {
       return [
         d,
-        d.split('/',).length,
+        d.split('/',)
+          .length,
       ];
     },),
   );
@@ -62,7 +63,9 @@ export async function restoreExpansion({
     a,
     b,
   ) {
-    return (depthOf.get(a,) ?? 0) - (depthOf.get(b,) ?? 0);
+    return (depthOf.get(a,)
+      ?? 0) - (depthOf.get(b,)
+      ?? 0);
   },);
 
   for (const dirPath of sorted) {
@@ -106,7 +109,8 @@ export function updateRecencyMarkers({
 },): void {
   /** Path-to-position lookup so each tree entry can resolve its recency index in O(1). */
   const recencyByPath = new Map<string, number>();
-  for (let i = 0; i < paths.length; i++) {
+  for (let i = 0; i < paths
+    .length; i++) {
     /** Recent entry at index `i`; undefined slots are ignored to keep the map dense. */
     const recentPath = paths[i];
     if (recentPath !== undefined) {
@@ -119,7 +123,8 @@ export function updateRecencyMarkers({
 
   for (const label of tree.querySelectorAll<HTMLElement>('tree-file-entry[data-path]',)) {
     /** Absolute path this entry represents; undefined when the data attribute is missing or empty. */
-    const labelPath = label.dataset.path;
+    const labelPath = label.dataset
+      .path;
     /** Position in the recency list, or undefined when this path is not among the recent files. */
     const recencyIndex = labelPath !== undefined
       ? recencyByPath.get(labelPath,)
@@ -128,12 +133,16 @@ export function updateRecencyMarkers({
     const toggle = label.querySelector<HTMLElement>('.toggle',);
 
     if (recencyIndex !== undefined) {
-      label.dataset.recency = String(recencyIndex,);
+      label.dataset
+        .recency = String(recencyIndex,);
       if (toggle !== null)
         toggle.textContent = String(recencyIndex,);
     }
-    else if (label.dataset.recency !== undefined) {
-      delete label.dataset.recency;
+    else if (label.dataset
+      .recency
+      !== undefined) {
+      delete label.dataset
+        .recency;
       if (toggle !== null)
         toggle.textContent = '';
     }
@@ -158,10 +167,13 @@ export function resolveSelectedDir(
   if (lastFocused === null)
     return '';
   /** Absolute path of the focused entry, or empty when the entry has no data-path attribute. */
-  const itemPath = lastFocused.dataset.path ?? '';
+  const itemPath = lastFocused.dataset
+    .path
+    ?? '';
   if (itemPath === '')
     return '';
-  if (lastFocused.tagName === 'SUMMARY')
+  if (lastFocused.tagName
+    === 'SUMMARY')
     return itemPath;
   /** Index of the last separator; used to derive the parent directory of a file entry. */
   const lastSlash = itemPath.lastIndexOf('/',);
@@ -192,7 +204,9 @@ export function collectExpandedDirs({ tree, }: { readonly tree: HTMLDivElement; 
     /** `<summary>` is always the first child of `<details>` (set in TreeDirEntry.connectedCallback). */
     const first = details.firstElementChild;
     /** Path read from the summary's data attribute; empty when the summary lacks a data-path. */
-    const path = first instanceof HTMLElement ? (first.dataset.path ?? '') : '';
+    const path = first instanceof HTMLElement ? (first.dataset
+      .path
+      ?? '') : '';
     if (path !== '')
       dirs.push(path,);
   }

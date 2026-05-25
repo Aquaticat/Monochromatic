@@ -40,10 +40,16 @@ function pointInInputRect(
     input: HTMLInputElement;
   },
 ): boolean {
-  return (px >= input.offsetLeft)
-    && (px <= (input.offsetLeft + input.offsetWidth))
-    && (py >= input.offsetTop)
-    && (py <= (input.offsetTop + input.offsetHeight));
+  return (px >= input
+    .offsetLeft)
+    && (px <= (input.offsetLeft
+      + input
+      .offsetWidth))
+    && (py >= input
+      .offsetTop)
+    && (py <= (input.offsetTop
+      + input
+      .offsetHeight));
 }
 
 /**
@@ -135,11 +141,16 @@ export function eraseTextAt({
         ey: py,
         left: input.offsetLeft,
         top: input.offsetTop,
-        right: input.offsetLeft + input.offsetWidth,
-        bottom: input.offsetTop + input.offsetHeight,
+        right: input.offsetLeft
+          + input
+          .offsetWidth,
+        bottom: input.offsetTop
+          + input
+          .offsetHeight,
       },);
 
-    if (hitCurrent || hitPrevious || hitSegment) {
+    if (hitCurrent || hitPrevious
+      || hitSegment) {
       input.remove();
       erased = true;
     }

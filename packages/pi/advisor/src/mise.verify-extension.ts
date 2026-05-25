@@ -66,7 +66,8 @@ async function verifyBuiltExtension(): Promise<string> {
   const missing = EXPECTED_REGISTRATIONS.filter(function isMissing(expected,) {
     return !registrations.includes(expected,);
   },);
-  if (missing.length > 0)
+  if (missing.length
+    > 0)
     throw new Error(`missing Advisor registrations: ${missing.join(', ',)}`,);
 
   return `Advisor extension verified: ${registrations.join(', ',)}`;

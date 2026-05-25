@@ -33,7 +33,8 @@ const TIME_CONTEXT_CLOSE_TAG = '</time>';
  * ```
  */
 function padTwoDigits(value: number,): string {
-  return value.toString().padStart(
+  return value.toString()
+    .padStart(
     CLOCK_FIELD_WIDTH,
     '0',
   );

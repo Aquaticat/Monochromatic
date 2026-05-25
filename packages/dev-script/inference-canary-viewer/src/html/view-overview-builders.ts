@@ -38,7 +38,8 @@ export function buildAllModelPoints(
 ): readonly ScatterPoint[] {
   return entries
     .filter(function hasScore(entry,): boolean {
-      return (entry.overallScore > 0) && hasMultipleProbes(entry,);
+      return (entry.overallScore
+        > 0) && hasMultipleProbes(entry,);
     },)
     .map(function toPoint(
       entry,
@@ -64,11 +65,13 @@ export function buildAllModelPoints(
         color,
         icon: vendorIcon(entry.model,),
         title: `${entry.label} ${
-          entry.timestamp.slice(
+          entry.timestamp
+            .slice(
             0,
             10,
           )
-        }: ${entry.overallScore.toFixed(2,)}`,
+        }: ${entry.overallScore
+          .toFixed(2,)}`,
         failed: entry.failed,
         tableRow,
       };

@@ -50,7 +50,8 @@ export type CompleteTaskResult = {
 export async function startTaskTimer(id: string,): Promise<Task | null> {
   /** Single ISO timestamp reused for both `timer_started_at` and `updated_at` to keep them aligned. */
   const timestamp = nowIso();
-  await db.prepare(SQL_START_TIMER,).run(
+  await db.prepare(SQL_START_TIMER,)
+    .run(
     timestamp,
     timestamp,
     id,
@@ -77,17 +78,21 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
     return null;
 
   /** Seconds the running timer accumulated; zero when no timer was active. */
-  const elapsedSeconds = currentTask.timerStartedAt === null
+  const elapsedSeconds = currentTask.timerStartedAt
+    === null
     ? 0
     : Math.max(
       0,
       Math.floor(
-        (Date.now() - Date.parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
+        (Date.now()
+          - Date
+          .parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
       ),
     );
   /** ISO timestamp for the `updated_at` column on the stop write. */
   const timestamp = nowIso();
-  await db.prepare(SQL_STOP_TIMER,).run(
+  await db.prepare(SQL_STOP_TIMER,)
+    .run(
     currentTask.trackedTime + elapsedSeconds,
     timestamp,
     id,
@@ -121,7 +126,8 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
 
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns blocker join columns */
   /** Raw blocker rows; emptiness implies completion is allowed. */
-  const blockingRows = await db.prepare(SQL_SELECT_BLOCKERS,).all(id,) as {
+  const blockingRows = await db.prepare(SQL_SELECT_BLOCKERS,)
+    .all(id,) as {
     blocker_id: string;
     blocker_title: string;
   }[];
@@ -133,7 +139,8 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
       blockerTitle: row.blocker_title,
     };
   },);
-  if (blockedBy.length > 0) {
+  if (blockedBy.length
+    > 0) {
     return {
       completed: false,
       notFound: false,
@@ -141,9 +148,11 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
     };
   }
 
-  if (currentTask.timerStartedAt !== null)
+  if (currentTask.timerStartedAt
+    !== null)
     await stopTaskTimer(id,);
-  await db.prepare(SQL_DELETE_TASK,).run(id,);
+  await db.prepare(SQL_DELETE_TASK,)
+    .run(id,);
   return {
     completed: true,
     notFound: false,

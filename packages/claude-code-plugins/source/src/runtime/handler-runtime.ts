@@ -89,7 +89,8 @@ async function runHookPlugin<TInput, TOutput,>(
   const event = parser(raw,);
   /** Handler response; serialized by the writer for stdout. */
   const output = await handler(event,);
-  process.stdout.write(writer(output,),);
+  process.stdout
+    .write(writer(output,),);
 }
 
 export type {

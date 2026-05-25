@@ -151,7 +151,9 @@ const derived = {
         v.transform(Number,),
         v.number(),
       ),
-      localStorage.getItem('numResults',) ?? numResultsInput.value,
+      localStorage.getItem('numResults',)
+        ?? numResultsInput
+        .value,
     ),
     onChange: function updateStored(val: number,) {
       localStorage.setItem(

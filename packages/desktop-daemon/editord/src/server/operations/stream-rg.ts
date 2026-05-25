@@ -108,11 +108,13 @@ export function streamRg({
         /**
          * Split on newlines; the trailing partial line stays in `state.buffer`.
          */
-        const lines = state.buffer.split('\n',);
+        const lines = state.buffer
+          .split('\n',);
         /**
          * Keep the last (possibly incomplete) line in the buffer.
          */
-        state.buffer = lines.pop() ?? '';
+        state.buffer = lines.pop()
+          ?? '';
 
         for (const line of lines) {
           if (line === '')
@@ -122,7 +124,8 @@ export function streamRg({
           const result = processLine(line,);
           if (result !== null) {
             results.push(result,);
-            if (results.length >= maxResults) {
+            if (results.length
+              >= maxResults) {
               finish();
               return;
             }
@@ -134,7 +137,8 @@ export function streamRg({
     proc.on(
       'close',
       function handleClose() {
-        if (state.buffer !== '') {
+        if (state.buffer
+          !== '') {
           /**
            * Last partial line salvaged on close so we do not drop the final hit.
            */

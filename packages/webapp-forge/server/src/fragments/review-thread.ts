@@ -122,7 +122,8 @@ function reviewBlock(props: ReviewRowData,): SafeHtml {
  */
 export function renderReviewThread(data: ReviewThreadData,): SafeHtml {
   /** Per-review HTML blocks composing the rendered thread. */
-  const blocks = data.reviews.map(function eachReview(review,) {
+  const blocks = data.reviews
+    .map(function eachReview(review,) {
     return reviewBlock(review,);
   },);
   return jsx(
@@ -130,8 +131,10 @@ export function renderReviewThread(data: ReviewThreadData,): SafeHtml {
     {
       className: 'forge-review-thread',
       'data-pr-number': String(data.prNumber,),
-      'data-review-count': String(data.reviews.length,),
-      children: blocks.length === 0
+      'data-review-count': String(data.reviews
+        .length,),
+      children: blocks.length
+        === 0
         ? jsx(
           'p',
           {

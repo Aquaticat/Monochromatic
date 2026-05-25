@@ -54,22 +54,33 @@ export function wireKeybindings({
   document.addEventListener(
     'keydown',
     function handleKeydown(event,) {
-      if ((event.ctrlKey || event.metaKey) && (event.key === 's')) {
+      if ((event.ctrlKey
+        || event
+        .metaKey) && (event.key
+        === 's')) {
         event.preventDefault();
         saveCurrentFile();
         return;
       }
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'F')) {
+      if ((event.ctrlKey || event.metaKey) && event
+        .shiftKey
+        && (event.key === 'F')) {
         event.preventDefault();
         formatDocument();
         return;
       }
-      if (event.ctrlKey && event.altKey && (event.key === 'l')) {
+      if (event.ctrlKey
+        && event
+        .altKey
+        && (event.key === 'l')) {
         event.preventDefault();
         formatDocument();
         return;
       }
-      if ((event.ctrlKey || event.metaKey) && (event.key === 'b')) {
+      if ((event.ctrlKey
+        || event
+        .metaKey) && (event.key
+        === 'b')) {
         event.preventDefault();
         gotoDefinition();
         return;
@@ -78,7 +89,8 @@ export function wireKeybindings({
         && (!event.ctrlKey)
         && (!event.metaKey)
         && (!event.altKey)
-        && (event.key === 'F6'))
+        && (event.key
+          === 'F6'))
       {
         event.preventDefault();
         renameAtCursor();
@@ -96,26 +108,34 @@ export function wireKeybindings({
       },)) {
         return;
       }
-      if (event.ctrlKey && (event.key === ' ')) {
+      if (event.ctrlKey
+        && (event.key === ' ')) {
         event.preventDefault();
         requestCompletions();
         return;
       }
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && (event.key === 'W')) {
+      if ((event.ctrlKey || event.metaKey) && event
+        .shiftKey
+        && (event.key === 'W')) {
         event.preventDefault();
         shrinkSelection();
         return;
       }
-      if ((event.ctrlKey || event.metaKey) && (!event.shiftKey) && (event.key === 'w')) {
+      if ((event.ctrlKey || event.metaKey) && (!event.shiftKey)
+        && (event.key === 'w')) {
         event.preventDefault();
         expandSelection();
         return;
       }
-      if ((event.ctrlKey || event.metaKey)
+      if ((event.ctrlKey
+        || event
+        .metaKey)
         && (!event.shiftKey)
         && (!event.altKey)
-        && (event.key >= '0')
-        && (event.key <= '9'))
+        && (event.key
+          >= '0')
+        && (event.key
+          <= '9'))
       {
         event.preventDefault();
         navigateToRecentFile(Number(event.key,),);
@@ -125,25 +145,29 @@ export function wireKeybindings({
         && (!event.ctrlKey)
         && (!event.metaKey)
         && (!event.shiftKey)
-        && (event.key === 'F12'))
+        && (event.key
+          === 'F12'))
       {
         event.preventDefault();
         openTerminalAtCurrentFile();
         return;
       }
-      if (referencesPopup.visible && handleReferencesNav({
+      if (referencesPopup.visible
+        && handleReferencesNav({
         event,
         referencesPopup,
       },)) {
         return;
       }
-      if (completionPopup.visible && handleCompletionNav({
+      if (completionPopup.visible
+        && handleCompletionNav({
         event,
         completionPopup,
       },)) {
         return;
       }
-      if ((event.key === 'Tab')
+      if ((event.key
+        === 'Tab')
         && (!event.ctrlKey)
         && (!event.metaKey)
         && (!event.altKey))
@@ -155,7 +179,8 @@ export function wireKeybindings({
           indentLines();
         return;
       }
-      if (event.key === 'Escape')
+      if (event.key
+        === 'Escape')
         hoverPopup.hide();
     },
   );

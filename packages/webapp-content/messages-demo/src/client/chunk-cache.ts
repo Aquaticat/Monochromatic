@@ -89,7 +89,8 @@ export type ChunkCacheCaps = {
 export async function createChunkCache(
   input: { readonly caps: ChunkCacheCaps; },
 ): Promise<ChunkCache> {
-  if (input.caps.opfs) {
+  if (input.caps
+    .opfs) {
     try {
       return await createOpfsCache();
     }
@@ -98,7 +99,8 @@ export async function createChunkCache(
       // permission revoked between visits), fall through to IDB.
     }
   }
-  if (input.caps.idb) {
+  if (input.caps
+    .idb) {
     try {
       return await createIdbCache();
     }
@@ -118,7 +120,8 @@ export async function createChunkCache(
  */
 async function createOpfsCache(): Promise<ChunkCache> {
   /** OPFS root acquired once and reused by the per-message subdirectory. */
-  const root = await navigator.storage.getDirectory();
+  const root = await navigator.storage
+    .getDirectory();
   /** Per-package cache directory created on first call; reused across reads and writes. */
   const directory = await root.getDirectoryHandle(
     OPFS_DIRECTORY,
@@ -263,13 +266,17 @@ async function evictOpfsStale(
   },
 ): Promise<void> {
   /** File-name prefix scoping the walk to the message id under consideration. */
-  const messagePrefix = `${String(input.key.messageId,)}-`;
+  const messagePrefix = `${String(input.key
+    .messageId,)}-`;
   /** Extends `messagePrefix` with the current revision; entries starting with this are kept. */
-  const currentRevPrefix = `${messagePrefix}${String(input.key.revision,)}-`;
+  const currentRevPrefix = `${messagePrefix}${String(input.key
+    .revision,)}-`;
   // FileSystemDirectoryHandle implements AsyncIterable<FileSystemHandle>
   // in Chromium and WebKit; older lib.dom.d.ts versions do not declare
   // the iterator on the type, so we narrow via a typed alias.
-  if (!(Symbol.asyncIterator in input.directory))
+  if (!(Symbol.asyncIterator
+    in input
+    .directory))
     return;
   /* oxlint-disable typescript/no-unsafe-type-assertion -- DOM lib lacks the iterator type */
   /** Narrowed alias so the `for await` loop sees a typed iterator instead of the DOM-lib gap. */
@@ -277,13 +284,16 @@ async function evictOpfsStale(
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   // oxlint-disable-next-line no-await-in-loop
   for await (const handle of iterable) {
-    if (!handle.name.startsWith(messagePrefix,))
+    if (!handle.name
+      .startsWith(messagePrefix,))
       continue;
-    if (handle.name.startsWith(currentRevPrefix,))
+    if (handle.name
+      .startsWith(currentRevPrefix,))
       continue;
     try {
       // oxlint-disable-next-line no-await-in-loop
-      await input.directory.removeEntry(handle.name,);
+      await input.directory
+        .removeEntry(handle.name,);
     }
     catch {
       // Another tab may have raced us; ignore and move on.
@@ -315,7 +325,8 @@ function openCacheDb(): Promise<IDBDatabase> {
     name: IDB_DB_NAME,
     version: IDB_VERSION,
     onUpgrade(dbConn,) {
-      if (!dbConn.objectStoreNames.contains(IDB_STORE,)) {
+      if (!dbConn.objectStoreNames
+        .contains(IDB_STORE,)) {
         dbConn.createObjectStore(
           IDB_STORE,
           {
@@ -355,7 +366,8 @@ function idbGet(
     reject,
   ) {
     /** Read-only transaction scoped to the chunk store; closes on success callback. */
-    const tx = input.db.transaction(
+    const tx = input.db
+      .transaction(
       IDB_STORE,
       'readonly',
     );
@@ -363,16 +375,20 @@ function idbGet(
     const store = tx.objectStore(IDB_STORE,);
     /** Keyed get request; resolves to the row or `undefined` on miss. */
     const request = store.get([
-      input.key.messageId,
-      input.key.revision,
-      input.key.idx,
+      input.key
+        .messageId,
+      input.key
+        .revision,
+      input.key
+        .idx,
     ],);
     request.addEventListener(
       'success',
       function onSuccess(): void {
         /** Widened from `any` so the shape narrowing below stays type-safe. */
         const raw: unknown = request.result;
-        if ((raw === null) || ((typeof raw) !== 'object') || (!('html' in raw))) {
+        if ((raw === null) || ((typeof raw) !== 'object')
+          || (!('html' in raw))) {
           resolve(null,);
           return;
         }
@@ -384,7 +400,8 @@ function idbGet(
     request.addEventListener(
       'error',
       function onError(): void {
-        reject(request.error ?? new Error('IDB get failed',),);
+        reject(request.error
+          ?? new Error('IDB get failed',),);
       },
     );
   },);
@@ -408,11 +425,13 @@ async function idbPut(
   },
 ): Promise<void> {
   /** Read-write transaction held until `idbTransactionDone` resolves below. */
-  const tx = input.db.transaction(
+  const tx = input.db
+    .transaction(
     IDB_STORE,
     'readwrite',
   );
-  tx.objectStore(IDB_STORE,).put({
+  tx.objectStore(IDB_STORE,)
+    .put({
     messageId: input.key.messageId,
     revision: input.key.revision,
     idx: input.key.idx,
@@ -440,7 +459,8 @@ async function evictIdbStale(
   },
 ): Promise<void> {
   /** Read-write transaction held until `idbTransactionDone` resolves below. */
-  const tx = input.db.transaction(
+  const tx = input.db
+    .transaction(
     IDB_STORE,
     'readwrite',
   );
@@ -451,12 +471,14 @@ async function evictIdbStale(
   /** Lower-bound to upper-bound composite key range scoping the cursor to one message. */
   const range = IDBKeyRange.bound(
     [
-      input.key.messageId,
+      input.key
+        .messageId,
       0,
       0,
     ],
     [
-      input.key.messageId,
+      input.key
+        .messageId,
       HUGE_KEY_CEILING,
       HUGE_KEY_CEILING,
     ],
@@ -479,10 +501,13 @@ async function evictIdbStale(
       /** Widened to `unknown` so the shape check can narrow the row before reading fields. */
       const value: unknown = cursor.value;
       /* oxlint-enable eslint/prefer-destructuring */
-      if ((value !== null) && ((typeof value) === 'object') && ('revision' in value)) {
+      if ((value !== null) && ((typeof value) === 'object')
+        && ('revision' in value)) {
         /** Destructured after narrowing; the revision compare decides whether to delete this row. */
         const { revision, } = value;
-        if (((typeof revision) === 'number') && (revision !== input.key.revision))
+        if (((typeof revision) === 'number') && (revision !== input
+          .key
+          .revision))
           cursor.delete();
       }
       cursor.continue();

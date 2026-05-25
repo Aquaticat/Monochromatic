@@ -75,7 +75,8 @@ export async function handleCompare({
         provider,
         similarity: result.similarity,
         distance: result.distance,
-        embeddingDimensions: result.embeddingA.length,
+        embeddingDimensions: result.embeddingA
+          .length,
         description: result.description,
       },
       null,
@@ -94,10 +95,15 @@ export async function handleCompare({
       results.map(function formatEntry(entry,) {
         return {
           provider: entry.provider,
-          similarity: entry.result.similarity,
-          distance: entry.result.distance,
-          embeddingDimensions: entry.result.embeddingA.length,
-          description: entry.result.description,
+          similarity: entry.result
+            .similarity,
+          distance: entry.result
+            .distance,
+          embeddingDimensions: entry.result
+            .embeddingA
+            .length,
+          description: entry.result
+            .description,
         };
       },),
       null,

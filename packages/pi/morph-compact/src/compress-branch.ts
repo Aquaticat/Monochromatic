@@ -77,7 +77,8 @@ function walkBranch(branchEntries: SessionEntry[],): {
   /** Position of the most recent compaction entry; sentinel value means none seen. */
   const lastCompactionIndex = branchEntries.findLastIndex(
     function isCompaction(entry,) {
-      return (entry !== undefined) && (entry.type === 'compaction');
+      return (entry !== undefined) && (entry.type
+        === 'compaction');
     },
   );
   /** Compaction entry slot lookup; undefined when no compaction was found. */
@@ -85,7 +86,8 @@ function walkBranch(branchEntries: SessionEntry[],): {
     ? undefined
     : branchEntries[lastCompactionIndex];
   /** Last compaction entry's summary text; undefined when no compaction was found. */
-  const previousSummary = (lastCompactionEntry?.type === 'compaction')
+  const previousSummary = (lastCompactionEntry?.type
+    === 'compaction')
     ? lastCompactionEntry.summary
     : undefined;
 
@@ -97,7 +99,8 @@ function walkBranch(branchEntries: SessionEntry[],): {
   const messages: BranchMessage[] = branchEntries
     .slice(startIdx,)
     .filter(function isMessage(entry,) {
-      return (entry !== undefined) && (entry.type === 'message');
+      return (entry !== undefined) && (entry.type
+        === 'message');
     },)
     .map(function takeMessage(entry,) {
       return (entry as SessionMessageEntry).message;
@@ -158,7 +161,8 @@ export async function compressBranch(
   } = walkBranch(branchEntries,);
 
   // Nothing to compress at all
-  if ((messages.length === 0) && (previousSummary === undefined)) {
+  if ((messages.length
+    === 0) && (previousSummary === undefined)) {
     throw new Error(
       'Nothing to compress: session has no messages and no previous compaction',
     );
@@ -166,7 +170,8 @@ export async function compressBranch(
 
   // No new messages since last compaction; return previous
   // summary directly to avoid wasting Morph credits
-  if ((messages.length === 0) && (previousSummary !== undefined))
+  if ((messages.length
+    === 0) && (previousSummary !== undefined))
     return previousSummary;
 
   // Serialize messages for Morph input
@@ -203,7 +208,8 @@ export async function compressBranch(
   },);
 
   /** Trimmed compacted body; empty output is treated as failure. */
-  const output = result.output?.trim();
+  const output = result.output
+    ?.trim();
   if ((output === undefined) || (output === '')) {
     throw new Error(
       'Morph Compact returned empty output: compression failed',

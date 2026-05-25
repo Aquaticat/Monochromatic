@@ -113,7 +113,9 @@ export function buildSuggestedSection({
           },),
         ],
       },),
-      pageData.suggestedTasks.length === 0
+      pageData.suggestedTasks
+        .length
+        === 0
         ? h({
           tag: 'p',
           class: 'empty',

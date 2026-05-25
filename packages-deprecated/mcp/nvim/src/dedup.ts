@@ -18,7 +18,8 @@ import type { Diagnostic, } from './nvim-types.ts';
  * ```
  */
 export function dedupKey(diagnostic: Diagnostic,): string {
-  if (diagnostic.code !== null)
+  if (diagnostic.code
+    !== null)
     return `${diagnostic.lnum}:${diagnostic.col}:${diagnostic.code}`;
   return `${diagnostic.lnum}:${diagnostic.col}:${diagnostic.message}`;
 }

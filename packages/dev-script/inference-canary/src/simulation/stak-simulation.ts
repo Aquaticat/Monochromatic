@@ -244,9 +244,11 @@ export const stakSimulation: Probe = {
       index,
     ): boolean {
       /** Section text for this case; empty string when the response had fewer sections than cases. */
-      const section = sections[index] ?? '';
+      const section = sections[index]
+        ?? '';
       /** Whether this case's output matches its expectation exactly (whitespace-trimmed). */
-      const match = section === testCase.expected;
+      const match = section === testCase
+        .expected;
       if (!match) {
         rl.info(
           `case ${testCase.label}: expected ${JSON.stringify(testCase.expected,)}, got ${

@@ -55,14 +55,16 @@ export async function seedDataset(row: {
   maxIssuesPerRepo?: number;
 },): Promise<SeedSummary> {
   /** Namespace offset reserving the user id range from repos sharing the same root seed. */
-  const userBaseSeed = row.seed * USER_SEED_FACTOR;
+  const userBaseSeed = row.seed
+    * USER_SEED_FACTOR;
   await seedUsers({
     seed: userBaseSeed,
     count: row.userCount,
     baseTimestamp: row.baseTimestamp,
   },);
   /** Namespace offset reserving the repo id range from users sharing the same root seed. */
-  const repoBaseSeed = row.seed * REPO_SEED_FACTOR;
+  const repoBaseSeed = row.seed
+    * REPO_SEED_FACTOR;
   /** Repo id list returned from seeding; reused to derive per-repo iteration order. */
   const repoIds = await seedRepos({
     seed: repoBaseSeed,
@@ -91,7 +93,8 @@ export async function seedDataset(row: {
   }[] = [];
   for (const [index, repoId,] of repoIds.entries()) {
     /** Per-repo label id list defaulted to empty so the seeder receives a concrete array. */
-    const labels = labelsByRepo.get(repoId,) ?? [];
+    const labels = labelsByRepo.get(repoId,)
+      ?? [];
     /* oxlint-disable no-await-in-loop -- per-repo serial seeding keeps libSQL transactions linear */
     /** Phase-1 seeding result reused for the comment/issue totals and to feed phase-2. */
     const r = await seedIssuesForRepo({
@@ -99,9 +102,11 @@ export async function seedDataset(row: {
       seed: repoBaseSeed + index,
       userBaseSeed,
       userCount: row.userCount,
-      baseTimestamp: row.baseTimestamp + (index * REPO_SEED_FACTOR),
+      baseTimestamp: row.baseTimestamp
+        + (index * REPO_SEED_FACTOR),
       labelIds: labels,
-      ...(row.maxIssuesPerRepo === undefined
+      ...(row.maxIssuesPerRepo
+        === undefined
         ? {}
         : { maxIssues: row.maxIssuesPerRepo, }),
     },);
@@ -113,7 +118,8 @@ export async function seedDataset(row: {
       seed: repoBaseSeed + index,
       userBaseSeed,
       userCount: row.userCount,
-      baseTimestamp: row.baseTimestamp + (index * REPO_SEED_FACTOR),
+      baseTimestamp: row.baseTimestamp
+        + (index * REPO_SEED_FACTOR),
       issueIds: r.issueIds,
     },);
     /* oxlint-enable no-await-in-loop */
@@ -134,13 +140,27 @@ export async function seedDataset(row: {
       partial,
     ) {
       return {
-        issues: acc.issues + partial.issues,
-        comments: acc.comments + partial.comments,
-        milestones: acc.milestones + partial.milestones,
-        prs: acc.prs + partial.prs,
-        reviews: acc.reviews + partial.reviews,
-        assignees: acc.assignees + partial.assignees,
-        members: acc.members + partial.members,
+        issues: acc.issues
+          + partial
+          .issues,
+        comments: acc.comments
+          + partial
+          .comments,
+        milestones: acc.milestones
+          + partial
+          .milestones,
+        prs: acc.prs
+          + partial
+          .prs,
+        reviews: acc.reviews
+          + partial
+          .reviews,
+        assignees: acc.assignees
+          + partial
+          .assignees,
+        members: acc.members
+          + partial
+          .members,
       };
     },
     {

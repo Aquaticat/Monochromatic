@@ -65,7 +65,8 @@ export function acquireLock(): Promise<boolean> {
     server.on(
       'error',
       function handleSocketError(err: NodeJS.ErrnoException,) {
-        if (err.code === 'EADDRINUSE')
+        if (err.code
+          === 'EADDRINUSE')
           resolve(false,);
         else {
           log.error(`[lock] Socket error: ${err.message}`,);
@@ -91,7 +92,8 @@ export function acquireLock(): Promise<boolean> {
  * @returns whether `s` is one or more digits
  */
 function isAllDigits(s: string,): boolean {
-  if (s.length === 0)
+  if (s.length
+    === 0)
     return false;
   for (const c of s) {
     if ((c < '0') || (c > '9'))
@@ -127,16 +129,17 @@ export function splitOnWhitespace(s: string,): string[] {
     let tokenStart = -1;
     /** Scan cursor advanced one character at a time across `s`. */
     let idx = 0;
-    while (idx < s.length) {
+    while (idx < s
+      .length) {
       /** Current char; whitespace closes the in-progress token. */
       const c = s.charAt(idx,);
       if (
         (c === ' ')
         || (c === '\t')
-        || (c === '\n')
-        || (c === '\r')
-        || (c === '\f')
-        || (c === '\v')
+          || (c === '\n')
+          || (c === '\r')
+          || (c === '\f')
+          || (c === '\v')
       ) {
         if (tokenStart !== (-1)) {
           tokens.push(s.slice(
@@ -169,7 +172,8 @@ async function findSocketOwnerPid(): Promise<number | null> {
     'utf8',
   );
   /** First `/proc/net/unix` row whose path matches the hall-monitor abstract socket. */
-  const line = unix.split('\n',).find(function matchHallMonitor(l,) {
+  const line = unix.split('\n',)
+    .find(function matchHallMonitor(l,) {
     return l.includes('@hall-monitor',);
   },);
   if (line === undefined)

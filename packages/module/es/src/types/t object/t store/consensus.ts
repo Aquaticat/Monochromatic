@@ -58,7 +58,9 @@ export function pickMajority<TBackend = unknown,>({
       [, bucketA,],
       [, bucketB,],
     ) {
-      return bucketB.length - bucketA.length;
+      return bucketB.length
+        - bucketA
+        .length;
     },);
 
   /** Top entry from sorted buckets; falls back to empty bucket so majority check stays well-defined when no results exist. */
@@ -69,7 +71,9 @@ export function pickMajority<TBackend = unknown,>({
     ];
 
   return {
-    hasMajority: leaderBucket.length > Math.floor(totalCount / 2,),
+    hasMajority: leaderBucket.length
+      > Math
+      .floor(totalCount / 2,),
     value: leaderKey,
   };
 }
@@ -220,7 +224,8 @@ export function resolveConsensus<TBackend = unknown,>({
 
   /** Last entry in `sortedTiers`; the highest-priority cohort that gates consensus when cross-tier majority fails. */
   const highestResults = sortedTiers.at(-1,);
-  if ((highestResults === undefined) || (highestResults.length === 0))
+  if ((highestResults === undefined) || (highestResults.length
+    === 0))
     throw new Error(`(maybe sync) Store.get: no backend results for key "${key}"`,);
 
   /** Highest-tier results regrouped by serialized value, ready for majority resolution. */

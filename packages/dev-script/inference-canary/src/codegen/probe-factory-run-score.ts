@@ -116,7 +116,8 @@ export async function scoreImpl({
   /** Extracted TypeScript source from the model response */
   const rawSource = extraction.source;
   /** Source after probe-level transform, with reject flag for constraint violations */
-  const transformed = config.transformSource !== undefined
+  const transformed = config.transformSource
+    !== undefined
     ? config.transformSource(
       rawSource,
       context,
@@ -143,15 +144,18 @@ export async function scoreImpl({
     context,
   },);
   /** Perf container promise (undefined when no perfTest configured) */
-  const perfPromise = config.perfTest !== undefined
+  const perfPromise = config.perfTest
+    !== undefined
     ? runInContainerTimed({
       source,
-      input: config.perfTest.input,
+      input: config.perfTest
+        .input,
       signal: context.signal,
     },)
     : undefined;
   /** Additional run container promises (empty array when no additional runs) */
-  const additionalPromise = config.additionalRuns !== undefined
+  const additionalPromise = config.additionalRuns
+    !== undefined
     ? executeAdditionalRuns({
       source,
       runs: config.additionalRuns,
@@ -171,17 +175,20 @@ export async function scoreImpl({
     ? await additionalPromise
     : undefined;
 
-  caches.lint.set(
+  caches.lint
+    .set(
     context.label,
     lint,
   );
-  caches.container.set(
+  caches.container
+    .set(
     context.label,
     result,
   );
 
   // Cache and verify additional runs
-  if ((additionalResults !== undefined) && (config.additionalRuns !== undefined)) {
+  if ((additionalResults !== undefined) && (config.additionalRuns
+    !== undefined)) {
     cacheAdditionalResults({
       results: additionalResults,
       runs: config.additionalRuns,
@@ -203,9 +210,11 @@ export async function scoreImpl({
     return combinedScore({
       correctness: 0,
       lint,
-    },) * perfMultiplier;
+    },)
+      * perfMultiplier;
   }
-  if (result.timedOut || (result.exitCode !== 0)) {
+  if (result.timedOut
+    || (result.exitCode !== 0)) {
     rl.info(
       `container failed: exit=${String(result.exitCode,)} timedOut=${
         String(result.timedOut,)
@@ -214,7 +223,8 @@ export async function scoreImpl({
     return combinedScore({
       correctness: 0,
       lint,
-    },) * perfMultiplier;
+    },)
+      * perfMultiplier;
   }
 
   /** Main-run correctness fraction from the probe's verifier; combined below with additional-run correctness via `Math.min`. */
@@ -224,7 +234,8 @@ export async function scoreImpl({
   // every run must achieve perfect correctness for a non-zero final score
   /** Per-run correctness fractions from additional runs (empty when none configured) */
   const additionalCorrectnesses =
-    (additionalResults !== undefined) && (config.additionalRuns !== undefined)
+    (additionalResults !== undefined) && (config.additionalRuns
+      !== undefined)
       ? computeAdditionalCorrectnesses({
         results: additionalResults,
         runs: config.additionalRuns,
@@ -242,5 +253,6 @@ export async function scoreImpl({
   return combinedScore({
     correctness: overallCorrectness,
     lint,
-  },) * perfMultiplier;
+  },)
+    * perfMultiplier;
 }

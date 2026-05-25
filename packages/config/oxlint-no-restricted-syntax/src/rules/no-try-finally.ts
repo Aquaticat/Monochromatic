@@ -45,7 +45,8 @@ export const noTryFinally: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       TryStatement(node: ESTree.TryStatement,): void {
-        if (node.finalizer !== null) {
+        if (node.finalizer
+          !== null) {
           context.report({
             node,
             messageId: 'forbidden',

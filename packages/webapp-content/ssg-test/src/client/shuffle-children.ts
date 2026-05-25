@@ -53,7 +53,8 @@ function shuffleChildren(): void {
   for (const wrapper of wrappers) {
     /** Snapshot of current child order before shuffling. */
     const children = [...wrapper.children,];
-    if (children.length === 0)
+    if (children.length
+      === 0)
       continue;
 
     /** Permutation produced by attaching a random rank then sorting by it. */
@@ -68,7 +69,9 @@ function shuffleChildren(): void {
         left,
         right,
       ) {
-        return left.rank - right.rank;
+        return left.rank
+          - right
+          .rank;
       },)
       .map(function dropRank({ child, },) {
         return child;

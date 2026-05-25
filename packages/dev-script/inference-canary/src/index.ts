@@ -44,7 +44,7 @@ import {
 //region API key resolution: validates INFERENCE_VALIDATION_OPENROUTER_API_KEY before any network calls
 
 /** OpenRouter API key from environment, required for all inference calls. */
-const apiKey = process.env['INFERENCE_VALIDATION_OPENROUTER_API_KEY'];
+const apiKey = process.env.INFERENCE_VALIDATION_OPENROUTER_API_KEY;
 if ((apiKey === undefined) || (apiKey === ''))
   throw new Error('INFERENCE_VALIDATION_OPENROUTER_API_KEY not set in environment',);
 
@@ -69,7 +69,8 @@ const {
 
 //region Execution: selects probe tier (simple/fast/slow), runs canary, throws on degradation
 
-if (selectedModels.length === 0)
+if (selectedModels.length
+  === 0)
   l.info('no models selected for testing.',);
 else {
   // oxlint-disable-next-line no-nested-ternary -- three-way probe tier selection; simulation runs alongside code-gen by default
@@ -91,7 +92,8 @@ else {
     },)
     : allProbes;
 
-  if (probes.length === 0) {
+  if (probes.length
+    === 0) {
     /** Comma-separated list of all available probe names for the error message. */
     const available = allProbes
       .map(function getName(probe,): string {

@@ -39,7 +39,9 @@ export function sortRootsByLengthDesc(
     a,
     b,
   ): number {
-    return b.length - a.length;
+    return b.length
+      - a
+      .length;
   },);
   return copy;
 }

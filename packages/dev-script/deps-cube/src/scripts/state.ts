@@ -179,7 +179,8 @@ function computeExtent(
     .filter(function nonNull(value,): value is number {
       return value !== null;
     },);
-  if (values.length === 0) {
+  if (values.length
+    === 0) {
     return [
       0,
       0,
@@ -389,7 +390,9 @@ function extractStateParam(s: string,): string {
     : (function findAfterAmp(): number {
       /** Position of `&state=`; `-1` ends the search. */
       const ampIdx = s.indexOf(`&${STATE_PARAM}`,);
-      return ampIdx === (-1) ? (-1) : (ampIdx + 1 + STATE_PARAM.length);
+      return ampIdx === (-1) ? (-1) : (ampIdx + 1
+        + STATE_PARAM
+        .length);
     })();
   if (payloadStart === (-1))
     return '';

@@ -56,7 +56,8 @@ export async function dispatchLspFeatureMessage(
     readonly dirWatcher: DirWatcher | null;
   },
 ): Promise<boolean> {
-  if (parsed.type === 'gotoDefinition') {
+  if (parsed.type
+    === 'gotoDefinition') {
     if (lspManager === null) {
       return replyEmpty({
         peer,
@@ -100,7 +101,8 @@ export async function dispatchLspFeatureMessage(
     },);
     return true;
   }
-  if (parsed.type === 'findReferences') {
+  if (parsed.type
+    === 'findReferences') {
     if (lspManager === null) {
       return replyEmpty({
         peer,
@@ -127,7 +129,8 @@ export async function dispatchLspFeatureMessage(
     },);
     return true;
   }
-  if (parsed.type === 'selectionRange') {
+  if (parsed.type
+    === 'selectionRange') {
     if (lspManager === null) {
       return replyEmpty({
         peer,
@@ -157,7 +160,8 @@ export async function dispatchLspFeatureMessage(
     },);
     return true;
   }
-  if (parsed.type === 'prepareRename') {
+  if (parsed.type
+    === 'prepareRename') {
     if (lspManager === null) {
       return replyEmpty({
         peer,
@@ -197,7 +201,8 @@ export async function dispatchLspFeatureMessage(
     },);
     return true;
   }
-  if (parsed.type === 'rename') {
+  if (parsed.type
+    === 'rename') {
     if (lspManager === null) {
       return replyEmpty({
         peer,

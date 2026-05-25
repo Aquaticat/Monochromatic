@@ -15,7 +15,8 @@ import {
 } from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Vertical padding for entry labels and summaries in `rem`: 0.125 = 1 / (2 * 2 * 2). */
-const ENTRY_PADDING_BLOCK = 1 / (2 * 2 * 2);
+const ENTRY_PADDING_BLOCK = 1 / (2 * 2
+  * 2);
 
 /** Horizontal padding for entry labels and summaries in `rem`: 0.5 = 1 / 2. */
 const ENTRY_PADDING_INLINE = 1 / 2;
@@ -55,9 +56,11 @@ export const ENTRY_STYLES: string = [
     decls: {
       'background-color': cssVar('tree-selected-bg',),
       'outline-style': 'dashed',
-      'outline-width': cssRem(1 / (2 * 2 * 2),),
+      'outline-width': cssRem(1 / (2 * 2
+        * 2),),
       'outline-color': cssVar('fg',),
-      'outline-offset': cssRem(-(1 / (2 * 2 * 2)),),
+      'outline-offset': cssRem(-(1 / (2 * 2
+        * 2)),),
     },
   },),
   $({

@@ -209,7 +209,8 @@ export function createWriteBuffer({
    * ```
    */
   function clearTimer(): void {
-    if (state.timerId !== null) {
+    if (state.timerId
+      !== null) {
       clearTimeout(state.timerId,);
       state.timerId = null;
     }
@@ -227,14 +228,16 @@ export function createWriteBuffer({
    */
   async function flushOnce(): Promise<void> {
     clearTimer();
-    if (queue.size === 0)
+    if (queue.size
+      === 0)
       return;
     /** Snapshot of pending items; re-entry from `enqueue` repopulates `queue`. */
     const items: StoragePutItem[] = [...queue.values(),];
     queue.clear();
     // Bound concurrency: when we have already saturated the in-flight
     // batches, await one before kicking off the next.
-    while (inFlight.size >= concurrency) {
+    while (inFlight.size
+      >= concurrency) {
       // oxlint-disable-next-line no-await-in-loop -- explicit serialisation under saturation
       await Promise.race(inFlight,);
     }
@@ -263,7 +266,8 @@ export function createWriteBuffer({
    * ```
    */
   function scheduleTimer(): void {
-    if (state.timerId !== null)
+    if (state.timerId
+      !== null)
       return;
     state.timerId = setTimeout(
       function timerFlush() {
@@ -285,7 +289,8 @@ export function createWriteBuffer({
         item.key,
         item,
       );
-      if (queue.size >= flushAtItems) {
+      if (queue.size
+        >= flushAtItems) {
         // Trigger the size-based flush; `flushOnce` clears the timer.
         detach(flushOnce(),);
         return;

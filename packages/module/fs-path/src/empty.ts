@@ -153,7 +153,8 @@ export async function removeEmptyFilesInDir(path: string,): Promise<string> {
           fullPath,
           'utf8',
         );
-        if (content.trim() === '') {
+        if (content.trim()
+          === '') {
           l.debug(`Removing empty file ${fullPath}`,);
           await rm(
             fullPath,

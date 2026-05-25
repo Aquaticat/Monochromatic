@@ -70,7 +70,8 @@ export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly s
   /** Input cursor; multi-character constructs advance by 2 to skip the escaped second char. */
   let i = 0;
 
-  while (i < exec.length) {
+  while (i < exec
+    .length) {
     /** Current input character, scoped to the loop iteration. */
     const ch = exec[i];
     if (ch === undefined)
@@ -82,12 +83,15 @@ export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly s
         i++;
         continue;
       }
-      if ((ch === '\\') && ((i + 1) < exec.length)) {
+      if ((ch === '\\') && ((i + 1) < exec
+        .length)) {
         /** Lookahead char for the quoted-backslash escape branch. */
         const next = exec[i + 1];
         if (next === undefined)
           break; // unreachable (length checked above)
-        if ((next === '"') || (next === '`') || (next === '$') || (next === '\\')) {
+        if ((next === '"') || (next === '`')
+          || (next === '$')
+          || (next === '\\')) {
           current += next;
           i += 2;
           continue;
@@ -105,7 +109,8 @@ export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly s
     }
 
     if ((ch === ' ') || (ch === '\t')) {
-      if (current.length > 0) {
+      if (current.length
+        > 0) {
         tokens.push(current,);
         current = '';
       }
@@ -119,7 +124,8 @@ export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly s
     }
 
     //region % field code stripping
-    if ((ch === '%') && ((i + 1) < exec.length)) {
+    if ((ch === '%') && ((i + 1) < exec
+      .length)) {
       /** Lookahead char for the `%` field-code branch. */
       const next = exec[i + 1];
       if (next === undefined)
@@ -145,7 +151,8 @@ export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly s
     return null;
   }
 
-  if (current.length > 0)
+  if (current.length
+    > 0)
     tokens.push(current,);
 
   l.debug(`tokenized: ${JSON.stringify(tokens,)}`,);

@@ -40,7 +40,8 @@ export function atomicPush(args: readonly string[],): readonly string[] {
   /** Position of the `push` (or other) subcommand within args. */
   const { subcommandIndex, } = parseGlobalOptions(args,);
 
-  if (args[subcommandIndex] !== 'push')
+  if (args[subcommandIndex]
+    !== 'push')
     return args;
 
   /** Tagged logger for the atomic-push rule. */

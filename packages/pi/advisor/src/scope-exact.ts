@@ -41,11 +41,15 @@ export function findExactModelReferenceMatch(
   const normalizedReference = trimmedReference.toLowerCase();
   /** Canonical slug matches. */
   const canonicalMatches = availableModels.filter(function matchesCanonical(model,) {
-    return canonicalSlug(model,).toLowerCase() === normalizedReference;
+    return canonicalSlug(model,)
+      .toLowerCase()
+      === normalizedReference;
   },);
-  if (canonicalMatches.length === 1)
+  if (canonicalMatches.length
+    === 1)
     return canonicalMatches[0];
-  if (canonicalMatches.length > 1)
+  if (canonicalMatches.length
+    > 1)
     return undefined;
 
   /** Match provider/model form before bare id. */
@@ -58,9 +62,12 @@ export function findExactModelReferenceMatch(
 
   /** Bare id matches. */
   const idMatches = availableModels.filter(function matchesId(model,) {
-    return model.id.toLowerCase() === normalizedReference;
+    return model.id
+      .toLowerCase()
+      === normalizedReference;
   },);
-  return idMatches.length === 1 ? idMatches[0] : undefined;
+  return idMatches.length
+    === 1 ? idMatches[0] : undefined;
 }
 
 //endregion Public API
@@ -106,10 +113,17 @@ function matchProviderModelReference(
 
   /** Exact provider and model id matches. */
   const providerMatches = availableModels.filter(function matchesProvider(model,) {
-    return (model.provider.toLowerCase() === provider.toLowerCase())
-      && (model.id.toLowerCase() === modelId.toLowerCase());
+    return (model.provider
+      .toLowerCase()
+      === provider
+      .toLowerCase())
+      && (model.id
+        .toLowerCase()
+        === modelId
+        .toLowerCase());
   },);
-  if (providerMatches.length === 1)
+  if (providerMatches.length
+    === 1)
     return providerMatches[0];
   return undefined;
 }

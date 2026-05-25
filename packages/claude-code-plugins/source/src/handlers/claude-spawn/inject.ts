@@ -44,7 +44,9 @@ function formatSpawnResult(state: SpawnState,): string {
     `Spawned Claude session completed (spawnId: ${state.spawnId}):`,
     `Session ID: ${state.sessionId}`,
     `Transcript: ${state.transcriptPath}`,
-    state.lastMessage.length > 0
+    state.lastMessage
+      .length
+      > 0
       ? `Last assistant message:\n${state.lastMessage}`
       : 'No assistant message was produced.',
   ]
@@ -132,10 +134,12 @@ function checkCompletedChildren(
       /** Parsed spawn state used to filter by parent session and stopped status. */
       const state = parseHookJson<SpawnState>(raw,);
 
-      if (state.parentSessionId !== parentSessionId)
+      if (state.parentSessionId
+        !== parentSessionId)
         continue;
 
-      if (state.status !== 'stopped')
+      if (state.status
+        !== 'stopped')
         continue;
 
       if (consume) {
@@ -158,7 +162,8 @@ function checkCompletedChildren(
     }
   }
 
-  if (results.length === 0)
+  if (results.length
+    === 0)
     return null;
 
   return results.join('\n\n---\n\n',);

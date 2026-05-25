@@ -16,7 +16,9 @@ import { $ as css, } from './css.ts';
 const CHILDREN_INDENT = 1 + (1 / 2);
 
 /** Border width for task children separator in rem (1/8). */
-const CHILDREN_BORDER = 1 / 2 / 2 / 2;
+const CHILDREN_BORDER = 1 / 2
+  / 2
+  / 2;
 
 /** Padding for task children in rem (3/4). */
 const CHILDREN_PADDING = (1 / 2) + ((1 / 2) / 2);

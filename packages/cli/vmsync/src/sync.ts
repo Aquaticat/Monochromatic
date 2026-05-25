@@ -87,11 +87,13 @@ export async function syncFromKvm(name: string,): Promise<void> {
   /** Regions at depth 0 with actual data: these were written during the boot session. */
   const changedRegions: readonly QemuMapRegion[] = regions.filter(
     function isOverlayData(r,) {
-      return (r.depth === 0) && r.data;
+      return (r.depth === 0) && r
+        .data;
     },
   );
 
-  if (changedRegions.length === 0)
+  if (changedRegions.length
+    === 0)
     rl.info('no blocks changed during boot, skipping sync',);
   else {
     rl.info(`${String(changedRegions.length,)} regions changed, patching vhdx via NBD`,);
@@ -119,8 +121,10 @@ export async function syncFromKvm(name: string,): Promise<void> {
 
   /** Current config to update with new state. */
   const config = await readConfig(name,);
-  config.state.synced = true;
-  config.state.checksums = {
+  config.state
+    .synced = true;
+  config.state
+    .checksums = {
     qcow2: qcow2Hash,
     vhdx: vhdxHash,
   };
@@ -242,9 +246,13 @@ export async function syncFromHyperv(name: string,): Promise<void> {
   /** Post-boot checksum to compare against stored value. */
   const newVhdxHash = await checksum(vhdxPath,);
 
-  if (newVhdxHash === config.state.checksums.vhdx) {
+  if (newVhdxHash === config
+    .state
+    .checksums
+    .vhdx) {
     rl.info('vhdx unchanged, skipping sync',);
-    config.state.synced = true;
+    config.state
+      .synced = true;
     await writeConfig({
       name,
       config,
@@ -270,8 +278,10 @@ export async function syncFromHyperv(name: string,): Promise<void> {
   /** Updated qcow2 checksum after conversion. */
   const newQcow2Hash = await checksum(qcow2Path,);
 
-  config.state.synced = true;
-  config.state.checksums = {
+  config.state
+    .synced = true;
+  config.state
+    .checksums = {
     qcow2: newQcow2Hash,
     vhdx: newVhdxHash,
   };
@@ -306,15 +316,20 @@ export async function syncVm(name: string,): Promise<void> {
   /** Current config to determine last boot hypervisor. */
   const config = await readConfig(name,);
 
-  if (config.state.synced) {
+  if (config.state
+    .synced) {
     rl.info(`"${name}" is already synced`,);
     console.log(`"${name}" is already synced`,);
     return;
   }
 
-  if (config.state.lastBootHypervisor === 'kvm')
+  if (config.state
+    .lastBootHypervisor
+    === 'kvm')
     await syncFromKvm(name,);
-  else if (config.state.lastBootHypervisor === 'hyperv')
+  else if (config.state
+    .lastBootHypervisor
+    === 'hyperv')
     await syncFromHyperv(name,);
   else {
     throw new Error(

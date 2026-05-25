@@ -57,7 +57,8 @@ function resolvePort(): number {
   /** Highest-priority source: explicit `--port=` flag. */
   const argumentPort = getArgumentValue('port',);
   /** Mid-priority source: `PORT` env var when no flag is given. */
-  const environmentPort = process.env.PORT;
+  const environmentPort = process.env
+    .PORT;
   /** First-found source; `undefined` falls through to the default port. */
   const rawPort = argumentPort ?? environmentPort;
   if (rawPort === undefined)

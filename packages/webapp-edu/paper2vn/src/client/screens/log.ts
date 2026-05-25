@@ -34,9 +34,11 @@ function mount(root: HTMLElement,): void {
   /** Persona display name, used to label persona lines. */
   const ruka = getCharacterName('ruka',);
   /** Log entries from the active save, defaulting to empty when none. */
-  const entries = save?.log ?? [];
+  const entries = save?.log
+    ?? [];
   /** Rendered row nodes, or an empty-state placeholder when no entries. */
-  const rows = entries.length === 0
+  const rows = entries.length
+    === 0
     ? [
       el({
         tag: 'p',
@@ -53,7 +55,8 @@ function mount(root: HTMLElement,): void {
             tag: 'div',
             attrs: { class: 'speaker-name', },
             children: [
-              entry.speaker === 'persona' ? ruka : ll.speakerYou(),
+              entry.speaker
+                === 'persona' ? ruka : ll.speakerYou(),
             ],
           },),
           el({

@@ -79,7 +79,8 @@ export function groupByName(posts: readonly Post[],): Record<string, Post[]> {
  */
 export function allTags(posts: readonly Post[],): string[] {
   return [...new Set(posts.flatMap(function getTags(post,) {
-    return post.data.tags;
+    return post.data
+      .tags;
   },),),];
 }
 
@@ -104,7 +105,9 @@ export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
       return [
         tag,
         posts.filter(function hasTag(post,) {
-          return post.data.tags.includes(tag,);
+          return post.data
+            .tags
+            .includes(tag,);
         },),
       ];
     },),
@@ -135,7 +138,8 @@ export function groupByLangThenTag(
   const byLang = groupByLang(posts,);
 
   return Object.fromEntries(
-    Object.entries(byLang,).map(function langEntry([lang, langPosts,],) {
+    Object.entries(byLang,)
+      .map(function langEntry([lang, langPosts,],) {
       return [
         lang,
         groupByTag(langPosts,),

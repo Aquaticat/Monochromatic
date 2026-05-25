@@ -74,13 +74,16 @@ export function verifySolutionSet({
     },);
   /** Whether the solution count matches the expected or minimum threshold */
   const countOk = expectedCount !== undefined
-    ? grids.length === expectedCount
-    : grids.length >= minCount;
+    ? grids.length
+      === expectedCount
+    : grids.length
+      >= minCount;
   if (!countOk)
     return false;
   /** Whether every parsed grid is a valid complete sudoku matching the original clues */
   const allValid = grids.every(function validateGrid(grid,): boolean {
-    return isValidSolution(grid,) && matchesClues({
+    return isValidSolution(grid,)
+      && matchesClues({
       grid,
       clues,
     },);
@@ -90,5 +93,7 @@ export function verifySolutionSet({
   return new Set(grids.map(function toStr(grid,): string {
     return gridToString(grid,);
   },),)
-    .size === grids.length;
+    .size
+    === grids
+    .length;
 }

@@ -25,7 +25,8 @@ function computeLineStarts({ lines, }: { readonly lines: readonly string[]; },):
   let cumulativeOffset = 0;
   for (const line of lines) {
     lineStarts.push(cumulativeOffset,);
-    cumulativeOffset += line.length + 1;
+    cumulativeOffset += line.length
+      + 1;
   }
   return lineStarts;
 }
@@ -111,7 +112,9 @@ export function collectHighlightRanges({
         const rangeEnd = lineIndex === endLine ? to - lineStart : lineText.length;
 
         /** Visible character count in the text node; used to clamp range bounds against the actual DOM content. */
-        const nodeLength = textNode.textContent?.length ?? 0;
+        const nodeLength = textNode.textContent
+          ?.length
+          ?? 0;
         if (rangeStart >= nodeLength)
           continue;
 

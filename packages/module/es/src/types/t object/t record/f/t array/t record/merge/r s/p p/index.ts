@@ -58,10 +58,12 @@ export type { ObjectsMergeRules, } from './rules.ts';
   objs: TObjects;
   rules?: Partial<ObjectsMergeRules>;
 },): UnknownRecord {
-  if (objs.length === 0)
+  if (objs.length
+    === 0)
     throw new TypeError('objs array cannot be empty',);
 
-  if (objs.length === 1) {
+  if (objs.length
+    === 1) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single-element array guaranteed by length check
     return objs[0] as UnknownRecord;
   }
@@ -151,7 +153,8 @@ function resolveProperty({
   }
 
   // Reject mixed types for the same property
-  if (valuesByType.size > 1) {
+  if (valuesByType.size
+    > 1) {
     throw new TypeError(
       `Cannot merge property "${key}": mixed types found: ${
         [...valuesByType.keys(),].join(', ',)
@@ -173,7 +176,8 @@ function resolveProperty({
    */
   const [valueType, values,] = firstEntry;
 
-  if (values.length === 1)
+  if (values.length
+    === 1)
     return values[0];
 
   // Check for consensus using structuredClone round-trip for deep equality
@@ -194,7 +198,9 @@ function resolveProperty({
        * Deep clone of the value under test; paired with {@link clonedFirst} for structural comparison.
        */
       const clonedValue = structuredClone(value,);
-      return JSON.stringify(clonedFirst,) === JSON.stringify(clonedValue,);
+      return JSON.stringify(clonedFirst,)
+        === JSON
+        .stringify(clonedValue,);
     }
     catch {
       // Fall back to strict equality for non-cloneable values (functions, symbols)

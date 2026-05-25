@@ -85,7 +85,8 @@ export async function runSecondPass({
   lastCompletionText,
   fixContext,
 }: RunSecondPassOptions,): Promise<SecondPassResult | undefined> {
-  if (probe.buildFixPrompt === undefined)
+  if (probe.buildFixPrompt
+    === undefined)
     return undefined;
 
   /** Probe-specific logger for pass2 messages. */

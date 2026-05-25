@@ -105,7 +105,8 @@ export function registerRoutes({
               const isNotFound = (error instanceof Error)
                 && ('code' in error)
                 // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- guarded by instanceof Error and 'code' in error above
-                && ((error as NodeJS.ErrnoException).code === 'ENOENT');
+                && ((error as NodeJS.ErrnoException).code
+                  === 'ENOENT');
               if (isNotFound)
                 return undefined;
               throw error;
@@ -125,7 +126,8 @@ export function registerRoutes({
     defineHandler(async function handleRawFile(event,) {
       /** Parsed query string carrying `token` (auth) and `path` (target file). */
       const query = getQuery(event,);
-      if (query.token !== authToken) {
+      if (query.token
+        !== authToken) {
         return new Response(
           'Unauthorized',
           { status: 401, },

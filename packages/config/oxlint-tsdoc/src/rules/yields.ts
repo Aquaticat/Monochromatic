@@ -89,7 +89,9 @@ function createFunctionTsdocVisitor({
  * @returns true when yielded values are documented
  */
 function hasYieldsTag(result: TsdocParseResult,): boolean {
-  return result.comment.value.includes('@yields',);
+  return result.comment
+    .value
+    .includes('@yields',);
 }
 
 /**

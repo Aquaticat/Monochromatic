@@ -83,7 +83,8 @@ function extractMetadata(
   }
 
   /** Metadata-only slice, trailing whitespace removed for tidy display. */
-  const trimmed = stderr.slice(startIdx,).trimEnd();
+  const trimmed = stderr.slice(startIdx,)
+    .trimEnd();
   probeLog.info(`probed: ${path}`,);
   return trimmed;
 }
@@ -119,7 +120,8 @@ export async function probeMedia({ path, }: { readonly path: string; },): Promis
      * ffprobe often exits non-zero (e.g. for image files).
      * nano-spawn's SubprocessError still carries the captured stderr.
      */
-    if ((error !== null) && ((typeof error) === 'object') && ('stderr' in error)) {
+    if ((error !== null) && ((typeof error) === 'object')
+      && ('stderr' in error)) {
       /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- narrowed by 'stderr' in check */
       /** Stderr captured by nano-spawn on non-zero exit; still contains the metadata we want. */
       const { stderr, } = error as { readonly stderr: string; };

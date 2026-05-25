@@ -122,25 +122,29 @@ function matchesExclude({
   readonly combination: Combination;
   readonly exclude: ExcludeEntry;
 },): boolean {
-  if ((exclude.os !== undefined) && (!testMatcher({
+  if ((exclude.os
+    !== undefined) && (!testMatcher({
     matcher: exclude.os,
     value: combination.os,
   },))) {
     return false;
   }
-  if ((exclude.user !== undefined) && (!testMatcher({
+  if ((exclude.user
+    !== undefined) && (!testMatcher({
     matcher: exclude.user,
     value: combination.user,
   },))) {
     return false;
   }
-  if ((exclude.runtime !== undefined) && (!testMatcher({
+  if ((exclude.runtime
+    !== undefined) && (!testMatcher({
     matcher: exclude.runtime,
     value: combination.runtime,
   },))) {
     return false;
   }
-  if ((exclude.file !== undefined) && (!testMatcher({
+  if ((exclude.file
+    !== undefined) && (!testMatcher({
     matcher: exclude.file,
     value: combination.file,
   },))) {
@@ -165,7 +169,8 @@ function applyExcludes({
   readonly combinations: readonly Combination[];
   readonly excludes: readonly ExcludeEntry[];
 },): readonly Combination[] {
-  if (excludes.length === 0)
+  if (excludes.length
+    === 0)
     return combinations;
 
   return combinations.filter(function isNotExcluded(combination,) {
@@ -235,10 +240,12 @@ function executeCombination({
   /** Protocol drives the backend choice; parsed once and inspected by each branch. */
   const parsed = parseOs(combination.os,);
 
-  if (parsed.protocol === 'host')
+  if (parsed.protocol
+    === 'host')
     return runHost({ combination, },);
 
-  if (parsed.protocol === 'container') {
+  if (parsed.protocol
+    === 'container') {
     return runContainer({
       combination,
       monorepoRoot,
@@ -303,7 +310,8 @@ export async function matrix({
   for (const osSpec of os) {
     /** Pre-validates the protocol up-front; failing here surfaces config errors before any work. */
     const parsed = parseOs(osSpec,);
-    if (parsed.protocol === 'vm') {
+    if (parsed.protocol
+      === 'vm') {
       throw new Error(
         `vm: protocol not yet implemented (in "${osSpec}"). Use container: or host: protocol instead.`,
       );
@@ -350,7 +358,9 @@ export async function matrix({
   l.info(
     `${String(combinations.length,)} combination(s) `
       + `(${String(allCombinations.length,)} total, ${
-        String(allCombinations.length - combinations.length,)
+        String(allCombinations.length
+          - combinations
+          .length,)
       } excluded)`,
   );
   //endregion Generate and filter combinations

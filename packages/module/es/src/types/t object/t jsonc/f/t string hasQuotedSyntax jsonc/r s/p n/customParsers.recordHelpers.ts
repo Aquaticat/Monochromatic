@@ -75,7 +75,8 @@ export function expectRecordSeparatorOrEnd(
   /** Leading comments/whitespace after previous member. */
   const after = startsWithComment({ value: tail, },);
   /** Tail trimmed to detect ',' or '}' token. */
-  const rc = after.remainingContent.trimStart() as FragmentStringJsonc;
+  const rc = after.remainingContent
+    .trimStart() as FragmentStringJsonc;
 
   if (rc.startsWith('}',)) {
     return {
@@ -90,7 +91,8 @@ export function expectRecordSeparatorOrEnd(
     /** Comments/whitespace before the next potential member. */
     const next = startsWithComment({ value: afterComma, },);
     /** Start of the next token inside the record. */
-    const nextToken = next.remainingContent.trimStart() as FragmentStringJsonc;
+    const nextToken = next.remainingContent
+      .trimStart() as FragmentStringJsonc;
     if (nextToken.startsWith('}',)) {
       return {
         kind: 'end',
@@ -184,7 +186,8 @@ export function expectColonAfterKey(
   /** Comments/whitespace after key before the colon. */
   const afterKeyLead = startsWithComment({ value: tail, },);
   /** Tail starting at ':' or error position. */
-  const rc = afterKeyLead.remainingContent.trimStart() as FragmentStringJsonc;
+  const rc = afterKeyLead.remainingContent
+    .trimStart() as FragmentStringJsonc;
   if (!rc.startsWith(':',))
     throw new Error("malformed jsonc object: expected ':' after key",);
   return rc.slice(':'.length,) as FragmentStringJsonc;

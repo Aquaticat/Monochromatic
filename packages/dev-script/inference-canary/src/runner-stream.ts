@@ -85,7 +85,8 @@ export async function streamCompletion({
   signal,
 }: StreamCompletionOptions,): Promise<CompletionResult> {
   // Fast-path: if the signal is already aborted, skip the network request entirely.
-  if ((signal !== undefined) && signal.aborted) {
+  if ((signal !== undefined) && signal
+    .aborted) {
     throw new DOMException(
       'Probe timeout signal already aborted before stream start',
       'AbortError',
@@ -121,11 +122,14 @@ export async function streamCompletion({
   const extraBody: Record<string, unknown> = {
     ...(config.reasoning ? { reasoning: { enabled: true, }, } : {}),
     // 'high' is OpenRouter's server-side default, so skip sending it to reduce payload noise
-    ...(config.verbosity !== 'high' ? { verbosity: config.verbosity, } : {}),
+    ...(config.verbosity
+      !== 'high' ? { verbosity: config.verbosity, } : {}),
   };
 
   /** Async iterator over chat completion chunks; awaited per-chunk in the for-await below. */
-  const stream = await client.chat.completions.create(
+  const stream = await client.chat
+    .completions
+    .create(
     {
       model: config.model,
       max_tokens: config.maxTokens,
@@ -182,7 +186,9 @@ export async function streamCompletion({
       const {
         delta,
       } = choice;
-      if ((delta.content !== undefined) && (delta.content !== null))
+      if ((delta.content
+        !== undefined) && (delta.content
+        !== null))
         chunks.push(delta.content,);
 
       // OpenRouter surfaces reasoning via `reasoning_details` on the delta: an array of
@@ -191,29 +197,34 @@ export async function streamCompletion({
       // The field is not typed in OpenAI SDK v6.22, so access it dynamically.
       /** OpenRouter's untyped reasoning array on the delta; mined for `reasoning.text`/`reasoning.summary` items. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenRouter extends the SDK delta with reasoning_details
-      const reasoningDetails = (delta as Record<string, unknown>)['reasoning_details'];
+      const reasoningDetails = (delta as Record<string, unknown>).reasoning_details;
       if (Array.isArray(reasoningDetails,)) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenRouter reasoning_details items have known shape
         for (const detail of reasoningDetails as readonly Record<string, unknown>[]) {
-          if ((detail['type'] === 'reasoning.text')
-            && ((typeof detail['text']) === 'string'))
+          if ((detail.type
+            === 'reasoning.text')
+            && ((typeof detail.text) === 'string'))
           {
-            reasoningChunks.push(detail['text'],);
+            reasoningChunks.push(detail.text,);
           }
-          else if ((detail['type'] === 'reasoning.summary')
-            && ((typeof detail['summary']) === 'string'))
+          else if ((detail.type
+            === 'reasoning.summary')
+            && ((typeof detail.summary) === 'string'))
           {
-            reasoningChunks.push(detail['summary'],);
+            reasoningChunks.push(detail.summary,);
           }
         }
       }
 
-      if (choice.finish_reason !== null)
+      if (choice.finish_reason
+        !== null)
         lastFinishReason = choice.finish_reason;
     }
 
     // Usage arrives on the final chunk when stream_options.include_usage is set.
-    if ((chunk.usage !== undefined) && (chunk.usage !== null))
+    if ((chunk.usage
+      !== undefined) && (chunk.usage
+      !== null))
       lastUsage = chunk.usage;
   }
 
@@ -223,7 +234,8 @@ export async function streamCompletion({
   );
 
   /** End-to-end stream duration (ms) from request start to last chunk. */
-  const totalMs = Date.now() - startMs;
+  const totalMs = Date.now()
+    - startMs;
   /** Bundled timing snapshot logged once and stored on the final result for the report. */
   const timing: StreamTiming = {
     timeToFirstChunkMs: firstChunkMs,

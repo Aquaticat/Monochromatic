@@ -60,7 +60,8 @@ export function prepareAdvisorArguments(
   if ((args === undefined) || (args === null))
     return {};
   if ((typeof args) === 'string')
-    return args.trim() === '' ? {} : { model: args, };
+    return args.trim()
+      === '' ? {} : { model: args, };
   if ((typeof args) !== 'object')
     throw new Error('advisor: arguments must be an object with optional model field',);
 
@@ -70,14 +71,18 @@ export function prepareAdvisorArguments(
     .filter(function isExtraKey(key,) {
     return key !== 'model';
   },);
-  if (extraKeys.length > 0)
+  if (extraKeys.length
+    > 0)
     throw new Error(`advisor: unsupported argument fields: ${extraKeys.join(', ',)}`,);
 
-  if ((!('model' in args)) || (args.model === undefined))
+  if ((!('model' in args)) || (args.model
+    === undefined))
     return {};
   if ((typeof args.model) !== 'string')
     throw new Error('advisor: model must be a string when provided',);
-  return args.model.trim() === '' ? {} : { model: args.model, };
+  return args.model
+    .trim()
+    === '' ? {} : { model: args.model, };
 }
 
 //endregion Argument normalization

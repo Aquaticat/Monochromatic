@@ -20,7 +20,9 @@ import {
 import { TASK_DETAIL_INTERACTIVE_STYLES, } from './task-detail-styles-interactive.ts';
 
 /** Focus outline offset in rem (-1/8). */
-const FOCUS_OFFSET = -(1 / 2 / 2 / 2);
+const FOCUS_OFFSET = -(1 / 2
+  / 2
+  / 2);
 
 /** SVG stroke width for close icon. */
 const STROKE_WIDTH = 4;
@@ -35,7 +37,8 @@ const FONT_WEIGHT_NORMAL = 400;
 const FULL_PERCENT = 100;
 
 /** Padding for title-input and description blocks in rem (1/4). */
-const SMALL_PADDING = 1 / 2 / 2;
+const SMALL_PADDING = 1 / 2
+  / 2;
 
 /** Padding for description input in rem (1/2). */
 const DESC_PADDING = 1 / 2;

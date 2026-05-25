@@ -147,7 +147,8 @@ catch (error) {
           .with(
             false,
             function exitWithCode(): void {
-              process.exitCode = subprocessError.exitCode ?? 1;
+              process.exitCode = subprocessError.exitCode
+                ?? 1;
             },
           )
           .with(

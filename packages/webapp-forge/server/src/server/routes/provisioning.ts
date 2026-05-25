@@ -45,8 +45,11 @@ export async function provisionUser(row: ProvisionUserRow,): Promise<void> {
   await insertUser({
     id: row.id,
     login: row.login,
-    email: row.email ?? null,
-    createdAt: row.createdAt ?? Date.now(),
+    email: row.email
+      ?? null,
+    createdAt: row.createdAt
+      ?? Date
+      .now(),
   },);
 }
 
@@ -65,6 +68,8 @@ export async function provisionRepo(row: ProvisionRepoRow,): Promise<void> {
     id: row.id,
     ownerId: row.ownerId,
     name: row.name,
-    createdAt: row.createdAt ?? Date.now(),
+    createdAt: row.createdAt
+      ?? Date
+      .now(),
   },);
 }

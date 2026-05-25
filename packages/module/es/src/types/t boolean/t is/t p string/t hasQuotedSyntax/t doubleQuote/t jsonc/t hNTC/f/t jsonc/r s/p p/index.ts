@@ -48,7 +48,9 @@ export function $(value: Jsonc,): value is HasNoTrailingCommas {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- narrowing computed end index to branded Int type */
     /** Match end offset narrowed into the branded Int domain. */
     const endInclusive = (potentialTrailingComma
-      .index + potentialTrailingComma[0].length) as Int;
+      .index
+      + potentialTrailingComma[0]
+      .length) as Int;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     /* oxlint-disable typescript/no-unsafe-type-assertion -- constructing branded RangeInt from verified Int values */
     /** Range covering the candidate trailing-comma run for in-quotes lookup. */
@@ -66,7 +68,10 @@ export function $(value: Jsonc,): value is HasNoTrailingCommas {
 
     // return false for the entire fn on not-in-quotes
 
-    if (rangeIntWInQuotesInfo.__brand.inQuotes?.get(value,) === false)
+    if (rangeIntWInQuotesInfo.__brand
+      .inQuotes
+      ?.get(value,)
+      === false)
       return false;
   }
 

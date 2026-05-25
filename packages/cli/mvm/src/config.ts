@@ -95,7 +95,9 @@ function isAlphaNum(c: string,): boolean {
  * ```
  */
 function isNameBodyChar(c: string,): boolean {
-  return isAlphaNum(c,) || (c === '_') || (c === '-');
+  return isAlphaNum(c,)
+    || (c === '_')
+    || (c === '-');
 }
 
 /**
@@ -117,7 +119,8 @@ function isNameBodyChar(c: string,): boolean {
  * ```
  */
 function isValidVmName(name: string,): boolean {
-  if (name.length === 0)
+  if (name.length
+    === 0)
     return false;
   if (!isAlphaNum(name.charAt(0,),))
     return false;

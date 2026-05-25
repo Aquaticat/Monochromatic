@@ -65,7 +65,8 @@ const SILENT_LEVELS: ReadonlySet<string> = new Set([
  */
 function detectVerbose(): boolean {
   try {
-    if (((typeof process) !== 'undefined') && (process.env['DEBUG'] === 'true'))
+    if (((typeof process) !== 'undefined') && (process.env.DEBUG
+      === 'true'))
       return true;
   }
   catch {
@@ -74,8 +75,11 @@ function detectVerbose(): boolean {
 
   try {
     if (((typeof process) !== 'undefined')
-      && Array.isArray(process.argv,)
-      && process.argv.includes('--verbose',))
+      && Array
+      .isArray(process.argv,)
+      && process
+      .argv
+      .includes('--verbose',))
     {
       return true;
     }
@@ -86,7 +90,8 @@ function detectVerbose(): boolean {
 
   try {
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- import.meta.env may not exist in all runtimes
-    if (import.meta?.env?.['DEBUG'] === 'true')
+    if (import.meta?.env?.DEBUG
+      === 'true')
       return true;
   }
   catch {
@@ -247,8 +252,11 @@ function groupRuns(records: readonly LogRecord[],): Run[] {
     ) {
       /** Trailing run being extended; new same-level records append onto it, otherwise a fresh run is opened. */
       const tail = runs.at(-1,);
-      if ((tail !== undefined) && (tail.level === record.level)) {
-        tail.records.push(record,);
+      if ((tail !== undefined) && (tail.level
+        === record
+        .level)) {
+        tail.records
+          .push(record,);
         return runs;
       }
       runs.push({
@@ -275,7 +283,8 @@ function groupRuns(records: readonly LogRecord[],): Run[] {
  */
 function flushBuffer(): void {
   state.scheduled = false;
-  if (buffer.length === 0)
+  if (buffer.length
+    === 0)
     return;
 
   /**
@@ -358,7 +367,8 @@ function write(record: LogRecord,): void {
   if (!state.available)
     return;
 
-  if ((!getVerbose()) && SILENT_LEVELS.has(record.level,))
+  if ((!getVerbose()) && SILENT_LEVELS
+    .has(record.level,))
     return;
 
   buffer.push(record,);

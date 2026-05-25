@@ -69,7 +69,9 @@ export async function spawnOxlint({
     /** Captured stdout from the zero-exit run; non-empty when diagnostics happen to be present at warning level. */
     const { stdout, } = result;
 
-    if (stdout.trim().length === 0) {
+    if (stdout.trim()
+      .length
+      === 0) {
       console.error('[mcp-nvim] oxlint produced no output (exit code 0)',);
       return new Map();
     }
@@ -94,7 +96,9 @@ export async function spawnOxlint({
     {
       /** Captured stdout from the failed run; oxlint emits diagnostics here even when exiting non-zero. */
       const stdout = String(err.stdout,);
-      if (stdout.trim().length > 0) {
+      if (stdout.trim()
+        .length
+        > 0) {
         /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- oxlint JSON output conforms to OxlintJsonOutput schema */
         /** Parsed oxlint JSON output from the failed run; same schema as the success path. */
         const parsed = JSON.parse(stdout,) as OxlintJsonOutput;

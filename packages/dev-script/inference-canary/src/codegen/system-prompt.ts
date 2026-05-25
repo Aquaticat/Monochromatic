@@ -80,7 +80,11 @@ async function discoverRuleModules(): Promise<string[]> {
 
   return entries
     .filter(function isRuleModule(entry,): boolean {
-      return entry.isFile() && entry.name.endsWith('.ts',) && (entry.name !== 'index.ts');
+      return entry.isFile()
+        && entry
+        .name
+        .endsWith('.ts',)
+        && (entry.name !== 'index.ts');
     },)
     .map(function toRelativePath(entry,): string {
       return join(

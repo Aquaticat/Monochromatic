@@ -145,7 +145,8 @@ export function computeSceneBounds(
       .filter(function nonNull(value,): value is number {
         return value !== null;
       },);
-    if (values.length === 0) {
+    if (values.length
+      === 0) {
       return [
         channel,
         FALLBACK_EXTENT,
@@ -223,7 +224,8 @@ export function buildLayers(
   },
 ): readonly Layer[] {
   /** Unknown-cluster scatter layers when the toggle is on; empty otherwise so the group flattens to nothing. */
-  const unknownCluster = state.displayToggles.showUnknownCluster
+  const unknownCluster = state.displayToggles
+    .showUnknownCluster
     ? buildUnknownClusterLayer({
       probes,
       state,
@@ -232,7 +234,8 @@ export function buildLayers(
     },)
     : [];
   /** Threshold guide-line layer when the toggle is on; `null` is filtered out before flattening. */
-  const thresholdLines = state.displayToggles.showThresholdPlanes
+  const thresholdLines = state.displayToggles
+    .showThresholdPlanes
     ? buildThresholdLineLayer({
       bounds,
       dimMapping: state.dimMapping,
@@ -240,7 +243,8 @@ export function buildLayers(
     : null;
   /** Layer groups in back-to-front order; flattened below into the final layer array deck.gl renders. */
   const groups: readonly (readonly Layer[])[] = [
-    state.displayToggles.showWireframe
+    state.displayToggles
+      .showWireframe
       ? buildCoordinatePlaneLayers({
         bounds,
       },)
@@ -275,7 +279,8 @@ export function buildLayers(
       bounds,
       visibleIndices,
     },),
-    state.displayToggles.showAxisLabels
+    state.displayToggles
+      .showAxisLabels
       ? [
         buildOriginLabelLayer({
           bounds,

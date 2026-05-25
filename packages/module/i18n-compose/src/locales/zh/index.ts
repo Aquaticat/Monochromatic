@@ -86,7 +86,8 @@ export function defineChineseLocale<
    * @returns rendered surface
    */
   function renderNoun(key: Noun,): string {
-    return input.nouns[key].surface;
+    return input.nouns[key]
+      .surface;
   }
 
   return {

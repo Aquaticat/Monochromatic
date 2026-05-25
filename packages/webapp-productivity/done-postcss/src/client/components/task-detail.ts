@@ -76,15 +76,19 @@ class TaskDetail extends HTMLElement {
           complexity?: string | null;
         },
       ): void {
-        if (update.tags !== undefined)
+        if (update.tags
+          !== undefined)
           this.#tags = update.tags as string[];
-        if (update.locations !== undefined)
+        if (update.locations
+          !== undefined)
           this.#locations = update.locations as string[];
-        if (update.priority !== undefined) {
+        if (update.priority
+          !== undefined) {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from string to TaskPriority union
           this.#priority = update.priority as TaskPriority | null;
         }
-        if (update.complexity !== undefined) {
+        if (update.complexity
+          !== undefined) {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from string to TaskComplexity union
           this.#complexity = update.complexity as TaskComplexity | null;
         }
@@ -106,15 +110,23 @@ class TaskDetail extends HTMLElement {
   configure(data: TaskDetailData,): void {
     console.log(
       '[task-detail] configure() called, mode:',
-      data.mode ?? 'edit',
+      data.mode
+        ?? 'edit',
     );
     this.#data = data;
-    this.#mode = data.mode ?? 'edit';
-    this.#tags = [...data.task.tags,];
-    this.#locations = [...data.task.locations,];
-    this.#priority = data.task.priority;
-    this.#complexity = data.task.complexity;
-    this.#autofill.autofilled.clear();
+    this.#mode = data.mode
+      ?? 'edit';
+    this.#tags = [...data.task
+      .tags,];
+    this.#locations = [...data.task
+      .locations,];
+    this.#priority = data.task
+      .priority;
+    this.#complexity = data.task
+      .complexity;
+    this.#autofill
+      .autofilled
+      .clear();
     this.#render();
   }
 
@@ -140,11 +152,13 @@ class TaskDetail extends HTMLElement {
   /** Rebuilds pill elements from current metadata state. */
   #updatePillsDisplay(): void {
     /** Container the pill list is rendered into; absent before initial render. */
-    const pillsContainer = this.#shadow.querySelector<HTMLElement>('.pills',);
+    const pillsContainer = this.#shadow
+      .querySelector<HTMLElement>('.pills',);
     if (pillsContainer === null)
       return;
     /** Task data extracted from `#data`; updates are skipped until `configure()` has run. */
-    const task = this.#data?.task;
+    const task = this.#data
+      ?.task;
     if (task === undefined)
       return;
 
@@ -159,8 +173,10 @@ class TaskDetail extends HTMLElement {
     pillsContainer.replaceChildren(
       ...buildPillElements({
         pills,
-        loading: this.#autofill.loading,
-        autofilled: this.#autofill.autofilled,
+        loading: this.#autofill
+          .loading,
+        autofilled: this.#autofill
+          .autofilled,
       },),
     );
   }
@@ -182,7 +198,8 @@ class TaskDetail extends HTMLElement {
     titleInput.addEventListener(
       'input',
       function onTitleInput(this: TaskDetail,): void {
-        this.#autofill.request(titleInput.value,);
+        this.#autofill
+          .request(titleInput.value,);
       }
         .bind(this,),
     );

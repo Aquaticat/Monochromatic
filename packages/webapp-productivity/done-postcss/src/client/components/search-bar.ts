@@ -70,8 +70,10 @@ class SearchBar extends HTMLElement {
    */
   get value(): string {
     /** Input element from the rendered shadow tree; `null` before `connectedCallback`. */
-    const input = this.#shadow.querySelector<HTMLInputElement>('input',);
-    return input?.value ?? '';
+    const input = this.#shadow
+      .querySelector<HTMLInputElement>('input',);
+    return input?.value
+      ?? '';
   }
 
   /**
@@ -81,7 +83,8 @@ class SearchBar extends HTMLElement {
    */
   set value(text: string,) {
     /** Input element from the rendered shadow tree; assignment is skipped when not yet rendered. */
-    const input = this.#shadow.querySelector<HTMLInputElement>('input',);
+    const input = this.#shadow
+      .querySelector<HTMLInputElement>('input',);
     if (input !== null)
       input.value = text;
   }
@@ -89,7 +92,8 @@ class SearchBar extends HTMLElement {
   /** Renders the search bar with back button and debounced input. */
   connectedCallback(): void {
     /** Pre-filled query from the `value` attribute, defaulting to empty when absent. */
-    const query = this.getAttribute('value',) ?? '';
+    const query = this.getAttribute('value',)
+      ?? '';
 
     // SVG back arrow built via innerHTML on a container because h() targets
     // HTMLElement creation; SVG elements require the SVG namespace.
@@ -132,7 +136,8 @@ class SearchBar extends HTMLElement {
               new CustomEvent(
                 'search',
                 {
-                  detail: { query: input.value.trim(), },
+                  detail: { query: input.value
+                    .trim(), },
                   bubbles: true,
                 },
               ),
@@ -145,7 +150,8 @@ class SearchBar extends HTMLElement {
         .bind(this,),
     );
 
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,

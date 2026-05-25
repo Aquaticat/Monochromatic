@@ -4,7 +4,8 @@ import {
 } from '@monochromatic-dev/module-numeric-const';
 
 /** How long capture sets are retained in the buffer before pruning. */
-const RETENTION_MS = 10 * SECONDS_PER_MINUTE * MS_PER_SECOND;
+const RETENTION_MS = 10 * SECONDS_PER_MINUTE
+  * MS_PER_SECOND;
 
 /** Maximum number of capture sets kept in the rolling buffer. */
 const MAX_ENTRIES = 3;
@@ -110,7 +111,8 @@ function isAfterCutoff(
     set: CaptureSet;
   },
 ): boolean {
-  return set.timestamp >= cutoff;
+  return set.timestamp
+    >= cutoff;
 }
 
 /**
@@ -118,9 +120,11 @@ function isAfterCutoff(
  */
 function prune(): void {
   /** Oldest timestamp to keep; sets older than this are filtered out. */
-  const cutoff = Date.now() - RETENTION_MS;
+  const cutoff = Date.now()
+    - RETENTION_MS;
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- bounded tuple enforced by filter subset
-  state.buffer = state.buffer.filter(function checkRetention(set,) {
+  state.buffer = state.buffer
+    .filter(function checkRetention(set,) {
     return isAfterCutoff({
       cutoff,
       set,

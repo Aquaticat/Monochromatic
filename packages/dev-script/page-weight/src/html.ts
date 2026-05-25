@@ -18,7 +18,8 @@ import { unified, } from 'unified';
 import { startsWithUriScheme, } from './url-detect.ts';
 
 /** Reusable unified parser configured for full HTML documents. */
-const parser = unified().use(rehypeParse,);
+const parser = unified()
+  .use(rehypeParse,);
 
 /**
  * Parses an HTML source string into a hast root node.
@@ -39,7 +40,8 @@ function parseHtml(source: string,): Root {
  * @returns whether the node is an element
  */
 function isElement(node: Node,): node is Element {
-  return node.type === 'element';
+  return node.type
+    === 'element';
 }
 
 /**
@@ -50,7 +52,8 @@ function isElement(node: Node,): node is Element {
  * @returns whether the node is a text node
  */
 function isText(node: Node,): node is Text {
-  return node.type === 'text';
+  return node.type
+    === 'text';
 }
 
 /**
@@ -97,7 +100,8 @@ function attr(
  */
 function firstSrcsetUrl(srcset: string,): string | null {
   /** First candidate descriptor in the srcset list; used as the canonical pick. */
-  const first = srcset.split(',',)[0]?.trim();
+  const first = srcset.split(',',)[0]
+    ?.trim();
   if ((first === undefined) || (first === ''))
     return null;
   /** Leading URL token from the candidate; descriptor like `2x` is dropped. */
@@ -184,9 +188,11 @@ function addIfLocal(
     return;
   /** Whitespace-stripped form so empty and fragment-only references are filtered out. */
   const trimmed = raw.trim();
-  if ((trimmed === '') || trimmed.startsWith('#',))
+  if ((trimmed === '') || trimmed
+    .startsWith('#',))
     return;
-  if (trimmed.startsWith('//',) || startsWithUriScheme(trimmed,))
+  if (trimmed.startsWith('//',)
+    || startsWithUriScheme(trimmed,))
     return;
   target.add(trimmed,);
 }
@@ -225,7 +231,8 @@ function collectInlineStyle(
   }
   /** Concatenated `<style>` content; only emitted when non-blank so the accumulator stays clean. */
   const text = parts.join('',);
-  if (text.trim() !== '')
+  if (text.trim()
+    !== '')
     out.push(text,);
 }
 
@@ -256,7 +263,8 @@ function collectMediaUrl(
   for (const child of element.children) {
     if (!isElement(child,))
       continue;
-    if (child.tagName === 'source') {
+    if (child.tagName
+      === 'source') {
       /** `srcset` on the current `<source>` child, if any; preferred over `src`. */
       const srcset = attr({
         element: child,
@@ -272,16 +280,19 @@ function collectMediaUrl(
       if (src !== null)
         return src;
     }
-    if (child.tagName === 'style') {
+    if (child.tagName
+      === 'style') {
       collectInlineStyle({
         element: child,
         out: inlineCss,
       },);
     }
   }
-  if (element.tagName === 'picture') {
+  if (element.tagName
+    === 'picture') {
     for (const child of element.children) {
-      if (isElement(child,) && (child.tagName === 'img')) {
+      if (isElement(child,)
+        && (child.tagName === 'img')) {
         /** Fallback `<img>` `src` used when no `<source>` child matched. */
         const src = attr({
           element: child,
@@ -307,7 +318,8 @@ function collectMediaUrl(
  * @returns URL to fetch, or `null` when the element has no own asset
  */
 function ownAssetUrl(element: Element,): string | null {
-  if (element.tagName === 'link') {
+  if (element.tagName
+    === 'link') {
     return attr({
       element,
       name: 'href',
@@ -316,22 +328,24 @@ function ownAssetUrl(element: Element,): string | null {
   if (
     (element.tagName === 'script')
     || (element.tagName === 'iframe')
-    || (element.tagName === 'embed')
-    || (element.tagName === 'audio')
-    || (element.tagName === 'video')
+      || (element.tagName === 'embed')
+      || (element.tagName === 'audio')
+      || (element.tagName === 'video')
   ) {
     return attr({
       element,
       name: 'src',
     },);
   }
-  if (element.tagName === 'object') {
+  if (element.tagName
+    === 'object') {
     return attr({
       element,
       name: 'data',
     },);
   }
-  if (element.tagName === 'img') {
+  if (element.tagName
+    === 'img') {
     /** `<img>` `srcset`, preferred over `src` when set. */
     const srcset = attr({
       element,
@@ -344,7 +358,8 @@ function ownAssetUrl(element: Element,): string | null {
       name: 'src',
     },);
   }
-  if (element.tagName === 'use') {
+  if (element.tagName
+    === 'use') {
     /** `<use>` `href`, preferred over the legacy `xlink:href`. */
     const href = attr({
       element,
@@ -396,7 +411,8 @@ function walk(
   },
 ): void {
   if (isElement(node,)) {
-    if (node.tagName === 'style') {
+    if (node.tagName
+      === 'style') {
       collectInlineStyle({
         element: node,
         out: inlineStyles,
@@ -420,7 +436,8 @@ function walk(
   }
   /** Structural view of the node so children can be visited when the node carries them. */
   const parent = node as Partial<Parent>;
-  if (parent.children !== undefined) {
+  if (parent.children
+    !== undefined) {
     for (const child of parent.children) {
       walk({
         node: child,

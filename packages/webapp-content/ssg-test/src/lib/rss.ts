@@ -46,11 +46,16 @@ export function generateLanguageRss(
     language: lang,
     items: posts.map(function toRssItem(post,) {
       return {
-        title: post.data.title,
+        title: post.data
+          .title,
         link: `${siteUrl}/${lang}/${post.name}`,
-        description: post.data.description,
-        pubDate: post.data.published,
-        categories: post.data.tags.map(function toCategory(tag,) {
+        description: post.data
+          .description,
+        pubDate: post.data
+          .published,
+        categories: post.data
+          .tags
+          .map(function toCategory(tag,) {
           return { name: tag, };
         },),
       };

@@ -52,7 +52,9 @@ const SHORT_VALUE_OPTIONS: ReadonlySet<string> = new Set([
  * ```
  */
 function normaliseInlineShort(token: string,): readonly string[] {
-  if ((!token.startsWith('-',)) || token.startsWith('--',) || (token.length <= 2))
+  if ((!token.startsWith('-',)) || token
+    .startsWith('--',)
+    || (token.length <= 2))
     return [token,];
 
   /** Index of the first value-taking short option inside the cluster. */
@@ -113,7 +115,8 @@ function normaliseInlineShort(token: string,): readonly string[] {
  * ```
  */
 function findValueOptionIndex(token: string,): number {
-  for (let i = 1; i < token.length; i += 1) {
+  for (let i = 1; i < token
+    .length; i += 1) {
     if (SHORT_VALUE_OPTIONS.has(`-${token[i]}`,))
       return i;
   }
@@ -324,18 +327,36 @@ export function parseCommitRegion(
   /** Successful parse value with optique-inferred shape. */
   const { value, } = parseResult;
   /** Sum of explicit only-mode flag occurrences (`-o`, `--only`, `--no-only`). */
-  const explicitOnlyCount = value.explicitOnlyFlags.length + value.noOnlyFlags.length;
+  const explicitOnlyCount = value.explicitOnlyFlags
+    .length
+    + value
+    .noOnlyFlags
+    .length;
   /** Sum of pathless-allowed flag occurrences (`--amend`, `--allow-empty`). */
-  const pathlessAllowedCount = value.amendFlags.length + value.allowEmptyFlags.length;
+  const pathlessAllowedCount = value.amendFlags
+    .length
+    + value
+    .allowEmptyFlags
+    .length;
 
   return {
-    hasAllFlag: value.allFlags.length > 0,
+    hasAllFlag: value.allFlags
+      .length
+      > 0,
     hasExplicitOnlyFlag: explicitOnlyCount > 0,
-    hasNoOnlyFlag: value.noOnlyFlags.length > 0,
+    hasNoOnlyFlag: value.noOnlyFlags
+      .length
+      > 0,
     hasPathlessAllowedFlag: pathlessAllowedCount > 0,
-    hasPathspecFromFile: value.pathspecFromFile !== undefined,
-    hasPathspec: (value.positionals.length > 0) || (pathspecAfterSeparator.length > 0),
-    hasEscapeHatch: value.escape.length > 0,
+    hasPathspecFromFile: value.pathspecFromFile
+      !== undefined,
+    hasPathspec: (value.positionals
+      .length
+      > 0) || (pathspecAfterSeparator.length
+      > 0),
+    hasEscapeHatch: value.escape
+      .length
+      > 0,
   };
 }
 

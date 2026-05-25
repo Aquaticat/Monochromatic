@@ -59,7 +59,8 @@ export async function sweepOrphans(
   scope: { readonly userId: string | null; },
 ): Promise<void> {
   /** Threshold; drafts older than this and still unfinalised are reaped. */
-  const cutoff = Date.now() - ORPHAN_TTL_MS;
+  const cutoff = Date.now()
+    - ORPHAN_TTL_MS;
   await run({
     sql: `DELETE FROM drafts WHERE id IN (
        SELECT id FROM drafts
@@ -91,7 +92,8 @@ export async function sweepOrphans(
  */
 export async function sweepDeleted(): Promise<void> {
   /** Threshold; messages soft-deleted before this are eligible for hard-delete. */
-  const cutoff = Date.now() - DELETED_TTL_MS;
+  const cutoff = Date.now()
+    - DELETED_TTL_MS;
   /** Bounded candidate batch; each row is hard-deleted in its own transaction below. */
   const candidates = await all<{
     id: number;
@@ -132,7 +134,8 @@ export async function sweepDeleted(): Promise<void> {
           sql: 'SELECT parent_id FROM drafts WHERE id = ?',
           params: [cursor,],
         },);
-        cursor = parentRow?.parent_id ?? null;
+        cursor = parentRow?.parent_id
+          ?? null;
       }
       for (const id of chainIds) {
         await run({

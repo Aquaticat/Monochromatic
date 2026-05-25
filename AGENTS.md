@@ -69,15 +69,15 @@ The cue: a single task subject would hide multiple kinds of evidence gathering o
 
 Before sending any response with substantive claims:
 
-1.  Quantitative claim (size, speed, complexity, difficulty, duration) without measuring? Measure or rephrase as a guess.
-2.  Described how an external tool works without reading its src? Clone and read (see "Third-party libraries"), or label recall-from-training.
-3.  Estimated difficulty of a fix you have not built? Drop the estimate.
-4.  Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
-5.  Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents, whether a tool/feature is used, whether a conf or AGENTS.md already covers the thing weighed) or working pattern in repo artifacts (commit cadence, hours, defect rate, concurrent sessions)? Measure it (see "Measure-vs-ask"). Categorical dismissals feel like recall but are one `rg`/`find`/conf-read away; AGENTS.md itself counts as a conf to read. Cite the result inline (file path, line, or conf key); if wrong, fold the option back in.
-6.  Assumed a non-measurable preference (which approach, what they value)? Ask.
-7.  Confident factual claim about your environment, an external tool, or src code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
-8.  Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
-9.  Quoted a clause or doc passage and drawn a conclusion? Restate subject and object in plain English first. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
+1. Quantitative claim (size, speed, complexity, difficulty, duration) without measuring? Measure or rephrase as a guess.
+2. Described how an external tool works without reading its src? Clone and read (see "Third-party libraries"), or label recall-from-training.
+3. Estimated difficulty of a fix you have not built? Drop the estimate.
+4. Used a hedge phrase (see "Hedge phrases that signal a skipped step")? Verify or remove.
+5. Assumed a measurable fact about the user's environment (codebase size, deps, build time, file contents, whether a tool/feature is used, whether a conf or AGENTS.md already covers the thing weighed) or working pattern in repo artifacts (commit cadence, hours, defect rate, concurrent sessions)? Measure it (see "Measure-vs-ask"). Categorical dismissals feel like recall but are one `rg`/`find`/conf-read away; AGENTS.md itself counts as a conf to read. Cite the result inline (file path, line, or conf key); if wrong, fold the option back in.
+6. Assumed a non-measurable preference (which approach, what they value)? Ask.
+7. Confident factual claim about your environment, an external tool, or src code? Verify any cited path/line still exists; for uncited claims, add the citation inline (see "Name the verification step") or downgrade to a labeled guess.
+8. Claimed a tool cannot do something? Check whether composition (Bash + shell utility) bridges the gap; refuse only after trying (see "Before claiming inability").
+9. Quoted a clause or doc passage and drawn a conclusion? Restate subject and object in plain English first. Failure shape: "X waives Y" read as "X is freed from Y" when the clause actually runs Y from X toward a third party.
 10. About to ask the user to perform a manual action? Try the bridging path first; if you must hand off, invoke the `runbook` skill (see "Before claiming inability").
 11. Revising a substantive claim the user just corrected? Treat the correction as evidence your previous verification path was insufficient: re-read primary sources, run concrete commands, or use a genuinely separate reviewer when independent review is asked. Do not run a same-session self-review, local "advisor" skill, or magic `Advisor pass: ...` ritual; self-review is not independent evidence (see `docs/agent-self-review.md`). User-correction phrases ("demonstrably false", "you missed", "didn't you", "you're wrong", "shouldn't have", "why would you") are an approach-change moment, not a small patch.
 
@@ -139,12 +139,12 @@ The antipattern this targets is hedging as a substitute for research, not honest
 For "should we use X better?" / "are we taking advantage of X?", walk every layer before recommending.
 Each can flip the conclusion.
 
-1.  **The tool itself**: usage volume, conf.
-2.  **Parallel systems**: where the same need is met outside the tool.
-3.  **Content of those parallel systems**: not just file count but what is inside.
-4.  **Inline annotations in code**: TODO/FIXME/HACK, deprecation markers, workaround comments. Zero signals discipline (but verify the search ran; see null-search rule); thousands signal debt.
-5.  **Suppressions and exceptions**: lint disables, type-error suppressions, skipped tests. Justified-with-rationale is healthy; bare suppressions are debt.
-6.  **Stated policies in code or conf**: comments declaring intent ("X is tracked via Y, not Z") that may or may not be followed in practice.
+1. **The tool itself**: usage volume, conf.
+2. **Parallel systems**: where the same need is met outside the tool.
+3. **Content of those parallel systems**: not just file count but what is inside.
+4. **Inline annotations in code**: TODO/FIXME/HACK, deprecation markers, workaround comments. Zero signals discipline (but verify the search ran; see null-search rule); thousands signal debt.
+5. **Suppressions and exceptions**: lint disables, type-error suppressions, skipped tests. Justified-with-rationale is healthy; bare suppressions are debt.
+6. **Stated policies in code or conf**: comments declaring intent ("X is tracked via Y, not Z") that may or may not be followed in practice.
 
 Report findings at each layer before the conclusion.
 A recommendation given after only checking layer 1 is a guess shaped by the surface you happened to look at.
@@ -513,11 +513,11 @@ Repo-wide docs live under `docs/<family>/`, one directory per dotted-prefix fami
 The repo root keeps only `README.md`, `SECURITY.md`, `AGENTS.md`, `CLAUDE.md`, `LICENSES/`, and already-tidy doc subdirectories like `.out-of-scope/`; the flat dotted-prefix families are what move under `docs/`.
 Package-specific docs stay beside the code they document; this rule governs root-level families, not a package's own `README.md`, `TODO.md`, or `HANDOVER.*.md`.
 
-1.  Naming: a `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping the now-redundant prefix; a second dotted segment stays flat in the filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not a deeper directory. Use kebab-case for multi-word topics.
-2.  Hubs: a bare `PREFIX.md` index becomes `docs/<family>/README.md`, keeping its curated prose.
-3.  Bug reports fold into the most relevant `docs/troubleshooting/<topic>.md` as a section rather than getting their own family.
-4.  Delete verifiably-finished docs once their work lands; git history is the backstop, so removal is not destructive. Read each before deleting.
-5.  Reference source files by repo-relative path, not a pinned GitHub blob URL; a blob URL also breaks when the target moves.
+1. Naming: a `PREFIX.rest.md` file becomes `docs/<prefix-lowercased>/<rest-lowercased>.md`, dropping the now-redundant prefix; a second dotted segment stays flat in the filename (`TODO.performance.build.md` becomes `docs/todo/performance.build.md`), not a deeper directory. Use kebab-case for multi-word topics.
+2. Hubs: a bare `PREFIX.md` index becomes `docs/<family>/README.md`, keeping its curated prose.
+3. Bug reports fold into the most relevant `docs/troubleshooting/<topic>.md` as a section rather than getting their own family.
+4. Delete verifiably-finished docs once their work lands; git history is the backstop, so removal is not destructive. Read each before deleting.
+5. Reference source files by repo-relative path, not a pinned GitHub blob URL; a blob URL also breaks when the target moves.
 
 No enforcement hook guards root regression; this rule is the cure. A warn-only `PreToolUse` hook is a possible future addition, not built now.
 
@@ -567,11 +567,11 @@ The cue: about to write "the commit message overstates scope" or similar in chat
 
 ### Adding new packages
 
-1.  Create directory under the appropriate category in `packages/`.
-2.  Add `mise.toml` with task definitions mirroring sibling packages.
-3.  Configure `package.json` with workspace dependencies.
-4.  For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point; without it, Unix falls back to `/bin/sh` and the script hangs or errors.
-5.  For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency.
+1. Create directory under the appropriate category in `packages/`.
+2. Add `mise.toml` with task definitions mirroring sibling packages.
+3. Configure `package.json` with workspace dependencies.
+4. For CLI packages with a `bin` entry, add `#!/usr/bin/env bun` shebang as the first line of the entry point; without it, Unix falls back to `/bin/sh` and the script hangs or errors.
+5. For packages with client-side bundling, add `tsdown.client.config.ts` extending `@monochromatic-dev/config-tsdown/.client.ts`, a `build:js:client` mise task, and `@monochromatic-dev/config-tsdown` as a devDependency.
 
 ### Essential commands
 

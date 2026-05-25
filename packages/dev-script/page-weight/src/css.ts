@@ -42,7 +42,8 @@ const TOKEN_DATA_INDEX = 4;
 function tokenValue(
   token: TokenURL | TokenString | TokenFunction | TokenAtKeyword,
 ): string {
-  return token[TOKEN_DATA_INDEX].value;
+  return token[TOKEN_DATA_INDEX]
+    .value;
 }
 
 /**
@@ -69,9 +70,11 @@ function addIfLocal(
 ): void {
   /** URL with surrounding whitespace removed; raw CSS values often carry stray padding. */
   const trimmed = raw.trim();
-  if ((trimmed === '') || trimmed.startsWith('#',))
+  if ((trimmed === '') || trimmed
+    .startsWith('#',))
     return;
-  if (trimmed.startsWith('//',) || startsWithUriScheme(trimmed,))
+  if (trimmed.startsWith('//',)
+    || startsWithUriScheme(trimmed,))
     return;
   target.add(trimmed,);
 }
@@ -94,7 +97,8 @@ function nextSemanticToken(
     startIndex: number;
   },
 ): CSSToken | null {
-  for (let index = startIndex; index < tokens.length; index += 1) {
+  for (let index = startIndex; index < tokens
+    .length; index += 1) {
     /** Current token under inspection; skipped if it carries no semantic content. */
     const token = nonNullishOrThrow(tokens[index],);
     if (!isTokenWhiteSpaceOrComment(token,))
@@ -134,7 +138,8 @@ export function extractCssUrls(source: string,): string[] {
   /** Output set; deduplicates references seen multiple times across the stylesheet. */
   const refs = new Set<string>();
 
-  for (let index = 0; index < tokens.length; index += 1) {
+  for (let index = 0; index < tokens
+    .length; index += 1) {
     /** Current token in the linear scan; dispatch below depends on its kind. */
     const token = nonNullishOrThrow(tokens[index],);
     if (isTokenURL(token,)) {
@@ -145,7 +150,9 @@ export function extractCssUrls(source: string,): string[] {
       continue;
     }
     if (isTokenFunction(token,)) {
-      if (tokenValue(token,).toLowerCase() !== 'url')
+      if (tokenValue(token,)
+        .toLowerCase()
+        !== 'url')
         continue;
       /** First semantic token after `url(`; expected to be the quoted URL string. */
       const next = nextSemanticToken({
@@ -161,7 +168,9 @@ export function extractCssUrls(source: string,): string[] {
       continue;
     }
     if (isTokenAtKeyword(token,)) {
-      if (tokenValue(token,).toLowerCase() !== 'import')
+      if (tokenValue(token,)
+        .toLowerCase()
+        !== 'import')
         continue;
       /**
        * First semantic token after `@import`; expected to be the imported stylesheet URL.

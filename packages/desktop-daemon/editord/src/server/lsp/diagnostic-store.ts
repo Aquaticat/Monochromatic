@@ -108,7 +108,9 @@ export function createDiagnosticStore(
     /** Skip merge and broadcast when this source's diagnostics are unchanged. */
     const previous = sourceMap.get(source,);
     if ((previous !== undefined)
-      && (previous.length === diagnostics.length)
+      && (previous.length
+        === diagnostics
+        .length)
       && previous.every(function matchesDiagnostic(
         prev,
         i,
@@ -117,13 +119,43 @@ export function createDiagnosticStore(
         const next = diagnostics[i];
         if (next === undefined)
           return false;
-        return (prev.message === next.message)
-          && (prev.severity === next.severity)
-          && (prev.source === next.source)
-          && (prev.range.start.line === next.range.start.line)
-          && (prev.range.start.character === next.range.start.character)
-          && (prev.range.end.line === next.range.end.line)
-          && (prev.range.end.character === next.range.end.character);
+        return (prev.message
+          === next
+          .message)
+          && (prev.severity
+            === next
+            .severity)
+          && (prev.source
+            === next
+            .source)
+          && (prev.range
+            .start
+            .line
+            === next
+            .range
+            .start
+            .line)
+          && (prev.range
+            .start
+            .character
+            === next
+            .range
+            .start
+            .character)
+          && (prev.range
+            .end
+            .line
+            === next
+            .range
+            .end
+            .line)
+          && (prev.range
+            .end
+            .character
+            === next
+            .range
+            .end
+            .character);
       },))
     {
       return;
@@ -150,7 +182,8 @@ export function createDiagnosticStore(
           };
         },);
       },
-    ).flat();
+    )
+      .flat();
 
     /** Filesystem path returned to the broadcast handler; the wire form was URI. */
     const path = uriToPath({ uri, },);

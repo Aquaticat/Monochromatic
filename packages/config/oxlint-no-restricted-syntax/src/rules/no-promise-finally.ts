@@ -45,10 +45,15 @@ export const noPromiseFinally: CreateOnceRule = {
       CallExpression(node: ESTree.CallExpression,): void {
         /** Call target; only `x.finally()` member calls qualify for the rule. */
         const { callee, } = node;
-        if ((callee.type !== 'MemberExpression') || callee.computed)
+        if ((callee.type !== 'MemberExpression') || callee
+          .computed)
           return;
-        if ((callee.property.type !== 'Identifier')
-          || (callee.property.name !== 'finally'))
+        if ((callee.property
+          .type
+          !== 'Identifier')
+          || (callee.property
+            .name
+            !== 'finally'))
         {
           return;
         }

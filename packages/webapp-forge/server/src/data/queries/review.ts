@@ -53,7 +53,8 @@ export async function insertReview(row: {
       row.prIssueId,
       row.reviewerId,
       row.state,
-      row.body ?? '',
+      row.body
+        ?? '',
       row.createdAt,
     ],
   },);
@@ -97,7 +98,8 @@ export async function submitReviewWithEvent(row: {
         row.prIssueId,
         row.reviewerId,
         row.state,
-        row.body ?? '',
+        row.body
+          ?? '',
         row.createdAt,
       ],
     },);

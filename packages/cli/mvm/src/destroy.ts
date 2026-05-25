@@ -114,7 +114,8 @@ export async function destroyAll(): Promise<void> {
   /** Current set of managed VM names enumerated before any destruction runs. */
   const vms = await listVms();
 
-  if (vms.length === 0) {
+  if (vms.length
+    === 0) {
     rl.info('no VMs to destroy',);
     return;
   }

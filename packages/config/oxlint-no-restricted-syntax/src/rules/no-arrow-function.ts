@@ -60,8 +60,8 @@ export const noArrowFunction: CreateOnceRule = {
         if (
           (parent.type !== 'VariableDeclarator')
           || (parent.id.type !== 'Identifier')
-          || (parent.parent.type !== 'VariableDeclaration')
-          || (parent.parent.declarations.length !== 1)
+            || (parent.parent.type !== 'VariableDeclaration')
+            || (parent.parent.declarations.length !== 1)
         ) {
           context.report({
             node,
@@ -74,9 +74,11 @@ export const noArrowFunction: CreateOnceRule = {
         const { name, } = parent.id;
 
         /** Node containing the `VariableDeclaration`; inspected to detect an `export` wrapper. */
-        const grandparent = parent.parent.parent;
+        const grandparent = parent.parent
+          .parent;
         /** True when the declaration is exported, so the replacement keeps the `export` prefix. */
-        const isExported = grandparent.type === 'ExportNamedDeclaration';
+        const isExported = grandparent.type
+          === 'ExportNamedDeclaration';
 
         /** The full declaration node to replace (including `export` if present). */
         const replaceNode = isExported ? grandparent : parent.parent;
@@ -86,8 +88,11 @@ export const noArrowFunction: CreateOnceRule = {
 
         /** Generic type parameters if present. */
         const typeParamsText =
-          (node.typeParameters !== null) && (node.typeParameters !== undefined)
-            ? context.sourceCode.getText(node.typeParameters,)
+          (node.typeParameters
+            !== null) && (node.typeParameters
+            !== undefined)
+            ? context.sourceCode
+              .getText(node.typeParameters,)
             : '';
 
         /**
@@ -96,20 +101,26 @@ export const noArrowFunction: CreateOnceRule = {
          * stripping the `=>` arrow token.
          */
         const paramsText = extractParamsText({
-          fullText: context.sourceCode.getText(node,),
+          fullText: context.sourceCode
+            .getText(node,),
           node,
         },);
 
         /** Return type annotation if present. */
         const returnTypeText =
-          (node.returnType !== null) && (node.returnType !== undefined)
-            ? context.sourceCode.getText(node.returnType,)
+          (node.returnType
+            !== null) && (node.returnType
+            !== undefined)
+            ? context.sourceCode
+              .getText(node.returnType,)
             : '';
 
         /** Body text, wrapping expression bodies in `{ return ...; }`. */
         const bodyText = node.expression
-          ? `{ return ${context.sourceCode.getText(node.body,)} }`
-          : context.sourceCode.getText(node.body,);
+          ? `{ return ${context.sourceCode
+            .getText(node.body,)} }`
+          : context.sourceCode
+            .getText(node.body,);
 
         /** Export keyword prefix. */
         const exportPrefix = isExported ? 'export ' : '';

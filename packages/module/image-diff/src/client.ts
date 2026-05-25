@@ -68,8 +68,10 @@ export async function embed({
   config?: ImageDiffConfig;
 },): Promise<EmbeddingResult> {
   /** Selected provider name; defaults to Voyage when unspecified by the caller. */
-  const provider = config.provider ?? 'voyage';
-  return getProvider(provider,).embed({
+  const provider = config.provider
+    ?? 'voyage';
+  return getProvider(provider,)
+    .embed({
     input,
     config,
   },);
@@ -103,8 +105,10 @@ export async function embedBatch({
   config?: ImageDiffConfig;
 },): Promise<BatchEmbeddingResult> {
   /** Selected provider name; defaults to Voyage when unspecified by the caller. */
-  const provider = config.provider ?? 'voyage';
-  return getProvider(provider,).embedBatch({
+  const provider = config.provider
+    ?? 'voyage';
+  return getProvider(provider,)
+    .embedBatch({
     inputs,
     config,
   },);
@@ -148,11 +152,13 @@ export async function compareEmbeddings({
     l,
   },);
   /** Selected provider name; defaults to Voyage when unspecified by the caller. */
-  const provider = config.provider ?? 'voyage';
+  const provider = config.provider
+    ?? 'voyage';
   rl.debug(`comparing embeddings via ${provider}`,);
 
   /** Both image embeddings produced in a single batch call so the API charges and round-trips just once. */
-  const { embeddings, } = await getProvider(provider,).embedBatch({
+  const { embeddings, } = await getProvider(provider,)
+    .embedBatch({
     inputs: [
       imageA,
       imageB,

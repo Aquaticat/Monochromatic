@@ -19,7 +19,8 @@ const Z_INDEX_FAB = 50;
 const FAB_SIZE = 4;
 
 /** FAB border width in rem (1/4). */
-const FAB_BORDER = 1 / 2 / 2;
+const FAB_BORDER = 1 / 2
+  / 2;
 
 /** Compiled CSS string for `<fab-button>` Shadow DOM. */
 const STYLES = [
@@ -80,8 +81,10 @@ class FabButton extends HTMLElement {
   /** Renders the action button with label and slot into the shadow root. */
   connectedCallback(): void {
     /** Resolved at attach time so missing attributes still render a usable button. */
-    const label = this.getAttribute('label',) ?? 'Action';
-    this.#shadow.replaceChildren(
+    const label = this.getAttribute('label',)
+      ?? 'Action';
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,

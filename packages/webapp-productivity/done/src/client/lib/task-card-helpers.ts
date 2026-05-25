@@ -73,21 +73,35 @@ export function buildChipTexts(task: Task,): string[] {
   /** Accumulator mutated by the conditional pushes below; tag chips come first. */
   const chips: string[] = [];
 
-  if (task.tags.length > 0)
-    chips.push(`# ${task.tags.join(', ',)}`,);
+  if (task.tags
+    .length
+    > 0)
+    chips.push(`# ${task.tags
+      .join(', ',)}`,);
   chips.push(`tracked: ${formatTrackedTime(task.trackedTime,)}`,);
-  if (task.locations.length > 0)
-    chips.push(`where: ${task.locations.join(', ',)}`,);
-  if (task.priority !== null)
+  if (task.locations
+    .length
+    > 0)
+    chips.push(`where: ${task.locations
+      .join(', ',)}`,);
+  if (task.priority
+    !== null)
     chips.push(`priority: ${task.priority}`,);
-  if (task.dueDate !== null)
+  if (task.dueDate
+    !== null)
     chips.push(`due: ${task.dueDate}`,);
-  if (task.complexity !== null)
+  if (task.complexity
+    !== null)
     chips.push(`complexity: ${task.complexity}`,);
-  if (task.reminders.length > 0)
+  if (task.reminders
+    .length
+    > 0)
     chips.push(`reminders: ${task.reminders[0]}`,);
-  if (task.blockedBy.length > 0)
-    chips.push(`blockedBy: ${task.blockedBy.length}`,);
+  if (task.blockedBy
+    .length
+    > 0)
+    chips.push(`blockedBy: ${task.blockedBy
+      .length}`,);
   else
     chips.push('blockedBy: none',);
 

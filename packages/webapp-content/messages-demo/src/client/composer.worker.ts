@@ -98,9 +98,11 @@ async function onMessage(event: MessageEvent<InboundMessage>,): Promise<void> {
   /** Destructured early so the kind switch can read it without repeated `event.data` access. */
   const { data, } = event;
   try {
-    if (data.kind === 'compile-and-upload')
+    if (data.kind
+      === 'compile-and-upload')
       await runCompileAndUpload(data,);
-    else if (data.kind === 'compile-only')
+    else if (data.kind
+      === 'compile-only')
       runCompileOnly(data,);
   }
   catch (error) {
@@ -159,7 +161,8 @@ function runCompileOnly(input: { body: string; },): void {
     const now = performance.now();
     compileMs.push(now - lastTick,);
     lastTick = now;
-    if (collected.length === 0)
+    if (collected.length
+      === 0)
       firstMd = chunk.md;
     collected.push({
       md: chunk.md,
@@ -265,7 +268,8 @@ async function runCompileAndUpload(
         charCount: chunk.charCount,
       },
     },);
-    putMs.push(performance.now() - putStart,);
+    putMs.push(performance.now()
+      - putStart,);
     pendingPuts -= 1;
     allChunks.push({
       md: chunk.md,
@@ -330,9 +334,12 @@ async function putOneChunk(
   }`;
   /** JSON body serialised once outside the retry loop to avoid repeated stringify cost. */
   const body = JSON.stringify({
-    md: input.chunk.md,
-    html: input.chunk.html,
-    char_count: input.chunk.charCount,
+    md: input.chunk
+      .md,
+    html: input.chunk
+      .html,
+    char_count: input.chunk
+      .charCount,
   },);
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- retry-loop error capture: the catch arm assigns the latest failure and the post-loop throw rethrows it; replacing with a try-catch-around-each-attempt loses the bounded-retry shape */
   /** Holds the most recent failure so the post-loop throw can rethrow it. */

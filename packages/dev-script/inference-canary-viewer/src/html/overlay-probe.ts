@@ -46,9 +46,12 @@ async function buildSourceSection(detail: ProbeDetail | undefined,): Promise<str
       text: 'Artifacts not available for this run.',
     },);
   }
-  if (detail.initialSource === undefined)
+  if (detail.initialSource
+    === undefined)
     return '';
-  if ((detail.fixSource !== undefined) && (detail.fixDir !== undefined)) {
+  if ((detail.fixSource
+    !== undefined) && (detail.fixDir
+    !== undefined)) {
     /** Absolute path to the initial canary file; left side of the diff. */
     const initialFile = join(
       detail.initialDir,
@@ -132,7 +135,8 @@ export async function renderProbeOverlay({
   /** Run label destructured from the viewer entry; used in the overlay title. */
   const { label, } = entry;
   /** Initial-pass score for this probe; defaulted to zero so the title always renders a number. */
-  const score = entry.probeScores[probe] ?? 0;
+  const score = entry.probeScores[probe]
+    ?? 0;
   /** Fix-pass score for this probe; absent when no fix run produced one. */
   const pass2Score = entry.pass2Scores?.[probe];
 
@@ -150,7 +154,9 @@ export async function renderProbeOverlay({
     : '';
   /** Fix-pass metadata block; rendered only when the run actually has fix-pass timing or usage. */
   const fixMeta = (detail !== undefined)
-      && ((detail.fixTiming !== undefined) || (detail.fixUsage !== undefined))
+      && ((detail.fixTiming
+        !== undefined) || (detail.fixUsage
+        !== undefined))
     ? renderPassMeta({
       label: 'Fix pass',
       timing: detail.fixTiming,

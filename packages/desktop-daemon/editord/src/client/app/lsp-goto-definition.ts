@@ -74,12 +74,16 @@ export async function doGotoDefinition(
       character,
     },);
     gotoLog.info(`definition response: ${JSON.stringify(def,)}`,);
-    if (def.path !== '') {
-      if ((def.path === path) && (def.line === line))
+    if (def.path
+      !== '') {
+      if ((def.path
+        === path) && (def.line
+        === line))
         return 'already-at-definition';
       await loadFileSafe({
         path: def.path,
-        line: def.line + 1,
+        line: def.line
+          + 1,
         character: def.character,
       },);
       return 'navigated';

@@ -78,5 +78,6 @@ export async function upsertFragmentIndexIfNewer(row: {
       row.sourceEventSequence,
     ],
   },);
-  return result.changes > 0;
+  return result.changes
+    > 0;
 }

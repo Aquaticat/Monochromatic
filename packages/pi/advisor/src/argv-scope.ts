@@ -30,14 +30,16 @@ export function parseArgvModelPatterns(
   options: ParseArgvModelsOptions,
 ): string[] | undefined {
   /** Inline `--models=value` argument, if present. */
-  const inline = options.argv.find(function isInlineModelsArg(arg,) {
+  const inline = options.argv
+    .find(function isInlineModelsArg(arg,) {
     return arg.startsWith('--models=',);
   },);
   if (inline !== undefined)
     return splitPatterns(inline.slice('--models='.length,),);
 
   /** Index of `--models` when supplied as a separate argument. */
-  const modelsIndex = options.argv.indexOf('--models',);
+  const modelsIndex = options.argv
+    .indexOf('--models',);
   if (modelsIndex === (-1))
     return undefined;
 

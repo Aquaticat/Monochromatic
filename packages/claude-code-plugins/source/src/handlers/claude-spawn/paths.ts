@@ -16,7 +16,9 @@ import { join, } from 'node:path';
 
 /** Root directory for all spawn coordination files. */
 const SPAWN_RESULTS_DIR: string = join(
-  process.env.HOME ?? '/tmp',
+  process.env
+    .HOME
+    ?? '/tmp',
   '.claude',
   'spawn-results',
 );

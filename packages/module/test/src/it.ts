@@ -150,7 +150,8 @@ async function runIt(
    * Wrapping the parent with this test's name puts the test tag rightmost
    * so the full chain reads root-first: `[outer] [inner] [test-name] PASS`.
    */
-  const baseLogger = explicitLogger ?? descriptorCtx.parentLogger;
+  const baseLogger = explicitLogger ?? descriptorCtx
+    .parentLogger;
   /** Composed tagged logger used for every PASS/FAIL/SKIP line of this test. */
   const l = baseLogger !== undefined
     ? tagged({
@@ -213,7 +214,8 @@ async function runIt(
     sandbox.restore();
 
     /** Elapsed time for this iteration, formatted into the result log line. */
-    const durationMs = performance.now() - runStart;
+    const durationMs = performance.now()
+      - runStart;
 
     /** Inline annotation appended after the FAIL/PASS line when `fails` was set as a string. */
     const failsReason = (typeof fails) === 'string' ? ` (${fails})` : '';
@@ -256,7 +258,10 @@ async function runIt(
     }
 
     //region Assertion count verification
-    if ((tracker.expected !== null) && (tracker.count !== tracker.expected)) {
+    if ((tracker.expected
+      !== null) && (tracker.count
+      !== tracker
+      .expected)) {
       /** Synthetic cause naming the assertion-count mismatch so the failure surface mirrors a regular throw. */
       const assertionCause = new Error(
         `Expected ${String(tracker.expected,)} assertions, but ${
@@ -276,7 +281,8 @@ async function runIt(
       );
     }
 
-    if (tracker.requiresAtLeastOne && (tracker.count === 0)) {
+    if (tracker.requiresAtLeastOne
+      && (tracker.count === 0)) {
       /** Synthetic cause used when `expect.hasAssertions()` was declared but no assertion ran. */
       const noAssertionsCause = new Error(
         'Expected at least one assertion to be called',

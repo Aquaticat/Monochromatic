@@ -66,7 +66,10 @@ export const expressionEvaluator: Probe = createCodeGenProbe({
     .join('\n',),
   verify: function verifyExprEval(result,): { correctness: number; } {
     /** Per-line model output, trimmed so trailing whitespace does not perturb the float comparison below. */
-    const lines = result.stdout.trim().split('\n',).map(function trimLine(line,): string {
+    const lines = result.stdout
+      .trim()
+      .split('\n',)
+      .map(function trimLine(line,): string {
       return line.trim();
     },);
     /** Number of expected outputs the model produced; divided by the total to yield correctness. */
@@ -81,10 +84,12 @@ export const expressionEvaluator: Probe = createCodeGenProbe({
           return false;
         if (exp === 'ERR')
           return actual === 'ERR';
-        return Math.abs(Number(actual,) - Number(exp,),) < FLOAT_TOLERANCE;
+        return Math.abs(Number(actual,) - Number(exp,),)
+          < FLOAT_TOLERANCE;
       },)
       .length;
 
-    return { correctness: correctCount / EXPR_EXPECTED.length, };
+    return { correctness: correctCount / EXPR_EXPECTED
+      .length, };
   },
 },);

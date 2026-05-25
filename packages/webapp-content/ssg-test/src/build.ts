@@ -86,7 +86,8 @@ const [loadedPosts, cache, pipelineHash, gitCtx,] = await Promise.all([
 l.info(`loaded ${loadedPosts.length} posts`,);
 
 /** Whether the processing pipeline source has changed since last build. */
-const pipelineChanged = cache?.pipelineHash !== pipelineHash;
+const pipelineChanged = cache?.pipelineHash
+  !== pipelineHash;
 if (pipelineChanged)
   l.info('pipeline changed, invalidating all cache entries',);
 
@@ -98,7 +99,9 @@ const effectiveCache = pipelineChanged ? undefined : cache;
  * Safe when HEAD is unchanged since the cache was written and the pipeline
  * has not changed (pipeline change already invalidates all cache entries).
  */
-const gitDatesReusable = (!pipelineChanged) && (cache?.headSha === gitCtx.headSha);
+const gitDatesReusable = (!pipelineChanged) && (cache?.headSha
+  === gitCtx
+  .headSha);
 
 /** Map from absolute file path to resolved publication/update dates. */
 const datesByFilePath = new Map<string, ResolvedDates>();
@@ -120,8 +123,10 @@ await Promise.all(loadedPosts.map(async function resolveDates(post,) {
       datesByFilePath.set(
         post.filePath,
         {
-          published: cached.frontmatter.published,
-          updated: cached.frontmatter.updated,
+          published: cached.frontmatter
+            .published,
+          updated: cached.frontmatter
+            .updated,
         },
       );
       return;
@@ -171,8 +176,10 @@ const processResults = await Promise.all(posts.map(async function processPost(po
       html: cached.html,
       frontmatter: {
         ...cached.frontmatter,
-        published: post.data.published,
-        updated: post.data.updated,
+        published: post.data
+          .published,
+        updated: post.data
+          .updated,
       },
     };
     return {
@@ -232,13 +239,15 @@ const cacheHits = processResults
   },)
   .length;
 
-l.info(`processed ${posts.length - cacheHits} files, ${cacheHits} from cache`,);
+l.info(`processed ${posts.length
+  - cacheHits} files, ${cacheHits} from cache`,);
 
 /** Posts grouped by locale, computed once for both page and asset generation. */
 const byLang = groupByLang(posts,);
 
 /** Valid locale codes present in the loaded content. */
-const validLangs = Object.keys(byLang,).filter(function keepLocale(name,) {
+const validLangs = Object.keys(byLang,)
+  .filter(function keepLocale(name,) {
   return isLocale(name,);
 },);
 

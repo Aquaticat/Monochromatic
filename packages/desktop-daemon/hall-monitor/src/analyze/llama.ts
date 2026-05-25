@@ -182,7 +182,8 @@ async function waitForHealth(): Promise<void> {
         /** Parsed health payload; `status === 'ok'` ends the poll loop. */
         // oxlint-disable-next-line no-await-in-loop, typescript/no-unsafe-type-assertion -- sequential poll; JSON response shape is known
         const body = (await res.json()) as { status: string; };
-        if (body.status === 'ok')
+        if (body.status
+          === 'ok')
           return;
       }
     }

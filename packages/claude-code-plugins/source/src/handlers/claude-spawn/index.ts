@@ -71,7 +71,8 @@ function updateChildOnStop(
   },
 ): void {
   /** Spawn correlation id injected by the CLI when this Claude was a child; absent in normal runs. */
-  const spawnId = process.env.CLAUDE_SPAWN_ID;
+  const spawnId = process.env
+    .CLAUDE_SPAWN_ID;
   if ((spawnId === undefined) || (lastMessage === undefined))
     return;
 
@@ -92,7 +93,8 @@ function updateChildOnStop(
     const state = JSON.parse(existing,) as SpawnState;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
 
-    if (state.sessionId === sessionId) {
+    if (state.sessionId
+      === sessionId) {
       /** New state with `status: 'stopped'` and the final assistant message recorded. */
       const updated: SpawnState = {
         ...state,
@@ -198,7 +200,8 @@ function additionalContextResponse(event: ReadonlyDeep<HookInput>,): ClaudeSpawn
  * ```
  */
 function claudeSpawnHandler(event: ReadonlyDeep<HookInput>,): ClaudeSpawnOutput {
-  if (event.hook_event_name === 'SessionStart') {
+  if (event.hook_event_name
+    === 'SessionStart') {
     /** Raw SessionStart warning text emitted directly to stdout. */
     const text = handleSessionStart({
       sessionId: event.session_id,
@@ -210,14 +213,16 @@ function claudeSpawnHandler(event: ReadonlyDeep<HookInput>,): ClaudeSpawnOutput 
       text,
     };
   }
-  if (event.hook_event_name === 'Stop') {
+  if (event.hook_event_name
+    === 'Stop') {
     updateChildOnStop({
       sessionId: event.session_id,
       lastMessage: event.last_assistant_message,
     },);
     return stopResponse(event,);
   }
-  if (event.hook_event_name === 'SessionEnd') {
+  if (event.hook_event_name
+    === 'SessionEnd') {
     /** SessionEnd is a no-op for this plugin; return the empty pass-through. */
     const empty: HookOutputBase = {};
     return {
@@ -259,7 +264,8 @@ function claudeSpawnParser(raw: string,): HookInput {
  * ```
  */
 function claudeSpawnWriter(output: ReadonlyDeep<ClaudeSpawnOutput>,): string {
-  if (output.kind === 'raw')
+  if (output.kind
+    === 'raw')
     return output.text;
   return JSON.stringify(output.payload,);
 }

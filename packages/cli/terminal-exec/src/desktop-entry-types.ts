@@ -80,13 +80,16 @@ export function expandEscapes({ s, }: { readonly s: string; },): string {
     const out: string[] = [];
     /** Scan cursor; advances by 2 across a resolved escape, by 1 otherwise. */
     let idx = 0;
-    while (idx < s.length) {
+    while (idx < s
+      .length) {
       /** Current character under the cursor. */
       const c = s.charAt(idx,);
-      if ((c === '\\') && ((idx + 1) < s.length)) {
+      if ((c === '\\') && ((idx + 1) < s
+        .length)) {
         /** Character following the backslash; looked up in the escape map. */
         const next = s.charAt(idx + 1,);
-        out.push(ESCAPE_MAP[next] ?? next,);
+        out.push(ESCAPE_MAP[next]
+          ?? next,);
         idx += 2;
       }
       else {

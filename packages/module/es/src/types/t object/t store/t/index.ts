@@ -1,5 +1,5 @@
-export * as async from './r a/index.ts';
-export * as sync from './r s/index.ts';
+export type * as async from './r a/index.ts';
+export type * as sync from './r s/index.ts';
 
 /**
  * Serialize unknown data to deterministic string form.

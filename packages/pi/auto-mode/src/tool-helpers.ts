@@ -37,7 +37,8 @@ function extractToolText(
     'write',
     event,
   )) {
-    return event.input.content;
+    return event.input
+      .content;
   }
   if (isToolCallEventType(
     'edit',
@@ -75,25 +76,29 @@ function getFilePath(
     'read',
     event,
   )) {
-    return event.input.path;
+    return event.input
+      .path;
   }
   if (isToolCallEventType(
     'write',
     event,
   )) {
-    return event.input.path;
+    return event.input
+      .path;
   }
   if (isToolCallEventType(
     'edit',
     event,
   )) {
-    return event.input.path;
+    return event.input
+      .path;
   }
   if (isToolCallEventType(
     'grep',
     event,
   )) {
-    return event.input.path;
+    return event.input
+      .path;
   }
   return undefined;
 }
@@ -119,43 +124,53 @@ function describeAction(
     'bash',
     event,
   )) {
-    return `bash: ${event.input.command}`;
+    return `bash: ${event.input
+      .command}`;
   }
   if (isToolCallEventType(
     'read',
     event,
   )) {
-    return `read ${event.input.path}`;
+    return `read ${event.input
+      .path}`;
   }
   if (isToolCallEventType(
     'write',
     event,
   )) {
-    return `write ${event.input.path}`;
+    return `write ${event.input
+      .path}`;
   }
   if (isToolCallEventType(
     'edit',
     event,
   )) {
-    return `edit ${event.input.path}`;
+    return `edit ${event.input
+      .path}`;
   }
   if (isToolCallEventType(
     'grep',
     event,
   )) {
-    return `grep ${event.input.path ?? ''}`;
+    return `grep ${event.input
+      .path
+      ?? ''}`;
   }
   if (isToolCallEventType(
     'find',
     event,
   )) {
-    return `find ${event.input.path ?? ''}`;
+    return `find ${event.input
+      .path
+      ?? ''}`;
   }
   if (isToolCallEventType(
     'ls',
     event,
   )) {
-    return `ls ${event.input.path ?? ''}`;
+    return `ls ${event.input
+      .path
+      ?? ''}`;
   }
   return event.toolName;
 }

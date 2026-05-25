@@ -57,8 +57,10 @@ export function parseRange(value: string,): ParsedRange | undefined {
     idx,
   );
   /** Substring after `>=`, used as the semver to compare against installed versions. */
-  const version = value.slice(idx + RANGE_TOKEN.length,);
-  if (version.length === 0)
+  const version = value.slice(idx + RANGE_TOKEN
+    .length,);
+  if (version.length
+    === 0)
     return undefined;
   return {
     prefix,

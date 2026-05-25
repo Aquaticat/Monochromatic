@@ -33,7 +33,8 @@ const TIMER_INTERVAL_MS = 1_000;
  * @param taskId - ID of task to open
  */
 function handleOpen(taskId: string,): void {
-  globalThis.location.href = `/tasks/${taskId}`;
+  globalThis.location
+    .href = `/tasks/${taskId}`;
 }
 
 injectCSS(globalStyles,);
@@ -49,7 +50,9 @@ if (!(appElement instanceof HTMLElement))
 /** Validated `#app` container element. */
 const app = appElement;
 
-if (pageData.tasks.length === 0) {
+if (pageData.tasks
+  .length
+  === 0) {
   app.append(h({
     tag: 'p',
     class: 'empty',
@@ -74,14 +77,17 @@ for (const task of pageData.tasks) {
             path: `/api/tasks/${taskId}/stop`,
             options: { method: 'POST', },
           },);
-          globalThis.location.reload();
+          globalThis.location
+            .reload();
         },
       },
     },),
   );
 }
 
-if (pageData.tasks.length > 0)
+if (pageData.tasks
+  .length
+  > 0)
   app.append(list,);
 
 // Live timer updates: correlate each card with its task by DOM order

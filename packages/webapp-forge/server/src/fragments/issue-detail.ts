@@ -154,14 +154,16 @@ function commentBlock(props: {
  */
 export function renderIssueDetail(data: IssueDetailData,): SafeHtml {
   /** Per-label badge HTML rendered into the header. */
-  const labelBadges = data.labels.map(function eachLabel(label,) {
+  const labelBadges = data.labels
+    .map(function eachLabel(label,) {
     return labelBadge({
       name: label.name,
       color: label.color,
     },);
   },);
   /** Per-comment HTML rendered into the issue body. */
-  const commentBlocks = data.comments.map(function eachComment(comment,) {
+  const commentBlocks = data.comments
+    .map(function eachComment(comment,) {
     return commentBlock({
       authorLogin: comment.authorLogin,
       body: comment.body,

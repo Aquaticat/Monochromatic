@@ -90,7 +90,9 @@ async function isShimForSelf(candidatePath: string,): Promise<boolean> {
  * ```
  */
 export async function resolveGit({
-  pathEnv = process.env.PATH ?? '',
+  pathEnv = process.env
+    .PATH
+    ?? '',
 }: ResolveGitOptions = {},): Promise<string> {
   /** Tagged logger for git binary resolution. */
   const rl = tagged({

@@ -36,7 +36,8 @@ export function runStak(source: string,): string {
   // First pass: index label positions so JUMP/JUMPZ can resolve targets before execution
   /** Label name to token index; populated in the first pass so jumps can resolve forward labels. */
   const labels = new Map<string, number>();
-  for (let i = 0; i < tokens.length; i++) {
+  for (let i = 0; i < tokens
+    .length; i++) {
     /** Current token in the label-indexing pass; undefined when the array has holes. */
     const token = tokens[i];
     if (token === undefined)
@@ -64,7 +65,8 @@ export function runStak(source: string,): string {
   /** Output buffer accumulated from PRINT/PRINTC; returned to the caller at end of program. */
   let out = '';
 
-  while (ip < tokens.length) {
+  while (ip < tokens
+    .length) {
     /** Token at the current ip; loop terminates if it is missing. */
     const currentToken = tokens[ip];
     if (currentToken === undefined)
@@ -87,9 +89,11 @@ export function runStak(source: string,): string {
       env,
       labels,
     },);
-    if (step.output !== undefined)
+    if (step.output
+      !== undefined)
       out += step.output;
-    if (step.jumpTo !== undefined) {
+    if (step.jumpTo
+      !== undefined) {
       ip = step.jumpTo;
       continue;
     }

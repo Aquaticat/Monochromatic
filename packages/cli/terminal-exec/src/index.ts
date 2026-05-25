@@ -23,14 +23,16 @@ import { l, } from './log.ts';
 import { resolveTerminal, } from './resolve.ts';
 
 /** Parsed CLI options from process arguments. */
-const options = parseArgs({ argv: process.argv.slice(2,), },);
+const options = parseArgs({ argv: process.argv
+  .slice(2,), },);
 /** Resolved terminal emulator entry, or `null` if none found. */
 const terminal = await resolveTerminal();
 
 if (terminal === null) {
   console.error('terminal-exec: no terminal emulator found',);
   throw new Error(
-    process.platform === 'win32'
+    process.platform
+      === 'win32'
       ? 'No terminal emulator found.'
       : 'No terminal emulator found. Install a terminal emulator or configure one in ~/.config/xdg-terminals.list',
   );
@@ -48,7 +50,11 @@ const command = buildCommand({
  * If `--dir` was provided but the terminal has no dir argument support,
  * change the working directory before exec.
  */
-if ((options.dir.length > 0) && (terminal.dirArg.length === 0)) {
+if ((options.dir
+  .length
+  > 0) && (terminal.dirArg
+  .length
+  === 0)) {
   l.info(`terminal has no TerminalArgDir, cd to '${options.dir}'`,);
   process.chdir(options.dir,);
 }

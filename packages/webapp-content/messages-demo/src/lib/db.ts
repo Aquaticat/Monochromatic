@@ -49,9 +49,11 @@ function resolveDatabasePath(): string {
   /** CLI override; preferred over the env var when both are set. */
   const argumentPath = getArgumentValue('db',);
   /** Fallback environment value; used when the CLI did not supply one. */
-  const environmentPath = process.env.DB_PATH;
+  const environmentPath = process.env
+    .DB_PATH;
   /** Resolved precedence: CLI \> env \> default. */
-  const rawPath = argumentPath ?? environmentPath ?? DEFAULT_DATABASE_PATH;
+  const rawPath = argumentPath ?? environmentPath
+    ?? DEFAULT_DATABASE_PATH;
   return normalizeDatabasePath(rawPath,);
 }
 
@@ -114,7 +116,8 @@ export async function run(
   /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
   const stmt = db.prepare(input.sql,);
   /* oxlint-disable typescript/no-unsafe-type-assertion -- Turso typed result */
-  return await stmt.run(...(input.params ?? []),) as {
+  return await stmt.run(...(input.params
+    ?? []),) as {
     changes: number;
     lastInsertRowid: number;
   };
@@ -143,7 +146,8 @@ export async function get<T = Record<string, unknown>,>(
   const stmt = db.prepare(input.sql,);
   /* oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Turso returns any */
   /** Raw row returned by Turso; widened to `unknown` here and asserted to `T` below. */
-  const value = await stmt.get(...(input.params ?? []),);
+  const value = await stmt.get(...(input.params
+    ?? []),);
   return ((value === undefined) || (value === null)) ? undefined : value as T;
   /* oxlint-enable typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion */
 }
@@ -169,6 +173,7 @@ export async function all<T = Record<string, unknown>,>(
   /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
   const stmt = db.prepare(input.sql,);
   /* oxlint-disable typescript/no-unsafe-type-assertion -- Turso typed rows */
-  return await stmt.all(...(input.params ?? []),) as T[];
+  return await stmt.all(...(input.params
+    ?? []),) as T[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
 }

@@ -46,9 +46,12 @@ import {
  * Claude Code `PRH` pattern this mirrors.
  */
 const TEMP_OPEN_FLAGS = fsConstants.O_WRONLY
-  | fsConstants.O_CREAT
-  | fsConstants.O_EXCL
-  | fsConstants.O_NOFOLLOW;
+  | fsConstants
+  .O_CREAT
+  | fsConstants
+  .O_EXCL
+  | fsConstants
+  .O_NOFOLLOW;
 
 /**
  * Number of random bytes in the temp-file suffix. 6 bytes is 12 hex chars,
@@ -81,7 +84,8 @@ const TEMP_SUFFIX_BYTES = 6;
  */
 function buildTempPath(path: string,): string {
   /** Random suffix prevents collisions when multiple writers target the same file. */
-  const rand = randomBytes(TEMP_SUFFIX_BYTES,).toString('hex',);
+  const rand = randomBytes(TEMP_SUFFIX_BYTES,)
+    .toString('hex',);
   return join(
     dirname(path,),
     `.${basename(path,)}.editord.${rand}~`,
@@ -122,7 +126,8 @@ async function refuseSymlinkAndReadMode(path: string,): Promise<number | null> {
     return stats.mode;
   }
   catch (statErr) {
-    if ((statErr instanceof Error) && ('code' in statErr) && (statErr.code === 'ENOENT'))
+    if ((statErr instanceof Error) && ('code' in statErr)
+      && (statErr.code === 'ENOENT'))
       return null;
     throw statErr;
   }

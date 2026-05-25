@@ -85,9 +85,11 @@ const tasks = scanResults.flatMap(function buildTasks(result,) {
 /** Settled conversion outcomes used to tally converted vs skipped counts. */
 const results = await Promise.all(tasks,);
 /** Number of images that were newly converted to AVIF. */
-const converted = results.filter(Boolean,).length;
+const converted = results.filter(Boolean,)
+  .length;
 /** Number of images skipped because an AVIF counterpart already existed. */
-const skipped = results.length - converted;
+const skipped = results.length
+  - converted;
 
 l.info(`done: ${converted} converted, ${skipped} skipped`,);
 

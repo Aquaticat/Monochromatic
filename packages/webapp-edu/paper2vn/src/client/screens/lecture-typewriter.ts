@@ -88,7 +88,9 @@ export function typewrite(
           0,
           state.index,
         );
-        if (state.index >= text.length) {
+        if (state.index
+          >= text
+          .length) {
           globalThis.clearInterval(timer,);
           resolve();
         }

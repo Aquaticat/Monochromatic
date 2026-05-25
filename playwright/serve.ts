@@ -37,7 +37,8 @@ app.all(
 
     if (pathname.startsWith('/dist/module-logger/',)) {
       /** Resolved MIME type for the requested asset; falls back to a safe binary type. */
-      const contentType = mimeTypes[extname(pathname,)] ?? 'application/octet-stream';
+      const contentType = mimeTypes[extname(pathname,)]
+        ?? 'application/octet-stream';
       return new Response(
         await readFile(
           `packages/module/logger/dist/${pathname.slice('/dist/module-logger/'.length,)}`,
@@ -50,7 +51,8 @@ app.all(
 
     if (pathname.startsWith('/dist/',)) {
       /** Resolved MIME type for the requested asset; falls back to a safe binary type. */
-      const contentType = mimeTypes[extname(pathname,)] ?? 'application/octet-stream';
+      const contentType = mimeTypes[extname(pathname,)]
+        ?? 'application/octet-stream';
       return new Response(
         await readFile(`packages/module/es${pathname}`,),
         {

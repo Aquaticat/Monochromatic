@@ -69,7 +69,8 @@ async function runStrategyCommand({
   verbose,
 }: RunStrategyCommandOptions,): Promise<number> {
   /** Space-separated stringified timestamps suitable for embedding in a `printf` argument list. */
-  const formattedValues = timestamps.map(String,).join(' ',);
+  const formattedValues = timestamps.map(String,)
+    .join(' ',);
   // Use printf to pipe timestamps (one per line) into the strategy command via stdin
   /** Full pipeline executed via `sh`, piping one timestamp per line into the user's strategy command. */
   const fullCommand = `printf '%s\\n' ${formattedValues} | ${command}`;
@@ -85,7 +86,8 @@ async function runStrategyCommand({
       fullCommand,
       { shell: true, },
     );
-    stdout = result.stdout.trim();
+    stdout = result.stdout
+      .trim();
   }
   catch (error) {
     throw new Error(
@@ -186,7 +188,8 @@ export async function aggregateTimestamps({
   /** Prefix that identifies a shell command strategy */
   const shPrefix = 'sh:';
   if (strategy.startsWith(shPrefix,)) {
-    if (timestamps.length === 0)
+    if (timestamps.length
+      === 0)
       return -Infinity;
     return await runStrategyCommand({
       command: strategy.slice(shPrefix.length,),

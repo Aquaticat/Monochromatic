@@ -117,7 +117,9 @@ export function css(): string {
  */
 export function html(post: Post,): string {
   /** Pre-rendered tag list injected into the card body so the JSX structure stays flat. */
-  const tagItems = post.data.tags.map(function renderTag(tag,) {
+  const tagItems = post.data
+    .tags
+    .map(function renderTag(tag,) {
     return h({
       tag: 'li',
       class: 'tag-link',
@@ -142,19 +144,22 @@ export function html(post: Post,): string {
             tag: 'a',
             class: 'overlay',
             attrs: { href: `/${post.lang}/${post.name}`, },
-            text: post.data.title,
+            text: post.data
+              .title,
           },),
           h({
             tag: 'div',
             children: [
               h({
                 tag: 'h2',
-                text: post.data.title,
+                text: post.data
+                  .title,
               },),
               h({
                 tag: 'p',
                 class: 'description',
-                text: post.data.description,
+                text: post.data
+                  .description,
               },),
               h({
                 tag: 'aside',
@@ -169,12 +174,14 @@ export function html(post: Post,): string {
                     class: 'date',
                     children: [
                       prettyDate({
-                        date: post.data.published,
+                        date: post.data
+                          .published,
                         lang: post.lang,
                       },),
                       ' - ',
                       prettyDate({
-                        date: post.data.updated,
+                        date: post.data
+                          .updated,
                         lang: post.lang,
                       },),
                     ],

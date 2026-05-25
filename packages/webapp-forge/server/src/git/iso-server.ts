@@ -81,9 +81,12 @@ export async function handleUploadPack(
   /** Parsed upload-pack request driving the rest of the handler. */
   const request = parseUploadPackBody(row.body,);
   /** Client opted into 64k side-band frames; checked before generic side-band. */
-  const useSideBand64k = request.capabilities.includes('side-band-64k',);
+  const useSideBand64k = request.capabilities
+    .includes('side-band-64k',);
   /** Either form of side-band selects the multiplexed response shape. */
-  const useSideBand = useSideBand64k || request.capabilities.includes('side-band',);
+  const useSideBand = useSideBand64k || request
+    .capabilities
+    .includes('side-band',);
   /** Object ids the server still needs to send after subtracting client haves. */
   const oids = await collectReachable({
     gitdir,
@@ -92,7 +95,8 @@ export async function handleUploadPack(
   },);
   /** Packfile bytes; populated from packObjects only when the want set is non-empty. */
   const packfile = await (async function buildPackfile(): Promise<Uint8Array> {
-    if (oids.length === 0)
+    if (oids.length
+      === 0)
       return new Uint8Array(0,);
     /** Pack-generation result; `packfile` is undefined for empty packs. */
     const result = await git.packObjects({
@@ -101,7 +105,8 @@ export async function handleUploadPack(
       oids,
       write: false,
     },);
-    if (result.packfile === undefined)
+    if (result.packfile
+      === undefined)
       return new Uint8Array(0,);
     return new Uint8Array(result.packfile,);
   })();
@@ -137,10 +142,15 @@ export async function handleReceivePack(
   /** Parsed receive-pack request: triplets, packfile, capabilities. */
   const request = parseReceivePackBody(row.body,);
   /** Client opted into 64k side-band frames; checked before generic side-band. */
-  const useSideBand64k = request.capabilities.includes('side-band-64k',);
+  const useSideBand64k = request.capabilities
+    .includes('side-band-64k',);
   /** Either form of side-band selects the multiplexed response shape. */
-  const useSideBand = useSideBand64k || request.capabilities.includes('side-band',);
-  if (request.triplets.length === 0) {
+  const useSideBand = useSideBand64k || request
+    .capabilities
+    .includes('side-band',);
+  if (request.triplets
+    .length
+    === 0) {
     return {
       body: concatChunks(writeReceivePackResponse({
         unpackOk: true,
@@ -159,7 +169,9 @@ export async function handleReceivePack(
     unpackOk: boolean;
     unpackError: string | undefined;
   }> {
-    if (request.packfile.byteLength === 0) {
+    if (request.packfile
+      .byteLength
+      === 0) {
       return {
         unpackOk: true,
         unpackError: undefined,
@@ -199,7 +211,8 @@ export async function handleReceivePack(
         triplet,
       },);
       /* oxlint-enable no-await-in-loop */
-      refResults.push(result.error === undefined
+      refResults.push(result.error
+        === undefined
         ? {
           refName: triplet.refName,
           ok: result.ok,
@@ -320,11 +333,13 @@ export async function readLooseObjectBytes(
   const path = join(
     gitdir,
     'objects',
-    row.oid.slice(
+    row.oid
+      .slice(
       0,
       HEX_PREFIX_LEN,
     ),
-    row.oid.slice(HEX_PREFIX_LEN,),
+    row.oid
+      .slice(HEX_PREFIX_LEN,),
   );
   return new Uint8Array(await readFile(path,),);
 }

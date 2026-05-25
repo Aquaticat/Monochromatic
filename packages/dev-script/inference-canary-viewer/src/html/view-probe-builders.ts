@@ -37,7 +37,8 @@ export function buildCrossModelPoints({
 },): readonly ScatterPoint[] {
   /** Entries that recorded a score for the requested probe. */
   const relevant = entries.filter(function hasProbe(entry,): boolean {
-    return probe in entry.probeScores;
+    return probe in entry
+      .probeScores;
   },);
 
   return relevant.map(function toPoint(
@@ -45,7 +46,8 @@ export function buildCrossModelPoints({
     index,
   ): ScatterPoint {
     /** Probe-specific initial-pass score with zero fallback. */
-    const score = entry.probeScores[probe] ?? 0;
+    const score = entry.probeScores[probe]
+      ?? 0;
     /** Probe-specific fix-pass score; undefined when no fix was attempted. */
     const pass2Score = entry.pass2Scores?.[probe];
     /** Vendor-derived accent color for the point's button. */
@@ -61,7 +63,8 @@ export function buildCrossModelPoints({
       color,
       icon: vendorIcon(entry.model,),
       title: `${entry.label} ${
-        entry.timestamp.slice(
+        entry.timestamp
+          .slice(
           0,
           10,
         )
@@ -124,7 +127,9 @@ export function buildSingleModelPoints({
 },): readonly ScatterPoint[] {
   /** Entries scoring the requested probe for this specific model label. */
   const relevant = entries.filter(function matchLabelAndProbe(entry,): boolean {
-    return (entry.label === label) && (probe in entry.probeScores);
+    return (entry.label
+      === label) && (probe in entry
+      .probeScores);
   },);
 
   return relevant.map(function toPoint(
@@ -132,7 +137,8 @@ export function buildSingleModelPoints({
     index,
   ): ScatterPoint {
     /** Probe-specific initial-pass score with zero fallback. */
-    const score = entry.probeScores[probe] ?? 0;
+    const score = entry.probeScores[probe]
+      ?? 0;
     /** Probe-specific fix-pass score; undefined when no fix was attempted. */
     const pass2Score = entry.pass2Scores?.[probe];
     /** Stable id linking the point to its probe-detail overlay. */
@@ -146,7 +152,8 @@ export function buildSingleModelPoints({
       color,
       icon: vendorIcon(openrouterId,),
       title: `${
-        entry.timestamp.slice(
+        entry.timestamp
+          .slice(
           0,
           10,
         )

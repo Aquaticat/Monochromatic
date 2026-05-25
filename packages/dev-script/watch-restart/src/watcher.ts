@@ -170,14 +170,17 @@ export class Watcher {
     this.#onEvent = options.onEvent;
     this.#logger = tagged({
       tag: Watcher.name,
-      l: options.logger ?? defaultLogger,
+      l: options.logger
+        ?? defaultLogger,
     },);
 
     this.#fsw = chokidarWatch(
       [...this.#resolvedRoots,],
       {
-        atomic: options.atomic ?? true,
-        awaitWriteFinish: options.awaitWriteFinish ?? {
+        atomic: options.atomic
+          ?? true,
+        awaitWriteFinish: options.awaitWriteFinish
+          ?? {
           stabilityThreshold: DEFAULT_STABILITY_THRESHOLD_MS,
           pollInterval: DEFAULT_POLL_INTERVAL_MS,
         },
@@ -185,18 +188,22 @@ export class Watcher {
         persistent: true,
         // Always pass `followSymlinks` so the package's default (false) is
         // enforced regardless of chokidar's own default value.
-        followSymlinks: options.followSymlinks === true,
+        followSymlinks: options.followSymlinks
+          === true,
         // Conditional spread keeps `ignored` absent when the caller passes none;
         // ChokidarOptions's `Partial<>` allows missing keys but not explicit `undefined`.
-        ...(options.ignored === undefined
+        ...(options.ignored
+          === undefined
           ? {}
           : { ignored: [...options.ignored,], }),
         // `depth` absent leaves chokidar's default (unlimited) intact.
-        ...(options.depth === undefined ? {} : { depth: options.depth, }),
+        ...(options.depth
+          === undefined ? {} : { depth: options.depth, }),
         // Polling: only enable when an explicit interval is given; both
         // `usePolling` and `interval` are spread together so the keys move
         // as one unit rather than leaving a stray `usePolling: false`.
-        ...(options.poll === undefined
+        ...(options.poll
+          === undefined
           ? {}
           : {
             usePolling: true,
@@ -214,7 +221,8 @@ export class Watcher {
      */
     function onReady(): void {
       self.#ready = true;
-      self.#logger.info('ready',);
+      self.#logger
+        .info('ready',);
     }
 
     /**
@@ -233,7 +241,8 @@ export class Watcher {
           );
         }
         catch (error) {
-          self.#logger.error(`add dispatch failed: ${describeError(error,)}`,);
+          self.#logger
+            .error(`add dispatch failed: ${describeError(error,)}`,);
         }
       })();
     }
@@ -252,7 +261,8 @@ export class Watcher {
           );
         }
         catch (error) {
-          self.#logger.error(`change dispatch failed: ${describeError(error,)}`,);
+          self.#logger
+            .error(`change dispatch failed: ${describeError(error,)}`,);
         }
       })();
     }
@@ -268,7 +278,8 @@ export class Watcher {
           await self.#dispatchUnlink(path,);
         }
         catch (error) {
-          self.#logger.error(`unlink dispatch failed: ${describeError(error,)}`,);
+          self.#logger
+            .error(`unlink dispatch failed: ${describeError(error,)}`,);
         }
       })();
     }
@@ -292,7 +303,8 @@ export class Watcher {
           );
         }
         catch (error) {
-          self.#logger.error(`addDir dispatch failed: ${describeError(error,)}`,);
+          self.#logger
+            .error(`addDir dispatch failed: ${describeError(error,)}`,);
         }
       })();
     }
@@ -314,7 +326,8 @@ export class Watcher {
           );
         }
         catch (error) {
-          self.#logger.error(
+          self.#logger
+            .error(
             `unlinkDir dispatch failed: ${describeError(error,)}`,
           );
         }
@@ -329,34 +342,42 @@ export class Watcher {
      * @param error - error value emitted by chokidar (typed `unknown` per chokidar's signature)
      */
     function onError(error: unknown,): void {
-      self.#logger.error(`watcher error: ${describeError(error,)}`,);
+      self.#logger
+        .error(`watcher error: ${describeError(error,)}`,);
     }
 
-    this.#fsw.on(
+    this.#fsw
+      .on(
       'ready',
       onReady,
     );
-    this.#fsw.on(
+    this.#fsw
+      .on(
       'add',
       onAdd,
     );
-    this.#fsw.on(
+    this.#fsw
+      .on(
       'change',
       onChange,
     );
-    this.#fsw.on(
+    this.#fsw
+      .on(
       'unlink',
       onUnlink,
     );
-    this.#fsw.on(
+    this.#fsw
+      .on(
       'addDir',
       onAddDir,
     );
-    this.#fsw.on(
+    this.#fsw
+      .on(
       'unlinkDir',
       onUnlinkDir,
     );
-    this.#fsw.on(
+    this.#fsw
+      .on(
       'error',
       onError,
     );
@@ -380,7 +401,9 @@ export class Watcher {
         'ready',
       );
     }
-    while (this.#prePopulate.size > 0) {
+    while (this.#prePopulate
+      .size
+      > 0) {
       /* oxlint-disable-next-line eslint/no-await-in-loop -- intentional drain: each iteration awaits ALL pending pre-populates before re-checking, so the loop body cannot run concurrently */
       await Promise.allSettled(this.#prePopulate,);
     }
@@ -397,7 +420,8 @@ export class Watcher {
    * ```
    */
   async stop(): Promise<void> {
-    await this.#fsw.close();
+    await this.#fsw
+      .close();
   }
 
   /**
@@ -430,7 +454,8 @@ export class Watcher {
    * @param path - absolute path emitted by chokidar
    */
   async #dispatchUnlink(path: string,): Promise<void> {
-    this.#hashCache.delete(path,);
+    this.#hashCache
+      .delete(path,);
     if (!this.#ready)
       return;
     await this.#emitEvent(
@@ -470,7 +495,8 @@ export class Watcher {
   #trackPrePopulate(path: string,): void {
     /** Hash-and-store job retained in `#prePopulate` so `untilReady()` can drain it. */
     const job = this.#runPrePopulate(path,);
-    this.#prePopulate.add(job,);
+    this.#prePopulate
+      .add(job,);
     void this.#drainPrePopulateJob(job,);
   }
 
@@ -482,7 +508,8 @@ export class Watcher {
    */
   async #drainPrePopulateJob(job: Promise<void>,): Promise<void> {
     await Promise.allSettled([job,],);
-    this.#prePopulate.delete(job,);
+    this.#prePopulate
+      .delete(job,);
   }
 
   /**
@@ -495,16 +522,19 @@ export class Watcher {
   async #runPrePopulate(path: string,): Promise<void> {
     try {
       /** Digest computed off the disk read; `null` signals a non-fatal I/O miss that should not poison the cache. */
-      const hash = await this.#hashCache.hashFile(path,);
+      const hash = await this.#hashCache
+        .hashFile(path,);
       if (hash !== null) {
-        this.#hashCache.set({
+        this.#hashCache
+          .set({
           path,
           hash,
         },);
       }
     }
     catch (error) {
-      this.#logger.warn(
+      this.#logger
+        .warn(
         `pre-populate hash failed for ${path}: ${describeError(error,)}`,
       );
     }
@@ -557,7 +587,8 @@ export class Watcher {
    * @returns the matching root, or `undefined` when none match
    */
   #findRoot(absPath: string,): string | undefined {
-    return this.#resolvedRoots.find(function isParent(root,) {
+    return this.#resolvedRoots
+      .find(function isParent(root,) {
       return isPathUnderRoot({
         root,
         absPath,

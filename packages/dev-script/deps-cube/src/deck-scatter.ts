@@ -152,7 +152,8 @@ function buildProbeLayer(
   const pos = positionOverride ?? probePosition({
     probe: datum.probe,
     state,
-  },) ?? [
+  },)
+    ?? [
     0,
     0,
     0,
@@ -164,7 +165,8 @@ function buildProbeLayer(
     bounds,
   },);
   return new SimpleMeshLayer<ScatterDatum>({
-    id: `${idPrefix}-${datum.originalIndex.toString()}`,
+    id: `${idPrefix}-${datum.originalIndex
+      .toString()}`,
     data: [
       datum,
     ],

@@ -107,7 +107,8 @@ function isMissingPathError(error: unknown,): boolean {
   if (!('code' in error))
     return false;
 
-  return error.code === 'ENOENT';
+  return error.code
+    === 'ENOENT';
 }
 
 /**
@@ -120,7 +121,8 @@ async function cleanRootSentinelArtifact(artifactPath: string,): Promise<void> {
     /** Candidate stat, read with `lstat` so symlinks are preserved. */
     const stats = await lstat(artifactPath,);
 
-    if ((!stats.isFile()) || (stats.size > 0))
+    if ((!stats.isFile()) || (stats.size
+      > 0))
       return;
 
     await rm(

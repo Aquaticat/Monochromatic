@@ -64,13 +64,18 @@ export class AutofillController {
    * @param title - Current title input value
    */
   request(title: string,): void {
-    if (this.#timer !== null)
+    if (this.#timer
+      !== null)
       clearTimeout(this.#timer,);
-    if (this.#abort !== null) {
-      this.#abort.abort();
+    if (this.#abort
+      !== null) {
+      this.#abort
+        .abort();
       this.#abort = null;
     }
-    if (title.trim().length === 0)
+    if (title.trim()
+      .length
+      === 0)
       return;
 
     this.#timer = setTimeout(
@@ -93,7 +98,8 @@ export class AutofillController {
     const controller = new AbortController();
     this.#abort = controller;
     this.loading = true;
-    this.#callbacks.updateDisplay();
+    this.#callbacks
+      .updateDisplay();
 
     try {
       /** Server response containing the AI-suggested metadata payload. */
@@ -112,34 +118,54 @@ export class AutofillController {
         /** Parsed autofill payload; shape is enforced by the server endpoint contract. */
         const result = (await response.json()) as AutofillResult;
         /* oxlint-enable typescript/no-unsafe-type-assertion */
-        this.autofilled.clear();
+        this.autofilled
+          .clear();
         /** Current field values from the host so empty-field merging can be done. */
-        const state = this.#callbacks.getState();
+        const state = this.#callbacks
+          .getState();
         /** Patch accumulating only fields that were empty before the AI suggestion. */
         const update: Record<string, unknown> = {};
 
-        if ((result.tags.length > 0) && (state.tags.length === 0)) {
+        if ((result.tags
+          .length
+          > 0) && (state.tags
+          .length
+          === 0)) {
           update.tags = result.tags;
-          this.autofilled.add('tags',);
+          this.autofilled
+            .add('tags',);
         }
-        if ((result.locations.length > 0) && (state.locations.length === 0)) {
+        if ((result.locations
+          .length
+          > 0) && (state.locations
+          .length
+          === 0)) {
           update.locations = result.locations;
-          this.autofilled.add('locations',);
+          this.autofilled
+            .add('locations',);
         }
-        if ((result.priority !== null) && (state.priority === null)) {
+        if ((result.priority
+          !== null) && (state.priority
+          === null)) {
           update.priority = result.priority;
-          this.autofilled.add('priority',);
+          this.autofilled
+            .add('priority',);
         }
-        if ((result.complexity !== null) && (state.complexity === null)) {
+        if ((result.complexity
+          !== null) && (state.complexity
+          === null)) {
           update.complexity = result.complexity;
-          this.autofilled.add('complexity',);
+          this.autofilled
+            .add('complexity',);
         }
 
-        this.#callbacks.setState(update,);
+        this.#callbacks
+          .setState(update,);
       }
     }
     catch (error: unknown) {
-      if (!((error instanceof DOMException) && (error.name === 'AbortError'))) {
+      if (!((error instanceof DOMException) && (error.name
+        === 'AbortError'))) {
         console.error(
           'Autofill request failed:',
           error,
@@ -148,6 +174,7 @@ export class AutofillController {
     }
 
     this.loading = false;
-    this.#callbacks.updateDisplay();
+    this.#callbacks
+      .updateDisplay();
   }
 }

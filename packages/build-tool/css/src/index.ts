@@ -132,7 +132,8 @@ export async function build(options: BuildOptions,): Promise<string> {
   /**
    * PostCSS result after resolving and inlining all \@import rules.
    */
-  const bundled = postcss([postcssInlineImport,],).process(
+  const bundled = postcss([postcssInlineImport,],)
+    .process(
     cssText,
     {
       from: inputPath,

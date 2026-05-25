@@ -103,7 +103,8 @@ function endOfDigitRun({
   return (function walk(): number {
     /** Cursor advanced across the ASCII digit run; stops at the first non-digit or the end of `s`. */
     let idx = from;
-    while (idx < s.length) {
+    while (idx < s
+      .length) {
       /** Char at the cursor; only ASCII digits advance the run. */
       const c = s.charAt(idx,);
       if ((c < '0') || (c > '9'))
@@ -172,10 +173,13 @@ export function isDiagnosticLine(line: string,): boolean {
     /** Exclusive end of the trailing digit run; must be followed by `:` to match. */
     const codeEnd = endOfDigitRun({
       s: line,
-      from: codeIdx + ERROR_CODE_TOKEN.length,
+      from: codeIdx + ERROR_CODE_TOKEN
+        .length,
     },);
-    if ((codeEnd === (codeIdx + ERROR_CODE_TOKEN.length))
-      || (line.charAt(codeEnd,) !== ':'))
+    if ((codeEnd === (codeIdx + ERROR_CODE_TOKEN
+      .length))
+      || (line.charAt(codeEnd,)
+        !== ':'))
     {
       from = codeIdx + 1;
       continue;
@@ -184,13 +188,15 @@ export function isDiagnosticLine(line: string,): boolean {
     const colEnd = codeIdx;
     /** Inclusive start of the column digit run; comma boundary must sit just before. */
     const colStart = startOfDigitsBackwards(colEnd,);
-    if ((colStart === colEnd) || (line.charAt(colStart - 1,) !== ',')) {
+    if ((colStart === colEnd) || (line.charAt(colStart - 1,)
+      !== ',')) {
       from = codeIdx + 1;
       continue;
     }
     /** Inclusive start of the line digit run; opening `(` must sit just before. */
     const lineStart = startOfDigitsBackwards(colStart - 1,);
-    if ((lineStart === (colStart - 1)) || (line.charAt(lineStart - 1,) !== '(')) {
+    if ((lineStart === (colStart - 1)) || (line.charAt(lineStart - 1,)
+      !== '(')) {
       from = codeIdx + 1;
       continue;
     }
@@ -214,7 +220,9 @@ export function isDiagnosticLine(line: string,): boolean {
  * ```
  */
 export function isNodeModulesDiagnostic(line: string,): boolean {
-  return line.includes('node_modules/',) || line.includes('node_modules\\',);
+  return line.includes('node_modules/',)
+    || line
+    .includes('node_modules\\',);
 }
 
 /**
@@ -239,9 +247,12 @@ export function isNodeModulesDiagnostic(line: string,): boolean {
 export function isI18nGeneratedDiagnostic(line: string,): boolean {
   // oxlint-disable eslint-plugin-unicorn/prefer-string-raw -- String.raw template literals cannot end with `\` (the trailing backtick is consumed as an escape target); plain '\\' string escapes are the only option for these path separators.
   return line.includes('/i18n/',)
-    || line.includes('/i18n\\',)
-    || line.includes('\\i18n/',)
-    || line.includes('\\i18n\\',);
+    || line
+    .includes('/i18n\\',)
+    || line
+    .includes('\\i18n/',)
+    || line
+    .includes('\\i18n\\',);
   // oxlint-enable eslint-plugin-unicorn/prefer-string-raw
 }
 
@@ -267,7 +278,8 @@ export function isI18nGeneratedDiagnostic(line: string,): boolean {
  * ```
  */
 export function isSuppressedDiagnostic(line: string,): boolean {
-  return isNodeModulesDiagnostic(line,) || isI18nGeneratedDiagnostic(line,);
+  return isNodeModulesDiagnostic(line,)
+    || isI18nGeneratedDiagnostic(line,);
 }
 
 /**
@@ -289,7 +301,10 @@ export function isSuppressedDiagnostic(line: string,): boolean {
  * ```
  */
 export function isContinuationLine(line: string,): boolean {
-  return (line.length > 0) && (line.startsWith(' ',) || line.startsWith('\t',));
+  return (line.length
+    > 0) && (line.startsWith(' ',)
+    || line
+    .startsWith('\t',));
 }
 
 //endregion Diagnostic line detection
@@ -325,7 +340,8 @@ export function filterTsgoOutput(output: string,): {
   readonly filtered: string;
   readonly hasRemainingErrors: boolean;
 } {
-  if (output.length === 0) {
+  if (output.length
+    === 0) {
     return {
       filtered: '',
       hasRemainingErrors: false,
@@ -356,7 +372,8 @@ export function filterTsgoOutput(output: string,): {
         kept.push(line,);
       }
     }
-    else if (isContinuationLine(line,) && droppingContinuation) {
+    else if (isContinuationLine(line,)
+      && droppingContinuation) {
       // Drop continuation of a node_modules diagnostic
     }
     else {
@@ -386,8 +403,11 @@ export function filterTsgoOutput(output: string,): {
  */
 async function main(): Promise<void> {
   /** Arguments forwarded to tsgo, defaulting to `--build` when none are provided. */
-  const tsgoArgs = process.argv.length > 2
-    ? process.argv.slice(2,)
+  const tsgoArgs = process.argv
+    .length
+    > 2
+    ? process.argv
+      .slice(2,)
     : ['--build',];
 
   // tsgo #2666: stale .tsbuildinfo causes false negatives; clean before each build
@@ -401,16 +421,22 @@ async function main(): Promise<void> {
     );
 
     // tsgo succeeded (exit 0): pass output through unfiltered
-    if (result.stdout.length > 0)
-      process.stdout.write(result.stdout,);
-    if (result.stderr.length > 0)
-      process.stderr.write(result.stderr,);
+    if (result.stdout
+      .length
+      > 0)
+      process.stdout
+        .write(result.stdout,);
+    if (result.stderr
+      .length
+      > 0)
+      process.stderr
+        .write(result.stderr,);
   }
   catch (error) {
     if (
       (error !== null)
       && ((typeof error) === 'object')
-      && ('exitCode' in error)
+        && ('exitCode' in error)
     ) {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape */
       /** Subprocess failure narrowed to the shape exposed by the bun/node spawn libraries; carries the streams to filter. */
@@ -424,30 +450,47 @@ async function main(): Promise<void> {
 
       /** Filtered stdout payload with low-value tsgo diagnostics suppressed; written below when non-empty. */
       // Filter stdout (where tsgo writes diagnostics)
-      const stdoutResult = filterTsgoOutput(subprocessError.stdout ?? '',);
+      const stdoutResult = filterTsgoOutput(subprocessError.stdout
+        ?? '',);
       /** Filtered stderr payload with low-value tsgo diagnostics suppressed; written below when non-empty. */
       // Filter stderr as well in case tsgo writes diagnostics there
-      const stderrResult = filterTsgoOutput(subprocessError.stderr ?? '',);
+      const stderrResult = filterTsgoOutput(subprocessError.stderr
+        ?? '',);
 
-      if (stdoutResult.filtered.length > 0) {
-        process.stdout.write(stdoutResult.filtered,);
+      if (stdoutResult.filtered
+        .length
+        > 0) {
+        process.stdout
+          .write(stdoutResult.filtered,);
         // Ensure trailing newline for clean terminal output
-        if (!stdoutResult.filtered.endsWith('\n',))
-          process.stdout.write('\n',);
+        if (!stdoutResult.filtered
+          .endsWith('\n',))
+          process.stdout
+            .write('\n',);
       }
 
-      if (stderrResult.filtered.length > 0) {
-        process.stderr.write(stderrResult.filtered,);
-        if (!stderrResult.filtered.endsWith('\n',))
-          process.stderr.write('\n',);
+      if (stderrResult.filtered
+        .length
+        > 0) {
+        process.stderr
+          .write(stderrResult.filtered,);
+        if (!stderrResult.filtered
+          .endsWith('\n',))
+          process.stderr
+            .write('\n',);
       }
 
       // Exit non-zero only if non-suppressed errors remain
-      if (stdoutResult.hasRemainingErrors || stderrResult.hasRemainingErrors)
-        process.exitCode = subprocessError.exitCode ?? 1;
+      if (stdoutResult.hasRemainingErrors
+        || stderrResult
+        .hasRemainingErrors)
+        process.exitCode = subprocessError.exitCode
+          ?? 1;
 
-      if ((subprocessError.signalName !== undefined)
-        && (subprocessError.signalName !== ''))
+      if ((subprocessError.signalName
+        !== undefined)
+        && (subprocessError.signalName
+          !== ''))
       {
         console.error(
           `[task-tsgo] tsgo terminated by signal: ${subprocessError.signalName}`,

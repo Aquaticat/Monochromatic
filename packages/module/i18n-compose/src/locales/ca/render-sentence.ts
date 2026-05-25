@@ -153,7 +153,8 @@ export function makeCatalanSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.declarative'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Agreement metadata. */
     const agreement = subjectAgreement({
       ref: sentence.subject,
@@ -166,23 +167,28 @@ export function makeCatalanSentenceRenderer<
     },);
     /** Finite verb surface. */
     const verb = finiteVerbSurface({
-      entry: verbs[sentence.predicate.verb],
-      key: sentence.predicate.verb,
+      entry: verbs[sentence.predicate
+        .verb],
+      key: sentence.predicate
+        .verb,
       tense,
       agreement,
     },);
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body before sentence-case fixup. */
     const body = joinTokens([
       subj,
@@ -191,7 +197,8 @@ export function makeCatalanSentenceRenderer<
       complement,
       adverbials,
     ],);
-    return `${capitalizeBody(body,)}${sentence.terminator ?? '.'}`;
+    return `${capitalizeBody(body,)}${sentence.terminator
+      ?? '.'}`;
   }
 
   /**
@@ -205,7 +212,8 @@ export function makeCatalanSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.question.yesNo'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Agreement metadata. */
     const agreement = subjectAgreement({
       ref: sentence.subject,
@@ -218,23 +226,28 @@ export function makeCatalanSentenceRenderer<
     },);
     /** Finite verb surface. */
     const verb = finiteVerbSurface({
-      entry: verbs[sentence.predicate.verb],
-      key: sentence.predicate.verb,
+      entry: verbs[sentence.predicate
+        .verb],
+      key: sentence.predicate
+        .verb,
       tense,
       agreement,
     },);
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body before terminator. */
     const body = joinTokens([
       subj,
@@ -243,7 +256,8 @@ export function makeCatalanSentenceRenderer<
       complement,
       adverbials,
     ],);
-    return `${body}${sentence.terminator ?? '?'}`;
+    return `${body}${sentence.terminator
+      ?? '?'}`;
   }
 
   /**
@@ -257,26 +271,32 @@ export function makeCatalanSentenceRenderer<
     sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.subject'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Finite verb surface using wh-subject agreement (3s). */
     const verb = finiteVerbSurface({
-      entry: verbs[sentence.predicate.verb],
-      key: sentence.predicate.verb,
+      entry: verbs[sentence.predicate
+        .verb],
+      key: sentence.predicate
+        .verb,
       tense,
       agreement: WH_SUBJECT_AGREEMENT,
     },);
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body with `Qui` at head. */
     const body = joinTokens([
       'Qui',
@@ -285,7 +305,8 @@ export function makeCatalanSentenceRenderer<
       complement,
       adverbials,
     ],);
-    return `${body}${sentence.terminator ?? '?'}`;
+    return `${body}${sentence.terminator
+      ?? '?'}`;
   }
 
   /**
@@ -299,7 +320,8 @@ export function makeCatalanSentenceRenderer<
     sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.object'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Agreement metadata. */
     const agreement = subjectAgreement({
       ref: sentence.subject,
@@ -326,7 +348,8 @@ export function makeCatalanSentenceRenderer<
       subj,
       adverbials,
     ],);
-    return `${body}${sentence.terminator ?? '?'}`;
+    return `${body}${sentence.terminator
+      ?? '?'}`;
   }
 
   /**
@@ -340,7 +363,8 @@ export function makeCatalanSentenceRenderer<
     sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.adverbial'; }>,
   ): string {
     /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense ?? 'present';
+    const tense = sentence.tense
+      ?? 'present';
     /** Agreement metadata. */
     const agreement = subjectAgreement({
       ref: sentence.subject,
@@ -353,23 +377,28 @@ export function makeCatalanSentenceRenderer<
     },);
     /** Finite verb surface. */
     const verb = finiteVerbSurface({
-      entry: verbs[sentence.predicate.verb],
-      key: sentence.predicate.verb,
+      entry: verbs[sentence.predicate
+        .verb],
+      key: sentence.predicate
+        .verb,
       tense,
       agreement,
     },);
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Catalan wh-word matched to the AST relation. */
     const wh = catalanWhWord(sentence.wh,);
     /** Sentence body with wh-word at head. */
@@ -381,7 +410,8 @@ export function makeCatalanSentenceRenderer<
       complement,
       adverbials,
     ],);
-    return `${body}${sentence.terminator ?? '?'}`;
+    return `${body}${sentence.terminator
+      ?? '?'}`;
   }
 
   /**
@@ -392,9 +422,11 @@ export function makeCatalanSentenceRenderer<
    * @returns rendered surface
    */
   function renderWh(sentence: WhQuestion<S, V, N>,): string {
-    if (sentence.kind === 'sentence.question.wh.subject')
+    if (sentence.kind
+      === 'sentence.question.wh.subject')
       return renderWhSubject(sentence,);
-    if (sentence.kind === 'sentence.question.wh.object')
+    if (sentence.kind
+      === 'sentence.question.wh.object')
       return renderWhObject(sentence,);
     return renderWhAdverbial(sentence,);
   }
@@ -410,20 +442,25 @@ export function makeCatalanSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.imperative'; }>,
   ): string {
     /** Imperative surface; falls back to the infinitive when no dedicated form is supplied. */
-    const verb = verbs[sentence.predicate.verb].imperative
-      ?? verbs[sentence.predicate.verb].infinitive;
+    const verb = verbs[sentence.predicate.verb]
+      .imperative
+      ?? verbs[sentence.predicate.verb]
+      .infinitive;
     /** Rendered object slot. */
     const object = renderOptionalObject({
-      object: sentence.predicate.object,
+      object: sentence.predicate
+        .object,
       renderNounPhrase,
     },);
     /** Rendered infinitive complement. */
     const complement = renderOptionalComplement({
-      complement: sentence.predicate.complement,
+      complement: sentence.predicate
+        .complement,
       renderVerbPhrase,
     },);
     /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate.adverbials,);
+    const adverbials = renderAdverbials(sentence.predicate
+      .adverbials,);
     /** Sentence body before sentence-case fixup. */
     const body = joinTokens([
       verb,
@@ -431,7 +468,8 @@ export function makeCatalanSentenceRenderer<
       complement,
       adverbials,
     ],);
-    return `${capitalizeBody(body,)}${sentence.terminator ?? '.'}`;
+    return `${capitalizeBody(body,)}${sentence.terminator
+      ?? '.'}`;
   }
 
   /**
@@ -442,11 +480,14 @@ export function makeCatalanSentenceRenderer<
    * @returns rendered surface
    */
   function renderSentence(sentence: Sentence<S, V, N>,): string {
-    if (sentence.kind === 'sentence.declarative')
+    if (sentence.kind
+      === 'sentence.declarative')
       return renderDeclarative(sentence,);
-    if (sentence.kind === 'sentence.question.yesNo')
+    if (sentence.kind
+      === 'sentence.question.yesNo')
       return renderYesNo(sentence,);
-    if (sentence.kind === 'sentence.imperative')
+    if (sentence.kind
+      === 'sentence.imperative')
       return renderImperative(sentence,);
     return renderWh(sentence,);
   }

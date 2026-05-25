@@ -67,7 +67,8 @@ export async function doExpandSelection({
       line: pos.line,
       character: pos.character,
     },);
-    if (chain.length === 0)
+    if (chain.length
+      === 0)
       return;
 
     /** Current selection compared against chain entries to pick the next outer range. */
@@ -75,8 +76,12 @@ export async function doExpandSelection({
 
     /** No selection or collapsed: apply the innermost range. */
     if ((currentSel === null)
-      || ((currentSel.startLine === currentSel.endLine)
-        && (currentSel.startCharacter === currentSel.endCharacter)))
+      || ((currentSel.startLine
+        === currentSel
+        .endLine)
+        && (currentSel.startCharacter
+          === currentSel
+          .endCharacter)))
     {
       /** Innermost entry; undefined was guarded out by the length check above. */
       const [first,] = chain;

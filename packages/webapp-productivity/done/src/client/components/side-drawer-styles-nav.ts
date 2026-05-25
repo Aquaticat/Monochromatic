@@ -34,7 +34,9 @@ const NAV_FONT_SIZE = 1 + ((1 / 2) / 2);
 const FONT_WEIGHT_NORMAL = 400;
 
 /** Focus outline offset in rem. */
-const FOCUS_OFFSET = -(1 / 2 / 2 / 2);
+const FOCUS_OFFSET = -(1 / 2
+  / 2
+  / 2);
 
 /** Minimum block-size for the header bar in rem. */
 const HEADER_HEIGHT = 4;

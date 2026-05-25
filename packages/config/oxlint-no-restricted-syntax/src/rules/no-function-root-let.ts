@@ -24,29 +24,37 @@ function isHelperShape(body: ESTree.FunctionBody,): boolean {
   const stmts = body.body;
   /** Minimum statement count for a meaningful helper (declaration + return). */
   const minStmts = 2;
-  if (stmts.length < minStmts)
+  if (stmts.length
+    < minStmts)
     return false;
   /** Final statement of the body; only `ReturnStatement` continues the check. */
   const last = stmts.at(-1,);
-  if ((last === undefined) || (last.type !== 'ReturnStatement'))
+  if ((last === undefined) || (last.type
+    !== 'ReturnStatement'))
     return false;
   /** Expression returned by the helper; only a bare identifier qualifies as the helper shape. */
   const arg = last.argument;
-  if ((arg === null) || (arg.type !== 'Identifier'))
+  if ((arg === null) || (arg.type
+    !== 'Identifier'))
     return false;
   /** Name of the returned identifier; must resolve to a root-level declaration to allowlist the helper. */
   const returnedName = arg.name;
   for (const stmt of stmts) {
-    if (stmt.type === 'VariableDeclaration') {
+    if (stmt.type
+      === 'VariableDeclaration') {
       for (const decl of stmt.declarations) {
-        if ((decl.id.type === 'Identifier') && (decl.id.name === returnedName))
+        if ((decl.id
+          .type
+          === 'Identifier') && (decl.id
+          .name
+          === returnedName))
           return true;
       }
     }
     else if (
       (stmt.type === 'FunctionDeclaration')
       && (stmt.id !== null)
-      && (stmt.id.name === returnedName)
+        && (stmt.id.name === returnedName)
     ) {
       return true;
     }
@@ -148,8 +156,10 @@ export const noFunctionRootLet: CreateOnceRule = {
         body,
       } = node;
       if (
-        (parent.type === 'CallExpression')
-        && (parent.callee === node)
+        (parent.type
+          === 'CallExpression')
+        && (parent.callee
+          === node)
       ) {
         return;
       }
@@ -158,11 +168,14 @@ export const noFunctionRootLet: CreateOnceRule = {
       if (isHelperShape(body,))
         return;
       for (const stmt of body.body) {
-        if (stmt.type !== 'VariableDeclaration')
+        if (stmt.type
+          !== 'VariableDeclaration')
           continue;
-        if (stmt.kind !== 'let')
+        if (stmt.kind
+          !== 'let')
           continue;
-        if (stmt.declare === true)
+        if (stmt.declare
+          === true)
           continue;
         context.report({
           node: stmt,

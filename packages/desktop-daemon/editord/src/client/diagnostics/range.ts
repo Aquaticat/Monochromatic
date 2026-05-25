@@ -50,7 +50,9 @@ export function findTextOffset({
 
   while (textNode !== null) {
     /** Defensive default keeps the count advancing past nodes with null content. */
-    const len = textNode.textContent?.length ?? 0;
+    const len = textNode.textContent
+      ?.length
+      ?? 0;
     if (remaining <= len) {
       return {
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TreeWalker with SHOW_TEXT filter only yields Text nodes
@@ -87,21 +89,29 @@ export function createDiagnosticRange({
   readonly diagnostic: Diagnostic;
 },): globalThis.Range | null {
   /** Out-of-bounds line index returns null instead of throwing. */
-  const startDiv = editor.children[diagnostic.range.start.line];
+  const startDiv = editor.children[diagnostic.range
+    .start
+    .line];
   /** Out-of-bounds line index returns null instead of throwing. */
-  const endDiv = editor.children[diagnostic.range.end.line];
+  const endDiv = editor.children[diagnostic.range
+    .end
+    .line];
   if ((startDiv === undefined) || (endDiv === undefined))
     return null;
 
   /** Resolved DOM position; null when the start column is past end-of-line. */
   const startPos = findTextOffset({
     lineDiv: startDiv,
-    charOffset: diagnostic.range.start.character,
+    charOffset: diagnostic.range
+      .start
+      .character,
   },);
   /** Resolved DOM position; null when the end column is past end-of-line. */
   const endPos = findTextOffset({
     lineDiv: endDiv,
-    charOffset: diagnostic.range.end.character,
+    charOffset: diagnostic.range
+      .end
+      .character,
   },);
   if ((startPos === null) || (endPos === null))
     return null;

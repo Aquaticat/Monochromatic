@@ -175,7 +175,8 @@ function parsePpid(statusContent: string | null,): number {
     return 0;
   /** Parsed integer ppid; falls back to 0 below when /proc emits a non-numeric value. */
   const num = Number.parseInt(
-    ppidLine.slice('PPid:'.length,).trim(),
+    ppidLine.slice('PPid:'.length,)
+      .trim(),
     10,
   );
   return Number.isNaN(num,) ? 0 : num;
@@ -200,7 +201,8 @@ function readProcessFrame(pid: number,): ProcessFrame | null {
   const cmdlineRaw = readProcFile({
     pid,
     name: 'cmdline',
-  },) ?? '';
+  },)
+    ?? '';
   /** Human-readable cmdline with NULs replaced by spaces and trailing NUL removed. */
   const cmdline = cmdlineRaw
     .replaceAll(
@@ -248,7 +250,9 @@ function walkParentChain(
   const frame = readProcessFrame(pid,);
   if (frame === null)
     return [];
-  if ((frame.ppid === 0) || (frame.ppid === pid))
+  if ((frame.ppid
+    === 0) || (frame.ppid
+    === pid))
     return [frame,];
   return [
     frame,
@@ -275,7 +279,8 @@ function hashEnvironment(env: NodeJS.ProcessEnv,): string {
     .toSorted()
     .map(function envLine(key,): string {
       /** Env value for `key`; defaults to '' so unset keys still hash deterministically. */
-      const value = env[key] ?? '';
+      const value = env[key]
+        ?? '';
       return isSecretKey(key,)
         ? `${key}=<len:${String(value.length,)}>\n`
         : `${key}=${value}\n`;

@@ -32,7 +32,10 @@ export function buildPillElements({
   const pillData = [
     {
       field: 'tags',
-      text: metadata.tags.length > 0 ? `# ${metadata.tags.join(', ',)}` : '# ?',
+      text: metadata.tags
+        .length
+        > 0 ? `# ${metadata.tags
+        .join(', ',)}` : '# ?',
     },
     {
       field: 'tracked',
@@ -40,32 +43,43 @@ export function buildPillElements({
     },
     {
       field: 'locations',
-      text: metadata.locations.length > 0
-        ? `where: ${metadata.locations.join(', ',)}`
+      text: metadata.locations
+        .length
+        > 0
+        ? `where: ${metadata.locations
+          .join(', ',)}`
         : 'where: ?',
     },
     {
       field: 'priority',
-      text: `priority: ${metadata.priority ?? '?'}`,
+      text: `priority: ${metadata.priority
+        ?? '?'}`,
     },
     {
       field: 'due',
-      text: `due: ${task.dueDate ?? '?'}`,
+      text: `due: ${task.dueDate
+        ?? '?'}`,
     },
     {
       field: 'complexity',
-      text: `complexity: ${metadata.complexity ?? '?'}`,
+      text: `complexity: ${metadata.complexity
+        ?? '?'}`,
     },
     {
       field: 'reminders',
-      text: task.reminders.length > 0
+      text: task.reminders
+        .length
+        > 0
         ? `reminders: ${task.reminders[0]}`
         : 'reminders: None',
     },
     {
       field: 'blockedBy',
-      text: task.blockedBy.length > 0
-        ? `blockedBy: ${String(task.blockedBy.length,)}`
+      text: task.blockedBy
+        .length
+        > 0
+        ? `blockedBy: ${String(task.blockedBy
+          .length,)}`
         : 'blockedBy: none',
     },
   ];
@@ -78,9 +92,9 @@ export function buildPillElements({
       text: pill.text,
     },);
     if (autofillLoading)
-      element.dataset['loading'] = '';
+      element.dataset.loading = '';
     else if (autofilled.has(pill.field,))
-      element.dataset['autofilled'] = '';
+      element.dataset.autofilled = '';
     return element;
   },);
 }

@@ -36,8 +36,13 @@ export function findAllSocketPaths(): string[] {
   /** Set accumulates discovered paths so the `$NVIM` entry can coexist with scan-directory entries without duplication. */
   const found = new Set<string>();
 
-  if ((process.env.NVIM !== undefined) && (process.env.NVIM !== ''))
-    found.add(process.env.NVIM,);
+  if ((process.env
+    .NVIM
+    !== undefined) && (process.env
+    .NVIM
+    !== ''))
+    found.add(process.env
+      .NVIM,);
 
   /** Current process UID; `undefined` on platforms where `getuid` isn't available (e.g. Windows). */
   const uid = process.getuid?.();
@@ -46,7 +51,8 @@ export function findAllSocketPaths(): string[] {
     const dir = `/run/user/${uid}`;
     try {
       /** Filenames matching the `nvim.*` convention; non-nvim entries in the directory are ignored. */
-      const entries = readdirSync(dir,).filter(function isNvimSocket(entry,) {
+      const entries = readdirSync(dir,)
+        .filter(function isNvimSocket(entry,) {
         return entry.startsWith('nvim.',);
       },);
       for (const name of entries)
@@ -108,7 +114,8 @@ function connectToSocket(socketPath: string,): NeovimClient {
 export function getAllClients(): NeovimClient[] {
   /** Every reachable Neovim RPC socket; empty means no Neovim is running, which is treated as a hard error below. */
   const paths = findAllSocketPaths();
-  if (paths.length === 0) {
+  if (paths.length
+    === 0) {
     throw new Error(
       "No Neovim sockets found. Set $NVIM or run from Neovim's :terminal.",
     );

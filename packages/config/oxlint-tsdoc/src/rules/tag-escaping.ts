@@ -39,7 +39,8 @@ export function hasUnescapedCommentClose(s: string,): boolean {
   // Linear walk: each `*\/` is located by `indexOf`, the cursor advances past
   // every escaped match, so total work is bounded by the length of `s` and the
   // stack stays flat regardless of how many escaped closers appear.
-  for (let from = 0; from <= s.length;) {
+  for (let from = 0; from <= s
+    .length;) {
     /** Position of the next `*\/`; -1 means the rest of the string is safe. */
     const idx = s.indexOf(
       '*/',
@@ -92,7 +93,9 @@ export const escapeInlineTags: CreateOnceRule = {
             index,
           ): void {
             // Skip the first line opener
-            if ((index === 0) && line.trimEnd().endsWith('*',))
+            if ((index === 0) && line
+              .trimEnd()
+              .endsWith('*',))
               return;
             /** Line stripped of indent and `*` so an embedded `*\/` becomes detectable in content. */
             const trimmed = stripCommentLineMarker(line.trimStart(),);
@@ -101,7 +104,10 @@ export const escapeInlineTags: CreateOnceRule = {
               context.report({
                 loc: {
                   start: {
-                    line: comment.loc.start.line + index,
+                    line: comment.loc
+                      .start
+                      .line
+                      + index,
                     column: 0,
                   },
                 },

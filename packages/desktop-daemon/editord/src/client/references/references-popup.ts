@@ -60,7 +60,8 @@ export class ReferencesPopup extends HTMLElement {
       tag: 'div',
       class: 'list',
     },);
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,
@@ -77,7 +78,8 @@ export class ReferencesPopup extends HTMLElement {
     this.addEventListener(
       'toggle',
       function handleToggle(event,) {
-        if ((event as ToggleEvent).newState === 'closed')
+        if ((event as ToggleEvent).newState
+          === 'closed')
           popup.#cleanup();
       },
     );
@@ -107,11 +109,14 @@ export class ReferencesPopup extends HTMLElement {
       readonly cursorHeight: number;
     },
   ): void {
-    if ((this.#list === null) || (locations.length === 0))
+    if ((this.#list
+      === null) || (locations.length
+      === 0))
       return;
     this.#locations = locations;
     this.#selectedIndex = 0;
-    this.parentElement?.insertBefore(
+    this.parentElement
+      ?.insertBefore(
       this.#anchor,
       this,
     );
@@ -122,7 +127,8 @@ export class ReferencesPopup extends HTMLElement {
       cursorHeight,
     },);
     this.showPopover();
-    this.#list.replaceChildren(...renderReferenceItems({ locations, },),);
+    this.#list
+      .replaceChildren(...renderReferenceItems({ locations, },),);
   }
 
   /** Hides the popup and removes the anchor div. */
@@ -134,7 +140,8 @@ export class ReferencesPopup extends HTMLElement {
 
   /** Resets internal state and removes the anchor element. */
   #cleanup(): void {
-    this.#anchor.remove();
+    this.#anchor
+      .remove();
     this.#locations = [];
     this.#selectedIndex = -1;
   }
@@ -150,11 +157,15 @@ export class ReferencesPopup extends HTMLElement {
 
   /** Moves the selection up or down. */
   navigate({ direction, }: { readonly direction: 'up' | 'down'; },): void {
-    if ((this.#locations.length === 0) || (this.#list === null))
+    if ((this.#locations
+      .length
+      === 0) || (this.#list
+      === null))
       return;
     this.#selectedIndex = computeNextIndex({
       current: this.#selectedIndex,
-      total: this.#locations.length,
+      total: this.#locations
+        .length,
       direction,
     },);
     updateItemSelection({
@@ -179,7 +190,8 @@ export class ReferencesPopup extends HTMLElement {
     /** Public event detail; line is converted to 1-based to match editor convention. */
     const detail: ReferenceSelectDetail = {
       path: location.path,
-      line: location.line + 1,
+      line: location.line
+        + 1,
       character: location.character,
     };
     this.dispatchEvent(
@@ -201,7 +213,11 @@ export class ReferencesPopup extends HTMLElement {
    * @returns selected location detail, or null if nothing selected
    */
   accept(): ReferenceSelectDetail | null {
-    if ((this.#selectedIndex < 0) || (this.#selectedIndex >= this.#locations.length))
+    if ((this.#selectedIndex
+      < 0) || (this.#selectedIndex
+      >= this
+      .#locations
+      .length))
       return null;
     /** Currently highlighted reference entry; bounds-checked above. */
     const loc = this.#locations[this.#selectedIndex];

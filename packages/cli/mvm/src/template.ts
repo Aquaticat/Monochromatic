@@ -58,7 +58,8 @@ export async function ensureTemplate(spec: ImageSpec,): Promise<string> {
     return templatePath;
   }
 
-  if (spec.osFamily === 'windows')
+  if (spec.osFamily
+    === 'windows')
     return await ensureWindowsTemplate(spec,);
   return await ensureLinuxTemplate(spec,);
 }

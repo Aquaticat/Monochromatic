@@ -53,7 +53,9 @@ export const requireReturns: CreateOnceRule = {
       ): void {
         if (!functionReturnsValue(node,))
           return;
-        if (result.docComment.returnsBlock === undefined) {
+        if (result.docComment
+          .returnsBlock
+          === undefined) {
           context.report({
             node: result.comment,
             messageId: 'missing',
@@ -90,7 +92,9 @@ export const requireReturnsCheck: CreateOnceRule = {
         result,
       ): void {
         if ((!functionReturnsValue(node,))
-          && (result.docComment.returnsBlock !== undefined))
+          && (result.docComment
+            .returnsBlock
+            !== undefined))
         {
           context.report({
             node: result.comment,

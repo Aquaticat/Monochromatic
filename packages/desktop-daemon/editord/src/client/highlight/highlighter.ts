@@ -63,7 +63,8 @@ export function applyHighlights({
   /** Full document text passed to the parser; newline-joined to match Lezer's offset model. */
   const text = lines.join('\n',);
 
-  if (text.length > MAX_HIGHLIGHT_BYTES) {
+  if (text.length
+    > MAX_HIGHLIGHT_BYTES) {
     highlightLog.info(
       `skipping: ${String(text.length,)} bytes exceeds ${
         String(MAX_HIGHLIGHT_BYTES,)
@@ -88,14 +89,17 @@ export function applyHighlights({
     const name = `hl-${group}`;
     /** Ranges collected for this group, or undefined when no token of this kind appeared. */
     const ranges = rangesByGroup.get(group,);
-    if ((ranges !== undefined) && (ranges.length > 0)) {
-      CSS.highlights.set(
+    if ((ranges !== undefined) && (ranges.length
+      > 0)) {
+      CSS.highlights
+        .set(
         name,
         new Highlight(...ranges,),
       );
     }
     else {
-      CSS.highlights.delete(name,);
+      CSS.highlights
+        .delete(name,);
     }
   }
 

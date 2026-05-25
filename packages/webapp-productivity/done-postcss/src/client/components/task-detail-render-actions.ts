@@ -33,16 +33,20 @@ export function buildActionButtonRow(
 ): HTMLElement {
   /** Start button attrs; `disabled` is appended when a timer is already running. */
   const startAttrs: Record<string, string> = { 'data-action': 'start', };
-  if (task.timerStartedAt !== null)
-    startAttrs['disabled'] = '';
+  if (task.timerStartedAt
+    !== null)
+    startAttrs.disabled = '';
   /** Stop button attrs; `disabled` is appended when no timer is running. */
   const stopAttrs: Record<string, string> = { 'data-action': 'stop', };
-  if (task.timerStartedAt === null)
-    stopAttrs['disabled'] = '';
+  if (task.timerStartedAt
+    === null)
+    stopAttrs.disabled = '';
   /** Complete button attrs; `disabled` is appended when blockers remain. */
   const completeAttrs: Record<string, string> = { 'data-action': 'complete', };
-  if (task.blockedBy.length > 0)
-    completeAttrs['disabled'] = '';
+  if (task.blockedBy
+    .length
+    > 0)
+    completeAttrs.disabled = '';
 
   /** Row captured separately so the create-mode hidden flag can be toggled. */
   const btnRow = h({
@@ -76,7 +80,7 @@ export function buildActionButtonRow(
     ],
   },);
   if (isCreate)
-    btnRow.dataset['hidden'] = '';
+    btnRow.dataset.hidden = '';
   return btnRow;
 }
 

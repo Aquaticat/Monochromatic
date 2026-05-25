@@ -81,7 +81,9 @@ export function parseStatusPreRegion(
     return { hasStatusHintsOverride: false, };
 
   return {
-    hasStatusHintsOverride: parseResult.value.configValues.some(function isAdviceKey(v,) {
+    hasStatusHintsOverride: parseResult.value
+      .configValues
+      .some(function isAdviceKey(v,) {
       return v.startsWith(ADVICE_KEY_PREFIX,);
     },),
   };
@@ -124,8 +126,13 @@ export function parseStatusPostRegion(
     return { isMachineReadable: false, };
 
   /** Sum of machine-readable status flag occurrences (`--porcelain`/`-z` + `-s`/`--short`). */
-  const machineReadableCount = parseResult.value.porcelainFlags.length
-    + parseResult.value.shortFlags.length;
+  const machineReadableCount = parseResult.value
+    .porcelainFlags
+    .length
+    + parseResult
+    .value
+    .shortFlags
+    .length;
 
   return {
     isMachineReadable: machineReadableCount > 0,

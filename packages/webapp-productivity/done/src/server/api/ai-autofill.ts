@@ -88,14 +88,16 @@ function parseAutofillResponse(raw: string,): AutofillResult {
 
     /** String-only tag list filtered defensively against malformed AI output. */
     const tags = Array.isArray(parsed.tags,)
-      ? parsed.tags.filter(function isString(tag,): tag is string {
+      ? parsed.tags
+        .filter(function isString(tag,): tag is string {
         return (typeof tag) === 'string';
       },)
       : [];
 
     /** String-only location list filtered defensively against malformed AI output. */
     const locations = Array.isArray(parsed.locations,)
-      ? parsed.locations.filter(function isString(location,): location is string {
+      ? parsed.locations
+        .filter(function isString(location,): location is string {
         return (typeof location) === 'string';
       },)
       : [];
@@ -103,14 +105,15 @@ function parseAutofillResponse(raw: string,): AutofillResult {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- validated by Set.has check */
     /** Priority gated by the allowed-value set; everything else collapses to null. */
     const priority = ((typeof parsed
-        .priority) === 'string') && VALID_PRIORITIES.has(parsed.priority,)
+        .priority) === 'string') && VALID_PRIORITIES
+      .has(parsed.priority,)
       ? (parsed.priority as TaskPriority)
       : null;
 
     /** Complexity gated by the allowed-value set; everything else collapses to null. */
     const complexity = ((typeof parsed
         .complexity) === 'string') && VALID_COMPLEXITIES
-        .has(parsed.complexity,)
+      .has(parsed.complexity,)
       ? (parsed.complexity as TaskComplexity)
       : null;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -173,9 +176,11 @@ export async function handleAutofill(req: Request,): Promise<Response> {
     const body = (await req.json()) as Record<string, unknown>;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     /** Trimmed title; empty string short-circuits to the empty-response branch below. */
-    const title = (typeof body.title) === 'string' ? body.title.trim() : '';
+    const title = (typeof body.title) === 'string' ? body.title
+      .trim() : '';
 
-    if (title.length === 0) {
+    if (title.length
+      === 0) {
       return Response.json({
         tags: [],
         locations: [],

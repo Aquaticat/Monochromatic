@@ -30,7 +30,9 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
           /** Parsed URL so the protocol and hostname can be checked independently. */
           const u = new URL(s,);
           return ((u.protocol === 'http:') || (u.protocol === 'https:'))
-            && v.DOMAIN_REGEX.test(u.hostname,);
+            && v
+            .DOMAIN_REGEX
+            .test(u.hostname,);
         },
         'Invalid HTTP(S) URL with valid domain',
       ),
@@ -42,10 +44,12 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
         function isFileUrl(s,) {
           /** Parsed URL so the protocol check happens on a structured value, not a string match. */
           const u = new URL(s,);
-          if (!u.protocol.includes('file',))
+          if (!u.protocol
+            .includes('file',))
             return false;
           if (DOT_ENV_PATH !== undefined)
-            return s.length > 0;
+            return s.length
+              > 0;
           return s.startsWith('file:///',);
         },
         'Invalid file URL',
@@ -75,7 +79,10 @@ export function getOpmls(): v.InferOutput<typeof OPMLS_SCHEMA> {
   /** Validated URL list returned to callers so invalid entries fail loud at startup. */
   const result = v.parse(
     OPMLS_SCHEMA,
-    process.env.OPMLS?.split(',',) ?? [],
+    process.env
+      .OPMLS
+      ?.split(',',)
+      ?? [],
   );
   innerL.debug(`${String(result.length,)} OPML URLs`,);
   return result;

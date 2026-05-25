@@ -67,12 +67,14 @@ function handlePopupNav({
   const entry = keyMap[event.key];
   if (entry === undefined)
     return false;
-  if (entry.action === 'navigate') {
+  if (entry.action
+    === 'navigate') {
     event.preventDefault();
     popup.navigate({ direction: entry.direction, },);
     return true;
   }
-  if (entry.action === 'accept') {
+  if (entry.action
+    === 'accept') {
     event.preventDefault();
     entry.handler();
     return true;

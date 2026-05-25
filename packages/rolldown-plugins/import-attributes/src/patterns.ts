@@ -35,7 +35,9 @@ export function extractAttrType(id: string,): string | undefined {
   if (queryIndex === (-1))
     return undefined;
   /** Position immediately after `?<key>=`, where the value substring begins. */
-  const valueStart = queryIndex + ATTR_QUERY_KEY.length + 2;
+  const valueStart = queryIndex + ATTR_QUERY_KEY
+    .length
+    + 2;
   /** Boundary `&` introducing a subsequent query parameter, if any. */
   const ampIndex = id.indexOf(
     '&',

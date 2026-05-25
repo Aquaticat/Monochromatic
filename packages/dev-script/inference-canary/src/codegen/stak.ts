@@ -107,7 +107,8 @@ export const stakInterpreter: Probe = createCodeGenProbe({
     // nano-spawn strips the trailing newline from captured stdout;
     // trimEnd normalizes so the checks work regardless of trailing whitespace
     /** Trimmed stdout used as the haystack for all output checks below. */
-    const output = result.stdout.trimEnd();
+    const output = result.stdout
+      .trimEnd();
     /** Independent boolean checks against the model output; counted to yield correctness. */
     const checks = [
       // Floor division: -7 DIV 2 must be -4 (floor), not -3 (truncation)
@@ -122,6 +123,8 @@ export const stakInterpreter: Probe = createCodeGenProbe({
       output === CODEGEN_EXPECTED_OUTPUT,
     ];
 
-    return { correctness: checks.filter(Boolean,).length / STAK_CODEGEN_TOTAL_CHECKS, };
+    return { correctness: checks.filter(Boolean,)
+      .length
+      / STAK_CODEGEN_TOTAL_CHECKS, };
   },
 },);

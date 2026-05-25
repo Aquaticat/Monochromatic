@@ -85,7 +85,8 @@ async function askUser(
     action,
   ];
   /** Selected button label, used to dispatch between approve / deny / hard-stop branches below. */
-  const choice = await ctx.ui.select(
+  const choice = await ctx.ui
+    .select(
     lines.join('\n',),
     [
       'Allow',
@@ -164,7 +165,8 @@ function updateWidget(
   const approved = verdicts
     .filter(
       function isApproved(v,) {
-        return v.verdict === 'approved';
+        return v.verdict
+          === 'approved';
       },
     )
     .length;
@@ -172,7 +174,8 @@ function updateWidget(
   const denied = verdicts
     .filter(
       function isDenied(v,) {
-        return v.verdict === 'denied';
+        return v.verdict
+          === 'denied';
       },
     )
     .length;
@@ -182,7 +185,8 @@ function updateWidget(
     parts.push(`${approved} approved`,);
   if (denied > 0)
     parts.push(`${denied} denied`,);
-  ctx.ui.setWidget(
+  ctx.ui
+    .setWidget(
     'auto-mode',
     [parts.join(', ',),],
   );

@@ -172,19 +172,23 @@ export function probePosition(
   /** Scene-space X coordinate, or `null` when the X dim is unknown for this probe. */
   const x = extractDim({
     probe,
-    dim: state.dimMapping.x,
+    dim: state.dimMapping
+      .x,
   },);
   /** Scene-space Y coordinate, or `null` when the Y dim is unknown for this probe. */
   const y = extractDim({
     probe,
-    dim: state.dimMapping.y,
+    dim: state.dimMapping
+      .y,
   },);
   /** Scene-space Z coordinate, or `null` when the Z dim is unknown for this probe. */
   const z = extractDim({
     probe,
-    dim: state.dimMapping.z,
+    dim: state.dimMapping
+      .z,
   },);
-  if ((x === null) || (y === null) || (z === null))
+  if ((x === null) || (y === null)
+    || (z === null))
     return null;
   return [
     x,
@@ -246,16 +250,22 @@ export function unknownClusterPosition(
    */
   const hash = (index * 2_654_435_761) >>> 0;
   /** X jitter in `[-UNKNOWN_CLUSTER_JITTER, +UNKNOWN_CLUSTER_JITTER]`, derived from the low byte of `hash`. */
-  const jx = (((hash & 0xff) / 0xff) - 0.5) * 2 * UNKNOWN_CLUSTER_JITTER;
+  const jx = (((hash & 0xff) / 0xff) - 0.5) * 2
+    * UNKNOWN_CLUSTER_JITTER;
   /** Y jitter from the second byte of `hash`, same range as `jx`. */
-  const jy = ((((hash >> 8) & 0xff) / 0xff) - 0.5) * 2 * UNKNOWN_CLUSTER_JITTER;
+  const jy = ((((hash >> 8) & 0xff) / 0xff) - 0.5) * 2
+    * UNKNOWN_CLUSTER_JITTER;
   /** Z jitter from the third byte of `hash`, same range as `jx`. */
-  const jz = ((((hash >> 16) & 0xff) / 0xff) - 0.5) * 2 * UNKNOWN_CLUSTER_JITTER;
+  const jz = ((((hash >> 16) & 0xff) / 0xff) - 0.5) * 2
+    * UNKNOWN_CLUSTER_JITTER;
   /* oxlint-enable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, eslint-plugin-unicorn/number-literal-case, eslint-plugin-unicorn/prefer-math-trunc */
   return [
-    xMax + UNKNOWN_CLUSTER_OFFSET + jx,
-    yMax + UNKNOWN_CLUSTER_OFFSET + jy,
-    zMax + UNKNOWN_CLUSTER_OFFSET + jz,
+    xMax + UNKNOWN_CLUSTER_OFFSET
+      + jx,
+    yMax + UNKNOWN_CLUSTER_OFFSET
+      + jy,
+    zMax + UNKNOWN_CLUSTER_OFFSET
+      + jz,
   ];
 }
 
@@ -314,7 +324,8 @@ export function probeFillColor(
   /** Raw probe value for the colour dim, or `null` when the dim is unknown. */
   const value = extractDim({
     probe,
-    dim: state.dimMapping.color,
+    dim: state.dimMapping
+      .color,
   },);
   if (value === null) {
     return [
@@ -390,7 +401,8 @@ export function probeRadius(
   /** Raw probe value for the size dim, or `null` when the dim is unknown. */
   const value = extractDim({
     probe,
-    dim: state.dimMapping.size,
+    dim: state.dimMapping
+      .size,
   },);
   if (value === null)
     return RADIUS_MIN_PX;
@@ -449,11 +461,17 @@ export function probeRadiusWorld(
   },
 ): number {
   /** Width of the scene bounding box along X, one component of the diagonal. */
-  const dx = bounds.x[1] - bounds.x[0];
+  const dx = bounds.x[1]
+    - bounds
+    .x[0];
   /** Depth of the scene bounding box along Y, one component of the diagonal. */
-  const dy = bounds.y[1] - bounds.y[0];
+  const dy = bounds.y[1]
+    - bounds
+    .y[0];
   /** Height of the scene bounding box along Z, one component of the diagonal. */
-  const dz = bounds.z[1] - bounds.z[0];
+  const dz = bounds.z[1]
+    - bounds
+    .z[0];
   /** Bounding-box diagonal length; world-space radii are expressed as fractions of this so they scale with scene size. */
   const diagonal = Math.hypot(
     dx,
@@ -463,7 +481,8 @@ export function probeRadiusWorld(
   /** Raw probe value for the size dim, or `null` when the dim is unknown. */
   const value = extractDim({
     probe,
-    dim: state.dimMapping.size,
+    dim: state.dimMapping
+      .size,
   },);
   if (value === null)
     return diagonal * RADIUS_MIN_WORLD_FRACTION;
@@ -518,7 +537,8 @@ export function probeIsFilled(
   /** Raw probe value for the shape dim; `null` falls through to the hollow default below. */
   const value = extractDim({
     probe,
-    dim: state.dimMapping.shape,
+    dim: state.dimMapping
+      .shape,
   },);
   if (value === null)
     return false;

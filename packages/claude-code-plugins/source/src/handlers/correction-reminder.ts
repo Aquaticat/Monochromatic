@@ -137,7 +137,8 @@ function detectCorrection(prompt: string,): boolean {
   return containsAnyOfWordBounded({
     haystack: normaliseApostrophes(prompt,),
     phrases: CORRECTION_PHRASES,
-  },) !== undefined;
+  },)
+    !== undefined;
 }
 
 //endregion

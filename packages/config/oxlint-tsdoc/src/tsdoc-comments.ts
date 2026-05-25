@@ -56,7 +56,9 @@ const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration,);
  * @returns true for `/** ... *\/` style comments
  */
 function isTsdocBlock(comment: Comment,): boolean {
-  return (comment.type === 'Block') && comment.value.startsWith('*',);
+  return (comment.type === 'Block') && comment
+    .value
+    .startsWith('*',);
 }
 
 /**
@@ -117,8 +119,10 @@ export function findTsdocComment({
 }: TsdocLookupParams,): Comment | undefined {
   // Fast path: getCommentsBefore works for most declarations
   /** Leading comments returned by the standard API; scanned back-to-front for nearest TSDoc. */
-  const comments = context.sourceCode.getCommentsBefore(node,);
-  for (let i = comments.length - 1; i >= 0; i--) {
+  const comments = context.sourceCode
+    .getCommentsBefore(node,);
+  for (let i = comments.length
+    - 1; i >= 0; i--) {
     /** Single comment candidate at index `i`; checked for the TSDoc block marker. */
     const c = comments[i];
     if ((c !== undefined) && isTsdocBlock(c,))
@@ -139,9 +143,12 @@ export function findTsdocComment({
   // getCommentsBefore returns nothing because the comment is before the
   // `export` keyword rather than the inner declaration.
   /** Starting line of the declaration; comments must end exactly one line above. */
-  const nodeStartLine = node.loc.start.line;
+  const nodeStartLine = node.loc
+    .start
+    .line;
   /** Full comment table for the file; needed because `getCommentsBefore` misses cross-scope ones. */
-  const allComments = context.sourceCode.getAllComments();
+  const allComments = context.sourceCode
+    .getAllComments();
 
   /** Closest TSDoc comment found so far, tracked as the loop scans the whole comment table. */
   let best: Comment | undefined = undefined;
@@ -149,12 +156,20 @@ export function findTsdocComment({
     if (!isTsdocBlock(candidate,))
       continue;
     /** End line of the candidate comment; must immediately precede `nodeStartLine`. */
-    const candidateEndLine = candidate.loc.end.line;
+    const candidateEndLine = candidate.loc
+      .end
+      .line;
     if (candidateEndLine >= nodeStartLine)
       continue;
     if ((nodeStartLine - candidateEndLine) > 1)
       continue;
-    if ((best === undefined) || (candidate.loc.end.line > best.loc.end.line))
+    if ((best === undefined) || (candidate.loc
+      .end
+      .line
+      > best
+      .loc
+      .end
+      .line))
       best = candidate;
   }
 
@@ -197,6 +212,7 @@ export function parseTsdocForNode({
     comment,
     parserContext,
     docComment: parserContext.docComment,
-    messages: parserContext.log.messages,
+    messages: parserContext.log
+      .messages,
   };
 }

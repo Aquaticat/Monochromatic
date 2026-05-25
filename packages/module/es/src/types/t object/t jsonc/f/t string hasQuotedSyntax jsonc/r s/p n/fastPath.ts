@@ -124,11 +124,15 @@ function tryContainerFastPath(
     return NO_FAST_PATH;
 
   /** Cursor that walks back from the closing character to detect a trailing-comma pattern; cursor state held on an object so the function root stays const-only. */
-  const cursor = { searchIndex: trimmed.length - closingChar.length, };
+  const cursor = { searchIndex: trimmed.length
+    - closingChar
+    .length, };
   // Skip whitespace before the closing character
   while (
-    (cursor.searchIndex > 0)
-    && isJsonWhitespace(trimmed[cursor.searchIndex - 1] ?? '',)
+    (cursor.searchIndex
+      > 0)
+    && isJsonWhitespace(trimmed[cursor.searchIndex - 1]
+      ?? '',)
   ) {
     cursor.searchIndex--;
   }
@@ -136,7 +140,8 @@ function tryContainerFastPath(
   /** Local copy of the final cursor position used by the comma/end checks below. */
   const { searchIndex, } = cursor;
   // Check if there's a comma before the whitespace
-  if ((searchIndex > 0) && (trimmed[searchIndex - 1] === ',')) {
+  if ((searchIndex > 0) && (trimmed[searchIndex - 1]
+    === ',')) {
     // Found trailing comma pattern like ", ]" or ", }"
     // Check if there's any content between opening character and the comma
     /** Body between the opening bracket and the trailing comma; empty means malformed container like "[ , ]". */
@@ -146,7 +151,8 @@ function tryContainerFastPath(
         searchIndex - 1,
       )
       .trim();
-    if (contentBeforeComma.length === 0) {
+    if (contentBeforeComma.length
+      === 0) {
       // Empty container with trailing comma like "[ , ]" or "{ , }" - reject
       return NO_FAST_PATH;
     }
@@ -155,7 +161,8 @@ function tryContainerFastPath(
     const repairedJson = trimmed.slice(
       0,
       searchIndex - 1,
-    ) + closingChar;
+    )
+      + closingChar;
     try {
       return {
         ...context,
@@ -268,7 +275,8 @@ export function validateNoTrailingContent(
   const tail = startsWithComment({ value: remainingContent as FragmentStringJsonc, },)
     .remainingContent
     .trim();
-  if (tail.length > 0) {
+  if (tail.length
+    > 0) {
     throw new Error(
       `unexpected trailing content after ${containerType}: ${
         tail.slice(

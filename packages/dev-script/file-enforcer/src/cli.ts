@@ -8,7 +8,8 @@ import { startWatching, } from './watch/watch.ts';
 const CONFIG_NAME = 'file-enforcer.config.ts';
 
 /** Raw CLI arguments after the script path */
-const args = process.argv.slice(2,);
+const args = process.argv
+  .slice(2,);
 
 /** Whether --watch was passed, enabling continuous file watching */
 const watchMode = args.includes('--watch',);
@@ -19,7 +20,8 @@ const positionalArgs = args.filter(function isPositional(arg,): boolean {
 },);
 
 /** Config path from CLI arg, or found by walking up from cwd */
-const configPath = positionalArgs[0] ?? await findUp(CONFIG_NAME,);
+const configPath = positionalArgs[0]
+  ?? await findUp(CONFIG_NAME,);
 
 if (configPath === undefined)
   throw new Error(`Could not find ${CONFIG_NAME} in any parent directory`,);

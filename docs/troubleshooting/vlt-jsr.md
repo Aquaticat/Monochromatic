@@ -257,7 +257,6 @@ Related but distinct: pnpm had a different issue (pnpm/pnpm#10915) about tarball
 - vlt source examined: `vltpkg/vltpkg` main branch,
   `src/package-info/src/index.ts`
 
-
 ## Upstream bug: build metadata in version spec
 
 Filed from: Monochromatic monorepo, vlt 1.0.0-rc.24, Node.js v25.9.0, Linux x86_64

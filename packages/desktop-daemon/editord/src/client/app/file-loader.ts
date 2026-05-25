@@ -84,12 +84,15 @@ export async function loadFile(
     } = r;
     document.title = `editord - ${path}`;
 
-    if ((kind === 'image') || (kind === 'audio') || (kind === 'video')) {
-      editorPane.style.display = 'none';
+    if ((kind === 'image') || (kind === 'audio')
+      || (kind === 'video')) {
+      editorPane.style
+        .display = 'none';
       /** Token-scoped URL the browser fetches the asset bytes from for native media playback. */
       const mediaUrl = `/_raw?path=${encodeURIComponent(path,)}&token=${token}`;
       /** Options bag for the binary viewer, including probed media metadata when the server returned it. */
-      const mediaOpts = r.mediaInfo !== undefined
+      const mediaOpts = r.mediaInfo
+        !== undefined
         ? {
           url: mediaUrl,
           mediaInfo: r.mediaInfo,
@@ -105,14 +108,17 @@ export async function loadFile(
     }
 
     if (kind === 'binary') {
-      editorPane.style.display = 'none';
+      editorPane.style
+        .display = 'none';
       binaryViewer.showHexDump({ content, },);
       return kind;
     }
 
     binaryViewer.hide();
-    editorPane.style.display = '';
-    if (content.length > FILE_SIZE_WARNING_THRESHOLD)
+    editorPane.style
+      .display = '';
+    if (content.length
+      > FILE_SIZE_WARNING_THRESHOLD)
       showFixedToast({ message: 'File too large (>100KB)', },);
     editorPane.setParser(getParserForPath({ path, },),);
     editorPane.setText(content,);

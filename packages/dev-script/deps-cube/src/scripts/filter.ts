@@ -160,7 +160,8 @@ export function extractDim(
   },
 ): number | null {
   if (dim === 'logSourceBytes') {
-    if (probe.sourceBytesOrNull === null)
+    if (probe.sourceBytesOrNull
+      === null)
       return null;
     return Math.log10(Math.max(
       probe.sourceBytesOrNull,
@@ -168,7 +169,8 @@ export function extractDim(
     ),);
   }
   if (dim === 'logDaysStale') {
-    if (probe.daysSinceLastCommitOrNull === null)
+    if (probe.daysSinceLastCommitOrNull
+      === null)
       return null;
     return Math.log10(Math.max(
       probe.daysSinceLastCommitOrNull,
@@ -237,26 +239,35 @@ export function derivedBool(
   if (key === 'isLeaf')
     return probe.isLeaf;
   if (key === 'tsMajority') {
-    if (probe.tsRatioOrNull === null)
+    if (probe.tsRatioOrNull
+      === null)
       return null;
-    return probe.tsRatioOrNull >= TS_MAJORITY_THRESHOLD;
+    return probe.tsRatioOrNull
+      >= TS_MAJORITY_THRESHOLD;
   }
   if (key === 'large') {
-    if (probe.sourceBytesOrNull === null)
+    if (probe.sourceBytesOrNull
+      === null)
       return null;
-    return probe.sourceBytesOrNull >= LARGE_SOURCE_BYTES_THRESHOLD;
+    return probe.sourceBytesOrNull
+      >= LARGE_SOURCE_BYTES_THRESHOLD;
   }
   if (key === 'recent') {
-    if (probe.daysSinceLastCommitOrNull === null)
+    if (probe.daysSinceLastCommitOrNull
+      === null)
       return null;
-    return probe.daysSinceLastCommitOrNull < RECENT_DAYS_THRESHOLD;
+    return probe.daysSinceLastCommitOrNull
+      < RECENT_DAYS_THRESHOLD;
   }
   if (key === 'permissive')
-    return probe.licenseClass === 'permissive';
+    return probe.licenseClass
+      === 'permissive';
   if (key === 'copyleft')
-    return probe.licenseClass === 'copyleft';
+    return probe.licenseClass
+      === 'copyleft';
   if (key === 'hasKnownRepo')
-    return probe.unknownReason === null;
+    return probe.unknownReason
+      === null;
   throw new Error(`Unknown toggle key: ${key as string}`,);
 }
 
@@ -411,14 +422,19 @@ export function searchMatches(
   if (search === '')
     return true;
   /** Lowercased npm name so the substring/regex test is case-insensitive. */
-  const name = probe.npmName.toLowerCase();
-  if ((search.length >= 2) && search.startsWith('/',) && search.endsWith('/',)) {
+  const name = probe.npmName
+    .toLowerCase();
+  if ((search.length >= 2) && search
+    .startsWith('/',)
+    && search
+    .endsWith('/',)) {
     /** Body between the `/.../` delimiters; capped to a benign length so a pathological pattern cannot hang the page. */
     const body = search.slice(
       1,
       -1,
     );
-    if (body.length > MAX_USER_REGEX_LEN)
+    if (body.length
+      > MAX_USER_REGEX_LEN)
       return false;
     try {
       /**

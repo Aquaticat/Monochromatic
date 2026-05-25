@@ -19,5 +19,7 @@ export const PORT: number = v.parse(
     v.transform(Number,),
     v.number(),
   ),
-  process.env.RSS_PORT ?? DEFAULT_PORT,
+  process.env
+    .RSS_PORT
+    ?? DEFAULT_PORT,
 );

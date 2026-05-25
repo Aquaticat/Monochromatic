@@ -83,7 +83,8 @@ export function createMcpServer(
           definition: {
             name: entry.name,
             description: entry.description,
-            inputSchema: entry.inputSchema ?? { type: 'object', },
+            inputSchema: entry.inputSchema
+              ?? { type: 'object', },
           },
           handler: entry.handler,
         },

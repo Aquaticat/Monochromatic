@@ -64,7 +64,9 @@ export async function handleGetDiagnostics(): Promise<ToolCallResult> {
       if (!currentPathSet.has(fileEntry.path,))
         continue;
       /** Lint diagnostics for this current file; empty when oxlint produced none, which still yields a clean merge. */
-      const lintDiags = lintResult.diagnostics.get(fileEntry.path,) ?? [];
+      const lintDiags = lintResult.diagnostics
+        .get(fileEntry.path,)
+        ?? [];
       mergedByPath.set(
         fileEntry.path,
         dedupDiagnostics({
@@ -78,8 +80,11 @@ export async function handleGetDiagnostics(): Promise<ToolCallResult> {
     for (const filePath of uniquePaths) {
       if (!mergedByPath.has(filePath,)) {
         /** Lint-only diagnostics for this current file; LSP didn't report it, so the lint output stands on its own. */
-        const lintDiags = lintResult.diagnostics.get(filePath,) ?? [];
-        if (lintDiags.length > 0) {
+        const lintDiags = lintResult.diagnostics
+          .get(filePath,)
+          ?? [];
+        if (lintDiags.length
+          > 0) {
           mergedByPath.set(
             filePath,
             lintDiags,
@@ -93,13 +98,15 @@ export async function handleGetDiagnostics(): Promise<ToolCallResult> {
     const allNotes = [...lintResult.notes,];
     /** Unsaved-buffer caveat text; empty when every current buffer is saved, so it isn't appended in that case. */
     const caveat = modifiedCaveat(files,);
-    if (caveat.length > 0)
+    if (caveat.length
+      > 0)
       allNotes.push(caveat,);
 
     /** Flattened diagnostic list used purely for the empty-vs-non-empty branching below. */
     const allMerged = [...mergedByPath.values(),].flat();
 
-    if (allMerged.length === 0) {
+    if (allMerged.length
+      === 0) {
       return {
         content: [{
           type: 'text',
@@ -111,7 +118,8 @@ export async function handleGetDiagnostics(): Promise<ToolCallResult> {
     }
 
     // Single file: flat list. Multiple files: grouped by path.
-    if (mergedByPath.size === 1) {
+    if (mergedByPath.size
+      === 1) {
       /** Formatted diagnostic lines for the single-file shortcut path; no indent because no section header. */
       const lines = allMerged.map(function formatLine(diagnostic,) {
         return formatDiagnostic({ diagnostic, },);

@@ -43,13 +43,15 @@ export async function dispatchFsAction({
   readonly action: ContextAction;
   readonly ws: EditorWsClientHandle;
 },): Promise<void> {
-  if (action.kind === 'delete') {
+  if (action.kind
+    === 'delete') {
     await ws.request({
       type: 'deleteEntry',
       path: action.path,
     },);
   }
-  else if (action.kind === 'copy') {
+  else if (action.kind
+    === 'copy') {
     await ws.request({
       type: 'copyEntry',
       path: action.path,
@@ -57,7 +59,8 @@ export async function dispatchFsAction({
         .destPath,
     },);
   }
-  else if (action.kind === 'move') {
+  else if (action.kind
+    === 'move') {
     await ws.request({
       type: 'moveEntry',
       path: action.path,
@@ -65,12 +68,15 @@ export async function dispatchFsAction({
         .destPath,
     },);
   }
-  else if (action.kind === 'new') {
+  else if (action.kind
+    === 'new') {
     /** Trailing slash in the user-entered name signals a directory creation. */
-    const isDirectory = action.name.endsWith('/',);
+    const isDirectory = action.name
+      .endsWith('/',);
     /** Entry name without the trailing slash; the protocol carries the directory bit separately. */
     const name = isDirectory
-      ? action.name.slice(
+      ? action.name
+        .slice(
         0,
         -1,
       )
@@ -82,13 +88,15 @@ export async function dispatchFsAction({
       isDirectory,
     },);
   }
-  else if (action.kind === 'openInTerminal') {
+  else if (action.kind
+    === 'openInTerminal') {
     await ws.request({
       type: 'openInTerminal',
       path: action.path,
     },);
   }
-  else if (action.kind === 'openInDefaultApp') {
+  else if (action.kind
+    === 'openInDefaultApp') {
     await ws.request({
       type: 'openInDefaultApp',
       path: action.path,

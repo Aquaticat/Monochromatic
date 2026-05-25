@@ -40,7 +40,8 @@ export function makeEnglishAdverbialRenderer<S extends string, N extends string,
    * @returns rendered surface
    */
   function renderTimeOperand(operand: NounPhrase<S, N> | ExternalText,): string {
-    return operand.kind === 'externalText' ? operand.text : renderNounPhrase(operand,);
+    return operand.kind
+      === 'externalText' ? operand.text : renderNounPhrase(operand,);
   }
 
   /**
@@ -51,7 +52,8 @@ export function makeEnglishAdverbialRenderer<S extends string, N extends string,
    * @returns rendered surface
    */
   function renderAdverbial(adv: Adverbial<S, N>,): string {
-    if (adv.kind === 'adverbial.location')
+    if (adv.kind
+      === 'adverbial.location')
       return `${adv.relation} ${renderNounPhrase(adv.place,)}`;
     return `${adv.relation} ${renderTimeOperand(adv.time,)}`;
   }
@@ -67,7 +69,8 @@ export function makeEnglishAdverbialRenderer<S extends string, N extends string,
   function renderAdverbials(
     advs: readonly Adverbial<S, N>[] | undefined,
   ): string | undefined {
-    if ((advs === undefined) || (advs.length === 0))
+    if ((advs === undefined) || (advs.length
+      === 0))
       return undefined;
     return advs
       .map(function renderOne(adv,): string {

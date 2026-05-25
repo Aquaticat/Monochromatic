@@ -74,9 +74,11 @@ function resolveLibsqlUrl(): string {
   /** `--db=PATH` CLI argument when supplied; highest priority source. */
   const argumentPath = getArgumentValue('db',);
   /** `DB_PATH` environment variable; second priority source. */
-  const environmentPath = process.env.DB_PATH;
+  const environmentPath = process.env
+    .DB_PATH;
   /** Selected raw path; falls back to the compile-time default. */
-  const rawPath = argumentPath ?? environmentPath ?? DEFAULT_DATABASE_PATH;
+  const rawPath = argumentPath ?? environmentPath
+    ?? DEFAULT_DATABASE_PATH;
   if (rawPath === ':memory:')
     return ':memory:';
   if (rawPath.startsWith('file:',))
@@ -85,10 +87,14 @@ function resolveLibsqlUrl(): string {
 }
 
 /** Resolved Better Auth secret; production must set `BETTER_AUTH_SECRET`. */
-const betterAuthSecret = process.env.BETTER_AUTH_SECRET ?? DEV_BETTER_AUTH_SECRET;
+const betterAuthSecret = process.env
+  .BETTER_AUTH_SECRET
+  ?? DEV_BETTER_AUTH_SECRET;
 
 /** Resolved app base URL for Better Auth's session cookie scope. */
-const betterAuthUrl = process.env.BETTER_AUTH_URL ?? DEFAULT_BETTER_AUTH_URL;
+const betterAuthUrl = process.env
+  .BETTER_AUTH_URL
+  ?? DEFAULT_BETTER_AUTH_URL;
 
 /** Resolved libsql URL captured once so the log line and the dialect agree. */
 const libsqlUrl = resolveLibsqlUrl();

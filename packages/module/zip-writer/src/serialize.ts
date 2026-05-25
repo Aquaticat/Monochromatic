@@ -56,17 +56,26 @@ function computeOffsets(
       entry,
       lfhOffset: cursor,
     },);
-    cursor += LFH_FIXED_SIZE + entry.nameBytes.length + entry.content.length;
+    cursor += LFH_FIXED_SIZE + entry
+      .nameBytes
+      .length
+      + entry
+      .content
+      .length;
   }
   /** Cursor frozen at the point the central directory begins. */
   const cdStart = cursor;
   /** Running total of central directory header bytes. */
   let cdSize = 0;
   for (const { entry, } of positioned)
-    cdSize += CDH_FIXED_SIZE + entry.nameBytes.length;
+    cdSize += CDH_FIXED_SIZE + entry
+      .nameBytes
+      .length;
   /** Final archive size used to allocate the output buffer. */
-  const totalSize = cdStart + cdSize + EOCD_FIXED_SIZE;
-  if ((cdStart > MAX_UINT32) || (cdSize > MAX_UINT32) || (totalSize > MAX_UINT32)) {
+  const totalSize = cdStart + cdSize
+    + EOCD_FIXED_SIZE;
+  if ((cdStart > MAX_UINT32) || (cdSize > MAX_UINT32)
+    || (totalSize > MAX_UINT32)) {
     throw new Error(
       `zip-writer: archive too large for legacy ZIP (${totalSize} bytes, max ${MAX_UINT32}); Zip64 not supported`,
     );
@@ -187,7 +196,8 @@ function writeEndOfCentralDirectory(
  * ```
  */
 export function serializeEntries(entries: ReadonlyMap<string, ZipEntry>,): Uint8Array {
-  if (entries.size > MAX_UINT16) {
+  if (entries.size
+    > MAX_UINT16) {
     throw new Error(
       `zip-writer: too many entries (${entries.size}, max ${MAX_UINT16}); Zip64 not supported`,
     );

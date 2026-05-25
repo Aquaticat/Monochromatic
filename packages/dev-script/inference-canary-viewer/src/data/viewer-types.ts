@@ -129,7 +129,9 @@ export type ProbeDetail = {
  * ```
  */
 export function hasMultipleProbes(entry: ViewerEntry,): boolean {
-  return Object.keys(entry.probeScores,).length >= 2;
+  return Object.keys(entry.probeScores,)
+    .length
+    >= 2;
 }
 
 /** Result of reading all artifacts */

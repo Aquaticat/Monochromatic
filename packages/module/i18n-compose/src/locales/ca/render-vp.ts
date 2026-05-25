@@ -111,15 +111,19 @@ export function makeCatalanVerbPhraseRenderer<
    */
   function renderVerbPhrase(phrase: VerbPhrase<S, V, N>,): string {
     /** Infinitive head for non-finite verb-phrase rendering. */
-    const head = verbs[phrase.verb].infinitive;
+    const head = verbs[phrase.verb]
+      .infinitive;
     /** Optional rendered object surface. */
-    const object = phrase.object === undefined
+    const object = phrase.object
+      === undefined
       ? undefined
       : renderNounPhrase(phrase.object,);
     /** Optional rendered complement (bare infinitive phrase). */
-    const complement = phrase.complement === undefined
+    const complement = phrase.complement
+      === undefined
       ? undefined
-      : renderVerbPhrase(phrase.complement.phrase,);
+      : renderVerbPhrase(phrase.complement
+        .phrase,);
     /** Optional rendered adverbial cluster. */
     const adverbials = renderAdverbials(phrase.adverbials,);
     return joinTokens([

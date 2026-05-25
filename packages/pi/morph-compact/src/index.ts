@@ -82,7 +82,8 @@ async function handleMorphCompactCommand({
   /** Resolved Morph key gates the command early when missing. */
   const apiKey = await resolveMorphApiKey();
   if (apiKey === undefined) {
-    ctx.ui.notify(
+    ctx.ui
+      .notify(
       'MORPH_API_KEY not set (env or ~/.pi/agent/mcp.json): cannot compress',
       'warning',
     );
@@ -90,7 +91,8 @@ async function handleMorphCompactCommand({
   }
 
   /** Read-only branch view fed to the standalone compressor. */
-  const branchEntries = ctx.sessionManager.getBranch();
+  const branchEntries = ctx.sessionManager
+    .getBranch();
   /** Snapshot of current context pressure used to choose a ratio. */
   const contextUsage = ctx.getContextUsage();
   /** Trimmed command-line instructions; empty string maps to undefined below. */
@@ -100,7 +102,8 @@ async function handleMorphCompactCommand({
     ? instructions
     : undefined;
 
-  ctx.ui.notify(
+  ctx.ui
+    .notify(
     'Morph Compact: compressing session...',
     'info',
   );
@@ -116,7 +119,8 @@ async function handleMorphCompactCommand({
 
     // Tier 1: argv (simplest path, zero cleanup)
     // oxlint-disable-next-line eslint-plugin-unicorn/prefer-ternary -- branching on async calls is clearer with if/else
-    if (compressedText.length <= MAX_COMPRESSED_ARG_BYTES) {
+    if (compressedText.length
+      <= MAX_COMPRESSED_ARG_BYTES) {
       await launchTerminal({
         dir: ctx.cwd,
         command: [
@@ -132,7 +136,8 @@ async function handleMorphCompactCommand({
       },);
     }
 
-    ctx.ui.notify(
+    ctx.ui
+      .notify(
       'Morph Compact: launched new session in a separate terminal',
       'info',
     );
@@ -142,7 +147,8 @@ async function handleMorphCompactCommand({
     const message = error instanceof Error
       ? error.message
       : String(error,);
-    ctx.ui.notify(
+    ctx.ui
+      .notify(
       `Morph Compact failed: ${message}`,
       'error',
     );

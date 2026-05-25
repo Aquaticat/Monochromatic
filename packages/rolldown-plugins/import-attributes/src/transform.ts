@@ -66,7 +66,9 @@ export function transformImportAttributes({
   /** AST visitor that records replacements for each kind of attribute-bearing declaration. */
   const visitor = new Visitor({
     ImportDeclaration(node: ESTree.ImportDeclaration,): void {
-      if (node.attributes.length === 0)
+      if (node.attributes
+        .length
+        === 0)
         return;
       /** Attribute type on this static import; gates whether to emit a replacement. */
       const attrType = extractTypeFromAttributes(node.attributes,);
@@ -81,7 +83,10 @@ export function transformImportAttributes({
     },
 
     ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
-      if ((node.source === null) || (node.attributes.length === 0))
+      if ((node.source
+        === null) || (node.attributes
+        .length
+        === 0))
         return;
       /** Attribute type on this re-export with source; gates whether to emit a replacement. */
       const attrType = extractTypeFromAttributes(node.attributes,);
@@ -96,7 +101,9 @@ export function transformImportAttributes({
     },
 
     ExportAllDeclaration(node: ESTree.ExportAllDeclaration,): void {
-      if (node.attributes.length === 0)
+      if (node.attributes
+        .length
+        === 0)
         return;
       /** Attribute type on this wildcard re-export; gates whether to emit a replacement. */
       const attrType = extractTypeFromAttributes(node.attributes,);
@@ -111,7 +118,8 @@ export function transformImportAttributes({
     },
 
     ImportExpression(node: ESTree.ImportExpression,): void {
-      if (node.options === null)
+      if (node.options
+        === null)
         return;
       /** Attribute type extracted from the dynamic-import options object. */
       const attrType = extractTypeFromOptions(node.options,);
@@ -123,28 +131,37 @@ export function transformImportAttributes({
         return;
 
       /** Quote character preserved so the rewritten specifier matches the source's quoting style. */
-      const quote = code[node.source.start];
+      const quote = code[node.source
+        .start];
       replacements.push({
-        start: node.source.start,
-        end: node.source.end,
+        start: node.source
+          .start,
+        end: node.source
+          .end,
         text: `${quote}${sourceValue}?${ATTR_QUERY_KEY}=${attrType}${quote}`,
       },);
 
       // Remove the options argument: find the first comma between source and options
       /** Slice between source end and options start, scanned to locate the separating comma. */
       const between = code.slice(
-        node.source.end,
-        node.options.start,
+        node.source
+          .end,
+        node.options
+          .start,
       );
       /** Position of the comma within `between`; -1 means no comma was found. */
       const relCommaIndex = between.indexOf(',',);
       /** Absolute offset where the options-argument removal span begins. */
       const commaPos = relCommaIndex === (-1)
-        ? node.options.start
-        : node.source.end + relCommaIndex;
+        ? node.options
+          .start
+        : node.source
+          .end
+          + relCommaIndex;
       replacements.push({
         start: commaPos,
-        end: node.options.end,
+        end: node.options
+          .end,
         text: '',
       },);
     },
@@ -152,7 +169,8 @@ export function transformImportAttributes({
 
   visitor.visit(result.program,);
 
-  if (replacements.length === 0)
+  if (replacements.length
+    === 0)
     return null;
 
   // Apply replacements in reverse order to preserve byte offsets
@@ -160,7 +178,9 @@ export function transformImportAttributes({
     a,
     b,
   ) {
-    return b.start - a.start;
+    return b.start
+      - a
+      .start;
   },);
 
   /** Final source after every replacement has been applied in descending start order. */
@@ -172,7 +192,11 @@ export function transformImportAttributes({
       return acc.slice(
         0,
         r.start,
-      ) + r.text + acc.slice(r.end,);
+      )
+        + r
+        .text
+        + acc
+        .slice(r.end,);
     },
     code,
   );

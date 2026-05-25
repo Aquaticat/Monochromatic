@@ -48,7 +48,8 @@ export function typeFilter(
       readonly ctx: WatchCtx;
     },
   ): boolean {
-    if (allowed.size === 0)
+    if (allowed.size
+      === 0)
       return true;
     return allowed.has(event.entity,);
   };

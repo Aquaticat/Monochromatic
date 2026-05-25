@@ -50,7 +50,9 @@ export async function toGeminiInlineData(input: ImageInput,): Promise<GeminiInli
       );
     }
     /** MIME type pulled from the response, defaulted to `image/png` when the server omits the header. */
-    const contentType = response.headers.get('content-type',) ?? 'image/png';
+    const contentType = response.headers
+      .get('content-type',)
+      ?? 'image/png';
     /** Image bytes pulled into an `ArrayBuffer` before being re-encoded as base64 below. */
     const arrayBuffer = await response.arrayBuffer();
     /** Base64-encoded image payload; Gemini requires the raw form, without a data-URI prefix. */

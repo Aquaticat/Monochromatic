@@ -108,8 +108,10 @@ export function getConfigPaths(
   readonly projectPath: string;
 } {
   /** Home directory used by pi for global agent config. */
-  const home = options.home 
-    ?? process.env.HOME 
+  const home = options.home
+    ?? process
+    .env
+    .HOME
     ?? '~';
   return {
     globalPath: join(
@@ -158,16 +160,25 @@ function mergeConfigFiles(
       if (config === undefined)
         return accumulator;
       /** Merged context cap, omitted when neither scope configures one. */
-      const maxContextChars = config.maxContextChars ?? accumulator.maxContextChars;
+      const maxContextChars = config.maxContextChars
+        ?? accumulator
+        .maxContextChars;
       return {
-        enabled: config.enabled ?? accumulator.enabled,
-        timeoutMs: config.timeoutMs ?? accumulator.timeoutMs,
+        enabled: config.enabled
+          ?? accumulator
+          .enabled,
+        timeoutMs: config.timeoutMs
+          ?? accumulator
+          .timeoutMs,
         maxAdvisorOutputTokens: config.maxAdvisorOutputTokens
-          ?? accumulator.maxAdvisorOutputTokens,
+          ?? accumulator
+          .maxAdvisorOutputTokens,
         includePriorAdvisorResults: config.includePriorAdvisorResults
-          ?? accumulator.includePriorAdvisorResults,
+          ?? accumulator
+          .includePriorAdvisorResults,
         ...(maxContextChars === undefined ? {} : { maxContextChars, }),
-        ...(config.systemPrompt === undefined
+        ...(config.systemPrompt
+          === undefined
           ? {}
           : { systemPrompt: config.systemPrompt, }),
       };

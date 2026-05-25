@@ -19,9 +19,11 @@ export const openrouter: Provider = {
   id: 'openrouter',
   chat: function chat(opts: ChatOptions,): Promise<string> {
     return chatOpenAICompatible({
-      baseUrl: opts.baseUrl === '' ? DEFAULT_BASE : opts.baseUrl,
+      baseUrl: opts.baseUrl
+        === '' ? DEFAULT_BASE : opts.baseUrl,
       extraHeaders: {
-        'HTTP-Referer': globalThis.location.origin,
+        'HTTP-Referer': globalThis.location
+          .origin,
         'X-Title': 'paper2vn',
       },
       opts,

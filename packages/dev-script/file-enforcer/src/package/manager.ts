@@ -58,7 +58,8 @@ const managerCache = new Map<'manager', PackageManager | null>();
  */
 export async function detectManager(): Promise<PackageManager | null> {
   if (managerCache.has('manager',))
-    return managerCache.get('manager',) ?? null;
+    return managerCache.get('manager',)
+      ?? null;
   /** Snapshot of registered manager entries; iteration order defines detection priority. */
   const entries = [...MANAGERS.entries(),];
   /** Per-manager probe results: the manager name when its check succeeds, otherwise `null`. */
@@ -165,7 +166,8 @@ export function isRoot(): boolean {
   if (cached !== undefined)
     return cached;
   /** Fresh detection result; stored before return so subsequent calls short-circuit. */
-  const detected = process.getuid?.() === 0;
+  const detected = process.getuid?.()
+    === 0;
   rootCache.set(
     'isRoot',
     detected,
@@ -268,7 +270,8 @@ export async function installPackage(
     packageName,
   },);
   /** True when the manager needs root and the process is not already running as root. */
-  const needsSudo = def.needsRoot && (!isRoot());
+  const needsSudo = def.needsRoot
+    && (!isRoot());
   /**
    * Final argv with `sudo` prepended only when {@link needsSudo} flagged it.
    */

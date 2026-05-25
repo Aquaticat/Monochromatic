@@ -77,7 +77,9 @@ function isUpperAlpha(c: string,): boolean {
  * ```
  */
 function isAlphaNum(c: string,): boolean {
-  return isLowerAlpha(c,) || isUpperAlpha(c,) || isDigit(c,);
+  return isLowerAlpha(c,)
+    || isUpperAlpha(c,)
+    || isDigit(c,);
 }
 
 /**
@@ -96,7 +98,8 @@ function isAlphaNum(c: string,): boolean {
  * ```
  */
 function isWordChar(c: string,): boolean {
-  return isAlphaNum(c,) || (c === '_');
+  return isAlphaNum(c,)
+    || (c === '_');
 }
 
 /**
@@ -145,7 +148,8 @@ function splitWhitespace(s: string,): string[] {
   const tokens: string[] = [];
   // Single forward pass; whitespace advances one char, a non-whitespace run is
   // sliced out in one piece. `idx` jumps over each token, so the stride varies.
-  for (let idx = 0; idx < s.length;) {
+  for (let idx = 0; idx < s
+    .length;) {
     if (isWhitespace(s.charAt(idx,),)) {
       idx += 1;
       continue;
@@ -154,7 +158,8 @@ function splitWhitespace(s: string,): string[] {
     const start = idx;
     /** Exclusive end of the token, advanced to the next whitespace or end of input. */
     let end = idx + 1;
-    while ((end < s.length) && (!isWhitespace(s.charAt(end,),))) {
+    while ((end < s
+      .length) && (!isWhitespace(s.charAt(end,),))) {
       end += 1;
     }
     tokens.push(s.slice(
@@ -207,15 +212,18 @@ function boundariesSatisfied(
     ? ''
     : haystack.charAt(index - 1,);
   /** Position one past the candidate phrase's last character. */
-  const afterIdx = index + phrase.length;
+  const afterIdx = index + phrase
+    .length;
   /** Character immediately after the candidate occurrence; empty string when at the end of `haystack`. */
-  const after = (afterIdx >= haystack.length)
+  const after = (afterIdx >= haystack
+    .length)
     ? ''
     : haystack.charAt(afterIdx,);
   /** First character of `phrase`; empty string is impossible here because callers guard length. */
   const firstChar = phrase.charAt(0,);
   /** Last character of `phrase`; equal to `firstChar` for length-1 phrases. */
-  const lastChar = phrase.at(-1,) ?? '';
+  const lastChar = phrase.at(-1,)
+    ?? '';
   /** Whether the start boundary holds (phrase starts with a word char, neighbour is not a word char). */
   const startBoundaryOk = isWordChar(firstChar,)
     ? ((before === '') || (!isWordChar(before,)))
@@ -253,7 +261,8 @@ function containsWordBoundedPhrase(
     readonly phrase: string;
   },
 ): boolean {
-  if (phrase.length === 0)
+  if (phrase.length
+    === 0)
     return false;
   /** Lower-cased haystack for case-insensitive lookup. */
   const lowerHay = haystack.toLowerCase();
@@ -388,7 +397,8 @@ function stripBetweenDelims(
     )
   ) {
     /** Search start for the matching close delimiter (must skip the entire opener). */
-    const closeSearchStart = openIdx + openDelim.length;
+    const closeSearchStart = openIdx + openDelim
+      .length;
     /** Index of the closing delimiter, or `-1` when the opener is unmatched. */
     const closeIdx = text.indexOf(
       closeDelim,
@@ -401,7 +411,8 @@ function stripBetweenDelims(
       closeSearchStart,
       closeIdx,
     );
-    if ((disallowedInside !== undefined) && inside.includes(disallowedInside,)) {
+    if ((disallowedInside !== undefined) && inside
+      .includes(disallowedInside,)) {
       // Disallowed char inside: keep the opener verbatim and resume just past it
       // instead of treating it as a strip start.
       parts.push(text.slice(
@@ -416,7 +427,8 @@ function stripBetweenDelims(
         idx,
         openIdx,
       ),);
-      idx = closeIdx + closeDelim.length;
+      idx = closeIdx + closeDelim
+        .length;
     }
   }
   parts.push(text.slice(idx,),);
@@ -455,7 +467,8 @@ function stripLinesStartingWith(
   return text
     .split('\n',)
     .filter(function keepLine(line,): boolean {
-      return !line.trimStart().startsWith(prefix,);
+      return !line.trimStart()
+        .startsWith(prefix,);
     },)
     .join('\n',);
 }

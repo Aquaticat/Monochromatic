@@ -105,9 +105,13 @@ export function formatExecResult(
 ): string {
   /** Output sections accumulated in order: stdout, stderr (when non-empty), exit code. Joined with blank lines below. */
   const parts: string[] = [];
-  if (result.stdout.length > 0)
+  if (result.stdout
+    .length
+    > 0)
     parts.push(`stdout:\n${result.stdout}`,);
-  if (result.stderr.length > 0)
+  if (result.stderr
+    .length
+    > 0)
     parts.push(`stderr:\n${result.stderr}`,);
   parts.push(`exit code: ${String(result.exitCode,)}`,);
   return parts.join('\n\n',);

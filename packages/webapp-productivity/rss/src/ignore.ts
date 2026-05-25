@@ -94,13 +94,15 @@ export function parseIgnoredLinks(content: string,): Set<string> {
       return line.trim();
     },)
     .filter(function nonEmpty(line,) {
-      return line.length > 0;
+      return line.length
+        > 0;
     },);
   for (const line of lines) {
     try {
       /** Parsed entry kept as unknown so the shape check below narrows it explicitly. */
       const parsed: unknown = JSON.parse(line,);
-      if ((parsed !== null) && ((typeof parsed) === 'object') && ('link' in parsed)) {
+      if ((parsed !== null) && ((typeof parsed) === 'object')
+        && ('link' in parsed)) {
         /** Destructured link field so the type guard runs on a named binding. */
         const { link, } = parsed;
         if (((typeof link) === 'string') && (link !== ''))

@@ -33,7 +33,7 @@ import { augmentOxlintOutput, } from './oxlint-augment.ts';
  * OXLINT_THREADS = "1"
  * ```
  */
-const threadOverride = process.env['OXLINT_THREADS'];
+const threadOverride = process.env.OXLINT_THREADS;
 
 /** Arguments forwarded to oxlint. */
 const oxlintArgs = [
@@ -43,7 +43,8 @@ const oxlintArgs = [
       threadOverride,
     ]
     : []),
-  ...process.argv.slice(2,),
+  ...process.argv
+    .slice(2,),
 ];
 
 try {
@@ -54,13 +55,20 @@ try {
   );
 
   // oxlint succeeded (exit 0, no diagnostics): pass output through
-  if (result.stdout.length > 0)
-    process.stdout.write(augmentOxlintOutput(result.stdout,),);
-  if (result.stderr.length > 0)
-    process.stderr.write(result.stderr,);
+  if (result.stdout
+    .length
+    > 0)
+    process.stdout
+      .write(augmentOxlintOutput(result.stdout,),);
+  if (result.stderr
+    .length
+    > 0)
+    process.stderr
+      .write(result.stderr,);
 }
 catch (error) {
-  if ((error !== null) && ((typeof error) === 'object') && ('exitCode' in error)) {
+  if ((error !== null) && ((typeof error) === 'object')
+    && ('exitCode' in error)) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows error to the captured-subprocess shape */
     /** Re-typed thrown error so its captured stdout, stderr, and exit fields can be augmented and forwarded. */
     const subprocessError = error as {
@@ -72,25 +80,36 @@ catch (error) {
     /* oxlint-enable typescript/no-unsafe-type-assertion */
 
     /** oxlint diagnostics with the wrapper's extra guidance appended, ready for the parent stdout. */
-    const augmentedStdout = augmentOxlintOutput(subprocessError.stdout ?? '',);
+    const augmentedStdout = augmentOxlintOutput(subprocessError.stdout
+      ?? '',);
 
-    if (augmentedStdout.length > 0) {
-      process.stdout.write(augmentedStdout,);
+    if (augmentedStdout.length
+      > 0) {
+      process.stdout
+        .write(augmentedStdout,);
       if (!augmentedStdout.endsWith('\n',))
-        process.stdout.write('\n',);
+        process.stdout
+          .write('\n',);
     }
 
-    if ((subprocessError.stderr ?? '').length > 0) {
-      process.stderr.write(subprocessError.stderr ?? '',);
-      if (!(subprocessError.stderr ?? '').endsWith('\n',))
-        process.stderr.write('\n',);
+    if ((subprocessError.stderr ?? '').length
+      > 0) {
+      process.stderr
+        .write(subprocessError.stderr ?? '',);
+      if (!(subprocessError.stderr
+        ?? '').endsWith('\n',))
+        process.stderr
+          .write('\n',);
     }
 
     // Preserve oxlint's exit code
-    process.exitCode = subprocessError.exitCode ?? 1;
+    process.exitCode = subprocessError.exitCode
+      ?? 1;
 
-    if ((subprocessError.signalName !== undefined)
-      && (subprocessError.signalName !== ''))
+    if ((subprocessError.signalName
+      !== undefined)
+      && (subprocessError.signalName
+        !== ''))
     {
       console.error(
         `[task-oxlint] oxlint terminated by signal: ${subprocessError.signalName}`,

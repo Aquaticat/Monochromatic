@@ -80,14 +80,16 @@ detail.addEventListener(
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
     if (action === 'close')
-      globalThis.location.href = '/';
+      globalThis.location
+        .href = '/';
     else if (action === 'save') {
       /** Snapshot of the autofill/manual metadata fields captured before the request body is built. */
       const metadata = detail.getMetadata();
       /** Body forwarded to the PUT endpoint; merges metadata with the unchanged base task fields. */
       const payload = {
         title,
-        description: description.length === 0 ? null : description,
+        description: description.length
+          === 0 ? null : description,
         tags: metadata.tags,
         locations: metadata.locations,
         priority: metadata.priority,
@@ -103,7 +105,8 @@ detail.addEventListener(
             body: JSON.stringify(payload,),
           },
         },);
-        globalThis.location.reload();
+        globalThis.location
+          .reload();
       })();
     }
     else if (action === 'start') {
@@ -112,7 +115,8 @@ detail.addEventListener(
           path: `/api/tasks/${task.id}/start`,
           options: { method: 'POST', },
         },);
-        globalThis.location.reload();
+        globalThis.location
+          .reload();
       })();
     }
     else if (action === 'stop') {
@@ -121,7 +125,8 @@ detail.addEventListener(
           path: `/api/tasks/${task.id}/stop`,
           options: { method: 'POST', },
         },);
-        globalThis.location.reload();
+        globalThis.location
+          .reload();
       })();
     }
     else if (action === 'complete') {
@@ -130,7 +135,8 @@ detail.addEventListener(
           path: `/api/tasks/${task.id}/complete`,
           options: { method: 'POST', },
         },);
-        globalThis.location.href = '/';
+        globalThis.location
+          .href = '/';
       })();
     }
     else if (action === 'delete') {
@@ -139,7 +145,8 @@ detail.addEventListener(
           path: `/api/tasks/${task.id}`,
           options: { method: 'DELETE', },
         },);
-        globalThis.location.href = '/';
+        globalThis.location
+          .href = '/';
       })();
     }
   },

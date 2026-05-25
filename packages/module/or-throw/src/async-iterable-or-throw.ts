@@ -35,9 +35,11 @@
  * ```
  */
 export function asyncIterableOrThrow<T,>(value: T,): T & AsyncIterable<unknown> {
-  if ((value === null) || (value === undefined) || ((typeof value) !== 'object'))
+  if ((value === null) || (value === undefined)
+    || ((typeof value) !== 'object'))
     throw new Error(`Expected async iterable, got ${typeof value} ${String(value,)}`,);
-  if (!(Symbol.asyncIterator in value))
+  if (!(Symbol.asyncIterator
+    in value))
     throw new Error(`Expected async iterable, got object without Symbol.asyncIterator`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- Symbol.asyncIterator presence narrows the runtime shape; TypeScript does not propagate this
   return value as T & AsyncIterable<unknown>;

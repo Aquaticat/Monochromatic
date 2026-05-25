@@ -119,16 +119,19 @@ export class HashCache {
   async hashFile(absolutePath: string,): Promise<string | null> {
     /** File size pulled from `fstat` to gate the read against `#maxHashSize` before allocating bytes. */
     const { size, } = await stat(absolutePath,);
-    if (size > this.#maxHashSize)
+    if (size > this
+      .#maxHashSize)
       return null;
     /** File bytes; Buffer extends Uint8Array, accepted directly by SubtleCrypto */
     const bytes = await readFile(absolutePath,);
     /** Raw SHA-256 digest as an `ArrayBuffer`; hex-encoded immediately below for the cache key. */
-    const digest = await crypto.subtle.digest(
+    const digest = await crypto.subtle
+      .digest(
       'SHA-256',
       bytes,
     );
-    return Buffer.from(digest,).toString('hex',);
+    return Buffer.from(digest,)
+      .toString('hex',);
   }
 
   /**
@@ -144,7 +147,8 @@ export class HashCache {
    * ```
    */
   get(absolutePath: string,): string | undefined {
-    return this.#map.get(absolutePath,);
+    return this.#map
+      .get(absolutePath,);
   }
 
   /**
@@ -166,7 +170,8 @@ export class HashCache {
    * ```
    */
   has(absolutePath: string,): boolean {
-    return this.#map.has(absolutePath,);
+    return this.#map
+      .has(absolutePath,);
   }
 
   /**
@@ -195,7 +200,8 @@ export class HashCache {
       readonly hash: string;
     },
   ): void {
-    this.#map.set(
+    this.#map
+      .set(
       path,
       hash,
     );
@@ -216,7 +222,8 @@ export class HashCache {
    * ```
    */
   delete(absolutePath: string,): boolean {
-    return this.#map.delete(absolutePath,);
+    return this.#map
+      .delete(absolutePath,);
   }
 
   /**
@@ -231,6 +238,7 @@ export class HashCache {
    * ```
    */
   get size(): number {
-    return this.#map.size;
+    return this.#map
+      .size;
   }
 }

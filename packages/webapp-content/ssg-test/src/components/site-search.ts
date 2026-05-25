@@ -42,7 +42,8 @@ const SEARCH_COLLAPSED = TOUCH_TARGET;
 const SEARCH_EXPANDED = 16;
 
 /** Transition duration for the search input expand/collapse. */
-const SEARCH_TRANSITION = cssS(1 / 2 / 2,);
+const SEARCH_TRANSITION = cssS(1 / 2
+  / 2,);
 
 //endregion Constants
 
@@ -155,7 +156,8 @@ export function css(): string {
         position: 'absolute',
         inset: `${cssRem(SEARCH_COLLAPSED,)} 0 auto auto`,
         'min-inline-size': cssRem(SEARCH_EXPANDED,),
-        'max-block-size': cssRem(16 + (2 * 2 * 2),),
+        'max-block-size': cssRem(16 + (2 * 2
+          * 2),),
         'overflow-y': 'auto',
         'margin-block': cssInt(0,),
         'padding-block': cssRem(GAP_SMALL,),

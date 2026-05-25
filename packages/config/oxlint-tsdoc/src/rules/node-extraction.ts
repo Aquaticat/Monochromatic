@@ -45,14 +45,17 @@ export function extractNodeName(node: Span,): string {
   const typed = node as Span & Record<string, unknown>;
 
   // VariableDeclaration: dig into declarators[0].id.name
-  if (typed.type === 'VariableDeclaration') {
+  if (typed.type
+    === 'VariableDeclaration') {
     /** Declarator list of the variable statement; first declarator carries the canonical name. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const declarations = typed.declarations as Record<string, unknown>[] | undefined;
-    if ((declarations !== undefined) && (declarations.length > 0)) {
+    if ((declarations !== undefined) && (declarations.length
+      > 0)) {
       /** Identifier node of the first declarator; carries the variable name string. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      const id = declarations[0]?.id as Record<string, unknown> | undefined;
+      const id = declarations[0]
+        ?.id as Record<string, unknown> | undefined;
       if ((id !== undefined) && ((typeof id.name) === 'string'))
         return id.name;
     }
@@ -60,9 +63,12 @@ export function extractNodeName(node: Span,): string {
   }
 
   // MethodDefinition / PropertyDefinition / Property: key.name
-  if ((typed.type === 'MethodDefinition')
-    || (typed.type === 'PropertyDefinition')
-    || (typed.type === 'Property'))
+  if ((typed.type
+    === 'MethodDefinition')
+    || (typed.type
+      === 'PropertyDefinition')
+    || (typed.type
+      === 'Property'))
   {
     /** Key node of the member (`foo` in `class C { foo() {} }`); supplies the diagnostic name. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
@@ -106,7 +112,8 @@ export function extractNodeKind(node: Span,): string {
   const nodeType = (node as Span & Record<string, unknown>).type as string | undefined;
   if (nodeType === undefined)
     return 'declaration';
-  return NODE_KIND_LABELS[nodeType] ?? 'declaration';
+  return NODE_KIND_LABELS[nodeType]
+    ?? 'declaration';
 }
 
 /**
@@ -134,7 +141,8 @@ export function reportMissing({
   if (findTsdocComment({
     node,
     context,
-  },) === undefined) {
+  },)
+    === undefined) {
     context.report({
       node,
       messageId: 'missing',

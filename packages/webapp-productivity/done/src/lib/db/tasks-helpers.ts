@@ -134,7 +134,8 @@ export function normalizeStringArray(values: readonly string[] | undefined,): st
       return value.trim();
     },)
     .filter(function isNonEmpty(value,) {
-      return value.length > 0;
+      return value.length
+        > 0;
     },),),];
 }
 
@@ -189,7 +190,8 @@ export function mapTask(row: TaskRow,): Task {
 export async function getTaskRowById(id: string,): Promise<TaskRow | null> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database prepare().get() returns the row shape we defined */
   /** Raw row read from SQLite; `undefined` distinguished from `null` for not-found. */
-  const taskRow = await db.prepare(SQL_SELECT_TASK_BY_ID,).get(id,) as
+  const taskRow = await db.prepare(SQL_SELECT_TASK_BY_ID,)
+    .get(id,) as
     | TaskRow
     | undefined;
   /* oxlint-enable typescript/no-unsafe-type-assertion */

@@ -33,7 +33,9 @@ export const FETCH_INTERVAL_MS: number = v.parse(
     v.transform(Number,),
     v.number(),
   ),
-  process.env.RSS_FETCH_INTERVAL_MS ?? DEFAULT_FETCH_INTERVAL_MS,
+  process.env
+    .RSS_FETCH_INTERVAL_MS
+    ?? DEFAULT_FETCH_INTERVAL_MS,
 );
 
 l.debug(`fetch interval: ${String(FETCH_INTERVAL_MS,)}ms`,);
@@ -51,5 +53,6 @@ l.debug(`fetch interval: ${String(FETCH_INTERVAL_MS,)}ms`,);
  * ```
  */
 export function getFetchSalt(): string {
-  return String(Math.floor(Date.now() / FETCH_INTERVAL_MS,),);
+  return String(Math.floor(Date.now()
+    / FETCH_INTERVAL_MS,),);
 }

@@ -128,7 +128,8 @@ export function selectDefaultModelFromContextEstimates(
   if (options
     .scope
     .entries
-    .length === 0)
+    .length
+    === 0)
     throw new Error('advisor: no scoped models with configured auth',);
 
   /** Sorted scores, highest expected cost first. */
@@ -137,7 +138,8 @@ export function selectDefaultModelFromContextEstimates(
     .entries
     .map(function scoreEntry(entry,) {
       /** Input-token estimate for this scoped model's effective context budget. */
-      const estimatedInputTokens = options.estimatedInputTokensBySlug.get(
+      const estimatedInputTokens = options.estimatedInputTokensBySlug
+        .get(
         entry.canonicalSlug,
       );
       if (estimatedInputTokens === undefined) {
@@ -171,7 +173,9 @@ export function selectDefaultModelFromContextEstimates(
     .scope
     .entries
     .find(function matchesTopScore(entry,) {
-    return entry.canonicalSlug === topScore.slug;
+    return entry.canonicalSlug
+      === topScore
+      .slug;
   },);
   if (selected === undefined)
     throw new Error(`advisor: selected model ${topScore.slug} disappeared from scope`,);
@@ -230,7 +234,8 @@ function scoreModel(
     expectedCost,
     inputCost,
     outputCost,
-    contextWindow: entry.model.contextWindow,
+    contextWindow: entry.model
+      .contextWindow,
   };
 }
 
@@ -252,15 +257,32 @@ function compareScores(
     readonly right: ModelCostScore;
   },
 ): number {
-  if (right.expectedCost !== left.expectedCost)
-    return right.expectedCost - left.expectedCost;
-  if (right.outputCost !== left.outputCost)
-    return right.outputCost - left.outputCost;
-  if (right.inputCost !== left.inputCost)
-    return right.inputCost - left.inputCost;
-  if (right.contextWindow !== left.contextWindow)
-    return right.contextWindow - left.contextWindow;
-  return left.slug.localeCompare(right.slug,);
+  if (right.expectedCost
+    !== left
+    .expectedCost)
+    return right.expectedCost
+      - left
+      .expectedCost;
+  if (right.outputCost
+    !== left
+    .outputCost)
+    return right.outputCost
+      - left
+      .outputCost;
+  if (right.inputCost
+    !== left
+    .inputCost)
+    return right.inputCost
+      - left
+      .inputCost;
+  if (right.contextWindow
+    !== left
+    .contextWindow)
+    return right.contextWindow
+      - left
+      .contextWindow;
+  return left.slug
+    .localeCompare(right.slug,);
 }
 
 /**

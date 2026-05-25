@@ -66,7 +66,8 @@ function resolvePort(): number {
   /** `--port=N` CLI argument when supplied; highest priority source. */
   const argumentPort = getArgumentValue('port',);
   /** `PORT` environment variable; second priority source. */
-  const environmentPort = process.env.PORT;
+  const environmentPort = process.env
+    .PORT;
   /** Selected raw string; `undefined` falls through to the compile-time default. */
   const rawPort = argumentPort ?? environmentPort;
   if (rawPort === undefined)

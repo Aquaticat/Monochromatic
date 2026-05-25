@@ -96,13 +96,15 @@ export async function seedPhase2ForRepo(row: {
   /** Milestone count returned from the seeder; folded into the aggregate result. */
   const milestones = await seedMilestones({
     repoId: row.repoId,
-    seed: row.seed + MILESTONE_SEED_OFFSET,
+    seed: row.seed
+      + MILESTONE_SEED_OFFSET,
     baseTimestamp: row.baseTimestamp,
   },);
   /** PR seeding result; its issue ids feed the subsequent reviews pass. */
   const prs = await seedPullRequestsForRepo({
     repoId: row.repoId,
-    seed: row.seed + PR_SEED_OFFSET,
+    seed: row.seed
+      + PR_SEED_OFFSET,
     userBaseSeed: row.userBaseSeed,
     userCount: row.userCount,
     baseTimestamp: row.baseTimestamp,
@@ -110,7 +112,8 @@ export async function seedPhase2ForRepo(row: {
   /** Review count returned from the seeder; folded into the aggregate result. */
   const reviews = await seedReviewsForPrs({
     prIssueIds: prs.issueIds,
-    seed: row.seed + REVIEW_SEED_OFFSET,
+    seed: row.seed
+      + REVIEW_SEED_OFFSET,
     userBaseSeed: row.userBaseSeed,
     userCount: row.userCount,
     baseTimestamp: row.baseTimestamp,
@@ -118,14 +121,16 @@ export async function seedPhase2ForRepo(row: {
   /** Issue-assignee count returned from the seeder; folded into the aggregate result. */
   const assignees = await seedAssigneesForIssues({
     issueIds: row.issueIds,
-    seed: row.seed + ASSIGNEE_SEED_OFFSET,
+    seed: row.seed
+      + ASSIGNEE_SEED_OFFSET,
     userBaseSeed: row.userBaseSeed,
     userCount: row.userCount,
   },);
   /** Repo-member count returned from the seeder; folded into the aggregate result. */
   const members = await seedRepoMembers({
     repoId: row.repoId,
-    seed: row.seed + MEMBER_SEED_OFFSET,
+    seed: row.seed
+      + MEMBER_SEED_OFFSET,
     userBaseSeed: row.userBaseSeed,
     userCount: row.userCount,
   },);
@@ -170,7 +175,8 @@ async function seedMilestones(row: {
       },),
       repoId: row.repoId,
       title: `v${String(i + 1,)}.0`,
-      dueAt: row.baseTimestamp + ((i + 1) * MILESTONE_SEED_OFFSET),
+      dueAt: row.baseTimestamp
+        + ((i + 1) * MILESTONE_SEED_OFFSET),
     },);
   }
   return count;
@@ -196,24 +202,29 @@ async function seedAssigneesForIssues(row: {
 },): Promise<number> {
   /** Running assignment count returned to the caller after the per-issue loops finish. */
   let total = 0;
-  for (const [index, issueId,] of row.issueIds.entries()) {
+  for (const [index, issueId,] of row.issueIds
+    .entries()) {
     /** Per-issue assignment count drawn from the seed; bounds the inner loop. */
     const count = rngInt({
-      seed: row.seed + index,
+      seed: row.seed
+        + index,
       lo: 0,
       hi: MAX_ASSIGNEES_PER_ISSUE + 1,
     },);
     for (let a = 0; a < count; a += 1) {
       /** Deterministic user-table index used to pick the assignee. */
       const userIndex = rngInt({
-        seed: row.seed + index + a,
+        seed: row.seed
+          + index
+          + a,
         lo: 0,
         hi: row.userCount,
       },);
       /** Composed assignee id mapped through the user namespace offset. */
       const userId = deterministicId({
         prefix: 'user',
-        index: row.userBaseSeed + userIndex,
+        index: row.userBaseSeed
+          + userIndex,
       },);
       // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially
       await assignUserToIssue({
@@ -253,20 +264,23 @@ async function seedRepoMembers(row: {
   for (let i = 0; i < count; i += 1) {
     /** Deterministic user-table index used to pick the member. */
     const userIndex = rngInt({
-      seed: row.seed + i,
+      seed: row.seed
+        + i,
       lo: 0,
       hi: row.userCount,
     },);
     /** Composed member id mapped through the user namespace offset. */
     const userId = deterministicId({
       prefix: 'user',
-      index: row.userBaseSeed + userIndex,
+      index: row.userBaseSeed
+        + userIndex,
     },);
     /** Role string sampled from the allowed set, defaulted to reader when picking fails. */
     const role = rngPick({
       seed: row.seed + i,
       items: ROLES,
-    },) ?? 'reader';
+    },)
+      ?? 'reader';
     // oxlint-disable-next-line no-await-in-loop -- libSQL prepared statements run serially
     await upsertRepoMember({
       repoId: row.repoId,

@@ -24,7 +24,8 @@ import type { ProbeResult, } from './runner-types.ts';
 const PROBE_TIMEOUT_MINUTES = 5;
 
 /** 5 minutes per probe (all consistency runs + fix pass) -- slower inference is unusable */
-const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND;
+const PROBE_TIMEOUT_MS = PROBE_TIMEOUT_MINUTES * SECONDS_PER_MINUTE
+  * MS_PER_SECOND;
 
 /**
  * Options for {@link createDisposableTimeout}.
@@ -162,7 +163,8 @@ export async function runProbe({
       return await corePromise;
     }
     catch (error) {
-      if (controller.signal.aborted)
+      if (controller.signal
+        .aborted)
         return timedOutResult;
       throw error;
     }

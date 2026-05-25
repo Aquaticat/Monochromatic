@@ -161,9 +161,11 @@ async function bootKvm(name: string,): Promise<void> {
   const qemuArgs: readonly string[] = [
     '-enable-kvm',
     '-m',
-    config.boot.memory,
+    config.boot
+      .memory,
     '-smp',
-    String(config.boot.cpus,),
+    String(config.boot
+      .cpus,),
     '-cpu',
     'host',
     '-bios',
@@ -188,9 +190,12 @@ async function bootKvm(name: string,): Promise<void> {
   );
 
   //region Update state before boot
-  config.state.lastBootHypervisor = 'kvm';
-  config.state.lastBootAt = new Date().toISOString();
-  config.state.synced = false;
+  config.state
+    .lastBootHypervisor = 'kvm';
+  config.state
+    .lastBootAt = new Date().toISOString();
+  config.state
+    .synced = false;
   await writeConfig({
     name,
     config,
@@ -249,7 +254,8 @@ async function bootHyperv(name: string,): Promise<void> {
   const hvName = `vmsync-${name}`;
 
   /** Memory in bytes for Hyper-V. */
-  const memoryBytes = parseMemoryToBytes(config.boot.memory,);
+  const memoryBytes = parseMemoryToBytes(config.boot
+    .memory,);
 
   rl.info(`creating Hyper-V VM "${hvName}"`,);
 
@@ -258,7 +264,8 @@ async function bootHyperv(name: string,): Promise<void> {
     `New-VM -Name "${hvName}" -MemoryStartupBytes ${
       String(memoryBytes,)
     } -VHDPath "${vhdxPath}" -Generation 2`,
-    `Set-VMProcessor -VMName "${hvName}" -Count ${String(config.boot.cpus,)}`,
+    `Set-VMProcessor -VMName "${hvName}" -Count ${String(config.boot
+      .cpus,)}`,
     `Set-VMFirmware -VMName "${hvName}" -EnableSecureBoot Off`,
     `Connect-VMNetworkAdapter -VMName "${hvName}" -SwitchName "Default Switch"`,
     `Start-VM -Name "${hvName}"`,
@@ -268,9 +275,12 @@ async function bootHyperv(name: string,): Promise<void> {
     .join('; ',);
 
   //region Update state before boot
-  config.state.lastBootHypervisor = 'hyperv';
-  config.state.lastBootAt = new Date().toISOString();
-  config.state.synced = false;
+  config.state
+    .lastBootHypervisor = 'hyperv';
+  config.state
+    .lastBootAt = new Date().toISOString();
+  config.state
+    .synced = false;
   await writeConfig({
     name,
     config,
@@ -345,7 +355,8 @@ export function parseMemoryToBytes(memory: string,): number {
   function findDigitsEnd(idx: number,): number {
     /** Scan cursor; starts at `idx` and advances past each leading ASCII digit in one linear pass. */
     let cursor = idx;
-    while (cursor < memory.length) {
+    while (cursor < memory
+      .length) {
       /** Char under the cursor; stops the scan when non-digit. */
       const c = memory.charAt(cursor,);
       if ((c < '0') || (c > '9'))
@@ -369,7 +380,8 @@ export function parseMemoryToBytes(memory: string,): number {
   function skipWhitespace(idx: number,): number {
     /** Scan cursor; starts at `idx` and advances past each space or tab in one linear pass. */
     let cursor = idx;
-    while (cursor < memory.length) {
+    while (cursor < memory
+      .length) {
       /** Char under the cursor; stops the skip when non-whitespace. */
       const c = memory.charAt(cursor,);
       if ((c !== ' ') && (c !== '\t'))
@@ -391,7 +403,8 @@ export function parseMemoryToBytes(memory: string,): number {
   const unitStart = skipWhitespace(digitsEnd,);
   /** Unit portion of the input; must be exactly one character. */
   const unitPart = memory.slice(unitStart,);
-  if (unitPart.length !== 1)
+  if (unitPart.length
+    !== 1)
     fail();
   /** Unit suffix, normalized to uppercase. */
   const unit = unitPart.toUpperCase();

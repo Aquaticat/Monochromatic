@@ -88,7 +88,8 @@ function updateWidth(): void {
     /** Current output container in the iteration, resolved from its id. */
     const el = document.querySelector<HTMLElement>(`#${id}`,);
     if (el)
-      el.style.inlineSize = value;
+      el.style
+        .inlineSize = value;
   }
   if (widthLabel)
     widthLabel.textContent = value;

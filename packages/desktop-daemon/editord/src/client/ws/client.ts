@@ -242,7 +242,8 @@ export function createEditorWsClient({
     );
     /* oxlint-enable eslint-plugin-promise/avoid-new */
 
-    state.ws.send(JSON.stringify(fullMessage,),);
+    state.ws
+      .send(JSON.stringify(fullMessage,),);
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- wire correlation by id guarantees resolved value is the success-side variant matching TReq['type']; error variants reject through handleMessage
     return responsePromise as Promise<RequestResponseMap[TReq['type']]>;
   }
@@ -255,7 +256,8 @@ export function createEditorWsClient({
    */
   async function notify(message: ClientNotification,): Promise<void> {
     await state.ready;
-    state.ws.send(JSON.stringify(message,),);
+    state.ws
+      .send(JSON.stringify(message,),);
   }
 
   /**
@@ -282,11 +284,13 @@ export function createEditorWsClient({
     }
 
     // Skip the initial 'connected' message (handled by handshake)
-    if (data.type === 'connected')
+    if (data.type
+      === 'connected')
       return;
 
     // Push notifications: no request ID
-    if (data.type === 'fileChanged') {
+    if (data.type
+      === 'fileChanged') {
       state.onFileChanged?.({
         path: data.path,
         changeType: data.changeType,
@@ -294,7 +298,8 @@ export function createEditorWsClient({
       },);
       return;
     }
-    if (data.type === 'diagnostics') {
+    if (data.type
+      === 'diagnostics') {
       state.onDiagnostics?.({
         path: data.path,
         diagnostics: data.diagnostics,
@@ -309,7 +314,8 @@ export function createEditorWsClient({
       if (pendingRequest !== undefined) {
         pending.delete(data.id,);
         clearTimeout(pendingRequest.timeoutId,);
-        if (data.type === 'error')
+        if (data.type
+          === 'error')
           pendingRequest.reject(new Error(data.message,),);
         else
           pendingRequest.resolve(data,);
@@ -335,11 +341,13 @@ export function createEditorWsClient({
   function wireConnection(): Promise<void> {
     /** Handshake promise returned to the caller so `ready` resolves once authenticated. */
     const handshakePromise = performHandshakeForConnection();
-    state.ws.addEventListener(
+    state.ws
+      .addEventListener(
       'message',
       handleMessage,
     );
-    state.ws.addEventListener(
+    state.ws
+      .addEventListener(
       'close',
       handleClose,
     );

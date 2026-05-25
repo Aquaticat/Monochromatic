@@ -85,19 +85,23 @@ export class EditorPane extends HTMLElement {
   /** Renders the editor container and attaches event listeners. */
   connectedCallback(): void {
     this.#editor = createEditorElement();
-    this.#editor.addEventListener(
+    this.#editor
+      .addEventListener(
       'input',
       this.#scheduleHighlight.bind(this,),
     );
-    this.#editor.addEventListener(
+    this.#editor
+      .addEventListener(
       'input',
       createAutoIndentHandler({
         editor: this.#editor,
         shadow: this.#shadow,
       },),
     );
-    this.#mutationObserver = new MutationObserver(this.#onMutation.bind(this,),);
-    this.#mutationObserver.observe(
+    this.#mutationObserver = new MutationObserver(this.#onMutation
+      .bind(this,),);
+    this.#mutationObserver
+      .observe(
       this.#editor,
       {
         childList: true,
@@ -105,9 +109,12 @@ export class EditorPane extends HTMLElement {
         subtree: true,
       },
     );
-    this.#resizeObserver = new ResizeObserver(this.#scheduleInlayMeasure.bind(this,),);
-    this.#resizeObserver.observe(this.#editor,);
-    this.#shadow.replaceChildren(
+    this.#resizeObserver = new ResizeObserver(this.#scheduleInlayMeasure
+      .bind(this,),);
+    this.#resizeObserver
+      .observe(this.#editor,);
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,
@@ -118,9 +125,11 @@ export class EditorPane extends HTMLElement {
 
   /** Cleans up observers and pending animation frames. */
   disconnectedCallback(): void {
-    this.#mutationObserver?.disconnect();
+    this.#mutationObserver
+      ?.disconnect();
     this.#mutationObserver = null;
-    this.#resizeObserver?.disconnect();
+    this.#resizeObserver
+      ?.disconnect();
     this.#resizeObserver = null;
     cancelEditorPaneFrames({ frames: this.#frames, },);
   }
@@ -148,7 +157,8 @@ export class EditorPane extends HTMLElement {
    * @param text - full file content
    */
   setText(text: string,): void {
-    if (this.#editor === null)
+    if (this.#editor
+      === null)
       return;
     setTextContent({
       editor: this.#editor,
@@ -163,7 +173,8 @@ export class EditorPane extends HTMLElement {
    * @returns full text content of the editor
    */
   getText(): string {
-    if (this.#editor === null)
+    if (this.#editor
+      === null)
       return '';
     return getTextContent({ editor: this.#editor, },);
   }
@@ -174,7 +185,8 @@ export class EditorPane extends HTMLElement {
    * @param line - 1-based line number to scroll to
    */
   scrollToLine({ line, }: { readonly line: number; },): void {
-    if (this.#editor === null)
+    if (this.#editor
+      === null)
       return;
     scrollLineIntoView({
       editor: this.#editor,
@@ -225,7 +237,9 @@ export class EditorPane extends HTMLElement {
    * @param edits - text edits to apply
    */
   applyTextEdits(edits: readonly TextEdit[],): void {
-    if ((this.#editor === null) || (edits.length === 0))
+    if ((this.#editor
+      === null) || (edits.length
+      === 0))
       return;
     /** Capture cursor before setText replaces every line div. */
     const cursorBefore = this.getCursorPosition();
@@ -259,7 +273,8 @@ export class EditorPane extends HTMLElement {
    * @param coords - selection start and end positions
    */
   setSelection(coords: SelectionCoords,): void {
-    if (this.#editor === null)
+    if (this.#editor
+      === null)
       return;
     setSelection({
       editor: this.#editor,
@@ -273,7 +288,8 @@ export class EditorPane extends HTMLElement {
    * @returns selection coordinates, or null
    */
   getSelection(): SelectionCoords | null {
-    if (this.#editor === null)
+    if (this.#editor
+      === null)
       return null;
     return getSelection({
       editor: this.#editor,
@@ -287,7 +303,8 @@ export class EditorPane extends HTMLElement {
    * @returns 0-based line and character, or null
    */
   getCursorPosition(): EditorPosition | null {
-    return this.#editor !== null
+    return this.#editor
+      !== null
       ? getCursorPosition({
         editor: this.#editor,
         shadow: this.#shadow,
@@ -318,7 +335,8 @@ export class EditorPane extends HTMLElement {
     readonly line: number;
     readonly character: number;
   },): void {
-    if (this.#editor === null)
+    if (this.#editor
+      === null)
       return;
     restoreCursor({
       editor: this.#editor,
@@ -357,7 +375,8 @@ export class EditorPane extends HTMLElement {
     readonly x: number;
     readonly y: number;
   },): EditorPosition | null {
-    if (this.#editor === null)
+    if (this.#editor
+      === null)
       return null;
     return getPositionFromPoint({
       editor: this.#editor,
@@ -372,7 +391,8 @@ export class EditorPane extends HTMLElement {
    * @returns document range from (0,0) to end-of-file, or null before connected
    */
   getDocumentRange(): Range | null {
-    return this.#editor !== null
+    return this.#editor
+      !== null
       ? computeDocumentRange({ editor: this.#editor, },)
       : null;
   }
@@ -383,7 +403,9 @@ export class EditorPane extends HTMLElement {
    * @returns scroll offset in pixels, or 0 before connected
    */
   get editorScrollTop(): number {
-    return this.#editor?.scrollTop ?? 0;
+    return this.#editor
+      ?.scrollTop
+      ?? 0;
   }
 
   /**
@@ -392,8 +414,10 @@ export class EditorPane extends HTMLElement {
    * @param value - scroll offset in pixels
    */
   set editorScrollTop(value: number,) {
-    if (this.#editor !== null)
-      this.#editor.scrollTop = value;
+    if (this.#editor
+      !== null)
+      this.#editor
+        .scrollTop = value;
   }
 
   /**
@@ -416,7 +440,8 @@ export class EditorPane extends HTMLElement {
    * @param listener - event handler function
    */
   addScrollListener(listener: EventListener,): void {
-    this.#editor?.addEventListener(
+    this.#editor
+      ?.addEventListener(
       'scroll',
       listener,
     );
@@ -445,9 +470,12 @@ export class EditorPane extends HTMLElement {
 
   /** Schedules diagnostic highlights. */
   #scheduleDiagnosticHighlights(): void {
-    cancelAnimationFrame(this.#frames.diagnosticHighlight,);
-    if (this.#editor !== null) {
-      this.#frames.diagnosticHighlight = scheduleDiagnosticHighlights({
+    cancelAnimationFrame(this.#frames
+      .diagnosticHighlight,);
+    if (this.#editor
+      !== null) {
+      this.#frames
+        .diagnosticHighlight = scheduleDiagnosticHighlights({
         editor: this.#editor,
         diagnostics: this.#diagnostics,
       },);
@@ -456,9 +484,12 @@ export class EditorPane extends HTMLElement {
 
   /** Schedules inlay annotations. */
   #scheduleInlayAnnotations(): void {
-    cancelAnimationFrame(this.#frames.inlayAnnotation,);
-    if (this.#editor !== null) {
-      this.#frames.inlayAnnotation = scheduleInlayAnnotations({
+    cancelAnimationFrame(this.#frames
+      .inlayAnnotation,);
+    if (this.#editor
+      !== null) {
+      this.#frames
+        .inlayAnnotation = scheduleInlayAnnotations({
         editor: this.#editor,
         hints: this.#inlayHints,
         diagnostics: this.#diagnostics,
@@ -468,17 +499,23 @@ export class EditorPane extends HTMLElement {
 
   /** Schedules inlay re-measurement. */
   #scheduleInlayMeasure(): void {
-    if (this.#editor !== null) {
-      cancelAnimationFrame(this.#frames.resizeMeasure,);
-      this.#frames.resizeMeasure = scheduleInlayMeasure({ editor: this.#editor, },);
+    if (this.#editor
+      !== null) {
+      cancelAnimationFrame(this.#frames
+        .resizeMeasure,);
+      this.#frames
+        .resizeMeasure = scheduleInlayMeasure({ editor: this.#editor, },);
     }
   }
 
   /** Schedules syntax highlighting. */
   #scheduleHighlight(): void {
-    cancelAnimationFrame(this.#frames.highlight,);
-    if (this.#editor !== null) {
-      this.#frames.highlight = scheduleHighlight({
+    cancelAnimationFrame(this.#frames
+      .highlight,);
+    if (this.#editor
+      !== null) {
+      this.#frames
+        .highlight = scheduleHighlight({
         editor: this.#editor,
         parser: this.#parser,
       },);

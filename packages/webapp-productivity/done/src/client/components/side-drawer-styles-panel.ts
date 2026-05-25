@@ -34,7 +34,8 @@ const Z_INDEX_PANEL = 100;
 const SCRIM_FADE_S = 0.2;
 
 /** Drawer slide-in animation duration in seconds. */
-const DRAWER_SLIDE_S = 1 / 2 / 2;
+const DRAWER_SLIDE_S = 1 / 2
+  / 2;
 
 /** Cubic-bezier x-coordinate for the decelerate easing control point. */
 const EASE_CONTROL_X = 0.2;

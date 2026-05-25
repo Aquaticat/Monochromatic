@@ -23,7 +23,8 @@
  * ```
  */
 export function startsWithUriScheme(s: string,): boolean {
-  if (s.length < 2)
+  if (s.length
+    < 2)
     return false;
   /** Lower-cased copy so the alpha range check covers `[A-Za-z]`. */
   const lowered = s.toLowerCase();
@@ -36,7 +37,8 @@ export function startsWithUriScheme(s: string,): boolean {
   // is `:`. Indexed `charAt` (not `for...of`) preserves the prior UTF-16
   // code-unit semantics: a non-ASCII body char stops the run at its first code
   // unit, exactly as the recursion did, in O(n) time and O(1) stack.
-  for (let idx = 1; idx < lowered.length; idx += 1) {
+  for (let idx = 1; idx < lowered
+    .length; idx += 1) {
     /** Char at cursor; non-scheme characters end the run. */
     const c = lowered.charAt(idx,);
     /** Whether the cursor sits on a scheme-body character. */

@@ -144,8 +144,8 @@ export async function createOneShotTcpServer(
           if (
             (addrInfo !== undefined)
             && (addrInfo !== null)
-            && ((typeof addrInfo) !== 'string')
-            && ('port' in addrInfo)
+              && ((typeof addrInfo) !== 'string')
+              && ('port' in addrInfo)
           ) {
             resolve(`${addrInfo.address}:${addrInfo.port}`,);
           }
@@ -254,7 +254,8 @@ export function readFromTcpSocket(
             function onEnd(): void {
               finish({
                 error: null,
-                result: Buffer.concat(chunks,).toString('utf8',),
+                result: Buffer.concat(chunks,)
+                  .toString('utf8',),
               },);
             },
           );

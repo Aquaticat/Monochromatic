@@ -111,7 +111,8 @@ export function registerThinkingDefaults(
       getThinkingLevel: getCurrentThinkingLevel,
       setThinkingLevel: setCurrentThinkingLevel,
     },);
-    if (result.target !== undefined)
+    if (result.target
+      !== undefined)
       restoreDefaultThinkingLevel();
   }
 
@@ -142,7 +143,8 @@ export function registerThinkingDefaults(
       getThinkingLevel: getCurrentThinkingLevel,
       setThinkingLevel: setCurrentThinkingLevel,
     },);
-    if (result.target !== undefined)
+    if (result.target
+      !== undefined)
       restoreDefaultThinkingLevel();
   }
 

@@ -53,7 +53,9 @@ export {
  * Bun and Node both set `process.versions.node`.
  */
 const hasNodePath = ((typeof process) !== 'undefined')
-  && (process.versions?.node !== undefined);
+  && (process.versions
+    ?.node
+    !== undefined);
 
 /** Computed import specifier to prevent static bundler resolution */
 // oxlint-disable-next-line typescript/no-unnecessary-template-expression -- template expression prevents static bundler resolution
@@ -116,7 +118,9 @@ export function isAbsolute(filePath: string,): boolean {
     return nodePath.isAbsolute(filePath,);
   /** Unicode code point for `/` */
   const SLASH_CODE_POINT = 47;
-  return (filePath.length > 0) && (filePath.codePointAt(0,) === SLASH_CODE_POINT);
+  return (filePath.length
+    > 0) && (filePath.codePointAt(0,)
+    === SLASH_CODE_POINT);
 }
 
 /**

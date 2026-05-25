@@ -213,7 +213,9 @@ if ((command === undefined) || (command === '')) {
   );
 }
 
-if (args.outputs.length === 0) {
+if (args.outputs
+  .length
+  === 0) {
   throw new Error(
     'At least one -o is required (defines what "done" looks like: file glob or sh:command)',
   );

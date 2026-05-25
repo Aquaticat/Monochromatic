@@ -37,21 +37,32 @@ export async function showStatus(name: string,): Promise<void> {
   const config = await readConfig(name,);
 
   /** Disk size formatted in GiB. */
-  const sizeGib = (config.diskSizeBytes / BYTES_PER_GIB).toFixed(1,);
+  const sizeGib = (config.diskSizeBytes
+    / BYTES_PER_GIB).toFixed(1,);
 
   console.log(`name:       ${config.name}`,);
   console.log(`imported:   ${config.importedFrom}`,);
   console.log(`disk size:  ${sizeGib} GiB`,);
-  console.log(`memory:     ${config.boot.memory}`,);
-  console.log(`cpus:       ${String(config.boot.cpus,)}`,);
-  console.log(`synced:     ${String(config.state.synced,)}`,);
+  console.log(`memory:     ${config.boot
+    .memory}`,);
+  console.log(`cpus:       ${String(config.boot
+    .cpus,)}`,);
+  console.log(`synced:     ${String(config.state
+    .synced,)}`,);
   console.log(
-    `last boot:  ${config.state.lastBootHypervisor ?? 'never'} (${
+    `last boot:  ${config.state
+      .lastBootHypervisor
+      ?? 'never'} (${
       config
         .state
-        .lastBootAt ?? 'n/a'
+        .lastBootAt
+        ?? 'n/a'
     })`,
   );
-  console.log(`qcow2 hash: ${config.state.checksums.qcow2}`,);
-  console.log(`vhdx hash:  ${config.state.checksums.vhdx}`,);
+  console.log(`qcow2 hash: ${config.state
+    .checksums
+    .qcow2}`,);
+  console.log(`vhdx hash:  ${config.state
+    .checksums
+    .vhdx}`,);
 }

@@ -177,11 +177,13 @@ function renderComposerFooter(
     .join('',);
 
   /** Optional `data-edit-message-id` attribute used by the composer to enter edit mode. */
-  const editAttr = options.editMessageId === undefined
+  const editAttr = options.editMessageId
+    === undefined
     ? ''
     : ` data-edit-message-id="${String(options.editMessageId,)}"`;
   /** Optional `data-initial-tier` attribute that seeds the composer's tier discriminant. */
-  const tierAttr = options.initialTier === undefined
+  const tierAttr = options.initialTier
+    === undefined
     ? ''
     : ` data-initial-tier="${String(options.initialTier,)}"`;
 

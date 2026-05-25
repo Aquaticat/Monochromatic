@@ -135,36 +135,36 @@ fixtures.
 
 ### Group A: stateful coordinators (production)
 
-1.  `packages/dev-script/watch-restart/src/watcher.ts` -- `Watcher`
-1.  `packages/dev-script/watch-restart/src/child.ts` -- `Child`
-1.  `packages/dev-script/watch-restart/src/hash-cache.ts` -- `HashCache`
-1.  `packages/pi/morph-compact/src/morph-client.ts` -- `MorphCompactClient`
-1.  `packages/module/zip-writer/src/index.ts` -- `ZipWriter`
-1.  `packages/figma-parsers/kiwi/src/index.ts` -- `BinaryReader` (see "Lint blind spot" below)
+1. `packages/dev-script/watch-restart/src/watcher.ts` -- `Watcher`
+1. `packages/dev-script/watch-restart/src/child.ts` -- `Child`
+1. `packages/dev-script/watch-restart/src/hash-cache.ts` -- `HashCache`
+1. `packages/pi/morph-compact/src/morph-client.ts` -- `MorphCompactClient`
+1. `packages/module/zip-writer/src/index.ts` -- `ZipWriter`
+1. `packages/figma-parsers/kiwi/src/index.ts` -- `BinaryReader` (see "Lint blind spot" below)
 
 ### Completed in editord
 
 Migrated on 2026-05-20:
 
-1.  `packages/desktop-daemon/editord/src/server/lsp/lsp-pool.ts` -- `LspPool`
-1.  `packages/desktop-daemon/editord/src/server/lsp/lsp-client.ts` -- `LspClient`
-1.  `packages/desktop-daemon/editord/src/server/lsp/diagnostic-store.ts` -- `DiagnosticStore`
-1.  `packages/desktop-daemon/editord/src/server/operations/watch-filesystem.ts` -- `DirWatcher`
-1.  `packages/desktop-daemon/editord/src/client/ws/client.ts` -- `EditorWsClient`
-1.  `packages/desktop-daemon/editord/src/client/context-menu/context-menu.ts` -- `ContextMenu`
-1.  `packages/webapp-productivity/done/src/client/components/task-detail-autofill.ts` -- `AutofillManager`
-1.  `packages/webapp-productivity/done-postcss/src/client/components/task-detail-autofill.ts` -- `AutofillController`
+1. `packages/desktop-daemon/editord/src/server/lsp/lsp-pool.ts` -- `LspPool`
+1. `packages/desktop-daemon/editord/src/server/lsp/lsp-client.ts` -- `LspClient`
+1. `packages/desktop-daemon/editord/src/server/lsp/diagnostic-store.ts` -- `DiagnosticStore`
+1. `packages/desktop-daemon/editord/src/server/operations/watch-filesystem.ts` -- `DirWatcher`
+1. `packages/desktop-daemon/editord/src/client/ws/client.ts` -- `EditorWsClient`
+1. `packages/desktop-daemon/editord/src/client/context-menu/context-menu.ts` -- `ContextMenu`
+1. `packages/webapp-productivity/done/src/client/components/task-detail-autofill.ts` -- `AutofillManager`
+1. `packages/webapp-productivity/done-postcss/src/client/components/task-detail-autofill.ts` -- `AutofillController`
 
 ### Group B: test-fixture Disposables
 
-1.  `packages/dev-script/watch-restart/src/start.unit.test.ts` -- `FakeChild`
-1.  `packages/dev-script/watch-restart/src/child.unit.test.ts` -- `FakeChild`
-1.  `packages/webapp-forge/server/src/server/routes/git.cli.unit.test.ts` -- `DisposableServer`
-1.  `packages/pi/morph-compact/src/ipc-socket-tcp.unit.test.ts` -- `TcpServerDisposable`
-1.  `packages/pi/morph-compact/src/api-key.unit.test.ts` -- `EnvRestore`
-1.  `packages/pi/morph-compact/src/ipc-file.unit.test.ts` -- `FileDisposable`
-1.  `packages/pi/morph-compact/src/ipc-socket-unix.unit.test.ts` -- `SocketServerDisposable`
-1.  `packages/module/test/src/sinon.unit.test.ts` -- `Greeter`
+1. `packages/dev-script/watch-restart/src/start.unit.test.ts` -- `FakeChild`
+1. `packages/dev-script/watch-restart/src/child.unit.test.ts` -- `FakeChild`
+1. `packages/webapp-forge/server/src/server/routes/git.cli.unit.test.ts` -- `DisposableServer`
+1. `packages/pi/morph-compact/src/ipc-socket-tcp.unit.test.ts` -- `TcpServerDisposable`
+1. `packages/pi/morph-compact/src/api-key.unit.test.ts` -- `EnvRestore`
+1. `packages/pi/morph-compact/src/ipc-file.unit.test.ts` -- `FileDisposable`
+1. `packages/pi/morph-compact/src/ipc-socket-unix.unit.test.ts` -- `SocketServerDisposable`
+1. `packages/module/test/src/sinon.unit.test.ts` -- `Greeter`
 
 ## Lint blind spot
 
@@ -184,18 +184,18 @@ Choose during migration; either way the class needs to go.
 
 For each file:
 
-1.  Read the class top to bottom; note every field, every method, every
-    place `this` is captured by a callback.
-1.  Draft the factory shape (`type Foo = Readonly<{ ... }>` then
-    `function createFoo(): Foo`).
-1.  Move fields into closure-scoped `const`s.
-1.  Rewrite each method as a named function inside the factory body.
-1.  Replace `this.foo(...)` with `foo(...)` and `this.#bar` with `bar`.
-1.  Return `Object.freeze({ ... })`.
-1.  Update all call sites: `new Foo(...)` becomes `createFoo(...)`.
-1.  Run the package's tests: `mise run //packages/<path>:test:unit`.
-1.  Run the package's lint: `mise run //packages/<path>:lint`.
-1.  Commit (one logical unit per AGENTS.md).
+1. Read the class top to bottom; note every field, every method, every
+   place `this` is captured by a callback.
+1. Draft the factory shape (`type Foo = Readonly<{ ... }>` then
+   `function createFoo(): Foo`).
+1. Move fields into closure-scoped `const`s.
+1. Rewrite each method as a named function inside the factory body.
+1. Replace `this.foo(...)` with `foo(...)` and `this.#bar` with `bar`.
+1. Return `Object.freeze({ ... })`.
+1. Update all call sites: `new Foo(...)` becomes `createFoo(...)`.
+1. Run the package's tests: `mise run //packages/<path>:test:unit`.
+1. Run the package's lint: `mise run //packages/<path>:lint`.
+1. Commit (one logical unit per AGENTS.md).
 
 ## Escape hatch
 
@@ -238,15 +238,15 @@ on the superclass name.
 After every file in the inventory above is migrated or has a justified
 disable comment:
 
-1.  Run `mise run lint` from the repo root and confirm zero warnings from
-    `no-restricted-syntax/no-class`.
-1.  Edit `packages/config/oxlint/src/rules/restriction.ts`: change
-    `'no-restricted-syntax/no-class': 'warn'` to `'error'`. Remove the
-    `MIGRATION.no-class.md` reference in the comment.
-1.  Run `mise run lint; mise run buildAndTest` to confirm no regression.
-1.  Delete this file in the same commit.
-1.  Update `AGENTS.md` to encode the rule alongside the other syntax
-    bans in the "TypeScript" section.
+1. Run `mise run lint` from the repo root and confirm zero warnings from
+   `no-restricted-syntax/no-class`.
+1. Edit `packages/config/oxlint/src/rules/restriction.ts`: change
+   `'no-restricted-syntax/no-class': 'warn'` to `'error'`. Remove the
+   `MIGRATION.no-class.md` reference in the comment.
+1. Run `mise run lint; mise run buildAndTest` to confirm no regression.
+1. Delete this file in the same commit.
+1. Update `AGENTS.md` to encode the rule alongside the other syntax
+   bans in the "TypeScript" section.
 
 ## Suffix configuration
 

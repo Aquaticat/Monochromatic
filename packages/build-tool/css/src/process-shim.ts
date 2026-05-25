@@ -17,7 +17,8 @@ function stubCwd(): string {
 }
 
 // oxlint-disable-next-line typescript/no-unnecessary-condition -- browser environments lack process
-if (globalThis.process === undefined) {
+if (globalThis.process
+  === undefined) {
   (globalThis as Record<string, unknown>).process = {
     env: {},
     cwd: stubCwd,

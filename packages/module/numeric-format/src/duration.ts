@@ -218,7 +218,8 @@ export function formatTrackedDuration(seconds: number,): string {
   /** Top unit; primary cell of the rendered string. */
   const [bigValue, bigSuffix,] = nonNullishOrThrow(UNITS[biggestIdx],);
 
-  if (biggestIdx === (UNITS.length - 1))
+  if (biggestIdx === (UNITS.length
+    - 1))
     return `${bigValue}${bigSuffix}`;
 
   /** Partner unit; immediately adjacent per the strict-adjacency rule (no skipping). */

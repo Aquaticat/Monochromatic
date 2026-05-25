@@ -88,8 +88,12 @@ export async function requestGotoDefinition({
   const defPath = uriToPath({ uri: loc.uri, },);
   return {
     path: defPath,
-    line: loc.range.start.line,
-    character: loc.range.start.character,
+    line: loc.range
+      .start
+      .line,
+    character: loc.range
+      .start
+      .character,
   };
 }
 
@@ -143,7 +147,8 @@ export async function requestReferences({
     timeoutMs: LSP_FEATURE_TIMEOUT_MS,
   },);
 
-  if ((result === null) || (result === undefined) || (!Array.isArray(result,)))
+  if ((result === null) || (result === undefined)
+    || (!Array.isArray(result,)))
     return [];
 
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- LSP references returns Location[]
@@ -162,8 +167,12 @@ export async function requestReferences({
         const refPath = uriToPath({ uri: loc.uri, },);
         return {
           path: refPath,
-          line: loc.range.start.line,
-          character: loc.range.start.character,
+          line: loc.range
+            .start
+            .line,
+          character: loc.range
+            .start
+            .character,
         };
       },
     );

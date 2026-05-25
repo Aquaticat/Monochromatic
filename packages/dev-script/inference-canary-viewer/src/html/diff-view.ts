@@ -35,7 +35,8 @@ export function renderSideBySideDiff(
   const rightLines: string[] = [];
 
   for (const line of diffLines) {
-    if (line.type === 'removed') {
+    if (line.type
+      === 'removed') {
       leftLines.push(h({
         tag: 'span',
         class: 'diff-removed',
@@ -46,7 +47,8 @@ export function renderSideBySideDiff(
         class: 'diff-spacer',
       },),);
     }
-    else if (line.type === 'added') {
+    else if (line.type
+      === 'added') {
       leftLines.push(h({
         tag: 'span',
         class: 'diff-spacer',

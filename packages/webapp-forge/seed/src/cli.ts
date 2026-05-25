@@ -47,7 +47,8 @@ function getFlag(name: string,): string | undefined {
   /** Match-prefix derived from the flag name so the find call locates the right argv entry. */
   const prefix = `--${name}=`;
   /** First matching argv entry, or undefined when the flag was not passed. */
-  const argument = process.argv.find(function hasPrefix(entry,) {
+  const argument = process.argv
+    .find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);
   },);
   return argument?.slice(prefix.length,);
@@ -84,7 +85,8 @@ function intFlag(row: {
 /** CLI `--out=` arg, used to override `DB_PATH`. */
 const out = getFlag('out',);
 if (out !== undefined)
-  process.env.DB_PATH = out;
+  process.env
+    .DB_PATH = out;
 
 /** Resolved seed flag. */
 const seed = intFlag({
@@ -142,7 +144,8 @@ l.info(
   } prs=${String(summary.prs,)} reviews=${String(summary.reviews,)}`,
 );
 // JSON summary goes through stdout so callers can pipe it into other tools.
-process.stdout.write(`${
+process.stdout
+  .write(`${
   JSON.stringify(
     summary,
     null,

@@ -47,7 +47,8 @@ export const TEXT_COLOR_RGB = {
 export function getRootFontSizePx(): number {
   return Number.parseFloat(
     getComputedStyle(document.documentElement,).fontSize,
-  ) || DEFAULT_ROOT_FONT_SIZE_PX;
+  )
+    || DEFAULT_ROOT_FONT_SIZE_PX;
 }
 
 //region Text entry reading
@@ -117,18 +118,24 @@ function resolveExportEntry(
   },
 ): ExportTextEntry {
   /** Per-entry font size, falling back to CSS default */
-  const fontSizePx = ((raw.fontSize !== undefined) && (raw.fontSize !== ''))
+  const fontSizePx = ((raw.fontSize
+    !== undefined) && (raw.fontSize
+    !== ''))
     ? Number.parseFloat(raw.fontSize,)
     : defaultFontSizePx;
   /** Per-entry color, falling back to CSS default */
-  const color = ((raw.color !== undefined) && (raw.color !== ''))
+  const color = ((raw.color
+    !== undefined) && (raw.color
+    !== ''))
     ? raw.color
     : TEXT_COLOR;
 
   return {
     value: raw.value,
-    xFraction: Number.parseFloat(raw.insetInlineStart,) / PERCENT_DIVISOR,
-    yFraction: Number.parseFloat(raw.insetBlockStart,) / PERCENT_DIVISOR,
+    xFraction: Number.parseFloat(raw.insetInlineStart,)
+      / PERCENT_DIVISOR,
+    yFraction: Number.parseFloat(raw.insetBlockStart,)
+      / PERCENT_DIVISOR,
     fontSizePx,
     color,
   };
@@ -151,7 +158,9 @@ function resolveExportEntries(raws: Iterable<RawEntryFields>,): ExportTextEntry[
   const entries: ExportTextEntry[] = [];
 
   for (const raw of raws) {
-    if (raw.value.trim() === '')
+    if (raw.value
+      .trim()
+      === '')
       continue;
     entries.push(resolveExportEntry({
       raw,
@@ -192,10 +201,14 @@ export function readTextEntries({ textLayer, }: {
       function toRaw(input,): RawEntryFields {
         return {
           value: input.value,
-          insetInlineStart: input.style.insetInlineStart,
-          insetBlockStart: input.style.insetBlockStart,
-          fontSize: input.dataset.fontSize,
-          color: input.dataset.color,
+          insetInlineStart: input.style
+            .insetInlineStart,
+          insetBlockStart: input.style
+            .insetBlockStart,
+          fontSize: input.dataset
+            .fontSize,
+          color: input.dataset
+            .color,
         };
       },
     ),
@@ -226,8 +239,10 @@ export function textEntriesToExport(
         value: entry.value,
         insetInlineStart: entry.insetInlineStart,
         insetBlockStart: entry.insetBlockStart,
-        fontSize: entry.fontSize || undefined,
-        color: entry.color || undefined,
+        fontSize: entry.fontSize
+          || undefined,
+        color: entry.color
+          || undefined,
       };
     },),
   );

@@ -103,7 +103,8 @@ function resolveGlobPattern(
         fullId,
         parsed.pattern,
         { nocase: true, },
-      ) || minimatch(
+      )
+        || minimatch(
         model.id,
         parsed.pattern,
         { nocase: true, },
@@ -112,7 +113,8 @@ function resolveGlobPattern(
     .map(function mapMatch(model,) {
       return scopedModelFromModel({
         model,
-        ...(parsed.thinkingLevel === undefined
+        ...(parsed.thinkingLevel
+          === undefined
           ? {}
           : { thinkingLevel: parsed.thinkingLevel, }),
       },);
@@ -142,11 +144,13 @@ function resolveLiteralPattern(
     pattern,
     availableModels,
   },);
-  return resolution.model === undefined
+  return resolution.model
+    === undefined
     ? []
     : [scopedModelFromModel({
       model: resolution.model,
-      ...(resolution.thinkingLevel === undefined
+      ...(resolution.thinkingLevel
+        === undefined
         ? {}
         : { thinkingLevel: resolution.thinkingLevel, }),
     },),];

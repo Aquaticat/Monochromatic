@@ -64,7 +64,8 @@ const app = appElement;
  * @param taskId - UUID of the task to open
  */
 function openTask(taskId: string,): void {
-  globalThis.location.href = `/tasks/${taskId}`;
+  globalThis.location
+    .href = `/tasks/${taskId}`;
 }
 
 /**
@@ -82,7 +83,8 @@ async function completeTask(taskId: string,): Promise<void> {
     path: `/api/tasks/${taskId}/complete`,
     options: { method: 'POST', },
   },);
-  globalThis.location.reload();
+  globalThis.location
+    .reload();
 }
 
 /**
@@ -125,8 +127,10 @@ function buildTaskList(
       },),
     );
     /** Blocked-by children for the current task, defaulted to empty when none exist. */
-    const childLinks = blockedTasksByBlocker[task.id] ?? [];
-    if (childLinks.length > 0) {
+    const childLinks = blockedTasksByBlocker[task.id]
+      ?? [];
+    if (childLinks.length
+      > 0) {
       list.append(h({
         tag: 'div',
         class: 'task-children',
@@ -177,7 +181,9 @@ allSection.append(h({
     gap: 'var(--gap)',
   },
   children: [
-    pageData.allTasks.length === 0
+    pageData.allTasks
+      .length
+      === 0
       ? h({
         tag: 'p',
         class: 'empty',
@@ -196,5 +202,7 @@ const {
   panel: newTaskPanel,
   fab: newTaskFab,
 } = createNewTaskDialog();
-document.body.append(newTaskPanel,);
-document.body.append(newTaskFab,);
+document.body
+  .append(newTaskPanel,);
+document.body
+  .append(newTaskFab,);

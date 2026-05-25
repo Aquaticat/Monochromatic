@@ -141,13 +141,15 @@ function parseTrailingExportClause(source: string,): {
   if (lastIdx === (-1))
     return null;
   /** Position of the closing `}`; the semicolon is optional in the original regex. */
-  const closeBrace = (source.charAt(lastIdx,) === ';')
+  const closeBrace = (source.charAt(lastIdx,)
+    === ';')
     ? lastNonWhitespaceIndex({
       s: source,
       end: lastIdx,
     },)
     : lastIdx;
-  if ((closeBrace === (-1)) || (source.charAt(closeBrace,) !== '}'))
+  if ((closeBrace === (-1)) || (source.charAt(closeBrace,)
+    !== '}'))
     return null;
   /** Position of the matching `{`; the original regex requires `[^}]+` between, so the last `{` before `}` is correct. */
   const openBrace = source.lastIndexOf(
@@ -163,15 +165,18 @@ function parseTrailingExportClause(source: string,): {
   },);
   /** Literal keyword the clause must lead with. */
   const EXPORT = 'export';
-  if (beforeOpen < (EXPORT.length - 1))
+  if (beforeOpen < (EXPORT.length
+    - 1))
     return null;
   /** Inclusive start of the `export` keyword candidate; the byte before it must not be a word char. */
-  const wordStart = (beforeOpen - EXPORT.length) + 1;
+  const wordStart = (beforeOpen - EXPORT
+    .length) + 1;
   if (
     source.slice(
       wordStart,
       beforeOpen + 1,
-    ) !== EXPORT
+    )
+      !== EXPORT
   ) {
     return null;
   }
@@ -278,6 +283,7 @@ export async function loadHarness(
   },);
 
   await page.waitForFunction(function isReady() {
-    return globalThis.moduleDom !== undefined;
+    return globalThis.moduleDom
+      !== undefined;
   },);
 }

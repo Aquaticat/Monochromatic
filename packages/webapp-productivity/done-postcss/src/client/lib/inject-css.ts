@@ -17,5 +17,6 @@ export function injectCSS(css: string,): void {
   /** Fresh `<style>` element appended to `document.head` after textContent is set. */
   const styleElement = document.createElement('style',);
   styleElement.textContent = css;
-  document.head.append(styleElement,);
+  document.head
+    .append(styleElement,);
 }

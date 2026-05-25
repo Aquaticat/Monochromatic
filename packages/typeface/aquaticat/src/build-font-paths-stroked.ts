@@ -69,9 +69,9 @@ export function addStrokedPath({
   const vertices = (
       (first !== undefined)
       && (last !== undefined)
-      && (points.length > 1)
-      && (first[0] === last[0])
-      && (first[1] === last[1])
+        && (points.length > 1)
+        && (first[0] === last[0])
+        && (first[1] === last[1])
     )
     ? points.slice(
       0,
@@ -104,7 +104,8 @@ export function addStrokedPath({
       vertIndex,
     ) {
       /** Glyph-space X: vertex shifted from SVG coords into the glyph's local origin. */
-      const fx = (vert[0] - cellX) + xShift;
+      const fx = (vert[0]
+        - cellX) + xShift;
       /**
        * Glyph-space Y: vertex flipped into font Y-up coordinates by {@link fontY}.
        */

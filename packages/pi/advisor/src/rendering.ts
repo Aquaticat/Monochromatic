@@ -49,7 +49,8 @@ export function renderAdvisorCall(
   },
 ): Component {
   /** Requested target displayed before execution resolves. */
-  const target = args.model ?? 'default scoped model';
+  const target = args.model
+    ?? 'default scoped model';
   /** Styled tool title. */
   const title = theme.fg(
     'toolTitle',
@@ -100,8 +101,11 @@ export function renderAdvisorResult(
   },
 ): Component {
   /** Text block returned to primary model. */
-  const text = result.content[0]?.type === 'text'
-    ? result.content[0].text
+  const text = result.content[0]
+    ?.type
+    === 'text'
+    ? result.content[0]
+      .text
     : '(advisor returned no text)';
   return new Text(
     renderAdvisorSummary({

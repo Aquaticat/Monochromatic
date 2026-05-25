@@ -109,8 +109,11 @@ export function skipSpacesAndTabs({
     /** Cursor walked forward past each leading space or tab; the first non-blank position. */
     let cursor = from;
     while (
-      (cursor < s.length)
-      && ((s.charAt(cursor,) === ' ') || (s.charAt(cursor,) === '\t'))
+      (cursor < s
+        .length)
+      && ((s.charAt(cursor,)
+        === ' ') || (s.charAt(cursor,)
+        === '\t'))
     )
       cursor += 1;
     return cursor;
@@ -132,7 +135,8 @@ function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | undef
   /** Cursor after `VERDICT:` and any inline whitespace; verdict word starts here. */
   const start = skipSpacesAndTabs({
     s: upper,
-    from: idx + VERDICT_PREFIX.length,
+    from: idx + VERDICT_PREFIX
+      .length,
   },);
   /** Substring beginning at `start`; checked against the longer alternative first. */
   const tail = upper.slice(start,);
@@ -271,7 +275,8 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- response shape is defined by the OpenAI-compatible API
   const data = (await res.json()) as CompletionResponse;
   /** Wall-clock seconds spent on the request, rounded to one decimal for log output. */
-  const elapsed = ((performance.now() - start) / MS_PER_SECOND).toFixed(1,);
+  const elapsed = ((performance.now()
+    - start) / MS_PER_SECOND).toFixed(1,);
   /** Token-usage fields pulled out for the debug log line. */
   const {
     prompt_tokens,
@@ -285,5 +290,6 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
   const [firstChoice,] = data.choices;
   if (firstChoice === undefined)
     throw new Error('OpenAI API returned empty choices array',);
-  return firstChoice.message.content;
+  return firstChoice.message
+    .content;
 }

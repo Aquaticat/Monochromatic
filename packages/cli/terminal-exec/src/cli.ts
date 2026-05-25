@@ -45,7 +45,8 @@ export function parseArgs({ argv, }: { readonly argv: readonly string[]; },): Us
   /** Cursor into argv; advanced as options are consumed and used to slice the command remainder. */
   let i = 0;
 
-  while (i < argv.length) {
+  while (i < argv
+    .length) {
     /** Current argv slot, scoped to the loop iteration. */
     const arg = argv[i];
     if (arg === undefined)

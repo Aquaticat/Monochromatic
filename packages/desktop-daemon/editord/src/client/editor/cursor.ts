@@ -33,7 +33,8 @@ export function getComposedRange(
     return null;
   /** Composed ranges that pierce the shadow root; entry 0 is the active selection range. */
   const ranges = selection.getComposedRanges({ shadowRoots: [shadow,], },);
-  return ranges[0] ?? null;
+  return ranges[0]
+    ?? null;
 }
 
 /**

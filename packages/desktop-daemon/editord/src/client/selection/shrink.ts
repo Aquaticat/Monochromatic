@@ -74,7 +74,8 @@ export async function doShrinkSelection({
       line: pos.line,
       character: pos.character,
     },);
-    if (chain.length === 0)
+    if (chain.length
+      === 0)
       return;
 
     /**

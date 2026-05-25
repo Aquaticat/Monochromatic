@@ -65,7 +65,8 @@ export function renderBadges(detail: ProbeDetail,): string {
   /** Accumulator for badge spans whose corresponding state flag is set. */
   const badges: string[] = [];
 
-  if (detail.partial === true) {
+  if (detail.partial
+    === true) {
     badges.push(
       h({
         tag: 'span',
@@ -75,7 +76,9 @@ export function renderBadges(detail: ProbeDetail,): string {
       },),
     );
   }
-  if ((detail.error !== undefined) && (detail.error !== '')) {
+  if ((detail.error
+    !== undefined) && (detail.error
+    !== '')) {
     badges.push(
       h({
         tag: 'span',
@@ -85,7 +88,9 @@ export function renderBadges(detail: ProbeDetail,): string {
       },),
     );
   }
-  if ((detail.finishReason !== undefined) && (detail.finishReason !== 'stop')) {
+  if ((detail.finishReason
+    !== undefined) && (detail.finishReason
+    !== 'stop')) {
     badges.push(
       h({
         tag: 'span',
@@ -96,7 +101,8 @@ export function renderBadges(detail: ProbeDetail,): string {
     );
   }
 
-  if (badges.length === 0)
+  if (badges.length
+    === 0)
     return '';
   return h({
     tag: 'div',
@@ -187,7 +193,8 @@ export function renderPassMeta({
         text: formatNumber(usage.completionTokens,),
       },),
     );
-    if (usage.reasoningTokens !== undefined) {
+    if (usage.reasoningTokens
+      !== undefined) {
       items.push(
         h({
           tag: 'dt',
@@ -224,7 +231,8 @@ export function renderPassMeta({
     );
   }
 
-  if (items.length === 0)
+  if (items.length
+    === 0)
     return '';
 
   return h({

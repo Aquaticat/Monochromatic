@@ -94,9 +94,9 @@ function analyzeBashCommand(
     if (
       (op === '>')
       || (op === '>>')
-      || (op === '<')
-      || (op === '>&')
-      || (op === '|&')
+        || (op === '<')
+        || (op === '>&')
+        || (op === '|&')
     ) {
       nextIsRedirectTarget = true;
       continue;
@@ -116,7 +116,9 @@ function analyzeBashCommand(
       continue;
     }
 
-    if ((op === '&&') || (op === '||') || (op === ';') || (op === '&')) {
+    if ((op === '&&') || (op === '||')
+      || (op === ';')
+      || (op === '&')) {
       flushCurrentCommand({
         commands,
         args: currentArgs,
@@ -141,7 +143,8 @@ function analyzeBashCommand(
       continue;
     }
 
-    if ((op === '(') || (op === ')') || (op === ';;')) {
+    if ((op === '(') || (op === ')')
+      || (op === ';;')) {
       if (op === ';;') {
         flushCurrentCommand({
           commands,
@@ -168,7 +171,8 @@ function analyzeBashCommand(
   const allFiles = commands.flatMap(
     function collectFiles(c,) {
       return [
-        ...c.args.filter(looksLikePath,),
+        ...c.args
+          .filter(looksLikePath,),
         ...c.redirectTargets,
       ];
     },
@@ -182,7 +186,9 @@ function analyzeBashCommand(
     ),
   ),];
 
-  if ((allParamRefs.length === 0) && (preScanRefs.length > 0))
+  if ((allParamRefs.length
+    === 0) && (preScanRefs.length
+    > 0))
     allParamRefs.push(...preScanRefs,);
 
   return {
@@ -224,7 +230,9 @@ function flushCurrentCommand(
     paramRefs: string[];
   },
 ): void {
-  if ((args.length === 0) && (redirectTargets.length === 0))
+  if ((args.length
+    === 0) && (redirectTargets.length
+    === 0))
     return;
 
   /** Command name (first word, empty string on redirect-only commands) plus its remaining word arguments. */

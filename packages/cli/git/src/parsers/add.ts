@@ -192,7 +192,8 @@ function scanBulkTokens({
     },);
   }
 
-  if (skipPathspecFromFileValues && arg.startsWith('--pathspec-from-file=',)) {
+  if (skipPathspecFromFileValues && arg
+    .startsWith('--pathspec-from-file=',)) {
     return scanBulkTokens({
       region,
       index: index + 1,
@@ -255,7 +256,10 @@ export function parseAddRegion(
   );
   /** Whether wrapper-only escape hatch appears in flag position. */
   const hasEscapeHatch = (parseResult.success)
-    && (parseResult.value.escape.length > 0);
+    && (parseResult.value
+      .escape
+      .length
+      > 0);
 
   /** Literal bulk-staging tokens detected by the value-aware scan. */
   const bulkMatches = [

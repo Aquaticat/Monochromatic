@@ -38,7 +38,8 @@ type LayoutOptions = {
  * ```
  */
 export function serializePageData(data: unknown,): string {
-  return JSON.stringify(data,).replaceAll(
+  return JSON.stringify(data,)
+    .replaceAll(
     '<',
     String.raw`\u003C`,
   );
@@ -64,7 +65,8 @@ const MENU_OPEN_SCRIPT = `document.addEventListener('menu-open', function() {
  */
 export function renderPage(options: LayoutOptions,): Response {
   /** Optional nav element; empty string when the page hides the top bar. */
-  const topNav = options.hideTopNav === true
+  const topNav = options.hideTopNav
+    === true
     ? ''
     : h({
       tag: 'top-nav',

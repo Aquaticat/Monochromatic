@@ -60,10 +60,13 @@ export function skipWithClauseWhitespace({
   return (function scan(): number {
     /** Cursor; walked right past every with-clause whitespace char so the position is found in one pass. */
     let cursor = idx;
-    while (cursor < s.length) {
+    while (cursor < s
+      .length) {
       /** Char at the cursor; only the four whitespace chars permitted in the with-clause prefix advance the scan. */
       const c = s.charAt(cursor,);
-      if ((c !== ' ') && (c !== '\t') && (c !== '\n') && (c !== '\r'))
+      if ((c !== ' ') && (c !== '\t')
+        && (c !== '\n')
+        && (c !== '\r'))
         return cursor;
       cursor += 1;
     }

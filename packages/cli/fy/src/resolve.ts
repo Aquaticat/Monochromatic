@@ -76,7 +76,9 @@ function findGlobalNodeModules(): string | undefined {
     l,
   },);
   /** User's home directory; drives the per-user candidates below and is required for them to be meaningful. */
-  const home = process.env['HOME'] ?? process.env['USERPROFILE'];
+  const home = process.env.HOME
+    ?? process
+    .env.USERPROFILE;
   if (home === undefined) {
     rl.info('no HOME or USERPROFILE set',);
     return undefined;
@@ -106,7 +108,8 @@ function findGlobalNodeModules(): string | undefined {
         candidate,
         '.package-lock.json',
       ),);
-      if (bunFile.size > 0) {
+      if (bunFile.size
+        > 0) {
         rl.info(`found global node_modules at ${candidate}`,);
         return candidate;
       }

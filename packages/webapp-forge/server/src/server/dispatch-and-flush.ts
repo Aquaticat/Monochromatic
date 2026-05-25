@@ -60,7 +60,8 @@ export async function dispatchAndFlush(row: {
   readonly batchSize?: number;
 },): Promise<number> {
   /** Bounded page size protects the loop from unbounded backlog. */
-  const batchSize = row.batchSize ?? DEFAULT_BATCH_SIZE;
+  const batchSize = row.batchSize
+    ?? DEFAULT_BATCH_SIZE;
   /** Advances through `events.id` order; returned to caller as the new high-water mark. */
   let cursor = row.afterEventId;
   // Process up to `batchSize` events per loop turn so an unbounded
@@ -75,7 +76,8 @@ export async function dispatchAndFlush(row: {
       limit: batchSize,
     },);
     /* oxlint-enable no-await-in-loop */
-    if (events.length === 0)
+    if (events.length
+      === 0)
       break;
     for (const eventRow of events) {
       cursor = eventRow.id;
@@ -108,10 +110,12 @@ export async function dispatchAndFlush(row: {
         sink: row.writeBuffer,
       },);
     }
-    if (events.length < batchSize)
+    if (events.length
+      < batchSize)
       break;
   }
-  await row.writeBuffer.flush();
+  await row.writeBuffer
+    .flush();
   return cursor;
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

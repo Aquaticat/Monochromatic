@@ -44,8 +44,10 @@ const EXTENSION_MAP: Record<string, string> = {
  */
 export function getLanguageId({ path, }: { readonly path: string; },): string {
   /** Lowercase extension (including the leading dot) used to look up the LSP language id. */
-  const ext = extname(path,).toLowerCase();
-  return EXTENSION_MAP[ext] ?? 'plaintext';
+  const ext = extname(path,)
+    .toLowerCase();
+  return EXTENSION_MAP[ext]
+    ?? 'plaintext';
 }
 
 /** Language IDs that oxlint and tsgo handle (JavaScript/TypeScript family). */

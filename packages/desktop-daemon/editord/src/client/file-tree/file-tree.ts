@@ -71,7 +71,8 @@ export class FileTree extends HTMLElement {
    * @returns current fetchDir callback, or null
    */
   get fetchDir(): ((path: string,) => Promise<readonly DirEntry[]>) | null {
-    return this.#state.fetchDir;
+    return this.#state
+      .fetchDir;
   }
   /**
    * Installs the fetchDir callback.
@@ -79,7 +80,8 @@ export class FileTree extends HTMLElement {
    * @param fn - fetchDir callback to install
    */
   set fetchDir(fn: ((path: string,) => Promise<readonly DirEntry[]>) | null,) {
-    this.#state.fetchDir = fn;
+    this.#state
+      .fetchDir = fn;
   }
   /**
    * Callback invoked when a directory is expanded for the first time.
@@ -87,7 +89,8 @@ export class FileTree extends HTMLElement {
    * @returns current onDirExpanded callback, or null
    */
   get onDirExpanded(): ((path: string,) => void) | null {
-    return this.#state.onDirExpanded;
+    return this.#state
+      .onDirExpanded;
   }
   /**
    * Installs the onDirExpanded callback.
@@ -95,7 +98,8 @@ export class FileTree extends HTMLElement {
    * @param fn - onDirExpanded callback to install
    */
   set onDirExpanded(fn: ((path: string,) => void) | null,) {
-    this.#state.onDirExpanded = fn;
+    this.#state
+      .onDirExpanded = fn;
   }
   /**
    * Callback invoked when a context menu action is selected.
@@ -146,7 +150,8 @@ export class FileTree extends HTMLElement {
       class: 'tree',
     },);
     this.#contextMenu = createContextMenu();
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,
@@ -154,7 +159,8 @@ export class FileTree extends HTMLElement {
       this.#tree,
     );
 
-    this.#shadow.addEventListener(
+    this.#shadow
+      .addEventListener(
       'focusin',
       function handleFocusIn(event,) {
         if (event.target instanceof HTMLElement)
@@ -182,7 +188,8 @@ export class FileTree extends HTMLElement {
           kind,
           // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent from tree entries
         } = (event as CustomEvent<ShowContextDetail>).detail;
-        if (tree.#contextMenu === null)
+        if (tree.#contextMenu
+          === null)
           return;
         /**
          * Forwards context menu action to the external callback.
@@ -222,7 +229,8 @@ export class FileTree extends HTMLElement {
   async expandRoot(rootPath: string,): Promise<void> {
     /** Captured fetch callback; absent when the tree was never wired up with a backing fetcher. */
     const { fetchDir, } = this.#state;
-    if ((this.#tree === null) || (fetchDir === null))
+    if ((this.#tree
+      === null) || (fetchDir === null))
       return;
     this.#rootPath = rootPath;
     /** Root-level directory listing used to populate the top of the tree. */
@@ -231,16 +239,20 @@ export class FileTree extends HTMLElement {
     const children = createEntryElements({
       parentPath: rootPath,
       entries,
-      recentPaths: this.#state.recentPaths,
+      recentPaths: this.#state
+        .recentPaths,
     },);
-    this.#tree.replaceChildren(...children,);
+    this.#tree
+      .replaceChildren(...children,);
     void preloadChildren({
       parentPath: rootPath,
       entries,
       fetchDir,
-      prefetchCache: this.#state.prefetchCache,
+      prefetchCache: this.#state
+        .prefetchCache,
     },);
-    this.#state.onDirExpanded?.(rootPath,);
+    this.#state
+      .onDirExpanded?.(rootPath,);
   }
 
   /**
@@ -249,7 +261,8 @@ export class FileTree extends HTMLElement {
    * @returns array of absolute directory paths that are expanded
    */
   get expandedDirs(): string[] {
-    if (this.#tree === null)
+    if (this.#tree
+      === null)
       return [];
     return collectExpandedDirs({ tree: this.#tree, },);
   }
@@ -260,7 +273,8 @@ export class FileTree extends HTMLElement {
    * @param dirs - absolute paths of directories to expand
    */
   async restoreExpansion({ dirs, }: { readonly dirs: readonly string[]; },): Promise<void> {
-    if ((this.#tree === null) || (this.#state.fetchDir === null) || (dirs.length === 0))
+    if ((this.#tree === null) || (this.#state.fetchDir === null)
+      || (dirs.length === 0))
       return;
     /** Trailing-slash prefix used to drop any restored path that escaped the configured root. */
     const rootPrefix = `${this.#rootPath}/`;
@@ -268,12 +282,14 @@ export class FileTree extends HTMLElement {
     const validDirs = dirs.filter(function withinRoot(dir,) {
       return dir.startsWith(rootPrefix,);
     },);
-    if (validDirs.length === 0)
+    if (validDirs.length
+      === 0)
       return;
     await doRestoreExpansion({
       tree: this.#tree,
       dirs: validDirs,
-      loadPromises: this.#state.loadPromises,
+      loadPromises: this.#state
+        .loadPromises,
     },);
   }
 
@@ -283,8 +299,10 @@ export class FileTree extends HTMLElement {
    * @param paths - ordered recent file paths (index 0 = most recent)
    */
   updateRecency({ paths, }: { readonly paths: readonly string[]; },): void {
-    this.#state.recentPaths = paths;
-    if (this.#tree !== null) {
+    this.#state
+      .recentPaths = paths;
+    if (this.#tree
+      !== null) {
       updateRecencyMarkers({
         tree: this.#tree,
         paths,
@@ -298,7 +316,9 @@ export class FileTree extends HTMLElement {
    * @param paths - absolute file paths to reveal
    */
   async revealFiles({ paths, }: { readonly paths: readonly string[]; },): Promise<void> {
-    if ((this.#tree === null) || (this.#rootPath === ''))
+    if ((this.#tree
+      === null) || (this.#rootPath
+      === ''))
       return;
     /** Stable reference to `this` so the inline `restore` callback retains the component instance. */
     const tree = this;
@@ -319,7 +339,8 @@ export class FileTree extends HTMLElement {
    * @param path - absolute file path to scroll into view
    */
   scrollToFile({ path, }: { readonly path: string; },): void {
-    if (this.#tree === null)
+    if (this.#tree
+      === null)
       return;
     doScrollToFile({
       tree: this.#tree,
@@ -333,7 +354,8 @@ export class FileTree extends HTMLElement {
    * @param path - absolute path of the directory to refresh
    */
   async refreshDir({ path, }: { readonly path: string; },): Promise<void> {
-    if (this.#tree === null)
+    if (this.#tree
+      === null)
       return;
     await performRefreshDir({
       tree: this.#tree,

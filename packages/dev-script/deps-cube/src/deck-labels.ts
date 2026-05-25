@@ -222,16 +222,20 @@ export function buildAxisCapitalsLayer(
     bounds,
   },);
   /** X-axis offset past the arrow tip so capital `X` clears the cone. */
-  const offX = g.dx * TIP_LABEL_OFFSET_FRACTION;
+  const offX = g.dx
+    * TIP_LABEL_OFFSET_FRACTION;
   /** Y-axis offset past the arrow tip so capital `Y` clears the cone. */
-  const offY = g.dy * TIP_LABEL_OFFSET_FRACTION;
+  const offY = g.dy
+    * TIP_LABEL_OFFSET_FRACTION;
   /** Z-axis offset past the arrow tip so capital `Z` clears the cone. */
-  const offZ = g.dz * TIP_LABEL_OFFSET_FRACTION;
+  const offZ = g.dz
+    * TIP_LABEL_OFFSET_FRACTION;
   /** Three capital-letter labels, one per axis tip. */
   const data: TextDatum[] = [
     {
       position: [
-        g.xMax + offX,
+        g.xMax
+          + offX,
         g.yMin,
         g.zMin,
       ],
@@ -240,7 +244,8 @@ export function buildAxisCapitalsLayer(
     {
       position: [
         g.xMin,
-        g.yMax + offY,
+        g.yMax
+          + offY,
         g.zMin,
       ],
       text: 'Y',
@@ -249,7 +254,8 @@ export function buildAxisCapitalsLayer(
       position: [
         g.xMin,
         g.yMin,
-        g.zMax + offZ,
+        g.zMax
+          + offZ,
       ],
       text: 'Z',
     },
@@ -309,23 +315,31 @@ export function buildAxisSubtitlesLayer(
     bounds,
   },);
   /** Perpendicular X offset that pushes subtitles outward from the data box. */
-  const offX = g.dx * SUBTITLE_OFFSET_FRACTION;
+  const offX = g.dx
+    * SUBTITLE_OFFSET_FRACTION;
   /** Perpendicular Y offset that pushes subtitles outward from the data box. */
-  const offY = g.dy * SUBTITLE_OFFSET_FRACTION;
+  const offY = g.dy
+    * SUBTITLE_OFFSET_FRACTION;
   /** Three dim-name subtitle labels positioned at each axis midpoint. */
   const data: TextDatum[] = [
     {
       position: [
-        (g.xMin + g.xMax) * HALF,
-        g.yMin - offY,
+        (g.xMin
+          + g
+          .xMax) * HALF,
+        g.yMin
+          - offY,
         g.zMin,
       ],
       text: DIM_DISPLAY_NAMES[dimMapping.x],
     },
     {
       position: [
-        g.xMin - offX,
-        (g.yMin + g.yMax) * HALF,
+        g.xMin
+          - offX,
+        (g.yMin
+          + g
+          .yMax) * HALF,
         g.zMin,
       ],
       text: DIM_DISPLAY_NAMES[dimMapping.y],
@@ -333,8 +347,11 @@ export function buildAxisSubtitlesLayer(
     {
       position: [
         g.xMin,
-        g.yMin - offY,
-        (g.zMin + g.zMax) * HALF,
+        g.yMin
+          - offY,
+        (g.zMin
+          + g
+          .zMax) * HALF,
       ],
       text: DIM_DISPLAY_NAMES[dimMapping.z],
     },
@@ -390,18 +407,24 @@ export function buildOriginLabelLayer(
     bounds,
   },);
   /** X-axis offset that nudges `O` behind the min corner so it clears the shaft. */
-  const offX = g.dx * ORIGIN_OFFSET_FRACTION;
+  const offX = g.dx
+    * ORIGIN_OFFSET_FRACTION;
   /** Y-axis offset that nudges `O` behind the min corner so it clears the shaft. */
-  const offY = g.dy * ORIGIN_OFFSET_FRACTION;
+  const offY = g.dy
+    * ORIGIN_OFFSET_FRACTION;
   /** Z-axis offset that nudges `O` behind the min corner so it clears the shaft. */
-  const offZ = g.dz * ORIGIN_OFFSET_FRACTION;
+  const offZ = g.dz
+    * ORIGIN_OFFSET_FRACTION;
   /** Single-entry data array; only the origin marker is rendered by this layer. */
   const data: TextDatum[] = [
     {
       position: [
-        g.xMin - offX,
-        g.yMin - offY,
-        g.zMin - offZ,
+        g.xMin
+          - offX,
+        g.yMin
+          - offY,
+        g.zMin
+          - offZ,
       ],
       text: 'O',
     },

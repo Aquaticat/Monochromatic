@@ -22,7 +22,9 @@ import readdir from 'tiny-readdir-glob';
  * ```
  */
 export function sha256(input: string,): string {
-  return createHash('sha256',).update(input,).digest('hex',);
+  return createHash('sha256',)
+    .update(input,)
+    .digest('hex',);
 }
 
 /**
@@ -58,7 +60,8 @@ export async function computePipelineFingerprint(
     },),
   );
   /** Greatest modification time, or zero when no files match, encoded into the fingerprint. */
-  const maxMtime = mtimes.length > 0
+  const maxMtime = mtimes.length
+    > 0
     ? Math.max(...mtimes,)
     : 0;
   return `${paths.length}:${maxMtime}`;

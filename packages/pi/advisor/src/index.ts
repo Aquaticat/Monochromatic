@@ -160,7 +160,9 @@ function buildMainModelGuidance(
   /** Effective scoped model set. */
   const scope = resolveEffectiveScope({ ctx, },);
   /** Default model for empty Advisor params. */
-  const defaultSelection = scope.entries.length === 0
+  const defaultSelection = scope.entries
+    .length
+    === 0
     ? undefined
     : selectDefaultModel({
       scope,
@@ -168,17 +170,22 @@ function buildMainModelGuidance(
       maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
     },);
   /** Canonical slugs available to Advisor. */
-  const scopedSlugs = scope.entries.map(function mapEntry(entry,) {
+  const scopedSlugs = scope.entries
+    .map(function mapEntry(entry,) {
     return entry.canonicalSlug;
   },);
 
   return [
     MAIN_MODEL_GUIDANCE_PREFIX,
     `Allowed Advisor model slugs: ${
-      scopedSlugs.length === 0 ? 'none' : scopedSlugs.join(', ',)
+      scopedSlugs.length
+        === 0 ? 'none' : scopedSlugs.join(', ',)
     }`,
-    `advisor({}) default model: ${defaultSelection?.selected.canonicalSlug ?? 'none'}`,
-    `Advisor prompt: ${buildAdvisorSystemPrompt(config,).split('\n',)[0]}`,
+    `advisor({}) default model: ${defaultSelection?.selected
+      .canonicalSlug
+      ?? 'none'}`,
+    `Advisor prompt: ${buildAdvisorSystemPrompt(config,)
+      .split('\n',)[0]}`,
   ]
     .join('\n',);
 }

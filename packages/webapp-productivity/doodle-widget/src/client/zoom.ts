@@ -97,12 +97,16 @@ export function getPanY(): number {
  * ```
  */
 export function applyZoomTransform(zoomLayer: HTMLElement,): void {
-  if (zoomState.scale === 1) {
-    zoomLayer.style.transform = '';
+  if (zoomState.scale
+    === 1) {
+    zoomLayer.style
+      .transform = '';
     return;
   }
-  zoomLayer.style.transformOrigin = '0 0';
-  zoomLayer.style.transform = `translate(${String(zoomState.panX,)}px, ${
+  zoomLayer.style
+    .transformOrigin = '0 0';
+  zoomLayer.style
+    .transform = `translate(${String(zoomState.panX,)}px, ${
     String(zoomState.panY,)
   }px) scale(${String(zoomState.scale,)})`;
 }
@@ -126,20 +130,23 @@ export function clampPan({
   containerWidth: number;
   containerHeight: number;
 },): void {
-  if (zoomState.scale <= 1) {
+  if (zoomState.scale
+    <= 1) {
     zoomState.panX = 0;
     zoomState.panY = 0;
     return;
   }
   zoomState.panX = Math.max(
-    (-(zoomState.scale - 1)) * containerWidth,
+    (-(zoomState.scale
+      - 1)) * containerWidth,
     Math.min(
       0,
       zoomState.panX,
     ),
   );
   zoomState.panY = Math.max(
-    (-(zoomState.scale - 1)) * containerHeight,
+    (-(zoomState.scale
+      - 1)) * containerHeight,
     Math.min(
       0,
       zoomState.panY,
@@ -217,15 +224,20 @@ export function zoomAt(
     MIN_SCALE,
     Math.min(
       MAX_SCALE,
-      zoomState.scale * factor,
+      zoomState.scale
+        * factor,
     ),
   );
-  if (newScale === zoomState.scale)
+  if (newScale === zoomState
+    .scale)
     return;
   /** Ratio between new and old scale for pan adjustment */
-  const actualFactor = newScale / zoomState.scale;
-  zoomState.panX = (screenX * (1 - actualFactor)) + (zoomState.panX * actualFactor);
-  zoomState.panY = (screenY * (1 - actualFactor)) + (zoomState.panY * actualFactor);
+  const actualFactor = newScale / zoomState
+    .scale;
+  zoomState.panX = (screenX * (1 - actualFactor)) + (zoomState.panX
+    * actualFactor);
+  zoomState.panY = (screenY * (1 - actualFactor)) + (zoomState.panY
+    * actualFactor);
   zoomState.scale = newScale;
   clampPan({
     containerWidth,

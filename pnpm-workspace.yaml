@@ -1,6 +1,6 @@
 packages:
-  - 'packages/*/*'
-  - 'packages-deprecated/*/*'
+- 'packages/*/*'
+- 'packages-deprecated/*/*'
 
 allowBuilds:
   '@vscode/ripgrep': false
@@ -134,10 +134,10 @@ hoistWorkspacePackages: false
 linkWorkspacePackages: true
 managePackageManagerVersions: false
 minimumReleaseAgeExclude:
-  - '@earendil-works/pi-agent-core@0.75.4'
-  - '@earendil-works/pi-ai@0.75.4'
-  - '@earendil-works/pi-coding-agent@0.75.4'
-  - '@earendil-works/pi-tui@0.75.4'
+- '@earendil-works/pi-agent-core@0.75.4'
+- '@earendil-works/pi-ai@0.75.4'
+- '@earendil-works/pi-coding-agent@0.75.4'
+- '@earendil-works/pi-tui@0.75.4'
 nodeLinker: isolated
 
 overrides:
@@ -301,14 +301,14 @@ strictPeerDependencies: true
 
 supportedArchitectures:
   cpu:
-    - x64
-    - arm64
-    - current
+  - x64
+  - arm64
+  - current
   libc:
-    - glibc
-    - musl
-    - current
+  - glibc
+  - musl
+  - current
   os:
-    - darwin
-    - linux
-    - current
+  - darwin
+  - linux
+  - current

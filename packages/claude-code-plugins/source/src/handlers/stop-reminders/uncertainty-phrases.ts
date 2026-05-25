@@ -150,8 +150,10 @@ function findErThanMost(text: string,): string | undefined {
     if (!isWordChar(before,))
       continue;
     /** Position one past the trailing `t` of `most`; checked for a word boundary below. */
-    const endIdx = idx + ER_THAN_MOST_PHRASE.length;
-    if ((endIdx < lower.length) && isWordChar(lower.charAt(endIdx,),))
+    const endIdx = idx + ER_THAN_MOST_PHRASE
+      .length;
+    if ((endIdx < lower
+      .length) && isWordChar(lower.charAt(endIdx,),))
       continue;
     /** Inclusive start of the word that ends in `er`, found by scanning back over word chars. */
     let wordStart = idx - 1;
@@ -180,7 +182,8 @@ function findErThanMost(text: string,): string | undefined {
  * ```
  */
 function containsErThanMost(text: string,): boolean {
-  return findErThanMost(text,) !== undefined;
+  return findErThanMost(text,)
+    !== undefined;
 }
 
 //endregion

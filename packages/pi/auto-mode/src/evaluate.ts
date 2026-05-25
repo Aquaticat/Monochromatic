@@ -124,8 +124,10 @@ async function evaluate(
   if (!judgeResult.ok) {
     innerL.error(
       `judge model resolution failed: ${
-        judgeResult.err instanceof Error
-          ? judgeResult.err.message
+        judgeResult.err
+          instanceof Error
+          ? judgeResult.err
+            .message
           : String(judgeResult.err,)
       }`,
     );
@@ -159,7 +161,8 @@ async function evaluate(
       batchContext,
     },);
 
-    if (verdict.verdict === 'approve') {
+    if (verdict.verdict
+      === 'approve') {
       innerL.info(`approve: ${verdict.reason}`,);
       flowVerdicts.push({
         action,
@@ -181,7 +184,8 @@ async function evaluate(
       return undefined;
     }
 
-    if (verdict.verdict === 'deny') {
+    if (verdict.verdict
+      === 'deny') {
       innerL.warn(`deny: ${verdict.reason}`,);
       flowVerdicts.push({
         action,
@@ -202,7 +206,8 @@ async function evaluate(
       );
       return {
         block: true,
-        reason: verdict.guidance !== '' ? verdict.guidance : DEFAULT_DENY_GUIDANCE,
+        reason: verdict.guidance
+          !== '' ? verdict.guidance : DEFAULT_DENY_GUIDANCE,
       };
     }
 
@@ -265,12 +270,18 @@ function toBudgetModelOptions(
 ): BudgetModelOptions {
   /** Cleaned budget-model options that drop `modelOverride` so it can be re-attached conditionally below. */
   const opts: BudgetModelOptions = {
-    strategy: config.judgeModel.strategy,
-    costRatio: config.judgeModel.costRatio,
-    majorVersions: config.judgeModel.majorVersions,
+    strategy: config.judgeModel
+      .strategy,
+    costRatio: config.judgeModel
+      .costRatio,
+    majorVersions: config.judgeModel
+      .majorVersions,
   };
-  if (config.judgeModel.modelOverride !== undefined)
-    opts.modelOverride = config.judgeModel.modelOverride;
+  if (config.judgeModel
+    .modelOverride
+    !== undefined)
+    opts.modelOverride = config.judgeModel
+      .modelOverride;
   return opts;
 }
 

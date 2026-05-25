@@ -120,8 +120,10 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
     let offset = 0;
     /** Sentinel flipped when the protocol's flush-pkt is observed. */
     let sawFlush = false;
-    while (offset < body.byteLength) {
-      if ((body.byteLength - offset) < PKT_HEADER_BYTES)
+    while (offset < body
+      .byteLength) {
+      if ((body.byteLength
+        - offset) < PKT_HEADER_BYTES)
         throw new Error('receive-pack: truncated pkt-len header',);
       /** Length prefix string for the current pkt-line. */
       const lengthHex = decoder.decode(body.subarray(
@@ -140,7 +142,8 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
       }
       if (length < PKT_HEADER_BYTES)
         throw new Error(`receive-pack: invalid pkt-len ${String(length,)}`,);
-      if ((offset + length) > body.byteLength)
+      if ((offset + length) > body
+        .byteLength)
         throw new Error('receive-pack: pkt-line overruns body',);
       /** Payload bytes of the current pkt-line, length prefix excluded. */
       const payload = body.subarray(
@@ -149,10 +152,12 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
       );
       offset += length;
       /** Payload without the optional trailing line-feed git emits on text lines. */
-      const trimmed = payload[payload.byteLength - 1] === ASCII_LF
+      const trimmed = payload[payload.byteLength - 1]
+        === ASCII_LF
         ? payload.subarray(
           0,
-          payload.byteLength - 1,
+          payload.byteLength
+            - 1,
         )
         : payload;
       /** UTF-8 decoded line text. */
@@ -160,19 +165,26 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
       /** NUL-separated split: index 0 is the triplet, index 1 the capability suffix. */
       const nullSplit = text.split('\0',);
       /** Triplet portion of the line ("old new ref"). */
-      const tripletText = nullSplit[0] ?? '';
-      if ((triplets.length === 0) && (nullSplit.length >= 2)) {
+      const tripletText = nullSplit[0]
+        ?? '';
+      if ((triplets.length
+        === 0) && (nullSplit.length
+        >= 2)) {
         /** Raw capability string from the first triplet line. */
-        const capsText = nullSplit[1] ?? '';
-        capabilities = capsText.length === 0
+        const capsText = nullSplit[1]
+          ?? '';
+        capabilities = capsText.length
+          === 0
           ? []
-          : capsText.split(' ',).filter(function nonEmpty(s,) {
+          : capsText.split(' ',)
+            .filter(function nonEmpty(s,) {
             return s.length > 0;
           },);
       }
       /** Whitespace-separated triplet tokens; ref names may contain spaces. */
       const parts = tripletText.split(' ',);
-      if (parts.length < TRIPLET_MIN_TOKENS)
+      if (parts.length
+        < TRIPLET_MIN_TOKENS)
         throw new Error(`receive-pack: malformed triplet "${tripletText}"`,);
       /** Destructured triplet; ref names may contain embedded spaces. */
       const [oldOid, newOid, ...refTokens] = parts;
@@ -239,14 +251,17 @@ export function parseUploadPackBody(body: Uint8Array,): UploadPackRequest {
       if ((line === null) || (line === 'delim'))
         continue;
       /** Payload without the optional trailing line-feed git emits on text lines. */
-      const trimmed = line[line.byteLength - 1] === ASCII_LF
+      const trimmed = line[line.byteLength - 1]
+        === ASCII_LF
         ? line.subarray(
           0,
-          line.byteLength - 1,
+          line.byteLength
+            - 1,
         )
         : line;
       /** UTF-8 decoded line text. */
-      const text = decoder.decode(trimmed,).trim();
+      const text = decoder.decode(trimmed,)
+        .trim();
       if (text === 'done') {
         done = true;
         continue;
@@ -255,9 +270,12 @@ export function parseUploadPackBody(body: Uint8Array,): UploadPackRequest {
       const tokens = text.split(' ',);
       /** Destructured tokens: `key` selects the request kind, `rest` holds caps. */
       const [key, value, ...rest] = tokens;
-      if ((capabilities.length === 0) && (rest.length > 0)) {
+      if ((capabilities.length
+        === 0) && (rest.length
+        > 0)) {
         capabilities = rest.filter(function nonEmpty(s,) {
-          return s.length > 0;
+          return s.length
+            > 0;
         },);
       }
       if ((value === undefined) || (value === ''))

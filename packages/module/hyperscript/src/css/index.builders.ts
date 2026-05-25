@@ -64,13 +64,18 @@ function serializeDecls(decls: object,): string {
  * @returns `true` when the at-rule should produce a `{ }` block
  */
 function hasBlock(options: AtRuleOptions,): boolean {
-  if (options.decls !== undefined)
+  if (options.decls
+    !== undefined)
     return true;
 
-  if (options.raw !== undefined)
+  if (options.raw
+    !== undefined)
     return true;
 
-  if ((options.children !== undefined) && (options.children.length > 0))
+  if ((options.children
+    !== undefined) && (options.children
+    .length
+    > 0))
     return true;
 
   return false;

@@ -78,7 +78,8 @@ export function createRecentFiles(): RecentFiles {
       );
     }
     paths.unshift(path,);
-    if (paths.length > MAX_RECENT)
+    if (paths.length
+      > MAX_RECENT)
       paths.pop();
     l.info(`pushed ${path} (${String(paths.length,)} tracked)`,);
   }

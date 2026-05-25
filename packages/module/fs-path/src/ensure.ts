@@ -77,7 +77,8 @@ export async function ensureDir(path: string,): Promise<string> {
   }
   catch (error: unknown) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime stat result checked for isDirectory before cast
-    if ((error as { code?: string; }).code === 'ENOENT') {
+    if ((error as { code?: string; }).code
+      === 'ENOENT') {
       l.info(`${path} does not exist, creating recursively`,);
       await mkdir(
         path,
@@ -91,7 +92,9 @@ export async function ensureDir(path: string,): Promise<string> {
   try {
     await access(
       path,
-      constants.R_OK | constants.W_OK,
+      constants.R_OK
+        | constants
+        .W_OK,
     );
     l.info(`${path} is accessible`,);
   }
@@ -99,7 +102,9 @@ export async function ensureDir(path: string,): Promise<string> {
     l.info(`${path} not accessible, adjusting permissions`,);
     await chmod(
       path,
-      constants.R_OK | constants.W_OK,
+      constants.R_OK
+        | constants
+        .W_OK,
     );
   }
 
@@ -136,7 +141,8 @@ export async function ensureFile(path: string,): Promise<string> {
   }
   catch (error: unknown) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime stat result checked for isFile before cast
-    if ((error as { code?: string; }).code === 'ENOENT') {
+    if ((error as { code?: string; }).code
+      === 'ENOENT') {
       l.info(`${path} does not exist, creating`,);
       await ensureDir(parsed.dir,);
       await writeFile(
@@ -152,7 +158,9 @@ export async function ensureFile(path: string,): Promise<string> {
   try {
     await access(
       path,
-      constants.R_OK | constants.W_OK,
+      constants.R_OK
+        | constants
+        .W_OK,
     );
     l.info(`${path} is accessible`,);
   }
@@ -160,7 +168,9 @@ export async function ensureFile(path: string,): Promise<string> {
     l.info(`${path} not accessible, adjusting permissions`,);
     await chmod(
       path,
-      constants.R_OK | constants.W_OK,
+      constants.R_OK
+        | constants
+        .W_OK,
     );
   }
 

@@ -16,7 +16,8 @@ import { focusOutline, } from '../mixins.ts';
 const FULL_PERCENT = 100;
 
 /** Menu vertical padding in rem. */
-const MENU_PADDING = 1 / 2 / 2;
+const MENU_PADDING = 1 / 2
+  / 2;
 
 /** Option padding in rem. */
 const OPTION_PADDING = 1 / 2;

@@ -60,8 +60,10 @@ class TaskCard extends HTMLElement {
    * @returns Matching chip span, or null if not found
    */
   getChipElement(prefix: string,): HTMLSpanElement | null {
-    for (const chip of this.#shadow.querySelectorAll<HTMLSpanElement>('.chip',)) {
-      if (chip.textContent.startsWith(prefix,))
+    for (const chip of this.#shadow
+      .querySelectorAll<HTMLSpanElement>('.chip',)) {
+      if (chip.textContent
+        .startsWith(prefix,))
         return chip;
     }
     return null;
@@ -86,7 +88,8 @@ class TaskCard extends HTMLElement {
         text,
       },);
     },);
-    if (options.showBlockedBadge === true) {
+    if (options.showBlockedBadge
+      === true) {
       chipElements.push(h({
         tag: 'span',
         class: 'chip blocked',
@@ -94,7 +97,8 @@ class TaskCard extends HTMLElement {
       },),);
     }
 
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: TASK_CARD_STYLES,
@@ -191,13 +195,17 @@ export function createTaskCard({
  * // '2:15:00'
  */
 export function formatRunningTrackedTime(task: Task,): string {
-  if (task.timerStartedAt === null)
+  if (task.timerStartedAt
+    === null)
     return formatTrackedTime(task.trackedTime,);
 
   /** Live tick since the timer started; clamped so a clock skew never produces negatives. */
   const elapsedSeconds = Math.max(
     0,
-    Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / MS_PER_SECOND,),
+    Math.floor((Date.now()
+      - Date
+      .parse(task.timerStartedAt,)) / MS_PER_SECOND,),
   );
-  return formatTrackedTime(task.trackedTime + elapsedSeconds,);
+  return formatTrackedTime(task.trackedTime
+    + elapsedSeconds,);
 }

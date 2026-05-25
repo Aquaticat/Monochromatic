@@ -72,7 +72,8 @@ class SideDrawer extends HTMLElement {
   connectedCallback(): void {
     this.#render();
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns the panel div we created
-    this.#panel = this.#shadow.querySelector<HTMLDivElement>('.panel',) as HTMLDivElement;
+    this.#panel = this.#shadow
+      .querySelector<HTMLDivElement>('.panel',) as HTMLDivElement;
 
     this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener(
       'click',
@@ -91,7 +92,9 @@ class SideDrawer extends HTMLElement {
         this: SideDrawer,
         event: Event,
       ): void {
-        if (event.target === this.#panel)
+        if (event.target
+          === this
+          .#panel)
           this.open = false;
       }
         .bind(this,),
@@ -100,20 +103,24 @@ class SideDrawer extends HTMLElement {
 
   /** Toggles popover visibility when the open attribute changes. */
   attributeChangedCallback(): void {
-    if (this.#panel === null)
+    if (this.#panel
+      === null)
       return;
 
     if (this.open)
-      this.#panel.showPopover();
+      this.#panel
+        .showPopover();
     else
-      this.#panel.hidePopover();
+      this.#panel
+        .hidePopover();
   }
 
   /** Renders both the inline sidebar and popover panel into the shadow root. */
   #render(): void {
     /** Popover-only close button; tagged with `panel-close` so the click handler can find it. */
     const panelClose = buildCloseButton('Close menu',);
-    panelClose.classList.add('panel-close',);
+    panelClose.classList
+      .add('panel-close',);
 
     this.#shadow.replaceChildren(
       h({

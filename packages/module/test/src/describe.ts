@@ -138,7 +138,9 @@ async function runDescribe(
     l: loggerOverride,
   } = opts;
   /** Parent logger resolved from the override, the inherited parent, or the default module logger. */
-  const baseLogger = loggerOverride ?? ctx.parentLogger ?? defaultLogger;
+  const baseLogger = loggerOverride ?? ctx
+    .parentLogger
+    ?? defaultLogger;
   /** Composed tagged logger for this suite; empty-name suites stay invisible by reusing the parent untagged. */
   const l = name === ''
     ? baseLogger
@@ -155,7 +157,8 @@ async function runDescribe(
   }
 
   /** Effective concurrency for this suite, inheriting parent when not set. */
-  const effectiveConcurrency = concurrency ?? ctx.effectiveConcurrency;
+  const effectiveConcurrency = concurrency ?? ctx
+    .effectiveConcurrency;
   /**
    * Context passed to each child for inheritance.
    * `parentLogger` is this suite's composed tagged logger, so every
@@ -168,7 +171,8 @@ async function runDescribe(
     parentLogger: l,
   };
   /** Whether concurrency is effectively unbounded. */
-  const isUnbounded = effectiveConcurrency >= Number.MAX_SAFE_INTEGER;
+  const isUnbounded = effectiveConcurrency >= Number
+    .MAX_SAFE_INTEGER;
   /** Whether children run one at a time. */
   const isSequential = effectiveConcurrency <= 1;
 
@@ -299,7 +303,8 @@ async function runDescribe(
       }
       catch (timeoutError) {
         /** Elapsed time at the moment the timeout fired, used in the inline FAIL summary. */
-        const elapsedMs = performance.now() - startTime;
+        const elapsedMs = performance.now()
+          - startTime;
         l.error(await formatFailure({
           summary: `FAIL${runLabel}: timeout (${formatDuration(elapsedMs,)})`,
           value: timeoutError,
@@ -310,7 +315,8 @@ async function runDescribe(
     /** Settled child results awaited via the timeout-logging helper so a timeout always emits a FAIL line before throwing. */
     const settled = await awaitSettleWithTimeoutLogging();
     /** Elapsed time across the whole settle, used in the suite-level summary line. */
-    const durationMs = performance.now() - startTime;
+    const durationMs = performance.now()
+      - startTime;
 
     /** Failure accumulator; rejected child reasons are pushed here for the rollup throw. */
     const errors: unknown[] = [];
@@ -320,8 +326,10 @@ async function runDescribe(
     const logSuccess = name === '' ? l.debug : l.info;
 
     for (const result of settled) {
-      if (result.status === 'fulfilled')
-        passedNames.push(result.value.name,);
+      if (result.status
+        === 'fulfilled')
+        passedNames.push(result.value
+          .name,);
       else
         errors.push(result.reason,);
     }
@@ -336,8 +344,10 @@ async function runDescribe(
      * visible alongside the error-level `FAIL` rollup.
      */
     const labelPrefix = runLabel === '' ? '' : `${runLabel.trim()} `;
-    if (passedNames.length > 0) {
-      if (errors.length === 0) {
+    if (passedNames.length
+      > 0) {
+      if (errors.length
+        === 0) {
         logSuccess(
           `PASS ${passedNames.join(', ',)} ${labelPrefix}(${
             formatDuration(durationMs,)
@@ -349,14 +359,17 @@ async function runDescribe(
       }
     }
 
-    if (errors.length === 0) {
-      if (passedNames.length === 0)
+    if (errors.length
+      === 0) {
+      if (passedNames.length
+        === 0)
         logSuccess(`${labelPrefix}(${formatDuration(durationMs,)})`,);
       return;
     }
 
     /** Aggregated cause: single child failure passes through; multiple failures fold into an `AggregateError`. */
-    const cause = errors.length === 1
+    const cause = errors.length
+      === 1
       ? errors[0]
       : new AggregateError(
         errors,

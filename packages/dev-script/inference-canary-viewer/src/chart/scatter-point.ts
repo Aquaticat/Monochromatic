@@ -40,13 +40,17 @@ export function renderPointElements(points: readonly ScatterPoint[],): string {
       /** Horizontal position percentage along the plot's inline axis. */
       const left = totalRuns === 1
         ? CENTER_PERCENT
-        : (point.index / (totalRuns - 1)) * PERCENT;
+        : (point.index
+          / (totalRuns - 1)) * PERCENT;
       /** Vertical position percentage from the plot's block-end edge. */
-      const bottom = point.score * PERCENT;
+      const bottom = point.score
+        * PERCENT;
 
       /** Whether the point should render a vendor icon glyph instead of a plain dot. */
-      const hasIcon = (point.icon !== undefined)
-        && (point.icon !== '')
+      const hasIcon = (point.icon
+        !== undefined)
+        && (point.icon
+          !== '')
         && (!point.failed);
       /** Embedded SVG markup for the optional icon glyph. */
       const iconHtml = hasIcon ? point.icon : '';
@@ -70,13 +74,17 @@ export function renderPointElements(points: readonly ScatterPoint[],): string {
         html: iconHtml,
       },);
 
-      if (point.pass2Score === undefined)
+      if (point.pass2Score
+        === undefined)
         return pass1;
 
       /** Pass-2 vertical position percentage shown above the primary point. */
-      const pass2Bottom = point.pass2Score * PERCENT;
+      const pass2Bottom = point.pass2Score
+        * PERCENT;
       /** Whether the pass-2 overlay should render a vendor icon glyph. */
-      const pass2HasIcon = (point.icon !== undefined) && (point.icon !== '');
+      const pass2HasIcon = (point.icon
+        !== undefined) && (point.icon
+        !== '');
       /** Embedded SVG markup for the pass-2 overlay glyph. */
       const pass2IconHtml = pass2HasIcon ? point.icon : '';
       /** Overlaid (pass-2) scatter point button markup. */
@@ -90,8 +98,10 @@ export function renderPointElements(points: readonly ScatterPoint[],): string {
         },
         attrs: {
           popovertarget: `run-${point.runId}`,
-          title: `fix: ${point.pass2Score.toFixed(2,)}`,
-          'aria-label': `fix score ${point.pass2Score.toFixed(2,)}`,
+          title: `fix: ${point.pass2Score
+            .toFixed(2,)}`,
+          'aria-label': `fix score ${point.pass2Score
+            .toFixed(2,)}`,
           'data-pass': 'fix',
           ...(pass2HasIcon ? { 'data-shape': 'icon', } : {}),
         },

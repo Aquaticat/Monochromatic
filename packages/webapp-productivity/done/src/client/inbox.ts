@@ -49,7 +49,8 @@ const app = appElement;
  * @param taskId - ID of task to open
  */
 function openTask(taskId: string,): void {
-  globalThis.location.href = `/tasks/${taskId}`;
+  globalThis.location
+    .href = `/tasks/${taskId}`;
 }
 
 /**
@@ -62,7 +63,8 @@ async function completeTask(taskId: string,): Promise<void> {
     path: `/api/tasks/${taskId}/complete`,
     options: { method: 'POST', },
   },);
-  globalThis.location.reload();
+  globalThis.location
+    .reload();
 }
 
 //region Suggested section
@@ -102,7 +104,9 @@ const allContent = h({
     gap: 'var(--gap)',
   },
   children: [
-    pageData.allTasks.length === 0
+    pageData.allTasks
+      .length
+      === 0
       ? h({
         tag: 'p',
         class: 'empty',
@@ -129,7 +133,9 @@ const {
   panel: newTaskPanel,
   fab: newTaskFab,
 } = createNewTaskDialog();
-document.body.append(newTaskPanel,);
-document.body.append(newTaskFab,);
+document.body
+  .append(newTaskPanel,);
+document.body
+  .append(newTaskFab,);
 
 //endregion New-task dialog

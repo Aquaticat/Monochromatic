@@ -26,7 +26,8 @@ export function splitCommas(value: string,): string[] {
       return s.trim();
     },)
     .filter(function nonEmpty(s,): boolean {
-      return s.length > 0;
+      return s.length
+        > 0;
     },);
 }
 

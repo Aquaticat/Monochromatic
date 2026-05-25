@@ -49,7 +49,8 @@ export const validTypes: CreateOnceRule = {
       },);
       if (result === undefined)
         return;
-      result.messages.forEach(function reportMessage(message,): void {
+      result.messages
+        .forEach(function reportMessage(message,): void {
         context.report({
           node: result.comment,
           messageId: 'parseError',
@@ -77,7 +78,9 @@ export const validTypes: CreateOnceRule = {
       PropertyDefinition: check,
       TSEnumMember: check,
       Property(node,): void {
-        if ((node.kind === 'get') || (node.kind === 'set'))
+        if ((node.kind
+          === 'get') || (node.kind
+          === 'set'))
           check(node,);
       },
     } as VisitorWithHooks;

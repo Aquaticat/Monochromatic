@@ -54,7 +54,9 @@ import {
  */
 function saveFontScale(v: number,): void {
   updateSettings({ fontScale: v, },);
-  document.documentElement.style.setProperty(
+  document.documentElement
+    .style
+    .setProperty(
     '--font-scale',
     String(v,),
   );
@@ -172,7 +174,9 @@ function mount(root: HTMLElement,): void {
         fallback: settings.locale,
       },);
       updateSettings({ locale: next, },);
-      document.documentElement.style.setProperty(
+      document.documentElement
+        .style
+        .setProperty(
         '--font-scale',
         String(getSettings().fontScale,),
       );

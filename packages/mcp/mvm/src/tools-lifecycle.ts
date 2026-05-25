@@ -26,7 +26,8 @@ export const listTool: ToolEntry = defineTool({
       try {
         /** All managed VMs queried from libvirt. */
         const vms = await list();
-        if (vms.length === 0)
+        if (vms.length
+          === 0)
           return textResponse('No VMs found.',);
         /** One `name: state` line per VM, joined with newlines into the response body below. */
         const lines = vms.map(function formatVmLine(vm,) {

@@ -93,7 +93,8 @@ export function parseTimestamp(value: string,): number | undefined {
 
   /** Numeric coercion of the input; finite values are interpreted as a Unix timestamp before falling through to date parsing. */
   const num = Number(value,);
-  if ((!Number.isNaN(num,)) && Number.isFinite(num,))
+  if ((!Number.isNaN(num,)) && Number
+    .isFinite(num,))
     return (num >= SECONDS_MS_BOUNDARY) ? num : (num * MS_PER_SECOND);
 
   /** Date coercion of the input; used as a fallback when the value is a date string rather than a numeric timestamp. */

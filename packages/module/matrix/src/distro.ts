@@ -63,7 +63,8 @@ export function detectPackageManager(distro: string,): PackageManager {
 
   throw new Error(
     `Unknown distro "${distro}" -- cannot determine package manager. `
-      + `Known distros: ${Object.keys(DISTRO_MANAGER_MAP,).join(', ',)}`,
+      + `Known distros: ${Object.keys(DISTRO_MANAGER_MAP,)
+        .join(', ',)}`,
   );
 }
 

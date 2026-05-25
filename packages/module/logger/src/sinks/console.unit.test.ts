@@ -67,7 +67,7 @@ await describe({
       name: 'single write defers until next microtask',
       fn: async ({ sinon, },) => {
         __resetForTests();
-        process.env['DEBUG'] = 'true';
+        process.env.DEBUG = 'true';
         const spy = sinon.spy(
           console,
           'info',
@@ -90,7 +90,7 @@ await describe({
       name: 'contiguous same-level runs collapse to one console call',
       fn: async ({ sinon, },) => {
         __resetForTests();
-        process.env['DEBUG'] = 'true';
+        process.env.DEBUG = 'true';
         const spy = sinon.spy(
           console,
           'info',
@@ -123,7 +123,7 @@ await describe({
       name: 'level transitions split into separate console calls',
       fn: async ({ sinon, },) => {
         __resetForTests();
-        process.env['DEBUG'] = 'true';
+        process.env.DEBUG = 'true';
         const debugSpy = sinon.spy(
           console,
           'debug',
@@ -170,7 +170,7 @@ await describe({
       name: 'formats each record as [level] [iso] message',
       fn: async ({ sinon, },) => {
         __resetForTests();
-        process.env['DEBUG'] = 'true';
+        process.env.DEBUG = 'true';
         const spy = sinon.spy(
           console,
           'info',
@@ -193,7 +193,7 @@ await describe({
       name: 'each level routes to its mapped console method',
       fn: async ({ sinon, },) => {
         __resetForTests();
-        process.env['DEBUG'] = 'true';
+        process.env.DEBUG = 'true';
         const traceSpy = sinon.spy(
           console,
           'trace',
@@ -264,7 +264,7 @@ await describe({
       name: 'silent gating drops debug when verbose is off',
       fn: async ({ sinon, },) => {
         __resetForTests();
-        delete process.env['DEBUG'];
+        delete process.env.DEBUG;
         // Force-evaluate verbose with DEBUG cleared. Without this,
         // an earlier test that set DEBUG=true and called getVerbose
         // could already have poisoned the cache via __resetForTests
@@ -301,7 +301,7 @@ await describe({
       name: 'cross-microtask writes produce separate console calls',
       fn: async ({ sinon, },) => {
         __resetForTests();
-        process.env['DEBUG'] = 'true';
+        process.env.DEBUG = 'true';
         const spy = sinon.spy(
           console,
           'info',
@@ -327,7 +327,7 @@ await describe({
       name: 'flush() drains synchronously before the await resolves',
       fn: async ({ sinon, },) => {
         __resetForTests();
-        process.env['DEBUG'] = 'true';
+        process.env.DEBUG = 'true';
         const spy = sinon.spy(
           console,
           'info',

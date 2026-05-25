@@ -222,13 +222,15 @@ async function fabricateCommit(row: {
       author: {
         name: 'stress',
         email: 'stress@example.com',
-        timestamp: AUTHOR_TS_BASE + row.iteration,
+        timestamp: AUTHOR_TS_BASE + row
+          .iteration,
         timezoneOffset: 0,
       },
       committer: {
         name: 'stress',
         email: 'stress@example.com',
-        timestamp: AUTHOR_TS_BASE + row.iteration,
+        timestamp: AUTHOR_TS_BASE + row
+          .iteration,
         timezoneOffset: 0,
       },
       message: `iteration ${String(row.iteration,)}\n`,
@@ -245,7 +247,8 @@ async function fabricateCommit(row: {
     ],
     write: false,
   },);
-  if (result.packfile === undefined)
+  if (result.packfile
+    === undefined)
     throw new Error('packObjects returned no packfile',);
   return {
     oid: commitOid,
@@ -295,12 +298,15 @@ async function waitInterval(row: {
   intervalMs: number;
   elapsedMs: number;
 },): Promise<void> {
-  if (row.intervalMs <= 0)
+  if (row.intervalMs
+    <= 0)
     return;
   /** Remaining slack inside the per-event budget; floored to avoid overshoot. */
   const sleep = Math.max(
     0,
-    Math.floor(row.intervalMs - row.elapsedMs,),
+    Math.floor(row.intervalMs
+      - row
+      .elapsedMs,),
   );
   if (sleep > 0)
     await wait(sleep,);
@@ -327,7 +333,8 @@ async function run(): Promise<ScenarioResult> {
     tmpdir(),
     'forge-fp-root-',
   ),);
-  process.env.WEBAPP_FORGE_GITDIR_ROOT = gitdirRoot;
+  process.env
+    .WEBAPP_FORGE_GITDIR_ROOT = gitdirRoot;
 
   l.info(
     `force-push starting iterations=${String(config.burstEvents,)} blobSize=${
@@ -342,7 +349,9 @@ async function run(): Promise<ScenarioResult> {
   /** Invariant breaches collected for the scenario result. */
   const violations: string[] = [];
   /** Target spacing between iterations so the burst covers `burstDurationMs`. */
-  const intervalMs = config.burstDurationMs / Math.max(
+  const intervalMs = config.burstDurationMs
+    / Math
+    .max(
     config.burstEvents,
     1,
   );
@@ -358,7 +367,8 @@ async function run(): Promise<ScenarioResult> {
     let oid = ZERO_OID;
     /** Running count of accepted ref updates used by the apply-count invariant. */
     let applied = 0;
-    for (let i = 0; i < config.burstEvents; i += 1) {
+    for (let i = 0; i < config
+      .burstEvents; i += 1) {
       /* oxlint-disable no-await-in-loop -- per-iteration sequential is by design (each push depends on the prior ref state) */
       /** Fabricated commit oid for this iteration's force-push. */
       const {
@@ -390,7 +400,8 @@ async function run(): Promise<ScenarioResult> {
       /** Apply-phase end timestamp; difference with `t0` is the sample. */
       const t1 = Date.now();
       samples.push(t1 - t0,);
-      applied += outcome.applied.length;
+      applied += outcome.applied
+        .length;
       oid = nextOid;
       // oxlint-disable-next-line no-await-in-loop -- paced burst by design
       await waitInterval({
@@ -415,7 +426,8 @@ async function run(): Promise<ScenarioResult> {
       encodePkt('done\n',),
     ],),
   },);
-  if (verifyBody.byteLength === 0)
+  if (verifyBody.byteLength
+    === 0)
     violations.push('upload-pack returned an empty response after force-push burst',);
 
   /** Median receive-pack latency over the burst. */
@@ -429,7 +441,8 @@ async function run(): Promise<ScenarioResult> {
     p: P99,
   },);
   /** Wall-clock total used by the summary table. */
-  const durationMs = Date.now() - startedAt;
+  const durationMs = Date.now()
+    - startedAt;
 
   if (p99 > P99_LATENCY_BUDGET_MS) {
     violations.push(
@@ -438,7 +451,8 @@ async function run(): Promise<ScenarioResult> {
       }ms`,
     );
   }
-  if (appliedTotal !== config.burstEvents) {
+  if (appliedTotal !== config
+    .burstEvents) {
     violations.push(
       `expected ${String(config.burstEvents,)} accepted ref updates; got ${
         String(appliedTotal,)

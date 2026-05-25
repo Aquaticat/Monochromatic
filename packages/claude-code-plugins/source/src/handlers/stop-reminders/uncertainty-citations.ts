@@ -111,8 +111,10 @@ function hasFilePathWithExtension(line: string,): boolean {
       if (!isPathChar(before,))
         continue;
       /** Position one past the extension; checked below for a word boundary. */
-      const endIdx = idx + token.length;
-      if ((endIdx < line.length) && isWordChar(line.charAt(endIdx,),))
+      const endIdx = idx + token
+        .length;
+      if ((endIdx < line
+        .length) && isWordChar(line.charAt(endIdx,),))
         continue;
       return true;
     }
@@ -169,7 +171,7 @@ function hasLineNumberSuffix(line: string,): boolean {
     while (
       (count < LINE_NUMBER_MAX_DIGITS)
       && ((at + count) < line.length)
-      && isDigit(line.charAt(at + count,),)
+        && isDigit(line.charAt(at + count,),)
     ) {
       count += 1;
     }
@@ -194,8 +196,10 @@ function hasLineNumberSuffix(line: string,): boolean {
       && (digitCount <= LINE_NUMBER_MAX_DIGITS))
     {
       /** Position one past the digit run; checked for a word boundary below. */
-      const afterIdx = colonIdx + 1 + digitCount;
-      if ((afterIdx >= line.length) || (!isWordChar(line.charAt(afterIdx,),)))
+      const afterIdx = colonIdx + 1
+        + digitCount;
+      if ((afterIdx >= line
+        .length) || (!isWordChar(line.charAt(afterIdx,),)))
         return true;
     }
   }

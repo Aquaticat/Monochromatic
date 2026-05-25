@@ -130,8 +130,10 @@ export function buildContainerCommand({
   const runtimeInstall = runtimeInstallCommand(combination.runtime,);
 
   /** Path to the test file inside the container (mounted at /workspace). */
-  const relativePath = combination.file.startsWith(monorepoRoot,)
-    ? combination.file.slice(monorepoRoot.length + 1,)
+  const relativePath = combination.file
+    .startsWith(monorepoRoot,)
+    ? combination.file
+      .slice(monorepoRoot.length + 1,)
     : combination.file;
   /** Container-side absolute path; the host's monorepo is mounted at /workspace. */
   const containerFilePath = `/workspace/${relativePath}`;
@@ -141,7 +143,8 @@ export function buildContainerCommand({
     filePath: containerFilePath,
   },);
 
-  if (combination.user === 'user') {
+  if (combination.user
+    === 'user') {
     /**
      * Write a script to `/tmp/run-test.sh` to avoid nested quoting issues
      * with `sudo -u`. Heredoc with quoted delimiter preserves all special characters.
@@ -229,7 +232,8 @@ export async function runContainer({
   /** Pre-parsed OS so the vm-protocol guard and the image resolution can both reuse it. */
   const parsed = parseOs(combination.os,);
 
-  if (parsed.protocol === 'vm')
+  if (parsed.protocol
+    === 'vm')
     throw new Error('vm: protocol not yet implemented',);
 
   /** Fully tagged image reference suitable for `podman run`. */
@@ -255,7 +259,8 @@ export async function runContainer({
     ],
   );
 
-  if (result.stderr !== '')
+  if (result.stderr
+    !== '')
     console.error(result.stderr,);
 
   return result.stdout;

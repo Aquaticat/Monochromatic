@@ -101,7 +101,8 @@ export function createWsHandler(
       'http://localhost',
     );
     /** Token from the query string; compared against `authToken` to gate the connection. */
-    const token = url.searchParams.get('token',);
+    const token = url.searchParams
+      .get('token',);
 
     if (token !== authToken)
       return { open: rejectUnauthenticated, };

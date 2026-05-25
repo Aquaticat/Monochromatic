@@ -64,7 +64,8 @@ export function parseVolumeSerial(output: string,): string {
   if (idx === (-1))
     return '';
   /** Cursor positioned at the first byte after the label. */
-  const afterLabel = idx + SERIAL_LABEL.length;
+  const afterLabel = idx + SERIAL_LABEL
+    .length;
   /**
    * Serial token scanned in one linear forward pass from `afterLabel`:
    * skip inline whitespace (`' '` / `'\t'` only), then accumulate the
@@ -77,7 +78,8 @@ export function parseVolumeSerial(output: string,): string {
   return (function scanToken(): string {
     /** Forward-only cursor; never rewinds, so the whole scan is one linear pass. */
     let cursor = afterLabel;
-    while (cursor < output.length) {
+    while (cursor < output
+      .length) {
       /** Char at cursor; only ASCII space and tab precede the token. */
       const c = output.charAt(cursor,);
       if ((c !== ' ') && (c !== '\t'))
@@ -86,16 +88,17 @@ export function parseVolumeSerial(output: string,): string {
     }
     /** Token characters collected in order; joined once so the token is never rebuilt per step. */
     const collected: string[] = [];
-    while (cursor < output.length) {
+    while (cursor < output
+      .length) {
       /** Char at cursor; any ASCII whitespace ends the token. */
       const c = output.charAt(cursor,);
       if (
         (c === ' ')
         || (c === '\t')
-        || (c === '\n')
-        || (c === '\r')
-        || (c === '\f')
-        || (c === '\v')
+          || (c === '\n')
+          || (c === '\r')
+          || (c === '\f')
+          || (c === '\v')
       ) {
         break;
       }

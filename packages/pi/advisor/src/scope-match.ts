@@ -114,7 +114,8 @@ export function parseModelPattern(
     pattern: prefix,
     availableModels,
   },);
-  return nested.model === undefined
+  return nested.model
+    === undefined
     ? {}
     : {
       model: nested.model,
@@ -252,11 +253,12 @@ function tryMatchModel(
       .toLowerCase()
       .includes(normalizedPattern,)
       || model
-        .name
-        .toLowerCase()
-        .includes(normalizedPattern,);
+      .name
+      .toLowerCase()
+      .includes(normalizedPattern,);
   },);
-  if (matches.length === 0)
+  if (matches.length
+    === 0)
     return undefined;
 
   /** Alias matches, preferred over dated versions. */
@@ -264,13 +266,15 @@ function tryMatchModel(
     return isAlias(model.id,);
   },);
   /** Candidate list before sorting. */
-  const candidates = aliases.length > 0 ? aliases : matches;
+  const candidates = aliases.length
+    > 0 ? aliases : matches;
   /** Candidate list sorted by pi's descending id tie-break. */
   const sortedCandidates = candidates.toSorted(function compareByIdDesc(
     left,
     right,
   ) {
-    return right.id.localeCompare(left.id,);
+    return right.id
+      .localeCompare(left.id,);
   },);
   /** First candidate after sorting. */
   const [firstCandidate,] = sortedCandidates;
@@ -300,7 +304,8 @@ function isThinkingLevel(
 function isAlias(
   id: string,
 ): boolean {
-  return (id.endsWith('-latest',)) || (!hasDateSuffix(id,));
+  return (id.endsWith('-latest',))
+    || (!hasDateSuffix(id,));
 }
 
 /**
@@ -313,12 +318,15 @@ function isAlias(
 function hasDateSuffix(
   id: string,
 ): boolean {
-  if (id.length < DATE_SUFFIX_TOTAL_LENGTH)
+  if (id.length
+    < DATE_SUFFIX_TOTAL_LENGTH)
     return false;
 
   /** Index of leading hyphen for suffix candidate. */
-  const suffixHyphenIndex = id.length - DATE_SUFFIX_TOTAL_LENGTH;
-  if (id.at(suffixHyphenIndex,) !== '-')
+  const suffixHyphenIndex = id.length
+    - DATE_SUFFIX_TOTAL_LENGTH;
+  if (id.at(suffixHyphenIndex,)
+    !== '-')
     return false;
 
   /** Candidate date suffix without leading hyphen. */
@@ -339,7 +347,8 @@ function isAsciiDigitString(
   if (value === '')
     return true;
 
-  return isAsciiDigit(value.at(0,) ?? '',) && isAsciiDigitString(value.slice(1,),);
+  return isAsciiDigit(value.at(0,) ?? '',)
+    && isAsciiDigitString(value.slice(1,),);
 }
 
 /**

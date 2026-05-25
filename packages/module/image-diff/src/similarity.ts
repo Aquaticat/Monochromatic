@@ -23,7 +23,9 @@ export function dotProduct({
   a: readonly number[];
   b: readonly number[];
 },): number {
-  if (a.length !== b.length) {
+  if (a.length
+    !== b
+    .length) {
     throw new Error(
       `Vector length mismatch: ${String(a.length,)} vs ${String(b.length,)}`,
     );
@@ -36,7 +38,8 @@ export function dotProduct({
    * a `b[i]!` non-null assertion at the same place the explicit guard below already handles.
    */
   let sum = 0;
-  for (let i = 0; i < a.length; i++) {
+  for (let i = 0; i < a
+    .length; i++) {
     /** Element from the first vector at index `i`; guarded against jagged-array sparsity. */
     const ai = a[i];
     /** Element from the second vector at index `i`; guarded against jagged-array sparsity. */
@@ -73,7 +76,9 @@ export function cosineSimilarity({
   a: readonly number[];
   b: readonly number[];
 },): number {
-  if (a.length !== b.length) {
+  if (a.length
+    !== b
+    .length) {
     throw new Error(
       `Vector length mismatch: ${String(a.length,)} vs ${String(b.length,)}`,
     );
@@ -88,7 +93,9 @@ export function cosineSimilarity({
   const magnitude = Math.sqrt(dotProduct({
     a,
     b: a,
-  },),) * Math.sqrt(dotProduct({
+  },),)
+    * Math
+    .sqrt(dotProduct({
     a: b,
     b,
   },),);

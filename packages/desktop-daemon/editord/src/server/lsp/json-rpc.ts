@@ -46,7 +46,8 @@ export function parseContentLength(header: string,): number | null {
   if (labelIdx === (-1))
     return null;
   /** Cursor positioned at the first byte after the label. */
-  const afterLabel = labelIdx + CONTENT_LENGTH_LABEL.length;
+  const afterLabel = labelIdx + CONTENT_LENGTH_LABEL
+    .length;
   /**
    * Digit run scanned in one linear forward pass from `afterLabel`:
    * skip inline whitespace (`' '` / `'\t'` only), then accumulate the
@@ -59,7 +60,8 @@ export function parseContentLength(header: string,): number | null {
   const digits = (function scanDigits(): string {
     /** Forward-only cursor; never rewinds, so the whole scan is one linear pass. */
     let idx = afterLabel;
-    while (idx < header.length) {
+    while (idx < header
+      .length) {
       /** Char at cursor; only ASCII space and tab precede the digits. */
       const c = header.charAt(idx,);
       if ((c !== ' ') && (c !== '\t'))
@@ -68,7 +70,8 @@ export function parseContentLength(header: string,): number | null {
     }
     /** Digit characters collected in order; joined once so the run is never rebuilt per step. */
     const collected: string[] = [];
-    while (idx < header.length) {
+    while (idx < header
+      .length) {
       /** Char at cursor; a non-digit ends the run. */
       const c = header.charAt(idx,);
       if ((c < '0') || (c > '9'))
@@ -141,28 +144,35 @@ export function createLspParser({
    * the O(N^2) cost of `Buffer.concat` on every incoming chunk.
    */
   function consolidate(): void {
-    if (state.chunks.length === 0)
+    if (state.chunks
+      .length
+      === 0)
       return;
     state.buffer = Buffer.concat([
       state.buffer,
       ...state.chunks,
     ],);
-    state.chunks.length = 0;
-    state.totalLength = state.buffer.byteLength;
+    state.chunks
+      .length = 0;
+    state.totalLength = state.buffer
+      .byteLength;
   }
 
   return {
     feed(chunk: Buffer,): void {
-      state.chunks.push(chunk,);
+      state.chunks
+        .push(chunk,);
       state.totalLength += chunk.byteLength;
 
       while (true) {
-        if (state.contentLength === (-1)) {
+        if (state.contentLength
+          === (-1)) {
           consolidate();
           /**
            * -1 means the header is not yet complete in the buffer; wait for more data.
            */
-          const headerEnd = state.buffer.indexOf(HEADER_SEPARATOR,);
+          const headerEnd = state.buffer
+            .indexOf(HEADER_SEPARATOR,);
           if (headerEnd === (-1))
             return;
 
@@ -181,20 +191,26 @@ export function createLspParser({
            */
           const len = parseContentLength(header,);
           if (len === null) {
-            state.buffer = state.buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
-            state.totalLength = state.buffer.byteLength;
+            state.buffer = state.buffer
+              .subarray(headerEnd + HEADER_SEPARATOR.length,);
+            state.totalLength = state.buffer
+              .byteLength;
             continue;
           }
 
           state.contentLength = len;
-          state.buffer = state.buffer.subarray(headerEnd + HEADER_SEPARATOR.length,);
-          state.totalLength = state.buffer.byteLength;
+          state.buffer = state.buffer
+            .subarray(headerEnd + HEADER_SEPARATOR.length,);
+          state.totalLength = state.buffer
+            .byteLength;
         }
 
         /**
          * Wait for enough data before consolidating for body extraction.
          */
-        if (state.totalLength < state.contentLength)
+        if (state.totalLength
+          < state
+          .contentLength)
           return;
         consolidate();
 
@@ -208,8 +224,10 @@ export function createLspParser({
             state.contentLength,
           )
           .toString('utf8',);
-        state.buffer = state.buffer.subarray(state.contentLength,);
-        state.totalLength = state.buffer.byteLength;
+        state.buffer = state.buffer
+          .subarray(state.contentLength,);
+        state.totalLength = state.buffer
+          .byteLength;
         state.contentLength = -1;
 
         try {

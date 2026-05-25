@@ -70,7 +70,8 @@ export async function exec(invocation: ExecInvocation,): Promise<string> {
     return await execPlatformAware(invocation.platformCommands,);
   return await execDirect({
     cmd: invocation.cmd,
-    args: invocation.args ?? [],
+    args: invocation.args
+      ?? [],
   },);
 }
 
@@ -180,7 +181,8 @@ async function execCommand(cmd: Command,): Promise<string> {
 function isNestedPlatformCommands(
   cmd: readonly string[] | PlatformCommands,
 ): cmd is PlatformCommands {
-  return (cmd.length > 0) && Array.isArray(cmd[0],);
+  return (cmd.length > 0) && Array
+    .isArray(cmd[0],);
 }
 
 //endregion Platform-aware execution

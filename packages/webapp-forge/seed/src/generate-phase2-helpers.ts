@@ -66,8 +66,11 @@ export function fakeSha(seed: number,): string {
     s: string;
     next: number;
   },): string {
-    if (row.s.length >= SHA_HEX_LENGTH) {
-      return row.s.slice(
+    if (row.s
+      .length
+      >= SHA_HEX_LENGTH) {
+      return row.s
+        .slice(
         0,
         SHA_HEX_LENGTH,
       );
@@ -75,7 +78,8 @@ export function fakeSha(seed: number,): string {
     /** Next rolling integer derived from the prior state via the SHA mixing step. */
     const nextValue = Math.trunc(
       Math.imul(
-        row.next + 1,
+        row.next
+          + 1,
         HEX_RADIX,
       ),
     );
@@ -91,7 +95,8 @@ export function fakeSha(seed: number,): string {
         SHA_HEX_CHUNK,
       );
     return appendChunk({
-      s: row.s + chunk,
+      s: row.s
+        + chunk,
       next: nextValue,
     },);
   }

@@ -58,7 +58,8 @@ export function subjectAgreement<S extends string,>(
     readonly subjects: Readonly<Record<S, SubjectEntry>>;
   },
 ): SubjectAgreement {
-  if (ref.kind === 'subject.key') {
+  if (ref.kind
+    === 'subject.key') {
     /** Resolved subject entry from the locale vocabulary. */
     const meta = subjects[ref.subject];
     return {
@@ -93,8 +94,10 @@ export function subjectSurface<S extends string,>(
     readonly subjects: Readonly<Record<S, SubjectEntry>>;
   },
 ): string {
-  return ref.kind === 'subject.key'
-    ? subjects[ref.subject].surface
+  return ref.kind
+    === 'subject.key'
+    ? subjects[ref.subject]
+      .surface
     : ref.text;
 }
 

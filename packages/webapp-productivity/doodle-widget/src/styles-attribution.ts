@@ -15,7 +15,8 @@ import {
 const ATTRIBUTION_FONT_SIZE = (1 / 2) + ((1 / 2) / 2);
 
 /** Vertical padding for the attribution bar */
-const ATTRIBUTION_PADDING_BLOCK = 1 / 2 / 2;
+const ATTRIBUTION_PADDING_BLOCK = 1 / 2
+  / 2;
 
 /** Horizontal padding for the attribution bar */
 const ATTRIBUTION_PADDING_INLINE = 1;

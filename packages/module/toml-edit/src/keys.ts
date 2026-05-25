@@ -31,7 +31,8 @@ function isBareKeyChar(c: string,): boolean {
  * @returns whether `key` is a valid TOML bare key
  */
 function isBareKey(key: string,): boolean {
-  if (key.length === 0)
+  if (key.length
+    === 0)
     return false;
   for (const char of key) {
     if (!isBareKeyChar(char,))

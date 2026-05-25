@@ -91,9 +91,13 @@ function resolvePackageName(
     readonly manager: PackageManager;
   },
 ): string | undefined {
-  if ((entry.available !== null) && (!entry.available.has(manager,)))
+  if ((entry.available
+    !== null) && (!entry.available
+    .has(manager,)))
     return undefined;
-  return entry.overrides[manager] ?? entry.effname;
+  return entry.overrides[manager]
+    ?? entry
+    .effname;
 }
 
 //endregion Resolve package name

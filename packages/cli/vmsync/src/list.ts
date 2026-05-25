@@ -114,7 +114,8 @@ export async function printVmList(): Promise<void> {
   /** All managed VM names. */
   const names = await listVms();
 
-  if (names.length === 0) {
+  if (names.length
+    === 0) {
     console.log('no managed VMs (use `vmsync import` to add one)',);
     return;
   }
@@ -138,14 +139,20 @@ export async function printVmList(): Promise<void> {
   configs.forEach(
     function printRow(config,) {
       /** Sync state label. */
-      const syncLabel = config.state.synced ? 'synced' : 'dirty';
+      const syncLabel = config.state
+        .synced ? 'synced' : 'dirty';
       /** Last hypervisor label. */
-      const hvLabel = config.state.lastBootHypervisor ?? 'never';
+      const hvLabel = config.state
+        .lastBootHypervisor
+        ?? 'never';
 
       console.log(
-        `${config.name.padEnd(NAME_COL,)}${syncLabel.padEnd(SYNC_COL,)}${
+        `${config.name
+          .padEnd(NAME_COL,)}${syncLabel.padEnd(SYNC_COL,)}${
           hvLabel.padEnd(HV_COL,)
-        }${config.boot.memory}  ${String(config.boot.cpus,)}cpu`,
+        }${config.boot
+          .memory}  ${String(config.boot
+          .cpus,)}cpu`,
       );
     },
   );

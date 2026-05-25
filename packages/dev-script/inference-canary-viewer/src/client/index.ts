@@ -129,20 +129,27 @@ function collectRanges({
     ) {
       for (const entry of textNodes) {
         /** End offset of the current text node within the full code text. */
-        const nodeEnd = entry.start + entry.node.length;
+        const nodeEnd = entry.start
+          + entry
+          .node
+          .length;
 
-        if ((entry.start >= to) || (nodeEnd <= from))
+        if ((entry.start
+          >= to) || (nodeEnd <= from))
           continue;
 
         /** Range start offset within the current text node, clamped to its bounds. */
         const rangeStart = Math.max(
           0,
-          from - entry.start,
+          from - entry
+            .start,
         );
         /** Range end offset within the current text node, clamped to its bounds. */
         const rangeEnd = Math.min(
-          entry.node.length,
-          to - entry.start,
+          entry.node
+            .length,
+          to - entry
+            .start,
         );
 
         /** DOM Range covering the overlap between the highlight span and this text node. */
@@ -199,7 +206,8 @@ async function highlightAllCodeBlocks(): Promise<void> {
     return isTsBlock(el,);
   },);
 
-  if (tsBlocks.length === 0)
+  if (tsBlocks.length
+    === 0)
     return;
 
   /** Configured TypeScript parser; loaded only when at least one TS block exists. */
@@ -211,7 +219,8 @@ async function highlightAllCodeBlocks(): Promise<void> {
   for (const codeElement of tsBlocks) {
     /** Raw text content of the code block; fed to the Lezer parser. */
     const text = codeElement.textContent;
-    if (text.length === 0)
+    if (text.length
+      === 0)
       continue;
 
     /** Lezer parse tree produced from the block's text. */
@@ -241,8 +250,10 @@ async function highlightAllCodeBlocks(): Promise<void> {
     const name = `hl-${group}`;
     /** Ranges accumulated for this group across all blocks. */
     const ranges = allRanges.get(group,);
-    if ((ranges !== undefined) && (ranges.length > 0)) {
-      CSS.highlights.set(
+    if ((ranges !== undefined) && (ranges.length
+      > 0)) {
+      CSS.highlights
+        .set(
         name,
         new Highlight(...ranges,),
       );

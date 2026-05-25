@@ -100,7 +100,8 @@ export function renderStyles(): string {
         'margin-block-end': cssRem(1 + (1 / 2),),
         display: 'flex',
         'flex-direction': 'column',
-        gap: cssRem((1 / 2) + (1 / 2 / 2),),
+        gap: cssRem((1 / 2) + (1 / 2
+          / 2),),
       },
     },),
 
@@ -121,7 +122,8 @@ export function renderStyles(): string {
       decls: {
         display: 'flex',
         'align-items': 'center',
-        gap: cssRem((1 / 2) + (1 / 2 / 2),),
+        gap: cssRem((1 / 2) + (1 / 2
+          / 2),),
       },
     },),
 
@@ -135,7 +137,9 @@ export function renderStyles(): string {
     $({
       rule: '.processed-preview',
       decls: {
-        'font-size': cssRem(1 - (1 / 2 / 2 / 2),),
+        'font-size': cssRem(1 - (1 / 2
+          / 2
+          / 2),),
         color: COLOR_MUTED_LIGHT,
         'font-family': 'monospace',
         'word-break': 'break-all',
@@ -169,7 +173,8 @@ export function renderStyles(): string {
     $({
       rule: '.column p.note',
       decls: {
-        'font-size': cssRem((1 / 2) + (1 / 2 / 2),),
+        'font-size': cssRem((1 / 2) + (1 / 2
+          / 2),),
         color: COLOR_FAINT,
         'margin-block-end': cssRem(1 / 2,),
       },
@@ -183,8 +188,10 @@ export function renderStyles(): string {
         'outline-width': cssRem(1 / 16,),
         'inline-size': cssCh(10,),
         'font-size': cssRem(1,),
-        'padding-block': cssRem(1 / 2 / 2,),
-        'padding-inline': cssRem(1 / 2 / 2,),
+        'padding-block': cssRem(1 / 2
+          / 2,),
+        'padding-inline': cssRem(1 / 2
+          / 2,),
         'overflow-wrap': 'break-word',
       },
     },),

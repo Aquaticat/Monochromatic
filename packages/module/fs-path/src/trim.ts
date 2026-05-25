@@ -13,7 +13,8 @@
  * ```
  */
 export function trimTrailingSlash(path: string,): string {
-  return (path !== '/') && path.endsWith('/',)
+  return (path !== '/') && path
+    .endsWith('/',)
     ? path.slice(
       0,
       -1,
@@ -36,5 +37,6 @@ export function trimTrailingSlash(path: string,): string {
  * ```
  */
 export function trimLeadingSlash(path: string,): string {
-  return (path !== '/') && path.startsWith('/',) ? path.slice(1,) : path;
+  return (path !== '/') && path
+    .startsWith('/',) ? path.slice(1,) : path;
 }

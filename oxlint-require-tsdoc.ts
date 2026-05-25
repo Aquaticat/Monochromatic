@@ -13,10 +13,13 @@ function hasTsdoc(
   context: Context,
 ): boolean {
   /** Comments adjacent to the node; the rule passes when any one is a TSDoc block. */
-  const comments = context.sourceCode.getCommentsBefore(node,);
+  const comments = context.sourceCode
+    .getCommentsBefore(node,);
   return comments.some(comment =>
     (comment.type === 'Block')
-    && comment.value.startsWith('*',)
+    && comment
+      .value
+      .startsWith('*',)
   );
 }
 
@@ -71,7 +74,8 @@ const plugin = eslintCompatPlugin({
           before(): false | undefined {
             if (IGNORED_EXTENSIONS
               .some(function endsWith(ignorePattern,): boolean {
-                return context.filename.endsWith(ignorePattern,);
+                return context.filename
+                  .endsWith(ignorePattern,);
               },))
             {
               return false;
@@ -144,7 +148,9 @@ const plugin = eslintCompatPlugin({
             );
           },
           Property(node,): void {
-            if ((node.kind === 'get') || (node.kind === 'set')) {
+            if ((node.kind
+              === 'get') || (node.kind
+              === 'set')) {
               reportTsdoc(
                 node,
                 context,

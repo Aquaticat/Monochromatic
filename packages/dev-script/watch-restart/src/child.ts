@@ -309,7 +309,8 @@ const ESC: string = String.fromCodePoint(ESC_CODE_POINT,);
  * ```
  */
 function defaultWriteClear(): void {
-  process.stdout.write(`${ESC}[2J${ESC}[H`,);
+  process.stdout
+    .write(`${ESC}[2J${ESC}[H`,);
 }
 
 /**
@@ -454,18 +455,26 @@ export class Child {
    */
   constructor(options: ChildOptions,) {
     this.#command = options.command;
-    this.#args = options.args ?? [];
-    this.#stopTimeout = options.stopTimeout ?? DEFAULT_STOP_TIMEOUT_MS;
-    this.#killSignal = options.killSignal ?? 'SIGTERM';
-    this.#processGroup = options.processGroup ?? true;
-    this.#clear = options.clear ?? false;
-    this.#processSignal = options.processSignal ?? defaultProcessSignal;
-    this.#writeClear = options.writeClear ?? defaultWriteClear;
+    this.#args = options.args
+      ?? [];
+    this.#stopTimeout = options.stopTimeout
+      ?? DEFAULT_STOP_TIMEOUT_MS;
+    this.#killSignal = options.killSignal
+      ?? 'SIGTERM';
+    this.#processGroup = options.processGroup
+      ?? true;
+    this.#clear = options.clear
+      ?? false;
+    this.#processSignal = options.processSignal
+      ?? defaultProcessSignal;
+    this.#writeClear = options.writeClear
+      ?? defaultWriteClear;
     this.#spawn = options.spawn
       ?? makeDefaultSpawn({ detached: this.#processGroup, },);
     this.#logger = tagged({
       tag: Child.name,
-      l: options.logger ?? defaultLogger,
+      l: options.logger
+        ?? defaultLogger,
     },);
   }
 
@@ -511,8 +520,10 @@ export class Child {
    * ```
    */
   start(): Promise<void> {
-    if (this.#state !== 'idle') {
-      this.#logger.warn(`start() in state ${this.#state}; ignoring`,);
+    if (this.#state
+      !== 'idle') {
+      this.#logger
+        .warn(`start() in state ${this.#state}; ignoring`,);
       return Promise.resolve();
     }
     this.#spawnAndTrack();
@@ -534,11 +545,14 @@ export class Child {
    * ```
    */
   async restart(): Promise<void> {
-    if (this.#state === 'stopping') {
-      this.#logger.warn('restart() during stopping; ignoring',);
+    if (this.#state
+      === 'stopping') {
+      this.#logger
+        .warn('restart() during stopping; ignoring',);
       return;
     }
-    if (this.#state === 'running')
+    if (this.#state
+      === 'running')
       await this.#stopRunning();
     this.#spawnAndTrack();
   }
@@ -554,10 +568,13 @@ export class Child {
    * ```
    */
   async stop(): Promise<void> {
-    if (this.#state === 'idle')
+    if (this.#state
+      === 'idle')
       return;
-    if (this.#state === 'stopping') {
-      this.#logger.warn('stop() during stopping; ignoring',);
+    if (this.#state
+      === 'stopping') {
+      this.#logger
+        .warn('stop() during stopping; ignoring',);
       return;
     }
     await this.#stopRunning();
@@ -582,7 +599,8 @@ export class Child {
     },);
     this.#current = handle;
     this.#state = 'running';
-    this.#logger.info(
+    this.#logger
+      .info(
       `spawned pid=${String(handle.pid ?? '?',)} command=${this.#command}`,
     );
 
@@ -599,15 +617,18 @@ export class Child {
         code,
         signal,
       ) {
-        if (self.#current === handle) {
+        if (self.#current
+          === handle) {
           self.#current = undefined;
-          if (self.#state !== 'stopping') {
+          if (self.#state
+            !== 'stopping') {
             // Stop path explicitly manages this transition after Promise.race resolves;
             // a natural (uncommanded) exit also lands here and resets the state.
             self.#state = 'idle';
           }
         }
-        self.#logger.info(
+        self.#logger
+          .info(
           `exited pid=${String(handle.pid ?? '?',)} code=${
             code === null ? '?' : String(code,)
           } signal=${signal ?? '?'}`,
@@ -634,7 +655,8 @@ export class Child {
     handle: SpawnedChildHandle,
     signal: NodeJS.Signals,
   ): void {
-    if (this.#processGroup && (handle.pid !== undefined)) {
+    if (this.#processGroup
+      && (handle.pid !== undefined)) {
       this.#processSignal({
         pid: -handle.pid,
         signal,
@@ -659,7 +681,8 @@ export class Child {
     /** Active child handle narrowed from `#current`; the throw guards against the private method being called outside `running`. */
     const handle = nonNullishOrThrow(this.#current,);
     this.#state = 'stopping';
-    this.#logger.info(
+    this.#logger
+      .info(
       `stopping pid=${String(handle.pid ?? '?',)} (${this.#killSignal})`,
     );
 
@@ -676,7 +699,8 @@ export class Child {
       tagTimeout(this.#stopTimeout,),
     ],);
     if (result === 'timeout') {
-      this.#logger.warn(
+      this.#logger
+        .warn(
         `${this.#killSignal} timed out after ${
           String(this.#stopTimeout,)
         }ms; escalating to SIGKILL`,

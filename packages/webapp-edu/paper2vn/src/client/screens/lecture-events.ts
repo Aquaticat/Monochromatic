@@ -55,14 +55,16 @@ export function lectureKeyHandler(
   return function onKey(ev: KeyboardEvent,): void {
     if (ADVANCE_KEYS.has(ev.key,)) {
       ev.preventDefault();
-      if (runtime.typewriterCancel !== undefined) {
+      if (runtime.typewriterCancel
+        !== undefined) {
         runtime.typewriterCancel();
         runtime.typewriterCancel = undefined;
         return;
       }
       advance();
     }
-    else if (ev.key === 'ArrowLeft') {
+    else if (ev.key
+      === 'ArrowLeft') {
       ev.preventDefault();
       regress();
     }
@@ -96,12 +98,16 @@ export function lectureStageClickHandler(
 ): (ev: MouseEvent,) => void {
   return function onStageClick(ev: MouseEvent,): void {
     if (
-      (ev.target instanceof Element)
-      && (ev.target.closest<HTMLElement>(CONTROLS_SELECTOR,) !== null)
+      (ev.target
+        instanceof Element)
+      && (ev.target
+        .closest<HTMLElement>(CONTROLS_SELECTOR,)
+        !== null)
     ) {
       return;
     }
-    if (runtime.typewriterCancel !== undefined) {
+    if (runtime.typewriterCancel
+      !== undefined) {
       runtime.typewriterCancel();
       runtime.typewriterCancel = undefined;
       return;

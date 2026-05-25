@@ -115,7 +115,8 @@ export function readVersionFromBunStore(
     return entry.startsWith(matchPrefix,);
   },);
 
-  if (candidates.length === 0)
+  if (candidates.length
+    === 0)
     return undefined;
 
   // Read package.json from each candidate and pick the highest version

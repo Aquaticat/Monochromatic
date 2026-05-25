@@ -56,7 +56,8 @@ import { $ as pick, } from '../../../pick/p n/index.ts';
     ? extracted as ReadonlySet<TKeys>
     : new Set(extracted,);
 
-  if (extractedSet.size === 0)
+  if (extractedSet.size
+    === 0)
     throw new TypeError('Extracted iterable cannot be empty',);
 
   return pick({

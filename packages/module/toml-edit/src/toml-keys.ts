@@ -43,9 +43,12 @@ export function tomlKeys(
     edit,
     path,
   },);
-  if ((result.kind === 'missing') || (result.kind === 'deleted'))
+  if ((result.kind
+    === 'missing') || (result.kind
+    === 'deleted'))
     return [];
-  if (result.kind === 'pending-value') {
+  if (result.kind
+    === 'pending-value') {
     /** Local alias so the type guards can read directly. */
     const v = result.value;
     if (Array.isArray(v,)) {
@@ -60,13 +63,26 @@ export function tomlKeys(
       return Object.keys(v,);
     return [];
   }
-  if ((result.kind === 'top-level') || (result.kind === 'table'))
+  if ((result.kind
+    === 'top-level') || (result.kind
+    === 'table'))
     return tableChildKeys({ container: result.node, },);
-  if (result.kind === 'keyvalue') {
-    if (result.node.value.type === 'TOMLInlineTable')
-      return tableChildKeys({ container: result.node.value, },);
-    if (result.node.value.type === 'TOMLArray') {
-      return result.node.value.elements.map(function eachIdx(
+  if (result.kind
+    === 'keyvalue') {
+    if (result.node
+      .value
+      .type
+      === 'TOMLInlineTable')
+      return tableChildKeys({ container: result.node
+        .value, },);
+    if (result.node
+      .value
+      .type
+      === 'TOMLArray') {
+      return result.node
+        .value
+        .elements
+        .map(function eachIdx(
         _: unknown,
         i: number,
       ) {
@@ -75,11 +91,18 @@ export function tomlKeys(
     }
     return [];
   }
-  if (result.kind === 'value') {
-    if (result.node.type === 'TOMLInlineTable')
+  if (result.kind
+    === 'value') {
+    if (result.node
+      .type
+      === 'TOMLInlineTable')
       return tableChildKeys({ container: result.node, },);
-    if (result.node.type === 'TOMLArray') {
-      return result.node.elements.map(function eachIdx(
+    if (result.node
+      .type
+      === 'TOMLArray') {
+      return result.node
+        .elements
+        .map(function eachIdx(
         _: unknown,
         i: number,
       ) {
@@ -88,7 +111,8 @@ export function tomlKeys(
     }
     return [];
   }
-  return result.nodes.map(function eachIdx(
+  return result.nodes
+    .map(function eachIdx(
     _: unknown,
     i: number,
   ) {
@@ -111,7 +135,8 @@ function tableChildKeys(
   /** Tracks emitted top-level segments so each first key is reported once. */
   const seen = new Set<string>();
   return container.body.flatMap(function flatten(child,) {
-    if (child.type === 'TOMLKeyValue') {
+    if (child.type
+      === 'TOMLKeyValue') {
       /** All key segments of this entry so the first one can be projected out. */
       const segs = keysOf({ key: child.key, },);
       /** Top-level segment that becomes the visible key. */
@@ -121,10 +146,12 @@ function tableChildKeys(
       seen.add(first,);
       return [first,];
     }
-    if (container.type === 'TOMLTopLevelTable') {
+    if (container.type
+      === 'TOMLTopLevelTable') {
       /** Header's first segment so a top-level table contributes its top key. */
       const [tableTop,] = child.resolvedKey;
-      if (((typeof tableTop) !== 'string') || seen.has(tableTop,))
+      if (((typeof tableTop) !== 'string') || seen
+        .has(tableTop,))
         return [];
       seen.add(tableTop,);
       return [tableTop,];

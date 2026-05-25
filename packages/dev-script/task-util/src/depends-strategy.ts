@@ -66,7 +66,8 @@ function computeMean(values: readonly number[],): number {
     },
     0,
   );
-  return sum / values.length;
+  return sum / values
+    .length;
 }
 
 /**
@@ -94,11 +95,15 @@ function computeMedian(values: readonly number[],): number {
     return a - b;
   },);
   /** Index of the upper middle element; for even-length arrays the lower middle (`mid - 1`) is used to avoid fractional values. */
-  const mid = Math.floor(sorted.length / 2,);
+  const mid = Math.floor(sorted.length
+    / 2,);
   // Even length: use lower middle to avoid fractional timestamps
-  if ((sorted.length % 2) === 0)
-    return sorted[mid - 1] ?? 0;
-  return sorted[mid] ?? 0;
+  if ((sorted.length
+    % 2) === 0)
+    return sorted[mid - 1]
+      ?? 0;
+  return sorted[mid]
+    ?? 0;
 }
 
 /**
@@ -121,16 +126,20 @@ export const builtinStrategies: Readonly<
   Record<BuiltinTimeStrategy, (values: readonly number[],) => number>
 > = {
   newest: function newest(values,) {
-    return values.length === 0 ? -Infinity : Math.max(...values,);
+    return values.length
+      === 0 ? -Infinity : Math.max(...values,);
   },
   oldest: function oldest(values,) {
-    return values.length === 0 ? -Infinity : Math.min(...values,);
+    return values.length
+      === 0 ? -Infinity : Math.min(...values,);
   },
   mean: function mean(values,) {
-    return values.length === 0 ? -Infinity : computeMean(values,);
+    return values.length
+      === 0 ? -Infinity : computeMean(values,);
   },
   median: function median(values,) {
-    return values.length === 0 ? -Infinity : computeMedian(values,);
+    return values.length
+      === 0 ? -Infinity : computeMedian(values,);
   },
 };
 

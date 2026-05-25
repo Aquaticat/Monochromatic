@@ -56,7 +56,8 @@ type TightenResult = {
 //region Main
 
 /** Whether `--dry-run` was passed on the command line. */
-const dryRun = process.argv.includes('--dry-run',);
+const dryRun = process.argv
+  .includes('--dry-run',);
 
 /** Absolute path to the monorepo root (where this script is invoked from). */
 const monorepoRoot = resolve('.',);
@@ -100,7 +101,9 @@ function isWhitespaceOnly(s: string,): boolean {
 
 /** Workspace catalog mapping package names to version ranges. */
 const catalog = parseCatalogFromYaml(workspaceYamlContent,);
-if (Object.keys(catalog,).length === 0) {
+if (Object.keys(catalog,)
+  .length
+  === 0) {
   console.error('No catalog found in pnpm-workspace.yaml',);
   process.exitCode = 1;
   throw new Error('No catalog found in pnpm-workspace.yaml',);
@@ -165,10 +168,12 @@ const summary: CatalogSummary = catalogEntries.reduce(
         };
       },)
       .find(function hasVersion(r,) {
-        return r.version !== undefined;
+        return r.version
+          !== undefined;
       },);
 
-    if ((resolved === undefined) || (resolved.version === undefined)) {
+    if ((resolved === undefined) || (resolved.version
+      === undefined)) {
       console.warn(
         `MISS  ${name}: not found in node_modules (tried ${npmNames.join(', ',)})`,
       );
@@ -192,7 +197,8 @@ const summary: CatalogSummary = catalogEntries.reduce(
     console.info(
       `TIGHT ${name}: ${value} -> ${newRange} (installed ${resolved.version})`,
     );
-    acc.results.push({
+    acc.results
+      .push({
       name,
       oldRange: value,
       newRange,
@@ -204,11 +210,14 @@ const summary: CatalogSummary = catalogEntries.reduce(
 
 //region Write results
 
-if (summary.results.length === 0)
+if (summary.results
+  .length
+  === 0)
   console.info('\nNo catalog entries to tighten.',);
 else if (dryRun) {
   console.info(
-    `\nDry run: ${String(summary.results.length,)} entries would be tightened.`,
+    `\nDry run: ${String(summary.results
+      .length,)} entries would be tightened.`,
   );
 }
 else {
@@ -217,7 +226,8 @@ else {
    * Each catalog entry is replaced individually to avoid touching unrelated content.
    * Handles both quoted (`">=1.2.3"`) and unquoted (`>=1.2.3`) YAML values.
    */
-  const rewritten = summary.results.reduce(
+  const rewritten = summary.results
+    .reduce(
     function applyTightening(
       acc,
       {
@@ -245,7 +255,8 @@ else {
   );
   console.info(
     `\nWrote ${
-      String(summary.results.length,)
+      String(summary.results
+        .length,)
     } tightened entries to pnpm-workspace.yaml.`,
   );
 }
@@ -255,7 +266,8 @@ else {
 //region Summary
 
 console.info(`\nSummary:`,);
-console.info(`  Tightened: ${String(summary.results.length,)}`,);
+console.info(`  Tightened: ${String(summary.results
+  .length,)}`,);
 console.info(`  Already tight: ${String(summary.alreadyTightCount,)}`,);
 console.info(`  Skipped (not >=): ${String(summary.skippedCount,)}`,);
 console.info(`  Not found: ${String(summary.notFoundCount,)}`,);

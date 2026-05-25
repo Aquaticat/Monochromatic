@@ -70,12 +70,18 @@ export function createTextInput({
   input.type = 'text';
   input.className = 'text-input';
   input.autocomplete = 'off';
-  input.style.insetInlineStart = insetInlineStart;
-  input.style.insetBlockStart = insetBlockStart;
-  input.style.color = color;
-  input.style.fontSize = `${fontSize}px`;
-  input.dataset.color = color;
-  input.dataset.fontSize = fontSize;
+  input.style
+    .insetInlineStart = insetInlineStart;
+  input.style
+    .insetBlockStart = insetBlockStart;
+  input.style
+    .color = color;
+  input.style
+    .fontSize = `${fontSize}px`;
+  input.dataset
+    .color = color;
+  input.dataset
+    .fontSize = fontSize;
   return input;
 }
 
@@ -104,10 +110,16 @@ export function serializeTextEntries(layer: HTMLDivElement,): TextEntryData[] {
     function serializeInput(input,): TextEntryData {
       return {
         value: input.value,
-        insetInlineStart: input.style.insetInlineStart,
-        insetBlockStart: input.style.insetBlockStart,
-        color: input.dataset.color ?? '',
-        fontSize: input.dataset.fontSize ?? '',
+        insetInlineStart: input.style
+          .insetInlineStart,
+        insetBlockStart: input.style
+          .insetBlockStart,
+        color: input.dataset
+          .color
+          ?? '',
+        fontSize: input.dataset
+          .fontSize
+          ?? '',
       };
     },
   );

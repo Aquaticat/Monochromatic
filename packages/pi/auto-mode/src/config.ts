@@ -77,7 +77,8 @@ function loadMergedConfig(
   }
 
   /** Judge-model block from the global config, with `JUDGE_MODEL_DEFAULTS` as fallback for omitted files. */
-  const rawJudgeModel = global.judgeModel ?? { ...JUDGE_MODEL_DEFAULTS, };
+  const rawJudgeModel = global.judgeModel
+    ?? { ...JUDGE_MODEL_DEFAULTS, };
 
   /** Cleaned judge-model view that drops `modelOverride` so it can be re-attached conditionally below. */
   const judgeModel: MergedConfig['judgeModel'] = {
@@ -86,18 +87,30 @@ function loadMergedConfig(
     majorVersions: rawJudgeModel.majorVersions,
   };
 
-  if (rawJudgeModel.modelOverride !== undefined) {
+  if (rawJudgeModel.modelOverride
+    !== undefined) {
     if ((typeof rawJudgeModel.modelOverride) === 'string')
       judgeModel.modelOverride = rawJudgeModel.modelOverride;
     else {
       /** Auth object assembled field-by-field so omitted keys stay undefined rather than `null`. */
       const auth: BudgetModelAuth = {};
-      if (rawJudgeModel.modelOverride.auth.apiKey !== undefined)
-        auth.apiKey = rawJudgeModel.modelOverride.auth.apiKey;
-      if (rawJudgeModel.modelOverride.auth.headers !== undefined)
-        auth.headers = rawJudgeModel.modelOverride.auth.headers;
+      if (rawJudgeModel.modelOverride
+        .auth
+        .apiKey
+        !== undefined)
+        auth.apiKey = rawJudgeModel.modelOverride
+          .auth
+          .apiKey;
+      if (rawJudgeModel.modelOverride
+        .auth
+        .headers
+        !== undefined)
+        auth.headers = rawJudgeModel.modelOverride
+          .auth
+          .headers;
       judgeModel.modelOverride = {
-        model: rawJudgeModel.modelOverride.model,
+        model: rawJudgeModel.modelOverride
+          .model,
         auth,
       };
     }
@@ -110,10 +123,14 @@ function loadMergedConfig(
       patterns: patternStrs,
       label: project !== undefined ? 'global+project' : 'global',
     },),
-    ...((global.instructions !== undefined) && (global.instructions !== '')
+    ...((global.instructions
+      !== undefined) && (global.instructions
+      !== '')
       ? { globalInstructions: global.instructions, }
       : {}),
-    ...((project?.instructions !== undefined) && (project.instructions !== '')
+    ...((project?.instructions
+      !== undefined) && (project.instructions
+      !== '')
       ? { projectInstructions: project.instructions, }
       : {}),
     judgeModel,
@@ -149,7 +166,9 @@ const PROJECT_DEFAULTS: ProjectConfig = {
  */
 function globalConfigPath(): string {
   return join(
-    process.env.HOME ?? '~',
+    process.env
+      .HOME
+      ?? '~',
     '.pi',
     'agent',
     'extensions',
@@ -313,7 +332,8 @@ function loadGlobalConfig(): AutoModeConfig {
   /** Re-typed view of the JSON root as a record for spread/merge access. */
   const rawObj = raw as RawJson;
   /** Nested judge-model block from disk; defaults to an empty object so deep-merge below sees a record. */
-  const rawJudgeModel = (rawObj.judgeModel as RawJson | undefined) ?? {};
+  const rawJudgeModel = (rawObj.judgeModel as RawJson | undefined)
+    ?? {};
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   /** Defaults overlaid with the on-disk record, with a deeper merge for the nested judge-model. */
   const merged = {

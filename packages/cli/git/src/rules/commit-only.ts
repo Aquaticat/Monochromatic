@@ -20,7 +20,7 @@ const ESCAPE_HATCH = COMMIT_ESCAPE_HATCH;
 const NO_PATHSPEC_MESSAGE =
   'cli-git: git commit requires an explicit pathspec when commit-only enforcement is active. '
   + 'Name the paths in the commit command (for example, git commit -m <msg> <path>), '
-  + 'pass --pathspec-from-file, or pass --no-enforce-only to bypass for this invocation.';
+    + 'pass --pathspec-from-file, or pass --no-enforce-only to bypass for this invocation.';
 
 /**
  * Diagnostic emitted when commit-only enforcement sees `-a`/`--all`, which
@@ -29,7 +29,7 @@ const NO_PATHSPEC_MESSAGE =
 const ALL_FLAG_MESSAGE =
   'cli-git: git commit rejects -a/--all because it stages every tracked modification before committing. '
   + 'Stage paths explicitly and commit with git commit -m <msg> <path>, '
-  + 'or pass --no-enforce-only to bypass for this invocation.';
+    + 'or pass --no-enforce-only to bypass for this invocation.';
 
 /**
  * Injects `-o` (a.k.a. `--only`) into `git commit` commands when not already
@@ -72,7 +72,8 @@ export function commitOnly(args: readonly string[],): readonly string[] {
   /** Position of the `commit` (or other) subcommand within args. */
   const { subcommandIndex, } = parseGlobalOptions(args,);
 
-  if (args[subcommandIndex] !== 'commit')
+  if (args[subcommandIndex]
+    !== 'commit')
     return args;
 
   /** Tagged logger for the commit-only rule. */
@@ -107,8 +108,10 @@ export function commitOnly(args: readonly string[],): readonly string[] {
 
     /** True when pathspecs are supplied positionally, through a pathspec file, or by a git mode that permits pathless only commits. */
     const hasPathspecSource = region.hasPathspec
-      || region.hasPathspecFromFile
-      || region.hasPathlessAllowedFlag;
+      || region
+      .hasPathspecFromFile
+      || region
+      .hasPathlessAllowedFlag;
 
     if (!hasPathspecSource)
       throw new Error(NO_PATHSPEC_MESSAGE,);

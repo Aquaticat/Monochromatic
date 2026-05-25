@@ -64,14 +64,16 @@ export function loadSettingsScopePatterns(
     label: 'project',
   },);
 
-  if (project?.enabledModels !== undefined) {
+  if (project?.enabledModels
+    !== undefined) {
     return {
       patterns: cleanPatterns(project.enabledModels,),
       sourcePath: paths.projectPath,
     };
   }
 
-  if (global?.enabledModels !== undefined) {
+  if (global?.enabledModels
+    !== undefined) {
     return {
       patterns: cleanPatterns(global.enabledModels,),
       sourcePath: paths.globalPath,
@@ -100,8 +102,10 @@ export function getSettingsPaths(
   readonly projectPath: string;
 } {
   /** Home directory used by pi for global settings. */
-  const home = options.home 
-    ?? process.env.HOME 
+  const home = options.home
+    ?? process
+    .env
+    .HOME
     ?? '~';
   return {
     globalPath: join(

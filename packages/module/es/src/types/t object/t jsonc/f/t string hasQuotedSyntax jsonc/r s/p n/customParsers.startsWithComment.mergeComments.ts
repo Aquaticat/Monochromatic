@@ -57,7 +57,9 @@ export function mergeComments(
   /** Concatenated comment body preserving raw line breaks between the two inputs. */
   const commentValue = `${value.commentValue}
 ${value2.commentValue}`;
-  return value.type === value2.type
+  return value.type
+    === value2
+    .type
     ? {
       ...value,
       commentValue,

@@ -39,9 +39,11 @@ export function emitContentNode(
     depth?: number;
   },
 ): string {
-  if (node.type === 'TOMLValue')
+  if (node.type
+    === 'TOMLValue')
     return emitValueLeaf({ node, },);
-  if (node.type === 'TOMLArray') {
+  if (node.type
+    === 'TOMLArray') {
     return emitArray({
       node,
       options,
@@ -61,11 +63,15 @@ export function emitContentNode(
  * @returns Computed string.
  */
 function emitValueLeaf({ node, }: { node: AST.TOMLValue; },): string {
-  if (node.kind === 'string')
+  if (node.kind
+    === 'string')
     return emitStringValue({ node, },);
-  if ((node.kind === 'integer') || (node.kind === 'float'))
+  if ((node.kind
+    === 'integer') || (node.kind
+    === 'float'))
     return node.number;
-  if (node.kind === 'boolean')
+  if (node.kind
+    === 'boolean')
     return node.value ? 'true' : 'false';
   return node.datetime;
 }
@@ -87,7 +93,8 @@ function emitArray(
   },
 ): string {
   /** Per-element text so the assembler can join into inline or multi-line form. */
-  const parts = node.elements.map(function each(el,) {
+  const parts = node.elements
+    .map(function each(el,) {
     return emitContentNode({
       node: el,
       options,
@@ -194,7 +201,8 @@ export function emitArrayWithSkipPath(
     depth: number;
   },
 ): string {
-  if (skipPath.length === 0) {
+  if (skipPath.length
+    === 0) {
     throw new TomlImmutableNodeError(
       'emitArrayWithSkipPath: skipPath must not be empty',
     );
@@ -205,7 +213,8 @@ export function emitArrayWithSkipPath(
   /** Remaining inner-level indices. */
   const rest = skipPath.slice(1,);
 
-  if (rest.length === 0) {
+  if (rest.length
+    === 0) {
     return emitArrayWithoutIndex({
       array,
       skipIndex: head,
@@ -215,7 +224,8 @@ export function emitArrayWithSkipPath(
   }
 
   /** Per-element text where the matching child gets a recursive skip-path emit. */
-  const parts = array.elements.map(function each(
+  const parts = array.elements
+    .map(function each(
     el,
     i,
   ) {
@@ -263,17 +273,24 @@ function assembleArrayParts(
   },
 ): string {
   /** Speculative inline form so the column budget check can decide the layout. */
-  const inlineCandidate = `[ ${parts.join(', ',)}${parts.length === 0 ? '' : ', '}]`;
+  const inlineCandidate = `[ ${parts.join(', ',)}${parts.length
+    === 0 ? '' : ', '}]`;
   if (
-    (parts.length <= options.arrayInlineThreshold)
-    && (inlineCandidate.length <= options.arrayInlineMaxColumns)
+    (parts.length
+      <= options
+      .arrayInlineThreshold)
+    && (inlineCandidate.length
+      <= options
+      .arrayInlineMaxColumns)
   ) {
     return inlineCandidate;
   }
   /** Indent for each element when the array goes multi-line. */
-  const indent = ' '.repeat(options.indent * (depth + 1),);
+  const indent = ' '.repeat(options.indent
+    * (depth + 1),);
   /** Closing bracket sits at the parent's indent level. */
-  const closingIndent = ' '.repeat(options.indent * depth,);
+  const closingIndent = ' '.repeat(options.indent
+    * depth,);
   return `[\n${
     parts
       .map(function withIndent(p,) {
@@ -377,7 +394,8 @@ function emitInlineTableBodyParts(
       .key
       .keys
       .map(function each2(k,) {
-        return encodeKey({ key: k.type === 'TOMLBare' ? k.name : k.value, },);
+        return encodeKey({ key: k.type
+          === 'TOMLBare' ? k.name : k.value, },);
       },)
       .join('.',);
     /** Encoded value text so the entry can be composed as `k = v`. */
@@ -402,5 +420,6 @@ function assembleInlineTableParts(
     parts: readonly string[];
   },
 ): string {
-  return `{ ${parts.join(', ',)}${parts.length === 0 ? '' : ', '}}`;
+  return `{ ${parts.join(', ',)}${parts.length
+    === 0 ? '' : ', '}}`;
 }

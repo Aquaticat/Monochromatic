@@ -53,11 +53,13 @@ function extractMajorVersion(
     )
     .split(/\s+/,);
   for (const t of tokens) {
-    if (/^\d+$/.test(t,) && (t.length >= DATE_TOKEN_DIGIT_COUNT))
+    if (/^\d+$/.test(t,)
+      && (t.length >= DATE_TOKEN_DIGIT_COUNT))
       continue;
     /** First digit run inside the current token, e.g. `4` in `4o` or `3` in `3.5`. */
     const match = /(\d+)/.exec(t,);
-    if ((match !== null) && (match[1] !== undefined)) {
+    if ((match !== null) && (match[1]
+      !== undefined)) {
       return Number.parseInt(
         match[1],
         10,
@@ -94,11 +96,13 @@ function extractVersionNumbers(
   /** Local alias for the date-token cutoff; kept inline so the regex literal stays readable in context. */
   const EIGHT = 8;
   for (const t of tokens) {
-    if (/^\d+$/.test(t,) && (t.length >= EIGHT))
+    if (/^\d+$/.test(t,)
+      && (t.length >= EIGHT))
       continue;
     /** First digit run inside the current token; null when the token is non-numeric. */
     const m = /(\d+)/.exec(t,);
-    if ((m !== null) && (m[1] !== undefined)) {
+    if ((m !== null) && (m[1]
+      !== undefined)) {
       nums.push(
         Number.parseInt(
           m[1],
@@ -143,11 +147,15 @@ function compareVersions(
   );
   for (let i = 0; i < maxLen; i++) {
     /** Per-position delta with `b` first so higher versions sort earlier (descending). */
-    const diff = (bv[i] ?? 0) - (av[i] ?? 0);
+    const diff = (bv[i]
+      ?? 0) - (av[i]
+      ?? 0);
     if (diff !== 0)
       return diff;
   }
-  return av.length - bv.length;
+  return av.length
+    - bv
+    .length;
 }
 
 /**
@@ -190,7 +198,8 @@ function findCheapestInMajorVersions(
     },
   );
 
-  if (sorted.length === 0)
+  if (sorted.length
+    === 0)
     return [];
 
   /** Subset of major versions to keep: all when `majorVersions === 0`, otherwise the newest N. */
@@ -208,7 +217,8 @@ function findCheapestInMajorVersions(
     function hasVersion(m,) {
       /** Per-model major version used to test membership in `includedSet`. */
       const ver = extractMajorVersion(m.id,);
-      return (ver !== null) && includedSet.has(ver,);
+      return (ver !== null) && includedSet
+        .has(ver,);
     },
   );
 
@@ -218,7 +228,11 @@ function findCheapestInMajorVersions(
       b,
     ) {
       /** Cost-only ordering; ties fall through to a version-based compare below. */
-      const costDiff = a.cost.input - b.cost.input;
+      const costDiff = a.cost
+        .input
+        - b
+        .cost
+        .input;
       if (costDiff !== 0)
         return costDiff;
       return compareVersions({

@@ -48,9 +48,11 @@ function getTrustDirectives(
 ): string[] {
   /** Accumulator for currently-active trust directives. */
   const directives: string[] = [];
-  for (const entry of ctx.sessionManager.getBranch()) {
+  for (const entry of ctx.sessionManager
+    .getBranch()) {
     if (isTrustEntry(entry,)) {
-      if (entry.data === null)
+      if (entry.data
+        === null)
         directives.length = 0;
       else
         directives.push(entry.data,);
@@ -79,14 +81,18 @@ function buildContext(
   ctx: ExtensionContext,
 ): string {
   /** Full session branch snapshot, scanned forward and backward below. */
-  const branch = ctx.sessionManager.getBranch();
+  const branch = ctx.sessionManager
+    .getBranch();
 
   /** Index of the most recent user message; -1 sentinel means none found. */
   const userIdx = branch.findLastIndex(
     function isUserMessage(item,) {
       return (item !== undefined)
-        && (item.type === 'message')
-        && ((item as SessionMessageEntry).message.role === 'user');
+        && (item.type
+          === 'message')
+        && ((item as SessionMessageEntry).message
+          .role
+          === 'user');
     },
   );
 
@@ -109,12 +115,14 @@ function buildContext(
   /** Tail-window start used when no user message is found in the branch. */
   const tailStart = Math.max(
     0,
-    branch.length - TWENTY,
+    branch.length
+      - TWENTY,
   );
   /** Index where the forward scan begins. */
   const start = (userIdx !== (-1)) ? userIdx : tailStart;
 
-  for (let i = start; i < branch.length; i++) {
+  for (let i = start; i < branch
+    .length; i++) {
     /** Branch entry under inspection during the forward summary build. */
     const entry = branch[i];
     if (entry === undefined)
@@ -125,21 +133,25 @@ function buildContext(
       continue;
     }
 
-    if (entry.type !== 'message')
+    if (entry.type
+      !== 'message')
       continue;
     /** Narrowed message payload after the entry-type guard. */
     const msg = (entry as SessionMessageEntry).message;
 
-    if (msg.role === 'user') {
+    if (msg.role
+      === 'user') {
       /** Plain-text rendering of the user message used for the summary line. */
       const text = extractUserText(msg.content,);
       userLine = `[user] ${abbreviate(text,)}`;
       continue;
     }
 
-    if (msg.role === 'assistant') {
+    if (msg.role
+      === 'assistant') {
       for (const block of msg.content) {
-        if (block.type === 'toolCall') {
+        if (block.type
+          === 'toolCall') {
           pendingCalls.push({
             name: block.name,
             summary: summarizeToolCall({
@@ -152,13 +164,17 @@ function buildContext(
       continue;
     }
 
-    if (msg.role === 'toolResult') {
+    if (msg.role
+      === 'toolResult') {
       /** Tool call paired with this result, removed from the pending queue. */
       const call = pendingCalls.shift();
       /** Display string for the call: stored summary, or fallback to tool name. */
-      const callStr = call?.summary ?? msg.toolName;
+      const callStr = call?.summary
+        ?? msg
+        .toolName;
 
-      if ((pendingVerdict !== null) && (pendingVerdict.verdict !== 'approve')) {
+      if ((pendingVerdict !== null) && (pendingVerdict.verdict
+        !== 'approve')) {
         toolLines.push(
           `[tool] ${callStr} → ${pendingVerdict.verdict} (${pendingVerdict.reason})`,
         );
@@ -167,7 +183,8 @@ function buildContext(
         /** "error" / "ok" suffix derived from the result's error flag. */
         const outcome = msg.isError ? 'error' : 'ok';
         /** Optional bash-only detail suffix appended after the outcome. */
-        const detail = msg.toolName === 'bash'
+        const detail = msg.toolName
+          === 'bash'
           ? bashDetail(msg.content,)
           : '';
         toolLines.push(`[tool] ${callStr} → ${outcome}${detail}`,);
@@ -180,9 +197,11 @@ function buildContext(
   const lines: string[] = [];
   if (userLine !== '')
     lines.push(userLine,);
-  if (toolLines.length > MAX_CONTEXT_TOOLS) {
+  if (toolLines.length
+    > MAX_CONTEXT_TOOLS) {
     /** Count of older tool lines elided to fit within the context cap. */
-    const omitted = toolLines.length - MAX_CONTEXT_TOOLS;
+    const omitted = toolLines.length
+      - MAX_CONTEXT_TOOLS;
     lines.push(`[${omitted} previous tool calls omitted]`,);
     lines.push(...toolLines.slice(-MAX_CONTEXT_TOOLS,),);
   }
@@ -210,7 +229,8 @@ function extractUserText(
   return content
     .filter(
       function isText(c,): c is TextContent {
-        return c.type === 'text';
+        return c.type
+          === 'text';
       },
     )
     .map(
@@ -231,7 +251,8 @@ function extractUserText(
 function abbreviate(
   text: string,
 ): string {
-  if (text.length <= USER_MSG_MAX)
+  if (text.length
+    <= USER_MSG_MAX)
     return text;
   return `${
     text.slice(
@@ -263,7 +284,8 @@ function summarizeToolCall(
 ): string {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- untyped tool call arguments */
   if (name === 'bash')
-    return `bash: ${(args.command as string | undefined) ?? ''}`;
+    return `bash: ${(args.command as string | undefined)
+      ?? ''}`;
   if ([
     'read',
     'write',
@@ -274,7 +296,8 @@ function summarizeToolCall(
   ]
     .includes(name,))
   {
-    return `${name} ${(args.path as string | undefined) ?? ''}`;
+    return `${name} ${(args.path as string | undefined)
+      ?? ''}`;
   }
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return name;
@@ -297,21 +320,28 @@ function bashDetail(
   const text = content
     .filter(
       function hasText(c,) {
-        return c.type === 'text';
+        return c.type
+          === 'text';
       },
     )
     .map(
       function getText(c,) {
-        return c.text ?? '';
+        return c.text
+          ?? '';
       },
     )
     .join('',);
   /** Last non-empty trimmed line of bash output, the most informative suffix. */
-  const lastLine = text.trim().split('\n',).pop()?.trim() ?? '';
+  const lastLine = text.trim()
+    .split('\n',)
+    .pop()
+    ?.trim()
+    ?? '';
   if (lastLine === '')
     return '';
   /** Last line truncated to the configured cap from the right (preserves tail). */
-  const trimmed = lastLine.length > BASH_DETAIL_LEN
+  const trimmed = lastLine.length
+    > BASH_DETAIL_LEN
     ? lastLine.slice(-BASH_DETAIL_LEN,)
     : lastLine;
   return ` | ${trimmed}`;

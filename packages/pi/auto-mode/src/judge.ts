@@ -122,9 +122,11 @@ async function callJudge(
   const opts: Record<string, unknown> = {
     signal: controller.signal,
   };
-  if (auth.apiKey !== undefined)
+  if (auth.apiKey
+    !== undefined)
     opts.apiKey = auth.apiKey;
-  if (auth.headers !== undefined)
+  if (auth.headers
+    !== undefined)
     opts.headers = auth.headers;
   opts.toolChoice = toolChoiceForApi(String(model.api,),);
 
@@ -187,7 +189,8 @@ function buildUserContent(
     `Action: ${action}`,
   ];
 
-  if (trustDirectives.length > 0) {
+  if (trustDirectives.length
+    > 0) {
     lines.push(
       '',
       'User trust directives for this session:',
@@ -204,7 +207,8 @@ function buildUserContent(
     );
   }
 
-  if ((batchContext !== undefined) && (batchContext.length > 0)) {
+  if ((batchContext !== undefined) && (batchContext.length
+    > 0)) {
     lines.push(
       '',
       'Other actions in this batch:',
@@ -260,15 +264,18 @@ async function collectToolCall(
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   for await (const event of stream) {
-    if (event.type === 'toolcall_end')
+    if (event.type
+      === 'toolcall_end')
       ({ toolCall, } = event);
 
-    if (event.type === 'text_end')
+    if (event.type
+      === 'text_end')
       textContent += event.content;
   }
 
   if (toolCall !== undefined) {
-    if (toolCall.name !== 'render_verdict') {
+    if (toolCall.name
+      !== 'render_verdict') {
       throw new Error(
         `Judge called unexpected tool: "${toolCall.name}" instead of "render_verdict"`,
       );
@@ -376,7 +383,8 @@ function findBalancedJsonObject(text: string,): string | undefined {
   let escape = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
-  for (let i = start; i < text.length; i++) {
+  for (let i = start; i < text
+    .length; i++) {
     /** Character at the current scan position, used by the state machine below. */
     const ch = text[i];
 
@@ -431,16 +439,19 @@ function parseVerdict(
   args: Record<string, string>,
 ): Verdict {
   /** Raw verdict string from the tool call; defaulted to `ask` when missing so the union check below decides. */
-  const verdict = args.verdict ?? 'ask';
+  const verdict = args.verdict
+    ?? 'ask';
   /** Free-text rationale captured from the tool call. */
-  const reason = args.reason ?? '';
+  const reason = args.reason
+    ?? '';
   /** Guidance string to surface back to the agent; empty for approvals. */
-  const guidance = args.guidance ?? '';
+  const guidance = args.guidance
+    ?? '';
 
   if (
     (verdict !== 'approve')
     && (verdict !== 'deny')
-    && (verdict !== 'ask')
+      && (verdict !== 'ask')
   ) {
     return {
       verdict: 'ask',

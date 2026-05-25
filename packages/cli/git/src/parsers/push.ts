@@ -65,7 +65,10 @@ export function parsePushRegion(
     return { hasAtomicChoice: false, };
 
   return {
-    hasAtomicChoice: parseResult.value.atomicFlags.length > 0,
+    hasAtomicChoice: parseResult.value
+      .atomicFlags
+      .length
+      > 0,
   };
 }
 

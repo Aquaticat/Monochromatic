@@ -86,7 +86,8 @@ export function splitOnBlankLines(s: string,): string[] {
 
   for (const line of lines) {
     if (isBlankLine(line,)) {
-      if (current.length > 0) {
+      if (current.length
+        > 0) {
         blocks.push(current.join('\n',),);
         current.length = 0;
       }
@@ -96,7 +97,8 @@ export function splitOnBlankLines(s: string,): string[] {
     }
   }
 
-  if (current.length > 0)
+  if (current.length
+    > 0)
     blocks.push(current.join('\n',),);
 
   return blocks;
@@ -137,7 +139,8 @@ const BOX_ORIGINS: readonly (readonly [
     number,
   ] {
     return [
-      Math.floor(idx / BOX_SIZE,) * BOX_SIZE,
+      Math.floor(idx / BOX_SIZE,)
+        * BOX_SIZE,
       (idx % BOX_SIZE) * BOX_SIZE,
     ] as const;
   },
@@ -165,9 +168,11 @@ export function parseGrid(text: string,): number[][] | undefined {
       return line.trim();
     },)
     .filter(function nonEmpty(line,): boolean {
-      return line.length > 0;
+      return line.length
+        > 0;
     },);
-  if (lines.length !== GRID_SIZE)
+  if (lines.length
+    !== GRID_SIZE)
     return undefined;
   /** Parsed digit rows, undefined entries indicate parse failure */
   const grid = lines.map(function parseLine(line,): number[] | undefined {
@@ -177,7 +182,8 @@ export function parseGrid(text: string,): number[][] | undefined {
       .from(stripAllWhitespace(line,),)
       .map(Number,);
     return (digits.length === GRID_SIZE)
-        && digits.every(function validDigit(digit,): boolean {
+        && digits
+      .every(function validDigit(digit,): boolean {
           return (digit >= 1) && (digit <= GRID_SIZE);
         },)
       ? digits
@@ -224,7 +230,8 @@ function extractColumn({
   col,
 }: ExtractColumnOptions,): number[] {
   return grid.map(function getCol(row,): number {
-    return row[col] ?? 0;
+    return row[col]
+      ?? 0;
   },);
 }
 
@@ -273,7 +280,8 @@ function extractBox({
       _,
       idx,
     ): number {
-      return grid[originRow + Math.floor(idx / BOX_SIZE,)]?.[originCol + (idx % BOX_SIZE)]
+      return grid[originRow + Math
+        .floor(idx / BOX_SIZE,)]?.[originCol + (idx % BOX_SIZE)]
         ?? 0;
     },
   );
@@ -301,7 +309,8 @@ export function isValidSolution(grid: number[][],): boolean {
    * @returns true when the set of digits has exactly GRID_SIZE unique values
    */
   function hasAllDigits(nums: number[],): boolean {
-    return new Set(nums,).size === GRID_SIZE;
+    return new Set(nums,).size
+      === GRID_SIZE;
   }
 
   // Rows
@@ -372,7 +381,8 @@ export function matchesClues({
       clue,
       colIndex,
     ): boolean {
-      return (clue === 0) || (clue === (grid[rowIndex]?.[colIndex] ?? (-1)));
+      return (clue === 0) || (clue === (grid[rowIndex]?.[colIndex]
+        ?? (-1)));
     },);
   },);
 }
@@ -417,6 +427,7 @@ export function splitSolutions(section: string,): string[] {
       return block.trim();
     },)
     .filter(function nonEmpty(block,): boolean {
-      return block.length > 0;
+      return block.length
+        > 0;
     },);
 }

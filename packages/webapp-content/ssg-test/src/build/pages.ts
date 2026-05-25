@@ -71,7 +71,8 @@ export async function generatePages(
   /** Locales each post slug has a translation in. */
   const availableLangsByName: Record<string, readonly Locales[]> = Object
     .fromEntries(
-      Object.entries(byName,).map(function pickAvailable([name, namePosts,],) {
+      Object.entries(byName,)
+        .map(function pickAvailable([name, namePosts,],) {
         return [
           name,
           namePosts.map(function langOf(p,) {
@@ -92,7 +93,8 @@ export async function generatePages(
     },),
     ...validLangs.flatMap(function langWrites(lang,) {
       /** Posts narrowed to this locale; absent locales yield an empty list instead of an error. */
-      const langPosts = byLang[lang] ?? [];
+      const langPosts = byLang[lang]
+        ?? [];
       /** Per-locale tag bucketing computed once per language pass. */
       const langTags = groupByTag(langPosts,);
       return [
@@ -107,7 +109,8 @@ export async function generatePages(
         ...names.map(function postWrite(name,) {
           /** Locale-specific post for this slug or undefined when no translation exists. */
           const post = langPosts.find(function matchName(lp,) {
-            return lp.name === name;
+            return lp.name
+              === name;
           },);
           /** Pre-rendered MDX body keyed by `lang/name`; absent for missing translations. */
           const html = renderedContent.get(`${lang}/${name}`,);
@@ -119,11 +122,13 @@ export async function generatePages(
               name,
               renderedHtml: html,
               canonicalUrl: `${siteUrl}/${lang}/${name}`,
-              availableInLangs: availableLangsByName[name] ?? [],
+              availableInLangs: availableLangsByName[name]
+                ?? [],
             },),
           },);
         },),
-        ...Object.entries(langTags,).map(function tagWrite([tag, tagPosts,],) {
+        ...Object.entries(langTags,)
+          .map(function tagWrite([tag, tagPosts,],) {
           return writePage({
             relativePath: `${lang}/tag/${tag}.html`,
             content: tagPage({
@@ -138,7 +143,8 @@ export async function generatePages(
     },),
     ...names.map(function nameWrite(name,) {
       /** Cross-language translations for this slug feeding the language picker on the name page. */
-      const namePosts = byName[name] ?? [];
+      const namePosts = byName[name]
+        ?? [];
       return writePage({
         relativePath: `${name}.html`,
         content: namePage({

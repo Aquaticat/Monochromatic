@@ -81,9 +81,12 @@ export async function putChunk(
     params: [
       input.draftId,
       input.seq,
-      input.chunk.md,
-      input.chunk.html,
-      input.chunk.charCount,
+      input.chunk
+        .md,
+      input.chunk
+        .html,
+      input.chunk
+        .charCount,
     ],
   },);
   await run({
@@ -122,7 +125,8 @@ export async function highestContiguousSeq(draftId: string,): Promise<number> {
   /** Running tally; `-1` represents an empty draft per the function's contract. */
   let highest = -1;
   for (const row of rows) {
-    if (row.seq === (highest + 1))
+    if (row.seq
+      === (highest + 1))
       highest = row.seq;
     else
       break;
@@ -149,7 +153,8 @@ export async function hasChunks(draftId: string,): Promise<boolean> {
     sql: 'SELECT EXISTS(SELECT 1 FROM chunks WHERE draft_id = ? LIMIT 1) AS "exists"',
     params: [draftId,],
   },);
-  return (row?.exists ?? 0) === 1;
+  return (row?.exists
+    ?? 0) === 1;
 }
 
 /**
@@ -183,7 +188,9 @@ export async function finalizeDraft(
     sql: 'SELECT user_id FROM drafts WHERE id = ?',
     params: [input.draftId,],
   },);
-  if ((draft === undefined) || (draft.user_id !== input.userId))
+  if ((draft === undefined) || (draft.user_id
+    !== input
+    .userId))
     return null;
   if (!(await hasChunks(input.draftId,)))
     return null;
@@ -248,5 +255,6 @@ export async function cancelDraft(
       input.userId,
     ],
   },);
-  return result.changes > 0;
+  return result.changes
+    > 0;
 }

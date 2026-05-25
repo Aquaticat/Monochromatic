@@ -29,7 +29,8 @@ import type { TomlEditState, } from './types.ts';
  * ```
  */
 export function tomlStringify({ edit, }: { edit: TomlEditState; },): string {
-  if (edit.mode === 'splice')
+  if (edit.mode
+    === 'splice')
     return spliceEmit({ edit, },);
   return canonicalEmit({ edit, },);
 }

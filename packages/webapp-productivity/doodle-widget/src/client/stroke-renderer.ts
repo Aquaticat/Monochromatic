@@ -44,24 +44,31 @@ export function renderStrokes({
   strokes: readonly StrokeData[];
 },): void {
   for (const stroke of strokes) {
-    if (stroke.points.length < MIN_STROKE_POINTS)
+    if (stroke.points
+      .length
+      < MIN_STROKE_POINTS)
       continue;
     ctx.strokeStyle = stroke.color;
     ctx.lineWidth = stroke.width;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.beginPath();
-    for (const [index, point,] of stroke.points.entries()) {
+    for (const [index, point,] of stroke.points
+      .entries()) {
       if (index === 0) {
         ctx.moveTo(
-          point[0] * cw,
-          point[1] * ch,
+          point[0]
+            * cw,
+          point[1]
+            * ch,
         );
       }
       else {
         ctx.lineTo(
-          point[0] * cw,
-          point[1] * ch,
+          point[0]
+            * cw,
+          point[1]
+            * ch,
         );
       }
     }

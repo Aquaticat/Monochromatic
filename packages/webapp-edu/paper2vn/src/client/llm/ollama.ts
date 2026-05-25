@@ -31,7 +31,8 @@ export const ollama: Provider = {
   id: 'ollama',
   chat: async function chat(opts: ChatOptions,): Promise<string> {
     /** Configured base URL falling back to localhost when unset. */
-    const base = opts.baseUrl === '' ? DEFAULT_BASE : opts.baseUrl;
+    const base = opts.baseUrl
+      === '' ? DEFAULT_BASE : opts.baseUrl;
     /** Provider base URL with any trailing slash removed so the endpoint suffix joins cleanly. */
     const trimmedBase = base.endsWith('/',)
       ? base.slice(
@@ -47,7 +48,8 @@ export const ollama: Provider = {
     const body: Record<string, unknown> = {
       model: opts.model,
       stream: false,
-      messages: opts.messages.map(function toApi(
+      messages: opts.messages
+        .map(function toApi(
         m: Readonly<Message>,
       ): {
         role: string;
@@ -59,10 +61,12 @@ export const ollama: Provider = {
         };
       },),
       options: {
-        temperature: opts.temperature ?? DEFAULT_TEMPERATURE,
+        temperature: opts.temperature
+          ?? DEFAULT_TEMPERATURE,
       },
     };
-    if (opts.expectJson === true)
+    if (opts.expectJson
+      === true)
       body.format = 'json';
     /** Raw fetch response so status can gate the JSON read. */
     const res = await fetch(
@@ -71,7 +75,8 @@ export const ollama: Provider = {
         method: 'POST',
         headers: { 'content-type': 'application/json', },
         body: JSON.stringify(body,),
-        signal: opts.signal ?? null,
+        signal: opts.signal
+          ?? null,
       },
     );
     if (!res.ok) {
@@ -101,7 +106,8 @@ export const ollama: Provider = {
     /** Parsed Ollama response payload, narrowed to the fields we read. */
     const json = await res.json() as OllamaResponse;
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-    return json.message.content;
+    return json.message
+      .content;
   },
 };
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

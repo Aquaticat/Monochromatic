@@ -101,7 +101,8 @@ export async function runHost({
     [...args,],
   );
 
-  if (result.stderr !== '')
+  if (result.stderr
+    !== '')
     console.error(result.stderr,);
 
   return result.stdout;

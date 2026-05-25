@@ -60,7 +60,8 @@ export function namePage(
               h({
                 tag: 'a',
                 attrs: { href: `/${post.lang}/${post.name}`, },
-                text: post.data.title,
+                text: post.data
+                  .title,
               },),
             ],
           },);
@@ -78,7 +79,8 @@ export function namePage(
 
   /** Use the first post's description when available, otherwise the slug name. */
   const description = firstPost !== undefined
-    ? firstPost.data.description
+    ? firstPost.data
+      .description
     : name;
 
   /** Locales in which this slug actually has a translation. */

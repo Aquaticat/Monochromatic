@@ -75,10 +75,13 @@ export function routeJsonRpcMessage({
     const entry = pending.get(response.id,);
     if (entry !== undefined) {
       pending.delete(response.id,);
-      if (entry.timeoutId !== null)
+      if (entry.timeoutId
+        !== null)
         clearTimeout(entry.timeoutId,);
-      if (response.error !== undefined)
-        entry.reject(new Error(`${name}: ${response.error.message}`,),);
+      if (response.error
+        !== undefined)
+        entry.reject(new Error(`${name}: ${response.error
+          .message}`,),);
       else
         entry.resolve(response.result,);
     }

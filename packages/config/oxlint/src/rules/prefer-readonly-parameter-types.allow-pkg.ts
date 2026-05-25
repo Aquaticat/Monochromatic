@@ -44,12 +44,18 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
   {
     from: "package",
     package: "@tursodatabase/database",
-    name: ["Client", "Database"],
+    name: [
+      "Client",
+      "Database"
+    ],
   },
   {
     from: "package",
     package: "@lezer/common",
-    name: ["Parser", "Tree"],
+    name: [
+      "Parser",
+      "Tree"
+    ],
   },
 
   // TODO: Remove them when we get to fixing lint issues in module-logger.
@@ -178,7 +184,12 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
     // not the TypeScript standard lib.
     from: "package",
     package: "@types/node",
-    name: ["Buffer", "ProcessEnv", "ReadableStream", "WritableStream"],
+    name: [
+      "Buffer",
+      "ProcessEnv",
+      "ReadableStream",
+      "WritableStream"
+    ],
   },
   {
     from: "package",

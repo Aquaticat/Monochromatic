@@ -133,7 +133,8 @@ class ToggleSwitch extends HTMLElement {
   #render(): void {
     /** Current toggle state, used to pick the thumb position class and glyph. */
     const isOn = this.on;
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,

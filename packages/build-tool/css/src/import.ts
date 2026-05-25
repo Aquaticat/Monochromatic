@@ -127,7 +127,9 @@ export const postcssInlineImport: Plugin = {
     const imported = new Set<string>();
 
     /** Source file path for the root stylesheet */
-    const rootFrom = root.source?.input.file;
+    const rootFrom = root.source
+      ?.input
+      .file;
     if (rootFrom !== undefined)
       imported.add(rootFrom,);
 
@@ -212,7 +214,9 @@ function inlineImports({
     },);
 
     // Replace the @import node with the inlined content
-    if (importedRoot.nodes.length > 0)
+    if (importedRoot.nodes
+      .length
+      > 0)
       node.replaceWith(...importedRoot.nodes,);
     else
       node.remove();

@@ -46,7 +46,9 @@ export function resolveAbsolutePoints(
    */
   let cy = 0;
   commands.forEach(function resolveCommand(cmd,) {
-    if ((cmd.type === 'M') || (cmd.type === 'L')) {
+    if ((cmd.type
+      === 'M') || (cmd.type
+      === 'L')) {
       cx = cmd.x;
       cy = cmd.y;
       points.push([
@@ -54,14 +56,16 @@ export function resolveAbsolutePoints(
         cy,
       ],);
     }
-    else if (cmd.type === 'H') {
+    else if (cmd.type
+      === 'H') {
       cx = cmd.x;
       points.push([
         cx,
         cy,
       ],);
     }
-    else if (cmd.type === 'V') {
+    else if (cmd.type
+      === 'V') {
       cy = cmd.y;
       points.push([
         cx,

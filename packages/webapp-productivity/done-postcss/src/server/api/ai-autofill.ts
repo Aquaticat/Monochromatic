@@ -88,14 +88,16 @@ function parseAutofillResponse(raw: string,): AutofillResult {
 
     /** Validated string-only tag list from the response. */
     const tags = Array.isArray(parsed.tags,)
-      ? parsed.tags.filter(function isString(tag,): tag is string {
+      ? parsed.tags
+        .filter(function isString(tag,): tag is string {
         return (typeof tag) === 'string';
       },)
       : [];
 
     /** Validated string-only location list from the response. */
     const locations = Array.isArray(parsed.locations,)
-      ? parsed.locations.filter(function isString(location,): location is string {
+      ? parsed.locations
+        .filter(function isString(location,): location is string {
         return (typeof location) === 'string';
       },)
       : [];
@@ -103,7 +105,8 @@ function parseAutofillResponse(raw: string,): AutofillResult {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- validated by Set.has check */
     /** Validated priority; `null` when the value is missing or not in the priority set. */
     const priority = ((typeof parsed.priority) === 'string')
-        && VALID_PRIORITIES.has(parsed.priority,)
+        && VALID_PRIORITIES
+      .has(parsed.priority,)
       ? (parsed.priority as TaskPriority)
       : null;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -111,7 +114,8 @@ function parseAutofillResponse(raw: string,): AutofillResult {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- validated by Set.has check */
     /** Validated complexity; `null` when the value is missing or not in the complexity set. */
     const complexity = ((typeof parsed.complexity) === 'string')
-        && VALID_COMPLEXITIES.has(parsed.complexity,)
+        && VALID_COMPLEXITIES
+      .has(parsed.complexity,)
       ? (parsed.complexity as TaskComplexity)
       : null;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -174,9 +178,11 @@ export async function handleAutofill(req: Request,): Promise<Response> {
     const body = (await req.json()) as Record<string, unknown>;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     /** Trimmed title from the body; empty-string fallback yields the empty result below. */
-    const title = ((typeof body.title) === 'string') ? body.title.trim() : '';
+    const title = ((typeof body.title) === 'string') ? body.title
+      .trim() : '';
 
-    if (title.length === 0) {
+    if (title.length
+      === 0) {
       return Response.json({
         tags: [],
         locations: [],

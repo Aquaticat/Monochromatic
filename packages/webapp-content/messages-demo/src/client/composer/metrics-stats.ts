@@ -31,14 +31,18 @@ export function percentile(
     readonly p: number;
   },
 ): number {
-  if (input.sortedAsc.length === 0)
+  if (input.sortedAsc
+    .length
+    === 0)
     return 0;
   /** Nearest-rank index clamped to 0 so empty-but-passing checks still index safely. */
   const rank = Math.max(
     0,
-    Math.ceil(input.p * input.sortedAsc.length,) - 1,
+    Math.ceil(input.p * input.sortedAsc.length,)
+      - 1,
   );
-  return input.sortedAsc[rank] ?? 0;
+  return input.sortedAsc[rank]
+    ?? 0;
 }
 
 /**
@@ -54,11 +58,17 @@ export function percentile(
  * ```
  */
 export function median(sortedAsc: readonly number[],): number {
-  if (sortedAsc.length === 0)
+  if (sortedAsc.length
+    === 0)
     return 0;
   /** Center index for odd-length arrays; upper of the two centers for even-length arrays. */
-  const mid = Math.floor(sortedAsc.length * MEDIAN_SPLIT,);
-  if ((sortedAsc.length % 2) === 1)
-    return sortedAsc[mid] ?? 0;
-  return ((sortedAsc[mid - 1] ?? 0) + (sortedAsc[mid] ?? 0)) * MEDIAN_SPLIT;
+  const mid = Math.floor(sortedAsc.length
+    * MEDIAN_SPLIT,);
+  if ((sortedAsc.length
+    % 2) === 1)
+    return sortedAsc[mid]
+      ?? 0;
+  return ((sortedAsc[mid - 1]
+    ?? 0) + (sortedAsc[mid]
+    ?? 0)) * MEDIAN_SPLIT;
 }

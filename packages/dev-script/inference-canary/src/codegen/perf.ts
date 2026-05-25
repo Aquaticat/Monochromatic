@@ -99,7 +99,8 @@ export async function runInContainerTimed({
   },);
   return {
     ...result,
-    durationMs: Date.now() - start,
+    durationMs: Date.now()
+      - start,
   };
 }
 
@@ -144,13 +145,22 @@ export function computePerfScore({
   perfResult,
   config,
 }: PerfScoreOptions,): number {
-  if (perfResult.timedOut || (perfResult.exitCode !== 0))
+  if (perfResult.timedOut
+    || (perfResult.exitCode !== 0))
     return 0;
-  if (perfResult.durationMs <= config.fastMs)
+  if (perfResult.durationMs
+    <= config
+    .fastMs)
     return 1;
-  if (perfResult.durationMs >= config.slowMs)
+  if (perfResult.durationMs
+    >= config
+    .slowMs)
     return 0;
-  return 1 - ((perfResult.durationMs - config.fastMs) / (config.slowMs - config.fastMs));
+  return 1 - ((perfResult.durationMs
+    - config
+    .fastMs) / (config.slowMs
+    - config
+    .fastMs));
 }
 
 /**

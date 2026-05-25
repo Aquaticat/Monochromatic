@@ -80,7 +80,8 @@ function resolvePort(): number {
   /** CLI override; preferred over the env var so the developer's `--port=` wins in foreground runs. */
   const argumentPort = getArgumentValue('port',);
   /** Fallback environment value; used when the CLI did not supply one. */
-  const environmentPort = process.env.PORT;
+  const environmentPort = process.env
+    .PORT;
   /** Resolved precedence: CLI \> env; undefined falls through to the default. */
   const rawPort = argumentPort ?? environmentPort;
   if (rawPort === undefined)
@@ -128,7 +129,9 @@ app.get(
     // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
     async function handleFeed(event,) {
       /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
-      const ifNoneMatch = event.req.headers.get('if-none-match',);
+      const ifNoneMatch = event.req
+        .headers
+        .get('if-none-match',);
       return await renderFeed({
         cursorToken: null,
         ifNoneMatch,
@@ -144,11 +147,14 @@ app.get(
     async function handleFeedPage(event,) {
       /** Required `:cursor` path param; bails to 400 when missing. */
       const cursor = requireParam({
-        params: event.context.params,
+        params: event.context
+          .params,
         name: 'cursor',
       },);
       /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
-      const ifNoneMatch = event.req.headers.get('if-none-match',);
+      const ifNoneMatch = event.req
+        .headers
+        .get('if-none-match',);
       return await renderFeed({
         cursorToken: cursor,
         ifNoneMatch,
@@ -164,7 +170,8 @@ app.get(
     function handleMessageRoot(event,) {
       /** Parsed `:id` param; redirect target uses this in the chunk-0 URL. */
       const id = parseId({
-        params: event.context.params,
+        params: event.context
+          .params,
         name: 'id',
       },);
       return redirect(
@@ -182,17 +189,21 @@ app.get(
     async function handleMessageChunk(event,) {
       /** Parsed `:id` param; consumed by `renderMessageChunk` as the message id. */
       const id = parseId({
-        params: event.context.params,
+        params: event.context
+          .params,
         name: 'id',
       },);
       /** Parsed `:idx` param; chunk index inside the message. */
       const idx = parseId({
-        params: event.context.params,
+        params: event.context
+          .params,
         name: 'idx',
         min: 0,
       },);
       /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
-      const ifNoneMatch = event.req.headers.get('if-none-match',);
+      const ifNoneMatch = event.req
+        .headers
+        .get('if-none-match',);
       return await renderMessageChunk({
         messageId: id,
         chunkIndex: idx,
@@ -209,17 +220,21 @@ app.get(
     async function handleChunkRaw(event,) {
       /** Parsed `:id` param; consumed by `renderChunkRaw` as the message id. */
       const id = parseId({
-        params: event.context.params,
+        params: event.context
+          .params,
         name: 'id',
       },);
       /** Parsed `:idx` param; chunk index inside the message. */
       const idx = parseId({
-        params: event.context.params,
+        params: event.context
+          .params,
         name: 'idx',
         min: 0,
       },);
       /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
-      const ifNoneMatch = event.req.headers.get('if-none-match',);
+      const ifNoneMatch = event.req
+        .headers
+        .get('if-none-match',);
       return await renderChunkRaw({
         messageId: id,
         chunkIndex: idx,
@@ -236,17 +251,21 @@ app.get(
     async function handleChunkMd(event,) {
       /** Parsed `:id` param; consumed by `renderChunkMd` as the message id. */
       const id = parseId({
-        params: event.context.params,
+        params: event.context
+          .params,
         name: 'id',
       },);
       /** Parsed `:idx` param; chunk index inside the message. */
       const idx = parseId({
-        params: event.context.params,
+        params: event.context
+          .params,
         name: 'idx',
         min: 0,
       },);
       /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
-      const ifNoneMatch = event.req.headers.get('if-none-match',);
+      const ifNoneMatch = event.req
+        .headers
+        .get('if-none-match',);
       return await renderChunkMd({
         messageId: id,
         chunkIndex: idx,
@@ -263,7 +282,8 @@ app.get(
     async function handleEdit(event,) {
       /** Parsed `:id` param; consumed by `renderEditPage`. */
       const id = parseId({
-        params: event.context.params,
+        params: event.context
+          .params,
         name: 'id',
       },);
       return await renderEditPage(id,);
@@ -396,7 +416,8 @@ function parseId(
   },
 ): number {
   /** Defaults to `1`; ids start at 1, chunk indices pass `min: 0`. */
-  const min = input.min ?? 1;
+  const min = input.min
+    ?? 1;
   /** Raw param string forwarded into `Number.parseInt`. */
   const raw = requireParam({
     params: input.params,

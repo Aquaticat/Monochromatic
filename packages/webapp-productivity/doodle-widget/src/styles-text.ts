@@ -14,10 +14,12 @@ import {
 import { INSET_ZERO_DECLS, } from './style-tokens.ts';
 
 /** Text input minimum inline size in rem */
-const TEXT_INPUT_MIN_INLINE_SIZE = 2 * 2 * 2;
+const TEXT_INPUT_MIN_INLINE_SIZE = 2 * 2
+  * 2;
 
 /** Text input line height (wider than CSS normal ~1.2 for readability) */
-const TEXT_INPUT_LINE_HEIGHT = 1 + (2 / (2 + 2 + 1));
+const TEXT_INPUT_LINE_HEIGHT = 1 + (2 / (2 + 2
+  + 1));
 
 /**
  * Generates CSS rules for the text overlay layer and text inputs.

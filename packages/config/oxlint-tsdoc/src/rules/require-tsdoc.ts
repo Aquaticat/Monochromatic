@@ -118,7 +118,7 @@ export const requireTsdoc: CreateOnceRule = {
           return;
         }
         reportMissing({
-          node: node,
+          node,
           context,
         },);
       },
@@ -135,9 +135,11 @@ export const requireTsdoc: CreateOnceRule = {
         },);
       },
       Property(node,): void {
-        if ((node.kind === 'get') || (node.kind === 'set')) {
+        if ((node.kind
+          === 'get') || (node.kind
+          === 'set')) {
           reportMissing({
-            node: node,
+            node,
             context,
           },);
         }

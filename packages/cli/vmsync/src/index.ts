@@ -33,7 +33,8 @@ export {};
 const INFRA_FLAGS: ReadonlySet<string> = new Set(['--verbose',],);
 
 /** Raw args after the script name. */
-const rawArgs = process.argv.slice(2,);
+const rawArgs = process.argv
+  .slice(2,);
 
 /**
  * Index of the `--` separator, or end-of-args when absent.
@@ -73,19 +74,24 @@ const args = runSync(
   },
 );
 
-if (args.cmd === 'import') {
+if (args.cmd
+  === 'import') {
   await importImage({
     imagePath: args.imagePath,
     name: args.name,
   },);
 }
-else if (args.cmd === 'boot')
+else if (args.cmd
+  === 'boot')
   await bootVm(args.name,);
-else if (args.cmd === 'sync')
+else if (args.cmd
+  === 'sync')
   await syncVm(args.name,);
-else if (args.cmd === 'status')
+else if (args.cmd
+  === 'status')
   await showStatus(args.name,);
-else if (args.cmd === 'list')
+else if (args.cmd
+  === 'list')
   await printVmList();
 else {
   await updateConfig({

@@ -58,7 +58,8 @@ export function generateHexDump(
   },
 ): string {
   /** Original file size; differs from buffer length when caller pre-truncated. */
-  const fullSize = totalSize ?? buffer.length;
+  const fullSize = totalSize ?? buffer
+    .length;
   /** Capped output length so very large buffers do not produce unbounded dumps. */
   const limit = Math.min(
     buffer.length,
@@ -69,7 +70,8 @@ export function generateHexDump(
 
   for (let offset = 0; offset < limit; offset += BYTES_PER_LINE) {
     /** Padded offset shown at the start of each dump row. */
-    const offsetHex = offset.toString(HEX_RADIX,).padStart(
+    const offsetHex = offset.toString(HEX_RADIX,)
+      .padStart(
       OFFSET_WIDTH,
       '0',
     );
@@ -94,12 +96,14 @@ export function generateHexDump(
     for (let i = 0; i < BYTES_PER_LINE; i++) {
       if (i === GROUP_BOUNDARY)
         hexParts.push('',);
-      if (i < chunk.length) {
+      if (i < chunk
+        .length) {
         /**
          * {@link nonNullishOrThrow} replaces the `!` operator banned by AGENTS.md.
          */
         const byte = nonNullishOrThrow(chunk[i],);
-        hexParts.push(byte.toString(HEX_RADIX,).padStart(
+        hexParts.push(byte.toString(HEX_RADIX,)
+          .padStart(
           2,
           '0',
         ),);

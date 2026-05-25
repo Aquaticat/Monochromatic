@@ -91,7 +91,9 @@ export function findProjectRoot({
   const cacheKey = `${startDir}\0${ceiling}\0${getJoinedConfigFiles(configFiles,)}`;
   /** TTL-gated reuse below avoids hitting the filesystem for recently-resolved paths. */
   const cached = rootCache.get(cacheKey,);
-  if ((cached !== undefined) && ((Date.now() - cached.storedAt) < CACHE_TTL_MS))
+  if ((cached !== undefined) && ((Date.now()
+    - cached
+    .storedAt) < CACHE_TTL_MS))
     return cached.value;
 
   /**

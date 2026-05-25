@@ -50,11 +50,14 @@ class SettingGroup extends HTMLElement {
   /** Renders the setting group with label, optional description, and action control. */
   connectedCallback(): void {
     /** Row title from the `label` attribute. */
-    const label = this.getAttribute('label',) ?? '';
+    const label = this.getAttribute('label',)
+      ?? '';
     /** Optional secondary description rendered as a `<p>` when non-empty. */
-    const description = this.getAttribute('description',) ?? '';
+    const description = this.getAttribute('description',)
+      ?? '';
     /** Either `'button'` or `'toggle'`; chooses which control sits in the action slot. */
-    const mode = this.getAttribute('mode',) ?? 'toggle';
+    const mode = this.getAttribute('mode',)
+      ?? 'toggle';
     /** Initial on state for `mode === 'toggle'`, derived from presence of the `on` attribute. */
     const on = this.hasAttribute('on',);
 
@@ -96,7 +99,8 @@ class SettingGroup extends HTMLElement {
       },),
     ];
 
-    if (description.length > 0) {
+    if (description.length
+      > 0) {
       children.push(h({
         tag: 'p',
         class: 'desc',
@@ -104,7 +108,8 @@ class SettingGroup extends HTMLElement {
       },),);
     }
 
-    this.#shadow.replaceChildren(...children,);
+    this.#shadow
+      .replaceChildren(...children,);
   }
 }
 

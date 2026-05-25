@@ -30,7 +30,8 @@ export function isWithinRoot({
 },): boolean {
   /** Trailing separator ensures `/home/userX/...` doesn't match `/home/user`. */
   const rootPrefix = root.endsWith('/',) ? root : `${root}/`;
-  return (path === root) || path.startsWith(rootPrefix,);
+  return (path === root) || path
+    .startsWith(rootPrefix,);
 }
 
 /**

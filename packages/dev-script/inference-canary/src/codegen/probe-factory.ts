@@ -60,12 +60,14 @@ export function createCodeGenProbe(config: CodeGenProbeConfig,): Probe {
     lint: new Map<string, LintResult>(),
     container: new Map<string, ContainerResult>(),
     perf: new Map<string, TimedContainerResult>(),
-    additionalContainers: (config.additionalRuns ?? []).map(
+    additionalContainers: (config.additionalRuns
+      ?? []).map(
       function createContainerCache(): Map<string, ContainerResult> {
         return new Map();
       },
     ),
-    additionalVerify: (config.additionalRuns ?? []).map(
+    additionalVerify: (config.additionalRuns
+      ?? []).map(
       function createVerifyCache(): Map<string, VerifyResult> {
         return new Map();
       },
@@ -73,7 +75,8 @@ export function createCodeGenProbe(config: CodeGenProbeConfig,): Probe {
   };
 
   /** Spread-friendly slow property, omitted when config.slow is undefined */
-  const slowProp = config.slow !== undefined ? { slow: config.slow, } : {};
+  const slowProp = config.slow
+    !== undefined ? { slow: config.slow, } : {};
 
   return {
     name: config.name,

@@ -51,7 +51,8 @@ export function selectAdvisorModel(
     readonly modelRegistry: ReadonlyDeep<ModelRegistry>;
   },
 ): AdvisorModelSelection {
-  if ((requestedSlug !== undefined) && (requestedSlug.trim() !== '')) {
+  if ((requestedSlug !== undefined) && (requestedSlug.trim()
+    !== '')) {
     return resolveRequestedModel({
       scope,
       requestedSlug,

@@ -70,7 +70,8 @@ async function fetchJson<T,>(url: string,): Promise<T> {
     },
   );
   if (!response.ok)
-    throw new Error(`HTTP ${response.status.toString()} on ${url}`,);
+    throw new Error(`HTTP ${response.status
+      .toString()} on ${url}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response.json() is `unknown`; caller asserts T.
   return await response.json() as T;
 }
@@ -141,7 +142,8 @@ export async function probePackageManifest(
   /**
    * Percent-encoded npm name preserving `@` for scoped packages.
    */
-  const encodedName = encodeURIComponent(npmName,).replaceAll(
+  const encodedName = encodeURIComponent(npmName,)
+    .replaceAll(
     '%40',
     '@',
   );
@@ -194,7 +196,8 @@ export async function probeDownloads(
     /**
      * Percent-encoded npm name preserving `@` for scoped packages.
      */
-    const encodedName = encodeURIComponent(npmName,).replaceAll(
+    const encodedName = encodeURIComponent(npmName,)
+      .replaceAll(
       '%40',
       '@',
     );
@@ -335,7 +338,10 @@ export async function probeLastCommit(
       `repos/${owner}/${repo}/commits?path=${encodeURIComponent(directory,)}&per_page=1`,
     );
     /** Author date of most-recent path-scoped commit; `undefined` means unexpected shape. */
-    const date = commits[0]?.commit?.author?.date;
+    const date = commits[0]
+      ?.commit
+      ?.author
+      ?.date;
     if (date === undefined)
       return null;
     await cache.write({

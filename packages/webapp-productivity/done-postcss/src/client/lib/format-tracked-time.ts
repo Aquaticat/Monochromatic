@@ -68,13 +68,17 @@ export function formatTrackedTime(seconds: number,): string {
  * const display = formatRunningTrackedTime(task);
  */
 export function formatRunningTrackedTime(task: Task,): string {
-  if (task.timerStartedAt === null)
+  if (task.timerStartedAt
+    === null)
     return formatTrackedTime(task.trackedTime,);
 
   /** Seconds elapsed since the timer started; clamped to non-negative for clock skew safety. */
   const elapsedSeconds = Math.max(
     0,
-    Math.floor((Date.now() - Date.parse(task.timerStartedAt,)) / MS_PER_SECOND,),
+    Math.floor((Date.now()
+      - Date
+      .parse(task.timerStartedAt,)) / MS_PER_SECOND,),
   );
-  return formatTrackedTime(task.trackedTime + elapsedSeconds,);
+  return formatTrackedTime(task.trackedTime
+    + elapsedSeconds,);
 }

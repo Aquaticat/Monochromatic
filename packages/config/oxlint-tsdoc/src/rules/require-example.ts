@@ -57,8 +57,10 @@ function isDirectlyExported(node: Span,): boolean {
   const parent = typed.parent as Record<string, unknown> | undefined;
   if (parent === undefined)
     return false;
-  return (parent.type === 'ExportNamedDeclaration')
-    || (parent.type === 'ExportDefaultDeclaration');
+  return (parent.type
+    === 'ExportNamedDeclaration')
+    || (parent.type
+      === 'ExportDefaultDeclaration');
 }
 
 /**
@@ -72,7 +74,9 @@ function isDirectlyExported(node: Span,): boolean {
  * @returns true when at least one `\@example` block exists
  */
 function hasExampleTag(result: TsdocParseResult,): boolean {
-  return result.docComment.customBlocks.some(
+  return result.docComment
+    .customBlocks
+    .some(
     function isExample(block,): boolean {
       return block.blockTag.tagName === EXAMPLE_TAG_NAME;
     },
@@ -90,9 +94,13 @@ function hasExampleTag(result: TsdocParseResult,): boolean {
  * @returns true when the comment should be skipped
  */
 function isExempt(result: TsdocParseResult,): boolean {
-  if (result.docComment.inheritDocTag !== undefined)
+  if (result.docComment
+    .inheritDocTag
+    !== undefined)
     return true;
-  return result.docComment.modifierTagSet.hasTagName(INTERNAL_TAG_NAME,);
+  return result.docComment
+    .modifierTagSet
+    .hasTagName(INTERNAL_TAG_NAME,);
 }
 
 /**
@@ -226,7 +234,8 @@ export const requireExample: CreateOnceRule = {
       /** Declarator list; for `const a = ..., b = ...` only the first is inspected. */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const declarations = typed.declarations as Record<string, unknown>[] | undefined;
-      if ((declarations === undefined) || (declarations.length === 0))
+      if ((declarations === undefined) || (declarations.length
+        === 0))
         return;
 
       /** First declarator; destructured here so its `init` can be inspected below. */
@@ -241,8 +250,10 @@ export const requireExample: CreateOnceRule = {
       const init = decl.init as Record<string, unknown> | null | undefined;
       if ((init === undefined) || (init === null))
         return;
-      if ((init.type !== 'FunctionExpression')
-        && (init.type !== 'ArrowFunctionExpression'))
+      if ((init.type
+        !== 'FunctionExpression')
+        && (init.type
+          !== 'ArrowFunctionExpression'))
       {
         return;
       }

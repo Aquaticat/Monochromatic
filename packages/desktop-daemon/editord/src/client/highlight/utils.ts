@@ -28,7 +28,8 @@ export const MAX_HIGHLIGHT_BYTES: number = FILE_SIZE_WARNING_THRESHOLD;
 export function getLineTexts({ editor, }: { readonly editor: HTMLDivElement; },): string[] {
   return [...editor.children,].map(function readLine(div,) {
     /** Defensive default keeps empty divs producing the empty string rather than null. */
-    const text = div.textContent ?? '';
+    const text = div.textContent
+      ?? '';
     return text === '\n' ? '' : text;
   },);
 }
@@ -67,7 +68,8 @@ export function findLineForOffset({
    * Binary-search upper bound; ends one before length so out-of-range returns last.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- binary-search state machine: `hi` falls when `mid` undershoots
-  let hi = lineStarts.length - 1;
+  let hi = lineStarts.length
+    - 1;
   while (lo <= hi) {
     /** Unsigned right shift halves without overflowing for very long files. */
     const mid = (lo + hi) >>> 1;
@@ -96,5 +98,6 @@ export function findLineForOffset({
  */
 export function clearHighlights(): void {
   for (const group of HIGHLIGHT_GROUPS)
-    CSS.highlights.delete(`hl-${group}`,);
+    CSS.highlights
+      .delete(`hl-${group}`,);
 }

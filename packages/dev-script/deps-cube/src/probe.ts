@@ -131,7 +131,8 @@ function computeUnknownReason(
 ): UnknownReason | null {
   if (repoInfo === null)
     return 'no-repo';
-  if (repoInfo.host !== 'github')
+  if (repoInfo.host
+    !== 'github')
     return 'non-github';
   if (isMonorepoHoused && (languages === null))
     return 'monorepo';
@@ -211,27 +212,37 @@ async function probeOne(
   const resolvedVersion = resolveVersion({
     range: entry.range,
     pkg,
-  },) ?? entry.range;
+  },)
+    ?? entry
+    .range;
 
   /** Version-scoped sub-manifest for `resolvedVersion`; `{}` when the registry response is incomplete. */
-  const versionManifest = pkg.versions?.[resolvedVersion] ?? {};
+  const versionManifest = pkg.versions?.[resolvedVersion]
+    ?? {};
   /** Runtime dependency map declared in the version manifest. */
-  const dependencies = versionManifest.dependencies ?? {};
+  const dependencies = versionManifest.dependencies
+    ?? {};
   /** Count of direct runtime deps; drives the `isLeaf` flag and the runtime-dep visual channel. */
-  const runtimeDepCount = Object.keys(dependencies,).length;
+  const runtimeDepCount = Object.keys(dependencies,)
+    .length;
   /** `true` when the package has no runtime deps; convenience flag derived from `runtimeDepCount`. */
   const isLeaf = runtimeDepCount === 0;
   /** Self install size in bytes; `0` when the registry omits `dist.unpackedSize`. */
-  const installSizeBytes = versionManifest.dist?.unpackedSize ?? 0;
+  const installSizeBytes = versionManifest.dist
+    ?.unpackedSize
+    ?? 0;
   /** Bucketed license class derived from the SPDX-ish `license` field; coarser than the raw string for visualisation. */
   const licenseClass = classifyLicense(versionManifest.license,);
 
   /** ISO timestamp of first publish; missing on some legacy packages. */
-  const createdAt = pkg.time?.created;
+  const createdAt = pkg.time
+    ?.created;
   /** Days since first publish, computed from `createdAt`; `0` when `createdAt` is missing. */
   const packageAgeDays = createdAt === undefined
     ? 0
-    : Math.floor((Date.now() - new Date(createdAt,).getTime()) / MS_PER_DAY,);
+    : Math.floor((Date.now()
+      - new Date(createdAt,)
+      .getTime()) / MS_PER_DAY,);
 
   /** Weekly download count from the npm registry; surfaces popularity as a visual channel. */
   const weeklyDownloads = await probeDownloads({
@@ -242,9 +253,11 @@ async function probeOne(
   /** Parsed repository pointer, or `null` when the manifest lacks a usable repo URL. */
   const repoInfo = parseRepository(versionManifest.repository,);
   /** `true` when the package lives inside a monorepo; Linguist measures the wrong scope here so we skip it. */
-  const isMonorepoHoused = (repoInfo !== null) && (repoInfo.directory !== undefined);
+  const isMonorepoHoused = (repoInfo !== null) && (repoInfo.directory
+    !== undefined);
   /** `true` when the repo is on GitHub; gates the GH-specific probes below. */
-  const isGitHub = (repoInfo !== null) && (repoInfo.host === 'github');
+  const isGitHub = (repoInfo !== null) && (repoInfo.host
+    === 'github');
 
   /** `true` when the package is on GitHub and not buried inside a monorepo; gates the Linguist probe. */
   const isStandaloneGitHub = isGitHub && (!isMonorepoHoused);
@@ -282,7 +295,8 @@ async function probeOne(
   /** Sum of Linguist byte counts across every detected language, used as the denominator for `tsRatioOrNull`. */
   const totalBytes = languages === null
     ? null
-    : Object.values(languages,).reduce(
+    : Object.values(languages,)
+      .reduce(
       function sumBytes(
         a,
         b,
@@ -292,9 +306,11 @@ async function probeOne(
       0,
     );
   /** Bytes Linguist attributes to TypeScript; `null` when Linguist did not run or did not detect TS. */
-  const tsBytes = languages?.['TypeScript'] ?? null;
+  const tsBytes = languages?.TypeScript
+    ?? null;
   /** Bytes Linguist attributes to JavaScript; `0` when Linguist did not detect JS. */
-  const jsBytes = languages?.['JavaScript'] ?? 0;
+  const jsBytes = languages?.JavaScript
+    ?? 0;
 
   /** `true` when the Linguist-derived byte counts can't yield a meaningful TS ratio. */
   const tsRatioUnknown = (totalBytes === null)
@@ -311,7 +327,9 @@ async function probeOne(
   /** Days since the most-recent commit; `null` when the last-commit probe failed or was skipped. */
   const daysSinceLastCommitOrNull = lastCommitDate === null
     ? null
-    : Math.floor((Date.now() - new Date(lastCommitDate,).getTime()) / MS_PER_DAY,);
+    : Math.floor((Date.now()
+      - new Date(lastCommitDate,)
+      .getTime()) / MS_PER_DAY,);
 
   /** Discriminated reason for any unknown GH-derived field, or `null` when all three are known. */
   const unknownReason = computeUnknownReason({
@@ -334,7 +352,8 @@ async function probeOne(
     tsRatioOrNull,
     sourceBytesOrNull,
     daysSinceLastCommitOrNull,
-    repositoryUrlOrNull: repoInfo?.url ?? null,
+    repositoryUrlOrNull: repoInfo?.url
+      ?? null,
     isMonorepoHoused,
     unknownReason,
   };

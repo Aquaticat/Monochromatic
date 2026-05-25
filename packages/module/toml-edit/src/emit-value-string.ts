@@ -21,7 +21,8 @@ import type { AST, } from 'toml-eslint-parser';
  * ```
  */
 export function emitStringValue({ node, }: { node: AST.TOMLStringValue; },): string {
-  if (node.style === 'literal') {
+  if (node.style
+    === 'literal') {
     if (node.multiline)
       return `'''${node.value}'''`;
     return `'${node.value}'`;

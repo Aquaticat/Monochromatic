@@ -41,7 +41,8 @@ export function renderByProbe({ entries, }: {
     return Object.keys(entry.probeScores,);
   },),),];
 
-  if (probeNames.length === 0) {
+  if (probeNames.length
+    === 0) {
     return h({
       tag: 'p',
       text: 'No probe data available.',
@@ -62,7 +63,8 @@ export function renderByProbe({ entries, }: {
       /** Unique model labels that recorded a score for the current probe. */
       const labels = [...new Set(entries
         .filter(function hasProbe(entry,): boolean {
-          return probe in entry.probeScores;
+          return probe in entry
+            .probeScores;
         },)
         .map(function getLabel(entry,): string {
           return entry.label;
@@ -72,10 +74,13 @@ export function renderByProbe({ entries, }: {
         .map(function renderModelSection(label,): string {
           /** Entries narrowed to the current model label. */
           const modelEntries = entries.filter(function matchLabel(entry,): boolean {
-            return entry.label === label;
+            return entry.label
+              === label;
           },);
           /** OpenRouter model ID from the first entry for vendor icon/color */
-          const openrouterId = modelEntries[0]?.model ?? '';
+          const openrouterId = modelEntries[0]
+            ?.model
+            ?? '';
           /** Vendor-derived accent color reused across this model's points. */
           const color = vendorColor(openrouterId,);
           /** Scatter points for this single model within the current probe. */

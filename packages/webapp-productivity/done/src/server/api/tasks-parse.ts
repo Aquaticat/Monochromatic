@@ -53,7 +53,8 @@ export function parseStringArray(value: unknown,): string[] | null {
       return entry.trim();
     },)
     .filter(function isNonEmpty(entry,) {
-      return entry.length > 0;
+      return entry.length
+        > 0;
     },);
   return parsedValues;
 }

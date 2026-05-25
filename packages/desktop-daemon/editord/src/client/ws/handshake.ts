@@ -58,14 +58,16 @@ export function performHandshake({
         /** Parsed server message; discriminated below on `data.type`. */
         // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns unknown; runtime type is validated by discriminant checks below
         const data = JSON.parse(String(event.data,),) as ServerMessage;
-        if (data.type === 'connected') {
+        if (data.type
+          === 'connected') {
           onConnected({
             rootDir: data.rootDir,
             fsId: data.fsId,
           },);
           resolve();
         }
-        else if (data.type === 'error') {
+        else if (data.type
+          === 'error') {
           reject(new Error(data.message,),);
         }
         else {

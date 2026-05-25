@@ -91,11 +91,14 @@ export async function bootSession(
   },);
   currentFileState.setCurrentFilePath(restored.filePath,);
   recentFiles.replaceAll(restored.recentFiles,);
-  if (restored.filePath !== null)
+  if (restored.filePath
+    !== null)
     recentFiles.push(restored.filePath,);
   await fileTree.revealFiles({ paths: recentFiles.paths, },);
   fileTree.updateRecency({ paths: recentFiles.paths, },);
-  if ((restored.filePath !== null) && (currentFileState.getCurrentFileKind() === 'text'))
+  if ((restored.filePath
+    !== null) && (currentFileState.getCurrentFileKind()
+    === 'text'))
     refreshInlayHints();
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

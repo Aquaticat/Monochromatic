@@ -147,7 +147,8 @@ function parseKeys(xml: string,): string[] {
   const pattern = /<Key>(.+?)<\/Key>/gu;
   /* oxlint-enable no-restricted-syntax/no-regex */
   for (const match of xml.matchAll(pattern,)) {
-    if (match[1] !== undefined)
+    if (match[1]
+      !== undefined)
       keys.push(decodeXmlEntities(match[1],),);
   }
   return keys;
@@ -171,13 +172,15 @@ function parseContinuationToken(xml: string,): string | undefined {
   /** IsTruncated flag; absent or false means the response is the final page. */
   const truncated = /<IsTruncated>(.+?)<\/IsTruncated>/u.exec(xml,);
   /* oxlint-enable no-restricted-syntax/no-regex */
-  if (truncated?.[1] !== 'true')
+  if (truncated?.[1]
+    !== 'true')
     return undefined;
   /* oxlint-disable no-restricted-syntax/no-regex -- Extracts S3 pagination control fields from a ListObjectsV2 response body bounded by AWS; non-greedy single-capture pattern with no alternation prevents catastrophic backtracking. */
   /** Raw continuation token; XML-escaped values are decoded before returning. */
   const token = /<NextContinuationToken>(.+?)<\/NextContinuationToken>/u.exec(xml,);
   /* oxlint-enable no-restricted-syntax/no-regex */
-  return token?.[1] === undefined ? undefined : decodeXmlEntities(token[1],);
+  return token?.[1]
+    === undefined ? undefined : decodeXmlEntities(token[1],);
 }
 
 /**
@@ -233,14 +236,21 @@ async function throwOnError(row: {
   readonly operation: string;
   readonly key: string;
 },): Promise<void> {
-  if ((row.response.status >= HTTP_OK) && (row.response.status < HTTP_REDIRECT))
+  if ((row.response
+    .status
+    >= HTTP_OK) && (row.response
+    .status
+    < HTTP_REDIRECT))
     return;
   /** Response body included verbatim in the thrown error for diagnostics. */
-  const body = await row.response.text();
+  const body = await row.response
+    .text();
   throw new Error(
     `S3 ${row.operation} ${row.key} failed: ${
-      String(row.response.status,)
-    } ${row.response.statusText} ${body}`,
+      String(row.response
+        .status,)
+    } ${row.response
+      .statusText} ${body}`,
   );
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
@@ -288,7 +298,8 @@ async function listOnePage(row: {
     'max-keys',
     String(LIST_PAGE_SIZE,),
   );
-  if (row.continuationToken !== undefined) {
+  if (row.continuationToken
+    !== undefined) {
     params.set(
       'continuation-token',
       row.continuationToken,
@@ -297,7 +308,8 @@ async function listOnePage(row: {
   /** Fully qualified ListObjectsV2 URL with all query parameters set. */
   const url = `${row.endpoint}/${row.bucket}?${params.toString()}`;
   /** Signed HTTP response with the raw XML page body. */
-  const response = await row.client.fetch(
+  const response = await row.client
+    .fetch(
     url,
     { method: 'GET', },
   );
@@ -343,7 +355,8 @@ async function listOnePage(row: {
  */
 export function createS3Storage(options: S3StorageOptions,): Storage {
   /** Concurrency limiter shared across every batch operation on the adapter. */
-  const limit = pLimit(options.putBatchConcurrency ?? DEFAULT_PUT_BATCH_CONCURRENCY,);
+  const limit = pLimit(options.putBatchConcurrency
+    ?? DEFAULT_PUT_BATCH_CONCURRENCY,);
 
   /**
    * Single PUT to the bucket.
@@ -375,7 +388,8 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
     /** Fresh buffer copy ensures the body satisfies `Uint8Array<ArrayBuffer>`. */
     const reqBody = new Uint8Array(body,);
     /** Signed HTTP response from the PUT operation. */
-    const response = await options.client.fetch(
+    const response = await options.client
+      .fetch(
       url,
       {
         method: 'PUT',
@@ -432,11 +446,13 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
       key,
     },);
     /** Signed HTTP response from the GET operation. */
-    const response = await options.client.fetch(
+    const response = await options.client
+      .fetch(
       url,
       { method: 'GET', },
     );
-    if (response.status === HTTP_NOT_FOUND) {
+    if (response.status
+      === HTTP_NOT_FOUND) {
       // Drain the body so connection reuse works.
       await response.arrayBuffer();
       return undefined;
@@ -469,11 +485,13 @@ export function createS3Storage(options: S3StorageOptions,): Storage {
       key,
     },);
     /** Signed HTTP response from the DELETE operation. */
-    const response = await options.client.fetch(
+    const response = await options.client
+      .fetch(
       url,
       { method: 'DELETE', },
     );
-    if (response.status === HTTP_NOT_FOUND) {
+    if (response.status
+      === HTTP_NOT_FOUND) {
       await response.arrayBuffer();
       return;
     }

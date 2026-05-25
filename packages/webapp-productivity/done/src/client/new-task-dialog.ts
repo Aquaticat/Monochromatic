@@ -114,7 +114,8 @@ export function createNewTaskDialog(): NewTaskDialog {
       if (action === 'save') {
         /** Trimmed title captured once; empty titles short-circuit the save below. */
         const trimmedTitle = title.trim();
-        if (trimmedTitle.length === 0)
+        if (trimmedTitle.length
+          === 0)
           return;
 
         /** Snapshot of the autofill/manual metadata, forwarded to the create endpoint. */
@@ -126,7 +127,8 @@ export function createNewTaskDialog(): NewTaskDialog {
               method: 'POST',
               body: JSON.stringify({
                 title: trimmedTitle,
-                description: description.length === 0 ? null : description,
+                description: description.length
+                  === 0 ? null : description,
                 tags: metadata.tags,
                 locations: metadata.locations,
                 priority: metadata.priority,
@@ -134,7 +136,8 @@ export function createNewTaskDialog(): NewTaskDialog {
               },),
             },
           },);
-          globalThis.location.reload();
+          globalThis.location
+            .reload();
         })();
       }
     },
@@ -154,13 +157,15 @@ export function createNewTaskDialog(): NewTaskDialog {
     fab.hidden = true;
 
     // Restart the expand animation by toggling the data attribute
-    delete panel.dataset['animating'];
+    delete panel.dataset.animating;
     panel.showPopover();
     requestAnimationFrame(function animatePanel() {
-      panel.dataset['animating'] = '';
+      panel.dataset.animating = '';
       /** Looked up after the panel opens so the autofocus lands on the right input. */
       const titleInput =
-        detail.shadowRoot?.querySelector<HTMLInputElement>('.title-input',) ?? null;
+        detail.shadowRoot
+          ?.querySelector<HTMLInputElement>('.title-input',)
+          ?? null;
       titleInput?.focus();
     },);
   }

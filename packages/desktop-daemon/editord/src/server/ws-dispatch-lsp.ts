@@ -60,7 +60,8 @@ export async function dispatchLspMessage(
     readonly dirWatcher: DirWatcher | null;
   },
 ): Promise<boolean> {
-  if (parsed.type === 'inlayHint') {
+  if (parsed.type
+    === 'inlayHint') {
     if (lspManager === null) {
       return replyEmpty({
         peer,
@@ -87,7 +88,8 @@ export async function dispatchLspMessage(
     },);
     return true;
   }
-  if (parsed.type === 'didChange') {
+  if (parsed.type
+    === 'didChange') {
     if (lspManager !== null) {
       await lspManager.didChange({
         path: parsed.path,
@@ -96,12 +98,14 @@ export async function dispatchLspMessage(
     }
     return true;
   }
-  if (parsed.type === 'didClose') {
+  if (parsed.type
+    === 'didClose') {
     if (lspManager !== null)
       await lspManager.didClose({ path: parsed.path, },);
     return true;
   }
-  if (parsed.type === 'watchDir') {
+  if (parsed.type
+    === 'watchDir') {
     if (dirWatcher !== null) {
       /** Resolved root-rebased path required by the chokidar watcher. */
       const absolutePath = assertWithinRoot({
@@ -112,7 +116,8 @@ export async function dispatchLspMessage(
     }
     return true;
   }
-  if (parsed.type === 'hover') {
+  if (parsed.type
+    === 'hover') {
     if (lspManager === null) {
       return replyEmpty({
         peer,
@@ -151,7 +156,8 @@ export async function dispatchLspMessage(
     },);
     return true;
   }
-  if (parsed.type === 'completion') {
+  if (parsed.type
+    === 'completion') {
     if (lspManager === null) {
       return replyEmpty({
         peer,
@@ -178,7 +184,8 @@ export async function dispatchLspMessage(
     },);
     return true;
   }
-  if (parsed.type === 'format') {
+  if (parsed.type
+    === 'format') {
     if (lspManager === null) {
       return replyEmpty({
         peer,

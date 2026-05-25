@@ -52,7 +52,8 @@ const PARTIAL_CREDIT = 0.1;
 export function verifyNormal(stdout: string,): number {
   /** Per-puzzle output sections split on the `---` separator */
   const sections = splitOutputSections(stdout,);
-  if (sections.length < NORMAL_CHECKS)
+  if (sections.length
+    < NORMAL_CHECKS)
     return PARTIAL_CREDIT;
 
   /** Destructured puzzle output sections: solvable, two unsolvables, and multi-solution */
@@ -71,8 +72,10 @@ export function verifyNormal(stdout: string,): number {
   /** Individual solution blocks from the multi-solution output */
   const multiSolutions = splitSolutions(multiSection,);
   /** Parsed grid from multi-solution output (only when exactly one solution present) */
-  const multiGrid = multiSolutions.length === 1
-    ? parseGrid(multiSolutions[0] ?? '',)
+  const multiGrid = multiSolutions.length
+    === 1
+    ? parseGrid(multiSolutions[0]
+      ?? '',)
     : undefined;
 
   /** Number of checks that passed out of NORMAL_CHECKS total */
@@ -80,18 +83,20 @@ export function verifyNormal(stdout: string,): number {
     // Check 1: solvable puzzle solved correctly
     (solvableGrid !== undefined)
     && isValidSolution(solvableGrid,)
-    && matchesClues({
+      && matchesClues({
       grid: solvableGrid,
       clues: SOLVABLE_CLUES,
     },),
     // Check 2: box-conflict unsolvable rejected
-    unsolvableBoxSection.toUpperCase() === 'UNSOLVABLE',
+    unsolvableBoxSection.toUpperCase()
+      === 'UNSOLVABLE',
     // Check 3: column-conflict unsolvable rejected
-    unsolvableColSection.toUpperCase() === 'UNSOLVABLE',
+    unsolvableColSection.toUpperCase()
+      === 'UNSOLVABLE',
     // Check 4: multi-solution returns exactly 1 valid solution
     (multiGrid !== undefined)
     && isValidSolution(multiGrid,)
-    && matchesClues({
+      && matchesClues({
       grid: multiGrid,
       clues: MULTI_CLUES,
     },),
@@ -125,7 +130,8 @@ export function verifyNormal(stdout: string,): number {
 export function verifyAll(stdout: string,): number {
   /** Per-puzzle output sections split on the `---` separator */
   const sections = splitOutputSections(stdout,);
-  if (sections.length < ALL_CHECKS)
+  if (sections.length
+    < ALL_CHECKS)
     return PARTIAL_CREDIT;
 
   /** Destructured --all mode output sections: 2-solution, many-solution, unsolvable */
@@ -154,7 +160,8 @@ export function verifyAll(stdout: string,): number {
       minCount: MIN_MANY_SOLUTIONS,
     },),
     // Check 3: unsolvable still rejected under --all
-    unsolvableSection.toUpperCase() === 'UNSOLVABLE',
+    unsolvableSection.toUpperCase()
+      === 'UNSOLVABLE',
   ]
     .filter(Boolean,)
     .length;

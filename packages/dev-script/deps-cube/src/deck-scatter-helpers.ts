@@ -76,7 +76,8 @@ export function partitionProbes(
     probe,
     originalIndex,
   ) {
-    if (probe.unknownReason !== null) {
+    if (probe.unknownReason
+      !== null) {
       unknown.push({
         probe,
         originalIndex,
@@ -86,7 +87,8 @@ export function partitionProbes(
     if (probePosition({
       probe,
       state,
-    },) === null) {
+    },)
+      === null) {
       unknown.push({
         probe,
         originalIndex,
@@ -150,9 +152,13 @@ export function computeNameBakeSet(
     state: AppState;
   },
 ): ReadonlySet<number> {
-  if (state.displayToggles.nameLabels === 'none')
+  if (state.displayToggles
+    .nameLabels
+    === 'none')
     return new Set();
-  if (state.displayToggles.nameLabels === 'all') {
+  if (state.displayToggles
+    .nameLabels
+    === 'all') {
     return new Set(probes.map(function indexOf(
       _,
       i,
@@ -177,8 +183,12 @@ export function computeNameBakeSet(
       a,
       b,
     ) {
-      return (b.probe.daysSinceLastCommitOrNull ?? 0)
-        - (a.probe.daysSinceLastCommitOrNull ?? 0);
+      return (b.probe
+        .daysSinceLastCommitOrNull
+        ?? 0)
+        - (a.probe
+          .daysSinceLastCommitOrNull
+          ?? 0);
     },)
     .slice(
       0,

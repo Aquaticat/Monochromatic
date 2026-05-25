@@ -53,9 +53,12 @@ export function buildViewerData({
 
   for (const [runKey, probes,] of initialByRun) {
     /** Fix-pass artifacts for this run; defaults to empty so runs without a fix pass still process. */
-    const fixes = fixByRun.get(runKey,) ?? new Map<string, ParsedArtifact>();
+    const fixes = fixByRun.get(runKey,)
+      ?? new Map<string, ParsedArtifact>();
     /** Sample probe used to read run-level metadata (model, label, timestamp). */
-    const firstProbe = probes.values().next().value;
+    const firstProbe = probes.values()
+      .next()
+      .value;
     if (firstProbe === undefined)
       continue;
 
@@ -77,8 +80,10 @@ export function buildViewerData({
     for (const [probeName, artifact,] of probes) {
       /** Enriched metadata for the initial pass, or undefined if the artifact is raw. */
       const enriched = isEnriched(artifact.meta,) ? artifact.meta : undefined;
-      probeScores[probeName] = enriched?.score ?? 0;
-      if (enriched?.config !== undefined)
+      probeScores[probeName] = enriched?.score
+        ?? 0;
+      if (enriched?.config
+        !== undefined)
         ({ config, } = enriched);
 
       /** Matching fix-pass artifact for this probe, if a fix run produced one. */
@@ -87,7 +92,8 @@ export function buildViewerData({
       const fixEnriched = (fix !== undefined) && isEnriched(fix.meta,)
         ? fix.meta
         : undefined;
-      if (fixEnriched?.score !== undefined) {
+      if (fixEnriched?.score
+        !== undefined) {
         pass2Scores[probeName] = fixEnriched.score;
         hasPass2 = true;
       }
@@ -110,7 +116,8 @@ export function buildViewerData({
     /** Initial-pass scores collected from `probeScores`; averaged below for the run summary. */
     const scores = Object.values(probeScores,);
     /** Mean of `scores`; zero when no probes contributed, used as the run's headline score. */
-    const overallScore = scores.length > 0
+    const overallScore = scores.length
+      > 0
       ? scores.reduce(
         function addScore(
           sum,
@@ -119,7 +126,9 @@ export function buildViewerData({
           return sum + score;
         },
         0,
-      ) / scores.length
+      )
+        / scores
+        .length
       : 0;
 
     entries.push({
@@ -151,7 +160,8 @@ export function buildViewerData({
     a,
     b,
   ) {
-    return a.timestamp.localeCompare(b.timestamp,);
+    return a.timestamp
+      .localeCompare(b.timestamp,);
   },);
 
   console.error(

@@ -51,84 +51,84 @@ name.
 
 Walk the chain.
 
-1.  `ESTree` is the `types_d_exports` namespace, re-exported under an alias.
-    `node_modules/@oxlint/plugins/index.d.ts:4021`:
+1. `ESTree` is the `types_d_exports` namespace, re-exported under an alias.
+   `node_modules/@oxlint/plugins/index.d.ts:4021`:
 
-    ```typescript
-    export { /* ... */ type types_d_exports as ESTree, /* ... */ type Node, /* ... */ };
-    ```
+   ```typescript
+   export { /* ... */ type types_d_exports as ESTree, /* ... */ type Node, /* ... */ };
+   ```
 
-    Note `type Node` is also a top-level export, distinct from the namespace member.
+   Note `type Node` is also a top-level export, distinct from the namespace member.
 
-2.  Inside the namespace, `Node` is a renamed re-export of `Node$1`.
-    `index.d.ts:1135`:
+2. Inside the namespace, `Node` is a renamed re-export of `Node$1`.
+   `index.d.ts:1135`:
 
-    ```typescript
-    declare namespace types_d_exports {
-      export { /* ... */ Function$1 as Function, /* ... */ Node$1 as Node, /* ... */ PropertyKey$1 as PropertyKey, /* ... */ };
-    }
-    ```
+   ```typescript
+   declare namespace types_d_exports {
+     export { /* ... */ Function$1 as Function, /* ... */ Node$1 as Node, /* ... */ PropertyKey$1 as PropertyKey, /* ... */ };
+   }
+   ```
 
-    The package declares two AST shapes in one module: an oxc-style visitor AST (top-level
-    `interface Node extends Span {}` at `index.d.ts:2777`) and the estree-format AST. The
-    three estree names that collide with an oxc-style declaration are renamed with a `$1`
-    suffix: `type Node$1` (`index.d.ts:2428`), `interface Function$1 extends Span`
-    (`index.d.ts:1612`), `type PropertyKey$1` (`index.d.ts:1206`). So `ESTree.Node` is
-    `Node$1`, `ESTree.Function` is `Function$1`, `ESTree.PropertyKey` is `PropertyKey$1`.
-    Sibling names that do not collide (`Program`, `Statement`, `CallExpression`) keep their
-    plain name, which is why their allow-list entries already work.
+   The package declares two AST shapes in one module: an oxc-style visitor AST (top-level
+   `interface Node extends Span {}` at `index.d.ts:2777`) and the estree-format AST. The
+   three estree names that collide with an oxc-style declaration are renamed with a `$1`
+   suffix: `type Node$1` (`index.d.ts:2428`), `interface Function$1 extends Span`
+   (`index.d.ts:1612`), `type PropertyKey$1` (`index.d.ts:1206`). So `ESTree.Node` is
+   `Node$1`, `ESTree.Function` is `Function$1`, `ESTree.PropertyKey` is `PropertyKey$1`.
+   Sibling names that do not collide (`Program`, `Statement`, `CallExpression`) keep their
+   plain name, which is why their allow-list entries already work.
 
-3.  `Node$1` is a large union type alias. `index.d.ts:2428`:
+3. `Node$1` is a large union type alias. `index.d.ts:2428`:
 
-    ```typescript
-    type Node$1 = Program | IdentifierName | IdentifierReference | BindingIdentifier
-      /* ... ~200 members ... */ | ParamPattern;
-    ```
+   ```typescript
+   type Node$1 = Program | IdentifierName | IdentifierReference | BindingIdentifier
+     /* ... ~200 members ... */ | ParamPattern;
+   ```
 
-4.  tsgolint matches an `allow` specifier by the type's alias or symbol name.
-    `internal/utils/type_matches_specifier.go:146`:
+4. tsgolint matches an `allow` specifier by the type's alias or symbol name.
+   `internal/utils/type_matches_specifier.go:146`:
 
-    ```go
-    func typeMatchesStringSpecifier(t *checker.Type, names []string) bool {
-        alias := checker.Type_alias(t)
-        var symbol *ast.Symbol
-        if alias == nil {
-            symbol = checker.Type_symbol(t)
-        } else {
-            symbol = alias.Symbol()
-        }
-        if symbol != nil && slices.Contains(names, symbol.Name) {
-            return true
-        }
-        // ...
-        return false
-    }
-    ```
+   ```go
+   func typeMatchesStringSpecifier(t *checker.Type, names []string) bool {
+       alias := checker.Type_alias(t)
+       var symbol *ast.Symbol
+       if alias == nil {
+           symbol = checker.Type_symbol(t)
+       } else {
+           symbol = alias.Symbol()
+       }
+       if symbol != nil && slices.Contains(names, symbol.Name) {
+           return true
+       }
+       // ...
+       return false
+   }
+   ```
 
-    For `ESTree.Node` the alias symbol name is `Node$1`, not `Node`, so
-    `slices.Contains(["Node", ...], "Node$1")` is false. The package/source check that
-    follows never runs, because the name gate already failed.
+   For `ESTree.Node` the alias symbol name is `Node$1`, not `Node`, so
+   `slices.Contains(["Node", ...], "Node$1")` is false. The package/source check that
+   follows never runs, because the name gate already failed.
 
-5.  Because the whole-type match failed and `Node$1` is a union, the rule recurses into each
-    union member. `internal/rules/prefer_readonly_parameter_types/prefer_readonly_parameter_types.go:211`:
+5. Because the whole-type match failed and `Node$1` is a union, the rule recurses into each
+   union member. `internal/rules/prefer_readonly_parameter_types/prefer_readonly_parameter_types.go:211`:
 
-    ```go
-    if utils.TypeMatchesSomeSpecifier(t, opts.allow, program) {
-        return readonlynessReadonly
-    }
-    if utils.IsUnionType(t) {
-        for _, subType := range t.Types() {
-            // ...
-            if isTypeReadonlyRecurser(program, typeChecker, subType, opts, seenTypes) != readonlynessReadonly {
-                return readonlynessMutable
-            }
-        }
-        return readonlynessReadonly
-    }
-    ```
+   ```go
+   if utils.TypeMatchesSomeSpecifier(t, opts.allow, program) {
+       return readonlynessReadonly
+   }
+   if utils.IsUnionType(t) {
+       for _, subType := range t.Types() {
+           // ...
+           if isTypeReadonlyRecurser(program, typeChecker, subType, opts, seenTypes) != readonlynessReadonly {
+               return readonlynessMutable
+           }
+       }
+       return readonlynessReadonly
+   }
+   ```
 
-    Members such as `IdentifierName` are mutable interfaces and are not in the allow-list, so
-    the first such member returns `readonlynessMutable` and the parameter is reported.
+   Members such as `IdentifierName` are mutable interfaces and are not in the allow-list, so
+   the first such member returns `readonlynessMutable` and the parameter is reported.
 
 An earlier reading of this bug blamed the empty interface `interface Node extends Span {}`
 (`index.d.ts:2777`) and guessed the type collapsed to its `Span` base. That was wrong: the
@@ -323,43 +323,43 @@ future session can re-evaluate if upstream signal changes.
 
 ### Why we do not file this upstream
 
-1.  Is it really upstream's fault? Not cleanly. Two candidate upstreams. `@oxlint/plugins`
-    emits the ESTree AST types twice and the bundler suffixes the colliding namespace copies
-    with `$1`; that is valid, normal `.d.ts` bundler output, not a defect. tsgolint matches
-    `allow` by the resolved symbol/alias name (`Node$1`), which is identical to
-    typescript-eslint's own matcher. typescript-eslint
-    `packages/type-utils/src/typeOrValueSpecifiers/specifierNameMatches.ts:11` (read at the
-    repo HEAD on 2026-05-23):
+1. Is it really upstream's fault? Not cleanly. Two candidate upstreams. `@oxlint/plugins`
+   emits the ESTree AST types twice and the bundler suffixes the colliding namespace copies
+   with `$1`; that is valid, normal `.d.ts` bundler output, not a defect. tsgolint matches
+   `allow` by the resolved symbol/alias name (`Node$1`), which is identical to
+   typescript-eslint's own matcher. typescript-eslint
+   `packages/type-utils/src/typeOrValueSpecifiers/specifierNameMatches.ts:11` (read at the
+   repo HEAD on 2026-05-23):
 
-    ```typescript
-    const symbol = type.aliasSymbol ?? type.getSymbol();
-    const candidateNames = symbol
-      ? [symbol.escapedName as string, type.intrinsicName]
-      : [type.intrinsicName];
-    ```
+   ```typescript
+   const symbol = type.aliasSymbol ?? type.getSymbol();
+   const candidateNames = symbol
+     ? [symbol.escapedName as string, type.intrinsicName]
+     : [type.intrinsicName];
+   ```
 
-    `symbol.escapedName` for `ESTree.Node` is `Node$1`, so the JavaScript typescript-eslint
-    rule would reject `name: ["Node"]` exactly as tsgolint does. Neither side is doing
-    something wrong; the failure is an interaction between dts bundling and the shared
-    symbol-name matching design.
-2.  Can upstream fix it? Only with disproportionate change. `@oxlint/plugins` would have to
-    restructure its type emission to avoid the duplicate namespace/top-level copies.
-    tsgolint would have to match on the name as referenced at the use site rather than the
-    declaration symbol name, a semantics change touching every `allow` user across all rules.
-3.  Are they supporting this use case? No documentation, example, or test on either side
-    covers allow-listing a `$1`-renamed re-exported namespace member. The `allow` option is
-    documented for ordinary named types.
-4.  Will they likely fix it? Unlikely. tsgolint's matcher mirrors typescript-eslint by
-    design; changing it risks the broader `allow` contract. No commits in the matcher path
-    (`type_matches_specifier.go` at `78f9a83`) suggest movement toward import-site matching.
-5.  Have we prototyped a minimal upstream fix? Not applicable. The correct fix is
-    consumer-side (the allow-list entry above), which fully resolves the user-facing problem
-    without an upstream change. Constraints 1 and 4 do not hold, so the auto-prototype path
-    is not triggered.
+   `symbol.escapedName` for `ESTree.Node` is `Node$1`, so the JavaScript typescript-eslint
+   rule would reject `name: ["Node"]` exactly as tsgolint does. Neither side is doing
+   something wrong; the failure is an interaction between dts bundling and the shared
+   symbol-name matching design.
+2. Can upstream fix it? Only with disproportionate change. `@oxlint/plugins` would have to
+   restructure its type emission to avoid the duplicate namespace/top-level copies.
+   tsgolint would have to match on the name as referenced at the use site rather than the
+   declaration symbol name, a semantics change touching every `allow` user across all rules.
+3. Are they supporting this use case? No documentation, example, or test on either side
+   covers allow-listing a `$1`-renamed re-exported namespace member. The `allow` option is
+   documented for ordinary named types.
+4. Will they likely fix it? Unlikely. tsgolint's matcher mirrors typescript-eslint by
+   design; changing it risks the broader `allow` contract. No commits in the matcher path
+   (`type_matches_specifier.go` at `78f9a83`) suggest movement toward import-site matching.
+5. Have we prototyped a minimal upstream fix? Not applicable. The correct fix is
+   consumer-side (the allow-list entry above), which fully resolves the user-facing problem
+   without an upstream change. Constraints 1 and 4 do not hold, so the auto-prototype path
+   is not triggered.
 
 Kept draft, in case upstream signal changes:
 
-~~~md
+```md
 Title: `prefer-readonly-parameter-types` `allow` cannot target re-exported namespace
 types whose bundled symbol carries a `$1` suffix
 
@@ -384,4 +384,4 @@ tsgolint and typescript-eslint match `symbol.escapedName` by design, so this wou
 `internal/utils/type_matches_specifier.go` (`typeMatchesStringSpecifier`,
 `typeMatchesSpecifier`); typescript-eslint
 `packages/type-utils/src/typeOrValueSpecifiers/specifierNameMatches.ts`.
-~~~
+```

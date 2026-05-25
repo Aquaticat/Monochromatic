@@ -59,14 +59,16 @@ export function expandAbbreviations({
     );
   }
 
-  if (minStemLength > stem.length) {
+  if (minStemLength > stem
+    .length) {
     throw new Error(
       `expandAbbreviations: minStemLength ${minStemLength} exceeds stem length ${stem.length}.`,
     );
   }
 
   /** Number of aliases generated; equals the stem-length range. */
-  const aliasCount = (stem.length - minStemLength) + 1;
+  const aliasCount = (stem.length
+    - minStemLength) + 1;
   /** Aliases generated in descending stem length, full spelling first. */
   const aliases = Array.from(
     { length: aliasCount, },
@@ -77,7 +79,8 @@ export function expandAbbreviations({
       return `${LONG_OPTION_PREFIX}${
         stem.slice(
           0,
-          stem.length - i,
+          stem.length
+            - i,
         )
       }`;
     },

@@ -78,7 +78,8 @@ export async function findPackageRoot(
     /** Cast to expose the optional `name` field for the discriminant compare below. */
     const parsed = JSON.parse(contents,) as { name?: string; };
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-    if (parsed.name === name)
+    if (parsed.name
+      === name)
       return dir;
   }
   catch {

@@ -50,7 +50,8 @@ export async function insertPullRequest(row: {
       row.baseRef,
       row.headRef,
       row.headSha,
-      row.mergeable ?? 'unknown',
+      row.mergeable
+        ?? 'unknown',
     ],
   },);
 }
@@ -144,7 +145,8 @@ export async function createPullRequestWithEvent(row: {
         row.number,
         row.authorId,
         row.title,
-        row.body ?? '',
+        row.body
+          ?? '',
         row.createdAt,
         row.createdAt,
       ],
@@ -213,7 +215,8 @@ export async function pushPullRequestHead(row: {
        WHERE issue_id = ?`,
       params: [
         row.headSha,
-        row.mergeable ?? 'unknown',
+        row.mergeable
+          ?? 'unknown',
         row.issueId,
       ],
     },);

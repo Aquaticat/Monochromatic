@@ -199,7 +199,8 @@ export const execCmd: SubcommandParser = command(
       return {
         cmd: 'exec',
         name: v.name,
-        command: v.args.join(' ',),
+        command: v.args
+          .join(' ',),
       };
     },
   ),
@@ -222,7 +223,8 @@ export const runCmd: SubcommandParser = command(
     ): MvmArgs {
       return {
         cmd: 'run',
-        command: v.args.join(' ',),
+        command: v.args
+          .join(' ',),
         from: v.from,
       };
     },

@@ -125,7 +125,7 @@ export type Cache = {
  */
 function defaultRootDir(): string {
   /** XDG override; empty or unset falls through to the `$HOME/.cache` default. */
-  const xdg = process.env['XDG_CACHE_HOME'];
+  const xdg = process.env.XDG_CACHE_HOME;
   /** Resolved cache home; honours XDG when present, falls back to the conventional location. */
   const cacheHome = ((xdg !== undefined) && (xdg !== '')) ? xdg : join(
     homedir(),
@@ -238,7 +238,9 @@ export function createCache(
     const entry = file[field];
     if (entry === undefined)
       return undefined;
-    if ((ttlMs !== null) && ((Date.now() - entry.fetchedAt) > ttlMs))
+    if ((ttlMs !== null) && ((Date.now()
+      - entry
+      .fetchedAt) > ttlMs))
       return undefined;
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- caller asserts T; cache file shape is opaque at this layer.
     return entry.value as T;

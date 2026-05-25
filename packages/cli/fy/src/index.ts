@@ -53,7 +53,8 @@ const args = runSync(
   parser,
   {
     programName: 'cli-fy',
-    args: process.argv.slice(2,),
+    args: process.argv
+      .slice(2,),
     help: 'option',
     aboveError: 'help',
     brief: message`cli-fy - call any ESM export from the command line`,
@@ -93,7 +94,8 @@ const exportValue: unknown = mod[args.exportName];
 
 if (exportValue === undefined) {
   /** Available export names for error message */
-  const available = Object.keys(mod,).join(', ',);
+  const available = Object.keys(mod,)
+    .join(', ',);
   throw new Error(
     `Export "${args.exportName}" not found in "${args.specifier}".\n`
       + `Available exports: ${available}`,
@@ -102,10 +104,12 @@ if (exportValue === undefined) {
 
 if ((typeof exportValue) === 'function') {
   /** Coerced arguments for the function call */
-  const coercedArgs = args.callArgs.map(function coerceCallArg(arg,) {
+  const coercedArgs = args.callArgs
+    .map(function coerceCallArg(arg,) {
     return coerceArg({ arg, },);
   },);
-  rl.info(`calling ${args.exportName}(${coercedArgs.map(String,).join(', ',)})`,);
+  rl.info(`calling ${args.exportName}(${coercedArgs.map(String,)
+    .join(', ',)})`,);
 
   /** Return value from calling the exported function */
   // oxlint-disable-next-line typescript/no-unsafe-assignment -- dynamic module call with unknown signature
@@ -115,10 +119,13 @@ if ((typeof exportValue) === 'function') {
   console.log(result,);
 }
 else {
-  if (args.callArgs.length > 0) {
+  if (args.callArgs
+    .length
+    > 0) {
     throw new Error(
       `Export "${args.exportName}" from "${args.specifier}" is not a function (got ${typeof exportValue}), `
-        + `but ${String(args.callArgs.length,)} argument(s) were provided.`,
+        + `but ${String(args.callArgs
+          .length,)} argument(s) were provided.`,
     );
   }
   console.log(exportValue,);

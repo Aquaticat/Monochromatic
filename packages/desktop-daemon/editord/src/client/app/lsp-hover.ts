@@ -97,7 +97,9 @@ export function wireHover(
       const me = hoverState.latestMouseEvent;
       if (me === null)
         return;
-      if (completionPopup.visible || referencesPopup.visible)
+      if (completionPopup.visible
+        || referencesPopup
+        .visible)
         return;
       /** Skip when no file is open; LSP needs a target. */
       const path = getCurrentFilePath();
@@ -110,7 +112,11 @@ export function wireHover(
       },);
       if (pos === null)
         return;
-      if ((pos.line === hoverState.lastLine) && (pos.character === hoverState.lastChar))
+      if ((pos.line
+        === hoverState
+        .lastLine) && (pos.character
+        === hoverState
+        .lastChar))
         return;
       hoverState.lastLine = pos.line;
       hoverState.lastChar = pos.character;
@@ -145,7 +151,8 @@ export function wireHover(
         resetHover();
         return;
       }
-      if ((event.relatedTarget instanceof Node) && hoverPopup.contains(event.relatedTarget,))
+      if ((event.relatedTarget instanceof Node) && hoverPopup
+        .contains(event.relatedTarget,))
         return;
       resetHover();
     },

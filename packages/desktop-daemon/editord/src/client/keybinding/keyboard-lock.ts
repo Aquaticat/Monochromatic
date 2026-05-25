@@ -60,12 +60,14 @@ const LOCKED_KEY_CODES = [
 export async function lockKeyboard(): Promise<void> {
   /** Navigator augmented with the Keyboard Lock API; missing in lib.dom.d.ts so cast locally. */
   const nav = navigator as NavigatorWithKeyboard;
-  if (nav.keyboard === undefined) {
+  if (nav.keyboard
+    === undefined) {
     lockLog.info('Keyboard Lock API not available',);
     return;
   }
   try {
-    await nav.keyboard.lock(LOCKED_KEY_CODES,);
+    await nav.keyboard
+      .lock(LOCKED_KEY_CODES,);
     lockLog.info(`keyboard locked for: ${LOCKED_KEY_CODES.join(', ',)}`,);
   }
   catch (error) {
@@ -87,7 +89,8 @@ export async function lockKeyboard(): Promise<void> {
  */
 export async function enterFullscreenAndLock(): Promise<void> {
   try {
-    await document.documentElement.requestFullscreen();
+    await document.documentElement
+      .requestFullscreen();
     lockLog.info('entered fullscreen',);
     await lockKeyboard();
   }

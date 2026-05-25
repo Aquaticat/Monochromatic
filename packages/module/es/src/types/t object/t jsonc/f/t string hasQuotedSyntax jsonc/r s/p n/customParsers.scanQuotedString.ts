@@ -23,7 +23,8 @@ function findTerminatingQuote({
   // Mutable scan counter held on an object so the function root stays const-only.
   /** Backslash run length carried across iterations to decide quote escaping by parity. */
   const scanState = { consecutiveBackslashes: 0, };
-  for (let charIndex = fromIndex; charIndex < input.length; charIndex++) {
+  for (let charIndex = fromIndex; charIndex < input
+    .length; charIndex++) {
     /** Current input character under inspection in the scan loop. */
     const ch = input[charIndex];
     if (ch === '\\') {
@@ -31,7 +32,8 @@ function findTerminatingQuote({
       continue;
     }
     if (ch === '"') {
-      if ((scanState.consecutiveBackslashes % 2) === 0)
+      if ((scanState.consecutiveBackslashes
+        % 2) === 0)
         return charIndex; // unescaped terminator
 
       // escaped quote; reset and continue

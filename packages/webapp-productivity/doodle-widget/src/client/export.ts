@@ -162,18 +162,22 @@ export async function renderSvgOverlayToContext(
   const scale = imageScale ?? 1;
 
   /** Export-space dimensions of the SVG overlay */
-  const exportWidth = info.width * es;
+  const exportWidth = info.width
+    * es;
   /**
    * Companion to {@link exportWidth} on the y axis.
    */
-  const exportHeight = info.height * es;
+  const exportHeight = info.height
+    * es;
 
   /** Set explicit dimensions so the Image decodes at the correct size */
-  info.clone.setAttribute(
+  info.clone
+    .setAttribute(
     'width',
     String(exportWidth * scale,),
   );
-  info.clone.setAttribute(
+  info.clone
+    .setAttribute(
     'height',
     String(exportHeight * scale,),
   );
@@ -187,8 +191,10 @@ export async function renderSvgOverlayToContext(
   await img.decode();
   ctx.drawImage(
     img,
-    info.offsetX * es,
-    info.offsetY * es,
+    info.offsetX
+      * es,
+    info.offsetY
+      * es,
     exportWidth,
     exportHeight,
   );

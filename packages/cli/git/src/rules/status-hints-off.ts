@@ -53,7 +53,8 @@ export function hasExplicitStatusHintsOverride(args: readonly string[],): boolea
     subcommandIndex,
   );
 
-  return parseStatusPreRegion(preSubcommandArgs,).hasStatusHintsOverride;
+  return parseStatusPreRegion(preSubcommandArgs,)
+    .hasStatusHintsOverride;
 }
 
 /**
@@ -90,7 +91,8 @@ export function statusHintsOff(args: readonly string[],): readonly string[] {
   /** Position of the `status` (or other) subcommand within args. */
   const { subcommandIndex, } = parseGlobalOptions(args,);
 
-  if (args[subcommandIndex] !== 'status')
+  if (args[subcommandIndex]
+    !== 'status')
     return args;
 
   /** Tagged logger for the status-hints-off rule. */

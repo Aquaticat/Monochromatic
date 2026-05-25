@@ -97,7 +97,8 @@ export async function classifyEvent(
       // Floor mtimeMs because stat() returns sub-ms precision (float)
       // while Date.now() returns whole ms (integer), causing false positives
       // when both timestamps fall within the same millisecond.
-      if (Math.floor(fileStat.mtimeMs,) > ourWriteTime)
+      if (Math.floor(fileStat.mtimeMs,)
+        > ourWriteTime)
         return 'protected';
     }
     catch {
@@ -111,7 +112,8 @@ export async function classifyEvent(
   /** Resolved config path for comparison */
   const resolvedConfig = resolve(configPath,);
 
-  if (reads.has(absolutePath,) || (absolutePath === resolvedConfig))
+  if (reads.has(absolutePath,)
+    || (absolutePath === resolvedConfig))
     return 'source';
 
   return 'ignore';

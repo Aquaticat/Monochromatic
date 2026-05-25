@@ -52,7 +52,8 @@ export function extractAtDigits(line: string,): string {
     // linear pass with no recursion and no per-char accumulator rebuild.
     /** Cursor advanced over each ASCII digit; marks one-past the end of the run. */
     let end = start;
-    while (end < line.length) {
+    while (end < line
+      .length) {
       /** Char at the cursor; the run stops at the first non-digit. */
       const c = line.charAt(end,);
       if ((c < '0') || (c > '9'))
@@ -102,7 +103,10 @@ export const taskScheduler: Probe = createCodeGenProbe({
     .join('\n',),
   verify: function verifyTaskScheduler(result,): { correctness: number; } {
     /** Trimmed output lines split off stdout so each can be matched against expected prefixes. */
-    const lines = result.stdout.trim().split('\n',).map(function trimLine(line,): string {
+    const lines = result.stdout
+      .trim()
+      .split('\n',)
+      .map(function trimLine(line,): string {
       return line.trim();
     },);
 
@@ -153,16 +157,20 @@ export const taskScheduler: Probe = createCodeGenProbe({
     /** Elapsed ms reported for task C; undefined when the line was missing or malformed. */
     const timeC = extractTime('C',);
 
-    if ((timeA === undefined) || (timeB === undefined) || (timeC === undefined))
+    if ((timeA === undefined) || (timeB === undefined)
+      || (timeC === undefined))
       return { correctness: 0.2, };
 
     /**
      * Number of timing and ordering invariants the candidate output satisfies, out of {@link TOTAL_CHECKS}.
      */
     const correctCount = [
-      Math.abs(timeA - EXPECTED_AB_TIME,) < TIMING_TOLERANCE,
-      Math.abs(timeB - EXPECTED_AB_TIME,) < TIMING_TOLERANCE,
-      Math.abs(timeC - EXPECTED_C_TIME,) < TIMING_TOLERANCE,
+      Math.abs(timeA - EXPECTED_AB_TIME,)
+        < TIMING_TOLERANCE,
+      Math.abs(timeB - EXPECTED_AB_TIME,)
+        < TIMING_TOLERANCE,
+      Math.abs(timeC - EXPECTED_C_TIME,)
+        < TIMING_TOLERANCE,
       (timeC > timeA) && (timeC > timeB),
     ]
       .filter(Boolean,)

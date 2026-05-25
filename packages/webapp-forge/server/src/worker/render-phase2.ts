@@ -174,7 +174,8 @@ async function renderReviewThreadByKey(issueId: string,): Promise<RenderResult> 
       const reviewer = await getUser(review.reviewer_id,);
       return [
         review.reviewer_id,
-        reviewer?.login ?? 'unknown',
+        reviewer?.login
+          ?? 'unknown',
       ] as const;
     },),
   );
@@ -188,7 +189,8 @@ async function renderReviewThreadByKey(issueId: string,): Promise<RenderResult> 
     reviews: reviews.map(function eachReview(review,) {
       return {
         id: review.id,
-        reviewerLogin: reviewerLogins.get(review.reviewer_id,) ?? 'unknown',
+        reviewerLogin: reviewerLogins.get(review.reviewer_id,)
+          ?? 'unknown',
         state: review.state,
         body: review.body,
         createdAt: new Date(review.created_at,).toISOString(),
@@ -260,7 +262,8 @@ async function renderCommentByKey(commentId: string,): Promise<RenderResult> {
   /** Rendered HTML for the standalone-comment fragment. */
   const { html, } = renderComment({
     id: comment.id,
-    authorLogin: author?.login ?? 'unknown',
+    authorLogin: author?.login
+      ?? 'unknown',
     body: comment.body,
     createdAt: new Date(comment.created_at,).toISOString(),
   },);
@@ -301,16 +304,20 @@ function countReviewStates(
       counts: ReviewCounts,
       review: { readonly state: string; },
     ): ReviewCounts {
-      if (review.state === 'approved') {
+      if (review.state
+        === 'approved') {
         return {
-          approved: counts.approved + 1,
+          approved: counts.approved
+            + 1,
           changesRequested: counts.changesRequested,
         };
       }
-      if (review.state === 'changes_requested') {
+      if (review.state
+        === 'changes_requested') {
         return {
           approved: counts.approved,
-          changesRequested: counts.changesRequested + 1,
+          changesRequested: counts.changesRequested
+            + 1,
         };
       }
       return counts;
@@ -371,7 +378,8 @@ async function loadPrContext(issueId: string,): Promise<PrContext> {
     prNumber: issue.number,
     title: issue.title,
     body: issue.body,
-    authorLogin: author?.login ?? 'unknown',
+    authorLogin: author?.login
+      ?? 'unknown',
     createdAt: new Date(issue.created_at,).toISOString(),
     state: issue.state,
     baseRef: pr.base_ref,

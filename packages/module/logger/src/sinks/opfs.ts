@@ -39,9 +39,11 @@ export async function verifyOpfs(): Promise<boolean> {
 
   try {
     /** Origin Private File System directory handle that hosts every monochromatic log file. */
-    const opfsRoot = await navigator.storage.getDirectory();
+    const opfsRoot = await navigator.storage
+      .getDirectory();
     /** ISO timestamp with colons replaced by dashes so it can be embedded in a cross-platform file name. */
-    const timestamp = new Date().toISOString().replaceAll(
+    const timestamp = new Date().toISOString()
+      .replaceAll(
       ':',
       '-',
     );
@@ -85,7 +87,8 @@ async function write(record: LogRecord,): Promise<void> {
     return;
 
   try {
-    await state.writable.write(`${JSON.stringify(record,)}\n`,);
+    await state.writable
+      .write(`${JSON.stringify(record,)}\n`,);
   }
   catch {
     // Silently fail

@@ -49,17 +49,20 @@ export const issueDetailHandler: EventHandlerWithFetch = defineHandler(
   async function handleIssueDetail(event,) {
     /** Owner login segment of the route path. */
     const owner = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'owner',
     },);
     /** Repo name segment of the route path. */
     const repoName = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'repo',
     },);
     /** Raw issue number from the URL; parsed below. */
     const numberRaw = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'number',
     },);
     /** Parsed issue number; non-finite or non-positive triggers a 400. */
@@ -123,20 +126,26 @@ export const filterListHandler: EventHandlerWithFetch = defineHandler(
   async function handleFilterList(event,) {
     /** Owner login segment of the route path. */
     const owner = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'owner',
     },);
     /** Repo name segment of the route path. */
     const repoName = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'repo',
     },);
     /** Request URL parsed once so query params are reachable below. */
-    const url = new URL(event.req.url,);
+    const url = new URL(event.req
+      .url,);
     /** `?label=...` query param; null means "any label". */
-    const labelParam = url.searchParams.get('label',);
+    const labelParam = url.searchParams
+      .get('label',);
     /** `?state=...` query param; defaults to `'open'`. */
-    const stateParam = url.searchParams.get('state',) ?? 'open';
+    const stateParam = url.searchParams
+      .get('state',)
+      ?? 'open';
     /** Validated state facet; null triggers a 400. */
     const stateFacet = parseStateFacet(stateParam,);
     if (stateFacet === null) {
@@ -186,10 +195,12 @@ export const rawFragmentHandler: EventHandlerWithFetch = defineHandler(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleRawFragment(event,) {
     /** Request URL parsed once so pathname is reachable below. */
-    const url = new URL(event.req.url,);
+    const url = new URL(event.req
+      .url,);
     /* oxlint-disable no-restricted-syntax/no-regex -- Anchored literal-prefix strip on a bounded request pathname; one-shot match, no quantifier means linear time. */
     /** Path under `/_fragments/`, treated as a literal storage key. */
-    const path = url.pathname.replace(
+    const path = url.pathname
+      .replace(
       /^\/_fragments\//u,
       '',
     );

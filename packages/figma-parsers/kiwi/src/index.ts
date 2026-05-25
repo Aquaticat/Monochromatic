@@ -112,12 +112,18 @@ class BinaryReader {
 
   /** Whether the reader has consumed all bytes. */
   get eof(): boolean {
-    return this.pos >= this.data.length;
+    return this.pos
+      >= this
+      .data
+      .length;
   }
 
   /** Number of remaining bytes. */
   get remaining(): number {
-    return this.data.length - this.pos;
+    return this.data
+      .length
+      - this
+      .pos;
   }
 
   /**
@@ -131,7 +137,10 @@ class BinaryReader {
     let result = 0;
     /** Bit offset for the next chunk; grows by 7 per byte until the MSB clears. */
     let shift = 0;
-    while (this.pos < this.data.length) {
+    while (this.pos
+      < this
+      .data
+      .length) {
       /** Current LEB128 byte; low 7 bits are payload, high bit signals continuation. */
       const byte = this.data[this.pos]!;
       this.pos += 1;
@@ -181,16 +190,21 @@ class BinaryReader {
     /** Low-order byte of the 4-byte float payload. */
     const b0 = this.data[this.pos]!;
     /** Second byte of the 4-byte float payload. */
-    const b1 = this.data[this.pos + 1]!;
+    const b1 = this.data[this.pos
+      + 1]!;
     /** Third byte of the 4-byte float payload. */
-    const b2 = this.data[this.pos + 2]!;
+    const b2 = this.data[this.pos
+      + 2]!;
     /** High-order byte of the 4-byte float payload. */
-    const b3 = this.data[this.pos + 3]!;
+    const b3 = this.data[this.pos
+      + 3]!;
     this.pos += 4;
 
     // Rotate bits: move exponent from first byte back to correct position
     /** Little-endian uint32 reassembly of the 4 payload bytes before bit rotation. */
-    const rawBits = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+    const rawBits = b0 | (b1 << 8)
+      | (b2 << 16)
+      | (b3 << 24);
     /** Rotation result restoring the IEEE 754 float32 layout that Kiwi pre-rotates on encode. */
     const bits = ((rawBits << 23) | (rawBits >>> 9)) >>> 0;
 
@@ -217,10 +231,14 @@ class BinaryReader {
   readString(): string {
     /** Scan cursor seeking the next 0x00 terminator; left pointing AT the null when the loop exits. */
     let end = this.pos;
-    while ((end < this.data.length) && (this.data[end] !== 0))
+    while ((end < this
+      .data
+      .length) && (this.data[end]
+      !== 0))
       end += 1;
     /** UTF-8 decode of the bytes between the original cursor and the terminator. */
-    const s = new TextDecoder('utf-8',).decode(this.data.subarray(
+    const s = new TextDecoder('utf-8',).decode(this.data
+      .subarray(
       this.pos,
       end,
     ),);
@@ -237,8 +255,12 @@ class BinaryReader {
   readUint32LE(): number {
     /** View aliased over the current 4-byte window so getUint32 can pull a little-endian value. */
     const view = new DataView(
-      this.data.buffer,
-      this.data.byteOffset + this.pos,
+      this.data
+        .buffer,
+      this.data
+        .byteOffset
+        + this
+        .pos,
       4,
     );
     this.pos += 4;
@@ -251,7 +273,8 @@ class BinaryReader {
   /** Read a fixed number of raw bytes. */
   readBytes(count: number,): Uint8Array {
     /** Subarray view onto the next `count` bytes; shares the parent buffer to avoid a copy. */
-    const result = this.data.subarray(
+    const result = this.data
+      .subarray(
       this.pos,
       this.pos + count,
     );
@@ -283,12 +306,16 @@ function resolveTypeName(
   if (typeCode < 0) {
     /** Primitive table index; Kiwi stores negative codes as `~index` so the bit-flip recovers it. */
     const primIdx = ~typeCode;
-    return primIdx < KIWI_PRIMITIVES.length
+    return primIdx < KIWI_PRIMITIVES
+      .length
       ? KIWI_PRIMITIVES[primIdx]!
       : `prim[${primIdx}]`;
   }
-  if (typeCode < schema.definitions.length)
-    return schema.definitions[typeCode]!.name;
+  if (typeCode < schema
+    .definitions
+    .length)
+    return schema.definitions[typeCode]!
+      .name;
   return `ref[${typeCode}]`;
 }
 
@@ -388,7 +415,8 @@ function parseKiwiSchema(data: Uint8Array,): KiwiSchema {
         /** Zigzag-decoded field type code; negative selects a primitive, otherwise a definition index. */
         const fieldType = reader.readVarInt();
         /** Whether this field is repeated; bit 0 of the byte after the type code carries the flag. */
-        const isArray = (reader.readByte() & 1) === 1;
+        const isArray = (reader.readByte()
+          & 1) === 1;
         /** Tag value for the field (used as the wire tag for message fields). */
         const value = reader.readVarUint();
         fields.push({
@@ -467,7 +495,8 @@ function decodeValue(
     const primIdx = ~typeCode;
     switch (primIdx) {
       case 0: // bool
-        return reader.readByte() !== 0;
+        return reader.readByte()
+          !== 0;
       case 1: // byte
         return reader.readByte();
       case 2: // int (zigzag varint)
@@ -488,20 +517,25 @@ function decodeValue(
   }
 
   // Schema definition reference
-  if (typeCode >= schema.definitions.length)
+  if (typeCode >= schema
+    .definitions
+    .length)
     return null;
   /** Schema definition referenced by `typeCode`; dispatched on its kind below. */
   const def = schema.definitions[typeCode]!;
 
-  if (def.kind === 'ENUM') {
+  if (def.kind
+    === 'ENUM') {
     /** Numeric enum value read from the wire; matched against `def.fields` to recover the name. */
     const value = reader.readVarUint();
     /** Matching enum field; absent indicates a value the schema does not name, so we fall back to a stringified form. */
-    const enumField = def.fields.find(f => f.value === value);
+    const enumField = def.fields
+      .find(f => f.value === value);
     return enumField ? `${def.name}.${enumField.name}` : `${def.name}(${value})`;
   }
 
-  if (def.kind === 'STRUCT') {
+  if (def.kind
+    === 'STRUCT') {
     return decodeStruct(
       reader,
       schema,
@@ -673,13 +707,15 @@ function decodeDocument(
   documentData: Uint8Array,
   schema: KiwiSchema,
 ): Record<string, unknown> | null {
-  if (documentData.length === 0)
+  if (documentData.length
+    === 0)
     return null;
 
   /** Cursor over the document bytes consumed by `decodeMessage`. */
   const reader = new BinaryReader(documentData,);
   /** Top-level Message definition; required to decode the document root. */
-  const messageDef = schema.structByName.get('Message',);
+  const messageDef = schema.structByName
+    .get('Message',);
   if (!messageDef)
     throw new Error('Message definition not found in schema',);
 
@@ -771,7 +807,8 @@ function parseCanvasHeader(
   fileType: FigmaFileType;
   reserved: Uint8Array;
 } {
-  if (data.length < CANVAS_HEADER_SIZE) {
+  if (data.length
+    < CANVAS_HEADER_SIZE) {
     throw new Error(
       `canvas.fig header too short: ${data.length} bytes (need ${CANVAS_HEADER_SIZE})`,
     );
@@ -780,7 +817,8 @@ function parseCanvasHeader(
   // Find null terminator within first 10 bytes
   /** Cursor seeking the 0x00 terminator inside the 10-byte magic window. */
   let magicLen = 0;
-  while ((magicLen < 10) && (data[magicLen] !== 0))
+  while ((magicLen < 10) && (data[magicLen]
+    !== 0))
     magicLen++;
   /** ASCII-decoded magic string used to discriminate fig/deck/jam payloads. */
   const magic = new TextDecoder('ascii',).decode(data.subarray(
@@ -792,9 +830,11 @@ function parseCanvasHeader(
     throw new Error(`Unknown canvas.fig magic: "${magic}"`,);
 
   /** File-type discriminant derived from the validated magic string. */
-  const fileType: FigmaFileType = magic === CANVAS_FIG_MAGIC.fig
+  const fileType: FigmaFileType = magic === CANVAS_FIG_MAGIC
+    .fig
     ? 'fig'
-    : (magic === CANVAS_FIG_MAGIC.deck
+    : (magic === CANVAS_FIG_MAGIC
+      .deck
       ? 'deck'
       : 'jam');
 
@@ -844,12 +884,13 @@ async function parseCanvasFig(canvasData: Uint8Array,): Promise<{
   ],);
   /** Byte offset where the zstd frame begins; -1 indicates no zstd payload was found. */
   let zstdOffset = -1;
-  for (let i = CANVAS_HEADER_SIZE; i < (canvasData.length - 4); i++) {
+  for (let i = CANVAS_HEADER_SIZE; i < (canvasData.length
+    - 4); i++) {
     if (
       (canvasData[i] === zstdMagic[0])
       && (canvasData[i + 1] === zstdMagic[1])
-      && (canvasData[i + 2] === zstdMagic[2])
-      && (canvasData[i + 3] === zstdMagic[3])
+        && (canvasData[i + 2] === zstdMagic[2])
+        && (canvasData[i + 3] === zstdMagic[3])
     ) {
       zstdOffset = i;
       break;
@@ -895,7 +936,8 @@ async function parseCanvasFig(canvasData: Uint8Array,): Promise<{
       inflater.on(
         'error',
         (err: Error,) => {
-          if (err.message.includes('unexpected end',))
+          if (err.message
+            .includes('unexpected end',))
             resolve();
           else
             reject(err,);
@@ -917,7 +959,8 @@ async function parseCanvasFig(canvasData: Uint8Array,): Promise<{
     const zstdSize = new DataView(
       canvasData.buffer,
       canvasData
-        .byteOffset + sizePrefixOffset,
+        .byteOffset
+        + sizePrefixOffset,
       4,
     )
       .getUint32(
@@ -1033,27 +1076,51 @@ function parseMetaJson(jsonBytes: Uint8Array,): FigmaMeta {
   /** Decoded JSON tree from meta.json; field shapes follow Figma's snake_case export schema. */
   const json = JSON.parse(new TextDecoder('utf-8',).decode(jsonBytes,),);
   /** Convenience alias for the nested `client_meta` block; defaults to `{}` so destructuring is safe. */
-  const cm = json.client_meta ?? {};
+  const cm = json.client_meta
+    ?? {};
   return {
     backgroundColor: {
-      r: cm.background_color?.r ?? 1,
-      g: cm.background_color?.g ?? 1,
-      b: cm.background_color?.b ?? 1,
-      a: cm.background_color?.a ?? 1,
+      r: cm.background_color
+        ?.r
+        ?? 1,
+      g: cm.background_color
+        ?.g
+        ?? 1,
+      b: cm.background_color
+        ?.b
+        ?? 1,
+      a: cm.background_color
+        ?.a
+        ?? 1,
     },
     thumbnailSize: {
-      width: cm.thumbnail_size?.width ?? 0,
-      height: cm.thumbnail_size?.height ?? 0,
+      width: cm.thumbnail_size
+        ?.width
+        ?? 0,
+      height: cm.thumbnail_size
+        ?.height
+        ?? 0,
     },
     renderCoordinates: {
-      x: cm.render_coordinates?.x ?? 0,
-      y: cm.render_coordinates?.y ?? 0,
-      width: cm.render_coordinates?.width ?? 0,
-      height: cm.render_coordinates?.height ?? 0,
+      x: cm.render_coordinates
+        ?.x
+        ?? 0,
+      y: cm.render_coordinates
+        ?.y
+        ?? 0,
+      width: cm.render_coordinates
+        ?.width
+        ?? 0,
+      height: cm.render_coordinates
+        ?.height
+        ?? 0,
     },
-    fileName: json.file_name ?? '',
-    exportedAt: json.exported_at ?? '',
-    developerRelatedLinks: json.developer_related_links ?? [],
+    fileName: json.file_name
+      ?? '',
+    exportedAt: json.exported_at
+      ?? '',
+    developerRelatedLinks: json.developer_related_links
+      ?? [],
   };
 }
 
@@ -1084,11 +1151,13 @@ async function extractZipEntries(buffer: Uint8Array,): Promise<Map<string, Uint8
   // Find end of central directory record
   /** EOCD record offset located by scanning backwards for its 4-byte signature. */
   let eocdOffset = -1;
-  for (let i = buffer.length - 22; i >= 0; i--) {
+  for (let i = buffer.length
+    - 22; i >= 0; i--) {
     if (view.getUint32(
       i,
       true,
-    ) === 0x06_05_4B_50) {
+    )
+      === 0x06_05_4B_50) {
       eocdOffset = i;
       break;
     }
@@ -1159,7 +1228,8 @@ async function extractZipEntries(buffer: Uint8Array,): Promise<Map<string, Uint8
     const fileName = new TextDecoder('ascii',).decode(
       buffer.subarray(
         offset + 46,
-        offset + 46 + fileNameLength,
+        offset + 46
+          + fileNameLength,
       ),
     );
 
@@ -1183,7 +1253,9 @@ async function extractZipEntries(buffer: Uint8Array,): Promise<Map<string, Uint8
       true,
     );
     /** Absolute offset where the entry's compressed bytes begin. */
-    const dataOffset = localHeaderOffset + 30 + localFileNameLen + localExtraLen;
+    const dataOffset = localHeaderOffset + 30
+      + localFileNameLen
+      + localExtraLen;
     /** Slice of compressed bytes handed to either passthrough or inflate. */
     const compressedData = buffer.subarray(
       dataOffset,
@@ -1205,7 +1277,8 @@ async function extractZipEntries(buffer: Uint8Array,): Promise<Map<string, Uint8
       );
     }
 
-    if (content.length !== uncompressedSize) {
+    if (content.length
+      !== uncompressedSize) {
       throw new Error(
         `Size mismatch for "${fileName}": expected ${uncompressedSize}, got ${content.length}`,
       );
@@ -1215,7 +1288,9 @@ async function extractZipEntries(buffer: Uint8Array,): Promise<Map<string, Uint8
       fileName,
       content,
     );
-    offset += 46 + fileNameLength + extraLength + commentLength;
+    offset += 46 + fileNameLength
+      + extraLength
+      + commentLength;
   }
 
   return entries;
@@ -1266,7 +1341,8 @@ async function parseFigmaFile(
     throw new Error('Missing meta.json in Figma export file',);
 
   /** Thumbnail PNG bytes; missing thumbnails default to an empty buffer rather than an error. */
-  const thumbnail = zipEntries.get('thumbnail.png',) ?? new Uint8Array(0,);
+  const thumbnail = zipEntries.get('thumbnail.png',)
+    ?? new Uint8Array(0,);
 
   /** Image map keyed by SHA-1 filename with the `images/` prefix stripped. */
   const images = new Map<string, Uint8Array>();

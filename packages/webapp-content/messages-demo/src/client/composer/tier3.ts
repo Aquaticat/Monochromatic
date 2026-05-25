@@ -39,7 +39,9 @@ export function setupTier3Nav(
     messageId: number | null;
   },
 ): void {
-  input.form.classList.add('tier-3',);
+  input.form
+    .classList
+    .add('tier-3',);
   /** Chunk-nav container inserted above the textarea so the prev/next/save buttons stay visible. */
   const nav = document.createElement('div',);
   nav.className = 'composer-chunk-nav';
@@ -49,7 +51,8 @@ export function setupTier3Nav(
     <button type="button" data-tier3-next>next »</button>
     <button type="button" data-tier3-save>save chunk</button>
   `;
-  input.form.insertBefore(
+  input.form
+    .insertBefore(
     nav,
     input.textarea,
   );
@@ -58,7 +61,8 @@ export function setupTier3Nav(
     state: input.state,
   },);
 
-  nav.querySelector<HTMLButtonElement>('[data-tier3-prev]',)?.addEventListener(
+  nav.querySelector<HTMLButtonElement>('[data-tier3-prev]',)
+    ?.addEventListener(
     'click',
     function onPrev() {
       void navigateTier3({
@@ -68,7 +72,8 @@ export function setupTier3Nav(
       },);
     },
   );
-  nav.querySelector<HTMLButtonElement>('[data-tier3-next]',)?.addEventListener(
+  nav.querySelector<HTMLButtonElement>('[data-tier3-next]',)
+    ?.addEventListener(
     'click',
     function onNext() {
       void navigateTier3({
@@ -78,7 +83,8 @@ export function setupTier3Nav(
       },);
     },
   );
-  nav.querySelector<HTMLButtonElement>('[data-tier3-save]',)?.addEventListener(
+  nav.querySelector<HTMLButtonElement>('[data-tier3-save]',)
+    ?.addEventListener(
     'click',
     function onSave() {
       void saveCurrentTier3Chunk({
@@ -106,21 +112,27 @@ export function updateTier3Nav(
     state: ComposerState;
   },
 ): void {
-  if (input.state.tier3 === null)
+  if (input.state
+    .tier3
+    === null)
     return;
   /** Destructured early so the button-state branches read the values directly. */
   const {
     currentSeq,
     chunkCount,
-  } = input.state.tier3;
+  } = input.state
+    .tier3;
   /** Position label element; updated on every nav refresh. */
-  const position = input.nav.querySelector<HTMLElement>('[data-tier3-position]',);
+  const position = input.nav
+    .querySelector<HTMLElement>('[data-tier3-position]',);
   if (position !== null)
     position.textContent = `chunk ${String(currentSeq + 1,)} of ${String(chunkCount,)}`;
   /** Prev button; disabled at chunk 0. */
-  const prev = input.nav.querySelector<HTMLButtonElement>('[data-tier3-prev]',);
+  const prev = input.nav
+    .querySelector<HTMLButtonElement>('[data-tier3-prev]',);
   /** Next button; disabled at the last chunk. */
-  const next = input.nav.querySelector<HTMLButtonElement>('[data-tier3-next]',);
+  const next = input.nav
+    .querySelector<HTMLButtonElement>('[data-tier3-next]',);
   if (prev !== null)
     prev.disabled = currentSeq === 0;
   if (next !== null)
@@ -149,16 +161,21 @@ export async function loadChunkIntoEditor(
   },
 ): Promise<void> {
   /** New-mode chunk cache; non-null bypasses the network fetch below. */
-  const local = input.state.tier3?.localChunks;
+  const local = input.state
+    .tier3
+    ?.localChunks;
   if ((local !== null) && (local !== undefined)) {
     writeBody({
       state: input.state,
       textarea: input.textarea,
-      text: local[input.seq]?.md ?? '',
+      text: local[input.seq]
+        ?.md
+        ?? '',
     },);
     return;
   }
-  if (input.messageId === null)
+  if (input.messageId
+    === null)
     throw new Error('cannot load chunk: no message id and no local chunks',);
   /** Per-chunk markdown fetch; throws on `!ok` so the textarea is not stomped with empty text. */
   const response = await fetch(
@@ -196,7 +213,9 @@ export async function navigateTier3(
     messageId: number | null;
   },
 ): Promise<void> {
-  if (input.state.tier3 === null)
+  if (input.state
+    .tier3
+    === null)
     return;
   await saveCurrentTier3Chunk({
     state: input.state,
@@ -207,11 +226,20 @@ export async function navigateTier3(
   const next = Math.max(
     0,
     Math.min(
-      input.state.tier3.chunkCount - 1,
-      input.state.tier3.currentSeq + input.delta,
+      input.state
+        .tier3
+        .chunkCount
+        - 1,
+      input.state
+        .tier3
+        .currentSeq
+        + input
+        .delta,
     ),
   );
-  input.state.tier3.currentSeq = next;
+  input.state
+    .tier3
+    .currentSeq = next;
   await loadChunkIntoEditor({
     state: input.state,
     messageId: input.messageId,
@@ -225,7 +253,9 @@ export async function navigateTier3(
   setStatus({
     status: input.status,
     message: `editing chunk ${String(next + 1,)} of ${
-      String(input.state.tier3.chunkCount,)
+      String(input.state
+        .tier3
+        .chunkCount,)
     }`,
   },);
 }
@@ -248,29 +278,45 @@ export async function saveCurrentTier3Chunk(
     status: HTMLElement;
   },
 ): Promise<void> {
-  if (input.state.tier3 === null)
+  if (input.state
+    .tier3
+    === null)
     return;
   /** Current chunk markdown; read once so the compile, char-count, and PUT use the same snapshot. */
-  const md = input.textarea.value;
+  const md = input.textarea
+    .value;
   /** Inline compile result; only the rendered HTML is forwarded to the chunk PUT. */
   const { html, } = compileInline(md,);
   /** Character count forwarded to both the in-memory cache update and the chunk PUT. */
   const charCount = md.length;
   /** Current seq from the tier-3 state; the chunk PUT lands here. */
-  const seq = input.state.tier3.currentSeq;
+  const seq = input.state
+    .tier3
+    .currentSeq;
   /** Draft id used in the PUT URL; tier-3 reuses the new draft for every chunk save. */
-  const draftId = input.state.tier3.newDraftId;
+  const draftId = input.state
+    .tier3
+    .newDraftId;
   // Mirror the edit into localChunks (new-mode tier 3) so prev/next
   // navigation reflects the latest text without a server round-trip.
-  if (input.state.tier3.localChunks !== null) {
-    input.state.tier3.localChunks[seq] = {
+  if (input.state
+    .tier3
+    .localChunks
+    !== null) {
+    input.state
+      .tier3
+      .localChunks[seq] = {
       md,
       html,
       charCount,
     };
   }
-  await (input.state.outbox !== null
-    ? input.state.outbox.enqueue({
+  await (input.state
+    .outbox
+    !== null
+    ? input.state
+      .outbox
+      .enqueue({
       draftId,
       seq,
       md,

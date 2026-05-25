@@ -38,7 +38,8 @@ function nounPlural(
     readonly count: number;
   },
 ): string {
-  if (entry.plural === undefined)
+  if (entry.plural
+    === undefined)
     return `${entry.surface}s`;
   if ((typeof entry.plural) === 'string')
     return entry.plural;
@@ -111,8 +112,10 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
    * @returns possessive surface
    */
   function renderPossessor(p: Possessor<S>,): string {
-    if (p.kind === 'possessor.subject')
-      return subjects[p.subject].possessive;
+    if (p.kind
+      === 'possessor.subject')
+      return subjects[p.subject]
+        .possessive;
     return `de ${p.text}`;
   }
 
@@ -124,9 +127,12 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
    * @returns rendered surface
    */
   function renderNounPhrase(phrase: NounPhrase<S, N>,): string {
-    if (phrase.kind === 'noun.bare')
-      return nouns[phrase.noun].surface;
-    if (phrase.kind === 'noun.counted') {
+    if (phrase.kind
+      === 'noun.bare')
+      return nouns[phrase.noun]
+        .surface;
+    if (phrase.kind
+      === 'noun.counted') {
       /** Resolved noun entry validated before numeric rendering. */
       const entry = nouns[phrase.noun];
       assertCountableNoun({
@@ -134,7 +140,8 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
         noun: phrase.noun,
       },);
       /** Plural surface when count is not 1, singular otherwise. */
-      const surface = phrase.count === 1
+      const surface = phrase.count
+        === 1
         ? entry.surface
         : nounPlural({
           entry,
@@ -142,7 +149,8 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
         },);
       return `${String(phrase.count,)} ${surface}`;
     }
-    if (phrase.kind === 'noun.definite') {
+    if (phrase.kind
+      === 'noun.definite') {
       /** Resolved noun entry. */
       const entry = nouns[phrase.noun];
       return `${
@@ -153,7 +161,8 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
         },)
       } ${entry.surface}`;
     }
-    if (phrase.kind === 'noun.indefinite') {
+    if (phrase.kind
+      === 'noun.indefinite') {
       /** Resolved noun entry. */
       const entry = nouns[phrase.noun];
       return `${
@@ -164,8 +173,10 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
         },)
       } ${entry.surface}`;
     }
-    if (phrase.kind === 'noun.possessed')
-      return `${nouns[phrase.noun].surface} ${renderPossessor(phrase.possessor,)}`;
+    if (phrase.kind
+      === 'noun.possessed')
+      return `${nouns[phrase.noun]
+        .surface} ${renderPossessor(phrase.possessor,)}`;
     return phrase.text;
   }
 

@@ -55,11 +55,16 @@ export const noMultiAsterisks: CreateOnceRule = {
             /** Leading-whitespace-stripped line; needed to detect a `**` that should be a single `*`. */
             const trimmed = line.trimStart();
             // After the leading *, check for immediate additional *
-            if ((trimmed.startsWith('**',)) && (!trimmed.startsWith('*/',))) {
+            if ((trimmed.startsWith('**',))
+              && (!trimmed.startsWith('*/',))) {
               context.report({
                 loc: {
                   start: {
-                    line: comment.loc.start.line + index + 1,
+                    line: comment.loc
+                      .start
+                      .line
+                      + index
+                      + 1,
                     column: 0,
                   },
                 },

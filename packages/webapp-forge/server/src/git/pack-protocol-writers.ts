@@ -80,15 +80,19 @@ export function multiplexSideband(row: {
   const out: Uint8Array[] = [];
   /** Read position advancing through `row.payload`. */
   let cursor = 0;
-  while (cursor < row.payload.byteLength) {
+  while (cursor < row
+    .payload
+    .byteLength) {
     /** Next chunk of payload bytes for one sideband frame. */
-    const slice = row.payload.subarray(
+    const slice = row.payload
+      .subarray(
       cursor,
       cursor + max,
     );
     cursor += slice.byteLength;
     /** Frame buffer with the channel marker prepended to the slice. */
-    const wrapped = new Uint8Array(slice.byteLength + 1,);
+    const wrapped = new Uint8Array(slice.byteLength
+      + 1,);
     wrapped[0] = row.channel;
     wrapped.set(
       slice,
@@ -131,7 +135,10 @@ export function writeUploadPackResponse(row: {
   /** Response chunks; starts with the mandatory NAK acknowledging no common bases. */
   const chunks: Uint8Array[] = [encodePkt('NAK\n',),];
   if (row.useSideBand) {
-    if ((row.progress !== undefined) && (row.progress.length > 0)) {
+    if ((row.progress
+      !== undefined) && (row.progress
+      .length
+      > 0)) {
       /** Fresh encoder reused only for the progress payload. */
       const encoder = new TextEncoder();
       chunks.push(...multiplexSideband({
@@ -203,16 +210,19 @@ export function writeReceivePackResponse(row: {
   const report: Uint8Array[] = [
     row.unpackOk
       ? encodePkt('unpack ok\n',)
-      : encodePkt(`unpack ${row.unpackError ?? 'failed'}\n`,),
+      : encodePkt(`unpack ${row.unpackError
+        ?? 'failed'}\n`,),
   ];
   for (const result of row.refResults) {
     if (result.ok)
       report.push(encodePkt(`ok ${result.refName}\n`,),);
     else
-      report.push(encodePkt(`ng ${result.refName} ${result.error ?? 'failed'}\n`,),);
+      report.push(encodePkt(`ng ${result.refName} ${result.error
+        ?? 'failed'}\n`,),);
   }
   report.push(flushPkt(),);
-  if (row.useSideBand !== true)
+  if (row.useSideBand
+    !== true)
     return report;
   /** Running sum of report chunk lengths to size the flattened buffer. */
   const total = report.reduce(
@@ -220,7 +230,8 @@ export function writeReceivePackResponse(row: {
       sum: number,
       chunk: Uint8Array,
     ): number {
-      return sum + chunk.byteLength;
+      return sum + chunk
+        .byteLength;
     },
     0,
   );
@@ -235,7 +246,8 @@ export function writeReceivePackResponse(row: {
         chunk,
         cursor,
       );
-      return cursor + chunk.byteLength;
+      return cursor + chunk
+        .byteLength;
     },
     0,
   );
@@ -243,7 +255,8 @@ export function writeReceivePackResponse(row: {
     ...multiplexSideband({
       payload: flat,
       channel: SIDEBAND_CHANNEL_PACK,
-      useSideBand64k: row.useSideBand64k === true,
+      useSideBand64k: row.useSideBand64k
+        === true,
     },),
     flushPkt(),
   ];

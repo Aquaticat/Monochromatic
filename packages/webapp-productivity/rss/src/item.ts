@@ -63,7 +63,9 @@ export function getSortedItems(feeds: FeedWOutline[],): ItemWDate[] {
           },),
           v.date(),
         ),
-        item.item.pubDate ?? new Date(0,),
+        item.item
+          .pubDate
+          ?? new Date(0,),
       ),
     };
   },);
@@ -72,7 +74,11 @@ export function getSortedItems(feeds: FeedWOutline[],): ItemWDate[] {
     itemA,
     itemB,
   ) {
-    return itemB.pubDateDate.getTime() - itemA.pubDateDate.getTime();
+    return itemB.pubDateDate
+      .getTime()
+      - itemA
+      .pubDateDate
+      .getTime();
   },);
   innerL.debug(`${String(result.length,)} sorted items`,);
   return result;
@@ -97,7 +103,8 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
       feed,
       outline,
     }: FeedWOutline,): Item[] {
-      if (outline.type === 'atom') {
+      if (outline.type
+        === 'atom') {
         /* oxlint-disable typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type */
         /** Narrowed Atom feed so the entries split below reads typed fields. */
         const atomFeed = feed as Atom.Feed<string>;
@@ -107,8 +114,10 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
           entries,
           ...feedWithoutEntries
         } = atomFeed;
-        if ((entries === undefined) || (entries.length === 0)) {
-          innerL.warn(`atom feed ${outline.text ?? 'unnamed'} has no entries`,);
+        if ((entries === undefined) || (entries.length
+          === 0)) {
+          innerL.warn(`atom feed ${outline.text
+            ?? 'unnamed'} has no entries`,);
           return [];
         }
         return entries.map(function wrapEntry(entry,) {
@@ -129,8 +138,10 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
         items,
         ...feedWithoutItems
       } = rssFeed;
-      if ((items === undefined) || (items.length === 0)) {
-        innerL.warn(`rss feed ${outline.text ?? 'unnamed'} has no items`,);
+      if ((items === undefined) || (items.length
+        === 0)) {
+        innerL.warn(`rss feed ${outline.text
+          ?? 'unnamed'} has no items`,);
         return [];
       }
       return items.map(function wrapItem(rssItem,) {
@@ -156,7 +167,9 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
  * @returns Normalized item in RSS-compatible format
  */
 function getNormalizedItem(item: Item,): NormalizedItem {
-  if (item.outline.type !== 'atom') {
+  if (item.outline
+    .type
+    !== 'atom') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom items already match NormalizedItem shape
     return item as NormalizedItem;
   }
@@ -180,22 +193,29 @@ function getNormalizedItem(item: Item,): NormalizedItem {
   /** Source atom entry held as the read base for the RSS-shaped output. */
   const atomEntry = atomItem.item;
   /** First link if present so the output `link` field stays a single value, not an array. */
-  const link = atomEntry.links?.at(0,);
+  const link = atomEntry.links
+    ?.at(0,);
   /** Output item object built up incrementally to preserve only defined fields. */
   const newItem: Record<string, string | Atom.Link<string> | Atom.Category[]> = {};
-  if (atomEntry.title !== undefined)
+  if (atomEntry.title
+    !== undefined)
     newItem.title = atomEntry.title;
   if (link !== undefined)
     newItem.link = link;
-  if (atomEntry.content !== undefined)
+  if (atomEntry.content
+    !== undefined)
     newItem.description = atomEntry.content;
-  if (atomEntry.categories !== undefined)
+  if (atomEntry.categories
+    !== undefined)
     newItem.categories = atomEntry.categories;
   /** Preferred timestamp falling back to `published` so feeds without `updated` still sort. */
-  const pubDate = atomEntry.updated ?? atomEntry.published;
+  const pubDate = atomEntry.updated
+    ?? atomEntry
+    .published;
   if (pubDate !== undefined)
     newItem.pubDate = pubDate;
-  if (atomEntry.id !== undefined)
+  if (atomEntry.id
+    !== undefined)
     newItem.guid = atomEntry.id;
 
   return {

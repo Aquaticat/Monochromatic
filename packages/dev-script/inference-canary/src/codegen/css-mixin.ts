@@ -38,7 +38,8 @@ const regexViolationCache = new Map<string, boolean>();
  * ```
  */
 export function detectsRegexUsage(source: string,): boolean {
-  return hasRegexConstructorCall(source,) || hasSingleCharRegexLiteral(source,);
+  return hasRegexConstructorCall(source,)
+    || hasSingleCharRegexLiteral(source,);
 }
 
 /**
@@ -69,16 +70,17 @@ function skipInlineWhitespace({
   return (function advance(): number {
     /** Cursor advanced over each whitespace char; the first non-whitespace index is returned. */
     let pos = from;
-    while (pos < s.length) {
+    while (pos < s
+      .length) {
       /** Char at the cursor; only the six ASCII whitespace chars advance the scan. */
       const c = s.charAt(pos,);
       if (
         (c !== ' ')
         && (c !== '\t')
-        && (c !== '\n')
-        && (c !== '\r')
-        && (c !== '\f')
-        && (c !== '\v')
+          && (c !== '\n')
+          && (c !== '\r')
+          && (c !== '\f')
+          && (c !== '\v')
       ) {
         return pos;
       }
@@ -111,9 +113,11 @@ function hasRegexConstructorCall(source: string,): boolean {
       /** First non-whitespace index after the token; its char must be `(` to count as a call. */
       const afterWs = skipInlineWhitespace({
         s: source,
-        from: idx + TOKEN.length,
+        from: idx + TOKEN
+          .length,
       },);
-      if (source.charAt(afterWs,) === '(')
+      if (source.charAt(afterWs,)
+        === '(')
         return true;
       idx = source.indexOf(
         TOKEN,
@@ -148,16 +152,20 @@ function hasSingleCharRegexLiteral(source: string,): boolean {
     );
     while (open !== (-1)) {
       /** Body length: `2` for `\X`, `1` for a plain char. */
-      const bodyLen = source.charAt(open + 1,) === '\\' ? 2 : 1;
+      const bodyLen = source.charAt(open + 1,)
+        === '\\' ? 2 : 1;
       /** Index of the closing-slash slot, just past the body. */
-      const bodyEnd = open + 1 + bodyLen;
-      if (bodyEnd >= source.length)
+      const bodyEnd = open + 1
+        + bodyLen;
+      if (bodyEnd >= source
+        .length)
         return false;
       /** Body char (or escape lead) checked against the `[^/\n]` constraint. */
       const body = source.charAt(open + 1,);
       /** Whether a one-char body is itself `/` or newline, which the shape forbids. */
       const bodyIsForbidden = (bodyLen === 1) && ((body === '/') || (body === '\n'));
-      if ((!bodyIsForbidden) && (source.charAt(bodyEnd,) === '/'))
+      if ((!bodyIsForbidden) && (source.charAt(bodyEnd,)
+        === '/'))
         return true;
       open = source.indexOf(
         '/',
@@ -209,7 +217,8 @@ export const cssMixinTranspiler: Probe = createCodeGenProbe({
     base,
     context,
   ): string | undefined {
-    if (regexViolationCache.get(context.label,) !== true)
+    if (regexViolationCache.get(context.label,)
+      !== true)
       return base;
     // Prepend constraint violation to existing fix prompt, or create a standalone prompt
     return base !== undefined ? `${REGEX_CONSTRAINT_MSG}\n${base}` : REGEX_CONSTRAINT_MSG;

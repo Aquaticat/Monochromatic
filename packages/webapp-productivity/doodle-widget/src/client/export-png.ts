@@ -55,8 +55,10 @@ export async function exportAsPng(deps: ExportDeps,): Promise<void> {
     ctx.fillStyle = entry.color;
     ctx.fillText(
       entry.value,
-      entry.xFraction * cw,
-      entry.yFraction * ch,
+      entry.xFraction
+        * cw,
+      entry.yFraction
+        * ch,
     );
   }
   //endregion Layer 4

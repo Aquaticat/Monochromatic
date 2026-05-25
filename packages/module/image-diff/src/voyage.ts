@@ -56,7 +56,8 @@ async function voyageEmbed({
   /**
    * Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
    */
-  const model = (config.model as VoyageModel | undefined) ?? DEFAULT_VOYAGE_MODEL;
+  const model = (config.model as VoyageModel | undefined)
+    ?? DEFAULT_VOYAGE_MODEL;
   /** Voyage-shaped content payload converted from the caller's image input. */
   const contentItem = await toVoyageContentItem(input,);
 
@@ -81,9 +82,12 @@ async function voyageEmbed({
   return {
     embedding: firstData.embedding,
     usage: {
-      textTokens: response.usage.text_tokens,
-      imagePixels: response.usage.image_pixels,
-      totalTokens: response.usage.total_tokens,
+      textTokens: response.usage
+        .text_tokens,
+      imagePixels: response.usage
+        .image_pixels,
+      totalTokens: response.usage
+        .total_tokens,
     },
   };
 }
@@ -126,7 +130,8 @@ async function voyageEmbedBatch({
   /**
    * Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
    */
-  const model = (config.model as VoyageModel | undefined) ?? DEFAULT_VOYAGE_MODEL;
+  const model = (config.model as VoyageModel | undefined)
+    ?? DEFAULT_VOYAGE_MODEL;
 
   /** Voyage-shaped content payloads converted from each caller image, in input order. */
   const contentItems = await Promise.all(
@@ -156,7 +161,9 @@ async function voyageEmbedBatch({
     a,
     b,
   ) {
-    return a.index - b.index;
+    return a.index
+      - b
+      .index;
   },);
 
   return {
@@ -164,9 +171,12 @@ async function voyageEmbedBatch({
       return d.embedding;
     },),
     usage: {
-      textTokens: response.usage.text_tokens,
-      imagePixels: response.usage.image_pixels,
-      totalTokens: response.usage.total_tokens,
+      textTokens: response.usage
+        .text_tokens,
+      imagePixels: response.usage
+        .image_pixels,
+      totalTokens: response.usage
+        .total_tokens,
     },
   };
 }

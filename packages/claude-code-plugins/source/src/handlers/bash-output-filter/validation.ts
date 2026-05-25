@@ -38,11 +38,14 @@ const ALLOW_LEADING_PUNCT = '_/.~"\'-';
  * ```
  */
 function startsWithSafeChar(cmd: string,): boolean {
-  if (cmd.length === 0)
+  if (cmd.length
+    === 0)
     return false;
   /** Leading char to test against the allow-list set. */
   const c = cmd.charAt(0,);
-  return isAlphaNum(c,) || ALLOW_LEADING_PUNCT.includes(c,);
+  return isAlphaNum(c,)
+    || ALLOW_LEADING_PUNCT
+    .includes(c,);
 }
 
 /** Predicates a command must satisfy at least one of to be allowed through the filter. */
@@ -107,7 +110,8 @@ function hasBinaryTool(cmd: string,): boolean {
   return containsAnyOfWordBounded({
     haystack: cmd,
     phrases: BINARY_TOOL_NAMES,
-  },) !== undefined;
+  },)
+    !== undefined;
 }
 
 /**
@@ -141,13 +145,17 @@ function hasFileRedirect(cmd: string,): boolean {
   ) {
     /** Position of the candidate destination char, advanced past whitespace after `>`. */
     let afterWs = gtIdx + 1;
-    while ((afterWs < cmd.length) && isWhitespace(cmd.charAt(afterWs,),)) {
+    while ((afterWs < cmd
+      .length) && isWhitespace(cmd.charAt(afterWs,),)) {
       afterWs += 1;
     }
-    if (afterWs < cmd.length) {
+    if (afterWs < cmd
+      .length) {
       /** Char immediately following the optional whitespace; classified below. */
       const next = cmd.charAt(afterWs,);
-      if ((next !== '|') && (next !== '&') && (next !== ';') && (!isWhitespace(next,)))
+      if ((next !== '|') && (next !== '&')
+        && (next !== ';')
+        && (!isWhitespace(next,)))
         return true;
     }
   }
@@ -173,7 +181,8 @@ function invokesFilterScript(cmd: string,): boolean {
   return containsWordBoundedPhrase({
     haystack: cmd,
     phrase: 'filter.mjs',
-  },) || containsWordBoundedPhrase({
+  },)
+    || containsWordBoundedPhrase({
     haystack: cmd,
     phrase: 'filter.ts',
   },);
@@ -213,7 +222,8 @@ function hasBofMarker(cmd: string,): boolean {
  * ```
  */
 function endsWithBackgroundOp(cmd: string,): boolean {
-  return cmd.trimEnd().endsWith('&',);
+  return cmd.trimEnd()
+    .endsWith('&',);
 }
 
 /** Detachment wrapper utilities that take their child off the controlling terminal. */
@@ -238,7 +248,8 @@ function hasDetachWrapper(cmd: string,): boolean {
   return containsAnyOfWordBounded({
     haystack: cmd,
     phrases: DETACH_WRAPPER_NAMES,
-  },) !== undefined;
+  },)
+    !== undefined;
 }
 
 /** Container runtimes whose `exec`/`run` subcommands may attach a TTY. */
@@ -272,7 +283,8 @@ const CONTAINER_TTY_SUBCOMMANDS: ReadonlySet<string> = new Set([
 function isTtyFlag(token: string,): boolean {
   /** Minimum length: leading dash plus at least one body character. */
   const MIN_FLAG_LENGTH = 2;
-  if ((!token.startsWith('-',)) || (token.length < MIN_FLAG_LENGTH))
+  if ((!token.startsWith('-',)) || (token.length
+    < MIN_FLAG_LENGTH))
     return false;
   /** Body after the leading dash; all chars must be lowercase letters. */
   const body = token.slice(1,);
@@ -281,7 +293,8 @@ function isTtyFlag(token: string,): boolean {
       return false;
   }
   /** Final char of the body must be `i` or `t`. */
-  const last = body.at(-1,) ?? '';
+  const last = body.at(-1,)
+    ?? '';
   return (last === 'i') || (last === 't');
 }
 
@@ -307,12 +320,17 @@ function hasTtyContainerInvoke(cmd: string,): boolean {
   const tokens = splitWhitespace(cmd,);
   // Scan adjacent token pairs for `(runtime, subcommand)`; on a hit, look for a
   // later TTY flag among the remaining tokens.
-  for (let idx = 0; (idx + 1) < tokens.length; idx += 1) {
+  for (let idx = 0; (idx + 1) < tokens
+    .length; idx += 1) {
     /** Candidate container runtime token. */
-    const runtime = tokens[idx] ?? '';
+    const runtime = tokens[idx]
+      ?? '';
     /** Candidate subcommand token immediately following the runtime. */
-    const sub = tokens[idx + 1] ?? '';
-    if (CONTAINER_RUNTIMES.has(runtime,) && CONTAINER_TTY_SUBCOMMANDS.has(sub,)) {
+    const sub = tokens[idx + 1]
+      ?? '';
+    if (CONTAINER_RUNTIMES.has(runtime,)
+      && CONTAINER_TTY_SUBCOMMANDS
+      .has(sub,)) {
       for (const t of tokens.slice(idx + 2,)) {
         if (isTtyFlag(t,))
           return true;
@@ -340,8 +358,11 @@ function hasBunBuild(cmd: string,): boolean {
   /** Whitespace-separated tokens of the command. */
   const tokens = splitWhitespace(cmd,);
   // Scan adjacent token pairs for `bun` immediately followed by `build`.
-  for (let idx = 0; (idx + 1) < tokens.length; idx += 1) {
-    if ((tokens[idx] === 'bun') && (tokens[idx + 1] === 'build'))
+  for (let idx = 0; (idx + 1) < tokens
+    .length; idx += 1) {
+    if ((tokens[idx]
+      === 'bun') && (tokens[idx + 1]
+      === 'build'))
       return true;
   }
   return false;
@@ -408,7 +429,9 @@ function hasBacktickPair(cmd: string,): boolean {
  * ```
  */
 function hasProcessSubstitution(cmd: string,): boolean {
-  return cmd.includes('<(',) || cmd.includes('>(',);
+  return cmd.includes('<(',)
+    || cmd
+    .includes('>(',);
 }
 
 /**
@@ -446,14 +469,17 @@ function hasHeredoc(cmd: string,): boolean {
     const afterOpener = cmd.charAt(idx + OPENER_LENGTH,);
     /** Cursor past the optional variant marker. */
     const afterMarker = ((afterOpener === '<') || (afterOpener === '-'))
-      ? (idx + OPENER_LENGTH + 1)
+      ? (idx + OPENER_LENGTH
+        + 1)
       : (idx + OPENER_LENGTH);
     /** Position of the candidate body char, advanced past whitespace after the marker. */
     let afterWs = afterMarker;
-    while ((afterWs < cmd.length) && isWhitespace(cmd.charAt(afterWs,),)) {
+    while ((afterWs < cmd
+      .length) && isWhitespace(cmd.charAt(afterWs,),)) {
       afterWs += 1;
     }
-    if ((afterWs < cmd.length) && (!isWhitespace(cmd.charAt(afterWs,),)))
+    if ((afterWs < cmd
+      .length) && (!isWhitespace(cmd.charAt(afterWs,),)))
       return true;
   }
   return false;
@@ -487,7 +513,8 @@ function hasStateBuiltin(cmd: string,): boolean {
   return containsAnyOfWordBounded({
     haystack: cmd,
     phrases: STATE_BUILTIN_NAMES,
-  },) !== undefined;
+  },)
+    !== undefined;
 }
 
 /**
@@ -507,7 +534,8 @@ function isSourceShorthand(cmd: string,): boolean {
   /** Minimum length: dot plus whitespace. */
   const MIN_LENGTH = 2;
   return (cmd.length >= MIN_LENGTH)
-    && cmd.startsWith('.',)
+    && cmd
+    .startsWith('.',)
     && isWhitespace(cmd.charAt(1,),);
 }
 

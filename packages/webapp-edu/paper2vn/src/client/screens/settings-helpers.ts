@@ -454,7 +454,8 @@ export function anthropicWarningNodes(
     onAcknowledge: (value: boolean,) => void;
   },
 ): (Node | string)[] {
-  if (provider.id !== 'anthropic')
+  if (provider.id
+    !== 'anthropic')
     return [];
   /** Acknowledgement checkbox writing back to provider state on change. */
   const ackInput = checkbox({

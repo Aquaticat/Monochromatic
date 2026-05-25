@@ -97,7 +97,8 @@ async function walkCss(
   /** Cycle guard so a CSS file reached twice is not re-parsed. */
   const visited = new Set<string>();
 
-  while (queue.length > 0) {
+  while (queue.length
+    > 0) {
     /** Next stylesheet to process; the while-condition guarantees a value. */
     const cssPath = nonNullishOrThrow(queue.shift(),);
     if (visited.has(cssPath,))
@@ -121,7 +122,9 @@ async function walkCss(
         missing.push(ref,);
         continue;
       }
-      if ((extname(resolved,).toLowerCase() === '.css') && (!visited.has(resolved,)))
+      if ((extname(resolved,)
+        .toLowerCase()
+        === '.css') && (!visited.has(resolved,)))
         queue.push(resolved,);
       if (!seen.has(resolved,)) {
         seen.add(resolved,);
@@ -199,7 +202,9 @@ export async function weighPage(
       seen.add(resolved,);
       assets.push(resolved,);
     }
-    if (extname(resolved,).toLowerCase() === '.css') {
+    if (extname(resolved,)
+      .toLowerCase()
+      === '.css') {
       /**
        * Assets reachable through the CSS `@import` / `url()` graph rooted at this stylesheet.
        */
@@ -258,7 +263,8 @@ export async function weighPage(
 
   /** Page path stripped of the dist root prefix so the report stays readable. */
   const relativePage = htmlPath.startsWith(root,)
-    ? htmlPath.slice(root.length + 1,)
+    ? htmlPath.slice(root.length
+      + 1,)
     : htmlPath;
 
   return {

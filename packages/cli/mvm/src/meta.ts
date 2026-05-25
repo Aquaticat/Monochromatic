@@ -192,7 +192,8 @@ export async function readVmMeta(vmDir: string,): Promise<VmMeta> {
   /** Image record resolved from the legacy identifier; registry or custom. */
   const resolved = resolveImage(image,);
   /** Guest config used to fill the synthetic `VmMeta`; defaults for custom images. */
-  const guest = resolved.kind === 'registry'
+  const guest = resolved.kind
+    === 'registry'
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;
 

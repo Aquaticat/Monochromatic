@@ -241,7 +241,8 @@ async function collectIconCodepoints(
     codepoints.push(codepoint,);
   }
 
-  l.info(`icons in use: ${[...names,].toSorted().join(', ',)}`,);
+  l.info(`icons in use: ${[...names,].toSorted()
+    .join(', ',)}`,);
 
   return codepoints.join('',);
 }
@@ -303,7 +304,8 @@ async function subsetOne(
       return await readFile(inputPath,);
     }
     catch (error) {
-      if ((error instanceof Error) && ('code' in error) && (error.code === 'ENOENT')) {
+      if ((error instanceof Error) && ('code' in error)
+        && (error.code === 'ENOENT')) {
         throw new Error(
           `${inputPath} not found. Place the full upstream woff2 in ${SOURCE_FONTS_DIR}/ before running format:fonts.`,
           { cause: error, },

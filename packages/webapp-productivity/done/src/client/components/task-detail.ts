@@ -54,17 +54,24 @@ class TaskDetail extends HTMLElement {
   configure(data: TaskDetailData,): void {
     console.log(
       '[task-detail] configure() called, mode:',
-      data.mode ?? 'edit',
+      data.mode
+        ?? 'edit',
     );
     this.#data = data;
-    this.#mode = data.mode ?? 'edit';
+    this.#mode = data.mode
+      ?? 'edit';
     this.#metadata = {
-      tags: [...data.task.tags,],
-      locations: [...data.task.locations,],
-      priority: data.task.priority,
-      complexity: data.task.complexity,
+      tags: [...data.task
+        .tags,],
+      locations: [...data.task
+        .locations,],
+      priority: data.task
+        .priority,
+      complexity: data.task
+        .complexity,
     };
-    this.#autofill.reset();
+    this.#autofill
+      .reset();
     this.#render();
   }
 
@@ -85,11 +92,13 @@ class TaskDetail extends HTMLElement {
   /** Rebuilds pill elements in the `.pills` container from current metadata state. */
   #updatePillsDisplay(): void {
     /** Shadow-DOM lookup; null when the component has not rendered yet. */
-    const pillsContainer = this.#shadow.querySelector<HTMLElement>('.pills',);
+    const pillsContainer = this.#shadow
+      .querySelector<HTMLElement>('.pills',);
     if (pillsContainer === null)
       return;
     /** Current task snapshot; absent until the component has been hydrated. */
-    const task = this.#data?.task;
+    const task = this.#data
+      ?.task;
     if (task === undefined)
       return;
 
@@ -97,8 +106,10 @@ class TaskDetail extends HTMLElement {
     const pillElements = buildPillElements({
       task,
       metadata: this.#metadata,
-      autofillLoading: this.#autofill.loading,
-      autofilled: this.#autofill.autofilled,
+      autofillLoading: this.#autofill
+        .loading,
+      autofilled: this.#autofill
+        .autofilled,
     },);
     pillsContainer.replaceChildren(...pillElements,);
   }
@@ -112,7 +123,8 @@ class TaskDetail extends HTMLElement {
     /** Destructured task forwarded to the tree builder and downstream listeners. */
     const { task, } = data;
     /** Whether this render is for the create flow; affects header buttons. */
-    const isCreate = this.#mode === 'create';
+    const isCreate = this.#mode
+      === 'create';
 
     /** Element list plus refs to interactive nodes that need post-render wiring. */
     const {
@@ -123,19 +135,25 @@ class TaskDetail extends HTMLElement {
       isCreate,
       styles: TASK_DETAIL_STYLES,
     },);
-    this.#shadow.replaceChildren(...elements,);
+    this.#shadow
+      .replaceChildren(...elements,);
     this.#updatePillsDisplay();
 
     /** Pre-bound autofill trigger so the input listener keeps the manager's `this`. */
-    const requestAutofill = this.#autofill.request.bind(this.#autofill,);
+    const requestAutofill = this.#autofill
+      .request
+      .bind(this.#autofill,);
     /** Local alias so the input listener does not capture `this`. */
     const metadata = this.#metadata;
     /** Pre-bound pill refresher used as the autofill `onUpdate` callback. */
-    const updatePills = this.#updatePillsDisplay.bind(this,);
+    const updatePills = this.#updatePillsDisplay
+      .bind(this,);
     /** Pre-bound dispatcher so the click handler can bubble events. */
-    const dispatchFn = this.dispatchEvent.bind(this,);
+    const dispatchFn = this.dispatchEvent
+      .bind(this,);
 
-    refs.titleInput.addEventListener(
+    refs.titleInput
+      .addEventListener(
       'input',
       function handleTitleInput(): void {
         requestAutofill({
@@ -168,8 +186,10 @@ class TaskDetail extends HTMLElement {
               bubbles: true,
               detail: {
                 action,
-                title: refs.titleInput.value,
-                description: refs.descInput.value,
+                title: refs.titleInput
+                  .value,
+                description: refs.descInput
+                  .value,
               },
             },
           ),

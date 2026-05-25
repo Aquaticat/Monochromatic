@@ -37,7 +37,8 @@ export function onLoadRedirectingTo(delayTime: number = 5_000,): void {
   if (potentialRedirectingToElement) {
     setTimeout(
       function redirect() {
-        globalThis.location.replace(
+        globalThis.location
+          .replace(
           potentialRedirectingToElement.href,
         );
       },

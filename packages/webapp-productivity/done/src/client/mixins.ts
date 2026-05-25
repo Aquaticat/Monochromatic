@@ -24,7 +24,9 @@ const TOUCH_TARGET = 3;
 const DISABLED_OPACITY = 0.45;
 
 /** Focus outline width in rem (1/8). */
-const OUTLINE_WIDTH = 1 / 2 / 2 / 2;
+const OUTLINE_WIDTH = 1 / 2
+  / 2
+  / 2;
 
 //region Layout primitives
 

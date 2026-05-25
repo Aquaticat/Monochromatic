@@ -90,7 +90,8 @@ export function renderPage(
    * Escape `</` as `<\/` to prevent premature script tag closure.
    * `\/` is a valid JSON escape for `/`.
    */
-  const backgroundsJson = JSON.stringify(svgBackgrounds,).replaceAll(
+  const backgroundsJson = JSON.stringify(svgBackgrounds,)
+    .replaceAll(
     '</',
     String.raw`<\/`,
   );

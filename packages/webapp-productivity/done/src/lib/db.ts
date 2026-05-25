@@ -44,9 +44,11 @@ function resolveDatabasePath(): string {
   /** Highest-priority source: explicit `--db=` flag. */
   const argumentPath = getArgumentValue('db',);
   /** Mid-priority source: `DB_PATH` env var when no flag is given. */
-  const environmentPath = process.env.DB_PATH;
+  const environmentPath = process.env
+    .DB_PATH;
   /** Falls back to the default constant when neither source supplies a value. */
-  const rawPath = argumentPath ?? environmentPath ?? DEFAULT_DATABASE_PATH;
+  const rawPath = argumentPath ?? environmentPath
+    ?? DEFAULT_DATABASE_PATH;
   return normalizeDatabasePath(rawPath,);
 }
 

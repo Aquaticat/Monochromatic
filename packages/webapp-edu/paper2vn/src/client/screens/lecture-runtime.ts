@@ -56,7 +56,8 @@ export function currentBeat(): DialogueBeat | undefined {
   const live = getActiveSave();
   if (live === undefined)
     return undefined;
-  return live.chapters[live.chapterIndex]?.dialogue[live.beatIndex];
+  return live.chapters[live.chapterIndex]
+    ?.dialogue[live.beatIndex];
 }
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `chapterCard` is a live HTMLElement that this function mutates by replacing children and writing `hidden`; deep-readonly cannot describe the DOM-mount contract. */
@@ -143,14 +144,20 @@ export function advanceBeat(
     return;
   /** Current chapter resolved through the throwing helper. */
   const chapter = currentChapter();
-  if ((live.beatIndex + 1) < chapter.dialogue.length) {
-    patchActiveSave({ beatIndex: live.beatIndex + 1, },);
+  if ((live.beatIndex + 1) < chapter
+    .dialogue
+    .length) {
+    patchActiveSave({ beatIndex: live.beatIndex
+      + 1, },);
     onAdvanced();
     return;
   }
-  if ((live.chapterIndex + 1) < live.chapters.length) {
+  if ((live.chapterIndex + 1) < live
+    .chapters
+    .length) {
     patchActiveSave({
-      chapterIndex: live.chapterIndex + 1,
+      chapterIndex: live.chapterIndex
+        + 1,
       beatIndex: 0,
     },);
     onAdvanced();
@@ -182,19 +189,26 @@ export function regressBeat(
   const live = getActiveSave();
   if (live === undefined)
     return;
-  if (live.beatIndex > 0) {
-    patchActiveSave({ beatIndex: live.beatIndex - 1, },);
+  if (live.beatIndex
+    > 0) {
+    patchActiveSave({ beatIndex: live.beatIndex
+      - 1, },);
     onRegressed();
     return;
   }
-  if (live.chapterIndex > 0) {
+  if (live.chapterIndex
+    > 0) {
     /** Previous chapter entry whose final beat becomes the new index. */
-    const prev = live.chapters[live.chapterIndex - 1];
+    const prev = live.chapters[live.chapterIndex
+      - 1];
     if (prev === undefined)
       return;
     patchActiveSave({
-      chapterIndex: live.chapterIndex - 1,
-      beatIndex: prev.dialogue.length - 1,
+      chapterIndex: live.chapterIndex
+        - 1,
+      beatIndex: prev.dialogue
+        .length
+        - 1,
     },);
     onRegressed();
   }

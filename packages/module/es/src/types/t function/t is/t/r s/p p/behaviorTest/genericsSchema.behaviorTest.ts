@@ -246,7 +246,8 @@ function isRealSchemaAsync_GenericExtends<
  * @returns `true` when value has a callable `parse` or `parseAsync` property
  */
 function isRealMaybeAsyncSchema_Unknown(value: unknown,): value is RealMaybeAsyncSchema {
-  return isRealSchema_Unknown(value,) || isRealSchemaAsync_Unknown(value,);
+  return isRealSchema_Unknown(value,)
+    || isRealSchemaAsync_Unknown(value,);
 }
 
 /**
@@ -262,7 +263,8 @@ function isRealMaybeAsyncSchema_Generic<const MyValue = unknown,>(
   ? (MyValue & RealMaybeAsyncSchema<MyInput, MyOutput>)
   : never
 {
-  return isRealSchema_Generic(value,) || isRealSchemaAsync_Generic(value,);
+  return isRealSchema_Generic(value,)
+    || isRealSchemaAsync_Generic(value,);
 }
 
 /**
@@ -390,7 +392,8 @@ const realGenericTestValues = {
 
   userValidationSchema: {
     parse(user: User,) {
-      if (user.age < 0)
+      if (user.age
+        < 0)
         throw new Error('Invalid age',);
       return user;
     },
@@ -481,7 +484,8 @@ const realGenericTestValues = {
   // Schema that returns Promisable (could be sync or async)
   promisableSchema: {
     parse(value: string,) {
-      return Math.random() > 0.5
+      return Math.random()
+        > 0.5
         ? value.length
         : Promise.resolve(value.length,);
     },

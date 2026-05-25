@@ -31,7 +31,8 @@ type StorageLike = {
   key(index: number,): string | null;
 };
 
-if (globalThis.localStorage === undefined) {
+if (globalThis.localStorage
+  === undefined) {
   /** In-memory backing map used by the polyfilled storage methods. */
   const store = new Map<string, string>();
   /**
@@ -39,7 +40,8 @@ if (globalThis.localStorage === undefined) {
    */
   const shim: StorageLike = {
     getItem(key,): string | null {
-      return store.get(key,) ?? null;
+      return store.get(key,)
+        ?? null;
     },
     setItem(
       key,
@@ -63,7 +65,8 @@ if (globalThis.localStorage === undefined) {
     key(index,): string | null {
       /** Insertion-ordered snapshot of keys for the by-index lookup. */
       const keys = [...store.keys(),];
-      return keys[index] ?? null;
+      return keys[index]
+        ?? null;
     },
   };
   /*

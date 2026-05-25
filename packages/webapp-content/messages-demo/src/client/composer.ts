@@ -106,13 +106,15 @@ export function decideTierTransition(
     readonly inEditMode: boolean;
   },
 ): TierTransition {
-  if ((input.tier === 1) && (input.length >= TIER_2_THRESHOLD))
+  if ((input.tier
+    === 1) && (input.length
+    >= TIER_2_THRESHOLD))
     return { kind: 'to-tier-2', };
   if (
     (input.tier === 2)
     && (input.length >= TIER_3_THRESHOLD)
-    && (!input.tier3Active)
-    && (!input.inEditMode)
+      && (!input.tier3Active)
+      && (!input.inEditMode)
   ) {
     return { kind: 'to-tier-3', };
   }
@@ -144,9 +146,12 @@ export async function attachComposer({
   form: HTMLFormElement;
   caps: StorageCaps;
 },): Promise<void> {
-  if (form.dataset.composerAttached === '1')
+  if (form.dataset
+    .composerAttached
+    === '1')
     return;
-  form.dataset.composerAttached = '1';
+  form.dataset
+    .composerAttached = '1';
 
   /** Identity select; null aborts the attach so a half-mounted form is not left behind. */
   const select = form.querySelector<HTMLSelectElement>('.composer-identity',);
@@ -154,12 +159,14 @@ export async function attachComposer({
   const textarea = form.querySelector<HTMLTextAreaElement>('.composer-body',);
   /** Send button; null aborts the attach. */
   const sendBtn = form.querySelector<HTMLButtonElement>('.composer-send',);
-  if ((select === null) || (textarea === null) || (sendBtn === null))
+  if ((select === null) || (textarea === null)
+    || (sendBtn === null))
     return;
 
   /** Identity previously persisted; restored if it still matches one of the select's options. */
   const persisted = loadIdentity(caps.localStorage,);
-  if ((persisted !== null) && [...select.options,].some(function isPersisted(option,) {
+  if ((persisted !== null) && [...select.options,]
+    .some(function isPersisted(option,) {
     return option.value === persisted;
   },)) {
     select.value = persisted;
@@ -190,13 +197,16 @@ export async function attachComposer({
   const state: ComposerState = {
     /* oxlint-disable eslint/no-magic-numbers, typescript/no-unsafe-type-assertion -- tier discriminant cast */
     tier: Number.parseInt(
-      form.dataset.initialTier ?? '1',
+      form.dataset
+        .initialTier
+        ?? '1',
       DECIMAL_RADIX,
     ) as 1 | 2 | 3,
     /* oxlint-enable eslint/no-magic-numbers, typescript/no-unsafe-type-assertion */
     worker: null,
     caps,
-    editMessageId: parseEditId(form.dataset.editMessageId,),
+    editMessageId: parseEditId(form.dataset
+      .editMessageId,),
     outbox,
     cache,
     metrics: null,
@@ -208,7 +218,8 @@ export async function attachComposer({
   // Mount the metrics overlay before any worker spawns so we don't
   // miss the first compile pass. Only when `?debug=1`.
   /** URL-flag override that surfaces the per-pipeline metrics overlay. */
-  const debug = new URLSearchParams(globalThis.location.search,).get('debug',) === '1';
+  const debug = new URLSearchParams(globalThis.location.search,).get('debug',)
+    === '1';
   if (debug) {
     /** Overlay handle whose `recordTransition` is captured on state for later metrics. */
     const overlay = attachMetricsOverlay({
@@ -229,7 +240,8 @@ export async function attachComposer({
   // `textarea.value` still works; the editor mirrors its text into
   // the textarea on every change.
   /** Opt-in for the worker-backed editor; the textarea remains in the DOM as the mirrored source-of-truth. */
-  const wantCustom = new URLSearchParams(globalThis.location.search,).get('editor',)
+  const wantCustom = new URLSearchParams(globalThis.location
+    .search,).get('editor',)
     === 'custom';
   if (wantCustom) {
     await mountCustomEditor({
@@ -239,7 +251,8 @@ export async function attachComposer({
     },);
   }
 
-  if (state.editMessageId !== null) {
+  if (state.editMessageId
+    !== null) {
     await loadExistingChunksForEdit({
       form,
       textarea,
@@ -263,7 +276,10 @@ export async function attachComposer({
   textarea.addEventListener(
     'keydown',
     function onKeydown(event,) {
-      if ((event.metaKey || event.ctrlKey) && (event.key === 'Enter')) {
+      if ((event.metaKey
+        || event
+        .ctrlKey) && (event.key
+        === 'Enter')) {
         event.preventDefault();
         sendBtn.click();
       }
@@ -301,12 +317,17 @@ async function loadExistingChunksForEdit(
     status: HTMLElement;
   },
 ): Promise<void> {
-  if (input.state.editMessageId === null)
+  if (input.state
+    .editMessageId
+    === null)
     return;
   /** Captured under a non-null name so the branch logic does not re-narrow per access. */
-  const messageId = input.state.editMessageId;
+  const messageId = input.state
+    .editMessageId;
   // oxlint-disable-next-line eslint/no-magic-numbers -- tier discriminant
-  if (input.state.tier === 3) {
+  if (input.state
+    .tier
+    === 3) {
     /** Total chunk count from the server; needed to render the nav and size the tier-3 state. */
     const chunkCount = await fetchChunkCount(messageId,);
     /** Allocated up front so the create-draft POST and the tier-3 state both pick up the same id. */
@@ -316,7 +337,8 @@ async function loadExistingChunksForEdit(
       userId: getIdentity(input.form,),
       parentId: await fetchHeadDraftId(messageId,),
     },);
-    input.state.tier3 = {
+    input.state
+      .tier3 = {
       currentSeq: 0,
       chunkCount,
       newDraftId,
@@ -391,13 +413,22 @@ function queueTierPromotionCheck(
       promotionTimer = null;
       /** Tier-transition decision computed on the post-idle snapshot of buffer length and state. */
       const transition = decideTierTransition({
-        tier: input.state.tier,
-        length: input.textarea.value.length,
-        tier3Active: input.state.tier3 !== null,
-        inEditMode: input.state.editMessageId !== null,
+        tier: input.state
+          .tier,
+        length: input.textarea
+          .value
+          .length,
+        tier3Active: input.state
+          .tier3
+          !== null,
+        inEditMode: input.state
+          .editMessageId
+          !== null,
       },);
-      if (transition.kind === 'to-tier-2') {
-        input.state.tier = 2;
+      if (transition.kind
+        === 'to-tier-2') {
+        input.state
+          .tier = 2;
         setStatus({
           status: input.status,
           message: 'tier 2 (worker)',
@@ -405,7 +436,8 @@ function queueTierPromotionCheck(
         // Fall through: a single tick can't double-jump to tier 3 because
         // the decision was made on the pre-transition `tier` value.
       }
-      if (transition.kind === 'to-tier-3')
+      if (transition.kind
+        === 'to-tier-3')
         void promoteToTier3(input,);
     },
     TIER_DEBOUNCE_MS,

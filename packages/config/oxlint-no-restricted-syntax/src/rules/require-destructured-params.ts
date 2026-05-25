@@ -43,7 +43,9 @@ export const requireDestructuredParams: CreateOnceRule = {
       FunctionDeclaration(node: ESTree.Function,): void {
         /** Minimum parameter count that triggers the rule. */
         const minParams = 2;
-        if (node.params.length < minParams)
+        if (node.params
+          .length
+          < minParams)
           return;
         context.report({
           node,

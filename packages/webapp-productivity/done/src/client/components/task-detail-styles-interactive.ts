@@ -22,7 +22,8 @@ import {
 const PILL_PADDING = 1 / 2;
 
 /** Pill gap in rem (1/4). */
-const PILL_GAP = 1 / 2 / 2;
+const PILL_GAP = 1 / 2
+  / 2;
 
 /** Button row gap in rem (1/2). */
 const BTN_ROW_GAP = 1 / 2;

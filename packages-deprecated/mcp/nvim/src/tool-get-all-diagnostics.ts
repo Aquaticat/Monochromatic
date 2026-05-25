@@ -48,7 +48,9 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
 
     for (const fileEntry of editorFiles) {
       /** Lint diagnostics for this path; empty when oxlint produced none, which still yields a clean editor-only merge. */
-      const lintDiags = lintResult.diagnostics.get(fileEntry.path,) ?? [];
+      const lintDiags = lintResult.diagnostics
+        .get(fileEntry.path,)
+        ?? [];
       mergedByPath.set(
         fileEntry.path,
         dedupDiagnostics({
@@ -79,7 +81,8 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
       },
     );
 
-    if (result.length === 0) {
+    if (result.length
+      === 0) {
       return {
         content: [{
           type: 'text',
@@ -91,7 +94,8 @@ export async function handleGetAllDiagnostics(): Promise<ToolCallResult> {
     /** Per-file text blocks; each block has the path header followed by indented diagnostic lines. */
     const sections = result.map(function formatSection(fileEntry,) {
       /** Diagnostic lines for this file; indented two spaces so the path header reads as the section title. */
-      const lines = fileEntry.diagnostics.map(function formatLine(diagnostic,) {
+      const lines = fileEntry.diagnostics
+        .map(function formatLine(diagnostic,) {
         return formatDiagnostic({
           diagnostic,
           indent: '  ',

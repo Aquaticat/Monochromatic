@@ -151,7 +151,8 @@ function repoIdFor(row: {
   seed: number;
   index: number;
 },): string {
-  return `repo-${String((row.seed * REPO_SEED_FACTOR) + row.index,)}`;
+  return `repo-${String((row.seed * REPO_SEED_FACTOR) + row
+    .index,)}`;
 }
 
 /**
@@ -191,7 +192,8 @@ async function sumStorageBytes(): Promise<number> {
     keys.map(async function lengthOf(key,) {
       /** Persisted entry; `undefined` means no bytes contribute for this key. */
       const value = await storage.get(key,);
-      return value?.byteLength ?? 0;
+      return value?.byteLength
+        ?? 0;
     },),
   );
   return lengths.reduce(
@@ -225,7 +227,8 @@ async function runBurst(row: {
 },): Promise<number[]> {
   /** Per-event latency samples returned to the caller for the percentile summary. */
   const samples: number[] = [];
-  for (let i = 0; i < row.burstEvents; i += 1) {
+  for (let i = 0; i < row
+    .burstEvents; i += 1) {
     /** Deterministic random repo index keyed on `i` so reruns hit the same repos. */
     const repoIndex = rngInt({
       seed: i,
@@ -254,12 +257,15 @@ async function runBurst(row: {
       body: `wide ${String(i,)}`,
       createdAt: Date.now(),
     },);
-    samples.push(Date.now() - t0,);
-    if (row.intervalMs > 0) {
+    samples.push(Date.now()
+      - t0,);
+    if (row.intervalMs
+      > 0) {
       /** Remaining slack inside the per-event budget; floored to avoid overshoot. */
       const sleep = Math.max(
         0,
-        Math.floor(row.intervalMs - (Date.now() - t0),),
+        Math.floor(row.intervalMs
+          - (Date.now() - t0),),
       );
       if (sleep > 0) {
         // oxlint-disable-next-line no-await-in-loop -- pacing
@@ -322,7 +328,9 @@ async function run(): Promise<ScenarioResult> {
   /** Wall-clock start used for the duration summary. */
   const startedAt = Date.now();
   /** Target spacing between events so the burst covers `burstDurationMs`. */
-  const intervalMs = config.burstDurationMs / Math.max(
+  const intervalMs = config.burstDurationMs
+    / Math
+    .max(
     config.burstEvents,
     1,
   );
@@ -354,13 +362,15 @@ async function run(): Promise<ScenarioResult> {
     p: P99,
   },);
   /** Wall-clock total used by the summary table. */
-  const durationMs = Date.now() - startedAt;
+  const durationMs = Date.now()
+    - startedAt;
   /** Post-burst byte total; difference with `bytesBefore` is the burst's contribution. */
   const totalBytes = await sumStorageBytes();
   /** Bytes attributable to this scenario, compared against the per-repo ceiling. */
   const burstDeltaBytes = totalBytes - bytesBefore;
   /** Scaled byte ceiling: `BYTES_PER_REPO_CEILING * repoCount` so the budget tracks `--repos`. */
-  const bytesCeiling = BYTES_PER_REPO_CEILING * config.repoCount;
+  const bytesCeiling = BYTES_PER_REPO_CEILING * config
+    .repoCount;
   /** Invariant breaches collected for the scenario result. */
   const violations: string[] = [];
 

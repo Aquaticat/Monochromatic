@@ -188,7 +188,9 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
     'change',
     function handleFileChange(): void {
       /** Selected file from the upload input */
-      const file = uploadInput.files?.item(0,) ?? null;
+      const file = uploadInput.files
+        ?.item(0,)
+        ?? null;
       if (file === null)
         return;
       void processBackgroundFile(file,);

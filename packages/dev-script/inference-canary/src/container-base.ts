@@ -73,7 +73,9 @@ export async function execBun({
   options = {},
 }: ExecBunOptions,): Promise<BunExecResult> {
   // Fast-path: if the signal is already aborted, skip spawning entirely.
-  if (options.signal?.aborted === true) {
+  if (options.signal
+    ?.aborted
+    === true) {
     return {
       stdout: '',
       stderr: '',
@@ -121,13 +123,16 @@ export async function execBun({
       // Killed if the signal was aborted (race: it may have become true after spawn started)
       // or the process received a termination signal
       /** True when the abort signal fired or the process received a termination signal; surfaced to callers as `BunExecResult.killed`. */
-      const wasKilled = Boolean(options.signal?.aborted,)
-        || (subprocessError.signalName !== undefined);
+      const wasKilled = Boolean(options.signal
+        ?.aborted,)
+        || (subprocessError.signalName
+          !== undefined);
 
       return {
         stdout: subprocessError.stdout,
         stderr: subprocessError.stderr,
-        exitCode: subprocessError.exitCode ?? 1,
+        exitCode: subprocessError.exitCode
+          ?? 1,
         killed: wasKilled,
       };
     }

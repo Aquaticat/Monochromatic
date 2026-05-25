@@ -98,7 +98,8 @@ export function navigate(id: ScreenId,): void {
   const next = screens.get(id,);
   if (next === undefined)
     throw new Error(`[router] unknown screen: ${id}`,);
-  if (routerState.currentTeardown !== undefined) {
+  if (routerState.currentTeardown
+    !== undefined) {
     routerState.currentTeardown();
     routerState.currentTeardown = undefined;
   }
@@ -108,7 +109,8 @@ export function navigate(id: ScreenId,): void {
     throw new Error('[router] #app root not found',);
   root.replaceChildren();
   next.mount(root,);
-  if (next.unmount !== undefined)
+  if (next.unmount
+    !== undefined)
     routerState.currentTeardown = next.unmount;
   routerState.currentScreen = id;
   console.error(

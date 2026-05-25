@@ -75,7 +75,9 @@ const PORT = v.parse(
     v.transform(Number,),
     v.number(),
   ),
-  process.env.AI_TREE_PORT ?? DEFAULT_PORT,
+  process.env
+    .AI_TREE_PORT
+    ?? DEFAULT_PORT,
 );
 
 /** H3 application instance for the ai-tree server. */

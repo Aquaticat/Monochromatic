@@ -86,7 +86,8 @@ export async function $<
     keyFn,
   } = options;
   /** Cache backend; defaults to a per-instance LRU store so callers without one still get bounded memory. */
-  const store: Store = options.store ?? await createStore({
+  const store: Store = options.store
+    ?? await createStore({
     storeId: `memoize-${crypto.randomUUID()}`,
     eviction: [{
       policy: 'lru',

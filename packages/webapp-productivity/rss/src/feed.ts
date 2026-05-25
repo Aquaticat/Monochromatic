@@ -57,7 +57,10 @@ export async function getSortedFeeds(
     feedA,
     feedB,
   ) {
-    return extractDate(feedB,).getTime() - extractDate(feedA,).getTime();
+    return extractDate(feedB,)
+      .getTime()
+      - extractDate(feedA,)
+      .getTime();
   },);
   innerL.debug(`sorted ${String(result.length,)} feeds`,);
   return result;
@@ -118,7 +121,8 @@ async function fetchAndParseFeeds(
     outline,
   },) {
     /** Parser picked by outline type so each feed runs through the matching parser. */
-    const parser = outline.type === 'atom' ? parseAtomFeed : parseRssFeed;
+    const parser = outline.type
+      === 'atom' ? parseAtomFeed : parseRssFeed;
     try {
       return [{
         feed: parser(text,),
@@ -158,14 +162,16 @@ function extractDate(feedWOutline: FeedWOutline,): Date {
     feed,
     outline,
   } = feedWOutline;
-  if (outline.type === 'atom') {
+  if (outline.type
+    === 'atom') {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- outline.type discriminant narrows the feed type */
     /** Narrowed feed view used to read the Atom-specific `updated` field. */
     const atomFeed = feed as Atom.Feed<string>;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return v.parse(
       coerceDateSchema,
-      atomFeed.updated ?? new Date(0,),
+      atomFeed.updated
+        ?? new Date(0,),
     );
   }
   /* oxlint-disable typescript/no-unsafe-type-assertion -- non-atom feeds are RSS */
@@ -174,7 +180,8 @@ function extractDate(feedWOutline: FeedWOutline,): Date {
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return v.parse(
     coerceDateSchema,
-    rssFeed.pubDate ?? new Date(0,),
+    rssFeed.pubDate
+      ?? new Date(0,),
   );
 }
 

@@ -19,5 +19,7 @@ export const PORT: number = v.parse(
     v.transform(Number,),
     v.number(),
   ),
-  process.env.EXA_SEARCH_PORT ?? DEFAULT_PORT,
+  process.env
+    .EXA_SEARCH_PORT
+    ?? DEFAULT_PORT,
 );

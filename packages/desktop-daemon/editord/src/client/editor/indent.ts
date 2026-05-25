@@ -81,9 +81,13 @@ export function indentLines({
       isSelection: true,
       selection: {
         startLine: selection.startLine,
-        startCharacter: selection.startCharacter + INDENT_UNIT.length,
+        startCharacter: selection.startCharacter
+          + INDENT_UNIT
+          .length,
         endLine: selection.endLine,
-        endCharacter: selection.endCharacter + INDENT_UNIT.length,
+        endCharacter: selection.endCharacter
+          + INDENT_UNIT
+          .length,
       },
       cursor: {
         line: cursorLine,
@@ -102,7 +106,8 @@ export function indentLines({
     },
     cursor: {
       line: cursorLine,
-      character: cursorCharacter + INDENT_UNIT.length,
+      character: cursorCharacter + INDENT_UNIT
+        .length,
     },
   };
 }
@@ -177,19 +182,22 @@ export function unindentLines({
     /** Spaces removed from the first selected line; used to shift `selection.startCharacter`. */
     const [startRemoved = 0,] = removedPerLine;
     /** Spaces removed from the last selected line; used to shift `selection.endCharacter`. */
-    const endRemoved = removedPerLine.at(-1,) ?? 0;
+    const endRemoved = removedPerLine.at(-1,)
+      ?? 0;
     return {
       isSelection: true,
       selection: {
         startLine: selection.startLine,
         startCharacter: Math.max(
           0,
-          selection.startCharacter - startRemoved,
+          selection.startCharacter
+            - startRemoved,
         ),
         endLine: selection.endLine,
         endCharacter: Math.max(
           0,
-          selection.endCharacter - endRemoved,
+          selection.endCharacter
+            - endRemoved,
         ),
       },
       cursor: {
@@ -200,7 +208,8 @@ export function unindentLines({
   }
 
   /** Spaces removed from the cursor's line; used to shift `cursorCharacter`. */
-  const lineRemoved = removedPerLine[0] ?? 0;
+  const lineRemoved = removedPerLine[0]
+    ?? 0;
   return {
     isSelection: false,
     selection: {

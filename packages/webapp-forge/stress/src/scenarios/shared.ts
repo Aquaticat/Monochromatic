@@ -27,7 +27,8 @@ export function getFlag(name: string,): string | undefined {
   /** Literal `--name=` prefix used to identify the flag entry in argv. */
   const prefix = `--${name}=`;
   /** First argv entry matching the prefix, or `undefined` when the flag is absent. */
-  const argument = process.argv.find(function hasPrefix(entry,) {
+  const argument = process.argv
+    .find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);
   },);
   return argument?.slice(prefix.length,);

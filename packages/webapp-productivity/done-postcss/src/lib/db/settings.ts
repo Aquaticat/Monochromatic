@@ -27,11 +27,13 @@ type SettingRow = {
 export async function getSetting(key: string,): Promise<string | null> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns the SettingRow shape */
   /** Single-row result from the lookup; `undefined` indicates the key is missing. */
-  const row = await db.prepare('SELECT value FROM settings WHERE key = ?',).get(key,) as
+  const row = await db.prepare('SELECT value FROM settings WHERE key = ?',)
+    .get(key,) as
     | Pick<SettingRow, 'value'>
     | undefined;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
-  return row?.value ?? null;
+  return row?.value
+    ?? null;
 }
 
 /**
@@ -79,8 +81,10 @@ export async function setSetting(
  */
 export async function deleteSetting(key: string,): Promise<boolean> {
   /** Run result whose `.changes` distinguishes a successful delete from a no-op. */
-  const result = await db.prepare('DELETE FROM settings WHERE key = ?',).run(key,);
-  return result.changes > 0;
+  const result = await db.prepare('DELETE FROM settings WHERE key = ?',)
+    .run(key,);
+  return result.changes
+    > 0;
 }
 
 /**

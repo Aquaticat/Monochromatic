@@ -77,7 +77,8 @@ export function showImage({
     shadow,
     mediaInfo,
   },);
-  host.style.display = 'flex';
+  host.style
+    .display = 'flex';
 }
 
 /**
@@ -117,7 +118,8 @@ export function showAudio({
     shadow,
     mediaInfo,
   },);
-  host.style.display = 'flex';
+  host.style
+    .display = 'flex';
 }
 
 /**
@@ -157,5 +159,6 @@ export function showVideo({
     shadow,
     mediaInfo,
   },);
-  host.style.display = 'flex';
+  host.style
+    .display = 'flex';
 }

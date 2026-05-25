@@ -63,7 +63,8 @@ type RgJsonMatch = {
  * @returns whether the query contains an uppercase character
  */
 function hasUpperCase({ query, }: { readonly query: string; },): boolean {
-  return query !== query.toLowerCase();
+  return query !== query
+    .toLowerCase();
 }
 
 //endregion Helpers
@@ -165,7 +166,8 @@ function searchContents({
         /** Untyped intermediate so the discriminant can be checked before narrowing. */
         const parsed = JSON.parse(line,) as RgJsonMatch | { readonly type: string; };
         /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
-        if (parsed.type !== 'match')
+        if (parsed.type
+          !== 'match')
           return null;
 
         /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- guarded by type check above */
@@ -174,9 +176,15 @@ function searchContents({
         /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
         return {
           kind: 'content' as const,
-          path: match.data.path.text,
-          line: match.data.line_number,
-          text: match.data.lines.text.trimEnd(),
+          path: match.data
+            .path
+            .text,
+          line: match.data
+            .line_number,
+          text: match.data
+            .lines
+            .text
+            .trimEnd(),
         };
       }
       catch (error) {

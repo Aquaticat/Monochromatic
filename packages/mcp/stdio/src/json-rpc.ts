@@ -148,7 +148,8 @@ export function isJsonRpcMessage(value: unknown,): value is JsonRpcInbound {
   /** Narrowed view of `value` so the `jsonrpc` and `method` keys can be probed without further casts. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowed from unknown to object above
   const candidate = value as Record<string, unknown>;
-  return (candidate.jsonrpc === '2.0') && ((typeof candidate.method) === 'string');
+  return (candidate.jsonrpc
+    === '2.0') && ((typeof candidate.method) === 'string');
 }
 
 //endregion

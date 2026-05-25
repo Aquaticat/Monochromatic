@@ -48,7 +48,8 @@ function isWhitespaceChar(c: string,): boolean {
  * ```
  */
 function isDigitString(s: string,): boolean {
-  if (s.length === 0)
+  if (s.length
+    === 0)
     return false;
   for (const c of s) {
     if ((c < '0') || (c > '9'))
@@ -80,14 +81,16 @@ export function splitOnWhitespace(s: string,): readonly string[] {
     const tokens: string[] = [];
     /** Scan cursor over `s`; advances monotonically to `s.length` (single linear pass: O(n) time, O(1) stack, no recursion). */
     let idx = 0;
-    while (idx < s.length) {
+    while (idx < s
+      .length) {
       if (isWhitespaceChar(s.charAt(idx,),)) {
         idx += 1;
       }
       else {
         /** Inclusive start of the non-whitespace run under the cursor; the run is sliced out once its end is reached. */
         const start = idx;
-        while (idx < s.length) {
+        while (idx < s
+          .length) {
           if (isWhitespaceChar(s.charAt(idx,),))
             break;
           idx += 1;
@@ -138,7 +141,8 @@ function parseVirshRow(
   const MIN_DATA_ROW_TOKENS = 3;
   /** Whitespace-separated tokens of `line`. */
   const tokens = splitOnWhitespace(line,);
-  if (tokens.length < MIN_DATA_ROW_TOKENS)
+  if (tokens.length
+    < MIN_DATA_ROW_TOKENS)
     return undefined;
   /** Id column; data rows have digits or a literal `-`. */
   const [idToken, vmName, ...stateTokens] = tokens;
@@ -192,7 +196,8 @@ export async function list(): Promise<readonly VmInfo[]> {
     const vmState = row?.state;
     if ((vmName !== undefined)
       && (vmState !== undefined)
-      && vmName.startsWith(VM_PREFIX,))
+      && vmName
+      .startsWith(VM_PREFIX,))
     {
       vms.push({
         name: vmName.slice(VM_PREFIX.length,),

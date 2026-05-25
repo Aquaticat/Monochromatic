@@ -55,8 +55,10 @@ class TaskCard extends HTMLElement {
    * @returns Matching chip element, or null if not found
    */
   getChipElement(prefix: string,): HTMLSpanElement | null {
-    for (const chip of this.#shadow.querySelectorAll<HTMLSpanElement>('.chip',)) {
-      if (chip.textContent.startsWith(prefix,)) {
+    for (const chip of this.#shadow
+      .querySelectorAll<HTMLSpanElement>('.chip',)) {
+      if (chip.textContent
+        .startsWith(prefix,)) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelectorAll(".chip") returns span elements
         return chip as HTMLSpanElement;
       }

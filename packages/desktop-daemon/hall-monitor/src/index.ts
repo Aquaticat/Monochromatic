@@ -20,11 +20,13 @@ export {};
 const INTERVAL_MINUTES = 5;
 
 /** Interval between capture-analyze-notify cycles. */
-const INTERVAL_MS = INTERVAL_MINUTES * SECONDS_PER_MINUTE * MS_PER_SECOND;
+const INTERVAL_MS = INTERVAL_MINUTES * SECONDS_PER_MINUTE
+  * MS_PER_SECOND;
 
 /** Parsed CLI arguments for the hall-monitor daemon. */
 const { values: args, } = parseArgs({
-  args: process.argv.slice(2,),
+  args: process.argv
+    .slice(2,),
   options: { 'kill-existing': {
     type: 'boolean',
     default: false,
@@ -41,9 +43,11 @@ const state: { running: boolean; } = { running: true, };
 function shutdown(): void {
   log.debug('[hall-monitor] Shutting down...',);
   state.running = false;
-  getLockServer()?.close();
+  getLockServer()
+    ?.close();
   // oxlint-disable-next-line promise/prefer-await-to-then, promise/always-return -- shutdown handler cannot be async; then() is fire-and-forget
-  void forceCleanup().then(function setExitCode() {
+  void forceCleanup()
+    .then(function setExitCode() {
     process.exitCode = 0;
   },);
 }

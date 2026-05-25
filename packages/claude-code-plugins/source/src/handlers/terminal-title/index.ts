@@ -39,7 +39,8 @@ function titleForTool(event: ReadonlyDeep<PreToolUseInput | PostToolUseInput>,):
     tool_input: input,
   } = event;
   /** `pre` for PreToolUse, `post` for PostToolUse; picks the verb form of the title. */
-  const tense = event.hook_event_name === 'PreToolUse' ? 'pre' : 'post';
+  const tense = event.hook_event_name
+    === 'PreToolUse' ? 'pre' : 'post';
   /** Per-tool formatter entry; `undefined` when no specific formatter is registered. */
   const entry = TOOL_TITLES[toolName];
   if (entry === undefined)
@@ -74,40 +75,59 @@ function shortPath(filePath: string,): string {
  * @returns short descriptive title for the terminal tab
  */
 function titleForEvent(hookEvent: ReadonlyDeep<HookInput>,): string {
-  if ((hookEvent.hook_event_name === 'PreToolUse')
-    || (hookEvent.hook_event_name === 'PostToolUse'))
+  if ((hookEvent.hook_event_name
+    === 'PreToolUse')
+    || (hookEvent.hook_event_name
+      === 'PostToolUse'))
   {
     return titleForTool(hookEvent,);
   }
-  if (hookEvent.hook_event_name === 'PermissionRequest')
+  if (hookEvent.hook_event_name
+    === 'PermissionRequest')
     return `Permission: ${hookEvent.tool_name}`;
-  if (hookEvent.hook_event_name === 'PostToolUseFailure')
+  if (hookEvent.hook_event_name
+    === 'PostToolUseFailure')
     return `Failed: ${hookEvent.tool_name}`;
-  if (hookEvent.hook_event_name === 'SessionStart')
+  if (hookEvent.hook_event_name
+    === 'SessionStart')
     return `Session ${hookEvent.source}`;
-  if (hookEvent.hook_event_name === 'InstructionsLoaded')
+  if (hookEvent.hook_event_name
+    === 'InstructionsLoaded')
     return `Loaded ${shortPath(hookEvent.file_path,)}`;
-  if (hookEvent.hook_event_name === 'UserPromptSubmit')
+  if (hookEvent.hook_event_name
+    === 'UserPromptSubmit')
     return hookEvent.prompt;
-  if (hookEvent.hook_event_name === 'Notification')
-    return hookEvent.title ?? hookEvent.message;
-  if (hookEvent.hook_event_name === 'SubagentStart')
+  if (hookEvent.hook_event_name
+    === 'Notification')
+    return hookEvent.title
+      ?? hookEvent
+      .message;
+  if (hookEvent.hook_event_name
+    === 'SubagentStart')
     return `Subagent: ${hookEvent.agent_type}`;
-  if (hookEvent.hook_event_name === 'SubagentStop')
+  if (hookEvent.hook_event_name
+    === 'SubagentStop')
     return `Subagent done: ${hookEvent.agent_type}`;
-  if (hookEvent.hook_event_name === 'TeammateIdle')
+  if (hookEvent.hook_event_name
+    === 'TeammateIdle')
     return `Idle: ${hookEvent.teammate_name}`;
-  if (hookEvent.hook_event_name === 'TaskCompleted')
+  if (hookEvent.hook_event_name
+    === 'TaskCompleted')
     return `Task done: ${hookEvent.task_subject}`;
-  if (hookEvent.hook_event_name === 'ConfigChange')
+  if (hookEvent.hook_event_name
+    === 'ConfigChange')
     return `Config: ${hookEvent.source}`;
-  if (hookEvent.hook_event_name === 'WorktreeCreate')
+  if (hookEvent.hook_event_name
+    === 'WorktreeCreate')
     return `Worktree: ${hookEvent.name}`;
-  if (hookEvent.hook_event_name === 'WorktreeRemove')
+  if (hookEvent.hook_event_name
+    === 'WorktreeRemove')
     return `Worktree removed`;
-  if (hookEvent.hook_event_name === 'PreCompact')
+  if (hookEvent.hook_event_name
+    === 'PreCompact')
     return `Compacting (${hookEvent.trigger})`;
-  if (hookEvent.hook_event_name === 'Stop')
+  if (hookEvent.hook_event_name
+    === 'Stop')
     return 'Stopped';
   /* hookEvent.hook_event_name === 'SessionEnd' */
   return 'Session ended';

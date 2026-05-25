@@ -90,7 +90,8 @@ export function respondError(
  * ```
  */
 export function handleNotification(notification: JsonRpcNotification,): undefined {
-  if (notification.method !== 'notifications/initialized')
+  if (notification.method
+    !== 'notifications/initialized')
     console.error(`[mcp-stdio] unexpected notification method: ${notification.method}`,);
   return undefined;
 }

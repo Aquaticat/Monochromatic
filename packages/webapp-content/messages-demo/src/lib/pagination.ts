@@ -147,15 +147,19 @@ function base64UrlDecode(value: string,): string {
       '/',
     );
   /** Number of `=` characters needed to reach the next 4-group boundary. */
-  const padLength = (BASE64_GROUP_SIZE - (unpadded.length % BASE64_GROUP_SIZE))
+  const padLength = (BASE64_GROUP_SIZE - (unpadded.length
+    % BASE64_GROUP_SIZE))
     % BASE64_GROUP_SIZE;
   /** Base64 input ready for `atob`; trailing `=` restored to a 4-group boundary. */
-  const padded = unpadded + '='.repeat(padLength,);
+  const padded = unpadded + '='
+    .repeat(padLength,);
   /** Latin-1 string of decoded bytes; rewrapped into a Uint8Array below for `TextDecoder`. */
   const binary = globalThis.atob(padded,);
   /** Byte buffer copied from `binary`; decoded back to UTF-8 below. */
   const bytes = new Uint8Array(binary.length,);
-  for (let index = 0; index < binary.length; index += 1)
-    bytes[index] = binary.codePointAt(index,) ?? 0;
+  for (let index = 0; index < binary
+    .length; index += 1)
+    bytes[index] = binary.codePointAt(index,)
+      ?? 0;
   return new TextDecoder().decode(bytes,);
 }

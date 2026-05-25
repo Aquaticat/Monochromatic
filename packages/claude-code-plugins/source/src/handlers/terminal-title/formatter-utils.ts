@@ -63,7 +63,8 @@ function truncate(
     readonly maxLength: number;
   },
 ): string {
-  if (value.length <= maxLength)
+  if (value.length
+    <= maxLength)
     return value;
   return `${
     value.slice(
@@ -266,7 +267,8 @@ function stripCommandNoise(command: string,): string {
   function findTokenEnd(at: number,): number {
     /** Cursor advanced to the token's end; returned as the helper-shape binding. */
     let end = at;
-    while ((end < command.length) && (!isShellWs(command.charAt(end,),))) {
+    while ((end < command
+      .length) && (!isShellWs(command.charAt(end,),))) {
       end += 1;
     }
     return end;
@@ -286,7 +288,8 @@ function stripCommandNoise(command: string,): string {
   function skipWs(at: number,): number {
     /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
     let cursor = at;
-    while ((cursor < command.length) && isShellWs(command.charAt(cursor,),)) {
+    while ((cursor < command
+      .length) && isShellWs(command.charAt(cursor,),)) {
       cursor += 1;
     }
     return cursor;
@@ -296,7 +299,8 @@ function stripCommandNoise(command: string,): string {
   // Strip leading env-var assignments (`FOO=bar`) and wrapper-plus-argument
   // pairs (`timeout 5`, `env ...`) until the cursor reaches a token that is
   // neither, then return the remainder verbatim.
-  while (idx < command.length) {
+  while (idx < command
+    .length) {
     /** Exclusive end of the candidate first token. */
     const tokenEnd = findTokenEnd(idx,);
     if (tokenEnd === idx)
@@ -310,7 +314,8 @@ function stripCommandNoise(command: string,): string {
       idx,
       tokenEnd,
     );
-    if ((!token.startsWith('-',)) && token.includes('=',)) {
+    if ((!token.startsWith('-',)) && token
+      .includes('=',)) {
       idx = afterTokenWs;
       continue;
     }
@@ -327,7 +332,8 @@ function stripCommandNoise(command: string,): string {
     idx = afterArgWs;
   }
   /** Remainder after every stripped prefix; empty when the cursor ran past the end. */
-  const result = (idx >= command.length)
+  const result = (idx >= command
+    .length)
     ? ''
     : command.slice(idx,);
   return result;

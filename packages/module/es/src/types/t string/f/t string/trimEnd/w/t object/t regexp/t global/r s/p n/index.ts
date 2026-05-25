@@ -82,12 +82,15 @@ export function $(
     /** Start offset of this match in the original string. */
     const matchIndex = match.index;
     /** Length of the matched substring; added to `trimState.totalTrimLength` when the match abuts the current trim boundary. */
-    const matchLength = match[0].length;
+    const matchLength = match[0]
+      .length;
 
     /** Exclusive end offset of this match; used to detect whether it abuts the current trim boundary. */
     const matchEndsAt = matchIndex + matchLength;
     /** Current trim boundary; matches must end exactly here to count as consecutive trailing matches. */
-    const currentBoundary = str.length - trimState.totalTrimLength;
+    const currentBoundary = str.length
+      - trimState
+      .totalTrimLength;
 
     // If match doesn't end exactly at the current trim boundary, stop
     if (matchEndsAt !== currentBoundary)
@@ -100,6 +103,8 @@ export function $(
   // Return string with all consecutive trailing matches removed
   return str.slice(
     0,
-    str.length - trimState.totalTrimLength,
+    str.length
+      - trimState
+      .totalTrimLength,
   );
 }

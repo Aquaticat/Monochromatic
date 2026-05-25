@@ -25,8 +25,10 @@ import type { Span, } from '@oxlint/plugins';
 function unwrapMethodDefinition(
   node: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
-  if ((node.type === 'MethodDefinition')
-    || (node.type === 'TSAbstractMethodDefinition'))
+  if ((node.type
+    === 'MethodDefinition')
+    || (node.type
+      === 'TSAbstractMethodDefinition'))
   {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return node.value as Record<string, unknown> | undefined;
@@ -51,7 +53,8 @@ function extractRawParams(
   if (target === undefined)
     return [];
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-  return target.params as Record<string, unknown>[] | undefined ?? [];
+  return target.params as Record<string, unknown>[] | undefined
+    ?? [];
 }
 
 /**
@@ -73,7 +76,8 @@ function extractRawParams(
 export function extractParamNames(
   node: Span & Record<string, unknown>,
 ): readonly string[] {
-  return extractRawParams(node,).flatMap(function extractName(param,): readonly string[] {
+  return extractRawParams(node,)
+    .flatMap(function extractName(param,): readonly string[] {
     return extractBindingName(param,);
   },);
 }
@@ -86,22 +90,26 @@ export function extractParamNames(
  * @returns array of extracted name strings
  */
 function extractBindingName(pattern: Record<string, unknown>,): readonly string[] {
-  if (pattern.type === 'Identifier') {
+  if (pattern.type
+    === 'Identifier') {
     /** Identifier text of the parameter binding; `this` is skipped because it is not a real param. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     const name = pattern.name as string;
     // Skip `this` parameter in TypeScript
     return name === 'this' ? [] : [name,];
   }
-  if (pattern.type === 'AssignmentPattern') {
+  if (pattern.type
+    === 'AssignmentPattern') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return extractBindingName(pattern.left as Record<string, unknown>,);
   }
-  if (pattern.type === 'RestElement') {
+  if (pattern.type
+    === 'RestElement') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return extractBindingName(pattern.argument as Record<string, unknown>,);
   }
-  if (pattern.type === 'TSParameterProperty') {
+  if (pattern.type
+    === 'TSParameterProperty') {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return extractBindingName(pattern.parameter as Record<string, unknown>,);
   }
@@ -122,7 +130,9 @@ function extractBindingName(pattern: Record<string, unknown>,): readonly string[
  * ```
  */
 export function extractDocParamNames(docComment: DocComment,): readonly string[] {
-  return docComment.params.blocks.map(
+  return docComment.params
+    .blocks
+    .map(
     function getParamName(block: DocParamBlock,): string {
       return block.parameterName;
     },

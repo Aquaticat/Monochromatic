@@ -40,24 +40,49 @@ export function applyEditsToText({
     b,
   ) {
     /** Line diff (b - a) for reverse ordering; falls through to character on ties. */
-    const lineDiff = b.range.end.line - a.range.end.line;
-    return lineDiff !== 0 ? lineDiff : b.range.end.character - a.range.end.character;
+    const lineDiff = b.range
+      .end
+      .line
+      - a
+      .range
+      .end
+      .line;
+    return lineDiff !== 0 ? lineDiff : b.range
+      .end
+      .character
+      - a
+      .range
+      .end
+      .character;
   },);
 
   for (const edit of sorted) {
     /** Text on the start line before the edit range; preserved verbatim around the replacement. */
-    const before = lines[edit.range.start.line]?.slice(
+    const before = lines[edit.range.start.line]
+      ?.slice(
       0,
       edit.range.start.character,
     )
       ?? '';
     /** Text on the end line after the edit range; preserved verbatim around the replacement. */
-    const after = lines[edit.range.end.line]?.slice(edit.range.end.character,) ?? '';
+    const after = lines[edit.range.end.line]
+      ?.slice(edit.range.end.character,)
+      ?? '';
     /** Replacement lines for the spliced range; `newText` may introduce or collapse line breaks. */
-    const newLines = (before + edit.newText + after).split('\n',);
+    const newLines = (before + edit
+      .newText
+      + after).split('\n',);
     lines.splice(
-      edit.range.start.line,
-      (edit.range.end.line - edit.range.start.line) + 1,
+      edit.range
+        .start
+        .line,
+      (edit.range
+        .end
+        .line
+        - edit
+        .range
+        .start
+        .line) + 1,
       ...newLines,
     );
   }
@@ -105,7 +130,8 @@ function positionToOffset({
       },
       0,
     )
-    + position.character;
+    + position
+    .character;
 }
 
 /**
@@ -153,11 +179,14 @@ function offsetToPosition({
   /** Index of the last line; clamped to 0 for empty input so subsequent lookup never goes negative. */
   const lastLine = Math.max(
     0,
-    lines.length - 1,
+    lines.length
+      - 1,
   );
   return {
     line: lastLine,
-    character: lines[lastLine]?.length ?? 0,
+    character: lines[lastLine]
+      ?.length
+      ?? 0,
   };
 }
 
@@ -225,8 +254,20 @@ export function mapCursorThroughEdits({
     b,
   ) {
     /** Line diff for forward ordering; falls through to character on ties. */
-    const lineDiff = a.range.start.line - b.range.start.line;
-    return lineDiff !== 0 ? lineDiff : a.range.start.character - b.range.start.character;
+    const lineDiff = a.range
+      .start
+      .line
+      - b
+      .range
+      .start
+      .line;
+    return lineDiff !== 0 ? lineDiff : a.range
+      .start
+      .character
+      - b
+      .range
+      .start
+      .character;
   },);
 
   /**
@@ -238,22 +279,28 @@ export function mapCursorThroughEdits({
   for (const edit of sorted) {
     /** Edit start as an absolute offset in `originalText`; compared against `cursorOffset` for case routing. */
     const editStart = positionToOffset({
-      position: edit.range.start,
+      position: edit.range
+        .start,
       lines: originalLines,
     },);
     /** Edit end as an absolute offset in `originalText`; matched against `cursorOffset` to detect inclusion. */
     const editEnd = positionToOffset({
-      position: edit.range.end,
+      position: edit.range
+        .end,
       lines: originalLines,
     },);
 
     if (editEnd <= cursorOffset) {
-      shift += edit.newText.length - (editEnd - editStart);
+      shift += edit.newText
+        .length
+        - (editEnd - editStart);
       continue;
     }
     if (editStart < cursorOffset) {
       /** Cursor is inside this edit; clamp to end of replacement text. */
-      shift += (editStart + edit.newText.length) - cursorOffset;
+      shift += (editStart + edit
+        .newText
+        .length) - cursorOffset;
     }
     break;
   }

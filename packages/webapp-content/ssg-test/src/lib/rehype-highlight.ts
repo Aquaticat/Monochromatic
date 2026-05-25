@@ -95,10 +95,13 @@ const LANGUAGE_PREFIX = 'language-';
  * @returns concatenated text of all descendant text nodes
  */
 function extractText(node: ElementContent,): string {
-  if (node.type === 'text')
+  if (node.type
+    === 'text')
     return node.value;
   if ('children' in node)
-    return node.children.map(extractText,).join('',);
+    return node.children
+      .map(extractText,)
+      .join('',);
   return '';
 }
 
@@ -177,7 +180,8 @@ function annotateCodeBlock({
   for (const group of HIGHLIGHT_GROUPS) {
     /** Pairs for the current highlight group; undefined when no match was found. */
     const pairs = pairsByGroup.get(group,);
-    if ((pairs !== undefined) && (pairs.length > 0))
+    if ((pairs !== undefined) && (pairs.length
+      > 0))
       codeElement.properties[`data-hl-${group}`] = pairs.join(';',);
   }
 }
@@ -189,16 +193,18 @@ function annotateCodeBlock({
  */
 function visitNode(node: Root | Element,): void {
   for (const child of node.children) {
-    if (child.type !== 'element')
+    if (child.type
+      !== 'element')
       continue;
 
-    if (child.tagName === 'pre') {
+    if (child.tagName
+      === 'pre') {
       /** First child node expected to be the `<code>` block; processed when present. */
       const [firstChild,] = child.children;
       if (
         (firstChild !== undefined)
         && (firstChild.type === 'element')
-        && (firstChild.tagName === 'code')
+          && (firstChild.tagName === 'code')
       ) {
         /** Language detected from the `<code>` class list, or undefined to skip. */
         const lang = getLanguage(firstChild,);
@@ -207,8 +213,11 @@ function visitNode(node: Root | Element,): void {
           const parser = PARSERS[lang];
           if (parser !== undefined) {
             /** Plain text extracted from the code element prior to highlighting. */
-            const text = firstChild.children.map(extractText,).join('',);
-            if (text.length > 0) {
+            const text = firstChild.children
+              .map(extractText,)
+              .join('',);
+            if (text.length
+              > 0) {
               annotateCodeBlock({
                 codeElement: firstChild,
                 parser,

@@ -94,11 +94,16 @@ function looksLikePath(
 ): boolean {
   return (
     s.startsWith('/',)
-    || s.startsWith('./',)
-    || s.startsWith('../',)
-    || s.startsWith('~',)
-    || s.includes('/',)
-    || s.startsWith('.',)
+      || s
+      .startsWith('./',)
+      || s
+      .startsWith('../',)
+      || s
+      .startsWith('~',)
+      || s
+      .includes('/',)
+      || s
+      .startsWith('.',)
   );
 }
 

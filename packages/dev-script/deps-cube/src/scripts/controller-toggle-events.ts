@@ -59,11 +59,13 @@ export function wireToggles(
           return;
         /** Narrowed toggle value matching input value; `undefined` rejects unexpected values. */
         const next = TOGGLE_VALUES.find(function match(candidate,) {
-          return candidate === input.value;
+          return candidate === input
+            .value;
         },);
         if (next === undefined)
           return;
-        session.state.toggles[key] = next;
+        session.state
+          .toggles[key] = next;
         commit();
       },
     );
@@ -99,7 +101,8 @@ export function wireSearch(
   input.addEventListener(
     'input',
     function onInput() {
-      session.state.search = input.value;
+      session.state
+        .search = input.value;
       commit();
     },
   );

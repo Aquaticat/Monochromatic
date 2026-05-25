@@ -41,7 +41,9 @@ const config: UserConfig = defineConfig({
       // Spread the base's RegExp array; the type is `Arrayable<string |
       // RegExp> | NoExternalFn`, but the base config always uses an array.
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- base config invariant
-      ...(base.deps?.alwaysBundle as readonly (string | RegExp)[] | undefined ?? []),
+      ...(base.deps
+        ?.alwaysBundle as readonly (string | RegExp)[] | undefined
+        ?? []),
       /* oxlint-disable no-restricted-syntax/no-regex -- anchored package-name matchers consumed by tsdown's alwaysBundle list; each pattern is `^literal` or `^literal-` with no quantifiers, matching one short specifier per dependency at build time */
       /^micromark/u,
       /^micromark-/u,

@@ -47,7 +47,9 @@ export function contentHashFilter(): WatchFilter {
       readonly ctx: WatchCtx;
     },
   ): Promise<boolean> {
-    if ((event.entity === 'dir') || (event.kind === 'unlink')) {
+    if ((event.entity
+      === 'dir') || (event.kind
+      === 'unlink')) {
       // Directories have no content to hash; `unlink` already cleared
       // the cache entry. In both cases the decision to fire belongs to
       // other filters (e.g. `typeFilter`, `--events`).
@@ -55,14 +57,17 @@ export function contentHashFilter(): WatchFilter {
     }
     try {
       /** Hash computed off the current file bytes; `null` means the file exceeds the size cap. */
-      const fresh = await ctx.hashCache.hashFile(event.path,);
+      const fresh = await ctx.hashCache
+        .hashFile(event.path,);
       if (fresh === null)
         return true;
       /** Previously stored hash for this path; `undefined` when the watcher has never seen the file. */
-      const prior = ctx.hashCache.get(event.path,);
+      const prior = ctx.hashCache
+        .get(event.path,);
       if (prior === fresh)
         return false;
-      ctx.hashCache.set({
+      ctx.hashCache
+        .set({
         path: event.path,
         hash: fresh,
       },);
@@ -71,7 +76,8 @@ export function contentHashFilter(): WatchFilter {
     catch (error) {
       /** Human-readable error string used in the fire-on-failure warning log. */
       const message = error instanceof Error ? error.message : String(error,);
-      ctx.logger.warn(
+      ctx.logger
+        .warn(
         `content-hash filter failed for ${event.path}: ${message}; firing`,
       );
       return true;

@@ -53,10 +53,12 @@ type MessagesResponse = {
  */
 // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `opts` carries an `AbortSignal` (browser SDK with mutating methods); deep-readonly cannot apply, and the function never mutates opts.
 async function callAnthropic(opts: ChatOptions,): Promise<string> {
-  if (opts.apiKey === '')
+  if (opts.apiKey
+    === '')
     throw new Error('anthropic: no API key configured',);
   /** Configured base URL falling back to the public Anthropic endpoint. */
-  const base = opts.baseUrl === '' ? DEFAULT_BASE : opts.baseUrl;
+  const base = opts.baseUrl
+    === '' ? DEFAULT_BASE : opts.baseUrl;
   /** Provider base URL with any trailing slash removed so the endpoint suffix joins cleanly. */
   const trimmedBase = base.endsWith('/',)
     ? base.slice(
@@ -69,13 +71,15 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
    */
   const url = `${trimmedBase}/v1/messages`;
   /** Leading system turns split out since Anthropic accepts them as a separate field. */
-  const systemMessages = opts.messages.filter(function isSystem(
+  const systemMessages = opts.messages
+    .filter(function isSystem(
     m: Readonly<Message>,
   ): boolean {
     return m.role === 'system';
   },);
   /** Non-system turns forming the message list payload. */
-  const turnMessages = opts.messages.filter(function isTurn(
+  const turnMessages = opts.messages
+    .filter(function isTurn(
     m: Readonly<Message>,
   ): boolean {
     return m.role !== 'system';
@@ -90,7 +94,8 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
   const body: Record<string, unknown> = {
     model: opts.model,
     max_tokens: MAX_TOKENS,
-    temperature: opts.temperature ?? DEFAULT_TEMPERATURE,
+    temperature: opts.temperature
+      ?? DEFAULT_TEMPERATURE,
     system,
     messages: turnMessages.map(function toApi(
       m: Readonly<Message>,
@@ -118,7 +123,8 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
       method: 'POST',
       headers,
       body: JSON.stringify(body,),
-      signal: opts.signal ?? null,
+      signal: opts.signal
+        ?? null,
     },
   );
   if (!res.ok) {
@@ -149,12 +155,14 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
   const json = await res.json() as MessagesResponse;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   /** First `text`-typed content block, the assistant's reply. */
-  const textPart = json.content.find(function isText(
+  const textPart = json.content
+    .find(function isText(
     c: Readonly<MessagesResponse['content'][number]>,
   ): boolean {
     return c.type === 'text';
   },);
-  return textPart?.text ?? '';
+  return textPart?.text
+    ?? '';
 }
 
 /** Anthropic provider implementation. */

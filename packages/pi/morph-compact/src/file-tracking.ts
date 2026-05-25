@@ -68,11 +68,14 @@ export function formatFileOperations({
 },): string {
   /** Accumulates per-category XML fragments before joining. */
   const sections: string[] = [];
-  if (readFiles.length > 0)
+  if (readFiles.length
+    > 0)
     sections.push(`<read-files>\n${readFiles.join('\n',)}\n</read-files>`,);
-  if (modifiedFiles.length > 0)
+  if (modifiedFiles.length
+    > 0)
     sections.push(`<modified-files>\n${modifiedFiles.join('\n',)}\n</modified-files>`,);
-  if (sections.length === 0)
+  if (sections.length
+    === 0)
     return '';
   return `\n\n${sections.join('\n\n',)}`;
 }

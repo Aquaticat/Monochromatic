@@ -52,7 +52,8 @@ export function getModelIdLeaf(
   },
 ): string {
   /** Index after the final slash, or zero when no slash exists. */
-  const leafStartIndex = modelId.lastIndexOf('/',) + 1;
+  const leafStartIndex = modelId.lastIndexOf('/',)
+    + 1;
   return modelId.slice(leafStartIndex,);
 }
 
@@ -80,7 +81,8 @@ export function isGptModelId(
   },
 ): boolean {
   /** Lowercased final segment used for case-insensitive GPT detection. */
-  const normalizedLeaf = getModelIdLeaf({ modelId, },).toLowerCase();
+  const normalizedLeaf = getModelIdLeaf({ modelId, },)
+    .toLowerCase();
   return normalizedLeaf.startsWith('gpt-',);
 }
 

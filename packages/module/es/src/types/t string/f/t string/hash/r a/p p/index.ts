@@ -20,7 +20,8 @@ export async function $(value: string,): Promise<string> {
   /** UTF-8 encoded bytes of the input string */
   const data = encoder.encode(value,);
   /** SHA-256 hash digest as ArrayBuffer */
-  const hashBuffer = await crypto.subtle.digest(
+  const hashBuffer = await crypto.subtle
+    .digest(
     'SHA-256',
     data,
   );
@@ -31,7 +32,8 @@ export async function $(value: string,): Promise<string> {
     .map(function toHex(b,) {
       /** Hexadecimal base for byte-to-hex conversion */
       const HEX_BASE = 16;
-      return b.toString(HEX_BASE,).padStart(
+      return b.toString(HEX_BASE,)
+        .padStart(
         2,
         '0',
       );

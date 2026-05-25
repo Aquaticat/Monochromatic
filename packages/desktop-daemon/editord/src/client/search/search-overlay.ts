@@ -113,7 +113,9 @@ export class SearchOverlay extends HTMLElement {
           const related = event.relatedTarget;
           if ((related === null)
             || (!(related instanceof Node))
-            || (overlay.#dialog?.contains(related,) !== true))
+            || (overlay.#dialog
+              ?.contains(related,)
+              !== true))
           {
             overlay.#close();
           }
@@ -136,7 +138,8 @@ export class SearchOverlay extends HTMLElement {
         },
       },
     },);
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,
@@ -144,17 +147,21 @@ export class SearchOverlay extends HTMLElement {
       this.#dialog,
     );
     this.#boundKeydown = function handleGlobalKeydown(event: KeyboardEvent,): void {
-      if (event.key !== 'Shift')
+      if (event.key
+        !== 'Shift')
         overlay.#interveningKey = true;
     };
     this.#boundKeyup = function handleGlobalKeyup(event: KeyboardEvent,): void {
-      if (event.key !== 'Shift')
+      if (event.key
+        !== 'Shift')
         return;
       /** Current timestamp; compared against `lastShiftUp` to detect a double-shift within the threshold. */
       const now = Date.now();
       if ((!overlay.#interveningKey)
-        && (overlay.#lastShiftUp > 0)
-        && ((now - overlay.#lastShiftUp) < DOUBLE_SHIFT_THRESHOLD_MS))
+        && (overlay.#lastShiftUp
+          > 0)
+        && ((now - overlay
+          .#lastShiftUp) < DOUBLE_SHIFT_THRESHOLD_MS))
       {
         overlay.#lastShiftUp = 0;
         overlay.#interveningKey = false;
@@ -176,13 +183,15 @@ export class SearchOverlay extends HTMLElement {
 
   /** Removes global keyboard listeners added in connectedCallback. */
   disconnectedCallback(): void {
-    if (this.#boundKeydown !== null) {
+    if (this.#boundKeydown
+      !== null) {
       document.removeEventListener(
         'keydown',
         this.#boundKeydown,
       );
     }
-    if (this.#boundKeyup !== null) {
+    if (this.#boundKeyup
+      !== null) {
       document.removeEventListener(
         'keyup',
         this.#boundKeyup,
@@ -192,27 +201,37 @@ export class SearchOverlay extends HTMLElement {
 
   /** Opens the overlay. */
   #show(): void {
-    this.#rootDir = this.getRootDir?.() ?? '';
-    if ((this.#dialog === null)
-      || (this.#input === null)
-      || (this.#resultsContainer === null))
+    this.#rootDir = this.getRootDir?.()
+      ?? '';
+    if ((this.#dialog
+      === null)
+      || (this.#input
+        === null)
+      || (this.#resultsContainer
+        === null))
     {
       return;
     }
-    this.#input.value = '';
-    this.#resultsContainer.replaceChildren();
+    this.#input
+      .value = '';
+    this.#resultsContainer
+      .replaceChildren();
     this.#results = [];
     this.#selectedIndex = -1;
-    this.#dialog.showModal();
+    this.#dialog
+      .showModal();
     this.#measureCharWidth();
-    this.#input.focus();
+    this.#input
+      .focus();
     l.info('overlay opened',);
   }
 
   /** Closes the search overlay. */
   #close(): void {
-    if (this.#dialog !== null)
-      this.#dialog.close();
+    if (this.#dialog
+      !== null)
+      this.#dialog
+        .close();
   }
 
   /**
@@ -221,9 +240,11 @@ export class SearchOverlay extends HTMLElement {
    * since the dialog font does not change between opens.
    */
   #measureCharWidth(): void {
-    if (this.#charWidthPx > 0)
+    if (this.#charWidthPx
+      > 0)
       return;
-    if (this.#dialog === null)
+    if (this.#dialog
+      === null)
       return;
     /** Resolved `font` shorthand for the dialog; passed straight to the canvas context for measurement. */
     const { font, } = getComputedStyle(this.#dialog,);
@@ -234,7 +255,8 @@ export class SearchOverlay extends HTMLElement {
     if (ctx === null)
       return;
     ctx.font = font;
-    this.#charWidthPx = ctx.measureText('0',).width;
+    this.#charWidthPx = ctx.measureText('0',)
+      .width;
   }
 
   /**
@@ -243,9 +265,14 @@ export class SearchOverlay extends HTMLElement {
    * @returns number of monospace characters that fit in one result row
    */
   #charBudget(): number {
-    if ((this.#charWidthPx <= 0) || (this.#resultsContainer === null))
+    if ((this.#charWidthPx
+      <= 0) || (this.#resultsContainer
+      === null))
       return 0;
-    return Math.floor(this.#resultsContainer.clientWidth / this.#charWidthPx,);
+    return Math.floor(this.#resultsContainer
+      .clientWidth
+      / this
+      .#charWidthPx,);
   }
 
   /** Schedules a debounced search. */
@@ -262,12 +289,15 @@ export class SearchOverlay extends HTMLElement {
 
   /** Reads the input value, invokes `onSearch`, and renders results. */
   async #performSearch(): Promise<void> {
-    if ((this.onSearch === null) || (this.#input === null))
+    if ((this.onSearch
+      === null) || (this.#input
+      === null))
       return;
     /** Local alias for `this`; captured by the `onResults` callback. */
     const overlay = this;
     await performSearch({
-      raw: this.#input.value,
+      raw: this.#input
+        .value,
       state: this.#searchState,
       onSearch: this.onSearch,
       onResults: function render(opts,) {
@@ -286,14 +316,22 @@ export class SearchOverlay extends HTMLElement {
       readonly query: string;
     },
   ): void {
-    if (this.#resultsContainer === null)
+    if (this.#resultsContainer
+      === null)
       return;
     this.#results = results;
-    this.#selectedIndex = results.length > 0 ? 0 : -1;
-    if (results.length === 0) {
+    this.#selectedIndex = results.length
+      > 0 ? 0 : -1;
+    if (results.length
+      === 0) {
       /** True when the input contains non-whitespace text; selects the "No results" message over a blank placeholder. */
-      const hasInput = (this.#input !== null) && (this.#input.value.trim() !== '');
-      this.#resultsContainer.replaceChildren(
+      const hasInput = (this.#input
+        !== null) && (this.#input
+        .value
+        .trim()
+        !== '');
+      this.#resultsContainer
+        .replaceChildren(
         hasInput
           ? h({
             tag: 'div',
@@ -307,7 +345,8 @@ export class SearchOverlay extends HTMLElement {
     /** Local alias for `this`; captured by the `onSelect` callback. */
     const overlay = this;
     /** Root directory with a guaranteed trailing slash; stripped from result paths when displaying them. */
-    const rootPrefix = this.#rootDir.endsWith('/',) ? this.#rootDir : `${this.#rootDir}/`;
+    const rootPrefix = this.#rootDir
+      .endsWith('/',) ? this.#rootDir : `${this.#rootDir}/`;
     /** Rendered DOM nodes for each result row, ready to swap into `resultsContainer`. */
     const elements = renderResultElements({
       results,
@@ -318,7 +357,8 @@ export class SearchOverlay extends HTMLElement {
         overlay.#selectResult({ index, },);
       },
     },);
-    this.#resultsContainer.replaceChildren(...elements,);
+    this.#resultsContainer
+      .replaceChildren(...elements,);
     highlightMatches({
       query,
       container: this.#resultsContainer,
@@ -327,7 +367,8 @@ export class SearchOverlay extends HTMLElement {
 
   /** Moves the keyboard selection by the given delta. */
   #moveSelection({ delta, }: { readonly delta: number; },): void {
-    if (this.#resultsContainer === null)
+    if (this.#resultsContainer
+      === null)
       return;
     this.#selectedIndex = moveSearchSelection({
       delta,

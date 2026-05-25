@@ -66,7 +66,8 @@ function computeRangeExtent(
     .filter(function nonNull(value,): value is number {
       return value !== null;
     },);
-  if (values.length === 0) {
+  if (values.length
+    === 0) {
     return [
       0,
       0,
@@ -126,26 +127,35 @@ export function wireDimDropdowns(
         },);
         if (nextDim === undefined)
           return;
-        session.state.dimMapping[channel] = nextDim;
+        session.state
+          .dimMapping[channel] = nextDim;
         /** Fresh `[min, max]` for newly-selected dim. */
         const extent = computeRangeExtent({
           probes,
           dim: nextDim,
         },);
-        session.state.ranges[channel] = extent;
+        session.state
+          .ranges[channel] = extent;
         /** Min-slider for this channel; min/max/value rewritten to new dim's extent below. */
         const minSlider = elInput(`range-${channel}-min`,);
         /** Max-slider for this channel; min/max/value rewritten to new dim's extent below. */
         const maxSlider = elInput(`range-${channel}-max`,);
-        minSlider.min = extent[0].toString();
-        minSlider.max = extent[1].toString();
-        minSlider.value = extent[0].toString();
-        maxSlider.min = extent[0].toString();
-        maxSlider.max = extent[1].toString();
-        maxSlider.value = extent[1].toString();
+        minSlider.min = extent[0]
+          .toString();
+        minSlider.max = extent[1]
+          .toString();
+        minSlider.value = extent[0]
+          .toString();
+        maxSlider.min = extent[0]
+          .toString();
+        maxSlider.max = extent[1]
+          .toString();
+        maxSlider.value = extent[1]
+          .toString();
         session.bounds = computeSceneBounds({
           probes,
-          dimMapping: session.state.dimMapping,
+          dimMapping: session.state
+            .dimMapping,
         },);
         commit();
       },
@@ -188,7 +198,8 @@ export function wireRanges(
       const minVal = Number.parseFloat(minSlider.value,);
       /** Numeric form of max-slider's current value. */
       const maxVal = Number.parseFloat(maxSlider.value,);
-      session.state.ranges[channel] = minVal <= maxVal
+      session.state
+        .ranges[channel] = minVal <= maxVal
         ? [
           minVal,
           maxVal,

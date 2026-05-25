@@ -24,7 +24,8 @@ import { measureSpaceRatio, } from './measure.ts';
  * @returns 0-based line number
  */
 function hintLine(hint: InlayHint,): number {
-  return hint.position.line;
+  return hint.position
+    .line;
 }
 
 /**
@@ -35,7 +36,9 @@ function hintLine(hint: InlayHint,): number {
  * @returns 0-based line number
  */
 function diagLine(diagnostic: Diagnostic,): number {
-  return diagnostic.range.start.line;
+  return diagnostic.range
+    .start
+    .line;
 }
 
 /**
@@ -115,10 +118,15 @@ export function applyInlayAnnotations({
       continue;
     /** Line div whose stale annotation must be removed; null when the line was deleted. */
     const div = children[line];
-    if ((div instanceof HTMLElement) && (div.dataset.inlay !== undefined)) {
-      delete div.dataset.inlay;
-      delete div.dataset.inlaySeverity;
-      div.style.removeProperty('--line-num-offset',);
+    if ((div instanceof HTMLElement) && (div.dataset
+      .inlay
+      !== undefined)) {
+      delete div.dataset
+        .inlay;
+      delete div.dataset
+        .inlaySeverity;
+      div.style
+        .removeProperty('--line-num-offset',);
     }
   }
 
@@ -142,9 +150,12 @@ export function clearInlayAnnotations({ editor, }: { readonly editor: HTMLElemen
     /** Line div whose annotation attributes are being cleared on this teardown pass. */
     const child = editor.children[line];
     if (child instanceof HTMLElement) {
-      delete child.dataset.inlay;
-      delete child.dataset.inlaySeverity;
-      child.style.removeProperty('--line-num-offset',);
+      delete child.dataset
+        .inlay;
+      delete child.dataset
+        .inlaySeverity;
+      child.style
+        .removeProperty('--line-num-offset',);
     }
   }
   annotatedLines.clear();

@@ -26,6 +26,7 @@ export const codeGenProbesAll: readonly Probe[] = [
 /** Fast probes only (default) -- excludes slow probes like task-scheduler */
 export const codeGenProbes: readonly Probe[] = codeGenProbesAll.filter(
   function isFast(probe,): boolean {
-    return probe.slow !== true;
+    return probe.slow
+      !== true;
   },
 );

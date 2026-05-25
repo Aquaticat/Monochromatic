@@ -40,8 +40,12 @@ export function indexPage(
   const title = locales
     .map(function capitalize(locale,) {
       /** Translated phrase before title-case fixup. */
-      const str = i18nObject(locale,).chooseALang();
-      return str.charAt(0,).toUpperCase() + str.slice(1,);
+      const str = i18nObject(locale,)
+        .chooseALang();
+      return str.charAt(0,)
+        .toUpperCase()
+        + str
+        .slice(1,);
     },)
     .join(' ',);
 

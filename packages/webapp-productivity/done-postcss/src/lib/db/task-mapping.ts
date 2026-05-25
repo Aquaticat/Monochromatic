@@ -70,7 +70,8 @@ export function normalizeStringArray(values: readonly string[] | undefined,): st
       return value.trim();
     },)
     .filter(function isNonEmpty(value,) {
-      return value.length > 0;
+      return value.length
+        > 0;
     },),),];
 }
 

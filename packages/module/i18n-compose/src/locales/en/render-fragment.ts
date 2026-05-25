@@ -54,10 +54,13 @@ function nonFiniteSurface(
   },
 ): string {
   if (form === 'imperative')
-    return entry.imperative ?? entry.base;
+    return entry.imperative
+      ?? entry
+      .base;
   if (form === 'infinitive')
     return `to ${entry.base}`;
-  return entry.gerund ?? `${entry.base}ing`;
+  return entry.gerund
+    ?? `${entry.base}ing`;
 }
 
 /**
@@ -109,7 +112,8 @@ function renderComplement<S extends string, V extends string, N extends string,>
 ): string {
   /** Rendered nested verb phrase before complement marker selection. */
   const rendered = renderVerbPhrase(phrase,);
-  return complementFormForVerb({ entry, },) === 'bare' ? rendered : `to ${rendered}`;
+  return complementFormForVerb({ entry, },)
+    === 'bare' ? rendered : `to ${rendered}`;
 }
 
 /**
@@ -152,26 +156,35 @@ export function makeEnglishFragmentRenderer<
     fragment: Extract<Fragment<L, S, V, N>, { kind: 'fragment.verbPhrase'; }>,
   ): string {
     /** Verb entry used by every non-finite branch. */
-    const entry = verbs[fragment.phrase.verb];
+    const entry = verbs[fragment.phrase
+      .verb];
     /** Non-finite surface for the requested form. */
     const head = nonFiniteSurface({
       entry,
       form: fragment.form,
     },);
     /** Optional rendered object surface. */
-    const object = fragment.phrase.object === undefined
+    const object = fragment.phrase
+      .object
+      === undefined
       ? undefined
-      : renderNounPhrase(fragment.phrase.object,);
+      : renderNounPhrase(fragment.phrase
+        .object,);
     /** Optional rendered infinitive or bare complement. */
-    const complement = fragment.phrase.complement === undefined
+    const complement = fragment.phrase
+      .complement
+      === undefined
       ? undefined
       : renderComplement({
         entry,
-        phrase: fragment.phrase.complement.phrase,
+        phrase: fragment.phrase
+          .complement
+          .phrase,
         renderVerbPhrase,
       },);
     /** Optional rendered adverbial cluster. */
-    const adverbials = renderAdverbials(fragment.phrase.adverbials,);
+    const adverbials = renderAdverbials(fragment.phrase
+      .adverbials,);
     /** Joined surface before capitalization fixup. */
     const body = joinTokens([
       head,
@@ -195,9 +208,11 @@ export function makeEnglishFragmentRenderer<
   function renderPart(
     part: Extract<Fragment<L, S, V, N>, { kind: 'fragment.sequence'; }>['parts'][number],
   ): string {
-    if (part.kind === 'part.label')
+    if (part.kind
+      === 'part.label')
       return labels[part.label];
-    if (part.kind === 'part.nounPhrase')
+    if (part.kind
+      === 'part.nounPhrase')
       return renderNounPhrase(part.phrase,);
     return part.text;
   }
@@ -210,13 +225,15 @@ export function makeEnglishFragmentRenderer<
    * @returns rendered surface
    */
   function renderFragment(fragment: Fragment<L, S, V, N>,): string {
-    if (fragment.kind === 'fragment.nounPhrase') {
+    if (fragment.kind
+      === 'fragment.nounPhrase') {
       return capitalize({
         text: renderNounPhrase(fragment.phrase,),
         mode: fragment.capitalization,
       },);
     }
-    if (fragment.kind === 'fragment.verbPhrase')
+    if (fragment.kind
+      === 'fragment.verbPhrase')
       return renderVerbPhraseFragment(fragment,);
     /** Rendered sequence parts space-joined. */
     const joined = fragment

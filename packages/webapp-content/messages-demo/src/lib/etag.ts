@@ -89,7 +89,9 @@ export function matches(
     readonly etag: string;
   },
 ): boolean {
-  if ((input.ifNoneMatch === undefined) || (input.ifNoneMatch === null))
+  if ((input.ifNoneMatch
+    === undefined) || (input.ifNoneMatch
+    === null))
     return false;
   // The client may send a comma-separated list (e.g. multiple cached
   // entries for the same URL across redirects); a hit on any of them

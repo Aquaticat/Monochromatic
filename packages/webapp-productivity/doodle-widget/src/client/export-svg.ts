@@ -108,7 +108,9 @@ export function exportAsSvg(
   /** Snapshot pulled before the loop so concurrent edits cannot reshape the array mid-render. */
   const strokes = getStrokes();
   for (const stroke of strokes) {
-    if (stroke.points.length < MIN_STROKE_POINTS)
+    if (stroke.points
+      .length
+      < MIN_STROKE_POINTS)
       continue;
     /** One path per stroke so the colour and width attributes do not leak between strokes. */
     const path = document.createElementNS(
@@ -164,23 +166,28 @@ export function exportAsSvg(
     overlay,
   },);
   if (overlayInfo !== null) {
-    overlayInfo.clone.setAttribute(
+    overlayInfo.clone
+      .setAttribute(
       'x',
       String(overlayInfo.offsetX * exportScale,),
     );
-    overlayInfo.clone.setAttribute(
+    overlayInfo.clone
+      .setAttribute(
       'y',
       String(overlayInfo.offsetY * exportScale,),
     );
-    overlayInfo.clone.setAttribute(
+    overlayInfo.clone
+      .setAttribute(
       'width',
       String(overlayInfo.width * exportScale,),
     );
-    overlayInfo.clone.setAttribute(
+    overlayInfo.clone
+      .setAttribute(
       'height',
       String(overlayInfo.height * exportScale,),
     );
-    overlayInfo.clone.setAttribute(
+    overlayInfo.clone
+      .setAttribute(
       'style',
       'mix-blend-mode:multiply',
     );
@@ -199,11 +206,13 @@ export function exportAsSvg(
     );
     text.setAttribute(
       'x',
-      String(entry.xFraction * cw,),
+      String(entry.xFraction
+        * cw,),
     );
     text.setAttribute(
       'y',
-      String(entry.yFraction * ch,),
+      String(entry.yFraction
+        * ch,),
     );
     text.setAttribute(
       'font-family',

@@ -57,7 +57,8 @@ export async function fetchServerTimestamp(): Promise<ISOTimestamp> {
       },
     );
     /** Raw RFC 7231 `Date` header from the response; null when the server omitted it. */
-    const dateHeader = response.headers.get('date',);
+    const dateHeader = response.headers
+      .get('date',);
     if (dateHeader !== null) {
       /** Parsed `Date` instance; checked for NaN below before being serialized as ISO 8601. */
       const parsed = new Date(dateHeader,);

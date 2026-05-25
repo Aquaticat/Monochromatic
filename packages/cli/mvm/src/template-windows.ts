@@ -268,7 +268,8 @@ async function guestExecWait({
       }; })
       .return;
     if (status.exited)
-      return status.exitcode ?? 0;
+      return status.exitcode
+        ?? 0;
     // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- deliberate serial polling with setTimeout
     await new Promise(function pollDelay(resolve,) {
       setTimeout(
@@ -326,14 +327,16 @@ async function guestFilePush({
   const RAW_CHUNK_KIB = 48;
   /** Write in 48 KiB raw chunks (~65 KB base64, fits within virsh CLI arg limits). */
   const RAW_CHUNK: number = RAW_CHUNK_KIB * BYTES_PER_KIB;
-  for (let offset = 0; offset < data.length; offset += RAW_CHUNK) {
+  for (let offset = 0; offset < data
+    .length; offset += RAW_CHUNK) {
     /** Raw byte slice of the current chunk; zero-copy view into `data`. */
     const chunk = data.subarray(
       offset,
       offset + RAW_CHUNK,
     );
     /** Base64-encoded chunk; the QMP protocol only carries text, so binary must be encoded. */
-    const b64 = Buffer.from(chunk,).toString('base64',);
+    const b64 = Buffer.from(chunk,)
+      .toString('base64',);
     // oxlint-disable-next-line no-await-in-loop -- deliberate serial file transfer
     await virsh({
       args: [

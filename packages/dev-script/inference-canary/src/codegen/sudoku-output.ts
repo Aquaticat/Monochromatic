@@ -20,7 +20,8 @@
  * ```
  */
 export function splitOutputSections(output: string,): string[] {
-  return splitOnDashLines(output.trim(),).map(
+  return splitOnDashLines(output.trim(),)
+    .map(
     function trimSection(puzzleSection,): string {
       return puzzleSection.trim();
     },
@@ -43,7 +44,8 @@ export function splitOutputSections(output: string,): string[] {
  * ```
  */
 function isDashLine(line: string,): boolean {
-  if (line.length === 0)
+  if (line.length
+    === 0)
     return false;
   for (const c of line) {
     if (c !== '-')

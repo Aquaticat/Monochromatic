@@ -62,9 +62,11 @@ function indexAfterAsyncPrefix({ fullText, }: { readonly fullText: string; },): 
     return 0;
   /** Cursor after the async keyword, advanced across following whitespace. */
   let index = ASYNC_KEYWORD.length;
-  if (!isWhitespaceCharacter({ char: fullText[index] ?? '', },))
+  if (!isWhitespaceCharacter({ char: fullText[index]
+    ?? '', },))
     return 0;
-  while (isWhitespaceCharacter({ char: fullText[index] ?? '', },))
+  while (isWhitespaceCharacter({ char: fullText[index]
+    ?? '', },))
     index++;
   return index;
 }
@@ -112,16 +114,21 @@ export function extractParamsText(
    * Skip type parameters `<...>` if present.
    * Count angle bracket depth to handle nested generics.
    */
-  if ((node.typeParameters !== null) && (node.typeParameters !== undefined)) {
+  if ((node.typeParameters
+    !== null) && (node.typeParameters
+    !== undefined)) {
     /** Source slice starting at the first non-`async` character; inspected for a leading `<`. */
     const tpText = fullText.slice(start,);
     if (tpText.startsWith('<',)) {
       /** Angle-bracket nesting counter so nested generics resolve before the params open. */
       let depth = 0;
-      for (let i = 0; i < tpText.length; i++) {
-        if (tpText[i] === '<')
+      for (let i = 0; i < tpText
+        .length; i++) {
+        if (tpText[i]
+          === '<')
           depth++;
-        else if (tpText[i] === '>') {
+        else if (tpText[i]
+          === '>') {
           depth--;
           if (depth === 0) {
             start += i + 1;
@@ -139,7 +146,8 @@ export function extractParamsText(
   /** Active string-literal delimiter while scanning, or null when outside a string. */
   let inString: string | null = null;
 
-  for (let i = 0; i < rest.length; i++) {
+  for (let i = 0; i < rest
+    .length; i++) {
     /** Current character under the scanner cursor. */
     const ch = rest[i];
 
@@ -153,7 +161,8 @@ export function extractParamsText(
       continue;
     }
 
-    if ((ch === '"') || (ch === "'") || (ch === '`')) {
+    if ((ch === '"') || (ch === "'")
+      || (ch === '`')) {
       inString = ch;
       continue;
     }

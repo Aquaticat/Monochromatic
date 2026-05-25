@@ -70,7 +70,9 @@ export const DIALOG_STYLES: string = [
       'padding-inline': cssRem(INPUT_PADDING,),
       'border-block-style': 'none',
       'border-inline-style': 'none',
-      'border-block-end-width': cssRem(1 / (2 * 2 * 2 * 2),),
+      'border-block-end-width': cssRem(1 / (2 * 2
+        * 2
+        * 2),),
       'border-block-end-style': 'solid',
       'border-block-end-color': cssVar('gutter-fg',),
       'background-color': cssVar('bg',),

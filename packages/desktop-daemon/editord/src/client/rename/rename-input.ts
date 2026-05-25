@@ -44,7 +44,8 @@ export class RenameInput extends HTMLElement {
       },
     },) as HTMLInputElement;
 
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,
@@ -66,10 +67,12 @@ export class RenameInput extends HTMLElement {
       'keydown',
       function handleInputKey(event,) {
         event.stopPropagation();
-        if (event.key === 'Enter') {
+        if (event.key
+          === 'Enter') {
           event.preventDefault();
           /** Whitespace-only entries are dropped to avoid no-op renames. */
-          const newName = input.value.trim();
+          const newName = input.value
+            .trim();
           if (newName !== '') {
             component.dispatchEvent(new CustomEvent(
               'rename-confirm',
@@ -83,7 +86,8 @@ export class RenameInput extends HTMLElement {
           component.hide();
           return;
         }
-        if (event.key === 'Escape') {
+        if (event.key
+          === 'Escape') {
           event.preventDefault();
           component.dispatchEvent(new CustomEvent(
             'rename-cancel',
@@ -124,15 +128,19 @@ export class RenameInput extends HTMLElement {
     readonly x: number;
     readonly y: number;
   },): void {
-    if (this.#input === null)
+    if (this.#input
+      === null)
       return;
 
-    this.#input.value = placeholder;
-    this.style.setProperty(
+    this.#input
+      .value = placeholder;
+    this.style
+      .setProperty(
       'inset-inline-start',
       `${x}px`,
     );
-    this.style.setProperty(
+    this.style
+      .setProperty(
       'inset-block-start',
       `${y + VERTICAL_OFFSET}px`,
     );
@@ -140,8 +148,10 @@ export class RenameInput extends HTMLElement {
     if (!this.matches(':popover-open',))
       this.showPopover();
 
-    this.#input.focus();
-    this.#input.select();
+    this.#input
+      .focus();
+    this.#input
+      .select();
   }
 
   /** Hides the rename input. */

@@ -138,7 +138,8 @@ export async function processEvent(row: {
     /** Freshly rendered fragment body plus its content hash. */
     const result = await renderFragment(fragmentKey,);
     /* oxlint-enable no-await-in-loop */
-    if (previousHash === result.contentHash) {
+    if (previousHash === result
+      .contentHash) {
       counters.skipped += 1;
       continue;
     }
@@ -213,7 +214,8 @@ async function resolveContext(event: EventInput,): Promise<ResolvedEventContext 
   /** All labels defined on the repo for filter-list dependency expansion. */
   const repoLabels = await listRepoLabels(issue.repo_id,);
   /** Issue state collapsed to the open/closed facet used by fragment keys. */
-  const state: IssueStateFacet = issue.state === 'closed' ? 'closed' : 'open';
+  const state: IssueStateFacet = issue.state
+    === 'closed' ? 'closed' : 'open';
   return {
     repoId: issue.repo_id,
     issueLabelIds: issueLabels.map(function pickId(label,) {

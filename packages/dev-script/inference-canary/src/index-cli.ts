@@ -57,7 +57,8 @@ export const runsOverride: number | undefined =
   (function parseRunsOverride(): number | undefined {
     if ((typeof cliArgs.runs) !== 'number')
       return undefined;
-    if (cliArgs.runs < 1)
+    if (cliArgs.runs
+      < 1)
       throw new Error(`--runs must be >= 1, got ${String(cliArgs.runs,)}`,);
     return cliArgs.runs;
   })();

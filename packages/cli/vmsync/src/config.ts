@@ -110,7 +110,9 @@ function isAlphaNum(c: string,): boolean {
  * ```
  */
 function isNameBodyChar(c: string,): boolean {
-  return isAlphaNum(c,) || (c === '_') || (c === '-');
+  return isAlphaNum(c,)
+    || (c === '_')
+    || (c === '-');
 }
 
 /**
@@ -132,7 +134,8 @@ function isNameBodyChar(c: string,): boolean {
  * ```
  */
 function isValidVmName(name: string,): boolean {
-  if (name.length === 0)
+  if (name.length
+    === 0)
     return false;
   if (!isAlphaNum(name.charAt(0,),))
     return false;
@@ -191,7 +194,8 @@ export function stripJsoncComments(text: string,): string {
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- string-mode flag toggled across multiple branches of the parser state machine
   let inString = false;
 
-  while (i < text.length) {
+  while (i < text
+    .length) {
     /** Character at the current position. */
     const ch = nonNullishOrThrow(text[i],);
 
@@ -217,13 +221,20 @@ export function stripJsoncComments(text: string,): string {
       result.push(ch,);
       i += 1;
     }
-    else if ((ch === '/') && (text[i + 1] === '/')) {
-      while ((i < text.length) && (text[i] !== '\n'))
+    else if ((ch === '/') && (text[i + 1]
+      === '/')) {
+      while ((i < text
+        .length) && (text[i]
+        !== '\n'))
         i += 1;
     }
-    else if ((ch === '/') && (text[i + 1] === '*')) {
+    else if ((ch === '/') && (text[i + 1]
+      === '*')) {
       i += 2;
-      while ((i < text.length) && (!((text[i - 1] === '*') && (text[i] === '/'))))
+      while ((i < text
+        .length) && (!((text[i - 1]
+        === '*') && (text[i]
+        === '/'))))
         i += 1;
       i += 1;
     }
@@ -340,9 +351,11 @@ export async function writeConfig(
  * ```
  */
 export function detectHypervisor(): Hypervisor {
-  if (process.platform === 'linux')
+  if (process.platform
+    === 'linux')
     return 'kvm';
-  if (process.platform === 'win32')
+  if (process.platform
+    === 'win32')
     return 'hyperv';
   throw new Error(
     `unsupported platform: ${process.platform} (vmsync requires Linux with KVM or Windows with Hyper-V)`,

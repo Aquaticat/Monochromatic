@@ -113,7 +113,8 @@ export async function readCache(
     /** Distinguishes the benign first-build case from genuine failures so logs stay quiet on the happy path. */
     const isFileNotFound = (error instanceof Error)
       && ('code' in error)
-      && (error.code === 'ENOENT');
+      && (error.code
+        === 'ENOENT');
 
     if (!isFileNotFound) {
       l.error(
@@ -189,7 +190,8 @@ export function getCachedEntry(
   if (entry === undefined)
     return undefined;
 
-  if (entry.contentHash !== contentHash)
+  if (entry.contentHash
+    !== contentHash)
     return undefined;
 
   return entry;

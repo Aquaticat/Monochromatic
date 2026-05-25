@@ -182,7 +182,6 @@ Decision: no upstream report. The cost is intrinsic to the
 bundled-DTS feature; mitigate at our boundary by setting
 `dts: false` for non-library packages.
 
-
 ## Upstream doc bug: default dependency bundling
 
 **tsdown version:** 0.9+ (current as of 2026-04-04)

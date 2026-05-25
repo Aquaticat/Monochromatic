@@ -44,7 +44,8 @@ export const editMessageHandler: EventHandlerWithFetch = defineHandler(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   async function handleEditMessage(event,) {
     /** Parsed `:id` path param; throws 400 when missing or non-positive. */
-    const messageId = parseMessageId(event.context.params,);
+    const messageId = parseMessageId(event.context
+      .params,);
     /** Decoded body; defaulted so an absent body still flows through the shape check. */
     const body = await readBody<unknown>(event,) ?? {};
     if (!isRecord(body,)) {
@@ -76,9 +77,9 @@ export const editMessageHandler: EventHandlerWithFetch = defineHandler(
     if (
       (userId === null)
       || (newDraftId === null)
-      || (preview === null)
-      || ((typeof charCount) !== 'number')
-      || ((typeof chunkCount) !== 'number')
+        || (preview === null)
+        || ((typeof charCount) !== 'number')
+        || ((typeof chunkCount) !== 'number')
     ) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -96,19 +97,22 @@ export const editMessageHandler: EventHandlerWithFetch = defineHandler(
       preview,
     },);
 
-    if (outcome.kind === 'not-found') {
+    if (outcome.kind
+      === 'not-found') {
       throw new HTTPError({
         status: HTTP_NOT_FOUND,
         message: 'no such message',
       },);
     }
-    if (outcome.kind === 'forbidden') {
+    if (outcome.kind
+      === 'forbidden') {
       throw new HTTPError({
         status: HTTP_FORBIDDEN,
         message: 'identity mismatch',
       },);
     }
-    if (outcome.kind === 'capped') {
+    if (outcome.kind
+      === 'capped') {
       throw new HTTPError({
         status: HTTP_CONFLICT,
         message: 'message has reached the 10-revision cap; save as a new message',
@@ -144,7 +148,8 @@ export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   async function handleDeleteMessage(event,) {
     /** Parsed `:id` path param; throws 400 when missing or non-positive. */
-    const messageId = parseMessageId(event.context.params,);
+    const messageId = parseMessageId(event.context
+      .params,);
     /** Decoded body; defaulted so an absent body still flows through the shape check. */
     const body = await readBody<unknown>(event,) ?? {};
     if (!isRecord(body,)) {
@@ -171,13 +176,15 @@ export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
       userId,
     },);
 
-    if (outcome.kind === 'not-found') {
+    if (outcome.kind
+      === 'not-found') {
       throw new HTTPError({
         status: HTTP_NOT_FOUND,
         message: 'no such message',
       },);
     }
-    if (outcome.kind === 'forbidden') {
+    if (outcome.kind
+      === 'forbidden') {
       throw new HTTPError({
         status: HTTP_FORBIDDEN,
         message: 'identity mismatch',
@@ -244,7 +251,8 @@ function parseMessageId(params: Readonly<Record<string, string>> | undefined,): 
  * ```
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
-  return (value !== null) && ((typeof value) === 'object') && (!Array.isArray(value,));
+  return (value !== null) && ((typeof value) === 'object')
+    && (!Array.isArray(value,));
 }
 
 /**

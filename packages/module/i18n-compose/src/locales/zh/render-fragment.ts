@@ -98,17 +98,26 @@ export function makeChineseFragmentRenderer<
     fragment: Extract<Fragment<L, S, V, N>, { kind: 'fragment.verbPhrase'; }>,
   ): string {
     /** Chinese non-finite forms reuse the surface; no morphological distinction. */
-    const head = verbs[fragment.phrase.verb].surface;
+    const head = verbs[fragment.phrase.verb]
+      .surface;
     /** Optional rendered object surface. */
-    const object = fragment.phrase.object === undefined
+    const object = fragment.phrase
+      .object
+      === undefined
       ? undefined
-      : renderNounPhrase(fragment.phrase.object,);
+      : renderNounPhrase(fragment.phrase
+        .object,);
     /** Optional rendered complement. */
-    const complement = fragment.phrase.complement === undefined
+    const complement = fragment.phrase
+      .complement
+      === undefined
       ? undefined
-      : renderVerbPhrase(fragment.phrase.complement.phrase,);
+      : renderVerbPhrase(fragment.phrase
+        .complement
+        .phrase,);
     /** Optional rendered adverbial cluster. */
-    const adverbials = renderAdverbials(fragment.phrase.adverbials,);
+    const adverbials = renderAdverbials(fragment.phrase
+      .adverbials,);
     /** Joined surface before capitalization fixup. */
     const body = joinTokens([
       adverbials,
@@ -132,9 +141,11 @@ export function makeChineseFragmentRenderer<
   function renderPart(
     part: Extract<Fragment<L, S, V, N>, { kind: 'fragment.sequence'; }>['parts'][number],
   ): string {
-    if (part.kind === 'part.label')
+    if (part.kind
+      === 'part.label')
       return labels[part.label];
-    if (part.kind === 'part.nounPhrase')
+    if (part.kind
+      === 'part.nounPhrase')
       return renderNounPhrase(part.phrase,);
     return part.text;
   }
@@ -147,13 +158,15 @@ export function makeChineseFragmentRenderer<
    * @returns rendered surface
    */
   function renderFragment(fragment: Fragment<L, S, V, N>,): string {
-    if (fragment.kind === 'fragment.nounPhrase') {
+    if (fragment.kind
+      === 'fragment.nounPhrase') {
       return capitalize({
         text: renderNounPhrase(fragment.phrase,),
         mode: fragment.capitalization,
       },);
     }
-    if (fragment.kind === 'fragment.verbPhrase')
+    if (fragment.kind
+      === 'fragment.verbPhrase')
       return renderVerbPhraseFragment(fragment,);
     /** Rendered sequence parts concatenated (no space separator in Chinese). */
     const joined = fragment

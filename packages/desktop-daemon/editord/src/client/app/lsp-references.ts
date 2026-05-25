@@ -75,7 +75,8 @@ export async function showReferences(
       character,
     },);
     refLog.info(`references: ${locations.length} usage(s) found`,);
-    if (locations.length === 0) {
+    if (locations.length
+      === 0) {
       showCursorToast({
         message: 'No usages found',
         rect,
@@ -89,8 +90,10 @@ export async function showReferences(
     /** Display-ready reference entries with paths shortened relative to the workspace root. */
     const items: ReferenceLocation[] = locations.map(function toItem(loc,) {
       /** Workspace-relative display string; falls back to the full path when outside the root. */
-      const label = loc.path.startsWith(rootDir,)
-        ? loc.path.slice(rootDir.length + 1,)
+      const label = loc.path
+        .startsWith(rootDir,)
+        ? loc.path
+          .slice(rootDir.length + 1,)
         : loc.path;
       return {
         path: loc.path,
@@ -100,7 +103,8 @@ export async function showReferences(
       };
     },);
 
-    if (items.length === 1) {
+    if (items.length
+      === 1) {
       /** Without destructuring: prefer-destructuring lint error for index-0 access. */
       const [only,] = items;
       if (only !== undefined)

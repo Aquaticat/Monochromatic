@@ -54,7 +54,8 @@ export async function launchTerminal({
 
   if (terminal === null) {
     throw new Error(
-      process.platform === 'win32'
+      process.platform
+        === 'win32'
         ? 'No terminal emulator found.'
         : 'No terminal emulator found. Install a terminal emulator or configure one in ~/.config/xdg-terminals.list',
     );
@@ -74,7 +75,8 @@ export async function launchTerminal({
     },
   },);
 
-  if (argv.length === 0)
+  if (argv.length
+    === 0)
     throw new Error('launchTerminal: buildCommand returned empty argv',);
 
   /** Splits argv to feed spawn's separate executable/args parameters. */

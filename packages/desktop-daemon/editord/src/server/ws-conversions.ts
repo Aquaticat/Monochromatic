@@ -56,8 +56,11 @@ export function toWireCompletionItems(
   return items.map(function convertItem(item,) {
     return {
       label: item.label,
-      detail: item.detail ?? '',
-      insertText: item.insertText ?? item.label,
+      detail: item.detail
+        ?? '',
+      insertText: item.insertText
+        ?? item
+        .label,
     };
   },);
 }
@@ -90,9 +93,12 @@ export function toWireInlayHints({ hints, }: { readonly hints: readonly LspInlay
     return {
       position: hint.position,
       label,
-      ...(hint.kind !== undefined ? { kind: hint.kind, } : {}),
-      ...(hint.paddingLeft !== undefined ? { paddingLeft: hint.paddingLeft, } : {}),
-      ...(hint.paddingRight !== undefined ? { paddingRight: hint.paddingRight, } : {}),
+      ...(hint.kind
+        !== undefined ? { kind: hint.kind, } : {}),
+      ...(hint.paddingLeft
+        !== undefined ? { paddingLeft: hint.paddingLeft, } : {}),
+      ...(hint.paddingRight
+        !== undefined ? { paddingRight: hint.paddingRight, } : {}),
     };
   },);
 }
@@ -116,7 +122,8 @@ export function toWireSelectionRange(
   /** Wire payload; optional `parent` stays omitted when the LSP value omits it. */
   return {
     range: lspRange.range,
-    ...(lspRange.parent !== undefined
+    ...(lspRange.parent
+      !== undefined
       ? { parent: toWireSelectionRange({ lspRange: lspRange.parent, },), }
       : {}),
   };

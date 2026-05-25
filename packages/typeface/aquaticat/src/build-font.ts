@@ -136,7 +136,8 @@ const letterGlyphs = cells.flatMap(
     },);
 
     console.log(
-      `  ${letterName}: advance=${Math.round(advanceWidth,)}, paths=${cell.paths.length}`,
+      `  ${letterName}: advance=${Math.round(advanceWidth,)}, paths=${cell.paths
+        .length}`,
     );
 
     return [new opentype.Glyph({

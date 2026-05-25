@@ -121,7 +121,8 @@ export async function runAndEnrichFixPass({
       return undefined;
 
     /** Score change between mean first-pass score and fix-pass score; positive means improvement. */
-    const delta = pass2Result.score - meanScore;
+    const delta = pass2Result.score
+      - meanScore;
     /** Signed delta string used for log output: `+0.20`, `-0.10`. */
     const deltaStr = delta >= 0 ? `+${delta.toFixed(2,)}` : delta.toFixed(2,);
     rl.info(

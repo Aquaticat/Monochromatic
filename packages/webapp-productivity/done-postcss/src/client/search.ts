@@ -34,7 +34,8 @@ type SearchPageData = {
  * @param taskId - UUID of the task to open
  */
 function openTask(taskId: string,): void {
-  globalThis.location.href = `/tasks/${taskId}`;
+  globalThis.location
+    .href = `/tasks/${taskId}`;
 }
 
 injectCSS(styles,);
@@ -59,13 +60,17 @@ document.querySelector<HTMLElement>('search-bar',)?.addEventListener(
     /** Search query lifted from the custom event detail. */
     const { query, } = (event as CustomEvent<{ query: string; }>).detail;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
-    globalThis.location.href = query.length === 0
+    globalThis.location
+      .href = query.length
+      === 0
       ? '/search'
       : `/search?q=${encodeURIComponent(query,)}`;
   } as EventListener,
 );
 
-if (pageData.query.length === 0) {
+if (pageData.query
+  .length
+  === 0) {
   app.append(
     h({
       tag: 'p',
@@ -76,7 +81,8 @@ if (pageData.query.length === 0) {
 
   /** Tag chip list extracted from `pageData`; rendered only when non-empty. */
   const { availableTags, } = pageData;
-  if (availableTags.length > 0) {
+  if (availableTags.length
+    > 0) {
     app.append(
       h({
         tag: 'div',
@@ -88,7 +94,8 @@ if (pageData.query.length === 0) {
             text: `# ${tag}`,
             on: {
               click: function onTagClick(): void {
-                globalThis.location.href = `/search?q=${encodeURIComponent(`#${tag}`,)}`;
+                globalThis.location
+                  .href = `/search?q=${encodeURIComponent(`#${tag}`,)}`;
               },
             },
           },);
@@ -116,14 +123,17 @@ else {
               path: `/api/tasks/${taskId}/complete`,
               options: { method: 'POST', },
             },);
-            globalThis.location.reload();
+            globalThis.location
+              .reload();
           },
         },
       },),
     );
   }
 
-  if (pageData.results.length === 0) {
+  if (pageData.results
+    .length
+    === 0) {
     app.append(h({
       tag: 'p',
       class: 'empty',

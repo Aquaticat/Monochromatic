@@ -45,7 +45,8 @@ export type { RecentArtifactScan, };
  */
 export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
   /** Lower bound for "recent" in epoch ms; artifacts older than this are ignored. */
-  const cutoff = Date.now() - TWENTY_FOUR_HOURS_MS;
+  const cutoff = Date.now()
+    - TWENTY_FOUR_HOURS_MS;
   /** Per-model set of probe names that already have a recent initial-pass artifact. */
   const probePairs = new Map<string, Set<string>>();
   /** Model labels with a recent whole-model failure (e.g. 429); all probes are skipped for these. */
@@ -116,8 +117,10 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
             const meta = JSON.parse(metaRaw,) as Partial<FailureArtifactMeta>;
             /** Display label for the model; falls back to the directory name when meta has none. */
-            const label = meta.label ?? modelDir;
-            if (meta.failed === true)
+            const label = meta.label
+              ?? modelDir;
+            if (meta.failed
+              === true)
               failedModels.add(label,);
           }
           catch {
@@ -133,7 +136,8 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       const parts = parseArtifactDir(dirName,);
       if (parts === null)
         continue;
-      if (parts.pass !== 'initial')
+      if (parts.pass
+        !== 'initial')
         continue;
 
       /**
@@ -164,7 +168,8 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
         const meta = JSON.parse(metaRaw,) as Partial<ArtifactMeta>;
         /** Display label for the model; falls back to the directory name for legacy artifacts. */
-        const label = meta.label ?? modelDir;
+        const label = meta.label
+          ?? modelDir;
         /** Probe name extracted from the artifact meta; runs are skipped when missing. */
         const {
           probe,
@@ -172,7 +177,8 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
         if (probe === undefined)
           continue;
         /** Existing probe set for this model label, or a fresh set when this is the first hit. */
-        const existing = probePairs.get(label,) ?? new Set<string>();
+        const existing = probePairs.get(label,)
+          ?? new Set<string>();
         existing.add(probe,);
         probePairs.set(
           label,

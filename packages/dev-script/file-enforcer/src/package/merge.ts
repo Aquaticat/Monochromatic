@@ -51,8 +51,11 @@ export function mergeOverrides(
       return entry;
     return {
       available: entry.available,
-      bin: override.bin !== override.effname ? override.bin : entry.bin,
-      check: override.check !== DEFAULT_CHECK ? override.check : entry.check,
+      bin: override.bin
+        !== override
+        .effname ? override.bin : entry.bin,
+      check: override.check
+        !== DEFAULT_CHECK ? override.check : entry.check,
       effname: entry.effname,
       overrides: entry.overrides,
     };

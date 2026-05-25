@@ -69,12 +69,14 @@ async function pollProgress({
       if (contentLength > 0) {
         /** Integer percentage of the download completed; only meaningful when content-length is known. */
         const pct = Math.round((size / contentLength) * PERCENT,);
-        process.stderr.write(
+        process.stderr
+          .write(
           `\r  downloading: ${downloadedStr} / ${totalStr} (${String(pct,)}%)`,
         );
       }
       else {
-        process.stderr.write(`\r  downloading: ${downloadedStr}`,);
+        process.stderr
+          .write(`\r  downloading: ${downloadedStr}`,);
       }
     }
     catch {
@@ -108,7 +110,9 @@ export async function writeWithProgress({
   readonly rl: { readonly info: (msg: string,) => void; };
 },): Promise<void> {
   /** Expected total bytes from the `content-length` header; 0 when the server omits it. */
-  const contentLength = Number(response.headers.get('content-length',) ?? 0,);
+  const contentLength = Number(response.headers
+    .get('content-length',)
+    ?? 0,);
   /** Pre-formatted display string for the total size; computed once because progress prints it every tick. */
   const totalStr = contentLength > 0 ? formatBytes(contentLength,) : 'unknown';
 
@@ -143,7 +147,8 @@ export async function writeWithProgress({
 
   /** Final on-disk size after the pipeline completes; printed as the "downloaded: ..." line. */
   const { size, } = await stat(destPath,);
-  process.stderr.write(
+  process.stderr
+    .write(
     `\r  downloaded: ${formatBytes(size,)} total${' '.repeat(PROGRESS_LINE_PAD,)}\n`,
   );
   rl.info(`saved to ${destPath}`,);

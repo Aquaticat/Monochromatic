@@ -76,7 +76,8 @@ export function textFromContent(
       return isTextContentItem(item,);
     },)
     .map(function extractTrimmedText(item,) {
-      return item.text.trim();
+      return item.text
+        .trim();
     },)
     .filter(function isNonEmpty(trimmed,) {
       return trimmed !== '';
@@ -123,12 +124,14 @@ export function extractLatestQuery({
   if ((custom !== undefined) && (custom !== ''))
     return custom;
 
-  for (let index = branchEntries.length - 1; index >= 0; index -= 1) {
+  for (let index = branchEntries.length
+    - 1; index >= 0; index -= 1) {
     /** Current entry under inspection in the reverse-walk. */
     const entry = branchEntries[index];
     if (entry === undefined)
       continue;
-    if (entry.type !== 'message')
+    if (entry.type
+      !== 'message')
       continue;
     /** Narrowed alias used to access the message payload. */
     const msgEntry = entry as SessionMessageEntry;
@@ -139,7 +142,8 @@ export function extractLatestQuery({
       command?: string;
       output?: string;
     };
-    if (message.role === 'user') {
+    if (message.role
+      === 'user') {
       /** Concatenated user text; first non-empty result becomes the query. */
       const text = textFromContent(message.content,);
       if ((text !== undefined) && (text !== ''))
@@ -148,9 +152,10 @@ export function extractLatestQuery({
     if (
       (message.role === 'bashExecution')
       && (message.command !== undefined)
-      && (message.command !== '')
+        && (message.command !== '')
     ) {
-      return message.command.trim();
+      return message.command
+        .trim();
     }
   }
   return '';
@@ -229,7 +234,8 @@ export function buildMorphInput({
     parts.push(previous,);
     parts.push('</keepContext>',);
   }
-  if (serializedConversation.trim() !== '')
+  if (serializedConversation.trim()
+    !== '')
     parts.push(serializedConversation.trim(),);
   return parts.join('\n\n',);
 }

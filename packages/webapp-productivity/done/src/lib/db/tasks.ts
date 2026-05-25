@@ -52,7 +52,8 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
   /** Captured once so `created_at` and `updated_at` start at the same value. */
   const timestamp = nowIso();
 
-  await db.prepare(SQL_INSERT_TASK,).run(
+  await db.prepare(SQL_INSERT_TASK,)
+    .run(
     id,
     input.title.trim(),
     input.description ?? null,
@@ -110,20 +111,42 @@ export async function updateTask({
   /** Merged shape: input wins, falling back to the current row, with a fresh updated-at. */
   const updatedTask: Task = {
     ...currentTask,
-    title: input.title?.trim() ?? currentTask.title,
-    description: input.description ?? currentTask.description,
-    tags: input.tags ?? currentTask.tags,
-    locations: input.locations ?? currentTask.locations,
-    priority: input.priority ?? currentTask.priority,
-    dueDate: input.dueDate ?? currentTask.dueDate,
-    complexity: input.complexity ?? currentTask.complexity,
-    reminders: input.reminders ?? currentTask.reminders,
-    blockedBy: input.blockedBy ?? currentTask.blockedBy,
-    status: input.status ?? currentTask.status,
+    title: input.title
+      ?.trim()
+      ?? currentTask
+      .title,
+    description: input.description
+      ?? currentTask
+      .description,
+    tags: input.tags
+      ?? currentTask
+      .tags,
+    locations: input.locations
+      ?? currentTask
+      .locations,
+    priority: input.priority
+      ?? currentTask
+      .priority,
+    dueDate: input.dueDate
+      ?? currentTask
+      .dueDate,
+    complexity: input.complexity
+      ?? currentTask
+      .complexity,
+    reminders: input.reminders
+      ?? currentTask
+      .reminders,
+    blockedBy: input.blockedBy
+      ?? currentTask
+      .blockedBy,
+    status: input.status
+      ?? currentTask
+      .status,
     updatedAt: nowIso(),
   };
 
-  await db.prepare(SQL_UPDATE_TASK,).run(
+  await db.prepare(SQL_UPDATE_TASK,)
+    .run(
     updatedTask.title,
     updatedTask.description,
     JSON.stringify(normalizeStringArray(updatedTask.tags,),),
@@ -155,6 +178,8 @@ export async function updateTask({
  */
 export async function deleteTask(id: string,): Promise<boolean> {
   /** Run result; `changes` distinguishes a real delete from a missing row. */
-  const result = await db.prepare(SQL_DELETE_TASK,).run(id,);
-  return result.changes > 0;
+  const result = await db.prepare(SQL_DELETE_TASK,)
+    .run(id,);
+  return result.changes
+    > 0;
 }

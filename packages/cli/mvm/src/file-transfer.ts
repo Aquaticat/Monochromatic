@@ -120,7 +120,8 @@ export async function pushFile(
   const meta = await readVmMeta(vmDir,);
 
   /** Absolute path the guest will use to read the pushed file, branched on OS. */
-  const guestFilePath = meta.osFamily === 'windows'
+  const guestFilePath = meta.osFamily
+    === 'windows'
     ? `${WINDOWS_GUEST_MOUNT_POINT}${filename}`
     : `${GUEST_MOUNT_POINT}/${filename}`;
 

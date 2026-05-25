@@ -74,7 +74,10 @@ const SUPPORTED_MANAGERS = new Set([
 async function ensureImage(): Promise<void> {
   console.log('[generate-index] building container image...',);
   /** GitHub token from either env var; empty string when neither is set. */
-  const token = process.env['MISE_GITHUB_TOKEN'] ?? process.env['GITHUB_TOKEN'] ?? '';
+  const token = process.env.MISE_GITHUB_TOKEN
+    ?? process
+    .env.GITHUB_TOKEN
+    ?? '';
   /** `--secret` args for podman; empty when no token, so unauthenticated clones run instead. */
   const secretArgs = token !== ''
     ? [
@@ -171,7 +174,8 @@ async function runContainer(args: readonly string[],): Promise<string> {
       ...args,
     ],
   );
-  if (result.stderr !== '')
+  if (result.stderr
+    !== '')
     console.error(result.stderr,);
   return result.stdout;
 }
@@ -196,7 +200,8 @@ async function loadMiseRegistry(): Promise<ReadonlySet<string>> {
   );
   /** Set of mise-registry tool names; lowercase for case-insensitive matching downstream. */
   const names = new Set<string>();
-  for (const line of result.stdout.split('\n',)) {
+  for (const line of result.stdout
+    .split('\n',)) {
     /** First whitespace-separated token of `line`; tool name on `mise registry` output. */
     const name = firstWhitespaceToken(line,);
     if (name !== '')
@@ -274,7 +279,8 @@ type RepologyProject = {
  */
 function generateTypeScript(projects: readonly RepologyProject[],): string {
   /** Date portion of the current ISO timestamp; used in the generated file header. */
-  const [today,] = new Date().toISOString().split('T',);
+  const [today,] = new Date().toISOString()
+    .split('T',);
   /** Output buffer: header + entries + closing token, joined with newlines at the end. */
   const lines: string[] = [
     '/**',
@@ -322,18 +328,22 @@ function buildPCall(project: RepologyProject,): string {
   /** Check if all managers use the effname as package name */
   const allSameName = managers.every(
     function matchesEffname([, pkgname,],): boolean {
-      return pkgname === project.effname;
+      return pkgname === project
+        .effname;
     },
   );
 
   /** Check if available in ALL supported managers with same name */
-  if (allSameName && (managers.length === SUPPORTED_MANAGERS.size))
+  if (allSameName && (managers.length
+    === SUPPORTED_MANAGERS
+    .size))
     return `p('${escapeString(project.effname,)}',)`;
 
   /** Build yes array entries */
   const yesEntries = managers.map(
     function formatEntry([manager, pkgname,],): string {
-      if (pkgname === project.effname)
+      if (pkgname === project
+        .effname)
         return `'${manager}'`;
       return `['${manager}', '${escapeString(pkgname,)}',]`;
     },
@@ -400,7 +410,8 @@ console.log(`[generate-index] extracted ${projects.length} projects from Repolog
 /** Step 6: Filter out mise-installable packages */
 const filtered = projects.filter(
   function notMiseInstallable(project,): boolean {
-    if (miseTools.has(project.effname.toLowerCase(),))
+    if (miseTools.has(project.effname
+      .toLowerCase(),))
       return false;
     if (isMiseBackendPackage(project.effname,))
       return false;
@@ -408,7 +419,9 @@ const filtered = projects.filter(
   },
 );
 /** Number of packages filtered out because mise can install them directly. */
-const removedCount = projects.length - filtered.length;
+const removedCount = projects.length
+  - filtered
+  .length;
 console.log(
   `[generate-index] ${removedCount} packages filtered (mise registry + mise backends)`,
 );

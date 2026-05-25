@@ -22,23 +22,28 @@ import type { ReferenceLocation, } from './types.ts';
 export function createReferenceAnchor(): HTMLDivElement {
   /** Invisible anchor element used as the `anchor-name` target for the popover. */
   const anchor = document.createElement('div',);
-  anchor.style.setProperty(
+  anchor.style
+    .setProperty(
     'position',
     'fixed',
   );
-  anchor.style.setProperty(
+  anchor.style
+    .setProperty(
     'anchor-name',
     '--ref-anchor',
   );
-  anchor.style.setProperty(
+  anchor.style
+    .setProperty(
     'inline-size',
     '0.125rem',
   );
-  anchor.style.setProperty(
+  anchor.style
+    .setProperty(
     'pointer-events',
     'none',
   );
-  anchor.style.setProperty(
+  anchor.style
+    .setProperty(
     'z-index',
     '9999',
   );
@@ -72,15 +77,18 @@ export function positionAnchor({
   readonly y: number;
   readonly cursorHeight: number;
 },): void {
-  anchor.style.setProperty(
+  anchor.style
+    .setProperty(
     'inset-inline-start',
     `${x}px`,
   );
-  anchor.style.setProperty(
+  anchor.style
+    .setProperty(
     'inset-block-start',
     `${y}px`,
   );
-  anchor.style.setProperty(
+  anchor.style
+    .setProperty(
     'block-size',
     `${cursorHeight}px`,
   );
@@ -119,12 +127,14 @@ export function renderReferenceItems(
       h({
         tag: 'span',
         class: 'line-num',
-        text: `:${String(loc.line + 1,)}`,
+        text: `:${String(loc.line
+          + 1,)}`,
       },),
     );
     /** Without dataset: prefer-dom-node-dataset lint error for setAttribute on data- attributes. */
     if (index === 0)
-      item.dataset.selected = '';
+      item.dataset
+        .selected = '';
     return item;
   },);
 }
@@ -152,11 +162,13 @@ export function updateItemSelection({
   const items = list.querySelectorAll<HTMLElement>('.item',);
   for (const [i, item,] of [...items,].entries()) {
     if (i === selectedIndex) {
-      item.dataset.selected = '';
+      item.dataset
+        .selected = '';
       item.scrollIntoView({ block: 'nearest', },);
     }
     else {
-      delete item.dataset.selected;
+      delete item.dataset
+        .selected;
     }
   }
 }

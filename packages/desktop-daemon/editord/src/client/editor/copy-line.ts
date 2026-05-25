@@ -112,7 +112,9 @@ export function selectAndCopyLine({
   },);
 
   /** Length of the last text node so the focus offset lands at the very end of the line. */
-  const lastLen = lastText.textContent?.length ?? 0;
+  const lastLen = lastText.textContent
+    ?.length
+    ?? 0;
   selection.setBaseAndExtent(
     firstText,
     0,
@@ -122,6 +124,7 @@ export function selectAndCopyLine({
 
   /** Raw line text, including any leading whitespace; empty lines are represented as `\n`. */
   const raw = lineDiv.textContent;
-  void navigator.clipboard.writeText(`${raw === '\n' ? '' : raw}\n`,);
+  void navigator.clipboard
+    .writeText(`${raw === '\n' ? '' : raw}\n`,);
   return true;
 }

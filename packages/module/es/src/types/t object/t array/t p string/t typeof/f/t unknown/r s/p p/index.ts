@@ -95,7 +95,8 @@ export function $(value: unknown,): TypeOf {
     /** Narrowed string view of `value`; inspected for emptiness and single-character classification. */
     const myValue = value as string;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
-    if (myValue.length === 0) {
+    if (myValue.length
+      === 0) {
       return [
         typeOf,
         { empty: true, },
@@ -109,7 +110,8 @@ export function $(value: unknown,): TypeOf {
           false,
           {
             char: myValue
-                .length !== 1
+                .length
+              !== 1
               ? false
               : [
                 true,
@@ -128,7 +130,9 @@ export function $(value: unknown,): TypeOf {
   }
 
   /** `Object.prototype.toString` tag (e.g. `[object Array]`); the canonical way to distinguish built-in object subtypes. */
-  const prototypeString = Object.prototype.toString.call(value,);
+  const prototypeString = Object.prototype
+    .toString
+    .call(value,);
 
   if (typeOf === 'function') {
     if (prototypeString === '[object Function]') {

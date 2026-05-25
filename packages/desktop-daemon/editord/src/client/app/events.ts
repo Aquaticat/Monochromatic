@@ -83,7 +83,8 @@ async function loadFileAndRefreshHints({
     line,
     character,
   },);
-  if (currentFileState.getCurrentFileKind() === 'text')
+  if (currentFileState.getCurrentFileKind()
+    === 'text')
     refreshInlayHints();
 }
 

@@ -124,9 +124,11 @@ function importAttributesPlugin(): Plugin {
           };
         }
 
-        if ((importer !== undefined) && (cleanSource.startsWith('.',))) {
+        if ((importer !== undefined) && (cleanSource
+          .startsWith('.',))) {
           /** Importer directory used as the base for resolving the relative specifier. */
-          const importerDir = dirname(importer.split('?',)[0] ?? importer,);
+          const importerDir = dirname(importer.split('?',)[0]
+            ?? importer,);
           /** Absolute path produced when the resolver could not locate the target. */
           const absolutePath = resolve(
             importerDir,
@@ -149,7 +151,8 @@ function importAttributesPlugin(): Plugin {
        */
       if (importer !== undefined) {
         /** Importer path stripped of any attribute query; used both as scan target and base directory. */
-        const cleanImporter = importer.split('?',)[0] ?? importer;
+        const cleanImporter = importer.split('?',)[0]
+          ?? importer;
         /** Attribute type discovered by scanning the importer's AST for this specifier. */
         const attrType = scanImporterForAttribute({
           specifier: source,

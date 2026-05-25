@@ -24,7 +24,8 @@ import {
  * @returns the active locale code
  */
 function resolveLocale(): Locales {
-  return getSettings().locale;
+  return getSettings()
+    .locale;
 }
 
 /** Translation-accessor cache keyed by locale. */

@@ -42,13 +42,17 @@ export const checkAlignment: CreateOnceRule = {
       ): void {
         /** Comment body split into lines; each continuation line is checked against `expectedIndent`. */
         const lines = getCommentLines(comment,);
-        if (lines.length < 2)
+        if (lines.length
+          < 2)
           return;
 
         // The opening line `* ...` sets the expected indent
         // comment.loc.start.column is the column of `/*`, so `*` alignment is column + 1
         /** Expected column for the leading `*` on continuation lines, derived from the opener. */
-        const expectedIndent = comment.loc.start.column + 1;
+        const expectedIndent = comment.loc
+          .start
+          .column
+          + 1;
 
         lines.slice(1,).forEach(function checkLine(
           line,
@@ -56,17 +60,24 @@ export const checkAlignment: CreateOnceRule = {
         ): void {
           /** Continuation line with leading whitespace removed; used to test for the `*` marker. */
           const trimmed = line.trimStart();
-          if (trimmed.length === 0)
+          if (trimmed.length
+            === 0)
             return;
           if (!trimmed.startsWith('*',))
             return;
           /** Number of leading whitespace columns on the actual line; compared with `expectedIndent`. */
-          const actualIndent = line.length - trimmed.length;
+          const actualIndent = line.length
+            - trimmed
+            .length;
           if (actualIndent !== expectedIndent) {
             context.report({
               loc: {
                 start: {
-                  line: comment.loc.start.line + index + 1,
+                  line: comment.loc
+                    .start
+                    .line
+                    + index
+                    + 1,
                   column: actualIndent,
                 },
               },
@@ -112,10 +123,12 @@ export const multilineBlocks: CreateOnceRule = {
         /** Minimum line count for a proper multiline comment: opener, content, closer. */
         const minMultilineLines = 3;
         // A proper multiline comment has at least 3 lines: opener, content, closer
-        if (lines.length >= minMultilineLines)
+        if (lines.length
+          >= minMultilineLines)
           return;
         // Single-line comment containing a tag should be multiline
-        if (comment.value.includes('@',)) {
+        if (comment.value
+          .includes('@',)) {
           context.report({
             node: comment,
             messageId: 'singleLine',

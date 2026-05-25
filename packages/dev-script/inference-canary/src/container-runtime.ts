@@ -32,7 +32,8 @@ export const CONTAINER_IMAGE = 'docker.io/oven/bun:1.3';
  * Lookup command for finding executables on PATH.
  * `where.exe` on Windows, `which` everywhere else.
  */
-const WHICH_CMD = process.platform === 'win32' ? 'where.exe' : 'which';
+const WHICH_CMD = process.platform
+  === 'win32' ? 'where.exe' : 'which';
 
 /**
  * Checks whether a binary exists on PATH.

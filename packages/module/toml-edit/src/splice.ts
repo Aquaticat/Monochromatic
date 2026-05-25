@@ -40,7 +40,7 @@ export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
   if (
     (edit.edits.size === 0)
     && (edit.insertions.length === 0)
-    && (edit.deletions.size === 0)
+      && (edit.deletions.size === 0)
   ) {
     return edit.source;
   }
@@ -99,9 +99,11 @@ export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
     b,
   ) {
     /** Inserts use `at`, range events use `start`; normalise so the comparator is uniform. */
-    const aAt = a.kind === 'insert' ? a.at : a.start;
+    const aAt = a.kind
+      === 'insert' ? a.at : a.start;
     /** Counterpart to `aAt` for the second comparand. */
-    const bAt = b.kind === 'insert' ? b.at : b.start;
+    const bAt = b.kind
+      === 'insert' ? b.at : b.start;
     return aAt - bAt;
   },);
 
@@ -113,9 +115,12 @@ export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
       c,
       ev,
     ) {
-      if (ev.kind === 'insert') {
-        if (ev.at > c) {
-          out.push(edit.source.slice(
+      if (ev.kind
+        === 'insert') {
+        if (ev.at
+          > c) {
+          out.push(edit.source
+            .slice(
             c,
             ev.at,
           ),);
@@ -126,21 +131,27 @@ export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
           ev.at,
         );
       }
-      if (ev.start > c) {
-        out.push(edit.source.slice(
+      if (ev.start
+        > c) {
+        out.push(edit.source
+          .slice(
           c,
           ev.start,
         ),);
       }
-      if (ev.kind === 'replace')
+      if (ev.kind
+        === 'replace')
         out.push(ev.text,);
       return ev.end;
     },
     0,
   );
 
-  if (cursor < edit.source.length)
-    out.push(edit.source.slice(cursor,),);
+  if (cursor < edit
+    .source
+    .length)
+    out.push(edit.source
+      .slice(cursor,),);
 
   return out.join('',);
 }
@@ -164,7 +175,8 @@ function computeReplaceEvent(
   end: number;
   text: string;
 } {
-  if (edit.kind === 'replace-value') {
+  if (edit.kind
+    === 'replace-value') {
     /** Narrow to the value's bytes so the key and `=` stay in place. */
     const valueRange = valueRangeOf({ node, },);
     return {
@@ -191,8 +203,10 @@ function valueRangeOf({ node, }: { node: AST.TOMLNode; },): readonly [
   number,
   number,
 ] {
-  if (node.type === 'TOMLKeyValue')
-    return node.value.range;
+  if (node.type
+    === 'TOMLKeyValue')
+    return node.value
+      .range;
   return node.range;
 }
 
@@ -248,12 +262,15 @@ function computeDeletionRange(
   /** Start offset of the deletion; the end is computed below to absorb the trailing line. */
   const [start,] = node.range;
   /** Index of the first newline after the node; `-1` means EOF. */
-  const newlineAfter = state.source.indexOf(
+  const newlineAfter = state.source
+    .indexOf(
     '\n',
     node.range[1],
   );
   /** Same-line comment so it disappears with the node it annotates. */
-  const trailingInlineComment = state.program.comments.find(function inSameLine(c,) {
+  const trailingInlineComment = state.program
+    .comments
+    .find(function inSameLine(c,) {
     return (
       (c.range[0] > node.range[1])
       && ((newlineAfter === (-1)) || (c.range[0] < newlineAfter))
@@ -261,14 +278,16 @@ function computeDeletionRange(
   },);
   /** Offset just past the line terminator so the deletion absorbs the trailing `\n`. */
   const lineEndExclusive = newlineAfter === (-1)
-    ? state.source.length
+    ? state.source
+      .length
     : newlineAfter + 1;
   /** Extends the range past a trailing inline comment when one was found. */
   const endIncludingComment = trailingInlineComment === undefined
     ? lineEndExclusive
     : Math.max(
       lineEndExclusive,
-      trailingInlineComment.range[1] + 1,
+      trailingInlineComment.range[1]
+        + 1,
     );
   return {
     kind: 'delete',
@@ -292,17 +311,24 @@ function resolveAnchor(
   },
 ): number {
   if (anchor === 'eof')
-    return state.source.length;
-  if (anchor.position === 'after-node') {
+    return state.source
+      .length;
+  if (anchor.position
+    === 'after-node') {
     return endOfLineAt({
       source: state.source,
-      at: anchor.node.range[1],
+      at: anchor.node
+        .range[1],
     },);
   }
-  if (anchor.position === 'before-node')
-    return anchor.node.range[0];
-  if (anchor.position === 'same-line-after')
-    return anchor.node.range[1];
+  if (anchor.position
+    === 'before-node')
+    return anchor.node
+      .range[0];
+  if (anchor.position
+    === 'same-line-after')
+    return anchor.node
+      .range[1];
   return resolveInsideTable({
     table: anchor.table,
     source: state.source,
@@ -343,17 +369,22 @@ function resolveInsideTable(
     source: string;
   },
 ): number {
-  if (table.body.length === 0) {
-    if (table.type === 'TOMLTable') {
+  if (table.body
+    .length
+    === 0) {
+    if (table.type
+      === 'TOMLTable') {
       return endOfLineAt({
         source,
-        at: table.key.range[1],
+        at: table.key
+          .range[1],
       },);
     }
     return 0;
   }
   /** Last existing body entry so the insertion lands on the next line after it. */
-  const last = nonNullishOrThrow(table.body.at(-1,),);
+  const last = nonNullishOrThrow(table.body
+    .at(-1,),);
   return endOfLineAt({
     source,
     at: last.range[1],

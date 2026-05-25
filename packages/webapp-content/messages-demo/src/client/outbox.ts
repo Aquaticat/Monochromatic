@@ -168,7 +168,9 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
    * `dropAcked` still resets the flag and notifies waiters.
    */
   async function drain(): Promise<void> {
-    if (state.draining || state.destroyed)
+    if (state.draining
+      || state
+      .destroyed)
       return;
     state.draining = true;
     /** `using` disposable so the draining flag clears even when the body throws. */
@@ -176,12 +178,16 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
       /** Cleared at scope exit (including throws). */
       [Symbol.dispose]: function dispose(): void {
         state.draining = false;
-        if (state.queue.length === 0)
+        if (state.queue
+          .length
+          === 0)
           notifyFlushed();
       },
     };
     /* oxlint-disable eslint/no-await-in-loop -- sequential drain: each PUT must ack before the next can issue, so the server can return ack-up-to-N */
-    while ((state.queue.length > 0) && (!state.destroyed)) {
+    while ((state.queue
+      .length
+      > 0) && (!state.destroyed)) {
       /** Destructured head so the next iteration sees the new front element. */
       const [head,] = state.queue;
       if (head === undefined)
@@ -209,7 +215,8 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
   function onOnlineOrVisible(): void {
     if (state.destroyed)
       return;
-    if (((typeof document) !== 'undefined') && (document.visibilityState !== 'visible'))
+    if (((typeof document) !== 'undefined') && (document.visibilityState
+      !== 'visible'))
       return;
     kick();
   }
@@ -230,34 +237,41 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
   }
 
   // Drain anything we rehydrated from IDB on construction.
-  if (queue.length > 0)
+  if (queue.length
+    > 0)
     kick();
 
   return {
     async enqueue(upload,) {
       if (state.destroyed)
         throw new Error('outbox destroyed',);
-      if (state.idb !== null) {
+      if (state.idb
+        !== null) {
         await persistOne({
           idb: state.idb,
           upload,
         },);
       }
-      state.queue.push(upload,);
+      state.queue
+        .push(upload,);
       kick();
     },
     flushed() {
-      if ((state.queue.length === 0) && (!state.draining))
+      if ((state.queue
+        .length
+        === 0) && (!state.draining))
         return Promise.resolve();
       // The Promise constructor is the only way to capture a resolver
       // we hand off to the drain loop for later notification.
       // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- one-shot resolver
       return new Promise<void>(function executor(resolve,) {
-        state.waiters.push(resolve,);
+        state.waiters
+          .push(resolve,);
       },);
     },
     pendingCount() {
-      return state.queue.length;
+      return state.queue
+        .length;
     },
     destroy() {
       state.destroyed = true;
@@ -275,8 +289,10 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
           onOnlineOrVisible,
         );
       }
-      if (state.idb !== null)
-        state.idb.close();
+      if (state.idb
+        !== null)
+        state.idb
+          .close();
       notifyFlushed();
     },
   };
@@ -357,20 +373,27 @@ async function dropAcked(
   },
 ): Promise<void> {
   /** Pre-sweep length captured so the reverse walk terminates at a known head. */
-  const before = input.queue.length;
+  const before = input.queue
+    .length;
   for (let index = before - 1; index >= 0; index -= 1) {
     /** Currently-visited entry; the guard below treats sparse holes as already-dropped. */
     const entry = input.queue[index];
     if (entry === undefined)
       continue;
-    if ((entry.draftId === input.draftId) && (entry.seq <= input.ack)) {
-      input.queue.splice(
+    if ((entry.draftId
+      === input
+      .draftId) && (entry.seq
+      <= input
+      .ack)) {
+      input.queue
+        .splice(
         index,
         1,
       );
     }
   }
-  if (input.idb === null)
+  if (input.idb
+    === null)
     return;
   await deleteAcked({
     idb: input.idb,
@@ -394,7 +417,8 @@ function openOutboxDb(): Promise<IDBDatabase> {
     name: OUTBOX_DB_NAME,
     version: OUTBOX_DB_VERSION,
     onUpgrade(dbConn,) {
-      if (!dbConn.objectStoreNames.contains(OUTBOX_STORE,)) {
+      if (!dbConn.objectStoreNames
+        .contains(OUTBOX_STORE,)) {
         dbConn.createObjectStore(
           OUTBOX_STORE,
           {
@@ -445,9 +469,15 @@ async function readPersistedQueue(db: IDBDatabase,): Promise<ChunkUpload[]> {
     a: ChunkUpload,
     b: ChunkUpload,
   ): number {
-    if (a.draftId !== b.draftId)
-      return a.draftId < b.draftId ? -1 : 1;
-    return a.seq - b.seq;
+    if (a.draftId
+      !== b
+      .draftId)
+      return a.draftId
+        < b
+        .draftId ? -1 : 1;
+    return a.seq
+      - b
+      .seq;
   },);
   return raw;
 }
@@ -470,11 +500,13 @@ async function persistOne(
   },
 ): Promise<void> {
   /** Read-write transaction held until `idbTransactionDone` resolves below. */
-  const tx = input.idb.transaction(
+  const tx = input.idb
+    .transaction(
     OUTBOX_STORE,
     'readwrite',
   );
-  tx.objectStore(OUTBOX_STORE,).put(input.upload,);
+  tx.objectStore(OUTBOX_STORE,)
+    .put(input.upload,);
   await idbTransactionDone(tx,);
 }
 
@@ -496,7 +528,8 @@ async function deleteAcked(
   },
 ): Promise<void> {
   /** Read-write transaction held until `idbTransactionDone` resolves below. */
-  const tx = input.idb.transaction(
+  const tx = input.idb
+    .transaction(
     OUTBOX_STORE,
     'readwrite',
   );

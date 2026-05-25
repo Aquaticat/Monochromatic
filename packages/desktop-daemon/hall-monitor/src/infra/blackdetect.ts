@@ -38,10 +38,12 @@ export async function isBlackFrame(jpegBuf: Buffer,): Promise<boolean> {
       'pipe',
     ], },
   );
-  proc.stdin.end(jpegBuf,);
+  proc.stdin
+    .end(jpegBuf,);
   /** Stderr byte chunks; blackdetect emits its `black_start` marker here, not on stdout. */
   const stderrChunks: Buffer[] = [];
-  proc.stderr.on(
+  proc.stderr
+    .on(
     'data',
     function collectChunk(chunk: Buffer,) {
       stderrChunks.push(chunk,);
@@ -52,7 +54,8 @@ export async function isBlackFrame(jpegBuf: Buffer,): Promise<boolean> {
     'close',
   );
   /** Decoded ffmpeg stderr; searched for the blackdetect marker to determine the verdict. */
-  const stderr = Buffer.concat(stderrChunks,).toString('utf8',);
+  const stderr = Buffer.concat(stderrChunks,)
+    .toString('utf8',);
   // blackdetect emits "black_start:..." lines on stderr when a black frame is found
   return stderr.includes('black_start',);
 }

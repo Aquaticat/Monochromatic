@@ -22,7 +22,8 @@ export function getArgumentValue(name: string,): string | undefined {
   /** Computed once so the closure passed to `find` does not rebuild it per element. */
   const prefix = `--${name}=`;
   /** Captured separately so the return can slice off `prefix.length` without re-finding. */
-  const argument = process.argv.find(function hasPrefix(entry,) {
+  const argument = process.argv
+    .find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);
   },);
   return argument?.slice(prefix.length,);

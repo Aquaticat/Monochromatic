@@ -120,29 +120,45 @@ export function buildCommand({
 },): readonly string[] {
   /** Immutable command: kept exec tokens followed by the tokens each applicable option block contributes. */
   const args: readonly string[] = [
-    ...terminal.execTokens.filter(keepToken,),
-    ...(((options.appId.length > 0) && (terminal.appIdArg.length > 0))
+    ...terminal.execTokens
+      .filter(keepToken,),
+    ...(((options.appId
+      .length
+      > 0) && (terminal.appIdArg
+      .length
+      > 0))
       ? appendArg({
         argKey: terminal.appIdArg,
         value: options.appId,
       },)
       : []),
-    ...(((options.title.length > 0) && (terminal.titleArg.length > 0))
+    ...(((options.title
+      .length
+      > 0) && (terminal.titleArg
+      .length
+      > 0))
       ? appendArg({
         argKey: terminal.titleArg,
         value: options.title,
       },)
       : []),
-    ...(((options.dir.length > 0) && (terminal.dirArg.length > 0))
+    ...(((options.dir
+      .length
+      > 0) && (terminal.dirArg
+      .length
+      > 0))
       ? appendArg({
         argKey: terminal.dirArg,
         value: options.dir,
       },)
       : []),
-    ...((options.hold && (terminal.holdArg.length > 0))
+    ...((options.hold
+      && (terminal.holdArg.length > 0))
       ? [terminal.holdArg,]
       : []),
-    ...((options.command.length > 0)
+    ...((options.command
+      .length
+      > 0)
       ? [
         terminal.execArg,
         ...options.command,

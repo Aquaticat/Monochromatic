@@ -114,14 +114,16 @@ export async function countTokens({
     l,
   },);
   /** Fall back to the shared default so callers can omit model when the tokenizer choice is irrelevant. */
-  const model = config.model ?? DEFAULT_MODEL;
+  const model = config.model
+    ?? DEFAULT_MODEL;
   /** Build the SDK client lazily here so each call can supply its own apiKey override. */
   const client = resolveClient({ apiKey: config.apiKey, },);
 
   rl.debug(`counting tokens model=${model} contentLength=${String(content.length,)}`,);
 
   /** Hold the SDK response so the input_tokens field can be logged before being repackaged for the caller. */
-  const response = await client.messages.countTokens({
+  const response = await client.messages
+    .countTokens({
     model,
     messages: [{
       role: 'user',

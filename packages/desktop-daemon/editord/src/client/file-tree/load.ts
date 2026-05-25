@@ -60,17 +60,21 @@ export function loadDirChildren({
     path,
     childrenContainer,
   } = detail;
-  if (state.loadedDirs.has(path,))
+  if (state.loadedDirs
+    .has(path,))
     return;
-  state.loadedDirs.add(path,);
+  state.loadedDirs
+    .add(path,);
   state.onDirExpanded?.(path,);
 
   /** Tracked in `loadPromises` so concurrent expansions can coalesce. */
   const loadPromise = (async function load(): Promise<void> {
     try {
       /** Pulled out of the prefetch cache; rendered immediately for perceived responsiveness. */
-      const cached = state.prefetchCache.get(path,);
-      state.prefetchCache.delete(path,);
+      const cached = state.prefetchCache
+        .get(path,);
+      state.prefetchCache
+        .delete(path,);
 
       // Render cached entries immediately for responsiveness
       if (cached !== undefined) {
@@ -87,7 +91,9 @@ export function loadDirChildren({
       // Always verify with a fresh fetch: prefetch cache can be stale
       // when files are created after the parent directory was expanded
       /** Fresh listing from the server; replaces the cached render below. */
-      const entries = await (state.fetchDir?.(path,) ?? Promise.resolve([],));
+      const entries = await (state.fetchDir?.(path,)
+        ?? Promise
+        .resolve([],));
 
       /** Authoritative DOM children built from the fresh listing. */
       const children = createEntryElements({
@@ -98,7 +104,8 @@ export function loadDirChildren({
       },);
       childrenContainer.replaceChildren(...children,);
 
-      if (state.fetchDir !== null) {
+      if (state.fetchDir
+        !== null) {
         void preloadChildren({
           parentPath: path,
           entries,
@@ -109,12 +116,15 @@ export function loadDirChildren({
     }
     catch (error) {
       l.error(`failed to list ${path}: ${String(error,)}`,);
-      state.loadedDirs.delete(path,);
+      state.loadedDirs
+        .delete(path,);
     }
-    state.loadPromises.delete(path,);
+    state.loadPromises
+      .delete(path,);
   })();
 
-  state.loadPromises.set(
+  state.loadPromises
+    .set(
     path,
     loadPromise,
   );
@@ -164,7 +174,8 @@ export function createEntryElements({
     return createTreeFileEntry({
       path: fullPath,
       name: entry.name,
-      recencyIndex: recencyIndex.get(fullPath,) ?? (-1),
+      recencyIndex: recencyIndex.get(fullPath,)
+        ?? (-1),
     },);
   },);
 }

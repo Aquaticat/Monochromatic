@@ -93,10 +93,13 @@ export default function autoMode(
         if (trimmed === '') {
           /** Current trust directives for the session, listed back to the user when /guard is bare. */
           const directives = getTrustDirectives(ctx,);
-          if (directives.length === 0)
-            ctx.ui.notify('No trust directives set for this session.',);
+          if (directives.length
+            === 0)
+            ctx.ui
+              .notify('No trust directives set for this session.',);
           else {
-            ctx.ui.notify(
+            ctx.ui
+              .notify(
               `Trust directives:\n${
                 directives
                   .map(
@@ -118,14 +121,16 @@ export default function autoMode(
             TRUST_ENTRY_TYPE,
             null,
           );
-          ctx.ui.notify('Trust directives cleared for this session.',);
+          ctx.ui
+            .notify('Trust directives cleared for this session.',);
           return;
         }
         pi.appendEntry(
           TRUST_ENTRY_TYPE,
           trimmed,
         );
-        ctx.ui.notify(`Trust directive added: ${trimmed}`,);
+        ctx.ui
+          .notify(`Trust directive added: ${trimmed}`,);
       },
     },
   );
@@ -185,7 +190,9 @@ export default function autoMode(
         '',
         params.rule,
       ];
-      if ((params.reason !== undefined) && (params.reason !== '')) {
+      if ((params.reason
+        !== undefined) && (params.reason
+        !== '')) {
         lines.push(
           '',
           params.reason,
@@ -269,7 +276,8 @@ export default function autoMode(
       denialInCurrentTurn = false;
       denialInPreviousTurn = false;
       flowVerdicts = [];
-      ctx.ui.setWidget(
+      ctx.ui
+        .setWidget(
         'auto-mode',
         undefined,
       );
@@ -291,8 +299,10 @@ export default function autoMode(
       _event: unknown,
       ctx: ExtensionContext,
     ) {
-      if (flowVerdicts.length > 0) {
-        ctx.ui.setWidget(
+      if (flowVerdicts.length
+        > 0) {
+        ctx.ui
+          .setWidget(
           'auto-mode',
           undefined,
         );
@@ -310,7 +320,9 @@ export default function autoMode(
       /** Path resolution context handed to `shouldFlag`; mostly used to canonicalise `cwd` and `$HOME`. */
       const signalCtx: SignalContext = {
         cwd: ctx.cwd,
-        home: process.env.HOME ?? '/home',
+        home: process.env
+          .HOME
+          ?? '/home',
       };
 
       /** True when the tool call trips a static rule, or when a previous-turn denial promotes a relevant follow-up. */
@@ -318,7 +330,8 @@ export default function autoMode(
         event,
         ctx: signalCtx,
         config,
-      },) || (denialInPreviousTurn && isRelevantTool(event,));
+      },)
+        || (denialInPreviousTurn && isRelevantTool(event,));
 
       if (!flagged)
         return undefined;
@@ -326,7 +339,8 @@ export default function autoMode(
       /** Human-readable rendering of the tool call shown to the judge and the user. */
       const action = describeAction(event,);
       /** Snapshot of this turn's siblings handed to the judge so it can reason about batch context. */
-      const batchContext = currentTurnBatch.length > 0
+      const batchContext = currentTurnBatch.length
+        > 0
         ? [...currentTurnBatch,]
         : undefined;
 

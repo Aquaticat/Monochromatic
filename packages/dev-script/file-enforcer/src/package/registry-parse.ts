@@ -61,7 +61,8 @@ export function firstWhitespaceToken(line: string,): string {
   for (const c of line) {
     if (isWhitespace(c,)) {
       // whitespace after the token ends it; leading whitespace is skipped
-      if (tokenChars.length > 0)
+      if (tokenChars.length
+        > 0)
         break;
       continue;
     }

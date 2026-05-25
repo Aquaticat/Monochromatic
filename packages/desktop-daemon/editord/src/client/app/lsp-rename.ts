@@ -86,7 +86,8 @@ export async function initiateRename({
     }
 
     /** Empty fallback so the input opens with a usable cursor regardless of LSP support. */
-    const placeholder = result.placeholder ?? '';
+    const placeholder = result.placeholder
+      ?? '';
     renameLog.info(`symbol renamable, placeholder: "${placeholder}"`,);
 
     renameInput.show({
@@ -158,19 +159,24 @@ export async function performRename({
     },);
 
     /** Find edits for the currently open file and apply them to the buffer. */
-    const currentFileEdits = result.edits.find(
+    const currentFileEdits = result.edits
+      .find(
       function isCurrentFile(fileEdit,) {
         return fileEdit.path === path;
       },
     );
 
-    if ((currentFileEdits !== undefined) && (currentFileEdits.edits.length > 0))
+    if ((currentFileEdits !== undefined) && (currentFileEdits.edits
+      .length
+      > 0))
       editorPane.applyTextEdits(currentFileEdits.edits,);
 
     /** File-count summary used in the post-rename log entry below. */
-    const totalFiles = result.edits.length;
+    const totalFiles = result.edits
+      .length;
     /** Edit-count summary used in the post-rename log entry below. */
-    const totalEdits = result.edits.reduce(
+    const totalEdits = result.edits
+      .reduce(
       function countEdits(
         sum,
         fileEdit,

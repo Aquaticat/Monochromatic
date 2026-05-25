@@ -30,7 +30,8 @@ const GLOB_META_CHARS = '*?{[';
  * ```
  */
 export function firstGlobMetaIndex(s: string,): number {
-  for (let idx = 0; idx < s.length; idx += 1) {
+  for (let idx = 0; idx < s
+    .length; idx += 1) {
     if (GLOB_META_CHARS.includes(s.charAt(idx,),))
       return idx;
   }
@@ -195,9 +196,11 @@ export function mirrorGlobPath(
   const destParts = destPattern.split('*',);
 
   /** Number of wildcards in source vs dest must match for positional substitution */
-  const sourceWildcardCount = sourceParts.length - 1;
+  const sourceWildcardCount = sourceParts.length
+    - 1;
   /** Wildcard count on the destination side; compared with source to detect mismatches. */
-  const destWildcardCount = destParts.length - 1;
+  const destWildcardCount = destParts.length
+    - 1;
   if (sourceWildcardCount !== destWildcardCount) {
     throw new Error(
       `Wildcard count mismatch: source "${sourcePattern}" has ${
@@ -216,7 +219,8 @@ export function mirrorGlobPath(
     const acc: string[] = [];
     /** Unconsumed tail of the source path; shrinks as fixed prefixes get peeled off each iteration. */
     let remainder = sourcePath;
-    for (let partIndex = 0; partIndex < sourceParts.length; partIndex++) {
+    for (let partIndex = 0; partIndex < sourceParts
+      .length; partIndex++) {
       /** Fixed text before (or after) the current wildcard */
       const fixedPart = sourceParts[partIndex];
       if (fixedPart === undefined)
@@ -230,7 +234,8 @@ export function mirrorGlobPath(
 
       if (partIndex < sourceWildcardCount) {
         /** Position of the next fixed segment, marking the end of this wildcard capture */
-        const nextFixed = sourceParts[partIndex + 1] ?? '';
+        const nextFixed = sourceParts[partIndex + 1]
+          ?? '';
         /** Index in `remainder` where the next fixed segment begins, or end-of-string when none remains. */
         const nextFixedPos = (nextFixed === '')
           ? remainder.length
@@ -260,7 +265,8 @@ export function mirrorGlobPath(
     if (destIndex < destWildcardCount) {
       return [
         fixed,
-        captured[destIndex] ?? '',
+        captured[destIndex]
+          ?? '',
       ];
     }
     return [fixed,];

@@ -189,12 +189,16 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       ctx.lineJoin = 'round';
       ctx.beginPath();
       ctx.moveTo(
-        segment.from[0] * cw,
-        segment.from[1] * ch,
+        segment.from[0]
+          * cw,
+        segment.from[1]
+          * ch,
       );
       ctx.lineTo(
-        segment.to[0] * cw,
-        segment.to[1] * ch,
+        segment.to[0]
+          * cw,
+        segment.to[1]
+          * ch,
       );
       ctx.stroke();
     },
@@ -215,7 +219,8 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       const mode = getToolMode();
       if (mode === 'zoom')
         return;
-      if ((mode === 'draw') || ((mode === 'erase') && eraseState.erasedInGesture))
+      if ((mode === 'draw') || ((mode === 'erase') && eraseState
+        .erasedInGesture))
         pushSnapshot();
       endGesture();
     },

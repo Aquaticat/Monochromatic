@@ -53,7 +53,8 @@ function resolvePort(): number {
   /** Port supplied via `--port=` CLI flag, if present. */
   const argumentPort = getArgumentValue('port',);
   /** Port from `PORT` environment variable, used when no CLI flag is given. */
-  const environmentPort = process.env.PORT;
+  const environmentPort = process.env
+    .PORT;
   /** Whichever source (CLI takes precedence) provided a value, or `undefined`. */
   const rawPort = argumentPort ?? environmentPort;
   if (rawPort === undefined)

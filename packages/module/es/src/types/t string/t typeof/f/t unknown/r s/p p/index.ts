@@ -34,7 +34,8 @@ export function $(
     return 'null';
   if (obj === undefined)
     return 'undefined';
-  if (((typeof obj) === 'number') && Number.isNaN(obj,))
+  if (((typeof obj) === 'number') && Number
+    .isNaN(obj,))
     return 'NaN';
   if ((typeof obj) === 'number')
     return 'number';
@@ -72,10 +73,12 @@ export function $(
 
     // Check for plain objects - only those with Object.prototype as prototype
     // AND with Object as constructor (to exclude class instances)
-    if (prototype === Object.prototype) {
+    if (prototype === Object
+      .prototype) {
       try {
         /* v8 ignore next -- @preserve */
-        if (obj.constructor === Object)
+        if (obj.constructor
+          === Object)
           return 'object';
       }
       catch {

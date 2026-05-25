@@ -36,7 +36,8 @@ export async function api<TResponse = unknown,>(
 ): Promise<TResponse> {
   /** Combined header set; starts with the JSON content type and absorbs any caller-supplied headers. */
   const mergedHeaders = new Headers({ 'Content-Type': 'application/json', },);
-  if (options?.headers !== undefined) {
+  if (options?.headers
+    !== undefined) {
     /** Caller-supplied headers normalised through the `Headers` ctor before merging. */
     const extra = new Headers(options.headers,);
     extra.forEach(function applyHeader(
@@ -71,8 +72,8 @@ export async function api<TResponse = unknown,>(
     const message = (
         ((typeof error) === 'object')
         && (error !== null)
-        && ('error' in error)
-        && ((typeof error.error) === 'string')
+          && ('error' in error)
+          && ((typeof error.error) === 'string')
       )
       ? error.error
       : 'Request failed';
@@ -80,7 +81,8 @@ export async function api<TResponse = unknown,>(
     throw new Error(message,);
   }
 
-  if (response.status === HTTP_NO_CONTENT) {
+  if (response.status
+    === HTTP_NO_CONTENT) {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- 204 responses have no body; caller expects TResponse
     return undefined as TResponse;
   }

@@ -253,7 +253,8 @@ async function copyToLibvirtImages(): Promise<void> {
     ],
   },);
   /** Login name used to restore ownership of the qcow2 after the root-owned `sudo cp`. */
-  const currentUser = process.env['USER'] ?? 'user';
+  const currentUser = process.env.USER
+    ?? 'user';
   await run({
     cmd: 'sudo',
     args: [

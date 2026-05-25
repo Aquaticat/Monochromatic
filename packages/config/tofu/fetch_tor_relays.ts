@@ -16,7 +16,8 @@ const CACHE_FILE = join(
   'cache_tor_relays.json',
 );
 /** Cache TTL: relay flags churn within hours so an hour between refetches keeps the list current. */
-const ONE_HOUR_MS = 60 * 60 * 1_000;
+const ONE_HOUR_MS = 60 * 60
+  * 1_000;
 // Onionoo's `flag` query accepts only a single value; Guard alone is fine
 // because guards must be Stable to earn the flag in the first place.
 /**
@@ -36,8 +37,11 @@ async function run() {
   if (existsSync(CACHE_FILE,)) {
     /** Cache file metadata used to compare mtime against {@link ONE_HOUR_MS}. */
     const stats = await stat(CACHE_FILE,);
-    if ((Date.now() - stats.mtimeMs) < ONE_HOUR_MS) {
-      process.stdout.write(
+    if ((Date.now()
+      - stats
+      .mtimeMs) < ONE_HOUR_MS) {
+      process.stdout
+        .write(
         JSON.stringify({ ips: await readFile(
           CACHE_FILE,
           'utf8',
@@ -61,7 +65,9 @@ async function run() {
     const ips: string[] = [];
     for (const relay of data.relays) {
       for (const addr of relay.or_addresses) {
-        if (addr.startsWith('[',) && addr.endsWith(']:443',)) {
+        if (addr.startsWith('[',)
+          && addr
+          .endsWith(']:443',)) {
           // IPv6: [2001:db8::1]:443
           ips.push(`${
             addr.slice(
@@ -70,7 +76,8 @@ async function run() {
             )
           }/128`,);
         }
-        else if (addr.endsWith(':443',) && (!addr.startsWith('[',))) {
+        else if (addr.endsWith(':443',)
+          && (!addr.startsWith('[',))) {
           // IPv4: 1.2.3.4:443
           ips.push(`${addr.split(':',)[0]}/32`,);
         }
@@ -83,12 +90,14 @@ async function run() {
       CACHE_FILE,
       result,
     );
-    process.stdout.write(JSON.stringify({ ips: result, },),);
+    process.stdout
+      .write(JSON.stringify({ ips: result, },),);
   }
   catch {
     // Fallback to expired cache if download fails
     if (existsSync(CACHE_FILE,)) {
-      process.stdout.write(
+      process.stdout
+        .write(
         JSON.stringify({ ips: await readFile(
           CACHE_FILE,
           'utf8',

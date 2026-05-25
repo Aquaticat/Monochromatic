@@ -161,8 +161,10 @@ export function normalizePointer({
   /** Layout snapshot so both normalization terms share one DOM read. */
   const rect = canvas.getBoundingClientRect();
   return [
-    (event.clientX - rect.left) / rect.width,
-    (event.clientY - rect.top) / rect.height,
+    (event.clientX - rect.left) / rect
+      .width,
+    (event.clientY - rect.top) / rect
+      .height,
   ];
 }
 
@@ -198,8 +200,10 @@ export function denormalizePoint({
   py: number;
 } {
   return {
-    px: point[0] * cw,
-    py: point[1] * ch,
+    px: point[0]
+      * cw,
+    py: point[1]
+      * ch,
   };
 }
 
@@ -223,7 +227,8 @@ export function startStroke(point: NormalizedPoint,): void {
     color: getStrokeColor(),
     width: getStrokeWidth(),
   };
-  drawingState.strokes.push(drawingState.current,);
+  drawingState.strokes
+    .push(drawingState.current,);
 }
 
 /**
@@ -240,13 +245,18 @@ export function startStroke(point: NormalizedPoint,): void {
  * ```
  */
 export function continueStroke(point: NormalizedPoint,): StrokeSegment | null {
-  if ((!drawingState.drawing) || (drawingState.current === null))
+  if ((!drawingState.drawing) || (drawingState.current
+    === null))
     return null;
   /** Last sample retained so the returned segment can describe an incremental redraw. */
-  const previous = drawingState.current.points.at(-1,);
+  const previous = drawingState.current
+    .points
+    .at(-1,);
   if (previous === undefined)
     return null;
-  drawingState.current.points.push(point,);
+  drawingState.current
+    .points
+    .push(point,);
   return {
     from: previous,
     to: point,

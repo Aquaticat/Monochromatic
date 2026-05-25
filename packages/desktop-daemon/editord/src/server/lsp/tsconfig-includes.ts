@@ -66,7 +66,9 @@ export async function resolveTsconfigIncludes({
 },): Promise<readonly string[]> {
   /** TTL-gated reuse below avoids respawning tsgo for repeated queries. */
   const cached = includesCache.get(root,);
-  if ((cached !== undefined) && ((Date.now() - cached.storedAt) < CACHE_TTL_MS))
+  if ((cached !== undefined) && ((Date.now()
+    - cached
+    .storedAt) < CACHE_TTL_MS))
     return cached.patterns;
 
   try {
@@ -83,7 +85,9 @@ export async function resolveTsconfigIncludes({
         cwd: root,
         env: {
           ...process.env,
-          PATH: `${binPath}${delimiter}${process.env.PATH ?? ''}`,
+          PATH: `${binPath}${delimiter}${process.env
+            .PATH
+            ?? ''}`,
         },
       },
     );
@@ -95,7 +99,8 @@ export async function resolveTsconfigIncludes({
     };
     /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     /** Empty fallback so the cache stores a usable array even for unconfigured projects. */
-    const patterns = config.include ?? [];
+    const patterns = config.include
+      ?? [];
 
     includesCache.set(
       root,
@@ -149,7 +154,8 @@ export function matchesTsconfigIncludes({
   readonly patterns: readonly string[];
 },): boolean {
   /** Safe fallback: if resolution failed (empty patterns), allow everything through. */
-  if (patterns.length === 0)
+  if (patterns.length
+    === 0)
     return true;
 
   return patterns.some(

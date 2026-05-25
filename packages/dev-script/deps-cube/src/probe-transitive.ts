@@ -140,9 +140,11 @@ export async function probeTransitive(
     return 0;
   /** Manifest entry for the exact requested version, falling back to any first version when the requested version is missing. */
   const versionManifest = manifest.versions?.[version]
-    ?? Object.values(manifest.versions ?? {},)[0];
+    ?? Object
+    .values(manifest.versions ?? {},)[0];
   /** Direct `dependencies` map from the version manifest; empty when none declared. */
-  const deps = versionManifest?.dependencies ?? {};
+  const deps = versionManifest?.dependencies
+    ?? {};
   /** Direct dependency package names; each recurses into its own latest manifest. */
   const directNames = Object.keys(deps,);
 
@@ -157,7 +159,8 @@ export async function probeTransitive(
       if (depPkg === null)
         return 0;
       /** Concrete version string for the direct dep, used as the cache key for the recursive call. */
-      const depVersion = depPkg['dist-tags']?.latest;
+      const depVersion = depPkg['dist-tags']
+        ?.latest;
       if (depVersion === undefined)
         return 0;
       return 1 + await probeTransitive({

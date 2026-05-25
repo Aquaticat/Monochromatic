@@ -39,8 +39,10 @@ export function latestUserPromptExcerpt(
     return undefined;
 
   /** Plain text extracted from user message content. */
-  const text = userMessageText(latestUserEntry.message.content,);
-  return text.length <= LATEST_USER_EXCERPT_CHARS
+  const text = userMessageText(latestUserEntry.message
+    .content,);
+  return text.length
+    <= LATEST_USER_EXCERPT_CHARS
     ? text
     : `${
       text.slice(
@@ -68,7 +70,8 @@ function userMessageText(
     return content;
   return content
     .filter(function keepTextBlock(block,): block is TextContent {
-      return block.type === 'text';
+      return block.type
+        === 'text';
     },)
     .map(function mapTextBlock(block,) {
       return block.text;
@@ -89,7 +92,10 @@ function isUserMessageEntry(
   readonly type: 'message';
   readonly message: UserMessage;
 } {
-  return (entry.type === 'message') && (entry.message.role === 'user');
+  return (entry.type
+    === 'message') && (entry.message
+    .role
+    === 'user');
 }
 
 //endregion Internal helpers

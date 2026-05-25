@@ -92,7 +92,8 @@ function attachComposerLoaders(): void {
   );
 }
 
-if (document.readyState === 'loading') {
+if (document.readyState
+  === 'loading') {
   document.addEventListener(
     'DOMContentLoaded',
     attachComposerLoaders,

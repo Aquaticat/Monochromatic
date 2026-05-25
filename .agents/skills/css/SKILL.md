@@ -118,10 +118,14 @@ No inline color literals.
 
 ```css
 /* Wrong */
-.card { background-color: #f5f5f5; }
+.card {
+  background-color: #f5f5f5;
+}
 
 /* Right */
-.card { background-color: var(--color-surface-1); }
+.card {
+  background-color: var(--color-surface-1);
+}
 ```
 
 No `var()` fallbacks (`var(--x, red)`).
@@ -200,12 +204,20 @@ Use data attributes for state and variant styling, not BEM modifiers:
 
 ```css
 /* Wrong */
-.card--featured { /* ... */ }
-.card__title--large { /* ... */ }
+.card--featured {
+  /* ... */
+}
+.card__title--large {
+  /* ... */
+}
 
 /* Right */
-.card[data-featured] { /* ... */ }
-.card[data-size="large"] .title { /* ... */ }
+.card[data-featured] {
+  /* ... */
+}
+.card[data-size='large'] .title {
+  /* ... */
+}
 ```
 
 Data attributes are queryable from JavaScript without string manipulation

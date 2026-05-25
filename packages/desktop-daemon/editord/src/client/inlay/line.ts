@@ -76,7 +76,11 @@ export function applyLineAnnotation({
         left,
         right,
       ) {
-        return left.position.character - right.position.character;
+        return left.position
+          .character
+          - right
+          .position
+          .character;
       },
     );
 
@@ -96,7 +100,8 @@ export function applyLineAnnotation({
       /**
        * Column the hint anchors to; compared against {@link cursor} for overlap.
        */
-      const charPos = hint.position.character;
+      const charPos = hint.position
+        .character;
 
       if ((rowText === '') || (charPos >= cursor)) {
         /**
@@ -110,7 +115,8 @@ export function applyLineAnnotation({
           fallbackCursor: cursor,
           spaceRatio,
         },);
-        rowText += ' '.repeat(spaces,) + label;
+        rowText += ' '.repeat(spaces,)
+          + label;
       }
       else {
         /** Overlaps previous hint; flush current row and start fresh. */
@@ -121,7 +127,8 @@ export function applyLineAnnotation({
         const indent = ' '.repeat(Math.round(charPos * spaceRatio,),);
         rowText = indent + label;
       }
-      cursor = charPos + label.length;
+      cursor = charPos + label
+        .length;
     }
 
     if (rowText !== '')
@@ -134,16 +141,23 @@ export function applyLineAnnotation({
        * Approximates the diagnostic's column using {@link spaceRatio}.
        */
       const indent = ' '.repeat(
-        Math.round(diagnostic.range.start.character * spaceRatio,),
+        Math.round(diagnostic.range
+          .start
+          .character
+          * spaceRatio,),
       );
       rows.push(`${indent}${formatDiagnosticLabel({ diagnostic, },)}`,);
     }
   }
 
-  div.dataset.inlay = rows.join('\n',);
+  div.dataset
+    .inlay = rows.join('\n',);
 
-  if ((lineDiags !== undefined) && (lineDiags.length > 0))
-    div.dataset.inlaySeverity = findWorstSeverity({ diagnostics: lineDiags, },);
+  if ((lineDiags !== undefined) && (lineDiags.length
+    > 0))
+    div.dataset
+      .inlaySeverity = findWorstSeverity({ diagnostics: lineDiags, },);
   else
-    delete div.dataset.inlaySeverity;
+    delete div.dataset
+      .inlaySeverity;
 }

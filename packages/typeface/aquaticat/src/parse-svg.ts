@@ -53,7 +53,8 @@ function attr({
   if (start === (-1))
     return undefined;
   /** First char of the value, just past the `"` opener. */
-  const valueStart = start + needle.length;
+  const valueStart = start + needle
+    .length;
   /** Closing-quote position bounded by value start; -1 when the SVG is malformed. */
   const valueEnd = attrs.indexOf(
     '"',
@@ -111,7 +112,8 @@ export function parseSvg(svgContent: string,): Cell[] {
       /* oxlint-enable no-restricted-syntax/no-regex */
       /** Parsed X offset of this cell rect; falls back to 0 when no translate is present. */
       const xOffset = (translateMatch !== undefined) && (translateMatch !== null)
-        ? Number(translateMatch[1] ?? '0',)
+        ? Number(translateMatch[1]
+          ?? '0',)
         : 0;
       cells.push({
         xOffset,
@@ -138,7 +140,8 @@ export function parseSvg(svgContent: string,): Cell[] {
     const isStroked = (strokeAttr !== undefined) && (attr({
       attrs,
       name: 'fill',
-    },) === undefined);
+    },)
+      === undefined);
     /** Raw `stroke-width` attribute string; parsed only when the path is actually stroked. */
     const strokeWidthStr = attr({
       attrs,
@@ -152,7 +155,8 @@ export function parseSvg(svgContent: string,): Cell[] {
     /** Most recently pushed cell, which owns every `<path>` until the next `<rect>` appears. */
     const currentCell = cells.at(-1,);
     if (currentCell !== undefined) {
-      currentCell.paths.push({
+      currentCell.paths
+        .push({
         d,
         isStroked,
         strokeWidth,

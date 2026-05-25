@@ -152,15 +152,18 @@ export async function exec(
     }
 
     /** Decoded stdout text; QMP captures it as base64 so it needs decoding before returning. */
-    const stdout = status['out-data'] !== undefined
+    const stdout = status['out-data']
+      !== undefined
       ? decodeBase64(status['out-data'],)
       : '';
     /** Decoded stderr text; mirrors the stdout decode path. */
-    const stderr = status['err-data'] !== undefined
+    const stderr = status['err-data']
+      !== undefined
       ? decodeBase64(status['err-data'],)
       : '';
     /** Guest exit code; defaulted to 0 because the agent omits the field on a clean exit. */
-    const exitCode = status.exitcode ?? 0;
+    const exitCode = status.exitcode
+      ?? 0;
 
     rl.debug(`command exited with code ${String(exitCode,)}`,);
     return {

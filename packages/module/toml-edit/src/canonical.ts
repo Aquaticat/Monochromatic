@@ -46,7 +46,12 @@ import { encodeKey, } from './values.ts';
  * ```
  */
 export function canonicalEmit({ edit, }: { edit: TomlEditState; },): string {
-  if ((edit.source !== '') || (edit.program.body[0].body.length > 0))
+  if ((edit.source
+    !== '') || (edit.program
+    .body[0]
+    .body
+    .length
+    > 0))
     return spliceEmit({ edit, },);
   return canonicalFromEmpty({ edit, },);
 }
@@ -59,26 +64,34 @@ export function canonicalEmit({ edit, }: { edit: TomlEditState; },): string {
 function canonicalFromEmpty({ edit, }: { edit: TomlEditState; },): string {
   /** Accumulator so the header block and insertions can be emitted in source order. */
   const parts: string[] = [];
-  if ((edit.headerComment !== null) && (edit.headerComment !== '')) {
+  if ((edit.headerComment
+    !== null) && (edit.headerComment
+    !== '')) {
     /** Header comment is stored joined; split here so each line gets its own `#` prefix. */
-    const lines = edit.headerComment.split('\n',);
+    const lines = edit.headerComment
+      .split('\n',);
     for (const line of lines)
-      parts.push(`# ${line}${edit.canonical.lineBreak}`,);
-    parts.push(edit.canonical.lineBreak,);
+      parts.push(`# ${line}${edit.canonical
+        .lineBreak}`,);
+    parts.push(edit.canonical
+      .lineBreak,);
   }
   /** Pending insertions become the body when there is no parsed source. */
-  const insertionTexts = edit.insertions.map(function each(ins,) {
+  const insertionTexts = edit.insertions
+    .map(function each(ins,) {
     return ins.text;
   },);
   parts.push(...insertionTexts,);
   /** Single join so callers see a contiguous string instead of array fragments. */
   const result = parts.join('',);
   if (
-    edit.canonical.trailingNewline
-    && (result !== '')
-    && (!result.endsWith('\n',))
+    edit.canonical
+      .trailingNewline
+      && (result !== '')
+      && (!result.endsWith('\n',))
   ) {
-    return `${result}${edit.canonical.lineBreak}`;
+    return `${result}${edit.canonical
+      .lineBreak}`;
   }
   return result;
 }
@@ -103,7 +116,8 @@ export function emitKey(
   return key
     .keys
     .map(function each(k,) {
-      return encodeKey({ key: k.type === 'TOMLBare' ? k.name : k.value, },);
+      return encodeKey({ key: k.type
+        === 'TOMLBare' ? k.name : k.value, },);
     },)
     .join('.',);
 }

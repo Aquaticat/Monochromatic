@@ -172,7 +172,8 @@ function readMessage(error: object,): string {
  * ```
  */
 function readErrorLabel(error: object,): string {
-  if (('name' in error) && ((typeof error.name) === 'string') && (error.name !== ''))
+  if (('name' in error) && ((typeof error.name) === 'string')
+    && (error.name !== ''))
     return error.name;
   return 'Error';
 }
@@ -258,13 +259,15 @@ function readStackFrames({
   if ((!('stack' in error)) || ((typeof error.stack) !== 'string'))
     return [];
   /** Raw newline-split stack lines, before header-line trimming and per-frame cleanup. */
-  const rawLines = error.stack.split('\n',);
+  const rawLines = error.stack
+    .split('\n',);
   /**
    * V8 and JavaScriptCore prefix the stack with `ErrorName: message`
    * on the first line. Drop it so the caller does not show the
    * header twice; otherwise keep all lines.
    */
-  const startIndex = (rawLines[0] !== undefined) && rawLines[0].includes(message,)
+  const startIndex = (rawLines[0] !== undefined) && rawLines[0]
+    .includes(message,)
     ? 1
     : 0;
   return rawLines
@@ -349,7 +352,8 @@ function formatNode({
    * line: `Error: boom at fn (file:9:19) at runFnOnce (...)`. Empty
    * stack contributes no trailing whitespace.
    */
-  const framesInline = frames.length > 0
+  const framesInline = frames.length
+    > 0
     ? ` ${frames.join(' ',)}`
     : '';
   /** Composed header-plus-frames string for this node, prepended to the descendants in the return list. */
@@ -483,7 +487,8 @@ export async function formatFailure({
 },): Promise<string> {
   /** Walked error chain reused across the empty-check and the summary fusion. */
   const lines = await formatErrorDeep(value,);
-  if (lines.length === 0)
+  if (lines.length
+    === 0)
     return summary;
   /** First line is fused onto the summary so the tagged logger's prefix only renders once. */
   const [first, ...rest] = lines;

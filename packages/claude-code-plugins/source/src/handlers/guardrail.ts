@@ -97,7 +97,8 @@ function invokesBunTest(command: string,): boolean {
   function skipWhitespace(idx: number,): number {
     /** Cursor advanced over the whitespace run; returned as the helper-shape binding. */
     let at = idx;
-    while ((at < command.length) && isWhitespace(command.charAt(at,),)) {
+    while ((at < command
+      .length) && isWhitespace(command.charAt(at,),)) {
       at += 1;
     }
     return at;
@@ -125,8 +126,10 @@ function invokesBunTest(command: string,): boolean {
       return false;
     }
     /** Position immediately after the candidate `bun`. */
-    const afterBun = bunStart + BUN.length;
-    if ((afterBun >= command.length) || (!isWhitespace(command.charAt(afterBun,),)))
+    const afterBun = bunStart + BUN
+      .length;
+    if ((afterBun >= command
+      .length) || (!isWhitespace(command.charAt(afterBun,),)))
       return false;
     /** Position of the `test` token candidate. */
     const testStart = skipWhitespace(afterBun,);
@@ -137,8 +140,10 @@ function invokesBunTest(command: string,): boolean {
       return false;
     }
     /** Position immediately after the candidate `test`. */
-    const afterTest = testStart + TEST.length;
-    return (afterTest >= command.length) || (!isWordChar(command.charAt(afterTest,),));
+    const afterTest = testStart + TEST
+      .length;
+    return (afterTest >= command
+      .length) || (!isWordChar(command.charAt(afterTest,),));
   }
   /**
    * Scans `command` for boundary characters; reports success when any
@@ -156,13 +161,16 @@ function invokesBunTest(command: string,): boolean {
   function scanForBoundary(fromIdx: number,): boolean {
     // Scan every position from `fromIdx`; a command separator immediately
     // followed by a `bun test` segment confirms the invocation.
-    for (let idx = fromIdx; idx < command.length; idx += 1) {
-      if (isCommandBoundary(command.charAt(idx,),) && matchesAt(idx + 1,))
+    for (let idx = fromIdx; idx < command
+      .length; idx += 1) {
+      if (isCommandBoundary(command.charAt(idx,),)
+        && matchesAt(idx + 1,))
         return true;
     }
     return false;
   }
-  return matchesAt(0,) || scanForBoundary(0,);
+  return matchesAt(0,)
+    || scanForBoundary(0,);
 }
 
 /**
@@ -206,10 +214,12 @@ type GuardrailOutput = PreToolUseOutput | Record<string, never>;
  * ```
  */
 function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutput {
-  if (event.tool_name === 'Bash') {
+  if (event.tool_name
+    === 'Bash') {
     /** Bash command string extracted defensively; `undefined` when the field is absent. */
-    const command = 'command' in event.tool_input
-      ? event.tool_input['command']
+    const command = 'command' in event
+      .tool_input
+      ? event.tool_input.command
       : undefined;
 
     if (((typeof command) === 'string') && invokesBunTest(command,)) {
@@ -234,12 +244,14 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
     return {};
   }
 
-  if (event.tool_name !== 'Agent')
+  if (event.tool_name
+    !== 'Agent')
     return {};
 
   /** Agent's `subagent_type` field, fed to `isGeneralPurpose` to detect the banned default. */
-  const subagentType = 'subagent_type' in event.tool_input
-    ? event.tool_input['subagent_type']
+  const subagentType = 'subagent_type' in event
+    .tool_input
+    ? event.tool_input.subagent_type
     : undefined;
 
   if (isGeneralPurpose(subagentType,)) {
@@ -259,8 +271,9 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
   }
 
   /** Agent's `resume` field; presence triggers the no-polling deny path. */
-  const resume = 'resume' in event.tool_input
-    ? event.tool_input['resume']
+  const resume = 'resume' in event
+    .tool_input
+    ? event.tool_input.resume
     : undefined;
 
   if ((typeof resume) === 'string') {

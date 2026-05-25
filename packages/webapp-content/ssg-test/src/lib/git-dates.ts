@@ -141,7 +141,8 @@ export async function detectShallow(): Promise<boolean> {
     'rev-parse',
     '--is-shallow-repository',
   ],);
-  return stdout.trim() === 'true';
+  return stdout.trim()
+    === 'true';
 }
 
 /**
@@ -221,7 +222,8 @@ async function gitLogDates(
     '--',
     absolute,
   ],);
-  return stdout.split('\n',).filter(function keepNonEmpty(line,) {
+  return stdout.split('\n',)
+    .filter(function keepNonEmpty(line,) {
     return line.trim().length > 0;
   },);
 }
@@ -312,7 +314,8 @@ async function ghApiFirstCommitDate(
    * directly as JSON. */
   /** Trimmed JSON payload returned from `gh api --paginate`. */
   const raw = stdout.trim();
-  if (raw.length === 0)
+  if (raw.length
+    === 0)
     return undefined;
 
   /**
@@ -332,7 +335,8 @@ async function ghApiFirstCommitDate(
       /** Opening bracket re-inserted on every chunk except the first to rebuild the JSON array boundary. */
       const prefix = i === 0 ? '' : '[';
       /** Closing bracket re-inserted on every chunk except the last to rebuild the JSON array boundary. */
-      const suffix = i === (arr.length - 1) ? '' : ']';
+      const suffix = i === (arr.length
+        - 1) ? '' : ']';
       // oxlint-disable-next-line typescript-eslint(no-unsafe-return) -- see above
       return JSON.parse(`${prefix}${chunk}${suffix}`,);
     },) as GhCommit[])
@@ -341,7 +345,9 @@ async function ghApiFirstCommitDate(
 
   /** Oldest commit in the API response (last entry per GitHub's newest-first ordering). */
   const last = commits.at(-1,);
-  return last?.commit.author.date;
+  return last?.commit
+    .author
+    .date;
 }
 
 //endregion GitHub API fallback
@@ -418,7 +424,8 @@ export async function getPostDates(
   /** Final `published` ISO string, resolved through shallow/gh fallback when needed. */
   const publishedIso: string | undefined =
     await (async function resolvePublishedIso(): Promise<string | undefined> {
-      if ((oldestLocalIso !== undefined) || (!isShallow) || (latestIso === undefined))
+      if ((oldestLocalIso !== undefined) || (!isShallow)
+        || (latestIso === undefined))
         return oldestLocalIso;
       if (githubSlug === undefined) {
         throw new Error(

@@ -27,7 +27,8 @@
  * ```
  */
 export function mean(values: readonly number[],): number {
-  if (values.length === 0)
+  if (values.length
+    === 0)
     return 0;
   return values.reduce(
     function accumulate(
@@ -37,5 +38,7 @@ export function mean(values: readonly number[],): number {
       return sum + value;
     },
     0,
-  ) / values.length;
+  )
+    / values
+    .length;
 }

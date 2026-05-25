@@ -101,7 +101,8 @@ function formatNum(value: number | null,): string {
 function formatInt(value: number | null,): string {
   if (value === null)
     return 'unknown';
-  return Math.round(value,).toString();
+  return Math.round(value,)
+    .toString();
 }
 
 /**
@@ -153,11 +154,13 @@ export function formatTooltipHtml(
   /** Escaped license-class label rendered in the table. */
   const license = escapeHtml(probe.licenseClass,);
   /** Escaped repository URL, or the literal `"unknown"` when the probe lacks a repo. */
-  const repo = probe.repositoryUrlOrNull === null
+  const repo = probe.repositoryUrlOrNull
+    === null
     ? 'unknown'
     : escapeHtml(probe.repositoryUrlOrNull,);
   /** Optional unknown-reason banner; empty string when the probe has no unknowns to report. */
-  const unknown = probe.unknownReason === null
+  const unknown = probe.unknownReason
+    === null
     ? ''
     : `<div class="tooltip-unknown">unknown: ${escapeHtml(probe.unknownReason,)}</div>`;
   return `<div class="tooltip">
@@ -219,7 +222,8 @@ function ensurePinElement(): HTMLElement {
     close,
     content,
   );
-  document.body.append(aside,);
+  document.body
+    .append(aside,);
   return aside;
 }
 

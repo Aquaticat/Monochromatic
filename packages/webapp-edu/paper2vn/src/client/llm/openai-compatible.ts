@@ -77,7 +77,8 @@ export async function chatOpenAICompatible(
   /** Outgoing JSON payload (model, messages, temperature, optional JSON format). */
   const body: Record<string, unknown> = {
     model: opts.model,
-    messages: opts.messages.map(function toApi(
+    messages: opts.messages
+      .map(function toApi(
       m: Readonly<Message>,
     ): {
       role: string;
@@ -88,9 +89,11 @@ export async function chatOpenAICompatible(
         content: m.content,
       };
     },),
-    temperature: opts.temperature ?? DEFAULT_TEMPERATURE,
+    temperature: opts.temperature
+      ?? DEFAULT_TEMPERATURE,
   };
-  if (opts.expectJson === true)
+  if (opts.expectJson
+    === true)
     body.response_format = { type: 'json_object', };
   /** Raw fetch response so status can gate the JSON read. */
   const res = await fetch(
@@ -99,7 +102,8 @@ export async function chatOpenAICompatible(
       method: 'POST',
       headers,
       body: JSON.stringify(body,),
-      signal: opts.signal ?? null,
+      signal: opts.signal
+        ?? null,
     },
   );
   if (!res.ok) {
@@ -130,7 +134,10 @@ export async function chatOpenAICompatible(
   const json = await res.json() as ChatCompletionResponse;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
   /** First choice's assistant content, defaulting to empty when missing. */
-  const content = json.choices[0]?.message.content ?? '';
+  const content = json.choices[0]
+    ?.message
+    .content
+    ?? '';
   return content;
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

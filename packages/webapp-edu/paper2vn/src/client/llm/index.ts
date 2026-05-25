@@ -47,11 +47,14 @@ const PROVIDERS: Record<ProviderId, Provider> = {
 export function isProviderReady(): boolean {
   /** Active provider config snapshot from the settings store. */
   const cfg = getProvider();
-  if (cfg.id === 'ollama')
+  if (cfg.id
+    === 'ollama')
     return true;
-  if (cfg.apiKey === '')
+  if (cfg.apiKey
+    === '')
     return false;
-  if ((cfg.id === 'anthropic') && (!cfg.acknowledgedAnthropicWarning))
+  if ((cfg.id
+    === 'anthropic') && (!cfg.acknowledgedAnthropicWarning))
     return false;
   return true;
 }

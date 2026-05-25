@@ -203,7 +203,8 @@ export function mountEditor(
       if (entry === undefined)
         return;
       pending.delete(data.id,);
-      if (data.kind === 'error')
+      if (data.kind
+        === 'error')
         entry.reject(new Error(data.message,),);
       else
         entry.resolve(data,);
@@ -253,7 +254,8 @@ export function mountEditor(
 
   // Initialise the worker with the seed text. `init` has no reply.
   /** Effective initial text; defaulted to empty so the mirror and worker buffer start aligned. */
-  const initialText = input.initialText ?? '';
+  const initialText = input.initialText
+    ?? '';
   /* oxlint-disable eslint-plugin-unicorn/require-post-message-target-origin -- Worker channel */
   worker.postMessage({
     kind: 'init',
@@ -360,7 +362,10 @@ export function mountEditor(
   changeListeners.push(function repaint(changeset,) {
     viewport.render(mirror,);
     /** Cursor lands at the end of the inserted text, or at `from` for pure deletes (insert length 0). */
-    const cursor = changeset.from + changeset.insert.length;
+    const cursor = changeset.from
+      + changeset
+      .insert
+      .length;
     selection.set({
       from: cursor,
       to: cursor,
@@ -373,20 +378,24 @@ export function mountEditor(
    * the worker's authoritative snapshot. Logs (does not throw) on
    * mismatch so the invariant violation is loud but recoverable.
    */
-  if (input.debug === true) {
+  if (input.debug
+    === true) {
     changeListeners.push(function checkInvariant() {
       void (async function check(): Promise<void> {
         /** Worker snapshot reply; compared against `mirror` for the invariant check. */
         const reply = await request({ kind: 'snapshot', },);
-        if (reply.kind !== 'snapshotted')
+        if (reply.kind
+          !== 'snapshotted')
           return;
-        if (reply.text !== mirror) {
+        if (reply.text
+          !== mirror) {
           // oxlint-disable-next-line eslint-plugin-unicorn/prefer-global-this -- worker-aware fallback
           console.error(
             'editor invariant violated: mirror !== worker snapshot',
             {
               mirrorLength: mirror.length,
-              workerLength: reply.text.length,
+              workerLength: reply.text
+                .length,
             },
           );
         }

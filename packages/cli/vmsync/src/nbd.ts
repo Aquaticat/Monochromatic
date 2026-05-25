@@ -125,7 +125,8 @@ async function checkDeviceFree(
       command: 'cat',
       args: [sysfsSize,],
     },);
-    return sizeStr.trim() === '0';
+    return sizeStr.trim()
+      === '0';
   }
   catch {
     rl.debug(`no sysfs entry for ${sysfsSize}, assuming free`,);
@@ -285,7 +286,8 @@ export async function patchBlocks(
       acc,
       r,
     ) {
-      return acc + r.length;
+      return acc + r
+        .length;
     },
     0,
   );
@@ -337,7 +339,9 @@ async function transferRegion(
     readonly rl: Logger;
   },
 ): Promise<void> {
-  if (((region.start % SECTOR_SIZE) !== 0) || ((region.length % SECTOR_SIZE) !== 0)) {
+  if (((region.start
+    % SECTOR_SIZE) !== 0) || ((region.length
+    % SECTOR_SIZE) !== 0)) {
     throw new Error(
       `region at offset ${String(region.start,)} with length ${
         String(region.length,)
@@ -346,7 +350,8 @@ async function transferRegion(
   }
 
   /** Number of dd-sized blocks, rounding up for partial final blocks. */
-  const blockCount = Math.ceil(region.length / DD_BLOCK_SIZE,);
+  const blockCount = Math.ceil(region.length
+    / DD_BLOCK_SIZE,);
   /** Byte offset for dd skip/seek. */
   const byteOffset = region.start;
 

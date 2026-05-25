@@ -25,7 +25,8 @@ import { createTsdocVisitor, } from './tsdoc-visitors.ts';
  * current with spec updates.
  */
 const VALID_TSDOC_TAGS: ReadonlySet<string> = new Set([
-  ...StandardTags.allDefinitions.map(function getTagName(def,): string {
+  ...StandardTags.allDefinitions
+    .map(function getTagName(def,): string {
     return def.tagName;
   },),
   '@yields',
@@ -63,7 +64,8 @@ function isWordChar(c: string,): boolean {
  * @returns whether the line opens or closes a fenced code block
  */
 function isFenceLine(line: string,): boolean {
-  return line.trimStart().startsWith(FENCE_DELIMITER,);
+  return line.trimStart()
+    .startsWith(FENCE_DELIMITER,);
 }
 
 /**
@@ -87,7 +89,8 @@ export function stripInlineCodeSpans(s: string,): string {
   // Linear walk: each opening backtick is paired with the next closing
   // backtick; the cursor jumps past the closed span, so each character is
   // visited a bounded number of times and the stack stays flat.
-  for (let from = 0; from <= s.length;) {
+  for (let from = 0; from <= s
+    .length;) {
     /** Position of the next opening backtick; -1 means the rest is plain text. */
     const open = s.indexOf(
       INLINE_CODE_DELIMITER,
@@ -125,7 +128,8 @@ export function stripInlineCodeSpans(s: string,): string {
  * @returns line with inline code and escaped at signs removed
  */
 function stripInlineCodeAndEscapes(line: string,): string {
-  return stripInlineCodeSpans(line,).replaceAll(
+  return stripInlineCodeSpans(line,)
+    .replaceAll(
     ESCAPED_AT,
     '',
   );
@@ -160,7 +164,8 @@ export function collectTags(stripped: string,): readonly string[] {
   function scanTag(idx: number,): number {
     /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
     let cursor = idx;
-    while ((cursor < stripped.length) && isWordChar(stripped.charAt(cursor,),))
+    while ((cursor < stripped
+      .length) && isWordChar(stripped.charAt(cursor,),))
       cursor += 1;
     return cursor;
   }
@@ -169,7 +174,8 @@ export function collectTags(stripped: string,): readonly string[] {
   // Linear walk: each `@` is located by `indexOf`, the trailing word run is
   // measured once, and the cursor jumps past it, so each character is visited a
   // bounded number of times and the stack stays flat.
-  for (let from = 0; from < stripped.length;) {
+  for (let from = 0; from < stripped
+    .length;) {
     /** Position of the next at-sign; -1 ends the scan. */
     const atIdx = stripped.indexOf(
       '@',
@@ -221,7 +227,8 @@ export const checkTagNames: CreateOnceRule = {
         comment,
       ): void {
         /** Raw comment body split into per-line slices; iterated to find tag occurrences. */
-        const lines = comment.value.split('\n',);
+        const lines = comment.value
+          .split('\n',);
         /**
          * Mutable code-fence state, kept in a `const` object so AGENTS.md's
          * function-root `let` ban is satisfied while the forEach callback
@@ -262,7 +269,10 @@ export const checkTagNames: CreateOnceRule = {
               context.report({
                 loc: {
                   start: {
-                    line: comment.loc.start.line + index,
+                    line: comment.loc
+                      .start
+                      .line
+                      + index,
                     column: 0,
                   },
                 },
@@ -277,7 +287,10 @@ export const checkTagNames: CreateOnceRule = {
               context.report({
                 loc: {
                   start: {
-                    line: comment.loc.start.line + index,
+                    line: comment.loc
+                      .start
+                      .line
+                      + index,
                     column: 0,
                   },
                 },

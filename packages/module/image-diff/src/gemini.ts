@@ -55,7 +55,8 @@ async function geminiEmbed({
   /**
    * Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
    */
-  const model = (config.model as GeminiModel | undefined) ?? DEFAULT_GEMINI_MODEL;
+  const model = (config.model as GeminiModel | undefined)
+    ?? DEFAULT_GEMINI_MODEL;
   /** Gemini-shaped inline data payload converted from the caller's image input. */
   const inlineData = await toGeminiInlineData(input,);
 
@@ -93,11 +94,14 @@ async function geminiEmbed({
   /** Parsed embedContent payload; embedding vector lives at `embedding.values`. */
   const result = await response.json() as GeminiEmbedContentResponse;
   rl.debug(
-    `received embedding with ${String(result.embedding.values.length,)} dimensions`,
+    `received embedding with ${String(result.embedding
+      .values
+      .length,)} dimensions`,
   );
 
   return {
-    embedding: result.embedding.values,
+    embedding: result.embedding
+      .values,
     usage: {
       textTokens: 0,
       imagePixels: 0,

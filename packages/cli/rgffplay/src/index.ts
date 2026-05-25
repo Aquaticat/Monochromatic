@@ -93,8 +93,9 @@ const rlMusicDir = tagged({
  */
 async function resolveMusicDir(): Promise<string> {
   /** User-set XDG override; preferred path when present so callers can point at any directory. */
-  const envDir = process.env['XDG_MUSIC_DIR'];
-  if ((envDir !== undefined) && (envDir.length > 0)) {
+  const envDir = process.env.XDG_MUSIC_DIR;
+  if ((envDir !== undefined) && (envDir.length
+    > 0)) {
     rlMusicDir.info(`using XDG_MUSIC_DIR="${envDir}"`,);
     return envDir;
   }
@@ -182,14 +183,17 @@ async function findFiles({
     );
 
   /** Matched file paths split from the null-separated rg output; empty fragments dropped so the count reflects real matches. */
-  const files = rgOutput.split('\0',).filter(function nonEmpty(f,) {
+  const files = rgOutput.split('\0',)
+    .filter(function nonEmpty(f,) {
     return f.length > 0;
   },);
 
-  if (files.length === 0)
+  if (files.length
+    === 0)
     throw new Error(`No files matching glob "${glob}" in "${musicDir}"`,);
 
-  if (files.length > 1) {
+  if (files.length
+    > 1) {
     throw new Error(
       `Ambiguous match: ${
         String(files.length,)
@@ -223,9 +227,11 @@ const rl = tagged({
 },);
 
 /** Positional arguments forming the search query. */
-const args = process.argv.slice(2,);
+const args = process.argv
+  .slice(2,);
 
-if (args.length === 0) {
+if (args.length
+  === 0) {
   console.error('Usage: rgffplay <name...>',);
   console.error('Example: rgffplay sweet devil',);
   throw new Error('No arguments provided',);

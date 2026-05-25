@@ -131,7 +131,8 @@ async function run(): Promise<ScenarioResult> {
   /** Invariant breaches collected for the scenario result. */
   const violations: string[] = [];
   /** Target spacing between comment dispatches so the burst covers `burstDurationMs`. */
-  const intervalMs = burstDurationMs / Math.max(
+  const intervalMs = burstDurationMs / Math
+    .max(
     burstEvents,
     1,
   );
@@ -156,12 +157,14 @@ async function run(): Promise<ScenarioResult> {
     },);
     /* oxlint-enable no-await-in-loop */
     setEventCursor(cursor,);
-    samples.push(Date.now() - t0,);
+    samples.push(Date.now()
+      - t0,);
     if (intervalMs > 0) {
       /** Remaining slice of the per-event budget; floored so the sleep never overshoots. */
       const sleep = Math.max(
         0,
-        Math.floor(intervalMs - (Date.now() - t0),),
+        Math.floor(intervalMs - (Date.now()
+          - t0),),
       );
       if (sleep > 0) {
         // oxlint-disable-next-line no-await-in-loop -- paced burst by design
@@ -201,7 +204,8 @@ async function run(): Promise<ScenarioResult> {
     p: P99,
   },);
   /** Wall-clock total used by the summary table. */
-  const durationMs = Date.now() - startedAt;
+  const durationMs = Date.now()
+    - startedAt;
   l.info(
     `bursty-comment complete burstEvents=${String(burstEvents,)} durationMs=${
       String(durationMs,)
@@ -215,7 +219,8 @@ async function run(): Promise<ScenarioResult> {
     p50,
     p99,
     fragmentsWritten: burstEvents,
-    bytesWritten: stored?.byteLength ?? 0,
+    bytesWritten: stored?.byteLength
+      ?? 0,
     staleReadCount: 0,
     invariantViolations: violations,
   };

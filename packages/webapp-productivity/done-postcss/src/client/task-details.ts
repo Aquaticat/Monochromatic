@@ -88,14 +88,16 @@ detail.addEventListener(
         /* oxlint-enable typescript/no-unsafe-type-assertion */
 
         if (action === 'close')
-          globalThis.location.href = '/';
+          globalThis.location
+            .href = '/';
         else if (action === 'save') {
           /** Current metadata snapshot from the detail component for the PUT body. */
           const metadata = detail.getMetadata();
           /** PUT body merged from form inputs and metadata. */
           const payload = {
             title,
-            description: description.length === 0 ? null : description,
+            description: description.length
+              === 0 ? null : description,
             tags: metadata.tags,
             locations: metadata.locations,
             priority: metadata.priority,
@@ -110,35 +112,40 @@ detail.addEventListener(
               body: JSON.stringify(payload,),
             },
           },);
-          globalThis.location.reload();
+          globalThis.location
+            .reload();
         }
         else if (action === 'start') {
           await api({
             path: `/api/tasks/${task.id}/start`,
             options: { method: 'POST', },
           },);
-          globalThis.location.reload();
+          globalThis.location
+            .reload();
         }
         else if (action === 'stop') {
           await api({
             path: `/api/tasks/${task.id}/stop`,
             options: { method: 'POST', },
           },);
-          globalThis.location.reload();
+          globalThis.location
+            .reload();
         }
         else if (action === 'complete') {
           await api({
             path: `/api/tasks/${task.id}/complete`,
             options: { method: 'POST', },
           },);
-          globalThis.location.href = '/';
+          globalThis.location
+            .href = '/';
         }
         else if (action === 'delete') {
           await api({
             path: `/api/tasks/${task.id}`,
             options: { method: 'DELETE', },
           },);
-          globalThis.location.href = '/';
+          globalThis.location
+            .href = '/';
         }
       }
       catch (error: unknown) {

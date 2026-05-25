@@ -30,7 +30,8 @@ const timerState: { id: ReturnType<typeof setTimeout> | null; } = { id: null, };
  * ```
  */
 export function showZoomToast(toast: HTMLElement,): void {
-  if (timerState.id !== null) {
+  if (timerState.id
+    !== null) {
     clearTimeout(timerState.id,);
     timerState.id = null;
   }

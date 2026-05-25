@@ -134,9 +134,11 @@ function formatModelDisplay(raw: string,): string {
   /** Accumulator for the trimmed display name, seeded with the family and extended only with parts that diverge from defaults. */
   let result = family;
 
-  if (version && (version !== defaults?.latestVersion))
+  if (version && (version !== defaults
+    ?.latestVersion))
     result += ` ${version}`;
-  if (context && (context !== defaults?.defaultContext))
+  if (context && (context !== defaults
+    ?.defaultContext))
     result += ` (${context})`;
 
   return result;
@@ -156,7 +158,8 @@ const SECONDS_PER_DAY = 86_400;
 /** Format epoch seconds as a relative duration like "1h23m" or "3d2h". */
 function formatRelativeTime(resetsAt: number,): string {
   /** Remaining seconds until the reset; non-positive when the reset already passed. */
-  const diff = resetsAt - Math.floor(Date.now() / 1_000,);
+  const diff = resetsAt - Math
+    .floor(Date.now() / 1_000,);
 
   if (diff <= 0)
     return 'now';
@@ -231,23 +234,28 @@ function formatRateLimit({
     return '';
 
   /** Current wall-clock time in epoch seconds; matched against `tier.resets_at` to derive elapsed. */
-  const now = Math.floor(Date.now() / 1_000,);
+  const now = Math.floor(Date.now()
+    / 1_000,);
   /** Seconds already consumed in the window; negative when `resets_at` is in the future by more than the window. */
-  const elapsed = windowSeconds - (tier.resets_at - now);
+  const elapsed = windowSeconds - (tier.resets_at
+    - now);
   /**
    * Linear extrapolation of end-of-window usage from current burn rate.
    *
    * Set to `0` when elapsed is non-positive or usage is below {@link MIN_USAGE_FOR_PROJECTION},
    * to suppress the divide-by-tiny-elapsed amplification at session start.
    */
-  const projected = (elapsed > 0) && (tier.used_percentage >= MIN_USAGE_FOR_PROJECTION)
-    ? (tier.used_percentage / elapsed) * windowSeconds
+  const projected = (elapsed > 0) && (tier.used_percentage
+    >= MIN_USAGE_FOR_PROJECTION)
+    ? (tier.used_percentage
+      / elapsed) * windowSeconds
     : 0;
   /** True when projected usage exceeds 100%, forcing the segment to render even below {@link RATE_LIMIT_THRESHOLD}. */
   const isProjectedOverrun = projected > PROJECTED_OVERRUN_THRESHOLD;
 
   /** Remaining quota percentage as a whole number; the user-facing value in the output. */
-  const remaining = Math.floor(100 - tier.used_percentage,);
+  const remaining = Math.floor(100 - tier
+    .used_percentage,);
   if ((remaining > RATE_LIMIT_THRESHOLD) && (!isProjectedOverrun))
     return '';
 
@@ -296,7 +304,8 @@ function formatContextWindow(
    * statusline frames align column-by-column instead of wobbling as the count grows.
    */
   const usedFmt = used >= THOUSANDS
-    ? `${String(Math.floor(used / THOUSANDS,),).padStart(3,)},${
+    ? `${String(Math.floor(used / THOUSANDS,),)
+      .padStart(3,)},${
       String(
         used % THOUSANDS,
       )
@@ -305,7 +314,8 @@ function formatContextWindow(
           '0',
         )
     }`
-    : String(used,).padStart(7,);
+    : String(used,)
+      .padStart(7,);
 
   /** Total token count rendered with locale-aware thousands separators. */
   const totalFmt = total.toLocaleString('en-US',);
@@ -349,7 +359,8 @@ const EFFORT_SYMBOLS: Record<string, string> = {
 async function readEffortIndicator(): Promise<string> {
   try {
     /** User home directory; treated as empty when the env var is unset so the path simply fails to resolve. */
-    const home = process.env['HOME'] ?? '';
+    const home = process.env.HOME
+      ?? '';
     /** Path to the global Claude Code settings file storing `effortLevel`. */
     const settingsPath = `${home}/.claude/settings.json`;
     /** Raw JSON read from disk; only `effortLevel` is consumed downstream. */
@@ -360,8 +371,10 @@ async function readEffortIndicator(): Promise<string> {
     /** Parsed settings narrowed to just the `effortLevel` field this function cares about. */
     const settings: { effortLevel?: string; } = JSON.parse(raw,);
     /** Resolved effort level; defaults to `"high"`, which is the rendered-as-empty branch. */
-    const level = settings.effortLevel ?? 'high';
-    return EFFORT_SYMBOLS[level] ?? '';
+    const level = settings.effortLevel
+      ?? 'high';
+    return EFFORT_SYMBOLS[level]
+      ?? '';
   }
   catch {
     return '';
@@ -508,23 +521,30 @@ const TAIL_BYTES = 8_192;
  */
 function findGerundInText(text: string,): string | undefined {
   /** Raw `-ing` matches across the lowercased text; empty array when nothing matches, so downstream filters stay total. */
-  const matches = text.toLowerCase().match(GERUND_PATTERN,) ?? [];
+  const matches = text.toLowerCase()
+    .match(GERUND_PATTERN,)
+    ?? [];
   /** Matches that survive the length and noise filters; the last one becomes the activity word. */
   const candidates = matches
     .filter(function isLongEnough(w,) {
-      return w.length >= MIN_GERUND_LENGTH;
+      return w.length
+        >= MIN_GERUND_LENGTH;
     },)
     .filter(function isNotNoise(w,) {
       return !NOISE_GERUNDS.has(w,);
     },);
 
-  if (candidates.length === 0)
+  if (candidates.length
+    === 0)
     return undefined;
 
   /** Last surviving candidate; preferred over the first so the statusline tracks the most recent activity. */
   const last = candidates.at(-1,);
   /* oxlint-disable-next-line typescript/no-non-null-assertion -- length check guarantees element */
-  return last!.charAt(0,).toUpperCase() + last!.slice(1,);
+  return last!.charAt(0,)
+    .toUpperCase()
+    + last!
+    .slice(1,);
 }
 
 /**
@@ -550,7 +570,8 @@ async function readActivityWord(
     /** Slice offset clamped to zero so transcripts shorter than {@link TAIL_BYTES} still read from the beginning. */
     const start = Math.max(
       0,
-      blob.size - TAIL_BYTES,
+      blob.size
+        - TAIL_BYTES,
     );
     /** Tail of the transcript decoded as UTF-8 text; we accept potential codepoint truncation at the head, since later matches win. */
     const tail = await blob
@@ -559,7 +580,8 @@ async function readActivityWord(
         blob.size,
       )
       .text();
-    return findGerundInText(tail,) ?? '';
+    return findGerundInText(tail,)
+      ?? '';
   }
   catch {
     return '';
@@ -578,7 +600,8 @@ const input = JSON.parse(await text(process.stdin,),) as StatuslineInput;
 const SEP = '    ';
 
 /** Model display name pulled from the input; absent or empty when Claude Code did not supply it. */
-const displayName = input.model?.display_name;
+const displayName = input.model
+  ?.display_name;
 /** Effort-level indicator read from `~/.claude/settings.json`; empty when "high" or unreadable. */
 const effortIndicator = await readEffortIndicator();
 /** Composed model segment: model name plus the yellow effort indicator when applicable; empty when no display name. */
@@ -598,14 +621,21 @@ const modelSegment = displayName
   : '';
 
 /** Current-usage subtree from the input; absent when Claude Code has not reported any usage yet. */
-const usage = input.context_window?.current_usage;
+const usage = input.context_window
+  ?.current_usage;
 /** Total context-window size; defaults to zero so the segment is suppressed when the input lacks this field. */
-const total = input.context_window?.context_window_size ?? 0;
+const total = input.context_window
+  ?.context_window_size
+  ?? 0;
 /** Sum of every input/output/cache token bucket; the user-facing "used" half of the context segment. */
-const used = (usage?.input_tokens ?? 0)
-  + (usage?.cache_creation_input_tokens ?? 0)
-  + (usage?.cache_read_input_tokens ?? 0)
-  + (usage?.output_tokens ?? 0);
+const used = (usage?.input_tokens
+  ?? 0)
+  + (usage?.cache_creation_input_tokens
+    ?? 0)
+  + (usage?.cache_read_input_tokens
+    ?? 0)
+  + (usage?.output_tokens
+    ?? 0);
 /** Rendered context-window segment; empty until both used and total are known so the line stays clean at session start. */
 const contextSegment = (used > 0) && (total > 0)
   ? formatContextWindow(
@@ -616,18 +646,21 @@ const contextSegment = (used > 0) && (total > 0)
 
 /** Rendered five-hour rate-limit segment; empty when remaining is comfortable and no overrun is projected. */
 const fiveHour = formatRateLimit({
-  tier: input.rate_limits?.five_hour,
+  tier: input.rate_limits
+    ?.five_hour,
   windowSeconds: FIVE_HOUR_WINDOW_SECONDS,
 },);
 /** Rendered seven-day rate-limit segment; same emit-when-needed logic as {@link fiveHour}. */
 const sevenDay = formatRateLimit({
-  tier: input.rate_limits?.seven_day,
+  tier: input.rate_limits
+    ?.seven_day,
   windowSeconds: SEVEN_DAY_WINDOW_SECONDS,
 },);
 /** Joined rate-limit segment; uses a middle-dot separator only when both tiers render. */
 const rateSegment = fiveHour && sevenDay
   ? `${fiveHour} · ${sevenDay}`
-  : fiveHour || sevenDay || '';
+  : fiveHour || sevenDay
+    || '';
 
 /** Context-aware activity word extracted from the transcript tail; empty when extraction fails or no transcript exists. */
 const activityWord = await readActivityWord(input.transcript_path,);
@@ -640,11 +673,13 @@ const line = [
   activityWord,
 ]
   .filter(function isNonEmpty(s,) {
-    return s.length > 0;
+    return s.length
+      > 0;
   },)
   .join(SEP,);
 
-if (line.length > 0)
+if (line.length
+  > 0)
   console.log(line,);
 
 //endregion

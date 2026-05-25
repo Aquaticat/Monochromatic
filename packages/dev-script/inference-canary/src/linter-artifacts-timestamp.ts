@@ -103,13 +103,15 @@ function isAsciiDigitRun({
  * ```
  */
 function hasYearHyphenPrefix(s: string,): boolean {
-  if (s.length < YEAR_HYPHEN_PREFIX_LENGTH)
+  if (s.length
+    < YEAR_HYPHEN_PREFIX_LENGTH)
     return false;
   return isAsciiDigitRun({
     s,
     start: 0,
     count: YEAR_DIGITS,
-  },) && (s.charAt(YEAR_END,) === '-');
+  },)
+    && (s.charAt(YEAR_END,) === '-');
 }
 
 //endregion Year-hyphen prefix predicate
@@ -183,7 +185,8 @@ export function parseArtifactDir(name: string,): ArtifactDirParts | null {
         if (idx <= 0)
           return null;
         /** Slug after the marker; must satisfy the year-prefix shape to count. */
-        const tail = name.slice(idx + marker.length,);
+        const tail = name.slice(idx + marker
+          .length,);
         if (hasYearHyphenPrefix(tail,)) {
           return {
             probe: name.slice(
@@ -199,7 +202,8 @@ export function parseArtifactDir(name: string,): ArtifactDirParts | null {
       return null;
     })();
   }
-  return tryMarker('-initial-',) ?? tryMarker('-fix-',);
+  return tryMarker('-initial-',)
+    ?? tryMarker('-fix-',);
 }
 
 /**
@@ -266,7 +270,9 @@ function restoreTimestamp(rawTimestamp: string,): string {
  * @returns `s` with the leading date colons replaced, or `s` verbatim
  */
 function rewriteDateColons(s: string,): string {
-  if (s.length < 'YYYY:MM:DD'.length)
+  if (s.length
+    < 'YYYY:MM:DD'
+    .length)
     return s;
   if (
     (!isAsciiDigitRun({
@@ -275,13 +281,13 @@ function rewriteDateColons(s: string,): string {
       count: YEAR_DIGITS,
     },))
     || (s.charAt(YEAR_END,) !== ':')
-    || (!isAsciiDigitRun({
+      || (!isAsciiDigitRun({
       s,
       start: MONTH_START,
       count: 2,
     },))
-    || (s.charAt(MONTH_END,) !== ':')
-    || (!isAsciiDigitRun({
+      || (s.charAt(MONTH_END,) !== ':')
+      || (!isAsciiDigitRun({
       s,
       start: DAY_START,
       count: 2,

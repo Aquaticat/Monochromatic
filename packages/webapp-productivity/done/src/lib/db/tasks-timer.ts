@@ -32,7 +32,8 @@ import {
 export async function startTaskTimer(id: string,): Promise<Task | null> {
   /** Captured once so both the `started_at` and `updated_at` columns share the value. */
   const timestamp = nowIso();
-  await db.prepare(SQL_START_TIMER,).run(
+  await db.prepare(SQL_START_TIMER,)
+    .run(
     timestamp,
     timestamp,
     id,
@@ -60,20 +61,25 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
     return null;
 
   /** Live seconds between `timerStartedAt` and now; zero when no timer was running. */
-  const elapsedSeconds = currentTask.timerStartedAt === null
+  const elapsedSeconds = currentTask.timerStartedAt
+    === null
     ? 0
     : Math.max(
       0,
       Math.floor(
-        (Date.now() - Date.parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
+        (Date.now()
+          - Date
+          .parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
       ),
     );
   /** Accumulated total persisted to the row's `tracked_time` column. */
-  const updatedTrackedTime = currentTask.trackedTime + elapsedSeconds;
+  const updatedTrackedTime = currentTask.trackedTime
+    + elapsedSeconds;
   /** Captured once so the `updated_at` column carries the same value as the calculation. */
   const timestamp = nowIso();
 
-  await db.prepare(SQL_STOP_TIMER,).run(
+  await db.prepare(SQL_STOP_TIMER,)
+    .run(
     updatedTrackedTime,
     timestamp,
     id,
@@ -123,7 +129,8 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
       blockerTitle: row.blocker_title,
     };
   },);
-  if (blockedBy.length > 0) {
+  if (blockedBy.length
+    > 0) {
     return {
       completed: false,
       notFound: false,
@@ -131,10 +138,12 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
     };
   }
 
-  if (currentTask.timerStartedAt !== null)
+  if (currentTask.timerStartedAt
+    !== null)
     await stopTaskTimer(id,);
 
-  await db.prepare(SQL_DELETE_TASK,).run(id,);
+  await db.prepare(SQL_DELETE_TASK,)
+    .run(id,);
   return {
     completed: true,
     notFound: false,

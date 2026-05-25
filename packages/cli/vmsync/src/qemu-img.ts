@@ -207,7 +207,8 @@ export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegi
   const changedCount = regions
     .filter(
       function isOverlayData(r,) {
-        return (r.depth === 0) && r.data;
+        return (r.depth === 0) && r
+          .data;
       },
     )
     .length;
@@ -273,7 +274,8 @@ export async function commitOverlay(overlayPath: string,): Promise<void> {
 export function firstWhitespaceIndex(text: string,): number {
   /** Scan cursor; advances past each leading non-whitespace character in one linear pass. */
   let cursor = 0;
-  while (cursor < text.length) {
+  while (cursor < text
+    .length) {
     /** Char under the cursor; stops the scan at the first whitespace (space, tab, newline, or carriage return). */
     const c = text.charAt(cursor,);
     if (' \t\n\r'.includes(c,))
@@ -305,7 +307,8 @@ export async function checksum(imagePath: string,): Promise<string> {
   },);
   rl.info(`computing sha256 for ${imagePath}`,);
 
-  if (process.platform === 'win32') {
+  if (process.platform
+    === 'win32') {
     /** certutil output includes the hash on its own line. */
     const raw = await spawn({
       command: 'certutil',

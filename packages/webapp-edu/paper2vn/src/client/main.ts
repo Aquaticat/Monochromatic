@@ -17,7 +17,9 @@ import { getSettings, } from './state.ts';
 
 bootI18n();
 
-document.documentElement.style.setProperty(
+document.documentElement
+  .style
+  .setProperty(
   '--font-scale',
   String(getSettings().fontScale,),
 );

@@ -110,7 +110,8 @@ const initPromise: Promise<void> = initialize();
 function markFailed(entry: SinkEntry,): void {
   entry.available = false;
   state.hasAvailableSink = sinkEntries.some(function isAvailable(sinkEntry,) {
-    return sinkEntry.available === true;
+    return sinkEntry.available
+      === true;
   },);
 }
 
@@ -123,14 +124,17 @@ function markFailed(entry: SinkEntry,): void {
  */
 function createMethod(level: Level,): (message: string,) => void {
   return function logAtLevel(message: string,): void {
-    if ((!state.hasAvailableSink) && state.initialized)
+    if ((!state.hasAvailableSink) && state
+      .initialized)
       throw new Error('No logging backends available',);
 
     /** Subset of sinks that survived verification; filtered fresh per call so a sink that drops out is excluded next time. */
     const available = sinkEntries.filter(function isAvailable(entry,) {
-      return entry.available === true;
+      return entry.available
+        === true;
     },);
-    if (available.length === 0)
+    if (available.length
+      === 0)
       return;
 
     /** Shared LogRecord forwarded to every available sink; built once per call so all sinks see the same timestamp. */
@@ -143,7 +147,8 @@ function createMethod(level: Level,): (message: string,) => void {
     available.forEach(function writeToSink(entry,) {
       try {
         /** Sink write return value (void or Promise); when a Promise, its rejection marks the sink unavailable rather than crashing the caller. */
-        const result = entry.sink.write(record,);
+        const result = entry.sink
+          .write(record,);
         if (result instanceof Promise) {
           // Fire-and-forget: awaiting would make the logger blocking
           // oxlint-disable-next-line promise/prefer-await-to-then -- intentional fire-and-forget
@@ -184,8 +189,10 @@ async function flushAll(): Promise<void> {
   await Promise.all(
     sinkEntries.map(async function runFlush(entry,) {
       /** Optional sink-supplied flush hook; absent when the sink writes synchronously and needs no draining. */
-      const sinkFlush = entry.sink.flush;
-      if ((entry.available !== true) || ((typeof sinkFlush) !== 'function'))
+      const sinkFlush = entry.sink
+        .flush;
+      if ((entry.available
+        !== true) || ((typeof sinkFlush) !== 'function'))
         return;
       try {
         await sinkFlush();

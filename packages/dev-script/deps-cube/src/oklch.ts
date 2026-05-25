@@ -44,7 +44,8 @@ export type Rgb8 = readonly [
 /** Degrees in a half-circle; the denominator of the radians conversion. */
 const HALF_CIRCLE_DEGREES = 180;
 /** Degrees-to-radians factor; π/180. */
-const DEG_TO_RAD = Math.PI / HALF_CIRCLE_DEGREES;
+const DEG_TO_RAD = Math.PI
+  / HALF_CIRCLE_DEGREES;
 /** sRGB encoding piecewise boundary; values below take the linear segment. */
 const SRGB_LINEAR_THRESHOLD = 0.003_130_8;
 /** sRGB encoding linear-segment slope (standard). */
@@ -128,31 +129,57 @@ export function oklchToSrgb(color: Oklch,): Rgb8 {
     H,
   } = color;
   /** OKLab `a` axis (green→red); the Cartesian projection of chroma at the hue angle. */
-  const a = C * Math.cos(H * DEG_TO_RAD,);
+  const a = C * Math
+    .cos(H * DEG_TO_RAD,);
   /** OKLab `b` axis (blue→yellow); the Cartesian projection of chroma at the hue angle. */
-  const b = C * Math.sin(H * DEG_TO_RAD,);
+  const b = C * Math
+    .sin(H * DEG_TO_RAD,);
 
   /* oxlint-disable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, stylistic/no-mixed-operators -- Ottosson 2020 OKLab→linear-sRGB matrix coefficients; naming or regrouping each obscures the math. */
   /** Ottosson stage 1: long-cone response in pre-cube-root form. */
-  const lPrime = L + 0.3963377774 * a + 0.2158037573 * b;
+  const lPrime = L + 0.3963377774
+    * a
+    + 0.2158037573
+    * b;
   /** Ottosson stage 1: medium-cone response in pre-cube-root form. */
-  const mPrime = L - 0.1055613458 * a - 0.0638541728 * b;
+  const mPrime = L - 0.1055613458
+    * a
+    - 0.0638541728
+    * b;
   /** Ottosson stage 1: short-cone response in pre-cube-root form. */
-  const sPrime = L - 0.0894841775 * a - 1.291485548 * b;
+  const sPrime = L - 0.0894841775
+    * a
+    - 1.291485548
+    * b;
 
   /** Ottosson stage 2: long-cone response cubed; undoes the OKLab cube-root step. */
-  const lCubed = lPrime * lPrime * lPrime;
+  const lCubed = lPrime * lPrime
+    * lPrime;
   /** Ottosson stage 2: medium-cone response cubed. */
-  const mCubed = mPrime * mPrime * mPrime;
+  const mCubed = mPrime * mPrime
+    * mPrime;
   /** Ottosson stage 2: short-cone response cubed. */
-  const sCubed = sPrime * sPrime * sPrime;
+  const sCubed = sPrime * sPrime
+    * sPrime;
 
   /** Ottosson stage 3: linear-sRGB red channel projected from cone responses. */
-  const rLin = 4.0767416621 * lCubed - 3.3077115913 * mCubed + 0.2309699292 * sCubed;
+  const rLin = 4.0767416621 * lCubed
+    - 3.3077115913
+    * mCubed
+    + 0.2309699292
+    * sCubed;
   /** Ottosson stage 3: linear-sRGB green channel. */
-  const gLin = -1.2684380046 * lCubed + 2.6097574011 * mCubed - 0.3413193965 * sCubed;
+  const gLin = -1.2684380046 * lCubed
+    + 2.6097574011
+    * mCubed
+    - 0.3413193965
+    * sCubed;
   /** Ottosson stage 3: linear-sRGB blue channel. */
-  const bLin = -0.0041960863 * lCubed - 0.7034186147 * mCubed + 1.707614701 * sCubed;
+  const bLin = -0.0041960863 * lCubed
+    - 0.7034186147
+    * mCubed
+    + 1.707614701
+    * sCubed;
   /* oxlint-enable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, stylistic/no-mixed-operators */
 
   return [
@@ -200,9 +227,12 @@ export function oklchLerpToSrgb(
   },
 ): Rgb8 {
   return oklchToSrgb({
-    L: start.L + (t * (end.L - start.L)),
-    C: start.C + (t * (end.C - start.C)),
-    H: start.H + (t * (end.H - start.H)),
+    L: start.L
+      + (t * (end.L - start.L)),
+    C: start.C
+      + (t * (end.C - start.C)),
+    H: start.H
+      + (t * (end.H - start.H)),
   },);
 }
 

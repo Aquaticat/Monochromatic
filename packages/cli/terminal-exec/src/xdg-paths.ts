@@ -40,7 +40,8 @@ export function stripTrailingSlashes(dir: string,): string {
   return (function trim(): string {
     /** Cut point; walked left past every trailing slash so the slice runs once. */
     let end = dir.length;
-    while ((end > 0) && (dir.charAt(end - 1,) === '/'))
+    while ((end > 0) && (dir.charAt(end - 1,)
+      === '/'))
       end -= 1;
     return dir.slice(
       0,
@@ -68,13 +69,17 @@ export function configPaths(
   { desktops, }: { readonly desktops: readonly string[]; },
 ): readonly string[] {
   /** HOME envar fallback for path roots when the variable is unset. */
-  const home = process.env['HOME'] ?? '/tmp';
+  const home = process.env.HOME
+    ?? '/tmp';
   /** XDG config base; defaults under HOME per spec. */
-  const configHome = process.env['XDG_CONFIG_HOME'] ?? `${home}/.config`;
+  const configHome = process.env.XDG_CONFIG_HOME
+    ?? `${home}/.config`;
   /** System config search list from XDG_CONFIG_DIRS; defaults to /etc/xdg per spec. */
-  const configDirs = (process.env['XDG_CONFIG_DIRS'] ?? '/etc/xdg').split(':',);
+  const configDirs = (process.env.XDG_CONFIG_DIRS
+    ?? '/etc/xdg').split(':',);
   /** System data dirs for the secondary `xdg-terminal-exec/` config lookup. */
-  const dataDirs = (process.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(
+  const dataDirs = (process.env.XDG_DATA_DIRS
+    ?? '/usr/local/share:/usr/share').split(
     ':',
   );
 
@@ -119,17 +124,21 @@ export function configPaths(
  */
 export function applicationDirs(): readonly string[] {
   /** HOME envar fallback for the data-home derivation. */
-  const home = process.env['HOME'] ?? '/tmp';
+  const home = process.env.HOME
+    ?? '/tmp';
   /** XDG_DATA_HOME root; defaults under HOME/.local/share per spec. */
-  const dataHome = process.env['XDG_DATA_HOME'] ?? `${home}/.local/share`;
+  const dataHome = process.env.XDG_DATA_HOME
+    ?? `${home}/.local/share`;
   /** System data dirs; reversed below so the user dir wins on ID conflicts. */
-  const dataDirs = (process.env['XDG_DATA_DIRS'] ?? '/usr/local/share:/usr/share').split(
+  const dataDirs = (process.env.XDG_DATA_DIRS
+    ?? '/usr/local/share:/usr/share').split(
     ':',
   );
 
   /** Ascending priority: system dirs first, user dir last */
   const dirs = [
-    ...dataDirs.toReversed().map(function ensureTrailingSlash(dir,) {
+    ...dataDirs.toReversed()
+      .map(function ensureTrailingSlash(dir,) {
       return `${stripTrailingSlashes(dir,)}/applications/`;
     },),
     `${dataHome}/applications/`,
@@ -151,11 +160,13 @@ export function applicationDirs(): readonly string[] {
  */
 export function currentDesktops(): readonly string[] {
   /** Empty fallback yields an empty desktops array, which disables desktop-prefixed lookups cleanly. */
-  const raw = process.env['XDG_CURRENT_DESKTOP'] ?? '';
+  const raw = process.env.XDG_CURRENT_DESKTOP
+    ?? '';
   return raw
     .split(':',)
     .filter(function nonEmpty(s,) {
-      return s.length > 0;
+      return s.length
+        > 0;
     },)
     .map(function lower(s,) {
       return s.toLowerCase();

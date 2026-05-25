@@ -175,9 +175,12 @@ export function switchToPage({
   overlay: HTMLElement;
   textLayer: HTMLDivElement;
 },): void {
-  if (index === pagesState.currentIndex)
+  if (index === pagesState
+    .currentIndex)
     return;
-  if ((index < 0) || (index >= pagesState.pages.length))
+  if ((index < 0) || (index >= pagesState
+    .pages
+    .length))
     return;
   endStroke();
   saveCurrentPage({

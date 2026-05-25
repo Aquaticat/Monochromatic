@@ -12,8 +12,8 @@ import {
 const WORD_POOL = (
   'lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor '
   + 'incididunt ut labore magna aliqua enim minim veniam quis nostrud exercitation '
-  + 'ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure in '
-  + 'reprehenderit voluptate velit esse cillum fugiat nulla pariatur excepteur sint'
+    + 'ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure in '
+    + 'reprehenderit voluptate velit esse cillum fugiat nulla pariatur excepteur sint'
 )
   .split(' ',);
 
@@ -44,7 +44,8 @@ export function synthesizeTitle(seed: number,): string {
   const prefix = rngPick({
     seed,
     items: TITLE_PREFIXES,
-  },) ?? 'Issue:';
+  },)
+    ?? 'Issue:';
   /** Title word count drawn from the seed; bounds the per-word picking loop. */
   const wordCount = rngInt({
     seed: seed + 1,
@@ -58,7 +59,8 @@ export function synthesizeTitle(seed: number,): string {
     const picked = rngPick({
       seed: seed + 2 + i,
       items: WORD_POOL,
-    },) ?? 'item';
+    },)
+      ?? 'item';
     words.push(picked,);
   }
   return `${prefix} ${words.join(' ',)}`;
@@ -99,7 +101,8 @@ export function synthesizeBody(row: {
     remaining: number;
     cursor: number;
   },): readonly string[] {
-    if (state.remaining <= 0)
+    if (state.remaining
+      <= 0)
       return [];
     /** Paragraph length capped by remaining so the body never overshoots the target. */
     const paragraphLength = Math.min(
@@ -117,14 +120,18 @@ export function synthesizeBody(row: {
       const picked = rngPick({
         seed: state.cursor + 1 + i,
         items: WORD_POOL,
-      },) ?? 'item';
+      },)
+        ?? 'item';
       words.push(picked,);
     }
     return [
       `${words.join(' ',)}.`,
       ...buildParagraphs({
-        remaining: state.remaining - paragraphLength,
-        cursor: state.cursor + paragraphLength + 1,
+        remaining: state.remaining
+          - paragraphLength,
+        cursor: state.cursor
+          + paragraphLength
+          + 1,
       },),
     ];
   }

@@ -67,7 +67,9 @@ export function $({
 
   // Merge new map with original
   /** Pre-existing quote map carried on the input, defaulted to empty when absent. */
-  const existingQuoteMap = value.__brand.inQuotes ?? new Map<string, boolean>();
+  const existingQuoteMap = value.__brand
+    .inQuotes
+    ?? new Map<string, boolean>();
   /** Combined map preferring fresh per-string verdicts over the pre-existing entries. */
   const mergedQuoteMap = new Map<string, boolean>([
     ...existingQuoteMap,

@@ -50,7 +50,8 @@ export function tomlGetRaw(
     path: TomlPath;
   },
 ): string {
-  if (edit.mode === 'canonical') {
+  if (edit.mode
+    === 'canonical') {
     throw new TomlSpliceUnavailableError(
       `tomlGetRaw requires splice mode; current state is canonical`,
     );
@@ -60,25 +61,33 @@ export function tomlGetRaw(
     edit,
     path,
   },);
-  if (result.kind === 'missing') {
+  if (result.kind
+    === 'missing') {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found in parse-time source`,
     );
   }
-  if (result.kind === 'keyvalue') {
-    return edit.source.slice(
+  if (result.kind
+    === 'keyvalue') {
+    return edit.source
+      .slice(
       result.node.value.range[0],
       result.node.value.range[1],
     );
   }
-  if (result.kind === 'value') {
-    return edit.source.slice(
+  if (result.kind
+    === 'value') {
+    return edit.source
+      .slice(
       result.node.range[0],
       result.node.range[1],
     );
   }
-  if ((result.kind === 'table') || (result.kind === 'top-level')) {
-    return edit.source.slice(
+  if ((result.kind
+    === 'table') || (result.kind
+    === 'top-level')) {
+    return edit.source
+      .slice(
       result.node.range[0],
       result.node.range[1],
     );
@@ -86,8 +95,10 @@ export function tomlGetRaw(
   /** Span the slice over the first and last AoT element so every entry is captured. */
   const first = nonNullishOrThrow(result.nodes[0],);
   /** Pair with `first` to cover the full AoT extent in source order. */
-  const last = nonNullishOrThrow(result.nodes.at(-1,),);
-  return edit.source.slice(
+  const last = nonNullishOrThrow(result.nodes
+    .at(-1,),);
+  return edit.source
+    .slice(
     first.range[0],
     last.range[1],
   );

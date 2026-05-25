@@ -182,7 +182,8 @@ export async function readCatalog(
   if (workspaceYamlPath === undefined) {
     throw new Error(
       `Could not locate pnpm-workspace.yaml by walking up from ${
-        startDir ?? process.cwd()
+        startDir ?? process
+          .cwd()
       }`,
     );
   }
@@ -198,14 +199,17 @@ export async function readCatalog(
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
   /** Default `catalog:` block; empty object preserves the rest of the pipeline when absent. */
-  const defaultBlock = parsed.catalog ?? {};
+  const defaultBlock = parsed.catalog
+    ?? {};
   /** Named `catalogs.*` blocks keyed by catalog name; empty object when the file has only the default catalog. */
-  const namedBlocks = parsed.catalogs ?? {};
+  const namedBlocks = parsed.catalogs
+    ?? {};
 
   /** Flattened entries from the default block, each tagged without a `catalogName`. */
   const defaultEntries = entriesFromBlock({ block: defaultBlock, },);
   /** Flattened entries from every named block, each tagged with its `catalogName`. */
-  const namedEntries = Object.entries(namedBlocks,).flatMap(
+  const namedEntries = Object.entries(namedBlocks,)
+    .flatMap(
     function expandNamed([catalogName, block,],) {
       return entriesFromBlock({
         block,
@@ -219,7 +223,8 @@ export async function readCatalog(
     ...defaultEntries,
     ...namedEntries,
   ];
-  if (combined.length === 0)
+  if (combined.length
+    === 0)
     throw new Error(`No catalog or catalogs entries found in ${workspaceYamlPath}`,);
 
   return combined;

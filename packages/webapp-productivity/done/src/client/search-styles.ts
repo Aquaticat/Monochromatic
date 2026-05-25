@@ -17,7 +17,8 @@ import {
 const CHIP_PADDING = 1 / 2;
 
 /** Tag chip gap in rem (1/4). */
-const CHIP_GAP = 1 / 2 / 2;
+const CHIP_GAP = 1 / 2
+  / 2;
 
 /** Desktop search hint font size in rem (3/2). */
 const HINT_FONT_SIZE_DESKTOP = (2 + 1) / 2;

@@ -111,9 +111,13 @@ async function runVerify(): Promise<boolean> {
   // Guard: skip dynamic import entirely outside Node.js to avoid
   // browser console errors from attempting to fetch node: URLs
   // oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined
-  if ((globalThis.process === undefined)
+  if ((globalThis.process
+    === undefined)
     // oxlint-disable-next-line typescript/no-unnecessary-condition -- process.versions may be absent in non-Node polyfills
-    || (globalThis.process.versions?.node === undefined))
+    || (globalThis.process
+      .versions
+      ?.node
+      === undefined))
   {
     state.available = false;
     return false;
@@ -164,7 +168,8 @@ async function runVerify(): Promise<boolean> {
     );
 
     /** ISO timestamp with colons replaced by dashes so it can be embedded in a cross-platform file name. */
-    const timestamp = new Date().toISOString().replaceAll(
+    const timestamp = new Date().toISOString()
+      .replaceAll(
       ':',
       '-',
     );
@@ -214,7 +219,8 @@ async function runVerify(): Promise<boolean> {
  * ```
  */
 export function verifyFile(): Promise<boolean> {
-  if (state.verifyPromise !== null)
+  if (state.verifyPromise
+    !== null)
     return state.verifyPromise;
 
   state.verifyPromise = runVerify();
@@ -228,7 +234,8 @@ export function verifyFile(): Promise<boolean> {
  */
 async function write(record: LogRecord,): Promise<void> {
   // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath is string|null, checking both conditions
-  if ((!state.available) || (!state.filePath) || (!state.appendFile))
+  if ((!state.available) || (!state.filePath)
+    || (!state.appendFile))
     return;
 
   try {

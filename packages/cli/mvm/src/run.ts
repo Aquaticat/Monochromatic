@@ -27,7 +27,8 @@ const NAME_RANDOM_BYTES = 4;
  */
 function generateEphemeralName(): string {
   /** Hex-encoded random suffix; keeps collision probability negligible across concurrent ephemeral VMs. */
-  const suffix = randomBytes(NAME_RANDOM_BYTES,).toString('hex',);
+  const suffix = randomBytes(NAME_RANDOM_BYTES,)
+    .toString('hex',);
   return `ephemeral-${suffix}`;
 }
 

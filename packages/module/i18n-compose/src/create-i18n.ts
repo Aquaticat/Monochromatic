@@ -257,7 +257,8 @@ export function createI18n<
   function assertLocale(value: string,): Locale {
     if (!isLocale(value,)) {
       throw new Error(
-        `Expected one of ${config.locales.join(', ',)}, got ${value}`,
+        `Expected one of ${config.locales
+          .join(', ',)}, got ${value}`,
       );
     }
     return value;
@@ -272,37 +273,43 @@ export function createI18n<
       locale,
       key,
     ) {
-      return specFor(locale,).renderLabel(key,);
+      return specFor(locale,)
+        .renderLabel(key,);
     },
     noun: function noun(
       locale,
       key,
     ) {
-      return specFor(locale,).renderNoun(key,);
+      return specFor(locale,)
+        .renderNoun(key,);
     },
     np: function np(
       locale,
       phrase,
     ) {
-      return specFor(locale,).renderNounPhrase(phrase,);
+      return specFor(locale,)
+        .renderNounPhrase(phrase,);
     },
     vp: function vp(
       locale,
       phrase,
     ) {
-      return specFor(locale,).renderVerbPhrase(phrase,);
+      return specFor(locale,)
+        .renderVerbPhrase(phrase,);
     },
     sentence: function sentence(
       locale,
       ast,
     ) {
-      return specFor(locale,).renderSentence(ast,);
+      return specFor(locale,)
+        .renderSentence(ast,);
     },
     fragment: function fragment(
       locale,
       ast,
     ) {
-      return specFor(locale,).renderFragment(ast,);
+      return specFor(locale,)
+        .renderFragment(ast,);
     },
   };
 }

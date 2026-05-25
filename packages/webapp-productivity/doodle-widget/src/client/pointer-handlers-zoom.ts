@@ -62,12 +62,14 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
    * @param style - CSS cursor keyword to apply
    */
   function setZoomCursor(style: string,): void {
-    canvas.style.cursor = style;
+    canvas.style
+      .cursor = style;
   }
 
   /** Cancels any pending long-press timer */
   function clearLongPress(): void {
-    if (gestureState.longPressTimer !== null) {
+    if (gestureState.longPressTimer
+      !== null) {
       clearTimeout(gestureState.longPressTimer,);
       gestureState.longPressTimer = null;
     }
@@ -76,7 +78,8 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener(
     'pointerdown',
     function handleZoomPointerDown(event: PointerEvent,): void {
-      if (getToolMode() !== 'zoom')
+      if (getToolMode()
+        !== 'zoom')
         return;
       /** Prevent iOS Safari from cancelling the pointer sequence via native gesture recognition */
       event.preventDefault();
@@ -93,7 +96,8 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
         function fireLongPress(): void {
           gestureState.longPressFired = true;
           gestureState.longPressTimer = null;
-          if (gestureState.downEvent === null)
+          if (gestureState.downEvent
+            === null)
             return;
           /** Container layout captured per gesture so panning offsets stay consistent across reflows. */
           const containerRect = page.getBoundingClientRect();
@@ -103,8 +107,14 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
             ch,
           } = getCanvasSize();
           zoomAt({
-            screenX: gestureState.downEvent.clientX - containerRect.left,
-            screenY: gestureState.downEvent.clientY - containerRect.top,
+            screenX: gestureState.downEvent
+              .clientX
+              - containerRect
+              .left,
+            screenY: gestureState.downEvent
+              .clientY
+              - containerRect
+              .top,
             direction: 'out',
             containerWidth: cw,
             containerHeight: ch,
@@ -119,7 +129,8 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener(
     'pointermove',
     function handleZoomPointerMove(event: PointerEvent,): void {
-      if (getToolMode() !== 'zoom')
+      if (getToolMode()
+        !== 'zoom')
         return;
       /** Canvas dimensions resolved each move so pan math stays in sync with the live layout. */
       const {
@@ -143,7 +154,8 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener(
     'pointerup',
     function handleZoomPointerUp(event: PointerEvent,): void {
-      if (getToolMode() !== 'zoom')
+      if (getToolMode()
+        !== 'zoom')
         return;
       clearLongPress();
       /** True when the gesture moved past the drag threshold; suppresses the tap-to-zoom action. */
@@ -157,8 +169,12 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
           ch,
         } = getCanvasSize();
         zoomAt({
-          screenX: event.clientX - containerRect.left,
-          screenY: event.clientY - containerRect.top,
+          screenX: event.clientX
+            - containerRect
+            .left,
+          screenY: event.clientY
+            - containerRect
+            .top,
           direction: event.shiftKey ? 'out' : 'in',
           containerWidth: cw,
           containerHeight: ch,
@@ -191,7 +207,8 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener(
     'touchstart',
     function handleZoomTouchStart(event: TouchEvent,): void {
-      if (getToolMode() === 'zoom')
+      if (getToolMode()
+        === 'zoom')
         event.preventDefault();
     },
     { passive: false, },
@@ -200,7 +217,8 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   canvas.addEventListener(
     'touchmove',
     function handleZoomTouchMove(event: TouchEvent,): void {
-      if (getToolMode() === 'zoom')
+      if (getToolMode()
+        === 'zoom')
         event.preventDefault();
     },
     { passive: false, },
@@ -213,7 +231,9 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   document.addEventListener(
     'keydown',
     function handleZoomKeyDown(event: KeyboardEvent,): void {
-      if ((getToolMode() === 'zoom') && (event.key === 'Shift'))
+      if ((getToolMode()
+        === 'zoom') && (event.key
+        === 'Shift'))
         setZoomCursor('zoom-out',);
     },
   );
@@ -221,7 +241,9 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   document.addEventListener(
     'keyup',
     function handleZoomKeyUp(event: KeyboardEvent,): void {
-      if ((getToolMode() === 'zoom') && (event.key === 'Shift'))
+      if ((getToolMode()
+        === 'zoom') && (event.key
+        === 'Shift'))
         setZoomCursor('zoom-in',);
     },
   );

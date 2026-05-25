@@ -40,7 +40,8 @@ async function resolveRepoUrl(): Promise<string> {
       { cwd: repoRoot, },
     );
     /** Trimmed remote URL; the trailing `.git` suffix is stripped if present so the result is browsable. */
-    const trimmed = result.output.trim();
+    const trimmed = result.output
+      .trim();
     return trimmed.endsWith('.git',)
       ? trimmed.slice(
         0,

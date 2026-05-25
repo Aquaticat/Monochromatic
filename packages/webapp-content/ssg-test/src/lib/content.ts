@@ -56,7 +56,8 @@ function parseFrontmatter(raw: string,): {
 } {
   /* Strip optional leading BOM. */
   /** BOM-trimmed input used for every subsequent index computation. */
-  const str = raw.codePointAt(0,) === BOM ? raw.slice(1,) : raw;
+  const str = raw.codePointAt(0,)
+    === BOM ? raw.slice(1,) : raw;
 
   if (!str.startsWith(FRONTMATTER_OPEN,)) {
     return {
@@ -101,15 +102,17 @@ function parseFrontmatter(raw: string,): {
     }
 
     /* The delimiter must be at column 0 or immediately after a newline. */
-    if ((idx === 0) || (str[idx - 1] === '\n')) {
+    if ((idx === 0) || (str[idx - 1]
+      === '\n')) {
       /** Offset just past the closing fence; the next char must be newline or EOF for a valid close. */
-      const afterDelim = idx + FRONTMATTER_OPEN.length;
+      const afterDelim = idx + FRONTMATTER_OPEN
+        .length;
 
       /* Next char must be a newline or EOF for a valid closing fence. */
       if (
         (afterDelim === str.length)
         || (str[afterDelim] === '\n')
-        || (str[afterDelim] === '\r')
+          || (str[afterDelim] === '\r')
       ) {
         /** YAML body between the opening and closing fences fed to parseYaml. */
         const yamlBlock = str.slice(
@@ -118,14 +121,17 @@ function parseFrontmatter(raw: string,): {
         );
         /** Body start cursor advanced past CR/LF so the post body excludes the closing fence. */
         let bodyStart = afterDelim;
-        if (str[bodyStart] === '\r')
+        if (str[bodyStart]
+          === '\r')
           bodyStart += 1;
-        if (str[bodyStart] === '\n')
+        if (str[bodyStart]
+          === '\n')
           bodyStart += 1;
 
         return {
           // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- parseYaml returns `any`; runtime validation follows via zod schema
-          data: (parseYaml(yamlBlock,) ?? {}) as Record<string, unknown>,
+          data: (parseYaml(yamlBlock,)
+            ?? {}) as Record<string, unknown>,
           content: str.slice(bodyStart,),
         };
       }
@@ -386,9 +392,12 @@ export function attachDates(
       lang: lp.lang,
       name: lp.name,
       data: {
-        title: lp.fileData.title,
-        description: lp.fileData.description,
-        tags: lp.fileData.tags,
+        title: lp.fileData
+          .title,
+        description: lp.fileData
+          .description,
+        tags: lp.fileData
+          .tags,
         published: dates.published,
         updated: dates.updated,
       },
@@ -407,14 +416,27 @@ export function attachDates(
     b,
   ) {
     /** Primary sort key in milliseconds; descending. */
-    const updatedDelta = b.data.updated.getTime() - a.data.updated.getTime();
+    const updatedDelta = b.data
+      .updated
+      .getTime()
+      - a
+      .data
+      .updated
+      .getTime();
     if (updatedDelta !== 0)
       return updatedDelta;
     /** Tie-break used when many posts share the same updated timestamp. */
-    const publishedDelta = b.data.published.getTime() - a.data.published.getTime();
+    const publishedDelta = b.data
+      .published
+      .getTime()
+      - a
+      .data
+      .published
+      .getTime();
     if (publishedDelta !== 0)
       return publishedDelta;
-    return a.name.localeCompare(b.name,);
+    return a.name
+      .localeCompare(b.name,);
   },);
 }
 

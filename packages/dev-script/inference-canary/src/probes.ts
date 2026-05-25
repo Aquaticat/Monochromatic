@@ -30,7 +30,8 @@ const simpleArithmetic: Probe = {
     response,
     _context,
   ): number {
-    return response.trim() === '56' ? 1 : 0;
+    return response.trim()
+      === '56' ? 1 : 0;
   },
 };
 
@@ -44,7 +45,8 @@ const simpleFormat: Probe = {
     response,
     _context,
   ): number {
-    return response.trim() === '<<CANARY_OK>>' ? 1 : 0;
+    return response.trim()
+      === '<<CANARY_OK>>' ? 1 : 0;
   },
 };
 
@@ -68,7 +70,9 @@ const simpleJson: Probe = {
       const EXPECTED_VALUE = 42;
       /** Partial credit for valid JSON with wrong content */
       const PARTIAL_SCORE = 0.5;
-      if ((parsed['status'] === 'ok') && (parsed['value'] === EXPECTED_VALUE))
+      if ((parsed.status
+        === 'ok') && (parsed.value
+        === EXPECTED_VALUE))
         return 1;
       return PARTIAL_SCORE;
     }

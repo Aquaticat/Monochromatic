@@ -29,7 +29,9 @@ export function stripImportSpecifier(raw: string,): string {
   const URL_PREFIX_LENGTH = 4;
 
   // url(...) wrapper
-  if (trimmed.startsWith('url(',) && trimmed.endsWith(')',)) {
+  if (trimmed.startsWith('url(',)
+    && trimmed
+    .endsWith(')',)) {
     /** Inner content of url() */
     const inner = trimmed
       .slice(
@@ -38,8 +40,12 @@ export function stripImportSpecifier(raw: string,): string {
       )
       .trim();
     // Strip inner quotes if present
-    if ((inner.startsWith("'",) && inner.endsWith("'",))
-      || (inner.startsWith('"',) && inner.endsWith('"',)))
+    if ((inner.startsWith("'",)
+      && inner
+      .endsWith("'",))
+      || (inner.startsWith('"',)
+        && inner
+        .endsWith('"',)))
     {
       return inner.slice(
         1,
@@ -50,8 +56,12 @@ export function stripImportSpecifier(raw: string,): string {
   }
 
   // Quoted string
-  if ((trimmed.startsWith("'",) && trimmed.endsWith("'",))
-    || (trimmed.startsWith('"',) && trimmed.endsWith('"',)))
+  if ((trimmed.startsWith("'",)
+    && trimmed
+    .endsWith("'",))
+    || (trimmed.startsWith('"',)
+      && trimmed
+      .endsWith('"',)))
   {
     return trimmed.slice(
       1,
@@ -104,7 +114,8 @@ export function splitPackageSpecifier(specifier: string,): [
      */
     const secondSlash = specifier.indexOf(
       '/',
-      specifier.indexOf('/',) + 1,
+      specifier.indexOf('/',)
+        + 1,
     );
     if (secondSlash === (-1)) {
       return [

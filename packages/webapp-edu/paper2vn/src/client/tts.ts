@@ -23,7 +23,8 @@ import { getSettings, } from './state.ts';
  */
 export function stopSpeaking(): void {
   try {
-    globalThis.speechSynthesis.cancel();
+    globalThis.speechSynthesis
+      .cancel();
   }
   catch (err) {
     console.error(
@@ -44,7 +45,8 @@ export function stopSpeaking(): void {
  * ```
  */
 export function canSpeak(): boolean {
-  return getSettings().voiceEnabled
+  return getSettings()
+    .voiceEnabled
     && (globalThis.speechSynthesis !== undefined);
 }
 
@@ -58,10 +60,12 @@ function pickVoice(): SpeechSynthesisVoice | undefined {
   /** Active locale's BCP-47 tag, matched against voice metadata. */
   const lang = bcp47();
   /** Snapshot of installed synthesis voices for the running engine. */
-  const voices = globalThis.speechSynthesis.getVoices();
+  const voices = globalThis.speechSynthesis
+    .getVoices();
   /** Voice whose lang matches the active locale exactly. */
   const exact = voices.find(function isExact(v,): boolean {
-    return v.lang === lang;
+    return v.lang
+      === lang;
   },);
   if (exact !== undefined)
     return exact;
@@ -70,10 +74,12 @@ function pickVoice(): SpeechSynthesisVoice | undefined {
     .split(
       '-',
       1,
-    )[0] ?? '';
+    )[0]
+    ?? '';
   /** First voice whose lang starts with the prefix, when no exact match exists. */
   const partial = voices.find(function isPartial(v,): boolean {
-    return v.lang.startsWith(prefix,);
+    return v.lang
+      .startsWith(prefix,);
   },);
   return partial;
 }
@@ -138,6 +144,7 @@ export async function speak(text: string,): Promise<void> {
     },
   );
   /* oxlint-enable eslint-plugin-promise/avoid-new */
-  globalThis.speechSynthesis.speak(utterance,);
+  globalThis.speechSynthesis
+    .speak(utterance,);
   await finished;
 }

@@ -60,7 +60,8 @@ function truncate(
     maxLength: number;
   },
 ): string {
-  if (value.length <= maxLength)
+  if (value.length
+    <= maxLength)
     return value;
   return `${
     value.slice(

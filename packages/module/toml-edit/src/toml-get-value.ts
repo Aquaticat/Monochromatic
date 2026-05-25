@@ -44,17 +44,26 @@ export function tomlGetValue(
     edit,
     path,
   },);
-  if ((result.kind === 'missing') || (result.kind === 'deleted'))
+  if ((result.kind
+    === 'missing') || (result.kind
+    === 'deleted'))
     return undefined;
-  if (result.kind === 'pending-value')
+  if (result.kind
+    === 'pending-value')
     return result.value;
-  if (result.kind === 'keyvalue')
-    return getStaticTOMLValue(result.node.value,);
-  if (result.kind === 'value')
+  if (result.kind
+    === 'keyvalue')
+    return getStaticTOMLValue(result.node
+      .value,);
+  if (result.kind
+    === 'value')
     return getStaticTOMLValue(result.node,);
-  if ((result.kind === 'table') || (result.kind === 'top-level'))
+  if ((result.kind
+    === 'table') || (result.kind
+    === 'top-level'))
     return getStaticTOMLValue(result.node,);
-  return result.nodes.map(function each(t,) {
+  return result.nodes
+    .map(function each(t,) {
     return getStaticTOMLValue(t,);
   },);
 }

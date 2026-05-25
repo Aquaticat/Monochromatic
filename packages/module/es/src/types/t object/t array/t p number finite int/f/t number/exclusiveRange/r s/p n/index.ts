@@ -23,11 +23,13 @@ export function $(
 ): Int[] {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- narrowing floor+1 to branded Int */
   /** First integer strictly greater than the exclusive lower bound. */
-  const start = (Math.floor(startExclusive,) + 1) as Int;
+  const start = (Math.floor(startExclusive,)
+    + 1) as Int;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   /* oxlint-disable typescript/no-unsafe-type-assertion -- narrowing ceil-1 to branded Int */
   /** Last integer strictly less than the exclusive upper bound. */
-  const end = (Math.ceil(endExclusive,) - 1) as Int;
+  const end = (Math.ceil(endExclusive,)
+    - 1) as Int;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- constructed array of verified integers matches Int[]
   return (start > end

@@ -68,7 +68,8 @@ export function regexFilter(
     ) {
       return false;
     }
-    if (include.length === 0)
+    if (include.length
+      === 0)
       return true;
     return include.some(function matchInclude(re,): boolean {
       return re.test(event.relativePath,);

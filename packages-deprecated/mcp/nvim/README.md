@@ -55,7 +55,10 @@ Then add to `~/.factory/mcp.json` (or your agent's MCP config):
   "nvim": {
     "type": "stdio",
     "command": "bun",
-    "args": ["run", "<path-to-monochromatic>/packages-deprecated/mcp/nvim/src/index.ts"]
+    "args": [
+      "run",
+      "<path-to-monochromatic>/packages-deprecated/mcp/nvim/src/index.ts"
+    ]
   }
 }
 ```

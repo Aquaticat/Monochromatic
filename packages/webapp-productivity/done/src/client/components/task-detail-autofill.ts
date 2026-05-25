@@ -41,14 +41,18 @@ export class AutofillManager {
 
   /** Clears all pending state: call on reconfigure. */
   reset(): void {
-    this.autofilled.clear();
+    this.autofilled
+      .clear();
     this.loading = false;
-    if (this.#timer !== null) {
+    if (this.#timer
+      !== null) {
       clearTimeout(this.#timer,);
       this.#timer = null;
     }
-    if (this.#abort !== null) {
-      this.#abort.abort();
+    if (this.#abort
+      !== null) {
+      this.#abort
+        .abort();
       this.#abort = null;
     }
   }
@@ -59,17 +63,24 @@ export class AutofillManager {
    * @param options - Title, metadata state, and update callback
    */
   request(options: AutofillRequestOptions,): void {
-    if (this.#timer !== null)
+    if (this.#timer
+      !== null)
       clearTimeout(this.#timer,);
-    if (this.#abort !== null) {
-      this.#abort.abort();
+    if (this.#abort
+      !== null) {
+      this.#abort
+        .abort();
       this.#abort = null;
     }
-    if (options.title.trim().length === 0)
+    if (options.title
+      .trim()
+      .length
+      === 0)
       return;
 
     /** Pre-bound fetch so the timeout callback keeps the manager's `this`. */
-    const fetchFn = this.#fetch.bind(this,);
+    const fetchFn = this.#fetch
+      .bind(this,);
     this.#timer = setTimeout(
       function triggerFetch(): void {
         void fetchFn(options,);
@@ -127,27 +138,45 @@ export class AutofillManager {
       /** Parsed autofill payload used to fill empty metadata slots below. */
       const result = (await response.json()) as AutofillResult;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
-      this.autofilled.clear();
+      this.autofilled
+        .clear();
 
-      if ((result.tags.length > 0) && (metadata.tags.length === 0)) {
+      if ((result.tags
+        .length
+        > 0) && (metadata.tags
+        .length
+        === 0)) {
         metadata.tags = result.tags;
-        this.autofilled.add('tags',);
+        this.autofilled
+          .add('tags',);
       }
-      if ((result.locations.length > 0) && (metadata.locations.length === 0)) {
+      if ((result.locations
+        .length
+        > 0) && (metadata.locations
+        .length
+        === 0)) {
         metadata.locations = result.locations;
-        this.autofilled.add('locations',);
+        this.autofilled
+          .add('locations',);
       }
-      if ((result.priority !== null) && (metadata.priority === null)) {
+      if ((result.priority
+        !== null) && (metadata.priority
+        === null)) {
         metadata.priority = result.priority;
-        this.autofilled.add('priority',);
+        this.autofilled
+          .add('priority',);
       }
-      if ((result.complexity !== null) && (metadata.complexity === null)) {
+      if ((result.complexity
+        !== null) && (metadata.complexity
+        === null)) {
         metadata.complexity = result.complexity;
-        this.autofilled.add('complexity',);
+        this.autofilled
+          .add('complexity',);
       }
     }
     catch (error: unknown) {
-      if ((error instanceof DOMException) && (error.name === 'AbortError'))
+      if ((error instanceof DOMException) && (error.name
+        === 'AbortError'))
         return;
       console.error(
         'Autofill request failed:',

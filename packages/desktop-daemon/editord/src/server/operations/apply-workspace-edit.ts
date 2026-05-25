@@ -48,8 +48,10 @@ function positionToOffset({
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- text-walker counter: `currentLine` increments on each newline consumed
   let currentLine = 0;
-  while ((currentLine < line) && (offset < text.length)) {
-    if (text[offset] === '\n')
+  while ((currentLine < line) && (offset < text
+    .length)) {
+    if (text[offset]
+      === '\n')
       currentLine++;
     offset++;
   }
@@ -80,10 +82,22 @@ function applyEditsToString({
       b,
     ) {
       /** Negative line difference (b - a) for reverse-document ordering; falls through to character compare on ties. */
-      const lineDiff = b.range.start.line - a.range.start.line;
+      const lineDiff = b.range
+        .start
+        .line
+        - a
+        .range
+        .start
+        .line;
       if (lineDiff !== 0)
         return lineDiff;
-      return b.range.start.character - a.range.start.character;
+      return b.range
+        .start
+        .character
+        - a
+        .range
+        .start
+        .character;
     },
   );
 
@@ -93,19 +107,31 @@ function applyEditsToString({
     /** Start offset of the edit, recomputed against the current `result` since prior edits may have shifted it. */
     const start = positionToOffset({
       text: result,
-      line: edit.range.start.line,
-      character: edit.range.start.character,
+      line: edit.range
+        .start
+        .line,
+      character: edit.range
+        .start
+        .character,
     },);
     /** End offset of the edit, recomputed against the current `result` for the same reason as `start`. */
     const end = positionToOffset({
       text: result,
-      line: edit.range.end.line,
-      character: edit.range.end.character,
+      line: edit.range
+        .end
+        .line,
+      character: edit.range
+        .end
+        .character,
     },);
     result = result.slice(
       0,
       start,
-    ) + edit.newText + result.slice(end,);
+    )
+      + edit
+      .newText
+      + result
+      .slice(end,);
   }
   return result;
 }
@@ -209,7 +235,8 @@ export async function applyWorkspaceEdit({
   for (const uri of Object.keys(changes,)) {
     /** Edits targeting this URI; undefined or empty when LSP returned nothing for that file. */
     const lspEdits = changes[uri];
-    if ((lspEdits === undefined) || (lspEdits.length === 0))
+    if ((lspEdits === undefined) || (lspEdits.length
+      === 0))
       continue;
 
     /** Absolute path decoded from the LSP `file://` URI for use with `node:fs` APIs. */

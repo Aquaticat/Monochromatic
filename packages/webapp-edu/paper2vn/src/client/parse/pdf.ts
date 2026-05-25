@@ -79,7 +79,8 @@ export async function extractPdf(file: File | Blob,): Promise<string> {
     /* oxlint-disable no-restricted-syntax/no-regex -- Two replaceAll passes normalize whitespace in joined PDF page text: collapse horizontal-whitespace runs to a single space, then cap consecutive newlines at two. Character-class and quantifier regex are the clearest forms; PDF input is bounded so no backtracking surface. */
     return items
       .map(function pickStr(it: Readonly<TextItem>,): string {
-        return it.hasEOL === true ? `${it.str}\n` : `${it.str} `;
+        return it.hasEOL
+          === true ? `${it.str}\n` : `${it.str} `;
       },)
       .join('',)
       .replaceAll(

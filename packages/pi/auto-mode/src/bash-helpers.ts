@@ -79,7 +79,8 @@ function hasFlag(
       if (a.startsWith('--',)) {
         return flags.some(
           function matchLongFlag(f,) {
-            return a === `--${LONG_FLAGS[f] ?? f}`;
+            return a === `--${LONG_FLAGS[f]
+              ?? f}`;
           },
         );
       }
@@ -142,7 +143,8 @@ function hasInlineCode(
   const flags = INTERPRETER_INLINE_FLAGS[name];
   if (flags === undefined)
     return false;
-  if (flags.length === 0)
+  if (flags.length
+    === 0)
     return true;
   return flags.some(
     function flagPresent(f,) {
@@ -169,7 +171,8 @@ function hasInlineCode(
 function hasNetworkCommand(
   analysis: BashAnalysis,
 ): boolean {
-  return analysis.commands.some(
+  return analysis.commands
+    .some(
     function isNetworkCmd(c,) {
       return NETWORK_COMMANDS.has(c.name,);
     },
@@ -194,7 +197,8 @@ function hasNetworkCommand(
 function hasSecretParamRefs(
   analysis: BashAnalysis,
 ): boolean {
-  return analysis.allParamRefs.some(
+  return analysis.allParamRefs
+    .some(
     function isSecretRef(ref,) {
       return SECRET_VAR_PATTERN.test(ref,);
     },
@@ -219,7 +223,8 @@ function hasSensitiveSource(
     ctx: SignalContext;
   },
 ): boolean {
-  return analysis.allFiles.some(
+  return analysis.allFiles
+    .some(
     function isSensitivePath(f,) {
       return pathSignals({
         filePath: f,

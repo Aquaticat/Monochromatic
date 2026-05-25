@@ -47,15 +47,19 @@ export function tomlInsertCommentAfter(
     edit,
     path,
   },);
-  if ((resolved.kind === 'missing') || (resolved.kind === 'top-level')) {
+  if ((resolved.kind
+    === 'missing') || (resolved.kind
+    === 'top-level')) {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
   }
 
   /** Use the last AoT element so the comment lands next to the entry the caller named. */
-  const node = resolved.kind === 'array-of-tables'
-    ? nonNullishOrThrow(resolved.nodes.at(-1,),)
+  const node = resolved.kind
+    === 'array-of-tables'
+    ? nonNullishOrThrow(resolved.nodes
+      .at(-1,),)
     : resolved.node;
 
   /** Two-space prefix matches the prevailing style for trailing comments. */

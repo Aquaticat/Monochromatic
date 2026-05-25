@@ -48,14 +48,17 @@ export function compileInline(body: string,): Compiled {
     };
   },);
   /** First chunk's markdown captured once for the preview field. */
-  const firstMd = chunks[0]?.md ?? '';
+  const firstMd = chunks[0]
+    ?.md
+    ?? '';
   /** Accumulated character count across all chunks; passed to finalize. */
   const charCount = chunks.reduce(
     function sumCharCount(
       acc,
       chunk,
     ) {
-      return acc + chunk.charCount;
+      return acc + chunk
+        .charCount;
     },
     0,
   );
@@ -104,7 +107,8 @@ export function compileViaWorker(
     resolve,
     reject,
   ) {
-    input.state.worker ??= new Worker(
+    input.state
+      .worker ??= new Worker(
       new URL(
         'composer.worker.js',
         import.meta.url,
@@ -140,7 +144,8 @@ export function compileViaWorker(
     function onMessage(event: MessageEvent<WorkerOut>,): void {
       /** Destructured early so the kind switch reads `data.kind` without repeated access. */
       const { data, } = event;
-      if (data.kind === 'done') {
+      if (data.kind
+        === 'done') {
         worker.removeEventListener(
           'message',
           onMessage,
@@ -150,16 +155,19 @@ export function compileViaWorker(
           chunkCount: data.chunkCount,
           charCount: data.charCount,
           preview: data.preview,
-          chunks: data.chunks?.map(function copy(chunk,) {
+          chunks: data.chunks
+            ?.map(function copy(chunk,) {
             return {
               md: chunk.md,
               html: chunk.html,
               charCount: chunk.charCount,
             };
-          },) ?? [],
+          },)
+            ?? [],
         },);
       }
-      else if (data.kind === 'error') {
+      else if (data.kind
+        === 'error') {
         worker.removeEventListener(
           'message',
           onMessage,

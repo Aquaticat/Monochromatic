@@ -33,14 +33,16 @@ export function renderDataGrid({
 },): string {
   /** Show fix scores when at least one row has pass-2 data */
   const hasFixScores = rows.some(function hasPass2(row,) {
-    return row.pass2Score !== undefined;
+    return row.pass2Score
+      !== undefined;
   },);
 
   /** Rendered card markup strings, one per row, joined into the grid container's innerHTML. */
   const cards = rows
     .map(function renderCard(row,) {
       /** Score rendered to 2 decimal places for display alongside the timestamp. */
-      const score = row.score.toFixed(2,);
+      const score = row.score
+        .toFixed(2,);
 
       /** Timestamp line with optional "(timeout)" suffix */
       const timestampChildren: string[] = [h({
@@ -65,8 +67,10 @@ export function renderDataGrid({
         text: score,
       },),];
       if (hasFixScores) {
-        if (row.pass2Score !== undefined)
-          scoreChildren.push(` (fix: ${row.pass2Score.toFixed(2,)})`,);
+        if (row.pass2Score
+          !== undefined)
+          scoreChildren.push(` (fix: ${row.pass2Score
+            .toFixed(2,)})`,);
         else if (row.failed) {
           scoreChildren.push(
             ' ',
@@ -90,11 +94,13 @@ export function renderDataGrid({
       }
 
       /** Card element tag: `button` when a run-detail overlay can be opened, plain `div` otherwise. */
-      const tag = row.runId !== undefined ? 'button' : 'div';
+      const tag = row.runId
+        !== undefined ? 'button' : 'div';
       /** Mutable attribute bag populated below with overlay-target and failed-state markers as needed. */
       const attrs: Record<string, string> = { role: 'listitem', };
-      if (row.runId !== undefined)
-        attrs['popovertarget'] = `run-${row.runId}`;
+      if (row.runId
+        !== undefined)
+        attrs.popovertarget = `run-${row.runId}`;
       if (row.failed)
         attrs['data-failed'] = '';
 

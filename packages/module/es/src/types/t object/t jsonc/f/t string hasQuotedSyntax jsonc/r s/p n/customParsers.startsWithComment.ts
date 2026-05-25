@@ -44,7 +44,8 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
     // Found a complete block comment on the first line - return immediately
     // Doesn't handle `/* a {"b": "*\/" } *\/ {"c": "d"}`
     // Because in all languages, *\/ upon first found after starting a block comment, auto becomes end marker of block comment.
-    return (firstLineMatch.index + firstLineMatch[0].length) - '*/'.length;
+    return (firstLineMatch.index + firstLineMatch[0].length) - '*/'
+      .length;
   }
 
   // If not on first line, use line-based approach
@@ -70,7 +71,8 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
     // Valid starSlash found - return its position
     return (newlineStarSlashMatch.index
       + newlineStarSlashMatch[0].length)
-      - '*/'.length;
+      - '*/'
+      .length;
   }
 
   // No valid block comment end found
@@ -157,7 +159,8 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
 
     /** Input remaining after the inline comment; fed back through the parser to consume further comments. */
     const remainingContent = trimmed
-      .slice(newlinePosition + '\n'.length,)
+      .slice(newlinePosition + '\n'
+        .length,)
       .trim() as Value;
 
     // Recursively parse the remaining content
@@ -195,7 +198,8 @@ export function startsWithComment<const Value extends StringJsonc | FragmentStri
     // Get content after the block comment, skipping the star slash delimiter
     /** Input remaining after the block comment; fed back through the parser to consume further comments. */
     const remainingContent = trimmed
-      .slice(blockEndPosition + '*/'.length,)
+      .slice(blockEndPosition + '*/'
+        .length,)
       .trim() as Value;
 
     // Recursively parse the remaining content

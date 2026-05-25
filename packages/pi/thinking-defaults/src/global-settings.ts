@@ -143,7 +143,8 @@ export function restoreGlobalDefaultThinkingLevel(
   if (!isJsonRecord(parsedSettings,))
     throw new Error('Global pi settings JSON must be an object.',);
 
-  if (parsedSettings.defaultThinkingLevel === defaultLevel)
+  if (parsedSettings.defaultThinkingLevel
+    === defaultLevel)
     return false;
 
   parsedSettings.defaultThinkingLevel = defaultLevel;

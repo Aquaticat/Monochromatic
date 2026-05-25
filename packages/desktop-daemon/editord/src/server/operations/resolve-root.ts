@@ -84,7 +84,8 @@ export async function resolveRoot(): Promise<string> {
       acc,
       result,
     ) {
-      return result.status === 'fulfilled' ? result.value : acc;
+      return result.status
+        === 'fulfilled' ? result.value : acc;
     },
     cwd,
   );

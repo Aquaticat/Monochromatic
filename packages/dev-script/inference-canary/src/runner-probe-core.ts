@@ -124,7 +124,8 @@ export async function runProbeCore({
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   try {
-    for (const runIndex of Array.from({ length: config.consistencyRuns, },).keys()) {
+    for (const runIndex of Array.from({ length: config.consistencyRuns, },)
+      .keys()) {
       // oxlint-disable-next-line no-await-in-loop -- sequential to avoid rate limits
       lastCompletion = await executeProbe({
         probe,
@@ -191,7 +192,8 @@ export async function runProbeCore({
       client,
       timestamp,
       signal,
-      lastCompletionText: fixCompletion?.text ?? '',
+      lastCompletionText: fixCompletion?.text
+        ?? '',
       meanScore,
     },);
 

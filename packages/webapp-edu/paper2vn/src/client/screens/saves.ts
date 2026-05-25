@@ -108,7 +108,8 @@ function mount(root: HTMLElement,): void {
   /** Index of every save slot, source of the rendered rows. */
   const saves = getSaves();
   /** Rendered row nodes, or an empty-state placeholder when no saves exist. */
-  const rows = saves.length === 0
+  const rows = saves.length
+    === 0
     ? [
       el({
         tag: 'p',

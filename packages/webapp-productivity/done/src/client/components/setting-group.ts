@@ -78,11 +78,14 @@ class SettingGroup extends HTMLElement {
   /** Renders the setting label, optional description, and action control. */
   connectedCallback(): void {
     /** Resolved at attach time so the header still renders if the attribute is absent. */
-    const label = this.getAttribute('label',) ?? '';
+    const label = this.getAttribute('label',)
+      ?? '';
     /** Empty string sentinels an absent description so the optional paragraph stays unrendered. */
-    const description = this.getAttribute('description',) ?? '';
+    const description = this.getAttribute('description',)
+      ?? '';
     /** Default `toggle` mode preserves backwards compatibility with existing usages. */
-    const mode = this.getAttribute('mode',) ?? 'toggle';
+    const mode = this.getAttribute('mode',)
+      ?? 'toggle';
     /** Boolean-attribute presence flag forwarded to the embedded toggle. */
     const on = this.hasAttribute('on',);
 
@@ -124,7 +127,8 @@ class SettingGroup extends HTMLElement {
       },),
     ];
 
-    if (description.length > 0) {
+    if (description.length
+      > 0) {
       children.push(h({
         tag: 'p',
         class: 'desc',
@@ -132,7 +136,8 @@ class SettingGroup extends HTMLElement {
       },),);
     }
 
-    this.#shadow.replaceChildren(...children,);
+    this.#shadow
+      .replaceChildren(...children,);
   }
 }
 

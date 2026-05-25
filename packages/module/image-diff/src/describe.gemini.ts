@@ -64,8 +64,9 @@ Image A is the first image, Image B is the second.`;
  */
 function resolveGeminiDescribeKey(): string | undefined {
   /** Resolved Gemini key from preferred-then-fallback env var; treated as missing when blank. */
-  const key = process.env['IMAGE_DIFF_GEMINI_API_KEY']
-    ?? process.env['GEMINI_API_KEY'];
+  const key = process.env.IMAGE_DIFF_GEMINI_API_KEY
+    ?? process
+    .env.GEMINI_API_KEY;
   if ((key === undefined) || (key === ''))
     return undefined;
   return key;
@@ -173,7 +174,8 @@ export async function describeViaGemini({
     throw new Error('Gemini generateContent returned no candidates',);
 
   /** First content part destructured for text access; guarded against the empty-parts case. */
-  const [part,] = candidate.content.parts;
+  const [part,] = candidate.content
+    .parts;
   if (part === undefined)
     throw new Error('Gemini generateContent returned no content parts',);
 

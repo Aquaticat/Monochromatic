@@ -1760,7 +1760,7 @@ moves fast.
 
 ### Draft upstream issue (Bug G, fileable, held until the next bump)
 
-~~~md
+````md
 **Title:** stack overflow aborts `Regex::new` on deeply nested complement
 or lookaround patterns, below `expanded_ast_limit`
 
@@ -1820,7 +1820,7 @@ does this; against 0.6.4 the trigger then returns a clean `Err` instead of
 aborting in both profiles, the cap boundary is exact (depth 999 compiles,
 1,001 rejects), and `cargo test --workspace --no-fail-fast` is unchanged at
 `235 passed; 0 failed; 19 ignored`.
-~~~
+````
 
 ## Other flags from the 2026-05-25 pass
 

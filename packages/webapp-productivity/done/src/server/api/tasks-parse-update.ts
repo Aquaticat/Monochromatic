@@ -72,7 +72,8 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   }
 
   if ('description' in value) {
-    if (((typeof value.description) !== 'string') && (value.description !== null))
+    if (((typeof value.description) !== 'string') && (value.description
+      !== null))
       return null;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated above: string | null
     taskUpdateInput.description = value.description;
@@ -133,7 +134,8 @@ export function parseTaskUpdateInput(value: unknown,): TaskUpdateInput | null {
   }
 
   if ('dueDate' in value) {
-    if (((typeof value.dueDate) !== 'string') && (value.dueDate !== null))
+    if (((typeof value.dueDate) !== 'string') && (value.dueDate
+      !== null))
       return null;
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated above: string | null
     taskUpdateInput.dueDate = value.dueDate;

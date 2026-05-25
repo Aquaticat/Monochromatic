@@ -101,8 +101,10 @@ export async function cycle(): Promise<void> {
     }
     log.debug(
       `[capture] Screenshot: ${
-        (screenshot.length / BYTES_PER_KIB).toFixed(0,)
-      }KiB, Webcam: ${(webcam.length / BYTES_PER_KIB).toFixed(0,)}KiB`,
+        (screenshot.length
+          / BYTES_PER_KIB).toFixed(0,)
+      }KiB, Webcam: ${(webcam.length
+        / BYTES_PER_KIB).toFixed(0,)}KiB`,
     );
 
     store({
@@ -141,7 +143,8 @@ export async function cycle(): Promise<void> {
     log.info(`[report] ${result}`,);
     log.info(`[verdict] ${verdict} (streak: ${streakCount}/5)`,);
 
-    if (state.decisions.every(function checkUnproductive(d,) {
+    if (state.decisions
+      .every(function checkUnproductive(d,) {
       return isUnproductive(d,);
     },)) {
       await sendNotification(result,);

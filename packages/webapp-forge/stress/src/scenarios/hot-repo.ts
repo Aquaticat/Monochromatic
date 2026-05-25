@@ -157,12 +157,15 @@ async function waitInterval(row: {
   intervalMs: number;
   elapsedMs: number;
 },): Promise<void> {
-  if (row.intervalMs <= 0)
+  if (row.intervalMs
+    <= 0)
     return;
   /** Remaining slack inside the per-event budget; floored to avoid overshoot. */
   const sleep = Math.max(
     0,
-    Math.floor(row.intervalMs - row.elapsedMs,),
+    Math.floor(row.intervalMs
+      - row
+      .elapsedMs,),
   );
   if (sleep > 0)
     await wait(sleep,);
@@ -226,7 +229,8 @@ async function sumStorageBytes(keys: readonly string[],): Promise<number> {
     keys.map(async function lengthOf(key,) {
       /** Persisted entry; `undefined` means no bytes contribute for this key. */
       const value = await storage.get(key,);
-      return value?.byteLength ?? 0;
+      return value?.byteLength
+        ?? 0;
     },),
   );
   return lengths.reduce(
@@ -292,11 +296,14 @@ async function run(): Promise<ScenarioResult> {
 
   // Fire a paced burst.
   /** Target spacing between events so the burst covers `burstDurationMs`. */
-  const intervalMs = config.burstDurationMs / Math.max(
+  const intervalMs = config.burstDurationMs
+    / Math
+    .max(
     config.burstEvents,
     1,
   );
-  for (let i = 0; i < config.burstEvents; i += 1) {
+  for (let i = 0; i < config
+    .burstEvents; i += 1) {
     /** Deterministic per-iteration issue index so reruns target the same issues. */
     const issueIndex = rngInt({
       seed: i,
@@ -364,7 +371,8 @@ async function run(): Promise<ScenarioResult> {
     p: P99,
   },);
   /** Wall-clock total used by the summary table. */
-  const durationMs = Date.now() - startedAt;
+  const durationMs = Date.now()
+    - startedAt;
   /** Storage keys covered by the index; passed to `sumStorageBytes` for the byte total. */
   const indexedKeys = await storage.list('',);
   /** Aggregate fragment-storage byte count reported alongside latency. */

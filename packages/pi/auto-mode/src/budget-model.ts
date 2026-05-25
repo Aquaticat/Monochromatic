@@ -60,14 +60,17 @@ async function findBudgetModel(
   /** Options with defaults applied so the strategy branches below can read fields unconditionally. */
   const opts: BudgetModelOptions = options ?? { ...JUDGE_MODEL_DEFAULTS, };
 
-  if (opts.modelOverride !== undefined) {
+  if (opts.modelOverride
+    !== undefined) {
     return await resolveModelOverride({
       ctx,
       override: opts.modelOverride,
     },);
   }
 
-  if ((ctx.model === undefined) || (ctx.model === null))
+  if ((ctx.model
+    === undefined) || (ctx.model
+    === null))
     throw new NoBudgetModelError('no active model set',);
 
   /**
@@ -79,7 +82,8 @@ async function findBudgetModel(
    */
   const activeModel = ctx.model;
 
-  if (opts.strategy === 'any-provider') {
+  if (opts.strategy
+    === 'any-provider') {
     return await findAnyProvider({
       ctx,
       activeModel,
@@ -124,11 +128,13 @@ async function findSameProvider(
   /** Active provider name normalised to string; used to filter the registry. */
   const activeProvider = String(activeModel.provider,);
   /** Every model the registry knows about; filtered to same-provider candidates below. */
-  const allModels = ctx.modelRegistry.getAll();
+  const allModels = ctx.modelRegistry
+    .getAll();
   /** Subset of `allModels` sharing the active provider. */
   const providerModels = allModels.filter(
     function sameProvider(m,) {
-      return String(m.provider,) === activeProvider;
+      return String(m.provider,)
+        === activeProvider;
     },
   );
 
@@ -144,7 +150,8 @@ async function findSameProvider(
     },);
   }
 
-  if (providerModels.length === 0) {
+  if (providerModels.length
+    === 0) {
     throw new NoBudgetModelError(
       `no models found for provider "${activeProvider}"`,
       { cheapestOverall: await lazyCheapestOverall(), },
@@ -157,7 +164,8 @@ async function findSameProvider(
     majorVersions,
   },);
 
-  if (candidates.length === 0) {
+  if (candidates.length
+    === 0) {
     throw new NoBudgetModelError(
       `no versioned models found for provider "${activeProvider}"`,
       { cheapestOverall: await lazyCheapestOverall(), },
@@ -174,7 +182,9 @@ async function findSameProvider(
     );
   }
 
-  if (cheapestCandidate.cost.input >= (activeModel.cost.input * costRatio)) {
+  if (cheapestCandidate.cost
+    .input
+    >= (activeModel.cost.input * costRatio)) {
     /** Same-provider report row for the error message; the cheapest model is too expensive to use. */
     const sameProvider = toCandidate({
       ctx,
@@ -182,7 +192,9 @@ async function findSameProvider(
       provider: activeProvider,
     },);
     throw new NoBudgetModelError(
-      `cheapest model in ${activeProvider} is $${cheapestCandidate.cost.input}/M input; not significantly cheaper than active model ($${activeModel.cost.input}/M input)`,
+      `cheapest model in ${activeProvider} is $${cheapestCandidate.cost
+        .input}/M input; not significantly cheaper than active model ($${activeModel.cost
+        .input}/M input)`,
       {
         sameProvider,
         cheapestOverall: await lazyCheapestOverall(),
@@ -191,7 +203,9 @@ async function findSameProvider(
   }
 
   for (const candidate of candidates) {
-    if (candidate.cost.input >= (activeModel.cost.input * costRatio))
+    if (candidate.cost
+      .input
+      >= (activeModel.cost.input * costRatio))
       break;
     /* oxlint-disable no-await-in-loop -- sequential: stop at first successful auth */
     /** Resolved auth for the current candidate; `null` falls through to the next iteration. */
@@ -250,7 +264,8 @@ async function findAnyProvider(
   },
 ): Promise<BudgetModel> {
   /** Every model the registry knows about, regardless of provider. */
-  const allModels = ctx.modelRegistry.getAll();
+  const allModels = ctx.modelRegistry
+    .getAll();
 
   /** Provider name to its list of models so version ranking runs per provider. */
   const byProvider = new Map<string, Model<Api>[]>();
@@ -283,7 +298,11 @@ async function findAnyProvider(
       a,
       b,
     ) {
-      return a.cost.input - b.cost.input;
+      return a.cost
+        .input
+        - b
+        .cost
+        .input;
     },
   );
 
@@ -293,17 +312,23 @@ async function findAnyProvider(
   /* oxlint-enable prefer-destructuring */
   /** Input cost of the cheapest candidate, or `Infinity` so the empty case fails the ratio gate. */
   const cheapestCost = cheapestCandidate !== undefined
-    ? cheapestCandidate.cost.input
+    ? cheapestCandidate.cost
+      .input
     : Number.POSITIVE_INFINITY;
 
-  if (cheapestCost >= (activeModel.cost.input * costRatio)) {
+  if (cheapestCost >= (activeModel.cost
+    .input
+    * costRatio)) {
     throw new NoBudgetModelError(
-      `cheapest model across all providers is $${cheapestCost}/M input; not significantly cheaper than active model ($${activeModel.cost.input}/M input)`,
+      `cheapest model across all providers is $${cheapestCost}/M input; not significantly cheaper than active model ($${activeModel.cost
+        .input}/M input)`,
     );
   }
 
   for (const model of sortedCandidates) {
-    if (model.cost.input >= (activeModel.cost.input * costRatio))
+    if (model.cost
+      .input
+      >= (activeModel.cost.input * costRatio))
       break;
     /* oxlint-disable no-await-in-loop -- sequential: stop at first successful auth */
     /** Resolved auth for the current candidate; `null` falls through to the next iteration. */
@@ -357,7 +382,8 @@ async function resolveModelOverride(
 
   /* oxlint-disable unicorn/no-array-method-this-argument -- ModelRegistry.find is not Array.find */
   /** Registry-resolved model record, or `null`/`undefined` when the override does not exist. */
-  const model = ctx.modelRegistry.find(
+  const model = ctx.modelRegistry
+    .find(
     provider,
     id,
   );

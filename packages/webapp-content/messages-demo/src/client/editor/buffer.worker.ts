@@ -144,14 +144,18 @@ let collapseTimer: ReturnType<typeof setTimeout> | null = null;
  * doing the work.
  */
 function scheduleCollapseIfNeeded(): void {
-  if (table.pieces.length < COLLAPSE_THRESHOLD_NODES)
+  if (table.pieces
+    .length
+    < COLLAPSE_THRESHOLD_NODES)
     return;
   if (collapseTimer !== null)
     return;
   collapseTimer = setTimeout(
     function runCollapse() {
       collapseTimer = null;
-      if (table.pieces.length < COLLAPSE_THRESHOLD_NODES)
+      if (table.pieces
+        .length
+        < COLLAPSE_THRESHOLD_NODES)
         return;
       resetTable({
         table,
@@ -171,7 +175,8 @@ function scheduleCollapseIfNeeded(): void {
  */
 function pushUndo(input: { readonly entry: UndoEntry; },): void {
   undoStack.push(input.entry,);
-  if (undoStack.length > MAX_UNDO)
+  if (undoStack.length
+    > MAX_UNDO)
     undoStack.shift();
   redoStack.length = 0;
 }
@@ -200,7 +205,8 @@ function onMessage(event: MessageEvent<InboundMessage>,): void {
   /** Destructured early so the kind switch reads `data.kind` directly without repeated access. */
   const { data, } = event;
   try {
-    if (data.kind === 'init') {
+    if (data.kind
+      === 'init') {
       resetTable({
         table,
         text: data.initialText,
@@ -208,13 +214,18 @@ function onMessage(event: MessageEvent<InboundMessage>,): void {
       undoStack.length = 0;
       redoStack.length = 0;
     }
-    else if (data.kind === 'apply')
+    else if (data.kind
+      === 'apply')
       handleApply(data,);
-    else if (data.kind === 'query')
+    else if (data.kind
+      === 'query')
       handleQuery(data,);
-    else if (data.kind === 'snapshot')
+    else if (data.kind
+      === 'snapshot')
       handleSnapshot(data,);
-    else if ((data.kind === 'undo') || (data.kind === 'redo'))
+    else if ((data.kind
+      === 'undo') || (data.kind
+      === 'redo'))
       handleUndoRedo(data,);
   }
   catch (error) {
@@ -307,13 +318,16 @@ function handleUndoRedo(
   data: Extract<InboundMessage, { kind: 'undo' | 'redo'; }>,
 ): void {
   /** Stack to pop the next step from (undo pops undo, redo pops redo). */
-  const sourceStack = data.kind === 'undo' ? undoStack : redoStack;
+  const sourceStack = data.kind
+    === 'undo' ? undoStack : redoStack;
   /** Stack to push the inverse re-application onto so the user can reverse direction. */
-  const sinkStack = data.kind === 'undo' ? redoStack : undoStack;
+  const sinkStack = data.kind
+    === 'undo' ? redoStack : undoStack;
   /** Popped step; undefined means the stack was empty so the reply carries `applied: null`. */
   const entry = sourceStack.pop();
   /** Reply discriminant chosen by direction (`undone` or `redone`). */
-  const replyKind = data.kind === 'undo' ? 'undone' : 'redone';
+  const replyKind = data.kind
+    === 'undo' ? 'undone' : 'redone';
   if (entry === undefined) {
     post({
       kind: replyKind,

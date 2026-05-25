@@ -66,7 +66,8 @@ type BashOutputFilterOutput = PreToolUseOutput | Record<string, never>;
  * ```
  */
 function bashOutputFilterHandler(event: ReadonlyDeep<PreToolUseInput>,): BashOutputFilterOutput {
-  if ((event.tool_name !== 'Bash') || (!isBashToolInput(event.tool_input,)))
+  if ((event.tool_name
+    !== 'Bash') || (!isBashToolInput(event.tool_input,)))
     return {};
 
   /** Narrowed Bash tool input; refined from `event.tool_input` by `isBashToolInput`. */
@@ -76,7 +77,8 @@ function bashOutputFilterHandler(event: ReadonlyDeep<PreToolUseInput>,): BashOut
     return {};
 
   /** True when running from the bundled hook entry (`.mjs`); false during source-driven dev runs. */
-  const isBuilt = import.meta.url.endsWith('.mjs',);
+  const isBuilt = import.meta.url
+    .endsWith('.mjs',);
   /** Sibling path to the filter script chosen by build mode (`.mjs` vs `.ts`). */
   const filterPath = isBuilt
     ? `${import.meta.dirname}/filter.mjs`

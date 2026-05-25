@@ -44,7 +44,9 @@ export async function sendInlineEdit(
     status: HTMLElement;
   },
 ): Promise<void> {
-  if (input.state.editMessageId === null)
+  if (input.state
+    .editMessageId
+    === null)
     return;
   setStatus({
     status: input.status,
@@ -55,7 +57,8 @@ export async function sendInlineEdit(
   await postCreateDraft({
     id: newDraftId,
     userId: input.userId,
-    parentId: await fetchHeadDraftId(input.state.editMessageId,),
+    parentId: await fetchHeadDraftId(input.state
+      .editMessageId,),
   },);
   setStatus({
     status: input.status,
@@ -70,7 +73,8 @@ export async function sendInlineEdit(
   // Sequential PUTs match the server's outbox-ack contract; parallel
   // uploads would race the highest-contiguous-seq the server returns.
   // oxlint-disable-next-line no-await-in-loop
-  for (const [seq, chunk,] of compiled.chunks.entries()) {
+  for (const [seq, chunk,] of compiled.chunks
+    .entries()) {
     // oxlint-disable-next-line no-await-in-loop
     await fetch(
       `/api/drafts/${encodeURIComponent(newDraftId,)}/chunks/${String(seq,)}`,
@@ -91,7 +95,8 @@ export async function sendInlineEdit(
   },);
   /** Awaited so both the `!ok` branch and the JSON read below can reuse the same response. */
   const editResp = await fetch(
-    `/api/messages/${String(input.state.editMessageId,)}/edit`,
+    `/api/messages/${String(input.state
+      .editMessageId,)}/edit`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', },
@@ -113,7 +118,8 @@ export async function sendInlineEdit(
   const result = await readJson<{ location?: string; }>(editResp,);
   if ((typeof result.location) !== 'string')
     return;
-  globalThis.location.assign(result.location,);
+  globalThis.location
+    .assign(result.location,);
 }
 
 /**
@@ -136,7 +142,11 @@ export async function sendTier3Edit(
     status: HTMLElement;
   },
 ): Promise<void> {
-  if ((input.state.editMessageId === null) || (input.state.tier3 === null))
+  if ((input.state
+    .editMessageId
+    === null) || (input.state
+    .tier3
+    === null))
     return;
   /** Resolved once so the current-chunk save can run before the inherit-walk loop starts. */
   const tier3Textarea = document.querySelector<HTMLTextAreaElement>('.composer-body',);
@@ -149,7 +159,9 @@ export async function sendTier3Edit(
   },);
 
   /** Captured before the loop so the per-iteration cost stays cheap. */
-  const totalChunks = input.state.tier3.chunkCount;
+  const totalChunks = input.state
+    .tier3
+    .chunkCount;
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- inherit-walk accumulators: `aggregateCharCount` sums char counts across both branches (inherit vs reuse) of the per-seq decision and `firstMd` is captured exactly once when `seq === 0` is reached on either branch */
   /** Accumulator for char counts across inherited and new chunks; needed by the commit POST. */
   let aggregateCharCount = 0;
@@ -162,19 +174,24 @@ export async function sendTier3Edit(
   for (let seq = 0; seq < totalChunks; seq += 1) {
     /** Probe to decide whether the new draft already has this chunk or must inherit it. */
     const newChunkResp = await fetch(
-      `/api/drafts/${encodeURIComponent(input.state.tier3.newDraftId,)}/chunks/${
+      `/api/drafts/${encodeURIComponent(input.state
+        .tier3
+        .newDraftId,)}/chunks/${
         String(seq,)
       }`,
       { method: 'GET', },
     );
     /** Original markdown fetched from the message-chunk endpoint; shared by the inherit-PUT branch and the already-uploaded char-count rollup. */
     const origMd = await fetch(
-      `/m/${String(input.state.editMessageId,)}/c/${String(seq,)}/md`,
+      `/m/${String(input.state
+        .editMessageId,)}/c/${String(seq,)}/md`,
     );
-    if (newChunkResp.status === HTTP_NOT_FOUND) {
+    if (newChunkResp.status
+      === HTTP_NOT_FOUND) {
       /** Original rendered HTML fetched for the inherit-PUT body. */
       const origHtml = await fetch(
-        `/m/${String(input.state.editMessageId,)}/c/${String(seq,)}/raw`,
+        `/m/${String(input.state
+          .editMessageId,)}/c/${String(seq,)}/raw`,
       );
       if ((!origMd.ok) || (!origHtml.ok))
         throw new Error(`failed to inherit chunk ${String(seq,)}`,);
@@ -183,7 +200,9 @@ export async function sendTier3Edit(
       /** Resolved body of `origHtml`, sent as the rendered side of the inherited chunk. */
       const html = await origHtml.text();
       await fetch(
-        `/api/drafts/${encodeURIComponent(input.state.tier3.newDraftId,)}/chunks/${
+        `/api/drafts/${encodeURIComponent(input.state
+          .tier3
+          .newDraftId,)}/chunks/${
           String(seq,)
         }`,
         {
@@ -216,13 +235,16 @@ export async function sendTier3Edit(
   },);
   /** Tier-3 edit commit; the same response is read for status + body. */
   const editResp = await fetch(
-    `/api/messages/${String(input.state.editMessageId,)}/edit`,
+    `/api/messages/${String(input.state
+      .editMessageId,)}/edit`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', },
       body: JSON.stringify({
         user_id: input.userId,
-        new_draft_id: input.state.tier3.newDraftId,
+        new_draft_id: input.state
+          .tier3
+          .newDraftId,
         char_count: aggregateCharCount,
         chunk_count: totalChunks,
         preview: extractPreview({
@@ -241,6 +263,7 @@ export async function sendTier3Edit(
   const result = await readJson<{ location?: string; }>(editResp,);
   if ((typeof result.location) !== 'string')
     return;
-  globalThis.location.assign(result.location,);
+  globalThis.location
+    .assign(result.location,);
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

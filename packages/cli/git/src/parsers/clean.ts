@@ -156,13 +156,19 @@ export function parseCleanRegion(
   const orderedState = scanCleanOptionOrder(region,);
 
   return {
-    dryRunCount: value.dryRunFlags.length,
-    noDryRunCount: value.noDryRunFlags.length,
-    interactiveCount: value.interactiveFlags.length,
-    noInteractiveCount: value.noInteractiveFlags.length,
+    dryRunCount: value.dryRunFlags
+      .length,
+    noDryRunCount: value.noDryRunFlags
+      .length,
+    interactiveCount: value.interactiveFlags
+      .length,
+    noInteractiveCount: value.noInteractiveFlags
+      .length,
     dryRunActive: orderedState.dryRunActive,
     interactiveActive: orderedState.interactiveActive,
-    hasEscapeHatch: value.escape.length > 0,
+    hasEscapeHatch: value.escape
+      .length
+      > 0,
     parseFailed: false,
   };
 }

@@ -67,7 +67,9 @@ export function resolveEffectiveScope(
 
   /** Patterns from pi's startup `--models` flag. */
   const argvPatterns = parseArgvModelPatterns({
-    argv: options.argv ?? process.argv,
+    argv: options.argv
+      ?? process
+      .argv,
   },);
   if (argvPatterns !== undefined) {
     return {
@@ -85,10 +87,13 @@ export function resolveEffectiveScope(
 
   /** Patterns from merged pi settings. */
   const settingsScope = loadSettingsScopePatterns({
-    cwd: options.ctx.cwd,
-    ...(options.home === undefined ? {} : { home: options.home, }),
+    cwd: options.ctx
+      .cwd,
+    ...(options.home
+      === undefined ? {} : { home: options.home, }),
   },);
-  if (settingsScope.patterns !== undefined) {
+  if (settingsScope.patterns
+    !== undefined) {
     return {
       source: 'settings',
       entries: resolveModelPatterns({
@@ -142,7 +147,8 @@ function readLiveScope(
         ? scopedModelFromModel({ model: item, },)
         : scopedModelFromModel({
           model: item.model,
-          ...(item.thinkingLevel === undefined
+          ...(item.thinkingLevel
+            === undefined
             ? {}
             : { thinkingLevel: item.thinkingLevel, }),
         },);
@@ -234,7 +240,8 @@ function isModel(
     && ('maxTokens' in value)
     && ((typeof value.maxTokens) === 'number')
     && ('cost' in value)
-    && (value.cost !== null)
+    && (value.cost
+      !== null)
     && ((typeof value.cost) === 'object');
 }
 

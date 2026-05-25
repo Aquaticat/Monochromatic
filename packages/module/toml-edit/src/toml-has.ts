@@ -36,5 +36,7 @@ export function tomlHas(
     edit,
     path,
   },);
-  return (result.kind !== 'missing') && (result.kind !== 'deleted');
+  return (result.kind
+    !== 'missing') && (result.kind
+    !== 'deleted');
 }

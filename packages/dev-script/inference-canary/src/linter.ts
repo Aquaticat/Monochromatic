@@ -118,11 +118,16 @@ export async function lintSource({
 
   /** Non-empty diagnostic sections from each analyzer; joined for the model-facing `rawDiagnostics` field. */
   const rawParts = [
-    oxlintResult.rawOutput.length > 0 ? `=== oxlint ===\n${oxlintResult.rawOutput}` : '',
-    typeResult.rawOutput.length > 0 ? `=== tsgo ===\n${typeResult.rawOutput}` : '',
+    oxlintResult.rawOutput
+      .length
+      > 0 ? `=== oxlint ===\n${oxlintResult.rawOutput}` : '',
+    typeResult.rawOutput
+      .length
+      > 0 ? `=== tsgo ===\n${typeResult.rawOutput}` : '',
   ]
     .filter(function hasContent(part,): boolean {
-      return part.length > 0;
+      return part.length
+        > 0;
     },);
 
   return {

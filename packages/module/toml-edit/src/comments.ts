@@ -157,7 +157,8 @@ function lastCommentBefore(
       c,
       i,
     ) {
-      if (c.range[1] < offset)
+      if (c.range[1]
+        < offset)
         return i;
       return acc;
     },
@@ -197,7 +198,9 @@ export function trailingInlineCommentFor(
   /** Upper bound for "still on the same line" matches. */
   const limit = newlineAfter === (-1) ? source.length : newlineAfter;
   /** First comment that starts after the node and before the line break. */
-  const match = edit.program.comments.find(function inLine(c,) {
+  const match = edit.program
+    .comments
+    .find(function inLine(c,) {
     return (c.range[0] > node.range[1]) && (c.range[0] < limit);
   },);
   return match ?? null;

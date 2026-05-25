@@ -74,15 +74,19 @@ export function isAllowedCycleWarning(line: string,): boolean {
 
   /** Substring of the warning after the literal prefix, where pnpm lists the cycle members. */
   const afterPrefix = line.slice(
-    line.indexOf(CYCLE_WARNING_PREFIX,) + CYCLE_WARNING_PREFIX.length,
+    line.indexOf(CYCLE_WARNING_PREFIX,)
+      + CYCLE_WARNING_PREFIX
+      .length,
   );
   /** Comma-separated cycle members extracted from the warning suffix. */
   const paths = afterPrefix.split(', ',);
 
-  return (paths.length > 0) && paths.every(function checkPath(rawPath,) {
+  return (paths.length
+    > 0) && paths.every(function checkPath(rawPath,) {
     /** Whitespace-trimmed cycle entry; rejected outright when empty so a stray comma cannot pass the check. */
     const trimmed = rawPath.trim();
-    if (trimmed.length === 0)
+    if (trimmed.length
+      === 0)
       return false;
     // Strip everything up to and including the first `packages/` occurrence
     // to normalize absolute paths from any monorepo root location.
@@ -110,7 +114,8 @@ export function isAllowedCycleWarning(line: string,): boolean {
  * ```
  */
 export function filterPnpmOutput(output: string,): string {
-  if (output.length === 0)
+  if (output.length
+    === 0)
     return '';
 
   /** Source output split per line so each candidate cycle warning can be inspected independently. */

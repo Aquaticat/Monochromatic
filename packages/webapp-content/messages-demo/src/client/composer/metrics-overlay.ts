@@ -92,20 +92,26 @@ function mountMetricsOverlay(
   /** Overlay container appended to the parent; re-rendered on every metrics update. */
   const overlay = document.createElement('div',);
   overlay.className = 'composer-metrics-overlay';
-  overlay.dataset.testid = 'metrics-overlay';
-  input.parent.append(overlay,);
+  overlay.dataset
+    .testid = 'metrics-overlay';
+  input.parent
+    .append(overlay,);
   return function render(): void {
     /** Snapshot of state metrics, falling back to empty when not yet seeded. */
-    const m = input.state.metrics ?? emptyMetrics();
+    const m = input.state
+      .metrics
+      ?? emptyMetrics();
     overlay.innerHTML = `${
       row({
         label: 'compile p50',
-        value: `${m.compileMsMedian.toFixed(1,)} ms`,
+        value: `${m.compileMsMedian
+          .toFixed(1,)} ms`,
       },)
     }${
       row({
         label: 'compile p99',
-        value: `${m.compileMsP99.toFixed(1,)} ms`,
+        value: `${m.compileMsP99
+          .toFixed(1,)} ms`,
       },)
     }${
       row({
@@ -125,9 +131,11 @@ function mountMetricsOverlay(
     }${
       row({
         label: 'transition',
-        value: m.transitionMs === null
+        value: m.transitionMs
+          === null
           ? 'n/a'
-          : `${m.transitionMs.toFixed(1,)} ms`,
+          : `${m.transitionMs
+            .toFixed(1,)} ms`,
       },)
     }`;
   };
@@ -150,11 +158,13 @@ type WorkerMetricsPayload = {
  * @returns the payload, or null when unrelated
  */
 function asMetricsPayload(data: unknown,): WorkerMetricsPayload | null {
-  if (((typeof data) !== 'object') || (data === null) || (!('kind' in data)))
+  if (((typeof data) !== 'object') || (data === null)
+    || (!('kind' in data)))
     return null;
   /** Narrowed alias so the `kind` check reads `message.kind` rather than a type-cast. */
   const message: { kind: unknown; } = data;
-  if (message.kind !== 'metrics')
+  if (message.kind
+    !== 'metrics')
     return null;
   // Narrow to the optional-fields shape; the worker emits a stricter
   // type, but we accept anything structurally compatible.
@@ -179,19 +189,25 @@ function foldCounters(
 ): CompilePipelineMetrics {
   /** Running snapshot; replaced with widened copies as each payload field folds in. */
   let next = input.current;
-  if ((typeof input.payload.maxPutQueueDepth) === 'number') {
+  if ((typeof input.payload
+    .maxPutQueueDepth) === 'number') {
     next = {
       ...next,
       putQueueDepthMax: Math.max(
         next.putQueueDepthMax,
-        input.payload.maxPutQueueDepth,
+        input.payload
+          .maxPutQueueDepth,
       ),
     };
   }
-  if ((typeof input.payload.wastedPuts) === 'number') {
+  if ((typeof input.payload
+    .wastedPuts) === 'number') {
     next = {
       ...next,
-      wastedPuts: next.wastedPuts + input.payload.wastedPuts,
+      wastedPuts: next.wastedPuts
+        + input
+        .payload
+        .wastedPuts,
     };
   }
   return next;
@@ -227,7 +243,8 @@ export function attachMetricsOverlay(
   /** Records one tier 2 -\> 3 transition wall-clock time. */
   recordTransition: (ms: number,) => void;
 } {
-  input.state.metrics = emptyMetrics();
+  input.state
+    .metrics = emptyMetrics();
   /** Rolling buffer of per-chunk compile times; folded into the median/p99 stats. */
   const samples: number[] = [];
   /** Imperative re-render callback; called after every fold. */
@@ -239,7 +256,9 @@ export function attachMetricsOverlay(
 
   /** Recomputes derived stats from the rolling buffer and re-renders. */
   function refresh(): void {
-    if (input.state.metrics === null)
+    if (input.state
+      .metrics
+      === null)
       return;
     /** Ascending copy of `samples`; fed to median/percentile helpers. */
     const sorted = samples.toSorted(function asc(
@@ -248,8 +267,10 @@ export function attachMetricsOverlay(
     ) {
       return a - b;
     },);
-    input.state.metrics = {
-      ...input.state.metrics,
+    input.state
+      .metrics = {
+      ...input.state
+        .metrics,
       compileMsMedian: median(sorted,),
       compileMsP99: percentile({
         sortedAsc: sorted,
@@ -271,23 +292,32 @@ export function attachMetricsOverlay(
           if ((typeof sample) !== 'number')
             continue;
           samples.push(sample,);
-          if (samples.length > SAMPLE_BUFFER)
+          if (samples.length
+            > SAMPLE_BUFFER)
             samples.shift();
         }
       }
-      if (input.state.metrics !== null) {
-        input.state.metrics = foldCounters({
-          current: input.state.metrics,
+      if (input.state
+        .metrics
+        !== null) {
+        input.state
+          .metrics = foldCounters({
+          current: input.state
+            .metrics,
           payload,
         },);
       }
       refresh();
     },
     recordTransition(ms,) {
-      if (input.state.metrics === null)
+      if (input.state
+        .metrics
+        === null)
         return;
-      input.state.metrics = {
-        ...input.state.metrics,
+      input.state
+        .metrics = {
+        ...input.state
+          .metrics,
         transitionMs: ms,
       };
       render();

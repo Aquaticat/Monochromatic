@@ -209,7 +209,8 @@ export async function classifyEffectiveTarget({
     return 'outside-worktree';
 
   /** Output lines: inside-worktree flag, absolute git-dir, absolute common-dir. */
-  const outputLines = stripTrailingLineBreak(metadata,).split('\n',);
+  const outputLines = stripTrailingLineBreak(metadata,)
+    .split('\n',);
   /** Rev-parse metadata fields in output order. */
   const [
     isInsideWorktreeOutput,

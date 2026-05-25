@@ -39,7 +39,9 @@ export function leadingSpaces(s: string,): string {
   const end = (function scanSpaces(): number {
     /** Forward-only cursor; stops at the first non-space or the string end. */
     let idx = 0;
-    while ((idx < s.length) && (s.charAt(idx,) === ' '))
+    while ((idx < s
+      .length) && (s.charAt(idx,)
+      === ' '))
       idx += 1;
     return idx;
   })();
@@ -73,7 +75,8 @@ export function computeIndent({ lineText, }: { readonly lineText: string; },): s
   /** Line text with trailing whitespace stripped; needed to inspect the meaningful last char. */
   const trimmed = lineText.trimEnd();
   /** Final non-whitespace char of the previous line; decides whether to add a deeper indent. */
-  const lastChar = trimmed.at(-1,) ?? '';
+  const lastChar = trimmed.at(-1,)
+    ?? '';
   if (OPENING_BRACKETS.has(lastChar,))
     return baseIndent + INDENT_UNIT;
   return baseIndent;
@@ -108,7 +111,8 @@ export function createAutoIndentHandler({
   return function handleAutoIndent(event: Event,): void {
     if (!(event instanceof InputEvent))
       return;
-    if (event.inputType !== 'insertParagraph')
+    if (event.inputType
+      !== 'insertParagraph')
       return;
 
     /** Resolve cursor position inside the shadow DOM. */
@@ -116,16 +120,19 @@ export function createAutoIndentHandler({
       editor,
       shadow,
     },);
-    if ((pos === null) || (pos.line === 0))
+    if ((pos === null) || (pos.line
+      === 0))
       return;
 
     /** Previous line div contains the text that was before the cursor. */
-    const prevDiv = editor.children[pos.line - 1];
+    const prevDiv = editor.children[pos.line
+      - 1];
     if (prevDiv === undefined)
       return;
 
     /** Raw text content of the previous line div; empty string when missing. */
-    const prevText = prevDiv.textContent ?? '';
+    const prevText = prevDiv.textContent
+      ?? '';
     /** Empty lines store `'\n'` as a height-preserving marker. */
     const lineText = prevText === '\n' ? '' : prevText;
     /** Whitespace string to prepend so the new line aligns with (or under) the previous line. */

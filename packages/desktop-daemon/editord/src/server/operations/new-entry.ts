@@ -46,7 +46,9 @@ export async function newEntry({
   readonly name: string;
   readonly isDirectory: boolean;
 },): Promise<string> {
-  if (name.includes('/',) || name.includes('\\',))
+  if (name.includes('/',)
+    || name
+    .includes('\\',))
     throw new Error(`name must be a bare filename, got: ${name}`,);
 
   /** Parent rebased through `assertWithinRoot` so `path/..` cannot escape the root. */

@@ -95,10 +95,13 @@ else {
   /** Unique identifier for this spawn, used to coordinate state between parent and child. */
   const spawnId = randomUUID();
   /** Working directory for the child session, defaulting to the current directory. */
-  const cwd = args.cwd ?? process.cwd();
+  const cwd = args.cwd
+    ?? process
+    .cwd();
 
   /** Extra args split on whitespace, filtering empty strings. */
-  const extraArgs = splitWhitespace(args.extraArguments ?? '',);
+  const extraArgs = splitWhitespace(args.extraArguments
+    ?? '',);
 
   mkdirSync(
     SPAWNS_DIR,

@@ -89,7 +89,8 @@ export function parseTaggedLine(s: string,): TaggedLine | null {
   function scanTag(idx: number,): number {
     /** Cursor advanced over the word-character run; returned as the run's exclusive end. */
     let cursor = idx;
-    while ((cursor < s.length) && isWordChar(s.charAt(cursor,),))
+    while ((cursor < s
+      .length) && isWordChar(s.charAt(cursor,),))
       cursor += 1;
     return cursor;
   }
@@ -107,7 +108,8 @@ export function parseTaggedLine(s: string,): TaggedLine | null {
   function scanWhitespace(idx: number,): number {
     /** Cursor advanced over the whitespace run; returned as first non-whitespace position. */
     let cursor = idx;
-    while ((cursor < s.length) && isWhitespaceChar(s.charAt(cursor,),))
+    while ((cursor < s
+      .length) && isWhitespaceChar(s.charAt(cursor,),))
       cursor += 1;
     return cursor;
   }
@@ -117,7 +119,8 @@ export function parseTaggedLine(s: string,): TaggedLine | null {
     return null;
   /** Remaining content; must be non-empty to match `(.+)`. */
   const rest = s.slice(restStart,);
-  if (rest.length === 0)
+  if (rest.length
+    === 0)
     return null;
   return {
     tag: s.slice(
@@ -177,7 +180,8 @@ export const emptyTags: CreateOnceRule = {
           /**
            * Line stripped of indent and `*` so the leading `\@tag` (if any) is at column 0.
            */
-          const trimmed = stripCommentLineMarker(line.trimStart(),).trimStart();
+          const trimmed = stripCommentLineMarker(line.trimStart(),)
+            .trimStart();
           /**
            * Parsed `\@tag <text>` shape; null when the line carries no tag with trailing text.
            */
@@ -189,11 +193,15 @@ export const emptyTags: CreateOnceRule = {
             tag,
             rest,
           } = tagMatch;
-          if (modifierTags.has(tag,) && (rest.trim().length > 0)) {
+          if (modifierTags.has(tag,)
+            && (rest.trim().length > 0)) {
             context.report({
               loc: {
                 start: {
-                  line: comment.loc.start.line + index,
+                  line: comment.loc
+                    .start
+                    .line
+                    + index,
                   column: 0,
                 },
               },

@@ -52,7 +52,9 @@ export async function promoteToTier3(
     status: HTMLElement;
   },
 ): Promise<void> {
-  if (input.state.tier3 !== null)
+  if (input.state
+    .tier3
+    !== null)
     return;
   // Reserve the tier-3 slot synchronously BEFORE any await so a
   // re-entrant debounce firing during the worker compile or draft
@@ -61,9 +63,11 @@ export async function promoteToTier3(
   /** Allocated up front so the reserved tier-3 slot can capture the id before any await yields control. */
   const newDraftId = randomId();
   /* oxlint-disable eslint/no-magic-numbers -- tier discriminant */
-  input.state.tier = 3;
+  input.state
+    .tier = 3;
   /* oxlint-enable eslint/no-magic-numbers */
-  input.state.tier3 = {
+  input.state
+    .tier3 = {
     currentSeq: 0,
     chunkCount: 0,
     newDraftId,
@@ -77,17 +81,24 @@ export async function promoteToTier3(
   const transitionStart = performance.now();
   /** Holds the worker-produced chunks; consumed twice (length check, then map+writeBody). */
   const compiled = await compileViaWorker({
-    body: input.textarea.value,
+    body: input.textarea
+      .value,
     state: input.state,
   },);
-  input.state.metricsHooks?.recordTransition(
+  input.state
+    .metricsHooks
+    ?.recordTransition(
     performance.now() - transitionStart,
   );
-  if (compiled.chunks.length === 0) {
+  if (compiled.chunks
+    .length
+    === 0) {
     /* oxlint-disable eslint/no-magic-numbers -- tier discriminant */
-    input.state.tier = 2;
+    input.state
+      .tier = 2;
     /* oxlint-enable eslint/no-magic-numbers */
-    input.state.tier3 = null;
+    input.state
+      .tier3 = null;
     setStatus({
       status: input.status,
       message: 'tier 3 promotion aborted (no chunks)',
@@ -101,8 +112,14 @@ export async function promoteToTier3(
     userId,
     parentId: null,
   },);
-  input.state.tier3.chunkCount = compiled.chunks.length;
-  input.state.tier3.localChunks = compiled.chunks.map(function copy(chunk,) {
+  input.state
+    .tier3
+    .chunkCount = compiled.chunks
+    .length;
+  input.state
+    .tier3
+    .localChunks = compiled.chunks
+    .map(function copy(chunk,) {
     return {
       md: chunk.md,
       html: chunk.html,
@@ -110,9 +127,14 @@ export async function promoteToTier3(
     };
   },);
   // Background upload via the outbox; flush awaited at send time.
-  if (input.state.outbox !== null) {
-    for (const [seq, chunk,] of compiled.chunks.entries()) {
-      void input.state.outbox.enqueue({
+  if (input.state
+    .outbox
+    !== null) {
+    for (const [seq, chunk,] of compiled.chunks
+      .entries()) {
+      void input.state
+        .outbox
+        .enqueue({
         draftId: newDraftId,
         seq,
         md: chunk.md,
@@ -126,7 +148,9 @@ export async function promoteToTier3(
   writeBody({
     state: input.state,
     textarea: input.textarea,
-    text: compiled.chunks[0]?.md ?? '',
+    text: compiled.chunks[0]
+      ?.md
+      ?? '',
   },);
   setupTier3Nav({
     form: input.form,
@@ -137,7 +161,8 @@ export async function promoteToTier3(
   },);
   setStatus({
     status: input.status,
-    message: `tier 3: editing chunk 1 of ${String(compiled.chunks.length,)}`,
+    message: `tier 3: editing chunk 1 of ${String(compiled.chunks
+      .length,)}`,
   },);
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

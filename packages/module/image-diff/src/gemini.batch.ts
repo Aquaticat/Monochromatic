@@ -58,7 +58,8 @@ export async function geminiEmbedBatch({
   /**
    * Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
    */
-  const model = (config.model as GeminiModel | undefined) ?? DEFAULT_GEMINI_MODEL;
+  const model = (config.model as GeminiModel | undefined)
+    ?? DEFAULT_GEMINI_MODEL;
 
   /** Gemini-shaped inline data payloads converted from each caller image, in input order. */
   const inlineDataItems = await Promise.all(
@@ -105,10 +106,12 @@ export async function geminiEmbedBatch({
 
   /** Parsed batchEmbedContents payload; embedding vectors arrive in input order at `embeddings[]`. */
   const result = await response.json() as GeminiBatchEmbedResponse;
-  rl.debug(`received ${String(result.embeddings.length,)} embedding(s)`,);
+  rl.debug(`received ${String(result.embeddings
+    .length,)} embedding(s)`,);
 
   return {
-    embeddings: result.embeddings.map(function extractValues(e,) {
+    embeddings: result.embeddings
+      .map(function extractValues(e,) {
       return e.values;
     },),
     usage: {

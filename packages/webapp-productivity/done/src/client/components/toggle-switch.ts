@@ -68,7 +68,8 @@ class ToggleSwitch extends HTMLElement {
   }
 
   /** Bound click handler that toggles state and dispatches a `change` event. */
-  readonly #handleClick = this.#onHandleClick.bind(this,);
+  readonly #handleClick = this.#onHandleClick
+    .bind(this,);
 
   /** Toggles state and dispatches a change event. */
   #onHandleClick(): void {
@@ -88,7 +89,8 @@ class ToggleSwitch extends HTMLElement {
   #render(): void {
     /** Captured once so the value stays stable across both child branches below. */
     const isOn = this.on;
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: TOGGLE_SWITCH_STYLES,

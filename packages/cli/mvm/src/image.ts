@@ -195,7 +195,8 @@ export async function ensureWinFsp(): Promise<string> {
     { redirect: 'manual', },
   );
   /** Redirect target carrying the resolved version in its `/tag/<version>` suffix. */
-  const location = redirectResponse.headers.get('location',);
+  const location = redirectResponse.headers
+    .get('location',);
   if (location === null)
     throw new Error('failed to resolve latest WinFsp release',);
   /** Version tag from the redirect URL (e.g. "v2.1"). */
@@ -222,7 +223,8 @@ export async function ensureWinFsp(): Promise<string> {
     }[];
   };
   /** Matching MSI asset; the released zip carries a per-build filename so it cannot be hard-coded. */
-  const msiAsset = release.assets.find(function findMsi(a,) {
+  const msiAsset = release.assets
+    .find(function findMsi(a,) {
     return (a.name.endsWith('.msi',)) && (!a.name.includes('tests',));
   },);
   if (msiAsset === undefined)
@@ -295,7 +297,8 @@ export async function ensureMiseWindows(): Promise<string> {
     { redirect: 'manual', },
   );
   /** Redirect target carrying the resolved version in its `/tag/<version>` suffix. */
-  const location = redirectResponse.headers.get('location',);
+  const location = redirectResponse.headers
+    .get('location',);
   if (location === null)
     throw new Error('failed to resolve latest mise release',);
   /** Version tag from the redirect URL (e.g. "v2026.3.17"). */

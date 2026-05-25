@@ -53,16 +53,22 @@ export function tomlGetNode(
     edit,
     path,
   },);
-  if (result.kind === 'missing') {
+  if (result.kind
+    === 'missing') {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found in parse-time AST`,
     );
   }
-  if (result.kind === 'keyvalue')
-    return result.node.value;
-  if ((result.kind === 'value')
-    || (result.kind === 'table')
-    || (result.kind === 'top-level'))
+  if (result.kind
+    === 'keyvalue')
+    return result.node
+      .value;
+  if ((result.kind
+    === 'value')
+    || (result.kind
+      === 'table')
+    || (result.kind
+      === 'top-level'))
   {
     return result.node;
   }

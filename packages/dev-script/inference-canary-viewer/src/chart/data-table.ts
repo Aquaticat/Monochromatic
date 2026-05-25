@@ -60,10 +60,12 @@ function fixScoreCell({
 },): string {
   if (!hasFixScores)
     return '';
-  if (row.pass2Score !== undefined) {
+  if (row.pass2Score
+    !== undefined) {
     return h({
       tag: 'td',
-      text: row.pass2Score.toFixed(2,),
+      text: row.pass2Score
+        .toFixed(2,),
     },);
   }
   if (row.failed) {
@@ -128,9 +130,11 @@ export function renderDataTable({
   options?: TableDisplayOptions;
 },): string {
   /** Resolved Model-column visibility; defaults to visible when option is omitted. */
-  const showModel = options.showModel ?? true;
+  const showModel = options.showModel
+    ?? true;
   /** Resolved Probe-column visibility; defaults to visible when option is omitted. */
-  const showProbe = options.showProbe ?? true;
+  const showProbe = options.showProbe
+    ?? true;
 
   /** When only timestamp + score remain, render as a compact grid instead of a table */
   if ((!showModel) && (!showProbe)) {
@@ -142,7 +146,8 @@ export function renderDataTable({
 
   /** Only show the fix score column when at least one row has pass2 data */
   const hasFixScores = rows.some(function hasPass2(row,) {
-    return row.pass2Score !== undefined;
+    return row.pass2Score
+      !== undefined;
   },);
 
   /** Table header row built once and reused; column set depends on resolved visibility flags. */
@@ -239,7 +244,8 @@ export function renderDataTable({
             : []),
           h({
             tag: 'td',
-            text: row.score.toFixed(2,),
+            text: row.score
+              .toFixed(2,),
           },),
           fixScoreTd,
         ]

@@ -42,8 +42,10 @@ function isEditorSwapName(name: string,): boolean {
     return true;
   if (
     (name.length >= EMACS_LOCK_MIN_LENGTH)
-    && name.startsWith('#',)
-    && name.endsWith('#',)
+    && name
+      .startsWith('#',)
+      && name
+      .endsWith('#',)
   ) {
     return true;
   }
@@ -63,7 +65,8 @@ function isEditorSwapName(name: string,): boolean {
  * ```
  */
 export function isIgnored({ name, }: { readonly name: string; },): boolean {
-  return IGNORED_NAMES.has(name,) || isEditorSwapName(name,);
+  return IGNORED_NAMES.has(name,)
+    || isEditorSwapName(name,);
 }
 
 /**
@@ -125,9 +128,11 @@ export function isEditordTempFile(name: string,): boolean {
   if (tagIdx === (-1))
     return false;
   /** First index of the hex span; immediately after the trailing `.` of the tag. */
-  const hexStart = tagIdx + EDITORD_TAG.length;
+  const hexStart = tagIdx + EDITORD_TAG
+    .length;
   /** Exclusive end of the hex span; immediately before the trailing `~`. */
-  const hexEnd = name.length - 1;
+  const hexEnd = name.length
+    - 1;
   if (hexEnd <= hexStart)
     return false;
   /**

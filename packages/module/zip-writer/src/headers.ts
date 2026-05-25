@@ -77,13 +77,15 @@ function writeOneLocalFileHeader(
   offset += BYTES_UINT16;
   view.setUint16(
     offset,
-    entry.modified.time,
+    entry.modified
+      .time,
     true,
   );
   offset += BYTES_UINT16;
   view.setUint16(
     offset,
-    entry.modified.date,
+    entry.modified
+      .date,
     true,
   );
   offset += BYTES_UINT16;
@@ -95,19 +97,22 @@ function writeOneLocalFileHeader(
   offset += BYTES_UINT32;
   view.setUint32(
     offset,
-    entry.content.length,
+    entry.content
+      .length,
     true,
   );
   offset += BYTES_UINT32;
   view.setUint32(
     offset,
-    entry.content.length,
+    entry.content
+      .length,
     true,
   );
   offset += BYTES_UINT32;
   view.setUint16(
     offset,
-    entry.nameBytes.length,
+    entry.nameBytes
+      .length,
     true,
   );
   offset += BYTES_UINT16;
@@ -121,12 +126,14 @@ function writeOneLocalFileHeader(
     entry.nameBytes,
     offset,
   );
-  offset += entry.nameBytes.length;
+  offset += entry.nameBytes
+    .length;
   buffer.set(
     entry.content,
     offset,
   );
-  offset += entry.content.length;
+  offset += entry.content
+    .length;
   return offset;
 }
 
@@ -238,13 +245,15 @@ function writeOneCentralDirectoryHeader(
   offset += BYTES_UINT16;
   view.setUint16(
     offset,
-    entry.modified.time,
+    entry.modified
+      .time,
     true,
   );
   offset += BYTES_UINT16;
   view.setUint16(
     offset,
-    entry.modified.date,
+    entry.modified
+      .date,
     true,
   );
   offset += BYTES_UINT16;
@@ -256,19 +265,22 @@ function writeOneCentralDirectoryHeader(
   offset += BYTES_UINT32;
   view.setUint32(
     offset,
-    entry.content.length,
+    entry.content
+      .length,
     true,
   );
   offset += BYTES_UINT32;
   view.setUint32(
     offset,
-    entry.content.length,
+    entry.content
+      .length,
     true,
   );
   offset += BYTES_UINT32;
   view.setUint16(
     offset,
-    entry.nameBytes.length,
+    entry.nameBytes
+      .length,
     true,
   );
   offset += BYTES_UINT16;
@@ -312,7 +324,8 @@ function writeOneCentralDirectoryHeader(
     entry.nameBytes,
     offset,
   );
-  offset += entry.nameBytes.length;
+  offset += entry.nameBytes
+    .length;
   return offset;
 }
 

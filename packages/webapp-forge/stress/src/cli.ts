@@ -20,7 +20,8 @@ import type {
   ScenarioResult,
 } from './types.ts';
 
-process.env.DB_PATH ??= ':memory:';
+process.env
+  .DB_PATH ??= ':memory:';
 
 /** Lazy import keeps the runtime module from initialising before `DB_PATH` is set. */
 const { hotRepo, } = await import('./scenarios/hot-repo.ts');
@@ -68,9 +69,12 @@ function formatSummary(results: readonly ScenarioResult[],): string {
   ];
   for (const r of results) {
     /** Rendered cell, joined for readability when a scenario reports multiple violations. */
-    const violationText = r.invariantViolations.length === 0
+    const violationText = r.invariantViolations
+      .length
+      === 0
       ? 'none'
-      : r.invariantViolations.join('; ',);
+      : r.invariantViolations
+        .join('; ',);
     lines.push(
       `| ${r.scenario} | ${String(r.durationMs,)} | ${String(r.eventCount,)} | ${
         String(r.p50,)
@@ -81,7 +85,8 @@ function formatSummary(results: readonly ScenarioResult[],): string {
 }
 
 /** Resolved `--scenario=` flag, defaulting to `all`. */
-const target = getFlag('scenario',) ?? 'all';
+const target = getFlag('scenario',)
+  ?? 'all';
 
 /** Optional `--out=` flag for a JSON results file. */
 const outFile = getFlag('out',);
@@ -90,10 +95,12 @@ const outFile = getFlag('out',);
 const toRun: Scenario[] = target === 'all'
   ? [...SCENARIOS,]
   : SCENARIOS.filter(function matchesTarget(s,) {
-    return s.name === target;
+    return s.name
+      === target;
   },);
 
-if (toRun.length === 0) {
+if (toRun.length
+  === 0) {
   l.error(
     `no matching scenarios; unknown target: ${target}. Choose one of: ${
       SCENARIOS
@@ -119,7 +126,8 @@ else {
       `scenario ${result.scenario} done durationMs=${String(result.durationMs,)} p50=${
         String(result.p50,)
       } p99=${String(result.p99,)} violations=${
-        String(result.invariantViolations.length,)
+        String(result.invariantViolations
+          .length,)
       }`,
     );
   }
@@ -127,7 +135,8 @@ else {
   /** Markdown table emitted to stdout for piping into reports or CI artifacts. */
   const summary = formatSummary(results,);
   // CLI output goes through stdout for piping into reports / CI artifacts.
-  process.stdout.write(`${summary}\n`,);
+  process.stdout
+    .write(`${summary}\n`,);
   if (outFile !== undefined) {
     writeFileSync(
       outFile,
@@ -141,7 +150,9 @@ else {
 
   /** True when any scenario reported invariant violations. */
   const failed = results.some(function hasViolation(r,) {
-    return r.invariantViolations.length > 0;
+    return r.invariantViolations
+      .length
+      > 0;
   },);
   if (failed)
     process.exitCode = 1;

@@ -37,7 +37,9 @@ export function createEditorElement(): HTMLDivElement {
       document.execCommand(
         'insertText',
         false,
-        event.clipboardData?.getData('text/plain',) ?? '',
+        event.clipboardData
+          ?.getData('text/plain',)
+          ?? '',
       );
     },
   );
@@ -68,7 +70,8 @@ export function setTextContent({
   readonly text: string;
 },): void {
   editor.replaceChildren(
-    ...text.split('\n',).map(function createLineDiv(line,) {
+    ...text.split('\n',)
+      .map(function createLineDiv(line,) {
       return h({
         tag: 'div',
         text: line === '' ? '\n' : line,
@@ -93,7 +96,8 @@ export function getTextContent({ editor, }: { readonly editor: HTMLDivElement; }
   return [...editor.children,]
     .map(function readLine(child,) {
       /** Defensive default keeps empty divs producing the empty string rather than null. */
-      const t = child.textContent ?? '';
+      const t = child.textContent
+        ?? '';
       return t === '\n' ? '' : t;
     },)
     .join('\n',);
@@ -125,7 +129,8 @@ export function getLineText({
   if (child === undefined)
     return null;
   /** Defensive default keeps empty divs producing the empty string rather than null. */
-  const t = child.textContent ?? '';
+  const t = child.textContent
+    ?? '';
   return t === '\n' ? '' : t;
 }
 
@@ -158,7 +163,9 @@ export function scrollLineIntoView({
       0,
       Math.min(
         line - 1,
-        editor.children.length - 1,
+        editor.children
+          .length
+          - 1,
       ),
     )
   ];

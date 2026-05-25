@@ -24,7 +24,8 @@ import {
 const MIN_WIDTH = 2 * ((2 * 2) + 1);
 
 /** Input field opacity: (10 - 2 - 1) / 10 = 7/10 for subtle appearance. */
-const INPUT_OPACITY = (10 - 2 - 1) / 10;
+const INPUT_OPACITY = (10 - 2
+  - 1) / 10;
 
 /** Global context menu styles. */
 export const STYLES: string = [
@@ -76,7 +77,8 @@ export const STYLES: string = [
     rule: '.ctx-input',
     decls: {
       'flex-grow': cssNum(1,),
-      'min-inline-size': cssRem(2 * 2 * 2,),
+      'min-inline-size': cssRem(2 * 2
+        * 2,),
       'background-color': 'transparent',
       'border-style': 'none',
       'border-block-end-style': 'solid',

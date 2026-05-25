@@ -97,7 +97,10 @@ function findFirstOverlap(
     const mid = (lo + hi) >>> 1;
     /** Entry inspected at the midpoint of the current search window. */
     const entry = nonNullishOrThrow(textEntries[mid],);
-    if ((entry.start + entry.node.length) <= from)
+    if ((entry.start
+      + entry
+      .node
+      .length) <= from)
       lo = mid + 1;
     else
       hi = mid;
@@ -152,21 +155,26 @@ function createRangesFromPairs({
       from,
     },);
 
-    for (let i = startIdx; i < textEntries.length; i++) {
+    for (let i = startIdx; i < textEntries
+      .length; i++) {
       /** Text entry inspected at the current scan index. */
       const entry = nonNullishOrThrow(textEntries[i],);
-      if (entry.start >= to)
+      if (entry.start
+        >= to)
         break;
 
       /** Range-local start within `entry.node` clamped to zero. */
       const rangeStart = Math.max(
         0,
-        from - entry.start,
+        from - entry
+          .start,
       );
       /** Range-local end within `entry.node` clamped to the node length. */
       const rangeEnd = Math.min(
-        entry.node.length,
-        to - entry.start,
+        entry.node
+          .length,
+        to - entry
+          .start,
       );
 
       /** Fresh DOM Range whose endpoints are set to the computed local offsets. */
@@ -217,7 +225,8 @@ function highlightAllCodeBlocks(): void {
     for (const group of HIGHLIGHT_GROUPS) {
       /** Serialised offset pairs for the current highlight group; null when absent. */
       const encoded = codeElement.getAttribute(`data-hl-${group}`,);
-      if ((encoded === null) || (encoded.length === 0))
+      if ((encoded === null) || (encoded.length
+        === 0))
         continue;
 
       /** Decoded DOM ranges for this group's encoded pairs. */
@@ -225,7 +234,8 @@ function highlightAllCodeBlocks(): void {
         textEntries,
         encoded,
       },);
-      if (ranges.length === 0)
+      if (ranges.length
+        === 0)
         continue;
 
       /** Existing per-group bucket initialised lazily on first encounter. */
@@ -246,8 +256,10 @@ function highlightAllCodeBlocks(): void {
     const name = `hl-${group}`;
     /** Merged range list for the current group, or undefined when no matches were found. */
     const ranges = allRanges.get(group,);
-    if ((ranges !== undefined) && (ranges.length > 0)) {
-      CSS.highlights.set(
+    if ((ranges !== undefined) && (ranges.length
+      > 0)) {
+      CSS.highlights
+        .set(
         name,
         new Highlight(...ranges,),
       );

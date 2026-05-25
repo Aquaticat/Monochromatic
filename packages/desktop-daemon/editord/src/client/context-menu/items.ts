@@ -61,7 +61,9 @@ export function renderButtonItem({
         onActivate(item.action,);
       },
       keydown: function handleKeydown(event: KeyboardEvent,): void {
-        if ((event.key === 'Enter') || (event.key === ' ')) {
+        if ((event.key
+          === 'Enter') || (event.key
+          === ' ')) {
           event.preventDefault();
           onActivate(item.action,);
         }
@@ -97,11 +99,13 @@ export function renderInputItem({
     class: 'ctx-input',
     attrs: {
       type: 'text',
-      value: item.defaultValue ?? '',
+      value: item.defaultValue
+        ?? '',
     },
     on: {
       keydown: function handleInputKeydown(event: KeyboardEvent,): void {
-        if (event.key === 'Enter') {
+        if (event.key
+          === 'Enter') {
           event.preventDefault();
           /** Trimmed input contents; Enter on empty value is a no-op. */
           const { value, } = input;

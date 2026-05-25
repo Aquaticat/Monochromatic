@@ -71,20 +71,28 @@ export function setTextLayer(layer: HTMLDivElement,): void {
  * ```
  */
 export function finalizeActiveInput(): void {
-  if (textState.activeInput === null)
+  if (textState.activeInput
+    === null)
     return;
 
   /** Whether the input has non-empty content worth keeping */
-  const hasContent = textState.activeInput.value.trim() !== '';
+  const hasContent = textState.activeInput
+    .value
+    .trim()
+    !== '';
   if (hasContent)
-    textState.activeInput.readOnly = true;
+    textState.activeInput
+      .readOnly = true;
   else
-    textState.activeInput.remove();
+    textState.activeInput
+      .remove();
 
   textState.activeInput = null;
 
-  if (hasContent && (textState.layerElement !== null))
-    textState.layerElement.dispatchEvent(new CustomEvent(TEXT_FINALIZED_EVENT,),);
+  if (hasContent && (textState.layerElement
+    !== null))
+    textState.layerElement
+      .dispatchEvent(new CustomEvent(TEXT_FINALIZED_EVENT,),);
 }
 
 /**
@@ -103,18 +111,22 @@ export function finalizeActiveInput(): void {
 export function placeTextInput(position: NormalizedPoint,): void {
   finalizeActiveInput();
 
-  if (textState.layerElement === null)
+  if (textState.layerElement
+    === null)
     return;
 
   /** Active color captured at text input creation */
   const color = getStrokeColor();
   /** Text font size derived from active stroke width */
-  const textSizePx = getStrokeWidth() * TEXT_SIZE_FACTOR;
+  const textSizePx = getStrokeWidth()
+    * TEXT_SIZE_FACTOR;
 
   /** Built before listener wiring so the keydown closure can capture the same node. */
   const input = createTextInput({
-    insetInlineStart: `${String(position[0] * PERCENT_SCALE,)}%`,
-    insetBlockStart: `${String(position[1] * PERCENT_SCALE,)}%`,
+    insetInlineStart: `${String(position[0]
+      * PERCENT_SCALE,)}%`,
+    insetBlockStart: `${String(position[1]
+      * PERCENT_SCALE,)}%`,
     color,
     fontSize: String(textSizePx,),
   },);
@@ -122,11 +134,13 @@ export function placeTextInput(position: NormalizedPoint,): void {
   input.addEventListener(
     'keydown',
     function handleKeydown(event: KeyboardEvent,): void {
-      if (event.key === 'Enter') {
+      if (event.key
+        === 'Enter') {
         event.preventDefault();
         finalizeActiveInput();
       }
-      else if (event.key === 'Escape') {
+      else if (event.key
+        === 'Escape') {
         discardActiveInput();
       }
     },
@@ -138,7 +152,8 @@ export function placeTextInput(position: NormalizedPoint,): void {
   );
 
   textState.activeInput = input;
-  textState.layerElement.append(input,);
+  textState.layerElement
+    .append(input,);
   /**
    * preventScroll stops the browser from scrolling the overflow-hidden
    * canvas container to reveal the input when it extends past the edge.
@@ -155,8 +170,10 @@ export function placeTextInput(position: NormalizedPoint,): void {
  * ```
  */
 export function discardActiveInput(): void {
-  if (textState.activeInput !== null) {
-    textState.activeInput.remove();
+  if (textState.activeInput
+    !== null) {
+    textState.activeInput
+      .remove();
     textState.activeInput = null;
   }
 }
@@ -171,6 +188,8 @@ export function discardActiveInput(): void {
  */
 export function clearTextEntries(): void {
   discardActiveInput();
-  if (textState.layerElement !== null)
-    textState.layerElement.replaceChildren();
+  if (textState.layerElement
+    !== null)
+    textState.layerElement
+      .replaceChildren();
 }

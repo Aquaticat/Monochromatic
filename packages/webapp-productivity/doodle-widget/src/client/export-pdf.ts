@@ -165,9 +165,11 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
     const textEntries = textEntriesToExport(page.textEntries,);
     for (const entry of textEntries) {
       /** Font size in points */
-      const fontSizePt = entry.fontSizePx * PX_TO_PT;
+      const fontSizePt = entry.fontSizePx
+        * PX_TO_PT;
       doc.setFontSize(fontSizePt,);
-      if (entry.color.startsWith('#',)) {
+      if (entry.color
+        .startsWith('#',)) {
         /** Decomposed channels so jsPDF's three-arg setter receives integers, not a hex string. */
         const rgb = hexToRgb(entry.color,);
         doc.setTextColor(
@@ -185,8 +187,10 @@ export async function exportAsPdf(deps: ExportDeps,): Promise<void> {
       }
       doc.text(
         entry.value,
-        entry.xFraction * pageW,
-        entry.yFraction * pageH,
+        entry.xFraction
+          * pageW,
+        entry.yFraction
+          * pageH,
         {
           baseline: 'top',
         },

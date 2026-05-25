@@ -85,7 +85,8 @@ export function $<
     keyFn,
   } = options;
   /** Backing cache, supplied by caller or freshly created with the default LRU policy. */
-  const store: SyncStore = options.store ?? createSyncStore({
+  const store: SyncStore = options.store
+    ?? createSyncStore({
     storeId: `memoize-${crypto.randomUUID()}`,
     eviction: [{
       policy: 'lru',

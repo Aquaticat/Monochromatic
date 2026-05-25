@@ -35,8 +35,10 @@ export function resolveVoyageApiKey(configKey: string | undefined,): string {
   },);
   /** Resolved key from explicit config, then preferred env var, then fallback env var; blank triggers the explicit error. */
   const key = configKey
-    ?? process.env['IMAGE_DIFF_VOYAGE_API_KEY']
-    ?? process.env['VOYAGE_API_KEY'];
+    ?? process
+    .env.IMAGE_DIFF_VOYAGE_API_KEY
+    ?? process
+    .env.VOYAGE_API_KEY;
   if ((key === undefined) || (key === '')) {
     throw new Error(
       'Voyage AI API key is required. Provide it via config.apiKey or set IMAGE_DIFF_VOYAGE_API_KEY (or VOYAGE_API_KEY) environment variable.',
@@ -106,7 +108,8 @@ export async function callVoyageApi({
   /** Parsed Voyage API payload; structure validated by the response-type assertion above. */
   const result = await response.json() as VoyageApiResponse;
   rl.debug(
-    `received ${String(result.data.length,)} embedding(s), total tokens: ${
+    `received ${String(result.data
+      .length,)} embedding(s), total tokens: ${
       String(result
         .usage
         .total_tokens,)

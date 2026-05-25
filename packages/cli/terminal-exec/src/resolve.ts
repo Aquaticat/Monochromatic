@@ -61,7 +61,8 @@ export type ResolvedTerminal = ValidatedEntry & {
  * ```
  */
 export async function resolveTerminal(): Promise<ResolvedTerminal | null> {
-  if (process.platform === 'win32') {
+  if (process.platform
+    === 'win32') {
     l.debug('platform: win32',);
     return resolveWindowsTerminal();
   }
@@ -99,7 +100,8 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
 
   /** Fallback IDs with exclusions applied. */
   const filteredFallbackIds = fallbackIds.filter(function notExcluded(id,) {
-    return !config.excludedIds.has(id,);
+    return !config.excludedIds
+      .has(id,);
   },);
   //endregion
 
@@ -165,7 +167,8 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
 async function resolveExplicitIds(
   { configEntryIds, }: { readonly configEntryIds: readonly string[]; },
 ): Promise<readonly string[]> {
-  if (configEntryIds.length > 0)
+  if (configEntryIds.length
+    > 0)
     return configEntryIds;
 
   l.debug('no explicit entries in config, checking kdeglobals',);
@@ -226,6 +229,8 @@ async function tryEntry({
     entryId,
     desktops,
     isFallback,
-    execArgDefault: config.execArgDefaults.get(entryId,) ?? '',
+    execArgDefault: config.execArgDefaults
+      .get(entryId,)
+      ?? '',
   },);
 }

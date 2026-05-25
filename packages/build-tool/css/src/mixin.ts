@@ -36,17 +36,21 @@ export function collectMixins(root: Root,): void {
     'mixin',
     function processMixin(node: AtRule,) {
       /** Trimmed at-rule parameter used as the mixin identifier */
-      const mixinName = node.params.trim();
+      const mixinName = node.params
+        .trim();
 
       if (!mixinName)
         throw new Error('@mixin requires a name: @mixin --name { ... }',);
 
-      if ((!node.nodes) || (node.nodes.length === 0))
+      if ((!node.nodes) || (node.nodes
+        .length
+        === 0))
         throw new Error('mixin definition must include body',);
       else {
         mixins.set(
           mixinName,
-          node.nodes.map(function cloneChild(child,) {
+          node.nodes
+            .map(function cloneChild(child,) {
             return child.clone();
           },),
         );
@@ -74,7 +78,8 @@ export function expandApplyRules(root: Root,): void {
     'apply',
     function processApply(node: AtRule,) {
       /** Trimmed at-rule parameter identifying which mixin to inline */
-      const mixinName = node.params.trim();
+      const mixinName = node.params
+        .trim();
 
       if (!mixinName)
         throw node.error('Mixin name is required: @apply --name;',);
@@ -85,7 +90,8 @@ export function expandApplyRules(root: Root,): void {
       if (mixinNodes === undefined)
         throw node.error(`Unknown mixin: ${mixinName}`,);
 
-      if (mixinNodes.length === 0) {
+      if (mixinNodes.length
+        === 0) {
         node.remove();
         return;
       }

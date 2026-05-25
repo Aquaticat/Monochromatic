@@ -69,7 +69,8 @@ export async function watchDirectory(
     // for-await is the only way to consume an AsyncIterable from fs.watch:
     // there is no functional alternative for an unbounded event stream.
     for await (const event of watcher) {
-      if (event.filename === null)
+      if (event.filename
+        === null)
         continue;
       /** Classification determines whether this event triggers action */
       // oxlint-disable-next-line no-await-in-loop -- sequential event processing required by async iterator
@@ -88,7 +89,8 @@ export async function watchDirectory(
   }
   catch (watchError: unknown) {
     // AbortError is expected when closing watchers during re-setup
-    if ((watchError instanceof Error) && (watchError.name === 'AbortError'))
+    if ((watchError instanceof Error) && (watchError.name
+      === 'AbortError'))
       return;
     rl.error(`watcher error in ${dir}: ${String(watchError,)}`,);
   }

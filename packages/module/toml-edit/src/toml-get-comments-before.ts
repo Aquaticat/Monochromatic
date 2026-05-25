@@ -47,15 +47,19 @@ export function tomlGetCommentsBefore(
     edit,
     path,
   },);
-  if ((result.kind === 'missing') || (result.kind === 'deleted')) {
+  if ((result.kind
+    === 'missing') || (result.kind
+    === 'deleted')) {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );
   }
-  if (result.kind === 'pending-value')
+  if (result.kind
+    === 'pending-value')
     return [];
   /** First AoT element is the one a preceding comment block would attach to in source. */
-  const node = result.kind === 'array-of-tables'
+  const node = result.kind
+    === 'array-of-tables'
     ? nonNullishOrThrow(result.nodes[0],)
     : result.node;
   return attachedCommentsFor({

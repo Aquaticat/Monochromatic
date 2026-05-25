@@ -81,7 +81,8 @@ export const staticHandler: EventHandlerWithFetch = defineHandler(
         getMeta: async function getMetadata(id,) {
           /** Resolved stat result or `undefined` when the file does not exist or is inaccessible. */
           const stats = await tryStat(id,);
-          return ((stats !== undefined) && stats.isFile())
+          return ((stats !== undefined) && stats
+            .isFile())
             ? {
               size: Number(stats.size,),
               mtime: stats.mtime,

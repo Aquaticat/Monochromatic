@@ -33,7 +33,8 @@ import {
  * ```
  */
 function filterOutput(input: string,): string {
-  return collapseLines(input.split('\n',),).join('\n',);
+  return collapseLines(input.split('\n',),)
+    .join('\n',);
 }
 
 /**
@@ -118,13 +119,15 @@ async function runFilter(): Promise<void> {
     const input = await text(process.stdin,);
     /** Filtered text written back to stdout in the happy path. */
     const filtered = filterOutput(input,);
-    process.stdout.write(filtered,);
+    process.stdout
+      .write(filtered,);
   }
   catch {
     try {
       /** Original stdin payload re-read after a filter failure; preserves output rather than losing it. */
       const fallback = await text(process.stdin,);
-      process.stdout.write(fallback,);
+      process.stdout
+        .write(fallback,);
     }
     catch {
       /* stdin already consumed or unavailable: nothing to pass through */

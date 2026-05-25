@@ -55,7 +55,8 @@ export type LintResult = {
 export async function runOxlint(
   { files, }: { files: readonly string[]; },
 ): Promise<LintResult> {
-  if (files.length === 0) {
+  if (files.length
+    === 0) {
     return {
       diagnostics: new Map(),
       notes: [],
@@ -137,7 +138,8 @@ export async function runOxlint(
   /** Promise placeholder for the optional fallback oxlint run; resolves to `null` when no orphaned files exist. */
   const fallbackRun: Promise<Map<string, Diagnostic[]> | null> =
     (function getFallbackRun() {
-      if (filesWithoutTsconfig.length === 0)
+      if (filesWithoutTsconfig.length
+        === 0)
         return Promise.resolve(null,);
       notes.push(
         'Some files have no tsconfig.json in any ancestor directory; '

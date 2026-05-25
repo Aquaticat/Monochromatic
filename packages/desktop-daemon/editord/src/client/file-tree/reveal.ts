@@ -45,7 +45,8 @@ export function collectAncestorDirs({
       0,
       filePath.lastIndexOf('/',),
     );
-    while (current.length > rootLength) {
+    while (current.length
+      > rootLength) {
       dirs.add(current,);
       current = current.slice(
         0,
@@ -90,10 +91,12 @@ export function findScrollAnchor({
   )) {
     /** Per-candidate rect compared against the viewport reference frame. */
     const rect = candidate.getBoundingClientRect();
-    if (rect.bottom > viewportTop) {
+    if (rect.bottom
+      > viewportTop) {
       return {
         element: candidate,
-        offsetFromViewport: rect.top - viewportTop,
+        offsetFromViewport: rect.top
+          - viewportTop,
       };
     }
   }
@@ -172,7 +175,8 @@ export async function revealFiles(
     paths,
     rootLength: rootPath.length,
   },);
-  if (dirs.size === 0)
+  if (dirs.size
+    === 0)
     return;
   l.info(
     `revealing ${String(dirs.size,)} ancestor dirs for ${
@@ -189,7 +193,10 @@ export async function revealFiles(
     /**
      * Difference from {@link anchor.offsetFromViewport} drives the scroll correction.
      */
-    const newTop = anchor.element.getBoundingClientRect().top;
-    hostElement.scrollTop += newTop - anchor.offsetFromViewport;
+    const newTop = anchor.element
+      .getBoundingClientRect()
+      .top;
+    hostElement.scrollTop += newTop - anchor
+      .offsetFromViewport;
   }
 }

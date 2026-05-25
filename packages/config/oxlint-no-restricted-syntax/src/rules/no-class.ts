@@ -197,7 +197,8 @@ export const noClass: CreateOnceRule = {
     function checkClass(node: ESTree.Class,): void {
       // `declare class` in ambient `.d.ts` files describes external types
       // and emits no runtime; the rule targets emitted classes only.
-      if (node.declare === true)
+      if (node.declare
+        === true)
         return;
 
       /** Parent expression following `extends`, when present. */
@@ -211,7 +212,8 @@ export const noClass: CreateOnceRule = {
       }
 
       if (
-        (superClass.type === 'Identifier')
+        (superClass.type
+          === 'Identifier')
         && matchesSuffix(superClass.name,)
       ) {
         return;
@@ -222,7 +224,7 @@ export const noClass: CreateOnceRule = {
       if (
         (id !== null)
         && (id !== undefined)
-        && matchesSuffix(id.name,)
+          && matchesSuffix(id.name,)
       ) {
         return;
       }

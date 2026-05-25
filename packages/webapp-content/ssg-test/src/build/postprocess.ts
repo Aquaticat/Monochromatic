@@ -100,7 +100,9 @@ const STALE_HASH_ZST_PATTERN = /\.[0-9a-f]{10}\.[^.]+\.zst$/;
  * ```
  */
 function sha256Buffer(input: Buffer,): string {
-  return createHash('sha256',).update(input,).digest('hex',);
+  return createHash('sha256',)
+    .update(input,)
+    .digest('hex',);
 }
 
 /**
@@ -254,7 +256,8 @@ async function fingerprintCss(
       );
     }
     catch (error) {
-      if ((error instanceof Error) && ('code' in error) && (error.code === 'ENOENT')) {
+      if ((error instanceof Error) && ('code' in error)
+        && (error.code === 'ENOENT')) {
         l.info(
           'styles.css not found, skipping CSS fingerprinting (already fingerprinted?)',
         );
@@ -403,7 +406,8 @@ async function rewriteReferences(
 async function cleanStaleFingerprints(
   { staleFiles, }: { staleFiles: readonly string[]; },
 ): Promise<void> {
-  if (staleFiles.length > 0) {
+  if (staleFiles.length
+    > 0) {
     await Promise.all(staleFiles.map(function deleteStale(filePath,) {
       return unlink(filePath,);
     },),);
@@ -480,7 +484,9 @@ const fullScan = await readdir(`${DIST}/**/*`,);
 const staleFiles = fullScan.files.filter(function isStale(filePath,) {
   /** Basename used for the stale-fingerprint pattern check, regardless of subdirectory depth. */
   const name = basename(filePath,);
-  return STALE_HASH_PATTERN.test(name,) || STALE_HASH_ZST_PATTERN.test(name,);
+  return STALE_HASH_PATTERN.test(name,)
+    || STALE_HASH_ZST_PATTERN
+    .test(name,);
 },);
 
 await cleanStaleFingerprints({ staleFiles, },);
@@ -489,7 +495,9 @@ await cleanStaleFingerprints({ staleFiles, },);
 const leafAssetFiles = fullScan.files.filter(function isLeafAsset(filePath,) {
   /** Basename used for the stale-fingerprint pattern check independent of the full path. */
   const name = basename(filePath,);
-  if (STALE_HASH_PATTERN.test(name,) || STALE_HASH_ZST_PATTERN.test(name,))
+  if (STALE_HASH_PATTERN.test(name,)
+    || STALE_HASH_ZST_PATTERN
+    .test(name,))
     return false;
   return !isLeafExcluded(filePath,);
 },);

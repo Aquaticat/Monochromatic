@@ -223,7 +223,8 @@ function scanShortCleanOptionCluster({
   if (option === 'e') {
     return {
       state,
-      consumesNextToken: index === (cluster.length - 1),
+      consumesNextToken: index === (cluster.length
+        - 1),
     };
   }
 
@@ -336,7 +337,8 @@ function scanCleanOptionTokens({
     },);
   }
 
-  if ((arg.startsWith('-',)) && (arg !== '-')) {
+  if ((arg.startsWith('-',))
+    && (arg !== '-')) {
     /** Ordered state after scanning this short-option cluster. */
     const clusterResult = scanShortCleanOptionCluster({
       cluster: arg.slice(1,),

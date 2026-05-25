@@ -32,7 +32,8 @@ export function selectModels(): readonly ModelConfig[] {
 
   /** Registered model whose `label` matches the override; undefined when the override matches none. */
   const byLabel = models.find(function matchLabel(model,): boolean {
-    return model.label === modelOverride;
+    return model.label
+      === modelOverride;
   },);
   if (byLabel !== undefined)
     return [byLabel,];

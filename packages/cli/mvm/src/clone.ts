@@ -127,7 +127,8 @@ export async function clone(
   /** Resolved image record; either a registry spec or a fall-through for custom images. */
   const resolved = resolveImage(meta.image,);
   /** Guest config used for cloud-init seeding; defaults applied when the image isn't in the registry. */
-  const guest = resolved.kind === 'registry'
+  const guest = resolved.kind
+    === 'registry'
     ? resolved.spec
     : CUSTOM_GUEST_DEFAULTS;
 
@@ -164,14 +165,16 @@ export async function clone(
   await waitForGuestAgent({ name: destination, },);
 
   // Windows VMs: set hostname via guest agent since cloud-init is not available
-  if (guest.osFamily === 'windows') {
+  if (guest.osFamily
+    === 'windows') {
     rl.info(`setting Windows hostname to ${destination}`,);
     /** Result of the `Rename-Computer` invocation; non-zero exit codes are logged but not fatal. */
     const result = await exec({
       command: `Rename-Computer -NewName '${destination}' -Force`,
       name: destination,
     },);
-    if (result.exitCode !== 0) {
+    if (result.exitCode
+      !== 0) {
       rl.info(
         `hostname change returned exit code ${
           String(result.exitCode,)

@@ -87,7 +87,8 @@ export function attachInput(
     to: number;
   } {
     /** Live selection range; null falls through to the end-of-buffer default. */
-    const selection = input.selection.get();
+    const selection = input.selection
+      .get();
     if (selection !== null)
       return selection;
     /** Buffer length used as the default cursor position when no selection exists. */
@@ -105,7 +106,9 @@ export function attachInput(
   function handleBackspace(): void {
     /** Snapshot of the current selection; the branches read `from`, `to` directly. */
     const range = currentRange();
-    if (range.from < range.to) {
+    if (range.from
+      < range
+      .to) {
       emit({
         from: range.from,
         to: range.to,
@@ -113,10 +116,12 @@ export function attachInput(
       },);
       return;
     }
-    if (range.from === 0)
+    if (range.from
+      === 0)
       return;
     emit({
-      from: range.from - 1,
+      from: range.from
+        - 1,
       to: range.from,
       insert: '',
     },);
@@ -126,7 +131,9 @@ export function attachInput(
   function handleDelete(): void {
     /** Snapshot of the current selection; the branches read `from`, `to` directly. */
     const range = currentRange();
-    if (range.from < range.to) {
+    if (range.from
+      < range
+      .to) {
       emit({
         from: range.from,
         to: range.to,
@@ -136,11 +143,13 @@ export function attachInput(
     }
     /** Buffer length used to short-circuit deletes at end-of-buffer. */
     const { length, } = input.getMirror();
-    if (range.from >= length)
+    if (range.from
+      >= length)
       return;
     emit({
       from: range.from,
-      to: range.from + 1,
+      to: range.from
+        + 1,
       insert: '',
     },);
   }
@@ -152,7 +161,8 @@ export function attachInput(
    * @param text - text to insert
    */
   function handleInsert(text: string,): void {
-    if (text.length === 0)
+    if (text.length
+      === 0)
       return;
     /** Snapshot of the current selection; the insert spans `from`..`to` for replacements. */
     const range = currentRange();
@@ -176,36 +186,51 @@ export function attachInput(
     // stops the browser from mutating the DOM out from under us.
     event.preventDefault();
 
-    if ((event.inputType === 'insertText')
-      || (event.inputType === 'insertCompositionText'))
+    if ((event.inputType
+      === 'insertText')
+      || (event.inputType
+        === 'insertCompositionText'))
     {
-      handleInsert(event.data ?? '',);
+      handleInsert(event.data
+        ?? '',);
       return;
     }
-    if ((event.inputType === 'insertParagraph')
-      || (event.inputType === 'insertLineBreak'))
+    if ((event.inputType
+      === 'insertParagraph')
+      || (event.inputType
+        === 'insertLineBreak'))
     {
       handleInsert('\n',);
       return;
     }
-    if (event.inputType === 'deleteContentBackward') {
+    if (event.inputType
+      === 'deleteContentBackward') {
       handleBackspace();
       return;
     }
-    if (event.inputType === 'deleteContentForward') {
+    if (event.inputType
+      === 'deleteContentForward') {
       handleDelete();
       return;
     }
-    if (event.inputType === 'insertFromPaste') {
+    if (event.inputType
+      === 'insertFromPaste') {
       /** Plain-text payload; falls back to `event.data` for browsers that fill it there. */
-      const text = event.dataTransfer?.getData('text/plain',) ?? event.data ?? '';
+      const text = event.dataTransfer
+        ?.getData('text/plain',)
+        ?? event
+        .data
+        ?? '';
       handleInsert(text,);
       return;
     }
-    if (event.inputType === 'deleteByCut') {
+    if (event.inputType
+      === 'deleteByCut') {
       /** Snapshot of the current selection; the delete spans `from`..`to`. */
       const range = currentRange();
-      if (range.from < range.to) {
+      if (range.from
+        < range
+        .to) {
         emit({
           from: range.from,
           to: range.to,
@@ -216,7 +241,9 @@ export function attachInput(
     }
     // Fallback: if there is `data`, treat it as an insertion;
     // otherwise treat it as a backward delete.
-    if (((typeof event.data) === 'string') && (event.data.length > 0)) {
+    if (((typeof event.data) === 'string') && (event.data
+      .length
+      > 0)) {
       handleInsert(event.data,);
       return;
     }
@@ -244,8 +271,10 @@ export function attachInput(
     // DOM; we read it out and emit a single changeset, then the next
     // viewport repaint clears the browser's transient nodes.
     /** Composed text from the IME; empty string skips the no-op insert. */
-    const text = event.data ?? '';
-    if (text.length > 0)
+    const text = event.data
+      ?? '';
+    if (text.length
+      > 0)
       handleInsert(text,);
   }
 
@@ -257,11 +286,14 @@ export function attachInput(
    * @param event - the `paste` event
    */
   function onPaste(event: ClipboardEvent,): void {
-    if (event.clipboardData === null)
+    if (event.clipboardData
+      === null)
       return;
     /** Plain-text payload extracted from the clipboard; empty string short-circuits. */
-    const text = event.clipboardData.getData('text/plain',);
-    if (text.length === 0)
+    const text = event.clipboardData
+      .getData('text/plain',);
+    if (text.length
+      === 0)
       return;
     event.preventDefault();
     handleInsert(text,);
@@ -277,15 +309,20 @@ export function attachInput(
   function onCut(event: ClipboardEvent,): void {
     /** Snapshot of the current selection; collapsed ranges abort the cut. */
     const range = currentRange();
-    if (range.from >= range.to)
+    if (range.from
+      >= range
+      .to)
       return;
     /** Substring copied to the clipboard before the deletion changeset is emitted. */
-    const slice = input.getMirror().slice(
+    const slice = input.getMirror()
+      .slice(
       range.from,
       range.to,
     );
-    if (event.clipboardData !== null) {
-      event.clipboardData.setData(
+    if (event.clipboardData
+      !== null) {
+      event.clipboardData
+        .setData(
         'text/plain',
         slice,
       );
@@ -309,15 +346,20 @@ export function attachInput(
   function onCopy(event: ClipboardEvent,): void {
     /** Snapshot of the current selection; collapsed ranges fall through to the browser default. */
     const range = currentRange();
-    if (range.from >= range.to)
+    if (range.from
+      >= range
+      .to)
       return;
     /** Substring copied to the clipboard. */
-    const slice = input.getMirror().slice(
+    const slice = input.getMirror()
+      .slice(
       range.from,
       range.to,
     );
-    if (event.clipboardData !== null) {
-      event.clipboardData.setData(
+    if (event.clipboardData
+      !== null) {
+      event.clipboardData
+        .setData(
         'text/plain',
         slice,
       );
@@ -325,53 +367,65 @@ export function attachInput(
     }
   }
 
-  input.surface.addEventListener(
+  input.surface
+    .addEventListener(
     'beforeinput',
     onBeforeInput,
   );
-  input.surface.addEventListener(
+  input.surface
+    .addEventListener(
     'compositionstart',
     onCompositionStart,
   );
-  input.surface.addEventListener(
+  input.surface
+    .addEventListener(
     'compositionend',
     onCompositionEnd,
   );
-  input.surface.addEventListener(
+  input.surface
+    .addEventListener(
     'paste',
     onPaste,
   );
-  input.surface.addEventListener(
+  input.surface
+    .addEventListener(
     'cut',
     onCut,
   );
-  input.surface.addEventListener(
+  input.surface
+    .addEventListener(
     'copy',
     onCopy,
   );
 
   return function cleanup() {
-    input.surface.removeEventListener(
+    input.surface
+      .removeEventListener(
       'beforeinput',
       onBeforeInput,
     );
-    input.surface.removeEventListener(
+    input.surface
+      .removeEventListener(
       'compositionstart',
       onCompositionStart,
     );
-    input.surface.removeEventListener(
+    input.surface
+      .removeEventListener(
       'compositionend',
       onCompositionEnd,
     );
-    input.surface.removeEventListener(
+    input.surface
+      .removeEventListener(
       'paste',
       onPaste,
     );
-    input.surface.removeEventListener(
+    input.surface
+      .removeEventListener(
       'cut',
       onCut,
     );
-    input.surface.removeEventListener(
+    input.surface
+      .removeEventListener(
       'copy',
       onCopy,
     );

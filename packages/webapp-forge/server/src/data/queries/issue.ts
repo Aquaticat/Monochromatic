@@ -64,7 +64,8 @@ export async function createIssueWithEvent(row: {
         row.number,
         row.authorId,
         row.title,
-        row.body ?? '',
+        row.body
+          ?? '',
         row.createdAt,
         row.createdAt,
       ],
@@ -347,7 +348,8 @@ export async function listIssueIdsForFilter(row: {
   readonly labelId: string | null;
   readonly state: string;
 },): Promise<IssueIdRow[]> {
-  if (row.labelId === null) {
+  if (row.labelId
+    === null) {
     return await all<IssueIdRow>({
       sql: `SELECT i.id, i.updated_at FROM issues i
        WHERE i.repo_id = ? AND i.state = ?

@@ -9,4 +9,4 @@ export {};
 // oxlint-disable-next-line no-unsafe-type-assertion -- intentional unsafe cast to provoke a runtime TypeError
 const value = null as unknown as Record<string, unknown>;
 
-console.log(value['property'],);
+console.log(value.property,);

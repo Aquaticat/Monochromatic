@@ -34,16 +34,22 @@ const MAX_BYTES = MAX_MIB * BYTES_PER_MIB;
  * ```
  */
 export async function extractPaperText(file: File,): Promise<string> {
-  if (file.size > MAX_BYTES)
+  if (file.size
+    > MAX_BYTES)
     throw new Error(`paper too large: ${file.size} bytes (max ${MAX_BYTES})`,);
   /** Lowercased file name so extension checks stay case-insensitive. */
-  const name = file.name.toLowerCase();
+  const name = file.name
+    .toLowerCase();
   /** Whether the upload should be routed to the PDF extractor. */
-  const isPdf = name.endsWith('.pdf',) || (file.type === 'application/pdf');
+  const isPdf = name.endsWith('.pdf',)
+    || (file.type === 'application/pdf');
   /** Whether the upload should be routed to the plain-text extractor. */
   const isText = name.endsWith('.txt',)
-    || name.endsWith('.md',)
-    || file.type.startsWith('text/',);
+    || name
+    .endsWith('.md',)
+    || file
+    .type
+    .startsWith('text/',);
   if (isPdf)
     return await extractPdf(file,);
   if (isText)

@@ -23,7 +23,8 @@ import type { TomlPath, } from './types.ts';
  * ```
  */
 export function keyNameOf({ key, }: { key: AST.TOMLBare | AST.TOMLQuoted; },): string {
-  return key.type === 'TOMLBare' ? key.name : key.value;
+  return key.type
+    === 'TOMLBare' ? key.name : key.value;
 }
 
 /**
@@ -39,7 +40,8 @@ export function keyNameOf({ key, }: { key: AST.TOMLBare | AST.TOMLQuoted; },): s
  * ```
  */
 export function keysOf({ key, }: { key: AST.TOMLKey; },): readonly string[] {
-  return key.keys.map(function nameOf(k,) {
+  return key.keys
+    .map(function nameOf(k,) {
     return keyNameOf({ key: k, },);
   },);
 }

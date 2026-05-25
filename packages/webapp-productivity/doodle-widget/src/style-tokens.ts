@@ -92,7 +92,8 @@ export const PAGE_FRAME_COLOR: CssValue = cssOklch({
 },);
 
 /** Eight, used for US Letter width base */
-const EIGHT = 2 * 2 * 2;
+const EIGHT = 2 * 2
+  * 2;
 
 /** US Letter width in inches (8.5) */
 export const LETTER_WIDTH_IN: number = EIGHT + HALF;

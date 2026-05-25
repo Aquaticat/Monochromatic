@@ -31,5 +31,6 @@ export function $(value: string,): value is BacktickSyntax {
   const firstEffectiveQuoteMatch = /(?<!\\)(?:\\\\)*["'`]/.exec(value,);
 
   // assert that's a backtick
-  return firstEffectiveQuoteMatch?.[0] === '`';
+  return firstEffectiveQuoteMatch?.[0]
+    === '`';
 }

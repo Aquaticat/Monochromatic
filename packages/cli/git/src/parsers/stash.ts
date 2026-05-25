@@ -120,7 +120,9 @@ export function parseStashRegion(
   const { value, } = parseResult;
 
   return {
-    hasEscapeHatch: value.escape.length > 0,
+    hasEscapeHatch: value.escape
+      .length
+      > 0,
     parseFailed: false,
   };
 }

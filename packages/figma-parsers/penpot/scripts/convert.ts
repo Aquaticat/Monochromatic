@@ -28,14 +28,17 @@ const figmaFile = await parseFigmaFile(inputPath,);
 const doc = convertFigmaToPenpot(
   figmaFile,
   {
-    fileName: figmaFile.meta.fileName || undefined,
+    fileName: figmaFile.meta
+      .fileName
+      || undefined,
   },
 );
 
 /** Final ZIP buffer ready to be written to disk. */
 const zipBuffer = await serializePenpotZip(doc,);
 /** Resolved output path: caller's argument takes precedence, otherwise the input filename with its extension swapped to `.penpot`. */
-const outPath = outputPath ?? inputPath.replace(
+const outPath = outputPath ?? inputPath
+  .replace(
   /\.(fig|deck|jam)$/,
   '.penpot',
 );
@@ -46,7 +49,9 @@ await writeFile(
 );
 
 /** Count of NodeChange entries logged below as a quick sanity-check of conversion scope. */
-const nodeCount = (figmaFile.document?.nodeChanges ?? []).length;
+const nodeCount = (figmaFile.document
+  ?.nodeChanges
+  ?? []).length;
 console.log(
   `Converted ${figmaFile.fileType} (${nodeCount} nodes) -> ${outPath} (${zipBuffer.length} bytes)`,
 );

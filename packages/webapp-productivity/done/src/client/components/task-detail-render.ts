@@ -87,21 +87,26 @@ export function buildTaskDetailTree(
     class: 'desc-input',
     attrs: { placeholder: 'description', },
   },);
-  if (task.description !== null)
+  if (task.description
+    !== null)
     descInput.textContent = task.description;
 
   /** Mutable attribute map so a `disabled` flag can be appended conditionally below. */
   const startAttrs: Record<string, string> = { 'data-action': 'start', };
-  if (task.timerStartedAt !== null)
-    startAttrs['disabled'] = '';
+  if (task.timerStartedAt
+    !== null)
+    startAttrs.disabled = '';
   /** Mutable attribute map mirroring `startAttrs`; disabled when no timer is running. */
   const stopAttrs: Record<string, string> = { 'data-action': 'stop', };
-  if (task.timerStartedAt === null)
-    stopAttrs['disabled'] = '';
+  if (task.timerStartedAt
+    === null)
+    stopAttrs.disabled = '';
   /** Mutable attribute map disabled while any blocker remains unresolved. */
   const completeAttrs: Record<string, string> = { 'data-action': 'complete', };
-  if (task.blockedBy.length > 0)
-    completeAttrs['disabled'] = '';
+  if (task.blockedBy
+    .length
+    > 0)
+    completeAttrs.disabled = '';
 
   /** Exposed in refs so the host component can toggle button visibility per mode. */
   const btnRow = h({
@@ -135,7 +140,7 @@ export function buildTaskDetailTree(
     ],
   },);
   if (isCreate)
-    btnRow.dataset['hidden'] = '';
+    btnRow.dataset.hidden = '';
 
   /** Exposed in refs so the pill manager can replace its children without re-rendering the tree. */
   const pillsContainer = h({

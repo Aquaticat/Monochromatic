@@ -19,8 +19,10 @@ import type { Span, } from '@oxlint/plugins';
 function unwrapMethodDefinition(
   node: Record<string, unknown>,
 ): Record<string, unknown> | undefined {
-  if ((node.type === 'MethodDefinition')
-    || (node.type === 'TSAbstractMethodDefinition'))
+  if ((node.type
+    === 'MethodDefinition')
+    || (node.type
+      === 'TSAbstractMethodDefinition'))
   {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
     return node.value as Record<string, unknown> | undefined;
@@ -44,8 +46,10 @@ export function functionReturnsValue(node: Span & Record<string, unknown>,): boo
   // Check kind on the outer MethodDefinition BEFORE unwrapping to .value,
   // because `kind` ("constructor", "get", "set", "method") is a property
   // of MethodDefinition, not of the inner FunctionExpression.
-  if ((node.type === 'MethodDefinition')
-    || (node.type === 'TSAbstractMethodDefinition'))
+  if ((node.type
+    === 'MethodDefinition')
+    || (node.type
+      === 'TSAbstractMethodDefinition'))
   {
     /** Method kind (constructor/get/set/method); read on the outer MethodDefinition before unwrap. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
@@ -98,10 +102,12 @@ export function functionReturnsValue(node: Span & Record<string, unknown>,): boo
           /** Concrete type parameters of `Promise<...>`; exactly one is the valid shape. */
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
           const params = typeArgs?.params as Record<string, unknown>[] | undefined;
-          if ((params !== undefined) && (params.length === 1)) {
+          if ((params !== undefined) && (params.length
+            === 1)) {
             /** AST node-type of the single Promise type argument, e.g. `TSVoidKeyword`. */
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-            const innerType = params[0]?.type as string | undefined;
+            const innerType = params[0]
+              ?.type as string | undefined;
             if ((innerType === 'TSVoidKeyword') || (innerType === 'TSNeverKeyword'))
               return false;
           }
@@ -132,5 +138,6 @@ export function isGeneratorFunction(node: Span & Record<string, unknown>,): bool
   if (target === undefined)
     return false;
 
-  return target.generator === true;
+  return target.generator
+    === true;
 }

@@ -39,9 +39,12 @@ function goBackToMenu(): void {
  * @returns a unique save-slot id
  */
 function newSaveId(): string {
-  if (((typeof globalThis.crypto?.randomUUID) === 'function'))
-    return globalThis.crypto.randomUUID();
-  return `save-${Date.now()}-${Math.floor(Math.random() * FALLBACK_ID_SUFFIX_RANGE,)}`;
+  if (((typeof globalThis.crypto
+    ?.randomUUID) === 'function'))
+    return globalThis.crypto
+      .randomUUID();
+  return `save-${Date.now()}-${Math.floor(Math.random()
+    * FALLBACK_ID_SUFFIX_RANGE,)}`;
 }
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is the live mount target; the function appends children and mutates the DOM, so a readonly type would misdescribe the contract. */
@@ -92,7 +95,9 @@ function mount(root: HTMLElement,): void {
       const paperText = file !== undefined
         ? await extractPaperText(file,)
         : textarea.value;
-      if (paperText.trim().length === 0) {
+      if (paperText.trim()
+        .length
+        === 0) {
         status.textContent = ll.selectTopicHint();
         status.className = 'error';
         return;

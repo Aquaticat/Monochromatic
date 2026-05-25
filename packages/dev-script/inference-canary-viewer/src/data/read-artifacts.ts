@@ -38,7 +38,8 @@ export { probeKey, } from './parsed-artifact.ts';
  * @returns true when the metadata indicates a whole-model failure
  */
 function isFailure(meta: Record<string, unknown>,): meta is FailureArtifactMeta {
-  return meta['failed'] === true;
+  return meta.failed
+    === true;
 }
 
 /**
@@ -68,7 +69,8 @@ async function readOptional(path: string,): Promise<string | undefined> {
   }
   catch (error: unknown) {
     // ENOENT is expected for optional files (e.g. canary.ts not saved in old artifacts)
-    if ((!isErrnoException(error,)) || (error.code !== 'ENOENT')) {
+    if ((!isErrnoException(error,)) || (error.code
+      !== 'ENOENT')) {
       console.error(
         `[viewer] failed to read ${path}:`,
         error,
@@ -187,7 +189,9 @@ export async function readArtifacts(): Promise<ArtifactData> {
       const meta: ArtifactMeta = {
         ...parsedMeta,
         // oxlint-disable-next-line typescript/no-unnecessary-condition -- label is typed as required but old artifacts may omit it; ?? fallback is intentional
-        label: parsedMeta.label ?? modelDirent.name,
+        label: parsedMeta.label
+          ?? modelDirent
+          .name,
       };
       /* oxlint-disable no-await-in-loop -- sequential per-artifact reads grouped by run */
       /** Optional source and response file contents loaded together for this artifact directory. */
@@ -213,9 +217,11 @@ export async function readArtifacts(): Promise<ArtifactData> {
       const runKey = `${meta.label}::${meta.timestamp}`;
 
       /** Per-pass bucket selected by `meta.pass`; new artifacts are inserted into this Map. */
-      const target = meta.pass === 'initial' ? initialByRun : fixByRun;
+      const target = meta.pass
+        === 'initial' ? initialByRun : fixByRun;
       /** Existing probe-to-artifact map for the run, or a fresh empty Map when first seen. */
-      const probes = target.get(runKey,) ?? new Map<string, ParsedArtifact>();
+      const probes = target.get(runKey,)
+        ?? new Map<string, ParsedArtifact>();
       probes.set(
         meta.probe,
         artifact,

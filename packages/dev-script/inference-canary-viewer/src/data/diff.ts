@@ -71,7 +71,8 @@ async function captureGitDiffStdout({
   }
   catch (error: unknown) {
     // Exit code 1 means files differ (expected behavior)
-    if (((typeof error) === 'object') && (error !== null) && ('stdout' in error))
+    if (((typeof error) === 'object') && (error !== null)
+      && ('stdout' in error))
       return String(error.stdout,);
     return '';
   }

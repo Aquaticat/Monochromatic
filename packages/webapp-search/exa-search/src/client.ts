@@ -31,7 +31,8 @@ searchForm.addEventListener(
           'hidden',
           'true',
         );
-        resultsSection.querySelectorAll<HTMLElement>(':scope > *',).forEach(
+        resultsSection.querySelectorAll<HTMLElement>(':scope > *',)
+          .forEach(
           function hide(result,) {
             result.setAttribute(
               'hidden',
@@ -46,7 +47,8 @@ searchForm.addEventListener(
         const results = await searchExa({
           apiKey: apiKey.value,
           baseUrl,
-          query: searchInput.value.trim(),
+          query: searchInput.value
+            .trim(),
           options: {
             type: 'auto',
             numResults: numResults.value,
@@ -68,9 +70,12 @@ searchForm.addEventListener(
           'true',
         );
 
-        costDollarsSpan.textContent = String(results.costDollars?.total ?? 0,);
+        costDollarsSpan.textContent = String(results.costDollars
+          ?.total
+          ?? 0,);
 
-        results.results.forEach(function forEachResult(
+        results.results
+          .forEach(function forEachResult(
           result,
           resultIndex,
         ) {

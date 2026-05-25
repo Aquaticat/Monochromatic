@@ -95,7 +95,8 @@ async function findDesktopFiles({ dir, }: { readonly dir: string; },): Promise<r
         /* oxlint-disable-next-line no-await-in-loop -- recursive directory walk must be sequential */
         await walk({ current: fullPath, },);
       }
-      else if (entry.name.endsWith('.desktop',)) {
+      else if (entry.name
+        .endsWith('.desktop',)) {
         results.push(fullPath,);
       }
     }

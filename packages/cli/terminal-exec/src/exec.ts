@@ -33,7 +33,8 @@ const EXIT_NOT_FOUND = 127;
  * ```
  */
 export function execvp({ command, }: { readonly command: readonly string[]; },): void {
-  if (command.length === 0)
+  if (command.length
+    === 0)
     throw new Error('execvp: empty command array',);
 
   /** First token separated so the args slice below can pass the rest to Bun.spawn. */
@@ -59,7 +60,8 @@ export function execvp({ command, }: { readonly command: readonly string[]; },):
   );
 
   /* oxlint-disable promise/prefer-await-to-then, promise/always-return, promise/prefer-await-to-callbacks, promise/prefer-catch -- fire-and-forget: process exits with spawned command's code; .then(onSuccess, onError) is intentional for non-async exit handling */
-  proc.exited.then(
+  proc.exited
+    .then(
     function onExit(code,) {
       process.exitCode = code;
     },

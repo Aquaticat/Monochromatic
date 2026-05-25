@@ -56,12 +56,14 @@ function extractViewBox(raw: string,): string | undefined {
   /** Position of the closing quote; `-1` means the attribute is unterminated. */
   const close = raw.indexOf(
     '"',
-    open + 'viewBox="'.length,
+    open + 'viewBox="'
+      .length,
   );
   if (close === (-1))
     return undefined;
   return raw.slice(
-    open + 'viewBox="'.length,
+    open + 'viewBox="'
+      .length,
     close,
   );
 }
@@ -144,7 +146,8 @@ export function extractAndStripDefs(s: string,): DefsPartition {
     const content: string[] = [];
     /** Scan cursor; advances past each `</defs>` so no byte is ever revisited (single linear pass, O(1) stack). */
     let from = 0;
-    while (from <= s.length) {
+    while (from <= s
+      .length) {
       /** Position of the next `<defs>` opener; `-1` ends the scan. */
       const open = s.indexOf(
         '<defs>',
@@ -157,7 +160,8 @@ export function extractAndStripDefs(s: string,): DefsPartition {
       /** Position of the matching `</defs>`; `-1` means the block is unterminated. */
       const close = s.indexOf(
         '</defs>',
-        open + '<defs>'.length,
+        open + '<defs>'
+          .length,
       );
       if (close === (-1)) {
         content.push(s.slice(from,),);
@@ -168,10 +172,12 @@ export function extractAndStripDefs(s: string,): DefsPartition {
         open,
       ),);
       defs.push(s.slice(
-        open + '<defs>'.length,
+        open + '<defs>'
+          .length,
         close,
       ),);
-      from = close + '</defs>'.length;
+      from = close + '</defs>'
+        .length;
     }
     return {
       defs: defs.join('',),
@@ -209,7 +215,8 @@ function parseSvg(raw: string,): {
   inner: string;
 } {
   /** Extracted viewBox value; falls back to the lobehub icon default. */
-  const viewBox = extractViewBox(raw,) ?? DEFAULT_VIEWBOX;
+  const viewBox = extractViewBox(raw,)
+    ?? DEFAULT_VIEWBOX;
   /** SVG body with the outer `<svg>` opening and closing tags stripped. */
   const inner = stripClosingSvgTag(stripOpeningSvgTag(raw,),);
   return {
@@ -357,7 +364,8 @@ export function iconDot({
   color: string;
 },): string {
   /** Vendor prefix taken from the slash-delimited model ID. */
-  const vendor = modelId.split('/',)[0] ?? '';
+  const vendor = modelId.split('/',)[0]
+    ?? '';
   /** Parsed sprite symbol for the vendor; absent when the vendor has no icon. */
   const symbol = VENDOR_SYMBOLS.get(vendor,);
   if (symbol === undefined) {
@@ -394,7 +402,8 @@ export function iconDot({
  */
 export function vendorIcon(modelId: string,): string | undefined {
   /** Vendor prefix taken from the slash-delimited model ID. */
-  const vendor = modelId.split('/',)[0] ?? '';
+  const vendor = modelId.split('/',)[0]
+    ?? '';
   /** Parsed sprite symbol for the vendor; absent when the vendor has no icon. */
   const symbol = VENDOR_SYMBOLS.get(vendor,);
   return symbol === undefined ? undefined : useRef(symbol.id,);

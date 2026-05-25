@@ -31,7 +31,8 @@ const PANEL_WIDTH_PX = 393;
 const PANEL_MAX_DVB = 80;
 
 /** Panel slide-in animation duration in seconds. */
-const PANEL_SLIDE_S = 1 / 2 / 2;
+const PANEL_SLIDE_S = 1 / 2
+  / 2;
 
 /** First cubic-bezier x control point for the panel easing. */
 const EASE_X1 = 0.4;
@@ -93,7 +94,8 @@ export const newTaskPanel: string = [
       'border-end-end-radius': 0,
       'box-shadow': cssCompounded([
         0,
-        cssRem(-(1 / 2 / 2),),
+        cssRem(-(1 / 2
+          / 2),),
         cssRem(1,),
         cssOklch({
           l: 0,

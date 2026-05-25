@@ -56,7 +56,8 @@ class ToastMessage extends HTMLElement {
 
   /** Cancels the auto-dismiss timer when the element is removed early. */
   disconnectedCallback(): void {
-    if (this.#timer !== null) {
+    if (this.#timer
+      !== null) {
       clearTimeout(this.#timer,);
       this.#timer = null;
     }
@@ -65,8 +66,10 @@ class ToastMessage extends HTMLElement {
   /** Renders the toast content into the shadow root. */
   #render(): void {
     /** Text payload from the `message` attribute; empty string when the attribute is absent. */
-    const message = this.getAttribute('message',) ?? '';
-    this.#shadow.replaceChildren(
+    const message = this.getAttribute('message',)
+      ?? '';
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: STYLES,
@@ -97,7 +100,8 @@ customElements.define(
  * ```
  */
 export function showToast(message: string,): void {
-  document.querySelector<HTMLElement>('toast-message',)?.remove();
+  document.querySelector<HTMLElement>('toast-message',)
+    ?.remove();
 
   /** Fresh toast element; previous toast (if any) was removed above to avoid overlap. */
   const toast = document.createElement('toast-message',);
@@ -105,5 +109,6 @@ export function showToast(message: string,): void {
     'message',
     message,
   );
-  document.body.append(toast,);
+  document.body
+    .append(toast,);
 }

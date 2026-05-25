@@ -53,13 +53,20 @@ export function invertChangeset(
   },
 ): Changeset {
   /** Pre-edit substring captured so the inverse can re-insert it on undo. */
-  const removed = input.before.slice(
+  const removed = input.before
+    .slice(
     input.changeset.from,
     input.changeset.to,
   );
   return {
-    from: input.changeset.from,
-    to: input.changeset.from + input.changeset.insert.length,
+    from: input.changeset
+      .from,
+    to: input.changeset
+      .from
+      + input
+      .changeset
+      .insert
+      .length,
     insert: removed,
   };
 }
@@ -83,12 +90,17 @@ export function applyChangeset(
     readonly before: string;
   },
 ): string {
-  return input.before.slice(
+  return input.before
+    .slice(
     0,
     input.changeset.from,
   )
-    + input.changeset.insert
-    + input.before.slice(input.changeset.to,);
+    + input
+    .changeset
+    .insert
+    + input
+    .before
+    .slice(input.changeset.to,);
 }
 
 /**
@@ -124,14 +136,28 @@ export function mapOffsetThroughChangeset(
     readonly offset: number;
   },
 ): number {
-  if (input.offset <= input.changeset.from)
+  if (input.offset
+    <= input
+    .changeset
+    .from)
     return input.offset;
-  if (input.offset <= input.changeset.to)
-    return input.changeset.from + input.changeset.insert.length;
+  if (input.offset
+    <= input
+    .changeset
+    .to)
+    return input.changeset
+      .from
+      + input
+      .changeset
+      .insert
+      .length;
   /** Net length change so offsets past the edit window shift by exactly this much. */
-  const delta = input.changeset.insert.length
+  const delta = input.changeset
+    .insert
+    .length
     - (input.changeset.to - input.changeset.from);
-  return input.offset + delta;
+  return input.offset
+    + delta;
 }
 
 /**
@@ -167,12 +193,27 @@ export function composeChangesets(
   },
 ): Changeset | null {
   /** Offset where `a` ends after its insert; composition is only legal when `b` lands here. */
-  const insertEnd = input.a.from + input.a.insert.length;
-  if ((input.b.from !== insertEnd) || (input.b.to !== insertEnd))
+  const insertEnd = input.a
+    .from
+    + input
+    .a
+    .insert
+    .length;
+  if ((input.b
+    .from
+    !== insertEnd) || (input.b
+    .to
+    !== insertEnd))
     return null;
   return {
-    from: input.a.from,
-    to: input.a.to,
-    insert: input.a.insert + input.b.insert,
+    from: input.a
+      .from,
+    to: input.a
+      .to,
+    insert: input.a
+      .insert
+      + input
+      .b
+      .insert,
   };
 }

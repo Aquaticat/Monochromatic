@@ -51,33 +51,49 @@ export async function handleSend(
   },
 ): Promise<void> {
   /** Snapshot of the body at send time; the textarea may mutate during the await chain. */
-  const body = input.textarea.value;
+  const body = input.textarea
+    .value;
   /** Active identity at send time; the select may change while uploads are in flight. */
-  const userId = input.select.value;
-  if (body.length === 0) {
+  const userId = input.select
+    .value;
+  if (body.length
+    === 0) {
     setStatus({
       status: input.status,
       message: 'empty: nothing to send',
     },);
     return;
   }
-  input.sendBtn.disabled = true;
+  input.sendBtn
+    .disabled = true;
   try {
-    if ((input.state.editMessageId !== null) && (input.state.tier3 === null)) {
+    if ((input.state
+      .editMessageId
+      !== null) && (input.state
+      .tier3
+      === null)) {
       await sendInlineEdit({
         ...input,
         body,
         userId,
       },);
     }
-    else if ((input.state.editMessageId !== null) && (input.state.tier3 !== null)) {
+    else if ((input.state
+      .editMessageId
+      !== null) && (input.state
+      .tier3
+      !== null)) {
       await sendTier3Edit({
         ...input,
         body,
         userId,
       },);
     }
-    else if ((input.state.editMessageId === null) && (input.state.tier3 !== null)) {
+    else if ((input.state
+      .editMessageId
+      === null) && (input.state
+      .tier3
+      !== null)) {
       await sendTier3New({
         state: input.state,
         textarea: input.textarea,
@@ -99,7 +115,8 @@ export async function handleSend(
       message: `error: ${error instanceof Error ? error.message : String(error,)}`,
     },);
   }
-  input.sendBtn.disabled = false;
+  input.sendBtn
+    .disabled = false;
 }
 
 /**
@@ -132,7 +149,9 @@ async function sendNew(
     message: 'compiling...',
   },);
   /** Tier-1 inline compile or tier-2/3 worker compile result; both expose `chunks`, `charCount`, etc. */
-  const compiled = input.state.tier === 1
+  const compiled = input.state
+    .tier
+    === 1
     ? compileInline(input.body,)
     : await compileViaWorker({
       body: input.body,
@@ -141,12 +160,15 @@ async function sendNew(
 
   setStatus({
     status: input.status,
-    message: input.state.tier === 1 ? 'uploading chunk...' : 'uploading...',
+    message: input.state
+      .tier
+      === 1 ? 'uploading chunk...' : 'uploading...',
   },);
   // Sequential PUTs match the server's outbox-ack contract; parallel
   // uploads would race the highest-contiguous-seq the server returns.
   // oxlint-disable-next-line no-await-in-loop
-  for (const [seq, chunk,] of compiled.chunks.entries()) {
+  for (const [seq, chunk,] of compiled.chunks
+    .entries()) {
     // oxlint-disable-next-line no-await-in-loop
     await fetch(
       `/api/drafts/${encodeURIComponent(draftId,)}/chunks/${String(seq,)}`,
@@ -187,7 +209,8 @@ async function sendNew(
   }>(finalize,);
   if ((typeof result.location) !== 'string')
     throw new Error('finalize returned no location',);
-  globalThis.location.assign(result.location,);
+  globalThis.location
+    .assign(result.location,);
 }
 
 /**
@@ -211,7 +234,12 @@ async function sendTier3New(
     userId: string;
   },
 ): Promise<void> {
-  if ((input.state.tier3 === null) || (input.state.tier3.localChunks === null))
+  if ((input.state
+    .tier3
+    === null) || (input.state
+    .tier3
+    .localChunks
+    === null))
     return;
   await saveCurrentTier3Chunk({
     state: input.state,
@@ -222,23 +250,31 @@ async function sendTier3New(
     status: input.status,
     message: 'flushing chunks...',
   },);
-  if (input.state.outbox !== null)
-    await input.state.outbox.flushed();
+  if (input.state
+    .outbox
+    !== null)
+    await input.state
+      .outbox
+      .flushed();
 
   /** Destructured so the aggregate-walk reads the cached chunks directly. */
-  const { localChunks, } = input.state.tier3;
+  const { localChunks, } = input.state
+    .tier3;
   /** Aggregate character count across every cached chunk; passed to finalize. */
   const charCount = localChunks.reduce(
     function sumCharCount(
       acc,
       chunk,
     ) {
-      return acc + chunk.charCount;
+      return acc + chunk
+        .charCount;
     },
     0,
   );
   /** First chunk's markdown captured for the finalize preview field. */
-  const firstMd = localChunks[0]?.md ?? '';
+  const firstMd = localChunks[0]
+    ?.md
+    ?? '';
 
   setStatus({
     status: input.status,
@@ -246,7 +282,9 @@ async function sendTier3New(
   },);
   /** Tier-3 finalize fetch; awaited so both the status check and the JSON read use the same response. */
   const finalize = await fetch(
-    `/api/drafts/${encodeURIComponent(input.state.tier3.newDraftId,)}/finalize`,
+    `/api/drafts/${encodeURIComponent(input.state
+      .tier3
+      .newDraftId,)}/finalize`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', },
@@ -270,6 +308,7 @@ async function sendTier3New(
   const result = await readJson<{ location?: string; }>(finalize,);
   if ((typeof result.location) !== 'string')
     throw new Error('finalize returned no location',);
-  globalThis.location.assign(result.location,);
+  globalThis.location
+    .assign(result.location,);
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

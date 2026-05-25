@@ -123,9 +123,11 @@ function renderRunOverlay({
     .join('\n',);
 
   /** Bracketed failure detail appended only when an error message is present. */
-  const errorSuffix = entry.error !== undefined ? ` (${entry.error})` : '';
+  const errorSuffix = entry.error
+    !== undefined ? ` (${entry.error})` : '';
   /** Composed overlay heading shown at the top of the run popover. */
-  const title = `${label} - ${entry.overallScore.toFixed(2,)} - ${entry.timestamp}${
+  const title = `${label} - ${entry.overallScore
+    .toFixed(2,)} - ${entry.timestamp}${
     entry.failed ? ` (FAILED${errorSuffix})` : ''
   }`;
 

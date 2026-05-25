@@ -21,7 +21,8 @@ export function readPageData<TData,>(): TData {
 
   /** Raw JSON payload extracted from the script element. */
   const text = element.textContent;
-  if (text.length === 0)
+  if (text.length
+    === 0)
     throw new Error('Page data element is empty',);
 
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; caller provides the expected shape via TData

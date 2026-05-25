@@ -31,7 +31,8 @@ const toolCache = new Map<'tool', NotificationTool | null>();
  */
 async function detectNotificationTool(): Promise<NotificationTool | null> {
   if (toolCache.has('tool',))
-    return toolCache.get('tool',) ?? null;
+    return toolCache.get('tool',)
+      ?? null;
 
   if (await evaluatePredicate([
     'notify-send',

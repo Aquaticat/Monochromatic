@@ -31,5 +31,8 @@ export function $<const MyValue,>(
 ): value is MyValue extends Map<infer K, infer V> ? MyValue & Map<K, V>
   : MyValue & Map<unknown, unknown>
 {
-  return Object.prototype.toString.call(value,) === '[object Map]';
+  return Object.prototype
+    .toString
+    .call(value,)
+    === '[object Map]';
 }

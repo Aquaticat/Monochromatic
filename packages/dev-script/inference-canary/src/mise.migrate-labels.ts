@@ -91,9 +91,10 @@ for (const modelDir of modelDirs) {
       /** Parsed meta.json contents for label injection */
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- meta.json structure is known
       const meta = JSON.parse(raw,) as Record<string, unknown>;
-      if (meta['label'] !== undefined)
+      if (meta.label
+        !== undefined)
         continue;
-      meta['label'] = label;
+      meta.label = label;
       // oxlint-disable-next-line no-await-in-loop -- must finish writing before renaming the parent directory
       await writeFile(
         metaPath,

@@ -28,7 +28,8 @@ const TRANSITION_DURATION_DENOMINATOR = (2 * 2) * ((2 * 2) + 1);
 const TRANSITION_DURATION = (2 + 1) / TRANSITION_DURATION_DENOMINATOR;
 
 /** Circle percentage value: 50, expressed with exempt literals. */
-const CIRCLE_PERCENT = ((2 * 2) + 1) * ((2 * 2) + 1) * 2;
+const CIRCLE_PERCENT = ((2 * 2) + 1) * ((2 * 2) + 1)
+  * 2;
 
 /** Minimum touch target size in rem: 3. */
 const TOUCH_TARGET = 2 + 1;

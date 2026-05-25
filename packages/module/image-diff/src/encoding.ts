@@ -120,7 +120,8 @@ export function inferFormat(filePath: string,): ImageFormat {
   /**
    * Path extension normalised to lower case for case-insensitive lookup in {@link EXTENSION_FORMAT_MAP}.
    */
-  const ext = extname(filePath,).toLowerCase();
+  const ext = extname(filePath,)
+    .toLowerCase();
   /** Format resolved from the extension; `undefined` for unsupported extensions triggers the explicit error below. */
   const format = EXTENSION_FORMAT_MAP[ext];
   if (format === undefined) {
@@ -252,8 +253,10 @@ export function parseDataUri(dataUri: string,): {
   if ((sepIdx === (-1)) || (sepIdx === mimeStart))
     reject();
   /** Cursor at the first payload byte after the separator. */
-  const dataStart = sepIdx + SEPARATOR.length;
-  if (dataStart >= dataUri.length)
+  const dataStart = sepIdx + SEPARATOR
+    .length;
+  if (dataStart >= dataUri
+    .length)
     reject();
   return {
     mimeType: dataUri.slice(

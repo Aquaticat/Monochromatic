@@ -36,7 +36,8 @@ export async function insertMilestone(row: {
       row.id,
       row.repoId,
       row.title,
-      row.dueAt ?? null,
+      row.dueAt
+        ?? null,
     ],
   },);
 }

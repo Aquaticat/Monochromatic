@@ -78,7 +78,8 @@ export async function waitForGuestAgent({
     }
     catch {
       /** Milliseconds since polling began; compared against `timeoutMs` to give up. */
-      const elapsed = Date.now() - startTime;
+      const elapsed = Date.now()
+        - startTime;
       if (elapsed >= timeoutMs) {
         throw new Error(
           `guest agent on ${name} did not respond within ${
@@ -174,7 +175,8 @@ export async function waitForShutdown({ name, }: { readonly name: string; },): P
     }
 
     /** Milliseconds since polling began; compared against the shutdown timeout to give up. */
-    const elapsed = Date.now() - startTime;
+    const elapsed = Date.now()
+      - startTime;
     if (elapsed >= SHUTDOWN_TIMEOUT_MS) {
       throw new Error(
         `VM ${name} did not shut down within ${

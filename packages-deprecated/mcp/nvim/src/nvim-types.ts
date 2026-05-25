@@ -100,6 +100,7 @@ export function normalizeMessage(message: string,): string {
     helpIndex,
   );
   /** Help text following the separator, ready to be re-emitted as a parenthesised suffix. */
-  const helpText = message.slice(helpIndex + '\nhelp: '.length,);
+  const helpText = message.slice(helpIndex + '\nhelp: '
+    .length,);
   return `${mainMessage} (help: ${helpText})`;
 }

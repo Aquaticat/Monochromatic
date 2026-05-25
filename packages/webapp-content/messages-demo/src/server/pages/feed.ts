@@ -75,7 +75,8 @@ export async function renderFeed(
   }
 
   /** Decoded keyset cursor; null on the first page or when the token is absent. */
-  const cursor = input.cursorToken === null ? null : decodeCursor(input.cursorToken,);
+  const cursor = input.cursorToken
+    === null ? null : decodeCursor(input.cursorToken,);
   /** Materialised page of feed entries used to render the cards and the pagination link. */
   const messages = await listFeed(cursor,);
   /** Rendered feed body HTML; embedded in the layout's main slot. */
@@ -109,7 +110,8 @@ export async function renderFeed(
  * @returns HTML string
  */
 function renderFeedBody(messages: readonly FeedMessage[],): string {
-  if (messages.length === 0) {
+  if (messages.length
+    === 0) {
     return h({
       tag: 'div',
       attrs: { class: 'empty-state', },
@@ -138,7 +140,8 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
             },
             text: formatRelative(message.createdAt,),
           },),
-          message.revision > 1
+          message.revision
+            > 1
             ? h({
               tag: 'span',
               attrs: { class: 'card-revision', },
@@ -166,7 +169,8 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
               class: 'card-open',
               href: `/m/${String(message.id,)}/c/0`,
             },
-            text: message.chunkCount === 1
+            text: message.chunkCount
+              === 1
               ? 'open'
               : `open (${String(message.chunkCount,)} chunks)`,
           },),
@@ -179,7 +183,8 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
           class: 'feed-card',
           'data-message-id': String(message.id,),
         },
-        html: cardHeader + cardBody + cardFooter,
+        html: cardHeader + cardBody
+          + cardFooter,
       },);
     },)
     .join('',);
@@ -187,7 +192,8 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
   /** Last entry on the page; cursor seed for the "older" link. */
   const last = messages.at(-1,);
   /** Pagination HTML; empty when the page is incomplete. */
-  const pagination = ((messages.length === FEED_PAGE_SIZE) && (last !== undefined))
+  const pagination = ((messages.length
+    === FEED_PAGE_SIZE) && (last !== undefined))
     ? h({
       tag: 'nav',
       attrs: {
@@ -219,7 +225,8 @@ function renderFeedBody(messages: readonly FeedMessage[],): string {
       'aria-label': 'message feed',
     },
     html: cards,
-  },) + pagination;
+  },)
+    + pagination;
 }
 
 /** Day count after which the formatter switches to an ISO date. */
@@ -255,7 +262,8 @@ function formatRelative(timestamp: number,): string {
     return `${String(Math.floor(deltaSeconds / SECONDS_PER_HOUR,),)}h ago`;
   if (deltaSeconds < (SECONDS_PER_DAY * ISO_DATE_THRESHOLD_DAYS))
     return `${String(Math.floor(deltaSeconds / SECONDS_PER_DAY,),)}d ago`;
-  return new Date(timestamp,).toISOString().slice(
+  return new Date(timestamp,).toISOString()
+    .slice(
     0,
     ISO_DATE_PREFIX_LENGTH,
   );

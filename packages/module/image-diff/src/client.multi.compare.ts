@@ -95,7 +95,8 @@ export async function compareAll({
   if (descriptionSettlement === undefined)
     throw new Error('unreachable: allResults is non-empty',);
   /** Textual diff description when the description call succeeded; `undefined` on rejection. */
-  const description = descriptionSettlement.status === 'fulfilled'
+  const description = descriptionSettlement.status
+    === 'fulfilled'
     ? descriptionSettlement.value as string | undefined
     : undefined;
 
@@ -107,7 +108,8 @@ export async function compareAll({
   /** Collected per-provider comparison entries that resolved successfully; rejections are logged and skipped. */
   const successfulEntries: MultiProviderComparisonEntry[] = [];
   for (const settlement of providerSettlements) {
-    if (settlement.status === 'fulfilled') {
+    if (settlement.status
+      === 'fulfilled') {
       /** Fulfilled settlement value reshaped via assertion; `allSettled` returns `unknown` for tuple inputs. */
       const entry = settlement.value as {
         provider: Provider;
@@ -126,7 +128,8 @@ export async function compareAll({
     }
   }
 
-  if ((successfulEntries.length === 0) && (description === undefined)) {
+  if ((successfulEntries.length
+    === 0) && (description === undefined)) {
     throw new Error(
       'No results: all embedding providers failed and no description was generated. Check that at least one API key is configured.',
     );

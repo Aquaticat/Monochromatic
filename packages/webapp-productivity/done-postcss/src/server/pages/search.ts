@@ -28,7 +28,9 @@ import { serializePageData, } from './layout.ts';
  */
 export async function searchPage(url: URL,): Promise<Response> {
   /** Query string lifted from the `?q=` parameter; defaults to empty for the landing view. */
-  const query = url.searchParams.get('q',) ?? '';
+  const query = url.searchParams
+    .get('q',)
+    ?? '';
   /** Search results from the FTS (or LIKE fallback) query. */
   const results = await searchTasks(query,);
   /** All tags in the database; rendered as quick-filter chips on the landing view. */

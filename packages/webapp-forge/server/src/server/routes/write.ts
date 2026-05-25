@@ -56,12 +56,14 @@ export const createIssueHandler: EventHandlerWithFetch = defineHandler(
   async function handleCreateIssue(event,) {
     /** Owner login segment of the route path. */
     const owner = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'owner',
     },);
     /** Repo name segment of the route path. */
     const repoName = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'repo',
     },);
     /** Authenticated actor authoring the new issue. */
@@ -78,7 +80,8 @@ export const createIssueHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
     /** Untyped request body cast to the expected payload shape. */
-    const payload = await event.req.json() as CreateIssuePayload;
+    const payload = await event.req
+      .json() as CreateIssuePayload;
     /** Validated title; empty triggers a 400. */
     const title = ((typeof payload.title) === 'string') ? payload.title : '';
     if (title === '') {
@@ -126,17 +129,20 @@ export const createCommentHandler: EventHandlerWithFetch = defineHandler(
   async function handleCreateComment(event,) {
     /** Owner login segment of the route path. */
     const owner = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'owner',
     },);
     /** Repo name segment of the route path. */
     const repoName = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'repo',
     },);
     /** Raw issue number from the URL; parsed below. */
     const numberRaw = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'number',
     },);
     /** Parsed issue number for the lookup below. */
@@ -169,7 +175,8 @@ export const createCommentHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
     /** Untyped request body cast to the expected payload shape. */
-    const payload = await event.req.json() as CreateCommentPayload;
+    const payload = await event.req
+      .json() as CreateCommentPayload;
     /** Validated body; empty triggers a 400. */
     const body = ((typeof payload.body) === 'string') ? payload.body : '';
     if (body === '') {
@@ -207,22 +214,26 @@ export const labelIssueHandler: EventHandlerWithFetch = defineHandler(
   async function handleLabelIssue(event,) {
     /** Owner login segment of the route path. */
     const owner = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'owner',
     },);
     /** Repo name segment of the route path. */
     const repoName = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'repo',
     },);
     /** Raw issue number from the URL; parsed below. */
     const numberRaw = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'number',
     },);
     /** Label id segment of the route path. */
     const labelId = requireParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'label',
     },);
     /** Parsed issue number for the lookup below. */

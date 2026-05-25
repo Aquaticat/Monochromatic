@@ -82,12 +82,16 @@ export function sampleIssueCount(seed: number,): number {
   /** Bucket-selector draw in [0, 1) compared against the cumulative percentile thresholds. */
   const r = rng(seed,);
   if (r < P50_THRESHOLD)
-    return ISSUES_P50_BASE + Math.floor(rng(seed + 1,) * ISSUES_P50_RANGE,);
+    return ISSUES_P50_BASE + Math
+      .floor(rng(seed + 1,) * ISSUES_P50_RANGE,);
   if (r < P95_THRESHOLD)
-    return ISSUES_P95_BASE + Math.floor(rng(seed + 1,) * ISSUES_P95_RANGE,);
+    return ISSUES_P95_BASE + Math
+      .floor(rng(seed + 1,) * ISSUES_P95_RANGE,);
   if (r < P99_THRESHOLD)
-    return ISSUES_P99_BASE + Math.floor(rng(seed + 1,) * ISSUES_P99_RANGE,);
-  return ISSUES_TAIL_BASE + Math.floor(rng(seed + 1,) * ISSUES_TAIL_RANGE,);
+    return ISSUES_P99_BASE + Math
+      .floor(rng(seed + 1,) * ISSUES_P99_RANGE,);
+  return ISSUES_TAIL_BASE + Math
+    .floor(rng(seed + 1,) * ISSUES_TAIL_RANGE,);
 }
 
 /**
@@ -108,10 +112,14 @@ export function sampleCommentCount(seed: number,): number {
   /** Bucket-selector draw in [0, 1) compared against the cumulative percentile thresholds. */
   const r = rng(seed,);
   if (r < P50_THRESHOLD)
-    return COMMENTS_P50_BASE + Math.floor(rng(seed + 1,) * COMMENTS_P50_RANGE,);
+    return COMMENTS_P50_BASE + Math
+      .floor(rng(seed + 1,) * COMMENTS_P50_RANGE,);
   if (r < P95_THRESHOLD)
-    return COMMENTS_P95_BASE + Math.floor(rng(seed + 1,) * COMMENTS_P95_RANGE,);
+    return COMMENTS_P95_BASE + Math
+      .floor(rng(seed + 1,) * COMMENTS_P95_RANGE,);
   if (r < P99_THRESHOLD)
-    return COMMENTS_P99_BASE + Math.floor(rng(seed + 1,) * COMMENTS_P99_RANGE,);
-  return COMMENTS_TAIL_BASE + Math.floor(rng(seed + 1,) * COMMENTS_TAIL_RANGE,);
+    return COMMENTS_P99_BASE + Math
+      .floor(rng(seed + 1,) * COMMENTS_P99_RANGE,);
+  return COMMENTS_TAIL_BASE + Math
+    .floor(rng(seed + 1,) * COMMENTS_TAIL_RANGE,);
 }

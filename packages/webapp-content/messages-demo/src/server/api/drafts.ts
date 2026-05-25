@@ -71,7 +71,8 @@ export const createDraftHandler: EventHandlerWithFetch = defineHandler(
     const parentId = optionalStringField({
       body,
       key: 'parent_id',
-    },) ?? null;
+    },)
+      ?? null;
     if ((id === null) || (userId === null)) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -109,12 +110,14 @@ export const putChunkHandler: EventHandlerWithFetch = defineHandler(
   async function handlePutChunk(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
     const draftId = requirePathParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'id',
     },);
     /** Raw `:seq` path param; parsed as decimal below. */
     const seqRaw = requirePathParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'seq',
     },);
     /** Parsed seq; non-negative integer or the request is rejected. */
@@ -149,7 +152,8 @@ export const putChunkHandler: EventHandlerWithFetch = defineHandler(
     },);
     /** Raw `char_count` value; narrowed to number below before the upsert. */
     const charCountRaw = body.char_count;
-    if ((md === null) || (html === null) || ((typeof charCountRaw) !== 'number')) {
+    if ((md === null) || (html === null)
+      || ((typeof charCountRaw) !== 'number')) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing md, html, or char_count',
@@ -193,7 +197,8 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
   async function handleFinalizeDraft(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
     const draftId = requirePathParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'id',
     },);
     /** Decoded body; defaulted so an absent body still flows through the shape check. */
@@ -221,8 +226,8 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
     if (
       (userId === null)
       || (preview === null)
-      || ((typeof charCount) !== 'number')
-      || ((typeof chunkCount) !== 'number')
+        || ((typeof charCount) !== 'number')
+        || ((typeof chunkCount) !== 'number')
     ) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -275,7 +280,8 @@ export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
   async function handleCancelDraft(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
     const draftId = requirePathParam({
-      params: event.context.params,
+      params: event.context
+        .params,
       name: 'id',
     },);
     /**
@@ -345,7 +351,8 @@ export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
  * @returns `true` when `value` is a plain object
  */
 function isRecord(value: unknown,): value is Record<string, unknown> {
-  return (value !== null) && ((typeof value) === 'object') && (!Array.isArray(value,));
+  return (value !== null) && ((typeof value) === 'object')
+    && (!Array.isArray(value,));
 }
 
 /**

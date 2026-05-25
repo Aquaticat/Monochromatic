@@ -60,7 +60,8 @@ export function containsBoundedAccessTag({
   // Linear walk: each occurrence of `tag` is located by `indexOf`; the cursor
   // advances by one past every boundary-rejected candidate, so worst-case work
   // is bounded by the length of `text` and the stack stays flat.
-  for (let from = 0; from <= text.length;) {
+  for (let from = 0; from <= text
+    .length;) {
     /** Position of the next literal occurrence of `tag`; -1 ends the search. */
     const idx = text.indexOf(
       tag,
@@ -77,11 +78,14 @@ export function containsBoundedAccessTag({
       continue;
     }
     /** Index immediately after the match; used to inspect the trailing char. */
-    const afterIdx = idx + tag.length;
+    const afterIdx = idx + tag
+      .length;
     /** Char immediately after the match; end-of-string acts as a valid terminator. */
-    const after = afterIdx >= text.length ? '' : text.charAt(afterIdx,);
+    const after = afterIdx >= text
+      .length ? '' : text.charAt(afterIdx,);
     /** Whether the trailing char satisfies the `(?:\s|$|\*)` anchor. */
-    const afterOk = (after === '') || (after === '*') || isWhitespaceChar(after,);
+    const afterOk = (after === '') || (after === '*')
+      || isWhitespaceChar(after,);
     if (afterOk)
       return true;
     from = idx + 1;
@@ -131,7 +135,8 @@ export const checkAccess: CreateOnceRule = {
           },);
         },);
 
-        if (found.length > 1) {
+        if (found.length
+          > 1) {
           context.report({
             node: comment,
             messageId: 'conflict',

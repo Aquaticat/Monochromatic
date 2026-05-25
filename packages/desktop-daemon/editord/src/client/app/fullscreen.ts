@@ -62,14 +62,17 @@ export function wireFullscreen({ appElement, }: { readonly appElement: HTMLEleme
   document.addEventListener(
     'fullscreenchange',
     function handleFullscreenChange(): void {
-      if (document.fullscreenElement !== null) {
+      if (document.fullscreenElement
+        !== null) {
         fsLog.info('fullscreen active',);
-        fab.style.display = 'none';
+        fab.style
+          .display = 'none';
         void lockKeyboard();
       }
       else {
         fsLog.info('fullscreen exited',);
-        fab.style.display = '';
+        fab.style
+          .display = '';
       }
     },
   );

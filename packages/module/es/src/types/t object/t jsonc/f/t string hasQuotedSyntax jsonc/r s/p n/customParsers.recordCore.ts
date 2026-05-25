@@ -169,7 +169,8 @@ export function parseRecordMembers({
     ...entries,
     entry,
   ];
-  return decision.kind === 'end'
+  return decision.kind
+    === 'end'
     ? {
       entries: nextEntries,
       tail: decision.tail,
@@ -214,10 +215,13 @@ export function customParserForRecord(
   const woOpening = value.slice('{'.length,) as FragmentStringJsonc;
   /** Leading comments/spaces directly inside '{' before first member or '}'. */
   const insideLead = startsWithComment({ value: woOpening, },);
-  if (insideLead.remainingContent.startsWith('}',)) {
+  if (insideLead.remainingContent
+    .startsWith('}',)) {
     /** Combined record-level comment when context and inside comments are present. */
     let finalComment: Jsonc.Comment | undefined;
-    if (context?.comment && insideLead.comment) {
+    if (context?.comment
+      && insideLead
+      .comment) {
       finalComment = mergeComments({
         value: context.comment,
         value2: insideLead
@@ -232,7 +236,8 @@ export function customParserForRecord(
     return {
       value: new Map(),
       ...(finalComment ? { comment: finalComment, } : {}),
-      remainingContent: insideLead.remainingContent.slice(
+      remainingContent: insideLead.remainingContent
+        .slice(
         '}'.length,
       ) as FragmentStringJsonc,
     };

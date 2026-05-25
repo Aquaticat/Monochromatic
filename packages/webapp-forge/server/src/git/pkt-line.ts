@@ -82,9 +82,11 @@ export function encodePkt(payload: Uint8Array | string,): Uint8Array {
     ? new TextEncoder().encode(payload,)
     : payload;
   /** Total frame length includes the length prefix itself per the spec. */
-  const total = bytes.byteLength + PKT_LEN_BYTES;
+  const total = bytes.byteLength
+    + PKT_LEN_BYTES;
   /** Four-digit hex length prefix, zero-padded. */
-  const lengthHex = total.toString(HEX_RADIX,).padStart(
+  const lengthHex = total.toString(HEX_RADIX,)
+    .padStart(
     PKT_LEN_BYTES,
     '0',
   );
@@ -130,11 +132,14 @@ export function decodePktLines(data: Uint8Array,): PktLine[] {
   const out: PktLine[] = [];
   /** Cursor advancing through `data` as each frame is consumed. */
   let offset = 0;
-  while (offset < data.byteLength) {
-    if ((data.byteLength - offset) < PKT_LEN_BYTES) {
+  while (offset < data
+    .byteLength) {
+    if ((data.byteLength
+      - offset) < PKT_LEN_BYTES) {
       throw new Error(
         `pkt-line decode: trailing ${
-          String(data.byteLength - offset,)
+          String(data.byteLength
+            - offset,)
         } bytes too short for length prefix`,
       );
     }
@@ -164,10 +169,12 @@ export function decodePktLines(data: Uint8Array,): PktLine[] {
     }
     if (length < PKT_LEN_BYTES)
       throw new Error(`pkt-line decode: length ${String(length,)} below header size`,);
-    if ((offset + length) > data.byteLength) {
+    if ((offset + length) > data
+      .byteLength) {
       throw new Error(
         `pkt-line decode: line claims ${String(length,)} bytes but only ${
-          String(data.byteLength - offset,)
+          String(data.byteLength
+            - offset,)
         } remain`,
       );
     }

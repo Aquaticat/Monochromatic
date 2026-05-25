@@ -52,12 +52,14 @@ export function resolveReference(
   },
 ): string | null {
   /** Reference with any `#fragment` removed; fragments do not affect the served file. */
-  const withoutFragment = nonNullishOrThrow(ref.trim().split('#',)[0],);
+  const withoutFragment = nonNullishOrThrow(ref.trim()
+    .split('#',)[0],);
   /** Reference with the query string also stripped; query parameters do not change the path on disk. */
   const trimmed = nonNullishOrThrow(withoutFragment.split('?',)[0],);
   if (trimmed === '')
     return null;
-  if (trimmed.startsWith('//',) || startsWithUriScheme(trimmed,))
+  if (trimmed.startsWith('//',)
+    || startsWithUriScheme(trimmed,))
     return null;
 
   /** Canonical absolute form of the dist root used as the containment boundary. */
@@ -83,7 +85,8 @@ export function resolveReference(
     absoluteRoot,
     resolved,
   );
-  if (relativeToRoot.startsWith('..',) || isAbsolute(relativeToRoot,))
+  if (relativeToRoot.startsWith('..',)
+    || isAbsolute(relativeToRoot,))
     return null;
   return resolved;
 }

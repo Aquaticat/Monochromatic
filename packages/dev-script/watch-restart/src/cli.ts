@@ -236,9 +236,12 @@ export function parseArgs(
       programName: 'watch-restart',
       args: options.argv,
       help: 'option',
-      ...(options.onExit === undefined ? {} : { onExit: options.onExit, }),
-      ...(options.stdout === undefined ? {} : { stdout: options.stdout, }),
-      ...(options.stderr === undefined ? {} : { stderr: options.stderr, }),
+      ...(options.onExit
+        === undefined ? {} : { onExit: options.onExit, }),
+      ...(options.stdout
+        === undefined ? {} : { stdout: options.stdout, }),
+      ...(options.stderr
+        === undefined ? {} : { stderr: options.stderr, }),
     },
   );
 }
@@ -276,7 +279,9 @@ export function parseArgs(
  * ```
  */
 export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
-  if (args.rest.length === 0) {
+  if (args.rest
+    .length
+    === 0) {
     throw new Error(
       'No command supplied after "--"; usage: watch-restart -w <dir>... -- <cmd> [<args>...]',
     );
@@ -290,7 +295,8 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
   }
 
   /** Flattened, comma-split extension list. */
-  const extensions: readonly string[] = args.ext.flatMap(
+  const extensions: readonly string[] = args.ext
+    .flatMap(
     function flattenExt(raw,): string[] {
       return splitCommas(raw,);
     },
@@ -311,19 +317,23 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
    * CLI-facing `create`/`delete` to internal `add`/`unlink`.
    * `undefined` when `--events` was not passed.
    */
-  const events: readonly WatchEventKind[] | undefined = args.events === undefined
+  const events: readonly WatchEventKind[] | undefined = args.events
+    === undefined
     ? undefined
-    : splitCommas(args.events,).map(function mapEventToken(token,): WatchEventKind {
+    : splitCommas(args.events,)
+      .map(function mapEventToken(token,): WatchEventKind {
       return cliEventToInternal(token,);
     },);
   /** Compiled include regex list; throws here if any pattern is invalid. */
-  const includeRegex: readonly RegExp[] = args.includeRegex.map(
+  const includeRegex: readonly RegExp[] = args.includeRegex
+    .map(
     function mapIncludeRegex(pattern,): RegExp {
       return compileRegex(pattern,);
     },
   );
   /** Compiled exclude regex list; throws here if any pattern is invalid. */
-  const excludeRegex: readonly RegExp[] = args.excludeRegex.map(
+  const excludeRegex: readonly RegExp[] = args.excludeRegex
+    .map(
     function mapExcludeRegex(pattern,): RegExp {
       return compileRegex(pattern,);
     },
@@ -359,31 +369,48 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     flag: 'process-group',
   },);
   /** Validated kill signal (or `undefined` when --signal was not passed). */
-  const killSignal = args.signal === undefined
+  const killSignal = args.signal
+    === undefined
     ? undefined
     : parseKillSignal(args.signal,);
 
   return {
     paths: args.watch,
     command,
-    ...(commandArgs.length > 0 ? { args: commandArgs, } : {}),
-    ...(args.include.length > 0 ? { include: args.include, } : {}),
-    ...(args.exclude.length > 0 ? { exclude: args.exclude, } : {}),
-    ...(includeRegex.length > 0 ? { includeRegex, } : {}),
-    ...(excludeRegex.length > 0 ? { excludeRegex, } : {}),
-    ...(extensions.length > 0 ? { extensions, } : {}),
-    ...(types.length > 0 ? { types, } : {}),
+    ...(commandArgs.length
+      > 0 ? { args: commandArgs, } : {}),
+    ...(args.include
+      .length
+      > 0 ? { include: args.include, } : {}),
+    ...(args.exclude
+      .length
+      > 0 ? { exclude: args.exclude, } : {}),
+    ...(includeRegex.length
+      > 0 ? { includeRegex, } : {}),
+    ...(excludeRegex.length
+      > 0 ? { excludeRegex, } : {}),
+    ...(extensions.length
+      > 0 ? { extensions, } : {}),
+    ...(types.length
+      > 0 ? { types, } : {}),
     ...(events === undefined ? {} : { events, }),
     ...(hidden === undefined ? {} : { hidden, }),
     ...(followSymlinks === undefined ? {} : { followSymlinks, }),
     ...(gitignore === undefined ? {} : { gitignore, }),
-    ...(args.ignoreFile.length > 0 ? { ignoreFiles: args.ignoreFile, } : {}),
-    ...(args.depth === undefined ? {} : { depth: args.depth, }),
-    ...(args.poll === undefined ? {} : { poll: args.poll, }),
+    ...(args.ignoreFile
+      .length
+      > 0 ? { ignoreFiles: args.ignoreFile, } : {}),
+    ...(args.depth
+      === undefined ? {} : { depth: args.depth, }),
+    ...(args.poll
+      === undefined ? {} : { poll: args.poll, }),
     ...(args.noContentChanged ? { contentChanged: false, } : {}),
-    ...(args.maxHashSize === undefined ? {} : { maxHashSize: args.maxHashSize, }),
-    ...(args.debounce === undefined ? {} : { debounce: args.debounce, }),
-    ...(args.stopTimeout === undefined
+    ...(args.maxHashSize
+      === undefined ? {} : { maxHashSize: args.maxHashSize, }),
+    ...(args.debounce
+      === undefined ? {} : { debounce: args.debounce, }),
+    ...(args.stopTimeout
+      === undefined
       ? {}
       : { stopTimeout: args.stopTimeout, }),
     ...(args.noInitial ? { initial: false, } : {}),
@@ -442,7 +469,8 @@ function installShutdownHandler(
 
 if (import.meta.main) {
   /** Parsed argv from `process.argv.slice(2)`. */
-  const args = parseArgs({ argv: process.argv.slice(2,), },);
+  const args = parseArgs({ argv: process.argv
+    .slice(2,), },);
   /** Mapped options handed to the orchestrator. */
   const options = argsToOptions(args,);
   /** Live handle; both signals route through it during shutdown. */

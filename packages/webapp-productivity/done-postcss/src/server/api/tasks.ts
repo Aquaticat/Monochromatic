@@ -60,8 +60,10 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
     }
 
     /** Trimmed title; empty trim short-circuits with a 400 response. */
-    const title = ((typeof body.title) === 'string') ? body.title.trim() : '';
-    if (title.length === 0) {
+    const title = ((typeof body.title) === 'string') ? body.title
+      .trim() : '';
+    if (title.length
+      === 0) {
       return jsonResponse({
         payload: { error: 'Task title is required', },
         status: HTTP_BAD_REQUEST,
@@ -72,16 +74,20 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
     const task = await createTask({
       title,
       description: ((typeof body.description) === 'string') ? body.description : null,
-      tags: parseStringArray(body.tags,) ?? [],
-      locations: parseStringArray(body.locations,) ?? [],
+      tags: parseStringArray(body.tags,)
+        ?? [],
+      locations: parseStringArray(body.locations,)
+        ?? [],
       priority: parseEnumValue<TaskPriority>({
         value: body.priority,
         validValues: priorities,
-      },) ?? null,
+      },)
+        ?? null,
       complexity: parseEnumValue<TaskPriority>({
         value: body.complexity,
         validValues: priorities,
-      },) ?? null,
+      },)
+        ?? null,
     },);
     return jsonResponse({
       payload: task,

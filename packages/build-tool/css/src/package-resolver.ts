@@ -200,7 +200,8 @@ export function resolvePackage({
 
   if (packageJson !== undefined) {
     // Try exports field
-    if (packageJson.exports !== undefined) {
+    if (packageJson.exports
+      !== undefined) {
       /** Resolved path from exports map */
       const resolved = resolveExports({
         exports: packageJson.exports,

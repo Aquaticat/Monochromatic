@@ -158,7 +158,8 @@ export async function indexPackData(row: {
     { recursive: true, },
   );
   /** Random suffix avoids collision with concurrent pack writes. */
-  const tag = randomBytes(PACK_TAG_BYTES,).toString('hex',);
+  const tag = randomBytes(PACK_TAG_BYTES,)
+    .toString('hex',);
   /** Absolute temp path that holds the pack until indexing succeeds. */
   const packPath = join(
     packDir,
@@ -241,13 +242,17 @@ export async function applyRefUpdate(row: {
     })();
   // Validate old-OID: caller asserts what they think the ref points at.
   // Ignore zero comparison (creating a new ref).
-  if ((triplet.oldOid !== ZERO_OID) && (currentOid !== triplet.oldOid)) {
+  if ((triplet.oldOid
+    !== ZERO_OID) && (currentOid !== triplet
+    .oldOid)) {
     return {
       ok: false,
-      error: triplet.oldOid !== currentOid ? 'fetch-first' : 'unknown',
+      error: triplet.oldOid
+        !== currentOid ? 'fetch-first' : 'unknown',
     };
   }
-  if (triplet.newOid === ZERO_OID) {
+  if (triplet.newOid
+    === ZERO_OID) {
     if (currentOid === undefined)
       return { ok: true, };
     try {

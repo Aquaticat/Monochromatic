@@ -84,8 +84,10 @@ export function resolveByPath(
   },
 ): ResolveResult {
   /** Root container so the walker can descend without re-indexing every call. */
-  const [root,] = edit.program.body;
-  if (path.length === 0) {
+  const [root,] = edit.program
+    .body;
+  if (path.length
+    === 0) {
     return {
       kind: 'top-level',
       node: root,
@@ -114,7 +116,8 @@ function walk(
     consumed: number;
   },
 ): ResolveResult {
-  if (container.type === 'TOMLArray') {
+  if (container.type
+    === 'TOMLArray') {
     return walkArray({
       container,
       segments,
@@ -162,13 +165,16 @@ function walkArray(
       consumed,
     };
   }
-  if (segments.length === 1) {
+  if (segments.length
+    === 1) {
     return {
       kind: 'value',
       node: element,
     };
   }
-  if ((element.type === 'TOMLArray') || (element.type === 'TOMLInlineTable')) {
+  if ((element.type
+    === 'TOMLArray') || (element.type
+    === 'TOMLInlineTable')) {
     return walk({
       container: element,
       segments: segments.slice(1,),
@@ -209,7 +215,8 @@ function walkTable(
       node,
       matchedLen,
     } = directKeyValue;
-    if (segments.length === matchedLen) {
+    if (segments.length
+      === matchedLen) {
       return {
         kind: 'keyvalue',
         node,
@@ -217,7 +224,11 @@ function walkTable(
     }
     /** Remaining segments after the matched key chain; drives recursion into the value. */
     const rest = segments.slice(matchedLen,);
-    if ((node.value.type === 'TOMLArray') || (node.value.type === 'TOMLInlineTable')) {
+    if ((node.value
+      .type
+      === 'TOMLArray') || (node.value
+      .type
+      === 'TOMLInlineTable')) {
       return walk({
         container: node.value,
         segments: rest,
@@ -231,7 +242,8 @@ function walkTable(
     };
   }
 
-  if (container.type !== 'TOMLTopLevelTable') {
+  if (container.type
+    !== 'TOMLTopLevelTable') {
     return {
       kind: 'missing',
       deepest: container,
@@ -242,22 +254,27 @@ function walkTable(
   /** Tables whose header is a prefix of `segments`; candidates to descend into. */
   const descendable = container.body.filter(
     function isDescendable(child,): child is AST.TOMLTable {
-      if (child.type !== 'TOMLTable')
+      if (child.type
+        !== 'TOMLTable')
         return false;
       /** Sibling's resolved key so prefix checks reuse one binding. */
       const rk = child.resolvedKey;
-      if (rk.length > segments.length)
+      if (rk.length
+        > segments
+        .length)
         return false;
       return rk.every(function eq(
         k,
         i,
       ) {
-        return segments[i] === k;
+        return segments[i]
+          === k;
       },);
     },
   );
 
-  if (descendable.length > 0) {
+  if (descendable.length
+    > 0) {
     /** Longest-prefix candidate so the most specific table wins. */
     const best = nonNullishOrThrow(
       descendable
@@ -265,12 +282,18 @@ function walkTable(
           a,
           b,
         ) {
-          return b.resolvedKey.length - a.resolvedKey.length;
+          return b.resolvedKey
+            .length
+            - a
+            .resolvedKey
+            .length;
         },)[0],
     );
     /** Header length so the walker can skip already-matched segments. */
-    const prefixLen = best.resolvedKey.length;
-    if (segments.length === prefixLen) {
+    const prefixLen = best.resolvedKey
+      .length;
+    if (segments.length
+      === prefixLen) {
       return {
         kind: 'table',
         node: best,
@@ -286,22 +309,27 @@ function walkTable(
   /** Tables nested strictly under `segments`; populate the array-of-tables result. */
   const tablesUnder = container.body.filter(
     function isUnder(child,): child is AST.TOMLTable {
-      if (child.type !== 'TOMLTable')
+      if (child.type
+        !== 'TOMLTable')
         return false;
       /** Sibling's resolved key so prefix checks reuse one binding. */
       const rk = child.resolvedKey;
-      if (rk.length <= segments.length)
+      if (rk.length
+        <= segments
+        .length)
         return false;
       return segments.every(function eq(
         s,
         i,
       ) {
-        return rk[i] === s;
+        return rk[i]
+          === s;
       },);
     },
   );
 
-  if (tablesUnder.length > 0) {
+  if (tablesUnder.length
+    > 0) {
     return {
       kind: 'array-of-tables',
       nodes: tablesUnder,
@@ -333,18 +361,22 @@ function findKeyValueByPrefix(
   matchedLen: number;
 } | null {
   for (const child of container.body) {
-    if (child.type !== 'TOMLKeyValue')
+    if (child.type
+      !== 'TOMLKeyValue')
       continue;
     /** All key segments of this entry so the prefix check can compare directly. */
     const keys = keysOf({ key: child.key, },);
-    if (keys.length > segments.length)
+    if (keys.length
+      > segments
+      .length)
       continue;
     /** True when every key segment matches the corresponding `segments` entry. */
     const allMatch = keys.every(function eq(
       k,
       i,
     ) {
-      return segments[i] === k;
+      return segments[i]
+        === k;
     },);
     if (allMatch) {
       return {

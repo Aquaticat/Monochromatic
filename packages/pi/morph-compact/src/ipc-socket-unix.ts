@@ -228,7 +228,8 @@ export function readFromUnixSocket(
             function onEnd(): void {
               finish({
                 error: null,
-                result: Buffer.concat(chunks,).toString('utf8',),
+                result: Buffer.concat(chunks,)
+                  .toString('utf8',),
               },);
             },
           );

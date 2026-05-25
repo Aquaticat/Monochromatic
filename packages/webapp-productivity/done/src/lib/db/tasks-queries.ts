@@ -53,7 +53,8 @@ export async function getTaskById(id: string,): Promise<Task | null> {
 export async function listInboxUnblockedTasks(): Promise<Task[]> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns TaskRow shape */
   /** Raw rows from the inbox query, mapped through `mapTask` before returning. */
-  const rows = await db.prepare(SQL_SELECT_INBOX_UNBLOCKED,).all() as TaskRow[];
+  const rows = await db.prepare(SQL_SELECT_INBOX_UNBLOCKED,)
+    .all() as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
@@ -98,7 +99,8 @@ export async function listBlockedInboxTasks(): Promise<BlockedTaskLink[]> {
 export async function listInProgressTasks(): Promise<Task[]> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns TaskRow shape */
   /** Raw rows for in-progress tasks; mapped to the application type below. */
-  const rows = await db.prepare(SQL_SELECT_IN_PROGRESS,).all() as TaskRow[];
+  const rows = await db.prepare(SQL_SELECT_IN_PROGRESS,)
+    .all() as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
@@ -120,7 +122,8 @@ export async function listInProgressTasks(): Promise<Task[]> {
 export async function listTasksForBlockerPicker(taskId: string,): Promise<Task[]> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns TaskRow shape */
   /** Raw candidate rows excluding the current task, mapped to application objects below. */
-  const rows = await db.prepare(SQL_SELECT_FOR_BLOCKER_PICKER,).all(taskId,) as TaskRow[];
+  const rows = await db.prepare(SQL_SELECT_FOR_BLOCKER_PICKER,)
+    .all(taskId,) as TaskRow[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function toTask(row,) {
     return mapTask(row,);
@@ -141,7 +144,8 @@ export async function listTasksForBlockerPicker(taskId: string,): Promise<Task[]
 export async function listAllTags(): Promise<string[]> {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns rows with tag column */
   /** Single-column projection; the tag string is unwrapped from each row below. */
-  const rows = await db.prepare(SQL_SELECT_ALL_TAGS,).all() as { tag: string; }[];
+  const rows = await db.prepare(SQL_SELECT_ALL_TAGS,)
+    .all() as { tag: string; }[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   return rows.map(function extractTag(row,) {
     return row.tag;
@@ -164,20 +168,23 @@ export async function listAllTags(): Promise<string[]> {
 export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
   /** Trimmed query reused by both the FTS attempt and the LIKE fallback. */
   const normalizedSearchQuery = searchQuery.trim();
-  if (normalizedSearchQuery.length === 0)
+  if (normalizedSearchQuery.length
+    === 0)
     return [];
 
   try {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- database FTS query returns TaskRow with is_blocked column */
     /** FTS rows including the blocked-flag join column for the search-card UI. */
-    const rows = await db.prepare(SQL_SEARCH_FTS,).all(
+    const rows = await db.prepare(SQL_SEARCH_FTS,)
+      .all(
       normalizedSearchQuery,
     ) as (TaskRow & { is_blocked: number; })[];
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return rows.map(function toSearchTask(row,) {
       return {
         ...mapTask(row,),
-        isBlocked: row.is_blocked === 1,
+        isBlocked: row.is_blocked
+          === 1,
       };
     },);
   }
@@ -196,7 +203,8 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
     return rows.map(function toSearchTask(row,) {
       return {
         ...mapTask(row,),
-        isBlocked: row.is_blocked === 1,
+        isBlocked: row.is_blocked
+          === 1,
       };
     },);
   }

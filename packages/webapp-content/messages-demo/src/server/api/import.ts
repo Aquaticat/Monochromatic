@@ -55,7 +55,9 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   async function handleImport(event,) {
     /** Identity sent via `x-user-id` header because the body is the upload payload. */
-    const userId = event.req.headers.get('x-user-id',);
+    const userId = event.req
+      .headers
+      .get('x-user-id',);
     if ((userId === null) || (userId === '')) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -64,7 +66,8 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
     }
 
     /** Inbound body stream; null aborts the import before any draft is created. */
-    const stream = event.req.body;
+    const stream = event.req
+      .body;
     if ((stream === null) || (stream === undefined)) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -81,7 +84,8 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
     },);
 
     /** Decoded reader; multi-byte safe because `TextDecoderStream` re-aligns chunks. */
-    const reader = stream.pipeThrough(new TextDecoderStream(),).getReader();
+    const reader = stream.pipeThrough(new TextDecoderStream(),)
+      .getReader();
 
     /* oxlint-disable no-restricted-syntax/no-function-root-let -- streaming state machine: `pending` is grown by each read and shrunk by `flushFromPending`; `seq`, `chunkCount`, `charCount`, and `firstMd` are mutated by `flushFromPending` as it commits chunks. All five must live alongside `flushFromPending` so they share the closure */
     /** Buffer holding text between chunker flushes; cut at blank-line boundaries. */
@@ -133,7 +137,9 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
       // next.
       // oxlint-disable-next-line no-await-in-loop
       for (const chunk of renderChunks(prefix,)) {
-        if (chunk.html.length > CHUNK_HARD_CAP_BYTES) {
+        if (chunk.html
+          .length
+          > CHUNK_HARD_CAP_BYTES) {
           throw new HTTPError({
             status: HTTP_PAYLOAD_TOO_LARGE,
             message: 'a single block produced rendered HTML over the hard cap',
@@ -176,7 +182,8 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
           pending += value;
           // Avoid letting `pending` grow without bound between flushes.
           // Once it exceeds twice the soft target we run a flush.
-          if (pending.length > (CHUNK_TARGET_BYTES * PENDING_BUFFER_MULTIPLE))
+          if (pending.length
+            > (CHUNK_TARGET_BYTES * PENDING_BUFFER_MULTIPLE))
             await flushFromPending(false,);
         }
         /* oxlint-enable eslint/no-await-in-loop, eslint/no-constant-condition */

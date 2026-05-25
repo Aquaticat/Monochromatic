@@ -88,7 +88,8 @@ function findLineAtY({
    * Inclusive high bound of the binary-search window over `children`.
    */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- binary-search state machine: `hi` falls when the candidate is below `y`
-  let hi = children.length - 1;
+  let hi = children.length
+    - 1;
 
   while (lo <= hi) {
     /** Midpoint index inspected this iteration; unsigned shift avoids overflow for huge documents. */
@@ -100,9 +101,11 @@ function findLineAtY({
     /** Bounding rect of the candidate; reading it triggers layout but is unavoidable for hit-testing. */
     const rect = child.getBoundingClientRect();
 
-    if (y < rect.top)
+    if (y < rect
+      .top)
       hi = mid - 1;
-    else if (y > rect.bottom)
+    else if (y > rect
+      .bottom)
       lo = mid + 1;
     else {
       return {

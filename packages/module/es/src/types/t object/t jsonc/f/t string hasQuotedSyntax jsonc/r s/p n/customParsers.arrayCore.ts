@@ -67,7 +67,8 @@ export function parseArrayElements({
   },);
   /** Separator decision following the element. */
   const decision = expectArraySeparatorOrEnd(remaining,);
-  if (decision.kind === 'end') {
+  if (decision.kind
+    === 'end') {
     return {
       items: [
         ...items,
@@ -128,18 +129,22 @@ export function customParserForArray(
   //region Empty array fast-exit: Handle immediate closing bracket
   /** Leading comments/spaces directly inside '[' before first element or ']'. */
   const insideLead = startsWithComment({ value: headerTail, },);
-  if (insideLead.remainingContent.startsWith(']',)) {
+  if (insideLead.remainingContent
+    .startsWith(']',)) {
     /** Combined array-level comment when header and inside comments are present. */
-    const finalComment = arrayComment && insideLead.comment
+    const finalComment = arrayComment && insideLead
+      .comment
       ? mergeComments({
         value: arrayComment,
         value2: insideLead.comment,
       },)
-      : arrayComment ?? insideLead.comment;
+      : arrayComment ?? insideLead
+        .comment;
     return {
       value: [] as Jsonc.Value[],
       ...(finalComment ? { comment: finalComment, } : {}),
-      remainingContent: insideLead.remainingContent.slice(
+      remainingContent: insideLead.remainingContent
+        .slice(
         ']'.length,
       ) as FragmentStringJsonc,
     };

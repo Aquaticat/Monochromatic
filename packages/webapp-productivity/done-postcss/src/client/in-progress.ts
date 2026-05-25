@@ -31,7 +31,8 @@ type InProgressPageData = {
  * @param taskId - UUID of the task to open
  */
 function openTask(taskId: string,): void {
-  globalThis.location.href = `/tasks/${taskId}`;
+  globalThis.location
+    .href = `/tasks/${taskId}`;
 }
 
 injectCSS(styles,);
@@ -47,7 +48,9 @@ if (!(appElement instanceof HTMLElement))
 /** Typed reference to the app container. */
 const app = appElement;
 
-if (pageData.tasks.length === 0) {
+if (pageData.tasks
+  .length
+  === 0) {
   app.append(h({
     tag: 'p',
     class: 'empty',
@@ -72,14 +75,17 @@ for (const task of pageData.tasks) {
             path: `/api/tasks/${taskId}/stop`,
             options: { method: 'POST', },
           },);
-          globalThis.location.reload();
+          globalThis.location
+            .reload();
         },
       },
     },),
   );
 }
 
-if (pageData.tasks.length > 0)
+if (pageData.tasks
+  .length
+  > 0)
   app.append(list,);
 
 /** Timer update interval in milliseconds. */

@@ -74,7 +74,8 @@ export async function requireRoot(args: readonly string[],): Promise<readonly st
 
   rl.debug(`effective cwd: ${effectiveCwd}, subcommand: ${subcommand ?? '(none)'}`,);
 
-  if ((subcommand === undefined) || EXEMPT_SUBCOMMANDS.has(subcommand,)) {
+  if ((subcommand === undefined) || EXEMPT_SUBCOMMANDS
+    .has(subcommand,)) {
     rl.debug(`exempt subcommand: ${subcommand ?? '(none)'}`,);
     return args;
   }

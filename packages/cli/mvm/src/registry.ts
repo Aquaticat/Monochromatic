@@ -293,7 +293,8 @@ export function resolveImage(identifier: string,): ResolvedImage {
   }
 
   /** Listed in the error message so an unknown identifier shows the valid choices. */
-  const available = Object.keys(IMAGES,).join(', ',);
+  const available = Object.keys(IMAGES,)
+    .join(', ',);
   throw new Error(
     `unknown image "${identifier}". Built-in images: ${available}. `
       + `For custom images, place a qcow2 template at ${customPath}`,

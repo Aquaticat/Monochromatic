@@ -149,7 +149,10 @@ export async function renderMessageChunk(
       );
     }
 
-    if ((input.chunkIndex < 0) || (input.chunkIndex >= snapshot.chunkCount)) {
+    if ((input.chunkIndex
+      < 0) || (input.chunkIndex
+      >= snapshot
+      .chunkCount)) {
       await db.exec('COMMIT',);
       return new Response(
         renderSimplePage({
@@ -196,11 +199,13 @@ export async function renderMessageChunk(
     /** Complete HTML document returned to the client. */
     const html = renderPage({
       title: `Message ${String(snapshot.id,)} (chunk ${
-        String(input.chunkIndex + 1,)
+        String(input.chunkIndex
+          + 1,)
       } of ${String(snapshot.chunkCount,)})`,
       body,
       editMessageId: snapshot.id,
-      initialTier: tierFor(snapshot.chunkCount * CHUNK_TARGET_BYTES,),
+      initialTier: tierFor(snapshot.chunkCount
+        * CHUNK_TARGET_BYTES,),
     },);
 
     return new Response(
@@ -248,7 +253,8 @@ function renderChunkBody(
   /** True when the prev link is at chunk 0; renders as a disabled span instead. */
   const prevDisabled = chunkIndex === 0;
   /** True when the next link is at the last chunk; renders as a disabled span instead. */
-  const nextDisabled = chunkIndex >= (snapshot.chunkCount - 1);
+  const nextDisabled = chunkIndex >= (snapshot.chunkCount
+    - 1);
 
   /** Three pre-rendered nav items in the order prev, position, next. */
   const navItems: string[] = [
@@ -337,10 +343,12 @@ function renderChunkBody(
       class: 'message-article',
       'data-message-id': String(snapshot.id,),
     },
-    html: meta + nav + h({
+    html: meta + nav
+      + h({
       tag: 'div',
       attrs: { class: 'message-body', },
       html: chunkHtml,
-    },) + nav,
+    },)
+      + nav,
   },);
 }

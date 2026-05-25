@@ -25,16 +25,20 @@ const HEADING_FONT_SIZE = 1 + (1 / 2);
 const FONT_WEIGHT_NORMAL = 400;
 
 /** Focus outline offset in rem (-1/8). */
-const FOCUS_OFFSET = -(1 / 2 / 2 / 2);
+const FOCUS_OFFSET = -(1 / 2
+  / 2
+  / 2);
 
 /** Gap between hamburger lines in rem (3/8). */
 const HAMBURGER_GAP = ((1 / 2) / 2) + (((1 / 2) / 2) / 2);
 
 /** Hamburger line width in rem (1 3/4). */
-const LINE_WIDTH = 1 + (1 / 2) + ((1 / 2) / 2);
+const LINE_WIDTH = 1 + (1 / 2)
+  + ((1 / 2) / 2);
 
 /** Hamburger line height in rem (1/4). */
-const LINE_HEIGHT = 1 / 2 / 2;
+const LINE_HEIGHT = 1 / 2
+  / 2;
 
 /** Compiled CSS string for `<top-nav>` Shadow DOM. */
 export const TOP_NAV_STYLES: string = [

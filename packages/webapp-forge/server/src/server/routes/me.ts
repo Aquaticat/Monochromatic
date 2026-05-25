@@ -97,18 +97,24 @@ type DeltaPayload = {
  */
 async function resolveActor(headers: Headers,): Promise<DeltaActor | null> {
   /** Active Better Auth session, when present on the request. */
-  const session = await auth.api.getSession({ headers, },);
+  const session = await auth.api
+    .getSession({ headers, },);
   if (session !== null) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- Better Auth's session.user shape includes the username plugin's optional `username` field */
     /** Optional username from the session (provided by the username plugin). */
     const sessionUsername = (session.user as { username?: string | null; }).username;
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return {
-      id: session.user.id,
-      login: sessionUsername ?? session.user.id,
+      id: session.user
+        .id,
+      login: sessionUsername ?? session
+        .user
+        .id,
     };
   }
-  if (process.env.NODE_ENV === 'production')
+  if (process.env
+    .NODE_ENV
+    === 'production')
     return null;
   /** Dev-only login from the legacy header; missing returns null. */
   const headerLogin = headers.get('x-forge-user',);
@@ -145,11 +151,14 @@ function parseDeltaPath(path: string,): {
   /* oxlint-enable no-restricted-syntax/no-regex */
   if (issueDetailMatch !== null) {
     return {
-      owner: issueDetailMatch[1] ?? '',
-      repo: issueDetailMatch[2] ?? '',
+      owner: issueDetailMatch[1]
+        ?? '',
+      repo: issueDetailMatch[2]
+        ?? '',
       kind: 'issue-detail',
       number: Number.parseInt(
-        issueDetailMatch[ISSUE_NUMBER_CAPTURE_INDEX] ?? '0',
+        issueDetailMatch[ISSUE_NUMBER_CAPTURE_INDEX]
+          ?? '0',
         DECIMAL_RADIX,
       ),
     };
@@ -160,8 +169,10 @@ function parseDeltaPath(path: string,): {
   /* oxlint-enable no-restricted-syntax/no-regex */
   if (filterListMatch !== null) {
     return {
-      owner: filterListMatch[1] ?? '',
-      repo: filterListMatch[2] ?? '',
+      owner: filterListMatch[1]
+        ?? '',
+      repo: filterListMatch[2]
+        ?? '',
       kind: 'filter-list',
       number: null,
     };
@@ -230,7 +241,10 @@ async function buildIssueDetailDelta(row: {
   /** Ids of comments the actor authored on this issue. */
   const authoredCommentIds = comments
     .filter(function isMine(comment,) {
-      return comment.author_id === row.actor.id;
+      return comment.author_id
+        === row
+        .actor
+        .id;
     },)
     .map(function pickId(comment,) {
       return comment.id;
@@ -238,15 +252,23 @@ async function buildIssueDetailDelta(row: {
   /** Actor's membership row in this repo; `undefined` for non-members. */
   const membership = await getRepoMember({
     repoId: repo.id,
-    userId: row.actor.id,
+    userId: row.actor
+      .id,
   },);
   /** Actor owns the repo; bypasses the role check below. */
-  const isOwner = repo.owner_id === row.actor.id;
+  const isOwner = repo.owner_id
+    === row
+    .actor
+    .id;
   /** Actor has write permission via ownership or membership role. */
   const isWriter = isOwner
-    || ((membership !== undefined) && WRITE_ROLES.has(membership.role,));
+    || ((membership !== undefined) && WRITE_ROLES
+      .has(membership.role,));
   /** Actor authored the issue; combined with isWriter to compute close permission. */
-  const isAuthor = issue.author_id === row.actor.id;
+  const isAuthor = issue.author_id
+    === row
+    .actor
+    .id;
   return {
     actor: row.actor,
     path: row.path,
@@ -298,13 +320,18 @@ async function buildFilterListDelta(row: {
   /** Actor's membership row in this repo; `undefined` for non-members. */
   const membership = await getRepoMember({
     repoId: repo.id,
-    userId: row.actor.id,
+    userId: row.actor
+      .id,
   },);
   /** Actor owns the repo; bypasses the role check below. */
-  const isOwner = repo.owner_id === row.actor.id;
+  const isOwner = repo.owner_id
+    === row
+    .actor
+    .id;
   /** Actor has write permission via ownership or membership role. */
   const isWriter = isOwner
-    || ((membership !== undefined) && WRITE_ROLES.has(membership.role,));
+    || ((membership !== undefined) && WRITE_ROLES
+      .has(membership.role,));
   return {
     actor: row.actor,
     path: row.path,
@@ -334,9 +361,11 @@ export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
   // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleMeDelta(event,) {
     /** Request URL parsed once so query params are reachable below. */
-    const url = new URL(event.req.url,);
+    const url = new URL(event.req
+      .url,);
     /** Required `?path=...` query parameter naming the fragment path. */
-    const path = url.searchParams.get('path',);
+    const path = url.searchParams
+      .get('path',);
     if ((path === null) || (path === '')) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -344,7 +373,8 @@ export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
     /** Resolved actor; null produces the unauthenticated payload below. */
-    const actor = await resolveActor(event.req.headers,);
+    const actor = await resolveActor(event.req
+      .headers,);
     if (actor === null) {
       /** Unauthenticated delta payload returned with a null actor. */
       const payload: DeltaPayload = {
@@ -385,7 +415,9 @@ export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
         { headers: JSON_HEADERS, },
       );
     }
-    if ((parsed.kind === 'issue-detail') && (parsed.number !== null)) {
+    if ((parsed.kind
+      === 'issue-detail') && (parsed.number
+      !== null)) {
       /** Issue-detail delta payload populated from the actor's repo membership. */
       const payload = await buildIssueDetailDelta({
         owner: parsed.owner,

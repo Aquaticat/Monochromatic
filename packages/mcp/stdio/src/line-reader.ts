@@ -59,7 +59,8 @@ export async function* readLines(
   // Flush remaining data after stream closes without a trailing newline.
   // Not expected in normal MCP usage (clients send newline-terminated messages),
   // but logged so protocol issues are visible during debugging.
-  if (buffer.length > 0) {
+  if (buffer.length
+    > 0) {
     console.error(
       '[mcp-stdio] flushing trailing buffer without newline terminator:',
       buffer,

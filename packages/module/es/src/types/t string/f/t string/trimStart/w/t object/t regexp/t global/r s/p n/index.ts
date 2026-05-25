@@ -83,12 +83,14 @@ export function $(
 
     // No bug here because js matchAll consumes matches.
     // If match doesn't start at the current trim position, stop
-    if (matchIndex !== trimState.totalTrimLength)
+    if (matchIndex !== trimState
+      .totalTrimLength)
       break;
 
     // Add this match length to total trim
     /** Length of the current match folded into the running trim count. */
-    const matchLength = match[0].length;
+    const matchLength = match[0]
+      .length;
     trimState.totalTrimLength += matchLength;
   }
 

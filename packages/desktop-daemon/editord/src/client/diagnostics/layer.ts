@@ -55,7 +55,8 @@ export function applyDiagnosticHighlights({
       diagnostic,
     },);
     if (range !== null)
-      bySeverity.get(diagnostic.severity,)?.push(range,);
+      bySeverity.get(diagnostic.severity,)
+        ?.push(range,);
   }
 
   /** Register or remove highlights for each severity level. */
@@ -67,14 +68,17 @@ export function applyDiagnosticHighlights({
     if (ranges === undefined)
       continue;
 
-    if (ranges.length > 0) {
-      CSS.highlights.set(
+    if (ranges.length
+      > 0) {
+      CSS.highlights
+        .set(
         highlightName,
         new Highlight(...ranges,),
       );
     }
     else {
-      CSS.highlights.delete(highlightName,);
+      CSS.highlights
+        .delete(highlightName,);
     }
   }
 }
@@ -89,5 +93,6 @@ export function applyDiagnosticHighlights({
  */
 export function clearDiagnosticHighlights(): void {
   for (const level of SEVERITY_LEVELS)
-    CSS.highlights.delete(`diag-${level}`,);
+    CSS.highlights
+      .delete(`diag-${level}`,);
 }

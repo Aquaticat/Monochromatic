@@ -173,15 +173,22 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
     if ((typeof expected) === 'string') {
       /** Stringified rejection used for substring containment when an expected string was supplied. */
       const message = error instanceof Error ? error.message : String(error,);
-      chaiExpect(message,).to.include(expected,);
+      chaiExpect(message,)
+        .to
+        .include(expected,);
     }
     else if (expected instanceof RegExp) {
       /** Stringified rejection used for regex matching when an expected pattern was supplied. */
       const message = error instanceof Error ? error.message : String(error,);
-      chaiExpect(message,).to.match(expected,);
+      chaiExpect(message,)
+        .to
+        .match(expected,);
     }
     else {
-      chaiExpect(error,).to.be.instanceOf(expected,);
+      chaiExpect(error,)
+        .to
+        .be
+        .instanceOf(expected,);
     }
   };
 
@@ -314,7 +321,8 @@ function expectImpl(actual: unknown,): ExpectResult {
     },),
 
     not: buildMatchers({
-      a: chaiExpect(actual,).not,
+      a: chaiExpect(actual,)
+        .not,
       actual,
     },),
     // oxlint-disable-next-line no-unsafe-type-assertion -- cast required for Promise.race pattern

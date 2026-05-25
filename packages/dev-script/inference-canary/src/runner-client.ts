@@ -28,8 +28,10 @@ import type {
  */
 export function createProbeClient(config: RunnerConfig,): OpenAI {
   return new OpenAI({
-    apiKey: config.apiKey ?? '',
-    baseURL: config.baseURL ?? 'https://openrouter.ai/api/v1',
+    apiKey: config.apiKey
+      ?? '',
+    baseURL: config.baseURL
+      ?? 'https://openrouter.ai/api/v1',
   },);
 }
 

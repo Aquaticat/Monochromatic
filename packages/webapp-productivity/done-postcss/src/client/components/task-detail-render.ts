@@ -88,7 +88,8 @@ export function renderTaskDetail(
     class: 'desc-input',
     attrs: { placeholder: 'description', },
   },);
-  if (task.description !== null)
+  if (task.description
+    !== null)
     descInput.textContent = task.description;
 
   shadow.replaceChildren(

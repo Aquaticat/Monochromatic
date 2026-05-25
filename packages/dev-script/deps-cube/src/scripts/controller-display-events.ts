@@ -67,7 +67,8 @@ function bindCheckbox(
   input.addEventListener(
     'change',
     function onChange() {
-      session.state.displayToggles[key] = input.checked;
+      session.state
+        .displayToggles[key] = input.checked;
       commit();
     },
   );
@@ -131,9 +132,12 @@ export function wireDisplay(
     function onChange() {
       /** Raw `value` from select; narrowed against allowed name-label modes below. */
       const raw = nameLabels.value;
-      if ((raw !== 'none') && (raw !== 'topN') && (raw !== 'all'))
+      if ((raw !== 'none') && (raw !== 'topN')
+        && (raw !== 'all'))
         return;
-      session.state.displayToggles.nameLabels = raw;
+      session.state
+        .displayToggles
+        .nameLabels = raw;
       commit();
     },
   );

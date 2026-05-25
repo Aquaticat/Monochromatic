@@ -39,7 +39,8 @@ export async function queryAllBackends({
       const raw = await backend.get(key,);
       return {
         value: raw === null ? undefined : raw,
-        priority: backend.priority ?? 0,
+        priority: backend.priority
+          ?? 0,
         backend,
       };
     },),

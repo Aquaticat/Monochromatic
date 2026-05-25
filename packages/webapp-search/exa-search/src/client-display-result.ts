@@ -89,7 +89,8 @@ export function displayResult({
   replicateElementAsContentOf({
     templateElement: firstHighlight,
     parentElement: highlights,
-    targetCount: result.highlights.length,
+    targetCount: result.highlights
+      .length,
   },);
 
   result.highlights.forEach(

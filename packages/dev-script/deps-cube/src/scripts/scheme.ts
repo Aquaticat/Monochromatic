@@ -112,7 +112,8 @@ const LIGHT_CHROME: ChromeColors = {
  */
 export function detectScheme(): ChromeColors {
   /** True when the OS or browser is currently in dark mode; captured once per session, no live listener. */
-  const isDark = globalThis.matchMedia('(prefers-color-scheme: dark)',).matches;
+  const isDark = globalThis.matchMedia('(prefers-color-scheme: dark)',)
+    .matches;
   return isDark ? DARK_CHROME : LIGHT_CHROME;
 }
 

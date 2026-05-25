@@ -210,36 +210,58 @@ async function buildInternalFilter(
    * events the watcher started emitting in Q6. Callers that want
    * directory events pass `['file', 'dir']` or `['dir']`.
    */
-  const types: readonly WatchEntityType[] = options.types ?? ['file',];
+  const types: readonly WatchEntityType[] = options.types
+    ?? ['file',];
   filters.push(typeFilter(types,),);
 
-  if (options.events !== undefined)
+  if (options.events
+    !== undefined)
     filters.push(buildEventKindFilter(options.events,),);
-  if ((options.extensions !== undefined) && (options.extensions.length > 0))
+  if ((options.extensions
+    !== undefined) && (options.extensions
+    .length
+    > 0))
     filters.push(extFilter(options.extensions,),);
   if (
-    ((options.include !== undefined) && (options.include.length > 0))
-    || ((options.exclude !== undefined) && (options.exclude.length > 0))
+    ((options.include
+      !== undefined) && (options.include
+      .length
+      > 0))
+    || ((options.exclude
+      !== undefined) && (options.exclude
+      .length
+      > 0))
   ) {
     filters.push(globFilter({
-      ...(options.include === undefined ? {} : { include: options.include, }),
-      ...(options.exclude === undefined ? {} : { exclude: options.exclude, }),
+      ...(options.include
+        === undefined ? {} : { include: options.include, }),
+      ...(options.exclude
+        === undefined ? {} : { exclude: options.exclude, }),
     },),);
   }
   if (
-    ((options.includeRegex !== undefined) && (options.includeRegex.length > 0))
-    || ((options.excludeRegex !== undefined) && (options.excludeRegex.length > 0))
+    ((options.includeRegex
+      !== undefined) && (options.includeRegex
+      .length
+      > 0))
+    || ((options.excludeRegex
+      !== undefined) && (options.excludeRegex
+      .length
+      > 0))
   ) {
     filters.push(regexFilter({
-      ...(options.includeRegex === undefined
+      ...(options.includeRegex
+        === undefined
         ? {}
         : { include: options.includeRegex, }),
-      ...(options.excludeRegex === undefined
+      ...(options.excludeRegex
+        === undefined
         ? {}
         : { exclude: options.excludeRegex, }),
     },),);
   }
-  if (options.hidden !== true)
+  if (options.hidden
+    !== true)
     filters.push(hiddenFilter(),);
 
   /**
@@ -248,12 +270,16 @@ async function buildInternalFilter(
    * loads from `extraFiles` regardless, per the plan's "separate AND"
    * semantics (gitignore and ignore-file are independent dimensions).
    */
-  const gitignoreRoots: readonly string[] = options.gitignore === false
+  const gitignoreRoots: readonly string[] = options.gitignore
+    === false
     ? []
     : options.paths;
   /** Resolved extra ignore files; empty when none configured. */
-  const gitignoreExtraFiles: readonly string[] = options.ignoreFiles ?? [];
-  if ((gitignoreRoots.length > 0) || (gitignoreExtraFiles.length > 0)) {
+  const gitignoreExtraFiles: readonly string[] = options.ignoreFiles
+    ?? [];
+  if ((gitignoreRoots.length
+    > 0) || (gitignoreExtraFiles.length
+    > 0)) {
     filters.push(
       await gitignoreFilter({
         roots: gitignoreRoots,
@@ -262,9 +288,11 @@ async function buildInternalFilter(
     );
   }
 
-  if (options.contentChanged !== false)
+  if (options.contentChanged
+    !== false)
     filters.push(contentHashFilter(),);
-  if (options.filter !== undefined)
+  if (options.filter
+    !== undefined)
     filters.push(options.filter,);
 
   return composeFilters(filters,);
@@ -312,7 +340,8 @@ export async function startWatchRestart(
   options: StartWatchRestartOptions,
 ): Promise<WatchRestartHandle> {
   /** Resolved parent logger; the orchestrator and inner subsystems compose tags onto it. */
-  const parentLogger: Logger = options.logger ?? defaultLogger;
+  const parentLogger: Logger = options.logger
+    ?? defaultLogger;
   /** Tagged logger for this orchestrator's own log lines. */
   const startLogger: Logger = tagged({
     tag: startWatchRestart.name,
@@ -321,7 +350,8 @@ export async function startWatchRestart(
 
   /** Shared content-hash cache; pre-populated by the Watcher, read by `contentHashFilter`. */
   const hashCache = new HashCache({
-    maxHashSize: options.maxHashSize ?? DEFAULT_MAX_HASH_SIZE_BYTES,
+    maxHashSize: options.maxHashSize
+      ?? DEFAULT_MAX_HASH_SIZE_BYTES,
   },);
 
   /** Shared abort controller; flipped during `stop()` so in-flight filters can bail. */
@@ -336,24 +366,31 @@ export async function startWatchRestart(
   /** Composed filter chain assembled once at start; evaluated on every event. */
   const internalFilter: WatchFilter = await buildInternalFilter(options,);
   /** Resolved debounce window. */
-  const debounceMs: number = options.debounce ?? DEFAULT_DEBOUNCE_MS;
+  const debounceMs: number = options.debounce
+    ?? DEFAULT_DEBOUNCE_MS;
 
   /** Underlying child manager. */
   const child = new Child({
     command: options.command,
-    ...(options.args === undefined ? {} : { args: options.args, }),
-    ...(options.stopTimeout === undefined
+    ...(options.args
+      === undefined ? {} : { args: options.args, }),
+    ...(options.stopTimeout
+      === undefined
       ? {}
       : { stopTimeout: options.stopTimeout, }),
-    ...(options.killSignal === undefined
+    ...(options.killSignal
+      === undefined
       ? {}
       : { killSignal: options.killSignal, }),
-    ...(options.processGroup === undefined
+    ...(options.processGroup
+      === undefined
       ? {}
       : { processGroup: options.processGroup, }),
-    ...(options.clear === undefined ? {} : { clear: options.clear, }),
+    ...(options.clear
+      === undefined ? {} : { clear: options.clear, }),
     logger: startLogger,
-    ...(options.spawn === undefined ? {} : { spawn: options.spawn, }),
+    ...(options.spawn
+      === undefined ? {} : { spawn: options.spawn, }),
   },);
 
   /**
@@ -372,7 +409,8 @@ export async function startWatchRestart(
    * fresh event arriving mid-restart cannot see a stale handle.
    */
   function scheduleRestart(): void {
-    if (state.timer !== undefined)
+    if (state.timer
+      !== undefined)
       clearTimeout(state.timer,);
     state.timer = setTimeout(
       function fireRestart(): void {
@@ -429,16 +467,20 @@ export async function startWatchRestart(
     hashCache,
     onEvent,
     logger: startLogger,
-    ...(options.depth === undefined ? {} : { depth: options.depth, }),
-    ...(options.poll === undefined ? {} : { poll: options.poll, }),
-    ...(options.followSymlinks === undefined
+    ...(options.depth
+      === undefined ? {} : { depth: options.depth, }),
+    ...(options.poll
+      === undefined ? {} : { poll: options.poll, }),
+    ...(options.followSymlinks
+      === undefined
       ? {}
       : { followSymlinks: options.followSymlinks, }),
   },);
 
   await watcher.untilReady();
 
-  if (options.initial !== false)
+  if (options.initial
+    !== false)
     await child.start();
 
   /**
@@ -451,7 +493,8 @@ export async function startWatchRestart(
    */
   async function stop(): Promise<void> {
     abort.abort();
-    if (state.timer !== undefined) {
+    if (state.timer
+      !== undefined) {
       clearTimeout(state.timer,);
       state.timer = undefined;
     }

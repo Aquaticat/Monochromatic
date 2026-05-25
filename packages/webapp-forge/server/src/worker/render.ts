@@ -80,7 +80,7 @@ export async function renderFragment(fragmentKey: string,): Promise<RenderResult
     if (
       (repoId === undefined)
       || (labelId === undefined)
-      || (stateFacet === undefined)
+        || (stateFacet === undefined)
     ) {
       throw new Error(`unparseable fragment key: ${fragmentKey}`,);
     }
@@ -141,7 +141,8 @@ async function renderIssueDetailByKey(issueId: string,): Promise<RenderResult> {
       const user = await getUser(id,);
       return [
         id,
-        user?.login ?? 'unknown',
+        user?.login
+          ?? 'unknown',
       ] as const;
     },),
   );
@@ -167,7 +168,8 @@ async function renderIssueDetailByKey(issueId: string,): Promise<RenderResult> {
     comments: comments.map(function eachComment(comment,) {
       return {
         id: comment.id,
-        authorLogin: commentAuthorLogins.get(comment.author_id,) ?? 'unknown',
+        authorLogin: commentAuthorLogins.get(comment.author_id,)
+          ?? 'unknown',
         body: comment.body,
         createdAt: new Date(comment.created_at,).toISOString(),
       };
@@ -206,7 +208,8 @@ async function renderFilterListByKey(row: {
   /** Issue id rows narrowed by the filter facets. */
   const idRows = await listIssueIdsForFilter({
     repoId: row.repoId,
-    labelId: row.labelId === ANY_LABEL ? null : row.labelId,
+    labelId: row.labelId
+      === ANY_LABEL ? null : row.labelId,
     state: row.state,
   },);
 
@@ -235,7 +238,8 @@ async function renderFilterListByKey(row: {
 
   /** Human-readable facet description for the page heading. */
   const facetLabel = `${row.state} issues${
-    row.labelId === ANY_LABEL ? '' : ` with label "${row.labelId}"`
+    row.labelId
+      === ANY_LABEL ? '' : ` with label "${row.labelId}"`
   }`;
 
   /** Rendered HTML for the filter-list fragment. */

@@ -98,7 +98,8 @@ export function parseOxlintOutput(
 
   for (const entry of output.diagnostics) {
     /** First label span; supplies the line/column for this diagnostic, or `undefined` when oxlint omitted it. */
-    const span = entry.labels[0]?.span;
+    const span = entry.labels[0]
+      ?.span;
     if (span === undefined)
       continue;
 
@@ -108,12 +109,16 @@ export function parseOxlintOutput(
       entry.filename,
     );
     /** Final diagnostic text; appends the optional `help:` block when oxlint provided one. */
-    const message = ((entry.help !== undefined) && (entry.help.length > 0))
+    const message = ((entry.help
+      !== undefined) && (entry.help
+      .length
+      > 0))
       ? `${entry.message} (help: ${entry.help})`
       : entry.message;
     /** Diagnostic record in the shape consumed by the rest of the pipeline. */
     const diagnostic: Diagnostic = {
-      severity: OXLINT_SEVERITY_MAP[entry.severity] ?? `UNKNOWN(${entry.severity})`,
+      severity: OXLINT_SEVERITY_MAP[entry.severity]
+        ?? `UNKNOWN(${entry.severity})`,
       lnum: span.line,
       col: span.column,
       end_lnum: span.line,

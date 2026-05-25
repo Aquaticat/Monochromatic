@@ -31,5 +31,6 @@ export function $(value: string,): value is DoubleQuotedSyntax {
   const firstEffectiveQuoteMatch = /(?<!\\)(?:\\\\)*["'`]/.exec(value,);
 
   // assert that's a double quote
-  return firstEffectiveQuoteMatch?.[0] === '"';
+  return firstEffectiveQuoteMatch?.[0]
+    === '"';
 }

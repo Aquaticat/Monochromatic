@@ -131,7 +131,8 @@ export async function prompt(
     form.append(input,);
     form.append(buttonContainer,);
     dialog.append(form,);
-    document.body.append(dialog,);
+    document.body
+      .append(dialog,);
 
     // Handle form submission (OK click or Enter key). This is the only path that
     // counts as a successful prompt; `state.cancelled` flips so the close handler
@@ -173,14 +174,23 @@ export async function prompt(
       'click',
       function onBackdropClick(event,) {
         // Check if click was on the backdrop (dialog element itself, not its children).
-        if (event.target === dialog) {
+        if (event.target
+          === dialog) {
           /** Dialog box rectangle used to distinguish backdrop clicks from content clicks. */
           const rect = dialog.getBoundingClientRect();
           /** True when the pointer was inside the visible dialog box, not on the backdrop. */
-          const clickedInDialog = (event.clientX >= rect.left)
-            && (event.clientX <= rect.right)
-            && (event.clientY >= rect.top)
-            && (event.clientY <= rect.bottom);
+          const clickedInDialog = (event.clientX
+            >= rect
+            .left)
+            && (event.clientX
+              <= rect
+              .right)
+            && (event.clientY
+              >= rect
+              .top)
+            && (event.clientY
+              <= rect
+              .bottom);
 
           if (!clickedInDialog)
             dialog.close();

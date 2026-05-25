@@ -25,9 +25,11 @@ import type {
  */
 export function formatHintLabel({ hint, }: { readonly hint: InlayHint; },): string {
   /** Leading whitespace requested by the hint metadata; empty string when no padding is requested. */
-  const padLeft = hint.paddingLeft === true ? ' ' : '';
+  const padLeft = hint.paddingLeft
+    === true ? ' ' : '';
   /** Trailing whitespace requested by the hint metadata; empty string when no padding is requested. */
-  const padRight = hint.paddingRight === true ? ' ' : '';
+  const padRight = hint.paddingRight
+    === true ? ' ' : '';
   /** Parameter hints (kind=2) have a trailing colon that adds noise. */
   const PARAMETER_KIND = 2;
   /** Type hints (kind=1) carry a leading ` : ` prefix that duplicates the padding. */
@@ -43,17 +45,23 @@ export function formatHintLabel({ hint, }: { readonly hint: InlayHint; },): stri
    * @returns label ready for concatenation between the pad characters
    */
   function strippedLabel(): string {
-    if (hint.kind === PARAMETER_KIND) {
-      return hint.label.endsWith(':',)
-        ? hint.label.slice(
+    if (hint.kind
+      === PARAMETER_KIND) {
+      return hint.label
+        .endsWith(':',)
+        ? hint.label
+          .slice(
           0,
           -1,
         )
         : hint.label;
     }
-    if (hint.kind === TYPE_KIND) {
-      return hint.label.startsWith(TYPE_HINT_PREFIX,)
-        ? hint.label.slice(TYPE_HINT_PREFIX.length,)
+    if (hint.kind
+      === TYPE_KIND) {
+      return hint.label
+        .startsWith(TYPE_HINT_PREFIX,)
+        ? hint.label
+          .slice(TYPE_HINT_PREFIX.length,)
         : hint.label;
     }
     return hint.label;
@@ -88,7 +96,8 @@ export function formatDiagnosticLabel(
   { diagnostic, }: { readonly diagnostic: Diagnostic; },
 ): string {
   /** Severity-with-source tag rendered ahead of the message; falls back to bare severity when the source is empty. */
-  const prefix = diagnostic.source !== ''
+  const prefix = diagnostic.source
+    !== ''
     ? `${diagnostic.severity}(${diagnostic.source})`
     : diagnostic.severity;
   return `${prefix}: ${diagnostic.message}`;
@@ -127,7 +136,8 @@ export function findWorstSeverity(
 
   for (const diag of diagnostics) {
     /** Numeric priority for this diagnostic; unknown severities fall back to the lowest priority. */
-    const priority = SEVERITY_PRIORITY[diag.severity] ?? LOWEST_PRIORITY;
+    const priority = SEVERITY_PRIORITY[diag.severity]
+      ?? LOWEST_PRIORITY;
     if (priority < worstPriority) {
       worstPriority = priority;
       worst = diag.severity;
