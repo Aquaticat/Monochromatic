@@ -33,9 +33,9 @@ export async function handleEmbed({
   provider,
   model,
 }: {
-  image: string;
-  provider: Provider | undefined;
-  model: EmbeddingModel | undefined;
+  readonly image: string;
+  readonly provider: Provider | undefined;
+  readonly model: EmbeddingModel | undefined;
 },): Promise<void> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({

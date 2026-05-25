@@ -37,10 +37,10 @@ export async function handleCompare({
   provider,
   model,
 }: {
-  imageA: string;
-  imageB: string;
-  provider: Provider | undefined;
-  model: EmbeddingModel | undefined;
+  readonly imageA: string;
+  readonly imageB: string;
+  readonly provider: Provider | undefined;
+  readonly model: EmbeddingModel | undefined;
 },): Promise<void> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({

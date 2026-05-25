@@ -20,8 +20,8 @@ export function dotProduct({
   a,
   b,
 }: {
-  a: readonly number[];
-  b: readonly number[];
+  readonly a: readonly number[];
+  readonly b: readonly number[];
 },): number {
   if (a.length
     !== b
@@ -73,8 +73,8 @@ export function cosineSimilarity({
   a,
   b,
 }: {
-  a: readonly number[];
-  b: readonly number[];
+  readonly a: readonly number[];
+  readonly b: readonly number[];
 },): number {
   if (a.length
     !== b

@@ -70,8 +70,8 @@ export async function callVoyageApi({
   requestBody,
   apiKey,
 }: {
-  requestBody: VoyageApiRequest;
-  apiKey: string;
+  readonly requestBody: VoyageApiRequest;
+  readonly apiKey: string;
 },): Promise<VoyageApiResponse> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({

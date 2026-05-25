@@ -64,8 +64,8 @@ export async function embed({
   input,
   config = {},
 }: {
-  input: ImageInput;
-  config?: ImageDiffConfig;
+  readonly input: ImageInput;
+  readonly config?: ImageDiffConfig;
 },): Promise<EmbeddingResult> {
   /** Selected provider name; defaults to Voyage when unspecified by the caller. */
   const provider = config.provider
@@ -101,8 +101,8 @@ export async function embedBatch({
   inputs,
   config = {},
 }: {
-  inputs: readonly ImageInput[];
-  config?: ImageDiffConfig;
+  readonly inputs: readonly ImageInput[];
+  readonly config?: ImageDiffConfig;
 },): Promise<BatchEmbeddingResult> {
   /** Selected provider name; defaults to Voyage when unspecified by the caller. */
   const provider = config.provider
@@ -142,9 +142,9 @@ export async function compareEmbeddings({
   imageB,
   config = {},
 }: {
-  imageA: ImageInput;
-  imageB: ImageInput;
-  config?: ImageDiffConfig;
+  readonly imageA: ImageInput;
+  readonly imageB: ImageInput;
+  readonly config?: ImageDiffConfig;
 },): Promise<Omit<ComparisonResult, 'description'>> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
@@ -220,9 +220,9 @@ export async function compare({
   imageB,
   config = {},
 }: {
-  imageA: ImageInput;
-  imageB: ImageInput;
-  config?: ImageDiffConfig;
+  readonly imageA: ImageInput;
+  readonly imageB: ImageInput;
+  readonly config?: ImageDiffConfig;
 },): Promise<ComparisonResult> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({

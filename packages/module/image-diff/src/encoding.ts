@@ -182,8 +182,8 @@ export function bufferToDataUri({
   buffer,
   format,
 }: {
-  buffer: ArrayBuffer;
-  format: ImageFormat;
+  readonly buffer: ArrayBuffer;
+  readonly format: ImageFormat;
 },): string {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({

@@ -99,8 +99,8 @@ export async function describeViaGemini({
   imageA,
   imageB,
 }: {
-  imageA: ImageInput;
-  imageB: ImageInput;
+  readonly imageA: ImageInput;
+  readonly imageB: ImageInput;
 },): Promise<string | undefined> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({

@@ -202,16 +202,16 @@ export type BatchEmbeddingResult = {
  * Parameters accepted by {@link EmbeddingProvider.embed}.
  */
 export type EmbedParams = {
-  input: ImageInput;
-  config: ImageDiffConfig;
+  readonly input: ImageInput;
+  readonly config: ImageDiffConfig;
 };
 
 /**
  * Parameters accepted by {@link EmbeddingProvider.embedBatch}.
  */
 export type EmbedBatchParams = {
-  inputs: readonly ImageInput[];
-  config: ImageDiffConfig;
+  readonly inputs: readonly ImageInput[];
+  readonly config: ImageDiffConfig;
 };
 
 /**

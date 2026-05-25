@@ -82,10 +82,10 @@ export const compareCmd: SubcommandParser = command(
     },),
     function toCompareArgs(
       v: {
-        imageA: string;
-        imageB: string;
-        provider: 'voyage' | 'gemini' | undefined;
-        model:
+        readonly imageA: string;
+        readonly imageB: string;
+        readonly provider: 'voyage' | 'gemini' | undefined;
+        readonly model:
           | 'voyage-multimodal-3'
           | 'voyage-multimodal-3.5'
           | 'gemini-embedding-2-preview'
@@ -125,9 +125,9 @@ export const embedCmd: SubcommandParser = command(
     },),
     function toEmbedArgs(
       v: {
-        image: string;
-        provider: 'voyage' | 'gemini' | undefined;
-        model:
+        readonly image: string;
+        readonly provider: 'voyage' | 'gemini' | undefined;
+        readonly model:
           | 'voyage-multimodal-3'
           | 'voyage-multimodal-3.5'
           | 'gemini-embedding-2-preview'

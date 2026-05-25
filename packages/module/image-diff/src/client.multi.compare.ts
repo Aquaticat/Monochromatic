@@ -51,8 +51,8 @@ export async function compareAll({
   imageA,
   imageB,
 }: {
-  imageA: ImageInput;
-  imageB: ImageInput;
+  readonly imageA: ImageInput;
+  readonly imageB: ImageInput;
 },): Promise<readonly MultiProviderComparisonEntry[]> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({

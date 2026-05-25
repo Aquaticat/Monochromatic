@@ -40,8 +40,8 @@ async function geminiEmbed({
   input,
   config,
 }: {
-  input: ImageInput;
-  config: ImageDiffConfig;
+  readonly input: ImageInput;
+  readonly config: ImageDiffConfig;
 },): Promise<EmbeddingResult> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({

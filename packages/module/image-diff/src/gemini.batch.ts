@@ -41,8 +41,8 @@ export async function geminiEmbedBatch({
   inputs,
   config,
 }: {
-  inputs: readonly ImageInput[];
-  config: ImageDiffConfig;
+  readonly inputs: readonly ImageInput[];
+  readonly config: ImageDiffConfig;
 },): Promise<BatchEmbeddingResult> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({

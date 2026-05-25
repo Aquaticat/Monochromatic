@@ -41,8 +41,8 @@ async function voyageEmbed({
   input,
   config,
 }: {
-  input: ImageInput;
-  config: ImageDiffConfig;
+  readonly input: ImageInput;
+  readonly config: ImageDiffConfig;
 },): Promise<EmbeddingResult> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
@@ -113,8 +113,8 @@ async function voyageEmbedBatch({
   inputs,
   config,
 }: {
-  inputs: readonly ImageInput[];
-  config: ImageDiffConfig;
+  readonly inputs: readonly ImageInput[];
+  readonly config: ImageDiffConfig;
 },): Promise<BatchEmbeddingResult> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
