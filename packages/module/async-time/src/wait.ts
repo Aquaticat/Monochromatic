@@ -25,8 +25,7 @@
 export function wait(ms: number,): Promise<undefined> {
   // oxlint-disable-next-line promise/avoid-new -- Promise constructor pattern
   return new Promise(function createTimeout(resolve,) {
-    // oxlint-disable-next-line eslint/no-promise-executor-return -- setTimeout return value intentionally propagated
-    return setTimeout(
+    setTimeout(
       resolve,
       ms,
     );
