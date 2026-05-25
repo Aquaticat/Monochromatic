@@ -16,6 +16,14 @@ single merged upstream issue body is at
 the out-of-band local file `resharp-merged-issue.local.md` (gitignored, not committed). See the
 "Prototype fixes" section for the per-bug results.
 
+A later pass on 2026-05-25 against published resharp 0.6.4 (the current
+latest, which already carries the Bug B/C/E/F fixes) added Bug G, an
+uncatchable stack-overflow abort on deeply nested complement and lookaround
+patterns, plus three lower-severity flags (H, I, J) and a set of negative
+results. Those live in the "2026-05-25 follow-up pass (resharp 0.6.4)"
+section below and were verified against 0.6.4, not the 0.6.3 / `e0b8aba`
+baseline the A through F catalogues use.
+
 Update (2026-05-23, post-filing): the maintainer responded the same day
 and published resharp 0.6.4, whose sole fix commit (`bd780ef`) reproduces
 our prototype patch (source-verified: the Bug A render string is
@@ -63,6 +71,16 @@ Status:
   `nested_lookahead_in_quantified_group`. Prototyped fix: the shared
   `saturating_add`. Previously undocumented; the `engine.rs` pre-validator
   wrongly claimed it was filed upstream.
+- **Bug G** (deeply nested complement or lookaround patterns abort
+  `Regex::new` with an uncatchable stack overflow): new in the 2026-05-25
+  pass against published 0.6.4. In the release profile, `~(...)` or
+  `(?=...)` nested past about 25,000 to 30,000 levels overflows the stack
+  and aborts (SIGABRT) below the `expanded_ast_limit` rejection point, so
+  the limit never fires; in the debug profile every nesting kind overflows
+  at about 1,500 levels. `catch_unwind` cannot intercept a stack-overflow
+  abort, and forbidden-strings has no nesting-depth pre-validator, so this
+  is undefended at our boundary. Not yet filed; not yet prototyped (see the
+  follow-up section for the five-constraint status).
 
 Filing summary: filed 2026-05-23 as ieviev/resharp#5
 (`https://github.com/ieviev/resharp/issues/5`). Per the user's decision
@@ -1340,6 +1358,355 @@ Shared with Bug C: `tail_rel.saturating_add(la_rel)`. See "Prototype fixes".
 
 Probe crate against the patched HEAD clone: all three reproducers move from
 `COMPILE-PANIC` (unpatched) to `COMPILE-OK` (patched), in debug and release.
+
+## 2026-05-25 follow-up pass (resharp 0.6.4)
+
+This pass read the current published source (resharp 0.6.4, crates.io
+`max_version` 0.6.4 published 2026-05-23T15:24:24Z; git HEAD `9b324ff`, the
+0.6.4 `bump ver` commit plus a readme commit) to flag issues beyond Bugs A
+through F. It targeted the classes drawn from the A through F root causes
+(unbounded loops, postcondition `debug_assert!`s that fail open in release,
+unchecked arithmetic) plus a new class, unbounded recursion, and parser
+robustness against malformed input.
+
+Probe crates ran under `podman run --memory=4g --cpus=4 --rm` against
+`resharp = "=0.6.4"`, each pattern in its own subprocess wrapped in
+`timeout` so a crash, hang, or panic is isolated and observable by exit
+code (0 returned, 101 panic, 124 hang, 134 abort or stack overflow, 139
+segfault).
+
+### Confirmed fixed at 0.6.4 (Bugs B, C, E, F)
+
+The 0.6.4 fix commit `bd780ef` is present at HEAD and matches the prototype
+patch (see "Upstream response" above). Re-reading the source confirms each
+fix is in place:
+
+- Bug E: the `visited` set plus clear-and-break is at
+  `resharp-engine/src/prefix.rs:26-35`.
+- Bug C / Bug F: `tail_rel.saturating_add(la_rel)` is at
+  `resharp-algebra/src/lib.rs:2480`.
+- Bug B: the fail-closed `Err(UnsupportedPattern)` replaces the
+  postcondition `debug_assert!` in `strip_lb`
+  (`resharp-algebra/src/lib.rs:2010-2011`).
+
+Behavioural re-fuzzing against the published 0.6.4 build is still the
+pending step recorded in the plan above; this pass read source and ran
+targeted probes, it did not re-run the fuzz targets.
+
+### Negative results (parser robustness)
+
+About 50 malformed or adversarial patterns compile to a clean
+`Err(ParseError { ... })` with no panic, abort, or hang. Tested shapes
+include unterminated and nested character classes (`[`, `[[`, `[a[b]]`,
+`[a&&[b]]`), POSIX-style class names (`[[:alpha:]]`, `[[:foo:]]`,
+`[[.ch.]]`, `[[=a=]]`), reversed and mixed ranges (`[z-a]`, `[a-\d]`),
+partial groups and lookarounds (`(?`, `(?P<`, `(?<=`), invalid Unicode
+classes (`\p{Foo}`, `\P{}`), out-of-range hex (`\x{110000}`),
+backreferences (`\0`, `\700`), and invalid repetition (`a{2,1}`, `a{`).
+The `panic!` sites in `resharp-parser/src/lib.rs` at `:906`, `:907`,
+`:929`, and the `unreachable!` at `:1344` are internal invariants guarded
+by parser structure; none are reachable from the surface inputs probed.
+The `[[:foo:]]` case returning `Ok` (an unknown POSIX class name treated as
+literal characters rather than rejected) is a minor leniency quirk, not a
+soundness issue.
+
+## Bug G: deeply nested complement or lookaround patterns abort `Regex::new` with an uncatchable stack overflow
+
+### Symptom
+
+A rule whose pattern nests complement (`~(...)`) or lookaround (`(?=...)`,
+`(?<=...)`) groups deeply enough aborts the process during
+`resharp::Regex::new`:
+
+```text
+thread 'main' has overflowed its stack
+fatal runtime error: stack overflow, aborting
+```
+
+The abort is a stack overflow (SIGABRT, exit 134), not an arithmetic
+overflow panic and not the `expanded_ast_limit` rejection. The depth at
+which it fires depends on the build profile, and the two profiles diverge
+in a way that matters for forbidden-strings:
+
+- Release profile (forbidden-strings' scanner, small stack frames):
+  `~(...)` and `(?=...)` nested past about 25,000 to 30,000 levels overflow
+  and abort. This is below the `expanded_ast_limit` of 50,000, so the
+  parser's size guard never rejects the pattern first. Plain capturing
+  groups `(...)` and non-capturing groups `(?:...)` do NOT overflow in
+  release: they survive to about 50,000 levels, where the size guard
+  rejects them cleanly with `Parse(UnsupportedResharpRegex)`.
+- Debug profile (the package's `cargo test` and the fuzz targets, large
+  stack frames): every nesting kind, including plain `(...)`, overflows at
+  about 1,500 levels, below every size guard.
+
+So in release the dangerous shapes are complement and lookaround nesting,
+the constructs forbidden-strings uses for exclusion rules; in debug and
+under fuzzing, any deeply nested group triggers it.
+
+### Root cause
+
+resharp's parser deliberately avoids recursion for the parse itself: it
+drives a flat loop in `parse_inner` (`resharp-parser/src/lib.rs:1847-1851`)
+that pushes and pops an explicit open-group stack (`stack_group`, e.g.
+`resharp-parser/src/lib.rs:708` for `(` and `:745` for `~(`):
+
+```rust
+match self.char() {
+    '(' => concat = self.push_group(concat)?,
+    ')' => concat = self.pop_group(concat)?,
+    '|' => concat = self.push_alternate(concat)?,
+    '&' => concat = self.push_intersect(concat)?,
+    '~' => concat = self.push_compl_group(concat)?,
+    // ...
+}
+```
+
+The recursion that overflows lives in the passes that walk the resulting
+tree, none of which bound depth:
+
+1. `expanded_ast_size` (`resharp-parser/src/lib.rs:2872`), the very guard
+   that enforces `expanded_ast_limit`, recurses on AST depth and runs at
+   `resharp-parser/src/lib.rs:1876` before it can return the size that
+   would trip the limit:
+
+   ```rust
+   ast::Ast::Group(g) => go(&g.ast, limit).saturating_add(1).min(limit),
+   ast::Ast::Complement(c) => go(&c.ast, limit).saturating_add(1).min(limit),
+   ast::Ast::Lookaround(l) => go(&l.ast, limit).saturating_add(1).min(limit),
+   ```
+
+   The arithmetic is saturating (overflow-safe), but the recursion depth is
+   not bounded. For a pattern nested N deep, `go` recurses N frames.
+
+2. The AST-to-NodeId translation (`ast_to_node_id`) recurses on the AST
+   (the `Group`, `Complement`, `Lookaround`, and `Repetition` arms each
+   call back into themselves).
+
+3. The algebra tree-walks recurse on NodeId depth, for example
+   `get_bounded_length` (`resharp-algebra/src/lib.rs:1051`):
+
+   ```rust
+   Kind::Concat => {
+       let (lmin, lmax) = self.get_bounded_length(node_id.left(self));
+       let (rmin, rmax) = self.get_bounded_length(node_id.right(self));
+       (lmin + rmin, lmax.saturating_add(rmax))
+   }
+   ```
+
+   `reverse`, `der`, and `contains_look` are recursive on the same trees.
+
+4. The nested AST (a tree of boxed enums) and the NodeId tree drop
+   recursively, so even an all-iterative analysis would overflow on `Drop`
+   for a deep enough tree.
+
+`PatternFlags` exposes `multiline`, `expanded_ast_limit`, `max_list_len`,
+and `max_repeat` (`resharp-parser/src/lib.rs:37-50`) but no `max_depth`, so
+nothing caps nesting depth.
+
+### Why complement and lookaround overflow below the size limit but plain groups do not (release)
+
+A capturing `(...)` or non-capturing `(?:...)` group introduces no distinct
+algebra node: `(a)` compiles to the same node as `a`, so the NodeId tree for
+`((((a))))` collapses to `a` and stays shallow. The only
+deep recursion is then `expanded_ast_size` over the deep AST, whose release
+frames are small enough to reach the 50,000 size limit before the stack
+runs out (confirmed: `group` returns `Ok` at depth 49,000 in release and is
+only stopped by the limit at 60,000). `~(...)` and `(?=...)` build genuine
+`Compl` and `Lookahead` nodes, so the NodeId tree is itself N deep and the
+heavier algebra passes (`get_bounded_length`, `reverse`, `der`,
+`contains_look`) plus the recursive `Drop` run over it; their larger
+per-level stack cost overflows at about 25,000 to 30,000 levels, below the
+size limit. In debug, frames are large enough that even `expanded_ast_size`
+overflows at about 1,500 levels for every nesting kind.
+
+### Defense
+
+forbidden-strings has no nesting-depth pre-validator. The six existing
+pre-validators in `packages/cli/forbidden-strings/src/rules/engine.rs`
+cover lookaround-in-complement, the two intersection shapes, the
+alternation-sibling shape, complement-intersection-quantified-group, and
+nested-lookahead-in-quantified-group, none of them depth. The
+`catch_unwind` net in `compile_rule_src` does not help: a stack-overflow
+abort is SIGABRT, which unwinding cannot intercept.
+
+The durable consumer-side fix is a `nesting_depth` pre-validator that
+byte-scans the rule source, tracks maximum `(` / `~(` / `(?...` nesting
+depth, and rejects any rule above a safe cap well below both thresholds
+(for example 1,000, under the debug 1,500 and release 25,000 floors and
+under `expanded_ast_limit`). This matches the existing pre-validator shape:
+a cheap source-text scan that rejects before resharp sees the rule,
+fail-closed and safe to over-reject because the production corpus has no
+deeply nested rules. A complementary mitigation is to run `Regex::new` on a
+thread with a large explicit stack, but that only moves the finite ceiling;
+the pre-validator is the actual fix.
+
+This pre-validator is not yet implemented. Implementing it edits
+forbidden-strings source and is held for a separate go-ahead; this pass
+flags the issue, it does not change the scanner.
+
+### Verification
+
+Probe crate `Cargo.toml`:
+
+```toml
+# /tmp/resharp-probe/Cargo.toml
+[package]
+name = "probe"
+version = "0.0.0"
+edition = "2021"
+[dependencies]
+resharp = "=0.6.4"
+[profile.release]
+overflow-checks = true
+panic = "unwind"
+```
+
+The probe builds a pattern from a kind and a depth N, prints `START` before
+the call, then prints the `Regex::new` result, so a crash still shows which
+input was in flight:
+
+```rust
+// /tmp/resharp-probe/src/main.rs (shape)
+// "group" => "(".repeat(n)  + "a" + ")".repeat(n)
+// "compl" => "~(".repeat(n) + "a" + ")".repeat(n)
+// "look"  => "(?=".repeat(n) + "a" + ")".repeat(n)
+// "ncg"   => "(?:".repeat(n) + "a" + ")".repeat(n)
+match resharp::Regex::new(&pat) {
+    Ok(_) => println!("OK   {kind} n={n}"),
+    Err(e) => println!("ERR  {kind} n={n} {e:?}"),
+}
+```
+
+Each `(kind, N)` runs as `timeout 20 ./probe <kind> <N>` so an abort is
+isolated. Results:
+
+Debug profile (`cargo build`):
+
+- `group` returns `Ok` at N=1,400; aborts (exit 134, "overflowed its
+  stack") at N=1,600. Threshold is about 1,500.
+- `compl`, `look`, `ncg` all return `Ok` at N=1,000 and abort by N=5,000.
+
+Release profile (`cargo build --release`, matching forbidden-strings):
+
+- `group` and `ncg` return `Ok` through N=49,000, then return
+  `Err(Parse(UnsupportedResharpRegex))` at N=60,000 and N=100,000 (the size
+  guard rejects, no overflow).
+- `compl` and `look` return `Ok` through N=20,000, then abort (exit 134,
+  "overflowed its stack") at N=30,000, N=40,000, N=49,000, then return
+  `Err` at N=60,000. The abort window sits below the size-guard rejection
+  point, so deep complement and lookaround nesting overflows before the
+  guard can reject it.
+
+The release abort message captured directly:
+
+```text
+=== compl 30000 (release) exit=134 ===
+thread 'main' (3) has overflowed its stack
+fatal runtime error: stack overflow, aborting
+```
+
+### Suggested upstream fix
+
+Add a `max_depth` to `PatternFlags` (default in line with the other limits)
+and enforce it during parsing using the open-group stack the parser already
+maintains: reject when `stack_group` depth (plus complement and lookaround
+nesting) exceeds `max_depth`. Enforcing at parse time stops the deep AST
+from ever being built, which heads off `expanded_ast_size`, the translation
+pass, the algebra walks, and the recursive `Drop` at once. This is small
+and scoped (a counter check at the push sites
+`resharp-parser/src/lib.rs:708`, `:745`, and the lookaround push) and
+architecturally consistent with the existing `max_repeat`, `max_list_len`,
+and `expanded_ast_limit` guards.
+
+### Five-constraint upstream-filing check (Bug G)
+
+1. Upstream's fault? Yes. A parser-reachable pattern that aborts the
+   process via stack overflow, below the size guard meant to bound resource
+   use, is a defect. The crate already bounds repeat count, list length,
+   and expanded size; depth is the missing dimension.
+2. Can upstream fix it? Yes, and the change is small (the parse-time
+   `max_depth` check above) because the parser already tracks open-group
+   depth on `stack_group`.
+3. Supporting this use case? Partially. Deep nesting is not a headline
+   feature, but the existing limit set shows the project intends to bound
+   pathological patterns rather than crash on them.
+4. Likely to fix? Plausible. The project actively adds limits and was
+   responsive on the merged issue (0.6.4 shipped same-day). A depth limit
+   fits the established pattern.
+5. Prototyped a minimal fix? Not yet. The task that surfaced Bug G was to
+   flag issues, not to file or fix them. Constraints 1 through 4 hold or
+   sorta-hold and constraint 2 names a small change, so under the
+   troubleshooting-doc auto-prototype rule the next step is to prototype the
+   parse-time `max_depth` check against a fresh 0.6.4 clone and draft the
+   issue. That step is held for a go-ahead, because filing is
+   outward-facing and the durable fix for us is the consumer-side
+   pre-validator above. Do not file before the prototype lands.
+
+## Other flags from the 2026-05-25 pass
+
+These rank below Bug G: a latent arithmetic asymmetry not reachable under
+default limits, a 0.6.4 acceptance regression, and a low-confidence
+loop-termination question.
+
+### Flag H: `get_bounded_length` min-length add is not saturating
+
+`resharp-algebra/src/lib.rs:1061`, the `Kind::Concat` arm of
+`get_bounded_length`:
+
+```rust
+(lmin + rmin, lmax.saturating_add(rmax))
+```
+
+The max-length add is saturating; the min-length add is a plain `+`. The
+asymmetry suggests the max was hardened (consistent with the Bug C and F
+overflow awareness) while the min was missed. It is not reachable under
+default limits: min-length accumulates through concatenation and is bounded
+by the expanded node count, which `expanded_ast_limit` (50,000) caps far
+below `u32::MAX`, so `lmin + rmin` cannot overflow for any pattern the
+parser accepts. Latent defensive-consistency issue; the one-line fix is
+`lmin.saturating_add(rmin)`. Flagged, not a live bug.
+
+### Flag I: 0.6.4 `strip_lb` fail-closed rejects lookbehind shapes beyond the intersection case
+
+`resharp-algebra/src/lib.rs:2005-2014`. The Bug B fix made `strip_lb`
+return `Err(UnsupportedPattern)` (at `:2010-2011`, and `strip_lb_inner` at
+`:2021`) when it cannot remove a lookbehind. `strip_lb` runs during
+`find_all` for any lookbehind-bearing pattern, not only intersection
+shapes, so 0.6.4 can now reject lookbehind patterns that 0.6.3 accepted,
+including shapes with no intersection. forbidden-strings'
+`intersection_with_lookbehind` pre-validator only guards `&` co-occurring
+with `(?<=` / `(?<!`; a non-intersection lookbehind rule that `strip_lb`
+cannot fully strip would surface `UnsupportedPattern` at scan time rather
+than being caught by a pre-validator. This is a 0.6.3 to 0.6.4 acceptance
+regression, not a soundness defect (the maintainer commented out their own
+HTML-attribute, word-boundary, and user-agent tests with "TODO: reallow
+once guaranteed 2 be correct"). Whether it matters depends on whether any
+production rule uses a lookbehind outside an intersection; the example
+betterleaks config does not, so the practical risk is currently low.
+Flagged as a scope item: a known-restriction class, not a new crash.
+
+### Flag J: `prefix.rs` lookbehind fixpoint loop assumes monotonicity
+
+`resharp-engine/src/prefix.rs:1006-1013` strips a lookbehind prefix in a
+loop that breaks when `after == lb_stripped`:
+
+```rust
+loop {
+    let stripped = b.strip_prefix_safe(lb_stripped);
+    let after = b.nonbegins(stripped);
+    if after == lb_stripped {
+        break;
+    }
+    lb_stripped = after;
+}
+```
+
+It terminates only if `strip_prefix_safe` then `nonbegins` is
+monotone-shrinking toward a fixpoint. If that composition could oscillate
+between two node ids for some input, the loop would not terminate. Low
+confidence: these strip operations are normally monotone and no probe
+triggered it. Flagged as a place to check if a future hang bisects into
+`prefix.rs`, not a confirmed defect.
 
 ## Prototype fixes (verified 2026-05-23)
 
