@@ -388,6 +388,15 @@ await describe({
             const diagnostics = await lint('invalid/chain-per-line.ts',);
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(chain-per-line)',);
+            /** Diagnostic messages for chain-per-line reports, isolated from unrelated fixture violations. */
+            const chainMessages = diagnostics.flatMap(function getChainMessage(diagnostic,): string[] {
+              return diagnostic.code === 'stylistic(chain-per-line)'
+                ? [diagnostic.message,]
+                : [];
+            },);
+            expect(chainMessages,).toContain(
+              'Put each operator, member, or method step in this chain on its own line.',
+            );
           },
         },),
         it({

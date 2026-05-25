@@ -329,7 +329,7 @@ export const chainPerLine: CreateOnceRule = {
     },
     messages: {
       chain:
-        'Chain has multiple boundaries on a single line; place each chain segment on its own line.',
+        'Put each operator, member, or method step in this chain on its own line.',
     },
   },
   createOnce(context: Context,): VisitorWithHooks {
