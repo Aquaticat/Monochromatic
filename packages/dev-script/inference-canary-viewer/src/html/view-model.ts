@@ -36,8 +36,8 @@ export function renderByModel({
   entries,
   thresholds,
 }: {
-  entries: readonly ViewerEntry[];
-  thresholds: ReadonlyMap<string, number>;
+  readonly entries: readonly ViewerEntry[];
+  readonly thresholds: ReadonlyMap<string, number>;
 },): string {
   /** Unique model labels in the order they first appear */
   const labels = [...new Set(entries.map(function getLabel(entry,): string {

@@ -14,10 +14,10 @@ export type TableRow = {
   readonly model: string;
   readonly probe: string;
   readonly score: number;
-  readonly pass2Score?: number | undefined;
+  readonly pass2Score?: number;
   readonly failed: boolean;
   /** Run ID for linking to the detail overlay (used in grid mode) */
-  readonly runId?: string | undefined;
+  readonly runId?: string;
 };
 
 /**
@@ -55,8 +55,8 @@ function fixScoreCell({
   hasFixScores,
   row,
 }: {
-  hasFixScores: boolean;
-  row: TableRow;
+  readonly hasFixScores: boolean;
+  readonly row: TableRow;
 },): string {
   if (!hasFixScores)
     return '';
@@ -125,9 +125,9 @@ export function renderDataTable({
   caption,
   options = {},
 }: {
-  rows: readonly TableRow[];
-  caption: string;
-  options?: TableDisplayOptions;
+  readonly rows: readonly TableRow[];
+  readonly caption: string;
+  readonly options?: TableDisplayOptions;
 },): string {
   /** Resolved Model-column visibility; defaults to visible when option is omitted. */
   const showModel = options.showModel

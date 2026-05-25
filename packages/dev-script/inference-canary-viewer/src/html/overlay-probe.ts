@@ -9,6 +9,7 @@ import { join, } from 'node:path';
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { computeDiff, } from '../data/diff.ts';
+import { omitUndefined, } from '../data/omit-undefined.ts';
 import type {
   ProbeDetail,
   ViewerEntry,
@@ -24,11 +25,11 @@ import {
 /**
  * Builds the source-code section of a probe overlay.
  *
- * Returns a placeholder when `detail` is missing entirely, an empty string when
- * the initial source is absent, a side-by-side diff when both fix source and
- * fix directory are present, or a single source pane otherwise.
+ * Returns an empty string when the initial source is absent, a side-by-side
+ * diff when both fix source and fix directory are present, or a single source
+ * pane otherwise.
  *
- * @param detail - enriched probe detail (may be undefined for missing artifacts)
+ * @param detail - enriched probe detail
  *
  * @returns HTML string for the source section
  *
@@ -38,14 +39,7 @@ import {
  * // '<details class="collapsible-section">...<\/details>'
  * ```
  */
-async function buildSourceSection(detail: ProbeDetail | undefined,): Promise<string> {
-  if (detail === undefined) {
-    return h({
-      tag: 'p',
-      class: 'detail-popover-empty',
-      text: 'Artifacts not available for this run.',
-    },);
-  }
+async function buildSourceSection(detail: ProbeDetail,): Promise<string> {
   if (detail.initialSource
     === undefined)
     return '';
@@ -127,10 +121,10 @@ export async function renderProbeOverlay({
   probe,
   detail,
 }: {
-  id: string;
-  entry: ViewerEntry;
-  probe: string;
-  detail: ProbeDetail | undefined;
+  readonly id: string;
+  readonly entry: ViewerEntry;
+  readonly probe: string;
+  readonly detail?: ProbeDetail;
 },): Promise<string> {
   /** Run label destructured from the viewer entry; used in the overlay title. */
   const { label, } = entry;
@@ -147,9 +141,11 @@ export async function renderProbeOverlay({
   const initialMeta = detail !== undefined
     ? renderPassMeta({
       label: 'Initial pass',
-      timing: detail.timing,
-      usage: detail.usage,
-      finishReason: detail.finishReason,
+      ...omitUndefined({
+        timing: detail.timing,
+        usage: detail.usage,
+        finishReason: detail.finishReason,
+      },),
     },)
     : '';
   /** Fix-pass metadata block; rendered only when the run actually has fix-pass timing or usage. */
@@ -159,14 +155,22 @@ export async function renderProbeOverlay({
           !== undefined))
     ? renderPassMeta({
       label: 'Fix pass',
-      timing: detail.fixTiming,
-      usage: detail.fixUsage,
-      finishReason: detail.fixFinishReason,
+      ...omitUndefined({
+        timing: detail.fixTiming,
+        usage: detail.fixUsage,
+        finishReason: detail.fixFinishReason,
+      },),
     },)
     : '';
 
-  /** Source-code section content: diff, single source, placeholder, or empty depending on `detail` shape. */
-  const sourceSection = await buildSourceSection(detail,);
+  /** Source-code section content: diff, single source, or empty; placeholder shown when detail is missing. */
+  const sourceSection = detail !== undefined
+    ? await buildSourceSection(detail,)
+    : h({
+      tag: 'p',
+      class: 'detail-popover-empty',
+      text: 'Artifacts not available for this run.',
+    },);
 
   /** Collapsible detail sections (reasoning, fix prompt, config); empty when detail is missing. */
   const collapsibles = detail !== undefined ? renderCollapsibles(detail,) : '';

@@ -51,8 +51,8 @@ async function captureGitDiffStdout({
   initialPath,
   fixPath,
 }: {
-  initialPath: string;
-  fixPath: string;
+  readonly initialPath: string;
+  readonly fixPath: string;
 },): Promise<string> {
   try {
     /** Spawn result holding stdout on the success path. */
@@ -100,8 +100,8 @@ export async function computeDiff({
   initialPath,
   fixPath,
 }: {
-  initialPath: string;
-  fixPath: string;
+  readonly initialPath: string;
+  readonly fixPath: string;
 },): Promise<readonly DiffLine[]> {
   /** Raw unified-diff stdout captured from `git diff --no-index`; empty when the subprocess fails. */
   const stdout = await captureGitDiffStdout({

@@ -12,11 +12,13 @@ import type {
 
 import type { ProbeDetail, } from './viewer-types.ts';
 
+import { omitUndefined, } from './omit-undefined.ts';
+
 /** Parsed artifact with metadata, optional source/response, and directory path */
 export type ParsedArtifact = {
   readonly meta: ArtifactMeta | EnrichedArtifactMeta;
-  readonly source: string | undefined;
-  readonly response: string | undefined;
+  readonly source?: string;
+  readonly response?: string;
   readonly dir: string;
 };
 
@@ -59,9 +61,9 @@ export function probeKey({
   probe,
   timestamp,
 }: {
-  label: string;
-  probe: string;
-  timestamp: string;
+  readonly label: string;
+  readonly probe: string;
+  readonly timestamp: string;
 },): string {
   return `${label}::${probe}::${timestamp}`;
 }
@@ -91,31 +93,33 @@ export function buildProbeDetail({
   artifact,
   fix,
 }: {
-  enriched: EnrichedArtifactMeta | undefined;
-  fixEnriched: EnrichedArtifactMeta | undefined;
-  artifact: ParsedArtifact;
-  fix: ParsedArtifact | undefined;
+  readonly enriched?: EnrichedArtifactMeta;
+  readonly fixEnriched?: EnrichedArtifactMeta;
+  readonly artifact: ParsedArtifact;
+  readonly fix?: ParsedArtifact;
 },): ProbeDetail {
   return {
-    score: enriched?.score,
-    pass2Score: fixEnriched?.score,
-    reasoning: enriched?.reasoning,
-    timing: enriched?.timing,
-    usage: enriched?.usage,
-    finishReason: enriched?.finishReason,
-    config: enriched?.config,
-    fixPrompt: fixEnriched?.fixPrompt,
-    fixReasoning: fixEnriched?.reasoning,
-    fixTiming: fixEnriched?.timing,
-    fixUsage: fixEnriched?.usage,
-    fixFinishReason: fixEnriched?.finishReason,
-    initialResponse: artifact.response,
-    fixResponse: fix?.response,
-    initialSource: artifact.source,
-    fixSource: fix?.source,
     initialDir: artifact.dir,
-    fixDir: fix?.dir,
-    partial: enriched?.partial,
-    error: enriched?.error,
+    ...omitUndefined({
+      score: enriched?.score,
+      pass2Score: fixEnriched?.score,
+      reasoning: enriched?.reasoning,
+      timing: enriched?.timing,
+      usage: enriched?.usage,
+      finishReason: enriched?.finishReason,
+      config: enriched?.config,
+      fixPrompt: fixEnriched?.fixPrompt,
+      fixReasoning: fixEnriched?.reasoning,
+      fixTiming: fixEnriched?.timing,
+      fixUsage: fixEnriched?.usage,
+      fixFinishReason: fixEnriched?.finishReason,
+      initialResponse: artifact.response,
+      fixResponse: fix?.response,
+      initialSource: artifact.source,
+      fixSource: fix?.source,
+      fixDir: fix?.dir,
+      partial: enriched?.partial,
+      error: enriched?.error,
+    },),
   };
 }

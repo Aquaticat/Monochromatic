@@ -31,13 +31,21 @@ export { LINT_DIR, };
 export { probeKey, } from './parsed-artifact.ts';
 
 /**
+ * Sentinel returned by {@link readOptional} when a file is absent or unreadable.
+ * Named so absence is expressed without widening the return type to
+ * `string | undefined`, which `exactOptionalPropertyTypes` and the
+ * no-nullish-union rule forbid.
+ */
+const FILE_ABSENT: unique symbol = Symbol('file-absent',);
+
+/**
  * Whether a parsed meta.json is a whole-model failure artifact.
  *
  * @param meta - parsed JSON object from meta.json
  *
  * @returns true when the metadata indicates a whole-model failure
  */
-function isFailure(meta: Record<string, unknown>,): meta is FailureArtifactMeta {
+function isFailure(meta: Readonly<Record<string, unknown>>,): meta is FailureArtifactMeta {
   return meta.failed
     === true;
 }
@@ -54,13 +62,13 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
 }
 
 /**
- * Reads a file, returning undefined on any error.
+ * Reads a file, returning {@link FILE_ABSENT} on any error.
  *
  * @param path - absolute file path
  *
- * @returns file contents or undefined
+ * @returns file contents, or {@link FILE_ABSENT} when missing or unreadable
  */
-async function readOptional(path: string,): Promise<string | undefined> {
+async function readOptional(path: string,): Promise<string | typeof FILE_ABSENT> {
   try {
     return await readFile(
       path,
@@ -76,7 +84,7 @@ async function readOptional(path: string,): Promise<string | undefined> {
         error,
       );
     }
-    return undefined;
+    return FILE_ABSENT;
   }
 }
 
@@ -159,7 +167,7 @@ export async function readArtifacts(): Promise<ArtifactData> {
         'meta.json',
       ),);
       /* oxlint-enable no-await-in-loop */
-      if (metaRaw === undefined)
+      if (metaRaw === FILE_ABSENT)
         continue;
 
       /** Parsed `meta.json` object; populated below or replaced with `{}` on parse failure. */
@@ -208,9 +216,9 @@ export async function readArtifacts(): Promise<ArtifactData> {
       /** Assembled parsed artifact bundling metadata with optional source and response files. */
       const artifact: ParsedArtifact = {
         meta,
-        source,
-        response,
         dir: dirPath,
+        ...(source !== FILE_ABSENT ? { source, } : {}),
+        ...(response !== FILE_ABSENT ? { response, } : {}),
       };
       /** Composite key grouping artifacts for the same run across probes. */
       const runKey = `${meta.label}::${meta.timestamp}`;

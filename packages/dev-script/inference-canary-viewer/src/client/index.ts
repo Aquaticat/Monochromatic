@@ -88,8 +88,8 @@ function collectRanges({
   tree,
   codeElement,
 }: {
-  tree: Tree;
-  codeElement: HTMLElement;
+  readonly tree: Tree;
+  readonly codeElement: HTMLElement;
 },): Map<string, Range[]> {
   /** Flattened text nodes with their start offsets within the full text. */
   const textNodes: {

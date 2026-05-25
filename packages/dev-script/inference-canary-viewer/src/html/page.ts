@@ -25,8 +25,8 @@ export function renderPage({
   body,
   title,
 }: {
-  body: string;
-  title: string;
+  readonly body: string;
+  readonly title: string;
 },): string {
   return `<!DOCTYPE html>\n${
     h({

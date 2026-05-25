@@ -6,6 +6,7 @@
  */
 import type { ScatterPoint, } from '../chart/scatter.ts';
 import { vendorIcon, } from '../data/model-icons.ts';
+import { omitUndefined, } from '../data/omit-undefined.ts';
 
 import {
   hasMultipleProbes,
@@ -42,10 +43,10 @@ export function buildOverallPoints({
   openrouterId,
   color,
 }: {
-  entries: readonly ViewerEntry[];
-  label: string;
-  openrouterId: string;
-  color: string;
+  readonly entries: readonly ViewerEntry[];
+  readonly label: string;
+  readonly openrouterId: string;
+  readonly color: string;
 },): readonly ScatterPoint[] {
   return entries
     .filter(function filterMultipleProbes(entry,) {
@@ -124,11 +125,11 @@ export function buildProbePoints({
   probe,
   color,
 }: {
-  entries: readonly ViewerEntry[];
-  label: string;
-  openrouterId: string;
-  probe: string;
-  color: string;
+  readonly entries: readonly ViewerEntry[];
+  readonly label: string;
+  readonly openrouterId: string;
+  readonly probe: string;
+  readonly color: string;
 },): readonly ScatterPoint[] {
   return entries
     .filter(function hasProbe(entry,): boolean {
@@ -151,7 +152,6 @@ export function buildProbePoints({
         index,
         timestamp: entry.timestamp,
         score,
-        pass2Score,
         color,
         icon: vendorIcon(openrouterId,),
         title: `${probe} ${
@@ -164,14 +164,15 @@ export function buildProbePoints({
           pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
         }`,
         failed: entry.failed,
+        ...omitUndefined({ pass2Score, },),
         tableRow: {
           timestamp: entry.timestamp,
           model: label,
           probe,
           score,
-          pass2Score,
           failed: entry.failed,
           runId,
+          ...omitUndefined({ pass2Score, },),
         },
       };
     },);

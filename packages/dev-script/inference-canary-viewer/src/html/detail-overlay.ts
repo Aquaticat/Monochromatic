@@ -37,8 +37,8 @@ export async function renderAllOverlays({
   entries,
   probeDetails,
 }: {
-  entries: readonly ViewerEntry[];
-  probeDetails: ReadonlyMap<string, ProbeDetail>;
+  readonly entries: readonly ViewerEntry[];
+  readonly probeDetails: ReadonlyMap<string, ProbeDetail>;
 },): Promise<string> {
   /** Resolved overlay HTML fragments for every entry, awaited before join. */
   const overlays = await Promise.all(entries.flatMap(function buildEntryOverlays(entry,) {
@@ -61,11 +61,13 @@ export async function renderAllOverlays({
           probe,
           timestamp: entry.timestamp,
         },);
+        /** Enriched probe detail for this overlay; absent for runs without artifacts. */
+        const detail = probeDetails.get(key,);
         return renderProbeOverlay({
           id: probeId,
           entry,
           probe,
-          detail: probeDetails.get(key,),
+          ...(detail !== undefined ? { detail, } : {}),
         },);
       },),
     ];
@@ -88,8 +90,8 @@ function renderRunOverlay({
   id,
   entry,
 }: {
-  id: string;
-  entry: ViewerEntry;
+  readonly id: string;
+  readonly entry: ViewerEntry;
 },): string {
   /** Display label destructured for use in cards and headings below. */
   const { label, } = entry;

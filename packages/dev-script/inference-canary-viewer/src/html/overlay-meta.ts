@@ -137,10 +137,10 @@ export function renderPassMeta({
   usage,
   finishReason,
 }: {
-  label: string;
-  timing: StreamTiming | undefined;
-  usage: StreamUsage | undefined;
-  finishReason: string | undefined;
+  readonly label: string;
+  readonly timing?: StreamTiming;
+  readonly usage?: StreamUsage;
+  readonly finishReason?: string;
 },): string {
   /** Accumulator for `<dt>`/`<dd>` pairs added per available metric. */
   const items: string[] = [];

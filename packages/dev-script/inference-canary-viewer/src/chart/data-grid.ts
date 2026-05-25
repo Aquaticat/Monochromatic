@@ -28,8 +28,8 @@ export function renderDataGrid({
   rows,
   caption,
 }: {
-  rows: readonly TableRow[];
-  caption: string;
+  readonly rows: readonly TableRow[];
+  readonly caption: string;
 },): string {
   /** Show fix scores when at least one row has pass-2 data */
   const hasFixScores = rows.some(function hasPass2(row,) {

@@ -42,9 +42,9 @@ export function buildViewerData({
   fixByRun,
   failures,
 }: {
-  initialByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>;
-  fixByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>;
-  failures: readonly FailureArtifactMeta[];
+  readonly initialByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>;
+  readonly fixByRun: ReadonlyMap<string, ReadonlyMap<string, ParsedArtifact>>;
+  readonly failures: readonly FailureArtifactMeta[];
 },): ArtifactData {
   /** Per-run viewer entries built up below; one entry per initial-pass run plus one per failure. */
   const entries: ViewerEntry[] = [];
@@ -105,10 +105,10 @@ export function buildViewerData({
           timestamp,
         },),
         buildProbeDetail({
-          enriched,
-          fixEnriched,
           artifact,
-          fix,
+          ...(enriched !== undefined ? { enriched, } : {}),
+          ...(fixEnriched !== undefined ? { fixEnriched, } : {}),
+          ...(fix !== undefined ? { fix, } : {}),
         },),
       );
     }
@@ -139,7 +139,7 @@ export function buildViewerData({
       probeScores,
       ...(hasPass2 ? { pass2Scores, } : {}),
       failed: false,
-      config,
+      ...(config !== undefined ? { config, } : {}),
     },);
   }
 

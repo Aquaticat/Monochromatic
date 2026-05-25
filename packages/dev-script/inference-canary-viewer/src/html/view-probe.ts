@@ -34,7 +34,7 @@ import { buildProbeLegend, } from './view-probe-legend.ts';
  * ```
  */
 export function renderByProbe({ entries, }: {
-  entries: readonly ViewerEntry[];
+  readonly entries: readonly ViewerEntry[];
 },): string {
   /** All unique probe names across all entries */
   const probeNames = [...new Set(entries.flatMap(function probeKeys(entry,): string[] {

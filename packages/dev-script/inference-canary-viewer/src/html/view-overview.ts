@@ -44,8 +44,8 @@ export function renderOverview({
   summaries,
   entries,
 }: {
-  summaries: readonly ModelSummary[];
-  entries: readonly ViewerEntry[];
+  readonly summaries: readonly ModelSummary[];
+  readonly entries: readonly ViewerEntry[];
 },): string {
   if (summaries.length
     === 0) {

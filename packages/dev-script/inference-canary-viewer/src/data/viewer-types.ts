@@ -42,15 +42,15 @@ export type ViewerEntry = {
   /** Mean of per-probe pass-1 scores, 0 for failed runs */
   readonly overallScore: number;
   /** Per-probe pass-1 scores keyed by probe name */
-  readonly probeScores: Record<string, number>;
+  readonly probeScores: Readonly<Record<string, number>>;
   /** Per-probe pass-2 (fix) scores, absent for probes without a fix pass */
-  readonly pass2Scores?: Record<string, number> | undefined;
+  readonly pass2Scores?: Readonly<Record<string, number>>;
   /** Whether this run was a whole-model failure (no probes executed) */
   readonly failed: boolean;
   /** Error message for failed runs */
-  readonly error?: string | undefined;
+  readonly error?: string;
   /** Runner configuration snapshot, present for enriched artifacts */
-  readonly config?: ConfigSnapshot | undefined;
+  readonly config?: ConfigSnapshot;
 };
 
 /**
@@ -71,45 +71,45 @@ export type ViewerEntry = {
  */
 export type ProbeDetail = {
   /** Probe score, undefined for old artifacts without enrichment */
-  readonly score?: number | undefined;
+  readonly score?: number;
   /** Fix-pass score */
-  readonly pass2Score?: number | undefined;
+  readonly pass2Score?: number;
   /** Model reasoning/thinking trace from initial pass */
-  readonly reasoning?: string | undefined;
+  readonly reasoning?: string;
   /** Timing breakdown from initial pass */
-  readonly timing?: StreamTiming | undefined;
+  readonly timing?: StreamTiming;
   /** Token usage from initial pass */
-  readonly usage?: StreamUsage | undefined;
+  readonly usage?: StreamUsage;
   /** Why generation stopped on initial pass */
-  readonly finishReason?: string | undefined;
+  readonly finishReason?: string;
   /** Runner configuration snapshot */
-  readonly config?: ConfigSnapshot | undefined;
+  readonly config?: ConfigSnapshot;
   /** Diagnostic prompt sent for the fix pass */
-  readonly fixPrompt?: string | undefined;
+  readonly fixPrompt?: string;
   /** Model reasoning/thinking trace from fix pass */
-  readonly fixReasoning?: string | undefined;
+  readonly fixReasoning?: string;
   /** Timing breakdown from fix pass */
-  readonly fixTiming?: StreamTiming | undefined;
+  readonly fixTiming?: StreamTiming;
   /** Token usage from fix pass */
-  readonly fixUsage?: StreamUsage | undefined;
+  readonly fixUsage?: StreamUsage;
   /** Why generation stopped on fix pass */
-  readonly fixFinishReason?: string | undefined;
+  readonly fixFinishReason?: string;
   /** Raw model response from initial pass response.txt */
-  readonly initialResponse?: string | undefined;
+  readonly initialResponse?: string;
   /** Raw model response from fix pass response.txt */
-  readonly fixResponse?: string | undefined;
+  readonly fixResponse?: string;
   /** TypeScript source from initial pass canary.ts */
-  readonly initialSource?: string | undefined;
+  readonly initialSource?: string;
   /** TypeScript source from fix pass canary.ts */
-  readonly fixSource?: string | undefined;
+  readonly fixSource?: string;
   /** Absolute path to initial pass artifact directory */
   readonly initialDir: string;
   /** Absolute path to fix pass artifact directory */
-  readonly fixDir?: string | undefined;
+  readonly fixDir?: string;
   /** True when initial pass was partial/aborted */
-  readonly partial?: boolean | undefined;
+  readonly partial?: boolean;
   /** Error message from initial pass */
-  readonly error?: string | undefined;
+  readonly error?: string;
 };
 
 /**

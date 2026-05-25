@@ -50,8 +50,8 @@ export function computeThreshold({
   label,
   entries,
 }: {
-  label: string;
-  entries: readonly ViewerEntry[];
+  readonly label: string;
+  readonly entries: readonly ViewerEntry[];
 },): ModelThreshold {
   /** Non-failed overall scores used as the statistical sample. */
   const scores = entries

@@ -46,13 +46,13 @@ const DEFAULT_VIEWBOX = '0 0 24 24';
  *
  * @param raw - raw SVG document
  *
- * @returns viewBox value, or `undefined` when the attribute is absent
+ * @returns viewBox value, or {@link DEFAULT_VIEWBOX} when the attribute is absent
  */
-function extractViewBox(raw: string,): string | undefined {
+function extractViewBox(raw: string,): string {
   /** Position of the opening of the attribute literal; `-1` ends the search. */
   const open = raw.indexOf('viewBox="',);
   if (open === (-1))
-    return undefined;
+    return DEFAULT_VIEWBOX;
   /** Position of the closing quote; `-1` means the attribute is unterminated. */
   const close = raw.indexOf(
     '"',
@@ -60,7 +60,7 @@ function extractViewBox(raw: string,): string | undefined {
       .length,
   );
   if (close === (-1))
-    return undefined;
+    return DEFAULT_VIEWBOX;
   return raw.slice(
     open + 'viewBox="'
       .length,
@@ -214,9 +214,8 @@ function parseSvg(raw: string,): {
   viewBox: string;
   inner: string;
 } {
-  /** Extracted viewBox value; falls back to the lobehub icon default. */
-  const viewBox = extractViewBox(raw,)
-    ?? DEFAULT_VIEWBOX;
+  /** Extracted viewBox value; `extractViewBox` falls back to the lobehub icon default. */
+  const viewBox = extractViewBox(raw,);
   /** SVG body with the outer `<svg>` opening and closing tags stripped. */
   const inner = stripClosingSvgTag(stripOpeningSvgTag(raw,),);
   return {
@@ -261,7 +260,8 @@ type VendorSymbol = {
 
 /** Map of vendor prefix to parsed symbol data */
 const VENDOR_SYMBOLS: ReadonlyMap<string, VendorSymbol> = new Map(
-  Object.entries(RAW_SVGS,).map(function parseEntry([vendor, raw,],) {
+  Object.entries(RAW_SVGS,)
+    .map(function parseEntry([vendor, raw,],) {
     /** ViewBox and inner markup pulled from the raw SVG before defs are extracted. */
     const {
       viewBox,
@@ -360,8 +360,8 @@ export function iconDot({
   modelId,
   color,
 }: {
-  modelId: string;
-  color: string;
+  readonly modelId: string;
+  readonly color: string;
 },): string {
   /** Vendor prefix taken from the slash-delimited model ID. */
   const vendor = modelId.split('/',)[0]
@@ -387,12 +387,13 @@ export function iconDot({
 }
 
 /**
- * Returns an `<svg><use>` reference for a vendor icon, or `undefined` when unavailable.
- * Used to embed icons inside chart data points.
+ * Returns an `<svg><use>` reference for a vendor icon, or an empty string when
+ * unavailable. Used to embed icons inside chart data points; the scatter-point
+ * renderer treats an empty string as "no icon".
  *
  * @param modelId - full OpenRouter model ID
  *
- * @returns SVG use-reference string or `undefined`
+ * @returns SVG use-reference string, or empty string when no vendor icon exists
  *
  * @example
  * ```ts
@@ -400,11 +401,11 @@ export function iconDot({
  * // '<svg height="1em" width="1em"><use href="#icon-anthropic"/></svg>'
  * ```
  */
-export function vendorIcon(modelId: string,): string | undefined {
+export function vendorIcon(modelId: string,): string {
   /** Vendor prefix taken from the slash-delimited model ID. */
   const vendor = modelId.split('/',)[0]
     ?? '';
   /** Parsed sprite symbol for the vendor; absent when the vendor has no icon. */
   const symbol = VENDOR_SYMBOLS.get(vendor,);
-  return symbol === undefined ? undefined : useRef(symbol.id,);
+  return symbol === undefined ? '' : useRef(symbol.id,);
 }

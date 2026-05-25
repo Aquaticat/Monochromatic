@@ -31,7 +31,7 @@ export type ScatterPoint = {
   /** Score value (0-1) for Y axis */
   readonly score: number;
   /** Optional pass-2 (fix) score overlaid at same X */
-  readonly pass2Score?: number | undefined;
+  readonly pass2Score?: number;
   /** CSS color for this point */
   readonly color: string;
   /** Tooltip text */
@@ -39,7 +39,7 @@ export type ScatterPoint = {
   /** Whether this run failed */
   readonly failed: boolean;
   /** Raw SVG icon to render inside the chart point (when available) */
-  readonly icon?: string | undefined;
+  readonly icon?: string;
   /** Metadata for the backing table */
   readonly tableRow: TableRow;
 };
@@ -75,12 +75,12 @@ export function renderScatterChart({
   hideTable,
   tableDisplay,
 }: {
-  points: readonly ScatterPoint[];
-  threshold: number;
-  thresholdLabel: string;
-  caption: string;
-  hideTable?: boolean;
-  tableDisplay?: TableDisplayOptions;
+  readonly points: readonly ScatterPoint[];
+  readonly threshold: number;
+  readonly thresholdLabel: string;
+  readonly caption: string;
+  readonly hideTable?: boolean;
+  readonly tableDisplay?: TableDisplayOptions;
 },): string {
   if (points.length
     === 0) {

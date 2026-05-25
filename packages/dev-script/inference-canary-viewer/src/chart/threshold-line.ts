@@ -26,8 +26,8 @@ export function renderThresholdLine({
   threshold,
   label,
 }: {
-  threshold: number;
-  label: string;
+  readonly threshold: number;
+  readonly label: string;
 },): string {
   if (threshold <= 0)
     return '';

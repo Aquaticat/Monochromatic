@@ -32,10 +32,10 @@ export function renderDashboard(
     byProbeHtml,
     overlaysHtml,
   }: {
-    overviewHtml: string;
-    byModelHtml: string;
-    byProbeHtml: string;
-    overlaysHtml: string;
+    readonly overviewHtml: string;
+    readonly byModelHtml: string;
+    readonly byProbeHtml: string;
+    readonly overlaysHtml: string;
   },
 ): string {
   return `${

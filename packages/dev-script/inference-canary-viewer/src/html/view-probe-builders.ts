@@ -7,6 +7,7 @@
 import type { ScatterPoint, } from '../chart/scatter.ts';
 import { vendorColor, } from '../data/model-colors.ts';
 import { vendorIcon, } from '../data/model-icons.ts';
+import { omitUndefined, } from '../data/omit-undefined.ts';
 
 import type { ViewerEntry, } from '../data/viewer-types.ts';
 
@@ -32,8 +33,8 @@ export function buildCrossModelPoints({
   entries,
   probe,
 }: {
-  entries: readonly ViewerEntry[];
-  probe: string;
+  readonly entries: readonly ViewerEntry[];
+  readonly probe: string;
 },): readonly ScatterPoint[] {
   /** Entries that recorded a score for the requested probe. */
   const relevant = entries.filter(function hasProbe(entry,): boolean {
@@ -59,7 +60,6 @@ export function buildCrossModelPoints({
       index,
       timestamp: entry.timestamp,
       score,
-      pass2Score,
       color,
       icon: vendorIcon(entry.model,),
       title: `${entry.label} ${
@@ -72,14 +72,15 @@ export function buildCrossModelPoints({
         pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
       }`,
       failed: entry.failed,
+      ...omitUndefined({ pass2Score, },),
       tableRow: {
         timestamp: entry.timestamp,
         model: entry.label,
         probe,
         score,
-        pass2Score,
         failed: entry.failed,
         runId,
+        ...omitUndefined({ pass2Score, },),
       },
     };
   },);
@@ -119,11 +120,11 @@ export function buildSingleModelPoints({
   openrouterId,
   color,
 }: {
-  entries: readonly ViewerEntry[];
-  probe: string;
-  label: string;
-  openrouterId: string;
-  color: string;
+  readonly entries: readonly ViewerEntry[];
+  readonly probe: string;
+  readonly label: string;
+  readonly openrouterId: string;
+  readonly color: string;
 },): readonly ScatterPoint[] {
   /** Entries scoring the requested probe for this specific model label. */
   const relevant = entries.filter(function matchLabelAndProbe(entry,): boolean {
@@ -148,7 +149,6 @@ export function buildSingleModelPoints({
       index,
       timestamp: entry.timestamp,
       score,
-      pass2Score,
       color,
       icon: vendorIcon(openrouterId,),
       title: `${
@@ -161,14 +161,15 @@ export function buildSingleModelPoints({
         pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
       }`,
       failed: entry.failed,
+      ...omitUndefined({ pass2Score, },),
       tableRow: {
         timestamp: entry.timestamp,
         model: label,
         probe,
         score,
-        pass2Score,
         failed: entry.failed,
         runId,
+        ...omitUndefined({ pass2Score, },),
       },
     };
   },);
