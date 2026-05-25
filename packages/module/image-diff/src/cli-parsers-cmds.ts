@@ -80,24 +80,20 @@ export const compareCmd: SubcommandParser = command(
         { description: message`Model override for the selected provider`, },
       ),),
     },),
-    function toCompareArgs(
-      v: {
-        readonly imageA: string;
-        readonly imageB: string;
-        readonly provider: 'voyage' | 'gemini' | undefined;
-        readonly model:
-          | 'voyage-multimodal-3'
-          | 'voyage-multimodal-3.5'
-          | 'gemini-embedding-2-preview'
-          | undefined;
-      },
-    ): ImageDiffArgs {
+    function toCompareArgs(v,): ImageDiffArgs {
+      /** Parsed fields destructured so optional spreads read plain identifiers. */
+      const {
+        imageA,
+        imageB,
+        provider,
+        model,
+      } = v;
       return {
         cmd: 'compare',
-        imageA: v.imageA,
-        imageB: v.imageB,
-        provider: v.provider,
-        model: v.model,
+        imageA,
+        imageB,
+        ...(provider !== undefined ? { provider, } : {}),
+        ...(model !== undefined ? { model, } : {}),
       };
     },
   ),
@@ -123,22 +119,18 @@ export const embedCmd: SubcommandParser = command(
         { description: message`Model override for the selected provider`, },
       ),),
     },),
-    function toEmbedArgs(
-      v: {
-        readonly image: string;
-        readonly provider: 'voyage' | 'gemini' | undefined;
-        readonly model:
-          | 'voyage-multimodal-3'
-          | 'voyage-multimodal-3.5'
-          | 'gemini-embedding-2-preview'
-          | undefined;
-      },
-    ): ImageDiffArgs {
+    function toEmbedArgs(v,): ImageDiffArgs {
+      /** Parsed fields destructured so optional spreads read plain identifiers. */
+      const {
+        image,
+        provider,
+        model,
+      } = v;
       return {
         cmd: 'embed',
-        image: v.image,
-        provider: v.provider,
-        model: v.model,
+        image,
+        ...(provider !== undefined ? { provider, } : {}),
+        ...(model !== undefined ? { model, } : {}),
       };
     },
   ),

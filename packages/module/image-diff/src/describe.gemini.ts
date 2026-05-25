@@ -57,12 +57,12 @@ elements that were added or removed, and any other noticeable changes.
 Image A is the first image, Image B is the second.`;
 
 /**
- * Resolve Gemini API key for description, returning `undefined` when unavailable
+ * Resolve Gemini API key for description, returning `null` when unavailable
  * instead of throwing.
  *
- * @returns resolved API key, or `undefined` if not configured
+ * @returns resolved API key, or `null` if not configured
  */
-function resolveGeminiDescribeKey(): string | undefined {
+function resolveGeminiDescribeKey(): string | null {
   /** Resolved Gemini key from preferred-then-fallback env var; treated as missing when blank. */
   const key = process.env
     .IMAGE_DIFF_GEMINI_API_KEY
@@ -70,7 +70,7 @@ function resolveGeminiDescribeKey(): string | undefined {
     .env
     .GEMINI_API_KEY;
   if ((key === undefined) || (key === ''))
-    return undefined;
+    return null;
   return key;
 }
 
@@ -83,7 +83,7 @@ function resolveGeminiDescribeKey(): string | undefined {
  *
  * @param imageB - second image (after)
  *
- * @returns detailed description of visual differences, or `undefined` when no Gemini API key is configured
+ * @returns detailed description of visual differences, or `null` when no Gemini API key is configured
  *
  * @throws when the API call itself fails (key is present but request errors)
  *
@@ -101,17 +101,17 @@ export async function describeViaGemini({
 }: {
   readonly imageA: ImageInput;
   readonly imageB: ImageInput;
-},): Promise<string | undefined> {
+},): Promise<string | null> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: describeViaGemini.name,
     l,
   },);
 
-  /** Gemini credential; absent triggers an early `undefined` return so the OpenRouter fallback can run. */
+  /** Gemini credential; absent triggers an early `null` return so the OpenRouter fallback can run. */
   const apiKey = resolveGeminiDescribeKey();
-  if (apiKey === undefined)
-    return undefined;
+  if (apiKey === null)
+    return null;
 
   rl.debug('describing image differences via native Gemini API',);
   /** Both images encoded as Gemini `inline_data` parts in parallel so the request body can embed them. */

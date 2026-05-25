@@ -55,8 +55,8 @@ async function geminiEmbed({
   /**
    * Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
    */
-  const model = (config.model as GeminiModel | undefined)
-    ?? DEFAULT_GEMINI_MODEL;
+  const model = (config.model
+    ?? DEFAULT_GEMINI_MODEL) as GeminiModel;
   /** Gemini-shaped inline data payload converted from the caller's image input. */
   const inlineData = await toGeminiInlineData(input,);
 

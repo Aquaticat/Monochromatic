@@ -41,16 +41,22 @@ const args = runSync(
   },
 );
 
+/** Provider/model overrides shared by both subcommands; spread in only when present. */
+const {
+  provider,
+  model,
+} = args;
+
 await (args.cmd
   === 'compare'
   ? handleCompare({
     imageA: args.imageA,
     imageB: args.imageB,
-    provider: args.provider,
-    model: args.model,
+    ...(provider !== undefined ? { provider, } : {}),
+    ...(model !== undefined ? { model, } : {}),
   },)
   : handleEmbed({
     image: args.image,
-    provider: args.provider,
-    model: args.model,
+    ...(provider !== undefined ? { provider, } : {}),
+    ...(model !== undefined ? { model, } : {}),
   },));

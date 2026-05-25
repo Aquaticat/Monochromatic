@@ -27,7 +27,7 @@ export const VOYAGE_API_URL = 'https://api.voyageai.com/v1/multimodalembeddings'
  * const key = resolveVoyageApiKey(undefined);
  * ```
  */
-export function resolveVoyageApiKey(configKey: string | undefined,): string {
+export function resolveVoyageApiKey(configKey?: string,): string {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: resolveVoyageApiKey.name,

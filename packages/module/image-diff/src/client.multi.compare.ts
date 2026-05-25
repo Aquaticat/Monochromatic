@@ -94,11 +94,11 @@ export async function compareAll({
   const descriptionSettlement = allResults.at(-1,);
   if (descriptionSettlement === undefined)
     throw new Error('unreachable: allResults is non-empty',);
-  /** Textual diff description when the description call succeeded; `undefined` on rejection. */
+  /** Textual diff description when the description call succeeded; `null` on rejection. */
   const description = descriptionSettlement.status
     === 'fulfilled'
-    ? descriptionSettlement.value as string | undefined
-    : undefined;
+    ? descriptionSettlement.value as string | null
+    : null;
 
   /** All settlements before the last are provider results. */
   const providerSettlements = allResults.slice(
@@ -119,7 +119,7 @@ export async function compareAll({
         provider: entry.provider,
         result: {
           ...entry.result,
-          description,
+          ...(description !== null ? { description, } : {}),
         },
       },);
     }
@@ -129,7 +129,7 @@ export async function compareAll({
   }
 
   if ((successfulEntries.length
-    === 0) && (description === undefined)) {
+    === 0) && (description === null)) {
     throw new Error(
       'No results: all embedding providers failed and no description was generated. Check that at least one API key is configured.',
     );
@@ -137,7 +137,7 @@ export async function compareAll({
 
   rl.debug(
     `${String(successfulEntries.length,)} provider(s) succeeded, description ${
-      description !== undefined ? 'available' : 'unavailable'
+      description !== null ? 'available' : 'unavailable'
     }`,
   );
   return successfulEntries;

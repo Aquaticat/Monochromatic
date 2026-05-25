@@ -56,8 +56,8 @@ async function voyageEmbed({
   /**
    * Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
    */
-  const model = (config.model as VoyageModel | undefined)
-    ?? DEFAULT_VOYAGE_MODEL;
+  const model = (config.model
+    ?? DEFAULT_VOYAGE_MODEL) as VoyageModel;
   /** Voyage-shaped content payload converted from the caller's image input. */
   const contentItem = await toVoyageContentItem(input,);
 
@@ -130,8 +130,8 @@ async function voyageEmbedBatch({
   /**
    * Effective model id; user override or {@link DEFAULT_VOYAGE_MODEL}.
    */
-  const model = (config.model as VoyageModel | undefined)
-    ?? DEFAULT_VOYAGE_MODEL;
+  const model = (config.model
+    ?? DEFAULT_VOYAGE_MODEL) as VoyageModel;
 
   /** Voyage-shaped content payloads converted from each caller image, in input order. */
   const contentItems = await Promise.all(

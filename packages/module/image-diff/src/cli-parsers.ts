@@ -26,14 +26,14 @@ export type ImageDiffArgs =
     cmd: 'compare';
     imageA: string;
     imageB: string;
-    provider: Provider | undefined;
-    model: EmbeddingModel | undefined;
+    provider?: Provider;
+    model?: EmbeddingModel;
   }
   | {
     cmd: 'embed';
     image: string;
-    provider: Provider | undefined;
-    model: EmbeddingModel | undefined;
+    provider?: Provider;
+    model?: EmbeddingModel;
   };
 
 //endregion Result types

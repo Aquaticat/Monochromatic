@@ -28,7 +28,7 @@ export const DEFAULT_GEMINI_MODEL: GeminiModel = 'gemini-embedding-2-preview';
  * const key = resolveGeminiApiKey(undefined);
  * ```
  */
-export function resolveGeminiApiKey(configKey: string | undefined,): string {
+export function resolveGeminiApiKey(configKey?: string,): string {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: resolveGeminiApiKey.name,

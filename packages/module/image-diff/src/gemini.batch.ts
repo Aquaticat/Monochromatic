@@ -58,8 +58,8 @@ export async function geminiEmbedBatch({
   /**
    * Effective model id; user override or {@link DEFAULT_GEMINI_MODEL}.
    */
-  const model = (config.model as GeminiModel | undefined)
-    ?? DEFAULT_GEMINI_MODEL;
+  const model = (config.model
+    ?? DEFAULT_GEMINI_MODEL) as GeminiModel;
 
   /** Gemini-shaped inline data payloads converted from each caller image, in input order. */
   const inlineDataItems = await Promise.all(

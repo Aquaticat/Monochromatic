@@ -15,16 +15,15 @@ import type {
  *
  * @param image - image argument (path or URL)
  *
- * @param provider - provider name, or undefined to use all providers
+ * @param provider - provider name; omit to use all providers
  *
- * @param model - model override, or undefined for the provider's default
+ * @param model - model override; omit for the provider's default
  *
  * @example
  * ```ts
  * await handleEmbed({
  *   image: 'photo.png',
  *   provider: 'voyage',
- *   model: undefined,
  * });
  * ```
  */
@@ -34,8 +33,8 @@ export async function handleEmbed({
   model,
 }: {
   readonly image: string;
-  readonly provider: Provider | undefined;
-  readonly model: EmbeddingModel | undefined;
+  readonly provider?: Provider;
+  readonly model?: EmbeddingModel;
 },): Promise<void> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
