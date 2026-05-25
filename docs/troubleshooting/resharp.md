@@ -74,7 +74,7 @@ Status:
 - **Bug G** (deeply nested complement or lookaround patterns abort
   `Regex::new` with an uncatchable stack overflow): new in the 2026-05-25
   pass against published 0.6.4. In the release profile, `~(...)` or
-  `(?=...)` nested past about 25,000 to 30,000 levels overflows the stack
+  `(?=...)` nested past roughly 20,000 to 30,000 levels overflows the stack
   and aborts (SIGABRT) below the `expanded_ast_limit` rejection point, so
   the limit never fires; in the debug profile every nesting kind overflows
   at about 1,500 levels. `catch_unwind` cannot intercept a stack-overflow
@@ -1375,6 +1375,12 @@ Probe crates ran under `podman run --memory=4g --cpus=4 --rm` against
 code (0 returned, 101 panic, 124 hang, 134 abort or stack overflow, 139
 segfault).
 
+Scope: this pass surveys compile-time behaviour (`Regex::new`) and parser
+robustness against malformed patterns. Match-time soundness against
+adversarial input (the class Bug B belonged to) is not re-probed here; it is
+left to the next fuzz re-run on the published 0.6.4 build, already on the
+plan above.
+
 ### Confirmed fixed at 0.6.4 (Bugs B, C, E, F)
 
 The 0.6.4 fix commit `bd780ef` is present at HEAD and matches the prototype
@@ -1429,8 +1435,9 @@ which it fires depends on the build profile, and the two profiles diverge
 in a way that matters for forbidden-strings:
 
 - Release profile (forbidden-strings' scanner, small stack frames):
-  `~(...)` and `(?=...)` nested past about 25,000 to 30,000 levels overflow
-  and abort. This is below the `expanded_ast_limit` of 50,000, so the
+  `~(...)` and `(?=...)` nested past 20,000 to 30,000 levels overflow and
+  abort (verified Ok at 20,000, abort at 30,000). This is below the
+  `expanded_ast_limit` of 50,000, so the
   parser's size guard never rejects the pattern first. Plain capturing
   groups `(...)` and non-capturing groups `(?:...)` do NOT overflow in
   release: they survive to about 50,000 levels, where the size guard
@@ -1515,7 +1522,7 @@ only stopped by the limit at 60,000). `~(...)` and `(?=...)` build genuine
 `Compl` and `Lookahead` nodes, so the NodeId tree is itself N deep and the
 heavier algebra passes (`get_bounded_length`, `reverse`, `der`,
 `contains_look`) plus the recursive `Drop` run over it; their larger
-per-level stack cost overflows at about 25,000 to 30,000 levels, below the
+per-level stack cost overflows between 20,000 and 30,000 levels, below the
 size limit. In debug, frames are large enough that even `expanded_ast_size`
 overflows at about 1,500 levels for every nesting kind.
 
@@ -1532,7 +1539,7 @@ abort is SIGABRT, which unwinding cannot intercept.
 The durable consumer-side fix is a `nesting_depth` pre-validator that
 byte-scans the rule source, tracks maximum `(` / `~(` / `(?...` nesting
 depth, and rejects any rule above a safe cap well below both thresholds
-(for example 1,000, under the debug 1,500 and release 25,000 floors and
+(for example 1,000, under the debug 1,500 and release 20,000 floors and
 under `expanded_ast_limit`). This matches the existing pre-validator shape:
 a cheap source-text scan that rejects before resharp sees the rule,
 fail-closed and safe to over-reject because the production corpus has no
@@ -1632,7 +1639,11 @@ and `expanded_ast_limit` guards.
    pathological patterns rather than crash on them.
 4. Likely to fix? Plausible. The project actively adds limits and was
    responsive on the merged issue (0.6.4 shipped same-day). A depth limit
-   fits the established pattern.
+   fits the established pattern. Tracker checked 2026-05-25 (`gh issue list
+   -R ieviev/resharp --state all`): five issues total, none touching
+   nesting depth, recursion, or stack overflow (#5 is the merged
+   DFA-construction issue, #4 is a syntax discussion, #1 through #3 are
+   unrelated), so Bug G is not a duplicate.
 5. Prototyped a minimal fix? Not yet. The task that surfaced Bug G was to
    flag issues, not to file or fix them. Constraints 1 through 4 hold or
    sorta-hold and constraint 2 names a small change, so under the
