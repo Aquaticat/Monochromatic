@@ -26,6 +26,8 @@ import {
   fetchChunkCount,
   fetchHeadDraftId,
   getIdentity,
+  NEW_MESSAGE,
+  NO_PARENT,
   parseEditId,
   postCreateDraft,
   randomId,
@@ -43,6 +45,7 @@ import {
 } from './composer/tier3.ts';
 import {
   loadIdentity,
+  NO_IDENTITY,
   saveIdentity,
 } from './identity-store.ts';
 import { createOutbox, } from './outbox.ts';
@@ -51,77 +54,17 @@ import {
   type StorageCaps,
 } from './storage-probe.ts';
 
-import { BYTES_PER_KIB, } from '@monochromatic-dev/module-numeric-const';
+import { decideTierTransition, } from './composer-tier.ts';
 
-/** Tier-2 threshold in kibibytes. */
-const TIER_2_THRESHOLD_KIB = 8;
-
-/** Tier-3 threshold in kibibytes. */
-const TIER_3_THRESHOLD_KIB = 1_024;
-
-/** Body-size threshold (chars) to promote from tier 1 to tier 2. */
-export const TIER_2_THRESHOLD: number = TIER_2_THRESHOLD_KIB * BYTES_PER_KIB;
-
-/** Body-size threshold (chars) to promote from tier 2 to tier 3. */
-export const TIER_3_THRESHOLD: number = TIER_3_THRESHOLD_KIB * BYTES_PER_KIB;
+export {
+  decideTierTransition,
+  TIER_2_THRESHOLD,
+  TIER_3_THRESHOLD,
+  type TierTransition,
+} from './composer-tier.ts';
 
 /** Idle delay before tier promotion fires, in milliseconds. */
 const TIER_DEBOUNCE_MS = 500;
-
-/** Outcome of a single tier-promotion check. */
-export type TierTransition =
-  | { readonly kind: 'none'; }
-  | { readonly kind: 'to-tier-2'; }
-  | { readonly kind: 'to-tier-3'; };
-
-/**
- * Pure decision: given the current tier and observed signals, what
- * transition (if any) should fire on the next promotion-check tick?
- *
- * Rules:
- *
- * - tier 1 promotes to tier 2 when `length >= TIER_2_THRESHOLD`.
- * - tier 2 promotes to tier 3 when `length >= TIER_3_THRESHOLD`,
- *   `tier3Active` is false, and we are not in edit mode.
- * - All other states return `none`. Promotion is one-way: tier-3 stays
- *   tier-3 even if the body shrinks back below the threshold.
- *
- * @param input - current tier + size + mode signals
- *
- * @returns transition to apply
- *
- * @example
- * ```ts
- * decideTierTransition({ tier: 1, length: 9000, tier3Active: false, inEditMode: false });
- * // { kind: 'to-tier-2' }
- * ```
- */
-export function decideTierTransition(
-  input: {
-    /* oxlint-disable eslint/no-magic-numbers -- tier discriminant union */
-    readonly tier: 1 | 2 | 3;
-    /* oxlint-enable eslint/no-magic-numbers */
-    readonly length: number;
-    readonly tier3Active: boolean;
-    readonly inEditMode: boolean;
-  },
-): TierTransition {
-  if ((input.tier
-    === 1) && (input.length
-      >= TIER_2_THRESHOLD))
-    return { kind: 'to-tier-2', };
-  if (
-    (input.tier
-      === 2)
-    && (input.length
-      >= TIER_3_THRESHOLD)
-      && (!input.tier3Active)
-      && (!input.inEditMode)
-  ) {
-    return { kind: 'to-tier-3', };
-  }
-  return { kind: 'none', };
-}
 
 /** Decimal radix for `parseInt`. */
 const DECIMAL_RADIX = 10;
@@ -167,7 +110,7 @@ export async function attachComposer({
 
   /** Identity previously persisted; restored if it still matches one of the select's options. */
   const persisted = loadIdentity(caps.localStorage,);
-  if ((persisted !== null) && [...select.options,]
+  if ((persisted !== NO_IDENTITY) && [...select.options,]
     .some(function isPersisted(option,) {
     return option.value
       === persisted;
@@ -196,6 +139,9 @@ export async function attachComposer({
     },),
   ],);
 
+  /** Parsed edit-mode id; `NEW_MESSAGE` means the composer is in new-message mode and `editMessageId` stays absent. */
+  const editId = parseEditId(form.dataset
+    .editMessageId,);
   /** Long-lived composer state; passed to every helper so they share editor, outbox, and tier discriminant. */
   const state: ComposerState = {
     /* oxlint-disable eslint/no-magic-numbers, typescript/no-unsafe-type-assertion -- tier discriminant cast */
@@ -206,16 +152,10 @@ export async function attachComposer({
       DECIMAL_RADIX,
     ) as 1 | 2 | 3,
     /* oxlint-enable eslint/no-magic-numbers, typescript/no-unsafe-type-assertion */
-    worker: null,
     caps,
-    editMessageId: parseEditId(form.dataset
-      .editMessageId,),
     outbox,
     cache,
-    metrics: null,
-    metricsHooks: null,
-    tier3: null,
-    editor: null,
+    ...(editId !== NEW_MESSAGE ? { editMessageId: editId, } : {}),
   };
 
   // Mount the metrics overlay before any worker spawns so we don't
@@ -256,7 +196,7 @@ export async function attachComposer({
   }
 
   if (state.editMessageId
-    !== null) {
+    !== undefined) {
     await loadExistingChunksForEdit({
       form,
       textarea,
@@ -323,29 +263,31 @@ async function loadExistingChunksForEdit(
 ): Promise<void> {
   if (input.state
     .editMessageId
-    === null)
+    === undefined)
     return;
-  /** Captured under a non-null name so the branch logic does not re-narrow per access. */
+  /** Captured under a present name so the branch logic does not re-narrow per access. */
   const messageId = input.state
     .editMessageId;
   if (input.state
     .tier
+    // oxlint-disable-next-line eslint/no-magic-numbers -- tier-3 discriminant
     === 3) {
     /** Total chunk count from the server; needed to render the nav and size the tier-3 state. */
     const chunkCount = await fetchChunkCount(messageId,);
     /** Allocated up front so the create-draft POST and the tier-3 state both pick up the same id. */
     const newDraftId = randomId();
+    /** Head draft for the copy-on-write parent; `NO_PARENT` omits the parent link for the demo. */
+    const headDraft = await fetchHeadDraftId(messageId,);
     await postCreateDraft({
       id: newDraftId,
       userId: getIdentity(input.form,),
-      parentId: await fetchHeadDraftId(messageId,),
+      ...(headDraft !== NO_PARENT ? { parentId: headDraft, } : {}),
     },);
     input.state
       .tier3 = {
       currentSeq: 0,
       chunkCount,
       newDraftId,
-      localChunks: null,
     };
     setupTier3Nav({
       ...input,
@@ -389,9 +331,16 @@ async function loadExistingChunksForEdit(
   },);
 }
 
+/**
+ * Sentinel for "no promotion check queued". A unique `Symbol` rather
+ * than `null`: a live timer handle is the only other value, so the
+ * scheduler gates `clearTimeout` with `!== NO_TIMER`.
+ */
+const NO_TIMER: unique symbol = Symbol('messages-demo:no-promotion-timer',);
+
 /* oxlint-disable no-restricted-syntax/no-module-root-let -- singleton timer handle: cleared inside `clearTimeout` and reassigned by every `queueTierPromotionCheck` call; wrapping in a Map adds noise without a key to hang state off */
-/** Pending promotion-check timer; null when no check is queued. */
-let promotionTimer: ReturnType<typeof setTimeout> | null = null;
+/** Pending promotion-check timer; `NO_TIMER` when no check is queued. */
+let promotionTimer: ReturnType<typeof setTimeout> | typeof NO_TIMER = NO_TIMER;
 /* oxlint-enable no-restricted-syntax/no-module-root-let */
 
 /**
@@ -409,11 +358,11 @@ function queueTierPromotionCheck(
     status: HTMLElement;
   },
 ): void {
-  if (promotionTimer !== null)
+  if (promotionTimer !== NO_TIMER)
     clearTimeout(promotionTimer,);
   promotionTimer = setTimeout(
     function onIdle() {
-      promotionTimer = null;
+      promotionTimer = NO_TIMER;
       /** Tier-transition decision computed on the post-idle snapshot of buffer length and state. */
       const transition = decideTierTransition({
         tier: input.state
@@ -423,10 +372,10 @@ function queueTierPromotionCheck(
           .length,
         tier3Active: input.state
           .tier3
-          !== null,
+          !== undefined,
         inEditMode: input.state
           .editMessageId
-          !== null,
+          !== undefined,
       },);
       if (transition.kind
         === 'to-tier-2') {

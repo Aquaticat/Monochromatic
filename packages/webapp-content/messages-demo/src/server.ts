@@ -32,7 +32,10 @@ import { existsSync, } from 'node:fs';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: opens SQLite and runs migrations
 import './lib/db.ts';
 
-import { getArgumentValue, } from './lib/args.ts';
+import {
+  ARG_ABSENT,
+  getArgumentValue,
+} from './lib/args.ts';
 import {
   HTTP_BAD_REQUEST,
   HTTP_FOUND,
@@ -55,6 +58,12 @@ import {
 import { renderEditPage, } from './server/pages/edit.ts';
 import { renderFeed, } from './server/pages/feed.ts';
 import { renderMessageChunk, } from './server/pages/message.ts';
+import {
+  ifNoneMatchInput,
+  paramsInput,
+  parseId,
+  requireParam,
+} from './server/route-params.ts';
 import { staticHandler, } from './server/static.ts';
 
 await initPromise;
@@ -82,8 +91,10 @@ function resolvePort(): number {
   /** Fallback environment value; used when the CLI did not supply one. */
   const environmentPort = process.env
     .PORT;
-  /** Resolved precedence: CLI \> env; undefined falls through to the default. */
-  const rawPort = argumentPort ?? environmentPort;
+  /** Resolved precedence: CLI \> env; absent on both falls through to the default. */
+  const rawPort = argumentPort !== ARG_ABSENT
+    ? argumentPort
+    : environmentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
   /** Parsed value; NaN signals a malformed input, in which case the default wins. */
@@ -127,14 +138,8 @@ app.get(
   '/',
   defineHandler(
     async function handleFeed(event,) {
-      /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
-      const ifNoneMatch = event.req
-        .headers
-        .get('if-none-match',);
-      return await renderFeed({
-        cursorToken: null,
-        ifNoneMatch,
-      },);
+      return await renderFeed({ ...ifNoneMatchInput(event.req
+        .headers,), },);
     },
   ),
 );
@@ -145,17 +150,14 @@ app.get(
     async function handleFeedPage(event,) {
       /** Required `:cursor` path param; bails to 400 when missing. */
       const cursor = requireParam({
-        params: event.context
-          .params,
+        ...paramsInput(event.context
+          .params,),
         name: 'cursor',
       },);
-      /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
-      const ifNoneMatch = event.req
-        .headers
-        .get('if-none-match',);
       return await renderFeed({
         cursorToken: cursor,
-        ifNoneMatch,
+        ...ifNoneMatchInput(event.req
+          .headers,),
       },);
     },
   ),
@@ -167,8 +169,8 @@ app.get(
     function handleMessageRoot(event,) {
       /** Parsed `:id` param; redirect target uses this in the chunk-0 URL. */
       const id = parseId({
-        params: event.context
-          .params,
+        ...paramsInput(event.context
+          .params,),
         name: 'id',
       },);
       return redirect(
@@ -185,25 +187,22 @@ app.get(
     async function handleMessageChunk(event,) {
       /** Parsed `:id` param; consumed by `renderMessageChunk` as the message id. */
       const id = parseId({
-        params: event.context
-          .params,
+        ...paramsInput(event.context
+          .params,),
         name: 'id',
       },);
       /** Parsed `:idx` param; chunk index inside the message. */
       const idx = parseId({
-        params: event.context
-          .params,
+        ...paramsInput(event.context
+          .params,),
         name: 'idx',
         min: 0,
       },);
-      /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
-      const ifNoneMatch = event.req
-        .headers
-        .get('if-none-match',);
       return await renderMessageChunk({
         messageId: id,
         chunkIndex: idx,
-        ifNoneMatch,
+        ...ifNoneMatchInput(event.req
+          .headers,),
       },);
     },
   ),
@@ -215,25 +214,22 @@ app.get(
     async function handleChunkRaw(event,) {
       /** Parsed `:id` param; consumed by `renderChunkRaw` as the message id. */
       const id = parseId({
-        params: event.context
-          .params,
+        ...paramsInput(event.context
+          .params,),
         name: 'id',
       },);
       /** Parsed `:idx` param; chunk index inside the message. */
       const idx = parseId({
-        params: event.context
-          .params,
+        ...paramsInput(event.context
+          .params,),
         name: 'idx',
         min: 0,
       },);
-      /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
-      const ifNoneMatch = event.req
-        .headers
-        .get('if-none-match',);
       return await renderChunkRaw({
         messageId: id,
         chunkIndex: idx,
-        ifNoneMatch,
+        ...ifNoneMatchInput(event.req
+          .headers,),
       },);
     },
   ),
@@ -245,25 +241,22 @@ app.get(
     async function handleChunkMd(event,) {
       /** Parsed `:id` param; consumed by `renderChunkMd` as the message id. */
       const id = parseId({
-        params: event.context
-          .params,
+        ...paramsInput(event.context
+          .params,),
         name: 'id',
       },);
       /** Parsed `:idx` param; chunk index inside the message. */
       const idx = parseId({
-        params: event.context
-          .params,
+        ...paramsInput(event.context
+          .params,),
         name: 'idx',
         min: 0,
       },);
-      /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
-      const ifNoneMatch = event.req
-        .headers
-        .get('if-none-match',);
       return await renderChunkMd({
         messageId: id,
         chunkIndex: idx,
-        ifNoneMatch,
+        ...ifNoneMatchInput(event.req
+          .headers,),
       },);
     },
   ),
@@ -275,8 +268,8 @@ app.get(
     async function handleEdit(event,) {
       /** Parsed `:id` param; consumed by `renderEditPage`. */
       const id = parseId({
-        params: event.context
-          .params,
+        ...paramsInput(event.context
+          .params,),
         name: 'id',
       },);
       return await renderEditPage(id,);
@@ -356,78 +349,3 @@ serve(
 );
 l.info(`listening on http://localhost:${String(port,)}`,);
 
-//region Local helpers
-
-/**
- * Extracts a path parameter, throwing a 400 when missing.
- *
- * @param input - h3 route parameter record and the parameter name
- *
- * @returns parameter value
- *
- * @example
- * ```ts
- * const cursor = requireParam({ params: event.context.params, name: 'cursor' });
- * ```
- */
-function requireParam(
-  input: {
-    readonly params: Readonly<Record<string, string>> | undefined;
-    readonly name: string;
-  },
-): string {
-  /** Indexed once so the empty-string check and the return both reference the same value. */
-  const value = input.params?.[input.name];
-  if ((value === undefined) || (value === '')) {
-    throw new HTTPError({
-      status: HTTP_BAD_REQUEST,
-      message: `missing route param: ${input.name}`,
-    },);
-  }
-  return value;
-}
-
-/**
- * Parses a route parameter as a non-negative integer. Used for both
- * message ids and chunk indices.
- *
- * @param input - h3 route parameter record, the parameter name, and the
- *                minimum acceptable value (1 for ids, 0 for indices)
- *
- * @returns parsed integer
- *
- * @example
- * ```ts
- * const id = parseId({ params: event.context.params, name: 'id', min: 1 });
- * ```
- */
-function parseId(
-  input: {
-    readonly params: Readonly<Record<string, string>> | undefined;
-    readonly name: string;
-    readonly min?: number;
-  },
-): number {
-  /** Defaults to `1`; ids start at 1, chunk indices pass `min: 0`. */
-  const min = input.min
-    ?? 1;
-  /** Raw param string forwarded into `Number.parseInt`. */
-  const raw = requireParam({
-    params: input.params,
-    name: input.name,
-  },);
-  /** Parsed integer; non-finite or below-minimum triggers a 400 below. */
-  const parsed = Number.parseInt(
-    raw,
-    DECIMAL_RADIX,
-  );
-  if ((!Number.isFinite(parsed,)) || (parsed < min)) {
-    throw new HTTPError({
-      status: HTTP_BAD_REQUEST,
-      message: `invalid ${input.name}: ${raw}`,
-    },);
-  }
-  return parsed;
-}
-
-//endregion

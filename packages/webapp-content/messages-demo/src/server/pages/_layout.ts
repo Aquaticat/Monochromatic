@@ -160,9 +160,9 @@ function renderSiteHeader(): string {
  */
 function renderComposerFooter(
   options: {
-    readonly editMessageId: number | undefined;
+    readonly editMessageId?: number;
     // oxlint-disable-next-line eslint/no-magic-numbers -- tier discriminant
-    readonly initialTier: 1 | 2 | 3 | undefined;
+    readonly initialTier?: 1 | 2 | 3;
   },
 ): string {
   /** Pre-rendered `<option>` HTML for the identity select, in seed-list order. */
@@ -224,10 +224,7 @@ export function renderPage(options: PageOptions,): string {
       attrs: { class: 'feed-main', },
       html: options.body,
     },)
-    + renderComposerFooter({
-      editMessageId: options.editMessageId,
-      initialTier: options.initialTier,
-    },);
+    + renderComposerFooter(options,);
 
   return `<!DOCTYPE html>${
     h({

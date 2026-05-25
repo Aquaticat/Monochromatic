@@ -23,6 +23,7 @@ import {
   finalizeDraft,
   highestContiguousSeq,
   putChunk,
+  REJECTED,
 } from '../../lib/db/drafts.ts';
 import { sweepOrphans, } from '../../lib/db/sweep.ts';
 import {
@@ -35,6 +36,13 @@ import {
 
 /** Decimal radix for `parseInt`. */
 const DECIMAL_RADIX = 10;
+
+/**
+ * Sentinel returned by `stringField` when a body field is absent or not
+ * a string. A unique `Symbol` rather than `null`: a valid field is
+ * always a string, so callers gate with `=== MISSING`.
+ */
+const MISSING: unique symbol = Symbol('messages-demo:field-missing',);
 
 /**
  * POST /api/drafts
@@ -66,13 +74,12 @@ export const createDraftHandler: EventHandlerWithFetch = defineHandler(
       body,
       key: 'user_id',
     },);
-    /** Parent draft id for copy-on-write edits; null for fresh messages. */
-    const parentId = optionalStringField({
+    /** Parent draft id for copy-on-write edits; `MISSING` (omitted below) for fresh messages. */
+    const parentId = stringField({
       body,
       key: 'parent_id',
-    },)
-      ?? null;
-    if ((id === null) || (userId === null)) {
+    },);
+    if ((id === MISSING) || (userId === MISSING)) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing id or user_id',
@@ -82,7 +89,7 @@ export const createDraftHandler: EventHandlerWithFetch = defineHandler(
     await createDraft({
       id,
       userId,
-      parentId,
+      ...(parentId === MISSING ? {} : { parentId, }),
     },);
 
     await sweepOrphans({ userId, },);
@@ -108,14 +115,14 @@ export const putChunkHandler: EventHandlerWithFetch = defineHandler(
   async function handlePutChunk(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
     const draftId = requirePathParam({
-      params: event.context
-        .params,
+      ...paramsInput(event.context
+        .params,),
       name: 'id',
     },);
     /** Raw `:seq` path param; parsed as decimal below. */
     const seqRaw = requirePathParam({
-      params: event.context
-        .params,
+      ...paramsInput(event.context
+        .params,),
       name: 'seq',
     },);
     /** Parsed seq; non-negative integer or the request is rejected. */
@@ -150,7 +157,7 @@ export const putChunkHandler: EventHandlerWithFetch = defineHandler(
     },);
     /** Raw `char_count` value; narrowed to number below before the upsert. */
     const charCountRaw = body.char_count;
-    if ((md === null) || (html === null)
+    if ((md === MISSING) || (html === MISSING)
       || ((typeof charCountRaw) !== 'number')) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
@@ -194,8 +201,8 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
   async function handleFinalizeDraft(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
     const draftId = requirePathParam({
-      params: event.context
-        .params,
+      ...paramsInput(event.context
+        .params,),
       name: 'id',
     },);
     /** Decoded body; defaulted so an absent body still flows through the shape check. */
@@ -221,8 +228,8 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
     /** Raw `chunk_count`; narrowed to number below before the finalize. */
     const chunkCount = body.chunk_count;
     if (
-      (userId === null)
-      || (preview === null)
+      (userId === MISSING)
+      || (preview === MISSING)
         || ((typeof charCount) !== 'number')
         || ((typeof chunkCount) !== 'number')
     ) {
@@ -232,7 +239,7 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
 
-    /** Newly-allocated messages.id; null when the draft is empty, missing, or owned by another user. */
+    /** Newly-allocated messages.id; `REJECTED` when the draft is empty, missing, or owned by another user. */
     const messageId = await finalizeDraft({
       draftId,
       userId,
@@ -241,14 +248,14 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
       preview,
     },);
 
-    if (messageId === null) {
+    if (messageId === REJECTED) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'draft is empty, missing, or owned by a different user',
       },);
     }
 
-    await sweepOrphans({ userId: null, },);
+    await sweepOrphans({},);
 
     // 200 (not 303) so `fetch` does not auto-follow the Location and
     // turn our JSON body into the redirected page's HTML. The client
@@ -276,8 +283,8 @@ export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
   async function handleCancelDraft(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
     const draftId = requirePathParam({
-      params: event.context
-        .params,
+      ...paramsInput(event.context
+        .params,),
       name: 'id',
     },);
     /**
@@ -308,7 +315,7 @@ export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
       body,
       key: 'user_id',
     },);
-    if (userId === null) {
+    if (userId === MISSING) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing user_id',
@@ -352,14 +359,14 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
- * Reads a string field from a JSON body, returning `null` when absent
+ * Reads a string field from a JSON body, returning `MISSING` when absent
  * or not a string.
  *
  * @param body - decoded JSON record
  *
  * @param key - field name
  *
- * @returns string value or `null`
+ * @returns string value, or `MISSING` when absent or not a string
  */
 function stringField({
   body,
@@ -367,35 +374,33 @@ function stringField({
 }: {
   readonly body: Readonly<Record<string, unknown>>;
   readonly key: string;
-},): string | null {
+},): string | typeof MISSING {
   /** Indexed once so the typeof narrow and the return both reference the same value. */
   const value = body[key];
-  return (typeof value) === 'string' ? value : null;
+  return (typeof value) === 'string' ? value : MISSING;
 }
 
 /**
- * Like `stringField` but returns `undefined` when absent so callers can
- * distinguish "field not supplied" from "field supplied but invalid."
+ * Bridges h3's `event.context.params` (present or `undefined`) into a
+ * spreadable object whose `params` property is omitted when absent, so
+ * call sites build the helper input under `exactOptionalPropertyTypes`
+ * without naming a `| undefined` slot.
  *
- * @param body - decoded JSON record
+ * @param params - h3 route parameter record, or `undefined` when none matched
  *
- * @param key - field name
+ * @returns object carrying `params` only when present
  *
- * @returns string when present and valid, `undefined` when absent,
- *          `null` when present but not a string
+ * @example
+ * ```ts
+ * requirePathParam({ ...paramsInput(event.context.params), name: 'id' });
+ * ```
  */
-function optionalStringField({
-  body,
-  key,
-}: {
-  readonly body: Readonly<Record<string, unknown>>;
-  readonly key: string;
-},): string | null | undefined {
-  if (!(key in body))
-    return undefined;
-  /** Indexed after the `in`-check so the result reflects the supplied (possibly invalid) value. */
-  const value = body[key];
-  return (typeof value) === 'string' ? value : null;
+function paramsInput(
+  params?: Readonly<Record<string, string>>,
+): { readonly params?: Readonly<Record<string, string>>; } {
+  if (params === undefined)
+    return {};
+  return { params, };
 }
 
 /**
@@ -413,7 +418,7 @@ function requirePathParam({
   params,
   name,
 }: {
-  readonly params: Readonly<Record<string, string>> | undefined;
+  readonly params?: Readonly<Record<string, string>>;
   readonly name: string;
 },): string {
   /** Indexed once so the empty-string check and the return both reference the same value. */

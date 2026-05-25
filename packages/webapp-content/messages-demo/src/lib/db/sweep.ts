@@ -17,9 +17,12 @@ import {
 
 import db, {
   all,
-  get,
   run,
 } from '../db.ts';
+import {
+  CHAIN_END,
+  stepToParent,
+} from './chain.ts';
 
 /** Minutes in the orphan TTL window. */
 const ORPHAN_TTL_MINUTES = 15;
@@ -52,11 +55,11 @@ export const DELETED_TTL_MS: number = DELETED_TTL_DAYS
  * @example
  * ```ts
  * await sweepOrphans({ userId: 'user-a' });
- * await sweepOrphans({ userId: null });   // safety net, called from finalize
+ * await sweepOrphans({});   // safety net, called from finalize
  * ```
  */
 export async function sweepOrphans(
-  scope: { readonly userId: string | null; },
+  scope: { readonly userId?: string; },
 ): Promise<void> {
   /** Threshold; drafts older than this and still unfinalised are reaped. */
   const cutoff = Date.now()
@@ -71,8 +74,10 @@ export async function sweepOrphans(
      )`,
     params: [
       cutoff,
-      scope.userId,
-      scope.userId,
+      scope.userId
+        ?? null,
+      scope.userId
+        ?? null,
       SWEEP_BATCH,
     ],
   },);
@@ -124,18 +129,10 @@ export async function sweepDeleted(): Promise<void> {
       /** Collected draft chain ids; deleted in a single sweep at the end of the transaction. */
       const chainIds: string[] = [];
       /** Walk cursor; advances to each draft's parent until the chain terminates. */
-      let cursor: string | null = candidate.draft_id;
-      while (cursor !== null) {
+      let cursor: string | typeof CHAIN_END = candidate.draft_id;
+      while (cursor !== CHAIN_END) {
         chainIds.push(cursor,);
-        /** Parent draft row; absence breaks the loop. */
-        const parentRow: { parent_id: string | null; } | undefined = await get<
-          { parent_id: string | null; }
-        >({
-          sql: 'SELECT parent_id FROM drafts WHERE id = ?',
-          params: [cursor,],
-        },);
-        cursor = parentRow?.parent_id
-          ?? null;
+        cursor = await stepToParent(cursor,);
       }
       for (const id of chainIds) {
         await run({

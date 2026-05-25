@@ -101,23 +101,9 @@ await describe({
         },),
 
         it({
-          name: 'returns false when ifNoneMatch is null',
+          name: 'returns false when ifNoneMatch is absent',
           fn: async () => {
-            expect(matches({
-              ifNoneMatch: null,
-              etag: '"r3-7"',
-            },),)
-              .toBe(false,);
-          },
-        },),
-
-        it({
-          name: 'returns false when ifNoneMatch is undefined',
-          fn: async () => {
-            expect(matches({
-              ifNoneMatch: undefined,
-              etag: '"r3-7"',
-            },),)
+            expect(matches({ etag: '"r3-7"', },),)
               .toBe(false,);
           },
         },),

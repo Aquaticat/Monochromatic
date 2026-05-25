@@ -58,47 +58,48 @@ export type CompilePipelineMetrics = {
   putQueueDepthMax: number;
   /** Number of chunk renders discarded before their PUT acked. */
   wastedPuts: number;
-  /** Wall-clock time of the last tier 2 -\> 3 promotion (ms), or null. */
-  transitionMs: number | null;
+  /** Wall-clock time of the last tier 2 -\> 3 promotion (ms); absent before the first promotion. */
+  transitionMs?: number;
 };
 
 /** Mutable composer state. */
 export type ComposerState = {
   // oxlint-disable-next-line eslint/no-magic-numbers -- tier discriminant
   tier: 1 | 2 | 3;
-  worker: Worker | null;
+  /** Compile worker; absent until the first tier-2 compile spawns it. */
+  worker?: Worker;
   caps: StorageCaps;
-  /** Edit-mode message id, or null for new-message mode. */
-  editMessageId: number | null;
-  /** Persistent chunk-PUT outbox; null until the composer initialises it. */
-  outbox: Outbox | null;
-  /** Rendered-HTML chunk cache; null until the composer initialises it. */
-  cache: ChunkCache | null;
+  /** Edit-mode message id; absent in new-message mode. */
+  editMessageId?: number;
+  /** Persistent chunk-PUT outbox; built during attach and always present. */
+  outbox: Outbox;
+  /** Rendered-HTML chunk cache; built during attach and always present. */
+  cache: ChunkCache;
   /**
-   * Custom editor handle; null when the URL does not request the
-   * custom editor (`?editor=custom`). When non-null the editor is the
+   * Custom editor handle; absent when the URL does not request the
+   * custom editor (`?editor=custom`). When present the editor is the
    * authoritative input surface and mirrors its text into the
    * textarea on every change so the rest of the composer can keep
    * reading `textarea.value` synchronously.
    */
-  editor: Editor | null;
+  editor?: Editor;
   /**
-   * Live metrics aggregator used by the dev overlay. `null` when the
+   * Live metrics aggregator used by the dev overlay. Absent when the
    * overlay is not active (no `?debug=1`); when present, the worker
    * `metrics` and the tier-3 promotion timer feed into it.
    */
-  metrics: CompilePipelineMetrics | null;
+  metrics?: CompilePipelineMetrics;
   /**
    * Callbacks the metrics overlay exposes to producers (the composer
-   * worker and the tier-3 promotion path). `null` when the overlay
-   * is not mounted; helpers should null-check before invoking.
+   * worker and the tier-3 promotion path). Absent when the overlay
+   * is not mounted; helpers should guard before invoking.
    */
-  metricsHooks: {
+  metricsHooks?: {
     onWorkerMessage: (data: unknown,) => void;
     recordTransition: (ms: number,) => void;
-  } | null;
-  /** Tier-3 chunk-paginated state. */
-  tier3: {
+  };
+  /** Tier-3 chunk-paginated state; absent until tier-3 is reached. */
+  tier3?: {
     /** Index of the chunk currently in the editor surface. */
     currentSeq: number;
     /** Total number of chunks for the message under edit. */
@@ -107,16 +108,16 @@ export type ComposerState = {
     newDraftId: string;
     /**
      * Local copy of all chunks, populated when tier-3 was reached for
-     * a new message (chunks were not yet on the server). `null` in
+     * a new message (chunks were not yet on the server). Absent in
      * edit-mode tier 3; existing chunks resolve via the chain walk
      * on the server.
      */
-    localChunks: {
+    localChunks?: {
       md: string;
       html: string;
       charCount: number;
-    }[] | null;
-  } | null;
+    }[];
+  };
 };
 
 /** Aggregated result returned by the inline / worker compile paths. */

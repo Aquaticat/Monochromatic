@@ -120,9 +120,9 @@ export function compileViaWorker(
     // Pipe every worker message through the metrics hooks (when the
     // overlay is mounted). The hook discriminates on `kind` and only
     // folds `metrics` payloads, so non-metrics messages are no-ops.
-    /** Optional metrics hook; non-null causes the tee listener to fold metrics envelopes. */
+    /** Optional metrics hook; present causes the tee listener to fold metrics envelopes. */
     const { metricsHooks, } = input.state;
-    if (metricsHooks !== null) {
+    if (metricsHooks !== undefined) {
       worker.addEventListener(
         'message',
         function tee(event: MessageEvent<unknown>,): void {

@@ -31,7 +31,15 @@ import {
  *
  * @returns a ChunkUpload with sensible defaults
  */
-function sampleUpload(overrides: Partial<ChunkUpload>,): ChunkUpload {
+function sampleUpload(
+  overrides: {
+    readonly draftId?: string;
+    readonly seq?: number;
+    readonly md?: string;
+    readonly html?: string;
+    readonly charCount?: number;
+  },
+): ChunkUpload {
   return {
     draftId: 'd-1',
     seq: 0,

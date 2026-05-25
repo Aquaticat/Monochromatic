@@ -125,7 +125,7 @@ type WorkerMessage =
     readonly kind: 'undone' | 'redone';
     readonly id: number;
     readonly length: number;
-    readonly applied: Changeset | null;
+    readonly applied?: Changeset;
   }
   | {
     readonly kind: 'error';

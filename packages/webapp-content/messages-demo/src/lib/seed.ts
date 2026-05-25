@@ -21,11 +21,15 @@ import {
   BYTES_PER_KIB,
   BYTES_PER_MIB,
 } from '@monochromatic-dev/module-numeric-const';
-import { getArgumentValue, } from './args.ts';
+import {
+  ARG_ABSENT,
+  getArgumentValue,
+} from './args.ts';
 import {
   createDraft,
   finalizeDraft,
   putChunk,
+  REJECTED,
 } from './db/drafts.ts';
 
 import {
@@ -303,7 +307,6 @@ async function createMessage(
   await createDraft({
     id: draftId,
     userId: input.userId,
-    parentId: null,
   },);
   /** Monotonically incrementing chunk index forwarded to `putChunk`. */
   let seq = 0;
@@ -330,7 +333,7 @@ async function createMessage(
   /* oxlint-enable no-await-in-loop */
   if (chunkCount === 0)
     throw new Error('seed produced empty body',);
-  /** New messages.id; null is invalid here so the helper throws on missing finalize. */
+  /** New messages.id; `REJECTED` is invalid here so the helper throws on a failed finalize. */
   const messageId = await finalizeDraft({
     draftId,
     userId: input.userId,
@@ -341,8 +344,8 @@ async function createMessage(
       maxLength: PREVIEW_MAX_LENGTH,
     },),
   },);
-  if (messageId === null)
-    throw new Error('finalize returned null for seeded draft',);
+  if (messageId === REJECTED)
+    throw new Error('finalize rejected the seeded draft',);
   return messageId;
 }
 
@@ -361,7 +364,7 @@ export async function runSeed(): Promise<void> {
   /** `--count=` CLI value if present; defines the mixed-corpus mode. */
   const count = getArgumentValue('count',);
 
-  if (huge !== undefined) {
+  if (huge !== ARG_ABSENT) {
     /** Parsed gigabyte size from `--huge=`; positive number required. */
     const gigabytes = Number.parseFloat(huge,);
     if ((!Number.isFinite(gigabytes,)) || (gigabytes <= 0))
@@ -383,13 +386,17 @@ export async function runSeed(): Promise<void> {
     return;
   }
 
+  /** `--count=` value or the default literal when the flag is absent; fed to `parseInt`. */
+  const countRaw = count !== ARG_ABSENT
+    ? count
+    : String(DEFAULT_MESSAGE_COUNT,);
   /** Parsed message count; defaulted to `DEFAULT_MESSAGE_COUNT` when `--count=` is absent. */
   const messageCount = Number.parseInt(
-    count ?? String(DEFAULT_MESSAGE_COUNT,),
+    countRaw,
     DECIMAL_RADIX,
   );
   if ((!Number.isFinite(messageCount,)) || (messageCount <= 0))
-    throw new Error(`invalid --count=${String(count,)}`,);
+    throw new Error(`invalid --count=${countRaw}`,);
 
   console.log(`seeding ${String(messageCount,)} mixed-size messages...`,);
   // Sequential creation keeps stdout progress lines monotonic and avoids

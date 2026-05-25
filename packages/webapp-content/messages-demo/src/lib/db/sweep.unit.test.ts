@@ -26,12 +26,14 @@ const messagesMod = await import('./messages.ts');
 
 const {
   get,
+  NO_ROW,
   run,
 } = dbMod;
 const {
   createDraft,
   putChunk,
   finalizeDraft,
+  REJECTED,
 } = draftsMod;
 const {
   softDeleteMessage,
@@ -77,7 +79,7 @@ async function draftExists(draftId: string,): Promise<boolean> {
     sql: 'SELECT id FROM drafts WHERE id = ?',
     params: [draftId,],
   },);
-  return row !== undefined;
+  return row !== NO_ROW;
 }
 
 /**
@@ -92,7 +94,7 @@ async function messageRowExists(messageId: number,): Promise<boolean> {
     sql: 'SELECT id FROM messages WHERE id = ?',
     params: [messageId,],
   },);
-  return row !== undefined;
+  return row !== NO_ROW;
 }
 
 await describe({
@@ -109,9 +111,7 @@ await describe({
             const draftId = uniqueId('orph-old',);
             await createDraft({
               id: draftId,
-              userId: 'user-a',
-              parentId: null,
-            },);
+              userId: 'user-a',            },);
             // Backdate the row so the sweep cutoff catches it.
             const stale = Date.now() - ORPHAN_TTL_MS - 1_000;
             await run({
@@ -132,9 +132,7 @@ await describe({
             const draftId = uniqueId('orph-fresh',);
             await createDraft({
               id: draftId,
-              userId: 'user-a',
-              parentId: null,
-            },);
+              userId: 'user-a',            },);
             await sweepOrphans({ userId: 'user-a', },);
             expect(await draftExists(draftId,),).toBe(true,);
           },
@@ -146,9 +144,7 @@ await describe({
             const draftId = uniqueId('orph-finalised',);
             await createDraft({
               id: draftId,
-              userId: 'user-a',
-              parentId: null,
-            },);
+              userId: 'user-a',            },);
             await putChunk({
               draftId,
               seq: 0,
@@ -165,7 +161,7 @@ await describe({
               chunkCount: 1,
               preview: 'x',
             },);
-            expect(messageId,).not.toBeNull();
+            expect(messageId,).not.toBe(REJECTED,);
             const stale = Date.now() - ORPHAN_TTL_MS - 1_000;
             await run({
               sql: 'UPDATE drafts SET updated_at = ? WHERE id = ?',
@@ -174,7 +170,7 @@ await describe({
                 draftId,
               ],
             },);
-            await sweepOrphans({ userId: null, },);
+            await sweepOrphans({},);
             expect(await draftExists(draftId,),).toBe(true,);
           },
         },),
@@ -186,14 +182,10 @@ await describe({
             const bDraft = uniqueId('orph-b',);
             await createDraft({
               id: aDraft,
-              userId: 'user-a',
-              parentId: null,
-            },);
+              userId: 'user-a',            },);
             await createDraft({
               id: bDraft,
-              userId: 'user-b',
-              parentId: null,
-            },);
+              userId: 'user-b',            },);
             const stale = Date.now() - ORPHAN_TTL_MS - 1_000;
             await run({
               sql: 'UPDATE drafts SET updated_at = ? WHERE id IN (?, ?)',
@@ -224,9 +216,7 @@ await describe({
               // oxlint-disable-next-line no-await-in-loop
               await createDraft({
                 id,
-                userId: 'user-a',
-                parentId: null,
-              },);
+                userId: 'user-a',              },);
             }
             const stale = Date.now() - ORPHAN_TTL_MS - 1_000;
             for (const id of ids) {
@@ -263,9 +253,7 @@ await describe({
             const root = uniqueId('del-root',);
             await createDraft({
               id: root,
-              userId: 'user-a',
-              parentId: null,
-            },);
+              userId: 'user-a',            },);
             await putChunk({
               draftId: root,
               seq: 0,
@@ -282,9 +270,9 @@ await describe({
               chunkCount: 1,
               preview: 'p',
             },);
-            expect(messageId,).not.toBeNull();
-            if (messageId === null)
-              throw new Error('messageId null',);
+            expect(messageId,).not.toBe(REJECTED,);
+            if ((typeof messageId) === 'symbol')
+              throw new Error('finalizeDraft rejected the draft',);
 
             const child = uniqueId('del-child',);
             await createDraft({
@@ -340,7 +328,9 @@ await describe({
                 child,
               ],
             },);
-            expect(remaining?.count,).toBe(0,);
+            if ((typeof remaining) === 'symbol')
+              throw new Error('COUNT(*) returned no row',);
+            expect(remaining.count,).toBe(0,);
           },
         },),
 
@@ -350,9 +340,7 @@ await describe({
             const draftId = uniqueId('del-fresh',);
             await createDraft({
               id: draftId,
-              userId: 'user-a',
-              parentId: null,
-            },);
+              userId: 'user-a',            },);
             await putChunk({
               draftId,
               seq: 0,
@@ -369,8 +357,8 @@ await describe({
               chunkCount: 1,
               preview: 'x',
             },);
-            if (messageId === null)
-              throw new Error('messageId null',);
+            if ((typeof messageId) === 'symbol')
+              throw new Error('finalizeDraft rejected the draft',);
             await softDeleteMessage({
               messageId,
               userId: 'user-a',
@@ -387,9 +375,7 @@ await describe({
             const draftId = uniqueId('del-alive',);
             await createDraft({
               id: draftId,
-              userId: 'user-a',
-              parentId: null,
-            },);
+              userId: 'user-a',            },);
             await putChunk({
               draftId,
               seq: 0,
@@ -406,8 +392,8 @@ await describe({
               chunkCount: 1,
               preview: 'x',
             },);
-            if (messageId === null)
-              throw new Error('messageId null',);
+            if ((typeof messageId) === 'symbol')
+              throw new Error('finalizeDraft rejected the draft',);
             await sweepDeleted();
             expect(await messageRowExists(messageId,),).toBe(true,);
             expect(await draftExists(draftId,),).toBe(true,);
@@ -430,9 +416,7 @@ await describe({
               // oxlint-disable-next-line no-await-in-loop
               await createDraft({
                 id: draftId,
-                userId: 'user-a',
-                parentId: null,
-              },);
+                userId: 'user-a',              },);
               // oxlint-disable-next-line no-await-in-loop
               await putChunk({
                 draftId,
@@ -451,8 +435,8 @@ await describe({
                 chunkCount: 1,
                 preview: 'x',
               },);
-              if (id === null)
-                throw new Error('id null',);
+              if ((typeof id) === 'symbol')
+                throw new Error('finalizeDraft rejected the draft',);
               messageIds.push(id,);
             }
             // Soft-delete + backdate every candidate.

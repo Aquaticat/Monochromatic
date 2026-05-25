@@ -105,7 +105,7 @@ type OutboundMessage =
     readonly kind: 'undone' | 'redone';
     readonly id: number;
     readonly length: number;
-    readonly applied: Changeset | null;
+    readonly applied?: Changeset;
   }
   | {
     readonly kind: 'error';
@@ -127,9 +127,16 @@ const undoStack: UndoEntry[] = [];
 /** Inverse changesets popped by undo, available to redo. Cleared on edit. */
 const redoStack: UndoEntry[] = [];
 
+/**
+ * Sentinel for "no collapse queued". A unique `Symbol` rather than
+ * `null`: a live timer handle is the only other value, so the scheduler
+ * gates with `!== NO_TIMER`.
+ */
+const NO_TIMER: unique symbol = Symbol('messages-demo:no-collapse-timer',);
+
 /* oxlint-disable no-restricted-syntax/no-module-root-let -- singleton timer handle: set when a collapse is scheduled, cleared from inside the timeout and from `scheduleCollapseIfNeeded` after re-check; wrapping in a Map adds noise without a key to hang state off */
-/** Pending collapse timer; null when no collapse is queued. */
-let collapseTimer: ReturnType<typeof setTimeout> | null = null;
+/** Pending collapse timer; `NO_TIMER` when no collapse is queued. */
+let collapseTimer: ReturnType<typeof setTimeout> | typeof NO_TIMER = NO_TIMER;
 /* oxlint-enable no-restricted-syntax/no-module-root-let */
 
 /**
@@ -148,11 +155,11 @@ function scheduleCollapseIfNeeded(): void {
     .length
     < COLLAPSE_THRESHOLD_NODES)
     return;
-  if (collapseTimer !== null)
+  if (collapseTimer !== NO_TIMER)
     return;
   collapseTimer = setTimeout(
     function runCollapse() {
-      collapseTimer = null;
+      collapseTimer = NO_TIMER;
       if (table.pieces
         .length
         < COLLAPSE_THRESHOLD_NODES)
@@ -322,7 +329,7 @@ function handleUndoRedo(
   /** Stack to push the inverse re-application onto so the user can reverse direction. */
   const sinkStack = data.kind
     === 'undo' ? redoStack : undoStack;
-  /** Popped step; undefined means the stack was empty so the reply carries `applied: null`. */
+  /** Popped step; undefined means the stack was empty so the reply omits `applied`. */
   const entry = sourceStack.pop();
   /** Reply discriminant chosen by direction (`undone` or `redone`). */
   const replyKind = data.kind
@@ -332,7 +339,6 @@ function handleUndoRedo(
       kind: replyKind,
       id: data.id,
       length: table.length,
-      applied: null,
     },);
     return;
   }

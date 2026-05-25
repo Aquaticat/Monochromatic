@@ -20,11 +20,22 @@ import {
 import { mkdirSync, } from 'node:fs';
 import { dirname, } from 'node:path';
 
-import { getArgumentValue, } from './args.ts';
+import {
+  ARG_ABSENT,
+  getArgumentValue,
+} from './args.ts';
 import { runMigrations, } from './db/migrations.ts';
 
 /** Default SQLite path when neither `--db=` nor `DB_PATH` env var is provided. */
 const DEFAULT_DATABASE_PATH = './data/messages-demo.db';
+
+/**
+ * Sentinel returned by `get` when a query matches no row. A unique
+ * `Symbol` rather than `null`/`undefined`: the `no-nullish-union` rule
+ * bans a nullish "absent" arm, and a real row is always a non-symbol
+ * object, so callers disambiguate with `result === NO_ROW`.
+ */
+export const NO_ROW: unique symbol = Symbol('messages-demo:no-row',);
 
 /**
  * Strips the `file:` URI prefix if present, returning a plain filesystem path.
@@ -52,8 +63,9 @@ function resolveDatabasePath(): string {
   const environmentPath = process.env
     .DB_PATH;
   /** Resolved precedence: CLI \> env \> default. */
-  const rawPath = argumentPath ?? environmentPath
-    ?? DEFAULT_DATABASE_PATH;
+  const rawPath = argumentPath !== ARG_ABSENT
+    ? argumentPath
+    : (environmentPath ?? DEFAULT_DATABASE_PATH);
   return normalizeDatabasePath(rawPath,);
 }
 
@@ -123,15 +135,17 @@ export async function run(
 }
 
 /**
- * Convenience: prepare + fetch the first row, or `undefined` if none.
+ * Convenience: prepare + fetch the first row, or the `NO_ROW` sentinel
+ * when the query matches nothing.
  *
  * @param input - SQL with `?` placeholders and the bind parameters
  *
- * @returns first row or `undefined`
+ * @returns first row, or `NO_ROW` when there is no matching row
  *
  * @example
  * ```ts
  * const row = await get<{ name: string; }>({ sql: 'SELECT name FROM users WHERE id = ?', params: [id] });
+ * if (row === NO_ROW) throw new Error('missing');
  * ```
  */
 export async function get<T = Record<string, unknown>,>(
@@ -139,14 +153,14 @@ export async function get<T = Record<string, unknown>,>(
     readonly sql: string;
     readonly params?: readonly unknown[];
   },
-): Promise<T | undefined> {
+): Promise<T | typeof NO_ROW> {
   /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
   const stmt = db.prepare(input.sql,);
   /* oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion -- Turso returns any */
   /** Raw row returned by Turso; widened to `unknown` here and asserted to `T` below. */
   const value = await stmt.get(...(input.params
     ?? []),);
-  return ((value === undefined) || (value === null)) ? undefined : value as T;
+  return ((value === undefined) || (value === null)) ? NO_ROW : value as T;
   /* oxlint-enable typescript/no-unsafe-assignment, typescript/no-unsafe-type-assertion */
 }
 

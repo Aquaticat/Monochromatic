@@ -54,7 +54,7 @@ export async function promoteToTier3(
 ): Promise<void> {
   if (input.state
     .tier3
-    !== null)
+    !== undefined)
     return;
   // Reserve the tier-3 slot synchronously BEFORE any await so a
   // re-entrant debounce firing during the worker compile or draft
@@ -94,8 +94,9 @@ export async function promoteToTier3(
     === 0) {
     input.state
       .tier = 2;
-    input.state
-      .tier3 = null;
+    // Clears the optional tier-3 slot; `exactOptionalPropertyTypes` forbids assigning `undefined`.
+    delete input.state
+      .tier3;
     setStatus({
       status: input.status,
       message: 'tier 3 promotion aborted (no chunks)',
@@ -107,7 +108,6 @@ export async function promoteToTier3(
   await postCreateDraft({
     id: newDraftId,
     userId,
-    parentId: null,
   },);
   input.state
     .tier3
@@ -124,21 +124,17 @@ export async function promoteToTier3(
     };
   },);
   // Background upload via the outbox; flush awaited at send time.
-  if (input.state
-    .outbox
-    !== null) {
-    for (const [seq, chunk,] of compiled.chunks
-      .entries()) {
-      void input.state
-        .outbox
-        .enqueue({
-        draftId: newDraftId,
-        seq,
-        md: chunk.md,
-        html: chunk.html,
-        charCount: chunk.charCount,
-      },);
-    }
+  for (const [seq, chunk,] of compiled.chunks
+    .entries()) {
+    void input.state
+      .outbox
+      .enqueue({
+      draftId: newDraftId,
+      seq,
+      md: chunk.md,
+      html: chunk.html,
+      charCount: chunk.charCount,
+    },);
   }
   // Swap the surface: textarea (and editor mirror) now hold chunk 0;
   // nav appears.
@@ -154,7 +150,6 @@ export async function promoteToTier3(
     textarea: input.textarea,
     state: input.state,
     status: input.status,
-    messageId: null,
   },);
   setStatus({
     status: input.status,

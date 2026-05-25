@@ -8,6 +8,14 @@ import {
 } from 'tsdown';
 
 /**
+ * Base `alwaysBundle` list. `Array.isArray` below narrows the
+ * `Arrayable<string | RegExp> | NoExternalFn | undefined` union to its
+ * array arm so the merge stays null-free without a type assertion.
+ */
+const baseAlwaysBundle = base.deps
+  ?.alwaysBundle;
+
+/**
  * Client-side browser bundle config for the messages-demo webapp.
  *
  * Three entry points:
@@ -40,10 +48,9 @@ const config: UserConfig = defineConfig({
     alwaysBundle: [
       // Spread the base's RegExp array; the type is `Arrayable<string |
       // RegExp> | NoExternalFn`, but the base config always uses an array.
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- base config invariant
-      ...(base.deps
-        ?.alwaysBundle as readonly (string | RegExp)[] | undefined
-        ?? []),
+      ...(Array.isArray(baseAlwaysBundle,)
+        ? baseAlwaysBundle
+        : []),
       /* oxlint-disable no-restricted-syntax/no-regex -- anchored package-name matchers consumed by tsdown's alwaysBundle list; each pattern is `^literal` or `^literal-` with no quantifiers, matching one short specifier per dependency at build time */
       /^micromark/u,
       /^micromark-/u,

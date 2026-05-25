@@ -7,22 +7,35 @@
  * unchanged chunks.
  */
 
-import db, {
+import {
   all,
   get,
-  run,
+  NO_ROW,
 } from '../db.ts';
+import {
+  CHAIN_END,
+  stepToParent,
+} from './chain.ts';
 import {
   type Cursor,
   FEED_PAGE_SIZE,
 } from '../pagination.ts';
 
+export {
+  type DeleteOutcome,
+  editMessage,
+  type EditOutcome,
+  MAX_REVISIONS,
+  softDeleteMessage,
+} from './messages-writes.ts';
+
 /**
- * Maximum number of edits per message. The 11th edit returns 409 with a
- * suggestion to "save as new message." Cap exists because chain depth
- * grows linearly with revisions and chain compaction is out of scope.
+ * Sentinel for a read that resolves no entity: `getSnapshot` for a
+ * missing or soft-deleted message, `getChunk` for an out-of-range chunk
+ * index. A unique `Symbol` rather than `null`; a real snapshot or chunk
+ * is always an object, so callers disambiguate with `=== ABSENT`.
  */
-export const MAX_REVISIONS = 10;
+export const ABSENT: unique symbol = Symbol('messages-demo:absent',);
 
 /** Public shape of a row in the message feed. */
 export type FeedMessage = {
@@ -53,19 +66,19 @@ export type MessageSnapshot = {
  * can plan an index-only walk.
  *
  * @param cursor - position of the last message on the previous page,
- *                 or `null` for the first page
+ *                 omitted for the first page
  *
  * @returns up to `FEED_PAGE_SIZE` rows in newest-first order
  *
  * @example
  * ```ts
- * const page = await listFeed(null);
+ * const page = await listFeed();
  * const next = await listFeed({ createdAt: page.at(-1)!.createdAt, id: page.at(-1)!.id });
  * ```
  */
-export async function listFeed(cursor: Cursor | null,): Promise<FeedMessage[]> {
+export async function listFeed(cursor?: Cursor,): Promise<FeedMessage[]> {
   /** Raw SQL rows from the cursor or non-cursor query; mapped to the FeedMessage shape below. */
-  const rows = cursor === null
+  const rows = cursor === undefined
     ? await all<{
       readonly id: number;
       readonly user_id: string;
@@ -138,24 +151,27 @@ export async function feedAggregates(): Promise<{
   maxId: number;
   maxUpdatedAt: number;
 }> {
-  /** Single-row aggregates query; nulls map to zeros so empty corpora still produce a stable ETag. */
+  /** Single-row aggregates query; `COALESCE` folds the empty-corpus null into 0 in SQL so the row type stays null-free. */
   const row = await get<{
-    max_id: number | null;
-    max_updated_at: number | null;
+    max_id: number;
+    max_updated_at: number;
   }>({
-    sql: `SELECT MAX(id) AS max_id, MAX(updated_at) AS max_updated_at
+    sql: `SELECT COALESCE(MAX(id), 0) AS max_id, COALESCE(MAX(updated_at), 0) AS max_updated_at
        FROM messages WHERE deleted_at IS NULL`,
   },);
+  if (row === NO_ROW)
+    return {
+      maxId: 0,
+      maxUpdatedAt: 0,
+    };
   return {
-    maxId: row?.max_id
-      ?? 0,
-    maxUpdatedAt: row?.max_updated_at
-      ?? 0,
+    maxId: row.max_id,
+    maxUpdatedAt: row.max_updated_at,
   };
 }
 
 /**
- * Loads the snapshot for a single message. Returns `null` when the
+ * Loads the snapshot for a single message. Returns `ABSENT` when the
  * message does not exist or is soft-deleted (handlers translate this to
  * 410 Gone vs 404 based on whether the row exists at all).
  *
@@ -165,15 +181,15 @@ export async function feedAggregates(): Promise<{
  *
  * @param messageId - target message id
  *
- * @returns snapshot, or `null` when not found or deleted
+ * @returns snapshot, or `ABSENT` when not found or deleted
  *
  * @example
  * ```ts
  * const snapshot = await getSnapshot(42);
  * ```
  */
-export async function getSnapshot(messageId: number,): Promise<MessageSnapshot | null> {
-  /** Single-row snapshot lookup; null result or non-null `deleted_at` returns the public null below. */
+export async function getSnapshot(messageId: number,): Promise<MessageSnapshot | typeof ABSENT> {
+  /** Single-row snapshot lookup; `deleted` (0/1) is computed in SQL so the row type stays null-free. */
   const row = await get<{
     id: number;
     draft_id: string;
@@ -181,17 +197,17 @@ export async function getSnapshot(messageId: number,): Promise<MessageSnapshot |
     chunk_count: number;
     user_id: string;
     user_name: string;
-    deleted_at: number | null;
+    deleted: number;
   }>({
     sql: `SELECT m.id, m.draft_id, m.revision, m.chunk_count, m.user_id,
-            u.name AS user_name, m.deleted_at
+            u.name AS user_name, (m.deleted_at IS NOT NULL) AS deleted
        FROM messages m JOIN users u ON u.id = m.user_id
        WHERE m.id = ?`,
     params: [messageId,],
   },);
-  if ((row === undefined) || (row.deleted_at
-    !== null))
-    return null;
+  if ((row === NO_ROW) || (row.deleted
+    !== 0))
+    return ABSENT;
   return {
     id: row.id,
     draftId: row.draft_id,
@@ -217,13 +233,15 @@ export async function getSnapshot(messageId: number,): Promise<MessageSnapshot |
  * ```
  */
 export async function messageExists(messageId: number,): Promise<boolean> {
-  /** Single-row EXISTS probe; null result returns `false` via the coalesce. */
+  /** Single-row EXISTS probe; a no-row result reads as "does not exist". */
   const row = await get<{ exists: number; }>({
     sql: 'SELECT EXISTS(SELECT 1 FROM messages WHERE id = ?) AS "exists"',
     params: [messageId,],
   },);
-  return (row?.exists
-    ?? 0) === 1;
+  if (row === NO_ROW)
+    return false;
+  return row.exists
+    === 1;
 }
 
 /** Pre-rendered chunk fields returned to the read path. */
@@ -242,7 +260,7 @@ export type ChunkRow = {
  *
  * @param input - message + chunk index
  *
- * @returns chunk content, or `null` when the chunk index is out of range
+ * @returns chunk content, or `ABSENT` when the chunk index is out of range
  *
  * @example
  * ```ts
@@ -254,7 +272,7 @@ export async function getChunk(
     readonly messageId: number;
     readonly chunkIndex: number;
   },
-): Promise<ChunkRow | null> {
+): Promise<ChunkRow | typeof ABSENT> {
   // Turso does not implement recursive CTEs, so we walk the chain in
   // JS. Chain depth is `revision - 1`; capped at 10 by the edit handler,
   // so this loop is bounded.
@@ -263,17 +281,17 @@ export async function getChunk(
     sql: 'SELECT draft_id FROM messages WHERE id = ?',
     params: [input.messageId,],
   },);
-  if (head === undefined)
-    return null;
-  /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor with side-effecting branches: the walk advances `cursor` after each row-by-row decision and exits via either `return found` or the parent-id reassignment to null */
+  if (head === NO_ROW)
+    return ABSENT;
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor with side-effecting branches: the walk advances `cursor` after each row-by-row decision and exits via either `return found` or the reassignment to the `CHAIN_END` sentinel */
   /** Walk cursor; advances to each draft's parent until a chunk is found or the chain ends. */
-  let cursor: string | null = head.draft_id;
+  let cursor: string | typeof CHAIN_END = head.draft_id;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
   // Chain walk: each iteration must read the previous draft's parent_id
   // before deciding whether to keep walking. Inherently sequential.
   /* oxlint-disable eslint/no-await-in-loop */
-  while (cursor !== null) {
-    /** Chunk row in the current draft, if present; non-undefined returns the chunk immediately. */
+  while (cursor !== CHAIN_END) {
+    /** Chunk row in the current draft, if present; a real row returns the chunk immediately. */
     const found = await get<{
       md: string;
       html: string;
@@ -284,193 +302,10 @@ export async function getChunk(
         input.chunkIndex,
       ],
     },);
-    if (found !== undefined)
+    if (found !== NO_ROW)
       return found;
-    /** Parent draft id used to step the chain back one revision. */
-    const parentRow: { parent_id: string | null; } | undefined = await get<
-      { parent_id: string | null; }
-    >({
-      sql: 'SELECT parent_id FROM drafts WHERE id = ?',
-      params: [cursor,],
-    },);
-    cursor = parentRow?.parent_id
-      ?? null;
+    cursor = await stepToParent(cursor,);
   }
   /* oxlint-enable eslint/no-await-in-loop */
-  return null;
-}
-
-/** Outcome codes returned by the edit handler. */
-export type EditOutcome =
-  | {
-    readonly kind: 'ok';
-    readonly newRevision: number;
-  }
-  | { readonly kind: 'forbidden'; }
-  | { readonly kind: 'capped'; }
-  | { readonly kind: 'not-found'; };
-
-/**
- * Atomically swaps a message's `draft_id` to a new draft and increments
- * `revision`. Refuses when:
- *
- * - The message does not exist (`not-found`)
- * - The user does not own the message (`forbidden`)
- * - The message has already been edited `MAX_REVISIONS` times (`capped`)
- *
- * The new draft must already exist and be owned by the same user; this
- * is checked in the SAME transaction so an in-flight cancellation
- * cannot race the edit.
- *
- * @param input - message id, user id, new draft id, aggregated counts
- *
- * @returns outcome describing why the edit succeeded or was refused
- *
- * @example
- * ```ts
- * const outcome = await editMessage({ messageId, userId, newDraftId, charCount, chunkCount, preview });
- * ```
- */
-export async function editMessage(
-  input: {
-    readonly messageId: number;
-    readonly userId: string;
-    readonly newDraftId: string;
-    readonly charCount: number;
-    readonly chunkCount: number;
-    readonly preview: string;
-  },
-): Promise<EditOutcome> {
-  await db.exec('BEGIN IMMEDIATE',);
-  try {
-    /** Current message row; drives the outcome variant based on existence, ownership, and revision cap. */
-    const message = await get<{
-      user_id: string;
-      revision: number;
-      deleted_at: number | null;
-    }>({
-      sql: 'SELECT user_id, revision, deleted_at FROM messages WHERE id = ?',
-      params: [input.messageId,],
-    },);
-    if ((message === undefined) || (message.deleted_at
-      !== null)) {
-      await db.exec('ROLLBACK',);
-      return { kind: 'not-found', };
-    }
-    if (message.user_id
-      !== input
-      .userId) {
-      await db.exec('ROLLBACK',);
-      return { kind: 'forbidden', };
-    }
-    if (message.revision
-      >= MAX_REVISIONS) {
-      await db.exec('ROLLBACK',);
-      return { kind: 'capped', };
-    }
-    /** Child draft row; absent or mismatched ownership becomes `forbidden`. */
-    const newDraft = await get<{
-      user_id: string;
-      finalized: number;
-    }>({
-      sql: 'SELECT user_id, finalized FROM drafts WHERE id = ?',
-      params: [input.newDraftId,],
-    },);
-    if ((newDraft === undefined) || (newDraft.user_id
-      !== input
-      .userId)) {
-      await db.exec('ROLLBACK',);
-      return { kind: 'forbidden', };
-    }
-
-    /** Captured before the UPDATE so messages.updated_at reflects the commit moment. */
-    const now = Date.now();
-    /** Incremented revision returned to the handler so it can echo the new value. */
-    const newRevision = message.revision
-      + 1;
-    await run({
-      sql: `UPDATE messages
-         SET draft_id = ?, revision = ?, updated_at = ?,
-             char_count = ?, chunk_count = ?, preview = ?
-         WHERE id = ?`,
-      params: [
-        input.newDraftId,
-        newRevision,
-        now,
-        input.charCount,
-        input.chunkCount,
-        input.preview,
-        input.messageId,
-      ],
-    },);
-    await run({
-      sql: 'UPDATE drafts SET finalized = 1 WHERE id = ?',
-      params: [input.newDraftId,],
-    },);
-    await db.exec('COMMIT',);
-    return {
-      kind: 'ok',
-      newRevision,
-    };
-  }
-  catch (error) {
-    await db.exec('ROLLBACK',);
-    throw error;
-  }
-}
-
-/** Outcome codes returned by the delete handler. */
-export type DeleteOutcome =
-  | { readonly kind: 'ok'; }
-  | { readonly kind: 'forbidden'; }
-  | { readonly kind: 'not-found'; };
-
-/**
- * Soft-deletes a message. Subsequent feed reads exclude it via the
- * partial index; `getSnapshot` returns `null`. Hard-delete and chunk
- * cleanup happen in the deleted-message sweep.
- *
- * @param input - message id and identity
- *
- * @returns outcome explaining whether the row was updated
- *
- * @example
- * ```ts
- * const outcome = await softDeleteMessage({ messageId, userId });
- * ```
- */
-export async function softDeleteMessage(
-  input: {
-    readonly messageId: number;
-    readonly userId: string;
-  },
-): Promise<DeleteOutcome> {
-  /** Current message row; absent or already-deleted becomes `not-found`, mismatched user becomes `forbidden`. */
-  const message = await get<{
-    user_id: string;
-    deleted_at: number | null;
-  }>({
-    sql: 'SELECT user_id, deleted_at FROM messages WHERE id = ?',
-    params: [input.messageId,],
-  },);
-  if (message === undefined)
-    return { kind: 'not-found', };
-  if (message.deleted_at
-    !== null)
-    return { kind: 'not-found', };
-  if (message.user_id
-    !== input
-    .userId)
-    return { kind: 'forbidden', };
-  /** Captured before the UPDATE so deleted_at and updated_at land at the same instant. */
-  const now = Date.now();
-  await run({
-    sql: 'UPDATE messages SET deleted_at = ?, updated_at = ? WHERE id = ?',
-    params: [
-      now,
-      now,
-      input.messageId,
-    ],
-  },);
-  return { kind: 'ok', };
+  return ABSENT;
 }

@@ -10,26 +10,38 @@
 const IDENTITY_KEY = 'messages-demo:identity';
 
 /**
- * Loads the persisted identity, or `null` when none is stored or when
- * `localStorage` is unavailable / failing.
+ * Sentinel returned by `loadIdentity` when no identity is stored or
+ * `localStorage` is unavailable. A unique `Symbol` rather than `null`:
+ * a stored identity is always a string, so callers gate with
+ * `=== NO_IDENTITY`.
+ */
+export const NO_IDENTITY: unique symbol = Symbol('messages-demo:no-identity',);
+
+/**
+ * Loads the persisted identity, or `NO_IDENTITY` when none is stored or
+ * when `localStorage` is unavailable / failing.
  *
  * @param available - whether the storage probe succeeded
  *
- * @returns persisted identity or `null`
+ * @returns persisted identity or `NO_IDENTITY`
  *
  * @example
  * ```ts
  * const identity = loadIdentity(caps.localStorage);
  * ```
  */
-export function loadIdentity(available: boolean,): string | null {
+export function loadIdentity(available: boolean,): string | typeof NO_IDENTITY {
   if (!available)
-    return null;
+    return NO_IDENTITY;
   try {
-    return localStorage.getItem(IDENTITY_KEY,);
+    /** Raw Web Storage read; `getItem` yields `null` for an absent key, mapped to the sentinel. */
+    const stored = localStorage.getItem(IDENTITY_KEY,);
+    if (stored === null)
+      return NO_IDENTITY;
+    return stored;
   }
   catch {
-    return null;
+    return NO_IDENTITY;
   }
 }
 

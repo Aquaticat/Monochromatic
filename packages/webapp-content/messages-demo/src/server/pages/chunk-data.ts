@@ -10,6 +10,7 @@
  */
 
 import {
+  ABSENT,
   getChunk,
   getSnapshot,
 } from '../../lib/db/messages.ts';
@@ -64,6 +65,29 @@ type ChunkFields = {
 };
 
 /**
+ * Forwards an optional `If-None-Match` into a spreadable object whose
+ * property is omitted when absent, so the value can flow between
+ * optional slots under `exactOptionalPropertyTypes` without a
+ * `| undefined` annotation.
+ *
+ * @param ifNoneMatch - header value, or `undefined` when absent
+ *
+ * @returns object carrying `ifNoneMatch` only when present
+ *
+ * @example
+ * ```ts
+ * renderChunkData({ ...optionalIfNoneMatch(input.ifNoneMatch), messageId, chunkIndex, contentType, pickField });
+ * ```
+ */
+function optionalIfNoneMatch(
+  ifNoneMatch?: string,
+): { readonly ifNoneMatch?: string; } {
+  if (ifNoneMatch === undefined)
+    return {};
+  return { ifNoneMatch, };
+}
+
+/**
  * Returns the raw pre-rendered HTML for one chunk.
  *
  * @param input - message id, chunk index, and the request `If-None-Match` header
@@ -72,20 +96,20 @@ type ChunkFields = {
  *
  * @example
  * ```ts
- * const r = await renderChunkRaw({ messageId: 1, chunkIndex: 0, ifNoneMatch: null });
+ * const r = await renderChunkRaw({ messageId: 1, chunkIndex: 0 });
  * ```
  */
 export async function renderChunkRaw(
   input: {
     readonly messageId: number;
     readonly chunkIndex: number;
-    readonly ifNoneMatch: string | null;
+    readonly ifNoneMatch?: string;
   },
 ): Promise<Response> {
   return await renderChunkData({
     messageId: input.messageId,
     chunkIndex: input.chunkIndex,
-    ifNoneMatch: input.ifNoneMatch,
+    ...optionalIfNoneMatch(input.ifNoneMatch,),
     contentType: 'text/html; charset=utf-8',
     pickField: pickHtml,
   },);
@@ -100,20 +124,20 @@ export async function renderChunkRaw(
  *
  * @example
  * ```ts
- * const r = await renderChunkMd({ messageId: 1, chunkIndex: 0, ifNoneMatch: null });
+ * const r = await renderChunkMd({ messageId: 1, chunkIndex: 0 });
  * ```
  */
 export async function renderChunkMd(
   input: {
     readonly messageId: number;
     readonly chunkIndex: number;
-    readonly ifNoneMatch: string | null;
+    readonly ifNoneMatch?: string;
   },
 ): Promise<Response> {
   return await renderChunkData({
     messageId: input.messageId,
     chunkIndex: input.chunkIndex,
-    ifNoneMatch: input.ifNoneMatch,
+    ...optionalIfNoneMatch(input.ifNoneMatch,),
     contentType: 'text/markdown; charset=utf-8',
     pickField: pickMd,
   },);
@@ -133,12 +157,12 @@ async function renderChunkData(
     readonly chunkIndex: number;
     readonly contentType: string;
     readonly pickField: (chunk: ChunkFields,) => string;
-    readonly ifNoneMatch: string | null;
+    readonly ifNoneMatch?: string;
   },
 ): Promise<Response> {
-  /** Snapshot of the message; null returns 410 Gone (deleted or never existed). */
+  /** Snapshot of the message; `ABSENT` returns 410 Gone (deleted or never existed). */
   const snapshot = await getSnapshot(input.messageId,);
-  if (snapshot === null) {
+  if (snapshot === ABSENT) {
     return new Response(
       null,
       {
@@ -152,7 +176,8 @@ async function renderChunkData(
     revision: snapshot.revision,
     chunkIndex: input.chunkIndex,
   },);
-  if (matches({
+  if ((input.ifNoneMatch
+    !== undefined) && matches({
     ifNoneMatch: input.ifNoneMatch,
     etag,
   },)) {
@@ -184,7 +209,7 @@ async function renderChunkData(
     messageId: input.messageId,
     chunkIndex: input.chunkIndex,
   },);
-  if (chunk === null) {
+  if (chunk === ABSENT) {
     return new Response(
       null,
       {

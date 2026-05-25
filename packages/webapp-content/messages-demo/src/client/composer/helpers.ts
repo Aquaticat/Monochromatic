@@ -11,6 +11,20 @@ import type { ComposerState, } from './state.ts';
 /** Decimal radix for `parseInt`. */
 const DECIMAL_RADIX = 10;
 
+/**
+ * Sentinel returned by `parseEditId` for the new-message mode (no
+ * `data-edit-message-id`). A unique `Symbol` rather than `null`: an
+ * edit-mode id is always a number, so callers gate with `=== NEW_MESSAGE`.
+ */
+export const NEW_MESSAGE: unique symbol = Symbol('messages-demo:new-message',);
+
+/**
+ * Sentinel returned by `fetchHeadDraftId` when a draft should be created
+ * with no parent. A unique `Symbol` rather than `null`: a real head draft
+ * id is a string, so callers gate with `=== NO_PARENT`.
+ */
+export const NO_PARENT: unique symbol = Symbol('messages-demo:no-parent',);
+
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `state.editor` is mutated via `setText`; `textarea` is a `HTMLTextAreaElement` with mutating DOM methods by design */
 /**
  * Writes `text` into the body surface, updating both the hidden
@@ -37,7 +51,7 @@ export function writeBody(
     .value = input.text;
   if (input.state
     .editor
-    !== null)
+    !== undefined)
     void input.state
       .editor
       .setText(input.text,);
@@ -54,14 +68,14 @@ const RANDOM_ID_RANGE = 1e9;
  *
  * @example
  * ```ts
- * await postCreateDraft({ id, userId, parentId: null });
+ * await postCreateDraft({ id, userId });
  * ```
  */
 export async function postCreateDraft(
   input: {
     readonly id: string;
     readonly userId: string;
-    readonly parentId: string | null;
+    readonly parentId?: string;
   },
 ): Promise<void> {
   /** Awaited so the `!ok` branch can read the body before throwing. */
@@ -123,7 +137,7 @@ export async function fetchChunkCount(messageId: number,): Promise<number> {
  * has no parent and the granular-edit inheritance path uploads every
  * chunk explicitly.
  *
- * Returning `null` here is the safe option for the demo: edits create
+ * Returning `NO_PARENT` here is the safe option for the demo: edits create
  * a draft with no parent, and the tier-3 path uploads (or inherits via
  * fetch-and-PUT) every chunk explicitly. The tradeoff is more network
  * traffic on edit; the never-stale guarantee and revision count are
@@ -131,15 +145,15 @@ export async function fetchChunkCount(messageId: number,): Promise<number> {
  *
  * @param _messageId - reserved for a future dedicated endpoint
  *
- * @returns `null` until a dedicated metadata endpoint is added
+ * @returns `NO_PARENT` until a dedicated metadata endpoint is added
  *
  * @example
  * ```ts
- * const parent = await fetchHeadDraftId(42); // null for the demo
+ * const parent = await fetchHeadDraftId(42); // NO_PARENT for the demo
  * ```
  */
-export function fetchHeadDraftId(_messageId: number,): Promise<string | null> {
-  return Promise.resolve(null,);
+export function fetchHeadDraftId(_messageId: number,): Promise<string | typeof NO_PARENT> {
+  return Promise.resolve(NO_PARENT,);
 }
 
 /**
@@ -187,24 +201,24 @@ export function getIdentity(form: HTMLFormElement,): string {
  *
  * @param raw - attribute value
  *
- * @returns numeric id or `null`
+ * @returns numeric id, or `NEW_MESSAGE` for new-message mode
  *
  * @example
  * ```ts
  * parseEditId('42'); // 42
- * parseEditId(undefined); // null
+ * parseEditId(undefined); // NEW_MESSAGE
  * ```
  */
-export function parseEditId(raw: string | undefined,): number | null {
+export function parseEditId(raw?: string,): number | typeof NEW_MESSAGE {
   if ((raw === undefined) || (raw === ''))
-    return null;
+    return NEW_MESSAGE;
   /** Parsed once so the finite-and-positive guard and the return can both reference it. */
   const value = Number.parseInt(
     raw,
     DECIMAL_RADIX,
   );
-  return Number.isFinite(value,)
-    && (value > 0) ? value : null;
+  return (Number.isFinite(value,)
+    && (value > 0)) ? value : NEW_MESSAGE;
 }
 
 /**

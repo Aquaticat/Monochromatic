@@ -22,6 +22,7 @@ type FakeStorage = {
     key: string,
     value: string,
   ) => void;
+  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors the Web Storage `Storage.getItem` signature (returns `string | null` for an absent key); the fake must match it to install as `globalThis.localStorage`
   readonly getItem: (key: string,) => string | null;
   readonly removeItem: (key: string,) => void;
 };

@@ -69,9 +69,9 @@ export async function handleSend(
   try {
     if ((input.state
       .editMessageId
-      !== null) && (input.state
+      !== undefined) && (input.state
         .tier3
-        === null)) {
+        === undefined)) {
       await sendInlineEdit({
         ...input,
         body,
@@ -80,9 +80,9 @@ export async function handleSend(
     }
     else if ((input.state
       .editMessageId
-      !== null) && (input.state
+      !== undefined) && (input.state
         .tier3
-        !== null)) {
+        !== undefined)) {
       await sendTier3Edit({
         ...input,
         body,
@@ -91,9 +91,9 @@ export async function handleSend(
     }
     else if ((input.state
       .editMessageId
-      === null) && (input.state
+      === undefined) && (input.state
         .tier3
-        !== null)) {
+        !== undefined)) {
       await sendTier3New({
         state: input.state,
         textarea: input.textarea,
@@ -142,7 +142,6 @@ async function sendNew(
   await postCreateDraft({
     id: draftId,
     userId: input.userId,
-    parentId: null,
   },);
   setStatus({
     status: input.status,
@@ -235,10 +234,10 @@ async function sendTier3New(
 ): Promise<void> {
   if ((input.state
     .tier3
-    === null) || (input.state
+    === undefined) || (input.state
       .tier3
       .localChunks
-      === null))
+      === undefined))
     return;
   await saveCurrentTier3Chunk({
     state: input.state,
@@ -249,12 +248,9 @@ async function sendTier3New(
     status: input.status,
     message: 'flushing chunks...',
   },);
-  if (input.state
+  await input.state
     .outbox
-    !== null)
-    await input.state
-      .outbox
-      .flushed();
+    .flushed();
 
   /** Destructured so the aggregate-walk reads the cached chunks directly. */
   const { localChunks, } = input.state

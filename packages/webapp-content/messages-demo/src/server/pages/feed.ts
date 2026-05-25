@@ -37,28 +37,29 @@ import { renderPage, } from './_layout.ts';
 /**
  * Renders one page of the feed.
  *
- * @param input - opaque cursor from the URL (`null` for first page) and
+ * @param input - opaque cursor from the URL (omitted for first page) and
  *                the request `If-None-Match` header for ETag negotiation
  *
  * @returns HTTP `Response`
  *
  * @example
  * ```ts
- * await renderFeed({ cursorToken: null, ifNoneMatch: null });                  // first page
- * await renderFeed({ cursorToken: 'MTcxNDA4MDAwMDA6MTA0Mg', ifNoneMatch: null }); // older page
+ * await renderFeed({});                                       // first page
+ * await renderFeed({ cursorToken: 'MTcxNDA4MDAwMDA6MTA0Mg' }); // older page
  * ```
  */
 export async function renderFeed(
   input: {
-    readonly cursorToken: string | null;
-    readonly ifNoneMatch: string | null;
+    readonly cursorToken?: string;
+    readonly ifNoneMatch?: string;
   },
 ): Promise<Response> {
   /** Aggregate signature fed into the ETag; matches against `If-None-Match` for 304s. */
   const aggregates = await feedAggregates();
   /** Computed ETag; sent on both 200 and 304 responses. */
   const etag = etagForFeed(aggregates,);
-  if (matches({
+  if ((input.ifNoneMatch
+    !== undefined) && matches({
     ifNoneMatch: input.ifNoneMatch,
     etag,
   },)) {
@@ -74,9 +75,9 @@ export async function renderFeed(
     );
   }
 
-  /** Decoded keyset cursor; null on the first page or when the token is absent. */
+  /** Decoded keyset cursor; absent on the first page or when the token is absent. */
   const cursor = input.cursorToken
-    === null ? null : decodeCursor(input.cursorToken,);
+    === undefined ? undefined : decodeCursor(input.cursorToken,);
   /** Materialised page of feed entries used to render the cards and the pagination link. */
   const messages = await listFeed(cursor,);
   /** Rendered feed body HTML; embedded in the layout's main slot. */
@@ -84,7 +85,7 @@ export async function renderFeed(
 
   /** Complete HTML document returned to the client. */
   const html = renderPage({
-    title: cursor === null ? 'messages-demo' : `messages-demo (older)`,
+    title: cursor === undefined ? 'messages-demo' : `messages-demo (older)`,
     body,
   },);
 

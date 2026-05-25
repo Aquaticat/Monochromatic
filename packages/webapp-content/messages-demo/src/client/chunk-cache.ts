@@ -23,6 +23,10 @@
  */
 
 import {
+  evictOpfsStale,
+  opfsName,
+} from './chunk-cache-opfs.ts';
+import {
   idbOpen,
   idbTransactionDone,
 } from './idb-helpers.ts';
@@ -46,15 +50,22 @@ export type ChunkCacheKey = {
   readonly idx: number;
 };
 
+/**
+ * Sentinel returned by `ChunkCache.get` on a cache miss. A unique
+ * `Symbol` rather than `null`: cached HTML is always a string, so
+ * callers gate with `=== CACHE_MISS`.
+ */
+export const CACHE_MISS: unique symbol = Symbol('messages-demo:cache-miss',);
+
 /** Cache public surface. All implementations honour the same contract. */
 export type ChunkCache = {
   /**
-   * Returns the cached HTML for `(messageId, revision, idx)`, or `null`
-   * on miss. Reading a key whose `revision` differs from any
+   * Returns the cached HTML for `(messageId, revision, idx)`, or
+   * `CACHE_MISS` on miss. Reading a key whose `revision` differs from any
    * previously-cached entries for the same `messageId` evicts the
    * older entries before returning.
    */
-  get: (key: ChunkCacheKey,) => Promise<string | null>;
+  get: (key: ChunkCacheKey,) => Promise<string | typeof CACHE_MISS>;
   /** Writes `html` for `key`. Overwrites a same-key entry. */
   put: (
     key: ChunkCacheKey,
@@ -141,7 +152,7 @@ async function createOpfsCache(): Promise<ChunkCache> {
         return await file.text();
       }
       catch {
-        return null;
+        return CACHE_MISS;
       }
     },
     async put(
@@ -194,7 +205,7 @@ async function createIdbCache(): Promise<ChunkCache> {
         },);
       }
       catch {
-        return null;
+        return CACHE_MISS;
       }
     },
     async put(
@@ -227,7 +238,7 @@ async function createIdbCache(): Promise<ChunkCache> {
 function createNoopCache(): ChunkCache {
   return {
     get() {
-      return Promise.resolve(null,);
+      return Promise.resolve(CACHE_MISS,);
     },
     put() {
       return Promise.resolve();
@@ -235,72 +246,6 @@ function createNoopCache(): ChunkCache {
     destroy() {/* no-op */},
   };
 }
-
-//region OPFS helpers
-
-/**
- * Builds the OPFS file name for `key`. Uses `-` as separator because
- * `:` is rejected by some OPFS implementations.
- *
- * @param key - cache key triple
- *
- * @returns OPFS file name
- */
-function opfsName(key: ChunkCacheKey,): string {
-  return `${String(key.messageId,)}-${String(key.revision,)}-${String(key.idx,)}.html`;
-}
-
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `FileSystemDirectoryHandle`/`IDBDatabase` are external SDK classes whose methods mutate filesystem / connection state by design */
-/**
- * Lists every file in the cache directory whose `messageId` matches
- * `key` but whose `revision` differs, and removes them. Bounded by the
- * number of cached entries for one message; with the typical
- * navigation pattern this is at most a few dozen files.
- *
- * @param input - directory handle and the new key being queried
- */
-async function evictOpfsStale(
-  input: {
-    directory: FileSystemDirectoryHandle;
-    key: ChunkCacheKey;
-  },
-): Promise<void> {
-  /** File-name prefix scoping the walk to the message id under consideration. */
-  const messagePrefix = `${String(input.key
-    .messageId,)}-`;
-  /** Extends `messagePrefix` with the current revision; entries starting with this are kept. */
-  const currentRevPrefix = `${messagePrefix}${String(input.key
-    .revision,)}-`;
-  // FileSystemDirectoryHandle implements AsyncIterable<FileSystemHandle>
-  // in Chromium and WebKit; older lib.dom.d.ts versions do not declare
-  // the iterator on the type, so we narrow via a typed alias.
-  if (!(Symbol.asyncIterator
-    in input
-    .directory))
-    return;
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- DOM lib lacks the iterator type */
-  /** Narrowed alias so the `for await` loop sees a typed iterator instead of the DOM-lib gap. */
-  const iterable = input.directory as unknown as AsyncIterable<FileSystemHandle>;
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
-  for await (const handle of iterable) {
-    if (!handle.name
-      .startsWith(messagePrefix,))
-      continue;
-    if (handle.name
-      .startsWith(currentRevPrefix,))
-      continue;
-    try {
-      await input.directory
-        .removeEntry(handle.name,);
-    }
-    catch {
-      // Another tab may have raced us; ignore and move on.
-    }
-  }
-}
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
-
-//endregion
 
 //region IDB helpers
 
@@ -341,11 +286,11 @@ function openCacheDb(): Promise<IDBDatabase> {
 }
 
 /**
- * Reads `html` for `key`, returning `null` on miss.
+ * Reads `html` for `key`, returning `CACHE_MISS` on miss.
  *
  * @param input - DB handle and cache key
  *
- * @returns cached HTML or `null`
+ * @returns cached HTML or `CACHE_MISS`
  *
  * @example
  * ```ts
@@ -357,9 +302,9 @@ function idbGet(
     db: IDBDatabase;
     key: ChunkCacheKey;
   },
-): Promise<string | null> {
+): Promise<string | typeof CACHE_MISS> {
   // oxlint-disable-next-line eslint-plugin-promise/avoid-new -- bridges callback API
-  return new Promise<string | null>(function executor(
+  return new Promise<string | typeof CACHE_MISS>(function executor(
     resolve,
     reject,
   ) {
@@ -387,12 +332,12 @@ function idbGet(
         const raw: unknown = request.result;
         if ((raw === null) || ((typeof raw) !== 'object')
           || (!('html' in raw))) {
-          resolve(null,);
+          resolve(CACHE_MISS,);
           return;
         }
         /** Destructured after narrowing; required to satisfy the rule. */
         const { html, } = raw;
-        resolve((typeof html) === 'string' ? html : null,);
+        resolve((typeof html) === 'string' ? html : CACHE_MISS,);
       },
     );
     request.addEventListener(

@@ -10,6 +10,7 @@ import {
   composeChangesets,
   invertChangeset,
   mapOffsetThroughChangeset,
+  NOT_COMPOSABLE,
 } from './changeset.ts';
 
 await describe({
@@ -321,7 +322,7 @@ await describe({
               a: b,
               b: c,
             },);
-            if ((ab === null) || (bc === null))
+            if ((ab === NOT_COMPOSABLE) || (bc === NOT_COMPOSABLE))
               throw new Error('expected composable inserts',);
             const left = composeChangesets({
               a: ab,
@@ -336,7 +337,7 @@ await describe({
         },),
 
         it({
-          name: 'returns null when b is not adjacent to a (gap in caret)',
+          name: 'returns NOT_COMPOSABLE when b is not adjacent to a (gap in caret)',
           fn: async () => {
             const composed = composeChangesets({
               a: {
@@ -350,12 +351,12 @@ await describe({
                 insert: 'i',
               },
             },);
-            expect(composed,).toBeNull();
+            expect(composed,).toBe(NOT_COMPOSABLE,);
           },
         },),
 
         it({
-          name: 'returns null when b is not a pure insert',
+          name: 'returns NOT_COMPOSABLE when b is not a pure insert',
           fn: async () => {
             const composed = composeChangesets({
               a: {
@@ -369,7 +370,7 @@ await describe({
                 insert: '',
               },
             },);
-            expect(composed,).toBeNull();
+            expect(composed,).toBe(NOT_COMPOSABLE,);
           },
         },),
 
@@ -399,7 +400,7 @@ await describe({
               a,
               b,
             },);
-            if (composed === null)
+            if (composed === NOT_COMPOSABLE)
               throw new Error('expected composable inserts',);
             expect(applyChangeset({
               changeset: composed,

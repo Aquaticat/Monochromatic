@@ -169,9 +169,16 @@ export function mapOffsetThroughChangeset(
 }
 
 /**
+ * Sentinel returned by `composeChangesets` when two changesets cannot
+ * be composed cleanly. A unique `Symbol` rather than `null`: a composed
+ * result is always a `Changeset`, so callers gate with `=== NOT_COMPOSABLE`.
+ */
+export const NOT_COMPOSABLE: unique symbol = Symbol('messages-demo:not-composable',);
+
+/**
  * Composes two changesets into one when both apply at the same
  * position (the typical "type two characters in a row" case). Returns
- * `null` if the two cannot be composed cleanly; the caller should keep
+ * `NOT_COMPOSABLE` if the two cannot be composed cleanly; the caller should keep
  * them as separate undo entries in that case.
  *
  * Composition rule: if `b.from === a.from + a.insert.length` AND
@@ -183,7 +190,7 @@ export function mapOffsetThroughChangeset(
  *
  * @param input - two changesets in apply order
  *
- * @returns combined changeset, or `null` if not composable
+ * @returns combined changeset, or `NOT_COMPOSABLE` if not composable
  *
  * @example
  * ```ts
@@ -199,7 +206,7 @@ export function composeChangesets(
     readonly a: Changeset;
     readonly b: Changeset;
   },
-): Changeset | null {
+): Changeset | typeof NOT_COMPOSABLE {
   /** Offset where `a` ends after its insert; composition is only legal when `b` lands here. */
   const insertEnd = input.a
     .from
@@ -212,7 +219,7 @@ export function composeChangesets(
     !== insertEnd) || (input.b
       .to
       !== insertEnd))
-    return null;
+    return NOT_COMPOSABLE;
   return {
     from: input.a
       .from,

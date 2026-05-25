@@ -12,6 +12,7 @@
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import {
+  ABSENT,
   getSnapshot,
   messageExists,
 } from '../../lib/db/messages.ts';
@@ -71,9 +72,9 @@ function startingTier(chunkCount: number,): 1 | 2 | 3 {
  * ```
  */
 export async function renderEditPage(messageId: number,): Promise<Response> {
-  /** Snapshot of the message; null branches to 404 / 410 below. */
+  /** Snapshot of the message; `ABSENT` branches to 404 / 410 below. */
   const snapshot = await getSnapshot(messageId,);
-  if (snapshot === null) {
+  if (snapshot === ABSENT) {
     /** Disambiguates 410 Gone (was a message, now deleted) from 404 Not Found. */
     const exists = await messageExists(messageId,);
     return new Response(

@@ -13,6 +13,7 @@ import { readJson, } from '../json-fetch.ts';
 import { compileInline, } from './compile.ts';
 import {
   fetchHeadDraftId,
+  NO_PARENT,
   postCreateDraft,
   randomId,
   setStatus,
@@ -46,7 +47,7 @@ export async function sendInlineEdit(
 ): Promise<void> {
   if (input.state
     .editMessageId
-    === null)
+    === undefined)
     return;
   setStatus({
     status: input.status,
@@ -54,11 +55,13 @@ export async function sendInlineEdit(
   },);
   /** Allocated up front so the create-draft POST and chunk PUTs all share the same id. */
   const newDraftId = randomId();
+  /** Head draft for the copy-on-write parent; `NO_PARENT` omits the parent link for the demo. */
+  const headDraft = await fetchHeadDraftId(input.state
+    .editMessageId,);
   await postCreateDraft({
     id: newDraftId,
     userId: input.userId,
-    parentId: await fetchHeadDraftId(input.state
-      .editMessageId,),
+    ...(headDraft !== NO_PARENT ? { parentId: headDraft, } : {}),
   },);
   setStatus({
     status: input.status,
@@ -143,9 +146,9 @@ export async function sendTier3Edit(
 ): Promise<void> {
   if ((input.state
     .editMessageId
-    === null) || (input.state
+    === undefined) || (input.state
       .tier3
-      === null))
+      === undefined))
     return;
   /** Resolved once so the current-chunk save can run before the inherit-walk loop starts. */
   const tier3Textarea = document.querySelector<HTMLTextAreaElement>('.composer-body',);

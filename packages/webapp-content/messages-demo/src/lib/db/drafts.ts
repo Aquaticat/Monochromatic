@@ -10,27 +10,36 @@
 import db, {
   all,
   get,
+  NO_ROW,
   run,
 } from '../db.ts';
 import type { RenderedChunk, } from '../markdown-stream.ts';
+
+/**
+ * Sentinel returned by `finalizeDraft` when the draft cannot be
+ * finalised (missing, empty, or owned by another user). A unique
+ * `Symbol` rather than `null`: a successful finalise returns the new
+ * numeric `messages.id`, so callers disambiguate with `=== REJECTED`.
+ */
+export const REJECTED: unique symbol = Symbol('messages-demo:finalize-rejected',);
 
 /**
  * Inserts a new draft row.
  *
  * @param draft - draft fields. `id` is client-generated UUID; `parentId`
  *                is the previous draft when this draft is created during
- *                an edit, `null` for fresh messages.
+ *                an edit, omitted for fresh messages (stored as SQL NULL).
  *
  * @example
  * ```ts
- * await createDraft({ id: 'd-1', userId: 'user-a', parentId: null });
+ * await createDraft({ id: 'd-1', userId: 'user-a' });
  * ```
  */
 export async function createDraft(
   draft: {
     readonly id: string;
     readonly userId: string;
-    readonly parentId: string | null;
+    readonly parentId?: string;
   },
 ): Promise<void> {
   /** Captured once so created_at and updated_at start as the same value. */
@@ -40,7 +49,8 @@ export async function createDraft(
       'INSERT INTO drafts(id, parent_id, user_id, created_at, updated_at, finalized) VALUES (?, ?, ?, ?, ?, 0)',
     params: [
       draft.id,
-      draft.parentId,
+      draft.parentId
+        ?? null,
       draft.userId,
       now,
       now,
@@ -148,13 +158,15 @@ export async function highestContiguousSeq(draftId: string,): Promise<number> {
  * ```
  */
 export async function hasChunks(draftId: string,): Promise<boolean> {
-  /** Single-row EXISTS probe; null when the query returns no rows. */
+  /** Single-row EXISTS probe; a no-row result reads as "no chunks". */
   const row = await get<{ exists: number; }>({
     sql: 'SELECT EXISTS(SELECT 1 FROM chunks WHERE draft_id = ? LIMIT 1) AS "exists"',
     params: [draftId,],
   },);
-  return (row?.exists
-    ?? 0) === 1;
+  if (row === NO_ROW)
+    return false;
+  return row.exists
+    === 1;
 }
 
 /**
@@ -162,11 +174,11 @@ export async function hasChunks(draftId: string,): Promise<boolean> {
  * check, the INSERT, and the `finalized = 1` UPDATE in one transaction.
  *
  * @param input - finalize fields. `userId` must match the draft's stored
- *                user_id; mismatch returns `null` so the handler can 403.
+ *                user_id; mismatch returns `REJECTED` so the handler can 403.
  *                `charCount`, `chunkCount`, and `preview` come from the
  *                client (the worker has already aggregated them).
  *
- * @returns the new `messages.id`, or `null` when the draft is missing,
+ * @returns the new `messages.id`, or `REJECTED` when the draft is missing,
  *          empty, or owned by a different user
  *
  * @example
@@ -182,18 +194,18 @@ export async function finalizeDraft(
     readonly chunkCount: number;
     readonly preview: string;
   },
-): Promise<number | null> {
+): Promise<number | typeof REJECTED> {
   /** Owner row used to cross-check identity before doing any write. */
   const draft = await get<{ user_id: string; }>({
     sql: 'SELECT user_id FROM drafts WHERE id = ?',
     params: [input.draftId,],
   },);
-  if ((draft === undefined) || (draft.user_id
+  if ((draft === NO_ROW) || (draft.user_id
     !== input
     .userId))
-    return null;
+    return REJECTED;
   if (!(await hasChunks(input.draftId,)))
-    return null;
+    return REJECTED;
 
   /** Captured once so messages.created_at and messages.updated_at start as the same value. */
   const now = Date.now();

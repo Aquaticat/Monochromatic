@@ -20,10 +20,10 @@ import type { ComposerState, } from './state.ts';
  * Sets up tier-3 prev/next/save buttons inside the composer form. Used
  * for both edit-mode (chunks live on the server, addressable by
  * `messageId`) and new-mode (chunks live in
- * `state.tier3.localChunks`); pass `messageId === null` for new-mode.
+ * `state.tier3.localChunks`); omit `messageId` for new-mode.
  *
  * @param input - form, textarea, state, status element, optional
- *                message id (null in new-message tier 3)
+ *                message id (omitted in new-message tier 3)
  *
  * @example
  * ```ts
@@ -36,7 +36,7 @@ export function setupTier3Nav(
     textarea: HTMLTextAreaElement;
     state: ComposerState;
     status: HTMLElement;
-    messageId: number | null;
+    messageId?: number;
   },
 ): void {
   input.form
@@ -114,7 +114,7 @@ export function updateTier3Nav(
 ): void {
   if (input.state
     .tier3
-    === null)
+    === undefined)
     return;
   /** Destructured early so the button-state branches read the values directly. */
   const {
@@ -141,10 +141,10 @@ export function updateTier3Nav(
 
 /**
  * Loads chunk `seq` into the textarea. In edit mode (`messageId`
- * non-null), fetches from the server's `/m/:id/c/:seq/md` endpoint.
+ * present), fetches from the server's `/m/:id/c/:seq/md` endpoint.
  * In new-mode tier 3, reads from `state.tier3.localChunks`.
  *
- * @param input - state, message id (null in new mode), chunk index,
+ * @param input - state, message id (omitted in new mode), chunk index,
  *                target textarea
  *
  * @example
@@ -155,16 +155,16 @@ export function updateTier3Nav(
 export async function loadChunkIntoEditor(
   input: {
     state: ComposerState;
-    messageId: number | null;
+    messageId?: number;
     seq: number;
     textarea: HTMLTextAreaElement;
   },
 ): Promise<void> {
-  /** New-mode chunk cache; non-null bypasses the network fetch below. */
+  /** New-mode chunk cache; present bypasses the network fetch below. */
   const local = input.state
     .tier3
     ?.localChunks;
-  if ((local !== null) && (local !== undefined)) {
+  if (local !== undefined) {
     writeBody({
       state: input.state,
       textarea: input.textarea,
@@ -175,7 +175,7 @@ export async function loadChunkIntoEditor(
     return;
   }
   if (input.messageId
-    === null)
+    === undefined)
     throw new Error('cannot load chunk: no message id and no local chunks',);
   /** Per-chunk markdown fetch; throws on `!ok` so the textarea is not stomped with empty text. */
   const response = await fetch(
@@ -210,12 +210,12 @@ export async function navigateTier3(
     status: HTMLElement;
     nav: HTMLElement;
     form: HTMLFormElement;
-    messageId: number | null;
+    messageId?: number;
   },
 ): Promise<void> {
   if (input.state
     .tier3
-    === null)
+    === undefined)
     return;
   await saveCurrentTier3Chunk({
     state: input.state,
@@ -242,7 +242,8 @@ export async function navigateTier3(
     .currentSeq = next;
   await loadChunkIntoEditor({
     state: input.state,
-    messageId: input.messageId,
+    ...(input.messageId
+      !== undefined ? { messageId: input.messageId, } : {}),
     seq: next,
     textarea: input.textarea,
   },);
@@ -280,7 +281,7 @@ export async function saveCurrentTier3Chunk(
 ): Promise<void> {
   if (input.state
     .tier3
-    === null)
+    === undefined)
     return;
   /** Current chunk markdown; read once so the compile, char-count, and PUT use the same snapshot. */
   const md = input.textarea
@@ -302,7 +303,7 @@ export async function saveCurrentTier3Chunk(
   if (input.state
     .tier3
     .localChunks
-    !== null) {
+    !== undefined) {
     input.state
       .tier3
       .localChunks[seq] = {
@@ -311,30 +312,15 @@ export async function saveCurrentTier3Chunk(
       charCount,
     };
   }
-  await (input.state
+  await input.state
     .outbox
-    !== null
-    ? input.state
-      .outbox
-      .enqueue({
+    .enqueue({
       draftId,
       seq,
       md,
       html,
       charCount,
-    },)
-    : fetch(
-      `/api/drafts/${encodeURIComponent(draftId,)}/chunks/${String(seq,)}`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({
-          md,
-          html,
-          char_count: charCount,
-        },),
-      },
-    ));
+    },);
   setStatus({
     status: input.status,
     message: `saved chunk ${String(seq + 1,)}`,

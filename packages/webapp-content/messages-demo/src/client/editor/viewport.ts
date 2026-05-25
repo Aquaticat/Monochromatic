@@ -125,7 +125,9 @@ export function mountViewport(
     ];
     for (let index = 0; index < text
       .length; index += 1) {
-      if (text.codePointAt(index,) === /* '\n' */ 10)
+      if (text
+        .codePointAt(index,)
+        === /* '\n' */ 10)
         starts.push(index + 1,);
     }
     lineStarts = starts;

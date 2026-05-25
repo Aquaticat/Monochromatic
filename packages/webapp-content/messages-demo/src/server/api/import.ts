@@ -26,6 +26,7 @@ import {
   createDraft,
   finalizeDraft,
   putChunk,
+  REJECTED,
 } from '../../lib/db/drafts.ts';
 import {
   HTTP_BAD_REQUEST,
@@ -79,7 +80,6 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
     await createDraft({
       id: draftId,
       userId,
-      parentId: null,
     },);
 
     /** Decoded reader; multi-byte safe because `TextDecoderStream` re-aligns chunks. */
@@ -213,7 +213,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
       },);
     }
 
-    /** New messages.id; null becomes a 500 because the draft passed every check above. */
+    /** New messages.id; `REJECTED` becomes a 500 because the draft passed every check above. */
     const messageId = await finalizeDraft({
       draftId,
       userId,
@@ -224,10 +224,10 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
         maxLength: PREVIEW_MAX_LENGTH,
       },),
     },);
-    if (messageId === null) {
+    if (messageId === REJECTED) {
       throw new HTTPError({
         status: HTTP_INTERNAL_SERVER_ERROR,
-        message: 'finalize returned null',
+        message: 'finalize rejected the import draft',
       },);
     }
 

@@ -19,23 +19,30 @@ import {
 import { join, } from 'node:path';
 
 /**
- * Returns `stat` for `./<id>`, or `undefined` when the file does not exist
+ * Sentinel returned by `tryStat` when the file does not exist or is
+ * inaccessible. A unique `Symbol` rather than `undefined`: a successful
+ * stat is always a `Stats` object, so callers branch with `=== STAT_ABSENT`.
+ */
+const STAT_ABSENT: unique symbol = Symbol('messages-demo:stat-absent',);
+
+/**
+ * Returns `stat` for `./<id>`, or `STAT_ABSENT` when the file does not exist
  * or is otherwise inaccessible. Swallows `stat`'s rejections so the caller
  * can branch on the return value rather than try/catch around the await.
  *
  * @param id - URL-relative asset path; joined onto `'.'` before stat
  *
- * @returns stat result, or `undefined` on any failure
+ * @returns stat result, or `STAT_ABSENT` on any failure
  *
  * @example
  * ```ts
  * const stats = await tryStat('dist/css/styles.css');
- * if (stats !== undefined) console.log(stats.size);
+ * if (stats !== STAT_ABSENT) console.log(stats.size);
  * ```
  */
 async function tryStat(
   id: string,
-): Promise<Awaited<ReturnType<typeof stat>> | undefined> {
+): Promise<Awaited<ReturnType<typeof stat>> | typeof STAT_ABSENT> {
   try {
     return await stat(
       join(
@@ -45,7 +52,7 @@ async function tryStat(
     );
   }
   catch {
-    return undefined;
+    return STAT_ABSENT;
   }
 }
 
@@ -77,9 +84,9 @@ export const staticHandler: EventHandlerWithFetch = defineHandler(
           );
         },
         getMeta: async function getMetadata(id,) {
-          /** Resolved stat result or `undefined` when the file does not exist or is inaccessible. */
+          /** Resolved stat result or `STAT_ABSENT` when the file does not exist or is inaccessible. */
           const stats = await tryStat(id,);
-          return ((stats !== undefined) && stats
+          return ((stats !== STAT_ABSENT) && stats
             .isFile())
             ? {
               size: Number(stats.size,),

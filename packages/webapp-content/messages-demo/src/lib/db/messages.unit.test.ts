@@ -27,8 +27,10 @@ const {
   createDraft,
   putChunk,
   finalizeDraft,
+  REJECTED,
 } = draftsMod;
 const {
+  ABSENT,
   editMessage,
   getChunk,
   getSnapshot,
@@ -38,6 +40,35 @@ const {
   softDeleteMessage,
   MAX_REVISIONS,
 } = messagesMod;
+
+/**
+ * Narrows a `getChunk` result to a present chunk, throwing when it is
+ * the `ABSENT` sentinel. Keeps the positive-path assertions terse.
+ *
+ * @param chunk - result returned by `getChunk`
+ *
+ * @returns present chunk row
+ *
+ * @throws `Error` when `chunk` is `ABSENT`
+ *
+ * @example
+ * ```ts
+ * expect(requireChunk(await getChunk({ messageId, chunkIndex: 0 })).md).toBe('# hi');
+ * ```
+ */
+function requireChunk(
+  chunk: Awaited<ReturnType<typeof getChunk>>,
+): {
+  readonly md: string;
+  readonly html: string;
+} {
+  // `typeof` narrows away the `ABSENT` symbol arm: dynamic `import()`
+  // widens the exported `unique symbol` to `symbol`, so `=== ABSENT`
+  // would not narrow the union here. The only symbol value is `ABSENT`.
+  if ((typeof chunk) === 'symbol')
+    throw new Error('expected a chunk, got ABSENT',);
+  return chunk;
+}
 
 /**
  * Generates a deterministic but unique draft id for a single test. The
@@ -80,7 +111,6 @@ async function makeMessage(
   await createDraft({
     id: input.draftId,
     userId: input.userId,
-    parentId: null,
   },);
   await putChunk({
     draftId: input.draftId,
@@ -101,8 +131,9 @@ async function makeMessage(
       50,
     ),
   },);
-  if (id === null)
-    throw new Error('finalizeDraft returned null',);
+  // `typeof` narrows away the widened-symbol `REJECTED` arm; see `requireChunk`.
+  if ((typeof id) === 'symbol')
+    throw new Error('finalizeDraft rejected the draft',);
   return id;
 }
 
@@ -128,13 +159,13 @@ await describe({
               messageId,
               chunkIndex: 0,
             },);
-            expect(chunk?.md,).toBe('# hello',);
-            expect(chunk?.html,).toBe('<h1>hello</h1>',);
+            expect(requireChunk(chunk,).md,).toBe('# hello',);
+            expect(requireChunk(chunk,).html,).toBe('<h1>hello</h1>',);
           },
         },),
 
         it({
-          name: 'returns null for chunk index out of range',
+          name: 'returns ABSENT for chunk index out of range',
           fn: async () => {
             const draftId = uniqueId('oor',);
             const messageId = await makeMessage({
@@ -147,18 +178,18 @@ await describe({
               messageId,
               chunkIndex: 99,
             },);
-            expect(chunk,).toBeNull();
+            expect(chunk,).toBe(ABSENT,);
           },
         },),
 
         it({
-          name: 'returns null for non-existent message id',
+          name: 'returns ABSENT for non-existent message id',
           fn: async () => {
             const chunk = await getChunk({
               messageId: 9_999_999,
               chunkIndex: 0,
             },);
-            expect(chunk,).toBeNull();
+            expect(chunk,).toBe(ABSENT,);
           },
         },),
 
@@ -171,7 +202,6 @@ await describe({
             await createDraft({
               id: root,
               userId: 'user-a',
-              parentId: null,
             },);
             for (const seq of [0, 1, 2,]) {
               // oxlint-disable-next-line no-await-in-loop
@@ -192,8 +222,8 @@ await describe({
               chunkCount: 3,
               preview: 'p',
             },);
-            if (messageId === null)
-              throw new Error('finalizeDraft returned null',);
+            if ((typeof messageId) === 'symbol')
+              throw new Error('finalizeDraft rejected the draft',);
 
             // 4 edits, each editing one of the 3 chunks in rotation.
             let parent = root;
@@ -244,9 +274,9 @@ await describe({
               messageId,
               chunkIndex: 2,
             },);
-            expect(c0?.md,).toBe('r5-c0',);
-            expect(c1?.md,).toBe('r3-c1',);
-            expect(c2?.md,).toBe('r4-c2',);
+            expect(requireChunk(c0,).md,).toBe('r5-c0',);
+            expect(requireChunk(c1,).md,).toBe('r3-c1',);
+            expect(requireChunk(c2,).md,).toBe('r4-c2',);
           },
         },),
       ],
@@ -263,7 +293,6 @@ await describe({
             await createDraft({
               id: newDraftId,
               userId: 'user-a',
-              parentId: null,
             },);
             const outcome = await editMessage({
               messageId: 9_999_999,
@@ -379,7 +408,7 @@ await describe({
       concurrency: 1,
       children: [
         it({
-          name: 'soft-deletes and excludes from feed; getSnapshot returns null',
+          name: 'soft-deletes and excludes from feed; getSnapshot returns ABSENT',
           fn: async () => {
             const draftId = uniqueId('del',);
             const messageId = await makeMessage({
@@ -389,18 +418,18 @@ await describe({
               html: '<p>doomed</p>',
             },);
             const before = await getSnapshot(messageId,);
-            expect(before,).not.toBeNull();
+            expect(before,).not.toBe(ABSENT,);
             const outcome = await softDeleteMessage({
               messageId,
               userId: 'user-a',
             },);
             expect(outcome.kind,).toBe('ok',);
             const after = await getSnapshot(messageId,);
-            expect(after,).toBeNull();
+            expect(after,).toBe(ABSENT,);
             // messageExists is true even after soft delete.
             expect(await messageExists(messageId,),).toBe(true,);
             // Feed excludes deleted rows.
-            const feed = await listFeed(null,);
+            const feed = await listFeed();
             const stillThere = feed.some(function findIt(row,) {
               return row.id === messageId;
             },);

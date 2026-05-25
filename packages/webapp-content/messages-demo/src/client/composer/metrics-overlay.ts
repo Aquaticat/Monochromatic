@@ -43,7 +43,6 @@ function emptyMetrics(): CompilePipelineMetrics {
     compileSamples: 0,
     putQueueDepthMax: 0,
     wastedPuts: 0,
-    transitionMs: null,
   };
 }
 
@@ -132,7 +131,7 @@ function mountMetricsOverlay(
       row({
         label: 'transition',
         value: m.transitionMs
-          === null
+          === undefined
           ? 'n/a'
           : `${m.transitionMs
             .toFixed(1,)} ms`,
@@ -150,22 +149,29 @@ type WorkerMetricsPayload = {
 };
 
 /**
- * Narrows `data` to a worker `metrics` payload, returning `null`
+ * Sentinel returned by `asMetricsPayload` when the inbound message is
+ * not a worker `metrics` payload. A unique `Symbol` rather than `null`:
+ * a real payload is always an object, so callers gate with `=== NOT_METRICS`.
+ */
+const NOT_METRICS: unique symbol = Symbol('messages-demo:not-metrics',);
+
+/**
+ * Narrows `data` to a worker `metrics` payload, returning `NOT_METRICS`
  * when the shape does not match.
  *
  * @param data - inbound message data
  *
- * @returns the payload, or null when unrelated
+ * @returns the payload, or `NOT_METRICS` when unrelated
  */
-function asMetricsPayload(data: unknown,): WorkerMetricsPayload | null {
+function asMetricsPayload(data: unknown,): WorkerMetricsPayload | typeof NOT_METRICS {
   if (((typeof data) !== 'object') || (data === null)
     || (!('kind' in data)))
-    return null;
+    return NOT_METRICS;
   /** Narrowed alias so the `kind` check reads `message.kind` rather than a type-cast. */
   const message: { kind: unknown; } = data;
   if (message.kind
     !== 'metrics')
-    return null;
+    return NOT_METRICS;
   // Narrow to the optional-fields shape; the worker emits a stricter
   // type, but we accept anything structurally compatible.
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- structural narrowing
@@ -258,7 +264,7 @@ export function attachMetricsOverlay(
   function refresh(): void {
     if (input.state
       .metrics
-      === null)
+      === undefined)
       return;
     /** Ascending copy of `samples`; fed to median/percentile helpers. */
     const sorted = samples.toSorted(function asc(
@@ -283,9 +289,9 @@ export function attachMetricsOverlay(
 
   return {
     onWorkerMessage(data,) {
-      /** Narrowed worker metrics payload; null skips non-metrics messages. */
+      /** Narrowed worker metrics payload; `NOT_METRICS` skips non-metrics messages. */
       const payload = asMetricsPayload(data,);
-      if (payload === null)
+      if (payload === NOT_METRICS)
         return;
       if (Array.isArray(payload.compileMs,)) {
         for (const sample of payload.compileMs) {
@@ -299,7 +305,7 @@ export function attachMetricsOverlay(
       }
       if (input.state
         .metrics
-        !== null) {
+        !== undefined) {
         input.state
           .metrics = foldCounters({
           current: input.state
@@ -312,7 +318,7 @@ export function attachMetricsOverlay(
     recordTransition(ms,) {
       if (input.state
         .metrics
-        === null)
+        === undefined)
         return;
       input.state
         .metrics = {

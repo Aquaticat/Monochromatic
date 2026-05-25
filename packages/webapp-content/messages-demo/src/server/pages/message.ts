@@ -16,6 +16,7 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import db from '../../lib/db.ts';
 import {
+  ABSENT,
   getChunk,
   getSnapshot,
   messageExists,
@@ -86,21 +87,21 @@ function tierFor(charCount: number,): 1 | 2 | 3 {
  *
  * @example
  * ```ts
- * const response = await renderMessageChunk({ messageId: 5, chunkIndex: 0, ifNoneMatch: null });
+ * const response = await renderMessageChunk({ messageId: 5, chunkIndex: 0 });
  * ```
  */
 export async function renderMessageChunk(
   input: {
     readonly messageId: number;
     readonly chunkIndex: number;
-    readonly ifNoneMatch: string | null;
+    readonly ifNoneMatch?: string;
   },
 ): Promise<Response> {
   await db.exec('BEGIN DEFERRED',);
   try {
     /** Snapshot reused across the chunk count check, ETag, and chunk fetch. */
     const snapshot = await getSnapshot(input.messageId,);
-    if (snapshot === null) {
+    if (snapshot === ABSENT) {
       // Distinguish gone from not-found so the client can decide
       // whether to clear cached state or follow a redirect.
       /** Tells 410 Gone (existed once) from 404 Not Found (never existed). */
@@ -132,7 +133,8 @@ export async function renderMessageChunk(
       revision: snapshot.revision,
       chunkIndex: input.chunkIndex,
     },);
-    if (matches({
+    if ((input.ifNoneMatch
+      !== undefined) && matches({
       ifNoneMatch: input.ifNoneMatch,
       etag,
     },)) {
@@ -180,7 +182,7 @@ export async function renderMessageChunk(
     },);
     await db.exec('COMMIT',);
 
-    if (chunk === null) {
+    if (chunk === ABSENT) {
       return new Response(
         'chunk not found',
         {

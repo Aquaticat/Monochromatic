@@ -23,12 +23,13 @@
  */
 
 import { wait, } from '@monochromatic-dev/module-async-time';
-import {
-  idbOpen,
-  idbRequestResult,
-  idbTransactionDone,
-} from './idb-helpers.ts';
 import { readJson, } from './json-fetch.ts';
+import {
+  deleteAcked,
+  openOutboxDb,
+  persistOne,
+  readPersistedQueue,
+} from './outbox-idb.ts';
 
 /** Maximum number of PUT attempts per chunk before pausing. */
 const PUT_MAX_ATTEMPTS = 3;
@@ -36,14 +37,19 @@ const PUT_MAX_ATTEMPTS = 3;
 /** Initial backoff delay between PUT retries, in milliseconds. */
 const PUT_BACKOFF_BASE_MS = 250;
 
-/** IndexedDB database name used for the persistent outbox. */
-const OUTBOX_DB_NAME = 'messages-demo:outbox';
+/**
+ * Sentinel for "no IndexedDB handle": the probe lied or the open failed,
+ * so the outbox runs in-memory. A unique `Symbol` rather than `null`: an
+ * open handle is an `IDBDatabase`, so callers gate with `=== NO_IDB`.
+ */
+const NO_IDB: unique symbol = Symbol('messages-demo:no-idb',);
 
-/** Object-store name inside the outbox database. */
-const OUTBOX_STORE = 'pending';
-
-/** IndexedDB schema version. Bump if the record shape changes. */
-const OUTBOX_DB_VERSION = 1;
+/**
+ * Sentinel returned by `tryPutWithBackoff` when the retry budget is
+ * exhausted. A unique `Symbol` rather than `null`: a success carries the
+ * numeric ack, so the drain loop gates with `=== PUT_FAILED`.
+ */
+const PUT_FAILED: unique symbol = Symbol('messages-demo:put-failed',);
 
 /**
  * One queued chunk upload. The shape mirrors the request body of
@@ -108,19 +114,19 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
    * any post-probe failure (private mode quirks, quota races) so the
    * composer falls back to in-memory rather than blocking startup.
    *
-   * @returns the opened handle, or `null` when probe lied or open failed
+   * @returns the opened handle, or `NO_IDB` when probe lied or open failed
    */
-  async function maybeOpenIdb(): Promise<IDBDatabase | null> {
+  async function maybeOpenIdb(): Promise<IDBDatabase | typeof NO_IDB> {
     if (!options.idbAvailable)
-      return null;
+      return NO_IDB;
     try {
       return await openOutboxDb();
     }
     catch {
-      return null;
+      return NO_IDB;
     }
   }
-  /** Lazily assigned IDB handle; left null when the probe lied or the open call fails post-probe. */
+  /** Lazily assigned IDB handle; left `NO_IDB` when the probe lied or the open call fails post-probe. */
   const idb = await maybeOpenIdb();
 
   /**
@@ -131,7 +137,7 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
    * @returns persisted queue snapshot, or `[]` on missing handle or read failure
    */
   async function readInitialQueue(): Promise<ChunkUpload[]> {
-    if (idb === null)
+    if (idb === NO_IDB)
       return [];
     try {
       return await readPersistedQueue(idb,);
@@ -143,12 +149,18 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
   /** Initial queue populated from IDB when available; pushes from `enqueue` extend it later. */
   const queue = await readInitialQueue();
   /** Closure-scoped state shared by every helper in this factory; queue and flags live here. */
-  const state = {
+  const state: {
+    queue: ChunkUpload[];
+    idb: IDBDatabase | typeof NO_IDB;
+    draining: boolean;
+    destroyed: boolean;
+    waiters: (() => void)[];
+  } = {
     queue,
     idb,
     draining: false,
     destroyed: false,
-    waiters: [] as (() => void)[],
+    waiters: [],
   };
 
   /** Resolves every pending `flushed()` waiter and clears the list. */
@@ -192,9 +204,9 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
       const [head,] = state.queue;
       if (head === undefined)
         break;
-      /** Server ack from the PUT; `null` signals retries exhausted and the loop pauses. */
+      /** Server ack from the PUT; `PUT_FAILED` signals retries exhausted and the loop pauses. */
       const ack = await tryPutWithBackoff(head,);
-      if (ack === null)
+      if (ack === PUT_FAILED)
         break;
       await dropAcked({
         idb: state.idb,
@@ -246,7 +258,7 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
       if (state.destroyed)
         throw new Error('outbox destroyed',);
       if (state.idb
-        !== null) {
+        !== NO_IDB) {
         await persistOne({
           idb: state.idb,
           upload,
@@ -290,7 +302,7 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
         );
       }
       if (state.idb
-        !== null)
+        !== NO_IDB)
         state.idb
           .close();
       notifyFlushed();
@@ -300,20 +312,20 @@ export async function createOutbox(options: OutboxOptions,): Promise<Outbox> {
 
 /**
  * Sends one upload with bounded exponential backoff. Returns the
- * server-reported ack on success or `null` after the retry budget is
+ * server-reported ack on success or `PUT_FAILED` after the retry budget is
  * exhausted; the caller pauses the queue until the next online /
  * visibility event.
  *
  * @param upload - chunk to PUT
  *
- * @returns highest contiguous seq returned by the server, or `null`
+ * @returns highest contiguous seq returned by the server, or `PUT_FAILED`
  *
  * @example
  * ```ts
  * const ack = await tryPutWithBackoff(upload);
  * ```
  */
-async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | null> {
+async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | typeof PUT_FAILED> {
   /** Stable URL captured once outside the retry loop so each attempt targets the same slot. */
   const url = `/api/drafts/${encodeURIComponent(upload.draftId,)}/chunks/${
     String(upload.seq,)
@@ -349,7 +361,7 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | null> {
     }
   }
   /* oxlint-enable eslint/no-await-in-loop */
-  return null;
+  return PUT_FAILED;
 }
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `IDBDatabase` is an external SDK class whose `transaction` mutates connection state by design; `queue` is mutated in place by `splice` below */
@@ -366,7 +378,7 @@ async function tryPutWithBackoff(upload: ChunkUpload,): Promise<number | null> {
  */
 async function dropAcked(
   input: {
-    idb: IDBDatabase | null;
+    idb: IDBDatabase | typeof NO_IDB;
     queue: ChunkUpload[];
     draftId: string;
     ack: number;
@@ -393,164 +405,12 @@ async function dropAcked(
     }
   }
   if (input.idb
-    === null)
+    === NO_IDB)
     return;
   await deleteAcked({
     idb: input.idb,
     draftId: input.draftId,
     ack: input.ack,
   },);
-}
-
-/**
- * Opens (or creates) the IDB database used to persist the outbox.
- *
- * @returns open IDB handle, or rejects when the open fails
- *
- * @example
- * ```ts
- * const db = await openOutboxDb();
- * ```
- */
-function openOutboxDb(): Promise<IDBDatabase> {
-  return idbOpen({
-    name: OUTBOX_DB_NAME,
-    version: OUTBOX_DB_VERSION,
-    onUpgrade(dbConn,) {
-      if (!dbConn.objectStoreNames
-        .contains(OUTBOX_STORE,)) {
-        dbConn.createObjectStore(
-          OUTBOX_STORE,
-          {
-            keyPath: [
-              'draftId',
-              'seq',
-            ],
-          },
-        );
-      }
-    },
-  },);
-}
-
-/**
- * Reads every persisted upload back into a queue, ordered by
- * `(draftId, seq)`.
- *
- * @param db - open IDB handle
- *
- * @returns rehydrated queue
- *
- * @example
- * ```ts
- * const queue = await readPersistedQueue(db);
- * ```
- */
-async function readPersistedQueue(db: IDBDatabase,): Promise<ChunkUpload[]> {
-  /** Read-only transaction scoped to the outbox store; held until the request resolves. */
-  const tx = db.transaction(
-    OUTBOX_STORE,
-    'readonly',
-  );
-  /** Store handle reused by the `getAll` request below. */
-  const store = tx.objectStore(OUTBOX_STORE,);
-  // The store's keyPath constrains every record to ChunkUpload shape;
-  // see openOutboxDb's onUpgrade. getAll's typings widen to any[].
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- IDB store schema constraint */
-  /** Cast widens `getAll`'s `any[]` back to the schema-enforced `ChunkUpload[]`. */
-  const request = store.getAll() as IDBRequest<ChunkUpload[]>;
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
-  /** Resolved records; sorted in place below so the drain loop emits original order. */
-  const raw = await idbRequestResult<ChunkUpload[]>(request,);
-  // Array.sort dictates the (a, b) => number callback shape, so the
-  // comparator stays inline rather than being promoted to a top-level
-  // declaration that would violate require-destructured-params.
-  raw.sort(function comparePersistedUpload(
-    a: ChunkUpload,
-    b: ChunkUpload,
-  ): number {
-    if (a.draftId
-      !== b
-      .draftId)
-      return a.draftId
-        < b
-        .draftId ? -1 : 1;
-    return a.seq
-      - b
-      .seq;
-  },);
-  return raw;
-}
-
-/**
- * Writes one upload to IDB. Idempotent: re-enqueueing the same
- * `(draftId, seq)` overwrites the prior entry.
- *
- * @param input - IDB handle and the upload to persist
- *
- * @example
- * ```ts
- * await persistOne({ idb, upload });
- * ```
- */
-async function persistOne(
-  input: {
-    idb: IDBDatabase;
-    upload: ChunkUpload;
-  },
-): Promise<void> {
-  /** Read-write transaction held until `idbTransactionDone` resolves below. */
-  const tx = input.idb
-    .transaction(
-    OUTBOX_STORE,
-    'readwrite',
-  );
-  tx.objectStore(OUTBOX_STORE,)
-    .put(input.upload,);
-  await idbTransactionDone(tx,);
-}
-
-/**
- * Deletes every persisted entry for `draftId` whose `seq <= ack`.
- *
- * @param input - IDB handle, draft id, server ack
- *
- * @example
- * ```ts
- * await deleteAcked({ idb, draftId, ack });
- * ```
- */
-async function deleteAcked(
-  input: {
-    idb: IDBDatabase;
-    draftId: string;
-    ack: number;
-  },
-): Promise<void> {
-  /** Read-write transaction held until `idbTransactionDone` resolves below. */
-  const tx = input.idb
-    .transaction(
-    OUTBOX_STORE,
-    'readwrite',
-  );
-  /** Store handle reused by the bounded-delete below. */
-  const store = tx.objectStore(OUTBOX_STORE,);
-  // Composite key range: every (draftId, seq) with seq in [0, ack].
-  // Lower bound at seq=0 is the smallest value the chunker produces.
-  /** Composite-key range bounding the delete to one draft id and seqs 0..ack. */
-  const range = IDBKeyRange.bound(
-    [
-      input.draftId,
-      0,
-    ],
-    [
-      input.draftId,
-      input.ack,
-    ],
-    false,
-    false,
-  );
-  store.delete(range,);
-  await idbTransactionDone(tx,);
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

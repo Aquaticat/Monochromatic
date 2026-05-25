@@ -34,6 +34,13 @@ import {
 const DECIMAL_RADIX = 10;
 
 /**
+ * Sentinel returned by `stringField` when a body field is absent or not
+ * a string. A unique `Symbol` rather than `null`: a valid field is
+ * always a string, so callers gate with `=== MISSING`.
+ */
+const MISSING: unique symbol = Symbol('messages-demo:field-missing',);
+
+/**
  * POST /api/messages/:id/edit
  *
  * Body: `{ user_id, new_draft_id, char_count, chunk_count, preview }`.
@@ -74,9 +81,9 @@ export const editMessageHandler: EventHandlerWithFetch = defineHandler(
     /** Raw `chunk_count`; narrowed to number below before the edit call. */
     const chunkCount = body.chunk_count;
     if (
-      (userId === null)
-      || (newDraftId === null)
-        || (preview === null)
+      (userId === MISSING)
+      || (newDraftId === MISSING)
+        || (preview === MISSING)
         || ((typeof charCount) !== 'number')
         || ((typeof chunkCount) !== 'number')
     ) {
@@ -161,7 +168,7 @@ export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
       body,
       key: 'user_id',
     },);
-    if (userId === null) {
+    if (userId === MISSING) {
       throw new HTTPError({
         status: HTTP_BAD_REQUEST,
         message: 'missing user_id',
@@ -213,7 +220,7 @@ export const deleteMessageHandler: EventHandlerWithFetch = defineHandler(
  *
  * @throws `HTTPError` 400 when missing or not a positive integer
  */
-function parseMessageId(params: Readonly<Record<string, string>> | undefined,): number {
+function parseMessageId(params?: Readonly<Record<string, string>>,): number {
   /** Raw `:id` path param; empty or undefined trips the 400 below. */
   const raw = params?.id;
   if ((raw === undefined) || (raw === '')) {
@@ -254,14 +261,14 @@ function isRecord(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
- * Reads a string field from a JSON body, returning `null` when absent
+ * Reads a string field from a JSON body, returning `MISSING` when absent
  * or not a string.
  *
  * @param body - decoded JSON record
  *
  * @param key - field name
  *
- * @returns string value or `null`
+ * @returns string value, or `MISSING` when absent or not a string
  *
  * @example
  * ```ts
@@ -274,10 +281,10 @@ function stringField({
 }: {
   readonly body: Readonly<Record<string, unknown>>;
   readonly key: string;
-},): string | null {
+},): string | typeof MISSING {
   /** Indexed once so the typeof narrow and the return both reference the same value. */
   const value = body[key];
-  return (typeof value) === 'string' ? value : null;
+  return (typeof value) === 'string' ? value : MISSING;
 }
 
 //endregion

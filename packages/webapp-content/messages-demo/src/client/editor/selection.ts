@@ -21,13 +21,21 @@
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- DOM editor surface: every entry point takes a `Node`/`HTMLElement` (or wraps one), which has mutating DOM methods by design; readonly wrappers would misdescribe the API contract */
 
+/**
+ * Sentinel for an unresolved selection position: no selection in the
+ * surface, or a DOM walk that ran off the rendered lines. A unique
+ * `Symbol` rather than `null`: a resolved position is always an object
+ * or numeric offset, so callers gate with `=== NO_SELECTION`.
+ */
+export const NO_SELECTION: unique symbol = Symbol('messages-demo:no-selection',);
+
 /** Public selection handle returned by `mountSelection`. */
 export type Selection = {
-  /** Read the current selection, or `null` if not in this surface. */
+  /** Read the current selection, or `NO_SELECTION` if not in this surface. */
   get(): {
     readonly from: number;
     readonly to: number;
-  } | null;
+  } | typeof NO_SELECTION;
   /**
    * Write a selection. `from === to` means a collapsed cursor.
    *
@@ -43,23 +51,23 @@ export type Selection = {
 
 /**
  * Walks the ancestor chain from `start` upward, returning the first
- * `.ce-line` element or `null` when the walk runs off the document.
+ * `.ce-line` element or `NO_SELECTION` when the walk runs off the document.
  *
  * @param start - DFS root; usually the click target node
  *
- * @returns enclosing `.ce-line` element or `null`
+ * @returns enclosing `.ce-line` element or `NO_SELECTION`
  *
  * @example
  * ```ts
  * const line = findEnclosingLine(selection.anchorNode);
  * ```
  */
-function findEnclosingLine(start: Node,): HTMLElement | null {
+function findEnclosingLine(start: Node,): HTMLElement | typeof NO_SELECTION {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- parser cursor: `runner` advances up the parent chain until the `.ce-line` host is found or the walk reaches the document root */
   /** Walks parent chain looking for the enclosing `.ce-line` element. */
-  let runner: Node | null = start;
+  let runner: Node = start;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
-  while (runner !== null) {
+  while (true) {
     if (
       (runner instanceof HTMLElement)
       && runner
@@ -68,9 +76,12 @@ function findEnclosingLine(start: Node,): HTMLElement | null {
     ) {
       return runner;
     }
-    runner = runner.parentNode;
+    /** Next ancestor; DOM `parentNode` yields `null` at the document root. */
+    const parent = runner.parentNode;
+    if (parent === null)
+      return NO_SELECTION;
+    runner = parent;
   }
-  return null;
 }
 
 /**
@@ -101,18 +112,18 @@ export function mountSelection(
    *
    * @param domInput - DOM node and the offset within that node
    *
-   * @returns absolute buffer offset or `null`
+   * @returns absolute buffer offset or `NO_SELECTION`
    */
   function domToOffset(
     domInput: {
       node: Node;
       offset: number;
     },
-  ): number | null {
-    /** Enclosing `.ce-line` element; null exits early to leave the selection unresolved. */
+  ): number | typeof NO_SELECTION {
+    /** Enclosing `.ce-line` element; `NO_SELECTION` exits early to leave the selection unresolved. */
     const line = findEnclosingLine(domInput.node,);
-    if (line === null)
-      return null;
+    if (line === NO_SELECTION)
+      return NO_SELECTION;
     /** Parsed line index from the enclosing element's `data-line` attribute. */
     const lineIndex = Number.parseInt(
       line.dataset
@@ -121,7 +132,7 @@ export function mountSelection(
       10,
     );
     if (Number.isNaN(lineIndex,))
-      return null;
+      return NO_SELECTION;
     // Sum the lengths of preceding lines (with a trailing newline
     // each) plus the offset within the current line. We use the
     // surface's textContent to recover line lengths since the line's
@@ -205,7 +216,7 @@ export function mountSelection(
   let cached: {
     from: number;
     to: number;
-  } | null = null;
+  } | typeof NO_SELECTION = NO_SELECTION;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   /**
@@ -218,14 +229,14 @@ export function mountSelection(
     const sel = document.getSelection();
     if ((sel === null) || (sel.rangeCount
       === 0)) {
-      cached = null;
+      cached = NO_SELECTION;
       return;
     }
     /** First range; the editor uses single-range selections only. */
     const range = sel.getRangeAt(0,);
     if (!input.surface
       .contains(range.startContainer,)) {
-      cached = null;
+      cached = NO_SELECTION;
       return;
     }
     /** Start offset translated from DOM coordinates. */
@@ -238,8 +249,8 @@ export function mountSelection(
       node: range.endContainer,
       offset: range.endOffset,
     },);
-    if ((from === null) || (to === null)) {
-      cached = null;
+    if ((from === NO_SELECTION) || (to === NO_SELECTION)) {
+      cached = NO_SELECTION;
       return;
     }
     cached = {
@@ -266,14 +277,14 @@ export function mountSelection(
    *
    * @param target - target buffer offset
    *
-   * @returns DOM position or `null` if no matching line is rendered
+   * @returns DOM position or `NO_SELECTION` if no matching line is rendered
    */
   function offsetToDom(
     target: { offset: number; },
   ): {
     node: Node;
     offset: number;
-  } | null {
+  } | typeof NO_SELECTION {
     /** Materialised line list so the walk can break out as soon as the target is bracketed. */
     const lines = [
       ...input.surface
@@ -310,7 +321,7 @@ export function mountSelection(
       // +1 for the trailing newline between lines.
       cursor = lineEnd + 1;
     }
-    return null;
+    return NO_SELECTION;
   }
 
   return {
@@ -322,11 +333,11 @@ export function mountSelection(
       return cached;
     },
     set(target,) {
-      /** Resolved DOM start position; null aborts the set so a stale Range is not written. */
+      /** Resolved DOM start position; `NO_SELECTION` aborts the set so a stale Range is not written. */
       const start = offsetToDom({ offset: target.from, },);
-      /** Resolved DOM end position; null aborts the set so a stale Range is not written. */
+      /** Resolved DOM end position; `NO_SELECTION` aborts the set so a stale Range is not written. */
       const end = offsetToDom({ offset: target.to, },);
-      if ((start === null) || (end === null))
+      if ((start === NO_SELECTION) || (end === NO_SELECTION))
         return;
       /** Browser-managed selection; null aborts the set when no document scope is available. */
       const sel = document.getSelection();
@@ -354,7 +365,7 @@ export function mountSelection(
         'selectionchange',
         refresh,
       );
-      cached = null;
+      cached = NO_SELECTION;
     },
   };
 }

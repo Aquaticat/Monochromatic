@@ -29,7 +29,10 @@
  */
 
 import type { Changeset, } from './changeset.ts';
-import type { Selection, } from './selection.ts';
+import {
+  NO_SELECTION,
+  type Selection,
+} from './selection.ts';
 
 /** Input layer destructor. */
 type InputCleanup = () => void;
@@ -86,10 +89,10 @@ export function attachInput(
     from: number;
     to: number;
   } {
-    /** Live selection range; null falls through to the end-of-buffer default. */
+    /** Live selection range; `NO_SELECTION` falls through to the end-of-buffer default. */
     const selection = input.selection
       .get();
-    if (selection !== null)
+    if (selection !== NO_SELECTION)
       return selection;
     /** Buffer length used as the default cursor position when no selection exists. */
     const { length, } = input.getMirror();
