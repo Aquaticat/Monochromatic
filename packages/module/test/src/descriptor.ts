@@ -112,8 +112,8 @@ export function makeDescriptor<T,>(
      */
     // oxlint-disable-next-line no-thenable -- a thenable is the entire point of TestDescriptor; awaiting drives lazy execution
     then<R1 = T, R2 = never,>(
-      onfulfilled?: ((value: T,) => R1 | PromiseLike<R1>) | null,
-      onrejected?: ((reason: unknown,) => R2 | PromiseLike<R2>) | null,
+      onfulfilled?: (value: T,) => R1 | PromiseLike<R1>,
+      onrejected?: (reason: unknown,) => R2 | PromiseLike<R2>,
     ): PromiseLike<R1 | R2> {
       return run({ effectiveConcurrency: DEFAULT_CONCURRENCY, },)
         .then(

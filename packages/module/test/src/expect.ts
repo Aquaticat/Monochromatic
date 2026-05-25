@@ -465,8 +465,8 @@ export { expect, };
 export type AssertionTracker = {
   /** Number of assertions actually called. */
   count: number;
-  /** Expected assertion count set by `expect.assertions(n)`. `null` means unchecked. */
-  expected: number | null;
+  /** Expected assertion count set by `expect.assertions(n)`; absent means unchecked. */
+  expected?: number;
   /** Whether `expect.hasAssertions()` was called. */
   requiresAtLeastOne: boolean;
 };
@@ -579,7 +579,6 @@ export function createScopedExpect(): readonly [
   /** Per-test counter shared between every wrapped matcher and the parent `it` runner that checks it. */
   const tracker: AssertionTracker = {
     count: 0,
-    expected: null,
     requiresAtLeastOne: false,
   };
 

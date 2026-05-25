@@ -266,7 +266,7 @@ async function runIt(
 
     //region Assertion count verification
     if ((tracker.expected
-      !== null) && (tracker.count
+      !== undefined) && (tracker.count
         !== tracker
         .expected)) {
       /** Synthetic cause naming the assertion-count mismatch so the failure surface mirrors a regular throw. */
