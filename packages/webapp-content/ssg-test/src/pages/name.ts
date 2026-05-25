@@ -38,9 +38,9 @@ export function namePage(
     posts,
     canonicalUrl,
   }: {
-    name: string;
-    posts: readonly Post[];
-    canonicalUrl: string;
+    readonly name: string;
+    readonly posts: readonly Post[];
+    readonly canonicalUrl: string;
   },
 ): string {
   /** Main element tree composed before the page layout wraps it with `<head>` and friends. */

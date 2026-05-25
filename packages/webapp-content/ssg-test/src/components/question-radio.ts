@@ -209,9 +209,9 @@ function renderOption(
     idx,
     opt,
   }: {
-    qId: string;
-    idx: number;
-    opt: QuestionOption;
+    readonly qId: string;
+    readonly idx: number;
+    readonly opt: QuestionOption;
   },
 ): SafeHtml {
   /** Unique input identifier; linked from the sibling label's htmlFor. */

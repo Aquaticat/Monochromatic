@@ -48,7 +48,7 @@ const ICO_DATA_OFFSET = 22;
  * const ico = createIco({ pngData: png32Buffer });
  * ```
  */
-export function createIco({ pngData, }: { pngData: Buffer; },): Buffer {
+export function createIco({ pngData, }: { readonly pngData: Uint8Array; },): Buffer {
   /** ICONDIR header preceding the image directory entries per the ICO spec. */
   const header = Buffer.alloc(ICO_HEADER_SIZE,);
   header.writeUInt16LE(

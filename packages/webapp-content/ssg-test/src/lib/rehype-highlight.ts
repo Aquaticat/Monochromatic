@@ -87,6 +87,7 @@ const LANGUAGE_PREFIX = 'language-';
 
 //region Hast utilities
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `ElementContent` is an external `@types/hast` AST type carrying mutable members (children array, properties record); the rule cannot model its immutability and this function only reads the node. */
 /**
  * Recursively extracts text content from a hast node tree.
  *
@@ -104,27 +105,30 @@ function extractText(node: ElementContent,): string {
       .join('',);
   return '';
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `Element` is an external `@types/hast` AST type carrying mutable members (children array, properties record); the rule cannot model its immutability and this function only reads the node. */
 /**
  * Extracts the language name from a code element's class list.
  *
  * @param codeElement - hast `<code>` element node
  *
- * @returns language name, or `undefined` when no `language-*` class is found
+ * @returns language name, or `''` when no `language-*` class is found
  */
-function getLanguage(codeElement: Element,): string | undefined {
+function getLanguage(codeElement: Element,): string {
   /** Destructured class-list property; rehype puts the language as a `language-*` token here. */
   const { className, } = codeElement.properties;
   if (!Array.isArray(className,))
-    return undefined;
+    return '';
   for (const cls of className) {
     /** Per-iteration string cast since className entries may be numbers in the hast spec. */
     const name = String(cls,);
     if (name.startsWith(LANGUAGE_PREFIX,))
       return name.slice(LANGUAGE_PREFIX.length,);
   }
-  return undefined;
+  return '';
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Hast utilities
 
@@ -140,14 +144,15 @@ function getLanguage(codeElement: Element,): string | undefined {
  *
  * @param text - plain text content of the code block
  */
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `codeElement` is an external `@types/hast` `Element` whose mutable members the rule cannot model; this function mutates it in place (sets `data-hl-*` properties) per the rehype transform contract. */
 function annotateCodeBlock({
   codeElement,
   parser,
   text,
 }: {
-  codeElement: Element;
-  parser: Parser;
-  text: string;
+  readonly codeElement: Element;
+  readonly parser: Parser;
+  readonly text: string;
 },): void {
   /** Parsed syntax tree fed to the Lezer highlighter for offset-pair extraction. */
   const tree = parser.parse(text,);
@@ -164,7 +169,8 @@ function annotateCodeBlock({
       classes: string,
     ) {
       /** Existing pair list for this highlight class group, or a freshly inserted empty array. */
-      const pairs = pairsByGroup.get(classes,) ?? (function initGroup(): string[] {
+      const pairs = pairsByGroup.get(classes,)
+        ?? (function initGroup(): string[] {
         /** Newly allocated pair list inserted into the shared map. */
         const fresh: string[] = [];
         pairsByGroup.set(
@@ -185,7 +191,9 @@ function annotateCodeBlock({
       codeElement.properties[`data-hl-${group}`] = pairs.join(';',);
   }
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `Root`/`Element` are external `@types/hast` AST types whose mutable members the rule cannot model; this walker descends and mutates the tree in place per the rehype transform contract. */
 /**
  * Recursively visits hast element nodes, processing `<pre><code>` blocks.
  *
@@ -208,9 +216,9 @@ function visitNode(node: Root | Element,): void {
           && (firstChild.tagName
             === 'code')
       ) {
-        /** Language detected from the `<code>` class list, or undefined to skip. */
+        /** Language detected from the `<code>` class list, or `''` to skip. */
         const lang = getLanguage(firstChild,);
-        if (lang !== undefined) {
+        if (lang !== '') {
           /** Lezer parser bound to the detected language, or undefined when unsupported. */
           const parser = PARSERS[lang];
           if (parser !== undefined) {
@@ -234,9 +242,11 @@ function visitNode(node: Root | Element,): void {
     visitNode(child,);
   }
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Highlight computation
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `tree: Root` mirrors the unified/rehype transformer signature over the external `@types/hast` `Root` AST type, whose mutable members the rule cannot model; the transform mutates the tree in place. */
 /**
  * Rehype plugin that pre-computes Lezer syntax highlight ranges.
  *
@@ -260,3 +270,4 @@ export default function rehypeHighlight(): (tree: Root,) => void {
     visitNode(tree,);
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

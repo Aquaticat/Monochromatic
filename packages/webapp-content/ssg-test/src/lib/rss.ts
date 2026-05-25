@@ -32,9 +32,9 @@ export function generateLanguageRss(
     posts,
     siteUrl,
   }: {
-    lang: Locales;
-    posts: readonly Post[];
-    siteUrl: string;
+    readonly lang: Locales;
+    readonly posts: readonly Post[];
+    readonly siteUrl: string;
   },
 ): string {
   /** Locale-bound translator captured once so siteName and siteDescription resolve in the same locale. */

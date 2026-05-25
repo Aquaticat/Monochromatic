@@ -32,7 +32,6 @@
  *
  * Run via `mise run build:postprocess` or `bun src/build/postprocess.ts`.
  */
-import { createHash, } from 'node:crypto';
 import {
   readFile,
   rename,
@@ -55,6 +54,10 @@ import readdir from 'tiny-readdir-glob';
 
 import { sha256, } from '../lib/cache-hash.ts';
 
+import {
+  insertHash,
+  sha256Buffer,
+} from './fingerprint-naming.ts';
 import { isLeafExcluded, } from './postprocess-excludes.ts';
 import { DIST, } from './write-page.ts';
 
@@ -68,93 +71,26 @@ const l = tagged({
   l: logger,
 },);
 
-/** Number of hex characters to use from the SHA-256 digest. */
-const HASH_LENGTH = 10;
-
 /* oxlint-disable no-restricted-syntax/no-regex -- fingerprinted-filename anchored suffix matchers; the input is a basename (bounded by filesystem name length) and both patterns anchor at `$`. `{10}` is a constant repetition count and `[^.]+` is linear with no nesting; no backtracking risk. */
 /**
  * Regex matching a previously fingerprinted filename.
  * Matches `name.{10 hex chars}.ext` patterns.
  */
-const STALE_HASH_PATTERN = /\.[0-9a-f]{10}\.[^.]+$/;
+const STALE_HASH_PATTERN = /\.[0-9a-f]{10}\.[^.]+$/u;
 
 /**
  * Regex matching a previously fingerprinted filename with zstd compression.
  * Matches `name.{10 hex chars}.ext.zst` patterns.
  */
-const STALE_HASH_ZST_PATTERN = /\.[0-9a-f]{10}\.[^.]+\.zst$/;
+const STALE_HASH_ZST_PATTERN = /\.[0-9a-f]{10}\.[^.]+\.zst$/u;
 /* oxlint-enable no-restricted-syntax/no-regex */
 
-//region Helper functions
-
 /**
- * Computes a SHA-256 hex digest of a Buffer.
- *
- * @param input - binary data to hash
- *
- * @returns hex-encoded SHA-256 digest
- *
- * @example
- * ```ts
- * const hash = sha256Buffer(await readFile('image.avif'));
- * ```
+ * Sentinel returned by `fingerprintCss` when no `styles.css` exists to
+ * fingerprint (already renamed). A genuine `Symbol` rather than
+ * `null`/`undefined`, which the `no-nullish-union` rule rejects.
  */
-function sha256Buffer(input: Buffer,): string {
-  return createHash('sha256',)
-    .update(input,)
-    .digest('hex',);
-}
-
-/**
- * Inserts a content hash before the file extension.
- *
- * @param name - original filename (basename only, no directory)
- *
- * @param hash - full hex hash (sliced to HASH_LENGTH internally)
- *
- * @returns filename with hash inserted before the last extension
- *
- * @example
- * ```ts
- * insertHash({ name: 'styles.css', hash: 'a1b2c3d4ef9876543210' });
- * // → 'styles.a1b2c3d4ef.css'
- * ```
- */
-function insertHash(
-  {
-    name,
-    hash,
-  }: {
-    name: string;
-    hash: string;
-  },
-): string {
-  /** Position of the final dot; `-1` indicates the file has no extension. */
-  const lastDot = name.lastIndexOf('.',);
-  if (lastDot === (-1)) {
-    return `${name}.${
-      hash.slice(
-        0,
-        HASH_LENGTH,
-      )
-    }`;
-  }
-  /** Filename portion before the extension; used as the prefix for the hashed name. */
-  const stem = name.slice(
-    0,
-    lastDot,
-  );
-  /** Extension portion including the leading dot; appended after the hash. */
-  const ext = name.slice(lastDot,);
-  return `${stem}.${
-    hash.slice(
-      0,
-      HASH_LENGTH,
-    )
-  }${ext}`;
-}
-
-//endregion Helper functions
+const CSS_ABSENT: unique symbol = Symbol('css-absent',);
 
 //region Phase 1: fingerprint leaf assets
 
@@ -172,7 +108,7 @@ function insertHash(
  * ```
  */
 async function fingerprintLeafAssets(
-  { files, }: { files: readonly string[]; },
+  { files, }: { readonly files: readonly string[]; },
 ): Promise<Map<string, string>> {
   /** Original-to-hashed basename map built up across the per-file fan-out. */
   const replacements = new Map<string, string>();
@@ -221,11 +157,14 @@ async function fingerprintLeafAssets(
  *
  * @param distDir - path to the dist output directory
  *
- * @param replacements - phase 1 replacement map (mutated: CSS entry added)
+ * @param replacements - phase 1 replacement map (read-only; CSS entry returned, not added)
+ *
+ * @returns `styles.css` to hashed-basename mapping for the caller to record, or
+ * `CSS_ABSENT` when the CSS file is absent (already fingerprinted)
  *
  * @example
  * ```ts
- * await fingerprintCss({ distDir: 'dist', replacements });
+ * const cssEntry = await fingerprintCss({ distDir: 'dist', replacements });
  * ```
  */
 async function fingerprintCss(
@@ -233,10 +172,13 @@ async function fingerprintCss(
     distDir,
     replacements,
   }: {
-    distDir: string;
-    replacements: Map<string, string>;
+    readonly distDir: string;
+    readonly replacements: ReadonlyMap<string, string>;
   },
-): Promise<void> {
+): Promise<{
+  readonly name: string;
+  readonly hashedName: string;
+} | typeof CSS_ABSENT> {
   /** Absolute path of the pre-fingerprinted CSS file shared by readCss and the rename. */
   const cssPath = join(
     distDir,
@@ -244,11 +186,13 @@ async function fingerprintCss(
   );
 
   /**
-   * Reads the CSS file, returning `undefined` when missing (already fingerprinted).
+   * Reads the CSS file, returning `''` when missing (already fingerprinted).
+   * A non-empty stylesheet is always produced by the build, so `''` is an
+   * unambiguous absent-sentinel here.
    *
-   * @returns CSS file contents, or `undefined` when the file does not exist
+   * @returns CSS file contents, or `''` when the file does not exist
    */
-  async function readCss(): Promise<string | undefined> {
+  async function readCss(): Promise<string> {
     try {
       return await readFile(
         cssPath,
@@ -262,16 +206,16 @@ async function fingerprintCss(
         l.info(
           'styles.css not found, skipping CSS fingerprinting (already fingerprinted?)',
         );
-        return undefined;
+        return '';
       }
       throw error;
     }
   }
 
-  /** Pre-fingerprint CSS body; undefined when the file is already renamed. */
+  /** Pre-fingerprint CSS body; `''` when the file is already renamed. */
   const initialCss = await readCss();
-  if (initialCss === undefined)
-    return;
+  if (initialCss === '')
+    return CSS_ABSENT;
 
   /** CSS body rewritten via replacements before hashing. */
   const cssContent = [...replacements,].reduce(
@@ -308,11 +252,11 @@ async function fingerprintCss(
     'utf8',
   );
   await unlink(cssPath,);
-  replacements.set(
-    'styles.css',
-    hashedName,
-  );
   l.info(`styles.css → ${hashedName}`,);
+  return {
+    name: 'styles.css',
+    hashedName,
+  };
 }
 
 //endregion Phase 2
@@ -339,8 +283,8 @@ async function rewriteReferences(
     distDir,
     replacements,
   }: {
-    distDir: string;
-    replacements: ReadonlyMap<string, string>;
+    readonly distDir: string;
+    readonly replacements: ReadonlyMap<string, string>;
   },
 ): Promise<void> {
   /** HTML files discovered by globbing dist for rewrite candidates. */
@@ -405,7 +349,7 @@ async function rewriteReferences(
  * ```
  */
 async function cleanStaleFingerprints(
-  { staleFiles, }: { staleFiles: readonly string[]; },
+  { staleFiles, }: { readonly staleFiles: readonly string[]; },
 ): Promise<void> {
   if (staleFiles.length
     > 0) {
@@ -443,7 +387,7 @@ async function cleanStaleFingerprints(
  * ```
  */
 async function runPagefind(
-  { distDir, }: { distDir: string; },
+  { distDir, }: { readonly distDir: string; },
 ): Promise<void> {
   /** Sub-tagged logger so pagefind output is attributable in the build log. */
   const pl = tagged({
@@ -482,7 +426,9 @@ l.info('starting',);
 const fullScan = await readdir(`${DIST}/**/*`,);
 
 /** Previously fingerprinted files to clean up before re-fingerprinting. */
-const staleFiles = fullScan.files.filter(function isStale(filePath,) {
+const staleFiles = fullScan
+  .files
+  .filter(function isStale(filePath,) {
   /** Basename used for the stale-fingerprint pattern check, regardless of subdirectory depth. */
   const name = basename(filePath,);
   return STALE_HASH_PATTERN.test(name,)
@@ -493,7 +439,9 @@ const staleFiles = fullScan.files.filter(function isStale(filePath,) {
 await cleanStaleFingerprints({ staleFiles, },);
 
 /** Leaf assets eligible for fingerprinting (excludes HTML, CSS, pagefind, etc.). */
-const leafAssetFiles = fullScan.files.filter(function isLeafAsset(filePath,) {
+const leafAssetFiles = fullScan
+  .files
+  .filter(function isLeafAsset(filePath,) {
   /** Basename used for the stale-fingerprint pattern check independent of the full path. */
   const name = basename(filePath,);
   if (STALE_HASH_PATTERN.test(name,)
@@ -525,10 +473,17 @@ async function fingerprintAssets(): Promise<Map<string, string>> {
   },);
   l.info(`phase 1: fingerprinted ${replacements.size} leaf assets`,);
 
-  await fingerprintCss({
+  /** `styles.css` mapping returned by phase 2, or `CSS_ABSENT` when the CSS file is absent. */
+  const cssEntry = await fingerprintCss({
     distDir: DIST,
     replacements,
   },);
+  if (cssEntry !== CSS_ABSENT) {
+    replacements.set(
+      cssEntry.name,
+      cssEntry.hashedName,
+    );
+  }
   l.info('phase 2: fingerprinted CSS',);
 
   return replacements;

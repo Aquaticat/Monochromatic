@@ -97,7 +97,7 @@ export function css(): string {
  * const markup = html(t);
  * ```
  */
-export function html(t: TranslationFunctions,): string {
+export function html(t: Readonly<TranslationFunctions>,): string {
   return h({
     tag: 'theme-toggle',
     attrs: { 'data-is': '', },

@@ -30,8 +30,8 @@ export function indexPage(
     langs,
     canonicalUrl,
   }: {
-    langs: readonly string[];
-    canonicalUrl: string;
+    readonly langs: readonly string[];
+    readonly canonicalUrl: string;
   },
 ): string {
   /** English-locale translator used for the document-level meta strings on the language picker. */

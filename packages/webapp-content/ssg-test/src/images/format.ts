@@ -63,7 +63,8 @@ const scanResults = await Promise.all(
 
 /** Conversion tasks for all discovered raster images across all scanned directories. */
 const tasks = scanResults.flatMap(function buildTasks(result,) {
-  return result.files.map(function createTask(filePath,) {
+  return result.files
+    .map(function createTask(filePath,) {
     /** Base filename without extension, used to derive the AVIF output path. */
     const nameWithoutExt = basename(
       filePath,

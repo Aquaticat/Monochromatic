@@ -43,10 +43,10 @@ export function tagPage(
     posts,
     canonicalUrl,
   }: {
-    tag: string;
-    lang: Locales;
-    posts: readonly Post[];
-    canonicalUrl: string;
+    readonly tag: string;
+    readonly lang: Locales;
+    readonly posts: readonly Post[];
+    readonly canonicalUrl: string;
   },
 ): string {
   /** Locale-bound translator reused for head meta strings on the tag page. */

@@ -49,6 +49,7 @@ type PagefindSearchResponse = {
   readonly results: readonly PagefindResult[];
 };
 
+/* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors the external Pagefind JS API: `debouncedSearch` resolves to `null` when superseded by a newer query, per Pagefind's documented contract; this `PagefindApi` type is the boundary surface for that runtime-loaded, untyped module. */
 /**
  * Pagefind JS API surface used by this module.
  *
@@ -59,10 +60,11 @@ type PagefindApi = {
   search(query: string,): Promise<PagefindSearchResponse>;
   debouncedSearch(
     query: string,
-    options: Record<string, unknown>,
+    options: Readonly<Record<string, unknown>>,
     debounceMs: number,
   ): Promise<PagefindSearchResponse | null>;
 };
+/* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 //endregion Types
 
@@ -88,21 +90,22 @@ const resultsList = document.querySelector<HTMLUListElement>('#search-results',)
 
 //region Pagefind lifecycle
 
+/* oxlint-disable no-restricted-syntax/no-nullish-union -- boundary to the runtime-loaded, untyped Pagefind module: the loader resolves to a `PagefindApi` or `null` on load failure (graceful degradation), and the single-flight memo cell is `null` until first load. The nullish states model that external lazy-load contract. */
 /**
  * Lazily loads the Pagefind JS API from the generated bundle.
  *
  * Called on first focus of the search input. Subsequent calls return
  * the cached promise (single-flight). If loading fails (e.g. index not
- * built yet), logs a warning and the cached promise resolves to `undefined`,
+ * built yet), logs a warning and the cached promise resolves to `null`,
  * so subsequent calls short-circuit without retrying the failed import.
  *
- * @returns Pagefind API instance or `undefined` on failure
+ * @returns Pagefind API instance or `null` on failure
  */
-const loadPagefind: () => Promise<PagefindApi | undefined> = (function initLoader() {
+const loadPagefind: () => Promise<PagefindApi | null> = (function initLoader() {
   /** Single-flight cached promise; the IIFE wrapping is required by no-module-root-let. */
-  let cached: Promise<PagefindApi | undefined> | undefined = undefined;
-  return function loadPagefindCached(): Promise<PagefindApi | undefined> {
-    cached ??= (async function importPagefind(): Promise<PagefindApi | undefined> {
+  let cached: Promise<PagefindApi | null> | null = null;
+  return function loadPagefindCached(): Promise<PagefindApi | null> {
+    cached ??= (async function importPagefind(): Promise<PagefindApi | null> {
       try {
         // Dynamic import from the build-generated Pagefind bundle.
         // This path is created by `pagefind --site dist` and cannot be
@@ -123,12 +126,13 @@ const loadPagefind: () => Promise<PagefindApi | undefined> = (function initLoade
           'Pagefind search index not available:',
           error,
         );
-        return undefined;
+        return null;
       }
     })();
     return cached;
   };
 })();
+/* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 //endregion Pagefind lifecycle
 
@@ -155,7 +159,7 @@ async function executeSearch(query: string,): Promise<void> {
 
   /** Pagefind API handle reused across queries once first loaded. */
   const api = await loadPagefind();
-  if (api === undefined) {
+  if (api === null) {
     hideResults();
     return;
   }

@@ -84,8 +84,8 @@ function findFirstOverlap(
     textEntries,
     from,
   }: {
-    textEntries: readonly TextEntry[];
-    from: number;
+    readonly textEntries: readonly TextEntry[];
+    readonly from: number;
   },
 ): number {
   /** Inclusive lower binary-search bound. */
@@ -126,7 +126,7 @@ function createRangesFromPairs({
   encoded,
 }: {
   readonly textEntries: readonly TextEntry[];
-  encoded: string;
+  readonly encoded: string;
 },): Range[] {
   /** Accumulated DOM Range list returned to the caller. */
   const ranges: Range[] = [];

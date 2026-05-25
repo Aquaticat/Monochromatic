@@ -50,12 +50,12 @@ export async function generatePages(
     validLangs,
     l: parentLogger,
   }: {
-    posts: readonly Post[];
-    renderedContent: ReadonlyMap<string, string>;
-    siteUrl: string;
-    byLang: Partial<Record<Locales, Post[]>>;
-    validLangs: readonly Locales[];
-    l: Logger;
+    readonly posts: readonly Post[];
+    readonly renderedContent: ReadonlyMap<string, string>;
+    readonly siteUrl: string;
+    readonly byLang: Readonly<Partial<Record<Locales, readonly Post[]>>>;
+    readonly validLangs: readonly Locales[];
+    readonly l: Logger;
   },
 ): Promise<void> {
   /** Function-scoped logger tagged with the caller name for traceable log lines. */
@@ -117,10 +117,10 @@ export async function generatePages(
           return writePage({
             relativePath: `${lang}/${name}.html`,
             content: postPage({
-              post,
+              ...(post !== undefined ? { post, } : {}),
               lang,
               name,
-              renderedHtml: html,
+              ...(html !== undefined ? { renderedHtml: html, } : {}),
               canonicalUrl: `${siteUrl}/${lang}/${name}`,
               availableInLangs: availableLangsByName[name]
                 ?? [],

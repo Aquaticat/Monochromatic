@@ -111,13 +111,13 @@ const ASCII_PRINTABLE_MAX = 0x7E;
  * never variables, so this regex can enumerate the exact set of icons
  * in use. The match group is the bare icon name.
  */
-const ICON_CALL_REGEX = /\bicon\(\s*['"]([a-z][a-z0-9_]*)['"]\s*,?\s*\)/g;
+const ICON_CALL_REGEX = /\bicon\(\s*['"]([a-z][a-z0-9_]*)['"]\s*,?\s*\)/gu;
 
 /** Matches `/* ... *\/` block comments (non-greedy). */
-const BLOCK_COMMENT_REGEX = /\/\*[\s\S]*?\*\//g;
+const BLOCK_COMMENT_REGEX = /\/\*[\s\S]*?\*\//gu;
 
 /** Matches `// ...` line comments up to end of line. */
-const LINE_COMMENT_REGEX = /\/\/[^\n]*/g;
+const LINE_COMMENT_REGEX = /\/\/[^\n]*/gu;
 /* oxlint-enable no-restricted-syntax/no-regex */
 
 //region Charset extraction
@@ -149,7 +149,7 @@ const LINE_COMMENT_REGEX = /\/\/[^\n]*/g;
  * ```
  */
 async function collectBodyCharset(
-  { sourceFiles, }: { sourceFiles: readonly string[]; },
+  { sourceFiles, }: { readonly sourceFiles: readonly string[]; },
 ): Promise<string> {
   /** Deduplicated grapheme set returned as the final charset. */
   const chars = new Set<string>();
@@ -199,7 +199,7 @@ async function collectBodyCharset(
  * ```
  */
 async function collectIconCodepoints(
-  { sourceFiles, }: { sourceFiles: readonly string[]; },
+  { sourceFiles, }: { readonly sourceFiles: readonly string[]; },
 ): Promise<string> {
   /** Set of icon names referenced by `icon('NAME')` calls across the source tree. */
   const names = new Set<string>();
@@ -254,7 +254,7 @@ async function collectIconCodepoints(
 /** Map from font basename to the function that builds its charset. */
 const FONT_CHARSET_BUILDERS: Record<
   string,
-  (args: { sourceFiles: readonly string[]; },) => Promise<string>
+  (args: { readonly sourceFiles: readonly string[]; },) => Promise<string>
 > = {
   'inter.woff2': collectBodyCharset,
   'interItalic.woff2': collectBodyCharset,
@@ -283,8 +283,8 @@ async function subsetOne(
     basename,
     text,
   }: {
-    basename: string;
-    text: string;
+    readonly basename: string;
+    readonly text: string;
   },
 ): Promise<void> {
   /** Source-side path to the full upstream woff2 referenced for byte counts and diagnostics. */
@@ -374,8 +374,9 @@ const sourceFiles = scan.files;
 l.info(`scanning ${sourceFiles.length} source files`,);
 
 await Promise.all(
-  Object.entries(FONT_CHARSET_BUILDERS,).map(
-    async function subsetTarget([basename, buildCharset,],) {
+  Object.entries(FONT_CHARSET_BUILDERS,)
+    .map(
+      async function subsetTarget([basename, buildCharset,],) {
       /** Charset computed per font once before the woff2 subset call. */
       const text = await buildCharset({ sourceFiles, },);
       return subsetOne({

@@ -27,9 +27,11 @@ import { loadAllLocales, } from './i18n/i18n-util.sync.ts';
 import { isLocale, } from './i18n/i18n-util.ts';
 import {
   buildManifest,
+  CACHE_MISS,
   computePipelineFingerprint,
   createCacheEntry,
   getCachedEntry,
+  NO_CACHE,
   readCache,
   writeCache,
 } from './lib/cache.ts';
@@ -75,8 +77,8 @@ const PIPELINE_GLOB = 'src/{lib,components,client}/**/*.ts';
 
 l.info('starting',);
 
-/** Loaded posts, cached manifest, pipeline hash, and git-dates context fetched concurrently. */
-const [loadedPosts, cache, pipelineHash, gitCtx,] = await Promise.all([
+/** Loaded posts, cached-manifest result, pipeline hash, and git-dates context fetched concurrently. */
+const [loadedPosts, cacheResult, pipelineHash, gitCtx,] = await Promise.all([
   loadContent(CONTENT_DIR,),
   readCache({ l, },),
   computePipelineFingerprint(PIPELINE_GLOB,),
@@ -84,6 +86,9 @@ const [loadedPosts, cache, pipelineHash, gitCtx,] = await Promise.all([
 ],);
 
 l.info(`loaded ${loadedPosts.length} posts`,);
+
+/** Manifest when one was read, or `undefined` (inferred local, never a written nullish union) when absent. */
+const cache = cacheResult === NO_CACHE ? undefined : cacheResult;
 
 /** Whether the processing pipeline source has changed since last build. */
 const pipelineChanged = cache?.pipelineHash
@@ -114,12 +119,14 @@ await Promise.all(loadedPosts.map(async function resolveDates(post,) {
   );
   if (gitDatesReusable) {
     /** Prior manifest entry reused only when both pipeline and git head are unchanged. */
-    const cached = getCachedEntry({
-      manifest: effectiveCache,
-      filePath: cacheKey,
-      contentHash: post.contentHash,
-    },);
-    if (cached !== undefined) {
+    const cached = effectiveCache === undefined
+      ? CACHE_MISS
+      : getCachedEntry({
+        manifest: effectiveCache,
+        filePath: cacheKey,
+        contentHash: post.contentHash,
+      },);
+    if (cached !== CACHE_MISS) {
       datesByFilePath.set(
         post.filePath,
         {
@@ -160,13 +167,15 @@ const processResults = await Promise.all(posts.map(async function processPost(po
     post.filePath,
   );
   /** Prior manifest entry reused when the post content hash is unchanged. */
-  const cached = getCachedEntry({
-    manifest: effectiveCache,
-    filePath: cacheKey,
-    contentHash: post.contentHash,
-  },);
+  const cached = effectiveCache === undefined
+    ? CACHE_MISS
+    : getCachedEntry({
+      manifest: effectiveCache,
+      filePath: cacheKey,
+      contentHash: post.contentHash,
+    },);
 
-  if (cached !== undefined) {
+  if (cached !== CACHE_MISS) {
     /* Reuse rendered HTML; overlay freshly-resolved dates onto cached frontmatter
      * so downstream consumers see dates consistent with the current HEAD even
      * when `gitDatesReusable` was false. */

@@ -55,8 +55,8 @@ const ALERT_LABELS: Record<AlertType, string> = {
  * ```
  */
 export function CalloutAlert(props: {
-  children: unknown;
-  'data-type': AlertType;
+  readonly children: unknown;
+  readonly 'data-type': AlertType;
 },): SafeHtml {
   /** Discriminator picking the right icon and label pair from the alert tables. */
   const type = props['data-type'];

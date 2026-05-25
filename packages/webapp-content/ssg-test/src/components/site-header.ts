@@ -111,9 +111,9 @@ export function html(
     currentName,
     availableInLangs,
   }: {
-    lang: Locales;
-    currentName?: string | undefined;
-    availableInLangs?: readonly Locales[] | undefined;
+    readonly lang: Locales;
+    readonly currentName?: string;
+    readonly availableInLangs?: readonly Locales[];
   },
 ): string {
   /** Locale-bound translator reused for every header label across this render. */
@@ -148,8 +148,8 @@ export function html(
             children: [
               langSwitcherHtml({
                 currentLang: lang,
-                currentName,
-                availableInLangs,
+                ...(currentName !== undefined ? { currentName, } : {}),
+                ...(availableInLangs !== undefined ? { availableInLangs, } : {}),
               },),
               themeToggleHtml(t,),
               siteSearchHtml(t,),

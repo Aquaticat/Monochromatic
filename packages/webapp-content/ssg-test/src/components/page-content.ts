@@ -68,8 +68,8 @@ export function html(
     content,
     searchable = false,
   }: {
-    content: string;
-    searchable?: boolean;
+    readonly content: string;
+    readonly searchable?: boolean;
   },
 ): string {
   return h({

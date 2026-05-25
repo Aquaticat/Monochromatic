@@ -53,12 +53,12 @@ export function postPage(
     canonicalUrl,
     availableInLangs,
   }: {
-    post: Post | undefined;
-    lang: Locales;
-    name: string;
-    renderedHtml: string | undefined;
-    canonicalUrl: string;
-    availableInLangs: readonly Locales[];
+    readonly post?: Post;
+    readonly lang: Locales;
+    readonly name: string;
+    readonly renderedHtml?: string;
+    readonly canonicalUrl: string;
+    readonly availableInLangs: readonly Locales[];
   },
 ): string {
   if ((post === undefined) || (renderedHtml === undefined)) {
@@ -122,10 +122,10 @@ function postNotFoundPage(
     canonicalUrl,
     availableInLangs,
   }: {
-    lang: Locales;
-    name: string;
-    canonicalUrl: string;
-    availableInLangs: readonly Locales[];
+    readonly lang: Locales;
+    readonly name: string;
+    readonly canonicalUrl: string;
+    readonly availableInLangs: readonly Locales[];
   },
 ): string {
   /** Locale-bound translator reused for fallback page strings. */

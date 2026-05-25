@@ -35,9 +35,9 @@ export function langPage(
     posts,
     canonicalUrl,
   }: {
-    lang: Locales;
-    posts: readonly Post[];
-    canonicalUrl: string;
+    readonly lang: Locales;
+    readonly posts: readonly Post[];
+    readonly canonicalUrl: string;
   },
 ): string {
   /** Locale-bound translator reused for both `<h1>` and head meta strings. */

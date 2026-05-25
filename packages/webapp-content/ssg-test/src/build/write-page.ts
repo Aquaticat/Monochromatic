@@ -30,8 +30,8 @@ export async function writePage(
     relativePath,
     content,
   }: {
-    relativePath: string;
-    content: string;
+    readonly relativePath: string;
+    readonly content: string;
   },
 ): Promise<void> {
   /** Absolute target so mkdir and writeFile reach the same dist location. */

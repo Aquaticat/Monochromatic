@@ -55,7 +55,7 @@ const TARGETS = [
  * ```
  */
 export async function ensureFavicons(
-  { l: parentLogger, }: { l: Logger; },
+  { l: parentLogger, }: { readonly l: Logger; },
 ): Promise<void> {
   /** Function-scoped logger tagged with the caller name for traceable log lines. */
   const l = tagged({

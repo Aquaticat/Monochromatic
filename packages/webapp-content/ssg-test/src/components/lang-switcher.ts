@@ -184,9 +184,9 @@ function resolveHref(
     currentName,
     availableInLangs,
   }: {
-    targetLang: Locales;
-    currentName: string | undefined;
-    availableInLangs: readonly Locales[] | undefined;
+    readonly targetLang: Locales;
+    readonly currentName?: string;
+    readonly availableInLangs?: readonly Locales[];
   },
 ): string {
   if (currentName !== undefined) {
@@ -223,9 +223,9 @@ export function html(
     currentName,
     availableInLangs,
   }: {
-    currentLang: Locales;
-    currentName?: string | undefined;
-    availableInLangs?: readonly Locales[] | undefined;
+    readonly currentLang: Locales;
+    readonly currentName?: string;
+    readonly availableInLangs?: readonly Locales[];
   },
 ): string {
   /** Locale-bound translator for the switcher's aria-label and menu item text. */
@@ -255,8 +255,8 @@ export function html(
               /** URL path computed once per locale row before the link element is built. */
               const href = resolveHref({
                 targetLang,
-                currentName,
-                availableInLangs,
+                ...(currentName !== undefined ? { currentName, } : {}),
+                ...(availableInLangs !== undefined ? { availableInLangs, } : {}),
               },);
               /** Marks the current-locale item so aria-current renders consistently. */
               const isCurrent = targetLang === currentLang;

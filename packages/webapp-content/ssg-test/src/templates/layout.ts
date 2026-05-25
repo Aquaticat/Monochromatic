@@ -60,14 +60,14 @@ export function pageLayout(
     currentName,
     availableInLangs,
   }: {
-    title: string;
-    lang: Locales;
-    content: string;
-    description: string;
-    canonicalUrl: string;
-    searchable?: boolean;
-    currentName?: string | undefined;
-    availableInLangs?: readonly Locales[] | undefined;
+    readonly title: string;
+    readonly lang: Locales;
+    readonly content: string;
+    readonly description: string;
+    readonly canonicalUrl: string;
+    readonly searchable?: boolean;
+    readonly currentName?: string;
+    readonly availableInLangs?: readonly Locales[];
   },
 ): string {
   return `<!DOCTYPE html>\n${
@@ -86,8 +86,8 @@ export function pageLayout(
           children: [
             siteHeaderHtml({
               lang,
-              currentName,
-              availableInLangs,
+              ...(currentName !== undefined ? { currentName, } : {}),
+              ...(availableInLangs !== undefined ? { availableInLangs, } : {}),
             },),
             pageContentHtml({
               content,

@@ -51,8 +51,8 @@ export async function fileExists(
     filePath,
     l,
   }: {
-    filePath: string;
-    l?: { error: (message: string,) => void; };
+    readonly filePath: string;
+    readonly l?: { readonly error: (message: string,) => void; };
   },
 ): Promise<boolean> {
   try {
@@ -90,8 +90,8 @@ export async function convertToAvif(
     inputPath,
     outputPath,
   }: {
-    inputPath: string;
-    outputPath: string;
+    readonly inputPath: string;
+    readonly outputPath: string;
   },
 ): Promise<void> {
   await sharp(inputPath,)
@@ -125,9 +125,9 @@ export async function maybeConvert(
     avifPath,
     l,
   }: {
-    filePath: string;
-    avifPath: string;
-    l: { info: (message: string,) => void; };
+    readonly filePath: string;
+    readonly avifPath: string;
+    readonly l: { readonly info: (message: string,) => void; };
   },
 ): Promise<boolean> {
   if (await fileExists({ filePath: avifPath, },))

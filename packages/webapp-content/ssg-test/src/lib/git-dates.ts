@@ -52,9 +52,9 @@ async function runCapture(
     args,
     cwd,
   }: {
-    cmd: string;
-    args: readonly string[];
-    cwd?: string;
+    readonly cmd: string;
+    readonly args: readonly string[];
+    readonly cwd?: string;
   },
 ): Promise<CommandResult> {
   /** Destructured spawn result; only stdout and stderr are forwarded to the caller. */
@@ -152,14 +152,14 @@ export async function detectShallow(): Promise<boolean> {
  * (`https://github.com/owner/repo.git`) remotes. Strips the optional
  * trailing `.git` suffix.
  *
- * @returns `owner/repo` identifier, or `undefined` when the remote is not GitHub
+ * @returns `owner/repo` identifier, or `''` when the remote is not GitHub
  *
  * @example
  * ```ts
  * const slug = await getGithubSlug(); // 'Aquaticat/Monochromatic'
  * ```
  */
-async function getGithubSlug(): Promise<string | undefined> {
+async function getGithubSlug(): Promise<string> {
   try {
     /** Captured stdout from `git remote get-url origin`; may be SSH or HTTPS form. */
     const { stdout, } = await runGit([
@@ -171,12 +171,13 @@ async function getGithubSlug(): Promise<string | undefined> {
     const url = stdout.trim();
     /* oxlint-disable no-restricted-syntax/no-regex -- anchored at `$` to parse the trailing `owner/repo[.git]` slug from either SSH or HTTPS GitHub URLs. Input is `git remote get-url` output (bounded URL length); `[^/]+` and `[^/.]+` are negated classes so each matches its own slice with no overlap, no backtracking risk. */
     /** Regex capture extracting `owner/repo` from either supported URL form. */
-    const match = /github\.com[:/]([^/]+\/[^/.]+)(?:\.git)?$/.exec(url,);
+    const match = /github\.com[:/]([^/]+\/[^/.]+)(?:\.git)?$/u.exec(url,);
     /* oxlint-enable no-restricted-syntax/no-regex */
-    return match?.[1];
+    return match?.[1]
+      ?? '';
   }
   catch {
-    return undefined;
+    return '';
   }
 }
 
@@ -207,7 +208,7 @@ async function getGithubSlug(): Promise<string | undefined> {
  * ```
  */
 async function gitLogDates(
-  { filePath, }: { filePath: string; },
+  { filePath, }: { readonly filePath: string; },
 ): Promise<string[]> {
   /** Absolute file path passed to git so `--follow` can trace renames consistently. */
   const absolute = resolve(
@@ -281,7 +282,7 @@ async function getRepoRelativePath(filePath: string,): Promise<string> {
  *
  * @param repoRelPath - path relative to the repository root
  *
- * @returns ISO-8601 author date string, or `undefined` when the API returns
+ * @returns ISO-8601 author date string, or `''` when the API returns
  * no commits for the path (e.g., path exists only in a local branch)
  *
  * @example
@@ -297,10 +298,10 @@ async function ghApiFirstCommitDate(
     slug,
     repoRelPath,
   }: {
-    slug: string;
-    repoRelPath: string;
+    readonly slug: string;
+    readonly repoRelPath: string;
   },
-): Promise<string | undefined> {
+): Promise<string> {
   /** Captured stdout from `gh api` containing concatenated JSON pages. */
   const { stdout, } = await runCapture({
     cmd: 'gh',
@@ -318,35 +319,40 @@ async function ghApiFirstCommitDate(
   const raw = stdout.trim();
   if (raw.length
     === 0)
-    return undefined;
+    return '';
 
   /**
    * Each commit object from the GitHub REST API exposes the relevant
    * `commit.author.date` field; other fields are ignored.
    */
-  type GhCommit = { commit: { author: { date: string; }; }; };
+  type GhCommit = { readonly commit: { readonly author: { readonly date: string; }; }; };
 
+  /* oxlint-disable no-unsafe-type-assertion -- `gh api` JSON output is untyped; GhCommit mirrors the documented GitHub REST commits response and is read structurally below via `last?.commit.author.date`. */
   /** Flat list of commits across all returned pages. */
   const commits: GhCommit[] = raw.includes('][',)
-    ? (raw.split('][',).flatMap(function parseChunk(
-      chunk,
-      i,
-      arr,
-    ) {
-      /** Opening bracket re-inserted on every chunk except the first to rebuild the JSON array boundary. */
-      const prefix = i === 0 ? '' : '[';
-      /** Closing bracket re-inserted on every chunk except the last to rebuild the JSON array boundary. */
-      const suffix = i === (arr.length
-        - 1) ? '' : ']';
-      return JSON.parse(`${prefix}${chunk}${suffix}`,);
-    },) as GhCommit[])
+    ? raw
+      .split('][',)
+      .flatMap(function parseChunk(
+        chunk,
+        i,
+        arr,
+      ) {
+        /** Opening bracket re-inserted on every chunk except the first to rebuild the JSON array boundary. */
+        const prefix = i === 0 ? '' : '[';
+        /** Closing bracket re-inserted on every chunk except the last to rebuild the JSON array boundary. */
+        const suffix = i === (arr.length
+          - 1) ? '' : ']';
+        return JSON.parse(`${prefix}${chunk}${suffix}`,) as GhCommit[];
+      },)
     : (JSON.parse(raw,) as GhCommit[]);
+  /* oxlint-enable no-unsafe-type-assertion */
 
   /** Oldest commit in the API response (last entry per GitHub's newest-first ordering). */
   const last = commits.at(-1,);
   return last?.commit
     .author
-    .date;
+    .date
+    ?? '';
 }
 
 //endregion GitHub API fallback
@@ -376,7 +382,7 @@ type PostDates = {
  *
  * @param isShallow - pre-computed shallow-clone flag (from `detectShallow`)
  *
- * @param githubSlug - pre-resolved `owner/repo`; required when shallow
+ * @param githubSlug - pre-resolved `owner/repo` (`''` when origin is not GitHub); required when shallow
  *
  * @param l - tagged logger used for fallback diagnostics
  *
@@ -389,7 +395,7 @@ type PostDates = {
  * const dates = await getPostDates({
  *   filePath: 'src/content/en/post.mdx',
  *   isShallow: false,
- *   githubSlug: undefined,
+ *   githubSlug: '',
  *   l,
  * });
  * ```
@@ -401,39 +407,41 @@ export async function getPostDates(
     githubSlug,
     l,
   }: {
-    filePath: string;
-    isShallow: boolean;
-    githubSlug: string | undefined;
-    l: Logger;
+    readonly filePath: string;
+    readonly isShallow: boolean;
+    readonly githubSlug: string;
+    readonly l: Logger;
   },
 ): Promise<PostDates> {
   /** Newest-first list of author dates for every commit touching the file. */
   const localHistory = await gitLogDates({ filePath, },);
-  /** Author date of the most recent commit, if any. */
-  const [latestIso,]: readonly (string | undefined)[] = localHistory;
+  /** Author date of the most recent commit; `''` when the file has no git history. */
+  const latestIso = localHistory[0]
+    ?? '';
   /**
    * Author date of the oldest commit from local history.
    * Shallow clones omit the true first commit, so this value is unreliable
    * when `isShallow` is set; in that case the gh-api fallback replaces it.
    */
-  const oldestLocalIso: string | undefined = isShallow
-    ? undefined
-    : localHistory.at(-1,);
+  const oldestLocalIso = isShallow
+    ? ''
+    : (localHistory.at(-1,)
+      ?? '');
 
   /** Final `published` ISO string, resolved through shallow/gh fallback when needed. */
-  const publishedIso: string | undefined =
-    await (async function resolvePublishedIso(): Promise<string | undefined> {
-      if ((oldestLocalIso !== undefined) || (!isShallow)
-        || (latestIso === undefined))
+  const publishedIso =
+    await (async function resolvePublishedIso(): Promise<string> {
+      if ((oldestLocalIso !== '') || (!isShallow)
+        || (latestIso === ''))
         return oldestLocalIso;
-      if (githubSlug === undefined) {
+      if (githubSlug === '') {
         throw new Error(
           `Shallow clone detected but no GitHub remote configured; cannot resolve published date for ${filePath}. Fetch with --unshallow or configure an origin on github.com.`,
         );
       }
       /** Repo-relative form required by the GitHub commits API `path` query param. */
       const repoRelPath = await getRepoRelativePath(filePath,);
-      /** ISO date returned by the gh-api fallback; undefined when the API has no commits for the path. */
+      /** ISO date returned by the gh-api fallback; `''` when the API has no commits for the path. */
       const ghIso = await ghApiFirstCommitDate({
         slug: githubSlug,
         repoRelPath,
@@ -444,7 +452,7 @@ export async function getPostDates(
       return ghIso;
     })();
 
-  if ((latestIso !== undefined) && (publishedIso !== undefined)) {
+  if ((latestIso !== '') && (publishedIso !== '')) {
     return {
       published: new Date(publishedIso,),
       updated: new Date(latestIso,),
@@ -457,9 +465,9 @@ export async function getPostDates(
   const mtime = new Date(stats.mtimeMs,);
   /** Names of fields filled in from mtime, surfaced in the diagnostic log line. */
   const missing: string[] = [];
-  if (publishedIso === undefined)
+  if (publishedIso === '')
     missing.push('published',);
-  if (latestIso === undefined)
+  if (latestIso === '')
     missing.push('updated',);
   l.info(
     `git history incomplete for ${filePath} (missing ${
@@ -467,8 +475,8 @@ export async function getPostDates(
     }); falling back to file mtime for missing fields`,
   );
   return {
-    published: publishedIso !== undefined ? new Date(publishedIso,) : mtime,
-    updated: latestIso !== undefined ? new Date(latestIso,) : mtime,
+    published: publishedIso !== '' ? new Date(publishedIso,) : mtime,
+    updated: latestIso !== '' ? new Date(latestIso,) : mtime,
   };
 }
 
@@ -481,11 +489,11 @@ export async function getPostDates(
  */
 export type GitDatesContext = {
   /** Current `HEAD` commit SHA. */
-  headSha: string;
+  readonly headSha: string;
   /** Whether the repository is a shallow clone. */
-  isShallow: boolean;
-  /** GitHub `owner/repo` slug when origin is on github.com. */
-  githubSlug: string | undefined;
+  readonly isShallow: boolean;
+  /** GitHub `owner/repo` slug when origin is on github.com; `''` when origin is not GitHub. */
+  readonly githubSlug: string;
 };
 
 /**

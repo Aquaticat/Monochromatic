@@ -132,6 +132,7 @@ function parseFrontmatter(raw: string,): {
           bodyStart += 1;
 
         return {
+          // oxlint-disable-next-line no-unsafe-type-assertion -- `yaml`'s `parse` returns `any` for untyped frontmatter; the assertion narrows to the documented record contract, re-validated downstream by `postFileFrontmatterSchema` in `loadContent`.
           data: (parseYaml(yamlBlock,)
             ?? {}) as Record<string, unknown>,
           content: str.slice(bodyStart,),
@@ -219,11 +220,11 @@ export const postFrontmatterSchema: v.GenericSchema<
 
 /** Fully-resolved frontmatter as carried by `Post.data`. */
 export type PostFrontmatter = {
-  title: string;
-  description: string;
-  tags: string[];
-  published: Date;
-  updated: Date;
+  readonly title: string;
+  readonly description: string;
+  readonly tags: readonly string[];
+  readonly published: Date;
+  readonly updated: Date;
 };
 
 /**
@@ -235,37 +236,37 @@ export type PostFrontmatter = {
  */
 export type LoadedPost = {
   /** Two-letter language code derived from parent directory name, validated against known locales. */
-  lang: Locales;
+  readonly lang: Locales;
   /** Post slug derived from filename without extension. */
-  name: string;
+  readonly name: string;
   /** Validated author-written frontmatter (title, description, tags). */
-  fileData: {
-    title: string;
-    description: string;
-    tags: string[];
+  readonly fileData: {
+    readonly title: string;
+    readonly description: string;
+    readonly tags: readonly string[];
   };
   /** Raw MDX body content (frontmatter stripped). */
-  body: string;
+  readonly body: string;
   /** Absolute path to the source MDX file. */
-  filePath: string;
+  readonly filePath: string;
   /** SHA-256 hex digest of the raw file contents, computed during loading. */
-  contentHash: string;
+  readonly contentHash: string;
 };
 
 /** Blog post with fully-resolved frontmatter (author-written + git-derived dates). */
 export type Post = {
   /** Two-letter language code derived from parent directory name, validated against known locales. */
-  lang: Locales;
+  readonly lang: Locales;
   /** Post slug derived from filename without extension. */
-  name: string;
+  readonly name: string;
   /** Fully-resolved frontmatter data. */
-  data: PostFrontmatter;
+  readonly data: PostFrontmatter;
   /** Raw MDX body content (frontmatter stripped). */
-  body: string;
+  readonly body: string;
   /** Absolute path to the source MDX file. */
-  filePath: string;
+  readonly filePath: string;
   /** SHA-256 hex digest of the raw file contents, computed during loading. */
-  contentHash: string;
+  readonly contentHash: string;
 };
 
 //endregion Types
@@ -377,8 +378,8 @@ export function attachDates(
     loadedPosts,
     datesByFilePath,
   }: {
-    loadedPosts: readonly LoadedPost[];
-    datesByFilePath: ReadonlyMap<string, ResolvedDates>;
+    readonly loadedPosts: readonly LoadedPost[];
+    readonly datesByFilePath: ReadonlyMap<string, ResolvedDates>;
   },
 ): Post[] {
   /** Hydrated posts assembled before the stable multi-key sort. */

@@ -36,9 +36,9 @@ export {
 
 /** Per-file cache entry with content hash and pre-rendered HTML. */
 export type CacheEntry = {
-  contentHash: string;
-  html: string;
-  frontmatter: PostFrontmatter;
+  readonly contentHash: string;
+  readonly html: string;
+  readonly frontmatter: PostFrontmatter;
 };
 
 /** Valibot schema for a single cache entry. */
@@ -50,15 +50,15 @@ const cacheEntrySchema = v.object({
 
 /** On-disk cache structure at `.cache/build-manifest.json`. */
 export type BuildManifest = {
-  pipelineHash: string;
+  readonly pipelineHash: string;
   /**
    * HEAD commit SHA captured when this manifest was written.
    * Used to validate cached git-derived publication/update dates:
    * when the current HEAD matches, cached dates are reusable without
    * re-probing git. When HEAD has moved, dates are re-derived.
    */
-  headSha: string;
-  content: Record<string, CacheEntry>;
+  readonly headSha: string;
+  readonly content: Readonly<Record<string, CacheEntry>>;
 };
 
 /** Valibot schema for the on-disk build manifest. */
@@ -73,6 +73,24 @@ const buildManifestSchema = v.object({
 
 //endregion Schema and types
 
+//region Sentinels
+
+/**
+ * Sentinel returned by `readCache` when no manifest file exists on disk.
+ * A genuine `Symbol` rather than `null`/`undefined`, which the
+ * `no-nullish-union` rule rejects as non-sentinels.
+ */
+export const NO_CACHE: unique symbol = Symbol('no-cache',);
+
+/**
+ * Sentinel returned by `getCachedEntry` when the manifest has no matching,
+ * content-hash-current entry for a file. A genuine `Symbol` rather than
+ * `null`/`undefined`.
+ */
+export const CACHE_MISS: unique symbol = Symbol('cache-miss',);
+
+//endregion Sentinels
+
 /** Default path for the cache manifest file. */
 const CACHE_PATH = '.cache/build-manifest.json';
 
@@ -81,13 +99,13 @@ const CACHE_PATH = '.cache/build-manifest.json';
 /**
  * Reads the build manifest from disk.
  *
- * Returns `undefined` when the cache file does not exist.
+ * Returns `NO_CACHE` when the cache file does not exist.
  * Logs and discards corrupted or invalid manifests rather than
  * crashing the build, since a missing cache just triggers a full rebuild.
  *
  * @param l - logger for cache read errors
  *
- * @returns parsed and validated manifest, or `undefined` on any failure
+ * @returns parsed and validated manifest, or `NO_CACHE` on any failure
  *
  * @example
  * ```ts
@@ -95,8 +113,8 @@ const CACHE_PATH = '.cache/build-manifest.json';
  * ```
  */
 export async function readCache(
-  { l, }: { l: Logger; },
-): Promise<BuildManifest | undefined> {
+  { l, }: { readonly l: Logger; },
+): Promise<BuildManifest | typeof NO_CACHE> {
   try {
     /** Raw JSON text read before schema validation so parse errors and validation errors share the same catch. */
     const raw = await readFile(
@@ -121,7 +139,7 @@ export async function readCache(
         `Failed to read or validate build cache, starting fresh: ${String(error,)}`,
       );
     }
-    return undefined;
+    return NO_CACHE;
   }
 }
 
@@ -158,13 +176,13 @@ export async function writeCache(manifest: BuildManifest,): Promise<void> {
 /**
  * Looks up a cached entry for a given file path and content hash.
  *
- * @param manifest - current build manifest (or undefined if no cache)
+ * @param manifest - current build manifest
  *
  * @param filePath - relative path to the MDX file
  *
  * @param contentHash - SHA-256 of the current file contents
  *
- * @returns cached entry if the content hash matches, otherwise `undefined`
+ * @returns cached entry if the content hash matches, otherwise `CACHE_MISS`
  *
  * @example
  * ```ts
@@ -177,22 +195,19 @@ export function getCachedEntry(
     filePath,
     contentHash,
   }: {
-    manifest: BuildManifest | undefined;
-    filePath: string;
-    contentHash: string;
+    readonly manifest: BuildManifest;
+    readonly filePath: string;
+    readonly contentHash: string;
   },
-): CacheEntry | undefined {
-  if (manifest === undefined)
-    return undefined;
-
+): CacheEntry | typeof CACHE_MISS {
   /** Lookup separated from the hash check so the missing-key and stale-hash branches both early-return. */
   const entry = manifest.content[filePath];
   if (entry === undefined)
-    return undefined;
+    return CACHE_MISS;
 
   if (entry.contentHash
     !== contentHash)
-    return undefined;
+    return CACHE_MISS;
 
   return entry;
 }
@@ -219,9 +234,9 @@ export function createCacheEntry(
     html,
     frontmatter,
   }: {
-    contentHash: string;
-    html: string;
-    frontmatter: CacheEntry['frontmatter'];
+    readonly contentHash: string;
+    readonly html: string;
+    readonly frontmatter: CacheEntry['frontmatter'];
   },
 ): CacheEntry {
   return {
@@ -253,9 +268,9 @@ export function buildManifest(
     headSha,
     entries,
   }: {
-    pipelineHash: string;
-    headSha: string;
-    entries: Record<string, CacheEntry>;
+    readonly pipelineHash: string;
+    readonly headSha: string;
+    readonly entries: Readonly<Record<string, CacheEntry>>;
   },
 ): BuildManifest {
   return {

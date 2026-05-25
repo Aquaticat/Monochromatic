@@ -32,7 +32,7 @@ const RENDER_DENSITY = 384;
  * const png = await renderPng({ size: 32 });
  * ```
  */
-export function renderPng({ size, }: { size: number; },): Promise<Buffer> {
+export function renderPng({ size, }: { readonly size: number; },): Promise<Buffer> {
   return sharp(
     SVG_SOURCE,
     { density: RENDER_DENSITY, },
@@ -64,8 +64,8 @@ export async function renderPadded(
     contentSize,
     canvasSize,
   }: {
-    contentSize: number;
-    canvasSize: number;
+    readonly contentSize: number;
+    readonly canvasSize: number;
   },
 ): Promise<Buffer> {
   /** Inner glyph rendered first so the padded outer canvas can centre-composite it. */

@@ -44,10 +44,10 @@ export function headFragment(
     description,
     canonicalUrl,
   }: {
-    title: string;
-    lang: Locales;
-    description: string;
-    canonicalUrl: string;
+    readonly title: string;
+    readonly lang: Locales;
+    readonly description: string;
+    readonly canonicalUrl: string;
   },
 ): string {
   /** Locale-bound translator captured once for siteName plus any further translated strings. */

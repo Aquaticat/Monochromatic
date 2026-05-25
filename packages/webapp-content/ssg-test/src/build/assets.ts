@@ -28,6 +28,61 @@ import {
 } from './write-page.ts';
 
 /**
+ * Copies all files from a source directory into dist, preserving relative structure.
+ * Creates target directories before copying.
+ *
+ * @param sourceDir - base directory to copy from
+ *
+ * @param files - absolute file paths to copy
+ */
+async function copyTreeToDist(
+  {
+    sourceDir,
+    files,
+  }: {
+    readonly sourceDir: string;
+    readonly files: readonly string[];
+  },
+): Promise<void> {
+  /** Deduplicated parent directories pre-created before the per-file copy fan-out. */
+  const targetDirs = [...new Set(
+    files.map(function targetDir(filePath,) {
+      return join(
+        DIST,
+        dirname(relative(
+          sourceDir,
+          filePath,
+        ),),
+      );
+    },),
+  ),];
+
+  await Promise.all(
+    targetDirs.map(function ensureDir(dir,) {
+      return mkdir(
+        dir,
+        { recursive: true, },
+      );
+    },),
+  );
+
+  await Promise.all(
+    files.map(function copyOneFile(filePath,) {
+      return copyFile(
+        filePath,
+        join(
+          DIST,
+          relative(
+            sourceDir,
+            filePath,
+          ),
+        ),
+      );
+    },),
+  );
+}
+
+/**
  * Generates CSS, RSS feeds, and copies static assets to dist.
  *
  * @param siteUrl - base URL for RSS feed links
@@ -53,11 +108,11 @@ export async function generateAssets(
     validLangs,
     l: parentLogger,
   }: {
-    siteUrl: string;
-    contentDir: string;
-    byLang: Partial<Record<Locales, Post[]>>;
-    validLangs: readonly Locales[];
-    l: Logger;
+    readonly siteUrl: string;
+    readonly contentDir: string;
+    readonly byLang: Readonly<Partial<Record<Locales, readonly Post[]>>>;
+    readonly validLangs: readonly Locales[];
+    readonly l: Logger;
   },
 ): Promise<void> {
   /** Function-scoped logger tagged with the caller name for traceable log lines. */
@@ -82,59 +137,6 @@ export async function generateAssets(
       content: rssXml,
     },);
   },);
-
-  /**
-   * Copies all files from a source directory into dist, preserving relative structure.
-   * Creates target directories before copying.
-   *
-   * @param sourceDir - base directory to copy from
-   *
-   * @param files - absolute file paths to copy
-   */
-  async function copyTreeToDist({
-    sourceDir,
-    files,
-  }: {
-    sourceDir: string;
-    files: readonly string[];
-  },): Promise<void> {
-    /** Deduplicated parent directories pre-created before the per-file copy fan-out. */
-    const targetDirs = [...new Set(
-      files.map(function targetDir(filePath,) {
-        return join(
-          DIST,
-          dirname(relative(
-            sourceDir,
-            filePath,
-          ),),
-        );
-      },),
-    ),];
-
-    await Promise.all(
-      targetDirs.map(function ensureDir(dir,) {
-        return mkdir(
-          dir,
-          { recursive: true, },
-        );
-      },),
-    );
-
-    await Promise.all(
-      files.map(function copyOneFile(filePath,) {
-        return copyFile(
-          filePath,
-          join(
-            DIST,
-            relative(
-              sourceDir,
-              filePath,
-            ),
-          ),
-        );
-      },),
-    );
-  }
 
   // Copies all content files (including MDX source) to dist intentionally,
   // so readers can inspect the original source of any post.

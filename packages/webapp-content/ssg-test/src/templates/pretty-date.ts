@@ -26,8 +26,8 @@ export function prettyDate(
     date,
     lang,
   }: {
-    date: Date;
-    lang: string;
+    readonly date: Date;
+    readonly lang: string;
   },
 ): string {
   /** Locale-formatted display text rendered inside the `<time>` element. */
