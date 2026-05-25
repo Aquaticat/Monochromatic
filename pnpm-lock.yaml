@@ -688,9 +688,6 @@ importers:
 
   packages/cli/git:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -719,9 +716,6 @@ importers:
 
   packages/cli/mvm:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -756,9 +750,6 @@ importers:
 
   packages/cli/rgffplay:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -775,9 +766,6 @@ importers:
 
   packages/cli/terminal-exec:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -1096,9 +1084,6 @@ importers:
       '@luma.gl/engine':
         specifier: 'catalog:'
         version: 9.3.3(@luma.gl/core@9.3.3)(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3))
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-fs-path':
         specifier: workspace:*
         version: link:../../module/fs-path
@@ -1136,9 +1121,6 @@ importers:
 
   packages/dev-script/file-enforcer:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -1176,9 +1158,6 @@ importers:
 
   packages/dev-script/inference-canary:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -1231,9 +1210,6 @@ importers:
       '@monochromatic-dev/dev-script-inference-canary':
         specifier: workspace:*
         version: link:../inference-canary
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -1398,9 +1374,6 @@ importers:
 
   packages/figma-parsers/kiwi:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -1646,9 +1619,6 @@ importers:
 
   packages/module/image-diff:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
@@ -1913,9 +1883,6 @@ importers:
       '@anthropic-ai/sdk':
         specifier: '>=0.91.1'
         version: 0.92.0(zod@4.3.6)
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
@@ -2472,9 +2439,6 @@ importers:
 
   packages/webapp-edu/paper2vn:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -2503,9 +2467,6 @@ importers:
 
   packages/webapp-forge/seed:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -2537,9 +2498,6 @@ importers:
       '@libsql/kysely-libsql':
         specifier: 'catalog:'
         version: 0.4.1(kysely@0.28.17)
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -2626,9 +2584,6 @@ importers:
 
   packages/webapp-productivity/done:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -2660,9 +2615,6 @@ importers:
       '@monochromatic-dev/build-tool-css':
         specifier: workspace:*
         version: link:../../build-tool/css
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -2771,9 +2723,6 @@ importers:
 
   packages/webapp-productivity/syllable-break-demo:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -2799,9 +2748,6 @@ importers:
       '@anthropic-ai/sdk':
         specifier: '>=0.91.1'
         version: 0.92.0(zod@4.3.6)
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       h3:
         specifier: 'catalog:'
         version: 2.0.1-rc.20(crossws@0.4.4(srvx@0.11.15))

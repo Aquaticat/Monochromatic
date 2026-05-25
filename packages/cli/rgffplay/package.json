@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/module-es": "workspace:*",
     "nano-spawn": "catalog:"
   },
   "version": "0.0.1",
