@@ -194,7 +194,7 @@ If you cannot name what backs a claim, downgrade to a labeled guess or do the ve
 ### Treat search results as suspicious until you've verified the shape
 
 Every search result carries two claims: the search ran correctly, and the lines shown are the matches.
-Both fail silently, in both directions: zero-match (invalid `--type`, wrong glob, `2>/dev/null` masking errors, stale dir, stdin mode) and non-zero-match (`head -N` truncation, denylist `-v` filters, `-l` hiding context, narrow `--type`).
+Both fail silently, in both directions: zero-match (invalid `--type`, wrong glob, `2>/dev/null` masking errors, stale dir, stdin mode) and non-zero-match (`head -N` truncation, denylist `-v` filters, `-l` hiding context, narrow `--type`, and `rg -r`/`--replace` rewriting matched substrings in the output: grep muscle-memory `rg -rn`/`-rln` parses as `--replace=n`/`--replace=ln`, not recursive, since ripgrep recurses by default).
 Run a sanity-check (broader pattern, no cap, no negative filter) before claiming you've enumerated what's there.
 
 ### Git cleanup and worktree safety reviews
