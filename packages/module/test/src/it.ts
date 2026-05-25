@@ -85,7 +85,7 @@ async function runFnOnce({
   readonly ctx: TestContext;
   readonly fn: (ctx: TestContext,) => Promise<void>;
   readonly name: string;
-  readonly timeout: number | undefined;
+  readonly timeout?: number;
 },): Promise<void> {
   /** Hoists the test-fn invocation so it can be optionally wrapped with `withTimeout`. */
   const promise = fn(ctx,);
@@ -184,6 +184,9 @@ async function runIt(
   /** Total iteration count: one base run plus any explicit repeats. */
   const totalRuns = 1 + repeats;
 
+  /** Spreads `timeout` into the runFnOnce call only when set, so exactOptional never receives an explicit `undefined`. */
+  const timeoutArg = timeout !== undefined ? { timeout, } : {};
+
   for (let run = 0; run < totalRuns; run += 1) {
     /** Per-iteration label inserted in log messages so repeat runs can be told apart. */
     const runLabel = totalRuns > 1
@@ -204,8 +207,8 @@ async function runIt(
       await runFnOnce({
         fn,
         ctx,
-        timeout,
         name,
+        ...timeoutArg,
       },);
     }
     catch (error) {
