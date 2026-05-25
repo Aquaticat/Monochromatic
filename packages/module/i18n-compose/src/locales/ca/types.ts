@@ -25,10 +25,12 @@ export type CatalanVerbEntry = {
   /** Imperative surface; defaults to second-person singular present finite when unset. */
   readonly imperative?: string;
   /**
-   * Sparse table of finite forms by tense and person/number.
-   * Missing entries throw at render time rather than producing wrong agreement.
+   * Sparse table of finite forms by tense and person/number. A `Map` models
+   * the genuine sparseness directly (absent keys are simply not set) instead
+   * of `Partial<Record>`, which fakes optionality at the type level. Missing
+   * entries throw at render time rather than producing wrong agreement.
    */
-  readonly finite: Partial<Record<Tense, Partial<Record<PersonNumberKey, string>>>>;
+  readonly finite: ReadonlyMap<Tense, ReadonlyMap<PersonNumberKey, string>>;
 };
 
 /** Input shape accepted by `defineCatalanLocale`. */

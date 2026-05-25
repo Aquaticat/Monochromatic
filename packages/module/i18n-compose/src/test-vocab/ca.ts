@@ -8,6 +8,10 @@ import type {
   NounEntry,
   SubjectEntry,
 } from '../entries.ts';
+import type {
+  PersonNumberKey,
+  Tense,
+} from '../grammar-primitives.ts';
 import type { CatalanVerbEntry, } from '../locales/ca/index.ts';
 import type {
   TestLabel,
@@ -100,89 +104,139 @@ export const caNouns: Record<TestNoun, NounEntry> = {
   },
 };
 
+/**
+ * Builds a {@link ReadonlyMap} from a record literal while preserving the
+ * record's literal key type. Lets the finite inflection tables stay readable
+ * object literals at the call site while the stored shape is a `Map`, which
+ * models the sparse tense level directly instead of a `Partial<Record>` escape.
+ *
+ * @param record - source key/value pairs
+ *
+ * @returns map mirroring `record` with its literal key type intact
+ *
+ * @example
+ * ```ts
+ * const present = toReadonlyMap<PersonNumberKey, string>({ '1s': 'tinc', },);
+ * present.get('1s',); // 'tinc'
+ * ```
+ */
+function toReadonlyMap<const K extends string, V,>(
+  record: Readonly<Record<K, V>>,
+): ReadonlyMap<K, V> {
+  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.entries() widens keys to string; the record's own `K` is the source of truth, so the cast restores it, routed through `unknown` because the generic key blocks a direct narrowing assertion. */
+  /** Record entries retyped so the resulting Map keeps `K` instead of `string`. */
+  const entries = Object.entries(record,) as unknown as readonly (readonly [
+    K,
+    V,
+  ])[];
+  /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
+  return new Map(entries,);
+}
+
 /** Catalan verb table for tests. */
 export const caVerbs: Record<TestVerb, CatalanVerbEntry> = {
   have: {
     infinitive: 'tenir',
     imperative: 'Té',
-    finite: {
-      present: {
-        '1s': 'tinc',
-        '2s': 'tens',
-        '3s': 'té',
-        '1p': 'tenim',
-        '2p': 'teniu',
-        '3p': 'tenen',
-      },
-      past: {
-        '1s': 'tenia',
-        '2s': 'tenies',
-        '3s': 'tenia',
-        '1p': 'teníem',
-        '2p': 'teníeu',
-        '3p': 'tenien',
-      },
-      future: {
-        '1s': 'tindré',
-        '2s': 'tindràs',
-        '3s': 'tindrà',
-        '1p': 'tindrem',
-        '2p': 'tindreu',
-        '3p': 'tindran',
-      },
-    },
+    finite: new Map<Tense, ReadonlyMap<PersonNumberKey, string>>([
+      [
+        'present',
+        toReadonlyMap<PersonNumberKey, string>({
+          '1s': 'tinc',
+          '2s': 'tens',
+          '3s': 'té',
+          '1p': 'tenim',
+          '2p': 'teniu',
+          '3p': 'tenen',
+        },),
+      ],
+      [
+        'past',
+        toReadonlyMap<PersonNumberKey, string>({
+          '1s': 'tenia',
+          '2s': 'tenies',
+          '3s': 'tenia',
+          '1p': 'teníem',
+          '2p': 'teníeu',
+          '3p': 'tenien',
+        },),
+      ],
+      [
+        'future',
+        toReadonlyMap<PersonNumberKey, string>({
+          '1s': 'tindré',
+          '2s': 'tindràs',
+          '3s': 'tindrà',
+          '1p': 'tindrem',
+          '2p': 'tindreu',
+          '3p': 'tindran',
+        },),
+      ],
+    ],),
   },
   see: {
     infinitive: 'veure',
-    finite: {
-      present: {
-        '1s': 'veig',
-        '2s': 'veus',
-        '3s': 'veu',
-        '1p': 'veiem',
-        '2p': 'veieu',
-        '3p': 'veuen',
-      },
-    },
+    finite: new Map<Tense, ReadonlyMap<PersonNumberKey, string>>([
+      [
+        'present',
+        toReadonlyMap<PersonNumberKey, string>({
+          '1s': 'veig',
+          '2s': 'veus',
+          '3s': 'veu',
+          '1p': 'veiem',
+          '2p': 'veieu',
+          '3p': 'veuen',
+        },),
+      ],
+    ],),
   },
   delete: {
     infinitive: 'esborrar',
-    finite: {
-      present: {
-        '1s': 'esborro',
-        '2s': 'esborres',
-        '3s': 'esborra',
-        '1p': 'esborrem',
-        '2p': 'esborreu',
-        '3p': 'esborren',
-      },
-    },
+    finite: new Map<Tense, ReadonlyMap<PersonNumberKey, string>>([
+      [
+        'present',
+        toReadonlyMap<PersonNumberKey, string>({
+          '1s': 'esborro',
+          '2s': 'esborres',
+          '3s': 'esborra',
+          '1p': 'esborrem',
+          '2p': 'esborreu',
+          '3p': 'esborren',
+        },),
+      ],
+    ],),
   },
   want: {
     infinitive: 'voler',
-    finite: {
-      present: {
-        '1s': 'vull',
-        '2s': 'vols',
-        '3s': 'vol',
-        '1p': 'volem',
-        '2p': 'voleu',
-        '3p': 'volen',
-      },
-    },
+    finite: new Map<Tense, ReadonlyMap<PersonNumberKey, string>>([
+      [
+        'present',
+        toReadonlyMap<PersonNumberKey, string>({
+          '1s': 'vull',
+          '2s': 'vols',
+          '3s': 'vol',
+          '1p': 'volem',
+          '2p': 'voleu',
+          '3p': 'volen',
+        },),
+      ],
+    ],),
   },
   save: {
     infinitive: 'desar',
     imperative: 'Desa',
-    finite: {
-      present: {
-        '1s': 'deso',
-        '2s': 'deses',
-        '3s': 'desa',
-        '1p': 'desem',
-        '2p': 'deseu',
-        '3p': 'desen',
-      },
-    },
+    finite: new Map<Tense, ReadonlyMap<PersonNumberKey, string>>([
+      [
+        'present',
+        toReadonlyMap<PersonNumberKey, string>({
+          '1s': 'deso',
+          '2s': 'deses',
+          '3s': 'desa',
+          '1p': 'desem',
+          '2p': 'deseu',
+          '3p': 'desen',
+        },),
+      ],
+    ],),
   },
 };

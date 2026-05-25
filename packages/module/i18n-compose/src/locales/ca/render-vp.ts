@@ -51,7 +51,9 @@ export function finiteVerbSurface(
   },
 ): string {
   /** Tense-specific subtable. */
-  const tenseTable = entry.finite[tense];
+  const tenseTable = entry
+    .finite
+    .get(tense,);
   if (tenseTable === undefined)
     throw new Error(`Catalan verb '${key}' has no finite forms for tense '${tense}'`,);
   /** Joined person/number lookup key. */
@@ -60,7 +62,7 @@ export function finiteVerbSurface(
     number: agreement.number,
   },);
   /** Finite surface for the lookup key. */
-  const surface = tenseTable[pn];
+  const surface = tenseTable.get(pn,);
   if (surface === undefined) {
     throw new Error(
       `Catalan verb '${key}' has no finite form for tense '${tense}' at ${pn}`,
