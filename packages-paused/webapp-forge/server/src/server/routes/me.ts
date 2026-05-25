@@ -414,7 +414,7 @@ export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
     }
     if ((parsed.kind
       === 'issue-detail') && (parsed.number
-      !== null)) {
+        !== null)) {
       /** Issue-detail delta payload populated from the actor's repo membership. */
       const payload = await buildIssueDetailDelta({
         owner: parsed.owner,

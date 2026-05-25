@@ -38,7 +38,10 @@ export function percentile(
   /** Nearest-rank index clamped to 0 so empty-but-passing checks still index safely. */
   const rank = Math.max(
     0,
-    Math.ceil(input.p * input.sortedAsc.length,)
+    Math.ceil(input.p
+      * input
+      .sortedAsc
+      .length,)
       - 1,
   );
   return input.sortedAsc[rank]
@@ -70,5 +73,5 @@ export function median(sortedAsc: readonly number[],): number {
       ?? 0;
   return ((sortedAsc[mid - 1]
     ?? 0) + (sortedAsc[mid]
-    ?? 0)) * MEDIAN_SPLIT;
+      ?? 0)) * MEDIAN_SPLIT;
 }

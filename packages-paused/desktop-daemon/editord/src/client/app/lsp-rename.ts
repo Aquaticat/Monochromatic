@@ -162,7 +162,8 @@ export async function performRename({
     const currentFileEdits = result.edits
       .find(
       function isCurrentFile(fileEdit,) {
-        return fileEdit.path === path;
+        return fileEdit.path
+          === path;
       },
     );
 
@@ -181,7 +182,9 @@ export async function performRename({
         sum,
         fileEdit,
       ) {
-        return sum + fileEdit.edits.length;
+        return sum + fileEdit
+          .edits
+          .length;
       },
       0,
     );

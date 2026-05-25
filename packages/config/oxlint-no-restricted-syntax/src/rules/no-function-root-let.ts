@@ -46,15 +46,19 @@ function isHelperShape(body: ESTree.FunctionBody,): boolean {
         if ((decl.id
           .type
           === 'Identifier') && (decl.id
-          .name
-          === returnedName))
+            .name
+            === returnedName))
           return true;
       }
     }
     else if (
-      (stmt.type === 'FunctionDeclaration')
-      && (stmt.id !== null)
-        && (stmt.id.name === returnedName)
+      (stmt.type
+        === 'FunctionDeclaration')
+      && (stmt.id
+        !== null)
+        && (stmt.id
+          .name
+          === returnedName)
     ) {
       return true;
     }

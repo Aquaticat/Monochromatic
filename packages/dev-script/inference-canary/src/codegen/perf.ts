@@ -146,7 +146,8 @@ export function computePerfScore({
   config,
 }: PerfScoreOptions,): number {
   if (perfResult.timedOut
-    || (perfResult.exitCode !== 0))
+    || (perfResult.exitCode
+      !== 0))
     return 0;
   if (perfResult.durationMs
     <= config
@@ -159,8 +160,8 @@ export function computePerfScore({
   return 1 - ((perfResult.durationMs
     - config
     .fastMs) / (config.slowMs
-    - config
-    .fastMs));
+      - config
+      .fastMs));
 }
 
 /**

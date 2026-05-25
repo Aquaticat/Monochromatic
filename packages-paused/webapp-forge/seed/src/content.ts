@@ -57,7 +57,8 @@ export function synthesizeTitle(seed: number,): string {
   for (let i = 0; i < wordCount; i += 1) {
     /** Per-word pick from the lorem pool; defaulted when picking fails. */
     const picked = rngPick({
-      seed: seed + 2 + i,
+      seed: seed + 2
+        + i,
       items: WORD_POOL,
     },)
       ?? 'item';
@@ -118,7 +119,9 @@ export function synthesizeBody(row: {
     for (let i = 0; i < paragraphLength; i += 1) {
       /** Per-word pick from the lorem pool; defaulted when picking fails. */
       const picked = rngPick({
-        seed: state.cursor + 1 + i,
+        seed: state.cursor
+          + 1
+          + i,
         items: WORD_POOL,
       },)
         ?? 'item';

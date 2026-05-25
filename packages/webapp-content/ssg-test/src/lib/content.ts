@@ -110,9 +110,12 @@ function parseFrontmatter(raw: string,): {
 
       /* Next char must be a newline or EOF for a valid closing fence. */
       if (
-        (afterDelim === str.length)
-        || (str[afterDelim] === '\n')
-          || (str[afterDelim] === '\r')
+        (afterDelim === str
+          .length)
+        || (str[afterDelim]
+          === '\n')
+          || (str[afterDelim]
+            === '\r')
       ) {
         /** YAML body between the opening and closing fences fed to parseYaml. */
         const yamlBlock = str.slice(

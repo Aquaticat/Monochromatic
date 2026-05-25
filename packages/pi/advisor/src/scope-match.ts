@@ -347,7 +347,8 @@ function isAsciiDigitString(
   if (value === '')
     return true;
 
-  return isAsciiDigit(value.at(0,) ?? '',)
+  return isAsciiDigit(value.at(0,)
+    ?? '',)
     && isAsciiDigitString(value.slice(1,),);
 }
 

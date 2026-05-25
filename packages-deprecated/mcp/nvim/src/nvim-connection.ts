@@ -39,8 +39,8 @@ export function findAllSocketPaths(): string[] {
   if ((process.env
     .NVIM
     !== undefined) && (process.env
-    .NVIM
-    !== ''))
+      .NVIM
+      !== ''))
     found.add(process.env
       .NVIM,);
 

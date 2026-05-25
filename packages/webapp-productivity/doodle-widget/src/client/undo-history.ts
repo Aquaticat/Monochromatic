@@ -98,7 +98,8 @@ export function pushSnapshot({
   history.states = history.states
     .slice(
     0,
-    history.index + 1,
+    history.index
+      + 1,
   );
   history.states
     .push(snapshot,);
@@ -158,7 +159,9 @@ export function redo(pageIndex: number,): Snapshot | null {
   /** Page slot guarded so an absent or at-end page falls through to null. */
   const history = historiesState.all[pageIndex];
   if ((history === undefined) || (history.index
-    >= (history.states.length - 1)))
+    >= (history.states
+      .length
+      - 1)))
     return null;
   history.index += 1;
   return history.states[history.index]
@@ -200,5 +203,7 @@ export function canRedo(pageIndex: number,): boolean {
   /** Page slot looked up so the predicate covers both presence and position. */
   const history = historiesState.all[pageIndex];
   return (history !== undefined) && (history.index
-    < (history.states.length - 1));
+    < (history.states
+      .length
+      - 1));
 }

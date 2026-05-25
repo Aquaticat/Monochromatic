@@ -303,8 +303,8 @@ export function isSuppressedDiagnostic(line: string,): boolean {
 export function isContinuationLine(line: string,): boolean {
   return (line.length
     > 0) && (line.startsWith(' ',)
-    || line
-    .startsWith('\t',));
+      || line
+      .startsWith('\t',));
 }
 
 //endregion Diagnostic line detection

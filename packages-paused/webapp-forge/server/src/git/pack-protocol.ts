@@ -151,7 +151,8 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
       );
       offset += length;
       /** Payload without the optional trailing line-feed git emits on text lines. */
-      const trimmed = payload[payload.byteLength - 1]
+      const trimmed = payload[payload.byteLength
+        - 1]
         === ASCII_LF
         ? payload.subarray(
           0,
@@ -168,7 +169,7 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
         ?? '';
       if ((triplets.length
         === 0) && (nullSplit.length
-        >= 2)) {
+          >= 2)) {
         /** Raw capability string from the first triplet line. */
         const capsText = nullSplit[1]
           ?? '';
@@ -177,7 +178,8 @@ export function parseReceivePackBody(body: Uint8Array,): ReceivePackRequest {
           ? []
           : capsText.split(' ',)
             .filter(function nonEmpty(s,) {
-            return s.length > 0;
+            return s.length
+              > 0;
           },);
       }
       /** Whitespace-separated triplet tokens; ref names may contain spaces. */
@@ -248,7 +250,8 @@ export function parseUploadPackBody(body: Uint8Array,): UploadPackRequest {
       if ((line === null) || (line === 'delim'))
         continue;
       /** Payload without the optional trailing line-feed git emits on text lines. */
-      const trimmed = line[line.byteLength - 1]
+      const trimmed = line[line.byteLength
+        - 1]
         === ASCII_LF
         ? line.subarray(
           0,
@@ -269,7 +272,7 @@ export function parseUploadPackBody(body: Uint8Array,): UploadPackRequest {
       const [key, value, ...rest] = tokens;
       if ((capabilities.length
         === 0) && (rest.length
-        > 0)) {
+          > 0)) {
         capabilities = rest.filter(function nonEmpty(s,) {
           return s.length
             > 0;

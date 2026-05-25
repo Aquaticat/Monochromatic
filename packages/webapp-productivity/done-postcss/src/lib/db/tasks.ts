@@ -65,13 +65,18 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
   await db.prepare(SQL_INSERT_TASK,)
     .run(
     id,
-    input.title.trim(),
-    input.description ?? null,
+    input.title
+      .trim(),
+    input.description
+      ?? null,
     JSON.stringify(normalizeStringArray(input.tags,),),
     JSON.stringify(normalizeStringArray(input.locations,),),
-    input.priority ?? null,
-    input.dueDate ?? null,
-    input.complexity ?? null,
+    input.priority
+      ?? null,
+    input.dueDate
+      ?? null,
+    input.complexity
+      ?? null,
     JSON.stringify(normalizeStringArray(input.reminders,),),
     JSON.stringify(normalizeStringArray(input.blockedBy,),),
     0,

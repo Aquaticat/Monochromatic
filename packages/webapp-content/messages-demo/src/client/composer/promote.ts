@@ -86,7 +86,8 @@ export async function promoteToTier3(
   input.state
     .metricsHooks
     ?.recordTransition(
-    performance.now() - transitionStart,
+    performance.now()
+      - transitionStart,
   );
   if (compiled.chunks
     .length
@@ -111,11 +112,11 @@ export async function promoteToTier3(
   input.state
     .tier3
     .chunkCount = compiled.chunks
-    .length;
+      .length;
   input.state
     .tier3
     .localChunks = compiled.chunks
-    .map(function copy(chunk,) {
+      .map(function copy(chunk,) {
     return {
       md: chunk.md,
       html: chunk.html,

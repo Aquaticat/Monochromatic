@@ -33,7 +33,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
 
   if ((detail.reasoning
     !== undefined) && (detail.reasoning
-    !== '')) {
+      !== '')) {
     sections.push(h({
       tag: 'details',
       class: 'collapsible-section',
@@ -58,7 +58,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
 
   if ((detail.initialResponse
     !== undefined) && (detail.initialResponse
-    !== '')) {
+      !== '')) {
     sections.push(h({
       tag: 'details',
       class: 'collapsible-section',
@@ -83,7 +83,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
 
   if ((detail.fixReasoning
     !== undefined) && (detail.fixReasoning
-    !== '')) {
+      !== '')) {
     sections.push(h({
       tag: 'details',
       class: 'collapsible-section',
@@ -108,7 +108,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
 
   if ((detail.fixResponse
     !== undefined) && (detail.fixResponse
-    !== '')) {
+      !== '')) {
     sections.push(h({
       tag: 'details',
       class: 'collapsible-section',
@@ -133,7 +133,7 @@ export function renderCollapsibles(detail: ProbeDetail,): string {
 
   if ((detail.fixPrompt
     !== undefined) && (detail.fixPrompt
-    !== '')) {
+      !== '')) {
     sections.push(h({
       tag: 'details',
       class: 'collapsible-section',

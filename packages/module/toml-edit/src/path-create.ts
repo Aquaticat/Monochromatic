@@ -176,7 +176,8 @@ function doTopLevelDottedKeyInsert(
   const firstTable = container.body
     .find(
     function isTable(child,): child is AST.TOMLTable {
-      return child.type === 'TOMLTable';
+      return child.type
+        === 'TOMLTable';
     },
   );
 
@@ -195,7 +196,8 @@ function doTopLevelDottedKeyInsert(
   /** Leading newline only when the EOF insertion would land mid-line. */
   const prefix = firstTable !== undefined
     ? ''
-    : ((edit.source === '') || edit
+    : ((edit.source
+      === '') || edit
       .source
       .endsWith('\n',)
       ? ''

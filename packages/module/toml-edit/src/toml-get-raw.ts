@@ -71,25 +71,33 @@ export function tomlGetRaw(
     === 'keyvalue') {
     return edit.source
       .slice(
-      result.node.value.range[0],
-      result.node.value.range[1],
+      result.node
+        .value
+        .range[0],
+      result.node
+        .value
+        .range[1],
     );
   }
   if (result.kind
     === 'value') {
     return edit.source
       .slice(
-      result.node.range[0],
-      result.node.range[1],
+      result.node
+        .range[0],
+      result.node
+        .range[1],
     );
   }
   if ((result.kind
     === 'table') || (result.kind
-    === 'top-level')) {
+      === 'top-level')) {
     return edit.source
       .slice(
-      result.node.range[0],
-      result.node.range[1],
+      result.node
+        .range[0],
+      result.node
+        .range[1],
     );
   }
   /** Span the slice over the first and last AoT element so every entry is captured. */

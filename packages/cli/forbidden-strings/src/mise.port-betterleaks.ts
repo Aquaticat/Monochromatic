@@ -223,7 +223,7 @@ function parseRules({ toml, }: { toml: string; },): readonly RawRule[] {
     i += 1;
     while ((i < lines
       .length) && (!lines[i]!
-      .includes("'''",))) {
+        .includes("'''",))) {
       parts.push(lines[i]!,);
       i += 1;
     }

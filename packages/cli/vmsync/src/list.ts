@@ -152,7 +152,7 @@ export async function printVmList(): Promise<void> {
           hvLabel.padEnd(HV_COL,)
         }${config.boot
           .memory}  ${String(config.boot
-          .cpus,)}cpu`,
+            .cpus,)}cpu`,
       );
     },
   );

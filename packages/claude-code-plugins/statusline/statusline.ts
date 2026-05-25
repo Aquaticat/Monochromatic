@@ -159,7 +159,8 @@ const SECONDS_PER_DAY = 86_400;
 function formatRelativeTime(resetsAt: number,): string {
   /** Remaining seconds until the reset; non-positive when the reset already passed. */
   const diff = resetsAt - Math
-    .floor(Date.now() / 1_000,);
+    .floor(Date.now()
+      / 1_000,);
 
   if (diff <= 0)
     return 'now';
@@ -359,7 +360,8 @@ const EFFORT_SYMBOLS: Record<string, string> = {
 async function readEffortIndicator(): Promise<string> {
   try {
     /** User home directory; treated as empty when the env var is unset so the path simply fails to resolve. */
-    const home = process.env.HOME
+    const home = process.env
+      .HOME
       ?? '';
     /** Path to the global Claude Code settings file storing `effortLevel`. */
     const settingsPath = `${home}/.claude/settings.json`;

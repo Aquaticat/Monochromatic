@@ -48,7 +48,8 @@ export async function mountCustomEditor(
     input.textarea,
   );
   /** URL-flag override that surfaces editor-internal trace logs in the browser console. */
-  const debug = new URLSearchParams(globalThis.location.search,).get('debug',)
+  const debug = new URLSearchParams(globalThis.location
+    .search,).get('debug',)
     === '1';
   /** Saved on composer state so later send/promote steps can read editor text or unmount it. */
   const editor = await mountEditor({

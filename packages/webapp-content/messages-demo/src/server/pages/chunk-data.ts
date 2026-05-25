@@ -169,8 +169,8 @@ async function renderChunkData(
   }
   if ((input.chunkIndex
     < 0) || (input.chunkIndex
-    >= snapshot
-    .chunkCount)) {
+      >= snapshot
+      .chunkCount)) {
     return new Response(
       null,
       {

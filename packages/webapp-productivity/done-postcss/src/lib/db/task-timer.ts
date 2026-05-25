@@ -93,7 +93,8 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
   const timestamp = nowIso();
   await db.prepare(SQL_STOP_TIMER,)
     .run(
-    currentTask.trackedTime + elapsedSeconds,
+    currentTask.trackedTime
+      + elapsedSeconds,
     timestamp,
     id,
   );

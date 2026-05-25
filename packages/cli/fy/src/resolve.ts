@@ -76,9 +76,11 @@ function findGlobalNodeModules(): string | undefined {
     l,
   },);
   /** User's home directory; drives the per-user candidates below and is required for them to be meaningful. */
-  const home = process.env.HOME
+  const home = process.env
+    .HOME
     ?? process
-    .env.USERPROFILE;
+    .env
+    .USERPROFILE;
   if (home === undefined) {
     rl.info('no HOME or USERPROFILE set',);
     return undefined;

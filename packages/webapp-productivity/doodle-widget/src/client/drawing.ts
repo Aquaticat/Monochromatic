@@ -161,9 +161,13 @@ export function normalizePointer({
   /** Layout snapshot so both normalization terms share one DOM read. */
   const rect = canvas.getBoundingClientRect();
   return [
-    (event.clientX - rect.left) / rect
+    (event.clientX
+      - rect
+      .left) / rect
       .width,
-    (event.clientY - rect.top) / rect
+    (event.clientY
+      - rect
+      .top) / rect
       .height,
   ];
 }

@@ -133,7 +133,7 @@ export function createTsdocVisitor({
     Property(node,): void {
       if ((node.kind
         === 'get') || (node.kind
-        === 'set'))
+          === 'set'))
         check(node,);
     },
   } as VisitorWithHooks;

@@ -83,15 +83,19 @@ export function sampleIssueCount(seed: number,): number {
   const r = rng(seed,);
   if (r < P50_THRESHOLD)
     return ISSUES_P50_BASE + Math
-      .floor(rng(seed + 1,) * ISSUES_P50_RANGE,);
+      .floor(rng(seed + 1,)
+        * ISSUES_P50_RANGE,);
   if (r < P95_THRESHOLD)
     return ISSUES_P95_BASE + Math
-      .floor(rng(seed + 1,) * ISSUES_P95_RANGE,);
+      .floor(rng(seed + 1,)
+        * ISSUES_P95_RANGE,);
   if (r < P99_THRESHOLD)
     return ISSUES_P99_BASE + Math
-      .floor(rng(seed + 1,) * ISSUES_P99_RANGE,);
+      .floor(rng(seed + 1,)
+        * ISSUES_P99_RANGE,);
   return ISSUES_TAIL_BASE + Math
-    .floor(rng(seed + 1,) * ISSUES_TAIL_RANGE,);
+    .floor(rng(seed + 1,)
+      * ISSUES_TAIL_RANGE,);
 }
 
 /**
@@ -113,13 +117,17 @@ export function sampleCommentCount(seed: number,): number {
   const r = rng(seed,);
   if (r < P50_THRESHOLD)
     return COMMENTS_P50_BASE + Math
-      .floor(rng(seed + 1,) * COMMENTS_P50_RANGE,);
+      .floor(rng(seed + 1,)
+        * COMMENTS_P50_RANGE,);
   if (r < P95_THRESHOLD)
     return COMMENTS_P95_BASE + Math
-      .floor(rng(seed + 1,) * COMMENTS_P95_RANGE,);
+      .floor(rng(seed + 1,)
+        * COMMENTS_P95_RANGE,);
   if (r < P99_THRESHOLD)
     return COMMENTS_P99_BASE + Math
-      .floor(rng(seed + 1,) * COMMENTS_P99_RANGE,);
+      .floor(rng(seed + 1,)
+        * COMMENTS_P99_RANGE,);
   return COMMENTS_TAIL_BASE + Math
-    .floor(rng(seed + 1,) * COMMENTS_TAIL_RANGE,);
+    .floor(rng(seed + 1,)
+      * COMMENTS_TAIL_RANGE,);
 }

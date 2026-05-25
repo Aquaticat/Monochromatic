@@ -63,7 +63,8 @@ export const requireQueryselectorGeneric: CreateOnceRule = {
       CallExpression(node: ESTree.CallExpression,): void {
         /** Call target; only member expressions on a selector method qualify for the rule. */
         const { callee, } = node;
-        if ((callee.type !== 'MemberExpression') || callee
+        if ((callee.type
+          !== 'MemberExpression') || callee
           .computed)
           return;
         if (callee.property
@@ -79,7 +80,7 @@ export const requireQueryselectorGeneric: CreateOnceRule = {
           return;
         if ((node.typeArguments
           !== null) && (node.typeArguments
-          !== undefined))
+            !== undefined))
           return;
         context.report({
           node,

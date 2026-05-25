@@ -58,7 +58,8 @@ async function readUtf8IfExists(path: string,): Promise<string | undefined> {
   }
   catch (error) {
     if (isErrnoException(error,)
-      && (error.code === 'ENOENT'))
+      && (error.code
+        === 'ENOENT'))
       return undefined;
     throw error;
   }

@@ -114,7 +114,7 @@ function collapseRepeatedChars(line: string,): string {
     let runEnd = idx + 1;
     while ((runEnd < line
       .length) && (line.charAt(runEnd,)
-      === c)) {
+        === c)) {
       runEnd += 1;
     }
     /** Length of the current run; gates the collapse vs. emit-verbatim choice. */

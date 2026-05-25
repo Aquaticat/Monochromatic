@@ -83,7 +83,8 @@ export async function execContainer({
     },
   },);
 
-  if ((result.exitCode !== 0) || result
+  if ((result.exitCode
+    !== 0) || result
     .killed) {
     /** Container-specific logger for execution failure messages. */
     const rl = tagged({

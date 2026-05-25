@@ -53,8 +53,8 @@ const command = buildCommand({
 if ((options.dir
   .length
   > 0) && (terminal.dirArg
-  .length
-  === 0)) {
+    .length
+    === 0)) {
   l.info(`terminal has no TerminalArgDir, cd to '${options.dir}'`,);
   process.chdir(options.dir,);
 }

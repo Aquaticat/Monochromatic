@@ -118,7 +118,8 @@ export async function buildCodeGenFixPrompt({
   // Narrow to a failed container only when exit was non-zero or process was killed
   /** Container result restricted to actual failures (non-zero exit or timeout); undefined for clean runs. */
   const failedContainer = (priorContainer !== undefined)
-      && ((priorContainer.exitCode !== 0) || priorContainer
+      && ((priorContainer.exitCode
+        !== 0) || priorContainer
         .timedOut)
     ? priorContainer
     : undefined;
@@ -135,8 +136,13 @@ export async function buildCodeGenFixPrompt({
 
   /** One-line lint summary shown before the diagnostics; undefined when there are zero issues. */
   const lintSummary =
-    (lint.severity.errors > 0) || (lint.severity.warnings > 0)
-      || (lint.typeErrors > 0)
+    (lint.severity
+      .errors
+      > 0) || (lint.severity
+      .warnings
+      > 0)
+      || (lint.typeErrors
+        > 0)
       ? `It has ${String(lint.severity
         .errors,)} lint errors, ${
         String(lint.severity

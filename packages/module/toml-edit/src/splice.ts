@@ -38,9 +38,15 @@ import type {
  */
 export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
   if (
-    (edit.edits.size === 0)
-    && (edit.insertions.length === 0)
-      && (edit.deletions.size === 0)
+    (edit.edits
+      .size
+      === 0)
+    && (edit.insertions
+      .length
+      === 0)
+      && (edit.deletions
+        .size
+        === 0)
   ) {
     return edit.source;
   }
@@ -272,8 +278,11 @@ function computeDeletionRange(
     .comments
     .find(function inSameLine(c,) {
     return (
-      (c.range[0] > node.range[1])
-      && ((newlineAfter === (-1)) || (c.range[0] < newlineAfter))
+      (c.range[0]
+        > node
+        .range[1])
+      && ((newlineAfter === (-1)) || (c.range[0]
+        < newlineAfter))
     );
   },);
   /** Offset just past the line terminator so the deletion absorbs the trailing `\n`. */

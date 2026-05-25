@@ -85,8 +85,8 @@ export function transformImportAttributes({
     ExportNamedDeclaration(node: ESTree.ExportNamedDeclaration,): void {
       if ((node.source
         === null) || (node.attributes
-        .length
-        === 0))
+          .length
+          === 0))
         return;
       /** Attribute type on this re-export with source; gates whether to emit a replacement. */
       const attrType = extractTypeFromAttributes(node.attributes,);

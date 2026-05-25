@@ -157,18 +157,23 @@ export function dependenciesFor(row: {
   // targets and permalinks have the new HTML available.
   if ((event.kind
     === 'comment.created') && (event.commentId
-    !== undefined))
+      !== undefined))
     keysIterable.push(commentKey(event.commentId,),);
 
   // PR-lifecycle events fan out to the PR-specific fragments (detail,
   // merge-status, reviews) in addition to the issue-detail and filter
   // lists already added above (PR shares identity with issue).
   if (
-    (event.kind === 'pr.opened')
-    || (event.kind === 'pr.merged')
-      || (event.kind === 'pr.closed')
-      || (event.kind === 'review.submitted')
-      || (event.kind === 'push')
+    (event.kind
+      === 'pr.opened')
+    || (event.kind
+      === 'pr.merged')
+      || (event.kind
+        === 'pr.closed')
+      || (event.kind
+        === 'review.submitted')
+      || (event.kind
+        === 'push')
   ) {
     keysIterable.push(prDetailKey({
       repoId: context.repoId,
@@ -183,10 +188,14 @@ export function dependenciesFor(row: {
   // Review-thread fragment rebuilds when the thread itself changes
   // (new review) or when a PR transition resets review counts.
   if (
-    (event.kind === 'review.submitted')
-    || (event.kind === 'pr.opened')
-      || (event.kind === 'pr.merged')
-      || (event.kind === 'pr.closed')
+    (event.kind
+      === 'review.submitted')
+    || (event.kind
+      === 'pr.opened')
+      || (event.kind
+        === 'pr.merged')
+      || (event.kind
+        === 'pr.closed')
   ) {
     keysIterable.push(reviewThreadKey({
       repoId: context.repoId,

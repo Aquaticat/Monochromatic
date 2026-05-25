@@ -70,7 +70,7 @@ async function findBudgetModel(
 
   if ((ctx.model
     === undefined) || (ctx.model
-    === null))
+      === null))
     throw new NoBudgetModelError('no active model set',);
 
   /**
@@ -184,7 +184,9 @@ async function findSameProvider(
 
   if (cheapestCandidate.cost
     .input
-    >= (activeModel.cost.input * costRatio)) {
+    >= (activeModel.cost
+      .input
+      * costRatio)) {
     /** Same-provider report row for the error message; the cheapest model is too expensive to use. */
     const sameProvider = toCandidate({
       ctx,
@@ -194,7 +196,7 @@ async function findSameProvider(
     throw new NoBudgetModelError(
       `cheapest model in ${activeProvider} is $${cheapestCandidate.cost
         .input}/M input; not significantly cheaper than active model ($${activeModel.cost
-        .input}/M input)`,
+          .input}/M input)`,
       {
         sameProvider,
         cheapestOverall: await lazyCheapestOverall(),
@@ -205,7 +207,9 @@ async function findSameProvider(
   for (const candidate of candidates) {
     if (candidate.cost
       .input
-      >= (activeModel.cost.input * costRatio))
+      >= (activeModel.cost
+        .input
+        * costRatio))
       break;
     /* oxlint-disable no-await-in-loop -- sequential: stop at first successful auth */
     /** Resolved auth for the current candidate; `null` falls through to the next iteration. */
@@ -328,7 +332,9 @@ async function findAnyProvider(
   for (const model of sortedCandidates) {
     if (model.cost
       .input
-      >= (activeModel.cost.input * costRatio))
+      >= (activeModel.cost
+        .input
+        * costRatio))
       break;
     /* oxlint-disable no-await-in-loop -- sequential: stop at first successful auth */
     /** Resolved auth for the current candidate; `null` falls through to the next iteration. */

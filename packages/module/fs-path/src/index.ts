@@ -120,7 +120,7 @@ export function isAbsolute(filePath: string,): boolean {
   const SLASH_CODE_POINT = 47;
   return (filePath.length
     > 0) && (filePath.codePointAt(0,)
-    === SLASH_CODE_POINT);
+      === SLASH_CODE_POINT);
 }
 
 /**

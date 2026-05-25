@@ -305,7 +305,8 @@ async function subsetOne(
     }
     catch (error) {
       if ((error instanceof Error) && ('code' in error)
-        && (error.code === 'ENOENT')) {
+        && (error.code
+          === 'ENOENT')) {
         throw new Error(
           `${inputPath} not found. Place the full upstream woff2 in ${SOURCE_FONTS_DIR}/ before running format:fonts.`,
           { cause: error, },

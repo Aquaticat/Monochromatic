@@ -80,7 +80,7 @@ export class CompletionPopup extends HTMLElement {
   },): void {
     if ((this.#list
       === null) || (items.length
-      === 0))
+        === 0))
       return;
     this.#items = items;
     this.#selectedIndex = 0;
@@ -145,7 +145,9 @@ export class CompletionPopup extends HTMLElement {
     }
     else {
       this.#selectedIndex = this.#selectedIndex
-        >= (this.#items.length - 1)
+        >= (this.#items
+          .length
+          - 1)
         ? 0
         : this.#selectedIndex
           + 1;
@@ -167,9 +169,9 @@ export class CompletionPopup extends HTMLElement {
   accept(): string | null {
     if ((this.#selectedIndex
       < 0) || (this.#selectedIndex
-      >= this
-      .#items
-      .length))
+        >= this
+        .#items
+        .length))
       return null;
     /** Currently highlighted completion entry; bounds-checked above. */
     const item = this.#items[this.#selectedIndex];

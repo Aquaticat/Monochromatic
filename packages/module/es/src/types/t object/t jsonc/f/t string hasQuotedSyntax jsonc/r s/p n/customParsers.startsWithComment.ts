@@ -44,7 +44,9 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
     // Found a complete block comment on the first line - return immediately
     // Doesn't handle `/* a {"b": "*\/" } *\/ {"c": "d"}`
     // Because in all languages, *\/ upon first found after starting a block comment, auto becomes end marker of block comment.
-    return (firstLineMatch.index + firstLineMatch[0].length) - '*/'
+    return (firstLineMatch.index
+      + firstLineMatch[0]
+      .length) - '*/'
       .length;
   }
 
@@ -70,7 +72,8 @@ function findBlockEndPosition({ value, }: { value: string; },): number {
 
     // Valid starSlash found - return its position
     return (newlineStarSlashMatch.index
-      + newlineStarSlashMatch[0].length)
+      + newlineStarSlashMatch[0]
+      .length)
       - '*/'
       .length;
   }

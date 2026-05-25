@@ -173,7 +173,8 @@ function readMessage(error: object,): string {
  */
 function readErrorLabel(error: object,): string {
   if (('name' in error) && ((typeof error.name) === 'string')
-    && (error.name !== ''))
+    && (error.name
+      !== ''))
     return error.name;
   return 'Error';
 }
@@ -266,7 +267,8 @@ function readStackFrames({
    * on the first line. Drop it so the caller does not show the
    * header twice; otherwise keep all lines.
    */
-  const startIndex = (rawLines[0] !== undefined) && rawLines[0]
+  const startIndex = (rawLines[0]
+    !== undefined) && rawLines[0]
     .includes(message,)
     ? 1
     : 0;

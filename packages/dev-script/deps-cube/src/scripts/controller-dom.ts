@@ -164,19 +164,19 @@ export function syncDomFromState(
     .value = state.search;
   elInput('display-wireframe',)
     .checked = state.displayToggles
-    .showWireframe;
+      .showWireframe;
   elInput('display-planes',)
     .checked = state.displayToggles
-    .showThresholdPlanes;
+      .showThresholdPlanes;
   elInput('display-axis-labels',)
     .checked = state.displayToggles
-    .showAxisLabels;
+      .showAxisLabels;
   elInput('display-unknown',)
     .checked = state.displayToggles
-    .showUnknownCluster;
+      .showUnknownCluster;
   elSelect('name-labels',)
     .value = state.displayToggles
-    .nameLabels;
+      .nameLabels;
 }
 
 //endregion State → DOM sync

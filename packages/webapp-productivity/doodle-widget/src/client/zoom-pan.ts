@@ -124,7 +124,7 @@ export function continuePan({
   if (!panState.dragExceededThreshold) {
     if ((Math.abs(dx,)
       > DRAG_THRESHOLD) || (Math.abs(dy,)
-      > DRAG_THRESHOLD))
+        > DRAG_THRESHOLD))
       panState.dragExceededThreshold = true;
     else
       return false;

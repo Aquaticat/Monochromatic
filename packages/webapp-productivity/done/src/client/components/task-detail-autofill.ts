@@ -143,8 +143,8 @@ export class AutofillManager {
       if ((result.tags
         .length
         > 0) && (metadata.tags
-        .length
-        === 0)) {
+          .length
+          === 0)) {
         metadata.tags = result.tags;
         this.autofilled
           .add('tags',);
@@ -152,22 +152,22 @@ export class AutofillManager {
       if ((result.locations
         .length
         > 0) && (metadata.locations
-        .length
-        === 0)) {
+          .length
+          === 0)) {
         metadata.locations = result.locations;
         this.autofilled
           .add('locations',);
       }
       if ((result.priority
         !== null) && (metadata.priority
-        === null)) {
+          === null)) {
         metadata.priority = result.priority;
         this.autofilled
           .add('priority',);
       }
       if ((result.complexity
         !== null) && (metadata.complexity
-        === null)) {
+          === null)) {
         metadata.complexity = result.complexity;
         this.autofilled
           .add('complexity',);

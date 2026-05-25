@@ -152,12 +152,12 @@ function dumpAndHandleError({
     // Dump captured output so the user can see what happened
     if ((subprocessError.stdout
       !== undefined) && (subprocessError.stdout
-      !== ''))
+        !== ''))
       process.stdout
         .write(`${subprocessError.stdout}\n`,);
     if ((subprocessError.stderr
       !== undefined) && (subprocessError.stderr
-      !== ''))
+        !== ''))
       process.stderr
         .write(`${subprocessError.stderr}\n`,);
 

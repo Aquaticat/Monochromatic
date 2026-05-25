@@ -599,7 +599,9 @@ export function augmentOxlintOutput(output: string,): string {
 
     // Inject before blank line (end of diagnostic) if no help line was found
     if ((activeGuidance !== null) && (!injected)
-      && (stripAnsi(line,).trim() === '')) {
+      && (stripAnsi(line,)
+        .trim()
+        === '')) {
       result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
         ?? '',),);
       injected = true;

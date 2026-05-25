@@ -90,9 +90,11 @@ function resolveOpenRouterApiKey(): string | undefined {
     l,
   },);
   /** Resolved API key from preferred-then-fallback env var; treated as missing when blank. */
-  const key = process.env.IMAGE_DIFF_OPENROUTER_API_KEY
+  const key = process.env
+    .IMAGE_DIFF_OPENROUTER_API_KEY
     ?? process
-    .env.OPENROUTER_API_KEY;
+    .env
+    .OPENROUTER_API_KEY;
   if ((key === undefined) || (key === '')) {
     rl.debug('no OpenRouter API key found, skipping description',);
     return undefined;

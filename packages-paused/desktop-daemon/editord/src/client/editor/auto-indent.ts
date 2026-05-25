@@ -41,7 +41,7 @@ export function leadingSpaces(s: string,): string {
     let idx = 0;
     while ((idx < s
       .length) && (s.charAt(idx,)
-      === ' '))
+        === ' '))
       idx += 1;
     return idx;
   })();

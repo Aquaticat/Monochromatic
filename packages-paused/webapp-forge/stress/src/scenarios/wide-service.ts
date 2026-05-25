@@ -151,7 +151,8 @@ function repoIdFor(row: {
   seed: number;
   index: number;
 },): string {
-  return `repo-${String((row.seed * REPO_SEED_FACTOR) + row
+  return `repo-${String((row.seed
+    * REPO_SEED_FACTOR) + row
     .index,)}`;
 }
 
@@ -265,7 +266,8 @@ async function runBurst(row: {
       const sleep = Math.max(
         0,
         Math.floor(row.intervalMs
-          - (Date.now() - t0),),
+          - (Date.now()
+            - t0),),
       );
       if (sleep > 0) {
         // oxlint-disable-next-line no-await-in-loop -- pacing

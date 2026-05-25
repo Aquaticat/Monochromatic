@@ -53,7 +53,7 @@ export function formatDiagnostic(
   /** Bracketed source-and-code suffix, or empty string when no source info is attached. */
   const source = ((diagnostic.source
     !== null) && (diagnostic.source
-    !== ''))
+      !== ''))
     ? ` [${diagnostic.source}${
       diagnostic.code
         !== null ? ` ${String(diagnostic.code,)}` : ''

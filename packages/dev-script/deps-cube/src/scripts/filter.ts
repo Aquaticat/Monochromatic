@@ -424,7 +424,8 @@ export function searchMatches(
   /** Lowercased npm name so the substring/regex test is case-insensitive. */
   const name = probe.npmName
     .toLowerCase();
-  if ((search.length >= 2) && search
+  if ((search.length
+    >= 2) && search
     .startsWith('/',)
     && search
     .endsWith('/',)) {

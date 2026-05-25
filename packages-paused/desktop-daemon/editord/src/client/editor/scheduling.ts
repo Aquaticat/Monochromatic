@@ -88,7 +88,7 @@ export function scheduleInlayAnnotations({
   return requestAnimationFrame(function applyScheduledInlayAnnotations() {
     if ((hints.length
       === 0) && (diagnostics.length
-      === 0)) {
+        === 0)) {
       clearInlayAnnotations({ editor, },);
       return;
     }

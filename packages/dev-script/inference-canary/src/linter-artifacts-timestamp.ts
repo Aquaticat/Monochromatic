@@ -111,7 +111,8 @@ function hasYearHyphenPrefix(s: string,): boolean {
     start: 0,
     count: YEAR_DIGITS,
   },)
-    && (s.charAt(YEAR_END,) === '-');
+    && (s.charAt(YEAR_END,)
+      === '-');
 }
 
 //endregion Year-hyphen prefix predicate
@@ -280,13 +281,15 @@ function rewriteDateColons(s: string,): string {
       start: 0,
       count: YEAR_DIGITS,
     },))
-    || (s.charAt(YEAR_END,) !== ':')
+    || (s.charAt(YEAR_END,)
+      !== ':')
       || (!isAsciiDigitRun({
       s,
       start: MONTH_START,
       count: 2,
     },))
-      || (s.charAt(MONTH_END,) !== ':')
+      || (s.charAt(MONTH_END,)
+        !== ':')
       || (!isAsciiDigitRun({
       s,
       start: DAY_START,

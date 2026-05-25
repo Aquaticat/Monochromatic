@@ -174,19 +174,24 @@ function findScopedSlugMatches(
   if (requestedSlug.includes('/',)) {
     return scope.entries
       .filter(function matchCanonical(entry,) {
-      return entry.canonicalSlug === requestedSlug;
+      return entry.canonicalSlug
+        === requestedSlug;
     },);
   }
 
   /** Bare id matches inside scope. */
   const idMatches = scope.entries
     .filter(function matchId(entry,) {
-    return entry.model.id === requestedSlug;
+    return entry.model
+      .id
+      === requestedSlug;
   },);
   /** Model display-name matches inside scope. */
   const nameMatches = scope.entries
     .filter(function matchName(entry,) {
-    return entry.model.name === requestedSlug;
+    return entry.model
+      .name
+      === requestedSlug;
   },);
   /** Unique matches across both bare forms. */
   const uniqueMatches = uniqueScopedModels([
@@ -224,7 +229,7 @@ function slugExistsGlobally(
   return models.some(function matchesBareModel(model,) {
     return (model.id
       === requestedSlug) || (model.name
-      === requestedSlug);
+        === requestedSlug);
   },);
 }
 

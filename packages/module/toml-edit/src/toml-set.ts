@@ -153,7 +153,7 @@ export function tomlSet(
 
   if ((resolved.kind
     === 'table') || (resolved.kind
-    === 'top-level')) {
+      === 'top-level')) {
     return doTableReplace({
       edit,
       path,
@@ -202,7 +202,8 @@ function doTableReplace(
   /** Existing body key-values so they can be marked for deletion. */
   const bodyKvs = container.body
     .filter(function isKv(child,): child is AST.TOMLKeyValue {
-    return child.type === 'TOMLKeyValue';
+    return child.type
+      === 'TOMLKeyValue';
   },);
 
   /** Anchor placing new insertions inside the table body. */
@@ -272,7 +273,8 @@ function anchorForTableReplace(
   const firstTable = container.body
     .find(
     function isTable(child,): child is AST.TOMLTable {
-      return child.type === 'TOMLTable';
+      return child.type
+        === 'TOMLTable';
     },
   );
   if (firstTable !== undefined) {

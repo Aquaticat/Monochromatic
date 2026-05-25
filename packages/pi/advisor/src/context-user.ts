@@ -94,8 +94,8 @@ function isUserMessageEntry(
 } {
   return (entry.type
     === 'message') && (entry.message
-    .role
-    === 'user');
+      .role
+      === 'user');
 }
 
 //endregion Internal helpers

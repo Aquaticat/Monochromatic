@@ -84,7 +84,8 @@ async function discoverRuleModules(): Promise<string[]> {
         && entry
         .name
         .endsWith('.ts',)
-        && (entry.name !== 'index.ts');
+        && (entry.name
+          !== 'index.ts');
     },)
     .map(function toRelativePath(entry,): string {
       return join(

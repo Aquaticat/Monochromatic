@@ -181,7 +181,8 @@ async function execCommand(cmd: Command,): Promise<string> {
 function isNestedPlatformCommands(
   cmd: readonly string[] | PlatformCommands,
 ): cmd is PlatformCommands {
-  return (cmd.length > 0) && Array
+  return (cmd.length
+    > 0) && Array
     .isArray(cmd[0],);
 }
 

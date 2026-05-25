@@ -66,7 +66,7 @@ function isRegExpConstructorExpression(
 ): node is ESTree.CallExpression | ESTree.NewExpression {
   if ((node.type
     !== 'CallExpression') && (node.type
-    !== 'NewExpression'))
+      !== 'NewExpression'))
     return false;
   return (node.callee
     .type

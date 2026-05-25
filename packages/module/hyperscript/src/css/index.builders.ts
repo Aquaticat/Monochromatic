@@ -74,8 +74,8 @@ function hasBlock(options: AtRuleOptions,): boolean {
 
   if ((options.children
     !== undefined) && (options.children
-    .length
-    > 0))
+      .length
+      > 0))
     return true;
 
   return false;

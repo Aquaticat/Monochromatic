@@ -78,7 +78,9 @@ function hasExampleTag(result: TsdocParseResult,): boolean {
     .customBlocks
     .some(
     function isExample(block,): boolean {
-      return block.blockTag.tagName === EXAMPLE_TAG_NAME;
+      return block.blockTag
+        .tagName
+        === EXAMPLE_TAG_NAME;
     },
   );
 }

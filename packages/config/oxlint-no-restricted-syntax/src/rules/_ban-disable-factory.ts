@@ -76,7 +76,9 @@ export function banDisableRule({
             .getAllComments()
             .forEach(function checkComment(comment,) {
             if (hasOxlintDisableDirective({ value: comment.value, },)
-              && comment.value.includes(ruleId,))
+              && comment
+              .value
+              .includes(ruleId,))
             {
               context.report({
                 node: comment,

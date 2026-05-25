@@ -65,7 +65,7 @@ export async function restoreExpansion({
   ) {
     return (depthOf.get(a,)
       ?? 0) - (depthOf.get(b,)
-      ?? 0);
+        ?? 0);
   },);
 
   for (const dirPath of sorted) {

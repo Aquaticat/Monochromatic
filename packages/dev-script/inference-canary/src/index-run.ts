@@ -143,7 +143,7 @@ export async function runAndReport({
   // so they appear in reportsWithResults and are never silently dropped.
   if ((reportsWithResults.length
     === 0) && (failedReports.length
-    === 0)) {
+      === 0)) {
     l.info(
       'all probes skipped due to recent results. Use --retest-all to force re-run.',
     );

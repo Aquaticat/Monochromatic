@@ -108,11 +108,13 @@ export function decideTierTransition(
 ): TierTransition {
   if ((input.tier
     === 1) && (input.length
-    >= TIER_2_THRESHOLD))
+      >= TIER_2_THRESHOLD))
     return { kind: 'to-tier-2', };
   if (
-    (input.tier === 2)
-    && (input.length >= TIER_3_THRESHOLD)
+    (input.tier
+      === 2)
+    && (input.length
+      >= TIER_3_THRESHOLD)
       && (!input.tier3Active)
       && (!input.inEditMode)
   ) {
@@ -167,7 +169,8 @@ export async function attachComposer({
   const persisted = loadIdentity(caps.localStorage,);
   if ((persisted !== null) && [...select.options,]
     .some(function isPersisted(option,) {
-    return option.value === persisted;
+    return option.value
+      === persisted;
   },)) {
     select.value = persisted;
   }
@@ -218,7 +221,8 @@ export async function attachComposer({
   // Mount the metrics overlay before any worker spawns so we don't
   // miss the first compile pass. Only when `?debug=1`.
   /** URL-flag override that surfaces the per-pipeline metrics overlay. */
-  const debug = new URLSearchParams(globalThis.location.search,).get('debug',)
+  const debug = new URLSearchParams(globalThis.location
+    .search,).get('debug',)
     === '1';
   if (debug) {
     /** Overlay handle whose `recordTransition` is captured on state for later metrics. */
@@ -279,7 +283,7 @@ export async function attachComposer({
       if ((event.metaKey
         || event
         .ctrlKey) && (event.key
-        === 'Enter')) {
+          === 'Enter')) {
         event.preventDefault();
         sendBtn.click();
       }

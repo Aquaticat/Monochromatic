@@ -600,7 +600,8 @@ export class Child {
     this.#state = 'running';
     this.#logger
       .info(
-      `spawned pid=${String(handle.pid ?? '?',)} command=${this.#command}`,
+      `spawned pid=${String(handle.pid
+        ?? '?',)} command=${this.#command}`,
     );
 
     /** Captured for the sync exit listener that needs class state. */
@@ -628,7 +629,8 @@ export class Child {
         }
         self.#logger
           .info(
-          `exited pid=${String(handle.pid ?? '?',)} code=${
+          `exited pid=${String(handle.pid
+            ?? '?',)} code=${
             code === null ? '?' : String(code,)
           } signal=${signal ?? '?'}`,
         );
@@ -655,7 +657,8 @@ export class Child {
     signal: NodeJS.Signals,
   ): void {
     if (this.#processGroup
-      && (handle.pid !== undefined)) {
+      && (handle.pid
+        !== undefined)) {
       this.#processSignal({
         pid: -handle.pid,
         signal,
@@ -682,7 +685,8 @@ export class Child {
     this.#state = 'stopping';
     this.#logger
       .info(
-      `stopping pid=${String(handle.pid ?? '?',)} (${this.#killSignal})`,
+      `stopping pid=${String(handle.pid
+        ?? '?',)} (${this.#killSignal})`,
     );
 
     /** Listener registered BEFORE kill so a synchronous-exit fake cannot lose the event. */

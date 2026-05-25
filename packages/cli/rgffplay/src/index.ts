@@ -93,7 +93,8 @@ const rlMusicDir = tagged({
  */
 async function resolveMusicDir(): Promise<string> {
   /** User-set XDG override; preferred path when present so callers can point at any directory. */
-  const envDir = process.env.XDG_MUSIC_DIR;
+  const envDir = process.env
+    .XDG_MUSIC_DIR;
   if ((envDir !== undefined) && (envDir.length
     > 0)) {
     rlMusicDir.info(`using XDG_MUSIC_DIR="${envDir}"`,);
@@ -185,7 +186,8 @@ async function findFiles({
   /** Matched file paths split from the null-separated rg output; empty fragments dropped so the count reflects real matches. */
   const files = rgOutput.split('\0',)
     .filter(function nonEmpty(f,) {
-    return f.length > 0;
+    return f.length
+      > 0;
   },);
 
   if (files.length

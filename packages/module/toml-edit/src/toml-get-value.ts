@@ -46,7 +46,7 @@ export function tomlGetValue(
   },);
   if ((result.kind
     === 'missing') || (result.kind
-    === 'deleted'))
+      === 'deleted'))
     return undefined;
   if (result.kind
     === 'pending-value')
@@ -60,7 +60,7 @@ export function tomlGetValue(
     return getStaticTOMLValue(result.node,);
   if ((result.kind
     === 'table') || (result.kind
-    === 'top-level'))
+      === 'top-level'))
     return getStaticTOMLValue(result.node,);
   return result.nodes
     .map(function each(t,) {

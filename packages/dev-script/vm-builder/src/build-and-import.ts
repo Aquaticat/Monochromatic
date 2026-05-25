@@ -97,7 +97,8 @@ const QCOW2_PATH = join(
 );
 
 /** Current user login name; used to restore ownership after the privileged build step. */
-const CURRENT_USER = process.env.USER
+const CURRENT_USER = process.env
+  .USER
   ?? 'user';
 
 /** libvirt session URI: connects to the user's QEMU/KVM daemon (no sudo needed). */

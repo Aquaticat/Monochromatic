@@ -60,10 +60,12 @@ async function readFileOrNull(
  */
 export async function kdeTerminalService(): Promise<string | null> {
   /** HOME envar fallback keeps path construction deterministic on systems where HOME is unset. */
-  const home = process.env.HOME
+  const home = process.env
+    .HOME
     ?? '/tmp';
   /** XDG config base; defaults under HOME per the spec. */
-  const configHome = process.env.XDG_CONFIG_HOME
+  const configHome = process.env
+    .XDG_CONFIG_HOME
     ?? `${home}/config`;
   /** KDE's global settings file; source of the TerminalService key. */
   const path = `${configHome}/kdeglobals`;

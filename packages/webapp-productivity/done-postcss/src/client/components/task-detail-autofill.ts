@@ -129,8 +129,8 @@ export class AutofillController {
         if ((result.tags
           .length
           > 0) && (state.tags
-          .length
-          === 0)) {
+            .length
+            === 0)) {
           update.tags = result.tags;
           this.autofilled
             .add('tags',);
@@ -138,22 +138,22 @@ export class AutofillController {
         if ((result.locations
           .length
           > 0) && (state.locations
-          .length
-          === 0)) {
+            .length
+            === 0)) {
           update.locations = result.locations;
           this.autofilled
             .add('locations',);
         }
         if ((result.priority
           !== null) && (state.priority
-          === null)) {
+            === null)) {
           update.priority = result.priority;
           this.autofilled
             .add('priority',);
         }
         if ((result.complexity
           !== null) && (state.complexity
-          === null)) {
+            === null)) {
           update.complexity = result.complexity;
           this.autofilled
             .add('complexity',);

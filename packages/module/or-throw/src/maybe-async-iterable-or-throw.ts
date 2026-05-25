@@ -50,7 +50,7 @@ export function maybeAsyncIterableOrThrow<T,>(
   }
   if ((!(Symbol.iterator
     in value)) && (!(Symbol.asyncIterator
-    in value))) {
+      in value))) {
     throw new Error(
       `Expected iterable or async iterable, got object without either Symbol.iterator or Symbol.asyncIterator`,
     );

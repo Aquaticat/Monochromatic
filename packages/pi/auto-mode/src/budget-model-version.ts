@@ -54,7 +54,8 @@ function extractMajorVersion(
     .split(/\s+/,);
   for (const t of tokens) {
     if (/^\d+$/.test(t,)
-      && (t.length >= DATE_TOKEN_DIGIT_COUNT))
+      && (t.length
+        >= DATE_TOKEN_DIGIT_COUNT))
       continue;
     /** First digit run inside the current token, e.g. `4` in `4o` or `3` in `3.5`. */
     const match = /(\d+)/.exec(t,);
@@ -97,7 +98,8 @@ function extractVersionNumbers(
   const EIGHT = 8;
   for (const t of tokens) {
     if (/^\d+$/.test(t,)
-      && (t.length >= EIGHT))
+      && (t.length
+        >= EIGHT))
       continue;
     /** First digit run inside the current token; null when the token is non-numeric. */
     const m = /(\d+)/.exec(t,);
@@ -149,7 +151,7 @@ function compareVersions(
     /** Per-position delta with `b` first so higher versions sort earlier (descending). */
     const diff = (bv[i]
       ?? 0) - (av[i]
-      ?? 0);
+        ?? 0);
     if (diff !== 0)
       return diff;
   }

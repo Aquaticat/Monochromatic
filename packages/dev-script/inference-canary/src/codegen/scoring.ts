@@ -181,7 +181,7 @@ export async function lintAndLog({
     const lintSummary = lint.linterRan
       ? `lint=${String(lint.severity
         .errors,)}err/${String(lint.severity
-        .warnings,)}warn`
+          .warnings,)}warn`
       : 'lint=skipped';
     /** Tsgo portion of the one-line log summary; "skipped" when the type checker never ran. */
     const typeSummary = lint.typeCheckerRan

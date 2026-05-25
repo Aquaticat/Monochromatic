@@ -70,7 +70,7 @@ class NoBudgetModelError extends Error {
     ];
     if ((candidates.sameProvider
       !== undefined) && (candidates.sameProvider
-      !== null)) {
+        !== null)) {
       /** Local alias for the same-provider candidate so the template strings stay readable. */
       const c = candidates.sameProvider;
       lines.push(
@@ -78,8 +78,10 @@ class NoBudgetModelError extends Error {
       );
     }
     if (
-      (candidates.cheapestOverall !== undefined)
-      && (candidates.cheapestOverall !== null)
+      (candidates.cheapestOverall
+        !== undefined)
+      && (candidates.cheapestOverall
+        !== null)
         && candidates
         .cheapestOverall
         .hasApiKey

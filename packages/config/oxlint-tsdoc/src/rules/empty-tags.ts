@@ -194,7 +194,9 @@ export const emptyTags: CreateOnceRule = {
             rest,
           } = tagMatch;
           if (modifierTags.has(tag,)
-            && (rest.trim().length > 0)) {
+            && (rest.trim()
+              .length
+              > 0)) {
             context.report({
               loc: {
                 start: {

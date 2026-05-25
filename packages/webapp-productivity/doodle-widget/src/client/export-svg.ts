@@ -169,22 +169,26 @@ export function exportAsSvg(
     overlayInfo.clone
       .setAttribute(
       'x',
-      String(overlayInfo.offsetX * exportScale,),
+      String(overlayInfo.offsetX
+        * exportScale,),
     );
     overlayInfo.clone
       .setAttribute(
       'y',
-      String(overlayInfo.offsetY * exportScale,),
+      String(overlayInfo.offsetY
+        * exportScale,),
     );
     overlayInfo.clone
       .setAttribute(
       'width',
-      String(overlayInfo.width * exportScale,),
+      String(overlayInfo.width
+        * exportScale,),
     );
     overlayInfo.clone
       .setAttribute(
       'height',
-      String(overlayInfo.height * exportScale,),
+      String(overlayInfo.height
+        * exportScale,),
     );
     overlayInfo.clone
       .setAttribute(

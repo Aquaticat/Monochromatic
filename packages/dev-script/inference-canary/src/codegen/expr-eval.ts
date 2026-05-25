@@ -84,7 +84,8 @@ export const expressionEvaluator: Probe = createCodeGenProbe({
           return false;
         if (exp === 'ERR')
           return actual === 'ERR';
-        return Math.abs(Number(actual,) - Number(exp,),)
+        return Math.abs(Number(actual,)
+          - Number(exp,),)
           < FLOAT_TOLERANCE;
       },)
       .length;

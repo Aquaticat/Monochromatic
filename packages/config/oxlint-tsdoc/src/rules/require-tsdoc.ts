@@ -136,7 +136,7 @@ export const requireTsdoc: CreateOnceRule = {
       Property(node,): void {
         if ((node.kind
           === 'get') || (node.kind
-          === 'set')) {
+            === 'set')) {
           reportMissing({
             node,
             context,

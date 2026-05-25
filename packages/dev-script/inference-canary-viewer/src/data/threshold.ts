@@ -56,7 +56,8 @@ export function computeThreshold({
   /** Non-failed overall scores used as the statistical sample. */
   const scores = entries
     .filter(function matchLabel(entry,): boolean {
-      return (entry.label === label) && (!entry.failed)
+      return (entry.label
+        === label) && (!entry.failed)
         && hasMultipleProbes(entry,);
     },)
     .map(function getScore(entry,): number {

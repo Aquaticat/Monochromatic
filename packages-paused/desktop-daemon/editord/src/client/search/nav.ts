@@ -100,7 +100,9 @@ export function moveSearchSelection({
   }
 
   /** Wraps the new index modulo length so navigation cycles. */
-  const newIndex = (selectedIndex + delta + results.length) % results
+  const newIndex = (selectedIndex + delta
+    + results
+    .length) % results
     .length;
 
   /** Newly-selected row receiving the `data-selected` flag and viewport scroll. */

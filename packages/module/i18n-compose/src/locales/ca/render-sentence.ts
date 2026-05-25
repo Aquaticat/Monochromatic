@@ -442,9 +442,11 @@ export function makeCatalanSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.imperative'; }>,
   ): string {
     /** Imperative surface; falls back to the infinitive when no dedicated form is supplied. */
-    const verb = verbs[sentence.predicate.verb]
+    const verb = verbs[sentence.predicate
+      .verb]
       .imperative
-      ?? verbs[sentence.predicate.verb]
+      ?? verbs[sentence.predicate
+        .verb]
       .infinitive;
     /** Rendered object slot. */
     const object = renderOptionalObject({

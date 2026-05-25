@@ -43,7 +43,10 @@ export const requireParamName: CreateOnceRule = {
           .params
           .blocks
           .forEach(function checkBlock(block,): void {
-          if (block.parameterName.trim().length === 0) {
+          if (block.parameterName
+            .trim()
+            .length
+            === 0) {
             context.report({
               node: result.comment,
               messageId: 'missingName',

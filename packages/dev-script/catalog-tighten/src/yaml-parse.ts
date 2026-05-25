@@ -90,7 +90,8 @@ type CatalogEntry = {
  */
 function unquote(s: string,): string {
   if (
-    (s.length >= 2)
+    (s.length
+      >= 2)
     && s
       .startsWith('"',)
       && s
@@ -142,7 +143,7 @@ function parseCatalogEntry(line: string,): CatalogEntry | null {
   const value = unquote(rawValue,);
   if ((key.length
     === 0) || (value.length
-    === 0))
+      === 0))
     return null;
   return {
     key,

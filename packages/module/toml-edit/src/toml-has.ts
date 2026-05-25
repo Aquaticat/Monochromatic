@@ -38,5 +38,5 @@ export function tomlHas(
   },);
   return (result.kind
     !== 'missing') && (result.kind
-    !== 'deleted');
+      !== 'deleted');
 }

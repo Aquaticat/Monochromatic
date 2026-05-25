@@ -56,7 +56,8 @@ async function executableExists({ name, }: { readonly name: string; },): Promise
  */
 async function which(name: string,): Promise<string | null> {
   /** Empty PATH fallback yields no candidates, which falls through to null cleanly. */
-  const pathEnv = process.env.PATH
+  const pathEnv = process.env
+    .PATH
     ?? '';
   /** Split on the platform PATH delimiter; colon on POSIX. */
   const dirs = pathEnv.split(delimiter,);

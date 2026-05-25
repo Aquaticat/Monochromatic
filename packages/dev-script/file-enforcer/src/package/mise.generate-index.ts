@@ -74,9 +74,11 @@ const SUPPORTED_MANAGERS = new Set([
 async function ensureImage(): Promise<void> {
   console.log('[generate-index] building container image...',);
   /** GitHub token from either env var; empty string when neither is set. */
-  const token = process.env.MISE_GITHUB_TOKEN
+  const token = process.env
+    .MISE_GITHUB_TOKEN
     ?? process
-    .env.GITHUB_TOKEN
+    .env
+    .GITHUB_TOKEN
     ?? '';
   /** `--secret` args for podman; empty when no token, so unauthenticated clones run instead. */
   const secretArgs = token !== ''

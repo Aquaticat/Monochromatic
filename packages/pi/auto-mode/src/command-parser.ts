@@ -188,7 +188,7 @@ function analyzeBashCommand(
 
   if ((allParamRefs.length
     === 0) && (preScanRefs.length
-    > 0))
+      > 0))
     allParamRefs.push(...preScanRefs,);
 
   return {
@@ -232,7 +232,7 @@ function flushCurrentCommand(
 ): void {
   if ((args.length
     === 0) && (redirectTargets.length
-    === 0))
+      === 0))
     return;
 
   /** Command name (first word, empty string on redirect-only commands) plus its remaining word arguments. */

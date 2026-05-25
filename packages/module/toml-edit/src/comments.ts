@@ -201,7 +201,10 @@ export function trailingInlineCommentFor(
   const match = edit.program
     .comments
     .find(function inLine(c,) {
-    return (c.range[0] > node.range[1]) && (c.range[0] < limit);
+    return (c.range[0]
+      > node
+      .range[1]) && (c.range[0]
+      < limit);
   },);
   return match ?? null;
 }

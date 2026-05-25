@@ -320,7 +320,8 @@ export function buildMatchers(
       )
         .to
         .equal(1,);
-      chaiExpect(spy.firstCall.args,)
+      chaiExpect(spy.firstCall
+        .args,)
         .to
         .deep
         .equal([...args,],);
@@ -396,7 +397,8 @@ export function buildMatchers(
       /** Captured returned-at-least-once flag reused inside the chai assertion below. */
       const hasReturned = spy.getCalls()
         .some(function didReturn(call,) {
-        return call.exception === undefined;
+        return call.exception
+          === undefined;
       },);
 
       chaiExpect(

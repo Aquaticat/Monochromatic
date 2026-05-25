@@ -260,8 +260,8 @@ async function runIt(
     //region Assertion count verification
     if ((tracker.expected
       !== null) && (tracker.count
-      !== tracker
-      .expected)) {
+        !== tracker
+        .expected)) {
       /** Synthetic cause naming the assertion-count mismatch so the failure surface mirrors a regular throw. */
       const assertionCause = new Error(
         `Expected ${String(tracker.expected,)} assertions, but ${
@@ -282,7 +282,8 @@ async function runIt(
     }
 
     if (tracker.requiresAtLeastOne
-      && (tracker.count === 0)) {
+      && (tracker.count
+        === 0)) {
       /** Synthetic cause used when `expect.hasAssertions()` was declared but no assertion ran. */
       const noAssertionsCause = new Error(
         'Expected at least one assertion to be called',

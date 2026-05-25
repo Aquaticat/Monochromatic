@@ -174,7 +174,7 @@ function walkArray(
   }
   if ((element.type
     === 'TOMLArray') || (element.type
-    === 'TOMLInlineTable')) {
+      === 'TOMLInlineTable')) {
     return walk({
       container: element,
       segments: segments.slice(1,),
@@ -227,8 +227,8 @@ function walkTable(
     if ((node.value
       .type
       === 'TOMLArray') || (node.value
-      .type
-      === 'TOMLInlineTable')) {
+        .type
+        === 'TOMLInlineTable')) {
       return walk({
         container: node.value,
         segments: rest,

@@ -814,7 +814,7 @@ function convertFigmaToPenpot(
       const parentKey =
         `${parentIndex.parentGuid
           .sessionId}:${parentIndex.parentGuid
-          .localId}`;
+            .localId}`;
       /** Existing child list for this parent, or a fresh array when first observed. */
       const children = childrenByParent.get(parentKey,)
         ?? [];
@@ -870,7 +870,7 @@ function convertFigmaToPenpot(
         /** Best-effort flag identifying Figma's hidden internal canvas so we don't emit it as a page. */
         const internalOnly = (nc.internalOnly
           === true) || (nc.editInfo
-          != null);
+            != null);
         if (internalOnly && name
           .toLowerCase()
           .includes('internal',))
@@ -1292,7 +1292,7 @@ function convertNode(
     const parentKey =
       `${parentIndex.parentGuid
         .sessionId}:${parentIndex.parentGuid
-        .localId}`;
+          .localId}`;
     effectiveParentUuid = guidToUuidMap.get(parentKey,)
       ?? parentUuid;
   }
@@ -1368,7 +1368,7 @@ function convertNode(
       ?? []) as Record<string, unknown>[];
     if ((fillGeometry.length
       > 0) && ((typeof fillGeometry[0]!
-      .path) === 'string'))
+        .path) === 'string'))
       shape.content = fillGeometry[0]!
         .path;
   }
@@ -1393,7 +1393,7 @@ function convertNode(
       ?? []) as Record<string, unknown>[];
     if ((fillGeometry.length
       > 0) && ((typeof fillGeometry[0]!
-      .path) === 'string'))
+        .path) === 'string'))
       shape.content = fillGeometry[0]!
         .path;
     else if ((strokeGeometry.length

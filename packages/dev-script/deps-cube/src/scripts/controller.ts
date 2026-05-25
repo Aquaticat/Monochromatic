@@ -122,7 +122,7 @@ function getProbes(): readonly PackageProbe[] {
 function pickedProbe(info: PickingInfo,): PackageProbe | null {
   if ((info.object
     === undefined) || (info.object
-    === null))
+      === null))
     return null;
   if ((typeof info.object) !== 'object')
     return null;
@@ -174,7 +174,7 @@ function recomputeVisibility(
       `${session.visibleIndices
         .size
         .toString()} of ${probes.length
-        .toString()} visible`;
+          .toString()} visible`;
   }
 }
 

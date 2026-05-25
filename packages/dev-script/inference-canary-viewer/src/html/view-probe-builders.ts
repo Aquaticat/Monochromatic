@@ -129,7 +129,7 @@ export function buildSingleModelPoints({
   const relevant = entries.filter(function matchLabelAndProbe(entry,): boolean {
     return (entry.label
       === label) && (probe in entry
-      .probeScores);
+        .probeScores);
   },);
 
   return relevant.map(function toPoint(

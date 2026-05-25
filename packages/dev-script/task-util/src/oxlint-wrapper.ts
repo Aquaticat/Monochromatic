@@ -33,7 +33,8 @@ import { augmentOxlintOutput, } from './oxlint-augment.ts';
  * OXLINT_THREADS = "1"
  * ```
  */
-const threadOverride = process.env.OXLINT_THREADS;
+const threadOverride = process.env
+  .OXLINT_THREADS;
 
 /** Arguments forwarded to oxlint. */
 const oxlintArgs = [
@@ -92,10 +93,12 @@ catch (error) {
           .write('\n',);
     }
 
-    if ((subprocessError.stderr ?? '').length
+    if ((subprocessError.stderr
+      ?? '').length
       > 0) {
       process.stderr
-        .write(subprocessError.stderr ?? '',);
+        .write(subprocessError.stderr
+          ?? '',);
       if (!(subprocessError.stderr
         ?? '').endsWith('\n',))
         process.stderr

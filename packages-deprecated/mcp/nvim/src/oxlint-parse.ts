@@ -110,8 +110,8 @@ export function parseOxlintOutput(
     /** Final diagnostic text; appends the optional `help:` block when oxlint provided one. */
     const message = ((entry.help
       !== undefined) && (entry.help
-      .length
-      > 0))
+        .length
+        > 0))
       ? `${entry.message} (help: ${entry.help})`
       : entry.message;
     /** Diagnostic record in the shape consumed by the rest of the pipeline. */

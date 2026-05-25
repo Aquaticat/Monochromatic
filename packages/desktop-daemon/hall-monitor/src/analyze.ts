@@ -113,7 +113,7 @@ export function skipSpacesAndTabs({
         .length)
       && ((s.charAt(cursor,)
         === ' ') || (s.charAt(cursor,)
-        === '\t'))
+          === '\t'))
     )
       cursor += 1;
     return cursor;

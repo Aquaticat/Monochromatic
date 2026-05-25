@@ -47,7 +47,7 @@ export function tomlGetCommentAfter(
   },);
   if ((result.kind
     === 'missing') || (result.kind
-    === 'deleted')) {
+      === 'deleted')) {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );

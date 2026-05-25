@@ -219,10 +219,10 @@ export function buildAdvisorStatus(
         .length
         === 0 ? 'none' : scope
         .entries
-        .map(function mapEntry(entry,) {
+          .map(function mapEntry(entry,) {
           return entry.canonicalSlug;
         },)
-        .join(', ',)
+          .join(', ',)
     }`,
     `Default model: ${defaultSelection?.selected
       .canonicalSlug
@@ -232,10 +232,10 @@ export function buildAdvisorStatus(
     `Config: global=${
       config.source
         .globalLoaded ? config.source
-        .globalPath : 'absent'
+          .globalPath : 'absent'
     } project=${config.source
       .projectLoaded ? config.source
-      .projectPath : 'absent'}`,
+        .projectPath : 'absent'}`,
     [
       `Context budget: ${defaultContextBudgetText} effective for default model,`,
       `cap=${configuredContextCap},`,

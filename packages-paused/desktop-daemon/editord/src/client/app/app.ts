@@ -298,7 +298,7 @@ wireSelectEvents({
 async function saveCurrentFile(): Promise<void> {
   if ((state.currentFilePath
     === null) || (state.currentFileKind
-    !== 'text'))
+      !== 'text'))
     return;
   try {
     await ws.request({
@@ -375,7 +375,8 @@ wireKeybindings({
       ? state.currentFilePath
         .slice(
         0,
-        state.currentFilePath.lastIndexOf('/',),
+        state.currentFilePath
+          .lastIndexOf('/',),
       )
       : ws.rootDir;
     void ws.request({

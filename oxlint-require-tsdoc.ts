@@ -16,7 +16,8 @@ function hasTsdoc(
   const comments = context.sourceCode
     .getCommentsBefore(node,);
   return comments.some(comment =>
-    (comment.type === 'Block')
+    (comment.type
+      === 'Block')
     && comment
       .value
       .startsWith('*',)
@@ -150,7 +151,7 @@ const plugin = eslintCompatPlugin({
           Property(node,): void {
             if ((node.kind
               === 'get') || (node.kind
-              === 'set')) {
+                === 'set')) {
               reportTsdoc(
                 node,
                 context,

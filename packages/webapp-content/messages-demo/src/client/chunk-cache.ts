@@ -430,9 +430,12 @@ async function idbPut(
   );
   tx.objectStore(IDB_STORE,)
     .put({
-    messageId: input.key.messageId,
-    revision: input.key.revision,
-    idx: input.key.idx,
+    messageId: input.key
+      .messageId,
+    revision: input.key
+      .revision,
+    idx: input.key
+      .idx,
     html: input.html,
   },);
   await idbTransactionDone(tx,);

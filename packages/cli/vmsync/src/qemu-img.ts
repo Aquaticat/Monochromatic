@@ -207,7 +207,8 @@ export async function blockMap(imagePath: string,): Promise<readonly QemuMapRegi
   const changedCount = regions
     .filter(
       function isOverlayData(r,) {
-        return (r.depth === 0) && r
+        return (r.depth
+          === 0) && r
           .data;
       },
     )

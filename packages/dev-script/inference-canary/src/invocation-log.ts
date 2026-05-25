@@ -252,7 +252,7 @@ function walkParentChain(
     return [];
   if ((frame.ppid
     === 0) || (frame.ppid
-    === pid))
+      === pid))
     return [frame,];
   return [
     frame,

@@ -59,7 +59,8 @@ export function dosDateTime(date: Date,): DosDateTime {
   );
   /** Packed DOS date word ready to write to the archive. */
   const dosDate = ((year - DOS_EPOCH_YEAR) << DOS_DATE_YEAR_SHIFT)
-    | ((date.getUTCMonth() + MONTH_OFFSET_TO_ONE_BASED) << DOS_DATE_MONTH_SHIFT)
+    | ((date.getUTCMonth()
+      + MONTH_OFFSET_TO_ONE_BASED) << DOS_DATE_MONTH_SHIFT)
     | date
     .getUTCDate();
   /** Packed DOS time word ready to write to the archive. */

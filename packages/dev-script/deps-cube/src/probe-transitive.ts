@@ -141,7 +141,8 @@ export async function probeTransitive(
   /** Manifest entry for the exact requested version, falling back to any first version when the requested version is missing. */
   const versionManifest = manifest.versions?.[version]
     ?? Object
-    .values(manifest.versions ?? {},)[0];
+    .values(manifest.versions
+      ?? {},)[0];
   /** Direct `dependencies` map from the version manifest; empty when none declared. */
   const deps = versionManifest?.dependencies
     ?? {};

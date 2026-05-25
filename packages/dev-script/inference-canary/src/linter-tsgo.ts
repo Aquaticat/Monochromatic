@@ -61,7 +61,9 @@ function filterTypeErrors({
   const marker = `canary-lint/${subdirId}/canary.ts`;
   return output.split('\n',)
     .filter(function matchLine(line,): boolean {
-    return line.includes(marker,) && line.includes('error TS',);
+    return line.includes(marker,)
+      && line
+      .includes('error TS',);
   },);
 }
 

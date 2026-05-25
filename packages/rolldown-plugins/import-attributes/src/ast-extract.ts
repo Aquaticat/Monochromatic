@@ -86,7 +86,8 @@ export function extractTypeFromAttributes(
         .name
       : attr.key
         .value;
-    if ((key === 'type') && (HANDLERS[attr.value.value]
+    if ((key === 'type') && (HANDLERS[attr.value
+      .value]
       !== undefined))
       return attr.value
         .value;

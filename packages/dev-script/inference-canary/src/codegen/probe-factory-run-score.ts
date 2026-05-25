@@ -214,7 +214,8 @@ export async function scoreImpl({
       * perfMultiplier;
   }
   if (result.timedOut
-    || (result.exitCode !== 0)) {
+    || (result.exitCode
+      !== 0)) {
     rl.info(
       `container failed: exit=${String(result.exitCode,)} timedOut=${
         String(result.timedOut,)

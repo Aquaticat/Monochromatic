@@ -346,7 +346,8 @@ export function buildThresholdLineLayer(
   /** Accumulator for guide-line paths; one entry per threshold whose dim is mapped and within bounds. */
   const segments: PathDatum[] = [];
   if (
-    (dimMapping.x === 'logSourceBytes')
+    (dimMapping.x
+      === 'logSourceBytes')
     && (SOURCE_BYTES_THRESHOLD > xMin)
       && (SOURCE_BYTES_THRESHOLD < xMax)
   ) {
@@ -366,7 +367,8 @@ export function buildThresholdLineLayer(
     },);
   }
   if (
-    (dimMapping.y === 'logDaysStale')
+    (dimMapping.y
+      === 'logDaysStale')
     && (DAYS_STALE_THRESHOLD > yMin)
       && (DAYS_STALE_THRESHOLD < yMax)
   ) {
@@ -386,9 +388,12 @@ export function buildThresholdLineLayer(
     },);
   }
   if (
-    (dimMapping.z === 'logInstallSize')
-    && (INSTALL_SIZE_THRESHOLD > bounds.z[0])
-      && (INSTALL_SIZE_THRESHOLD < bounds.z[1])
+    (dimMapping.z
+      === 'logInstallSize')
+    && (INSTALL_SIZE_THRESHOLD > bounds
+      .z[0])
+      && (INSTALL_SIZE_THRESHOLD < bounds
+        .z[1])
   ) {
     segments.push({
       path: [

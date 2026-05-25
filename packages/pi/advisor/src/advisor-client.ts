@@ -71,7 +71,7 @@ export async function completeAdvisor(
     throw new Error(
       `advisor: auth failed for ${options.model
         .provider}/${options.model
-        .id}: ${auth.error}`,
+          .id}: ${auth.error}`,
     );
   }
 
@@ -118,7 +118,7 @@ export async function completeAdvisor(
     throw new Error(
       `advisor: provider call failed for ${options.model
         .provider}/${options.model
-        .id}: ${
+          .id}: ${
         error instanceof Error ? error.message : String(error,)
       }`,
       { cause: error, },
@@ -170,8 +170,8 @@ export function buildAdvisorSystemPrompt(
 ): string {
   return (config.systemPrompt
     === undefined) || (config.systemPrompt
-    .trim()
-    === '')
+      .trim()
+      === '')
     ? ADVISOR_SYSTEM_PROMPT
     : `${ADVISOR_SYSTEM_PROMPT}\n\n## Project-specific instructions\n\n${config.systemPrompt}`;
 }

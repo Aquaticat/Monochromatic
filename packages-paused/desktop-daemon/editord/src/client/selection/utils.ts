@@ -82,8 +82,8 @@ export function strictlyContains(
     || ((outer.endLine
       === inner
       .endLine) && (outer.endCharacter
-      > inner
-      .endCharacter));
+        > inner
+        .endCharacter));
   /**
    * True when starts coincide; pairs with {@link outerEndAfter} for the "extends end only" case.
    */

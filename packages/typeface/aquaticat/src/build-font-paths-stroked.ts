@@ -67,9 +67,12 @@ export function addStrokedPath({
   const vertices = (
       (first !== undefined)
       && (last !== undefined)
-        && (points.length > 1)
-        && (first[0] === last[0])
-        && (first[1] === last[1])
+        && (points.length
+          > 1)
+        && (first[0]
+          === last[0])
+        && (first[1]
+          === last[1])
     )
     ? points.slice(
       0,

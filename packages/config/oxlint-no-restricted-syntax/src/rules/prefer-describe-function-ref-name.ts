@@ -160,7 +160,7 @@ function isCallableBinding(
     return false;
   if ((def.type
     === 'FunctionName') || (def.type
-    === 'ClassName'))
+      === 'ClassName'))
     return true;
   if (def.type
     === 'ImportBinding') {
@@ -172,7 +172,8 @@ function isCallableBinding(
       ? node
       : node.parent;
     if ((decl === null) || (decl === undefined)
-      || (decl.type !== 'ImportDeclaration'))
+      || (decl.type
+        !== 'ImportDeclaration'))
       return !ALL_CAPS_SNAKE.test(variable.name,);
     /** Literal source string of the import, typed as `string | null` by ESTree to cover non-conforming nodes. */
     const sourceValue = decl.source
@@ -221,9 +222,12 @@ function isCallableBinding(
     if ((init === null) || (init === undefined))
       return false;
     return (
-      (init.type === 'FunctionExpression')
-      || (init.type === 'ArrowFunctionExpression')
-        || (init.type === 'ClassExpression')
+      (init.type
+        === 'FunctionExpression')
+      || (init.type
+        === 'ArrowFunctionExpression')
+        || (init.type
+          === 'ClassExpression')
     );
   }
   return false;
@@ -315,8 +319,8 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
       if ((node.callee
         .type
         !== 'Identifier') || (node.callee
-        .name
-        !== 'describe'))
+          .name
+          !== 'describe'))
         return;
       /** First argument of the call, or `undefined` when none was passed. */
       const [firstArg,] = node.arguments;
@@ -334,13 +338,13 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
         if ((prop.key
           .type
           !== 'Identifier') || (prop.key
-          .name
-          !== 'name'))
+            .name
+            !== 'name'))
           continue;
         if ((prop.value
           .type
           !== 'Literal') || ((typeof prop.value
-          .value) !== 'string'))
+            .value) !== 'string'))
           continue;
         /** String value of the `name` property. */
         const stringValue = prop.value

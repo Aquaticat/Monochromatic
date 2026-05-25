@@ -268,8 +268,8 @@ export function wireCompletionDismiss({
       if ((pos.line
         !== shownAt
         .line) || (pos.character
-        !== shownAt
-        .character))
+          !== shownAt
+          .character))
         completionPopup.hide();
     },
   );

@@ -133,7 +133,8 @@ export function buildContainerCommand({
   const relativePath = combination.file
     .startsWith(monorepoRoot,)
     ? combination.file
-      .slice(monorepoRoot.length + 1,)
+      .slice(monorepoRoot.length
+        + 1,)
     : combination.file;
   /** Container-side absolute path; the host's monorepo is mounted at /workspace. */
   const containerFilePath = `/workspace/${relativePath}`;

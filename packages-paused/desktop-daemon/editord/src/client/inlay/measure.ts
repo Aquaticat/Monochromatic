@@ -132,8 +132,11 @@ export function interSpacesForGap({
   readonly fallbackCursor: number;
   readonly spaceRatio: number;
 },): number {
-  if ((cache.ctx === null) || (cache.monoW === 0)
-    || (cache.interSpW === 0))
+  if ((cache.ctx
+    === null) || (cache.monoW
+    === 0)
+    || (cache.interSpW
+      === 0))
     return Math.round((charPos - fallbackCursor) * spaceRatio,);
 
   /**

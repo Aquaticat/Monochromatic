@@ -82,7 +82,7 @@ export function tomlDelete(
 
   if ((resolved.kind
     === 'missing') || (resolved.kind
-    === 'top-level'))
+      === 'top-level'))
     return edit;
 
   if (resolved.kind

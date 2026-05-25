@@ -413,7 +413,9 @@ export function persistActiveSave(): void {
   /** Existing index minus the entry being replaced. */
   const next = store.saves
     .filter(function isOther(s: Readonly<SaveSummary>,): boolean {
-    return s.id !== updated.id;
+    return s.id
+      !== updated
+      .id;
   },);
   store.saves = [
     summary,
@@ -467,7 +469,8 @@ export function deleteSave(id: string,): void {
   removeKey(`${STORAGE_KEY_SAVE_PREFIX}${id}`,);
   store.saves = store.saves
     .filter(function isOther(s: Readonly<SaveSummary>,): boolean {
-    return s.id !== id;
+    return s.id
+      !== id;
   },);
   writeJson({
     key: STORAGE_KEY_SAVES,

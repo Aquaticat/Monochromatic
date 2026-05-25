@@ -93,7 +93,7 @@ function resolvePackageName(
 ): string | undefined {
   if ((entry.available
     !== null) && (!entry.available
-    .has(manager,)))
+      .has(manager,)))
     return undefined;
   return entry.overrides[manager]
     ?? entry

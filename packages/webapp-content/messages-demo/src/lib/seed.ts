@@ -194,19 +194,22 @@ function synthesizeBody(
     if (kind === BLOCK_KIND_HEADING) {
       /** Heading level in `[1, HEADING_LEVEL_MAX]`. */
       const level = 1 + Math
-        .floor(rng(cursor + 1,) * HEADING_LEVEL_MAX,);
+        .floor(rng(cursor + 1,)
+          * HEADING_LEVEL_MAX,);
       return `${'#'.repeat(level,)} ${
         pickWords({
           seed: cursor,
           count: HEADING_WORD_BASE + Math
-            .floor(rng(cursor + 2,) * HEADING_WORD_RANGE,),
+            .floor(rng(cursor + 2,)
+              * HEADING_WORD_RANGE,),
         },)
       }\n\n`;
     }
     if (kind === BLOCK_KIND_CODE) {
       /** Code-block line count drawn from the configured base + range. */
       const lineCount = CODE_LINE_BASE + Math
-        .floor(rng(cursor + 1,) * CODE_LINE_RANGE,);
+        .floor(rng(cursor + 1,)
+          * CODE_LINE_RANGE,);
       /** Accumulator of synthesised code lines; joined with `\n` below. */
       const lines = [];
       for (let i = 0; i < lineCount; i += 1) {
@@ -222,7 +225,8 @@ function synthesizeBody(
     /** Paragraph word count drawn from the configured base + range. */
     const wordCount = PARAGRAPH_WORD_BASE
       + Math
-      .floor(rng(cursor + 1,) * PARAGRAPH_WORD_RANGE,);
+      .floor(rng(cursor + 1,)
+        * PARAGRAPH_WORD_RANGE,);
     return `${
       pickWords({
         seed: cursor,
@@ -271,7 +275,8 @@ function pickWords({
     /** Per-word pseudo-random value driving the lorem-word index. */
     const r = rng(seed + i,);
     /** Picked word, defaulted to empty when the lorem corpus is empty. */
-    const picked = LOREM_WORDS[Math.floor(r * LOREM_WORDS.length,)]
+    const picked = LOREM_WORDS[Math.floor(r * LOREM_WORDS
+      .length,)]
       ?? '';
     words.push(picked,);
   }
@@ -398,23 +403,28 @@ export async function runSeed(): Promise<void> {
     let bytes = 0;
     if (r < P50_THRESHOLD)
       bytes = SIZE_P50_BASE + Math
-        .floor(rng(index + 1,) * SIZE_P50_RANGE,);
+        .floor(rng(index + 1,)
+          * SIZE_P50_RANGE,);
     else if (r < P95_THRESHOLD)
       bytes = SIZE_P95_BASE + Math
-        .floor(rng(index + 1,) * SIZE_P95_RANGE,);
+        .floor(rng(index + 1,)
+          * SIZE_P95_RANGE,);
     else if (r < P99_THRESHOLD)
       bytes = SIZE_P99_BASE + Math
-        .floor(rng(index + 1,) * SIZE_P99_RANGE,);
+        .floor(rng(index + 1,)
+          * SIZE_P99_RANGE,);
     else
       bytes = SIZE_TAIL_BASE + Math
-        .floor(rng(index + 1,) * SIZE_TAIL_RANGE,);
+        .floor(rng(index + 1,)
+          * SIZE_TAIL_RANGE,);
     /** Synthesised body sized to the chosen bucket. */
     const body = synthesizeBody({
       targetBytes: bytes,
       seed: index * SEED_MULTIPLIER,
     },);
     /** Cycled seed user; falls back to user-a when the modulo lookup misses. */
-    const userId = SEED_USER_IDS[index % SEED_USER_IDS.length]
+    const userId = SEED_USER_IDS[index % SEED_USER_IDS
+      .length]
       ?? SEED_USER_IDS[0];
     await createMessage({
       body,

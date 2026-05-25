@@ -129,7 +129,9 @@ export async function handleBeforeCompact({
     .length;
   ctx.ui
     .notify(
-    `Morph Compact: compressing ${msgCount} messages (${event.preparation.tokensBefore.toLocaleString()} tokens)...`,
+    `Morph Compact: compressing ${msgCount} messages (${event.preparation
+      .tokensBefore
+      .toLocaleString()} tokens)...`,
     'info',
   );
 

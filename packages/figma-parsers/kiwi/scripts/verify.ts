@@ -66,17 +66,20 @@ async function main(): Promise<void> {
       /** Count of ENUM-kind definitions for the summary line. */
       const enums = file.schema
         .definitions
-        .filter(d => d.kind === 'ENUM')
+        .filter(d => d.kind
+          === 'ENUM')
         .length;
       /** Count of STRUCT-kind definitions for the summary line. */
       const structs = file.schema
         .definitions
-        .filter(d => d.kind === 'STRUCT')
+        .filter(d => d.kind
+          === 'STRUCT')
         .length;
       /** Count of MESSAGE-kind definitions for the summary line. */
       const messages = file.schema
         .definitions
-        .filter(d => d.kind === 'MESSAGE')
+        .filter(d => d.kind
+          === 'MESSAGE')
         .length;
       console.log(
         `  Schema: ${totalDefs} definitions (${enums} enums, ${structs} structs, ${messages} messages)`,
@@ -94,7 +97,8 @@ async function main(): Promise<void> {
       }
       /** DOCUMENT entry of NodeType; its value must equal 1 to confirm enum decoding is correct. */
       const docField = nodeType.fields
-        .find(f => f.name === 'DOCUMENT');
+        .find(f => f.name
+          === 'DOCUMENT');
       if ((!docField) || (docField.value
         !== 1)) {
         console.error(

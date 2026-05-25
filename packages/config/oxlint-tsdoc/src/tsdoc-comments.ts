@@ -56,7 +56,8 @@ const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration,);
  * @returns true for `/** ... *\/` style comments
  */
 function isTsdocBlock(comment: Comment,): boolean {
-  return (comment.type === 'Block') && comment
+  return (comment.type
+    === 'Block') && comment
     .value
     .startsWith('*',);
 }

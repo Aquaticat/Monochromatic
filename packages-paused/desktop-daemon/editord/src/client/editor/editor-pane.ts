@@ -88,7 +88,8 @@ export class EditorPane extends HTMLElement {
     this.#editor
       .addEventListener(
       'input',
-      this.#scheduleHighlight.bind(this,),
+      this.#scheduleHighlight
+        .bind(this,),
     );
     this.#editor
       .addEventListener(
@@ -239,7 +240,7 @@ export class EditorPane extends HTMLElement {
   applyTextEdits(edits: readonly TextEdit[],): void {
     if ((this.#editor
       === null) || (edits.length
-      === 0))
+        === 0))
       return;
     /** Capture cursor before setText replaces every line div. */
     const cursorBefore = this.getCursorPosition();

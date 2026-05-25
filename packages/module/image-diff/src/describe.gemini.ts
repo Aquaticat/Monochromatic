@@ -64,9 +64,11 @@ Image A is the first image, Image B is the second.`;
  */
 function resolveGeminiDescribeKey(): string | undefined {
   /** Resolved Gemini key from preferred-then-fallback env var; treated as missing when blank. */
-  const key = process.env.IMAGE_DIFF_GEMINI_API_KEY
+  const key = process.env
+    .IMAGE_DIFF_GEMINI_API_KEY
     ?? process
-    .env.GEMINI_API_KEY;
+    .env
+    .GEMINI_API_KEY;
   if ((key === undefined) || (key === ''))
     return undefined;
   return key;

@@ -58,15 +58,23 @@ export function applyEditsToText({
 
   for (const edit of sorted) {
     /** Text on the start line before the edit range; preserved verbatim around the replacement. */
-    const before = lines[edit.range.start.line]
+    const before = lines[edit.range
+      .start
+      .line]
       ?.slice(
       0,
-      edit.range.start.character,
+      edit.range
+        .start
+        .character,
     )
       ?? '';
     /** Text on the end line after the edit range; preserved verbatim around the replacement. */
-    const after = lines[edit.range.end.line]
-      ?.slice(edit.range.end.character,)
+    const after = lines[edit.range
+      .end
+      .line]
+      ?.slice(edit.range
+        .end
+        .character,)
       ?? '';
     /** Replacement lines for the spliced range; `newText` may introduce or collapse line breaks. */
     const newLines = (before + edit
@@ -126,7 +134,9 @@ function positionToOffset({
         sum,
         line,
       ) {
-        return sum + line.length + 1;
+        return sum + line
+          .length
+          + 1;
       },
       0,
     )

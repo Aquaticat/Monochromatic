@@ -205,16 +205,21 @@ function bashExecutionToText(
   if (msg.cancelled)
     sections.push('\n(command cancelled)',);
   else if (
-    (msg.exitCode !== null)
-    && (msg.exitCode !== undefined)
-      && (msg.exitCode !== 0)
+    (msg.exitCode
+      !== null)
+    && (msg.exitCode
+      !== undefined)
+      && (msg.exitCode
+        !== 0)
   ) {
     sections.push(`\nCommand exited with code ${msg.exitCode}`,);
   }
   if (
     msg.truncated
-      && (msg.fullOutputPath !== undefined)
-      && (msg.fullOutputPath !== '')
+      && (msg.fullOutputPath
+        !== undefined)
+      && (msg.fullOutputPath
+        !== '')
   ) {
     sections.push(`\n[Output truncated. Full output: ${msg.fullOutputPath}]`,);
   }
@@ -365,8 +370,11 @@ function toLlmMessage(
       timestamp: m.timestamp,
     };
   }
-  if ((m.role === 'user') || (m.role === 'assistant')
-    || (m.role === 'toolResult'))
+  if ((m.role
+    === 'user') || (m.role
+    === 'assistant')
+    || (m.role
+      === 'toolResult'))
     return m;
   throw new Error(`convertToLlm: unhandled message role: ${JSON.stringify(m,)}`,);
 }

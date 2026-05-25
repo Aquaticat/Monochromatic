@@ -35,7 +35,7 @@ export function buildPillElements({
       text: metadata.tags
         .length
         > 0 ? `# ${metadata.tags
-        .join(', ',)}` : '# ?',
+          .join(', ',)}` : '# ?',
     },
     {
       field: 'tracked',
@@ -92,9 +92,11 @@ export function buildPillElements({
       text: pill.text,
     },);
     if (autofillLoading)
-      element.dataset.loading = '';
+      element.dataset
+        .loading = '';
     else if (autofilled.has(pill.field,))
-      element.dataset.autofilled = '';
+      element.dataset
+        .autofilled = '';
     return element;
   },);
 }

@@ -36,7 +36,7 @@ export function itemToFeed(
   /** Optional iframe markup omitted when description is absent so empty content stays unrendered. */
   const descriptionIframe = (item.description
     !== undefined) && (item.description
-    !== '')
+      !== '')
     ? h({
       tag: 'iframe',
       class: 'feed__description',
@@ -93,7 +93,7 @@ export function itemToFeed(
               },),
               ...(((feed.description
                 !== undefined) && (feed.description
-                !== ''))
+                  !== ''))
                 ? [h({
                   tag: 'span',
                   class: 'feed__itemDescription',

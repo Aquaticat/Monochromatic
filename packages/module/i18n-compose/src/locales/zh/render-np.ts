@@ -113,13 +113,13 @@ export function makeChineseNounPhraseRenderer<S extends string, N extends string
       return `这${nouns[phrase.noun]
         .classifier
         ?? '个'}${nouns[phrase.noun]
-        .surface}`;
+          .surface}`;
     if (phrase.kind
       === 'noun.indefinite')
       return `一${nouns[phrase.noun]
         .classifier
         ?? '个'}${nouns[phrase.noun]
-        .surface}`;
+          .surface}`;
     if (phrase.kind
       === 'noun.possessed')
       return `${renderPossessor(phrase.possessor,)}${nouns[phrase.noun]

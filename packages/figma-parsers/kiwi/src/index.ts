@@ -234,7 +234,7 @@ class BinaryReader {
     while ((end < this
       .data
       .length) && (this.data[end]
-      !== 0))
+        !== 0))
       end += 1;
     /** UTF-8 decode of the bytes between the original cursor and the terminator. */
     const s = new TextDecoder('utf-8',).decode(this.data
@@ -276,7 +276,8 @@ class BinaryReader {
     const result = this.data
       .subarray(
       this.pos,
-      this.pos + count,
+      this.pos
+        + count,
     );
     this.pos += count;
     return result;
@@ -530,7 +531,8 @@ function decodeValue(
     const value = reader.readVarUint();
     /** Matching enum field; absent indicates a value the schema does not name, so we fall back to a stringified form. */
     const enumField = def.fields
-      .find(f => f.value === value);
+      .find(f => f.value
+        === value);
     return enumField ? `${def.name}.${enumField.name}` : `${def.name}(${value})`;
   }
 
@@ -887,10 +889,14 @@ async function parseCanvasFig(canvasData: Uint8Array,): Promise<{
   for (let i = CANVAS_HEADER_SIZE; i < (canvasData.length
     - 4); i++) {
     if (
-      (canvasData[i] === zstdMagic[0])
-      && (canvasData[i + 1] === zstdMagic[1])
-        && (canvasData[i + 2] === zstdMagic[2])
-        && (canvasData[i + 3] === zstdMagic[3])
+      (canvasData[i]
+        === zstdMagic[0])
+      && (canvasData[i + 1]
+        === zstdMagic[1])
+        && (canvasData[i + 2]
+          === zstdMagic[2])
+        && (canvasData[i + 3]
+          === zstdMagic[3])
     ) {
       zstdOffset = i;
       break;

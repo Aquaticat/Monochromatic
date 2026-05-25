@@ -87,7 +87,8 @@ export async function syncFromKvm(name: string,): Promise<void> {
   /** Regions at depth 0 with actual data: these were written during the boot session. */
   const changedRegions: readonly QemuMapRegion[] = regions.filter(
     function isOverlayData(r,) {
-      return (r.depth === 0) && r
+      return (r.depth
+        === 0) && r
         .data;
     },
   );

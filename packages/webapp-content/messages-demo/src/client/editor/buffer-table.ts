@@ -61,8 +61,8 @@ export function resetTable(
     .add = '';
   input.table
     .pieces = input.text
-    .length
-    === 0
+      .length
+      === 0
     ? []
     : [
       {
@@ -74,7 +74,7 @@ export function resetTable(
     ];
   input.table
     .length = input.text
-    .length;
+      .length;
 }
 
 /**
@@ -260,7 +260,8 @@ export function splitAt(
       const right: Piece = {
         source: piece.source,
         start: piece.start
-          + (input.at - cursor),
+          + (input.at
+            - cursor),
         length: pieceEnd - input
           .at,
       };
@@ -315,9 +316,14 @@ export function applyToTable(
     changeset,
   } = input;
   if (
-    (changeset.from < 0)
-    || (changeset.to < changeset.from)
-      || (changeset.to > table.length)
+    (changeset.from
+      < 0)
+    || (changeset.to
+      < changeset
+      .from)
+      || (changeset.to
+        > table
+        .length)
   ) {
     throw new Error(
       `invalid changeset: from=${String(changeset.from,)} to=${
@@ -363,14 +369,17 @@ export function applyToTable(
       {
         source: 'add',
         start: addStart,
-        length: changeset.insert.length,
+        length: changeset.insert
+          .length,
       },
     );
   }
 
   table.length += changeset.insert
     .length
-    - (changeset.to - changeset.from);
+    - (changeset.to
+      - changeset
+      .from);
 
   return {
     from: changeset.from,

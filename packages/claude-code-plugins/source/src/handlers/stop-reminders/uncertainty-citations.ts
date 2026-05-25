@@ -170,7 +170,8 @@ function hasLineNumberSuffix(line: string,): boolean {
     let count = 0;
     while (
       (count < LINE_NUMBER_MAX_DIGITS)
-      && ((at + count) < line.length)
+      && ((at + count) < line
+        .length)
         && isDigit(line.charAt(at + count,),)
     ) {
       count += 1;

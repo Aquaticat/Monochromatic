@@ -59,7 +59,7 @@ document.querySelector<HTMLElement>('search-bar',)?.addEventListener(
     const { query, } = event.detail;
     globalThis.location
       .href = query.length
-      === 0
+        === 0
       ? '/search'
       : `/search?q=${encodeURIComponent(query,)}`;
   }) as EventListener,

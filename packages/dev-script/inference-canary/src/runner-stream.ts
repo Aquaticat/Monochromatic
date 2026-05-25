@@ -181,7 +181,7 @@ export async function streamCompletion({
       } = choice;
       if ((delta.content
         !== undefined) && (delta.content
-        !== null))
+          !== null))
         chunks.push(delta.content,);
 
       // OpenRouter surfaces reasoning via `reasoning_details` on the delta: an array of
@@ -216,7 +216,7 @@ export async function streamCompletion({
     // Usage arrives on the final chunk when stream_options.include_usage is set.
     if ((chunk.usage
       !== undefined) && (chunk.usage
-      !== null))
+        !== null))
       lastUsage = chunk.usage;
   }
 

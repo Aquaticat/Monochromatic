@@ -52,7 +52,8 @@ export function applyKey({
     return {
       onlyShowIn: value.split(';',)
         .filter(function nonEmpty(s,) {
-        return s.length > 0;
+        return s.length
+          > 0;
       },),
     };
   }
@@ -60,7 +61,8 @@ export function applyKey({
     return {
       notShowIn: value.split(';',)
         .filter(function nonEmpty(s,) {
-        return s.length > 0;
+        return s.length
+          > 0;
       },),
     };
   }

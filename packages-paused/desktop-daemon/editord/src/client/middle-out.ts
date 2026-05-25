@@ -74,7 +74,8 @@ export function middleOut({
   if ((text.length
     - matchStart) <= (budget - 1))
     return ELLIPSIS + text
-      .slice((text.length - budget) + 1,);
+      .slice((text.length
+        - budget) + 1,);
 
   // Match in the middle: truncate both sides, center on the match
   /** Remaining budget after reserving space for the query and two ellipses. */

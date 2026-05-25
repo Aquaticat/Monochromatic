@@ -49,7 +49,7 @@ export function tomlInsertCommentAfter(
   },);
   if ((resolved.kind
     === 'missing') || (resolved.kind
-    === 'top-level')) {
+      === 'top-level')) {
     throw new TomlPathNotFoundError(
       `Path ${formatPath({ path, },)} not found`,
     );

@@ -70,8 +70,8 @@ export async function handleSend(
     if ((input.state
       .editMessageId
       !== null) && (input.state
-      .tier3
-      === null)) {
+        .tier3
+        === null)) {
       await sendInlineEdit({
         ...input,
         body,
@@ -81,8 +81,8 @@ export async function handleSend(
     else if ((input.state
       .editMessageId
       !== null) && (input.state
-      .tier3
-      !== null)) {
+        .tier3
+        !== null)) {
       await sendTier3Edit({
         ...input,
         body,
@@ -92,8 +92,8 @@ export async function handleSend(
     else if ((input.state
       .editMessageId
       === null) && (input.state
-      .tier3
-      !== null)) {
+        .tier3
+        !== null)) {
       await sendTier3New({
         state: input.state,
         textarea: input.textarea,
@@ -236,9 +236,9 @@ async function sendTier3New(
   if ((input.state
     .tier3
     === null) || (input.state
-    .tier3
-    .localChunks
-    === null))
+      .tier3
+      .localChunks
+      === null))
     return;
   await saveCurrentTier3Chunk({
     state: input.state,

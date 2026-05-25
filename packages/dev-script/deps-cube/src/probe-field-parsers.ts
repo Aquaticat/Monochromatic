@@ -298,7 +298,8 @@ export function resolveVersion(
   },
 ): string | undefined {
   if (looksLikePinnedSemver(range,)
-    && (pkg.versions?.[range] !== undefined))
+    && (pkg.versions?.[range]
+      !== undefined))
     return range;
   return pkg['dist-tags']
     ?.latest;

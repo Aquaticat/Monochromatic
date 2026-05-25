@@ -79,7 +79,8 @@ export function formatModelReport(report: CanaryReport,): string {
     > 0
     ? Math.max(...report.results
       .map(function nameLen(result,): number {
-      return result.name.length;
+      return result.name
+        .length;
     },),)
     : 0;
 
@@ -96,7 +97,7 @@ export function formatModelReport(report: CanaryReport,): string {
       !== undefined
       ? `   fix: ${result.pass2Score
         .toFixed(2,)} (${formatDelta(result.fixDelta
-        ?? 0,)})`
+          ?? 0,)})`
       : '';
     return `    ${paddedName}  ${
       result.meanScore

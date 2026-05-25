@@ -136,7 +136,7 @@ export function writeStr({
 },): void {
   for (let idx = 0; idx < len; idx++) {
     buf[offset + idx] = idx < str
-      .length ? str.charCodeAt(idx,) : ASCII_SPACE;
+      .length ? str.codePointAt(idx,) : ASCII_SPACE;
   }
 }
 

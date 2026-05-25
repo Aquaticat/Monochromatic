@@ -266,7 +266,8 @@ function resolveApiKey({
     return explicit;
   /** Browser-safe fallback to process env when the runtime exposes one. */
   const envKey = ((typeof process) !== 'undefined')
-    ? process.env.MORPH_API_KEY
+    ? process.env
+      .MORPH_API_KEY
     : undefined;
   if ((envKey !== undefined) && (envKey !== ''))
     return envKey;

@@ -54,8 +54,8 @@ export async function getIndexHtmlBody(
     if ((item.item
       .link
       === undefined) || (item.item
-      .link
-      === ''))
+        .link
+        === ''))
       return true;
     return !ignoredLinks.has(item.item
       .link,);

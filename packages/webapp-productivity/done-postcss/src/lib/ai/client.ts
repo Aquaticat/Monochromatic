@@ -50,7 +50,7 @@ function isRateLimited(): boolean {
   // Discard entries older than the window
   while ((requestTimestamps.length
     > 0) && ((requestTimestamps[0] as number)
-    < cutoff))
+      < cutoff))
     requestTimestamps.shift();
 
   return requestTimestamps.length

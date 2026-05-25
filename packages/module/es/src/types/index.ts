@@ -1,11 +1,11 @@
-export * as any from './t any/index.ts';
-export * as bigint from './t bigint/index.ts';
+export type * as any from './t any/index.ts';
+export type * as bigint from './t bigint/index.ts';
 export * as boolean from './t boolean/index.ts';
 export * as function from './t function/index.ts';
 export * as never from './t never/index.ts';
 export * as number from './t number/index.ts';
-export * as numeric from './t numeric/index.ts';
+export type * as numeric from './t numeric/index.ts';
 export * as object from './t object/index.ts';
 export * as string from './t string/index.ts';
-export * as undefined from './t undefined/index.ts';
-export * as unknown from './t unknown/index.ts';
+export type * as undefined from './t undefined/index.ts';
+export type * as unknown from './t unknown/index.ts';

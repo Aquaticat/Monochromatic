@@ -29,7 +29,9 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
         function isHttpDomainUrl(s,) {
           /** Parsed URL so the protocol and hostname can be checked independently. */
           const u = new URL(s,);
-          return ((u.protocol === 'http:') || (u.protocol === 'https:'))
+          return ((u.protocol
+            === 'http:') || (u.protocol
+            === 'https:'))
             && v
             .DOMAIN_REGEX
             .test(u.hostname,);

@@ -147,7 +147,8 @@ export function mountSelection(
         if (Number.isNaN(candidateIndex,)
           || (candidateIndex >= lineIndex))
           return acc;
-        return acc + (candidate.textContent ?? '')
+        return acc + (candidate.textContent
+          ?? '')
           .length
           + 1;
       },

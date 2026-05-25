@@ -116,7 +116,7 @@ export function extractParamsText(
    */
   if ((node.typeParameters
     !== null) && (node.typeParameters
-    !== undefined)) {
+      !== undefined)) {
     /** Source slice starting at the first non-`async` character; inspected for a leading `<`. */
     const tpText = fullText.slice(start,);
     if (tpText.startsWith('<',)) {

@@ -21,7 +21,8 @@ document.documentElement
   .style
   .setProperty(
   '--font-scale',
-  String(getSettings().fontScale,),
+  String(getSettings()
+    .fontScale,),
 );
 
 registerMenu();

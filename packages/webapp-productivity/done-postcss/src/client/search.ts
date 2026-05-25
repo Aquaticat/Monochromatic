@@ -62,7 +62,7 @@ document.querySelector<HTMLElement>('search-bar',)?.addEventListener(
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     globalThis.location
       .href = query.length
-      === 0
+        === 0
       ? '/search'
       : `/search?q=${encodeURIComponent(query,)}`;
   } as EventListener,

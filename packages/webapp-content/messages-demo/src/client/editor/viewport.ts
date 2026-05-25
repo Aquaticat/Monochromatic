@@ -144,7 +144,7 @@ export function mountViewport(
 
     spacer.style
       .minBlockSize = `${String(lineStarts.length
-      * lineHeight,)}px`;
+        * lineHeight,)}px`;
 
     /** Cached layout rect; read once per render to avoid forcing a second layout per line. */
     const hostRect = input.host

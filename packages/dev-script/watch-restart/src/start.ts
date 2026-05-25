@@ -219,18 +219,18 @@ async function buildInternalFilter(
     filters.push(buildEventKindFilter(options.events,),);
   if ((options.extensions
     !== undefined) && (options.extensions
-    .length
-    > 0))
+      .length
+      > 0))
     filters.push(extFilter(options.extensions,),);
   if (
     ((options.include
       !== undefined) && (options.include
-      .length
-      > 0))
+        .length
+        > 0))
     || ((options.exclude
       !== undefined) && (options.exclude
-      .length
-      > 0))
+        .length
+        > 0))
   ) {
     filters.push(globFilter({
       ...(options.include
@@ -242,12 +242,12 @@ async function buildInternalFilter(
   if (
     ((options.includeRegex
       !== undefined) && (options.includeRegex
-      .length
-      > 0))
+        .length
+        > 0))
     || ((options.excludeRegex
       !== undefined) && (options.excludeRegex
-      .length
-      > 0))
+        .length
+        > 0))
   ) {
     filters.push(regexFilter({
       ...(options.includeRegex
@@ -279,7 +279,7 @@ async function buildInternalFilter(
     ?? [];
   if ((gitignoreRoots.length
     > 0) || (gitignoreExtraFiles.length
-    > 0)) {
+      > 0)) {
     filters.push(
       await gitignoreFilter({
         roots: gitignoreRoots,

@@ -77,7 +77,8 @@ export async function parseConfigFiles(
     for (const rawLine of text.split('\n',)) {
       /** Whitespace tolerance before prefix-character dispatch. */
       const line = rawLine.trim();
-      if ((line.length === 0) || line
+      if ((line.length
+        === 0) || line
         .startsWith('#',))
         continue;
 

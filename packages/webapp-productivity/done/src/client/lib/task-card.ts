@@ -118,7 +118,8 @@ class TaskCard extends HTMLElement {
             on: {
               click: async function handleCheckboxClick(event,) {
                 event.stopPropagation();
-                if (options.onToggleComplete !== undefined)
+                if (options.onToggleComplete
+                  !== undefined)
                   await options.onToggleComplete(task.id,);
               },
             },

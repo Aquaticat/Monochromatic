@@ -164,7 +164,7 @@ async function markTree(row: {
       === 'blob') {
       if ((!row.bag
         .has(entry.oid,)) && (!row.excluded
-        .has(entry.oid,)))
+          .has(entry.oid,)))
         row.bag
           .add(entry.oid,);
     }

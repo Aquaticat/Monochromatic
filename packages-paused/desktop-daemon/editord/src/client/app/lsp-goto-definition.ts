@@ -78,7 +78,7 @@ export async function doGotoDefinition(
       !== '') {
       if ((def.path
         === path) && (def.line
-        === line))
+          === line))
         return 'already-at-definition';
       await loadFileSafe({
         path: def.path,

@@ -89,13 +89,16 @@ export function buildAxisTickLayer(
   const ticks: PathDatum[] = ts.flatMap(function tickTriple(t,) {
     /** World-space X coordinate of the tick on the X axis for parameter `t`. */
     const xAt = g.xMin
-      + (g.dx * t);
+      + (g.dx
+        * t);
     /** World-space Y coordinate of the tick on the Y axis for parameter `t`. */
     const yAt = g.yMin
-      + (g.dy * t);
+      + (g.dy
+        * t);
     /** World-space Z coordinate of the tick on the Z axis for parameter `t`. */
     const zAt = g.zMin
-      + (g.dz * t);
+      + (g.dz
+        * t);
     return [
       {
         path: [

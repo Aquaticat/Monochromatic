@@ -65,7 +65,8 @@ const SILENT_LEVELS: ReadonlySet<string> = new Set([
  */
 function detectVerbose(): boolean {
   try {
-    if (((typeof process) !== 'undefined') && (process.env.DEBUG
+    if (((typeof process) !== 'undefined') && (process.env
+      .DEBUG
       === 'true'))
       return true;
   }
@@ -89,7 +90,8 @@ function detectVerbose(): boolean {
   }
 
   try {
-    if (import.meta?.env?.DEBUG
+    if (import.meta?.env
+      ?.DEBUG
       === 'true')
       return true;
   }

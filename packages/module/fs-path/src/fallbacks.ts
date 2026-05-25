@@ -29,7 +29,8 @@ export function normalize(filePath: string,): string {
   const isRoot = filePath.codePointAt(0,)
     === SLASH_CODE_POINT;
   /** Whether the input ends with a trailing slash */
-  const trailingSlash = filePath.codePointAt(filePath.length - 1,)
+  const trailingSlash = filePath.codePointAt(filePath.length
+    - 1,)
     === SLASH_CODE_POINT;
 
   /** Path segments split on `/` */
@@ -44,7 +45,7 @@ export function normalize(filePath: string,): string {
       // Don't pop past root
       if ((resolved.length
         > 0) && (resolved.at(-1,)
-        !== '..'))
+          !== '..'))
         resolved.pop();
       else if (!isRoot)
         resolved.push('..',);
@@ -100,7 +101,8 @@ export function dirnameFallback(filePath: string,): string {
    */
   const searchEnd = ((filePath.length
     > 1)
-      && (filePath.codePointAt(filePath.length - 1,)
+      && (filePath.codePointAt(filePath.length
+        - 1,)
         === SLASH_CODE_POINT))
     ? filePath.length
       - 2
@@ -209,7 +211,8 @@ export function resolveFallback(segments: readonly string[],): string {
   if (
     (normalized.length
       > 1)
-    && (normalized.codePointAt(normalized.length - 1,)
+    && (normalized.codePointAt(normalized.length
+      - 1,)
       === SLASH_CODE_POINT)
   ) {
     return normalized.slice(

@@ -46,14 +46,15 @@ export const noPromiseCatch: CreateOnceRule = {
       CallExpression(node: ESTree.CallExpression,): void {
         /** Call target; only `x.catch()` member calls qualify for the rule. */
         const { callee, } = node;
-        if ((callee.type !== 'MemberExpression') || callee
+        if ((callee.type
+          !== 'MemberExpression') || callee
           .computed)
           return;
         if ((callee.property
           .type
           !== 'Identifier') || (callee.property
-          .name
-          !== 'catch'))
+            .name
+            !== 'catch'))
           return;
         context.report({
           node,

@@ -48,10 +48,10 @@ import { encodeKey, } from './values.ts';
 export function canonicalEmit({ edit, }: { edit: TomlEditState; },): string {
   if ((edit.source
     !== '') || (edit.program
-    .body[0]
-    .body
-    .length
-    > 0))
+      .body[0]
+      .body
+      .length
+      > 0))
     return spliceEmit({ edit, },);
   return canonicalFromEmpty({ edit, },);
 }
@@ -66,7 +66,7 @@ function canonicalFromEmpty({ edit, }: { edit: TomlEditState; },): string {
   const parts: string[] = [];
   if ((edit.headerComment
     !== null) && (edit.headerComment
-    !== '')) {
+      !== '')) {
     /** Header comment is stored joined; split here so each line gets its own `#` prefix. */
     const lines = edit.headerComment
       .split('\n',);

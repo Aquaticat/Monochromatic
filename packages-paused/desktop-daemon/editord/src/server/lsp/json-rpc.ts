@@ -192,7 +192,8 @@ export function createLspParser({
           const len = parseContentLength(header,);
           if (len === null) {
             state.buffer = state.buffer
-              .subarray(headerEnd + HEADER_SEPARATOR.length,);
+              .subarray(headerEnd + HEADER_SEPARATOR
+                .length,);
             state.totalLength = state.buffer
               .byteLength;
             continue;
@@ -200,7 +201,8 @@ export function createLspParser({
 
           state.contentLength = len;
           state.buffer = state.buffer
-            .subarray(headerEnd + HEADER_SEPARATOR.length,);
+            .subarray(headerEnd + HEADER_SEPARATOR
+              .length,);
           state.totalLength = state.buffer
             .byteLength;
         }

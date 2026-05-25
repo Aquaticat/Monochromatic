@@ -62,7 +62,7 @@ function findOpeningFenceEnd(response: string,): number {
         after,
       )
         === tag) && (response.charAt(after,)
-        === '\n')
+          === '\n')
     ) {
       return after + 1;
     }

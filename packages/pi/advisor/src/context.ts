@@ -347,7 +347,7 @@ function filterMessage(
     return !(
       (block.type === 'toolCall')
       && (block.name === ADVISOR_TOOL_NAME)
-      && (block.id === currentToolCallId)
+        && (block.id === currentToolCallId)
     );
   },);
   if (content.length

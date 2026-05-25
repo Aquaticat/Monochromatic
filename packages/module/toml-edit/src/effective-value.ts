@@ -73,7 +73,8 @@ export function effectiveAt(
   /** Exact-path pending insertion wins before any walk, per the resolution policy. */
   const exactInsertion = edit.insertions
     .find(function matchesPath(ins,) {
-    return (ins.path !== undefined) && pathEquals({
+    return (ins.path
+      !== undefined) && pathEquals({
       a: ins.path,
       b: path,
     },);
@@ -159,7 +160,8 @@ function projectPendingAtPrefix(
     /** Pending insertion that covers this prefix exactly, if any. */
     const matchingIns = edit.insertions
       .find(function matches(ins,) {
-      return (ins.path !== undefined) && pathEquals({
+      return (ins.path
+        !== undefined) && pathEquals({
         a: ins.path,
         b: prefix,
       },);
@@ -214,11 +216,11 @@ function nodeFromResolved(
 ): AST.TOMLNode | null {
   if ((resolved.kind
     === 'keyvalue') || (resolved.kind
-    === 'value'))
+      === 'value'))
     return resolved.node;
   if ((resolved.kind
     === 'table') || (resolved.kind
-    === 'top-level'))
+      === 'top-level'))
     return resolved.node;
   return null;
 }
@@ -372,16 +374,19 @@ function resolveAst(
       };
     }
   }
-  if ((base.kind === 'table') && edit
+  if ((base.kind
+    === 'table') && edit
     .deletions
     .has(base.node,))
     return { kind: 'deleted', };
   if (
-    (base.kind === 'array-of-tables')
+    (base.kind
+      === 'array-of-tables')
     && base
       .nodes
       .every(function isDeleted(n,) {
-      return edit.deletions.has(n,);
+      return edit.deletions
+        .has(n,);
     },)
   ) {
     return { kind: 'deleted', };

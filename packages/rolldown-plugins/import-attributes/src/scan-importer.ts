@@ -92,8 +92,8 @@ export function scanImporterForAttribute({
       if ((node.source
         .value
         !== specifier) || (node.attributes
-        .length
-        === 0))
+          .length
+          === 0))
         return;
       found = extractTypeFromAttributes(node.attributes,);
     },
@@ -121,8 +121,8 @@ export function scanImporterForAttribute({
       if ((node.source
         .value
         !== specifier) || (node.attributes
-        .length
-        === 0))
+          .length
+          === 0))
         return;
       found = extractTypeFromAttributes(node.attributes,);
     },

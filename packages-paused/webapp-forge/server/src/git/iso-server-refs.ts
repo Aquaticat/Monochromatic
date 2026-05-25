@@ -240,7 +240,7 @@ export async function applyRefUpdate(row: {
   // Ignore zero comparison (creating a new ref).
   if ((triplet.oldOid
     !== ZERO_OID) && (currentOid !== triplet
-    .oldOid)) {
+      .oldOid)) {
     return {
       ok: false,
       error: triplet.oldOid

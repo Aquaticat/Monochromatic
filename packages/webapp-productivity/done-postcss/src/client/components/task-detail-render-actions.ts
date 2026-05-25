@@ -80,7 +80,8 @@ export function buildActionButtonRow(
     ],
   },);
   if (isCreate)
-    btnRow.dataset.hidden = '';
+    btnRow.dataset
+      .hidden = '';
   return btnRow;
 }
 

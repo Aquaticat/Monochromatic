@@ -81,7 +81,9 @@ export async function getOutlinesFromOpmls(
               function isHttpDomainUrl(s,) {
                 /** Parsed URL so the protocol and hostname can be checked independently. */
                 const u = new URL(s,);
-                return ((u.protocol === 'http:') || (u.protocol === 'https:'))
+                return ((u.protocol
+                  === 'http:') || (u.protocol
+                  === 'https:'))
                   && v
                   .DOMAIN_REGEX
                   .test(u.hostname,);

@@ -219,7 +219,8 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
     /** Bash command string extracted defensively; `undefined` when the field is absent. */
     const command = 'command' in event
       .tool_input
-      ? event.tool_input.command
+      ? event.tool_input
+        .command
       : undefined;
 
     if (((typeof command) === 'string') && invokesBunTest(command,)) {
@@ -251,7 +252,8 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
   /** Agent's `subagent_type` field, fed to `isGeneralPurpose` to detect the banned default. */
   const subagentType = 'subagent_type' in event
     .tool_input
-    ? event.tool_input.subagent_type
+    ? event.tool_input
+      .subagent_type
     : undefined;
 
   if (isGeneralPurpose(subagentType,)) {
@@ -273,7 +275,8 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
   /** Agent's `resume` field; presence triggers the no-polling deny path. */
   const resume = 'resume' in event
     .tool_input
-    ? event.tool_input.resume
+    ? event.tool_input
+      .resume
     : undefined;
 
   if ((typeof resume) === 'string') {

@@ -134,8 +134,8 @@ function performIndentOp({
       && (!((sel.startLine
         === sel
         .endLine) && (sel.startCharacter
-        === sel
-        .endCharacter)))
+          === sel
+          .endCharacter)))
     ? sel
     : null;
   /** Outcome of the indent/unindent run, expressed as either an updated selection or a new caret. */

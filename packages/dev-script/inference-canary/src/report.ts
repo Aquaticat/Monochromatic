@@ -22,7 +22,8 @@ function formatTimestamp(isoTimestamp: string,): string {
   const year = String(date.getUTCFullYear(),);
   // padStart(2, '0') ensures consistent two-digit month/day/hour/minute/second display
   /** Two-digit month (`01`-`12`); +1 converts from JS's 0-indexed months. */
-  const month = String(date.getUTCMonth() + 1,)
+  const month = String(date.getUTCMonth()
+    + 1,)
     .padStart(
     2,
     '0',

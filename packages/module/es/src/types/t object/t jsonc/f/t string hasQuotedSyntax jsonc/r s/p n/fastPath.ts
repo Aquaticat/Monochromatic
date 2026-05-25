@@ -131,7 +131,8 @@ function tryContainerFastPath(
   while (
     (cursor.searchIndex
       > 0)
-    && isJsonWhitespace(trimmed[cursor.searchIndex - 1]
+    && isJsonWhitespace(trimmed[cursor.searchIndex
+      - 1]
       ?? '',)
   ) {
     cursor.searchIndex--;

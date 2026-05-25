@@ -73,7 +73,8 @@ async function readKeyFromMcpConfig(): Promise<string | undefined> {
       /** Current server entry; may be missing env block. */
       const server = servers[serverName];
       /** First env-stored key encountered short-circuits the walk. */
-      const key = server?.env?.MORPH_API_KEY;
+      const key = server?.env
+        ?.MORPH_API_KEY;
       if ((key !== undefined) && (key !== ''))
         return key;
     }

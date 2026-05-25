@@ -91,7 +91,7 @@ export function matches(
 ): boolean {
   if ((input.ifNoneMatch
     === undefined) || (input.ifNoneMatch
-    === null))
+      === null))
     return false;
   // The client may send a comma-separated list (e.g. multiple cached
   // entries for the same URL across redirects); a hit on any of them

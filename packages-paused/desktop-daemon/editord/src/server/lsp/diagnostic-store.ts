@@ -174,11 +174,13 @@ export function createDiagnosticStore(
           return {
             range: diag.range,
             severity: (diag
-                .severity !== undefined
+                .severity
+              !== undefined
               ? SEVERITY_MAP[diag.severity]
               : undefined) ?? 'info',
             message: diag.message,
-            source: diag.source ?? sourceName,
+            source: diag.source
+              ?? sourceName,
           };
         },);
       },

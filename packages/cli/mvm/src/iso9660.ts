@@ -159,7 +159,10 @@ export function createIso({
   const entries = files.map(function mapFileEntry(f,) {
     /** Sector this file occupies; reserved before `nextSector` is bumped past the file. */
     const sector = nextSector;
-    nextSector += Math.ceil(f.data.length / L.SECTOR_SIZE,)
+    nextSector += Math.ceil(f.data
+      .length
+      / L
+      .SECTOR_SIZE,)
       || 1;
     return {
       data: f.data,

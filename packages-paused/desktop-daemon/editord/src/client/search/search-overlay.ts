@@ -267,7 +267,7 @@ export class SearchOverlay extends HTMLElement {
   #charBudget(): number {
     if ((this.#charWidthPx
       <= 0) || (this.#resultsContainer
-      === null))
+        === null))
       return 0;
     return Math.floor(this.#resultsContainer
       .clientWidth
@@ -291,7 +291,7 @@ export class SearchOverlay extends HTMLElement {
   async #performSearch(): Promise<void> {
     if ((this.onSearch
       === null) || (this.#input
-      === null))
+        === null))
       return;
     /** Local alias for `this`; captured by the `onResults` callback. */
     const overlay = this;
@@ -327,9 +327,9 @@ export class SearchOverlay extends HTMLElement {
       /** True when the input contains non-whitespace text; selects the "No results" message over a blank placeholder. */
       const hasInput = (this.#input
         !== null) && (this.#input
-        .value
-        .trim()
-        !== '');
+          .value
+          .trim()
+          !== '');
       this.#resultsContainer
         .replaceChildren(
         hasInput

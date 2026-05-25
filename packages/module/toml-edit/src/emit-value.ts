@@ -68,7 +68,7 @@ function emitValueLeaf({ node, }: { node: AST.TOMLValue; },): string {
     return emitStringValue({ node, },);
   if ((node.kind
     === 'integer') || (node.kind
-    === 'float'))
+      === 'float'))
     return node.number;
   if (node.kind
     === 'boolean')
@@ -236,7 +236,8 @@ export function emitArrayWithSkipPath(
         depth: depth + 1,
       },);
     }
-    if (el.type !== 'TOMLArray') {
+    if (el.type
+      !== 'TOMLArray') {
       throw new TomlImmutableNodeError(
         `emitArrayWithSkipPath: expected TOMLArray at index ${head}, got ${el.type}`,
       );

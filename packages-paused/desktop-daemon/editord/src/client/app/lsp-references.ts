@@ -93,7 +93,8 @@ export async function showReferences(
       const label = loc.path
         .startsWith(rootDir,)
         ? loc.path
-          .slice(rootDir.length + 1,)
+          .slice(rootDir.length
+            + 1,)
         : loc.path;
       return {
         path: loc.path,

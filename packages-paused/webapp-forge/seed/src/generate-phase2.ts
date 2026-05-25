@@ -277,7 +277,8 @@ async function seedRepoMembers(row: {
     },);
     /** Role string sampled from the allowed set, defaulted to reader when picking fails. */
     const role = rngPick({
-      seed: row.seed + i,
+      seed: row.seed
+        + i,
       items: ROLES,
     },)
       ?? 'reader';

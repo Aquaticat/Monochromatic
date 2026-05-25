@@ -44,7 +44,8 @@ import {
 //region API key resolution: validates INFERENCE_VALIDATION_OPENROUTER_API_KEY before any network calls
 
 /** OpenRouter API key from environment, required for all inference calls. */
-const apiKey = process.env.INFERENCE_VALIDATION_OPENROUTER_API_KEY;
+const apiKey = process.env
+  .INFERENCE_VALIDATION_OPENROUTER_API_KEY;
 if ((apiKey === undefined) || (apiKey === ''))
   throw new Error('INFERENCE_VALIDATION_OPENROUTER_API_KEY not set in environment',);
 

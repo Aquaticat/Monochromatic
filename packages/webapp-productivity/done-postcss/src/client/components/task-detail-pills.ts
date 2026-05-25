@@ -136,9 +136,11 @@ export function buildPillElements(
         text: pill.text,
       },);
       if (loading)
-        element.dataset.loading = '';
+        element.dataset
+          .loading = '';
       else if (autofilled.has(pill.field,))
-        element.dataset.autofilled = '';
+        element.dataset
+          .autofilled = '';
       return element;
     },
   );

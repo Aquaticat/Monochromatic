@@ -118,7 +118,7 @@ export function declarativeVerbSurface(
     return entry.base;
   if ((agreement.person
     === THIRD_PERSON) && (agreement.number
-    === 'singular'))
+      === 'singular'))
     return entry.present3s
       ?? `${entry.base}s`;
   return entry.base;
@@ -153,7 +153,7 @@ export function doAuxiliary(
     return 'will';
   if ((agreement.person
     === THIRD_PERSON) && (agreement.number
-    === 'singular'))
+      === 'singular'))
     return 'does';
   return 'do';
 }

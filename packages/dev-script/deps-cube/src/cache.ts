@@ -125,7 +125,8 @@ export type Cache = {
  */
 function defaultRootDir(): string {
   /** XDG override; empty or unset falls through to the `$HOME/.cache` default. */
-  const xdg = process.env.XDG_CACHE_HOME;
+  const xdg = process.env
+    .XDG_CACHE_HOME;
   /** Resolved cache home; honours XDG when present, falls back to the conventional location. */
   const cacheHome = ((xdg !== undefined) && (xdg !== '')) ? xdg : join(
     homedir(),

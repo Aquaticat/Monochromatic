@@ -45,7 +45,7 @@ export function tomlKeys(
   },);
   if ((result.kind
     === 'missing') || (result.kind
-    === 'deleted'))
+      === 'deleted'))
     return [];
   if (result.kind
     === 'pending-value') {
@@ -65,7 +65,7 @@ export function tomlKeys(
   }
   if ((result.kind
     === 'top-level') || (result.kind
-    === 'table'))
+      === 'table'))
     return tableChildKeys({ container: result.node, },);
   if (result.kind
     === 'keyvalue') {

@@ -233,7 +233,7 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
     function handleZoomKeyDown(event: KeyboardEvent,): void {
       if ((getToolMode()
         === 'zoom') && (event.key
-        === 'Shift'))
+          === 'Shift'))
         setZoomCursor('zoom-out',);
     },
   );
@@ -243,7 +243,7 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
     function handleZoomKeyUp(event: KeyboardEvent,): void {
       if ((getToolMode()
         === 'zoom') && (event.key
-        === 'Shift'))
+          === 'Shift'))
         setZoomCursor('zoom-in',);
     },
   );

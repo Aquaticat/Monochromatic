@@ -115,8 +115,8 @@ export function wireHover(
       if ((pos.line
         === hoverState
         .lastLine) && (pos.character
-        === hoverState
-        .lastChar))
+          === hoverState
+          .lastChar))
         return;
       hoverState.lastLine = pos.line;
       hoverState.lastChar = pos.character;
@@ -151,7 +151,8 @@ export function wireHover(
         resetHover();
         return;
       }
-      if ((event.relatedTarget instanceof Node) && hoverPopup
+      if ((event.relatedTarget
+        instanceof Node) && hoverPopup
         .contains(event.relatedTarget,))
         return;
       resetHover();

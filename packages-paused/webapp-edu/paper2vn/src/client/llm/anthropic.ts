@@ -75,14 +75,16 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
     .filter(function isSystem(
     m: Readonly<Message>,
   ): boolean {
-    return m.role === 'system';
+    return m.role
+      === 'system';
   },);
   /** Non-system turns forming the message list payload. */
   const turnMessages = opts.messages
     .filter(function isTurn(
     m: Readonly<Message>,
   ): boolean {
-    return m.role !== 'system';
+    return m.role
+      !== 'system';
   },);
   /** Joined system-message text passed via Anthropic's `system` field. */
   const system = systemMessages
@@ -159,7 +161,8 @@ async function callAnthropic(opts: ChatOptions,): Promise<string> {
     .find(function isText(
     c: Readonly<MessagesResponse['content'][number]>,
   ): boolean {
-    return c.type === 'text';
+    return c.type
+      === 'text';
   },);
   return textPart?.text
     ?? '';

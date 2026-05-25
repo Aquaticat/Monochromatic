@@ -181,7 +181,8 @@ export function parseGrid(text: string,): number[][] | undefined {
     const digits = Array
       .from(stripAllWhitespace(line,),)
       .map(Number,);
-    return (digits.length === GRID_SIZE)
+    return (digits.length
+      === GRID_SIZE)
         && digits
       .every(function validDigit(digit,): boolean {
           return (digit >= 1) && (digit <= GRID_SIZE);

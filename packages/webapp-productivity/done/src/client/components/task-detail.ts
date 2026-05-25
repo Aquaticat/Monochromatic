@@ -157,7 +157,8 @@ class TaskDetail extends HTMLElement {
       'input',
       function handleTitleInput(): void {
         requestAutofill({
-          title: refs.titleInput.value,
+          title: refs.titleInput
+            .value,
           metadata,
           onUpdate: function onAutofillUpdate(): void {
             updatePills();

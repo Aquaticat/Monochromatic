@@ -151,8 +151,8 @@ export async function renderMessageChunk(
 
     if ((input.chunkIndex
       < 0) || (input.chunkIndex
-      >= snapshot
-      .chunkCount)) {
+        >= snapshot
+        .chunkCount)) {
       await db.exec('COMMIT',);
       return new Response(
         renderSimplePage({

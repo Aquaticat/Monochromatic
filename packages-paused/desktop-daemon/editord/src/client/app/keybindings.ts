@@ -57,14 +57,17 @@ export function wireKeybindings({
       if ((event.ctrlKey
         || event
         .metaKey) && (event.key
-        === 's')) {
+          === 's')) {
         event.preventDefault();
         saveCurrentFile();
         return;
       }
-      if ((event.ctrlKey || event.metaKey) && event
+      if ((event.ctrlKey
+        || event
+        .metaKey) && event
         .shiftKey
-        && (event.key === 'F')) {
+        && (event.key
+          === 'F')) {
         event.preventDefault();
         formatDocument();
         return;
@@ -72,7 +75,8 @@ export function wireKeybindings({
       if (event.ctrlKey
         && event
         .altKey
-        && (event.key === 'l')) {
+        && (event.key
+          === 'l')) {
         event.preventDefault();
         formatDocument();
         return;
@@ -80,7 +84,7 @@ export function wireKeybindings({
       if ((event.ctrlKey
         || event
         .metaKey) && (event.key
-        === 'b')) {
+          === 'b')) {
         event.preventDefault();
         gotoDefinition();
         return;
@@ -109,20 +113,27 @@ export function wireKeybindings({
         return;
       }
       if (event.ctrlKey
-        && (event.key === ' ')) {
+        && (event.key
+          === ' ')) {
         event.preventDefault();
         requestCompletions();
         return;
       }
-      if ((event.ctrlKey || event.metaKey) && event
+      if ((event.ctrlKey
+        || event
+        .metaKey) && event
         .shiftKey
-        && (event.key === 'W')) {
+        && (event.key
+          === 'W')) {
         event.preventDefault();
         shrinkSelection();
         return;
       }
-      if ((event.ctrlKey || event.metaKey) && (!event.shiftKey)
-        && (event.key === 'w')) {
+      if ((event.ctrlKey
+        || event
+        .metaKey) && (!event.shiftKey)
+        && (event.key
+          === 'w')) {
         event.preventDefault();
         expandSelection();
         return;

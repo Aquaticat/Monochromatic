@@ -228,11 +228,17 @@ export function oklchLerpToSrgb(
 ): Rgb8 {
   return oklchToSrgb({
     L: start.L
-      + (t * (end.L - start.L)),
+      + (t * (end.L
+        - start
+        .L)),
     C: start.C
-      + (t * (end.C - start.C)),
+      + (t * (end.C
+        - start
+        .C)),
     H: start.H
-      + (t * (end.H - start.H)),
+      + (t * (end.H
+        - start
+        .H)),
   },);
 }
 

@@ -63,7 +63,7 @@ export function renderButtonItem({
       keydown: function handleKeydown(event: KeyboardEvent,): void {
         if ((event.key
           === 'Enter') || (event.key
-          === ' ')) {
+            === ' ')) {
           event.preventDefault();
           onActivate(item.action,);
         }

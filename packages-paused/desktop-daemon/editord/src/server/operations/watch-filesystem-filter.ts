@@ -41,7 +41,8 @@ function isEditorSwapName(name: string,): boolean {
   if (name.startsWith('.#',))
     return true;
   if (
-    (name.length >= EMACS_LOCK_MIN_LENGTH)
+    (name.length
+      >= EMACS_LOCK_MIN_LENGTH)
     && name
       .startsWith('#',)
       && name

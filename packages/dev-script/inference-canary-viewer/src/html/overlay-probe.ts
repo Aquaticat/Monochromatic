@@ -51,7 +51,7 @@ async function buildSourceSection(detail: ProbeDetail | undefined,): Promise<str
     return '';
   if ((detail.fixSource
     !== undefined) && (detail.fixDir
-    !== undefined)) {
+      !== undefined)) {
     /** Absolute path to the initial canary file; left side of the diff. */
     const initialFile = join(
       detail.initialDir,
@@ -156,7 +156,7 @@ export async function renderProbeOverlay({
   const fixMeta = (detail !== undefined)
       && ((detail.fixTiming
         !== undefined) || (detail.fixUsage
-        !== undefined))
+          !== undefined))
     ? renderPassMeta({
       label: 'Fix pass',
       timing: detail.fixTiming,

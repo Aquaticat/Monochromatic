@@ -47,7 +47,8 @@ export function stopSpeaking(): void {
 export function canSpeak(): boolean {
   return getSettings()
     .voiceEnabled
-    && (globalThis.speechSynthesis !== undefined);
+    && (globalThis.speechSynthesis
+      !== undefined);
 }
 
 /**

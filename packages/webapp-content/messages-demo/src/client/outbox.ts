@@ -383,8 +383,8 @@ async function dropAcked(
     if ((entry.draftId
       === input
       .draftId) && (entry.seq
-      <= input
-      .ack)) {
+        <= input
+        .ack)) {
       input.queue
         .splice(
         index,

@@ -89,7 +89,8 @@ export function showCursorToast(
   toast.style
     .setProperty(
     'inset-block-start',
-    `${rect.bottom + VERTICAL_OFFSET}px`,
+    `${rect.bottom
+      + VERTICAL_OFFSET}px`,
   );
 
   document.body

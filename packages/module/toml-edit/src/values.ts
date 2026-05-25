@@ -176,9 +176,12 @@ function encodeString(
 ): string {
   if (
     (existing !== undefined)
-    && (existing.type === 'TOMLValue')
-      && (existing.kind === 'string')
-      && (existing.value === value)
+    && (existing.type
+      === 'TOMLValue')
+      && (existing.kind
+        === 'string')
+      && (existing.value
+        === value)
   ) {
     return encodeStringWithStyle({
       value,
@@ -282,9 +285,13 @@ function encodeNumber(
 ): string {
   if (
     (existing !== undefined)
-    && (existing.type === 'TOMLValue')
-      && ((existing.kind === 'integer') || (existing.kind === 'float'))
-      && (existing.value === value)
+    && (existing.type
+      === 'TOMLValue')
+      && ((existing.kind
+        === 'integer') || (existing.kind
+        === 'float'))
+      && (existing.value
+        === value)
   ) {
     return existing.number;
   }

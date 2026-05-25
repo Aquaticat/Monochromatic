@@ -341,7 +341,7 @@ async function transferRegion(
 ): Promise<void> {
   if (((region.start
     % SECTOR_SIZE) !== 0) || ((region.length
-    % SECTOR_SIZE) !== 0)) {
+      % SECTOR_SIZE) !== 0)) {
     throw new Error(
       `region at offset ${String(region.start,)} with length ${
         String(region.length,)

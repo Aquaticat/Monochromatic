@@ -55,8 +55,10 @@ export function invertChangeset(
   /** Pre-edit substring captured so the inverse can re-insert it on undo. */
   const removed = input.before
     .slice(
-    input.changeset.from,
-    input.changeset.to,
+    input.changeset
+      .from,
+    input.changeset
+      .to,
   );
   return {
     from: input.changeset
@@ -93,14 +95,16 @@ export function applyChangeset(
   return input.before
     .slice(
     0,
-    input.changeset.from,
+    input.changeset
+      .from,
   )
     + input
     .changeset
     .insert
     + input
     .before
-    .slice(input.changeset.to,);
+    .slice(input.changeset
+      .to,);
 }
 
 /**
@@ -155,7 +159,11 @@ export function mapOffsetThroughChangeset(
   const delta = input.changeset
     .insert
     .length
-    - (input.changeset.to - input.changeset.from);
+    - (input.changeset
+      .to
+      - input
+      .changeset
+      .from);
   return input.offset
     + delta;
 }
@@ -202,8 +210,8 @@ export function composeChangesets(
   if ((input.b
     .from
     !== insertEnd) || (input.b
-    .to
-    !== insertEnd))
+      .to
+      !== insertEnd))
     return null;
   return {
     from: input.a

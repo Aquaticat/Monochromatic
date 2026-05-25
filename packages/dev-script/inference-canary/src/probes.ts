@@ -72,7 +72,7 @@ const simpleJson: Probe = {
       const PARTIAL_SCORE = 0.5;
       if ((parsed.status
         === 'ok') && (parsed.value
-        === EXPECTED_VALUE))
+          === EXPECTED_VALUE))
         return 1;
       return PARTIAL_SCORE;
     }

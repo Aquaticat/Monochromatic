@@ -198,21 +198,26 @@ function bashSignals(
     }
     if (hasRootTarget(cmd,))
       return true;
-    if ((cmd.name === 'chmod') && cmd
+    if ((cmd.name
+      === 'chmod') && cmd
       .args
       .includes('777',))
       return true;
-    if ((cmd.name === 'chmod') && cmd
+    if ((cmd.name
+      === 'chmod') && cmd
       .args
       .some(
       function hasSetuid(a,) {
-        return a.includes('u+s',) || a.includes('g+s',);
+        return a.includes('u+s',)
+          || a
+          .includes('g+s',);
       },
     )) {
       return true;
     }
 
-    if ((cmd.name === 'dd') && cmd
+    if ((cmd.name
+      === 'dd') && cmd
       .args
       .some(
       function hasOfEquals(a,) {
@@ -227,7 +232,8 @@ function bashSignals(
       return true;
     if (ENV_DUMP_COMMANDS.has(cmd.name,))
       return true;
-    if ((cmd.name === 'export') && cmd
+    if ((cmd.name
+      === 'export') && cmd
       .args
       .includes('-p',))
       return true;

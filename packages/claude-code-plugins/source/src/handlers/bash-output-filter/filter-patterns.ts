@@ -36,7 +36,8 @@ const MAX_REPEATED_CHARS = 3;
  * string if `$HOME` is unset, which disables path collapsing without breaking
  * the filter.
  */
-const HOME_DIR: string = process.env.HOME
+const HOME_DIR: string = process.env
+  .HOME
   ?? '';
 
 /**

@@ -134,8 +134,8 @@ export function writeUploadPackResponse(row: {
   if (row.useSideBand) {
     if ((row.progress
       !== undefined) && (row.progress
-      .length
-      > 0)) {
+        .length
+        > 0)) {
       /** Fresh encoder reused only for the progress payload. */
       const encoder = new TextEncoder();
       chunks.push(...multiplexSideband({

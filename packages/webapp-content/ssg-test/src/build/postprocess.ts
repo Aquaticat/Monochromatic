@@ -257,7 +257,8 @@ async function fingerprintCss(
     }
     catch (error) {
       if ((error instanceof Error) && ('code' in error)
-        && (error.code === 'ENOENT')) {
+        && (error.code
+          === 'ENOENT')) {
         l.info(
           'styles.css not found, skipping CSS fingerprinting (already fingerprinted?)',
         );

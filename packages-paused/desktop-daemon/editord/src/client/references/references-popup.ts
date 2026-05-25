@@ -111,7 +111,7 @@ export class ReferencesPopup extends HTMLElement {
   ): void {
     if ((this.#list
       === null) || (locations.length
-      === 0))
+        === 0))
       return;
     this.#locations = locations;
     this.#selectedIndex = 0;
@@ -160,7 +160,7 @@ export class ReferencesPopup extends HTMLElement {
     if ((this.#locations
       .length
       === 0) || (this.#list
-      === null))
+        === null))
       return;
     this.#selectedIndex = computeNextIndex({
       current: this.#selectedIndex,
@@ -215,9 +215,9 @@ export class ReferencesPopup extends HTMLElement {
   accept(): ReferenceSelectDetail | null {
     if ((this.#selectedIndex
       < 0) || (this.#selectedIndex
-      >= this
-      .#locations
-      .length))
+        >= this
+        .#locations
+        .length))
       return null;
     /** Currently highlighted reference entry; bounds-checked above. */
     const loc = this.#locations[this.#selectedIndex];

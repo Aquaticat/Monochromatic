@@ -98,7 +98,8 @@ export function makeChineseFragmentRenderer<
     fragment: Extract<Fragment<L, S, V, N>, { kind: 'fragment.verbPhrase'; }>,
   ): string {
     /** Chinese non-finite forms reuse the surface; no morphological distinction. */
-    const head = verbs[fragment.phrase.verb]
+    const head = verbs[fragment.phrase
+      .verb]
       .surface;
     /** Optional rendered object surface. */
     const object = fragment.phrase

@@ -168,10 +168,12 @@ export function createNewTaskDialog(): NewTaskDialog {
     fab.hidden = true;
 
     // Restart the expand animation by toggling the data attribute
-    delete panel.dataset.animating;
+    delete panel.dataset
+      .animating;
     panel.showPopover();
     requestAnimationFrame(function focusTitleInput() {
-      panel.dataset.animating = '';
+      panel.dataset
+        .animating = '';
       /* oxlint-disable typescript/no-unsafe-type-assertion -- shadowRoot querySelector returns the input we created */
       /** Title input from inside the detail's shadow root; focused after the expand frame. */
       const titleInput = detail.shadowRoot

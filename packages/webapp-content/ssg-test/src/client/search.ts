@@ -374,7 +374,7 @@ if ((input !== null) && (resultsList !== null)) {
         setActiveOption(
           navState.activeIndex
             < (count - 1) ? navState.activeIndex
-            + 1 : 0,
+              + 1 : 0,
         );
         return;
       }
@@ -384,7 +384,7 @@ if ((input !== null) && (resultsList !== null)) {
         event.preventDefault();
         setActiveOption(navState.activeIndex
           > 0 ? navState.activeIndex
-          - 1 : count - 1,);
+            - 1 : count - 1,);
         return;
       }
 

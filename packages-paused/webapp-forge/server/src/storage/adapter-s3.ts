@@ -238,8 +238,8 @@ async function throwOnError(row: {
   if ((row.response
     .status
     >= HTTP_OK) && (row.response
-    .status
-    < HTTP_REDIRECT))
+      .status
+      < HTTP_REDIRECT))
     return;
   /** Response body included verbatim in the thrown error for diagnostics. */
   const body = await row.response

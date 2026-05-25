@@ -144,8 +144,8 @@ export async function sendTier3Edit(
   if ((input.state
     .editMessageId
     === null) || (input.state
-    .tier3
-    === null))
+      .tier3
+      === null))
     return;
   /** Resolved once so the current-chunk save can run before the inherit-walk loop starts. */
   const tier3Textarea = document.querySelector<HTMLTextAreaElement>('.composer-body',);

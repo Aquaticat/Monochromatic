@@ -140,7 +140,8 @@ export function cacheAdditionalResults({
     );
     /** Run configuration for this index, used to call verify on successful containers */
     const run = runs[index];
-    if ((run !== undefined) && (result.exitCode === 0)
+    if ((run !== undefined) && (result.exitCode
+      === 0)
       && (!result.timedOut)) {
       verifyCaches[index]
         ?.set(
@@ -212,7 +213,8 @@ export function computeAdditionalCorrectnesses({
     index,
   ): number {
     if (result.timedOut
-      || (result.exitCode !== 0)) {
+      || (result.exitCode
+        !== 0)) {
       /** Run name for the log message, falls back to numeric index */
       const runName = runs[index]
         ?.name

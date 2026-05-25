@@ -292,7 +292,8 @@ function collectMediaUrl(
     === 'picture') {
     for (const child of element.children) {
       if (isElement(child,)
-        && (child.tagName === 'img')) {
+        && (child.tagName
+          === 'img')) {
         /** Fallback `<img>` `src` used when no `<source>` child matched. */
         const src = attr({
           element: child,
@@ -326,11 +327,16 @@ function ownAssetUrl(element: Element,): string | null {
     },);
   }
   if (
-    (element.tagName === 'script')
-    || (element.tagName === 'iframe')
-      || (element.tagName === 'embed')
-      || (element.tagName === 'audio')
-      || (element.tagName === 'video')
+    (element.tagName
+      === 'script')
+    || (element.tagName
+      === 'iframe')
+      || (element.tagName
+        === 'embed')
+      || (element.tagName
+        === 'audio')
+      || (element.tagName
+        === 'video')
   ) {
     return attr({
       element,

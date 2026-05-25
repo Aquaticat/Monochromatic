@@ -93,7 +93,8 @@ export type Actor = {
 export async function requireActor(event: ActorEvent,): Promise<Actor> {
   /** Active Better Auth session, when one is present on the request. */
   const session = await auth.api
-    .getSession({ headers: event.req.headers, },);
+    .getSession({ headers: event.req
+      .headers, },);
   if (session !== null) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- Better Auth's session.user shape includes the username plugin's optional `username` field, which the framework's typed surface omits at this entry point */
     /** Username from the Better Auth session, when the username plugin is configured. */

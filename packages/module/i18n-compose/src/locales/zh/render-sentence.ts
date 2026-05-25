@@ -378,7 +378,8 @@ export function makeChineseSentenceRenderer<
     sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.imperative'; }>,
   ): string {
     /** Imperative renders the bare verb surface. */
-    const verb = verbs[sentence.predicate.verb]
+    const verb = verbs[sentence.predicate
+      .verb]
       .surface;
     /** Rendered object slot. */
     const object = renderOptionalObject({

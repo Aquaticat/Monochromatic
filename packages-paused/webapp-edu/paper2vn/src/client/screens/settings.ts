@@ -177,7 +177,8 @@ function mount(root: HTMLElement,): void {
         .style
         .setProperty(
         '--font-scale',
-        String(getSettings().fontScale,),
+        String(getSettings()
+          .fontScale,),
       );
       navigate('settings',);
     },

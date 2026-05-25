@@ -203,8 +203,10 @@ function visitNode(node: Root | Element,): void {
       const [firstChild,] = child.children;
       if (
         (firstChild !== undefined)
-        && (firstChild.type === 'element')
-          && (firstChild.tagName === 'code')
+        && (firstChild.type
+          === 'element')
+          && (firstChild.tagName
+            === 'code')
       ) {
         /** Language detected from the `<code>` class list, or undefined to skip. */
         const lang = getLanguage(firstChild,);

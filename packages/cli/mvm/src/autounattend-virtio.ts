@@ -77,7 +77,8 @@ export function pnpDriverPaths(): string {
       letterIdx,
     ) {
       /** Unique 1-based keyValue derived from the driver/letter cross-product position. */
-      const keyValue = (driverIdx * VIRTIO_DRIVE_CANDIDATES.length) + letterIdx
+      const keyValue = (driverIdx * VIRTIO_DRIVE_CANDIDATES
+        .length) + letterIdx
         + 1;
       return `      <PathAndCredentials wcm:action="add" wcm:keyValue="${
         String(keyValue,)

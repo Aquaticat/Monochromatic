@@ -125,12 +125,12 @@ function loadMergedConfig(
     },),
     ...((global.instructions
       !== undefined) && (global.instructions
-      !== '')
+        !== '')
       ? { globalInstructions: global.instructions, }
       : {}),
     ...((project?.instructions
       !== undefined) && (project.instructions
-      !== '')
+        !== '')
       ? { projectInstructions: project.instructions, }
       : {}),
     judgeModel,

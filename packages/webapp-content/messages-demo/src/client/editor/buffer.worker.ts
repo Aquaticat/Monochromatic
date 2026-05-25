@@ -224,7 +224,7 @@ function onMessage(event: MessageEvent<InboundMessage>,): void {
       handleSnapshot(data,);
     else if ((data.kind
       === 'undo') || (data.kind
-      === 'redo'))
+        === 'redo'))
       handleUndoRedo(data,);
   }
   catch (error) {

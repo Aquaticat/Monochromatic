@@ -157,10 +157,12 @@ export function createNewTaskDialog(): NewTaskDialog {
     fab.hidden = true;
 
     // Restart the expand animation by toggling the data attribute
-    delete panel.dataset.animating;
+    delete panel.dataset
+      .animating;
     panel.showPopover();
     requestAnimationFrame(function animatePanel() {
-      panel.dataset.animating = '';
+      panel.dataset
+        .animating = '';
       /** Looked up after the panel opens so the autofocus lands on the right input. */
       const titleInput =
         detail.shadowRoot

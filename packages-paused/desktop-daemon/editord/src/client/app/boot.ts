@@ -98,7 +98,7 @@ export async function bootSession(
   fileTree.updateRecency({ paths: recentFiles.paths, },);
   if ((restored.filePath
     !== null) && (currentFileState.getCurrentFileKind()
-    === 'text'))
+      === 'text'))
     refreshInlayHints();
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */

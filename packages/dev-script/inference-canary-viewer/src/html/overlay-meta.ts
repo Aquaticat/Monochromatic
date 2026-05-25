@@ -78,7 +78,7 @@ export function renderBadges(detail: ProbeDetail,): string {
   }
   if ((detail.error
     !== undefined) && (detail.error
-    !== '')) {
+      !== '')) {
     badges.push(
       h({
         tag: 'span',
@@ -90,7 +90,7 @@ export function renderBadges(detail: ProbeDetail,): string {
   }
   if ((detail.finishReason
     !== undefined) && (detail.finishReason
-    !== 'stop')) {
+      !== 'stop')) {
     badges.push(
       h({
         tag: 'span',

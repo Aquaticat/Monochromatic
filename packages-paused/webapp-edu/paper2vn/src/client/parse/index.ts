@@ -41,7 +41,8 @@ export async function extractPaperText(file: File,): Promise<string> {
     .toLowerCase();
   /** Whether the upload should be routed to the PDF extractor. */
   const isPdf = name.endsWith('.pdf',)
-    || (file.type === 'application/pdf');
+    || (file.type
+      === 'application/pdf');
   /** Whether the upload should be routed to the plain-text extractor. */
   const isText = name.endsWith('.txt',)
     || name

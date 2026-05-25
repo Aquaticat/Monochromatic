@@ -140,7 +140,8 @@ export function buildTaskDetailTree(
     ],
   },);
   if (isCreate)
-    btnRow.dataset.hidden = '';
+    btnRow.dataset
+      .hidden = '';
 
   /** Exposed in refs so the pill manager can replace its children without re-rendering the tree. */
   const pillsContainer = h({

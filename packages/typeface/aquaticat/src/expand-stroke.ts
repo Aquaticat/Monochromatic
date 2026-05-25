@@ -48,7 +48,7 @@ function lineIntersection({
   /** 2D cross product of the two direction vectors; zero means parallel lines. */
   const cross = (d1[0]
     * d2[1]) - (d1[1]
-    * d2[0]);
+      * d2[0]);
   /** X offset from `p1` to `p2`, used to project the gap onto `d1`'s parameter axis. */
   const dx = p2[0]
     - p1[0];

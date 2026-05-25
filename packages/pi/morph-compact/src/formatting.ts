@@ -150,9 +150,12 @@ export function extractLatestQuery({
         return text;
     }
     if (
-      (message.role === 'bashExecution')
-      && (message.command !== undefined)
-        && (message.command !== '')
+      (message.role
+        === 'bashExecution')
+      && (message.command
+        !== undefined)
+        && (message.command
+          !== '')
     ) {
       return message.command
         .trim();

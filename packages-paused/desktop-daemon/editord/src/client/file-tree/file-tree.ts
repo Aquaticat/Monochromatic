@@ -163,7 +163,8 @@ export class FileTree extends HTMLElement {
       .addEventListener(
       'focusin',
       function handleFocusIn(event,) {
-        if (event.target instanceof HTMLElement)
+        if (event.target
+          instanceof HTMLElement)
           tree.#lastFocused = event.target;
       },
     );
@@ -273,8 +274,12 @@ export class FileTree extends HTMLElement {
    * @param dirs - absolute paths of directories to expand
    */
   async restoreExpansion({ dirs, }: { readonly dirs: readonly string[]; },): Promise<void> {
-    if ((this.#tree === null) || (this.#state.fetchDir === null)
-      || (dirs.length === 0))
+    if ((this.#tree
+      === null) || (this.#state
+      .fetchDir
+      === null)
+      || (dirs.length
+        === 0))
       return;
     /** Trailing-slash prefix used to drop any restored path that escaped the configured root. */
     const rootPrefix = `${this.#rootPath}/`;
@@ -318,7 +323,7 @@ export class FileTree extends HTMLElement {
   async revealFiles({ paths, }: { readonly paths: readonly string[]; },): Promise<void> {
     if ((this.#tree
       === null) || (this.#rootPath
-      === ''))
+        === ''))
       return;
     /** Stable reference to `this` so the inline `restore` callback retains the component instance. */
     const tree = this;

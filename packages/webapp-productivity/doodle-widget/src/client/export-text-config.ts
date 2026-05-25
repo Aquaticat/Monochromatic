@@ -46,7 +46,8 @@ export const TEXT_COLOR_RGB = {
  */
 export function getRootFontSizePx(): number {
   return Number.parseFloat(
-    getComputedStyle(document.documentElement,).fontSize,
+    getComputedStyle(document.documentElement,)
+      .fontSize,
   )
     || DEFAULT_ROOT_FONT_SIZE_PX;
 }
@@ -120,13 +121,13 @@ function resolveExportEntry(
   /** Per-entry font size, falling back to CSS default */
   const fontSizePx = ((raw.fontSize
     !== undefined) && (raw.fontSize
-    !== ''))
+      !== ''))
     ? Number.parseFloat(raw.fontSize,)
     : defaultFontSizePx;
   /** Per-entry color, falling back to CSS default */
   const color = ((raw.color
     !== undefined) && (raw.color
-    !== ''))
+      !== ''))
     ? raw.color
     : TEXT_COLOR;
 

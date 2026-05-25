@@ -83,7 +83,8 @@ export async function restoreSession(
 
   /** Restore cursor and scroll position after file and tree are loaded. */
   if ((saved !== null) && (bootFilePath !== null)
-    && (bootFilePath === saved.filePath)) {
+    && (bootFilePath === saved
+      .filePath)) {
     editorPane.restoreCursor(saved.cursor,);
     editorPane.setEditorScrollTop(saved.scrollTop,);
   }

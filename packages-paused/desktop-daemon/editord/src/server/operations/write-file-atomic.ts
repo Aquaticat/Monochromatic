@@ -127,7 +127,8 @@ async function refuseSymlinkAndReadMode(path: string,): Promise<number | null> {
   }
   catch (statErr) {
     if ((statErr instanceof Error) && ('code' in statErr)
-      && (statErr.code === 'ENOENT'))
+      && (statErr.code
+        === 'ENOENT'))
       return null;
     throw statErr;
   }

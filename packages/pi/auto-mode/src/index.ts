@@ -192,7 +192,7 @@ export default function autoMode(
       ];
       if ((params.reason
         !== undefined) && (params.reason
-        !== '')) {
+          !== '')) {
         lines.push(
           '',
           params.reason,

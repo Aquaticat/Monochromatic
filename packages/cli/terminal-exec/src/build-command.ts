@@ -125,8 +125,8 @@ export function buildCommand({
     ...(((options.appId
       .length
       > 0) && (terminal.appIdArg
-      .length
-      > 0))
+        .length
+        > 0))
       ? appendArg({
         argKey: terminal.appIdArg,
         value: options.appId,
@@ -135,8 +135,8 @@ export function buildCommand({
     ...(((options.title
       .length
       > 0) && (terminal.titleArg
-      .length
-      > 0))
+        .length
+        > 0))
       ? appendArg({
         argKey: terminal.titleArg,
         value: options.title,
@@ -145,15 +145,17 @@ export function buildCommand({
     ...(((options.dir
       .length
       > 0) && (terminal.dirArg
-      .length
-      > 0))
+        .length
+        > 0))
       ? appendArg({
         argKey: terminal.dirArg,
         value: options.dir,
       },)
       : []),
     ...((options.hold
-      && (terminal.holdArg.length > 0))
+      && (terminal.holdArg
+        .length
+        > 0))
       ? [terminal.holdArg,]
       : []),
     ...((options.command

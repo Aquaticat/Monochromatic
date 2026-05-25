@@ -1,12 +1,12 @@
 export * as array from './t array/index.ts';
-export * as date from './t date/index.ts';
-export * as errorLike from './t errorLike/index.ts';
+export type * as date from './t date/index.ts';
+export type * as errorLike from './t errorLike/index.ts';
 export * as globalThis from './t globalThis/index.ts';
 export * as iterable from './t iterable/index.ts';
 export * as jsonc from './t jsonc/index.ts';
-export * as map from './t map/index.ts';
-export * as nonNull from './t nonNull/index.ts';
-export * as null from './t null/index.ts';
+export type * as map from './t map/index.ts';
+export type * as nonNull from './t nonNull/index.ts';
+export type * as null from './t null/index.ts';
 export * as promise from './t promise/index.ts';
 export * as proxy from './t proxy/index.ts';
 export * as record from './t record/index.ts';

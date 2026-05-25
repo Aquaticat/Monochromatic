@@ -58,7 +58,8 @@ function expandApplyInNodes(nodes: readonly ChildNode[],): ChildNode[] {
       node,
     ) {
       if (isAtRule(node,)
-        && (node.name === 'apply')) {
+        && (node.name
+          === 'apply')) {
         /** Trimmed at-rule parameter identifying which mixin to inline */
         const mixinName = node.params
           .trim();
