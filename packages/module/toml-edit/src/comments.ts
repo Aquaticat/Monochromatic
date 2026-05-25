@@ -172,7 +172,8 @@ function lastCommentBefore(
  * A comment is "trailing" when its `range[0]` is strictly after `node.range[1]`
  * and on the same source line (no newline between).
  *
- * @returns Result, or `null` when no match.
+ * @returns Object whose `comment` field is the trailing comment, or is
+ *          absent when the node has no same-line trailing comment.
  *
  * @example
  * ```toml
@@ -187,7 +188,7 @@ export function trailingInlineCommentFor(
     readonly node: AST.TOMLNode;
     readonly edit: TomlEditState;
   },
-): TomlComment | null {
+): { readonly comment?: TomlComment; } {
   /** Source bytes so the same-line check can scan for the next newline. */
   const { source, } = edit;
   /** First newline after the node; `-1` means EOF, so `limit` falls back to `source.length`. */
@@ -206,5 +207,7 @@ export function trailingInlineCommentFor(
       .range[1]) && (c.range[0]
         < limit);
   },);
-  return match ?? null;
+  if (match === undefined)
+    return {};
+  return { comment: match, };
 }

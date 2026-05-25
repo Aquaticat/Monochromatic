@@ -21,6 +21,7 @@
 import {
   asStringPath,
   mergeAt,
+  PATH_HAS_NUMERIC,
   pathEquals,
 } from './effective-helpers.ts';
 import {
@@ -48,6 +49,23 @@ export type EffectiveResult =
     readonly value: unknown;
   }
   | ResolveResult;
+
+/**
+ * Sentinel for "no covering pending state at any prefix".
+ *
+ * A unique `Symbol` rather than `null`: `no-nullish-union` bans a nullish
+ * "absent" arm, and an `EffectiveResult` is always a tagged object so the
+ * symbol never collides with a real result.
+ */
+const NO_PROJECTION = Symbol('toml-edit/no-projection',);
+
+/**
+ * Sentinel for "no pending insertion contributes to the synthesised subtree".
+ *
+ * A unique `Symbol` rather than `null`: `no-nullish-union` bans a nullish
+ * arm, and an empty object would be ambiguous with a real empty subtree.
+ */
+const SUBTREE_ABSENT = Symbol('toml-edit/subtree-absent',);
 
 /**
  * Resolve a path against the AST plus pending deltas.
@@ -89,7 +107,7 @@ export function effectiveAt(
     edit,
     path,
   },);
-  if (prefixProjection !== null)
+  if (prefixProjection !== NO_PROJECTION)
     return prefixProjection;
 
   /** Sub-tree synthesis merges pending descendants for intermediate-level reads. */
@@ -97,7 +115,7 @@ export function effectiveAt(
     edit,
     path,
   },);
-  if (subtree !== null) {
+  if (subtree !== SUBTREE_ABSENT) {
     return {
       kind: 'pending-value',
       value: subtree,
@@ -133,9 +151,9 @@ function missingFor(
  * covers the prefix; navigate the JS value space for the remaining
  * segments.
  *
- * Returns `null` when no covering pending state exists.
+ * Returns `NO_PROJECTION` when no covering pending state exists.
  *
- * @returns Result, or `null` when no match.
+ * @returns Result, or `NO_PROJECTION` when no match.
  */
 function projectPendingAtPrefix(
   {
@@ -145,7 +163,7 @@ function projectPendingAtPrefix(
     readonly edit: TomlEditState;
     readonly path: TomlPath;
   },
-): EffectiveResult | null {
+): EffectiveResult | typeof NO_PROJECTION {
   for (let prefixLen = path.length; prefixLen >= 1; prefixLen--) {
     /** Candidate ancestor path being probed at this iteration. */
     const prefix = path.slice(
@@ -210,7 +228,7 @@ function projectPendingAtPrefix(
       }
     }
   }
-  return null;
+  return NO_PROJECTION;
 }
 
 /**
@@ -218,9 +236,9 @@ function projectPendingAtPrefix(
  * strictly extend `path`. Used when a caller queries an intermediate
  * level above a deep path-create.
  *
- * Returns `null` when no pending insertion contributes.
+ * Returns `SUBTREE_ABSENT` when no pending insertion contributes.
  *
- * @returns Result, or `null` when no match.
+ * @returns Result, or `SUBTREE_ABSENT` when no match.
  */
 function synthesiseSubtree(
   {
@@ -230,9 +248,9 @@ function synthesiseSubtree(
     readonly edit: TomlEditState;
     readonly path: TomlPath;
   },
-): Record<string, unknown> | null {
-  /** Lazy accumulator so an empty pending set returns `null` instead of `{}`. */
-  let acc: Record<string, unknown> | null = null;
+): Record<string, unknown> | typeof SUBTREE_ABSENT {
+  /** Lazy accumulator so an empty pending set returns `SUBTREE_ABSENT` instead of `{}`. */
+  let acc: Record<string, unknown> | typeof SUBTREE_ABSENT = SUBTREE_ABSENT;
   for (const ins of edit.insertions) {
     /** Path field is optional; skip insertions without a path. */
     const insPath = ins.path;
@@ -255,10 +273,10 @@ function synthesiseSubtree(
     const rest = insPath.slice(path.length,);
     /** Numeric segments rule out merging into a plain object. */
     const restStrings = asStringPath({ segs: rest, },);
-    if (restStrings === null)
+    if (restStrings === PATH_HAS_NUMERIC)
       continue;
     acc = mergeAt({
-      base: acc ?? {},
+      base: acc === SUBTREE_ABSENT ? {} : acc,
       segments: restStrings,
       value: ins.jsValue,
     },);

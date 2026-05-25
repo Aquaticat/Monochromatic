@@ -30,6 +30,7 @@
 export type {
   AnchorKind,
   CanonicalOptions,
+  CanonicalOptionsOverride,
   Edit,
   Insertion,
   TomlComment,

@@ -9,9 +9,9 @@ import type { TomlEditState, } from './types.ts';
 /**
  * Set the header comment block.
  *
- * Pass a string (or array of lines) for the new comment, or `null` to
- * clear. Each line is emitted as `# <line>` by canonical-mode output,
- * preceded by a blank line.
+ * Pass a string (or array of lines) for the new comment; omit `comment`
+ * to clear an existing header. Each line is emitted as `# <line>` by
+ * canonical-mode output, preceded by a blank line.
  *
  * Splice-mode emission does not currently re-flow existing source
  * comments; setting a header comment in splice mode affects only
@@ -22,7 +22,7 @@ import type { TomlEditState, } from './types.ts';
  * @example
  * ```ts
  * tomlSetHeaderComment({ edit, comment: ' Generated; do not edit', },);
- * tomlSetHeaderComment({ edit, comment: null, },);
+ * tomlSetHeaderComment({ edit, },); // clears any existing header
  * ```
  */
 export function tomlSetHeaderComment(
@@ -31,28 +31,21 @@ export function tomlSetHeaderComment(
     comment,
   }: {
     readonly edit: TomlEditState;
-    readonly comment: string | readonly string[] | null;
+    readonly comment?: string | readonly string[];
   },
 ): TomlEditState {
+  if (comment === undefined) {
+    /** Drop the property entirely so the cleared state has no header. */
+    const {
+      headerComment: _cleared,
+      ...rest
+    } = edit;
+    return rest;
+  }
   /** Normalised payload so the state field carries one representation. */
-  const headerComment = resolveComment({ comment, },);
+  const headerComment = (typeof comment) === 'string' ? comment : comment.join('\n',);
   return {
     ...edit,
     headerComment,
   };
-}
-
-/**
- * Normalise the `comment` arg to a single newline-joined string or `null`.
- *
- * @returns Result, or `null` when no match.
- */
-function resolveComment(
-  { comment, }: { readonly comment: string | readonly string[] | null; },
-): string | null {
-  if (comment === null)
-    return null;
-  if ((typeof comment) === 'string')
-    return comment;
-  return comment.join('\n',);
 }

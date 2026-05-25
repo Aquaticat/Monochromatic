@@ -65,7 +65,7 @@ function canonicalFromEmpty({ edit, }: { readonly edit: TomlEditState; },): stri
   /** Accumulator so the header block and insertions can be emitted in source order. */
   const parts: string[] = [];
   if ((edit.headerComment
-    !== null) && (edit.headerComment
+    !== undefined) && (edit.headerComment
       !== '')) {
     /** Header comment is stored joined; split here so each line gets its own `#` prefix. */
     const lines = edit.headerComment

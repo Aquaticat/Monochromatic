@@ -17,12 +17,13 @@ import type {
 } from './types.ts';
 
 /**
- * The same-line trailing inline comment for the node at `path`, or `null`.
+ * The same-line trailing inline comment for the node at `path`.
  *
  * A comment is "trailing" when its `range[0]` is strictly after the node's
  * end and on the same source line (no newline between).
  *
- * @returns Result, or `null` when no match.
+ * @returns Object whose `comment` field is the trailing comment, or is
+ *          absent when the node has no same-line trailing comment.
  *
  * @throws TomlPathNotFoundError when `path` does not exist or was deleted.
  *
@@ -39,7 +40,7 @@ export function tomlGetCommentAfter(
     readonly edit: TomlEditState;
     readonly path: TomlPath;
   },
-): TomlComment | null {
+): { readonly comment?: TomlComment; } {
   /** Effective resolution accounts for pending edits and deletes. */
   const result = effectiveAt({
     edit,
@@ -54,7 +55,7 @@ export function tomlGetCommentAfter(
   }
   if (result.kind
     === 'pending-value')
-    return null;
+    return {};
   /** Last AoT element is the one a trailing comment would attach to in source. */
   const node = result.kind
     === 'array-of-tables'

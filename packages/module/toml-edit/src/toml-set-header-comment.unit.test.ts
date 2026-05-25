@@ -42,11 +42,11 @@ await describe({
     },),
 
     it({
-      name: 'null clears the header comment',
+      name: 'omitting comment clears the header comment',
       fn: async () => {
         const e0 = emptyTomlEdit();
         const e1 = tomlSetHeaderComment({ edit: e0, comment: 'X', },);
-        const e2 = tomlSetHeaderComment({ edit: e1, comment: null, },);
+        const e2 = tomlSetHeaderComment({ edit: e1, },);
         const e3 = tomlSet({ edit: e2, path: ['title',], value: 'Demo', },);
         const out = tomlStringify({ edit: e3, },);
         expect(out.includes('# X',),).toBe(false,);

@@ -19,6 +19,15 @@ import type { ResolveResult, } from './resolve.ts';
 import type { TomlPath, } from './types.ts';
 
 /**
+ * Sentinel for "no key-value whose key list prefixes the query segments".
+ *
+ * A unique `Symbol` rather than `null`: `no-nullish-union` bans a nullish
+ * "absent" arm, and the matched shape is always a plain object so the
+ * symbol never collides with a real hit.
+ */
+const KEYVALUE_NOT_FOUND = Symbol('toml-edit/keyvalue-not-found',);
+
+/**
  * Dispatch to the array or table walker based on `container.type`.
  *
  * @returns Computed result (`ResolveResult`).
@@ -142,7 +151,7 @@ function walkTable(
     container,
     segments,
   },);
-  if (directKeyValue !== null) {
+  if (directKeyValue !== KEYVALUE_NOT_FOUND) {
     /** Destructure so the matched key-value and its key-chain length read by name. */
     const {
       node,
@@ -283,7 +292,7 @@ function walkTable(
 /**
  * Find a key-value whose full key list is a prefix of `segments`.
  *
- * @returns Computed result.
+ * @returns Matched node and key-chain length, or `KEYVALUE_NOT_FOUND`.
  */
 function findKeyValueByPrefix(
   {
@@ -296,7 +305,7 @@ function findKeyValueByPrefix(
 ): {
   node: AST.TOMLKeyValue;
   matchedLen: number;
-} | null {
+} | typeof KEYVALUE_NOT_FOUND {
   if ((container.type
     !== 'TOMLTopLevelTable')
     && (container.type
@@ -332,5 +341,5 @@ function findKeyValueByPrefix(
       };
     }
   }
-  return null;
+  return KEYVALUE_NOT_FOUND;
 }

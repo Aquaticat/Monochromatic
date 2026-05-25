@@ -102,7 +102,6 @@ export function parseTomlEdit(
     edits: new Map(),
     insertions: [],
     deletions: new Set(),
-    headerComment: null,
     mode,
     canonical: Object.freeze({
       ...DEFAULT_CANONICAL_OPTIONS,

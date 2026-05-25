@@ -53,17 +53,17 @@ await describe({
         const source = 'key = 1  # trailing\n';
         const edit = parseTomlEdit({ source, },);
         const trailing = tomlGetCommentAfter({ edit, path: ['key',], },);
-        expect(trailing,).not.toBe(null,);
-        expect(nonNullishOrThrow(trailing,).value,).toBe(' trailing',);
+        expect(trailing.comment,).not.toBe(undefined,);
+        expect(nonNullishOrThrow(trailing.comment,).value,).toBe(' trailing',);
       },
     },),
 
     it({
-      name: 'trailing inline comment absent returns null',
+      name: 'trailing inline comment absent yields no comment field',
       fn: async () => {
         const source = 'key = 1\n';
         const edit = parseTomlEdit({ source, },);
-        expect(tomlGetCommentAfter({ edit, path: ['key',], },),).toBe(null,);
+        expect(tomlGetCommentAfter({ edit, path: ['key',], },).comment,).toBe(undefined,);
       },
     },),
   ],

@@ -82,12 +82,32 @@ export type CanonicalOptions = {
 };
 
 /**
+ * Caller-supplied subset of `CanonicalOptions`.
+ *
+ * Every field is individually optional so a caller overrides only the
+ * formatting knobs it cares about; the rest fall back to
+ * `DEFAULT_CANONICAL_OPTIONS` at merge time. Spelled out as a per-field
+ * optional type rather than `Partial<CanonicalOptions>` because the
+ * `no-optional-escape` rule bans the `Partial` mapped-type encoding of
+ * optionality; under `exactOptionalPropertyTypes` `field?: T` already means
+ * "absent or T".
+ */
+export type CanonicalOptionsOverride = {
+  readonly indent?: number;
+  readonly lineBreak?: '\n' | '\r\n';
+  readonly arrayInlineThreshold?: number;
+  readonly arrayInlineMaxColumns?: number;
+  readonly preferDottedKeysForCreate?: boolean;
+  readonly trailingNewline?: boolean;
+};
+
+/**
  * Options for `parseTomlEdit`.
  */
 export type TomlEditOptions = {
   readonly source: string;
   readonly mode?: TomlEditMode;
-  readonly canonical?: Partial<CanonicalOptions>;
+  readonly canonical?: CanonicalOptionsOverride;
   readonly tomlVersion?: '1.0' | '1.1' | '1.0.0' | '1.1.0' | 'latest' | 'next';
 };
 
@@ -95,7 +115,7 @@ export type TomlEditOptions = {
  * Options for `emptyTomlEdit`.
  */
 export type TomlEmptyOptions = {
-  readonly canonical?: Partial<CanonicalOptions>;
+  readonly canonical?: CanonicalOptionsOverride;
 };
 
 /**
@@ -175,7 +195,7 @@ export type TomlEditState = {
   readonly edits: ReadonlyMap<AST.TOMLNode, Edit>;
   readonly insertions: readonly Insertion[];
   readonly deletions: ReadonlySet<AST.TOMLNode>;
-  readonly headerComment: string | null;
+  readonly headerComment?: string;
   readonly mode: TomlEditMode;
   readonly canonical: Readonly<CanonicalOptions>;
 };

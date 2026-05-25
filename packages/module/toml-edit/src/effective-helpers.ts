@@ -42,27 +42,36 @@ export function pathEquals(
 }
 
 /**
- * Project `segs` to a `string[]` when every segment is a string; else
- * `null`. Used in sub-tree synthesis to skip insertions whose path
- * goes through an array (a sub-tree can't be reconstructed via key
- * navigation alone).
+ * Sentinel returned by `asStringPath` when a path segment is numeric.
  *
- * @returns String segments, or `null` when any segment is numeric.
+ * A unique `Symbol` rather than `null`: the `no-nullish-union` rule bans a
+ * nullish "absent" arm, and an empty array would be ambiguous with a valid
+ * zero-length string path.
+ */
+export const PATH_HAS_NUMERIC: unique symbol = Symbol('toml-edit/path-has-numeric',);
+
+/**
+ * Project `segs` to a `string[]` when every segment is a string; else the
+ * `PATH_HAS_NUMERIC` sentinel. Used in sub-tree synthesis to skip
+ * insertions whose path goes through an array (a sub-tree can't be
+ * reconstructed via key navigation alone).
+ *
+ * @returns String segments, or `PATH_HAS_NUMERIC` when any segment is numeric.
  *
  * @example
  * ```ts
  * asStringPath({ segs: ['a','b',], },); // ['a','b']
- * asStringPath({ segs: ['a', 0,], },);  // null
+ * asStringPath({ segs: ['a', 0,], },);  // PATH_HAS_NUMERIC
  * ```
  */
 export function asStringPath(
   { segs, }: { readonly segs: TomlPath; },
-): readonly string[] | null {
-  /** Accumulator so an early numeric segment can short-circuit with `null`. */
+): readonly string[] | typeof PATH_HAS_NUMERIC {
+  /** Accumulator so an early numeric segment can short-circuit with the sentinel. */
   const result: string[] = [];
   for (const s of segs) {
     if ((typeof s) !== 'string')
-      return null;
+      return PATH_HAS_NUMERIC;
     result.push(s,);
   }
   return result;
