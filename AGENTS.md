@@ -16,6 +16,7 @@ When a cue matches, follow the target rule immediately rather than rediscovering
 - Tests: see "Essential commands".
 - User correction of a substantive claim: see "Pre-response checklist".
 - Verification touching destructive or stateful behavior: see "Verify on a throwaway, not against real state".
+- Removing a regex, or refactoring a loop, over text or a flat array: see "Simplification progression" (no recursion over linear input; JS has no guaranteed tail-call elimination).
 
 ## Before responding to the user
 
@@ -311,7 +312,7 @@ When unsure, propose a concrete edit and location.
 - Prefer `const`, immutable patterns, functional approaches (`map`/`filter`/`reduce`) over mutable state and imperative loops.
 - Use existing utilities (e.g. `wait()` from `@monochromatic-dev/module-async-time`) over manual promise creation.
 - Extract and name concepts; start simple, refactor to complexity only when necessary.
-- Simplification progression: imperative loop -> while -> for -> recursive -> higher-order functions/async iterators.
+- Simplification progression (iterating over linear input): `map`/`filter`/`reduce` or `for...of` first; a counter `for (let i = 0; ...)` loop when you need an index or lookahead; `while` for a cursor with side-effecting branches. Recursion is **not** a rung on this ladder for flat input: never turn a loop, or a regex you are removing, into recursion over a string or flat array. JS guarantees no tail-call elimination (V8 has none), so recursion over linear input is a stack-overflow bug at scale, and accumulator recursion (`acc + c`, `[...acc, x]`) is additionally O(n^2). Reserve recursion for bounded **structural** walks (AST, tree, grid, filesystem) whose depth tracks the data's nesting, not its length.
 - Never disable, raise, bypass, or work around the max-lines limit. Remediate by splitting: re-export from `index.ts`; move helpers to siblings, constants to `constants.ts`, types to `types.ts`. Forbidden workarounds: compressing function arguments to one line, joining multi-line statements, removing TSDoc, removing `//region` markers, joining declarations. If you find yourself reformatting to reduce line count, stop; the fix lives in another file.
 
 ### Linting
@@ -393,7 +394,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 #### Variables and values
 
 - `const` over `let`. Two hard rules enforce this:
-  - `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), wrap the mutation in a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or extract a helper function ending in `return <local-binding>` (the helper-shape allowlist suppresses the report).
+  - `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), use a counter `for (let i = 0; ...)` loop (`let` inside `ForStatement.init` is exempt, so this is the right tool for an indexed or lookahead scan, not a rule to dodge), wrap the mutation in a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or extract a helper function ending in `return <local-binding>` (the helper-shape allowlist suppresses the report). Do **not** escape this rule by recursing over flat input (see "Simplification progression").
   - `no-restricted-syntax/no-module-root-let` reports `let` at module root, including `export let`. Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` container, `memoize()` from `@monochromatic-dev/module-es`, or an IIFE-into-const initialization.
   - For legitimate exceptions (multi-statement state machines, parser cursors with side-effecting branches), add `oxlint-disable-next-line` with a justification comment naming the constraint.
 - Remove unused variables or prefix with underscore (`_unusedVar`).
@@ -419,6 +420,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 #### Regular expressions
 
 - Do not introduce a regular expression when an index scan, parser, or string API expresses the same rule clearly.
+- A regex you remove must be replaced by a single linear pass: one `for...of` or `for (let i...)` scan, or one `reduce`, in O(n) time and O(1) extra stack. Do **not** replace it with recursion over the text, nor with an accumulator that rebuilds a string or array each step (`acc + c`, `[...acc, x]`); both are O(n^2) time and a stack-overflow risk at scale. Do not assume the original regex was linear either: a backtracking pattern can be superlinear (the ReDoS hazard this ban guards against), so linear is the bar the replacement must hit on its own merit, proven for attacker-controlled or unbounded input, not inherited from the regex.
 - Regex literals, `RegExp` constructor calls, and string methods using regex must be guarded by a scoped `oxlint-disable-next-line no-restricted-syntax/no-regex -- ...` comment. The justification must explain why regex is the right tool, what input shape bounds it, and why it cannot backtrack or rescan unbounded prefixes/suffixes. If no useful justification exists, do not use regex.
 - For hot paths or attacker-controlled input, prefer explicit parsers or index scans. If regex remains, cap the input or prove linear behaviour in the disable justification and regression tests.
 
