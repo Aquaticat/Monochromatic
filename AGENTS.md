@@ -560,6 +560,16 @@ Do not silently let it stand;
 future readers see only the message.
 The cue: about to write "the commit message overstates scope" or similar in chat as a one-off note instead of recording it where the commit lives.
 
+### Respect cli-git enforcement guards
+
+Do not preemptively bypass `cli-git` enforcement.
+The `git add` and `git commit` guards reject bulk staging (`-A`, `.`) and pathspec-less commits on purpose: with a dirty tree or concurrent sessions they sweep unintended files into a commit.
+They are not obstacles to route around;
+the compliant path satisfies them.
+Stage and commit an explicit, package-scoped pathspec (`git add <path>`; `git commit <path> -m ...`), which also keeps each commit to one logical unit and cannot capture another session's files.
+Reach for `--no-enforce-bulk-add` or `--no-enforce-only` only when no scoped pathspec can express the change (a genuine whole-tree single-session operation), never as the default form, and never baked into instructions to child sessions.
+The cue: about to type `--no-enforce`, `git add -A`, or `git add .` before trying a scoped pathspec, or about to hand a child a commit recipe carrying a bypass flag.
+
 ## When working with the workspace
 
 ### Dependency management
