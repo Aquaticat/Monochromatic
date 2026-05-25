@@ -36,6 +36,7 @@ import { noFunctionRootLet, } from './rules/no-function-root-let.ts';
 import { noHasownproperty, } from './rules/no-hasownproperty.ts';
 import { noModuleRootLet, } from './rules/no-module-root-let.ts';
 import { noNullishUnion, } from './rules/no-nullish-union.ts';
+import { noOptionalEscape, } from './rules/no-optional-escape.ts';
 import { noPromiseCatch, } from './rules/no-promise-catch.ts';
 import { noPromiseFinally, } from './rules/no-promise-finally.ts';
 import { noRegex, } from './rules/no-regex.ts';
@@ -87,6 +88,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-hasownproperty': noHasownproperty,
     'no-module-root-let': noModuleRootLet,
     'no-nullish-union': noNullishUnion,
+    'no-optional-escape': noOptionalEscape,
     'no-promise-catch': noPromiseCatch,
     'no-promise-finally': noPromiseFinally,
     'no-regex': noRegex,

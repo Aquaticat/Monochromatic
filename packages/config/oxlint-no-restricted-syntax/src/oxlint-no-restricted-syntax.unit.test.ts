@@ -144,6 +144,7 @@ const SUBSTANTIVE_RULES = [
   'no-hasownproperty',
   'no-module-root-let',
   'no-nullish-union',
+  'no-optional-escape',
   'no-promise-catch',
   'no-promise-finally',
   'no-regex',
@@ -251,6 +252,16 @@ await describe({
             expect(diagnostics,).toEqual([],);
           },
         },),
+        it({
+          name:
+            'no-optional-escape accepts void returns, real tuples, Symbol sentinels, literal domains, and Required',
+          fn: async () => {
+            const diagnostics = await lint(
+              'valid/no-optional-escape.ts',
+            );
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
       ],
     },),
     describe({
@@ -271,6 +282,76 @@ await describe({
             // plus three `null` variants (T | null, null | T,
             // Promise<T | null>).
             expect(nullishUnion.length,).toBe(10,);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'no-optional-escape forms',
+      children: [
+        it({
+          name: 'catches every distinct fake-optional encoding in the fixture',
+          fn: async () => {
+            const diagnostics = await lint('invalid/no-optional-escape.ts',);
+            const optionalEscape = diagnostics.filter(
+              function isOptionalEscape(diagnostic,): boolean {
+                return diagnostic.code === 'no-restricted-syntax(no-optional-escape)';
+              },
+            );
+            // Eighteen distinct banned forms, one site each: `| void`,
+            // `| never`, `| unknown`, `| any`, `| ''`, empty template, `| 0`,
+            // `| -1`, `| false`, `| {}`, empty tuple, optional tuple element,
+            // optional named tuple member, rest-only tuple, `Partial<T>`,
+            // `Record<K, never>`, `Pick<T, never>`, and an added-optionality
+            // mapped type.
+            expect(optionalEscape.length,).toBe(18,);
+          },
+        },),
+        it({
+          name: 'maps each banned form to its own diagnostic message',
+          fn: async () => {
+            const diagnostics = await lint('invalid/no-optional-escape.ts',);
+            const messages = diagnostics
+              .filter(function isOptionalEscape(diagnostic,): boolean {
+                return diagnostic.code === 'no-restricted-syntax(no-optional-escape)';
+              },)
+              .map(function pickMessage(diagnostic,): string {
+                return diagnostic.message;
+              },);
+            // Distinctive leading phrase of each form's message, with its
+            // expected occurrence count: `unknown`/`any` share wideningUnion,
+            // `""`/empty-template share emptyStringUnion, `0`/`-1` share
+            // falsyNumberUnion, and Record/Pick share emptyUtilityObject, so
+            // four prefixes appear twice and the rest once (18 total).
+            const expectedCounts: Readonly<Record<string, number>> = {
+              '`T | void` widens': 1,
+              '`T | never` collapses': 1,
+              '`T | unknown` and `T | any`': 2,
+              'An empty-string literal': 2,
+              'A zero or negative numeric': 2,
+              '`T | false` uses': 1,
+              'An empty object type in a union': 1,
+              'An empty tuple type': 1,
+              'An optional tuple element': 1,
+              'An optional named tuple member': 1,
+              'A rest-only tuple': 1,
+              '`Partial<T>` makes': 1,
+              'A utility type producing': 2,
+              'A mapped type that adds optionality': 1,
+            };
+            const actualCounts: Record<string, number> = Object.fromEntries(
+              Object.keys(expectedCounts,).map(
+                function countMatches(prefix,): readonly [string, number,] {
+                  const matches = messages.filter(
+                    function hasPrefix(message,): boolean {
+                      return message.startsWith(prefix,);
+                    },
+                  );
+                  return [prefix, matches.length,];
+                },
+              ),
+            );
+            expect(actualCounts,).toEqual(expectedCounts,);
           },
         },),
       ],

@@ -19,6 +19,7 @@
     "no-restricted-syntax/no-hasownproperty": "error",
     "no-restricted-syntax/no-module-root-let": "error",
     "no-restricted-syntax/no-nullish-union": "error",
+    "no-restricted-syntax/no-optional-escape": "error",
     "no-restricted-syntax/no-promise-catch": "error",
     "no-restricted-syntax/no-promise-finally": "error",
     "no-restricted-syntax/no-rest-params": "error",

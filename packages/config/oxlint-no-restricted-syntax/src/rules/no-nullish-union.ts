@@ -18,6 +18,22 @@ const NULLISH_KEYWORD_TYPES: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ * Checks whether a union member is the `undefined` or `null` type keyword.
+ *
+ * @param member - union member to test
+ *
+ * @returns whether member is a nullish keyword type
+ *
+ * @example
+ * ```ts
+ * isNullishMember(member); // true for the `undefined` in `string | undefined`
+ * ```
+ */
+function isNullishMember(member: ESTree.TSType,): boolean {
+  return NULLISH_KEYWORD_TYPES.has(member.type,);
+}
+
+/**
  * Bans union types containing `null` or `undefined` (`T | undefined`,
  * `undefined | T`, `T | null`, `null | T`, or either nullish keyword anywhere
  * in a union).
@@ -89,18 +105,12 @@ export const noNullishUnion: CreateOnceRule = {
   createOnce(context: Context,): VisitorWithHooks {
     return {
       TSUnionType(node: ESTree.TSUnionType,): void {
-        // Iterate members directly: a `for...of` loop binding is not a
-        // function parameter, so it sidesteps `prefer-readonly-parameter-types`
-        // on the `TSType` member without needing an allow-list entry, and
-        // avoids a non-capturing nested predicate.
-        for (const member of node.types) {
-          if (NULLISH_KEYWORD_TYPES.has(member.type,)) {
-            context.report({
-              node,
-              messageId: 'forbidden',
-            },);
-            return;
-          }
+        if (node.types
+          .some(isNullishMember,)) {
+          context.report({
+            node,
+            messageId: 'forbidden',
+          },);
         }
       },
     };

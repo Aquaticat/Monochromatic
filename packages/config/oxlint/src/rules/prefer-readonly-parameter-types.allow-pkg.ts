@@ -103,6 +103,13 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       "Token",
       "TryStatement",
       "TSEnumDeclaration",
+      "TSLiteralType",
+      "TSMappedType",
+      "TSNamedTupleMember",
+      "TSTupleElement",
+      "TSTupleType",
+      "TSType",
+      "TSTypeReference",
       "TSUnionType",
       "Variable",
       "VariableDeclaration",
@@ -202,11 +209,15 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       // variants retain writable fields, ModelRegistry exposes auth lookup,
       // and ExtensionContext/ExtensionCommandContext are passed through to
       // host components whose contracts predate readonly conventions.
+      // ToolCallEvent is the `tool_call` visitor union; its variants carry
+      // mutable `input` payloads and are consumed by the host's
+      // isToolCallEventType guard, which requires the writable union.
       "ExtensionAPI",
       "ExtensionContext",
       "ExtensionCommandContext",
       "SessionEntry",
       "ModelRegistry",
+      "ToolCallEvent",
     ],
   },
   {
@@ -216,8 +227,11 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       // pi-ai provider/message types are dictated by the upstream SDK;
       // AssistantMessage carries a mutable `content` array of TextContent/
       // ThinkingContent/ToolCall blocks that the upstream type does not
-      // mark readonly.
+      // mark readonly. Model<TApi> likewise carries mutable fields
+      // (`input: (...)[]`, `cost`, `thinkingLevelMap`) and is forwarded to
+      // host registry/stream calls that require the writable shape.
       "AssistantMessage",
+      "Model",
     ],
   },
   {

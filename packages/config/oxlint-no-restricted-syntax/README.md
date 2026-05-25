@@ -26,6 +26,7 @@ This plugin provides individual rules for each banned syntax pattern instead.
 - **no-trim-left-right**: bans `.trimLeft()`/`.trimRight()` in favor of `.trimStart()`/`.trimEnd()`
 - **no-try-finally**: bans `try...finally` blocks in favor of `using`/`await using`
 - **no-nullish-union**: bans union types containing `null` or `undefined` (`T | null`, `T | undefined`); use `?:`, an if-guard, or a genuine `Symbol` sentinel
+- **no-optional-escape**: bans every other statically-detectable type-level fake-optional encoding (`| void`, `| never`, `| unknown`/`| any`, falsy literal members, `| {}`, empty/optional/rest-only tuples, `Partial<T>`, `Record<K, never>`, added-optionality mapped types)
 - **no-variable-function-expression**: bans `const x = function() {}`, use a function declaration instead
 - **require-destructured-params**: function declarations with 2+ params must use a single destructured object
 - **require-queryselector-generic**: requires explicit generic typing for querySelector-style calls
@@ -72,6 +73,61 @@ type Result = string | typeof NOT_FOUND;
 ```
 
 Genuine external-boundary cases (a parameter mirroring a third-party API type that is itself `T | undefined` or `T | null`) stay handleable with a tightly scoped `oxlint-disable-next-line no-restricted-syntax/no-nullish-union` carrying a justification.
+
+## no-optional-escape
+
+`exactOptionalPropertyTypes: true` keeps `undefined` out of typed slots.
+Agents repeatedly invent new type-level encodings to dodge it: once `| undefined` and `| null` were banned, the next dodge was `| void`, then tuple-as-Maybe, then literal sentinels, then `Partial<T>`.
+This rule enumerates and bans the whole statically-detectable space in one pass.
+`| undefined` and `| null` stay with `no-nullish-union`; everything else lives here.
+
+The fixes are the same four: `foo?: T` for an optional property; an `if`-guard so the value is always present where typed; throw via `nonNullishOrThrow` (`@monochromatic-dev/module-or-throw`); or a real sentinel (a unique `Symbol`, or a distinct non-empty domain value).
+A genuine external-boundary mirror uses a scoped `oxlint-disable-next-line no-restricted-syntax/no-optional-escape` with a justification.
+
+### Banned (each its own diagnostic)
+
+Union members:
+
+- `T | void`: `void` is assignable from `undefined`, so it widens the slot.
+- `T | never`: collapses to `T`; a hand-written `| never` is a stubbed-out absence branch.
+- `T | unknown` and `T | any`: collapse to the wide type, accepting everything including nullish.
+- `T | {}`: an empty object type widens to any non-nullish value.
+- Falsy literal members: the empty string `""`, an empty template literal type, zero `0`, a negative number such as `-1`, and `false`. Flagged only when the union also has a non-literal member, so a finite literal domain like `0 | 1 | 2` is left alone.
+
+Tuples:
+
+- Empty tuple `[]`.
+- Optional element `[T?]`.
+- Optional named member `[foo?: T]`.
+- Rest-only tuple `[...T[]]` (functionally `T[]` dressed as 0-or-many).
+
+Type references and mapped types:
+
+- `Partial<T>` (makes every property optional).
+- `Record<K, never>` and `Pick<T, never>` (produce an empty object).
+- A mapped type that adds optionality, `{ [K in keyof T]?: ... }` (a hand-rolled `Partial`).
+
+### Allowed (not flagged)
+
+- A bare `(): void` return; only `void` inside a union is banned.
+- `T | null` and `T | undefined`, owned by `no-nullish-union`.
+- A fixed non-empty tuple `[number, string]`, and a leading-element variadic tuple `[T, ...U[]]` (one-or-more).
+- A real `Symbol` sentinel via `typeof MY_SYMBOL`.
+- A non-empty literal member (`T | 42`, `T | "pending"`) and pure literal domains (`0 | 1 | 2`, `"a" | "b"`).
+- A real `Record<K, V>` or `Pick<T, K>`, and the `Required` mapped form `{ [K in keyof T]-?: ... }`.
+
+### Statically undetectable (review-only blind spots)
+
+A pattern is undetectable when the type annotation itself is honest and carries no syntactic marker of absence; there is nothing for an AST rule to see.
+
+- A field typed `string` but defaulted to `""` at runtime: the type is `string`, an honest annotation.
+- A `T[]` whose emptiness encodes absence: the type is `T[]`, honest.
+- `0` or `-1` used as absent on a plain `number`: the type is `number`, honest. (Contrast `T | 0`, which is a literal-type union and is banned.)
+- `T | typeof CONST` where `CONST` resolves to a falsy literal: the `typeof` node is identical whether `CONST` is a real `Symbol` or an empty string (verified by AST probe), so distinguishing it needs binding resolution. Reliable only for a same-file literal-initialized `const`; cross-file or imported `CONST` needs the type-checker the JS plugin lacks. Not implemented.
+- `Omit<T, keyof T>` (equals `{}`): detectable in principle but needs a structural match between the `keyof T` argument and `T`; fragile, not implemented.
+- `class Sentinel {}` plus `T | typeof Sentinel`: same blind spot as `typeof CONST`, and a class instance type is itself a distinct non-empty value, so it is an allowed sentinel anyway.
+- `0n` (bigint zero) as a union literal: deliberately skipped; rare, and bigint literals add magic-literal friction for little gain.
+- `NaN` as a union member is not expressible (`NaN` is a value, not a type), so there is nothing to detect.
 
 ## Ban-disable rules
 

@@ -79,6 +79,17 @@ export const restrictionRules: DummyRuleMap = {
   // genuine external-boundary cases.
   'no-restricted-syntax/no-nullish-union': 'error',
 
+  // Every other statically-detectable type-level fake-optional encoding, banned
+  // in one pass so the whack-a-mole stops. Covers union members `| void`,
+  // `| never`, `| unknown`/`| any`, `| {}`, and falsy literals (`""`, empty
+  // template, `0`, negative, `false`); empty/optional/rest-only tuples and
+  // optional named tuple members; `Partial<T>`, `Record<K, never>`,
+  // `Pick<T, never>`; and added-optionality mapped types. `| null`/`| undefined`
+  // are left to no-nullish-union. Same fixes apply: `foo?: T`, an if-guard,
+  // nonNullishOrThrow, or a real Symbol/non-empty sentinel. Disableable with a
+  // justified scoped comment for genuine external-boundary mirrors.
+  'no-restricted-syntax/no-optional-escape': 'error',
+
   // Use named function declarations or named function expressions, never arrow functions.
   // Callbacks still need a name: items.map(function getValue(item) { return item.value; }).
   'no-restricted-syntax/no-arrow-function': 'error',
