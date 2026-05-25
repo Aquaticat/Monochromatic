@@ -1,4 +1,5 @@
 // oxlint-disable typescript/no-unsafe-type-assertion -- API response types require assertions
+import { ABSENT, } from './describe.absent.ts';
 import { describeViaGemini, } from './describe.gemini.ts';
 import { toImageUri, } from './encoding.uri.ts';
 import {
@@ -75,15 +76,15 @@ type ChatCompletionResponse = {
  * Returns `null` when no key is available, allowing callers
  * to skip the description gracefully.
  *
- * @returns resolved API key, or `null` if not configured
+ * @returns resolved API key, or {@link ABSENT} if not configured
  *
  * @example
  * ```ts
  * const key = resolveOpenRouterApiKey();
- * if (key === null) return null;
+ * if (key === ABSENT) return ABSENT;
  * ```
  */
-function resolveOpenRouterApiKey(): string | null {
+function resolveOpenRouterApiKey(): string | typeof ABSENT {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: resolveOpenRouterApiKey.name,
@@ -97,7 +98,7 @@ function resolveOpenRouterApiKey(): string | null {
     .OPENROUTER_API_KEY;
   if ((key === undefined) || (key === '')) {
     rl.debug('no OpenRouter API key found, skipping description',);
-    return null;
+    return ABSENT;
   }
   rl.debug('OpenRouter API key resolved',);
   return key;
@@ -105,14 +106,14 @@ function resolveOpenRouterApiKey(): string | null {
 
 /**
  * Describe visual differences between two images using the native Gemini API
- * (preferred) or OpenRouter as a fallback. Returns `null` when no API key
+ * (preferred) or OpenRouter as a fallback. Returns {@link ABSENT} when no API key
  * is configured for either backend.
  *
  * @param imageA - first image (before)
  *
  * @param imageB - second image (after)
  *
- * @returns detailed description of visual differences, or `null` when no API key is configured
+ * @returns detailed description of visual differences, or {@link ABSENT} when no API key is configured
  *
  * @throws when the API call itself fails (key is present but request errors)
  *
@@ -122,7 +123,7 @@ function resolveOpenRouterApiKey(): string | null {
  *   imageA: { path: './before.png' },
  *   imageB: { path: './after.png' },
  * });
- * if (description !== null) console.log(description);
+ * if (description !== ABSENT) console.log(description);
  * ```
  */
 export async function describeImageDifference({
@@ -131,7 +132,7 @@ export async function describeImageDifference({
 }: {
   readonly imageA: ImageInput;
   readonly imageB: ImageInput;
-},): Promise<string | null> {
+},): Promise<string | typeof ABSENT> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: describeImageDifference.name,
@@ -144,16 +145,16 @@ export async function describeImageDifference({
     imageA,
     imageB,
   },);
-  if (geminiResult !== null) {
+  if (geminiResult !== ABSENT) {
     rl.debug('description obtained via native Gemini API',);
     return geminiResult;
   }
 
   // Fall back to OpenRouter when no Gemini API key is available
-  /** OpenRouter credential; absent triggers an early `null` return so callers can skip the description step. */
+  /** OpenRouter credential; absence triggers an early `ABSENT` return so callers can skip the description step. */
   const apiKey = resolveOpenRouterApiKey();
-  if (apiKey === null)
-    return null;
+  if (apiKey === ABSENT)
+    return ABSENT;
 
   rl.debug('describing image differences via Gemini 3.1 Pro Preview on OpenRouter',);
   /** Both images encoded as data URIs in parallel so the request body can embed them inline. */

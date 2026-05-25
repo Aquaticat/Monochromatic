@@ -1,4 +1,5 @@
 // oxlint-disable require-await -- Promise.allSettled values require type assertions; async functions return provider promises directly
+import { ABSENT, } from './describe.absent.ts';
 import { describeImageDifference, } from './describe.ts';
 import { geminiProvider, } from './gemini.ts';
 import {
@@ -245,7 +246,7 @@ export async function compare({
   ],);
   /** Tuple destructured for separate handling; description-absence triggers an explicit missing-key error. */
   const [embeddingResult, description,] = results;
-  if (description === null) {
+  if (description === ABSENT) {
     throw new Error(
       'OpenRouter API key is required for image comparison. Set IMAGE_DIFF_OPENROUTER_API_KEY (or OPENROUTER_API_KEY) environment variable.',
     );

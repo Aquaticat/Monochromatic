@@ -7,6 +7,7 @@
 // oxlint-disable typescript/no-unsafe-type-assertion -- Promise.allSettled values require type assertions
 import type { MultiProviderComparisonEntry, } from './client.multi.types.ts';
 import { compareEmbeddings, } from './client.ts';
+import { ABSENT, } from './describe.absent.ts';
 import { describeImageDifference, } from './describe.ts';
 import {
   l,
@@ -94,11 +95,11 @@ export async function compareAll({
   const descriptionSettlement = allResults.at(-1,);
   if (descriptionSettlement === undefined)
     throw new Error('unreachable: allResults is non-empty',);
-  /** Textual diff description when the description call succeeded; `null` on rejection. */
+  /** Textual diff description when the description call succeeded; `ABSENT` on rejection. */
   const description = descriptionSettlement.status
     === 'fulfilled'
-    ? descriptionSettlement.value as string | null
-    : null;
+    ? descriptionSettlement.value as string | typeof ABSENT
+    : ABSENT;
 
   /** All settlements before the last are provider results. */
   const providerSettlements = allResults.slice(
@@ -119,7 +120,7 @@ export async function compareAll({
         provider: entry.provider,
         result: {
           ...entry.result,
-          ...(description !== null ? { description, } : {}),
+          ...(description !== ABSENT ? { description, } : {}),
         },
       },);
     }
@@ -129,7 +130,7 @@ export async function compareAll({
   }
 
   if ((successfulEntries.length
-    === 0) && (description === null)) {
+    === 0) && (description === ABSENT)) {
     throw new Error(
       'No results: all embedding providers failed and no description was generated. Check that at least one API key is configured.',
     );
@@ -137,7 +138,7 @@ export async function compareAll({
 
   rl.debug(
     `${String(successfulEntries.length,)} provider(s) succeeded, description ${
-      description !== null ? 'available' : 'unavailable'
+      description !== ABSENT ? 'available' : 'unavailable'
     }`,
   );
   return successfulEntries;

@@ -49,6 +49,7 @@ export {
   embed,
   embedBatch,
 } from './client.ts';
+export { ABSENT, } from './describe.absent.ts';
 export { describeImageDifference, } from './describe.ts';
 export { geminiProvider, } from './gemini.ts';
 export {

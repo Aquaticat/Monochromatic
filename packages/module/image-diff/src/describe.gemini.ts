@@ -1,3 +1,4 @@
+import { ABSENT, } from './describe.absent.ts';
 import { toGeminiInlineData, } from './encoding.gemini.ts';
 import { GEMINI_API_BASE, } from './gemini.config.ts';
 import {
@@ -57,12 +58,12 @@ elements that were added or removed, and any other noticeable changes.
 Image A is the first image, Image B is the second.`;
 
 /**
- * Resolve Gemini API key for description, returning `null` when unavailable
- * instead of throwing.
+ * Resolve Gemini API key for description, returning {@link ABSENT} when
+ * unavailable instead of throwing.
  *
- * @returns resolved API key, or `null` if not configured
+ * @returns resolved API key, or {@link ABSENT} if not configured
  */
-function resolveGeminiDescribeKey(): string | null {
+function resolveGeminiDescribeKey(): string | typeof ABSENT {
   /** Resolved Gemini key from preferred-then-fallback env var; treated as missing when blank. */
   const key = process.env
     .IMAGE_DIFF_GEMINI_API_KEY
@@ -70,7 +71,7 @@ function resolveGeminiDescribeKey(): string | null {
     .env
     .GEMINI_API_KEY;
   if ((key === undefined) || (key === ''))
-    return null;
+    return ABSENT;
   return key;
 }
 
@@ -83,7 +84,7 @@ function resolveGeminiDescribeKey(): string | null {
  *
  * @param imageB - second image (after)
  *
- * @returns detailed description of visual differences, or `null` when no Gemini API key is configured
+ * @returns detailed description of visual differences, or {@link ABSENT} when no Gemini API key is configured
  *
  * @throws when the API call itself fails (key is present but request errors)
  *
@@ -101,17 +102,17 @@ export async function describeViaGemini({
 }: {
   readonly imageA: ImageInput;
   readonly imageB: ImageInput;
-},): Promise<string | null> {
+},): Promise<string | typeof ABSENT> {
   /** Logger pre-tagged with this function's name so call-site context is preserved across debug lines. */
   const rl = tagged({
     tag: describeViaGemini.name,
     l,
   },);
 
-  /** Gemini credential; absent triggers an early `null` return so the OpenRouter fallback can run. */
+  /** Gemini credential; absence triggers an early `ABSENT` return so the OpenRouter fallback can run. */
   const apiKey = resolveGeminiDescribeKey();
-  if (apiKey === null)
-    return null;
+  if (apiKey === ABSENT)
+    return ABSENT;
 
   rl.debug('describing image differences via native Gemini API',);
   /** Both images encoded as Gemini `inline_data` parts in parallel so the request body can embed them. */
