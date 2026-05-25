@@ -20,6 +20,14 @@ const REGEX_ACCEPTING_STRING_METHODS = [
   'split',
 ] as const;
 
+/**
+ * Sentinel returned by {@link getStaticMethodName} when a member expression's
+ * property is computed dynamically and carries no static string name. A named
+ * sentinel keeps the "no static name" signal out of a `string | undefined`
+ * union, which `no-restricted-syntax/no-undefined-union` bans.
+ */
+const NO_STATIC_METHOD_NAME = Symbol('no-static-method-name',);
+
 //endregion Constants
 
 //region AST helpers
@@ -81,7 +89,7 @@ function isRegExpConstructorExpression(
  *
  * @param node - member expression to inspect
  *
- * @returns property name, or `undefined` when computed dynamically
+ * @returns property name, or {@link NO_STATIC_METHOD_NAME} when computed dynamically
  *
  * @example
  * ```ts
@@ -90,22 +98,22 @@ function isRegExpConstructorExpression(
  */
 function getStaticMethodName(
   { node, }: { readonly node: ESTree.MemberExpression; },
-): string | undefined {
+): string | typeof NO_STATIC_METHOD_NAME {
   if (!node.computed) {
     if (node.property
       .type
       !== 'Identifier')
-      return undefined;
+      return NO_STATIC_METHOD_NAME;
     return node.property
       .name;
   }
   if (node.property
     .type
     !== 'Literal')
-    return undefined;
+    return NO_STATIC_METHOD_NAME;
   if ((typeof node.property
     .value) !== 'string')
-    return undefined;
+    return NO_STATIC_METHOD_NAME;
   return node.property
     .value;
 }
@@ -173,7 +181,7 @@ function isStringMethodRegexCall({ node, }: { readonly node: ESTree.CallExpressi
     return false;
   /** Method name resolved from static or string-literal member syntax. */
   const methodName = getStaticMethodName({ node: node.callee, },);
-  if (methodName === undefined)
+  if ((typeof methodName) === 'symbol')
     return false;
   if (!isRegexAcceptingStringMethod({ methodName, },))
     return false;
@@ -201,8 +209,11 @@ function stringRegexMethodName({ node, }: { readonly node: ESTree.CallExpression
     .type
     !== 'MemberExpression')
     return 'unknown';
-  return getStaticMethodName({ node: node.callee, },)
-    ?? 'unknown';
+  /** Static method name, or the sentinel when the member is computed dynamically. */
+  const methodName = getStaticMethodName({ node: node.callee, },);
+  if ((typeof methodName) === 'symbol')
+    return 'unknown';
+  return methodName;
 }
 
 /**

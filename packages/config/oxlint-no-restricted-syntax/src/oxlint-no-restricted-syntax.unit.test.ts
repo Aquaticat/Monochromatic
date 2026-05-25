@@ -150,6 +150,7 @@ const SUBSTANTIVE_RULES = [
   'no-switch',
   'no-trim-left-right',
   'no-try-finally',
+  'no-undefined-union',
   'no-variable-function-expression',
   'prefer-describe-function-ref-name',
   'require-destructured-params',
@@ -239,6 +240,35 @@ await describe({
               'valid/no-regex.ts',
             );
             expect(diagnostics,).toEqual([],);
+          },
+        },),
+        it({
+          name: 'no-undefined-union accepts ?:, plain T, T | null, and sentinels',
+          fn: async () => {
+            const diagnostics = await lint(
+              'valid/no-undefined-union.ts',
+            );
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: 'no-undefined-union forms',
+      children: [
+        it({
+          name: 'catches every distinct `T | undefined` form in the fixture',
+          fn: async () => {
+            const diagnostics = await lint('invalid/no-undefined-union.ts',);
+            const undefinedUnion = diagnostics.filter(
+              function isUndefinedUnion(diagnostic,): boolean {
+                return diagnostic.code === 'no-restricted-syntax(no-undefined-union)';
+              },
+            );
+            // Seven distinct union sites in the fixture: T | undefined,
+            // undefined | T, optional property, return type, parameter,
+            // Promise<T | undefined>, Array<T | undefined>.
+            expect(undefinedUnion.length,).toBe(7,);
           },
         },),
       ],

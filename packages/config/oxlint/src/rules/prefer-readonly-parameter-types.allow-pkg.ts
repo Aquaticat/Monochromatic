@@ -103,6 +103,7 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       "Token",
       "TryStatement",
       "TSEnumDeclaration",
+      "TSUnionType",
       "Variable",
       "VariableDeclaration",
       // The matcher compares `symbol.escapedName`, not the surface name. The

@@ -24,6 +24,7 @@
     "no-restricted-syntax/no-switch": "error",
     "no-restricted-syntax/no-trim-left-right": "error",
     "no-restricted-syntax/no-try-finally": "error",
+    "no-restricted-syntax/no-undefined-union": "error",
     "no-restricted-syntax/no-variable-function-expression": "error",
     "no-restricted-syntax/prefer-describe-function-ref-name": "error",
     "no-restricted-syntax/require-destructured-params": "error",

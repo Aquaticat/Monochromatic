@@ -42,6 +42,7 @@ import { noRestParams, } from './rules/no-rest-params.ts';
 import { noSwitch, } from './rules/no-switch.ts';
 import { noTrimLeftRight, } from './rules/no-trim-left-right.ts';
 import { noTryFinally, } from './rules/no-try-finally.ts';
+import { noUndefinedUnion, } from './rules/no-undefined-union.ts';
 import {
   noVariableFunctionExpression,
 } from './rules/no-variable-function-expression.ts';
@@ -92,6 +93,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-switch': noSwitch,
     'no-trim-left-right': noTrimLeftRight,
     'no-try-finally': noTryFinally,
+    'no-undefined-union': noUndefinedUnion,
     'no-variable-function-expression': noVariableFunctionExpression,
     'prefer-describe-function-ref-name': preferDescribeFunctionRefName,
     'require-destructured-params': requireDestructuredParams,

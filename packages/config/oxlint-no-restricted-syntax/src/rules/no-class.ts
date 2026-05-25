@@ -59,7 +59,7 @@ function isFirstOption(value: unknown,): value is FirstOption {
  * @returns resolved suffix list, never empty when defaults apply
  */
 function readSuffixes(
-  options: readonly unknown[] | undefined,
+  options: readonly unknown[],
 ): readonly string[] {
   if (!Array.isArray(options,))
     return DEFAULT_SUFFIXES;
@@ -170,8 +170,10 @@ export const noClass: CreateOnceRule = {
     ],
   },
   createOnce(context: Context,): VisitorWithHooks {
-    /** Suffix list resolved once per file from rule options merged with defaults. */
-    const suffixes = readSuffixes(context.options,);
+    /** Raw rule options; oxlint omits this until config is supplied. */
+    const { options, } = context;
+    /** Suffix list resolved once per file; default the absent case to an empty array rather than widening the parameter to `| undefined`. */
+    const suffixes = readSuffixes(options ?? [],);
 
     /**
      * Tests whether `name` ends with any configured allowlist suffix.
