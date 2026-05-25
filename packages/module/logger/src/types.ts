@@ -16,17 +16,27 @@ export type LogRecord = {
  * Optional drain hook for sinks that buffer records internally.
  * Called via logger-level `flush()` to force buffered work through
  * before a process exit, critical error boundary, or assertion.
+ *
+ * Always async: sinks whose drain is synchronous return an
+ * already-resolved promise so callers `await` uniformly. A `void` arm is
+ * not used; under the `no-optional-escape` rule `T | void` is a banned
+ * fake-optional encoding, and there is no real synchronous value to carry.
  */
-export type SinkFlush = () => Promise<void> | void;
+export type SinkFlush = () => Promise<void>;
 
 /**
  * Sink that receives log records.
  * Sinks that buffer records (e.g. microtask-batched console) may
  * expose a `flush` hook so callers can force emission on demand.
+ *
+ * `write` is always async: a synchronous sink does its work eagerly and
+ * returns an already-resolved promise, so the logger observes a uniform
+ * `Promise<void>` (and can mark a sink unavailable when one rejects). A
+ * `void` arm is not used, for the reason stated on `SinkFlush`.
  */
 export type Sink = {
   flush?: SinkFlush;
-  write: (record: LogRecord,) => Promise<void> | void;
+  write: (record: LogRecord,) => Promise<void>;
 };
 
 /**

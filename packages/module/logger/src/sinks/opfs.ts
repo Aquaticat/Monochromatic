@@ -11,13 +11,12 @@ import type {
  * a failed verification or a runtime throw.
  */
 const state: {
-  writable: FileSystemWritableFileStream | null;
+  writable?: FileSystemWritableFileStream;
   verified: boolean;
   available: boolean;
 } = {
   available: false,
   verified: false,
-  writable: null,
 };
 
 /**

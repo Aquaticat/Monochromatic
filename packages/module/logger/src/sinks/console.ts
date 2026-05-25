@@ -5,23 +5,30 @@ import type {
 } from '../types.ts';
 
 /**
+ * Sentinel for an uncomputed `verboseCache` slot. A unique `Symbol` rather
+ * than `null`: the `no-nullish-union` rule bans a nullish "absent" arm, and
+ * a real `boolean` value is the computed state this must stay distinct from.
+ */
+const VERBOSE_UNCOMPUTED = Symbol('logger:verbose-uncomputed',);
+
+/**
  * Module-local mutable state grouped in a `const` container so module-root
  * state stays out of a top-level `let` (`no-module-root-let` would otherwise
  * reject it). `verified` short-circuits repeat verification; `available`
  * flips false on a failed verification or a runtime throw; `verboseCache`
- * lazily memoizes the verbose-mode detection (null sentinel = not yet
- * computed); `scheduled` guards against redundant `queueMicrotask` calls
- * within the same sync frame.
+ * lazily memoizes the verbose-mode detection (the `VERBOSE_UNCOMPUTED`
+ * sentinel means not yet computed); `scheduled` guards against redundant
+ * `queueMicrotask` calls within the same sync frame.
  */
 const state: {
   verified: boolean;
   available: boolean;
-  verboseCache: boolean | null;
+  verboseCache: boolean | typeof VERBOSE_UNCOMPUTED;
   scheduled: boolean;
 } = {
   available: true,
   scheduled: false,
-  verboseCache: null,
+  verboseCache: VERBOSE_UNCOMPUTED,
   verified: false,
 };
 
@@ -121,8 +128,14 @@ function detectVerbose(): boolean {
  * @returns Whether verbose logging is enabled for this process.
  */
 function getVerbose(): boolean {
-  state.verboseCache ??= detectVerbose();
-  return state.verboseCache;
+  /** Cached verbose flag; the sentinel means detection has not run yet. */
+  const cached = state.verboseCache;
+  if (cached !== VERBOSE_UNCOMPUTED)
+    return cached;
+  /** Computed verbose flag, stored so subsequent reads skip detection. */
+  const computed = detectVerbose();
+  state.verboseCache = computed;
+  return computed;
 }
 
 /**
@@ -364,13 +377,13 @@ export function verifyConsole(): boolean {
  * consoleSink.write({ level: 'info', message: 'server started', timestamp: Date.now() });
  * ```
  */
-function write(record: LogRecord,): void {
+function write(record: LogRecord,): Promise<void> {
   if (!state.available)
-    return;
+    return Promise.resolve();
 
   if ((!getVerbose()) && SILENT_LEVELS
     .has(record.level,))
-    return;
+    return Promise.resolve();
 
   buffer.push(record,);
 
@@ -378,6 +391,8 @@ function write(record: LogRecord,): void {
     state.scheduled = true;
     queueMicrotask(flushBuffer,);
   }
+
+  return Promise.resolve();
 }
 
 /**
@@ -394,7 +409,7 @@ function write(record: LogRecord,): void {
 export function __resetForTests(): void {
   buffer.length = 0;
   state.scheduled = false;
-  state.verboseCache = null;
+  state.verboseCache = VERBOSE_UNCOMPUTED;
   state.verified = false;
   state.available = true;
 }

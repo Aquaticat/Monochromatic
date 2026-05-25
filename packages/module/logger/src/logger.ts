@@ -26,30 +26,36 @@ import type {
  * Represents a sink with its verification status.
  */
 type SinkEntry = {
-  available: boolean | null;
+  available: boolean;
   sink: Sink;
   verify: Verify;
 };
 
-/** All sink backends to attempt, in priority order. */
+/**
+ * All sink backends to attempt, in priority order. Each entry starts
+ * `available: false` (not-yet-verified reads as unavailable, identical to
+ * a verified failure) and flips true once its `verify` confirms the
+ * backend; a tri-state with a `null` "pending" value would add no
+ * behaviour the `=== true` filters do not already give.
+ */
 const sinkEntries: SinkEntry[] = [
   {
-    available: null,
+    available: false,
     sink: consoleSink,
     verify: verifyConsole,
   },
   {
-    available: null,
+    available: false,
     sink: opfsSink,
     verify: verifyOpfs,
   },
   {
-    available: null,
+    available: false,
     sink: sessionStorageSink,
     verify: verifySessionStorage,
   },
   {
-    available: null,
+    available: false,
     sink: fileSink,
     verify: verifyFile,
   },
@@ -110,8 +116,7 @@ const initPromise: Promise<void> = initialize();
  */
 function recomputeAvailability(): void {
   state.hasAvailableSink = sinkEntries.some(function isAvailable(sinkEntry,) {
-    return sinkEntry.available
-      === true;
+    return sinkEntry.available;
   },);
 }
 
@@ -130,8 +135,7 @@ function createMethod(level: Level,): (message: string,) => void {
 
     /** Subset of sinks that survived verification; filtered fresh per call so a sink that drops out is excluded next time. */
     const available = sinkEntries.filter(function isAvailable(entry,) {
-      return entry.available
-        === true;
+      return entry.available;
     },);
     if (available.length
       === 0)
@@ -145,27 +149,19 @@ function createMethod(level: Level,): (message: string,) => void {
     };
 
     available.forEach(function writeToSink(entry,) {
-      try {
-        /** Sink write return value (void or Promise); when a Promise, its rejection marks the sink unavailable rather than crashing the caller. */
-        const result = entry.sink
-          .write(record,);
-        if (result instanceof Promise) {
-          // Fire-and-forget: awaiting would make the logger blocking
-          // oxlint-disable-next-line promise/prefer-await-to-then -- intentional fire-and-forget
-          void result.then(
-            // oxlint-disable-next-line promise/always-return -- fire-and-forget success handler
-            function noop() {/* success */},
-            function onReject() {
-              entry.available = false;
-              recomputeAvailability();
-            },
-          );
-        }
-      }
-      catch {
-        entry.available = false;
-        recomputeAvailability();
-      }
+      /** Sink write promise; its rejection marks the sink unavailable rather than crashing the caller. */
+      const result = entry.sink
+        .write(record,);
+      // Fire-and-forget: awaiting would make the logger blocking
+      // oxlint-disable-next-line promise/prefer-await-to-then -- intentional fire-and-forget
+      void result.then(
+        // oxlint-disable-next-line promise/always-return -- fire-and-forget success handler
+        function noop() {/* success */},
+        function onReject() {
+          entry.available = false;
+          recomputeAvailability();
+        },
+      );
     },);
 
     if (!state.hasAvailableSink)
@@ -193,8 +189,7 @@ async function flushAll(): Promise<void> {
       /** Optional sink-supplied flush hook; absent when the sink writes synchronously and needs no draining. */
       const sinkFlush = entry.sink
         .flush;
-      if ((entry.available
-        !== true) || ((typeof sinkFlush) !== 'function'))
+      if ((!entry.available) || ((typeof sinkFlush) !== 'function'))
         return;
       try {
         await sinkFlush();

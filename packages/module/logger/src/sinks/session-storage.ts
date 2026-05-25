@@ -68,9 +68,9 @@ export function verifySessionStorage(): boolean {
  *
  * @param record - log record to persist
  */
-function write(record: LogRecord,): void {
+function write(record: LogRecord,): Promise<void> {
   if (!state.available)
-    return;
+    return Promise.resolve();
 
   try {
     /** Counter-incremented storage key so each log entry occupies its own slot; the prefix namespaces them. */
@@ -84,11 +84,13 @@ function write(record: LogRecord,): void {
   catch {
     // Silently fail if storage is full or unavailable
   }
+
+  return Promise.resolve();
 }
 
 /**
  * SessionStorage sink that writes log records to browser sessionStorage.
- * Writes are synchronous, so no `flush` hook is needed.
+ * Writes persist immediately with no buffering, so no `flush` hook is needed.
  *
  * @example
  * ```ts

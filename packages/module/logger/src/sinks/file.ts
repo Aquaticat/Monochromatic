@@ -20,15 +20,12 @@ import type {
  */
 const state: {
   // oxlint-disable-next-line typescript/consistent-type-imports -- typeof import() cannot use import type syntax
-  appendFile: typeof import('node:fs/promises').appendFile | null;
-  filePath: string | null;
-  verifyPromise: Promise<boolean> | null;
+  appendFile?: typeof import('node:fs/promises').appendFile;
+  filePath?: string;
+  verifyPromise?: Promise<boolean>;
   available: boolean;
 } = {
-  appendFile: null,
   available: false,
-  filePath: null,
-  verifyPromise: null,
 };
 
 /**
@@ -234,7 +231,7 @@ async function runVerify(): Promise<boolean> {
  */
 export function verifyFile(): Promise<boolean> {
   if (state.verifyPromise
-    !== null)
+    !== undefined)
     return state.verifyPromise;
 
   state.verifyPromise = runVerify();
@@ -247,7 +244,7 @@ export function verifyFile(): Promise<boolean> {
  * @param record - log record to write
  */
 async function write(record: LogRecord,): Promise<void> {
-  // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath is string|null, checking both conditions
+  // oxlint-disable-next-line typescript/strict-boolean-expressions -- filePath/appendFile are optional (unset before verification); checking presence
   if ((!state.available) || (!state.filePath)
     || (!state.appendFile))
     return;

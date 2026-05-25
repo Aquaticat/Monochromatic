@@ -22,8 +22,9 @@ export function verifyNoop(): boolean {
  *
  * @param _record - log record to discard
  */
-function write(_record: LogRecord,): void {
-  // Intentionally empty - discards all logs
+function write(_record: LogRecord,): Promise<void> {
+  // Intentionally discards all logs; resolves immediately to match the async Sink contract
+  return Promise.resolve();
 }
 
 /**
