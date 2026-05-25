@@ -168,7 +168,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
     async function drainReader(): Promise<unknown> {
       try {
         // Streaming reader is inherently sequential.
-        /* oxlint-disable eslint/no-await-in-loop, eslint/no-constant-condition */
+        /* oxlint-disable eslint/no-await-in-loop */
         while (true) {
           /** Destructured read result; `done` ends the loop, `value` is the new text segment. */
           const {
@@ -184,7 +184,7 @@ export const importHandler: EventHandlerWithFetch = defineHandler(
             > (CHUNK_TARGET_BYTES * PENDING_BUFFER_MULTIPLE))
             await flushFromPending(false,);
         }
-        /* oxlint-enable eslint/no-await-in-loop, eslint/no-constant-condition */
+        /* oxlint-enable eslint/no-await-in-loop */
         // Drain anything left.
         await flushFromPending(true,);
         return undefined;

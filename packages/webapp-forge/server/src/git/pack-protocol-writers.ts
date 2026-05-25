@@ -54,7 +54,6 @@ export type RefUpdateResult = {
   readonly error?: string;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array payload is read-only consumed via `.subarray`; the rule cannot model TypedArray immutability. */
 /**
  * Splits `payload` into sideband-multiplexed pkt-lines on the given channel.
  *
@@ -102,9 +101,7 @@ export function multiplexSideband(row: {
   }
   return out;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array packfile is read-only consumed; the rule cannot model TypedArray immutability. */
 /**
  * Builds a complete `git-upload-pack` response stream.
  *
@@ -158,9 +155,7 @@ export function writeUploadPackResponse(row: {
   chunks.push(row.packfile,);
   return chunks;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array chunks in reduce callbacks are read-only consumed; the rule cannot model TypedArray immutability. */
 /**
  * Builds a `git-receive-pack` status report.
  *
@@ -261,7 +256,6 @@ export function writeReceivePackResponse(row: {
     flushPkt(),
   ];
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /** Sideband channel constants exported for tests and `iso-server.ts`. */
 export const SidebandChannels: {

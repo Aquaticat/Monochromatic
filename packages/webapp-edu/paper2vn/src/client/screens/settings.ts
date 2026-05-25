@@ -148,7 +148,6 @@ function goBackToMenu(): void {
   navigate('menu',);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is the live mount target; the function appends children and mutates the DOM, so a readonly type would misdescribe the contract. */
 /**
  * Mounts the settings screen.
  *
@@ -381,7 +380,6 @@ function mount(root: HTMLElement,): void {
   },);
   root.append(screen,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Registers the settings screen with the router.

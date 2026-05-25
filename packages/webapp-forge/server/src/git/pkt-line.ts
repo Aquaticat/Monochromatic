@@ -63,7 +63,6 @@ export function delimPkt(): Uint8Array {
   return new Uint8Array(DELIM_PKT,);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array payload is read-only consumed (only `.byteLength` and bytewise copy into the output frame); the rule cannot model TypedArray immutability. */
 /**
  * Encodes one pkt-line: prepends the hex length prefix to `payload`.
  *
@@ -104,7 +103,6 @@ export function encodePkt(payload: Uint8Array | string,): Uint8Array {
   );
   return out;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Decoded pkt-line. `null` represents a flush-pkt; `'delim'` represents a delim-pkt;
@@ -112,7 +110,6 @@ export function encodePkt(payload: Uint8Array | string,): Uint8Array {
  */
 export type PktLine = Uint8Array | null | 'delim';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array data is read-only consumed via `.subarray` only; the rule cannot model TypedArray immutability. */
 /**
  * Decodes the `data` byte stream into a list of pkt-lines.
  *
@@ -188,4 +185,3 @@ export function decodePktLines(data: Uint8Array,): PktLine[] {
   }
   return out;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

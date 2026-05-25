@@ -26,7 +26,6 @@ export type StoragePutItem = {
   readonly body: Uint8Array;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Storage interface bytes are passed through to implementations (in-memory, S3) that legitimately need the Uint8Array contract; the rule cannot model that the interface guarantees read-only consumption. */
 /** Object-storage interface implemented by every adapter. */
 export type Storage = {
   /**
@@ -75,4 +74,3 @@ export type Storage = {
    */
   list(prefix: string,): Promise<string[]>;
 };
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

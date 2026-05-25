@@ -88,7 +88,6 @@ export function el<K extends keyof TagNameMap,>(
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `parent` is a live DOM Node that this function mutates by clearing its children; marking it readonly would misdescribe the API contract. */
 /**
  * Removes every child from a node.
  *
@@ -110,4 +109,3 @@ export function clear(parent: Node,): void {
     parent.firstChild
       .remove();
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

@@ -17,7 +17,6 @@ type TextItem = {
   hasEOL?: boolean;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `file` is a Web `File`/`Blob` from the browser; reading consumes the underlying stream (.arrayBuffer()), so a readonly type would misdescribe the API contract. */
 /**
  * Extracts plain text from a PDF file.
  *
@@ -96,4 +95,3 @@ export async function extractPdf(file: File | Blob,): Promise<string> {
   },),);
   return pages.join('\n\n',);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

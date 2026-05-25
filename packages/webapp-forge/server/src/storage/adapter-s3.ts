@@ -220,7 +220,6 @@ function decodeXmlEntities(value: string,): string {
     );
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Web `Response` has mutator-looking methods (`text`, `arrayBuffer`); we only read via `.status`, `.text()`, `.arrayBuffer()`. */
 /**
  * Throws when an S3 response is non-2xx (and not 404 for GET/HEAD).
  *
@@ -253,7 +252,6 @@ async function throwOnError(row: {
       .statusText} ${body}`,
   );
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `client` is the platform fetch client whose `fetch` method has mutable signature; we only call `.fetch`. */
 /**

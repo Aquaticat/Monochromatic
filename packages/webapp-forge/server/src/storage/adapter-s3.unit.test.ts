@@ -48,7 +48,6 @@ type FakeServer = {
   readonly log: RecordedRequest[];
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `input` follows the platform `fetch` API contract; `Request` has mutator methods (`clone`, `text`) by spec. */
 /**
  * Resolves the various `fetch` input shapes to a string URL.
  *
@@ -68,7 +67,6 @@ function resolveUrl(input: string | URL | Request,): string {
     return input.href;
   return input.url;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Builds a fake S3 server backed by an in-memory `Map`. The returned
@@ -87,7 +85,6 @@ function createFakeServer(): FakeServer {
   const store = new Map<string, Uint8Array>();
   const log: RecordedRequest[] = [];
 
-  /* oxlint-disable typescript/prefer-readonly-parameter-types -- `fetch` signature follows the platform fetch API contract; `Request` and `RequestInit` carry mutator methods by spec. */
   return {
     client: {
       async fetch(
@@ -168,7 +165,6 @@ function createFakeServer(): FakeServer {
     store,
     log,
   };
-  /* oxlint-enable typescript/prefer-readonly-parameter-types */
 }
 
 await describe({

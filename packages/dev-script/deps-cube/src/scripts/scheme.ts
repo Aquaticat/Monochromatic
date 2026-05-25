@@ -61,7 +61,7 @@ export type ChromeColors = {
 
 //region Palettes
 
-/* oxlint-disable eslint/no-magic-numbers, stylistic/array-element-per-line, stylistic/tuple-per-line -- 8-bit RGBA components within fixed 4-element tuples; vertical splits per channel make the palette table unreadable. */
+/* oxlint-disable eslint/no-magic-numbers, stylistic/array-element-per-line -- 8-bit RGBA components within fixed 4-element tuples; vertical splits per channel make the palette table unreadable. */
 /**
  * Dark-mode palette; light tones so chrome reads against the
  * dark page background (`--bg-page: #0f0f0f`).
@@ -85,7 +85,7 @@ const LIGHT_CHROME: ChromeColors = {
   originLabel: [80, 80, 80, 255,],
   nameLabel: [50, 50, 50, 255,],
 };
-/* oxlint-enable eslint/no-magic-numbers, stylistic/array-element-per-line, stylistic/tuple-per-line */
+/* oxlint-enable eslint/no-magic-numbers, stylistic/array-element-per-line */
 
 //endregion Palettes
 

@@ -58,7 +58,6 @@ export type ReceivePackOutcome = {
   readonly applied: readonly RefUpdateTriplet[];
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array body buffer is read-only consumed (parseUploadPackBody only calls `.subarray`); the rule cannot model TypedArray immutability. */
 /**
  * Handles a `POST /x/y.git/git-upload-pack` request.
  *
@@ -116,9 +115,7 @@ export async function handleUploadPack(
   },);
   return concatChunks(chunks,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array body buffer is read-only consumed (parseReceivePackBody only calls `.subarray`); the rule cannot model TypedArray immutability. */
 /**
  * Handles a `POST /x/y.git/git-receive-pack` request.
  *
@@ -253,7 +250,6 @@ export async function handleReceivePack(
     applied,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Reads the contents of a single ref. Returns `undefined` when the
@@ -342,7 +338,6 @@ export async function readLooseObjectBytes(
   return new Uint8Array(await readFile(path,),);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array has mutator methods (`set`, `copyWithin`); rule cannot infer that this helper only reads from chunks and writes into the output buffer. */
 /**
  * Concatenates byte chunks into a single `Uint8Array`.
  *
@@ -373,4 +368,3 @@ function concatChunks(chunks: readonly Uint8Array[],): Uint8Array {
   }
   return out;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

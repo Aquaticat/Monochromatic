@@ -116,14 +116,12 @@ class DisposableServer implements AsyncDisposable {
   /** Bound server handle returned by `serve()`. */
   readonly server: ServeHandle;
 
-  /* oxlint-disable typescript/prefer-readonly-parameter-types -- ServeHandle is from srvx and has mutable lifecycle methods (`close`); we only hand it back to its own `close` call in dispose. */
   /**
    * @param server - the bound srvx server
    */
   constructor({ server, }: { readonly server: ServeHandle; },) {
     this.server = server;
   }
-  /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
   /**
    * Closes the server and severs in-flight connections. Bound via

@@ -125,10 +125,8 @@ export function attachActionHandler(
       const button = target.closest<HTMLElement>('[data-action]',);
       if (button === null)
         return;
-      /* oxlint-disable typescript/no-unsafe-type-assertion -- closest returns HTMLElement with dataset */
       /** Action name from the button's `data-action` attribute, forwarded to the custom event. */
       const { action, } = (button as HTMLElement).dataset;
-      /* oxlint-enable typescript/no-unsafe-type-assertion */
 
       host.dispatchEvent(
         new CustomEvent(

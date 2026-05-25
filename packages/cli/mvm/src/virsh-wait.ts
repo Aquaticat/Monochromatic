@@ -65,7 +65,7 @@ export async function waitForGuestAgent({
 
   rl.info(`waiting for guest agent on ${name}...`,);
 
-  // oxlint-disable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new -- polling loop
+  // oxlint-disable no-await-in-loop, promise/avoid-new -- polling loop
   while (true) {
     try {
       await virsh({ args: [
@@ -100,7 +100,7 @@ export async function waitForGuestAgent({
       },);
     }
   }
-  // oxlint-enable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new
+  // oxlint-enable no-await-in-loop, promise/avoid-new
 }
 
 /**
@@ -162,7 +162,7 @@ export async function waitForShutdown({ name, }: { readonly name: string; },): P
 
   rl.info(`waiting for VM ${name} to shut down...`,);
 
-  // oxlint-disable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new -- polling loop
+  // oxlint-disable no-await-in-loop, promise/avoid-new -- polling loop
   while (true) {
     /** Current libvirt domain state string; loop exits when it reaches `shut off`. */
     const state = await virsh({ args: [
@@ -195,5 +195,5 @@ export async function waitForShutdown({ name, }: { readonly name: string; },): P
       );
     },);
   }
-  // oxlint-enable typescript/no-unnecessary-condition, no-await-in-loop, promise/avoid-new
+  // oxlint-enable no-await-in-loop, promise/avoid-new
 }

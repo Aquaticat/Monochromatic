@@ -58,10 +58,8 @@ async function readKeyFromMcpConfig(): Promise<string | undefined> {
       MCP_CONFIG_PATH,
       'utf8',
     );
-    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns any; we validate shape below */
     /** Parsed mcp.json payload before structural validation. */
     const config: unknown = JSON.parse(contents,);
-    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     if (((typeof config) !== 'object') || (config === null))
       return undefined;
     /** MCP server entries that may carry the Morph key under env. */

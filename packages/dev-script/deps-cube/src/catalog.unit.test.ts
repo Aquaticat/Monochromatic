@@ -162,14 +162,12 @@ await describe({
         ): name is string {
           return name !== undefined;
         },);
-        /* oxlint-disable typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-call -- oxlint's type-aware mode loses `string[]` through the readonly+toSorted chain; tsgo confirms the types resolve. */
         const namedCatalogs: readonly string[] = present.toSorted(function alphabetical(
           a: string,
           b: string,
         ) {
           return a.localeCompare(b,);
         },);
-        /* oxlint-enable typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-call */
         expect(namedCatalogs,).toEqual([
           'react18',
           'react19',

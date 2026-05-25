@@ -129,7 +129,6 @@ export async function listAllRefs(row: { readonly gitdir: string; },): Promise<R
   return out;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array buffer is read-only consumed (`writeFile` and `git.indexPack` only read bytes); the rule cannot model TypedArray immutability. */
 /**
  * Writes `packBytes` to a temp file under the gitdir's pack directory,
  * then asks isomorphic-git to index it.
@@ -192,7 +191,6 @@ export async function indexPackData(row: {
     throw err;
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Applies one ref update triplet. Validates that the current ref value

@@ -16,10 +16,8 @@ export type ScreenId =
   | 'saves'
   | 'log';
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is a live HTMLElement that screen mount fns mutate (append, replaceChildren, addEventListener); marking it readonly would misdescribe the DOM-mount contract. */
 /** Function that mounts a screen into the given container. */
 export type ScreenRenderer = (root: HTMLElement,) => void;
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /** Function that tears down a previously mounted screen. */
 export type ScreenTeardown = () => void;

@@ -93,7 +93,6 @@ export async function buildInfoRefsAdvertisement(row: {
   return concatChunks(chunks,);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array has mutator methods (`set`, `copyWithin`); rule cannot infer that this helper only reads from chunks and writes into the output buffer. */
 /**
  * Concatenates byte chunks into a single `Uint8Array`. Local-only because
  * `iso-server.ts` ships its own copy.
@@ -125,4 +124,3 @@ function concatChunks(chunks: readonly Uint8Array[],): Uint8Array {
   }
   return out;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

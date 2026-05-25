@@ -113,7 +113,6 @@ function appendLog(entry: Readonly<LogEntry>,): void {
   },);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is the live mount target; the function appends children and mutates the DOM, so a readonly type would misdescribe the contract. */
 /**
  * Mounts the lecture screen against the active save.
  *
@@ -376,7 +375,6 @@ function mount(root: HTMLElement,): void {
     );
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Registers the lecture screen with the router.

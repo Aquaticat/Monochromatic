@@ -83,7 +83,6 @@ type DeltaPayload = {
   };
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Web `Headers` has `set`/`delete` mutators by spec; we only read via `.get`. */
 /**
  * Resolves the actor identity from a Better Auth session, falling back
  * to the legacy `X-Forge-User` dev header in non-production environments.
@@ -129,7 +128,6 @@ async function resolveActor(headers: Headers,): Promise<DeltaActor | null> {
     login: fallbackUser.login,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Parsed `(owner, repo, kind, number?)` view of a path the delta

@@ -5,7 +5,6 @@
  * text; no rendering, just text extraction for the LLM.
  */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `file` is a Web `File`/`Blob` from the browser file picker; these are external SDK objects with mutating read methods (`.text()`, `.arrayBuffer()` consume the stream), so a readonly type would misdescribe the API contract. */
 /**
  * Reads `file` as UTF-8 text.
  *
@@ -23,4 +22,3 @@
 export async function extractText(file: File | Blob,): Promise<string> {
   return await file.text();
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

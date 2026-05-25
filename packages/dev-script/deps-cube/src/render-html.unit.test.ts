@@ -150,15 +150,11 @@ await describe({
     it({
       name: 'composes a self-contained HTML document with the stubbed bundle inlined',
       fn: async ({ sinon, },) => {
-        /* oxlint-disable typescript-eslint/no-unsafe-call -- sinon's overload set doesn't unify with the Bun ambient namespace; this is a typed stub on a known method. */
-        /* oxlint-disable typescript-eslint/no-unsafe-member-access -- chai-as-promised .resolves chain isn't typed against sinon's stub return. */
         sinon.stub(Bun, 'build',).resolves({
           success: true,
           outputs: [{ text: async (): Promise<string> => FIXTURE_BUNDLE, } as any,],
           logs: [],
         } as unknown as Awaited<ReturnType<typeof Bun.build>>,);
-        /* oxlint-enable typescript-eslint/no-unsafe-member-access */
-        /* oxlint-enable typescript-eslint/no-unsafe-call */
 
         const html = await renderHtml({ probes: PROBES, },);
 
@@ -192,8 +188,6 @@ await describe({
     it({
       name: 'escapes </script and <!-- inside the inlined bundle and data',
       fn: async ({ sinon, },) => {
-        /* oxlint-disable typescript-eslint/no-unsafe-call -- sinon's overload set doesn't unify with the Bun ambient namespace; this is a typed stub on a known method. */
-        /* oxlint-disable typescript-eslint/no-unsafe-member-access -- chai-as-promised .resolves chain isn't typed against sinon's stub return. */
         sinon.stub(Bun, 'build',).resolves({
           success: true,
           outputs: [
@@ -203,8 +197,6 @@ await describe({
           ],
           logs: [],
         } as unknown as Awaited<ReturnType<typeof Bun.build>>,);
-        /* oxlint-enable typescript-eslint/no-unsafe-member-access */
-        /* oxlint-enable typescript-eslint/no-unsafe-call */
 
         const html = await renderHtml({ probes: PROBES, },);
         expect(html,).toContain(String.raw`<\/script>`,);
@@ -220,8 +212,6 @@ await describe({
     it({
       name: 'surfaces bundle failures with the bundler logs joined in the error',
       fn: async ({ sinon, },) => {
-        /* oxlint-disable typescript-eslint/no-unsafe-call -- sinon's overload set doesn't unify with the Bun ambient namespace; this is a typed stub on a known method. */
-        /* oxlint-disable typescript-eslint/no-unsafe-member-access -- chai-as-promised .resolves chain isn't typed against sinon's stub return. */
         sinon.stub(Bun, 'build',).resolves({
           success: false,
           outputs: [],
@@ -230,8 +220,6 @@ await describe({
             { message: 'second error', },
           ],
         } as unknown as Awaited<ReturnType<typeof Bun.build>>,);
-        /* oxlint-enable typescript-eslint/no-unsafe-member-access */
-        /* oxlint-enable typescript-eslint/no-unsafe-call */
 
         const caught = await (async function captureError() {
           try {

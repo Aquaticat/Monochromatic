@@ -163,12 +163,10 @@ export function mountSelection(
      * @returns running tally inside the target line
      */
     function tallyWithinLine(root: HTMLElement,): number {
-      /* oxlint-disable no-restricted-syntax/no-function-root-let -- DFS state: `withinLine` accumulates as the walk crosses text nodes; `foundTarget` flips to short-circuit later siblings once the requested target is hit */
       /** Running tally inside the target line; finalised when the DFS hits the target node. */
       let withinLine = 0;
       /** DFS sentinel; flipped once the target node is reached so later nodes are skipped. */
       let foundTarget = false;
-      /* oxlint-enable no-restricted-syntax/no-function-root-let */
       /**
        * Recursive DFS that tallies code-unit lengths of text nodes
        * preceding the target `(node, offset)`. Sets `foundTarget` once

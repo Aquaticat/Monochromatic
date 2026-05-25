@@ -72,7 +72,6 @@ export type Actor = {
   login: string;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- ActorEvent wraps a Web `Headers` whose `set`/`delete` methods are mutators by spec; we only read via `.get`. */
 /**
  * Resolves the actor identity from a Better Auth session, falling back
  * to the legacy `X-Forge-User: <login>` header in non-production
@@ -139,7 +138,6 @@ export async function requireActor(event: ActorEvent,): Promise<Actor> {
     login: user.login,
   };
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Drains every event newer than the in-memory cursor and flushes the

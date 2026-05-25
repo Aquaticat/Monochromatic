@@ -54,7 +54,6 @@ async function freshGitdirRoot(): Promise<string> {
   return root;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array has mutator methods (`set`, `copyWithin`); rule cannot infer that this helper only reads from chunks and writes into the output buffer. */
 /**
  * Concatenates byte chunks.
  *
@@ -82,7 +81,6 @@ function concat(chunks: readonly Uint8Array[],): Uint8Array {
   }
   return out;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Builds a self-contained commit in a temp gitdir and returns the

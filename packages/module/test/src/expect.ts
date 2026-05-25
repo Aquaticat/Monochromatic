@@ -26,7 +26,6 @@ export type AsyncMatcherSet = {
   [K in keyof MatcherSet]: (...args: Parameters<MatcherSet[K]>) => Promise<void>;
 };
 
-/* oxlint-disable no-unsafe-type-assertion -- literal array matches MatcherSet keys by construction */
 /**
  * Static list of matcher method names, extracted once to avoid
  * creating a throwaway chai assertion on every async matcher wrapping call.
@@ -75,7 +74,6 @@ const MATCHER_KEYS = [
   'toHaveLastReturnedWith',
   'toHaveNthReturnedWith',
 ] as const satisfies readonly (keyof MatcherSet)[];
-/* oxlint-enable no-unsafe-type-assertion */
 
 //region Async matcher builders
 

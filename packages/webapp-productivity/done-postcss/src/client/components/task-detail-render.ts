@@ -145,14 +145,10 @@ export function renderTaskDetail(
     },),
   );
 
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- h() created these elements with the correct tag */
   /** Typed alias of `titleInput` so the action handler and return value receive the precise element type. */
   const typedTitleInput = titleInput as HTMLInputElement;
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- h() created these elements with the correct tag */
   /** Typed alias of `descInput` so callers reading `.value` see the textarea-specific API. */
   const typedDescInput = descInput as HTMLTextAreaElement;
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
 
   attachActionHandler({
     shadow,

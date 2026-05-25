@@ -42,7 +42,6 @@ const SIDEBAND_CHUNKS_TO_PROVOKE = 3;
 /** Bytes of payload per chunk in the sideband chunking test. */
 const SIDEBAND_CHUNK_SIZE = 65_518;
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Uint8Array has mutator methods; this helper only reads from chunks and writes into the output buffer. */
 /**
  * Concatenates pkt-line bytes into a single `Uint8Array`.
  *
@@ -70,7 +69,6 @@ function concat(chunks: readonly Uint8Array[],): Uint8Array {
   }
   return out;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 await describe({
   name: 'pack-protocol',

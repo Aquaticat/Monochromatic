@@ -115,13 +115,11 @@ export async function run(
 }> {
   /** Prepared once for this call; not memoised because the SQL string is the caller's responsibility. */
   const stmt = db.prepare(input.sql,);
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- Turso typed result */
   return await stmt.run(...(input.params
     ?? []),) as {
     changes: number;
     lastInsertRowid: number;
   };
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
 }
 
 /**

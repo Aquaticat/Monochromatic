@@ -127,7 +127,6 @@ export type WriteBuffer = {
   readonly pending: number;
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `Promise<unknown>` is the standard fire-and-forget shape; the rule cannot model its single-resolution semantics. */
 /**
  * Fire-and-forget helper that adapts a promise to the void-returning
  * call sites. Errors are swallowed; an explicit `flush()` await re-runs
@@ -151,7 +150,6 @@ function detach(promise: Promise<unknown>,): void {
     }
   }());
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `storage: Storage` has mutator methods (`put`, `delete`) by interface contract; we delegate to them through the same contract. */
 /**

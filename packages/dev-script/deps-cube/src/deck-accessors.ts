@@ -243,7 +243,7 @@ export function unknownClusterPosition(
     ,
     zMax,
   ] = bounds.z;
-  /* oxlint-disable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, eslint-plugin-unicorn/number-literal-case, eslint-plugin-unicorn/prefer-math-trunc -- Knuth-multiplicative-hash constant + per-byte shift offsets are intrinsic to the algorithm; the `>>> 0` is the canonical unsigned-32-bit coercion (Math.trunc returns signed); named consts would obscure the bit layout. */
+  /* oxlint-disable eslint/no-magic-numbers, eslint-plugin-unicorn/number-literal-case, eslint-plugin-unicorn/prefer-math-trunc -- Knuth-multiplicative-hash constant + per-byte shift offsets are intrinsic to the algorithm; the `>>> 0` is the canonical unsigned-32-bit coercion (Math.trunc returns signed); named consts would obscure the bit layout. */
   /**
    * Knuth multiplicative hash on the probe index, giving a deterministic 32-bit
    * value to derive three independent jitter offsets from.
@@ -258,7 +258,7 @@ export function unknownClusterPosition(
   /** Z jitter from the third byte of `hash`, same range as `jx`. */
   const jz = ((((hash >> 16) & 0xff) / 0xff) - 0.5) * 2
     * UNKNOWN_CLUSTER_JITTER;
-  /* oxlint-enable eslint/no-magic-numbers, eslint-plugin-unicorn/numeric-separators-style, eslint-plugin-unicorn/number-literal-case, eslint-plugin-unicorn/prefer-math-trunc */
+  /* oxlint-enable eslint/no-magic-numbers, eslint-plugin-unicorn/number-literal-case, eslint-plugin-unicorn/prefer-math-trunc */
   return [
     xMax + UNKNOWN_CLUSTER_OFFSET
       + jx,

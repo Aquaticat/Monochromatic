@@ -62,10 +62,8 @@ export async function promoteToTier3(
   // orphan draft on the server).
   /** Allocated up front so the reserved tier-3 slot can capture the id before any await yields control. */
   const newDraftId = randomId();
-  /* oxlint-disable eslint/no-magic-numbers -- tier discriminant */
   input.state
     .tier = 3;
-  /* oxlint-enable eslint/no-magic-numbers */
   input.state
     .tier3 = {
     currentSeq: 0,
@@ -93,10 +91,8 @@ export async function promoteToTier3(
   if (compiled.chunks
     .length
     === 0) {
-    /* oxlint-disable eslint/no-magic-numbers -- tier discriminant */
     input.state
       .tier = 2;
-    /* oxlint-enable eslint/no-magic-numbers */
     input.state
       .tier3 = null;
     setStatus({

@@ -163,7 +163,6 @@ export function randomId(): string {
   }`;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `HTMLFormElement` has mutating DOM methods by design */
 /**
  * Reads the current identity from the form's select element. Used by
  * the edit-mode setup before the composer state object is built.
@@ -182,7 +181,6 @@ export function getIdentity(form: HTMLFormElement,): string {
     ?.value
     ?? '';
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Parses the optional `data-edit-message-id` attribute off the form.
@@ -209,7 +207,6 @@ export function parseEditId(raw: string | undefined,): number | null {
     && (value > 0) ? value : null;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `HTMLFormElement` has mutating DOM methods by design */
 /**
  * Appends a small status `<div>` below the composer if one is not
  * already there.
@@ -234,7 +231,6 @@ export function appendStatusElement(form: HTMLFormElement,): HTMLElement {
   form.append(status,);
   return status;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /* oxlint-disable typescript/prefer-readonly-parameter-types -- `status` is `HTMLElement` whose `textContent` is mutated below */
 /**
@@ -259,7 +255,6 @@ export function setStatus(
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `HTMLFormElement` has mutating DOM methods by design */
 /**
  * Adds the "volatile mode" badge when persistent storage is unavailable
  * so the user knows their unsent buffer is in-memory.
@@ -279,4 +274,3 @@ export function appendVolatileBadge(form: HTMLFormElement,): void {
   badge.title = 'No persistent storage available; unsent edits are lost on reload';
   form.append(badge,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

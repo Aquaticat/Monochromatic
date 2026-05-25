@@ -85,7 +85,6 @@ const SEED_USERS: readonly {
   },
 ];
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- Turso `Database` is an external SDK class whose methods (exec, prepare) mutate connection state by design */
 /**
  * Runs the schema migration and seeds the `users` table.
  *
@@ -118,4 +117,3 @@ export async function runMigrations(db: Database,): Promise<void> {
     );
   }
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */

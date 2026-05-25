@@ -19,7 +19,6 @@ function goBackToLecture(): void {
   navigate('lecture',);
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is the live mount target; the function appends children and mutates the DOM, so a readonly type would misdescribe the contract. */
 /**
  * Mounts the log screen.
  *
@@ -99,7 +98,6 @@ function mount(root: HTMLElement,): void {
   },);
   root.append(screen,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Registers the log screen with the router.

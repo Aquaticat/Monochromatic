@@ -354,10 +354,8 @@ export function decodeState(
   try {
     /** URI-decoded JSON payload extracted from the hash. */
     const json = decodeURIComponent(encoded,);
-    /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- JSON.parse returns `any`; validateAppState narrows below. */
     /** Untrusted parsed JSON; downgraded to `unknown` so `validateAppState` is the only narrowing path. */
     const parsed = JSON.parse(json,) as unknown;
-    /* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
     return validateAppState(parsed,);
   }
   catch {

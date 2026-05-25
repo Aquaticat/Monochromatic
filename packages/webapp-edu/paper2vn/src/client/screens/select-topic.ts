@@ -47,7 +47,6 @@ function newSaveId(): string {
     * FALLBACK_ID_SUFFIX_RANGE,)}`;
 }
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- `root` is the live mount target; the function appends children and mutates the DOM, so a readonly type would misdescribe the contract. */
 /**
  * Mounts the select-topic screen.
  *
@@ -208,7 +207,6 @@ function mount(root: HTMLElement,): void {
   },);
   root.append(screen,);
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Registers the select-topic screen with the router.
