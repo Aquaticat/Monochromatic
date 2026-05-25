@@ -4,126 +4,21 @@
  * @module
  */
 
-import {
-  subjectAgreement,
-  subjectSurface,
-  WH_SUBJECT_AGREEMENT,
-} from '../../agreement.ts';
 import type {
-  Adverbial,
-  NounPhrase,
   Sentence,
-  VerbPhrase,
   WhQuestion,
 } from '../../ast.ts';
-import type { SubjectEntry, } from '../../entries.ts';
 import {
-  applyCapitalization,
-  joinTokens,
-} from '../../render-helpers.ts';
+  renderDeclarative,
+  renderImperative,
+  renderYesNo,
+} from './render-sentence-core.ts';
+import type { SentenceDeps, } from './render-sentence-helpers.ts';
 import {
-  complementFormForVerb,
-  declarativeVerbSurface,
-  questionVerbParts,
-  subjectQuestionVerbSurface,
-  type EnglishComplementForm,
-} from './render-vp.ts';
-import {
-  EN_CASE_INVARIANTS,
-  type EnglishVerbEntry,
-} from './types.ts';
-
-/**
- * Dependency bundle for {@link makeEnglishSentenceRenderer}.
- */
-type SentenceDeps<S extends string, V extends string, N extends string,> = {
-  readonly subjects: Readonly<Record<S, SubjectEntry>>;
-  readonly verbs: Readonly<Record<V, EnglishVerbEntry>>;
-  readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
-  readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
-  readonly renderAdverbials: (
-    advs: readonly Adverbial<S, N>[] | undefined,
-  ) => string | undefined;
-};
-
-/**
- * Renders an optional object slot, returning `undefined` when absent.
- *
- * @param object - optional object AST
- *
- * @param renderNounPhrase - noun-phrase render function
- *
- * @returns rendered surface or undefined
- */
-function renderOptionalObject<S extends string, N extends string,>(
-  {
-    object,
-    renderNounPhrase,
-  }: {
-    readonly object: NounPhrase<S, N> | undefined;
-    readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
-  },
-): string | undefined {
-  return object === undefined ? undefined : renderNounPhrase(object,);
-}
-
-/**
- * Renders an optional infinitive complement (`to + ...`) returning `undefined` when absent.
- *
- * @param complement - optional complement AST
- *
- * @param renderVerbPhrase - verb-phrase render function
- *
- * @param form - complement attachment mode for the predicate head
- *
- * @returns rendered surface with `to` prefix, bare surface, or undefined
- */
-function renderOptionalComplement<S extends string, V extends string, N extends string,>(
-  {
-    complement,
-    renderVerbPhrase,
-    form,
-  }: {
-    readonly complement: { readonly phrase: VerbPhrase<S, V, N>; } | undefined;
-    readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
-    readonly form: EnglishComplementForm;
-  },
-): string | undefined {
-  if (complement === undefined)
-    return undefined;
-  /** Rendered nested verb phrase before complement marker selection. */
-  const rendered = renderVerbPhrase(complement.phrase,);
-  return form === 'bare' ? rendered : `to ${rendered}`;
-}
-
-/**
- * Capitalizes a sentence body using English case-invariants.
- *
- * @param body - rendered body before sentence-case fixup
- *
- * @returns same body with the first character uppercased unless it is in the invariant set
- */
-function capitalizeBody(body: string,): string {
-  return applyCapitalization({
-    text: body,
-    mode: 'firstLetter',
-    caseInvariants: EN_CASE_INVARIANTS,
-  },);
-}
-
-/**
- * Capitalizes a wh-word for the head position.
- *
- * @param wh - wh-word lowercase form
- *
- * @returns wh-word with the first character uppercased
- */
-function capitalizeWh(wh: string,): string {
-  return wh.charAt(0,)
-    .toUpperCase()
-    + wh
-    .slice(1,);
-}
+  renderWhAdverbial,
+  renderWhObject,
+  renderWhSubject,
+} from './render-sentence-wh.ts';
 
 /**
  * Builds an English sentence renderer.
@@ -144,291 +39,6 @@ export function makeEnglishSentenceRenderer<
 >(
   deps: SentenceDeps<S, V, N>,
 ): (sentence: Sentence<S, V, N>,) => string {
-  /** Destructured locale dependencies captured for use across every sub-renderer below. */
-  const {
-    subjects,
-    verbs,
-    renderNounPhrase,
-    renderVerbPhrase,
-    renderAdverbials,
-  } = deps;
-
-  /**
-   * Renders a declarative sentence.
-   *
-   * @param sentence - declarative AST
-   *
-   * @returns rendered surface with sentence-case fixup and terminator
-   */
-  function renderDeclarative(
-    sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.declarative'; }>,
-  ): string {
-    /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense
-      ?? 'present';
-    /** Agreement metadata extracted from the subject reference. */
-    const agreement = subjectAgreement({
-      ref: sentence.subject,
-      subjects,
-    },);
-    /** Subject surface used in the leading position. */
-    const subj = subjectSurface({
-      ref: sentence.subject,
-      subjects,
-    },);
-    /** Verb entry used for finite surface and complement attachment. */
-    const entry = verbs[sentence.predicate
-      .verb];
-    /** Finite verb surface for this subject + tense. */
-    const finite = declarativeVerbSurface({
-      entry,
-      tense,
-      agreement,
-    },);
-    /** Future tense wraps the base in `will`. */
-    const verb = tense === 'future' ? `will ${finite}` : finite;
-    /** Rendered object slot. */
-    const object = renderOptionalObject({
-      object: sentence.predicate
-        .object,
-      renderNounPhrase,
-    },);
-    /** Rendered infinitive complement. */
-    const complement = renderOptionalComplement({
-      complement: sentence.predicate
-        .complement,
-      renderVerbPhrase,
-      form: complementFormForVerb({ entry, },),
-    },);
-    /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate
-      .adverbials,);
-    /** Sentence body before terminator. */
-    const body = joinTokens([
-      subj,
-      verb,
-      object,
-      complement,
-      adverbials,
-    ],);
-    return `${capitalizeBody(body,)}${sentence.terminator
-      ?? '.'}`;
-  }
-
-  /**
-   * Renders a yes/no question with do-support.
-   *
-   * @param sentence - yes/no AST
-   *
-   * @returns rendered surface with auxiliary, sentence-case fixup, and terminator
-   */
-  function renderYesNo(
-    sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.question.yesNo'; }>,
-  ): string {
-    /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense
-      ?? 'present';
-    /** Agreement metadata. */
-    const agreement = subjectAgreement({
-      ref: sentence.subject,
-      subjects,
-    },);
-    /** Question verb parts chosen from the entry's auxiliary strategy. */
-    const questionVerb = questionVerbParts({
-      entry: verbs[sentence.predicate
-        .verb],
-      tense,
-      agreement,
-    },);
-    /** Subject surface placed after the auxiliary. */
-    const subj = subjectSurface({
-      ref: sentence.subject,
-      subjects,
-    },);
-    /** Rendered object slot. */
-    const object = renderOptionalObject({
-      object: sentence.predicate
-        .object,
-      renderNounPhrase,
-    },);
-    /** Rendered infinitive or bare complement. */
-    const complement = renderOptionalComplement({
-      complement: sentence.predicate
-        .complement,
-      renderVerbPhrase,
-      form: questionVerb.complementForm,
-    },);
-    /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate
-      .adverbials,);
-    /** Sentence body before sentence-case fixup. */
-    const body = joinTokens([
-      questionVerb.auxiliary,
-      subj,
-      questionVerb.lexicalVerb,
-      object,
-      complement,
-      adverbials,
-    ],);
-    return `${capitalizeBody(body,)}${sentence.terminator
-      ?? '?'}`;
-  }
-
-  /**
-   * Renders a wh-subject question.
-   *
-   * @param sentence - wh-subject AST
-   *
-   * @returns rendered surface fronted with `Who`
-   */
-  function renderWhSubject(
-    sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.subject'; }>,
-  ): string {
-    /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense
-      ?? 'present';
-    /** Verb entry used for the finite question head. */
-    const entry = verbs[sentence.predicate
-      .verb];
-    /** Wh-subject treated as third-person singular for ordinary finite agreement. */
-    const verb = subjectQuestionVerbSurface({
-      entry,
-      tense,
-      agreement: WH_SUBJECT_AGREEMENT,
-    },);
-    /** Rendered object slot. */
-    const object = renderOptionalObject({
-      object: sentence.predicate
-        .object,
-      renderNounPhrase,
-    },);
-    /** Rendered infinitive complement. */
-    const complement = renderOptionalComplement({
-      complement: sentence.predicate
-        .complement,
-      renderVerbPhrase,
-      form: complementFormForVerb({ entry, },),
-    },);
-    /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate
-      .adverbials,);
-    /** Sentence body with `Who` at head. */
-    const body = joinTokens([
-      'Who',
-      verb,
-      object,
-      complement,
-      adverbials,
-    ],);
-    return `${body}${sentence.terminator
-      ?? '?'}`;
-  }
-
-  /**
-   * Renders a wh-object question with do-support.
-   *
-   * @param sentence - wh-object AST
-   *
-   * @returns rendered surface fronted with `What`
-   */
-  function renderWhObject(
-    sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.object'; }>,
-  ): string {
-    /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense
-      ?? 'present';
-    /** Agreement metadata. */
-    const agreement = subjectAgreement({
-      ref: sentence.subject,
-      subjects,
-    },);
-    /** Question verb parts chosen from the entry's auxiliary strategy. */
-    const questionVerb = questionVerbParts({
-      entry: verbs[sentence.verb],
-      tense,
-      agreement,
-    },);
-    /** Subject surface placed after the auxiliary. */
-    const subj = subjectSurface({
-      ref: sentence.subject,
-      subjects,
-    },);
-    /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.adverbials,);
-    /** Sentence body with `What` at head. */
-    const body = joinTokens([
-      'What',
-      questionVerb.auxiliary,
-      subj,
-      questionVerb.lexicalVerb,
-      adverbials,
-    ],);
-    return `${body}${sentence.terminator
-      ?? '?'}`;
-  }
-
-  /**
-   * Renders a wh-adverbial question (`Where/When/Why/How`).
-   *
-   * @param sentence - wh-adverbial AST
-   *
-   * @returns rendered surface fronted with the wh-word
-   */
-  function renderWhAdverbial(
-    sentence: Extract<WhQuestion<S, V, N>, { kind: 'sentence.question.wh.adverbial'; }>,
-  ): string {
-    /** Sentence-level tense; defaults to present when omitted. */
-    const tense = sentence.tense
-      ?? 'present';
-    /** Agreement metadata. */
-    const agreement = subjectAgreement({
-      ref: sentence.subject,
-      subjects,
-    },);
-    /** Question verb parts chosen from the entry's auxiliary strategy. */
-    const questionVerb = questionVerbParts({
-      entry: verbs[sentence.predicate
-        .verb],
-      tense,
-      agreement,
-    },);
-    /** Subject surface placed after the auxiliary. */
-    const subj = subjectSurface({
-      ref: sentence.subject,
-      subjects,
-    },);
-    /** Rendered object slot. */
-    const object = renderOptionalObject({
-      object: sentence.predicate
-        .object,
-      renderNounPhrase,
-    },);
-    /** Rendered infinitive complement. */
-    const complement = renderOptionalComplement({
-      complement: sentence.predicate
-        .complement,
-      renderVerbPhrase,
-      form: questionVerb.complementForm,
-    },);
-    /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate
-      .adverbials,);
-    /** Wh-word capitalized in the head position. */
-    const wh = capitalizeWh(sentence.wh,);
-    /** Sentence body with wh-word at head. */
-    const body = joinTokens([
-      wh,
-      questionVerb.auxiliary,
-      subj,
-      questionVerb.lexicalVerb,
-      object,
-      complement,
-      adverbials,
-    ],);
-    return `${body}${sentence.terminator
-      ?? '?'}`;
-  }
-
   /**
    * Dispatches a wh-question by slot.
    *
@@ -439,55 +49,20 @@ export function makeEnglishSentenceRenderer<
   function renderWh(sentence: WhQuestion<S, V, N>,): string {
     if (sentence.kind
       === 'sentence.question.wh.subject')
-      return renderWhSubject(sentence,);
+      return renderWhSubject({
+        sentence,
+        deps,
+      },);
     if (sentence.kind
       === 'sentence.question.wh.object')
-      return renderWhObject(sentence,);
-    return renderWhAdverbial(sentence,);
-  }
-
-  /**
-   * Renders an imperative sentence with sentence-case fixup.
-   *
-   * @param sentence - imperative AST
-   *
-   * @returns rendered surface
-   */
-  function renderImperative(
-    sentence: Extract<Sentence<S, V, N>, { kind: 'sentence.imperative'; }>,
-  ): string {
-    /** Imperative surface, defaulting to `base` when no dedicated form is supplied. */
-    const entry = verbs[sentence.predicate
-      .verb];
-    /** Verb surface used in the imperative head slot. */
-    const verb = entry.imperative
-      ?? entry
-      .base;
-    /** Rendered object slot. */
-    const object = renderOptionalObject({
-      object: sentence.predicate
-        .object,
-      renderNounPhrase,
+      return renderWhObject({
+        sentence,
+        deps,
+      },);
+    return renderWhAdverbial({
+      sentence,
+      deps,
     },);
-    /** Rendered infinitive or bare complement. */
-    const complement = renderOptionalComplement({
-      complement: sentence.predicate
-        .complement,
-      renderVerbPhrase,
-      form: complementFormForVerb({ entry, },),
-    },);
-    /** Rendered adverbial cluster. */
-    const adverbials = renderAdverbials(sentence.predicate
-      .adverbials,);
-    /** Sentence body before sentence-case fixup. */
-    const body = joinTokens([
-      verb,
-      object,
-      complement,
-      adverbials,
-    ],);
-    return `${capitalizeBody(body,)}${sentence.terminator
-      ?? '.'}`;
   }
 
   /**
@@ -500,13 +75,22 @@ export function makeEnglishSentenceRenderer<
   function renderSentence(sentence: Sentence<S, V, N>,): string {
     if (sentence.kind
       === 'sentence.declarative')
-      return renderDeclarative(sentence,);
+      return renderDeclarative({
+        sentence,
+        deps,
+      },);
     if (sentence.kind
       === 'sentence.question.yesNo')
-      return renderYesNo(sentence,);
+      return renderYesNo({
+        sentence,
+        deps,
+      },);
     if (sentence.kind
       === 'sentence.imperative')
-      return renderImperative(sentence,);
+      return renderImperative({
+        sentence,
+        deps,
+      },);
     return renderWh(sentence,);
   }
 
