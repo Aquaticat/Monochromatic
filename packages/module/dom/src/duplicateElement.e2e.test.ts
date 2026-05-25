@@ -139,7 +139,7 @@ test.describe('deepCloneNode', () => {
         href: clone.href,
         cls: clone.className,
         innerChildCount: clone.children.length,
-        innerSpanFlag: (clone.children[0] as HTMLElement | undefined)?.dataset.flag,
+        innerSpanFlag: (clone.children[0] as HTMLElement).dataset.flag,
       };
     },);
 

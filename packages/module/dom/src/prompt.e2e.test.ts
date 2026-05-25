@@ -14,7 +14,7 @@ import {
 import { loadHarness, } from './test-setup.ts';
 
 declare global {
-  var pendingPrompt: Promise<string | null> | undefined;
+  var pendingPrompt: Promise<string | null>;
 }
 
 test.describe('prompt', () => {
