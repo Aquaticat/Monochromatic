@@ -1,4 +1,5 @@
 import {
+  relative,
   resolve,
   sep,
 } from 'node:path';
@@ -75,6 +76,47 @@ export function isPathUnderRoot(
   /** Root with a trailing separator guaranteed, so `startsWith` cannot match sibling roots like `/abs/srcZ` against `/abs/src`. */
   const prefix = root.endsWith(sep,) ? root : root + sep;
   return absPath.startsWith(prefix,);
+}
+
+/**
+ * Computes `absPath` relative to the deepest matching root in
+ * `resolvedRoots`, falling back to `absPath` itself when none match.
+ * The fallback keeps the watcher defensive (chokidar should not emit for
+ * paths outside the watched roots) without surfacing an absent root upward.
+ *
+ * @param resolvedRoots - absolute roots, sorted deepest-first by {@link sortRootsByLengthDesc}
+ *
+ * @param absPath - absolute event path
+ *
+ * @returns path relative to its matching root, or `absPath` when none match
+ *
+ * @example
+ * ```ts
+ * relativePathForRoots({ resolvedRoots: ['/abs/src',], absPath: '/abs/src/a.ts', },); // 'a.ts'
+ * ```
+ */
+export function relativePathForRoots(
+  {
+    resolvedRoots,
+    absPath,
+  }: {
+    readonly resolvedRoots: readonly string[];
+    readonly absPath: string;
+  },
+): string {
+  /** Deepest matching root; `.find` yields it or none, so absence stays a local concern. */
+  const root = resolvedRoots.find(function isParent(candidate,) {
+    return isPathUnderRoot({
+      root: candidate,
+      absPath,
+    },);
+  },);
+  if (root === undefined)
+    return absPath;
+  return relative(
+    root,
+    absPath,
+  );
 }
 
 /**

@@ -29,7 +29,15 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
 }
 
 /**
- * Reads a file's UTF-8 contents; returns `undefined` if the file does
+ * Real sentinel for "the candidate gitignore file does not exist". A unique
+ * `Symbol` rather than `undefined`/`null`/`''` so the absent case is a
+ * distinct value the optionality-ban rules accept and an empty `.gitignore`
+ * (legitimate zero-pattern content) stays distinguishable from a missing one.
+ */
+const ABSENT: unique symbol = Symbol('gitignore-file-absent',);
+
+/**
+ * Reads a file's UTF-8 contents; returns {@link ABSENT} if the file does
  * not exist (`ENOENT`). Other errors propagate.
  *
  * Used to soak up "no `.gitignore` here" and "extra-file path was a
@@ -40,7 +48,7 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
  *
  * @param path - absolute path to read
  *
- * @returns file contents as a UTF-8 string, or `undefined` on ENOENT
+ * @returns file contents as UTF-8 string, or {@link ABSENT} on ENOENT
  *
  * @throws Error from `fs.readFile` other than ENOENT
  *
@@ -49,7 +57,9 @@ function isErrnoException(error: unknown,): error is NodeJS.ErrnoException {
  * const text = await readUtf8IfExists('/abs/.gitignore',);
  * ```
  */
-async function readUtf8IfExists(path: string,): Promise<string | undefined> {
+async function readUtf8IfExists(
+  path: string,
+): Promise<string | typeof ABSENT> {
   try {
     return await readFile(
       path,
@@ -60,7 +70,7 @@ async function readUtf8IfExists(path: string,): Promise<string | undefined> {
     if (isErrnoException(error,)
       && (error.code
         === 'ENOENT'))
-      return undefined;
+      return ABSENT;
     throw error;
   }
 }
@@ -122,16 +132,16 @@ export async function gitignoreFilter(
     },
   );
   /**
-   * Parallel read of every candidate file; ENOENT collapses to undefined
+   * Parallel read of every candidate file; ENOENT collapses to {@link ABSENT}
    * via {@link readUtf8IfExists}, so a missing `.gitignore` is a no-op
    * rather than a fatal error.
    */
-  const allContents: readonly (string | undefined)[] = await Promise.all(
+  const allContents: readonly (string | typeof ABSENT)[] = await Promise.all(
     [
       ...rootGitignorePaths,
       ...extraFiles,
     ]
-      .map(function read(path,): Promise<string | undefined> {
+      .map(function read(path,): Promise<string | typeof ABSENT> {
         return readUtf8IfExists(path,);
       },),
   );
@@ -144,7 +154,7 @@ export async function gitignoreFilter(
    */
   const ig: Ignore = ignore();
   for (const content of allContents) {
-    if (content !== undefined)
+    if (content !== ABSENT)
       ig.add(content,);
   }
 

@@ -3,11 +3,11 @@ import {
   watch as chokidarWatch,
 } from 'chokidar';
 import { once, } from 'node:events';
+import { extname, } from 'node:path';
 import {
-  extname,
-  relative,
-} from 'node:path';
-import type { HashCache, } from './hash-cache.ts';
+  type HashCache,
+  OVERSIZED,
+} from './hash-cache.ts';
 import {
   l as defaultLogger,
   type Logger,
@@ -20,92 +20,15 @@ import type {
 } from './types.ts';
 import {
   describeError,
-  isPathUnderRoot,
+  relativePathForRoots,
   sortRootsByLengthDesc,
 } from './watcher-paths.ts';
+import {
+  DEFAULT_AWAIT_WRITE_FINISH,
+  type WatcherOptions,
+} from './watcher-types.ts';
 
-/**
- * Default `awaitWriteFinish.stabilityThreshold` (milliseconds).
- * Tuned for editors that write the final byte then move on; matches
- * chokidar's recommended floor for "saved by a human" timing.
- */
-const DEFAULT_STABILITY_THRESHOLD_MS = 50;
-
-/**
- * Default `awaitWriteFinish.pollInterval` (milliseconds).
- * How often chokidar re-stats a candidate file while waiting for stability;
- * 10ms keeps the latency low without burning CPU on a typical dev box.
- */
-const DEFAULT_POLL_INTERVAL_MS = 10;
-
-/**
- * Predicate testing whether a path should be skipped by chokidar's traversal.
- *
- * `Matcher` in chokidar 5 admits string (literal path), RegExp, function, or
- * `{ path, recursive }`. The orchestrator compiles all flag inputs to
- * functions ahead of time (via picomatch), so this adapter accepts the
- * function form only and ignores the others.
- *
- * @example
- * ```ts
- * const isNodeModules: IgnoredPredicate = function isNm(p,) {
- *   return p.includes('/node_modules/',);
- * };
- * ```
- */
-export type IgnoredPredicate = (path: string,) => boolean;
-
-/**
- * Stability/polling tuning for chokidar's `awaitWriteFinish`.
- * Splitting it out keeps the {@link WatcherOptions} shape narrow.
- */
-export type AwaitWriteFinishOptions = {
-  /** Milliseconds the file size must hold steady before an event emits. */
-  readonly stabilityThreshold: number;
-  /** Milliseconds between size re-stats during the stability window. */
-  readonly pollInterval: number;
-};
-
-/**
- * Construction options for {@link Watcher}.
- */
-export type WatcherOptions = {
-  /** Roots to watch. Resolved to absolute on construction. */
-  readonly paths: readonly string[];
-  /** Shared content-hash cache; pre-populated during the initial walk. */
-  readonly hashCache: HashCache;
-  /** Predicates that skip files/directories during traversal (efficiency only; not a filter substitute). */
-  readonly ignored?: readonly IgnoredPredicate[];
-  /** Forwarded to chokidar's `atomic` option; defaults to `true`. */
-  readonly atomic?: boolean | number;
-  /** Forwarded to chokidar's `awaitWriteFinish`; defaults to `{ stabilityThreshold: 50, pollInterval: 10 }`. */
-  readonly awaitWriteFinish?: AwaitWriteFinishOptions;
-  /**
-   * Maximum subdirectory depth chokidar will descend from each root.
-   * `undefined` is chokidar's default (unlimited). `0` watches only the
-   * root directory's direct files.
-   */
-  readonly depth?: number;
-  /**
-   * Polling interval (ms). When set, chokidar uses `usePolling: true`
-   * with this value for `interval`. When `undefined`, native filesystem
-   * events are used (chokidar default). Set this on filesystems without
-   * inotify support (NFS mounts, WSL1-on-Windows-FS, some Docker setups).
-   */
-  readonly poll?: number;
-  /**
-   * Whether chokidar follows symbolic links when traversing watch roots.
-   * Defaults to `false` (this package's safer default), regardless of
-   * chokidar's own default; passed explicitly so the value is not
-   * silently flipped by a chokidar version bump.
-   */
-  readonly followSymlinks?: boolean;
-  /** Callback fired for each post-`ready` event. Async callbacks are not awaited by chokidar. */
-  readonly onEvent: (event: WatchEvent,) => void | Promise<void>;
-  /** Parent logger; the watcher composes a `Watcher` tag on top. */
-  readonly logger?: Logger;
-};
-
+/* oxlint-disable no-restricted-syntax/no-class -- per-instance watcher state: one Watcher (owning one chokidar FSWatcher and its pre-populate set) lives per `startWatchRestart()` call, state is `#private`-encapsulated, and the class is an exported library primitive consumers instantiate via `new`; module-level state cannot model multiple concurrent watch sessions. */
 /**
  * chokidar 5 adapter that owns one `FSWatcher`, pre-populates a {@link HashCache}
  * during the initial walk (events before `ready`), and forwards live events
@@ -137,12 +60,12 @@ export type WatcherOptions = {
 export class Watcher {
   /** Underlying chokidar instance. */
   readonly #fsw: FSWatcher;
-  /** Watch roots resolved to absolute, sorted deepest-first for `#findRoot`. */
+  /** Watch roots resolved to absolute, sorted deepest-first for `#relativePathFor`. */
   readonly #resolvedRoots: readonly string[];
   /** Shared hash cache; the watcher writes during pre-populate, filters read post-ready. */
-  readonly #hashCache: HashCache;
-  /** Live-event callback handed in by the orchestrator. */
-  readonly #onEvent: (event: WatchEvent,) => void | Promise<void>;
+  readonly #hashCache: Readonly<HashCache>;
+  /** Live-event callback handed in by the orchestrator; awaited per event. */
+  readonly #onEvent: (event: WatchEvent,) => Promise<void>;
   /** Tagged logger composed onto the parent. */
   readonly #logger: Logger;
   /**
@@ -180,10 +103,7 @@ export class Watcher {
         atomic: options.atomic
           ?? true,
         awaitWriteFinish: options.awaitWriteFinish
-          ?? {
-          stabilityThreshold: DEFAULT_STABILITY_THRESHOLD_MS,
-          pollInterval: DEFAULT_POLL_INTERVAL_MS,
-        },
+          ?? DEFAULT_AWAIT_WRITE_FINISH,
         ignoreInitial: false,
         persistent: true,
         // Always pass `followSymlinks` so the package's default (false) is
@@ -521,10 +441,10 @@ export class Watcher {
    */
   async #runPrePopulate(path: string,): Promise<void> {
     try {
-      /** Digest computed off the disk read; `null` signals a non-fatal I/O miss that should not poison the cache. */
+      /** Digest computed off the disk read; the OVERSIZED sentinel signals a too-large file that should not be cached. */
       const hash = await this.#hashCache
         .hashFile(path,);
-      if (hash !== null) {
+      if (hash !== OVERSIZED) {
         this.#hashCache
           .set({
           path,
@@ -557,8 +477,6 @@ export class Watcher {
     kind: WatchEventKind,
     path: string,
   ): Promise<void> {
-    /** Deepest configured root containing `path`; used to compute the event's relative path. */
-    const root = this.#findRoot(path,);
     /** Entity derived from kind once; filters reuse rather than re-derive. */
     const entity: WatchEntityType = ((kind === 'addDir') || (kind === 'unlinkDir'))
       ? 'dir'
@@ -568,31 +486,13 @@ export class Watcher {
       kind,
       entity,
       path,
-      relativePath: root === undefined ? path : relative(
-        root,
-        path,
-      ),
+      relativePath: relativePathForRoots({
+        resolvedRoots: this.#resolvedRoots,
+        absPath: path,
+      },),
       ext: extname(path,),
     };
     await this.#onEvent(event,);
   }
-
-  /**
-   * Finds the deepest configured root that contains `absPath`.
-   * Returns `undefined` when no root matches (chokidar should not emit
-   * for such paths, but the fallback keeps the watcher defensive).
-   *
-   * @param absPath - absolute event path
-   *
-   * @returns the matching root, or `undefined` when none match
-   */
-  #findRoot(absPath: string,): string | undefined {
-    return this.#resolvedRoots
-      .find(function isParent(root,) {
-      return isPathUnderRoot({
-        root,
-        absPath,
-      },);
-    },);
-  }
 }
+/* oxlint-enable no-restricted-syntax/no-class */

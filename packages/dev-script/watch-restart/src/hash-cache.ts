@@ -28,6 +28,21 @@ export const DEFAULT_MAX_HASH_SIZE_BYTES: number = DEFAULT_MAX_HASH_SIZE_MIB
   * BYTES_PER_MIB;
 
 /**
+ * Real sentinel returned by {@link HashCache.hashFile} when a file exceeds the
+ * configured size cap and is deliberately not read into memory. A unique
+ * `Symbol` rather than `null` so the "too large to compare" outcome stays a
+ * distinct value (never collides with a real hex digest) without a nullish
+ * union; callers treat it as "fire without comparing content".
+ *
+ * @example
+ * ```ts
+ * const hash = await cache.hashFile(path,);
+ * if (hash === OVERSIZED) return true; // fire; do not compare
+ * ```
+ */
+export const OVERSIZED: unique symbol = Symbol('hash-oversized',);
+
+/**
  * Options for constructing a {@link HashCache}.
  */
 export type HashCacheOptions = {
@@ -39,6 +54,7 @@ export type HashCacheOptions = {
   readonly maxHashSize?: number;
 };
 
+/* oxlint-disable no-restricted-syntax/no-class -- per-instance mutable cache: one HashCache lives per `startWatchRestart()` call (concurrent watch sessions each need their own), state is `#private`-encapsulated, and the class is an exported library primitive consumers instantiate via `new`; a module-level container cannot model multiple concurrent instances. */
 /**
  * In-memory map of absolute path → sha256 hex of the last seen file content.
  *
@@ -104,24 +120,24 @@ export class HashCache {
    *
    * @param absolutePath - path read directly; caller is expected to have resolved it
    *
-   * @returns sha256 hex string, or `null` when the file is too large
+   * @returns sha256 hex string, or {@link OVERSIZED} when the file is too large
    *
    * @example
    * ```ts
    * const hash = await cache.hashFile('/abs/path/to/index.ts');
-   * if (hash !== null) cache.set({ path, hash, });
+   * if (hash !== OVERSIZED) cache.set({ path, hash, });
    * ```
    *
    * @throws Error when the file cannot be stat'd or read (missing, permission denied, ...).
    *   The watcher's event-handler layer decides whether to swallow ENOENT
    *   (legitimate race against `unlink`) or escalate; this method does not guess.
    */
-  async hashFile(absolutePath: string,): Promise<string | null> {
+  async hashFile(absolutePath: string,): Promise<string | typeof OVERSIZED> {
     /** File size pulled from `fstat` to gate the read against `#maxHashSize` before allocating bytes. */
     const { size, } = await stat(absolutePath,);
     if (size > this
       .#maxHashSize)
-      return null;
+      return OVERSIZED;
     /** File bytes; Buffer extends Uint8Array, accepted directly by SubtleCrypto */
     const bytes = await readFile(absolutePath,);
     /** Raw SHA-256 digest as an `ArrayBuffer`; hex-encoded immediately below for the cache key. */
@@ -134,6 +150,7 @@ export class HashCache {
       .toString('hex',);
   }
 
+  /* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors Map.get: this method forwards directly to the backing Map's `get`, whose `string | undefined` return (undefined when the key is absent) is the external API's shape, not modelling our own optionality. */
   /**
    * Looks up the stored hash for a path.
    *
@@ -150,6 +167,7 @@ export class HashCache {
     return this.#map
       .get(absolutePath,);
   }
+  /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
   /**
    * Reports whether a path has any recorded hash.
@@ -242,3 +260,4 @@ export class HashCache {
       .size;
   }
 }
+/* oxlint-enable no-restricted-syntax/no-class */

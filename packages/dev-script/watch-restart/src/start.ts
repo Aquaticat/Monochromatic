@@ -37,6 +37,14 @@ import { Watcher, } from './watcher.ts';
 export const DEFAULT_DEBOUNCE_MS = 100;
 
 /**
+ * Real sentinel for "no debounce timer is currently armed". A unique
+ * `Symbol` rather than `undefined` so the timer container's type stays free
+ * of a nullish union; the orchestrator compares against it to decide whether
+ * a pending timer must be cleared.
+ */
+const NO_TIMER: unique symbol = Symbol('no-debounce-timer',);
+
+/**
  * Options for {@link startWatchRestart}.
  *
  * Mirrors the CLI flag surface (`-w`, `-i`, `-e`, `--ext`, ...) so the CLI
@@ -399,8 +407,8 @@ export async function startWatchRestart(
    * from `scheduleRestart` and `stop`.
    */
   const state: {
-    timer: ReturnType<typeof setTimeout> | undefined;
-  } = { timer: undefined, };
+    timer: ReturnType<typeof setTimeout> | typeof NO_TIMER;
+  } = { timer: NO_TIMER, };
 
   /**
    * Resets the debounce window: a new event ties for "latest", so the
@@ -410,11 +418,11 @@ export async function startWatchRestart(
    */
   function scheduleRestart(): void {
     if (state.timer
-      !== undefined)
+      !== NO_TIMER)
       clearTimeout(state.timer,);
     state.timer = setTimeout(
       function fireRestart(): void {
-        state.timer = undefined;
+        state.timer = NO_TIMER;
         void (async function doRestart(): Promise<void> {
           try {
             await child.restart();
@@ -494,9 +502,9 @@ export async function startWatchRestart(
   async function stop(): Promise<void> {
     abort.abort();
     if (state.timer
-      !== undefined) {
+      !== NO_TIMER) {
       clearTimeout(state.timer,);
-      state.timer = undefined;
+      state.timer = NO_TIMER;
     }
     await watcher.stop();
     await child.stop();

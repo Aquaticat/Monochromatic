@@ -173,14 +173,28 @@ export function parseKillSignal(raw: string,): NodeJS.Signals {
  * ```
  */
 export function compileRegex(pattern: string,): RegExp {
-  // oxlint-disable-next-line no-restricted-syntax/no-regex -- user-supplied CLI regex source: the pattern shape is user-defined (filename matchers like \.story\.ts$) so no string-API substitute fits; input is bounded by argv length, and the regex runs against relative paths (bounded by filesystem path limits) on each event with no nested quantifiers introduced by this site.
+  // oxlint-disable-next-line no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- user-supplied CLI regex source: the pattern shape is user-defined (filename matchers like \.story\.ts$) so no string-API substitute fits; input is bounded by argv length, and the regex runs against relative paths (bounded by filesystem path limits) on each event with no nested quantifiers introduced by this site. The `u` flag is intentionally omitted: it would change matching of arbitrary user patterns (turning previously-valid escapes into SyntaxErrors), so the un-flagged form preserves the patterns the user supplies.
   return new RegExp(pattern,);
 }
 
 /**
+ * Real sentinel for "neither `--flag` nor `--no-flag` was passed". A unique
+ * `Symbol` rather than `undefined` so {@link resolveBoolPair}'s tri-state
+ * stays free of a nullish union; the caller maps it to "omit the option and
+ * defer to the orchestrator's documented default".
+ *
+ * @example
+ * ```ts
+ * const hidden = resolveBoolPair({ positive, negative, flag: 'hidden', },);
+ * if (hidden !== FLAG_UNSET) options.hidden = hidden;
+ * ```
+ */
+export const FLAG_UNSET: unique symbol = Symbol('flag-unset',);
+
+/**
  * Collapses a `--flag` / `--no-flag` pair into a single tri-state.
  *
- * `undefined` means "caller did not pass either flag, defer to the
+ * {@link FLAG_UNSET} means "caller did not pass either flag, defer to the
  * orchestrator's documented default"; this lets the same helper power
  * default-off and default-on toggles without each call site duplicating
  * the both-true conflict check.
@@ -191,7 +205,7 @@ export function compileRegex(pattern: string,): RegExp {
  *
  * @param flag - user-facing flag name (without leading `--`) for the error message
  *
- * @returns `true` / `false` / `undefined` (see description)
+ * @returns `true` / `false` / {@link FLAG_UNSET} (see description)
  *
  * @throws Error when both positive and negative forms are passed in the same argv
  *
@@ -210,7 +224,7 @@ export function resolveBoolPair(
     readonly negative: boolean;
     readonly flag: string;
   },
-): boolean | undefined {
+): boolean | typeof FLAG_UNSET {
   if (positive && negative) {
     throw new Error(
       `Cannot pass both --${flag} and --no-${flag} in the same invocation`,
@@ -220,5 +234,5 @@ export function resolveBoolPair(
     return true;
   if (negative)
     return false;
-  return undefined;
+  return FLAG_UNSET;
 }

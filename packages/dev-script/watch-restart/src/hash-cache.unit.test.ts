@@ -14,6 +14,7 @@ import { join, } from 'node:path';
 import {
   DEFAULT_MAX_HASH_SIZE_BYTES,
   HashCache,
+  OVERSIZED,
 } from './hash-cache.ts';
 
 /**
@@ -64,14 +65,14 @@ await describe({
           },
         },),
         it({
-          name: 'returns null when file size exceeds maxHashSize',
+          name: 'returns OVERSIZED when file size exceeds maxHashSize',
           fn: async () => {
             const dir = await makeTmpDir();
             const file = join(dir, 'big.txt',);
             await writeFile(file, 'too-big',);
-            // 'too-big' is 7 bytes; cap at 6 forces the null branch.
+            // 'too-big' is 7 bytes; cap at 6 forces the OVERSIZED branch.
             const cache = new HashCache({ maxHashSize: 6, },);
-            expect(await cache.hashFile(file,),).toBeNull();
+            expect(await cache.hashFile(file,),).toBe(OVERSIZED,);
             await rm(dir, { recursive: true, },);
           },
         },),

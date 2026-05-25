@@ -11,7 +11,10 @@ import {
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
-import { HashCache, } from '../hash-cache.ts';
+import {
+  HashCache,
+  OVERSIZED,
+} from '../hash-cache.ts';
 import { l as defaultLogger, } from '../log.ts';
 import type {
   WatchCtx,
@@ -83,7 +86,13 @@ function makeCtx(
  * ```
  */
 function makeEvent(
-  overrides: Partial<WatchEvent> = {},
+  overrides: {
+    readonly kind?: WatchEvent['kind'];
+    readonly entity?: WatchEvent['entity'];
+    readonly path?: WatchEvent['path'];
+    readonly relativePath?: WatchEvent['relativePath'];
+    readonly ext?: WatchEvent['ext'];
+  } = {},
 ): WatchEvent {
   return {
     kind: overrides.kind ?? 'change',
@@ -92,6 +101,30 @@ function makeEvent(
     relativePath: overrides.relativePath ?? 'file.ts',
     ext: overrides.ext ?? '.ts',
   };
+}
+
+/**
+ * Narrows a {@link HashCache.hashFile} result to a hex digest, throwing if
+ * the test fixture unexpectedly exceeded the size cap.
+ *
+ * @param value - hashFile result (digest or the OVERSIZED sentinel)
+ *
+ * @returns hex digest string
+ *
+ * @throws Error when the fixture file is unexpectedly oversized
+ *
+ * @example
+ * ```ts
+ * const hash = requireHash(await cache.hashFile(file,),);
+ * ```
+ */
+function requireHash(value: string | typeof OVERSIZED,): string {
+  if (value === OVERSIZED) {
+    throw new Error(
+      'test fixture file unexpectedly exceeded the hash size cap',
+    );
+  }
+  return value;
 }
 
 await describe({
@@ -157,7 +190,7 @@ await describe({
         const file = join(dir, 'same.ts',);
         await writeFile(file, 'unchanged-bytes',);
         const cache = new HashCache();
-        const priorHash = nonNullishOrThrow(await cache.hashFile(file,),);
+        const priorHash = requireHash(await cache.hashFile(file,),);
         cache.set({
           path: file,
           hash: priorHash,
@@ -186,7 +219,7 @@ await describe({
         const file = join(dir, 'edit.ts',);
         await writeFile(file, 'v1-content',);
         const cache = new HashCache();
-        const oldHash = nonNullishOrThrow(await cache.hashFile(file,),);
+        const oldHash = requireHash(await cache.hashFile(file,),);
         cache.set({
           path: file,
           hash: oldHash,

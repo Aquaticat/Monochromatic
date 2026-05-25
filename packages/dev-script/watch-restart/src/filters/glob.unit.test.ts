@@ -44,7 +44,13 @@ function makeCtx(): WatchCtx {
  * ```
  */
 function makeEvent(
-  overrides: Partial<WatchEvent> = {},
+  overrides: {
+    readonly kind?: WatchEvent['kind'];
+    readonly entity?: WatchEvent['entity'];
+    readonly path?: WatchEvent['path'];
+    readonly relativePath?: WatchEvent['relativePath'];
+    readonly ext?: WatchEvent['ext'];
+  } = {},
 ): WatchEvent {
   return {
     kind: overrides.kind ?? 'change',

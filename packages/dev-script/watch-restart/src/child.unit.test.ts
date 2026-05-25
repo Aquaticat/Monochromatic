@@ -9,12 +9,15 @@ import {
   Child,
   DEFAULT_STOP_TIMEOUT_MS,
   type ExitListener,
+  type ExitResult,
+  NO_CHILD,
   type ProcessSignalFn,
   type SpawnedChildHandle,
   type SpawnFn,
   type WriteClearFn,
 } from './child.ts';
 
+/* oxlint-disable no-restricted-syntax/no-class -- test double implementing the SpawnedChildHandle contract and instantiated via `new` by the recording spawn factory; it carries mutable per-instance state (signalsReceived, exit listeners) that a frozen-object factory cannot model for the state-machine assertions. */
 /**
  * Fake stand-in for `node:child_process.ChildProcess`.
  *
@@ -25,10 +28,10 @@ import {
  * which lets each test pick its own race timeline.
  */
 class FakeChild implements SpawnedChildHandle {
-  /** Mirrors `ChildProcess.pid`; arbitrary non-zero so log assertions can read it. */
-  readonly pid: number | undefined;
-  /** Mirrors `ChildProcess.exitCode`; `null` until {@link simulateExit}. */
-  exitCode: number | null = null;
+  /** Mirrors `ChildProcess.pid`; always a number here (assignable to the handle's `number | undefined`). */
+  readonly pid: number;
+  /** Mirrors `ChildProcess.exitCode`; `null` until {@link simulateExit}. Type sourced from the handle so the nullish union lives only at its definition. */
+  exitCode: SpawnedChildHandle['exitCode'] = null;
   /** Mirrors `ChildProcess.killed`; flips on any {@link kill} call. */
   killed: boolean = false;
   /** Test assertion surface: which signals arrived in what order. */
@@ -138,8 +141,8 @@ class FakeChild implements SpawnedChildHandle {
       code = 0,
       signal = null,
     }: {
-      readonly code?: number | null;
-      readonly signal?: NodeJS.Signals | null;
+      readonly code?: ExitResult['code'];
+      readonly signal?: ExitResult['signal'];
     } = {},
   ): void {
     this.exitCode = code;
@@ -153,6 +156,7 @@ class FakeChild implements SpawnedChildHandle {
     }
   }
 }
+/* oxlint-enable no-restricted-syntax/no-class */
 
 /**
  * Records spawn calls so tests can assert command/args wiring and inspect
@@ -238,7 +242,7 @@ await describe({
             },);
 
             expect(child.state,).toBe('idle',);
-            expect(child.current,).toBeUndefined();
+            expect(child.current,).toBe(NO_CHILD,);
           },
         },),
         it({
@@ -314,7 +318,7 @@ await describe({
             },);
 
             expect(child.state,).toBe('idle',);
-            expect(child.current,).toBeUndefined();
+            expect(child.current,).toBe(NO_CHILD,);
           },
         },),
       ],
@@ -341,7 +345,7 @@ await describe({
             const { handle, } = nonNullishOrThrow(records[0],);
             expect(handle.signalsReceived,).toEqual(['SIGTERM',],);
             expect(child.state,).toBe('idle',);
-            expect(child.current,).toBeUndefined();
+            expect(child.current,).toBe(NO_CHILD,);
           },
         },),
         it({

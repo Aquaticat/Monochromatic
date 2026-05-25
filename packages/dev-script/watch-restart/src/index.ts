@@ -12,6 +12,8 @@ export {
   type ChildState,
   DEFAULT_STOP_TIMEOUT_MS,
   type ExitListener,
+  type ExitResult,
+  NO_CHILD,
   type SpawnedChildHandle,
   type SpawnFn,
 } from './child.ts';
@@ -41,9 +43,9 @@ export type {
   WatchEventKind,
   WatchFilter,
 } from './types.ts';
-export {
-  type AwaitWriteFinishOptions,
-  type IgnoredPredicate,
-  Watcher,
-  type WatcherOptions,
-} from './watcher.ts';
+export { Watcher, } from './watcher.ts';
+export type {
+  AwaitWriteFinishOptions,
+  IgnoredPredicate,
+  WatcherOptions,
+} from './watcher-types.ts';

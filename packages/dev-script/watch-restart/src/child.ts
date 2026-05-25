@@ -1,5 +1,4 @@
 import { wait, } from '@monochromatic-dev/module-async-time';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import { spawn as nodeSpawn, } from 'node:child_process';
 import {
   l as defaultLogger,
@@ -16,6 +15,21 @@ import {
  * graceful-shutdown handlers.
  */
 export const DEFAULT_STOP_TIMEOUT_MS = 5_000;
+
+/**
+ * Real sentinel for "no child process is currently tracked". A unique
+ * `Symbol` rather than `undefined`/`null` so {@link Child}'s state stays
+ * free of a nullish union; {@link Child.current} returns this when the
+ * manager is `idle`, and callers (e.g. tests) compare identity against it.
+ *
+ * @example
+ * ```ts
+ * if (child.current === NO_CHILD) {
+ *   // manager is idle; no handle to inspect
+ * }
+ * ```
+ */
+export const NO_CHILD: unique symbol = Symbol('no-child',);
 
 /**
  * State of the {@link Child}'s underlying process.
@@ -35,6 +49,7 @@ export const DEFAULT_STOP_TIMEOUT_MS = 5_000;
  */
 export type ChildState = 'idle' | 'running' | 'stopping';
 
+/* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors node:child_process.ChildProcess 'exit' event: node delivers `code: number | null` (null when killed by signal) and `signal: NodeJS.Signals | null` (null when exited normally); this listener must be structurally assignable to `ChildProcess.once('exit', ...)`, so the nullish unions are dictated by the external API, not modelling our own optionality. */
 /**
  * Listener shape compatible with `ChildProcess.once('exit', ...)`.
  *
@@ -49,7 +64,26 @@ export type ExitListener = (
   code: number | null,
   signal: NodeJS.Signals | null,
 ) => void;
+/* oxlint-enable no-restricted-syntax/no-nullish-union */
 
+/* oxlint-disable no-restricted-syntax/no-nullish-union -- carries node:child_process.ChildProcess 'exit' values verbatim (see ExitListener); the nullish unions are the external API's shape, not our optionality. */
+/**
+ * Exit outcome the OS reported for a child: `code` is the numeric exit
+ * status (`null` when the process was terminated by a signal) and `signal`
+ * names the terminating signal (`null` when it exited normally). Both
+ * nullish slots come straight from node's `ChildProcess` 'exit' values; the
+ * single declaration keeps that external-boundary union in one place so
+ * `waitForExit` / `tagExited` reuse it instead of re-spelling it.
+ */
+export type ExitResult = {
+  /** Exit status code; `null` when the child was terminated by a signal. */
+  readonly code: number | null;
+  /** Terminating signal name; `null` when the child exited normally. */
+  readonly signal: NodeJS.Signals | null;
+};
+/* oxlint-enable no-restricted-syntax/no-nullish-union */
+
+/* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors node:child_process.ChildProcess so a real `ChildProcess` stays structurally assignable: `pid?: number | undefined` matches its optional+explicit-undefined `pid` (exactOptionalPropertyTypes forces the `| undefined` for assignability), and `exitCode: number | null` matches its `null`-while-running exit code. Both nullish slots are the external API's shape, not modelling our optionality. */
 /**
  * Minimum surface {@link Child} requires from a spawned process.
  *
@@ -67,8 +101,8 @@ export type ExitListener = (
  * ```
  */
 export type SpawnedChildHandle = {
-  /** OS process id; `undefined` only if the spawn failed before assignment. */
-  readonly pid: number | undefined;
+  /** OS process id; absent (`pid?`) only if the spawn failed before assignment, matching `ChildProcess.pid`. */
+  readonly pid?: number | undefined;
   /** Exit code once the process has exited; `null` while still running. */
   readonly exitCode: number | null;
   /** Whether `kill()` has been called against this handle. */
@@ -86,6 +120,7 @@ export type SpawnedChildHandle = {
     listener: ExitListener,
   ): void;
 };
+/* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 /**
  * Factory that spawns a child process.
@@ -233,13 +268,11 @@ function makeDefaultSpawn(
       readonly args: readonly string[];
     },
   ): SpawnedChildHandle {
-    /**
-     * `ChildProcess` has overload-rich `on`/`once`/`off` and a `this`-returning
-     * `kill`; the `SpawnedChildHandle` shape narrows to just the `exit` event.
-     * The narrower type is structurally satisfied at runtime but TS cannot prove
-     * the overload subset matches, so an explicit assertion lands here at the
-     * single integration boundary instead of polluting consumers.
-     */
+    // `ChildProcess` structurally satisfies the narrower `SpawnedChildHandle`:
+    // `pid?` is optional on both, `exitCode`/`killed` line up, and the
+    // overload-rich `once`/`off` plus `this`-returning `kill` are assignable to
+    // the single-`exit`-event subset, so the spawn result returns directly with
+    // no assertion at this integration boundary.
     return nodeSpawn(
       args.command,
       [...args.args,],
@@ -247,7 +280,7 @@ function makeDefaultSpawn(
         stdio: 'inherit',
         detached,
       },
-    ) as unknown as SpawnedChildHandle;
+    );
   };
 }
 
@@ -329,10 +362,7 @@ function defaultWriteClear(): void {
  * const { code, signal, } = await exited;
  * ```
  */
-function waitForExit(handle: SpawnedChildHandle,): Promise<{
-  readonly code: number | null;
-  readonly signal: NodeJS.Signals | null;
-}> {
+function waitForExit(handle: Readonly<SpawnedChildHandle>,): Promise<ExitResult> {
   // oxlint-disable-next-line promise/avoid-new -- EventEmitter -> Promise bridge needs the constructor form
   return new Promise(function captureExit(resolve,) {
     handle.once(
@@ -359,10 +389,7 @@ function waitForExit(handle: SpawnedChildHandle,): Promise<{
  * @returns string tag `'exited'`
  */
 async function tagExited(
-  promise: Promise<{
-    readonly code: number | null;
-    readonly signal: NodeJS.Signals | null;
-  }>,
+  promise: Promise<ExitResult>,
 ): Promise<'exited'> {
   await promise;
   return 'exited';
@@ -381,6 +408,7 @@ async function tagTimeout(ms: number,): Promise<'timeout'> {
   return 'timeout';
 }
 
+/* oxlint-disable no-restricted-syntax/no-class -- per-instance process state machine: one Child (owning the running handle, kill-signal config, and state transitions) lives per `startWatchRestart()` call, state is `#private`-encapsulated, and the class is an exported library primitive consumers instantiate via `new`; module-level state cannot model multiple concurrent child managers. */
 /**
  * Long-running child process with restart/stop semantics.
  *
@@ -438,9 +466,9 @@ export class Child {
    */
   #state: ChildState = 'idle';
   /**
-   * Currently active child handle, or `undefined` between spawns; backs {@link current}.
+   * Currently active child handle, or {@link NO_CHILD} between spawns; backs {@link current}.
    */
-  #current: SpawnedChildHandle | undefined = undefined;
+  #current: SpawnedChildHandle | typeof NO_CHILD = NO_CHILD;
 
   /**
    * Constructs the manager. Does NOT start the child; call {@link start} to spawn.
@@ -492,15 +520,15 @@ export class Child {
   }
 
   /**
-   * Active child handle, or `undefined` when no child is alive.
+   * Active child handle, or {@link NO_CHILD} when no child is alive.
    *
    * Exposed so tests can inspect the underlying handle's `pid`, `killed`,
    * and event-emission state; production callers should treat the
    * {@link Child} as a black box and use the lifecycle methods instead.
    *
-   * @returns active child handle, or `undefined`
+   * @returns active child handle, or {@link NO_CHILD}
    */
-  get current(): SpawnedChildHandle | undefined {
+  get current(): SpawnedChildHandle | typeof NO_CHILD {
     return this.#current;
   }
 
@@ -619,7 +647,7 @@ export class Child {
       ) {
         if (self.#current
           === handle) {
-          self.#current = undefined;
+          self.#current = NO_CHILD;
           if (self.#state
             !== 'stopping') {
             // Stop path explicitly manages this transition after Promise.race resolves;
@@ -653,7 +681,7 @@ export class Child {
    * @param signal - signal name to deliver
    */
   #sendSignal(
-    handle: SpawnedChildHandle,
+    handle: Readonly<SpawnedChildHandle>,
     signal: NodeJS.Signals,
   ): void {
     if (this.#processGroup
@@ -675,13 +703,19 @@ export class Child {
    * misbehaving child cannot block teardown indefinitely).
    *
    * Caller is responsible for ensuring state is `running` at entry; the
-   * private method narrows the precondition via {@link nonNullishOrThrow}
-   * on `#current` so a stray call from a future code path fails loudly
+   * private method narrows the precondition by throwing when `#current` is
+   * {@link NO_CHILD} so a stray call from a future code path fails loudly
    * instead of silently no-op'ing.
    */
   async #stopRunning(): Promise<void> {
-    /** Active child handle narrowed from `#current`; the throw guards against the private method being called outside `running`. */
-    const handle = nonNullishOrThrow(this.#current,);
+    if (this.#current
+      === NO_CHILD) {
+      throw new Error(
+        '#stopRunning called with no tracked child; precondition is state === "running"',
+      );
+    }
+    /** Active child handle narrowed from `#current` by the NO_CHILD guard above. */
+    const handle = this.#current;
     this.#state = 'stopping';
     this.#logger
       .info(
@@ -715,7 +749,8 @@ export class Child {
       await exited;
     }
 
-    this.#current = undefined;
+    this.#current = NO_CHILD;
     this.#state = 'idle';
   }
 }
+/* oxlint-enable no-restricted-syntax/no-class */

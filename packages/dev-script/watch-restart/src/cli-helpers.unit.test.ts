@@ -5,6 +5,7 @@ import {
 } from '@monochromatic-dev/module-test';
 import {
   compileRegex,
+  FLAG_UNSET,
   parseKillSignal,
   parseTypeToken,
   resolveBoolPair,
@@ -100,14 +101,14 @@ await describe({
       name: resolveBoolPair.name,
       children: [
         it({
-          name: 'returns undefined when neither flag is passed',
+          name: 'returns FLAG_UNSET when neither flag is passed',
           fn: async function neither() {
             expect(resolveBoolPair({
               positive: false,
               negative: false,
               flag: 'foo',
             },),)
-              .toBeUndefined();
+              .toBe(FLAG_UNSET,);
           },
         },),
         it({

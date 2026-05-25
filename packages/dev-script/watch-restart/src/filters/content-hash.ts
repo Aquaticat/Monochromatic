@@ -1,3 +1,4 @@
+import { OVERSIZED, } from '../hash-cache.ts';
 import type {
   WatchCtx,
   WatchEvent,
@@ -56,10 +57,10 @@ export function contentHashFilter(): WatchFilter {
       return true;
     }
     try {
-      /** Hash computed off the current file bytes; `null` means the file exceeds the size cap. */
+      /** Hash computed off the current file bytes; the OVERSIZED sentinel means the file exceeds the size cap. */
       const fresh = await ctx.hashCache
         .hashFile(event.path,);
-      if (fresh === null)
+      if (fresh === OVERSIZED)
         return true;
       /** Previously stored hash for this path; `undefined` when the watcher has never seen the file. */
       const prior = ctx.hashCache

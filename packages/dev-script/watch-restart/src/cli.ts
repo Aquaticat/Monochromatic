@@ -38,87 +38,22 @@ import { runSync, } from '@optique/run';
 import {
   cliEventToInternal,
   compileRegex,
+  FLAG_UNSET,
   parseKillSignal,
   parseTypeToken,
   resolveBoolPair,
   splitCommas,
 } from './cli-helpers.ts';
+import { installShutdownHandler, } from './cli-shutdown.ts';
+import type { ParsedArgs, } from './cli-types.ts';
 import {
   startWatchRestart,
   type StartWatchRestartOptions,
-  type WatchRestartHandle,
 } from './start.ts';
 import type {
   WatchEntityType,
   WatchEventKind,
 } from './types.ts';
-
-/**
- * Shape produced by {@link parseArgs}.
- *
- * Spelled explicitly (not inferred via `InferValue<typeof parser>`)
- * because `--isolatedDeclarations` does not survive optique's deeply-
- * generic combinators across the export boundary; the explicit shape
- * also doubles as documentation for the test fixtures.
- */
-export type ParsedArgs = {
-  /** `-w` / `--watch`; watch roots in argv order. */
-  readonly watch: readonly string[];
-  /** `-i` / `--include`; include globs in argv order. */
-  readonly include: readonly string[];
-  /** `-e` / `--exclude`; exclude globs in argv order. */
-  readonly exclude: readonly string[];
-  /** `--include-regex`; raw regex source strings in argv order. */
-  readonly includeRegex: readonly string[];
-  /** `--exclude-regex`; raw regex source strings in argv order. */
-  readonly excludeRegex: readonly string[];
-  /** `--ext`; raw values pre-split (each entry may be a comma list). */
-  readonly ext: readonly string[];
-  /** `--type`; raw type tokens (each entry may be a comma list). */
-  readonly type: readonly string[];
-  /** `--events`; raw comma list, or `undefined` when not passed. */
-  readonly events: string | undefined;
-  /** `--hidden`; `true` when passed. */
-  readonly hidden: boolean;
-  /** `--no-hidden`; `true` when passed. */
-  readonly noHidden: boolean;
-  /** `--follow-symlinks`; `true` when passed. */
-  readonly followSymlinks: boolean;
-  /** `--no-follow-symlinks`; `true` when passed. */
-  readonly noFollowSymlinks: boolean;
-  /** `--gitignore`; `true` when passed. */
-  readonly gitignore: boolean;
-  /** `--no-gitignore`; `true` when passed. */
-  readonly noGitignore: boolean;
-  /** `--ignore-file`; extra gitignore-format files in argv order. */
-  readonly ignoreFile: readonly string[];
-  /** `--depth`; parsed integer or `undefined`. */
-  readonly depth: number | undefined;
-  /** `--poll`; parsed integer or `undefined`. */
-  readonly poll: number | undefined;
-  /** `--no-content-changed`; `true` when passed. */
-  readonly noContentChanged: boolean;
-  /** `--max-hash-size`; parsed integer or `undefined`. */
-  readonly maxHashSize: number | undefined;
-  /** `--debounce`; parsed integer or `undefined`. */
-  readonly debounce: number | undefined;
-  /** `--stop-timeout`; parsed integer or `undefined`. */
-  readonly stopTimeout: number | undefined;
-  /** `--no-initial`; `true` when passed. */
-  readonly noInitial: boolean;
-  /** `--clear`; `true` when passed. */
-  readonly clear: boolean;
-  /** `--no-clear`; `true` when passed. */
-  readonly noClear: boolean;
-  /** `--signal`; raw signal name, or `undefined` when not passed. */
-  readonly signal: string | undefined;
-  /** `--process-group`; `true` when passed. */
-  readonly processGroup: boolean;
-  /** `--no-process-group`; `true` when passed. */
-  readonly noProcessGroup: boolean;
-  /** Positional args after `--`; first is command, rest is its args. */
-  readonly rest: readonly string[];
-};
 
 /**
  * Module-internal optique parser. Built once at module load. Not
@@ -315,9 +250,10 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
   /**
    * Flattened, comma-split event kind list; translated from
    * CLI-facing `create`/`delete` to internal `add`/`unlink`.
-   * `undefined` when `--events` was not passed.
+   * Inferred `readonly WatchEventKind[] | undefined` (no annotation, so no
+   * nullish-union type node); `undefined` when `--events` was not passed.
    */
-  const events: readonly WatchEventKind[] | undefined = args.events
+  const events = args.events
     === undefined
     ? undefined
     : splitCommas(args.events,)
@@ -394,9 +330,9 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     ...(types.length
       > 0 ? { types, } : {}),
     ...(events === undefined ? {} : { events, }),
-    ...(hidden === undefined ? {} : { hidden, }),
-    ...(followSymlinks === undefined ? {} : { followSymlinks, }),
-    ...(gitignore === undefined ? {} : { gitignore, }),
+    ...(hidden === FLAG_UNSET ? {} : { hidden, }),
+    ...(followSymlinks === FLAG_UNSET ? {} : { followSymlinks, }),
+    ...(gitignore === FLAG_UNSET ? {} : { gitignore, }),
     ...(args.ignoreFile
       .length
       > 0 ? { ignoreFiles: args.ignoreFile, } : {}),
@@ -414,57 +350,10 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
       ? {}
       : { stopTimeout: args.stopTimeout, }),
     ...(args.noInitial ? { initial: false, } : {}),
-    ...(clear === undefined ? {} : { clear, }),
+    ...(clear === FLAG_UNSET ? {} : { clear, }),
     ...(killSignal === undefined ? {} : { killSignal, }),
-    ...(processGroup === undefined ? {} : { processGroup, }),
+    ...(processGroup === FLAG_UNSET ? {} : { processGroup, }),
   };
-}
-
-/**
- * Installs a one-shot SIGINT/SIGTERM handler that stops the
- * orchestrator and exits the process.
- *
- * One-shot: subsequent signals during shutdown skip the handler so a
- * frustrated double-Ctrl+C does not race two `stop()` calls; the
- * second signal lands as a hard exit via Node's default disposition.
- *
- * @param signal - signal name to handle
- *
- * @param handle - orchestrator handle whose `stop()` runs first
- *
- * @example
- * ```ts
- * installShutdownHandler({ signal: 'SIGINT', handle, },);
- * ```
- */
-function installShutdownHandler(
-  {
-    signal,
-    handle,
-  }: {
-    readonly signal: NodeJS.Signals;
-    readonly handle: WatchRestartHandle;
-  },
-): void {
-  process.once(
-    signal,
-    function onSignal(): void {
-      void (async function doShutdown(): Promise<void> {
-        try {
-          await handle.stop();
-          process.exit(0,);
-        }
-        catch (error) {
-          /** Human-readable error string used in the shutdown-failure stderr line. */
-          const message = error instanceof Error
-            ? error.message
-            : String(error,);
-          console.error(`shutdown failed: ${message}`,);
-          process.exit(1,);
-        }
-      })();
-    },
-  );
 }
 
 if (import.meta.main) {

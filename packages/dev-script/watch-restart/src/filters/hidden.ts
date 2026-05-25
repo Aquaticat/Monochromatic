@@ -65,8 +65,8 @@ function hasHiddenSegmentAt({
   path,
   idx,
 }: {
-  path: string;
-  idx: number;
+  readonly path: string;
+  readonly idx: number;
 },): boolean {
   return (path.charAt(idx,)
     === '.')

@@ -6,8 +6,8 @@ import {
 import {
   argsToOptions,
   parseArgs,
-  type ParsedArgs,
 } from './cli.ts';
+import type { ParsedArgs, } from './cli-types.ts';
 
 /**
  * Runs {@link parseArgs} against a synthetic argv with output / exit

@@ -93,8 +93,14 @@ export type WatchCtx = {
   readonly logger: Logger;
   /** Aborts when the orchestrator stops; long-running filters should respect it. */
   readonly signal: AbortSignal;
-  /** Shared content-hash cache; read by `contentHashFilter`, written by the watcher. */
-  readonly hashCache: HashCache;
+  /**
+   * Shared content-hash cache; read by `contentHashFilter`, written by the watcher.
+   * Typed `Readonly<HashCache>` so this context is deeply readonly (the cache's
+   * mutating methods stay callable; only reassignment of the binding is barred),
+   * which keeps {@link WatchFilter} and every filter that destructures it
+   * within `typescript/prefer-readonly-parameter-types`.
+   */
+  readonly hashCache: Readonly<HashCache>;
 };
 
 /**

@@ -14,6 +14,7 @@ import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 import type {
   ExitListener,
+  ExitResult,
   SpawnedChildHandle,
   SpawnFn,
 } from './child.ts';
@@ -37,6 +38,7 @@ const POST_EVENT_WAIT_MS: number = 50 + DEFAULT_DEBOUNCE_MS + 150;
  */
 const NO_EVENT_WAIT_MS: number = POST_EVENT_WAIT_MS;
 
+/* oxlint-disable no-restricted-syntax/no-class -- test double implementing the SpawnedChildHandle contract and instantiated via `new` by the recording spawn factory; it carries mutable per-instance state (exit listeners, exited guard) that a frozen-object factory cannot model for the orchestrator's lifecycle assertions. */
 /**
  * In-memory stand-in for `node:child_process.ChildProcess`.
  *
@@ -56,8 +58,8 @@ const NO_EVENT_WAIT_MS: number = POST_EVENT_WAIT_MS;
 class FakeChild implements SpawnedChildHandle {
   /** Mutable so the orchestrator's lifecycle logging reads consistent. */
   pid: number = 1_000;
-  /** Set when {@link simulateExit} fires; mirrors `ChildProcess.exitCode`. */
-  exitCode: number | null = null;
+  /** Set when {@link simulateExit} fires; mirrors `ChildProcess.exitCode`. Type sourced from the handle so the nullish union lives only at its definition. */
+  exitCode: SpawnedChildHandle['exitCode'] = null;
   /** Flips on {@link kill}; mirrors `ChildProcess.killed`. */
   killed: boolean = false;
 
@@ -128,8 +130,8 @@ class FakeChild implements SpawnedChildHandle {
    * @param signal - signal name (or `null` when exited normally)
    */
   #simulateExit(
-    code: number | null,
-    signal: NodeJS.Signals | null,
+    code: ExitResult['code'],
+    signal: ExitResult['signal'],
   ): void {
     if (this.#exited)
       return;
@@ -141,6 +143,7 @@ class FakeChild implements SpawnedChildHandle {
       listener(code, signal,);
   }
 }
+/* oxlint-enable no-restricted-syntax/no-class */
 
 /**
  * Spawn record produced by {@link makeRecordingSpawn}; one entry per
