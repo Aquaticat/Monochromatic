@@ -185,7 +185,7 @@ an empty result on the narrowest query is not "no precedent."
 
 When the bridges genuinely fail and the user must execute, invoke the `runbook` skill when writing any manual-action document (it encodes the required sections and formatting rules).
 Repo-wide handovers live in `docs/handover/<topic>.md`; package-specific handovers stay beside the code they document.
-Canonical example: `packages/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`.
+Canonical example: `packages-paused/desktop-daemon/editord/HANDOVER.chokidar-atomic-migration.md`.
 
 ### Name the verification step
 

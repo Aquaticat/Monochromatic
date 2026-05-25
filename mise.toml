@@ -580,36 +580,8 @@ run = "rm -rf node_modules; task-pnpm install"
 
 #endregion Fix Tasks
 
-#region Forge -- shortcuts to webapp-forge package tasks
-
-[tasks."forge:dev"]
-description = "Start the forge server in watch mode against in-memory storage + libSQL"
-run = "mise run //packages/webapp-forge/server:dev"
-
-[tasks."forge:seed"]
-description = "Seed synthetic forge data; --repos=N --users=N --seed=N --out=path"
-usage = 'arg "[args]" var=#true help="Forwarded to seed CLI"'
-run = """
-let args = ($env.usage_args? | default '' | split row ' ' | where {|p| $p != ''})
-bun packages/webapp-forge/seed/src/cli.ts ...$args
-"""
-
-[tasks."forge:stress"]
-description = "Run a forge stress scenario; --scenario=hot-repo|bursty-comment|wide-service|force-push (or all)"
-usage = 'arg "[args]" var=#true help="Forwarded to stress CLI"'
-run = """
-let args = ($env.usage_args? | default '' | split row ' ' | where {|p| $p != ''})
-bun packages/webapp-forge/stress/src/cli.ts ...$args
-"""
-
-[tasks."prepare:garage"]
-description = "Build and start a single-node Garage S3-compatible test container (replaces archived MinIO)"
-run = """
-task-depends -s "sh:echo Infinity" -o "sh:podman image exists monochromatic-garage && echo Infinity || echo -Infinity" -- podman build -t monochromatic-garage -f packages/webapp-forge/stress/garage.Dockerfile .
-podman run --rm -d --name monochromatic-garage-running -p 3900:3900 -p 3901:3901 -p 3903:3903 -v garage-data:/var/lib/garage -v garage-creds:/secrets monochromatic-garage
-"""
-
-#endregion Forge
+# Forge shortcut tasks (forge:dev, forge:seed, forge:stress, prepare:garage) were removed when
+# webapp-forge moved to packages-paused/. Re-add them on un-pause.
 
 #endregion tasks
 
@@ -619,9 +591,6 @@ podman run --rm -d --name monochromatic-garage-running -p 3900:3900 -p 3901:3901
 _.file = [{ path = ".env", redact = true }, { path = ".env.local", redact = true }]
 _.path = [
   "node_modules/.bin",
-  "packages/webapp-forge/stress/node_modules/.bin",
-  "packages/webapp-forge/server/node_modules/.bin",
-  "packages/webapp-edu/paper2vn/node_modules/.bin",
   "packages/pi/advisor/node_modules/.bin",
   "packages/pi/current-time-context/node_modules/.bin",
   "packages/pi/thinking-defaults/node_modules/.bin",
@@ -637,9 +606,7 @@ _.path = [
   "packages/claude-code-plugins/claude-spawn/node_modules/.bin",
   "packages/claude-code-plugins/bash-output-filter/node_modules/.bin",
   "packages/claude-code-plugins/guardrail/node_modules/.bin",
-  "packages/desktop-daemon/editord/node_modules/.bin",
   "packages/typeface/aquaticat/node_modules/.bin",
-  "packages/webapp-search/ai-tree/node_modules/.bin",
   "packages/webapp-productivity/done-postcss/node_modules/.bin",
   "packages/webapp-content/messages-demo/node_modules/.bin",
   "packages/webapp-content/ssg-test/node_modules/.bin",

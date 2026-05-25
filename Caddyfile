@@ -1,13 +1,15 @@
 # TODO: Delete this and migrate to per-pkg caddyfile
-:4110 {
-  handle /api/proxy/* {
-    uri strip_prefix /api/proxy
-    reverse_proxy https://api.exa.ai {
-      header_up Host api.exa.ai
-      header_up x-api-key {header.x-api-key}
-    }
-  }
-
-  root * /srv/packages/webapp-search/exa-search/dist/final/js
-  file_server
-}
+# Paused: webapp-search/exa-search moved to packages-paused/, so its deploy is paused too.
+# Uncomment and restore the dist path on un-pause.
+# :4110 {
+#   handle /api/proxy/* {
+#     uri strip_prefix /api/proxy
+#     reverse_proxy https://api.exa.ai {
+#       header_up Host api.exa.ai
+#       header_up x-api-key {header.x-api-key}
+#     }
+#   }
+#
+#   root * /srv/packages-paused/webapp-search/exa-search/dist/final/js
+#   file_server
+# }
