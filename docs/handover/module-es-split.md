@@ -113,16 +113,23 @@ Steps 2 to 9 are done and committed on `feat/module-es-split`:
   locally and it is not committed. The `sync:files` task also non-deterministically reorders `mise.toml`'s
   `_.path` bin list; that churn was reverted, not committed.
 
-Remaining:
+Steps 10 and 11 (GitHub issue management) are done (user approved the full batch):
 
-10. Add GitHub correction comments to #93 and #183 (exact text in the plan, lines 413 to 425).
-11. Create the round-1 implementation issue (single ordered checklist), the round-2 planning issue, and the
-    tsdown audit issue; comment on the ~21 `blocked-on-185-r2` deferred issues pointing at the round-2
-    issue; close #185. These are outward-facing GitHub mutations; verify current issue state first and
-    confirm before posting the batch.
+- Correction comment on #93 (mapIterableAsync name kept) and supplemental comment on #183 (kv-store before
+  memoize).
+- Created #210 (round 2 planning), #211 (round 1 implementation checklist, all boxes checked), #212
+  (tsdown audit of runtime-export packages).
+- Commented on all 21 `blocked-on-185-r2` issues (44, 47 to 52, 67, 70, 82, 87, 94, 95, 100, 152, 171,
+  172, 179 to 182) pointing at #210.
+- Closed #185 with a comment linking #210/#211/#212.
 
-Final: repo-wide build/test sanity (repo-wide lint is not 0/0 due to pre-existing module-es debt). Browser
-verification of exa-search was skipped at user request.
+All plan steps 1 to 11 are complete. The branch `feat/module-es-split` is ready to merge.
+
+Verification done: per-package build/lint(0/0)/test for the four new packages; rss and exa-search
+build + lint:types; the four plan rg import/manifest checks (all pass); sampled lint:types on three
+dep-removal packages (cli/git, module/token-count, figma-parsers/kiwi), all clean. Skipped: exa-search
+browser verification (user request) and a full repo-wide lint (not 0/0 because of pre-existing module-es
+and consumer debt, which is drift, not a regression from this work).
 
 ## Verification before declaring done
 
