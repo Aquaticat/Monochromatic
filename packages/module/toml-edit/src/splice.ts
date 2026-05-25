@@ -36,7 +36,7 @@ import type {
  * spliceEmit({ edit, },);
  * ```
  */
-export function spliceEmit({ edit, }: { edit: TomlEditState; },): string {
+export function spliceEmit({ edit, }: { readonly edit: TomlEditState; },): string {
   if (
     (edit.edits
       .size
@@ -172,8 +172,8 @@ function computeReplaceEvent(
     node,
     edit,
   }: {
-    node: AST.TOMLNode;
-    edit: Edit;
+    readonly node: AST.TOMLNode;
+    readonly edit: Edit;
   },
 ): {
   kind: 'replace';
@@ -205,7 +205,7 @@ function computeReplaceEvent(
  *
  * @returns Computed result (`readonly [number, number]`).
  */
-function valueRangeOf({ node, }: { node: AST.TOMLNode; },): readonly [
+function valueRangeOf({ node, }: { readonly node: AST.TOMLNode; },): readonly [
   number,
   number,
 ] {
@@ -226,8 +226,8 @@ function computeDeleteEvent(
     node,
     state,
   }: {
-    node: AST.TOMLNode;
-    state: TomlEditState;
+    readonly node: AST.TOMLNode;
+    readonly state: TomlEditState;
   },
 ): {
   kind: 'delete';
@@ -257,8 +257,8 @@ function computeDeletionRange(
     node,
     state,
   }: {
-    node: AST.TOMLNode;
-    state: TomlEditState;
+    readonly node: AST.TOMLNode;
+    readonly state: TomlEditState;
   },
 ): {
   kind: 'delete';
@@ -315,8 +315,8 @@ function resolveAnchor(
     anchor,
     state,
   }: {
-    anchor: AnchorKind;
-    state: TomlEditState;
+    readonly anchor: AnchorKind;
+    readonly state: TomlEditState;
   },
 ): number {
   if (anchor === 'eof')
@@ -353,8 +353,8 @@ function endOfLineAt({
   source,
   at,
 }: {
-  source: string;
-  at: number;
+  readonly source: string;
+  readonly at: number;
 },): number {
   /** Newline index; `-1` means EOF, so callers fall back to `source.length`. */
   const nl = source.indexOf(
@@ -374,8 +374,8 @@ function resolveInsideTable(
     table,
     source,
   }: {
-    table: AST.TOMLTable | AST.TOMLTopLevelTable;
-    source: string;
+    readonly table: AST.TOMLTable | AST.TOMLTopLevelTable;
+    readonly source: string;
   },
 ): number {
   if (table.body

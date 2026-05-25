@@ -36,8 +36,8 @@ export function tomlGetCommentAfter(
     edit,
     path,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
   },
 ): TomlComment | null {
   /** Effective resolution accounts for pending edits and deletes. */

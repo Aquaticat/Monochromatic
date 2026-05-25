@@ -15,14 +15,15 @@
 
 import type { AST, } from 'toml-eslint-parser';
 
-import {
-  TomlImmutableNodeError,
-  TomlTypeError,
-} from './errors.ts';
+import { TomlTypeError, } from './errors.ts';
 import { doPathCreate, } from './path-create.ts';
 import { formatPath, } from './path.ts';
 import { resolveByPath, } from './resolve.ts';
 import { withEditOn, } from './state.ts';
+import {
+  doAotReplace,
+  describeNonObject,
+} from './toml-set-aot.ts';
 import type {
   AnchorKind,
   Insertion,
@@ -85,9 +86,9 @@ export function tomlSet(
     path,
     value,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
-    value: unknown;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
+    readonly value: unknown;
   },
 ): TomlEditState {
   if ((value === null) || (value === undefined)) {
@@ -108,8 +109,10 @@ export function tomlSet(
     const newText = jsValueToTomlText({
       input: value,
       options: edit.canonical,
-      existing: resolved.node
-        .value,
+      existing: {
+        node: resolved.node
+          .value,
+      },
     },);
     return withEditOn({
       edit,
@@ -128,7 +131,7 @@ export function tomlSet(
     const newText = jsValueToTomlText({
       input: value,
       options: edit.canonical,
-      existing: resolved.node,
+      existing: { node: resolved.node, },
     },);
     return withEditOn({
       edit,
@@ -183,10 +186,10 @@ function doTableReplace(
     value,
     container,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
-    value: unknown;
-    container: AST.TOMLTable | AST.TOMLTopLevelTable;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
+    readonly value: unknown;
+    readonly container: AST.TOMLTable | AST.TOMLTopLevelTable;
   },
 ): TomlEditState {
   if (!isPlainObject(value,)) {
@@ -210,7 +213,9 @@ function doTableReplace(
   const anchor: AnchorKind = anchorForTableReplace({ container, },);
 
   /** One `Insertion` per replacement entry so the splice engine can emit them in order. */
-  const newInsertions: Insertion[] = Object.entries(value,).map(function each([k, v,],) {
+  const newInsertions: Insertion[] = Object
+    .entries(value,)
+    .map(function each([k, v,],) {
     /** Encoded `key = value\n` line. */
     const text = `${encodeKey({ key: k, },)} = ${
       jsValueToTomlText({
@@ -258,7 +263,7 @@ function anchorForTableReplace(
   {
     container,
   }: {
-    container: AST.TOMLTable | AST.TOMLTopLevelTable;
+    readonly container: AST.TOMLTable | AST.TOMLTopLevelTable;
   },
 ): AnchorKind {
   if (container.type
@@ -286,150 +291,3 @@ function anchorForTableReplace(
   return 'eof';
 }
 
-/**
- * Describe a non-plain-object value for the table-replace error message.
- *
- * @returns Computed string.
- */
-function describeNonObject(
-  { value, }: { value: unknown; },
-): string {
-  if (value === null)
-    return 'null';
-  if (Array.isArray(value,))
-    return 'array';
-  if (value instanceof Date)
-    return 'Date';
-  if ((typeof value) === 'object')
-    return 'non-plain-object';
-  return typeof value;
-}
-
-/**
- * Replace an array-of-tables collection or reject when the resolver's
- * `array-of-tables` result actually represents sibling standard tables.
- *
- * Disambiguates by inspecting `node.kind`: every node being `kind: 'array'`
- * marks a true `[[foo]]` AOT; otherwise the path matched multiple sibling
- * `[a.b]` / `[a.c]` standard tables under an implicit parent, which is a
- * different shape and is still rejected.
- *
- * @returns A fresh `TomlEditState` reflecting the change.
- *
- * @throws TomlImmutableNodeError when `nodes` are sibling standard tables
- *         rather than a true AOT.
- *
- * @throws TomlTypeError when `value` is not an array, or an element of the
- *         array is not a plain object.
- */
-function doAotReplace(
-  {
-    edit,
-    path,
-    value,
-    nodes,
-  }: {
-    edit: TomlEditState;
-    path: TomlPath;
-    value: unknown;
-    nodes: readonly AST.TOMLTable[];
-  },
-): TomlEditState {
-  /** True when every node is a `[[foo]]` instance rather than a sibling standard table. */
-  const allAot = nodes.every(function isAot(n,) {
-    return n.kind
-      === 'array';
-  },);
-  if (!allAot) {
-    throw new TomlImmutableNodeError(
-      `tomlSet on the sibling tables at ${formatPath({ path, },)} is not supported; `
-        + `the path matches multiple standard tables under an implicit parent, not a true array-of-tables. `
-        + `Set per sub-table with tomlSet({ path: [...subpath], value }) instead.`,
-    );
-  }
-
-  if (!Array.isArray(value,)) {
-    throw new TomlTypeError(
-      `tomlSet on an array-of-tables at ${
-        formatPath({ path, },)
-      } requires an array value; `
-        + `got ${describeNonObject({ value, },)}. Pass [] to clear all instances.`,
-    );
-  }
-
-  /** Aliased so the iteration site reads as `elements` not `value`. */
-  const elements: readonly unknown[] = value;
-
-  /** Encoded dotted header so each `[[a.b]]` line shares one spelling. */
-  const encodedHeader = path
-    .map(function each(seg,) {
-      if ((typeof seg) !== 'string') {
-        throw new TomlImmutableNodeError(
-          `tomlSet on an array-of-tables at ${
-            formatPath({ path, },)
-          }: numeric path segment is not allowed on the array path`,
-        );
-      }
-      return encodeKey({ key: seg, },);
-    },)
-    .join('.',);
-
-  /** Destructure so the first existing AOT instance can anchor the new insertions. */
-  const [firstNode,] = nodes;
-  /** Anchor in front of the first existing instance, or EOF when there are none. */
-  const anchor: AnchorKind = firstNode === undefined
-    ? 'eof'
-    : {
-      position: 'before-node',
-      node: firstNode,
-    };
-
-  /** One insertion per AOT element so the splice engine can emit each `[[a.b]]` block in order. */
-  const newInsertions: Insertion[] = elements.map(function each(
-    el,
-    i,
-  ) {
-    if (!isPlainObject(el,)) {
-      throw new TomlTypeError(
-        `tomlSet on an array-of-tables at ${
-          formatPath({ path, },)
-        } requires every element to be a plain object; `
-          + `element at index ${i} is ${describeNonObject({ value: el, },)}.`,
-      );
-    }
-    /** Encoded body lines for this AOT element. */
-    const bodyText = Object
-      .entries(el,)
-      .map(function eachEntry([k, v,],) {
-        return `${encodeKey({ key: k, },)} = ${
-          jsValueToTomlText({
-            input: v,
-            options: edit.canonical,
-            existing: undefined,
-          },)
-        }\n`;
-      },)
-      .join('',);
-    return {
-      anchor,
-      text: `[[${encodedHeader}]]\n${bodyText}`,
-      path: [
-        ...path,
-        i,
-      ],
-      jsValue: el,
-    };
-  },);
-
-  return {
-    ...edit,
-    deletions: new Set([
-      ...edit.deletions,
-      ...nodes,
-    ],),
-    insertions: [
-      ...edit.insertions,
-      ...newInsertions,
-    ],
-  };
-}

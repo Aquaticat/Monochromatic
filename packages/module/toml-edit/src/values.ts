@@ -12,11 +12,28 @@ import type { AST, } from 'toml-eslint-parser';
 
 import { TomlTypeError, } from './errors.ts';
 import { encodeKey, } from './keys.ts';
-import type {
-  CanonicalOptions,
-  TomlWrappedInput,
-} from './types.ts';
+import type { CanonicalOptions, } from './types.ts';
+import {
+  encodeStringWithStyle,
+  encodeWrapped,
+  isPlainObject,
+  isWrappedInput,
+} from './value-encoders.ts';
 export { encodeKey, } from './keys.ts';
+export { isPlainObject, } from './value-encoders.ts';
+
+/**
+ * Optional existing AST node carrier.
+ *
+ * Wraps the node in an object so the `AST.TOMLNode` alias sits at a property
+ * position. A bare `AST.TOMLNode | undefined` would flatten the alias into
+ * its constituents (re-exposing `TOMLInlineTable`, which is not on the
+ * `prefer-readonly-parameter-types` allow-list); nesting it keeps the alias
+ * intact and the parameter readonly.
+ */
+type ExistingNode = {
+  readonly node: AST.TOMLNode;
+};
 
 /**
  * Encode a JS value as TOML text suitable for assignment after `=`.
@@ -42,9 +59,9 @@ export function jsValueToTomlText(
     options,
     existing,
   }: {
-    input: unknown;
-    options: CanonicalOptions;
-    existing?: AST.TOMLContentNode | undefined;
+    readonly input: unknown;
+    readonly options: CanonicalOptions;
+    readonly existing?: ExistingNode | undefined;
   },
 ): string {
   return encodeValue({
@@ -67,10 +84,10 @@ function encodeValue(
     existing,
     depth,
   }: {
-    input: unknown;
-    options: CanonicalOptions;
-    existing: AST.TOMLContentNode | undefined;
-    depth: number;
+    readonly input: unknown;
+    readonly options: CanonicalOptions;
+    readonly existing: ExistingNode | undefined;
+    readonly depth: number;
   },
 ): string {
   if ((input === null) || (input === undefined)) {
@@ -126,41 +143,6 @@ function encodeValue(
 }
 
 /**
- * Encode a tagged wrapper input (`tomlInteger`, `tomlFloat`, date kinds).
- *
- * @returns Computed string.
- */
-function encodeWrapped(
-  { wrapped, }: { wrapped: TomlWrappedInput; },
-): string {
-  if (wrapped.tomlKind
-    === 'integer') {
-    return (typeof wrapped.value) === 'bigint'
-      ? wrapped.value
-        .toString()
-      : String(wrapped.value,);
-  }
-  if (wrapped.tomlKind
-    === 'float') {
-    /** Numeric form so finiteness and NaN can be checked. */
-    const n = Number(wrapped.value,);
-    if (!Number.isFinite(n,)) {
-      if (Number.isNaN(n,))
-        return 'nan';
-      return n > 0 ? 'inf' : '-inf';
-    }
-    /** String form so the float-marker check can scan once. */
-    const s = String(n,);
-    return s.includes('.',)
-      || s
-      .includes('e',)
-      || s
-      .includes('E',) ? s : `${s}.0`;
-  }
-  return String(wrapped.value,);
-}
-
-/**
  * Encode a JS string, preserving existing quote style if equal-valued.
  *
  * @returns Computed string.
@@ -170,23 +152,28 @@ function encodeString(
     value,
     existing,
   }: {
-    value: string;
-    existing: AST.TOMLContentNode | undefined;
+    readonly value: string;
+    readonly existing: ExistingNode | undefined;
   },
 ): string {
   if (
     (existing !== undefined)
-    && (existing.type
+    && (existing.node
+      .type
       === 'TOMLValue')
-      && (existing.kind
+      && (existing.node
+        .kind
         === 'string')
-      && (existing.value
+      && (existing.node
+        .value
         === value)
   ) {
     return encodeStringWithStyle({
       value,
-      style: existing.style,
-      multiline: existing.multiline,
+      style: existing.node
+        .style,
+      multiline: existing.node
+        .multiline,
     },);
   }
   /** Multi-line content selects triple-quoted output to avoid splitting. */
@@ -206,70 +193,6 @@ function encodeString(
 }
 
 /**
- * Encode a string with explicit `style` and `multiline` choices.
- *
- * @returns Computed string.
- */
-function encodeStringWithStyle(
-  {
-    value,
-    style,
-    multiline,
-  }: {
-    value: string;
-    style: 'basic' | 'literal';
-    multiline: boolean;
-  },
-): string {
-  if (style === 'literal') {
-    if (multiline)
-      return `'''\n${value}'''`;
-    return `'${value}'`;
-  }
-  /** Backslash and control-char escapes shared by single- and multi-line basic strings. */
-  const escaped = value
-    .replaceAll(
-      '\\',
-      String.raw`\\`,
-    )
-    .replaceAll(
-      '"',
-      String.raw`\"`,
-    )
-    .replaceAll(
-      '\t',
-      String.raw`\t`,
-    )
-    .replaceAll(
-      '\b',
-      String.raw`\b`,
-    )
-    .replaceAll(
-      '\f',
-      String.raw`\f`,
-    );
-  if (multiline) {
-    /** Newlines stay literal so the multi-line string preserves layout. */
-    const escapedKeepNewlines = escaped.replaceAll(
-      '\r',
-      String.raw`\r`,
-    );
-    return `"""\n${escapedKeepNewlines}"""`;
-  }
-  return `"${
-    escaped
-      .replaceAll(
-        '\n',
-        String.raw`\n`,
-      )
-      .replaceAll(
-        '\r',
-        String.raw`\r`,
-      )
-  }"`;
-}
-
-/**
  * Encode a JS number, preserving existing raw spelling when value is unchanged.
  *
  * @returns Computed string.
@@ -279,21 +202,26 @@ function encodeNumber(
     value,
     existing,
   }: {
-    value: number;
-    existing: AST.TOMLContentNode | undefined;
+    readonly value: number;
+    readonly existing: ExistingNode | undefined;
   },
 ): string {
   if (
     (existing !== undefined)
-    && (existing.type
+    && (existing.node
+      .type
       === 'TOMLValue')
-      && ((existing.kind
-        === 'integer') || (existing.kind
+      && ((existing.node
+        .kind
+        === 'integer') || (existing.node
+          .kind
           === 'float'))
-      && (existing.value
+      && (existing.node
+        .value
         === value)
   ) {
-    return existing.number;
+    return existing.node
+      .number;
   }
   if (!Number.isFinite(value,)) {
     if (Number.isNaN(value,))
@@ -319,26 +247,30 @@ function encodeArray(
     depth,
     existing,
   }: {
-    input: readonly unknown[];
-    options: CanonicalOptions;
-    depth: number;
-    existing: AST.TOMLContentNode | undefined;
+    readonly input: readonly unknown[];
+    readonly options: CanonicalOptions;
+    readonly depth: number;
+    readonly existing: ExistingNode | undefined;
   },
 ): string {
   /** Existing per-element AST so encoder can reuse spelling when value matches. */
-  const elementExistings = (existing !== undefined) && (existing.type
+  const elementExistings = (existing !== undefined) && (existing.node
+    .type
     === 'TOMLArray')
-    ? existing.elements
+    ? existing.node
+      .elements
     : null;
   /** Encoded element strings so the result can be both inline-tested and multi-line-emitted. */
   const encoded = input.map(function each(
     el,
     i,
   ) {
+    /** Existing element node at this index, if the parent array carried one. */
+    const elementExisting = elementExistings === null ? undefined : elementExistings[i];
     return encodeValue({
       input: el,
       options,
-      existing: elementExistings === null ? undefined : elementExistings[i],
+      existing: elementExisting === undefined ? undefined : { node: elementExisting, },
       depth: depth + 1,
     },);
   },);
@@ -381,9 +313,9 @@ function encodeInlineTable(
     options,
     depth,
   }: {
-    input: Record<string, unknown>;
-    options: CanonicalOptions;
-    depth: number;
+    readonly input: Readonly<Record<string, unknown>>;
+    readonly options: CanonicalOptions;
+    readonly depth: number;
   },
 ): string {
   /** Entries so iteration is keyed and ordering is deterministic. */
@@ -403,42 +335,3 @@ function encodeInlineTable(
     === 0 ? '' : ', '}}`;
 }
 
-/**
- * Type guard for tagged wrapper inputs produced by `wrappers.ts`.
- *
- * @param value - Arbitrary JS value to test.
- *
- * @returns True when `value` is an object carrying a string `tomlKind` discriminant.
- */
-function isWrappedInput(value: unknown,): value is TomlWrappedInput {
-  return (
-    ((typeof value) === 'object')
-    && (value !== null)
-      && ('tomlKind' in value)
-      && ((typeof (value as { tomlKind: unknown; }).tomlKind) === 'string')
-  );
-}
-
-/**
- * Type guard for plain object literals (proto is `Object.prototype` or `null`).
- *
- * @param value - Arbitrary JS value to test.
- *
- * @returns True when `value` is a plain object literal (excludes `Date`, class
- *          instances, `Map`, `Set`, etc.).
- *
- * @example
- * ```ts
- * isPlainObject({ a: 1, },);    // true
- * isPlainObject(new Date(),);   // false
- * isPlainObject([1, 2, 3,],);   // false (Array.prototype)
- * ```
- */
-export function isPlainObject(value: unknown,): value is Record<string, unknown> {
-  if (((typeof value) !== 'object') || (value === null))
-    return false;
-  /** Prototype lookup so class instances and built-ins are rejected. */
-  const proto: unknown = Object.getPrototypeOf(value,);
-  return (proto === Object
-    .prototype) || (proto === null);
-}

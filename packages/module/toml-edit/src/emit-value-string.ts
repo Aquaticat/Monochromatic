@@ -20,7 +20,7 @@ import type { AST, } from 'toml-eslint-parser';
  * emitStringValue({ node: tomlStringNode, },);
  * ```
  */
-export function emitStringValue({ node, }: { node: AST.TOMLStringValue; },): string {
+export function emitStringValue({ node, }: { readonly node: AST.TOMLStringValue; },): string {
   if (node.style
     === 'literal') {
     if (node.multiline)
@@ -44,7 +44,7 @@ export function emitStringValue({ node, }: { node: AST.TOMLStringValue; },): str
  * escapeBasic({ value: 'a\nb', },);
  * ```
  */
-function escapeBasic({ value, }: { value: string; },): string {
+function escapeBasic({ value, }: { readonly value: string; },): string {
   return value
     .replaceAll(
       '\\',
@@ -88,7 +88,7 @@ function escapeBasic({ value, }: { value: string; },): string {
  * escapeBasicMultiline({ value: 'a"""b', },);
  * ```
  */
-function escapeBasicMultiline({ value, }: { value: string; },): string {
+function escapeBasicMultiline({ value, }: { readonly value: string; },): string {
   return value
     .replaceAll(
       '\\',

@@ -8,6 +8,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import type { AST, } from 'toml-eslint-parser';
 
 import { effectiveAt, } from './effective-value.ts';
+import { TomlImmutableNodeError, } from './errors.ts';
 import { keysOf, } from './path.ts';
 import type {
   TomlEditState,
@@ -34,8 +35,8 @@ export function tomlKeys(
     edit,
     path = [],
   }: {
-    edit: TomlEditState;
-    path?: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path?: TomlPath;
   },
 ): readonly (string | number)[] {
   /** Effective resolution accounts for pending edits and deletes. */
@@ -129,12 +130,24 @@ function tableChildKeys(
   {
     container,
   }: {
-    container: AST.TOMLTopLevelTable | AST.TOMLTable | AST.TOMLInlineTable;
+    readonly container: AST.TOMLNode;
   },
 ): readonly string[] {
+  if ((container.type
+    !== 'TOMLTopLevelTable')
+    && (container.type
+      !== 'TOMLTable')
+    && (container.type
+      !== 'TOMLInlineTable')) {
+    throw new TomlImmutableNodeError(
+      `tableChildKeys: expected table container, got ${container.type}`,
+    );
+  }
   /** Tracks emitted top-level segments so each first key is reported once. */
   const seen = new Set<string>();
-  return container.body.flatMap(function flatten(child,) {
+  return container
+    .body
+    .flatMap(function flatten(child,) {
     if (child.type
       === 'TOMLKeyValue') {
       /** All key segments of this entry so the first one can be projected out. */

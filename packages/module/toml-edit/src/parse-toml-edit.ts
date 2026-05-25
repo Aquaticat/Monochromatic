@@ -27,8 +27,8 @@ function safeParse(
     source,
     tomlVersion,
   }: {
-    source: string;
-    tomlVersion: TomlEditOptions['tomlVersion'];
+    readonly source: string;
+    readonly tomlVersion: TomlEditOptions['tomlVersion'];
   },
 ): AST.TOMLProgram {
   try {

@@ -45,7 +45,7 @@ import { encodeKey, } from './values.ts';
  * canonicalEmit({ edit, },);
  * ```
  */
-export function canonicalEmit({ edit, }: { edit: TomlEditState; },): string {
+export function canonicalEmit({ edit, }: { readonly edit: TomlEditState; },): string {
   if ((edit.source
     !== '') || (edit.program
       .body[0]
@@ -61,7 +61,7 @@ export function canonicalEmit({ edit, }: { edit: TomlEditState; },): string {
  *
  * @returns Computed string.
  */
-function canonicalFromEmpty({ edit, }: { edit: TomlEditState; },): string {
+function canonicalFromEmpty({ edit, }: { readonly edit: TomlEditState; },): string {
   /** Accumulator so the header block and insertions can be emitted in source order. */
   const parts: string[] = [];
   if ((edit.headerComment
@@ -110,7 +110,7 @@ export function emitKey(
   {
     key,
   }: {
-    key: AST.TOMLKey;
+    readonly key: AST.TOMLKey;
   },
 ): string {
   return key
@@ -137,8 +137,8 @@ export function emitKeyValue(
     keyValue,
     options,
   }: {
-    keyValue: AST.TOMLKeyValue;
-    options: CanonicalOptions;
+    readonly keyValue: AST.TOMLKeyValue;
+    readonly options: CanonicalOptions;
   },
 ): string {
   return `${emitKey({ key: keyValue.key, },)} = ${

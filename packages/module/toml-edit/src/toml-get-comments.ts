@@ -24,7 +24,7 @@ import type {
  * ```
  */
 export function tomlGetComments(
-  { edit, }: { edit: TomlEditState; },
+  { edit, }: { readonly edit: TomlEditState; },
 ): readonly TomlComment[] {
   return edit.program
     .comments;

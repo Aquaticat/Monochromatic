@@ -46,8 +46,8 @@ export function tomlGetRaw(
     edit,
     path,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
   },
 ): string {
   if (edit.mode

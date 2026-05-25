@@ -33,7 +33,7 @@ export class TomlEditError extends Error {
    */
   constructor(
     message: string,
-    options?: ErrorOptions,
+    options?: Readonly<ErrorOptions>,
   ) {
     super(
       message,
@@ -58,7 +58,7 @@ export class TomlPathNotFoundError extends TomlEditError {
    */
   constructor(
     message: string,
-    options?: ErrorOptions,
+    options?: Readonly<ErrorOptions>,
   ) {
     super(
       message,
@@ -83,7 +83,7 @@ export class TomlSpliceUnavailableError extends TomlEditError {
    */
   constructor(
     message: string,
-    options?: ErrorOptions,
+    options?: Readonly<ErrorOptions>,
   ) {
     super(
       message,
@@ -108,7 +108,7 @@ export class TomlTypeError extends TomlEditError {
    */
   constructor(
     message: string,
-    options?: ErrorOptions,
+    options?: Readonly<ErrorOptions>,
   ) {
     super(
       message,
@@ -134,7 +134,7 @@ export class TomlImmutableNodeError extends TomlEditError {
    */
   constructor(
     message: string,
-    options?: ErrorOptions,
+    options?: Readonly<ErrorOptions>,
   ) {
     super(
       message,

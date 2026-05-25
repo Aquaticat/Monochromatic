@@ -25,8 +25,8 @@ export function pathEquals(
     a,
     b,
   }: {
-    a: TomlPath;
-    b: TomlPath;
+    readonly a: TomlPath;
+    readonly b: TomlPath;
   },
 ): boolean {
   if (a.length
@@ -56,7 +56,7 @@ export function pathEquals(
  * ```
  */
 export function asStringPath(
-  { segs, }: { segs: TomlPath; },
+  { segs, }: { readonly segs: TomlPath; },
 ): readonly string[] | null {
   /** Accumulator so an early numeric segment can short-circuit with `null`. */
   const result: string[] = [];
@@ -85,9 +85,9 @@ export function mergeAt(
     segments,
     value,
   }: {
-    base: Record<string, unknown>;
-    segments: readonly string[];
-    value: unknown;
+    readonly base: Readonly<Record<string, unknown>>;
+    readonly segments: readonly string[];
+    readonly value: unknown;
   },
 ): Record<string, unknown> {
   if (segments.length

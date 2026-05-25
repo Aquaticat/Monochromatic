@@ -34,9 +34,9 @@ export function emitContentNode(
     options,
     depth = 0,
   }: {
-    node: AST.TOMLContentNode;
-    options: CanonicalOptions;
-    depth?: number;
+    readonly node: AST.TOMLNode;
+    readonly options: CanonicalOptions;
+    readonly depth?: number;
   },
 ): string {
   if (node.type
@@ -62,7 +62,7 @@ export function emitContentNode(
  *
  * @returns Computed string.
  */
-function emitValueLeaf({ node, }: { node: AST.TOMLValue; },): string {
+function emitValueLeaf({ node, }: { readonly node: AST.TOMLValue; },): string {
   if (node.kind
     === 'string')
     return emitStringValue({ node, },);
@@ -87,9 +87,9 @@ function emitArray(
     options,
     depth,
   }: {
-    node: AST.TOMLArray;
-    options: CanonicalOptions;
-    depth: number;
+    readonly node: AST.TOMLArray;
+    readonly options: CanonicalOptions;
+    readonly depth: number;
   },
 ): string {
   /** Per-element text so the assembler can join into inline or multi-line form. */
@@ -129,10 +129,10 @@ export function emitArrayWithoutIndex(
     options,
     depth,
   }: {
-    array: AST.TOMLArray;
-    skipIndex: number;
-    options: CanonicalOptions;
-    depth: number;
+    readonly array: AST.TOMLArray;
+    readonly skipIndex: number;
+    readonly options: CanonicalOptions;
+    readonly depth: number;
   },
 ): string {
   /** Per-element text with the targeted index dropped before encoding. */
@@ -195,10 +195,10 @@ export function emitArrayWithSkipPath(
     options,
     depth,
   }: {
-    array: AST.TOMLArray;
-    skipPath: readonly number[];
-    options: CanonicalOptions;
-    depth: number;
+    readonly array: AST.TOMLArray;
+    readonly skipPath: readonly number[];
+    readonly options: CanonicalOptions;
+    readonly depth: number;
   },
 ): string {
   if (skipPath.length
@@ -268,9 +268,9 @@ function assembleArrayParts(
     options,
     depth,
   }: {
-    parts: readonly string[];
-    options: CanonicalOptions;
-    depth: number;
+    readonly parts: readonly string[];
+    readonly options: CanonicalOptions;
+    readonly depth: number;
   },
 ): string {
   /** Speculative inline form so the column budget check can decide the layout. */
@@ -312,11 +312,17 @@ function emitInlineTable(
     options,
     depth,
   }: {
-    node: AST.TOMLInlineTable;
-    options: CanonicalOptions;
-    depth: number;
+    readonly node: AST.TOMLNode;
+    readonly options: CanonicalOptions;
+    readonly depth: number;
   },
 ): string {
+  if (node.type
+    !== 'TOMLInlineTable') {
+    throw new TomlImmutableNodeError(
+      `emitInlineTable: expected TOMLInlineTable, got ${node.type}`,
+    );
+  }
   /** Body entries rendered as `k = v` fragments for the assembler. */
   const parts = emitInlineTableBodyParts({
     body: node.body,
@@ -354,13 +360,19 @@ export function emitInlineTableWithExtra(
     extraKey,
     extraValue,
   }: {
-    node: AST.TOMLInlineTable;
-    options: CanonicalOptions;
-    depth: number;
-    extraKey: string;
-    extraValue: string;
+    readonly node: AST.TOMLNode;
+    readonly options: CanonicalOptions;
+    readonly depth: number;
+    readonly extraKey: string;
+    readonly extraValue: string;
   },
 ): string {
+  if (node.type
+    !== 'TOMLInlineTable') {
+    throw new TomlImmutableNodeError(
+      `emitInlineTableWithExtra: expected TOMLInlineTable, got ${node.type}`,
+    );
+  }
   /** Existing entries plus the new one so the assembler joins them in order. */
   const parts = [
     ...emitInlineTableBodyParts({
@@ -384,9 +396,9 @@ function emitInlineTableBodyParts(
     options,
     depth,
   }: {
-    body: readonly AST.TOMLKeyValue[];
-    options: CanonicalOptions;
-    depth: number;
+    readonly body: readonly AST.TOMLKeyValue[];
+    readonly options: CanonicalOptions;
+    readonly depth: number;
   },
 ): readonly string[] {
   return body.map(function each(kv,) {
@@ -418,7 +430,7 @@ function assembleInlineTableParts(
   {
     parts,
   }: {
-    parts: readonly string[];
+    readonly parts: readonly string[];
   },
 ): string {
   return `{ ${parts.join(', ',)}${parts.length

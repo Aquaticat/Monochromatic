@@ -38,8 +38,8 @@ export function tomlGetCommentsBefore(
     edit,
     path,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
   },
 ): readonly TomlComment[] {
   /** Effective resolution accounts for pending edits and deletes. */

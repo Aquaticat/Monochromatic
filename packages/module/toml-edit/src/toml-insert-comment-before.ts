@@ -38,9 +38,9 @@ export function tomlInsertCommentBefore(
     path,
     comment,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
-    comment: string | readonly string[];
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
+    readonly comment: string | readonly string[];
   },
 ): TomlEditState {
   /** Path lookup so missing keys throw before any state change. */
@@ -95,7 +95,7 @@ export function tomlInsertCommentBefore(
  * @returns Computed result (`readonly string[]`).
  */
 function toLines(
-  { comment, }: { comment: string | readonly string[]; },
+  { comment, }: { readonly comment: string | readonly string[]; },
 ): readonly string[] {
   if ((typeof comment) === 'string')
     return [comment,];

@@ -70,8 +70,8 @@ export function tomlDelete(
     edit,
     path,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
   },
 ): TomlEditState {
   /** Direct AST lookup so deletion can branch on the resolution kind. */
@@ -118,8 +118,8 @@ function withDeletion(
     edit,
     node,
   }: {
-    edit: TomlEditState;
-    node: AST.TOMLNode;
+    readonly edit: TomlEditState;
+    readonly node: AST.TOMLNode;
   },
 ): TomlEditState {
   return {
@@ -141,8 +141,8 @@ function withDeletions(
     edit,
     nodes,
   }: {
-    edit: TomlEditState;
-    nodes: readonly AST.TOMLNode[];
+    readonly edit: TomlEditState;
+    readonly nodes: readonly AST.TOMLNode[];
   },
 ): TomlEditState {
   return {
@@ -176,11 +176,21 @@ function deleteArrayElement(
     path,
     element,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
-    element: AST.TOMLContentNode;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
+    readonly element: AST.TOMLNode;
   },
 ): TomlEditState {
+  if ((element.type
+    !== 'TOMLValue')
+    && (element.type
+      !== 'TOMLArray')
+    && (element.type
+      !== 'TOMLInlineTable')) {
+    throw new TomlImmutableNodeError(
+      `deleteArrayElement: expected array element, got ${element.type}`,
+    );
+  }
   /** Destructured parent so the type guard can read it once. */
   const { parent, } = element;
   if ((parent === null) || (parent.type
@@ -188,7 +198,7 @@ function deleteArrayElement(
     throw new TomlImmutableNodeError(
       `tomlDelete at ${
         formatPath({ path, },)
-      }: expected an array element, found parent type ${String(parent?.type,)}`,
+      }: expected an array element, found parent type ${parent?.type}`,
     );
   }
   /** Position of the element to drop; seeds the skip path for the outer walk. */
@@ -253,9 +263,9 @@ function walkUpToKeyValue(
     array,
     trailingPath,
   }: {
-    path: TomlPath;
-    array: AST.TOMLArray;
-    trailingPath: readonly number[];
+    readonly path: TomlPath;
+    readonly array: AST.TOMLArray;
+    readonly trailingPath: readonly number[];
   },
 ): {
   readonly keyValue: AST.TOMLKeyValue;
@@ -315,8 +325,8 @@ function removeJsAtPath(
     arr,
     path,
   }: {
-    arr: readonly unknown[];
-    path: readonly number[];
+    readonly arr: readonly unknown[];
+    readonly path: readonly number[];
   },
 ): unknown[] {
   if (path.length

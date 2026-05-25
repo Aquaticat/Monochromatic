@@ -37,9 +37,9 @@ export function tomlInsertCommentAfter(
     path,
     comment,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
-    comment: string;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
+    readonly comment: string;
   },
 ): TomlEditState {
   /** Path lookup so missing keys throw before any state change. */

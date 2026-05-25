@@ -26,8 +26,8 @@ export function tomlGet(
     edit,
     path,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
   },
 ): unknown {
   return tomlGetValue({

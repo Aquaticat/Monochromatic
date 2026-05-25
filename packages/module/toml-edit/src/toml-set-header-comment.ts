@@ -30,8 +30,8 @@ export function tomlSetHeaderComment(
     edit,
     comment,
   }: {
-    edit: TomlEditState;
-    comment: string | readonly string[] | null;
+    readonly edit: TomlEditState;
+    readonly comment: string | readonly string[] | null;
   },
 ): TomlEditState {
   /** Normalised payload so the state field carries one representation. */
@@ -48,7 +48,7 @@ export function tomlSetHeaderComment(
  * @returns Result, or `null` when no match.
  */
 function resolveComment(
-  { comment, }: { comment: string | readonly string[] | null; },
+  { comment, }: { readonly comment: string | readonly string[] | null; },
 ): string | null {
   if (comment === null)
     return null;

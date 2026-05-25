@@ -32,9 +32,9 @@ export function withEditOn(
     node,
     delta,
   }: {
-    edit: TomlEditState;
-    node: AST.TOMLNode;
-    delta: Edit;
+    readonly edit: TomlEditState;
+    readonly node: AST.TOMLNode;
+    readonly delta: Edit;
   },
 ): TomlEditState {
   /** Flattened tuples so `Map` can rebuild without mutating the previous instance. */
@@ -69,8 +69,8 @@ export function withInsertion(
     edit,
     insertion,
   }: {
-    edit: TomlEditState;
-    insertion: Insertion;
+    readonly edit: TomlEditState;
+    readonly insertion: Insertion;
   },
 ): TomlEditState {
   return {

@@ -74,8 +74,8 @@ export function attachedCommentsFor(
     node,
     edit,
   }: {
-    node: AST.TOMLNode;
-    edit: TomlEditState;
+    readonly node: AST.TOMLNode;
+    readonly edit: TomlEditState;
   },
 ): readonly TomlComment[] {
   /** Local alias so the recursive walker reads as `comments[i]`. */
@@ -100,9 +100,9 @@ function collectAttached(
     source,
     cursor,
   }: {
-    comments: readonly TomlComment[];
-    source: string;
-    cursor: number;
+    readonly comments: readonly TomlComment[];
+    readonly source: string;
+    readonly cursor: number;
   },
 ): readonly TomlComment[] {
   /** Last comment whose end falls before the cursor; starting point for the backward walk. */
@@ -147,8 +147,8 @@ function lastCommentBefore(
     comments,
     offset,
   }: {
-    comments: readonly TomlComment[];
-    offset: number;
+    readonly comments: readonly TomlComment[];
+    readonly offset: number;
   },
 ): number {
   return comments.reduce(
@@ -184,8 +184,8 @@ export function trailingInlineCommentFor(
     node,
     edit,
   }: {
-    node: AST.TOMLNode;
-    edit: TomlEditState;
+    readonly node: AST.TOMLNode;
+    readonly edit: TomlEditState;
   },
 ): TomlComment | null {
   /** Source bytes so the same-line check can scan for the next newline. */

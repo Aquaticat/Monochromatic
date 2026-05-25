@@ -42,8 +42,8 @@ export function tomlGetNode(
     edit,
     path,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
   },
 ): AST.TOMLContentNode | AST.TOMLTable | AST.TOMLTopLevelTable
   | readonly AST.TOMLTable[]

@@ -18,8 +18,6 @@
  * @module
  */
 
-import type { AST, } from 'toml-eslint-parser';
-
 import {
   asStringPath,
   mergeAt,
@@ -66,8 +64,8 @@ export function effectiveAt(
     edit,
     path,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
   },
 ): EffectiveResult {
   /** Exact-path pending insertion wins before any walk, per the resolution policy. */
@@ -120,7 +118,7 @@ export function effectiveAt(
  * @returns Computed result (`ResolveResult`).
  */
 function missingFor(
-  { edit, }: { edit: TomlEditState; },
+  { edit, }: { readonly edit: TomlEditState; },
 ): ResolveResult {
   return {
     kind: 'missing',
@@ -144,8 +142,8 @@ function projectPendingAtPrefix(
     edit,
     path,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
   },
 ): EffectiveResult | null {
   for (let prefixLen = path.length; prefixLen >= 1; prefixLen--) {
@@ -179,8 +177,22 @@ function projectPendingAtPrefix(
       edit,
       path: prefix,
     },);
-    /** AST node a pending edit could be keyed on. */
-    const pendingNode = nodeFromResolved({ resolved: baseAtPrefix, },);
+    /**
+     * AST node a pending edit could be keyed on. For `keyvalue` the splice
+     * engine uses `value.range`; for `value` the content node is used
+     * directly; `table`/`top-level` carry their own node. Other kinds have
+     * no single editable node.
+     */
+    const pendingNode = ((baseAtPrefix.kind
+      === 'keyvalue')
+      || (baseAtPrefix.kind
+        === 'value')
+      || (baseAtPrefix.kind
+        === 'table')
+      || (baseAtPrefix.kind
+        === 'top-level'))
+      ? baseAtPrefix.node
+      : null;
     if (pendingNode !== null) {
       if (edit.deletions
         .has(pendingNode,))
@@ -202,30 +214,6 @@ function projectPendingAtPrefix(
 }
 
 /**
- * Extract the AST node a pending edit could be keyed on.
- *
- * For `keyvalue`, this is the key-value node (the splice engine uses
- * its `value.range`). For `value`, this is the content node directly
- * (used by element-Edit cases). Other kinds either have no single node
- * to edit or are handled in the AST fallback.
- *
- * @returns Result, or `null` when no match.
- */
-function nodeFromResolved(
-  { resolved, }: { resolved: ResolveResult; },
-): AST.TOMLNode | null {
-  if ((resolved.kind
-    === 'keyvalue') || (resolved.kind
-      === 'value'))
-    return resolved.node;
-  if ((resolved.kind
-    === 'table') || (resolved.kind
-      === 'top-level'))
-    return resolved.node;
-  return null;
-}
-
-/**
  * Synthesise an object covering all pending insertions whose paths
  * strictly extend `path`. Used when a caller queries an intermediate
  * level above a deep path-create.
@@ -239,8 +227,8 @@ function synthesiseSubtree(
     edit,
     path,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
   },
 ): Record<string, unknown> | null {
   /** Lazy accumulator so an empty pending set returns `null` instead of `{}`. */
@@ -292,9 +280,9 @@ function navigateJsValue(
     value,
     rest,
   }: {
-    edit: TomlEditState;
-    value: unknown;
-    rest: TomlPath;
+    readonly edit: TomlEditState;
+    readonly value: unknown;
+    readonly rest: TomlPath;
   },
 ): EffectiveResult {
   if (rest.length
@@ -338,8 +326,8 @@ function resolveAst(
     edit,
     path,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
   },
 ): EffectiveResult {
   /** AST-only resolution so deletion and edit lookups can be keyed by node identity. */

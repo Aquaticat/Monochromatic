@@ -29,6 +29,7 @@ import {
 } from './collision.ts';
 import { emitInlineTableWithExtra, } from './emit-value.ts';
 import { TomlImmutableNodeError, } from './errors.ts';
+import { mergeDottedSegments, } from './path-create-merge.ts';
 import { formatPath, } from './path.ts';
 import {
   withEditOn,
@@ -62,13 +63,13 @@ export function doPathCreate(
     value,
     resolved,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
-    value: unknown;
-    resolved: {
-      kind: 'missing';
-      deepest: AST.TOMLNode;
-      consumed: number;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
+    readonly value: unknown;
+    readonly resolved: {
+      readonly kind: 'missing';
+      readonly deepest: AST.TOMLNode;
+      readonly consumed: number;
     };
   },
 ): TomlEditState {
@@ -145,11 +146,11 @@ function doTopLevelDottedKeyInsert(
     container,
     dottedSegments,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
-    value: unknown;
-    container: AST.TOMLTopLevelTable;
-    dottedSegments: readonly string[];
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
+    readonly value: unknown;
+    readonly container: AST.TOMLTopLevelTable;
+    readonly dottedSegments: readonly string[];
   },
 ): TomlEditState {
   assertNoSiblingTableCollision({
@@ -232,11 +233,11 @@ function doTableDottedKeyInsert(
     container,
     dottedSegments,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
-    value: unknown;
-    container: AST.TOMLTable;
-    dottedSegments: readonly string[];
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
+    readonly value: unknown;
+    readonly container: AST.TOMLTable;
+    readonly dottedSegments: readonly string[];
   },
 ): TomlEditState {
   assertNoSiblingTableCollision({
@@ -299,13 +300,19 @@ function doInlineTableExtend(
     inlineTable,
     dottedSegments,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
-    value: unknown;
-    inlineTable: AST.TOMLInlineTable;
-    dottedSegments: readonly string[];
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
+    readonly value: unknown;
+    readonly inlineTable: AST.TOMLNode;
+    readonly dottedSegments: readonly string[];
   },
 ): TomlEditState {
+  if (inlineTable.type
+    !== 'TOMLInlineTable') {
+    throw new TomlImmutableNodeError(
+      `doInlineTableExtend: expected TOMLInlineTable, got ${inlineTable.type}`,
+    );
+  }
   /** Destructured parent so the type guard can read it once. */
   const { parent, } = inlineTable;
   if ((parent === null) || (parent.type
@@ -367,50 +374,4 @@ function doInlineTableExtend(
       jsValue: newJsValue,
     },
   },);
-}
-
-/**
- * Merge `value` into `base` at the chain of dotted segments, returning
- * a fresh object. Intermediate non-object slots are overwritten with
- * fresh `{}`.
- *
- * @returns Computed result (`Record<string, unknown>`).
- */
-function mergeDottedSegments(
-  {
-    base,
-    segments,
-    value,
-  }: {
-    base: Record<string, unknown>;
-    segments: readonly string[];
-    value: unknown;
-  },
-): Record<string, unknown> {
-  if (segments.length
-    === 0)
-    return base;
-  /** Current segment so each recursion step shrinks `segments` by one. */
-  const [head,] = segments;
-  if (head === undefined)
-    return base;
-  if (segments.length
-    === 1) {
-    return {
-      ...base,
-      [head]: value,
-    };
-  }
-  /** Snapshot prior subtree so it can be merged into rather than overwritten. */
-  const existing = base[head];
-  /** Default to an empty object when the existing slot is not a plain object. */
-  const child = isPlainObject(existing,) ? existing : {};
-  return {
-    ...base,
-    [head]: mergeDottedSegments({
-      base: child,
-      segments: segments.slice(1,),
-      value,
-    },),
-  };
 }

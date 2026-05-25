@@ -28,7 +28,7 @@ import type { TomlEditState, } from './types.ts';
  * tomlStringify({ edit, },); // === source
  * ```
  */
-export function tomlStringify({ edit, }: { edit: TomlEditState; },): string {
+export function tomlStringify({ edit, }: { readonly edit: TomlEditState; },): string {
   if (edit.mode
     === 'splice')
     return spliceEmit({ edit, },);

@@ -54,7 +54,7 @@ function isBareKey(key: string,): boolean {
  * encodeKey({ key: 'my key', },); // '"my key"'
  * ```
  */
-export function encodeKey({ key, }: { key: string; },): string {
+export function encodeKey({ key, }: { readonly key: string; },): string {
   if (isBareKey(key,))
     return key;
   return `"${

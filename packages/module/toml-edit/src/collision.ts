@@ -56,10 +56,10 @@ export function assertNoSiblingTableCollision(
     dottedSegments,
     path,
   }: {
-    programBody: readonly (AST.TOMLKeyValue | AST.TOMLTable)[];
-    basePath: TomlPath;
-    dottedSegments: readonly string[];
-    path: TomlPath;
+    readonly programBody: readonly (AST.TOMLKeyValue | AST.TOMLTable)[];
+    readonly basePath: TomlPath;
+    readonly dottedSegments: readonly string[];
+    readonly path: TomlPath;
   },
 ): void {
   if (dottedSegments.length
@@ -159,9 +159,9 @@ export function assertNoInlineTableCollision(
     newSegments,
     path,
   }: {
-    body: readonly AST.TOMLKeyValue[];
-    newSegments: readonly string[];
-    path: TomlPath;
+    readonly body: readonly AST.TOMLKeyValue[];
+    readonly newSegments: readonly string[];
+    readonly path: TomlPath;
   },
 ): void {
   for (const kv of body) {
@@ -199,8 +199,8 @@ function collisionMessage(
     path,
     reason,
   }: {
-    path: TomlPath;
-    reason: string;
+    readonly path: TomlPath;
+    readonly reason: string;
   },
 ): string {
   return `tomlSet at ${
@@ -218,8 +218,8 @@ function pathsEqual(
     a,
     b,
   }: {
-    a: readonly (string | number)[];
-    b: TomlPath;
+    readonly a: readonly (string | number)[];
+    readonly b: TomlPath;
   },
 ): boolean {
   if (a.length
@@ -244,8 +244,8 @@ function startsWith(
     haystack,
     needle,
   }: {
-    haystack: readonly (string | number)[];
-    needle: TomlPath;
+    readonly haystack: readonly (string | number)[];
+    readonly needle: TomlPath;
   },
 ): boolean {
   if (haystack.length
@@ -270,8 +270,8 @@ function startsWithInclusive(
     haystack,
     needle,
   }: {
-    haystack: readonly (string | number)[];
-    needle: readonly (string | number)[];
+    readonly haystack: readonly (string | number)[];
+    readonly needle: readonly (string | number)[];
   },
 ): boolean {
   if (haystack.length

@@ -27,8 +27,8 @@ export function tomlHas(
     edit,
     path,
   }: {
-    edit: TomlEditState;
-    path: TomlPath;
+    readonly edit: TomlEditState;
+    readonly path: TomlPath;
   },
 ): boolean {
   /** Effective resolution so pending deletes show as absent. */
