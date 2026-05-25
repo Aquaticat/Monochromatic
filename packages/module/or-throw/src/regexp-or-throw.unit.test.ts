@@ -21,9 +21,10 @@ await describe({
     it({
       name: 'returns RegExp instances unchanged',
       fn: async () => {
-        const re = /abc/;
+        const re = /abc/u;
         expect(regExpOrThrow(re,),).toBe(re,);
-        const ctor = new RegExp('xyz',);
+        // oxlint-disable-next-line eslint/prefer-regex-literals -- this fixture deliberately constructs via `new RegExp` to verify constructor-built instances pass through unchanged; a literal would collapse it into the `re` case above
+        const ctor = new RegExp('xyz', 'u',);
         expect(regExpOrThrow(ctor,),).toBe(ctor,);
       },
     },),
@@ -48,7 +49,7 @@ await describe({
     it({
       name: 'narrows unknown to RegExp',
       fn: async () => {
-        const input: unknown = /abc/;
+        const input: unknown = /abc/u;
         const output = regExpOrThrow(input,);
         expectTypeOf(output,).toEqualTypeOf<RegExp>();
       },

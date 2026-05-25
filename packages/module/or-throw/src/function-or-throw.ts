@@ -15,9 +15,9 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  * functions, generator functions, classes (which are technically callable
  * as constructors), and built-in functions like `Array.from`.
  *
- * The target type `(...args: never[]) => unknown` uses contravariant `never[]`
- * to match any callable regardless of parameter types, the standard
- * "any-function" trick that avoids the banned `Function` type.
+ * The target type `(...args: readonly never[]) => unknown` uses contravariant
+ * `readonly never[]` to match any callable regardless of parameter types, the
+ * standard "any-function" trick that avoids the banned `Function` type.
  *
  * The return type uses `ExtractOrUnknown` so `unknown` inputs narrow to the
  * function type instead of collapsing to `never`.
@@ -38,9 +38,9 @@ import type { ExtractOrUnknown, } from './extract-or-unknown.ts';
  */
 export function functionOrThrow<T,>(
   value: T,
-): ExtractOrUnknown<T, (...args: never[]) => unknown> {
+): ExtractOrUnknown<T, (...args: readonly never[]) => unknown> {
   if ((typeof value) !== 'function')
     throw new Error(`Expected function, got ${typeof value} ${String(value,)}`,);
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- TypeScript cannot statically narrow generic T after typeof
-  return value as ExtractOrUnknown<T, (...args: never[]) => unknown>;
+  return value as ExtractOrUnknown<T, (...args: readonly never[]) => unknown>;
 }
