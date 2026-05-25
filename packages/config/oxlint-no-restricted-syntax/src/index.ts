@@ -35,6 +35,7 @@ import { noForIn, } from './rules/no-for-in.ts';
 import { noFunctionRootLet, } from './rules/no-function-root-let.ts';
 import { noHasownproperty, } from './rules/no-hasownproperty.ts';
 import { noModuleRootLet, } from './rules/no-module-root-let.ts';
+import { noNullishUnion, } from './rules/no-nullish-union.ts';
 import { noPromiseCatch, } from './rules/no-promise-catch.ts';
 import { noPromiseFinally, } from './rules/no-promise-finally.ts';
 import { noRegex, } from './rules/no-regex.ts';
@@ -42,7 +43,6 @@ import { noRestParams, } from './rules/no-rest-params.ts';
 import { noSwitch, } from './rules/no-switch.ts';
 import { noTrimLeftRight, } from './rules/no-trim-left-right.ts';
 import { noTryFinally, } from './rules/no-try-finally.ts';
-import { noUndefinedUnion, } from './rules/no-undefined-union.ts';
 import {
   noVariableFunctionExpression,
 } from './rules/no-variable-function-expression.ts';
@@ -86,6 +86,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-function-root-let': noFunctionRootLet,
     'no-hasownproperty': noHasownproperty,
     'no-module-root-let': noModuleRootLet,
+    'no-nullish-union': noNullishUnion,
     'no-promise-catch': noPromiseCatch,
     'no-promise-finally': noPromiseFinally,
     'no-regex': noRegex,
@@ -93,7 +94,6 @@ const plugin: Plugin = eslintCompatPlugin({
     'no-switch': noSwitch,
     'no-trim-left-right': noTrimLeftRight,
     'no-try-finally': noTryFinally,
-    'no-undefined-union': noUndefinedUnion,
     'no-variable-function-expression': noVariableFunctionExpression,
     'prefer-describe-function-ref-name': preferDescribeFunctionRefName,
     'require-destructured-params': requireDestructuredParams,

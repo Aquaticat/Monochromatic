@@ -46,7 +46,7 @@ await describe({
     it({
       name: 'narrows union return types to exclude falsy variants',
       fn: async () => {
-        // oxlint-disable-next-line no-restricted-syntax/no-undefined-union -- narrowing test deliberately feeds a union with `undefined` to verify the return type excludes it
+        // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- narrowing test deliberately feeds a union with `undefined` to verify the return type excludes it
         const input: string | undefined = 'value';
         const output = truthyOrThrow(input,);
         expectTypeOf(output,).toEqualTypeOf<string>();

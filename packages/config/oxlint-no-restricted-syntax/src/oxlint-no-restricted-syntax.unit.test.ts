@@ -143,6 +143,7 @@ const SUBSTANTIVE_RULES = [
   'no-function-root-let',
   'no-hasownproperty',
   'no-module-root-let',
+  'no-nullish-union',
   'no-promise-catch',
   'no-promise-finally',
   'no-regex',
@@ -150,7 +151,6 @@ const SUBSTANTIVE_RULES = [
   'no-switch',
   'no-trim-left-right',
   'no-try-finally',
-  'no-undefined-union',
   'no-variable-function-expression',
   'prefer-describe-function-ref-name',
   'require-destructured-params',
@@ -243,10 +243,10 @@ await describe({
           },
         },),
         it({
-          name: 'no-undefined-union accepts ?:, plain T, T | null, and sentinels',
+          name: 'no-nullish-union accepts ?:, plain T, and Symbol sentinels',
           fn: async () => {
             const diagnostics = await lint(
-              'valid/no-undefined-union.ts',
+              'valid/no-nullish-union.ts',
             );
             expect(diagnostics,).toEqual([],);
           },
@@ -254,21 +254,23 @@ await describe({
       ],
     },),
     describe({
-      name: 'no-undefined-union forms',
+      name: 'no-nullish-union forms',
       children: [
         it({
-          name: 'catches every distinct `T | undefined` form in the fixture',
+          name: 'catches every distinct nullish-union form in the fixture',
           fn: async () => {
-            const diagnostics = await lint('invalid/no-undefined-union.ts',);
-            const undefinedUnion = diagnostics.filter(
-              function isUndefinedUnion(diagnostic,): boolean {
-                return diagnostic.code === 'no-restricted-syntax(no-undefined-union)';
+            const diagnostics = await lint('invalid/no-nullish-union.ts',);
+            const nullishUnion = diagnostics.filter(
+              function isNullishUnion(diagnostic,): boolean {
+                return diagnostic.code === 'no-restricted-syntax(no-nullish-union)';
               },
             );
-            // Seven distinct union sites in the fixture: T | undefined,
-            // undefined | T, optional property, return type, parameter,
-            // Promise<T | undefined>, Array<T | undefined>.
-            expect(undefinedUnion.length,).toBe(7,);
+            // Ten distinct union sites in the fixture: seven `undefined`
+            // variants (T | undefined, undefined | T, optional property, return
+            // type, parameter, Promise<T | undefined>, Array<T | undefined>)
+            // plus three `null` variants (T | null, null | T,
+            // Promise<T | null>).
+            expect(nullishUnion.length,).toBe(10,);
           },
         },),
       ],

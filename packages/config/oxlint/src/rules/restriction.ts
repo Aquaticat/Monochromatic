@@ -70,12 +70,14 @@ export const restrictionRules: DummyRuleMap = {
   // Use union types with `as const` instead of enum declarations.
   'no-restricted-syntax/no-enum': 'error',
 
-  // Union types containing `undefined` (`T | undefined`) are banned.
-  // exactOptionalPropertyTypes is on; widening a slot to `| undefined` skirts
-  // it. Use `foo?: T` for optional members, an if-guard so undefined never
-  // flows into the typed slot, or a named sentinel. Stays disableable with a
-  // justified scoped comment for genuine external-boundary cases.
-  'no-restricted-syntax/no-undefined-union': 'error',
+  // Union types containing `null` or `undefined` (`T | null`, `T | undefined`)
+  // are banned. exactOptionalPropertyTypes is on; widening a slot to a nullish
+  // member skirts it, and pivoting `undefined` to `null` is the same escape.
+  // Use `foo?: T` for optional members, an if-guard so the nullish value never
+  // flows into the typed slot, or a genuine `Symbol` sentinel (never
+  // null/undefined). Stays disableable with a justified scoped comment for
+  // genuine external-boundary cases.
+  'no-restricted-syntax/no-nullish-union': 'error',
 
   // Use named function declarations or named function expressions, never arrow functions.
   // Callbacks still need a name: items.map(function getValue(item) { return item.value; }).

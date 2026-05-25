@@ -59,7 +59,7 @@ await describe({
     it({
       name: 'narrows the static return type to exclude null and undefined',
       fn: async () => {
-        // oxlint-disable-next-line no-restricted-syntax/no-undefined-union -- narrowing test deliberately feeds a union with `undefined` to verify the return type excludes it
+        // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- narrowing test deliberately feeds a union with `undefined` to verify the return type excludes it
         const input: string | null | undefined = 'value';
         const output = nonNullishOrThrow(input,);
         expectTypeOf(output,).toEqualTypeOf<string>();

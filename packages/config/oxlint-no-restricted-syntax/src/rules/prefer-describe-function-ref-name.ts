@@ -351,6 +351,7 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
           .value;
         if (stringValue === '')
           return;
+        /* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors eslint's Scope API: `context.sourceCode.getScope` returns `Scope` and `scope.upper` is typed `Scope | null` (null above the global scope), so this scope-walk cursor must admit `null`; external-boundary type, not a nullish escape we control */
         for (
           let scope: Scope | null = context.sourceCode
             .getScope(node,);
@@ -375,6 +376,7 @@ export const preferDescribeFunctionRefName: CreateOnceRule = {
           }
           return;
         }
+        /* oxlint-enable no-restricted-syntax/no-nullish-union */
         return;
       }
     }

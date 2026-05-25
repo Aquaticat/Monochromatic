@@ -24,7 +24,7 @@ const REGEX_ACCEPTING_STRING_METHODS = [
  * Sentinel returned by {@link getStaticMethodName} when a member expression's
  * property is computed dynamically and carries no static string name. A named
  * sentinel keeps the "no static name" signal out of a `string | undefined`
- * union, which `no-restricted-syntax/no-undefined-union` bans.
+ * union, which `no-restricted-syntax/no-nullish-union` bans.
  */
 const NO_STATIC_METHOD_NAME = Symbol('no-static-method-name',);
 

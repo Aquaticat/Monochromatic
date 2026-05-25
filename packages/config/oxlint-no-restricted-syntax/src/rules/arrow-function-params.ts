@@ -143,21 +143,26 @@ export function extractParamsText(
   const rest = fullText.slice(start,);
   /** Parenthesis nesting counter; the params end when it returns to zero. */
   let depth = 0;
-  /** Active string-literal delimiter while scanning, or null when outside a string. */
-  let inString: string | null = null;
+  /** Genuine sentinel marking the scanner is outside any string literal; a unique `Symbol`, never `null`, so the cursor type carries no nullish union. */
+  const OUTSIDE_STRING = Symbol('outside-string',);
+  /**
+   * Active string-literal delimiter while scanning, or {@link OUTSIDE_STRING}
+   * when not inside a string.
+   */
+  let inString: string | typeof OUTSIDE_STRING = OUTSIDE_STRING;
 
   for (let i = 0; i < rest
     .length; i++) {
     /** Current character under the scanner cursor. */
     const ch = rest[i];
 
-    if (inString !== null) {
+    if (inString !== OUTSIDE_STRING) {
       if (ch === '\\') {
         i++;
         continue;
       }
       if (ch === inString)
-        inString = null;
+        inString = OUTSIDE_STRING;
       continue;
     }
 

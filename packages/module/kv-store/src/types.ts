@@ -135,7 +135,7 @@ export type StorageBackend = {
    * @param key - lookup key
    * @returns serialized value or undefined/null when missing
    */
-  // oxlint-disable-next-line no-restricted-syntax/no-undefined-union -- mirrors the JS stdlib backend APIs this contract accepts directly: `Map<string,string>.get` returns `string | undefined` and Web Storage `getItem` returns `string | null`; raw `Map` is a documented backend, so the return must admit both `undefined` and `null`
+  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors the JS stdlib backend APIs this contract accepts directly: `Map<string,string>.get` returns `string | undefined` and Web Storage `getItem` returns `string | null`; raw `Map` is a documented backend, so the return must admit both `undefined` and `null`
   readonly get: (key: string,) => Promisable<string | undefined | null>;
 
   /**
@@ -181,7 +181,7 @@ export type SyncStorageBackend = {
    * @param key - lookup key
    * @returns serialized value or undefined when missing
    */
-  // oxlint-disable-next-line no-restricted-syntax/no-undefined-union -- mirrors `Map<string,string>.get` (`string | undefined`), the JS stdlib backend this contract accepts directly; raw `Map` is a documented sync backend, so the return must admit `undefined`
+  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors `Map<string,string>.get` (`string | undefined`), the JS stdlib backend this contract accepts directly; raw `Map` is a documented sync backend, so the return must admit `undefined`
   readonly get: (key: string,) => string | undefined;
 
   /**

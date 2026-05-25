@@ -44,8 +44,12 @@ function has({
   return Object.hasOwn(obj, key,);
 }
 
-function pick(): HTMLInputElement | null {
-  return document.querySelector<HTMLInputElement>('.target',);
+function pick(): HTMLInputElement {
+  // no-nullish-union proper fix: if-guard so `null` never enters the return slot.
+  const found = document.querySelector<HTMLInputElement>('.target',);
+  if (found === null)
+    throw new Error('target input missing',);
+  return found;
 }
 
 // no-class allowlist: direct Error subclass passes via the `Error` suffix on the superclass name.
