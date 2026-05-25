@@ -29,6 +29,7 @@ export {
   DEFAULT_MAX_HASH_SIZE_BYTES,
   HashCache,
   type HashCacheOptions,
+  OVERSIZED,
 } from './hash-cache.ts';
 export {
   DEFAULT_DEBOUNCE_MS,
