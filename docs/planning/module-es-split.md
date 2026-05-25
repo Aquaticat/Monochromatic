@@ -429,11 +429,11 @@ because the current memoize implementation depends on the store abstraction. `me
 Close #185 after this revised decision doc lands and the follow-up issues are created.
 Create two issues:
 
-1.  Round 1 implementation issue.
-    Use one ordered checklist rather than package-per-issue tracking.
-2.  Round 2 planning issue.
-    This issue defines destinations for the next batch of `module/es` symbols and becomes the human-readable target for
-    deferred work.
+1. Round 1 implementation issue.
+   Use one ordered checklist rather than package-per-issue tracking.
+2. Round 2 planning issue.
+   This issue defines destinations for the next batch of `module/es` symbols and becomes the human-readable target for
+   deferred work.
 
 Keep the existing `blocked-on-185-r2` label.
 It currently marks 21 open deferred issues and does not need to be renamed.
@@ -452,15 +452,15 @@ audit should cover runtime exports across the workspace rather than module packa
 
 Each step is a minimum logical unit and should be committed after verification.
 
-1.  Create `@monochromatic-dev/module-kv-store` with full tsdown setup, README, implementation, and ported tests.
-2.  Create `@monochromatic-dev/module-memoize` with full tsdown setup, README, implementation, and ported tests.
-3.  Create `@monochromatic-dev/module-async-iter` with full tsdown setup, README, implementation, and tests.
-4.  Create `@monochromatic-dev/module-observable` with full tsdown setup, README, implementation, and tests.
-5.  Migrate `webapp-productivity/rss` to `module-async-iter` and `module-memoize`.
-6.  Migrate `webapp-search/exa-search` to `module-observable` and the method-based observable API.
-7.  Remove the 18 unused `module-es` manifest dependencies and refresh package manager state.
-8.  Remove migrated named subpath exports from `packages/module/es/package.json`.
-9.  Update active memoize guidance to point at `module-memoize`.
+1. Create `@monochromatic-dev/module-kv-store` with full tsdown setup, README, implementation, and ported tests.
+2. Create `@monochromatic-dev/module-memoize` with full tsdown setup, README, implementation, and ported tests.
+3. Create `@monochromatic-dev/module-async-iter` with full tsdown setup, README, implementation, and tests.
+4. Create `@monochromatic-dev/module-observable` with full tsdown setup, README, implementation, and tests.
+5. Migrate `webapp-productivity/rss` to `module-async-iter` and `module-memoize`.
+6. Migrate `webapp-search/exa-search` to `module-observable` and the method-based observable API.
+7. Remove the 18 unused `module-es` manifest dependencies and refresh package manager state.
+8. Remove migrated named subpath exports from `packages/module/es/package.json`.
+9. Update active memoize guidance to point at `module-memoize`.
 10. Add GitHub correction comments.
 11. Create the round-1 implementation issue, the round-2 planning issue, and the tsdown audit issue.
 
