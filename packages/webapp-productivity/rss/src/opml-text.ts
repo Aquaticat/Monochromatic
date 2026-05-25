@@ -1,4 +1,4 @@
-import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
+import { mapIterableAsync, } from '@monochromatic-dev/module-async-iter';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import { readFile, } from 'node:fs/promises';

@@ -2725,15 +2725,18 @@ importers:
 
   packages/webapp-productivity/rss:
     dependencies:
-      '@monochromatic-dev/module-es':
+      '@monochromatic-dev/module-async-iter':
         specifier: workspace:*
-        version: link:../../module/es
+        version: link:../../module/async-iter
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/module-memoize':
+        specifier: workspace:*
+        version: link:../../module/memoize
       '@monochromatic-dev/module-numeric-const':
         specifier: workspace:*
         version: link:../../module/numeric-const
