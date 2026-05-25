@@ -19,6 +19,7 @@ Fix all lint issues across active packages so `mise run lint` exits 0.
 - GitHub issue #213 filed for future improvement of the two rules (the syntax-only rules miss runtime/binding-resolution escapes; those are tractable with more effort, not unbannable).
 - All 12 shared `module/*` packages re-fixed under the final rules with proper patterns: kv-store (b76ec75f), toml-edit (a7e908d8), logger (60325d59), fs-path (c039ca94), hyperscript (843a9745), image-diff (2631fb84), dom (3826946b), or-throw (70888390), test (097c10c7), observable (49e30157), i18n-compose (58dab75a).
 - Leaves wave L1: deps-cube (0764b13c), done-postcss (926ef363), messages-demo (b1d3be9a), auto-mode (e8c5ba80), inference-canary (ea4f2041).
+- Leaves wave L2 (verified `:lint` exit 0): module/memoize (1665ed5a lint + 5d3e148c test migration to ABSENT contract), dev-script/watch-restart (5ff2776d + 1c6418e7 OVERSIZED sentinel re-export), pi/morph-compact (dcd5e344 + 592b6aaf). All used real Symbol/domain sentinels and justified external-boundary disables, no nullish dodges.
 
 ## In progress: webapp-productivity/done (UNCOMMITTED) + oxlint investigation lead
 
@@ -74,10 +75,8 @@ Dispatch each leaf package to a `spawn-claude` child that fixes it to `mise run 
 Leaf packages still to fix:
 
 - `webapp-productivity/done`: IN PROGRESS, uncommitted; ~100/102 fixed, 2 suspected-tool-bug `prefer-readonly` warnings left. See the dedicated "In progress: webapp-productivity/done" section above before resuming.
-- `pi/morph-compact` (33w 33e)
-- `dev-script/watch-restart` (22w 44e)
 - `pi/advisor` (33e)
-- `config/oxlint-tsdoc` (28w 37e)
+- `config/oxlint-tsdoc` (28w 37e): a config package; child was launched but PAUSED by the user and must NOT resume until `webapp-productivity/done` finishes (no config edits while leaf work is uncommitted on disk). Polish config packages early but only with zero leaf children running.
 - `webapp-productivity/doodle-widget` (45w 16e)
 - `dev-script/page-weight` (20w 12e)
 - `pi/terminal-title` (23w 3e)
