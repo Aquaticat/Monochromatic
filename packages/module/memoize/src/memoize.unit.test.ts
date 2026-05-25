@@ -1,4 +1,7 @@
-import { createSyncStore, } from '@monochromatic-dev/module-kv-store';
+import {
+  ABSENT,
+  createSyncStore,
+} from '@monochromatic-dev/module-kv-store';
 import {
   describe,
   expect,
@@ -177,7 +180,7 @@ await describe({
 
         memoized({ args: [4,], salt: 'v1', },);
         expect(memoized.size,).toBe(3,);
-        expect(memoized.store.get('1:v1',),).toBeUndefined();
+        expect(memoized.store.get('1:v1',),).toBe(ABSENT,);
         expect(memoized.store.get('4:v1',),).toBeDefined();
       },
     },),
@@ -204,7 +207,7 @@ await describe({
         // Adding 4 should evict 2 (oldest after refresh), not 1.
         memoized({ args: [4,], salt: 'v1', },);
         expect(memoized.store.get('1:v1',),).toBeDefined();
-        expect(memoized.store.get('2:v1',),).toBeUndefined();
+        expect(memoized.store.get('2:v1',),).toBe(ABSENT,);
       },
     },),
 
@@ -242,7 +245,7 @@ await describe({
     },),
 
     it({
-      name: 'undefined return value is treated as a miss and recomputes',
+      name: 'undefined return value is cached and recomputes once',
       fn: async () => {
         const calls: number[] = [];
         function returnsUndefined(x: number,): undefined {
@@ -250,9 +253,9 @@ await describe({
         }
         const memoized = memoize({ fn: returnsUndefined, keyFn: String, },);
 
-        memoized({ args: [1,], salt: 'v1', },);
-        memoized({ args: [1,], salt: 'v1', },);
-        expect(calls.length,).toBe(2,);
+        expect(memoized({ args: [1,], salt: 'v1', },),).toBeUndefined();
+        expect(memoized({ args: [1,], salt: 'v1', },),).toBeUndefined();
+        expect(calls.length,).toBe(1,);
       },
     },),
   ],

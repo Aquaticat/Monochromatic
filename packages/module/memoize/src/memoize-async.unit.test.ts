@@ -192,7 +192,7 @@ await describe({
     },),
 
     it({
-      name: 'undefined resolution is treated as a miss and recomputes',
+      name: 'undefined resolution is cached and recomputes once',
       fn: async () => {
         const calls: number[] = [];
         async function resolvesUndefined(x: number,): Promise<undefined> {
@@ -200,9 +200,9 @@ await describe({
         }
         const memoized = await memoizeAsync({ fn: resolvesUndefined, keyFn: String, },);
 
-        await memoized({ args: [1,], salt: 'v1', },);
-        await memoized({ args: [1,], salt: 'v1', },);
-        expect(calls.length,).toBe(2,);
+        expect(await memoized({ args: [1,], salt: 'v1', },),).toBeUndefined();
+        expect(await memoized({ args: [1,], salt: 'v1', },),).toBeUndefined();
+        expect(calls.length,).toBe(1,);
       },
     },),
   ],
