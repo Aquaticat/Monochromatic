@@ -17,6 +17,7 @@ When a cue matches, follow the target rule immediately rather than rediscovering
 - User correction of a substantive claim: see "Pre-response checklist".
 - Verification touching destructive or stateful behavior: see "Verify on a throwaway, not against real state".
 - Removing a regex, or refactoring a loop, over text or a flat array: see "Simplification progression" (no recursion over linear input; JS has no guaranteed tail-call elimination).
+- About to type a bundled or single-letter CLI flag (e.g. `rg -rl`, `-rn`): see "Long-form flags".
 
 ## Before responding to the user
 
@@ -250,6 +251,24 @@ Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
 Clone the git repo of a package to a temp dir whenever investigating src code.
 Use `gh repo clone` instead of `git clone`;
 `gh` handles authentication and fork remotes automatically.
+
+### Long-form flags
+
+Use long-form (`--flag`) options for CLI commands, not bundled or single-letter short flags.
+Writing a flag's long form forces knowing what it does, which is where short-flag muscle memory fails.
+
+`rg` is the canonical trap.
+ripgrep recurses by default, so its `-r` means `--replace`, not grep's recursive `-r`.
+A grep-reflex `rg -rl 'pat'` parses as `--replace=l`: it silently rewrites every match to `l` in the output.
+The agent then reads back corrupted data that looks plausible (a `$1` bundler suffix shown as `l`, for instance).
+`-r` is dangerous anywhere in a single-dash bundle, not only at the front:
+at a bundle tail (`rg -ir 'pat'`) it consumes the next argument as the replacement and swallows the pattern.
+Long form removes the trap.
+`--replace=...` is never typed meaning recursion;
+the recursive reflex `rg --recursive` fails loudly with `unrecognized flag` instead of corrupting output silently.
+
+Where a flag has no long-form spelling the short flag stays;
+`--` argument separators (`mise watch -- task`) are unaffected.
 
 ### Bash output path collapse
 
