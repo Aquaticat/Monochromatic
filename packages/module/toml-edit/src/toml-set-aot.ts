@@ -158,7 +158,6 @@ export function doAotReplace(
           jsValueToTomlText({
             input: v,
             options: edit.canonical,
-            existing: undefined,
           },)
         }\n`;
       },)

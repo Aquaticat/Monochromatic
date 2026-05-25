@@ -164,7 +164,6 @@ function doTopLevelDottedKeyInsert(
   const valueText = jsValueToTomlText({
     input: value,
     options: edit.canonical,
-    existing: undefined,
   },);
   /** Dotted key spelling so each segment is encoded once. */
   const dottedKey = dottedSegments
@@ -253,7 +252,6 @@ function doTableDottedKeyInsert(
   const valueText = jsValueToTomlText({
     input: value,
     options: edit.canonical,
-    existing: undefined,
   },);
   /** Dotted key spelling so each segment is encoded once. */
   const dottedKey = dottedSegments
@@ -334,7 +332,6 @@ function doInlineTableExtend(
   const valueText = jsValueToTomlText({
     input: value,
     options: edit.canonical,
-    existing: undefined,
   },);
   /** Dotted key spelling so each segment is encoded once. */
   const extraKey = dottedSegments

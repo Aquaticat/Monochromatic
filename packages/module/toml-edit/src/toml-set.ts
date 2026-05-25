@@ -221,7 +221,6 @@ function doTableReplace(
       jsValueToTomlText({
         input: v,
         options: edit.canonical,
-        existing: undefined,
       },)
     }\n`;
     return {

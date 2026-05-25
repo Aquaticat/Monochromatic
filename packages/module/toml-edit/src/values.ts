@@ -61,14 +61,16 @@ export function jsValueToTomlText(
   }: {
     readonly input: unknown;
     readonly options: CanonicalOptions;
-    readonly existing?: ExistingNode | undefined;
+    readonly existing?: ExistingNode;
   },
 ): string {
+  /** Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot under `exactOptionalPropertyTypes`. */
+  const existingArg = existing === undefined ? {} : { existing, };
   return encodeValue({
     input,
     options,
-    existing,
     depth: 0,
+    ...existingArg,
   },);
 }
 
@@ -86,7 +88,7 @@ function encodeValue(
   }: {
     readonly input: unknown;
     readonly options: CanonicalOptions;
-    readonly existing: ExistingNode | undefined;
+    readonly existing?: ExistingNode;
     readonly depth: number;
   },
 ): string {
@@ -96,13 +98,16 @@ function encodeValue(
     );
   }
 
+  /** Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot under `exactOptionalPropertyTypes`. */
+  const existingArg = existing === undefined ? {} : { existing, };
+
   if (isWrappedInput(input,))
     return encodeWrapped({ wrapped: input, },);
 
   if ((typeof input) === 'string') {
     return encodeString({
       value: input,
-      existing,
+      ...existingArg,
     },);
   }
 
@@ -115,7 +120,7 @@ function encodeValue(
   if ((typeof input) === 'number') {
     return encodeNumber({
       value: input,
-      existing,
+      ...existingArg,
     },);
   }
 
@@ -127,7 +132,7 @@ function encodeValue(
       input,
       options,
       depth,
-      existing,
+      ...existingArg,
     },);
   }
 
@@ -153,7 +158,7 @@ function encodeString(
     existing,
   }: {
     readonly value: string;
-    readonly existing: ExistingNode | undefined;
+    readonly existing?: ExistingNode;
   },
 ): string {
   if (
@@ -203,7 +208,7 @@ function encodeNumber(
     existing,
   }: {
     readonly value: number;
-    readonly existing: ExistingNode | undefined;
+    readonly existing?: ExistingNode;
   },
 ): string {
   if (
@@ -250,7 +255,7 @@ function encodeArray(
     readonly input: readonly unknown[];
     readonly options: CanonicalOptions;
     readonly depth: number;
-    readonly existing: ExistingNode | undefined;
+    readonly existing?: ExistingNode;
   },
 ): string {
   /** Existing per-element AST so encoder can reuse spelling when value matches. */
@@ -267,11 +272,13 @@ function encodeArray(
   ) {
     /** Existing element node at this index, if the parent array carried one. */
     const elementExisting = elementExistings === null ? undefined : elementExistings[i];
+    /** Carrier re-passed only when present, so `undefined` never enters the optional `existing` slot. */
+    const elementExistingArg = elementExisting === undefined ? {} : { existing: { node: elementExisting, }, };
     return encodeValue({
       input: el,
       options,
-      existing: elementExisting === undefined ? undefined : { node: elementExisting, },
       depth: depth + 1,
+      ...elementExistingArg,
     },);
   },);
   /** Speculative inline form so the column budget check can decide the layout. */
@@ -326,7 +333,6 @@ function encodeInlineTable(
       encodeValue({
         input: v,
         options,
-        existing: undefined,
         depth: depth + 1,
       },)
     }`;
