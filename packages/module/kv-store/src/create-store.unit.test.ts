@@ -5,6 +5,7 @@ import {
 } from '@monochromatic-dev/module-test';
 
 import {
+  ABSENT,
   configureDefaultBackendsBuilder,
   createStore,
 } from './index.ts';
@@ -41,11 +42,11 @@ await describe({
     },),
 
     it({
-      name: 'get returns null for missing keys',
+      name: 'get returns ABSENT for missing keys',
       fn: async () => {
         const store = await createStore({ storeId: 'missing', },);
         const result = await store.get('nonexistent',);
-        expect(result,).toBeNull();
+        expect(result,).toBe(ABSENT,);
       },
     },),
 
@@ -56,7 +57,7 @@ await describe({
         await store.set('to-delete', 'value',);
         expect(await store.get<string>('to-delete',),).toBe('value',);
         await store.delete('to-delete',);
-        expect(await store.get('to-delete',),).toBeNull();
+        expect(await store.get('to-delete',),).toBe(ABSENT,);
       },
     },),
 
@@ -67,8 +68,8 @@ await describe({
         await store.set('a', 1,);
         await store.set('b', 2,);
         await store.clear();
-        expect(await store.get('a',),).toBeNull();
-        expect(await store.get('b',),).toBeNull();
+        expect(await store.get('a',),).toBe(ABSENT,);
+        expect(await store.get('b',),).toBe(ABSENT,);
       },
     },),
 
@@ -164,7 +165,9 @@ await describe({
         await store.set('cyc', circular,);
         const result = await store.get<Record<string, unknown>>('cyc',);
         expect(result,).toBeDefined();
-        expect(result?.data,).toBe('test',);
+        if (result === ABSENT)
+          throw new Error('unreachable: stored value missing',);
+        expect(result.data,).toBe('test',);
       },
     },),
 
@@ -207,7 +210,7 @@ await describe({
         await store.set('c', 3,);
         await store.set('d', 4,);
 
-        expect(await store.get('a',),).toBeNull();
+        expect(await store.get('a',),).toBe(ABSENT,);
         expect(await store.get('d',),).toBeDefined();
       },
     },),
@@ -230,7 +233,7 @@ await describe({
         // Adding 'd' should evict 'b' (oldest after refresh), not 'a'
         await store.set('d', 4,);
         expect(await store.get('a',),).toBeDefined();
-        expect(await store.get('b',),).toBeNull();
+        expect(await store.get('b',),).toBe(ABSENT,);
       },
     },),
 

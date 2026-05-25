@@ -6,9 +6,13 @@ import {
 import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/logger';
 
 import { queryAllBackendsSync, } from './backends-sync.ts';
+import { ABSENT, } from './constants.ts';
 import { resolveConsensus, } from './consensus.ts';
 import { healBackendsSync, } from './heal.ts';
-import { createLruKeySet, } from './lru-key-set.ts';
+import {
+  createLruKeySet,
+  noopLruKeySet,
+} from './lru-key-set.ts';
 import { serializeValue, } from './serialize.ts';
 import type {
   Deserializer,
@@ -101,11 +105,11 @@ export function createSyncStore(config: SyncStoreConfig = {},): SyncStore {
       === 'lru';
   },);
   /**
-   * LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or `null` when LRU is not configured.
+   * LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or a no-op tracker when LRU is not configured.
    */
   const lru = lruPolicy !== undefined
     ? createLruKeySet(lruPolicy.maxSize,)
-    : null;
+    : noopLruKeySet;
 
   defaultLogger.debug(
     `syncStore "${storeId}" created with ${String(backends.length,)} backend(s)`,
@@ -147,28 +151,26 @@ export function createSyncStore(config: SyncStoreConfig = {},): SyncStore {
         );
       }
 
-      if (lru !== null) {
-        /** Key the LRU tracker chose to drop, or `null` when below capacity. */
-        const evicted = lru.touch(key,);
-        if (evicted !== null) {
-          defaultLogger.debug(`syncStore.evict: "${evicted}"`,);
-          for (const backend of backends)
-            backend.delete(evicted,);
-        }
+      /** Key the LRU tracker chose to drop, or `ABSENT` when below capacity. */
+      const evicted = lru.touch(key,);
+      if (evicted !== ABSENT) {
+        defaultLogger.debug(`syncStore.evict: "${evicted}"`,);
+        for (const backend of backends)
+          backend.delete(evicted,);
       }
 
       return store;
     },
 
     // oxlint-disable-next-line typescript/no-unnecessary-type-parameters -- T is the caller-specified return type for typed reads; a single use is the intended call-site-inference shape, not redundancy
-    get<const T = unknown,>(key: string,): T | null {
+    get<const T = unknown,>(key: string,): T | typeof ABSENT {
       defaultLogger.debug(`syncStore.get: "${key}"`,);
       /** Per-backend lookup results; feeds both consensus resolution and the healing pass. */
       const results = queryAllBackendsSync({
         backends,
         key,
       },);
-      /** Consensus value across backends, or `null` when no backend held the key. */
+      /** Consensus value across backends, or `ABSENT` when no backend held the key. */
       const canonicalSerialized = resolveConsensus({
         results,
         key,
@@ -180,33 +182,31 @@ export function createSyncStore(config: SyncStoreConfig = {},): SyncStore {
         key,
       },);
 
-      if ((canonicalSerialized !== null) && (lru !== null)) {
-        /** Key the LRU tracker chose to drop on access, or `null` when below capacity. */
+      if (canonicalSerialized !== ABSENT) {
+        /** Key the LRU tracker chose to drop on access, or `ABSENT` when below capacity. */
         const evicted = lru.touch(key,);
-        if (evicted !== null) {
+        if (evicted !== ABSENT) {
           defaultLogger.debug(`syncStore.evict: "${evicted}"`,);
           for (const backend of backends)
             backend.delete(evicted,);
         }
       }
 
-      return canonicalSerialized === null
-        ? null
+      return canonicalSerialized === ABSENT
+        ? ABSENT
         : deserializer<T>(canonicalSerialized,);
     },
 
     delete(key: string,): void {
       defaultLogger.debug(`syncStore.delete: "${key}"`,);
-      if (lru !== null)
-        lru.remove(key,);
+      lru.remove(key,);
       for (const backend of backends)
         backend.delete(key,);
     },
 
     clear(): void {
       defaultLogger.debug(`syncStore.clear`,);
-      if (lru !== null)
-        lru.clear();
+      lru.clear();
       for (const backend of backends) {
         if (('clear' in backend) && ((typeof backend.clear) === 'function')) {
           // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- runtime check confirms clear is a function

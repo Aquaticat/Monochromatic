@@ -3,6 +3,7 @@
  * package public API.
  */
 
+import { ABSENT, } from './constants.ts';
 import type { BackendResult, } from './consensus.ts';
 import type { SyncStorageBackend, } from './types.ts';
 
@@ -38,7 +39,7 @@ export function queryAllBackendsSync({
     /** Raw value returned by this backend before nullish normalisation. */
     const raw = backend.get(key,);
     return {
-      value: raw ?? null,
+      value: raw ?? ABSENT,
       priority: backend.priority
         ?? 0,
       backend,

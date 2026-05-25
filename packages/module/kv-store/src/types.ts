@@ -1,5 +1,7 @@
 import type { Promisable, } from 'type-fest';
 
+import type { ABSENT, } from './constants.ts';
+
 /**
  * Serialize unknown data to deterministic string form.
  *
@@ -290,13 +292,13 @@ export type Store = BaseStoreFields<StorageBackend> & {
   /**
    * Read value by key using consensus and heal backends to canonical result.
    *
-   * @remarks A stored `null` value reads back as `null`, indistinguishable from a missing key.
+   * @remarks A stored `null` value deserializes back to `null`; a missing key yields {@link ABSENT}, so the two are distinguishable.
    *
    * @typeParam T - expected deserialized value type
    * @param key - lookup key
-   * @returns deserialized value, or `null` when no backend holds the key
+   * @returns deserialized value, or {@link ABSENT} when no backend holds the key
    */
-  readonly get: <const T = unknown,>(key: string,) => Promise<T | null>;
+  readonly get: <const T = unknown,>(key: string,) => Promise<T | typeof ABSENT>;
 
   /**
    * Remove entry by key across all backends.
@@ -348,13 +350,13 @@ export type SyncStore = BaseStoreFields<SyncStorageBackend> & {
   /**
    * Read value by key using consensus and heal backends to canonical result.
    *
-   * @remarks A stored `null` value reads back as `null`, indistinguishable from a missing key.
+   * @remarks A stored `null` value deserializes back to `null`; a missing key yields {@link ABSENT}, so the two are distinguishable.
    *
    * @typeParam T - expected deserialized value type
    * @param key - lookup key
-   * @returns deserialized value, or `null` when no backend holds the key
+   * @returns deserialized value, or {@link ABSENT} when no backend holds the key
    */
-  readonly get: <const T = unknown,>(key: string,) => T | null;
+  readonly get: <const T = unknown,>(key: string,) => T | typeof ABSENT;
   /* oxlint-enable typescript/no-unnecessary-type-parameters */
 
   /**

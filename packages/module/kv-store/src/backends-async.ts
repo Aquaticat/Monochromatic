@@ -5,6 +5,7 @@
  * which are re-exported from the package root.
  */
 
+import { ABSENT, } from './constants.ts';
 import type { BackendResult, } from './consensus.ts';
 import type { LruKeySet, } from './lru-key-set.ts';
 import type { StorageBackend, } from './types.ts';
@@ -42,7 +43,7 @@ export async function queryAllBackends({
       /** Raw value returned by this backend before nullish normalisation. */
       const raw = await backend.get(key,);
       return {
-        value: raw ?? null,
+        value: raw ?? ABSENT,
         priority: backend.priority
           ?? 0,
         backend,
@@ -98,29 +99,43 @@ export function configureDefaultBackendsBuilder(builder: DefaultBackendsBuilder,
 }
 
 /**
- * Returns the currently configured default backends builder, if any.
+ * Build the default backends for a store: the registered platform builder's
+ * output when one was configured, otherwise a single in-memory `Map`.
+ * Encapsulates the registry lookup so callers never handle an absent builder.
  *
- * @returns builder function, or `null` when no platform builder has been registered
+ * @param storeId - store identifier forwarded to the platform builder
+ *
+ * @returns non-empty list of storage backends
  *
  * @example
  * ```ts
- * const builder = getDefaultBackendsBuilder();
- * if (builder !== null) {
- *   const backends = await builder({ storeId: 'my-store' });
- * }
+ * const backends = config.backends ?? await buildDefaultBackends({ storeId });
  * ```
  */
-export function getDefaultBackendsBuilder(): DefaultBackendsBuilder | null {
-  return builderRegistry.get('default',)
-    ?? null;
+export async function buildDefaultBackends({
+  storeId,
+}: Readonly<{
+  storeId: string;
+}>,): Promise<readonly [
+  StorageBackend,
+  ...StorageBackend[],
+]> {
+  /** Platform-specific factory registered via `configureDefaultBackendsBuilder`, present only when an entry file set it. */
+  const builder = builderRegistry.get('default',);
+  if (builder !== undefined) {
+    /** Backends produced by the registered platform builder. */
+    const built = await builder({ storeId, },);
+    return built;
+  }
+  return [new Map<string, string>(),];
 }
 
 /**
  * Touch the LRU set for a key and evict the displaced entry from all backends.
  *
- * No-op when `lru` is `null` (store has no eviction policy).
+ * Passing a no-op LRU set makes this a no-op (store has no eviction policy).
  *
- * @param lru - LRU key set, or `null` when no eviction policy is configured
+ * @param lru - LRU key set tracking access order
  *
  * @param key - key that was just accessed
  *
@@ -145,7 +160,7 @@ export async function evictLruEntry(
     backends,
     logger,
   }: Readonly<{
-    lru: LruKeySet | null;
+    lru: LruKeySet;
     key: string;
     backends: readonly [
       StorageBackend,
@@ -154,11 +169,9 @@ export async function evictLruEntry(
     logger: { readonly debug: (msg: string,) => void; };
   }>,
 ): Promise<void> {
-  if (lru === null)
-    return;
-  /** Key displaced by the LRU touch, or `null` when nothing was evicted. */
+  /** Key displaced by the LRU touch, or `ABSENT` when nothing was evicted. */
   const evicted = lru.touch(key,);
-  if (evicted === null)
+  if (evicted === ABSENT)
     return;
   logger.debug(`store.evict: "${evicted}"`,);
   await Promise.all(

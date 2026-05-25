@@ -55,6 +55,8 @@ export type { DefaultBackendsBuilder, } from './backends-async.ts';
 
 export { configureDefaultBackendsBuilder, } from './backends-async.ts';
 
+export { ABSENT, } from './constants.ts';
+
 export { createStore, } from './create-store.ts';
 
 export { createSyncStore, } from './create-sync-store.ts';

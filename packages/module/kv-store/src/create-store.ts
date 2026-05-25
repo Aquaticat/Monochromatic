@@ -6,14 +6,18 @@ import {
 import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/logger';
 
 import {
+  buildDefaultBackends,
   evictLruEntry,
-  getDefaultBackendsBuilder,
   queryAllBackends,
 } from './backends-async.ts';
+import { ABSENT, } from './constants.ts';
 import { resolveConsensus, } from './consensus.ts';
 import { hashString, } from './hash.ts';
 import { healBackends, } from './heal.ts';
-import { createLruKeySet, } from './lru-key-set.ts';
+import {
+  createLruKeySet,
+  noopLruKeySet,
+} from './lru-key-set.ts';
 import { serializeValue, } from './serialize.ts';
 import type {
   Deserializer,
@@ -80,18 +84,12 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
   const lossyForCircular = config.lossyForCircular
     ?? true;
 
-  /**
-   * Platform-specific backend factory registered via {@link configureDefaultBackendsBuilder}, or undefined when none was set.
-   */
-  const defaultBackendsBuilder = getDefaultBackendsBuilder();
   /** Non-empty list of storage backends; user-supplied, else the platform builder's output, else a single in-memory Map. */
   const backends: readonly [
     StorageBackend,
     ...StorageBackend[],
   ] = config.backends
-    ?? (defaultBackendsBuilder !== null
-      ? await defaultBackendsBuilder({ storeId, },)
-      : [new Map<string, string>(),]);
+    ?? await buildDefaultBackends({ storeId, },);
 
   /** Configured eviction policies; empty array means unbounded growth. */
   const policies = config.eviction
@@ -102,11 +100,11 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
       === 'lru';
   },);
   /**
-   * LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or `null` when LRU is not configured.
+   * LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or a no-op tracker when LRU is not configured.
    */
   const lru = lruPolicy !== undefined
     ? createLruKeySet(lruPolicy.maxSize,)
-    : null;
+    : noopLruKeySet;
 
   defaultLogger.debug(
     `store "${storeId}" created with ${String(backends.length,)} backend(s)`,
@@ -154,14 +152,14 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
       return store;
     },
 
-    async get<const T = unknown,>(key: string,): Promise<T | null> {
+    async get<const T = unknown,>(key: string,): Promise<T | typeof ABSENT> {
       defaultLogger.debug(`store.get: "${key}"`,);
       /** Per-backend lookup results; feeds both consensus resolution and the healing pass. */
       const results = await queryAllBackends({
         backends,
         key,
       },);
-      /** Consensus value across backends, or `null` when no backend held the key. */
+      /** Consensus value across backends, or `ABSENT` when no backend held the key. */
       const canonicalSerialized = resolveConsensus({
         results,
         key,
@@ -173,7 +171,7 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
         key,
       },);
 
-      if (canonicalSerialized !== null) {
+      if (canonicalSerialized !== ABSENT) {
         await evictLruEntry({
           lru,
           key,
@@ -182,15 +180,14 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
         },);
       }
 
-      return canonicalSerialized === null
-        ? null
+      return canonicalSerialized === ABSENT
+        ? ABSENT
         : deserializer<T>(canonicalSerialized,);
     },
 
     async delete(key: string,): Promise<void> {
       defaultLogger.debug(`store.delete: "${key}"`,);
-      if (lru !== null)
-        lru.remove(key,);
+      lru.remove(key,);
       await Promise.all(
         backends.map(async function deleteFromBackend(backend,) {
           await backend.delete(key,);
@@ -200,8 +197,7 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
 
     async clear(): Promise<void> {
       defaultLogger.debug(`store.clear`,);
-      if (lru !== null)
-        lru.clear();
+      lru.clear();
       await Promise.all(
         backends.map(async function clearBackend(backend,) {
           // Map and similar backends support clear()

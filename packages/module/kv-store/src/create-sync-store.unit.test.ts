@@ -4,7 +4,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
-import { createSyncStore, } from './index.ts';
+import {
+  ABSENT,
+  createSyncStore,
+} from './index.ts';
 
 await describe({
   name: createSyncStore.name,
@@ -38,11 +41,11 @@ await describe({
     },),
 
     it({
-      name: 'get returns null for missing keys',
+      name: 'get returns ABSENT for missing keys',
       fn: async () => {
         const store = createSyncStore({ storeId: 'missing', },);
         const result = store.get('nonexistent',);
-        expect(result,).toBeNull();
+        expect(result,).toBe(ABSENT,);
       },
     },),
 
@@ -53,7 +56,7 @@ await describe({
         store.set('to-delete', 'value',);
         expect(store.get<string>('to-delete',),).toBe('value',);
         store.delete('to-delete',);
-        expect(store.get('to-delete',),).toBeNull();
+        expect(store.get('to-delete',),).toBe(ABSENT,);
       },
     },),
 
@@ -64,8 +67,8 @@ await describe({
         store.set('a', 1,);
         store.set('b', 2,);
         store.clear();
-        expect(store.get('a',),).toBeNull();
-        expect(store.get('b',),).toBeNull();
+        expect(store.get('a',),).toBe(ABSENT,);
+        expect(store.get('b',),).toBe(ABSENT,);
       },
     },),
 
@@ -161,7 +164,9 @@ await describe({
         store.set('cyc', circular,);
         const result = store.get<Record<string, unknown>>('cyc',);
         expect(result,).toBeDefined();
-        expect(result?.data,).toBe('test',);
+        if (result === ABSENT)
+          throw new Error('unreachable: stored value missing',);
+        expect(result.data,).toBe('test',);
       },
     },),
 
@@ -206,7 +211,7 @@ await describe({
 
         store.set('d', 4,);
         expect(store.size,).toBe(3,);
-        expect(store.get('a',),).toBeNull();
+        expect(store.get('a',),).toBe(ABSENT,);
         expect(store.get('d',),).toBeDefined();
       },
     },),
@@ -229,7 +234,7 @@ await describe({
         // Adding 'd' should evict 'b' (oldest after refresh), not 'a'
         store.set('d', 4,);
         expect(store.get('a',),).toBeDefined();
-        expect(store.get('b',),).toBeNull();
+        expect(store.get('b',),).toBe(ABSENT,);
       },
     },),
 
