@@ -336,7 +336,7 @@ overrides:
   dprint: '-'
   argparse: '-'
 
-pnpmfileChecksum: sha256-6KqyahOu4Da1KHfipF6F/L3YTrXYiPB6HmoVLL8966U=
+pnpmfileChecksum: sha256-ghdh3VHT8EeCh246dlNJmTZzveReaLIvTKu+d3whFUw=
 
 importers:
 
@@ -688,9 +688,6 @@ importers:
 
   packages/cli/git:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -719,9 +716,6 @@ importers:
 
   packages/cli/mvm:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -756,9 +750,6 @@ importers:
 
   packages/cli/rgffplay:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -775,9 +766,6 @@ importers:
 
   packages/cli/terminal-exec:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -1096,9 +1084,6 @@ importers:
       '@luma.gl/engine':
         specifier: 'catalog:'
         version: 9.3.3(@luma.gl/core@9.3.3)(@luma.gl/shadertools@9.3.3(@luma.gl/core@9.3.3))
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-fs-path':
         specifier: workspace:*
         version: link:../../module/fs-path
@@ -1136,9 +1121,6 @@ importers:
 
   packages/dev-script/file-enforcer:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -1176,9 +1158,6 @@ importers:
 
   packages/dev-script/inference-canary:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -1231,9 +1210,6 @@ importers:
       '@monochromatic-dev/dev-script-inference-canary':
         specifier: workspace:*
         version: link:../inference-canary
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -1398,9 +1374,6 @@ importers:
 
   packages/figma-parsers/kiwi:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
@@ -1470,6 +1443,24 @@ importers:
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
+
+  packages/module/async-iter:
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
 
   packages/module/async-time:
     devDependencies:
@@ -1628,9 +1619,6 @@ importers:
 
   packages/module/image-diff:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
@@ -1656,6 +1644,37 @@ importers:
       tsdown:
         specifier: 'catalog:'
         version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/module/kv-store:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
+      decircular:
+        specifier: 'catalog:'
+        version: 1.0.0
+      superjson:
+        specifier: 'catalog:'
+        version: 2.2.6
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.5.0
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -1709,6 +1728,28 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
+  packages/module/memoize:
+    dependencies:
+      '@monochromatic-dev/module-kv-store':
+        specifier: workspace:*
+        version: link:../kv-store
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
   packages/module/numeric-const:
     devDependencies:
       '@monochromatic-dev/config-typescript':
@@ -1733,6 +1774,24 @@ importers:
         specifier: workspace:*
         version: link:../or-throw
     devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/module/observable:
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
@@ -1824,9 +1883,6 @@ importers:
       '@anthropic-ai/sdk':
         specifier: '>=0.91.1'
         version: 0.92.0(zod@4.3.6)
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../logger
@@ -2383,9 +2439,6 @@ importers:
 
   packages/webapp-edu/paper2vn:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -2414,9 +2467,6 @@ importers:
 
   packages/webapp-forge/seed:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
@@ -2448,9 +2498,6 @@ importers:
       '@libsql/kysely-libsql':
         specifier: 'catalog:'
         version: 0.4.1(kysely@0.28.17)
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -2537,9 +2584,6 @@ importers:
 
   packages/webapp-productivity/done:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -2571,9 +2615,6 @@ importers:
       '@monochromatic-dev/build-tool-css':
         specifier: workspace:*
         version: link:../../build-tool/css
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -2636,15 +2677,18 @@ importers:
 
   packages/webapp-productivity/rss:
     dependencies:
-      '@monochromatic-dev/module-es':
+      '@monochromatic-dev/module-async-iter':
         specifier: workspace:*
-        version: link:../../module/es
+        version: link:../../module/async-iter
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/module-memoize':
+        specifier: workspace:*
+        version: link:../../module/memoize
       '@monochromatic-dev/module-numeric-const':
         specifier: workspace:*
         version: link:../../module/numeric-const
@@ -2679,9 +2723,6 @@ importers:
 
   packages/webapp-productivity/syllable-break-demo:
     dependencies:
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
@@ -2707,9 +2748,6 @@ importers:
       '@anthropic-ai/sdk':
         specifier: '>=0.91.1'
         version: 0.92.0(zod@4.3.6)
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       h3:
         specifier: 'catalog:'
         version: 2.0.1-rc.20(crossws@0.4.4(srvx@0.11.15))
@@ -2732,15 +2770,15 @@ importers:
       '@monochromatic-dev/module-dom':
         specifier: workspace:*
         version: link:../../module/dom
-      '@monochromatic-dev/module-es':
-        specifier: workspace:*
-        version: link:../../module/es
       '@monochromatic-dev/module-hyperscript':
         specifier: workspace:*
         version: link:../../module/hyperscript
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/module-observable':
+        specifier: workspace:*
+        version: link:../../module/observable
       '@monochromatic-dev/module-or-throw':
         specifier: workspace:*
         version: link:../../module/or-throw

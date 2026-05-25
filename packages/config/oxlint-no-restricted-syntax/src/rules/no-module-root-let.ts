@@ -19,7 +19,7 @@ import type {
  * No allowlist heuristics: modules are not called and do not return.
  * The remediation paths are a concrete data structure (`Map`, `WeakMap`,
  * `Set`, `WeakSet` for mutable containers), the `memoize()` helper from
- * `@monochromatic-dev/module-es` for cached computations, or wrapping
+ * `@monochromatic-dev/module-memoize` for cached computations, or wrapping
  * initialization in an IIFE assigned to const.
  *
  * @example
@@ -37,10 +37,16 @@ import type {
  *   return m;
  * })();
  *
- * // Good; memoize() encapsulates the cache
- * const getValue = memoize(function compute (): string {
- *   return expensiveLookup();
+ * // Good; memoize() holds its cache internally, no module-root let
+ * const fetchValue = memoize({
+ *   fn: function compute (key: string): string {
+ *     return expensiveLookup(key,);
+ *   },
+ *   keyFn: function identity (key: string): string {
+ *     return key;
+ *   },
  * },);
+ * const value = fetchValue({ args: ['k',], salt: 'v1', },);
  * ```
  */
 export const noModuleRootLet: CreateOnceRule = {
@@ -54,7 +60,7 @@ export const noModuleRootLet: CreateOnceRule = {
     messages: {
       forbidden: '`let` at module-root scope is mutable across the entire module. '
         + 'Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` for mutable containers, '
-        + '`memoize()` from `@monochromatic-dev/module-es` for cached computations, '
+        + '`memoize()` from `@monochromatic-dev/module-memoize` for cached computations, '
         + 'or an IIFE assigned to const `const cached = (function init () { let v = null; /* compute */ return v; })()`. '
         + 'If genuinely unavoidable, add '
         + '`oxlint-disable-next-line no-restricted-syntax/no-module-root-let` with a justification.',

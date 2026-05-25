@@ -8,7 +8,6 @@
   "license": "LGPL-3.0-or-later",
   "type": "module",
   "dependencies": {
-    "@monochromatic-dev/module-es": "workspace:*",
     "valibot": "catalog:",
     "@anthropic-ai/sdk": "catalog:",
     "h3": "catalog:"

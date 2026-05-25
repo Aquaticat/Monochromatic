@@ -82,7 +82,6 @@ Single h3 server process handling both page routes (HTML) and API routes (JSON).
 
 - `@monochromatic-dev/build-tool-css`: CSS `@mixin`/`@apply` expansion pipeline
 - `@monochromatic-dev/module-hyperscript`: h-html, h-dom factories (h-css is unused here)
-- `@monochromatic-dev/module-es`: Functional utilities
 
 This package runs only within the Monochromatic monorepo.
 

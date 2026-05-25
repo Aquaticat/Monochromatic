@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/module-es": "workspace:*",
     "find-up": "catalog:",
     "nano-spawn": "catalog:"
   },

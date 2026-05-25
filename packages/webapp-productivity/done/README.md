@@ -26,7 +26,6 @@ Single h3 server process handling both page routes (HTML) and API routes (JSON).
 ## Monorepo dependencies
 
 - `@monochromatic-dev/module-hyperscript`: h-css, h-html, h-dom factories
-- `@monochromatic-dev/module-es`: Functional utilities
 
 This package runs only within the Monochromatic monorepo.
 

@@ -13,11 +13,7 @@
     },
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*",
-    "./binary": "./src/types/t function/f/t function/binary/r s/p p/index.ts",
-    "./create-observable": "./src/types/t object/t proxy/f/t any/createObservable/r s/p p/index.ts",
-    "./create-observable-async": "./src/types/t object/t proxy/f/t any/createObservable/r a/p p/index.ts",
-    "./map-iterable-async": "./src/types/t object/t array/f/t iterable/map/r a/p p/index.ts",
-    "./memoize-async": "./src/types/t function/f/t function/memoize/r a/p n/index.ts"
+    "./binary": "./src/types/t function/f/t function/binary/r s/p p/index.ts"
   },
   "files": [
     "dist/final",

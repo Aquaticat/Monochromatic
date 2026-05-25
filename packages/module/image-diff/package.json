@@ -13,7 +13,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@monochromatic-dev/module-es": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:"

@@ -1,5 +1,5 @@
 // 105 lines: fetch, parse, and sort are a single pipeline; splitting obscures the data flow
-import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async';
+import { mapIterableAsync, } from '@monochromatic-dev/module-async-iter';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import {
   type Atom,
