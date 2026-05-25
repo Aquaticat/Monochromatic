@@ -32,10 +32,10 @@ export function replicateElementAsParentContent(
   {
     templateElement,
     targetCount,
-  }: {
+  }: Readonly<{
     templateElement: HTMLElement;
     targetCount: number;
-  },
+  }>,
 ): void {
   /** Parent of the template; required because replication targets its children. */
   const parent = templateElement.parentElement;
@@ -108,11 +108,11 @@ export function replicateElementAsContentOf(
     templateElement,
     parentElement,
     targetCount,
-  }: {
+  }: Readonly<{
     templateElement: HTMLElement;
     parentElement: HTMLElement;
     targetCount: number;
-  },
+  }>,
 ): void {
   /** Independent deep clones of the template; one per slot in the explicit parent. */
   const clones = Array.from(

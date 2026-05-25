@@ -85,10 +85,10 @@ function isWhitespaceChar(c: string,): boolean {
 function lastNonWhitespaceIndex({
   s,
   end,
-}: {
+}: Readonly<{
   s: string;
   end: number;
-},): number {
+}>,): number {
   if (end <= 0)
     return -1;
   if (!isWhitespaceChar(s.charAt(end - 1,),))
@@ -243,6 +243,24 @@ async function bundleAsGlobalAssignment(): Promise<string> {
 }
 
 /**
+ * Structural subset of Playwright `Page` covering only the methods
+ * {@link loadHarness} calls. A full `Page` carries nested mutable members
+ * (`keyboard`, `mouse`) that `prefer-readonly-parameter-types` cannot accept
+ * as a readonly parameter; this readonly method-only view is genuinely
+ * immutable yet a real `Page` satisfies it structurally at every call site.
+ */
+type HarnessPage = Readonly<{
+  /** Navigates to the harness URL. */
+  goto: Page['goto'];
+
+  /** Injects the bundled helpers as an inline module script. */
+  addScriptTag: Page['addScriptTag'];
+
+  /** Polls until `globalThis.moduleDom` is set. */
+  waitForFunction: Page['waitForFunction'];
+}>;
+
+/**
  * Loads the harness page, injects the bundled helpers as an inline
  * script, and waits until `globalThis.moduleDom` is set so subsequent
  * `page.evaluate` calls can reference it directly.
@@ -263,10 +281,10 @@ export async function loadHarness(
   {
     page,
     query,
-  }: {
-    page: Page;
+  }: Readonly<{
+    page: HarnessPage;
     query?: string;
-  },
+  }>,
 ): Promise<void> {
   /** Harness URL with the optional query string normalised to a leading `?`. */
   const url = (query === undefined) || (query === '')

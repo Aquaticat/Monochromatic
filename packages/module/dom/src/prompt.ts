@@ -17,11 +17,11 @@
  */
 export type PromptClassNames = {
   /** Class applied to the `<dialog>` element. */
-  dialog?: string;
+  readonly dialog?: string;
   /** Class applied to the Cancel button. */
-  cancel?: string;
+  readonly cancel?: string;
   /** Class applied to the OK (submit) button. */
-  ok?: string;
+  readonly ok?: string;
 };
 
 /**
@@ -67,11 +67,11 @@ export async function prompt(
     message,
     defaultValue = '',
     classes,
-  }: {
+  }: Readonly<{
     message: string;
     defaultValue?: string;
     classes?: PromptClassNames;
-  },
+  }>,
 ): Promise<string | null> {
   /**
    * Per-call classes merged with {@link DEFAULT_PROMPT_CLASSES} so unset fields stay defaulted.
