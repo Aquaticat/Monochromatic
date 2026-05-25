@@ -1,595 +1,264 @@
-import type { Span, } from '@oxlint/plugins';
-
-import { hasParens, } from './has-parens.ts';
-
-/**
- * Boundary position within a chained expression where the autofix should
- * insert `\n + indent` to break before the boundary token.
- */
-export type Boundary = {
-  /** Byte offset of the first character of the boundary token in source. */
-  readonly offset: number;
-  /**
-   * Whether the inter-segment slice contains only safely-replaceable filler
-   * (whitespace plus, for `CallExpression`, the call's own type arguments).
-   *
-   * `false` means a comment, a TS non-null assertion, or other foreign content
-   * sits between the segments; the rule still reports but suppresses the fix.
-   */
-  readonly canFix: boolean;
-};
+import type {
+  Context,
+  Span,
+} from '@oxlint/plugins';
 
 /**
- * Narrowed parent link surfaced on any AST node by oxlint's visitor walker.
+ * AST node fields the chain walk reads.
  *
- * Used by the root predicates to consult fields beyond the base `Span` shape
- * without committing to a node-specific interface at every call site.
+ * oxlint types every node's `parent` and child links as the bare {@link Span}
+ * shape, which omits the discriminant and the structural links the chain walk
+ * needs. This self-referential view exposes them; the visitor casts its node to
+ * this type once, after which the walk stays cast-free. Every field beyond
+ * `type` is optional because a single shape covers member, call, operator,
+ * wrapper, and leaf nodes alike.
  */
-type ParentLike = Span & {
-  /** AST node type discriminant. */
-  readonly type?: string;
-  /** Same-type chain operator for `BinaryExpression` and `LogicalExpression`. */
-  readonly operator?: string;
-  /** `MemberExpression.object` for chain continuation checks. */
-  readonly object?: Span;
-  /** `CallExpression.callee` for chain continuation checks. */
-  readonly callee?: Span;
-};
-
-/**
- * Binary or logical operand carrying the `operator` field used to detect
- * same-operator chains.
- */
-export type BinaryLikeNode = Span & {
-  /** AST node type discriminant. */
+export type ChainNode = Span & {
+  /** AST node-type discriminant, for example `'MemberExpression'`. */
   readonly type: string;
-  /** Operator literal used to match against the parent's operator. */
-  readonly operator: string;
-  /** Left operand carrying the optional type/operator fields used to continue walking. */
-  readonly left: Span & {
-    /** Node type, if exposed; used to detect chain continuation. */
-    readonly type?: string;
-    /** Operator literal, if exposed; used to detect chain continuation. */
-    readonly operator?: string;
-  };
-  /** Right operand; walked when collecting chain segments. */
-  readonly right: Span;
-  /** Parent link surfaced by the visitor walker. */
-  readonly parent?: ParentLike;
-};
-
-/**
- * Member or call frame carrying the punctuator-relevant fields used to find
- * boundary offsets.
- */
-export type MemberOrCallNode = Span & {
-  /** Either `'MemberExpression'` or `'CallExpression'`. */
-  readonly type: 'CallExpression' | 'MemberExpression';
-  /** True for optional `?.` access; controls the boundary token shape. */
-  readonly optional: boolean;
-  /** Computed-property flag for `MemberExpression`. */
+  /** `MemberExpression.object`: the receiver of a member access. */
+  readonly object?: ChainNode;
+  /** `CallExpression.callee`: the callee of a call. */
+  readonly callee?: ChainNode;
+  /** Inner expression of a `ChainExpression`, `!`, `as`, or `satisfies` wrapper. */
+  readonly expression?: ChainNode;
+  /** `MemberExpression.property`: the accessed name or computed key. */
+  readonly property?: Span;
+  /** `true` when a `MemberExpression` uses computed `[expr]` access. */
   readonly computed?: boolean;
-  /** Object being accessed in a `MemberExpression`. */
-  readonly object?: Span;
-  /** Callee being invoked in a `CallExpression`. */
-  readonly callee?: Span;
-  /** TypeScript type arguments range, if present on a `CallExpression`. */
-  readonly typeArguments?: Span | null;
-  /** Parent link surfaced by the visitor walker. */
-  readonly parent?: ParentLike;
+  /** Left operand of a `BinaryExpression` or `LogicalExpression`. */
+  readonly left?: ChainNode;
+  /** Right operand of a `BinaryExpression` or `LogicalExpression`. */
+  readonly right?: ChainNode;
+  /** Operator literal of a `BinaryExpression` or `LogicalExpression`. */
+  readonly operator?: string;
+  /** Parent link surfaced on every node by oxlint's visitor walker. */
+  readonly parent?: ChainNode;
 };
 
 /**
- * Parameters for {@link isBinaryChainRoot}.
+ * Parameters for {@link parenIsolated}.
+ *
+ * Threads the rule `Context` rather than its `sourceCode` directly: oxlint's
+ * `SourceCode` is an anonymous `Readonly<typeof ...>` the readonly-params
+ * allow-list cannot name-match, whereas `Context` is allow-listed by name. The
+ * token accessors live on `context.sourceCode`.
  */
-export type IsBinaryChainRootParams = {
-  /** Candidate root node. */
-  readonly node: BinaryLikeNode;
-  /** Full file source text; used to detect paren-isolated subtrees. */
-  readonly sourceText: string;
-};
-
-/**
- * Determines whether a `BinaryExpression` or `LogicalExpression` is the top
- * of its same-operator chain.
- *
- * The chain is defined by same node type and same operator; precedence is
- * already enforced by `no-mixed-operators`, which wraps mixed-operator
- * children in parentheses. Source-level parens around this node isolate it
- * from any same-operator parent, so a parenthesised node always counts as a
- * root regardless of parent shape.
- *
- * @returns whether the parent breaks the chain (so `node` is the root)
- *
- * @example
- * ```ts
- * // For (a + b + c): outer BinaryExpression returns true; inner returns false
- * isBinaryChainRoot({ node, sourceText, });
- * ```
- */
-export function isBinaryChainRoot({
-  node,
-  sourceText,
-}: IsBinaryChainRootParams,): boolean {
-  /** Parent link; absent at program scope, which still counts as root. */
-  const { parent, } = node;
-  if (parent === undefined)
-    return true;
-  if (parent.type !== node.type)
-    return true;
-  if (parent.operator !== node.operator)
-    return true;
-  if (hasParens({
-    child: node,
-    sourceText,
-  },)) {
-    return true;
-  }
-  return false;
-}
-
-/**
- * Parameters for {@link isMemberOrCallChainRoot}.
- */
-export type IsMemberOrCallChainRootParams = {
-  /** Candidate root node. */
-  readonly node: MemberOrCallNode;
-  /** Full file source text; used to detect paren-isolated subtrees. */
-  readonly sourceText: string;
-};
-
-/**
- * Determines whether a `MemberExpression` or `CallExpression` is the top of
- * its member/call chain.
- *
- * Continuation links: a chain continues when this node sits as `object` of a
- * parent `MemberExpression` or as `callee` of a parent `CallExpression`.
- * `ChainExpression` (oxlint's `?.` wrapper) and `ParenthesizedExpression`
- * never match either continuation link, so the chain terminates naturally at
- * them. Source-level parens around this node also isolate it from any chain
- * continuation parent.
- *
- * @returns whether the parent breaks the chain (so `node` is the root)
- *
- * @example
- * ```ts
- * // For `a.b.c.d`: outermost MemberExpression returns true; inner returns false
- * isMemberOrCallChainRoot({ node, sourceText, });
- * ```
- */
-export function isMemberOrCallChainRoot({
-  node,
-  sourceText,
-}: IsMemberOrCallChainRootParams,): boolean {
-  /** Parent link; absent at program scope, which still counts as root. */
-  const { parent, } = node;
-  if (parent === undefined)
-    return true;
-  /** Whether the parent's continuation link points to this node. */
-  const isContinuationParent = ((parent.type === 'MemberExpression')
-    && (parent.object === node))
-    || ((parent.type === 'CallExpression')
-      && (parent.callee === node));
-  if (!isContinuationParent)
-    return true;
-  if (hasParens({
-    child: node,
-    sourceText,
-  },)) {
-    return true;
-  }
-  return false;
-}
-
-/**
- * Parameters for {@link collectBinaryChainOperands}.
- */
-export type CollectBinaryChainOperandsParams = {
-  /** Chain root identified by {@link isBinaryChainRoot}. */
-  readonly root: BinaryLikeNode;
-  /** Full file source text; used to detect paren-isolated subtrees. */
-  readonly sourceText: string;
-};
-
-/**
- * Walks the same-operator binary/logical chain and returns the leaves in
- * source order.
- *
- * Uses in-order traversal so both left-associative chains (`a + b + c`, tree
- * `((a+b)+c)`) and right-associative chains (`a ** b ** c`, tree
- * `(a**(b**c))`) yield leaves in left-to-right source order. A subtree counts
- * as a continuation only when it shares the root's type, shares the root's
- * operator, and is not isolated by source-level parens; otherwise it is
- * treated as an opaque leaf.
- *
- * @returns operands in source order (leftmost first)
- *
- * @example
- * ```ts
- * // For `a + b + c`: returns [a, b, c]
- * collectBinaryChainOperands({ root, sourceText, });
- * ```
- */
-export function collectBinaryChainOperands({
-  root,
-  sourceText,
-}: CollectBinaryChainOperandsParams,): readonly Span[] {
-  /** Accumulator collected in source order via in-order walk of continuation subtrees. */
-  const leaves: Span[] = [];
-
-  /**
-   * Recursive in-order walk: descends into continuation subtrees, otherwise
-   * records the node as a leaf.
-   *
-   * @param node - candidate operand
-   */
-  function walkLeaves(node: Span,): void {
-    /** Operand narrowed to the operator-bearing shape for the continuation test. */
-    const candidate = node as Span & {
-      readonly type?: string;
-      readonly operator?: string;
-    };
-    /** Whether the operand continues the same-operator chain and has no isolating parens. */
-    const continues = (candidate.type === root.type)
-      && (candidate.operator === root.operator)
-      && (!hasParens({
-        child: node,
-        sourceText,
-      },));
-    if (continues) {
-      /* oxlint-disable typescript/no-unsafe-type-assertion -- continuation predicate guarantees Binary-like shape with left/right operands */
-      /** Continuation subtree narrowed; both branches recurse to expose deeper leaves. */
-      const bin = node as BinaryLikeNode;
-      /* oxlint-enable typescript/no-unsafe-type-assertion */
-      walkLeaves(bin.left,);
-      walkLeaves(bin.right,);
-      return;
-    }
-    leaves.push(node,);
-  }
-
-  walkLeaves(root.left,);
-  walkLeaves(root.right,);
-  return leaves;
-}
-
-/**
- * Frame in a member/call chain together with its `leftSibling` (the node
- * immediately preceding it in source order). The leaf segment is not a frame
- * and never appears in the frame list; the very first frame's `leftSibling`
- * is the chain's leaf.
- */
-export type MemberOrCallFrame = {
-  /** The `MemberExpression` or `CallExpression` node introducing this frame. */
-  readonly node: MemberOrCallNode;
-  /** Node that ends immediately before this frame's boundary in source. */
-  readonly leftSibling: Span;
-};
-
-/**
- * Parameters for {@link collectMemberOrCallChainFrames}.
- */
-export type CollectMemberOrCallChainFramesParams = {
-  /** Chain root identified by {@link isMemberOrCallChainRoot}. */
-  readonly root: MemberOrCallNode;
-  /** Full file source text; used to detect paren-isolated subtrees. */
-  readonly sourceText: string;
-};
-
-/**
- * Walks down `object` / `callee` links and returns the chain's frames in
- * source order, each paired with its left sibling.
- *
- * The walk stops at any left descendant that is parenthesised or of a node
- * kind other than `MemberExpression` / `CallExpression`.
- *
- * @returns frames in source order; leaf appears as the first frame's left sibling
- *
- * @example
- * ```ts
- * // For `a.b().c`: returns frames [(a.b), (().c)], with leftSibling chain `a → a.b → a.b()`
- * collectMemberOrCallChainFrames({ root, sourceText, });
- * ```
- */
-export function collectMemberOrCallChainFrames({
-  root,
-  sourceText,
-}: CollectMemberOrCallChainFramesParams,): readonly MemberOrCallFrame[] {
-  /** Reverse-order accumulator: outermost frame first, innermost last. */
-  const reversedNodes: MemberOrCallNode[] = [];
-
-  /**
-   * Recursive descent that follows `object` for `MemberExpression` and
-   * `callee` for `CallExpression`, stopping at any other node kind or at a
-   * parens-isolated subtree.
-   *
-   * @param current - current chain frame
-   */
-  function walk(current: MemberOrCallNode,): void {
-    reversedNodes.push(current,);
-    /** Left descendant: `object` for member access, `callee` for calls. */
-    const left = (current.type === 'MemberExpression')
-      ? current.object
-      : current.callee;
-    if (left === undefined)
-      return;
-    /** Type tag captured via a narrow cast; only used to decide whether to recurse. */
-    const leftType = (left as Span & { readonly type?: string; }).type;
-    /** Whether the descendant continues the chain by kind and is not paren-isolated. */
-    const continues = ((leftType === 'MemberExpression')
-      || (leftType === 'CallExpression'))
-      && (!hasParens({
-        child: left,
-        sourceText,
-      },));
-    if (continues) {
-      /* oxlint-disable typescript/no-unsafe-type-assertion -- continuation predicate guarantees Member/Call shape with object/callee */
-      walk(left as MemberOrCallNode,);
-      /* oxlint-enable typescript/no-unsafe-type-assertion */
-    }
-  }
-
-  walk(root,);
-  /** Frames in source order: leaf-adjacent first, root last. */
-  const sourceOrder = reversedNodes.toReversed();
-
-  return sourceOrder.map(function pairWithLeftSibling(
-    frame,
-    index,
-  ): MemberOrCallFrame {
-    if (index === 0) {
-      /** Innermost frame's left sibling: its own `object` or `callee` (the leaf). */
-      const leaf = (frame.type === 'MemberExpression')
-        ? frame.object
-        : frame.callee;
-      if (leaf === undefined)
-        throw new Error('chain frame missing object/callee',);
-      return {
-        node: frame,
-        leftSibling: leaf,
-      };
-    }
-    /** Preceding frame's node serves as this frame's left sibling. */
-    const prev = sourceOrder[index - 1];
-    if (prev === undefined)
-      throw new Error('chain frame missing previous frame',);
-    return {
-      node: frame,
-      leftSibling: prev,
-    };
-  },);
-}
-
-/**
- * Parameters for {@link effectiveEnd}.
- */
-export type EffectiveEndParams = {
-  /** AST node whose source-effective end is wanted. */
+export type ParenIsolatedParams = {
+  /** Rule context; its `sourceCode` supplies the surrounding-token lookups. */
+  readonly context: Context;
+  /** Node whose immediate token neighbours decide grouping isolation. */
   readonly node: Span;
-  /** Full file source text. */
-  readonly sourceText: string;
 };
 
 /**
- * Returns the byte offset immediately after the node's source-text region,
- * including a trailing `)` when the node is wrapped in source-level parens.
+ * Determines whether a node is wrapped in its own grouping parentheses.
  *
- * oxlint strips surrounding parens from a node's `start`/`end` range, so a
- * paren-wrapped operand like `(b + c)` reports `end` at the inner content's
- * end rather than after the `)`. Boundary scanning relies on a left sibling
- * whose end sits past any closing punctuation; otherwise the inter-segment
- * slice contains the `)` and the cleanliness check rejects an otherwise-safe
- * fix. Tolerates whitespace between the inner content and the `)`.
+ * oxlint strips parentheses from the AST (it emits no `ParenthesizedExpression`
+ * node), so grouping is recovered from the token stream: the node is isolated
+ * when the token immediately before it is `(` and the token immediately after
+ * it is `)`. The chain walk only consults this in structural positions (a chain
+ * receiver, a chain callee, an operator operand, or a chain root) where a
+ * bracketing `(`/`)` pair can only be grouping; a call argument's or `if`-test's
+ * parentheses never abut a node in those positions, so the historic
+ * false-positive on `f(a + b)` cannot misdirect a decision here.
  *
- * @returns end offset including the trailing `)` if present, else `node.end`
+ * @returns whether `( ... )` brackets the node as a grouping pair
  *
  * @example
  * ```ts
- * // For source `(b + c) + d`, with node = BinaryExpression `b + c`:
- * effectiveEnd({ node, sourceText, }); // node.end + 1 (past the `)`)
+ * // For `(a + b).c`, with node = BinaryExpression `a + b`: true
+ * parenIsolated({ context, node, });
  * ```
  */
-export function effectiveEnd({
+export function parenIsolated({
+  context,
   node,
-  sourceText,
-}: EffectiveEndParams,): number {
-  if (!hasParens({
+}: ParenIsolatedParams,): boolean {
+  /** Token immediately before the node; `(` when the node opens a grouping. */
+  const before = context.sourceCode
+    .getTokenBefore(node,);
+  /** Token immediately after the node; `)` when the node closes a grouping. */
+  const after = context.sourceCode
+    .getTokenAfter(node,);
+  return (before !== null)
+    && (before.value
+      === '(')
+    && (after !== null)
+    && (after.value
+      === ')');
+}
+
+/**
+ * Parameters for {@link wrapsChild}.
+ */
+type WrapsChildParams = {
+  /** Candidate transparent-wrapper parent. */
+  readonly parent: ChainNode;
+  /** Child the parent must wrap to count. */
+  readonly child: ChainNode;
+};
+
+/**
+ * Reports whether `parent` is a transparent wrapper around `child`.
+ *
+ * The transparent wrappers are the optional-chaining `ChainExpression` marker
+ * and the TypeScript `!`, `as`, and `satisfies` expressions. Each holds its
+ * inner expression in `.expression`; matching that link by identity confirms
+ * `child` is wrapped rather than merely adjacent.
+ *
+ * @returns whether `parent` transparently wraps `child`
+ */
+function wrapsChild({
+  parent,
+  child,
+}: WrapsChildParams,): boolean {
+  /** Whether the parent is one of the four transparent wrapper kinds. */
+  const isWrapper = (parent.type
+    === 'ChainExpression')
+    || (parent.type
+      === 'TSNonNullExpression')
+    || (parent.type
+      === 'TSAsExpression')
+    || (parent.type
+      === 'TSSatisfiesExpression');
+  return isWrapper && (parent.expression
+    === child);
+}
+
+/**
+ * Walks up from a core chain node through any transparent wrappers that enclose
+ * it and returns the outermost such node.
+ *
+ * The chain region ends at this node so trailing wrapper text (`!`, `as T`,
+ * `satisfies T`) and the optional-chaining marker are inside the region and
+ * survive the render. A non-wrapped node returns itself.
+ *
+ * @param node - core chain node to walk up from
+ *
+ * @returns outermost transparent wrapper enclosing `node`, or `node` itself
+ *
+ * @example
+ * ```ts
+ * // For `a.b.c.d as Foo`, with node = MemberExpression `a.b.c.d`:
+ * effectiveTop(node); // the enclosing TSAsExpression
+ * ```
+ */
+export function effectiveTop(node: ChainNode,): ChainNode {
+  /** Parent link; absent at program scope. */
+  const { parent, } = node;
+  if (parent === undefined)
+    return node;
+  if (wrapsChild({
+    parent,
     child: node,
-    sourceText,
   },)) {
-    return node.end;
+    return effectiveTop(parent,);
   }
-  /**
-   * Linear scan that advances past whitespace from `idx` until the closing
-   * paren character. Single forward pass: O(n) time, O(1) stack, no recursion.
-   *
-   * @param idx - cursor start position
-   *
-   * @returns position of the `)` byte, or `-1` if absent
-   */
-  function findClose(idx: number,): number {
-    for (let cursor = idx; cursor < sourceText.length; cursor += 1) {
-      /** Current character; tolerates whitespace between the inner span and the closing paren. */
-      const c = sourceText.charAt(cursor,);
-      if (c === ')')
-        return cursor;
-      /** Whether the current character is whitespace and the scan can continue. */
-      const isWs = (c === ' ')
-        || (c === '\t')
-        || (c === '\n')
-        || (c === '\r')
-        || (c === '\f')
-        || (c === '\v');
-      if (!isWs)
-        return -1;
-    }
-    return -1;
-  }
-  /** Position of the closing paren, or -1 when the scan failed. */
-  const closeIdx = findClose(node.end,);
-  if (closeIdx === (-1))
-    return node.end;
-  return closeIdx + 1;
+  return node;
 }
 
 /**
- * Returns the source-text token shape introduced at this frame's boundary.
- *
- * Each shape is the literal characters that must appear, in order, somewhere
- * in `sourceText.slice(leftSibling.end, ...)` for the boundary scanner to
- * locate the break point.
- *
- * @param frame - chain frame
- *
- * @returns boundary token string
- *
- * @example
- * ```ts
- * // For `a?.b`: returns '?.'
- * // For `a.b`:  returns '.'
- * // For `a[b]`: returns '['
- * // For `a()`:  returns '('
- * memberOrCallBoundaryToken(frame);
- * ```
+ * Parameters for {@link isChainRoot}.
  */
-export function memberOrCallBoundaryToken(frame: MemberOrCallFrame,): string {
-  /** Frame node carries the `optional` / `computed` flags used here. */
-  const { node, } = frame;
-  if (node.optional)
-    return '?.';
-  if (node.type === 'CallExpression')
-    return '(';
-  if (node.computed === true)
-    return '[';
-  return '.';
-}
-
-/**
- * Parameters for {@link findBoundaryOffset}.
- */
-export type FindBoundaryOffsetParams = {
-  /** Full file source text. */
-  readonly sourceText: string;
-  /** Byte offset to begin the scan at; typically the left sibling's effective end. */
-  readonly from: number;
-  /** Boundary token literal to scan for. */
-  readonly token: string;
+export type IsChainRootParams = {
+  /** Rule context; its `sourceCode` supplies the grouping-parenthesis check. */
+  readonly context: Context;
+  /** Visited core node (`MemberExpression`, `CallExpression`, `BinaryExpression`, or `LogicalExpression`). */
+  readonly node: ChainNode;
 };
 
 /**
- * Locates the byte offset where the boundary token begins, scanning forward
- * from `from`.
+ * Determines whether a visited node is the outermost root of its chain.
  *
- * The first occurrence of `token` at or after `from` is the answer for every
- * chain shape this rule supports because chain boundaries always sit between
- * the two child node ranges, with only whitespace, TS type arguments, or
- * comments allowed between them.
+ * A node is the root unless a larger chain absorbs it: the effective parent
+ * (found past any transparent wrappers) continues the chain as a member
+ * receiver, a call callee, or an operator operand. Grouping parentheses around
+ * the node override absorption, isolating it as its own root exactly as
+ * `no-mixed-operators` treats a parenthesised subexpression. Firing only on the
+ * root lays out the whole flattened chain in one pass, including chains nested
+ * as operands of an operator chain.
  *
- * @returns boundary offset, or `-1` if the token is not found
- *
- * @example
- * ```ts
- * // For source `a + b`, with from = 1 (after `a`), token = '+': returns 2
- * findBoundaryOffset({ sourceText, from, token, });
- * ```
- */
-export function findBoundaryOffset({
-  sourceText,
-  from,
-  token,
-}: FindBoundaryOffsetParams,): number {
-  return sourceText.indexOf(
-    token,
-    from,
-  );
-}
-
-/**
- * Parameters for {@link isInterSegmentClean}.
- */
-export type IsInterSegmentCleanParams = {
-  /** Full file source text. */
-  readonly sourceText: string;
-  /** Byte offset where the inter-segment slice begins; the left sibling's effective end. */
-  readonly from: number;
-  /** Byte offset of the boundary token's first character. */
-  readonly boundaryOffset: number;
-  /** Type-arguments range from a `CallExpression`, if any. */
-  readonly typeArguments?: Span | null | undefined;
-};
-
-/**
- * Returns true when the source slice between `from` and `boundaryOffset`
- * contains only autofix-safe filler: whitespace, and when a `CallExpression`'s
- * type arguments occupy that slice, exactly the range
- * `[typeArguments.start, typeArguments.end)`.
- *
- * A comment, semicolon, TS non-null assertion, or any other content in that
- * slice fails the check; the rule still reports the violation but suppresses
- * the fix to avoid clobbering writer intent.
- *
- * @returns whether the autofix may be emitted for this boundary
+ * @returns whether the node should be laid out as a chain root
  *
  * @example
  * ```ts
- * // For source `a + b`, with from = 1, boundaryOffset = 2: returns true (only ' ')
- * isInterSegmentClean({ sourceText, from, boundaryOffset, });
+ * // For `a.b.c.d`: the outermost MemberExpression returns true; inner ones false
+ * isChainRoot({ context, node, });
  * ```
  */
-export function isInterSegmentClean({
-  sourceText,
-  from,
-  boundaryOffset,
-  typeArguments,
-}: IsInterSegmentCleanParams,): boolean {
-  /** Whether type arguments are present and define a permitted non-whitespace slice. */
-  const hasTypeArgs = (typeArguments !== undefined) && (typeArguments !== null);
-  /** Start of the type-args range, or `from` when no type args exist. */
-  const taStart = hasTypeArgs ? typeArguments.start : from;
-  /** End of the type-args range; equals `taStart` when no type args exist. */
-  const taEnd = hasTypeArgs ? typeArguments.end : from;
-
-  /**
-   * Linear whitespace scan over `[lo, hi)`. Single forward pass: O(n) time,
-   * O(1) stack, no recursion.
-   *
-   * @param lo - inclusive lower bound
-   *
-   * @param hi - exclusive upper bound
-   *
-   * @returns whether every character in the half-open range is whitespace
-   */
-  function scan({
-    lo,
-    hi,
-  }: {
-    readonly lo: number;
-    readonly hi: number;
-  },): boolean {
-    for (let idx = lo; idx < hi; idx += 1) {
-      /** Current character; tested against the ASCII whitespace set used elsewhere. */
-      const c = sourceText.charAt(idx,);
-      /** Whether the current character is allowable filler. */
-      const ok = (c === ' ')
-        || (c === '\t')
-        || (c === '\n')
-        || (c === '\r')
-        || (c === '\f')
-        || (c === '\v');
-      if (!ok)
-        return false;
-    }
+export function isChainRoot({
+  context,
+  node,
+}: IsChainRootParams,): boolean {
+  /** Outermost transparent wrapper around the node; the parent of this decides absorption. */
+  const top = effectiveTop(node,);
+  if (parenIsolated({
+    context,
+    node: top,
+  },)) {
     return true;
   }
-
-  if (!scan({
-    lo: from,
-    hi: taStart,
-  },)) {
+  /** Effective parent: the first ancestor that is not a transparent wrapper. */
+  const { parent, } = top;
+  if (parent === undefined)
+    return true;
+  if ((parent.type
+    === 'MemberExpression') && (parent.object
+      === top))
     return false;
-  }
-  return scan({
-    lo: taEnd,
-    hi: boundaryOffset,
-  },);
+  if ((parent.type
+    === 'CallExpression') && (parent.callee
+      === top))
+    return false;
+  /** Whether the effective parent is an operator that takes `top` as an operand. */
+  const parentIsOperator = (parent.type
+    === 'BinaryExpression')
+    || (parent.type
+      === 'LogicalExpression');
+  if (parentIsOperator && ((parent.left
+    === top) || (parent.right
+      === top)))
+    return false;
+  return true;
+}
+
+/**
+ * Parameters for {@link hasInteriorComment}.
+ */
+export type HasInteriorCommentParams = {
+  /** Rule context; its `sourceCode` supplies the comment lookup. */
+  readonly context: Context;
+  /** Outermost chain-region node; comments inside its range gate the autofix. */
+  readonly node: Span;
+};
+
+/**
+ * Reports whether any comment sits inside the chain region.
+ *
+ * The render slices source verbatim, so a comment between segments would be
+ * relocated onto a continuation line. The rule suppresses the autofix
+ * (reporting without a fix) whenever any comment lives in the region, the
+ * conservative stance toward writer intent. The check spans the outermost
+ * region node so a comment inside trailing `as /* x *\/ Foo` is still seen; it
+ * deliberately over-suppresses for comments buried in call arguments rather
+ * than risk relocating one, so do not narrow it without reinstating that
+ * guarantee.
+ *
+ * @returns whether the region contains at least one comment
+ *
+ * @example
+ * ```ts
+ * // For `obj.b // note\n  .c.d`: true, so the rule reports without a fix
+ * hasInteriorComment({ context, node, });
+ * ```
+ */
+export function hasInteriorComment({
+  context,
+  node,
+}: HasInteriorCommentParams,): boolean {
+  return context.sourceCode
+    .getCommentsInside(node,)
+    .length
+    > 0;
 }

@@ -93,11 +93,13 @@ export function checkItemsPerLine({
   minItems = 2,
   delimiter = ',',
 }: ItemPerLineConfig,): void {
-  if (items.length < minItems)
+  if (items.length
+    < minItems)
     return;
 
   /** Source text of the entire file. */
-  const sourceText = context.sourceCode.getText();
+  const sourceText = context.sourceCode
+    .getText();
 
   if (!needsPerLineFix({
     sourceText,

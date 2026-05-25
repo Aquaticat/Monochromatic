@@ -85,13 +85,15 @@ export const paramPerLine: CreateOnceRule = {
       const { params, } = fnNode;
       if ((params === undefined)
         || (params === null)
-        || (params.length < 2))
+        || (params.length
+          < 2))
       {
         return;
       }
 
       /** Source text is needed for boundary-paren lookup and the fixer call below. */
-      const sourceText = context.sourceCode.getText();
+      const sourceText = context.sourceCode
+        .getText();
       /** Range of the first param; used to find the `(` to its left. */
       const firstRange = rangeOf(at({
         arr: params,
@@ -100,7 +102,8 @@ export const paramPerLine: CreateOnceRule = {
       /** Range of the last param; used to find the `)` to its right. */
       const lastRange = rangeOf(at({
         arr: params,
-        index: params.length - 1,
+        index: params.length
+          - 1,
       },),);
 
       /** Find the `(` before the first param. */

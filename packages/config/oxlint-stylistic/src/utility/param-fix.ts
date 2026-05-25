@@ -49,7 +49,8 @@ export function paramsNeedFix({
   if (lineAt({
     sourceText,
     offset: openParen,
-  },) === lineAt({
+  },)
+    === lineAt({
     sourceText,
     offset: firstRange[0],
   },)) {
@@ -59,19 +60,22 @@ export function paramsNeedFix({
   /** Last param's range; used to test whether it shares a line with the closing paren. */
   const lastRange = rangeOf(at({
     arr: params,
-    index: params.length - 1,
+    index: params.length
+      - 1,
   },),);
   if (lineAt({
     sourceText,
     offset: lastRange[1],
-  },) === lineAt({
+  },)
+    === lineAt({
     sourceText,
     offset: closeParen,
   },)) {
     return true;
   }
 
-  for (let i = 1; i < params.length; i++) {
+  for (let i = 1; i < params
+    .length; i++) {
     /** Range of the previous param; its end offset is compared with the current param's start line. */
     const prevRange = rangeOf(at({
       arr: params,
@@ -85,7 +89,8 @@ export function paramsNeedFix({
     if (lineAt({
       sourceText,
       offset: prevRange[1],
-    },) === lineAt({
+    },)
+      === lineAt({
       sourceText,
       offset: currRange[0],
     },)) {
@@ -152,7 +157,8 @@ export function buildParamFix({
   /** Check trailing comma. */
   const lastRange = rangeOf(at({
     arr: params,
-    index: params.length - 1,
+    index: params.length
+      - 1,
   },),);
   /** Source slice between the last param and the close paren; inspected for an existing trailing comma. */
   const between = sourceText.slice(
@@ -169,7 +175,8 @@ export function buildParamFix({
       idx,
     ): string {
       /** Whether this is the last param; combined with `hasTrailing` to decide whether to emit a comma. */
-      const isLast = idx === (paramTexts.length - 1);
+      const isLast = idx === (paramTexts.length
+        - 1);
       /** Comma suffix or empty string for the last param without an original trailing comma. */
       const comma = (isLast && (!hasTrailing)) ? '' : ',';
       return `${childIndent}${text}${comma}`;

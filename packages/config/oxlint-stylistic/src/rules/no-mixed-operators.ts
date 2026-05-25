@@ -65,7 +65,8 @@ export const noMixedOperators: CreateOnceRule = {
      */
     function check(node: Span,): void {
       /** Source text is needed for `hasParens` to peek at bytes surrounding the operand spans. */
-      const sourceText = context.sourceCode.getText();
+      const sourceText = context.sourceCode
+        .getText();
       /* oxlint-disable typescript/no-unsafe-type-assertion -- oxlint Span omits operator and operand fields exposed by these visitor nodes */
       /** Parent expression narrowed to operator-bearing child fields. */
       const parent = node as Span & {
@@ -78,9 +79,12 @@ export const noMixedOperators: CreateOnceRule = {
         parent.left,
         parent.right,
       ]) {
-        if (child.operator === undefined)
+        if (child.operator
+          === undefined)
           continue;
-        if (child.operator === parent.operator)
+        if (child.operator
+          === parent
+          .operator)
           continue;
         if (hasParens({
           child,

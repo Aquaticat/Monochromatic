@@ -147,23 +147,28 @@ export const maxStatementsPerLine: CreateOnceRule = {
           readonly alternate?: Span;
         };
       };
-      if ((parent !== undefined) && SINGLE_CHILD_ALLOWED.has(parent.type,)) {
+      if ((parent !== undefined) && SINGLE_CHILD_ALLOWED
+        .has(parent.type,)) {
         /** Alternate branch of an `if`/`else` is not exempt; it counts toward the line tally. */
-        const isIfAlternate = (parent.type === 'IfStatement')
-          && (parent.alternate === node);
+        const isIfAlternate = (parent.type
+          === 'IfStatement')
+          && (parent.alternate
+            === node);
         if (!isIfAlternate)
           return;
       }
 
       /** Source text is needed to map the node's start offset to a line number. */
-      const sourceText = context.sourceCode.getText();
+      const sourceText = context.sourceCode
+        .getText();
       /** Line number of the statement's start offset; bucket key. */
       const line = lineAt({
         sourceText,
         offset: rangeOf(node,)[0],
       },);
       /** Per-line bucket of statements seen so far; created on demand. */
-      const bucket = perLine.get(line,) ?? [];
+      const bucket = perLine.get(line,)
+        ?? [];
       bucket.push(node,);
       perLine.set(
         line,
@@ -177,9 +182,11 @@ export const maxStatementsPerLine: CreateOnceRule = {
      */
     function reportExceeding(): void {
       /** Source text is needed for indent lookup and inter-statement slices. */
-      const sourceText = context.sourceCode.getText();
+      const sourceText = context.sourceCode
+        .getText();
       for (const stmts of perLine.values()) {
-        if (stmts.length <= 1)
+        if (stmts.length
+          <= 1)
           continue;
 
         /** Range of the first statement on this line; its leading whitespace defines the indent for the fix. */
@@ -193,7 +200,8 @@ export const maxStatementsPerLine: CreateOnceRule = {
           offset: firstRange[0],
         },);
 
-        for (let i = 1; i < stmts.length; i++) {
+        for (let i = 1; i < stmts
+          .length; i++) {
           /** Previous statement; its end offset is the cut point for the inter-statement slice. */
           const prev = at({
             arr: stmts,

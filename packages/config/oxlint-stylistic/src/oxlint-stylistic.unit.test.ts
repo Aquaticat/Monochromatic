@@ -383,20 +383,28 @@ await describe({
       name: 'chain-per-line',
       children: [
         it({
-          name: 'reports chained expressions whose boundaries share a line',
+          name: 'reports each non-canonical chain exactly once and nothing else',
           fn: async () => {
             const diagnostics = await lint('invalid/chain-per-line.ts',);
-            const rules = uniqueRules(diagnostics,);
-            expect(rules,).toContain('stylistic(chain-per-line)',);
-            /** Diagnostic messages for chain-per-line reports, isolated from unrelated fixture violations. */
-            const chainMessages = diagnostics.flatMap(function getChainMessage(diagnostic,): string[] {
-              return diagnostic.code === 'stylistic(chain-per-line)'
-                ? [diagnostic.message,]
-                : [];
+            /** chain-per-line diagnostics isolated from any unrelated fixture violations. */
+            const chainDiagnostics = diagnostics.filter(function isChain(diagnostic,): boolean {
+              return diagnostic.code === 'stylistic(chain-per-line)';
             },);
-            expect(chainMessages,).toContain(
+            // The fixture has nine non-canonical chains (b1..b9); each root fires once.
+            expect(chainDiagnostics.length,).toBe(9,);
+            // Declarations are `any`-typed, so chain-per-line is the only rule that fires.
+            expect(uniqueRules(diagnostics,),).toEqual(['stylistic(chain-per-line)',],);
+            expect(chainDiagnostics[0]?.message,).toBe(
               'Put each operator, member, or method step in this chain on its own line.',
             );
+          },
+        },),
+        it({
+          name: 'reports a chain with an interior comment without dropping other rules',
+          fn: async () => {
+            const diagnostics = await lint('invalid/chain-comment.ts',);
+            const rules = uniqueRules(diagnostics,);
+            expect(rules,).toContain('stylistic(chain-per-line)',);
           },
         },),
         it({
@@ -532,7 +540,7 @@ await describe({
           },
         },),
         it({
-          name: '--fix converges on a chain-per-line fixture (idempotent)',
+          name: '--fix renders each chain in canonical layout, idempotently and without trailing whitespace',
           fn: async () => {
             /** Source fixture copied so --fix never mutates original fixture. */
             const chainSrc = resolve(
@@ -561,15 +569,99 @@ await describe({
             catch {
               // --fix may exit non-zero when unfixable issues remain
             }
+            /** File content after the first --fix pass. */
+            const fixedOnce = readFileSync(chainCopy.filePath, 'utf8',);
+
+            /** Exact canonical layout expected for each chain in the fixture. */
+            const expectedLayouts = [
+              'const b1 = obj.foo\n  .bar;',
+              'const b2 = ctx.sc\n  .getText();',
+              'const b3 = obj.b\n  .c\n  .d;',
+              'const b4 = foo()\n  .bar()[0];',
+              'const b5 = items.map(a)\n  .filter(b)\n  .filter(c);',
+              'const b6 = a + b\n  + c\n  + d;',
+              'const b7 = x && y\n  && z;',
+              'const b8 = aa.b()\n  .c()\n  + dd\n  .e()\n  .f();',
+              'const b9 = obj.b\n  .c\n  .d\n  .toString()\n  .trim();',
+            ];
+            expectedLayouts.forEach(function assertLayout(layout,): void {
+              expect(fixedOnce,).toContain(layout,);
+            },);
+
+            /** Lines of the fixed output, for whitespace-shape regression checks. */
+            const lines = fixedOnce.split('\n',);
+            expect(
+              lines.some(function endsInWhitespace(line,): boolean {
+                /** Last character of the line, or `undefined` when the line is empty. */
+                const last = line.at(-1,);
+                return (last === ' ') || (last === '\t');
+              },),
+            ).toBe(false,);
+            expect(
+              lines.some(function isWhitespaceOnly(line,): boolean {
+                return (line.length > 0) && (line.trim() === '');
+              },),
+            ).toBe(false,);
+
+            try {
+              await spawn(
+                'oxlint',
+                [
+                  '--fix',
+                  '-c',
+                  FIXTURE_CONFIG,
+                  chainCopy.filePath,
+                ],
+                { cwd: ROOT, },
+              );
+            }
+            catch {
+              // --fix may exit non-zero
+            }
+            // Second pass changes nothing: the fix is idempotent.
+            expect(readFileSync(chainCopy.filePath, 'utf8',),).toBe(fixedOnce,);
 
             const diagnostics = await lint(chainCopy.filePath,);
-            const stylisticDiags = diagnostics.filter(
-              function isStylistic(d,): boolean {
-                return ((typeof d.code) === 'string')
-                  && d.code.startsWith('stylistic(',);
-              },
+            expect(
+              diagnostics.filter(function isChain(d,): boolean {
+                return d.code === 'stylistic(chain-per-line)';
+              },),
+            ).toEqual([],);
+          },
+        },),
+        it({
+          name: '--fix preserves a chain whose interior comment suppresses the fix',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates original fixture. */
+            const commentSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'chain-comment.ts',
             );
-            expect(stylisticDiags,).toEqual([],);
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using commentCopy = createTempFixtureFile({
+              fileName: 'chain-comment.ts',
+              sourcePath: commentSrc,
+            },);
+            /** Original content; the suppressed fix must leave it byte-for-byte. */
+            const before = readFileSync(commentCopy.filePath, 'utf8',);
+
+            try {
+              await spawn(
+                'oxlint',
+                [
+                  '--fix',
+                  '-c',
+                  FIXTURE_CONFIG,
+                  commentCopy.filePath,
+                ],
+                { cwd: ROOT, },
+              );
+            }
+            catch {
+              // --fix may exit non-zero when unfixable issues remain
+            }
+            expect(readFileSync(commentCopy.filePath, 'utf8',),).toBe(before,);
           },
         },),
         it({

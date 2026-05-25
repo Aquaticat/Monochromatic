@@ -45,7 +45,8 @@ export function needsPerLineFix({
   if (lineAt({
     sourceText,
     offset: containerRange[0],
-  },) === lineAt({
+  },)
+    === lineAt({
     sourceText,
     offset: firstRange[0],
   },)) {
@@ -55,19 +56,22 @@ export function needsPerLineFix({
   /** Last item's range; used to test whether it shares a line with the closing delimiter. */
   const lastRange = rangeOf(at({
     arr: items,
-    index: items.length - 1,
+    index: items.length
+      - 1,
   },),);
   if (lineAt({
     sourceText,
     offset: lastRange[1],
-  },) === lineAt({
+  },)
+    === lineAt({
     sourceText,
     offset: containerRange[1],
   },)) {
     return true;
   }
 
-  for (let i = 1; i < items.length; i++) {
+  for (let i = 1; i < items
+    .length; i++) {
     /** Previous item's range; paired with `currRange` to detect items sharing a line. */
     const prevRange = rangeOf(at({
       arr: items,
@@ -81,7 +85,8 @@ export function needsPerLineFix({
     if (lineAt({
       sourceText,
       offset: prevRange[1],
-    },) === lineAt({
+    },)
+      === lineAt({
       sourceText,
       offset: currRange[0],
     },)) {

@@ -108,13 +108,15 @@ export function buildPerLineFix({
   /** Range of the last item; right edge used to locate the closing bracket. */
   const lastRange = rangeOf(at({
     arr: items,
-    index: items.length - 1,
+    index: items.length
+      - 1,
   },),);
 
   /** Scan backward from first item to find the opening bracket. */
   const openPos = sourceText.lastIndexOf(
     bracketPair.open,
-    firstRange[0] - 1,
+    firstRange[0]
+      - 1,
   );
 
   /** Scan forward from last item to find the closing bracket. */
@@ -139,7 +141,8 @@ export function buildPerLineFix({
   const lineStart = sourceText.lastIndexOf(
     '\n',
     openPos - 1,
-  ) + 1;
+  )
+    + 1;
   /** Substring of the open-bracket line up to the bracket itself; leading whitespace is the existing indent. */
   const linePrefix = sourceText.slice(
     lineStart,
@@ -157,7 +160,9 @@ export function buildPerLineFix({
       const raw = context.sourceCode
         .getText(item,)
         .trim();
-      if (raw.endsWith(';',) || raw.endsWith(',',)) {
+      if (raw.endsWith(';',)
+        || raw
+        .endsWith(',',)) {
         return raw.slice(
           0,
           -1,
@@ -174,7 +179,8 @@ export function buildPerLineFix({
   ),);
   /** Whether the original source had a trailing delimiter; preserved verbatim in the rewrite to avoid forcing a style change. */
   const hasTrailingDelimiter = trailingRegion.has(',',)
-    || trailingRegion.has(';',);
+    || trailingRegion
+    .has(';',);
 
   /** Items rendered one per line with `childIndent` prefix and the appropriate delimiter suffix. */
   const formattedItems = itemTexts
@@ -183,7 +189,8 @@ export function buildPerLineFix({
       idx,
     ): string {
       /** Whether this is the last item; combined with `hasTrailingDelimiter` to decide the suffix. */
-      const isLast = idx === (itemTexts.length - 1);
+      const isLast = idx === (itemTexts.length
+        - 1);
       /** Delimiter or empty string for the last item without a trailing delimiter in the original. */
       const suffix = (isLast && (!hasTrailingDelimiter)) ? '' : delimiter;
       return `${childIndent}${text}${suffix}`;

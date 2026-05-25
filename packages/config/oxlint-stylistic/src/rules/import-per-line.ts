@@ -65,11 +65,13 @@ export const importPerLine: CreateOnceRule = {
         /** Filter to only named import specifiers (skip default and namespace). */
         const namedSpecifiers = specifiers.filter(
           function isNamed(specifier,): boolean {
-            return specifier.type === 'ImportSpecifier';
+            return specifier.type
+              === 'ImportSpecifier';
           },
         );
 
-        if (namedSpecifiers.length < 2)
+        if (namedSpecifiers.length
+          < 2)
           return;
 
         checkItemsPerLine({

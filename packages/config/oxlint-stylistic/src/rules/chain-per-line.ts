@@ -3,304 +3,72 @@ import type {
   CreateOnceRule,
   Fix,
   Fixer,
+  SourceCode,
   Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
 import {
-  type BinaryLikeNode,
-  collectBinaryChainOperands,
-  collectMemberOrCallChainFrames,
-  effectiveEnd,
-  findBoundaryOffset,
-  isBinaryChainRoot,
-  isInterSegmentClean,
-  isMemberOrCallChainRoot,
-  memberOrCallBoundaryToken,
-  type MemberOrCallNode,
+  type ChainNode,
+  effectiveTop,
+  hasInteriorComment,
+  isChainRoot,
 } from '../utility/chain.ts';
+import { flattenChain, } from '../utility/chain-flatten.ts';
+import {
+  renderCanonical,
+  selectBreakOffsets,
+} from '../utility/chain-render.ts';
 import { baseIndentAt, } from '../utility/indent.ts';
-import { lineAt, } from '../utility/line-at.ts';
 
-/** Minimum call-frame count that classifies a chain as a method chain worth splitting. */
-const MIN_CALLS_FOR_METHOD_CHAIN = 2;
-
-/** Minimum member-frame count that classifies a chain as deep access worth splitting. */
-const MIN_MEMBERS_FOR_DEEP_ACCESS = 3;
+/** Per-file cache of full source text, keyed by the file's `SourceCode` identity. */
+const sourceTextCache = new WeakMap<SourceCode, string>();
 
 /**
- * One boundary in a chain: the byte offset where the break should be inserted,
- * whether the slice leading up to it is safe for the autofix, and which kind
- * of chain frame introduced it.
- */
-type ChainBoundary = {
-  /** Byte offset of the boundary token's first character. */
-  readonly offset: number;
-  /** Whether the inter-segment slice contains only autofix-safe filler. */
-  readonly canFix: boolean;
-  /**
-   * Frame kind that introduced this boundary.
-   *
-   * `'member'` for `MemberExpression` frames (the `.x` / `[x]` step that
-   * defines "multi-step access").
-   * `'call'` for `CallExpression` frames; absent for binary/logical chains
-   * since they are detected by a different threshold.
-   */
-  readonly kind: 'binary' | 'call' | 'member';
-  /**
-   * Whether a newline immediately before this boundary is grammatically safe.
-   *
-   * False only for non-optional computed-member access (`expr[x]`): inserting
-   * `\n` before the `[` triggers `no-unexpected-multiline`, which would parse
-   * the result as `expr` followed by an unrelated `[x]` access on the next
-   * line. Dot members (`.x`), optional members (`?.x`, `?.[x]`), and binary
-   * operators bridge the newline cleanly and stay `true`. Call boundaries
-   * (`(` / `?.(`) carry the same hazard as `[`, but the rule never breaks
-   * before a call, so the call entries inherit `true` to avoid suggesting
-   * otherwise; the fix loop reads this flag only for member entries.
-   */
-  readonly breakable: boolean;
-};
-
-/**
- * Parameters for {@link sameLineCount}.
- */
-type SameLineCountParams = {
-  /** Full file source text. */
-  readonly sourceText: string;
-  /** Ordered chain boundaries to inspect. */
-  readonly boundaries: readonly ChainBoundary[];
-};
-
-/**
- * Returns the maximum number of boundaries that share any single source line.
+ * Returns the file's full source text, computing it once per file.
  *
- * The chain needs splitting when at least one line carries two or more
- * boundaries; that condition is equivalent to this helper returning a value
- * greater than 1.
+ * `createOnce` reuses one visitor across files, and the visitor fires on every
+ * member, call, binary, and logical node, so recomputing `getText()` per
+ * invocation is wasteful. Keying the cache on `SourceCode` identity refreshes
+ * it exactly when oxlint moves to the next file. The parameter is the rule
+ * `Context` rather than its `sourceCode` directly because oxlint's `SourceCode`
+ * is an anonymous type the readonly-params allow-list cannot name-match.
  *
- * @returns largest count of boundaries sitting on a single source line
+ * @param context - rule context whose `sourceCode` describes the current file
+ *
+ * @returns full source text of the file `context.sourceCode` describes
  */
-function sameLineCount({
-  sourceText,
-  boundaries,
-}: SameLineCountParams,): number {
-  /** Per-line buckets keyed by 1-indexed source line number; mutated by `Map.set` rather than reassigned. */
-  const perLine = new Map<number, number>();
-  for (const boundary of boundaries) {
-    /** 1-indexed line that the boundary token begins on. */
-    const line = lineAt({
-      sourceText,
-      offset: boundary.offset,
-    },);
-    perLine.set(
-      line,
-      (perLine.get(line,) ?? 0) + 1,
-    );
-  }
-  /** Max over all bucket counts; spread keeps `Math.max` purely functional. */
-  return Math.max(
-    0,
-    ...perLine.values(),
+function sourceTextOf(context: Context,): string {
+  /** Source code accessor identifying the current file. */
+  const { sourceCode, } = context;
+  /** Cached text for this file, if already computed. */
+  const cached = sourceTextCache.get(sourceCode,);
+  if (cached !== undefined)
+    return cached;
+  /** Full source text, computed once and memoised against this `SourceCode`. */
+  const text = sourceCode.getText();
+  sourceTextCache.set(
+    sourceCode,
+    text,
   );
+  return text;
 }
 
 /**
- * Parameters for {@link binaryBoundaries}.
- */
-type BinaryBoundariesParams = {
-  /** Chain root identified as a `BinaryExpression` or `LogicalExpression`. */
-  readonly root: BinaryLikeNode;
-  /** Full file source text. */
-  readonly sourceText: string;
-};
-
-/**
- * Returns the chain's boundaries in source order, derived from the leaves
- * collected by {@link collectBinaryChainOperands}.
+ * Enforces one chain segment per source line for binary, logical, member, and
+ * call chains, laid out by a single uniform rule.
  *
- * @returns one boundary per adjacent operand pair
- */
-function binaryBoundaries({
-  root,
-  sourceText,
-}: BinaryBoundariesParams,): readonly ChainBoundary[] {
-  /** Leaves in source order; one boundary lives between each adjacent pair. */
-  const leaves = collectBinaryChainOperands({
-    root,
-    sourceText,
-  },);
-  /** Accumulator built once and frozen as readonly by the return signature. */
-  const result: ChainBoundary[] = [];
-  for (let i = 1; i < leaves.length; i++) {
-    /** Previous operand; its effective end (paren-aware) anchors the boundary scan. */
-    const prev = leaves[i - 1];
-    if (prev === undefined)
-      continue;
-    /** Effective end of the previous operand, advanced past any closing paren. */
-    const from = effectiveEnd({
-      node: prev,
-      sourceText,
-    },);
-    /** Byte offset of the operator token introducing this boundary. */
-    const offset = findBoundaryOffset({
-      sourceText,
-      from,
-      token: root.operator,
-    },);
-    if (offset === (-1))
-      continue;
-    /** Whether the inter-segment slice between previous-end and operator is whitespace only. */
-    const canFix = isInterSegmentClean({
-      sourceText,
-      from,
-      boundaryOffset: offset,
-    },);
-    result.push({
-      offset,
-      canFix,
-      kind: 'binary',
-      breakable: true,
-    },);
-  }
-  return result;
-}
-
-/**
- * Parameters for {@link memberOrCallBoundaries}.
- */
-type MemberOrCallBoundariesParams = {
-  /** Chain root identified as a `MemberExpression` or `CallExpression`. */
-  readonly root: MemberOrCallNode;
-  /** Full file source text. */
-  readonly sourceText: string;
-};
-
-/**
- * Returns the chain's boundaries in source order, derived from the frames
- * collected by {@link collectMemberOrCallChainFrames}.
- *
- * @returns one boundary per frame in the chain
- */
-function memberOrCallBoundaries({
-  root,
-  sourceText,
-}: MemberOrCallBoundariesParams,): readonly ChainBoundary[] {
-  /** Frames in source order; the leaf appears as the first frame's left sibling. */
-  const frames = collectMemberOrCallChainFrames({
-    root,
-    sourceText,
-  },);
-  /** Accumulator built once and frozen as readonly by the return signature. */
-  const result: ChainBoundary[] = [];
-  for (const frame of frames) {
-    /** Effective end of the left sibling, advanced past any closing paren. */
-    const from = effectiveEnd({
-      node: frame.leftSibling,
-      sourceText,
-    },);
-    /** Boundary token: `.` / `[` / `(` / `?.` per frame shape. */
-    const token = memberOrCallBoundaryToken(frame,);
-    /** Byte offset of the boundary token; -1 when the scan fails. */
-    const offset = findBoundaryOffset({
-      sourceText,
-      from,
-      token,
-    },);
-    if (offset === (-1))
-      continue;
-    /** Type arguments range, only present on `CallExpression` frames. */
-    const typeArguments = (frame.node.type === 'CallExpression')
-      ? frame.node.typeArguments
-      : null;
-    /** Whether the slice between left sibling and boundary is autofix-safe. */
-    const canFix = isInterSegmentClean({
-      sourceText,
-      from,
-      boundaryOffset: offset,
-      typeArguments,
-    },);
-    /** Frame kind for threshold checks: only member boundaries count for "multi-step access". */
-    const kind: 'call' | 'member' = (frame.node.type === 'MemberExpression')
-      ? 'member'
-      : 'call';
-    /**
-     * Member boundaries opened by `[` are not safe to break before because of
-     * `no-unexpected-multiline`. Calls keep `breakable: true` for consistency
-     * since the rule never breaks before a call; only member entries consult
-     * the flag.
-     */
-    const breakable = (kind === 'call') || (token !== '[');
-    result.push({
-      offset,
-      canFix,
-      kind,
-      breakable,
-    },);
-  }
-  return result;
-}
-
-/**
- * Parameters for {@link buildChainFix}.
- */
-type BuildChainFixParams = {
-  /** Fixer instance from the lint report callback. */
-  readonly fixer: Fixer;
-  /** Chain root; its column defines the continuation indent. */
-  readonly root: Span;
-  /** Full file source text. */
-  readonly sourceText: string;
-  /** Boundaries to break before, all of which must be clean. */
-  readonly boundaries: readonly ChainBoundary[];
-};
-
-/**
- * Builds the autofix as one `insertTextBeforeRange` per boundary.
- *
- * Each insertion lands at a unique byte offset and never overlaps another, so
- * the fixer applies them atomically. The continuation indent is two spaces
- * deeper than the chain root's line, matching the break-before convention
- * already used elsewhere in this plugin and across the codebase.
- *
- * @returns array of `Fix` records, one per boundary
- */
-function buildChainFix({
-  fixer,
-  root,
-  sourceText,
-  boundaries,
-}: BuildChainFixParams,): Fix[] {
-  /** Whitespace prefix of the chain root's line; the break-before continuation indents two spaces deeper. */
-  const baseIndent = baseIndentAt({
-    sourceText,
-    offset: root.start,
-  },);
-  /** Continuation indent: two spaces deeper than the chain root. */
-  const childIndent = `${baseIndent}  `;
-  return boundaries.map(function asInsertion(boundary,): Fix {
-    return fixer.insertTextBeforeRange(
-      [
-        boundary.offset,
-        boundary.offset,
-      ],
-      `\n${childIndent}`,
-    );
-  },);
-}
-
-/**
- * Enforces one chain segment per source line for binary, logical, member,
- * and call chains.
- *
- * A chain reports when it has at least two boundaries and at least one source
- * line carries two or more of those boundaries. The autofix inserts
- * `\n + indent` before each boundary token, matching this codebase's
- * break-before continuation style; the fix is suppressed when any
- * inter-segment slice contains a comment, a TS non-null assertion, or other
- * foreign content. `no-mixed-operators` runs alongside this rule and remains
- * the authority on precedence-clarifying parens; their fixes are disjoint by
- * construction.
+ * Firing once on the outermost chain root, the rule flattens the chain into
+ * segments, keeps the leaf and the first member or operand on the head line,
+ * and breaks every later break point (a member-name step or an operator's
+ * right operand) onto its own continuation line indented two spaces deeper.
+ * Computed access (`[expr]`) and call steps (`(args)`) stay attached, so
+ * `arr[0][1]` and `obj.method()` keep to one line. It reports when the region's
+ * source differs from this canonical layout and replaces the whole region in
+ * one fix, except when a comment inside the region would be relocated, where it
+ * reports without a fix. `no-mixed-operators` runs alongside and remains the
+ * authority on precedence parentheses; on a shared region their fixes need two
+ * `oxlint --fix` passes (an upstream single-pass limitation).
  *
  * @example
  * ```ts
@@ -309,11 +77,9 @@ function buildChainFix({
  * const r2 = items.map(toName).filter(isReady).sort();
  *
  * // Good
- * const r1 = a
- *   + b
+ * const r1 = a + b
  *   + c;
- * const r2 = items
- *   .map(toName)
+ * const r2 = items.map(toName)
  *   .filter(isReady)
  *   .sort();
  * ```
@@ -334,141 +100,79 @@ export const chainPerLine: CreateOnceRule = {
   },
   createOnce(context: Context,): VisitorWithHooks {
     /**
-     * Visitor entry for binary/logical chains. Bails when not the chain root,
-     * otherwise reports and proposes the multi-boundary fix.
+     * Visitor entry for every chain-capable node. Bails unless the node is the
+     * outermost root, then reports when its layout is not canonical.
      *
-     * @param node - candidate `BinaryExpression` or `LogicalExpression`
+     * @param node - candidate `MemberExpression`, `CallExpression`,
+     *   `BinaryExpression`, or `LogicalExpression`
      */
-    function checkBinary(node: Span,): void {
-      /** Full source text; needed for paren detection, boundary scanning, and indent computation. */
-      const sourceText = context.sourceCode.getText();
-      /* oxlint-disable typescript/no-unsafe-type-assertion -- BinaryExpression/LogicalExpression visitor nodes always carry the operator, left, right, and parent fields BinaryLikeNode requires */
-      /** Node narrowed to the operator-bearing shape used by chain helpers. */
-      const root = node as BinaryLikeNode;
+    function check(node: Span,): void {
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- visitor nodes always carry the type/object/callee/left/right/operator/parent fields ChainNode reads; oxlint types them only as bare Span */
+      /** Node narrowed to the structural view the chain walk reads. */
+      const root = node as ChainNode;
       /* oxlint-enable typescript/no-unsafe-type-assertion */
-      if (!isBinaryChainRoot({
+      if (!isChainRoot({
+        context,
         node: root,
-        sourceText,
       },)) {
         return;
       }
-      /** Boundaries derived from the chain's operands in source order. */
-      const boundaries = binaryBoundaries({
-        root,
-        sourceText,
-      },);
-      if (boundaries.length < 2)
+      /** Break offsets that begin a continuation line; empty when the chain fits on one line. */
+      const breakOffsets = selectBreakOffsets(flattenChain({
+        context,
+        node: root,
+      },),);
+      if (breakOffsets.length
+        === 0)
         return;
-      if (sameLineCount({
+      /** Full source text, cached per file. */
+      const sourceText = sourceTextOf(context,);
+      /** Outermost region node, past any trailing `!`/`as`/`satisfies` wrapper. */
+      const top = effectiveTop(root,);
+      /** Byte offset where the chain region begins. */
+      const regionStart = root.start;
+      /** Byte offset where the chain region ends, past trailing wrapper text. */
+      const regionEnd = top.end;
+      /** Continuation indent: the head line's indentation plus two spaces. */
+      const childIndent = `${
+        baseIndentAt({
+          sourceText,
+          offset: regionStart,
+        },)
+      }  `;
+      /** Canonical multi-line layout of the region. */
+      const canonical = renderCanonical({
         sourceText,
-        boundaries,
-      },) < 2) {
+        regionStart,
+        regionEnd,
+        breakOffsets,
+        childIndent,
+      },);
+      if (sourceText.slice(
+        regionStart,
+        regionEnd,
+      )
+        === canonical) {
         return;
       }
-      /** Whether every boundary's inter-segment slice is autofix-safe. */
-      const allClean = boundaries.every(function clean(b,): boolean {
-        return b.canFix;
+      /** Whether the region is free of comments the render would relocate. */
+      const fixable = !hasInteriorComment({
+        context,
+        node: top,
       },);
       context.report({
         node,
         messageId: 'chain',
-        ...allClean
+        ...fixable
           ? {
-            fix(fixer: Fixer,): Fix[] {
-              return buildChainFix({
-                fixer,
-                root,
-                sourceText,
-                boundaries,
-              },);
-            },
-          }
-          : {},
-      },);
-    }
-
-    /**
-     * Visitor entry for member/call chains. Bails when not the chain root,
-     * otherwise reports and proposes the multi-boundary fix.
-     *
-     * @param node - candidate `MemberExpression` or `CallExpression`
-     */
-    function checkMemberOrCall(node: Span,): void {
-      /** Full source text; needed for paren detection, boundary scanning, and indent computation. */
-      const sourceText = context.sourceCode.getText();
-      /* oxlint-disable typescript/no-unsafe-type-assertion -- MemberExpression/CallExpression visitor nodes always carry the type, optional, object/callee, and parent fields MemberOrCallNode requires */
-      /** Node narrowed to the member/call shape used by chain helpers. */
-      const root = node as MemberOrCallNode;
-      /* oxlint-enable typescript/no-unsafe-type-assertion */
-      if (!isMemberOrCallChainRoot({
-        node: root,
-        sourceText,
-      },)) {
-        return;
-      }
-      /** Boundaries derived from the chain's frames in source order. */
-      const boundaries = memberOrCallBoundaries({
-        root,
-        sourceText,
-      },);
-      /**
-       * Member-frame boundaries safe to break before; non-optional computed
-       * `[` access drops out here because inserting `\n` before `[` triggers
-       * `no-unexpected-multiline`. The dropped boundaries stay attached to
-       * their preceding segment on whichever line that lands on.
-       */
-      const memberBoundaries = boundaries.filter(function isBreakableMember(b,): boolean {
-        return (b.kind === 'member') && b.breakable;
-      },);
-      /** Call-frame boundaries; counted separately because they drive the method-chain threshold. */
-      const callBoundaries = boundaries.filter(function isCall(b,): boolean {
-        return b.kind === 'call';
-      },);
-      // Threshold: fire on method chains (≥ 2 calls) or deep access (≥ 3
-      // breakable members). Non-optional computed `[` access does not count;
-      // a chain made entirely of `[` steps has no break point the fix can
-      // safely emit, so the rule leaves it on one line.
-      // Allows common idioms on one line:
-      //   `obj.method()`           — 1 call, 1 member.
-      //   `obj.foo.bar`            — 0 calls, 2 members.
-      //   `context.sc.getText()`   — 1 call, 2 members.
-      //   `arr[0][1]`              — 0 calls, 2 members.
-      //   `arr[0][1][2]`           — 0 breakable members; `[` cannot be broken before.
-      //   `foo().bar()[0]`         — 2 calls, 1 breakable member.
-      // Splits multi-step patterns:
-      //   `arr.map(f).filter(g)`   — 2 calls.
-      //   `obj.a.b.c`              — 3 breakable members.
-      //   `foo().bar().baz()`      — 3 calls.
-      //   `obj.a.b.c[0]`           — 3 breakable members; `[0]` stays attached to `.c`.
-      if ((callBoundaries.length < MIN_CALLS_FOR_METHOD_CHAIN)
-        && (memberBoundaries.length < MIN_MEMBERS_FOR_DEEP_ACCESS))
-      {
-        return;
-      }
-      // Already-split chains (each `.x` boundary on its own line) report no
-      // breakable member boundary sharing a line; further splits would be churn.
-      if (sameLineCount({
-        sourceText,
-        boundaries: memberBoundaries,
-      },) < 2) {
-        return;
-      }
-      /** Whether every breakable member boundary's inter-segment slice is autofix-safe. */
-      const allClean = memberBoundaries.every(function clean(b,): boolean {
-        return b.canFix;
-      },);
-      context.report({
-        node,
-        messageId: 'chain',
-        ...allClean
-          ? {
-            fix(fixer: Fixer,): Fix[] {
-              return buildChainFix({
-                fixer,
-                root,
-                sourceText,
-                boundaries: memberBoundaries,
-              },);
+            fix(fixer: Fixer,): Fix {
+              return fixer.replaceTextRange(
+                [
+                  regionStart,
+                  regionEnd,
+                ],
+                canonical,
+              );
             },
           }
           : {},
@@ -476,10 +180,10 @@ export const chainPerLine: CreateOnceRule = {
     }
 
     return {
-      BinaryExpression: checkBinary,
-      LogicalExpression: checkBinary,
-      MemberExpression: checkMemberOrCall,
-      CallExpression: checkMemberOrCall,
+      BinaryExpression: check,
+      LogicalExpression: check,
+      MemberExpression: check,
+      CallExpression: check,
     };
   },
 };

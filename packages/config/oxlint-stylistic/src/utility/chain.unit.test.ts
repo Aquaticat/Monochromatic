@@ -1,260 +1,174 @@
-import type { Span, } from '@oxlint/plugins';
-
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test';
 import {
-  effectiveEnd,
-  isInterSegmentClean,
-} from './chain.ts';
+  type ChainSegment,
+  renderCanonical,
+  selectBreakOffsets,
+} from './chain-render.ts';
+
+/** Attached segment helper for building fixture segment streams. */
+const attached: ChainSegment = { isBreak: false, };
 
 /**
- * Builds a fully-typed {@link Span} from a byte range for fixture nodes.
+ * Builds a break segment at a byte offset for fixture segment streams.
  *
- * `effectiveEnd` and `isInterSegmentClean` read only `start`/`end`; `loc` and
- * `range` carry single-line placeholders so the value satisfies the type
- * without an assertion.
+ * @param offset - byte offset where the break's continuation line begins
+ *
+ * @returns break segment carrying that offset
  */
-function makeSpan({
-  start,
-  end,
-}: {
-  readonly start: number;
-  readonly end: number;
-},): Span {
+function breakAt(offset: number,): ChainSegment {
   return {
-    start,
-    end,
-    range: [
-      start,
-      end,
-    ],
-    loc: {
-      start: {
-        line: 1,
-        column: start,
-      },
-      end: {
-        line: 1,
-        column: end,
-      },
-    },
+    isBreak: true,
+    breakOffset: offset,
   };
 }
 
 await describe({
   name: '',
   children: [
-    //region effectiveEnd
+    //region selectBreakOffsets
 
     describe({
-      name: effectiveEnd.name,
+      name: selectBreakOffsets.name,
       children: [
         it({
-          name: 'returns node.end unchanged when the node is not parenthesised',
+          name: 'returns no offsets when nothing breaks',
           fn: async () => {
             expect(
-              effectiveEnd({
-                node: makeSpan({
-                  start: 0,
-                  end: 1,
-                },),
-                sourceText: 'a + b',
-              },),
-            ).toBe(1,);
+              selectBreakOffsets([
+                attached,
+                attached,
+                attached,
+              ],),
+            ).toEqual([],);
           },
         },),
         it({
-          name: 'advances past a closing paren that abuts the node end',
+          name: 'keeps a break point on the head line when only one segment precedes it',
           fn: async () => {
-            // '(b + c) + d': inner span 'b + c' ends at 6, ')' sits at 6.
+            // `a + b`: [leaf, operator break]; the break sits at index 1 and attaches.
             expect(
-              effectiveEnd({
-                node: makeSpan({
-                  start: 1,
-                  end: 6,
-                },),
-                sourceText: '(b + c) + d',
-              },),
-            ).toBe(7,);
+              selectBreakOffsets([
+                attached,
+                breakAt(2,),
+              ],),
+            ).toEqual([],);
           },
         },),
         it({
-          name: 'tolerates whitespace between the node end and the closing paren',
+          name: 'breaks every break point at segment index two or greater',
           fn: async () => {
-            // '(b + c ) + d': inner span ends at 6, space at 6, ')' at 7.
+            // `obj.b.c.d`: [leaf, .b@4, .c@6, .d@8]; `.b` attaches, `.c` and `.d` break.
             expect(
-              effectiveEnd({
-                node: makeSpan({
-                  start: 1,
-                  end: 6,
-                },),
-                sourceText: '(b + c ) + d',
-              },),
-            ).toBe(8,);
+              selectBreakOffsets([
+                attached,
+                breakAt(4,),
+                breakAt(6,),
+                breakAt(8,),
+              ],),
+            ).toEqual([
+              6,
+              8,
+            ],);
           },
         },),
         it({
-          name: 'returns node.end when only non-ASCII whitespace precedes the close',
+          name: 'counts attached segments toward the head when locating the first break',
           fn: async () => {
-            // hasParens trims the U+00A0 (Unicode trim), but the scan's ASCII-only
-            // whitespace set does not, so the close is not located: node.end stands.
+            // `foo().bar()[0]`: [leaf, call, .bar@5, call, computed]; `.bar` is index 2 and breaks.
             expect(
-              effectiveEnd({
-                node: makeSpan({
-                  start: 1,
-                  end: 2,
-                },),
-                sourceText: '(b\u00A0)',
-              },),
-            ).toBe(2,);
-          },
-        },),
-        it({
-          name: 'scans a long whitespace gap to the close in a single linear pass',
-          fn: async () => {
-            const pad = 50_000;
-            // '(b' + pad spaces + ')': ')' sits at index pad + 2.
-            const sourceText = `(b${' '.repeat(pad,)})`;
-            expect(
-              effectiveEnd({
-                node: makeSpan({
-                  start: 1,
-                  end: 2,
-                },),
-                sourceText,
-              },),
-            ).toBe(pad + 3,);
+              selectBreakOffsets([
+                attached,
+                attached,
+                breakAt(5,),
+                attached,
+                attached,
+              ],),
+            ).toEqual([5,],);
           },
         },),
       ],
     },),
 
-    //endregion effectiveEnd
+    //endregion selectBreakOffsets
 
-    //region isInterSegmentClean
+    //region renderCanonical
 
     describe({
-      name: isInterSegmentClean.name,
+      name: renderCanonical.name,
       children: [
         it({
-          name: 'returns true for an empty slice (from equals boundaryOffset)',
+          name: 'returns the verbatim region when there are no breaks',
           fn: async () => {
             expect(
-              isInterSegmentClean({
-                sourceText: 'a+b',
-                from: 1,
-                boundaryOffset: 1,
+              renderCanonical({
+                sourceText: 'obj.method()',
+                regionStart: 0,
+                regionEnd: 12,
+                breakOffsets: [],
+                childIndent: '  ',
               },),
-            ).toBe(true,);
+            ).toBe('obj.method()',);
           },
         },),
         it({
-          name: 'returns true when the slice is entirely whitespace',
+          name: 'lays each break onto its own continuation line at the child indent',
           fn: async () => {
+            // `obj.b.c.d`: dots at 5 (`.c`) and 7 (`.d`).
             expect(
-              isInterSegmentClean({
-                sourceText: 'a   +b',
-                from: 1,
-                boundaryOffset: 4,
+              renderCanonical({
+                sourceText: 'obj.b.c.d',
+                regionStart: 0,
+                regionEnd: 9,
+                breakOffsets: [
+                  5,
+                  7,
+                ],
+                childIndent: '  ',
               },),
-            ).toBe(true,);
+            ).toBe('obj.b\n  .c\n  .d',);
           },
         },),
         it({
-          name: 'returns false when the slice contains a comment',
+          name: 'trims trailing whitespace so no line ends in spaces',
           fn: async () => {
+            // `a +  b` with a break at the operator (index 2) leaves no trailing space on the head.
             expect(
-              isInterSegmentClean({
-                sourceText: 'a/**/+b',
-                from: 1,
-                boundaryOffset: 5,
+              renderCanonical({
+                sourceText: 'a  +  b',
+                regionStart: 0,
+                regionEnd: 7,
+                breakOffsets: [3,],
+                childIndent: '  ',
               },),
-            ).toBe(false,);
+            ).toBe('a\n  +  b',);
           },
         },),
         it({
-          name: 'treats null typeArguments like absent type arguments',
+          name: 'is idempotent: re-rendering already-canonical source reproduces it',
           fn: async () => {
+            // Already laid out: dots at 8 (`.c`) and 13 (`.d`); trailing indent trims away.
+            const canonical = 'obj.b\n  .c\n  .d';
             expect(
-              isInterSegmentClean({
-                sourceText: 'a  +',
-                from: 1,
-                boundaryOffset: 3,
-                typeArguments: null,
+              renderCanonical({
+                sourceText: canonical,
+                regionStart: 0,
+                regionEnd: canonical.length,
+                breakOffsets: [
+                  8,
+                  13,
+                ],
+                childIndent: '  ',
               },),
-            ).toBe(true,);
-          },
-        },),
-        it({
-          name: 'permits a type-arguments span as the only non-whitespace content',
-          fn: async () => {
-            // 'f<T>(': type args '<T>' occupy [1,4); boundary '(' at 4.
-            expect(
-              isInterSegmentClean({
-                sourceText: 'f<T>(',
-                from: 1,
-                boundaryOffset: 4,
-                typeArguments: makeSpan({
-                  start: 1,
-                  end: 4,
-                },),
-              },),
-            ).toBe(true,);
-          },
-        },),
-        it({
-          name: 'tolerates whitespace around a type-arguments span',
-          fn: async () => {
-            // 'f <T> (': type args '<T>' occupy [2,5); boundary '(' at 6.
-            expect(
-              isInterSegmentClean({
-                sourceText: 'f <T> (',
-                from: 1,
-                boundaryOffset: 6,
-                typeArguments: makeSpan({
-                  start: 2,
-                  end: 5,
-                },),
-              },),
-            ).toBe(true,);
-          },
-        },),
-        it({
-          name: 'returns false for non-whitespace outside the type-arguments span',
-          fn: async () => {
-            // 'f x<T>(': stray 'x' before the type args fails the leading scan.
-            expect(
-              isInterSegmentClean({
-                sourceText: 'f x<T>(',
-                from: 1,
-                boundaryOffset: 6,
-                typeArguments: makeSpan({
-                  start: 3,
-                  end: 6,
-                },),
-              },),
-            ).toBe(false,);
-          },
-        },),
-        it({
-          name: 'scans a long whitespace slice in a single linear pass',
-          fn: async () => {
-            const pad = 50_000;
-            expect(
-              isInterSegmentClean({
-                sourceText: ' '.repeat(pad,),
-                from: 0,
-                boundaryOffset: pad,
-              },),
-            ).toBe(true,);
+            ).toBe(canonical,);
           },
         },),
       ],
     },),
 
-    //endregion isInterSegmentClean
+    //endregion renderCanonical
   ],
 },);

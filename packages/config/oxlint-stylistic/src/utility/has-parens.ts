@@ -46,5 +46,7 @@ export function hasParens({
   const after = sourceText
     .slice(child.end,)
     .trimStart();
-  return before.endsWith('(',) && after.startsWith(')',);
+  return before.endsWith('(',)
+    && after
+    .startsWith(')',);
 }

@@ -107,16 +107,19 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
       /* oxlint-enable typescript/no-unsafe-type-assertion */
       if (
         (parent !== undefined)
-        && FOR_PARENT_TYPES.has(parent.type,)
+        && FOR_PARENT_TYPES
+          .has(parent.type,)
       ) {
         return;
       }
 
-      if (declarations.length < 2)
+      if (declarations.length
+        < 2)
         return;
 
       /** Source text is needed for line-number lookups and inter-declarator slices. */
-      const sourceText = context.sourceCode.getText();
+      const sourceText = context.sourceCode
+        .getText();
       /** Indentation of the declaration keyword; the fix aligns continuations relative to it. */
       const baseIndent = baseIndentAt({
         sourceText,
@@ -125,7 +128,8 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
       /** Continuation indent for declarators after the first; two-space convention matches the rest of the package. */
       const childIndent = `${baseIndent}  `;
 
-      for (let i = 1; i < declarations.length; i++) {
+      for (let i = 1; i < declarations
+        .length; i++) {
         /** Previous declarator; its end offset is the cut point for the inter-declarator slice. */
         const prev = at({
           arr: declarations,
@@ -145,7 +149,8 @@ export const oneVarDeclarationPerLine: CreateOnceRule = {
           lineAt({
             sourceText,
             offset: prevRange[1],
-          },) !== lineAt({
+          },)
+            !== lineAt({
             sourceText,
             offset: currRange[0],
           },)

@@ -1,51 +1,57 @@
-// Fixture: chains with multiple boundaries on a single source line.
-// Expected violations: stylistic(chain-per-line)
+// Fixture: chains whose layout is not canonical. Expected: stylistic(chain-per-line).
+// Declarations are `any`-typed so only chain-per-line fixes apply, making the
+// autofix output deterministic. Same-operator and member/call chains are used
+// so no-mixed-operators never wraps a region first.
 
-declare const a: number;
-declare const b: number;
-declare const c: number;
-declare const d: number;
-declare const x: boolean;
-declare const y: boolean;
-declare const z: boolean;
-declare const obj: {
-  b: { c: { d: number; }; e: number; };
-  q?: { r?: { s?: number; }; };
-};
-declare const nested: { a: { b: { c: number[]; }; }; };
-declare function foo(): { bar(): { baz(): number; }; };
+declare const a: any;
+declare const b: any;
+declare const c: any;
+declare const d: any;
+declare const x: any;
+declare const y: any;
+declare const z: any;
+declare const obj: any;
+declare const ctx: any;
+declare function foo(): any;
+declare const items: any;
+declare const aa: any;
+declare const dd: any;
 
-// Same-operator binary chain (3 operands, 2 boundaries)
-const r1 = a + b + c;
+// Plain member chain (head keeps leaf plus one member).
+const b1 = obj.foo.bar;
 
-// Same-operator logical chain (3 operands, 2 boundaries)
-const r2 = x && y && z;
+// Member chain ending in a call.
+const b2 = ctx.sc.getText();
 
-// Plain member chain (4 segments, 3 member boundaries)
-const r3 = obj.b.c.d;
+// One member per line after the head.
+const b3 = obj.b.c.d;
 
-// Optional chaining deep
-const r4 = obj.q?.r?.s;
+// Head holds two segments when `.bar` arrives; trailing `[0]` stays attached.
+const b4 = foo().bar()[0];
 
-// Mixed dot + computed: dots split, trailing `[0]` stays attached to its dot member.
-const r5 = nested.a.b.c[0];
+// Method chain: one call step per continuation line.
+const b5 = items.map(a).filter(b).filter(c);
 
-// Call chain (3 calls)
-const r6 = foo().bar().baz();
+// Same-operator binary chain keeps the first two operands on the head line.
+const b6 = a + b + c + d;
 
-// Member + call mix (multi-step method chain, ≥ 2 calls)
-const r7 = obj.b.c.d.toString().trim();
+// Same-operator logical chain.
+const b7 = x && y && z;
 
-// Long binary chain (4 operands, 3 boundaries)
-const r8 = a + b + c + d;
+// Operator chain whose operands are member chains, laid out flat at one indent.
+const b8 = aa.b().c() + dd.e().f();
+
+// Mixed member and call steps.
+const b9 = obj.b.c.d.toString().trim();
 
 export {
-  r1,
-  r2,
-  r3,
-  r4,
-  r5,
-  r6,
-  r7,
-  r8,
+  b1,
+  b2,
+  b3,
+  b4,
+  b5,
+  b6,
+  b7,
+  b8,
+  b9,
 };

@@ -4,6 +4,10 @@ extends = "lint"
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
 
+[tasks."lint:oxlint:fix"]
+description = "Auto-fix this package with Oxlint (type-aware)"
+run = "task-oxlint --fix --type-aware"
+
 [tasks."lint:types"]
 extends = "lint:types"
 

@@ -39,13 +39,15 @@ export function findDelimiter({
   direction,
 }: FindDelimiterParams,): number {
   if (direction === 'open') {
-    for (let i = 0; i < text.length; i++) {
+    for (let i = 0; i < text
+      .length; i++) {
       if (OPEN_DELIMITERS.has(text.charAt(i,),))
         return i;
     }
   }
   else {
-    for (let i = text.length - 1; i >= 0; i--) {
+    for (let i = text.length
+      - 1; i >= 0; i--) {
       if (CLOSE_DELIMITERS.has(text.charAt(i,),))
         return i;
     }

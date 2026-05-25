@@ -54,26 +54,40 @@ All per-line rules are auto-fixable via `oxlint --fix`.
   Not auto-fixable.
 - **chain-per-line**: require one chain segment per source line for binary, logical,
   member, and call chains.
-  Reports when:
-  - a binary/logical chain has 2 or more same-operator boundaries on a single line, OR
-  - a member/call chain has 2 or more call boundaries (method chain) or 3 or more member
-    boundaries (deep access) on a single line.
-  Common idioms stay on one line: `obj.method()`, `obj.foo.bar`,
-  `context.sourceCode.getText()`, `arr[0][1]`.
-  Multi-step patterns split: `arr.map(f).filter(g)`, `obj.a.b.c`,
-  `foo().bar().baz()`.
+  The message is `Put each operator, member, or method step in this chain on its own line.`
+  Firing once on the outermost chain root, the rule flattens the chain into segments in
+  source order, then lays them out by one uniform rule:
+  the head line keeps the leaf and the first break point that has fewer than two segments
+  before it, and every later break point starts its own continuation line indented two
+  spaces deeper.
+  A break point is a member-name step (`.name`, `?.name`) or a binary or logical
+  operator's right operand (the operator renders leading, for example `+ c`);
+  call steps (`(args)`) and computed steps (`[expr]`, `?.[expr]`) are attached and ride on
+  the line before them.
+  It reports when the region's source differs from this canonical layout, so an
+  old-style fully-split chain reports until it is normalized.
+  Short chains stay on one line: `obj.method()`, `arr[0][1]`, `a + b`.
+  Multi-step chains break: `obj.foo.bar` becomes `obj.foo` then `.bar`;
+  `a + b + c + d` keeps `a + b` on the head line then `+ c` then `+ d`;
+  `arr.map(f).filter(g)`, `obj.a.b.c`, and `foo().bar()` all split.
   Covers `BinaryExpression`, `LogicalExpression`, `MemberExpression`, `CallExpression`,
   including optional chaining (`?.`), computed access (`a[b]`), call chains (`f().g()`),
-  TypeScript type arguments (`a.b<T>().c`), and right-associative `**`.
-  Source-level parens isolate inner chains (`(a + b) + c` keeps `(a + b)` opaque).
-  Same-operator chains are walked because `no-mixed-operators` already wrapped any
-  mismatched precedence.
-  Auto-fix inserts `\n + indent` before each member-frame boundary token, following the
-  project's break-before continuation style; call boundaries stay attached to the
-  preceding member. The fix is suppressed when an inter-segment slice contains a comment
-  or other foreign content.
-  Tagged templates (`` tag`x` ``) and `new` expressions are treated as opaque leaves
-  rather than chain participants.
+  TypeScript type arguments (`a.b<T>().c`), right-associative `**`, and chains threaded
+  through `!`, `as`, and `satisfies` (`a.b!.c.d` splits).
+  Grouping parentheses isolate inner chains (`(a + b) + c` keeps `(a + b)` opaque);
+  the rule trusts `no-mixed-operators` to have parenthesized mixed precedence, so it
+  flattens an unparenthesized operator run as one chain regardless of operator text.
+  The autofix is one replacement that re-renders the whole region in canonical layout,
+  slicing source verbatim so operand text survives, leaving no trailing whitespace, and
+  converging to a fixed point.
+  It is suppressed (the rule reports without a fix) when a comment sits inside the region.
+  Tagged templates (`` tag`x` ``) and `new` expressions are opaque leaves, not chain
+  participants.
+  When `no-mixed-operators` and `chain-per-line` both apply to one region, two
+  `oxlint --fix` passes are needed (an upstream single-pass limitation);
+  `no-mixed-operators` also parenthesizes same-precedence mixed-operator runs such as
+  `a + b - c`, so in the combined config that case becomes `(a + b) - c` rather than a
+  flattened chain.
 
 ## Usage
 
@@ -114,8 +128,10 @@ keeping rule files minimal.
 - `utility/needs-fix.ts`: line-sharing detection between items and container delimiters
 - `utility/delimiter.ts`: opening/closing delimiter scanning
 - `utility/range.ts`: `rangeOf` and `at` helpers for untyped AST node access
-- `utility/has-parens.ts`: source-level paren detection shared between `no-mixed-operators` and `chain-per-line`
-- `utility/chain.ts`: chain-root predicates, chain walkers, boundary-token finders for `chain-per-line`
+- `utility/has-parens.ts`: source-level paren detection for `no-mixed-operators`
+- `utility/chain.ts`: token-based grouping-paren detection, chain-root detection, and region/comment helpers for `chain-per-line`
+- `utility/chain-flatten.ts`: flattens a chain root into an ordered segment stream for `chain-per-line`
+- `utility/chain-render.ts`: break-point selection and canonical multi-line rendering for `chain-per-line`
 
 ## Tests
 

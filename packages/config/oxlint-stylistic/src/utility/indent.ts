@@ -41,7 +41,8 @@ export function leadingWhitespace(s: string,): string {
    * @returns first non-whitespace position (or `s.length`)
    */
   function scan(): number {
-    for (let idx = 0; idx < s.length; idx += 1) {
+    for (let idx = 0; idx < s
+      .length; idx += 1) {
       if (!isWhitespaceChar(s.charAt(idx,),))
         return idx;
     }
@@ -84,7 +85,8 @@ export function baseIndentAt({
   const lineStart = sourceText.lastIndexOf(
     '\n',
     offset - 1,
-  ) + 1;
+  )
+    + 1;
   /** Substring from line start to `offset`; the helper returns just its leading whitespace. */
   const linePrefix = sourceText.slice(
     lineStart,
