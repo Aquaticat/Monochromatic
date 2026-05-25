@@ -288,7 +288,6 @@ export function mountEditor(
       }
       catch (error) {
         // Subscriber errors are non-fatal; surface to console for dev.
-        // oxlint-disable-next-line eslint-plugin-unicorn/prefer-global-this -- worker-aware fallback
         console.error(
           'editor change listener threw',
           error,
@@ -389,7 +388,6 @@ export function mountEditor(
           return;
         if (reply.text
           !== mirror) {
-          // oxlint-disable-next-line eslint-plugin-unicorn/prefer-global-this -- worker-aware fallback
           console.error(
             'editor invariant violated: mirror !== worker snapshot',
             {

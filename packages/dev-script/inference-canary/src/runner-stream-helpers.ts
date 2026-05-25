@@ -11,7 +11,6 @@ import {
   tagged,
 } from './log.ts';
 
-// oxlint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
 import type OpenAI from 'openai';
 import type {
   CompletionResult,

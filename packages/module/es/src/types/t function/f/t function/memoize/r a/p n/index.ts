@@ -220,6 +220,5 @@ export async function $<
     await store.delete(key,);
   };
 
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- memoized function is extended with store/clear/delete properties
   return memoized as MemoizedAsyncFunction<TArgs, TReturn>;
 }

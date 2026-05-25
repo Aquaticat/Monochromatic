@@ -150,7 +150,6 @@ export async function dispatchAndFlush(row: {
  */
 function tryParseJson(payload: string,): unknown {
   try {
-    // oxlint-disable-next-line typescript/no-unsafe-return -- JSON.parse returns any
     return JSON.parse(payload,);
   }
   catch {

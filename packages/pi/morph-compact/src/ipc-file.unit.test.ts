@@ -138,7 +138,6 @@ await describe({
           name: 'removes the temp directory after cleanup',
           fn: async () => {
             const { filePath, cleanup, } = writeCompactFile('data',);
-            // oxlint-disable-next-line no-restricted-syntax -- verifying cleanup behavior
             const dir = filePath.split('/',).slice(0, -1,).join('/',);
 
             expect(existsSync(filePath,),).toBe(true,);

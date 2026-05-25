@@ -324,7 +324,6 @@ async function loadExistingChunksForEdit(
   /** Captured under a non-null name so the branch logic does not re-narrow per access. */
   const messageId = input.state
     .editMessageId;
-  // oxlint-disable-next-line eslint/no-magic-numbers -- tier discriminant
   if (input.state
     .tier
     === 3) {

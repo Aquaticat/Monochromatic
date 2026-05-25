@@ -14,7 +14,6 @@ import {
 } from './runner-probe-artifacts.ts';
 import { runSecondPass, } from './runner-second-pass.ts';
 
-// oxlint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
 import type OpenAI from 'openai';
 import type {
   Probe,

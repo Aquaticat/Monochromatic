@@ -231,7 +231,6 @@ async function renderFilterListByKey(row: {
   );
   /** Non-null summaries forming the rendered list. */
   const summaries: FilterListData['issues'][number][] = issuesLoaded
-    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- Array.prototype.filter callback signature is dictated by the built-in array type; `value` carries the element type as the JS engine sees it.
     .filter(function notNull(value,) {
       return value !== null;
     },);

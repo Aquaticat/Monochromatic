@@ -38,7 +38,6 @@ export function queryAllBackendsSync({
     const raw = backend.get(key,);
     return {
       value: raw ?? undefined,
-      // oxlint-disable-next-line typescript/prefer-nullish-coalescing -- 0 is a valid default for undefined priority
       priority: backend.priority
         ?? 0,
       backend,

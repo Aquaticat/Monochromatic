@@ -121,7 +121,6 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
           return [];
         }
         return entries.map(function wrapEntry(entry,) {
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- outline.type narrows feed to atom
           return {
             feed: feedWithoutEntries,
             outline,
@@ -145,7 +144,6 @@ function extractItems(feeds: FeedWOutline[],): Item[] {
         return [];
       }
       return items.map(function wrapItem(rssItem,) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- non-atom feeds are RSS
         return {
           feed: feedWithoutItems,
           outline,

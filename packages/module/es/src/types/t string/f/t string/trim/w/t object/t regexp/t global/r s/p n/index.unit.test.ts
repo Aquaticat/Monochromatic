@@ -1,4 +1,3 @@
-/* oxlint-disable unicorn/better-regex -- Testing */
 /* oxlint-disable no-restricted-syntax/no-regex -- this file tests the trim-by-global-regex function; every test must construct a regex literal as input. The regex literals here ARE the test fixtures. */
 
 import { types, } from '@monochromatic-dev/module-es';

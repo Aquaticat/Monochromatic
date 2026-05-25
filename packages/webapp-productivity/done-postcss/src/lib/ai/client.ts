@@ -48,7 +48,6 @@ function isRateLimited(): boolean {
     - WINDOW_DURATION_MS;
 
   // Discard entries older than the window
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- array index 0 is checked via length guard
   while ((requestTimestamps.length
     > 0) && ((requestTimestamps[0] as number)
     < cutoff))

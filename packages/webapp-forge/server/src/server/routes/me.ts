@@ -358,7 +358,6 @@ async function buildFilterListDelta(row: {
  * ```
  */
 export const meDeltaHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleMeDelta(event,) {
     /** Request URL parsed once so query params are reachable below. */
     const url = new URL(event.req

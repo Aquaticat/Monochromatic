@@ -282,7 +282,6 @@ async function evictOpfsStale(
   /** Narrowed alias so the `for await` loop sees a typed iterator instead of the DOM-lib gap. */
   const iterable = input.directory as unknown as AsyncIterable<FileSystemHandle>;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
-  // oxlint-disable-next-line no-await-in-loop
   for await (const handle of iterable) {
     if (!handle.name
       .startsWith(messagePrefix,))
@@ -291,7 +290,6 @@ async function evictOpfsStale(
       .startsWith(currentRevPrefix,))
       continue;
     try {
-      // oxlint-disable-next-line no-await-in-loop
       await input.directory
         .removeEntry(handle.name,);
     }

@@ -129,7 +129,6 @@ function parseFrontmatter(raw: string,): {
           bodyStart += 1;
 
         return {
-          // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- parseYaml returns `any`; runtime validation follows via zod schema
           data: (parseYaml(yamlBlock,)
             ?? {}) as Record<string, unknown>,
           content: str.slice(bodyStart,),

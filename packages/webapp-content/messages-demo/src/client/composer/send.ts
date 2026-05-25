@@ -166,7 +166,6 @@ async function sendNew(
   },);
   // Sequential PUTs match the server's outbox-ack contract; parallel
   // uploads would race the highest-contiguous-seq the server returns.
-  // oxlint-disable-next-line no-await-in-loop
   for (const [seq, chunk,] of compiled.chunks
     .entries()) {
     // oxlint-disable-next-line no-await-in-loop

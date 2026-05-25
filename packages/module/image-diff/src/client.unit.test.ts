@@ -43,7 +43,6 @@ function makeMinimalPngDataUri({
     function buildCrcEntry(_, n,) {
       return Array.from({ length: 8, },).reduce(
         function step(c: number,) {
-          // oxlint-disable-next-line no-bitwise -- CRC32 requires bitwise ops
           return c & 1 ? 0xED_B8_83_20 ^ (c >>> 1) : c >>> 1;
         },
         n,
@@ -55,25 +54,20 @@ function makeMinimalPngDataUri({
   function crc32(bytes: number[],): number {
     const finalCrc = bytes.reduce(
       function updateCrc(crc, byte,) {
-        // oxlint-disable-next-line no-bitwise -- CRC32 requires bitwise operations
         return (crcTable[(crc ^ byte) & 0xFF] ?? 0) ^ (crc >>> 8);
       },
       0xFF_FF_FF_FF,
     );
-    // oxlint-disable-next-line no-bitwise, prefer-math-trunc -- final XOR; bitwise truncation is intentional for CRC32
+    // oxlint-disable-next-line prefer-math-trunc -- final XOR; bitwise truncation is intentional for CRC32
     return Math.trunc((finalCrc ^ 0xFF_FF_FF_FF) >>> 0,);
   }
 
   /** Encode a 4-byte big-endian unsigned integer. */
   function uint32be(value: number,): number[] {
     return [
-      // oxlint-disable-next-line no-bitwise -- byte extraction
       (value >>> 24) & 0xFF,
-      // oxlint-disable-next-line no-bitwise
       (value >>> 16) & 0xFF,
-      // oxlint-disable-next-line no-bitwise
       (value >>> 8) & 0xFF,
-      // oxlint-disable-next-line no-bitwise
       value & 0xFF,
     ];
   }
@@ -114,7 +108,7 @@ function makeMinimalPngDataUri({
     },
     { adlerA: 1, adlerB: 0, },
   );
-  // oxlint-disable-next-line no-bitwise, prefer-math-trunc -- Adler-32 packing; bitwise truncation is intentional
+  // oxlint-disable-next-line prefer-math-trunc -- Adler-32 packing; bitwise truncation is intentional
   const adler32 = Math.trunc(((adlerB << 16) | adlerA) >>> 0,);
 
   /**
@@ -123,16 +117,13 @@ function makeMinimalPngDataUri({
    * BFINAL=1, BTYPE=00 (no compression), LEN=5, NLEN=~5.
    */
   const len = rawScanline.length;
-  // oxlint-disable-next-line no-bitwise -- complement for deflate NLEN
   const nlen = len ^ 0xFF_FF;
   const deflateBlock = [
     0x78,
     0x01,
     0x01,
-    // oxlint-disable-next-line no-bitwise
     len & 0xFF,
     (len >>> 8) & 0xFF,
-    // oxlint-disable-next-line no-bitwise
     nlen & 0xFF,
     (nlen >>> 8) & 0xFF,
     ...rawScanline,

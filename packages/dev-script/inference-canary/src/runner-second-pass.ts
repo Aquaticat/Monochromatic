@@ -7,7 +7,6 @@ import {
 } from './log.ts';
 import { streamCompletion, } from './runner-stream.ts';
 
-// oxlint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
 import type OpenAI from 'openai';
 import type {
   Probe,

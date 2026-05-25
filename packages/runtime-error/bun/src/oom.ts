@@ -15,7 +15,6 @@ const CHUNK_SIZE_BYTES = CHUNK_SIZE_MIB * BYTES_PER_MIB;
  */
 const chunks: Buffer[] = [];
 
-// oxlint-disable-next-line no-constant-condition -- intentional infinite loop to exhaust memory
 while (true) {
   chunks.push(Buffer.alloc(CHUNK_SIZE_BYTES,),);
   console.log(`Allocated ${chunks.length

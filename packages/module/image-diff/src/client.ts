@@ -1,4 +1,4 @@
-// oxlint-disable typescript/no-unsafe-type-assertion, require-await -- Promise.allSettled values require type assertions; async functions return provider promises directly
+// oxlint-disable require-await -- Promise.allSettled values require type assertions; async functions return provider promises directly
 import { describeImageDifference, } from './describe.ts';
 import { geminiProvider, } from './gemini.ts';
 import {

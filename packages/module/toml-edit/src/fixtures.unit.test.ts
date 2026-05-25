@@ -6,7 +6,6 @@
  *
  * @module
  */
-/* oxlint-disable typescript-eslint/no-unsafe-call, typescript-eslint/no-unsafe-assignment, typescript-eslint/no-unsafe-member-access, typescript-eslint/no-unsafe-return, typescript-eslint/no-unsafe-type-assertion -- oxlint type-aware inference doesn't follow node:fs/promises types through the module-test harness; the calls are sound at the type level. */
 
 import {
   readdir,

@@ -62,7 +62,6 @@ function createFunctionTsdocVisitor({
   }
 
   /** Visitor object built up before the unsafe cast that satisfies the host's index-signature type. */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint VisitorWithHooks allows arbitrary string keys
   const visitor = {
     before() {
       if (shouldIgnoreFile(context.filename,))

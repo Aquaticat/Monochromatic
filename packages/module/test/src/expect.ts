@@ -109,7 +109,7 @@ function buildAsyncMatchers(getValue: () => Promise<unknown>,): AsyncMatcherSet 
         a: chaiExpect(value,),
         actual: value,
       },);
-      // oxlint-disable-next-line no-unsafe-argument, no-unsafe-type-assertion -- args are typed by MatcherSet[K]; cast needed for dynamic dispatch
+      // oxlint-disable-next-line no-unsafe-type-assertion -- args are typed by MatcherSet[K]; cast needed for dynamic dispatch
       (matchers[key] as (...a: readonly unknown[]) => void)(...args,);
     };
   }
@@ -454,7 +454,6 @@ expectImpl.arrayContaining = function arrayContaining(
  * Jest-style `expect` with both a call signature and static asymmetric matchers.
  * `expectImpl` is cast to `Expect` to expose the static methods to TypeScript.
  */
-// oxlint-disable-next-line no-unsafe-type-assertion -- expectImpl satisfies Expect by construction
 const expect = expectImpl as Expect;
 
 export { expect, };
@@ -511,7 +510,7 @@ function wrapMatchersWithCounter(
     const original = matchers[key];
     wrapped[key] = function countedMatcher(...args: readonly unknown[]): unknown {
       tracker.count += 1;
-      // oxlint-disable-next-line no-unsafe-argument, no-unsafe-type-assertion -- dynamic dispatch over MatcherSet methods requires cast
+      // oxlint-disable-next-line no-unsafe-type-assertion -- dynamic dispatch over MatcherSet methods requires cast
       return (original as (...a: readonly unknown[]) => unknown)(...args,);
     };
   }
@@ -548,7 +547,7 @@ function wrapAsyncMatchersWithCounter(
       ...args: readonly unknown[]
     ): Promise<unknown> {
       tracker.count += 1;
-      // oxlint-disable-next-line no-unsafe-argument, no-unsafe-type-assertion -- dynamic dispatch over AsyncMatcherSet methods requires cast
+      // oxlint-disable-next-line no-unsafe-type-assertion -- dynamic dispatch over AsyncMatcherSet methods requires cast
       return await (original as (...a: readonly unknown[]) => Promise<unknown>)(...args,);
     };
   }
@@ -628,7 +627,6 @@ export function createScopedExpect(): readonly [
   scopedExpectImpl.any = expectImpl.any;
   scopedExpectImpl.arrayContaining = expectImpl.arrayContaining;
 
-  // oxlint-disable-next-line no-unsafe-type-assertion -- scopedExpectImpl satisfies ScopedExpect by construction
   return [
     scopedExpectImpl as ScopedExpect,
     tracker,

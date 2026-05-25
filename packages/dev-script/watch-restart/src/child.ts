@@ -240,7 +240,6 @@ function makeDefaultSpawn(
      * the overload subset matches, so an explicit assertion lands here at the
      * single integration boundary instead of polluting consumers.
      */
-    // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- narrowing ChildProcess to the minimal SpawnedChildHandle shape; behavior is structurally compatible at runtime
     return nodeSpawn(
       args.command,
       [...args.args,],

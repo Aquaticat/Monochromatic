@@ -15,7 +15,6 @@ import { runProbe, } from './runner-probe.ts';
 import { fetchServerTimestamp, } from './server-time.ts';
 
 import type { Probe, } from './probes.ts';
-// oxlint-disable-next-line no-duplicate-imports -- local type use; re-exported below for consumers
 import type {
   CanaryReport,
   ProbeResult,

@@ -138,7 +138,6 @@ async function callJudge(
       messages,
       tools: [VERDICT_TOOL,],
     },
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- streamSimple's options shape is widened by toolChoice key
     opts as SimpleStreamOptions,
   );
 
@@ -280,7 +279,6 @@ async function collectToolCall(
         `Judge called unexpected tool: "${toolCall.name}" instead of "render_verdict"`,
       );
     }
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- ToolCall.arguments is `unknown` from pi-ai; the schema enforces shape
     return toolCall.arguments as Record<string, string>;
   }
 

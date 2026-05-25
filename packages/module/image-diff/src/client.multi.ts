@@ -4,7 +4,6 @@
  *
  * @module
  */
-// oxlint-disable require-await -- async functions return provider promises directly
 import type {
   MultiProviderBatchEmbedEntry,
   MultiProviderEmbedEntry,

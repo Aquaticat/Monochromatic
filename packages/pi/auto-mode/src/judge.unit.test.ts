@@ -197,7 +197,6 @@ await describe({
             partial: {},
           };
         }
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test mock matches AssistantMessageEvent shape
         const result = await collectToolCall(mockStream() as never,);
         expect(result.verdict,).toBe('approve',);
         expect(result.guidance,).toBe('second block',);
@@ -222,7 +221,6 @@ await describe({
             partial: {},
           };
         }
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test mock matches AssistantMessageEvent shape
         const result = await collectToolCall(mockStream() as never,);
         expect(result.verdict,).toBe('approve',);
         expect(result.reason,).toBe('tool path',);

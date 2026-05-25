@@ -1,4 +1,4 @@
-// oxlint-disable typescript/no-unsafe-assignment, typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-return, typescript/require-await, eslint/no-await-in-loop -- browser evaluate callbacks lose type info across page boundary
+// oxlint-disable eslint/no-await-in-loop -- browser evaluate callbacks lose type info across page boundary
 
 import {
   expect,
@@ -6,7 +6,6 @@ import {
 } from '@playwright/test';
 
 declare global {
-  // oxlint-disable-next-line no-var -- global augmentation requires var declaration
   // oxlint-disable-next-line typescript/consistent-type-imports -- typeof import() cannot use import type syntax
   var moduleLogger: typeof import('@monochromatic-dev/module-logger');
 }
@@ -14,7 +13,6 @@ declare global {
 test.describe('OPFS sink', () => {
   test.beforeEach(async ({ page, },) => {
     await page.goto('/',);
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- runs in browser page context where moduleLogger may not be loaded yet
     await page.waitForFunction(() => globalThis.moduleLogger !== undefined);
   },);
 

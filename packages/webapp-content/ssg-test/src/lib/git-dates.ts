@@ -326,7 +326,6 @@ async function ghApiFirstCommitDate(
 
   /** Flat list of commits across all returned pages. */
   const commits: GhCommit[] = raw.includes('][',)
-    // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- JSON.parse returns any; shape is validated by the access below
     ? (raw.split('][',).flatMap(function parseChunk(
       chunk,
       i,
@@ -337,10 +336,8 @@ async function ghApiFirstCommitDate(
       /** Closing bracket re-inserted on every chunk except the last to rebuild the JSON array boundary. */
       const suffix = i === (arr.length
         - 1) ? '' : ']';
-      // oxlint-disable-next-line typescript-eslint(no-unsafe-return) -- see above
       return JSON.parse(`${prefix}${chunk}${suffix}`,);
     },) as GhCommit[])
-    // oxlint-disable-next-line typescript-eslint(no-unsafe-type-assertion) -- see above
     : (JSON.parse(raw,) as GhCommit[]);
 
   /** Oldest commit in the API response (last entry per GitHub's newest-first ordering). */

@@ -154,10 +154,8 @@ await describe({
         /* oxlint-disable typescript-eslint/no-unsafe-member-access -- chai-as-promised .resolves chain isn't typed against sinon's stub return. */
         sinon.stub(Bun, 'build',).resolves({
           success: true,
-          // oxlint-disable-next-line typescript-eslint/no-explicit-any -- minimal stub of BuildArtifact for the test path.
           outputs: [{ text: async (): Promise<string> => FIXTURE_BUNDLE, } as any,],
           logs: [],
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- minimal stub of BuildOutput; only the consumed fields are populated.
         } as unknown as Awaited<ReturnType<typeof Bun.build>>,);
         /* oxlint-enable typescript-eslint/no-unsafe-member-access */
         /* oxlint-enable typescript-eslint/no-unsafe-call */
@@ -198,14 +196,12 @@ await describe({
         /* oxlint-disable typescript-eslint/no-unsafe-member-access -- chai-as-promised .resolves chain isn't typed against sinon's stub return. */
         sinon.stub(Bun, 'build',).resolves({
           success: true,
-          // oxlint-disable-next-line typescript-eslint/no-explicit-any -- minimal stub of BuildArtifact for the test path.
           outputs: [
             {
               text: async (): Promise<string> => `</script><!--${FIXTURE_BUNDLE}`,
             } as any,
           ],
           logs: [],
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- minimal stub of BuildOutput; only the consumed fields are populated.
         } as unknown as Awaited<ReturnType<typeof Bun.build>>,);
         /* oxlint-enable typescript-eslint/no-unsafe-member-access */
         /* oxlint-enable typescript-eslint/no-unsafe-call */
@@ -233,7 +229,6 @@ await describe({
             { message: 'first error', },
             { message: 'second error', },
           ],
-          // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- minimal stub of BuildOutput; only the consumed fields are populated.
         } as unknown as Awaited<ReturnType<typeof Bun.build>>,);
         /* oxlint-enable typescript-eslint/no-unsafe-member-access */
         /* oxlint-enable typescript-eslint/no-unsafe-call */

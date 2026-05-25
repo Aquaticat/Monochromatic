@@ -48,7 +48,6 @@ export async function captureScreenshot(): Promise<Buffer> {
   /** Temp PNG path used as a handoff file between spectacle and ffmpeg; cleaned up by the disposable below. */
   const tmp = `/tmp/hall-monitor-screen-${Date.now()}.png`;
   /** Disposable wrapper for temp file cleanup. */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- disposable resource pattern
   await using _cleanup = {
     [Symbol.asyncDispose]: async function cleanupTempFile(): Promise<void> {
       try {

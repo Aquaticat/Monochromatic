@@ -192,7 +192,6 @@ export function createMcpServer(
   function handleMessage(message: JsonRpcInbound,): Promise<JsonRpcOutbound | undefined> {
     if (!('id' in message)) {
       handleNotification(message,);
-      // oxlint-disable-next-line unicorn/no-useless-undefined -- explicit undefined needed to satisfy Promise<JsonRpcOutbound | undefined> return type
       return Promise.resolve(undefined,);
     }
     return handleRequest(message,);

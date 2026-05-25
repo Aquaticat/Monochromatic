@@ -210,7 +210,6 @@ async function runDescribe(
         },);
       }
       catch (reason) {
-        // oxlint-disable-next-line no-unsafe-type-assertion -- PromiseSettledResult requires reason typed as any
         results.push({
           status: 'rejected',
           reason,

@@ -140,7 +140,6 @@ async function readRequestBytes(request: Request,): Promise<Uint8Array> {
  * `GET /:owner/:repo.git/info/refs?service=git-upload-pack|git-receive-pack`.
  */
 export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleInfoRefs(event,) {
     /** Owner login segment of the route path. */
     const owner = event.context
@@ -195,7 +194,6 @@ export const gitInfoRefsHandler: EventHandlerWithFetch = defineHandler(
  * `POST /:owner/:repo.git/git-upload-pack`: clone/fetch.
  */
 export const gitUploadPackHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleUploadPackRoute(event,) {
     /** Owner login segment of the route path. */
     const owner = event.context
@@ -245,7 +243,6 @@ export const gitUploadPackHandler: EventHandlerWithFetch = defineHandler(
  * scope: real auth and DB-side repo creation come with Better Auth.
  */
 export const gitReceivePackHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleReceivePackRoute(event,) {
     /** Owner login segment of the route path. */
     const owner = event.context

@@ -5,7 +5,6 @@
  */
 export {};
 
-// oxlint-disable-next-line no-constant-condition -- intentional hang
 while (true) {
   // intentional busy loop: no yield, no sleep, no exit
 }

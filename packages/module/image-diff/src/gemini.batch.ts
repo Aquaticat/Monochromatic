@@ -1,4 +1,4 @@
-// oxlint-disable typescript/no-unsafe-type-assertion, prefer-destructuring -- API response types require assertions
+// oxlint-disable typescript/no-unsafe-type-assertion -- API response types require assertions
 import { toGeminiInlineData, } from './encoding.gemini.ts';
 import {
   DEFAULT_GEMINI_MODEL,

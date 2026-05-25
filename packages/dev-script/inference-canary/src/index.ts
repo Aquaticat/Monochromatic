@@ -73,7 +73,6 @@ if (selectedModels.length
   === 0)
   l.info('no models selected for testing.',);
 else {
-  // oxlint-disable-next-line no-nested-ternary -- three-way probe tier selection; simulation runs alongside code-gen by default
   /** Code generation probe set, including slow probes when `--slow` is passed. */
   const codeGenSet = includeSlow ? codeGenProbesAll : codeGenProbes;
   /** Combined probe list from selected code-gen tier and simulation probes. */

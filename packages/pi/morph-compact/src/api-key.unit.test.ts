@@ -50,7 +50,6 @@ await describe({
         it({
           name: 'resolves MORPH_API_KEY from environment',
           fn: async () => {
-            // oxlint-disable-next-line no-restricted-syntax -- env cleanup requires using block
             using _restore = setEnv({ key: 'MORPH_API_KEY',
               value: 'test-key-from-env', },);
             const key = await resolveMorphApiKey();
@@ -60,7 +59,6 @@ await describe({
         it({
           name: 'returns env value directly when set',
           fn: async () => {
-            // oxlint-disable-next-line no-restricted-syntax -- env cleanup requires using block
             using _restore = setEnv({ key: 'MORPH_API_KEY', value: 'cached-key', },);
             const first = await resolveMorphApiKey();
             // Env var takes priority over cache
@@ -73,7 +71,6 @@ await describe({
         it({
           name: 'resetApiKeyCache clears the cache',
           fn: async () => {
-            // oxlint-disable-next-line no-restricted-syntax -- env cleanup requires using block
             using _restore = setEnv({ key: 'MORPH_API_KEY', value: 'before-reset', },);
             await resolveMorphApiKey();
             process.env.MORPH_API_KEY = 'after-reset';
@@ -90,7 +87,6 @@ await describe({
         it({
           name: 'allows re-reading after cache reset',
           fn: async () => {
-            // oxlint-disable-next-line no-restricted-syntax -- env cleanup requires using block
             using _restore = setEnv({ key: 'MORPH_API_KEY', value: 'initial', },);
             await resolveMorphApiKey();
             process.env.MORPH_API_KEY = 'post-reset';

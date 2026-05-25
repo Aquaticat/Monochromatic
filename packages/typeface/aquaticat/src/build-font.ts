@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return -- opentype.js is a JS library with no TypeScript declarations; all API calls are inherently untyped
 /**
  * Build script that reads the master glyph strip SVG, extracts individual
  * letter shapes, and assembles them into an OpenType font file using opentype.js.
@@ -16,7 +15,6 @@ import {
   resolve,
 } from 'node:path';
 
-// oxlint-disable-next-line import/no-namespace -- opentype.js requires namespace import for its constructor API
 import * as opentype from 'opentype.js';
 
 import {

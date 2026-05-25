@@ -42,8 +42,6 @@ import { mkdtemp, } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
 
-// oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- the package re-exports ESM as a wildcard namespace
-// oxlint-disable-next-line import/no-namespace -- isomorphic-git is a flat-named CJS module, namespace import is the only ergonomic shape
 import * as git from 'isomorphic-git';
 
 import { percentile, } from '../percentile.ts';

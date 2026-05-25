@@ -14,7 +14,6 @@ import {
 import { loadHarness, } from './test-setup.ts';
 
 declare global {
-  // oxlint-disable-next-line no-var -- single-spot holder for the active prompt promise inside the page
   var pendingPrompt: Promise<string | null> | undefined;
 }
 

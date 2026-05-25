@@ -89,7 +89,6 @@ await describe({
     it({
       name: 'handles async generators',
       fn: async () => {
-        // oxlint-disable-next-line typescript/require-await -- async generator yields without await
         async function* asyncGen(): AsyncGenerator<string> {
           yield 'first';
           yield 'second';

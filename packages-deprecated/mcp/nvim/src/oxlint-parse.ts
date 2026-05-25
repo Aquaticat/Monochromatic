@@ -48,7 +48,6 @@ export function findAncestorWithFile(
   /** Walking cursor; advances toward the filesystem root each iteration until the file is found or the root is reached. */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- filesystem walking cursor advances toward root each iteration
   let current = startDir;
-  // oxlint-disable-next-line no-constant-condition -- walk up until filesystem root
   while (true) {
     if (existsSync(resolve(
       current,

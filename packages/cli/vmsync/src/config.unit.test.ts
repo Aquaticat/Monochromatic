@@ -238,7 +238,6 @@ await describe({
             },)
               .not
               .toThrow();
-            // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- test assertion for parsed JSON shape
             const parsed = JSON.parse(stripped,) as { name: string; size: number; };
             expect(parsed.name,).toBe('alpine',);
             expect(parsed.size,).toBe(1_024,);

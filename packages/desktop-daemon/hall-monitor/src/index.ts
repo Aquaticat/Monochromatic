@@ -45,7 +45,6 @@ function shutdown(): void {
   state.running = false;
   getLockServer()
     ?.close();
-  // oxlint-disable-next-line promise/prefer-await-to-then, promise/always-return -- shutdown handler cannot be async; then() is fire-and-forget
   void forceCleanup()
     .then(function setExitCode() {
     process.exitCode = 0;
@@ -66,7 +65,6 @@ process.on(
  * Acquires the lock, runs the first cycle, then loops at the configured interval.
  */
 // Async IIFE required because `bun build --compile` does not support top-level await.
-// oxlint-disable-next-line typescript/no-floating-promises -- top-level entry point
 async function main(): Promise<void> {
   if (!(await acquireLock())) {
     if (args['kill-existing'])
@@ -87,7 +85,6 @@ async function main(): Promise<void> {
 
   // Not needed because we don't allow configuring interval: defense-in-depth: add a floor (e.g. Math.max(INTERVAL_MS, 60_000))
   // so a misconfigured or zero interval cannot cause a tight spin loop.
-  // oxlint-disable-next-line no-unmodified-loop-condition, typescript/no-unnecessary-condition -- state.running is mutated by signal handler
   while (state.running) {
     // oxlint-disable-next-line no-await-in-loop, promise/avoid-new -- sequential timer loop; setTimeout wrapper for delay
     await new Promise(function intervalDelay(resolve,) {
@@ -96,7 +93,6 @@ async function main(): Promise<void> {
         INTERVAL_MS,
       );
     },);
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- state.running is mutated by signal handler
     if (state.running) {
       // oxlint-disable-next-line no-await-in-loop -- sequential polling loop; each cycle must complete before the next
       await cycle();

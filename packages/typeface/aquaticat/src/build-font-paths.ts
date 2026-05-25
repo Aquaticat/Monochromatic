@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return -- opentype.js is a JS library with no TypeScript declarations; all API calls are inherently untyped
 /**
  * Path construction utilities for converting SVG glyph data into OpenType path commands.
  *
@@ -8,7 +7,6 @@
  * ```
  */
 
-// oxlint-disable-next-line import/no-namespace -- opentype.js requires namespace import for its Path type
 import type * as opentype from 'opentype.js';
 
 import { fontY, } from './build-font-metrics.ts';
@@ -180,7 +178,6 @@ export function addFilledPath({
         fontY(cy,),
       );
     }
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- SVG command type discriminant is checked exhaustively
     else if (cmd.type
       === 'Z') {
       otPath.close();

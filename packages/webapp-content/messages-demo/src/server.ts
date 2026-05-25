@@ -126,7 +126,6 @@ const app = new H3();
 app.get(
   '/',
   defineHandler(
-    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
     async function handleFeed(event,) {
       /** Conditional-GET header forwarded to the renderer for ETag short-circuiting. */
       const ifNoneMatch = event.req
@@ -143,7 +142,6 @@ app.get(
 app.get(
   '/p/:cursor',
   defineHandler(
-    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
     async function handleFeedPage(event,) {
       /** Required `:cursor` path param; bails to 400 when missing. */
       const cursor = requireParam({
@@ -166,7 +164,6 @@ app.get(
 app.get(
   '/m/:id',
   defineHandler(
-    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
     function handleMessageRoot(event,) {
       /** Parsed `:id` param; redirect target uses this in the chunk-0 URL. */
       const id = parseId({
@@ -185,7 +182,6 @@ app.get(
 app.get(
   '/m/:id/c/:idx',
   defineHandler(
-    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
     async function handleMessageChunk(event,) {
       /** Parsed `:id` param; consumed by `renderMessageChunk` as the message id. */
       const id = parseId({
@@ -216,7 +212,6 @@ app.get(
 app.get(
   '/m/:id/c/:idx/raw',
   defineHandler(
-    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
     async function handleChunkRaw(event,) {
       /** Parsed `:id` param; consumed by `renderChunkRaw` as the message id. */
       const id = parseId({
@@ -247,7 +242,6 @@ app.get(
 app.get(
   '/m/:id/c/:idx/md',
   defineHandler(
-    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
     async function handleChunkMd(event,) {
       /** Parsed `:id` param; consumed by `renderChunkMd` as the message id. */
       const id = parseId({
@@ -278,7 +272,6 @@ app.get(
 app.get(
   '/m/:id/edit',
   defineHandler(
-    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
     async function handleEdit(event,) {
       /** Parsed `:id` param; consumed by `renderEditPage`. */
       const id = parseId({

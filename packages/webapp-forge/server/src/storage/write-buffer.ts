@@ -108,7 +108,6 @@ export type WriteBuffer = {
    *
    * @param item - put operation
    */
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `item: StoragePutItem` carries a Uint8Array body; the WriteBuffer contract guarantees read-only consumption.
   enqueue(item: StoragePutItem,): void;
 
   /**
@@ -281,7 +280,6 @@ export function createWriteBuffer({
   }
 
   return {
-    // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `item: StoragePutItem` carries a Uint8Array body; the WriteBuffer contract guarantees read-only consumption.
     enqueue(item: StoragePutItem,): void {
       if (state.closed)
         throw new Error('write buffer is closed',);

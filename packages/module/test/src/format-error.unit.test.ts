@@ -239,7 +239,6 @@ await describe({
           message: 'outer',
           frames: ['at outerFn (packages/foo/src/outer.ts:2:2)',],
         },);
-        // oxlint-disable-next-line no-unsafe-type-assertion -- Error.cause is typed as unknown at the use-site
         (outer as Error & { cause?: unknown; }).cause = root;
         const lines = await formatErrorDeep(outer,);
         expect(lines,).toHaveLength(2,);
@@ -259,7 +258,6 @@ await describe({
           message: 'self-loop',
           frames: [USER_FRAME,],
         },);
-        // oxlint-disable-next-line no-unsafe-type-assertion -- Error.cause is typed as unknown at the use-site
         (error as Error & { cause?: unknown; }).cause = error;
         const joined = (await formatErrorDeep(error,)).join('\n',);
         expect(joined,).toContain('... (cycle)',);

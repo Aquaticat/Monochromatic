@@ -1,4 +1,3 @@
-// oxlint-disable prefer-destructuring, no-unnecessary-template-expression, no-magic-numbers -- utility module with array access patterns and MIME type detection
 import { extname, } from 'node:path';
 
 import {

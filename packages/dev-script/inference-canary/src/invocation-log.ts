@@ -335,7 +335,6 @@ catch (error) {
   // Provenance logging is diagnostic-only; never break canary startup over it.
   // The tagged logger from log.ts is not yet initialized at this import point,
   // so console.error is the correct surface here.
-  // oxlint-disable-next-line no-console -- startup-time fallback before tagged logger init
   console.error(
     'canary invocation-log write failed:',
     error,

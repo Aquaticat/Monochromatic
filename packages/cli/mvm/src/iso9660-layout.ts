@@ -135,7 +135,6 @@ export function writeStr({
   readonly str: string;
 },): void {
   for (let idx = 0; idx < len; idx++) {
-    /* oxlint-disable-next-line unicorn/prefer-code-point -- ISO 9660 uses single-byte ASCII; charCodeAt is correct for byte-level buffer operations */
     buf[offset + idx] = idx < str
       .length ? str.charCodeAt(idx,) : ASCII_SPACE;
   }

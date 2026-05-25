@@ -165,7 +165,6 @@ await describe({
       name: 'unknown binary throws',
       fn: async () => {
         let caught: unknown;
-        // oxlint-disable-next-line no-try-catch -- need to capture the error for assertion; ensurePackage is async so toThrow cannot be used
         try {
           await ensurePackage('nonexistent-binary-that-should-not-exist-42',);
         }

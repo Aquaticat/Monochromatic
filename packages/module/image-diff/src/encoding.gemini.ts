@@ -1,4 +1,3 @@
-// oxlint-disable prefer-destructuring -- utility module with array access patterns
 import { readFile, } from 'node:fs/promises';
 import {
   bufferToBase64,

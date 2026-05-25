@@ -110,7 +110,6 @@ export async function runMigrations(db: Database,): Promise<void> {
   // Sequential, not Promise.all: Turso's prepared statement is not safe
   // for concurrent re-execution with different params: doing so silently
   // drops all but one of the bind sets, leaving only one seed user.
-  // oxlint-disable-next-line no-await-in-loop
   for (const user of SEED_USERS) {
     // oxlint-disable-next-line no-await-in-loop
     await insertUser.run(

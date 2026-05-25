@@ -160,7 +160,6 @@ export async function run(row: {
 }> {
   /** Prepared statement for the one-shot execution. */
   const stmt = db.prepare(row.sql,);
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- libSQL typed result
   return await stmt.run(...(row.params
     ?? []),) as {
     changes: number;

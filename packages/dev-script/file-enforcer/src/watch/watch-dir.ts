@@ -73,7 +73,6 @@ export async function watchDirectory(
         === null)
         continue;
       /** Classification determines whether this event triggers action */
-      // oxlint-disable-next-line no-await-in-loop -- sequential event processing required by async iterator
       const kind = await classifyEvent({
         filename: event.filename,
         watchedDir: dir,

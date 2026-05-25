@@ -47,7 +47,6 @@ const DECIMAL_RADIX = 10;
  * user are reaped before they pile up.
  */
 export const createDraftHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   async function handleCreateDraft(event,) {
     /** Decoded body; defaulted so an absent body still flows through the shape check. */
     const body = await readBody<unknown>(event,) ?? {};
@@ -106,7 +105,6 @@ export const createDraftHandler: EventHandlerWithFetch = defineHandler(
  * acknowledged entries from its outbox.
  */
 export const putChunkHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   async function handlePutChunk(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
     const draftId = requirePathParam({
@@ -193,7 +191,6 @@ export const putChunkHandler: EventHandlerWithFetch = defineHandler(
  * abandoned drafts owned by users who have not posted in a while.
  */
 export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   async function handleFinalizeDraft(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
     const draftId = requirePathParam({
@@ -276,7 +273,6 @@ export const finalizeDraftHandler: EventHandlerWithFetch = defineHandler(
  * a finalised draft (would orphan a messages row).
  */
 export const cancelDraftHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   async function handleCancelDraft(event,) {
     /** Required `:id` path param; bails to 400 when missing. */
     const draftId = requirePathParam({

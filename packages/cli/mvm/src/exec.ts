@@ -118,7 +118,6 @@ export async function exec(
     arguments: { pid, },
   },);
 
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- polling loop
   while (true) {
     /** Raw `guest-exec-status` response polled each iteration until the process exits. */
     // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop

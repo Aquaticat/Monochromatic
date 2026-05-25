@@ -13,7 +13,6 @@ import { fsRegistry, } from './fs-registry.ts';
  * Whether the current runtime has Node-compatible `fs` APIs.
  * Bun and Node both set `process.versions.node`.
  */
-// oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime check for browser environments
 const hasNodeFs = ((typeof process) !== 'undefined')
   && (process.versions
     ?.node

@@ -1,19 +1,13 @@
-// oxlint-disable eslint/no-unused-vars -- behavioral test verifies type narrowing, not runtime usage
 // oxlint-disable eslint/no-unused-expressions -- property accesses verify type narrowing at compile time
 // oxlint-disable typescript/no-unsafe-type-assertion -- intentional `as any` and `as Type` casts test guard behavior with varied input types
 // oxlint-disable typescript/no-explicit-any -- any-typed test inputs verify guard behavior with untyped values
 // oxlint-disable typescript/no-unsafe-member-access -- accessing members on any-typed values is part of the behavioral test
 // oxlint-disable typescript/no-unsafe-assignment -- assigning any-typed results is part of the behavioral test
 // oxlint-disable typescript/no-unsafe-call -- calling functions on any-typed values is part of the behavioral test
-// oxlint-disable typescript/no-unnecessary-condition -- guards on pre-validated values test runtime path, not logical necessity
 // oxlint-disable typescript/no-confusing-void-expression -- void returns from IIFEs are intentional for behavioral tests
 // oxlint-disable eslint/no-magic-numbers -- numeric literals in test data are self-documenting
 // oxlint-disable eslint/max-lines -- behavioral test matrix requires exhaustive coverage across all guard patterns
-// oxlint-disable unicorn/prefer-number-properties -- isNaN used intentionally in test data
 // oxlint-disable stylistic/argument-per-line -- compact test data definitions are more readable on single lines
-// oxlint-disable stylistic/object-property-per-line -- compact test data definitions are more readable on single lines
-// oxlint-disable stylistic/type-property-per-line -- compact inline type annotations in test data
-// oxlint-disable typescript/explicit-function-return-type -- test IIFEs use void return implicitly
 /**
  * Generic Schema typeguard behavioral test matrix
  *

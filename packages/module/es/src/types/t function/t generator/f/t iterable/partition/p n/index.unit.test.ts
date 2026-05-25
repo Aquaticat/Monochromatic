@@ -108,7 +108,6 @@ await describe({
     it({
       name: 'works with async iterables',
       fn: async () => {
-        // oxlint-disable-next-line typescript/require-await -- async generator yields without await
         async function* asyncNumbers() {
           yield 1;
           yield 2;

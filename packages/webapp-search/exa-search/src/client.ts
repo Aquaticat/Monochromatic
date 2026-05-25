@@ -1,4 +1,3 @@
-// oxlint-disable typescript/strict-boolean-expressions, no-magic-numbers, typescript/no-confusing-void-expression -- DOM string coercions and IIFE-wrapped async handlers
 import { prompt, } from '@monochromatic-dev/module-dom/ts/prompt.ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import * as v from 'valibot';

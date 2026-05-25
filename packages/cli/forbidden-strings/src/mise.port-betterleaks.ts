@@ -606,19 +606,16 @@ async function main(): Promise<void> {
     content,
     'utf8',
   );
-  // oxlint-disable-next-line no-console -- CLI script user-facing output
   console.log(
     `wrote ${outPath} (${kept.length} rules kept, ${dropped.length} dropped)`,
   );
   if (dropped.length
     > 0) {
-    // oxlint-disable-next-line no-console -- CLI script user-facing output
     console.log('  dropped:',);
     for (const {
       rule,
       reason,
     } of dropped) {
-      // oxlint-disable-next-line no-console -- CLI script user-facing output
       console.log(`    ${rule.id} (${reason})`,);
     }
   }

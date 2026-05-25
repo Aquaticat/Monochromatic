@@ -245,7 +245,6 @@ async function guestExecWait({
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- QEMU guest agent JSON protocol response
   const { pid, } = (JSON.parse(startResult,) as { return: { pid: number; }; }).return;
 
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- polling loop
   while (true) {
     /** Raw `guest-exec-status` response polled each iteration until the process exits. */
     // oxlint-disable-next-line no-await-in-loop -- deliberate serial polling loop

@@ -108,7 +108,6 @@ await describe({
         await waitForFlush();
         expect(spy.callCount,)
           .toBe(1,);
-        // oxlint-disable-next-line no-unsafe-type-assertion -- spy call args are typed as any
         const emitted = spy.firstCall.args[0] as string;
         expect(emitted.split('\n',).length,)
           .toBe(2,);
@@ -155,9 +154,7 @@ await describe({
           .toBe(2,);
         expect(warnSpy.callCount,)
           .toBe(1,);
-        // oxlint-disable-next-line no-unsafe-type-assertion -- spy args
         const firstDebug = debugSpy.firstCall.args[0] as string;
-        // oxlint-disable-next-line no-unsafe-type-assertion -- spy args
         const secondDebug = debugSpy.secondCall.args[0] as string;
         expect(firstDebug.split('\n',).length,)
           .toBe(2,);
@@ -182,7 +179,6 @@ await describe({
         },),);
         await waitForFlush();
 
-        // oxlint-disable-next-line no-unsafe-type-assertion -- spy args
         const emitted = spy.firstCall.args[0] as string;
         expect(emitted,)
           .toBe('[info] [1970-01-01T00:00:00.000Z] hi',);

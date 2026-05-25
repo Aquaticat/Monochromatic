@@ -19,7 +19,6 @@ import type { Page, } from '@playwright/test';
 
 declare global {
   /** Bundled module-dom helpers exposed on `globalThis` by the test harness. */
-  // oxlint-disable-next-line no-var -- global augmentation requires var declaration
   // oxlint-disable-next-line typescript-eslint/consistent-type-imports -- typeof import() cannot use import type syntax
   var moduleDom: typeof import('./index.ts');
 }

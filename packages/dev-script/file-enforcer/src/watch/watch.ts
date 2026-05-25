@@ -181,7 +181,6 @@ export function startWatching(configPath: string,): Promise<never> {
   setupWatchers();
 
   // Block forever: watch mode runs until the process is killed.
-  // oxlint-disable-next-line typescript/no-empty-function -- intentional infinite block
   // oxlint-disable-next-line promise/avoid-new -- intentional infinite block requires explicit Promise
   return new Promise<never>(function neverResolve(): void {/* intentionally empty */},);
 }

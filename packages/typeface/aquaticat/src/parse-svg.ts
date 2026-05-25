@@ -91,7 +91,6 @@ export function parseSvg(svgContent: string,): Cell[] {
   const elementRegex = /<(rect|path)\s+([^>]*?)\/>/g;
   /* oxlint-enable no-restricted-syntax/no-regex */
 
-  // oxlint-disable-next-line no-restricted-syntax -- regex exec loop is the idiomatic way to iterate matches
   for (let match = elementRegex.exec(svgContent,); match !== null;
     match = elementRegex.exec(svgContent,))
   {
@@ -222,7 +221,6 @@ export function parseSvgPathD(d: string,): SVGPathCommand[] {
    */
   let currentCmd = '';
 
-  // oxlint-disable-next-line no-restricted-syntax -- regex exec loop
   for (let tok = tokenRegex.exec(d,); tok !== null; tok = tokenRegex.exec(d,)) {
     /** Captured command letter (group 1) from the current token, undefined when the token is a number. */
     const [, commandLetter,] = tok;

@@ -57,7 +57,6 @@ async function pollProgress({
         POLL_INTERVAL_MS,
       );
     },);
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- signal can be aborted during the await above
     if (signal.aborted)
       break;
     try {

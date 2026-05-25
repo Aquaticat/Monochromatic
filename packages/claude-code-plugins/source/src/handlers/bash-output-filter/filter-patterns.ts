@@ -49,7 +49,6 @@ const REAL_HOME_DIR: string = (function resolveRealHome(): string {
   try {
     if (HOME_DIR === '')
       return '';
-    /* oxlint-disable-next-line node/no-sync -- one-shot startup cost, avoids async complexity in a filter script */
     /** Canonical home path; equal to `HOME_DIR` when there is no symlink, so the IIFE returns ''. */
     const resolved = realpathSync(HOME_DIR,);
     return resolved === HOME_DIR ? '' : resolved;

@@ -100,7 +100,6 @@ export function $(config: SyncStoreConfig = {},): SyncStore {
     ?? [];
   /** First LRU policy in the list, or undefined when LRU is not configured. */
   const lruPolicy = policies.find(function isLru(p,) {
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- future-proofing: more eviction policies will be added
     return p.policy
       === 'lru';
   },);

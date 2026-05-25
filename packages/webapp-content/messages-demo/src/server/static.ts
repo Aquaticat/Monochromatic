@@ -58,7 +58,6 @@ async function tryStat(
  * ```
  */
 export const staticHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- `event` is h3's H3Event, an external SDK object with mutating methods (response writes, header sets, body reads); marking it readonly would misdescribe the API contract
   function handleStaticAsset(event,) {
     return serveStatic(
       event,
@@ -77,7 +76,6 @@ export const staticHandler: EventHandlerWithFetch = defineHandler(
             ),
           );
         },
-        // oxlint-disable-next-line eslint-plugin-unicorn/consistent-function-scoping -- contextual typing fits the return shape to h3's `StaticAssetMeta | undefined`
         getMeta: async function getMetadata(id,) {
           /** Resolved stat result or `undefined` when the file does not exist or is inaccessible. */
           const stats = await tryStat(id,);

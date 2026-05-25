@@ -12,7 +12,6 @@
  * @module
  */
 
-// oxlint-disable typescript/no-unsafe-type-assertion -- runtime AST types differ from @oxc-project/types declarations
 
 import type { ESTree, } from 'rolldown/utils';
 

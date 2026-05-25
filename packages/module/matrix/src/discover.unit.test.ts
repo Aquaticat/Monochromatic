@@ -153,7 +153,6 @@ await describe({
         );
 
         let caught: unknown;
-        // oxlint-disable-next-line no-try-catch -- need to capture the error for assertion; discoverTestFiles is async so toThrow cannot be used
         try {
           await discoverTestFiles(dir.path,);
         }

@@ -45,7 +45,6 @@ const HTML_FRAGMENT_HEADERS = {
  * not been built yet (a sign the dispatcher missed the event).
  */
 export const issueDetailHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleIssueDetail(event,) {
     /** Owner login segment of the route path. */
     const owner = requireParam({
@@ -122,7 +121,6 @@ export const issueDetailHandler: EventHandlerWithFetch = defineHandler(
  * built yet.
  */
 export const filterListHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleFilterList(event,) {
     /** Owner login segment of the route path. */
     const owner = requireParam({
@@ -192,7 +190,6 @@ export const filterListHandler: EventHandlerWithFetch = defineHandler(
  * literal storage key.
  */
 export const rawFragmentHandler: EventHandlerWithFetch = defineHandler(
-  // oxlint-disable-next-line typescript/prefer-readonly-parameter-types -- h3 EventHandlerWithFetch callback signature is dictated by the library; the `event` parameter has mutable response/state fields by design.
   async function handleRawFragment(event,) {
     /** Request URL parsed once so pathname is reachable below. */
     const url = new URL(event.req

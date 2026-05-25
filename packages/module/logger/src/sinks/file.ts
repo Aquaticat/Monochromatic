@@ -110,10 +110,8 @@ export async function findNodeModulesUp(
 async function runVerify(): Promise<boolean> {
   // Guard: skip dynamic import entirely outside Node.js to avoid
   // browser console errors from attempting to fetch node: URLs
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- runtime guard for browser environments where process is undefined
   if ((globalThis.process
     === undefined)
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- process.versions may be absent in non-Node polyfills
     || (globalThis.process
       .versions
       ?.node

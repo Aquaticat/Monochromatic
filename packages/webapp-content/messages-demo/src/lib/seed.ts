@@ -363,7 +363,6 @@ export async function runSeed(): Promise<void> {
       throw new Error(`invalid --huge=${huge}; expected a positive number of gigabytes`,);
     /** Target body length in bytes derived from `gigabytes`. */
     const targetBytes = Math.floor(gigabytes * BYTES_PER_GIB,);
-    // oxlint-disable-next-line eslint/no-magic-numbers -- toFixed precision
     console.log(`seeding one ~${gigabytes.toFixed(2,)} GB message...`,);
     /** Synthesised body for the huge-message stress run. */
     const body = synthesizeBody({

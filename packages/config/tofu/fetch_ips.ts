@@ -73,7 +73,6 @@ async function run() {
     /** Trailing partial line carried over between chunks until a newline arrives. */
     let leftover = '';
 
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- streaming read loop
     while (true) {
       /** Next stream chunk: `done` signals end-of-stream, `value` is the raw bytes. */
       const {

@@ -59,7 +59,6 @@ class TaskCard extends HTMLElement {
       .querySelectorAll<HTMLSpanElement>('.chip',)) {
       if (chip.textContent
         .startsWith(prefix,)) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelectorAll(".chip") returns span elements
         return chip as HTMLSpanElement;
       }
     }

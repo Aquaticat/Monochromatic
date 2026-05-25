@@ -4,7 +4,6 @@
  * Avoids any external dependency on `genisoimage` or `mkisofs`.
  */
 
-/* oxlint-disable import/namespace -- iso9660-layout exports 35+ constants and helpers; namespace import avoids 40 lines of individual imports that push this file over max-lines */
 import * as L from './iso9660-layout.ts';
 
 //region Directory record writer

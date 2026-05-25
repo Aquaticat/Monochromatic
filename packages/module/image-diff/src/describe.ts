@@ -1,4 +1,4 @@
-// oxlint-disable typescript/no-unsafe-type-assertion, require-await -- API response types require assertions
+// oxlint-disable typescript/no-unsafe-type-assertion -- API response types require assertions
 import { describeViaGemini, } from './describe.gemini.ts';
 import { toImageUri, } from './encoding.uri.ts';
 import {

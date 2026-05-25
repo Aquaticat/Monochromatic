@@ -40,7 +40,6 @@ export function maybeAsyncIterableOrThrow<T,>(
   value: T,
 ): T & (Iterable<unknown> | AsyncIterable<unknown>) {
   if ((typeof value) === 'string') {
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- strings are statically known to implement Iterable<string>
     return value as T & (Iterable<unknown> | AsyncIterable<unknown>);
   }
   if ((value === null) || (value === undefined)

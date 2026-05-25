@@ -6,7 +6,6 @@
  * - "Calibrating LLMs with Sample Consistency" (AAAI 2025)
  * - "Confidence Improves Self-Consistency in LLMs" (arxiv 2502.06233)
  */
-// oxlint-disable-next-line import/no-named-as-default -- OpenAI SDK canonical usage is `import OpenAI from 'openai'`
 import type OpenAI from 'openai';
 import {
   buildResult,
@@ -96,7 +95,6 @@ export async function streamCompletion({
   // Track whether the signal fired during the stream. tsgo narrows `signal.aborted` to
   // `false | undefined` after the for-await loop (infers no abort if stream completed
   // without throwing), so we use a listener-set flag that tsgo cannot narrow away.
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- listener callback writes from outside the for-await scope; tsgo cannot prove the flag stays false either way
   /**
    * Flag flipped by the abort listener so post-stream code can distinguish
    * graceful completion from cancellation.
@@ -151,19 +149,14 @@ export async function streamCompletion({
   const interChunkMs: number[] = [];
   // firstChunkMs, lastChunkMs, chunkCount, lastFinishReason, lastUsage are let
   // because they are all reassigned inside the for-await loop.
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- streaming accumulator: reassigned on first chunk
   /** Latency (ms) from request start to the first chunk; set on the first iteration. */
   let firstChunkMs = 0;
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- streaming accumulator: reassigned each chunk
   /** Wall-clock timestamp of the most recent chunk; seed value compares against `startMs`. */
   let lastChunkMs = startMs;
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- streaming accumulator: incremented each chunk
   /** Number of stream chunks observed so far; drives first-chunk detection and metrics. */
   let chunkCount = 0;
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- streaming accumulator: updated per chunk; final value used after loop
   /** Most recent non-null `finish_reason`; the final value is what the API used to terminate. */
   let lastFinishReason: string | undefined = undefined;
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- streaming accumulator: usage arrives on final chunk
   /** Most recent usage payload; arrives only on the final chunk when `include_usage` is set. */
   let lastUsage: OpenAI.CompletionUsage | null | undefined = undefined;
 
@@ -199,7 +192,6 @@ export async function streamCompletion({
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenRouter extends the SDK delta with reasoning_details
       const reasoningDetails = (delta as Record<string, unknown>).reasoning_details;
       if (Array.isArray(reasoningDetails,)) {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- OpenRouter reasoning_details items have known shape
         for (const detail of reasoningDetails as readonly Record<string, unknown>[]) {
           if ((detail.type
             === 'reasoning.text')
@@ -260,7 +252,6 @@ export async function streamCompletion({
   // The SDK ends the stream gracefully on abort (returns partial data) rather than throwing.
   // Throw PartialCompletionError so callers can distinguish abort from success while still
   // having access to whatever chunks arrived before cancellation.
-  // oxlint-disable-next-line typescript/no-unnecessary-condition -- mutated by addEventListener callback; oxlint can't track cross-function mutation
   if (streamWasAborted) {
     throw new PartialCompletionError(
       'Stream aborted by probe timeout signal',

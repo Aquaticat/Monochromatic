@@ -1,4 +1,3 @@
-// oxlint-disable eslint/no-unused-vars -- behavioral test verifies type narrowing, not runtime usage
 // oxlint-disable eslint/no-unused-expressions -- property accesses verify type narrowing at compile time
 // oxlint-disable typescript/no-unsafe-type-assertion -- intentional `as any` and `as Type` casts test guard behavior
 // oxlint-disable typescript/no-explicit-any -- any-typed test inputs verify guard behavior with untyped values
@@ -6,11 +5,9 @@
 // oxlint-disable typescript/no-unsafe-assignment -- assigning any-typed results is part of the behavioral test
 // oxlint-disable typescript/no-unsafe-call -- calling functions on any-typed values is part of the behavioral test
 // oxlint-disable typescript/no-unsafe-argument -- passing any-typed arguments is part of the behavioral test
-// oxlint-disable typescript/no-unnecessary-condition -- guards on pre-validated values test runtime path
 // oxlint-disable typescript/no-confusing-void-expression -- void returns from IIFEs are intentional
 // oxlint-disable eslint/no-magic-numbers -- numeric literals in test data are self-documenting
 // oxlint-disable stylistic/object-property-per-line -- compact test data on single lines
-// oxlint-disable stylistic/array-element-per-line -- compact test data on single lines
 /**
  * Simplified Schema typeguard behavioral test matrix.
  *

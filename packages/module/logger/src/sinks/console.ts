@@ -89,7 +89,6 @@ function detectVerbose(): boolean {
   }
 
   try {
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- import.meta.env may not exist in all runtimes
     if (import.meta?.env?.DEBUG
       === 'true')
       return true;

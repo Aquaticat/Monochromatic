@@ -110,7 +110,6 @@ export class AutofillManager {
     onUpdate();
 
     /** Disposable guard that resets loading state on scope exit. */
-    // oxlint-disable-next-line prefer-const -- using binding must be let-like per spec
     using _loadingGuard = {
       [Symbol.dispose]: function resetLoading(this: AutofillManager,): void {
         this.loading = false;

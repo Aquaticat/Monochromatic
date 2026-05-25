@@ -188,7 +188,6 @@ export async function readArtifacts(): Promise<ArtifactData> {
       /** Artifact metadata with a guaranteed `label`; old artifacts without one fall back to the directory name. */
       const meta: ArtifactMeta = {
         ...parsedMeta,
-        // oxlint-disable-next-line typescript/no-unnecessary-condition -- label is typed as required but old artifacts may omit it; ?? fallback is intentional
         label: parsedMeta.label
           ?? modelDirent
           .name,

@@ -1,4 +1,3 @@
-// oxlint-disable typescript/no-unsafe-member-access, typescript/no-unsafe-call, typescript/no-unsafe-assignment, typescript/no-unsafe-argument, typescript/no-unsafe-type-assertion, typescript/no-unsafe-return -- opentype.js is a JS library with no TypeScript declarations; all API calls are inherently untyped
 /**
  * Stroked path expansion for converting SVG stroke-based glyphs into filled outlines.
  * Separated from {@link ./build-font-paths.ts} to stay within the max-lines budget.
@@ -6,7 +5,6 @@
  * @module
  */
 
-// oxlint-disable-next-line import/no-namespace -- opentype.js requires namespace import for its Path type
 import type * as opentype from 'opentype.js';
 
 import { fontY, } from './build-font-metrics.ts';

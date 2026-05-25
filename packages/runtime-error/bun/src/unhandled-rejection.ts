@@ -9,7 +9,6 @@ export {};
 /** Milliseconds to keep the event loop alive for unhandled rejection detection. */
 const KEEP_ALIVE_MS = 100;
 
-// oxlint-disable-next-line prefer-await-to-then -- Promise.reject is the most direct way to create an unhandled rejection
 void Promise.reject(new Error('Intentional unhandled rejection',),);
 
 // Keep the event loop alive so the runtime can detect the unhandled rejection before exiting
