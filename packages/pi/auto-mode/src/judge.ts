@@ -56,7 +56,7 @@ const l = tagged({
  *   trustDirectives: [],
  *   timeoutMs: 10_000,
  *   systemPrompt: prompt,
- *   batchContext: undefined,
+ *   batchContext: [],
  * });
  * ```
  */
@@ -72,15 +72,15 @@ async function callJudge(
     systemPrompt,
     batchContext,
   }: {
-    model: Model<Api>;
-    auth: BudgetModelAuth;
-    action: string;
-    cwd: string;
-    recentContext: string;
-    trustDirectives: string[];
-    timeoutMs: number;
-    systemPrompt: string;
-    batchContext: BatchEntry[] | undefined;
+    readonly model: Model<Api>;
+    readonly auth: BudgetModelAuth;
+    readonly action: string;
+    readonly cwd: string;
+    readonly recentContext: string;
+    readonly trustDirectives: readonly string[];
+    readonly timeoutMs: number;
+    readonly systemPrompt: string;
+    readonly batchContext: readonly BatchEntry[];
   },
 ): Promise<Verdict> {
   /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
@@ -88,7 +88,7 @@ async function callJudge(
     tag: callJudge.name,
     l,
   },);
-  innerL.debug(`calling ${String(model.provider,)}/${model.id} for action: ${action}`,);
+  innerL.debug(`calling ${model.provider}/${model.id} for action: ${action}`,);
 
   /** Rendered user-message body that bundles working directory, action, context, and batch siblings. */
   const userContent = buildUserContent({
@@ -162,7 +162,7 @@ async function callJudge(
  *   cwd: '/project',
  *   recentContext: '',
  *   trustDirectives: [],
- *   batchContext: undefined,
+ *   batchContext: [],
  * });
  * ```
  */
@@ -174,11 +174,11 @@ function buildUserContent(
     trustDirectives,
     batchContext,
   }: {
-    action: string;
-    cwd: string;
-    recentContext: string;
-    trustDirectives: string[];
-    batchContext: BatchEntry[] | undefined;
+    readonly action: string;
+    readonly cwd: string;
+    readonly recentContext: string;
+    readonly trustDirectives: readonly string[];
+    readonly batchContext: readonly BatchEntry[];
   },
 ): string {
   /** Per-line accumulator for the rendered prompt body; joined with newlines on return. */
@@ -206,8 +206,8 @@ function buildUserContent(
     );
   }
 
-  if ((batchContext !== undefined) && (batchContext.length
-    > 0)) {
+  if (batchContext.length
+    > 0) {
     lines.push(
       '',
       'Other actions in this batch:',
@@ -222,6 +222,12 @@ function buildUserContent(
 //endregion
 
 //region Stream collection
+
+/**
+ * Sentinel marking that no `toolcall_end` event has set
+ * {@link collectToolCall}'s latch yet.
+ */
+const NO_TOOL_CALL = Symbol('no-tool-call',);
 
 /**
  * Collect tool call arguments from a model stream.
@@ -256,8 +262,11 @@ async function collectToolCall(
   stream: AsyncIterable<AssistantMessageEvent>,
 ): Promise<Record<string, string>> {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- async-iteration accumulator latches: `toolCall` set on `toolcall_end`, `textContent` appended on each `text_end`; both are read after the loop terminates */
-  /** Last-seen tool call from the stream; defined only after a `toolcall_end` event. */
-  let toolCall: ToolCall | undefined = undefined;
+  /**
+   * Last-seen tool call from the stream; the {@link NO_TOOL_CALL} sentinel
+   * until a `toolcall_end` event sets it.
+   */
+  let toolCall: ToolCall | typeof NO_TOOL_CALL = NO_TOOL_CALL;
   /** Cumulative text from `text_end` events, used only when the model never emitted a tool call. */
   let textContent = '';
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
@@ -272,7 +281,7 @@ async function collectToolCall(
       textContent += event.content;
   }
 
-  if (toolCall !== undefined) {
+  if (toolCall !== NO_TOOL_CALL) {
     if (toolCall.name
       !== 'render_verdict') {
       throw new Error(
@@ -340,7 +349,7 @@ function extractJsonVerdict(
 
   /** First balanced `{...}` block found in the free-text output, or undefined if none exists. */
   const block = findBalancedJsonObject(text,);
-  if (block === undefined) {
+  if (block === '') {
     throw new Error(
       `Judge returned text without JSON verdict: ${
         text.slice(
@@ -363,14 +372,14 @@ function extractJsonVerdict(
  *
  * @param text - string to scan
  *
- * @returns matched block including delimiters, or `undefined` when no
- *   balanced object is found
+ * @returns matched block including delimiters, or empty string when no
+ *   balanced object is found (a real match always includes its braces)
  */
-function findBalancedJsonObject(text: string,): string | undefined {
+function findBalancedJsonObject(text: string,): string {
   /** Index of the first `{` in the text; the scan starts here. */
   const start = text.indexOf('{',);
   if (start === (-1))
-    return undefined;
+    return '';
 
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- balanced-brace scanner state machine mutated across the character loop (depth counter, string-mode latch, escape latch) */
   /** Brace nesting depth; the slice is taken when this returns to 0. */
@@ -413,7 +422,7 @@ function findBalancedJsonObject(text: string,): string | undefined {
       }
     }
   }
-  return undefined;
+  return '';
 }
 
 //endregion
@@ -434,7 +443,7 @@ function findBalancedJsonObject(text: string,): string | undefined {
  * ```
  */
 function parseVerdict(
-  args: Record<string, string>,
+  args: Readonly<Record<string, string>>,
 ): Verdict {
   /** Raw verdict string from the tool call; defaulted to `ask` when missing so the union check below decides. */
   const verdict = args.verdict
@@ -484,8 +493,8 @@ function disposableTimeout(
     ms,
     onTimeout,
   }: {
-    ms: number;
-    onTimeout: () => void;
+    readonly ms: number;
+    readonly onTimeout: () => void;
   },
 ): Disposable {
   /** Timer handle returned by setTimeout; cleared on dispose to cancel pending callbacks. */

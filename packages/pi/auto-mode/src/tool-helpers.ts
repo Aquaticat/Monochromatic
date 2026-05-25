@@ -23,7 +23,8 @@ import { RELEVANT_TOOLS, } from './constants.ts';
  *
  * @param event - the tool call event
  *
- * @returns the text content from write/edit tools, or `undefined`
+ * @returns text content from write/edit tools, or empty string for
+ *   tools that carry no editable text
  *
  * @example
  * ```typescript
@@ -32,7 +33,7 @@ import { RELEVANT_TOOLS, } from './constants.ts';
  */
 function extractToolText(
   event: ToolCallEvent,
-): string | undefined {
+): string {
   if (isToolCallEventType(
     'write',
     event,
@@ -54,7 +55,7 @@ function extractToolText(
       )
       .join('\n',);
   }
-  return undefined;
+  return '';
 }
 
 /**
@@ -62,7 +63,7 @@ function extractToolText(
  *
  * @param event - the tool call event
  *
- * @returns the file path, or `undefined` if not a file-targeting tool
+ * @returns file path, or empty string if not a file-targeting tool
  *
  * @example
  * ```typescript
@@ -71,7 +72,7 @@ function extractToolText(
  */
 function getFilePath(
   event: ToolCallEvent,
-): string | undefined {
+): string {
   if (isToolCallEventType(
     'read',
     event,
@@ -98,9 +99,10 @@ function getFilePath(
     event,
   )) {
     return event.input
-      .path;
+      .path
+      ?? '';
   }
-  return undefined;
+  return '';
 }
 
 /**

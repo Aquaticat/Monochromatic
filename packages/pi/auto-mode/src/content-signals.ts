@@ -61,8 +61,8 @@ function textSignals(
     text,
     config,
   }: {
-    text: string;
-    config?: MergedConfig;
+    readonly text: string;
+    readonly config?: MergedConfig;
   },
 ): boolean {
   for (const pattern of BUILTIN_TEXT_PATTERNS) {

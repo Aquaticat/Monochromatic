@@ -53,14 +53,16 @@ function analyzeBashCommand(
   /** Param references harvested via regex before parsing so the catch-branch still surfaces them. */
   const preScanRefs = extractParamRefs(cmd,);
 
-  /** Tokens emitted by `shell-quote` for the command; `null` when the parse threw. */
-  const entries = tryParseEntries(cmd,);
-  if (entries === null) {
+  /** Tokens emitted by `shell-quote` for the command; `ok` is false when the parse threw. */
+  const parsed = tryParseEntries(cmd,);
+  if (!parsed.ok) {
     return {
       ...empty,
       allParamRefs: preScanRefs,
     };
   }
+  /** Successfully-parsed token stream from `shell-quote`, walked below. */
+  const { entries, } = parsed;
 
   /** Accumulator for parsed `CommandInfo` entries; one push per `|`, `&&`, `||`, `;`, `&`, or `;;` boundary. */
   const commands: CommandInfo[] = [];
@@ -74,6 +76,18 @@ function analyzeBashCommand(
   /** True for one tick after a redirect operator so the very next string token is captured as the target path. */
   let nextIsRedirectTarget = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
+
+  /** Flush the current-command accumulators into `commands`; no-op when nothing is pending. */
+  function flushInto(): void {
+    /** Discriminated flush result for the tokens accumulated since the last boundary. */
+    const result = flushCurrentCommand({
+      args: currentArgs,
+      redirectTargets: currentRedirectTargets,
+      paramRefs: preScanRefs,
+    },);
+    if (result.flushed)
+      commands.push(result.command,);
+  }
 
   for (const entry of entries) {
     if ((typeof entry) === 'string') {
@@ -104,12 +118,7 @@ function analyzeBashCommand(
 
     if (op === '|') {
       isPipeline = true;
-      flushCurrentCommand({
-        commands,
-        args: currentArgs,
-        redirectTargets: currentRedirectTargets,
-        paramRefs: preScanRefs,
-      },);
+      flushInto();
       currentArgs = [];
       currentRedirectTargets = [];
       nextIsRedirectTarget = false;
@@ -119,12 +128,7 @@ function analyzeBashCommand(
     if ((op === '&&') || (op === '||')
       || (op === ';')
       || (op === '&')) {
-      flushCurrentCommand({
-        commands,
-        args: currentArgs,
-        redirectTargets: currentRedirectTargets,
-        paramRefs: preScanRefs,
-      },);
+      flushInto();
       currentArgs = [];
       currentRedirectTargets = [];
       nextIsRedirectTarget = false;
@@ -146,12 +150,7 @@ function analyzeBashCommand(
     if ((op === '(') || (op === ')')
       || (op === ';;')) {
       if (op === ';;') {
-        flushCurrentCommand({
-          commands,
-          args: currentArgs,
-          redirectTargets: currentRedirectTargets,
-          paramRefs: preScanRefs,
-        },);
+        flushInto();
         currentArgs = [];
         currentRedirectTargets = [];
         nextIsRedirectTarget = false;
@@ -160,12 +159,7 @@ function analyzeBashCommand(
     }
   }
 
-  flushCurrentCommand({
-    commands,
-    args: currentArgs,
-    redirectTargets: currentRedirectTargets,
-    paramRefs: preScanRefs,
-  },);
+  flushInto();
 
   /** Union of every path-shaped argument and every redirect target across all commands, in source order. */
   const allFiles = commands.flatMap(
@@ -205,12 +199,17 @@ function analyzeBashCommand(
 //region Internal
 
 /**
- * Flush accumulated tokens into a `CommandInfo`.
+ * Build a `CommandInfo` from accumulated tokens.
+ *
+ * Returns a discriminated result rather than pushing into a passed array,
+ * so callers own the accumulator and this stays free of param mutation.
+ *
+ * @returns `{ flushed: true, command }` for a non-empty command, or
+ *   `{ flushed: false }` when there are no tokens to flush
  *
  * @example
  * ```typescript
  * flushCurrentCommand({
- *   commands: cmdAcc,
  *   args: ['curl', 'https://api.example.com'],
  *   redirectTargets: ['out.txt'],
  *   paramRefs: ['API_KEY'],
@@ -219,56 +218,68 @@ function analyzeBashCommand(
  */
 function flushCurrentCommand(
   {
-    commands,
     args,
     redirectTargets,
     paramRefs,
   }: {
-    commands: CommandInfo[];
-    args: string[];
-    redirectTargets: string[];
-    paramRefs: string[];
+    readonly args: readonly string[];
+    readonly redirectTargets: readonly string[];
+    readonly paramRefs: readonly string[];
   },
-): void {
+): {
+  flushed: true;
+  command: CommandInfo;
+} | { flushed: false } {
   if ((args.length
     === 0) && (redirectTargets.length
       === 0))
-    return;
+    return { flushed: false, };
 
   /** Command name (first word, empty string on redirect-only commands) plus its remaining word arguments. */
   const [name = '', ...cmdArgs] = args;
 
-  commands.push({
-    name,
-    args: cmdArgs,
-    redirectTargets,
-    paramRefs: [...paramRefs,],
-  },);
+  return {
+    flushed: true,
+    command: {
+      name,
+      args: cmdArgs,
+      redirectTargets,
+      paramRefs: [...paramRefs,],
+    },
+  };
 }
 
 /**
- * Run `shell-quote.parse` and convert throws to `null`.
+ * Run `shell-quote.parse` and convert throws to a discriminated result.
  *
  * Pulled out of {@link analyzeBashCommand} so the caller can branch on the
- * sentinel without holding an empty `let entries` at function root.
+ * `ok` discriminant without holding an empty `let entries` at function root.
  *
  * @param cmd - raw bash command string forwarded to `shell-quote.parse`
  *
- * @returns the parsed entries, or `null` when the parser threw
+ * @returns `{ ok: true, entries }` on success, or `{ ok: false }` when the
+ *   parser threw
  *
  * @example
  * ```typescript
- * const entries = tryParseEntries('echo hi') ?? [];
+ * const parsed = tryParseEntries('echo hi');
+ * const entries = parsed.ok ? parsed.entries : [];
  * ```
  */
 function tryParseEntries(
   cmd: string,
-): ParseEntry[] | null {
+): {
+  ok: true;
+  entries: ParseEntry[];
+} | { ok: false } {
   try {
-    return parse(cmd,);
+    return {
+      ok: true,
+      entries: parse(cmd,),
+    };
   }
   catch {
-    return null;
+    return { ok: false, };
   }
 }
 

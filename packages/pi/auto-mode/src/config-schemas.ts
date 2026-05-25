@@ -33,8 +33,8 @@ const STRATEGY_ENUM = {
 
 /** Auth shape for a model override. */
 type AuthShape = {
-  apiKey?: string | undefined;
-  headers?: Record<string, string> | undefined;
+  apiKey?: string;
+  headers?: Record<string, string>;
 };
 
 /** Model override shape: either a model name string, or `{model, auth}`. */
@@ -47,7 +47,7 @@ type ModelOverride =
 
 /** Judge model configuration shape. */
 type JudgeModel = {
-  modelOverride?: ModelOverride | undefined;
+  modelOverride?: ModelOverride;
   strategy: Strategy;
   costRatio: number;
   majorVersions: number;
@@ -57,9 +57,9 @@ type JudgeModel = {
 type AutoModeConfig = {
   commands: (string | string[])[];
   patterns: string[];
-  instructions?: string | undefined;
+  instructions?: string;
   enabled: boolean;
-  judgeModel?: JudgeModel | undefined;
+  judgeModel?: JudgeModel;
   judgeTimeoutMs: number;
 };
 
@@ -69,7 +69,7 @@ type AutoModeConfig = {
 type ProjectConfig = {
   commands: (string | string[])[];
   patterns: string[];
-  instructions?: string | undefined;
+  instructions?: string;
 };
 
 /** Command matcher schema: either a literal command or an array of arguments. */
@@ -80,8 +80,8 @@ const CommandMatcherSchema: v.GenericSchema<string | string[]> = v.union([
 
 /** Auth schema for model override. */
 const AuthSchema: v.GenericSchema<AuthShape> = v.object({
-  apiKey: v.optional(v.string(),),
-  headers: v.optional(
+  apiKey: v.exactOptional(v.string(),),
+  headers: v.exactOptional(
     v.record(
       v.string(),
       v.string(),
@@ -100,7 +100,7 @@ const ModelOverrideSchema: v.GenericSchema<ModelOverride> = v.union([
 
 /** Judge model configuration schema. */
 const JudgeModelSchema: v.GenericSchema<JudgeModel> = v.object({
-  modelOverride: v.optional(ModelOverrideSchema,),
+  modelOverride: v.exactOptional(ModelOverrideSchema,),
   strategy: v.picklist(STRATEGY_VALUES,),
   costRatio: v.number(),
   majorVersions: v.number(),
@@ -110,9 +110,9 @@ const JudgeModelSchema: v.GenericSchema<JudgeModel> = v.object({
 const AutoModeConfigSchema: v.GenericSchema<AutoModeConfig> = v.object({
   commands: v.array(CommandMatcherSchema,),
   patterns: v.array(v.string(),),
-  instructions: v.optional(v.string(),),
+  instructions: v.exactOptional(v.string(),),
   enabled: v.boolean(),
-  judgeModel: v.optional(JudgeModelSchema,),
+  judgeModel: v.exactOptional(JudgeModelSchema,),
   judgeTimeoutMs: v.number(),
 },);
 
@@ -120,7 +120,7 @@ const AutoModeConfigSchema: v.GenericSchema<AutoModeConfig> = v.object({
 const ProjectConfigSchema: v.GenericSchema<ProjectConfig> = v.object({
   commands: v.array(CommandMatcherSchema,),
   patterns: v.array(v.string(),),
-  instructions: v.optional(v.string(),),
+  instructions: v.exactOptional(v.string(),),
 },);
 
 //endregion

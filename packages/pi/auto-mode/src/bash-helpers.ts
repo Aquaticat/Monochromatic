@@ -58,8 +58,8 @@ function hasFlag(
     args,
     flags,
   }: {
-    args: string[];
-    flags: string[];
+    readonly args: readonly string[];
+    readonly flags: readonly string[];
   },
 ): boolean {
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- latched mid-iteration after seeing `--`; pulling into reduce hurts readability without changing behaviour */
@@ -135,8 +135,8 @@ function hasInlineCode(
     name,
     args,
   }: {
-    name: string;
-    args: string[];
+    readonly name: string;
+    readonly args: readonly string[];
   },
 ): boolean {
   /** Inline-code flags registered for this interpreter; `undefined` for non-interpreters. */
@@ -219,8 +219,8 @@ function hasSensitiveSource(
     analysis,
     ctx,
   }: {
-    analysis: BashAnalysis;
-    ctx: SignalContext;
+    readonly analysis: BashAnalysis;
+    readonly ctx: SignalContext;
   },
 ): boolean {
   return analysis.allFiles

@@ -9,10 +9,6 @@
  */
 
 import type {
-  ImageContent,
-  TextContent,
-} from '@earendil-works/pi-ai';
-import type {
   ExtensionContext,
   SessionMessageEntry,
 } from '@earendil-works/pi-coding-agent';
@@ -62,6 +58,12 @@ function getTrustDirectives(
 }
 
 /**
+ * Sentinel marking that no verdict entry is awaiting its tool call during the
+ * {@link buildContext} scan.
+ */
+const NO_PENDING_VERDICT = Symbol('no-pending-verdict',);
+
+/**
  * Build a context summary for the LLM judge.
  *
  * Scoped from the last user message, capped at recent tools.
@@ -106,8 +108,11 @@ function buildContext(
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- forward-scan state machine assembling userLine and tracking pendingVerdict across message-entry pairs */
   /** Formatted user-message line; empty when no user message was found. */
   let userLine = '';
-  /** Verdict attached to the next tool call, or null when none is pending. */
-  let pendingVerdict: VerdictData | null = null;
+  /**
+   * Verdict attached to the next tool call; the {@link NO_PENDING_VERDICT}
+   * sentinel when none is pending.
+   */
+  let pendingVerdict: VerdictData | typeof NO_PENDING_VERDICT = NO_PENDING_VERDICT;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   /** Fallback window size when no user message anchors the scan. */
@@ -173,7 +178,7 @@ function buildContext(
         ?? msg
         .toolName;
 
-      if ((pendingVerdict !== null) && (pendingVerdict.verdict
+      if ((pendingVerdict !== NO_PENDING_VERDICT) && (pendingVerdict.verdict
         !== 'approve')) {
         toolLines.push(
           `[tool] ${callStr} → ${pendingVerdict.verdict} (${pendingVerdict.reason})`,
@@ -189,7 +194,7 @@ function buildContext(
           : '';
         toolLines.push(`[tool] ${callStr} → ${outcome}${detail}`,);
       }
-      pendingVerdict = null;
+      pendingVerdict = NO_PENDING_VERDICT;
     }
   }
 
@@ -222,20 +227,24 @@ function buildContext(
  * @returns concatenated text content
  */
 function extractUserText(
-  content: string | (TextContent | ImageContent)[],
+  content: string | readonly {
+    readonly type: string;
+    readonly text?: string;
+  }[],
 ): string {
   if ((typeof content) === 'string')
     return content;
   return content
     .filter(
-      function isText(c,): c is TextContent {
+      function isText(c,) {
         return c.type
           === 'text';
       },
     )
     .map(
       function getText(c,) {
-        return c.text;
+        return c.text
+          ?? '';
       },
     )
     .join(' ',);
@@ -278,14 +287,17 @@ function summarizeToolCall(
     name,
     args,
   }: {
-    name: string;
-    args: Record<string, unknown>;
+    readonly name: string;
+    readonly args: Readonly<Record<string, unknown>>;
   },
 ): string {
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- untyped tool call arguments */
-  if (name === 'bash')
-    return `bash: ${(args.command as string | undefined)
-      ?? ''}`;
+  if (name === 'bash') {
+    return `bash: ${
+      (typeof args.command) === 'string'
+        ? args.command
+        : ''
+    }`;
+  }
   if ([
     'read',
     'write',
@@ -296,10 +308,12 @@ function summarizeToolCall(
   ]
     .includes(name,))
   {
-    return `${name} ${(args.path as string | undefined)
-      ?? ''}`;
+    return `${name} ${
+      (typeof args.path) === 'string'
+        ? args.path
+        : ''
+    }`;
   }
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
   return name;
 }
 
@@ -311,9 +325,9 @@ function summarizeToolCall(
  * @returns a detail suffix, or empty string
  */
 function bashDetail(
-  content: {
-    type: string;
-    text?: string;
+  content: readonly {
+    readonly type: string;
+    readonly text?: string;
   }[],
 ): string {
   /** Flattened text content from all text blocks, used to derive the last line. */

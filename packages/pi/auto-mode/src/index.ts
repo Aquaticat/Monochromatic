@@ -13,13 +13,13 @@ import type {
   ExtensionAPI,
   ExtensionContext,
   ToolCallEvent,
-  ToolCallEventResult,
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
-import { Type, } from 'typebox';
+import { updateWidget, } from './ask-user.ts';
 import { loadMergedConfig, } from './config.ts';
 import { evaluate, } from './evaluate.ts';
 import { l as parentLogger, } from './log.ts';
+import { registerProposeTrust, } from './register-propose-trust.ts';
 import {
   type MergedConfig,
   shouldFlag,
@@ -33,7 +33,6 @@ import {
   type BatchEntry,
   type SignalContext,
   TRUST_ENTRY_TYPE,
-  VERDICT_ENTRY_TYPE,
 } from './types.ts';
 
 /** Tagged logger for the auto-mode entry point. */
@@ -139,109 +138,7 @@ export default function autoMode(
 
   //region propose_trust tool
 
-  pi.registerTool({
-    name: 'propose_trust',
-    label: 'Propose Trust Rule',
-    description:
-      'Request permission for something the security guardrail blocked. Proposes a trust rule for the user to accept or reject. Accepted rules instruct the security judge for the remainder of the session, so propose broad rules covering your task rather than one-off approvals.',
-    promptSnippet:
-      'Request permission for something the security guardrail blocked (proposes a session-wide trust rule for the user to approve)',
-    promptGuidelines: [
-      'When blocked by the security guardrail, use propose_trust to request permission instead of asking the user to type /guard manually.',
-      'Accepted rules last for the entire session, so propose rules that cover the task broadly rather than one-off approvals.',
-      "Keep rules brief but explicit about what is allowed. Good: 'Allow .env file access', 'Allow terraform plan and apply'. Bad: 'Allow dangerous commands', 'Allow everything needed for this task'.",
-      "The reason field is optional. Only include it if the rule isn't self-explanatory. Don't repeat information from the rule.",
-    ],
-    parameters: Type.Object({
-      rule: Type.String({
-        description:
-          "Brief, explicit trust rule stating what is allowed (e.g. 'Allow .env file access', 'Allow terraform commands', 'Allow editing safeguard source')",
-      },),
-      // oxlint-disable-next-line new-cap -- typebox API naming convention
-      reason: Type.Optional(
-        Type.String({
-          description: "Only if the rule isn't self-explanatory. Don't repeat the rule.",
-        },),
-      ),
-    },),
-    execute(
-      _toolCallId: string,
-      params: {
-        rule: string;
-        reason?: string;
-      },
-      _signal: AbortSignal | undefined,
-      _onUpdate: unknown,
-      ctx: ExtensionContext,
-    ) {
-      if (!ctx.hasUI) {
-        return Promise.resolve({
-          content: [{
-            type: 'text',
-            text: 'Rejected: no interactive UI available.',
-          },],
-          details: {},
-        },);
-      }
-
-      /** Per-line accumulator for the proposed-rule prompt; reason is appended below when present. */
-      const lines = [
-        'Trust rule proposed',
-        '',
-        params.rule,
-      ];
-      if ((params.reason
-        !== undefined) && (params.reason
-          !== '')) {
-        lines.push(
-          '',
-          params.reason,
-        );
-      }
-      lines.push('',);
-
-      return ctx
-        .ui
-        .select(
-          lines.join('\n',),
-          [
-            'Accept',
-            'Reject',
-          ],
-        )
-        .then(
-          function handleChoice(choice,) {
-            if (choice === 'Accept') {
-              pi.appendEntry(
-                TRUST_ENTRY_TYPE,
-                params.rule,
-              );
-              return {
-                content: [
-                  {
-                    type: 'text',
-                    text:
-                      `Trust rule accepted for this session: "${params.rule}". You can now retry the blocked action.`,
-                  },
-                ],
-                details: {},
-              };
-            }
-
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text:
-                    'Trust rule rejected by user. Try a different approach, or ask the user to run the command directly.',
-                },
-              ],
-              details: {},
-            };
-          },
-        );
-    },
-  },);
+  registerProposeTrust(pi,);
 
   //endregion
 
@@ -316,7 +213,7 @@ export default function autoMode(
     function handleToolCall(
       event: ToolCallEvent,
       ctx: ExtensionContext,
-    ): Promise<ToolCallEventResult | void> | ToolCallEventResult | void {
+    ) {
       /** Path resolution context handed to `shouldFlag`; mostly used to canonicalise `cwd` and `$HOME`. */
       const signalCtx: SignalContext = {
         cwd: ctx.cwd,
@@ -338,11 +235,8 @@ export default function autoMode(
 
       /** Human-readable rendering of the tool call shown to the judge and the user. */
       const action = describeAction(event,);
-      /** Snapshot of this turn's siblings handed to the judge so it can reason about batch context. */
-      const batchContext = currentTurnBatch.length
-        > 0
-        ? [...currentTurnBatch,]
-        : undefined;
+      /** Snapshot of this turn's siblings handed to the judge so it can reason about batch context; empty when this is the turn's first flagged call. */
+      const batchContext = [...currentTurnBatch,];
 
       return evaluate({
         pi,
@@ -351,23 +245,38 @@ export default function autoMode(
         systemPrompt,
         action,
         batchContext,
-        flowVerdicts,
       },)
         .then(
           function handleResult(result,) {
-            /** Coarse verdict label recorded in the per-turn batch: `deny` on any block, `approve` otherwise. */
-            const verdict = result !== undefined ? 'deny' : 'approve';
+            /** Block-or-allow decision and the optional flow verdict the judge produced. */
+            const {
+              decision,
+              flowVerdict,
+            } = result;
+            if (flowVerdict !== undefined) {
+              flowVerdicts.push(flowVerdict,);
+              updateWidget({
+                ctx,
+                verdicts: flowVerdicts,
+              },);
+            }
+
             currentTurnBatch.push({
               action,
-              verdict,
+              verdict: decision.block ? 'deny' : 'approve',
             },);
 
-            if (result !== undefined)
+            if (decision.block)
               denialInCurrentTurn = true;
 
             denialInPreviousTurn = false;
 
-            return result;
+            if (decision.block)
+              return {
+                block: true,
+                reason: decision.reason,
+              };
+            return undefined;
           },
         );
     },

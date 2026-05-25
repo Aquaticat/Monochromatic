@@ -17,6 +17,7 @@ import {
   extractMajorVersion,
   extractVersionNumbers,
   findCheapestInMajorVersions,
+  NO_MAJOR_VERSION,
 } from './budget-model-version.ts';
 import { NoBudgetModelError, } from './budget-model.ts';
 
@@ -86,9 +87,9 @@ await describe({
     },),
 
     it({
-      name: 'returns null for no version',
+      name: 'returns the no-version sentinel for no version',
       fn: async () => {
-        expect(extractMajorVersion('embedding-model',),).toBeNull();
+        expect(extractMajorVersion('embedding-model',),).toBe(NO_MAJOR_VERSION,);
       },
     },),
   ],

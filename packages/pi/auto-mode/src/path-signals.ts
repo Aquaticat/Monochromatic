@@ -39,8 +39,8 @@ function pathSignals(
     filePath,
     ctx,
   }: {
-    filePath: string;
-    ctx: SignalContext;
+    readonly filePath: string;
+    readonly ctx: SignalContext;
   },
 ): boolean {
   /** Cached resolution shared by the cwd-containment, dotfile, and secret-pattern checks below. */
@@ -84,8 +84,8 @@ function resolvePath(
     filePath,
     cwd,
   }: {
-    filePath: string;
-    cwd: string;
+    readonly filePath: string;
+    readonly cwd: string;
   },
 ): string {
   if (filePath.startsWith('~',)) {
@@ -121,8 +121,8 @@ function isUnder(
     resolved,
     dir,
   }: {
-    resolved: string;
-    dir: string;
+    readonly resolved: string;
+    readonly dir: string;
   },
 ): boolean {
   /** Trailing slash prevents `/foo` from matching `/foobar` via `startsWith`. */
@@ -147,8 +147,8 @@ function isHomeDotfile(
     resolved,
     home,
   }: {
-    resolved: string;
-    home: string;
+    readonly resolved: string;
+    readonly home: string;
   },
 ): boolean {
   if (!isUnder({

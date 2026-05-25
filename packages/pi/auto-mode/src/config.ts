@@ -23,7 +23,10 @@ import type {
   CommandMatcher,
   MergedConfig,
 } from './signals.ts';
-import type { BudgetModelAuth, } from './types.ts';
+import type {
+  BudgetModelAuth,
+  ModelOverride,
+} from './types.ts';
 
 /** Tagged logger for the config module. */
 const l = tagged({
@@ -58,10 +61,10 @@ function loadMergedConfig(
   innerL.debug(`loading config for cwd: ${cwd}`,);
   /** Validated global config (or `GLOBAL_DEFAULTS` when the file is absent). */
   const global = loadGlobalConfig();
-  /** Validated project config, or `undefined` when no project-level file exists. */
+  /** Project config lookup result; `found` discriminates whether a project-level file exists. */
   const project = loadProjectConfig(cwd,);
   innerL.debug(
-    `loaded global=${String(true,)} project=${String(project !== undefined,)} enabled=${
+    `loaded global=${String(true,)} project=${String(project.found,)} enabled=${
       String(global.enabled,)
     }`,
   );
@@ -71,68 +74,88 @@ function loadMergedConfig(
   /** Mutable pattern-string list seeded from global config; project patterns are appended below. */
   const patternStrs = [...global.patterns,];
 
-  if (project !== undefined) {
-    commands.push(...project.commands,);
-    patternStrs.push(...project.patterns,);
+  if (project.found) {
+    /** Project-level matchers and patterns destructured so the spreads below stay single-identifier. */
+    const {
+      commands: projectCommands,
+      patterns: projectPatterns,
+    } = project.config;
+    commands.push(...projectCommands,);
+    patternStrs.push(...projectPatterns,);
   }
 
   /** Judge-model block from the global config, with `JUDGE_MODEL_DEFAULTS` as fallback for omitted files. */
   const rawJudgeModel = global.judgeModel
     ?? { ...JUDGE_MODEL_DEFAULTS, };
 
-  /** Cleaned judge-model view that drops `modelOverride` so it can be re-attached conditionally below. */
+  /** Override block re-attached to the judge model when the config pins one; an absent override stays absent. */
+  const overrideContext = (
+    function resolveOverrideContext(): {
+      modelOverride?: ModelOverride;
+    } {
+      /** Pinned-model override from the validated config, if any. */
+      const ov = rawJudgeModel.modelOverride;
+      if (ov === undefined)
+        return {};
+      if ((typeof ov) === 'string')
+        return { modelOverride: ov, };
+      /** Override auth fields destructured so the conditional spreads below stay single-identifier. */
+      const {
+        apiKey,
+        headers,
+      } = ov.auth;
+      /** Inline auth assembled immutably so omitted keys stay absent rather than `undefined`. */
+      const auth: BudgetModelAuth = {
+        ...(apiKey !== undefined ? { apiKey, } : {}),
+        ...(headers !== undefined ? { headers, } : {}),
+      };
+      return {
+        modelOverride: {
+          model: ov.model,
+          auth,
+        },
+      };
+    }
+  )();
+
+  /** Validated judge-model block, with modelOverride re-attached only when the config pinned one. */
   const judgeModel: MergedConfig['judgeModel'] = {
     strategy: rawJudgeModel.strategy,
     costRatio: rawJudgeModel.costRatio,
     majorVersions: rawJudgeModel.majorVersions,
+    ...overrideContext,
   };
 
-  if (rawJudgeModel.modelOverride
-    !== undefined) {
-    if ((typeof rawJudgeModel.modelOverride) === 'string')
-      judgeModel.modelOverride = rawJudgeModel.modelOverride;
-    else {
-      /** Auth object assembled field-by-field so omitted keys stay undefined rather than `null`. */
-      const auth: BudgetModelAuth = {};
-      if (rawJudgeModel.modelOverride
-        .auth
-        .apiKey
-        !== undefined)
-        auth.apiKey = rawJudgeModel.modelOverride
-          .auth
-          .apiKey;
-      if (rawJudgeModel.modelOverride
-        .auth
-        .headers
-        !== undefined)
-        auth.headers = rawJudgeModel.modelOverride
-          .auth
-          .headers;
-      judgeModel.modelOverride = {
-        model: rawJudgeModel.modelOverride
-          .model,
-        auth,
-      };
+  /**
+   * Project-instructions spread fragment: carries `projectInstructions` only
+   * when a project config set a non-empty value, otherwise an empty object so
+   * the key stays absent.
+   */
+  const projectInstructionsFragment = (
+    function resolveProjectInstructions(): { projectInstructions?: string } {
+      if (!project.found)
+        return {};
+      /** Project-level instructions string, possibly absent or empty. */
+      const { instructions, } = project.config;
+      if ((instructions === undefined) || (instructions === ''))
+        return {};
+      return { projectInstructions: instructions, };
     }
-  }
+  )();
 
   return {
     enabled: global.enabled,
     commands,
     patterns: compilePatterns({
       patterns: patternStrs,
-      label: project !== undefined ? 'global+project' : 'global',
+      label: project.found ? 'global+project' : 'global',
     },),
     ...((global.instructions
       !== undefined) && (global.instructions
         !== '')
       ? { globalInstructions: global.instructions, }
       : {}),
-    ...((project?.instructions
-      !== undefined) && (project.instructions
-        !== '')
-      ? { projectInstructions: project.instructions, }
-      : {}),
+    ...projectInstructionsFragment,
     judgeModel,
     judgeTimeoutMs: global.judgeTimeoutMs,
   };
@@ -208,8 +231,8 @@ function readJsonFile(
     path,
     label,
   }: {
-    path: string;
-    label: string;
+    readonly path: string;
+    readonly label: string;
   },
 ): unknown {
   try {
@@ -237,43 +260,6 @@ function readJsonFile(
 }
 
 /**
- * Parse raw config data against a valibot schema.
- *
- * @returns parsed config data
- *
- * @throws when validation fails
- *
- * @example
- * ```typescript
- * const cfg = parseConfig({ schema: AutoModeConfigSchema, raw, path, label: 'global' });
- * ```
- */
-function parseConfig<T,>(
-  {
-    schema,
-    raw,
-    path,
-    label,
-  }: {
-    schema: v.GenericSchema<unknown, T>;
-    raw: unknown;
-    path: string;
-    label: string;
-  },
-): T {
-  /** valibot safe-parse outcome; `success` discriminates between the typed output and a list of issues. */
-  const result = v.safeParse(
-    schema,
-    raw,
-  );
-  if (result.success)
-    return result.output;
-  throw new Error(
-    `auto-mode: invalid ${label} config at ${path}: ${JSON.stringify(result.issues,)}`,
-  );
-}
-
-/**
  * Compile user-provided regex strings into RegExp objects.
  *
  * @returns array of compiled RegExp objects
@@ -288,14 +274,14 @@ function compilePatterns(
     patterns,
     label,
   }: {
-    patterns: string[];
-    label: string;
+    readonly patterns: readonly string[];
+    readonly label: string;
   },
 ): RegExp[] {
   return patterns.map(
     function compilePattern(p,) {
       try {
-        // oxlint-disable-next-line no-restricted-syntax/no-regex -- user-supplied auto-mode config patterns: source comes from config file, compiled to RegExp for the scanner; the function's purpose IS user-pattern-to-regex compilation.
+        // oxlint-disable-next-line no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- user-supplied auto-mode config patterns: source comes from config file, compiled to RegExp for the scanner; the function's purpose IS user-pattern-to-regex compilation. The `u` flag is omitted deliberately: it enables strict escape parsing that would reject existing user patterns valid under the default (non-unicode) grammar.
         return new RegExp(p,);
       }
       catch (err) {
@@ -332,8 +318,8 @@ function loadGlobalConfig(): AutoModeConfig {
   /** Re-typed view of the JSON root as a record for spread/merge access. */
   const rawObj = raw as RawJson;
   /** Nested judge-model block from disk; defaults to an empty object so deep-merge below sees a record. */
-  const rawJudgeModel = (rawObj.judgeModel as RawJson | undefined)
-    ?? {};
+  const rawJudgeModel = (rawObj.judgeModel
+    ?? {}) as RawJson;
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   /** Defaults overlaid with the on-disk record, with a deeper merge for the nested judge-model. */
   const merged = {
@@ -344,12 +330,16 @@ function loadGlobalConfig(): AutoModeConfig {
       ...rawJudgeModel,
     },
   };
-  return parseConfig({
-    schema: AutoModeConfigSchema,
-    raw: merged,
-    path,
-    label: 'global',
-  },);
+  /** valibot validation outcome; `success` discriminates the typed output from the issue list. */
+  const result = v.safeParse(
+    AutoModeConfigSchema,
+    merged,
+  );
+  if (result.success)
+    return result.output;
+  throw new Error(
+    `auto-mode: invalid global config at ${path}: ${JSON.stringify(result.issues,)}`,
+  );
 }
 
 /** Load project config from cwd.
@@ -359,11 +349,15 @@ function loadGlobalConfig(): AutoModeConfig {
  *
  * @param cwd - the current working directory
  *
- * @returns parsed project config, or `undefined` if not found
+ * @returns `{ found: true, config }` when a project file exists, otherwise
+ *   `{ found: false }`
  */
 function loadProjectConfig(
   cwd: string,
-): ProjectConfig | undefined {
+): {
+  found: true;
+  config: ProjectConfig;
+} | { found: false } {
   /** Absolute path to `<cwd>/.pi/extensions/pi-auto-mode.json`. */
   const path = projectConfigPath(cwd,);
   /** Parsed JSON contents, or `undefined` when the project file is absent. */
@@ -372,7 +366,7 @@ function loadProjectConfig(
     label: 'project',
   },);
   if (raw === undefined)
-    return undefined;
+    return { found: false, };
   /* oxlint-disable typescript/no-unsafe-type-assertion -- JSON.parse returns unknown */
   /** Re-typed view of the JSON root as a record for spread/merge access. */
   const rawObj = raw as RawJson;
@@ -382,12 +376,19 @@ function loadProjectConfig(
     ...PROJECT_DEFAULTS,
     ...rawObj,
   };
-  return parseConfig({
-    schema: ProjectConfigSchema,
-    raw: merged,
-    path,
-    label: 'project',
-  },);
+  /** valibot validation outcome; `success` discriminates the typed output from the issue list. */
+  const result = v.safeParse(
+    ProjectConfigSchema,
+    merged,
+  );
+  if (!result.success)
+    throw new Error(
+      `auto-mode: invalid project config at ${path}: ${JSON.stringify(result.issues,)}`,
+    );
+  return {
+    found: true,
+    config: result.output,
+  };
 }
 
 //endregion

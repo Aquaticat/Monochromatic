@@ -172,20 +172,20 @@ export const LONG_FLAGS: Record<string, string> = {
 //region Content signal patterns
 
 /** Pattern matching private key PEM headers. */
-export const PRIVATE_KEY_PATTERN: RegExp = /-----BEGIN\s[\w\s]*PRIVATE\sKEY-----/;
+export const PRIVATE_KEY_PATTERN: RegExp = /-----BEGIN\s[\w\s]*PRIVATE\sKEY-----/u;
 
 /** Patterns matching known secret formats (tokens, keys). */
 export const SECRET_FORMAT_PATTERNS: readonly RegExp[] = [
-  /ghp_[A-Za-z0-9_]{36,}/,
-  /gho_[A-Za-z0-9_]{36,}/,
-  /ghs_[A-Za-z0-9_]{36,}/,
-  /github_pat_[A-Za-z0-9_]{22,}/,
-  /sk-[A-Za-z0-9]{20,}/,
-  /sk-proj-[A-Za-z0-9-_]{20,}/,
-  /AKIA[0-9A-Z]{16}/,
-  /xoxb-[0-9]+-[A-Za-z0-9]+/,
-  /xoxp-[0-9]+-[A-Za-z0-9]+/,
-  /xoxs-[0-9]+-[A-Za-z0-9]+/,
+  /ghp_[A-Za-z0-9_]{36,}/u,
+  /gho_[A-Za-z0-9_]{36,}/u,
+  /ghs_[A-Za-z0-9_]{36,}/u,
+  /github_pat_[A-Za-z0-9_]{22,}/u,
+  /sk-[A-Za-z0-9]{20,}/u,
+  /sk-proj-[A-Za-z0-9-_]{20,}/u,
+  /AKIA[0-9A-Z]{16}/u,
+  /xoxb-[0-9]+-[A-Za-z0-9]+/u,
+  /xoxp-[0-9]+-[A-Za-z0-9]+/u,
+  /xoxs-[0-9]+-[A-Za-z0-9]+/u,
 ] as const;
 
 //endregion
@@ -194,9 +194,9 @@ export const SECRET_FORMAT_PATTERNS: readonly RegExp[] = [
 
 /** Built-in text patterns that always trigger flagging. */
 export const BUILTIN_TEXT_PATTERNS: readonly RegExp[] = [
-  /\bsudo\b/,
-  /\bauto-mode\b/,
-  /\bsafeguard\b/,
+  /\bsudo\b/u,
+  /\bauto-mode\b/u,
+  /\bsafeguard\b/u,
 ] as const;
 
 //endregion
@@ -210,7 +210,7 @@ export const BUILTIN_TEXT_PATTERNS: readonly RegExp[] = [
  * matching `AUTHOR`, `AUTHORIZE`.
  */
 export const SECRET_VAR_PATTERN: RegExp =
-  /(?:SECRET|TOKEN|PASSWORD|PASSWD|PASSPHRASE|CREDENTIAL|API[_.]?KEY|PRIVATE[_.]?KEY|(?:^|_)AUTH(?:_|$))/i;
+  /(?:SECRET|TOKEN|PASSWORD|PASSWD|PASSPHRASE|CREDENTIAL|API[_.]?KEY|PRIVATE[_.]?KEY|(?:^|_)AUTH(?:_|$))/iu;
 
 //endregion
 
@@ -218,7 +218,7 @@ export const SECRET_VAR_PATTERN: RegExp =
 
 /** Pattern matching secret-related keywords in file paths. */
 export const SECRET_PATH_PATTERN: RegExp =
-  /(?:^|[/\\._-])(?:secret|credential|password|passwd|token|private[._-]?key|\.env(?:\.|$)|\.dev\.vars(?:$|[/\\])|id_rsa|id_ed25519|id_ecdsa|authorized_keys|known_hosts)|\.(?:pem|key)$/i;
+  /(?:^|[/\\._-])(?:secret|credential|password|passwd|token|private[._-]?key|\.env(?:\.|$)|\.dev\.vars(?:$|[/\\])|id_rsa|id_ed25519|id_ecdsa|authorized_keys|known_hosts)|\.(?:pem|key)$/iu;
 
 //endregion
 

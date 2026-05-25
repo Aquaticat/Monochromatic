@@ -16,6 +16,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import { l as parentLogger, } from './log.ts';
 import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
 import {
+  type GuardDecision,
   VERDICT_ENTRY_TYPE,
   type VerdictData,
 } from './types.ts';
@@ -31,7 +32,7 @@ const l = tagged({
  *
  * If no interactive UI is available, denies by default (fail-closed).
  *
- * @returns a block result, or `undefined` if the user allows
+ * @returns block decision with guidance, or an allow decision
  *
  * @example
  * ```typescript
@@ -45,15 +46,12 @@ async function askUser(
     action,
     explanation,
   }: {
-    pi: ExtensionAPI;
-    ctx: ExtensionContext;
-    action: string;
-    explanation: string;
+    readonly pi: ExtensionAPI;
+    readonly ctx: ExtensionContext;
+    readonly action: string;
+    readonly explanation: string;
   },
-): Promise<{
-  block: true;
-  reason: string;
-} | undefined> {
+): Promise<GuardDecision> {
   /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
   const innerL = tagged({
     tag: askUser.name,
@@ -105,7 +103,7 @@ async function askUser(
         reason: explanation,
       } satisfies VerdictData,
     );
-    return undefined;
+    return { block: false, };
   }
 
   if (choice === 'Stop') {
@@ -153,11 +151,11 @@ function updateWidget(
     ctx,
     verdicts,
   }: {
-    ctx: ExtensionContext;
-    verdicts: {
-      action: string;
-      verdict: string;
-      reason: string;
+    readonly ctx: ExtensionContext;
+    readonly verdicts: readonly {
+      readonly action: string;
+      readonly verdict: string;
+      readonly reason: string;
     }[];
   },
 ): void {

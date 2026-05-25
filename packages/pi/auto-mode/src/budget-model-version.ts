@@ -26,6 +26,13 @@ import type {
 const DATE_TOKEN_DIGIT_COUNT = 8;
 
 /**
+ * Sentinel returned by {@link extractMajorVersion} when no version token is
+ * present in a model ID. A unique `Symbol` cannot collide with any real
+ * (non-negative) version number.
+ */
+const NO_MAJOR_VERSION: unique symbol = Symbol('no-major-version',);
+
+/**
  * Extract the major version number from a model ID.
  *
  * Finds the first digit sequence in any token, skipping
@@ -33,7 +40,7 @@ const DATE_TOKEN_DIGIT_COUNT = 8;
  *
  * @param id - the model ID string
  *
- * @returns the major version number, or `null` if not found
+ * @returns the major version number, or {@link NO_MAJOR_VERSION} if not found
  *
  * @example
  * ```typescript
@@ -44,21 +51,21 @@ const DATE_TOKEN_DIGIT_COUNT = 8;
  */
 function extractMajorVersion(
   id: string,
-): number | null {
+): number | typeof NO_MAJOR_VERSION {
   /** ID split on `.`, `_`, `-`, `:`, and whitespace so each segment can be inspected for a numeric prefix. */
   const tokens = id
     .replaceAll(
-      /[._\-:]/g,
+      /[._\-:]/gu,
       ' ',
     )
-    .split(/\s+/,);
+    .split(/\s+/u,);
   for (const t of tokens) {
-    if (/^\d+$/.test(t,)
+    if (/^\d+$/u.test(t,)
       && (t.length
         >= DATE_TOKEN_DIGIT_COUNT))
       continue;
     /** First digit run inside the current token, e.g. `4` in `4o` or `3` in `3.5`. */
-    const match = /(\d+)/.exec(t,);
+    const match = /(\d+)/u.exec(t,);
     if ((match !== null) && (match[1]
       !== undefined)) {
       return Number.parseInt(
@@ -67,7 +74,7 @@ function extractMajorVersion(
       );
     }
   }
-  return null;
+  return NO_MAJOR_VERSION;
 }
 
 /**
@@ -88,21 +95,21 @@ function extractVersionNumbers(
   /** ID split on `.`, `_`, `-`, `:`, and whitespace so each segment can be inspected for a numeric prefix. */
   const tokens = id
     .replaceAll(
-      /[._\-:]/g,
+      /[._\-:]/gu,
       ' ',
     )
-    .split(/\s+/,);
+    .split(/\s+/u,);
   /** Accumulator for every per-token version number, preserving original order so lexicographic compare works. */
   const nums: number[] = [];
   /** Local alias for the date-token cutoff; kept inline so the regex literal stays readable in context. */
   const EIGHT = 8;
   for (const t of tokens) {
-    if (/^\d+$/.test(t,)
+    if (/^\d+$/u.test(t,)
       && (t.length
         >= EIGHT))
       continue;
     /** First digit run inside the current token; null when the token is non-numeric. */
-    const m = /(\d+)/.exec(t,);
+    const m = /(\d+)/u.exec(t,);
     if ((m !== null) && (m[1]
       !== undefined)) {
       nums.push(
@@ -134,8 +141,8 @@ function compareVersions(
     a,
     b,
   }: {
-    a: Model<Api>;
-    b: Model<Api>;
+    readonly a: Model<Api>;
+    readonly b: Model<Api>;
   },
 ): number {
   /** Version vector for `a`, e.g. `[3, 5]` for `claude-3.5-sonnet`. */
@@ -178,16 +185,19 @@ function findCheapestInMajorVersions(
     models,
     majorVersions,
   }: {
-    models: Model<Api>[];
-    majorVersions: number;
+    readonly models: readonly Model<Api>[];
+    readonly majorVersions: number;
   },
 ): Model<Api>[] {
   /** Distinct major-version numbers seen across the candidate set. */
   const allVersions = new Set<number>();
   for (const m of models) {
-    /** Major version extracted from this model's ID, or `null` when the ID has no numeric token. */
+    /**
+     * Major version extracted from this model's ID, or
+     * {@link NO_MAJOR_VERSION} when the ID has no numeric token.
+     */
     const ver = extractMajorVersion(m.id,);
-    if (ver !== null)
+    if (ver !== NO_MAJOR_VERSION)
       allVersions.add(ver,);
   }
   /** Major versions in descending order so `slice(0, N)` keeps the newest N families. */
@@ -219,7 +229,7 @@ function findCheapestInMajorVersions(
     function hasVersion(m,) {
       /** Per-model major version used to test membership in `includedSet`. */
       const ver = extractMajorVersion(m.id,);
-      return (ver !== null) && includedSet
+      return (ver !== NO_MAJOR_VERSION) && includedSet
         .has(ver,);
     },
   );
@@ -250,6 +260,7 @@ export {
   extractMajorVersion,
   extractVersionNumbers,
   findCheapestInMajorVersions,
+  NO_MAJOR_VERSION,
 };
 
 /* oxlint-enable no-restricted-syntax/no-regex */

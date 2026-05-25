@@ -406,7 +406,7 @@ await describe({
           config: {
             enabled: true,
             // oxlint-disable-next-line no-restricted-syntax/no-regex -- test fixture: textSignals consumes user-configured RegExp[] from config; this literal IS the test's pattern.
-            patterns: [/production/,],
+            patterns: [/production/u,],
             commands: [],
             judgeModel: { strategy: 'same-provider', costRatio: 0.5, majorVersions: 1, },
             judgeTimeoutMs: 10_000,

@@ -33,16 +33,16 @@ const VERDICT_ENTRY_TYPE = 'auto-mode:verdict';
  */
 type VerdictData = {
   /** Human-readable description of the action. */
-  action: string;
+  readonly action: string;
   /** Judge or user decision. */
-  verdict:
+  readonly verdict:
     | 'approve'
     | 'deny'
     | 'ask'
     | 'user-approve'
     | 'user-deny';
   /** Reasoning or context. */
-  reason: string;
+  readonly reason: string;
 };
 
 /**
@@ -52,10 +52,10 @@ type VerdictData = {
  * produce `VerdictData` directly.
  */
 type Verdict = {
-  verdict: 'approve' | 'deny' | 'ask';
-  reason: string;
+  readonly verdict: 'approve' | 'deny' | 'ask';
+  readonly reason: string;
   /** Guidance sent to the agent on deny. */
-  guidance: string;
+  readonly guidance: string;
 };
 
 //endregion
@@ -82,11 +82,12 @@ type Verdict = {
  */
 function isTrustEntry(
   entry: {
-    type: string;
-    data?: unknown;
+    readonly type: string;
+    readonly data?: unknown;
   },
 ): entry is {
   type: string;
+  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- external boundary: trust-directive session entries persist `data` as `string | null` via pi.appendEntry, where `null` is the protocol's clear-all-directives signal; the predicate mirrors that stored shape.
   data: string | null;
 } {
   return entry.type
@@ -109,8 +110,8 @@ function isTrustEntry(
  */
 function isVerdictEntry(
   entry: {
-    type: string;
-    data?: unknown;
+    readonly type: string;
+    readonly data?: unknown;
   },
 ): entry is {
   type: string;
@@ -127,9 +128,9 @@ function isVerdictEntry(
 /** Context needed by signal functions. */
 type SignalContext = {
   /** Working directory of the agent session. */
-  cwd: string;
+  readonly cwd: string;
   /** Home directory of the current user. */
-  home: string;
+  readonly home: string;
 };
 
 //endregion
@@ -139,13 +140,13 @@ type SignalContext = {
 /** Parsed command from shell-quote. */
 type CommandInfo = {
   /** Command name (e.g. "rm", "sudo"). */
-  name: string;
+  readonly name: string;
   /** Positional arguments and flags. */
-  args: string[];
+  readonly args: readonly string[];
   /** Redirect targets (files after > or >>). */
-  redirectTargets: string[];
+  readonly redirectTargets: readonly string[];
   /** Pre-scanned variable references from the raw command. */
-  paramRefs: string[];
+  readonly paramRefs: readonly string[];
 };
 
 /**
@@ -155,15 +156,15 @@ type CommandInfo = {
  */
 type BashAnalysis = {
   /** Whether the command could be parsed. */
-  parsed: boolean;
+  readonly parsed: boolean;
   /** Individual commands in the pipeline. */
-  commands: CommandInfo[];
+  readonly commands: readonly CommandInfo[];
   /** Whether the command is a pipeline (uses |). */
-  isPipeline: boolean;
+  readonly isPipeline: boolean;
   /** All environment variable references across commands. */
-  allParamRefs: string[];
+  readonly allParamRefs: readonly string[];
   /** All file-like arguments across commands. */
-  allFiles: string[];
+  readonly allFiles: readonly string[];
 };
 
 //endregion
@@ -173,15 +174,15 @@ type BashAnalysis = {
 /** Authentication details for a budget model. */
 type BudgetModelAuth = {
   /** API key for the model provider. */
-  apiKey?: string;
+  readonly apiKey?: string;
   /** Custom headers for the request. */
-  headers?: Record<string, string>;
+  readonly headers?: Readonly<Record<string, string>>;
 };
 
 /** A selected budget model with its auth credentials. */
 type BudgetModel = {
-  model: Model<Api>;
-  auth: BudgetModelAuth;
+  readonly model: Model<Api>;
+  readonly auth: BudgetModelAuth;
 };
 
 /** Strategy for finding a budget model. */
@@ -197,8 +198,8 @@ type ModelStrategy = 'same-provider' | 'any-provider';
 type ModelOverride =
   | string
   | {
-    model: string;
-    auth: BudgetModelAuth;
+    readonly model: string;
+    readonly auth: BudgetModelAuth;
   };
 
 /**
@@ -209,12 +210,12 @@ type ModelOverride =
  * `BudgetModelOptions`, and the YAML/JSON config schema.
  */
 type JudgeModelConfig = {
-  modelOverride?: ModelOverride;
-  strategy: ModelStrategy;
+  readonly modelOverride?: ModelOverride;
+  readonly strategy: ModelStrategy;
   /** Maximum cost ratio vs active model (0-1). */
-  costRatio: number;
+  readonly costRatio: number;
   /** How many major version families to search. */
-  majorVersions: number;
+  readonly majorVersions: number;
 };
 
 /** Budget-model find options (shape used by `findBudgetModel`). */
@@ -232,9 +233,59 @@ type BudgetModelOptions = JudgeModelConfig;
  */
 type BatchEntry = {
   /** Human-readable action description. */
-  action: string;
+  readonly action: string;
   /** Verdict: "approve" or "deny". */
-  verdict: string;
+  readonly verdict: string;
+};
+
+//endregion
+
+//region Evaluation types
+
+/**
+ * Outcome of guarding a flagged action: block the tool call with guidance,
+ * or allow it.
+ *
+ * A discriminated union on `block` rather than an optional/absent result, so
+ * "allow" is a distinct, meaningful value rather than a missing one. Both
+ * `evaluate` and `askUser` resolve to this shape; the entry-point handler maps
+ * it onto the host SDK's `ToolCallEventResult` (block) or no result (allow).
+ */
+type GuardDecision =
+  | {
+    readonly block: true;
+    /** Guidance returned to the agent explaining the block. */
+    readonly reason: string;
+  }
+  | { readonly block: false };
+
+/**
+ * One entry in the per-flow verdict log surfaced in the auto-mode widget.
+ *
+ * Recorded only for judge `approve`/`deny` outcomes; user-driven `ask`
+ * resolutions are logged via `pi.appendEntry` instead of the flow widget.
+ */
+type FlowVerdict = {
+  /** Human-readable description of the guarded action. */
+  readonly action: string;
+  /** Widget verdict label: `approved` or `denied`. */
+  readonly verdict: string;
+  /** Judge reasoning for the verdict. */
+  readonly reason: string;
+};
+
+/**
+ * Result of {@link evaluate}: the block/allow decision plus the flow verdict to
+ * record, when the judge produced one.
+ *
+ * `flowVerdict` is absent for the user-prompt (`ask`) path, which records its
+ * own session entry and does not contribute to the flow widget.
+ */
+type EvaluateResult = {
+  /** Block-or-allow decision handed back to the host SDK. */
+  readonly decision: GuardDecision;
+  /** Verdict to append to the flow log, when the judge approved or denied. */
+  readonly flowVerdict?: FlowVerdict;
 };
 
 //endregion
@@ -252,6 +303,9 @@ export type {
   BudgetModelAuth,
   BudgetModelOptions,
   CommandInfo,
+  EvaluateResult,
+  FlowVerdict,
+  GuardDecision,
   JudgeModelConfig,
   ModelOverride,
   ModelStrategy,

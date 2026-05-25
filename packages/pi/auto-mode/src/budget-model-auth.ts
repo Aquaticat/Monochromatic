@@ -24,11 +24,11 @@ const l = tagged({
 
 /** A model candidate found during search. */
 type ModelCandidate = {
-  provider: string;
-  modelId: string;
-  costInput: number;
-  costOutput: number;
-  hasApiKey: boolean;
+  readonly provider: string;
+  readonly modelId: string;
+  readonly costInput: number;
+  readonly costOutput: number;
+  readonly hasApiKey: boolean;
 };
 
 //endregion
@@ -44,10 +44,10 @@ type ModelCandidate = {
 class NoBudgetModelError extends Error {
   /** Why no budget model was found. */
   readonly reason: string;
-  /** Best candidate from the same provider. */
-  readonly sameProvider: ModelCandidate | null;
-  /** Cheapest candidate across all providers. */
-  readonly cheapestOverall: ModelCandidate | null;
+  /** Best candidate from the same provider, when one was found. */
+  readonly sameProvider?: ModelCandidate;
+  /** Cheapest candidate across all providers, when one was found. */
+  readonly cheapestOverall?: ModelCandidate;
 
   /**
    * Construct a NoBudgetModelError.
@@ -59,8 +59,8 @@ class NoBudgetModelError extends Error {
   constructor(
     reason: string,
     candidates: {
-      sameProvider?: ModelCandidate | null;
-      cheapestOverall?: ModelCandidate | null;
+      readonly sameProvider?: ModelCandidate;
+      readonly cheapestOverall?: ModelCandidate;
     } = {},
   ) {
     /** Per-line accumulator for the multi-line error message; joined with newlines below. */
@@ -68,28 +68,20 @@ class NoBudgetModelError extends Error {
       "Tried to auto-detect a budget model for a background task, but couldn't find one.",
       `Reason: ${reason}`,
     ];
-    if ((candidates.sameProvider
-      !== undefined) && (candidates.sameProvider
-        !== null)) {
+    if (candidates.sameProvider
+      !== undefined) {
       /** Local alias for the same-provider candidate so the template strings stay readable. */
       const c = candidates.sameProvider;
       lines.push(
         `Best same-provider option: ${c.provider}/${c.modelId} ($${c.costInput}/$${c.costOutput} per M tokens)`,
       );
     }
-    if (
-      (candidates.cheapestOverall
-        !== undefined)
-      && (candidates.cheapestOverall
-        !== null)
-        && candidates
-        .cheapestOverall
-        .hasApiKey
-    ) {
-      /** Local alias for the cheapest-overall candidate so the template strings stay readable. */
-      const c = candidates.cheapestOverall;
+    /** Cheapest-overall candidate, surfaced only when present and carrying an API key. */
+    const cheapest = candidates.cheapestOverall;
+    if (cheapest?.hasApiKey
+      === true) {
       lines.push(
-        `Cheapest with API key: ${c.provider}/${c.modelId} ($${c.costInput}/$${c.costOutput} per M tokens)`,
+        `Cheapest with API key: ${cheapest.provider}/${cheapest.modelId} ($${cheapest.costInput}/$${cheapest.costOutput} per M tokens)`,
       );
     }
     lines.push(
@@ -99,10 +91,12 @@ class NoBudgetModelError extends Error {
     super(lines.join('\n',),);
     this.name = 'NoBudgetModelError';
     this.reason = reason;
-    this.sameProvider = candidates.sameProvider
-      ?? null;
-    this.cheapestOverall = candidates.cheapestOverall
-      ?? null;
+    if (candidates.sameProvider
+      !== undefined)
+      this.sameProvider = candidates.sameProvider;
+    if (candidates.cheapestOverall
+      !== undefined)
+      this.cheapestOverall = candidates.cheapestOverall;
   }
 }
 
@@ -126,9 +120,9 @@ function toCandidate(
     model,
     provider,
   }: {
-    ctx: ExtensionContext;
-    model: Model<Api>;
-    provider: string;
+    readonly ctx: ExtensionContext;
+    readonly model: Model<Api>;
+    readonly provider: string;
   },
 ): ModelCandidate {
   return {
@@ -148,7 +142,8 @@ function toCandidate(
  *
  * Uses `getApiKeyAndHeaders` instead of upstream's broken `getApiKey`.
  *
- * @returns auth credentials, or `null` if resolution failed
+ * @returns `{ found: true, auth }` with credentials, or `{ found: false }`
+ *   when resolution failed
  *
  * @example
  * ```typescript
@@ -160,19 +155,25 @@ async function resolveAuth(
     ctx,
     model,
   }: {
-    ctx: ExtensionContext;
-    model: Model<Api>;
+    readonly ctx: ExtensionContext;
+    readonly model: Model<Api>;
   },
-): Promise<{
-  apiKey?: string;
-  headers?: Record<string, string>;
-} | null> {
+): Promise<
+  | {
+    found: true;
+    auth: {
+      apiKey?: string;
+      headers?: Record<string, string>;
+    };
+  }
+  | { found: false }
+> {
   try {
     /** Registry response carrying `ok` plus optional `apiKey` and `headers`. */
     const result = await ctx.modelRegistry
       .getApiKeyAndHeaders(model,);
     if (!result.ok)
-      return null;
+      return { found: false, };
     /** Output auth object assembled field-by-field so omitted keys stay undefined rather than `null`. */
     const auth: {
       apiKey?: string;
@@ -184,7 +185,10 @@ async function resolveAuth(
     if (result.headers
       !== undefined)
       auth.headers = result.headers;
-    return auth;
+    return {
+      found: true,
+      auth,
+    };
   }
   catch (err) {
     /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
@@ -193,18 +197,19 @@ async function resolveAuth(
       l,
     },);
     innerL.error(
-      `getApiKeyAndHeaders failed for ${String(model.provider,)}/${model.id}: ${
+      `getApiKeyAndHeaders failed for ${model.provider}/${model.id}: ${
         err instanceof Error ? err.message : String(err,)
       }`,
     );
-    return null;
+    return { found: false, };
   }
 }
 
 /**
  * Find the single cheapest model across all providers (for error context).
  *
- * @returns the cheapest candidate, or `null` if none found
+ * @returns `{ found: true, candidate }` for the cheapest candidate, or
+ *   `{ found: false }` when no provider yielded one
  *
  * @example
  * ```typescript
@@ -217,18 +222,24 @@ async function findCheapestCandidate(
     allModels,
     majorVersions,
   }: {
-    ctx: ExtensionContext;
-    allModels: Model<Api>[];
-    majorVersions: number;
+    readonly ctx: ExtensionContext;
+    readonly allModels: readonly Model<Api>[];
+    readonly majorVersions: number;
   },
-): Promise<ModelCandidate | null> {
+): Promise<
+  | {
+    found: true;
+    candidate: ModelCandidate;
+  }
+  | { found: false }
+> {
   /** Dynamically imported version helper; lazy to break a potential circular import on module init. */
   const { findCheapestInMajorVersions, } = await import('./budget-model-version.ts');
   /** Provider name to its list of models, used so version ranking runs per provider. */
   const byProvider = new Map<string, Model<Api>[]>();
   for (const m of allModels) {
-    /** Provider name normalised to string; the type allows non-string discriminants from upstream. */
-    const p = String(m.provider,);
+    /** Provider name keying the grouping map. */
+    const p = m.provider;
     if (!byProvider.has(p,)) {
       byProvider.set(
         p,
@@ -241,50 +252,53 @@ async function findCheapestCandidate(
       list.push(m,);
   }
 
-  /** Best (cheapest-input) candidate across all providers; `null` when no provider yielded a candidate. */
-  const best = [...byProvider,].reduce<
-    | {
-      model: Model<Api>;
-      provider: string;
-    }
-    | null
-  >(
-    function pickBest(
-      acc,
-      [provider, models,],
-    ) {
-      /** Per-provider candidates already sorted by cost then version. */
-      const candidates = findCheapestInMajorVersions({
-        models,
-        majorVersions,
+  /** Cheapest per-provider head for every provider that yielded a candidate. */
+  const providerHeads: {
+    model: Model<Api>;
+    provider: string;
+  }[] = [];
+  for (const [provider, models,] of byProvider) {
+    /** Per-provider candidates already sorted by cost then version. */
+    const firstCandidate = findCheapestInMajorVersions({
+      models,
+      majorVersions,
+    },)
+      .at(0,);
+    if (firstCandidate !== undefined) {
+      providerHeads.push({
+        model: firstCandidate,
+        provider,
       },);
-      /** Head of the per-provider candidate list; compared against `acc` to find the overall cheapest. */
-      const [firstCandidate,] = candidates;
-      if (firstCandidate === undefined)
-        return acc;
-      if ((acc === null) || (firstCandidate.cost
+    }
+  }
+
+  /** Overall cheapest provider-head by input cost; `undefined` when no provider yielded a candidate. */
+  const best = providerHeads.toSorted(
+    function byInputCost(
+      a,
+      b,
+    ) {
+      return a.model
+        .cost
         .input
-        < acc
+        - b
         .model
         .cost
-        .input)) {
-        return {
-          model: firstCandidate,
-          provider,
-        };
-      }
-      return acc;
+        .input;
     },
-    null,
-  );
+  )
+    .at(0,);
 
-  if (best === null)
-    return null;
-  return toCandidate({
-    ctx,
-    model: best.model,
-    provider: best.provider,
-  },);
+  if (best === undefined)
+    return { found: false, };
+  return {
+    found: true,
+    candidate: toCandidate({
+      ctx,
+      model: best.model,
+      provider: best.provider,
+    },),
+  };
 }
 
 //endregion

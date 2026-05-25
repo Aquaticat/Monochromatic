@@ -49,7 +49,7 @@ import type {
 //region Public types
 
 /** A command matcher: either a command name or a command prefix. */
-export type CommandMatcher = string | string[];
+export type CommandMatcher = string | readonly string[];
 
 /**
  * Merged config with compiled patterns.
@@ -58,13 +58,13 @@ export type CommandMatcher = string | string[];
  * built from global and project config layers.
  */
 export type MergedConfig = {
-  enabled: boolean;
-  commands: CommandMatcher[];
-  patterns: RegExp[];
-  globalInstructions?: string;
-  projectInstructions?: string;
-  judgeModel: JudgeModelConfig;
-  judgeTimeoutMs: number;
+  readonly enabled: boolean;
+  readonly commands: readonly CommandMatcher[];
+  readonly patterns: readonly RegExp[];
+  readonly globalInstructions?: string;
+  readonly projectInstructions?: string;
+  readonly judgeModel: JudgeModelConfig;
+  readonly judgeTimeoutMs: number;
 };
 
 //endregion
@@ -89,9 +89,9 @@ function shouldFlag(
     ctx,
     config,
   }: {
-    event: ToolCallEvent;
-    ctx: SignalContext;
-    config?: MergedConfig;
+    readonly event: ToolCallEvent;
+    readonly ctx: SignalContext;
+    readonly config?: MergedConfig;
   },
 ): boolean {
   if (isToolCallEventType(
@@ -121,8 +121,7 @@ function shouldFlag(
   /** Path argument extracted from the tool event when one applies (read/write/edit/etc.). */
   const filePath = getFilePath(event,);
   if (
-    (filePath !== undefined)
-    && (filePath !== '')
+    (filePath !== '')
       && pathSignals({
       filePath,
       ctx,
@@ -133,7 +132,7 @@ function shouldFlag(
 
   /** Free text extracted from the tool event (file body, search query) for content/text signals. */
   const text = extractToolText(event,);
-  if ((text !== undefined) && (text !== '')) {
+  if (text !== '') {
     if (contentSignals(text,))
       return true;
     if (textSignals({
@@ -168,9 +167,9 @@ function bashSignals(
     ctx,
     config,
   }: {
-    analysis: BashAnalysis;
-    ctx: SignalContext;
-    config?: MergedConfig;
+    readonly analysis: BashAnalysis;
+    readonly ctx: SignalContext;
+    readonly config?: MergedConfig;
   },
 ): boolean {
   if (!analysis.parsed)
@@ -331,8 +330,8 @@ function matchUserCommands(
     analysis,
     matchers,
   }: {
-    analysis: BashAnalysis;
-    matchers: CommandMatcher[];
+    readonly analysis: BashAnalysis;
+    readonly matchers: readonly CommandMatcher[];
   },
 ): boolean {
   for (const cmd of analysis.commands) {

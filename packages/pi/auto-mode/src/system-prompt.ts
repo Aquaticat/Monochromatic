@@ -65,8 +65,8 @@ Be pragmatic. Developers work with these files and commands constantly. Err towa
  */
 function buildSystemPrompt(
   config: {
-    globalInstructions?: string;
-    projectInstructions?: string;
+    readonly globalInstructions?: string;
+    readonly projectInstructions?: string;
   },
 ): string {
   /** Accumulator seeded with the base prompt; conditional `push` calls below append optional sections before joining. */
