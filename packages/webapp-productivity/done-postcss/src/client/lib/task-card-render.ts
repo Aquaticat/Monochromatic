@@ -11,11 +11,11 @@ import { TASK_CARD_STYLES, } from './task-card-styles.ts';
 /** Configuration for a `\<task-card\>` instance, passed via `createTaskCard`. */
 export type TaskCardOptions = {
   /** Whether to show a red "blocked" badge chip. */
-  showBlockedBadge?: boolean;
+  readonly showBlockedBadge?: boolean;
   /** Callback when the card body is clicked (navigates to task detail). */
-  onOpen: (taskId: string,) => void;
+  readonly onOpen: (taskId: string,) => void;
   /** Callback when the checkbox is clicked (completes the task). */
-  onToggleComplete?: (taskId: string,) => Promise<void>;
+  readonly onToggleComplete?: (taskId: string,) => Promise<void>;
 };
 
 /**
@@ -46,13 +46,13 @@ export function buildChipTexts(task: Task,): string[] {
     chips.push(`where: ${task.locations
       .join(', ',)}`,);
   if (task.priority
-    !== null)
+    !== undefined)
     chips.push(`priority: ${task.priority}`,);
   if (task.dueDate
-    !== null)
+    !== undefined)
     chips.push(`due: ${task.dueDate}`,);
   if (task.complexity
-    !== null)
+    !== undefined)
     chips.push(`complexity: ${task.complexity}`,);
   if (task.reminders
     .length
@@ -88,9 +88,9 @@ export function renderTaskCardContent(
     task,
     options,
   }: {
-    shadow: ShadowRoot;
-    task: Task;
-    options: TaskCardOptions;
+    readonly shadow: ShadowRoot;
+    readonly task: Task;
+    readonly options: TaskCardOptions;
   },
 ): void {
   /** Rendered chip elements; the optional blocked badge is appended below when requested. */

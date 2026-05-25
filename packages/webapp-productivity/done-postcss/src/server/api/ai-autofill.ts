@@ -31,10 +31,10 @@ type AutofillResult = {
   tags: string[];
   /** Suggested locations. */
   locations: string[];
-  /** Suggested priority level. */
-  priority: TaskPriority | null;
-  /** Suggested complexity level. */
-  complexity: TaskComplexity | null;
+  /** Suggested priority level; absent when none was inferred. */
+  priority?: TaskPriority;
+  /** Suggested complexity level; absent when none was inferred. */
+  complexity?: TaskComplexity;
 };
 
 /** Raw shape of the AI response before validation. */
@@ -74,8 +74,6 @@ function parseAutofillResponse(raw: string,): AutofillResult {
   const empty: AutofillResult = {
     tags: [],
     locations: [],
-    priority: null,
-    complexity: null,
   };
 
   try {
@@ -103,28 +101,28 @@ function parseAutofillResponse(raw: string,): AutofillResult {
       : [];
 
     /* oxlint-disable typescript/no-unsafe-type-assertion -- validated by Set.has check */
-    /** Validated priority; `null` when the value is missing or not in the priority set. */
-    const priority = ((typeof parsed.priority) === 'string')
+    /** Priority field, included only when the response carries a recognised value. */
+    const priorityField: { priority?: TaskPriority; } = ((typeof parsed.priority) === 'string')
         && VALID_PRIORITIES
       .has(parsed.priority,)
-      ? (parsed.priority as TaskPriority)
-      : null;
+      ? { priority: parsed.priority as TaskPriority, }
+      : {};
     /* oxlint-enable typescript/no-unsafe-type-assertion */
 
     /* oxlint-disable typescript/no-unsafe-type-assertion -- validated by Set.has check */
-    /** Validated complexity; `null` when the value is missing or not in the complexity set. */
-    const complexity = ((typeof parsed.complexity) === 'string')
+    /** Complexity field, included only when the response carries a recognised value. */
+    const complexityField: { complexity?: TaskComplexity; } = ((typeof parsed.complexity) === 'string')
         && VALID_COMPLEXITIES
       .has(parsed.complexity,)
-      ? (parsed.complexity as TaskComplexity)
-      : null;
+      ? { complexity: parsed.complexity as TaskComplexity, }
+      : {};
     /* oxlint-enable typescript/no-unsafe-type-assertion */
 
     return {
       tags,
       locations,
-      priority,
-      complexity,
+      ...priorityField,
+      ...complexityField,
     };
   }
   catch {
@@ -186,8 +184,6 @@ export async function handleAutofill(req: Request,): Promise<Response> {
       return Response.json({
         tags: [],
         locations: [],
-        priority: null,
-        complexity: null,
       },);
     }
 
@@ -218,8 +214,6 @@ export async function handleAutofill(req: Request,): Promise<Response> {
       return Response.json({
         tags: [],
         locations: [],
-        priority: null,
-        complexity: null,
       },);
     }
 
@@ -235,8 +229,6 @@ export async function handleAutofill(req: Request,): Promise<Response> {
     return Response.json({
       tags: [],
       locations: [],
-      priority: null,
-      complexity: null,
     },);
   }
 }

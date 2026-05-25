@@ -119,6 +119,8 @@ class SearchBar extends HTMLElement {
     },);
 
     // Debounced search dispatch
+    /** Captured so the debounce closures reach this component without `this`-bound functions. */
+    const self = this;
     /* oxlint-disable no-restricted-syntax/no-function-root-let -- debounce timer handle mutated on each keystroke; closed over by the input listener */
     /** Mutable timer handle replaced on each keystroke to debounce dispatch. */
     let timeout: ReturnType<typeof setTimeout> = setTimeout(
@@ -128,11 +130,11 @@ class SearchBar extends HTMLElement {
     /* oxlint-enable no-restricted-syntax/no-function-root-let */
     input.addEventListener(
       'input',
-      function onInput(this: SearchBar,): void {
+      function onInput(): void {
         clearTimeout(timeout,);
         timeout = setTimeout(
-          function dispatchSearch(this: SearchBar,): void {
-            this.dispatchEvent(
+          function dispatchSearch(): void {
+            self.dispatchEvent(
               new CustomEvent(
                 'search',
                 {
@@ -142,12 +144,10 @@ class SearchBar extends HTMLElement {
                 },
               ),
             );
-          }
-            .bind(this,),
+          },
           SEARCH_DEBOUNCE_MS,
         );
-      }
-        .bind(this,),
+      },
     );
 
     this.#shadow

@@ -56,6 +56,10 @@ class ToggleSwitch extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
 
+  /** Click handler pre-bound to this instance for stable add/removeEventListener references. */
+  readonly #boundHandleClick = this.#handleClick
+    .bind(this,);
+
   /** Initializes the shadow root. */
   constructor() {
     super();
@@ -93,7 +97,7 @@ class ToggleSwitch extends HTMLElement {
     this.#render();
     this.addEventListener(
       'click',
-      this.#handleClick,
+      this.#boundHandleClick,
     );
   }
 
@@ -101,7 +105,7 @@ class ToggleSwitch extends HTMLElement {
   disconnectedCallback(): void {
     this.removeEventListener(
       'click',
-      this.#handleClick,
+      this.#boundHandleClick,
     );
   }
 
@@ -112,10 +116,11 @@ class ToggleSwitch extends HTMLElement {
 
   /**
    * Toggles state and dispatches a change event.
-   * Registered as a click handler in connectedCallback.
+   *
+   * Registered directly as the click handler on the host element, so `this`
+   * resolves to this component (the listener's `currentTarget`) without binding.
    */
-  // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-  readonly #handleClick = function handleClick(this: ToggleSwitch,): void {
+  #handleClick(): void {
     this.on = !this.on;
     this.dispatchEvent(
       new CustomEvent(
@@ -127,7 +132,6 @@ class ToggleSwitch extends HTMLElement {
       ),
     );
   }
-    .bind(this,);
 
   /** Renders the track and thumb into the shadow root. */
   #render(): void {

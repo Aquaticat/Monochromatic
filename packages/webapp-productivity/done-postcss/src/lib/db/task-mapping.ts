@@ -61,7 +61,7 @@ export function parseStringArray(value: string,): string[] {
  * normalizeStringArray([' a ', 'b', 'a']); // ['a', 'b']
  * ```
  */
-export function normalizeStringArray(values: readonly string[] | undefined,): string[] {
+export function normalizeStringArray(values?: readonly string[],): string[] {
   if (values === undefined)
     return [];
 
@@ -87,25 +87,41 @@ export function normalizeStringArray(values: readonly string[] | undefined,): st
  * const task = mapTask(row);
  * ```
  */
-export function mapTask(row: TaskRow,): Task {
-  return {
+export function mapTask(row: Readonly<TaskRow>,): Task {
+  /** Mutable accumulator; nullable SQLite columns are added only when present, so null maps to an absent (`?:`) field. */
+  const task: { -readonly [K in keyof Task]: Task[K]; } = {
     id: row.id,
     title: row.title,
-    description: row.description,
     tags: parseStringArray(row.tags,),
     locations: parseStringArray(row.locations,),
-    priority: row.priority,
-    dueDate: row.due_date,
-    complexity: row.complexity,
     reminders: parseStringArray(row.reminders,),
     blockedBy: parseStringArray(row.blocked_by,),
     trackedTime: row.tracked_time,
-    timerStartedAt: row.timer_started_at,
     status: row.status,
     source: row.source,
-    sourceId: row.source_id,
-    sourceMeta: row.source_meta,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+  if (row.description
+    !== null)
+    task.description = row.description;
+  if (row.priority
+    !== null)
+    task.priority = row.priority;
+  if (row.due_date
+    !== null)
+    task.dueDate = row.due_date;
+  if (row.complexity
+    !== null)
+    task.complexity = row.complexity;
+  if (row.timer_started_at
+    !== null)
+    task.timerStartedAt = row.timer_started_at;
+  if (row.source_id
+    !== null)
+    task.sourceId = row.source_id;
+  if (row.source_meta
+    !== null)
+    task.sourceMeta = row.source_meta;
+  return task;
 }

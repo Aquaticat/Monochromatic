@@ -14,12 +14,16 @@ import {
   defineHandler,
   getRouterParam,
   H3,
+  type H3Event,
   HTTPError,
   serve,
 } from 'h3';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: opens SQLite database and runs schema migrations
 import './lib/db.ts';
-import { getArgumentValue, } from './lib/args.ts';
+import {
+  ARGUMENT_ABSENT,
+  getArgumentValue,
+} from './lib/args.ts';
 import { handleAutofill, } from './server/api/ai-autofill.ts';
 import {
   handleCreateTask,
@@ -56,7 +60,7 @@ function resolvePort(): number {
   const environmentPort = process.env
     .PORT;
   /** Whichever source (CLI takes precedence) provided a value, or `undefined`. */
-  const rawPort = argumentPort ?? environmentPort;
+  const rawPort = argumentPort === ARGUMENT_ABSENT ? environmentPort : argumentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
   /** Numeric port after `parseInt`; `NaN` falls back to `DEFAULT_PORT`. */
@@ -88,8 +92,8 @@ function requireParam(
     event,
     name,
   }: {
-    event: Parameters<typeof getRouterParam>[0];
-    name: string;
+    readonly event: H3Event;
+    readonly name: string;
   },
 ): string {
   /** Raw parameter value from h3's router; `undefined` when missing. */

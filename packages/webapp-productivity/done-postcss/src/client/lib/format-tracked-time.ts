@@ -69,7 +69,7 @@ export function formatTrackedTime(seconds: number,): string {
  */
 export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt
-    === null)
+    === undefined)
     return formatTrackedTime(task.trackedTime,);
 
   /** Seconds elapsed since the timer started; clamped to non-negative for clock skew safety. */

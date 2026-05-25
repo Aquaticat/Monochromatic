@@ -62,16 +62,18 @@ class SectionHeading extends HTMLElement {
       .querySelector<HTMLElement>('.heading',)
       ?.addEventListener(
       'click',
-      this.#toggle,
+      this.#toggle
+        .bind(this,),
     );
   }
 
   /**
    * Toggles the open state and dispatches a toggle event.
-   * Registered as a click handler in connectedCallback.
+   *
+   * Bound to this instance at the listener site because it is attached to the
+   * inner `.heading` element, whose `currentTarget` is not this component.
    */
-  // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-  readonly #toggle = function toggle(this: SectionHeading,): void {
+  #toggle(): void {
     this.#open = !this.#open;
     this.#updateToggle();
     this.dispatchEvent(
@@ -84,7 +86,6 @@ class SectionHeading extends HTMLElement {
       ),
     );
   }
-    .bind(this,);
 
   /** Updates the toggle indicator and content visibility. */
   #updateToggle(): void {

@@ -23,7 +23,10 @@ class TopNav extends HTMLElement {
     /** Heading text from the `heading` attribute, displayed in the page title `<h1>`. */
     const heading = this.getAttribute('heading',)
       ?? '';
-    this.#shadow.replaceChildren(
+    /** Captured so the click handler reaches this component without a `this`-bound function. */
+    const self = this;
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: TOP_NAV_STYLES,
@@ -53,9 +56,8 @@ class TopNav extends HTMLElement {
           },),
         ],
         on: {
-          // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-          click: function openMenu(this: TopNav,): void {
-            this.dispatchEvent(
+          click: function openMenu(): void {
+            self.dispatchEvent(
               new CustomEvent(
                 'menu-open',
                 {
@@ -64,8 +66,7 @@ class TopNav extends HTMLElement {
                 },
               ),
             );
-          }
-            .bind(this,),
+          },
         },
       },),
       h({

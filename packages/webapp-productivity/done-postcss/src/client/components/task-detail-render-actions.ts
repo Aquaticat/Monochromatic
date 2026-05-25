@@ -27,19 +27,19 @@ export function buildActionButtonRow(
     task,
     isCreate,
   }: {
-    task: Task;
-    isCreate: boolean;
+    readonly task: Task;
+    readonly isCreate: boolean;
   },
 ): HTMLElement {
   /** Start button attrs; `disabled` is appended when a timer is already running. */
   const startAttrs: Record<string, string> = { 'data-action': 'start', };
   if (task.timerStartedAt
-    !== null)
+    !== undefined)
     startAttrs.disabled = '';
   /** Stop button attrs; `disabled` is appended when no timer is running. */
   const stopAttrs: Record<string, string> = { 'data-action': 'stop', };
   if (task.timerStartedAt
-    === null)
+    === undefined)
     stopAttrs.disabled = '';
   /** Complete button attrs; `disabled` is appended when blockers remain. */
   const completeAttrs: Record<string, string> = { 'data-action': 'complete', };
@@ -109,10 +109,10 @@ export function attachActionHandler(
     titleInput,
     descInput,
   }: {
-    shadow: ShadowRoot;
-    host: HTMLElement;
-    titleInput: HTMLInputElement;
-    descInput: HTMLTextAreaElement;
+    readonly shadow: ShadowRoot;
+    readonly host: HTMLElement;
+    readonly titleInput: HTMLInputElement;
+    readonly descInput: HTMLTextAreaElement;
   },
 ): void {
   shadow.addEventListener(

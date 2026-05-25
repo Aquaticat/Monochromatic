@@ -7,26 +7,36 @@ import type {
   TaskPriority,
 } from '../../lib/types.ts';
 
+/**
+ * Sentinel for an editor metadata field (priority, complexity) with no
+ * selected value.
+ *
+ * A unique `Symbol` keeps "unset" out of a nullish union (banned by
+ * `no-nullish-union`) while remaining a distinct, comparable value the mutable
+ * editor state can be reset to; consumers narrow with `=== METADATA_UNSET`.
+ */
+export const METADATA_UNSET: unique symbol = Symbol('metadata-unset',);
+
 /** Blocker task summary displayed as a pill in the task detail view. */
 export type BlockerSummary = {
   /** UUID of the blocking task. */
-  id: string;
+  readonly id: string;
   /** Title of the blocking task. */
-  title: string;
+  readonly title: string;
   /** Current status of the blocking task. */
-  status: string;
+  readonly status: string;
 };
 
 /** Shape of the JSON response from the `/api/ai/autofill` endpoint. */
 export type AutofillResult = {
   /** Suggested tags for the task. */
-  tags: string[];
+  readonly tags: readonly string[];
   /** Suggested locations for the task. */
-  locations: string[];
-  /** Suggested priority level. */
-  priority: TaskPriority | null;
-  /** Suggested complexity level. */
-  complexity: TaskComplexity | null;
+  readonly locations: readonly string[];
+  /** Suggested priority level; absent when none was inferred. */
+  readonly priority?: TaskPriority;
+  /** Suggested complexity level; absent when none was inferred. */
+  readonly complexity?: TaskComplexity;
 };
 
 /** Determines whether the component renders as a new-task creator or an editor. */
@@ -35,9 +45,9 @@ export type TaskDetailMode = 'create' | 'edit';
 /** Configuration payload passed to `TaskDetail.configure()`. */
 export type TaskDetailData = {
   /** Task being viewed or edited. */
-  task: Task;
+  readonly task: Task;
   /** Summaries of tasks that block this one. */
-  blockerSummaries: BlockerSummary[];
+  readonly blockerSummaries: readonly BlockerSummary[];
   /** Display mode: "create" for new tasks, "edit" for existing. */
-  mode?: TaskDetailMode;
+  readonly mode?: TaskDetailMode;
 };

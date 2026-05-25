@@ -48,7 +48,7 @@ export function buildNav(): HTMLElement {
 /**
  * Builds a header row with a name label and an optional close button.
  *
- * @param closeButton - Close button element, or null for inline sidebar
+ * @param closeButton - Close button element, omitted for the inline sidebar
  *
  * @returns Header element
  *
@@ -57,7 +57,7 @@ export function buildNav(): HTMLElement {
  * const header = buildHeader(closeButton);
  * ```
  */
-export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
+export function buildHeader(closeButton?: HTMLElement,): HTMLElement {
   /** Initial children list; the optional close button is appended only when supplied. */
   const children: HTMLElement[] = [
     h({
@@ -66,7 +66,7 @@ export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
       text: 'Firstname',
     },),
   ];
-  if (closeButton !== null)
+  if (closeButton !== undefined)
     children.push(closeButton,);
   return h({
     tag: 'div',

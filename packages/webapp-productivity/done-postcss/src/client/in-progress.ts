@@ -35,6 +35,20 @@ function openTask(taskId: string,): void {
     .href = `/tasks/${taskId}`;
 }
 
+/**
+ * Stops a running timer on a task, then reloads to reflect the new state.
+ *
+ * @param taskId - UUID of the task whose timer to stop
+ */
+async function stopTimer(taskId: string,): Promise<void> {
+  await api({
+    path: `/api/tasks/${taskId}/stop`,
+    options: { method: 'POST', },
+  },);
+  globalThis.location
+    .reload();
+}
+
 injectCSS(styles,);
 
 /** Deserialized page data from the server-rendered JSON blob. */
@@ -70,14 +84,7 @@ for (const task of pageData.tasks) {
       task,
       options: {
         onOpen: openTask,
-        onToggleComplete: async function stopTimer(taskId,) {
-          await api({
-            path: `/api/tasks/${taskId}/stop`,
-            options: { method: 'POST', },
-          },);
-          globalThis.location
-            .reload();
-        },
+        onToggleComplete: stopTimer,
       },
     },),
   );
@@ -105,9 +112,9 @@ setInterval(
       if (task === undefined)
         return;
       /* oxlint-disable typescript/no-unsafe-type-assertion -- custom element has getChipElement method */
-      /** Tracked-time chip on the task-card; returns `null` when the card has not yet rendered chips. */
-      const chipEl = (card as unknown as {
-        getChipElement?: (prefix: string,) => HTMLSpanElement | null;
+      /** Tracked-time chip on the task-card; narrowed via `instanceof` below since the card may not have rendered chips. */
+      const chipEl: unknown = (card as unknown as {
+        getChipElement?: (prefix: string,) => unknown;
       })
         .getChipElement?.('tracked:',);
       /* oxlint-enable typescript/no-unsafe-type-assertion */

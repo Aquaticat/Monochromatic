@@ -15,7 +15,10 @@ import {
 } from '@tursodatabase/database';
 import { mkdirSync, } from 'node:fs';
 import { dirname, } from 'node:path';
-import { getArgumentValue, } from './args.ts';
+import {
+  ARGUMENT_ABSENT,
+  getArgumentValue,
+} from './args.ts';
 import { runMigrations, } from './db/migrations.ts';
 
 /** Default database file path when neither `--db=` nor `DB_PATH` env var is provided. */
@@ -48,8 +51,9 @@ function resolveDatabasePath(): string {
   const environmentPath = process.env
     .DB_PATH;
   /** First defined source in priority order, falling back to the default path. */
-  const rawPath = argumentPath ?? environmentPath
-    ?? DEFAULT_DATABASE_PATH;
+  const rawPath = argumentPath === ARGUMENT_ABSENT
+    ? (environmentPath ?? DEFAULT_DATABASE_PATH)
+    : argumentPath;
   return normalizeDatabasePath(rawPath,);
 }
 

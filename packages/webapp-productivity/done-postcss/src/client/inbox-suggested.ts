@@ -6,7 +6,7 @@
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type {
-  BlockedTaskLink,
+  BlockedTasksByBlocker,
   Task,
 } from '../lib/types.ts';
 
@@ -33,12 +33,12 @@ export function buildSuggestedSection(
     blockedTasksByBlocker,
     buildTaskList,
   }: {
-    suggestedTasks: readonly Task[];
-    blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
-    buildTaskList: (
+    readonly suggestedTasks: readonly Task[];
+    readonly blockedTasksByBlocker: BlockedTasksByBlocker;
+    readonly buildTaskList: (
       params: {
-        tasks: readonly Task[];
-        blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
+        readonly tasks: readonly Task[];
+        readonly blockedTasksByBlocker: BlockedTasksByBlocker;
       },
     ) => HTMLUListElement;
   },

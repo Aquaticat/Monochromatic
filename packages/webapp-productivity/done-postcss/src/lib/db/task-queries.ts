@@ -5,10 +5,11 @@
  * to application-level types using `mapTask()`.
  */
 import db from '../db.ts';
-import type {
-  BlockedTaskLink,
-  SearchTask,
-  Task,
+import {
+  type BlockedTaskLink,
+  type SearchTask,
+  type Task,
+  TASK_NOT_FOUND,
 } from '../types.ts';
 import { mapTask, } from './task-mapping.ts';
 import {
@@ -28,22 +29,21 @@ import {
  *
  * @param id - Task UUID
  *
- * @returns Raw task row, or null when not found
+ * @returns Raw task row, or {@link TASK_NOT_FOUND} when no row matches
  *
  * @example
  * ```ts
  * const row = await getTaskRowById('uuid-123');
  * ```
  */
-export async function getTaskRowById(id: string,): Promise<TaskRow | null> {
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- database prepare().get() returns the row shape */
-  /** Single-row lookup result; `undefined` becomes the public `null` return. */
-  const taskRow = await db.prepare(SQL_SELECT_TASK_BY_ID,)
-    .get(id,) as
-    | TaskRow
-    | undefined;
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
-  return taskRow ?? null;
+export async function getTaskRowById(id: string,): Promise<TaskRow | typeof TASK_NOT_FOUND> {
+  /** Single-row lookup result; nullish when the ID does not exist. */
+  const taskRow: unknown = await db.prepare(SQL_SELECT_TASK_BY_ID,)
+    .get(id,);
+  if ((taskRow === undefined) || (taskRow === null))
+    return TASK_NOT_FOUND;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database prepare().get() returns the row shape
+  return taskRow as TaskRow;
 }
 
 /**
@@ -51,17 +51,17 @@ export async function getTaskRowById(id: string,): Promise<TaskRow | null> {
  *
  * @param id - Task UUID
  *
- * @returns Mapped task, or `null` when the ID does not exist
+ * @returns Mapped task, or {@link TASK_NOT_FOUND} when the ID does not exist
  *
  * @example
  * ```ts
  * const task = await getTaskById('uuid-123');
  * ```
  */
-export async function getTaskById(id: string,): Promise<Task | null> {
+export async function getTaskById(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
   /** Raw row from `getTaskRowById`; mapped to the application shape when present. */
   const taskRow = await getTaskRowById(id,);
-  return taskRow === null ? null : mapTask(taskRow,);
+  return taskRow === TASK_NOT_FOUND ? TASK_NOT_FOUND : mapTask(taskRow,);
 }
 
 /**

@@ -39,6 +39,8 @@ class FocusDropdown extends HTMLElement {
 
   /** Renders the trigger button and popover menu with preset options. */
   #render(): void {
+    /** Captured so option-click closures reach this component without `this`-bound functions. */
+    const self = this;
     /** Trigger label span captured so option clicks can update it in place. */
     const textSpan = h({
       tag: 'span',
@@ -51,20 +53,17 @@ class FocusDropdown extends HTMLElement {
       class: 'menu',
       attrs: { popover: 'auto', },
       children: DEFAULT_PRESETS.map(
-        function buildOption(
-          this: FocusDropdown,
-          preset: string,
-        ): HTMLElement {
+        function buildOption(preset: string,): HTMLElement {
           return h({
             tag: 'li',
             class: 'option',
             text: preset,
             on: {
-              click: function selectPreset(this: FocusDropdown,): void {
-                this.#value = preset;
+              click: function selectPreset(): void {
+                self.#value = preset;
                 textSpan.textContent = preset;
                 menu.hidePopover();
-                this.dispatchEvent(
+                self.dispatchEvent(
                   new CustomEvent(
                     'change',
                     {
@@ -73,12 +72,10 @@ class FocusDropdown extends HTMLElement {
                     },
                   ),
                 );
-              }
-                .bind(this,),
+              },
             },
           },);
-        }
-          .bind(this,),
+        },
       ),
     },);
 

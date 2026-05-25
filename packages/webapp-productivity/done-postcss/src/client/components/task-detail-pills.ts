@@ -4,15 +4,20 @@
  * Extracted from task-detail.ts to keep each file under the line-count limit.
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import type { Task, } from '../../lib/types.ts';
+import type {
+  Task,
+  TaskComplexity,
+  TaskPriority,
+} from '../../lib/types.ts';
 import { formatRunningTrackedTime, } from '../lib/format-tracked-time.ts';
+import { METADATA_UNSET, } from './task-detail-types.ts';
 
 /** Single pill descriptor with a field identifier and display text. */
 export type PillDatum = {
   /** Metadata field this pill represents. */
-  field: string;
+  readonly field: string;
   /** Display text shown inside the pill. */
-  text: string;
+  readonly text: string;
 };
 
 /**
@@ -43,11 +48,11 @@ export function buildPillData(
     priority,
     complexity,
   }: {
-    task: Task;
-    tags: string[];
-    locations: string[];
-    priority: string | null;
-    complexity: string | null;
+    readonly task: Task;
+    readonly tags: readonly string[];
+    readonly locations: readonly string[];
+    readonly priority: TaskPriority | typeof METADATA_UNSET;
+    readonly complexity: TaskComplexity | typeof METADATA_UNSET;
   },
 ): PillDatum[] {
   return [
@@ -69,7 +74,7 @@ export function buildPillData(
     },
     {
       field: 'priority',
-      text: `priority: ${priority ?? '?'}`,
+      text: `priority: ${priority === METADATA_UNSET ? '?' : priority}`,
     },
     {
       field: 'due',
@@ -78,7 +83,7 @@ export function buildPillData(
     },
     {
       field: 'complexity',
-      text: `complexity: ${complexity ?? '?'}`,
+      text: `complexity: ${complexity === METADATA_UNSET ? '?' : complexity}`,
     },
     {
       field: 'reminders',
@@ -122,9 +127,9 @@ export function buildPillElements(
     loading,
     autofilled,
   }: {
-    pills: PillDatum[];
-    loading: boolean;
-    autofilled: Set<string>;
+    readonly pills: readonly PillDatum[];
+    readonly loading: boolean;
+    readonly autofilled: ReadonlySet<string>;
   },
 ): HTMLElement[] {
   return pills.map(

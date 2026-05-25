@@ -48,10 +48,15 @@ function isRateLimited(): boolean {
     - WINDOW_DURATION_MS;
 
   // Discard entries older than the window
-  while ((requestTimestamps.length
-    > 0) && ((requestTimestamps[0] as number)
-      < cutoff))
+  while (requestTimestamps.length
+    > 0) {
+    /** Oldest tracked timestamp; `undefined` only when the array drained, which the length guard rules out. */
+    const [oldest,] = requestTimestamps;
+    if ((oldest === undefined) || (oldest
+      >= cutoff))
+      break;
     requestTimestamps.shift();
+  }
 
   return requestTimestamps.length
     >= MAX_REQUESTS_PER_WINDOW;
@@ -69,21 +74,21 @@ function recordRequest(): void {
 /** Message in a chat conversation. */
 export type ChatMessage = {
   /** Role of the message author. */
-  role: 'system' | 'user' | 'assistant';
+  readonly role: 'system' | 'user' | 'assistant';
   /** Text content of the message. */
-  content: string;
+  readonly content: string;
 };
 
 /** Options for a chat completion request. */
 export type ChatCompletionOptions = {
   /** Messages in the conversation. */
-  messages: ChatMessage[];
+  readonly messages: readonly ChatMessage[];
   /** Sampling temperature (0 = deterministic). */
-  temperature?: number;
+  readonly temperature?: number;
   /** Maximum tokens to generate. */
-  maxTokens?: number;
+  readonly maxTokens?: number;
   /** When `true`, request `response_format: \{ type: "json_object" \}`. */
-  jsonMode?: boolean;
+  readonly jsonMode?: boolean;
 };
 
 /** Single choice from a chat completion response. */

@@ -32,8 +32,8 @@ export function jsonResponse(
     payload,
     status = HTTP_OK,
   }: {
-    payload: unknown;
-    status?: number;
+    readonly payload: unknown;
+    readonly status?: number;
   },
 ): Response {
   return Response.json(

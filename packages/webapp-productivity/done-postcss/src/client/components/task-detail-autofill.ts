@@ -4,102 +4,99 @@
  * Manages debounced AI metadata suggestion requests with
  * abort support and loading state tracking.
  */
-import type { AutofillResult, } from './task-detail-types.ts';
+import type {
+  TaskComplexity,
+  TaskPriority,
+} from '../../lib/types.ts';
+import {
+  type AutofillResult,
+  METADATA_UNSET,
+} from './task-detail-types.ts';
 
 /** Delay before triggering AI autofill after the user stops typing. */
 const AUTOFILL_DEBOUNCE_MS = 500;
 
+/** Sentinel for "no debounce timer is scheduled". */
+const NO_TIMER: unique symbol = Symbol('no-timer',);
+
+/** Sentinel for "no request is in flight". */
+const NO_ABORT: unique symbol = Symbol('no-abort',);
+
 /** Callback interface for the autofill controller to update the host component. */
 export type AutofillCallbacks = {
   /** Returns current metadata values. */
-  getState: () => {
-    tags: string[];
-    locations: string[];
-    priority: string | null;
-    complexity: string | null;
+  readonly getState: () => {
+    readonly tags: readonly string[];
+    readonly locations: readonly string[];
+    readonly priority: TaskPriority | typeof METADATA_UNSET;
+    readonly complexity: TaskComplexity | typeof METADATA_UNSET;
   };
-  /** Applies new metadata values. */
-  setState: (
+  /** Applies new metadata values; omitted fields are left unchanged. */
+  readonly setState: (
     update: {
-      tags?: string[];
-      locations?: string[];
-      priority?: string | null;
-      complexity?: string | null;
+      readonly tags?: readonly string[];
+      readonly locations?: readonly string[];
+      readonly priority?: TaskPriority;
+      readonly complexity?: TaskComplexity;
     },
   ) => void;
   /** Refreshes the pill display. */
-  updateDisplay: () => void;
+  readonly updateDisplay: () => void;
+};
+
+/** Public surface returned by `createAutofillController`. */
+export type AutofillController = {
+  /** Debounces an autofill request for the given title. */
+  readonly request: (title: string,) => void;
+  /** Whether an autofill request is currently in flight. */
+  readonly loading: boolean;
+  /** Field names that were filled by the most recent AI suggestion. */
+  readonly autofilled: ReadonlySet<string>;
+  /** Clears the autofilled-field tracking set. */
+  readonly clearAutofilled: () => void;
 };
 
 /**
- * Manages debounced autofill requests and loading state.
- * Delegates display and state updates to the host via callbacks.
+ * Creates a debounced autofill controller.
+ *
+ * Delegates display and state reads/writes to the host via `callbacks`,
+ * keeping its own mutable timer/abort/loading state in the closure.
+ *
+ * @param callbacks - Host component callbacks
+ *
+ * @returns Controller surface for the host to drive
+ *
+ * @example
+ * ```ts
+ * const autofill = createAutofillController(callbacks);
+ * autofill.request('Buy groceries');
+ * ```
  */
-export class AutofillController {
-  /** Tracks which fields were filled by the AI. */
-  autofilled: Set<string> = new Set<string>();
-
-  /** Whether an autofill request is currently in flight. */
-  loading = false;
-
-  /** Handle for the debounce timer. */
-  #timer: ReturnType<typeof setTimeout> | null = null;
-
-  /** Abort controller for in-flight requests. */
-  #abort: AbortController | null = null;
-
-  /** Host callbacks for state and display updates. */
-  readonly #callbacks: AutofillCallbacks;
-
-  /**
-   * @param callbacks - Host component callbacks
-   */
-  constructor(callbacks: AutofillCallbacks,) {
-    this.#callbacks = callbacks;
-  }
-
-  /**
-   * Debounces an autofill request.
-   *
-   * @param title - Current title input value
-   */
-  request(title: string,): void {
-    if (this.#timer
-      !== null)
-      clearTimeout(this.#timer,);
-    if (this.#abort
-      !== null) {
-      this.#abort
-        .abort();
-      this.#abort = null;
-    }
-    if (title.trim()
-      .length
-      === 0)
-      return;
-
-    this.#timer = setTimeout(
-      function triggerAutofill(this: AutofillController,): void {
-        // oxlint-disable-next-line typescript/no-floating-promises -- fire-and-forget
-        this.#fetch(title.trim(),);
-      }
-        .bind(this,),
-      AUTOFILL_DEBOUNCE_MS,
-    );
-  }
+export function createAutofillController(callbacks: AutofillCallbacks,): AutofillController {
+  /** Mutable controller state captured by the closure below. */
+  const state: {
+    readonly autofilled: Set<string>;
+    loading: boolean;
+    timer: ReturnType<typeof setTimeout> | typeof NO_TIMER;
+    abort: AbortController | typeof NO_ABORT;
+  } = {
+    autofilled: new Set<string>(),
+    loading: false,
+    timer: NO_TIMER,
+    abort: NO_ABORT,
+  };
 
   /**
    * Sends an autofill request and merges results into empty metadata fields.
    *
    * @param title - Trimmed title text
    */
-  async #fetch(title: string,): Promise<void> {
+  async function fetchSuggestions(title: string,): Promise<void> {
     /** Captured locally so the abort signal can be reused for the in-flight check and abort. */
     const controller = new AbortController();
-    this.#abort = controller;
-    this.loading = true;
-    this.#callbacks
-      .updateDisplay();
+    state.abort = controller;
+    state.loading = true;
+    callbacks.updateDisplay();
 
     try {
       /** Server response containing the AI-suggested metadata payload. */
@@ -114,53 +111,56 @@ export class AutofillController {
       );
 
       if (response.ok) {
-        /* oxlint-disable typescript/no-unsafe-type-assertion -- API response shape */
+        /* oxlint-disable typescript/no-unsafe-type-assertion -- API response shape enforced by the server endpoint contract */
         /** Parsed autofill payload; shape is enforced by the server endpoint contract. */
         const result = (await response.json()) as AutofillResult;
         /* oxlint-enable typescript/no-unsafe-type-assertion */
-        this.autofilled
+        state.autofilled
           .clear();
         /** Current field values from the host so empty-field merging can be done. */
-        const state = this.#callbacks
-          .getState();
+        const current = callbacks.getState();
         /** Patch accumulating only fields that were empty before the AI suggestion. */
-        const update: Record<string, unknown> = {};
+        const update: {
+          tags?: readonly string[];
+          locations?: readonly string[];
+          priority?: TaskPriority;
+          complexity?: TaskComplexity;
+        } = {};
 
         if ((result.tags
           .length
-          > 0) && (state.tags
+          > 0) && (current.tags
             .length
             === 0)) {
           update.tags = result.tags;
-          this.autofilled
+          state.autofilled
             .add('tags',);
         }
         if ((result.locations
           .length
-          > 0) && (state.locations
+          > 0) && (current.locations
             .length
             === 0)) {
           update.locations = result.locations;
-          this.autofilled
+          state.autofilled
             .add('locations',);
         }
         if ((result.priority
-          !== null) && (state.priority
-            === null)) {
+          !== undefined) && (current.priority
+            === METADATA_UNSET)) {
           update.priority = result.priority;
-          this.autofilled
+          state.autofilled
             .add('priority',);
         }
         if ((result.complexity
-          !== null) && (state.complexity
-            === null)) {
+          !== undefined) && (current.complexity
+            === METADATA_UNSET)) {
           update.complexity = result.complexity;
-          this.autofilled
+          state.autofilled
             .add('complexity',);
         }
 
-        this.#callbacks
-          .setState(update,);
+        callbacks.setState(update,);
       }
     }
     catch (error: unknown) {
@@ -173,8 +173,54 @@ export class AutofillController {
       }
     }
 
-    this.loading = false;
-    this.#callbacks
-      .updateDisplay();
+    state.loading = false;
+    callbacks.updateDisplay();
   }
+
+  /**
+   * Debounces an autofill request.
+   *
+   * @param title - Current title input value
+   */
+  function request(title: string,): void {
+    if (state.timer
+      !== NO_TIMER)
+      clearTimeout(state.timer,);
+    if (state.abort
+      !== NO_ABORT) {
+      state.abort
+        .abort();
+      state.abort = NO_ABORT;
+    }
+    if (title.trim()
+      .length
+      === 0)
+      return;
+
+    state.timer = setTimeout(
+      function triggerAutofill(): void {
+        void fetchSuggestions(title.trim(),);
+      },
+      AUTOFILL_DEBOUNCE_MS,
+    );
+  }
+
+  /** Clears the autofilled-field tracking set. */
+  function clearAutofilled(): void {
+    state.autofilled
+      .clear();
+  }
+
+  return {
+    request,
+    /** Whether an autofill request is currently in flight. */
+    get loading(): boolean {
+      return state.loading;
+    },
+    /** Field names filled by the most recent AI suggestion. */
+    get autofilled(): ReadonlySet<string> {
+      return state.autofilled;
+    },
+    clearAutofilled,
+  };
 }

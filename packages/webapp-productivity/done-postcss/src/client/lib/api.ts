@@ -11,6 +11,23 @@ import { showToast, } from '../components/toast-message.ts';
 export { showToast, };
 
 /**
+ * Subset of fetch request configuration accepted by {@link api}.
+ *
+ * Deeply readonly (and narrower than `RequestInit`, which carries inherently
+ * mutable nested members) so the destructured parameter satisfies
+ * `prefer-readonly-parameter-types`. Covers exactly the fields the callers use:
+ * a method, a JSON-string body, and optional extra headers.
+ */
+export type ApiRequestOptions = {
+  /** HTTP method, e.g. `"POST"`, `"PUT"`, `"DELETE"`. */
+  readonly method?: string;
+  /** Request body; callers serialize JSON to a string. */
+  readonly body?: string;
+  /** Extra request headers merged over the default JSON content type. */
+  readonly headers?: Readonly<Record<string, string>>;
+};
+
+/**
  * Sends a fetch request to a JSON API endpoint with standard headers and error handling.
  *
  * @param path - API endpoint path
@@ -30,8 +47,8 @@ export async function api<TResponse = unknown,>(
     path,
     options,
   }: {
-    path: string;
-    options?: RequestInit;
+    readonly path: string;
+    readonly options?: ApiRequestOptions;
   },
 ): Promise<TResponse> {
   /** Combined header set; starts with the JSON content type and absorbs any caller-supplied headers. */
@@ -39,7 +56,7 @@ export async function api<TResponse = unknown,>(
   if (options?.headers
     !== undefined) {
     /** Caller-supplied headers normalised through the `Headers` ctor before merging. */
-    const extra = new Headers(options.headers,);
+    const extra = new Headers({ ...options.headers, },);
     extra.forEach(function applyHeader(
       value: string,
       key: string,

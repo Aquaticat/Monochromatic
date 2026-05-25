@@ -33,8 +33,8 @@ class SideDrawer extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
 
-  /** Reference to the popover panel element, null until first render. */
-  #panel: HTMLDivElement | null = null;
+  /** Reference to the popover panel element; absent until first render. */
+  #panel?: HTMLDivElement;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -74,37 +74,35 @@ class SideDrawer extends HTMLElement {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns the panel div we created
     this.#panel = this.#shadow
       .querySelector<HTMLDivElement>('.panel',) as HTMLDivElement;
+    /** Captured so the close handlers reach this component without `this`-bound functions. */
+    const self = this;
 
-    this.#shadow.querySelector<HTMLElement>('.panel-close',)?.addEventListener(
+    this.#shadow
+      .querySelector<HTMLElement>('.panel-close',)
+      ?.addEventListener(
       'click',
-      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-      function closeDrawer(this: SideDrawer,): void {
-        this.open = false;
-      }
-        .bind(this,),
+      function closeDrawer(): void {
+        self.open = false;
+      },
     );
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
-    this.#panel.addEventListener(
+    this.#panel
+      .addEventListener(
       'click',
-      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-      function lightDismiss(
-        this: SideDrawer,
-        event: Event,
-      ): void {
+      function lightDismiss(event: Event,): void {
         if (event.target
-          === this
+          === self
           .#panel)
-          this.open = false;
-      }
-        .bind(this,),
+          self.open = false;
+      },
     );
   }
 
   /** Toggles popover visibility when the open attribute changes. */
   attributeChangedCallback(): void {
     if (this.#panel
-      === null)
+      === undefined)
       return;
 
     if (this.open)
@@ -122,7 +120,8 @@ class SideDrawer extends HTMLElement {
     panelClose.classList
       .add('panel-close',);
 
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: SIDE_DRAWER_STYLES,
@@ -136,7 +135,7 @@ class SideDrawer extends HTMLElement {
             tag: 'aside',
             class: 'sidebar',
             children: [
-              buildHeader(null,),
+              buildHeader(),
               h({
                 tag: 'div',
                 class: 'divider',

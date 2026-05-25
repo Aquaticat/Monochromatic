@@ -6,10 +6,11 @@
  * functions so existing consumers can import from one place.
  */
 import db from '../db.ts';
-import type {
-  Task,
-  TaskCreateInput,
-  TaskUpdateInput,
+import {
+  type Task,
+  type TaskCreateInput,
+  TASK_NOT_FOUND,
+  type TaskUpdateInput,
 } from '../types.ts';
 import {
   normalizeStringArray,
@@ -91,7 +92,7 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
 
   /** Read-back of the freshly inserted row; absence indicates a write/read race. */
   const createdTask = await getTaskById(id,);
-  if (createdTask === null)
+  if (createdTask === TASK_NOT_FOUND)
     throw new Error('Failed to read created task',);
   return createdTask;
 }
@@ -103,7 +104,7 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
  *
  * @param input - Fields to update
  *
- * @returns Updated task, or `null` when not found
+ * @returns Updated task, or {@link TASK_NOT_FOUND} when not found
  *
  * @example
  * ```ts
@@ -115,61 +116,40 @@ export async function updateTask(
     id,
     input,
   }: {
-    id: string;
-    input: TaskUpdateInput;
+    readonly id: string;
+    readonly input: TaskUpdateInput;
   },
-): Promise<Task | null> {
+): Promise<Task | typeof TASK_NOT_FOUND> {
   /** Existing task used as the merge base for the partial update. */
   const currentTask = await getTaskById(id,);
-  if (currentTask === null)
-    return null;
+  if (currentTask === TASK_NOT_FOUND)
+    return TASK_NOT_FOUND;
 
+  // Spread-merge: present `input` keys override; absent optional keys inherit from `currentTask`
   /** Merged task object combining the previous values with any fields supplied in `input`. */
   const updated: Task = {
     ...currentTask,
+    ...input,
     title: input.title
       ?.trim()
       ?? currentTask
       .title,
-    description: input.description
-      ?? currentTask
-      .description,
-    tags: input.tags
-      ?? currentTask
-      .tags,
-    locations: input.locations
-      ?? currentTask
-      .locations,
-    priority: input.priority
-      ?? currentTask
-      .priority,
-    dueDate: input.dueDate
-      ?? currentTask
-      .dueDate,
-    complexity: input.complexity
-      ?? currentTask
-      .complexity,
-    reminders: input.reminders
-      ?? currentTask
-      .reminders,
-    blockedBy: input.blockedBy
-      ?? currentTask
-      .blockedBy,
-    status: input.status
-      ?? currentTask
-      .status,
     updatedAt: nowIso(),
   };
 
   await db.prepare(SQL_UPDATE_TASK,)
     .run(
     updated.title,
-    updated.description,
+    updated.description
+      ?? null,
     JSON.stringify(normalizeStringArray(updated.tags,),),
     JSON.stringify(normalizeStringArray(updated.locations,),),
-    updated.priority,
-    updated.dueDate,
-    updated.complexity,
+    updated.priority
+      ?? null,
+    updated.dueDate
+      ?? null,
+    updated.complexity
+      ?? null,
     JSON.stringify(normalizeStringArray(updated.reminders,),),
     JSON.stringify(normalizeStringArray(updated.blockedBy,),),
     updated.status,

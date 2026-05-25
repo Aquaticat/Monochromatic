@@ -7,7 +7,10 @@
 import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
 
 import db from '../db.ts';
-import type { Task, } from '../types.ts';
+import {
+  type Task,
+  TASK_NOT_FOUND,
+} from '../types.ts';
 import { nowIso, } from './task-mapping.ts';
 import { getTaskById, } from './task-queries.ts';
 import {
@@ -40,14 +43,14 @@ export type CompleteTaskResult = {
  *
  * @param id - Task UUID
  *
- * @returns Updated task, or `null` when not found
+ * @returns Updated task, or {@link TASK_NOT_FOUND} when not found
  *
  * @example
  * ```ts
  * const task = await startTaskTimer('uuid-123');
  * ```
  */
-export async function startTaskTimer(id: string,): Promise<Task | null> {
+export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
   /** Single ISO timestamp reused for both `timer_started_at` and `updated_at` to keep them aligned. */
   const timestamp = nowIso();
   await db.prepare(SQL_START_TIMER,)
@@ -64,22 +67,22 @@ export async function startTaskTimer(id: string,): Promise<Task | null> {
  *
  * @param id - Task UUID
  *
- * @returns Updated task, or `null` when not found
+ * @returns Updated task, or {@link TASK_NOT_FOUND} when not found
  *
  * @example
  * ```ts
  * const task = await stopTaskTimer('uuid-123');
  * ```
  */
-export async function stopTaskTimer(id: string,): Promise<Task | null> {
-  /** Existing task; absent task short-circuits with `null`. */
+export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
+  /** Existing task; absent task short-circuits with `TASK_NOT_FOUND`. */
   const currentTask = await getTaskById(id,);
-  if (currentTask === null)
-    return null;
+  if (currentTask === TASK_NOT_FOUND)
+    return TASK_NOT_FOUND;
 
   /** Seconds the running timer accumulated; zero when no timer was active. */
   const elapsedSeconds = currentTask.timerStartedAt
-    === null
+    === undefined
     ? 0
     : Math.max(
       0,
@@ -117,7 +120,7 @@ export async function stopTaskTimer(id: string,): Promise<Task | null> {
 export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   /** Existing task; absent task short-circuits with `notFound: true`. */
   const currentTask = await getTaskById(id,);
-  if (currentTask === null) {
+  if (currentTask === TASK_NOT_FOUND) {
     return {
       completed: false,
       notFound: true,
@@ -150,7 +153,7 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
   }
 
   if (currentTask.timerStartedAt
-    !== null)
+    !== undefined)
     await stopTaskTimer(id,);
   await db.prepare(SQL_DELETE_TASK,)
     .run(id,);

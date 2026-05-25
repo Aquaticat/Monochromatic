@@ -11,7 +11,7 @@
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import styles from '../../dist/css/styles.css' with { type: 'text', };
 import type {
-  BlockedTaskLink,
+  BlockedTasksByBlocker,
   Task,
 } from '../lib/types.ts';
 import { inboxStyles, } from './inbox-styles.ts';
@@ -41,7 +41,7 @@ type InboxPageData = {
   /** All inbox tasks. */
   allTasks: Task[];
   /** Blocked tasks grouped by their blocker task ID. */
-  blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
+  blockedTasksByBlocker: BlockedTasksByBlocker;
 };
 
 injectCSS(styles,);
@@ -107,8 +107,8 @@ function buildTaskList(
     tasks,
     blockedTasksByBlocker,
   }: {
-    tasks: readonly Task[];
-    blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
+    readonly tasks: readonly Task[];
+    readonly blockedTasksByBlocker: BlockedTasksByBlocker;
   },
 ): HTMLUListElement {
   /** Top-level list element; child tasks are appended as nested sub-lists. */

@@ -22,20 +22,28 @@ export function isRecord(value: unknown,): value is Record<string, unknown> {
 }
 
 /**
+ * Sentinel returned by the parsers below when untrusted input fails validation.
+ *
+ * A unique `Symbol` keeps "invalid / not the expected shape" out of a nullish
+ * union (banned by `no-nullish-union`); callers narrow with `=== INVALID`.
+ */
+export const INVALID: unique symbol = Symbol('invalid-input',);
+
+/**
  * Extracts a trimmed, non-empty string array from untrusted input.
  *
  * @param value - Raw input that may be an array
  *
- * @returns Parsed array, or `null` when the input is not an array
+ * @returns Parsed array, or {@link INVALID} when the input is not an array
  *
  * @example
  * ```ts
- * const tags = parseStringArray(body.tags); // ['shopping', 'errands'] or null
+ * const tags = parseStringArray(body.tags); // ['shopping', 'errands'] or INVALID
  * ```
  */
-export function parseStringArray(value: unknown,): string[] | null {
+export function parseStringArray(value: unknown,): string[] | typeof INVALID {
   if (!Array.isArray(value,))
-    return null;
+    return INVALID;
 
   return value
     .filter(function isString(entry,): entry is string {
@@ -51,34 +59,33 @@ export function parseStringArray(value: unknown,): string[] | null {
 }
 
 /**
- * Parses a nullable enum field from untrusted input.
+ * Parses an enum field from untrusted input against a set of recognised values.
+ *
+ * Callers handle an explicit `null` (treated as "field not provided") before
+ * calling, so a `null` reaching here is just another non-string and maps to
+ * {@link INVALID}.
  *
  * @param value - Raw input value
  *
  * @param validValues - Set of recognized enum strings
  *
- * @returns Validated enum value, null, or undefined
+ * @returns Validated string, or {@link INVALID} when absent or unrecognized
  *
  * @example
  * ```ts
- * const priority = parseEnumValue<TaskPriority>({ value: body.priority, validValues: validPriorities });
+ * const priority = parseEnumValue({ value: body.priority, validValues: validPriorities });
  * ```
  */
-export function parseEnumValue<T extends string,>(
+export function parseEnumValue(
   {
     value,
     validValues,
   }: {
-    value: unknown;
-    validValues: Set<string>;
+    readonly value: unknown;
+    readonly validValues: ReadonlySet<string>;
   },
-): T | null | undefined {
-  if (value === undefined)
-    return undefined;
-  if (value === null)
-    return null;
+): string | typeof INVALID {
   if ((typeof value) !== 'string')
-    return undefined;
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
-  return validValues.has(value,) ? (value as T) : undefined;
+    return INVALID;
+  return validValues.has(value,) ? value : INVALID;
 }

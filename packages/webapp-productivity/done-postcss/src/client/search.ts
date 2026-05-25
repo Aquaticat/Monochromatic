@@ -38,6 +38,20 @@ function openTask(taskId: string,): void {
     .href = `/tasks/${taskId}`;
 }
 
+/**
+ * Completes a task, then reloads to drop it from the results.
+ *
+ * @param taskId - UUID of the task to complete
+ */
+async function completeTask(taskId: string,): Promise<void> {
+  await api({
+    path: `/api/tasks/${taskId}/complete`,
+    options: { method: 'POST', },
+  },);
+  globalThis.location
+    .reload();
+}
+
 injectCSS(styles,);
 injectCSS(searchStyles,);
 
@@ -53,7 +67,9 @@ if (!(appElement instanceof HTMLElement))
 const app = appElement;
 
 // Listen for search events from the search-bar component
-document.querySelector<HTMLElement>('search-bar',)?.addEventListener(
+document
+  .querySelector<HTMLElement>('search-bar',)
+  ?.addEventListener(
   'search',
   function onSearch(event,) {
     /* oxlint-disable typescript/no-unsafe-type-assertion -- CustomEvent detail contains query string */
@@ -118,14 +134,7 @@ else {
         options: {
           showBlockedBadge: result.isBlocked,
           onOpen: openTask,
-          onToggleComplete: async function completeTask(taskId,): Promise<void> {
-            await api({
-              path: `/api/tasks/${taskId}/complete`,
-              options: { method: 'POST', },
-            },);
-            globalThis.location
-              .reload();
-          },
+          onToggleComplete: completeTask,
         },
       },),
     );

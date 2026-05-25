@@ -47,10 +47,10 @@ export function renderTaskDetail(
     mode,
     host,
   }: {
-    shadow: ShadowRoot;
-    task: Task;
-    mode: TaskDetailMode;
-    host: HTMLElement;
+    readonly shadow: ShadowRoot;
+    readonly task: Task;
+    readonly mode: TaskDetailMode;
+    readonly host: HTMLElement;
   },
 ): RenderResult {
   /** Branches header label, button class, and button text between create and edit. */
@@ -89,7 +89,7 @@ export function renderTaskDetail(
     attrs: { placeholder: 'description', },
   },);
   if (task.description
-    !== null)
+    !== undefined)
     descInput.textContent = task.description;
 
   shadow.replaceChildren(

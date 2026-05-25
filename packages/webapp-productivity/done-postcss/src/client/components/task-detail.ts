@@ -6,15 +6,19 @@ import type {
   TaskComplexity,
   TaskPriority,
 } from '../../lib/types.ts';
-import { AutofillController, } from './task-detail-autofill.ts';
+import {
+  type AutofillController,
+  createAutofillController,
+} from './task-detail-autofill.ts';
 import {
   buildPillData,
   buildPillElements,
 } from './task-detail-pills.ts';
 import { renderTaskDetail, } from './task-detail-render.ts';
-import type {
-  TaskDetailData,
-  TaskDetailMode,
+import {
+  METADATA_UNSET,
+  type TaskDetailData,
+  type TaskDetailMode,
 } from './task-detail-types.ts';
 
 /**
@@ -25,22 +29,22 @@ class TaskDetail extends HTMLElement {
   readonly #shadow: ShadowRoot;
 
   /** Current task configuration data. */
-  #data: TaskDetailData | null = null;
+  #data?: TaskDetailData;
 
   /** Current display mode. */
   #mode: TaskDetailMode = 'edit';
 
   /** Mutable metadata state. */
-  #tags: string[] = [];
+  #tags: readonly string[] = [];
 
   /** Mutable locations state. */
-  #locations: string[] = [];
+  #locations: readonly string[] = [];
 
-  /** Mutable priority state. */
-  #priority: TaskPriority | null = null;
+  /** Mutable priority state; `METADATA_UNSET` until a value is selected. */
+  #priority: TaskPriority | typeof METADATA_UNSET = METADATA_UNSET;
 
-  /** Mutable complexity state. */
-  #complexity: TaskComplexity | null = null;
+  /** Mutable complexity state; `METADATA_UNSET` until a value is selected. */
+  #complexity: TaskComplexity | typeof METADATA_UNSET = METADATA_UNSET;
 
   /** Autofill controller managing debounced AI requests. */
   readonly #autofill: AutofillController;
@@ -49,57 +53,60 @@ class TaskDetail extends HTMLElement {
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
-    this.#autofill = new AutofillController({
-      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-      getState: function getState(
-        this: TaskDetail,
-      ): {
-        tags: string[];
-        locations: string[];
-        priority: string | null;
-        complexity: string | null;
-      } {
-        return {
-          tags: this.#tags,
-          locations: this.#locations,
-          priority: this.#priority,
-          complexity: this.#complexity,
-        };
-      }
+    this.#autofill = createAutofillController({
+      getState: this.#getAutofillState
         .bind(this,),
-      setState: function setState(
-        this: TaskDetail,
-        update: {
-          tags?: string[];
-          locations?: string[];
-          priority?: string | null;
-          complexity?: string | null;
-        },
-      ): void {
-        if (update.tags
-          !== undefined)
-          this.#tags = update.tags as string[];
-        if (update.locations
-          !== undefined)
-          this.#locations = update.locations as string[];
-        if (update.priority
-          !== undefined) {
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from string to TaskPriority union
-          this.#priority = update.priority as TaskPriority | null;
-        }
-        if (update.complexity
-          !== undefined) {
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from string to TaskComplexity union
-          this.#complexity = update.complexity as TaskComplexity | null;
-        }
-      }
+      setState: this.#applyAutofillState
         .bind(this,),
-      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-      updateDisplay: function updateDisplay(this: TaskDetail,): void {
-        this.#updatePillsDisplay();
-      }
+      updateDisplay: this.#updatePillsDisplay
         .bind(this,),
     },);
+  }
+
+  /**
+   * Snapshots current metadata for the autofill controller's empty-field check.
+   *
+   * @returns Current tags, locations, priority, and complexity
+   */
+  #getAutofillState(): {
+    readonly tags: readonly string[];
+    readonly locations: readonly string[];
+    readonly priority: TaskPriority | typeof METADATA_UNSET;
+    readonly complexity: TaskComplexity | typeof METADATA_UNSET;
+  } {
+    return {
+      tags: this.#tags,
+      locations: this.#locations,
+      priority: this.#priority,
+      complexity: this.#complexity,
+    };
+  }
+
+  /**
+   * Applies AI-suggested metadata; omitted fields are left unchanged.
+   *
+   * @param update - Fields the autofill controller wants to set
+   */
+  #applyAutofillState(
+    update: {
+      readonly tags?: readonly string[];
+      readonly locations?: readonly string[];
+      readonly priority?: TaskPriority;
+      readonly complexity?: TaskComplexity;
+    },
+  ): void {
+    if (update.tags
+      !== undefined)
+      this.#tags = update.tags;
+    if (update.locations
+      !== undefined)
+      this.#locations = update.locations;
+    if (update.priority
+      !== undefined)
+      this.#priority = update.priority;
+    if (update.complexity
+      !== undefined)
+      this.#complexity = update.complexity;
   }
 
   /**
@@ -121,12 +128,13 @@ class TaskDetail extends HTMLElement {
     this.#locations = [...data.task
       .locations,];
     this.#priority = data.task
-      .priority;
+      .priority
+      ?? METADATA_UNSET;
     this.#complexity = data.task
-      .complexity;
+      .complexity
+      ?? METADATA_UNSET;
     this.#autofill
-      .autofilled
-      .clear();
+      .clearAutofilled();
     this.#render();
   }
 
@@ -136,10 +144,10 @@ class TaskDetail extends HTMLElement {
    * @returns Current metadata values
    */
   getMetadata(): {
-    tags: string[];
-    locations: string[];
-    priority: TaskPriority | null;
-    complexity: TaskComplexity | null;
+    readonly tags: readonly string[];
+    readonly locations: readonly string[];
+    readonly priority: TaskPriority | typeof METADATA_UNSET;
+    readonly complexity: TaskComplexity | typeof METADATA_UNSET;
   } {
     return {
       tags: this.#tags,
@@ -183,9 +191,9 @@ class TaskDetail extends HTMLElement {
 
   /** Delegates to renderTaskDetail and wires autofill on title input. */
   #render(): void {
-    /** Snapshot of `#data` to satisfy the null check and stable destructure below. */
+    /** Snapshot of `#data` to satisfy the absence check and stable destructure below. */
     const data = this.#data;
-    if (data === null)
+    if (data === undefined)
       return;
     /** Title input returned by the shared renderer; autofill is wired on its `input` events. */
     const { titleInput, } = renderTaskDetail({
@@ -195,13 +203,13 @@ class TaskDetail extends HTMLElement {
       host: this,
     },);
     this.#updatePillsDisplay();
+    /** Captured so the input listener reaches the controller without a `this`-bound handler. */
+    const autofill = this.#autofill;
     titleInput.addEventListener(
       'input',
-      function onTitleInput(this: TaskDetail,): void {
-        this.#autofill
-          .request(titleInput.value,);
-      }
-        .bind(this,),
+      function onTitleInput(): void {
+        autofill.request(titleInput.value,);
+      },
     );
   }
 }

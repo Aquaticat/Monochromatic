@@ -12,6 +12,7 @@ import type {
   TaskStatus,
 } from '../types.ts';
 
+/* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors `@tursodatabase/database` `.get()/.all()` raw row shape: SQLite NULL columns materialize as JS `null` values on the returned row object, so the honest type for a nullable column is `T | null`. `mapTask` converts these to absent (`?:`) at the application boundary. */
 /** Raw SQLite row shape before mapping to the application-level `Task` type. */
 export type TaskRow = {
   /** Primary key UUID. */
@@ -51,6 +52,7 @@ export type TaskRow = {
   /** ISO timestamp of last update. */
   updated_at: string;
 };
+/* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 /** SQL to select a single task by primary key. */
 export const SQL_SELECT_TASK_BY_ID = 'SELECT * FROM tasks WHERE id = ?';

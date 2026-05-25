@@ -11,29 +11,23 @@
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../lib/types.ts';
+import { METADATA_UNSET, } from './components/task-detail-types.ts';
 import type { TaskDetail, } from './components/task-detail.ts';
 import { api, } from './lib/api.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: registers the task-detail custom element
 import './components/task-detail.ts';
 
-/** Blank task template used when creating a new task. */
+/** Blank task template used when creating a new task; optional fields stay absent. */
 const emptyTask: Task = {
   id: '',
   title: '',
-  description: null,
   tags: [],
   locations: [],
-  priority: null,
-  dueDate: null,
-  complexity: null,
   reminders: [],
   blockedBy: [],
   trackedTime: 0,
-  timerStartedAt: null,
   status: 'inbox',
   source: 'local',
-  sourceId: null,
-  sourceMeta: null,
   createdAt: '',
   updatedAt: '',
 };
@@ -135,8 +129,10 @@ export function createNewTaskDialog(): NewTaskDialog {
                     === 0 ? null : description,
                   tags: metadata.tags,
                   locations: metadata.locations,
-                  priority: metadata.priority,
-                  complexity: metadata.complexity,
+                  priority: metadata.priority
+                    === METADATA_UNSET ? undefined : metadata.priority,
+                  complexity: metadata.complexity
+                    === METADATA_UNSET ? undefined : metadata.complexity,
                 },),
               },
             },);
@@ -174,13 +170,11 @@ export function createNewTaskDialog(): NewTaskDialog {
     requestAnimationFrame(function focusTitleInput() {
       panel.dataset
         .animating = '';
-      /* oxlint-disable typescript/no-unsafe-type-assertion -- shadowRoot querySelector returns the input we created */
       /** Title input from inside the detail's shadow root; focused after the expand frame. */
       const titleInput = detail.shadowRoot
         ?.querySelector<HTMLInputElement>(
         '.title-input',
-      ) as HTMLInputElement | null;
-      /* oxlint-enable typescript/no-unsafe-type-assertion */
+      );
       titleInput?.focus();
     },);
   }

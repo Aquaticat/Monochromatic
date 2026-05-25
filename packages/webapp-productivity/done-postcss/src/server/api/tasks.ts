@@ -14,7 +14,11 @@ import {
   deleteTask,
   updateTask,
 } from '../../lib/db/tasks.ts';
-import type { TaskPriority, } from '../../lib/types.ts';
+import {
+  type TaskComplexity,
+  TASK_NOT_FOUND,
+  type TaskPriority,
+} from '../../lib/types.ts';
 import {
   HTTP_BAD_REQUEST,
   HTTP_CREATED,
@@ -24,6 +28,7 @@ import {
 } from './http-utils.ts';
 import { parseTaskUpdateInput, } from './task-validation-update.ts';
 import {
+  INVALID,
   isRecord,
   parseEnumValue,
   parseStringArray,
@@ -70,24 +75,39 @@ export async function handleCreateTask(req: Request,): Promise<Response> {
       },);
     }
 
+    /** Validated tags; INVALID (not an array) falls back to an empty list. */
+    const parsedTags = parseStringArray(body.tags,);
+    /** Validated locations; INVALID falls back to an empty list. */
+    const parsedLocations = parseStringArray(body.locations,);
+    /** Validated priority string, or INVALID when absent/unrecognised. */
+    const parsedPriority = parseEnumValue({
+      value: body.priority,
+      validValues: priorities,
+    },);
+    /** Validated complexity string, or INVALID when absent/unrecognised. */
+    const parsedComplexity = parseEnumValue({
+      value: body.complexity,
+      validValues: priorities,
+    },);
+    /** Priority field, included only when a valid value was supplied. */
+    const priorityField: { priority?: TaskPriority; } = parsedPriority === INVALID
+      ? {}
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- member of the priorities set, which holds exactly the TaskPriority values
+      : { priority: parsedPriority as TaskPriority, };
+    /** Complexity field, included only when a valid value was supplied. */
+    const complexityField: { complexity?: TaskComplexity; } = parsedComplexity === INVALID
+      ? {}
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- member of the priorities set, whose low/medium/high values are exactly the TaskComplexity values
+      : { complexity: parsedComplexity as TaskComplexity, };
+
     /** Persisted task returned to the caller as the 201 body. */
     const task = await createTask({
       title,
-      description: ((typeof body.description) === 'string') ? body.description : null,
-      tags: parseStringArray(body.tags,)
-        ?? [],
-      locations: parseStringArray(body.locations,)
-        ?? [],
-      priority: parseEnumValue<TaskPriority>({
-        value: body.priority,
-        validValues: priorities,
-      },)
-        ?? null,
-      complexity: parseEnumValue<TaskPriority>({
-        value: body.complexity,
-        validValues: priorities,
-      },)
-        ?? null,
+      ...(((typeof body.description) === 'string') ? { description: body.description, } : {}),
+      tags: parsedTags === INVALID ? [] : parsedTags,
+      locations: parsedLocations === INVALID ? [] : parsedLocations,
+      ...priorityField,
+      ...complexityField,
     },);
     return jsonResponse({
       payload: task,
@@ -121,28 +141,28 @@ export async function handleUpdateTask(
     req,
     id,
   }: {
-    req: Request;
-    id: string;
+    readonly req: Request;
+    readonly id: string;
   },
 ): Promise<Response> {
   try {
     /** Parsed JSON body retained as `unknown` until the update parser narrows the shape. */
     const body: unknown = await req.json();
-    /** Validated update payload; `null` triggers a 400 response. */
+    /** Validated update payload; INVALID triggers a 400 response. */
     const taskUpdateInput = parseTaskUpdateInput(body,);
-    if (taskUpdateInput === null) {
+    if (taskUpdateInput === INVALID) {
       return jsonResponse({
         payload: { error: 'Invalid update payload', },
         status: HTTP_BAD_REQUEST,
       },);
     }
 
-    /** Updated task; `null` triggers a 404 when the row was removed concurrently. */
+    /** Updated task; `TASK_NOT_FOUND` triggers a 404 when the row was removed concurrently. */
     const task = await updateTask({
       id,
       input: taskUpdateInput,
     },);
-    if (task === null) {
+    if (task === TASK_NOT_FOUND) {
       return jsonResponse({
         payload: { error: 'Task not found', },
         status: HTTP_NOT_FOUND,

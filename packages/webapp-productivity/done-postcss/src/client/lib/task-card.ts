@@ -14,16 +14,19 @@ import {
 
 export { formatRunningTrackedTime, } from './format-tracked-time.ts';
 
+/** Sentinel returned by `getChipElement` when no chip matches the prefix. */
+const CHIP_NOT_FOUND: unique symbol = Symbol('chip-not-found',);
+
 /** `\<task-card\>` -- displays a task as a clickable card with checkbox, title, and metadata chips. */
 class TaskCard extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
 
-  /** Currently displayed task, or null before configuration. */
-  #task: Task | null = null;
+  /** Currently displayed task; absent before configuration. */
+  #task?: Task;
 
-  /** Current rendering options, or null before configuration. */
-  #options: TaskCardOptions | null = null;
+  /** Current rendering options; absent before configuration. */
+  #options?: TaskCardOptions;
 
   /** Initializes the shadow root for encapsulated rendering. */
   constructor() {
@@ -52,26 +55,26 @@ class TaskCard extends HTMLElement {
    *
    * @param prefix - Text prefix to match (e.g. `"tracked:"`)
    *
-   * @returns Matching chip element, or null if not found
+   * @returns Matching chip element, or `CHIP_NOT_FOUND` when none matches
    */
-  getChipElement(prefix: string,): HTMLSpanElement | null {
+  getChipElement(prefix: string,): HTMLSpanElement | typeof CHIP_NOT_FOUND {
     for (const chip of this.#shadow
       .querySelectorAll<HTMLSpanElement>('.chip',)) {
       if (chip.textContent
         .startsWith(prefix,)) {
-        return chip as HTMLSpanElement;
+        return chip;
       }
     }
-    return null;
+    return CHIP_NOT_FOUND;
   }
 
   /** Renders the full card content into the shadow root. */
   #render(): void {
-    /** Local snapshot used for the null guard and the renderer call below. */
+    /** Local snapshot used for the absence guard and the renderer call below. */
     const task = this.#task;
-    /** Local snapshot used for the null guard and the renderer call below. */
+    /** Local snapshot used for the absence guard and the renderer call below. */
     const options = this.#options;
-    if ((task === null) || (options === null))
+    if ((task === undefined) || (options === undefined))
       return;
     renderTaskCardContent({
       shadow: this.#shadow,
@@ -106,8 +109,8 @@ export function createTaskCard(
     task,
     options,
   }: {
-    task: Task;
-    options: TaskCardOptions;
+    readonly task: Task;
+    readonly options: TaskCardOptions;
   },
 ): TaskCard {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- custom element registered as "task-card" */

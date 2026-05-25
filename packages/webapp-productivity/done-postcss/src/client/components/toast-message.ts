@@ -24,6 +24,9 @@ const STYLES = css(`
 /** Auto-dismiss duration in milliseconds. */
 const DISMISS_MS = 3_000;
 
+/** Sentinel for "no auto-dismiss timer is scheduled". */
+const NO_TIMER: unique symbol = Symbol('no-timer',);
+
 /**
  * `\<toast-message\>`: ephemeral notification that auto-dismisses.
  * Reads the `message` attribute for display text.
@@ -32,8 +35,8 @@ class ToastMessage extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
 
-  /** Handle for the auto-dismiss timer, or null when not scheduled. */
-  #timer: ReturnType<typeof setTimeout> | null = null;
+  /** Handle for the auto-dismiss timer; `NO_TIMER` when not scheduled. */
+  #timer: ReturnType<typeof setTimeout> | typeof NO_TIMER = NO_TIMER;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -44,12 +47,12 @@ class ToastMessage extends HTMLElement {
   /** Renders content and schedules auto-removal after `DISMISS_MS`. */
   connectedCallback(): void {
     this.#render();
+    /** Captured so the dismiss closure removes this component without a `this`-bound function. */
+    const self = this;
     this.#timer = setTimeout(
-      // oxlint-disable-next-line unicorn/consistent-function-scoping -- bound to class instance via .bind(this)
-      function dismiss(this: ToastMessage,): void {
-        this.remove();
-      }
-        .bind(this,),
+      function dismiss(): void {
+        self.remove();
+      },
       DISMISS_MS,
     );
   }
@@ -57,9 +60,9 @@ class ToastMessage extends HTMLElement {
   /** Cancels the auto-dismiss timer when the element is removed early. */
   disconnectedCallback(): void {
     if (this.#timer
-      !== null) {
+      !== NO_TIMER) {
       clearTimeout(this.#timer,);
-      this.#timer = null;
+      this.#timer = NO_TIMER;
     }
   }
 
