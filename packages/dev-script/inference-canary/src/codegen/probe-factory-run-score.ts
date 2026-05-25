@@ -34,7 +34,7 @@ import type { LintResult, } from '../linter.ts';
 import type { ScoreContext, } from '../probes.ts';
 import type {
   CodeGenProbeConfig,
-  ProbeFactoryCaches,
+  WritableProbeFactoryCaches,
 } from './probe-factory-types.ts';
 
 /**
@@ -58,7 +58,7 @@ type ScoreImplOptions = {
   /** Scoring context with model label, pass, timestamp, and abort signal */
   readonly context: ScoreContext;
   /** Shared per-model caches populated for downstream use by buildFixPromptImpl */
-  readonly caches: ProbeFactoryCaches;
+  readonly caches: WritableProbeFactoryCaches;
 };
 
 /**
@@ -130,12 +130,19 @@ export async function scoreImpl({
   /** Final source to execute in containers */
   const { source, } = transformed;
 
+  /** Abort signal from the score context, destructured so the spread guard below has no member chain. */
+  const {
+    signal,
+  } = context;
+  /** Spread-friendly abort signal; included only when the score context carries one, to satisfy exactOptionalPropertyTypes. */
+  const signalArg = signal !== undefined ? { signal, } : {};
+
   // Launch all container runs in parallel: correctness + lint + perf + additional
   /** Main correctness container promise */
   const correctnessPromise = runInContainer({
     source,
     stdinData: config.testInput,
-    signal: context.signal,
+    ...signalArg,
   },);
   /** Lint analysis promise */
   const lintPromise = lintAndLog({
@@ -150,7 +157,7 @@ export async function scoreImpl({
       source,
       input: config.perfTest
         .input,
-      signal: context.signal,
+      ...signalArg,
     },)
     : undefined;
   /** Additional run container promises (empty array when no additional runs) */
@@ -159,7 +166,7 @@ export async function scoreImpl({
     ? executeAdditionalRuns({
       source,
       runs: config.additionalRuns,
-      signal: context.signal,
+      ...signalArg,
     },)
     : undefined;
 
@@ -203,7 +210,7 @@ export async function scoreImpl({
     config,
     context,
     caches,
-    perfResult,
+    ...((perfResult !== undefined) ? { perfResult, } : {}),
   },);
 
   if (transformed.reject) {

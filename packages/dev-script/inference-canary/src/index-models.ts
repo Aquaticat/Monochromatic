@@ -27,7 +27,7 @@ import {
  * ```
  */
 export function selectModels(): readonly ModelConfig[] {
-  if (modelOverride === undefined)
+  if (modelOverride === '')
     return models;
 
   /** Registered model whose `label` matches the override; undefined when the override matches none. */

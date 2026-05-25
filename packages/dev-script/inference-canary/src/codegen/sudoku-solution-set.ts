@@ -30,9 +30,9 @@ type VerifySolutionSetOptions = {
   readonly section: string;
   /** Clue grid to verify solutions against */
   readonly clues: readonly (readonly number[])[];
-  /** Exact number of solutions expected, or undefined for "at least min" */
-  readonly expectedCount: number | undefined;
-  /** Minimum number of solutions when expectedCount is undefined */
+  /** Exact number of solutions expected, omitted for "at least min" */
+  readonly expectedCount?: number;
+  /** Minimum number of solutions when expectedCount is absent */
   readonly minCount: number;
 };
 
@@ -64,13 +64,14 @@ export function verifySolutionSet({
 }: VerifySolutionSetOptions,): boolean {
   /** Raw solution text blocks split on blank lines within the section */
   const solutionBlocks = splitSolutions(section,);
-  /** Parsed grids from solution blocks, filtering out unparseable ones */
+  /** Parsed grids from solution blocks, filtering out unparseable ones (empty array result) */
   const grids = solutionBlocks
-    .map(function parseSol(sol,): number[][] | undefined {
+    .map(function parseSol(sol,): number[][] {
       return parseGrid(sol,);
     },)
-    .filter(function isGrid(grid,): grid is number[][] {
-      return grid !== undefined;
+    .filter(function isGrid(grid,): boolean {
+      return grid.length
+        > 0;
     },);
   /** Whether the solution count matches the expected or minimum threshold */
   const countOk = expectedCount !== undefined

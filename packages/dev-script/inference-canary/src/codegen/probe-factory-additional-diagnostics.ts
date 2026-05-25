@@ -28,14 +28,14 @@ const MAX_ADDITIONAL_OUTPUT = 500;
  * ```
  */
 type AppendAdditionalRunDiagnosticsOptions = {
-  /** Base fix prompt from buildCodeGenFixPrompt (may be undefined) */
-  readonly base: string | undefined;
-  /** Additional run configurations */
-  readonly runs: readonly AdditionalRun[] | undefined;
-  /** Per-run container result caches */
-  readonly containerCaches: readonly Map<string, ContainerResult>[];
-  /** Per-run verification result caches */
-  readonly verifyCaches: readonly Map<string, VerifyResult>[];
+  /** Base fix prompt from buildCodeGenFixPrompt (empty string when no base diagnostics) */
+  readonly base: string;
+  /** Additional run configurations (empty when the probe defines none) */
+  readonly runs: readonly AdditionalRun[];
+  /** Per-run container result caches (read-only here) */
+  readonly containerCaches: readonly ReadonlyMap<string, ContainerResult>[];
+  /** Per-run verification result caches (read-only here) */
+  readonly verifyCaches: readonly ReadonlyMap<string, VerifyResult>[];
   /** Model label for cache lookups */
   readonly label: string;
 };
@@ -46,7 +46,7 @@ type AppendAdditionalRunDiagnosticsOptions = {
  * Includes runtime errors (crash/timeout) and incorrect output summaries for runs
  * that succeeded at runtime but failed verification. Skips runs that passed.
  *
- * @param base - base fix prompt from buildCodeGenFixPrompt (may be undefined)
+ * @param base - base fix prompt from buildCodeGenFixPrompt (empty string when no base diagnostics)
  *
  * @param runs - additional run configurations
  *
@@ -69,51 +69,48 @@ export function appendAdditionalRunDiagnostics({
   containerCaches,
   verifyCaches,
   label,
-}: AppendAdditionalRunDiagnosticsOptions,): string | undefined {
-  if ((runs === undefined) || (runs.length
-    === 0))
+}: AppendAdditionalRunDiagnosticsOptions,): string {
+  if (runs.length
+    === 0)
     return base;
 
-  /** Diagnostic text sections for runs that failed or produced incorrect output */
+  /** Diagnostic text sections for runs that failed or produced incorrect output; passing runs contribute no entry. */
   const diagSections = runs
-    .map(function buildDiagSection(
+    .flatMap(function buildDiagSection(
       run,
       index,
-    ): string | undefined {
+    ): readonly string[] {
       /** Cached container result for this run and model */
       const container = containerCaches[index]
         ?.get(label,);
       if (container === undefined)
-        return undefined;
+        return [];
       if (container.timedOut)
-        return `=== ${run.name} ===\nProcess timed out.`;
+        return [`=== ${run.name} ===\nProcess timed out.`,];
       if (container.exitCode
         !== 0) {
-        return `=== ${run.name} ===\nExited with code ${String(container.exitCode,)}.\n${
+        return [`=== ${run.name} ===\nExited with code ${String(container.exitCode,)}.\n${
           container.stderr
             .slice(
             0,
             MAX_ADDITIONAL_OUTPUT,
           )
-        }`;
+        }`,];
       }
       /** Cached verification result for this run and model */
       const verify = verifyCaches[index]
         ?.get(label,);
       if ((verify !== undefined) && (verify.correctness
         < 1)) {
-        return `=== ${run.name} (incorrect output) ===\n${
+        return [`=== ${run.name} (incorrect output) ===\n${
           container.stdout
             .slice(
             0,
             MAX_ADDITIONAL_OUTPUT,
           )
-        }`;
+        }`,];
       }
-      return undefined;
-    },)
-    .filter(function isDefined(diagSection,): diagSection is string {
-      return diagSection !== undefined;
+      return [];
     },);
 
   if (diagSections.length
@@ -121,7 +118,7 @@ export function appendAdditionalRunDiagnostics({
     return base;
   /** Combined diagnostic text from all failing additional runs */
   const combined = diagSections.join('\n\n',);
-  if (base !== undefined)
+  if (base !== '')
     return `${base}\n\n${combined}`;
 
   // Main run was fine but additional runs failed: build standalone prompt

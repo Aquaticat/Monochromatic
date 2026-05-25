@@ -30,14 +30,45 @@ export type RunnerConfig = {
   /** Whether to enable adaptive thinking (reasoning) */
   readonly reasoning: boolean;
   /** API key for Authorization header */
-  readonly apiKey?: string | undefined;
+  readonly apiKey?: string;
   /** Base URL for the chat completions endpoint (e.g. "https://openrouter.ai/api/v1") */
-  readonly baseURL?: string | undefined;
+  readonly baseURL?: string;
   /**
    * Map from model label to the set of probe names to skip for that model.
    * Allows partial re-runs: only probes tested within the last 24 hours are skipped.
    */
-  readonly skipProbes?: ReadonlyMap<string, ReadonlySet<string>> | undefined;
+  readonly skipProbes?: ReadonlyMap<string, ReadonlySet<string>>;
+};
+
+/**
+ * Per-field overrides merged onto {@link defaultConfig} by {@link runCanary}.
+ *
+ * Every field is explicitly optional because a caller may override any subset and
+ * let the rest fall back to defaults. Spelled out field-by-field rather than via
+ * `Partial<RunnerConfig>`: under `exactOptionalPropertyTypes`, `Partial` reopens
+ * the holes the strict-optional config closes, and the no-optional-escape rule
+ * bans it. The genuinely-optional-everywhere shape of an override patch is the one
+ * case where every property legitimately carries `?:`.
+ */
+export type RunnerConfigOverrides = {
+  /** OpenRouter model ID override; defaults to {@link defaultConfig}'s model when absent. */
+  readonly model?: OpenRouterModelId;
+  /** Model label override used for dedup, artifact directories, and log prefixes. */
+  readonly label?: string;
+  /** Consistency-run count override; controls how many times each probe repeats. */
+  readonly consistencyRuns?: number;
+  /** Response token ceiling override. */
+  readonly maxTokens?: number;
+  /** Verbosity override forwarded to `output_config.effort`. */
+  readonly verbosity?: VerbosityLevel;
+  /** Adaptive-thinking toggle override. */
+  readonly reasoning?: boolean;
+  /** API key override for the Authorization header. */
+  readonly apiKey?: string;
+  /** Chat-completions endpoint base URL override. */
+  readonly baseURL?: string;
+  /** Per-model skip list override, enabling partial re-runs that reuse recent artifacts. */
+  readonly skipProbes?: ReadonlyMap<string, ReadonlySet<string>>;
 };
 
 /** Conservative defaults tuned for quick diagnostics */

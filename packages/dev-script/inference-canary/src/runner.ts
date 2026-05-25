@@ -9,6 +9,7 @@ import { mean, } from './math.ts';
 import {
   defaultConfig,
   type RunnerConfig,
+  type RunnerConfigOverrides,
 } from './runner-config.ts';
 import { handleRunFailure, } from './runner-failure.ts';
 import { runProbe, } from './runner-probe.ts';
@@ -22,6 +23,7 @@ import type {
 
 export type {
   RunnerConfig,
+  RunnerConfigOverrides,
   VerbosityLevel,
 } from './runner-config.ts';
 export type {
@@ -95,8 +97,8 @@ function computeCategoryScores(results: readonly ProbeResult[],): Record<string,
 type RunCanaryOptions = {
   /** Canary probes to execute */
   readonly probes: readonly Probe[];
-  /** Runner configuration (merged with defaults) */
-  readonly config?: Partial<RunnerConfig>;
+  /** Runner configuration overrides (merged with defaults) */
+  readonly config?: RunnerConfigOverrides;
 };
 
 /**
@@ -177,9 +179,9 @@ export async function runCanary({
         },);
         pl.info(
           `=> mean=${
-            String(result
+            result
               .meanScore
-              .toFixed(2,),)
+              .toFixed(2,)
           }`,
         );
         return result;

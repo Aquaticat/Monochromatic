@@ -17,6 +17,37 @@ export type ExecutionStep = {
 };
 
 /**
+ * Operand stack viewed as deeply readonly while still allowing the two mutators
+ * the interpreter genuinely needs.
+ *
+ * Mirrors the `WritableCache` technique used by the probe factory: a
+ * `readonly number[]` intersected with `push`/`pop` expressed as readonly
+ * properties holding the built-in `Array` method types. The
+ * `prefer-readonly-parameter-types` rule treats a function-valued property as
+ * immutable (as it does a method reference), so a parameter of this type counts
+ * as deeply readonly; a real `number[]` stays structurally assignable, so
+ * {@link runStak}'s call sites need no change.
+ */
+export type WritableStack = readonly number[] & {
+  /** In-place top-of-stack push; same signature as the built-in `Array.push`. */
+  readonly push: number[]['push'];
+  /** In-place top-of-stack pop; same signature as the built-in `Array.pop`. */
+  readonly pop: number[]['pop'];
+};
+
+/**
+ * Variable environment viewed as deeply readonly while still allowing `set`.
+ *
+ * Same technique as {@link WritableStack}: a {@link ReadonlyMap} intersected with
+ * the built-in `Map.set`, expressed as a readonly property so the parameter
+ * counts as deeply readonly; a real `Map` stays structurally assignable.
+ */
+export type WritableEnv = ReadonlyMap<string, number> & {
+  /** In-place variable binding; same signature as the built-in `Map.set`. */
+  readonly set: Map<string, number>['set'];
+};
+
+/**
  * Removes and returns the top stack value.
  *
  * @param stack - mutable integer stack
@@ -25,7 +56,7 @@ export type ExecutionStep = {
  *
  * @throws if the stack is empty
  */
-function pop(stack: number[],): number {
+function pop(stack: WritableStack,): number {
   if (stack.length
     === 0)
     throw new Error('stack underflow',);
@@ -91,11 +122,11 @@ export type ExecuteOpOptions = {
   /** Opcode string (e.g. "ADD", "JUMP", or a numeric literal) */
   readonly op: string;
   /** Optional argument (variable or label name) */
-  readonly arg: string | undefined;
-  /** Mutable integer stack */
-  readonly stack: number[];
-  /** Mutable variable environment */
-  readonly env: Map<string, number>;
+  readonly arg?: string;
+  /** Operand stack mutated in place via push/pop; {@link WritableStack} keeps the param deeply readonly. */
+  readonly stack: WritableStack;
+  /** Variable environment mutated in place via set; {@link WritableEnv} keeps the param deeply readonly. */
+  readonly env: WritableEnv;
   /** Label-to-position mapping from the indexing pass */
   readonly labels: ReadonlyMap<string, number>;
 };
@@ -218,7 +249,7 @@ export function executeOp({
   else if (op === 'JUMP') {
     return resolveJumpTarget({
       op,
-      arg,
+      ...((arg !== undefined) ? { arg, } : {}),
       labels,
     },);
   }
@@ -228,13 +259,13 @@ export function executeOp({
     if (val === 0) {
       return resolveJumpTarget({
         op,
-        arg,
+        ...((arg !== undefined) ? { arg, } : {}),
         labels,
       },);
     }
   }
   else {
-    throw new Error(`unknown op: ${String(op,)}`,);
+    throw new Error(`unknown op: ${op}`,);
   }
 
   return {};

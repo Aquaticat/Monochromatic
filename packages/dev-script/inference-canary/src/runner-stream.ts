@@ -9,12 +9,14 @@
 import type OpenAI from 'openai';
 import {
   buildResult,
+  buildStreamUsage,
   logTiming,
   PartialCompletionError,
 } from './runner-stream-helpers.ts';
 
 import type { RunnerConfig, } from './runner-config.ts';
 import type {
+  ChatClient,
   ChatMessage,
   CompletionResult,
   StreamTiming,
@@ -37,16 +39,16 @@ export { PartialCompletionError, } from './runner-stream-helpers.ts';
  * ```
  */
 type StreamCompletionOptions = {
-  /** OpenAI SDK client */
-  readonly client: OpenAI;
+  /** OpenAI SDK client (narrow readonly view) */
+  readonly client: ChatClient;
   /** Conversation messages */
   readonly messages: readonly ChatMessage[];
   /** Runner configuration */
   readonly config: RunnerConfig;
   /** Label for timing logs */
   readonly probeName: string;
-  /** Abort signal; cancels the HTTP stream when aborted, or `undefined` to disable */
-  readonly signal: AbortSignal | undefined;
+  /** Abort signal; cancels the HTTP stream when aborted, or absent to disable */
+  readonly signal?: AbortSignal;
 };
 
 /**
@@ -147,18 +149,17 @@ export async function streamCompletion({
   const reasoningChunks: string[] = [];
   /** Per-chunk inter-arrival times in ms; used to compute streaming-rate stats. */
   const interChunkMs: number[] = [];
-  // firstChunkMs, lastChunkMs, chunkCount, lastFinishReason, lastUsage are let
-  // because they are all reassigned inside the for-await loop.
+  /** Every non-null `finish_reason` seen, in arrival order; the last entry is what the API used to terminate. */
+  const finishReasons: string[] = [];
+  /** Every usage payload seen, in arrival order; the last entry is the final cumulative usage. */
+  const usages: OpenAI.CompletionUsage[] = [];
+  // firstChunkMs, lastChunkMs, chunkCount are let because they are all reassigned inside the for-await loop.
   /** Latency (ms) from request start to the first chunk; set on the first iteration. */
   let firstChunkMs = 0;
   /** Wall-clock timestamp of the most recent chunk; seed value compares against `startMs`. */
   let lastChunkMs = startMs;
   /** Number of stream chunks observed so far; drives first-chunk detection and metrics. */
   let chunkCount = 0;
-  /** Most recent non-null `finish_reason`; the final value is what the API used to terminate. */
-  let lastFinishReason: string | undefined = undefined;
-  /** Most recent usage payload; arrives only on the final chunk when `include_usage` is set. */
-  let lastUsage: OpenAI.CompletionUsage | null | undefined = undefined;
 
   for await (const chunk of stream) {
     /** Wall-clock timestamp captured once per chunk so first-chunk and inter-chunk arithmetic stay consistent. */
@@ -210,14 +211,14 @@ export async function streamCompletion({
 
       if (choice.finish_reason
         !== null)
-        lastFinishReason = choice.finish_reason;
+        finishReasons.push(choice.finish_reason,);
     }
 
     // Usage arrives on the final chunk when stream_options.include_usage is set.
     if ((chunk.usage
       !== undefined) && (chunk.usage
         !== null))
-      lastUsage = chunk.usage;
+      usages.push(chunk.usage,);
   }
 
   signal?.removeEventListener(
@@ -240,13 +241,30 @@ export async function streamCompletion({
     timing,
   },);
 
+  /** Final usage payload, when the API reported one on the closing chunk. */
+  const lastUsage = usages.at(-1,);
+  /** Final stop reason, when the API reported one. */
+  const lastFinishReason = finishReasons.at(-1,);
+  /** Reasoning-token count from the final usage payload; absent when the provider omits it. */
+  const reasoningTokens = lastUsage
+    ?.completion_tokens_details
+    ?.reasoning_tokens;
+  /** Normalized usage built from the final payload; omitted from the result when absent. */
+  const usage = lastUsage === undefined
+    ? undefined
+    : buildStreamUsage({
+      promptTokens: lastUsage.prompt_tokens,
+      completionTokens: lastUsage.completion_tokens,
+      totalTokens: lastUsage.total_tokens,
+      ...(reasoningTokens !== undefined ? { reasoningTokens, } : {}),
+    });
   /** Assembled completion (text + reasoning + usage + finish reason) returned on success or in PartialCompletionError. */
   const result = buildResult({
     chunks,
     reasoningChunks,
     timing,
-    usage: lastUsage,
-    finishReason: lastFinishReason,
+    ...((usage !== undefined) ? { usage, } : {}),
+    ...((lastFinishReason !== undefined) ? { finishReason: lastFinishReason, } : {}),
   },);
 
   // The SDK ends the stream gracefully on abort (returns partial data) rather than throwing.

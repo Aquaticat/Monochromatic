@@ -67,21 +67,22 @@ export function verifyNormal(stdout: string,): number {
     return PARTIAL_CREDIT;
   }
 
-  /** Parsed 9x9 grid from the solvable puzzle output, undefined on parse failure */
+  /** Parsed 9x9 grid from the solvable puzzle output, empty array on parse failure */
   const solvableGrid = parseGrid(solvableSection,);
   /** Individual solution blocks from the multi-solution output */
   const multiSolutions = splitSolutions(multiSection,);
-  /** Parsed grid from multi-solution output (only when exactly one solution present) */
+  /** Parsed grid from multi-solution output, empty array unless exactly one solution is present and parses */
   const multiGrid = multiSolutions.length
     === 1
     ? parseGrid(multiSolutions[0]
       ?? '',)
-    : undefined;
+    : [];
 
   /** Number of checks that passed out of NORMAL_CHECKS total */
   const correctCount = [
     // Check 1: solvable puzzle solved correctly
-    (solvableGrid !== undefined)
+    (solvableGrid.length
+      > 0)
     && isValidSolution(solvableGrid,)
       && matchesClues({
       grid: solvableGrid,
@@ -94,7 +95,8 @@ export function verifyNormal(stdout: string,): number {
     unsolvableColSection.toUpperCase()
       === 'UNSOLVABLE',
     // Check 4: multi-solution returns exactly 1 valid solution
-    (multiGrid !== undefined)
+    (multiGrid.length
+      > 0)
     && isValidSolution(multiGrid,)
       && matchesClues({
       grid: multiGrid,
@@ -156,7 +158,6 @@ export function verifyAll(stdout: string,): number {
     verifySolutionSet({
       section: manySolSection,
       clues: MANY_SOLUTION_CLUES,
-      expectedCount: undefined,
       minCount: MIN_MANY_SOLUTIONS,
     },),
     // Check 3: unsolvable still rejected under --all

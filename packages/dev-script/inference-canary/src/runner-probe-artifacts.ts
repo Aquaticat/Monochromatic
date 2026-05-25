@@ -64,9 +64,9 @@ export type EnrichArtifactOptions = {
   readonly score: number;
   /** Optional fields for fix prompt, partial flag, and error message */
   readonly options?: {
-    fixPrompt?: string;
-    partial?: boolean;
-    error?: string;
+    readonly fixPrompt?: string;
+    readonly partial?: boolean;
+    readonly error?: string;
   };
 };
 
@@ -101,6 +101,11 @@ export async function enrichArtifact({
   score,
   options,
 }: EnrichArtifactOptions,): Promise<void> {
+  /** Token usage and stop reason, spread into the artifact only when present so absent keys stay out of the JSON. */
+  const {
+    usage,
+    finishReason,
+  } = completion;
   /** Full enriched artifact written to disk; optional fields are spread in conditionally to keep absent fields out of JSON. */
   const enriched: EnrichedArtifactMeta = {
     model: config.model,
@@ -111,8 +116,8 @@ export async function enrichArtifact({
     score,
     reasoning: completion.reasoning,
     timing: completion.timing,
-    usage: completion.usage,
-    finishReason: completion.finishReason,
+    ...(usage !== undefined ? { usage, } : {}),
+    ...(finishReason !== undefined ? { finishReason, } : {}),
     config: snapshotConfig(config,),
     ...(options?.fixPrompt
       !== undefined ? { fixPrompt: options.fixPrompt, } : {}),
@@ -128,23 +133,31 @@ export async function enrichArtifact({
 }
 
 /**
+/**
+ * Sentinel returned by {@link extractPartialCompletion} when the caught error is
+ * not a {@link PartialCompletionError}. A unique symbol keeps the "no partial"
+ * outcome out of the result's value space without a banned nullish union.
+ */
+export const NO_PARTIAL: unique symbol = Symbol('no-partial',);
+
+/**
  * Extracts a {@link CompletionResult} from an error if it is a
- * {@link PartialCompletionError}, otherwise returns undefined.
+ * {@link PartialCompletionError}, otherwise returns {@link NO_PARTIAL}.
  *
  * @param error - caught error value
  *
- * @returns partial completion result, or undefined for non-partial errors
+ * @returns partial completion result, or {@link NO_PARTIAL} for non-partial errors
  *
  * @example
  * ```ts
  * const partial = extractPartialCompletion(caughtError);
- * if (partial !== undefined) savePartialData(partial);
+ * if (partial !== NO_PARTIAL) savePartialData(partial);
  * ```
  */
-export function extractPartialCompletion(error: unknown,): CompletionResult | undefined {
+export function extractPartialCompletion(error: unknown,): CompletionResult | typeof NO_PARTIAL {
   if (error instanceof PartialCompletionError)
     return error.partialResult;
-  return undefined;
+  return NO_PARTIAL;
 }
 
 /**
@@ -158,7 +171,7 @@ export function extractPartialCompletion(error: unknown,): CompletionResult | un
  *   timestamp: '2025-09-21T11:13:00Z',
  *   error: new Error('timeout'),
  *   lastCompletion,
- *   partialCompletion: undefined,
+ *   partialCompletion: NO_PARTIAL,
  *   lastScore: 0.5,
  *   enrichedInitial: false,
  * };
@@ -173,10 +186,10 @@ type SaveFailureArtifactsOptions = {
   readonly timestamp: string;
   /** The caught error */
   readonly error: unknown;
-  /** Completion from the last successful consistency run (if any) */
-  readonly lastCompletion: CompletionResult | undefined;
-  /** Partial completion extracted from a PartialCompletionError */
-  readonly partialCompletion: CompletionResult | undefined;
+  /** Completion from the last successful consistency run, absent when none completed */
+  readonly lastCompletion?: CompletionResult;
+  /** Partial completion extracted from a PartialCompletionError, {@link NO_PARTIAL} when absent */
+  readonly partialCompletion: CompletionResult | typeof NO_PARTIAL;
   /** Score from the last successful consistency run */
   readonly lastScore: number;
   /** Whether the initial-pass artifact was already enriched */
@@ -226,7 +239,7 @@ export async function saveFailureArtifacts({
 
   // If we have a partial completion from an aborted stream, save it.
   // This captures the mid-stream response that would otherwise be lost.
-  if (partialCompletion !== undefined) {
+  if (partialCompletion !== NO_PARTIAL) {
     await enrichArtifact({
       probe,
       config,

@@ -152,14 +152,14 @@ const BOX_ORIGINS: readonly (readonly [
  *
  * @param text - raw text block for one puzzle output
  *
- * @returns 9x9 number array, or undefined when parsing fails
+ * @returns 9x9 number array, or empty array when parsing fails
  *
  * @example
  * ```ts
  * parseGrid('534678912\n672195348\n...');
  * ```
  */
-export function parseGrid(text: string,): number[][] | undefined {
+export function parseGrid(text: string,): number[][] {
   /** Non-empty trimmed lines from the text block */
   const lines = text
     .trim()
@@ -173,9 +173,9 @@ export function parseGrid(text: string,): number[][] | undefined {
     },);
   if (lines.length
     !== GRID_SIZE)
-    return undefined;
-  /** Parsed digit rows, undefined entries indicate parse failure */
-  const grid = lines.map(function parseLine(line,): number[] | undefined {
+    return [];
+  /** Parsed digit rows; an empty row marks a line that failed digit validation. */
+  const grid = lines.map(function parseLine(line,): number[] {
     /** Digits extracted by stripping whitespace and converting each character */
     // oxlint-disable-next-line unicorn/prefer-spread -- spreading a string triggers no-misused-spread; Array.from is correct for ASCII digit iteration
     const digits = Array
@@ -188,13 +188,14 @@ export function parseGrid(text: string,): number[][] | undefined {
           return (digit >= 1) && (digit <= GRID_SIZE);
         },)
       ? digits
-      : undefined;
+      : [];
   },);
-  return grid.every(function isRow(row,): row is number[] {
-      return row !== undefined;
+  return grid.every(function isFullRow(row,): boolean {
+      return row.length
+        === GRID_SIZE;
     },)
     ? grid
-    : undefined;
+    : [];
 }
 
 /**
@@ -207,7 +208,7 @@ export function parseGrid(text: string,): number[][] | undefined {
  */
 type ExtractColumnOptions = {
   /** 9x9 grid of digits */
-  readonly grid: number[][];
+  readonly grid: readonly (readonly number[])[];
   /** Column index (0-8) */
   readonly col: number;
 };
@@ -246,7 +247,7 @@ function extractColumn({
  */
 type ExtractBoxOptions = {
   /** 9x9 grid of digits */
-  readonly grid: number[][];
+  readonly grid: readonly (readonly number[])[];
   /** Top row of the box (0, 3, or 6) */
   readonly originRow: number;
   /** Left column of the box (0, 3, or 6) */
@@ -301,7 +302,7 @@ function extractBox({
  * isValidSolution(solvedGrid); // true
  * ```
  */
-export function isValidSolution(grid: number[][],): boolean {
+export function isValidSolution(grid: readonly (readonly number[])[],): boolean {
   /**
    * Checks whether nums contains exactly GRID_SIZE distinct values (1-9).
    *
@@ -309,7 +310,7 @@ export function isValidSolution(grid: number[][],): boolean {
    *
    * @returns true when the set of digits has exactly GRID_SIZE unique values
    */
-  function hasAllDigits(nums: number[],): boolean {
+  function hasAllDigits(nums: readonly number[],): boolean {
     return new Set(nums,).size
       === GRID_SIZE;
   }
@@ -351,7 +352,7 @@ export function isValidSolution(grid: number[][],): boolean {
  */
 type MatchesCluesOptions = {
   /** 9x9 solved grid */
-  readonly grid: number[][];
+  readonly grid: readonly (readonly number[])[];
   /** 9x9 clue grid (0 = empty, non-zero = required digit) */
   readonly clues: readonly (readonly number[])[];
 };
@@ -401,7 +402,7 @@ export function matchesClues({
  * gridToString([[5,3,4,...], ...]); // '534...\n672...\n...'
  * ```
  */
-export function gridToString(grid: number[][],): string {
+export function gridToString(grid: readonly (readonly number[])[],): string {
   return grid
     .map(function joinRow(row,): string {
       return row.join('',);

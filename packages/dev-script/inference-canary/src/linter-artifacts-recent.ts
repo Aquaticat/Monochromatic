@@ -14,18 +14,40 @@ import { join, } from 'node:path';
 
 import {
   isRecentTimestamp,
+  NO_MATCH,
   parseArtifactDir,
   parseFailureDir,
   type RecentArtifactScan,
   TWENTY_FOUR_HOURS_MS,
 } from './linter-artifacts-timestamp.ts';
 import {
-  type ArtifactMeta,
-  type FailureArtifactMeta,
   LINT_DIR,
+  type StoredArtifactMeta,
+  type StoredFailureArtifactMeta,
 } from './linter-artifacts.ts';
 
 export type { RecentArtifactScan, };
+
+/**
+ * Reads the model directory names under {@link LINT_DIR}.
+ * Returns an empty array when the directory is missing or unreadable, which the
+ * caller treats identically to an empty directory (no recent artifacts).
+ *
+ * @returns model directory names, or empty array when the directory cannot be read
+ *
+ * @example
+ * ```ts
+ * const dirs = await readModelDirs();
+ * ```
+ */
+async function readModelDirs(): Promise<string[]> {
+  try {
+    return await readdir(LINT_DIR,);
+  }
+  catch {
+    return [];
+  }
+}
 
 /**
  * Scans artifact directories to find model:probe pairs tested within the last 24 hours.
@@ -53,23 +75,9 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
   const failedModels = new Set<string>();
 
   /**
-   * Names of model directories under {@link LINT_DIR}; `undefined` when the directory is missing.
+   * Names of model directories under {@link LINT_DIR}; empty when the directory is missing or unreadable.
    */
-  const modelDirs =
-    await (async function tryReadModelDirs(): Promise<string[] | undefined> {
-      try {
-        return await readdir(LINT_DIR,);
-      }
-      catch {
-        return undefined;
-      }
-    })();
-  if (modelDirs === undefined) {
-    return {
-      probePairs,
-      failedModels,
-    };
-  }
+  const modelDirs = await readModelDirs();
 
   for (const modelDir of modelDirs) {
     /** Absolute path to one model's artifact directory; used as the base for nested artifact scans. */
@@ -89,9 +97,11 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
 
     for (const dirName of artifactDirs) {
       //region Failure artifact detection: whole-model failures like 429 or auth errors
-      /** Parsed `failure-<timestamp>` directory parts; `null` when the dir is a per-probe artifact. */
+      /**
+       * Parsed `failure-<timestamp>` directory parts; {@link NO_MATCH} when the dir is a per-probe artifact.
+       */
       const failureParts = parseFailureDir(dirName,);
-      if (failureParts !== null) {
+      if (failureParts !== NO_MATCH) {
         /**
          * Timestamp segment captured from the failure directory name; checked against {@link cutoff} for recency.
          */
@@ -115,7 +125,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
             );
             /** Parsed failure meta; partial because old artifacts may predate newer fields. */
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
-            const meta = JSON.parse(metaRaw,) as Partial<FailureArtifactMeta>;
+            const meta = JSON.parse(metaRaw,) as StoredFailureArtifactMeta;
             /** Display label for the model; falls back to the directory name when meta has none. */
             const label = meta.label
               ?? modelDir;
@@ -132,9 +142,11 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
       //endregion Failure artifact detection
 
       //region Per-probe artifact detection: individual probe results
-      /** Parsed per-probe artifact directory parts; `null` when the dir is unrelated. */
+      /**
+       * Parsed per-probe artifact directory parts; {@link NO_MATCH} when the dir is unrelated.
+       */
       const parts = parseArtifactDir(dirName,);
-      if (parts === null)
+      if (parts === NO_MATCH)
         continue;
       if (parts.pass
         !== 'initial')
@@ -166,7 +178,7 @@ export async function getRecentArtifactPairs(): Promise<RecentArtifactScan> {
         );
         /** Parsed probe meta; partial because old artifacts may omit `label` or other newer fields. */
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON from meta.json has known shape
-        const meta = JSON.parse(metaRaw,) as Partial<ArtifactMeta>;
+        const meta = JSON.parse(metaRaw,) as StoredArtifactMeta;
         /** Display label for the model; falls back to the directory name for legacy artifacts. */
         const label = meta.label
           ?? modelDir;

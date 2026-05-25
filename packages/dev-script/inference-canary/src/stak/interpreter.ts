@@ -84,7 +84,7 @@ export function runStak(source: string,): string {
     /** Result of dispatching the current op; may carry output text and/or a jump target. */
     const step = executeOp({
       op,
-      arg,
+      ...((arg !== undefined) ? { arg, } : {}),
       stack,
       env,
       labels,

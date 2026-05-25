@@ -38,8 +38,8 @@ import { PACKAGE_DIR, } from './paths.ts';
 type ProcessFrame = {
   /** Process ID at this level of the chain. */
   readonly pid: number;
-  /** Resolved /proc/PID/exe symlink (e.g. /usr/bin/bun); null if unreadable. */
-  readonly exe: string | null;
+  /** Resolved /proc/PID/exe symlink (e.g. /usr/bin/bun); empty string if unreadable. */
+  readonly exe: string;
   /** Space-separated argv from /proc/PID/cmdline; empty when unreadable. */
   readonly cmdline: string;
   /** Parent PID parsed from /proc/PID/status; 0 at root or when unreadable. */
@@ -54,8 +54,8 @@ type InvocationRecord = {
   readonly pid: number;
   /** This process's parent PID. */
   readonly ppid: number;
-  /** Resolved /proc/self/exe symlink; null if unreadable. */
-  readonly exe: string | null;
+  /** Resolved /proc/self/exe symlink; empty string if unreadable. */
+  readonly exe: string;
   /** Working directory at startup. */
   readonly cwd: string;
   /** Full argv as launched. */
@@ -106,17 +106,17 @@ const PARENT_CHAIN_MAX_DEPTH = 32;
  *
  * @param name - File name within /proc/PID/ (e.g. `status`, `cmdline`)
  *
- * @returns File contents, or null when unreadable
+ * @returns File contents, or empty string when unreadable
  */
 function readProcFile(
   {
     pid,
     name,
   }: {
-    pid: number;
-    name: string;
+    readonly pid: number;
+    readonly name: string;
   },
-): string | null {
+): string {
   try {
     return readFileSync(
       `/proc/${String(pid,)}/${name}`,
@@ -124,7 +124,7 @@ function readProcFile(
     );
   }
   catch {
-    return null;
+    return '';
   }
 }
 
@@ -136,34 +136,34 @@ function readProcFile(
  *
  * @param name - Symlink name within /proc/PID/ (e.g. `exe`)
  *
- * @returns Symlink target, or null when unreadable
+ * @returns Symlink target, or empty string when unreadable
  */
 function readProcLink(
   {
     pid,
     name,
   }: {
-    pid: number;
-    name: string;
+    readonly pid: number;
+    readonly name: string;
   },
-): string | null {
+): string {
   try {
     return readlinkSync(`/proc/${String(pid,)}/${name}`,);
   }
   catch {
-    return null;
+    return '';
   }
 }
 
 /**
  * Parse the PPid line from /proc/PID/status content.
  *
- * @param statusContent - Raw status file contents, or null when unreadable
+ * @param statusContent - Raw status file contents, empty when unreadable
  *
  * @returns Parsed parent PID, or 0 when not present or unparseable
  */
-function parsePpid(statusContent: string | null,): number {
-  if (statusContent === null)
+function parsePpid(statusContent: string,): number {
+  if (statusContent === '')
     return 0;
   /** First `PPid:` line from /proc/PID/status, if any; bare `find` returns undefined when missing. */
   const ppidLine = statusContent
@@ -187,22 +187,21 @@ function parsePpid(statusContent: string | null,): number {
  *
  * @param pid - Process ID to read
  *
- * @returns Process frame, or null when the process is gone or unreadable
+ * @returns single-frame array, or empty array when the process is gone or unreadable
  */
-function readProcessFrame(pid: number,): ProcessFrame | null {
-  /** Raw /proc/PID/status text; null shortcircuits the rest of the frame when the process is gone. */
+function readProcessFrame(pid: number,): readonly ProcessFrame[] {
+  /** Raw /proc/PID/status text; empty short-circuits the rest of the frame when the process is gone. */
   const status = readProcFile({
     pid,
     name: 'status',
   },);
-  if (status === null)
-    return null;
-  /** Raw cmdline buffer with NUL separators; empty string when readable but blank (kernel threads). */
+  if (status === '')
+    return [];
+  /** Raw cmdline buffer with NUL separators; empty string when readable but blank (kernel threads) or unreadable. */
   const cmdlineRaw = readProcFile({
     pid,
     name: 'cmdline',
-  },)
-    ?? '';
+  },);
   /** Human-readable cmdline with NULs replaced by spaces and trailing NUL removed. */
   const cmdline = cmdlineRaw
     .replaceAll(
@@ -210,19 +209,19 @@ function readProcessFrame(pid: number,): ProcessFrame | null {
       ' ',
     )
     .trimEnd();
-  /** Resolved /proc/PID/exe symlink target; null when not permitted or when exe was unlinked. */
+  /** Resolved /proc/PID/exe symlink target; empty string when not permitted or when exe was unlinked. */
   const exe = readProcLink({
     pid,
     name: 'exe',
   },);
   /** Parent PID extracted from the status text; 0 means "no parent / unparseable". */
   const ppid = parsePpid(status,);
-  return {
+  return [{
     pid,
     exe,
     cmdline,
     ppid,
-  };
+  },];
 }
 
 /**
@@ -240,15 +239,15 @@ function walkParentChain(
     pid,
     remaining,
   }: {
-    pid: number;
-    remaining: number;
+    readonly pid: number;
+    readonly remaining: number;
   },
 ): ProcessFrame[] {
   if (remaining <= 0)
     return [];
-  /** Current frame of the parent chain; null terminates the walk on read failure. */
-  const frame = readProcessFrame(pid,);
-  if (frame === null)
+  /** Current frame of the parent chain; an empty array terminates the walk on read failure. */
+  const [frame,] = readProcessFrame(pid,);
+  if (frame === undefined)
     return [];
   if ((frame.ppid
     === 0) || (frame.ppid

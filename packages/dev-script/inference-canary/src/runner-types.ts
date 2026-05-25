@@ -3,7 +3,30 @@
  *
  * Configuration types and defaults live in runner-config.ts.
  */
+import type OpenAI from 'openai';
 import type { Probe, } from './probes.ts';
+
+//region OpenAI client view: narrow readonly surface this package actually calls
+
+/**
+ * Minimal readonly view of the OpenAI client exposing only the streaming
+ * `chat.completions.create` method this package uses.
+ *
+ * The full `OpenAI` class is deeply mutable and is not in the
+ * `prefer-readonly-parameter-types` allow-list (that list lives in another
+ * package and cannot be edited here), so passing `OpenAI` directly trips the
+ * rule. Declaring the narrow shape keeps client parameters deeply readonly
+ * while a real `OpenAI` instance remains structurally assignable to it.
+ */
+export type ChatClient = {
+  readonly chat: {
+    readonly completions: {
+      readonly create: OpenAI['chat']['completions']['create'];
+    };
+  };
+};
+
+//endregion OpenAI client view
 
 //region Shared branded types: template-literal types used across runner, models, server-time, and artifacts
 
@@ -57,8 +80,8 @@ export type StreamUsage = {
   readonly promptTokens: number;
   /** Tokens in the generated completion (includes reasoning tokens) */
   readonly completionTokens: number;
-  /** Tokens used for internal reasoning, undefined when the model does not report them */
-  readonly reasoningTokens?: number | undefined;
+  /** Tokens used for internal reasoning, absent when the model does not report them */
+  readonly reasoningTokens?: number;
   /** Sum of prompt and completion tokens */
   readonly totalTokens: number;
 };
@@ -74,10 +97,10 @@ export type CompletionResult = {
   readonly reasoning: string;
   /** Per-chunk timing breakdown */
   readonly timing: StreamTiming;
-  /** Token usage, undefined when the API did not include usage data */
-  readonly usage: StreamUsage | undefined;
-  /** Why generation stopped (e.g. "stop", "length"), undefined when not reported */
-  readonly finishReason: string | undefined;
+  /** Token usage, absent when the API did not include usage data */
+  readonly usage?: StreamUsage;
+  /** Why generation stopped (e.g. "stop", "length"), absent when not reported */
+  readonly finishReason?: string;
 };
 
 /**
@@ -109,21 +132,21 @@ export type ProbeResult = {
    * Score after a second pass where the model gets its code + diagnostics and fixes them.
    * Undefined if the probe doesn't support it or the first pass had no diagnostics.
    */
-  readonly pass2Score?: number | undefined;
+  readonly pass2Score?: number;
   /**
    * Improvement from pass 1 to pass 2 (pass2Score - meanScore).
    * Positive = model improved; zero/negative = degradation signal.
    */
-  readonly fixDelta?: number | undefined;
+  readonly fixDelta?: number;
   /**
    * Set to true when the probe timed out; score is forced to 0 rather than
    * failing the whole model so partial results can still be recorded in history.
    */
-  readonly timedOut?: boolean | undefined;
+  readonly timedOut?: boolean;
   /** Timing from the last consistency run */
-  readonly timing?: StreamTiming | undefined;
+  readonly timing?: StreamTiming;
   /** Token usage from the last consistency run */
-  readonly usage?: StreamUsage | undefined;
+  readonly usage?: StreamUsage;
 };
 
 /** Aggregate report across all probes */
@@ -136,11 +159,11 @@ export type CanaryReport = {
   /** Overall health score 0-1 */
   readonly overallScore: number;
   /** Per-category scores for targeted diagnosis */
-  readonly categoryScores: Record<string, number>;
+  readonly categoryScores: Readonly<Record<string, number>>;
   /** Whether this run failed entirely (API error, timeout, etc.) */
   readonly failed: boolean;
   /** Error message if failed */
-  readonly error?: string | undefined;
+  readonly error?: string;
 };
 
 //endregion Probe and report result types

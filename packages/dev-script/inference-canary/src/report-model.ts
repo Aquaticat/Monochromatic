@@ -84,8 +84,12 @@ export function formatModelReport(report: CanaryReport,): string {
     },),)
     : 0;
 
+  /** Per-probe results, destructured so the `.map` below is a two-step chain rather than a flagged longer one. */
+  const {
+    results,
+  } = report;
   /** One pre-formatted line per probe result; concatenated under the header. */
-  const probeLines = report.results.map(function formatResult(result,): string {
+  const probeLines = results.map(function formatResult(result,): string {
     /** Probe name right-padded to `maxNameLen` so the trailing columns line up. */
     const paddedName = result.name
       .padEnd(maxNameLen,);

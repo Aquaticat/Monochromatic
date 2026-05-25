@@ -131,9 +131,9 @@ export const taskScheduler: Probe = createCodeGenProbe({
      *
      * @param prefix - task name prefix to search for
      *
-     * @returns parsed timestamp in ms, or undefined when not found
+     * @returns parsed timestamp in ms, or -1 when not found (elapsed ms is never negative)
      */
-    function extractTime(prefix: string,): number | undefined {
+    function extractTime(prefix: string,): number {
       /**
        * First output line starting with the requested DONE prefix, or undefined if missing.
        */
@@ -141,24 +141,24 @@ export const taskScheduler: Probe = createCodeGenProbe({
         return lineItem.startsWith(`DONE ${prefix}`,);
       },);
       if (line === undefined)
-        return undefined;
+        return -1;
       /**
        * Elapsed-ms digit run captured immediately after the `@` marker;
        * empty when the line lacks a valid `@<digits>` field.
        */
       const digits = extractAtDigits(line,);
-      return digits === '' ? undefined : Number(digits,);
+      return digits === '' ? -1 : Number(digits,);
     }
 
-    /** Elapsed ms reported for task A; undefined when the line was missing or malformed. */
+    /** Elapsed ms reported for task A; -1 when the line was missing or malformed. */
     const timeA = extractTime('A',);
-    /** Elapsed ms reported for task B; undefined when the line was missing or malformed. */
+    /** Elapsed ms reported for task B; -1 when the line was missing or malformed. */
     const timeB = extractTime('B',);
-    /** Elapsed ms reported for task C; undefined when the line was missing or malformed. */
+    /** Elapsed ms reported for task C; -1 when the line was missing or malformed. */
     const timeC = extractTime('C',);
 
-    if ((timeA === undefined) || (timeB === undefined)
-      || (timeC === undefined))
+    if ((timeA < 0) || (timeB < 0)
+      || (timeC < 0))
       return { correctness: 0.2, };
 
     /**

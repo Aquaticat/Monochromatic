@@ -17,7 +17,7 @@ import {
 import type { ScoreContext, } from '../probes.ts';
 import type {
   CodeGenProbeConfig,
-  ProbeFactoryCaches,
+  ReadonlyProbeFactoryCaches,
 } from './probe-factory-types.ts';
 
 /**
@@ -40,8 +40,8 @@ type BuildFixPromptImplOptions = {
   readonly response: string;
   /** Scoring context with model label for cache lookups */
   readonly context: ScoreContext;
-  /** Shared per-model caches for lint, container, perf, and additional runs */
-  readonly caches: ProbeFactoryCaches;
+  /** Shared per-model caches for lint, container, perf, and additional runs (read-only) */
+  readonly caches: ReadonlyProbeFactoryCaches;
 };
 
 /**
@@ -59,12 +59,12 @@ type BuildFixPromptImplOptions = {
  *
  * @param caches - shared per-model caches for lint, container, perf, and additional runs
  *
- * @returns fix prompt string, or undefined when no issues were detected
+ * @returns fix prompt string, or empty string when no issues were detected
  *
  * @example
  * ```ts
  * const prompt = await buildFixPromptImpl({ config, response, context, caches });
- * if (prompt !== undefined) sendFixTurn(prompt);
+ * if (prompt !== '') sendFixTurn(prompt);
  * ```
  */
 export async function buildFixPromptImpl({
@@ -72,22 +72,27 @@ export async function buildFixPromptImpl({
   response,
   context,
   caches,
-}: BuildFixPromptImplOptions,): Promise<string | undefined> {
+}: BuildFixPromptImplOptions,): Promise<string> {
+  /** Reused lint result for this model from the scoring phase, when present. */
+  const priorLint = caches.lint
+    .get(context.label,);
+  /** Reused container result for this model from the scoring phase, when present. */
+  const priorContainer = caches.container
+    .get(context.label,);
   /** Base fix prompt from standard lint/runtime diagnostics */
   const base = await buildCodeGenFixPrompt({
     response,
     context,
-    priorLint: caches.lint
-      .get(context.label,),
-    priorContainer: caches.container
-      .get(context.label,),
+    ...((priorLint !== undefined) ? { priorLint, } : {}),
+    ...((priorContainer !== undefined) ? { priorContainer, } : {}),
   },);
 
   // Append additional run diagnostics when runs failed or produced incorrect output
   /** Fix prompt with additional run failure diagnostics appended */
   const withAdditional = appendAdditionalRunDiagnostics({
     base,
-    runs: config.additionalRuns,
+    runs: config.additionalRuns
+      ?? [],
     containerCaches: caches.additionalContainers,
     verifyCaches: caches.additionalVerify,
     label: context.label,
@@ -112,15 +117,15 @@ export async function buildFixPromptImpl({
     .get(context.label,);
   if (perf === undefined)
     return customized;
-  /** Formatted performance diagnostic text, undefined when perf was acceptable */
+  /** Formatted performance diagnostic text, empty string when perf was acceptable */
   const perfDiag = buildPerfDiagnostic({
     perfResult: perf,
     config: config.perfTest,
   },);
-  if (perfDiag === undefined)
+  if (perfDiag === '')
     return customized;
 
-  if (customized !== undefined)
+  if (customized !== '')
     return `${customized}\n\n${perfDiag}\n\nFix all the issues including the performance problem above. Output ONLY the complete fixed TypeScript source in a single fenced code block.`;
 
   // No lint/runtime issues but perf is slow: create a standalone perf fix prompt

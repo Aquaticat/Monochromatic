@@ -5,6 +5,7 @@ import {
 } from '@monochromatic-dev/module-test';
 import {
   isRecentTimestamp,
+  NO_MATCH,
   parseArtifactDir,
   parseFailureDir,
 } from './linter-artifacts-timestamp.ts';
@@ -63,27 +64,27 @@ await describe({
       },
     },),
     it({
-      name: 'returns null when no pass marker is present',
+      name: 'returns NO_MATCH when no pass marker is present',
       fn: async () => {
-        expect(parseArtifactDir('foo-bar',),).toBeNull();
+        expect(parseArtifactDir('foo-bar',),).toBe(NO_MATCH,);
       },
     },),
     it({
-      name: 'returns null for the empty string',
+      name: 'returns NO_MATCH for the empty string',
       fn: async () => {
-        expect(parseArtifactDir('',),).toBeNull();
+        expect(parseArtifactDir('',),).toBe(NO_MATCH,);
       },
     },),
     it({
-      name: 'returns null when the marker sits at index 0 (empty probe)',
+      name: 'returns NO_MATCH when the marker sits at index 0 (empty probe)',
       fn: async () => {
-        expect(parseArtifactDir('-fix-2026-01-01',),).toBeNull();
+        expect(parseArtifactDir('-fix-2026-01-01',),).toBe(NO_MATCH,);
       },
     },),
     it({
-      name: 'returns null when the tail after the marker is not year-anchored',
+      name: 'returns NO_MATCH when the tail after the marker is not year-anchored',
       fn: async () => {
-        expect(parseArtifactDir('probe-fix-notyear',),).toBeNull();
+        expect(parseArtifactDir('probe-fix-notyear',),).toBe(NO_MATCH,);
       },
     },),
     it({
@@ -91,7 +92,7 @@ await describe({
       fn: async () => {
         const markerCount = 50_000;
         const longName = `a${'-fix-z'.repeat(markerCount,)}`;
-        expect(parseArtifactDir(longName,),).toBeNull();
+        expect(parseArtifactDir(longName,),).toBe(NO_MATCH,);
       },
     },),
   ],
@@ -109,21 +110,21 @@ await describe({
       },
     },),
     it({
-      name: 'returns null without the failure- prefix',
+      name: 'returns NO_MATCH without the failure- prefix',
       fn: async () => {
-        expect(parseFailureDir('other-2026-03-06T12-00-00.000Z',),).toBeNull();
+        expect(parseFailureDir('other-2026-03-06T12-00-00.000Z',),).toBe(NO_MATCH,);
       },
     },),
     it({
-      name: 'returns null when the prefix is present but the tail is not year-anchored',
+      name: 'returns NO_MATCH when the prefix is present but the tail is not year-anchored',
       fn: async () => {
-        expect(parseFailureDir('failure-notyear',),).toBeNull();
+        expect(parseFailureDir('failure-notyear',),).toBe(NO_MATCH,);
       },
     },),
     it({
-      name: 'returns null for a bare failure- prefix with no timestamp',
+      name: 'returns NO_MATCH for a bare failure- prefix with no timestamp',
       fn: async () => {
-        expect(parseFailureDir('failure-',),).toBeNull();
+        expect(parseFailureDir('failure-',),).toBe(NO_MATCH,);
       },
     },),
   ],

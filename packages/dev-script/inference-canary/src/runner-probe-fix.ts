@@ -11,15 +11,19 @@ import {
 import {
   enrichArtifact,
   extractPartialCompletion,
+  NO_PARTIAL,
 } from './runner-probe-artifacts.ts';
-import { runSecondPass, } from './runner-second-pass.ts';
+import {
+  FIX_PASS_SKIPPED,
+  runSecondPass,
+} from './runner-second-pass.ts';
 
-import type OpenAI from 'openai';
 import type {
   Probe,
   ScoreContext,
 } from './probes.ts';
 import type { RunnerConfig, } from './runner-config.ts';
+import type { ChatClient, } from './runner-types.ts';
 
 /**
  * Options for {@link runAndEnrichFixPass}.
@@ -42,8 +46,8 @@ type RunAndEnrichFixPassOptions = {
   readonly probe: Probe;
   /** Runner configuration */
   readonly config: RunnerConfig;
-  /** OpenAI SDK client (reused from first pass) */
-  readonly client: OpenAI;
+  /** OpenAI SDK client (reused from first pass; narrow readonly view) */
+  readonly client: ChatClient;
   /** Authoritative server timestamp for artifact naming */
   readonly timestamp: string;
   /** Abort signal for cancellation */
@@ -59,7 +63,7 @@ type RunAndEnrichFixPassOptions = {
  *
  * On success, logs the fix score and delta, enriches the fix-pass artifact,
  * and returns the score. On failure, logs the error, saves partial completion
- * data if available, and returns undefined.
+ * data if available, and returns {@link FIX_PASS_SKIPPED}.
  *
  * @param probe - canary probe that produced the first-pass response
  *
@@ -75,7 +79,7 @@ type RunAndEnrichFixPassOptions = {
  *
  * @param meanScore - mean score across consistency runs, used for delta logging
  *
- * @returns fix pass score, or undefined if the fix was skipped or failed
+ * @returns fix pass score, or {@link FIX_PASS_SKIPPED} if the fix was skipped or failed
  *
  * @example
  * ```ts
@@ -90,7 +94,7 @@ export async function runAndEnrichFixPass({
   signal,
   lastCompletionText,
   meanScore,
-}: RunAndEnrichFixPassOptions,): Promise<number | undefined> {
+}: RunAndEnrichFixPassOptions,): Promise<number | typeof FIX_PASS_SKIPPED> {
   /** Probe-specific logger for fix pass messages. */
   const rl = tagged({
     tag: probe.name,
@@ -107,7 +111,7 @@ export async function runAndEnrichFixPass({
       timestamp,
       signal,
     };
-    /** Result of the fix pass; undefined when the probe declined to run a second pass. */
+    /** Result of the fix pass; null when the probe declined to run a second pass. */
     const pass2Result = await runSecondPass({
       probe,
       config,
@@ -116,8 +120,8 @@ export async function runAndEnrichFixPass({
       fixContext,
     },);
 
-    if (pass2Result === undefined)
-      return undefined;
+    if (pass2Result === FIX_PASS_SKIPPED)
+      return FIX_PASS_SKIPPED;
 
     /** Score change between mean first-pass score and fix-pass score; positive means improvement. */
     const delta = pass2Result.score
@@ -156,7 +160,7 @@ export async function runAndEnrichFixPass({
 
     /** Partial response text recovered when the stream was aborted mid-completion. */
     const partialFix = extractPartialCompletion(fixError,);
-    if (partialFix !== undefined) {
+    if (partialFix !== NO_PARTIAL) {
       try {
         await enrichArtifact({
           probe,
@@ -178,6 +182,6 @@ export async function runAndEnrichFixPass({
       }
     }
 
-    return undefined;
+    return FIX_PASS_SKIPPED;
   }
 }

@@ -88,7 +88,7 @@ export function createCodeGenProbe(config: CodeGenProbeConfig,): Probe {
     buildFixPrompt: function buildFixPrompt(
       response,
       context,
-    ): Promise<string | undefined> {
+    ): Promise<string> {
       return buildFixPromptImpl({
         config,
         response,

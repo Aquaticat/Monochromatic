@@ -64,7 +64,7 @@ type RunInContainerTimedOptions = {
   /** stdin data */
   readonly input: string;
   /** Abort signal */
-  readonly signal: AbortSignal | undefined;
+  readonly signal?: AbortSignal;
 };
 
 /**
@@ -95,7 +95,7 @@ export async function runInContainerTimed({
   const result = await runInContainer({
     source,
     stdinData: input,
-    signal,
+    ...((signal !== undefined) ? { signal, } : {}),
   },);
   return {
     ...result,
@@ -171,25 +171,25 @@ export function computePerfScore({
  *
  * @param config - timing thresholds
  *
- * @returns diagnostic text, or undefined if perf was acceptable
+ * @returns diagnostic text, or empty string if perf was acceptable
  *
  * @example
  * ```ts
  * const diag = buildPerfDiagnostic({ perfResult, config: { input: largeInput, fastMs: 3000, slowMs: 10000 } });
- * if (diag !== undefined) console.log(diag);
+ * if (diag !== '') console.log(diag);
  * ```
  */
 export function buildPerfDiagnostic({
   perfResult,
   config,
-}: PerfScoreOptions,): string | undefined {
+}: PerfScoreOptions,): string {
   /** Perf score for the current run; the diagnostic is suppressed when the run already hit the fast threshold. */
   const score = computePerfScore({
     perfResult,
     config,
   },);
   if (score >= 1)
-    return undefined;
+    return '';
   return [
     '=== performance issue ===',
     `Your implementation took ${

@@ -11,7 +11,6 @@ import {
   tagged,
 } from './log.ts';
 
-import type OpenAI from 'openai';
 import type {
   CompletionResult,
   StreamTiming,
@@ -111,30 +110,56 @@ export function logTiming({
 }
 
 /**
- * Extracts a {@link StreamUsage} from the SDK's CompletionUsage shape.
- * Returns undefined when the input is nullish (API did not include usage).
- *
- * @param raw - raw usage object from the OpenAI SDK
- *
- * @returns normalized usage, or undefined
+ * Options for {@link buildStreamUsage}.
  *
  * @example
  * ```ts
- * const usage = parseUsage(chunk.usage);
- * usage?.totalTokens; // combined prompt + completion tokens
+ * const opts: BuildStreamUsageOptions = { promptTokens: 10, completionTokens: 20, totalTokens: 30 };
  * ```
  */
-export function parseUsage(
-  raw: OpenAI.CompletionUsage | null | undefined,
-): StreamUsage | undefined {
-  if ((raw === null) || (raw === undefined))
-    return undefined;
+type BuildStreamUsageOptions = {
+  /** Tokens in the prompt */
+  readonly promptTokens: number;
+  /** Tokens in the generated completion */
+  readonly completionTokens: number;
+  /** Sum of prompt and completion tokens */
+  readonly totalTokens: number;
+  /** Tokens used for internal reasoning, omitted when the model does not report them */
+  readonly reasoningTokens?: number;
+};
+
+/**
+ * Assembles a {@link StreamUsage} from already-extracted token counts.
+ * Takes primitive fields rather than the SDK's mutable `CompletionUsage` so the
+ * parameter stays deeply readonly; callers narrow the SDK shape first.
+ *
+ * @param promptTokens - tokens in the prompt
+ *
+ * @param completionTokens - tokens in the generated completion
+ *
+ * @param totalTokens - sum of prompt and completion tokens
+ *
+ * @param reasoningTokens - tokens used for internal reasoning, omitted when not reported
+ *
+ * @returns normalized usage record
+ *
+ * @example
+ * ```ts
+ * const usage = buildStreamUsage({ promptTokens: 10, completionTokens: 20, totalTokens: 30 });
+ * usage.totalTokens; // 30
+ * ```
+ */
+export function buildStreamUsage({
+  promptTokens,
+  completionTokens,
+  totalTokens,
+  reasoningTokens,
+}: BuildStreamUsageOptions,): StreamUsage {
   return {
-    promptTokens: raw.prompt_tokens,
-    completionTokens: raw.completion_tokens,
-    reasoningTokens: raw.completion_tokens_details
-      ?.reasoning_tokens,
-    totalTokens: raw.total_tokens,
+    promptTokens,
+    completionTokens,
+    totalTokens,
+    ...((reasoningTokens !== undefined) ? { reasoningTokens, } : {}),
   };
 }
 
@@ -147,7 +172,7 @@ export function parseUsage(
  *   chunks: ['hello', ' world'],
  *   reasoningChunks: ['thinking...'],
  *   timing: streamTiming,
- *   usage: chunk.usage,
+ *   usage: streamUsage,
  *   finishReason: 'stop',
  * };
  * ```
@@ -159,10 +184,10 @@ type BuildResultOptions = {
   readonly reasoningChunks: readonly string[];
   /** Computed timing breakdown */
   readonly timing: StreamTiming;
-  /** Raw usage from the API (may be nullish) */
-  readonly usage: OpenAI.CompletionUsage | null | undefined;
-  /** Stop reason from the final chunk */
-  readonly finishReason: string | undefined;
+  /** Normalized token usage, omitted when the API reported none */
+  readonly usage?: StreamUsage;
+  /** Stop reason from the final chunk, omitted when not reported */
+  readonly finishReason?: string;
 };
 
 /**
@@ -174,9 +199,9 @@ type BuildResultOptions = {
  *
  * @param timing - computed timing breakdown
  *
- * @param usage - raw usage from the API (may be nullish)
+ * @param usage - normalized token usage, omitted when the API reported none
  *
- * @param finishReason - stop reason from the final chunk
+ * @param finishReason - stop reason from the final chunk, omitted when not reported
  *
  * @returns assembled completion result
  *
@@ -197,7 +222,7 @@ export function buildResult({
     text: chunks.join('',),
     reasoning: reasoningChunks.join('',),
     timing,
-    usage: parseUsage(usage,),
-    finishReason,
+    ...((usage !== undefined) ? { usage, } : {}),
+    ...((finishReason !== undefined) ? { finishReason, } : {}),
   };
 }

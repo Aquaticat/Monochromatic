@@ -21,7 +21,7 @@ export type ScoreContext = {
    * Abort signal from the probe timeout controller.
    * Passed to container execution so processes are killed when the probe times out.
    */
-  readonly signal?: AbortSignal | undefined;
+  readonly signal?: AbortSignal;
 };
 
 /** Single canary probe with prompt, expected behavior, and scoring function */
@@ -48,18 +48,17 @@ export type Probe = {
   /**
    * Generates a follow-up prompt for a second pass where the model gets its
    * code back with linter/type-checker output and tries to fix issues.
-   * Returns undefined to skip the second pass (e.g. when there's nothing to fix).
+   * Returns empty string to skip the second pass (e.g. when there's nothing to fix).
    * @param response - raw model output from the first pass
    * @param context - model identity and pass info for artifact organization
-   * @returns follow-up user message, or undefined to skip
+   * @returns follow-up user message, or empty string to skip
    */
   readonly buildFixPrompt?: (
     response: string,
     context: ScoreContext,
   ) =>
     | string
-    | undefined
-    | Promise<string | undefined>;
+    | Promise<string>;
   /**
    * Whether this probe involves long-running execution (e.g. real async delays).
    * Slow probes are excluded by default; pass --slow to include them.

@@ -52,18 +52,18 @@ export type EnrichedArtifactMeta = ArtifactMeta & {
   readonly reasoning: string;
   /** Per-chunk timing breakdown for the API call that produced this artifact */
   readonly timing: StreamTiming;
-  /** Token usage from the API, undefined when the API did not report usage */
-  readonly usage: StreamUsage | undefined;
-  /** Why generation stopped (e.g. "stop", "length"), undefined when not reported */
-  readonly finishReason: string | undefined;
+  /** Token usage from the API, absent when the API did not report usage */
+  readonly usage?: StreamUsage;
+  /** Why generation stopped (e.g. "stop", "length"), absent when not reported */
+  readonly finishReason?: string;
   /** Runner configuration snapshot for reproducibility */
   readonly config: ConfigSnapshot;
-  /** Diagnostic prompt sent to the model (fix pass only), undefined for initial pass */
-  readonly fixPrompt?: string | undefined;
+  /** Diagnostic prompt sent to the model (fix pass only), absent for initial pass */
+  readonly fixPrompt?: string;
   /** True when this artifact contains partial data from an aborted or failed run */
-  readonly partial?: boolean | undefined;
+  readonly partial?: boolean;
   /** Error message when the run failed or was aborted */
-  readonly error?: string | undefined;
+  readonly error?: string;
 };
 
 /**
@@ -78,6 +78,38 @@ export type FailureArtifactMeta = {
   readonly failed: true;
   readonly error: string;
   readonly config: ConfigSnapshot;
+};
+
+/**
+ * Failure meta as read back from a possibly-legacy artifact directory.
+ *
+ * Only the fields the recency scan consumes are typed, each `?:` because older
+ * artifacts predate newer fields. Distinct from the always-complete
+ * {@link FailureArtifactMeta} the runner writes: modelling the on-disk read view
+ * with explicit optional properties avoids `Partial<FailureArtifactMeta>`, which
+ * the no-optional-escape rule bans for reopening strict-optional holes.
+ */
+export type StoredFailureArtifactMeta = {
+  /** Model label recorded at write time; absent in legacy artifacts, so callers fall back to the directory name. */
+  readonly label?: string;
+  /** Whole-model failure marker; absent or non-true on entries that are not failures. */
+  readonly failed?: boolean;
+};
+
+/**
+ * Probe meta as read back from a possibly-legacy artifact directory.
+ *
+ * Only the fields the recency scan consumes are typed, each `?:` because older
+ * artifacts predate newer fields. Distinct from the always-complete
+ * {@link ArtifactMeta} the runner writes: modelling the on-disk read view with
+ * explicit optional properties avoids `Partial<ArtifactMeta>`, which the
+ * no-optional-escape rule bans for reopening strict-optional holes.
+ */
+export type StoredArtifactMeta = {
+  /** Model label recorded at write time; absent in legacy artifacts, so callers fall back to the directory name. */
+  readonly label?: string;
+  /** Probe name recorded at write time; runs whose meta omit it are skipped. */
+  readonly probe?: string;
 };
 
 /**
@@ -116,9 +148,7 @@ function timestampSlug(timestamp: string,): string {
 export function artifactDir(meta: ArtifactMeta,): string {
   if ((typeof meta.label) !== 'string') {
     throw new TypeError(
-      `ArtifactMeta.label must be a string, got ${typeof meta.label} (model=${
-        String(meta.model,)
-      }, probe=${String(meta.probe,)})`,
+      `ArtifactMeta.label must be a string, got ${typeof meta.label} (model=${meta.model}, probe=${meta.probe})`,
     );
   }
   /** Timestamp slug with colons rewritten to hyphens so it is filesystem-safe across platforms. */

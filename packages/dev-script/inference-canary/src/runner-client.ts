@@ -8,6 +8,7 @@ import { streamCompletion, } from './runner-stream.ts';
 import type { Probe, } from './probes.ts';
 import type { RunnerConfig, } from './runner-config.ts';
 import type {
+  ChatClient,
   ChatMessage,
   CompletionResult,
 } from './runner-types.ts';
@@ -52,8 +53,8 @@ type ExecuteProbeOptions = {
   readonly probe: Probe;
   /** Runner configuration */
   readonly config: RunnerConfig;
-  /** OpenAI SDK client (reused across consistency runs and fix pass) */
-  readonly client: OpenAI;
+  /** OpenAI SDK client (reused across consistency runs and fix pass; narrow readonly view) */
+  readonly client: ChatClient;
   /** Optional abort signal; cancels the HTTP stream when aborted */
   readonly signal?: AbortSignal;
 };
@@ -100,6 +101,6 @@ export function executeProbe({
     messages,
     config,
     probeName: probe.name,
-    signal,
+    ...((signal !== undefined) ? { signal, } : {}),
   },);
 }

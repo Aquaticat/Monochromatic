@@ -72,6 +72,23 @@ function findOpeningFenceEnd(response: string,): number {
 }
 
 /**
+ * Outcome of {@link extractFencedBody}: a captured body, or an explicit
+ * "no fence" result. A discriminated result avoids a nullish return while
+ * still distinguishing a genuinely empty body (`''`) from a missing fence.
+ */
+type FencedBodyResult =
+  | {
+    /** A matching fence was found. */
+    readonly found: true;
+    /** Captured body text between the fences (may be empty). */
+    readonly body: string;
+  }
+  | {
+    /** No matching fence exists in the response. */
+    readonly found: false;
+  };
+
+/**
  * Extracts the body of a fenced code block bounded by triple-backtick
  * fences. When `closing` is true the closing fence terminates the body;
  * when false the body extends to the end of `response` (salvages
@@ -81,32 +98,38 @@ function findOpeningFenceEnd(response: string,): number {
  *
  * @param closing - whether to require a closing triple-backtick fence
  *
- * @returns captured body, or `null` when no matching fence exists
+ * @returns captured body result, or `{ found: false }` when no matching fence exists
  */
 function extractFencedBody({
   response,
   closing,
 }: {
-  response: string;
-  closing: boolean;
-},): string | null {
+  readonly response: string;
+  readonly closing: boolean;
+},): FencedBodyResult {
   /** Byte offset just past the opening fence; `-1` means no fence at all. */
   const bodyStart = findOpeningFenceEnd(response,);
   if (bodyStart === (-1))
-    return null;
+    return { found: false, };
   if (!closing)
-    return response.slice(bodyStart,);
+    return {
+      found: true,
+      body: response.slice(bodyStart,),
+    };
   /** Position of the closing backticks; `-1` means the fence is unterminated. */
   const closeIdx = response.indexOf(
     '```',
     bodyStart,
   );
   if (closeIdx === (-1))
-    return null;
-  return response.slice(
-    bodyStart,
-    closeIdx,
-  );
+    return { found: false, };
+  return {
+    found: true,
+    body: response.slice(
+      bodyStart,
+      closeIdx,
+    ),
+  };
 }
 
 /**
@@ -138,9 +161,9 @@ export function tryExtractCode(response: string,): ExtractResult {
     response,
     closing: true,
   },);
-  if (closed !== null) {
+  if (closed.found) {
     return {
-      source: closed,
+      source: closed.body,
       fenced: true,
     };
   }
@@ -150,9 +173,9 @@ export function tryExtractCode(response: string,): ExtractResult {
     response,
     closing: false,
   },);
-  if (open !== null) {
+  if (open.found) {
     return {
-      source: open,
+      source: open.body,
       fenced: true,
     };
   }

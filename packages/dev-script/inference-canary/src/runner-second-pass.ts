@@ -7,16 +7,23 @@ import {
 } from './log.ts';
 import { streamCompletion, } from './runner-stream.ts';
 
-import type OpenAI from 'openai';
 import type {
   Probe,
   ScoreContext,
 } from './probes.ts';
 import type { RunnerConfig, } from './runner-config.ts';
 import type {
+  ChatClient,
   ChatMessage,
   CompletionResult,
 } from './runner-types.ts';
+
+/**
+ * Sentinel returned when the second pass is skipped (no `buildFixPrompt`, or it
+ * produced no fix prompt). A unique symbol keeps the "skipped" outcome out of the
+ * result's value space without a banned nullish union.
+ */
+export const FIX_PASS_SKIPPED: unique symbol = Symbol('fix-pass-skipped',);
 
 /** Result from a second-pass fix attempt, bundling score with completion data and the prompt used */
 export type SecondPassResult = {
@@ -47,8 +54,8 @@ type RunSecondPassOptions = {
   readonly probe: Probe;
   /** Runner configuration */
   readonly config: RunnerConfig;
-  /** OpenAI SDK client (reused from first pass) */
-  readonly client: OpenAI;
+  /** OpenAI SDK client (reused from first pass; narrow readonly view) */
+  readonly client: ChatClient;
   /** Raw model output from the first pass */
   readonly lastCompletionText: string;
   /** Score context for artifact organization (includes abort signal) */
@@ -69,12 +76,12 @@ type RunSecondPassOptions = {
  *
  * @param fixContext - score context for artifact organization (includes abort signal)
  *
- * @returns second-pass result with score, completion data, and fix prompt; or undefined if skipped
+ * @returns second-pass result with score, completion data, and fix prompt; or {@link FIX_PASS_SKIPPED} if skipped
  *
  * @example
  * ```ts
  * const result = await runSecondPass({ probe, config, client, lastCompletionText, fixContext });
- * if (result !== undefined) result.score; // fix pass score
+ * if (result !== FIX_PASS_SKIPPED) result.score; // fix pass score
  * ```
  */
 export async function runSecondPass({
@@ -83,10 +90,10 @@ export async function runSecondPass({
   client,
   lastCompletionText,
   fixContext,
-}: RunSecondPassOptions,): Promise<SecondPassResult | undefined> {
+}: RunSecondPassOptions,): Promise<SecondPassResult | typeof FIX_PASS_SKIPPED> {
   if (probe.buildFixPrompt
     === undefined)
-    return undefined;
+    return FIX_PASS_SKIPPED;
 
   /** Probe-specific logger for pass2 messages. */
   const rl = tagged({
@@ -96,14 +103,14 @@ export async function runSecondPass({
       l,
     },),
   },);
-  /** Diagnostic-only follow-up prompt; undefined when the probe decides no fix turn is warranted. */
+  /** Diagnostic-only follow-up prompt; empty string when the probe decides no fix turn is warranted. */
   const fixPrompt = await probe.buildFixPrompt(
     lastCompletionText,
     fixContext,
   );
-  if (fixPrompt === undefined) {
+  if (fixPrompt === '') {
     rl.info('pass2: skipped (no diagnostics to fix)',);
-    return undefined;
+    return FIX_PASS_SKIPPED;
   }
 
   rl.info('pass2: sending fix prompt...',);
@@ -127,13 +134,17 @@ export async function runSecondPass({
       content: fixPrompt,
     },
   ];
+  /** Abort signal from the fix context; spread into the stream call only when present. */
+  const {
+    signal,
+  } = fixContext;
   /** Streamed completion for the fix turn; carries the model's revised source plus usage and timing data. */
   const completion = await streamCompletion({
     client,
     messages,
     config,
     probeName: `${probe.name}:fix`,
-    signal: fixContext.signal,
+    ...(signal !== undefined ? { signal, } : {}),
   },);
   /** Fix-pass score; combined with the completion data in the returned `SecondPassResult`. */
   const score = await probe.score(

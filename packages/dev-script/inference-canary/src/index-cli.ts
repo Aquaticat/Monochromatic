@@ -47,40 +47,67 @@ const cliArgs = runSync(
   },
 );
 
-/** Single-model override from --model flag (matches by label, e.g. "Opus 4.6 medium") */
-export const modelOverride: string | undefined = ((typeof cliArgs.model) === 'string')
-  ? cliArgs.model
-  : undefined;
+/**
+ * Validates a parsed `--runs` value, returning it unchanged.
+ *
+ * @param runs - parsed `--runs` integer
+ *
+ * @returns validated run count
+ *
+ * @throws when `runs` is below 1, since that produces empty score arrays
+ *
+ * @example
+ * ```ts
+ * validatedRuns(3); // 3
+ * ```
+ */
+function validatedRuns(runs: number,): number {
+  if (runs < 1)
+    throw new Error(`--runs must be >= 1, got ${String(runs,)}`,);
+  return runs;
+}
 
-/** Consistency runs override from --runs flag, validated to be \>= 1 to prevent empty score arrays */
-export const runsOverride: number | undefined =
-  (function parseRunsOverride(): number | undefined {
-    if ((typeof cliArgs.runs) !== 'number')
-      return undefined;
-    if (cliArgs.runs
-      < 1)
-      throw new Error(`--runs must be >= 1, got ${String(cliArgs.runs,)}`,);
-    return cliArgs.runs;
-  })();
+/**
+ * Parses a comma-separated `--probe` value into a set of trimmed, non-empty names.
+ *
+ * @param raw - raw `--probe` flag value
+ *
+ * @returns set of probe names to run exclusively
+ *
+ * @example
+ * ```ts
+ * parseProbeNames('a, b'); // Set { 'a', 'b' }
+ * ```
+ */
+function parseProbeNames(raw: string,): ReadonlySet<string> {
+  return new Set(raw
+    .split(',',)
+    .map(function trimName(name,): string {
+      return name.trim();
+    },)
+    .filter(function nonEmpty(name,): boolean {
+      return name !== '';
+    },),);
+}
+
+/** Single-model override from --model flag (matches by label, e.g. "Opus 4.6 medium"); empty string when unset */
+export const modelOverride: string = ((typeof cliArgs.model) === 'string')
+  ? cliArgs.model
+  : '';
+
+/** Consistency runs override from --runs flag, validated to be \>= 1 to prevent empty score arrays; 0 when unset */
+export const runsOverride: number = ((typeof cliArgs.runs) === 'number')
+  ? validatedRuns(cliArgs.runs,)
+  : 0;
 
 /**
  * Comma-separated probe names to run exclusively (e.g. `stak-interpreter,stak-simulation`).
  * When set, only matching probes run and recent-result caching is bypassed for them.
+ * An empty set means no `--probe` filter was given, so all probes run.
  */
-export const probeFilter: ReadonlySet<string> | undefined =
-  (function parseProbeFilter(): ReadonlySet<string> | undefined {
-    if ((typeof cliArgs.probe) !== 'string')
-      return undefined;
-    return new Set(cliArgs
-      .probe
-      .split(',',)
-      .map(function trimName(name,): string {
-        return name.trim();
-      },)
-      .filter(function nonEmpty(name,): boolean {
-        return name !== '';
-      },),);
-  })();
+export const probeFilter: ReadonlySet<string> = ((typeof cliArgs.probe) === 'string')
+  ? parseProbeNames(cliArgs.probe,)
+  : new Set<string>();
 
 /** Whether to run simple probes instead of code-gen */
 export const useSimple: boolean = cliArgs.simple;

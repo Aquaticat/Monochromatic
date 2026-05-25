@@ -84,9 +84,11 @@ else {
 
   /** Local copy of probe filter for TypeScript narrowing inside callbacks. */
   const activeProbeFilter = probeFilter;
+  /** Number of names in the probe filter; zero means no `--probe` was given, so all probes run. */
+  const filterSize = activeProbeFilter.size;
 
-  /** Probes to run, filtered by `--probe` if specified. */
-  const probes = activeProbeFilter !== undefined
+  /** Probes to run, filtered by `--probe` if specified (empty filter set means run all). */
+  const probes = filterSize > 0
     ? allProbes.filter(function matchFilter(probe,): boolean {
       return activeProbeFilter.has(probe.name,);
     },)
@@ -138,7 +140,7 @@ else {
     recentModelProbePairs: effectiveRecentPairs,
     recentlyFailedModels,
     apiKey,
-    runsOverride,
+    ...((runsOverride > 0) ? { runsOverride, } : {}),
   },);
 }
 

@@ -15,7 +15,7 @@ import {
 import type { ScoreContext, } from '../probes.ts';
 import type {
   CodeGenProbeConfig,
-  ProbeFactoryCaches,
+  WritableProbeFactoryCaches,
 } from './probe-factory-types.ts';
 
 /**
@@ -37,9 +37,9 @@ type CacheAndComputePerfMultiplierOptions = {
   /** Scoring context (for model label in logs and cache keys) */
   readonly context: ScoreContext;
   /** Shared caches to populate with the perf result */
-  readonly caches: ProbeFactoryCaches;
-  /** Timed container result, undefined when no perf test ran */
-  readonly perfResult: TimedContainerResult | undefined;
+  readonly caches: WritableProbeFactoryCaches;
+  /** Timed container result, omitted when no perf test ran */
+  readonly perfResult?: TimedContainerResult;
 };
 
 /**

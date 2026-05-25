@@ -18,6 +18,7 @@ import type {
   AdditionalRun,
   VerifyResult,
 } from './additional-run-types.ts';
+import type { WritableCache, } from './probe-factory-types.ts';
 
 /**
  * Options for {@link executeAdditionalRuns}.
@@ -37,7 +38,7 @@ type ExecuteAdditionalRunsOptions = {
   /** Additional run configurations */
   readonly runs: readonly AdditionalRun[];
   /** Abort signal for cancellation */
-  readonly signal: AbortSignal | undefined;
+  readonly signal?: AbortSignal;
 };
 
 /**
@@ -72,7 +73,7 @@ export function executeAdditionalRuns({
     return runInContainer({
       source: runSource,
       stdinData: run.input,
-      signal,
+      ...((signal !== undefined) ? { signal, } : {}),
     },);
   },);
   return Promise.all(promises,);
@@ -98,9 +99,9 @@ type CacheAdditionalResultsOptions = {
   /** Additional run configurations (for verify functions) */
   readonly runs: readonly AdditionalRun[];
   /** Per-run container result caches to populate */
-  readonly containerCaches: Map<string, ContainerResult>[];
+  readonly containerCaches: readonly WritableCache<string, ContainerResult>[];
   /** Per-run verification result caches to populate */
-  readonly verifyCaches: Map<string, VerifyResult>[];
+  readonly verifyCaches: readonly WritableCache<string, VerifyResult>[];
   /** Model label for cache keys */
   readonly label: string;
 };
@@ -171,8 +172,8 @@ type ComputeAdditionalCorrectnessesOptions = {
   readonly results: readonly ContainerResult[];
   /** Additional run configurations (for names in log messages) */
   readonly runs: readonly AdditionalRun[];
-  /** Per-run verification caches populated by cacheAdditionalResults */
-  readonly verifyCaches: readonly Map<string, VerifyResult>[];
+  /** Per-run verification caches populated by cacheAdditionalResults (read-only here) */
+  readonly verifyCaches: readonly ReadonlyMap<string, VerifyResult>[];
   /** Model label for cache lookups and log prefixes */
   readonly label: string;
   /** Probe name for log prefixes */

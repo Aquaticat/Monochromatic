@@ -63,18 +63,16 @@ export type CodeGenProbeConfig = {
   };
   /**
    * Optional hook to customize the fix prompt beyond the standard buildCodeGenFixPrompt.
-   * Receives the base fix prompt (or undefined if no diagnostics) and returns
-   * the final prompt to send. Returning undefined skips the second pass.
-   * @param base - standard fix prompt from buildCodeGenFixPrompt, or undefined
+   * Receives the base fix prompt (empty string if no diagnostics) and returns
+   * the final prompt to send. Returning empty string skips the second pass.
+   * @param base - standard fix prompt from buildCodeGenFixPrompt, or empty string
    * @param context - model identity and pass info
-   * @returns modified fix prompt, or undefined to skip
+   * @returns modified fix prompt, or empty string to skip
    */
   readonly customizeFixPrompt?: (
-    base: string | undefined,
+    base: string,
     context: ScoreContext,
-  ) =>
-    | string
-    | undefined;
+  ) => string;
   /**
    * Optional additional container runs for testing the generated code under different
    * conditions. Each run can transform the source (e.g. inject CLI flags) and use
@@ -102,4 +100,52 @@ export type ProbeFactoryCaches = {
   readonly additionalContainers: Map<string, ContainerResult>[];
   /** Per-additional-run verification result caches, indexed by run position */
   readonly additionalVerify: Map<string, VerifyResult>[];
+};
+
+/**
+ * A cache the holder may write into: a {@link ReadonlyMap} plus the single `set`
+ * mutator, expressed as a readonly property holding `Map.set`. The
+ * `prefer-readonly-parameter-types` rule treats the function-valued property as
+ * immutable (just as it does for a method reference), so a parameter of this type
+ * counts as deeply readonly, while a real `Map` remains structurally assignable
+ * and the type is still assignable to {@link ReadonlyMap} for read-only consumers.
+ */
+export type WritableCache<K, V> = ReadonlyMap<K, V> & {
+  readonly set: Map<K, V>['set'];
+};
+
+/**
+ * Caches view for the probe factory's `score` closure, which populates caches as
+ * it runs. Mirrors {@link ProbeFactoryCaches} but uses {@link WritableCache} so
+ * the parameter stays deeply readonly without forbidding `.set`.
+ */
+export type WritableProbeFactoryCaches = {
+  /** Per-model lint result cache */
+  readonly lint: WritableCache<string, LintResult>;
+  /** Per-model main container result cache */
+  readonly container: WritableCache<string, ContainerResult>;
+  /** Per-model perf container result cache */
+  readonly perf: WritableCache<string, TimedContainerResult>;
+  /** Per-additional-run container result caches, indexed by run position */
+  readonly additionalContainers: readonly WritableCache<string, ContainerResult>[];
+  /** Per-additional-run verification result caches, indexed by run position */
+  readonly additionalVerify: readonly WritableCache<string, VerifyResult>[];
+};
+
+/**
+ * Read-only view of {@link ProbeFactoryCaches} for consumers that only look up
+ * cached results (e.g. `buildFixPrompt`). A real {@link ProbeFactoryCaches} is
+ * structurally assignable to this, keeping the parameter deeply readonly.
+ */
+export type ReadonlyProbeFactoryCaches = {
+  /** Per-model lint result cache (read-only) */
+  readonly lint: ReadonlyMap<string, LintResult>;
+  /** Per-model main container result cache (read-only) */
+  readonly container: ReadonlyMap<string, ContainerResult>;
+  /** Per-model perf container result cache (read-only) */
+  readonly perf: ReadonlyMap<string, TimedContainerResult>;
+  /** Per-additional-run container result caches (read-only) */
+  readonly additionalContainers: readonly ReadonlyMap<string, ContainerResult>[];
+  /** Per-additional-run verification result caches (read-only) */
+  readonly additionalVerify: readonly ReadonlyMap<string, VerifyResult>[];
 };

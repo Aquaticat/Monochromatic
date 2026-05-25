@@ -216,12 +216,12 @@ export const cssMixinTranspiler: Probe = createCodeGenProbe({
   customizeFixPrompt: function addRegexWarning(
     base,
     context,
-  ): string | undefined {
+  ): string {
     if (regexViolationCache.get(context.label,)
       !== true)
       return base;
     // Prepend constraint violation to existing fix prompt, or create a standalone prompt
-    return base !== undefined ? `${REGEX_CONSTRAINT_MSG}\n${base}` : REGEX_CONSTRAINT_MSG;
+    return base !== '' ? `${REGEX_CONSTRAINT_MSG}\n${base}` : REGEX_CONSTRAINT_MSG;
   },
   prompt: [
     'Write a TypeScript CLI that reads CSS from stdin and writes transpiled CSS to stdout.',

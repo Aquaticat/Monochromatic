@@ -143,6 +143,13 @@ export type ArtifactDirParts = {
 };
 
 /**
+ * Sentinel returned by the directory-name parsers when the name does not match
+ * the expected convention. A unique symbol keeps the "no match" outcome out of
+ * the parsed value's space without a banned nullish union.
+ */
+export const NO_MATCH: unique symbol = Symbol('no-match',);
+
+/**
  * Parses an artifact directory name into its `probe`, `pass`, and
  * `timestamp` components.
  *
@@ -153,7 +160,7 @@ export type ArtifactDirParts = {
  *
  * @param name - directory basename
  *
- * @returns parsed components or `null`
+ * @returns parsed components or {@link NO_MATCH}
  *
  * @example
  * ```ts
@@ -161,16 +168,16 @@ export type ArtifactDirParts = {
  * // { probe: 'csv-rfc4180', pass: 'initial', timestamp: '2026-03-06T12-00-00.000Z' }
  * ```
  */
-export function parseArtifactDir(name: string,): ArtifactDirParts | null {
+export function parseArtifactDir(name: string,): ArtifactDirParts | typeof NO_MATCH {
   /**
    * Searches `name` for `-<pass>-` followed by a timestamp slug.
    *
    * @param marker - one of `-initial-` or `-fix-`
    *
-   * @returns matching parts, or `null` when the marker does not yield a timestamp
+   * @returns matching parts, or {@link NO_MATCH} when the marker does not yield a timestamp
    */
-  function tryMarker(marker: '-initial-' | '-fix-',): ArtifactDirParts | null {
-    return (function scanMarkers(): ArtifactDirParts | null {
+  function tryMarker(marker: '-initial-' | '-fix-',): ArtifactDirParts | typeof NO_MATCH {
+    return (function scanMarkers(): ArtifactDirParts | typeof NO_MATCH {
       // Walk every occurrence of `marker` right-to-left (longest valid probe
       // prefix wins, matching the original regex's greedy `.+` capture) in a
       // single linear pass: each step moves the cursor strictly left of the
@@ -184,7 +191,7 @@ export function parseArtifactDir(name: string,): ArtifactDirParts | null {
           from,
         );
         if (idx <= 0)
-          return null;
+          return NO_MATCH;
         /** Slug after the marker; must satisfy the year-prefix shape to count. */
         const tail = name.slice(idx + marker
           .length,);
@@ -200,11 +207,12 @@ export function parseArtifactDir(name: string,): ArtifactDirParts | null {
         }
         from = idx - 1;
       }
-      return null;
+      return NO_MATCH;
     })();
   }
-  return tryMarker('-initial-',)
-    ?? tryMarker('-fix-',);
+  /** Initial-pass match attempt; falls through to the fix-pass marker on no match. */
+  const initial = tryMarker('-initial-',);
+  return initial !== NO_MATCH ? initial : tryMarker('-fix-',);
 }
 
 /**
@@ -216,7 +224,7 @@ export function parseArtifactDir(name: string,): ArtifactDirParts | null {
  *
  * @param name - directory basename
  *
- * @returns timestamp slug or `null`
+ * @returns timestamp slug or {@link NO_MATCH}
  *
  * @example
  * ```ts
@@ -224,15 +232,15 @@ export function parseArtifactDir(name: string,): ArtifactDirParts | null {
  * // { timestamp: '2026-03-06T12-00-00.000Z' }
  * ```
  */
-export function parseFailureDir(name: string,): { timestamp: string; } | null {
+export function parseFailureDir(name: string,): { timestamp: string; } | typeof NO_MATCH {
   /** Literal prefix consumed before the timestamp slug. */
   const PREFIX = 'failure-';
   if (!name.startsWith(PREFIX,))
-    return null;
+    return NO_MATCH;
   /** Slug after the prefix; must start with four digits and a hyphen. */
   const tail = name.slice(PREFIX.length,);
   if (!hasYearHyphenPrefix(tail,))
-    return null;
+    return NO_MATCH;
   return { timestamp: tail, };
 }
 

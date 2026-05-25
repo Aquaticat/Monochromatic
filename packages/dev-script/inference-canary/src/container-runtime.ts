@@ -42,14 +42,14 @@ const WHICH_CMD = process.platform
  *
  * @param name - binary name to search for
  *
- * @returns absolute path to the binary, or null if not found
+ * @returns absolute path to the binary, or empty string if not found (a path is never empty)
  *
  * @example
  * ```ts
- * whichSync('podman'); // => "/usr/bin/podman" or null
+ * whichSync('podman'); // => "/usr/bin/podman" or ""
  * ```
  */
-function whichSync(name: string,): string | null {
+function whichSync(name: string,): string {
   try {
     // `where.exe` may return multiple lines; take the first match
     /** First line of which output, containing the resolved binary path. */
@@ -61,11 +61,11 @@ function whichSync(name: string,): string | null {
       .trim()
       .split('\n',);
     if (firstLine === undefined)
-      return null;
+      return '';
     return firstLine.trim();
   }
   catch {
-    return null;
+    return '';
   }
 }
 
@@ -86,9 +86,9 @@ function detectRuntime(): string {
     'podman',
     'docker',
   ] as const) {
-    /** Absolute path of the candidate runtime if installed, or null when missing from PATH. */
+    /** Absolute path of the candidate runtime if installed, or empty string when missing from PATH. */
     const resolved = whichSync(runtime,);
-    if (resolved !== null) {
+    if (resolved !== '') {
       rl.info(`using runtime: ${resolved}`,);
       return runtime;
     }

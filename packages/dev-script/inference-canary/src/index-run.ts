@@ -12,7 +12,7 @@ import { formatMultiModelReport, } from './report.ts';
 import {
   type CanaryReport,
   runCanary,
-  type RunnerConfig,
+  type RunnerConfigOverrides,
 } from './runner.ts';
 
 import type { ModelConfig, } from './models.ts';
@@ -44,8 +44,8 @@ export type RunAndReportOptions = {
   readonly recentlyFailedModels: ReadonlySet<string>;
   /** OpenRouter API key */
   readonly apiKey: string;
-  /** Override for the number of consistency runs (already parsed as integer), `undefined` to use config default */
-  readonly runsOverride: number | undefined;
+  /** Override for the number of consistency runs (already parsed as integer), omit to use config default */
+  readonly runsOverride?: number;
 };
 
 /**
@@ -87,7 +87,7 @@ export async function runAndReport({
   runsOverride,
 }: RunAndReportOptions,): Promise<void> {
   /** Partial config patch carrying the consistency-runs override, or empty when no override is set. */
-  const consistencyRunsOverride: Pick<Partial<RunnerConfig>, 'consistencyRuns'> =
+  const consistencyRunsOverride: Pick<RunnerConfigOverrides, 'consistencyRuns'> =
     runsOverride !== undefined ? { consistencyRuns: runsOverride, } : {};
 
   /**

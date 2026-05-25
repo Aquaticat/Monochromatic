@@ -22,7 +22,7 @@ export type ResolveJumpTargetOptions = {
   /** Opcode name for error messages */
   readonly op: string;
   /** Label name argument */
-  readonly arg: string | undefined;
+  readonly arg?: string;
   /** Label-to-position mapping from the indexing pass */
   readonly labels: ReadonlyMap<string, number>;
 };

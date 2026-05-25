@@ -64,15 +64,15 @@ type BuildCodeGenFixPromptOptions = {
   readonly response: string;
   /** Model identity and pass for artifact organization */
   readonly context: ScoreContext;
-  /** Lint result already computed by score(); pass `undefined` to re-lint */
-  readonly priorLint: LintResult | undefined;
-  /** Container result already computed by score(); runtime errors are included when present, `undefined` to skip */
-  readonly priorContainer: ContainerResult | undefined;
+  /** Lint result already computed by score(); omit to re-lint */
+  readonly priorLint?: LintResult;
+  /** Container result already computed by score(); runtime errors are included when present, omit to skip */
+  readonly priorContainer?: ContainerResult;
 };
 
 /**
  * Builds a diagnostics-only follow-up prompt for the fix turn.
- * Returns undefined when there are no diagnostics (skip the second pass).
+ * Returns empty string when there are no diagnostics (skip the second pass).
  *
  * The model's first-pass response is already in the conversation as a native
  * assistant message, so this prompt only carries diagnostics; no code echo.
@@ -85,12 +85,12 @@ type BuildCodeGenFixPromptOptions = {
  *
  * @param priorContainer - container result already computed by score(); runtime errors are included when present
  *
- * @returns follow-up user message, or undefined to skip
+ * @returns follow-up user message, or empty string to skip
  *
  * @example
  * ```ts
  * const prompt = await buildCodeGenFixPrompt({ response, context, priorLint, priorContainer });
- * if (prompt !== undefined) sendFixTurn(prompt);
+ * if (prompt !== '') sendFixTurn(prompt);
  * ```
  */
 export async function buildCodeGenFixPrompt({
@@ -98,7 +98,7 @@ export async function buildCodeGenFixPrompt({
   context,
   priorLint,
   priorContainer,
-}: BuildCodeGenFixPromptOptions,): Promise<string | undefined> {
+}: BuildCodeGenFixPromptOptions,): Promise<string> {
   /** Source extracted from the model's first-pass response; fed to the linter for fix-time diagnostics. */
   const source = extractCode(response,);
   // Reuse the lint result from score() if available to avoid linting the same code twice.
@@ -132,7 +132,7 @@ export async function buildCodeGenFixPrompt({
       .length
       > 0);
   if ((failedContainer === undefined) && (!hasLintDiagnostics))
-    return undefined;
+    return '';
 
   /** One-line lint summary shown before the diagnostics; undefined when there are zero issues. */
   const lintSummary =

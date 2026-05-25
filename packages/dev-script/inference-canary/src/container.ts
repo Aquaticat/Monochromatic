@@ -84,8 +84,8 @@ type RunInContainerOptions = {
   readonly source: string;
   /** Optional stdin data to pipe to the script */
   readonly stdinData?: string;
-  /** Abort signal; kills the container immediately when aborted, or `undefined` to disable */
-  readonly signal: AbortSignal | undefined;
+  /** Abort signal; kills the container immediately when aborted, or absent to disable */
+  readonly signal?: AbortSignal;
 };
 
 /**
@@ -168,7 +168,7 @@ export async function runInContainer({
       '-c',
       shellScript,
     ],
-    signal,
+    ...((signal !== undefined) ? { signal, } : {}),
   },);
 }
 

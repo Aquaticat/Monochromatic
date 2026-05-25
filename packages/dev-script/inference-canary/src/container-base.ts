@@ -24,7 +24,7 @@ export type BunExecOptions = {
    * Abort signal; kills the process immediately when aborted.
    * Used to propagate probe timeouts into container subprocesses.
    */
-  readonly signal?: AbortSignal | undefined;
+  readonly signal?: AbortSignal;
 };
 
 /**
@@ -116,8 +116,8 @@ export async function execBun({
       const subprocessError = error as {
         stdout: string;
         stderr: string;
-        exitCode: number | undefined;
-        signalName: string | undefined;
+        exitCode?: number;
+        signalName?: string;
       };
       /* oxlint-enable typescript/no-unsafe-type-assertion */
       // Killed if the signal was aborted (race: it may have become true after spawn started)

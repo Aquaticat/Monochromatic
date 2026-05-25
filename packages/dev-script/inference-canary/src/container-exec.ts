@@ -41,8 +41,8 @@ export type ContainerResult = {
 type ExecContainerOptions = {
   /** Fully-formed arguments for the container runtime binary */
   readonly containerArgs: readonly string[];
-  /** Abort signal; kills the container process immediately on abort, or `undefined` to disable */
-  readonly signal: AbortSignal | undefined;
+  /** Abort signal; kills the container process immediately on abort, or absent to disable */
+  readonly signal?: AbortSignal;
 };
 
 /**
@@ -79,7 +79,7 @@ export async function execContainer({
     args: containerArgs,
     options: {
       timeout: timeoutMs,
-      signal,
+      ...((signal !== undefined) ? { signal, } : {}),
     },
   },);
 
