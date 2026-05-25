@@ -69,8 +69,8 @@ export async function launchWithLargeContext({
   cwd,
   compressedText,
 }: {
-  cwd: string;
-  compressedText: string;
+  readonly cwd: string;
+  readonly compressedText: string;
 },): Promise<void> {
   // Tier 2: temp file
   try {

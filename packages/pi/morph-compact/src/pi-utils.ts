@@ -7,108 +7,19 @@
  * subtree) as a type-only package, so pnpm doesn't have to install
  * `@aws-sdk/client-bedrock-runtime`, `chalk`, `marked`, `cli-highlight`, and
  * the rest of the upstream's runtime closure.
+ *
+ * The LLM wire-format types live in {@link ./pi-message-types.ts}.
+ *
+ * @module
  */
 
-//region Wire-format type definitions
-
-/**
- * Plain text content block in a message. Matches `TextContent` from `pi-ai`'s
- * public types but defined locally so this module does not have to take a
- * direct dependency on `@earendil-works/pi-ai` (which is a transitive of
- * `@earendil-works/pi-coding-agent`, not exposed in morph-compact's
- * `node_modules` under pnpm's isolated linker).
- */
-type TextContent = {
-  type: 'text';
-  text: string;
-  textSignature?: string;
-};
-
-/**
- * Image content block. Matches `pi-ai`'s `ImageContent`. Image blocks are
- * dropped from the serialized text; Morph Compact runs on text only.
- */
-type ImageContent = {
-  type: 'image';
-  data: string;
-  mimeType: string;
-};
-
-/**
- * Thinking content block in an assistant message. Matches `pi-ai`'s
- * `ThinkingContent`.
- */
-type ThinkingContent = {
-  type: 'thinking';
-  thinking: string;
-  thinkingSignature?: string;
-  redacted?: boolean;
-};
-
-/**
- * Tool call block in an assistant message. Matches `pi-ai`'s `ToolCall`.
- */
-type ToolCall = {
-  type: 'toolCall';
-  id: string;
-  name: string;
-  arguments: Record<string, unknown>;
-  thoughtSignature?: string;
-};
-
-/**
- * User message in LLM-compatible form. Matches `pi-ai`'s `UserMessage`.
- */
-type UserMessage = {
-  role: 'user';
-  content: string | (TextContent | ImageContent)[];
-  timestamp: number;
-};
-
-/**
- * Assistant message in LLM-compatible form. Loosely matches `pi-ai`'s
- * `AssistantMessage`: fields beyond `role`/`content`/`timestamp` are passed
- * through verbatim by the `convertToLlm` identity branches, so we leave the
- * remainder open as `unknown` to stay forward-compatible with upstream
- * additions.
- */
-type AssistantMessage = {
-  role: 'assistant';
-  content: (TextContent | ThinkingContent | ToolCall)[];
-  timestamp: number;
-  [extra: string]: unknown;
-};
-
-/**
- * Tool-result message in LLM-compatible form. Matches `pi-ai`'s
- * `ToolResultMessage`. Extra fields are passed through.
- */
-type ToolResultMessage = {
-  role: 'toolResult';
-  content: (TextContent | ImageContent)[];
-  timestamp: number;
-  [extra: string]: unknown;
-};
-
-/**
- * Union of LLM-compatible message roles, equivalent to `pi-ai`'s `Message`.
- */
-type Message = UserMessage | AssistantMessage | ToolResultMessage;
-
-/**
- * Discriminated union of every `AgentMessage` role this module handles. Wider
- * than `pi-ai`'s `Message`: covers the custom roles pi-coding-agent layers
- * on top via module augmentation (`bashExecution`, `custom`, `branchSummary`,
- * `compactionSummary`).
- */
-type AgentMessage =
-  | Message
-  | BashExecutionAgentMessage
-  | CustomAgentMessage
-  | BranchSummaryAgentMessage
-  | CompactionSummaryAgentMessage;
-
-//endregion
+import type {
+  AgentMessage,
+  BashExecutionAgentMessage,
+  ImageContent,
+  Message,
+  TextContent,
+} from './pi-message-types.ts';
 
 //region Summary text wrappers
 
@@ -150,29 +61,10 @@ const TOOL_RESULT_MAX_CHARS = 2_000;
 //region BashExecution and tool-result helpers
 
 /**
- * Discriminated shape of a `bashExecution` `AgentMessage`. pi-coding-agent's
- * `core/messages.ts` augments `CustomAgentMessages` with this role, but the
- * concrete interface is not re-exported from the package root. Defining it
- * locally keeps the runtime erased while letting the switch below narrow
- * fields like `command` and `output` without `as any`.
- */
-type BashExecutionAgentMessage = {
-  role: 'bashExecution';
-  command: string;
-  output: string;
-  exitCode: number | undefined;
-  cancelled: boolean;
-  truncated: boolean;
-  fullOutputPath?: string;
-  timestamp: number;
-  excludeFromContext?: boolean;
-};
-
-/**
  * Convert a bash-execution message into the user-visible text shown to the
  * LLM in summarized form.
  *
- * @param msg - the bash execution message
+ * @param msg - bash execution message
  *
  * @returns formatted multi-line string with command, output, and any
  *   exit-code or truncation annotations
@@ -206,11 +98,9 @@ function bashExecutionToText(
     sections.push('\n(command cancelled)',);
   else if (
     (msg.exitCode
-      !== null)
-    && (msg.exitCode
       !== undefined)
-      && (msg.exitCode
-        !== 0)
+    && (msg.exitCode
+      !== 0)
   ) {
     sections.push(`\nCommand exited with code ${msg.exitCode}`,);
   }
@@ -247,8 +137,8 @@ function truncateForSummary({
   text,
   maxChars,
 }: {
-  text: string;
-  maxChars: number;
+  readonly text: string;
+  readonly maxChars: number;
 },): string {
   if (text.length
     <= maxChars)
@@ -269,57 +159,30 @@ function truncateForSummary({
 //region convertToLlm
 
 /**
- * Discriminated shape of a `custom` `AgentMessage` augmenting role in
- * pi-coding-agent. Mirrors upstream `CustomMessage`.
+ * Sentinel returned by {@link toLlmMessage} when a message is excluded from
+ * LLM context. A unique symbol rather than `undefined` so the no-nullish-union
+ * rule is satisfied while {@link convertToLlm} can filter it out.
  */
-type CustomAgentMessage = {
-  role: 'custom';
-  customType: string;
-  content: string | (TextContent | ImageContent)[];
-  display: boolean;
-  details?: unknown;
-  timestamp: number;
-};
-
-/**
- * Discriminated shape of a `branchSummary` `AgentMessage` augmenting role.
- */
-type BranchSummaryAgentMessage = {
-  role: 'branchSummary';
-  summary: string;
-  fromId: string;
-  timestamp: number;
-};
-
-/**
- * Discriminated shape of a `compactionSummary` `AgentMessage` augmenting
- * role.
- */
-type CompactionSummaryAgentMessage = {
-  role: 'compactionSummary';
-  summary: string;
-  tokensBefore: number;
-  timestamp: number;
-};
+const OMIT = Symbol('omit-from-context',);
 
 /**
  * Map an extended `AgentMessage` (possibly carrying pi-coding-agent's custom
- * roles) into a base LLM-compatible {@link Message}, or `undefined` if the
+ * roles) into a base LLM-compatible {@link Message}, or {@link OMIT} if the
  * message should be omitted from LLM context.
  *
- * @param m - the agent message to convert
+ * @param m - agent message to convert
  *
- * @returns the LLM-compatible message, or `undefined` when the message is
- *   excluded from context (e.g. `bashExecution` with `excludeFromContext`)
+ * @returns LLM-compatible message, or {@link OMIT} when the message is excluded
+ *   from context (e.g. `bashExecution` with `excludeFromContext`)
  */
 function toLlmMessage(
   m: AgentMessage,
-): Message | undefined {
+): Message | typeof OMIT {
   if (m.role
     === 'bashExecution') {
     if (m.excludeFromContext
       === true)
-      return undefined;
+      return OMIT;
     return {
       role: 'user',
       content: [{
@@ -399,14 +262,14 @@ function toLlmMessage(
  * ```
  */
 export function convertToLlm(
-  messages: AgentMessage[],
+  messages: readonly AgentMessage[],
 ): Message[] {
   return messages
     .map(function mapToLlm(m,) {
       return toLlmMessage(m,);
     },)
-    .filter(function isDefined(m,): m is Message {
-      return m !== undefined;
+    .filter(function isMessage(m,): m is Message {
+      return m !== OMIT;
     },);
 }
 
@@ -425,7 +288,7 @@ export function convertToLlm(
  * @returns concatenated text or empty string when no text was present
  */
 function userTextFromContent(
-  content: string | (TextContent | ImageContent)[],
+  content: string | readonly (TextContent | ImageContent)[],
 ): string {
   if ((typeof content) === 'string')
     return content;
@@ -460,7 +323,7 @@ function userTextFromContent(
  * ```
  */
 export function serializeConversation(
-  messages: Message[],
+  messages: readonly Message[],
 ): string {
   /** Top-level accumulator joined into the final serialized transcript. */
   const parts: string[] = [];

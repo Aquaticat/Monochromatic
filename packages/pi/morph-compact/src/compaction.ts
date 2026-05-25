@@ -4,6 +4,7 @@
 
 import type {
   CompactionResult,
+  ContextUsage,
   SessionBeforeCompactEvent,
 } from '@earendil-works/pi-coding-agent';
 import {
@@ -15,7 +16,7 @@ import {
   extractLatestQuery,
   wrapMorphOutput,
 } from './formatting.ts';
-import { MorphCompactClient, } from './morph-client.ts';
+import { createMorphCompactClient, } from './morph-client.ts';
 import {
   convertToLlm,
   serializeConversation,
@@ -83,10 +84,7 @@ const THRESHOLD_HIGH = 0.6;
  * ```
  */
 export function chooseCompressionRatio(
-  contextUsage?: {
-    tokens: number | null;
-    contextWindow: number;
-  },
+  contextUsage?: Readonly<Pick<ContextUsage, 'tokens' | 'contextWindow'>>,
 ): number {
   if ((contextUsage === undefined) || (contextUsage.tokens
     === null))
@@ -136,12 +134,9 @@ export async function attemptMorphCompaction({
   contextUsage,
   apiKey,
 }: {
-  event: SessionBeforeCompactEvent;
-  contextUsage?: {
-    tokens: number | null;
-    contextWindow: number;
-  } | undefined;
-  apiKey?: string | undefined;
+  readonly event: SessionBeforeCompactEvent;
+  readonly contextUsage?: Readonly<ContextUsage>;
+  readonly apiKey: string;
 },): Promise<MorphCompactionAttempt> {
   /** Destructured event surface used throughout the attempt body. */
   const {
@@ -181,7 +176,7 @@ export async function attemptMorphCompaction({
   /** Final prompt body sent to Morph; merges prior summary with new content. */
   const input = buildMorphInput({
     serializedConversation: conversationText,
-    previousSummary,
+    ...((previousSummary !== undefined) ? { previousSummary, } : {}),
   },);
   if (input.trim()
     === '')
@@ -190,7 +185,7 @@ export async function attemptMorphCompaction({
   /** Latest user intent forwarded to Morph for relevance ranking. */
   const query = extractLatestQuery({
     branchEntries,
-    customInstructions,
+    ...((customInstructions !== undefined) ? { customInstructions, } : {}),
   },)
     .slice(
       0,
@@ -209,12 +204,10 @@ export async function attemptMorphCompaction({
     AbortSignal.timeout(COMPACTION_TIMEOUT_MS,),
   ],);
 
-  /** Lazily constructed client carries optional explicit key override. */
-  const client = new MorphCompactClient(
-    apiKey !== undefined
-      ? { morphApiKey: apiKey, }
-      : undefined,
-  );
+  /** Per-call client constructed with the resolved API key. */
+  const client = createMorphCompactClient({
+    morphApiKey: apiKey,
+  },);
   /** Network response payload from Morph Compact. */
   const result = await client.compact({
     input,

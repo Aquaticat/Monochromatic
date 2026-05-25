@@ -31,27 +31,35 @@ type McpConfig = {
 };
 
 /**
+ * Sentinel for "resolution ran and found no Morph key". Distinct from the
+ * literal absence of a cache entry (not yet resolved) and never a nullish
+ * value, so it survives the no-nullish-union rule while still letting callers
+ * branch on "no key configured".
+ */
+export const NO_MORPH_KEY: unique symbol = Symbol('no-morph-api-key',);
+
+/**
  * Cache of the resolved Morph API key for the session.
  * Map key is the literal `'value'`; presence indicates the cache has been
- * populated, and the stored value may itself be undefined when mcp.json
+ * populated, and the stored value is {@link NO_MORPH_KEY} when mcp.json
  * contained no Morph entry. Using `Map.has` lets us distinguish "not yet
- * resolved" from "resolved to undefined" without a separate flag.
+ * resolved" from "resolved to no key" without a separate flag.
  */
-const apiKeyCache = new Map<'value', string | undefined>();
+const apiKeyCache = new Map<'value', string | typeof NO_MORPH_KEY>();
 
 /**
  * Read `MORPH_API_KEY` from `~/.pi/agent/mcp.json`.
  * Walks all MCP server entries looking for an `env.MORPH_API_KEY` value.
  *
- * @returns the API key found in mcp.json, or undefined
+ * @returns the API key found in mcp.json, or {@link NO_MORPH_KEY}
  *
  * @example
  * ```typescript
  * const key = await readKeyFromMcpConfig();
- * // key === "sk-..." or undefined
+ * // key === "sk-..." or NO_MORPH_KEY
  * ```
  */
-async function readKeyFromMcpConfig(): Promise<string | undefined> {
+async function readKeyFromMcpConfig(): Promise<string | typeof NO_MORPH_KEY> {
   try {
     /** Raw JSON bytes from the user's mcp.json; parsed below. */
     const contents = await readFile(
@@ -61,11 +69,11 @@ async function readKeyFromMcpConfig(): Promise<string | undefined> {
     /** Parsed mcp.json payload before structural validation. */
     const config: unknown = JSON.parse(contents,);
     if (((typeof config) !== 'object') || (config === null))
-      return undefined;
+      return NO_MORPH_KEY;
     /** MCP server entries that may carry the Morph key under env. */
     const servers = (config as McpConfig).mcpServers;
     if (servers === undefined)
-      return undefined;
+      return NO_MORPH_KEY;
 
     /** Iteration keys for walking each configured server entry. */
     const serverNames = Object.keys(servers,);
@@ -78,11 +86,11 @@ async function readKeyFromMcpConfig(): Promise<string | undefined> {
       if ((key !== undefined) && (key !== ''))
         return key;
     }
-    return undefined;
+    return NO_MORPH_KEY;
   }
   catch {
     // File doesn't exist, unreadable, or invalid JSON: not an error
-    return undefined;
+    return NO_MORPH_KEY;
   }
 }
 
@@ -92,17 +100,17 @@ async function readKeyFromMcpConfig(): Promise<string | undefined> {
  * then falls back to `~/.pi/agent/mcp.json`.
  * Result is cached for the session.
  *
- * @returns the resolved API key, or undefined if not found
+ * @returns the resolved API key, or {@link NO_MORPH_KEY} if not found
  *
  * @example
  * ```typescript
  * const key = await resolveMorphApiKey();
- * if (key !== undefined) {
- *   const client = new MorphCompactClient({ morphApiKey: key });
+ * if (key !== NO_MORPH_KEY) {
+ *   const client = createMorphCompactClient({ morphApiKey: key });
  * }
  * ```
  */
-export async function resolveMorphApiKey(): Promise<string | undefined> {
+export async function resolveMorphApiKey(): Promise<string | typeof NO_MORPH_KEY> {
   // Check env var first
   /** Direct env override takes precedence over mcp.json. */
   const envKey = process.env
@@ -112,10 +120,11 @@ export async function resolveMorphApiKey(): Promise<string | undefined> {
 
   // Return cached value if already resolved
   if (apiKeyCache.has('value',))
-    return apiKeyCache.get('value',);
+    return apiKeyCache.get('value',)
+      ?? NO_MORPH_KEY;
 
   // Read from mcp.json and cache
-  /** Resolved key from mcp.json; may be undefined when no Morph entry exists. */
+  /** Resolved key from mcp.json; NO_MORPH_KEY when no Morph entry exists. */
   const resolved = await readKeyFromMcpConfig();
   apiKeyCache.set(
     'value',

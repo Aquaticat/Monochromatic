@@ -9,12 +9,15 @@
  */
 
 import type {
-  CompactionResult,
+  ExtensionContext,
   SessionBeforeCompactEvent,
 } from '@earendil-works/pi-coding-agent';
-import { resolveMorphApiKey, } from './api-key.ts';
+import {
+  NO_MORPH_KEY,
+  resolveMorphApiKey,
+} from './api-key.ts';
 import { attemptMorphCompaction, } from './compaction.ts';
-import type { MorphCompactionDetails, } from './types.ts';
+import type { MorphBeforeCompactOutcome, } from './types.ts';
 
 /**
  * Latches for one-time warnings during a session.
@@ -62,27 +65,12 @@ export async function handleBeforeCompact({
   event,
   ctx,
 }: {
-  event: SessionBeforeCompactEvent;
-  ctx: {
-    getContextUsage(): {
-      tokens: number | null;
-      contextWindow: number;
-    } | undefined;
-    ui: {
-      notify(
-        message: string,
-        type?: 'info' | 'warning' | 'error',
-      ): void;
-    };
-  };
-},): Promise<
-  | { compaction: CompactionResult<MorphCompactionDetails>; }
-  | { cancel: true; }
-  | undefined
-> {
-  /** Resolved Morph key; undefined disables the integration for this event. */
+  readonly event: SessionBeforeCompactEvent;
+  readonly ctx: ExtensionContext;
+},): Promise<MorphBeforeCompactOutcome> {
+  /** Resolved Morph key; sentinel disables the integration for this event. */
   const apiKey = await resolveMorphApiKey();
-  if (apiKey === undefined) {
+  if (apiKey === NO_MORPH_KEY) {
     if (!warnedFlags.has('missingKey',)) {
       warnedFlags.add('missingKey',);
       ctx.ui
@@ -91,16 +79,16 @@ export async function handleBeforeCompact({
         'warning',
       );
     }
-    return undefined;
+    return { kind: 'fallthrough', };
   }
 
   if (event.preparation
     .isSplitTurn)
-    return undefined;
+    return { kind: 'fallthrough', };
 
   if (event.signal
     .aborted)
-    return undefined;
+    return { kind: 'fallthrough', };
 
   /** Preparation slices read for the pre-flight emptiness check. */
   const {
@@ -120,7 +108,7 @@ export async function handleBeforeCompact({
       'Morph Compact: nothing to compact (session too small)',
       'warning',
     );
-    return { cancel: true, };
+    return { kind: 'cancel', };
   }
 
   /** Total messages slated for compaction; surfaced in the status notify. */
@@ -135,17 +123,20 @@ export async function handleBeforeCompact({
     'info',
   );
 
+  /** Current context pressure snapshot; absent when pi cannot report usage. */
+  const contextUsage = ctx.getContextUsage();
+
   try {
     /** Outcome of the Morph attempt; success surfaces a CompactionResult. */
     const attempt = await attemptMorphCompaction({
       event,
-      contextUsage: ctx.getContextUsage(),
+      ...((contextUsage !== undefined) ? { contextUsage, } : {}),
       apiKey,
     },);
 
     if (attempt.kind
       === 'fallback')
-      return undefined;
+      return { kind: 'fallthrough', };
 
     /** Extracted CompactionResult forwarded back to pi after the notify. */
     const { result, } = attempt;
@@ -184,12 +175,15 @@ export async function handleBeforeCompact({
       );
     }
 
-    return { compaction: result, };
+    return {
+      kind: 'compaction',
+      result,
+    };
   }
   catch (error) {
     if (event.signal
       .aborted)
-      return undefined;
+      return { kind: 'fallthrough', };
 
     /** Best-effort diagnostic forwarded into the UI notify body. */
     const message = error instanceof Error
@@ -200,6 +194,6 @@ export async function handleBeforeCompact({
       `Morph Compact failed: ${message}; falling back to pi default`,
       'error',
     );
-    return undefined;
+    return { kind: 'fallthrough', };
   }
 }

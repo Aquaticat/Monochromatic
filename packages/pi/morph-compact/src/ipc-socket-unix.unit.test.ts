@@ -15,30 +15,15 @@ import {
   readFromUnixSocket,
 } from './ipc-socket-unix.ts';
 
-/** Disposable wrapper for one-shot socket server cleanup. */
-class SocketServerDisposable implements Disposable {
-  readonly #cleanup: () => void;
-
-  constructor(cleanup: () => void,) {
-    this.#cleanup = cleanup;
-  }
-
-  [Symbol.dispose](): void {
-    this.#cleanup();
-  }
-}
-
 /** Wrap a socket server result so `using` calls cleanup automatically. */
 function usingSocketServer(
   result: ReturnType<typeof createOneShotSocketServer>,
-): SocketServerDisposable & {
+): Disposable & {
   socketPath: string;
 } {
   return {
     socketPath: result.socketPath,
     [Symbol.dispose]: result.cleanup,
-  } as SocketServerDisposable & {
-    socketPath: string;
   };
 }
 

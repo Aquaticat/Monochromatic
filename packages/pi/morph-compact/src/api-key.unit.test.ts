@@ -8,25 +8,6 @@ import {
   resolveMorphApiKey,
 } from './api-key.ts';
 
-/** Disposable that restores an env var and resets the API key cache. */
-class EnvRestore implements Disposable {
-  readonly #key: string;
-  readonly #original: string | undefined;
-
-  constructor(envKey: string, original: string | undefined,) {
-    this.#key = envKey;
-    this.#original = original;
-  }
-
-  [Symbol.dispose](): void {
-    if (this.#original === undefined)
-      Reflect.deleteProperty(process.env, this.#key,);
-    else
-      process.env[this.#key] = this.#original;
-    resetApiKeyCache();
-  }
-}
-
 /** Set an env var and return a disposable that restores the original value. */
 function setEnv({
   key,
@@ -34,11 +15,20 @@ function setEnv({
 }: {
   key: string;
   value: string;
-},): EnvRestore {
+},): Disposable {
+  /** Captured pre-test value; absent (undefined) means the var was unset. */
   const original = process.env[key];
   process.env[key] = value;
   resetApiKeyCache();
-  return new EnvRestore(key, original,);
+  return {
+    [Symbol.dispose](): void {
+      if (original === undefined)
+        Reflect.deleteProperty(process.env, key,);
+      else
+        process.env[key] = original;
+      resetApiKeyCache();
+    },
+  };
 }
 
 await describe({

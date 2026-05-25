@@ -14,7 +14,6 @@ import {
   createConnection,
   createServer,
   type Server,
-  type Socket,
 } from 'node:net';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
@@ -75,25 +74,32 @@ export function createOneShotSocketServer(
     `morph-compact-${randomUUID()}.sock`,
   );
 
-  /** Lazily assigned server reference closed by the shared close() helper. */
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- mutable state closed over by net.Server event handlers (handleConnection, handleError, close, idle timer)
-  let server: Server | null = null;
-  /** Idle-timeout handle cleared on connect or close. */
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- mutable state closed over by net.Server event handlers (handleConnection, handleError, close, idle timer)
-  let idleTimer: ReturnType<typeof setTimeout> | null = null;
+  /**
+   * Lazily assigned server and idle-timer handles, held in a mutable record so
+   * the net.Server event handlers (handleConnection, handleError, close, idle
+   * timer) can share and clear them without a function-root `let` or a nullish
+   * union. Absent property means "not created / already cleared".
+   */
+  const handles: {
+    server?: Server;
+    idleTimer?: ReturnType<typeof setTimeout>;
+  } = {};
   /** Guards against re-entry when multiple clients race to connect. */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- single-shot latch for racing client connections
   let served = false;
 
   /** Close the server and unlink the socket file. */
   function close(): void {
-    if (idleTimer !== null) {
-      clearTimeout(idleTimer,);
-      idleTimer = null;
+    if (handles.idleTimer
+      !== undefined) {
+      clearTimeout(handles.idleTimer,);
+      delete handles.idleTimer;
     }
-    if (server !== null) {
-      server.close();
-      server = null;
+    if (handles.server
+      !== undefined) {
+      handles.server
+        .close();
+      delete handles.server;
     }
     try {
       unlinkSync(socketPath,);
@@ -103,17 +109,18 @@ export function createOneShotSocketServer(
     }
   }
 
-  server = createServer(
+  handles.server = createServer(
     function handleConnection(
-      socket: Socket,
+      socket,
     ): void {
       if (served)
         return;
       served = true;
 
-      if (idleTimer !== null) {
-        clearTimeout(idleTimer,);
-        idleTimer = null;
+      if (handles.idleTimer
+        !== undefined) {
+        clearTimeout(handles.idleTimer,);
+        delete handles.idleTimer;
       }
 
       socket.write(
@@ -127,9 +134,11 @@ export function createOneShotSocketServer(
     },
   );
 
-  server.listen(socketPath,);
+  handles.server
+    .listen(socketPath,);
 
-  server.on(
+  handles.server
+    .on(
     'error',
     function handleError(): void {
       close();
@@ -137,7 +146,7 @@ export function createOneShotSocketServer(
   );
 
   // Auto-cleanup after idle timeout
-  idleTimer = setTimeout(
+  handles.idleTimer = setTimeout(
     close,
     SERVER_IDLE_TIMEOUT_MS,
   );
@@ -198,14 +207,14 @@ export function readFromUnixSocket(
         error,
         result,
       }: {
-        error: Error | null;
-        result?: string;
+        readonly error?: Error;
+        readonly result?: string;
       },): void {
         if (settled)
           return;
         settled = true;
 
-        if (error !== null)
+        if (error !== undefined)
           reject(error,);
         else
           resolve(result ?? '',);
@@ -227,7 +236,6 @@ export function readFromUnixSocket(
             'end',
             function onEnd(): void {
               finish({
-                error: null,
                 result: Buffer.concat(chunks,)
                   .toString('utf8',),
               },);

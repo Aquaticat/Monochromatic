@@ -1,9 +1,9 @@
 /**
  * Tests for {@link compressBranch}.
  *
- * Uses sequential execution because all tests stub
- * {@link MorphCompactClient.prototype.compact} and would conflict
- * if run concurrently.
+ * Uses sequential execution because all tests stub `globalThis.fetch`
+ * (the network seam behind the Morph client) and sinon refuses to wrap an
+ * already-wrapped method, so concurrent runs would conflict.
  *
  * @module
  */
@@ -19,7 +19,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 import { compressBranch, } from './compress-branch.ts';
-import { MorphCompactClient, } from './morph-client.ts';
 
 //region Test helpers
 
@@ -134,9 +133,9 @@ await describe({
   children: [
     describe({
       name: compressBranch.name,
-      // Sequential execution required: tests stub MorphCompactClient.prototype.compact
-      // and would fail under concurrent execution because sinon refuses to
-      // wrap an already-wrapped method.
+      // Sequential execution required: tests stub globalThis.fetch and would
+      // fail under concurrent execution because sinon refuses to wrap an
+      // already-wrapped method.
       concurrency: 1,
       children: [
         // Thunks required for concurrency: 1 so execution
@@ -171,11 +170,11 @@ await describe({
           fn: async ({ sinon, },) => {
             const compactStub = sinon
               .stub(
-                MorphCompactClient.prototype,
-                'compact',
+                globalThis,
+                'fetch',
               )
               .resolves(
-                mockCompactResult(MOCK_COMPACT_OUTPUT,),
+                Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
               );
 
             const entries: SessionEntry[] = [
@@ -211,11 +210,11 @@ await describe({
           fn: async ({ sinon, },) => {
             const compactStub = sinon
               .stub(
-                MorphCompactClient.prototype,
-                'compact',
+                globalThis,
+                'fetch',
               )
               .resolves(
-                mockCompactResult(MOCK_COMPACT_OUTPUT,),
+                Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
               );
 
             const previousSummary = 'Old context about Spain';
@@ -247,11 +246,11 @@ await describe({
           fn: async ({ sinon, },) => {
             const compactStub = sinon
               .stub(
-                MorphCompactClient.prototype,
-                'compact',
+                globalThis,
+                'fetch',
               )
               .resolves(
-                mockCompactResult(MOCK_COMPACT_OUTPUT,),
+                Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
               );
 
             const entries: SessionEntry[] = [
@@ -272,10 +271,11 @@ await describe({
             // Custom instructions should appear as the query
             // arg in the compact call
             expect(compactStub,).toHaveBeenCalled();
-            const callArgs = compactStub
+            const callInit = compactStub
               .firstCall
-              .args[0] as Record<string, unknown>;
-            expect(callArgs.query,).toBe(
+              .args[1] as { body: string; };
+            const requestBody = JSON.parse(callInit.body,) as Record<string, unknown>;
+            expect(requestBody.query,).toBe(
               'focus on authentication',
             );
           },
@@ -285,11 +285,11 @@ await describe({
           fn: async ({ sinon, },) => {
             sinon
               .stub(
-                MorphCompactClient.prototype,
-                'compact',
+                globalThis,
+                'fetch',
               )
               .resolves(
-                mockCompactResult('',),
+                Response.json(mockCompactResult('',),),
               );
 
             const entries: SessionEntry[] = [
@@ -314,11 +314,11 @@ await describe({
           fn: async ({ sinon, },) => {
             const compactStub = sinon
               .stub(
-                MorphCompactClient.prototype,
-                'compact',
+                globalThis,
+                'fetch',
               )
               .resolves(
-                mockCompactResult(MOCK_COMPACT_OUTPUT,),
+                Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
               );
 
             const previousSummary = 'Earlier conversation about Germany';
@@ -355,11 +355,11 @@ await describe({
           fn: async ({ sinon, },) => {
             const compactStub = sinon
               .stub(
-                MorphCompactClient.prototype,
-                'compact',
+                globalThis,
+                'fetch',
               )
               .resolves(
-                mockCompactResult(MOCK_COMPACT_OUTPUT,),
+                Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
               );
 
             const entries: SessionEntry[] = [
@@ -393,11 +393,12 @@ await describe({
             // containing "Second compaction" as
             // previousSummary
             expect(compactStub,).toHaveBeenCalled();
-            const callArgs = compactStub
+            const callInit = compactStub
               .firstCall
-              .args[0] as Record<string, unknown>;
+              .args[1] as { body: string; };
+            const requestBody = JSON.parse(callInit.body,) as Record<string, unknown>;
             expect(
-              callArgs.input as string,
+              requestBody.input as string,
             )
               .toContain('Second compaction',);
           },

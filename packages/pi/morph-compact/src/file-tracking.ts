@@ -63,8 +63,8 @@ export function formatFileOperations({
   readFiles,
   modifiedFiles,
 }: {
-  readFiles: string[];
-  modifiedFiles: string[];
+  readonly readFiles: readonly string[];
+  readonly modifiedFiles: readonly string[];
 },): string {
   /** Accumulates per-category XML fragments before joining. */
   const sections: string[] = [];

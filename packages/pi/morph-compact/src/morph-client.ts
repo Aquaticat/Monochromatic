@@ -48,7 +48,7 @@ export type CompactMessage = {
   /** Compressed message body. */
   content: string;
   /** Optional message name as supplied in request. */
-  name?: string | null;
+  name?: string;
   /** Line ranges removed during compaction. */
   compacted_line_ranges: CompactedRange[];
   /** Line ranges force-preserved via `<keepContext>` tags. */
@@ -65,11 +65,11 @@ export type CompactMessage = {
  */
 export type CompactInputMessage = {
   /** Role of message ("user", "assistant", etc.). */
-  role: string;
+  readonly role: string;
   /** Raw message body. */
-  content: string;
+  readonly content: string;
   /** Optional message name forwarded to API. */
-  name?: string;
+  readonly name?: string;
 };
 
 /**
@@ -85,23 +85,23 @@ export type CompactInputMessage = {
  */
 export type CompactInput = {
   /** String input or array of messages; ignored when `messages` is set. */
-  input?: string | CompactInputMessage[];
+  readonly input?: string | readonly CompactInputMessage[];
   /** Array of messages to compact; takes priority over `input`. */
-  messages?: CompactInputMessage[];
+  readonly messages?: readonly CompactInputMessage[];
   /** Query the compactor conditions on; auto-detected from last user message when omitted. */
-  query?: string;
+  readonly query?: string;
   /** Fraction of content to keep (0.05 to 1.0); default 0.5. */
-  compressionRatio?: number;
+  readonly compressionRatio?: number;
   /** Number of recent messages to keep uncompressed; default 2. */
-  preserveRecent?: number;
+  readonly preserveRecent?: number;
   /** Whether to include `compacted_line_ranges` in response; default `true`. */
-  includeLineRanges?: boolean;
+  readonly includeLineRanges?: boolean;
   /** Whether to include "(filtered N lines)" markers; default `true`. */
-  includeMarkers?: boolean;
+  readonly includeMarkers?: boolean;
   /** Compactor model identifier; default "morph-compactor". */
-  model?: string;
+  readonly model?: string;
   /** Optional cancellation signal forwarded to `fetch`; combined with the configured timeout. */
-  signal?: AbortSignal;
+  readonly signal?: AbortSignal;
 };
 
 /**
@@ -144,11 +144,11 @@ export type CompactResult = {
  */
 export type CompactConfig = {
   /** Morph API key; falls back to `MORPH_API_KEY` env var when undefined. */
-  morphApiKey?: string;
+  readonly morphApiKey?: string;
   /** Override base URL (e.g. for staging or proxies). */
-  morphApiUrl?: string;
+  readonly morphApiUrl?: string;
   /** Per-request timeout in milliseconds; default 120000. */
-  timeout?: number;
+  readonly timeout?: number;
 };
 
 //endregion
@@ -213,8 +213,8 @@ export class MorphApiError extends Error {
     status,
     body,
   }: {
-    status: number;
-    body: string;
+    readonly status: number;
+    readonly body: string;
   },) {
     super(`Morph compact API error ${status}: ${body}`,);
     this.name = 'MorphApiError';
@@ -254,14 +254,10 @@ export class MorphInvalidInputError extends Error {
  *
  * @example
  * ```typescript
- * const key = resolveApiKey({ explicit: 'sk-...' });
+ * const key = resolveApiKey('sk-...');
  * ```
  */
-function resolveApiKey({
-  explicit,
-}: {
-  explicit?: string | undefined;
-},): string {
+function resolveApiKey(explicit?: string,): string {
   if ((explicit !== undefined) && (explicit !== ''))
     return explicit;
   /** Browser-safe fallback to process env when the runtime exposes one. */
@@ -340,8 +336,8 @@ function buildSignal({
   caller,
   timeoutMs,
 }: {
-  caller?: AbortSignal | undefined;
-  timeoutMs: number;
+  readonly caller?: AbortSignal;
+  readonly timeoutMs: number;
 },): AbortSignal {
   /** Hard ceiling so a hung request cannot block compaction indefinitely. */
   const timeout = AbortSignal.timeout(timeoutMs,);
@@ -358,15 +354,33 @@ function buildSignal({
 //region Client
 
 /**
- * Direct fetch client for Morph Compact API.
+ * Public surface of a Morph Compact client: a single `compact` method.
+ * A frozen object literal (factory output) rather than a class, per the
+ * no-class rule.
+ */
+export type MorphCompactClient = {
+  /** Compact messages or text via `POST {apiUrl}/v1/compact`. */
+  readonly compact: (input: CompactInput,) => Promise<CompactResult>;
+};
+
+/**
+ * Build a Morph Compact client with optional config overrides; defaults
+ * applied for `morphApiUrl` and `timeout`. The API key is resolved per-request
+ * to allow late-binding via env var.
  *
- * Mirrors `@morphllm/morphsdk`'s `CompactClient` surface (constructor and
- * `compact()` method) so call sites and tests work unchanged after a
- * straight import-path swap and class rename.
+ * Returns per-message `compacted_line_ranges` showing which lines were
+ * removed. Caller may pass an `AbortSignal` to cancel mid-flight; it is
+ * combined with the configured timeout via `AbortSignal.any`.
+ *
+ * @param config - optional overrides for API URL, timeout, and key
+ *
+ * @returns frozen client exposing {@link MorphCompactClient.compact}
+ *
+ * @throws when no API key is available, neither `input` nor `messages` is set, or API responds with non-2xx status.
  *
  * @example
  * ```typescript
- * const client = new MorphCompactClient({ morphApiKey: 'sk-...' });
+ * const client = createMorphCompactClient({ morphApiKey: 'sk-...' });
  * const result = await client.compact({
  *   input: longText,
  *   query: 'auth flow',
@@ -375,95 +389,57 @@ function buildSignal({
  * console.log(result.output);
  * ```
  */
-export class MorphCompactClient {
-  /**
-   * Frozen runtime config; resolves defaults from {@link CompactConfig}.
-   */
-  readonly #config: {
-    morphApiKey?: string | undefined;
-    morphApiUrl: string;
-    timeout: number;
-  };
+export function createMorphCompactClient(
+  config: Readonly<CompactConfig> = {},
+): MorphCompactClient {
+  /** Resolved base URL; falls back to the public Morph endpoint. */
+  const morphApiUrl = config.morphApiUrl
+    ?? DEFAULT_API_URL;
+  /** Resolved per-request timeout in milliseconds. */
+  const timeout = config.timeout
+    ?? DEFAULT_TIMEOUT_MS;
+  /** Explicit key override resolved late so env overrides still surface. */
+  const explicitKey = config.morphApiKey;
 
-  /**
-   * Build client with optional config overrides; defaults applied for
-   * `morphApiUrl` and `timeout`. The API key is resolved per-request to
-   * allow late-binding via env var.
-   *
-   * @param config - optional overrides for API URL, timeout, and key
-   *
-   * @example
-   * ```typescript
-   * const client = new MorphCompactClient({ morphApiKey: 'sk-...' });
-   * ```
-   */
-  constructor(config: CompactConfig = {},) {
-    this.#config = {
-      morphApiKey: config.morphApiKey,
-      morphApiUrl: config.morphApiUrl
-        ?? DEFAULT_API_URL,
-      timeout: config.timeout
-        ?? DEFAULT_TIMEOUT_MS,
-    };
-  }
-
-  /**
-   * Compact messages or text via `POST {apiUrl}/v1/compact`.
-   *
-   * Returns per-message `compacted_line_ranges` showing which lines were
-   * removed. Caller may pass an `AbortSignal` to cancel mid-flight; it is
-   * combined with the configured timeout via `AbortSignal.any`.
-   *
-   * @param input - compaction request shape; see {@link CompactInput}
-   *
-   * @returns response from `/v1/compact` parsed as {@link CompactResult}
-   *
-   * @throws when no API key is available, neither `input` nor `messages` is set, or API responds with non-2xx status.
-   *
-   * @example
-   * ```typescript
-   * const result = await client.compact({ input: 'long text', query: 'auth' });
-   * ```
-   */
-  async compact(input: CompactInput,): Promise<CompactResult> {
-    /** Late-bound key resolution so env overrides can surface per call. */
-    const apiKey = resolveApiKey({ explicit: this.#config
-      .morphApiKey, },);
-    /** Fully qualified compact endpoint resolved against the configured base URL. */
-    const url = `${this.#config
-      .morphApiUrl}/v1/compact`;
-    /** Wire-shape JSON payload built from caller input. */
-    const body = buildRequestBody(input,);
-    /** Composite signal so either caller-cancel or timeout aborts fetch. */
-    const signal = buildSignal({
-      caller: input.signal,
-      timeoutMs: this.#config
-        .timeout,
-    },);
-    /** Raw fetch response inspected for status and parsed below. */
-    const response = await fetch(
-      url,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body,),
-        signal,
-      },
-    );
-    if (!response.ok) {
-      /** Captured error body forwarded into MorphApiError for diagnostics. */
-      const text = await response.text();
-      throw new MorphApiError({
-        status: response.status,
-        body: text,
+  return Object.freeze({
+    async compact(input: CompactInput,): Promise<CompactResult> {
+      /** Late-bound key resolution so env overrides can surface per call. */
+      const apiKey = resolveApiKey(explicitKey,);
+      /** Fully qualified compact endpoint resolved against the configured base URL. */
+      const url = `${morphApiUrl}/v1/compact`;
+      /** Wire-shape JSON payload built from caller input. */
+      const body = buildRequestBody(input,);
+      /** Composite signal so either caller-cancel or timeout aborts fetch. */
+      const signal = buildSignal({
+        ...((input.signal
+          !== undefined) ? { caller: input.signal, } : {}),
+        timeoutMs: timeout,
       },);
-    }
-    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response.json() returns any; shape is the documented /v1/compact contract mirrored from morphsdk@0.2.167
-    return await response.json() as CompactResult;
-  }
+      /** Raw fetch response inspected for status and parsed below. */
+      const response = await fetch(
+        url,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body,),
+          signal,
+        },
+      );
+      if (!response.ok) {
+        /** Captured error body forwarded into MorphApiError for diagnostics. */
+        const text = await response.text();
+        throw new MorphApiError({
+          status: response.status,
+          body: text,
+        },);
+      }
+      // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- response.json() returns any; shape is the documented /v1/compact contract mirrored from morphsdk@0.2.167
+      return await response.json() as CompactResult;
+    },
+  },);
 }
 
 //endregion

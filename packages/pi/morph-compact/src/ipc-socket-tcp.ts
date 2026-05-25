@@ -13,7 +13,6 @@ import {
   createConnection as createTcpConnection,
   createServer as createTcpServer,
   type Server,
-  type Socket,
 } from 'node:net';
 
 //region Constants
@@ -70,25 +69,32 @@ export type OneShotTcpServerResult = {
 export async function createOneShotTcpServer(
   text: string,
 ): Promise<OneShotTcpServerResult> {
-  /** Lazily assigned server reference closed by the shared close() helper. */
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- mutable state closed over by net.Server event handlers (handleConnection, handleError, close, idle timer)
-  let server: Server | null = null;
-  /** Idle-timeout handle cleared on connect or close. */
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- mutable state closed over by net.Server event handlers (handleConnection, handleError, close, idle timer)
-  let idleTimer: ReturnType<typeof setTimeout> | null = null;
+  /**
+   * Lazily assigned server and idle-timer handles, held in a mutable record so
+   * the net.Server event handlers (handleConnection, handleError, close, idle
+   * timer) can share and clear them without a function-root `let` or a nullish
+   * union. Absent property means "not created / already cleared".
+   */
+  const handles: {
+    server?: Server;
+    idleTimer?: ReturnType<typeof setTimeout>;
+  } = {};
   /** Guards against re-entry when multiple clients race to connect. */
   // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- single-shot latch for racing client connections
   let served = false;
 
   /** Close the server and clear idle timer. */
   function close(): void {
-    if (idleTimer !== null) {
-      clearTimeout(idleTimer,);
-      idleTimer = null;
+    if (handles.idleTimer
+      !== undefined) {
+      clearTimeout(handles.idleTimer,);
+      delete handles.idleTimer;
     }
-    if (server !== null) {
-      server.close();
-      server = null;
+    if (handles.server
+      !== undefined) {
+      handles.server
+        .close();
+      delete handles.server;
     }
   }
 
@@ -100,17 +106,18 @@ export async function createOneShotTcpServer(
       resolve,
       reject,
     ): void {
-      server = createTcpServer(
+      handles.server = createTcpServer(
         function handleConnection(
-          socket: Socket,
+          socket,
         ): void {
           if (served)
             return;
           served = true;
 
-          if (idleTimer !== null) {
-            clearTimeout(idleTimer,);
-            idleTimer = null;
+          if (handles.idleTimer
+            !== undefined) {
+            clearTimeout(handles.idleTimer,);
+            delete handles.idleTimer;
           }
 
           socket.write(
@@ -124,7 +131,8 @@ export async function createOneShotTcpServer(
         },
       );
 
-      server.on(
+      handles.server
+        .on(
         'error',
         function handleError(
           err: Error,
@@ -135,12 +143,14 @@ export async function createOneShotTcpServer(
       );
 
       // Bind to localhost with OS-assigned port
-      server.listen(
+      handles.server
+        .listen(
         0,
         LOCALHOST,
         function onListening(): void {
           /** AddressInfo from the bound socket; resolved into host:port for callers. */
-          const addrInfo = server?.address();
+          const addrInfo = handles.server
+            ?.address();
           if (
             (addrInfo !== undefined)
             && (addrInfo !== null)
@@ -153,7 +163,7 @@ export async function createOneShotTcpServer(
       );
 
       // Auto-cleanup after idle timeout
-      idleTimer = setTimeout(
+      handles.idleTimer = setTimeout(
         close,
         SERVER_IDLE_TIMEOUT_MS,
       );
@@ -221,14 +231,14 @@ export function readFromTcpSocket(
         error,
         result,
       }: {
-        error: Error | null;
-        result?: string;
+        readonly error?: Error;
+        readonly result?: string;
       },): void {
         if (settled)
           return;
         settled = true;
 
-        if (error !== null)
+        if (error !== undefined)
           reject(error,);
         else
           resolve(result ?? '',);
@@ -253,7 +263,6 @@ export function readFromTcpSocket(
             'end',
             function onEnd(): void {
               finish({
-                error: null,
                 result: Buffer.concat(chunks,)
                   .toString('utf8',),
               },);

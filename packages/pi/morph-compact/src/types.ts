@@ -39,3 +39,25 @@ export type MorphCompactionFallback = {
 export type MorphCompactionAttempt =
   | MorphCompactionSuccess
   | MorphCompactionFallback;
+
+/**
+ * Outcome of {@link handleBeforeCompact}, kept as a closed discriminated union
+ * (no `undefined`) so the bridge can translate it into pi's
+ * `SessionBeforeCompactResult` (`{ compaction }`, `{ cancel }`, or a bare
+ * `undefined` that lets other extensions keep their result).
+ */
+export type MorphBeforeCompactOutcome =
+  | {
+    /** Morph produced a compaction result for pi to apply. */
+    readonly kind: 'compaction';
+    /** Compaction record forwarded to pi. */
+    readonly result: CompactionResult<MorphCompactionDetails>;
+  }
+  | {
+    /** Session is too small to compact; cancel pi's default summarizer. */
+    readonly kind: 'cancel';
+  }
+  | {
+    /** Defer to pi's default compaction (missing key, abort, or failure). */
+    readonly kind: 'fallthrough';
+  };

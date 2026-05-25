@@ -45,9 +45,7 @@ await describe({
                 content: 'Tell me about European capitals', },),
             ];
             const query = extractLatestQuery({
-              branchEntries: entries,
-              customInstructions: undefined,
-            },);
+              branchEntries: entries,            },);
             expect(query,).toBe('Tell me about European capitals',);
           },
         },),
@@ -69,9 +67,7 @@ await describe({
           name: 'returns empty string for empty branch entries',
           fn: async () => {
             const query = extractLatestQuery({
-              branchEntries: [],
-              customInstructions: undefined,
-            },);
+              branchEntries: [],            },);
             expect(query,).toBe('',);
           },
         },),
@@ -97,9 +93,7 @@ await describe({
               } as unknown as SessionEntry,
             ];
             const query = extractLatestQuery({
-              branchEntries: entries,
-              customInstructions: undefined,
-            },);
+              branchEntries: entries,            },);
             expect(query,).toBe('What is the capital?',);
           },
         },),
@@ -127,7 +121,6 @@ await describe({
           fn: async () => {
             const input = buildMorphInput({
               serializedConversation: 'conversation text',
-              previousSummary: undefined,
             },);
             expect(input,).not.toContain('<keepContext>',);
             expect(input,).toContain('conversation text',);

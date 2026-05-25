@@ -46,11 +46,18 @@ function isTextContentItem(
 }
 
 /**
+ * Sentinel returned by {@link textFromContent} when content yields no text.
+ * A unique symbol rather than `undefined`/`''` so the no-empty-sentinel and
+ * no-nullish-union rules are satisfied while callers can still branch on it.
+ */
+const NO_TEXT: unique symbol = Symbol('no-text',);
+
+/**
  * Extract text content from a message content field (string or content array).
  *
  * @param content - raw message content, either a string or structured array
  *
- * @returns concatenated text or undefined if no text found
+ * @returns concatenated text, or {@link NO_TEXT} if no text found
  *
  * @example
  * ```typescript
@@ -60,16 +67,16 @@ function isTextContentItem(
  */
 export function textFromContent(
   content: unknown,
-): string | undefined {
+): string | typeof NO_TEXT {
   if ((typeof content) === 'string') {
-    /** Cheap pre-check so all-whitespace strings collapse to undefined. */
+    /** Cheap pre-check so all-whitespace strings collapse to the sentinel. */
     const trimmed = content.trim();
     if (trimmed === '')
-      return undefined;
+      return NO_TEXT;
     return trimmed;
   }
   if (!Array.isArray(content,))
-    return undefined;
+    return NO_TEXT;
   /** Joined text harvested from typed content items, or empty for none. */
   const result = content
     .filter(function checkItem(item,) {
@@ -84,7 +91,7 @@ export function textFromContent(
     },)
     .join('\n',);
   if (result === '')
-    return undefined;
+    return NO_TEXT;
   return result;
 }
 
@@ -116,8 +123,8 @@ export function extractLatestQuery({
   branchEntries,
   customInstructions,
 }: {
-  branchEntries: SessionEntry[];
-  customInstructions?: string | undefined;
+  readonly branchEntries: readonly SessionEntry[];
+  readonly customInstructions?: string;
 },): string {
   /** User-supplied instructions short-circuit branch scanning when present. */
   const custom = customInstructions?.trim();
@@ -146,7 +153,7 @@ export function extractLatestQuery({
       === 'user') {
       /** Concatenated user text; first non-empty result becomes the query. */
       const text = textFromContent(message.content,);
-      if ((text !== undefined) && (text !== ''))
+      if (text !== NO_TEXT)
         return text;
     }
     if (
@@ -224,8 +231,8 @@ export function buildMorphInput({
   serializedConversation,
   previousSummary,
 }: {
-  serializedConversation: string;
-  previousSummary?: string | undefined;
+  readonly serializedConversation: string;
+  readonly previousSummary?: string;
 },): string {
   /** Accumulator for the optional summary block and serialized conversation. */
   const parts: string[] = [];

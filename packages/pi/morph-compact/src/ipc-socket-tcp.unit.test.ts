@@ -16,30 +16,15 @@ import {
   readFromTcpSocket,
 } from './ipc-socket-tcp.ts';
 
-/** Disposable wrapper for one-shot TCP server cleanup. */
-class TcpServerDisposable implements Disposable {
-  readonly #cleanup: () => void;
-
-  constructor(cleanup: () => void,) {
-    this.#cleanup = cleanup;
-  }
-
-  [Symbol.dispose](): void {
-    this.#cleanup();
-  }
-}
-
 /** Wrap a TCP server result so `using` calls cleanup automatically. */
 function usingTcpServer(
   result: OneShotTcpServerResult,
-): TcpServerDisposable & {
+): Disposable & {
   address: string;
 } {
   return {
     address: result.address,
     [Symbol.dispose]: result.cleanup,
-  } as TcpServerDisposable & {
-    address: string;
   };
 }
 
@@ -88,7 +73,7 @@ await describe({
             using server = usingTcpServer(await createOneShotTcpServer('test',),);
 
             // oxlint-disable-next-line no-restricted-syntax/no-regex -- format check on `host:port`; the test asserts exact loopback IP shape with a numeric port suffix. Input length is bounded by IP+port format, no nested quantifiers.
-            expect(server.address,).toMatch(/^127\.0\.0\.1:\d+$/,);
+            expect(server.address,).toMatch(/^127\.0\.0\.1:\d+$/u,);
           },
         },),
         it({

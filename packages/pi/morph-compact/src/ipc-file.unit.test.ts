@@ -16,30 +16,15 @@ import {
   type WriteCompactFileResult,
 } from './ipc-file.ts';
 
-/** Disposable wrapper for writeCompactFile cleanup. */
-class FileDisposable implements Disposable {
-  readonly #cleanup: () => void;
-
-  constructor(cleanup: () => void,) {
-    this.#cleanup = cleanup;
-  }
-
-  [Symbol.dispose](): void {
-    this.#cleanup();
-  }
-}
-
 /** Wrap a writeCompactFile result so `using` calls cleanup automatically. */
 function usingCompactFile(
   result: WriteCompactFileResult,
-): FileDisposable & {
+): Disposable & {
   filePath: string;
 } {
   return {
     filePath: result.filePath,
     [Symbol.dispose]: result.cleanup,
-  } as FileDisposable & {
-    filePath: string;
   };
 }
 

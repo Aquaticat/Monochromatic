@@ -29,6 +29,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec';
 import {
+  NO_MORPH_KEY,
   resetApiKeyCache,
   resolveMorphApiKey,
 } from './api-key.ts';
@@ -76,12 +77,12 @@ async function handleMorphCompactCommand({
   args,
   ctx,
 }: {
-  args: string;
-  ctx: ExtensionCommandContext;
+  readonly args: string;
+  readonly ctx: ExtensionCommandContext;
 },): Promise<void> {
   /** Resolved Morph key gates the command early when missing. */
   const apiKey = await resolveMorphApiKey();
-  if (apiKey === undefined) {
+  if (apiKey === NO_MORPH_KEY) {
     ctx.ui
       .notify(
       'MORPH_API_KEY not set (env or ~/.pi/agent/mcp.json): cannot compress',
@@ -112,9 +113,9 @@ async function handleMorphCompactCommand({
     /** Compressed branch text routed through the right IPC tier below. */
     const compressedText = await compressBranch({
       branchEntries,
-      contextUsage,
+      ...((contextUsage !== undefined) ? { contextUsage, } : {}),
       apiKey,
-      customInstructions,
+      ...((customInstructions !== undefined) ? { customInstructions, } : {}),
     },);
 
     // Tier 1: argv (simplest path, zero cleanup)
@@ -225,14 +226,24 @@ export default function morphCompact(
 
   pi.on(
     'session_before_compact',
-    function bridgeBeforeCompact(
+    async function bridgeBeforeCompact(
       event,
       ctx,
     ) {
-      return handleBeforeCompact({
+      /** Morph outcome mapped to pi's before-compact result contract. */
+      const outcome = await handleBeforeCompact({
         event,
         ctx,
       },);
+      if (outcome.kind
+        === 'cancel')
+        return { cancel: true, };
+      if (outcome.kind
+        === 'compaction')
+        return { compaction: outcome.result, };
+      // Fall through to pi's default compaction without clobbering other
+      // extensions' results (the runner preserves a prior result on undefined).
+      return undefined;
     },
   );
 

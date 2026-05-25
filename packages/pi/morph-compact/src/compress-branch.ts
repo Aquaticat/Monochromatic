@@ -23,7 +23,7 @@ import {
   extractLatestQuery,
   wrapMorphOutput,
 } from './formatting.ts';
-import { MorphCompactClient, } from './morph-client.ts';
+import { createMorphCompactClient, } from './morph-client.ts';
 import {
   convertToLlm,
   serializeConversation,
@@ -36,13 +36,13 @@ import {
  */
 export type CompressBranchParams = {
   /** All entries on the current session branch. */
-  branchEntries: SessionEntry[];
-  /** Current context token usage and window size. May be undefined if not yet available. */
-  contextUsage?: ContextUsage | undefined;
+  readonly branchEntries: readonly SessionEntry[];
+  /** Current context token usage and window size. Absent if not yet available. */
+  readonly contextUsage?: Readonly<ContextUsage>;
   /** Morph API key (from env or mcp.json fallback). */
-  apiKey: string;
+  readonly apiKey: string;
   /** Optional user-provided instructions for compression focus. */
-  customInstructions?: string | undefined;
+  readonly customInstructions?: string;
 };
 
 /**
@@ -70,8 +70,8 @@ const NO_COMPACTION_INDEX = -1;
  * const { previousSummary, messages } = walkBranch(entries);
  * ```
  */
-function walkBranch(branchEntries: SessionEntry[],): {
-  previousSummary: string | undefined;
+function walkBranch(branchEntries: readonly SessionEntry[],): {
+  previousSummary?: string;
   messages: BranchMessage[];
 } {
   /** Position of the most recent compaction entry; sentinel value means none seen. */
@@ -107,7 +107,7 @@ function walkBranch(branchEntries: SessionEntry[],): {
     },);
 
   return {
-    previousSummary,
+    ...((previousSummary !== undefined) ? { previousSummary, } : {}),
     messages,
   };
 }
@@ -182,19 +182,19 @@ export async function compressBranch(
   /** Final prompt body combining prior summary tags and conversation. */
   const input = buildMorphInput({
     serializedConversation: conversationText,
-    previousSummary,
+    ...((previousSummary !== undefined) ? { previousSummary, } : {}),
   },);
 
   /** Latest-intent query forwarded for relevance ranking. */
   const query = extractLatestQuery({
     branchEntries,
-    customInstructions,
+    ...((customInstructions !== undefined) ? { customInstructions, } : {}),
   },);
   /** Adaptive ratio derived from current context pressure. */
   const ratio = chooseCompressionRatio(contextUsage,);
 
   /** Per-call client constructed with the resolved API key. */
-  const client = new MorphCompactClient({
+  const client = createMorphCompactClient({
     morphApiKey: apiKey,
   },);
   /** Network response payload from the compact endpoint. */
