@@ -88,26 +88,33 @@ failure was application: "AST" pattern-matched to the allowed example, and
 the "not its length" qualifier (the entire point of the carve-out) was not
 tested against the fact that chains are linear-depth trees.
 
-## Fix (deferred; user will authorize separately)
+## Fix (landed)
 
-Make all four walks iterative O(n) with one linear pass plus an explicit
-work-stack, no recursion and no spreads:
+Folded into the decoupled-axes rework of `chain-per-line` (the same change
+that stopped single operators with member operands from splitting). Both
+walks are now iterative O(n) with one linear pass plus an explicit
+work-stack, no recursion and no spread accumulation:
 
-- Member/call spine: descend with a `while` cursor collecting trailing
-  steps, then reverse to source order.
-- Operator chain: flatten with an explicit work-stack instead of
-  recursion plus stream spreads.
+- Member/call spine: `chainSegments` descends with a `for`-cursor collecting
+  the step-contributing nodes outermost-first, then reverses once to source
+  order. No recursion, one array build.
+- Operator chain: `collectOperatorChain` walks with an explicit work-stack,
+  gathering operand nodes and operator offsets without interleaving (the
+  decoupled axes are merged and sorted downstream, so order is recovered by
+  the sort rather than by recursion).
 
 No size cap or depth guard is needed; the linear rewrite removes both the
-crash and the quadratic. The existing test override disables
-`stylistic/chain-per-line` for test code, which is why the crash never
-surfaced; add a regression test exercising a long synthetic chain.
+crash and the quadratic. The regression test exercises `chainBreakOffsets`
+directly on synthetic 50000-deep member and operator spines with a mock
+context, asserting the expected break counts. It bypasses a real lint run
+because oxlint's own deep-AST handling fails first end-to-end (it silently
+drops `chain-per-line` near n=4000, then crashes around n=15000), so a
+reintroduced recursion is only catchable by calling the flatten directly.
 
-## Follow-up when the code fix lands
+## Follow-up (done)
 
-Apply the same wording sharpening to `regex-replacement-perf.md`'s "leave
-alone" criterion (lines 58 to 63): flag that a member/call/left-associative
-operator chain is a degenerate spine whose depth tracks length, so it is
-not the exempt structural-recursion case. AGENTS.md's "Simplification
-progression" rule was sharpened in this commit; the audit doc's matching
-criterion should get the same caveat so this does not recur a third time.
+`regex-replacement-perf.md`'s "leave alone" criterion now carries the caveat
+that a member/call or left-associative operator chain is a degenerate spine
+whose depth tracks length, so it is not the exempt structural-recursion
+case. AGENTS.md's "Simplification progression" rule already carries the same
+sharpening, so the class is mapped in all three places.

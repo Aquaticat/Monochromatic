@@ -38,11 +38,16 @@ const b6 = a + b + c + d;
 // Same-operator logical chain.
 const b7 = x && y && z;
 
-// Operator chain whose operands are member chains, laid out flat at one indent.
+// Operator chain whose operands are member chains: each operand breaks on its own
+// member axis, and the single operator takes its own line because an operand broke.
 const b8 = aa.b().c() + dd.e().f();
 
 // Mixed member and call steps.
 const b9 = obj.b.c.d.toString().trim();
+
+// Single operator with a multi-step member operand: the member chain breaks, so the
+// operator moves to its own line (decoupled axes; a one-step operand would stay inline).
+const b10 = obj.a.b > c;
 
 export {
   b1,
@@ -54,4 +59,5 @@ export {
   b7,
   b8,
   b9,
+  b10,
 };

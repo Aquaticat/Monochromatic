@@ -14,11 +14,8 @@ import {
   hasInteriorComment,
   isChainRoot,
 } from '../utility/chain.ts';
-import { flattenChain, } from '../utility/chain-flatten.ts';
-import {
-  renderCanonical,
-  selectBreakOffsets,
-} from '../utility/chain-render.ts';
+import { chainBreakOffsets, } from '../utility/chain-flatten.ts';
+import { renderCanonical, } from '../utility/chain-render.ts';
 import { baseIndentAt, } from '../utility/indent.ts';
 
 /** Per-file cache of full source text, keyed by the file's `SourceCode` identity. */
@@ -56,19 +53,27 @@ function sourceTextOf(context: Context,): string {
 
 /**
  * Enforces one chain segment per source line for binary, logical, member, and
- * call chains, laid out by a single uniform rule.
+ * call chains, laying out the operator and member axes independently.
  *
- * Firing once on the outermost chain root, the rule flattens the chain into
- * segments, keeps the leaf and the first member or operand on the head line,
- * and breaks every later break point (a member-name step or an operator's
- * right operand) onto its own continuation line indented two spaces deeper.
- * Computed access (`[expr]`) and call steps (`(args)`) stay attached, so
- * `arr[0][1]` and `obj.method()` keep to one line. It reports when the region's
- * source differs from this canonical layout and replaces the whole region in
- * one fix, except when a comment inside the region would be relocated, where it
- * reports without a fix. `no-mixed-operators` runs alongside and remains the
- * authority on precedence parentheses; on a shared region their fixes need two
- * `oxlint --fix` passes (an upstream single-pass limitation).
+ * Firing once on the outermost chain root, the rule computes break offsets on
+ * decoupled axes: a member or call chain breaks on its own member-step count,
+ * and an operator chain breaks on its own operator count, so neither axis
+ * inflates the other. A member chain keeps the leaf and the first member step on
+ * the head line and breaks every later step; an operator chain keeps the
+ * source-first operator on the head line and breaks the rest. A single operator
+ * whose operand is a member access (`a.b === c`) therefore stays on one line,
+ * while a multi-step member operand breaks and carries its operator onto a line
+ * of its own (`a.b.c > 0` becomes `a.b` then `.c` then `> 0`). Computed access
+ * (`[expr]`) and call steps (`(args)`) stay attached, so `arr[0][1]` and
+ * `obj.method()` keep to one line. It reports when the region's source differs
+ * from this canonical layout and replaces the whole region in one fix, except
+ * when a comment inside the region would be relocated, where it reports without
+ * a fix. The fix only inserts newlines at break offsets and slices everything
+ * else verbatim, so it never collapses whitespace at non-break points: a legacy
+ * split with no break offsets is left as-is rather than rejoined.
+ * `no-mixed-operators` runs alongside and remains the authority on precedence
+ * parentheses; on a shared region their fixes need two `oxlint --fix` passes (an
+ * upstream single-pass limitation).
  *
  * @example
  * ```ts
@@ -118,10 +123,10 @@ export const chainPerLine: CreateOnceRule = {
         return;
       }
       /** Break offsets that begin a continuation line; empty when the chain fits on one line. */
-      const breakOffsets = selectBreakOffsets(flattenChain({
+      const breakOffsets = chainBreakOffsets({
         context,
         node: root,
-      },),);
+      },);
       if (breakOffsets.length
         === 0)
         return;

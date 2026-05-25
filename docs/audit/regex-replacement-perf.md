@@ -60,7 +60,12 @@ Leave alone (not the target; flagging these would be churn):
 - structural recursion over a tree, AST, grid, graph, or filesystem,
   where recursion depth is bounded by structure depth, not input length
   (`module/toml-edit/src/resolve.ts` `walkTable`/`walkArray`, file-tree
-  walks, any sudoku backtracking)
+  walks, any sudoku backtracking).
+  Caveat: a member/call chain (`a.b.c`) or a left-associative operator
+  chain (`a + b + c`) is a degenerate AST spine whose depth equals operand
+  count, so its depth tracks input length, not nesting; it is NOT this
+  exempt case and must flatten iteratively
+  (see `docs/audit/chain-flatten-skewed-tree.md`)
 - code already doing a single `for...of` pass or a monotonic `indexOf`
   walk with no accumulator copy
 - regex deliberately kept with a justified disable

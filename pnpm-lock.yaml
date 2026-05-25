@@ -830,6 +830,9 @@ importers:
 
   packages/config/oxlint-stylistic:
     dependencies:
+      '@monochromatic-dev/module-or-throw':
+        specifier: workspace:*
+        version: link:../../module/or-throw
       '@oxlint/plugins':
         specifier: 'catalog:'
         version: 1.58.0

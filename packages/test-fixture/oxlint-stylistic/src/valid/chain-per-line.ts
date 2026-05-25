@@ -30,6 +30,14 @@ const v8 = obj.b
 const v9 = a + b
   + c;
 
+// Decoupled axes: a single operator whose operand is a one-step member access does not
+// break, because the member axis (one step) and the operator axis (one operator) are
+// counted separately. The reported regression on `===` and `??`, including inside a
+// template-literal interpolation.
+const v10 = a.b === c;
+const v11 = a.b ?? c;
+const v12 = `x: ${obj.a === b ? 'y' : 'z'}`;
+
 export {
   v1,
   v2,
@@ -40,4 +48,7 @@ export {
   v7,
   v8,
   v9,
+  v10,
+  v11,
+  v12,
 };

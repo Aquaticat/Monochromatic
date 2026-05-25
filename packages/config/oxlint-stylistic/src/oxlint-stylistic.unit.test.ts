@@ -11,12 +11,16 @@ import {
   resolve,
 } from 'node:path';
 
+import type { Context, } from '@oxlint/plugins';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test';
 import spawn from 'nano-spawn';
+
+import type { ChainNode, } from './utility/chain.ts';
+import { chainBreakOffsets, } from './utility/chain-flatten.ts';
 
 //region Types
 
@@ -52,6 +56,14 @@ type TempFixtureFileOptions = {
   readonly fileName: string;
   /** Source fixture path to copy into temp directory. */
   readonly sourcePath: string;
+};
+
+/** Minimal token stub the chain walk reads: a value to classify and a start offset. */
+type TokenStub = {
+  /** Token text, classified against `.`/`(`/`)`/operator by the walk. */
+  readonly value: string;
+  /** Byte offset of the token's start. */
+  readonly start: number;
 };
 
 //endregion Types
@@ -179,6 +191,161 @@ function createTempFixtureFile(
       );
     },
   };
+}
+
+/**
+ * Casts a structural stub to a `ChainNode` for synthetic-AST construction.
+ *
+ * The chain walk reads only `type`, the receiver links, `start`/`end`, and a
+ * member's `property`/`computed`; a hand-built stub supplies exactly those, so
+ * one assertion at the boundary keeps the builders free of per-field casts.
+ *
+ * @param stub - object carrying the chain-walk fields for one node
+ *
+ * @returns stub viewed as a `ChainNode`
+ */
+function asChainNode(stub: object,): ChainNode {
+  return stub as unknown as ChainNode;
+}
+
+/**
+ * Builds a mock rule context whose token lookups satisfy the chain walk for
+ * synthetic nodes, so the flatten can run on chains far deeper than oxlint feeds
+ * a plugin in practice (where its own deep-AST handling fails first).
+ *
+ * `getTokenBefore` returns the dot punctuator for a property stub (no `type`)
+ * and a non-`(` neighbour for a node; `getTokenAfter` returns the `+` operator
+ * when a filter is supplied (the operator-token lookup) and a non-`)` neighbour
+ * otherwise (the grouping-paren probe). No node is ever treated as grouped.
+ *
+ * @returns context stub exposing the two token accessors the walk uses
+ */
+function mockChainContext(): Context {
+  /**
+   * @param target - node or property whose preceding token is wanted
+   *
+   * @returns dot for a property stub, a non-`(` marker for a node
+   */
+  function getTokenBefore(target: {
+    readonly type?: string;
+    readonly start: number;
+  },): TokenStub {
+    return (target.type === undefined)
+      ? {
+        value: '.',
+        start: target.start - 1,
+      }
+      : {
+        value: 'x',
+        start: target.start - 1,
+      };
+  }
+  /**
+   * @param target - left operand or node whose following token is wanted
+   * @param options - present for the operator-token lookup, absent for the paren probe
+   *
+   * @returns `+` operator token when filtered, a non-`)` marker otherwise
+   */
+  function getTokenAfter(
+    target: { readonly end: number; },
+    options?: { readonly filter: (token: TokenStub,) => boolean; },
+  ): TokenStub {
+    return (options === undefined)
+      ? {
+        value: 'x',
+        start: target.end,
+      }
+      : {
+        value: '+',
+        start: target.end + 1,
+      };
+  }
+  return asChainContext({
+    sourceCode: {
+      getTokenBefore,
+      getTokenAfter,
+    },
+  },);
+}
+
+/**
+ * Casts a token-accessor stub to a `Context` for the synthetic chain walk.
+ *
+ * @param stub - object carrying the two `sourceCode` token accessors
+ *
+ * @returns stub viewed as a `Context`
+ */
+function asChainContext(stub: object,): Context {
+  return stub as unknown as Context;
+}
+
+/**
+ * Builds a synthetic member chain `x.a.a...` of the given step count.
+ *
+ * @param steps - number of `.a` member steps past the leaf
+ *
+ * @returns outermost `MemberExpression` node of the chain
+ */
+function buildMemberChain(steps: number,): ChainNode {
+  /** Leaf identifier `x` at the head of the chain. */
+  const leaf = asChainNode({
+    type: 'Identifier',
+    start: 0,
+    end: 1,
+  },);
+  return Array.from({ length: steps, },).reduce(
+    function addStep(object: ChainNode, _step, index,): ChainNode {
+      /** Byte offset of this step's dot punctuator. */
+      const dotStart = 1 + (index * 2);
+      return asChainNode({
+        type: 'MemberExpression',
+        object,
+        computed: false,
+        property: {
+          start: dotStart + 1,
+          end: dotStart + 2,
+        },
+        start: 0,
+        end: dotStart + 2,
+      },);
+    },
+    leaf,
+  );
+}
+
+/**
+ * Builds a synthetic left-associative operator chain `a + a + ...`.
+ *
+ * @param operators - number of `+` operators in the chain
+ *
+ * @returns outermost `BinaryExpression` node of the chain
+ */
+function buildOperatorChain(operators: number,): ChainNode {
+  /** Leftmost operand `a`. */
+  const leaf = asChainNode({
+    type: 'Identifier',
+    start: 0,
+    end: 1,
+  },);
+  return Array.from({ length: operators, },).reduce(
+    function addOperator(left: ChainNode, _operator, index,): ChainNode {
+      /** Byte offset of this operand's `a`, four columns per `+ a` step. */
+      const operandStart = 4 * (index + 1);
+      return asChainNode({
+        type: 'BinaryExpression',
+        operator: '+',
+        left,
+        right: asChainNode({
+          type: 'Identifier',
+          start: operandStart,
+          end: operandStart + 1,
+        },),
+        start: 0,
+        end: operandStart + 1,
+      },);
+    },
+    leaf,
+  );
 }
 
 /**
@@ -390,8 +557,8 @@ await describe({
             const chainDiagnostics = diagnostics.filter(function isChain(diagnostic,): boolean {
               return diagnostic.code === 'stylistic(chain-per-line)';
             },);
-            // The fixture has nine non-canonical chains (b1..b9); each root fires once.
-            expect(chainDiagnostics.length,).toBe(9,);
+            // The fixture has ten non-canonical chains (b1..b10); each root fires once.
+            expect(chainDiagnostics.length,).toBe(10,);
             // Declarations are `any`-typed, so chain-per-line is the only rule that fires.
             expect(uniqueRules(diagnostics,),).toEqual(['stylistic(chain-per-line)',],);
             expect(chainDiagnostics[0]?.message,).toBe(
@@ -417,6 +584,40 @@ await describe({
             const rules = uniqueRules(diagnostics,);
             expect(rules,).toContain('stylistic(chain-per-line)',);
             expect(rules,).toContain('stylistic(no-mixed-operators)',);
+          },
+        },),
+        it({
+          name: 'flattens a very long chain without stack overflow',
+          fn: async () => {
+            // docs/audit/chain-flatten-skewed-tree.md: the prior recursive flatteners
+            // overflowed near member n=12000 and binary n=8000 because a member or
+            // left-associative operator chain is a left-nested spine whose depth equals
+            // its length. The iterative walk has O(1) extra stack depth, so flattening a
+            // chain far past those thresholds returns instead of throwing RangeError.
+            // Exercised directly on the flatten because oxlint's own deep-AST handling
+            // fails first end-to-end (drops the rule near n=4000, then crashes), so a
+            // reintroduced recursion would not be caught through a real lint run.
+            /** Step count well past both audited overflow thresholds and the JS stack. */
+            const steps = 50_000;
+            /** Shared mock context; the synthetic nodes carry their own offsets. */
+            const context = mockChainContext();
+            /** Break offsets of a `steps`-deep member spine. */
+            const memberBreaks = chainBreakOffsets({
+              context,
+              node: buildMemberChain(steps,),
+            },);
+            /** Break offsets of a `steps`-operator left-associative spine. */
+            const operatorBreaks = chainBreakOffsets({
+              context,
+              node: buildOperatorChain(steps,),
+            },);
+            // A member chain breaks every step past the head's two segments; an operator
+            // chain breaks every operator past the source-first one. Both reaching the
+            // expected count proves the flatten ran to completion without overflowing.
+            expect(memberBreaks.length,).toBe(steps
+              - 1,);
+            expect(operatorBreaks.length,).toBe(steps
+              - 1,);
           },
         },),
       ],
@@ -581,8 +782,9 @@ await describe({
               'const b5 = items.map(a)\n  .filter(b)\n  .filter(c);',
               'const b6 = a + b\n  + c\n  + d;',
               'const b7 = x && y\n  && z;',
-              'const b8 = aa.b()\n  .c()\n  + dd\n  .e()\n  .f();',
+              'const b8 = aa.b()\n  .c()\n  + dd.e()\n  .f();',
               'const b9 = obj.b\n  .c\n  .d\n  .toString()\n  .trim();',
+              'const b10 = obj.a\n  .b\n  > c;',
             ];
             expectedLayouts.forEach(function assertLayout(layout,): void {
               expect(fixedOnce,).toContain(layout,);
@@ -680,16 +882,20 @@ await describe({
               sourcePath: combinedSrc,
             },);
 
-            // Two passes: oxlint applies one fix per overlapping byte region per
-            // pass, so when no-mixed-operators wraps a region containing the
-            // chain-per-line target, chain-per-line waits until the next pass.
-            // Two passes are sufficient for this fixture's rule interaction.
-            for (const _pass of [
-              0,
-              1,
-            ]) {
+            // oxlint applies at most one fix per overlapping byte region per pass, so
+            // chain-per-line and the no-mixed-operators paren wrap settle over several
+            // passes: pass 1 breaks the chain, pass 2 wraps the mixed operands, pass 3
+            // re-indents the now-nested inner chain. Run --fix until the file stops
+            // changing (capped well above the need) rather than hard-coding a count.
+            for (
+              let pass = 0;
+              pass < 8;
+              pass += 1
+            ) {
+              /** File content before this pass; an unchanged result after it means convergence. */
+              const before = readFileSync(combinedCopy.filePath, 'utf8',);
               try {
-                // oxlint-disable-next-line eslint/no-await-in-loop -- second pass must read the first pass's output from disk
+                // oxlint-disable-next-line eslint/no-await-in-loop -- each pass must read the previous pass's output from disk
                 await spawn(
                   'oxlint',
                   [
@@ -703,6 +909,10 @@ await describe({
               }
               catch {
                 // --fix may exit non-zero when unfixable issues remain
+              }
+              if (readFileSync(combinedCopy.filePath, 'utf8',)
+                === before) {
+                break;
               }
             }
 

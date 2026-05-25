@@ -6,8 +6,9 @@ and explicit operator structure in nested expressions.
 
 The per-line rules fire when 2 or more items share a source line
 and auto-fix by placing every item on its own line with consistent indentation.
-They work alongside dprint's `preferHanging: "always"` setting,
-which formats multi-line items correctly but does not force them to be multi-line.
+dprint's TypeScript formatter is disabled in this repository (replaced by this plugin),
+so this plugin is the active layout authority for TypeScript expressions;
+dprint still formats the other languages.
 
 The expression-structure rules surface ambiguous operator precedence
 by requiring explicit parentheses at operator boundaries.
@@ -53,20 +54,25 @@ All per-line rules are auto-fixable via `oxlint --fix`.
   Mixed operators (`a + b * c`, `x || y && z`) must be disambiguated with explicit parens.
   Not auto-fixable.
 - **chain-per-line**: require one chain segment per source line for binary, logical,
-  member, and call chains.
+  member, and call chains, laying out the operator and member axes independently.
   The message is `Put each operator, member, or method step in this chain on its own line.`
-  Firing once on the outermost chain root, the rule flattens the chain into segments in
-  source order, then lays them out by one uniform rule:
-  the head line keeps the leaf and the first break point that has fewer than two segments
-  before it, and every later break point starts its own continuation line indented two
-  spaces deeper.
+  Firing once on the outermost chain root, the rule computes break offsets on decoupled
+  axes: a member or call chain breaks on its own member-step count, and an operator chain
+  breaks on its own operator count, so neither axis inflates the other.
   A break point is a member-name step (`.name`, `?.name`) or a binary or logical
   operator's right operand (the operator renders leading, for example `+ c`);
   call steps (`(args)`) and computed steps (`[expr]`, `?.[expr]`) are attached and ride on
   the line before them.
-  It reports when the region's source differs from this canonical layout, so an
-  old-style fully-split chain reports until it is normalized.
-  Short chains stay on one line: `obj.method()`, `arr[0][1]`, `a + b`.
+  A member or call chain keeps the leaf and the first member step on the head line and
+  breaks every later step.
+  An operator chain keeps the source-first operator on the head line and breaks the rest;
+  but when any operand's own member chain breaks, every operator also moves to its own
+  line.
+  The two axes do not interact, so a single operator whose operand is a one-step member
+  access stays on one line: `a.b === c` and `task.dueDate ?? '?'` do not break.
+  A multi-step member operand does break, carrying its operator onto a line of its own:
+  `a.b.c > 0` becomes `a.b` then `.c` then `> 0`.
+  Short chains stay on one line: `obj.method()`, `arr[0][1]`, `a + b`, `a.b === c`.
   Multi-step chains break: `obj.foo.bar` becomes `obj.foo` then `.bar`;
   `a + b + c + d` keeps `a + b` on the head line then `+ c` then `+ d`;
   `arr.map(f).filter(g)`, `obj.a.b.c`, and `foo().bar()` all split.
@@ -77,14 +83,19 @@ All per-line rules are auto-fixable via `oxlint --fix`.
   Grouping parentheses isolate inner chains (`(a + b) + c` keeps `(a + b)` opaque);
   the rule trusts `no-mixed-operators` to have parenthesized mixed precedence, so it
   flattens an unparenthesized operator run as one chain regardless of operator text.
-  The autofix is one replacement that re-renders the whole region in canonical layout,
-  slicing source verbatim so operand text survives, leaving no trailing whitespace, and
-  converging to a fixed point.
+  The autofix inserts newlines only at break offsets and slices everything else verbatim,
+  so operand text survives, it leaves no trailing whitespace, and it converges to a fixed
+  point.
+  It never collapses whitespace at non-break points: a legacy split that the decoupled
+  rule no longer breaks (no break offsets) is left verbatim and goes unreported rather
+  than being rejoined onto one line.
   It is suppressed (the rule reports without a fix) when a comment sits inside the region.
   Tagged templates (`` tag`x` ``) and `new` expressions are opaque leaves, not chain
   participants.
-  When `no-mixed-operators` and `chain-per-line` both apply to one region, two
-  `oxlint --fix` passes are needed (an upstream single-pass limitation);
+  When `no-mixed-operators` and `chain-per-line` both apply to one region, several
+  `oxlint --fix` passes are needed (an upstream single-pass limitation): the chain
+  breaks, the wrap adds parentheses, then the now-nested inner chain re-indents, so a
+  caller should run `--fix` until the file stops changing;
   `no-mixed-operators` also parenthesizes same-precedence mixed-operator runs such as
   `a + b - c`, so in the combined config that case becomes `(a + b) - c` rather than a
   flattened chain.
@@ -130,7 +141,7 @@ keeping rule files minimal.
 - `utility/range.ts`: `rangeOf` and `at` helpers for untyped AST node access
 - `utility/has-parens.ts`: source-level paren detection for `no-mixed-operators`
 - `utility/chain.ts`: token-based grouping-paren detection, chain-root detection, and region/comment helpers for `chain-per-line`
-- `utility/chain-flatten.ts`: flattens a chain root into an ordered segment stream for `chain-per-line`
+- `utility/chain-flatten.ts`: computes a chain root's break offsets on decoupled operator and member axes for `chain-per-line`, walking each spine iteratively
 - `utility/chain-render.ts`: break-point selection and canonical multi-line rendering for `chain-per-line`
 
 ## Tests

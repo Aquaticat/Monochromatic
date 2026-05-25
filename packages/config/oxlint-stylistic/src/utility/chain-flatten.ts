@@ -1,10 +1,15 @@
 import type { Context, } from '@oxlint/plugins';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+
 import {
   type ChainNode,
   parenIsolated,
 } from './chain.ts';
-import type { ChainSegment, } from './chain-render.ts';
+import {
+  type ChainSegment,
+  selectBreakOffsets,
+} from './chain-render.ts';
 
 /** Shared attached-segment value: rides on the previous segment's line, never a break point. */
 const ATTACHED: ChainSegment = { isBreak: false, };
@@ -188,187 +193,64 @@ function trailingStep({
 /**
  * Flattens a member/call chain into segments in source order, leaf first.
  *
- * Descends the receiver spine to the leaf, treating a grouping-parenthesised
- * receiver as an opaque leaf, then appends each step's trailing segment. The
- * leaf and every attached step ride on one line until the layout rule breaks
- * them; member-name steps are the only break points this produces.
+ * Descends the receiver spine with a cursor, stopping at the leaf or at a
+ * grouping-parenthesised receiver (treated as an opaque leaf), and collects each
+ * node that contributes a trailing step. The leaf supplies the head `ATTACHED`
+ * segment; the collected nodes supply their trailing steps in source order
+ * (innermost receiver first), so member-name steps are the only break points
+ * this produces. The walk is iterative: a member or call chain is a left-nested
+ * spine whose depth equals its length, so recursion here would be linear-depth
+ * and overflow on long chains.
  *
  * @returns segments in source order, the leaf at index 0
  *
  * @example
  * ```ts
  * // For `a.b.c`: [leaf a, break .b, break .c]
- * chainSegmentsWithLeaf({ context, node, });
+ * chainSegments({ context, node, });
  * ```
  */
-export function chainSegmentsWithLeaf({
+export function chainSegments({
   context,
   node,
 }: ChainWalkParams,): ChainSegment[] {
-  /** Receiver to descend into; absent when the node is the chain leaf. */
-  const child = descentChild(node,);
-  if (child === undefined) {
-    return [ATTACHED,];
-  }
-  /** Receiver segments: an opaque leaf when grouping parens isolate the child, else its own chain. */
-  const receiver = parenIsolated({
-    context,
-    node: child,
-  },)
-    ? [ATTACHED,]
-    : chainSegmentsWithLeaf({
+  /** Nodes that each contribute a trailing step, outermost first; the leaf contributes none. */
+  const contributors: ChainNode[] = [];
+  for (
+    let cursor: ChainNode = node;
+    ;
+  ) {
+    /** Receiver to descend into; absent when the cursor is the chain leaf. */
+    const child = descentChild(cursor,);
+    if (child === undefined) {
+      break;
+    }
+    contributors.push(cursor,);
+    if (parenIsolated({
       context,
       node: child,
-    },);
-  return [
-    ...receiver,
-    ...trailingStep({
-      context,
-      node,
-    },),
-  ];
-}
-
-/**
- * One item of an operator chain in source order: an operand subchain or an
- * operator between two operands.
- */
-type StreamItem =
-  | {
-    readonly kind: 'operand';
-    /** Operand node; flattened as its own member/call subchain. */
-    readonly node: ChainNode;
-  }
-  | {
-    readonly kind: 'operator';
-    /** Byte offset of the operator token; start of its continuation line. */
-    readonly offset: number;
-  };
-
-/**
- * Parameters for {@link collectStream}.
- */
-type CollectStreamParams = {
-  /** Rule context; its `sourceCode` supplies operator-token lookups. */
-  readonly context: Context;
-  /** Node under consideration as a continuation or an operand. */
-  readonly node: ChainNode;
-  /** Root operator node type; same-type unparenthesised children continue the chain. */
-  readonly rootType: string;
-};
-
-/**
- * Walks an operator chain in source order, descending both operands of every
- * same-type unparenthesised operator and emitting operands and operator tokens.
- *
- * Descending both sides flattens left- and right-associative runs alike, so
- * `a + b - c` and `a ** b ** c` each yield one operand/operator stream. A
- * grouping-parenthesised operand stops the descent and becomes one opaque
- * operand, the boundary `no-mixed-operators` already inserts for mixed
- * precedence.
- *
- * @returns operand and operator items in source order
- */
-function collectStream({
-  context,
-  node,
-  rootType,
-}: CollectStreamParams,): StreamItem[] {
-  /** Whether the node continues the operator chain rather than ending it as an operand. */
-  const continues = (node.type
-    === rootType)
-    && (!parenIsolated({
-      context,
-      node,
-    },));
-  if (!continues) {
-    return [
-      {
-        kind: 'operand',
-        node,
-      },
-    ];
-  }
-  /** Operands of the continuing operator; both are descended in source order. */
-  const {
-    left,
-    right,
-  } = node;
-  if ((left === undefined) || (right === undefined)) {
-    throw new Error('operator chain node missing operands',);
-  }
-  return [
-    ...collectStream({
-      context,
-      node: left,
-      rootType,
-    },),
-    {
-      kind: 'operator',
-      offset: operatorTokenStart({
-        context,
-        node,
-      },),
-    },
-    ...collectStream({
-      context,
-      node: right,
-      rootType,
-    },),
-  ];
-}
-
-/**
- * Parameters for {@link buildSegmentsFromStream}.
- */
-type BuildSegmentsParams = {
-  /** Rule context; its `sourceCode` supplies operand subchain flattening. */
-  readonly context: Context;
-  /** Operand/operator stream from {@link collectStream}, root operator spliced in. */
-  readonly stream: readonly StreamItem[];
-};
-
-/**
- * Converts an operator stream into chain segments.
- *
- * The leftmost operand keeps its leaf; every later operand drops it, because
- * that leaf rides on the preceding operator's line and the operator segment's
- * slice already covers it. Each operator becomes one break segment.
- *
- * @returns chain segments in source order
- */
-function buildSegmentsFromStream({
-  context,
-  stream,
-}: BuildSegmentsParams,): ChainSegment[] {
-  return stream.flatMap(function build(
-    item,
-    index,
-  ): ChainSegment[] {
-    if (item.kind
-      === 'operator') {
-      return [
-        {
-          isBreak: true,
-          breakOffset: item.offset,
-        },
-      ];
+    },)) {
+      break;
     }
-    /** Operand subchain segments, leaf first. */
-    const segments = chainSegmentsWithLeaf({
-      context,
-      node: item.node,
-    },);
-    return (index === 0)
-      ? segments
-      : segments.slice(1,);
-  },);
+    cursor = child;
+  }
+  return [
+    ATTACHED,
+    ...contributors
+      .toReversed()
+      .flatMap(function step(contributor,): ChainSegment[] {
+        return trailingStep({
+          context,
+          node: contributor,
+        },);
+      },),
+  ];
 }
 
 /**
- * Parameters for {@link operatorSegments}.
+ * Parameters for {@link collectOperatorChain} and {@link operatorChainBreakOffsets}.
  */
-type OperatorSegmentsParams = {
+type OperatorChainParams = {
   /** Rule context; its `sourceCode` supplies operator-token lookups. */
   readonly context: Context;
   /** Operator chain root (`BinaryExpression` or `LogicalExpression`). */
@@ -376,83 +258,180 @@ type OperatorSegmentsParams = {
 };
 
 /**
- * Flattens an operator chain root into segments in source order.
+ * Operands and operator offsets of an operator chain, gathered without order.
  *
- * The root always continues into its own operands, so its operator is spliced
- * between the two collected operand streams unconditionally; paren-isolation
- * only gates the operands, never the root itself.
- *
- * @returns chain segments in source order
- *
- * @throws when the root lacks operands, which is unreachable for a binary or
- *   logical expression
+ * The two axes are decoupled, so neither list's order matters: operand breaks
+ * and operator breaks are merged and sorted into source order downstream. Each
+ * operand is flattened on its own member axis; each operator offset is a
+ * candidate operator-axis break point.
  */
-function operatorSegments({
+type OperatorChainParts = {
+  /** Operand subchains terminating the chain, each flattened independently. */
+  readonly operands: readonly ChainNode[];
+  /** Operator token offsets within the chain, root operator included. */
+  readonly operatorOffsets: readonly number[];
+};
+
+/**
+ * Gathers the operands and operator offsets of an operator chain iteratively.
+ *
+ * Descending both operands of every same-type unparenthesised operator flattens
+ * left- and right-associative runs alike. The root always continues into its
+ * operands, so its operator is recorded unconditionally; paren-isolation gates
+ * only the descendant operands, the boundary `no-mixed-operators` already
+ * inserts for mixed precedence. A grouping-parenthesised operand becomes one
+ * opaque operand. The walk uses an explicit work-stack rather than recursion
+ * because a left-associative operator chain is a left-nested spine whose depth
+ * equals operand count, so recursion would be linear-depth and overflow.
+ *
+ * @returns operands and operator offsets, neither in any guaranteed order
+ *
+ * @throws when an operator node lacks an operand, which is unreachable for a
+ *   binary or logical expression
+ */
+function collectOperatorChain({
   context,
   root,
-}: OperatorSegmentsParams,): ChainSegment[] {
-  /** Root operands; the root operator sits between their collected streams. */
-  const {
-    left,
-    right,
-  } = root;
-  if ((left === undefined) || (right === undefined)) {
-    throw new Error('operator root missing operands',);
-  }
-  /** Operand/operator stream in source order with the root operator spliced in. */
-  const stream: StreamItem[] = [
-    ...collectStream({
+}: OperatorChainParams,): OperatorChainParts {
+  /** Operand nodes terminating the chain. */
+  const operands: ChainNode[] = [];
+  /** Operator token offsets; the root operator is always present. */
+  const operatorOffsets: number[] = [
+    operatorTokenStart({
       context,
-      node: left,
-      rootType: root.type,
-    },),
-    {
-      kind: 'operator',
-      offset: operatorTokenStart({
-        context,
-        node: root,
-      },),
-    },
-    ...collectStream({
-      context,
-      node: right,
-      rootType: root.type,
+      node: root,
     },),
   ];
-  return buildSegmentsFromStream({
+  /** Root operator type; same-type unparenthesised descendants continue the chain. */
+  const { type: rootType, } = root;
+  /** Pending nodes to classify; the root's two operands seed the walk. */
+  const work: ChainNode[] = [
+    nonNullishOrThrow(root.left,),
+    nonNullishOrThrow(root.right,),
+  ];
+  while (work.length
+    > 0) {
+    /** Next pending node; the loop guard guarantees the stack is non-empty. */
+    const node = nonNullishOrThrow(work.pop(),);
+    /** Whether the node continues the chain rather than ending it as an operand. */
+    const continues = (node.type
+      === rootType)
+      && (!parenIsolated({
+        context,
+        node,
+      },));
+    if (!continues) {
+      operands.push(node,);
+      continue;
+    }
+    operatorOffsets.push(operatorTokenStart({
+      context,
+      node,
+    },),);
+    work.push(
+      nonNullishOrThrow(node.left,),
+      nonNullishOrThrow(node.right,),
+    );
+  }
+  return {
+    operands,
+    operatorOffsets,
+  };
+}
+
+/**
+ * Returns the break offsets for an operator chain root, in ascending source order.
+ *
+ * Decoupled axes: each operand is flattened on its own member axis and breaks
+ * only on its own member-step count, while operators break on their own count.
+ * Neither axis inflates the other, so a single operator with a member operand
+ * (`a.b === c`) stays on one line. When any operand's member chain breaks, every
+ * operator also breaks onto its own line; otherwise the source-first operator
+ * stays on the head line and the rest break (two or more operators).
+ *
+ * @returns operator and member break offsets merged in ascending order
+ */
+function operatorChainBreakOffsets({
+  context,
+  root,
+}: OperatorChainParams,): readonly number[] {
+  /** Operands and operator offsets, neither ordered; the final sort imposes order. */
+  const {
+    operands,
+    operatorOffsets,
+  } = collectOperatorChain({
     context,
-    stream,
+    root,
+  },);
+  /** Break offsets contributed by the operands' own member subchains. */
+  const operandBreakOffsets = operands.flatMap(function operandBreaks(operand,): readonly number[] {
+    return selectBreakOffsets(chainSegments({
+      context,
+      node: operand,
+    },),);
+  },);
+  /** Whether any operand's member chain broke; forces every operator onto its own line. */
+  const anyOperandBroke = operandBreakOffsets.length
+    > 0;
+  /** Source-first operator offset; it stays on the head line unless an operand broke. */
+  const firstOperatorOffset = operatorOffsets.reduce(
+    function smaller(
+      smallest,
+      offset,
+    ): number {
+      return (offset < smallest)
+        ? offset
+        : smallest;
+    },
+    Number.POSITIVE_INFINITY,
+  );
+  /** Operator offsets that begin a continuation line. */
+  const operatorBreakOffsets = operatorOffsets.filter(function breaks(offset,): boolean {
+    return anyOperandBroke
+      || (offset !== firstOperatorOffset);
+  },);
+  return [
+    ...operandBreakOffsets,
+    ...operatorBreakOffsets,
+  ].toSorted(function ascending(
+    first,
+    second,
+  ): number {
+    return first - second;
   },);
 }
 
 /**
- * Flattens any chain root into segments in source order.
+ * Returns the break offsets for any chain root, in ascending source order.
  *
- * Dispatches on the root kind: operator roots flatten across their operands,
- * member and call roots flatten down their receiver spine.
+ * Dispatches on the root kind: operator roots flatten across their operands on
+ * decoupled axes; member and call roots flatten down their receiver spine. Each
+ * branch returns offsets already in source order (member spines ascend by
+ * construction; operator chains sort their merged axes), ready for the renderer.
  *
- * @returns chain segments in source order, the leaf at index 0
+ * @returns break offsets in ascending source order, empty when the chain fits on
+ *   one line
  *
  * @example
  * ```ts
- * // For `arr.map(f).filter(g)`: [leaf arr, break .map, call, break .filter, call]
- * flattenChain({ context, node, });
+ * // For `arr.map(f).filter(g)`: [offset of `.filter`]
+ * chainBreakOffsets({ context, node, });
  * ```
  */
-export function flattenChain({
+export function chainBreakOffsets({
   context,
   node,
-}: ChainWalkParams,): ChainSegment[] {
+}: ChainWalkParams,): readonly number[] {
   if ((node.type
     === 'BinaryExpression') || (node.type
       === 'LogicalExpression')) {
-    return operatorSegments({
+    return operatorChainBreakOffsets({
       context,
       root: node,
     },);
   }
-  return chainSegmentsWithLeaf({
+  return selectBreakOffsets(chainSegments({
     context,
     node,
-  },);
+  },),);
 }
