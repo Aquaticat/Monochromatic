@@ -69,6 +69,10 @@ Leaf packages still to fix:
 - `dev-script/inference-canary-viewer` (2e), `webapp-content/ssg-test` (4e)
 - `module/memoize` (2e): import `ABSENT` from kv-store and narrow by identity; it broke when kv-store stopped returning `undefined`.
 
+Open behavioral decision discovered during the sweep (NOT a lint issue):
+
+- `module/memoize` lint is green (commit 1665ed5a), but the kv-store -> `ABSENT` migration (commit b76ec75f) changed runtime behavior: a memoized function returning `undefined` now round-trips through kv-store and gets cached, instead of being treated as a miss and recomputed. This breaks 4 unit tests (`memoize.unit.test.ts:180,207,244`, `memoize-async.unit.test.ts:195`) which assert the old "undefined is a miss" contract. Whether memoize should now cache `undefined` (arguably more correct) or keep treating it as a miss is a product decision for the user, so the tests are left untouched. Resolve the semantics, then update the 4 tests accordingly.
+
 Manual rework that no lint rule catches (the type annotation is honest):
 
 - `webapp-content/ssg-test` and `dev-script/inference-canary-viewer` used `''` as an absence sentinel in earlier passes. The user ruled that `''` is not a valid sentinel. Hunt these by reading the files (grep for `''` defaults and returns in slots that mean absent) and convert to `?:`, an `if`-guard, or a real Symbol or domain sentinel.
