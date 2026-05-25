@@ -7,7 +7,7 @@ import type { BackendResult, } from './consensus.ts';
  *
  * @param results - all backend results
  *
- * @param canonicalSerialized - canonical serialized value (or undefined)
+ * @param canonicalSerialized - canonical serialized value, or `null` when consensus is absence
  *
  * @param key - key to heal
  *
@@ -30,7 +30,7 @@ export async function healBackends({
       readonly delete: (key: string,) => unknown;
     }
   >[];
-  canonicalSerialized: string | undefined;
+  canonicalSerialized: string | null;
   key: string;
 }>,): Promise<void> {
   await Promise.all(
@@ -38,8 +38,8 @@ export async function healBackends({
       value,
       backend,
     },) {
-      if (canonicalSerialized === undefined) {
-        if (value !== undefined)
+      if (canonicalSerialized === null) {
+        if (value !== null)
           await backend.delete(key,);
         return;
       }
@@ -61,7 +61,7 @@ export async function healBackends({
  *
  * @param results - all backend results
  *
- * @param canonicalSerialized - canonical serialized value (or undefined)
+ * @param canonicalSerialized - canonical serialized value, or `null` when consensus is absence
  *
  * @param key - key to heal
  *
@@ -84,15 +84,15 @@ export function healBackendsSync({
       readonly delete: (key: string,) => unknown;
     }
   >[];
-  canonicalSerialized: string | undefined;
+  canonicalSerialized: string | null;
   key: string;
 }>,): void {
   for (const {
     value,
     backend,
   } of results) {
-    if (canonicalSerialized === undefined) {
-      if (value !== undefined)
+    if (canonicalSerialized === null) {
+      if (value !== null)
         backend.delete(key,);
       continue;
     }

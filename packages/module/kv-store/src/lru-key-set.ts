@@ -12,12 +12,12 @@
  * ```
  */
 export type LruKeySet = {
-  /** Mark a key as recently accessed. Returns evicted key if over capacity. */
-  touch: (key: string,) => string | undefined;
+  /** Mark a key as recently accessed. Returns evicted key, or `null` when under capacity. */
+  readonly touch: (key: string,) => string | null;
   /** Remove a key from tracking. */
-  remove: (key: string,) => void;
+  readonly remove: (key: string,) => void;
   /** Clear all tracked keys. */
-  clear: () => void;
+  readonly clear: () => void;
 };
 
 /**
@@ -25,13 +25,13 @@ export type LruKeySet = {
  *
  * @param maxSize - maximum tracked keys before eviction
  *
- * @returns LRU key set where {@link LruKeySet.touch} returns evicted key or undefined
+ * @returns LRU key set where {@link LruKeySet.touch} returns evicted key or `null`
  *
  * @example
  * ```ts
  * const lru = createLruKeySet(256);
  * const evicted = lru.touch('new-key');
- * if (evicted !== undefined) {
+ * if (evicted !== null) {
  *   store.delete(evicted);
  * }
  * ```
@@ -43,7 +43,7 @@ export function createLruKeySet(
   const keys = new Set<string>();
 
   return {
-    touch(key: string,): string | undefined {
+    touch(key: string,): string | null {
       keys.delete(key,);
       keys.add(key,);
 
@@ -59,7 +59,7 @@ export function createLruKeySet(
         }
       }
 
-      return undefined;
+      return null;
     },
 
     remove(key: string,): void {

@@ -89,7 +89,7 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
     StorageBackend,
     ...StorageBackend[],
   ] = config.backends
-    ?? (defaultBackendsBuilder !== undefined
+    ?? (defaultBackendsBuilder !== null
       ? await defaultBackendsBuilder({ storeId, },)
       : [new Map<string, string>(),]);
 
@@ -102,11 +102,11 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
       === 'lru';
   },);
   /**
-   * LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or undefined when LRU is not configured.
+   * LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or `null` when LRU is not configured.
    */
   const lru = lruPolicy !== undefined
     ? createLruKeySet(lruPolicy.maxSize,)
-    : undefined;
+    : null;
 
   defaultLogger.debug(
     `store "${storeId}" created with ${String(backends.length,)} backend(s)`,
@@ -154,14 +154,14 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
       return store;
     },
 
-    async get<const T = unknown,>(key: string,): Promise<T | undefined> {
+    async get<const T = unknown,>(key: string,): Promise<T | null> {
       defaultLogger.debug(`store.get: "${key}"`,);
       /** Per-backend lookup results; feeds both consensus resolution and the healing pass. */
       const results = await queryAllBackends({
         backends,
         key,
       },);
-      /** Consensus value across backends, or undefined when no backend held the key. */
+      /** Consensus value across backends, or `null` when no backend held the key. */
       const canonicalSerialized = resolveConsensus({
         results,
         key,
@@ -173,7 +173,7 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
         key,
       },);
 
-      if (canonicalSerialized !== undefined) {
+      if (canonicalSerialized !== null) {
         await evictLruEntry({
           lru,
           key,
@@ -182,14 +182,14 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
         },);
       }
 
-      return canonicalSerialized === undefined
-        ? undefined
+      return canonicalSerialized === null
+        ? null
         : deserializer<T>(canonicalSerialized,);
     },
 
     async delete(key: string,): Promise<void> {
       defaultLogger.debug(`store.delete: "${key}"`,);
-      if (lru !== undefined)
+      if (lru !== null)
         lru.remove(key,);
       await Promise.all(
         backends.map(async function deleteFromBackend(backend,) {
@@ -200,7 +200,7 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
 
     async clear(): Promise<void> {
       defaultLogger.debug(`store.clear`,);
-      if (lru !== undefined)
+      if (lru !== null)
         lru.clear();
       await Promise.all(
         backends.map(async function clearBackend(backend,) {

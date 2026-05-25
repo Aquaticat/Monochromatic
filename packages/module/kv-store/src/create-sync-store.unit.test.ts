@@ -38,11 +38,11 @@ await describe({
     },),
 
     it({
-      name: 'get returns undefined for missing keys',
+      name: 'get returns null for missing keys',
       fn: async () => {
         const store = createSyncStore({ storeId: 'missing', },);
         const result = store.get('nonexistent',);
-        expect(result,).toBeUndefined();
+        expect(result,).toBeNull();
       },
     },),
 
@@ -53,7 +53,7 @@ await describe({
         store.set('to-delete', 'value',);
         expect(store.get<string>('to-delete',),).toBe('value',);
         store.delete('to-delete',);
-        expect(store.get('to-delete',),).toBeUndefined();
+        expect(store.get('to-delete',),).toBeNull();
       },
     },),
 
@@ -64,8 +64,8 @@ await describe({
         store.set('a', 1,);
         store.set('b', 2,);
         store.clear();
-        expect(store.get('a',),).toBeUndefined();
-        expect(store.get('b',),).toBeUndefined();
+        expect(store.get('a',),).toBeNull();
+        expect(store.get('b',),).toBeNull();
       },
     },),
 
@@ -206,7 +206,7 @@ await describe({
 
         store.set('d', 4,);
         expect(store.size,).toBe(3,);
-        expect(store.get('a',),).toBeUndefined();
+        expect(store.get('a',),).toBeNull();
         expect(store.get('d',),).toBeDefined();
       },
     },),
@@ -229,7 +229,7 @@ await describe({
         // Adding 'd' should evict 'b' (oldest after refresh), not 'a'
         store.set('d', 4,);
         expect(store.get('a',),).toBeDefined();
-        expect(store.get('b',),).toBeUndefined();
+        expect(store.get('b',),).toBeNull();
       },
     },),
 

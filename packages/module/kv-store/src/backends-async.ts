@@ -6,6 +6,7 @@
  */
 
 import type { BackendResult, } from './consensus.ts';
+import type { LruKeySet, } from './lru-key-set.ts';
 import type { StorageBackend, } from './types.ts';
 
 /**
@@ -41,7 +42,7 @@ export async function queryAllBackends({
       /** Raw value returned by this backend before nullish normalisation. */
       const raw = await backend.get(key,);
       return {
-        value: raw === null ? undefined : raw,
+        value: raw ?? null,
         priority: backend.priority
           ?? 0,
         backend,
@@ -99,26 +100,27 @@ export function configureDefaultBackendsBuilder(builder: DefaultBackendsBuilder,
 /**
  * Returns the currently configured default backends builder, if any.
  *
- * @returns builder function or undefined when no platform builder has been registered
+ * @returns builder function, or `null` when no platform builder has been registered
  *
  * @example
  * ```ts
  * const builder = getDefaultBackendsBuilder();
- * if (builder !== undefined) {
+ * if (builder !== null) {
  *   const backends = await builder({ storeId: 'my-store' });
  * }
  * ```
  */
-export function getDefaultBackendsBuilder(): DefaultBackendsBuilder | undefined {
-  return builderRegistry.get('default',);
+export function getDefaultBackendsBuilder(): DefaultBackendsBuilder | null {
+  return builderRegistry.get('default',)
+    ?? null;
 }
 
 /**
  * Touch the LRU set for a key and evict the displaced entry from all backends.
  *
- * No-op when `lru` is undefined (store has no eviction policy).
+ * No-op when `lru` is `null` (store has no eviction policy).
  *
- * @param lru - LRU key set or undefined
+ * @param lru - LRU key set, or `null` when no eviction policy is configured
  *
  * @param key - key that was just accessed
  *
@@ -143,7 +145,7 @@ export async function evictLruEntry(
     backends,
     logger,
   }: Readonly<{
-    lru: { readonly touch: (key: string,) => string | undefined; } | undefined;
+    lru: LruKeySet | null;
     key: string;
     backends: readonly [
       StorageBackend,
@@ -152,11 +154,11 @@ export async function evictLruEntry(
     logger: { readonly debug: (msg: string,) => void; };
   }>,
 ): Promise<void> {
-  if (lru === undefined)
+  if (lru === null)
     return;
-  /** Key displaced by the LRU touch, or undefined when nothing was evicted. */
+  /** Key displaced by the LRU touch, or `null` when nothing was evicted. */
   const evicted = lru.touch(key,);
-  if (evicted === undefined)
+  if (evicted === null)
     return;
   logger.debug(`store.evict: "${evicted}"`,);
   await Promise.all(

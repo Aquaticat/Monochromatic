@@ -38,7 +38,7 @@ export function queryAllBackendsSync({
     /** Raw value returned by this backend before nullish normalisation. */
     const raw = backend.get(key,);
     return {
-      value: raw ?? undefined,
+      value: raw ?? null,
       priority: backend.priority
         ?? 0,
       backend,

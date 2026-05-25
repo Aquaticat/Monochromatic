@@ -18,8 +18,8 @@
  * ```
  */
 export type BackendResult<TBackend = unknown,> = {
-  /** Serialized value returned by a backend, or undefined if missing. */
-  readonly value: string | undefined;
+  /** Serialized value returned by a backend, or `null` if the backend lacks the key. */
+  readonly value: string | null;
   /** Backend priority (higher value means higher tier). */
   readonly priority: number;
   /** Backend instance that produced the value. */
@@ -45,11 +45,11 @@ export function pickMajority<TBackend = unknown,>({
   buckets,
   totalCount,
 }: Readonly<{
-  buckets: ReadonlyMap<string | undefined, readonly BackendResult<TBackend>[]>;
+  buckets: ReadonlyMap<string | null, readonly BackendResult<TBackend>[]>;
   totalCount: number;
 }>,): {
   hasMajority: boolean;
-  value?: string | undefined;
+  value: string | null;
 } {
   /** Leader candidate and its bucket after sorting by descending bucket size. */
   const sorted = [...buckets.entries(),]
@@ -65,7 +65,7 @@ export function pickMajority<TBackend = unknown,>({
   /** Top entry from sorted buckets; falls back to empty bucket so majority check stays well-defined when no results exist. */
   const [leaderKey, leaderBucket,] = sorted.at(0,)
     ?? [
-      undefined,
+      null,
       [] as BackendResult<TBackend>[],
     ];
 
@@ -87,7 +87,7 @@ export function pickMajority<TBackend = unknown,>({
  *
  * @param key - key for error context
  *
- * @returns canonical serialized value (can be undefined)
+ * @returns canonical serialized value (can be `null` when consensus is absence)
  *
  * @throws Error when no majority in highest tier
  *
@@ -101,10 +101,10 @@ export function computeFromHighestTier<TBackend = unknown,>({
   highestResults,
   key,
 }: Readonly<{
-  groupedHighest: ReadonlyMap<string | undefined, readonly BackendResult<TBackend>[]>;
+  groupedHighest: ReadonlyMap<string | null, readonly BackendResult<TBackend>[]>;
   highestResults: readonly BackendResult<TBackend>[];
   key: string;
-}>,): string | undefined {
+}>,): string | null {
   /** Majority pick restricted to the highest priority tier; throws below when no clear winner exists. */
   const highestTier = pickMajority({
     buckets: groupedHighest,
@@ -129,7 +129,7 @@ export function computeFromHighestTier<TBackend = unknown,>({
  *
  * @param key - key for error context
  *
- * @returns canonical serialized value (can be undefined)
+ * @returns canonical serialized value (can be `null` when consensus is absence)
  *
  * @example
  * ```ts
@@ -143,10 +143,10 @@ export function computeCanonical<TBackend = unknown,>({
   key,
 }: Readonly<{
   results: readonly BackendResult<TBackend>[];
-  groupedHighest: ReadonlyMap<string | undefined, readonly BackendResult<TBackend>[]>;
+  groupedHighest: ReadonlyMap<string | null, readonly BackendResult<TBackend>[]>;
   highestResults: readonly BackendResult<TBackend>[];
   key: string;
-}>,): string | undefined {
+}>,): string | null {
   /** Cross-tier grouping by serialized value so a strong overall majority can short-circuit tier-aware fallback. */
   const groupedAll = Map.groupBy(
     results,
@@ -182,7 +182,7 @@ export function computeCanonical<TBackend = unknown,>({
  *
  * @param key - lookup key for error messages
  *
- * @returns canonical serialized value or `undefined`
+ * @returns canonical serialized value, or `null` when consensus is absence
  *
  * @throws Error when no backend results exist for the key
  *
@@ -200,7 +200,7 @@ export function resolveConsensus<TBackend = unknown,>({
     ...BackendResult<TBackend>[],
   ];
   key: string;
-}>,): string | undefined {
+}>,): string | null {
   /** Results grouped by priority tier so the highest-priority cohort can be isolated for consensus. */
   const grouped = Map.groupBy(
     results,

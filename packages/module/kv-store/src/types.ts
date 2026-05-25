@@ -135,6 +135,7 @@ export type StorageBackend = {
    * @param key - lookup key
    * @returns serialized value or undefined/null when missing
    */
+  // oxlint-disable-next-line no-restricted-syntax/no-undefined-union -- mirrors the JS stdlib backend APIs this contract accepts directly: `Map<string,string>.get` returns `string | undefined` and Web Storage `getItem` returns `string | null`; raw `Map` is a documented backend, so the return must admit both `undefined` and `null`
   readonly get: (key: string,) => Promisable<string | undefined | null>;
 
   /**
@@ -180,6 +181,7 @@ export type SyncStorageBackend = {
    * @param key - lookup key
    * @returns serialized value or undefined when missing
    */
+  // oxlint-disable-next-line no-restricted-syntax/no-undefined-union -- mirrors `Map<string,string>.get` (`string | undefined`), the JS stdlib backend this contract accepts directly; raw `Map` is a documented sync backend, so the return must admit `undefined`
   readonly get: (key: string,) => string | undefined;
 
   /**
@@ -288,11 +290,13 @@ export type Store = BaseStoreFields<StorageBackend> & {
   /**
    * Read value by key using consensus and heal backends to canonical result.
    *
+   * @remarks A stored `null` value reads back as `null`, indistinguishable from a missing key.
+   *
    * @typeParam T - expected deserialized value type
    * @param key - lookup key
-   * @returns deserialized value or undefined when not found
+   * @returns deserialized value, or `null` when no backend holds the key
    */
-  readonly get: <const T = unknown,>(key: string,) => Promise<T | undefined>;
+  readonly get: <const T = unknown,>(key: string,) => Promise<T | null>;
 
   /**
    * Remove entry by key across all backends.
@@ -344,11 +348,13 @@ export type SyncStore = BaseStoreFields<SyncStorageBackend> & {
   /**
    * Read value by key using consensus and heal backends to canonical result.
    *
+   * @remarks A stored `null` value reads back as `null`, indistinguishable from a missing key.
+   *
    * @typeParam T - expected deserialized value type
    * @param key - lookup key
-   * @returns deserialized value or undefined when not found
+   * @returns deserialized value, or `null` when no backend holds the key
    */
-  readonly get: <const T = unknown,>(key: string,) => T | undefined;
+  readonly get: <const T = unknown,>(key: string,) => T | null;
   /* oxlint-enable typescript/no-unnecessary-type-parameters */
 
   /**

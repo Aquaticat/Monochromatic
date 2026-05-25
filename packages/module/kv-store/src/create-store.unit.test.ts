@@ -41,11 +41,11 @@ await describe({
     },),
 
     it({
-      name: 'get returns undefined for missing keys',
+      name: 'get returns null for missing keys',
       fn: async () => {
         const store = await createStore({ storeId: 'missing', },);
         const result = await store.get('nonexistent',);
-        expect(result,).toBeUndefined();
+        expect(result,).toBeNull();
       },
     },),
 
@@ -56,7 +56,7 @@ await describe({
         await store.set('to-delete', 'value',);
         expect(await store.get<string>('to-delete',),).toBe('value',);
         await store.delete('to-delete',);
-        expect(await store.get('to-delete',),).toBeUndefined();
+        expect(await store.get('to-delete',),).toBeNull();
       },
     },),
 
@@ -67,8 +67,8 @@ await describe({
         await store.set('a', 1,);
         await store.set('b', 2,);
         await store.clear();
-        expect(await store.get('a',),).toBeUndefined();
-        expect(await store.get('b',),).toBeUndefined();
+        expect(await store.get('a',),).toBeNull();
+        expect(await store.get('b',),).toBeNull();
       },
     },),
 
@@ -207,7 +207,7 @@ await describe({
         await store.set('c', 3,);
         await store.set('d', 4,);
 
-        expect(await store.get('a',),).toBeUndefined();
+        expect(await store.get('a',),).toBeNull();
         expect(await store.get('d',),).toBeDefined();
       },
     },),
@@ -230,7 +230,7 @@ await describe({
         // Adding 'd' should evict 'b' (oldest after refresh), not 'a'
         await store.set('d', 4,);
         expect(await store.get('a',),).toBeDefined();
-        expect(await store.get('b',),).toBeUndefined();
+        expect(await store.get('b',),).toBeNull();
       },
     },),
 

@@ -101,11 +101,11 @@ export function createSyncStore(config: SyncStoreConfig = {},): SyncStore {
       === 'lru';
   },);
   /**
-   * LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or undefined when LRU is not configured.
+   * LRU access tracker bounded by {@link lruPolicy}'s `maxSize`, or `null` when LRU is not configured.
    */
   const lru = lruPolicy !== undefined
     ? createLruKeySet(lruPolicy.maxSize,)
-    : undefined;
+    : null;
 
   defaultLogger.debug(
     `syncStore "${storeId}" created with ${String(backends.length,)} backend(s)`,
@@ -147,10 +147,10 @@ export function createSyncStore(config: SyncStoreConfig = {},): SyncStore {
         );
       }
 
-      if (lru !== undefined) {
-        /** Key the LRU tracker chose to drop, or undefined when below capacity. */
+      if (lru !== null) {
+        /** Key the LRU tracker chose to drop, or `null` when below capacity. */
         const evicted = lru.touch(key,);
-        if (evicted !== undefined) {
+        if (evicted !== null) {
           defaultLogger.debug(`syncStore.evict: "${evicted}"`,);
           for (const backend of backends)
             backend.delete(evicted,);
@@ -161,14 +161,14 @@ export function createSyncStore(config: SyncStoreConfig = {},): SyncStore {
     },
 
     // oxlint-disable-next-line typescript/no-unnecessary-type-parameters -- T is the caller-specified return type for typed reads; a single use is the intended call-site-inference shape, not redundancy
-    get<const T = unknown,>(key: string,): T | undefined {
+    get<const T = unknown,>(key: string,): T | null {
       defaultLogger.debug(`syncStore.get: "${key}"`,);
       /** Per-backend lookup results; feeds both consensus resolution and the healing pass. */
       const results = queryAllBackendsSync({
         backends,
         key,
       },);
-      /** Consensus value across backends, or undefined when no backend held the key. */
+      /** Consensus value across backends, or `null` when no backend held the key. */
       const canonicalSerialized = resolveConsensus({
         results,
         key,
@@ -180,24 +180,24 @@ export function createSyncStore(config: SyncStoreConfig = {},): SyncStore {
         key,
       },);
 
-      if ((canonicalSerialized !== undefined) && (lru !== undefined)) {
-        /** Key the LRU tracker chose to drop on access, or undefined when below capacity. */
+      if ((canonicalSerialized !== null) && (lru !== null)) {
+        /** Key the LRU tracker chose to drop on access, or `null` when below capacity. */
         const evicted = lru.touch(key,);
-        if (evicted !== undefined) {
+        if (evicted !== null) {
           defaultLogger.debug(`syncStore.evict: "${evicted}"`,);
           for (const backend of backends)
             backend.delete(evicted,);
         }
       }
 
-      return canonicalSerialized === undefined
-        ? undefined
+      return canonicalSerialized === null
+        ? null
         : deserializer<T>(canonicalSerialized,);
     },
 
     delete(key: string,): void {
       defaultLogger.debug(`syncStore.delete: "${key}"`,);
-      if (lru !== undefined)
+      if (lru !== null)
         lru.remove(key,);
       for (const backend of backends)
         backend.delete(key,);
@@ -205,7 +205,7 @@ export function createSyncStore(config: SyncStoreConfig = {},): SyncStore {
 
     clear(): void {
       defaultLogger.debug(`syncStore.clear`,);
-      if (lru !== undefined)
+      if (lru !== null)
         lru.clear();
       for (const backend of backends) {
         if (('clear' in backend) && ((typeof backend.clear) === 'function')) {
