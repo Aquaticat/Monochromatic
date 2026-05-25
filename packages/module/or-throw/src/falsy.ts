@@ -5,7 +5,7 @@
  * @module
  */
 
-/* oxlint-disable no-restricted-syntax/no-nullish-union -- `undefined` is intrinsically a falsy value; this type enumerates the falsy set and is incomplete without it */
+/* oxlint-disable no-restricted-syntax/no-nullish-union, no-restricted-syntax/no-optional-escape -- this type enumerates JavaScript's falsy set as its domain definition, not as a fake-optional encoding; `false`, `0`, `''`, `null`, and `undefined` are the subject matter, so the union is incomplete without them */
 /**
  * Union of the values that JavaScript evaluates as `false` in a boolean context.
  *
@@ -24,4 +24,4 @@
  * ```
  */
 export type Falsy = false | 0 | 0n | '' | null | undefined;
-/* oxlint-enable no-restricted-syntax/no-nullish-union */
+/* oxlint-enable no-restricted-syntax/no-nullish-union, no-restricted-syntax/no-optional-escape */
