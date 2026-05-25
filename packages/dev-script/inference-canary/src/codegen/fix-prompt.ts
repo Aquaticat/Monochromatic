@@ -139,8 +139,8 @@ export async function buildCodeGenFixPrompt({
     (lint.severity
       .errors
       > 0) || (lint.severity
-      .warnings
-      > 0)
+        .warnings
+        > 0)
       || (lint.typeErrors
         > 0)
       ? `It has ${String(lint.severity

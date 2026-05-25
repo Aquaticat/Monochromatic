@@ -204,7 +204,7 @@ export function trailingInlineCommentFor(
     return (c.range[0]
       > node
       .range[1]) && (c.range[0]
-      < limit);
+        < limit);
   },);
   return match ?? null;
 }

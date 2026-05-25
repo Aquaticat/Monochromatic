@@ -234,7 +234,7 @@ export function stripJsoncComments(text: string,): string {
       while ((i < text
         .length) && (!((text[i - 1]
           === '*') && (text[i]
-          === '/'))))
+            === '/'))))
         i += 1;
       i += 1;
     }

@@ -1,8 +1,8 @@
 export * as array from './t array/index.ts';
 export type * as date from './t date/index.ts';
 export type * as errorLike from './t errorLike/index.ts';
-export * as globalThis from './t globalThis/index.ts';
-export * as iterable from './t iterable/index.ts';
+export type * as globalThis from './t globalThis/index.ts';
+export type * as iterable from './t iterable/index.ts';
 export * as jsonc from './t jsonc/index.ts';
 export type * as map from './t map/index.ts';
 export type * as nonNull from './t nonNull/index.ts';

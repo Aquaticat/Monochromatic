@@ -62,7 +62,9 @@ export function rngInt(row: {
   return row.lo
     + Math
     .floor(rng(row.seed,)
-      * (row.hi - row.lo),);
+      * (row.hi
+        - row
+        .lo),);
 }
 
 /**

@@ -227,7 +227,8 @@ export async function ensureWinFsp(): Promise<string> {
     .find(function findMsi(a,) {
     return (a.name
       .endsWith('.msi',))
-      && (!a.name.includes('tests',));
+      && (!a.name
+        .includes('tests',));
   },);
   if (msiAsset === undefined)
     throw new Error(`no MSI asset found in WinFsp release ${version}`,);

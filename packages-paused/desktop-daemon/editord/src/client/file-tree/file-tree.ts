@@ -276,8 +276,8 @@ export class FileTree extends HTMLElement {
   async restoreExpansion({ dirs, }: { readonly dirs: readonly string[]; },): Promise<void> {
     if ((this.#tree
       === null) || (this.#state
-      .fetchDir
-      === null)
+        .fetchDir
+        === null)
       || (dirs.length
         === 0))
       return;

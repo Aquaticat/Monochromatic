@@ -345,9 +345,12 @@ function filterMessage(
   const content = message.content
     .filter(function keepContentBlock(block,) {
     return !(
-      (block.type === 'toolCall')
-      && (block.name === ADVISOR_TOOL_NAME)
-        && (block.id === currentToolCallId)
+      (block.type
+        === 'toolCall')
+      && (block.name
+        === ADVISOR_TOOL_NAME)
+        && (block.id
+          === currentToolCallId)
     );
   },);
   if (content.length

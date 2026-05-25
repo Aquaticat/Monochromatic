@@ -372,7 +372,7 @@ function toLlmMessage(
   }
   if ((m.role
     === 'user') || (m.role
-    === 'assistant')
+      === 'assistant')
     || (m.role
       === 'toolResult'))
     return m;

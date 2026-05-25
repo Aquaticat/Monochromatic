@@ -289,7 +289,7 @@ function encodeNumber(
       === 'TOMLValue')
       && ((existing.kind
         === 'integer') || (existing.kind
-        === 'float'))
+          === 'float'))
       && (existing.value
         === value)
   ) {

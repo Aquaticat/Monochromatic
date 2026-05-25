@@ -83,7 +83,7 @@ export async function getOutlinesFromOpmls(
                 const u = new URL(s,);
                 return ((u.protocol
                   === 'http:') || (u.protocol
-                  === 'https:'))
+                    === 'https:'))
                   && v
                   .DOMAIN_REGEX
                   .test(u.hostname,);
