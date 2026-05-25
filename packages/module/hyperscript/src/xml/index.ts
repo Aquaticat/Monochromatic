@@ -96,15 +96,15 @@ function escapeXml(raw: string,): string {
  */
 type XmlOptions = {
   /** XML tag name, may include namespace prefix (e.g. `'atom:link'`) */
-  tag: string;
+  readonly tag: string;
   /** Text content (XML-escaped automatically) */
-  text?: string;
+  readonly text?: string;
   /** Raw inner XML (NOT escaped; caller is responsible for well-formedness) */
-  raw?: string;
+  readonly raw?: string;
   /** Attributes set as key="value" pairs (values are XML-escaped) */
-  attrs?: Record<string, string>;
+  readonly attrs?: Readonly<Record<string, string>>;
   /** Child XML strings to concatenate inside the element */
-  children?: readonly string[];
+  readonly children?: readonly string[];
 };
 
 /**

@@ -301,10 +301,10 @@ export function cssOklch(
     h,
     a,
   }: {
-    l: number;
-    c: number;
-    h: number;
-    a?: number;
+    readonly l: number;
+    readonly c: number;
+    readonly h: number;
+    readonly a?: number;
   },
 ): CssValue {
   if (a !== undefined)
@@ -351,11 +351,11 @@ export function cssOklchFrom(
     h = 'h',
     a,
   }: {
-    from: CssValue | string;
-    l?: string;
-    c?: string;
-    h?: string;
-    a?: string;
+    readonly from: string;
+    readonly l?: string;
+    readonly c?: string;
+    readonly h?: string;
+    readonly a?: string;
   },
 ): CssValue {
   if (a !== undefined)
@@ -390,9 +390,9 @@ export function cssColorFn(
     channels,
     a,
   }: {
-    space: string;
-    channels: string;
-    a?: number;
+    readonly space: string;
+    readonly channels: string;
+    readonly a?: number;
   },
 ): CssValue {
   if (a !== undefined)
@@ -459,7 +459,7 @@ export function cssCalc(expr: string,): CssValue {
  * cssMin([cssRem(20), cssPercent(100)])           // 'min(20rem, 100%)'
  * ```
  */
-export function cssMin(values: readonly (CssValue | string)[],): CssValue {
+export function cssMin(values: readonly string[],): CssValue {
   return `min(${values.join(', ',)})` as CssValue;
 }
 
@@ -479,7 +479,7 @@ export function cssMin(values: readonly (CssValue | string)[],): CssValue {
  * cssMax(['100cqi', cssCalc('100% - 2rem')])       // 'max(100cqi, calc(100% - 2rem))'
  * ```
  */
-export function cssMax(values: readonly (CssValue | string)[],): CssValue {
+export function cssMax(values: readonly string[],): CssValue {
   return `max(${values.join(', ',)})` as CssValue;
 }
 
@@ -513,9 +513,9 @@ export function cssClamp(
     ideal,
     max,
   }: {
-    min: CssValue | string;
-    ideal: CssValue | string;
-    max: CssValue | string;
+    readonly min: string;
+    readonly ideal: string;
+    readonly max: string;
   },
 ): CssValue {
   return `clamp(${min}, ${ideal}, ${max})` as CssValue;
@@ -552,9 +552,9 @@ export function cssRandom(
     max,
     step,
   }: {
-    min: number;
-    max: number;
-    step?: number;
+    readonly min: number;
+    readonly max: number;
+    readonly step?: number;
   },
 ): CssValue {
   return step === undefined
@@ -735,7 +735,7 @@ export function cssCubicBezier(values: readonly number[],): CssValue {
  * // 'inset-inline-start, inset-inline-end'
  * ```
  */
-export function cssCommaList(values: readonly (CssValue | string)[],): CssValue {
+export function cssCommaList(values: readonly string[],): CssValue {
   return values.join(', ',) as CssValue;
 }
 
@@ -760,7 +760,7 @@ export function cssCommaList(values: readonly (CssValue | string)[],): CssValue 
  * ```
  */
 export function cssCompounded(
-  values: readonly (CssValue | string | number)[],
+  values: readonly (string | number)[],
 ): CssValue {
   return values.join(' ',) as CssValue;
 }

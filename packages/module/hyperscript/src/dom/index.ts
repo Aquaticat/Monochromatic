@@ -87,6 +87,7 @@ type HOptions<TTag extends string,> = {
   children?: readonly (Node | string)[];
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- HOptions<TTag> carries `children?: readonly (Node | string)[]` (DOM `Node` has mutating methods by design) and an `on` event-map intersected with `Partial<Record<string, ...>>` (mutable index signature); both are treated as mutable by this rule and cannot be made deep-readonly without misdescribing the DOM API contract */
 /**
  * Creates an HTML element with declarative options for tag, class, text, attributes, style, events, and children.
  *
@@ -170,3 +171,4 @@ type HOptions<TTag extends string,> = {
 
   return element;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */

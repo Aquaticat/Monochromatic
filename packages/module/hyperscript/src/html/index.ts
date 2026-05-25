@@ -119,19 +119,19 @@ export function escapeHtml(raw: string,): string {
 /** Named parameters for string-based element creation */
 type HOptions = {
   /** HTML tag name */
-  tag: string;
+  readonly tag: string;
   /** CSS class name(s) */
-  class?: string;
+  readonly class?: string;
   /** Text content (HTML-escaped automatically) */
-  text?: string;
+  readonly text?: string;
   /** Raw inner HTML (NOT escaped) */
-  html?: string;
+  readonly html?: string;
   /** Attributes set as key="value" pairs (values are HTML-escaped) */
-  attrs?: Record<string, string>;
+  readonly attrs?: Readonly<Record<string, string>>;
   /** Inline style properties (camelCase or kebab-case keys) */
-  style?: Record<string, string>;
+  readonly style?: Readonly<Record<string, string>>;
   /** Child HTML strings to concatenate inside the element */
-  children?: readonly string[];
+  readonly children?: readonly string[];
 };
 
 /**
