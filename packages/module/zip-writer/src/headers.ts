@@ -42,12 +42,12 @@ function writeOneLocalFileHeader(
     buffer,
     entry,
     startOffset,
-  }: {
+  }: Readonly<{
     view: DataView;
     buffer: Uint8Array;
     entry: ZipEntry;
     startOffset: number;
-  },
+  }>,
 ): number {
   /** Local cursor tracking each successive little-endian write. */
   let offset = startOffset;
@@ -161,12 +161,12 @@ export function writeLocalFileHeaders(
     buffer,
     positioned,
     startOffset,
-  }: {
+  }: Readonly<{
     view: DataView;
     buffer: Uint8Array;
     positioned: readonly Positioned[];
     startOffset: number;
-  },
+  }>,
 ): number {
   /** Running cursor advancing through successive local file headers. */
   let offset = startOffset;
@@ -203,13 +203,13 @@ function writeOneCentralDirectoryHeader(
     entry,
     lfhOffset,
     startOffset,
-  }: {
+  }: Readonly<{
     view: DataView;
     buffer: Uint8Array;
     entry: ZipEntry;
     lfhOffset: number;
     startOffset: number;
-  },
+  }>,
 ): number {
   /** Local cursor tracking each successive little-endian write. */
   let offset = startOffset;
@@ -353,12 +353,12 @@ export function writeCentralDirectory(
     buffer,
     positioned,
     startOffset,
-  }: {
+  }: Readonly<{
     view: DataView;
     buffer: Uint8Array;
     positioned: readonly Positioned[];
     startOffset: number;
-  },
+  }>,
 ): number {
   /** Running cursor advancing through successive central directory headers. */
   let offset = startOffset;

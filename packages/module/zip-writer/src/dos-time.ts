@@ -31,10 +31,10 @@ const MONTH_OFFSET_TO_ONE_BASED = 1;
 /** Encoded DOS modification timestamp split into time and date words. */
 export type DosDateTime = {
   /** Time-of-day word: `(hour << 11) | (minute << 5) | (second / 2)`. */
-  time: number;
+  readonly time: number;
 
   /** Date word: `((year - 1980) << 9) | (month << 5) | day`. */
-  date: number;
+  readonly date: number;
 };
 
 /**

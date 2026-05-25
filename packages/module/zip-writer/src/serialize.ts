@@ -112,13 +112,13 @@ function writeEndOfCentralDirectory(
     cdSize,
     cdStart,
     startOffset,
-  }: {
+  }: Readonly<{
     view: DataView;
     entryCount: number;
     cdSize: number;
     cdStart: number;
     startOffset: number;
-  },
+  }>,
 ): number {
   /** Local cursor tracking each successive little-endian write. */
   let offset = startOffset;

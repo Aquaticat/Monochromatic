@@ -44,6 +44,7 @@ export {
 /** Reusable text encoder for filename and string content conversion. */
 const TEXT_ENCODER = new TextEncoder();
 
+/* oxlint-disable no-restricted-syntax/no-class -- ZipWriter is consumed via `new ZipWriter()` by packages/figma-parsers/penpot (src/index.ts:1534); migrating to a factory requires a coordinated call-site update tracked in docs/migration/no-class.md, out of scope for this package-local lint sweep */
 /**
  * Builder for STORE-only ZIP archives. Add files with {@link ZipWriter.add}
  * then call {@link ZipWriter.build} to produce the final byte sequence.
@@ -71,7 +72,7 @@ export class ZipWriter {
    * modification timestamp for entries (defaults to the current time);
    * pass a fixed `Date` to produce reproducible output.
    */
-  constructor({ modifiedAt = new Date(), }: { modifiedAt?: Date; } = {},) {
+  constructor({ modifiedAt = new Date(), }: Readonly<{ modifiedAt?: Date; }> = {},) {
     this.#defaultModified = dosDateTime(modifiedAt,);
   }
 
@@ -145,3 +146,4 @@ export class ZipWriter {
     return serializeEntries(this.#entries,);
   }
 }
+/* oxlint-enable no-restricted-syntax/no-class */
