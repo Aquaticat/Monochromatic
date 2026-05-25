@@ -7,9 +7,9 @@ export type Level = 'debug' | 'error' | 'fatal' | 'info' | 'trace' | 'warn';
  * Structured log record written to sinks.
  */
 export type LogRecord = {
-  level: Level;
-  message: string;
-  timestamp: number;
+  readonly level: Level;
+  readonly message: string;
+  readonly timestamp: number;
 };
 
 /**
@@ -41,11 +41,11 @@ export type Verify = () => Promise<boolean> | boolean;
  * sink buffers; resolves immediately.
  */
 export type Logger = {
-  debug: (message: string,) => void;
-  error: (message: string,) => void;
-  fatal: (message: string,) => void;
-  flush: () => Promise<void>;
-  info: (message: string,) => void;
-  trace: (message: string,) => void;
-  warn: (message: string,) => void;
+  readonly debug: (message: string,) => void;
+  readonly error: (message: string,) => void;
+  readonly fatal: (message: string,) => void;
+  readonly flush: () => Promise<void>;
+  readonly info: (message: string,) => void;
+  readonly trace: (message: string,) => void;
+  readonly warn: (message: string,) => void;
 };

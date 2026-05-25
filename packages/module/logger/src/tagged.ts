@@ -40,8 +40,8 @@ export function tagged({
   tag,
   l = defaultLogger,
 }: {
-  l?: Logger;
-  tag: string;
+  readonly l?: Logger;
+  readonly tag: string;
 },): Logger {
   /** Bracketed tag prepended to every message; built once so each log call does one concatenation. */
   const prefix = `[${tag}] `;

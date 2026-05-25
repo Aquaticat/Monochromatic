@@ -60,7 +60,7 @@ const sinkEntries: SinkEntry[] = [
  * state stays out of a top-level `let` (`no-module-root-let` would otherwise
  * reject it). `initialized` flips true once the eager `initialize()` settles;
  * `hasAvailableSink` reflects whether any sink survives verification and is
- * recomputed by `markFailed` as sinks drop out at runtime.
+ * recomputed by `recomputeAvailability` as sinks drop out at runtime.
  */
 const state: {
   initialized: boolean;
@@ -103,12 +103,12 @@ async function initialize(): Promise<void> {
 const initPromise: Promise<void> = initialize();
 
 /**
- * Marks a sink entry as failed and recalculates global availability.
- *
- * @param entry - Sink entry that encountered an error
+ * Recomputes global availability after a sink entry's `available` flag flips.
+ * Call sites mutate the failing entry's flag directly (the entry is a callback
+ * parameter, so a `readonly` parameter type cannot forbid the assignment), then
+ * invoke this to recalculate the aggregate.
  */
-function markFailed(entry: SinkEntry,): void {
-  entry.available = false;
+function recomputeAvailability(): void {
   state.hasAvailableSink = sinkEntries.some(function isAvailable(sinkEntry,) {
     return sinkEntry.available
       === true;
@@ -156,13 +156,15 @@ function createMethod(level: Level,): (message: string,) => void {
             // oxlint-disable-next-line promise/always-return -- fire-and-forget success handler
             function noop() {/* success */},
             function onReject() {
-              markFailed(entry,);
+              entry.available = false;
+              recomputeAvailability();
             },
           );
         }
       }
       catch {
-        markFailed(entry,);
+        entry.available = false;
+        recomputeAvailability();
       }
     },);
 
@@ -198,7 +200,8 @@ async function flushAll(): Promise<void> {
         await sinkFlush();
       }
       catch {
-        markFailed(entry,);
+        entry.available = false;
+        recomputeAvailability();
       }
     },),
   );

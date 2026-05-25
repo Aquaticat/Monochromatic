@@ -68,10 +68,10 @@ export async function findNodeModulesUp(
     dirname,
     join,
   }: {
-    cwd: string;
-    stat: typeof Stat;
-    dirname: typeof Dirname;
-    join: typeof Join;
+    readonly cwd: string;
+    readonly stat: typeof Stat;
+    readonly dirname: typeof Dirname;
+    readonly join: typeof Join;
   },
 ): Promise<string | undefined> {
   /** Directory being tested in this iteration; either resolves to a node_modules or triggers the walk to the parent. */

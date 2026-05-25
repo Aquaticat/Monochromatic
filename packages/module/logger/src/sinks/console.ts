@@ -188,8 +188,8 @@ function emitRun(
     records,
     level,
   }: {
-    records: readonly LogRecord[];
-    level: Level;
+    readonly records: readonly LogRecord[];
+    readonly level: Level;
   },
 ): void {
   /** Joined run text; one `\n`-separated string per console call so a long run becomes a single grouped entry rather than N separate ones. */
