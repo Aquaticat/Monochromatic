@@ -8,10 +8,12 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+
 import {
   type ChainNode,
   effectiveTop,
-  hasInteriorComment,
+  hasReflowableComment,
   isChainRoot,
 } from '../utility/chain.ts';
 import { chainBreakOffsets, } from '../utility/chain-flatten.ts';
@@ -67,10 +69,13 @@ function sourceTextOf(context: Context,): string {
  * (`[expr]`) and call steps (`(args)`) stay attached, so `arr[0][1]` and
  * `obj.method()` keep to one line. It reports when the region's source differs
  * from this canonical layout and replaces the whole region in one fix, except
- * when a comment inside the region would be relocated, where it reports without
- * a fix. The fix only inserts newlines at break offsets and slices everything
- * else verbatim, so it never collapses whitespace at non-break points: a legacy
- * split with no break offsets is left as-is rather than rejoined.
+ * when a comment sits in the collapsible head (before the first break), where it
+ * reports without a fix; a comment at or after the first break (such as one in a
+ * trailing call's arguments) rides verbatim on its continuation slice, so the
+ * fix still applies. The fix only inserts newlines at break offsets and slices
+ * everything else verbatim, so it never collapses whitespace at non-break
+ * points: a legacy split with no break offsets is left as-is rather than
+ * rejoined.
  * `no-mixed-operators` runs alongside and remains the authority on precedence
  * parentheses; on a shared region their fixes need two `oxlint --fix` passes (an
  * upstream single-pass limitation).
@@ -160,10 +165,13 @@ export const chainPerLine: CreateOnceRule = {
         === canonical) {
         return;
       }
-      /** Whether the region is free of comments the render would relocate. */
-      const fixable = !hasInteriorComment({
+      /** First break offset; defined because an empty `breakOffsets` returned above. */
+      const firstBreak = nonNullishOrThrow(breakOffsets[0],);
+      /** Whether the region is free of comments the render would reflow. */
+      const fixable = !hasReflowableComment({
         context,
         node: top,
+        firstBreak,
       },);
       context.report({
         node,

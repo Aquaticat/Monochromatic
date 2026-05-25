@@ -224,41 +224,51 @@ export function isChainRoot({
 }
 
 /**
- * Parameters for {@link hasInteriorComment}.
+ * Parameters for {@link hasReflowableComment}.
  */
-export type HasInteriorCommentParams = {
+export type HasReflowableCommentParams = {
   /** Rule context; its `sourceCode` supplies the comment lookup. */
   readonly context: Context;
-  /** Outermost chain-region node; comments inside its range gate the autofix. */
+  /** Outermost chain-region node whose interior comments are inspected. */
   readonly node: Span;
+  /** First break offset; a comment before it sits in the collapsible head. */
+  readonly firstBreak: number;
 };
 
 /**
- * Reports whether any comment sits inside the chain region.
+ * Reports whether a comment sits where the autofix would reflow it.
  *
- * The render slices source verbatim, so a comment between segments would be
- * relocated onto a continuation line. The rule suppresses the autofix
- * (reporting without a fix) whenever any comment lives in the region, the
- * conservative stance toward writer intent. The check spans the outermost
- * region node so a comment inside trailing `as /* x *\/ Foo` is still seen; it
- * deliberately over-suppresses for comments buried in call arguments rather
- * than risk relocating one, so do not narrow it without reinstating that
- * guarantee.
+ * The render emits the head slice (region start to the first break) as one
+ * collapsed unit and every later slice verbatim, inserting a newline only at a
+ * break offset, which is always a `.`/`?.` or operator token and so never lands
+ * inside a comment. A comment therefore survives untouched unless it sits in the
+ * head, the one region where separate segments fold onto a single line; a
+ * comment at or after the first break rides verbatim on its own continuation
+ * slice (for example one buried in a trailing call's arguments). Suppressing the
+ * fix exactly when a comment precedes the first break reinstates the
+ * no-relocation guarantee while leaving call-argument comments fixable. Comments
+ * cannot straddle a break offset: the break token would otherwise be inside the
+ * comment and so not a token at all, so testing each comment's start against the
+ * first break classifies it fully.
  *
- * @returns whether the region contains at least one comment
+ * @returns whether any comment precedes the first break offset
  *
  * @example
  * ```ts
- * // For `obj.b // note\n  .c.d`: true, so the rule reports without a fix
- * hasInteriorComment({ context, node, });
+ * // For `obj.b // note\n  .c.d` with firstBreak at `.c`: true (note precedes .c)
+ * // For `obj.a.method(\n  // note\n  x,\n)` with firstBreak at `.method`: false
+ * hasReflowableComment({ context, node, firstBreak, });
  * ```
  */
-export function hasInteriorComment({
+export function hasReflowableComment({
   context,
   node,
-}: HasInteriorCommentParams,): boolean {
+  firstBreak,
+}: HasReflowableCommentParams,): boolean {
   return context.sourceCode
     .getCommentsInside(node,)
-    .length
-    > 0;
+    .some(function precedesFirstBreak(comment,): boolean {
+      return comment.start
+        < firstBreak;
+    },);
 }

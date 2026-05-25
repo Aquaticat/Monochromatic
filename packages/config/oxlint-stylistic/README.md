@@ -89,7 +89,10 @@ All per-line rules are auto-fixable via `oxlint --fix`.
   It never collapses whitespace at non-break points: a legacy split that the decoupled
   rule no longer breaks (no break offsets) is left verbatim and goes unreported rather
   than being rejoined onto one line.
-  It is suppressed (the rule reports without a fix) when a comment sits inside the region.
+  The fix is suppressed (the rule reports without a fix) only when a comment sits in the
+  collapsible head, before the first break offset;
+  a comment at or after the first break rides verbatim on its continuation slice, so the
+  fix still applies (for example a comment buried in a trailing call's arguments).
   Tagged templates (`` tag`x` ``) and `new` expressions are opaque leaves, not chain
   participants.
   When `no-mixed-operators` and `chain-per-line` both apply to one region, several

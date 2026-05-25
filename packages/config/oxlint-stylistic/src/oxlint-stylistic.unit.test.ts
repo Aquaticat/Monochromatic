@@ -867,6 +867,48 @@ await describe({
           },
         },),
         it({
+          name: '--fix applies to a chain whose comment sits in trailing call args',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates the original fixture. */
+            const argsSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'chain-comment-in-args.ts',
+            );
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using argsCopy = createTempFixtureFile({
+              fileName: 'chain-comment-in-args.ts',
+              sourcePath: argsSrc,
+            },);
+            /** Original content; unlike the head-comment case, the fix must rewrite it. */
+            const before = readFileSync(argsCopy.filePath, 'utf8',);
+
+            try {
+              await spawn(
+                'oxlint',
+                [
+                  '--fix',
+                  '-c',
+                  FIXTURE_CONFIG,
+                  argsCopy.filePath,
+                ],
+                { cwd: ROOT, },
+              );
+            }
+            catch {
+              // --fix may exit non-zero when unfixable issues remain
+            }
+            /** Content after the fix: the chain broke at the member step. */
+            const after = readFileSync(argsCopy.filePath, 'utf8',);
+            // The fix applied rather than being suppressed by the interior comment.
+            expect(after,).not.toBe(before,);
+            // The continuation-slice comment survived verbatim, never relocated or dropped.
+            expect(after.includes('// keep this note inside the call',),).toBe(true,);
+            // The member axis broke `obj.a` onto the head line.
+            expect(after.includes('obj.a\n',),).toBe(true,);
+          },
+        },),
+        it({
           name:
             '--fix converges when chain-per-line and no-mixed-operators apply together',
           fn: async () => {
