@@ -15,16 +15,17 @@ import {
   probeIsFilled,
   probePosition,
 } from './deck-accessors.ts';
+import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import type { AppState, } from './scripts/state.ts';
 
 //region Types
 
 /** Probe + its original index in the source array; preserved through partitioning so visibility lookups stay accurate. */
-export type ScatterDatum = {
+export type ScatterDatum = Readonly<{
   probe: PackageProbe;
   originalIndex: number;
-};
+}>;
 
 //endregion Types
 
@@ -58,8 +59,8 @@ export function partitionProbes(
     probes,
     state,
   }: {
-    probes: readonly PackageProbe[];
-    state: AppState;
+    readonly probes: readonly PackageProbe[];
+    readonly state: AppState;
   },
 ): {
   leaf: readonly ScatterDatum[];
@@ -77,7 +78,7 @@ export function partitionProbes(
     originalIndex,
   ) {
     if (probe.unknownReason
-      !== null) {
+      !== undefined) {
       unknown.push({
         probe,
         originalIndex,
@@ -88,7 +89,7 @@ export function partitionProbes(
       probe,
       state,
     },)
-      === null) {
+      === ABSENT) {
       unknown.push({
         probe,
         originalIndex,
@@ -148,8 +149,8 @@ export function computeNameBakeSet(
     probes,
     state,
   }: {
-    probes: readonly PackageProbe[];
-    state: AppState;
+    readonly probes: readonly PackageProbe[];
+    readonly state: AppState;
   },
 ): ReadonlySet<number> {
   if (state.displayToggles

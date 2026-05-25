@@ -28,6 +28,10 @@ import {
   SolidPolygonLayer,
 } from '@deck.gl/layers';
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import type { SceneBounds, } from './deck-config.ts';
 import type { DimMapping, } from './scripts/filter.ts';
 
@@ -111,6 +115,7 @@ const THRESHOLD_LINE_WIDTH = 1.5;
 
 //region Accessors
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- deck.gl layer accessors: `PolygonDatum`/`PathDatum` carry mutable coordinate arrays required by deck.gl's accessor return contract; deep-readonly cannot apply. */
 /**
  * Returns a `PolygonDatum`'s `polygon` field; deck.gl's `SolidPolygonLayer` calls this per datum.
  *
@@ -142,6 +147,7 @@ function getPolygonAccessor(d: PolygonDatum,): PolygonDatum['polygon'] {
 function getPathAccessor(d: PathDatum,): PathDatum['path'] {
   return d.path;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Accessors
 
@@ -164,7 +170,7 @@ function getPathAccessor(d: PathDatum,): PathDatum['path'] {
  * ```
  */
 export function buildCoordinatePlaneLayers(
-  { bounds, }: { bounds: SceneBounds; },
+  { bounds, }: { readonly bounds: SceneBounds; },
 ): readonly Layer[] {
   /** X-axis min and max destructured from `bounds.x` for polygon corner math. */
   const [
@@ -312,12 +318,12 @@ export function buildCoordinatePlaneLayers(
  *
  * @param dimMapping - Current dim mapping.
  *
- * @returns PathLayer with zero to three guide segments, or `null` if none qualify.
+ * @returns PathLayer with zero to three guide segments, or `ABSENT` if none qualify.
  *
  * @example
  * ```ts
  * const layer = buildThresholdLineLayer({ bounds, dimMapping: state.dimMapping });
- * if (layer !== null) layers.push(layer);
+ * if (layer !== ABSENT) layers.push(layer);
  * ```
  */
 export function buildThresholdLineLayer(
@@ -325,10 +331,10 @@ export function buildThresholdLineLayer(
     bounds,
     dimMapping,
   }: {
-    bounds: SceneBounds;
-    dimMapping: DimMapping;
+    readonly bounds: SceneBounds;
+    readonly dimMapping: DimMapping;
   },
-): Layer | null {
+): Maybe<Layer> {
   /** X-axis min and max destructured from `bounds.x` for guide-line endpoints. */
   const [
     xMin,
@@ -412,7 +418,7 @@ export function buildThresholdLineLayer(
   }
   if (segments.length
     === 0)
-    return null;
+    return ABSENT;
   return new PathLayer<PathDatum>({
     id: 'threshold-guides',
     data: segments,

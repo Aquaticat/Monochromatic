@@ -15,6 +15,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
+import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import {
   computeVisibleIndices,
@@ -81,9 +82,7 @@ const TS_LEAF: PackageProbe = {
   sourceBytesOrNull: 200_000,
   daysSinceLastCommitOrNull: 14,
   repositoryUrlOrNull: 'https://github.com/preactjs/preact',
-  isMonorepoHoused: false,
-  unknownReason: null,
-};
+  isMonorepoHoused: false,};
 
 /**
  * Non-leaf, JavaScript-majority, stale, copyleft, GitHub-hosted.
@@ -103,9 +102,7 @@ const JS_NON_LEAF_STALE: PackageProbe = {
   sourceBytesOrNull: 5_000,
   daysSinceLastCommitOrNull: 1_500,
   repositoryUrlOrNull: 'https://github.com/vercel/ms',
-  isMonorepoHoused: false,
-  unknownReason: null,
-};
+  isMonorepoHoused: false,};
 
 /**
  * Monorepo-housed entry: TS ratio + stale days unknown.
@@ -121,9 +118,6 @@ const MONOREPO_UNKNOWN: PackageProbe = {
   licenseClass: 'permissive',
   runtimeDepCount: 0,
   transitiveDepCount: 0,
-  tsRatioOrNull: null,
-  sourceBytesOrNull: null,
-  daysSinceLastCommitOrNull: null,
   repositoryUrlOrNull: 'https://github.com/lezer-parser/common',
   isMonorepoHoused: true,
   unknownReason: 'monorepo',
@@ -148,9 +142,7 @@ const AUDIT_TARGET: PackageProbe = {
   sourceBytesOrNull: 3_000,
   daysSinceLastCommitOrNull: 1_200,
   repositoryUrlOrNull: 'https://github.com/jshttp/etag',
-  isMonorepoHoused: false,
-  unknownReason: null,
-};
+  isMonorepoHoused: false,};
 
 const PROBES: readonly PackageProbe[] = [
   TS_LEAF,
@@ -181,7 +173,7 @@ await describe({
           probe: MONOREPO_UNKNOWN,
           dim: 'logSourceBytes',
         },);
-        expect(v,).toBeNull();
+        expect(v,).toBe(ABSENT,);
       },
     },),
 
@@ -207,9 +199,11 @@ await describe({
 
     //region derivedBool
     it({
-      name: 'derivedBool tsMajority returns null when ratio is unknown',
+      name: 'derivedBool tsMajority returns ABSENT when ratio is unknown',
       fn: async () => {
-        expect(derivedBool({ probe: MONOREPO_UNKNOWN, key: 'tsMajority', },),).toBeNull();
+        expect(derivedBool({ probe: MONOREPO_UNKNOWN, key: 'tsMajority', },),).toBe(
+          ABSENT,
+        );
       },
     },),
 

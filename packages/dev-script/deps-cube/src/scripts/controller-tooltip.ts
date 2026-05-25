@@ -78,43 +78,43 @@ function escapeHtml(raw: string,): string {
 
 /**
  * Formats a number with fixed decimals, or returns "unknown" when the
- * value is `null`.
+ * value is absent.
  *
- * @param value - Source value, possibly `null`.
+ * @param value - Source value; absent renders as "unknown".
  *
  * @returns Formatted string.
  */
-function formatNum(value: number | null,): string {
-  if (value === null)
+function formatNum(value?: number,): string {
+  if (value === undefined)
     return 'unknown';
   return value.toFixed(TOOLTIP_DECIMALS,);
 }
 
 /**
  * Formats a number with no decimals, or returns "unknown" when the
- * value is `null`. Used for counts.
+ * value is absent. Used for counts.
  *
- * @param value - Source value, possibly `null`.
+ * @param value - Source value; absent renders as "unknown".
  *
  * @returns Formatted string.
  */
-function formatInt(value: number | null,): string {
-  if (value === null)
+function formatInt(value?: number,): string {
+  if (value === undefined)
     return 'unknown';
   return Math.round(value,)
     .toString();
 }
 
 /**
- * Formats a boolean as the conventional ✓/✗ pair, or "unknown" for
- * `null`.
+ * Formats a boolean as the conventional ✓/✗ pair, or "unknown" when
+ * absent.
  *
- * @param value - Source boolean, possibly `null`.
+ * @param value - Source boolean; absent renders as "unknown".
  *
  * @returns Formatted string.
  */
-function formatBool(value: boolean | null,): string {
-  if (value === null)
+function formatBool(value?: boolean,): string {
+  if (value === undefined)
     return 'unknown';
   return value ? '✓' : '✗';
 }
@@ -145,7 +145,7 @@ function formatBool(value: boolean | null,): string {
  * ```
  */
 export function formatTooltipHtml(
-  { probe, }: { probe: PackageProbe; },
+  { probe, }: { readonly probe: PackageProbe; },
 ): string {
   /** Escaped npm name so the header is injection-safe. */
   const name = escapeHtml(probe.npmName,);
@@ -155,12 +155,12 @@ export function formatTooltipHtml(
   const license = escapeHtml(probe.licenseClass,);
   /** Escaped repository URL, or the literal `"unknown"` when the probe lacks a repo. */
   const repo = probe.repositoryUrlOrNull
-    === null
+    === undefined
     ? 'unknown'
     : escapeHtml(probe.repositoryUrlOrNull,);
   /** Optional unknown-reason banner; empty string when the probe has no unknowns to report. */
   const unknown = probe.unknownReason
-    === null
+    === undefined
     ? ''
     : `<div class="tooltip-unknown">unknown: ${escapeHtml(probe.unknownReason,)}</div>`;
   return `<div class="tooltip">
@@ -238,7 +238,7 @@ function ensurePinElement(): HTMLElement {
  * ```
  */
 export function pinTooltip(
-  { probe, }: { probe: PackageProbe; },
+  { probe, }: { readonly probe: PackageProbe; },
 ): void {
   /** Pinned-tooltip `<aside>`, created on first use. */
   const aside = ensurePinElement();

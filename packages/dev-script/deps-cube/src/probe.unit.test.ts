@@ -6,7 +6,7 @@
  * covers one of the five `UnknownReason` branches plus the
  * all-known case:
  *
- * - `null` (every GH-derived field known)
+ * - absent (every GH-derived field known)
  * - `'no-repo'` (manifest lacks `repository`)
  * - `'non-github'` (repository.url points at a non-GH host)
  * - `'monorepo'` (`repository.directory` set, Linguist deliberately skipped)
@@ -35,6 +35,7 @@ import { join, } from 'node:path';
 
 import { createCache, } from './cache.ts';
 import type { CatalogEntry, } from './catalog.ts';
+import { ABSENT, } from './maybe.ts';
 import {
   classifyLicense,
   parseRepository,
@@ -166,16 +167,19 @@ await describe({
       name: 'parseRepository returns other host for non-GitHub URLs',
       fn: async () => {
         const info = parseRepository('https://gitlab.com/owner/repo',);
-        expect(info?.host,).toBe('other',);
+        expect(info,).not.toBe(ABSENT,);
+        if (info === ABSENT)
+          return;
+        expect(info.host,).toBe('other',);
       },
     },),
 
     it({
-      name: 'parseRepository returns null for undefined and empty',
+      name: 'parseRepository returns ABSENT for undefined and empty',
       fn: async () => {
-        expect(parseRepository(undefined,),).toBeNull();
-        expect(parseRepository('',),).toBeNull();
-        expect(parseRepository({ url: '', },),).toBeNull();
+        expect(parseRepository(undefined,),).toBe(ABSENT,);
+        expect(parseRepository('',),).toBe(ABSENT,);
+        expect(parseRepository({ url: '', },),).toBe(ABSENT,);
       },
     },),
     //endregion parseRepository
@@ -254,7 +258,7 @@ await describe({
 
     //region probeAll: each UnknownReason branch
     it({
-      name: 'probeAll resolves a healthy GH-hosted entry to unknownReason=null',
+      name: 'probeAll resolves a healthy GH-hosted entry to absent unknownReason',
       fn: async () => {
         await using cacheDir = await tempPopulatedCache({
           entries: {
@@ -295,7 +299,7 @@ await describe({
         ];
         const [probe,] = await probeAll({ entries, cache, },);
         expect(probe,).toBeDefined();
-        expect(probe?.unknownReason,).toBeNull();
+        expect(probe?.unknownReason,).toBeUndefined();
         expect(probe?.tsRatioOrNull,).toBeCloseTo(0.9, 6,);
         expect(probe?.licenseClass,).toBe('permissive',);
         expect(probe?.isLeaf,).toBe(true,);
@@ -338,7 +342,7 @@ await describe({
           cache,
         },);
         expect(probe?.unknownReason,).toBe('no-repo',);
-        expect(probe?.tsRatioOrNull,).toBeNull();
+        expect(probe?.tsRatioOrNull,).toBeUndefined();
       },
     },),
 
@@ -425,7 +429,7 @@ await describe({
         },);
         expect(probe?.isMonorepoHoused,).toBe(true,);
         expect(probe?.unknownReason,).toBe('monorepo',);
-        expect(probe?.tsRatioOrNull,).toBeNull();
+        expect(probe?.tsRatioOrNull,).toBeUndefined();
       },
     },),
 
@@ -448,7 +452,7 @@ await describe({
           cache,
         },);
         expect(probe?.unknownReason,).toBe('private-or-404',);
-        expect(probe?.tsRatioOrNull,).toBeNull();
+        expect(probe?.tsRatioOrNull,).toBeUndefined();
         expect(probe?.weeklyDownloads,).toBe(0,);
       },
       timeout: 10_000,

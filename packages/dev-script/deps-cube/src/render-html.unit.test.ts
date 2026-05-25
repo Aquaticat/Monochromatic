@@ -137,7 +137,6 @@ const PROBES: readonly PackageProbe[] = [
     daysSinceLastCommitOrNull: 14,
     repositoryUrlOrNull: 'https://github.com/preactjs/preact',
     isMonorepoHoused: false,
-    unknownReason: null,
   },
 ];
 

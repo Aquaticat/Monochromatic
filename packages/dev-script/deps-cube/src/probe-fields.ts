@@ -21,7 +21,14 @@ import {
   MS_PER_SECOND,
 } from '@monochromatic-dev/module-numeric-const';
 
-import type { Cache, } from './cache.ts';
+import {
+  type Cache,
+  CACHE_MISS,
+} from './cache.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import type { NpmPackage, } from './probe-field-types.ts';
 export {
   classifyLicense,
@@ -37,8 +44,6 @@ export type {
 
 //region Constants
 
-/** Indefinite cache TTL marker. */
-const TTL_FOREVER: number | null = null;
 /** Days of validity for fields that can change with upstream activity. */
 const TTL_DAYS = 30;
 /** TTL in ms for fields that can change with upstream activity. */
@@ -124,12 +129,12 @@ export async function probePackageManifest(
     npmName,
     cache,
   }: {
-    npmName: string;
-    cache: Cache;
+    readonly npmName: string;
+    readonly cache: Cache;
   },
 ): Promise<NpmPackage> {
   /**
-   * Cached manifest, valid for {@link TTL_MS}; `undefined` on cache miss.
+   * Cached manifest, valid for {@link TTL_MS}; `CACHE_MISS` on cache miss.
    */
   const cached = await cache.read<NpmPackage>({
     name: npmName,
@@ -137,7 +142,7 @@ export async function probePackageManifest(
     field: 'registry',
     ttlMs: TTL_MS,
   },);
-  if (cached !== undefined)
+  if (cached !== CACHE_MISS)
     return cached;
   /**
    * Percent-encoded npm name preserving `@` for scoped packages.
@@ -179,8 +184,8 @@ export async function probeDownloads(
     npmName,
     cache,
   }: {
-    npmName: string;
-    cache: Cache;
+    readonly npmName: string;
+    readonly cache: Cache;
   },
 ): Promise<number> {
   /** Cached downloads payload from a prior run, if still within TTL. */
@@ -190,7 +195,7 @@ export async function probeDownloads(
     field: 'downloads',
     ttlMs: TTL_MS,
   },);
-  if (cached !== undefined)
+  if (cached !== CACHE_MISS)
     return cached.downloads;
   try {
     /**
@@ -227,7 +232,7 @@ export async function probeDownloads(
  *
  * @param cache - File cache handle.
  *
- * @returns `null` when API errors due to private repo, 404, or rate limit.
+ * @returns `ABSENT` when API errors due to private repo, 404, or rate limit.
  *
  * @example
  * ```ts
@@ -240,24 +245,24 @@ export async function probeLanguages(
     repo,
     cache,
   }: {
-    owner: string;
-    repo: string;
-    cache: Cache;
+    readonly owner: string;
+    readonly repo: string;
+    readonly cache: Cache;
   },
-): Promise<Record<string, number> | null> {
+): Promise<Maybe<Record<string, number>>> {
   /** Cache key for languages probe; `<owner>/<repo>` prevents repo collisions. */
   const key = `${owner}/${repo}`;
+  // Language data is immutable per published version, so `ttlMs` is omitted (never expires).
   /** Cached Linguist response if previously fetched. */
   const cached = await cache.read<Record<string, number>>({
     name: key,
     version: '_repo',
     field: 'languages',
-    ttlMs: TTL_FOREVER,
   },);
-  if (cached !== undefined)
+  if (cached !== CACHE_MISS)
     return cached;
   try {
-    /** Fresh Linguist response; on error, catch returns `null` to signal unknown upstream. */
+    /** Fresh Linguist response; on error, catch returns `ABSENT` to signal unknown upstream. */
     const fetched = await ghApi<Record<string, number>>(
       `repos/${owner}/${repo}/languages`,
     );
@@ -270,7 +275,7 @@ export async function probeLanguages(
     return fetched;
   }
   catch {
-    return null;
+    return ABSENT;
   }
 }
 
@@ -285,7 +290,7 @@ export async function probeLanguages(
  *
  * @param cache - File cache handle.
  *
- * @returns ISO timestamp string or `null` when API errors out.
+ * @returns ISO timestamp string, or `ABSENT` when API errors out.
  *
  * @example
  * ```ts
@@ -299,12 +304,12 @@ export async function probeLastCommit(
     directory,
     cache,
   }: {
-    owner: string;
-    repo: string;
-    directory?: string | undefined;
-    cache: Cache;
+    readonly owner: string;
+    readonly repo: string;
+    readonly directory?: string;
+    readonly cache: Cache;
   },
-): Promise<string | null> {
+): Promise<Maybe<string>> {
   /** Cache key shared by whole-repo and path-scoped variants; `field` discriminates. */
   const key = `${owner}/${repo}`;
   /** Cache field tag distinguishing whole-repo `pushed_at` from per-directory commits. */
@@ -316,7 +321,7 @@ export async function probeLastCommit(
     field,
     ttlMs: TTL_MS,
   },);
-  if (cached !== undefined)
+  if (cached !== CACHE_MISS)
     return cached;
 
   try {
@@ -343,7 +348,7 @@ export async function probeLastCommit(
       ?.author
       ?.date;
     if (date === undefined)
-      return null;
+      return ABSENT;
     await cache.write({
       name: key,
       version: '_repo',
@@ -353,7 +358,7 @@ export async function probeLastCommit(
     return date;
   }
   catch {
-    return null;
+    return ABSENT;
   }
 }
 

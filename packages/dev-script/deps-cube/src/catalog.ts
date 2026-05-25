@@ -28,13 +28,13 @@ import { parse as parseYaml, } from 'yaml';
  */
 export type CatalogEntry = {
   /** Key as written in the catalog (may be an alias when `range` starts with `npm:`). */
-  catalogKey: string;
+  readonly catalogKey: string;
   /** Actual npm package name to query the registry with. */
-  npmName: string;
+  readonly npmName: string;
   /** Version range string (semver, exact, `*`, or just the trailing part of `npm:<name>@<range>`). */
-  range: string;
-  /** Name of the named catalog this entry came from; `undefined` for the default `catalog:` block. */
-  catalogName?: string | undefined;
+  readonly range: string;
+  /** Name of the named catalog this entry came from; absent for the default `catalog:` block. */
+  readonly catalogName?: string;
 };
 
 /**
@@ -75,8 +75,8 @@ export function decodeAlias(
     key,
     value,
   }: {
-    key: string;
-    value: string;
+    readonly key: string;
+    readonly value: string;
   },
 ): {
   npmName: string;
@@ -127,26 +127,28 @@ function entriesFromBlock(
     block,
     catalogName,
   }: {
-    block: Record<string, string>;
-    catalogName?: string | undefined;
+    readonly block: Readonly<Record<string, string>>;
+    readonly catalogName?: string;
   },
 ): readonly CatalogEntry[] {
-  return Object.entries(block,).map(function toEntry([key, value,],): CatalogEntry {
-    /** Real npm package name plus version range, with `npm:` aliases resolved. */
-    const {
-      npmName,
-      range,
-    } = decodeAlias({
-      key,
-      value,
+  return Object.entries(block,)
+    .map(function toEntry([key, value,],): CatalogEntry {
+      /** Real npm package name plus version range, with `npm:` aliases resolved. */
+      const {
+        npmName,
+        range,
+      } = decodeAlias({
+        key,
+        value,
+      },);
+      // Spread the key only when present so `undefined` never lands in the optional slot.
+      return {
+        catalogKey: key,
+        npmName,
+        range,
+        ...(catalogName === undefined ? {} : { catalogName, }),
+      };
     },);
-    return {
-      catalogKey: key,
-      npmName,
-      range,
-      catalogName,
-    };
-  },);
 }
 
 //endregion Helpers
@@ -172,7 +174,7 @@ function entriesFromBlock(
  * ```
  */
 export async function readCatalog(
-  { startDir, }: { startDir?: string; } = {},
+  { startDir, }: { readonly startDir?: string; } = {},
 ): Promise<readonly CatalogEntry[]> {
   /** Absolute path to the nearest `pnpm-workspace.yaml` walked up from `startDir`. */
   const workspaceYamlPath = await findUp(

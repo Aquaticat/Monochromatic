@@ -23,10 +23,18 @@ import {
 } from '@monochromatic-dev/module-test';
 
 import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+import {
   parseRepository,
   resolveVersion,
 } from './probe-field-parsers.ts';
-import type { NpmPackage, } from './probe-field-types.ts';
+import type {
+  NpmPackage,
+  NpmVersion,
+  RepositoryInfo,
+} from './probe-field-types.ts';
 
 /** Repeated-run length for the stack-safety cases; far past V8's recursion ceiling, so a recursive scan would overflow while the linear pass does not. */
 const LONG_RUN = 100_000;
@@ -51,7 +59,7 @@ const LATEST_SENTINEL = 'LATEST-FALLBACK';
  * pinnedOrLatest('^1.0.0'); // 'LATEST-FALLBACK'
  * ```
  */
-function pinnedOrLatest(range: string,): string | undefined {
+function pinnedOrLatest(range: string,): Maybe<string> {
   /** Registry stub whose sole version key is `range`; `latest` differs so the non-pinned branch returns an observably different value. */
   const pkg: NpmPackage = {
     versions: { [range]: {}, },
@@ -63,6 +71,25 @@ function pinnedOrLatest(range: string,): string | undefined {
   },);
 }
 
+/**
+ * Parses `raw` and narrows away {@link ABSENT} so positive parser assertions
+ * can read `.owner`/`.repo`/`.host` directly. Throws when the field does not
+ * parse, surfacing a fixture mistake instead of a silent `undefined`.
+ *
+ * @param raw - Raw `repository` field forwarded to {@link parseRepository}.
+ *
+ * @returns Parsed repository info.
+ *
+ * @throws When `raw` does not parse to a repository.
+ */
+function parsedRepo(raw: NpmVersion['repository'],): RepositoryInfo {
+  /** Parse result; `ABSENT` here means the test fed an unparseable fixture. */
+  const info = parseRepository(raw,);
+  if (info === ABSENT)
+    throw new Error(`expected a parseable repository, got ABSENT for ${JSON.stringify(raw,)}`,);
+  return info;
+}
+
 await describe({
   name: '',
   children: [
@@ -72,14 +99,14 @@ await describe({
         it({
           name: 'repo span ends at end of input when no delimiter follows',
           fn: async () => {
-            expect(parseRepository('https://github.com/owner/repo',)?.repo,).toBe('repo',);
+            expect(parsedRepo('https://github.com/owner/repo',).repo,).toBe('repo',);
           },
         },),
 
         it({
           name: 'repo span stops at a trailing-path slash',
           fn: async () => {
-            expect(parseRepository('https://github.com/owner/repo/tree/main',)?.repo,)
+            expect(parsedRepo('https://github.com/owner/repo/tree/main',).repo,)
               .toBe('repo',);
           },
         },),
@@ -87,7 +114,7 @@ await describe({
         it({
           name: 'repo span stops at a query-string question mark',
           fn: async () => {
-            expect(parseRepository('https://github.com/owner/repo?tab=readme',)?.repo,)
+            expect(parsedRepo('https://github.com/owner/repo?tab=readme',).repo,)
               .toBe('repo',);
           },
         },),
@@ -95,7 +122,7 @@ await describe({
         it({
           name: 'repo span stops at a fragment hash',
           fn: async () => {
-            expect(parseRepository('https://github.com/owner/repo#readme',)?.repo,)
+            expect(parsedRepo('https://github.com/owner/repo#readme',).repo,)
               .toBe('repo',);
           },
         },),
@@ -103,7 +130,7 @@ await describe({
         it({
           name: 'strips a trailing .git when the span ends at end of input',
           fn: async () => {
-            expect(parseRepository('git+https://github.com/owner/repo.git',)?.repo,)
+            expect(parsedRepo('git+https://github.com/owner/repo.git',).repo,)
               .toBe('repo',);
           },
         },),
@@ -111,7 +138,7 @@ await describe({
         it({
           name: 'scans past .git to a slash, then strips the .git suffix',
           fn: async () => {
-            expect(parseRepository('https://github.com/owner/repo.git/issues',)?.repo,)
+            expect(parsedRepo('https://github.com/owner/repo.git/issues',).repo,)
               .toBe('repo',);
           },
         },),
@@ -119,7 +146,7 @@ await describe({
         it({
           name: 'captures the owner alongside the repo span',
           fn: async () => {
-            expect(parseRepository('https://github.com/owner/repo#x',)?.owner,)
+            expect(parsedRepo('https://github.com/owner/repo#x',).owner,)
               .toBe('owner',);
           },
         },),
@@ -127,7 +154,7 @@ await describe({
         it({
           name: 'an empty repo span from a trailing separator falls back to host other',
           fn: async () => {
-            expect(parseRepository('https://github.com/owner/',)?.host,).toBe('other',);
+            expect(parsedRepo('https://github.com/owner/',).host,).toBe('other',);
           },
         },),
 
@@ -136,7 +163,7 @@ await describe({
           fn: async () => {
             /** Repo name long enough that a recursive scan would overflow the stack on V8. */
             const longRepo = 'a'.repeat(LONG_RUN,);
-            expect(parseRepository(`https://github.com/owner/${longRepo}`,)?.repo,)
+            expect(parsedRepo(`https://github.com/owner/${longRepo}`,).repo,)
               .toBe(longRepo,);
           },
         },),
@@ -146,7 +173,7 @@ await describe({
           fn: async () => {
             /** Repo name long enough to exercise the linear scan past the recursive depth ceiling. */
             const longRepo = 'a'.repeat(LONG_RUN,);
-            expect(parseRepository(`https://github.com/owner/${longRepo}#frag`,)?.repo,)
+            expect(parsedRepo(`https://github.com/owner/${longRepo}#frag`,).repo,)
               .toBe(longRepo,);
           },
         },),

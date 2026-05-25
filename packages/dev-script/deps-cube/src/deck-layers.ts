@@ -63,6 +63,7 @@ type ArrowheadDatum = {
 
 //region Datum accessors
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- deck.gl layer accessors: `PathDatum`/`ArrowheadDatum` carry mutable coordinate arrays required by deck.gl's `Position`-returning accessor contract; deep-readonly cannot apply. */
 /**
  * Reads the `path` field off a {@link PathDatum} for `PathLayer.getPath`.
  *
@@ -105,6 +106,7 @@ function getArrowheadPosition(d: ArrowheadDatum,): [
 ] {
   return d.position;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Datum accessors
 
@@ -140,7 +142,7 @@ const ARROWHEAD_RADIUS_FRACTION = 0.018;
  * ```
  */
 export function computeAxisGeometry(
-  { bounds, }: { bounds: SceneBounds; },
+  { bounds, }: { readonly bounds: SceneBounds; },
 ): {
   xMin: number;
   yMin: number;
@@ -219,8 +221,8 @@ export function buildAxisShaftLayer(
     bounds,
     chrome,
   }: {
-    bounds: SceneBounds;
-    chrome: ChromeColors;
+    readonly bounds: SceneBounds;
+    readonly chrome: ChromeColors;
   },
 ): Layer {
   /** Cached axis geometry (mins, extents, arrow tips) shared by every path datum below. */
@@ -306,8 +308,8 @@ export function buildAxisArrowheadLayers(
     bounds,
     chrome,
   }: {
-    bounds: SceneBounds;
-    chrome: ChromeColors;
+    readonly bounds: SceneBounds;
+    readonly chrome: ChromeColors;
   },
 ): readonly Layer[] {
   /** Cached axis geometry; cone positions and scales derive from its extents. */

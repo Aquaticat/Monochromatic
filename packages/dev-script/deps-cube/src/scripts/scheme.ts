@@ -50,11 +50,11 @@ export type RgbaColor = readonly [
  * - `nameLabel`: per-glyph package-name labels.
  */
 export type ChromeColors = {
-  axis: RgbaColor;
-  axisTick: RgbaColor;
-  axisLabel: RgbaColor;
-  originLabel: RgbaColor;
-  nameLabel: RgbaColor;
+  readonly axis: RgbaColor;
+  readonly axisTick: RgbaColor;
+  readonly axisLabel: RgbaColor;
+  readonly originLabel: RgbaColor;
+  readonly nameLabel: RgbaColor;
 };
 
 //endregion Types

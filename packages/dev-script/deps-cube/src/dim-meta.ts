@@ -157,8 +157,8 @@ export function acceptsDim(
     channel,
     dim,
   }: {
-    channel: ChannelKey;
-    dim: DataDimKey;
+    readonly channel: ChannelKey;
+    readonly dim: DataDimKey;
   },
 ): boolean {
   return CHANNEL_ACCEPTED_KINDS[channel]

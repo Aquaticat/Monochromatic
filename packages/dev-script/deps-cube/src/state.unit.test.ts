@@ -18,6 +18,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
+import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import { extractDim, } from './scripts/filter.ts';
 import {
@@ -50,9 +51,7 @@ const PROBES: readonly PackageProbe[] = [
     sourceBytesOrNull: 200_000,
     daysSinceLastCommitOrNull: 14,
     repositoryUrlOrNull: 'https://github.com/preactjs/preact',
-    isMonorepoHoused: false,
-    unknownReason: null,
-  },
+    isMonorepoHoused: false,  },
   {
     catalogKey: 'ms',
     npmName: 'ms',
@@ -68,9 +67,7 @@ const PROBES: readonly PackageProbe[] = [
     sourceBytesOrNull: 5_000,
     daysSinceLastCommitOrNull: 1_500,
     repositoryUrlOrNull: 'https://github.com/vercel/ms',
-    isMonorepoHoused: false,
-    unknownReason: null,
-  },
+    isMonorepoHoused: false,  },
   {
     catalogKey: 'etag',
     npmName: 'etag',
@@ -86,9 +83,7 @@ const PROBES: readonly PackageProbe[] = [
     sourceBytesOrNull: 3_000,
     daysSinceLastCommitOrNull: 1_200,
     repositoryUrlOrNull: 'https://github.com/jshttp/etag',
-    isMonorepoHoused: false,
-    unknownReason: null,
-  },
+    isMonorepoHoused: false,  },
 ];
 
 await describe({
@@ -163,10 +158,10 @@ await describe({
     },),
 
     it({
-      name: 'decodeState returns null for malformed input',
+      name: 'decodeState returns ABSENT for malformed input',
       fn: async () => {
-        expect(decodeState({ encoded: '%%not-valid-uri%%', },),).toBeNull();
-        expect(decodeState({ encoded: 'not%20json', },),).toBeNull();
+        expect(decodeState({ encoded: '%%not-valid-uri%%', },),).toBe(ABSENT,);
+        expect(decodeState({ encoded: 'not%20json', },),).toBe(ABSENT,);
       },
     },),
 
@@ -174,7 +169,7 @@ await describe({
       name: 'decodeState rejects objects missing required keys',
       fn: async () => {
         const partial = encodeURIComponent(JSON.stringify({ viewState: {}, },),);
-        expect(decodeState({ encoded: partial, },),).toBeNull();
+        expect(decodeState({ encoded: partial, },),).toBe(ABSENT,);
       },
     },),
     //endregion encoding round-trip

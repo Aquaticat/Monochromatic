@@ -33,6 +33,7 @@ import {
   probeRadius,
   unknownClusterPosition,
 } from './deck-accessors.ts';
+import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import { defaultState, } from './scripts/state.ts';
 
@@ -54,9 +55,7 @@ const KNOWN: PackageProbe = {
   sourceBytesOrNull: 200_000,
   daysSinceLastCommitOrNull: 14,
   repositoryUrlOrNull: 'https://github.com/preactjs/preact',
-  isMonorepoHoused: false,
-  unknownReason: null,
-};
+  isMonorepoHoused: false,};
 
 /**
  * Monorepo-housed probe; TS ratio and source bytes unknown.
@@ -72,9 +71,6 @@ const UNKNOWN: PackageProbe = {
   licenseClass: 'permissive',
   runtimeDepCount: 0,
   transitiveDepCount: 0,
-  tsRatioOrNull: null,
-  sourceBytesOrNull: null,
-  daysSinceLastCommitOrNull: null,
   repositoryUrlOrNull: 'https://github.com/lezer-parser/common',
   isMonorepoHoused: true,
   unknownReason: 'monorepo',
@@ -98,9 +94,7 @@ const NON_LEAF: PackageProbe = {
   sourceBytesOrNull: 5_000,
   daysSinceLastCommitOrNull: 1_500,
   repositoryUrlOrNull: 'https://github.com/vercel/ms',
-  isMonorepoHoused: false,
-  unknownReason: null,
-};
+  isMonorepoHoused: false,};
 
 const PROBES = [KNOWN, NON_LEAF, UNKNOWN,];
 const STATE = defaultState({ probes: PROBES, },);
@@ -129,19 +123,21 @@ await describe({
           probe: KNOWN,
           state: STATE,
         },);
-        expect(pos,).not.toBeNull();
-        expect(pos?.length,).toBe(3,);
+        expect(pos,).not.toBe(ABSENT,);
+        if (pos === ABSENT)
+          return;
+        expect(pos.length,).toBe(3,);
       },
     },),
 
     it({
-      name: 'probePosition returns null when any spatial dim is unknown',
+      name: 'probePosition returns ABSENT when any spatial dim is unknown',
       fn: async () => {
         const pos = probePosition({
           probe: UNKNOWN,
           state: STATE,
         },);
-        expect(pos,).toBeNull();
+        expect(pos,).toBe(ABSENT,);
       },
     },),
     //endregion probePosition

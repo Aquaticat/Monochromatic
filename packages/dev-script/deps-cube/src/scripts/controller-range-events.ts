@@ -9,6 +9,7 @@
  */
 
 import { computeSceneBounds, } from '../deck-config.ts';
+import { ABSENT, } from '../maybe.ts';
 import type { PackageProbe, } from '../probe.ts';
 import {
   elInput,
@@ -48,8 +49,8 @@ function computeRangeExtent(
     probes,
     dim,
   }: {
-    probes: readonly PackageProbe[];
-    dim: DataDimKey;
+    readonly probes: readonly PackageProbe[];
+    readonly dim: DataDimKey;
   },
 ): readonly [
   number,
@@ -63,8 +64,8 @@ function computeRangeExtent(
         dim,
       },);
     },)
-    .filter(function nonNull(value,): value is number {
-      return value !== null;
+    .filter(function known(value,): value is number {
+      return value !== ABSENT;
     },);
   if (values.length
     === 0) {
@@ -83,6 +84,7 @@ function computeRangeExtent(
 
 //region Wire functions
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- every wire function takes the mutable `session` bundle (state and bounds reassigned in place); deep-readonly cannot apply. */
 /**
  * Wires the six dim dropdowns.
  *
@@ -127,15 +129,26 @@ export function wireDimDropdowns(
         },);
         if (nextDim === undefined)
           return;
-        session.state
-          .dimMapping[channel] = nextDim;
         /** Fresh `[min, max]` for newly-selected dim. */
         const extent = computeRangeExtent({
           probes,
           dim: nextDim,
         },);
-        session.state
-          .ranges[channel] = extent;
+        /** Dim mapping with this channel repointed at the newly-selected dim; feeds bounds recompute below. */
+        const nextDimMapping = {
+          ...session.state
+            .dimMapping,
+          [channel]: nextDim,
+        };
+        session.state = {
+          ...session.state,
+          dimMapping: nextDimMapping,
+          ranges: {
+            ...session.state
+              .ranges,
+            [channel]: extent,
+          },
+        };
         /** Min-slider for this channel; min/max/value rewritten to new dim's extent below. */
         const minSlider = elInput(`range-${channel}-min`,);
         /** Max-slider for this channel; min/max/value rewritten to new dim's extent below. */
@@ -154,8 +167,7 @@ export function wireDimDropdowns(
           .toString();
         session.bounds = computeSceneBounds({
           probes,
-          dimMapping: session.state
-            .dimMapping,
+          dimMapping: nextDimMapping,
         },);
         commit();
       },
@@ -198,16 +210,22 @@ export function wireRanges(
       const minVal = Number.parseFloat(minSlider.value,);
       /** Numeric form of max-slider's current value. */
       const maxVal = Number.parseFloat(maxSlider.value,);
-      session.state
-        .ranges[channel] = minVal <= maxVal
-        ? [
-          minVal,
-          maxVal,
-        ]
-        : [
-          maxVal,
-          minVal,
-        ];
+      session.state = {
+        ...session.state,
+        ranges: {
+          ...session.state
+            .ranges,
+          [channel]: minVal <= maxVal
+            ? [
+              minVal,
+              maxVal,
+            ]
+            : [
+              maxVal,
+              minVal,
+            ],
+        },
+      };
       commit();
     }
     minSlider.addEventListener(
@@ -220,5 +238,6 @@ export function wireRanges(
     );
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Wire functions

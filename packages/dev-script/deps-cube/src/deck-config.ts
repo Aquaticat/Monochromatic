@@ -40,6 +40,7 @@ import {
   buildNonLeafScatterLayer,
   buildUnknownClusterLayer,
 } from './deck-scatter.ts';
+import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import {
   type ChannelKey,
@@ -56,10 +57,10 @@ import type { AppState, } from './scripts/state.ts';
  * from the current dim mapping. Drives axis labels, color normalisation,
  * the wireframe extent, and the Unknown-cluster offset position.
  */
-export type SceneBounds = Record<ChannelKey, readonly [
+export type SceneBounds = Readonly<Record<ChannelKey, readonly [
   number,
   number,
-]>;
+]>>;
 
 //endregion Types
 
@@ -106,7 +107,7 @@ export const orbitView: OrbitView = new OrbitView({
 
 /**
  * Computes inclusive `[min, max]` bounds for every channel given the
- * current dim mapping. Unknowns (`extractDim` returning `null`) are
+ * current dim mapping. Unknowns (`extractDim` returning `ABSENT`) are
  * skipped. Channels with zero known values fall back to {@link FALLBACK_EXTENT}.
  *
  * Run on every render so dim swaps reflow the camera + axis labels.
@@ -128,13 +129,13 @@ export function computeSceneBounds(
     probes,
     dimMapping,
   }: {
-    probes: readonly PackageProbe[];
-    dimMapping: DimMapping;
+    readonly probes: readonly PackageProbe[];
+    readonly dimMapping: DimMapping;
   },
 ): SceneBounds {
   /** Per-channel `[key, extent]` pairs ready to feed `Object.fromEntries` into a SceneBounds record. */
   const entries = CHANNEL_KEYS.map(function extentFor(channel,) {
-    /** Known values across every probe for this channel; nulls (unknown dim) are dropped before min/max. */
+    /** Known values across every probe for this channel; unknowns (`ABSENT`) are dropped before min/max. */
     const values = probes
       .map(function pluck(probe,) {
         return extractDim({
@@ -142,8 +143,8 @@ export function computeSceneBounds(
           dim: dimMapping[channel],
         },);
       },)
-      .filter(function nonNull(value,): value is number {
-        return value !== null;
+      .filter(function known(value,): value is number {
+        return value !== ABSENT;
       },);
     if (values.length
       === 0) {
@@ -216,11 +217,11 @@ export function buildLayers(
     bounds,
     chrome,
   }: {
-    probes: readonly PackageProbe[];
-    state: AppState;
-    visibleIndices: ReadonlySet<number>;
-    bounds: SceneBounds;
-    chrome: ChromeColors;
+    readonly probes: readonly PackageProbe[];
+    readonly state: AppState;
+    readonly visibleIndices: ReadonlySet<number>;
+    readonly bounds: SceneBounds;
+    readonly chrome: ChromeColors;
   },
 ): readonly Layer[] {
   /** Unknown-cluster scatter layers when the toggle is on; empty otherwise so the group flattens to nothing. */
@@ -233,14 +234,14 @@ export function buildLayers(
       visibleIndices,
     },)
     : [];
-  /** Threshold guide-line layer when the toggle is on; `null` is filtered out before flattening. */
+  /** Threshold guide-line layer when the toggle is on; `ABSENT` is filtered out before flattening. */
   const thresholdLines = state.displayToggles
     .showThresholdPlanes
     ? buildThresholdLineLayer({
       bounds,
       dimMapping: state.dimMapping,
     },)
-    : null;
+    : ABSENT;
   /** Layer groups in back-to-front order; flattened below into the final layer array deck.gl renders. */
   const groups: readonly (readonly Layer[])[] = [
     state.displayToggles
@@ -249,7 +250,7 @@ export function buildLayers(
         bounds,
       },)
       : [],
-    thresholdLines === null ? [] : [thresholdLines,],
+    thresholdLines === ABSENT ? [] : [thresholdLines,],
     [
       buildAxisShaftLayer({
         bounds,

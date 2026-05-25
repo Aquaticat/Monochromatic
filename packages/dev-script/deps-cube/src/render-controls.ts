@@ -24,6 +24,7 @@ import {
   DIM_DISPLAY_NAMES,
   TOGGLE_LABELS,
 } from './dim-meta.ts';
+import { ABSENT, } from './maybe.ts';
 import type { PackageProbe, } from './probe.ts';
 import {
   type ChannelKey,
@@ -142,15 +143,15 @@ function computeChannelExtent(
     probes,
     dim,
   }: {
-    probes: readonly PackageProbe[];
-    dim: DataDimKey;
+    readonly probes: readonly PackageProbe[];
+    readonly dim: DataDimKey;
   },
 ): readonly [
   number,
   number,
 ] {
   /**
-   * Known (non-null) values for `dim`, used to derive the slider's `[min, max]` extent.
+   * Known values for `dim` (unknowns dropped), used to derive the slider's `[min, max]` extent.
    */
   const values = probes
     .map(function pluck(probe,) {
@@ -159,8 +160,8 @@ function computeChannelExtent(
         dim,
       },);
     },)
-    .filter(function nonNull(value,): value is number {
-      return value !== null;
+    .filter(function known(value,): value is number {
+      return value !== ABSENT;
     },);
   if (values.length
     === 0) {
@@ -202,8 +203,8 @@ function renderDimDropdown(
     channel,
     selectedDim,
   }: {
-    channel: ChannelKey;
-    selectedDim: DataDimKey;
+    readonly channel: ChannelKey;
+    readonly selectedDim: DataDimKey;
   },
 ): string {
   /**
@@ -254,8 +255,8 @@ function renderToggleRow(
     key,
     current,
   }: {
-    key: ToggleKey;
-    current: ToggleValue;
+    readonly key: ToggleKey;
+    readonly current: ToggleValue;
   },
 ): string {
   /** One `<input type="radio">` per allowed value, concatenated to form the toggle's radio group. */
@@ -301,12 +302,12 @@ function renderRangeRow(
     fullExtent,
     current,
   }: {
-    channel: ChannelKey;
-    fullExtent: readonly [
+    readonly channel: ChannelKey;
+    readonly fullExtent: readonly [
       number,
       number,
     ];
-    current: readonly [
+    readonly current: readonly [
       number,
       number,
     ];
@@ -355,7 +356,7 @@ function renderRangeRow(
  * ```
  */
 function renderDisplaySection(
-  { state, }: { state: AppState; },
+  { state, }: { readonly state: AppState; },
 ): string {
   /** Local alias for the display-toggles sub-state so each control read below stays one line. */
   const dt = state.displayToggles;
@@ -414,8 +415,8 @@ export function renderControls(
     probes,
     state,
   }: {
-    probes: readonly PackageProbe[];
-    state: AppState;
+    readonly probes: readonly PackageProbe[];
+    readonly state: AppState;
   },
 ): string {
   /**

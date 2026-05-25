@@ -132,10 +132,10 @@ function cacheKey(
     shape,
     withName,
   }: {
-    probe: PackageProbe;
-    fillColor: Rgba;
-    shape: MeshShape;
-    withName: boolean;
+    readonly probe: PackageProbe;
+    readonly fillColor: Rgba;
+    readonly shape: MeshShape;
+    readonly withName: boolean;
   },
 ): string {
   return `${probe.catalogKey}|${fillColor.join(',',)}|${shape}|${withName ? '1' : '0'}`;
@@ -154,8 +154,8 @@ function paintBackground(
     ctx,
     fillColor,
   }: {
-    ctx: CanvasRenderingContext2D;
-    fillColor: Rgba;
+    readonly ctx: CanvasRenderingContext2D;
+    readonly fillColor: Rgba;
   },
 ): void {
   /** Byte-RGBA channels destructured so each can be formatted into the CSS rgba string. */
@@ -195,10 +195,10 @@ function paintUpright(
     x,
     y,
   }: {
-    ctx: CanvasRenderingContext2D;
-    text: string;
-    x: number;
-    y: number;
+    readonly ctx: CanvasRenderingContext2D;
+    readonly text: string;
+    readonly x: number;
+    readonly y: number;
   },
 ): void {
   ctx.strokeText(
@@ -235,10 +235,10 @@ function paintRotated180(
     x,
     y,
   }: {
-    ctx: CanvasRenderingContext2D;
-    text: string;
-    x: number;
-    y: number;
+    readonly ctx: CanvasRenderingContext2D;
+    readonly text: string;
+    readonly x: number;
+    readonly y: number;
   },
 ): void {
   ctx.save();
@@ -282,9 +282,9 @@ function pickFontSize(
     text,
     slotWidthPx,
   }: {
-    ctx: CanvasRenderingContext2D;
-    text: string;
-    slotWidthPx: number;
+    readonly ctx: CanvasRenderingContext2D;
+    readonly text: string;
+    readonly slotWidthPx: number;
   },
 ): number {
   /** Measured width at the maximum font size; one measurement is enough since width scales linearly. */
@@ -345,10 +345,10 @@ export function makeProbeTexture(
     shape,
     withName,
   }: {
-    probe: PackageProbe;
-    fillColor: Rgba;
-    shape: MeshShape;
-    withName: boolean;
+    readonly probe: PackageProbe;
+    readonly fillColor: Rgba;
+    readonly shape: MeshShape;
+    readonly withName: boolean;
   },
 ): HTMLCanvasElement {
   /** Stable cache identity for the texture inputs; reused on subsequent calls. */

@@ -31,6 +31,10 @@ import {
   orbitView,
   type SceneBounds,
 } from '../deck-config.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from '../maybe.ts';
 import type { PackageProbe, } from '../probe.ts';
 import { syncDomFromState, } from './controller-dom.ts';
 import {
@@ -109,36 +113,39 @@ function getProbes(): readonly PackageProbe[] {
   return probes;
 }
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `info` is deck.gl's external `PickingInfo`, which carries mutating methods; deep-readonly cannot apply. */
 /**
  * Extracts the probe payload from a deck.gl picking-info object, or
- * returns `null` when nothing was picked or the picked datum lacks the
+ * returns `ABSENT` when nothing was picked or the picked datum lacks the
  * `.probe` field. `info.object` is typed `any` by deck.gl; the cast
  * is justified because we own the layer-data contract.
  *
  * @param info - deck.gl picking info.
  *
- * @returns The picked probe, or `null` when no probe is under the cursor.
+ * @returns Picked probe, or `ABSENT` when no probe is under the cursor.
  */
-function pickedProbe(info: PickingInfo,): PackageProbe | null {
+function pickedProbe(info: PickingInfo,): Maybe<PackageProbe> {
   if ((info.object
     === undefined) || (info.object
       === null))
-    return null;
+    return ABSENT;
   if ((typeof info.object) !== 'object')
-    return null;
+    return ABSENT;
   if (!('probe' in info
     .object))
-    return null;
+    return ABSENT;
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access -- ScatterplotLayer is fed ScatterDatum from layer factories; .probe is always a PackageProbe. */
   return info.object
     .probe as PackageProbe;
   /* oxlint-enable typescript-eslint/no-unsafe-type-assertion, typescript-eslint/no-unsafe-member-access */
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Helpers
 
 //region Render path
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- every render-path helper takes the mutable `session` bundle (fields reassigned and mutated in place); deep-readonly cannot apply. */
 /**
  * Recomputes `visibleIndices` from the current state, updates the
  * visibility counter, and writes the result back into the session.
@@ -226,11 +233,13 @@ function syncHash(
     },),
   );
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Render path
 
 //region Picking
 
+/* oxlint-disable no-restricted-syntax/no-nullish-union, typescript/prefer-readonly-parameter-types -- mirrors deck.gl's `getTooltip` contract: the handler receives the external `PickingInfo` (mutating methods, owned by deck.gl) and must return `{ html: string } | null` per deck.gl's `TooltipContent` type, so neither the param nor the nullish return can be reshaped. */
 /**
  * Builds the `getTooltip` payload for the deck.gl tooltip widget.
  *
@@ -239,9 +248,9 @@ function syncHash(
  * @returns `{ html }` for hovered probes, `null` otherwise.
  */
 function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
-  /** Probe under the cursor, or `null` for hover-over-empty-space. */
+  /** Probe under the cursor, or `ABSENT` for hover-over-empty-space. */
   const probe = pickedProbe(info,);
-  if (probe === null)
+  if (probe === ABSENT)
     return null;
   return {
     html: formatTooltipHtml({
@@ -249,7 +258,9 @@ function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
     },),
   };
 }
+/* oxlint-enable no-restricted-syntax/no-nullish-union, typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `info` is deck.gl's external `PickingInfo`, which carries mutating methods; deep-readonly cannot apply. */
 /**
  * `onClick` handler; pins a tooltip beside the canvas, or unpins it
  * when the click misses every glyph.
@@ -257,9 +268,9 @@ function getTooltipForInfo(info: PickingInfo,): { html: string; } | null {
  * @param info - deck.gl picking info.
  */
 function onCanvasClick(info: PickingInfo,): void {
-  /** Probe under the click, or `null` for miss-clicks that should unpin instead of pin. */
+  /** Probe under the click, or `ABSENT` for miss-clicks that should unpin instead of pin. */
   const probe = pickedProbe(info,);
-  if (probe === null) {
+  if (probe === ABSENT) {
     unpinTooltip();
     return;
   }
@@ -267,6 +278,7 @@ function onCanvasClick(info: PickingInfo,): void {
     probe,
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Picking
 
@@ -284,7 +296,7 @@ function onCanvasClick(info: PickingInfo,): void {
  * @returns Hydrated session ready for event wiring.
  */
 function createSession(
-  { probes, }: { probes: readonly PackageProbe[]; },
+  { probes, }: { readonly probes: readonly PackageProbe[]; },
 ): Session {
   /* oxlint-disable eslint-plugin-unicorn/prefer-global-this -- `window.location` is the canonical name; aliasing to `globalThis.location` only obscures intent for a browser-only file. */
   /** Initial `AppState`; uses any bookmarked URL hash, otherwise falls back to the data-driven defaults. */
@@ -315,7 +327,17 @@ function createSession(
   const deck = new Deck<OrbitView>({
     canvas: 'deck-canvas',
     views: orbitView,
-    initialViewState: initial.viewState,
+    initialViewState: {
+      ...initial.viewState,
+      target: [
+        initial.viewState
+          .target[0],
+        initial.viewState
+          .target[1],
+        initial.viewState
+          .target[2],
+      ],
+    },
     controller: true,
     layers: [
       ...buildLayers({
@@ -341,14 +363,20 @@ function createSession(
     onViewStateChange: function onViewStateChange(params,) {
       /** Latest view-state delta from deck.gl; copied into the session so hash sync can serialise it. */
       const v = params.viewState;
-      session.state
-        .viewState = {
-        target: v.target,
-        zoom: v.zoom,
-        rotationOrbit: v.rotationOrbit
-          ?? 0,
-        rotationX: v.rotationX
-          ?? 0,
+      session.state = {
+        ...session.state,
+        viewState: {
+          target: [
+            v.target[0],
+            v.target[1],
+            v.target[2],
+          ],
+          zoom: v.zoom,
+          rotationOrbit: v.rotationOrbit
+            ?? 0,
+          rotationX: v.rotationX
+            ?? 0,
+        },
       };
       syncHash({
         session,

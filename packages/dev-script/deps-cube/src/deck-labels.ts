@@ -56,6 +56,7 @@ type TextDatum = {
 
 //region Datum accessors
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- deck.gl layer accessors: `TextDatum` carries mutable coordinate arrays required by deck.gl's `Position`-returning accessor contract; deep-readonly cannot apply. */
 /**
  * Reads the `position` field off a {@link TextDatum} for `TextLayer.getPosition`.
  *
@@ -94,6 +95,7 @@ function getDatumPosition(d: TextDatum,): [
 function getDatumText(d: TextDatum,): string {
   return d.text;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Datum accessors
 
@@ -143,7 +145,7 @@ const ORIGIN_OFFSET_FRACTION = 0.08;
  * @returns Object with min/max and delta for each axis.
  */
 function axisExtents(
-  { bounds, }: { bounds: SceneBounds; },
+  { bounds, }: { readonly bounds: SceneBounds; },
 ): {
   xMin: number;
   yMin: number;
@@ -213,8 +215,8 @@ export function buildAxisCapitalsLayer(
     bounds,
     chrome,
   }: {
-    bounds: SceneBounds;
-    chrome: ChromeColors;
+    readonly bounds: SceneBounds;
+    readonly chrome: ChromeColors;
   },
 ): Layer {
   /** Per-axis min/max/delta extents shared across position computations. */
@@ -305,9 +307,9 @@ export function buildAxisSubtitlesLayer(
     dimMapping,
     chrome,
   }: {
-    bounds: SceneBounds;
-    dimMapping: DimMapping;
-    chrome: ChromeColors;
+    readonly bounds: SceneBounds;
+    readonly dimMapping: DimMapping;
+    readonly chrome: ChromeColors;
   },
 ): Layer {
   /** Per-axis min/max/delta extents shared across position computations. */
@@ -398,8 +400,8 @@ export function buildOriginLabelLayer(
     bounds,
     chrome,
   }: {
-    bounds: SceneBounds;
-    chrome: ChromeColors;
+    readonly bounds: SceneBounds;
+    readonly chrome: ChromeColors;
   },
 ): Layer {
   /** Per-axis min/max/delta extents shared across position computations. */

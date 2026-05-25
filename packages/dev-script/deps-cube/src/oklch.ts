@@ -221,9 +221,9 @@ export function oklchLerpToSrgb(
     end,
     t,
   }: {
-    start: Oklch;
-    end: Oklch;
-    t: number;
+    readonly start: Oklch;
+    readonly end: Oklch;
+    readonly t: number;
   },
 ): Rgb8 {
   return oklchToSrgb({

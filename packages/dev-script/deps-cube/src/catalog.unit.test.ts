@@ -117,14 +117,14 @@ await describe({
           catalogKey: 'preact',
           npmName: 'preact',
           range: '^10.26.0',
-          catalogName: undefined,
         },);
+        expect(entries[0]?.catalogName,).toBeUndefined();
         expect(entries[1],).toMatchObject({
           catalogKey: 'react',
           npmName: 'react',
           range: '^19.0.0',
-          catalogName: undefined,
         },);
+        expect(entries[1]?.catalogName,).toBeUndefined();
       },
     },),
 
@@ -147,27 +147,16 @@ await describe({
         );
         const entries = await readCatalog({ startDir: temp.dir, },);
         expect(entries.length,).toBe(3,);
-        const named: readonly CatalogEntry[] = entries.filter(function hasName(
-          e: CatalogEntry,
-        ) {
-          return e.catalogName !== undefined;
-        },);
-        const plucked: readonly (string | undefined)[] = named.map(function pluck(
-          e: CatalogEntry,
-        ) {
-          return e.catalogName;
-        },);
-        const present: readonly string[] = plucked.filter(function isString(
-          name: string | undefined,
-        ): name is string {
-          return name !== undefined;
-        },);
-        const namedCatalogs: readonly string[] = present.toSorted(function alphabetical(
-          a: string,
-          b: string,
-        ) {
-          return a.localeCompare(b,);
-        },);
+        const namedCatalogs: readonly string[] = entries
+          .flatMap(function pluckName(e: CatalogEntry,) {
+            return e.catalogName === undefined ? [] : [e.catalogName,];
+          },)
+          .toSorted(function alphabetical(
+            a: string,
+            b: string,
+          ) {
+            return a.localeCompare(b,);
+          },);
         expect(namedCatalogs,).toEqual([
           'react18',
           'react19',

@@ -27,7 +27,10 @@ import {
   join,
 } from 'node:path';
 
-import { createCache, } from './cache.ts';
+import {
+  CACHE_MISS,
+  createCache,
+} from './cache.ts';
 
 /**
  * Allocates a fresh temp directory for one cache invocation and
@@ -52,17 +55,15 @@ await describe({
   name: 'cache',
   children: [
     it({
-      name: 'read returns undefined for a missing key',
+      name: 'read returns CACHE_MISS for a missing key',
       fn: async () => {
         await using temp = await tempCacheRoot();
         const cache = createCache({ rootDir: temp.rootDir, },);
         const value = await cache.read({
           name: 'preact',
           version: '10.0.0',
-          field: 'languages',
-          ttlMs: null,
-        },);
-        expect(value,).toBeUndefined();
+          field: 'languages',        },);
+        expect(value,).toBe(CACHE_MISS,);
       },
     },),
 
@@ -81,15 +82,13 @@ await describe({
         const read = await cache.read<typeof payload>({
           name: 'preact',
           version: '10.0.0',
-          field: 'languages',
-          ttlMs: null,
-        },);
+          field: 'languages',        },);
         expect(read,).toEqual(payload,);
       },
     },),
 
     it({
-      name: 'null ttlMs means the value never expires',
+      name: 'omitted ttlMs means the value never expires',
       fn: async () => {
         await using temp = await tempCacheRoot();
         const cache = createCache({ rootDir: temp.rootDir, },);
@@ -102,9 +101,7 @@ await describe({
         const read = await cache.read({
           name: 'preact',
           version: '10.0.0',
-          field: 'languages',
-          ttlMs: null,
-        },);
+          field: 'languages',        },);
         expect(read,).toEqual({ TypeScript: 1, },);
       },
     },),
@@ -126,7 +123,7 @@ await describe({
           field: 'downloads',
           ttlMs: -1,
         },);
-        expect(expired,).toBeUndefined();
+        expect(expired,).toBe(CACHE_MISS,);
       },
     },),
 
@@ -150,15 +147,11 @@ await describe({
         const langs = await cache.read({
           name: 'preact',
           version: '10.0.0',
-          field: 'languages',
-          ttlMs: null,
-        },);
+          field: 'languages',        },);
         const dls = await cache.read({
           name: 'preact',
           version: '10.0.0',
-          field: 'downloads',
-          ttlMs: null,
-        },);
+          field: 'downloads',        },);
         expect(langs,).toEqual({ TypeScript: 100, },);
         expect(dls,).toEqual({ downloads: 7, },);
       },
@@ -210,10 +203,8 @@ await describe({
         const read = await cache.read({
           name: 'corrupt',
           version: '1.0.0',
-          field: 'languages',
-          ttlMs: null,
-        },);
-        expect(read,).toBeUndefined();
+          field: 'languages',        },);
+        expect(read,).toBe(CACHE_MISS,);
       },
     },),
   ],

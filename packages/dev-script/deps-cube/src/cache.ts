@@ -21,7 +21,7 @@
  *   field: 'languages',
  *   ttlMs: null,
  * });
- * if (languages === undefined) {
+ * if (languages === CACHE_MISS) {
  *   const fetched = await fetchLanguages();
  *   await cache.write({ name: 'preact', version: '10.26.0', field: 'languages', value: fetched });
  * }
@@ -43,6 +43,13 @@ import {
 //region Types
 
 /**
+ * Sentinel returned by {@link Cache.read} when a field is missing, expired, or
+ * unreadable. A distinct named value (not `undefined`) so a genuine cache miss
+ * is never confused with a stored value and never widens a slot to `T | undefined`.
+ */
+export const CACHE_MISS: unique symbol = Symbol('cache-miss',);
+
+/**
  * One stored field's payload.
  */
 type CacheValue<T,> = {
@@ -62,11 +69,11 @@ type CacheFile = Record<string, CacheValue<unknown>>;
  */
 type CacheKey = {
   /** Npm package name (may be scoped, e.g. `@anthropic-ai/sdk`). */
-  name: string;
+  readonly name: string;
   /** Concrete version string (e.g. `0.92.0`). */
-  version: string;
+  readonly version: string;
   /** Field name within the cache file (e.g. `languages`, `commits`). */
-  field: string;
+  readonly field: string;
 };
 
 /**
@@ -76,20 +83,20 @@ export type Cache = {
   /**
    * Reads a field's value if it exists and is not expired.
    *
-   * @param key - Field address plus the field's TTL (`null` = never expire).
+   * @param key - Field address plus the field's TTL (omit `ttlMs` = never expire).
    *
-   * @returns The cached value, or `undefined` if missing/expired/unreadable.
+   * @returns The cached value, or {@link CACHE_MISS} if missing/expired/unreadable.
    */
-  read: <T,>(
+  readonly read: <T,>(
     {
       name,
       version,
       field,
       ttlMs,
     }: CacheKey & {
-      ttlMs: number | null;
+      readonly ttlMs?: number;
     },
-  ) => Promise<T | undefined>;
+  ) => Promise<T | typeof CACHE_MISS>;
   /**
    * Writes a field's value, creating the cache file atomically.
    *
@@ -99,14 +106,14 @@ export type Cache = {
    *
    * @returns Resolves once the file has been renamed into place.
    */
-  write: <T,>(
+  readonly write: (
     {
       name,
       version,
       field,
       value,
     }: CacheKey & {
-      value: T;
+      readonly value: unknown;
     },
   ) => Promise<void>;
   /** Absolute path to the cache root, exposed for diagnostics and tests. */
@@ -156,9 +163,9 @@ function filePath(
     version,
     rootDir,
   }: {
-    name: string;
-    version: string;
-    rootDir: string;
+    readonly name: string;
+    readonly version: string;
+    readonly rootDir: string;
   },
 ): string {
   return join(
@@ -207,7 +214,7 @@ async function readFileOrEmpty(path: string,): Promise<CacheFile> {
  * ```
  */
 export function createCache(
-  { rootDir, }: { rootDir?: string; } = {},
+  { rootDir, }: { readonly rootDir?: string; } = {},
 ): Cache {
   /** Cache root used by every closure on this handle; pinned at construction so later env mutations are ignored. */
   const resolvedRoot = rootDir ?? defaultRootDir();
@@ -215,7 +222,7 @@ export function createCache(
   /**
    * Reads a single field, applying TTL.
    *
-   * @returns Parsed value, or `undefined` if missing or stale.
+   * @returns Parsed value, or {@link CACHE_MISS} if missing or stale.
    */
   async function read<T,>(
     {
@@ -224,9 +231,9 @@ export function createCache(
       field,
       ttlMs,
     }: CacheKey & {
-      ttlMs: number | null;
+      readonly ttlMs?: number;
     },
-  ): Promise<T | undefined> {
+  ): Promise<T | typeof CACHE_MISS> {
     /** Absolute on-disk path for this (name, version) pair. */
     const path = filePath({
       name,
@@ -238,11 +245,11 @@ export function createCache(
     /** Stored entry for the requested field, or `undefined` for a miss. */
     const entry = file[field];
     if (entry === undefined)
-      return undefined;
-    if ((ttlMs !== null) && ((Date.now()
+      return CACHE_MISS;
+    if ((ttlMs !== undefined) && ((Date.now()
       - entry
       .fetchedAt) > ttlMs))
-      return undefined;
+      return CACHE_MISS;
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- caller asserts T; cache file shape is opaque at this layer.
     return entry.value as T;
   }
@@ -251,14 +258,14 @@ export function createCache(
    * Writes a single field, updating any existing fields in the same file.
    * Uses atomic tmp+rename so torn reads are impossible.
    */
-  async function write<T,>(
+  async function write(
     {
       name,
       version,
       field,
       value,
     }: CacheKey & {
-      value: T;
+      readonly value: unknown;
     },
   ): Promise<void> {
     /** Destination cache file path. */

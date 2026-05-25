@@ -33,6 +33,7 @@ type CheckboxDisplayKey = 'showWireframe' | 'showThresholdPlanes' | 'showAxisLab
 
 //region Helpers
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- every handler here takes the mutable `session` bundle (state reassigned in place); deep-readonly cannot apply. */
 /**
  * Binds one checkbox to its display-toggles key.
  *
@@ -67,16 +68,25 @@ function bindCheckbox(
   input.addEventListener(
     'change',
     function onChange() {
-      session.state
-        .displayToggles[key] = input.checked;
+      session.state = {
+        ...session.state,
+        displayToggles: {
+          ...session.state
+            .displayToggles,
+          [key]: input.checked,
+        },
+      };
       commit();
     },
   );
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Helpers
 
 //region Wire functions
+
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- every wire function takes the mutable `session` bundle (state reassigned in place); deep-readonly cannot apply. */
 
 /**
  * Wires four display checkboxes plus `name-labels` select.
@@ -135,9 +145,14 @@ export function wireDisplay(
       if ((raw !== 'none') && (raw !== 'topN')
         && (raw !== 'all'))
         return;
-      session.state
-        .displayToggles
-        .nameLabels = raw;
+      session.state = {
+        ...session.state,
+        displayToggles: {
+          ...session.state
+            .displayToggles,
+          nameLabels: raw,
+        },
+      };
       commit();
     },
   );
@@ -194,5 +209,6 @@ export function wireReset(
     },
   );
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Wire functions

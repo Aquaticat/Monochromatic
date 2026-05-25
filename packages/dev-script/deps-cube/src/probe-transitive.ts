@@ -21,7 +21,14 @@
  */
 
 import { MS_PER_DAY, } from '@monochromatic-dev/module-numeric-const';
-import type { Cache, } from './cache.ts';
+import {
+  type Cache,
+  CACHE_MISS,
+} from './cache.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import {
   type NpmPackage,
   probePackageManifest,
@@ -42,23 +49,23 @@ const TTL_MS = TTL_DAYS * MS_PER_DAY;
 
 /**
  * Wraps {@link probePackageManifest} so registry-fetch failures during the
- * transitive walk return `null` instead of throwing.
+ * transitive walk return `ABSENT` instead of throwing.
  *
  * @param npmName - npm package name.
  *
  * @param cache - File cache handle.
  *
- * @returns Manifest, or `null` on any fetch error.
+ * @returns Manifest, or `ABSENT` on any fetch error.
  */
 async function readManifestSilent(
   {
     npmName,
     cache,
   }: {
-    npmName: string;
-    cache: Cache;
+    readonly npmName: string;
+    readonly cache: Cache;
   },
-): Promise<NpmPackage | null> {
+): Promise<Maybe<NpmPackage>> {
   try {
     return await probePackageManifest({
       npmName,
@@ -66,7 +73,7 @@ async function readManifestSilent(
     },);
   }
   catch {
-    return null;
+    return ABSENT;
   }
 }
 
@@ -74,6 +81,7 @@ async function readManifestSilent(
 
 //region Public API
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `visited` is a mutable cycle-breaker `Set` mutated via `.add` during the walk; deep-readonly cannot apply. */
 /**
  * Best-effort transitive dep count via a depth-bounded registry walk.
  *
@@ -128,15 +136,15 @@ export async function probeTransitive(
     field: 'transitive',
     ttlMs: TTL_MS,
   },);
-  if (cached !== undefined)
+  if (cached !== CACHE_MISS)
     return cached;
 
-  /** Full registry manifest for `name`; `null` when the registry fetch failed. */
+  /** Full registry manifest for `name`; `ABSENT` when the registry fetch failed. */
   const manifest = await readManifestSilent({
     npmName: name,
     cache,
   },);
-  if (manifest === null)
+  if (manifest === ABSENT)
     return 0;
   /** Manifest entry for the exact requested version, falling back to any first version when the requested version is missing. */
   const versionManifest = manifest.versions?.[version]
@@ -152,12 +160,12 @@ export async function probeTransitive(
   /** Per-direct-dep subtree counts (each direct dep contributes `1 + transitive_below`). */
   const subCounts = await Promise.all(directNames.map(
     async function recurseOne(depName,) {
-      /** Latest-version manifest for the direct dep; `null` when its registry fetch failed. */
+      /** Latest-version manifest for the direct dep; `ABSENT` when its registry fetch failed. */
       const depPkg = await readManifestSilent({
         npmName: depName,
         cache,
       },);
-      if (depPkg === null)
+      if (depPkg === ABSENT)
         return 0;
       /** Concrete version string for the direct dep, used as the cache key for the recursive call. */
       const depVersion = depPkg['dist-tags']
@@ -191,5 +199,6 @@ export async function probeTransitive(
   },);
   return total;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Public API

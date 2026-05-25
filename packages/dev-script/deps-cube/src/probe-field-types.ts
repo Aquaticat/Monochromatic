@@ -36,15 +36,18 @@ export type NpmVersion = {
 
 /**
  * Output of `repository` normalisation.
+ *
+ * Parsers return {@link Maybe} of this type; an unparseable repository
+ * field yields `ABSENT` rather than a nullish union.
  */
 export type RepositoryInfo = {
-  host: 'github' | 'other';
-  owner: string;
-  repo: string;
-  directory?: string | undefined;
-  /** The raw URL we parsed, useful for the tooltip. */
-  url: string;
-} | null;
+  readonly host: 'github' | 'other';
+  readonly owner: string;
+  readonly repo: string;
+  readonly directory?: string;
+  /** Raw URL parsed, useful for the tooltip. */
+  readonly url: string;
+};
 
 /**
  * License classes used for filter/color groupings.

@@ -59,8 +59,8 @@ export function buildAxisTickLayer(
     bounds,
     chrome,
   }: {
-    bounds: SceneBounds;
-    chrome: ChromeColors;
+    readonly bounds: SceneBounds;
+    readonly chrome: ChromeColors;
   },
 ): Layer {
   /** Cached axis geometry; tick positions and lengths derive from its extents. */

@@ -23,6 +23,10 @@
  * ```
  */
 
+import {
+  ABSENT,
+  type Maybe,
+} from '../maybe.ts';
 import type { PackageProbe, } from '../probe.ts';
 
 //region Types
@@ -36,7 +40,7 @@ import type { PackageProbe, } from '../probe.ts';
  * - `recent`: days since last commit `<` {@link RECENT_DAYS_THRESHOLD}
  * - `permissive`: license class is `permissive`
  * - `copyleft`: license class is `copyleft`
- * - `hasKnownRepo`: every GH-derived attribute is known (`unknownReason === null`)
+ * - `hasKnownRepo`: every GH-derived attribute is known (`unknownReason` absent)
  */
 export type ToggleKey =
   | 'isLeaf'
@@ -55,7 +59,7 @@ export type ToggleValue = 'any' | 'yes' | 'no';
 /**
  * Aggregated state for every 3-state toggle.
  */
-export type ToggleState = Record<ToggleKey, ToggleValue>;
+export type ToggleState = Readonly<Record<ToggleKey, ToggleValue>>;
 
 /**
  * Identifier for one of the ten candidate data dimensions a channel can map
@@ -91,16 +95,16 @@ export type ChannelKey = 'x' | 'y' | 'z' | 'color' | 'shape' | 'size';
 /**
  * Current mapping of every channel to its data dimension.
  */
-export type DimMapping = Record<ChannelKey, DataDimKey>;
+export type DimMapping = Readonly<Record<ChannelKey, DataDimKey>>;
 
 /**
  * Per-channel range slider state, expressed in displayed-value units
  * (i.e. after log scaling for continuous dims).
  */
-export type RangeState = Record<ChannelKey, readonly [
+export type RangeState = Readonly<Record<ChannelKey, readonly [
   number,
   number,
-]>;
+]>>;
 
 //endregion Types
 
@@ -132,20 +136,20 @@ const LICENSE_CODES: Record<PackageProbe['licenseClass'], number> = {
  * Returns the displayed value of one probe along one data dimension.
  *
  * Continuous dims that span orders of magnitude are log10-scaled with a
- * floor of {@link LOG_FLOOR}. Unknown values (`*OrNull` fields that are
- * `null`) return `null` so callers can either filter the package out or
- * render it at a sentinel offset position.
+ * floor of {@link LOG_FLOOR}. Unknown values (absent `*OrNull` fields)
+ * return `ABSENT` so callers can either filter the package out or render
+ * it at a sentinel offset position.
  *
  * @param probe - Source probe.
  *
  * @param dim - Data dimension to extract.
  *
- * @returns Numeric value, or `null` when the source field is unknown.
+ * @returns Numeric value, or `ABSENT` when the source field is unknown.
  *
  * @example
  * ```ts
  * const x = extractDim({ probe, dim: 'logSourceBytes' });
- * if (x === null) {
+ * if (x === ABSENT) {
  *   // monorepo-housed or repo unavailable; render in Unknown cluster
  * }
  * ```
@@ -155,14 +159,14 @@ export function extractDim(
     probe,
     dim,
   }: {
-    probe: PackageProbe;
-    dim: DataDimKey;
+    readonly probe: PackageProbe;
+    readonly dim: DataDimKey;
   },
-): number | null {
+): Maybe<number> {
   if (dim === 'logSourceBytes') {
     if (probe.sourceBytesOrNull
-      === null)
-      return null;
+      === undefined)
+      return ABSENT;
     return Math.log10(Math.max(
       probe.sourceBytesOrNull,
       LOG_FLOOR,
@@ -170,8 +174,8 @@ export function extractDim(
   }
   if (dim === 'logDaysStale') {
     if (probe.daysSinceLastCommitOrNull
-      === null)
-      return null;
+      === undefined)
+      return ABSENT;
     return Math.log10(Math.max(
       probe.daysSinceLastCommitOrNull,
       LOG_FLOOR,
@@ -190,7 +194,8 @@ export function extractDim(
     ),);
   }
   if (dim === 'tsRatio')
-    return probe.tsRatioOrNull;
+    return probe.tsRatioOrNull
+      ?? ABSENT;
   if (dim === 'runtimeDepCount')
     return probe.runtimeDepCount;
   if (dim === 'transitiveDepCount')
@@ -211,20 +216,20 @@ export function extractDim(
 /**
  * Computes the value of one derived boolean attribute for a probe.
  *
- * Returns `null` for booleans that depend on unknown inputs (e.g.
- * `tsMajority` when `tsRatioOrNull` is `null`). The `hasKnownRepo`
+ * Returns `ABSENT` for booleans that depend on unknown inputs (e.g.
+ * `tsMajority` when `tsRatioOrNull` is absent). The `hasKnownRepo`
  * derivation is always defined; it's the "no unknowns" predicate itself.
  *
  * @param probe - Source probe.
  *
  * @param key - Toggle key.
  *
- * @returns Boolean value, or `null` when undetermined.
+ * @returns Boolean value, or `ABSENT` when undetermined.
  *
  * @example
  * ```ts
  * const ts = derivedBool({ probe, key: 'tsMajority' });
- * // ts === null means TS ratio is unknown for this package
+ * // ts === ABSENT means TS ratio is unknown for this package
  * ```
  */
 export function derivedBool(
@@ -232,30 +237,30 @@ export function derivedBool(
     probe,
     key,
   }: {
-    probe: PackageProbe;
-    key: ToggleKey;
+    readonly probe: PackageProbe;
+    readonly key: ToggleKey;
   },
-): boolean | null {
+): Maybe<boolean> {
   if (key === 'isLeaf')
     return probe.isLeaf;
   if (key === 'tsMajority') {
     if (probe.tsRatioOrNull
-      === null)
-      return null;
+      === undefined)
+      return ABSENT;
     return probe.tsRatioOrNull
       >= TS_MAJORITY_THRESHOLD;
   }
   if (key === 'large') {
     if (probe.sourceBytesOrNull
-      === null)
-      return null;
+      === undefined)
+      return ABSENT;
     return probe.sourceBytesOrNull
       >= LARGE_SOURCE_BYTES_THRESHOLD;
   }
   if (key === 'recent') {
     if (probe.daysSinceLastCommitOrNull
-      === null)
-      return null;
+      === undefined)
+      return ABSENT;
     return probe.daysSinceLastCommitOrNull
       < RECENT_DAYS_THRESHOLD;
   }
@@ -267,7 +272,7 @@ export function derivedBool(
       === 'copyleft';
   if (key === 'hasKnownRepo')
     return probe.unknownReason
-      === null;
+      === undefined;
   throw new Error(`Unknown toggle key: ${key as string}`,);
 }
 
@@ -302,8 +307,8 @@ function passesToggles(
     probe,
     toggles,
   }: {
-    probe: PackageProbe;
-    toggles: ToggleState;
+    readonly probe: PackageProbe;
+    readonly toggles: ToggleState;
   },
 ): boolean {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.entries() loses key type; cast narrows it back. */
@@ -321,12 +326,12 @@ function passesToggles(
   ) {
     if (value === 'any')
       return true;
-    /** Concrete derived-boolean reading for the toggle; `null` means undetermined and fails both `'yes'` and `'no'`. */
+    /** Concrete derived-boolean reading for the toggle; `ABSENT` means undetermined and fails both `'yes'` and `'no'`. */
     const actual = derivedBool({
       probe,
       key,
     },);
-    if (actual === null)
+    if (actual === ABSENT)
       return false;
     return value === 'yes' ? actual : !actual;
   },);
@@ -362,9 +367,9 @@ function passesRanges(
     ranges,
     dimMapping,
   }: {
-    probe: PackageProbe;
-    ranges: RangeState;
-    dimMapping: DimMapping;
+    readonly probe: PackageProbe;
+    readonly ranges: RangeState;
+    readonly dimMapping: DimMapping;
   },
 ): boolean {
   /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- Object.keys() returns `string[]`; ChannelKey is the known set of keys. */
@@ -379,12 +384,12 @@ function passesRanges(
       min,
       max,
     ] = ranges[channel];
-    /** Extracted dim reading for the probe; `null` skips the range constraint. */
+    /** Extracted dim reading for the probe; `ABSENT` skips the range constraint. */
     const value = extractDim({
       probe,
       dim,
     },);
-    if (value === null)
+    if (value === ABSENT)
       return true;
     return (value >= min) && (value <= max);
   },);
@@ -415,8 +420,8 @@ export function searchMatches(
     probe,
     search,
   }: {
-    probe: PackageProbe;
-    search: string;
+    readonly probe: PackageProbe;
+    readonly search: string;
   },
 ): boolean {
   if (search === '')
@@ -450,7 +455,7 @@ export function searchMatches(
        * syntax. Runs only on the local probe-name strings (short fixed
        * vocabulary), never on attacker-controlled input.
        */
-      // oxlint-disable-next-line no-restricted-syntax/no-regex -- user-typed regex via `/.../`; length-capped by MAX_USER_REGEX_LEN; matched against short local probe names
+      // oxlint-disable-next-line no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- user-typed regex via `/.../`; length-capped by MAX_USER_REGEX_LEN; matched against short local probe names. The `u` flag is intentionally omitted: it would change matching of the user's own pattern (u-mode rejects lone surrogates and several escape forms that are legal in non-unicode mode), breaking patterns the user could legitimately type.
       const pattern = new RegExp(
         body,
         'i',
@@ -506,11 +511,11 @@ export function computeVisibleIndices(
     search,
     dimMapping,
   }: {
-    probes: readonly PackageProbe[];
-    toggles: ToggleState;
-    ranges: RangeState;
-    search: string;
-    dimMapping: DimMapping;
+    readonly probes: readonly PackageProbe[];
+    readonly toggles: ToggleState;
+    readonly ranges: RangeState;
+    readonly search: string;
+    readonly dimMapping: DimMapping;
   },
 ): Set<number> {
   return new Set(

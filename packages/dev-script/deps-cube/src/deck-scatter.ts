@@ -47,6 +47,7 @@ import {
   partitionProbes,
   type ScatterDatum,
 } from './deck-scatter-helpers.ts';
+import { ABSENT, } from './maybe.ts';
 import {
   makeProbeTexture,
   type MeshShape,
@@ -68,6 +69,7 @@ const TEXTURE_ALPHA = 255;
 
 //region Per-probe layer factory
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `mesh` is luma.gl's external `Geometry` class (mutating GPU-buffer methods, owned by luma.gl); deep-readonly cannot apply. */
 /**
  * Builds the per-probe `SimpleMeshLayer`. Per-glyph position, scale,
  * and texture; per-layer opacity for the filtered-fade effect.
@@ -122,7 +124,7 @@ function buildProbeLayer(
       number,
       number,
       number,
-    ] | undefined;
+    ];
   },
 ): Layer {
   /** `true` when the probe passes every filter; drives the layer's `opacity`. */
@@ -148,16 +150,20 @@ function buildProbeLayer(
     shape,
     withName: bake,
   },);
-  /** World-space position; honours the unknown-cluster override before falling back to the data-driven position. */
-  const pos = positionOverride ?? probePosition({
+  /** Data-driven position, or `ABSENT` when any spatial dim is unknown for this probe. */
+  const dataPosition = probePosition({
     probe: datum.probe,
     state,
-  },)
-    ?? [
-    0,
-    0,
-    0,
-  ];
+  },);
+  /** World-space position; honours the unknown-cluster override, then the data position, then the origin fallback. */
+  const pos = positionOverride
+    ?? (dataPosition === ABSENT
+      ? [
+        0,
+        0,
+        0,
+      ]
+      : dataPosition);
   /** Per-probe scale factor; deck.gl's `getScale` returns the same value on every axis. */
   const radius = probeRadiusWorld({
     probe: datum.probe,
@@ -186,6 +192,7 @@ function buildProbeLayer(
     pickable: true,
   },);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Per-probe layer factory
 
@@ -217,10 +224,10 @@ export function buildLeafScatterLayer(
     bounds,
     visibleIndices,
   }: {
-    probes: readonly PackageProbe[];
-    state: AppState;
-    bounds: SceneBounds;
-    visibleIndices: ReadonlySet<number>;
+    readonly probes: readonly PackageProbe[];
+    readonly state: AppState;
+    readonly bounds: SceneBounds;
+    readonly visibleIndices: ReadonlySet<number>;
   },
 ): readonly Layer[] {
   /** Leaf-only partition; non-leaf and unknown probes are handled by sibling factories. */
@@ -274,10 +281,10 @@ export function buildNonLeafScatterLayer(
     bounds,
     visibleIndices,
   }: {
-    probes: readonly PackageProbe[];
-    state: AppState;
-    bounds: SceneBounds;
-    visibleIndices: ReadonlySet<number>;
+    readonly probes: readonly PackageProbe[];
+    readonly state: AppState;
+    readonly bounds: SceneBounds;
+    readonly visibleIndices: ReadonlySet<number>;
   },
 ): readonly Layer[] {
   /** Non-leaf partition; leaves and unknown probes are handled by sibling factories. */
@@ -331,10 +338,10 @@ export function buildUnknownClusterLayer(
     bounds,
     visibleIndices,
   }: {
-    probes: readonly PackageProbe[];
-    state: AppState;
-    bounds: SceneBounds;
-    visibleIndices: ReadonlySet<number>;
+    readonly probes: readonly PackageProbe[];
+    readonly state: AppState;
+    readonly bounds: SceneBounds;
+    readonly visibleIndices: ReadonlySet<number>;
   },
 ): readonly Layer[] {
   /** Unknown-bucket partition; leaves and non-leaves are handled by sibling factories. */

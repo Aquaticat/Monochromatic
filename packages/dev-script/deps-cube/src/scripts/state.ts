@@ -20,6 +20,10 @@
  * ```
  */
 
+import {
+  ABSENT,
+  type Maybe,
+} from '../maybe.ts';
 import type { PackageProbe, } from '../probe.ts';
 import {
   type ChannelKey,
@@ -42,10 +46,10 @@ import {
  * - `target`: world-space coordinates of the orbit pivot.
  */
 export type ViewState = {
-  rotationX: number;
-  rotationOrbit: number;
-  zoom: number;
-  target: [
+  readonly rotationX: number;
+  readonly rotationOrbit: number;
+  readonly zoom: number;
+  readonly target: readonly [
     number,
     number,
     number,
@@ -56,23 +60,23 @@ export type ViewState = {
  * Display-only toggles (don't filter data, only chrome).
  */
 export type DisplayToggleState = {
-  showThresholdPlanes: boolean;
-  showWireframe: boolean;
-  showAxisLabels: boolean;
-  nameLabels: 'none' | 'topN' | 'all';
-  showUnknownCluster: boolean;
+  readonly showThresholdPlanes: boolean;
+  readonly showWireframe: boolean;
+  readonly showAxisLabels: boolean;
+  readonly nameLabels: 'none' | 'topN' | 'all';
+  readonly showUnknownCluster: boolean;
 };
 
 /**
  * Full UI state; every value that contributes to a unique view.
  */
 export type AppState = {
-  viewState: ViewState;
-  dimMapping: DimMapping;
-  toggles: ToggleState;
-  ranges: RangeState;
-  search: string;
-  displayToggles: DisplayToggleState;
+  readonly viewState: ViewState;
+  readonly dimMapping: DimMapping;
+  readonly toggles: ToggleState;
+  readonly ranges: RangeState;
+  readonly search: string;
+  readonly displayToggles: DisplayToggleState;
 };
 
 //endregion Types
@@ -161,8 +165,8 @@ function computeExtent(
     probes,
     dim,
   }: {
-    probes: readonly PackageProbe[];
-    dim: DataDimKey;
+    readonly probes: readonly PackageProbe[];
+    readonly dim: DataDimKey;
   },
 ): readonly [
   number,
@@ -176,8 +180,8 @@ function computeExtent(
         dim,
       },);
     },)
-    .filter(function nonNull(value,): value is number {
-      return value !== null;
+    .filter(function known(value,): value is number {
+      return value !== ABSENT;
     },);
   if (values.length
     === 0) {
@@ -206,8 +210,8 @@ function computeFullRanges(
     probes,
     dimMapping,
   }: {
-    probes: readonly PackageProbe[];
-    dimMapping: DimMapping;
+    readonly probes: readonly PackageProbe[];
+    readonly dimMapping: DimMapping;
   },
 ): RangeState {
   /** Per-channel `[channel, extent]` tuples; feeds `Object.fromEntries` to build the record. */
@@ -255,7 +259,7 @@ function computeFullRanges(
  * ```
  */
 export function defaultState(
-  { probes, }: { probes: readonly PackageProbe[]; },
+  { probes, }: { readonly probes: readonly PackageProbe[]; },
 ): AppState {
   return {
     viewState: structuredClone(DEFAULT_VIEW_STATE,),
@@ -292,7 +296,7 @@ export function defaultState(
  * ```
  */
 export function encodeState(
-  { state, }: { state: AppState; },
+  { state, }: { readonly state: AppState; },
 ): string {
   return encodeURIComponent(JSON.stringify(state,),);
 }
@@ -305,11 +309,11 @@ export function encodeState(
  *
  * @param value - Parsed JSON value, untrusted.
  *
- * @returns The value typed as `AppState`, or `null` when malformed.
+ * @returns Value typed as `AppState`, or `ABSENT` when malformed.
  */
-function validateAppState(value: unknown,): AppState | null {
+function validateAppState(value: unknown,): Maybe<AppState> {
   if (((typeof value) !== 'object') || (value === null))
-    return null;
+    return ABSENT;
   /** Top-level `AppState` fields that must all be present for the shape check to pass. */
   const required: readonly (keyof AppState)[] = [
     'viewState',
@@ -324,7 +328,7 @@ function validateAppState(value: unknown,): AppState | null {
     return key in value;
   },);
   if (!has)
-    return null;
+    return ABSENT;
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- shape verified above; deep-validation is intentionally cheap.
   return value as AppState;
 }
@@ -338,19 +342,19 @@ function validateAppState(value: unknown,): AppState | null {
  *
  * @param encoded - The URL-safe encoded string (no leading `state=`).
  *
- * @returns Restored state, or `null` if the input is malformed.
+ * @returns Restored state, or `ABSENT` if the input is malformed.
  *
  * @example
  * ```ts
  * const restored = decodeState({ encoded: match[1] });
- * if (restored === null) {
+ * if (restored === ABSENT) {
  *   // fall back to defaults
  * }
  * ```
  */
 export function decodeState(
-  { encoded, }: { encoded: string; },
-): AppState | null {
+  { encoded, }: { readonly encoded: string; },
+): Maybe<AppState> {
   try {
     /** URI-decoded JSON payload extracted from the hash. */
     const json = decodeURIComponent(encoded,);
@@ -359,7 +363,7 @@ export function decodeState(
     return validateAppState(parsed,);
   }
   catch {
-    return null;
+    return ABSENT;
   }
 }
 
@@ -429,8 +433,8 @@ export function readStateFromHash(
     hash,
     fallback,
   }: {
-    hash: string;
-    fallback: AppState;
+    readonly hash: string;
+    readonly fallback: AppState;
   },
 ): AppState {
   /** Hash with the leading `#` removed so `state=` always appears at offset 0 or after `&`. */
@@ -439,11 +443,11 @@ export function readStateFromHash(
   const encoded = extractStateParam(stripped,);
   if (encoded === '')
     return fallback;
-  /** Round-tripped state, or `null` when the payload fails to parse or validate. */
+  /** Round-tripped state, or `ABSENT` when the payload fails to parse or validate. */
   const decoded = decodeState({
     encoded,
   },);
-  return decoded ?? fallback;
+  return decoded === ABSENT ? fallback : decoded;
 }
 
 /**
@@ -459,7 +463,7 @@ export function readStateFromHash(
  * ```
  */
 export function writeStateToHash(
-  { state, }: { state: AppState; },
+  { state, }: { readonly state: AppState; },
 ): string {
   return `#state=${
     encodeState({

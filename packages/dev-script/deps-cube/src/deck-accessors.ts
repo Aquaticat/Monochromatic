@@ -20,6 +20,10 @@
 
 import type { SceneBounds, } from './deck-config.ts';
 import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+import {
   type Oklch,
   oklchLerpToSrgb,
 } from './oklch.ts';
@@ -118,9 +122,9 @@ function normalise(
     lo,
     hi,
   }: {
-    value: number;
-    lo: number;
-    hi: number;
+    readonly value: number;
+    readonly lo: number;
+    readonly hi: number;
   },
 ): number {
   if (hi === lo)
@@ -140,20 +144,20 @@ function normalise(
 //region Position
 
 /**
- * Returns the 3D scene-space position of a probe, or `null` when any
- * spatial dim is unknown. Probes returning `null` belong in the
+ * Returns the 3D scene-space position of a probe, or `ABSENT` when any
+ * spatial dim is unknown. Probes returning `ABSENT` belong in the
  * Unknown-cluster layer instead.
  *
  * @param probe - Source probe.
  *
  * @param state - Current state (uses `dimMapping.x/y/z`).
  *
- * @returns `[x, y, z]` in scene coords, or `null` when undefined.
+ * @returns `[x, y, z]` in scene coords, or `ABSENT` when undefined.
  *
  * @example
  * ```ts
  * const pos = probePosition({ probe, state });
- * if (pos !== null) draw(pos);
+ * if (pos !== ABSENT) draw(pos);
  * ```
  */
 export function probePosition(
@@ -161,35 +165,35 @@ export function probePosition(
     probe,
     state,
   }: {
-    probe: PackageProbe;
-    state: AppState;
+    readonly probe: PackageProbe;
+    readonly state: AppState;
   },
-): [
+): Maybe<[
   number,
   number,
   number,
-] | null {
-  /** Scene-space X coordinate, or `null` when the X dim is unknown for this probe. */
+]> {
+  /** Scene-space X coordinate, or `ABSENT` when the X dim is unknown for this probe. */
   const x = extractDim({
     probe,
     dim: state.dimMapping
       .x,
   },);
-  /** Scene-space Y coordinate, or `null` when the Y dim is unknown for this probe. */
+  /** Scene-space Y coordinate, or `ABSENT` when the Y dim is unknown for this probe. */
   const y = extractDim({
     probe,
     dim: state.dimMapping
       .y,
   },);
-  /** Scene-space Z coordinate, or `null` when the Z dim is unknown for this probe. */
+  /** Scene-space Z coordinate, or `ABSENT` when the Z dim is unknown for this probe. */
   const z = extractDim({
     probe,
     dim: state.dimMapping
       .z,
   },);
-  if ((x === null) || (y === null)
-    || (z === null))
-    return null;
+  if ((x === ABSENT) || (y === ABSENT)
+    || (z === ABSENT))
+    return ABSENT;
   return [
     x,
     y,
@@ -220,8 +224,8 @@ export function unknownClusterPosition(
     index,
     bounds,
   }: {
-    index: number;
-    bounds: SceneBounds;
+    readonly index: number;
+    readonly bounds: SceneBounds;
   },
 ): [
   number,
@@ -308,10 +312,10 @@ export function probeFillColor(
     bounds,
     isVisible,
   }: {
-    probe: PackageProbe;
-    state: AppState;
-    bounds: SceneBounds;
-    isVisible: boolean;
+    readonly probe: PackageProbe;
+    readonly state: AppState;
+    readonly bounds: SceneBounds;
+    readonly isVisible: boolean;
   },
 ): [
   number,
@@ -321,13 +325,13 @@ export function probeFillColor(
 ] {
   /** Alpha selected by filter visibility so filtered probes fade out instead of disappearing. */
   const alpha = isVisible ? ALPHA_VISIBLE : ALPHA_FILTERED;
-  /** Raw probe value for the colour dim, or `null` when the dim is unknown. */
+  /** Raw probe value for the colour dim, or `ABSENT` when the dim is unknown. */
   const value = extractDim({
     probe,
     dim: state.dimMapping
       .color,
   },);
-  if (value === null) {
+  if (value === ABSENT) {
     return [
       COLOR_UNKNOWN[0],
       COLOR_UNKNOWN[1],
@@ -393,18 +397,18 @@ export function probeRadius(
     state,
     bounds,
   }: {
-    probe: PackageProbe;
-    state: AppState;
-    bounds: SceneBounds;
+    readonly probe: PackageProbe;
+    readonly state: AppState;
+    readonly bounds: SceneBounds;
   },
 ): number {
-  /** Raw probe value for the size dim, or `null` when the dim is unknown. */
+  /** Raw probe value for the size dim, or `ABSENT` when the dim is unknown. */
   const value = extractDim({
     probe,
     dim: state.dimMapping
       .size,
   },);
-  if (value === null)
+  if (value === ABSENT)
     return RADIUS_MIN_PX;
   /** Inclusive `[lo, hi]` range for the size dim, used to normalise `value`. */
   const [
@@ -455,9 +459,9 @@ export function probeRadiusWorld(
     state,
     bounds,
   }: {
-    probe: PackageProbe;
-    state: AppState;
-    bounds: SceneBounds;
+    readonly probe: PackageProbe;
+    readonly state: AppState;
+    readonly bounds: SceneBounds;
   },
 ): number {
   /** Width of the scene bounding box along X, one component of the diagonal. */
@@ -478,13 +482,13 @@ export function probeRadiusWorld(
     dy,
     dz,
   );
-  /** Raw probe value for the size dim, or `null` when the dim is unknown. */
+  /** Raw probe value for the size dim, or `ABSENT` when the dim is unknown. */
   const value = extractDim({
     probe,
     dim: state.dimMapping
       .size,
   },);
-  if (value === null)
+  if (value === ABSENT)
     return diagonal * RADIUS_MIN_WORLD_FRACTION;
   /** Inclusive `[lo, hi]` range for the size dim, used to normalise `value`. */
   const [
@@ -530,17 +534,17 @@ export function probeIsFilled(
     probe,
     state,
   }: {
-    probe: PackageProbe;
-    state: AppState;
+    readonly probe: PackageProbe;
+    readonly state: AppState;
   },
 ): boolean {
-  /** Raw probe value for the shape dim; `null` falls through to the hollow default below. */
+  /** Raw probe value for the shape dim; `ABSENT` falls through to the hollow default below. */
   const value = extractDim({
     probe,
     dim: state.dimMapping
       .shape,
   },);
-  if (value === null)
+  if (value === ABSENT)
     return false;
   return value < SHAPE_FILLED_THRESHOLD;
 }

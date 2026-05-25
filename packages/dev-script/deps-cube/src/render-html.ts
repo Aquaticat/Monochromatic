@@ -172,7 +172,7 @@ export async function renderHtml(
   {
     probes,
   }: {
-    probes: readonly PackageProbe[];
+    readonly probes: readonly PackageProbe[];
   },
 ): Promise<string> {
   /** Initial controller state used to seed the control-panel markup; the browser-side controller re-derives its state from this. */

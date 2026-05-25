@@ -38,9 +38,7 @@ const PROBES: readonly PackageProbe[] = [
     sourceBytesOrNull: 200_000,
     daysSinceLastCommitOrNull: 14,
     repositoryUrlOrNull: 'https://github.com/preactjs/preact',
-    isMonorepoHoused: false,
-    unknownReason: null,
-  },
+    isMonorepoHoused: false,  },
   {
     catalogKey: 'ms',
     npmName: 'ms',
@@ -56,9 +54,7 @@ const PROBES: readonly PackageProbe[] = [
     sourceBytesOrNull: 5_000,
     daysSinceLastCommitOrNull: 1_500,
     repositoryUrlOrNull: 'https://github.com/vercel/ms',
-    isMonorepoHoused: false,
-    unknownReason: null,
-  },
+    isMonorepoHoused: false,  },
 ];
 
 /**

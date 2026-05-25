@@ -135,7 +135,7 @@ export function elSelect(id: string,): HTMLSelectElement {
  * ```
  */
 export function syncDomFromState(
-  { state, }: { state: AppState; },
+  { state, }: { readonly state: AppState; },
 ): void {
   CHANNEL_KEYS.forEach(function syncDim(channel,) {
     elSelect(`dim-${channel}`,)
