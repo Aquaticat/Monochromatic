@@ -20,6 +20,32 @@ Fix all lint issues across active packages so `mise run lint` exits 0.
 - All 12 shared `module/*` packages re-fixed under the final rules with proper patterns: kv-store (b76ec75f), toml-edit (a7e908d8), logger (60325d59), fs-path (c039ca94), hyperscript (843a9745), image-diff (2631fb84), dom (3826946b), or-throw (70888390), test (097c10c7), observable (49e30157), i18n-compose (58dab75a).
 - Leaves wave L1: deps-cube (0764b13c), done-postcss (926ef363), messages-demo (b1d3be9a), auto-mode (e8c5ba80), inference-canary (ea4f2041).
 
+## In progress: webapp-productivity/done (UNCOMMITTED) + oxlint investigation lead
+
+Status: ~100 of 102 oxlint violations fixed across 38 edited source files (all uncommitted, on disk). The tsgo build is clean (0 TS errors as of `/tmp/done-lint3.txt`). Two `prefer-readonly-parameter-types` warnings remain, and BOTH are suspected tsgolint/oxc bugs, not real violations. Do NOT commit: the package is not green, and the two remaining items must be diagnosed first.
+
+The lint-clean sibling `packages/webapp-productivity/done-postcss` is the same app, already fixed (commit 926ef363); it is the gold blueprint for every pattern below.
+
+Patterns applied (mirroring done-postcss):
+
+- Domain `Task`/`TaskCreateInput`/`TaskUpdateInput` in `src/lib/types.ts`: `T | null` fields became `readonly foo?: T` (`?:` optionality), all fields `readonly`, arrays `readonly T[]`.
+- `TaskRow` (raw DB row, `src/lib/db/tasks-helpers.ts`): kept `T | null` wrapped in a block `oxlint-disable no-restricted-syntax/no-nullish-union` justified as the `@tursodatabase/database` `.get()/.all()` boundary (SQLite NULL -> JS null). `mapTask` converts null -> absent via a mutable accumulator (`{ -readonly [K in keyof Task]: Task[K] }`) assigning nullable columns only when present.
+- Symbol sentinels replace `| null`/`| undefined` returns and "unset" states: `TASK_NOT_FOUND` (types.ts; getTaskById/getTaskRowById/updateTask/startTaskTimer/stopTaskTimer/completeTask), `SETTING_ABSENT` (db/settings.ts getSetting), `INVALID` (server/api/tasks-parse.ts; parseStringArray/parseEnumValue/parseStatus/parseTaskUpdateInput), `ARGUMENT_ABSENT` (lib/args.ts getArgumentValue; consumers server.ts + lib/db.ts), `METADATA_UNSET` (task-detail-types.ts MetadataState priority/complexity), `NO_TIMER`/`NO_ABORT` (task-detail-autofill.ts, toast-message.ts, search-bar uses optional `{handle?}`), `CHIP_NOT_FOUND` (lib/task-card.ts getChipElement).
+- `AutofillManager` class -> `createAutofillController` factory (fixes `no-class`): callback-based (`getState`/`setState`/`updateDisplay`) so it never mutates a borrowed object; task-detail.ts reassigns its `#metadata` wholesale via the setState callback.
+- `parseEnumValue` de-generified (fixes `no-unnecessary-type-parameters`); `page-data.ts readPageData<TData>` kept its return-only generic under a justified block `oxlint-disable no-unnecessary-type-parameters` (inlining would push casts to 5 call sites; mirrors done-postcss verbatim).
+- `consistent-function-scoping`: hoisted `handleStop`/`handleSearch`/`handleComplete` to module scope (in-progress.ts, search.ts); hoisted `readStaticContents`/`getStaticMetadata` in server.ts and typed meta via `Awaited<ReturnType<ServeStaticOptions['getMeta']>>` to avoid a literal `Stats | undefined`.
+- `no-misused-promises`/`strict-void-return`: task-card.ts checkbox `click` handler made non-async, `void options.onToggleComplete(...)`.
+- `prefer-readonly-parameter-types`: added `readonly` to many param-object types; `client/lib/api.ts` introduced a readonly `ApiRequestOptions` (method/body/headers) replacing `RequestInit`; ai/client.ts `ChatMessage`/`ChatCompletionOptions` deep-readonly; ai/prompts.ts param objects readonly + summary fields `?:`; layout.ts `LayoutOptions` readonly; inbox-builders.ts added `BlockedTasksByBlocker = Readonly<Record<string, readonly BlockedTaskLink[]>>` (dropped a redundant `| undefined` value union; `noUncheckedIndexedAccess` supplies it at access).
+
+The two REMAINING `prefer-readonly-parameter-types` warnings (the investigation, HIGHER priority than finishing the lint per the user):
+
+1. `src/client/mixins.ts:253` `focusOutline({ readonly offset?: CssValue } = {})`. `CssValue` is `string & { readonly __cssValue: unique symbol }` (branded readonly string, `@monochromatic-dev/module-hyperscript` `src/css/values.ts:26`). The property is readonly and the brand is readonly, so it should pass, yet it is flagged. Not in the allow-list. `focusOutline` is called both `focusOutline()` and `focusOutline({ offset: cssRem(FOCUS_OFFSET) })` (8 style files), so the param must stay.
+2. `src/server-api-routes.ts:74` `registerApiRoutes(app: H3)`. `H3` IS already in the package allow-list (`packages/config/oxlint/src/rules/prefer-readonly-parameter-types.allow-pkg.ts`, `{ from:'package', package:'h3', name:['H3','H3Event',...] }`), yet `app: H3` is still flagged. done-postcss sidesteps this by registering routes inline on a module-const `app` (no `app: H3` param) - but that is correlation, NOT a diagnosed fix; do not assume inlining is correct until the allow-list mismatch is understood.
+
+Investigation plan (do this BEFORE editing mixins.ts or the routes further): shallow-clone oxc (and `oxc-project/tsgolint`, which implements the type-aware `prefer-readonly-parameter-types` + its `allow`/`ignoreInferredTypes` options) to `/tmp` via `gh repo clone`. Build two minimal repros (a tiny TS file + `.oxlintrc.json` enabling the rule with the h3-style `allow` entry, run with the installed type-aware oxlint): (a) an allow-listed class-typed param still flagged; (b) a branded-readonly-string param flagged. Read tsgolint's `isTypeReadonly` and the `allow`/specifier-matching code paths to find the cause. If confirmed an oxc/tsgolint bug, write `docs/troubleshooting/<topic>.md` via the `troubleshooting-doc` skill (it gates the 5-constraint upstream-filing check); oxc/tsgolint bugs are NOT upstream-exempt. Only after diagnosis decide the source fix (e.g. number-param for focusOutline, inline routes for H3, or a corrected allow-list entry).
+
+Edited files (uncommitted) under `packages/webapp-productivity/done/src/`: lib/types.ts, lib/args.ts, lib/db.ts, lib/db/{settings,tasks,tasks-helpers,tasks-queries,tasks-timer}.ts, lib/ai/{client,prompts}.ts, server.ts, server-api-routes.ts, server/api/{ai-autofill,tasks,tasks-parse,tasks-parse-update,timer}.ts, server/pages/{layout,task-details}.ts, client/{in-progress,inbox-builders,inbox-suggested,new-task-dialog,search,mixins}.ts, client/lib/{api,page-data,task-card,task-card-helpers}.ts, client/components/{search-bar,side-drawer,side-drawer-helpers,task-detail,task-detail-autofill,task-detail-pills,task-detail-render,task-detail-types,toast-message}.ts. The `/tmp/lint-rules.txt` child prompt for this package still applies.
+
 ## Critical context: the optionality discipline
 
 Agents repeatedly tried to dodge the bans by swapping one escape hatch for another (`| undefined` to `| null` to tuple-as-Maybe to `''` sentinels). Do not do this.
@@ -47,7 +73,7 @@ Dispatch each leaf package to a `spawn-claude` child that fixes it to `mise run 
 
 Leaf packages still to fix:
 
-- `webapp-productivity/done` (40w 63e)
+- `webapp-productivity/done`: IN PROGRESS, uncommitted; ~100/102 fixed, 2 suspected-tool-bug `prefer-readonly` warnings left. See the dedicated "In progress: webapp-productivity/done" section above before resuming.
 - `pi/morph-compact` (33w 33e)
 - `dev-script/watch-restart` (22w 44e)
 - `pi/advisor` (33e)
