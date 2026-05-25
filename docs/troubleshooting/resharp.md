@@ -79,8 +79,11 @@ Status:
   the limit never fires; in the debug profile every nesting kind overflows
   at about 1,500 levels. `catch_unwind` cannot intercept a stack-overflow
   abort, and forbidden-strings has no nesting-depth pre-validator, so this
-  is undefended at our boundary. Not yet filed; not yet prototyped (see the
-  follow-up section for the five-constraint status).
+  is undefended at our boundary. Prototyped 2026-05-25 (a 16-line parse-time
+  `max_depth` check, regression-clean, abort becomes a clean `Err`); all five
+  filing constraints now pass. Not filed: per the 2026-05-25 decision the
+  upstream fix and the consumer-side depth pre-validator both wait for the
+  next upstream release bump (see the follow-up section).
 
 Filing summary: filed 2026-05-23 as ieviev/resharp#5
 (`https://github.com/ieviev/resharp/issues/5`). Per the user's decision
@@ -1625,6 +1628,100 @@ and scoped (a counter check at the push sites
 architecturally consistent with the existing `max_repeat`, `max_list_len`,
 and `expanded_ast_limit` guards.
 
+### Prototype fix (verified 2026-05-25)
+
+Prototyped in a fresh `mktemp -d` clone of
+`https://github.com/ieviev/resharp` (origin and HEAD `9b324ff`, version
+0.6.4, both confirmed before editing). The 16-line patch adds a `max_depth`
+to `PatternFlags` (default 1,000) and checks the open-group stack depth once
+per `parse_inner` loop iteration, rejecting before the deep AST is built.
+The 1,000 default sits below the debug stack-overflow floor of about 1,500,
+so the deepest AST ever constructed cannot overflow even on `Drop`; the
+`unbounded_size` option path sets `max_depth` to `usize::MAX`, preserving
+the existing escape hatch.
+
+```diff
+diff --git a/resharp-engine/src/lib.rs b/resharp-engine/src/lib.rs
+@@ -841,6 +841,11 @@ impl Regex {
+             } else {
+                 resharp_parser::DEFAULT_MAX_REPEAT
+             },
++            max_depth: if opts.unbounded_size {
++                usize::MAX
++            } else {
++                resharp_parser::DEFAULT_MAX_DEPTH
++            },
+         };
+         let node = resharp_parser::parse_ast_with(&mut b, pattern, &pflags)?;
+         Self::from_node_inner(b, node, opts, pattern.len())
+diff --git a/resharp-parser/src/lib.rs b/resharp-parser/src/lib.rs
+@@ -48,6 +48,10 @@ pub struct PatternFlags {
+     pub max_list_len: usize,
+     /// max upper bound on bounded repetition `{n,m}`. default 500.
+     pub max_repeat: u32,
++    /// max nesting depth of groups, complements, and lookarounds before the
++    /// parser rejects the pattern. default 1_000. bounds the recursion in the
++    /// AST and algebra tree-walks and in `Drop`, which are otherwise unbounded.
++    pub max_depth: usize,
+ }
+@@ -55,6 +59,7 @@ pub struct PatternFlags {
+ pub const DEFAULT_MAX_REPEAT: u32 = 500;
+ pub const DEFAULT_EXPANDED_AST_LIMIT: u64 = 50_000;
+ pub const DEFAULT_MAX_LIST_LEN: usize = 4_000;
++pub const DEFAULT_MAX_DEPTH: usize = 1_000;
+ 
+ impl Default for PatternFlags {
+     fn default() -> Self {
+@@ -69,6 +74,7 @@ impl Default for PatternFlags {
+             expanded_ast_limit: DEFAULT_EXPANDED_AST_LIMIT,
+             max_list_len: DEFAULT_MAX_LIST_LEN,
+             max_repeat: DEFAULT_MAX_REPEAT,
++            max_depth: DEFAULT_MAX_DEPTH,
+         }
+     }
+ }
+@@ -275,6 +281,7 @@ pub struct ResharpParser<'s> {
+     expanded_ast_limit: u64,
+     max_list_len: usize,
+     max_repeat: u32,
++    max_depth: usize,
+     comments: RefCell<Vec<ast::Comment>>,
+@@ -401,6 +408,7 @@ impl<'s> ResharpParser<'s> {
+             expanded_ast_limit: flags.expanded_ast_limit,
+             max_list_len: flags.max_list_len,
+             max_repeat: flags.max_repeat,
++            max_depth: flags.max_depth,
+             comments: RefCell::new(vec![]),
+@@ -1871,6 +1879,9 @@ impl<'s> ResharpParser<'s> {
+                 }
+                 _ => concat.asts.push(self.parse_primitive()?.into_ast()),
+             }
++            if self.parser().stack_group.borrow().len() > self.max_depth {
++                return Err(self.error(self.span(), ast::ErrorKind::UnsupportedResharpRegex));
++            }
+         }
+         let ast = self.pop_group_end(concat)?;
+```
+
+Verification used a probe with a path dependency on the patched clone, run
+under `podman run --memory=4g --cpus=4 --rm` in debug and release:
+
+- The pre-patch aborts become clean rejections: `group` at depth 2,000,
+  `compl` at 30,000, and `look` at 30,000 all return
+  `Err(Parse(UnsupportedResharpRegex))` (exit 0) instead of aborting (exit
+  134), in both profiles.
+- The cap boundary is exact: `compl` at depth 999 returns `Ok`, at 1,001
+  returns `Err`.
+- Real rules still compile: `~(.*foo.*)`, `(?=bar)baz`, and
+  `em&~(.* (npm|git) .*)` all return `Ok`.
+- No abort (exit 134) at any probed input post-patch.
+
+Regression: `cargo test --workspace --no-fail-fast` against the clone is
+`235 passed; 0 failed; 19 ignored` both with the patch and with it stashed
+(`git stash`), so the change is purely additive. resharp has no `build.rs`,
+so the run executed no upstream build scripts; it ran in the same capped
+container.
+
 ### Five-constraint upstream-filing check (Bug G)
 
 1. Upstream's fault? Yes. A parser-reachable pattern that aborts the
@@ -1644,14 +1741,85 @@ and `expanded_ast_limit` guards.
    nesting depth, recursion, or stack overflow (#5 is the merged
    DFA-construction issue, #4 is a syntax discussion, #1 through #3 are
    unrelated), so Bug G is not a duplicate.
-5. Prototyped a minimal fix? Not yet. The task that surfaced Bug G was to
-   flag issues, not to file or fix them. Constraints 1 through 4 hold or
-   sorta-hold and constraint 2 names a small change, so under the
-   troubleshooting-doc auto-prototype rule the next step is to prototype the
-   parse-time `max_depth` check against a fresh 0.6.4 clone and draft the
-   issue. That step is held for a go-ahead, because filing is
-   outward-facing and the durable fix for us is the consumer-side
-   pre-validator above. Do not file before the prototype lands.
+5. Prototyped a minimal fix? Yes, 2026-05-25. The 16-line parse-time
+   `max_depth` patch in the "Prototype fix" subsection above moves the abort
+   to a clean `Err(UnsupportedResharpRegex)` in debug and release, holds an
+   exact cap boundary (depth 999 compiles, 1,001 rejects), leaves real rules
+   compiling, and is regression-clean (`235 passed; 0 failed; 19 ignored`
+   both with and without it).
+
+All five constraints now pass, so the draft below is fileable. Per the
+2026-05-25 decision it is not filed yet: the upstream fix and the
+consumer-side depth pre-validator both wait for the next upstream release
+bump (the maintainer's "coming days" follow-up that re-allows the Bug B
+patterns), folding Bug G into the same single bump-and-re-fuzz pass the plan
+near the top of this doc describes. Re-run `git apply --check` of the
+prototype diff against that release before filing, since resharp's `main`
+moves fast.
+
+### Draft upstream issue (Bug G, fileable, held until the next bump)
+
+~~~md
+**Title:** stack overflow aborts `Regex::new` on deeply nested complement
+or lookaround patterns, below `expanded_ast_limit`
+
+**Labels:** `bug`, `parser`, `engine`
+
+## Description
+
+`resharp::Regex::new` aborts the process with a stack overflow on patterns
+that nest complement (`~(...)`) or lookaround (`(?=...)`, `(?<=...)`) groups
+deeply:
+
+```text
+thread 'main' has overflowed its stack
+fatal runtime error: stack overflow, aborting
+```
+
+In release this fires at about 25,000 to 30,000 levels of `~(...)` or
+`(?=...)`, which is below the `expanded_ast_limit` of 50,000, so the size
+guard never rejects the pattern first. In debug (and under cargo-fuzz,
+which builds with a large stack) every nesting kind including plain `(...)`
+overflows at about 1,500 levels. A stack-overflow abort is SIGABRT, so a
+`catch_unwind` around `Regex::new` cannot intercept it.
+
+The parser avoids recursion for the parse itself (the flat `parse_inner`
+loop over an explicit `stack_group`), but the passes that walk the
+resulting tree do not bound depth: `expanded_ast_size`
+(`resharp-parser/src/lib.rs:2872`, the guard that enforces
+`expanded_ast_limit`), the AST-to-NodeId translation, the algebra
+tree-walks such as `get_bounded_length` (`resharp-algebra/src/lib.rs:1051`),
+`reverse`, `der`, and `contains_look`, and the recursive `Drop` of the
+nested AST and NodeId trees. `PatternFlags` bounds repeat count, list
+length, and expanded size, but not nesting depth.
+
+## Reproduction
+
+```rust
+use resharp::Regex;
+
+// release: aborts (stack overflow) around depth 25_000-30_000
+let pat = "~(".repeat(30_000) + "a" + &")".repeat(30_000);
+let _ = Regex::new(&pat);
+
+// debug / cargo-fuzz: aborts around depth 1_500 for any nesting kind
+let pat = "(".repeat(2_000) + "a" + &")".repeat(2_000);
+let _ = Regex::new(&pat);
+```
+
+## Suggested fix
+
+Add a `max_depth` to `PatternFlags` (default 1,000, below the debug
+stack-overflow floor) and reject during parsing using the open-group stack
+the parser already maintains, so the deep AST is never built. This heads off
+`expanded_ast_size`, the translation pass, the algebra walks, and the
+recursive `Drop` at once, and matches the existing `max_repeat`,
+`max_list_len`, and `expanded_ast_limit` guards. A 16-line patch (full diff
+in our notes) does this; against 0.6.4 the trigger then returns a clean
+`Err` instead of aborting in both profiles, the cap boundary is exact
+(depth 999 compiles, 1,001 rejects), and `cargo test --workspace
+--no-fail-fast` is unchanged at `235 passed; 0 failed; 19 ignored`.
+~~~
 
 ## Other flags from the 2026-05-25 pass
 
