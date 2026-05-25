@@ -1622,11 +1622,11 @@ and enforce it during parsing using the open-group stack the parser already
 maintains: reject when `stack_group` depth (plus complement and lookaround
 nesting) exceeds `max_depth`. Enforcing at parse time stops the deep AST
 from ever being built, which heads off `expanded_ast_size`, the translation
-pass, the algebra walks, and the recursive `Drop` at once. This is small
-and scoped (a counter check at the push sites
-`resharp-parser/src/lib.rs:708`, `:745`, and the lookaround push) and
-architecturally consistent with the existing `max_repeat`, `max_list_len`,
-and `expanded_ast_limit` guards.
+pass, the algebra walks, and the recursive `Drop` at once. This is small and
+scoped (a single counter check in `parse_inner`'s loop against
+`stack_group.borrow().len()`, the nesting depth the parser already tracks)
+and architecturally consistent with the existing `max_repeat`,
+`max_list_len`, and `expanded_ast_limit` guards.
 
 ### Prototype fix (verified 2026-05-25)
 
@@ -1710,8 +1710,9 @@ under `podman run --memory=4g --cpus=4 --rm` in debug and release:
   `compl` at 30,000, and `look` at 30,000 all return
   `Err(Parse(UnsupportedResharpRegex))` (exit 0) instead of aborting (exit
   134), in both profiles.
-- The cap boundary is exact: `compl` at depth 999 returns `Ok`, at 1,001
-  returns `Err`.
+- The cap boundary is exact and uniform across nesting kinds: `group`,
+  `compl`, `look`, and `ncg` all return `Ok` at depth 999 and `Err` at
+  1,001 (the check reads the shared `stack_group` depth).
 - Real rules still compile: `~(.*foo.*)`, `(?=bar)baz`, and
   `em&~(.* (npm|git) .*)` all return `Ok`.
 - No abort (exit 134) at any probed input post-patch.
@@ -1814,11 +1815,11 @@ stack-overflow floor) and reject during parsing using the open-group stack
 the parser already maintains, so the deep AST is never built. This heads off
 `expanded_ast_size`, the translation pass, the algebra walks, and the
 recursive `Drop` at once, and matches the existing `max_repeat`,
-`max_list_len`, and `expanded_ast_limit` guards. A 16-line patch (full diff
-in our notes) does this; against 0.6.4 the trigger then returns a clean
-`Err` instead of aborting in both profiles, the cap boundary is exact
-(depth 999 compiles, 1,001 rejects), and `cargo test --workspace
---no-fail-fast` is unchanged at `235 passed; 0 failed; 19 ignored`.
+`max_list_len`, and `expanded_ast_limit` guards. A 16-line patch (attached)
+does this; against 0.6.4 the trigger then returns a clean `Err` instead of
+aborting in both profiles, the cap boundary is exact (depth 999 compiles,
+1,001 rejects), and `cargo test --workspace --no-fail-fast` is unchanged at
+`235 passed; 0 failed; 19 ignored`.
 ~~~
 
 ## Other flags from the 2026-05-25 pass
