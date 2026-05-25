@@ -280,7 +280,7 @@ export type Store = BaseStoreFields<StorageBackend> & {
    * @param value - data to persist
    * @returns this store for chaining
    */
-  set: (
+  readonly set: (
     key: string,
     value: unknown,
   ) => Promise<Store>;
@@ -292,19 +292,19 @@ export type Store = BaseStoreFields<StorageBackend> & {
    * @param key - lookup key
    * @returns deserialized value or undefined when not found
    */
-  get: <const T = unknown,>(key: string,) => Promise<T | undefined>;
+  readonly get: <const T = unknown,>(key: string,) => Promise<T | undefined>;
 
   /**
    * Remove entry by key across all backends.
    *
    * @param key - key to remove
    */
-  delete: (key: string,) => Promise<void>;
+  readonly delete: (key: string,) => Promise<void>;
 
   /**
    * Remove all entries across all backends that support clearing.
    */
-  clear: () => Promise<void>;
+  readonly clear: () => Promise<void>;
 };
 
 /**
@@ -335,7 +335,7 @@ export type SyncStore = BaseStoreFields<SyncStorageBackend> & {
    * @param value - data to persist
    * @returns this store for chaining
    */
-  set: (
+  readonly set: (
     key: string,
     value: unknown,
   ) => SyncStore;
@@ -348,7 +348,7 @@ export type SyncStore = BaseStoreFields<SyncStorageBackend> & {
    * @param key - lookup key
    * @returns deserialized value or undefined when not found
    */
-  get: <const T = unknown,>(key: string,) => T | undefined;
+  readonly get: <const T = unknown,>(key: string,) => T | undefined;
   /* oxlint-enable typescript/no-unnecessary-type-parameters */
 
   /**
@@ -356,12 +356,12 @@ export type SyncStore = BaseStoreFields<SyncStorageBackend> & {
    *
    * @param key - key to remove
    */
-  delete: (key: string,) => void;
+  readonly delete: (key: string,) => void;
 
   /**
    * Remove all entries across all backends that support clearing.
    */
-  clear: () => void;
+  readonly clear: () => void;
 
   /**
    * Current number of entries (available when all backends support `.size`).
