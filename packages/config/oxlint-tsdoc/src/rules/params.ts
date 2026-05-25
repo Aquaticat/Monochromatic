@@ -16,7 +16,10 @@ import {
   extractParamNames,
 } from '../tsdoc-utils.ts';
 
-import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
+import {
+  commentReportLoc,
+  createFunctionTsdocVisitor,
+} from './tsdoc-visitors.ts';
 
 /**
  * Validates that `\@param` tag names match the function's actual parameter names.
@@ -90,21 +93,21 @@ export const checkParamNames: CreateOnceRule = {
             // Extra @param with no matching parameter
             if (!paramNames.includes(docName,)) {
               context.report({
-                node: result.comment,
+                loc: commentReportLoc(result.comment,),
                 messageId: 'extra',
                 data: { docName, },
               },);
             }
             else {
               context.report({
-                node: result.comment,
+                loc: commentReportLoc(result.comment,),
                 messageId: 'order',
               },);
             }
           }
           else if (docName !== correspondingParam) {
             context.report({
-              node: result.comment,
+              loc: commentReportLoc(result.comment,),
               messageId: 'mismatch',
               data: {
                 docName,
@@ -161,7 +164,7 @@ export const requireParam: CreateOnceRule = {
         paramNames.forEach(function checkParam(paramName,): void {
           if (!docParamNames.has(paramName,)) {
             context.report({
-              node: result.comment,
+              loc: commentReportLoc(result.comment,),
               messageId: 'missing',
               data: { paramName, },
             },);

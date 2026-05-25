@@ -19,6 +19,9 @@ import type {
   Context,
   Span,
 } from '@oxlint/plugins';
+import type { ReadonlyDeep, } from 'type-fest';
+
+import { ABSENT, } from './sentinel.ts';
 
 /**
  * Result of extracting and parsing a TSDoc comment for a node.
@@ -26,7 +29,7 @@ import type {
  * @example
  * ```ts
  * const result = parseTsdocForNode(node, context);
- * if (result !== undefined) {
+ * if (result !== ABSENT) {
  *   console.log(result.docComment.summarySection);
  * }
  * ```
@@ -55,10 +58,9 @@ const tsdocParser: TSDocParser = new TSDocParser(tsdocConfiguration,);
  *
  * @returns true for `/** ... *\/` style comments
  */
-function isTsdocBlock(comment: Comment,): boolean {
-  return (comment.type
-    === 'Block') && comment
-    .value
+function isTsdocBlock(comment: ReadonlyDeep<Comment>,): boolean {
+  return (comment.type === 'Block')
+    && comment.value
     .startsWith('*',);
 }
 
@@ -88,9 +90,9 @@ export const FALLBACK_ELIGIBLE_TYPES: ReadonlySet<string> = new Set([
  */
 export type TsdocLookupParams = {
   /** AST node to find TSDoc for. */
-  node: Span;
+  readonly node: Span;
   /** Oxlint rule context providing sourceCode. */
-  context: Context;
+  readonly context: Context;
 };
 
 /**
@@ -107,7 +109,7 @@ export type TsdocLookupParams = {
  * FunctionExpression or ArrowFunctionExpression, because their TSDoc
  * is owned by the enclosing VariableDeclaration or MethodDefinition.
  *
- * @returns block comment starting with `*`, or undefined when absent
+ * @returns block comment starting with `*`, or {@link ABSENT} when none precedes the node
  *
  * @example
  * ```ts
@@ -117,7 +119,7 @@ export type TsdocLookupParams = {
 export function findTsdocComment({
   node,
   context,
-}: TsdocLookupParams,): Comment | undefined {
+}: TsdocLookupParams,): Comment | typeof ABSENT {
   // Fast path: getCommentsBefore works for most declarations
   /** Leading comments returned by the standard API; scanned back-to-front for nearest TSDoc. */
   const comments = context.sourceCode
@@ -133,11 +135,10 @@ export function findTsdocComment({
   // Only fall back for declaration-level nodes, not expressions inside them
   /** Node type string; gates whether the slow whole-file fallback is allowed. */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-  const nodeType = (node as unknown as Record<string, unknown>).type as
-    | string
-    | undefined;
-  if ((nodeType === undefined) || (!FALLBACK_ELIGIBLE_TYPES.has(nodeType,)))
-    return undefined;
+  const nodeType = (node as unknown as Record<string, unknown>).type;
+  if (((typeof nodeType)
+    !== 'string') || (!FALLBACK_ELIGIBLE_TYPES.has(nodeType,)))
+    return ABSENT;
 
   // Fallback: scan all comments for the closest TSDoc ending on the line
   // immediately before this node. Handles exported declarations where
@@ -152,7 +153,7 @@ export function findTsdocComment({
     .getAllComments();
 
   /** Closest TSDoc comment found so far, tracked as the loop scans the whole comment table. */
-  let best: Comment | undefined = undefined;
+  let best: Comment | typeof ABSENT = ABSENT;
   for (const candidate of allComments) {
     if (!isTsdocBlock(candidate,))
       continue;
@@ -164,7 +165,7 @@ export function findTsdocComment({
       continue;
     if ((nodeStartLine - candidateEndLine) > 1)
       continue;
-    if ((best === undefined) || (candidate.loc
+    if ((best === ABSENT) || (candidate.loc
       .end
       .line
       > best
@@ -180,12 +181,12 @@ export function findTsdocComment({
 /**
  * Extracts and parses the TSDoc comment for a given AST node.
  *
- * @returns parsed result, or undefined when no TSDoc comment precedes the node
+ * @returns parsed result, or {@link ABSENT} when no TSDoc comment precedes the node
  *
  * @example
  * ```ts
  * const result = parseTsdocForNode({ node, context });
- * if (result === undefined) return;
+ * if (result === ABSENT) return;
  * for (const message of result.messages) {
  *   context.report({ node, message: message.toString() });
  * }
@@ -194,14 +195,14 @@ export function findTsdocComment({
 export function parseTsdocForNode({
   node,
   context,
-}: TsdocLookupParams,): TsdocParseResult | undefined {
+}: TsdocLookupParams,): TsdocParseResult | typeof ABSENT {
   /** Located TSDoc comment for the node; absent means nothing to parse. */
   const comment = findTsdocComment({
     node,
     context,
   },);
-  if (comment === undefined)
-    return undefined;
+  if (comment === ABSENT)
+    return ABSENT;
 
   // Reconstruct full comment text as the parser expects `/** ... */`
   /** Reconstructed `/* ... *\/` form because `comment.value` strips the delimiters. */

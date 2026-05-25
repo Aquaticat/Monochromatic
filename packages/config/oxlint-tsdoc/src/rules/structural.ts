@@ -11,6 +11,7 @@ import type {
 } from '@oxlint/plugins';
 
 import {
+  commentReportLoc,
   createTsdocVisitor,
   getCommentLines,
 } from './tsdoc-visitors.ts';
@@ -54,10 +55,12 @@ export const checkAlignment: CreateOnceRule = {
           .column
           + 1;
 
-        lines.slice(1,).forEach(function checkLine(
-          line,
-          index,
-        ): void {
+        lines
+          .slice(1,)
+          .forEach(function checkLine(
+            line,
+            index,
+          ): void {
           /** Continuation line with leading whitespace removed; used to test for the `*` marker. */
           const trimmed = line.trimStart();
           if (trimmed.length
@@ -130,7 +133,7 @@ export const multilineBlocks: CreateOnceRule = {
         if (comment.value
           .includes('@',)) {
           context.report({
-            node: comment,
+            loc: commentReportLoc(comment,),
             messageId: 'singleLine',
           },);
         }

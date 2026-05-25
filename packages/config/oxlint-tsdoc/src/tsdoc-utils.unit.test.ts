@@ -14,9 +14,9 @@ await describe({
   children: [
     ...IGNORED_EXTENSIONS.map(function mapExt(ext,) {
       return it({
-        name: `returns true for ${String(ext,)} extension`,
+        name: `returns true for ${ext} extension`,
         fn: async () => {
-          expect(shouldIgnoreFile(`/some/path/file${String(ext,)}`,),).toBe(true,);
+          expect(shouldIgnoreFile(`/some/path/file${ext}`,),).toBe(true,);
         },
       },);
     },),

@@ -18,7 +18,13 @@ import type {
   Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ReadonlyDeep, } from 'type-fest';
 
+import {
+  isRecord,
+  isRecordArray,
+} from '../ast-access.ts';
+import { ABSENT, } from '../sentinel.ts';
 import {
   findTsdocComment,
   parseTsdocForNode,
@@ -27,6 +33,7 @@ import {
 } from '../tsdoc-utils.ts';
 
 import { extractNodeName, } from './node-extraction.ts';
+import { commentReportLoc, } from './tsdoc-visitors.ts';
 
 /**
  * TSDoc standard tag name for `\@example`.
@@ -53,9 +60,8 @@ function isDirectlyExported(node: Span,): boolean {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
   const typed = node as Span & Record<string, unknown>;
   /** Parent node, used to detect whether the function sits under an `export` declaration. */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-  const parent = typed.parent as Record<string, unknown> | undefined;
-  if (parent === undefined)
+  const { parent, } = typed;
+  if (!isRecord(parent,))
     return false;
   return (parent.type
     === 'ExportNamedDeclaration')
@@ -73,7 +79,7 @@ function isDirectlyExported(node: Span,): boolean {
  *
  * @returns true when at least one `\@example` block exists
  */
-function hasExampleTag(result: TsdocParseResult,): boolean {
+function hasExampleTag(result: ReadonlyDeep<TsdocParseResult>,): boolean {
   return result.docComment
     .customBlocks
     .some(
@@ -95,7 +101,7 @@ function hasExampleTag(result: TsdocParseResult,): boolean {
  *
  * @returns true when the comment should be skipped
  */
-function isExempt(result: TsdocParseResult,): boolean {
+function isExempt(result: ReadonlyDeep<TsdocParseResult>,): boolean {
   if (result.docComment
     .inheritDocTag
     !== undefined)
@@ -163,22 +169,22 @@ export const requireExample: CreateOnceRule = {
       comment,
     }: {
       /** Function-like AST node. */
-      node: Span;
+      readonly node: Span;
       /** TSDoc comment AST node for error location. */
-      comment: Comment;
+      readonly comment: ReadonlyDeep<Comment>;
     },): void {
-      /** Parsed TSDoc result; undefined when the comment cannot be parsed at all. */
+      /** Parsed TSDoc result; absent when the comment cannot be parsed at all. */
       const result = parseTsdocForNode({
         node,
         context,
       },);
-      if (result === undefined)
+      if (result === ABSENT)
         return;
       if (isExempt(result,))
         return;
       if (!hasExampleTag(result,)) {
         context.report({
-          node: comment,
+          loc: commentReportLoc(comment,),
           messageId: 'missing',
         },);
       }
@@ -196,7 +202,7 @@ export const requireExample: CreateOnceRule = {
         node,
         context,
       },);
-      if (comment === undefined)
+      if (comment === ABSENT)
         return;
 
       if (isDirectlyExported(node,)) {
@@ -234,23 +240,22 @@ export const requireExample: CreateOnceRule = {
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
       const typed = node as Span & Record<string, unknown>;
       /** Declarator list; for `const a = ..., b = ...` only the first is inspected. */
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      const declarations = typed.declarations as Record<string, unknown>[] | undefined;
-      if ((declarations === undefined) || (declarations.length
+      const { declarations, } = typed;
+      if ((!isRecordArray(declarations,)) || (declarations.length
         === 0))
         return;
 
-      /** First declarator; destructured here so its `init` can be inspected below. */
+      /** First declarator; inspected so its `init` can be checked below. */
       const [decl,] = declarations;
-      if (decl === undefined)
+      if (!isRecord(decl,))
         return;
 
       // Only check variables whose init is a function expression or arrow.
-      // AST uses null (not undefined) for missing initializers (e.g. for-of bindings).
-      /** Initializer of the first declarator; `null` for empty bindings, undefined absent. */
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      const init = decl.init as Record<string, unknown> | null | undefined;
-      if ((init === undefined) || (init === null))
+      // AST uses null (not undefined) for missing initializers (e.g. for-of bindings);
+      // both fail the isRecord guard, so a non-record init is skipped here.
+      /** Initializer of the first declarator; a non-record value means no function init. */
+      const { init, } = decl;
+      if (!isRecord(init,))
         return;
       if ((init.type
         !== 'FunctionExpression')
@@ -265,7 +270,7 @@ export const requireExample: CreateOnceRule = {
         node,
         context,
       },);
-      if (comment === undefined)
+      if (comment === ABSENT)
         return;
 
       if (isDirectlyExported(node,)) {
@@ -309,17 +314,20 @@ export const requireExample: CreateOnceRule = {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
         const typed = node as Span & Record<string, unknown>;
         /** Specifier list; populated only for `export { a, b }` form, absent for inline exports. */
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-        const specifiers = typed.specifiers as Record<string, unknown>[] | undefined;
-        if (specifiers === undefined)
+        const { specifiers, } = typed;
+        if (!isRecordArray(specifiers,))
           return;
 
         for (const spec of specifiers) {
           /** Local-name node of the specifier (`a` in `export { a as b }`). */
-          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-          const local = spec.local as Record<string, unknown> | undefined;
-          if ((local !== undefined) && ((typeof local.name) === 'string'))
-            specifierExportedNames.add(local.name,);
+          const { local, } = spec;
+          if (!isRecord(local,))
+            continue;
+          /** Exported local identifier text; only string names are tracked. */
+          const { name, } = local;
+          if ((typeof name)
+            === 'string')
+            specifierExportedNames.add(name,);
         }
       },
       after(): void {

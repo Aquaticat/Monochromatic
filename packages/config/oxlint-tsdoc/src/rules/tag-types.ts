@@ -13,6 +13,7 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+import { ABSENT, } from '../sentinel.ts';
 import {
   parseTsdocForNode,
   shouldIgnoreFile,
@@ -47,7 +48,7 @@ export const validTypes: CreateOnceRule = {
         node,
         context,
       },);
-      if (result === undefined)
+      if (result === ABSENT)
         return;
       result.messages
         .forEach(function reportMessage(message,): void {

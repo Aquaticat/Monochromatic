@@ -4,6 +4,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
+import { ABSENT, } from '../sentinel.ts';
+
 import { parseTaggedLine, } from './empty-tags.ts';
 
 /** Length of the long repeated runs used to exercise scan boundaries on big inputs. */
@@ -13,27 +15,27 @@ await describe({
   name: parseTaggedLine.name,
   children: [
     it({
-      name: 'returns null for empty string',
+      name: 'returns ABSENT for empty string',
       fn: async () => {
-        expect(parseTaggedLine('',),).toBe(null,);
+        expect(parseTaggedLine('',),).toBe(ABSENT,);
       },
     },),
     it({
-      name: 'returns null for a bare at-sign with no tag name',
+      name: 'returns ABSENT for a bare at-sign with no tag name',
       fn: async () => {
-        expect(parseTaggedLine('@',),).toBe(null,);
+        expect(parseTaggedLine('@',),).toBe(ABSENT,);
       },
     },),
     it({
-      name: 'returns null when the at-sign is not followed by a word char',
+      name: 'returns ABSENT when the at-sign is not followed by a word char',
       fn: async () => {
-        expect(parseTaggedLine('@ foo',),).toBe(null,);
+        expect(parseTaggedLine('@ foo',),).toBe(ABSENT,);
       },
     },),
     it({
-      name: 'returns null for text without a leading at-sign',
+      name: 'returns ABSENT for text without a leading at-sign',
       fn: async () => {
-        expect(parseTaggedLine('plain text',),).toBe(null,);
+        expect(parseTaggedLine('plain text',),).toBe(ABSENT,);
       },
     },),
     it({
@@ -64,15 +66,15 @@ await describe({
       },
     },),
     it({
-      name: 'returns null when there is no whitespace gap after the tag',
+      name: 'returns ABSENT when there is no whitespace gap after the tag',
       fn: async () => {
-        expect(parseTaggedLine('@param',),).toBe(null,);
+        expect(parseTaggedLine('@param',),).toBe(ABSENT,);
       },
     },),
     it({
-      name: 'returns null when only trailing whitespace follows the tag (empty rest)',
+      name: 'returns ABSENT when only trailing whitespace follows the tag (empty rest)',
       fn: async () => {
-        expect(parseTaggedLine('@param ',),).toBe(null,);
+        expect(parseTaggedLine('@param ',),).toBe(ABSENT,);
       },
     },),
     it({

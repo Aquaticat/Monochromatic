@@ -4,6 +4,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
+import { ABSENT, } from '../sentinel.ts';
+
 import { extractLeadingTag, } from './structural-tags.ts';
 
 /** Length of the long repeated run used to exercise the scan boundary on big input. */
@@ -13,33 +15,33 @@ await describe({
   name: extractLeadingTag.name,
   children: [
     it({
-      name: 'returns null for empty string',
+      name: 'returns ABSENT for empty string',
       fn: async () => {
-        expect(extractLeadingTag('',),).toBe(null,);
+        expect(extractLeadingTag('',),).toBe(ABSENT,);
       },
     },),
     it({
-      name: 'returns null for a bare at-sign with no tag name',
+      name: 'returns ABSENT for a bare at-sign with no tag name',
       fn: async () => {
-        expect(extractLeadingTag('@',),).toBe(null,);
+        expect(extractLeadingTag('@',),).toBe(ABSENT,);
       },
     },),
     it({
-      name: 'returns null when the at-sign is not followed by a word char',
+      name: 'returns ABSENT when the at-sign is not followed by a word char',
       fn: async () => {
-        expect(extractLeadingTag('@ foo',),).toBe(null,);
+        expect(extractLeadingTag('@ foo',),).toBe(ABSENT,);
       },
     },),
     it({
-      name: 'returns null for a doubled at-sign',
+      name: 'returns ABSENT for a doubled at-sign',
       fn: async () => {
-        expect(extractLeadingTag('@@x',),).toBe(null,);
+        expect(extractLeadingTag('@@x',),).toBe(ABSENT,);
       },
     },),
     it({
-      name: 'returns null for text without a leading at-sign',
+      name: 'returns ABSENT for text without a leading at-sign',
       fn: async () => {
-        expect(extractLeadingTag('no tag',),).toBe(null,);
+        expect(extractLeadingTag('no tag',),).toBe(ABSENT,);
       },
     },),
     it({

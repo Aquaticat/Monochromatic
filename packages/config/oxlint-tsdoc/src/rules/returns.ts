@@ -12,7 +12,10 @@ import type {
 
 import { functionReturnsValue, } from '../tsdoc-utils.ts';
 
-import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
+import {
+  commentReportLoc,
+  createFunctionTsdocVisitor,
+} from './tsdoc-visitors.ts';
 
 /**
  * Requires returns tag for functions that return a value.
@@ -57,7 +60,7 @@ export const requireReturns: CreateOnceRule = {
           .returnsBlock
           === undefined) {
           context.report({
-            node: result.comment,
+            loc: commentReportLoc(result.comment,),
             messageId: 'missing',
           },);
         }
@@ -97,7 +100,7 @@ export const requireReturnsCheck: CreateOnceRule = {
             !== undefined))
         {
           context.report({
-            node: result.comment,
+            loc: commentReportLoc(result.comment,),
             messageId: 'voidReturn',
           },);
         }

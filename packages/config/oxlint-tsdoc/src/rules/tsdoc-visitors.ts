@@ -10,10 +10,14 @@
 import type {
   Comment,
   Context,
+  LineColumn,
   Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ReadonlyDeep, } from 'type-fest';
 
+import type { ReadonlyRecord, } from '../ast-access.ts';
+import { ABSENT, } from '../sentinel.ts';
 import {
   findTsdocComment,
   parseTsdocForNode,
@@ -56,9 +60,49 @@ export function stripCommentLineMarker(s: string,): string {
  * const lines = getCommentLines(commentNode);
  * ```
  */
-export function getCommentLines(comment: Comment,): readonly string[] {
+export function getCommentLines(comment: ReadonlyDeep<Comment>,): readonly string[] {
   return comment.value
     .split('\n',);
+}
+
+/**
+ * Builds a fresh report location from a comment's span.
+ *
+ * `context.report` needs a mutable `Ranged` / location, but rule handlers
+ * receive deeply-readonly comments; copying the numeric positions into a
+ * new object crosses that readonly boundary without an assertion.
+ *
+ * @param comment - TSDoc comment whose span locates the diagnostic
+ *
+ * @returns location object accepted by `context.report({ loc })`
+ *
+ * @example
+ * ```ts
+ * context.report({ loc: commentReportLoc(comment), messageId: 'x' });
+ * ```
+ */
+export function commentReportLoc(comment: ReadonlyDeep<Comment>,): {
+  start: LineColumn;
+  end: LineColumn;
+} {
+  return {
+    start: {
+      line: comment.loc
+        .start
+        .line,
+      column: comment.loc
+        .start
+        .column,
+    },
+    end: {
+      line: comment.loc
+        .end
+        .line,
+      column: comment.loc
+        .end
+        .column,
+    },
+  };
 }
 
 /**
@@ -66,11 +110,11 @@ export function getCommentLines(comment: Comment,): readonly string[] {
  */
 export type CreateTsdocVisitorParams = {
   /** Oxlint rule context. */
-  context: Context;
+  readonly context: Context;
   /** Invoked for each (node, comment) pair. */
-  handler: (
+  readonly handler: (
     node: Span,
-    comment: Comment,
+    comment: ReadonlyDeep<Comment>,
   ) => void;
 };
 
@@ -105,7 +149,7 @@ export function createTsdocVisitor({
       node,
       context,
     },);
-    if (comment !== undefined) {
+    if (comment !== ABSENT) {
       handler(
         node,
         comment,
@@ -144,11 +188,11 @@ export function createTsdocVisitor({
  */
 export type CreateFunctionTsdocVisitorParams = {
   /** Oxlint rule context. */
-  context: Context;
+  readonly context: Context;
   /** Invoked with node and parsed TSDoc for each function-like node. */
-  handler: (
-    node: Span & Record<string, unknown>,
-    result: TsdocParseResult,
+  readonly handler: (
+    node: Span & ReadonlyRecord,
+    result: ReadonlyDeep<TsdocParseResult>,
   ) => void;
 };
 
@@ -185,7 +229,7 @@ export function createFunctionTsdocVisitor({
       node,
       context,
     },);
-    if (result === undefined)
+    if (result === ABSENT)
       return;
     /** Narrowed view that exposes the host AST's untyped extra properties to the handler. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped

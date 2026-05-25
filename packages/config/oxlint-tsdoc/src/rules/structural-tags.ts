@@ -13,6 +13,8 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+import { ABSENT, } from '../sentinel.ts';
+
 import {
   createTsdocVisitor,
   getCommentLines,
@@ -41,17 +43,17 @@ function isWordChar(c: string,): boolean {
  *
  * @param s - line content (with the leading `*` already stripped and trimmed)
  *
- * @returns captured tag (e.g. `'@param'`) or `null` when `s` does not begin with `@word`
+ * @returns captured tag (e.g. `'@param'`) or {@link ABSENT} when `s` does not begin with `@word`
  *
  * @example
  * ```ts
  * extractLeadingTag('@param foo'); // '@param'
- * extractLeadingTag('plain text'); // null
+ * extractLeadingTag('plain text'); // ABSENT
  * ```
  */
-export function extractLeadingTag(s: string,): string | null {
+export function extractLeadingTag(s: string,): string | typeof ABSENT {
   if (!s.startsWith('@',))
-    return null;
+    return ABSENT;
   /**
    * Advances through the run of word characters following the `@`.
    *
@@ -70,7 +72,7 @@ export function extractLeadingTag(s: string,): string | null {
   /** Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign. */
   const end = scan(1,);
   if (end === 1)
-    return null;
+    return ABSENT;
   return s.slice(
     0,
     end,
@@ -148,10 +150,13 @@ export const tagLines: CreateOnceRule = {
           if (prevTrimmed.length
             > 0) {
             /**
-             * Resolved tag string for the error message, with `\@unknown` fallback for the impossible-null case.
+             * Tag matched on the line; absent only if the line somehow lost its leading `@`.
              */
-            const tag = extractLeadingTag(trimmed,)
-              ?? '@unknown';
+            const matched = extractLeadingTag(trimmed,);
+            /**
+             * Resolved tag string for the error message, with `\@unknown` for the impossible-absent case.
+             */
+            const tag = matched === ABSENT ? '@unknown' : matched;
 
             /**
              * Line number of the tag line in the source file (1-based).

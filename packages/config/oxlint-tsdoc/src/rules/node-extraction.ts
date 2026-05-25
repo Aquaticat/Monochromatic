@@ -11,6 +11,12 @@ import type {
   Span,
 } from '@oxlint/plugins';
 
+import {
+  isRecord,
+  isRecordArray,
+  type ReadonlyRecord,
+} from '../ast-access.ts';
+import { ABSENT, } from '../sentinel.ts';
 import { findTsdocComment, } from '../tsdoc-utils.ts';
 
 /** Human-readable labels for AST node types that require TSDoc. */
@@ -26,6 +32,41 @@ export const NODE_KIND_LABELS: Readonly<Record<string, string>> = {
   PropertyDefinition: 'property',
   Property: 'accessor',
 };
+
+/**
+ * Parameters for {@link readNamedChild}.
+ */
+type ReadNamedChildParams = {
+  /** Parent AST node carrying the child under `key`. */
+  readonly node: ReadonlyRecord;
+  /** Property name of the child identifier (`id`, `key`, ...). */
+  readonly key: string;
+};
+
+/**
+ * Reads the `.name` string of an identifier-shaped child node.
+ *
+ * @returns child's `name` string, or {@link ABSENT} when the child is not
+ * a record with a string `name`
+ *
+ * @example
+ * ```ts
+ * const name = readNamedChild({ node, key: 'id' });
+ * ```
+ */
+function readNamedChild({
+  node,
+  key,
+}: ReadNamedChildParams,): string | typeof ABSENT {
+  /** Child node under `key`; only an identifier-shaped record yields a name. */
+  const child = node[key];
+  if (!isRecord(child,))
+    return ABSENT;
+  /** Identifier text of the child; present only on identifier nodes. */
+  const { name, } = child;
+  return (typeof name)
+    === 'string' ? name : ABSENT;
+}
 
 /**
  * Extracts a human-readable name from an AST node for diagnostic messages.
@@ -48,18 +89,19 @@ export function extractNodeName(node: Span,): string {
   if (typed.type
     === 'VariableDeclaration') {
     /** Declarator list of the variable statement; first declarator carries the canonical name. */
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    const declarations = typed.declarations as Record<string, unknown>[] | undefined;
-    if ((declarations !== undefined) && (declarations.length
-      > 0)) {
-      /** Identifier node of the first declarator; carries the variable name string. */
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-      const id = declarations[0]
-        ?.id as Record<string, unknown> | undefined;
-      if ((id !== undefined) && ((typeof id.name) === 'string'))
-        return id.name;
-    }
-    return 'anonymous';
+    const { declarations, } = typed;
+    if (!isRecordArray(declarations,))
+      return 'anonymous';
+    /** First declarator; its `id` identifier holds the variable name. */
+    const [first,] = declarations;
+    if (!isRecord(first,))
+      return 'anonymous';
+    /** Variable name read from the first declarator's `id`. */
+    const name = readNamedChild({
+      node: first,
+      key: 'id',
+    },);
+    return name === ABSENT ? 'anonymous' : name;
   }
 
   // MethodDefinition / PropertyDefinition / Property: key.name
@@ -70,24 +112,29 @@ export function extractNodeName(node: Span,): string {
     || (typed.type
       === 'Property'))
   {
-    /** Key node of the member (`foo` in `class C { foo() {} }`); supplies the diagnostic name. */
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-    const key = typed.key as Record<string, unknown> | undefined;
-    if ((key !== undefined) && ((typeof key.name) === 'string'))
-      return key.name;
-    return 'anonymous';
+    /** Member name read from the node's `key` (`foo` in `class C { foo() {} }`). */
+    const name = readNamedChild({
+      node: typed,
+      key: 'key',
+    },);
+    return name === ABSENT ? 'anonymous' : name;
   }
 
   // Most declarations: .id.name
-  /** Identifier node of the declaration; present on functions, classes, type aliases, etc. */
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-  const id = typed.id as Record<string, unknown> | undefined;
-  if ((id !== undefined) && ((typeof id.name) === 'string'))
-    return id.name;
+  /** Declaration name read from `id`; present on functions, classes, type aliases, etc. */
+  const idName = readNamedChild({
+    node: typed,
+    key: 'id',
+  },);
+  if (idName !== ABSENT)
+    return idName;
 
   // FunctionDeclaration without name, TSEnumMember with direct name
-  if ((typeof typed.name) === 'string')
-    return typed.name;
+  /** Direct `.name` on the node, used for enum members and unnamed functions. */
+  const { name, } = typed;
+  if ((typeof name)
+    === 'string')
+    return name;
 
   return 'anonymous';
 }
@@ -109,8 +156,9 @@ export function extractNodeKind(node: Span,): string {
    * AST type tag (e.g. `FunctionDeclaration`); the key into {@link NODE_KIND_LABELS}.
    */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
-  const nodeType = (node as Span & Record<string, unknown>).type as string | undefined;
-  if (nodeType === undefined)
+  const nodeType = (node as Span & Record<string, unknown>).type;
+  if ((typeof nodeType)
+    !== 'string')
     return 'declaration';
   return NODE_KIND_LABELS[nodeType]
     ?? 'declaration';
@@ -121,9 +169,9 @@ export function extractNodeKind(node: Span,): string {
  */
 export type ReportMissingParams = {
   /** AST node that should have TSDoc. */
-  node: Span;
+  readonly node: Span;
   /** Oxlint rule context. */
-  context: Context;
+  readonly context: Context;
 };
 
 /**
@@ -142,7 +190,7 @@ export function reportMissing({
     node,
     context,
   },)
-    === undefined) {
+    === ABSENT) {
     context.report({
       node,
       messageId: 'missing',

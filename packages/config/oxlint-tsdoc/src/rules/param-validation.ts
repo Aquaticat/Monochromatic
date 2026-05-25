@@ -6,7 +6,10 @@
  * @module
  */
 
-import { PlainTextEmitter, } from '@microsoft/tsdoc';
+import {
+  type DocSection,
+  PlainTextEmitter,
+} from '@microsoft/tsdoc';
 
 import type {
   Context,
@@ -14,7 +17,10 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
+import {
+  commentReportLoc,
+  createFunctionTsdocVisitor,
+} from './tsdoc-visitors.ts';
 
 /**
  * Requires that every `\@param` tag has a parameter name.
@@ -48,7 +54,7 @@ export const requireParamName: CreateOnceRule = {
             .length
             === 0) {
             context.report({
-              node: result.comment,
+              loc: commentReportLoc(result.comment,),
               messageId: 'missingName',
             },);
           }
@@ -98,9 +104,10 @@ export const requireParamDescription: CreateOnceRule = {
           .params
           .blocks
           .forEach(function checkBlock(block,): void {
-          if (!PlainTextEmitter.hasAnyTextContent(block.content,)) {
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- @microsoft/tsdoc PlainTextEmitter.hasAnyTextContent expects a mutable DocNode; content is only read
+          if (!PlainTextEmitter.hasAnyTextContent(block.content as DocSection,)) {
             context.report({
-              node: result.comment,
+              loc: commentReportLoc(result.comment,),
               messageId: 'missingDescription',
               data: { paramName: block.parameterName, },
             },);

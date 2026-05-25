@@ -12,6 +12,8 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
+import { ABSENT, } from '../sentinel.ts';
+
 import {
   createTsdocVisitor,
   getCommentLines,
@@ -50,7 +52,7 @@ function isWhitespaceChar(c: string,): boolean {
 }
 
 /**
- * Parsed shape of a tagged TSDoc line; `null` when the line is not
+ * Parsed shape of a tagged TSDoc line; {@link ABSENT} when the line is not
  * `@tag <text>` form.
  */
 type TaggedLine = {
@@ -68,17 +70,17 @@ type TaggedLine = {
  *
  * @param s - line content (with the leading `*` already stripped)
  *
- * @returns parsed tag + rest, or `null` when the shape does not match
+ * @returns parsed tag + rest, or {@link ABSENT} when the shape does not match
  *
  * @example
  * ```ts
  * parseTaggedLine('@param foo'); // { tag: '@param', rest: 'foo' }
- * parseTaggedLine('@param'); // null
+ * parseTaggedLine('@param'); // ABSENT
  * ```
  */
-export function parseTaggedLine(s: string,): TaggedLine | null {
+export function parseTaggedLine(s: string,): TaggedLine | typeof ABSENT {
   if (!s.startsWith('@',))
-    return null;
+    return ABSENT;
   /**
    * Advances through the run of word characters following the `@`.
    *
@@ -97,7 +99,7 @@ export function parseTaggedLine(s: string,): TaggedLine | null {
   /** Exclusive end of the tag-name run; cursor starts at 1 to skip the leading at-sign. */
   const tagEnd = scanTag(1,);
   if (tagEnd === 1)
-    return null;
+    return ABSENT;
   /**
    * Advances through the run of whitespace characters following the tag.
    *
@@ -116,12 +118,12 @@ export function parseTaggedLine(s: string,): TaggedLine | null {
   /** First index past the inter-token whitespace; rest starts here. */
   const restStart = scanWhitespace(tagEnd,);
   if (restStart === tagEnd)
-    return null;
+    return ABSENT;
   /** Remaining content; must be non-empty to match `(.+)`. */
   const rest = s.slice(restStart,);
   if (rest.length
     === 0)
-    return null;
+    return ABSENT;
   return {
     tag: s.slice(
       0,
@@ -183,10 +185,10 @@ export const emptyTags: CreateOnceRule = {
           const trimmed = stripCommentLineMarker(line.trimStart(),)
             .trimStart();
           /**
-           * Parsed `\@tag <text>` shape; null when the line carries no tag with trailing text.
+           * Parsed `\@tag <text>` shape; absent when the line carries no tag with trailing text.
            */
           const tagMatch = parseTaggedLine(trimmed,);
-          if (tagMatch === null)
+          if (tagMatch === ABSENT)
             return;
           /** Captured tag name and remainder; both populate the diagnostic and gate the report. */
           const {

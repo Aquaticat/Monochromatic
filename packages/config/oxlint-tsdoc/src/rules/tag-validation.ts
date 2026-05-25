@@ -10,7 +10,10 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { createTsdocVisitor, } from './tsdoc-visitors.ts';
+import {
+  commentReportLoc,
+  createTsdocVisitor,
+} from './tsdoc-visitors.ts';
 
 /**
  * Returns true when `c` is ASCII whitespace per regex `\s` semantics.
@@ -54,8 +57,8 @@ export function containsBoundedAccessTag({
   text,
   tag,
 }: {
-  text: string;
-  tag: string;
+  readonly text: string;
+  readonly tag: string;
 },): boolean {
   // Linear walk: each occurrence of `tag` is located by `indexOf`; the cursor
   // advances by one past every boundary-rejected candidate, so worst-case work
@@ -138,7 +141,7 @@ export const checkAccess: CreateOnceRule = {
         if (found.length
           > 1) {
           context.report({
-            node: comment,
+            loc: commentReportLoc(comment,),
             messageId: 'conflict',
             data: { tags: found.join(', ',), },
           },);

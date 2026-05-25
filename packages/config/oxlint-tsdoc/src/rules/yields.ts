@@ -4,13 +4,18 @@ import type {
   Span,
   VisitorWithHooks,
 } from '@oxlint/plugins';
+import type { ReadonlyDeep, } from 'type-fest';
 
+import type { ReadonlyRecord, } from '../ast-access.ts';
+import { ABSENT, } from '../sentinel.ts';
 import {
   isGeneratorFunction,
   parseTsdocForNode,
   shouldIgnoreFile,
   type TsdocParseResult,
 } from '../tsdoc-utils.ts';
+
+import { commentReportLoc, } from './tsdoc-visitors.ts';
 
 //region Shared
 
@@ -19,11 +24,11 @@ import {
  */
 type CreateFunctionTsdocVisitorParams = {
   /** Oxlint rule context. */
-  context: Context;
+  readonly context: Context;
   /** Invoked with node and parsed TSDoc. */
-  handler: (
-    node: Span & Record<string, unknown>,
-    result: TsdocParseResult,
+  readonly handler: (
+    node: Span & ReadonlyRecord,
+    result: ReadonlyDeep<TsdocParseResult>,
   ) => void;
 };
 
@@ -50,7 +55,7 @@ function createFunctionTsdocVisitor({
       node,
       context,
     },);
-    if (result === undefined)
+    if (result === ABSENT)
       return;
     /** Narrowed view that exposes the host AST's untyped extra properties to the handler. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- oxlint plugin API is untyped
@@ -87,7 +92,7 @@ function createFunctionTsdocVisitor({
  *
  * @returns true when yielded values are documented
  */
-function hasYieldsTag(result: TsdocParseResult,): boolean {
+function hasYieldsTag(result: ReadonlyDeep<TsdocParseResult>,): boolean {
   return result.comment
     .value
     .includes('@yields',);
@@ -132,7 +137,7 @@ export const requireYields: CreateOnceRule = {
           return;
         if (!hasYieldsTag(result,)) {
           context.report({
-            node: result.comment,
+            loc: commentReportLoc(result.comment,),
             messageId: 'missing',
           },);
         }
@@ -166,7 +171,7 @@ export const requireYieldsCheck: CreateOnceRule = {
       ): void {
         if ((!isGeneratorFunction(node,)) && hasYieldsTag(result,)) {
           context.report({
-            node: result.comment,
+            loc: commentReportLoc(result.comment,),
             messageId: 'notGenerator',
           },);
         }

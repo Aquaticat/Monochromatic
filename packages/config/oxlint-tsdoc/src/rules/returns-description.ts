@@ -6,7 +6,10 @@
  * @module
  */
 
-import { PlainTextEmitter, } from '@microsoft/tsdoc';
+import {
+  type DocSection,
+  PlainTextEmitter,
+} from '@microsoft/tsdoc';
 
 import type {
   Context,
@@ -14,7 +17,10 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { createFunctionTsdocVisitor, } from './tsdoc-visitors.ts';
+import {
+  commentReportLoc,
+  createFunctionTsdocVisitor,
+} from './tsdoc-visitors.ts';
 
 /**
  * Requires that returns tags have a description.
@@ -58,9 +64,10 @@ export const requireReturnsDescription: CreateOnceRule = {
         const { returnsBlock, } = result.docComment;
         if (returnsBlock === undefined)
           return;
-        if (!PlainTextEmitter.hasAnyTextContent(returnsBlock.content,)) {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- @microsoft/tsdoc PlainTextEmitter.hasAnyTextContent expects a mutable DocNode; content is only read
+        if (!PlainTextEmitter.hasAnyTextContent(returnsBlock.content as DocSection,)) {
           context.report({
-            node: result.comment,
+            loc: commentReportLoc(result.comment,),
             messageId: 'missingDescription',
           },);
         }
