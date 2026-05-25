@@ -86,7 +86,7 @@ async function writeIfChanged(
   /** Current file content, or undefined if file doesn't exist yet */
   const existing = await readExisting(dest,);
   if (existing === content) {
-    rl.info(
+    rl.debug(
       `skip (unchanged): ${sourcePath !== undefined ? `${sourcePath} -> ` : ''}${dest}`,
     );
     return;
