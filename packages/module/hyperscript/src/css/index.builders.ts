@@ -41,7 +41,7 @@ function serializeDecls(decls: object,): string {
 
   for (const [property, value,] of Object.entries(decls,) as readonly [
     string,
-    CssValue | string | number | undefined,
+    CssValue | string | number,
   ][]) {
     if (value === undefined)
       continue;
@@ -115,9 +115,9 @@ function renderBody(
     raw,
     children,
   }: {
-    readonly decls: object | undefined;
-    readonly raw: string | undefined;
-    readonly children: readonly string[] | undefined;
+    readonly decls?: object;
+    readonly raw?: string;
+    readonly children?: readonly string[];
   },
 ): string {
   /** Accumulates declaration and raw segments so they can be joined with `;` separators. */
@@ -155,13 +155,7 @@ function renderBody(
 /**
  * Builds a CSS style rule string.
  *
- * @param rule - CSS selector string
- *
- * @param decls - declarations to serialize
- *
- * @param raw - raw CSS strings to inject verbatim
- *
- * @param children - nested child rules
+ * @param options - selector plus optional declarations, raw CSS, and child rules
  *
  * @returns CSS rule string (e.g. `'.card{display:flex}'`)
  *
@@ -172,19 +166,12 @@ function renderBody(
  * ```
  */
 export function buildRule(
-  {
-    rule,
-    decls,
-    raw,
-    children,
-  }: RuleOptions,
+  options: RuleOptions,
 ): string {
+  /** Pulls the selector out so the block body renders from the remaining option fields. */
+  const { rule, } = options;
   return `${rule}{${
-    renderBody({
-      decls,
-      raw,
-      children,
-    },)
+    renderBody(options,)
   }}`;
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
@@ -213,9 +200,6 @@ export function buildAtRule(
   const {
     at,
     params,
-    decls,
-    raw,
-    children,
   } = options;
   /** Captures the at-rule keyword and optional params as a single prefix shared by both the statement and block forms. */
   const head = params !== undefined
@@ -229,11 +213,7 @@ export function buildAtRule(
     return `${head};`;
 
   return `${head}{${
-    renderBody({
-      decls,
-      raw,
-      children,
-    },)
+    renderBody(options,)
   }}`;
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
