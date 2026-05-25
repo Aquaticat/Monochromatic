@@ -2,170 +2,537 @@
 
 GitHub issue: [Aquaticat/Monochromatic#185](https://github.com/Aquaticat/Monochromatic/issues/185)
 
+Status: revised decision document. Implementation work has not started.
+
 ## Context
 
-Issue #185 asks to plan splitting `packages/module/es/` (582 TS files, 26,943 LOC; "comprehensive functional programming utility library") into smaller focused packages and ultimately delete `module/es`. Companion issues (#47, #50, #67, #87, #93, #94, #95, #100, #152, #171, #172, #179, #180, #181, #182, #183, #184) propose adding utilities; each needs a destination before retargeting.
+Issue #185 tracks splitting `packages/module/es/` into focused packages and eventually deleting `module/es`.
+Current repository measurements show `packages/module/es/` contains 552 TypeScript files and 19,931 TypeScript
+lines.
 
-**Empirical surface inventory** (verified via `rg "from '@monochromatic-dev/module-es" packages/`):
+Source-level imports outside `packages/module/es/` are limited to five files across two packages:
 
-- 3 external workspace packages actually import from `module-es`:
-  - `packages/webapp-productivity/rss/`: `mapIterableAsync` (3 files), `memoizeAsync` (1 file)
-  - `packages/webapp-search/exa-search/`: `createObservable` (1 file)
-  - `packages/build-tool/css/`: POSIX path helpers (`dirname`, `resolve`, `join`, `isAbsolute`, `sep`) from `module-es/ts/path/index.ts` (3 files; the target `src/path/` does not exist in `module-es`. Verified: `mise run //packages/build-tool/css:lint:types` currently fails with `TS2307: Cannot find module '@monochromatic-dev/module-es/ts/path/index.ts'` on all 3 files.)
-- 18 other workspace packages declare `module-es` as a dependency but do not import it.
-- ~500 type-taxonomy files under `src/types/t .../` have no external consumer; `AUDIT.fallow-tools.md` already disables `unused-*` rules there.
+- `packages/webapp-productivity/rss/src/feed.ts`: `module-es/map-iterable-async`
+- `packages/webapp-productivity/rss/src/ignore.ts`: `module-es/map-iterable-async`
+- `packages/webapp-productivity/rss/src/opml-text.ts`: `module-es/map-iterable-async`
+- `packages/webapp-productivity/rss/src/index.ts`: `module-es/memoize-async`
+- `packages/webapp-search/exa-search/src/client-dom.ts`: `module-es/create-observable`
 
-**Settled by precedent** (no decision needed):
+Twenty package manifests outside `module/es` declare `@monochromatic-dev/module-es`.
+Two are active source consumers (`rss`, `exa-search`), and 18 have no current source imports:
 
-- Concept-driven, single-concept package naming (matches every prior extraction: `async-time`, `logger`, `numeric-const`, `numeric-format`, `or-throw`).
-- Flat `src/<name>.ts + src/<name>.unit.test.ts + src/index.ts` layout (matches every sibling).
-- Migration discipline: additive+verified+committed first, consumer migration each commit green, deletion last (`PLANNING.extract-refactor-guardrail.md`).
-- Issues #50 (numeric constants) and #67 (format helpers like `formatBytes`/`formatMs`) already have homes: `@monochromatic-dev/module-numeric-const` (byte/fraction/http-status/time) and `@monochromatic-dev/module-numeric-format` (byte/duration).
+- `packages/cli/git`
+- `packages/cli/mvm`
+- `packages/cli/rgffplay`
+- `packages/cli/terminal-exec`
+- `packages/dev-script/deps-cube`
+- `packages/dev-script/file-enforcer`
+- `packages/dev-script/inference-canary`
+- `packages/dev-script/inference-canary-viewer`
+- `packages/figma-parsers/kiwi`
+- `packages/module/image-diff`
+- `packages/module/token-count`
+- `packages/webapp-edu/paper2vn`
+- `packages/webapp-forge/seed`
+- `packages/webapp-forge/server`
+- `packages/webapp-productivity/done`
+- `packages/webapp-productivity/done-postcss`
+- `packages/webapp-productivity/syllable-break-demo`
+- `packages/webapp-search/ai-tree`
 
-**User decisions (2026-05-14):**
+`packages/build-tool/css` is not part of round 1.
+It already imports POSIX path helpers from `@monochromatic-dev/module-fs-path`, and
+`mise run //packages/build-tool/css:lint:types` passes.
+The old broken-import section in the previous plan was stale.
 
-- Granularity: tracer-bullet: define only the 3 packages needed for actual consumer migrations. Defer remaining issues to follow-up planning rounds.
-- Round-1 deletion scope: nothing in `module/es` is deleted in round 1. The remaining symbols (taxonomy, `binary`, JSONC parser, etc.) stay in `module/es` pending further planning rounds that will assign them to better homes. `module/es` itself is deleted only at the end of all migration work, after every symbol has a destination. The "eventually delete with `module/es`" framing applies to the final milestone, not round 1.
-- Issue #184 (Result/Option): close as wontfix; AGENTS.md "throw, not return errors" is unambiguous.
-- Deliverable: decision doc + issue retargeting. No code lands.
+## Current decisions
 
-## Recommended approach
+Round 1 uses a tracer-bullet split: extract only the concepts needed by current external consumers, plus the
+store package needed to make memoize a real package instead of a memoize-private cache.
 
-### Round-1 packages (3)
+Round 1 creates four private packages:
 
-- **`@monochromatic-dev/module-async-iter`**
-  - Initial exports: `asyncMap`.
-  - Source path in `module-es`: `src/types/t object/t array/f/t iterable/map/r a/p p/index.ts` (currently `module-es/map-iterable-async`).
-  - Drives consumer: `webapp-productivity/rss`.
-- **`@monochromatic-dev/module-memoize`**
-  - Initial exports: `memoize` (sync), `memoizeAsync` (async).
-  - Source paths in `module-es`: `src/types/t function/f/t function/memoize/r s/p p/index.ts` and `.../r a/p n/index.ts` (currently `module-es/memoize-async`).
-  - Drives consumer: `webapp-productivity/rss`.
-- **`@monochromatic-dev/module-observable`**
-  - Initial exports: `createObservable` (sync), `createObservableAsync` (async).
-  - Source paths in `module-es`: `src/types/t object/t proxy/f/t any/createObservable/r s/p p/index.ts` and `.../r a/p p/index.ts` (currently `module-es/create-observable`, `module-es/create-observable-async`).
-  - Drives consumer: `webapp-search/exa-search`.
+- `@monochromatic-dev/module-kv-store`
+- `@monochromatic-dev/module-memoize`
+- `@monochromatic-dev/module-async-iter`
+- `@monochromatic-dev/module-observable`
 
-Directory layout: `packages/module/{async-iter,memoize,observable}/`. Each follows the shape of `packages/module/async-time/`: `package.json`, `mise.toml`, `README.md`, `tsconfig.json`, `tsdown.config.ts` (or browser/node split), `src/index.ts`, `src/<name>.ts`, `src/<name>.unit.test.ts`.
+Every new package has tsdown setup.
+Existing packages without tsdown setup are drift, not precedent.
+Round 1 creates a separate audit issue for runtime-export packages that still lack tsdown setup.
 
-Naming note: rename `mapIterableAsync` → `asyncMap` to match issue #93's proposed convention and the `async-X` sibling pattern (`module-async-time` exports `wait` directly, not `waitAsync`). Consumer rewrites are one-line each.
+Public runtime imports use package roots only.
+No new runtime subpath exports such as `./sync` or `./async` are added.
+Each package keeps `./ts` and `./ts/*` source escape hatches for exceptional source imports.
 
-The `$ as <name>` import idiom in current `module-es` consumers (e.g. `import { $ as mapIterableAsync, } from '@monochromatic-dev/module-es/map-iterable-async'`) goes away in round-1 packages; new packages use plain named exports per sibling-module convention.
+Every new package is private in round 1.
+Public publishing can be decided later after dependency graphs and provenance are reviewed.
 
-### Pre-existing broken-import fix (in round 1 because the symbols don't belong in `module-es`)
+## Package shape
 
-`packages/build-tool/css/src/{index.ts, package-resolver.ts, import.ts}` import POSIX helpers from `@monochromatic-dev/module-es/ts/path/index.ts`. That path resolves to `module-es/src/path/index.ts`, which does not exist (`find packages/module/es/src -name 'path*'` returns nothing). The imports are pre-existing-broken. Retarget to `node:path` directly: the imported names (`dirname`, `resolve`, `join`, `isAbsolute`, `sep`) are exact Node aliases. This is not a `module-es` extraction (the symbols never lived there); it's a fix that goes into round 1 because round 1 is the moment `build-tool/css`'s `module-es` dep relationship is being reconsidered.
+Each new package follows the built-output package shape used by current tsdown-backed module packages.
+The package contains:
 
-### Symbol-to-destination map (round 1 scope)
+- `package.json`
+- `mise.toml`
+- `README.md`
+- `tsconfig.json`
+- `tsdown.browser.config.ts`
+- `tsdown.node.config.ts`
+- `src/index.ts`
+- implementation files under `src/`
+- `*.unit.test.ts` files beside implementation files
 
-The five entries below are the only symbols that move in round 1. Everything else in `module/es` stays put pending later planning rounds.
+`tsdown.browser.config.ts` re-exports the neutral shared config:
 
-- `module-es/map-iterable-async` (`asyncMap`) → `module-async-iter` root export. Rename `mapIterableAsync` to `asyncMap`.
-- `module-es/memoize-async` (`memoizeAsync`) → `module-memoize` root export.
-- `module-es` taxonomy: sync `memoize` (no subpath, but tests exist) → `module-memoize` root export. Paired with async.
-- `module-es/create-observable` (`createObservable`) → `module-observable` root export.
-- `module-es/create-observable-async` (`createObservableAsync`) → `module-observable` root export. Declared subpath but no external consumer; ship anyway as paired API.
+```ts
+export { default, } from '@monochromatic-dev/config-tsdown/.ts';
+```
 
-The migrated source files stay in place inside `module-es` for round 1 (the new packages contain fresh implementations). The `module-es` subpath exports continue to exist for any unmigrated consumer or test inside `module-es` itself. Later planning rounds decide when to remove the now-unused subpath exports from `module-es/package.json`.
+`tsdown.node.config.ts` re-exports the Node shared config:
 
-Round-1-adjacent fix (not a `module-es` symbol):
+```ts
+export { default, } from '@monochromatic-dev/config-tsdown/.node.ts';
+```
 
-- `module-es/ts/path/index.ts` (broken POSIX path import in `build-tool/css`) → `node:path`. Imports are pre-existing-broken; verified via `mise run //packages/build-tool/css:lint:types` failing with TS2307.
+The runtime export map uses built root output only, plus source escape hatches:
 
-Stays in `module/es` (pending future planning rounds):
+```json
+{
+  "module": "dist/final/neutral/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/final/neutral/index.d.mts",
+      "node": "./dist/final/node/index.mjs",
+      "default": "./dist/final/neutral/index.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
+  "files": [
+    "dist/final",
+    "src"
+  ]
+}
+```
 
-- `module-es/binary` (declared subpath, no external consumer; future-round destination TBD)
-- ~500 type-taxonomy files under `src/types/t .../` (future rounds decide per-symbol destinations)
-- The full taxonomy `src/index.ts`, JSONC parser, store helpers, regex helpers, iterable generators, string helpers, etc., all stay in place
+The package `mise.toml` includes build, watch-build, lint, and test tasks.
+The build tasks mirror tsdown-backed sibling packages:
 
-### Issue retargeting
+```toml
+[tasks.build]
+extends = "build"
 
-**Close as wontfix:**
+[tasks.'build:js']
+extends = "build:js"
 
-- #184 Result / Option types. Comment: "Closing per the AGENTS.md rule that errors are thrown, not returned (see `AGENTS.md` → `## Before editing code` → TypeScript → Programming patterns: `Custom error classes; throw over error codes/null/result types`). Reopening requires an ADR overturning that decision; out of scope for #185."
+[tasks.'build:js:browser']
+extends = "build:js:browser"
 
-**Retarget to round-1 packages:**
+[tasks.'build:js:node']
+extends = "build:js:node"
 
-- #93 async iterator utilities. Comment: "Destination is the new `@monochromatic-dev/module-async-iter` package (#185 round 1). Round 1 ships only `asyncMap`; `asyncFilter`/`asyncReduce`/`asyncTake`/`asyncSkip`/`asyncBatch`/`asyncParallel` track here for follow-up. Renames the current `module-es` export `mapIterableAsync` to `asyncMap`."
-- #183 functional composition helpers. Comment: "Split scope. `memoize`/`memoizeAsync` retarget to the new `@monochromatic-dev/module-memoize` package (#185 round 1). `debounce`/`throttle`/`curry` blocked on #185 round 2; destination TBD."
+[tasks."watch:build"]
+extends = "watch:build"
 
-**Block on round 2** (comment with `blocked-on-185-r2` label):
+[tasks."watch:build:js"]
+extends = "watch:build:js"
 
-- Feature-add issues: #47, #50, #67, #87, #94, #95, #172, #179, #180, #181, #182.
-- Maintenance against `module/es` source: #100 (missing exports), #152 (JSONC parser rationale), #171 (TS2677 errors). These stay valid while `module/es` is alive but should not be invested in until the migration assigns those symbols to new homes; resolving them inside `module/es` would be wasted work.
-- Destination-TBD candidates that name `module/es` as a candidate home: #44, #48, #49, #51, #52, #70, #82.
-- Comment text (template): "Blocked on #185 round 2. `module/es` is being incrementally split; round 1 only moves the three packages with active external consumers (`async-iter`, `memoize`, `observable`). All other symbols remain in `module/es` until their destinations are defined in follow-up planning rounds. Do not add to `module/es` while the split is in flight."
-- Additional comment for #50: "Note: `@monochromatic-dev/module-numeric-const` already exists with `byte`/`fraction`/`http-status`/`time` modules and is the likely destination; round 2 will confirm and migrate callers."
-- Additional comment for #67: "Note: `@monochromatic-dev/module-numeric-format` already exists with `byte`/`duration` modules covering `formatBytes`/`formatMs`/`formatRelative` shapes; round 2 will confirm and migrate."
+[tasks."watch:build:js:browser"]
+extends = "watch:build:js:browser"
 
-### Migration order for the round-1 implementation (separate follow-up PRs)
+[tasks."watch:build:js:node"]
+extends = "watch:build:js:node"
 
-Per `PLANNING.extract-refactor-guardrail.md` (additive-first; each commit green):
+[tasks.lint]
+extends = "lint"
 
-1. Create `module-async-iter` skeleton + `asyncMap` + tests. Commit. Verify `mise run //packages/module/async-iter:lint` and `:test`.
-2. Create `module-memoize` skeleton + `memoize`/`memoizeAsync` + tests. Commit. Verify.
-3. Create `module-observable` skeleton + `createObservable`/`createObservableAsync` + tests. Commit. Verify.
-4. Migrate `webapp-productivity/rss/src/{feed,ignore,opml-text}.ts` to `module-async-iter`. Add the new dep to `rss/package.json`; keep `module-es` for `memoizeAsync` (removed in step 5). Commit. Verify `mise run //packages/webapp-productivity/rss:lint:types` and `:test`.
-5. Migrate `webapp-productivity/rss/src/index.ts` to `module-memoize`. Drop `module-es` from `rss/package.json` once no `rss/src/*` file imports it. Commit. Verify.
-6. Migrate `webapp-search/exa-search/src/client-dom.ts` to `module-observable`. Drop `module-es` from `exa-search/package.json`. Commit. Verify.
-7. Fix `build-tool/css/src/{index,package-resolver,import}.ts` to import from `node:path` (or `module-fs-path` if it exposes the helpers). Drop `module-es` from `build-tool/css/package.json`. Commit. Verify; the previously failing `:lint:types` should now pass.
-8. Open issue "#185 round 2: define destinations for the next batch of `module/es` symbols," referencing the 21 deferred issues.
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
 
-Round 1 ends here. `module/es` itself remains in place; its other ~500 source files, the `binary` subpath, the JSONC parser, the store/regex/iterable/string helpers, and any nominal `module-es` deps in the remaining 18 packages all stay untouched. Future rounds extract them piece by piece. The final deletion of `module/es` happens in the last round, after every symbol has a destination.
+[tasks."lint:types"]
+extends = "lint:types"
 
-### Out of scope (round 1)
+[tasks."test:unit"]
+extends = "test:unit"
+```
 
-- Deletion of `module/es` itself (final milestone after every symbol has a destination).
-- Removal of any `module/es` source file, subpath export, or sub-tree (taxonomy, `binary`, JSONC parser, store helpers, etc. all stay until later rounds).
-- Cleanup of nominal `@monochromatic-dev/module-es` deps in the 18 packages that declare but do not import it (deferred until the actual symbols those packages might use are homed).
-- Destinations for the 21 deferred issues: feature-adds #47, #50, #67, #87, #94, #95, #172, #179, #180, #181, #182; maintenance #100, #152, #171; destination-TBD candidates #44, #48, #49, #51, #52, #70, #82.
-- `debounce`, `throttle`, `curry` from #183.
-- The post-edit-typecheck PostToolUse hook discussed in `PLANNING.extract-refactor-guardrail.md`.
-- Renaming `packages/module/` → `packages/library/` (proposed in stale `TODO.package-structure.md`).
-- Resolving the `getRandomId` reference noted in `TODO.2-week-presentability.md` (pre-existing internal bug in code that stays in `module/es`).
+## Round-1 packages
 
-## Critical files
+### `@monochromatic-dev/module-kv-store`
 
-**This plan modifies only one file**: it is a decision doc.
+Root exports:
 
-The current plan lives at `/home/user/.claude/plans/https-github-com-aquaticat-monochromatic-tidy-rossum.md` (planning-session-internal). When ExitPlanMode runs, copy the contents into:
+- `createStore`
+- `createSyncStore`
+- `configureDefaultBackendsBuilder`
+- `Store`
+- `SyncStore`
+- `StorageBackend`
+- `SyncStorageBackend`
+- `StoreConfig`
+- `SyncStoreConfig`
+- store support types such as serializers, deserializers, eviction policies, and default-backend builders
 
-- `PLANNING.module-es-split.md` (new, repo root): the durable, committed artifact for #185 round 1. Whoever executes round 1 reads this file, not the planning-session copy.
+The extraction preserves full current store behavior:
 
-**Round-1 follow-up PRs will create** (skeletons modelled after `packages/module/async-time/`):
+- sync and async stores
+- ordered backend lists
+- backend priority
+- majority consensus
+- highest-priority-tier fallback
+- backend healing
+- LRU eviction
+- SuperJSON serialization
+- lossy circular handling
+- async empty-key hashing
+- default async backend configuration
 
-- `packages/module/async-iter/{package.json, mise.toml, README.md, tsconfig.json, tsdown.config.ts, src/index.ts, src/async-map.ts, src/async-map.unit.test.ts}`
-- `packages/module/memoize/{package.json, mise.toml, README.md, tsconfig.json, tsdown.config.ts, src/index.ts, src/memoize.ts, src/memoize.unit.test.ts, src/memoize-async.ts, src/memoize-async.unit.test.ts}`
-- `packages/module/observable/{package.json, mise.toml, README.md, tsconfig.json, tsdown.config.ts, src/index.ts, src/create-observable.ts, src/create-observable.unit.test.ts, src/create-observable-async.ts, src/create-observable-async.unit.test.ts}`
+Current source paths that move or inform the implementation:
 
-**Round-1 follow-up PRs will edit**:
+- `packages/module/es/src/types/t object/t store/`
+- `packages/module/es/src/types/t string/f/t unknown/serialize/r s/p n/index.ts`
+- `packages/module/es/src/types/t string/f/t string/hash/r a/p p/index.ts`
+- `packages/module/es/src/types/t boolean/f/t unknown/hasCycle/r s/p p/index.ts`
 
-- `packages/webapp-productivity/rss/src/{feed.ts, ignore.ts, opml-text.ts, index.ts}`: switch imports to the new packages
-- `packages/webapp-productivity/rss/package.json`: add new deps; drop `module-es` once unused by `rss/src/*`
-- `packages/webapp-search/exa-search/src/client-dom.ts`: switch imports to `module-observable`
-- `packages/webapp-search/exa-search/package.json`: swap dep
-- `packages/build-tool/css/src/{index.ts, package-resolver.ts, import.ts}`: swap `module-es/ts/path` for `node:path`
-- `packages/build-tool/css/package.json`: drop `module-es` dep
+Hashing, serialization, and cycle detection are internal helpers in `module-kv-store`.
+They are not public exports in round 1.
 
-**Round-1 follow-up PRs will NOT modify**:
+Tests are ported from current store tests and rewritten to import the new package root.
+Coverage must include sync and async stores, consensus, healing, LRU, serialization, circular handling, default backend
+configuration, deletion, clearing, and size reporting.
 
-- `packages/module/es/` (stays in place; round 1 is additive only)
-- The 18 other `package.json` files that declare `module-es` as a nominal dep (cleanup deferred until those packages' future consumer needs are addressed)
-- Documentation files (`AUDIT.*.md`, `PLANNING.*.md`, `TODO.*.md`) that reference `module/es` as a canonical home: those references remain accurate while `module/es` is alive
+### `@monochromatic-dev/module-memoize`
+
+Root exports:
+
+- `memoize`
+- `memoizeAsync`
+- `MemoizedFunction`
+- `MemoizedAsyncFunction`
+- memoize option and call option types
+
+`module-memoize` depends on `@monochromatic-dev/module-kv-store`.
+It preserves the current named-object call shape:
+
+```ts
+const memoized = await memoizeAsync({
+  fn: fetchUser,
+  keyFn: function keyUser(userId: string): string {
+    return userId;
+  },
+});
+
+await memoized({
+  args: ['user-1'],
+  salt: 'v1',
+});
+```
+
+The package preserves current behavior:
+
+- `store` injection in constructor options
+- `.store`, `.clear()`, `.delete()`, and sync `.size`
+- async in-flight deduplication
+- `${argKey}:${salt}` cache key format
+- current `undefined` handling, where stored `undefined` is not a cache hit and recomputes
+- error behavior where failed async computations do not poison the cache
+
+Current source paths that move or inform the implementation:
+
+- `packages/module/es/src/types/t function/f/t function/memoize/r s/p n/index.ts`
+- `packages/module/es/src/types/t function/f/t function/memoize/r a/p n/index.ts`
+- `packages/module/es/src/types/t function/f/t function/memoize/t/index.ts`
+- `packages/module/es/src/types/t function/f/t function/memoize/cacheKey.ts`
+
+No positional compatibility wrapper is shipped in round 1.
+Tests port the current memoize matrix and import the new package root.
+Coverage must include sync and async variants, LRU, store injection, clear, delete, size, salt, in-flight deduplication,
+error retry, and the `undefined` recomputation behavior.
+
+### `@monochromatic-dev/module-async-iter`
+
+Root export:
+
+- `mapIterableAsync`
+
+`mapIterableAsync` keeps the current name and current behavior.
+It accepts a sync or async iterable, eagerly starts every mapper call, preserves input order in the output array,
+and returns `Promise<R[]>`.
+Concurrency remains unbounded in round 1.
+
+Current source path:
+
+- `packages/module/es/src/types/t object/t array/f/t iterable/map/r a/p p/index.ts`
+
+Tests must cover sync iterables, async iterables, empty input, output order, mapper rejection, and eager concurrency.
+The README must state that this helper is an eager collect-to-array mapper, not a lazy async-iterator transform.
+
+### `@monochromatic-dev/module-observable`
+
+Root exports:
+
+- `createObservable`
+- `createObservableAsync`
+- `Observable`
+- `ObservableAsync`
+
+Round 1 deliberately changes the public API from property setters to methods.
+Both sync and async observables expose `getValue()` and `setValue()`.
+
+Sync shape:
+
+```ts
+const value = createObservable({
+  initialValue: 0,
+  onChange: function onCounterChange(newValue: number, oldValue: number): void {
+    // observer body
+  },
+});
+
+value.setValue(1,);
+const current = value.getValue();
+```
+
+Async shape:
+
+```ts
+const value = await createObservableAsync({
+  initialValue: 0,
+  async onChange(newValue: number, oldValue: number): Promise<void> {
+    // observer body
+  },
+});
+
+await value.setValue(1,);
+const current = value.getValue();
+```
+
+State updates before `onChange` runs.
+Sync `setValue()` returns `void` and propagates thrown errors.
+Async `setValue()` returns `Promise<void>` and propagates rejected handlers.
+
+Current source paths that inform the implementation:
+
+- `packages/module/es/src/types/t object/t proxy/f/t any/createObservable/r s/p p/index.ts`
+- `packages/module/es/src/types/t object/t proxy/f/t any/createObservable/r a/p p/index.ts`
+
+Tests must cover get/set behavior, old and new callback values, update-before-callback order, sync throw propagation,
+async await behavior, and async rejection propagation.
+
+## Consumer migration
+
+### `webapp-productivity/rss`
+
+`rss` moves from `module-es/map-iterable-async` and `module-es/memoize-async` to package-root imports:
+
+```ts
+import { mapIterableAsync, } from '@monochromatic-dev/module-async-iter';
+import { memoizeAsync, } from '@monochromatic-dev/module-memoize';
+```
+
+Add package dependencies:
+
+- `@monochromatic-dev/module-async-iter`
+- `@monochromatic-dev/module-memoize`
+
+Remove `@monochromatic-dev/module-es` from `rss/package.json` after both imports are migrated.
+
+### `webapp-search/exa-search`
+
+`exa-search` moves from `module-es/create-observable` to the package root:
+
+```ts
+import {
+  createObservable,
+  type Observable,
+} from '@monochromatic-dev/module-observable';
+```
+
+Update all observable consumers from `.value` reads and writes to `getValue()` and `setValue()`.
+Known current consumers are in:
+
+- `packages/webapp-search/exa-search/src/client-dom.ts`
+- `packages/webapp-search/exa-search/src/client.ts`
+
+Add `@monochromatic-dev/module-observable` to `exa-search/package.json`.
+Remove `@monochromatic-dev/module-es` after the migration.
+
+## `module-es` cleanup boundary
+
+Round 1 removes only migrated named export entries from `packages/module/es/package.json`, and only after all current
+external source imports are migrated.
+
+Remove these named subpaths:
+
+- `./create-observable`
+- `./create-observable-async`
+- `./map-iterable-async`
+- `./memoize-async`
+
+Do not remove source files from `packages/module/es/` in round 1.
+Do not remove the `./binary` export.
+Do not remove `./ts` or `./ts/*`.
+The `./ts` and `./ts/*` entries remain source escape hatches until a later round decides the package-wide policy.
+
+## Dependency cleanup
+
+Round 1 removes all 18 currently unused `@monochromatic-dev/module-es` manifest dependencies listed in the context
+section.
+This cleanup belongs in a separate commit after active consumers have migrated.
+That keeps dependency-graph cleanup reviewable and prevents it from hiding code migrations.
+
+Run the workspace install task after package manifest edits so lockfile changes are intentional.
+
+## Active guidance cleanup
+
+Round 1 updates active guidance that points new memoization users at `module-es`.
+Known active references include:
+
+- `AGENTS.md`: module-root `let` guidance that recommends `memoize()` from `@monochromatic-dev/module-es`
+- `packages/config/oxlint/src/rules/restriction.ts`
+- `packages/config/oxlint-no-restricted-syntax/src/rules/no-module-root-let.ts`
+
+Update these to point at `@monochromatic-dev/module-memoize` after the new package exists.
+If `AGENTS.md` changes, regenerate managed outputs through file-enforcer instead of editing generated files directly.
+
+Historical audits and handover notes do not need a repo-wide rewrite in round 1.
+
+## Issue updates
+
+### Already settled
+
+Issue #184 is closed as `NOT_PLANNED`.
+No further action is required unless the issue needs a link to the revised doc.
+
+### Add correction comments
+
+Add a correction comment to #93 because an earlier comment said round 1 renames `mapIterableAsync` to `asyncMap`.
+Use this decision instead:
+
+```md
+Correction to the earlier #185 round-1 comment: the new `@monochromatic-dev/module-async-iter` package keeps the
+export name `mapIterableAsync`. It preserves the current eager, unbounded, collect-to-array behavior. Future lazy async
+iterator helpers remain in this issue for a later round.
+```
+
+Add a supplemental comment to #183:
+
+```md
+Round 1 now extracts `@monochromatic-dev/module-kv-store` before `@monochromatic-dev/module-memoize`,
+because the current memoize implementation depends on the store abstraction. `memoize` and `memoizeAsync` still move to
+`@monochromatic-dev/module-memoize`. `debounce`, `throttle`, and `curry` remain blocked on round 2.
+```
+
+### Create follow-up issues
+
+Close #185 after this revised decision doc lands and the follow-up issues are created.
+Create two issues:
+
+1.  Round 1 implementation issue.
+    Use one ordered checklist rather than package-per-issue tracking.
+2.  Round 2 planning issue.
+    This issue defines destinations for the next batch of `module/es` symbols and becomes the human-readable target for
+    deferred work.
+
+Keep the existing `blocked-on-185-r2` label.
+It currently marks 21 open deferred issues and does not need to be renamed.
+Add comments to deferred issues pointing at the new round-2 planning issue when it exists.
+
+### Create tsdown audit issue
+
+Create a separate audit issue for runtime-export packages that lack tsdown setup.
+The audit should cover packages with JavaScript or TypeScript public entrypoints and document explicit exceptions for
+fixtures, assets, typefaces, config-only packages, and other non-runtime packages.
+
+Current measured drift includes 10 `packages/module/*` packages missing tsdown config or build task references, but the
+audit should cover runtime exports across the workspace rather than module packages only.
+
+## Round-1 implementation order
+
+Each step is a minimum logical unit and should be committed after verification.
+
+1.  Create `@monochromatic-dev/module-kv-store` with full tsdown setup, README, implementation, and ported tests.
+2.  Create `@monochromatic-dev/module-memoize` with full tsdown setup, README, implementation, and ported tests.
+3.  Create `@monochromatic-dev/module-async-iter` with full tsdown setup, README, implementation, and tests.
+4.  Create `@monochromatic-dev/module-observable` with full tsdown setup, README, implementation, and tests.
+5.  Migrate `webapp-productivity/rss` to `module-async-iter` and `module-memoize`.
+6.  Migrate `webapp-search/exa-search` to `module-observable` and the method-based observable API.
+7.  Remove the 18 unused `module-es` manifest dependencies and refresh package manager state.
+8.  Remove migrated named subpath exports from `packages/module/es/package.json`.
+9.  Update active memoize guidance to point at `module-memoize`.
+10. Add GitHub correction comments.
+11. Create the round-1 implementation issue, the round-2 planning issue, and the tsdown audit issue.
 
 ## Verification
 
-End-to-end checks once the round-1 follow-up PRs land:
+Per-package verification for each new package:
 
-1. `rg "from '@monochromatic-dev/module-es" packages/ | grep -v "packages/module/es/"`: only `module-es/ts/path/index.ts` cleared (that import path is removed entirely from `build-tool/css`); the four `module-es` subpath imports in `webapp-productivity/rss` and the one in `webapp-search/exa-search` are gone.
-2. `find packages/module/es -type d | head -5`: still returns the directory (round 1 does not delete it).
-3. `mise run lint`: clean for the full workspace; `mise run //packages/build-tool/css:lint:types` now passes (it currently fails with TS2307).
-4. `mise run test`: passes for `module-async-iter`, `module-memoize`, `module-observable`, `webapp-productivity/rss`, `webapp-search/exa-search`, `build-tool/css`.
-5. `pnpm install`: succeeds.
-6. Each new package: README.md present, tests cover every exported symbol (AGENTS.md "Test coverage matches the public API surface"), zero lint errors.
-7. `gh issue list -R Aquaticat/Monochromatic --label "blocked-on-185-r2" --state open`: returns the 21 deferred issues (11 feature-adds + 3 maintenance + 7 destination-TBD).
-8. `gh issue view 184 -R Aquaticat/Monochromatic`: state `CLOSED`, reason `not planned`.
-9. `gh issue view 93 -R Aquaticat/Monochromatic` and `gh issue view 183 -R Aquaticat/Monochromatic`: comments reference the new packages.
-10. `module/es` still builds (`mise run //packages/module/es:build`) and its tests still pass; the original subpath exports remain valid for any future symbol-by-symbol migration.
+```sh
+mise run //packages/module/<package>:build
+mise run //packages/module/<package>:lint
+mise run //packages/module/<package>:test
+```
 
-Deliverable for #185 itself (this round): the `PLANNING.module-es-split.md` file plus the GitHub issue updates (close #184 wontfix; retarget #93 and #183; block-comment on the 21 deferred issues including #100, #152, #171). Implementation of the three packages and the consumer migration is follow-up work, not part of #185 round 1.
+Targeted consumer verification:
+
+```sh
+mise run //packages/webapp-productivity/rss:lint:types
+mise run //packages/webapp-productivity/rss:test
+mise run //packages/webapp-search/exa-search:build
+mise run //packages/webapp-search/exa-search:lint
+mise run //packages/webapp-search/exa-search:test
+```
+
+Workspace dependency verification after manifest edits:
+
+```sh
+mise run prepare:pnpm:install
+```
+
+Repository-wide verification after all implementation commits:
+
+```sh
+mise run build
+mise run lint
+mise run test
+```
+
+Import and manifest checks after migration:
+
+```sh
+rg -n "from ['\"]@monochromatic-dev/module-es" packages --glob '!packages/module/es/**'
+rg -n '"@monochromatic-dev/module-es"' packages --glob package.json --glob '!packages/module/es/package.json'
+rg -n '"\./(create-observable|create-observable-async|map-iterable-async|memoize-async)"' \
+  packages/module/es/package.json
+rg -n '"\./ts"|"\./ts/\*"' packages/module/es/package.json
+```
+
+Expected results:
+
+- first command returns no external source imports
+- second command returns no external package declarations
+- third command returns no migrated named subpaths
+- fourth command confirms source escape hatches remain
+
+User-boundary verification for `exa-search` must load the built page in a browser and confirm no console errors.
+It must exercise every rewritten observable path:
+
+- API key read and update
+- total-search count increment
+- result-count input update
+
+## Out of scope for round 1
+
+- Deleting `packages/module/es/`
+- Removing any `module/es` source file
+- Removing `module-es` `./ts` or `./ts/*`
+- Adding runtime subpath exports to the new packages
+- Renaming `packages/module/` to another package family
+- Choosing destinations for deferred symbols outside the four round-1 concepts
+- Fixing all existing tsdown drift in the same PR
+- Adding `asyncFilter`, `asyncReduce`, `asyncTake`, `asyncSkip`, `asyncBatch`, or `asyncParallel`
+- Adding `debounce`, `throttle`, or `curry`
+- Changing memoize cache key format
+- Making `undefined` a cache hit
+- Changing `mapIterableAsync` concurrency behavior
