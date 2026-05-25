@@ -62,16 +62,16 @@ const hasNodePath = ((typeof process) !== 'undefined')
 const nodePathSpecifier = `node${':path'}`;
 
 /**
- * Lazily loaded `node:path/posix` module, or undefined in browser.
+ * Lazily loaded `node:path/posix` module, or `null` in browser.
  * Uses top-level await with a computed specifier (`'node' + ':path'`)
  * so browser bundlers cannot statically resolve the import.
  * Top-level await is valid in ESM and supported by Bun and Node 14.8+.
  */
 // oxlint-disable-next-line typescript/consistent-type-imports -- dynamic import cannot use `import type` syntax
-const nodePath: typeof import('node:path/posix') | undefined = hasNodePath
+const nodePath: typeof import('node:path/posix') | null = hasNodePath
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion, typescript/consistent-type-imports -- cast dynamic import to known node:path type
   ? (await import(nodePathSpecifier) as typeof import('node:path')).posix
-  : undefined;
+  : null;
 
 //endregion Node delegation
 
@@ -94,7 +94,7 @@ export const sep = '/';
  * ```
  */
 export function dirname(filePath: string,): string {
-  if (nodePath !== undefined)
+  if (nodePath !== null)
     return nodePath.dirname(filePath,);
   return dirnameFallback(filePath,);
 }
@@ -114,7 +114,7 @@ export function dirname(filePath: string,): string {
  * ```
  */
 export function isAbsolute(filePath: string,): boolean {
-  if (nodePath !== undefined)
+  if (nodePath !== null)
     return nodePath.isAbsolute(filePath,);
   /** Unicode code point for `/` */
   const SLASH_CODE_POINT = 47;
@@ -138,7 +138,7 @@ export function isAbsolute(filePath: string,): boolean {
  * ```
  */
 export function join(segments: readonly string[],): string {
-  if (nodePath !== undefined)
+  if (nodePath !== null)
     return nodePath.join(...segments,);
   return joinFallback(segments,);
 }
@@ -162,7 +162,7 @@ export function join(segments: readonly string[],): string {
  * ```
  */
 export function resolve(segments: readonly string[],): string {
-  if (nodePath !== undefined)
+  if (nodePath !== null)
     return nodePath.resolve(...segments,);
   return resolveFallback(segments,);
 }

@@ -24,7 +24,7 @@ import {
 /** Optional starting directory for uncached root finders. */
 type RootSearchOptions = {
   /** Starting directory for upward search. Defaults to current process cwd. */
-  readonly cwd?: string | undefined;
+  readonly cwd?: string;
 };
 
 /** Process-lifetime root promise cache used by cached root finders. */
@@ -94,9 +94,9 @@ async function matchesMiseMonorepoRoot({
   dir,
   fs,
 }: RootMatcherArgs,): Promise<boolean> {
-  /** Candidate `mise.toml` content, or `undefined` when absent. */
+  /** Candidate `mise.toml` content, or `null` when absent. */
   const content = await fs.readTextFile(`${dir}/mise.toml`,);
-  return (content !== undefined) && content
+  return (content !== null) && content
     .includes(MONOREPO_SECTION_MARKER,);
 }
 
@@ -162,7 +162,7 @@ function logRootSearchStart({
   cwd,
 }: {
   readonly functionName: string;
-  readonly cwd?: string | undefined;
+  readonly cwd?: string;
 },): void {
   /** Logger tagged with current public finder name. */
   const functionLogger = tagged({
@@ -182,7 +182,7 @@ function logRootSearchStart({
  *
  * Normalizes the result to use `/var/home` instead of `/home` on Fedora ostree.
  *
- * @param cwd - starting directory for upward search, defaults to `process.cwd()`
+ * @param options - upward-search options; `cwd` defaults to `process.cwd()`
  *
  * @returns absolute path to monorepo root
  *
@@ -199,14 +199,14 @@ function logRootSearchStart({
  * ```
  */
 export function findMiseMonorepoRoot(
-  { cwd, }: RootSearchOptions = {},
+  options: RootSearchOptions = {},
 ): Promise<string> {
   logRootSearchStart({
     functionName: findMiseMonorepoRoot.name,
-    cwd,
+    ...options,
   },);
   return findRootByWalkingUp({
-    cwd,
+    ...options,
     matches: matchesMiseMonorepoRoot,
     missingMessage: MISE_ROOT_MISSING_MESSAGE,
   },);
@@ -242,7 +242,7 @@ export function findMiseMonorepoRootCached(): Promise<string> {
  * Accepts both normal `.git` directories and gitfile markers used by worktrees
  * and submodules. Normalizes `/home` roots to `/var/home` on Fedora ostree.
  *
- * @param cwd - starting directory for upward search, defaults to `process.cwd()`
+ * @param options - upward-search options; `cwd` defaults to `process.cwd()`
  *
  * @returns absolute path to Git repository root
  *
@@ -258,13 +258,13 @@ export function findMiseMonorepoRootCached(): Promise<string> {
  * const root = await findGitRepoRoot({ cwd: import.meta.dirname });
  * ```
  */
-export function findGitRepoRoot({ cwd, }: RootSearchOptions = {},): Promise<string> {
+export function findGitRepoRoot(options: RootSearchOptions = {},): Promise<string> {
   logRootSearchStart({
     functionName: findGitRepoRoot.name,
-    cwd,
+    ...options,
   },);
   return findRootByWalkingUp({
-    cwd,
+    ...options,
     matches: matchesGitRepoRoot,
     missingMessage: GIT_ROOT_MISSING_MESSAGE,
   },);
@@ -300,7 +300,7 @@ export function findGitRepoRootCached(): Promise<string> {
  *
  * Normalizes `/home` roots to `/var/home` on Fedora ostree.
  *
- * @param cwd - starting directory for upward search, defaults to `process.cwd()`
+ * @param options - upward-search options; `cwd` defaults to `process.cwd()`
  *
  * @returns absolute path to pnpm workspace root
  *
@@ -317,14 +317,14 @@ export function findGitRepoRootCached(): Promise<string> {
  * ```
  */
 export function findPnpmWorkspaceRoot(
-  { cwd, }: RootSearchOptions = {},
+  options: RootSearchOptions = {},
 ): Promise<string> {
   logRootSearchStart({
     functionName: findPnpmWorkspaceRoot.name,
-    cwd,
+    ...options,
   },);
   return findRootByWalkingUp({
-    cwd,
+    ...options,
     matches: matchesPnpmWorkspaceRoot,
     missingMessage: PNPM_ROOT_MISSING_MESSAGE,
   },);

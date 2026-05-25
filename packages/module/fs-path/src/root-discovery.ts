@@ -15,8 +15,8 @@ import { dirnameFallback, } from './fallbacks.ts';
 
 /** Filesystem operations needed by upward root discovery. */
 export type RootFilesystem = {
-  /** Reads UTF-8 text, returning `undefined` when path is absent. */
-  readonly readTextFile: (path: string,) => Promise<string | undefined>;
+  /** Reads UTF-8 text, returning `null` when path is absent. */
+  readonly readTextFile: (path: string,) => Promise<string | null>;
 
   /** Checks whether path exists as any filesystem entry kind. */
   readonly exists: (path: string,) => Promise<boolean>;
@@ -39,7 +39,7 @@ export type RootMatcher = (args: RootMatcherArgs,) => Promise<boolean>;
  */
 export type FindRootByWalkingUpOptions = {
   /** Starting directory. Defaults to current process working directory. */
-  readonly cwd?: string | undefined;
+  readonly cwd?: string;
 
   /** Candidate-root predicate applied at each ancestor. */
   readonly matches: RootMatcher;
@@ -107,7 +107,7 @@ const VAR_HOME_PREFIX = `${VAR_HOME_ROOT}/`;
  *
  * @example
  * ```ts
- * if (isNoEntryError(error)) return undefined;
+ * if (isNoEntryError(error)) return null;
  * ```
  */
 function isNoEntryError(error: unknown,): boolean {
@@ -142,7 +142,7 @@ async function resolveNodeRootFilesystem(): Promise<RootFilesystem> {
   return {
     readTextFile: async function nodeReadTextFile(
       path: string,
-    ): Promise<string | undefined> {
+    ): Promise<string | null> {
       try {
         return await readFile(
           path,
@@ -151,7 +151,7 @@ async function resolveNodeRootFilesystem(): Promise<RootFilesystem> {
       }
       catch (error: unknown) {
         if (isNoEntryError(error,))
-          return undefined;
+          return null;
         throw error;
       }
     },
@@ -193,12 +193,12 @@ async function resolveOpfsRootFilesystem(): Promise<RootFilesystem> {
   return {
     readTextFile: async function opfsReadTextFile(
       path: string,
-    ): Promise<string | undefined> {
+    ): Promise<string | null> {
       /** `AsyncIOResult` from `happy-opfs`; errors map to absent files. */
       const result = await readTextFile(path,);
       if (result.isOk())
         return result.unwrap();
-      return undefined;
+      return null;
     },
 
     exists: async function opfsPathExists(path: string,): Promise<boolean> {
@@ -216,15 +216,15 @@ async function resolveOpfsRootFilesystem(): Promise<RootFilesystem> {
  *
  * @param _path - ignored candidate path
  *
- * @returns promise resolving to `undefined`
+ * @returns promise resolving to `null`
  *
  * @example
  * ```ts
  * await emptyReadTextFile('/repo/mise.toml');
  * ```
  */
-function emptyReadTextFile(_path: string,): Promise<undefined> {
-  return Promise.resolve(undefined,);
+function emptyReadTextFile(_path: string,): Promise<null> {
+  return Promise.resolve(null,);
 }
 
 /**
@@ -364,7 +364,7 @@ export function normalizeHomeRoot(root: string,): string {
  *
  * @param matches - predicate that identifies root directory
  *
- * @returns matching root directory, or `undefined` after filesystem root
+ * @returns matching root directory, or `null` after filesystem root
  *
  * @example
  * ```ts
@@ -375,7 +375,7 @@ async function walkUpRoot({
   dir,
   fs,
   matches,
-}: WalkUpRootOptions,): Promise<string | undefined> {
+}: WalkUpRootOptions,): Promise<string | null> {
   if (await matches({
     dir,
     fs,
@@ -385,7 +385,7 @@ async function walkUpRoot({
   /** Parent directory inspected after current candidate misses. */
   const parent = dirnameFallback(dir,);
   if (parent === dir)
-    return undefined;
+    return null;
 
   return walkUpRoot({
     dir: parent,
@@ -433,7 +433,7 @@ export async function findRootByWalkingUp({
     matches,
   },);
 
-  if (rawRoot === undefined)
+  if (rawRoot === null)
     throw new Error(missingMessage,);
 
   /** Root path after Fedora ostree home normalization. */
