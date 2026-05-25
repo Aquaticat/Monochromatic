@@ -16,6 +16,7 @@
 import spawn from 'nano-spawn';
 
 import { augmentOxlintOutput, } from './oxlint-augment.ts';
+import { filterOxlintOutput, } from './oxlint-suppress.ts';
 
 //region Main execution
 
@@ -80,9 +81,14 @@ catch (error) {
     };
     /* oxlint-enable typescript/no-unsafe-type-assertion */
 
+    /** oxlint diagnostics with known false-positive blocks dropped and the summary recomputed. */
+    const suppressed = filterOxlintOutput({
+      output: subprocessError.stdout
+        ?? '',
+    },);
+
     /** oxlint diagnostics with the wrapper's extra guidance appended, ready for the parent stdout. */
-    const augmentedStdout = augmentOxlintOutput(subprocessError.stdout
-      ?? '',);
+    const augmentedStdout = augmentOxlintOutput(suppressed.filtered,);
 
     if (augmentedStdout.length
       > 0) {
@@ -105,9 +111,18 @@ catch (error) {
           .write('\n',);
     }
 
-    // Preserve oxlint's exit code
-    process.exitCode = subprocessError.exitCode
-      ?? 1;
+    /** Total blocks dropped this run; zero means the filter changed nothing, so oxlint's failure stands. */
+    const totalSuppressed = suppressed.suppressedWarnings
+      + suppressed.suppressedErrors;
+    // Force success only when the failure was caused solely by suppressed
+    // diagnostics. Preserve oxlint's exit code when real diagnostics remain OR
+    // nothing was suppressed (e.g. a config error or panic emits no parseable
+    // block, so suppressedTotal stays 0 and the failure must propagate).
+    if (suppressed.hasRemainingDiagnostics
+      || (totalSuppressed === 0)) {
+      process.exitCode = subprocessError.exitCode
+        ?? 1;
+    }
 
     if ((subprocessError.signalName
       !== undefined)
