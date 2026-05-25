@@ -15,6 +15,7 @@
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 
 import {
+  ABSENT,
   findRootByWalkingUp,
   type RootMatcherArgs,
 } from './root-discovery.ts';
@@ -94,9 +95,9 @@ async function matchesMiseMonorepoRoot({
   dir,
   fs,
 }: RootMatcherArgs,): Promise<boolean> {
-  /** Candidate `mise.toml` content, or `null` when absent. */
+  /** Candidate `mise.toml` content; the `ABSENT` sentinel when the file is missing. */
   const content = await fs.readTextFile(`${dir}/mise.toml`,);
-  return (content !== null) && content
+  return (content !== ABSENT) && content
     .includes(MONOREPO_SECTION_MARKER,);
 }
 
