@@ -1,4 +1,5 @@
 import {
+  ABSENT,
   createStore,
   type Store,
 } from '@monochromatic-dev/module-kv-store';
@@ -23,8 +24,9 @@ import {
  *
  * The `keyFn` option is required to compute cache keys from arguments. The `fn` parameter is
  * typed with `this: void` to disallow method-style memoization, where `this` binding would
- * cause incorrect caching. A stored value of `undefined` is indistinguishable from a cache
- * miss, so functions resolving to `undefined` recompute on every call.
+ * cause incorrect caching. Cache misses are signalled by the {@link ABSENT} sentinel returned
+ * from the store, so any resolved value, including `undefined` or `null`, is distinguishable
+ * from a miss and is cached.
  *
  * @typeParam TArgs - tuple of function argument types
  *
@@ -132,9 +134,9 @@ export async function memoizeAsync<
     /** Auto-disposer that clears the inflight entry on scope exit, even on throw. */
     using _guard = inflightGuard(cacheKey,);
 
-    /** Cached value if present; an explicit `undefined` is treated as a miss and triggers recomputation. */
+    /** Cached value if present; `ABSENT` signals a miss and triggers recomputation. */
     const stored = await store.get<TReturn>(cacheKey,);
-    if (stored !== undefined)
+    if (stored !== ABSENT)
       return stored;
 
     /** Freshly computed value persisted to `store` so subsequent calls hit the cache. */

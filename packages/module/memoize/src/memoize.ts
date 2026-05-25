@@ -1,4 +1,5 @@
 import {
+  ABSENT,
   createSyncStore,
   type SyncStore,
 } from '@monochromatic-dev/module-kv-store';
@@ -23,8 +24,8 @@ import {
  * The `fn` parameter is typed with `this: void` to disallow method-style memoization,
  * where `this` binding would cause incorrect caching.
  *
- * A stored value of `undefined` is indistinguishable from a cache miss, so functions
- * returning `undefined` recompute on every call.
+ * Cache misses are signalled by the {@link ABSENT} sentinel returned from the store, so any
+ * stored value, including `undefined` or `null`, is distinguishable from a miss and is cached.
  *
  * @typeParam TArgs - tuple of function argument types
  *
@@ -113,9 +114,9 @@ export function memoize<
       salt,
     },);
 
-    /** Previously memoized return value, or `undefined` when not yet stored (a miss). */
+    /** Previously memoized return value, or `ABSENT` when not yet stored (a miss). */
     const cached = store.get<TReturn>(cacheKey,);
-    if (cached !== undefined)
+    if (cached !== ABSENT)
       return cached;
 
     /** Freshly computed return value persisted into the store for future calls. */
