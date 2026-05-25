@@ -4,6 +4,7 @@
  * @module
  */
 
+/* oxlint-disable no-restricted-syntax/no-undefined-union -- function's contract is to accept a possibly-nullish input (`null` or `undefined`) and throw; the `undefined` member is the parameter's reason to exist */
 /**
  * Asserts that a value is not `null` or `undefined`, returning it with a narrowed type.
  *
@@ -42,3 +43,4 @@ export function nonNullishOrThrow<T,>(value: T | null | undefined,): T {
     throw new Error(`Expected non-nullish value, got ${String(value,)}`,);
   return value;
 }
+/* oxlint-enable no-restricted-syntax/no-undefined-union */

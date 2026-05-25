@@ -51,6 +51,7 @@ await describe({
     it({
       name: 'narrows union return types to the falsy side',
       fn: async () => {
+        // oxlint-disable-next-line no-restricted-syntax/no-undefined-union -- narrowing test deliberately feeds a union with `undefined` to verify the return type narrows to the falsy side
         const input: string | undefined = undefined;
         const output = falsyOrThrow(input,);
         expectTypeOf(output,).toEqualTypeOf<undefined>();
