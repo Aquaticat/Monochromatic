@@ -5,6 +5,7 @@ export {
 export {
   fileSink,
   findNodeModulesUp,
+  NO_NODE_MODULES_FOUND,
   verifyFile,
 } from './file.ts';
 export {

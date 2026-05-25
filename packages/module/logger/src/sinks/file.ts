@@ -32,6 +32,22 @@ const state: {
 };
 
 /**
+ * Sentinel returned by {@link findNodeModulesUp} when no ancestor directory
+ * contains a `node_modules`. A unique symbol so it never collides with a real
+ * path string the walk might otherwise return, keeping the result free of a
+ * banned `string | undefined` union.
+ *
+ * @example
+ * ```ts
+ * const dir = await findNodeModulesUp({ cwd, stat, dirname, join });
+ * if (dir === NO_NODE_MODULES_FOUND) {
+ *   // no ancestor project root
+ * }
+ * ```
+ */
+export const NO_NODE_MODULES_FOUND: unique symbol = Symbol('logger:no-node-modules-found',);
+
+/**
  * Walks up from `cwd` to find the nearest ancestor directory containing a
  * `node_modules` subdirectory, returning that subdirectory's absolute path.
  *
@@ -54,7 +70,7 @@ const state: {
  * @param join - `node:path` join
  *
  * @returns absolute path to the nearest ancestor `node_modules`, or
- * `undefined` when no ancestor contains one
+ * {@link NO_NODE_MODULES_FOUND} when no ancestor contains one
  *
  * @example
  * ```ts
@@ -73,7 +89,7 @@ export async function findNodeModulesUp(
     readonly dirname: typeof Dirname;
     readonly join: typeof Join;
   },
-): Promise<string | undefined> {
+): Promise<string | typeof NO_NODE_MODULES_FOUND> {
   /** Directory being tested in this iteration; either resolves to a node_modules or triggers the walk to the parent. */
   const candidate = join(
     cwd,
@@ -91,7 +107,7 @@ export async function findNodeModulesUp(
   /** Parent directory used by the next recursive step; equal to `cwd` only at the filesystem root, which terminates the walk. */
   const parent = dirname(cwd,);
   if (parent === cwd)
-    return undefined;
+    return NO_NODE_MODULES_FOUND;
   return await findNodeModulesUp({
     cwd: parent,
     stat,
@@ -133,7 +149,7 @@ async function runVerify(): Promise<boolean> {
 
     state.appendFile = fs.appendFile;
 
-    /** Resolved absolute path of the closest ancestor `node_modules`, or undefined when none exists (e.g. a stray cwd). */
+    /** Resolved absolute path of the closest ancestor `node_modules`, or the sentinel when none exists (e.g. a stray cwd). */
     const nodeModulesDir = await findNodeModulesUp({
       cwd: process.cwd(),
       stat: fs.stat,
@@ -141,7 +157,7 @@ async function runVerify(): Promise<boolean> {
       join,
     },);
 
-    if (nodeModulesDir === undefined) {
+    if (nodeModulesDir === NO_NODE_MODULES_FOUND) {
       // Unexpected in a Node environment: the process is running JS,
       // which almost always means there is a node_modules upward.
       // Surface this so a silently-missing file sink is diagnosable.

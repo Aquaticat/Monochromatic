@@ -12,6 +12,7 @@ import {
 import {
   fileSink,
   findNodeModulesUp,
+  NO_NODE_MODULES_FOUND,
   verifyFile,
 } from './file.ts';
 
@@ -85,12 +86,13 @@ await describe({
           join,
         },);
         expect(typeof result,).toBe('string',);
-        expect(result?.endsWith('node_modules',),).toBe(true,);
+        if ((typeof result) === 'string')
+          expect(result.endsWith('node_modules',),).toBe(true,);
       },
     },),
 
     it({
-      name: 'findNodeModulesUp returns undefined when no ancestor contains node_modules',
+      name: 'findNodeModulesUp returns NO_NODE_MODULES_FOUND when no ancestor contains node_modules',
       fn: async () => {
         const result = await findNodeModulesUp({
           cwd: import.meta.dirname,
@@ -98,7 +100,7 @@ await describe({
           dirname,
           join,
         },);
-        expect(result,).toBe(undefined,);
+        expect(result,).toBe(NO_NODE_MODULES_FOUND,);
       },
     },),
 
