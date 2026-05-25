@@ -90,27 +90,39 @@ committed on `feat/module-es-split`:
 
 ## Remaining steps (plan implementation order)
 
-2. (memoize) done. 3. (async-iter) done. 4. (observable) done.
-5. Migrate `webapp-productivity/rss`: `feed.ts`, `ignore.ts`, `opml-text.ts` import `mapIterableAsync` from
-   `@monochromatic-dev/module-async-iter`; `index.ts` imports `memoizeAsync` from
-   `@monochromatic-dev/module-memoize`. Add both deps, remove `@monochromatic-dev/module-es`.
-6. Migrate `webapp-search/exa-search`: `client-dom.ts` and `client.ts` import `createObservable` and
-   `type Observable` from `@monochromatic-dev/module-observable`. Convert observable `.value` reads/writes
-   to `getValue()` / `setValue()`. Observables are only `apiKey`, `numTotalSearches`, `numResults`. Leave
-   DOM `.value` alone (`numResultsInput.value`, `searchInput.value`). `numTotalSearches.value++` becomes
-   `numTotalSearches.setValue(numTotalSearches.getValue() + 1)`. Add the dep, remove module-es.
-7. Remove the 18 unused `module-es` manifest deps (listed in the plan context section); refresh the
-   lockfile. Separate commit.
-8. Remove migrated named subpath exports from `packages/module/es/package.json`: `./create-observable`,
-   `./create-observable-async`, `./map-iterable-async`, `./memoize-async`. Keep `./binary`, `./ts`,
-   `./ts/*`. Do not remove any module-es source file.
-9. Update memoize guidance to point at `@monochromatic-dev/module-memoize`: `AGENTS.md` (module-root `let`
-   guidance), `packages/config/oxlint/src/rules/restriction.ts`,
-   `packages/config/oxlint-no-restricted-syntax/src/rules/no-module-root-let.ts`. If `AGENTS.md` changes,
-   regenerate managed outputs with file-enforcer (do not edit `CLAUDE.md` by hand).
-10. Add GitHub correction comments to #93 and #183 (exact text in the plan).
-11. Create the round-1 implementation issue, the round-2 planning issue, and the tsdown audit issue; add
-    pointers on deferred issues; close #185.
+Steps 2 to 9 are done and committed on `feat/module-es-split`:
+
+- `52dbb63f refactor(webapp-productivity-rss)`: rss now imports `mapIterableAsync` from
+  `module-async-iter` and `memoizeAsync` from `module-memoize`; module-es dep dropped. Builds and
+  type-checks clean. Pre-existing oxlint debt (28 warnings) left untouched; rss has no test task, and the
+  plan's rss consumer bar is `lint:types` + `test` only (not `lint:oxlint`).
+- `61a64d68 refactor(webapp-search-exa-search)`: observable `.value` reads/writes converted to
+  `getValue()` / `setValue()` (`numTotalSearches.value++` became `setValue(getValue() + 1)`); DOM `.value`
+  on `searchInput`/`numResultsInput` left alone. Type-checks and builds clean. The new `Observable` type
+  has no `.value`, so tsc forced and validated every conversion. exa-search carries pre-existing oxlint
+  debt (11 warnings across `asset.ts`, `exa-fetch.ts`, `client-display-result.ts`, and stale file-level
+  directives) confirmed out of scope by the user. Browser verification skipped at user request.
+- `098ea8d5 chore(*)`: removed the 18 unused `module-es` manifest deps (verified zero source imports) and
+  relinked the lockfile; also dropped `module-es` from the `done`/`done-postcss` README dep lists.
+- `b3de71cf refactor(module-es)`: removed the four migrated subpath exports
+  (`./create-observable`, `./create-observable-async`, `./map-iterable-async`, `./memoize-async`); kept
+  `./binary`, `./ts`, `./ts/*`. All four plan rg checks pass.
+- `87d8d334 docs(*)`: memoize guidance now points at `@monochromatic-dev/module-memoize` in `AGENTS.md`,
+  `restriction.ts`, and `no-module-root-let.ts` (TSDoc, runtime message, and example corrected to the real
+  `memoize({ fn, keyFn })` API). `CLAUDE.md` is gitignored and untracked; file-enforcer regenerates it
+  locally and it is not committed. The `sync:files` task also non-deterministically reorders `mise.toml`'s
+  `_.path` bin list; that churn was reverted, not committed.
+
+Remaining:
+
+10. Add GitHub correction comments to #93 and #183 (exact text in the plan, lines 413 to 425).
+11. Create the round-1 implementation issue (single ordered checklist), the round-2 planning issue, and the
+    tsdown audit issue; comment on the ~21 `blocked-on-185-r2` deferred issues pointing at the round-2
+    issue; close #185. These are outward-facing GitHub mutations; verify current issue state first and
+    confirm before posting the batch.
+
+Final: repo-wide build/test sanity (repo-wide lint is not 0/0 due to pre-existing module-es debt). Browser
+verification of exa-search was skipped at user request.
 
 ## Verification before declaring done
 
