@@ -212,9 +212,15 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       // ToolCallEvent is the `tool_call` visitor union; its variants carry
       // mutable `input` payloads and are consumed by the host's
       // isToolCallEventType guard, which requires the writable union.
+      // SessionBeforeCompactEvent is the `session_before_compact` visitor
+      // payload (nested CompactionPreparation, branchEntries, AbortSignal);
+      // FileOperations is its cumulative read/edited/written tracker. Both are
+      // handed to extensions mutable and owned by the host.
       "ExtensionAPI",
       "ExtensionContext",
       "ExtensionCommandContext",
+      "FileOperations",
+      "SessionBeforeCompactEvent",
       "SessionEntry",
       "ModelRegistry",
       "ToolCallEvent",
