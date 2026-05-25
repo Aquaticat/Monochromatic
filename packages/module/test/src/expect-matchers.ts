@@ -1,6 +1,10 @@
 /**
  * Matcher set builders for the test module's expect implementation.
- * Contains the core chai-backed matcher factories for both sync and async assertions.
+ * Holds the {@link MatcherSet} type and the sinon spy/stub matchers,
+ * and merges the core value matchers from `expect-matchers-core.ts`.
+ * The sinon matchers keep their Jest-compatible variadic signatures, so
+ * the no-rest-params exemption is scoped to this file in the oxlint
+ * config's `jestMatcherApiOverride`.
  *
  * @module
  */
@@ -12,6 +16,8 @@ import {
 import chaiAsPromised from 'chai-as-promised';
 import type { SinonSpy, } from 'sinon';
 import sinonChai from 'sinon-chai';
+
+import { buildCoreMatchers, } from './expect-matchers-core.ts';
 
 use(chaiAsPromised,);
 use(sinonChai,);
@@ -69,7 +75,7 @@ export type MatcherSet = {
     expected: unknown,
   ) => void;
   toMatch: (expected: string | RegExp,) => void;
-  toMatchObject: (expected: Record<string, unknown>,) => void;
+  toMatchObject: (expected: Readonly<Record<string, unknown>>,) => void;
   toSatisfy: (predicate: (value: unknown,) => boolean,) => void;
   toStrictEqual: (expected: unknown,) => void;
   toThrow: (
@@ -77,12 +83,16 @@ export type MatcherSet = {
   ) => void;
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `Chai.Assertion` is an external chai SDK type whose chainable getters mutate assertion state by design; deep-readonly does not apply to a type we do not own. */
 /**
  * Builds a Jest-style matcher set from a chai Assertion instance.
+ * Core value matchers come from {@link buildCoreMatchers}; the sinon
+ * spy/stub matchers are defined here because their variadic signatures
+ * need this file's no-rest-params exemption.
  *
  * @param a - Chai assertion (may have `.not` flag set)
  *
- * @param actual - Raw value being asserted on, passed through for matchers that need direct access
+ * @param actual - Raw value being asserted on, cast to a sinon spy for the spy matchers
  *
  * @returns object with Jest-compatible matcher methods
  *
@@ -102,199 +112,9 @@ export function buildMatchers(
   },
 ): MatcherSet {
   return {
-    toBe: function toBe(expected: unknown,): void {
-      a.to
-        .equal(expected,);
-    },
-
-    toEqual: function toEqual(expected: unknown,): void {
-      a.to
-        .deep
-        .equal(expected,);
-    },
-
-    toContain: function toContain(expected: unknown,): void {
-      a.to
-        .include(expected,);
-    },
-
-    toContainEqual: function toContainEqual(expected: unknown,): void {
-      a.to
-        .deep
-        .include(expected,);
-    },
-
-    toThrow: function toThrow(
-      expected?: string | RegExp | (abstract new(...args: never) => unknown),
-    ): void {
-      if (expected !== undefined) {
-        a.to
-          .throw(expected as Parameters<typeof a.to.throw>[0],);
-      }
-      else {
-        a.to
-          .throw();
-      }
-    },
-
-    toBeCloseTo: function toBeCloseTo(
-      expected: number,
-      precision: number = 2,
-    ): void {
-      /** Half-tolerance multiplier (named to keep the magic constant rule from firing on `0.5`). */
-      const HALF = 1 / 2;
-      /* oxlint-disable prefer-exponentiation-operator -- Math.pow is clearer here with a variable exponent */
-      /** Floating-point tolerance derived from `precision` so chai's `closeTo` accepts values within +/-HALF of the lowest place. */
-      const delta = Math.pow(
-        10,
-        -precision,
-      )
-        * HALF;
-      /* oxlint-enable prefer-exponentiation-operator */
-
-      a.to
-        .be
-        .closeTo(
-        expected,
-        delta,
-      );
-    },
-
-    toBeGreaterThan: function toBeGreaterThan(expected: number,): void {
-      a.to
-        .be
-        .above(expected,);
-    },
-
-    toBeGreaterThanOrEqual: function toBeGreaterThanOrEqual(expected: number,): void {
-      a.to
-        .be
-        .at
-        .least(expected,);
-    },
-
-    toBeLessThan: function toBeLessThan(expected: number,): void {
-      a.to
-        .be
-        .below(expected,);
-    },
-
-    toBeLessThanOrEqual: function toBeLessThanOrEqual(expected: number,): void {
-      a.to
-        .be
-        .at
-        .most(expected,);
-    },
-
-    toBeDefined: function toBeDefined(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to
-        .not
-        .be
-        .undefined;
-    },
-
-    toBeUndefined: function toBeUndefined(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to
-        .be
-        .undefined;
-    },
-
-    toBeNaN: function toBeNaN(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to
-        .be
-        .NaN;
-    },
-
-    toBeNull: function toBeNull(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to
-        .be
-        .null;
-    },
-
-    toBeTruthy: function toBeTruthy(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to
-        .be
-        .ok;
-    },
-
-    toBeFalsy: function toBeFalsy(): void {
-      // oxlint-disable-next-line no-unused-expressions -- chai property assertion
-      a.to
-        .not
-        .be
-        .ok;
-    },
-
-    toBeTypeOf: function toBeTypeOf(
-      expected: 'bigint' | 'boolean' | 'function' | 'number' | 'object' | 'string'
-        | 'symbol' | 'undefined',
-    ): void {
-      a.to
-        .be
-        .a(expected,);
-    },
-
-    toHaveLength: function toHaveLength(expected: number,): void {
-      a.to
-        .have
-        .lengthOf(expected,);
-    },
-
-    toHaveProperty: function toHaveProperty(
-      path: string,
-      value?: unknown,
-    ): void {
-      if (value !== undefined) {
-        a.to
-          .have
-          .nested
-          .property(
-          path,
-          value,
-        );
-      }
-      else {
-        a.to
-          .have
-          .nested
-          .property(path,);
-      }
-    },
-
-    toMatch: function toMatch(expected: string | RegExp,): void {
-      a.to
-        .match(expected instanceof RegExp ? expected : new RegExp(expected,),);
-    },
-
-    toMatchObject: function toMatchObject(expected: Record<string, unknown>,): void {
-      a.to
-        .deep
-        .include(expected,);
-    },
-
-    toBeInstanceOf: function toBeInstanceOf(
-      expected: abstract new(...args: never) => unknown,
-    ): void {
-      a.to
-        .be
-        .instanceOf(expected,);
-    },
-
-    toSatisfy: function toSatisfy(predicate: (value: unknown,) => boolean,): void {
-      a.to
-        .satisfy(predicate,);
-    },
-
-    toStrictEqual: function toStrictEqual(expected: unknown,): void {
-      a.to
-        .deep
-        .equal(expected,);
-    },
+    // Core value matchers live in a sibling module to keep this file
+    // under the line-count limit; merged in here so the set is whole.
+    ...buildCoreMatchers({ a, },),
 
     //region sinon-chai matchers
 
@@ -486,6 +306,7 @@ export function buildMatchers(
     //endregion sinon-chai matchers
   };
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 //endregion Matcher set builder
 

@@ -12,6 +12,7 @@ import {
 
 //region Shared prototype stub target
 
+/* oxlint-disable no-restricted-syntax/no-class -- sinon prototype-stub isolation tests need a real `Greeter.prototype.greet` as the stub target; a factory returning a frozen object has no shared prototype to stub, so a class is the required fixture. */
 /**
  * Toy class whose prototype methods serve as safe stub targets
  * for concurrent-isolation tests. Using a synthetic class avoids
@@ -23,6 +24,7 @@ class Greeter {
     return 'hi';
   }
 }
+/* oxlint-enable no-restricted-syntax/no-class */
 
 //endregion
 
@@ -114,7 +116,7 @@ await describe({
         spy('hello world',);
 
         // oxlint-disable-next-line no-restricted-syntax/no-regex -- this test exercises `expect.stringMatching` which is a regex matcher; the regex IS the test fixture.
-        expect(spy,).toHaveBeenCalledWith(expect.stringMatching(/^hello/,),);
+        expect(spy,).toHaveBeenCalledWith(expect.stringMatching(/^hello/u,),);
       },
     },),
 

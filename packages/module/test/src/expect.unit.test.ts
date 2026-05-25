@@ -123,7 +123,7 @@ await describe({
         expect(() => {
           throw new Error('something went wrong',);
         },)
-          .toThrow(/went wrong/,);
+          .toThrow(/went wrong/u,);
       },
     },),
 
@@ -282,7 +282,7 @@ await describe({
     it({
       name: 'toMatch works with regex',
       fn: async () => {
-        expect('hello world',).toMatch(/world/,);
+        expect('hello world',).toMatch(/world/u,);
       },
     },),
 
@@ -349,7 +349,7 @@ await describe({
       name: 'rejects.toThrow matches regex',
       fn: async () => {
         await expect(Promise.reject(new Error('code 42 failed',),),).rejects.toThrow(
-          /code \d+ failed/,
+          /code \d+ failed/u,
         );
       },
     },),

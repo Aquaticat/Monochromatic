@@ -266,7 +266,7 @@ type ExpectStatic = {
    *
    * @returns sinon matcher that checks for partial object match
    */
-  objectContaining: (obj: Record<string, unknown>,) => SinonMatcher;
+  objectContaining: (obj: Readonly<Record<string, unknown>>,) => SinonMatcher;
   /**
    * Matches any string containing the given substring.
    *
@@ -381,7 +381,7 @@ expectImpl.stringMatching = function stringMatching(pattern: RegExp,): SinonMatc
  * ```
  */
 expectImpl.objectContaining = function objectContaining(
-  obj: Record<string, unknown>,
+  obj: Readonly<Record<string, unknown>>,
 ): SinonMatcher {
   return sinonMatch(obj,);
 };
@@ -491,6 +491,7 @@ export type ScopedExpect = Expect & {
  *
  * @returns new matcher set that counts calls
  */
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `tracker` is the exported `AssertionTracker` accumulator shared by reference with the parent `it` runner; the body mutates `tracker.count += 1`, so deep-readonly cannot apply. */
 function wrapMatchersWithCounter(
   {
     matchers,
@@ -516,7 +517,9 @@ function wrapMatchersWithCounter(
   // oxlint-disable-next-line no-unsafe-type-assertion -- wrapped keys match MatcherSet by construction
   return wrapped as unknown as MatcherSet;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `tracker` is the exported `AssertionTracker` accumulator shared by reference with the parent `it` runner; the body mutates `tracker.count += 1`, so deep-readonly cannot apply. */
 /**
  * Wraps an async matcher set so each matcher call increments the assertion counter.
  *
@@ -553,6 +556,7 @@ function wrapAsyncMatchersWithCounter(
   // oxlint-disable-next-line no-unsafe-type-assertion -- wrapped keys match AsyncMatcherSet by construction
   return wrapped as unknown as AsyncMatcherSet;
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 /**
  * Creates a scoped `expect` function that tracks assertion counts.
