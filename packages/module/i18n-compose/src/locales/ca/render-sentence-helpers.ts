@@ -25,62 +25,75 @@ export type SentenceDeps<S extends string, V extends string, N extends string,> 
   readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
   readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
   readonly renderAdverbials: (
-    advs: readonly Adverbial<S, N>[] | undefined,
-  ) => string | undefined;
+    advs?: readonly Adverbial<S, N>[],
+  ) => string;
 };
 
 /**
- * Renders an optional object slot, returning `undefined` when absent.
+ * Renders a predicate's optional object slot, returning empty string when absent.
  *
- * @param object - optional object AST
+ * Reads `predicate.object` itself so the absent case never crosses the call
+ * boundary as `undefined`; `joinTokens` drops the empty-string result.
+ *
+ * @param predicate - verb phrase whose object slot is rendered
  *
  * @param renderNounPhrase - noun-phrase render function
  *
- * @returns rendered surface or undefined
+ * @returns rendered surface, or empty string when the object slot is absent
  *
  * @example
  * ```ts
- * renderOptionalObject({ object: predicate.object, renderNounPhrase, },);
- * // -> 'la porta' when present, undefined when the object slot is absent
+ * renderOptionalObject({ predicate: sentence.predicate, renderNounPhrase, },);
+ * // -> 'la porta' when present, '' when the object slot is absent
  * ```
  */
-export function renderOptionalObject<S extends string, N extends string,>(
+export function renderOptionalObject<S extends string, V extends string, N extends string,>(
   {
-    object,
+    predicate,
     renderNounPhrase,
   }: {
-    readonly object: NounPhrase<S, N> | undefined;
+    readonly predicate: VerbPhrase<S, V, N>;
     readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
   },
-): string | undefined {
-  return object === undefined ? undefined : renderNounPhrase(object,);
+): string {
+  if (predicate.object
+    === undefined)
+    return '';
+  return renderNounPhrase(predicate.object,);
 }
 
 /**
- * Renders an optional infinitive complement returning `undefined` when absent.
+ * Renders a predicate's optional infinitive complement, returning empty string when absent.
  *
- * @param complement - optional complement AST
+ * Reads `predicate.complement` itself so the absent case never crosses the
+ * call boundary as `undefined`; `joinTokens` drops the empty-string result.
+ *
+ * @param predicate - verb phrase whose complement slot is rendered
  *
  * @param renderVerbPhrase - verb-phrase render function
  *
- * @returns rendered complement phrase or undefined
+ * @returns rendered complement phrase, or empty string when absent
  *
  * @example
  * ```ts
- * renderOptionalComplement({ complement: predicate.complement, renderVerbPhrase, },);
- * // -> 'marxar' when present, undefined when the complement slot is absent
+ * renderOptionalComplement({ predicate: sentence.predicate, renderVerbPhrase, },);
+ * // -> 'marxar' when present, '' when the complement slot is absent
  * ```
  */
 export function renderOptionalComplement<S extends string, V extends string, N extends string,>(
   {
-    complement,
+    predicate,
     renderVerbPhrase,
   }: {
-    readonly complement: { readonly phrase: VerbPhrase<S, V, N>; } | undefined;
+    readonly predicate: VerbPhrase<S, V, N>;
     readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
   },
-): string | undefined {
-  return complement === undefined ? undefined : renderVerbPhrase(complement.phrase,);
+): string {
+  if (predicate.complement
+    === undefined)
+    return '';
+  return renderVerbPhrase(predicate.complement
+    .phrase,);
 }
 
 /**

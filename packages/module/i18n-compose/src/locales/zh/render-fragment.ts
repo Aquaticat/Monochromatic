@@ -29,8 +29,8 @@ type FragmentDeps<L extends string, S extends string, V extends string,
     readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
     readonly renderVerbPhrase: (phrase: VerbPhrase<S, V, N>,) => string;
     readonly renderAdverbials: (
-      advs: readonly Adverbial<S, N>[] | undefined,
-    ) => string | undefined;
+      advs?: readonly Adverbial<S, N>[],
+    ) => string;
   };
 
 /**
@@ -101,22 +101,22 @@ export function makeChineseFragmentRenderer<
     const head = verbs[fragment.phrase
       .verb]
       .surface;
-    /** Optional rendered object surface. */
+    /** Rendered object surface; empty string when absent. */
     const object = fragment.phrase
       .object
       === undefined
-      ? undefined
+      ? ''
       : renderNounPhrase(fragment.phrase
         .object,);
-    /** Optional rendered complement. */
+    /** Rendered complement; empty string when absent. */
     const complement = fragment.phrase
       .complement
       === undefined
-      ? undefined
+      ? ''
       : renderVerbPhrase(fragment.phrase
         .complement
         .phrase,);
-    /** Optional rendered adverbial cluster. */
+    /** Rendered adverbial cluster; empty string when none. */
     const adverbials = renderAdverbials(fragment.phrase
       .adverbials,);
     /** Joined surface before capitalization fixup. */
@@ -128,7 +128,8 @@ export function makeChineseFragmentRenderer<
     ],);
     return capitalize({
       text: body,
-      mode: fragment.capitalization,
+      mode: fragment.capitalization
+        ?? 'preserve',
     },);
   }
 
@@ -163,7 +164,8 @@ export function makeChineseFragmentRenderer<
       === 'fragment.nounPhrase') {
       return capitalize({
         text: renderNounPhrase(fragment.phrase,),
-        mode: fragment.capitalization,
+        mode: fragment.capitalization
+          ?? 'preserve',
       },);
     }
     if (fragment.kind
@@ -178,7 +180,8 @@ export function makeChineseFragmentRenderer<
       .join('',);
     return capitalize({
       text: joined,
-      mode: fragment.capitalization,
+      mode: fragment.capitalization
+        ?? 'preserve',
     },);
   }
 

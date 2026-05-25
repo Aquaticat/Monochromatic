@@ -30,7 +30,7 @@ function locativeCoverb(relation: 'at' | 'in' | 'to' | 'from',): string {
  *
  * @param renderNounPhrase - noun-phrase render function
  *
- * @returns render function for adverbial clusters; returns `undefined` for empty input
+ * @returns render function for adverbial clusters; returns empty string for empty input
  *
  * @example
  * ```ts
@@ -43,7 +43,7 @@ export function makeChineseAdverbialRenderer<S extends string, N extends string,
   }: {
     readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
   },
-): (advs: readonly Adverbial<S, N>[] | undefined,) => string | undefined {
+): (advs?: readonly Adverbial<S, N>[],) => string {
   /**
    * Renders a time operand handling both noun-phrase and external-text variants.
    *
@@ -81,14 +81,14 @@ export function makeChineseAdverbialRenderer<S extends string, N extends string,
    *
    * @param advs - optional adverbial list
    *
-   * @returns concatenated surface, or undefined for empty input
+   * @returns concatenated surface, or empty string for empty input
    */
   function renderAdverbials(
-    advs: readonly Adverbial<S, N>[] | undefined,
-  ): string | undefined {
+    advs?: readonly Adverbial<S, N>[],
+  ): string {
     if ((advs === undefined) || (advs.length
       === 0))
-      return undefined;
+      return '';
     return advs
       .map(function renderOne(adv,): string {
         return renderAdverbial(adv,);

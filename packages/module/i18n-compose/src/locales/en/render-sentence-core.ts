@@ -80,14 +80,12 @@ export function renderDeclarative<S extends string, V extends string, N extends 
   const verb = tense === 'future' ? `will ${finite}` : finite;
   /** Rendered object slot. */
   const object = renderOptionalObject({
-    object: sentence.predicate
-      .object,
+    predicate: sentence.predicate,
     renderNounPhrase,
   },);
   /** Rendered infinitive complement. */
   const complement = renderOptionalComplement({
-    complement: sentence.predicate
-      .complement,
+    predicate: sentence.predicate,
     renderVerbPhrase,
     form: complementFormForVerb({ entry, },),
   },);
@@ -160,14 +158,12 @@ export function renderYesNo<S extends string, V extends string, N extends string
   },);
   /** Rendered object slot. */
   const object = renderOptionalObject({
-    object: sentence.predicate
-      .object,
+    predicate: sentence.predicate,
     renderNounPhrase,
   },);
   /** Rendered infinitive or bare complement. */
   const complement = renderOptionalComplement({
-    complement: sentence.predicate
-      .complement,
+    predicate: sentence.predicate,
     renderVerbPhrase,
     form: questionVerb.complementForm,
   },);
@@ -227,14 +223,12 @@ export function renderImperative<S extends string, V extends string, N extends s
     .base;
   /** Rendered object slot. */
   const object = renderOptionalObject({
-    object: sentence.predicate
-      .object,
+    predicate: sentence.predicate,
     renderNounPhrase,
   },);
   /** Rendered infinitive or bare complement. */
   const complement = renderOptionalComplement({
-    complement: sentence.predicate
-      .complement,
+    predicate: sentence.predicate,
     renderVerbPhrase,
     form: complementFormForVerb({ entry, },),
   },);

@@ -68,14 +68,12 @@ export function renderWhSubject<S extends string, V extends string, N extends st
   },);
   /** Rendered object slot. */
   const object = renderOptionalObject({
-    object: sentence.predicate
-      .object,
+    predicate: sentence.predicate,
     renderNounPhrase,
   },);
   /** Rendered infinitive complement. */
   const complement = renderOptionalComplement({
-    complement: sentence.predicate
-      .complement,
+    predicate: sentence.predicate,
     renderVerbPhrase,
     form: complementFormForVerb({ entry, },),
   },);
@@ -211,14 +209,12 @@ export function renderWhAdverbial<S extends string, V extends string, N extends 
   },);
   /** Rendered object slot. */
   const object = renderOptionalObject({
-    object: sentence.predicate
-      .object,
+    predicate: sentence.predicate,
     renderNounPhrase,
   },);
   /** Rendered infinitive complement. */
   const complement = renderOptionalComplement({
-    complement: sentence.predicate
-      .complement,
+    predicate: sentence.predicate,
     renderVerbPhrase,
     form: questionVerb.complementForm,
   },);

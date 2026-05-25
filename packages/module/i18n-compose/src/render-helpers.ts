@@ -25,7 +25,7 @@ export type CaseInvariantSet = ReadonlySet<string>;
  */
 type ApplyCapitalizationOptions = Readonly<{
   readonly text: string;
-  readonly mode: Capitalization | undefined;
+  readonly mode: Capitalization;
   readonly caseInvariants: ReadonlySet<string>;
 }>;
 
@@ -55,7 +55,7 @@ export function applyCapitalization(
     mode,
     caseInvariants,
   } = options;
-  if ((mode === undefined) || (mode === 'preserve'))
+  if (mode === 'preserve')
     return text;
   if (text.length
     === 0)
@@ -83,22 +83,20 @@ export function applyCapitalization(
  * join them with this helper so a missing optional slot (no adverbials,
  * no object) does not surface as a doubled space.
  *
- * @param tokens - ordered token list; falsy entries are skipped
+ * @param tokens - ordered token list; empty-string entries are skipped
  *
  * @returns space-joined string
  *
  * @example
  * ```ts
  * joinTokens(['Do', 'I', 'have', '1 cat']); // 'Do I have 1 cat'
- * joinTokens(['Save', undefined, 'now']);   // 'Save now'
+ * joinTokens(['Save', '', 'now']);           // 'Save now'
  * ```
  */
-export function joinTokens(tokens: readonly (string | undefined)[],): string {
-  /** Filtered token list with truthy entries only, preserved order. */
-  const kept: string[] = [];
-  for (const token of tokens) {
-    if ((token !== undefined) && (token !== ''))
-      kept.push(token,);
-  }
-  return kept.join(' ',);
+export function joinTokens(tokens: readonly string[],): string {
+  return tokens
+    .filter(function isPresent(token: string,): boolean {
+      return token !== '';
+    },)
+    .join(' ',);
 }

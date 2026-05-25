@@ -98,8 +98,8 @@ export function makeCatalanVerbPhraseRenderer<
     readonly verbs: Readonly<Record<V, CatalanVerbEntry>>;
     readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
     readonly renderAdverbials: (
-      advs: readonly Adverbial<S, N>[] | undefined,
-    ) => string | undefined;
+      advs?: readonly Adverbial<S, N>[],
+    ) => string;
   },
 ): (phrase: VerbPhrase<S, V, N>,) => string {
   /**
@@ -113,18 +113,18 @@ export function makeCatalanVerbPhraseRenderer<
     /** Infinitive head for non-finite verb-phrase rendering. */
     const head = verbs[phrase.verb]
       .infinitive;
-    /** Optional rendered object surface. */
+    /** Rendered object surface; empty string when absent. */
     const object = phrase.object
       === undefined
-      ? undefined
+      ? ''
       : renderNounPhrase(phrase.object,);
-    /** Optional rendered complement (bare infinitive phrase). */
+    /** Rendered complement (bare infinitive phrase); empty string when absent. */
     const complement = phrase.complement
       === undefined
-      ? undefined
+      ? ''
       : renderVerbPhrase(phrase.complement
         .phrase,);
-    /** Optional rendered adverbial cluster. */
+    /** Rendered adverbial cluster; empty string when none. */
     const adverbials = renderAdverbials(phrase.adverbials,);
     return joinTokens([
       head,

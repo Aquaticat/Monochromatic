@@ -27,10 +27,14 @@ export type EnglishComplementForm = 'infinitive' | 'bare';
 
 /**
  * Question head and retained lexical verb chosen from an English verb entry.
+ *
+ * `lexicalVerb` is empty string when the strategy retains no lexical verb
+ * (copula and modal questions front the finite verb itself), so `joinTokens`
+ * drops the slot.
  */
 export type EnglishQuestionVerbParts = {
   readonly auxiliary: string;
-  readonly lexicalVerb: string | undefined;
+  readonly lexicalVerb: string;
   readonly complementForm: EnglishComplementForm;
 };
 
@@ -172,7 +176,7 @@ export function doAuxiliary(
  * @example
  * ```ts
  * questionVerbParts({ entry: { base: 'are', present3s: 'is', auxiliaryStrategy: 'copula' }, tense: 'present', agreement: { person: 2, number: 'singular' } });
- * // { auxiliary: 'are', lexicalVerb: undefined, complementForm: 'infinitive' }
+ * // { auxiliary: 'are', lexicalVerb: '', complementForm: 'infinitive' }
  * ```
  */
 export function questionVerbParts(
@@ -202,7 +206,7 @@ export function questionVerbParts(
         tense,
         agreement,
       },),
-      lexicalVerb: undefined,
+      lexicalVerb: '',
       complementForm: 'infinitive',
     };
   }
@@ -211,7 +215,7 @@ export function questionVerbParts(
       auxiliary: tense === 'past' ? entry.past
         ?? entry
         .base : entry.base,
-      lexicalVerb: undefined,
+      lexicalVerb: '',
       complementForm: 'bare',
     };
   }
@@ -327,8 +331,8 @@ export function makeEnglishVerbPhraseRenderer<
     readonly verbs: Readonly<Record<V, EnglishVerbEntry>>;
     readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
     readonly renderAdverbials: (
-      advs: readonly Adverbial<S, N>[] | undefined,
-    ) => string | undefined;
+      advs?: readonly Adverbial<S, N>[],
+    ) => string;
   },
 ): (phrase: VerbPhrase<S, V, N>,) => string {
   /**
@@ -343,22 +347,22 @@ export function makeEnglishVerbPhraseRenderer<
     const entry = verbs[phrase.verb];
     /** Verb base form; finite tense is decided by callers that own subject + tense context. */
     const verb = entry.base;
-    /** Optional rendered object surface; absent when no object slot was supplied. */
+    /** Rendered object surface; empty string when no object slot was supplied. */
     const object = phrase.object
       === undefined
-      ? undefined
+      ? ''
       : renderNounPhrase(phrase.object,);
-    /** Optional rendered complement, bare for modal-like heads and infinitive otherwise. */
+    /** Rendered complement, bare for modal-like heads and infinitive otherwise; empty string when absent. */
     const complement = phrase.complement
       === undefined
-      ? undefined
+      ? ''
       : renderComplement({
         entry,
         phrase: phrase.complement
           .phrase,
         renderVerbPhrase,
       },);
-    /** Optional rendered adverbial cluster. */
+    /** Rendered adverbial cluster; empty string when none. */
     const adverbials = renderAdverbials(phrase.adverbials,);
     return joinTokens([
       verb,

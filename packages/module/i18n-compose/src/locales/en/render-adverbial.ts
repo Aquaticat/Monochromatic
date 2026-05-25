@@ -15,7 +15,7 @@ import type {
  *
  * @param renderNounPhrase - noun-phrase render function
  *
- * @returns render function for adverbial clusters; returns `undefined` for empty input
+ * @returns render function for adverbial clusters; returns empty string for empty input
  *
  * @example
  * ```ts
@@ -30,7 +30,7 @@ export function makeEnglishAdverbialRenderer<S extends string, N extends string,
   }: {
     readonly renderNounPhrase: (phrase: NounPhrase<S, N>,) => string;
   },
-): (advs: readonly Adverbial<S, N>[] | undefined,) => string | undefined {
+): (advs?: readonly Adverbial<S, N>[],) => string {
   /**
    * Renders the operand of a `adverbial.time` slot, handling both
    * noun-phrase and opaque external-text variants.
@@ -60,18 +60,18 @@ export function makeEnglishAdverbialRenderer<S extends string, N extends string,
 
   /**
    * Renders an adverbial cluster as a single space-joined string,
-   * returning `undefined` so `joinTokens` can drop the slot.
+   * returning empty string so `joinTokens` can drop the slot.
    *
    * @param advs - optional adverbial list
    *
-   * @returns space-joined surface, or undefined for empty input
+   * @returns space-joined surface, or empty string for empty input
    */
   function renderAdverbials(
-    advs: readonly Adverbial<S, N>[] | undefined,
-  ): string | undefined {
+    advs?: readonly Adverbial<S, N>[],
+  ): string {
     if ((advs === undefined) || (advs.length
       === 0))
-      return undefined;
+      return '';
     return advs
       .map(function renderOne(adv,): string {
         return renderAdverbial(adv,);

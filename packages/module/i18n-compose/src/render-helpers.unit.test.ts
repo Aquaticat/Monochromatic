@@ -22,17 +22,6 @@ await describe({
       name: applyCapitalization.name,
       children: [
         it({
-          name: 'preserves text when mode is undefined',
-          fn: async () => {
-            expect(
-              applyCapitalization({ text: 'hello world', mode: undefined,
-                caseInvariants: new Set(), },),
-            )
-              .toBe('hello world',);
-          },
-        },),
-
-        it({
           name: 'preserves text when mode is preserve',
           fn: async () => {
             expect(
@@ -85,13 +74,6 @@ await describe({
           name: 'joins truthy tokens with single spaces',
           fn: async () => {
             expect(joinTokens(['Do', 'I', 'have', '1 cat',],),).toBe('Do I have 1 cat',);
-          },
-        },),
-
-        it({
-          name: 'drops undefined tokens without doubled spaces',
-          fn: async () => {
-            expect(joinTokens(['Save', undefined, 'now',],),).toBe('Save now',);
           },
         },),
 
