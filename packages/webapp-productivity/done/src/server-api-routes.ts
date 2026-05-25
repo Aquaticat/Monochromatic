@@ -8,6 +8,7 @@ import {
   defineHandler,
   getRouterParam,
   type H3,
+  type H3Event,
   HTTPError,
 } from 'h3';
 import { handleAutofill, } from './server/api/ai-autofill.ts';
@@ -44,8 +45,8 @@ function requireParam({
   event,
   name,
 }: {
-  event: Parameters<typeof getRouterParam>[0];
-  name: string;
+  readonly event: H3Event;
+  readonly name: string;
 },): string {
   /** Route value as returned by h3; converted to a thrown 400 below when absent. */
   const value = getRouterParam(

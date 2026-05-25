@@ -37,6 +37,20 @@ function handleOpen(taskId: string,): void {
     .href = `/tasks/${taskId}`;
 }
 
+/**
+ * Stops a task's timer via the API, then reloads to reflect the change.
+ *
+ * @param taskId - ID of task whose timer to stop
+ */
+async function handleStop(taskId: string,): Promise<void> {
+  await api({
+    path: `/api/tasks/${taskId}/stop`,
+    options: { method: 'POST', },
+  },);
+  globalThis.location
+    .reload();
+}
+
 injectCSS(globalStyles,);
 
 /** Deserialized page data containing in-progress tasks. */
@@ -72,14 +86,7 @@ for (const task of pageData.tasks) {
       task,
       options: {
         onOpen: handleOpen,
-        onToggleComplete: async function handleStop(taskId,) {
-          await api({
-            path: `/api/tasks/${taskId}/stop`,
-            options: { method: 'POST', },
-          },);
-          globalThis.location
-            .reload();
-        },
+        onToggleComplete: handleStop,
       },
     },),
   );
@@ -104,9 +111,9 @@ setInterval(
       if (task === undefined)
         return;
       /* oxlint-disable typescript/no-unsafe-type-assertion -- TaskCard has getChipElement but querySelectorAll returns generic HTMLElement */
-      /** Optional chip lookup; undefined on cards rendered before the chip helper existed. */
-      const chipEl = (card as unknown as {
-        getChipElement?: (prefix: string,) => HTMLSpanElement | null;
+      /** Optional chip lookup typed as `unknown`; narrowed by the `instanceof` check below. */
+      const chipEl: unknown = (card as unknown as {
+        getChipElement?: (prefix: string,) => unknown;
       })
         .getChipElement?.('tracked:',);
       /* oxlint-enable typescript/no-unsafe-type-assertion */

@@ -45,7 +45,7 @@ export function buildNav(): HTMLElement {
 /**
  * Builds a header row with a name label and an optional close button.
  *
- * @param closeButton - Close button element, or null for read-only headers
+ * @param closeButton - Close button element, omitted for read-only headers
  *
  * @returns Header div element
  *
@@ -54,7 +54,7 @@ export function buildNav(): HTMLElement {
  * const header = buildHeader(buildCloseButton('Close drawer'));
  * ```
  */
-export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
+export function buildHeader(closeButton?: HTMLElement,): HTMLElement {
   /** Accumulator for the header children so an optional close button can be appended. */
   const children: HTMLElement[] = [
     h({
@@ -63,7 +63,7 @@ export function buildHeader(closeButton: HTMLElement | null,): HTMLElement {
       text: 'Firstname',
     },),
   ];
-  if (closeButton !== null)
+  if (closeButton !== undefined)
     children.push(closeButton,);
   return h({
     tag: 'div',

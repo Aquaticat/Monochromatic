@@ -8,14 +8,25 @@ import type {
 } from '../lib/types.ts';
 import { createTaskCard, } from './lib/task-card.ts';
 
+/**
+ * Map of blocker task ID to the tasks it blocks.
+ *
+ * Deeply readonly; under `noUncheckedIndexedAccess` an index lookup already
+ * yields `... | undefined` for blocker IDs with no blocked tasks, so no
+ * explicit `| undefined` value union (banned by `no-nullish-union`) is needed.
+ */
+export type BlockedTasksByBlocker = Readonly<
+  Record<string, readonly BlockedTaskLink[]>
+>;
+
 /** Shape of the JSON blob embedded in the inbox page by the server. */
 export type InboxPageData = {
   /** AI-prioritized suggested tasks for the current context. */
-  suggestedTasks: Task[];
+  readonly suggestedTasks: readonly Task[];
   /** All inbox tasks. */
-  allTasks: Task[];
+  readonly allTasks: readonly Task[];
   /** Map of blocker task ID to the tasks it blocks. */
-  blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
+  readonly blockedTasksByBlocker: BlockedTasksByBlocker;
 };
 
 /**
@@ -36,10 +47,10 @@ export function buildTaskList(
     onOpen,
     onToggleComplete,
   }: {
-    tasks: readonly Task[];
-    blockedTasksByBlocker: Record<string, BlockedTaskLink[] | undefined>;
-    onOpen: (taskId: string,) => void;
-    onToggleComplete: (taskId: string,) => Promise<void>;
+    readonly tasks: readonly Task[];
+    readonly blockedTasksByBlocker: BlockedTasksByBlocker;
+    readonly onOpen: (taskId: string,) => void;
+    readonly onToggleComplete: (taskId: string,) => Promise<void>;
   },
 ): HTMLUListElement {
   /** Top-level list mutated in-place as the loop appends cards and child branches. */

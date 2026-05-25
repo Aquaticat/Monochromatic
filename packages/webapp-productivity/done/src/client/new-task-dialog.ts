@@ -17,24 +17,17 @@ import { api, } from './lib/api.ts';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: register custom elements
 import './components/task-detail.ts';
 
-/** Blank task template used when creating a new task. */
+/** Blank task template used when creating a new task; optional fields stay absent. */
 const emptyTask: Task = {
   id: '',
   title: '',
-  description: null,
   tags: [],
   locations: [],
-  priority: null,
-  dueDate: null,
-  complexity: null,
   reminders: [],
   blockedBy: [],
   trackedTime: 0,
-  timerStartedAt: null,
   status: 'inbox',
   source: 'local',
-  sourceId: null,
-  sourceMeta: null,
   createdAt: '',
   updatedAt: '',
 };

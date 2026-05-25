@@ -15,6 +15,9 @@ import {
 } from './task-card-helpers.ts';
 import { TASK_CARD_STYLES, } from './task-card-styles.ts';
 
+/** Sentinel returned by `getChipElement` when no chip matches the prefix. */
+const CHIP_NOT_FOUND: unique symbol = Symbol('chip-not-found',);
+
 /**
  * `<task-card>`: displays a task as a clickable card with checkbox, title, and metadata chips.
  * Created programmatically via `createTaskCard()`, not placed in server HTML.
@@ -23,11 +26,11 @@ class TaskCard extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
 
-  /** Task data to display, set via `configure()`. */
-  #task: Task | null = null;
+  /** Task data to display, set via `configure()`; absent before configure. */
+  #task?: Task;
 
-  /** Interaction callbacks and display flags, set via `configure()`. */
-  #options: TaskCardOptions | null = null;
+  /** Interaction callbacks and display flags, set via `configure()`; absent before configure. */
+  #options?: TaskCardOptions;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -57,16 +60,16 @@ class TaskCard extends HTMLElement {
    *
    * @param prefix - Text prefix to match (e.g. `"tracked:"`)
    *
-   * @returns Matching chip span, or null if not found
+   * @returns Matching chip span, or {@link CHIP_NOT_FOUND} when none matches
    */
-  getChipElement(prefix: string,): HTMLSpanElement | null {
+  getChipElement(prefix: string,): HTMLSpanElement | typeof CHIP_NOT_FOUND {
     for (const chip of this.#shadow
       .querySelectorAll<HTMLSpanElement>('.chip',)) {
       if (chip.textContent
         .startsWith(prefix,))
         return chip;
     }
-    return null;
+    return CHIP_NOT_FOUND;
   }
 
   /** Renders the card content (checkbox, title, chips) into the shadow root. */
@@ -75,7 +78,7 @@ class TaskCard extends HTMLElement {
     const task = this.#task;
     /** Snapshot of the configured options; early-returns below if not yet set. */
     const options = this.#options;
-    if ((task === null) || (options === null))
+    if ((task === undefined) || (options === undefined))
       return;
 
     /** Chip label strings built from the task fields. */
@@ -116,11 +119,11 @@ class TaskCard extends HTMLElement {
               class: 'checkbox-box',
             },),],
             on: {
-              click: async function handleCheckboxClick(event,) {
+              click: function handleCheckboxClick(event,): void {
                 event.stopPropagation();
                 if (options.onToggleComplete
                   !== undefined)
-                  await options.onToggleComplete(task.id,);
+                  void options.onToggleComplete(task.id,);
               },
             },
           },),
@@ -169,8 +172,8 @@ export function createTaskCard({
   task,
   options,
 }: {
-  task: Task;
-  options: TaskCardOptions;
+  readonly task: Task;
+  readonly options: TaskCardOptions;
 },): TaskCard {
   /* oxlint-disable typescript/no-unsafe-type-assertion -- createElement returns HTMLElement but task-card is registered as TaskCard */
   /** Live `TaskCard` instance so the imperative `configure()` API is reachable. */
@@ -197,7 +200,7 @@ export function createTaskCard({
  */
 export function formatRunningTrackedTime(task: Task,): string {
   if (task.timerStartedAt
-    === null)
+    === undefined)
     return formatTrackedTime(task.trackedTime,);
 
   /** Live tick since the timer started; clamped so a clock skew never produces negatives. */

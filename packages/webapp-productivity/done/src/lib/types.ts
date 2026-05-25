@@ -43,64 +43,72 @@ export type TaskStatus = (typeof TASK_STATUSES)[number];
 /** External system from which a task was imported, or `"local"` for manually created tasks. */
 export type TaskSource = 'local' | 'github' | 'linear' | 'calendar' | 'codebase';
 
+/**
+ * Sentinel returned by task lookups when no row matches the requested ID.
+ *
+ * A unique `Symbol` keeps "not found" out of a `Task | null` union (banned by
+ * `no-nullish-union`); callers narrow with `=== TASK_NOT_FOUND`.
+ */
+export const TASK_NOT_FOUND: unique symbol = Symbol('task-not-found',);
+
 /** Canonical task shape shared between server (DB layer) and client (page data JSON). */
 export type Task = {
-  id: string;
-  title: string;
-  description: string | null;
-  tags: string[];
-  locations: string[];
-  priority: TaskPriority | null;
-  dueDate: string | null;
-  complexity: TaskComplexity | null;
-  reminders: string[];
-  blockedBy: string[];
+  readonly id: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly tags: readonly string[];
+  readonly locations: readonly string[];
+  readonly priority?: TaskPriority;
+  readonly dueDate?: string;
+  readonly complexity?: TaskComplexity;
+  readonly reminders: readonly string[];
+  readonly blockedBy: readonly string[];
   /** Accumulated tracked time in seconds (excludes any running timer). */
-  trackedTime: number;
-  /** ISO timestamp when the current timer was started, or `null` when idle. */
-  timerStartedAt: string | null;
-  status: TaskStatus;
-  source: TaskSource;
-  sourceId: string | null;
-  sourceMeta: string | null;
-  createdAt: string;
-  updatedAt: string;
+  readonly trackedTime: number;
+  /** ISO timestamp when the current timer was started; absent when idle. */
+  readonly timerStartedAt?: string;
+  readonly status: TaskStatus;
+  readonly source: TaskSource;
+  readonly sourceId?: string;
+  readonly sourceMeta?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
 };
 
 /** Associates a blocked inbox task with the blocker task that gates it. */
 export type BlockedTaskLink = {
-  blockerId: string;
-  task: Task;
+  readonly blockerId: string;
+  readonly task: Task;
 };
 
 /** Search result task with an additional `isBlocked` flag for UI badge display. */
 export type SearchTask = Task & {
-  isBlocked: boolean;
+  readonly isBlocked: boolean;
 };
 
 /** Payload accepted by `createTask()`: only `title` is required; all others default. */
 export type TaskCreateInput = {
-  title: string;
-  description?: string | null;
-  tags?: string[];
-  locations?: string[];
-  priority?: TaskPriority | null;
-  dueDate?: string | null;
-  complexity?: TaskComplexity | null;
-  reminders?: string[];
-  blockedBy?: string[];
+  readonly title: string;
+  readonly description?: string;
+  readonly tags?: readonly string[];
+  readonly locations?: readonly string[];
+  readonly priority?: TaskPriority;
+  readonly dueDate?: string;
+  readonly complexity?: TaskComplexity;
+  readonly reminders?: readonly string[];
+  readonly blockedBy?: readonly string[];
 };
 
 /** Partial update payload accepted by `updateTask()`: omitted fields stay unchanged. */
 export type TaskUpdateInput = {
-  title?: string;
-  description?: string | null;
-  tags?: string[];
-  locations?: string[];
-  priority?: TaskPriority | null;
-  dueDate?: string | null;
-  complexity?: TaskComplexity | null;
-  reminders?: string[];
-  blockedBy?: string[];
-  status?: TaskStatus;
+  readonly title?: string;
+  readonly description?: string;
+  readonly tags?: readonly string[];
+  readonly locations?: readonly string[];
+  readonly priority?: TaskPriority;
+  readonly dueDate?: string;
+  readonly complexity?: TaskComplexity;
+  readonly reminders?: readonly string[];
+  readonly blockedBy?: readonly string[];
+  readonly status?: TaskStatus;
 };

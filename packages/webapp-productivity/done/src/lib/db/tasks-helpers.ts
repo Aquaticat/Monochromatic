@@ -2,14 +2,16 @@
  * Shared types and helper functions for the task data-access layer.
  */
 import db from '../db.ts';
-import type {
-  Task,
-  TaskComplexity,
-  TaskPriority,
-  TaskStatus,
+import {
+  type Task,
+  type TaskComplexity,
+  type TaskPriority,
+  type TaskStatus,
+  TASK_NOT_FOUND,
 } from '../types.ts';
 import { SQL_SELECT_TASK_BY_ID, } from './tasks-sql.ts';
 
+/* oxlint-disable no-restricted-syntax/no-nullish-union -- mirrors `@tursodatabase/database` `prepare().get()/.all()` raw row shape: SQLite NULL columns materialize as JS `null` on the returned row object, so the honest type for a nullable column is `T | null`; `mapTask` converts these to absent (`?:`) fields at the application boundary */
 /** Raw SQLite row shape before mapping to the application-level `Task` type. */
 export type TaskRow = {
   /** Primary key UUID. */
@@ -49,6 +51,7 @@ export type TaskRow = {
   /** ISO timestamp of last update. */
   updated_at: string;
 };
+/* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 /** Summary of a single blocker task, used to report why completion was refused. */
 export type BlockerSummary = {
@@ -126,7 +129,7 @@ export function parseStringArray(value: string,): string[] {
  * // ['errand', 'home']
  * ```
  */
-export function normalizeStringArray(values: readonly string[] | undefined,): string[] {
+export function normalizeStringArray(values?: readonly string[],): string[] {
   if (values === undefined)
     return [];
   return [...new Set(values
@@ -152,27 +155,43 @@ export function normalizeStringArray(values: readonly string[] | undefined,): st
  * const task = mapTask(row);
  * ```
  */
-export function mapTask(row: TaskRow,): Task {
-  return {
+export function mapTask(row: Readonly<TaskRow>,): Task {
+  /** Mutable accumulator; nullable SQLite columns are added only when present, so null maps to an absent (`?:`) field. */
+  const task: { -readonly [K in keyof Task]: Task[K]; } = {
     id: row.id,
     title: row.title,
-    description: row.description,
     tags: parseStringArray(row.tags,),
     locations: parseStringArray(row.locations,),
-    priority: row.priority,
-    dueDate: row.due_date,
-    complexity: row.complexity,
     reminders: parseStringArray(row.reminders,),
     blockedBy: parseStringArray(row.blocked_by,),
     trackedTime: row.tracked_time,
-    timerStartedAt: row.timer_started_at,
     status: row.status,
     source: row.source,
-    sourceId: row.source_id,
-    sourceMeta: row.source_meta,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+  if (row.description
+    !== null)
+    task.description = row.description;
+  if (row.priority
+    !== null)
+    task.priority = row.priority;
+  if (row.due_date
+    !== null)
+    task.dueDate = row.due_date;
+  if (row.complexity
+    !== null)
+    task.complexity = row.complexity;
+  if (row.timer_started_at
+    !== null)
+    task.timerStartedAt = row.timer_started_at;
+  if (row.source_id
+    !== null)
+    task.sourceId = row.source_id;
+  if (row.source_meta
+    !== null)
+    task.sourceMeta = row.source_meta;
+  return task;
 }
 
 /**
@@ -180,20 +199,19 @@ export function mapTask(row: TaskRow,): Task {
  *
  * @param id - Task UUID
  *
- * @returns Raw task row, or null when not found
+ * @returns Raw task row, or {@link TASK_NOT_FOUND} when not found
  *
  * @example
  * ```ts
  * const row = await getTaskRowById('abc-123');
  * ```
  */
-export async function getTaskRowById(id: string,): Promise<TaskRow | null> {
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- database prepare().get() returns the row shape we defined */
-  /** Raw row read from SQLite; `undefined` distinguished from `null` for not-found. */
-  const taskRow = await db.prepare(SQL_SELECT_TASK_BY_ID,)
-    .get(id,) as
-    | TaskRow
-    | undefined;
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
-  return taskRow ?? null;
+export async function getTaskRowById(id: string,): Promise<TaskRow | typeof TASK_NOT_FOUND> {
+  /** Raw row read from SQLite; nullish when no row matches the requested ID. */
+  const taskRow: unknown = await db.prepare(SQL_SELECT_TASK_BY_ID,)
+    .get(id,);
+  if ((taskRow === undefined) || (taskRow === null))
+    return TASK_NOT_FOUND;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database prepare().get() returns the row shape we defined
+  return taskRow as TaskRow;
 }

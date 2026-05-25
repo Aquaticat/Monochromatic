@@ -4,7 +4,10 @@
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
 import type { Task, } from '../../lib/types.ts';
 import { formatRunningTrackedTime, } from '../lib/task-card.ts';
-import type { MetadataState, } from './task-detail-types.ts';
+import {
+  METADATA_UNSET,
+  type MetadataState,
+} from './task-detail-types.ts';
 
 /**
  * Builds pill elements from current metadata state and autofill status.
@@ -23,10 +26,10 @@ export function buildPillElements({
   autofillLoading,
   autofilled,
 }: {
-  task: Task;
-  metadata: MetadataState;
-  autofillLoading: boolean;
-  autofilled: Set<string>;
+  readonly task: Task;
+  readonly metadata: MetadataState;
+  readonly autofillLoading: boolean;
+  readonly autofilled: ReadonlySet<string>;
 },): HTMLElement[] {
   /** Ordered pill descriptors; field names align with the autofilled set lookup below. */
   const pillData = [
@@ -53,7 +56,9 @@ export function buildPillElements({
     {
       field: 'priority',
       text: `priority: ${metadata.priority
-        ?? '?'}`,
+          === METADATA_UNSET
+        ? '?'
+        : metadata.priority}`,
     },
     {
       field: 'due',
@@ -63,7 +68,9 @@ export function buildPillElements({
     {
       field: 'complexity',
       text: `complexity: ${metadata.complexity
-        ?? '?'}`,
+          === METADATA_UNSET
+        ? '?'
+        : metadata.complexity}`,
     },
     {
       field: 'reminders',

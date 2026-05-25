@@ -25,8 +25,8 @@ class SideDrawer extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
 
-  /** Reference to the popover panel element, set after first render. */
-  #panel: HTMLDivElement | null = null;
+  /** Reference to the popover panel element; absent before first render. */
+  #panel?: HTMLDivElement;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -68,8 +68,9 @@ class SideDrawer extends HTMLElement {
   /** Renders content, sets up panel reference, and wires event listeners. */
   connectedCallback(): void {
     this.#render();
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- querySelector returns the `.panel` div rendered unconditionally above
     this.#panel = this.#shadow
-      .querySelector<HTMLDivElement>('.panel',);
+      .querySelector<HTMLDivElement>('.panel',) as HTMLDivElement;
     /** Pre-bound closer so the inline listeners keep `this` after handoff. */
     const closeFn = this.#closeDrawer
       .bind(this,);
@@ -86,7 +87,7 @@ class SideDrawer extends HTMLElement {
     );
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
-    panel?.addEventListener(
+    panel.addEventListener(
       'click',
       function handleBackdropClick(event: Event,): void {
         if (event.target
@@ -99,7 +100,7 @@ class SideDrawer extends HTMLElement {
   /** Syncs the popover visibility when the `open` attribute changes. */
   attributeChangedCallback(): void {
     if (this.#panel
-      === null)
+      === undefined)
       return;
 
     if (this.open)
@@ -117,7 +118,8 @@ class SideDrawer extends HTMLElement {
     panelClose.classList
       .add('panel-close',);
 
-    this.#shadow.replaceChildren(
+    this.#shadow
+      .replaceChildren(
       h({
         tag: 'style',
         text: SIDE_DRAWER_STYLES,
@@ -131,7 +133,7 @@ class SideDrawer extends HTMLElement {
             tag: 'aside',
             class: 'sidebar',
             children: [
-              buildHeader(null,),
+              buildHeader(),
               h({
                 tag: 'div',
                 class: 'divider',

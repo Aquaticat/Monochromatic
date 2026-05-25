@@ -250,7 +250,7 @@ export function scrollRow(): CssDeclarations {
  * ```
  */
 export function focusOutline(
-  { offset = cssRem(OUTLINE_WIDTH,), }: { offset?: CssValue; } = {},
+  { offset = cssRem(OUTLINE_WIDTH,), }: { readonly offset?: CssValue; } = {},
 ): CssDeclarations {
   return {
     'outline-width': cssRem(OUTLINE_WIDTH,),

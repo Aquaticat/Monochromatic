@@ -7,11 +7,11 @@ import type { Task, } from '../../lib/types.ts';
 /** Options for building the task detail DOM tree. */
 type RenderOptions = {
   /** Task being displayed. */
-  task: Task;
+  readonly task: Task;
   /** Whether the component is in create mode. */
-  isCreate: boolean;
+  readonly isCreate: boolean;
   /** Compiled CSS string for styles. */
-  styles: string;
+  readonly styles: string;
 };
 
 /** References to dynamic elements within the rendered tree. */
@@ -88,18 +88,18 @@ export function buildTaskDetailTree(
     attrs: { placeholder: 'description', },
   },);
   if (task.description
-    !== null)
+    !== undefined)
     descInput.textContent = task.description;
 
   /** Mutable attribute map so a `disabled` flag can be appended conditionally below. */
   const startAttrs: Record<string, string> = { 'data-action': 'start', };
   if (task.timerStartedAt
-    !== null)
+    !== undefined)
     startAttrs.disabled = '';
   /** Mutable attribute map mirroring `startAttrs`; disabled when no timer is running. */
   const stopAttrs: Record<string, string> = { 'data-action': 'stop', };
   if (task.timerStartedAt
-    === null)
+    === undefined)
     stopAttrs.disabled = '';
   /** Mutable attribute map disabled while any blocker remains unresolved. */
   const completeAttrs: Record<string, string> = { 'data-action': 'complete', };

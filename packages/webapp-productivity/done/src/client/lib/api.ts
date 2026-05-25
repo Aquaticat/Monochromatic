@@ -11,6 +11,18 @@ import { showToast, } from '../components/toast-message.ts';
 export { showToast, };
 
 /**
+ * Request configuration accepted by {@link api}; a readonly subset of `RequestInit`.
+ */
+export type ApiRequestOptions = {
+  /** HTTP method, e.g. `"POST"`, `"PUT"`, `"DELETE"`. */
+  readonly method?: string;
+  /** Request body; callers serialize JSON to a string. */
+  readonly body?: string;
+  /** Extra request headers merged over the default JSON content type. */
+  readonly headers?: Readonly<Record<string, string>>;
+};
+
+/**
  * Sends a fetch request to a JSON API endpoint with standard headers and error handling.
  *
  * @param path - API endpoint path
@@ -29,14 +41,14 @@ export async function api<TResponse = unknown,>({
   path,
   options,
 }: {
-  path: string;
-  options?: RequestInit;
+  readonly path: string;
+  readonly options?: ApiRequestOptions;
 },): Promise<TResponse> {
   /** Base headers merged with any caller-supplied overrides below. */
   const headers = new Headers({ 'Content-Type': 'application/json', },);
   if (options?.headers
     !== undefined) {
-    new Headers(options.headers,).forEach(function applyHeader(
+    new Headers({ ...options.headers, },).forEach(function applyHeader(
       value,
       key,
     ) {

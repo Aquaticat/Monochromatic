@@ -12,6 +12,7 @@ import {
   getTaskById,
   listTasksForBlockerPicker,
 } from '../../lib/db/tasks-queries.ts';
+import { TASK_NOT_FOUND, } from '../../lib/types.ts';
 import { serializePageData, } from './layout.ts';
 
 /**
@@ -27,9 +28,9 @@ import { serializePageData, } from './layout.ts';
  * ```
  */
 export async function taskDetailsPage(taskId: string,): Promise<Response> {
-  /** Target task; null short-circuits to a 404 response below. */
+  /** Target task; the not-found sentinel short-circuits to a 404 response below. */
   const task = await getTaskById(taskId,);
-  if (task === null) {
+  if (task === TASK_NOT_FOUND) {
     return new Response(
       'Task not found',
       { status: 404, },

@@ -5,14 +5,18 @@ import type {
   TaskComplexity,
   TaskPriority,
 } from '../../lib/types.ts';
-import { AutofillManager, } from './task-detail-autofill.ts';
+import {
+  type AutofillController,
+  createAutofillController,
+} from './task-detail-autofill.ts';
 import { buildPillElements, } from './task-detail-pills.ts';
 import { buildTaskDetailTree, } from './task-detail-render.ts';
 import { TASK_DETAIL_STYLES, } from './task-detail-styles.ts';
-import type {
-  MetadataState,
-  TaskDetailData,
-  TaskDetailMode,
+import {
+  METADATA_UNSET,
+  type MetadataState,
+  type TaskDetailData,
+  type TaskDetailMode,
 } from './task-detail-types.ts';
 
 /**
@@ -23,27 +27,73 @@ class TaskDetail extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
 
-  /** Current task data and display configuration, or `null` before configure. */
-  #data: TaskDetailData | null = null;
+  /** Current task data and display configuration; absent before configure. */
+  #data?: TaskDetailData;
 
   /** Whether the component is in edit or create mode. */
   #mode: TaskDetailMode = 'edit';
 
-  /** Mutable metadata state updated by autofill and user edits. */
+  /** Metadata state updated by autofill and user edits; reassigned wholesale. */
   #metadata: MetadataState = {
     tags: [],
     locations: [],
-    priority: null,
-    complexity: null,
+    priority: METADATA_UNSET,
+    complexity: METADATA_UNSET,
   };
 
-  /** Debounced AI autofill manager. */
-  readonly #autofill = new AutofillManager();
+  /** Debounced AI autofill controller. */
+  readonly #autofill: AutofillController;
 
-  /** Initializes the shadow root. */
+  /** Initializes the shadow root and autofill controller. */
   constructor() {
     super();
     this.#shadow = this.attachShadow({ mode: 'open', },);
+    this.#autofill = createAutofillController({
+      getState: this.#getMetadataState
+        .bind(this,),
+      setState: this.#applyMetadataState
+        .bind(this,),
+      updateDisplay: this.#updatePillsDisplay
+        .bind(this,),
+    },);
+  }
+
+  /**
+   * Snapshots current metadata for the autofill controller's empty-field check.
+   *
+   * @returns Current metadata values
+   */
+  #getMetadataState(): MetadataState {
+    return this.#metadata;
+  }
+
+  /**
+   * Applies AI-suggested metadata; omitted fields are left unchanged.
+   *
+   * @param update - Fields the autofill controller wants to set
+   */
+  #applyMetadataState(
+    update: {
+      readonly tags?: readonly string[];
+      readonly locations?: readonly string[];
+      readonly priority?: TaskPriority;
+      readonly complexity?: TaskComplexity;
+    },
+  ): void {
+    this.#metadata = {
+      tags: update.tags
+        ?? this.#metadata
+        .tags,
+      locations: update.locations
+        ?? this.#metadata
+        .locations,
+      priority: update.priority
+        ?? this.#metadata
+        .priority,
+      complexity: update.complexity
+        ?? this.#metadata
+        .complexity,
+    };
   }
 
   /**
@@ -66,12 +116,14 @@ class TaskDetail extends HTMLElement {
       locations: [...data.task
         .locations,],
       priority: data.task
-        .priority,
+        .priority
+        ?? METADATA_UNSET,
       complexity: data.task
-        .complexity,
+        .complexity
+        ?? METADATA_UNSET,
     };
     this.#autofill
-      .reset();
+      .clearAutofilled();
     this.#render();
   }
 
@@ -80,13 +132,8 @@ class TaskDetail extends HTMLElement {
    *
    * @returns Current tags, locations, priority, and complexity
    */
-  getMetadata(): {
-    tags: string[];
-    locations: string[];
-    priority: TaskPriority | null;
-    complexity: TaskComplexity | null;
-  } {
-    return { ...this.#metadata, };
+  getMetadata(): MetadataState {
+    return this.#metadata;
   }
 
   /** Rebuilds pill elements in the `.pills` container from current metadata state. */
@@ -118,7 +165,7 @@ class TaskDetail extends HTMLElement {
   #render(): void {
     /** Hydration payload captured once; early return below if not yet set. */
     const data = this.#data;
-    if (data === null)
+    if (data === undefined)
       return;
     /** Destructured task forwarded to the tree builder and downstream listeners. */
     const { task, } = data;
@@ -139,15 +186,8 @@ class TaskDetail extends HTMLElement {
       .replaceChildren(...elements,);
     this.#updatePillsDisplay();
 
-    /** Pre-bound autofill trigger so the input listener keeps the manager's `this`. */
-    const requestAutofill = this.#autofill
-      .request
-      .bind(this.#autofill,);
-    /** Local alias so the input listener does not capture `this`. */
-    const metadata = this.#metadata;
-    /** Pre-bound pill refresher used as the autofill `onUpdate` callback. */
-    const updatePills = this.#updatePillsDisplay
-      .bind(this,);
+    /** Local alias so the input listener reaches the controller without capturing `this`. */
+    const autofill = this.#autofill;
     /** Pre-bound dispatcher so the click handler can bubble events. */
     const dispatchFn = this.dispatchEvent
       .bind(this,);
@@ -156,18 +196,13 @@ class TaskDetail extends HTMLElement {
       .addEventListener(
       'input',
       function handleTitleInput(): void {
-        requestAutofill({
-          title: refs.titleInput
-            .value,
-          metadata,
-          onUpdate: function onAutofillUpdate(): void {
-            updatePills();
-          },
-        },);
+        autofill.request(refs.titleInput
+          .value,);
       },
     );
 
-    this.#shadow.addEventListener(
+    this.#shadow
+      .addEventListener(
       'click',
       function handleActionClick(event: Event,): void {
         /** Click origin; type narrowed below before walking ancestors. */

@@ -5,10 +5,11 @@
  * Timer and completion operations are in `tasks-timer.ts`.
  */
 import db from '../db.ts';
-import type {
-  Task,
-  TaskCreateInput,
-  TaskUpdateInput,
+import {
+  type Task,
+  type TaskCreateInput,
+  TASK_NOT_FOUND,
+  type TaskUpdateInput,
 } from '../types.ts';
 import {
   normalizeStringArray,
@@ -81,7 +82,7 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
 
   /** Read-back so callers receive the canonical row including server-applied defaults. */
   const createdTask = await getTaskById(id,);
-  if (createdTask === null)
+  if (createdTask === TASK_NOT_FOUND)
     throw new Error('Failed to read created task',);
 
   return createdTask;
@@ -94,7 +95,7 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
  *
  * @param input - Fields to update (omitted fields keep their current value)
  *
- * @returns Updated task, or `null` when the ID does not exist
+ * @returns Updated task, or {@link TASK_NOT_FOUND} when the ID does not exist
  *
  * @example
  * ```ts
@@ -105,60 +106,39 @@ export async function updateTask({
   id,
   input,
 }: {
-  id: string;
-  input: TaskUpdateInput;
-},): Promise<Task | null> {
-  /** Existing row used as the merge baseline; null short-circuits not-found. */
+  readonly id: string;
+  readonly input: TaskUpdateInput;
+},): Promise<Task | typeof TASK_NOT_FOUND> {
+  /** Existing row used as the merge baseline; the sentinel short-circuits not-found. */
   const currentTask = await getTaskById(id,);
-  if (currentTask === null)
-    return null;
+  if (currentTask === TASK_NOT_FOUND)
+    return TASK_NOT_FOUND;
 
+  // Spread-merge: present `input` keys override; absent optional keys inherit from `currentTask`
   /** Merged shape: input wins, falling back to the current row, with a fresh updated-at. */
   const updatedTask: Task = {
     ...currentTask,
+    ...input,
     title: input.title
       ?.trim()
       ?? currentTask
       .title,
-    description: input.description
-      ?? currentTask
-      .description,
-    tags: input.tags
-      ?? currentTask
-      .tags,
-    locations: input.locations
-      ?? currentTask
-      .locations,
-    priority: input.priority
-      ?? currentTask
-      .priority,
-    dueDate: input.dueDate
-      ?? currentTask
-      .dueDate,
-    complexity: input.complexity
-      ?? currentTask
-      .complexity,
-    reminders: input.reminders
-      ?? currentTask
-      .reminders,
-    blockedBy: input.blockedBy
-      ?? currentTask
-      .blockedBy,
-    status: input.status
-      ?? currentTask
-      .status,
     updatedAt: nowIso(),
   };
 
   await db.prepare(SQL_UPDATE_TASK,)
     .run(
     updatedTask.title,
-    updatedTask.description,
+    updatedTask.description
+      ?? null,
     JSON.stringify(normalizeStringArray(updatedTask.tags,),),
     JSON.stringify(normalizeStringArray(updatedTask.locations,),),
-    updatedTask.priority,
-    updatedTask.dueDate,
-    updatedTask.complexity,
+    updatedTask.priority
+      ?? null,
+    updatedTask.dueDate
+      ?? null,
+    updatedTask.complexity
+      ?? null,
     JSON.stringify(normalizeStringArray(updatedTask.reminders,),),
     JSON.stringify(normalizeStringArray(updatedTask.blockedBy,),),
     updatedTask.status,

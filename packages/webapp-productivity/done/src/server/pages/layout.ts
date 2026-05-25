@@ -14,13 +14,13 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 /** Options for rendering a full HTML page with the standard layout shell. */
 type LayoutOptions = {
-  title: string;
-  heading: string;
+  readonly title: string;
+  readonly heading: string;
   /** Path to the bundled client entry script, e.g. "/dist/client/inbox.js" */
-  entryScriptPath: string;
+  readonly entryScriptPath: string;
   /** Arbitrary data serialized as JSON into `<script id="page-data">` for client hydration */
-  pageData: unknown;
-  hideTopNav?: boolean;
+  readonly pageData: unknown;
+  readonly hideTopNav?: boolean;
 };
 
 /**

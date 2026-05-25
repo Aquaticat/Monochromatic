@@ -7,51 +7,61 @@ import type {
   TaskPriority,
 } from '../../lib/types.ts';
 
+/**
+ * Sentinel for an editor metadata field (priority, complexity) with no
+ * selected value.
+ *
+ * A unique `Symbol` keeps "unset" out of a nullish union (banned by
+ * `no-nullish-union`) while remaining a distinct, comparable value the mutable
+ * editor state can be reset to; consumers narrow with `=== METADATA_UNSET`.
+ */
+export const METADATA_UNSET: unique symbol = Symbol('metadata-unset',);
+
 /** Blocker task summary displayed as a pill in the task detail view. */
 export type BlockerSummary = {
   /** Blocker task ID. */
-  id: string;
+  readonly id: string;
   /** Blocker task title. */
-  title: string;
+  readonly title: string;
   /** Blocker task status. */
-  status: string;
+  readonly status: string;
 };
 
 /** Shape of the JSON response from the `/api/ai/autofill` endpoint. */
 export type AutofillResult = {
   /** AI-suggested tags. */
-  tags: string[];
+  readonly tags: readonly string[];
   /** AI-suggested locations. */
-  locations: string[];
-  /** AI-suggested priority. */
-  priority: TaskPriority | null;
-  /** AI-suggested complexity. */
-  complexity: TaskComplexity | null;
+  readonly locations: readonly string[];
+  /** AI-suggested priority; absent when none was inferred. */
+  readonly priority?: TaskPriority;
+  /** AI-suggested complexity; absent when none was inferred. */
+  readonly complexity?: TaskComplexity;
 };
 
 /** Determines whether the component renders as a new-task creator or an editor. */
 export type TaskDetailMode = 'create' | 'edit';
 
-/** Mutable metadata state managed by the `<task-detail>` component. */
+/** Metadata state managed by the `<task-detail>` component; reassigned wholesale on edit. */
 export type MetadataState = {
   /** Current tags (user-set or autofilled). */
-  tags: string[];
+  readonly tags: readonly string[];
   /** Current locations (user-set or autofilled). */
-  locations: string[];
-  /** Current priority (user-set or autofilled). */
-  priority: TaskPriority | null;
-  /** Current complexity (user-set or autofilled). */
-  complexity: TaskComplexity | null;
+  readonly locations: readonly string[];
+  /** Current priority (user-set or autofilled); `METADATA_UNSET` when none chosen. */
+  readonly priority: TaskPriority | typeof METADATA_UNSET;
+  /** Current complexity (user-set or autofilled); `METADATA_UNSET` when none chosen. */
+  readonly complexity: TaskComplexity | typeof METADATA_UNSET;
 };
 
 /** Configuration payload passed to `TaskDetail.configure()`. */
 export type TaskDetailData = {
   /** Task being displayed or edited. */
-  task: Task;
+  readonly task: Task;
   /** Summaries of tasks that block this one. */
-  blockerSummaries: BlockerSummary[];
+  readonly blockerSummaries: readonly BlockerSummary[];
   /** Component mode: `"create"` for new tasks, `"edit"` (default) for existing. */
-  mode?: TaskDetailMode;
+  readonly mode?: TaskDetailMode;
 };
 
 /** Delay before triggering AI autofill after the user stops typing. */

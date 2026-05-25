@@ -71,21 +71,21 @@ function recordRequest(): void {
 /** Message in a chat conversation. */
 export type ChatMessage = {
   /** Role of the message author. */
-  role: 'system' | 'user' | 'assistant';
+  readonly role: 'system' | 'user' | 'assistant';
   /** Text content of the message. */
-  content: string;
+  readonly content: string;
 };
 
 /** Options for a chat completion request. */
 export type ChatCompletionOptions = {
   /** Messages in the conversation. */
-  messages: ChatMessage[];
+  readonly messages: readonly ChatMessage[];
   /** Sampling temperature (0 = deterministic). */
-  temperature?: number;
+  readonly temperature?: number;
   /** Maximum tokens to generate. */
-  maxTokens?: number;
+  readonly maxTokens?: number;
   /** When `true`, request `response_format: \{ type: "json_object" \}`. */
-  jsonMode?: boolean;
+  readonly jsonMode?: boolean;
 };
 
 /** Single choice from a chat completion response. */

@@ -1,3 +1,4 @@
+/* oxlint-disable typescript/no-unnecessary-type-parameters -- TData is a return-only parameter on purpose: it centralizes the single JSON-hydration cast at this trusted server->client boundary. Inlining to `unknown` would push an unchecked `as` assertion (and its own suppression) to every one of the five call sites. */
 /**
  * Reads server-provided page data from the `\<script id="page-data" type="application/json"\>`
  * element that `renderPage()` (or the inline HTML shells) embed in every page.
@@ -28,3 +29,4 @@ export function readPageData<TData,>(): TData {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON.parse returns unknown; caller provides the expected shape via TData
   return JSON.parse(text,) as TData;
 }
+/* oxlint-enable typescript/no-unnecessary-type-parameters */

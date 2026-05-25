@@ -38,9 +38,9 @@ export function buildAutofillMessages({
   existingTags,
   existingLocations,
 }: {
-  title: string;
-  existingTags: readonly string[];
-  existingLocations: readonly string[];
+  readonly title: string;
+  readonly existingTags: readonly string[];
+  readonly existingLocations: readonly string[];
 },): ChatMessage[] {
   /** Schema-bearing system message; passed back as the first element of the chat array. */
   const systemPrompt =
@@ -109,17 +109,17 @@ export function buildSuggestionMessages({
   currentLocation,
   focusDirective,
 }: {
-  tasks: readonly {
-    id: string;
-    title: string;
-    tags: string[];
-    locations: string[];
-    priority: string | null;
-    dueDate: string | null;
-    complexity: string | null;
+  readonly tasks: readonly {
+    readonly id: string;
+    readonly title: string;
+    readonly tags: readonly string[];
+    readonly locations: readonly string[];
+    readonly priority?: string;
+    readonly dueDate?: string;
+    readonly complexity?: string;
   }[];
-  currentLocation: string | null;
-  focusDirective: string | null;
+  readonly currentLocation?: string;
+  readonly focusDirective?: string;
 },): ChatMessage[] {
   /** Snapshot of the request time so the model can reason about due-date proximity. */
   const currentTime = new Date().toISOString();

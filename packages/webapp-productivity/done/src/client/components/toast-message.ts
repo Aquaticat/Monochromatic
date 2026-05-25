@@ -50,6 +50,9 @@ const STYLES = [
 /** Auto-dismiss duration in milliseconds. */
 const DISMISS_MS = 3_000;
 
+/** Sentinel for "no auto-dismiss timer is scheduled". */
+const NO_TIMER: unique symbol = Symbol('no-timer',);
+
 /**
  * `\<toast-message\>`: ephemeral notification that auto-dismisses.
  * Reads the `message` attribute for display text.
@@ -58,8 +61,8 @@ class ToastMessage extends HTMLElement {
   /** Shadow root for encapsulated rendering. */
   readonly #shadow: ShadowRoot;
 
-  /** Handle for the auto-dismiss timer, or null when not scheduled. */
-  #timer: ReturnType<typeof setTimeout> | null = null;
+  /** Handle for the auto-dismiss timer; `NO_TIMER` when not scheduled. */
+  #timer: ReturnType<typeof setTimeout> | typeof NO_TIMER = NO_TIMER;
 
   /** Initializes the shadow root. */
   constructor() {
@@ -91,9 +94,9 @@ class ToastMessage extends HTMLElement {
    */
   disconnectedCallback(): void {
     if (this.#timer
-      !== null) {
+      !== NO_TIMER) {
       clearTimeout(this.#timer,);
-      this.#timer = null;
+      this.#timer = NO_TIMER;
     }
   }
 

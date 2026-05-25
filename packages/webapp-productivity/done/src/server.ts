@@ -24,8 +24,8 @@ import {
   H3,
   serve,
   serveStatic,
+  type ServeStaticOptions,
 } from 'h3';
-import type { Stats, } from 'node:fs';
 import {
   readFile,
   stat,
@@ -33,7 +33,10 @@ import {
 import { join, } from 'node:path';
 // oxlint-disable-next-line import/no-unassigned-import -- side-effect: opens SQLite database and runs schema migrations
 import './lib/db.ts';
-import { getArgumentValue, } from './lib/args.ts';
+import {
+  ARGUMENT_ABSENT,
+  getArgumentValue,
+} from './lib/args.ts';
 import { registerApiRoutes, } from './server-api-routes.ts';
 import { inProgressPage, } from './server/pages/in-progress.ts';
 import { inboxPage, } from './server/pages/inbox.ts';
@@ -48,6 +51,56 @@ const DEFAULT_PORT = 3_000;
 const DECIMAL_RADIX = 10;
 
 /**
+ * Resolved cache-metadata shape h3's `getMeta` contract returns; carries the
+ * `undefined` "missing file" case without a literal `T | undefined` annotation.
+ */
+type StaticMeta = Awaited<ReturnType<ServeStaticOptions['getMeta']>>;
+
+/**
+ * Reads a static asset's bytes from disk relative to the working directory.
+ *
+ * @param id - Request path resolved by h3, relative to project root
+ *
+ * @returns File contents
+ */
+function readStaticContents(id: string,): ReturnType<ServeStaticOptions['getContents']> {
+  return readFile(
+    join(
+      '.',
+      id,
+    ),
+  );
+}
+
+/**
+ * Resolves size/mtime cache metadata for a static asset.
+ *
+ * @param id - Request path resolved by h3, relative to project root
+ *
+ * @returns Cache metadata, or `undefined` when the file is missing or inaccessible
+ */
+async function getStaticMetadata(id: string,): Promise<StaticMeta> {
+  try {
+    /** Filesystem stats for the requested asset; drives both the is-file check and meta payload. */
+    const stats = await stat(
+      join(
+        '.',
+        id,
+      ),
+    );
+    if (!stats.isFile())
+      return undefined;
+    return {
+      size: stats.size,
+      mtime: stats.mtimeMs,
+    };
+  }
+  catch {
+    return undefined;
+  }
+}
+
+/**
  * Resolves the HTTP listen port from CLI arguments, environment, or default.
  * Priority: `--port=N` \> `PORT` env var \> `DEFAULT_PORT`.
  *
@@ -59,8 +112,8 @@ function resolvePort(): number {
   /** Mid-priority source: `PORT` env var when no flag is given. */
   const environmentPort = process.env
     .PORT;
-  /** First-found source; `undefined` falls through to the default port. */
-  const rawPort = argumentPort ?? environmentPort;
+  /** First-found source; absent flag falls back to the env var, then the default port. */
+  const rawPort = argumentPort === ARGUMENT_ABSENT ? environmentPort : argumentPort;
   if (rawPort === undefined)
     return DEFAULT_PORT;
 
@@ -133,38 +186,8 @@ app.get(
     return serveStatic(
       event,
       {
-        getContents: function readContents(id,) {
-          return readFile(
-            join(
-              '.',
-              id,
-            ),
-          );
-        },
-        getMeta: async function getMetadata(id,) {
-          /** Resolved file stats, or undefined when the file is missing or `stat` failed. */
-          const stats = await (async function readStats(): Promise<Stats | undefined> {
-            try {
-              return await stat(
-                join(
-                  '.',
-                  id,
-                ),
-              );
-            }
-            catch {
-              return undefined;
-            }
-          })();
-          if (stats === undefined)
-            return;
-          if (!stats.isFile())
-            return;
-          return {
-            size: stats.size,
-            mtime: stats.mtimeMs,
-          };
-        },
+        getContents: readStaticContents,
+        getMeta: getStaticMetadata,
       },
     );
   },),

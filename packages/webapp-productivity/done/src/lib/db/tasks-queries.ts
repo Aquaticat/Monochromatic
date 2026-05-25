@@ -2,10 +2,11 @@
  * Read-only query functions for the task data-access layer.
  */
 import db from '../db.ts';
-import type {
-  BlockedTaskLink,
-  SearchTask,
-  Task,
+import {
+  type BlockedTaskLink,
+  type SearchTask,
+  type Task,
+  TASK_NOT_FOUND,
 } from '../types.ts';
 import {
   getTaskRowById,
@@ -27,17 +28,17 @@ import {
  *
  * @param id - Task UUID
  *
- * @returns Mapped task, or `null` when the ID does not exist
+ * @returns Mapped task, or {@link TASK_NOT_FOUND} when the ID does not exist
  *
  * @example
  * ```ts
  * const task = await getTaskById('abc-123');
  * ```
  */
-export async function getTaskById(id: string,): Promise<Task | null> {
-  /** Raw row; `null` short-circuits to caller-friendly `null` below. */
+export async function getTaskById(id: string,): Promise<Task | typeof TASK_NOT_FOUND> {
+  /** Raw row; the not-found sentinel propagates to the caller below. */
   const taskRow = await getTaskRowById(id,);
-  return taskRow === null ? null : mapTask(taskRow,);
+  return taskRow === TASK_NOT_FOUND ? TASK_NOT_FOUND : mapTask(taskRow,);
 }
 
 /**

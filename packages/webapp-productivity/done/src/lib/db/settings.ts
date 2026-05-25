@@ -13,27 +13,33 @@ type SettingRow = {
 };
 
 /**
+ * Sentinel returned by {@link getSetting} when no row matches the key.
+ *
+ * A unique `Symbol` keeps "missing" out of a nullish union (banned by
+ * `no-nullish-union`); callers narrow with `=== SETTING_ABSENT`.
+ */
+export const SETTING_ABSENT: unique symbol = Symbol('setting-absent',);
+
+/**
  * Retrieves a single setting by key.
  *
  * @param key - Setting identifier
  *
- * @returns Stored value, or `null` when the key does not exist
+ * @returns Stored value, or {@link SETTING_ABSENT} when the key does not exist
  *
  * @example
  * ```ts
  * const apiKey = await getSetting('openai-api-key');
  * ```
  */
-export async function getSetting(key: string,): Promise<string | null> {
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- database query returns the SettingRow shape */
-  /** Single-column projection from the settings table for the requested key. */
-  const row = await db.prepare('SELECT value FROM settings WHERE key = ?',)
-    .get(key,) as
-    | Pick<SettingRow, 'value'>
-    | undefined;
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
-  return row?.value
-    ?? null;
+export async function getSetting(key: string,): Promise<string | typeof SETTING_ABSENT> {
+  /** Single-row result from the lookup; nullish when the key is missing. */
+  const row: unknown = await db.prepare('SELECT value FROM settings WHERE key = ?',)
+    .get(key,);
+  if ((row === undefined) || (row === null))
+    return SETTING_ABSENT;
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- database query returns the SettingRow shape
+  return (row as Pick<SettingRow, 'value'>).value;
 }
 
 /**
@@ -52,8 +58,8 @@ export async function setSetting({
   key,
   value,
 }: {
-  key: string;
-  value: string;
+  readonly key: string;
+  readonly value: string;
 },): Promise<void> {
   await db
     .prepare(

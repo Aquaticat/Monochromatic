@@ -3,13 +3,18 @@
  *
  * The large `parseTaskUpdateInput` function lives in `tasks-parse-update.ts`.
  */
-import {
-  TASK_PRIORITIES,
-  type TaskPriority,
-} from '../../lib/types.ts';
+import { TASK_PRIORITIES, } from '../../lib/types.ts';
 
 /** Recognized priority/complexity values for input validation. */
 const priorities = new Set<string>(TASK_PRIORITIES,);
+
+/**
+ * Sentinel returned by the parsers below when untrusted input fails validation.
+ *
+ * A unique `Symbol` keeps "invalid / not the expected shape" out of a nullish
+ * union (banned by `no-nullish-union`); callers narrow with `=== INVALID`.
+ */
+export const INVALID: unique symbol = Symbol('invalid-input',);
 
 /**
  * Narrows `unknown` to a plain object for property access.
@@ -34,16 +39,16 @@ export function isRecord(value: unknown,): value is Record<string, unknown> {
  *
  * @param value - Raw input that may be an array
  *
- * @returns Parsed array, or `null` when the input is not an array
+ * @returns Parsed array, or {@link INVALID} when the input is not an array
  *
  * @example
  * ```ts
  * const tags = parseStringArray(body['tags']);
  * ```
  */
-export function parseStringArray(value: unknown,): string[] | null {
+export function parseStringArray(value: unknown,): string[] | typeof INVALID {
   if (!Array.isArray(value,))
-    return null;
+    return INVALID;
   /** Normalised entries: only strings, trimmed, non-empty; returned as the parsed result. */
   const parsedValues = value
     .filter(function isString(entry,): entry is string {
@@ -60,36 +65,32 @@ export function parseStringArray(value: unknown,): string[] | null {
 }
 
 /**
- * Parses a nullable enum field (priority or complexity) from untrusted input.
- * Returns `undefined` when the value is absent or not a recognized member,
- * `null` when explicitly cleared, or the validated string otherwise.
+ * Parses an enum field (priority or complexity) from untrusted input against a
+ * set of recognised values. Callers handle an explicit `null` (treated as
+ * "field not provided") before calling, so a `null` reaching here is just
+ * another non-string and maps to {@link INVALID}.
  *
  * @param value - Raw input value
  *
  * @param validValues - Set of recognized enum strings
  *
- * @returns Validated enum value, null, or undefined
+ * @returns Validated string, or {@link INVALID} when absent or unrecognized
  *
  * @example
  * ```ts
- * const priority = parseEnumValue<TaskPriority>({ value: body['priority'], validValues: getPriorities(), });
+ * const priority = parseEnumValue({ value: body['priority'], validValues: getPriorities(), });
  * ```
  */
-export function parseEnumValue<T extends string,>({
+export function parseEnumValue({
   value,
   validValues,
 }: {
-  value: unknown;
-  validValues: Set<string>;
-},): T | null | undefined {
-  if (value === undefined)
-    return undefined;
-  if (value === null)
-    return null;
+  readonly value: unknown;
+  readonly validValues: ReadonlySet<string>;
+},): string | typeof INVALID {
   if ((typeof value) !== 'string')
-    return undefined;
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- validated by Set.has check
-  return validValues.has(value,) ? (value as T) : undefined;
+    return INVALID;
+  return validValues.has(value,) ? value : INVALID;
 }
 
 /**
@@ -102,6 +103,6 @@ export function parseEnumValue<T extends string,>({
  * const validPriorities = getPriorities();
  * ```
  */
-export function getPriorities(): Set<string> {
+export function getPriorities(): ReadonlySet<string> {
   return priorities;
 }

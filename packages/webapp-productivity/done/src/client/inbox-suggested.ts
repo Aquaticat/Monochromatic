@@ -29,9 +29,9 @@ export function buildSuggestedSection({
   onOpen,
   onComplete,
 }: {
-  pageData: InboxPageData;
-  onOpen: (taskId: string,) => void;
-  onComplete: (taskId: string,) => Promise<void>;
+  readonly pageData: InboxPageData;
+  readonly onOpen: (taskId: string,) => void;
+  readonly onComplete: (taskId: string,) => Promise<void>;
 },): HTMLElement {
   /** Collapsible section heading for the suggested tasks block. */
   const suggestedSection = h({

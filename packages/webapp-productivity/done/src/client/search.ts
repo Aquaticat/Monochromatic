@@ -36,6 +36,35 @@ function handleOpen(taskId: string,): void {
     .href = `/tasks/${taskId}`;
 }
 
+/**
+ * Navigates to the search results for the search-bar's query.
+ *
+ * @param event - `search` CustomEvent carrying the typed query
+ */
+function handleSearch(event: CustomEvent<{ query: string; }>,): void {
+  /** Search-bar query text destructured for the URL builder below. */
+  const { query, } = event.detail;
+  globalThis.location
+    .href = query.length
+      === 0
+    ? '/search'
+    : `/search?q=${encodeURIComponent(query,)}`;
+}
+
+/**
+ * Completes a task via the API, then reloads to drop it from the results.
+ *
+ * @param taskId - ID of task to complete
+ */
+async function handleComplete(taskId: string,): Promise<void> {
+  await api({
+    path: `/api/tasks/${taskId}/complete`,
+    options: { method: 'POST', },
+  },);
+  globalThis.location
+    .reload();
+}
+
 injectCSS(globalStyles,);
 injectCSS(searchStyles,);
 
@@ -51,20 +80,12 @@ if (!(appElement instanceof HTMLElement))
 const app = appElement;
 
 // Listen for search events from the search-bar component
-document.querySelector<HTMLElement>('search-bar',)?.addEventListener(
+document.querySelector<HTMLElement>('search-bar',)
+  ?.addEventListener(
   'search',
-  /* oxlint-disable typescript-eslint/no-unsafe-type-assertion -- CustomEvent handler must be cast to EventListener for addEventListener */
-  (function handleSearch(event: CustomEvent<{ query: string; }>,) {
-    /** Search-bar query text destructured for the URL builder below. */
-    const { query, } = event.detail;
-    globalThis.location
-      .href = query.length
-        === 0
-      ? '/search'
-      : `/search?q=${encodeURIComponent(query,)}`;
-  }) as EventListener,
+  // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent handler must be cast to EventListener for addEventListener
+  handleSearch as EventListener,
 );
-/* oxlint-enable typescript-eslint/no-unsafe-type-assertion */
 
 if (pageData.query
   .length
@@ -116,14 +137,7 @@ else {
         options: {
           showBlockedBadge: result.isBlocked,
           onOpen: handleOpen,
-          onToggleComplete: async function handleComplete(taskId,) {
-            await api({
-              path: `/api/tasks/${taskId}/complete`,
-              options: { method: 'POST', },
-            },);
-            globalThis.location
-              .reload();
-          },
+          onToggleComplete: handleComplete,
         },
       },),
     );

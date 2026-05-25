@@ -6,11 +6,19 @@
  */
 
 /**
+ * Sentinel returned by {@link getArgumentValue} when the flag is not present.
+ *
+ * A unique `Symbol` keeps "absent" out of a nullish union (banned by
+ * `no-nullish-union`); callers narrow with `=== ARGUMENT_ABSENT`.
+ */
+export const ARGUMENT_ABSENT: unique symbol = Symbol('argument-absent',);
+
+/**
  * Extracts the value of a `--name=value` CLI argument from `process.argv`.
  *
  * @param name - Argument name without the `--` prefix
  *
- * @returns Extracted value, or `undefined` when the argument is absent
+ * @returns Extracted value, or {@link ARGUMENT_ABSENT} when the argument is absent
  *
  * @example
  * ```ts
@@ -18,13 +26,15 @@
  * // '3000' when invoked with --port=3000
  * ```
  */
-export function getArgumentValue(name: string,): string | undefined {
+export function getArgumentValue(name: string,): string | typeof ARGUMENT_ABSENT {
   /** Search prefix built once so the predicate closure stays cheap. */
   const prefix = `--${name}=`;
-  /** First argv entry that opens with `--name=`; undefined when absent. */
+  /** First argv entry that opens with `--name=`; absent when no match. */
   const argument = process.argv
     .find(function hasPrefix(entry,) {
     return entry.startsWith(prefix,);
   },);
-  return argument?.slice(prefix.length,);
+  if (argument === undefined)
+    return ARGUMENT_ABSENT;
+  return argument.slice(prefix.length,);
 }
