@@ -47,7 +47,7 @@ export const restrictionRules: DummyRuleMap = {
   'no-restricted-syntax/no-function-root-let': 'warn',
 
   // `let` at module root is mutable across the entire module. No allowlist;
-  // use Map/WeakMap/Set, memoize() from @monochromatic-dev/module-es,
+  // use Map/WeakMap/Set, memoize() from @monochromatic-dev/module-memoize,
   // or an IIFE-into-const initialization.
   'no-restricted-syntax/no-module-root-let': 'warn',
 

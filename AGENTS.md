@@ -395,7 +395,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 
 - `const` over `let`. Two hard rules enforce this:
   - `no-restricted-syntax/no-function-root-let` reports `let` at function-body root. Refactor to `const` (ternary, `Array.reduce`), use a counter `for (let i = 0; ...)` loop (`let` inside `ForStatement.init` is exempt, so this is the right tool for an indexed or lookahead scan, not a rule to dodge), wrap the mutation in a named-function IIFE `(function name () { let x; /* ... */ return x; })()`, or extract a helper function ending in `return <local-binding>` (the helper-shape allowlist suppresses the report). Do **not** escape this rule by recursing over flat input (see "Simplification progression").
-  - `no-restricted-syntax/no-module-root-let` reports `let` at module root, including `export let`. Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` container, `memoize()` from `@monochromatic-dev/module-es`, or an IIFE-into-const initialization.
+  - `no-restricted-syntax/no-module-root-let` reports `let` at module root, including `export let`. Replace with a `Map`/`WeakMap`/`Set`/`WeakSet` container, `memoize()` from `@monochromatic-dev/module-memoize`, or an IIFE-into-const initialization.
   - For legitimate exceptions (multi-statement state machines, parser cursors with side-effecting branches), add `oxlint-disable-next-line` with a justification comment naming the constraint.
 - Remove unused variables or prefix with underscore (`_unusedVar`).
 - No single-letter variables (exception: math formulas).
