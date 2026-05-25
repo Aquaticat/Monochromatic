@@ -35,7 +35,7 @@ export const DEFAULT_PROMPT_CLASSES: Required<PromptClassNames> = {
   ok: 'prompt-polyfill-ok',
 };
 
-/* oxlint-disable require-await -- exposed as async so callers can `await` even though the work is event-driven */
+/* oxlint-disable require-await, no-restricted-syntax/no-nullish-union -- exposed as async so callers can `await` even though the work is event-driven; the `string | null` return mirrors the native `window.prompt` DOM API this polyfill replaces, which returns the entered string (including `''`) on OK or `null` on every cancel path */
 /**
  * Creates a modern prompt dialog using the HTML dialog element.
  * This serves as a polyfill for window.prompt with enhanced styling capabilities.
@@ -205,4 +205,4 @@ export async function prompt(
     input.select();
   },);
 }
-/* oxlint-enable require-await */
+/* oxlint-enable require-await, no-restricted-syntax/no-nullish-union */

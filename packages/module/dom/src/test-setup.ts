@@ -115,6 +115,13 @@ function isWordChar(c: string,): boolean {
 }
 
 /**
+ * Sentinel returned by {@link parseTrailingExportClause} when the trailing
+ * `export { ... }` clause is missing or malformed. A unique `Symbol` keeps
+ * "no clause" distinct from any parsed result without a nullish escape.
+ */
+const NO_CLAUSE: unique symbol = Symbol('no-trailing-export-clause',);
+
+/**
  * Locates the trailing `export { ... }` clause of a rolldown bundle and
  * extracts the named-export list.
  *
@@ -125,20 +132,20 @@ function isWordChar(c: string,): boolean {
  *
  * @param source - bundle source text
  *
- * @returns named-export list and the byte offset of `export`, or `null`
- *   when the trailing clause is missing or malformed
+ * @returns named-export list and the byte offset of `export`, or
+ *   {@link NO_CLAUSE} when the trailing clause is missing or malformed
  */
 function parseTrailingExportClause(source: string,): {
   namedExports: string;
   clauseStart: number;
-} | null {
+} | typeof NO_CLAUSE {
   /** Last non-whitespace position; `-1` means the source is empty/whitespace-only. */
   const lastIdx = lastNonWhitespaceIndex({
     s: source,
     end: source.length,
   },);
   if (lastIdx === (-1))
-    return null;
+    return NO_CLAUSE;
   /** Position of the closing `}`; the semicolon is optional in the original regex. */
   const closeBrace = (source.charAt(lastIdx,)
     === ';')
@@ -149,14 +156,14 @@ function parseTrailingExportClause(source: string,): {
     : lastIdx;
   if ((closeBrace === (-1)) || (source.charAt(closeBrace,)
     !== '}'))
-    return null;
+    return NO_CLAUSE;
   /** Position of the matching `{`; the original regex requires `[^}]+` between, so the last `{` before `}` is correct. */
   const openBrace = source.lastIndexOf(
     '{',
     closeBrace - 1,
   );
   if (openBrace === (-1))
-    return null;
+    return NO_CLAUSE;
   /** Position immediately before `{`, skipping intervening whitespace; the `export` keyword should end here. */
   const beforeOpen = lastNonWhitespaceIndex({
     s: source,
@@ -166,7 +173,7 @@ function parseTrailingExportClause(source: string,): {
   const EXPORT = 'export';
   if (beforeOpen < (EXPORT.length
     - 1))
-    return null;
+    return NO_CLAUSE;
   /** Inclusive start of the `export` keyword candidate; the byte before it must not be a word char. */
   const wordStart = (beforeOpen - EXPORT
     .length) + 1;
@@ -177,10 +184,10 @@ function parseTrailingExportClause(source: string,): {
     )
       !== EXPORT
   ) {
-    return null;
+    return NO_CLAUSE;
   }
   if ((wordStart > 0) && isWordChar(source.charAt(wordStart - 1,),))
-    return null;
+    return NO_CLAUSE;
   return {
     namedExports: source
       .slice(
@@ -222,7 +229,7 @@ async function bundleAsGlobalAssignment(): Promise<string> {
   );
   /** Parsed trailing `export { ... }` clause; throws when the bundle shape is unexpected. */
   const clause = parseTrailingExportClause(source,);
-  if (clause === null) {
+  if (clause === NO_CLAUSE) {
     throw new Error(
       'test setup: could not locate trailing `export { ... }` in bundle; rebuild may have failed',
     );

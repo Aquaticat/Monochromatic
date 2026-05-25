@@ -14,6 +14,7 @@ import {
 import { loadHarness, } from './test-setup.ts';
 
 declare global {
+  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- `string | null` mirrors the `prompt` return type, which mirrors the native `window.prompt` DOM API (string on OK, `null` on cancel)
   var pendingPrompt: Promise<string | null>;
 }
 
