@@ -71,6 +71,7 @@ type IdentifierProperties =
 
 //region Strict declarations
 
+/* oxlint-disable no-restricted-syntax/no-optional-escape -- external-boundary mirror of csstype's PropertiesHyphen optional-property model: a CSS declarations object names a subset of properties, each with a key-dependent value type (StrictValue<PropertiesHyphen[K]>) that a string index signature cannot express per-property */
 /**
  * Strict CSS declarations with disallowed properties omitted and values type-checked.
  *
@@ -96,6 +97,7 @@ export type StrictCssDeclarations = {
     IdentifierProperties ? StrictValue<PropertiesHyphen[K]> | (string & {})
     : StrictValue<PropertiesHyphen[K]>;
 } & Record<`--${string}`, CssValue | string>;
+/* oxlint-enable no-restricted-syntax/no-optional-escape */
 
 //endregion
 

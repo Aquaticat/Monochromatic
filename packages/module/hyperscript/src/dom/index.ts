@@ -76,18 +76,20 @@ type HOptions<TTag extends string,> = {
   attrs?: Record<string, string>;
   /** Inline style properties (camelCase keys, e.g. `{ flexDirection: 'column' }`) */
   style?: Record<string, string>;
+  /* oxlint-disable no-restricted-syntax/no-optional-escape -- external-boundary mirror of the DOM HTMLElementEventMap: each known event's handler receives its correctly-typed event, and handlers are optional because a caller registers only the events it needs, which a string index signature cannot type per-key */
   /** Event listeners keyed by event name (known DOM events are type-checked, unknown ones accepted as fallback) */
   on?: {
     [K in keyof HTMLElementEventMap]?: (
       event: HTMLElementEventMap[K],
-    ) => void | Promise<void>;
-    // oxlint-disable-next-line typescript/no-explicit-any -- event parameter type varies by listener
-  } & Partial<Record<string, (event: any,) => void | Promise<void>>>;
+    ) => void;
+    // oxlint-disable-next-line typescript/no-explicit-any -- event parameter type varies by listener; `any` keeps the index signature bivariant so typed handlers stay assignable to the intersection
+  } & Record<string, (event: any,) => void>;
+  /* oxlint-enable no-restricted-syntax/no-optional-escape */
   /** Child nodes to append */
   children?: readonly (Node | string)[];
 };
 
-/* oxlint-disable typescript/prefer-readonly-parameter-types -- HOptions<TTag> carries `children?: readonly (Node | string)[]` (DOM `Node` has mutating methods by design) and an `on` event-map intersected with `Partial<Record<string, ...>>` (mutable index signature); both are treated as mutable by this rule and cannot be made deep-readonly without misdescribing the DOM API contract */
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- HOptions<TTag> carries `children?: readonly (Node | string)[]` (DOM `Node` has mutating methods by design) and an `on` event-map intersected with `Record<string, ...>` (mutable index signature); both are treated as mutable by this rule and cannot be made deep-readonly without misdescribing the DOM API contract */
 /**
  * Creates an HTML element with declarative options for tag, class, text, attributes, style, events, and children.
  *
