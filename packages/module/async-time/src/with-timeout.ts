@@ -37,14 +37,26 @@ export async function withTimeout<T,>({
   readonly promise: Promise<T>;
 },): Promise<T> {
   /**
-   * setTimeout handle shared between the Promise executor and the `using` disposer.
-   *
-   * Hoisted to function root because the executor assigns it synchronously
-   * inside `new Promise`, while the disposer reads it on every scope-exit path;
-   * both branches must reference the same binding.
+   * Rejecter and its promise captured up front via `Promise.withResolvers`,
+   * so the timer can reject the deadline promise and the race can await it
+   * without a `new Promise` executor or a shared mutable timer binding.
    */
-  // oxlint-disable-next-line no-restricted-syntax/no-function-root-let -- timer handle is assigned inside the Promise constructor callback and read by the using-disposer; both branches need a shared mutable binding
-  let timer: ReturnType<typeof setTimeout> | undefined = undefined;
+  const {
+    promise: timeoutPromise,
+    reject,
+  } = Promise.withResolvers<never>();
+
+  /**
+   * setTimeout handle read by the `using` disposer. Assigned synchronously
+   * here so the disposer never observes an unset handle and the binding stays
+   * a `const` free of a banned `T | undefined` union.
+   */
+  const timer = setTimeout(
+    function onTimeout() {
+      reject(new Error(`Timed out after ${String(ms,)}ms: ${label}`,),);
+    },
+    ms,
+  );
 
   /**
    * Clears the pending setTimeout when the race resolves before the timeout fires.
@@ -54,24 +66,12 @@ export async function withTimeout<T,>({
    */
   using _cleanup = {
     [Symbol.dispose](): void {
-      if (timer !== undefined)
-        clearTimeout(timer,);
+      clearTimeout(timer,);
     },
   };
 
   return await Promise.race([
     promise,
-    // oxlint-disable-next-line promise/avoid-new -- Promise.race requires a rejecting promise; no async/await alternative exists
-    new Promise<never>(function rejectAfterTimeout(
-      _resolve,
-      reject,
-    ) {
-      timer = setTimeout(
-        function onTimeout() {
-          reject(new Error(`Timed out after ${String(ms,)}ms: ${label}`,),);
-        },
-        ms,
-      );
-    },),
+    timeoutPromise,
   ],);
 }
