@@ -36,50 +36,34 @@ const API_KEY_ENV_VARS = [
 ] as const;
 
 /**
- * Resolve an API key from an explicit value or env var fallback chain.
- *
- * @param explicit - caller-provided API key, checked first
- *
- * @returns resolved API key, or `undefined` to let the SDK try its own default
- *
- * @example
- * ```ts
- * const key = resolveApiKey(undefined); // checks env vars
- * const key2 = resolveApiKey('sk-ant-...'); // uses explicit value
- * ```
- */
-function resolveApiKey(explicit: string | undefined,): string | undefined {
-  if (explicit !== undefined)
-    return explicit;
-  for (const envVar of API_KEY_ENV_VARS) {
-    /** Treat empty-string env vars as unset so a blank shell export does not shadow later fallbacks. */
-    const value = process.env[envVar];
-    if ((value !== undefined) && (value !== ''))
-      return value;
-  }
-  return undefined;
-}
-
-/**
  * Resolve an Anthropic client from an optional API key.
- * Checks `TOKEN_COUNT_CLAUDE_API_KEY`, `CLAUDE_API_KEY`, then
- * `ANTHROPIC_API_KEY` env vars when no explicit key is provided.
  *
- * @param apiKey - optional API key for client construction
+ * Checks the explicit key first, then `TOKEN_COUNT_CLAUDE_API_KEY`,
+ * `CLAUDE_API_KEY`, and `ANTHROPIC_API_KEY` env vars in priority order,
+ * treating empty-string env vars as unset. When nothing is found, builds
+ * the client with no key so the SDK falls through to its own default.
+ *
+ * @param apiKey - explicit API key, checked before the env var chain
  *
  * @returns configured Anthropic client
  *
  * @example
  * ```ts
- * const client = resolveClient({ apiKey: 'sk-ant-...' });
+ * const client = resolveClient('sk-ant-...');
  * ```
  */
-function resolveClient(
-  { apiKey, }: { readonly apiKey: string | undefined; },
-): Anthropic {
-  /** Branch on the resolved value so the SDK still falls through to its own default when nothing is found. */
-  const resolved = resolveApiKey(apiKey,);
-  return new Anthropic(resolved !== undefined ? { apiKey: resolved, } : undefined,);
+function resolveClient(apiKey?: string,): Anthropic {
+  if (apiKey !== undefined)
+    return new Anthropic({ apiKey, },);
+
+  for (const envVar of API_KEY_ENV_VARS) {
+    /** Treat empty-string env vars as unset so a blank shell export does not shadow later fallbacks. */
+    const value = process.env[envVar];
+    if ((value !== undefined) && (value !== ''))
+      return new Anthropic({ apiKey: value, },);
+  }
+
+  return new Anthropic();
 }
 
 /**
@@ -117,7 +101,7 @@ export async function countTokens({
   const model = config.model
     ?? DEFAULT_MODEL;
   /** Build the SDK client lazily here so each call can supply its own apiKey override. */
-  const client = resolveClient({ apiKey: config.apiKey, },);
+  const client = resolveClient(config.apiKey,);
 
   rl.debug(`counting tokens model=${model} contentLength=${String(content.length,)}`,);
 
