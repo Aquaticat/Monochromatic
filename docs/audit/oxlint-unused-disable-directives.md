@@ -101,7 +101,7 @@ The categories that explain them:
     `packages/config/oxlint/src/rules/correctness.ts:44`, so all 24 directives targeting it are dead.
     Example: `packages/config/tofu/fetch_ips.ts:76` disables it above `while (true)`.
 3.  Block `oxlint-enable` end markers whose block suppressed nothing.
-    74 of the flagged occurrences are `/* oxlint-enable ... */` lines.
+    72 of the 301 are `/* oxlint-enable ... */` lines (232 are `oxlint-disable` lines).
     Example: `packages/webapp-forge/server/src/storage/adapter.ts:78`.
     When the paired `oxlint-disable` block contains no firing of the rule, the enable marker
     is reported as unused.
