@@ -171,4 +171,3 @@ type HOptions<TTag extends string,> = {
 
   return element;
 }
-/* oxlint-enable typescript/prefer-readonly-parameter-types */
