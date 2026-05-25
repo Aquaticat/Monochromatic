@@ -17,6 +17,20 @@ export type ObservableAsync<T,> = {
   setValue: (newValue: T,) => Promise<void>;
 };
 
+/**
+ * Result of a handler that may run synchronously or asynchronously: either a
+ * direct `T` or a promise of `T`. Expressed as a generic so the `void` use site
+ * stays a type-reference argument rather than a `T | void` union escape hatch.
+ *
+ * @example
+ * ```ts
+ * const handler: (n: number,) => MaybePromise<void> = async function handler(n,) {
+ *   await persist(n,);
+ * };
+ * ```
+ */
+export type MaybePromise<T,> = T | Promise<T>;
+
 /* oxlint-disable eslint/require-await, typescript/require-await -- async wrapper enables top-level await of construction even though construction itself is synchronous */
 /**
  * Creates an observable value container that awaits a handler when the value is set.
@@ -52,7 +66,7 @@ export async function createObservableAsync<T,>(
     readonly onChange: (
       newValue: T,
       oldValue: T,
-    ) => void | Promise<void>;
+    ) => MaybePromise<void>;
   },
 ): Promise<ObservableAsync<T>> {
   /** Internal store backing the methods; held on an object property so mutation avoids a function-root `let`. */

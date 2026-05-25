@@ -51,7 +51,7 @@ await describe({
       name: 'state is already updated when onChange runs',
       fn: async ({ sinon, },) => {
         /** Mutable slot so the handler reads the observable assigned after construction, avoiding use-before-define. */
-        const holder: { observable: Observable<number> | null; } = { observable: null, };
+        const holder: { observable?: Observable<number>; } = {};
         const onChange = sinon.spy(function onChange(newValue: number,): void {
           expect(holder.observable?.getValue(),).toBe(newValue,);
         },);
