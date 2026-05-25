@@ -13,6 +13,15 @@
       <excludeFolder url="file://$MODULE_DIR$/.aider.tags.cache.v4" />
       <excludeFolder url="file://$MODULE_DIR$/.moon/cache" />
       <excludeFolder url="file://$MODULE_DIR$/packages/config/tofu/.terraform" />
+      <excludeFolder url="file://$MODULE_DIR$/packages-paused/desktop-daemon/editord/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages-paused/stylesheet/monochromatic/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages-paused/webapp-edu/paper2vn/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages-paused/webapp-forge/seed/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages-paused/webapp-forge/server/data" />
+      <excludeFolder url="file://$MODULE_DIR$/packages-paused/webapp-forge/server/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages-paused/webapp-forge/stress/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages-paused/webapp-search/ai-tree/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/packages-paused/webapp-search/exa-search/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
