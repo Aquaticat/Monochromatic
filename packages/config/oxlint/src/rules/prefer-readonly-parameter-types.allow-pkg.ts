@@ -33,7 +33,15 @@ export const packageAllowSpecifiers: readonly PackageSpecifier[] = [
       "EventHandler",
       "EventHandlerObject",
       "EventHandlerWithFetch",
+      // h3's bundled `.d.mts` renames the app class to `H3$1` and re-exports it
+      // as `type H3 = H3$1` (dist/h3-D76FUMrE.d.mts:832,666). The matcher keys
+      // on `symbol.escapedName`, so a param typed `app: H3` resolves to the
+      // class symbol `H3$1`, not `H3`; the plain `H3` name never matches. Keep
+      // both so the entry self-heals if a future h3 release drops the rename.
+      // Same class of bug as the @oxlint/plugins `Node$1` and postcss `Root_`
+      // entries; see docs/troubleshooting/oxlint-prefer-readonly-estree.md.
       "H3",
+      "H3$1",
     ],
   },
   {
