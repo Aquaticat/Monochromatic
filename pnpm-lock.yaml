@@ -336,7 +336,7 @@ overrides:
   dprint: '-'
   argparse: '-'
 
-pnpmfileChecksum: sha256-6KqyahOu4Da1KHfipF6F/L3YTrXYiPB6HmoVLL8966U=
+pnpmfileChecksum: sha256-ghdh3VHT8EeCh246dlNJmTZzveReaLIvTKu+d3whFUw=
 
 importers:
 
@@ -1471,6 +1471,24 @@ importers:
         specifier: 'catalog:'
         version: 1.3.11
 
+  packages/module/async-iter:
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
   packages/module/async-time:
     devDependencies:
       '@monochromatic-dev/config-typescript':
@@ -1660,6 +1678,37 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
+  packages/module/kv-store:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
+      decircular:
+        specifier: 'catalog:'
+        version: 1.0.0
+      superjson:
+        specifier: 'catalog:'
+        version: 2.2.6
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.5.0
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
   packages/module/logger:
     devDependencies:
       '@monochromatic-dev/config-tsdown':
@@ -1709,6 +1758,28 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
+  packages/module/memoize:
+    dependencies:
+      '@monochromatic-dev/module-kv-store':
+        specifier: workspace:*
+        version: link:../kv-store
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
   packages/module/numeric-const:
     devDependencies:
       '@monochromatic-dev/config-typescript':
@@ -1733,6 +1804,24 @@ importers:
         specifier: workspace:*
         version: link:../or-throw
     devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/module/observable:
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
