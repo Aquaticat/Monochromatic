@@ -10,7 +10,7 @@ import type { ScatterPoint, } from '../chart/scatter.ts';
 import { vendorColor, } from '../data/model-colors.ts';
 import {
   iconDot,
-  vendorIcon,
+  vendorIconEntry,
 } from '../data/model-icons.ts';
 
 import {
@@ -63,7 +63,7 @@ export function buildAllModelPoints(
         timestamp: entry.timestamp,
         score: entry.overallScore,
         color,
-        icon: vendorIcon(entry.model,),
+        ...vendorIconEntry(entry.model,),
         title: `${entry.label} ${
           entry.timestamp
             .slice(

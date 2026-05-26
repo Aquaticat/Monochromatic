@@ -9,7 +9,6 @@ import { join, } from 'node:path';
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 
 import { computeDiff, } from '../data/diff.ts';
-import { omitUndefined, } from '../data/omit-undefined.ts';
 import type {
   ProbeDetail,
   ViewerEntry,
@@ -141,11 +140,9 @@ export async function renderProbeOverlay({
   const initialMeta = detail !== undefined
     ? renderPassMeta({
       label: 'Initial pass',
-      ...omitUndefined({
-        timing: detail.timing,
-        usage: detail.usage,
-        finishReason: detail.finishReason,
-      },),
+      ...(detail.timing !== undefined ? { timing: detail.timing, } : {}),
+      ...(detail.usage !== undefined ? { usage: detail.usage, } : {}),
+      ...(detail.finishReason !== undefined ? { finishReason: detail.finishReason, } : {}),
     },)
     : '';
   /** Fix-pass metadata block; rendered only when the run actually has fix-pass timing or usage. */
@@ -155,11 +152,9 @@ export async function renderProbeOverlay({
           !== undefined))
     ? renderPassMeta({
       label: 'Fix pass',
-      ...omitUndefined({
-        timing: detail.fixTiming,
-        usage: detail.fixUsage,
-        finishReason: detail.fixFinishReason,
-      },),
+      ...(detail.fixTiming !== undefined ? { timing: detail.fixTiming, } : {}),
+      ...(detail.fixUsage !== undefined ? { usage: detail.fixUsage, } : {}),
+      ...(detail.fixFinishReason !== undefined ? { finishReason: detail.fixFinishReason, } : {}),
     },)
     : '';
 

@@ -65,15 +65,16 @@ export function renderByModel({
         return entry.label
           === label;
       },);
+      /** First entry for this label; always present since `label` came from these entries. */
+      const [firstEntry,] = modelEntries;
+      if (firstEntry === undefined)
+        throw new Error(`no entries for model label: ${label}`,);
       /** OpenRouter model ID from the first entry, used for vendor color/icon */
-      const openrouterId = modelEntries[0]
-        ?.model
-        ?? '';
+      const openrouterId = firstEntry.model;
       /** Vendor-derived accent color reused across this model's charts. */
       const color = vendorColor(openrouterId,);
-      /** Degradation threshold drawn as a horizontal reference line. */
-      const threshold = thresholds.get(label,)
-        ?? 0;
+      /** Degradation threshold for this model; absent when none was computed. */
+      const thresholdValue = thresholds.get(label,);
 
       // Overall score chart
       /** Scatter points feeding the overall-score chart for this model. */
@@ -86,8 +87,14 @@ export function renderByModel({
       /** Rendered overall-score chart markup for this model section. */
       const overallChart = renderScatterChart({
         points: overallPoints,
-        threshold,
-        thresholdLabel: `threshold: ${threshold.toFixed(2,)}`,
+        ...(thresholdValue !== undefined
+          ? {
+            threshold: {
+              value: thresholdValue,
+              label: `threshold: ${thresholdValue.toFixed(2,)}`,
+            },
+          }
+          : {}),
         caption: `${label} overall score`,
         tableDisplay,
       },);
@@ -120,8 +127,6 @@ export function renderByModel({
               },),
               renderScatterChart({
                 points: probePoints,
-                threshold: 0,
-                thresholdLabel: '',
                 caption: `${label} - ${probe}`,
                 tableDisplay: {
                   showModel: false,

@@ -341,6 +341,32 @@ function useRef(symbolId: string,): string {
 }
 
 /**
+ * Extracts the vendor prefix (segment before the first `/`) from a model ID.
+ *
+ * Avoids indexing `split('/')[0]`, whose `string | undefined` element would need
+ * an empty-string fallback; slicing on the separator position always yields a
+ * string (the whole id when no separator is present).
+ *
+ * @param modelId - full OpenRouter model ID
+ *
+ * @returns vendor prefix, or whole id when it carries no `/`
+ *
+ * @example
+ * ```ts
+ * vendorPrefix('anthropic/claude-opus-4.6'); // 'anthropic'
+ * vendorPrefix('localmodel'); // 'localmodel'
+ * ```
+ */
+function vendorPrefix(modelId: string,): string {
+  if (!modelId.includes('/',))
+    return modelId;
+  return modelId.slice(
+    0,
+    modelId.indexOf('/',),
+  );
+}
+
+/**
  * Returns a `color-swatch` span containing a vendor icon `<use>` reference.
  * Falls back to a plain colored dot when no icon is available.
  *
@@ -364,8 +390,7 @@ export function iconDot({
   readonly color: string;
 },): string {
   /** Vendor prefix taken from the slash-delimited model ID. */
-  const vendor = modelId.split('/',)[0]
-    ?? '';
+  const vendor = vendorPrefix(modelId,);
   /** Parsed sprite symbol for the vendor; absent when the vendor has no icon. */
   const symbol = VENDOR_SYMBOLS.get(vendor,);
   if (symbol === undefined) {
@@ -387,25 +412,30 @@ export function iconDot({
 }
 
 /**
- * Returns an `<svg><use>` reference for a vendor icon, or an empty string when
- * unavailable. Used to embed icons inside chart data points; the scatter-point
- * renderer treats an empty string as "no icon".
+ * Builds a spreadable `{ icon }` fragment carrying an `<svg><use>` reference for
+ * a vendor icon, or an empty fragment when the vendor has none.
+ *
+ * Returns an exact-optional property rather than an empty-string sentinel: a
+ * vendor without an icon yields `{}`, so spreading the result simply omits the
+ * `icon` key instead of populating it with a "no icon" marker.
  *
  * @param modelId - full OpenRouter model ID
  *
- * @returns SVG use-reference string, or empty string when no vendor icon exists
+ * @returns `{ icon }` when a vendor symbol exists, otherwise an empty fragment
  *
  * @example
  * ```ts
- * const svg = vendorIcon('anthropic/claude-opus-4.6');
- * // '<svg height="1em" width="1em"><use href="#icon-anthropic"/></svg>'
+ * const point = { runId, score, ...vendorIconEntry('anthropic/claude-opus-4.6'), };
+ * // point.icon === '<svg height="1em" width="1em"><use href="#icon-anthropic"/></svg>'
+ * vendorIconEntry('unknown/model'); // {} (icon omitted)
  * ```
  */
-export function vendorIcon(modelId: string,): string {
+export function vendorIconEntry(modelId: string,): { readonly icon?: string; } {
   /** Vendor prefix taken from the slash-delimited model ID. */
-  const vendor = modelId.split('/',)[0]
-    ?? '';
+  const vendor = vendorPrefix(modelId,);
   /** Parsed sprite symbol for the vendor; absent when the vendor has no icon. */
   const symbol = VENDOR_SYMBOLS.get(vendor,);
-  return symbol === undefined ? '' : useRef(symbol.id,);
+  if (symbol === undefined)
+    return {};
+  return { icon: useRef(symbol.id,), };
 }

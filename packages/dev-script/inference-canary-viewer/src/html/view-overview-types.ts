@@ -17,24 +17,30 @@ export type ModelSummary = {
   readonly degraded: boolean;
 };
 
+/** Model health status: a failure, a degradation, or a healthy run. */
+export type StatusLevel = 'failed' | 'degraded' | 'healthy';
+
 /**
- * Resolves a model summary to its status level data attribute value.
+ * Resolves a model summary to its health status level.
+ *
+ * Healthy runs report the explicit `'healthy'` member rather than an empty
+ * string, so callers branch on a real domain value instead of an absence sentinel.
  *
  * @param summary - model summary to check
  *
- * @returns "failed", "degraded", or empty string for healthy models
+ * @returns `'failed'`, `'degraded'`, or `'healthy'`
  *
  * @example
  * ```ts
  * statusLevel({ failed: true, degraded: false } as ModelSummary); // "failed"
  * statusLevel({ failed: false, degraded: true } as ModelSummary); // "degraded"
- * statusLevel({ failed: false, degraded: false } as ModelSummary); // ""
+ * statusLevel({ failed: false, degraded: false } as ModelSummary); // "healthy"
  * ```
  */
-export function statusLevel(summary: ModelSummary,): string {
+export function statusLevel(summary: ModelSummary,): StatusLevel {
   if (summary.failed)
     return 'failed';
   if (summary.degraded)
     return 'degraded';
-  return '';
+  return 'healthy';
 }

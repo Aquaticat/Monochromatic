@@ -90,53 +90,53 @@ export function renderXAxis(timestamps: readonly string[],): string {
   const PERCENT = 100;
   /** Center position when a single data point exists */
   const CENTER_PERCENT = HALF * PERCENT;
+  /** Total point count, used to spread ticks across the inline axis. */
+  const total = timestamps.length;
 
-  /** Indices into `timestamps` at which to emit a tick; stride-limited by `step`. */
-  const tickIndices = Array
-    .from(
-      { length: Math.ceil(timestamps.length
-        / step,), },
-      function indexAt(
-        _unused,
-        k,
-      ): number {
-        return k * step;
-      },
-    )
-    .filter(function inRange(i,): boolean {
-      return i < timestamps
-        .length;
+  /** Every stride-th timestamp paired with its original position; values come from the callback, so no index lookup is needed. */
+  const picked = timestamps
+    .map(function locate(
+      timestamp,
+      position,
+    ): {
+      readonly timestamp: string;
+      readonly position: number;
+    } {
+      return {
+        timestamp,
+        position,
+      };
+    },)
+    .filter(function onStride({ position, },): boolean {
+      return (position % step)
+        === 0;
     },);
 
-  /** Formatted label per tick, pre-computed so consecutive-duplicate suppression can index-compare. */
-  const tickLabels = tickIndices.map(function format(i,): string {
-    return formatter(timestamps[i]
-      ?? '',);
-  },);
-
-  /** Rendered tick spans, joined into the axis HTML on return. */
-  const ticks = tickIndices.map(function renderTick(
-    i,
+  /** Rendered tick spans; consecutive duplicate labels are suppressed against the previous picked tick. */
+  const ticks = picked.map(function renderTick(
+    {
+      timestamp,
+      position,
+    },
     idx,
+    all,
   ): string {
     /** Horizontal position percentage for this tick along the inline axis. */
-    const left = timestamps.length
-      === 1
+    const left = total === 1
       ? CENTER_PERCENT
-      : (i / (timestamps.length
-        - 1)) * PERCENT;
+      : (position / (total - 1)) * PERCENT;
     /** Formatted label for this tick. */
-    const label = tickLabels[idx]
-      ?? '';
+    const label = formatter(timestamp,);
+    /** Immediately preceding picked tick, or undefined for the first one. */
+    const previous = idx === 0 ? undefined : all[idx - 1];
     /** Suppress consecutive duplicate labels so the axis stays readable */
-    const displayLabel = (idx > 0) && (tickLabels[idx - 1]
+    const displayLabel = (previous !== undefined) && (formatter(previous.timestamp,)
       === label) ? '' : label;
     return h({
       tag: 'span',
       class: 'tick',
       style: { left: `${left.toFixed(2,)}%`, },
-      attrs: { title: timestamps[i]
-        ?? '', },
+      attrs: { title: timestamp, },
       text: displayLabel,
     },);
   },);

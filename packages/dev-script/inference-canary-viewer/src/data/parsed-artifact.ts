@@ -12,8 +12,6 @@ import type {
 
 import type { ProbeDetail, } from './viewer-types.ts';
 
-import { omitUndefined, } from './omit-undefined.ts';
-
 /** Parsed artifact with metadata, optional source/response, and directory path */
 export type ParsedArtifact = {
   readonly meta: ArtifactMeta | EnrichedArtifactMeta;
@@ -84,7 +82,7 @@ export function probeKey({
  * @example
  * ```ts
  * const detail = buildProbeDetail({ enriched: meta, fixEnriched: undefined, artifact, fix: undefined });
- * // { score: 0.85, pass2Score: undefined, reasoning: '...', ... }
+ * // { score: 0.85, reasoning: '...', initialDir: '...' } (pass2Score omitted: no fix pass)
  * ```
  */
 export function buildProbeDetail({
@@ -100,26 +98,24 @@ export function buildProbeDetail({
 },): ProbeDetail {
   return {
     initialDir: artifact.dir,
-    ...omitUndefined({
-      score: enriched?.score,
-      pass2Score: fixEnriched?.score,
-      reasoning: enriched?.reasoning,
-      timing: enriched?.timing,
-      usage: enriched?.usage,
-      finishReason: enriched?.finishReason,
-      config: enriched?.config,
-      fixPrompt: fixEnriched?.fixPrompt,
-      fixReasoning: fixEnriched?.reasoning,
-      fixTiming: fixEnriched?.timing,
-      fixUsage: fixEnriched?.usage,
-      fixFinishReason: fixEnriched?.finishReason,
-      initialResponse: artifact.response,
-      fixResponse: fix?.response,
-      initialSource: artifact.source,
-      fixSource: fix?.source,
-      fixDir: fix?.dir,
-      partial: enriched?.partial,
-      error: enriched?.error,
-    },),
+    ...(enriched?.score !== undefined ? { score: enriched.score, } : {}),
+    ...(fixEnriched?.score !== undefined ? { pass2Score: fixEnriched.score, } : {}),
+    ...(enriched?.reasoning !== undefined ? { reasoning: enriched.reasoning, } : {}),
+    ...(enriched?.timing !== undefined ? { timing: enriched.timing, } : {}),
+    ...(enriched?.usage !== undefined ? { usage: enriched.usage, } : {}),
+    ...(enriched?.finishReason !== undefined ? { finishReason: enriched.finishReason, } : {}),
+    ...(enriched?.config !== undefined ? { config: enriched.config, } : {}),
+    ...(fixEnriched?.fixPrompt !== undefined ? { fixPrompt: fixEnriched.fixPrompt, } : {}),
+    ...(fixEnriched?.reasoning !== undefined ? { fixReasoning: fixEnriched.reasoning, } : {}),
+    ...(fixEnriched?.timing !== undefined ? { fixTiming: fixEnriched.timing, } : {}),
+    ...(fixEnriched?.usage !== undefined ? { fixUsage: fixEnriched.usage, } : {}),
+    ...(fixEnriched?.finishReason !== undefined ? { fixFinishReason: fixEnriched.finishReason, } : {}),
+    ...(artifact.response !== undefined ? { initialResponse: artifact.response, } : {}),
+    ...(fix?.response !== undefined ? { fixResponse: fix.response, } : {}),
+    ...(artifact.source !== undefined ? { initialSource: artifact.source, } : {}),
+    ...(fix?.source !== undefined ? { fixSource: fix.source, } : {}),
+    ...(fix?.dir !== undefined ? { fixDir: fix.dir, } : {}),
+    ...(enriched?.partial !== undefined ? { partial: enriched.partial, } : {}),
+    ...(enriched?.error !== undefined ? { error: enriched.error, } : {}),
   };
 }

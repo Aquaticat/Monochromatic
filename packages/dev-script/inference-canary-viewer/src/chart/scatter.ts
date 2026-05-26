@@ -49,9 +49,7 @@ export type ScatterPoint = {
  *
  * @param points - data points to render
  *
- * @param threshold - degradation threshold value (0-1), 0 to hide
- *
- * @param thresholdLabel - label for the threshold line
+ * @param threshold - degradation threshold value and label, omitted to draw no line
  *
  * @param caption - accessible caption for the chart and table
  *
@@ -63,21 +61,22 @@ export type ScatterPoint = {
  *
  * @example
  * ```ts
- * const html = renderScatterChart({ points, threshold: 0.75, thresholdLabel: 'threshold: 0.75', caption: 'Score' });
+ * const html = renderScatterChart({ points, threshold: { value: 0.75, label: 'threshold: 0.75' }, caption: 'Score' });
  * // '<figure class="chart-figure">...<\/figure>'
  * ```
  */
 export function renderScatterChart({
   points,
   threshold,
-  thresholdLabel,
   caption,
   hideTable,
   tableDisplay,
 }: {
   readonly points: readonly ScatterPoint[];
-  readonly threshold: number;
-  readonly thresholdLabel: string;
+  readonly threshold?: {
+    readonly value: number;
+    readonly label: string;
+  };
   readonly caption: string;
   readonly hideTable?: boolean;
   readonly tableDisplay?: TableDisplayOptions;
@@ -135,10 +134,7 @@ export function renderScatterChart({
             tag: 'div',
             class: 'chart-plot',
             children: [
-              renderThresholdLine({
-                threshold,
-                label: thresholdLabel,
-              },),
+              renderThresholdLine(threshold,),
               pointElements,
             ],
           },),

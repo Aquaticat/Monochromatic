@@ -49,8 +49,6 @@ export function renderPointElements(points: readonly ScatterPoint[],): string {
       /** Whether the point should render a vendor icon glyph instead of a plain dot. */
       const hasIcon = (point.icon
         !== undefined)
-        && (point.icon
-          !== '')
         && (!point.failed);
       /** Embedded SVG markup for the optional icon glyph. */
       const iconHtml = hasIcon ? point.icon : '';
@@ -82,9 +80,8 @@ export function renderPointElements(points: readonly ScatterPoint[],): string {
       const pass2Bottom = point.pass2Score
         * PERCENT;
       /** Whether the pass-2 overlay should render a vendor icon glyph. */
-      const pass2HasIcon = (point.icon
-        !== undefined) && (point.icon
-          !== '');
+      const pass2HasIcon = point.icon
+        !== undefined;
       /** Embedded SVG markup for the pass-2 overlay glyph. */
       const pass2IconHtml = pass2HasIcon ? point.icon : '';
       /** Overlaid (pass-2) scatter point button markup. */

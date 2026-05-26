@@ -22,8 +22,12 @@
  */
 export function vendorColor(modelId: string,): string {
   /** OpenRouter prefix segment used as the lookup key into the color table. */
-  const vendor = modelId.split('/',)[0]
-    ?? '';
+  const vendor = modelId.includes('/',)
+    ? modelId.slice(
+      0,
+      modelId.indexOf('/',),
+    )
+    : modelId;
   return VENDOR_COLORS[vendor]
     ?? FALLBACK_COLOR;
 }

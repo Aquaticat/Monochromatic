@@ -63,8 +63,6 @@ export function renderOverview({
   /** Composed scatter chart markup for the all-models view. */
   const chart = renderScatterChart({
     points: chartPoints,
-    threshold: 0,
-    thresholdLabel: '',
     caption: 'All models overall score',
     hideTable: true,
   },);
@@ -75,7 +73,7 @@ export function renderOverview({
     .map(function buildRow(summary,): string {
       /** Vendor-derived accent color for the row's model icon. */
       const color = vendorColor(summary.model,);
-      /** Data attribute value for row-level status styling */
+      /** Row-level health status driving the optional `data-level` styling attribute. */
       const statusClass = statusLevel(summary,);
 
       /** Inline status badge appended to the score cell when applicable. */
@@ -101,7 +99,7 @@ export function renderOverview({
 
       return h({
         tag: 'tr',
-        ...(statusClass !== ''
+        ...(statusClass !== 'healthy'
           ? {
             class: 'run-status',
             attrs: { 'data-level': statusClass, },

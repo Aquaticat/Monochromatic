@@ -5,8 +5,7 @@
  * using vendor colors and icons derived from the OpenRouter model ID.
  */
 import type { ScatterPoint, } from '../chart/scatter.ts';
-import { vendorIcon, } from '../data/model-icons.ts';
-import { omitUndefined, } from '../data/omit-undefined.ts';
+import { vendorIconEntry, } from '../data/model-icons.ts';
 
 import {
   hasMultipleProbes,
@@ -65,7 +64,7 @@ export function buildOverallPoints({
           timestamp: entry.timestamp,
           score: entry.overallScore,
           color,
-          icon: vendorIcon(openrouterId,),
+          ...vendorIconEntry(openrouterId,),
           title: `${label} ${
             entry.timestamp
               .slice(
@@ -153,7 +152,7 @@ export function buildProbePoints({
         timestamp: entry.timestamp,
         score,
         color,
-        icon: vendorIcon(openrouterId,),
+        ...vendorIconEntry(openrouterId,),
         title: `${probe} ${
           entry.timestamp
             .slice(
@@ -164,7 +163,7 @@ export function buildProbePoints({
           pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
         }`,
         failed: entry.failed,
-        ...omitUndefined({ pass2Score, },),
+        ...(pass2Score !== undefined ? { pass2Score, } : {}),
         tableRow: {
           timestamp: entry.timestamp,
           model: label,
@@ -172,7 +171,7 @@ export function buildProbePoints({
           score,
           failed: entry.failed,
           runId,
-          ...omitUndefined({ pass2Score, },),
+          ...(pass2Score !== undefined ? { pass2Score, } : {}),
         },
       };
     },);

@@ -77,10 +77,12 @@ export function renderByProbe({ entries, }: {
             return entry.label
               === label;
           },);
+          /** First entry for this label; always present since `label` came from these entries. */
+          const [firstEntry,] = modelEntries;
+          if (firstEntry === undefined)
+            throw new Error(`no entries for model label: ${label}`,);
           /** OpenRouter model ID from the first entry for vendor icon/color */
-          const openrouterId = modelEntries[0]
-            ?.model
-            ?? '';
+          const openrouterId = firstEntry.model;
           /** Vendor-derived accent color reused across this model's points. */
           const color = vendorColor(openrouterId,);
           /** Scatter points for this single model within the current probe. */
@@ -111,8 +113,6 @@ export function renderByProbe({ entries, }: {
               },),
               renderScatterChart({
                 points: modelPoints,
-                threshold: 0,
-                thresholdLabel: '',
                 caption: `${probe} - ${label}`,
                 tableDisplay: {
                   showModel: false,
@@ -139,8 +139,6 @@ export function renderByProbe({ entries, }: {
               legend,
               renderScatterChart({
                 points,
-                threshold: 0,
-                thresholdLabel: '',
                 caption: `${probe} - all models`,
                 tableDisplay: { showProbe: false, },
               },),

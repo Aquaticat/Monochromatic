@@ -6,8 +6,7 @@
  */
 import type { ScatterPoint, } from '../chart/scatter.ts';
 import { vendorColor, } from '../data/model-colors.ts';
-import { vendorIcon, } from '../data/model-icons.ts';
-import { omitUndefined, } from '../data/omit-undefined.ts';
+import { vendorIconEntry, } from '../data/model-icons.ts';
 
 import type { ViewerEntry, } from '../data/viewer-types.ts';
 
@@ -61,7 +60,7 @@ export function buildCrossModelPoints({
       timestamp: entry.timestamp,
       score,
       color,
-      icon: vendorIcon(entry.model,),
+      ...vendorIconEntry(entry.model,),
       title: `${entry.label} ${
         entry.timestamp
           .slice(
@@ -72,7 +71,7 @@ export function buildCrossModelPoints({
         pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
       }`,
       failed: entry.failed,
-      ...omitUndefined({ pass2Score, },),
+      ...(pass2Score !== undefined ? { pass2Score, } : {}),
       tableRow: {
         timestamp: entry.timestamp,
         model: entry.label,
@@ -80,7 +79,7 @@ export function buildCrossModelPoints({
         score,
         failed: entry.failed,
         runId,
-        ...omitUndefined({ pass2Score, },),
+        ...(pass2Score !== undefined ? { pass2Score, } : {}),
       },
     };
   },);
@@ -150,7 +149,7 @@ export function buildSingleModelPoints({
       timestamp: entry.timestamp,
       score,
       color,
-      icon: vendorIcon(openrouterId,),
+      ...vendorIconEntry(openrouterId,),
       title: `${
         entry.timestamp
           .slice(
@@ -161,7 +160,7 @@ export function buildSingleModelPoints({
         pass2Score !== undefined ? ` (fix: ${pass2Score.toFixed(2,)})` : ''
       }`,
       failed: entry.failed,
-      ...omitUndefined({ pass2Score, },),
+      ...(pass2Score !== undefined ? { pass2Score, } : {}),
       tableRow: {
         timestamp: entry.timestamp,
         model: label,
@@ -169,7 +168,7 @@ export function buildSingleModelPoints({
         score,
         failed: entry.failed,
         runId,
-        ...omitUndefined({ pass2Score, },),
+        ...(pass2Score !== undefined ? { pass2Score, } : {}),
       },
     };
   },);

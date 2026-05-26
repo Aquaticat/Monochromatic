@@ -9,42 +9,42 @@ import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
 /**
  * Renders a threshold line as a positioned `<div>` inside a chart container.
  *
- * @param threshold - score threshold value (0-1)
+ * Charts without a degradation threshold pass no argument, so absence is
+ * modelled by an omitted optional rather than a `0`/empty-string sentinel.
  *
- * @param label - descriptive label (e.g. "threshold: 0.42")
+ * @param threshold - threshold value (0-1) and its label, omitted to draw no line
  *
- * @returns HTML string for the threshold line, or empty string if threshold is 0
+ * @returns HTML string for the threshold line, or empty string when absent or non-positive
  *
  * @example
  * ```ts
- * renderThresholdLine({ threshold: 0.75, label: 'threshold: 0.75', });
+ * renderThresholdLine({ value: 0.75, label: 'threshold: 0.75', });
  * // '<div class="chart-threshold" style="bottom:75%">...<\/div>'
- * renderThresholdLine({ threshold: 0, label: '', }); // ''
+ * renderThresholdLine(); // ''
  * ```
  */
-export function renderThresholdLine({
-  threshold,
-  label,
-}: {
-  readonly threshold: number;
+export function renderThresholdLine(threshold?: {
+  readonly value: number;
   readonly label: string;
 },): string {
-  if (threshold <= 0)
+  if (threshold === undefined)
+    return '';
+  if (threshold.value <= 0)
     return '';
   /** Percentage multiplier */
   const PERCENT = 100;
   /** Inline-style positioning expressed as percentage from the chart floor. */
-  const bottom = threshold * PERCENT;
+  const bottom = threshold.value * PERCENT;
   return h({
     tag: 'div',
     class: 'chart-threshold',
     style: { bottom: `${String(bottom,)}%`, },
-    attrs: { title: label, },
+    attrs: { title: threshold.label, },
     children: [
       h({
         tag: 'span',
         class: 'label',
-        text: label,
+        text: threshold.label,
       },),
     ],
   },);
