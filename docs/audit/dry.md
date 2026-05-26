@@ -971,12 +971,12 @@ Shape A `{ config-tsdown, config-typescript, @types/bun }` (11 packages):
 `claude-code-plugins/*` (excluding `source` itself).
 
 Shape B `{ config-typescript, @types/bun }` (9 packages):
-`config/oxlint, config/oxlint-no-restricted-syntax, dev-script/{catalog-tighten,
+`config/oxlint, oxlint-plugins/no-restricted-syntax, dev-script/{catalog-tighten,
 vm-builder}, mcp/mvm, runtime-error/bun, desktop-daemon/hall-monitor,
 cli/{terminal-exec, rgffplay}`.
 
 Shape C `{ config-typescript, module-test, @types/bun }` (6 packages):
-`config/oxlint-stylistic, dev-script/task-util, mcp/{nvim, stdio}, cli/mvm,
+`oxlint-plugins/stylistic, dev-script/task-util, mcp/{nvim, stdio}, cli/mvm,
 claude-code-plugins/source`.
 
 Version pins (`workspace:*`, `catalog:`) are also identical.
@@ -1218,7 +1218,7 @@ category.
 - `packages/dev-script/file-enforcer/src/integration.unit.test.ts`
 - `packages/dev-script/inference-canary-viewer/src/dashboard.e2e.test.ts`
 - `packages/build-tool/css/src/build.unit.test.ts`
-- `packages/config/oxlint-stylistic/src/oxlint-stylistic.unit.test.ts`
+- `packages/oxlint-plugins/stylistic/src/oxlint-stylistic.unit.test.ts`
 - plus a couple more
 
 The pattern (`import.meta.dirname` used to resolve fixture paths relative to the test

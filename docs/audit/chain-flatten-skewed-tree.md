@@ -2,7 +2,7 @@
 
 Post-mortem of commit `797d71ae` (`feat(oxlint-stylistic): rewrite
 chain-per-line on AST spans and tokens`). The rewrite introduced
-`packages/config/oxlint-stylistic/src/utility/chain-flatten.ts`, whose
+`packages/oxlint-plugins/stylistic/src/utility/chain-flatten.ts`, whose
 recursive spread-based flatteners are O(n^2) in time and O(n) in stack
 depth on long chains. A Codex security finding flagged it as a lint-time
 DoS (low severity: developer/build tooling, private package, no PR CI
@@ -79,7 +79,7 @@ overflow recursive walkers across the repo. That audit's "leave alone"
 criterion (lines 58 to 63) lists "AST" as exempt, qualified by "where
 recursion depth is bounded by structure depth, not input length." Same
 correct qualifier, same "AST" bait. That audit even lists
-`config/oxlint-stylistic` (`chain.ts`, `indent.ts`) as fix targets, but
+`oxlint-plugins/stylistic` (`chain.ts`, `indent.ts`) as fix targets, but
 `chain-flatten.ts` did not exist yet, so the rewrite created a fresh
 instance after the audit had already mapped the class.
 

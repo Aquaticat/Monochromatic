@@ -35,10 +35,10 @@ See [`PHILOSOPHY.tool-choices.md`](docs/philosophy/tool-choices.md) for the full
 analysis of h3 vs Elysia vs Hono.
 
 **Custom Oxlint plugins**:
-[`oxlint-tsdoc`](packages/config/oxlint-tsdoc/) enforces TSDoc correctness
+[`oxlint-tsdoc`](packages/oxlint-plugins/tsdoc/) enforces TSDoc correctness
 across 20+ rules with 23 fixture-based tests, replacing the slow
 eslint-plugin-jsdoc integration that previously required ESLint.
-[`oxlint-no-restricted-syntax`](packages/config/oxlint-no-restricted-syntax/)
+[`oxlint-no-restricted-syntax`](packages/oxlint-plugins/no-restricted-syntax/)
 encodes 13 monorepo-specific AST rules (no arrow functions, no switch statements,
 require destructured params for 2+ args) that Oxlint's lack of AST selectors
 demands as dedicated rule implementations.

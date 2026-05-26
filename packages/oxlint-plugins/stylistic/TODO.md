@@ -2,7 +2,7 @@
 
 ## Problem
 
-`mise run buildAndTest -- packages/config/oxlint-stylistic/src/oxlint-stylistic.unit.test.ts`
+`mise run buildAndTest -- packages/oxlint-plugins/stylistic/src/oxlint-stylistic.unit.test.ts`
 times out instead of completing normally.
 The tests invoke `oxlint` via `nano-spawn` and read JSON output,
 so a hang could occur in the spawned process, in output buffering, or in the test runner itself.

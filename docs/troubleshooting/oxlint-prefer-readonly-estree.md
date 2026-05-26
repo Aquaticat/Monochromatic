@@ -231,7 +231,7 @@ This is a consumer-side allow-list correction. It does not touch `@oxlint/plugin
 tsgolint and survives regardless of upstream movement.
 
 Applied and verified. The repo entry above (plain and `$1` names together) is live in
-`allow-pkg.ts`; `mise run //packages/config/oxlint-no-restricted-syntax:lint:oxlint` drops the
+`allow-pkg.ts`; `mise run //packages/oxlint-plugins/no-restricted-syntax:lint:oxlint` drops the
 bare `ESTree.Node` (3 sites) and `ESTree.Function` (1 site) reports, taking the package from 20
 to 13 (the remainder are wrapper-object and union cases fixed in source separately). The
 `@oxlint/plugins` `Variable` scope-manager type needed the same allow-list treatment, added by

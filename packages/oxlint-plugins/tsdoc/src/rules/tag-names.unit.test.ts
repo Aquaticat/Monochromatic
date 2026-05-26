@@ -69,7 +69,11 @@ await describe({
         it({
           name: 'handles a long run of spans without overflow',
           fn: async () => {
-            expect(stripInlineCodeSpans('a`x`'.repeat(LONG_RUN,),),).toBe('a'.repeat(LONG_RUN,),);
+            /** Repeated inline code spans used to prove linear scanning. */
+            const inlineCodeSpans = 'a`x`'.repeat(LONG_RUN,);
+            /** Expected text after each inline span is stripped. */
+            const expectedText = 'a'.repeat(LONG_RUN,);
+            expect(stripInlineCodeSpans(inlineCodeSpans,),).toBe(expectedText,);
           },
         },),
       ],

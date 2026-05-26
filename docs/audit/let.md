@@ -385,7 +385,7 @@ The codebase has 19 custom no-restricted-syntax rules already
 (`no-arrow-function`, `no-enum`, `no-for-in`, `no-switch`, `no-try-finally`, etc.).
 Adding more fits the established pattern;
 the cost is per-rule plugin code, which is mechanical given the existing examples
-(see `packages/config/oxlint-no-restricted-syntax/src/rules/no-variable-function-expression.ts`).
+(see `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-variable-function-expression.ts`).
 
 ### `no-disable-*` companion rule
 
@@ -447,7 +447,7 @@ deciding on the permanent rule is easier with the refactored codebase as the sta
 
 ## Implementation status
 
-2026-05-10: Option B (function-body-root) and Option C (module-level) shipped as two separate oxlint rules in `packages/config/oxlint-no-restricted-syntax/`:
+2026-05-10: Option B (function-body-root) and Option C (module-level) shipped as two separate oxlint rules in `packages/oxlint-plugins/no-restricted-syntax/`:
 
 - `no-function-root-let` (`src/rules/no-function-root-let.ts`): visits `FunctionDeclaration` and `FunctionExpression`; reports each `let` declared as a direct child of the function body. Two AST-level allowlists:
   1. **IIFE callee**: the function's `parent.type === 'CallExpression' && parent.callee === fn`. Covers both named-function IIFEs `(function () { let x; })()` and arrow IIFEs `(() => { let x; })()` (the latter still trips `no-arrow-function`; prefer the named form).
@@ -456,7 +456,7 @@ deciding on the permanent rule is easier with the refactored codebase as the sta
 
 Both rules:
 
-- Registered in `packages/config/oxlint-no-restricted-syntax/src/index.ts`.
+- Registered in `packages/oxlint-plugins/no-restricted-syntax/src/index.ts`.
 - Enabled at `'warn'` (not `'error'`) in `packages/config/oxlint/src/rules/restriction.ts`.
 - Have no corresponding `no-disable-*` companion rule; disable-with-justification is the contracted escape.
 - Referenced in `AGENTS.md` under the `const`/`let` policy.

@@ -13,7 +13,7 @@ Fix all lint issues across active packages so `mise run lint` exits 0.
 ## What is already done (committed)
 
 - Formatting: `chain-per-line` autofix and `mise run format` converged (style commits).
-- Two new custom oxlint rules in `packages/config/oxlint-no-restricted-syntax`, both enabled at `error` in `packages/config/oxlint/src/rules/restriction.ts`:
+- Two new custom oxlint rules in `packages/oxlint-plugins/no-restricted-syntax`, both enabled at `error` in `packages/config/oxlint/src/rules/restriction.ts`:
     - `no-nullish-union`: bans `T | undefined` and `T | null` (commit 5954a771).
     - `no-optional-escape`: bans `| void`, `| never`, `| unknown`/`| any`, `| {}`, falsy literals (`| ""`, `` | `` ``, `| 0`, `| -1`, `| false`, gated on a non-literal union member), empty/optional/named-optional/rest-only tuples, `Partial<T>`, `Record<K, never>`, `Pick<T, never>`, optionality-adding mapped types (commit e2741a08).
 - AGENTS.md rule forbidding preemptive cli-git bypass (commit 17f79a17). CLAUDE.md is gitignored and regenerated from AGENTS.md via `mise run sync:files`.
@@ -69,7 +69,7 @@ Leaf packages still to fix:
 
 - `webapp-productivity/done`: DONE, committed `9741947c` (green via the task-oxlint suppression for the one branded-nesting false positive). See the "Done: webapp-productivity/done" section above for the reusable findings.
 - `pi/advisor` (33e)
-- `config/oxlint-tsdoc` (28w 37e): a config package; child was launched but PAUSED by the user. The "no config edits while `webapp-productivity/done` is uncommitted" constraint is now LIFTED (done is committed); resume only with zero leaf children running.
+- `oxlint-plugins/tsdoc` (28w 37e): a config package; child was launched but PAUSED by the user. The "no config edits while `webapp-productivity/done` is uncommitted" constraint is now LIFTED (done is committed); resume only with zero leaf children running.
 - `webapp-productivity/doodle-widget` (45w 16e)
 - `dev-script/page-weight` (20w 12e)
 - `pi/terminal-title` (23w 3e)
@@ -79,7 +79,7 @@ Leaf packages still to fix:
 - `pi/current-time-context` (6w 4e)
 - `cli/mvm` (14e), `cli/terminal-exec` (13e), `cli/vmsync` (11e), `cli/git` (8e), `cli/fy` (3e)
 - `mcp/stdio` (12w 6e), `mcp/mvm` (2w)
-- `config/oxlint-stylistic` (12e), `config/oxlint-no-restricted-syntax` (5w, pre-existing require-unicode-regexp in prefer-describe-function-ref-name.ts)
+- `oxlint-plugins/stylistic` (12e), `oxlint-plugins/no-restricted-syntax` (5w, pre-existing require-unicode-regexp in prefer-describe-function-ref-name.ts)
 - `dev-script/file-enforcer` (10e), `dev-script/task-util` (11w 6e), `dev-script/catalog-tighten` (4w 6e), `dev-script/vm-builder` (7w)
 - `rolldown-plugins/import-attributes` (8e), `build-tool/css` (4e)
 - `desktop-daemon/hall-monitor` (7w 6e)
@@ -118,13 +118,13 @@ After all leaves: rebuild (`mise run build`), then run the full `mise run lint` 
 - There was one incident where new `ghostty -e claude` sessions hung at startup (Claude exited before initializing; the terminal became an empty husk) with around 12 lingering terminals. Do NOT treat this as a reproducible resource limit: it happened once and did not recur. It is debuggable in principle (Claude Code is closed-source but its compiled JS can be extracted and read), just not worth that effort for a non-recurring one-off. If new children stop producing live sessions, that single failure mode is a candidate, and the user must close stale terminal windows (killing them needs explicit user authorization; the auto-mode classifier blocks mass-kills), but it is an unexplained one-off, not a cap to design around.
 - Do NOT trust the `status` field in `~/.claude/spawn-results/spawns/<id>.json` to find live children: it does not reset to `stopped`/`reported` on abrupt termination, so hundreds of stale files read `"running"`. For an actual live count use `find ~/.claude/spawn-results/spawns/ -name '*.json' -mmin -30` plus `pgrep -af ghostty`, not the JSON status.
 - `cli/git` implements the cli-git enforcement guard itself. Fix it LAST (or, right after its commit lands, confirm the guard still rejects `git add -A` in a throwaway `git init` repo before launching more children); a regression there breaks every later child's scoped commit and stalls the sweep.
-- Do NOT fix shared oxlint config packages concurrently with anything else. `config/oxlint-tsdoc`, `config/oxlint-stylistic`, `config/oxlint-no-restricted-syntax`, and `config/oxlint` define the rules every other package lints against; editing them mid-flight shifts the lint baseline under every concurrent child (they end up working on unstable ground). Fix these SERIALLY, after all consumer packages are green, one at a time, re-running a full fanout lint between each. Treat them like `cli/git`: a final, isolated, single-child phase.
+- Do NOT fix shared oxlint config packages concurrently with anything else. `oxlint-plugins/tsdoc`, `oxlint-plugins/stylistic`, `oxlint-plugins/no-restricted-syntax`, and `config/oxlint` define the rules every other package lints against; editing them mid-flight shifts the lint baseline under every concurrent child (they end up working on unstable ground). Fix these SERIALLY, after all consumer packages are green, one at a time, re-running a full fanout lint between each. Treat them like `cli/git`: a final, isolated, single-child phase.
 - Other recurring lint categories and their fixes: `prefer-readonly-parameter-types` (mark params readonly, find the structural root in shared types; if `TS2540` "cannot assign to read-only property" appears, use a mutable internal type with a readonly public view rather than widening); `require-unicode-regexp` (add `u` to the existing guarded regex); `max-lines` (split the file into siblings, never raise the limit); `no-class` (prefer factory closures); `consistent-function-scoping` (hoist non-capturing inner functions).
 - `claude-code-plugins/*/dist/*.mjs` showing as modified is harmless build-artifact churn from rebuilds. Leave it uncommitted for the user; do not commit hook infrastructure during the autonomous sweep.
 
 ## References
 
-- Optionality rules: `packages/config/oxlint-no-restricted-syntax/src/rules/no-nullish-union.ts`, `no-optional-escape.ts`.
+- Optionality rules: `packages/oxlint-plugins/no-restricted-syntax/src/rules/no-nullish-union.ts`, `no-optional-escape.ts`.
 - Research: `docs/research/optionality-enforcement.md`.
 - Future rule work: GitHub issue #213.
 - The development guidelines in AGENTS.md govern everything (commit eagerly per logical unit, scoped commits, no rule loosening, log extensively, comprehensive TSDoc).

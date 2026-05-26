@@ -64,9 +64,9 @@ Packages with **blank/empty** README first lines: `config/stylelint`, `dev-scrip
 - `0.0.5` (1): config/typescript
 - `0.1.0` (4): mcp/nvim, mcp/stdio, mcp/mvm, stylesheet/monochromatic
 - `1.0.0` (2): webapp-productivity/rss, webapp-search/ai-tree
-- missing (13): config/dprint, config/stylelint, config/tsdown, config/oxlint-tsdoc,
-  config/tofu, config/oxlint-no-restricted-syntax,
-  config/oxlint-stylistic, config/oxlint,
+- missing (13): config/dprint, config/stylelint, config/tsdown, oxlint-plugins/tsdoc,
+  config/tofu, oxlint-plugins/no-restricted-syntax,
+  oxlint-plugins/stylistic, config/oxlint,
   webapp-content/ssg-test, webapp-productivity/done, webapp-productivity/done-h-css-test,
   desktop-daemon/editord, audit/oph-common-look-and-feel
 
@@ -87,7 +87,7 @@ Packages without `private` that look like they should be private
 
 Packages without `private` that are likely intended for publishing (have `files` field):
 `config/dprint`, `config/stylelint`, `config/tsdown`, `config/typescript`,
-`config/oxlint-tsdoc`, `config/oxlint-no-restricted-syntax`, `config/oxlint-stylistic`,
+`oxlint-plugins/tsdoc`, `oxlint-plugins/no-restricted-syntax`, `oxlint-plugins/stylistic`,
 `config/oxlint`, `module/es`, `module/hyperscript`, `build-tool/css`,
 `rolldown-plugins/import-attributes`, `stylesheet/monochromatic`.
 

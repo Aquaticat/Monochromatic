@@ -1121,38 +1121,38 @@ Replace with proper punctuation or restructure sentence.
 
 - Line 17: //region VM configuration -- persisted as vmsync.jsonc
 
-### packages/config/oxlint-no-restricted-syntax/src/rules/no-variable-function-expression.ts
+### packages/oxlint-plugins/no-restricted-syntax/src/rules/no-variable-function-expression.ts
 
 - Line 11: * Patterns like `const myFn = function myFn() {}` are redundant --
 
-### packages/config/oxlint-stylistic/README.md
+### packages/oxlint-plugins/stylistic/README.md
 
 - Line 38: **Union/intersection types excluded** -- a `union-per-line` rule was prototyped but dropped.
 - Line 42: **Minimum 2 items** -- single-item constructs are never flagged.
 - Line 45: **Shared implementation** -- all rules delegate to `checkItemsPerLine` in the utility layer.
 
-### packages/config/oxlint-stylistic/TODO.md
+### packages/oxlint-plugins/stylistic/TODO.md
 
 - Line 15: 4. Verify `nano-spawn` subprocess stdout/stderr handling -- a full buffer with no reader on stderr could deadlock
 - Line 18: 7. Look at the `afterEach` cleanup -- `unlinkSync` on a non-existent file in the catch block should be fine, but verify
 
-### packages/config/oxlint-stylistic/src/index.ts
+### packages/oxlint-plugins/stylistic/src/index.ts
 
 - Line 40: //region Per-line rules -- enforce one item per line in multi-element constructs
 
-### packages/config/oxlint-stylistic/src/oxlint-stylistic.unit.test.ts
+### packages/oxlint-plugins/stylistic/src/oxlint-stylistic.unit.test.ts
 
 - Line 85: // oxlint exits non-zero when violations are found -- capture stdout from the error
 - Line 148: //region Valid fixtures -- expect zero stylistic violations
 - Line 179: //region Invalid fixtures -- expect specific violations
 
-### packages/config/oxlint-tsdoc/src/oxlint-tsdoc.unit.test.ts
+### packages/oxlint-plugins/tsdoc/src/oxlint-tsdoc.unit.test.ts
 
 - Line 60: // oxlint exits non-zero when violations are found -- capture stdout from the error
 - Line 103: //region Valid fixtures -- expect zero tsdoc violations
 - Line 134: //region Invalid fixtures -- expect specific violations
 
-### packages/config/oxlint-tsdoc/src/rules/jsdoc-map.ts
+### packages/oxlint-plugins/tsdoc/src/rules/jsdoc-map.ts
 
 - Line 23: 'Remove @type -- TypeScript handles types.',
 - Line 27: 'Remove @typedef -- use TypeScript type alias instead.',

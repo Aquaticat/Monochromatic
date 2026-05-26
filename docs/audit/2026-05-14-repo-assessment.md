@@ -78,7 +78,7 @@ Strengths:
 - `packages/build-tool/css/src/index.ts` provides useful public interfaces:
   `build()` and `applyMixins()` hide PostCSS parsing, import inlining,
   mixin collection, nested mixin expansion, apply expansion, and output writing.
-- `packages/config/oxlint-no-restricted-syntax/src/index.ts` encodes repository
+- `packages/oxlint-plugins/no-restricted-syntax/src/index.ts` encodes repository
   conventions as custom Oxlint plugin rules rather than relying only on prose.
 - `packages/cli/git/src/index.ts` uses an explicit rule pipeline for wrapper behavior:
   root requirement, add restrictions, push restrictions, commit restrictions,

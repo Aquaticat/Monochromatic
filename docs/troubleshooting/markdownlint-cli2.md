@@ -7,10 +7,10 @@ with no extra arguments, but OOMs after roughly 30 to 50 seconds when invoked wi
 positional arguments via `mise run lint:markdownlint -- <path>`:
 
 ```text
-$ mise run lint:markdownlint -- packages/config/oxlint-stylistic/README.md
-[//:lint:markdownlint] $ markdownlint-cli2 . packages/config/oxlint-stylistic/R...
+$ mise run lint:markdownlint -- packages/oxlint-plugins/stylistic/README.md
+[//:lint:markdownlint] $ markdownlint-cli2 . packages/oxlint-plugins/stylistic/R...
 markdownlint-cli2 v0.22.1 (markdownlint v0.40.0)
-Finding: . packages/config/oxlint-stylistic/README.md !node_modules/** !dist/** !.dist/** !bak/**
+Finding: . packages/oxlint-plugins/stylistic/README.md !node_modules/** !dist/** !.dist/** !bak/**
 <--- Last few GCs --->
 [927285:0x285b2000]    26112 ms: Mark-Compact 4016.7 (4124.1) -> 3992.6 (4127.6) MB, ...
 FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
@@ -19,11 +19,11 @@ FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaS
 Reproducible with the binary directly, no mise involvement needed:
 
 ```sh
-markdownlint-cli2 . packages/config/oxlint-stylistic/README.md  # OOMs
+markdownlint-cli2 . packages/oxlint-plugins/stylistic/README.md  # OOMs
 markdownlint-cli2 . README.md                                   # OOMs
 markdownlint-cli2 . .                                           # OOMs
 markdownlint-cli2 .                                             # works
-markdownlint-cli2 packages/config/oxlint-stylistic/README.md    # works
+markdownlint-cli2 packages/oxlint-plugins/stylistic/README.md    # works
 ```
 
 The failure shape is "any time `.` appears alongside another positional argument".
@@ -111,7 +111,7 @@ Tested against:
 Patterns that work cleanly:
 
 - `markdownlint-cli2 .` (lone argument, remap applies)
-- `markdownlint-cli2 packages/config/oxlint-stylistic/README.md`
+- `markdownlint-cli2 packages/oxlint-plugins/stylistic/README.md`
 - `markdownlint-cli2 README.md AGENTS.md`
 - `markdownlint-cli2 '**/*.md'` on small trees
 

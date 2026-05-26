@@ -90,7 +90,7 @@ Files matching these extensions are skipped by all rules:
 23 fixture-based tests covering all rules:
 
 ```bash
-mise run test:unit -- --filter oxlint-tsdoc
+mise run //packages/oxlint-plugins/tsdoc:test:unit
 ```
 
 Test fixtures live in `packages/test-fixture/oxlint-tsdoc/src/` with `valid/` and `invalid/` directories.

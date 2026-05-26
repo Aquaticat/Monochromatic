@@ -141,8 +141,8 @@ spec), fixes the string-scanning sites, and leaves structural recursion.
 - `module/hyperscript`: `src/html/index.ts`
 - `module/toml-edit`: `src/keys.ts`, `src/comments.ts` (leave
   `src/resolve.ts`, it is AST recursion)
-- `config/oxlint-tsdoc`: `src/rules/{empty-tags,structural-tags,tag-escaping,tag-names,tag-validation,type-annotations}.ts`
-- `config/oxlint-stylistic`: `src/utility/chain.ts`,
+- `oxlint-plugins/tsdoc`: `src/rules/{empty-tags,structural-tags,tag-escaping,tag-names,tag-validation,type-annotations}.ts`
+- `oxlint-plugins/stylistic`: `src/utility/chain.ts`,
   `src/utility/indent.ts`
 - `rolldown-plugins/import-attributes`: `src/transform-helpers.ts`
 

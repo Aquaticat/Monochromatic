@@ -1,6 +1,6 @@
 # Planning: invocation-depth-per-line stylistic rule
 
-Status: implemented in `packages/config/oxlint-stylistic`
+Status: implemented in `packages/oxlint-plugins/stylistic`
 (`src/rules/invocation-depth-per-line.ts`, `src/utility/invocation-spine.ts`,
 `src/utility/invocation-depth-fix.ts`); enabled `warn` in
 `packages/config/oxlint/src/rules/style.ts`.
@@ -18,7 +18,7 @@ an implementer can work from this section alone and drop to the trace for ration
 
 ### Identity
 
-- Package: `packages/config/oxlint-stylistic`; new rule file under `src/rules/`, registered in `src/index.ts`.
+- Package: `packages/oxlint-plugins/stylistic`; new rule file under `src/rules/`, registered in `src/index.ts`.
 - Config key `stylistic/invocation-depth-per-line`, enabled `warn` in `packages/config/oxlint/src/rules/style.ts`.
 - `meta.type: 'layout'`, `meta.fixable: 'whitespace'`. A trailing-comma-inserting reformat is still declared
   `whitespace` in this repo (`src/rules/argument-per-line.ts:36-38`), so the comma the fixer adds does not change this.
@@ -109,18 +109,18 @@ explore the codebase for answerable questions instead of asking, and recommend o
 
 The first codebase search found the custom syntax-rule package:
 
-- `packages/config/oxlint-no-restricted-syntax/src/index.ts` registers custom no-restricted-syntax rules.
-- `packages/config/oxlint-no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
+- `packages/oxlint-plugins/no-restricted-syntax/src/index.ts` registers custom no-restricted-syntax rules.
+- `packages/oxlint-plugins/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
   shows fixture-driven rule tests for that package.
 
 A later search showed this new rule belongs in the stylistic package instead:
 
-- `packages/config/oxlint-stylistic/src/index.ts` registers layout and expression-structure rules.
-- `packages/config/oxlint-stylistic/src/rules/argument-per-line.ts` enforces one argument per line
+- `packages/oxlint-plugins/stylistic/src/index.ts` registers layout and expression-structure rules.
+- `packages/oxlint-plugins/stylistic/src/rules/argument-per-line.ts` enforces one argument per line
   for calls and constructors with two or more arguments.
-- `packages/config/oxlint-stylistic/src/rules/param-per-line.ts` enforces one parameter per line
+- `packages/oxlint-plugins/stylistic/src/rules/param-per-line.ts` enforces one parameter per line
   for function-like declarations with two or more parameters.
-- `packages/config/oxlint-stylistic/src/rules/chain-per-line.ts` enforces receiver, member,
+- `packages/oxlint-plugins/stylistic/src/rules/chain-per-line.ts` enforces receiver, member,
   call-result, binary, and logical chain layout.
 - `packages/config/oxlint/src/rules/style.ts` enables stylistic plugin rules as `warn`.
 
@@ -400,8 +400,8 @@ Reason: it names the broader invocation scope without making the rule name too l
 
 Resolved from codebase evidence:
 
-- Put the rule in `packages/config/oxlint-stylistic`.
-- Register it in `packages/config/oxlint-stylistic/src/index.ts`.
+- Put the rule in `packages/oxlint-plugins/stylistic`.
+- Register it in `packages/oxlint-plugins/stylistic/src/index.ts`.
 - Enable it as `stylistic/invocation-depth-per-line: 'warn'` in
   `packages/config/oxlint/src/rules/style.ts`.
 
@@ -875,7 +875,7 @@ The confirmed summary became the implementation target below.
 
 ## Final rule identity
 
-- Package: `packages/config/oxlint-stylistic`.
+- Package: `packages/oxlint-plugins/stylistic`.
 - Rule name: `invocation-depth-per-line`.
 - Config key: `stylistic/invocation-depth-per-line`.
 - Default severity: `warn`.
@@ -976,8 +976,8 @@ The fixer:
 
 ## Implementation outline
 
-Implement the rule as a new file under `packages/config/oxlint-stylistic/src/rules/`.
-Register it in `packages/config/oxlint-stylistic/src/index.ts`.
+Implement the rule as a new file under `packages/oxlint-plugins/stylistic/src/rules/`.
+Register it in `packages/oxlint-plugins/stylistic/src/index.ts`.
 Enable it in `packages/config/oxlint/src/rules/style.ts`.
 
 Use iterative traversal, not recursion.

@@ -60,7 +60,9 @@ await describe({
     it({
       name: 'returns false across a long run of escaped closers',
       fn: async () => {
-        expect(hasUnescapedCommentClose(String.raw`\*/ `.repeat(LONG_RUN,),),).toBe(false,);
+        /** Long escaped comment closers used to prove linear scanning. */
+        const longEscaped = String.raw`\*/ `.repeat(LONG_RUN,);
+        expect(hasUnescapedCommentClose(longEscaped,),).toBe(false,);
       },
     },),
     it({
