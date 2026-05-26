@@ -1720,6 +1720,28 @@ importers:
         specifier: 'catalog:'
         version: 6.0.3
 
+  packages/module/pipe:
+    dependencies:
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../logger
+    devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
   packages/module/test:
     dependencies:
       '@monochromatic-dev/module-async-time':
