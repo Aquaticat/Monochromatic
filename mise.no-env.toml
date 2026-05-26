@@ -25,7 +25,8 @@ config_roots = [
 
 [tools]
 # Primary runtime
-bun = "latest"
+# Pinned to 1.3.14 because the Rust rewrite's robustness invites serious doubts.
+bun = "1.3.14"
 
 # Package manager
 # Pinned to major 11 instead of "latest" because pnpm has not promoted v11 to the npm `latest` dist-tag
