@@ -8,7 +8,10 @@
 import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { createSeedIso, } from './cloud-init.ts';
+import {
+  createSeedIso,
+  NO_SEED_ISO,
+} from './cloud-init.ts';
 import {
   DEFAULT_DISK_SIZE,
   IMAGES_DIR,
@@ -111,8 +114,8 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
     ],
   },);
 
-  /** NoCloud seed ISO carrying cloud-init user-data that installs `qemu-guest-agent`. */
-  const seedIsoPath = await createSeedIso({
+  /** NoCloud seed ISO carrying cloud-init user-data that installs `qemu-guest-agent`; NO_SEED_ISO for Windows. */
+  const seedIso = await createSeedIso({
     guest: spec,
     name: TEMPLATE_VM_NAME,
     template: true,
@@ -122,7 +125,7 @@ export async function ensureLinuxTemplate(spec: LinuxImageSpec,): Promise<string
   const xml = domainXml({
     diskPath,
     name: TEMPLATE_VM_NAME,
-    seedIsoPath,
+    ...(seedIso !== NO_SEED_ISO ? { seedIsoPath: seedIso, } : {}),
   },);
 
   await defineVm({

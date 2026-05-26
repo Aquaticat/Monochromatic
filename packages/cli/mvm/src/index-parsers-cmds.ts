@@ -80,18 +80,12 @@ export const createCmd: SubcommandParser = command(
       from: fromOption,
       image: imageOption,
     },),
-    function toCreateArgs(
-      v: {
-        readonly name: string;
-        readonly from: string | undefined;
-        readonly image: string | undefined;
-      },
-    ): MvmArgs {
+    function toCreateArgs(v,): MvmArgs {
       return {
         cmd: 'create',
-        from: v.from,
-        image: v.image,
         name: v.name,
+        ...(v.from !== undefined ? { from: v.from, } : {}),
+        ...(v.image !== undefined ? { image: v.image, } : {}),
       };
     },
   ),
@@ -146,7 +140,6 @@ const destroyAllParser = map(
   function toDestroyAllArgs(): MvmArgs {
     return {
       cmd: 'destroy',
-      name: undefined,
       all: true,
     };
   },
@@ -215,17 +208,12 @@ export const runCmd: SubcommandParser = command(
       from: fromOption,
       args: multiple(argument(commandToken,),),
     },),
-    function toRunArgs(
-      v: {
-        readonly from: string | undefined;
-        readonly args: readonly string[];
-      },
-    ): MvmArgs {
+    function toRunArgs(v,): MvmArgs {
       return {
         cmd: 'run',
         command: v.args
           .join(' ',),
-        from: v.from,
+        ...(v.from !== undefined ? { from: v.from, } : {}),
       };
     },
   ),

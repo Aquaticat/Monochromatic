@@ -5,7 +5,10 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { createSeedIso, } from './cloud-init.ts';
+import {
+  createSeedIso,
+  NO_SEED_ISO,
+} from './cloud-init.ts';
 import {
   SHARED_DIR_NAME,
   validateName,
@@ -142,8 +145,8 @@ export async function clone(
     { recursive: true, },
   );
 
-  /** Generated NoCloud seed ISO with a new instance-id so cloud-init reruns on the clone. */
-  const seedIsoPath = await createSeedIso({
+  /** Generated NoCloud seed ISO with a new instance-id so cloud-init reruns on the clone; NO_SEED_ISO for Windows. */
+  const seedIso = await createSeedIso({
     guest,
     name: destination,
     vmDir: dstVmDir,
@@ -153,8 +156,8 @@ export async function clone(
     diskPath: dstDiskPath,
     name: destination,
     osFamily: guest.osFamily,
-    seedIsoPath,
     sharedDir,
+    ...(seedIso !== NO_SEED_ISO ? { seedIsoPath: seedIso, } : {}),
   },);
 
   await defineVm({

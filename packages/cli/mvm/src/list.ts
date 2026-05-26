@@ -12,6 +12,12 @@ export type VmInfo = {
 };
 
 /**
+ * Sentinel returned by {@link parseVirshRow} for header, separator, and other
+ * non-data rows. A unique symbol models "not a row" without a nullish union.
+ */
+const NOT_A_DATA_ROW: unique symbol = Symbol('not-a-data-row',);
+
+/**
  * Checks whether `c` is a single ASCII whitespace character.
  *
  * @param c - single-character string to inspect
@@ -113,26 +119,23 @@ export function splitOnWhitespace(s: string,): readonly string[] {
  * Mirrors the original `/\s+(?:\d+|-)\s+(\S+)\s+(.+)/` shape: rows have
  * leading whitespace, an id column (digits or `-`), a name column
  * (non-whitespace), then a state column (one or more whitespace-separated
- * tokens). Returns `undefined` for header rows, separator rows, and any
- * non-data row.
+ * tokens). Returns {@link NOT_A_DATA_ROW} for header rows, separator rows, and
+ * any non-data row.
  *
  * @param line - single line of virsh tabular output
  *
- * @returns parsed row or `undefined` when `line` is not a data row
+ * @returns parsed row or {@link NOT_A_DATA_ROW} when `line` is not a data row
  *
  * @example
  * ```ts
  * parseVirshRow(' 1    mvm-foo    running');  // { name: 'mvm-foo', state: 'running' }
  * parseVirshRow(' -    mvm-bar    shut off'); // { name: 'mvm-bar', state: 'shut off' }
- * parseVirshRow(' Id   Name   State');        // undefined (header)
+ * parseVirshRow(' Id   Name   State');        // NOT_A_DATA_ROW (header)
  * ```
  */
 function parseVirshRow(
   line: string,
-): {
-  name: string;
-  state: string;
-} | undefined {
+): VmInfo | typeof NOT_A_DATA_ROW {
   /**
    * Minimum token count for a data row: id, name, and at least one state token.
    * Header (`Id Name State`) and separator (`---`) rows produce fewer or
@@ -143,13 +146,13 @@ function parseVirshRow(
   const tokens = splitOnWhitespace(line,);
   if (tokens.length
     < MIN_DATA_ROW_TOKENS)
-    return undefined;
+    return NOT_A_DATA_ROW;
   /** Id column; data rows have digits or a literal `-`. */
   const [idToken, vmName, ...stateTokens] = tokens;
   if ((idToken === undefined) || (vmName === undefined))
-    return undefined;
+    return NOT_A_DATA_ROW;
   if ((idToken !== '-') && (!isDigitString(idToken,)))
-    return undefined;
+    return NOT_A_DATA_ROW;
   return {
     name: vmName,
     state: stateTokens.join(' ',),
@@ -188,21 +191,19 @@ export async function list(): Promise<readonly VmInfo[]> {
   const vms: VmInfo[] = [];
 
   for (const line of lines) {
-    /** Parsed row fields, or `undefined` for non-data rows. */
+    /** Parsed row fields, or NOT_A_DATA_ROW for header/separator/non-data rows. */
     const row = parseVirshRow(line,);
-    /** Captured VM name from the parser; may be undefined when the line is not a data row. */
-    const vmName = row?.name;
-    /** Captured state column from the parser; trimmed when emitted because it carries trailing spaces. */
-    const vmState = row?.state;
-    if ((vmName !== undefined)
-      && (vmState !== undefined)
-      && vmName
-      .startsWith(VM_PREFIX,))
-    {
-      vms.push({
-        name: vmName.slice(VM_PREFIX.length,),
-        state: vmState.trim(),
-      },);
+    if (row !== NOT_A_DATA_ROW) {
+      /** VM name column from the parsed data row. */
+      const vmName = row.name;
+      /** State column from the parsed data row; trimmed when emitted because it carries trailing spaces. */
+      const vmState = row.state;
+      if (vmName.startsWith(VM_PREFIX,)) {
+        vms.push({
+          name: vmName.slice(VM_PREFIX.length,),
+          state: vmState.trim(),
+        },);
+      }
     }
   }
 

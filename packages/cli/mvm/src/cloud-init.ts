@@ -16,6 +16,19 @@ import type {
 } from './registry.ts';
 
 /**
+ * Sentinel returned by {@link createSeedIso} for Windows guests, which
+ * provision via the guest agent instead of a cloud-init seed ISO.
+ * A unique symbol models "no seed ISO" without a nullish union.
+ *
+ * @example
+ * ```ts
+ * const seed = await createSeedIso({ guest, name, vmDir });
+ * if (seed !== NO_SEED_ISO) attachSeedIso(seed);
+ * ```
+ */
+export const NO_SEED_ISO: unique symbol = Symbol('no-seed-iso',);
+
+/**
  * Narrows a {@link GuestConfig} to {@link LinuxGuestConfig} after the caller
  * has already ruled out Windows guests via an early return.
  *
@@ -150,7 +163,7 @@ ${templateRuncmd(linux.initSystem,)}`;
  * // seedPath => '/path/to/vm/seed.iso'
  *
  * const winSeed = await createSeedIso({ name: 'win-vm', guest: IMAGES['windows'], vmDir: '/path/to/vm' });
- * // winSeed => undefined
+ * // winSeed => NO_SEED_ISO
  * ```
  */
 export async function createSeedIso({
@@ -163,7 +176,7 @@ export async function createSeedIso({
   readonly name: string;
   readonly template?: boolean;
   readonly vmDir: string;
-},): Promise<string | undefined> {
+},): Promise<string | typeof NO_SEED_ISO> {
   if (guest.osFamily
     === 'windows') {
     /** Logger for the Windows skip-path; namespaced so the info line is attributable. */
@@ -172,7 +185,7 @@ export async function createSeedIso({
       l,
     },);
     rl.info('skipping seed ISO for Windows guest (uses guest agent for provisioning)',);
-    return undefined;
+    return NO_SEED_ISO;
   }
 
   /** Logger scoped to this function so the "created seed ISO" message is attributable. */

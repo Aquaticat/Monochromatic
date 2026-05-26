@@ -1,7 +1,10 @@
 import { mkdir, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { createSeedIso, } from './cloud-init.ts';
+import {
+  createSeedIso,
+  NO_SEED_ISO,
+} from './cloud-init.ts';
 import {
   DEFAULT_DISK_SIZE,
   SHARED_DIR_NAME,
@@ -102,7 +105,7 @@ export async function create({
   image = DEFAULT_IMAGE,
   name,
 }: {
-  readonly image?: string | undefined;
+  readonly image?: string;
   readonly name: string;
 },): Promise<void> {
   validateName(name,);
@@ -174,8 +177,8 @@ export async function create({
     { recursive: true, },
   );
 
-  /** NoCloud seed ISO carrying the user-data and meta-data files for first-boot cloud-init. */
-  const seedIsoPath = await createSeedIso({
+  /** NoCloud seed ISO carrying the user-data and meta-data files for first-boot cloud-init; NO_SEED_ISO for Windows. */
+  const seedIso = await createSeedIso({
     guest,
     name,
     vmDir,
@@ -185,8 +188,8 @@ export async function create({
     diskPath,
     name,
     osFamily: guest.osFamily,
-    seedIsoPath,
     sharedDir,
+    ...(seedIso !== NO_SEED_ISO ? { seedIsoPath: seedIso, } : {}),
   },);
 
   await defineVm({

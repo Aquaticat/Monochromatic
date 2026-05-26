@@ -86,8 +86,8 @@ if (args.cmd
       source: args.from,
     },)
     : create({
-      image: args.image,
       name: args.name,
+      ...(args.image !== undefined ? { image: args.image, } : {}),
     },));
 }
 else if (args.cmd
@@ -172,7 +172,7 @@ else {
   /** Execution result from the ephemeral VM. */
   const result = await run({
     command: args.command,
-    from: args.from,
+    ...(args.from !== undefined ? { from: args.from, } : {}),
   },);
   if (result.stdout
     .length

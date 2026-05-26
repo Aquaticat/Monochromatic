@@ -116,9 +116,9 @@ export function domainXml(
     /** Guest OS family for platform-specific optimizations. */
     readonly osFamily?: OsFamily;
     /** Absolute path to the cloud-init seed ISO (Linux only, omitted for Windows). */
-    readonly seedIsoPath?: string | undefined;
+    readonly seedIsoPath?: string;
     /** Absolute path to a host directory shared via virtiofs. */
-    readonly sharedDir?: string | undefined;
+    readonly sharedDir?: string;
   },
 ): string {
   /** Mutable buffer because Windows pushes Hyper-V enlightenments on top of ACPI. */

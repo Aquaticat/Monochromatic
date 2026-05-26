@@ -27,9 +27,9 @@ import {
 export type MvmArgs =
   | {
     cmd: 'create';
-    image: string | undefined;
+    image?: string;
     name: string;
-    from: string | undefined;
+    from?: string;
   }
   | {
     cmd: 'shell';
@@ -39,7 +39,7 @@ export type MvmArgs =
   | { cmd: 'update'; }
   | {
     cmd: 'destroy';
-    name: string | undefined;
+    name?: string;
     all: boolean;
   }
   | {
@@ -50,7 +50,7 @@ export type MvmArgs =
   | {
     cmd: 'run';
     command: string;
-    from: string | undefined;
+    from?: string;
   }
   | {
     cmd: 'push';
