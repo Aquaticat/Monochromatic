@@ -2,41 +2,249 @@
 
 Status: ready to implement.
 
-## Goal
+This file records the full grilling session that produced the `invocation-depth-per-line` rule.
+A future implementer should be able to read only this file and recover the problem statement,
+the evidence gathered, every design branch we settled, the corrections made along the way,
+and the final implementation target.
 
-Add a separate Oxlint stylistic rule named `stylistic/invocation-depth-per-line`.
-The rule limits nested invocation density on a single source line.
+## Starting proposal
 
-The rule fills the one-operand gap left by existing layout rules:
+The starting proposal was narrower than the final rule:
 
-- `packages/config/oxlint-stylistic/src/rules/argument-per-line.ts` owns calls
-  with two or more arguments.
-- `packages/config/oxlint-stylistic/src/rules/param-per-line.ts` owns function-like
-  declarations with two or more parameters.
-- `packages/config/oxlint-stylistic/src/rules/chain-per-line.ts` owns receiver,
-  member, call-result, binary, and logical chains.
+```txt
+Plan to implement nested-call-per-line (or similar) rule:
+  1. Fire on a CallExpression whose single argument is itself a CallExpression,
+     or an AwaitExpression wrapping one.
+  2. gated on depth 2.
+```
 
-This new rule owns single-operand invocation spines such as `a(b(c()))`.
+The session used the `grill-me` process: ask one design question at a time,
+explore the codebase for answerable questions instead of asking, and recommend one answer for each branch.
 
-## Rule identity
+## Evidence gathered during grilling
 
-- Package: `packages/config/oxlint-stylistic`.
-- Rule name: `invocation-depth-per-line`.
-- Config key: `stylistic/invocation-depth-per-line`.
-- Default severity: `warn`, matching other stylistic rules in
-  `packages/config/oxlint/src/rules/style.ts`.
-- Threshold: hardcode a maximum of two counted invocations per source line.
+The first codebase search found the custom syntax-rule package:
 
-## Core invariant
+- `packages/config/oxlint-no-restricted-syntax/src/index.ts` registers custom no-restricted-syntax rules.
+- `packages/config/oxlint-no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`
+  shows fixture-driven rule tests for that package.
 
-`a(b())` passes because the line contains two counted invocations.
+A later search showed this new rule belongs in the stylistic package instead:
+
+- `packages/config/oxlint-stylistic/src/index.ts` registers layout and expression-structure rules.
+- `packages/config/oxlint-stylistic/src/rules/argument-per-line.ts` enforces one argument per line
+  for calls and constructors with two or more arguments.
+- `packages/config/oxlint-stylistic/src/rules/param-per-line.ts` enforces one parameter per line
+  for function-like declarations with two or more parameters.
+- `packages/config/oxlint-stylistic/src/rules/chain-per-line.ts` enforces receiver, member,
+  call-result, binary, and logical chain layout.
+- `packages/config/oxlint/src/rules/style.ts` enables stylistic plugin rules as `warn`.
+
+The Oxlint ESTree type definitions in
+`node_modules/.pnpm/@oxlint+plugins@1.58.0/node_modules/@oxlint/plugins/index.d.ts`
+showed the relevant node shapes:
+
+- `CallExpression` carries `callee`, `arguments`, and `optional`.
+- `NewExpression` carries `callee` and `arguments`.
+- `ImportExpression` carries `source`, optional `options`, and optional `phase`.
+- `TaggedTemplateExpression` carries `tag` and `quasi`.
+- `ChainExpression`, `ParenthesizedExpression`, `AwaitExpression`, `UnaryExpression`, `YieldExpression`,
+  `SpreadElement`, `TSAsExpression`, `TSSatisfiesExpression`, `TSTypeAssertion`, `TSNonNullExpression`,
+  and `TSInstantiationExpression` provide wrapper shapes the rule may need to pass through.
+
+A repo source search found no active `.tsx` or `.jsx` files.
+That supported excluding JSX pseudo-call semantics from the first implementation.
+
+A Node check showed that rewriting a tagged template from `` tag`${value}` `` to a multiline template body changes
+`strings.raw`, so tag-quasi rewriting is not semantics-preserving.
+That forced the later tagged-template decision.
+
+The existing troubleshooting doc `docs/troubleshooting/oxlint-multi-fix-convergence.md` records that Oxlint may need
+multiple `--fix` passes when plugin fixes overlap.
+The new rule may overlap with `argument-per-line`, so the implementation and tests should assume convergence,
+not single-pass completion.
+
+## Session decision trace
+
+This section records each decision in the order it was made.
+When a later branch corrected an earlier branch, the correction is called out explicitly.
+
+### 1. Rule semantics: line-sensitive, not structural
+
+Options considered:
+
+- Line-sensitive formatting rule.
+- Structural ban on nested single-argument calls.
+- Formatter-only behavior.
+
+Chosen: line-sensitive.
+
+Reason: the rule is about per-line readability. A structural ban would reject already-readable multiline code.
+Formatter-only behavior would not provide a targeted diagnostic or threshold-specific enforcement.
 
 ```ts
+// FAIL
+const value = parse(readConfig());
+
 // PASS
+const value = parse(
+  readConfig(),
+);
+```
+
+### 2. Correction: depth two is allowed
+
+The first examples treated `a(b())` as a failure.
+That was wrong.
+The intended threshold is "calls greater than two must be split".
+
+Resolved rule:
+
+```ts
+// PASS: exactly two counted invocations.
+const value = a(b());
+
+// FAIL: three counted invocations on one line.
+const value = a(b(c()));
+```
+
+This correction also explained why the rule targets one-operand call composition:
+`argument-per-line` already owns multi-argument call layout.
+
+### 3. Split shape: max two counted invocations per line
+
+Options considered:
+
+- Max two counted invocations per line.
+- Full cascade split.
+- Outer-only split.
+
+Chosen: max two counted invocations per line.
+
+```ts
+// FAIL
+const value = a(b(c()));
+
+// PASS: no line contains more than two counted invocations.
+const value = a(
+  b(c()),
+);
+
+// PASS: depth two is allowed.
 const value = a(b());
 ```
 
-`a(b(c()))` fails because the line contains three counted invocations.
+Full cascade was stricter than the user asked for.
+Outer-only split did not define a durable invariant for longer chains.
+
+### 4. First wrapper decision: await plus TypeScript wrappers
+
+Options considered:
+
+- Await only.
+- Await plus TypeScript wrappers.
+- Plain calls only.
+
+Chosen: await plus TypeScript wrappers.
+
+```ts
+// FAIL
+const value = a(await b(c()));
+
+// PASS
+const value = a(
+  await b(c()),
+);
+
+// FAIL
+const value = a(b(c()) as Value);
+
+// PASS
+const value = a(
+  b(c()) as Value,
+);
+```
+
+This choice was later expanded into the full transparent-wrapper list.
+
+### 5. Invocation scope: broader than `CallExpression`
+
+Options considered:
+
+- `CallExpression` plus `NewExpression`.
+- `CallExpression` only.
+- All invocation-like forms.
+
+Chosen by user: all invocation-like forms.
+
+The follow-up codebase and type-definition check narrowed that to a practical TypeScript set:
+
+- Count `CallExpression`.
+- Count `NewExpression`.
+- Count `ImportExpression`.
+- Do not include V8 intrinsics in the first implementation.
+- Do not include JSX in the first implementation.
+
+Tagged templates were initially considered part of the practical set,
+but later decisions changed their status.
+
+### 6. Long-chain autofix shape: outer-first
+
+Options considered:
+
+- Outer-first recursive split.
+- Head-pair split.
+- Full cascade split.
+
+Chosen: outer-first recursive split as the autofix shape.
+
+```ts
+// FAIL
+const value = a(b(c(d())));
+
+// PASS after autofix
+const value = a(
+  b(
+    c(d()),
+  ),
+);
+```
+
+This is an autofix preference, not the lint invariant.
+The later threshold-only decision means hand-written alternatives pass if every line stays at depth two or less.
+
+### 7. Autofix scope: full autofix
+
+Options considered:
+
+- Conservative autofix.
+- Full autofix.
+- Report-only.
+
+Chosen: full autofix.
+
+```ts
+// FAIL
+const value = a(b(c()));
+
+// PASS after fix
+const value = a(
+  b(c()),
+);
+```
+
+Later branches refined this: full autofix applies to fixable invocation spines,
+but tagged-template quasis must not be rewritten because doing so changes runtime semantics.
+
+### 8. Nesting path: operand spine
+
+Options considered:
+
+- Invocation operand spine.
+- Any descendant invocation.
+- Direct call arguments only.
+
+Chosen: operand spine.
 
 ```ts
 // FAIL
@@ -46,10 +254,81 @@ const value = a(b(c()));
 const value = a(
   b(c()),
 );
+
+// PASS: object literal breaks the parent operand spine.
+const value = a({ value: b(c()) });
 ```
 
-The rule is line-sensitive and threshold-only.
-It does not require one canonical layout when a noncanonical layout already keeps each line at depth two or less.
+The later container decision kept the parent-spine break but still checks descendants inside containers independently.
+
+### 9. Arity gate: strict single operand
+
+Options considered:
+
+- Strict single operand.
+- Per-operand branch checking in multi-operand parents.
+- Total line count across sibling operands.
+
+Chosen: strict single operand for traversing through the current invocation.
+
+```ts
+// FAIL for invocation-depth-per-line.
+const value = a(b(c()));
+
+// PASS for invocation-depth-per-line: `a` has two arguments, so `a` does not continue the spine.
+// `argument-per-line` owns the parent call layout.
+const value = a(b(c()), other);
+```
+
+Later refinement: single-operand child spines inside multi-argument parents still get checked.
+That means `b(c(d()))` inside `a(b(c(d())), other)` is still owned by `invocation-depth-per-line`.
+
+### 10. Diagnostic ownership, first pass: outermost over-depth spine
+
+Options considered:
+
+- Outermost only.
+- Every violating node.
+- Innermost only.
+
+Chosen at this stage: outermost only.
+
+The reason was to avoid overlapping diagnostics inside one uninterrupted over-depth spine.
+This was later refined by the threshold-only and owner-line decisions:
+report the highest invocation on the line that actually violates the threshold.
+
+### 11. Rule name
+
+Options considered:
+
+- `max-invocation-depth-per-line`.
+- `invocation-depth-per-line`.
+- `nested-invocation-per-line`.
+- `nested-call-per-line`.
+
+Chosen: `invocation-depth-per-line`.
+
+Reason: it names the broader invocation scope without making the rule name too long.
+
+### 12. Rule package and enablement
+
+Resolved from codebase evidence:
+
+- Put the rule in `packages/config/oxlint-stylistic`.
+- Register it in `packages/config/oxlint-stylistic/src/index.ts`.
+- Enable it as `stylistic/invocation-depth-per-line: 'warn'` in
+  `packages/config/oxlint/src/rules/style.ts`.
+
+It does not belong in `oxlint-no-restricted-syntax` because it is a layout rule with a whitespace autofix.
+
+### 13. Canonical layout: threshold-only, not outer-first enforcement
+
+Options considered:
+
+- Enforce outer-first canonical layout.
+- Threshold-only layout.
+
+Chosen: threshold-only.
 
 ```ts
 // PASS: no line has more than two counted invocations.
@@ -57,76 +336,173 @@ const value = a(b(
   c(),
 ));
 
-// PASS: autofix may prefer this shape, but lint does not require it.
+// PASS: autofix may produce this shape, but lint does not require it.
 const value = a(
   b(c()),
 );
+
+// FAIL: three counted invocations on one line.
+const value = a(b(c()));
 ```
 
-## Counted invocation forms
+This separated the lint invariant from the autofix renderer's preferred output.
 
-Count these as invocations:
+### 14. Line attribution: invocation-head line
 
-- `CallExpression`, including optional calls such as `fn?.()`.
-- `NewExpression`.
-- `ImportExpression` for dynamic `import()`.
+Options considered:
 
-Do not count `TaggedTemplateExpression` itself.
-A tagged-template wrapper breaks the parent operand spine.
-Calls inside template interpolations still get checked as independent descendant spines.
+- Invocation head line.
+- Wrapper start line.
+- Whole-span overlap.
+
+Chosen: invocation head line.
+
+```ts
+// FAIL: a, b, and c heads start on line 1.
+const value = a(await b(c()));
+
+// PASS: c starts on its own line.
+const value = a(await b(
+  c(),
+));
+```
+
+Whole-span overlap would make compliant multiline code fail because outer invocations span child lines.
+Wrapper start would overcount syntax like `await` and type assertions.
+
+### 15. Callee chains: out of scope
+
+Options considered:
+
+- Operand only.
+- Include callee position.
+- Count every invocation chain.
+
+Chosen: operand only.
+
+```ts
+// FAIL: operand spine.
+const value = a(b(c()));
+
+// PASS for this rule: callee chain.
+const value = factory()()();
+```
+
+`chain-per-line` remains the owner for receiver and call-result chains.
+
+### 16. Dynamic import and tag single-operand rules
+
+For dynamic import, strict single operand means the rule traverses through `import(source)`
+but not `import(source, options)`.
+
+```ts
+// FAIL
+const value = a(import(b(c())));
+
+// PASS
+const value = a(
+  import(b(c())),
+);
+
+// PASS for this rule.
+const value = a(import(b(c()), opts));
+```
+
+Tagged-template handling changed later and no longer follows the counted-invocation path.
+
+### 17. Full transparent-wrapper list
+
+After checking Oxlint's node types, the wrapper list expanded beyond the initial await plus TypeScript wrappers.
+
+Chosen transparent wrappers:
+
+- `ParenthesizedExpression`.
+- `ChainExpression`.
+- `AwaitExpression`.
+- TypeScript wrappers: `TSAsExpression`, `TSSatisfiesExpression`, `TSTypeAssertion`,
+  `TSNonNullExpression`, and `TSInstantiationExpression`.
+
+```ts
+// FAIL
+const value = a((b(c())));
+
+// PASS
+const value = a(
+  (b(c())),
+);
+
+// FAIL
+const value = a(b?.(c()));
+
+// PASS
+const value = a(
+  b?.(c()),
+);
+```
+
+Semantic unary, yield, and spread were not decided until later branches.
+
+### 18. Folding into `chain-per-line`: rejected
+
+The user asked whether the rule should exist separately or fold into `chain-per-line`.
+
+Evaluation:
+
+- `chain-per-line` currently descends through `CallExpression.callee`, not `CallExpression.arguments`.
+- `chain-per-line` treats `new` and tagged templates as leaves.
+- `chain-render.ts` inserts newline breaks at offsets; it does not re-render call argument lists with commas.
+- Folding would turn `chain-per-line` into an umbrella rule with a mostly separate invocation-depth subsystem.
+
+Decision: keep `invocation-depth-per-line` separate.
+
+### 19. Tagged templates: do not rewrite quasis
+
+The first full-autofix examples rewrote:
+
+```ts
+const value = a(tag`${b(c())}`);
+```
+
+into a multiline tagged template body.
+A Node check showed that such a rewrite changes the tag's observed template strings.
+
+Options considered:
+
+- Preserve tag quasis and split inside interpolation expressions.
+- Report-only for tag cases.
+- Rewrite quasis anyway.
+
+The user first chose report-only for tags, then clarified that tagged template literal syntax should be transparent or ignored
+because the repo does not use tagged template literals.
+The final settled behavior is:
+
+- Do not count `TaggedTemplateExpression` itself.
+- Let tag syntax break the parent operand spine.
+- Still check and autofix normal call spines inside `${...}` interpolation expressions.
+- Do not rewrite template quasis.
 
 ```ts
 // PASS: tag wrapper breaks the outer spine, and b(c()) is only depth two.
 const value = a(tag`${b(c())}`);
 
-// FAIL: descendant interpolation spine b(c(d())) has three calls on one line.
+// FAIL: interpolation descendant b(c(d())) is checked independently.
 const value = a(tag`${b(c(d()))}`);
 
-// PASS
+// PASS: fix happens inside the interpolation expression without changing quasis.
 const value = a(tag`${b(
   c(d()),
 )}`);
 ```
 
-## Operand-spine scope
+### 20. Multi-argument parent interaction: scan child spines
 
-Only operand nesting counts.
-Callee chains such as `factory()()()` stay out of scope for this rule.
-`chain-per-line` remains responsible for call-result and member chains.
+Options considered:
 
-```ts
-// FAIL: nested through single operands.
-const value = a(b(c()));
+- Scan single-operand child spines inside multi-argument parents.
+- Skip children under multi-argument parents.
+- Only check root calls.
 
-// PASS for this rule: nested through callee position.
-const value = factory()()();
-```
-
-Containers break the parent spine, but descendants inside containers remain checkable.
-Existing container layout rules continue to own container formatting.
-
-```ts
-// PASS: object literal breaks a -> b, and b(c()) is only depth two.
-const value = a({ value: b(c()) });
-
-// FAIL: inner b(c(d())) is checked independently.
-const value = a({ value: b(c(d())) });
-
-// PASS
-const value = a({ value: b(
-  c(d()),
-) });
-```
-
-## Single-operand gate
-
-The rule traverses through a counted invocation only when that invocation has exactly one operand.
-This avoids taking ownership away from `argument-per-line` for multi-argument calls.
-
-Child single-operand spines inside multi-argument parents still get checked.
-Both rules may report the same original expression, and repeated `oxlint --fix` passes may be needed.
-That matches the existing multi-fix convergence behavior documented in
-`docs/troubleshooting/oxlint-multi-fix-convergence.md`.
+Chosen: scan children.
 
 ```ts
 // FAIL: argument-per-line owns a(...), invocation-depth-per-line owns b(...).
@@ -139,48 +515,33 @@ const value = a(
   ),
   other,
 );
-
-// PASS for invocation-depth-per-line: child spine depth is only two.
-const value = a(b(c()), other);
 ```
 
-For dynamic import, the source is the single operand only when `options` is absent.
+### 21. Overlapping autofixes: fix and converge
+
+Options considered:
+
+- Provide autofixes and rely on repeated `oxlint --fix` convergence.
+- Report-only when a child fix overlaps another rule's fix.
+- Suppress the child diagnostic.
+
+Chosen: fix and converge.
+
+This matches the existing documented Oxlint limitation:
+when fixes overlap, a later pass may be needed.
+Tests should include a convergence fixture rather than requiring one-pass stability.
+
+### 22. Semantic unary operators: transparent
+
+Options considered:
+
+- Semantic unary breaks the spine.
+- Semantic unary is transparent.
+- Only `void` is transparent.
+
+Chosen: semantic unary is transparent.
 
 ```ts
-// FAIL: import has one operand, source.
-const value = a(import(b(c())));
-
-// PASS
-const value = a(
-  import(b(c())),
-);
-
-// PASS for this rule: import has source plus options.
-const value = a(import(b(c()), opts));
-```
-
-## Transparent wrappers
-
-These wrappers do not break the operand spine:
-
-- Parenthesized expressions.
-- `ChainExpression` wrappers from optional chaining.
-- `AwaitExpression`.
-- `UnaryExpression`, including semantic unary operators such as `void`, `!`, `typeof`, `+`, and `-`.
-- `YieldExpression`, including `yield*`.
-- `SpreadElement` when it is the single call or constructor argument.
-- TypeScript wrappers: `TSAsExpression`, `TSSatisfiesExpression`, `TSTypeAssertion`,
-  `TSNonNullExpression`, and `TSInstantiationExpression`.
-
-```ts
-// FAIL
-const value = a(await b(c()));
-
-// PASS
-const value = a(
-  await b(c()),
-);
-
 // FAIL
 const value = a(void b(c()));
 
@@ -190,67 +551,215 @@ const value = a(
 );
 
 // FAIL
+const value = a(!b(c()));
+
+// PASS
+const value = a(
+  !b(c()),
+);
+```
+
+This makes the rule follow visible invocation density, not only value-preserving wrappers.
+
+### 23. `yield` and `yield*`: transparent
+
+Options considered:
+
+- Treat `yield` and `yield*` as transparent.
+- Break the spine at `yield`.
+
+Chosen: transparent yield.
+
+```ts
+// FAIL
+function* gen(): Generator<unknown> {
+  const value = a(yield b(c()));
+}
+
+// PASS
+function* gen(): Generator<unknown> {
+  const value = a(
+    yield b(c()),
+  );
+}
+```
+
+### 24. Spread: transparent
+
+Options considered:
+
+- Single spread argument is transparent.
+- Spread breaks the spine.
+
+Chosen: transparent spread.
+
+```ts
+// FAIL
 const value = a(...b(c()));
 
 // PASS
 const value = a(
   ...b(c()),
 );
-```
 
-## Line attribution
-
-Count each invocation on its invocation-head line, not on the start line of wrappers
-and not on every line of the invocation span.
-
-```ts
-// FAIL: a, b, and c heads start on the same line.
-const value = a(await b(c()));
-
-// PASS: c starts on its own line.
-const value = a(await b(
-  c(),
-));
-
-// FAIL: a, new B, and c heads start on the same line.
-const value = a(new B(c()));
-
-// PASS: c starts on its own line.
-const value = a(new B(
-  c(),
-));
-```
-
-## Diagnostic ownership
-
-Report the highest invocation on the offending line.
-If an outer invocation is already split and only a child line exceeds the threshold,
-report the child invocation.
-
-```ts
-// FAIL: diagnostic on a(...), because line 1 contains a + b + c.
-const value = a(b(c()));
+// FAIL
+const value = new A(...b(c()));
 
 // PASS
+const value = new A(
+  ...b(c()),
+);
+```
+
+### 25. Threshold configuration: hardcode two
+
+Options considered:
+
+- Hardcode max depth two.
+- Make the threshold configurable.
+
+Chosen: hardcode two.
+
+Reason: the repo has one style target, and existing stylistic rules hardcode their thresholds.
+A configurable option would add schema and test complexity without an identified second threshold.
+
+### 26. Trailing comma: always add
+
+Options considered:
+
+- Always add a trailing comma when splitting the single operand.
+- Preserve whether a trailing comma existed.
+- Never add a trailing comma.
+
+Chosen: always add.
+
+```ts
+// FAIL
+const value = a(await b(c()));
+
+// PASS after fix
 const value = a(
-  b(c()),
+  await b(c()),
+);
+```
+
+This matches the repo's multiline call style.
+
+### 27. Line comments: move comma before comment
+
+Options considered:
+
+- Report-only for line-comment operands.
+- Move the comma before the trailing comment.
+- Put the comma on its own next line.
+
+Chosen: move comma before the trailing comment.
+
+```ts
+// FAIL
+const value = a(b(c()) // keep
 );
 
-// FAIL: diagnostic on b(...), because line 2 contains b + c + d.
+// PASS after fix
+const value = a(
+  b(c()), // keep
+);
+```
+
+### 28. Block comments: comma before comment
+
+Options considered:
+
+- Put the comma before trailing block comments.
+- Put the comma after trailing block comments.
+
+Chosen: comma before trailing block comments, matching the line-comment decision.
+
+```ts
+// FAIL
+const value = a(b(c()) /* keep */);
+
+// PASS after fix
+const value = a(
+  b(c()), /* keep */
+);
+```
+
+### 29. Container descendants: check inside, do not cross containers
+
+Options considered:
+
+- Containers break the parent spine, but descendants inside containers are checked independently.
+- Containers suppress all descendant checks.
+- Cross containers and count every descendant.
+
+Chosen: check inside.
+
+```ts
+// PASS: object breaks a -> b, and b(c()) is only depth two.
+const value = a({ value: b(c()) });
+
+// FAIL: inner b(c(d())) is checked independently.
+const value = a({ value: b(c(d())) });
+
+// PASS
+const value = a({ value: b(
+  c(d()),
+) });
+```
+
+### 30. Indentation: source-line indent plus two spaces
+
+Options considered:
+
+- Base indentation of the invocation source line plus two spaces.
+- Align continuation to the call-head column.
+
+Chosen: source-line indent plus two spaces.
+
+```ts
+// FAIL
+  const value = a({ value: b(c(d())) });
+
+// PASS after fix
+  const value = a({ value: b(
+    c(d()),
+  ) });
+```
+
+This matches existing stylistic helper behavior better than wide column alignment.
+
+### 31. Owner line: highest invocation on the bad line
+
+Options considered:
+
+- Highest invocation on the line whose counted depth exceeds two.
+- Original spine root.
+- Innermost pair.
+
+Chosen: highest invocation on the bad line.
+
+```ts
+// FAIL: diagnostic on a(...), because line 1 has a + b + c.
+const value = a(b(c()));
+
+// FAIL: diagnostic on b(...), because line 2 has b + c + d.
 const value = a(
   b(c(d())),
 );
-
-// PASS
-const value = a(
-  b(
-    c(d()),
-  ),
-);
 ```
 
-When multiple independent child spines sit inside a container, let existing container rules own the container layout.
-`invocation-depth-per-line` may still report each independently fixable invocation spine.
+This reconciles threshold-only layout with stable diagnostic ownership.
+
+### 32. Multiple independent spines and containers
+
+The user initially chose "one per root" for multiple independent spines in one line.
+That preview implied `invocation-depth-per-line` might rewrite object literals broadly.
+A follow-up pointed out that existing container rules already own object layout.
+
+Final decision: container rules own container layout.
+`invocation-depth-per-line` owns invocation spines inside containers.
+It may report independently fixable child spines, and the combined formatter/linter pass converges with existing container rules.
 
 ```ts
 // FAIL: object-property-per-line owns the object, invocation-depth-per-line owns child spines.
@@ -267,11 +776,85 @@ const value = {
 };
 ```
 
-## Autofix behavior
+### 33. Final confirmation
 
-The fixer splits the offending invocation's single operand onto its own line.
-It uses the base indentation of the invocation's source line plus two spaces for the operand line.
-The closing delimiter returns to the base indentation of that source line.
+The final spec was read back to the user and confirmed as correct.
+The confirmed summary became the implementation target below.
+
+## Final rule identity
+
+- Package: `packages/config/oxlint-stylistic`.
+- Rule name: `invocation-depth-per-line`.
+- Config key: `stylistic/invocation-depth-per-line`.
+- Default severity: `warn`.
+- Fixability: `fixable: 'whitespace'` for fixable cases.
+- Threshold: hardcoded maximum of two counted invocations per source line.
+
+## Final rule semantics
+
+The rule checks invocation operand spines.
+A source line fails when one checked spine contains more than two counted invocations whose invocation heads start on that line.
+
+```ts
+// PASS
+const value = a(b());
+
+// FAIL
+const value = a(b(c()));
+
+// PASS
+const value = a(
+  b(c()),
+);
+```
+
+The rule is threshold-only.
+Already-split layouts pass when every line stays within the depth limit.
+
+```ts
+// PASS
+const value = a(b(
+  c(),
+));
+```
+
+## Final counted nodes
+
+Count these invocation heads:
+
+- `CallExpression`, including optional calls.
+- `NewExpression`.
+- `ImportExpression` when traversed through its source operand.
+
+Do not count these in the first implementation:
+
+- `TaggedTemplateExpression` as a wrapper itself.
+- V8 intrinsic expressions.
+- JSX elements or components.
+
+## Final transparent wrappers
+
+The operand-spine walker passes through these node types:
+
+- `ParenthesizedExpression`.
+- `ChainExpression`.
+- `AwaitExpression`.
+- `UnaryExpression`.
+- `YieldExpression`.
+- `SpreadElement`.
+- `TSAsExpression`.
+- `TSSatisfiesExpression`.
+- `TSTypeAssertion`.
+- `TSNonNullExpression`.
+- `TSInstantiationExpression`.
+
+The walker does not pass through containers such as object literals, array literals,
+conditional expressions, template literals, or tagged-template syntax.
+Those containers stop the parent spine, but normal visitors still check descendants inside them.
+
+## Final autofix rules
+
+For a fixable violating invocation, replace the invocation's argument or operand list with a multiline form:
 
 ```ts
 // FAIL
@@ -281,60 +864,39 @@ const value = a(b(c()));
 const value = a(
   b(c()),
 );
-
-// FAIL
-  const value = a({ value: b(c(d())) });
-
-// PASS after fix
-  const value = a({ value: b(
-    c(d()),
-  ) });
 ```
 
-The fixer always adds a trailing comma when it splits the operand.
+The fixer:
 
-```ts
-// FAIL
-const value = a(await b(c()));
+- Uses source-line indentation plus two spaces for the operand line.
+- Returns the closing delimiter to the source-line indentation.
+- Always adds a trailing comma.
+- Places the trailing comma before trailing line comments.
+- Places the trailing comma before trailing block comments.
+- Does not rewrite tagged-template quasis.
+- Allows overlapping fixes with other rules and relies on repeated `oxlint --fix` convergence.
 
-// PASS after fix
-const value = a(
-  await b(c()),
-);
-```
+## Implementation outline
 
-For trailing comments, the comma goes before the trailing comment.
+Implement the rule as a new file under `packages/config/oxlint-stylistic/src/rules/`.
+Register it in `packages/config/oxlint-stylistic/src/index.ts`.
+Enable it in `packages/config/oxlint/src/rules/style.ts`.
 
-```ts
-// FAIL
-const value = a(b(c()) // keep
-);
+Use iterative traversal, not recursion.
+Invocation nesting depth can grow with source length.
+Recursing over an operand spine would violate the repo rule against recursion over linear input and risks stack overflow.
 
-// PASS after fix
-const value = a(
-  b(c()), // keep
-);
+A workable internal model:
 
-// FAIL
-const value = a(b(c()) /* keep */);
+1. Visit `CallExpression`, `NewExpression`, and `ImportExpression`.
+2. For each visited counted invocation, determine whether it is the highest counted invocation on its source line.
+3. Walk the single-operand spine iteratively, passing through transparent wrappers.
+4. Track counted invocation heads by source line.
+5. If any line reaches three counted invocations, report the highest invocation on that line.
+6. Build a fix by splitting that invocation's single operand, when the target syntax is fixable.
 
-// PASS after fix
-const value = a(
-  b(c()), /* keep */
-);
-```
-
-## Implementation notes
-
-Use an iterative traversal for operand spines.
-Invocation nesting can be as deep as source length, so recursive traversal over the spine risks stack overflow.
-
-The rule needs source-line utilities for invocation heads, not whole-span overlap checks.
-Whole-span overlap would make already-compliant multiline code fail because outer invocations span child lines.
-
-The visitor should include `CallExpression`, `NewExpression`, and `ImportExpression`.
-Do not visit `TaggedTemplateExpression` as a counted invocation owner.
-Descendant calls inside template interpolations can be handled by ordinary call visitors.
+The implementation should compute invocation-head lines rather than using whole-node span overlap.
+Whole-node overlap would treat compliant multiline calls as violations because outer call spans include child lines.
 
 ## Test coverage
 
@@ -346,8 +908,10 @@ Add invalid fixtures for:
 - Dynamic import with one operand: `a(import(b(c())))`.
 - Transparent wrappers: `await`, unary, `yield`, spread, parentheses, and TypeScript wrappers.
 - Already-split child-line violation: `a(\n  b(c(d())),\n)`.
-- Descendant spines inside containers and tagged-template interpolations.
-- Comment-aware autofix for trailing line and block comments.
+- Descendant spines inside containers.
+- Descendant spines inside tagged-template interpolations.
+- Comment-aware autofix for trailing line comments.
+- Comment-aware autofix for trailing block comments.
 - Overlap convergence with `argument-per-line` on `a(b(c(d())), other)`.
 
 Add valid fixtures for:
@@ -358,3 +922,10 @@ Add valid fixtures for:
 - Multi-argument parent with depth-two child: `a(b(c()), other)`.
 - Dynamic import with options: `a(import(b(c()), opts))`.
 - Tagged-template wrapper with depth-two interpolation: `` a(tag`${b(c())}`) ``.
+- Container parent with depth-two descendant: `a({ value: b(c()) })`.
+
+Add autofix convergence tests for cases where `invocation-depth-per-line` overlaps with:
+
+- `argument-per-line`.
+- `object-property-per-line`.
+- `array-element-per-line`, if an array fixture contains multiple child spines.
