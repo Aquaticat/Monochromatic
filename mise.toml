@@ -207,7 +207,13 @@ if $all and (not ($args | is-empty)) {
 let files = if ($args | is-empty) {
   let g = (glob "**/*.unit.test.ts")
   if $all { $g } else { $g | where { not ($in | str contains "/deprecated/") } | where { not ($in | str contains ".expensive.") } }
-} else { $args }
+} else {
+  # Package-scoped tasks run with cwd = MISE_CONFIG_ROOT (the package dir), so a repo-root-relative
+  # path passed verbatim resolves under the package and fails with "Module not found". Resolve each
+  # arg against the monorepo root (modern mise), then the mise invocation dir, then cwd.
+  let base = ($env.MISE_MONOREPO_ROOT? | default ($env.MISE_ORIGINAL_CWD? | default (pwd)))
+  $args | each {|f| if ($f | path exists) { $f } else { [$base $f] | path join } }
+}
 $files | par-each { |file| bun $file }
 """
 
