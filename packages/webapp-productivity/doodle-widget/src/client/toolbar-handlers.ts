@@ -20,11 +20,11 @@ import type {
 } from './export.ts';
 import { clearTextEntries, } from './text.ts';
 
-/** Format-to-exporter dispatch table */
-const EXPORTERS: Record<ExportFormat, (deps: ExportDeps,) => void | Promise<void>> = {
-  pdf: exportAsPdf,
-  png: exportAsPng,
-  svg: exportAsSvg,
+/** Valid export formats, keyed for the isExportFormat membership test */
+const EXPORT_FORMATS: Record<ExportFormat, true> = {
+  pdf: true,
+  png: true,
+  svg: true,
 };
 
 /**
@@ -35,7 +35,37 @@ const EXPORTERS: Record<ExportFormat, (deps: ExportDeps,) => void | Promise<void
  * @returns `true` if value is a recognized export format
  */
 function isExportFormat(value: string,): value is ExportFormat {
-  return value in EXPORTERS;
+  return value in EXPORT_FORMATS;
+}
+
+/**
+ * Runs the exporter matching the format.
+ *
+ * PDF and PNG rasterize the canvas asynchronously, so they are
+ * awaited; SVG serializes vector markup synchronously, so it is
+ * invoked directly. A uniform `Promise<void>`-returning interface
+ * keeps the dispatch free of a `void | Promise<void>` union.
+ *
+ * @param format - validated export format
+ *
+ * @param deps - shared export dependencies
+ */
+async function runExport({
+  format,
+  deps,
+}: {
+  readonly format: ExportFormat;
+  readonly deps: ExportDeps;
+},): Promise<void> {
+  if (format === 'pdf') {
+    await exportAsPdf(deps,);
+    return;
+  }
+  if (format === 'png') {
+    await exportAsPng(deps,);
+    return;
+  }
+  exportAsSvg(deps,);
 }
 
 /**
@@ -43,38 +73,38 @@ function isExportFormat(value: string,): value is ExportFormat {
  */
 type ToolbarHandlerDeps = {
   /** Color picker input */
-  colorPicker: HTMLInputElement;
+  readonly colorPicker: HTMLInputElement;
   /** Stroke width slider */
-  sizeSlider: HTMLInputElement;
+  readonly sizeSlider: HTMLInputElement;
   /** Clear button */
-  clearBtn: HTMLButtonElement;
+  readonly clearBtn: HTMLButtonElement;
   /** Export button */
-  exportBtn: HTMLButtonElement;
+  readonly exportBtn: HTMLButtonElement;
   /** Export format dropdown */
-  formatSelect: HTMLSelectElement;
+  readonly formatSelect: HTMLSelectElement;
   /** Upload trigger button */
-  uploadBtn: HTMLButtonElement;
+  readonly uploadBtn: HTMLButtonElement;
   /** Hidden file input */
-  uploadInput: HTMLInputElement;
+  readonly uploadInput: HTMLInputElement;
   /** Page element (coordinate reference for export sizing) */
-  page: HTMLDivElement;
+  readonly page: HTMLDivElement;
   /** SVG overlay element */
-  svgOverlay: HTMLDivElement;
+  readonly svgOverlay: HTMLDivElement;
   /** Drawing canvas element */
-  drawCanvas: HTMLCanvasElement;
+  readonly drawCanvas: HTMLCanvasElement;
   /** Text layer element */
-  textLayer: HTMLDivElement;
+  readonly textLayer: HTMLDivElement;
   /** Canvas 2D rendering context */
-  ctx: CanvasRenderingContext2D;
+  readonly ctx: CanvasRenderingContext2D;
   /** Returns current canvas dimensions */
-  getCanvasSize: () => {
+  readonly getCanvasSize: () => {
     cw: number;
     ch: number;
   };
   /** Resizes and redraws the canvas */
-  sizeCanvas: () => void;
+  readonly sizeCanvas: () => void;
   /** Pushes current state to undo history after a completed action */
-  pushSnapshot: () => void;
+  readonly pushSnapshot: () => void;
 };
 
 /**
@@ -148,11 +178,14 @@ export function setupToolbarHandlers(deps: ToolbarHandlerDeps,): void {
       const format = formatSelect.value;
       if (!isExportFormat(format,))
         return;
-      void EXPORTERS[format]({
-        container: page,
-        overlay: svgOverlay,
-        drawCanvas,
-        textLayer,
+      void runExport({
+        format,
+        deps: {
+          container: page,
+          overlay: svgOverlay,
+          drawCanvas,
+          textLayer,
+        },
       },);
     },
   );

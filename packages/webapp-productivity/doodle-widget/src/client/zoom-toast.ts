@@ -6,6 +6,11 @@
  * non-modal overlay without blocking interaction.
  */
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+
 /** Duration in milliseconds before the toast auto-hides */
 const TOAST_DURATION_MS = 3_000;
 
@@ -15,7 +20,7 @@ const TOAST_DURATION_MS = 3_000;
  * Stored as an object property so module-root state stays in a `const`
  * container (`no-module-root-let` would otherwise reject a top-level `let`).
  */
-const timerState: { id: ReturnType<typeof setTimeout> | null; } = { id: null, };
+const timerState: { id: Maybe<ReturnType<typeof setTimeout>>; } = { id: ABSENT, };
 
 /**
  * Shows the zoom instruction toast, auto-hiding after a delay.
@@ -31,15 +36,15 @@ const timerState: { id: ReturnType<typeof setTimeout> | null; } = { id: null, };
  */
 export function showZoomToast(toast: HTMLElement,): void {
   if (timerState.id
-    !== null) {
+    !== ABSENT) {
     clearTimeout(timerState.id,);
-    timerState.id = null;
+    timerState.id = ABSENT;
   }
   toast.showPopover();
   timerState.id = setTimeout(
     function hideToast(): void {
       toast.hidePopover();
-      timerState.id = null;
+      timerState.id = ABSENT;
     },
     TOAST_DURATION_MS,
   );

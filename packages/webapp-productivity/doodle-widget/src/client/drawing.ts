@@ -15,6 +15,10 @@ import {
   getStrokeColor,
   getStrokeWidth,
 } from './drawing-config.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { renderStrokes, } from './stroke-renderer.ts';
 
 //region Types
@@ -39,7 +43,24 @@ export type NormalizedPoint = readonly [
  */
 export type StrokeData = {
   /** Sequence of normalized points forming one continuous stroke */
-  readonly points: NormalizedPoint[];
+  readonly points: readonly NormalizedPoint[];
+  /** CSS color string captured at stroke creation */
+  readonly color: string;
+  /** Stroke width in CSS pixels captured at stroke creation */
+  readonly width: number;
+};
+
+/**
+ * In-progress stroke whose point list is still being appended to.
+ *
+ * Mutable internal counterpart of {@link StrokeData}: the live drawing
+ * gesture pushes points onto {@link DrawingStroke.points}, and the same
+ * object is exposed through the readonly {@link StrokeData} view once it
+ * lands in the stroke list.
+ */
+type DrawingStroke = {
+  /** Mutable point buffer appended to as the gesture progresses */
+  points: NormalizedPoint[];
   /** CSS color string captured at stroke creation */
   readonly color: string;
   /** Stroke width in CSS pixels captured at stroke creation */
@@ -52,7 +73,7 @@ export type StrokeData = {
  * @example
  * ```ts
  * const segment = continueStroke(point);
- * if (segment !== null) {
+ * if (segment !== ABSENT) {
  *   ctx.moveTo(segment.from[0] * width, segment.from[1] * height);
  *   ctx.lineTo(segment.to[0] * width, segment.to[1] * height);
  * }
@@ -78,13 +99,13 @@ export type StrokeSegment = {
 const drawingState: {
   /** All completed and in-progress strokes */
   strokes: StrokeData[];
-  /** Stroke currently being drawn, or null when idle */
-  current: StrokeData | null;
+  /** Stroke currently being drawn, or {@link ABSENT} when idle */
+  current: Maybe<DrawingStroke>;
   /** Whether a pointer-driven drawing gesture is active */
   drawing: boolean;
 } = {
   strokes: [],
-  current: null,
+  current: ABSENT,
   drawing: false,
 };
 
@@ -114,9 +135,9 @@ export function redraw(
     cw,
     ch,
   }: {
-    ctx: CanvasRenderingContext2D;
-    cw: number;
-    ch: number;
+    readonly ctx: CanvasRenderingContext2D;
+    readonly cw: number;
+    readonly ch: number;
   },
 ): void {
   ctx.clearRect(
@@ -155,8 +176,8 @@ export function normalizePointer({
   event,
   canvas,
 }: {
-  event: PointerEvent;
-  canvas: HTMLCanvasElement;
+  readonly event: PointerEvent;
+  readonly canvas: HTMLCanvasElement;
 },): NormalizedPoint {
   /** Layout snapshot so both normalization terms share one DOM read. */
   const rect = canvas.getBoundingClientRect();
@@ -196,9 +217,9 @@ export function denormalizePoint({
   cw,
   ch,
 }: {
-  point: NormalizedPoint;
-  cw: number;
-  ch: number;
+  readonly point: NormalizedPoint;
+  readonly cw: number;
+  readonly ch: number;
 },): {
   px: number;
   py: number;
@@ -241,23 +262,23 @@ export function startStroke(point: NormalizedPoint,): void {
  * @param point - coordinate to append in normalized [0..1] space
  *
  * @returns segment from previous to current point for incremental
- *   rendering, or null if no drawing gesture is active
+ *   rendering, or {@link ABSENT} if no drawing gesture is active
  *
  * @example
  * ```ts
  * const segment = continueStroke([0.6, 0.6]);
  * ```
  */
-export function continueStroke(point: NormalizedPoint,): StrokeSegment | null {
+export function continueStroke(point: NormalizedPoint,): Maybe<StrokeSegment> {
   if ((!drawingState.drawing) || (drawingState.current
-    === null))
-    return null;
+    === ABSENT))
+    return ABSENT;
   /** Last sample retained so the returned segment can describe an incremental redraw. */
   const previous = drawingState.current
     .points
     .at(-1,);
   if (previous === undefined)
-    return null;
+    return ABSENT;
   drawingState.current
     .points
     .push(point,);
@@ -277,7 +298,7 @@ export function continueStroke(point: NormalizedPoint,): StrokeSegment | null {
  */
 export function endStroke(): void {
   drawingState.drawing = false;
-  drawingState.current = null;
+  drawingState.current = ABSENT;
 }
 
 /**
@@ -290,7 +311,7 @@ export function endStroke(): void {
  */
 export function clearStrokes(): void {
   drawingState.strokes = [];
-  drawingState.current = null;
+  drawingState.current = ABSENT;
 }
 
 /**
@@ -305,9 +326,9 @@ export function clearStrokes(): void {
  * setStrokes(savedStrokes);
  * ```
  */
-export function setStrokes(newStrokes: StrokeData[],): void {
-  drawingState.strokes = newStrokes;
-  drawingState.current = null;
+export function setStrokes(newStrokes: readonly StrokeData[],): void {
+  drawingState.strokes = [...newStrokes,];
+  drawingState.current = ABSENT;
   drawingState.drawing = false;
 }
 

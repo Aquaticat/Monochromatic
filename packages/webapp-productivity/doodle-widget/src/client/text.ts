@@ -11,6 +11,10 @@ import {
   getStrokeWidth,
 } from './drawing-config.ts';
 import type { NormalizedPoint, } from './drawing.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { createTextInput, } from './text-page.ts';
 
 /** Multiplier converting a 0..1 normalized coordinate to a percentage */
@@ -29,12 +33,12 @@ const TEXT_SIZE_FACTOR = 2;
  */
 const textState: {
   /** Text layer container, set via {@link setTextLayer} */
-  layerElement: HTMLDivElement | null;
-  /** Currently focused text input, or null when idle */
-  activeInput: HTMLInputElement | null;
+  layerElement: Maybe<HTMLDivElement>;
+  /** Currently focused text input, or {@link ABSENT} when idle */
+  activeInput: Maybe<HTMLInputElement>;
 } = {
-  layerElement: null,
-  activeInput: null,
+  layerElement: ABSENT,
+  activeInput: ABSENT,
 };
 
 //endregion State
@@ -72,7 +76,7 @@ export function setTextLayer(layer: HTMLDivElement,): void {
  */
 export function finalizeActiveInput(): void {
   if (textState.activeInput
-    === null)
+    === ABSENT)
     return;
 
   /** Whether the input has non-empty content worth keeping */
@@ -87,10 +91,10 @@ export function finalizeActiveInput(): void {
     textState.activeInput
       .remove();
 
-  textState.activeInput = null;
+  textState.activeInput = ABSENT;
 
   if (hasContent && (textState.layerElement
-    !== null))
+    !== ABSENT))
     textState.layerElement
       .dispatchEvent(new CustomEvent(TEXT_FINALIZED_EVENT,),);
 }
@@ -112,7 +116,7 @@ export function placeTextInput(position: NormalizedPoint,): void {
   finalizeActiveInput();
 
   if (textState.layerElement
-    === null)
+    === ABSENT)
     return;
 
   /** Active color captured at text input creation */
@@ -171,10 +175,10 @@ export function placeTextInput(position: NormalizedPoint,): void {
  */
 export function discardActiveInput(): void {
   if (textState.activeInput
-    !== null) {
+    !== ABSENT) {
     textState.activeInput
       .remove();
-    textState.activeInput = null;
+    textState.activeInput = ABSENT;
   }
 }
 
@@ -189,7 +193,7 @@ export function discardActiveInput(): void {
 export function clearTextEntries(): void {
   discardActiveInput();
   if (textState.layerElement
-    !== null)
+    !== ABSENT)
     textState.layerElement
       .replaceChildren();
 }

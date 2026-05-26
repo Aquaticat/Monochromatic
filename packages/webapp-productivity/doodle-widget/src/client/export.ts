@@ -14,6 +14,7 @@ import {
   getStrokes,
   type StrokeData,
 } from './drawing.ts';
+import { ABSENT, } from './maybe.ts';
 import {
   LETTER_HEIGHT,
   LETTER_WIDTH,
@@ -140,19 +141,19 @@ export async function renderSvgOverlayToContext(
     imageScale,
     exportScale,
   }: {
-    ctx: OffscreenCanvasRenderingContext2D;
-    container: HTMLDivElement;
-    overlay: HTMLDivElement;
-    imageScale?: number;
-    exportScale?: number;
+    readonly ctx: OffscreenCanvasRenderingContext2D;
+    readonly container: HTMLDivElement;
+    readonly overlay: HTMLDivElement;
+    readonly imageScale?: number;
+    readonly exportScale?: number;
   },
 ): Promise<void> {
-  /** Layout snapshot of the overlay; `null` short-circuits when there is nothing to embed. */
+  /** Layout snapshot of the overlay; an absent result short-circuits when there is nothing to embed. */
   const info = measureSvgOverlay({
     container,
     overlay,
   },);
-  if (info === null)
+  if (info === ABSENT)
     return;
 
   /** Scale from rendered page coordinates to export coordinates */
@@ -232,10 +233,10 @@ export async function renderBaseCanvas({
   strokes,
   imageScale,
 }: {
-  container: HTMLDivElement;
-  overlay: HTMLDivElement;
-  strokes?: readonly StrokeData[];
-  imageScale?: number;
+  readonly container: HTMLDivElement;
+  readonly overlay: HTMLDivElement;
+  readonly strokes?: readonly StrokeData[];
+  readonly imageScale?: number;
 },): Promise<{
   canvas: OffscreenCanvas;
   ctx: OffscreenCanvasRenderingContext2D;
@@ -327,8 +328,8 @@ export function triggerDownload({
   blob,
   filename,
 }: {
-  blob: Blob;
-  filename: string;
+  readonly blob: Blob;
+  readonly filename: string;
 },): void {
   /** Temporary object URL revoked once the anchor click has fired. */
   const url = URL.createObjectURL(blob,);

@@ -22,31 +22,31 @@ import { resetZoom, } from './zoom.ts';
  * Dependencies for {@link setupWidget}.
  */
 export type WidgetDeps = {
-  backgroundsScript: HTMLScriptElement;
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  getToolMode: () => ToolMode;
-  getCanvasSize: () => {
+  readonly backgroundsScript: HTMLScriptElement;
+  readonly canvas: HTMLCanvasElement;
+  readonly ctx: CanvasRenderingContext2D;
+  readonly getToolMode: () => ToolMode;
+  readonly getCanvasSize: () => {
     cw: number;
     ch: number;
   };
-  textLayer: HTMLDivElement;
-  container: HTMLDivElement;
+  readonly textLayer: HTMLDivElement;
+  readonly container: HTMLDivElement;
   /** Fixed letter-size page element (coordinate reference for drawing and export) */
-  page: HTMLDivElement;
-  zoomLayer: HTMLDivElement;
-  svgOverlay: HTMLDivElement;
-  pageToggle: HTMLDivElement;
-  colorPicker: HTMLInputElement;
-  sizeSlider: HTMLInputElement;
-  clearBtn: HTMLButtonElement;
-  exportBtn: HTMLButtonElement;
-  formatSelect: HTMLSelectElement;
-  uploadBtn: HTMLButtonElement;
-  uploadInput: HTMLInputElement;
-  undoBtn: HTMLButtonElement;
-  redoBtn: HTMLButtonElement;
-  sizeCanvas: () => void;
+  readonly page: HTMLDivElement;
+  readonly zoomLayer: HTMLDivElement;
+  readonly svgOverlay: HTMLDivElement;
+  readonly pageToggle: HTMLDivElement;
+  readonly colorPicker: HTMLInputElement;
+  readonly sizeSlider: HTMLInputElement;
+  readonly clearBtn: HTMLButtonElement;
+  readonly exportBtn: HTMLButtonElement;
+  readonly formatSelect: HTMLSelectElement;
+  readonly uploadBtn: HTMLButtonElement;
+  readonly uploadInput: HTMLInputElement;
+  readonly undoBtn: HTMLButtonElement;
+  readonly redoBtn: HTMLButtonElement;
+  readonly sizeCanvas: () => void;
 };
 
 /**

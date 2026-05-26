@@ -91,10 +91,10 @@ type RawEntryFields = {
   readonly insetInlineStart: string;
   /** CSS percentage string for vertical position */
   readonly insetBlockStart: string;
-  /** Font size in pixels as numeric string, or empty/undefined when unset */
-  readonly fontSize: string | undefined;
-  /** CSS color string, or empty/undefined when unset */
-  readonly color: string | undefined;
+  /** Font size in pixels as numeric string; absent when unset */
+  readonly fontSize?: string;
+  /** CSS color string; absent when unset */
+  readonly color?: string;
 };
 
 /**
@@ -114,8 +114,8 @@ function resolveExportEntry(
     raw,
     defaultFontSizePx,
   }: {
-    raw: RawEntryFields;
-    defaultFontSizePx: number;
+    readonly raw: RawEntryFields;
+    readonly defaultFontSizePx: number;
   },
 ): ExportTextEntry {
   /** Per-entry font size, falling back to CSS default */
@@ -189,7 +189,7 @@ function resolveExportEntries(raws: Iterable<RawEntryFields>,): ExportTextEntry[
  * ```
  */
 export function readTextEntries({ textLayer, }: {
-  textLayer: HTMLDivElement;
+  readonly textLayer: HTMLDivElement;
 },): ExportTextEntry[] {
   /**
    * Live `NodeList` captured here so {@link Array.from} can map each entry to its raw shape.
@@ -200,16 +200,19 @@ export function readTextEntries({ textLayer, }: {
     Array.from(
       inputs,
       function toRaw(input,): RawEntryFields {
+        /** Pulled out so each dataset value can be spread in only when present (exactOptionalPropertyTypes). */
+        const {
+          fontSize,
+          color,
+        } = input.dataset;
         return {
           value: input.value,
           insetInlineStart: input.style
             .insetInlineStart,
           insetBlockStart: input.style
             .insetBlockStart,
-          fontSize: input.dataset
-            .fontSize,
-          color: input.dataset
-            .color,
+          ...((fontSize === undefined) ? {} : { fontSize, }),
+          ...((color === undefined) ? {} : { color, }),
         };
       },
     ),
@@ -240,10 +243,8 @@ export function textEntriesToExport(
         value: entry.value,
         insetInlineStart: entry.insetInlineStart,
         insetBlockStart: entry.insetBlockStart,
-        fontSize: entry.fontSize
-          || undefined,
-        color: entry.color
-          || undefined,
+        ...(entry.fontSize ? { fontSize: entry.fontSize, } : {}),
+        ...(entry.color ? { color: entry.color, } : {}),
       };
     },),
   );

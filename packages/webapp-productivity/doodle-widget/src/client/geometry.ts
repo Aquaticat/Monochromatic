@@ -40,12 +40,12 @@ export function distToSegmentSq(
     bx,
     by,
   }: {
-    px: number;
-    py: number;
-    ax: number;
-    ay: number;
-    bx: number;
-    by: number;
+    readonly px: number;
+    readonly py: number;
+    readonly ax: number;
+    readonly ay: number;
+    readonly bx: number;
+    readonly by: number;
   },
 ): number {
   /**
@@ -109,12 +109,12 @@ function cross(
     cx,
     cy,
   }: {
-    ax: number;
-    ay: number;
-    bx: number;
-    by: number;
-    cx: number;
-    cy: number;
+    readonly ax: number;
+    readonly ay: number;
+    readonly bx: number;
+    readonly by: number;
+    readonly cx: number;
+    readonly cy: number;
   },
 ): number {
   return ((bx - ax) * (cy - ay)) - ((by - ay) * (cx - ax));
@@ -124,14 +124,14 @@ function cross(
  * Parameter shape shared by {@link segmentsIntersect} and {@link segToSegDistSq}.
  */
 export type TwoSegments = {
-  a1x: number;
-  a1y: number;
-  a2x: number;
-  a2y: number;
-  b1x: number;
-  b1y: number;
-  b2x: number;
-  b2y: number;
+  readonly a1x: number;
+  readonly a1y: number;
+  readonly a2x: number;
+  readonly a2y: number;
+  readonly b1x: number;
+  readonly b1y: number;
+  readonly b2x: number;
+  readonly b2y: number;
 };
 
 /**
@@ -350,14 +350,14 @@ export function segmentIntersectsRect(
     right,
     bottom,
   }: {
-    sx: number;
-    sy: number;
-    ex: number;
-    ey: number;
-    left: number;
-    top: number;
-    right: number;
-    bottom: number;
+    readonly sx: number;
+    readonly sy: number;
+    readonly ex: number;
+    readonly ey: number;
+    readonly left: number;
+    readonly top: number;
+    readonly right: number;
+    readonly bottom: number;
   },
 ): boolean {
   /** Top edge: left,top -> right,top */

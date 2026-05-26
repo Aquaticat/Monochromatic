@@ -12,6 +12,10 @@ import {
   type NormalizedPoint,
 } from './drawing.ts';
 import { segmentIntersectsRect, } from './geometry.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 
 /**
  * Checks whether a content-space pixel coordinate falls inside an
@@ -35,9 +39,9 @@ function pointInInputRect(
     py,
     input,
   }: {
-    px: number;
-    py: number;
-    input: HTMLInputElement;
+    readonly px: number;
+    readonly py: number;
+    readonly input: HTMLInputElement;
   },
 ): boolean {
   return (px >= input
@@ -61,7 +65,7 @@ function pointInInputRect(
  *
  * @param point - current eraser position in normalized [0..1] space
  *
- * @param previousPoint - previous eraser position, or null for first event
+ * @param previousPoint - previous eraser position, or {@link ABSENT} for first event
  *
  * @param cw - current canvas width in CSS pixels
  *
@@ -86,11 +90,11 @@ export function eraseTextAt({
   ch,
   textLayer,
 }: {
-  point: NormalizedPoint;
-  previousPoint: NormalizedPoint | null;
-  cw: number;
-  ch: number;
-  textLayer: HTMLDivElement;
+  readonly point: NormalizedPoint;
+  readonly previousPoint: Maybe<NormalizedPoint>;
+  readonly cw: number;
+  readonly ch: number;
+  readonly textLayer: HTMLDivElement;
 },): boolean {
   /** Current eraser position in content-space pixels */
   const {
@@ -108,13 +112,13 @@ export function eraseTextAt({
   let erased = false;
 
   /** Previous eraser position in content-space pixels when available */
-  const prev = previousPoint !== null
+  const prev = previousPoint !== ABSENT
     ? denormalizePoint({
       point: previousPoint,
       cw,
       ch,
     },)
-    : null;
+    : ABSENT;
 
   for (const input of inputs) {
     /** Check current eraser position */
@@ -125,7 +129,7 @@ export function eraseTextAt({
     },);
 
     /** Check previous eraser position when available */
-    const hitPrevious = (prev !== null)
+    const hitPrevious = (prev !== ABSENT)
       && pointInInputRect({
         px: prev.px,
         py: prev.py,
@@ -133,7 +137,7 @@ export function eraseTextAt({
       },);
 
     /** Check whether the eraser travel segment crosses the input rect */
-    const hitSegment = (prev !== null)
+    const hitSegment = (prev !== ABSENT)
       && segmentIntersectsRect({
         sx: prev.px,
         sy: prev.py,

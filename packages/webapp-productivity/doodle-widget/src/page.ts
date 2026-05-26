@@ -80,10 +80,10 @@ export function renderPage(
     svgBackgrounds,
     sourceUrl,
   }: {
-    css: string;
-    js: string;
-    svgBackgrounds: readonly string[];
-    sourceUrl: string;
+    readonly css: string;
+    readonly js: string;
+    readonly svgBackgrounds: readonly string[];
+    readonly sourceUrl: string;
   },
 ): string {
   /**

@@ -60,10 +60,10 @@ export function createTextInput({
   color,
   fontSize,
 }: {
-  insetInlineStart: string;
-  insetBlockStart: string;
-  color: string;
-  fontSize: string;
+  readonly insetInlineStart: string;
+  readonly insetBlockStart: string;
+  readonly color: string;
+  readonly fontSize: string;
 },): HTMLInputElement {
   /** Configured before insertion so the caller can finalize any extra styling. */
   const input = document.createElement('input',);
@@ -144,8 +144,8 @@ export function restoreTextEntries({
   entries,
   layer,
 }: {
-  entries: readonly TextEntryData[];
-  layer: HTMLDivElement;
+  readonly entries: readonly TextEntryData[];
+  readonly layer: HTMLDivElement;
 },): void {
   for (const entry of entries) {
     /** Detached input built first so its value and readonly flag are set before insertion. */
@@ -187,9 +187,9 @@ export function replaceTextEntries({
   layer,
   clearFn,
 }: {
-  entries: readonly TextEntryData[];
-  layer: HTMLDivElement;
-  clearFn: () => void;
+  readonly entries: readonly TextEntryData[];
+  readonly layer: HTMLDivElement;
+  readonly clearFn: () => void;
 },): void {
   clearFn();
   restoreTextEntries({

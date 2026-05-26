@@ -17,6 +17,7 @@ import {
   getRenderedSize,
   triggerDownload,
 } from './export.ts';
+import { ABSENT, } from './maybe.ts';
 import { MIN_STROKE_POINTS, } from './stroke-renderer.ts';
 import { measureSvgOverlay, } from './svg-overlay-measure.ts';
 
@@ -165,7 +166,7 @@ export function exportAsSvg(
     container,
     overlay,
   },);
-  if (overlayInfo !== null) {
+  if (overlayInfo !== ABSENT) {
     overlayInfo.clone
       .setAttribute(
       'x',

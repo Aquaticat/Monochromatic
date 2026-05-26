@@ -20,6 +20,10 @@ import {
 } from './drawing.ts';
 import { eraseStrokesAt, } from './eraser-strokes.ts';
 import { eraseTextAt, } from './eraser-text.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import type { PointerHandlerDeps, } from './pointer-handler-deps.ts';
 import { placeTextInput, } from './text.ts';
 
@@ -56,11 +60,11 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
   const eraseState: {
     erasing: boolean;
     erasedInGesture: boolean;
-    prevErasePoint: NormalizedPoint | null;
+    prevErasePoint: Maybe<NormalizedPoint>;
   } = {
     erasing: false,
     erasedInGesture: false,
-    prevErasePoint: null,
+    prevErasePoint: ABSENT,
   };
 
   canvas.addEventListener(
@@ -96,18 +100,18 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
       if (mode === 'erase') {
         eraseState.erasing = true;
         eraseState.erasedInGesture = false;
-        eraseState.prevErasePoint = null;
+        eraseState.prevErasePoint = ABSENT;
         /** Tracks whether any stroke geometry was removed in this tick so the redraw is conditional. */
         const strokeErased = eraseStrokesAt({
           point,
-          previousPoint: null,
+          previousPoint: ABSENT,
           cw,
           ch,
         },);
         /** Companion flag for text removal so snapshot pushes happen only when something actually changed. */
         const textErased = eraseTextAt({
           point,
-          previousPoint: null,
+          previousPoint: ABSENT,
           cw,
           ch,
           textLayer,
@@ -179,9 +183,9 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
         return;
       }
 
-      /** Line segment to draw incrementally, or null if not drawing */
+      /** Line segment to draw incrementally, or absent if not drawing */
       const segment = continueStroke(point,);
-      if (segment === null)
+      if (segment === ABSENT)
         return;
       ctx.strokeStyle = getStrokeColor();
       ctx.lineWidth = getStrokeWidth();
@@ -209,7 +213,7 @@ export function setupPointerHandlers(deps: PointerHandlerDeps,): void {
     endStroke();
     eraseState.erasing = false;
     eraseState.erasedInGesture = false;
-    eraseState.prevErasePoint = null;
+    eraseState.prevErasePoint = ABSENT;
   }
 
   canvas.addEventListener(

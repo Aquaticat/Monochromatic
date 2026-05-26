@@ -127,8 +127,8 @@ export function clampPan({
   containerWidth,
   containerHeight,
 }: {
-  containerWidth: number;
-  containerHeight: number;
+  readonly containerWidth: number;
+  readonly containerHeight: number;
 },): void {
   if (zoomState.scale
     <= 1) {
@@ -170,8 +170,8 @@ export function setPan({
   x,
   y,
 }: {
-  x: number;
-  y: number;
+  readonly x: number;
+  readonly y: number;
 },): void {
   zoomState.panX = x;
   zoomState.panY = y;
@@ -209,12 +209,12 @@ export function zoomAt(
     containerHeight,
     zoomLayer,
   }: {
-    screenX: number;
-    screenY: number;
-    direction: 'in' | 'out';
-    containerWidth: number;
-    containerHeight: number;
-    zoomLayer: HTMLElement;
+    readonly screenX: number;
+    readonly screenY: number;
+    readonly direction: 'in' | 'out';
+    readonly containerWidth: number;
+    readonly containerHeight: number;
+    readonly zoomLayer: HTMLElement;
   },
 ): void {
   /** Direction-aware multiplier so a single formula handles both zoom in and zoom out. */
@@ -282,9 +282,9 @@ export function refreshZoomTransform({
   containerHeight,
   zoomLayer,
 }: {
-  containerWidth: number;
-  containerHeight: number;
-  zoomLayer: HTMLElement;
+  readonly containerWidth: number;
+  readonly containerHeight: number;
+  readonly zoomLayer: HTMLElement;
 },): void {
   clampPan({
     containerWidth,

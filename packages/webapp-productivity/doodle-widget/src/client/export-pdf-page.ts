@@ -42,10 +42,10 @@ export async function renderPageCanvas({
   container,
   overlay,
 }: {
-  svgBackground: string;
-  strokes: readonly StrokeData[];
-  container: HTMLDivElement;
-  overlay: HTMLDivElement;
+  readonly svgBackground: string;
+  readonly strokes: readonly StrokeData[];
+  readonly container: HTMLDivElement;
+  readonly overlay: HTMLDivElement;
 },): Promise<OffscreenCanvas> {
   /** Set overlay to this page's SVG for layout computation */
   overlay.innerHTML = svgBackground;

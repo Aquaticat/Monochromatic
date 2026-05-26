@@ -38,10 +38,10 @@ export function renderStrokes({
   ch,
   strokes,
 }: {
-  ctx: RenderContext;
-  cw: number;
-  ch: number;
-  strokes: readonly StrokeData[];
+  readonly ctx: RenderContext;
+  readonly cw: number;
+  readonly ch: number;
+  readonly strokes: readonly StrokeData[];
 },): void {
   for (const stroke of strokes) {
     if (stroke.points

@@ -6,6 +6,10 @@
  */
 
 import type { StrokeData, } from './drawing.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import type { TextEntryData, } from './text-page.ts';
 
 /** Maximum undo states retained per page */
@@ -21,9 +25,9 @@ const MAX_HISTORY_DEPTH = 50;
  */
 export type Snapshot = {
   /** Deep-enough copy of strokes (stroke objects are immutable after creation) */
-  readonly strokes: StrokeData[];
+  readonly strokes: readonly StrokeData[];
   /** Serialized text input entries */
-  readonly textEntries: TextEntryData[];
+  readonly textEntries: readonly TextEntryData[];
 };
 
 /** Undo/redo state for a single page */
@@ -87,8 +91,8 @@ export function pushSnapshot({
   pageIndex,
   snapshot,
 }: {
-  pageIndex: number;
-  snapshot: Snapshot;
+  readonly pageIndex: number;
+  readonly snapshot: Snapshot;
 },): void {
   /** Per-page slot; missing only when the page was never initialized, in which case the push is silently dropped. */
   const history = historiesState.all[pageIndex];
@@ -125,22 +129,22 @@ export function pushSnapshot({
  *
  * @param pageIndex - page to undo on
  *
- * @returns snapshot to restore, or null if at the beginning
+ * @returns snapshot to restore, or {@link ABSENT} if at the beginning
  *
  * @example
  * ```ts
  * const snapshot = undo(0);
  * ```
  */
-export function undo(pageIndex: number,): Snapshot | null {
-  /** Page slot guarded so an absent or at-start page falls through to null. */
+export function undo(pageIndex: number,): Maybe<Snapshot> {
+  /** Page slot guarded so an absent or at-start page falls through to the absent sentinel. */
   const history = historiesState.all[pageIndex];
   if ((history === undefined) || (history.index
     <= 0))
-    return null;
+    return ABSENT;
   history.index -= 1;
   return history.states[history.index]
-    ?? null;
+    ?? ABSENT;
 }
 
 /**
@@ -148,24 +152,24 @@ export function undo(pageIndex: number,): Snapshot | null {
  *
  * @param pageIndex - page to redo on
  *
- * @returns snapshot to restore, or null if at the end
+ * @returns snapshot to restore, or {@link ABSENT} if at the end
  *
  * @example
  * ```ts
  * const snapshot = redo(0);
  * ```
  */
-export function redo(pageIndex: number,): Snapshot | null {
-  /** Page slot guarded so an absent or at-end page falls through to null. */
+export function redo(pageIndex: number,): Maybe<Snapshot> {
+  /** Page slot guarded so an absent or at-end page falls through to the absent sentinel. */
   const history = historiesState.all[pageIndex];
   if ((history === undefined) || (history.index
     >= (history.states
       .length
       - 1)))
-    return null;
+    return ABSENT;
   history.index += 1;
   return history.states[history.index]
-    ?? null;
+    ?? ABSENT;
 }
 
 /**

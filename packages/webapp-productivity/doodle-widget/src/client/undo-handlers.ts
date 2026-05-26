@@ -11,6 +11,7 @@ import {
   redraw,
   setStrokes,
 } from './drawing.ts';
+import { ABSENT, } from './maybe.ts';
 import { getCurrentPageIndex, } from './pages.ts';
 import {
   replaceTextEntries,
@@ -31,18 +32,18 @@ import {
  */
 export type UndoHandlerDeps = {
   /** Undo button */
-  undoBtn: HTMLButtonElement;
+  readonly undoBtn: HTMLButtonElement;
   /** Redo button */
-  redoBtn: HTMLButtonElement;
+  readonly redoBtn: HTMLButtonElement;
   /** Canvas 2D rendering context for redraw after restore */
-  ctx: CanvasRenderingContext2D;
+  readonly ctx: CanvasRenderingContext2D;
   /** Returns current canvas dimensions */
-  getCanvasSize: () => {
+  readonly getCanvasSize: () => {
     cw: number;
     ch: number;
   };
   /** Text layer element for serializing and restoring text entries */
-  textLayer: HTMLDivElement;
+  readonly textLayer: HTMLDivElement;
 };
 
 /**
@@ -128,9 +129,9 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
   undoBtn.addEventListener(
     'click',
     function handleUndo(): void {
-      /** Null when the page's undo stack is empty, in which case the click is ignored. */
+      /** Absent when the page's undo stack is empty, in which case the click is ignored. */
       const snapshot = undo(getCurrentPageIndex(),);
-      if (snapshot !== null)
+      if (snapshot !== ABSENT)
         restoreSnapshot(snapshot,);
     },
   );
@@ -138,9 +139,9 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
   redoBtn.addEventListener(
     'click',
     function handleRedo(): void {
-      /** Null when the page's redo stack is empty, in which case the click is ignored. */
+      /** Absent when the page's redo stack is empty, in which case the click is ignored. */
       const snapshot = redo(getCurrentPageIndex(),);
-      if (snapshot !== null)
+      if (snapshot !== ABSENT)
         restoreSnapshot(snapshot,);
     },
   );
@@ -169,14 +170,14 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
         const snapshot = event.shiftKey
           ? redo(getCurrentPageIndex(),)
           : undo(getCurrentPageIndex(),);
-        if (snapshot !== null)
+        if (snapshot !== ABSENT)
           restoreSnapshot(snapshot,);
       }
       else if (key === 'y') {
         event.preventDefault();
-        /** Null when the redo stack is empty, in which case the keystroke is consumed harmlessly. */
+        /** Absent when the redo stack is empty, in which case the keystroke is consumed harmlessly. */
         const snapshot = redo(getCurrentPageIndex(),);
-        if (snapshot !== null)
+        if (snapshot !== ABSENT)
           restoreSnapshot(snapshot,);
       }
     },

@@ -27,8 +27,8 @@ export function setSvgBackground({
   svgMarkup,
   overlay,
 }: {
-  svgMarkup: string;
-  overlay: HTMLElement;
+  readonly svgMarkup: string;
+  readonly overlay: HTMLElement;
 },): void {
   overlay.innerHTML = svgMarkup;
 }

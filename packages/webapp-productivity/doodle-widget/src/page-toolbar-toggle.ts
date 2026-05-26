@@ -33,11 +33,11 @@ export function renderToggleOption({
   checked,
   value,
 }: {
-  id: string;
-  name: string;
-  label: string;
-  checked: boolean;
-  value?: string;
+  readonly id: string;
+  readonly name: string;
+  readonly label: string;
+  readonly checked: boolean;
+  readonly value?: string;
 },): string {
   return h({
     tag: 'label',

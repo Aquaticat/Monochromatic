@@ -5,6 +5,10 @@
  * long-press-to-zoom-out gestures when the zoom tool is active.
  */
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import type { PointerHandlerDeps, } from './pointer-handler-deps.ts';
 import {
   continuePan,
@@ -47,13 +51,13 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
    * container (`no-function-root-let` would otherwise reject top-level `let`).
    */
   const gestureState: {
-    longPressTimer: ReturnType<typeof setTimeout> | null;
+    longPressTimer: Maybe<ReturnType<typeof setTimeout>>;
     longPressFired: boolean;
-    downEvent: PointerEvent | null;
+    downEvent: Maybe<PointerEvent>;
   } = {
-    longPressTimer: null,
+    longPressTimer: ABSENT,
     longPressFired: false,
-    downEvent: null,
+    downEvent: ABSENT,
   };
 
   /**
@@ -69,9 +73,9 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
   /** Cancels any pending long-press timer */
   function clearLongPress(): void {
     if (gestureState.longPressTimer
-      !== null) {
+      !== ABSENT) {
       clearTimeout(gestureState.longPressTimer,);
-      gestureState.longPressTimer = null;
+      gestureState.longPressTimer = ABSENT;
     }
   }
 
@@ -95,9 +99,9 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
       gestureState.longPressTimer = setTimeout(
         function fireLongPress(): void {
           gestureState.longPressFired = true;
-          gestureState.longPressTimer = null;
+          gestureState.longPressTimer = ABSENT;
           if (gestureState.downEvent
-            === null)
+            === ABSENT)
             return;
           /** Container layout captured per gesture so panning offsets stay consistent across reflows. */
           const containerRect = page.getBoundingClientRect();
@@ -181,7 +185,7 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
           zoomLayer,
         },);
       }
-      gestureState.downEvent = null;
+      gestureState.downEvent = ABSENT;
       setZoomCursor(event.shiftKey ? 'zoom-out' : 'zoom-in',);
     },
   );
@@ -191,7 +195,7 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
     function handleZoomPointerCancel(): void {
       clearLongPress();
       endPan();
-      gestureState.downEvent = null;
+      gestureState.downEvent = ABSENT;
     },
   );
 

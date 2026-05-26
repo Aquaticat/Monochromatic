@@ -18,6 +18,10 @@ import {
   distToSegmentSq,
   segToSegDistSq,
 } from './geometry.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 
 /** Minimum number of points required for a valid sub-stroke after splitting */
 const MIN_SEGMENT_POINTS = 2;
@@ -27,8 +31,8 @@ const MIN_SEGMENT_POINTS = 2;
  *
  * Tests each stroke point **and each stroke segment** against the
  * line segment from `previousPoint` to `point` (the eraser's travel
- * path between frames). When `previousPoint` is null (first event of
- * a gesture), tests against the single point only.
+ * path between frames). When `previousPoint` is {@link ABSENT} (first
+ * event of a gesture), tests against the single point only.
  *
  * The segment-to-segment check catches cases where the eraser crosses
  * a stroke line between two widely-spaced points without being close
@@ -36,7 +40,7 @@ const MIN_SEGMENT_POINTS = 2;
  *
  * @param point - current eraser position in normalized [0..1] space
  *
- * @param previousPoint - previous eraser position, or null for first event
+ * @param previousPoint - previous eraser position, or {@link ABSENT} for first event
  *
  * @param cw - current canvas width in CSS pixels
  *
@@ -58,10 +62,10 @@ export function eraseStrokesAt({
   cw,
   ch,
 }: {
-  point: NormalizedPoint;
-  previousPoint: NormalizedPoint | null;
-  cw: number;
-  ch: number;
+  readonly point: NormalizedPoint;
+  readonly previousPoint: Maybe<NormalizedPoint>;
+  readonly cw: number;
+  readonly ch: number;
 },): boolean {
   /** Eraser radius in CSS pixels, matching the active stroke width */
   const radiusPx = getStrokeWidth();
@@ -78,7 +82,7 @@ export function eraseStrokesAt({
   const {
     px: ax,
     py: ay,
-  } = previousPoint !== null
+  } = previousPoint !== ABSENT
     ? denormalizePoint({
       point: previousPoint,
       cw,

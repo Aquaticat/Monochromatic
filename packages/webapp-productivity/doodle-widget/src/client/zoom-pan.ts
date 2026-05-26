@@ -66,9 +66,9 @@ export function startPan({
   currentPanX,
   currentPanY,
 }: {
-  event: PointerEvent;
-  currentPanX: number;
-  currentPanY: number;
+  readonly event: PointerEvent;
+  readonly currentPanX: number;
+  readonly currentPanY: number;
 },): void {
   panState.panning = true;
   panState.dragExceededThreshold = false;
@@ -102,10 +102,10 @@ export function continuePan({
   containerHeight,
   zoomLayer,
 }: {
-  event: PointerEvent;
-  containerWidth: number;
-  containerHeight: number;
-  zoomLayer: HTMLElement;
+  readonly event: PointerEvent;
+  readonly containerWidth: number;
+  readonly containerHeight: number;
+  readonly zoomLayer: HTMLElement;
 },): boolean {
   if (!panState.panning)
     return false;

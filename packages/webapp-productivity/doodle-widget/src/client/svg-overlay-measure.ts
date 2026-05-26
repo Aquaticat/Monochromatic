@@ -6,13 +6,18 @@
  * (vector embedding) and raster export (canvas drawing).
  */
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+
 /**
  * Measured and cloned SVG overlay data.
  *
  * @example
  * ```ts
  * const info = measureSvgOverlay({ container, overlay });
- * if (info !== null) {
+ * if (info !== ABSENT) {
  *   ctx.drawImage(img, info.offsetX, info.offsetY, info.width, info.height);
  * }
  * ```
@@ -37,7 +42,7 @@ export type SvgOverlayInfo = {
  *
  * @param overlay - SVG overlay div holding the background SVG element
  *
- * @returns measurement data with a cloned SVG, or null if no SVG is present
+ * @returns measurement data with a cloned SVG, or {@link ABSENT} if no SVG is present
  *
  * @example
  * ```ts
@@ -48,13 +53,13 @@ export function measureSvgOverlay({
   container,
   overlay,
 }: {
-  container: HTMLDivElement;
-  overlay: HTMLDivElement;
-},): SvgOverlayInfo | null {
+  readonly container: HTMLDivElement;
+  readonly overlay: HTMLDivElement;
+},): Maybe<SvgOverlayInfo> {
   /** SVG element from the overlay, if present */
   const svgElement = overlay.querySelector<SVGSVGElement>(':scope > svg',);
   if (svgElement === null)
-    return null;
+    return ABSENT;
 
   /** Container position for offset calculation */
   const containerRect = container.getBoundingClientRect();

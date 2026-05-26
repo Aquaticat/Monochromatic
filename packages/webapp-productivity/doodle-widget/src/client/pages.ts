@@ -78,8 +78,8 @@ export function initPages({
   backgrounds,
   overlay,
 }: {
-  backgrounds: readonly string[];
-  overlay: HTMLElement;
+  readonly backgrounds: readonly string[];
+  readonly overlay: HTMLElement;
 },): void {
   pagesState.pages = backgrounds.map(function createPage(svg,): PageState {
     return {
@@ -124,8 +124,8 @@ function saveCurrentPage({
   overlay,
   textLayer,
 }: {
-  overlay: HTMLElement;
-  textLayer: HTMLDivElement;
+  readonly overlay: HTMLElement;
+  readonly textLayer: HTMLDivElement;
 },): void {
   /** Live page slot, or `undefined` when state has been wiped mid-switch. */
   const page = pagesState.pages[pagesState.currentIndex];
@@ -168,12 +168,12 @@ export function switchToPage({
   overlay,
   textLayer,
 }: {
-  index: number;
-  ctx: CanvasRenderingContext2D;
-  cw: number;
-  ch: number;
-  overlay: HTMLElement;
-  textLayer: HTMLDivElement;
+  readonly index: number;
+  readonly ctx: CanvasRenderingContext2D;
+  readonly cw: number;
+  readonly ch: number;
+  readonly overlay: HTMLElement;
+  readonly textLayer: HTMLDivElement;
 },): void {
   if (index === pagesState
     .currentIndex)
@@ -236,8 +236,8 @@ export function snapshotAllPages({
   overlay,
   textLayer,
 }: {
-  overlay: HTMLElement;
-  textLayer: HTMLDivElement;
+  readonly overlay: HTMLElement;
+  readonly textLayer: HTMLDivElement;
 },): readonly PageState[] {
   endStroke();
   saveCurrentPage({

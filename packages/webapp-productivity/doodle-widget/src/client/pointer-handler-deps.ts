@@ -20,22 +20,22 @@ export type ToolMode = 'draw' | 'erase' | 'text' | 'zoom';
  */
 export type PointerHandlerDeps = {
   /** Canvas element receiving pointer events */
-  canvas: HTMLCanvasElement;
+  readonly canvas: HTMLCanvasElement;
   /** 2D rendering context for immediate stroke rendering */
-  ctx: CanvasRenderingContext2D;
+  readonly ctx: CanvasRenderingContext2D;
   /** Returns the currently active tool mode */
-  getToolMode: () => ToolMode;
+  readonly getToolMode: () => ToolMode;
   /** Returns current canvas dimensions in CSS pixels */
-  getCanvasSize: () => {
+  readonly getCanvasSize: () => {
     cw: number;
     ch: number;
   };
   /** Text layer element for eraser hit testing */
-  textLayer: HTMLDivElement;
+  readonly textLayer: HTMLDivElement;
   /** Pushes current state to undo history after a completed action */
-  pushSnapshot: () => void;
+  readonly pushSnapshot: () => void;
   /** Page element for zoom screen-to-content coordinate mapping */
-  page: HTMLDivElement;
+  readonly page: HTMLDivElement;
   /** Zoom layer element for CSS transform application */
-  zoomLayer: HTMLDivElement;
+  readonly zoomLayer: HTMLDivElement;
 };
