@@ -567,9 +567,11 @@ Group related changes by type; be specific about what changed. Two lines per gro
 
 ```txt
 fix(package1): <what>
+
 <why>
 
 fix(package2): <what>
+
 <why>
 ```
 
