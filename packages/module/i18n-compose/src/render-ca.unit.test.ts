@@ -81,7 +81,7 @@ await describe({
           name: "definite for item uses elided l'",
           fn: async () => {
             expect(ca.renderNounPhrase({ kind: 'noun.definite', noun: 'item', },),).toBe(
-              `l' article`,
+              `l'article`,
             );
           },
         },),

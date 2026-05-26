@@ -12,6 +12,7 @@ import type {
 } from '../../ast.ts';
 import type { Tense, } from '../../grammar-primitives.ts';
 import { joinTokens, } from '../../render-helpers.ts';
+import { englishThirdSingular, } from './morphology.ts';
 import type { EnglishVerbEntry, } from './types.ts';
 
 /** Grammatical-person value used to detect third-person singular agreement; composed from the exempt 1..2 range to satisfy `no-magic-numbers`. */
@@ -124,7 +125,7 @@ export function declarativeVerbSurface(
     === THIRD_PERSON) && (agreement.number
       === 'singular'))
     return entry.present3s
-      ?? `${entry.base}s`;
+      ?? englishThirdSingular({ base: entry.base, },);
   return entry.base;
 }
 

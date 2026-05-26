@@ -171,7 +171,11 @@ await describe({
           fn: async () => {
             /** Synthetic third-singular subject derived from the existing `they` entry shape. */
             const subject = { kind: 'subject.key', subject: 'they', } as const;
-            /** Custom 3s subject baked locally; we re-use `they` but override metadata via a fresh spec. */
+            /**
+             * Deliberate surface/agreement mismatch: `they` still renders while 3s metadata
+             * isolates present3s agreement, because shared test vocabulary intentionally has
+             * no he/she/it subject.
+             */
             const localSpec = defineEnglishLocale({
               labels: enLabels,
               subjects: { ...enSubjects,
@@ -256,7 +260,11 @@ await describe({
         it({
           name: 'do-support: 3s present uses Does',
           fn: async () => {
-            /** Spec that flips `they` to third-singular so we can prove Does insertion. */
+            /**
+             * Deliberate surface/agreement mismatch: `they` still renders while 3s metadata
+             * isolates do-support agreement, because shared test vocabulary intentionally has
+             * no he/she/it subject.
+             */
             const localSpec = defineEnglishLocale({
               labels: enLabels,
               subjects: { ...enSubjects,
@@ -467,14 +475,37 @@ await describe({
 
         it({
           name:
-            'verb-phrase fragment in gerund form uses the gerund or falls back to base+ing',
+            'verb-phrase fragment in gerund form uses the gerund or derives it from base',
           fn: async () => {
             expect(en.renderFragment({
               kind: 'fragment.verbPhrase',
               phrase: { kind: 'verbPhrase', verb: 'save', },
               form: 'gerund',
             },),)
-              .toBe('saveing',);
+              .toBe('saving',);
+          },
+        },),
+
+        it({
+          name: 'verb-phrase fragment in gerund form prefers explicit gerund',
+          fn: async () => {
+            /**
+             * Spec whose `save` key uses an `open` base to prove explicit gerund overrides
+             * derived `openning`.
+             */
+            const localSpec = defineEnglishLocale({
+              labels: enLabels,
+              subjects: enSubjects,
+              nouns: enNouns,
+              verbs: { ...enVerbs,
+                save: { ...enVerbs.save, base: 'open', gerund: 'opening', }, },
+            },);
+            expect(localSpec.renderFragment({
+              kind: 'fragment.verbPhrase',
+              phrase: { kind: 'verbPhrase', verb: 'save', },
+              form: 'gerund',
+            },),)
+              .toBe('opening',);
           },
         },),
 

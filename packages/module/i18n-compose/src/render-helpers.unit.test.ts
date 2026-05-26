@@ -85,6 +85,13 @@ await describe({
         },),
 
         it({
+          name: 'omits spaces at adjacent CJK token boundaries',
+          fn: async () => {
+            expect(joinTokens(['我', '有', '1 只猫',],),).toBe('我有 1 只猫',);
+          },
+        },),
+
+        it({
           name: 'returns empty string for an empty list',
           fn: async () => {
             expect(joinTokens([],),).toBe('',);

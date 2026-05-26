@@ -82,6 +82,35 @@ function articleFor(
 }
 
 /**
+ * Joins an article and noun surface, attaching elided apostrophe-final articles.
+ *
+ * @param options - article and surface wrapped for named-parameter calls
+ *
+ * @returns article phrase with correct separator
+ *
+ * @example
+ * ```ts
+ * articlePhrase({ article: 'el', surface: 'gat' }); // 'el gat'
+ * articlePhrase({ article: "l'", surface: 'article' }); // "l'article"
+ * ```
+ */
+function articlePhrase(
+  options: {
+    readonly article: string;
+    readonly surface: string;
+  },
+): string {
+  /** Article surface and noun surface for elision-aware joining. */
+  const {
+    article,
+    surface,
+  } = options;
+  if (article.endsWith("'",))
+    return `${article}${surface}`;
+  return `${article} ${surface}`;
+}
+
+/**
  * Builds a Catalan noun-phrase renderer closed over the supplied vocab tables.
  *
  * @param nouns - noun vocabulary keyed by the consumer's `Noun` union
@@ -153,25 +182,27 @@ export function makeCatalanNounPhraseRenderer<S extends string, N extends string
       === 'noun.definite') {
       /** Resolved noun entry. */
       const entry = nouns[phrase.noun];
-      return `${
-        articleFor({
+      return articlePhrase({
+        article: articleFor({
           entry,
           kind: 'definite',
           number: 'singular',
-        },)
-      } ${entry.surface}`;
+        },),
+        surface: entry.surface,
+      },);
     }
     if (phrase.kind
       === 'noun.indefinite') {
       /** Resolved noun entry. */
       const entry = nouns[phrase.noun];
-      return `${
-        articleFor({
+      return articlePhrase({
+        article: articleFor({
           entry,
           kind: 'indefinite',
           number: 'singular',
-        },)
-      } ${entry.surface}`;
+        },),
+        surface: entry.surface,
+      },);
     }
     if (phrase.kind
       === 'noun.possessed')

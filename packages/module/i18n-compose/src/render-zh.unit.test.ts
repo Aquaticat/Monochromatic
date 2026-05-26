@@ -128,7 +128,7 @@ await describe({
               predicate: { kind: 'verbPhrase', verb: 'have',
                 object: { kind: 'noun.counted', count: 1, noun: 'cat', }, },
             },),)
-              .toBe('我 有 1 只猫。',);
+              .toBe('我有 1 只猫。',);
           },
         },),
 
@@ -142,7 +142,7 @@ await describe({
               predicate: { kind: 'verbPhrase', verb: 'see',
                 object: { kind: 'noun.counted', count: 1, noun: 'cat', }, },
             },),)
-              .toBe('我 看见了 1 只猫。',);
+              .toBe('我看见了 1 只猫。',);
           },
         },),
 
@@ -156,7 +156,7 @@ await describe({
               predicate: { kind: 'verbPhrase', verb: 'see',
                 object: { kind: 'noun.counted', count: 1, noun: 'cat', }, },
             },),)
-              .toBe('我 会看见 1 只猫。',);
+              .toBe('我会看见 1 只猫。',);
           },
         },),
       ],
@@ -178,7 +178,7 @@ await describe({
               predicate: { kind: 'verbPhrase', verb: 'have',
                 object: { kind: 'noun.counted', count: 1, noun: 'cat', }, },
             },),)
-              .toBe('我 有 1 只猫吗？',);
+              .toBe('我有 1 只猫吗？',);
           },
         },),
       ],
@@ -201,7 +201,7 @@ await describe({
               subject: { kind: 'subject.key', subject: 'I', },
               verb: 'see',
             },);
-            expect(out,).toBe('我 看见 什么？',);
+            expect(out,).toBe('我看见什么？',);
             expect(out.includes('吗',),).toBe(false,);
           },
         },),
@@ -215,7 +215,7 @@ await describe({
               predicate: { kind: 'verbPhrase', verb: 'see',
                 object: { kind: 'noun.counted', count: 1, noun: 'cat', }, },
             },);
-            expect(out,).toBe('谁 看见 1 只猫？',);
+            expect(out,).toBe('谁看见 1 只猫？',);
             expect(out.includes('吗',),).toBe(false,);
           },
         },),
@@ -230,7 +230,7 @@ await describe({
               predicate: { kind: 'verbPhrase', verb: 'see',
                 object: { kind: 'noun.counted', count: 1, noun: 'cat', }, },
             },);
-            expect(out,).toBe('我 在哪里 看见 1 只猫？',);
+            expect(out,).toBe('我在哪里看见 1 只猫？',);
             expect(out.includes('吗',),).toBe(false,);
           },
         },),

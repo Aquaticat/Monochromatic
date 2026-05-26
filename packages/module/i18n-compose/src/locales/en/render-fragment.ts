@@ -15,6 +15,7 @@ import {
   applyCapitalization,
   joinTokens,
 } from '../../render-helpers.ts';
+import { englishGerund, } from './morphology.ts';
 import { complementFormForVerb, } from './render-vp.ts';
 import {
   EN_CASE_INVARIANTS,
@@ -60,7 +61,7 @@ function nonFiniteSurface(
   if (form === 'infinitive')
     return `to ${entry.base}`;
   return entry.gerund
-    ?? `${entry.base}ing`;
+    ?? englishGerund({ base: entry.base, },);
 }
 
 /**
