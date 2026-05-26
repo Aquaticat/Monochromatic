@@ -13,6 +13,10 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import type { ResolvedTerminal, } from './resolve.ts';
 
 /** Tagged logger for this module. */
@@ -27,9 +31,9 @@ const l = tagged({
  *
  * @param name - Executable name to find.
  *
- * @returns Absolute path if found, or `null`.
+ * @returns Absolute path if found, or {@link ABSENT}.
  */
-async function which(name: string,): Promise<string | null> {
+async function which(name: string,): Promise<Maybe<string>> {
   /** Dynamic import keeps the Windows-only path cold on other platforms. */
   const { access, } = await import('node:fs/promises');
   /** Empty PATH fallback yields an empty dirs list, which returns null cleanly. */
@@ -53,7 +57,7 @@ async function which(name: string,): Promise<string | null> {
       continue;
     }
   }
-  return null;
+  return ABSENT;
 }
 
 /**
@@ -72,7 +76,7 @@ async function which(name: string,): Promise<string | null> {
  * ```
  */
 export async function resolveWindowsTerminal(): Promise<ResolvedTerminal> {
-  if (await which('wt.exe',) !== null) {
+  if (await which('wt.exe',) !== ABSENT) {
     l.debug('found Windows Terminal (wt.exe)',);
     return {
       entryId: 'wt.exe',

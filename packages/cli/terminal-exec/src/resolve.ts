@@ -21,6 +21,10 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { scanEntries, } from './scan.ts';
 import {
   type ValidatedEntry,
@@ -51,7 +55,7 @@ export type ResolvedTerminal = ValidatedEntry & {
 /**
  * Resolves the preferred terminal emulator for the current platform.
  *
- * @returns Resolved terminal entry, or `null` if no valid terminal is found.
+ * @returns Resolved terminal entry, or {@link ABSENT} if no valid terminal is found.
  *
  * @example
  * ```ts
@@ -60,7 +64,7 @@ export type ResolvedTerminal = ValidatedEntry & {
  * // Windows: terminal.entryId === 'wt.exe'
  * ```
  */
-export async function resolveTerminal(): Promise<ResolvedTerminal | null> {
+export async function resolveTerminal(): Promise<Maybe<ResolvedTerminal>> {
   if (process.platform
     === 'win32') {
     l.debug('platform: win32',);
@@ -76,9 +80,9 @@ export async function resolveTerminal(): Promise<ResolvedTerminal | null> {
  * Resolves the terminal emulator using the XDG Desktop Entry Specification.
  * Used on Linux, FreeBSD, and other Unix-like systems.
  *
- * @returns Resolved terminal entry, or `null` if no valid terminal is found.
+ * @returns Resolved terminal entry, or {@link ABSENT} if no valid terminal is found.
  */
-async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
+async function resolveXdgTerminal(): Promise<Maybe<ResolvedTerminal>> {
   /** Lowercased XDG_CURRENT_DESKTOP list; needed for ShowIn checks below. */
   const desktops = currentDesktops();
   /** Ordered config file paths; later parseConfigFiles reads in priority order. */
@@ -117,7 +121,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
       config,
     },);
     /* oxlint-enable no-await-in-loop */
-    if (result !== null) {
+    if (result !== ABSENT) {
       return {
         ...result,
         entryId,
@@ -138,7 +142,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
       config,
     },);
     /* oxlint-enable no-await-in-loop */
-    if (result !== null) {
+    if (result !== ABSENT) {
       return {
         ...result,
         entryId,
@@ -148,7 +152,7 @@ async function resolveXdgTerminal(): Promise<ResolvedTerminal | null> {
   //endregion
 
   l.debug('no valid terminal emulator found',);
-  return null;
+  return ABSENT;
 }
 
 /**
@@ -174,7 +178,7 @@ async function resolveExplicitIds(
   l.debug('no explicit entries in config, checking kdeglobals',);
   /** KDE fallback used only when explicit entries are empty. */
   const kdeId = await kdeTerminalService();
-  if (kdeId === null)
+  if (kdeId === ABSENT)
     return [];
 
   l.debug(`using KDE TerminalService '${kdeId}' as explicit entry`,);
@@ -194,7 +198,7 @@ async function resolveExplicitIds(
  *
  * @param config - Parsed config for execarg defaults.
  *
- * @returns Validated entry or `null`.
+ * @returns Validated entry or {@link ABSENT}.
  */
 async function tryEntry({
   entryId,
@@ -211,18 +215,18 @@ async function tryEntry({
   readonly desktops: readonly string[];
   readonly isFallback: boolean;
   readonly config: { readonly execArgDefaults: ReadonlyMap<string, string>; };
-},): Promise<ValidatedEntry | null> {
+},): Promise<Maybe<ValidatedEntry>> {
   /** Registry lookup; missing id means we cannot resolve this preference. */
   const reg = registry.get(entryId,);
   if (reg === undefined) {
     l.debug(`entry '${entryId}' not found in registry`,);
-    return null;
+    return ABSENT;
   }
 
-  /** Parsed desktop entry contents; null on read failure. */
+  /** Parsed desktop entry contents; ABSENT on read failure. */
   const entry = await parseDesktopEntry({ path: reg.path, },);
-  if (entry === null)
-    return null;
+  if (entry === ABSENT)
+    return ABSENT;
 
   return validateEntry({
     entry,

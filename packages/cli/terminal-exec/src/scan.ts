@@ -17,6 +17,10 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 
 /** Tagged logger for this module. */
 const l = tagged({
@@ -25,22 +29,22 @@ const l = tagged({
 },);
 
 /**
- * Lists directory entries with type info, returning `null` when the directory cannot be read.
+ * Lists directory entries with type info, returning {@link ABSENT} when the directory cannot be read.
  * Used so the walker skips missing or unreadable directories without leaking a let into walk's body.
  *
  * @param current - Absolute directory path to read.
  *
- * @returns Array of Dirent entries, or `null` when readdir throws.
+ * @returns Array of Dirent entries, or {@link ABSENT} when readdir throws.
  *
  * @example
  * ```ts
- * const entries = await readdirOrNull({ current: '/usr/share/applications' })
+ * const entries = await readdirOrAbsent({ current: '/usr/share/applications' })
  * // entries === [<Dirent for 'org.gnome.Terminal.desktop'>, ...] when present
  * ```
  */
-async function readdirOrNull(
+async function readdirOrAbsent(
   { current, }: { readonly current: string; },
-): Promise<readonly Dirent[] | null> {
+): Promise<Maybe<readonly Dirent[]>> {
   try {
     return await readdir(
       current,
@@ -48,7 +52,7 @@ async function readdirOrNull(
     );
   }
   catch {
-    return null;
+    return ABSENT;
   }
 }
 
@@ -81,9 +85,9 @@ async function findDesktopFiles({ dir, }: { readonly dir: string; },): Promise<r
    * @param current - Directory to walk.
    */
   async function walk({ current, }: { readonly current: string; },): Promise<void> {
-    /** Null when readdir throws (e.g. directory missing or unreadable); skip the directory. */
-    const entries = await readdirOrNull({ current, },);
-    if (entries === null)
+    /** ABSENT when readdir throws (e.g. directory missing or unreadable); skip the directory. */
+    const entries = await readdirOrAbsent({ current, },);
+    if (entries === ABSENT)
       return;
     for (const entry of entries) {
       /** Absolute candidate for recursion or `.desktop` matching. */

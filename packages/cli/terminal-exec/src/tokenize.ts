@@ -9,6 +9,10 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 
 /** Tagged logger for this module. */
 const l = tagged({
@@ -52,7 +56,7 @@ const FIELD_CODES = new Set([
  *
  * @param exec - Raw Exec value from the desktop entry.
  *
- * @returns Array of argument tokens, or `null` if the value contains invalid syntax.
+ * @returns Array of argument tokens, or {@link ABSENT} if the value contains invalid syntax.
  *
  * @example
  * ```ts
@@ -60,7 +64,7 @@ const FIELD_CODES = new Set([
  * // ['/usr/bin/ghostty', '--gtk-single-instance=true']
  * ```
  */
-export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly string[] | null {
+export function tokenizeExec({ exec, }: { readonly exec: string; },): Maybe<readonly string[]> {
   /** Output accumulator; pushed when whitespace ends a token. */
   const tokens: string[] = [];
   /** In-progress token characters; reset on whitespace. */
@@ -120,7 +124,7 @@ export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly s
 
     if (UNQUOTED_REJECT.has(ch,)) {
       l.debug(`rejected unquoted character '${ch}' in exec: ${exec}`,);
-      return null;
+      return ABSENT;
     }
 
     //region % field code stripping
@@ -148,7 +152,7 @@ export function tokenizeExec({ exec, }: { readonly exec: string; },): readonly s
 
   if (inQuote) {
     l.debug(`unterminated quote in exec: ${exec}`,);
-    return null;
+    return ABSENT;
   }
 
   if (current.length

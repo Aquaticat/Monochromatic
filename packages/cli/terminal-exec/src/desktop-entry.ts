@@ -16,6 +16,10 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 
 export type { DesktopEntry, } from './desktop-entry-types.ts';
 export { expandEscapes, } from './desktop-entry-types.ts';
@@ -32,7 +36,7 @@ const l = tagged({
  *
  * @param path - Absolute path to the `.desktop` file.
  *
- * @returns Parsed desktop entry, or `null` if the file cannot be read.
+ * @returns Parsed desktop entry, or {@link ABSENT} if the file cannot be read.
  *
  * @example
  * ```ts
@@ -43,8 +47,8 @@ const l = tagged({
  */
 export async function parseDesktopEntry(
   { path, }: { readonly path: string; },
-): Promise<DesktopEntry | null> {
-  /** Empty default lets the catch return null without restructuring the read path. */
+): Promise<Maybe<DesktopEntry>> {
+  /** Empty default lets the catch return ABSENT without restructuring the read path. */
   let text = '';
   try {
     text = await readFile(
@@ -53,11 +57,11 @@ export async function parseDesktopEntry(
     );
   }
   catch {
-    return null;
+    return ABSENT;
   }
 
-  /** Mutated by applyKey calls below; one accumulator per parsed file. */
-  const result = createEmptyEntry();
+  /** Parse accumulator; each applyKey call returns an updated copy. Annotated readonly so the immutable updates type-check. */
+  let result: DesktopEntry = createEmptyEntry();
 
   /** Section gate; toggled on each `[Section]` line so non-Desktop Entry sections are skipped. */
   let inDesktopEntry = false;
@@ -94,13 +98,11 @@ export async function parseDesktopEntry(
     const value = line.slice(eqIdx + 1,)
       .trim();
 
-    Object.assign(
-      result,
-      applyKey({
-        key,
-        value,
-      },),
-    );
+    result = applyKey({
+      entry: result,
+      key,
+      value,
+    },);
   }
 
   l.debug(

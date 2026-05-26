@@ -10,6 +10,10 @@ import {
   l as parentLogger,
   tagged,
 } from './log.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 
 /** Tagged logger for this module. */
 const l = tagged({
@@ -83,9 +87,9 @@ export async function parseConfigFiles(
         continue;
 
       if (line.startsWith('/',)) {
-        /** Parsed execarg-default entry; null for non-matching or malformed directives. */
+        /** Parsed execarg-default entry; ABSENT for non-matching or malformed directives. */
         const directive = parseDirective({ line, },);
-        if (directive !== null) {
+        if (directive !== ABSENT) {
           /** Entry id and default arg from the matched directive. */
           const [entryId, defaultArg,] = directive;
           execArgDefaults.set(
@@ -132,31 +136,31 @@ export async function parseConfigFiles(
  *
  * @param line - Raw directive line including the leading `/`.
  *
- * @returns `[entryId, defaultArg]` for a well-formed `/execarg_default:` directive; `null` for other or malformed directives.
+ * @returns `[entryId, defaultArg]` for a well-formed `/execarg_default:` directive; {@link ABSENT} for other or malformed directives.
  *
  * @example
  * ```ts
  * parseDirective({ line: '/execarg_default:org.xterm:-e' }); // ['org.xterm', '-e']
- * parseDirective({ line: '/unknown' });                      // null
+ * parseDirective({ line: '/unknown' });                      // ABSENT
  * ```
  */
 function parseDirective(
   { line, }: { readonly line: string; },
-): readonly [
+): Maybe<readonly [
   string,
   string,
-] | null {
+]> {
   /** Directive prefix lifted to a name for the slice math below. */
   const EXECARG_PREFIX = '/execarg_default:';
   if (!line.startsWith(EXECARG_PREFIX,))
-    return null;
+    return ABSENT;
 
   /** Directive payload; format is `<entryId>:<defaultArg>`. */
   const rest = line.slice(EXECARG_PREFIX.length,);
   /** Separator between entry id and default arg; -1 means malformed and skipped. */
   const colonIdx = rest.indexOf(':',);
   if (colonIdx === (-1))
-    return null;
+    return ABSENT;
 
   /** Target entry id for the default. */
   const entryId = rest.slice(
