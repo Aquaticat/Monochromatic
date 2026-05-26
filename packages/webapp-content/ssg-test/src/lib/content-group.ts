@@ -17,22 +17,20 @@ import type { Post, } from './content.ts';
  *
  * @param posts - all loaded posts
  *
- * @returns record mapping language codes to their posts
+ * @returns map from language codes to their posts; absent locales have no key rather than an empty bucket
  *
  * @example
  * ```ts
  * const byLang = groupByLang(posts);
- * // { en: [...], fr: [...] }
+ * // Map { 'en' => [...], 'fr' => [...] }
  * ```
  */
-export function groupByLang(posts: readonly Post[],): Partial<Record<Locales, Post[]>> {
-  return Object.fromEntries(
-    Map.groupBy(
-      posts,
-      function byLang(post,) {
-        return post.lang;
-      },
-    ),
+export function groupByLang(posts: readonly Post[],): ReadonlyMap<Locales, Post[]> {
+  return Map.groupBy(
+    posts,
+    function byLang(post,) {
+      return post.lang;
+    },
   );
 }
 
@@ -123,27 +121,26 @@ export function groupByTag(posts: readonly Post[],): Record<string, Post[]> {
  *
  * @param posts - all loaded posts
  *
- * @returns nested record of lang \> tag \> posts
+ * @returns nested map of lang \> tag \> posts; absent locales have no key
  *
  * @example
  * ```ts
  * const grouped = groupByLangThenTag(posts);
- * // { en: { typescript: [...], css: [...] }, zh: { ... } }
+ * // Map { 'en' => { typescript: [...], css: [...] }, 'zh' => { ... } }
  * ```
  */
 export function groupByLangThenTag(
   posts: readonly Post[],
-): Partial<Record<Locales, Record<string, Post[]>>> {
+): ReadonlyMap<Locales, Record<string, Post[]>> {
   /** Stage one of the two-level grouping; second-level tag grouping happens per language to avoid empty buckets. */
   const byLang = groupByLang(posts,);
 
-  return Object.fromEntries(
-    Object.entries(byLang,)
-      .map(function langEntry([lang, langPosts,],) {
+  return new Map(
+    [...byLang,].map(function langEntry([lang, langPosts,],) {
       return [
         lang,
         groupByTag(langPosts,),
-      ];
+      ] as const;
     },),
   );
 }

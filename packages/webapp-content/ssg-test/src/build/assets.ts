@@ -110,7 +110,7 @@ export async function generateAssets(
   }: {
     readonly siteUrl: string;
     readonly contentDir: string;
-    readonly byLang: Readonly<Partial<Record<Locales, readonly Post[]>>>;
+    readonly byLang: ReadonlyMap<Locales, readonly Post[]>;
     readonly validLangs: readonly Locales[];
     readonly l: Logger;
   },
@@ -124,7 +124,7 @@ export async function generateAssets(
   /** Per-language RSS write promises kicked off concurrently. */
   const rssWrites = validLangs.map(function writeRss(lang,) {
     /** Posts narrowed to this locale; absent locales yield an empty feed instead of an error. */
-    const langPosts = byLang[lang]
+    const langPosts = byLang.get(lang,)
       ?? [];
     /** Pre-rendered XML body written to `{lang}/rss.xml`. */
     const rssXml = generateLanguageRss({

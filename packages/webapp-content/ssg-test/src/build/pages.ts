@@ -53,7 +53,7 @@ export async function generatePages(
     readonly posts: readonly Post[];
     readonly renderedContent: ReadonlyMap<string, string>;
     readonly siteUrl: string;
-    readonly byLang: Readonly<Partial<Record<Locales, readonly Post[]>>>;
+    readonly byLang: ReadonlyMap<Locales, readonly Post[]>;
     readonly validLangs: readonly Locales[];
     readonly l: Logger;
   },
@@ -93,7 +93,7 @@ export async function generatePages(
     },),
     ...validLangs.flatMap(function langWrites(lang,) {
       /** Posts narrowed to this locale; absent locales yield an empty list instead of an error. */
-      const langPosts = byLang[lang]
+      const langPosts = byLang.get(lang,)
         ?? [];
       /** Per-locale tag bucketing computed once per language pass. */
       const langTags = groupByTag(langPosts,);

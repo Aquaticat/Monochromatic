@@ -24,7 +24,6 @@ import { generateAssets, } from './build/assets.ts';
 import { ensureFavicons, } from './build/favicon.ts';
 import { generatePages, } from './build/pages.ts';
 import { loadAllLocales, } from './i18n/i18n-util.sync.ts';
-import { isLocale, } from './i18n/i18n-util.ts';
 import {
   buildManifest,
   CACHE_MISS,
@@ -254,11 +253,8 @@ l.info(`processed ${posts.length
 /** Posts grouped by locale, computed once for both page and asset generation. */
 const byLang = groupByLang(posts,);
 
-/** Valid locale codes present in the loaded content. */
-const validLangs = Object.keys(byLang,)
-  .filter(function keepLocale(name,) {
-  return isLocale(name,);
-},);
+/** Valid locale codes present in the loaded content; map keys are already `Locales`. */
+const validLangs = [...byLang.keys(),];
 
 await ensureFavicons({ l, },);
 await Promise.all([
