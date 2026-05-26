@@ -4,10 +4,7 @@
  * @module
  */
 
-import type {
-  BeforeAgentStartEventResult,
-  ExtensionAPI,
-} from '@earendil-works/pi-coding-agent';
+import type { ExtensionFactory, } from '@earendil-works/pi-coding-agent';
 import {
   createBeforeAgentStartEvent,
   createExtensionContext,
@@ -34,7 +31,7 @@ const EXPECTED_CUSTOM_TYPE = 'current-time-context';
 /** Built current-time-context extension module shape. */
 type CurrentTimeContextExtensionModule = {
   /** Pi extension factory. */
-  default: (pi: ExtensionAPI,) => void | Promise<void>;
+  default: ExtensionFactory;
 };
 
 //endregion Types
@@ -84,44 +81,6 @@ async function verifyBuiltExtension(): Promise<string> {
   if (result === undefined)
     throw new Error('before_agent_start handler returned no result',);
 
-  verifyMessage(result,);
-
-  return 'current-time-context extension verified: event:before_agent_start, hidden <time>HH:MM</time>';
-}
-
-/**
- * Detects built current-time-context extension module shape.
- *
- * @param value - imported module namespace
- *
- * @returns whether module exports extension factory
- *
- * @example
- * ```typescript
- * isCurrentTimeContextExtensionModule(await import('../dist/final/node/index.mjs'));
- * ```
- */
-function isCurrentTimeContextExtensionModule(
-  value: unknown,
-): value is CurrentTimeContextExtensionModule {
-  if ((value === null) || ((typeof value) !== 'object'))
-    return false;
-  return ('default' in value) && ((typeof value.default) === 'function');
-}
-
-/**
- * Verifies handler result carries expected hidden custom message.
- *
- * @param result - handler result from built extension
- *
- * @throws when message is missing or malformed
- *
- * @example
- * ```typescript
- * verifyMessage({ message: { customType: 'current-time-context', content: '<time>07:05</time>', display: false } });
- * ```
- */
-function verifyMessage(result: BeforeAgentStartEventResult,): void {
   /** Custom message returned by the extension. */
   const { message, } = result;
   if (message === undefined)
@@ -145,6 +104,28 @@ function verifyMessage(result: BeforeAgentStartEventResult,): void {
   )) {
     throw new Error('current-time-context message was not hidden',);
   }
+
+  return 'current-time-context extension verified: event:before_agent_start, hidden <time>HH:MM</time>';
+}
+
+/**
+ * Detects built current-time-context extension module shape.
+ *
+ * @param value - imported module namespace
+ *
+ * @returns whether module exports extension factory
+ *
+ * @example
+ * ```typescript
+ * isCurrentTimeContextExtensionModule(await import('../dist/final/node/index.mjs'));
+ * ```
+ */
+function isCurrentTimeContextExtensionModule(
+  value: unknown,
+): value is CurrentTimeContextExtensionModule {
+  if ((value === null) || ((typeof value) !== 'object'))
+    return false;
+  return ('default' in value) && ((typeof value.default) === 'function');
 }
 
 //endregion Verification

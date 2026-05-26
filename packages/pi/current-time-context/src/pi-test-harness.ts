@@ -10,15 +10,14 @@ import {
   createEventBus,
   type ExecResult,
   type ExtensionAPI,
+  type ExtensionContext,
+  type ExtensionHandler,
 } from '@earendil-works/pi-coding-agent';
 
 //region Types
 
 /** Minimal handler signature for `before_agent_start` checks. */
-type BeforeAgentStartHandler = (
-  event: BeforeAgentStartEvent,
-  ctx: unknown,
-) => BeforeAgentStartEventResult | Promise<BeforeAgentStartEventResult | void> | void;
+type BeforeAgentStartHandler = ExtensionHandler<BeforeAgentStartEvent, BeforeAgentStartEventResult>;
 
 /** Fake API harness recording registrations and captured handlers. */
 type FakePiApiHarness = {
@@ -61,7 +60,7 @@ function fakePiApi(): FakePiApiHarness {
       if (event === 'before_agent_start')
         handlers.push(handler,);
     },
-    registerTool(tool: { name: string; },) {
+    registerTool(tool: { readonly name: string; },) {
       registrations.push(`tool:${tool.name}`,);
     },
     registerCommand(name: string,) {
@@ -79,7 +78,7 @@ function fakePiApi(): FakePiApiHarness {
     registerMessageRenderer(customType: string,) {
       registrations.push(`renderer:${customType}`,);
     },
-    sendMessage(message: { customType: string; },) {
+    sendMessage(message: { readonly customType: string; },) {
       registrations.push(`message:${message.customType}`,);
     },
     sendUserMessage(content: unknown,) {
@@ -96,14 +95,14 @@ function fakePiApi(): FakePiApiHarness {
     },
     setLabel(
       entryId: string,
-      label: string | undefined,
+      label?: string,
     ) {
       void entryId;
       void label;
     },
     exec(
       command: string,
-      args: string[],
+      args: readonly string[],
     ): Promise<ExecResult> {
       void command;
       void args;
@@ -120,7 +119,7 @@ function fakePiApi(): FakePiApiHarness {
     getAllTools() {
       return [];
     },
-    setActiveTools(toolNames: string[],) {
+    setActiveTools(toolNames: readonly string[],) {
       void toolNames;
     },
     getCommands() {
@@ -208,8 +207,9 @@ function createBeforeAgentStartEvent(): BeforeAgentStartEvent {
  * const ctx = createExtensionContext();
  * ```
  */
-function createExtensionContext(): unknown {
-  return {};
+function createExtensionContext(): ExtensionContext {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Mirrors @earendil-works/pi-coding-agent ExtensionContext at the test boundary; the current-time-context handler ignores ctx, so an empty stand-in suffices for registration verification.
+  return {} as unknown as ExtensionContext;
 }
 
 //endregion Harness construction
