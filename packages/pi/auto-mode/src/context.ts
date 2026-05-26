@@ -190,49 +190,13 @@ function buildContext(
     }
   }
 
-  /** Final activity lines capped while preserving the last user-message anchor. */
-  return capActivityLines(activityLines,)
+  /** Final activity lines capped to the newest entries in the scoped window. */
+  return activityLines
+    .slice(-MAX_CONTEXT_ACTIVITIES,)
     .join('\n',);
 }
 
 //region Internal helpers
-
-/**
- * Cap activity lines to the configured maximum.
- *
- * Keeps the first line when it is the scoped user message, then fills the
- * remaining slots with the newest follow-up activities.
- *
- * @param activityLines - chronological activity lines from the scoped branch window
- *
- * @returns capped activity lines
- *
- * @example
- * ```typescript
- * capActivityLines(['[user] run tests', '[tool] one', '[tool] two']);
- * ```
- */
-function capActivityLines(
-  activityLines: readonly string[],
-): readonly string[] {
-  /** First activity line, which is the scoped user message when a user anchor exists. */
-  const [firstLine,] = activityLines;
-  if (firstLine === undefined)
-    return [];
-  if (!firstLine.startsWith('[user] ',))
-    return activityLines.slice(-MAX_CONTEXT_ACTIVITIES,);
-  /** Remaining capacity after preserving the scoped user-message anchor. */
-  const remainingLimit = MAX_CONTEXT_ACTIVITIES - 1;
-  if (remainingLimit <= 0)
-    return [firstLine,];
-  /** Follow-up activity lines after the scoped user-message anchor. */
-  const remainingLines = activityLines.slice(1,);
-  return [
-    firstLine,
-    ...remainingLines.slice(-remainingLimit,),
-  ];
-}
-
 
 /**
  * Extract text from user message content.

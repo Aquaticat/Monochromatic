@@ -265,8 +265,8 @@ await describe({
     },),
 
     it({
-      name: 'caps scoped activities at five while preserving user anchor',
-      fn: async function testCapsScopedActivitiesAtFive(): Promise<void> {
+      name: 'caps scoped activities at five newest lines',
+      fn: async function testCapsScopedActivitiesAtFiveNewestLines(): Promise<void> {
         /** Generated activities after the latest user message. */
         const generatedActivities = Array.from(
           { length: BASH_ACTIVITY_COUNT, },
@@ -290,11 +290,10 @@ await describe({
         const lines = context.split('\n',);
 
         expect(lines,).toHaveLength(MAX_CONTEXT_ACTIVITIES,);
-        expect(lines[0],).toBe('[user] new request',);
         expect(context.includes('old request',),).toBe(false,);
+        expect(context.includes('new request',),).toBe(false,);
         expect(context.includes('result 1',),).toBe(false,);
-        expect(context.includes('result 2',),).toBe(false,);
-        expect(context.includes('result 3',),).toBe(true,);
+        expect(context.includes('result 2',),).toBe(true,);
         expect(context.includes('result 6',),).toBe(true,);
       },
     },),
