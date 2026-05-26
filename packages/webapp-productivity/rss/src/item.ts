@@ -35,7 +35,7 @@ const l = tagged({
  * const items = getSortedItems(await getSortedFeeds(outlines));
  * ```
  */
-export function getSortedItems(feeds: FeedWOutline[],): ItemWDate[] {
+export function getSortedItems(feeds: readonly FeedWOutline[],): ItemWDate[] {
   /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: getSortedItems.name,
@@ -91,7 +91,7 @@ export function getSortedItems(feeds: FeedWOutline[],): ItemWDate[] {
  *
  * @returns Flat array of items with parent feed metadata
  */
-function extractItems(feeds: FeedWOutline[],): Item[] {
+function extractItems(feeds: readonly FeedWOutline[],): Item[] {
   /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: extractItems.name,

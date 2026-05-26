@@ -6,7 +6,6 @@ import {
 import * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 import { getOPMLTexts, } from './opml-text.ts';
-import type { OPMLS_SCHEMA, } from './opmls.ts';
 
 /** Tagged logger for the outline module. */
 const l = tagged({
@@ -38,7 +37,7 @@ export type InnerOutlineWUrl = Opml.Outline<string> & { xmlUrl: string; };
  * ```
  */
 export async function getOutlinesFromOpmls(
-  opmls: v.InferOutput<typeof OPMLS_SCHEMA>,
+  opmls: readonly string[],
 ): Promise<InnerOutlineWUrl[]> {
   /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
@@ -112,7 +111,7 @@ export async function getOutlinesFromOpmls(
  *
  * @returns Successfully parsed OPML documents
  */
-function parseSafe(texts: string[],): Opml.Document<string>[] {
+function parseSafe(texts: readonly string[],): Opml.Document<string>[] {
   /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
     tag: parseSafe.name,

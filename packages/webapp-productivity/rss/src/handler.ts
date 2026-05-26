@@ -33,7 +33,7 @@ const l = tagged({
  * ```
  */
 export async function serveIndex(options: {
-  getHtmlBody: () => Promise<string>;
+  readonly getHtmlBody: () => Promise<string>;
 },): Promise<Response> {
   /** Destructured renderer so the call site reads without `options.` prefix. */
   const { getHtmlBody, } = options;

@@ -9,6 +9,38 @@ import * as v from 'valibot';
 
 //region Scroll event observer: Tracks element visibility and dispatches custom scroll lifecycle events
 
+/** Default visibility thresholds: both edges, quarters, half, and full coverage. */
+const DEFAULT_THRESHOLD: readonly number[] = [
+  0,
+  QUARTER,
+  HALF,
+  THREE_QUARTERS,
+  1,
+];
+
+/**
+ * Resolves a caller threshold into the writable shape `IntersectionObserverInit` requires.
+ * Copies array thresholds into a fresh mutable array and falls back to {@link DEFAULT_THRESHOLD}.
+ *
+ * @param threshold - Caller-supplied threshold, absent when the caller wants defaults
+ *
+ * @returns Writable threshold value accepted by the observer constructor
+ *
+ * @example
+ * ```ts
+ * const t = resolveThreshold(HALF);
+ * ```
+ */
+function resolveThreshold(
+  threshold?: number | readonly number[],
+): number | number[] {
+  if (threshold === undefined)
+    return [...DEFAULT_THRESHOLD,];
+  if ((typeof threshold) === 'number')
+    return threshold;
+  return [...threshold,];
+}
+
 /**
  * Attaches an IntersectionObserver to an element, dispatching custom events
  * for scroll lifecycle transitions (enter, leave, half-visible, fully visible, scrolled out).
@@ -23,25 +55,24 @@ import * as v from 'valibot';
  * ```
  */
 function addScrollEvents(scrollOptions: {
-  element: HTMLElement;
-  options?: IntersectionObserverInit;
+  readonly element: HTMLElement;
+  readonly options?: {
+    readonly root?: Element | Document;
+    readonly rootMargin?: string;
+    readonly threshold?: number | readonly number[];
+  };
 },): IntersectionObserver {
   /** Destructured inputs so the body reads without `scrollOptions.` prefix. */
   const {
     element,
-    options = {},
+    options,
   } = scrollOptions;
   /** Defaults merged with caller overrides so the observer sees a complete config. */
   const config: IntersectionObserverInit = {
-    threshold: [
-      0,
-      QUARTER,
-      HALF,
-      THREE_QUARTERS,
-      1,
-    ],
-    rootMargin: '0px',
-    ...options,
+    threshold: resolveThreshold(options?.threshold,),
+    rootMargin: options?.rootMargin
+      ?? '0px',
+    ...((options?.root !== undefined) ? { root: options.root, } : {}),
   };
 
   /** Closure latch so `scrolledIn` fires exactly once per visibility cycle. */

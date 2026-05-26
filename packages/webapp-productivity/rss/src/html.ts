@@ -35,7 +35,7 @@ export const INDEX_HTML_END = '</body></html>';
  * ```
  */
 export async function getIndexHtmlBody(
-  options: { items: ItemWDate[]; },
+  options: { readonly items: readonly ItemWDate[]; },
 ): Promise<string> {
   /** Destructured items so the loop body reads without `options.` prefix. */
   const { items, } = options;

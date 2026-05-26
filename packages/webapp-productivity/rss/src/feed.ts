@@ -11,6 +11,7 @@ import {
 import * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 import type { InnerOutlineWUrl, } from './outline.ts';
+import type { DeepReadonly, } from './types.ts';
 
 /** Tagged logger for the feed module. */
 const l = tagged({
@@ -21,11 +22,12 @@ const l = tagged({
 /**
  * Parsed feed data paired with its OPML outline metadata.
  * Combines the feed content with source information for display.
+ * Deeply readonly because the sort and extract steps only read these values.
  */
-export type FeedWOutline = {
+export type FeedWOutline = DeepReadonly<{
   feed: Rss.Feed<string> | Atom.Feed<string>;
   outline: Opml.Outline<string>;
-};
+}>;
 
 //region Feed fetching and sorting: Retrieves feeds from URLs, parses them, and sorts by date
 
@@ -43,7 +45,7 @@ export type FeedWOutline = {
  * ```
  */
 export async function getSortedFeeds(
-  outlines: InnerOutlineWUrl[],
+  outlines: readonly DeepReadonly<InnerOutlineWUrl>[],
 ): Promise<FeedWOutline[]> {
   /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
@@ -74,7 +76,7 @@ export async function getSortedFeeds(
  * @returns Successfully fetched and parsed feeds
  */
 async function fetchAndParseFeeds(
-  outlines: InnerOutlineWUrl[],
+  outlines: readonly DeepReadonly<InnerOutlineWUrl>[],
 ): Promise<FeedWOutline[]> {
   /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
@@ -86,11 +88,11 @@ async function fetchAndParseFeeds(
   /** Fetched OPML text paired with its source outline for later parsing. */
   type TextWOutline = {
     text: string;
-    outline: Opml.Outline<string> & { xmlUrl: string; };
+    outline: DeepReadonly<InnerOutlineWUrl>;
   };
   /** Fetched feed texts paired with outlines, filtered down to the successful subset. */
   const textsWOutline: TextWOutline[] = (await mapIterableAsync({
-    fn: async function fetchFeed(outline: Opml.Outline<string> & { xmlUrl: string; },) {
+    fn: async function fetchFeed(outline: DeepReadonly<InnerOutlineWUrl>,) {
       /** Single Response held so status check and text read share one network round trip. */
       const response = await fetch(outline.xmlUrl,);
       if (!response.ok) {

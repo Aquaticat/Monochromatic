@@ -18,8 +18,8 @@ import type { ItemWDate, } from './item-type.ts';
  */
 export function itemToFeed(
   options: {
-    itemWDate: ItemWDate;
-    index: number;
+    readonly itemWDate: ItemWDate;
+    readonly index: number;
   },
 ): string {
   /** Destructured top-level inputs so the body reads without `options.` prefix. */
@@ -43,7 +43,7 @@ export function itemToFeed(
       attrs: {
         src: `data:text/html;charset=utf-8,${
           encodeURIComponent(
-            `<style>${css}</style>${String(item.description,)}`,
+            `<style>${css}</style>${item.description}`,
           )
         }`,
         sandbox: '',

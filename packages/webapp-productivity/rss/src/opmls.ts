@@ -10,10 +10,17 @@ const l = tagged({
 },);
 
 /**
- * Path to the .env file if found in the project directory hierarchy.
+ * Sentinel marking that no `.env` file was discovered in the directory hierarchy.
+ * Distinct non-nullish value so {@link DOT_ENV_PATH} never widens to a banned `T | undefined`.
+ */
+export const DOT_ENV_ABSENT: unique symbol = Symbol('dot-env-absent',);
+
+/**
+ * Path to the .env file if found in the project directory hierarchy, else {@link DOT_ENV_ABSENT}.
  * Enables relative `file://` URL support in OPML paths when present.
  */
-export const DOT_ENV_PATH: string | undefined = await findUp('.env',);
+export const DOT_ENV_PATH: string | typeof DOT_ENV_ABSENT = (await findUp('.env',))
+  ?? DOT_ENV_ABSENT;
 
 /**
  * Valibot schema validating OPML source URLs.
@@ -49,7 +56,7 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
           if (!u.protocol
             .includes('file',))
             return false;
-          if (DOT_ENV_PATH !== undefined)
+          if (DOT_ENV_PATH !== DOT_ENV_ABSENT)
             return s.length
               > 0;
           return s.startsWith('file:///',);

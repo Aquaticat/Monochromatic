@@ -8,12 +8,65 @@ import {
 import { join, } from 'node:path';
 import { l as parentLogger, } from './log.ts';
 import { IGNORE_PATH, } from './path.ts';
+import type { DeepReadonly, } from './types.ts';
 
 /** Tagged logger for the ignore module. */
 const l = tagged({
   tag: 'ignore',
   l: parentLogger,
 },);
+
+/**
+ * Sentinel returned when the ignore directory does not exist.
+ * Distinct non-nullish value so {@link readIgnoreDir} never widens to a banned `T | undefined`.
+ */
+const IGNORE_DIR_ABSENT = Symbol('ignore-dir-absent',);
+
+/**
+ * Reads the ignore directory entries, returning {@link IGNORE_DIR_ABSENT} when it is missing.
+ * Module-scoped because it captures nothing from any caller.
+ *
+ * @returns Directory entries, or {@link IGNORE_DIR_ABSENT} when the directory does not exist
+ *
+ * @example
+ * ```ts
+ * const entries = await readIgnoreDir();
+ * ```
+ */
+async function readIgnoreDir(): Promise<Dirent[] | typeof IGNORE_DIR_ABSENT> {
+  try {
+    return await readdir(
+      IGNORE_PATH,
+      { withFileTypes: true, },
+    );
+  }
+  catch {
+    return IGNORE_DIR_ABSENT;
+  }
+}
+
+/**
+ * Reads one ignore directory entry's file contents as UTF-8 text.
+ * Module-scoped because it captures nothing from any caller.
+ *
+ * @param dirent - Directory entry whose backing file is read
+ *
+ * @returns File contents as UTF-8 text
+ *
+ * @example
+ * ```ts
+ * const text = await readIgnoreFile(dirent);
+ * ```
+ */
+function readIgnoreFile(dirent: DeepReadonly<Dirent>,): Promise<string> {
+  return readFile(
+    join(
+      dirent.parentPath,
+      dirent.name,
+    ),
+    'utf8',
+  );
+}
 
 //region Ignore content loading: Reads raw JSONL content for salt derivation and link filtering
 
@@ -34,34 +87,15 @@ export async function getIgnoreContent(): Promise<string> {
     tag: getIgnoreContent.name,
     l,
   },);
-  /** Directory entries or undefined when the ignore directory is missing. */
-  const filesInDir =
-    await (async function readIgnoreDir(): Promise<Dirent[] | undefined> {
-      try {
-        return await readdir(
-          IGNORE_PATH,
-          { withFileTypes: true, },
-        );
-      }
-      catch {
-        return undefined;
-      }
-    })();
-  if (filesInDir === undefined) {
+  /** Directory entries, or the absent sentinel when the ignore directory is missing. */
+  const filesInDir = await readIgnoreDir();
+  if (filesInDir === IGNORE_DIR_ABSENT) {
     innerL.debug('ignore directory not found',);
     return '';
   }
   /** Per-file contents read in parallel, joined back into one stream for callers. */
   const contents = await mapIterableAsync({
-    fn: function readIgnoreFile(dirent: Dirent,) {
-      return readFile(
-        join(
-          dirent.parentPath,
-          dirent.name,
-        ),
-        'utf8',
-      );
-    },
+    fn: readIgnoreFile,
     iterable: filesInDir,
   },);
   return contents.join('',);

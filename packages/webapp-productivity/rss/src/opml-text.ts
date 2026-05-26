@@ -1,17 +1,15 @@
 import { mapIterableAsync, } from '@monochromatic-dev/module-async-iter';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import { readFile, } from 'node:fs/promises';
 import {
   dirname,
   resolve,
 } from 'node:path';
 import { fileURLToPath, } from 'node:url';
-import type * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 import {
+  DOT_ENV_ABSENT,
   DOT_ENV_PATH,
-  type OPMLS_SCHEMA,
 } from './opmls.ts';
 
 /** Tagged logger for the opml-text module. */
@@ -36,7 +34,7 @@ const l = tagged({
  * ```
  */
 export async function getOPMLTexts(
-  opmls: v.InferOutput<typeof OPMLS_SCHEMA>,
+  opmls: readonly string[],
 ): Promise<string[]> {
   /** Inner logger tagged with this function name for traceable log lines. */
   const innerL = tagged({
@@ -48,7 +46,7 @@ export async function getOPMLTexts(
   /** Successfully fetched OPML texts left after dropping DISCARD entries. */
   const result = (await mapIterableAsync({
     fn: async function fetchOpml(
-      opmlLink: (v.InferOutput<typeof OPMLS_SCHEMA>)[number],
+      opmlLink: string,
     ): Promise<string | typeof DISCARD> {
       if (opmlLink.startsWith('http',)) {
         /** Single Response held so status check and text read share one network round trip. */
@@ -80,9 +78,13 @@ export async function getOPMLTexts(
             return DISCARD;
           }
         }
+        if (DOT_ENV_PATH === DOT_ENV_ABSENT)
+          throw new Error(
+            'cannot resolve relative file:// OPML path without a discoverable .env',
+          );
         /** Relative file path resolved against the .env directory so config-local paths work. */
         const absPath = resolve(
-          dirname(nonNullishOrThrow(DOT_ENV_PATH,),),
+          dirname(DOT_ENV_PATH,),
           opmlLink
             .slice('file://'.length,),
         );
