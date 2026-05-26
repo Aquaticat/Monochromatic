@@ -8,7 +8,6 @@ import {
   isWhitespace,
   isWordChar,
 } from '../lib/text-scan.ts';
-import { parseHookJson, } from '../runtime/handler-runtime.ts';
 
 /**
  * Whether the given subagent type represents a general-purpose agent.
@@ -174,12 +173,13 @@ function invokesBunTest(command: string,): boolean {
 }
 
 /**
- * Output union returned by the guardrail handler.
+ * Output returned by the guardrail handler.
  *
- * Either an empty allow response or a typed deny response.
- * `Record<string, never>` matches the shape of `{}` written when no action is taken.
+ * Either a typed deny response or the empty pass-through `{}`.
+ * Every `PreToolUseOutput` field is optional, so `{}` (written when no action
+ * is taken) is itself a valid `PreToolUseOutput`; no separate empty type is needed.
  */
-type GuardrailOutput = PreToolUseOutput | Record<string, never>;
+type GuardrailOutput = PreToolUseOutput;
 
 /**
  * Guard for Agent and Bash tool calls.
@@ -313,7 +313,8 @@ function guardrailHandler(event: ReadonlyDeep<PreToolUseInput>,): GuardrailOutpu
  * ```
  */
 function guardrailParser(raw: string,): PreToolUseInput {
-  return parseHookJson<PreToolUseInput>(raw,);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON contract from Claude Code hook system
+  return JSON.parse(raw,) as PreToolUseInput;
 }
 
 /**

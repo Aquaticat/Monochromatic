@@ -4,7 +4,10 @@ import type {
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 import type { ReadonlyDeep, } from 'type-fest';
 
-import { containsAnyOfWordBounded, } from '../lib/text-scan.ts';
+import {
+  containsAnyOfWordBounded,
+  PHRASE_NOT_FOUND,
+} from '../lib/text-scan.ts';
 
 //region Patterns
 
@@ -138,7 +141,7 @@ function detectCorrection(prompt: string,): boolean {
     haystack: normaliseApostrophes(prompt,),
     phrases: CORRECTION_PHRASES,
   },)
-    !== undefined;
+    !== PHRASE_NOT_FOUND;
 }
 
 //endregion

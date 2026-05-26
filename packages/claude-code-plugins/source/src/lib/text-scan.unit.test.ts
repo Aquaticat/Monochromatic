@@ -10,6 +10,7 @@ import {
   isDigit,
   isWhitespace,
   isWordChar,
+  PHRASE_NOT_FOUND,
   splitWhitespace,
   stripBetweenDelims,
   stripLinesStartingWith,
@@ -253,13 +254,13 @@ await describe({
           },
         },),
         it({
-          name: 'returns undefined when no phrase matches',
+          name: 'returns PHRASE_NOT_FOUND when no phrase matches',
           fn: async () => {
             expect(containsAnyOfWordBounded({
               haystack: 'the deploy succeeded',
               phrases: ['probably', 'maybe', 'perhaps',],
             },),)
-              .toBe(undefined,);
+              .toBe(PHRASE_NOT_FOUND,);
           },
         },),
       ],

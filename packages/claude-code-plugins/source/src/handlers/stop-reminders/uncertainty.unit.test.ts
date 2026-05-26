@@ -7,6 +7,7 @@ import {
   findCategoricalDismissal,
   findTrailingQuestion,
   findUncertainty,
+  NO_MATCH,
   stripNonProseRegions,
 } from './uncertainty.ts';
 
@@ -19,14 +20,13 @@ await describe({
         it({
           name: 'matches a hedge phrase in prose',
           fn: async () => {
-            const m = findUncertainty('This is probably the fix.',);
-            expect(m?.phrase,).toBe('probably',);
+            expect(findUncertainty('This is probably the fix.',),).toEqual({ phrase: 'probably', },);
           },
         },),
         it({
-          name: 'returns undefined when prose has no hedges',
+          name: 'returns NO_MATCH when prose has no hedges',
           fn: async () => {
-            expect(findUncertainty('A fact stated plainly.',),).toBe(undefined,);
+            expect(findUncertainty('A fact stated plainly.',),).toBe(NO_MATCH,);
           },
         },),
       ],
@@ -37,26 +37,30 @@ await describe({
         it({
           name: 'flags uncited "project doesn\'t use" dismissal',
           fn: async () => {
-            const m = findCategoricalDismissal(
-              "All JSX rules: project doesn't use JSX.",
-            );
-            expect(m?.phrase.toLowerCase(),).toBe("project doesn't use",);
+            expect(
+              findCategoricalDismissal(
+                "All JSX rules: project doesn't use JSX.",
+              ),
+            )
+              .toEqual({ phrase: "project doesn't use", },);
           },
         },),
         it({
           name: 'flags uncited "we don\'t use" dismissal',
           fn: async () => {
-            const m = findCategoricalDismissal("Skip; we don't use enums.",);
-            expect(m?.phrase.toLowerCase(),).toBe("we don't use",);
+            expect(findCategoricalDismissal("Skip; we don't use enums.",),)
+              .toEqual({ phrase: "we don't use", },);
           },
         },),
         it({
           name: 'flags uncited "is already handled by" dismissal',
           fn: async () => {
-            const m = findCategoricalDismissal(
-              'Skip; operator-linebreak is already handled by dprint.',
-            );
-            expect(m?.phrase.toLowerCase(),).toBe('is already handled by',);
+            expect(
+              findCategoricalDismissal(
+                'Skip; operator-linebreak is already handled by dprint.',
+              ),
+            )
+              .toEqual({ phrase: 'is already handled by', },);
           },
         },),
         it({
@@ -67,7 +71,7 @@ await describe({
                 'Skip; is already handled by dprint (`packages/config/dprint/index.json:103`).',
               ),
             )
-              .toBe(undefined,);
+              .toBe(NO_MATCH,);
           },
         },),
         it({
@@ -78,7 +82,7 @@ await describe({
                 "Skip; the project doesn't use this (AGENTS.md bans it).",
               ),
             )
-              .toBe(undefined,);
+              .toBe(NO_MATCH,);
           },
         },),
         it({
@@ -89,37 +93,39 @@ await describe({
               "A separate bullet; project doesn't use JSX.",
             ]
               .join('\n',);
-            const m = findCategoricalDismissal(text,);
-            expect(m?.phrase.toLowerCase(),).toBe("project doesn't use",);
+            expect(findCategoricalDismissal(text,),)
+              .toEqual({ phrase: "project doesn't use", },);
           },
         },),
         it({
-          name: 'returns undefined when prose has no dismissal',
+          name: 'returns NO_MATCH when prose has no dismissal',
           fn: async () => {
             expect(
               findCategoricalDismissal('Just a factual statement, no dismissal.',),
             )
-              .toBe(undefined,);
+              .toBe(NO_MATCH,);
           },
         },),
         it({
           name: 'flags "codebase doesn\'t have" without citation',
           fn: async () => {
-            const m = findCategoricalDismissal(
-              "Skip; the codebase doesn't have any Vue files.",
-            );
-            expect(m?.phrase.toLowerCase(),).toBe(
-              "the codebase doesn't have",
-            );
+            expect(
+              findCategoricalDismissal(
+                "Skip; the codebase doesn't have any Vue files.",
+              ),
+            )
+              .toEqual({ phrase: "the codebase doesn't have", },);
           },
         },),
         it({
           name: 'flags "doesn\'t apply here" without citation',
           fn: async () => {
-            const m = findCategoricalDismissal(
-              "Skip; that rule doesn't apply here.",
-            );
-            expect(m?.phrase.toLowerCase(),).toBe("doesn't apply here",);
+            expect(
+              findCategoricalDismissal(
+                "Skip; that rule doesn't apply here.",
+              ),
+            )
+              .toEqual({ phrase: "doesn't apply here", },);
           },
         },),
         it({
@@ -130,7 +136,7 @@ await describe({
                 'Skip; is already covered by dprint at line :103.',
               ),
             )
-              .toBe(undefined,);
+              .toBe(NO_MATCH,);
           },
         },),
       ],
@@ -141,37 +147,37 @@ await describe({
         it({
           name: 'flags a trailing question',
           fn: async () => {
-            const m = findTrailingQuestion('I finished. Want me to run tests?',);
-            expect(m?.sentence,).toBe('Want me to run tests?',);
+            expect(findTrailingQuestion('I finished. Want me to run tests?',),)
+              .toEqual({ sentence: 'Want me to run tests?', },);
           },
         },),
         it({
-          name: 'returns undefined when no trailing question',
+          name: 'returns NO_MATCH when no trailing question',
           fn: async () => {
             expect(findTrailingQuestion('I finished. Tests pass.',),).toBe(
-              undefined,
+              NO_MATCH,
             );
           },
         },),
         it({
           name: 'flags a question that spans the whole message (sentence start at 0)',
           fn: async () => {
-            const m = findTrailingQuestion('Want me to commit?',);
-            expect(m?.sentence,).toBe('Want me to commit?',);
+            expect(findTrailingQuestion('Want me to commit?',),)
+              .toEqual({ sentence: 'Want me to commit?', },);
           },
         },),
         it({
           name: 'finds the sentence start after a terminator and multiple spaces',
           fn: async () => {
-            const m = findTrailingQuestion('Done!   Should I proceed?',);
-            expect(m?.sentence,).toBe('Should I proceed?',);
+            expect(findTrailingQuestion('Done!   Should I proceed?',),)
+              .toEqual({ sentence: 'Should I proceed?', },);
           },
         },),
         it({
           name: 'ignores a rhetorical trailing question',
           fn: async () => {
             expect(findTrailingQuestion('I fixed it. Why would anyone object?',),).toBe(
-              undefined,
+              NO_MATCH,
             );
           },
         },),

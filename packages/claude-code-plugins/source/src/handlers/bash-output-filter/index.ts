@@ -5,7 +5,6 @@ import type {
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 import type { ReadonlyDeep, } from 'type-fest';
 
-import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
   isAllowed,
   shouldSkip,
@@ -29,12 +28,13 @@ function isBashToolInput(input: Readonly<Record<string, unknown>>,): input is Ba
 }
 
 /**
- * Output union returned by the bash-output-filter handler. Either a
- * pass-through `{}` (when the command is non-Bash, malformed, disallowed, or
- * skipped) or a `PreToolUseOutput` carrying a rewritten `updatedInput.command`
- * that pipes the original command through the filter script.
+ * Output returned by the bash-output-filter handler. Either a `PreToolUseOutput`
+ * carrying a rewritten `updatedInput.command` that pipes the original command
+ * through the filter script, or the pass-through `{}` (when the command is
+ * non-Bash, malformed, disallowed, or skipped). Every `PreToolUseOutput` field
+ * is optional, so `{}` is itself a valid `PreToolUseOutput`.
  */
-type BashOutputFilterOutput = PreToolUseOutput | Record<string, never>;
+type BashOutputFilterOutput = PreToolUseOutput;
 
 /**
  * Rewrites the Bash command to pipe its merged stdout/stderr through the
@@ -114,7 +114,8 @@ function bashOutputFilterHandler(event: ReadonlyDeep<PreToolUseInput>,): BashOut
  * ```
  */
 function bashOutputFilterParser(raw: string,): PreToolUseInput {
-  return parseHookJson<PreToolUseInput>(raw,);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON contract from Claude Code hook system
+  return JSON.parse(raw,) as PreToolUseInput;
 }
 
 /**

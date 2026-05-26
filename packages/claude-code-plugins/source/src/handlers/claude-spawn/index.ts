@@ -22,9 +22,11 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 
-import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import { handleSessionStart, } from './hook-session-start.ts';
-import { checkCompletedChildren, } from './inject.ts';
+import {
+  checkCompletedChildren,
+  NOTHING_TO_REPORT,
+} from './inject.ts';
 import {
   SPAWNS_DIR,
   type SpawnState,
@@ -54,8 +56,9 @@ type ClaudeSpawnOutput =
 
 /**
  * Updates a child's spawn state file when the Stop event reports a final
- * assistant message. No-op if `CLAUDE_SPAWN_ID` is unset, the message is
- * absent, the file is missing, or this session does not own the spawn record.
+ * assistant message. No-op if `CLAUDE_SPAWN_ID` is unset, the file is missing,
+ * or this session does not own the spawn record. The caller skips this when
+ * the Stop event carries no final message.
  *
  * @param sessionId - Claude Code session identifier of the child session
  *
@@ -67,13 +70,13 @@ function updateChildOnStop(
     lastMessage,
   }: {
     readonly sessionId: string;
-    readonly lastMessage: string | undefined;
+    readonly lastMessage: string;
   },
 ): void {
   /** Spawn correlation id injected by the CLI when this Claude was a child; absent in normal runs. */
   const spawnId = process.env
     .CLAUDE_SPAWN_ID;
-  if ((spawnId === undefined) || (lastMessage === undefined))
+  if (spawnId === undefined)
     return;
 
   /** Path to the child's spawn-state JSON file under `SPAWNS_DIR`. */
@@ -128,12 +131,12 @@ function stopResponse(
   event: ReadonlyDeep<Extract<HookInput, { hook_event_name: 'Stop'; }>>,
 ): ClaudeSpawnOutput {
   if (!event.stop_hook_active) {
-    /** Formatted child-result text consumed atomically; `null` when nothing pending. */
+    /** Formatted child-result text consumed atomically; `NOTHING_TO_REPORT` when nothing pending. */
     const context = checkCompletedChildren({
       parentSessionId: event.session_id,
       consume: true,
     },);
-    if (context !== null) {
+    if (context !== NOTHING_TO_REPORT) {
       return {
         kind: 'json',
         payload: {
@@ -160,12 +163,12 @@ function stopResponse(
  * @returns hook response carrying child-result text, or empty pass-through
  */
 function additionalContextResponse(event: ReadonlyDeep<HookInput>,): ClaudeSpawnOutput {
-  /** Formatted child-result text consumed atomically; `null` when no completion is pending. */
+  /** Formatted child-result text consumed atomically; `NOTHING_TO_REPORT` when no completion is pending. */
   const context = checkCompletedChildren({
     parentSessionId: event.session_id,
     consume: true,
   },);
-  if (context === null) {
+  if (context === NOTHING_TO_REPORT) {
     /** Pass-through payload returned when there is nothing to inject. */
     const empty: HookOutputBase = {};
     return {
@@ -215,10 +218,12 @@ function claudeSpawnHandler(event: ReadonlyDeep<HookInput>,): ClaudeSpawnOutput 
   }
   if (event.hook_event_name
     === 'Stop') {
-    updateChildOnStop({
-      sessionId: event.session_id,
-      lastMessage: event.last_assistant_message,
-    },);
+    if (event.last_assistant_message !== undefined) {
+      updateChildOnStop({
+        sessionId: event.session_id,
+        lastMessage: event.last_assistant_message,
+      },);
+    }
     return stopResponse(event,);
   }
   if (event.hook_event_name
@@ -246,7 +251,8 @@ function claudeSpawnHandler(event: ReadonlyDeep<HookInput>,): ClaudeSpawnOutput 
  * ```
  */
 function claudeSpawnParser(raw: string,): HookInput {
-  return parseHookJson<HookInput>(raw,);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON contract from Claude Code hook system
+  return JSON.parse(raw,) as HookInput;
 }
 
 /**

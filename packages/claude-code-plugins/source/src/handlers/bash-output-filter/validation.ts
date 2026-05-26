@@ -14,6 +14,7 @@ import {
   containsWordBoundedPhrase,
   isAlphaNum,
   isWhitespace,
+  PHRASE_NOT_FOUND,
   splitWhitespace,
 } from '../../lib/text-scan.ts';
 
@@ -111,7 +112,7 @@ function hasBinaryTool(cmd: string,): boolean {
     haystack: cmd,
     phrases: BINARY_TOOL_NAMES,
   },)
-    !== undefined;
+    !== PHRASE_NOT_FOUND;
 }
 
 /**
@@ -249,7 +250,7 @@ function hasDetachWrapper(cmd: string,): boolean {
     haystack: cmd,
     phrases: DETACH_WRAPPER_NAMES,
   },)
-    !== undefined;
+    !== PHRASE_NOT_FOUND;
 }
 
 /** Container runtimes whose `exec`/`run` subcommands may attach a TTY. */
@@ -514,7 +515,7 @@ function hasStateBuiltin(cmd: string,): boolean {
     haystack: cmd,
     phrases: STATE_BUILTIN_NAMES,
   },)
-    !== undefined;
+    !== PHRASE_NOT_FOUND;
 }
 
 /**

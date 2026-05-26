@@ -5,6 +5,7 @@ import {
 } from '@monochromatic-dev/module-test';
 import {
   containsErThanMost,
+  ER_NOT_FOUND,
   findErThanMost,
 } from './uncertainty-phrases.ts';
 
@@ -29,21 +30,21 @@ await describe({
           },
         },),
         it({
-          name: 'returns undefined when there is no word prefix',
+          name: 'returns ER_NOT_FOUND when there is no word prefix',
           fn: async () => {
-            expect(findErThanMost('just er than most',),).toBe(undefined,);
+            expect(findErThanMost('just er than most',),).toBe(ER_NOT_FOUND,);
           },
         },),
         it({
-          name: 'returns undefined when the phrase begins the string',
+          name: 'returns ER_NOT_FOUND when the phrase begins the string',
           fn: async () => {
-            expect(findErThanMost('er than most',),).toBe(undefined,);
+            expect(findErThanMost('er than most',),).toBe(ER_NOT_FOUND,);
           },
         },),
         it({
-          name: 'returns undefined when a trailing word char breaks the boundary',
+          name: 'returns ER_NOT_FOUND when a trailing word char breaks the boundary',
           fn: async () => {
-            expect(findErThanMost('faster than mostly',),).toBe(undefined,);
+            expect(findErThanMost('faster than mostly',),).toBe(ER_NOT_FOUND,);
           },
         },),
         it({
@@ -53,15 +54,15 @@ await describe({
           },
         },),
         it({
-          name: 'returns undefined for the empty string',
+          name: 'returns ER_NOT_FOUND for the empty string',
           fn: async () => {
-            expect(findErThanMost('',),).toBe(undefined,);
+            expect(findErThanMost('',),).toBe(ER_NOT_FOUND,);
           },
         },),
         it({
-          name: 'returns undefined when absent',
+          name: 'returns ER_NOT_FOUND when absent',
           fn: async () => {
-            expect(findErThanMost('all good here',),).toBe(undefined,);
+            expect(findErThanMost('all good here',),).toBe(ER_NOT_FOUND,);
           },
         },),
         it({

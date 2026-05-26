@@ -21,13 +21,21 @@ import {
   resolve,
 } from 'node:path';
 
-import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
   BY_PID_DIR,
   type PidMapping,
   SPAWNS_DIR,
   type SpawnState,
 } from './paths.ts';
+
+/**
+ * Sentinel returned by {@link autoSetupCli} when CLI setup succeeded or was
+ * unnecessary, so there is no warning to surface.
+ *
+ * A unique symbol rather than `null`: the caller narrows on identity
+ * (`=== NO_WARNING`), keeping the warning text free of a nullish union.
+ */
+const NO_WARNING: unique symbol = Symbol('claude-spawn/cli-setup-ok',);
 
 /**
  * Handles the SessionStart hook event.
@@ -106,8 +114,10 @@ function handleSessionStart({
         jsonPath,
         'utf8',
       );
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
       /** Parsed spawn state; an empty `sessionId` field signals an unclaimed slot. */
-      const state = parseHookJson<SpawnState>(raw,);
+      const state = JSON.parse(raw,) as SpawnState;
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
 
       if (state.sessionId
         === '') {
@@ -128,9 +138,9 @@ function handleSessionStart({
     }
   }
 
-  /** Warning text from CLI auto-setup, or `null` when setup succeeded or was unnecessary. */
+  /** Warning text from CLI auto-setup, or `NO_WARNING` when setup succeeded or was unnecessary. */
   const cliWarning = autoSetupCli(hookDir,);
-  if (cliWarning !== null)
+  if (cliWarning !== NO_WARNING)
     return cliWarning;
 
   return JSON.stringify({},);
@@ -167,17 +177,17 @@ function cliIsOnPath(): boolean {
  *
  * @param hookDir - directory of the compiled hook entry point, used to derive plugin root
  *
- * @returns warning text to print to stdout, or `null` when setup either succeeded or was unnecessary
+ * @returns warning text to print to stdout, or `NO_WARNING` when setup either succeeded or was unnecessary
  *
  * @example
  * ```ts
  * const warning = autoSetupCli(import.meta.dir);
- * if (warning !== null) console.warn(warning);
+ * if (warning !== NO_WARNING) console.warn(warning);
  * ```
  */
-function autoSetupCli(hookDir: string,): string | null {
+function autoSetupCli(hookDir: string,): string | typeof NO_WARNING {
   if (cliIsOnPath())
-    return null;
+    return NO_WARNING;
 
   /**
    * Resolve plugin root from the compiled hook's location.
@@ -240,7 +250,7 @@ function autoSetupCli(hookDir: string,): string | null {
       .PATH
       ?? '').split(':',);
     return pathDirs.includes(localBin,)
-      ? null
+      ? NO_WARNING
       : [
         '[claude-spawn] Symlinked spawn-claude to ~/.local/bin/spawn-claude,',
         'but ~/.local/bin is not on PATH. Add it to your shell profile:',

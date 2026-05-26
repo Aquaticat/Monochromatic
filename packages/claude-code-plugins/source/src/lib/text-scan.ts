@@ -296,15 +296,23 @@ function containsWordBoundedPhrase(
 }
 
 /**
+ * Sentinel returned by {@link containsAnyOfWordBounded} when no phrase matches.
+ *
+ * A unique symbol rather than `undefined`: the absence of a match is a real
+ * outcome of the scan, so callers narrow on identity (`=== PHRASE_NOT_FOUND`)
+ * without a nullish union widening the result type.
+ */
+const PHRASE_NOT_FOUND: unique symbol = Symbol('text-scan/phrase-not-found',);
+
+/**
  * Finds the first phrase from `phrases` that occurs in `haystack` flanked by
- * word boundaries, case-insensitively. Returns `undefined` when no phrase
- * matches.
+ * word boundaries, case-insensitively.
  *
  * @param haystack - text to scan
  *
  * @param phrases - candidate phrase list, ordered by detection priority
  *
- * @returns matching phrase wrapped in `{ phrase }`, or `undefined`
+ * @returns matching phrase wrapped in `{ phrase }`, or `PHRASE_NOT_FOUND` when none match
  *
  * @example
  * ```ts
@@ -323,7 +331,7 @@ function containsAnyOfWordBounded(
     readonly haystack: string;
     readonly phrases: readonly string[];
   },
-): { phrase: string; } | undefined {
+): { phrase: string; } | typeof PHRASE_NOT_FOUND {
   for (const phrase of phrases) {
     if (containsWordBoundedPhrase({
       haystack,
@@ -332,7 +340,7 @@ function containsAnyOfWordBounded(
       return { phrase, };
     }
   }
-  return undefined;
+  return PHRASE_NOT_FOUND;
 }
 
 //endregion Word-boundary phrase lookup
@@ -484,6 +492,7 @@ export {
   isUpperAlpha,
   isWhitespace,
   isWordChar,
+  PHRASE_NOT_FOUND,
   splitWhitespace,
   stripBetweenDelims,
   stripLinesStartingWith,

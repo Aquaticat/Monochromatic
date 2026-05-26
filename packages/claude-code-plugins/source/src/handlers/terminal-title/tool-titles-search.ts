@@ -8,6 +8,7 @@
 
 import {
   field,
+  FIELD_ABSENT,
   MAX_PATTERN_LENGTH,
   pathFormat,
   quotedFormat,
@@ -32,22 +33,22 @@ const SEARCH_TOOL_TITLES: Record<string, ToolTitleEntry> = {
     },
   },
   AskUserQuestion: {
-    extract(input,): string | undefined {
+    extract(input,): string | typeof FIELD_ABSENT {
       /** Questions array from the AskUserQuestion tool input; non-array shapes are rejected below. */
       const { questions, } = input;
       if (!Array.isArray(questions,))
-        return undefined;
+        return FIELD_ABSENT;
       /* oxlint-disable typescript/no-unsafe-type-assertion -- untyped tool_input; structure verified by Array.isArray guard */
       /** First entry destructured from the questions array; only one question's title is shown. */
       const [first,] = questions as Record<string, unknown>[];
       /* oxlint-enable typescript/no-unsafe-type-assertion */
       if (first === undefined)
-        return undefined;
-      /** Question text pulled from the first entry; non-string shapes fall through to `undefined`. */
+        return FIELD_ABSENT;
+      /** Question text pulled from the first entry; non-string shapes fall through to `FIELD_ABSENT`. */
       const { question, } = first;
       if ((typeof question) === 'string')
         return question;
-      return undefined;
+      return FIELD_ABSENT;
     },
     format(
       v,

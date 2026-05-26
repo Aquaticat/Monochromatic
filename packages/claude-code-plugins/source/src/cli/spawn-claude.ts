@@ -33,7 +33,10 @@ import {
   SPAWNS_DIR,
   type SpawnState,
 } from '../handlers/claude-spawn/paths.ts';
-import { findCallingSession, } from '../handlers/claude-spawn/session-finder.ts';
+import {
+  findCallingSession,
+  SESSION_NOT_FOUND,
+} from '../handlers/claude-spawn/session-finder.ts';
 import { splitWhitespace, } from '../lib/text-scan.ts';
 
 /**
@@ -85,7 +88,7 @@ const args = runSync(
 /** Resolved session identity of the calling Claude instance. */
 const identity = findCallingSession();
 
-if (identity === null) {
+if (identity === SESSION_NOT_FOUND) {
   console.error(
     'Error: Could not find calling Claude session. Ensure the claude-spawn plugin hooks are active and SessionStart has fired.',
   );

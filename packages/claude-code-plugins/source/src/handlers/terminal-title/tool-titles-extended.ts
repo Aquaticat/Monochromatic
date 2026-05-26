@@ -8,6 +8,7 @@
 
 import {
   field,
+  FIELD_ABSENT,
   MAX_PATTERN_LENGTH,
   type ToolTitleEntry,
   truncate,
@@ -19,7 +20,9 @@ import {
  */
 const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
   EnterPlanMode: {
-    extract() {/* No extractable value */},
+    extract() {
+      return FIELD_ABSENT;
+    },
     format() {
       return '';
     },
@@ -29,7 +32,9 @@ const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
     },
   },
   ExitPlanMode: {
-    extract() {/* No extractable value */},
+    extract() {
+      return FIELD_ABSENT;
+    },
     format() {
       return '';
     },
@@ -80,7 +85,9 @@ const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
     },
   },
   TaskList: {
-    extract() {/* No extractable value */},
+    extract() {
+      return FIELD_ABSENT;
+    },
     format() {
       return '';
     },
@@ -160,7 +167,9 @@ const EXTENDED_TOOL_TITLES: Record<string, ToolTitleEntry> = {
     },
   },
   CronList: {
-    extract() {/* No extractable value */},
+    extract() {
+      return FIELD_ABSENT;
+    },
     format() {
       return '';
     },

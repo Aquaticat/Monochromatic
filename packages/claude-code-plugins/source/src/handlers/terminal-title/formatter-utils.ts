@@ -16,6 +16,16 @@ import { basename, } from 'node:path';
 const MAX_PATTERN_LENGTH = 30;
 
 /**
+ * Sentinel returned by an `extract` when the tool input carries no
+ * display-relevant string.
+ *
+ * A unique symbol rather than `undefined`: the consumer narrows on identity
+ * (`=== FIELD_ABSENT`) to choose the tense fallback, keeping the extracted
+ * value free of a nullish union.
+ */
+const FIELD_ABSENT: unique symbol = Symbol('terminal-title/field-absent',);
+
+/**
  * Tense-specific labels for a tool title. `pre` is shown during execution
  * (PreToolUse), `post` after completion (PostToolUse).
  */
@@ -27,10 +37,10 @@ type TenseLabels = {
 /**
  * Formatter entry for a known tool. `extract` pulls a display-relevant string
  * from `tool_input`; `format` turns it into a tense-appropriate title;
- * `fallback` provides tense-specific defaults when `extract` returns `undefined`.
+ * `fallback` provides tense-specific defaults when `extract` returns `FIELD_ABSENT`.
  */
 type ToolTitleEntry = {
-  extract: (input: Readonly<GenericToolInput>,) => string | undefined;
+  extract: (input: Readonly<GenericToolInput>,) => string | typeof FIELD_ABSENT;
   format: (
     value: string,
     tense: 'pre' | 'post',
@@ -97,12 +107,12 @@ function shortPath(filePath: string,): string {
  *
  * @param key - property name to extract
  *
- * @returns string value or `undefined` if absent or non-string
+ * @returns string value, or `FIELD_ABSENT` if absent or non-string
  *
  * @example
  * ```typescript
  * stringField({ input: { file_path: '/x.ts' }, key: 'file_path' }); // '/x.ts'
- * stringField({ input: { count: 3 }, key: 'count' }); // undefined
+ * stringField({ input: { count: 3 }, key: 'count' }); // FIELD_ABSENT
  * ```
  */
 function stringField(
@@ -113,12 +123,12 @@ function stringField(
     readonly input: Readonly<GenericToolInput>;
     readonly key: string;
   },
-): string | undefined {
-  /** Property value read from the tool input; non-string shapes fall through to `undefined`. */
+): string | typeof FIELD_ABSENT {
+  /** Property value read from the tool input; non-string shapes fall through to `FIELD_ABSENT`. */
   const value = input[key];
   if ((typeof value) === 'string')
     return value;
-  return undefined;
+  return FIELD_ABSENT;
 }
 
 /**
@@ -134,7 +144,7 @@ function stringField(
  * get({ command: 'ls' }); // 'ls'
  * ```
  */
-function field(key: string,): (input: Readonly<GenericToolInput>,) => string | undefined {
+function field(key: string,): (input: Readonly<GenericToolInput>,) => string | typeof FIELD_ABSENT {
   return function extractField(input: Readonly<GenericToolInput>,) {
     return stringField({
       input,
@@ -362,6 +372,7 @@ export type {
 
 export {
   field,
+  FIELD_ABSENT,
   MAX_PATTERN_LENGTH,
   pathFormat,
   quotedFormat,

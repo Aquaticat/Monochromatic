@@ -9,8 +9,6 @@ import {
   rm,
 } from 'node:fs/promises';
 
-import { parseHookJson, } from '../runtime/handler-runtime.ts';
-
 /**
  * Stale artifact names that git metadata or Claude config can leak into nested
  * `dist/final/` directories. Removed on session start to prevent build contamination.
@@ -230,7 +228,8 @@ async function sessionStartHousekeepingHandler(
  * ```
  */
 function sessionStartHousekeepingParser(raw: string,): SessionStartInput {
-  return parseHookJson<SessionStartInput>(raw,);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON contract from Claude Code hook system
+  return JSON.parse(raw,) as SessionStartInput;
 }
 
 /**

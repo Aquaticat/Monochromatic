@@ -108,6 +108,14 @@ const UNCERTAINTY_PHRASES: readonly string[] = [
 const ER_THAN_MOST_PHRASE = 'er than most';
 
 /**
+ * Sentinel returned by {@link findErThanMost} when no comparative fragment is found.
+ *
+ * A unique symbol rather than `undefined`: callers narrow on identity so the
+ * matched-fragment string never shares a nullish union with "no match".
+ */
+const ER_NOT_FOUND: unique symbol = Symbol('uncertainty-phrases/er-not-found',);
+
+/**
  * Looks up the first `<word>er than most` occurrence in `text`, returning
  * the matched word fragment (e.g. `'bigger than most'`).
  *
@@ -118,15 +126,15 @@ const ER_THAN_MOST_PHRASE = 'er than most';
  *
  * @param text - input text to scan
  *
- * @returns matched fragment from `<word>er` through `most`, or `undefined` when no match exists
+ * @returns matched fragment from `<word>er` through `most`, or `ER_NOT_FOUND` when no match exists
  *
  * @example
  * ```ts
  * findErThanMost('this is bigger than most lengths'); // => 'bigger than most'
- * findErThanMost('just er than most');                // => undefined (no word prefix)
+ * findErThanMost('just er than most');                // => ER_NOT_FOUND (no word prefix)
  * ```
  */
-function findErThanMost(text: string,): string | undefined {
+function findErThanMost(text: string,): string | typeof ER_NOT_FOUND {
   /** Lower-cased text used for the case-insensitive substring scan. */
   const lower = text.toLowerCase();
   // Walk every `er than most` occurrence in order (monotonic `indexOf`, no
@@ -165,7 +173,7 @@ function findErThanMost(text: string,): string | undefined {
       endIdx,
     );
   }
-  return undefined;
+  return ER_NOT_FOUND;
 }
 
 /**
@@ -183,7 +191,7 @@ function findErThanMost(text: string,): string | undefined {
  */
 function containsErThanMost(text: string,): boolean {
   return findErThanMost(text,)
-    !== undefined;
+    !== ER_NOT_FOUND;
 }
 
 //endregion
@@ -228,6 +236,7 @@ const DISMISSAL_PHRASES: readonly string[] = [
 export {
   containsErThanMost,
   DISMISSAL_PHRASES,
+  ER_NOT_FOUND,
   findErThanMost,
   normaliseApostrophes,
   UNCERTAINTY_PHRASES,

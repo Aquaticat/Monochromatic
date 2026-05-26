@@ -5,7 +5,6 @@ import type {
 import type { ReadonlyDeep, } from 'type-fest';
 
 import { formatTimeContext, } from '@monochromatic-dev/module-current-time-context';
-import { parseHookJson, } from '../runtime/handler-runtime.ts';
 
 /**
  * Output of the prompt-time handler.
@@ -64,7 +63,8 @@ function promptTimeHandler(_event: ReadonlyDeep<UserPromptSubmitInput>,): Prompt
  * ```
  */
 function promptTimeParser(raw: string,): UserPromptSubmitInput {
-  return parseHookJson<UserPromptSubmitInput>(raw,);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON contract from Claude Code hook system
+  return JSON.parse(raw,) as UserPromptSubmitInput;
 }
 
 /**

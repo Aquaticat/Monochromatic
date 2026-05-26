@@ -20,7 +20,6 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 
-import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
   SPAWNS_DIR,
   type SpawnState,
@@ -54,6 +53,35 @@ function formatSpawnResult(state: SpawnState,): string {
 }
 
 /**
+ * Sentinel returned by {@link checkCompletedChildren} when no completed child
+ * is pending delivery.
+ *
+ * A unique symbol rather than `null`: the caller narrows on identity
+ * (`=== NOTHING_TO_REPORT`), keeping the context string free of a nullish union.
+ */
+const NOTHING_TO_REPORT: unique symbol = Symbol('claude-spawn/nothing-to-report',);
+
+/**
+ * Lists the filenames in the spawns coordination directory.
+ *
+ * @returns directory entries, or `NOTHING_TO_REPORT` when the directory is
+ *   missing or unreadable (there is then nothing to deliver)
+ *
+ * @example
+ * ```ts
+ * const entries = readSpawnsDir();
+ * ```
+ */
+function readSpawnsDir(): readonly string[] | typeof NOTHING_TO_REPORT {
+  try {
+    return readdirSync(SPAWNS_DIR,);
+  }
+  catch {
+    return NOTHING_TO_REPORT;
+  }
+}
+
+/**
  * Scans the spawns directory for children of the given session that have
  * stopped and not yet been reported.
  *
@@ -69,7 +97,7 @@ function formatSpawnResult(state: SpawnState,): string {
  *   from reliable delivery hooks (UserPromptSubmit, Stop), `false` from
  *   best-effort hooks (PreToolUse, PostToolUse, etc.).
  *
- * @returns combined context string, or `null` if nothing to report
+ * @returns combined context string, or `NOTHING_TO_REPORT` if nothing to report
  *
  * @example
  * ```ts
@@ -84,19 +112,12 @@ function checkCompletedChildren(
     readonly parentSessionId: string;
     readonly consume: boolean;
   },
-): string | null {
-  /** Filenames in `SPAWNS_DIR`; `null` when the directory is missing or unreadable. */
-  const entries = (function readSpawnsDir(): string[] | null {
-    try {
-      return readdirSync(SPAWNS_DIR,);
-    }
-    catch {
-      return null;
-    }
-  })();
+): string | typeof NOTHING_TO_REPORT {
+  /** Filenames in `SPAWNS_DIR`, or `NOTHING_TO_REPORT` when the directory is missing or unreadable. */
+  const entries = readSpawnsDir();
 
-  if (entries === null)
-    return null;
+  if (entries === NOTHING_TO_REPORT)
+    return NOTHING_TO_REPORT;
 
   /** Formatted result strings for each completed child belonging to this parent. */
   const results: string[] = [];
@@ -131,8 +152,10 @@ function checkCompletedChildren(
         filePath,
         'utf8',
       );
+      /* oxlint-disable typescript/no-unsafe-type-assertion -- trusted file written by our own CLI */
       /** Parsed spawn state used to filter by parent session and stopped status. */
-      const state = parseHookJson<SpawnState>(raw,);
+      const state = JSON.parse(raw,) as SpawnState;
+      /* oxlint-enable typescript/no-unsafe-type-assertion */
 
       if (state.parentSessionId
         !== parentSessionId)
@@ -164,9 +187,12 @@ function checkCompletedChildren(
 
   if (results.length
     === 0)
-    return null;
+    return NOTHING_TO_REPORT;
 
   return results.join('\n\n---\n\n',);
 }
 
-export { checkCompletedChildren, };
+export {
+  checkCompletedChildren,
+  NOTHING_TO_REPORT,
+};

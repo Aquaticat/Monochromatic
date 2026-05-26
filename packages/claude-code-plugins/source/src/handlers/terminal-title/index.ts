@@ -11,7 +11,7 @@ import {
 } from 'node:fs';
 import { basename, } from 'node:path';
 
-import { parseHookJson, } from '../../runtime/handler-runtime.ts';
+import { FIELD_ABSENT, } from './formatter-utils.ts';
 import {
   TOOL_TITLES,
   truncate,
@@ -45,9 +45,9 @@ function titleForTool(event: ReadonlyDeep<PreToolUseInput | PostToolUseInput>,):
   const entry = TOOL_TITLES[toolName];
   if (entry === undefined)
     return toolName;
-  /** Extracted target value (path, command, etc.); `undefined` falls back to a generic title. */
+  /** Extracted target value (path, command, etc.); `FIELD_ABSENT` falls back to a generic title. */
   const value = entry.extract(input,);
-  if (value === undefined)
+  if (value === FIELD_ABSENT)
     return entry.fallback[tense];
   return entry.format(
     value,
@@ -206,7 +206,8 @@ function terminalTitleHandler(event: ReadonlyDeep<HookInput>,): TerminalTitleOut
  * ```
  */
 function terminalTitleParser(raw: string,): HookInput {
-  return parseHookJson<HookInput>(raw,);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON contract from Claude Code hook system
+  return JSON.parse(raw,) as HookInput;
 }
 
 /**

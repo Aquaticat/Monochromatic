@@ -11,11 +11,13 @@
 import {
   containsAnyOfWordBounded,
   isWhitespace,
+  PHRASE_NOT_FOUND,
 } from '../../lib/text-scan.ts';
 import { lineHasCitation, } from './uncertainty-citations.ts';
 import {
   containsErThanMost,
   DISMISSAL_PHRASES,
+  ER_NOT_FOUND,
   findErThanMost,
   normaliseApostrophes,
   UNCERTAINTY_PHRASES,
@@ -40,6 +42,14 @@ type QuestionMatch = {
   sentence: string;
 };
 
+/**
+ * Sentinel returned by the scan functions when no match is found.
+ *
+ * A unique symbol rather than `undefined`: each detector narrows on identity
+ * (`=== NO_MATCH`), keeping the match payload free of a nullish union.
+ */
+const NO_MATCH: unique symbol = Symbol('stop-reminders/no-match',);
+
 //endregion
 
 //region Uncertainty detection
@@ -53,7 +63,7 @@ type QuestionMatch = {
  *
  * @param prose - text with code blocks and quotes already stripped
  *
- * @returns match details if uncertain language was found, `undefined` otherwise
+ * @returns match details if uncertain language was found, `NO_MATCH` otherwise
  *
  * @example
  * ```ts
@@ -61,24 +71,23 @@ type QuestionMatch = {
  * // => { phrase: 'probably' }
  * ```
  */
-function findUncertainty(prose: string,): UncertaintyMatch | undefined {
+function findUncertainty(prose: string,): UncertaintyMatch | typeof NO_MATCH {
   /**
    * First word-bounded phrase hit from {@link UNCERTAINTY_PHRASES};
-   * may be `undefined` when no phrase fires.
+   * `PHRASE_NOT_FOUND` when no phrase fires.
    */
   const phraseHit = containsAnyOfWordBounded({
     haystack: prose,
     phrases: UNCERTAINTY_PHRASES,
   },);
-  if (phraseHit !== undefined)
+  if (phraseHit !== PHRASE_NOT_FOUND)
     return { phrase: phraseHit.phrase, };
   if (containsErThanMost(prose,)) {
     /** Recovered comparative fragment for the diagnostic ("bigger than most" etc.). */
-    const fragment = findErThanMost(prose,)
-      ?? 'er than most';
-    return { phrase: fragment, };
+    const fragment = findErThanMost(prose,);
+    return { phrase: fragment === ER_NOT_FOUND ? 'er than most' : fragment, };
   }
-  return undefined;
+  return NO_MATCH;
 }
 
 //endregion
@@ -100,7 +109,7 @@ function findUncertainty(prose: string,): UncertaintyMatch | undefined {
  *
  * @param prose - text with code blocks and quotes already stripped
  *
- * @returns match details if an uncited dismissal was found, `undefined` otherwise
+ * @returns match details if an uncited dismissal was found, `NO_MATCH` otherwise
  *
  * @example
  * ```ts
@@ -108,10 +117,10 @@ function findUncertainty(prose: string,): UncertaintyMatch | undefined {
  * // => { phrase: "project doesn't use" }
  *
  * findCategoricalDismissal('Skip; project doesn\'t use X (see tsconfig.json:5)');
- * // => undefined
+ * // => NO_MATCH
  * ```
  */
-function findCategoricalDismissal(prose: string,): UncertaintyMatch | undefined {
+function findCategoricalDismissal(prose: string,): UncertaintyMatch | typeof NO_MATCH {
   /** Prose split per-line so each dismissal check is scoped to its own citation context. */
   const lines = prose.split('\n',);
   for (const line of lines) {
@@ -119,15 +128,15 @@ function findCategoricalDismissal(prose: string,): UncertaintyMatch | undefined 
       continue;
     /** Normalised line that folds curly apostrophes to ASCII so phrase entries match either shape. */
     const normalised = normaliseApostrophes(line,);
-    /** First dismissal-phrase hit, if any; populates the returned match. */
+    /** First dismissal-phrase hit, or `PHRASE_NOT_FOUND`; populates the returned match. */
     const hit = containsAnyOfWordBounded({
       haystack: normalised,
       phrases: DISMISSAL_PHRASES,
     },);
-    if (hit !== undefined)
+    if (hit !== PHRASE_NOT_FOUND)
       return { phrase: hit.phrase, };
   }
-  return undefined;
+  return NO_MATCH;
 }
 
 //endregion
@@ -268,32 +277,32 @@ function findLastSentenceStart(text: string,): number {
  *
  * @param prose - assistant message text to scan
  *
- * @returns matched question sentence, or `undefined` if none qualifies
+ * @returns matched question sentence, or `NO_MATCH` if none qualifies
  *
  * @example
  * ```ts
  * findTrailingQuestion('Done. Want me to commit?'); // { sentence: 'Want me to commit?' }
- * findTrailingQuestion('What if cats ruled?');      // undefined (rhetorical)
+ * findTrailingQuestion('What if cats ruled?');      // NO_MATCH (rhetorical)
  * ```
  */
-function findTrailingQuestion(prose: string,): QuestionMatch | undefined {
+function findTrailingQuestion(prose: string,): QuestionMatch | typeof NO_MATCH {
   /** Last `TRAILING_QUESTION_SCAN_LENGTH` chars; trailing questions live at the end of a turn. */
   const tail = prose.slice(-TRAILING_QUESTION_SCAN_LENGTH,);
   /** Tail trimmed of trailing whitespace; the trailing `?` lives at the very end after this. */
   const trimmed = tail.trimEnd();
   if (!trimmed.endsWith('?',))
-    return undefined;
+    return NO_MATCH;
   /** Inclusive start index of the trailing sentence within `trimmed`. */
   const sentenceStart = findLastSentenceStart(trimmed,);
   /** Trailing sentence text including the terminating `?`. */
   const sentence = trimmed.slice(sentenceStart,);
   if (sentence.length
     === 0)
-    return undefined;
+    return NO_MATCH;
   /** Sentence-leading character; must be an uppercase ASCII letter to qualify. */
   const firstChar = sentence.charAt(0,);
   if ((firstChar < 'A') || (firstChar > 'Z'))
-    return undefined;
+    return NO_MATCH;
   /** Lower-cased sentence used for rhetorical-prefix matching. */
   const lower = sentence.toLowerCase();
   for (const prefix of RHETORICAL_PREFIXES) {
@@ -301,7 +310,7 @@ function findTrailingQuestion(prose: string,): QuestionMatch | undefined {
       s: lower,
       prefix,
     },)) {
-      return undefined;
+      return NO_MATCH;
     }
   }
   return { sentence, };
@@ -313,6 +322,7 @@ export {
   findCategoricalDismissal,
   findTrailingQuestion,
   findUncertainty,
+  NO_MATCH,
   stripNonProseRegions,
 };
 

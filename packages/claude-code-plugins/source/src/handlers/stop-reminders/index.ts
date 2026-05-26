@@ -4,21 +4,23 @@ import type {
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 import type { ReadonlyDeep, } from 'type-fest';
 
-import { parseHookJson, } from '../../runtime/handler-runtime.ts';
 import {
   findCategoricalDismissal,
   findTrailingQuestion,
   findUncertainty,
+  NO_MATCH,
   stripNonProseRegions,
 } from './uncertainty.ts';
 
 /**
- * Output union returned by the stop-reminders handler.
+ * Output returned by the stop-reminders handler.
  *
- * Either an empty pass-through (`{}`) or a typed `StopOutput` carrying a
- * block decision and concatenated reasons.
+ * Either a typed `StopOutput` carrying a block decision and concatenated
+ * reasons, or the empty pass-through `{}`. Every `StopOutput` field is
+ * optional, so `{}` is itself a valid `StopOutput`; no separate empty type
+ * is needed.
  */
-type StopRemindersOutput = StopOutput | Record<string, never>;
+type StopRemindersOutput = StopOutput;
 
 /**
  * Detects uncertain language and trailing user-directed questions in Claude's
@@ -55,17 +57,17 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
   /** Final assistant message with code blocks, inline code, and quotes stripped before scanning. */
   const prose = stripNonProseRegions(event.last_assistant_message
     ?? '',);
-  /** First hedging-phrase hit, if any; populates the uncertainty reminder when defined. */
+  /** First hedging-phrase hit, or `NO_MATCH`; populates the uncertainty reminder when matched. */
   const match = findUncertainty(prose,);
-  /** First uncited categorical-dismissal hit; populates the dismissal reminder when defined. */
+  /** First uncited categorical-dismissal hit, or `NO_MATCH`; populates the dismissal reminder when matched. */
   const dismissal = findCategoricalDismissal(prose,);
-  /** Trailing user-directed question hit; populates the AskUserQuestion reminder when defined. */
+  /** Trailing user-directed question hit, or `NO_MATCH`; populates the AskUserQuestion reminder when matched. */
   const question = findTrailingQuestion(prose,);
 
   /** Reminder lines accumulated across the three detectors; joined into the final block reason. */
   const reasons: string[] = [];
 
-  if (match !== undefined) {
+  if (match !== NO_MATCH) {
     reasons.push(
       `Your response contains uncertain language ("${match.phrase}").`,
       'Search for evidence, read the relevant code, or check documentation.',
@@ -76,7 +78,7 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
     );
   }
 
-  if (dismissal !== undefined) {
+  if (dismissal !== NO_MATCH) {
     reasons.push(
       `Your response contains an uncited categorical dismissal ("${dismissal.phrase}").`,
       'Categorical dismissals are one rg/find/config-read/AGENTS.md-grep away from being verified.',
@@ -87,7 +89,7 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
     );
   }
 
-  if (question !== undefined) {
+  if (question !== NO_MATCH) {
     reasons.push(
       `Your response ends with a question to the user ("${question.sentence}").`,
       'Use the AskUserQuestion tool to ask the user instead of ending your response with a question.',
@@ -122,7 +124,8 @@ function stopRemindersHandler(event: ReadonlyDeep<StopInput>,): StopRemindersOut
  * ```
  */
 function stopRemindersParser(raw: string,): StopInput {
-  return parseHookJson<StopInput>(raw,);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- trusted JSON contract from Claude Code hook system
+  return JSON.parse(raw,) as StopInput;
 }
 
 /**
