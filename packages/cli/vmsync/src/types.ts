@@ -33,9 +33,9 @@ export type DiskChecksums = {
 /** Mutable sync state tracked between boots. */
 export type SyncState = {
   /** Which hypervisor was used for the last boot. */
-  lastBootHypervisor: Hypervisor | undefined;
+  lastBootHypervisor?: Hypervisor;
   /** ISO 8601 timestamp of the last boot. */
-  lastBootAt: string | undefined;
+  lastBootAt?: string;
   /** True if the VM was booted but changes have not been synced to the other format. */
   synced: boolean;
   /** SHA-256 checksums recorded after the last sync. */

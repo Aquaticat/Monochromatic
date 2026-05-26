@@ -76,10 +76,7 @@ const args = runSync(
 
 if (args.cmd
   === 'import') {
-  await importImage({
-    imagePath: args.imagePath,
-    name: args.name,
-  },);
+  await importImage(args,);
 }
 else if (args.cmd
   === 'boot')
@@ -94,11 +91,7 @@ else if (args.cmd
   === 'list')
   await printVmList();
 else {
-  await updateConfig({
-    name: args.name,
-    memory: args.memory,
-    cpus: args.cpus,
-  },);
+  await updateConfig(args,);
 }
 
 //endregion Dispatch

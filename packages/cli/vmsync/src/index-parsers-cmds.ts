@@ -80,9 +80,15 @@ export const importCmd: SubcommandParser = command(
     function toImportArgs(
       v: {
         readonly imagePath: string;
+        // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors @optique/core optional() output, which yields `TValue | undefined` for an absent option; converted to an absent property below
         readonly name: string | undefined;
       },
     ): VmsyncArgs {
+      if (v.name === undefined)
+        return {
+          cmd: 'import',
+          imagePath: v.imagePath,
+        };
       return {
         cmd: 'import',
         imagePath: v.imagePath,
@@ -196,15 +202,34 @@ export const configCmd: SubcommandParser = command(
     function toConfigArgs(
       v: {
         readonly name: string;
+        // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors @optique/core optional() output, which yields `TValue | undefined` for an absent option; converted to absent properties below
         readonly memory: string | undefined;
+        // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- mirrors @optique/core optional() output, which yields `TValue | undefined` for an absent option; converted to absent properties below
         readonly cpus: number | undefined;
       },
     ): VmsyncArgs {
+      if ((v.memory !== undefined) && (v.cpus !== undefined))
+        return {
+          cmd: 'config',
+          name: v.name,
+          memory: v.memory,
+          cpus: v.cpus,
+        };
+      if (v.memory !== undefined)
+        return {
+          cmd: 'config',
+          name: v.name,
+          memory: v.memory,
+        };
+      if (v.cpus !== undefined)
+        return {
+          cmd: 'config',
+          name: v.name,
+          cpus: v.cpus,
+        };
       return {
         cmd: 'config',
         name: v.name,
-        memory: v.memory,
-        cpus: v.cpus,
       };
     },
   ),

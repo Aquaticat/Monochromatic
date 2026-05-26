@@ -200,7 +200,7 @@ export async function importImage(
     name,
   }: {
     readonly imagePath: string;
-    readonly name: string | undefined;
+    readonly name?: string;
   },
 ): Promise<void> {
   /** Tagged logger so import entries are scoped to `importImage` in the output. */
@@ -280,8 +280,6 @@ export async function importImage(
       cpus: DEFAULT_CPUS,
     },
     state: {
-      lastBootHypervisor: undefined,
-      lastBootAt: undefined,
       synced: true,
       checksums: {
         qcow2: qcow2Hash,

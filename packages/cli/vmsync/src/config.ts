@@ -228,18 +228,18 @@ export function stripJsoncComments(text: string,): string {
           !== '\n'))
         i += 1;
     }
-    else if ((ch === '/') && (text[i + 1]
-      === '*')) {
-      i += 2;
-      while ((i < text
-        .length) && (!((text[i - 1]
-          === '*') && (text[i]
-            === '/'))))
-        i += 1;
-      i += 1;
-    }
     else {
-      result.push(ch,);
+      if ((ch === '/') && (text[i + 1]
+        === '*')) {
+        i += 2;
+        while ((i < text
+          .length) && (!((text[i - 1]
+            === '*') && (text[i]
+              === '/'))))
+          i += 1;
+      }
+      else
+        result.push(ch,);
       i += 1;
     }
   }

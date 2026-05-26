@@ -25,7 +25,7 @@ export type VmsyncArgs =
   | {
     cmd: 'import';
     imagePath: string;
-    name: string | undefined;
+    name?: string;
   }
   | {
     cmd: 'boot';
@@ -43,8 +43,8 @@ export type VmsyncArgs =
   | {
     cmd: 'config';
     name: string;
-    memory: string | undefined;
-    cpus: number | undefined;
+    memory?: string;
+    cpus?: number;
   };
 
 //endregion Result types
