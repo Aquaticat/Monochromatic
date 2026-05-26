@@ -35,6 +35,7 @@ import {
 import type { Plugin, } from 'rolldown';
 
 import { HANDLERS, } from './handlers.ts';
+import { ABSENT, } from './maybe.ts';
 import {
   ATTR_QUERY_KEY,
   extractAttrType,
@@ -82,10 +83,17 @@ function importAttributesPlugin(): Plugin {
       code,
       id,
     ) {
-      return transformImportAttributes({
+      /**
+       * Transformed module, or {@link ABSENT} when no attribute clause was present.
+       */
+      const result = transformImportAttributes({
         code,
         id,
       },);
+      // Rolldown's transform hook signals "no change" with null; convert the ABSENT sentinel back at the boundary.
+      if (result === ABSENT)
+        return null;
+      return result;
     },
 
     /**
@@ -103,7 +111,7 @@ function importAttributesPlugin(): Plugin {
     ) {
       /** Check for query-param-tagged specifiers (from static imports after transform). */
       const queryAttrType = extractAttrType(source,);
-      if (queryAttrType !== undefined) {
+      if (queryAttrType !== ABSENT) {
         /** Specifier without the attribute query so the downstream resolver can locate the file. */
         const cleanSource = stripAttrQuery(source,);
 
@@ -160,7 +168,7 @@ function importAttributesPlugin(): Plugin {
           importerSourceCache,
         },);
 
-        if (attrType !== undefined) {
+        if (attrType !== ABSENT) {
           /** Resolved descriptor for an untagged dynamic-import specifier; `null` triggers the relative fallback. */
           const resolved = await this.resolve(
             source,
@@ -204,7 +212,7 @@ function importAttributesPlugin(): Plugin {
     async load(id,) {
       /** Attribute type encoded in the requested ID; absent IDs are left to other loaders. */
       const attrType = extractAttrType(id,);
-      if (attrType === undefined)
+      if (attrType === ABSENT)
         return null;
 
       /** Registered transformer for this attribute type; absent types are left to other loaders. */

@@ -7,6 +7,11 @@
  * @module
  */
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+
 //region Constants
 
 /** Query parameter name used to encode the attribute type in rewritten specifiers. */
@@ -21,19 +26,19 @@ export const ATTR_QUERY_KEY = '__importattr';
  *
  * @param id - Module ID potentially containing `?__importattr=<type>`
  *
- * @returns Attribute type string if present, `undefined` otherwise
+ * @returns Attribute type string if present, {@link ABSENT} otherwise
  *
  * @example
  * ```ts
  * extractAttrType('./file.sql?__importattr=text'); // 'text'
- * extractAttrType('./file.sql'); // undefined
+ * extractAttrType('./file.sql'); // ABSENT
  * ```
  */
-export function extractAttrType(id: string,): string | undefined {
+export function extractAttrType(id: string,): Maybe<string> {
   /** Offset of the attribute marker; -1 signals the ID has no encoded attribute. */
   const queryIndex = id.indexOf(`?${ATTR_QUERY_KEY}=`,);
   if (queryIndex === (-1))
-    return undefined;
+    return ABSENT;
   /** Position immediately after `?<key>=`, where the value substring begins. */
   const valueStart = queryIndex + ATTR_QUERY_KEY
     .length

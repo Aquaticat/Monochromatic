@@ -19,6 +19,10 @@ import {
   extractTypeFromOptions,
   getStringLiteralValue,
 } from './ast-extract.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { ATTR_QUERY_KEY, } from './patterns.ts';
 import {
   collectStaticReplacements,
@@ -34,7 +38,7 @@ import {
  *
  * @param id - module ID (filename) for the parser
  *
- * @returns transformed code object, or `null` if no attributes were found
+ * @returns transformed code object, or {@link ABSENT} if no attributes were found
  *
  * @example
  * ```ts
@@ -51,9 +55,9 @@ export function transformImportAttributes({
 }: {
   readonly code: string;
   readonly id: string;
-},): { code: string; } | null {
+},): Maybe<{ code: string; }> {
   if ((!code.includes(' with ',)) && (!code.includes(' with{',)))
-    return null;
+    return ABSENT;
 
   /** Parsed AST root walked to collect attribute replacements. */
   const result = parseSync(
@@ -72,7 +76,7 @@ export function transformImportAttributes({
         return;
       /** Attribute type on this static import; gates whether to emit a replacement. */
       const attrType = extractTypeFromAttributes(node.attributes,);
-      if (attrType === undefined)
+      if (attrType === ABSENT)
         return;
       replacements.push(...collectStaticReplacements({
         source: node.source,
@@ -90,7 +94,7 @@ export function transformImportAttributes({
         return;
       /** Attribute type on this re-export with source; gates whether to emit a replacement. */
       const attrType = extractTypeFromAttributes(node.attributes,);
-      if (attrType === undefined)
+      if (attrType === ABSENT)
         return;
       replacements.push(...collectStaticReplacements({
         source: node.source,
@@ -107,7 +111,7 @@ export function transformImportAttributes({
         return;
       /** Attribute type on this wildcard re-export; gates whether to emit a replacement. */
       const attrType = extractTypeFromAttributes(node.attributes,);
-      if (attrType === undefined)
+      if (attrType === ABSENT)
         return;
       replacements.push(...collectStaticReplacements({
         source: node.source,
@@ -123,11 +127,11 @@ export function transformImportAttributes({
         return;
       /** Attribute type extracted from the dynamic-import options object. */
       const attrType = extractTypeFromOptions(node.options,);
-      if (attrType === undefined)
+      if (attrType === ABSENT)
         return;
       /** Literal specifier text; computed sources are skipped because their bytes cannot be rewritten safely. */
       const sourceValue = getStringLiteralValue(node.source,);
-      if (sourceValue === undefined)
+      if (sourceValue === ABSENT)
         return;
 
       /** Quote character preserved so the rewritten specifier matches the source's quoting style. */
@@ -171,7 +175,7 @@ export function transformImportAttributes({
 
   if (replacements.length
     === 0)
-    return null;
+    return ABSENT;
 
   // Apply replacements in reverse order to preserve byte offsets
   replacements.sort(function byStartDesc(

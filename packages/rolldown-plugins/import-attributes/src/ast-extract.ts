@@ -16,6 +16,10 @@
 import type { ESTree, } from 'rolldown/utils';
 
 import { HANDLERS, } from './handlers.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 
 //region Helpers
 
@@ -25,15 +29,15 @@ import { HANDLERS, } from './handlers.ts';
  *
  * @param key - AST property key node
  *
- * @returns key name as string, or `undefined` for computed/non-string keys
+ * @returns key name as string, or {@link ABSENT} for computed/non-string keys
  */
-function getPropertyKeyName(key: ESTree.PropertyKey,): string | undefined {
+function getPropertyKeyName(key: ESTree.PropertyKey,): Maybe<string> {
   if (key.type
     === 'Identifier')
     return key.name;
   if (('value' in key) && ((typeof key.value) === 'string'))
     return key.value;
-  return undefined;
+  return ABSENT;
 }
 
 /**
@@ -41,19 +45,19 @@ function getPropertyKeyName(key: ESTree.PropertyKey,): string | undefined {
  *
  * @param node - AST expression node
  *
- * @returns string value if the node is a string literal, `undefined` otherwise
+ * @returns string value if the node is a string literal, {@link ABSENT} otherwise
  *
  * @example
  * ```ts
  * // Given AST node for string literal "text"
  * getStringLiteralValue(stringNode); // "text"
- * getStringLiteralValue(identifierNode); // undefined
+ * getStringLiteralValue(identifierNode); // ABSENT
  * ```
  */
-export function getStringLiteralValue(node: ESTree.Expression,): string | undefined {
+export function getStringLiteralValue(node: ESTree.Expression,): Maybe<string> {
   if (('value' in node) && ((typeof node.value) === 'string'))
     return node.value as string;
-  return undefined;
+  return ABSENT;
 }
 
 //endregion Helpers
@@ -66,7 +70,7 @@ export function getStringLiteralValue(node: ESTree.Expression,): string | undefi
  *
  * @param attributes - import attribute nodes from the AST
  *
- * @returns supported attribute type string, or `undefined` if none found
+ * @returns supported attribute type string, or {@link ABSENT} if none found
  *
  * @example
  * ```ts
@@ -76,7 +80,7 @@ export function getStringLiteralValue(node: ESTree.Expression,): string | undefi
  */
 export function extractTypeFromAttributes(
   attributes: readonly ESTree.ImportAttribute[],
-): string | undefined {
+): Maybe<string> {
   for (const attr of attributes) {
     /** Resolved attribute key name covering both identifier and string-literal AST forms. */
     const key = attr.key
@@ -92,7 +96,7 @@ export function extractTypeFromAttributes(
       return attr.value
         .value;
   }
-  return undefined;
+  return ABSENT;
 }
 
 /**
@@ -102,7 +106,7 @@ export function extractTypeFromAttributes(
  *
  * @param options - options expression from `ImportExpression.options`
  *
- * @returns supported attribute type string, or `undefined` if the options
+ * @returns supported attribute type string, or {@link ABSENT} if the options
  * do not contain a recognized `with.type` value
  *
  * @example
@@ -113,10 +117,10 @@ export function extractTypeFromAttributes(
  */
 export function extractTypeFromOptions(
   options: ESTree.Expression,
-): string | undefined {
+): Maybe<string> {
   if (options.type
     !== 'ObjectExpression')
-    return undefined;
+    return ABSENT;
 
   for (const prop of options.properties) {
     if (prop.type
@@ -141,7 +145,7 @@ export function extractTypeFromOptions(
       /** String value paired with the `type` entry. */
       const innerValue = getStringLiteralValue(innerProp.value,);
       if ((innerKey === 'type')
-        && (innerValue !== undefined)
+        && (innerValue !== ABSENT)
         && (HANDLERS[innerValue]
           !== undefined))
       {
@@ -150,5 +154,5 @@ export function extractTypeFromOptions(
     }
   }
 
-  return undefined;
+  return ABSENT;
 }
