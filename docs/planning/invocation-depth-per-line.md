@@ -31,7 +31,7 @@ Threshold-only: already-split layouts pass when every line stays within two.
 - `CallExpression` (including optional calls) and `NewExpression`: the spine continues through the single argument
   only when `arguments.length === 1`.
 - `ImportExpression`: the spine operand is `.source`, not `.arguments[0]`, and continues only when `.options` is null
-  (`@oxlint/plugins` `index.d.ts:1752-1757`).
+  (the `@oxlint/plugins` `ImportExpression` interface carries `source`, `options`, `phase`).
 - Do not count `TaggedTemplateExpression`, JSX, or `V8IntrinsicExpression`. The oxc parser as invoked here does not
   emit `V8IntrinsicExpression` for repo TypeScript, so it needs no explicit exclusion code.
 
@@ -41,9 +41,10 @@ Threshold-only: already-split layouts pass when every line stays within two.
 `TSSatisfiesExpression`, `TSTypeAssertion`, `TSNonNullExpression`, `TSInstantiationExpression`.
 
 Not `ParenthesizedExpression`. oxlint strips grouping parentheses and emits no such node here
-(`src/utility/chain.ts:57`, `src/utility/has-parens.ts:17`), even though the `@oxlint/plugins` type union lists the type
-(`index.d.ts:1413`) and a visitor hook for it (`index.d.ts:2583`). Detection is unaffected because `a((b(c())))` parses
-identically to `a(b(c()))`. The autofix is affected: see the paren note under "Autofix".
+(`src/utility/chain.ts` `parenIsolated`, `src/utility/has-parens.ts` `hasParens`), even though the `@oxlint/plugins`
+type union declares the type and a visitor hook for it. Confirmed empirically on oxlint 1.67.0 (see "Verification"):
+`a((b(c())))` parses to three `CallExpression` nodes with no paren node, so detection is unaffected. The autofix is
+affected: see the paren note under "Autofix".
 
 ### Containers (stop the parent spine, descendants still checked)
 
@@ -77,6 +78,15 @@ Iterative, never recursive: spine depth grows with source length and the repo ba
 Before coding, dump node types with a throwaway logging visitor for each fixture shape (call, new, dynamic import,
 optional call, grouping parens, spread, yield, unary, TS wrappers, tagged-template interpolation) to confirm the shapes
 against the running oxlint version rather than against the type union.
+
+### Verification
+
+Confirmed on oxlint 1.67.0 with a throwaway probe plugin reporting each visited node's type.
+For `const grouped = a((b(c())));` the probe reported three `CallExpression` nodes and no `ParenthesizedExpression`,
+and the `b(c())` operand span excluded the surrounding parens, so the byte-peek paren recovery above is required.
+`import(...)` surfaced as an `ImportExpression` operand; `await`, `void`, `yield`, and spread surfaced as
+`AwaitExpression`, `UnaryExpression`, `YieldExpression`, and `SpreadElement` wrappers.
+Re-run the probe after any oxlint major bump.
 
 ## Starting proposal
 
@@ -282,6 +292,8 @@ const value = a(
 ```
 
 This is an autofix preference, not the lint invariant.
+The shown layout is the converged state: each report splits one operand level, so a spine this deep needs several
+`oxlint --fix` passes (one pass on `a(b(c(d())))` yields `a(\n  b(c(d())),\n)`, still failing).
 The later threshold-only decision means hand-written alternatives pass if every line stays at depth two or less.
 
 ### 7. Autofix scope: full autofix
@@ -485,9 +497,8 @@ Tagged-template handling changed later and no longer follows the counted-invocat
 
 After checking Oxlint's node types, the wrapper list expanded beyond the initial await plus TypeScript wrappers.
 
-Chosen transparent wrappers:
+Chosen transparent wrappers (`ParenthesizedExpression` was later removed; see "Implementation spec"):
 
-- `ParenthesizedExpression`.
 - `ChainExpression`.
 - `AwaitExpression`.
 - TypeScript wrappers: `TSAsExpression`, `TSSatisfiesExpression`, `TSTypeAssertion`,
@@ -818,6 +829,13 @@ const value = a(b(c()));
 const value = a(
   b(c(d())),
 );
+```
+
+Independent spines on one line report independently:
+
+```ts
+// FAIL: two diagnostics, one on b and one on d; the two-argument a breaks both spines.
+const value = a(b(c(x())), d(e(f())));
 ```
 
 This reconciles threshold-only layout with stable diagnostic ownership.
