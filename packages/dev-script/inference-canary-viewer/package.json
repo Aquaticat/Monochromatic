@@ -20,7 +20,8 @@
     "micromark": "catalog:",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-numeric-const": "workspace:*",
-    "nano-spawn": "catalog:"
+    "nano-spawn": "catalog:",
+    "string-dedent": "catalog:"
   },
   "version": "0.0.1",
   "repository": {
