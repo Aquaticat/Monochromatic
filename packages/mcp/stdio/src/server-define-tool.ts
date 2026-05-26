@@ -32,8 +32,8 @@ export function defineTool(
     name,
     entry,
   }: {
-    name: string;
-    entry: Omit<ToolEntry, 'name'>;
+    readonly name: string;
+    readonly entry: Omit<ToolEntry, 'name'>;
   },
 ): ToolEntry {
   return {

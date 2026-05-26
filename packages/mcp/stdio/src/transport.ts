@@ -7,7 +7,10 @@ import {
 } from './json-rpc.ts';
 import { readLines, } from './line-reader.ts';
 
-import type { McpServerHandle, } from './server-types.ts';
+import {
+  type McpServerHandle,
+  NO_RESPONSE,
+} from './server-types.ts';
 
 //region Output writer abstraction: supports both Bun FileSink and standard WritableStream
 
@@ -24,7 +27,7 @@ import type { McpServerHandle, } from './server-types.ts';
  * ```
  */
 export type StdoutWriter = {
-  write(data: Uint8Array,): number | Promise<number>;
+  readonly write: (data: Uint8Array,) => number | Promise<number>;
 };
 
 /**
@@ -80,9 +83,9 @@ export async function serve(
     input = process.stdin,
     output = processStdoutWriter(),
   }: {
-    server: McpServerHandle;
-    input?: AsyncIterable<Uint8Array>;
-    output?: StdoutWriter;
+    readonly server: McpServerHandle;
+    readonly input?: AsyncIterable<Uint8Array>;
+    readonly output?: StdoutWriter;
   },
 ): Promise<void> {
   /** Reused across every outbound message so each call avoids allocating a fresh encoder. */
@@ -152,11 +155,11 @@ export async function serve(
 
     console.error(`[mcp-stdio] <- ${line}`,);
 
-    /** Dispatch result; `undefined` indicates a notification (no reply expected). */
+    /** Dispatch result; `NO_RESPONSE` indicates a notification (no reply expected). */
     const response = await server.handleMessage(parsed,);
 
     // Notifications produce no response.
-    if (response === undefined)
+    if (response === NO_RESPONSE)
       continue;
 
     console.error(`[mcp-stdio] -> ${JSON.stringify(response,)}`,);
@@ -196,9 +199,9 @@ async function writeMessage(
     encoder,
     message,
   }: {
-    writer: StdoutWriter;
-    encoder: TextEncoder;
-    message: JsonRpcOutbound;
+    readonly writer: StdoutWriter;
+    readonly encoder: Readonly<TextEncoder>;
+    readonly message: JsonRpcOutbound;
   },
 ): Promise<void> {
   /** Newline-terminated JSON; MCP stdio framing requires one message per line. */

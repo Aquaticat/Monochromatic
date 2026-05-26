@@ -18,11 +18,13 @@ export type {
   ToolInputSchema,
 } from './protocol.ts';
 export { defineTool, } from './server-define-tool.ts';
-export type {
-  McpServerConfig,
-  McpServerHandle,
-  RegisteredTool,
-  ToolEntry,
+export {
+  type DispatchResult,
+  type McpServerConfig,
+  type McpServerHandle,
+  NO_RESPONSE,
+  type RegisteredTool,
+  type ToolEntry,
 } from './server-types.ts';
 export { createMcpServer, } from './server.ts';
 export {

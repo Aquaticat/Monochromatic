@@ -7,6 +7,11 @@ import type {
   JsonRpcResponse,
 } from './json-rpc.ts';
 
+import {
+  type DispatchResult,
+  NO_RESPONSE,
+} from './server-types.ts';
+
 /**
  * Constructs a JSON-RPC success response.
  *
@@ -27,8 +32,8 @@ export function respondSuccess(
     id,
     result,
   }: {
-    id: JsonRpcRequest['id'];
-    result: unknown;
+    readonly id: JsonRpcRequest['id'];
+    readonly result: unknown;
   },
 ): JsonRpcResponse {
   return {
@@ -61,9 +66,9 @@ export function respondError(
     code,
     message,
   }: {
-    id: JsonRpcRequest['id'];
-    code: number;
-    message: string;
+    readonly id: JsonRpcRequest['id'];
+    readonly code: number;
+    readonly message: string;
   },
 ): JsonRpcErrorResponse {
   return {
@@ -81,17 +86,17 @@ export function respondError(
  *
  * @param notification - Inbound notification (consumed but not acted upon).
  *
- * @returns Always `undefined` since notifications produce no response.
+ * @returns `NO_RESPONSE` sentinel since notifications produce no reply to send.
  *
  * @example
  * ```ts
  * handleNotification({ jsonrpc: '2.0', method: 'notifications/initialized' });
- * // undefined
+ * // NO_RESPONSE
  * ```
  */
-export function handleNotification(notification: JsonRpcNotification,): undefined {
+export function handleNotification(notification: JsonRpcNotification,): DispatchResult {
   if (notification.method
     !== 'notifications/initialized')
     console.error(`[mcp-stdio] unexpected notification method: ${notification.method}`,);
-  return undefined;
+  return NO_RESPONSE;
 }

@@ -11,6 +11,20 @@
 export const PROTOCOL_VERSION = '2025-03-26';
 
 /**
+ * Tools capability sub-object declared in {@link ServerCapabilities}.
+ * `listChanged` signals that the server emits `notifications/tools/list_changed`
+ * when its tool set mutates; a stdio server with a fixed registry omits it.
+ *
+ * @example
+ * ```ts
+ * const tools: ToolsCapability = {};
+ * ```
+ */
+export type ToolsCapability = {
+  readonly listChanged?: boolean;
+};
+
+/**
  * Server capabilities declared during initialization.
  * Only `tools` is relevant for a stdio tool server.
  *
@@ -20,7 +34,7 @@ export const PROTOCOL_VERSION = '2025-03-26';
  * ```
  */
 export type ServerCapabilities = {
-  readonly tools?: Record<string, never>;
+  readonly tools?: ToolsCapability;
 };
 
 /**
@@ -63,7 +77,7 @@ export type InitializeResult = {
  */
 export type ToolInputSchema = {
   readonly type: 'object';
-  readonly properties?: Record<string, unknown>;
+  readonly properties?: Readonly<Record<string, unknown>>;
   readonly required?: readonly string[];
 };
 
@@ -129,7 +143,7 @@ export type ToolCallResult = {
  * ```
  */
 export type ToolHandler = (
-  args: Record<string, unknown>,
+  args: Readonly<Record<string, unknown>>,
 ) => ToolCallResult | Promise<ToolCallResult>;
 
 //endregion

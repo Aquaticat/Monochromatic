@@ -38,8 +38,8 @@ export async function handleToolCall(
     toolMap,
     request,
   }: {
-    toolMap: ReadonlyMap<string, RegisteredTool>;
-    request: JsonRpcRequest;
+    readonly toolMap: ReadonlyMap<string, RegisteredTool>;
+    readonly request: JsonRpcRequest;
   },
 ): Promise<JsonRpcOutbound> {
   /** Echoed back in the response so the client can correlate the call with the result. */

@@ -1,4 +1,5 @@
-// Type definitions for MCP server configuration, tool entries, and the server handle.
+// Type definitions for MCP server configuration, tool entries, the server handle,
+// and the dispatch sentinel that distinguishes "no reply" from a real outbound message.
 
 import type {
   ToolDefinition,
@@ -10,6 +11,23 @@ import type {
   JsonRpcInbound,
   JsonRpcOutbound,
 } from './json-rpc.ts';
+
+//region Dispatch outcome: outbound reply or the no-reply sentinel
+
+/**
+ * Sentinel returned from message dispatch when an inbound notification yields no reply.
+ * A unique `Symbol` rather than `undefined`/`null`: notifications are a real protocol state
+ * ("handled, nothing to send"), distinct from any value the transport could mistake for a reply.
+ */
+export const NO_RESPONSE: unique symbol = Symbol('mcp-stdio:no-response',);
+
+/**
+ * Outcome of dispatching one inbound message: either an outbound JSON-RPC reply,
+ * or {@link NO_RESPONSE} when the message was a notification expecting no reply.
+ */
+export type DispatchResult = JsonRpcOutbound | typeof NO_RESPONSE;
+
+//endregion
 
 //region Tool entry: pairs a name with its options for immutable registration
 
@@ -88,7 +106,7 @@ export type McpServerConfig = {
 export type McpServerHandle = {
   readonly handleMessage: (
     message: JsonRpcInbound,
-  ) => JsonRpcOutbound | undefined | Promise<JsonRpcOutbound | undefined>;
+  ) => DispatchResult | Promise<DispatchResult>;
 };
 
 //endregion

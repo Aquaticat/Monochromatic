@@ -20,6 +20,7 @@ import {
 } from './server-response.ts';
 import { handleToolCall, } from './server-tool-call.ts';
 import type {
+  DispatchResult,
   McpServerConfig,
   McpServerHandle,
   RegisteredTool,
@@ -64,8 +65,8 @@ export function createMcpServer(
     config,
     tools,
   }: {
-    config: McpServerConfig;
-    tools: readonly ToolEntry[];
+    readonly config: McpServerConfig;
+    readonly tools: readonly ToolEntry[];
   },
 ): McpServerHandle {
   /**
@@ -187,12 +188,11 @@ export function createMcpServer(
    *
    * @param message - Parsed inbound JSON-RPC request or notification.
    *
-   * @returns JSON-RPC response for requests; `undefined` for notifications.
+   * @returns JSON-RPC response for requests; the `NO_RESPONSE` sentinel for notifications.
    */
-  function handleMessage(message: JsonRpcInbound,): Promise<JsonRpcOutbound | undefined> {
+  function handleMessage(message: JsonRpcInbound,): Promise<DispatchResult> {
     if (!('id' in message)) {
-      handleNotification(message,);
-      return Promise.resolve(undefined,);
+      return Promise.resolve(handleNotification(message,),);
     }
     return handleRequest(message,);
   }

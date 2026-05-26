@@ -25,7 +25,7 @@ export type JsonRpcRequest = {
   readonly jsonrpc: '2.0';
   readonly id: JsonRpcId;
   readonly method: string;
-  readonly params?: Record<string, unknown>;
+  readonly params?: Readonly<Record<string, unknown>>;
 };
 
 /**
@@ -42,7 +42,7 @@ export type JsonRpcRequest = {
 export type JsonRpcNotification = {
   readonly jsonrpc: '2.0';
   readonly method: string;
-  readonly params?: Record<string, unknown>;
+  readonly params?: Readonly<Record<string, unknown>>;
 };
 
 /**
@@ -96,6 +96,7 @@ export type JsonRpcErrorDetail = {
  */
 export type JsonRpcErrorResponse = {
   readonly jsonrpc: '2.0';
+  // oxlint-disable-next-line no-restricted-syntax/no-nullish-union -- JSON-RPC 2.0 section 5 mandates the literal wire value `null` for `id` when the request id cannot be determined (parse errors, invalid structure); this `null` is the external protocol's required output, not an internal absence sentinel.
   readonly id: JsonRpcId | null;
   readonly error: JsonRpcErrorDetail;
 };

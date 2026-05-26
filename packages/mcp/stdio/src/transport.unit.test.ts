@@ -13,7 +13,11 @@ import {
   type StdoutWriter,
 } from './transport.ts';
 
-import type { McpServerHandle, } from './server-types.ts';
+import {
+  type DispatchResult,
+  type McpServerHandle,
+  NO_RESPONSE,
+} from './server-types.ts';
 
 //region helpers: test doubles for stdin/stdout and server handle
 
@@ -59,10 +63,10 @@ function collectingWriter(): { writer: StdoutWriter; lines: string[]; } {
 /**
  * Creates a mock MCP server handle that returns a fixed response for any request.
  *
- * @param response - Response to return for all requests. `undefined` for notifications.
+ * @param response - Dispatch result to return for all requests; `NO_RESPONSE` for notifications.
  * @returns McpServerHandle that always returns the given response.
  */
-function mockServer(response: JsonRpcOutbound | undefined,): McpServerHandle {
+function mockServer(response: DispatchResult,): McpServerHandle {
   return {
     handleMessage: () => response,
   };
@@ -108,7 +112,7 @@ await describe({
     it({
       name: 'returns parse error for invalid JSON',
       fn: async () => {
-        const server = mockServer(undefined,);
+        const server = mockServer(NO_RESPONSE,);
         const input = stdinFromMessages(['not-json',],);
         const { writer, lines, } = collectingWriter();
 
@@ -124,7 +128,7 @@ await describe({
     it({
       name: 'returns parse error for valid JSON that is not a JSON-RPC message',
       fn: async () => {
-        const server = mockServer(undefined,);
+        const server = mockServer(NO_RESPONSE,);
         const input = stdinFromMessages(['{"not":"jsonrpc"}',],);
         const { writer, lines, } = collectingWriter();
 
@@ -140,7 +144,7 @@ await describe({
     it({
       name: 'does not write response for notifications',
       fn: async () => {
-        const server = mockServer(undefined,);
+        const server = mockServer(NO_RESPONSE,);
         const input = stdinFromMessages([
           '{"jsonrpc":"2.0","method":"notifications/initialized"}',
         ],);

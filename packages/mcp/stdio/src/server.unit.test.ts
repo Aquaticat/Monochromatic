@@ -16,14 +16,17 @@ import { PROTOCOL_VERSION, } from './protocol.ts';
 import { defineTool, } from './server-define-tool.ts';
 import { createMcpServer, } from './server.ts';
 
-import type { ToolEntry, } from './server-types.ts';
+import {
+  NO_RESPONSE,
+  type ToolEntry,
+} from './server-types.ts';
 
 /** Reusable test tool that echoes arguments back as text content. */
 const echoTool: ToolEntry = {
   name: 'echo',
   description: 'Echoes arguments.',
   inputSchema: { type: 'object', properties: { text: { type: 'string', }, }, },
-  handler: (args: Record<string, unknown>,) => ({
+  handler: (args: Readonly<Record<string, unknown>>,) => ({
     content: [{ type: 'text', text: JSON.stringify(args,), },],
   }),
 };
@@ -475,13 +478,13 @@ await describe({
 
         //endregion unknown method
 
-        //region notifications: returns undefined for notifications
+        //region notifications: returns the no-response sentinel for notifications
 
         describe({
           name: 'notifications',
           children: [
             it({
-              name: 'returns undefined for notifications/initialized',
+              name: 'returns NO_RESPONSE for notifications/initialized',
               fn: async () => {
                 const server = createMcpServer({
                   config: { name: 'srv', version: '0.1.0', },
@@ -490,11 +493,11 @@ await describe({
                 const notification: JsonRpcInbound = { jsonrpc: '2.0',
                   method: 'notifications/initialized', };
                 const result = await server.handleMessage(notification,);
-                expect(result,).toBeUndefined();
+                expect(result,).toBe(NO_RESPONSE,);
               },
             },),
             it({
-              name: 'returns undefined for unexpected notification methods',
+              name: 'returns NO_RESPONSE for unexpected notification methods',
               fn: async () => {
                 const server = createMcpServer({
                   config: { name: 'srv', version: '0.1.0', },
@@ -503,7 +506,7 @@ await describe({
                 const notification: JsonRpcInbound = { jsonrpc: '2.0',
                   method: 'notifications/unknown', };
                 const result = await server.handleMessage(notification,);
-                expect(result,).toBeUndefined();
+                expect(result,).toBe(NO_RESPONSE,);
               },
             },),
           ],
