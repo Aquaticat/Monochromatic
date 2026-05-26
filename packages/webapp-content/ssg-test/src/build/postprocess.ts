@@ -186,13 +186,11 @@ async function fingerprintCss(
   );
 
   /**
-   * Reads the CSS file, returning `''` when missing (already fingerprinted).
-   * A non-empty stylesheet is always produced by the build, so `''` is an
-   * unambiguous absent-sentinel here.
+   * Reads the CSS file, returning `CSS_ABSENT` when missing (already fingerprinted).
    *
-   * @returns CSS file contents, or `''` when the file does not exist
+   * @returns CSS file contents, or `CSS_ABSENT` when the file does not exist
    */
-  async function readCss(): Promise<string> {
+  async function readCss(): Promise<string | typeof CSS_ABSENT> {
     try {
       return await readFile(
         cssPath,
@@ -206,15 +204,15 @@ async function fingerprintCss(
         l.info(
           'styles.css not found, skipping CSS fingerprinting (already fingerprinted?)',
         );
-        return '';
+        return CSS_ABSENT;
       }
       throw error;
     }
   }
 
-  /** Pre-fingerprint CSS body; `''` when the file is already renamed. */
+  /** Pre-fingerprint CSS body; `CSS_ABSENT` when the file is already renamed. */
   const initialCss = await readCss();
-  if (initialCss === '')
+  if (initialCss === CSS_ABSENT)
     return CSS_ABSENT;
 
   /** CSS body rewritten via replacements before hashing. */

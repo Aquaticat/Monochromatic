@@ -25,6 +25,8 @@ import {
 } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+
 /** Absolute directory of this module, used to locate the sibling codepoints file. */
 const HERE = import.meta.dirname;
 
@@ -47,6 +49,8 @@ const HEX_RADIX = 16;
  *
  * @returns tuple of icon name and single-codepoint string
  *
+ * @throws when the line is malformed (missing the name or codepoint field)
+ *
  * @example
  * ```ts
  * parseLine('info e88e'); // ['info', '\ue88e']
@@ -56,12 +60,12 @@ function parseLine(line: string,): readonly [
   string,
   string,
 ] {
-  /** Destructured space-delimited fields; downstream uses defaults to absorb malformed lines. */
+  /** Space-delimited fields; a well-formed line is `name codepoint`, so both fields are required. */
   const [name, hex,] = line.split(' ',);
   return [
-    name ?? '',
+    nonNullishOrThrow(name,),
     String.fromCodePoint(Number.parseInt(
-      hex ?? '0',
+      nonNullishOrThrow(hex,),
       HEX_RADIX,
     ),),
   ] as const;

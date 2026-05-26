@@ -83,6 +83,13 @@ const PARSERS: Readonly<Record<string, Parser>> = {
 /** Prefix on code element class names identifying the language. */
 const LANGUAGE_PREFIX = 'language-';
 
+/**
+ * Sentinel returned by {@link getLanguage} when a code element carries no
+ * `language-*` class. A unique symbol rather than the empty string, so "no
+ * language" is never mistaken for a (nonsensical) empty language name.
+ */
+const NO_LANGUAGE: unique symbol = Symbol('no-language',);
+
 //endregion Parser configuration
 
 //region Hast utilities
@@ -113,20 +120,20 @@ function extractText(node: ElementContent,): string {
  *
  * @param codeElement - hast `<code>` element node
  *
- * @returns language name, or `''` when no `language-*` class is found
+ * @returns language name, or {@link NO_LANGUAGE} when no `language-*` class is found
  */
-function getLanguage(codeElement: Element,): string {
+function getLanguage(codeElement: Element,): string | typeof NO_LANGUAGE {
   /** Destructured class-list property; rehype puts the language as a `language-*` token here. */
   const { className, } = codeElement.properties;
   if (!Array.isArray(className,))
-    return '';
+    return NO_LANGUAGE;
   for (const cls of className) {
     /** Per-iteration string cast since className entries may be numbers in the hast spec. */
     const name = String(cls,);
     if (name.startsWith(LANGUAGE_PREFIX,))
       return name.slice(LANGUAGE_PREFIX.length,);
   }
-  return '';
+  return NO_LANGUAGE;
 }
 /* oxlint-enable typescript/prefer-readonly-parameter-types */
 
@@ -216,9 +223,9 @@ function visitNode(node: Root | Element,): void {
           && (firstChild.tagName
             === 'code')
       ) {
-        /** Language detected from the `<code>` class list, or `''` to skip. */
+        /** Language detected from the `<code>` class list, or `NO_LANGUAGE` to skip. */
         const lang = getLanguage(firstChild,);
-        if (lang !== '') {
+        if (lang !== NO_LANGUAGE) {
           /** Lezer parser bound to the detected language, or undefined when unsupported. */
           const parser = PARSERS[lang];
           if (parser !== undefined) {
