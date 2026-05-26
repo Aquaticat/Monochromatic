@@ -76,7 +76,9 @@ await describe({
             await writeFile(dest, 'unchanged',);
             await overwrite({ dest, content: 'unchanged', },);
             /** No writeTimestamp recorded because the actual write was skipped */
-            expect(writeTimestamps.has(resolve(dest,),),).toBe(false,);
+            expect(
+              writeTimestamps.has(resolve(dest,),),
+            ).toBe(false,);
             await teardown(tempDir,);
           },
         },),
@@ -88,7 +90,9 @@ await describe({
             await writeFile(dest, 'same',);
             await overwrite({ dest, content: 'same', },);
             /** Path should be managed regardless of skip */
-            expect(writes.has(resolve(dest,),),).toBe(true,);
+            expect(
+              writes.has(resolve(dest,),),
+            ).toBe(true,);
             await teardown(tempDir,);
           },
         },),
@@ -106,7 +110,9 @@ await describe({
 
             await overwrite({ dest, content: 'new content', },);
             /** Same content now: timestamp must be identical to the first write */
-            expect(writeTimestamps.get(resolve(dest,),),).toBe(firstTimestamp,);
+            expect(
+              writeTimestamps.get(resolve(dest,),),
+            ).toBe(firstTimestamp,);
             await teardown(tempDir,);
           },
         },),
@@ -179,7 +185,9 @@ await describe({
             const dest = join(tempDir, 'skipme.txt',);
             await writeFile(dest, 'existing',);
             await overwriteIfNotExists({ dest, content: 'ignored', },);
-            expect(writes.has(resolve(dest,),),).toBe(true,);
+            expect(
+              writes.has(resolve(dest,),),
+            ).toBe(true,);
             await teardown(tempDir,);
           },
         },),
@@ -257,7 +265,9 @@ await describe({
             },);
 
             /** No writeTimestamp for this dest because content was identical (size check unsafe under concurrent execution) */
-            expect(writeTimestamps.has(resolve(join(destDir, 'same.ts',),),),).toBe(
+            expect(
+              writeTimestamps.has(resolve(join(destDir, 'same.ts',),),),
+            ).toBe(
               false,
             );
             await teardown(tempDir,);
@@ -303,8 +313,12 @@ await describe({
               files,
             },);
             /** Each dest path must be tracked individually (size check unsafe under concurrent execution) */
-            expect(writes.has(resolve(join(tempDir, 'out', 'x.ts',),),),).toBe(true,);
-            expect(writes.has(resolve(join(tempDir, 'out', 'y.ts',),),),).toBe(true,);
+            expect(
+              writes.has(resolve(join(tempDir, 'out', 'x.ts',),),),
+            ).toBe(true,);
+            expect(
+              writes.has(resolve(join(tempDir, 'out', 'y.ts',),),),
+            ).toBe(true,);
             await teardown(tempDir,);
           },
         },),

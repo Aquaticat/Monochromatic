@@ -97,14 +97,18 @@ await describe({
           name: 'walks tens of thousands of new RegExp tokens without overflowing',
           fn: async () => {
             const tokenCount = 50_000;
-            expect(detectsRegexUsage('new RegExpX'.repeat(tokenCount,),),).toBe(false,);
+            expect(
+              detectsRegexUsage('new RegExpX'.repeat(tokenCount,),),
+            ).toBe(false,);
           },
         },),
         it({
           name: 'walks tens of thousands of slashes without overflowing',
           fn: async () => {
             const slashCount = 50_000;
-            expect(detectsRegexUsage('/'.repeat(slashCount,),),).toBe(false,);
+            expect(
+              detectsRegexUsage('/'.repeat(slashCount,),),
+            ).toBe(false,);
           },
         },),
       ],

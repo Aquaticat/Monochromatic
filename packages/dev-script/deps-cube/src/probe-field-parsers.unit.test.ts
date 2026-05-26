@@ -270,7 +270,9 @@ await describe({
         it({
           name: 'scans a long digit run then rejects when no dot follows it',
           fn: async () => {
-            expect(pinnedOrLatest('1'.repeat(LONG_RUN,),),).toBe(LATEST_SENTINEL,);
+            expect(
+              pinnedOrLatest('1'.repeat(LONG_RUN,),),
+            ).toBe(LATEST_SENTINEL,);
           },
         },),
 

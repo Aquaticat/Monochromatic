@@ -74,7 +74,9 @@ await describe({
               createdAt: 1_714_080_000_000,
               id: 1_042,
             };
-            expect(decodeCursor(encodeCursor(original,),),).toEqual(original,);
+            expect(
+              decodeCursor(encodeCursor(original,),),
+            ).toEqual(original,);
           },
         },),
 
@@ -85,7 +87,9 @@ await describe({
               createdAt: 0,
               id: 0,
             };
-            expect(decodeCursor(encodeCursor(original,),),).toEqual(original,);
+            expect(
+              decodeCursor(encodeCursor(original,),),
+            ).toEqual(original,);
           },
         },),
 
@@ -96,7 +100,9 @@ await describe({
               createdAt: Number.MAX_SAFE_INTEGER,
               id: Number.MAX_SAFE_INTEGER,
             };
-            expect(decodeCursor(encodeCursor(original,),),).toEqual(original,);
+            expect(
+              decodeCursor(encodeCursor(original,),),
+            ).toEqual(original,);
           },
         },),
 
@@ -167,7 +173,9 @@ await describe({
               },
             );
             for (const original of cases)
-              expect(decodeCursor(encodeCursor(original,),),).toEqual(original,);
+              expect(
+                decodeCursor(encodeCursor(original,),),
+              ).toEqual(original,);
           },
         },),
       ],

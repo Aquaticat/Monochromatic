@@ -136,7 +136,9 @@ await describe({
         it({
           name: 'returns false for a long body with no terminating colon',
           fn: async () => {
-            expect(startsWithUriScheme('a'.repeat(LONG_RUN,),),).toBe(false,);
+            expect(
+              startsWithUriScheme('a'.repeat(LONG_RUN,),),
+            ).toBe(false,);
           },
         },),
       ],

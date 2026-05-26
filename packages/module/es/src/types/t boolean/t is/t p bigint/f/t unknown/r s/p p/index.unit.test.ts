@@ -19,7 +19,9 @@ await describe({
         expect(isBigint(BigInt(Number.MAX_SAFE_INTEGER,) + 1n,),).toBe(true,);
         expect(isBigint(BigInt(Number.MIN_SAFE_INTEGER,) - 1n,),).toBe(true,);
         // oxlint-disable-next-line unicorn/prefer-bigint-literals -- testing
-        expect(isBigint(BigInt('123456789012345678901234567890',),),).toBe(true,);
+        expect(
+          isBigint(BigInt('123456789012345678901234567890',),),
+        ).toBe(true,);
       },
     },),
     it({
@@ -39,7 +41,9 @@ await describe({
         expect(isBigint({},),).toBe(false,);
         expect(isBigint([],),).toBe(false,);
         expect(isBigint(() => {/* intentionally empty */},),).toBe(false,);
-        expect(isBigint(Symbol('test',),),).toBe(false,);
+        expect(
+          isBigint(Symbol('test',),),
+        ).toBe(false,);
         expect(isBigint(true,),).toBe(false,);
         expect(isBigint(false,),).toBe(false,);
       },

@@ -58,16 +58,20 @@ export {};
 
 /** Optique parser for the task-depends CLI */
 const parser = object({
-  sources: multiple(optional(option(
+  sources: multiple(
+    optional(option(
     '-s',
     '--sources',
     string(),
-  ),),),
-  outputs: multiple(optional(option(
+  ),),
+  ),
+  outputs: multiple(
+    optional(option(
     '-o',
     '--outputs',
     string(),
-  ),),),
+  ),),
+  ),
   sourceTimeStrategy: optional(option(
     '--source-time-strategy',
     string(),
@@ -84,7 +88,9 @@ const parser = object({
     '-v',
     '--verbose',
   ),
-  rest: multiple(argument(string(),),),
+  rest: multiple(
+    argument(string(),),
+  ),
 },);
 
 //endregion Parser definition

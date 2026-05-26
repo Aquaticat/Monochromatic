@@ -100,7 +100,9 @@ await describe({
       name: 'collapses a long newline run in a single linear pass',
       fn: async () => {
         const runLength = 100_000;
-        expect(collapseExcessNewlines('\n'.repeat(runLength,),),).toBe('\n\n',);
+        expect(
+          collapseExcessNewlines('\n'.repeat(runLength,),),
+        ).toBe('\n\n',);
       },
     },),
   ],

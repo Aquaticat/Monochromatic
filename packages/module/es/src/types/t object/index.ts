@@ -8,7 +8,7 @@ export type * as map from './t map/index.ts';
 export type * as nonNull from './t nonNull/index.ts';
 export type * as null from './t null/index.ts';
 export * as promise from './t promise/index.ts';
-export * as proxy from './t proxy/index.ts';
+export type * as proxy from './t proxy/index.ts';
 export * as record from './t record/index.ts';
 export * as regexp from './t regexp/index.ts';
 export type * as type from './t/index.ts';

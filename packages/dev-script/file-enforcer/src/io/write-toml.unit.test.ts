@@ -126,7 +126,9 @@ await describe({
           value: 'Alice',
         },);
         /** writeIfChanged should detect no diff and skip the write */
-        expect(writeTimestamps.has(resolve(dest,),),).toBe(false,);
+        expect(
+          writeTimestamps.has(resolve(dest,),),
+        ).toBe(false,);
         await teardown(tempDir,);
       },
     },),
@@ -141,7 +143,9 @@ await describe({
           path: ['name',],
           value: 'Alice',
         },);
-        expect(writes.has(resolve(dest,),),).toBe(true,);
+        expect(
+          writes.has(resolve(dest,),),
+        ).toBe(true,);
         await teardown(tempDir,);
       },
     },),

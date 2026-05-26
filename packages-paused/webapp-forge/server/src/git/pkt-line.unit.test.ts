@@ -72,14 +72,18 @@ await describe({
       name: 'flushPkt is "0000"',
       async fn() {
         await Promise.resolve();
-        expect(new TextDecoder().decode(flushPkt(),),).toBe('0000',);
+        expect(
+          new TextDecoder().decode(flushPkt(),),
+        ).toBe('0000',);
       },
     },),
     it({
       name: 'delimPkt is "0001"',
       async fn() {
         await Promise.resolve();
-        expect(new TextDecoder().decode(delimPkt(),),).toBe('0001',);
+        expect(
+          new TextDecoder().decode(delimPkt(),),
+        ).toBe('0001',);
       },
     },),
     it({

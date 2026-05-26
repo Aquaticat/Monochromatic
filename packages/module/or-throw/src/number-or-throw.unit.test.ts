@@ -28,7 +28,9 @@ await describe({
     it({
       name: 'accepts NaN and Infinity as numbers',
       fn: async () => {
-        expect(Number.isNaN(numberOrThrow(Number.NaN,),),).toBe(true,);
+        expect(
+          Number.isNaN(numberOrThrow(Number.NaN,),),
+        ).toBe(true,);
         expect(numberOrThrow(Number.POSITIVE_INFINITY,),).toBe(Number.POSITIVE_INFINITY,);
       },
     },),

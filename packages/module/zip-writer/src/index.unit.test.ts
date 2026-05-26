@@ -100,7 +100,9 @@ async function extractFromZip(
   const file = join(tempDir.path, 'test.zip',);
   await writeFile(file, bytes,);
   await spawn('unzip', ['-o', '-d', tempDir.path, file,],);
-  return new Uint8Array(await readFile(join(tempDir.path, path,),),);
+  return new Uint8Array(
+    await readFile(join(tempDir.path, path,),),
+  );
 }
 
 await describe({
@@ -112,7 +114,9 @@ await describe({
         it({
           name: 'returns 0 for empty input',
           fn: async () => {
-            expect(crc32(new Uint8Array(),),).toBe(0,);
+            expect(
+              crc32(new Uint8Array(),),
+            ).toBe(0,);
           },
         },),
         it({

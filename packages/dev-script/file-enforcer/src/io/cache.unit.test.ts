@@ -65,7 +65,9 @@ await describe({
             const file = join(dir, 'b.txt',);
             await writeFile(file, 'content',);
             await readCached(file,);
-            expect(readCache.has(resolve(file,),),).toBe(true,);
+            expect(
+              readCache.has(resolve(file,),),
+            ).toBe(true,);
             await rm(dir, { recursive: true, },);
           },
         },),
@@ -81,9 +83,13 @@ await describe({
             const file = join(dir, 'c.txt',);
             await writeFile(file, 'v1',);
             await readCached(file,);
-            expect(readCache.has(resolve(file,),),).toBe(true,);
+            expect(
+              readCache.has(resolve(file,),),
+            ).toBe(true,);
             invalidatePaths([file,],);
-            expect(readCache.has(resolve(file,),),).toBe(false,);
+            expect(
+              readCache.has(resolve(file,),),
+            ).toBe(false,);
             await rm(dir, { recursive: true, },);
           },
         },),
@@ -111,7 +117,9 @@ await describe({
             await readCached(fileA,);
             await readCached(fileB,);
             invalidatePaths([fileA,],);
-            expect(readCache.has(resolve(fileB,),),).toBe(true,);
+            expect(
+              readCache.has(resolve(fileB,),),
+            ).toBe(true,);
             await rm(dir, { recursive: true, },);
           },
         },),
@@ -124,7 +132,9 @@ await describe({
           name: 'sets cache entry without reading from disk',
           fn: async () => {
             updateCache({ filePath: '/fake/path.txt', content: 'injected', },);
-            expect(readCache.get(resolve('/fake/path.txt',),),).toBe('injected',);
+            expect(
+              readCache.get(resolve('/fake/path.txt',),),
+            ).toBe('injected',);
           },
         },),
         it({

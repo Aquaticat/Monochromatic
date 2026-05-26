@@ -378,7 +378,9 @@ await describe({
         it({
           name: 'resolves primitive types',
           fn: async () => {
-            const schema = parseKiwiSchema(new Uint8Array(buildMinimalSchemaBytes(),),);
+            const schema = parseKiwiSchema(
+              new Uint8Array(buildMinimalSchemaBytes(),),
+            );
             expect(resolveTypeName(-1, schema,),).toBe('bool',);
             expect(resolveTypeName(-4, schema,),).toBe('uint',);
             expect(resolveTypeName(-5, schema,),).toBe('float',);
@@ -388,7 +390,9 @@ await describe({
         it({
           name: 'resolves definition references',
           fn: async () => {
-            const schema = parseKiwiSchema(new Uint8Array(buildMinimalSchemaBytes(),),);
+            const schema = parseKiwiSchema(
+              new Uint8Array(buildMinimalSchemaBytes(),),
+            );
             expect(resolveTypeName(0, schema,),).toBe('MessageType',);
             expect(resolveTypeName(4, schema,),).toBe('GUID',);
           },
@@ -404,7 +408,9 @@ await describe({
         it({
           name: 'returns null for empty data',
           fn: async () => {
-            const schema = parseKiwiSchema(new Uint8Array(buildMinimalSchemaBytes(),),);
+            const schema = parseKiwiSchema(
+              new Uint8Array(buildMinimalSchemaBytes(),),
+            );
             const result = decodeDocument(new Uint8Array(0,), schema,);
             expect(result,).toBeNull();
           },

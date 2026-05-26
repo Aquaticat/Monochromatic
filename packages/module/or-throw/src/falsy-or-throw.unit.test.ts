@@ -25,7 +25,9 @@ await describe({
         expect(falsyOrThrow('',),).toBe('',);
         expect(falsyOrThrow(null,),).toBe(null,);
         expect(falsyOrThrow(undefined,),).toBe(undefined,);
-        expect(Number.isNaN(falsyOrThrow(Number.NaN,),),).toBe(true,);
+        expect(
+          Number.isNaN(falsyOrThrow(Number.NaN,),),
+        ).toBe(true,);
       },
     },),
 

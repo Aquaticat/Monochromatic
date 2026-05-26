@@ -107,8 +107,12 @@ await describe({
             await writeFile(file, 'hello',);
             const { watcher, hashCache, events, } = await buildWatcher([dir,],);
 
-            expect(hashCache.has(resolve(file,),),).toBe(true,);
-            expect(hashCache.get(resolve(file,),),).toBe(SHA256_HEX_OF_HELLO,);
+            expect(
+              hashCache.has(resolve(file,),),
+            ).toBe(true,);
+            expect(
+              hashCache.get(resolve(file,),),
+            ).toBe(SHA256_HEX_OF_HELLO,);
             expect(events,).toHaveLength(0,);
 
             await watcher.stop();
@@ -186,7 +190,9 @@ await describe({
             await writeFile(file, 'bye',);
             const { watcher, hashCache, events, } = await buildWatcher([dir,],);
 
-            expect(hashCache.has(resolve(file,),),).toBe(true,);
+            expect(
+              hashCache.has(resolve(file,),),
+            ).toBe(true,);
 
             await rm(file,);
             await wait(POST_EVENT_WAIT_MS,);
@@ -196,7 +202,9 @@ await describe({
             },);
             expect(unlinks.length,).toBe(1,);
             expect(nonNullishOrThrow(unlinks[0],).path,).toBe(resolve(file,),);
-            expect(hashCache.has(resolve(file,),),).toBe(false,);
+            expect(
+              hashCache.has(resolve(file,),),
+            ).toBe(false,);
 
             await watcher.stop();
             await rm(dir, { recursive: true, },);
@@ -299,10 +307,18 @@ await describe({
             // depth: 1 admits root files (depth 0 of subdirs) and one level of subdirs.
             // shallow.txt sits in root; mid.txt sits in a first-level subdir.
             // deep.txt is inside `a/b/`, a second-level subdir, past the cap.
-            expect(hashCache.has(resolve(shallow,),),).toBe(true,);
-            expect(hashCache.has(resolve(mid,),),).toBe(true,);
-            expect(hashCache.has(resolve(deep,),),).toBe(false,);
-            expect(hashCache.has(resolve(deeper,),),).toBe(false,);
+            expect(
+              hashCache.has(resolve(shallow,),),
+            ).toBe(true,);
+            expect(
+              hashCache.has(resolve(mid,),),
+            ).toBe(true,);
+            expect(
+              hashCache.has(resolve(deep,),),
+            ).toBe(false,);
+            expect(
+              hashCache.has(resolve(deeper,),),
+            ).toBe(false,);
 
             await watcher.stop();
             await rm(root, { recursive: true, },);

@@ -53,7 +53,9 @@ const resetRegionParser = object({
     string(),
   ),),
   escape: multiple(flag(WORKTREE_ENFORCEMENT_ESCAPE_HATCH,),),
-  positionals: multiple(argument(string(),),),
+  positionals: multiple(
+    argument(string(),),
+  ),
   unknownOptions: passThrough({ format: 'nextToken', },),
 },);
 

@@ -117,7 +117,9 @@ await describe({
         it({
           name: 'returns -1 for a long no-metacharacter run',
           fn: async () => {
-            expect(firstGlobMetaIndex('a'.repeat(LONG_RUN,),),).toBe(-1,);
+            expect(
+              firstGlobMetaIndex('a'.repeat(LONG_RUN,),),
+            ).toBe(-1,);
           },
         },),
 

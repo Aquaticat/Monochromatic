@@ -20,7 +20,9 @@ const statusPreParser = object({
     '-c',
     string(),
   ),),
-  positionals: multiple(argument(string(),),),
+  positionals: multiple(
+    argument(string(),),
+  ),
   unknownOptions: passThrough({ format: 'nextToken', },),
 },);
 
@@ -34,7 +36,9 @@ const statusPostParser = object({
     '-s',
     '--short',
   ),),
-  positionals: multiple(argument(string(),),),
+  positionals: multiple(
+    argument(string(),),
+  ),
   unknownOptions: passThrough({ format: 'nextToken', },),
 },);
 

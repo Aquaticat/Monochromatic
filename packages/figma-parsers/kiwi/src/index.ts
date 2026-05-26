@@ -920,7 +920,9 @@ async function parseCanvasFig(canvasData: Uint8Array,): Promise<{
   /** Decompressed schema bytes; assigned by whichever inflate path succeeds. */
   let schemaBytes: Uint8Array;
   try {
-    schemaBytes = new Uint8Array(inflateRawSync(Buffer.from(compressedAfterHeader,),),);
+    schemaBytes = new Uint8Array(
+      inflateRawSync(Buffer.from(compressedAfterHeader,),),
+    );
   }
   catch {
     // If inflateRawSync fails, try with a streaming approach
@@ -1009,7 +1011,9 @@ async function decompressZstd(data: Uint8Array,): Promise<Uint8Array> {
   try {
     /** Native-binding zstd decoder; available only when the optional dep is installed. */
     const { decompress, } = await import('@bokuwatch/zstd' as string);
-    return new Uint8Array(decompress(Buffer.from(data,),),);
+    return new Uint8Array(
+      decompress(Buffer.from(data,),),
+    );
   }
   catch {
     // Fall through to CLI
@@ -1278,7 +1282,9 @@ async function extractZipEntries(buffer: Uint8Array,): Promise<Map<string, Uint8
     else if (compressionMethod === 8) {
       /** Node zlib raw inflate resolved per-entry; only needed for deflate-compressed entries. */
       const { inflateRawSync, } = await import('node:zlib');
-      content = new Uint8Array(inflateRawSync(Buffer.from(compressedData,),),);
+      content = new Uint8Array(
+        inflateRawSync(Buffer.from(compressedData,),),
+      );
     }
     else {
       throw new Error(

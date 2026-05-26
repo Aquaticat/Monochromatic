@@ -66,7 +66,9 @@ await describe({
       name: 'accepts a promised input at the call boundary',
       fn: async () => {
         const process = pipeAsync({ fn1: increment, fn2: doubleAsync, },);
-        expect(await process(Promise.resolve(9,),),).toBe(20,);
+        expect(
+          await process(Promise.resolve(9,),),
+        ).toBe(20,);
       },
     },),
 

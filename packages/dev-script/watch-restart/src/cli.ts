@@ -137,7 +137,9 @@ const parser = object({
   ),),
   processGroup: option('--process-group',),
   noProcessGroup: option('--no-process-group',),
-  rest: multiple(argument(string(),),),
+  rest: multiple(
+    argument(string(),),
+  ),
 },);
 
 /**

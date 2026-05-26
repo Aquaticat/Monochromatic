@@ -130,7 +130,9 @@ await describe({
 
             await cat([tracked,],);
             /** Tracker should have recorded the absolute read path (size check unsafe under concurrent execution) */
-            expect(reads.has(resolve(tracked,),),).toBe(true,);
+            expect(
+              reads.has(resolve(tracked,),),
+            ).toBe(true,);
             await teardown(tempDir,);
           },
         },),
@@ -193,8 +195,12 @@ await describe({
 
             await cat(join(tempDir, '*.ts',),);
             /** Both files should be tracked individually (size check unsafe under concurrent execution) */
-            expect(reads.has(resolve(r1,),),).toBe(true,);
-            expect(reads.has(resolve(r2,),),).toBe(true,);
+            expect(
+              reads.has(resolve(r1,),),
+            ).toBe(true,);
+            expect(
+              reads.has(resolve(r2,),),
+            ).toBe(true,);
             await teardown(tempDir,);
           },
         },),

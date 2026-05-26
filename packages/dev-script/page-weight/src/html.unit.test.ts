@@ -130,7 +130,9 @@ await describe({
         it({
           name: 'scans a long token run without overflowing the stack',
           fn: async () => {
-            expect(firstNonWhitespaceToken('a'.repeat(LONG_RUN,),),).toBe('a'.repeat(LONG_RUN,),);
+            expect(
+              firstNonWhitespaceToken('a'.repeat(LONG_RUN,),),
+            ).toBe('a'.repeat(LONG_RUN,),);
           },
         },),
       ],

@@ -147,31 +147,45 @@ export function runPipe(args: RunArgs,): unknown {
     }
     if (fn4 === undefined) {
       l.debug('3 steps',);
-      return fn3(fn2(fn1(value,),),);
+      return fn3(
+        fn2(fn1(value,),),
+      );
     }
     if (fn5 === undefined) {
       l.debug('4 steps',);
-      return fn4(fn3(fn2(fn1(value,),),),);
+      return fn4(
+        fn3(fn2(fn1(value,),),),
+      );
     }
     if (fn6 === undefined) {
       l.debug('5 steps',);
-      return fn5(fn4(fn3(fn2(fn1(value,),),),),);
+      return fn5(
+        fn4(fn3(fn2(fn1(value,),),),),
+      );
     }
     if (fn7 === undefined) {
       l.debug('6 steps',);
-      return fn6(fn5(fn4(fn3(fn2(fn1(value,),),),),),);
+      return fn6(
+        fn5(fn4(fn3(fn2(fn1(value,),),),),),
+      );
     }
     if (fn8 === undefined) {
       l.debug('7 steps',);
-      return fn7(fn6(fn5(fn4(fn3(fn2(fn1(value,),),),),),),);
+      return fn7(
+        fn6(fn5(fn4(fn3(fn2(fn1(value,),),),),),),
+      );
     }
     if (fn9 === undefined) {
       l.debug('8 steps',);
-      return fn8(fn7(fn6(fn5(fn4(fn3(fn2(fn1(value,),),),),),),),);
+      return fn8(
+        fn7(fn6(fn5(fn4(fn3(fn2(fn1(value,),),),),),),),
+      );
     }
 
     l.debug('9 steps',);
-    return fn9(fn8(fn7(fn6(fn5(fn4(fn3(fn2(fn1(value,),),),),),),),),);
+    return fn9(
+      fn8(fn7(fn6(fn5(fn4(fn3(fn2(fn1(value,),),),),),),),),
+    );
   }
   catch (error) {
     l.error(`step failed: ${String(error,)}`,);
@@ -263,23 +277,33 @@ export async function runPipeAsync(args: RunArgs,): Promise<unknown> {
     }
     if (fn4 === undefined) {
       l.debug('3 steps',);
-      return await fn3(await fn2(await fn1(await value,),),);
+      return await fn3(
+        await fn2(await fn1(await value,),),
+      );
     }
     if (fn5 === undefined) {
       l.debug('4 steps',);
-      return await fn4(await fn3(await fn2(await fn1(await value,),),),);
+      return await fn4(
+        await fn3(await fn2(await fn1(await value,),),),
+      );
     }
     if (fn6 === undefined) {
       l.debug('5 steps',);
-      return await fn5(await fn4(await fn3(await fn2(await fn1(await value,),),),),);
+      return await fn5(
+        await fn4(await fn3(await fn2(await fn1(await value,),),),),
+      );
     }
     if (fn7 === undefined) {
       l.debug('6 steps',);
-      return await fn6(await fn5(await fn4(await fn3(await fn2(await fn1(await value,),),),),),);
+      return await fn6(
+        await fn5(await fn4(await fn3(await fn2(await fn1(await value,),),),),),
+      );
     }
     if (fn8 === undefined) {
       l.debug('7 steps',);
-      return await fn7(await fn6(await fn5(await fn4(await fn3(await fn2(await fn1(await value,),),),),),),);
+      return await fn7(
+        await fn6(await fn5(await fn4(await fn3(await fn2(await fn1(await value,),),),),),),
+      );
     }
     if (fn9 === undefined) {
       l.debug('8 steps',);

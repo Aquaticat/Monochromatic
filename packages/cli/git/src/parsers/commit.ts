@@ -377,7 +377,9 @@ const commitRegionParser = object({
     string(),
   ),),
   escape: multiple(flag(COMMIT_ESCAPE_HATCH,),),
-  positionals: multiple(argument(string(),),),
+  positionals: multiple(
+    argument(string(),),
+  ),
   unknownOptions: passThrough({ format: 'nextToken', },),
 },);
 

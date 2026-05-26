@@ -144,7 +144,9 @@ await describe({
         it({
           name: 'partitions a long repeated run in one linear pass',
           fn: async () => {
-            expect(extractAndStripDefs('<defs>x</defs>'.repeat(LONG_RUN,),),).toEqual({
+            expect(
+              extractAndStripDefs('<defs>x</defs>'.repeat(LONG_RUN,),),
+            ).toEqual({
               defs: 'x'.repeat(LONG_RUN,),
               content: '',
             },);

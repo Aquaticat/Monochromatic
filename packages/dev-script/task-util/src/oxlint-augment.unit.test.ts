@@ -140,13 +140,17 @@ await describe({
         it({
           name: 'strips many consecutive sequences',
           fn: async () => {
-            expect(stripAnsi('[0m'.repeat(MANY_SEQUENCES,),),).toBe('',);
+            expect(
+              stripAnsi('[0m'.repeat(MANY_SEQUENCES,),),
+            ).toBe('',);
           },
         },),
         it({
           name: 'strips many interleaved sequences preserving plain text',
           fn: async () => {
-            expect(stripAnsi('a[31m'.repeat(MANY_SEQUENCES,),),)
+            expect(
+              stripAnsi('a[31m'.repeat(MANY_SEQUENCES,),),
+            )
               .toBe('a'.repeat(MANY_SEQUENCES,),);
           },
         },),
@@ -271,13 +275,17 @@ await describe({
         it({
           name: 'returns null for a long run of bare markers',
           fn: async () => {
-            expect(extractRuleName('x'.repeat(MANY_SEQUENCES,),),).toBe(NO_RULE,);
+            expect(
+              extractRuleName('x'.repeat(MANY_SEQUENCES,),),
+            ).toBe(NO_RULE,);
           },
         },),
         it({
           name: 'returns null for a long non-marker run',
           fn: async () => {
-            expect(extractRuleName('a'.repeat(LONG_RUN,),),).toBe(NO_RULE,);
+            expect(
+              extractRuleName('a'.repeat(LONG_RUN,),),
+            ).toBe(NO_RULE,);
           },
         },),
         it({

@@ -69,7 +69,9 @@ await describe({
         it({
           name: 'collapses a very long run without overflowing (linear pass)',
           fn: async () => {
-            expect(collapseRepeatedChars('='.repeat(1_000_000,),),).toBe(
+            expect(
+              collapseRepeatedChars('='.repeat(1_000_000,),),
+            ).toBe(
               '=== (x1000000 repeated characters)',
             );
           },

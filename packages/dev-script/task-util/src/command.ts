@@ -68,7 +68,9 @@ const parser = object({
     '--timeout',
     integer(),
   ),),
-  rest: multiple(argument(string(),),),
+  rest: multiple(
+    argument(string(),),
+  ),
 },);
 
 //endregion Parser definition

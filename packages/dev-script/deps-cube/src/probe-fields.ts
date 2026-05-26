@@ -30,6 +30,7 @@ import {
   type Maybe,
 } from './maybe.ts';
 import type { NpmPackage, } from './probe-field-types.ts';
+
 export {
   classifyLicense,
   parseRepository,

@@ -30,7 +30,9 @@ await describe({
             reset();
             resetWriteTimestamps();
             trackRead('./some/file.ts',);
-            expect(reads.has(resolve('./some/file.ts',),),).toBe(true,);
+            expect(
+              reads.has(resolve('./some/file.ts',),),
+            ).toBe(true,);
           },
         },),
         it({
@@ -39,7 +41,9 @@ await describe({
             reset();
             resetWriteTimestamps();
             trackDest('./output/file.ts',);
-            expect(writes.has(resolve('./output/file.ts',),),).toBe(true,);
+            expect(
+              writes.has(resolve('./output/file.ts',),),
+            ).toBe(true,);
           },
         },),
         it({
@@ -48,7 +52,9 @@ await describe({
             reset();
             resetWriteTimestamps();
             trackDest('./output/file.ts',);
-            expect(writeTimestamps.has(resolve('./output/file.ts',),),).toBe(false,);
+            expect(
+              writeTimestamps.has(resolve('./output/file.ts',),),
+            ).toBe(false,);
           },
         },),
         it({
@@ -105,8 +111,12 @@ await describe({
             resetWriteTimestamps();
             trackRead('./input.ts',);
             trackDest('./output.ts',);
-            expect(reads.has(resolve('./output.ts',),),).toBe(false,);
-            expect(writes.has(resolve('./input.ts',),),).toBe(false,);
+            expect(
+              reads.has(resolve('./output.ts',),),
+            ).toBe(false,);
+            expect(
+              writes.has(resolve('./input.ts',),),
+            ).toBe(false,);
           },
         },),
       ],
@@ -125,7 +135,9 @@ await describe({
             reset();
             resetWriteTimestamps();
             trackWriteTime('./dest.md',);
-            expect(writeTimestamps.has(resolve('./dest.md',),),).toBe(true,);
+            expect(
+              writeTimestamps.has(resolve('./dest.md',),),
+            ).toBe(true,);
           },
         },),
         it({
@@ -183,8 +195,12 @@ await describe({
           fn: async () => {
             reset();
             addWatchedPaths(['./extra1.ts', './extra2.ts',],);
-            expect(reads.has(resolve('./extra1.ts',),),).toBe(true,);
-            expect(reads.has(resolve('./extra2.ts',),),).toBe(true,);
+            expect(
+              reads.has(resolve('./extra1.ts',),),
+            ).toBe(true,);
+            expect(
+              reads.has(resolve('./extra2.ts',),),
+            ).toBe(true,);
           },
         },),
         it({

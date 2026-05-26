@@ -112,7 +112,9 @@ await describe({
                 return false;
               },),
             );
-            expect(await pathExists(join(workspace.path, 'ordinary-file',),),).toBe(
+            expect(
+              await pathExists(join(workspace.path, 'ordinary-file',),),
+            ).toBe(
               true,
             );
           },

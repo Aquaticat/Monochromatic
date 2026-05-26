@@ -101,7 +101,9 @@ await describe({
         },);
 
         expect(changed,).toBe(true,);
-        expect(JSON.parse(harness.getContent(),),).toEqual({
+        expect(
+          JSON.parse(harness.getContent(),),
+        ).toEqual({
           defaultThinkingLevel: 'high',
         },);
         expect(harness.getWriteCount(),).toBe(1,);

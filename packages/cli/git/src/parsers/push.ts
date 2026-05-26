@@ -23,7 +23,9 @@ const pushRegionParser = object({
     '--atomic',
     '--no-atomic',
   ),),
-  positionals: multiple(argument(string(),),),
+  positionals: multiple(
+    argument(string(),),
+  ),
   unknownOptions: passThrough({ format: 'nextToken', },),
 },);
 

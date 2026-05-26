@@ -164,7 +164,9 @@ await describe({
     it({
       name: 'returns empty for a long whitespace run without overflowing the stack',
       fn: async () => {
-        expect(splitOnWhitespace(' '.repeat(STACK_RUN,),),).toEqual([],);
+        expect(
+          splitOnWhitespace(' '.repeat(STACK_RUN,),),
+        ).toEqual([],);
       },
     },),
 

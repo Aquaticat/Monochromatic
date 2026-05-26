@@ -49,42 +49,54 @@ await describe({
               event,
               context,
             },);
-            expect(keys.has(issueDetailKey({
+            expect(
+              keys.has(issueDetailKey({
               repoId: 'repo-1',
               issueId: 'issue-1',
-            },),),)
+            },),),
+            )
               .toBe(true,);
-            expect(keys.has(filterListKey({
+            expect(
+              keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: ANY_LABEL,
               state: 'open',
-            },),),)
+            },),),
+            )
               .toBe(true,);
-            expect(keys.has(filterListKey({
+            expect(
+              keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: ANY_LABEL,
               state: 'closed',
-            },),),)
+            },),),
+            )
               .toBe(true,);
-            expect(keys.has(filterListKey({
+            expect(
+              keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: 'bug',
               state: 'open',
-            },),),)
+            },),),
+            )
               .toBe(true,);
-            expect(keys.has(filterListKey({
+            expect(
+              keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: 'bug',
               state: 'closed',
-            },),),)
+            },),),
+            )
               .toBe(true,);
             // `feat` is not on this issue, so per-issue path does not include it.
             // `issue.labeled` adds repo-wide; `comment.created` does not.
-            expect(keys.has(filterListKey({
+            expect(
+              keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: 'feat',
               state: 'open',
-            },),),)
+            },),),
+            )
               .toBe(false,);
           },
         },),
@@ -111,11 +123,13 @@ await describe({
               context,
             },);
             for (const labelId of ['bug', 'feat', 'docs',]) {
-              expect(keys.has(filterListKey({
+              expect(
+                keys.has(filterListKey({
                 repoId: 'repo-1',
                 labelId,
                 state: 'open',
-              },),),)
+              },),),
+              )
                 .toBe(true,);
             }
           },
@@ -170,18 +184,22 @@ await describe({
               event,
               context,
             },);
-            expect(keys.has(filterListKey({
+            expect(
+              keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: ANY_LABEL,
               state: 'open',
-            },),),)
+            },),),
+            )
               .toBe(true,);
             // No per-label keys.
-            expect(keys.has(filterListKey({
+            expect(
+              keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: 'bug',
               state: 'open',
-            },),),)
+            },),),
+            )
               .toBe(false,);
           },
         },),
@@ -205,17 +223,21 @@ await describe({
               event,
               context,
             },);
-            expect(keys.has(filterListKey({
+            expect(
+              keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: 'bug',
               state: 'open',
-            },),),)
+            },),),
+            )
               .toBe(false,);
-            expect(keys.has(filterListKey({
+            expect(
+              keys.has(filterListKey({
               repoId: 'repo-1',
               labelId: ANY_LABEL,
               state: 'open',
-            },),),)
+            },),),
+            )
               .toBe(true,);
           },
         },),

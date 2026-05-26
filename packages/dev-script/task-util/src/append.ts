@@ -133,7 +133,9 @@ const parser = object({
     '--to',
     string(),
   ),
-  lines: multiple(argument(string(),),),
+  lines: multiple(
+    argument(string(),),
+  ),
 },);
 
 //endregion Parser definition

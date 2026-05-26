@@ -32,7 +32,9 @@ const parser = object({
     '--model',
     string({ metavar: 'MODEL', },),
   ),),
-  files: multiple(argument(string({ metavar: 'FILE', },),),),
+  files: multiple(
+    argument(string({ metavar: 'FILE', },),),
+  ),
 },);
 
 /** Parsed CLI arguments */

@@ -332,14 +332,18 @@ await describe({
     it({
       name: 'rejects.toThrow passes for rejected promise (no args)',
       fn: async () => {
-        await expect(Promise.reject(new Error('boom',),),).rejects.toThrow();
+        await expect(
+          Promise.reject(new Error('boom',),),
+        ).rejects.toThrow();
       },
     },),
 
     it({
       name: 'rejects.toThrow matches error message string',
       fn: async () => {
-        await expect(Promise.reject(new Error('specific failure',),),).rejects.toThrow(
+        await expect(
+          Promise.reject(new Error('specific failure',),),
+        ).rejects.toThrow(
           'specific',
         );
       },
@@ -348,7 +352,9 @@ await describe({
     it({
       name: 'rejects.toThrow matches regex',
       fn: async () => {
-        await expect(Promise.reject(new Error('code 42 failed',),),).rejects.toThrow(
+        await expect(
+          Promise.reject(new Error('code 42 failed',),),
+        ).rejects.toThrow(
           /code \d+ failed/u,
         );
       },
@@ -357,7 +363,9 @@ await describe({
     it({
       name: 'rejects.toThrow matches error class',
       fn: async () => {
-        await expect(Promise.reject(new TypeError('bad type',),),).rejects.toThrow(
+        await expect(
+          Promise.reject(new TypeError('bad type',),),
+        ).rejects.toThrow(
           TypeError,
         );
       },
@@ -367,7 +375,9 @@ await describe({
       name: 'rejects.toThrow fails on message mismatch',
       fails: true,
       fn: async () => {
-        await expect(Promise.reject(new Error('actual message',),),).rejects.toThrow(
+        await expect(
+          Promise.reject(new Error('actual message',),),
+        ).rejects.toThrow(
           'completely different',
         );
       },
@@ -384,7 +394,9 @@ await describe({
     it({
       name: 'rejects.toBeInstanceOf works',
       fn: async () => {
-        await expect(Promise.reject(new TypeError('x',),),).rejects.toBeInstanceOf(
+        await expect(
+          Promise.reject(new TypeError('x',),),
+        ).rejects.toBeInstanceOf(
           TypeError,
         );
       },
@@ -393,7 +405,9 @@ await describe({
     it({
       name: 'rejects.toHaveProperty checks error properties',
       fn: async () => {
-        await expect(Promise.reject(new Error('msg',),),).rejects.toHaveProperty(
+        await expect(
+          Promise.reject(new Error('msg',),),
+        ).rejects.toHaveProperty(
           'message',
           'msg',
         );

@@ -326,7 +326,9 @@ await describe({
           name: 'returns -1 over a long run with no metacharacter, linear and stack-safe',
           fn: async function longRunNoMatch() {
             const runLength = 100_000;
-            expect(firstGlobMetaIndex('a'.repeat(runLength,),),).toBe(-1,);
+            expect(
+              firstGlobMetaIndex('a'.repeat(runLength,),),
+            ).toBe(-1,);
           },
         },),
         it({

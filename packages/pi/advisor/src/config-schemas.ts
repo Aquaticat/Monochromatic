@@ -52,7 +52,9 @@ export const AdvisorConfigFileSchema: v.GenericSchema<AdvisorConfigFile> = v.obj
 
 /** Pi settings subset schema. */
 export const AdvisorSettingsFileSchema: v.GenericSchema<AdvisorSettingsFile> = v.object({
-  enabledModels: v.exactOptional(v.array(v.string(),),),
+  enabledModels: v.exactOptional(
+    v.array(v.string(),),
+  ),
 },);
 
 //endregion Schemas

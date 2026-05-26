@@ -41,28 +41,36 @@ await describe({
         it({
           name: 'zero-pads single-digit hours and minutes',
           fn: async () => {
-            expect(formatTimeContext(new Date('2026-05-01T07:05:00',),),)
+            expect(
+              formatTimeContext(new Date('2026-05-01T07:05:00',),),
+            )
               .toBe('<time>07:05</time>',);
           },
         },),
         it({
           name: 'renders midnight as 00:00',
           fn: async () => {
-            expect(formatTimeContext(new Date('2026-05-01T00:00:00',),),)
+            expect(
+              formatTimeContext(new Date('2026-05-01T00:00:00',),),
+            )
               .toBe('<time>00:00</time>',);
           },
         },),
         it({
           name: 'renders the example case 20:48 verbatim',
           fn: async () => {
-            expect(formatTimeContext(new Date('2026-05-01T20:48:00',),),)
+            expect(
+              formatTimeContext(new Date('2026-05-01T20:48:00',),),
+            )
               .toBe('<time>20:48</time>',);
           },
         },),
         it({
           name: 'renders the last minute of the day as 23:59',
           fn: async () => {
-            expect(formatTimeContext(new Date('2026-05-01T23:59:00',),),)
+            expect(
+              formatTimeContext(new Date('2026-05-01T23:59:00',),),
+            )
               .toBe('<time>23:59</time>',);
           },
         },),
@@ -112,10 +120,18 @@ await describe({
             function isAsciiDigit(c: string,): boolean {
               return (c >= '0') && (c <= '9');
             }
-            expect(isAsciiDigit(middle.charAt(0,),),).toBe(true,);
-            expect(isAsciiDigit(middle.charAt(1,),),).toBe(true,);
-            expect(isAsciiDigit(middle.charAt(3,),),).toBe(true,);
-            expect(isAsciiDigit(middle.charAt(4,),),).toBe(true,);
+            expect(
+              isAsciiDigit(middle.charAt(0,),),
+            ).toBe(true,);
+            expect(
+              isAsciiDigit(middle.charAt(1,),),
+            ).toBe(true,);
+            expect(
+              isAsciiDigit(middle.charAt(3,),),
+            ).toBe(true,);
+            expect(
+              isAsciiDigit(middle.charAt(4,),),
+            ).toBe(true,);
           },
         },),
       ],

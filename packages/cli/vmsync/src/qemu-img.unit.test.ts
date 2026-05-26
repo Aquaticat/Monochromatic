@@ -95,7 +95,9 @@ await describe({
     it({
       name: 'handles a long no-whitespace run without stack overflow',
       fn: async () => {
-        expect(firstWhitespaceIndex('a'.repeat(LONG_RUN,),),).toBe(LONG_RUN,);
+        expect(
+          firstWhitespaceIndex('a'.repeat(LONG_RUN,),),
+        ).toBe(LONG_RUN,);
       },
     },),
   ],

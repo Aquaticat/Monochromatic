@@ -193,7 +193,9 @@ await describe({
         it({
           name: 'rejects many error-code tokens that never form a valid diagnostic',
           fn: async () => {
-            expect(isDiagnosticLine('): error TSx'.repeat(SCAN_OCCURRENCES,),),)
+            expect(
+              isDiagnosticLine('): error TSx'.repeat(SCAN_OCCURRENCES,),),
+            )
               .toBe(false,);
           },
         },),
