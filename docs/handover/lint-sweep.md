@@ -1,5 +1,7 @@
 # Lint sweep handover
 
+STATUS: COMPLETE (2026-05-26). All 84 active packages pass `:lint` (oxlint + types) with zero warnings/errors, and the repo-wide `lint:dprint`, `lint:stylelint`, `lint:markdownlint` all pass. `module/es` remains excluded (still fails by design; being split in a later session). The cli-git guard was verified intact on a throwaway repo after its own lint fix. Remaining uncommitted working-tree changes are out-of-scope `mise run format` churn in `packages-paused/*`, `packages/module/es/*`, and root `oxlint-require-tsdoc.ts`, plus 11 harmless `dist/final` build-artifact files and `pnpm-lock.yaml`; left for the user to revert or handle (not reverted, to avoid clobbering paused/split-session work). The sections below are the historical resume record.
+
 Resume point for the workspace-wide lint sweep. A fresh agent should be able to continue from here with no prior conversation context.
 
 ## Goal
