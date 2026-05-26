@@ -257,6 +257,8 @@ export const libAllowSpecifiers: readonly LibSpecifier[] = [
       'IDBKeyRange',
       'CSSStyleDeclaration',
       'CanvasRenderingContext2D',
+      'OffscreenCanvas',
+      'OffscreenCanvasRenderingContext2D',
       'CSSRule',
       'CSSStyleSheet',
       'MediaQueryList',
