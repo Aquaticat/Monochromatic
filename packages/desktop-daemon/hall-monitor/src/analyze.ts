@@ -80,6 +80,11 @@ function buildImageEntry(
 const VERDICT_PREFIX = 'VERDICT:';
 
 /**
+ * Sentinel returned by {@link findVerdictToken} when no canonical verdict line is present.
+ */
+const NO_VERDICT: unique symbol = Symbol('no-verdict',);
+
+/**
  * Returns the position just after any horizontal whitespace starting at `from`.
  *
  * Single linear pass: a cursor walks forward over each space or tab, so the
@@ -125,13 +130,13 @@ export function skipSpacesAndTabs({
  *
  * @param upper - upper-cased LLM response
  *
- * @returns `'PRODUCTIVE'` / `'UNPRODUCTIVE'` when present; `undefined` otherwise
+ * @returns `'PRODUCTIVE'` / `'UNPRODUCTIVE'` when present; {@link NO_VERDICT} otherwise
  */
-function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | undefined {
+function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | typeof NO_VERDICT {
   /** Index of the canonical `VERDICT:` literal; -1 means the line is missing. */
   const idx = upper.indexOf(VERDICT_PREFIX,);
   if (idx === (-1))
-    return undefined;
+    return NO_VERDICT;
   /** Cursor after `VERDICT:` and any inline whitespace; verdict word starts here. */
   const start = skipSpacesAndTabs({
     s: upper,
@@ -144,7 +149,7 @@ function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | undef
     return 'UNPRODUCTIVE';
   if (tail.startsWith('PRODUCTIVE',))
     return 'PRODUCTIVE';
-  return undefined;
+  return NO_VERDICT;
 }
 
 /**
@@ -164,9 +169,11 @@ function findVerdictToken(upper: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' | undef
 export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
   /** Upper-cased copy of the response so verdict matching is case-insensitive. */
   const upper = result.toUpperCase();
-  /** Parsed verdict from the canonical line; undefined when only fallback keyword matching can apply. */
+  /**
+   * Parsed verdict from the canonical line; {@link NO_VERDICT} when only fallback keyword matching can apply.
+   */
   const verdict = findVerdictToken(upper,);
-  if (verdict !== undefined)
+  if ((typeof verdict) === 'string')
     return verdict;
   if (upper.includes('UNPRODUCTIVE',))
     return 'UNPRODUCTIVE';
@@ -178,7 +185,7 @@ export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
  * Constructs a multimodal prompt with timestamped screenshot/webcam pairs and
  * returns the raw LLM response text containing the verdict.
  *
- * @param sets - recent capture sets to analyze (mutated: cleared after building the prompt to free memory)
+ * @param sets - recent capture sets to analyze
  *
  * @returns raw LLM response text including the verdict line
  *
@@ -190,7 +197,7 @@ export function parseVerdict(result: string,): 'PRODUCTIVE' | 'UNPRODUCTIVE' {
  * const verdict = parseVerdict(result);
  * ```
  */
-export async function analyze(sets: CaptureSet[],): Promise<string> {
+export async function analyze(sets: readonly CaptureSet[],): Promise<string> {
   /**
    * Capture sets trimmed to {@link MAX_CAPTURE_SETS} so prompt size stays bounded.
    */
@@ -224,8 +231,6 @@ export async function analyze(sets: CaptureSet[],): Promise<string> {
       ];
     },
   );
-  // Release references to raw Buffers so they can be GC'd during inference
-  sets.length = 0;
 
   content.push({
     type: 'text',

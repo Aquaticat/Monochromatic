@@ -9,7 +9,7 @@ import { forceCleanup, } from './analyze/llama.ts';
 import { cycle, } from './cycle.ts';
 import {
   acquireLock,
-  getLockServer,
+  closeLock,
   killExisting,
 } from './infra/lock.ts';
 import { log, } from './log.ts';
@@ -40,24 +40,28 @@ const state: { running: boolean; } = { running: true, };
  * Gracefully shuts down the daemon by stopping the main loop,
  * closing the lock socket, and force-killing any llama-server processes.
  */
-function shutdown(): void {
+async function shutdown(): Promise<void> {
   log.debug('[hall-monitor] Shutting down...',);
   state.running = false;
-  getLockServer()
-    ?.close();
-  void forceCleanup()
-    .then(function setExitCode() {
-    process.exitCode = 0;
-  },);
+  closeLock();
+  await forceCleanup();
+  process.exitCode = 0;
+}
+
+/**
+ * Synchronous signal-listener wrapper; fires the async {@link shutdown} without awaiting.
+ */
+function onSignal(): void {
+  void shutdown();
 }
 
 process.on(
   'SIGINT',
-  shutdown,
+  onSignal,
 );
 process.on(
   'SIGTERM',
-  shutdown,
+  onSignal,
 );
 
 /**

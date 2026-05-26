@@ -26,21 +26,22 @@ const SIGTERM_RETRIES = 10;
 const SIGKILL_RETRIES = 7;
 
 /** Module-singleton mutable state for the lock-server handle; wrapped so it satisfies no-module-root-let. */
-const state: { lockServer: Server | undefined; } = { lockServer: undefined, };
+const state: { lockServer?: Server; } = {};
 
 /**
- * Returns the lock server instance.
- * Used during shutdown to close the socket.
- *
- * @returns lock server, or `undefined` if no lock is currently held
+ * Closes the held lock socket, if any.
+ * Used during shutdown; a no-op when no lock is currently held.
  *
  * @example
  * ```ts
- * getLockServer()?.close();
+ * closeLock();
  * ```
  */
-export function getLockServer(): Server | undefined {
-  return state.lockServer;
+export function closeLock(): void {
+  /** Current lock-server handle, if any; closed to release the held abstract socket. */
+  const { lockServer, } = state;
+  if (lockServer)
+    lockServer.close();
 }
 
 /**
@@ -64,7 +65,7 @@ export function acquireLock(): Promise<boolean> {
     state.lockServer = server;
     server.on(
       'error',
-      function handleSocketError(err: NodeJS.ErrnoException,) {
+      function handleSocketError(err: Readonly<NodeJS.ErrnoException>,) {
         if (err.code
           === 'EADDRINUSE')
           resolve(false,);
@@ -163,9 +164,11 @@ export function splitOnWhitespace(s: string,): string[] {
  * Finds the PID of the process holding the hall-monitor abstract socket
  * by cross-referencing `/proc/net/unix` inodes with `/proc/{pid}/fd` symlinks.
  *
- * @returns PID of the socket owner, or null if not found
+ * @returns PID of the socket owner
+ *
+ * @throws when no process is found holding the hall-monitor socket
  */
-async function findSocketOwnerPid(): Promise<number | null> {
+async function findSocketOwnerPid(): Promise<number> {
   /** Snapshot of `/proc/net/unix` listing every Unix socket on the system. */
   const unix = await readFile(
     '/proc/net/unix',
@@ -177,7 +180,7 @@ async function findSocketOwnerPid(): Promise<number | null> {
     return l.includes('@hall-monitor',);
   },);
   if (line === undefined)
-    return null;
+    throw new Error('Socket in use but could not find owner PID.',);
   /** Whitespace-separated `/proc/net/unix` columns used to extract the inode. */
   const fields = splitOnWhitespace(line.trim(),);
   /** Inode number that links the socket row to a `/proc/{pid}/fd` symlink target. */
@@ -206,7 +209,7 @@ async function findSocketOwnerPid(): Promise<number | null> {
       // permission denied or process exited between readdir and readlink
     }
   }
-  return null;
+  throw new Error('Socket in use but could not find owner PID.',);
 }
 
 /**
@@ -225,8 +228,6 @@ async function findSocketOwnerPid(): Promise<number | null> {
 export async function killExisting(): Promise<void> {
   /** PID of the existing hall-monitor instance that must be terminated before the lock is free. */
   const pid = await findSocketOwnerPid();
-  if (pid === null)
-    throw new Error('Socket in use but could not find owner PID.',);
 
   log.debug(`[lock] Sending SIGTERM to existing instance (PID ${pid})...`,);
   process.kill(

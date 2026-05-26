@@ -34,7 +34,7 @@ const HEALTH_POLL_MS = 500;
 export const API_URL: string = `http://127.0.0.1:${PORT}/v1/chat/completions`;
 
 /** Module-singleton mutable state for the running llama-server subprocess handle; wrapped so it satisfies no-module-root-let. */
-const state: { server: ChildProcess | null; } = { server: null, };
+const state: { server?: ChildProcess; } = {};
 
 /**
  * Starts llama-server inside a distrobox container with AMD GPU overrides.
@@ -131,7 +131,7 @@ export async function stop(): Promise<void> {
       resolve,
     );
   },);
-  state.server = null;
+  delete state.server;
 
   // Wait briefly for port to free up
   await setTimeout(PORT_FREE_DELAY_MS,);
@@ -161,7 +161,7 @@ export async function forceCleanup(): Promise<void> {
   catch {
     // process may already be gone, or pkill exits non-zero if no match
   }
-  state.server = null;
+  delete state.server;
 }
 
 /** Maximum number of health polls before giving up. */

@@ -19,8 +19,8 @@ function emit(
     priority,
     message,
   }: {
-    priority: string;
-    message: string;
+    readonly priority: string;
+    readonly message: string;
   },
 ): void {
   // Fire-and-forget: ignore spawn errors to avoid blocking the main flow

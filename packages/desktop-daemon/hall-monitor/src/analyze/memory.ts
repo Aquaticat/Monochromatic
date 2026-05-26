@@ -20,28 +20,18 @@ const MAX_ENTRIES = 3;
  */
 export type CaptureSet = {
   /** Unix epoch milliseconds when the capture was taken. */
-  timestamp: number;
+  readonly timestamp: number;
   /** JPEG-encoded desktop screenshot. */
-  screenshot: Buffer;
+  readonly screenshot: Buffer;
   /** JPEG-encoded webcam frame. */
-  webcam: Buffer;
+  readonly webcam: Buffer;
 };
 
 /**
- * Bounded tuple type enforcing the buffer never exceeds {@link MAX_ENTRIES} entries.
+ * Rolling buffer of recent capture sets, oldest first; runtime-trimmed to at
+ * most {@link MAX_ENTRIES} entries by {@link store}.
  */
-type CaptureBuffer =
-  | []
-  | [CaptureSet,]
-  | [
-    CaptureSet,
-    CaptureSet,
-  ]
-  | [
-    CaptureSet,
-    CaptureSet,
-    CaptureSet,
-  ];
+type CaptureBuffer = readonly CaptureSet[];
 
 /** Module-singleton mutable state for the rolling capture buffer; wrapped so it satisfies no-module-root-let. */
 const state: { buffer: CaptureBuffer; } = { buffer: [], };
@@ -58,7 +48,6 @@ const state: { buffer: CaptureBuffer; } = { buffer: [], };
  * ```
  */
 export function store(set: CaptureSet,): void {
-  /* oxlint-disable typescript/no-unsafe-type-assertion -- bounded tuple enforced by MAX_ENTRIES slice */
   /**
    * Updated buffer with the new set appended; trimmed to the most recent {@link MAX_ENTRIES} entries.
    */
@@ -66,8 +55,7 @@ export function store(set: CaptureSet,): void {
     ...state.buffer,
     set,
   ]
-    .slice(-MAX_ENTRIES,) as CaptureBuffer;
-  /* oxlint-enable typescript/no-unsafe-type-assertion */
+    .slice(-MAX_ENTRIES,);
   state.buffer = next;
   prune();
 }
@@ -107,8 +95,8 @@ function isAfterCutoff(
     cutoff,
     set,
   }: {
-    cutoff: number;
-    set: CaptureSet;
+    readonly cutoff: number;
+    readonly set: CaptureSet;
   },
 ): boolean {
   return set.timestamp
@@ -122,12 +110,11 @@ function prune(): void {
   /** Oldest timestamp to keep; sets older than this are filtered out. */
   const cutoff = Date.now()
     - RETENTION_MS;
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- bounded tuple enforced by filter subset
   state.buffer = state.buffer
     .filter(function checkRetention(set,) {
     return isAfterCutoff({
       cutoff,
       set,
     },);
-  },) as CaptureBuffer;
+  },);
 }
