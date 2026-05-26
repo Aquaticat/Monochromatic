@@ -3,6 +3,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test';
+import spawn from 'nano-spawn';
 import { exec, } from 'node:child_process';
 import {
   existsSync,
@@ -12,9 +13,26 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join, } from 'node:path';
-import { promisify, } from 'node:util';
 
-const execAsync = promisify(exec,);
+/**
+ * Runs a shell command and resolves with its captured output.
+ *
+ * Wraps `nano-spawn` with `shell: true` to mirror the previous `promisify(exec)`
+ * contract: resolves `{ stdout, stderr }` on success and rejects with a
+ * `SubprocessError` (carrying `exitCode`, `stdout`, `stderr`) on non-zero exit.
+ *
+ * @param command - Full shell command line to execute
+ *
+ * @returns Captured `stdout` and `stderr`
+ *
+ * @example
+ * ```ts
+ * const { stdout } = await execAsync('echo hi'); // stdout === 'hi'
+ * ```
+ */
+function execAsync(command: string,): Promise<{ readonly stdout: string; readonly stderr: string; }> {
+  return spawn(command, { shell: true, },);
+}
 
 const createTestScript = () => `
 const arg = process.argv[2];
@@ -95,8 +113,8 @@ await describe({
           await execAsync(`bun ${cliPath} -- node ${testScript} fail`,);
         }
         catch (error: unknown) {
-          const execError = error as { code: number; stderr: string; };
-          expect(execError.code,).toBe(1,);
+          const execError = error as { exitCode: number; stderr: string; };
+          expect(execError.exitCode,).toBe(1,);
           expect(execError.stderr,).toContain('Error: Test failure',);
         }
 
@@ -207,8 +225,8 @@ await describe({
           expect(true,).toBe(false,);
         }
         catch (error: unknown) {
-          const execError = error as { code: number; };
-          expect(execError.code,).toBeGreaterThan(0,);
+          const execError = error as { exitCode: number; };
+          expect(execError.exitCode,).toBeGreaterThan(0,);
         }
 
         teardown(fixtures,);
@@ -226,8 +244,8 @@ await describe({
           expect(true,).toBe(false,);
         }
         catch (error: unknown) {
-          const execError = error as { code: number; };
-          expect(execError.code,).toBeGreaterThan(0,);
+          const execError = error as { exitCode: number; };
+          expect(execError.exitCode,).toBeGreaterThan(0,);
         }
 
         teardown(fixtures,);
@@ -243,8 +261,8 @@ await describe({
           await execAsync(`bun ${cliPath} -- node ${testScript} fail-with-code 42`,);
         }
         catch (error: unknown) {
-          const execError = error as { code: number; };
-          expect(execError.code,).toBe(42,);
+          const execError = error as { exitCode: number; };
+          expect(execError.exitCode,).toBe(42,);
         }
 
         teardown(fixtures,);
@@ -262,8 +280,8 @@ await describe({
           expect(true,).toBe(false,);
         }
         catch (error: unknown) {
-          const execError = error as { code: number; };
-          expect(execError.code,).toBeGreaterThan(0,);
+          const execError = error as { exitCode: number; };
+          expect(execError.exitCode,).toBeGreaterThan(0,);
         }
 
         teardown(fixtures,);
@@ -319,8 +337,9 @@ await describe({
         const childProcess = exec(`bun ${cliPath} -- node ${sleepScript}`,);
 
         // Give it time to start
-        // oxlint-disable-next-line eslint/no-promise-executor-return -- test delay
-        await new Promise(resolve => setTimeout(resolve, 100,));
+        await new Promise(function delayResolve(resolve,): void {
+          setTimeout(resolve, 100,);
+        },);
 
         // Kill the process
         if ((childProcess.pid !== undefined) && (childProcess.pid !== 0))

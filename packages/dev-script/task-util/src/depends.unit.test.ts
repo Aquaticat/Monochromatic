@@ -3,7 +3,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test';
-import { exec, } from 'node:child_process';
+import spawn from 'nano-spawn';
 import {
   existsSync,
   mkdirSync,
@@ -12,9 +12,26 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join, } from 'node:path';
-import { promisify, } from 'node:util';
 
-const execAsync = promisify(exec,);
+/**
+ * Runs a shell command and resolves with its captured output.
+ *
+ * Wraps `nano-spawn` with `shell: true` to mirror the previous `promisify(exec)`
+ * contract: resolves `{ stdout, stderr }` on success and rejects with a
+ * `SubprocessError` (carrying `stdout`, `stderr`) on non-zero exit.
+ *
+ * @param command - Full shell command line to execute
+ *
+ * @returns Captured `stdout` and `stderr`
+ *
+ * @example
+ * ```ts
+ * const { stdout } = await execAsync('echo hi'); // stdout === 'hi'
+ * ```
+ */
+function execAsync(command: string,): Promise<{ readonly stdout: string; readonly stderr: string; }> {
+  return spawn(command, { shell: true, },);
+}
 
 //region Fixture Setup: temp directory with controllable source and output files
 

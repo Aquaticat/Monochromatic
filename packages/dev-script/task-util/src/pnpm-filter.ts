@@ -44,6 +44,7 @@ type WriteFilteredOptions = {
   readonly stream: NodeJS.WriteStream;
 };
 
+/* oxlint-disable typescript/prefer-readonly-parameter-types -- `stream` is `NodeJS.WriteStream`, an external type whose `.write()` mutates stream state by design; forwarding filtered output to the stream is this function's purpose, so deep-readonly cannot apply */
 /**
  * Filters output and writes to the given stream if non-empty after filtering.
  *
@@ -69,6 +70,7 @@ function writeFiltered({
     > 0)
     stream.write(filtered,);
 }
+/* oxlint-enable typescript/prefer-readonly-parameter-types */
 
 try {
   /** Captured pnpm subprocess result; both streams are filtered before forwarding to the parent process. */

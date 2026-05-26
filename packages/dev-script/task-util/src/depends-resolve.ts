@@ -17,6 +17,7 @@ import {
   extractCommand,
   isShellCommand,
   parseTimestamp,
+  UNPARSEABLE_TIMESTAMP,
 } from './depends-parse.ts';
 import { resolveGlobFiles, } from './depends-resolve-glob.ts';
 
@@ -182,9 +183,9 @@ async function resolveShellCommand({
     );
   }
 
-  /** Numeric timestamp parsed from the command's stdout; `undefined` triggers the unparseable-output error path. */
+  /** Numeric timestamp parsed from the command's stdout; `UNPARSEABLE_TIMESTAMP` triggers the unparseable-output error path. */
   const parsed = parseTimestamp(stdout,);
-  if (parsed === undefined) {
+  if (parsed === UNPARSEABLE_TIMESTAMP) {
     throw new Error(
       dedent`
         ${position} sh: "${command}" returned unparseable output: "${stdout}"

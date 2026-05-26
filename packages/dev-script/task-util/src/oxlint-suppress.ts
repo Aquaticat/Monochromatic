@@ -19,6 +19,7 @@
 
 import {
   extractRuleName,
+  NO_RULE,
   stripAnsi,
 } from './oxlint-augment.ts';
 
@@ -133,7 +134,7 @@ export function classifyHeader(line: string,): {
 } | typeof NOT_DIAGNOSTIC_HEADER {
   /** Rule name when `line` is a diagnostic header; a missing name rejects non-headers before severity is read. */
   const rule = extractRuleName(line,);
-  if (rule === null)
+  if (rule === NO_RULE)
     return NOT_DIAGNOSTIC_HEADER;
 
   /** ANSI-stripped, left-trimmed copy whose first char is the `!`/`x` severity marker. */

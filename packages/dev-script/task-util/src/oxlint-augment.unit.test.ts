@@ -9,6 +9,7 @@ import {
   extractRuleName,
   formatGuidanceLine,
   isHelpLine,
+  NO_RULE,
   RULE_GUIDANCE,
   stripAnsi,
 } from './oxlint-augment.ts';
@@ -208,25 +209,25 @@ await describe({
           name: 'returns null for context lines',
           fn: async () => {
             expect(extractRuleName('  92 |   const form = document.querySelector();',),)
-              .toBeNull();
+              .toBe(NO_RULE,);
           },
         },),
         it({
           name: 'returns null for blank lines',
           fn: async () => {
-            expect(extractRuleName('',),).toBeNull();
+            expect(extractRuleName('',),).toBe(NO_RULE,);
           },
         },),
         it({
           name: 'returns null for box-drawing lines',
           fn: async () => {
-            expect(extractRuleName('   ,-[src/client.ts:93:30]',),).toBeNull();
+            expect(extractRuleName('   ,-[src/client.ts:93:30]',),).toBe(NO_RULE,);
           },
         },),
         it({
           name: 'returns null for help lines',
           fn: async () => {
-            expect(extractRuleName('  help: Expected void return type.',),).toBeNull();
+            expect(extractRuleName('  help: Expected void return type.',),).toBe(NO_RULE,);
           },
         },),
       ],
@@ -242,20 +243,20 @@ await describe({
         it({
           name: 'returns null for all-whitespace input',
           fn: async () => {
-            expect(extractRuleName('     ',),).toBeNull();
+            expect(extractRuleName('     ',),).toBe(NO_RULE,);
           },
         },),
         it({
           name: 'returns null when an x is not a header marker',
           fn: async () => {
-            expect(extractRuleName('context line 42',),).toBeNull();
+            expect(extractRuleName('context line 42',),).toBe(NO_RULE,);
           },
         },),
         it({
           name: 'returns null when whitespace breaks the plugin name',
           fn: async () => {
             expect(extractRuleName('  x type script(no-misused-promises): msg',),)
-              .toBeNull();
+              .toBe(NO_RULE,);
           },
         },),
         it({
@@ -270,13 +271,13 @@ await describe({
         it({
           name: 'returns null for a long run of bare markers',
           fn: async () => {
-            expect(extractRuleName('x'.repeat(MANY_SEQUENCES,),),).toBeNull();
+            expect(extractRuleName('x'.repeat(MANY_SEQUENCES,),),).toBe(NO_RULE,);
           },
         },),
         it({
           name: 'returns null for a long non-marker run',
           fn: async () => {
-            expect(extractRuleName('a'.repeat(LONG_RUN,),),).toBeNull();
+            expect(extractRuleName('a'.repeat(LONG_RUN,),),).toBe(NO_RULE,);
           },
         },),
         it({

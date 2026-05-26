@@ -100,25 +100,27 @@ const rawArgs = runSync(
   },
 );
 
+/* oxlint-disable no-restricted-syntax/no-nullish-union -- external boundary: @optique/core `optional()` is typed `Parser<…, TValue | undefined, …>`, so `multiple(optional(...))` yields `(string | undefined)[]` for omitted options; this helper mirrors that upstream type to strip the absent entries */
 /**
- * Filters nullish values produced by `multiple(optional(...))` when an option is omitted.
+ * Filters absent values produced by `multiple(optional(...))` when an option is omitted.
  *
  * optique returns `undefined` for omitted optional options inside `multiple`.
  *
- * @param values - Array that may contain nullish values from optique parsing
+ * @param values - Array that may contain `undefined` from optique parsing
  *
- * @returns Array with nullish values removed
+ * @returns Array with absent values removed
  *
  * @example
  * ```ts
- * filterNullish([undefined, 'a', null]) // ['a']
+ * filterNullish([undefined, 'a', undefined, 'b']) // ['a', 'b']
  * ```
  */
-function filterNullish(values: readonly (string | null | undefined)[],): string[] {
+function filterNullish(values: readonly (string | undefined)[],): string[] {
   return values.filter(function isString(value,): value is string {
-    return (value !== null) && (value !== undefined);
+    return value !== undefined;
   },);
 }
+/* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 /** Valid builtin time strategy names */
 const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set([
@@ -140,8 +142,10 @@ const BUILTIN_STRATEGIES: ReadonlySet<BuiltinTimeStrategy> = new Set([
  * ```
  */
 type ValidateTimeStrategyOptions = {
-  /** Raw value from optique (possibly nullish when option is omitted) */
-  readonly value: string | null | undefined;
+  /* oxlint-disable no-restricted-syntax/no-nullish-union -- external boundary: @optique/core `optional()` is typed `Parser<…, TValue | undefined, …>`, so an omitted `--*-time-strategy` arrives here as `undefined`; this field mirrors that upstream type */
+  /** Raw value from optique (`undefined` when option is omitted) */
+  readonly value: string | undefined;
+  /* oxlint-enable no-restricted-syntax/no-nullish-union */
   /** Flag name for error messages */
   readonly flagName: string;
 };
@@ -170,7 +174,7 @@ function validateTimeStrategy({
   value,
   flagName,
 }: ValidateTimeStrategyOptions,): TimeStrategy {
-  if ((value === null) || (value === undefined))
+  if (value === undefined)
     return 'newest';
   /* oxlint-disable typescript/no-unsafe-type-assertion -- value is validated by Set.has / sh: prefix check before each cast below */
   if (BUILTIN_STRATEGIES.has(value as BuiltinTimeStrategy,))

@@ -15,6 +15,20 @@ import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
 export const SH_PREFIX = 'sh:';
 
 /**
+ * Sentinel returned by {@link parseTimestamp} when its input is not a parseable timestamp.
+ *
+ * A unique `Symbol` keeps the absent case out of the numeric domain: every real
+ * timestamp (including `Infinity`/`-Infinity`) is a `number`, so callers
+ * distinguish "unparseable" by identity rather than a nullish union.
+ *
+ * @example
+ * ```ts
+ * parseTimestamp('') === UNPARSEABLE_TIMESTAMP // true
+ * ```
+ */
+export const UNPARSEABLE_TIMESTAMP: unique symbol = Symbol('unparseable-timestamp',);
+
+/**
  * Boundary for distinguishing unix seconds from milliseconds.
  *
  * Numbers \>= 1e12 are treated as milliseconds (dates after 2001 in ms).
@@ -73,19 +87,19 @@ export function extractCommand(item: string,): string {
  * @param value - Trimmed stdout from a shell command
  *
  * @returns Timestamp in milliseconds (possibly `Infinity` or `-Infinity`),
- * or `undefined` when not parseable
+ * or {@link UNPARSEABLE_TIMESTAMP} when not parseable
  *
  * @example
  * ```ts
  * parseTimestamp('1710000000') // 1710000000000 (seconds -> ms)
  * parseTimestamp('Infinity') // Infinity
  * parseTimestamp('-Infinity') // -Infinity
- * parseTimestamp('') // undefined
+ * parseTimestamp('') // UNPARSEABLE_TIMESTAMP
  * ```
  */
-export function parseTimestamp(value: string,): number | undefined {
+export function parseTimestamp(value: string,): number | typeof UNPARSEABLE_TIMESTAMP {
   if (value === '')
-    return undefined;
+    return UNPARSEABLE_TIMESTAMP;
   if (value === 'Infinity')
     return Infinity;
   if (value === '-Infinity')
@@ -102,7 +116,7 @@ export function parseTimestamp(value: string,): number | undefined {
   if (!Number.isNaN(date.getTime(),))
     return date.getTime();
 
-  return undefined;
+  return UNPARSEABLE_TIMESTAMP;
 }
 
 //endregion Timestamp parsing

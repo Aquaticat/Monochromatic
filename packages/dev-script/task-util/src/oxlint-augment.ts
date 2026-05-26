@@ -142,8 +142,8 @@ function ansiEscapeLength({
   text,
   start,
 }: {
-  text: string;
-  start: number;
+  readonly text: string;
+  readonly start: number;
 },): number {
   if (text.charAt(start,)
     !== ESC_CHAR)
@@ -269,6 +269,21 @@ export const RULE_GUIDANCE: Record<string, string> = {
 //region Diagnostic detection
 
 /**
+ * Sentinel returned by {@link extractRuleName} and {@link matchHeaderAt} when a
+ * line is not a diagnostic header.
+ *
+ * A unique `Symbol` keeps the absent case out of the `string` domain (a rule
+ * name is always a non-empty string), so callers distinguish "no rule" by
+ * identity instead of a nullish union.
+ *
+ * @example
+ * ```ts
+ * extractRuleName('context line') === NO_RULE // true
+ * ```
+ */
+export const NO_RULE: unique symbol = Symbol('no-rule-name',);
+
+/**
  * Walks consecutive whitespace chars starting at `idx`, returning the
  * first non-whitespace position (or `text.length`).
  *
@@ -288,8 +303,8 @@ function skipWhitespace({
   text,
   idx,
 }: {
-  text: string;
-  idx: number;
+  readonly text: string;
+  readonly idx: number;
 },): number {
   return (function walk(): number {
     /** Cursor advanced across the whitespace run; stops at the first non-whitespace char or the end of `text`. */
@@ -321,8 +336,8 @@ function skipRuleNameChars({
   text,
   idx,
 }: {
-  text: string;
-  idx: number;
+  readonly text: string;
+  readonly idx: number;
 },): number {
   return (function walk(): number {
     /** Cursor advanced across the rule-name char run; stops at the first non-rule-name char or the end of `text`. */
@@ -356,9 +371,9 @@ function allNonWhitespaceBetween({
   start,
   end,
 }: {
-  text: string;
-  start: number;
-  end: number;
+  readonly text: string;
+  readonly start: number;
+  readonly end: number;
 },): boolean {
   return (function check(): boolean {
     /** Cursor scanned across `[start, end)`; any whitespace short-circuits to false. */
@@ -383,23 +398,23 @@ function allNonWhitespaceBetween({
  *
  * @param punctIdx - cursor at the candidate `x` or `!`
  *
- * @returns captured rule name, or `null` when no match
+ * @returns captured rule name, or {@link NO_RULE} when no match
  *
  * @example
  * ```ts
  * matchHeaderAt({ text: 'x foo(bar): baz', punctIdx: 0 }); // 'bar'
- * matchHeaderAt({ text: 'x foo: baz', punctIdx: 0 });      // null
+ * matchHeaderAt({ text: 'x foo: baz', punctIdx: 0 });      // NO_RULE
  * ```
  */
 function matchHeaderAt({
   text,
   punctIdx,
 }: {
-  text: string;
-  punctIdx: number;
-},): string | null {
+  readonly text: string;
+  readonly punctIdx: number;
+},): string | typeof NO_RULE {
   if (!isWhitespace(text.charAt(punctIdx + 1,),))
-    return null;
+    return NO_RULE;
 
   /** Cursor past the run of whitespace following the punctuation. */
   const afterWs = skipWhitespace({
@@ -413,7 +428,7 @@ function matchHeaderAt({
     afterWs,
   );
   if ((openParen === (-1)) || (openParen === afterWs))
-    return null;
+    return NO_RULE;
   if (
     !allNonWhitespaceBetween({
       text,
@@ -421,7 +436,7 @@ function matchHeaderAt({
       end: openParen,
     },)
   ) {
-    return null;
+    return NO_RULE;
   }
 
   /** Cursor at the first char inside the parens; rule name starts here. */
@@ -432,11 +447,11 @@ function matchHeaderAt({
     idx: ruleStart,
   },);
   if (ruleEnd === ruleStart)
-    return null;
+    return NO_RULE;
 
   if (text.charAt(ruleEnd,)
     !== ')')
-    return null;
+    return NO_RULE;
 
   /** Cursor past optional whitespace after `)`; the next char must be `:`. */
   const afterRule = skipWhitespace({
@@ -445,7 +460,7 @@ function matchHeaderAt({
   },);
   if (text.charAt(afterRule,)
     !== ':')
-    return null;
+    return NO_RULE;
 
   return text.slice(
     ruleStart,
@@ -460,7 +475,7 @@ function matchHeaderAt({
  *
  * @param line - single line of oxlint output, possibly with ANSI codes
  *
- * @returns rule name (e.g. `no-misused-promises`), or null if not a diagnostic header
+ * @returns rule name (e.g. `no-misused-promises`), or {@link NO_RULE} if not a diagnostic header
  *
  * @example
  * ```ts
@@ -468,10 +483,10 @@ function matchHeaderAt({
  * // 'no-misused-promises'
  *
  * extractRuleName('  92 |   const form = ...');
- * // null
+ * // NO_RULE
  * ```
  */
-export function extractRuleName(line: string,): string | null {
+export function extractRuleName(line: string,): string | typeof NO_RULE {
   /** ANSI-stripped working copy; the matcher operates on plain text. */
   const stripped = stripAnsi(line,);
 
@@ -481,16 +496,16 @@ export function extractRuleName(line: string,): string | null {
     /** Char at the cursor; only `x` or `!` can open a diagnostic header. */
     const c = stripped.charAt(idx,);
     if ((c === 'x') || (c === '!')) {
-      /** Header-match attempt anchored at the candidate; non-null on the first valid header. */
+      /** Header-match attempt anchored at the candidate; a rule name on the first valid header, else `NO_RULE`. */
       const result = matchHeaderAt({
         text: stripped,
         punctIdx: idx,
       },);
-      if (result !== null)
+      if (result !== NO_RULE)
         return result;
     }
   }
-  return null;
+  return NO_RULE;
 }
 
 /**
@@ -572,23 +587,23 @@ export function augmentOxlintOutput(output: string,): string {
   const result: string[] = [];
 
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- multi-statement state machine: activeGuidance and injected are mutated by four branches across loop iterations, with side effects on `result`. */
-  /** Rule name from the current diagnostic block, null when unmatched. */
-  let activeGuidance: string | null = null;
+  /** Rule name from the current diagnostic block, `NO_RULE` when unmatched. */
+  let activeGuidance: string | typeof NO_RULE = NO_RULE;
   /** Whether guidance has been injected for the current diagnostic block. */
   let injected = false;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   for (const line of lines) {
-    /** Rule name extracted from the current line when it matches a diagnostic header; otherwise null. */
+    /** Rule name extracted from the current line when it matches a diagnostic header; otherwise `NO_RULE`. */
     const ruleName = extractRuleName(line,);
-    if (ruleName !== null) {
+    if (ruleName !== NO_RULE) {
       activeGuidance = (RULE_GUIDANCE[ruleName]
-        !== undefined) ? ruleName : null;
+        !== undefined) ? ruleName : NO_RULE;
       injected = false;
     }
 
     // Inject after help line when guidance is pending
-    if ((activeGuidance !== null) && (!injected)
+    if ((activeGuidance !== NO_RULE) && (!injected)
       && isHelpLine(line,)) {
       result.push(line,);
       result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
@@ -598,21 +613,21 @@ export function augmentOxlintOutput(output: string,): string {
     }
 
     // Inject before blank line (end of diagnostic) if no help line was found
-    if ((activeGuidance !== null) && (!injected)
+    if ((activeGuidance !== NO_RULE) && (!injected)
       && (stripAnsi(line,)
         .trim()
         === '')) {
       result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
         ?? '',),);
       injected = true;
-      activeGuidance = null;
+      activeGuidance = NO_RULE;
     }
 
     result.push(line,);
   }
 
   // Handle trailing diagnostic with no blank line at end
-  if ((activeGuidance !== null) && (!injected))
+  if ((activeGuidance !== NO_RULE) && (!injected))
     result.push(formatGuidanceLine(RULE_GUIDANCE[activeGuidance]
       ?? '',),);
 
