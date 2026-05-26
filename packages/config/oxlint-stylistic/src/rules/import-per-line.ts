@@ -16,7 +16,7 @@ type ImportSpecifierNode = Span & {
 /** Import declaration node shape carrying specifiers for this rule. */
 type ImportSpecifierListNode = Span & {
   /** Import specifiers in source order. */
-  readonly specifiers?: readonly ImportSpecifierNode[] | null;
+  readonly specifiers?: readonly ImportSpecifierNode[];
 };
 
 /**
@@ -59,7 +59,7 @@ export const importPerLine: CreateOnceRule = {
         const importNode = node as ImportSpecifierListNode;
         /** Extract specifiers from the import declaration. */
         const { specifiers, } = importNode;
-        if ((specifiers === undefined) || (specifiers === null))
+        if (specifiers === undefined)
           return;
 
         /** Filter to only named import specifiers (skip default and namespace). */

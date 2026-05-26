@@ -10,7 +10,7 @@ import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 /** Object-pattern node shape carrying destructured properties for this rule. */
 type ObjectPatternListNode = Span & {
   /** Destructured properties in source order. */
-  readonly properties?: readonly Span[] | null;
+  readonly properties?: readonly Span[];
 };
 
 /**
@@ -49,7 +49,7 @@ export const destructurePerLine: CreateOnceRule = {
         const patternNode = node as ObjectPatternListNode;
         /** Extract properties from the object pattern. */
         const { properties, } = patternNode;
-        if ((properties === undefined) || (properties === null))
+        if (properties === undefined)
           return;
 
         checkItemsPerLine({

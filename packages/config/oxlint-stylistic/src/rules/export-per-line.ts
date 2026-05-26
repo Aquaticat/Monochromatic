@@ -9,10 +9,17 @@ import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 
 /** Export declaration node shape carrying named specifiers for this rule. */
 type ExportSpecifierListNode = Span & {
-  /** Inline export declaration, present for `export const` and similar syntax. */
-  readonly declaration?: Span | null;
+  /**
+   * Inline export declaration: a node for `export const` and similar syntax,
+   * `null` for re-exports (`export { a, b }`). Typed `unknown` rather than
+   * `Span` because oxlint sets the runtime value to `null` for re-exports;
+   * the field is only tested for presence, never read as a `Span`, so the
+   * nullish runtime value never flows into a typed slot (no `Span | null`
+   * union, which `no-nullish-union` bans).
+   */
+  readonly declaration?: unknown;
   /** Named export specifiers in source order. */
-  readonly specifiers?: readonly Span[] | null;
+  readonly specifiers?: readonly Span[];
 };
 
 /**
@@ -68,7 +75,7 @@ export const exportPerLine: CreateOnceRule = {
         }
 
         // Missing specifiers mean the export declaration has nothing to check.
-        if ((specifiers === undefined) || (specifiers === null))
+        if (specifiers === undefined)
           return;
 
         checkItemsPerLine({

@@ -15,6 +15,14 @@ import {
 const ATTACHED: ChainSegment = { isBreak: false, };
 
 /**
+ * Leaf sentinel returned by {@link descentChild} when a chain node has no
+ * receiver to descend into. A unique `Symbol` rather than `undefined` keeps
+ * "no child" out of a `ChainNode | undefined` union (banned by
+ * `no-nullish-union`); the walk gates on `=== LEAF`.
+ */
+const LEAF: unique symbol = Symbol('oxlint-stylistic:chain-flatten:leaf',);
+
+/**
  * Reports whether a node type is a transparent chain wrapper.
  *
  * The walk passes through these without emitting a segment of their own; their
@@ -142,18 +150,18 @@ type ChainWalkParams = {
  *
  * @param node - chain node whose receiver link is wanted
  *
- * @returns receiver to descend into, or `undefined` when the node is the leaf
+ * @returns receiver to descend into, or `LEAF` when the node is the leaf
  */
-function descentChild(node: ChainNode,): ChainNode | undefined {
+function descentChild(node: ChainNode,): ChainNode | typeof LEAF {
   if (isTransparentWrapper(node.type,))
-    return node.expression;
+    return node.expression ?? LEAF;
   if (node.type
     === 'MemberExpression')
-    return node.object;
+    return node.object ?? LEAF;
   if (node.type
     === 'CallExpression')
-    return node.callee;
-  return undefined;
+    return node.callee ?? LEAF;
+  return LEAF;
 }
 
 /**
@@ -220,9 +228,9 @@ export function chainSegments({
     let cursor: ChainNode = node;
     ;
   ) {
-    /** Receiver to descend into; absent when the cursor is the chain leaf. */
+    /** Receiver to descend into; `LEAF` when the cursor is the chain leaf. */
     const child = descentChild(cursor,);
-    if (child === undefined) {
+    if (child === LEAF) {
       break;
     }
     contributors.push(cursor,);

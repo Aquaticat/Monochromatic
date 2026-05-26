@@ -10,7 +10,7 @@ import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 /** Object-expression node shape carrying properties for this rule. */
 type ObjectPropertyListNode = Span & {
   /** Object literal properties in source order. */
-  readonly properties?: readonly Span[] | null;
+  readonly properties?: readonly Span[];
 };
 
 /**
@@ -51,7 +51,7 @@ export const objectPropertyPerLine: CreateOnceRule = {
         const objNode = node as ObjectPropertyListNode;
         /** Extract properties from the object expression. */
         const { properties, } = objNode;
-        if ((properties === undefined) || (properties === null))
+        if (properties === undefined)
           return;
 
         checkItemsPerLine({

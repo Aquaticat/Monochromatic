@@ -10,7 +10,7 @@ import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 /** Array-expression node shape carrying element spans for this rule. */
 type ArrayElementListNode = Span & {
   /** Array elements as read by the existing rule behavior. */
-  readonly elements?: readonly Span[] | null;
+  readonly elements?: readonly Span[];
 };
 
 /**
@@ -52,7 +52,7 @@ export const arrayElementPerLine: CreateOnceRule = {
         const arrayNode = node as ArrayElementListNode;
         /** Extract elements from the array node. */
         const { elements, } = arrayNode;
-        if ((elements === undefined) || (elements === null))
+        if (elements === undefined)
           return;
 
         checkItemsPerLine({

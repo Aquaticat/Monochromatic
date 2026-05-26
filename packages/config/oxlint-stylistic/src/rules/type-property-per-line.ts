@@ -10,9 +10,9 @@ import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 /** Type body node shape carrying members under oxlint's type-literal variants. */
 type TypeMemberListNode = Span & {
   /** Interface body members in source order. */
-  readonly body?: readonly Span[] | null;
+  readonly body?: readonly Span[];
   /** Type literal members in source order. */
-  readonly members?: readonly Span[] | null;
+  readonly members?: readonly Span[];
 };
 
 /**
@@ -64,7 +64,7 @@ export const typePropertyPerLine: CreateOnceRule = {
       } = bodyNode;
       /** Combined member list regardless of oxlint's node-shape variant. */
       const members = body ?? literalMembers;
-      if ((members === undefined) || (members === null))
+      if (members === undefined)
         return;
 
       checkItemsPerLine({

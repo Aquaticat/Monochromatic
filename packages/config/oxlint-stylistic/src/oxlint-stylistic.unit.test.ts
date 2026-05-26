@@ -240,30 +240,33 @@ function mockChainContext(): Context {
         start: target.start - 1,
       };
   }
-  /**
-   * @param target - left operand or node whose following token is wanted
-   * @param options - present for the operator-token lookup, absent for the paren probe
-   *
-   * @returns `+` operator token when filtered, a non-`)` marker otherwise
-   */
-  function getTokenAfter(
-    target: { readonly end: number; },
-    options?: { readonly filter: (token: TokenStub,) => boolean; },
-  ): TokenStub {
-    return (options === undefined)
-      ? {
-        value: 'x',
-        start: target.end,
-      }
-      : {
-        value: '+',
-        start: target.end + 1,
-      };
-  }
   return asChainContext({
     sourceCode: {
       getTokenBefore,
-      getTokenAfter,
+      // `getTokenAfter` mirrors oxlint's positional `SourceCode.getTokenAfter(
+      // nodeOrToken, skipOptions?)`, which the chain walk calls positionally.
+      // A named function expression as a property value, not a `function`
+      // declaration: `require-destructured-params` fires only on declarations
+      // and would reject this external-API 2-parameter shape, which cannot
+      // collapse to a single destructured object.
+      // `target` is the left operand or node whose following token is wanted;
+      // `options` is present for the operator-token lookup, absent for the
+      // paren probe. Returns the `+` operator token when filtered, a non-`)`
+      // marker otherwise.
+      getTokenAfter: function getTokenAfter(
+        target: { readonly end: number; },
+        options?: { readonly filter: (token: TokenStub,) => boolean; },
+      ): TokenStub {
+        return (options === undefined)
+          ? {
+            value: 'x',
+            start: target.end,
+          }
+          : {
+            value: '+',
+            start: target.end + 1,
+          };
+      },
     },
   },);
 }

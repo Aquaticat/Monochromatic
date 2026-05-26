@@ -10,7 +10,7 @@ import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 /** Call-like node shape carrying arguments for this rule. */
 type ArgumentListNode = Span & {
   /** Arguments passed to call-like syntax. */
-  readonly arguments?: readonly Span[] | null;
+  readonly arguments?: readonly Span[];
 };
 
 /**
@@ -57,7 +57,7 @@ export const argumentPerLine: CreateOnceRule = {
       const callNode = node as ArgumentListNode;
       /** Extract arguments from the call-like node. */
       const { arguments: args, } = callNode;
-      if ((args === undefined) || (args === null))
+      if (args === undefined)
         return;
 
       checkItemsPerLine({

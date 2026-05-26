@@ -10,7 +10,7 @@ import { checkItemsPerLine, } from '../utility/item-per-line.ts';
 /** Tuple-type node shape carrying element types for this rule. */
 type TupleElementListNode = Span & {
   /** Tuple element types in source order. */
-  readonly elementTypes?: readonly Span[] | null;
+  readonly elementTypes?: readonly Span[];
 };
 
 /**
@@ -48,7 +48,7 @@ export const tuplePerLine: CreateOnceRule = {
         const tupleNode = node as TupleElementListNode;
         /** Extract elementTypes from the tuple type. */
         const { elementTypes: elements, } = tupleNode;
-        if ((elements === undefined) || (elements === null))
+        if (elements === undefined)
           return;
 
         checkItemsPerLine({

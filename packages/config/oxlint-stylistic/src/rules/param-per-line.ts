@@ -18,7 +18,7 @@ import {
 /** Function-like node shape carrying parameters for this rule. */
 type FunctionParamListNode = Span & {
   /** Function parameters in source order. */
-  readonly params?: readonly Span[] | null;
+  readonly params?: readonly Span[];
 };
 
 /**
@@ -84,7 +84,6 @@ export const paramPerLine: CreateOnceRule = {
       /** Extract params from the function-like node. */
       const { params, } = fnNode;
       if ((params === undefined)
-        || (params === null)
         || (params.length
           < 2))
       {
