@@ -11,6 +11,10 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 import { extractCssUrls, } from './css.ts';
 import { extractHtmlRefs, } from './html.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { resolveReference, } from './resolve.ts';
 import { wireSize, } from './size.ts';
 
@@ -19,13 +23,13 @@ import { wireSize, } from './size.ts';
  */
 export type PageWeight = {
   /** Path of the HTML file relative to the dist root. */
-  page: string;
+  readonly page: string;
   /** Sum of wire sizes of the HTML and every asset it references. */
-  totalBytes: number;
+  readonly totalBytes: number;
   /** Number of unique assets contributing to the total (including the HTML). */
-  resourceCount: number;
+  readonly resourceCount: number;
   /** References the walker saw but could not resolve to a file under root. */
-  missing: string[];
+  readonly missing: readonly string[];
 };
 
 /**
@@ -43,21 +47,22 @@ function readText(absolutePath: string,): Promise<string> {
 }
 
 /**
- * Reads a CSS file and returns the raw source, or `null` if it cannot be read.
+ * Reads a CSS file and returns the raw source, or {@link ABSENT} if it cannot
+ * be read.
  *
  * Skipping on read failure keeps the pipeline robust against broken links
  * without masking them; the caller still receives the path via `missing`.
  *
  * @param absolutePath - absolute CSS path
  *
- * @returns CSS source or `null`
+ * @returns CSS source, or {@link ABSENT} on read failure
  */
-async function readCssOrNull(absolutePath: string,): Promise<string | null> {
+async function readCssOrAbsent(absolutePath: string,): Promise<Maybe<string>> {
   try {
     return await readText(absolutePath,);
   }
   catch {
-    return null;
+    return ABSENT;
   }
 }
 
@@ -69,27 +74,33 @@ async function readCssOrNull(absolutePath: string,): Promise<string | null> {
  *
  * @param root - absolute dist root
  *
- * @param seen - mutable set of absolute paths already counted (de-dup store)
+ * @param seen - read-only view of absolute paths already counted by the
+ *   caller, so an asset reachable from both the HTML and the CSS graph is
+ *   reported once
  *
- * @param missing - mutable accumulator of references that could not resolve
- *
- * @returns absolute paths of assets referenced by the CSS graph
+ * @returns assets discovered through the CSS graph plus references that could
+ *   not be resolved, for the caller to merge into its own accumulators
  */
 async function walkCss(
   {
     startPath,
     root,
     seen,
-    missing,
   }: {
-    startPath: string;
-    root: string;
-    seen: Set<string>;
-    missing: string[];
+    readonly startPath: string;
+    readonly root: string;
+    readonly seen: ReadonlySet<string>;
   },
-): Promise<string[]> {
+): Promise<{
+  readonly assets: readonly string[];
+  readonly missing: readonly string[];
+}> {
   /** Accumulator of unique asset paths discovered through the CSS graph. */
   const collected: string[] = [];
+  /** Accumulator of references that could not be resolved to a file under root. */
+  const missing: string[] = [];
+  /** Local dedup view seeded from the caller's counted set; grows as new assets are discovered. */
+  const counted = new Set<string>(seen,);
   /**
    * BFS frontier so chained `@import`s are followed before the function returns.
    */
@@ -105,20 +116,20 @@ async function walkCss(
       continue;
     visited.add(cssPath,);
 
-    /** CSS text, or `null` when the file cannot be read so dead links don't abort the walk. */
+    /** CSS text, or `ABSENT` when the file cannot be read so dead links don't abort the walk. */
     // oxlint-disable-next-line eslint/no-await-in-loop -- BFS over a queue that grows as each iteration parses imports; each step depends on the previous shift and the shared `visited` set, so parallelisation would race on dedup state.
-    const source = await readCssOrNull(cssPath,);
-    if (source === null)
+    const source = await readCssOrAbsent(cssPath,);
+    if (source === ABSENT)
       continue;
 
     for (const ref of extractCssUrls(source,)) {
-      /** Absolute asset path, or `null` when the reference escapes the dist root. */
+      /** Absolute asset path, or `ABSENT` when the reference escapes the dist root. */
       const resolved = resolveReference({
         root,
         fromFile: cssPath,
         ref,
       },);
-      if (resolved === null) {
+      if (resolved === ABSENT) {
         missing.push(ref,);
         continue;
       }
@@ -126,14 +137,17 @@ async function walkCss(
         .toLowerCase()
         === '.css') && (!visited.has(resolved,)))
         queue.push(resolved,);
-      if (!seen.has(resolved,)) {
-        seen.add(resolved,);
+      if (!counted.has(resolved,)) {
+        counted.add(resolved,);
         collected.push(resolved,);
       }
     }
   }
 
-  return collected;
+  return {
+    assets: collected,
+    missing,
+  };
 }
 
 /**
@@ -168,8 +182,8 @@ export async function weighPage(
     htmlPath,
     root,
   }: {
-    htmlPath: string;
-    root: string;
+    readonly htmlPath: string;
+    readonly root: string;
   },
 ): Promise<PageWeight> {
   /** Accumulator for unresolvable references, surfaced on the returned record. */
@@ -188,13 +202,13 @@ export async function weighPage(
   } = extractHtmlRefs(htmlSource,);
 
   for (const ref of urls) {
-    /** Absolute path of the referenced asset, or `null` when it escapes the dist root. */
+    /** Absolute path of the referenced asset, or `ABSENT` when it escapes the dist root. */
     const resolved = resolveReference({
       root,
       fromFile: htmlPath,
       ref,
     },);
-    if (resolved === null) {
+    if (resolved === ABSENT) {
       missing.push(ref,);
       continue;
     }
@@ -208,27 +222,30 @@ export async function weighPage(
       /**
        * Assets reachable through the CSS `@import` / `url()` graph rooted at this stylesheet.
        */
-      // oxlint-disable-next-line eslint/no-await-in-loop -- walkCss mutates the shared `seen` and `missing` accumulators, so parallel calls would race on those sets; ordering also determines which `@import` chain claims a given asset path first.
+      // oxlint-disable-next-line eslint/no-await-in-loop -- each walkCss reads the running `seen` set to avoid double-counting assets already claimed by earlier stylesheets, so ordering is significant and parallel calls would race on that shared dedup state.
       const nested = await walkCss({
         startPath: resolved,
         root,
         seen,
-        missing,
       },);
-      for (const asset of nested)
+      for (const asset of nested.assets) {
+        seen.add(asset,);
         assets.push(asset,);
+      }
+      for (const nestedRef of nested.missing)
+        missing.push(nestedRef,);
     }
   }
 
   for (const inline of inlineStyles) {
     for (const ref of extractCssUrls(inline,)) {
-      /** Absolute asset path for an inline `<style>` reference, or `null` when it escapes the dist root. */
+      /** Absolute asset path for an inline `<style>` reference, or `ABSENT` when it escapes the dist root. */
       const resolved = resolveReference({
         root,
         fromFile: htmlPath,
         ref,
       },);
-      if (resolved === null) {
+      if (resolved === ABSENT) {
         missing.push(ref,);
         continue;
       }
@@ -239,9 +256,9 @@ export async function weighPage(
     }
   }
 
-  /** Wire sizes per asset, computed in parallel; `null` slots are surfaced via `missing` below. */
+  /** Wire sizes per asset, computed in parallel; `ABSENT` slots are surfaced via `missing` below. */
   const sizes = await Promise.all(
-    assets.map(function measure(asset: string,): Promise<number | null> {
+    assets.map(function measure(asset: string,): Promise<Maybe<number>> {
       return wireSize(asset,);
     },),
   );
@@ -249,10 +266,10 @@ export async function weighPage(
   const totalBytes = sizes.reduce(
     function sumNonNull(
       acc: number,
-      size: number | null,
+      size: Maybe<number>,
       index: number,
     ): number {
-      if (size === null) {
+      if (size === ABSENT) {
         missing.push(nonNullishOrThrow(assets[index],),);
         return acc;
       }

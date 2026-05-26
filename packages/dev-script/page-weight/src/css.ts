@@ -13,13 +13,13 @@ import {
   isTokenString,
   isTokenURL,
   isTokenWhiteSpaceOrComment,
-  type TokenAtKeyword,
-  type TokenFunction,
   tokenize,
-  type TokenString,
-  type TokenURL,
 } from '@csstools/css-tokenizer';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { startsWithUriScheme, } from './url-detect.ts';
 
 /**
@@ -32,22 +32,36 @@ import { startsWithUriScheme, } from './url-detect.ts';
 const TOKEN_DATA_INDEX = 4;
 
 /**
+ * Minimal readonly view of a value-carrying CSS token.
+ *
+ * The four token kinds this module reads (`Url`, `String`, `Function`,
+ * `AtKeyword`) all expose their unescaped payload at tuple index
+ * {@link TOKEN_DATA_INDEX}. `prefer-readonly-parameter-types` rejects the
+ * upstream token types directly because they extend the mutable `Array`
+ * interface, so the reader takes this readonly-array intersection instead;
+ * every concrete token type is assignable to it (mutable to readonly is
+ * covariant).
+ */
+type ValueToken =
+  & readonly unknown[]
+  & Readonly<Record<typeof TOKEN_DATA_INDEX, { readonly value: string; }>>;
+
+/**
  * Reads the structured `value` payload from a URL / String / Function /
  * AtKeyword token.
  *
  * @param token - tokenizer output tuple
  *
- * @returns the token's unescaped string payload
+ * @returns token's unescaped string payload
  */
-function tokenValue(
-  token: TokenURL | TokenString | TokenFunction | TokenAtKeyword,
-): string {
+function tokenValue(token: ValueToken,): string {
   return token[TOKEN_DATA_INDEX]
     .value;
 }
 
 /**
- * Adds a URL reference to the output set if it is local (not external).
+ * Returns the local reference carried by a raw CSS URL value, or
+ * {@link ABSENT} when the value is external and contributes no local weight.
  *
  * External forms filtered:
  * - absolute URLs with scheme (`http:`, `https:`, `ftp:`, `data:`, ...)
@@ -55,56 +69,20 @@ function tokenValue(
  * - fragment-only (`#id`)
  * - empty string
  *
- * @param target - set receiving accepted references
- *
  * @param raw - URL string as it appeared in CSS
+ *
+ * @returns trimmed local reference, or {@link ABSENT}
  */
-function addIfLocal(
-  {
-    target,
-    raw,
-  }: {
-    target: Set<string>;
-    raw: string;
-  },
-): void {
+function localUrlOrAbsent(raw: string,): Maybe<string> {
   /** URL with surrounding whitespace removed; raw CSS values often carry stray padding. */
   const trimmed = raw.trim();
   if ((trimmed === '') || trimmed
     .startsWith('#',))
-    return;
+    return ABSENT;
   if (trimmed.startsWith('//',)
     || startsWithUriScheme(trimmed,))
-    return;
-  target.add(trimmed,);
-}
-
-/**
- * Returns the next token that is not whitespace or a comment, or `null` if none.
- *
- * @param tokens - full token array from the tokenizer
- *
- * @param startIndex - index to begin scanning from (inclusive)
- *
- * @returns next semantic token, or `null` past the end
- */
-function nextSemanticToken(
-  {
-    tokens,
-    startIndex,
-  }: {
-    tokens: readonly CSSToken[];
-    startIndex: number;
-  },
-): CSSToken | null {
-  for (let index = startIndex; index < tokens
-    .length; index += 1) {
-    /** Current token under inspection; skipped if it carries no semantic content. */
-    const token = nonNullishOrThrow(tokens[index],);
-    if (!isTokenWhiteSpaceOrComment(token,))
-      return token;
-  }
-  return null;
+    return ABSENT;
+  return trimmed;
 }
 
 /**
@@ -138,15 +116,45 @@ export function extractCssUrls(source: string,): string[] {
   /** Output set; deduplicates references seen multiple times across the stylesheet. */
   const refs = new Set<string>();
 
+  /**
+   * Returns the next token at or after `startIndex` that is not whitespace or
+   * a comment, or {@link ABSENT} when the stream ends first. Closes over
+   * `tokens` so the shared stream is not threaded through a parameter.
+   *
+   * @param startIndex - index to begin scanning from (inclusive)
+   *
+   * @returns next semantic token, or {@link ABSENT} past the end
+   */
+  function nextSemanticToken(startIndex: number,): Maybe<CSSToken> {
+    for (let index = startIndex; index < tokens
+      .length; index += 1) {
+      /** Current token under inspection; skipped if it carries no semantic content. */
+      const token = nonNullishOrThrow(tokens[index],);
+      if (!isTokenWhiteSpaceOrComment(token,))
+        return token;
+    }
+    return ABSENT;
+  }
+
+  /**
+   * Filters `raw` through {@link localUrlOrAbsent} and records the reference
+   * when it is local. Closes over `refs`.
+   *
+   * @param raw - URL string as it appeared in CSS
+   */
+  function addLocalRef(raw: string,): void {
+    /** Local reference carried by `raw`, or `ABSENT` when external. */
+    const local = localUrlOrAbsent(raw,);
+    if (local !== ABSENT)
+      refs.add(local,);
+  }
+
   for (let index = 0; index < tokens
     .length; index += 1) {
     /** Current token in the linear scan; dispatch below depends on its kind. */
     const token = nonNullishOrThrow(tokens[index],);
     if (isTokenURL(token,)) {
-      addIfLocal({
-        target: refs,
-        raw: tokenValue(token,),
-      },);
+      addLocalRef(tokenValue(token,),);
       continue;
     }
     if (isTokenFunction(token,)) {
@@ -155,16 +163,9 @@ export function extractCssUrls(source: string,): string[] {
         !== 'url')
         continue;
       /** First semantic token after `url(`; expected to be the quoted URL string. */
-      const next = nextSemanticToken({
-        tokens,
-        startIndex: index + 1,
-      },);
-      if ((next !== null) && isTokenString(next,)) {
-        addIfLocal({
-          target: refs,
-          raw: tokenValue(next,),
-        },);
-      }
+      const next = nextSemanticToken(index + 1,);
+      if ((next !== ABSENT) && isTokenString(next,))
+        addLocalRef(tokenValue(next,),);
       continue;
     }
     if (isTokenAtKeyword(token,)) {
@@ -175,16 +176,9 @@ export function extractCssUrls(source: string,): string[] {
       /**
        * First semantic token after `@import`; expected to be the imported stylesheet URL.
        */
-      const next = nextSemanticToken({
-        tokens,
-        startIndex: index + 1,
-      },);
-      if ((next !== null) && isTokenString(next,)) {
-        addIfLocal({
-          target: refs,
-          raw: tokenValue(next,),
-        },);
-      }
+      const next = nextSemanticToken(index + 1,);
+      if ((next !== ABSENT) && isTokenString(next,))
+        addLocalRef(tokenValue(next,),);
     }
   }
 

@@ -4,8 +4,6 @@
  * Parses an HTML document with rehype-parse and walks the resulting hast tree
  * to collect every local asset URL the page would cause a browser to fetch.
  */
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
-
 import type {
   Element,
   Node,
@@ -15,6 +13,12 @@ import type {
 } from 'hast';
 import rehypeParse from 'rehype-parse';
 import { unified, } from 'unified';
+
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+import type { DeepReadonly, } from './types.ts';
 import { startsWithUriScheme, } from './url-detect.ts';
 
 /** Reusable unified parser configured for full HTML documents. */
@@ -39,7 +43,7 @@ function parseHtml(source: string,): Root {
  *
  * @returns whether the node is an element
  */
-function isElement(node: Node,): node is Element {
+function isElement(node: DeepReadonly<Node>,): node is DeepReadonly<Element> {
   return node.type
     === 'element';
 }
@@ -51,40 +55,56 @@ function isElement(node: Node,): node is Element {
  *
  * @returns whether the node is a text node
  */
-function isText(node: Node,): node is Text {
+function isText(node: DeepReadonly<Node>,): node is DeepReadonly<Text> {
   return node.type
     === 'text';
 }
 
 /**
+ * Type-guards a generic hast node as a `Parent` (carries a `children` array).
+ *
+ * Replaces a `Partial<Parent>` view: `Partial` reopens every property as
+ * optional, which `no-optional-escape` bans, whereas a guard narrows precisely
+ * to the nodes that have children to descend into.
+ *
+ * @param node - hast node to test
+ *
+ * @returns whether the node has children to descend into
+ */
+function isParent(node: DeepReadonly<Node>,): node is DeepReadonly<Parent> {
+  return ('children' in node)
+    && Array.isArray(node.children,);
+}
+
+/**
  * Reads a string attribute from a hast element.
  *
- * Returns `null` for missing attributes, non-string values, or the empty string,
- * simplifying caller logic that would otherwise have to narrow the return type
- * and separately reject empty strings.
+ * Returns {@link ABSENT} for missing attributes, non-string values, or the
+ * empty string, simplifying caller logic that would otherwise have to narrow
+ * the return type and separately reject empty strings.
  *
  * @param element - source element
  *
  * @param name - attribute name
  *
- * @returns trimmed string value, or `null`
+ * @returns trimmed string value, or {@link ABSENT}
  */
 function attr(
   {
     element,
     name,
   }: {
-    element: Element;
-    name: string;
+    readonly element: DeepReadonly<Element>;
+    readonly name: string;
   },
-): string | null {
+): Maybe<string> {
   /** Attribute value as hast stores it; may be missing or non-string. */
   const raw = element.properties[name];
   if ((typeof raw) !== 'string')
-    return null;
-  /** Whitespace-stripped value so empty-after-trim attributes report as `null`. */
+    return ABSENT;
+  /** Whitespace-stripped value so empty-after-trim attributes report as `ABSENT`. */
   const trimmed = raw.trim();
-  return trimmed === '' ? null : trimmed;
+  return trimmed === '' ? ABSENT : trimmed;
 }
 
 /**
@@ -96,17 +116,17 @@ function attr(
  *
  * @param srcset - raw srcset value, e.g. `"a.jpg 1x, b.jpg 2x"`
  *
- * @returns first URL, or `null` if the value is empty
+ * @returns first URL, or {@link ABSENT} if the value is empty
  */
-function firstSrcsetUrl(srcset: string,): string | null {
+function firstSrcsetUrl(srcset: string,): Maybe<string> {
   /** First candidate descriptor in the srcset list; used as the canonical pick. */
   const first = srcset.split(',',)[0]
     ?.trim();
   if ((first === undefined) || (first === ''))
-    return null;
-  /** Leading URL token from the candidate; descriptor like `2x` is dropped. */
-  const url = firstNonWhitespaceToken(first,);
-  return nonNullishOrThrow(url === '' ? undefined : url,);
+    return ABSENT;
+  // `first` is trimmed and non-empty, so it carries at least one non-whitespace
+  // character; the leading-token scan therefore always yields a non-empty URL.
+  return firstNonWhitespaceToken(first,);
 }
 
 /**
@@ -169,32 +189,25 @@ export function firstNonWhitespaceToken(line: string,): string {
 }
 
 /**
- * Adds a URL to the collected set if it is local (not external, not data:, not fragment-only).
+ * Returns the local reference carried by a candidate URL, or {@link ABSENT}
+ * when the candidate is missing, external, a data URI, or fragment-only.
  *
- * @param target - set receiving accepted references
+ * @param raw - candidate URL, or {@link ABSENT} when the source element had none
  *
- * @param raw - candidate URL
+ * @returns trimmed local reference, or {@link ABSENT}
  */
-function addIfLocal(
-  {
-    target,
-    raw,
-  }: {
-    target: Set<string>;
-    raw: string | null;
-  },
-): void {
-  if (raw === null)
-    return;
+function localUrlOrAbsent(raw: Maybe<string>,): Maybe<string> {
+  if (raw === ABSENT)
+    return ABSENT;
   /** Whitespace-stripped form so empty and fragment-only references are filtered out. */
   const trimmed = raw.trim();
   if ((trimmed === '') || trimmed
     .startsWith('#',))
-    return;
+    return ABSENT;
   if (trimmed.startsWith('//',)
     || startsWithUriScheme(trimmed,))
-    return;
-  target.add(trimmed,);
+    return ABSENT;
+  return trimmed;
 }
 
 /**
@@ -208,32 +221,23 @@ const MEDIA_PARENTS = new Set([
 ],);
 
 /**
- * Appends an inline `<style>` element's text content to the accumulator.
+ * Returns an inline `<style>` element's text content, or {@link ABSENT} when
+ * the block is blank so the caller's accumulator stays clean.
  *
  * @param element - `<style>` element
  *
- * @param out - accumulator receiving inline stylesheet text
+ * @returns concatenated stylesheet text, or {@link ABSENT} when blank
  */
-function collectInlineStyle(
-  {
-    element,
-    out,
-  }: {
-    element: Element;
-    out: string[];
-  },
-): void {
+function inlineStyleText(element: DeepReadonly<Element>,): Maybe<string> {
   /** Text-node fragments collected from the `<style>` children. */
   const parts: string[] = [];
   for (const child of element.children) {
     if (isText(child,))
       parts.push(child.value,);
   }
-  /** Concatenated `<style>` content; only emitted when non-blank so the accumulator stays clean. */
+  /** Concatenated `<style>` content; only emitted when non-blank. */
   const text = parts.join('',);
-  if (text.trim()
-    !== '')
-    out.push(text,);
+  return text.trim() === '' ? ABSENT : text;
 }
 
 /**
@@ -247,19 +251,17 @@ function collectInlineStyle(
  *
  * @param element - the `<picture>` / `<video>` / `<audio>` element
  *
- * @param inlineCss - accumulator receiving `<style>` contents from children
- *
- * @returns single URL the media element most likely fetches, or `null`
+ * @returns single URL the media element most likely fetches (or {@link ABSENT})
+ *   plus any `<style>` contents seen among its children before that pick
  */
-function collectMediaUrl(
-  {
-    element,
-    inlineCss,
-  }: {
-    element: Element;
-    inlineCss: string[];
-  },
-): string | null {
+function collectMedia(
+  element: DeepReadonly<Element>,
+): {
+  readonly url: Maybe<string>;
+  readonly styles: readonly string[];
+} {
+  /** Inline `<style>` bodies found among the media children, in source order. */
+  const styles: string[] = [];
   for (const child of element.children) {
     if (!isElement(child,))
       continue;
@@ -270,22 +272,28 @@ function collectMediaUrl(
         element: child,
         name: 'srcset',
       },);
-      if (srcset !== null)
-        return firstSrcsetUrl(srcset,);
+      if (srcset !== ABSENT)
+        return {
+          url: firstSrcsetUrl(srcset,),
+          styles,
+        };
       /** Plain `src` fallback for the current `<source>` child when no `srcset` is set. */
       const src = attr({
         element: child,
         name: 'src',
       },);
-      if (src !== null)
-        return src;
+      if (src !== ABSENT)
+        return {
+          url: src,
+          styles,
+        };
     }
     if (child.tagName
       === 'style') {
-      collectInlineStyle({
-        element: child,
-        out: inlineCss,
-      },);
+      /** Text of the current `<style>` child, when non-blank. */
+      const text = inlineStyleText(child,);
+      if (text !== ABSENT)
+        styles.push(text,);
     }
   }
   if (element.tagName
@@ -299,12 +307,18 @@ function collectMediaUrl(
           element: child,
           name: 'src',
         },);
-        if (src !== null)
-          return src;
+        if (src !== ABSENT)
+          return {
+            url: src,
+            styles,
+          };
       }
     }
   }
-  return null;
+  return {
+    url: ABSENT,
+    styles,
+  };
 }
 
 /**
@@ -316,9 +330,9 @@ function collectMediaUrl(
  *
  * @param element - element to inspect
  *
- * @returns URL to fetch, or `null` when the element has no own asset
+ * @returns URL to fetch, or {@link ABSENT} when the element has no own asset
  */
-function ownAssetUrl(element: Element,): string | null {
+function ownAssetUrl(element: DeepReadonly<Element>,): Maybe<string> {
   if (element.tagName
     === 'link') {
     return attr({
@@ -357,7 +371,7 @@ function ownAssetUrl(element: Element,): string | null {
       element,
       name: 'srcset',
     },);
-    if (srcset !== null)
+    if (srcset !== ABSENT)
       return firstSrcsetUrl(srcset,);
     return attr({
       element,
@@ -371,14 +385,14 @@ function ownAssetUrl(element: Element,): string | null {
       element,
       name: 'href',
     },);
-    if (href !== null)
+    if (href !== ABSENT)
       return href;
     return attr({
       element,
       name: 'xlink:href',
     },);
   }
-  return null;
+  return ABSENT;
 }
 
 /**
@@ -387,72 +401,10 @@ function ownAssetUrl(element: Element,): string | null {
  */
 export type HtmlReferences = {
   /** Relative/absolute asset URLs as written in the source HTML. */
-  urls: string[];
+  readonly urls: readonly string[];
   /** Raw CSS text from `<style>` blocks, pending `url()` extraction. */
-  inlineStyles: string[];
+  readonly inlineStyles: readonly string[];
 };
-
-/**
- * Recursively walks a hast subtree, collecting asset URLs and inline styles.
- *
- * Media-parent elements short-circuit child recursion to avoid over-counting
- * `<source>` / fallback `<img>` combinations that a browser would pick exactly
- * one of.
- *
- * @param node - current hast node
- *
- * @param urls - accumulator receiving asset URLs
- *
- * @param inlineStyles - accumulator receiving `<style>` text blocks
- */
-function walk(
-  {
-    node,
-    urls,
-    inlineStyles,
-  }: {
-    node: Node;
-    urls: Set<string>;
-    inlineStyles: string[];
-  },
-): void {
-  if (isElement(node,)) {
-    if (node.tagName
-      === 'style') {
-      collectInlineStyle({
-        element: node,
-        out: inlineStyles,
-      },);
-      return;
-    }
-    if (MEDIA_PARENTS.has(node.tagName,)) {
-      addIfLocal({
-        target: urls,
-        raw: collectMediaUrl({
-          element: node,
-          inlineCss: inlineStyles,
-        },),
-      },);
-      return;
-    }
-    addIfLocal({
-      target: urls,
-      raw: ownAssetUrl(node,),
-    },);
-  }
-  /** Structural view of the node so children can be visited when the node carries them. */
-  const parent = node as Partial<Parent>;
-  if (parent.children
-    !== undefined) {
-    for (const child of parent.children) {
-      walk({
-        node: child,
-        urls,
-        inlineStyles,
-      },);
-    }
-  }
-}
 
 /**
  * Extracts every local asset reference from an HTML document.
@@ -474,11 +426,48 @@ export function extractHtmlRefs(source: string,): HtmlReferences {
   /** `<style>` bodies pulled out for a separate `url()` scan by the caller. */
   const inlineStyles: string[] = [];
 
-  walk({
-    node: tree,
-    urls,
-    inlineStyles,
-  },);
+  /**
+   * Recursively descends a hast subtree, recording asset URLs and inline
+   * styles into the captured accumulators. Media-parent elements short-circuit
+   * child recursion to avoid over-counting `<source>` / fallback `<img>`
+   * combinations a browser picks exactly one of. Closes over `urls` and
+   * `inlineStyles` so neither accumulator is threaded through a parameter.
+   *
+   * @param node - current hast node
+   */
+  function walk(node: DeepReadonly<Node>,): void {
+    if (isElement(node,)) {
+      if (node.tagName
+        === 'style') {
+        /** Text of this `<style>` block, when non-blank. */
+        const text = inlineStyleText(node,);
+        if (text !== ABSENT)
+          inlineStyles.push(text,);
+        return;
+      }
+      if (MEDIA_PARENTS.has(node.tagName,)) {
+        /** Canonical media pick plus any inline styles found among its children. */
+        const media = collectMedia(node,);
+        /** Local reference of the media pick, or `ABSENT` when external. */
+        const local = localUrlOrAbsent(media.url,);
+        if (local !== ABSENT)
+          urls.add(local,);
+        for (const style of media.styles)
+          inlineStyles.push(style,);
+        return;
+      }
+      /** Local reference of this element's own asset, or `ABSENT`. */
+      const local = localUrlOrAbsent(ownAssetUrl(node,),);
+      if (local !== ABSENT)
+        urls.add(local,);
+    }
+    if (isParent(node,)) {
+      for (const child of node.children)
+        walk(child,);
+    }
+  }
+
+  walk(tree,);
 
   return {
     urls: [...urls,],

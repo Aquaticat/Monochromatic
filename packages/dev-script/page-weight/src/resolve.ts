@@ -14,6 +14,10 @@ import {
 
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { startsWithUriScheme, } from './url-detect.ts';
 
 /**
@@ -27,8 +31,8 @@ import { startsWithUriScheme, } from './url-detect.ts';
  *
  * @param ref - raw reference string (URL or path) from HTML or CSS
  *
- * @returns absolute filesystem path under `root`, or `null` when the reference
- *   is external, escapes the root, or is malformed
+ * @returns absolute filesystem path under `root`, or {@link ABSENT} when the
+ *   reference is external, escapes the root, or is malformed
  *
  * @example
  * ```ts
@@ -46,21 +50,21 @@ export function resolveReference(
     fromFile,
     ref,
   }: {
-    root: string;
-    fromFile: string;
-    ref: string;
+    readonly root: string;
+    readonly fromFile: string;
+    readonly ref: string;
   },
-): string | null {
+): Maybe<string> {
   /** Reference with any `#fragment` removed; fragments do not affect the served file. */
   const withoutFragment = nonNullishOrThrow(ref.trim()
     .split('#',)[0],);
   /** Reference with the query string also stripped; query parameters do not change the path on disk. */
   const trimmed = nonNullishOrThrow(withoutFragment.split('?',)[0],);
   if (trimmed === '')
-    return null;
+    return ABSENT;
   if (trimmed.startsWith('//',)
     || startsWithUriScheme(trimmed,))
-    return null;
+    return ABSENT;
 
   /** Canonical absolute form of the dist root used as the containment boundary. */
   const absoluteRoot = pathResolve(root,);
@@ -87,6 +91,6 @@ export function resolveReference(
   );
   if (relativeToRoot.startsWith('..',)
     || isAbsolute(relativeToRoot,))
-    return null;
+    return ABSENT;
   return resolved;
 }
