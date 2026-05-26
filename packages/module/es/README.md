@@ -87,11 +87,9 @@ All functions are pure and don't rely on execution context.
 // Current root namespace
 import { types, } from '@monochromatic-dev/module-es/ts';
 
-// Special subpaths exposed by package.json include:
-// @monochromatic-dev/module-es/binary
-//
 // Utilities split from module-es now live in focused packages:
 // @monochromatic-dev/module-async-iter
+// @monochromatic-dev/module-function-arity
 // @monochromatic-dev/module-kv-store
 // @monochromatic-dev/module-memoize
 // @monochromatic-dev/module-observable

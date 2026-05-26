@@ -1,1 +1,0 @@
-export * as sync from './r s/index.ts';

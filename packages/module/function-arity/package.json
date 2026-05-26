@@ -1,0 +1,31 @@
+{
+  "license": "LGPL-3.0-or-later",
+  "name": "@monochromatic-dev/module-function-arity",
+  "description": "Function arity wrappers for narrowing callbacks to their first one or two positional arguments.",
+  "type": "module",
+  "version": "0.0.1",
+  "private": false,
+  "module": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:",
+    "typescript": "catalog:"
+  },
+  "files": [
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/module/function-arity"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

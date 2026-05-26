@@ -12,8 +12,7 @@
       "default": "./dist/final/neutral/index.mjs"
     },
     "./ts": "./src/index.ts",
-    "./ts/*": "./src/*",
-    "./binary": "./src/types/t function/f/t function/binary/r s/p p/index.ts"
+    "./ts/*": "./src/*"
   },
   "files": [
     "dist/final",
