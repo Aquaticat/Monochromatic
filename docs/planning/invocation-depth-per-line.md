@@ -7,6 +7,77 @@ A future implementer should be able to read only this file and recover the probl
 the evidence gathered, every design branch we settled, the corrections made along the way,
 and the final implementation target.
 
+## Implementation spec
+
+This section is the implementation checklist.
+The decision trace below records why each choice was made;
+an implementer can work from this section alone and drop to the trace for rationale.
+
+### Identity
+
+- Package: `packages/config/oxlint-stylistic`; new rule file under `src/rules/`, registered in `src/index.ts`.
+- Config key `stylistic/invocation-depth-per-line`, enabled `warn` in `packages/config/oxlint/src/rules/style.ts`.
+- `meta.type: 'layout'`, `meta.fixable: 'whitespace'`. A trailing-comma-inserting reformat is still declared
+  `whitespace` in this repo (`src/rules/argument-per-line.ts:36-38`), so the comma the fixer adds does not change this.
+- Threshold: hardcoded maximum of two counted invocations per source line.
+
+### Semantics
+
+A source line fails when one checked operand spine has more than two counted invocation heads starting on that line.
+Threshold-only: already-split layouts pass when every line stays within two.
+
+### Counted invocation heads
+
+- `CallExpression` (including optional calls) and `NewExpression`: the spine continues through the single argument
+  only when `arguments.length === 1`.
+- `ImportExpression`: the spine operand is `.source`, not `.arguments[0]`, and continues only when `.options` is null
+  (`@oxlint/plugins` `index.d.ts:1752-1757`).
+- Do not count `TaggedTemplateExpression`, JSX, or `V8IntrinsicExpression`. The oxc parser as invoked here does not
+  emit `V8IntrinsicExpression` for repo TypeScript, so it needs no explicit exclusion code.
+
+### Transparent wrappers (spine passes through)
+
+`ChainExpression`, `AwaitExpression`, `UnaryExpression`, `YieldExpression`, `SpreadElement`, `TSAsExpression`,
+`TSSatisfiesExpression`, `TSTypeAssertion`, `TSNonNullExpression`, `TSInstantiationExpression`.
+
+Not `ParenthesizedExpression`. oxlint strips grouping parentheses and emits no such node here
+(`src/utility/chain.ts:57`, `src/utility/has-parens.ts:17`), even though the `@oxlint/plugins` type union lists the type
+(`index.d.ts:1413`) and a visitor hook for it (`index.d.ts:2583`). Detection is unaffected because `a((b(c())))` parses
+identically to `a(b(c()))`. The autofix is affected: see the paren note under "Autofix".
+
+### Containers (stop the parent spine, descendants still checked)
+
+`ObjectExpression`, `ArrayExpression`, `ConditionalExpression`, `SequenceExpression`, `AssignmentExpression`,
+`TemplateLiteral`, `TaggedTemplateExpression`, and function bodies (`ArrowFunctionExpression`, `FunctionExpression`).
+A container stops the parent spine, but normal visitors still check spines that live inside it (decisions 29, 32).
+
+### Autofix
+
+- One report fixes one level: split the reported invocation's single operand onto its own line, dedent the closing
+  delimiter to the source-line indent, always add a trailing comma.
+- Deep spines converge over repeated `oxlint --fix` passes rather than expanding fully in one pass
+  (`docs/troubleshooting/oxlint-multi-fix-convergence.md`). Tests must include a convergence fixture.
+- Build the replacement with the bracket-locating, offset-slicing approach in `src/utility/item-per-line-fix.ts`,
+  never `getText(item).trim()`, so trailing comments and inner formatting survive.
+- Place the trailing comma before trailing line and block comments.
+- Grouping parens: operand spans exclude surrounding parens (`has-parens.ts:17`), so slicing `[operand.start,
+  operand.end]` drops them. Recover the grouping bytes with the `parenIsolated`/`hasParens` byte-peek before slicing,
+  or the fix silently deletes the parentheses.
+- Do not rewrite tagged-template quasis (it changes the tag's observed `strings.raw`); fix only inside `${...}`.
+
+### Diagnostic ownership
+
+Report the highest counted invocation on each line whose spine count exceeds two.
+Independent spines report independently: `a(b(c(x())), d(e(f())))` yields two diagnostics, one on `b` and one on `d`,
+because the two-argument `a` breaks both spines.
+
+### Traversal
+
+Iterative, never recursive: spine depth grows with source length and the repo bans recursion over linear input.
+Before coding, dump node types with a throwaway logging visitor for each fixture shape (call, new, dynamic import,
+optional call, grouping parens, spread, yield, unary, TS wrappers, tagged-template interpolation) to confirm the shapes
+against the running oxlint version rather than against the type union.
+
 ## Starting proposal
 
 The starting proposal was narrower than the final rule:
@@ -836,7 +907,6 @@ Do not count these in the first implementation:
 
 The operand-spine walker passes through these node types:
 
-- `ParenthesizedExpression`.
 - `ChainExpression`.
 - `AwaitExpression`.
 - `UnaryExpression`.
@@ -848,8 +918,15 @@ The operand-spine walker passes through these node types:
 - `TSNonNullExpression`.
 - `TSInstantiationExpression`.
 
-The walker does not pass through containers such as object literals, array literals,
-conditional expressions, template literals, or tagged-template syntax.
+It does not pass through `ParenthesizedExpression`: oxlint strips grouping parentheses and emits no such node here
+(`src/utility/chain.ts` `parenIsolated`, `src/utility/has-parens.ts` `hasParens`), so the wrapper is unnecessary and
+`a((b(c())))` already parses as depth-three `a(b(c()))`. The autofix must still recover grouping bytes by byte-peek,
+because operand spans exclude surrounding parens. Re-confirm this against the running oxlint version, since the
+`@oxlint/plugins` type union does declare a `ParenthesizedExpression` node and a visitor hook for it.
+
+The walker does not pass through containers: `ObjectExpression`, `ArrayExpression`, `ConditionalExpression`,
+`SequenceExpression`, `AssignmentExpression`, `TemplateLiteral`, `TaggedTemplateExpression`, and function bodies
+(`ArrowFunctionExpression`, `FunctionExpression`).
 Those containers stop the parent spine, but normal visitors still check descendants inside them.
 
 ## Final autofix rules
