@@ -11,13 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 import { compilePatterns, } from './config.ts';
-import {
-  BASH_DETAIL_LEN,
-  MAX_CONTEXT_TOOLS,
-  USER_MSG_HEAD,
-  USER_MSG_MAX,
-  USER_MSG_TAIL,
-} from './constants.ts';
+import { MAX_CONTEXT_ACTIVITIES, } from './constants.ts';
 import {
   BASE_SYSTEM_PROMPT,
   buildSystemPrompt,
@@ -30,11 +24,7 @@ await describe({
     it({
       name: 'has expected constant values',
       fn: async () => {
-        expect(MAX_CONTEXT_TOOLS,).toBe(8,);
-        expect(USER_MSG_MAX,).toBe(300,);
-        expect(USER_MSG_HEAD,).toBe(150,);
-        expect(USER_MSG_TAIL,).toBe(100,);
-        expect(BASH_DETAIL_LEN,).toBe(50,);
+        expect(MAX_CONTEXT_ACTIVITIES,).toBe(5,);
       },
     },),
 

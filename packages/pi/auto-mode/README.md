@@ -14,6 +14,16 @@ tool_call -> flagger (signals.ts, wide-net boolean predicates)
 
 The flagger and judge are strictly separated: the flagger never provides reasons, the judge sees only raw action plus context.
 
+### Judge context
+
+The recent activity sent to the judge is scoped from the latest user message.
+Auto-mode keeps the full latest user message, then fills the remaining slots
+with the newest follow-up activities up to five activity lines total.
+Messages are not abbreviated.
+
+For bash tool results, the context line includes the execution outcome and the
+full final non-empty line of bash output.
+
 ### Verdict extraction
 
 Primary path: the judge is invoked with forced `tool_choice` (`render_verdict`).

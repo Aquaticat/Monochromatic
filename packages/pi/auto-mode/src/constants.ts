@@ -29,20 +29,8 @@ export const JUDGE_MODEL_DEFAULTS = {
 
 //region Context builder limits
 
-/** Maximum number of tool calls included in judge context. */
-export const MAX_CONTEXT_TOOLS = 8;
-
-/** Maximum length of user message text in judge context. */
-export const USER_MSG_MAX = 300;
-
-/** Head portion of truncated user messages. */
-export const USER_MSG_HEAD = 150;
-
-/** Tail portion of truncated user messages. */
-export const USER_MSG_TAIL = 100;
-
-/** Maximum length of bash detail in context. */
-export const BASH_DETAIL_LEN = 50;
+/** Maximum number of activity lines included in judge context. */
+export const MAX_CONTEXT_ACTIVITIES = 5;
 
 //endregion
 

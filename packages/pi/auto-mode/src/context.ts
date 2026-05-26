@@ -12,13 +12,7 @@ import type {
   ExtensionContext,
   SessionMessageEntry,
 } from '@earendil-works/pi-coding-agent';
-import {
-  BASH_DETAIL_LEN,
-  MAX_CONTEXT_TOOLS,
-  USER_MSG_HEAD,
-  USER_MSG_MAX,
-  USER_MSG_TAIL,
-} from './constants.ts';
+import { MAX_CONTEXT_ACTIVITIES, } from './constants.ts';
 import {
   isTrustEntry,
   isVerdictEntry,
@@ -66,7 +60,7 @@ const NO_PENDING_VERDICT = Symbol('no-pending-verdict',);
 /**
  * Build a context summary for the LLM judge.
  *
- * Scoped from the last user message, capped at recent tools.
+ * Scoped from the last user message, capped at recent activities.
  * Includes verdict outcomes for denied/asked actions so the
  * judge can detect circumvention.
  *
@@ -98,16 +92,14 @@ function buildContext(
     },
   );
 
-  /** Accumulator for tool-call summary lines. */
-  const toolLines: string[] = [];
+  /** Accumulator for activity lines in chronological order. */
+  const activityLines: string[] = [];
   /** Queue of in-flight tool calls awaiting their matching toolResult. */
   const pendingCalls: {
     name: string;
     summary: string;
   }[] = [];
-  /* oxlint-disable no-restricted-syntax/no-function-root-let -- forward-scan state machine assembling userLine and tracking pendingVerdict across message-entry pairs */
-  /** Formatted user-message line; empty when no user message was found. */
-  let userLine = '';
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- forward-scan state machine tracking pendingVerdict across message-entry pairs */
   /**
    * Verdict attached to the next tool call; the {@link NO_PENDING_VERDICT}
    * sentinel when none is pending.
@@ -146,9 +138,9 @@ function buildContext(
 
     if (msg.role
       === 'user') {
-      /** Plain-text rendering of the user message used for the summary line. */
+      /** Plain-text rendering of the user message used for the activity line. */
       const text = extractUserText(msg.content,);
-      userLine = `[user] ${abbreviate(text,)}`;
+      activityLines.push(`[user] ${text}`,);
       continue;
     }
 
@@ -180,7 +172,7 @@ function buildContext(
 
       if ((pendingVerdict !== NO_PENDING_VERDICT) && (pendingVerdict.verdict
         !== 'approve')) {
-        toolLines.push(
+        activityLines.push(
           `[tool] ${callStr} → ${pendingVerdict.verdict} (${pendingVerdict.reason})`,
         );
       }
@@ -192,32 +184,55 @@ function buildContext(
           === 'bash'
           ? bashDetail(msg.content,)
           : '';
-        toolLines.push(`[tool] ${callStr} → ${outcome}${detail}`,);
+        activityLines.push(`[tool] ${callStr} → ${outcome}${detail}`,);
       }
       pendingVerdict = NO_PENDING_VERDICT;
     }
   }
 
-  /** Final summary lines assembled in display order. */
-  const lines: string[] = [];
-  if (userLine !== '')
-    lines.push(userLine,);
-  if (toolLines.length
-    > MAX_CONTEXT_TOOLS) {
-    /** Count of older tool lines elided to fit within the context cap. */
-    const omitted = toolLines.length
-      - MAX_CONTEXT_TOOLS;
-    lines.push(`[${omitted} previous tool calls omitted]`,);
-    lines.push(...toolLines.slice(-MAX_CONTEXT_TOOLS,),);
-  }
-  else {
-    lines.push(...toolLines,);
-  }
-
-  return lines.join('\n',);
+  /** Final activity lines capped while preserving the last user-message anchor. */
+  return capActivityLines(activityLines,)
+    .join('\n',);
 }
 
 //region Internal helpers
+
+/**
+ * Cap activity lines to the configured maximum.
+ *
+ * Keeps the first line when it is the scoped user message, then fills the
+ * remaining slots with the newest follow-up activities.
+ *
+ * @param activityLines - chronological activity lines from the scoped branch window
+ *
+ * @returns capped activity lines
+ *
+ * @example
+ * ```typescript
+ * capActivityLines(['[user] run tests', '[tool] one', '[tool] two']);
+ * ```
+ */
+function capActivityLines(
+  activityLines: readonly string[],
+): readonly string[] {
+  /** First activity line, which is the scoped user message when a user anchor exists. */
+  const [firstLine,] = activityLines;
+  if (firstLine === undefined)
+    return [];
+  if (!firstLine.startsWith('[user] ',))
+    return activityLines.slice(-MAX_CONTEXT_ACTIVITIES,);
+  /** Remaining capacity after preserving the scoped user-message anchor. */
+  const remainingLimit = MAX_CONTEXT_ACTIVITIES - 1;
+  if (remainingLimit <= 0)
+    return [firstLine,];
+  /** Follow-up activity lines after the scoped user-message anchor. */
+  const remainingLines = activityLines.slice(1,);
+  return [
+    firstLine,
+    ...remainingLines.slice(-remainingLimit,),
+  ];
+}
+
 
 /**
  * Extract text from user message content.
@@ -248,27 +263,6 @@ function extractUserText(
       },
     )
     .join(' ',);
-}
-
-/**
- * Abbreviate a text string to the configured maximum length.
- *
- * @param text - the text to abbreviate
- *
- * @returns the abbreviated text
- */
-function abbreviate(
-  text: string,
-): string {
-  if (text.length
-    <= USER_MSG_MAX)
-    return text;
-  return `${
-    text.slice(
-      0,
-      USER_MSG_HEAD,
-    )
-  }…${text.slice(-USER_MSG_TAIL,)}`;
 }
 
 /**
@@ -353,12 +347,7 @@ function bashDetail(
     ?? '';
   if (lastLine === '')
     return '';
-  /** Last line truncated to the configured cap from the right (preserves tail). */
-  const trimmed = lastLine.length
-    > BASH_DETAIL_LEN
-    ? lastLine.slice(-BASH_DETAIL_LEN,)
-    : lastLine;
-  return ` | ${trimmed}`;
+  return ` | ${lastLine}`;
 }
 
 //endregion
