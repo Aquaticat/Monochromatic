@@ -93,7 +93,8 @@ export function displayResult({
       .length,
   },);
 
-  result.highlights.forEach(
+  result.highlights
+    .forEach(
     function populateHighlight(
       highlight: string,
       highlightIndex: number,

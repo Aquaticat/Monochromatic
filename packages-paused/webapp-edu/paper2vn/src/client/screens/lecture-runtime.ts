@@ -145,7 +145,8 @@ export function advanceBeat(
   /** Current chapter resolved through the throwing helper. */
   const chapter = currentChapter();
   if ((live.beatIndex
-    + 1) < chapter
+    + 1)
+    < chapter
     .dialogue
     .length) {
     patchActiveSave({ beatIndex: live.beatIndex
@@ -154,7 +155,8 @@ export function advanceBeat(
     return;
   }
   if ((live.chapterIndex
-    + 1) < live
+    + 1)
+    < live
     .chapters
     .length) {
     patchActiveSave({

@@ -18,7 +18,7 @@ function hasTsdoc(
   return comments.some(comment =>
     (comment.type
       === 'Block')
-    && comment
+      && comment
       .value
       .startsWith('*',)
   );

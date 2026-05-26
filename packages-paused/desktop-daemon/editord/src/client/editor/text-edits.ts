@@ -308,7 +308,8 @@ export function mapCursorThroughEdits({
     }
     if (editStart < cursorOffset) {
       /** Cursor is inside this edit; clamp to end of replacement text. */
-      shift += (editStart + edit
+      shift += (editStart
+        + edit
         .newText
         .length) - cursorOffset;
     }

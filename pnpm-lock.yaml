@@ -871,6 +871,9 @@ importers:
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.5.0
 
   packages/config/stylelint:
     dependencies:
@@ -1101,6 +1104,9 @@ importers:
       nano-spawn:
         specifier: 'catalog:'
         version: 2.1.0
+      string-dedent:
+        specifier: 'catalog:'
+        version: 3.0.2
     devDependencies:
       '@monochromatic-dev/config-tsdown':
         specifier: workspace:*

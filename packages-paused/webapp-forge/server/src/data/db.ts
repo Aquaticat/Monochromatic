@@ -125,7 +125,7 @@ const reposSchemaRow = await reposSchemaStmt.get(
 
 if (
   (reposSchemaRow === undefined)
-  || (reposSchemaRow
+    || (reposSchemaRow
     .s
     .includes('REFERENCES users',))
 ) {

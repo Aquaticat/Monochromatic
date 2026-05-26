@@ -91,7 +91,8 @@ async function withClient<T,>({
   }
   catch (error) {
     /** Whether the error message contains the LSP request timeout marker; already logged by LspClient. */
-    const isTimeout = (error instanceof Error) && error
+    const isTimeout = (error instanceof Error)
+      && error
       .message
       .includes('timed out',);
     if (!isTimeout)

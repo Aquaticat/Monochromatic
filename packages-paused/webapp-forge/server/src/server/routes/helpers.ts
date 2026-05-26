@@ -103,7 +103,8 @@ export async function requireActor(event: ActorEvent,): Promise<Actor> {
     return {
       id: session.user
         .id,
-      login: sessionUsername ?? session
+      login: sessionUsername
+        ?? session
         .user
         .id,
     };

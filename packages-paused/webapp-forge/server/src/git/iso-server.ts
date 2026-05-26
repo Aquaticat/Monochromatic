@@ -81,7 +81,8 @@ export async function handleUploadPack(
   const useSideBand64k = request.capabilities
     .includes('side-band-64k',);
   /** Either form of side-band selects the multiplexed response shape. */
-  const useSideBand = useSideBand64k || request
+  const useSideBand = useSideBand64k
+    || request
     .capabilities
     .includes('side-band',);
   /** Object ids the server still needs to send after subtracting client haves. */
@@ -140,7 +141,8 @@ export async function handleReceivePack(
   const useSideBand64k = request.capabilities
     .includes('side-band-64k',);
   /** Either form of side-band selects the multiplexed response shape. */
-  const useSideBand = useSideBand64k || request
+  const useSideBand = useSideBand64k
+    || request
     .capabilities
     .includes('side-band',);
   if (request.triplets

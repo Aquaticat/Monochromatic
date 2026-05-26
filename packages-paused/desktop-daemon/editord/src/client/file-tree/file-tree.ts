@@ -168,7 +168,8 @@ export class FileTree extends HTMLElement {
           tree.#lastFocused = event.target;
       },
     );
-    this.#tree.addEventListener(
+    this.#tree
+      .addEventListener(
       'dir-open',
       function handleDirOpen(event,) {
         loadDirChildren({
@@ -178,7 +179,8 @@ export class FileTree extends HTMLElement {
         },);
       },
     );
-    this.#tree.addEventListener(
+    this.#tree
+      .addEventListener(
       'show-context',
       function handleShowContext(event,) {
         /** Detail payload from the bubbling `show-context` CustomEvent: coordinates and target. */

@@ -414,7 +414,8 @@ export function createLspClient({
       parser.feed(chunk,);
     },
   );
-  proc.stderr?.on(
+  proc.stderr
+    ?.on(
     'data',
     function handleStderr(chunk: Buffer,) {
       /** Decoded stderr chunk with trailing newline stripped; logged and appended to the rolling buffer. */

@@ -182,7 +182,8 @@ export async function performRename({
         sum,
         fileEdit,
       ) {
-        return sum + fileEdit
+        return sum
+          + fileEdit
           .edits
           .length;
       },

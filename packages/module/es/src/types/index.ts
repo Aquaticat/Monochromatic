@@ -3,7 +3,7 @@ export type * as bigint from './t bigint/index.ts';
 export * as boolean from './t boolean/index.ts';
 export * as function from './t function/index.ts';
 export * as never from './t never/index.ts';
-export * as number from './t number/index.ts';
+export type * as number from './t number/index.ts';
 export type * as numeric from './t numeric/index.ts';
 export * as object from './t object/index.ts';
 export * as string from './t string/index.ts';

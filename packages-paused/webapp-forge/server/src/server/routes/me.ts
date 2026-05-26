@@ -106,7 +106,8 @@ async function resolveActor(headers: Headers,): Promise<DeltaActor | null> {
     return {
       id: session.user
         .id,
-      login: sessionUsername ?? session
+      login: sessionUsername
+        ?? session
         .user
         .id,
     };

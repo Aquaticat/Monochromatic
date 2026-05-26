@@ -79,7 +79,8 @@ export function multiplexSideband(row: {
   const out: Uint8Array[] = [];
   /** Read position advancing through `row.payload`. */
   let cursor = 0;
-  while (cursor < row
+  while (cursor
+    < row
     .payload
     .byteLength) {
     /** Next chunk of payload bytes for one sideband frame. */

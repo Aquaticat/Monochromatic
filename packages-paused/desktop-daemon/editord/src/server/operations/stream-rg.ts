@@ -101,7 +101,8 @@ export function streamRg({
       );
     }
 
-    proc.stdout.on(
+    proc.stdout
+      .on(
       'data',
       function handleData(chunk: Buffer,) {
         state.buffer += chunk.toString('utf8',);
