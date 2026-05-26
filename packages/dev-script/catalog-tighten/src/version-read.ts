@@ -11,6 +11,10 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { isStrictlyGreater, } from './version-parse.ts';
 
 //region Version reading
@@ -20,14 +24,14 @@ import { isStrictlyGreater, } from './version-parse.ts';
  *
  * @param pkgJsonPath - absolute path to a package.json file
  *
- * @returns version string, or `undefined` if file does not exist or has no version
+ * @returns version string, or {@link ABSENT} if file does not exist or has no version
  *
  * @example
  * ```ts
  * readVersionFromPackageJson("/path/to/node_modules/oxlint/package.json") // "0.21.0"
  * ```
  */
-export function readVersionFromPackageJson(pkgJsonPath: string,): string | undefined {
+export function readVersionFromPackageJson(pkgJsonPath: string,): Maybe<string> {
   try {
     /** Raw `package.json` text read from disk; deliberately read synchronously so callers stay sync. */
     const content = readFileSync(
@@ -37,10 +41,10 @@ export function readVersionFromPackageJson(pkgJsonPath: string,): string | undef
     /** Parsed manifest narrowed to the only field this helper consults: `version`. */
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- JSON structure from package.json is well-known
     const parsed = JSON.parse(content,) as { version?: string; };
-    return parsed.version;
+    return parsed.version ?? ABSENT;
   }
   catch {
-    return undefined;
+    return ABSENT;
   }
 }
 
@@ -54,7 +58,7 @@ export function readVersionFromPackageJson(pkgJsonPath: string,): string | undef
  *
  * @param monorepoRoot - absolute path to the monorepo root
  *
- * @returns installed version string, or `undefined` if not found in store
+ * @returns installed version string, or {@link ABSENT} if not found in store
  *
  * @example
  * ```ts
@@ -67,13 +71,10 @@ export function readVersionFromBunStore(
     npmName,
     monorepoRoot,
   }: {
-    npmName: string;
-    monorepoRoot: string;
+    readonly npmName: string;
+    readonly monorepoRoot: string;
   },
-):
-  | string
-  | undefined
-{
+): Maybe<string> {
   /** Top-level bun store directory holding all installed package versions for the monorepo. */
   const bunStoreDir = join(
     monorepoRoot,
@@ -100,7 +101,7 @@ export function readVersionFromBunStore(
     entries = readdirSync(bunStoreDir,);
   }
   catch {
-    return undefined;
+    return ABSENT;
   }
 
   // Match directories starting with `prefix@` (the @ separates name from version)
@@ -117,16 +118,16 @@ export function readVersionFromBunStore(
 
   if (candidates.length
     === 0)
-    return undefined;
+    return ABSENT;
 
   // Read package.json from each candidate and pick the highest version
   /**
    * Highest semver seen across the candidate store entries.
    *
-   * Accumulator pattern: starts undefined so the first valid candidate seeds
-   * the value, then later candidates only overwrite when strictly greater.
+   * Accumulator pattern: starts {@link ABSENT} so the first valid candidate
+   * seeds the value, then later candidates only overwrite when strictly greater.
    */
-  let bestVersion: string | undefined = undefined;
+  let bestVersion: Maybe<string> = ABSENT;
   for (const candidate of candidates) {
     /** Absolute path to the candidate's nested `package.json`; bun stores the real package under `node_modules/<name>`. */
     const pkgJsonPath = join(
@@ -136,11 +137,11 @@ export function readVersionFromBunStore(
       npmName,
       'package.json',
     );
-    /** Version of one candidate; `undefined` skips this iteration without touching `bestVersion`. */
+    /** Version of one candidate; `ABSENT` skips this iteration without touching `bestVersion`. */
     const candidateVersion = readVersionFromPackageJson(pkgJsonPath,);
-    if (candidateVersion === undefined)
+    if (candidateVersion === ABSENT)
       continue;
-    if ((bestVersion === undefined) || isStrictlyGreater({
+    if ((bestVersion === ABSENT) || isStrictlyGreater({
       cataloged: bestVersion,
       installed: candidateVersion,
     },)) {

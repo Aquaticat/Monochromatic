@@ -25,6 +25,10 @@ import {
 } from 'node:path';
 
 import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+import {
   isStrictlyGreater,
   type ParsedRange,
   parseRange,
@@ -49,6 +53,20 @@ type TightenResult = {
   oldRange: string;
   /** New tightened range string, e.g. `">=1.3.0"`. */
   newRange: string;
+};
+
+/**
+ * One npm-name probe paired with its resolved installed version.
+ *
+ * Annotating the probe shape keeps `version` as `Maybe<string>` instead of
+ * letting the `.map` object literal widen the {@link ABSENT} sentinel to the
+ * general `symbol` type, which would block the later `=== ABSENT` narrowing.
+ */
+type ProbedCandidate = {
+  /** npm name that was looked up in node_modules. */
+  name: string;
+  /** Installed version, or {@link ABSENT} when this name did not resolve. */
+  version: Maybe<string>;
 };
 
 //endregion Types
@@ -143,9 +161,9 @@ const summary: CatalogSummary = catalogEntries.reduce(
     acc,
     [name, value,],
   ): CatalogSummary {
-    /** Parsed range prefix and version, or `undefined` if not a `>=` range. */
+    /** Parsed range prefix and version, or `ABSENT` if not a `>=` range. */
     const parsed = parseRange(value,);
-    if (parsed === undefined) {
+    if (parsed === ABSENT) {
       console.info(`SKIP  ${name}: ${value} (not a >= range)`,);
       acc.skippedCount += 1;
       return acc;
@@ -158,7 +176,7 @@ const summary: CatalogSummary = catalogEntries.reduce(
     },);
     /** First npm name candidate whose installed version resolves. */
     const resolved = npmNames
-      .map(function probeCandidate(candidate,) {
+      .map(function probeCandidate(candidate,): ProbedCandidate {
         return {
           name: candidate,
           version: readInstalledVersion({
@@ -169,11 +187,11 @@ const summary: CatalogSummary = catalogEntries.reduce(
       },)
       .find(function hasVersion(r,) {
         return r.version
-          !== undefined;
+          !== ABSENT;
       },);
 
     if ((resolved === undefined) || (resolved.version
-      === undefined)) {
+      === ABSENT)) {
       console.warn(
         `MISS  ${name}: not found in node_modules (tried ${npmNames.join(', ',)})`,
       );

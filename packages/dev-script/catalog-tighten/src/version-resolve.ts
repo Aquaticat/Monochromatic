@@ -10,6 +10,10 @@ import { createRequire, } from 'node:module';
 import { join, } from 'node:path';
 
 import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+import {
   readVersionFromBunStore,
   readVersionFromPackageJson,
 } from './version-read.ts';
@@ -39,8 +43,8 @@ export function resolveNpmNames(
     catalogKey,
     catalogValue,
   }: {
-    catalogKey: string;
-    catalogValue: string;
+    readonly catalogKey: string;
+    readonly catalogValue: string;
   },
 ): string[] {
   /** Length of the `npm:` prefix */
@@ -157,7 +161,7 @@ function discoverWorkspaceRoots(monorepoRoot: string,): string[] {
  *
  * @param monorepoRoot - absolute path to the monorepo root
  *
- * @returns installed version string, or `undefined` if not found
+ * @returns installed version string, or {@link ABSENT} if not found
  *
  * @example
  * ```ts
@@ -169,13 +173,10 @@ export function readInstalledVersion(
     npmName,
     monorepoRoot,
   }: {
-    npmName: string;
-    monorepoRoot: string;
+    readonly npmName: string;
+    readonly monorepoRoot: string;
   },
-):
-  | string
-  | undefined
-{
+): Maybe<string> {
   // Try root node_modules first
   /** Expected hoisted location of the package's `package.json` directly under the monorepo root. */
   const rootPkgJson = join(
@@ -186,7 +187,7 @@ export function readInstalledVersion(
   );
   /** Version found at the hoisted root location, if any; short-circuits before slower fallbacks. */
   const version = readVersionFromPackageJson(rootPkgJson,);
-  if (version !== undefined)
+  if (version !== ABSENT)
     return version;
 
   // Try resolving from monorepo root via createRequire
@@ -200,7 +201,7 @@ export function readInstalledVersion(
     const resolved = require.resolve(`${npmName}/package.json`,);
     /** Version read from the require-resolved `package.json`; second attempt after the hoisted lookup. */
     const rootVersion = readVersionFromPackageJson(resolved,);
-    if (rootVersion !== undefined)
+    if (rootVersion !== ABSENT)
       return rootVersion;
   }
   catch {
@@ -221,7 +222,7 @@ export function readInstalledVersion(
       const resolved = require.resolve(`${npmName}/package.json`,);
       /** Version read via the workspace-anchored resolution; tried per package before falling through to the bun store. */
       const wsVersion = readVersionFromPackageJson(resolved,);
-      if (wsVersion !== undefined)
+      if (wsVersion !== ABSENT)
         return wsVersion;
     }
     catch {

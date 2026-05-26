@@ -7,6 +7,11 @@
  * `index.ts`, whose top-level body reads and rewrites the workspace file.
  */
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+
 //region Catalog YAML parsing
 
 /**
@@ -70,8 +75,8 @@ export function collectIndentedBlock({
 }
 
 /**
- * Parsed `key: value` shape from one catalog entry line; `null` for lines
- * that do not match the expected indented `key: value` form.
+ * Parsed `key: value` shape from one catalog entry line; {@link ABSENT} for
+ * lines that do not match the expected indented `key: value` form.
  */
 type CatalogEntry = {
   /** Unquoted key. */
@@ -114,18 +119,18 @@ function unquote(s: string,): string {
  *
  * @param line - raw indented line from the catalog block
  *
- * @returns parsed entry, or `null` when the line shape is unexpected
+ * @returns parsed entry, or {@link ABSENT} when the line shape is unexpected
  */
-function parseCatalogEntry(line: string,): CatalogEntry | null {
+function parseCatalogEntry(line: string,): Maybe<CatalogEntry> {
   /** Whitespace-trimmed line; surrounding indentation and trailing CR/space are dropped. */
   const trimmed = line.trim();
   if (trimmed.length
     === 0)
-    return null;
+    return ABSENT;
   /** Position of the colon separator; `-1` indicates a malformed line. */
   const colonIdx = trimmed.indexOf(':',);
   if (colonIdx <= 0)
-    return null;
+    return ABSENT;
   /** Raw key segment before the colon, trailing whitespace stripped. */
   const rawKey = trimmed
     .slice(
@@ -144,7 +149,7 @@ function parseCatalogEntry(line: string,): CatalogEntry | null {
   if ((key.length
     === 0) || (value.length
       === 0))
-    return null;
+    return ABSENT;
   return {
     key,
     value,
@@ -188,9 +193,9 @@ export function parseCatalogFromYaml(content: string,): Record<string, string> {
       acc,
       line,
     ): Record<string, string> {
-      /** Parsed entry; `null` when the line shape does not match the catalog convention. */
+      /** Parsed entry; `ABSENT` when the line shape does not match the catalog convention. */
       const entry = parseCatalogEntry(line,);
-      if (entry === null)
+      if (entry === ABSENT)
         return acc;
       acc[entry.key] = entry.value;
       return acc;
