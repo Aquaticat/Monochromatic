@@ -19,6 +19,27 @@ import { splitPackageSpecifier, } from './specifier.ts';
 //region Package Resolution
 
 /**
+ * Sentinel returned by {@link findPackageDir} when no `node_modules/<pkg>` exists.
+ * A unique Symbol encodes genuine absence without a banned nullish union;
+ * identity comparison narrows the result back to `string`.
+ */
+const PACKAGE_NOT_FOUND: unique symbol = Symbol('package-not-found',);
+
+/**
+ * Sentinel returned by {@link readPackageJson} when no readable package.json exists.
+ * A unique Symbol encodes genuine absence without a banned nullish union;
+ * identity comparison narrows the result back to the parsed record.
+ */
+const PACKAGE_JSON_ABSENT: unique symbol = Symbol('package-json-absent',);
+
+/**
+ * Sentinel returned by {@link resolveExports} when no `exports` entry matches.
+ * A unique Symbol encodes genuine absence without a banned nullish union;
+ * identity comparison narrows the result back to `string`.
+ */
+const NO_EXPORT_MATCH: unique symbol = Symbol('no-export-match',);
+
+/**
  * Walks up from `startDir` looking for a `node_modules/<packageName>` directory.
  * Mimics Node's module resolution algorithm via tail recursion: each call
  * checks one directory and recurses into the parent until either the package
@@ -28,7 +49,7 @@ import { splitPackageSpecifier, } from './specifier.ts';
  *
  * @param packageName - Package name (e.g. `\@scope/pkg`)
  *
- * @returns Absolute path to the package directory, or undefined if not found
+ * @returns Absolute path to the package directory, or {@link PACKAGE_NOT_FOUND} if no `node_modules/<pkg>` exists up to the filesystem root
  *
  * @example
  * ```ts
@@ -44,7 +65,7 @@ export function findPackageDir({
   readonly packageName: string;
 },):
   | string
-  | undefined
+  | typeof PACKAGE_NOT_FOUND
 {
   /** Candidate node_modules/<pkg> directory */
   const candidate = join(
@@ -61,7 +82,7 @@ export function findPackageDir({
   const parent = dirname(startDir,);
   // Reached filesystem root
   if (parent === startDir)
-    return undefined;
+    return PACKAGE_NOT_FOUND;
   return findPackageDir({
     startDir: parent,
     packageName,
@@ -73,7 +94,7 @@ export function findPackageDir({
  *
  * @param packageDir - Absolute path to the package directory
  *
- * @returns Parsed package.json or undefined if not found
+ * @returns Parsed package.json, or {@link PACKAGE_JSON_ABSENT} when missing or unparseable
  *
  * @example
  * ```ts
@@ -82,7 +103,7 @@ export function findPackageDir({
  */
 export function readPackageJson(
   packageDir: string,
-): Record<string, unknown> | undefined {
+): Record<string, unknown> | typeof PACKAGE_JSON_ABSENT {
   /** Path to package.json */
   const packageJsonPath = join(
     [
@@ -97,7 +118,7 @@ export function readPackageJson(
     return JSON.parse(raw,) as Record<string, unknown>;
   }
   catch {
-    return undefined;
+    return PACKAGE_JSON_ABSENT;
   }
 }
 
@@ -109,7 +130,7 @@ export function readPackageJson(
  *
  * @param subpath - Subpath to resolve (e.g. `./index.css` or `.`)
  *
- * @returns Resolved relative path or undefined if no match
+ * @returns Resolved relative path, or {@link NO_EXPORT_MATCH} when no entry matches
  *
  * @example
  * ```ts
@@ -125,9 +146,9 @@ export function resolveExports({
 }: {
   readonly exports: unknown;
   readonly subpath: string;
-},): string | undefined {
+},): string | typeof NO_EXPORT_MATCH {
   if (((typeof exports) !== 'object') || (exports === null))
-    return undefined;
+    return NO_EXPORT_MATCH;
 
   /** Exports object keyed by subpath pattern */
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- narrowing from object to Record for property access
@@ -153,7 +174,7 @@ export function resolveExports({
     }
   }
 
-  return undefined;
+  return NO_EXPORT_MATCH;
 }
 
 /**
@@ -192,13 +213,13 @@ export function resolvePackage({
     packageName,
   },);
 
-  if (packageDir === undefined)
+  if (packageDir === PACKAGE_NOT_FOUND)
     throw new Error(`Cannot find package '${packageName}' from '${fromDir}'`,);
 
   /** Parsed package.json for exports/main/style lookup */
   const packageJson = readPackageJson(packageDir,);
 
-  if (packageJson !== undefined) {
+  if (packageJson !== PACKAGE_JSON_ABSENT) {
     // Try exports field
     if (packageJson.exports
       !== undefined) {
@@ -207,7 +228,7 @@ export function resolvePackage({
         exports: packageJson.exports,
         subpath,
       },);
-      if (resolved !== undefined) {
+      if (resolved !== NO_EXPORT_MATCH) {
         /** Absolute path from exports resolution */
         const absolutePath = resolve(
           [

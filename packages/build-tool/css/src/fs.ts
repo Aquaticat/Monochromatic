@@ -22,15 +22,22 @@ const hasNodeFs = ((typeof process) !== 'undefined')
 const nodeFsSpecifier = `node:fs`;
 
 /**
- * Eagerly loaded `node:fs` module, or undefined in browser.
+ * Sentinel marking runtimes (e.g. browser) where `node:fs` is unavailable.
+ * A unique Symbol keeps {@link nodeFs} free of a banned nullish union while
+ * still encoding genuine absence; identity comparison narrows back to the module.
+ */
+const NO_NODE_FS = Symbol('no-node-fs',);
+
+/**
+ * Eagerly loaded `node:fs` module, or {@link NO_NODE_FS} in browser.
  * Uses a variable specifier so browser bundlers cannot statically resolve the import.
  * Loaded eagerly (not lazily) because sync functions like
  * {@link readCssFileSync} and {@link existsSync} cannot await.
  */
-const nodeFs: typeof NodeFs | undefined = hasNodeFs
+const nodeFs: typeof NodeFs | typeof NO_NODE_FS = hasNodeFs
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- dynamic import lacks static type
   ? await import(nodeFsSpecifier) as typeof NodeFs
-  : undefined;
+  : NO_NODE_FS;
 
 /**
  * Reads a CSS file by absolute path.
@@ -54,7 +61,7 @@ export async function readCssFile(absolutePath: string,): Promise<string> {
   if (cached !== undefined)
     return cached;
 
-  if (nodeFs !== undefined) {
+  if (nodeFs !== NO_NODE_FS) {
     /** Dynamic import keeps `node:fs/promises` out of browser bundles. */
     const { readFile, } = await import('node:fs/promises');
     return readFile(
@@ -89,7 +96,7 @@ export function readCssFileSync(absolutePath: string,): string {
   if (cached !== undefined)
     return cached;
 
-  if (nodeFs !== undefined) {
+  if (nodeFs !== NO_NODE_FS) {
     return nodeFs.readFileSync(
       absolutePath,
       'utf8',
@@ -118,7 +125,7 @@ export function existsSync(absolutePath: string,): boolean {
   if (fsRegistry.has(absolutePath,))
     return true;
 
-  if (nodeFs !== undefined)
+  if (nodeFs !== NO_NODE_FS)
     return nodeFs.existsSync(absolutePath,);
 
   return false;
