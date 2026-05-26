@@ -639,6 +639,44 @@ await describe({
       ],
     },),
     describe({
+      name: 'invocation-depth-per-line',
+      children: [
+        it({
+          name: 'reports every spine over depth two and nothing else',
+          fn: async () => {
+            const diagnostics = await lint('invalid/invocation-depth-per-line.ts',);
+            /** invocation-depth-per-line diagnostics isolated from the fixture. */
+            const invocationDiagnostics = diagnostics.filter(
+              function isInvocationDepth(diagnostic,): boolean {
+                return diagnostic.code === 'stylistic(invocation-depth-per-line)';
+              },
+            );
+            // The fixture has fifteen failing spines (f1..f14 plus the yield case);
+            // each reports the outermost invocation on its violating line once.
+            expect(invocationDiagnostics.length,).toBe(15,);
+            // Every declaration is `any`-typed, so no sibling rule fires.
+            expect(uniqueRules(diagnostics,),).toEqual([
+              'stylistic(invocation-depth-per-line)',
+            ],);
+            expect(invocationDiagnostics[0]?.message,).toBe(
+              'No more than two nested invocations may start on one line; split the operand onto its own line.',
+            );
+          },
+        },),
+        it({
+          name: 'does not report compliant spines',
+          fn: async () => {
+            const diagnostics = await lint('valid/invocation-depth-per-line.ts',);
+            expect(
+              diagnostics.filter(function isInvocationDepth(diagnostic,): boolean {
+                return diagnostic.code === 'stylistic(invocation-depth-per-line)';
+              },),
+            ).toEqual([],);
+          },
+        },),
+      ],
+    },),
+    describe({
       name: 'one-var-declaration-per-line',
       children: [
         it({
@@ -1126,6 +1164,132 @@ await describe({
 
             // Two statements on a line should be split across lines.
             expect(fixedContent,).toContain('const p = 10;\nconst q = 20;',);
+          },
+        },),
+        it({
+          name:
+            '--fix splits invocation spines, keeping trailing comments and grouping parens, idempotently',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates the original fixture. */
+            const commentSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'invocation-depth-comment.ts',
+            );
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using commentCopy = createTempFixtureFile({
+              fileName: 'invocation-depth-comment.ts',
+              sourcePath: commentSrc,
+            },);
+
+            try {
+              await spawn(
+                'oxlint',
+                [
+                  '--fix',
+                  '-c',
+                  FIXTURE_CONFIG,
+                  commentCopy.filePath,
+                ],
+                { cwd: ROOT, },
+              );
+            }
+            catch {
+              // --fix may exit non-zero when unfixable issues remain
+            }
+            /** File content after the first --fix pass. */
+            const fixedOnce = readFileSync(commentCopy.filePath, 'utf8',);
+
+            // The comma is placed before each trailing comment, the grouping
+            // parentheses survive, and an existing comma is not doubled.
+            expect(fixedOnce,).toContain('b(c()), // keep line',);
+            expect(fixedOnce,).toContain('b(c()), /* keep block */',);
+            expect(fixedOnce,).toContain('(b(c()) /* keep grouped */),',);
+            expect(fixedOnce,).not.toContain('b(c()),,',);
+
+            // Second pass changes nothing: the fix is idempotent.
+            try {
+              await spawn(
+                'oxlint',
+                [
+                  '--fix',
+                  '-c',
+                  FIXTURE_CONFIG,
+                  commentCopy.filePath,
+                ],
+                { cwd: ROOT, },
+              );
+            }
+            catch {
+              // --fix may exit non-zero
+            }
+            expect(readFileSync(commentCopy.filePath, 'utf8',),).toBe(fixedOnce,);
+
+            const diagnostics = await lint(commentCopy.filePath,);
+            expect(
+              diagnostics.filter(function isInvocationDepth(d,): boolean {
+                return d.code === 'stylistic(invocation-depth-per-line)';
+              },),
+            ).toEqual([],);
+          },
+        },),
+        it({
+          name:
+            '--fix converges invocation-depth with argument, object, and array per-line rules',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates the original fixture. */
+            const convergeSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'invocation-depth-convergence.ts',
+            );
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using convergeCopy = createTempFixtureFile({
+              fileName: 'invocation-depth-convergence.ts',
+              sourcePath: convergeSrc,
+            },);
+
+            // oxlint applies at most one fix per overlapping byte region per pass,
+            // so a deep spine and the sibling per-line rules settle over several
+            // passes. Run --fix until the file stops changing (capped well above
+            // the need) rather than hard-coding a count.
+            for (
+              let pass = 0;
+              pass < 8;
+              pass += 1
+            ) {
+              /** File content before this pass; an unchanged result means convergence. */
+              const before = readFileSync(convergeCopy.filePath, 'utf8',);
+              try {
+                // oxlint-disable-next-line eslint/no-await-in-loop -- each pass must read the previous pass's output from disk
+                await spawn(
+                  'oxlint',
+                  [
+                    '--fix',
+                    '-c',
+                    FIXTURE_CONFIG,
+                    convergeCopy.filePath,
+                  ],
+                  { cwd: ROOT, },
+                );
+              }
+              catch {
+                // --fix may exit non-zero when unfixable issues remain
+              }
+              if (readFileSync(convergeCopy.filePath, 'utf8',)
+                === before) {
+                break;
+              }
+            }
+
+            const diagnostics = await lint(convergeCopy.filePath,);
+            const stylisticDiags = diagnostics.filter(
+              function isStylistic(d,): boolean {
+                return ((typeof d.code) === 'string')
+                  && d.code.startsWith('stylistic(',);
+              },
+            );
+            expect(stylisticDiags,).toEqual([],);
           },
         },),
       ],

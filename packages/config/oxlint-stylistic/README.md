@@ -108,6 +108,31 @@ All per-line rules are auto-fixable via `oxlint --fix`.
   `no-mixed-operators` also parenthesizes same-precedence mixed-operator runs such as
   `a + b - c`, so in the combined config that case becomes `(a + b) - c` rather than a
   flattened chain.
+- **invocation-depth-per-line**: allow at most two nested invocation heads on one source line.
+  The message is `No more than two nested invocations may start on one line; split the operand onto its own line.`
+  A counted invocation is a `CallExpression` (including optional calls), `NewExpression`, or
+  `ImportExpression`.
+  The rule walks each operand spine, the chain of single-argument invocations threaded through
+  transparent wrappers, and counts how many invocation heads begin on each source line;
+  a line carrying three or more heads fails.
+  Transparent wrappers the spine passes through: `await`, unary operators (`void`, `!`, `typeof`),
+  `yield`/`yield*`, a single spread argument, optional-chaining (`?.`), and the TypeScript
+  `as`, `satisfies`, `!`, type-assertion, and instantiation expressions.
+  Grouping parentheses are not a wrapper node (oxlint strips them), so `a((b(c())))` counts as
+  depth three.
+  The rule is threshold-only: an already-split layout passes when every line stays within the
+  limit, so `a(b(` then `c(),` then `))` is allowed.
+  Multi-argument calls belong to `argument-per-line` and callee chains to `chain-per-line`, so this
+  rule descends only the single operand and leaves those axes alone;
+  a dynamic import with options (`import(x, opts)`) stops the source spine, and a tagged template
+  or object literal breaks the parent spine while child spines inside it are still checked.
+  The autofix splits the highest invocation on each violating line: the operand moves to its own
+  line indented two spaces, a trailing comma is added (before any trailing line or block comment),
+  and the closing bracket returns to the head-line indent.
+  Grouping parentheses around the operand and template-literal quasis are preserved verbatim.
+  Each report splits one level, so a deep spine and any overlap with `argument-per-line`,
+  `object-property-per-line`, or `array-element-per-line` converge over several `oxlint --fix`
+  passes (the same upstream single-pass limitation `chain-per-line` notes above).
 
 ## Usage
 

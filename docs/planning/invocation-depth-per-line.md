@@ -1,6 +1,9 @@
 # Planning: invocation-depth-per-line stylistic rule
 
-Status: ready to implement.
+Status: implemented in `packages/config/oxlint-stylistic`
+(`src/rules/invocation-depth-per-line.ts`, `src/utility/invocation-spine.ts`,
+`src/utility/invocation-depth-fix.ts`); enabled `warn` in
+`packages/config/oxlint/src/rules/style.ts`.
 
 This file records the full grilling session that produced the `invocation-depth-per-line` rule.
 A future implementer should be able to read only this file and recover the problem statement,

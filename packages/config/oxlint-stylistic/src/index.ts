@@ -9,6 +9,7 @@ import { chainPerLine, } from './rules/chain-per-line.ts';
 import { destructurePerLine, } from './rules/destructure-per-line.ts';
 import { exportPerLine, } from './rules/export-per-line.ts';
 import { importPerLine, } from './rules/import-per-line.ts';
+import { invocationDepthPerLine, } from './rules/invocation-depth-per-line.ts';
 import { maxStatementsPerLine, } from './rules/max-statements-per-line.ts';
 import { noMixedOperators, } from './rules/no-mixed-operators.ts';
 import { objectPropertyPerLine, } from './rules/object-property-per-line.ts';
@@ -70,6 +71,7 @@ const plugin: Plugin = eslintCompatPlugin({
     //region Expression structure: enforce explicit parens at operator boundaries and break chains across lines
     'no-mixed-operators': noMixedOperators,
     'chain-per-line': chainPerLine,
+    'invocation-depth-per-line': invocationDepthPerLine,
     //endregion Expression structure
   },
 },);
