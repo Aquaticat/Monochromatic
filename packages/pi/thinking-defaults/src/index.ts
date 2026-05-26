@@ -6,32 +6,19 @@
  * @module
  */
 
-import type {
-  ExtensionAPI,
-  ExtensionContext,
-  SessionStartEvent,
-} from '@earendil-works/pi-coding-agent';
+import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
 import { applyThinkingDefault, } from './apply-thinking-default.ts';
 import { restoreGlobalDefaultThinkingLevel, } from './global-settings.ts';
 import type { ThinkingDefaultLevel, } from './model-policy.ts';
 
 //region Types
 
-/** Minimal model-selection event shape used by the thinking policy. */
-type ModelSelectEventLike = {
-  /** Newly selected model from pi's `model_select` event. */
-  model: {
-    /** Model identifier. */
-    id: string;
-  };
-};
-
 /** Dependencies used while registering the extension. */
 type RegisterThinkingDefaultsOptions = {
   /** Pi extension API. */
-  pi: ExtensionAPI;
+  readonly pi: ExtensionAPI;
   /** Restores persisted scalar thinking default after active-level changes. */
-  restoreDefaultThinkingLevel?: () => boolean;
+  readonly restoreDefaultThinkingLevel?: () => boolean;
 };
 
 //endregion Types
@@ -84,92 +71,39 @@ export function registerThinkingDefaults(
     pi.setThinkingLevel(level,);
   }
 
-  /**
-   * Applies the thinking policy to the model held by the current context.
-   *
-   * @param event - session-start event, unused because context carries model
-   *
-   * @param ctx - extension context with current model
-   *
-   * @example
-   * ```typescript
-   * handleSessionStart({ event: { type: 'session_start', reason: 'startup' }, ctx });
-   * ```
-   */
-  function handleSessionStart(
-    {
-      event: _event,
-      ctx,
-    }: {
-      event: SessionStartEvent;
-      ctx: ExtensionContext;
-    },
-  ): void {
-    /** Thinking application result for the session-start context model. */
-    const result = applyThinkingDefault({
-      model: ctx.model,
-      getThinkingLevel: getCurrentThinkingLevel,
-      setThinkingLevel: setCurrentThinkingLevel,
-    },);
-    if (result.target
-      !== undefined)
-      restoreDefaultThinkingLevel();
-  }
-
-  /**
-   * Applies the thinking policy to the newly selected model.
-   *
-   * @param event - model-selection event carrying next model
-   *
-   * @param ctx - extension context, unused because event carries model
-   *
-   * @example
-   * ```typescript
-   * handleModelSelect({ event: { type: 'model_select', model }, ctx });
-   * ```
-   */
-  function handleModelSelect(
-    {
-      event,
-      ctx: _ctx,
-    }: {
-      event: ModelSelectEventLike;
-      ctx: ExtensionContext;
-    },
-  ): void {
-    /** Thinking application result for the newly selected model. */
-    const result = applyThinkingDefault({
-      model: event.model,
-      getThinkingLevel: getCurrentThinkingLevel,
-      setThinkingLevel: setCurrentThinkingLevel,
-    },);
-    if (result.target
-      !== undefined)
-      restoreDefaultThinkingLevel();
-  }
-
   pi.on(
     'session_start',
     function onSessionStart(
-      event,
+      _event,
       ctx,
     ) {
-      handleSessionStart({
-        event,
-        ctx,
+      /** Current model carried by the session-start context. */
+      const { model, } = ctx;
+      if (model === undefined)
+        return;
+      /** Thinking application result for the session-start context model. */
+      const result = applyThinkingDefault({
+        model,
+        getThinkingLevel: getCurrentThinkingLevel,
+        setThinkingLevel: setCurrentThinkingLevel,
       },);
+      if (result.target
+        !== undefined)
+        restoreDefaultThinkingLevel();
     },
   );
   pi.on(
     'model_select',
-    function onModelSelect(
-      event,
-      ctx,
-    ) {
-      handleModelSelect({
-        event,
-        ctx,
+    function onModelSelect(event,) {
+      /** Thinking application result for the newly selected model. */
+      const result = applyThinkingDefault({
+        model: event.model,
+        getThinkingLevel: getCurrentThinkingLevel,
+        setThinkingLevel: setCurrentThinkingLevel,
       },);
+      if (result.target
+        !== undefined)
+        restoreDefaultThinkingLevel();
     },
   );
 }

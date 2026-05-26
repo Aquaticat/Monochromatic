@@ -22,7 +22,7 @@ const NON_GPT_THINKING_DEFAULT: ThinkingDefaultLevel = 'high';
 /** Minimal model shape needed by the thinking policy. */
 type ModelWithId = {
   /** Model identifier as passed through pi. */
-  id: string;
+  readonly id: string;
 };
 
 //endregion Model shapes
@@ -48,7 +48,7 @@ export function getModelIdLeaf(
   {
     modelId,
   }: {
-    modelId: string;
+    readonly modelId: string;
   },
 ): string {
   /** Index after the final slash, or zero when no slash exists. */
@@ -77,7 +77,7 @@ export function isGptModelId(
   {
     modelId,
   }: {
-    modelId: string;
+    readonly modelId: string;
   },
 ): boolean {
   /** Lowercased final segment used for case-insensitive GPT detection. */
@@ -104,7 +104,7 @@ export function getThinkingDefaultForModel(
   {
     model,
   }: {
-    model: ModelWithId;
+    readonly model: ModelWithId;
   },
 ): ThinkingDefaultLevel {
   if (isGptModelId({ modelId: model.id, },))

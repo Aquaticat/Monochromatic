@@ -37,7 +37,7 @@ type ModelSelectEventLike = {
   /** Newly selected model. */
   model: TestModel;
   /** Previous model, absent for first selection. */
-  previousModel: TestModel | undefined;
+  previousModel?: TestModel;
   /** Source of the model selection. */
   source: 'set' | 'cycle' | 'restore';
 };
@@ -152,7 +152,7 @@ function createContext(
   {
     model,
   }: {
-    model: TestModel | undefined;
+    model?: TestModel;
   },
 ): ExtensionContext {
   return { model, } as unknown as ExtensionContext;
@@ -213,6 +213,32 @@ await describe({
       },
     },),
     it({
+      name: 'session_start does nothing when context has no model',
+      fn: async function testSessionStartWithoutModel() {
+        const { api, registrations, setCalls, } = createMockApi({
+          currentLevel: 'high',
+        },);
+        /** Settings restoration calls after applying target defaults. */
+        const restoreCalls: string[] = [];
+        registerThinkingDefaults({
+          pi: api,
+          restoreDefaultThinkingLevel: function restoreDefaultThinkingLevel(): boolean {
+            restoreCalls.push('restore',);
+            return true;
+          },
+        },);
+        const handler = getHandler({ registrations, event: 'session_start', },);
+
+        handler(
+          { type: 'session_start', reason: 'startup', } satisfies SessionStartEvent,
+          createContext({},),
+        );
+
+        expect(setCalls,).toHaveLength(0,);
+        expect(restoreCalls,).toHaveLength(0,);
+      },
+    },),
+    it({
       name: 'model_select applies policy from selected event model',
       fn: async function testModelSelectUsesEventModel() {
         const { api, registrations, setCalls, } = createMockApi({
@@ -233,7 +259,6 @@ await describe({
           {
             type: 'model_select',
             model: { id: 'synthetic/hf:moonshotai/Kimi-K2.6', },
-            previousModel: undefined,
             source: 'set',
           } satisfies ModelSelectEventLike,
           createContext({ model: { id: 'gpt-5.5', }, },),

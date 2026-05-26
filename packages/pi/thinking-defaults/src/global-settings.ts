@@ -27,22 +27,75 @@ const SETTINGS_FILE_NAME = 'settings.json';
 /** JSON object shape used after parsing settings. */
 type JsonRecord = Record<string, unknown>;
 
+/** Inputs needed to write settings text to disk. */
+type WriteSettingsFileOptions = {
+  /** Settings file path. */
+  readonly path: string;
+  /** Settings JSON text to persist. */
+  readonly content: string;
+};
+
 /** Dependencies for reading and writing global pi settings. */
 type RestoreGlobalDefaultOptions = {
   /** Desired persisted scalar default. */
-  defaultLevel?: ThinkingDefaultLevel;
+  readonly defaultLevel?: ThinkingDefaultLevel;
   /** Settings path to read and write. */
-  settingsPath?: string;
+  readonly settingsPath?: string;
   /** Reads a settings file as UTF-8 text. */
-  readSettingsFile?: (path: string,) => string;
+  readonly readSettingsFile?: (path: string,) => string;
   /** Writes UTF-8 settings text. */
-  writeSettingsFile?: (
-    path: string,
-    content: string,
-  ) => void;
+  readonly writeSettingsFile?: (options: WriteSettingsFileOptions,) => void;
 };
 
 //endregion Types
+
+//region Settings file io defaults
+
+/**
+ * Reads settings file text through node fs.
+ *
+ * @param path - settings file path to read
+ *
+ * @returns settings file contents as UTF-8 text
+ *
+ * @example
+ * ```typescript
+ * defaultReadSettingsFile('/home/user/.pi/agent/settings.json');
+ * ```
+ */
+function defaultReadSettingsFile(path: string,): string {
+  return readFileSync(
+    path,
+    'utf8',
+  );
+}
+
+/**
+ * Writes settings file text through node fs.
+ *
+ * @param path - settings file path to write
+ *
+ * @param content - settings JSON text to persist
+ *
+ * @example
+ * ```typescript
+ * defaultWriteSettingsFile({ path: '/settings.json', content: '{}\n' });
+ * ```
+ */
+function defaultWriteSettingsFile(
+  {
+    path,
+    content,
+  }: WriteSettingsFileOptions,
+): void {
+  writeFileSync(
+    path,
+    content,
+    'utf8',
+  );
+}
+
+//endregion Settings file io defaults
 
 //region Predicates
 
@@ -118,22 +171,8 @@ export function restoreGlobalDefaultThinkingLevel(
   {
     defaultLevel = PERSISTED_DEFAULT_THINKING_LEVEL,
     settingsPath = getGlobalSettingsPath(),
-    readSettingsFile = function readSettings(path: string,): string {
-      return readFileSync(
-        path,
-        'utf8',
-      );
-    },
-    writeSettingsFile = function writeSettings(
-      path: string,
-      content: string,
-    ): void {
-      writeFileSync(
-        path,
-        content,
-        'utf8',
-      );
-    },
+    readSettingsFile = defaultReadSettingsFile,
+    writeSettingsFile = defaultWriteSettingsFile,
   }: RestoreGlobalDefaultOptions = {},
 ): boolean {
   /** Raw JSON settings text. */
@@ -156,10 +195,10 @@ export function restoreGlobalDefaultThinkingLevel(
       2,
     )
   }\n`;
-  writeSettingsFile(
-    settingsPath,
-    nextSettings,
-  );
+  writeSettingsFile({
+    path: settingsPath,
+    content: nextSettings,
+  },);
   return true;
 }
 

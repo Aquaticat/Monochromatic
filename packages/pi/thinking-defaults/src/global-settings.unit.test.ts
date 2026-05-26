@@ -18,7 +18,9 @@ type SettingsFileHarness = {
   /** Reads stored settings JSON. */
   readSettingsFile: (path: string,) => string;
   /** Writes stored settings JSON. */
-  writeSettingsFile: (path: string, content: string,) => void;
+  writeSettingsFile: (
+    options: { readonly path: string; readonly content: string; },
+  ) => void;
   /** Returns last stored settings JSON. */
   getContent: () => string;
   /** Returns write count. */
@@ -59,8 +61,10 @@ function createSettingsFileHarness(
       return contentSlot.get('value',) ?? '';
     },
     writeSettingsFile: function writeSettingsFile(
-      path: string,
-      content: string,
+      {
+        path,
+        content,
+      }: { readonly path: string; readonly content: string; },
     ): void {
       void path;
       contentSlot.set('value', content,);

@@ -67,7 +67,6 @@ await describe({
         const harness = createThinkingHarness({ currentLevel: 'high', },);
 
         const result = applyThinkingDefault({
-          model: undefined,
           getThinkingLevel: harness.getThinkingLevel,
           setThinkingLevel: harness.setThinkingLevel,
         },);

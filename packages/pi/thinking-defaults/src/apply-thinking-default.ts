@@ -14,7 +14,7 @@ import {
 /** Minimal model shape needed to choose a thinking default. */
 type ModelWithId = {
   /** Model identifier as passed through pi. */
-  id: string;
+  readonly id: string;
 };
 
 /** Result returned after applying, or skipping, a thinking default. */
@@ -29,12 +29,12 @@ export type ApplyThinkingDefaultResult = {
  * Dependencies needed by {@link applyThinkingDefault}.
  */
 type ApplyThinkingDefaultOptions = {
-  /** Current model, or `undefined` when pi has not selected one yet. */
-  model: ModelWithId | undefined;
+  /** Current model; absent when pi has not selected one yet. */
+  readonly model?: ModelWithId;
   /** Reads pi's current thinking level. */
-  getThinkingLevel: () => string;
+  readonly getThinkingLevel: () => string;
   /** Sets pi's current thinking level. */
-  setThinkingLevel: (level: ThinkingDefaultLevel,) => void;
+  readonly setThinkingLevel: (level: ThinkingDefaultLevel,) => void;
 };
 
 //endregion Types

@@ -8,6 +8,7 @@ import {
   createEventBus,
   type ExecResult,
   type ExtensionAPI,
+  type ExtensionFactory,
 } from '@earendil-works/pi-coding-agent';
 
 //region Constants
@@ -28,7 +29,7 @@ const EXPECTED_REGISTRATIONS = [
 /** Built thinking-defaults extension module shape. */
 type ThinkingDefaultsExtensionModule = {
   /** Pi extension factory. */
-  default: (pi: ExtensionAPI,) => void | Promise<void>;
+  readonly default: ExtensionFactory;
 };
 
 //endregion Types
@@ -56,9 +57,12 @@ async function verifyBuiltExtension(): Promise<string> {
     );
   }
 
-  /** Registration calls observed through fake Pi API. */
-  const registrations: string[] = [];
-  await mod.default(fakePiApi({ registrations, },),);
+  /** Fake Pi API plus its captured registration log. */
+  const {
+    api,
+    registrations,
+  } = fakePiApi();
+  await mod.default(api,);
 
   /** Expected registrations not observed. */
   const missing = EXPECTED_REGISTRATIONS.filter(function isMissing(expected,) {
@@ -97,27 +101,25 @@ function isThinkingDefaultsExtensionModule(
 /**
  * Builds fake Pi API used to verify extension registration.
  *
- * @param registrations - mutable registration call log
- *
- * @returns fake Pi extension API
+ * @returns fake Pi extension API plus its captured registration log
  *
  * @example
  * ```typescript
- * const api = fakePiApi({ registrations: [] });
+ * const { api, registrations } = fakePiApi();
  * ```
  */
-function fakePiApi(
-  {
-    registrations,
-  }: {
-    registrations: string[];
-  },
-): ExtensionAPI {
-  return {
+function fakePiApi(): {
+  readonly api: ExtensionAPI;
+  readonly registrations: readonly string[];
+} {
+  /** Mutable registration call log captured by the fake API. */
+  const registrations: string[] = [];
+  /** Fake Pi API recording each registration into the captured log. */
+  const api: ExtensionAPI = {
     on(event: string,) {
       registrations.push(`event:${event}`,);
     },
-    registerTool(tool: { name: string; },) {
+    registerTool(tool: { readonly name: string; },) {
       registrations.push(`tool:${tool.name}`,);
     },
     registerCommand(name: string,) {
@@ -135,7 +137,7 @@ function fakePiApi(
     registerMessageRenderer(customType: string,) {
       registrations.push(`renderer:${customType}`,);
     },
-    sendMessage(message: { customType: string; },) {
+    sendMessage(message: { readonly customType: string; },) {
       registrations.push(`message:${message.customType}`,);
     },
     sendUserMessage(content: unknown,) {
@@ -152,14 +154,14 @@ function fakePiApi(
     },
     setLabel(
       entryId: string,
-      label: string | undefined,
+      label?: string,
     ) {
       void entryId;
       void label;
     },
     exec(
       command: string,
-      args: string[],
+      args: readonly string[],
     ): Promise<ExecResult> {
       void command;
       void args;
@@ -176,7 +178,7 @@ function fakePiApi(
     getAllTools() {
       return [];
     },
-    setActiveTools(toolNames: string[],) {
+    setActiveTools(toolNames: readonly string[],) {
       void toolNames;
     },
     getCommands() {
@@ -199,6 +201,10 @@ function fakePiApi(
       registrations.push(`unprovider:${name}`,);
     },
     events: createEventBus(),
+  };
+  return {
+    api,
+    registrations,
   };
 }
 
