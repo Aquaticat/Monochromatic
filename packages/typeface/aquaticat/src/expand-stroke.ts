@@ -5,7 +5,7 @@
  */
 
 /** Cartesian coordinate pair. */
-type Point = [
+type Point = readonly [
   number,
   number,
 ];
@@ -40,10 +40,10 @@ function lineIntersection({
   p2,
   d2,
 }: {
-  p1: Point;
-  d1: Point;
-  p2: Point;
-  d2: Point;
+  readonly p1: Point;
+  readonly d1: Point;
+  readonly p2: Point;
+  readonly d2: Point;
 },): Point {
   /** 2D cross product of the two direction vectors; zero means parallel lines. */
   const cross = (d1[0]
@@ -87,8 +87,8 @@ export function offsetPolygon({
   vertices,
   offset,
 }: {
-  vertices: readonly Point[];
-  offset: number;
+  readonly vertices: readonly Point[];
+  readonly offset: number;
 },): Point[] {
   /** Cached vertex count used as the modulus for wrap-around edge indexing. */
   const vertexCount = vertices.length;

@@ -41,8 +41,8 @@ export function computeLocalXBounds({
   paths,
   cellX,
 }: {
-  paths: readonly CellPath[];
-  cellX: number;
+  readonly paths: readonly CellPath[];
+  readonly cellX: number;
 },): {
   minX: number;
   maxX: number;
@@ -121,10 +121,10 @@ export function addFilledPath({
   cellX,
   xShift,
 }: {
-  otPath: opentype.Path;
-  commands: readonly SVGPathCommand[];
-  cellX: number;
-  xShift: number;
+  readonly otPath: Readonly<opentype.Path>;
+  readonly commands: readonly SVGPathCommand[];
+  readonly cellX: number;
+  readonly xShift: number;
 },): void {
   /**
    * X component of the pen cursor while emitting OpenType path commands.

@@ -43,11 +43,11 @@ export function addStrokedPath({
   cellX,
   xShift,
 }: {
-  otPath: opentype.Path;
-  commands: readonly SVGPathCommand[];
-  strokeWidth: number;
-  cellX: number;
-  xShift: number;
+  readonly otPath: Readonly<opentype.Path>;
+  readonly commands: readonly SVGPathCommand[];
+  readonly strokeWidth: number;
+  readonly cellX: number;
+  readonly xShift: number;
 },): void {
   /** Half the stroke width, the signed distance each side is shifted from the centreline. */
   const halfWidth = strokeWidth / 2;
@@ -96,10 +96,10 @@ export function addStrokedPath({
    *
    * @param verts - ordered vertices of the contour polygon
    */
-  function traceContour(verts: readonly [
+  function traceContour(verts: readonly (readonly [
     number,
     number,
-  ][],): void {
+  ])[],): void {
     verts.forEach(function traceVertex(
       vert,
       vertIndex,

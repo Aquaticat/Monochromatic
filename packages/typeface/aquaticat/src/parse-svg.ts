@@ -3,16 +3,21 @@
  * the Aquaticat master glyph strip SVG exported from Figma.
  */
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+
 //region Types: data extracted from the master SVG
 
 /** Raw path data extracted from a single SVG `<path>` element. */
 export type CellPath = {
   /** SVG path `d` attribute string. */
-  d: string;
+  readonly d: string;
   /** Whether this path uses stroke rather than fill. */
-  isStroked: boolean;
+  readonly isStroked: boolean;
   /** Stroke width when `isStroked` is true, otherwise 0. */
-  strokeWidth: number;
+  readonly strokeWidth: number;
 };
 
 /** One glyph cell from the horizontal strip. */
@@ -32,7 +37,7 @@ export type Cell = {
  *
  * @param name - attribute name to extract
  *
- * @returns attribute value, or undefined if not found
+ * @returns attribute value, or {@link ABSENT} if not found
  *
  * @example
  * ```ts
@@ -43,15 +48,15 @@ function attr({
   attrs,
   name,
 }: {
-  attrs: string;
-  name: string;
-},): string | undefined {
+  readonly attrs: string;
+  readonly name: string;
+},): Maybe<string> {
   /** Literal token to locate; the value starts immediately after this prefix. */
   const needle = `${name}="`;
   /** Index of the first occurrence of `name="`; -1 when the attribute is absent. */
   const start = attrs.indexOf(needle,);
   if (start === (-1))
-    return undefined;
+    return ABSENT;
   /** First char of the value, just past the `"` opener. */
   const valueStart = start + needle
     .length;
@@ -61,7 +66,7 @@ function attr({
     valueStart,
   );
   if (valueEnd === (-1))
-    return undefined;
+    return ABSENT;
   return attrs.slice(
     valueStart,
     valueEnd,
@@ -88,7 +93,7 @@ export function parseSvg(svgContent: string,): Cell[] {
   const cells: Cell[] = [];
   /* oxlint-disable no-restricted-syntax/no-regex -- SVG element tokenizer scoped to two literal tag names; lazy `([^>]*?)` is bounded by the next `/>` and the input is a Figma-exported master strip (bounded size). Linear: every char is visited at most twice across the alternation. */
   /** Matches a self-closing `<rect ... />` or `<path ... />` tag and captures its tag name and attributes. */
-  const elementRegex = /<(rect|path)\s+([^>]*?)\/>/g;
+  const elementRegex = /<(rect|path)\s+([^>]*?)\/>/gu;
   /* oxlint-enable no-restricted-syntax/no-regex */
 
   for (let match = elementRegex.exec(svgContent,); match !== null;
@@ -106,11 +111,15 @@ export function parseSvg(svgContent: string,): Cell[] {
         name: 'transform',
       },);
       /* oxlint-disable no-restricted-syntax/no-regex -- canonical SVG `translate(N)` shape parser; the input is one attribute value bounded by the SVG element tokenizer above. No nested quantifiers; `\d+(?:\.\d+)?` is linear in the number's digit count. */
-      /** Captured numeric argument of the `translate(...)` transform, or undefined when absent. */
-      const translateMatch = transform?.match(/translate\((\d+(?:\.\d+)?)\)/,);
+      /** Matches the `translate(N)` transform shape; capture group 1 is the numeric X offset. */
+      const translateRegex = /translate\((\d+(?:\.\d+)?)\)/u;
       /* oxlint-enable no-restricted-syntax/no-regex */
+      /** Captured numeric argument of the `translate(...)` transform; null when the attribute is absent or does not match. */
+      const translateMatch = transform === ABSENT
+        ? null
+        : translateRegex.exec(transform,);
       /** Parsed X offset of this cell rect; falls back to 0 when no translate is present. */
-      const xOffset = (translateMatch !== undefined) && (translateMatch !== null)
+      const xOffset = translateMatch !== null
         ? Number(translateMatch[1]
           ?? '0',)
         : 0;
@@ -127,7 +136,7 @@ export function parseSvg(svgContent: string,): Cell[] {
       attrs,
       name: 'd',
     },);
-    if (d === undefined)
+    if (d === ABSENT)
       continue;
 
     /** Raw `stroke` attribute value used to discriminate stroked paths from filled ones. */
@@ -136,18 +145,18 @@ export function parseSvg(svgContent: string,): Cell[] {
       name: 'stroke',
     },);
     /** True when the path has a stroke but no fill, indicating it must be expanded into an outline. */
-    const isStroked = (strokeAttr !== undefined) && (attr({
+    const isStroked = (strokeAttr !== ABSENT) && (attr({
       attrs,
       name: 'fill',
     },)
-      === undefined);
+      === ABSENT);
     /** Raw `stroke-width` attribute string; parsed only when the path is actually stroked. */
     const strokeWidthStr = attr({
       attrs,
       name: 'stroke-width',
     },);
     /** Numeric stroke width in SVG units; 0 for filled paths so downstream code skips expansion. */
-    const strokeWidth = isStroked && (strokeWidthStr !== undefined)
+    const strokeWidth = isStroked && (strokeWidthStr !== ABSENT)
       ? Number(strokeWidthStr,)
       : 0;
 
@@ -171,24 +180,24 @@ export function parseSvg(svgContent: string,): Cell[] {
 /** Parsed absolute SVG path command (M/L/H/V/Z only). */
 export type SVGPathCommand =
   | {
-    type: 'M';
-    x: number;
-    y: number;
+    readonly type: 'M';
+    readonly x: number;
+    readonly y: number;
   }
   | {
-    type: 'L';
-    x: number;
-    y: number;
+    readonly type: 'L';
+    readonly x: number;
+    readonly y: number;
   }
   | {
-    type: 'H';
-    x: number;
+    readonly type: 'H';
+    readonly x: number;
   }
   | {
-    type: 'V';
-    y: number;
+    readonly type: 'V';
+    readonly y: number;
   }
-  | { type: 'Z'; };
+  | { readonly type: 'Z'; };
 
 /**
  * Tokenize an SVG path `d` attribute into absolute commands.
@@ -209,7 +218,7 @@ export function parseSvgPathD(d: string,): SVGPathCommand[] {
   const commands: SVGPathCommand[] = [];
   /* oxlint-disable no-restricted-syntax/no-regex -- SVG path tokenizer; the alternation either matches one command letter or one signed decimal in linear time, and the input is a bounded `d=` attribute value (Aquaticat master strip). No backtracking risk on either branch. */
   /** Matches either a command letter (M/L/H/V/Z) or a signed decimal number. */
-  const tokenRegex = /([MLHVZ])|(-?\d+(?:\.\d+)?)/g;
+  const tokenRegex = /([MLHVZ])|(-?\d+(?:\.\d+)?)/gu;
   /* oxlint-enable no-restricted-syntax/no-regex */
 
   /**

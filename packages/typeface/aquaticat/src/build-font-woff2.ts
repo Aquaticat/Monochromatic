@@ -30,8 +30,8 @@ export async function convertToWoff2({
   otfPath,
   distDir,
 }: {
-  otfPath: string;
-  distDir: string;
+  readonly otfPath: string;
+  readonly distDir: string;
 },): Promise<void> {
   console.log('Converting to WOFF2 via fonttools...',);
   /** Output path for the WOFF2 font file. */
