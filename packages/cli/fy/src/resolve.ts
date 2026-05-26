@@ -10,14 +10,23 @@ import {
 } from './log.ts';
 
 /**
+ * Sentinel marking "not found here", returned by the resolution helpers below.
+ *
+ * A unique `Symbol` is the genuine-sentinel form the no-nullish-union rule allows: it lets a
+ * helper signal absence without a `string | undefined` return type, and callers test identity
+ * against it instead of a nullish check.
+ */
+const NOT_FOUND = Symbol('NOT_FOUND',);
+
+/**
  * Attempts to resolve a bare specifier from a given base directory.
- * Returns the resolved path or `undefined` if resolution fails.
+ * Returns the resolved path or {@link NOT_FOUND} if resolution fails.
  *
  * @param specifier - ESM import specifier (e.g. `lodash`, `@scope/pkg/sub`)
  *
  * @param baseDir - Directory to resolve from
  *
- * @returns Resolved file URL string, or `undefined` on failure
+ * @returns Resolved file URL string, or {@link NOT_FOUND} on failure
  *
  * @example
  * ```ts
@@ -33,7 +42,7 @@ function resolveFrom(
     readonly specifier: string;
     readonly baseDir: string;
   },
-): string | undefined {
+): string | typeof NOT_FOUND {
   /** Tagged logger scoped to this function so log lines identify the call site. */
   const rl = tagged({
     tag: resolveFrom.name,
@@ -53,15 +62,15 @@ function resolveFrom(
   }
   catch {
     rl.info(`not found in ${baseDir}`,);
-    return undefined;
+    return NOT_FOUND;
   }
 }
 
 /**
  * Finds the global node_modules directory by checking common global install locations.
- * Returns the path or `undefined` if none found.
+ * Returns the path or {@link NOT_FOUND} if none found.
  *
- * @returns Path to global node_modules, or `undefined`
+ * @returns Path to global node_modules, or {@link NOT_FOUND}
  *
  * @example
  * ```ts
@@ -69,7 +78,7 @@ function resolveFrom(
  * // => '/home/user/.bun/install/global/node_modules'
  * ```
  */
-function findGlobalNodeModules(): string | undefined {
+function findGlobalNodeModules(): string | typeof NOT_FOUND {
   /** Tagged logger scoped to this function so log lines identify the call site. */
   const rl = tagged({
     tag: findGlobalNodeModules.name,
@@ -83,7 +92,7 @@ function findGlobalNodeModules(): string | undefined {
     .USERPROFILE;
   if (home === undefined) {
     rl.info('no HOME or USERPROFILE set',);
-    return undefined;
+    return NOT_FOUND;
   }
   /** Candidate global node_modules paths, ordered by priority */
   const candidates = [
@@ -121,23 +130,23 @@ function findGlobalNodeModules(): string | undefined {
     }
   }
   rl.info('no global node_modules found',);
-  return undefined;
+  return NOT_FOUND;
 }
 
 /**
  * Wraps {@link findMiseMonorepoRootCached} to swallow discovery errors and emit a single
- * diagnostic log instead. Returns the cached root or `undefined` when the helper throws
+ * diagnostic log instead. Returns the cached root or {@link NOT_FOUND} when the helper throws
  * (i.e. when no `mise.toml` with `[monorepo]` exists above CWD).
  *
- * @returns Cached monorepo root, or `undefined` outside a monorepo
+ * @returns Cached monorepo root, or {@link NOT_FOUND} outside a monorepo
  *
  * @example
  * ```ts
  * const root = await tryFindMiseMonorepoRoot();
- * // => '/home/user/Monochromatic' (or undefined outside a workspace)
+ * // => '/home/user/Monochromatic' (or NOT_FOUND outside a workspace)
  * ```
  */
-async function tryFindMiseMonorepoRoot(): Promise<string | undefined> {
+async function tryFindMiseMonorepoRoot(): Promise<string | typeof NOT_FOUND> {
   /** Tagged logger scoped to this helper so the "no monorepo root" log identifies the call site. */
   const rl = tagged({
     tag: tryFindMiseMonorepoRoot.name,
@@ -148,7 +157,7 @@ async function tryFindMiseMonorepoRoot(): Promise<string | undefined> {
   }
   catch {
     rl.info('no monorepo root found',);
-    return undefined;
+    return NOT_FOUND;
   }
 }
 
@@ -181,12 +190,12 @@ export async function resolveSpecifier(
 
   //region CWD resolution
   rl.info(`resolving "${specifier}" from CWD: ${cwd}`,);
-  /** Result of the CWD resolution attempt; returned eagerly when defined so monorepo and global lookups are skipped. */
+  /** Result of the CWD resolution attempt; returned eagerly when resolved so monorepo and global lookups are skipped. */
   const fromCwd = resolveFrom({
     specifier,
     baseDir: cwd,
   },);
-  if (fromCwd !== undefined)
+  if (fromCwd !== NOT_FOUND)
     return fromCwd;
   //endregion CWD resolution
 
@@ -194,18 +203,18 @@ export async function resolveSpecifier(
   /**
    * Cached monorepo root populated by {@link findMiseMonorepoRootCached}.
    *
-   * Stays `undefined` outside a monorepo or when discovery throws; reused below to
+   * Stays {@link NOT_FOUND} outside a monorepo or when discovery throws; reused below to
    * render the diagnostic line for the not-found error.
    */
   const monorepoRoot = await tryFindMiseMonorepoRoot();
-  if ((monorepoRoot !== undefined) && (monorepoRoot !== cwd)) {
+  if ((monorepoRoot !== NOT_FOUND) && (monorepoRoot !== cwd)) {
     rl.info(`trying monorepo root: ${monorepoRoot}`,);
     /** Result of resolution anchored at the monorepo root; tried only when the root differs from CWD. */
     const fromMonorepo = resolveFrom({
       specifier,
       baseDir: monorepoRoot,
     },);
-    if (fromMonorepo !== undefined)
+    if (fromMonorepo !== NOT_FOUND)
       return fromMonorepo;
   }
   //endregion Monorepo root resolution
@@ -213,7 +222,7 @@ export async function resolveSpecifier(
   //region Global resolution
   /** Detected global `node_modules` path; final fallback when project-local resolution fails. */
   const globalDir = findGlobalNodeModules();
-  if (globalDir !== undefined) {
+  if (globalDir !== NOT_FOUND) {
     rl.info(`trying global: ${globalDir}`,);
     /** Result of resolution anchored one level above the global `node_modules` so Node's `require` discovers packages installed there. */
     const fromGlobal = resolveFrom({
@@ -223,17 +232,17 @@ export async function resolveSpecifier(
         '..',
       ),
     },);
-    if (fromGlobal !== undefined)
+    if (fromGlobal !== NOT_FOUND)
       return fromGlobal;
   }
   //endregion Global resolution
 
   /** Diagnostic line included in the thrown error only when a monorepo root was discovered. */
-  const monorepoLine = monorepoRoot !== undefined
+  const monorepoLine = monorepoRoot !== NOT_FOUND
     ? `  - Monorepo root: ${monorepoRoot}\n`
     : '';
   /** Diagnostic line included in the thrown error only when a global `node_modules` was detected. */
-  const globalLine = globalDir !== undefined ? `  - Global: ${globalDir}\n` : '';
+  const globalLine = globalDir !== NOT_FOUND ? `  - Global: ${globalDir}\n` : '';
   throw new Error(
     `Cannot resolve "${specifier}" from any of:\n  - CWD: ${cwd}\n${monorepoLine}${globalLine}Install the package first (e.g. bun add <package>)`,
   );
