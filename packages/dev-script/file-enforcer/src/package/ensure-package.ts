@@ -7,6 +7,7 @@ import {
   canProvide,
   detectManager,
   installPackage,
+  NO_MANAGER,
 } from './manager.ts';
 import type {
   PackageEntry,
@@ -71,16 +72,25 @@ function buildIndex(): ReadonlyMap<string, PackageEntry> {
 //region Resolve package name
 
 /**
+ * Sentinel returned by {@link resolvePackageName} when Repology data confirms
+ * the package is unavailable on the detected manager. A unique `Symbol` keeps
+ * the absent case out of a banned `string | undefined` union while staying
+ * distinguishable from any real package name (including the empty string).
+ */
+const PACKAGE_UNAVAILABLE = Symbol('package-unavailable',);
+
+/**
  * Resolves the package name for a given entry and manager.
- * Returns `undefined` when Repology data confirms the package is unavailable
- * (manager not in `available` set), avoiding the expensive live `canProvide` check.
- * Uses the per-manager override if present, otherwise falls back to effname.
+ * Returns {@link PACKAGE_UNAVAILABLE} when Repology data confirms the package is
+ * unavailable (manager not in `available` set), avoiding the expensive live
+ * `canProvide` check. Uses the per-manager override if present, otherwise falls
+ * back to effname.
  *
  * @param entry - Package entry to resolve
  *
  * @param manager - Detected package manager
  *
- * @returns Package name to pass to the install command, or `undefined` when unavailable
+ * @returns Package name to pass to the install command, or {@link PACKAGE_UNAVAILABLE} when unavailable
  */
 function resolvePackageName(
   {
@@ -90,11 +100,11 @@ function resolvePackageName(
     readonly entry: PackageEntry;
     readonly manager: PackageManager;
   },
-): string | undefined {
+): string | typeof PACKAGE_UNAVAILABLE {
   if ((entry.available
-    !== null) && (!entry.available
+    !== undefined) && (!entry.available
       .has(manager,)))
-    return undefined;
+    return PACKAGE_UNAVAILABLE;
   return entry.overrides[manager]
     ?? entry
     .effname;
@@ -160,7 +170,6 @@ export async function ensurePackage(binary: string,): Promise<void> {
   const entry = index.get(binary,);
   /** Entry actually used downstream; falls back to a self-named default for unregistered binaries. */
   const effectiveEntry: PackageEntry = entry ?? {
-    available: null,
     bin: binary,
     check: '--version',
     effname: binary,
@@ -175,18 +184,18 @@ export async function ensurePackage(binary: string,): Promise<void> {
   if (alreadyInstalled)
     return;
 
-  /** Detected manager on this host, or `null` when nothing supported is installed. */
+  /** Detected manager on this host, or NO_MANAGER when nothing supported is installed. */
   const manager = await detectManager();
-  if (!manager)
+  if (manager === NO_MANAGER)
     throw new NoManagerError(binary,);
 
-  /** Manager-specific package name; `undefined` when Repology says this manager cannot supply it. */
+  /** Manager-specific package name; PACKAGE_UNAVAILABLE when Repology says this manager cannot supply it. */
   const packageName = resolvePackageName({
     entry: effectiveEntry,
     manager,
   },);
 
-  if (packageName === undefined) {
+  if (packageName === PACKAGE_UNAVAILABLE) {
     throw new PackageNotFoundError(
       binary,
       manager,

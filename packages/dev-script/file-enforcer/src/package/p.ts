@@ -13,11 +13,11 @@ export const DEFAULT_CHECK = '--version';
  * Builds a {@link PackageEntry} from a shorthand string or detailed spec.
  *
  * **String form**: binary name, effname, and all per-manager package names are the same value.
- * Availability is unrestricted (`null`).
+ * Availability is unrestricted (`available` omitted).
  *
  * **Object form**: `bin` defaults to `effname` when omitted.
  * When `yes` is present, it encodes both availability and per-manager name overrides.
- * When `yes` is absent, availability is unrestricted (`null`).
+ * When `yes` is absent, availability is unrestricted (`available` omitted).
  *
  * @param shorthandOrSpec - Name string or object with `effname`, optional `bin`, and optional `yes` array
  *
@@ -26,7 +26,7 @@ export const DEFAULT_CHECK = '--version';
  * @example
  * ```ts
  * p('curl')
- * // { bin: 'curl', effname: 'curl', available: null, overrides: {} }
+ * // { bin: 'curl', effname: 'curl', overrides: {} }
  * p({ bin: 'rg', effname: 'ripgrep' })
  * p({ effname: 'acpica', yes: ['apt', ['dnf', 'acpica-tools'], ['pacman', 'acpica-utils']] })
  * ```
@@ -50,7 +50,6 @@ export function p(shorthandOrSpec: string | PackageSpec,): PackageEntry {
  */
 function buildFromShorthand(name: string,): PackageEntry {
   return {
-    available: null,
     bin: name,
     check: DEFAULT_CHECK,
     effname: name,
@@ -75,20 +74,25 @@ function buildFromSpec(spec: PackageSpec,): PackageEntry {
     yes,
   } = spec;
 
-  /** Availability set and overrides; `null` availability when no `yes` array was supplied. */
-  const result = yes !== undefined
-    ? parseYes(yes,)
-    : {
-      available: null as ReadonlySet<PackageManager> | null,
+  if (yes === undefined)
+    return {
+      bin: bin ?? effname,
+      check: check ?? DEFAULT_CHECK,
+      effname,
       overrides: Object.freeze({},),
     };
 
+  /** Availability set and per-manager overrides parsed from the supplied `yes` array. */
+  const {
+    available,
+    overrides,
+  } = parseYes(yes,);
   return {
-    available: result.available,
+    available,
     bin: bin ?? effname,
     check: check ?? DEFAULT_CHECK,
     effname,
-    overrides: result.overrides,
+    overrides,
   };
 }
 

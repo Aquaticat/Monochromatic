@@ -18,6 +18,7 @@ export {
 } from './io/glob.ts';
 export { overwriteTomlKey, } from './io/write-toml.ts';
 export {
+  MISSING,
   overwrite,
   overwriteEach,
   overwriteIfNotExists,
@@ -37,6 +38,7 @@ export {
   canProvide,
   detectManager,
   installPackage,
+  NO_MANAGER,
 } from './package/manager.ts';
 export { mergeOverrides, } from './package/merge.ts';
 export {

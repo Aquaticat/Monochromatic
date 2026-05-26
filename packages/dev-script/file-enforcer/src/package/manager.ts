@@ -36,19 +36,26 @@ function fillTemplate(
 //region Manager detection
 
 /**
+ * Sentinel for "detection ran but found no supported package manager".
+ * A unique `Symbol` keeps the absent case out of a banned `T | null` union
+ * while staying distinguishable from every real {@link PackageManager} value.
+ */
+export const NO_MANAGER: unique symbol = Symbol('no-manager',);
+
+/**
  * Single-key holder for the lazily-detected package manager.
- * `null` value means detection ran but no manager was found; missing key means
- * detection has not run yet. Using a {@link Map} container side-steps a
+ * {@link NO_MANAGER} value means detection ran but no manager was found; missing
+ * key means detection has not run yet. Using a {@link Map} container side-steps a
  * module-root `let` binding while keeping the same lazy-cache semantics.
  */
-const managerCache = new Map<'manager', PackageManager | null>();
+const managerCache = new Map<'manager', PackageManager | typeof NO_MANAGER>();
 
 /**
  * Detects the highest-priority available package manager on the current system.
  * All candidates are probed concurrently; the winner is the first by {@link MANAGERS} insertion order.
  * Result is cached for the lifetime of the process.
  *
- * @returns Detected manager name, or `null` if none found
+ * @returns Detected manager name, or {@link NO_MANAGER} if none found
  *
  * @example
  * ```ts
@@ -56,28 +63,28 @@ const managerCache = new Map<'manager', PackageManager | null>();
  * // 'brew' when installed, otherwise 'apt' on Debian/Ubuntu, 'dnf' on Fedora, etc.
  * ```
  */
-export async function detectManager(): Promise<PackageManager | null> {
+export async function detectManager(): Promise<PackageManager | typeof NO_MANAGER> {
   if (managerCache.has('manager',))
     return managerCache.get('manager',)
-      ?? null;
+      ?? NO_MANAGER;
   /** Snapshot of registered manager entries; iteration order defines detection priority. */
   const entries = [...MANAGERS.entries(),];
-  /** Per-manager probe results: the manager name when its check succeeds, otherwise `null`. */
+  /** Per-manager probe results: the manager name when its check succeeds, otherwise NO_MANAGER. */
   const results = await Promise.all(
     entries.map(
-      async function checkManager([name, def,],): Promise<PackageManager | null> {
+      async function checkManager([name, def,],): Promise<PackageManager | typeof NO_MANAGER> {
         /** Whether this manager's existence check exits successfully on the current system. */
         const available = await evaluatePredicate(def.check,);
-        return available ? name : null;
+        return available ? name : NO_MANAGER;
       },
     ),
   );
-  /** First non-null entry in priority order, or `undefined` when nothing matched. */
+  /** First detected entry in priority order, or `undefined` when nothing matched. */
   const detected = results.find(function isPresent(name,): name is PackageManager {
-    return name !== null;
+    return name !== NO_MANAGER;
   },);
   /** Resolved value stored in the cache and returned to the caller. */
-  const resolved = detected ?? null;
+  const resolved = detected ?? NO_MANAGER;
   managerCache.set(
     'manager',
     resolved,

@@ -15,13 +15,13 @@ await describe({
       children: [
         it({
           name:
-            'sets bin, check, effname, null available, and empty overrides from a single name',
+            'sets bin, check, effname, absent available, and empty overrides from a single name',
           fn: async () => {
             const entry = p('curl',);
             expect(entry.bin,).toBe('curl',);
             expect(entry.check,).toBe('--version',);
             expect(entry.effname,).toBe('curl',);
-            expect(entry.available,).toBeNull();
+            expect(entry.available,).toBeUndefined();
             expect(entry.overrides,).toEqual({},);
           },
         },),
@@ -59,10 +59,10 @@ await describe({
           },
         },),
         it({
-          name: 'sets available to null when yes is omitted',
+          name: 'leaves available absent when yes is omitted',
           fn: async () => {
             const entry = p({ effname: 'wget', },);
-            expect(entry.available,).toBeNull();
+            expect(entry.available,).toBeUndefined();
             expect(entry.overrides,).toEqual({},);
           },
         },),
@@ -108,7 +108,7 @@ await describe({
           name: 'builds available set from bare manager names',
           fn: async () => {
             const entry = p({ effname: 'curl', yes: ['apt', 'dnf', 'brew',], },);
-            expect(entry.available,).not.toBeNull();
+            expect(entry.available,).toBeDefined();
             expect(entry.available?.has('apt',),).toBe(true,);
             expect(entry.available?.has('dnf',),).toBe(true,);
             expect(entry.available?.has('brew',),).toBe(true,);
@@ -160,7 +160,7 @@ await describe({
           name: 'empty yes array produces empty available set',
           fn: async () => {
             const entry = p({ effname: 'niche-tool', yes: [], },);
-            expect(entry.available,).not.toBeNull();
+            expect(entry.available,).toBeDefined();
             expect(entry.available?.size,).toBe(0,);
           },
         },),

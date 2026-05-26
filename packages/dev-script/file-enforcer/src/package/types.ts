@@ -20,9 +20,21 @@ export type PackageManager =
 
 /**
  * Per-manager package name overrides.
- * Only managers whose package name differs from the effname need an entry.
+ * Only managers whose package name differs from the effname need an entry;
+ * every key is optional so a sparse map carries just the differing managers.
+ * Spelled as explicit `?:` properties rather than `Partial<Record<...>>`,
+ * which `no-optional-escape` bans as a blanket optionality dodge.
  */
-export type PackageMapping = Partial<Record<PackageManager, string>>;
+export type PackageMapping = {
+  readonly apk?: string;
+  readonly apt?: string;
+  readonly brew?: string;
+  readonly choco?: string;
+  readonly dnf?: string;
+  readonly pacman?: string;
+  readonly scoop?: string;
+  readonly zypper?: string;
+};
 
 /**
  * Single element in the {@link PackageSpec.yes} availability array.
@@ -77,11 +89,11 @@ export type PackageSpec = {
 export type PackageEntry = {
   /**
    * Managers where the package is known to be available (from Repology data).
-   * `null` means no availability restriction (all managers assumed available).
-   * When the detected manager is not in this set, {@link ensurePackage} skips
-   * the live `canProvide` check and fails fast.
+   * Absent (omitted) means no availability restriction (all managers assumed
+   * available). When the detected manager is not in this set, {@link ensurePackage}
+   * skips the live `canProvide` check and fails fast.
    */
-  readonly available: ReadonlySet<PackageManager> | null;
+  readonly available?: ReadonlySet<PackageManager>;
   /** Binary name to check on PATH. */
   readonly bin: string;
   /** Flag passed to the binary for existence check (default: `--version`). */
@@ -89,7 +101,7 @@ export type PackageEntry = {
   /** Repology canonical project name; fallback package name when no override exists. */
   readonly effname: string;
   /** Per-manager package name overrides (only entries that differ from effname). */
-  readonly overrides: Readonly<PackageMapping>;
+  readonly overrides: PackageMapping;
 };
 
 //endregion Package entry
