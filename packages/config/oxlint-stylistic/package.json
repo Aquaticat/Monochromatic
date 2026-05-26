@@ -39,5 +39,5 @@
       "default": "./src/index.ts"
     }
   },
-  "description": "Oxlint JS plugin enforcing one-item-per-line formatting across all multi-element TypeScript constructs."
+  "description": "Oxlint JS plugin enforcing TypeScript layout rules for per-line constructs, semicolons, and expression structure."
 }

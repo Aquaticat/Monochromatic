@@ -79,7 +79,7 @@ const config: OxlintConfig = defineConfig({
     )
       .pathname,
 
-    // One-item-per-line formatting enforcement for all multi-element constructs.
+    // TypeScript layout enforcement for per-line constructs, semicolons, and expression structure.
     new URL(import.meta.resolve('@monochromatic-dev/config-oxlint-stylistic',),).pathname,
   ],
 

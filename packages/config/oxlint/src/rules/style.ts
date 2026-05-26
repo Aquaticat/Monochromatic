@@ -175,6 +175,7 @@ export const styleRules: DummyRuleMap = {
   //region stylistic: statement boundaries
   'stylistic/one-var-declaration-per-line': 'warn',
   'stylistic/max-statements-per-line': 'warn',
+  'stylistic/semi': 'warn',
   //endregion stylistic: statement boundaries
 
   //region stylistic: expression structure

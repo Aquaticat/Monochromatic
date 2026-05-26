@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+  // Dedicated config proving stylistic/semi does not accept eslint.style-style options.
+  "jsPlugins": [
+    "../../config/oxlint-stylistic/src/index.ts"
+  ],
+  "ignorePatterns": [
+    "**/dist",
+    "**/node_modules"
+  ],
+  "rules": {
+    "stylistic/semi": [
+      "error",
+      "always"
+    ]
+  }
+}

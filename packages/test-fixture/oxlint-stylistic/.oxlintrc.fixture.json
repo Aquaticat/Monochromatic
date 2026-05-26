@@ -22,6 +22,7 @@
     "stylistic/destructure-per-line": "error",
     "stylistic/one-var-declaration-per-line": "error",
     "stylistic/max-statements-per-line": "error",
+    "stylistic/semi": "error",
     "stylistic/no-mixed-operators": "error",
     "stylistic/chain-per-line": "error"
   }

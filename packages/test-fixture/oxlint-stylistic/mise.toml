@@ -13,4 +13,4 @@
 
 [tasks."lint-fixture"]
 description = "Lint fixture files with all stylistic rules enabled (for plugin validation)"
-run = "oxlint -c .oxlintrc.fixture.json src/"
+run = "oxlint --config .oxlintrc.fixture.json src/"

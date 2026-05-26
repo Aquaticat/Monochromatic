@@ -102,6 +102,12 @@ const FIXTURE_CONFIG = resolve(
   '.oxlintrc.fixture.json',
 );
 
+/** Fixture config that intentionally passes eslint.style-style semi options. */
+const SEMI_CONFIGURED_FIXTURE_CONFIG = resolve(
+  FIXTURE_PKG,
+  '.oxlintrc.semi-configured.fixture.json',
+);
+
 /**
  * Runs oxlint with the fixture config against a fixture path and returns
  * parsed diagnostics.
@@ -128,7 +134,7 @@ async function lint(fixturePath: string,): Promise<readonly OxlintDiagnostic[]> 
         [
           '--format',
           'json',
-          '-c',
+          '--config',
           FIXTURE_CONFIG,
           target,
         ],
@@ -412,6 +418,13 @@ await describe({
             expect(diagnostics,).toEqual([],);
           },
         },),
+        it({
+          name: 'semi valid cases produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/semi.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
       ],
     },),
 
@@ -652,6 +665,55 @@ await describe({
       ],
     },),
 
+    describe({
+      name: 'semi',
+      children: [
+        it({
+          name: 'reports missing semicolons',
+          fn: async () => {
+            const diagnostics = await lint('invalid/semi.ts',);
+            const semiDiagnostics = diagnostics.filter(function isSemi(diagnostic,): boolean {
+              return diagnostic.code === 'stylistic(semi)';
+            },);
+            expect(semiDiagnostics.length,).toBe(15,);
+            expect(semiDiagnostics[0]?.message,).toBe('Missing semicolon.',);
+          },
+        },),
+        it({
+          name: 'rejects eslint-style options',
+          fn: async () => {
+            const caught = await (async function catchConfiguredSemiError(): Promise<unknown> {
+              try {
+                await spawn(
+                  'oxlint',
+                  [
+                    '--format',
+                    'json',
+                    '--config',
+                    SEMI_CONFIGURED_FIXTURE_CONFIG,
+                    resolve(
+                      FIXTURES,
+                      'valid',
+                      'semi.ts',
+                    ),
+                  ],
+                  { cwd: ROOT, },
+                );
+                return undefined;
+              }
+              catch (error: unknown) {
+                return error;
+              }
+            })();
+            const { stdout, } = caught as { readonly stdout: string; };
+            expect(stdout,).toContain(
+              "Rule 'stylistic/semi' does not accept options",
+            );
+          },
+        },),
+      ],
+    },),
+
     //endregion Invalid fixtures
 
     //region Autofix tests
@@ -659,6 +721,49 @@ await describe({
     describe({
       name: 'autofix',
       children: [
+        it({
+          name: '--fix inserts missing semicolons',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates original fixture. */
+            const semiSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'semi.ts',
+            );
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using semiCopy = createTempFixtureFile({
+              fileName: 'semi.ts',
+              sourcePath: semiSrc,
+            },);
+
+            try {
+              await spawn(
+                'oxlint',
+                [
+                  '--fix',
+                  '--config',
+                  FIXTURE_CONFIG,
+                  semiCopy.filePath,
+                ],
+                { cwd: ROOT, },
+              );
+            }
+            catch {
+              // --fix may still exit non-zero if unfixable issues remain
+            }
+
+            const fixedContent = readFileSync(semiCopy.filePath, 'utf8',);
+            expect(fixedContent,).toContain('const value = 1;',);
+            expect(fixedContent,).toContain('return value;',);
+            expect(fixedContent,).toContain('field = value;',);
+            expect(fixedContent,).toContain('type Alias = number;',);
+            expect(fixedContent,).toContain('declare function ambient(): void;',);
+            expect(fixedContent,).toContain('export default value;',);
+
+            const diagnostics = await lint(semiCopy.filePath,);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
         it({
           name: '--fix produces zero violations',
           fn: async () => {

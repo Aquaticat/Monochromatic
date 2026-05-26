@@ -2,6 +2,7 @@
 
 Oxlint JS plugin for TypeScript stylistic rules:
 one-item-per-line formatting across multi-element constructs,
+statement-boundary semicolon enforcement,
 and explicit operator structure in nested expressions.
 
 The per-line rules fire when 2 or more items share a source line
@@ -45,6 +46,11 @@ All per-line rules are auto-fixable via `oxlint --fix`.
   exempt their inner statement, so `if (a) foo();` is allowed; the alternate branch of `if`/`else`
   is not exempt, so `if (a) foo(); else bar();` flags `bar()`.
   Auto-fixable; fix is suppressed if a comment lives between statements (preserves the comment).
+- **semi**: require semicolons at the end of statement-like declarations and expressions.
+  Mirrors `@stylistic/semi` in its default `"always"` mode only.
+  The rule has no options: configure it as `"stylistic/semi": "error"`, not as
+  `["error", "always"]`.
+  Auto-fixable; the fixer inserts `;` after the node's last syntax token.
 
 ### Expression structure
 
