@@ -7,6 +7,10 @@
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import { parseArgvModelPatterns, } from './argv-scope.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { canonicalSlug, } from './model-slug.ts';
 import { resolveModelPatterns, } from './scope-patterns.ts';
 import { loadSettingsScopePatterns, } from './settings-scope.ts';
@@ -58,7 +62,7 @@ export function resolveEffectiveScope(
 ): EffectiveModelScope {
   /** Live model scope exposed by current or future pi APIs. */
   const liveScope = readLiveScope(options.ctx,);
-  if (liveScope !== undefined) {
+  if (liveScope !== ABSENT) {
     return {
       source: 'live',
       entries: liveScope,
@@ -71,7 +75,7 @@ export function resolveEffectiveScope(
       ?? process
       .argv,
   },);
-  if (argvPatterns !== undefined) {
+  if (argvPatterns !== ABSENT) {
     return {
       source: 'argv',
       entries: resolveModelPatterns({
@@ -128,15 +132,15 @@ export function resolveEffectiveScope(
  *
  * @param ctx - pi extension context
  *
- * @returns live scoped models, or `undefined` when unavailable
+ * @returns live scoped models, or {@link ABSENT} when unavailable
  */
 function readLiveScope(
   ctx: ReadonlyDeep<ExtensionContext>,
-): ScopedAdvisorModel[] | undefined {
+): Maybe<ScopedAdvisorModel[]> {
   /** Raw live scope value from method or property. */
   const rawScope = liveScopeRawValue(ctx,);
   if (!Array.isArray(rawScope,))
-    return undefined;
+    return ABSENT;
 
   return rawScope
     .filter(function keepRawLiveScopeItem(value,): value is RawLiveScopeItem {

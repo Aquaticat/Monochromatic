@@ -11,23 +11,23 @@ import * as v from 'valibot';
 /** Raw configuration file shape before defaults are applied. */
 export type AdvisorConfigFile = {
   /** Whether Advisor starts enabled. */
-  readonly enabled?: boolean | undefined;
+  readonly enabled?: boolean;
   /** Provider timeout in milliseconds. */
-  readonly timeoutMs?: number | undefined;
+  readonly timeoutMs?: number;
   /** Maximum serialized context characters. */
-  readonly maxContextChars?: number | undefined;
+  readonly maxContextChars?: number;
   /** Maximum Advisor output tokens. */
-  readonly maxAdvisorOutputTokens?: number | undefined;
+  readonly maxAdvisorOutputTokens?: number;
   /** Whether prior Advisor results stay in context. */
-  readonly includePriorAdvisorResults?: boolean | undefined;
+  readonly includePriorAdvisorResults?: boolean;
   /** Project-specific Advisor prompt suffix. */
-  readonly systemPrompt?: string | undefined;
+  readonly systemPrompt?: string;
 };
 
 /** Settings file subset needed for scoped-model reconstruction. */
 export type AdvisorSettingsFile = {
   /** Pi model-cycle patterns. */
-  readonly enabledModels?: readonly string[] | undefined;
+  readonly enabledModels?: readonly string[];
 };
 
 //endregion Types
@@ -42,17 +42,17 @@ const PositiveNumberSchema: v.GenericSchema<number> = v.pipe(
 
 /** Advisor configuration file schema. */
 export const AdvisorConfigFileSchema: v.GenericSchema<AdvisorConfigFile> = v.object({
-  enabled: v.optional(v.boolean(),),
-  timeoutMs: v.optional(PositiveNumberSchema,),
-  maxContextChars: v.optional(PositiveNumberSchema,),
-  maxAdvisorOutputTokens: v.optional(PositiveNumberSchema,),
-  includePriorAdvisorResults: v.optional(v.boolean(),),
-  systemPrompt: v.optional(v.string(),),
+  enabled: v.exactOptional(v.boolean(),),
+  timeoutMs: v.exactOptional(PositiveNumberSchema,),
+  maxContextChars: v.exactOptional(PositiveNumberSchema,),
+  maxAdvisorOutputTokens: v.exactOptional(PositiveNumberSchema,),
+  includePriorAdvisorResults: v.exactOptional(v.boolean(),),
+  systemPrompt: v.exactOptional(v.string(),),
 },);
 
 /** Pi settings subset schema. */
 export const AdvisorSettingsFileSchema: v.GenericSchema<AdvisorSettingsFile> = v.object({
-  enabledModels: v.optional(v.array(v.string(),),),
+  enabledModels: v.exactOptional(v.array(v.string(),),),
 },);
 
 //endregion Schemas

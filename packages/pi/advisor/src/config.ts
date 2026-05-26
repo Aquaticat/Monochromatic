@@ -16,6 +16,10 @@ import {
   DEFAULT_MAX_ADVISOR_OUTPUT_TOKENS,
   DEFAULT_TIMEOUT_MS,
 } from './constants.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import type { AdvisorConfig, } from './types.ts';
 
 //region Defaults
@@ -37,7 +41,7 @@ export type LoadConfigOptions = {
   /** Current working directory used for project config lookup. */
   readonly cwd: string;
   /** Home directory override for tests. */
-  readonly home?: string | undefined;
+  readonly home?: string;
 };
 
 /**
@@ -83,8 +87,8 @@ export function loadMergedConfig(
     source: {
       globalPath: paths.globalPath,
       projectPath: paths.projectPath,
-      globalLoaded: global !== undefined,
-      projectLoaded: project !== undefined,
+      globalLoaded: global !== ABSENT,
+      projectLoaded: project !== ABSENT,
     },
   };
 }
@@ -149,15 +153,15 @@ function mergeConfigFiles(
     configs,
   }: {
     readonly defaults: Omit<AdvisorConfig, 'source'>;
-    readonly configs: readonly (AdvisorConfigFile | undefined)[];
+    readonly configs: readonly Maybe<AdvisorConfigFile>[];
   },
 ): Omit<AdvisorConfig, 'source'> {
   return configs.reduce(
     function mergeConfig(
       accumulator: Omit<AdvisorConfig, 'source'>,
-      config: AdvisorConfigFile | undefined,
+      config: Maybe<AdvisorConfigFile>,
     ) {
-      if (config === undefined)
+      if (config === ABSENT)
         return accumulator;
       /** Merged context cap, omitted when neither scope configures one. */
       const maxContextChars = config.maxContextChars
@@ -194,7 +198,7 @@ function mergeConfigFiles(
  *
  * @param label - config scope label
  *
- * @returns parsed config file, or `undefined` when absent
+ * @returns parsed config file, or {@link ABSENT} when absent
  */
 function loadConfigFile(
   {
@@ -204,14 +208,14 @@ function loadConfigFile(
     readonly path: string;
     readonly label: string;
   },
-): AdvisorConfigFile | undefined {
+): Maybe<AdvisorConfigFile> {
   /** Raw JSON data, or `undefined` when file is absent. */
   const raw = readJsonFile({
     path,
     label,
   },);
   if (raw === undefined)
-    return undefined;
+    return ABSENT;
   return parseConfigFile({
     raw,
     path,
@@ -244,9 +248,7 @@ function readJsonFile(
     ),);
   }
   catch (error) {
-    /** Filesystem error code when available. */
-    const code = errorCode(error,);
-    if (code === 'ENOENT')
+    if (isFileMissingError(error,))
       return undefined;
     throw new Error(
       `advisor: failed to read ${label} config at ${path}: ${
@@ -292,18 +294,18 @@ function parseConfigFile(
 }
 
 /**
- * Extract Node-style error code without unsafe assertion.
+ * Detect Node ENOENT missing-file errors without unsafe assertion.
  *
  * @param error - caught error value
  *
- * @returns error code, when present
+ * @returns whether error reports a missing config file
  */
-function errorCode(
+function isFileMissingError(
   error: unknown,
-): string | undefined {
+): boolean {
   if ((!(error instanceof Error)) || (!('code' in error)))
-    return undefined;
-  return (typeof error.code) === 'string' ? error.code : undefined;
+    return false;
+  return error.code === 'ENOENT';
 }
 
 //endregion Internal loading

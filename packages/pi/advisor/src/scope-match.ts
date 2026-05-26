@@ -4,6 +4,10 @@
  * @module
  */
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { canonicalSlug, } from './model-slug.ts';
 import { findExactModelReferenceMatch, } from './scope-exact.ts';
 import type {
@@ -87,7 +91,7 @@ export function parseModelPattern(
     pattern,
     availableModels,
   },);
-  if (exactMatch !== undefined)
+  if (exactMatch !== ABSENT)
     return { model: exactMatch, };
 
   /** Last colon, used for optional thinking suffix parsing. */
@@ -235,13 +239,13 @@ function tryMatchModel(
     readonly pattern: string;
     readonly availableModels: readonly AdvisorReadonlyModel[];
   },
-): AdvisorReadonlyModel | undefined {
+): Maybe<AdvisorReadonlyModel> {
   /** Exact match by canonical slug or bare id. */
   const exact = findExactModelReferenceMatch({
     modelReference: pattern,
     availableModels,
   },);
-  if (exact !== undefined)
+  if (exact !== ABSENT)
     return exact;
 
   /** Lowercase pattern for fuzzy id and name matching. */
@@ -259,7 +263,7 @@ function tryMatchModel(
   },);
   if (matches.length
     === 0)
-    return undefined;
+    return ABSENT;
 
   /** Alias matches, preferred over dated versions. */
   const aliases = matches.filter(function keepAlias(model,) {
@@ -278,7 +282,7 @@ function tryMatchModel(
   },);
   /** First candidate after sorting. */
   const [firstCandidate,] = sortedCandidates;
-  return firstCandidate;
+  return firstCandidate ?? ABSENT;
 }
 
 /**

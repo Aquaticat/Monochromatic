@@ -8,8 +8,8 @@ import {
   createEventBus,
   type ExecResult,
   type ExtensionAPI,
+  type ExtensionFactory,
 } from '@earendil-works/pi-coding-agent';
-import type { ReadonlyDeep, } from 'type-fest';
 
 //region Constants
 
@@ -32,7 +32,7 @@ const EXPECTED_REGISTRATIONS = [
 /** Built Advisor extension module shape. */
 type AdvisorExtensionModule = {
   /** Pi extension factory. */
-  readonly default: (pi: ReadonlyDeep<ExtensionAPI>,) => void | Promise<void>;
+  readonly default: ExtensionFactory;
 };
 
 //endregion Types
@@ -139,7 +139,7 @@ function fakePiApi(): {
     },
     setLabel(
       entryId: string,
-      label: string | undefined,
+      label?: string,
     ) {
       void entryId;
       void label;

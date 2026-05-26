@@ -9,7 +9,6 @@
 
 import type {
   BeforeAgentStartEvent,
-  BeforeAgentStartEventResult,
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
@@ -114,7 +113,7 @@ export default function advisor(
     function handleBeforeAgentStart(
       event: ReadonlyDeep<BeforeAgentStartEvent>,
       ctx: ReadonlyDeep<ExtensionContext>,
-    ): BeforeAgentStartEventResult | undefined {
+    ) {
       if (!state.getEnabled())
         return undefined;
 

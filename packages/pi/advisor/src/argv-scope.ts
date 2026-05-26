@@ -4,6 +4,11 @@
  * @module
  */
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+
 //region Public API
 
 /** Options for parsing `--models` from argv. */
@@ -19,7 +24,7 @@ export type ParseArgvModelsOptions = {
  *
  * @param options - argv to inspect
  *
- * @returns cleaned patterns, or `undefined` when `--models` is absent
+ * @returns cleaned patterns, or {@link ABSENT} when `--models` is absent
  *
  * @example
  * ```typescript
@@ -28,7 +33,7 @@ export type ParseArgvModelsOptions = {
  */
 export function parseArgvModelPatterns(
   options: ParseArgvModelsOptions,
-): string[] | undefined {
+): Maybe<string[]> {
   /** Inline `--models=value` argument, if present. */
   const inline = options.argv
     .find(function isInlineModelsArg(arg,) {
@@ -41,7 +46,7 @@ export function parseArgvModelPatterns(
   const modelsIndex = options.argv
     .indexOf('--models',);
   if (modelsIndex === (-1))
-    return undefined;
+    return ABSENT;
 
   /** Value following `--models`. */
   const value = options.argv[modelsIndex + 1];

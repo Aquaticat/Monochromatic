@@ -11,6 +11,10 @@ import type {
 import type { SessionEntry, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import { LATEST_USER_EXCERPT_CHARS, } from './constants.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 
 //region Public API
 
@@ -28,7 +32,7 @@ import { LATEST_USER_EXCERPT_CHARS, } from './constants.ts';
  */
 export function latestUserPromptExcerpt(
   branch: readonly SessionEntry[],
-): string | undefined {
+): Maybe<string> {
   /** Latest user message entry, if present. */
   const latestUserEntry = branch
     .toReversed()
@@ -36,7 +40,7 @@ export function latestUserPromptExcerpt(
       return isUserMessageEntry(entry,);
     },);
   if (latestUserEntry === undefined)
-    return undefined;
+    return ABSENT;
 
   /** Plain text extracted from user message content. */
   const text = userMessageText(latestUserEntry.message

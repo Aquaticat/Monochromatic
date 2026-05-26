@@ -32,18 +32,12 @@ export type SelectDefaultModelOptions = {
   readonly maxAdvisorOutputTokens: number;
 };
 
-/** Read-only lookup interface for slug→tokens mapping. */
-type ReadonlySlugTokensMap = {
-  /** Look up the estimated input-token count for a canonical model slug. */
-  readonly get: (slug: string) => number | undefined;
-};
-
 /** Options for default model selection with per-model context estimates. */
 export type SelectDefaultModelFromContextEstimatesOptions = {
   /** Effective scoped model set. */
   readonly scope: EffectiveModelScope;
   /** Estimated input tokens keyed by canonical scoped model slug. */
-  readonly estimatedInputTokensBySlug: ReadonlySlugTokensMap;
+  readonly estimatedInputTokensBySlug: ReadonlyMap<string, number>;
   /** Maximum output tokens requested from Advisor. */
   readonly maxAdvisorOutputTokens: number;
 };

@@ -34,7 +34,7 @@ export type CompleteAdvisorOptions = {
   /** Serialized Advisor context. */
   readonly advisorContext: AdvisorContext;
   /** Abort signal from tool or command mode. */
-  readonly signal?: ReadonlyDeep<AbortSignal> | undefined;
+  readonly signal?: ReadonlyDeep<AbortSignal>;
 };
 
 //endregion Types

@@ -11,6 +11,10 @@ import {
   type AdvisorSettingsFile,
   AdvisorSettingsFileSchema,
 } from './config-schemas.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 
 //region Types
 
@@ -19,15 +23,15 @@ export type LoadSettingsScopeOptions = {
   /** Current working directory for project settings lookup. */
   readonly cwd: string;
   /** Home directory override for tests. */
-  readonly home?: string | undefined;
+  readonly home?: string;
 };
 
 /** Reconstructed enabled-model patterns from pi settings. */
 export type SettingsScopePatterns = {
-  /** Effective enabled-model patterns, or `undefined` when unrestricted. */
-  readonly patterns?: readonly string[] | undefined;
+  /** Effective enabled-model patterns, omitted when unrestricted. */
+  readonly patterns?: readonly string[];
   /** Settings file path that supplied the effective patterns. */
-  readonly sourcePath?: string | undefined;
+  readonly sourcePath?: string;
 };
 
 //endregion Types
@@ -64,16 +68,16 @@ export function loadSettingsScopePatterns(
     label: 'project',
   },);
 
-  if (project?.enabledModels
-    !== undefined) {
+  if ((project !== ABSENT) && (project.enabledModels
+    !== undefined)) {
     return {
       patterns: cleanPatterns(project.enabledModels,),
       sourcePath: paths.projectPath,
     };
   }
 
-  if (global?.enabledModels
-    !== undefined) {
+  if ((global !== ABSENT) && (global.enabledModels
+    !== undefined)) {
     return {
       patterns: cleanPatterns(global.enabledModels,),
       sourcePath: paths.globalPath,
@@ -133,7 +137,7 @@ export function getSettingsPaths(
  *
  * @param label - settings scope label
  *
- * @returns parsed settings subset, or `undefined` when absent
+ * @returns parsed settings subset, or {@link ABSENT} when absent
  */
 function loadSettingsFile(
   {
@@ -143,14 +147,14 @@ function loadSettingsFile(
     readonly path: string;
     readonly label: string;
   },
-): AdvisorSettingsFile | undefined {
+): Maybe<AdvisorSettingsFile> {
   /** Raw parsed JSON object, or `undefined` when absent. */
   const raw = readJsonFile({
     path,
     label,
   },);
   if (raw === undefined)
-    return undefined;
+    return ABSENT;
 
   /** Valibot validation result for the settings subset. */
   const result = v.safeParse(
@@ -189,9 +193,7 @@ function readJsonFile(
     ),);
   }
   catch (error) {
-    /** Filesystem error code when available. */
-    const code = errorCode(error,);
-    if (code === 'ENOENT')
+    if (isFileMissingError(error,))
       return undefined;
     throw new Error(
       `advisor: failed to read ${label} settings at ${path}: ${
@@ -222,18 +224,18 @@ function cleanPatterns(
 }
 
 /**
- * Extract Node-style error code without unsafe assertion.
+ * Detect Node ENOENT missing-file errors without unsafe assertion.
  *
  * @param error - caught error value
  *
- * @returns error code, when present
+ * @returns whether error reports a missing settings file
  */
-function errorCode(
+function isFileMissingError(
   error: unknown,
-): string | undefined {
+): boolean {
   if ((!(error instanceof Error)) || (!('code' in error)))
-    return undefined;
-  return (typeof error.code) === 'string' ? error.code : undefined;
+    return false;
+  return error.code === 'ENOENT';
 }
 
 //endregion Internal helpers

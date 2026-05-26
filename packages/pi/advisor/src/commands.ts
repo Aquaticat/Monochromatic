@@ -335,7 +335,7 @@ async function handleAdvisorCommand(
     ctx: options.ctx,
     pi: options.pi,
     config: options.getConfig(),
-    requestedSlug: trimmed === '' ? undefined : trimmed,
+    ...(trimmed === '' ? {} : { requestedSlug: trimmed, }),
   },);
 }
 
@@ -350,7 +350,7 @@ async function runImmediateAdvisor(
     readonly ctx: ReadonlyDeep<ExtensionCommandContext>;
     readonly pi: ReadonlyDeep<ExtensionAPI>;
     readonly config: AdvisorConfig;
-    readonly requestedSlug?: string | undefined;
+    readonly requestedSlug?: string;
   },
 ): Promise<void> {
   await ctx.waitForIdle();

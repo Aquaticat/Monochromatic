@@ -22,6 +22,10 @@ import {
   TOKEN_ESTIMATE_CHARS_PER_TOKEN,
 } from './constants.ts';
 import { latestUserPromptExcerpt, } from './context-user.ts';
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { estimateAdvisorInputTokens, } from './model-cost.ts';
 import type {
   AdvisorConfig,
@@ -88,7 +92,7 @@ export function buildAdvisorContext(
       },);
     },)
     .filter(function isIncludedMessage(message,): message is AdvisorAgentMessage {
-      return message !== undefined;
+      return message !== ABSENT;
     },);
 
   /** Serialized conversation produced by pi's compaction utility. */
@@ -123,7 +127,7 @@ export function buildAdvisorContext(
     truncated: truncation.truncated,
     includedMessageCount: messages.length,
     estimatedInputTokens,
-    ...(latestExcerpt === undefined ? {} : { latestUserPromptExcerpt: latestExcerpt, }),
+    ...(latestExcerpt === ABSENT ? {} : { latestUserPromptExcerpt: latestExcerpt, }),
   };
 }
 
@@ -256,7 +260,7 @@ function entryToMessage(
     readonly includePriorAdvisorResults: boolean;
     readonly currentToolCallId?: string;
   },
-): AdvisorAgentMessage | undefined {
+): Maybe<AdvisorAgentMessage> {
   if (entry.type
     === 'message') {
     return filterMessage({
@@ -290,7 +294,7 @@ function entryToMessage(
     === 'custom_message') {
     if ((!includePriorAdvisorResults) && (entry.customType
       === ADVISOR_MESSAGE_TYPE))
-      return undefined;
+      return ABSENT;
     return {
       role: 'custom',
       customType: entry.customType,
@@ -301,7 +305,7 @@ function entryToMessage(
     };
   }
 
-  return undefined;
+  return ABSENT;
 }
 
 /**
@@ -325,15 +329,15 @@ function filterMessage(
     readonly includePriorAdvisorResults: boolean;
     readonly currentToolCallId?: string;
   },
-): AdvisorAgentMessage | undefined {
+): Maybe<AdvisorAgentMessage> {
   if (message.role
     === 'toolResult') {
     if ((currentToolCallId !== undefined) && (message.toolCallId
       === currentToolCallId))
-      return undefined;
+      return ABSENT;
     if ((!includePriorAdvisorResults) && (message.toolName
       === ADVISOR_TOOL_NAME))
-      return undefined;
+      return ABSENT;
     return message;
   }
 
@@ -355,7 +359,7 @@ function filterMessage(
   },);
   if (content.length
     === 0)
-    return undefined;
+    return ABSENT;
   return {
     ...message,
     content,

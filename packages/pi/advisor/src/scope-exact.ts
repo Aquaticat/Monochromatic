@@ -4,6 +4,10 @@
  * @module
  */
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
 import { canonicalSlug, } from './model-slug.ts';
 import type { AdvisorReadonlyModel, } from './types.ts';
 
@@ -31,11 +35,11 @@ export function findExactModelReferenceMatch(
     readonly modelReference: string;
     readonly availableModels: readonly AdvisorReadonlyModel[];
   },
-): AdvisorReadonlyModel | undefined {
+): Maybe<AdvisorReadonlyModel> {
   /** Trimmed user reference. */
   const trimmedReference = modelReference.trim();
   if (trimmedReference === '')
-    return undefined;
+    return ABSENT;
 
   /** Lowercase reference for pi-compatible exact matching. */
   const normalizedReference = trimmedReference.toLowerCase();
@@ -47,17 +51,17 @@ export function findExactModelReferenceMatch(
   },);
   if (canonicalMatches.length
     === 1)
-    return canonicalMatches[0];
+    return canonicalMatches[0] ?? ABSENT;
   if (canonicalMatches.length
     > 1)
-    return undefined;
+    return ABSENT;
 
   /** Match provider/model form before bare id. */
   const providerMatch = matchProviderModelReference({
     trimmedReference,
     availableModels,
   },);
-  if (providerMatch !== undefined)
+  if (providerMatch !== ABSENT)
     return providerMatch;
 
   /** Bare id matches. */
@@ -67,7 +71,7 @@ export function findExactModelReferenceMatch(
       === normalizedReference;
   },);
   return idMatches.length
-    === 1 ? idMatches[0] : undefined;
+    === 1 ? (idMatches[0] ?? ABSENT) : ABSENT;
 }
 
 //endregion Public API
@@ -91,11 +95,11 @@ function matchProviderModelReference(
     readonly trimmedReference: string;
     readonly availableModels: readonly AdvisorReadonlyModel[];
   },
-): AdvisorReadonlyModel | undefined {
+): Maybe<AdvisorReadonlyModel> {
   /** Slash index used to parse provider/model references. */
   const slashIndex = trimmedReference.indexOf('/',);
   if (slashIndex === (-1))
-    return undefined;
+    return ABSENT;
 
   /** Provider segment from a canonical reference. */
   const provider = trimmedReference
@@ -109,7 +113,7 @@ function matchProviderModelReference(
     .slice(slashIndex + 1,)
     .trim();
   if ((provider === '') || (modelId === ''))
-    return undefined;
+    return ABSENT;
 
   /** Exact provider and model id matches. */
   const providerMatches = availableModels.filter(function matchesProvider(model,) {
@@ -124,8 +128,8 @@ function matchProviderModelReference(
   },);
   if (providerMatches.length
     === 1)
-    return providerMatches[0];
-  return undefined;
+    return providerMatches[0] ?? ABSENT;
+  return ABSENT;
 }
 
 //endregion Internal helpers
