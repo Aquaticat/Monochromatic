@@ -1,11 +1,13 @@
 ---
-name: research-drafting
-description: Use when drafting research documents, reference docs, or analysis reports on a topic.
+name: source-audited-report
+description: Use for cited reader-facing reports, not quick research, code work, or docs edits.
 ---
 
-# Research drafting
+# Source-audited report
 
-Fires when drafting research documents, reference docs, or analysis reports on a topic.
+Fires when drafting or revising cited reader-facing reports.
+Does not apply to quick research, code investigation, implementation planning,
+issue triage, ordinary documentation edits, or short analytical answers.
 Covers gathering sources, structuring sections, maintaining source quality awareness,
 and writing to professional editorial standards.
 
