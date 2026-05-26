@@ -249,7 +249,8 @@ Reserve external timeout wrappers for commands whose behavior is being tested or
 Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
 
 Clone the git repo of a package to a temp dir whenever investigating src code.
-Use `gh repo clone` instead of `git clone`;
+Use `gh repo clone <repo> <tmp-dir> -- --depth 1` instead of `git clone` unless commit history is part of the
+investigation;
 `gh` handles authentication and fork remotes automatically.
 
 ### Long-form flags
