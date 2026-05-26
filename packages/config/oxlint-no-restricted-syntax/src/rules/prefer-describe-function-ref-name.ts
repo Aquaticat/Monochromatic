@@ -15,7 +15,7 @@ import type {
 
 /* oxlint-disable no-restricted-syntax/no-regex -- binding names are parser-produced identifiers, source files are normal TypeScript modules, and the anchored constant-name grammar has no nested quantifiers. */
 /** All-caps snake-case binding name pattern; assumed to be a constant import. */
-const ALL_CAPS_SNAKE = /^[A-Z][A-Z0-9_]*$/;
+const ALL_CAPS_SNAKE = /^[A-Z][A-Z0-9_]*$/u;
 /* oxlint-enable no-restricted-syntax/no-regex */
 
 /**
@@ -78,32 +78,32 @@ function classifyExportedName(
   })();
   if (content === '')
     return 'unknown';
-  /* oxlint-disable no-restricted-syntax/no-regex -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. */
+  /* oxlint-disable no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. The 'u' flag is omitted deliberately: the pattern interpolates the dynamic name identifier, and u-mode's code-point semantics plus stricter escape parsing could alter how that interpolated value matches the scanned source. This package defines the workspace-wide no-restricted-syntax rules, so the un-flagged form preserves the exact matching the rule's classification (and the diagnostics the sweep depends on) currently relies on. */
   /** Pattern matching `export function`, `export async function`, and `export function*` declarations of `name`. */
   const fnRe = new RegExp(
     String.raw`(?:^|\n)export\s+(?:async\s+)?function\s*\*?\s+${name}\b`,
   );
-  /* oxlint-enable no-restricted-syntax/no-regex */
+  /* oxlint-enable no-restricted-syntax/no-regex, eslint/require-unicode-regexp */
   if (fnRe.test(content,))
     return 'callable';
-  /* oxlint-disable no-restricted-syntax/no-regex -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. */
+  /* oxlint-disable no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. The 'u' flag is omitted deliberately: the pattern interpolates the dynamic name identifier, and u-mode's code-point semantics plus stricter escape parsing could alter how that interpolated value matches the scanned source. This package defines the workspace-wide no-restricted-syntax rules, so the un-flagged form preserves the exact matching the rule's classification (and the diagnostics the sweep depends on) currently relies on. */
   /** Pattern matching `export class` declarations of `name`. */
   const classRe = new RegExp(String.raw`(?:^|\n)export\s+class\s+${name}\b`,);
-  /* oxlint-enable no-restricted-syntax/no-regex */
+  /* oxlint-enable no-restricted-syntax/no-regex, eslint/require-unicode-regexp */
   if (classRe.test(content,))
     return 'callable';
-  /* oxlint-disable no-restricted-syntax/no-regex -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. */
+  /* oxlint-disable no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. The 'u' flag is omitted deliberately: the pattern interpolates the dynamic name identifier, and u-mode's code-point semantics plus stricter escape parsing could alter how that interpolated value matches the scanned source. This package defines the workspace-wide no-restricted-syntax rules, so the un-flagged form preserves the exact matching the rule's classification (and the diagnostics the sweep depends on) currently relies on. */
   /** Pattern matching `export const` declarations of `name`, regardless of initializer shape. */
   const constRe = new RegExp(String.raw`(?:^|\n)export\s+const\s+${name}\b`,);
-  /* oxlint-enable no-restricted-syntax/no-regex */
+  /* oxlint-enable no-restricted-syntax/no-regex, eslint/require-unicode-regexp */
   if (constRe.test(content,))
     return 'const';
-  /* oxlint-disable no-restricted-syntax/no-regex -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. */
+  /* oxlint-disable no-restricted-syntax/no-regex, eslint/require-unicode-regexp -- sourceName is a parser-produced identifier and the scan is limited to one imported source file; this heuristic is simpler than parsing a second AST here. The 'u' flag is omitted deliberately: the pattern interpolates the dynamic name identifier, and u-mode's code-point semantics plus stricter escape parsing could alter how that interpolated value matches the scanned source. This package defines the workspace-wide no-restricted-syntax rules, so the un-flagged form preserves the exact matching the rule's classification (and the diagnostics the sweep depends on) currently relies on. */
   /** Pattern matching `export { ... name ... } from '...'` re-export specifiers. */
   const reexportRe = new RegExp(
     String.raw`export\s*\{[^}]*\b${name}\b[^}]*\}\s*from\s*['"]`,
   );
-  /* oxlint-enable no-restricted-syntax/no-regex */
+  /* oxlint-enable no-restricted-syntax/no-regex, eslint/require-unicode-regexp */
   if (reexportRe.test(content,))
     return 'reexport';
   return 'unknown';
