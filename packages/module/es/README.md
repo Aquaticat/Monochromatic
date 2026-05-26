@@ -23,9 +23,9 @@ This library aims to be the definitive TypeScript functional programming toolkit
 
 - **Boolean utilities**: Equality, logical operations, type predicates
 - **Error utilities**: Comprehensive error handling and assertion functions
-- **Function utilities**: Composition, memoization, currying, and functional patterns
+- **Function utilities**: Composition, currying, and functional patterns
 - **Numeric utilities**: Addition, type guards, range validation, BigInt support
-- **String utilities**: Validation, transformation, hashing, and formatting
+- **String utilities**: Validation, transformation, and formatting
 - **Basic array utilities**: Type guards, range generation, basic operations
 
 ### 🟡 Partially Implemented Categories
@@ -89,10 +89,12 @@ import { types, } from '@monochromatic-dev/module-es/ts';
 
 // Special subpaths exposed by package.json include:
 // @monochromatic-dev/module-es/binary
-// @monochromatic-dev/module-es/create-observable
-// @monochromatic-dev/module-es/create-observable-async
-// @monochromatic-dev/module-es/map-iterable-async
-// @monochromatic-dev/module-es/memoize-async
+//
+// Utilities split from module-es now live in focused packages:
+// @monochromatic-dev/module-async-iter
+// @monochromatic-dev/module-kv-store
+// @monochromatic-dev/module-memoize
+// @monochromatic-dev/module-observable
 ```
 
 #### Functional Programming Patterns
@@ -110,7 +112,6 @@ import {
 import {
   booleanfy,
   curry,
-  memoize,
   partial,
 } from '@monochromatic-dev/module-es';
 
@@ -130,11 +131,8 @@ import {
   wait,
 } from '@monochromatic-dev/module-es';
 
-// Async iteration (expanding)
-import {
-  filterIterableAsync,
-  mapIterableAsync,
-} from '@monochromatic-dev/module-es';
+// Async iteration helpers split into @monochromatic-dev/module-async-iter.
+import { mapIterableAsync, } from '@monochromatic-dev/module-async-iter';
 
 // Concurrency control
 import { deConcurrency, } from '@monochromatic-dev/module-es';
@@ -244,8 +242,9 @@ Use [`jsonc.min`](https://www.npmjs.com/package/jsonc.min/) instead.
 
 #### Observable
 
-For simple observable needs, use `any.observable.ts` (`createObservable`/`createObservableAsync`).
-For a more complete observable implementation, use [`@therapy/observable`](https://jsr.io/@therapy/observable): a lightweight, zero-dependency TypeScript observable library with a simple `.value` API.
+Use `@monochromatic-dev/module-observable` for workspace observable needs.
+It provides `createObservable` and `createObservableAsync` with `getValue()` and `setValue()` methods.
+For an external observable implementation, evaluate [`@therapy/observable`](https://jsr.io/@therapy/observable).
 
 ## Contributing to Completeness
 

@@ -11,11 +11,6 @@
   - Need to document infinite generator behavior
   - Add usage examples with `Array.from()` and breaking conditions
 
-- [ ] **[`any.hasCycle.ts`](src/any.hasCycle.ts:56)**: [`hasCycle()`](src/any.hasCycle.ts:56)
-  - Has partial documentation, needs comprehensive examples
-  - Document performance characteristics for large objects
-  - Add examples of cyclic vs non-cyclic structures
-
 - [ ] **[`function.always.ts`](src/function.always.ts:1)**: [`alwaysTrue()`](src/function.always.ts:1)
   - Missing TSDoc completely
   - Need to document use cases in filtering and predicate scenarios
@@ -44,11 +39,6 @@
   - [`arrayRangeGen()`](src/array.range.ts:130): Document memory efficiency benefits
 
 #### String Utilities Documentation Gaps
-
-- [ ] **[`string.hash.ts`](src/string.hash.ts:15)**: [`hashString()`](src/string.hash.ts:15)
-  - Missing complete documentation
-  - Need to document SHA-256 algorithm usage
-  - Add examples with different input sizes
 
 - [ ] **[`string.trim.ts`](src/string.trim.ts:20)**: Multiple functions:
   - [`trimEndWith()`](src/string.trim.ts:20): Add examples with different trimmers
@@ -102,10 +92,6 @@
   - Document CSS parsing limitations and security model
 
 #### Async Functions Needing Better Documentation
-
-- [ ] **[`any.observable.ts`](src/any.observable.ts:3)**: Observable functions:
-  - [`createObservable()`](src/any.observable.ts:3): Add reactive programming examples
-  - [`createObservableAsync()`](src/any.observable.ts:23): Document async change handler patterns
 
 - [ ] **[`any.when.ts`](src/any.when.ts:24)**: Conditional functions:
   - [`when()`](src/any.when.ts:24): Add functional programming examples

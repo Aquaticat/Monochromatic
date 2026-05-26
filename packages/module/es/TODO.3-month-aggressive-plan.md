@@ -88,7 +88,7 @@
 - [ ] Object utilities: `pick`, `omit`, `merge`, `clone`, `equals` (5 functions)
 - [ ] Array utilities: `chunk`, `flatten`, `uniq`, `difference`, `intersection` (5 functions)
 - [ ] String utilities: `capitalize`, `trim`, `split`, `format`, `template` (5 functions)
-- [ ] Function utilities: `debounce`, `throttle`, `memoize`, `curry`, `compose` (5 functions)
+- [ ] Function utilities: `debounce`, `throttle`, `curry`, `compose`
 
 #### Stream 3: Test Infrastructure (AI Generation)
 

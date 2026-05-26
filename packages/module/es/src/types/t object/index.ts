@@ -11,5 +11,4 @@ export * as promise from './t promise/index.ts';
 export * as proxy from './t proxy/index.ts';
 export * as record from './t record/index.ts';
 export * as regexp from './t regexp/index.ts';
-export * as store from './t store/index.ts';
 export type * as type from './t/index.ts';

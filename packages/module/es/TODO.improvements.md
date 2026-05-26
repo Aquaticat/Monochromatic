@@ -22,18 +22,6 @@
   - Consider single-pass parsing where possible
   - Profile tokenization performance with large CSS values
 
-#### Medium Priority - Memory Optimization
-
-- [ ] **[`any.hasCycle.ts`](src/any.hasCycle.ts:56)**: [`hasCycle()`](src/any.hasCycle.ts:56)
-  - WeakSet usage for visited tracking could be optimized
-  - Consider memory-efficient cycle detection for very large objects
-  - Add memory usage profiling
-
-- [ ] **[`function.memoize.ts`](src/function.memoize.ts:47)**: Memoization functions
-  - No cache size limits could cause memory leaks
-  - Consider LRU cache implementation
-  - Add cache eviction strategies
-
 ### Error Handling Improvements
 
 #### High Priority - Better Error Messages
@@ -132,10 +120,6 @@
   - Consider early termination for empty inputs
   - Profile performance with large datasets
 
-- [ ] **[`any.hasCycle.ts`](src/any.hasCycle.ts:56)**: Cycle detection
-  - DFS implementation could use iterative approach for very deep objects
-  - Consider memory-efficient alternatives for large object graphs
-
 #### Medium Priority - Mathematical Precision
 
 - [ ] **[`numeric.add.ts`](src/numeric.add.ts:34)**: Numeric addition functions
@@ -172,11 +156,6 @@
   - Consider using modern `<dialog>` element consistently
   - Add accessibility improvements (ARIA labels, focus management)
   - Enhance keyboard navigation support
-
-- [ ] **[`string.hash.ts`](src/string.hash.ts:15)**: Crypto API usage
-  - Add fallback for environments without crypto.subtle
-  - Consider polyfill for older browsers
-  - Document browser support requirements
 
 #### Medium Priority - Progressive Enhancement
 

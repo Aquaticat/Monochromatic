@@ -66,7 +66,6 @@ export function clamp(
 
 - [ ] [`any.constant()`](src/any.constant.ts:32): Add logger parameter
 - [ ] [`any.echo()`](src/any.echo.ts:26): Add logger parameter
-- [ ] [`any.hasCycle()`](src/any.hasCycle.ts:56): Add logger parameter
 - [ ] [`any.identity()`](src/any.identity.ts:25): Add logger parameter
 - [ ] [`any.toExport()`](src/any.toExport.ts:45): Add logger parameter
 - [ ] [`any.typeOf()`](src/any.typeOf.ts:25): Add logger parameter

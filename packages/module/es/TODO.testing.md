@@ -32,7 +32,6 @@
 
 - [ ] [`any.constant()`](src/any.constant.ts:32): Test return function type and closure type
 - [ ] [`any.echo()`](src/any.echo.ts:26): Test generator type and yield type
-- [ ] [`any.hasCycle()`](src/any.hasCycle.ts:56): Test boolean return and input type handling
 - [ ] [`any.identity()`](src/any.identity.ts:25): Test perfect type preservation
 - [ ] [`any.toExport()`](src/any.toExport.ts:45): Test string return and any input handling
 - [ ] [`any.typeOf()`](src/any.typeOf.ts:25): Test string literal return types
@@ -69,7 +68,6 @@
 - [ ] [`pipedAsync()`](src/function.pipe.ts:19) and overloads - Test async immediate composition
 - [ ] [`curry()`](src/function.curry.ts:1): Test curried function type inference
 - [ ] [`partial()`](src/function.partial.ts:46): Test partial application types
-- [ ] [`memoize()`](src/function.memoize.ts:47): Test function type preservation
 - [ ] All other function utilities - Test type preservation and inference
 
 **Iterable Utilities**: Type tests needed:
@@ -83,7 +81,6 @@
 
 - [ ] All string validation functions - Test type predicate behavior
 - [ ] All string transformation functions - Test string return types
-- [ ] [`hashString()`](src/string.hash.ts:15): Test Promise<string> return
 
 **Numeric Utilities**: Type tests needed:
 
@@ -216,7 +213,6 @@ describe('Type Constant Testing', () => {
 #### Core Utilities Missing Tests
 
 - [ ] **[`any.echo.ts`](src/any.echo.ts:26)**: Generator that yields same value infinitely
-- [ ] **[`any.observable.ts`](src/any.observable.ts:3)**: Observable creation with change callbacks
 - [ ] **[`any.when.ts`](src/any.when.ts:24)**: Conditional execution utilities
 - [ ] **[`array.is.ts`](src/array.is.ts:51)**: Array type guards and validation
 - [ ] **[`function.always.ts`](src/function.always.ts:1)**: Always-true/false functions
@@ -279,32 +275,31 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 #### Essential Test Files to Create
 
 1. **`any.echo.unit.test.ts`**: Test infinite value generator
-2. **`any.observable.unit.test.ts`**: Test observable creation and change callbacks
-3. **`any.when.unit.test.ts`**: Test conditional execution utilities
-4. **`array.is.unit.test.ts`**: Test array type guards
-5. **`function.always.unit.test.ts`**: Test always-true/false functions
-6. **`function.curry.unit.test.ts`**: Test function currying
-7. **`function.ignoreExtraArgs.unit.test.ts`**: Test argument filtering
-8. **`generator.is.unit.test.ts`**: Test generator type guards
-9. **`map.is.unit.test.ts`**: Test Map type guards
-10. **`object.is.unit.test.ts`**: Test object type guards
-11. **`set.is.unit.test.ts`**: Test Set type guards
+2. **`any.when.unit.test.ts`**: Test conditional execution utilities
+3. **`array.is.unit.test.ts`**: Test array type guards
+4. **`function.always.unit.test.ts`**: Test always-true/false functions
+5. **`function.curry.unit.test.ts`**: Test function currying
+6. **`function.ignoreExtraArgs.unit.test.ts`**: Test argument filtering
+7. **`generator.is.unit.test.ts`**: Test generator type guards
+8. **`map.is.unit.test.ts`**: Test Map type guards
+9. **`object.is.unit.test.ts`**: Test object type guards
+10. **`set.is.unit.test.ts`**: Test Set type guards
 
 #### Type-Level Testing Files to Create
 
-12. **`array.type.mapTo.unit.test.ts`**: Test array mapping types
-13. **`array.type.tuple.unit.test.ts`**: Test tuple type definitions
-14. **`array.type.withoutFirst.unit.test.ts`**: Test array tail types
-15. **`iterable.type.maybe.unit.test.ts`**: Test maybe async types
-16. **`promise.type.unit.test.ts`**: Test promise type utilities
+11. **`array.type.mapTo.unit.test.ts`**: Test array mapping types
+12. **`array.type.tuple.unit.test.ts`**: Test tuple type definitions
+13. **`array.type.withoutFirst.unit.test.ts`**: Test array tail types
+14. **`iterable.type.maybe.unit.test.ts`**: Test maybe async types
+15. **`promise.type.unit.test.ts`**: Test promise type utilities
 
 #### Platform-Specific Test Files to Create
 
-17. **`fs.default.unit.test.ts`**: Test default filesystem
-18. **`fs.fs.default.unit.test.ts`**: Test browser filesystem polyfill
-19. **`fs.pathJoin.shared.unit.test.ts`**: Test shared path utilities
-20. **`fs.pathParse.default.unit.test.ts`**: Test default path parsing
-21. **`fs.pathParse.node.unit.test.ts`**: Test Node.js path parsing
+16. **`fs.default.unit.test.ts`**: Test default filesystem
+17. **`fs.fs.default.unit.test.ts`**: Test browser filesystem polyfill
+18. **`fs.pathJoin.shared.unit.test.ts`**: Test shared path utilities
+19. **`fs.pathParse.default.unit.test.ts`**: Test default path parsing
+20. **`fs.pathParse.node.unit.test.ts`**: Test Node.js path parsing
 
 ### Functions Needing Improved Test Coverage
 
@@ -427,7 +422,7 @@ Based on implementation files that have no corresponding `.unit.test.ts`:
 
 ### Phase 1: Critical Missing Tests (Week 1)
 
-1. **Core utilities**: `any.echo`, `any.observable`, `any.when`
+1. **Core utilities**: `any.echo`, `any.when`
 2. **Type guards**: `array.is`, `map.is`, `object.is`, `set.is`
 3. **Function utilities**: `function.always`, `function.curry`, `function.ignoreExtraArgs`
 
