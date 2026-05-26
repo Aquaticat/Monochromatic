@@ -233,9 +233,11 @@ expect(isError(new Error(),),).toBe(true,);
 
 ### Functional Programming Utilities
 
-- Use `piped` for synchronous function composition
-- Use `pipedAsync` for async function composition
-- Use `pipe`/`pipeAsync` for reusable function pipelines
+Function composition lives in `@monochromatic-dev/module-pipe`, not module-es:
+
+- Use `piped` for eager synchronous function composition
+- Use `pipedAsync` for eager async function composition
+- Use `pipe`/`pipeAsync` for deferred, reusable function pipelines
 - Functions generally don't require `.bind()` for `this` context
 
 **Cross-Reference**: See [Packages Todo](packages.md#module-library-packages-modulees) for functional utility expansion.

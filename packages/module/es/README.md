@@ -93,18 +93,19 @@ import { types, } from '@monochromatic-dev/module-es/ts';
 // @monochromatic-dev/module-kv-store
 // @monochromatic-dev/module-memoize
 // @monochromatic-dev/module-observable
+// @monochromatic-dev/module-pipe
 ```
 
 #### Functional Programming Patterns
 
 ```typescript
-// Function composition
+// Function composition split into @monochromatic-dev/module-pipe.
 import {
   pipe,
   pipeAsync,
   piped,
   pipedAsync,
-} from '@monochromatic-dev/module-es';
+} from '@monochromatic-dev/module-pipe';
 
 // Function transformation
 import {
