@@ -871,7 +871,8 @@ function convertFigmaToPenpot(
         const internalOnly = (nc.internalOnly
           === true) || (nc.editInfo
             != null);
-        if (internalOnly && name
+        if (internalOnly
+          && name
           .toLowerCase()
           .includes('internal',))
           continue;

@@ -231,7 +231,8 @@ class BinaryReader {
   readString(): string {
     /** Scan cursor seeking the next 0x00 terminator; left pointing AT the null when the loop exits. */
     let end = this.pos;
-    while ((end < this
+    while ((end
+      < this
       .data
       .length) && (this.data[end]
         !== 0))
@@ -312,7 +313,8 @@ function resolveTypeName(
       ? KIWI_PRIMITIVES[primIdx]!
       : `prim[${primIdx}]`;
   }
-  if (typeCode < schema
+  if (typeCode
+    < schema
     .definitions
     .length)
     return schema.definitions[typeCode]!
@@ -518,7 +520,8 @@ function decodeValue(
   }
 
   // Schema definition reference
-  if (typeCode >= schema
+  if (typeCode
+    >= schema
     .definitions
     .length)
     return null;

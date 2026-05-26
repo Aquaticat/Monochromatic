@@ -268,7 +268,8 @@ function readStackFrames({
    * header twice; otherwise keep all lines.
    */
   const startIndex = (rawLines[0]
-    !== undefined) && rawLines[0]
+    !== undefined)
+    && rawLines[0]
     .includes(message,)
     ? 1
     : 0;

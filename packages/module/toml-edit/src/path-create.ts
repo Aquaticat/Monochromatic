@@ -197,7 +197,8 @@ function doTopLevelDottedKeyInsert(
   const prefix = firstTable !== undefined
     ? ''
     : ((edit.source
-      === '') || edit
+      === '')
+      || edit
       .source
       .endsWith('\n',)
       ? ''

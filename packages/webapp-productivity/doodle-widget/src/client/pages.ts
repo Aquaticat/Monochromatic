@@ -178,7 +178,8 @@ export function switchToPage({
   if (index === pagesState
     .currentIndex)
     return;
-  if ((index < 0) || (index >= pagesState
+  if ((index < 0) || (index
+    >= pagesState
     .pages
     .length))
     return;

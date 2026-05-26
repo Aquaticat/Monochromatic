@@ -52,10 +52,12 @@ export async function updateConfig(
 
   /** Updated boot config with overrides applied. */
   const updatedBoot = {
-    memory: memory ?? config
+    memory: memory
+      ?? config
       .boot
       .memory,
-    cpus: cpus ?? config
+    cpus: cpus
+      ?? config
       .boot
       .cpus,
   };

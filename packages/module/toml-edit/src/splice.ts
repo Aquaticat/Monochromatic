@@ -153,7 +153,8 @@ export function spliceEmit({ edit, }: { readonly edit: TomlEditState; },): strin
     0,
   );
 
-  if (cursor < edit
+  if (cursor
+    < edit
     .source
     .length)
     out.push(edit.source

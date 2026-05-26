@@ -46,7 +46,8 @@ export async function update(): Promise<void> {
 
   /** Flat list of `rm()` promises across every registered image; awaited concurrently below. */
   // Delete all cached base images and templates
-  const removePromises = Object.entries(IMAGES,).flatMap(
+  const removePromises = Object.entries(IMAGES,)
+    .flatMap(
     function buildRemoveOps([name, spec,],) {
       /** Pending remove operations for this image; collected so `flatMap` returns a flat array. */
       const ops: Promise<void>[] = [];

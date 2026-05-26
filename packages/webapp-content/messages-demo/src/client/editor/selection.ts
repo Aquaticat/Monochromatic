@@ -70,7 +70,7 @@ function findEnclosingLine(start: Node,): HTMLElement | typeof NO_SELECTION {
   while (true) {
     if (
       (runner instanceof HTMLElement)
-      && runner
+        && runner
         .classList
         .contains('ce-line',)
     ) {

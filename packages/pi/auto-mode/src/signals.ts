@@ -198,12 +198,14 @@ function bashSignals(
     if (hasRootTarget(cmd,))
       return true;
     if ((cmd.name
-      === 'chmod') && cmd
+      === 'chmod')
+      && cmd
       .args
       .includes('777',))
       return true;
     if ((cmd.name
-      === 'chmod') && cmd
+      === 'chmod')
+      && cmd
       .args
       .some(
       function hasSetuid(a,) {
@@ -216,7 +218,8 @@ function bashSignals(
     }
 
     if ((cmd.name
-      === 'dd') && cmd
+      === 'dd')
+      && cmd
       .args
       .some(
       function hasOfEquals(a,) {
@@ -232,7 +235,8 @@ function bashSignals(
     if (ENV_DUMP_COMMANDS.has(cmd.name,))
       return true;
     if ((cmd.name
-      === 'export') && cmd
+      === 'export')
+      && cmd
       .args
       .includes('-p',))
       return true;

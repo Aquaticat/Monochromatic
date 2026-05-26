@@ -247,7 +247,8 @@ export async function syncFromHyperv(name: string,): Promise<void> {
   /** Post-boot checksum to compare against stored value. */
   const newVhdxHash = await checksum(vhdxPath,);
 
-  if (newVhdxHash === config
+  if (newVhdxHash
+    === config
     .state
     .checksums
     .vhdx) {

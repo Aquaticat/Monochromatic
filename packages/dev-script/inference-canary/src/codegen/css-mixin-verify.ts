@@ -120,7 +120,8 @@ function verifyOverrideTest(output: string,): boolean {
   );
   /** Offset of the last `display:` declaration in the block, used to identify the cascade winner. */
   const lastDisplay = block.lastIndexOf('display:',);
-  return (lastDisplay !== (-1)) && block
+  return (lastDisplay !== (-1))
+    && block
     .slice(lastDisplay,)
     .includes('grid',);
 }

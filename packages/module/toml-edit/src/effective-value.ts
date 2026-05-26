@@ -381,14 +381,15 @@ function resolveAst(
     }
   }
   if ((base.kind
-    === 'table') && edit
+    === 'table')
+    && edit
     .deletions
     .has(base.node,))
     return { kind: 'deleted', };
   if (
     (base.kind
       === 'array-of-tables')
-    && base
+      && base
       .nodes
       .every(function isDeleted(n,) {
       return edit.deletions

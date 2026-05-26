@@ -232,7 +232,8 @@ export function splitAt(
   /** Running document offset that tracks the start of `piece` per iteration. */
   let cursor = 0;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
-  for (let index = 0; index < input
+  for (let index = 0; index
+    < input
     .table
     .pieces
     .length; index += 1) {

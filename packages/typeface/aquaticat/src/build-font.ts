@@ -111,7 +111,8 @@ const letterGlyphs = cells.flatMap(
 
     /** OpenType path that collects every contour from this cell's SVG paths. */
     const path = new opentype.Path();
-    cell.paths.forEach(function addCellPath(cellPath,) {
+    cell.paths
+      .forEach(function addCellPath(cellPath,) {
       /** Tokenised commands for one SVG path, dispatched into stroked or filled tracing. */
       const commands = parseSvgPathD(cellPath.d,);
       if (cellPath.isStroked) {

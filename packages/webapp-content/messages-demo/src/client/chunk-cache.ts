@@ -451,7 +451,8 @@ async function evictIdbStale(
         && ('revision' in value)) {
         /** Destructured after narrowing; the revision compare decides whether to delete this row. */
         const { revision, } = value;
-        if (((typeof revision) === 'number') && (revision !== input
+        if (((typeof revision) === 'number') && (revision
+          !== input
           .key
           .revision))
           cursor.delete();

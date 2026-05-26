@@ -56,7 +56,8 @@ function computeOffsets(
       entry,
       lfhOffset: cursor,
     },);
-    cursor += LFH_FIXED_SIZE + entry
+    cursor += LFH_FIXED_SIZE
+      + entry
       .nameBytes
       .length
       + entry
@@ -68,7 +69,8 @@ function computeOffsets(
   /** Running total of central directory header bytes. */
   let cdSize = 0;
   for (const { entry, } of positioned)
-    cdSize += CDH_FIXED_SIZE + entry
+    cdSize += CDH_FIXED_SIZE
+      + entry
       .nameBytes
       .length;
   /** Final archive size used to allocate the output buffer. */
