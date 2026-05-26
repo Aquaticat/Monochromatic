@@ -150,7 +150,8 @@ export function pipeAsync(args: DeferredArgs,): (value: unknown,) => Promise<unk
    */
   function pipelineAsync(value: unknown,): Promise<unknown> {
     /** Logger tagged at the deferred async public API invocation boundary. */
-    const l = tagged(args.l === undefined
+    const l = tagged(args.l
+      === undefined
       ? { tag: pipeAsync.name, }
       : {
         tag: pipeAsync.name,
