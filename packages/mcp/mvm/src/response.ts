@@ -65,8 +65,8 @@ export function errorResponse({
   tag,
   err,
 }: {
-  err: unknown;
-  tag: string;
+  readonly err: unknown;
+  readonly tag: string;
 },): ErrorResponse {
   /** Human-readable error text extracted from `Error.message` when available, stringified otherwise. */
   const message = (err instanceof Error) ? err.message : String(err,);
@@ -98,9 +98,9 @@ export function errorResponse({
  */
 export function formatExecResult(
   result: {
-    exitCode: number;
-    stderr: string;
-    stdout: string;
+    readonly exitCode: number;
+    readonly stderr: string;
+    readonly stdout: string;
   },
 ): string {
   /** Output sections accumulated in order: stdout, stderr (when non-empty), exit code. Joined with blank lines below. */

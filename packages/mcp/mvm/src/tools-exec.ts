@@ -90,14 +90,14 @@ export const runTool: ToolEntry = defineTool({
       /** Shell command coerced to string so the ephemeral VM receives a stable type regardless of MCP client encoding. */
       const command = String(args.command,);
       /**
-       * Optional source VM to clone from; `undefined` selects the create-fresh path inside {@link run}.
+       * Optional source VM to clone from; absence selects the create-fresh path inside {@link run}.
        */
       const from = ((typeof args.from) === 'string') ? args.from : undefined;
       try {
         /** Execution result holding stdout, stderr, and exit code; formatted into the response below. */
         const result = await run({
           command,
-          from,
+          ...(from !== undefined ? { from, } : {}),
         },);
         return textResponse(formatExecResult(result,),);
       }

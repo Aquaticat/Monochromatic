@@ -51,7 +51,7 @@ export const createTool: ToolEntry = defineTool({
       /** Optional source VM to clone from; `undefined` selects the create-fresh path below. */
       const from = ((typeof args.from) === 'string') ? args.from : undefined;
       /**
-       * Optional image template; `undefined` falls back to the default in {@link create}.
+       * Optional image template; absence falls back to the default in {@link create}.
        */
       const image = ((typeof args.image) === 'string') ? args.image : undefined;
       try {
@@ -61,8 +61,8 @@ export const createTool: ToolEntry = defineTool({
             source: from,
           },)
           : create({
-            image,
             name,
+            ...(image !== undefined ? { image, } : {}),
           },));
         /** Trailing fragment appended to the success message to disclose clone provenance when applicable. */
         const suffix = from !== undefined ? ` (cloned from ${from})` : '';
