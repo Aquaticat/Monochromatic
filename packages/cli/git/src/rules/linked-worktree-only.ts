@@ -71,7 +71,7 @@ const RESET_VALUE_OPTIONS: ReadonlySet<string> = new Set([
  * // => true
  * ```
  */
-function isGuardedCommand(subcommand: string | undefined,): subcommand is GuardedCommand {
+function isGuardedCommand(subcommand: string,): subcommand is GuardedCommand {
   return (subcommand === STASH_SUBCOMMAND)
     || (subcommand === CLEAN_SUBCOMMAND)
     || (subcommand === RESET_SUBCOMMAND);
@@ -184,6 +184,9 @@ export async function linkedWorktreeOnly(
   } = parseGlobalOptions(args,);
   /** Subcommand at the located index; `undefined` when args have no subcommand. */
   const subcommand = args[subcommandIndex];
+
+  if (subcommand === undefined)
+    return args;
 
   if (!isGuardedCommand(subcommand,))
     return args;

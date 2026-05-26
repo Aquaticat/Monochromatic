@@ -25,7 +25,7 @@ const PARENT_DIR_SEGMENT = '..';
 /** Options for resolving uv's git cache directory. */
 type ResolveUvCacheDirOptions = {
   /** Environment read for uv cache hints; defaults to the process environment, injectable for tests. */
-  readonly env?: Readonly<Record<string, string | undefined>>;
+  readonly env?: NodeJS.ProcessEnv;
 };
 
 /**
@@ -141,6 +141,13 @@ export function isPathUnder({
 
 //region Allowlist membership
 
+/**
+ * Sentinel returned by {@link safeRealpath} when a directory cannot be resolved
+ * (it does not exist on this machine). A real `Symbol` rather than `undefined`
+ * so absence is a distinct, intentional value the membership check filters on.
+ */
+const REALPATH_ABSENT = Symbol('realpath-absent',);
+
 /** Options for the worktree allowlist membership test. */
 type IsAllowedWorktreeDirOptions = {
   /** Realpath-resolved git-dir of the repository the command targets. */
@@ -150,14 +157,14 @@ type IsAllowedWorktreeDirOptions = {
 };
 
 /**
- * Resolves a directory through `realpath`, returning `undefined` instead of
- * throwing when it does not exist. Allowed entries may name paths absent on a
- * given machine (a tool not yet installed), and a missing entry must drop out
- * of the check rather than abort classification.
+ * Resolves a directory through `realpath`, returning {@link REALPATH_ABSENT}
+ * instead of throwing when it does not exist. Allowed entries may name paths
+ * absent on a given machine (a tool not yet installed), and a missing entry
+ * must drop out of the check rather than abort classification.
  *
  * @param path - Directory to resolve.
  *
- * @returns Realpath-resolved directory, or `undefined` when resolution failed.
+ * @returns Realpath-resolved directory, or {@link REALPATH_ABSENT} when resolution failed.
  *
  * @example
  * ```ts
@@ -165,12 +172,12 @@ type IsAllowedWorktreeDirOptions = {
  * // => '/var/home/user/.cache/uv'
  * ```
  */
-async function safeRealpath(path: string,): Promise<string | undefined> {
+async function safeRealpath(path: string,): Promise<string | typeof REALPATH_ABSENT> {
   try {
     return await realpath(path,);
   }
   catch {
-    return undefined;
+    return REALPATH_ABSENT;
   }
 }
 
@@ -206,19 +213,19 @@ export async function isAllowedWorktreeDir({
     l,
   },);
 
-  /** Allowed roots resolved through realpath; `undefined` marks a dropped entry. */
+  /** Allowed roots resolved through realpath; REALPATH_ABSENT marks a dropped entry. */
   const resolvedAllowed = await Promise.all(
-    allowedDirs.map(async function resolveAllowedDir(dir,): Promise<string | undefined> {
-      /** Realpath of one allowed entry, or `undefined` when it does not exist. */
+    allowedDirs.map(async function resolveAllowedDir(dir,): Promise<string | typeof REALPATH_ABSENT> {
+      /** Realpath of one allowed entry, or REALPATH_ABSENT when it does not exist. */
       const resolved = await safeRealpath(dir,);
-      if (resolved === undefined)
+      if (resolved === REALPATH_ABSENT)
         rl.debug(`skipping allowed dir that could not be resolved: ${dir}`,);
       return resolved;
     },),
   );
 
   return resolvedAllowed.some(function candidateUnderAllowed(resolved,): boolean {
-    return (resolved !== undefined)
+    return (resolved !== REALPATH_ABSENT)
       && isPathUnder({
         parent: resolved,
         child: candidatePath,

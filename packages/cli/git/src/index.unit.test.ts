@@ -126,11 +126,19 @@ async function runWrapper(options: RunGitOptions,): Promise<Result> {
 }
 
 /**
+ * Sentinel returned by {@link catchWrapperError} when the wrapper unexpectedly
+ * succeeded instead of failing. A real `Symbol` rather than `undefined` so the
+ * "no error captured" case is a distinct value {@link requireSubprocessError}
+ * rejects.
+ */
+const WRAPPER_SUCCEEDED = Symbol('wrapper-succeeded',);
+
+/**
  * Captures cli-git subprocess failure.
  *
  * @param options - Working directory and git argv.
  *
- * @returns Subprocess failure, or `undefined` when invocation succeeds.
+ * @returns Subprocess failure, or {@link WRAPPER_SUCCEEDED} when invocation succeeds.
  *
  * @example
  * ```ts
@@ -140,7 +148,7 @@ async function runWrapper(options: RunGitOptions,): Promise<Result> {
  */
 async function catchWrapperError(
   options: RunGitOptions,
-): Promise<SubprocessError | undefined> {
+): Promise<SubprocessError | typeof WRAPPER_SUCCEEDED> {
   try {
     await runWrapper(options,);
   }
@@ -149,13 +157,13 @@ async function catchWrapperError(
       return error;
     throw error;
   }
-  return undefined;
+  return WRAPPER_SUCCEEDED;
 }
 
 /**
- * Narrows optional subprocess error after expectation assertion.
+ * Narrows captured subprocess error after expectation assertion.
  *
- * @param error - Optional subprocess error returned by catch helper.
+ * @param error - Subprocess error, or {@link WRAPPER_SUCCEEDED} from catch helper.
  *
  * @returns Subprocess error when present.
  *
@@ -167,10 +175,10 @@ async function catchWrapperError(
  * console.log(error.stderr);
  * ```
  */
-function requireSubprocessError(error: SubprocessError | undefined,): SubprocessError {
+function requireSubprocessError(error: SubprocessError | typeof WRAPPER_SUCCEEDED,): SubprocessError {
   expect(error,).toBeInstanceOf(SubprocessError,);
 
-  if (error === undefined)
+  if (error === WRAPPER_SUCCEEDED)
     throw new Error('Expected cli-git subprocess to fail.',);
 
   return error;

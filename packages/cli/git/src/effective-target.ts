@@ -57,7 +57,8 @@ type ExecFileExitError = Error & {
  */
 function isExecFileExitError(error: unknown,): error is ExecFileExitError {
   return (error instanceof Error)
-    && ((typeof (error as Partial<ExecFileExitError>).code) === 'number');
+    && ('code' in error)
+    && ((typeof error.code) === 'number');
 }
 
 /**
@@ -89,6 +90,14 @@ function stripTrailingLineBreak(output: string,): string {
   return output;
 }
 
+/**
+ * Sentinel returned by {@link readGitWorktreeMetadata} when git rev-parse exits
+ * non-zero, meaning the caller's repo selection points outside any worktree. A
+ * real `Symbol` rather than `undefined` so absence is a distinct domain value
+ * the classifier maps to `'outside-worktree'`.
+ */
+const OUTSIDE_WORKTREE = Symbol('outside-worktree',);
+
 /** Options for the read-only worktree metadata query. */
 type ReadGitWorktreeMetadataOptions = {
   /** Absolute path to real git binary. */
@@ -112,8 +121,8 @@ type ReadGitWorktreeMetadataOptions = {
  *
  * @param effectiveCwd - Cwd from which the query runs.
  *
- * @returns Stdout text on success, or `undefined` when git exited non-zero
- *   (cwd outside any worktree under the supplied repo selection).
+ * @returns Stdout text on success, or {@link OUTSIDE_WORKTREE} when git exited
+ *   non-zero (cwd outside any worktree under the supplied repo selection).
  *
  * @example
  * ```ts
@@ -129,7 +138,7 @@ async function readGitWorktreeMetadata({
   gitPath,
   preSubcommandArgs,
   effectiveCwd,
-}: ReadGitWorktreeMetadataOptions,): Promise<string | undefined> {
+}: ReadGitWorktreeMetadataOptions,): Promise<string | typeof OUTSIDE_WORKTREE> {
   /** Argv that mirrors caller's repo selection while running a read-only rev-parse. */
   const queryArgs: readonly string[] = [
     ...preSubcommandArgs,
@@ -154,7 +163,7 @@ async function readGitWorktreeMetadata({
   }
   catch (error) {
     if (isExecFileExitError(error,))
-      return undefined;
+      return OUTSIDE_WORKTREE;
     throw error;
   }
 }
@@ -198,14 +207,14 @@ export async function classifyEffectiveTarget({
   /** Absolute path to real git binary used for read-only worktree query. */
   const gitPath = await resolveGit();
 
-  /** Raw git metadata output, or undefined when caller selection points outside any worktree. */
+  /** Raw git metadata output, or OUTSIDE_WORKTREE when caller selection points outside any worktree. */
   const metadata = await readGitWorktreeMetadata({
     gitPath,
     preSubcommandArgs,
     effectiveCwd,
   },);
 
-  if (metadata === undefined)
+  if (metadata === OUTSIDE_WORKTREE)
     return 'outside-worktree';
 
   /** Output lines: inside-worktree flag, absolute git-dir, absolute common-dir. */
