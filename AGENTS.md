@@ -628,7 +628,8 @@ The cue: about to type `--no-enforce`, `git add -A`, or `git add .` before tryin
 - Root `package.json` may depend on workspace packages; root configs import by package name.
 - Switch from config-as-data to TypeScript when conf needs logic (`if`, `map`, `await`).
 - Direct async execution over descriptor/interpreter patterns; apply YAGNI to architecture.
-- Nested calls (`c(b(a()))`) over method chaining to keep functions self-contained.
+- Nested calls (`b(a())`) over method chaining to keep functions self-contained;
+  split a chain of more than two nested calls across lines instead of stacking close-parens (`)))`) on one line.
 
 ## Enforcement mechanisms
 
