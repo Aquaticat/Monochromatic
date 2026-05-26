@@ -9,25 +9,37 @@
 
 import { basename, } from 'node:path';
 
+import {
+  ABSENT,
+  type Maybe,
+} from './maybe.ts';
+
 /** Maximum length for pattern and query strings displayed in the title. */
 const MAX_PATTERN_LENGTH = 30;
+
+/**
+ * Readonly tool-input record sampled by field extractors. Tool args arrive
+ * untyped from pi events; extractors only read keys, never mutate, so the
+ * record is deeply readonly to satisfy `prefer-readonly-parameter-types`.
+ */
+type ToolArgs = Readonly<Record<string, unknown>>;
 
 /**
  * Tense-specific labels for a tool title. `pre` is shown during execution
  * (`tool_execution_start`), `post` after completion (`tool_execution_end`).
  */
 type TenseLabels = {
-  pre: string;
-  post: string;
+  readonly pre: string;
+  readonly post: string;
 };
 
 /**
  * Formatter entry for a known tool. `extract` pulls a display-relevant string
  * from tool input; `format` turns it into a tense-appropriate title;
- * `fallback` provides tense-specific defaults when `extract` returns `undefined`.
+ * `fallback` provides tense-specific defaults when `extract` returns {@link ABSENT}.
  */
 type ToolTitleEntry = {
-  extract: (input: Record<string, unknown>,) => string | undefined;
+  extract: (input: ToolArgs,) => Maybe<string>;
   format: (
     value: string,
     tense: 'pre' | 'post',
@@ -55,10 +67,10 @@ function truncate(
   {
     value,
     maxLength,
-  }: {
+  }: Readonly<{
     value: string;
     maxLength: number;
-  },
+  }>,
 ): string {
   if (value.length
     <= maxLength)
@@ -94,28 +106,30 @@ function shortPath(filePath: string,): string {
  *
  * @param key - property name to extract
  *
- * @returns string value or `undefined` if absent or non-string
+ * @returns string value or {@link ABSENT} if missing or non-string
  *
  * @example
  * ```ts
  * stringField({ input: { path: '/foo.ts' }, key: 'path' }) // '/foo.ts'
- * stringField({ input: { path: '/foo.ts' }, key: 'missing' }) // undefined
+ * stringField({ input: { path: '/foo.ts' }, key: 'missing' }) // ABSENT
  * ```
  */
 function stringField(
   {
     input,
     key,
-  }: {
-    input: Record<string, unknown>;
+  }: Readonly<{
+    input: ToolArgs;
     key: string;
-  },
-): string | undefined {
-  /** Raw value pulled out of `input` by key; only strings are accepted, anything else becomes `undefined`. */
+  }>,
+): Maybe<string> {
+  /**
+   * Raw value pulled out of `input` by key; only strings are accepted, anything else becomes {@link ABSENT}.
+   */
   const value = input[key];
   if ((typeof value) === 'string')
     return value;
-  return undefined;
+  return ABSENT;
 }
 
 /**
@@ -131,8 +145,8 @@ function stringField(
  * extractPath({ path: '/foo/bar.ts' }) // '/foo/bar.ts'
  * ```
  */
-function field(key: string,): (input: Record<string, unknown>,) => string | undefined {
-  return function extractField(input: Record<string, unknown>,) {
+function field(key: string,): (input: ToolArgs,) => Maybe<string> {
+  return function extractField(input: ToolArgs,) {
     return stringField({
       input,
       key,
@@ -206,7 +220,7 @@ function quotedFormat(
  * Anchored at start; repeats to strip stacked prefixes like `env timeout 10`.
  */
 // oxlint-disable-next-line no-restricted-syntax/no-regex -- anchored noise-stripper for shell commands; the negative lookahead `(?!-)` disambiguates flag-starting tokens from `VAR=value` assignments, and the alternation lists the four wrapper commands explicitly. Anchored at `^` so matching is bounded by the prefix; no nested quantifiers, no backtracking risk on bounded command-line input.
-const COMMAND_NOISE_RE = /^(?:(?!-)\S+=\S*\s+|(?:timeout|env|nice|nohup)\s+\S+\s+)*/;
+const COMMAND_NOISE_RE = /^(?:(?!-)\S+=\S*\s+|(?:timeout|env|nice|nohup)\s+\S+\s+)*/u;
 
 /**
  * Extracts first meaningful token from a bash command for display.
@@ -230,6 +244,7 @@ function shortCommand(command: string,): string {
 
 export type {
   TenseLabels,
+  ToolArgs,
   ToolTitleEntry,
 };
 

@@ -7,7 +7,11 @@
  * @module
  */
 
-import { truncate, } from './formatter-utils.ts';
+import {
+  truncate,
+  type ToolArgs,
+} from './formatter-utils.ts';
+import { ABSENT, } from './maybe.ts';
 import { TOOL_TITLES, } from './tool-titles.ts';
 
 /** Prefix prepended to every terminal title for visual identification. */
@@ -59,18 +63,20 @@ function titleForTool(
     toolName,
     args,
     tense,
-  }: {
+  }: Readonly<{
     toolName: string;
-    args: Record<string, unknown>;
+    args: ToolArgs;
     tense: 'pre' | 'post';
-  },
+  }>,
 ): string {
   /** Lookup entry for the tool; `undefined` triggers the generic Running/Ran fallback below. */
   const entry = TOOL_TITLES[toolName];
   if (entry !== undefined) {
-    /** Extracted display value (e.g. command, file path) sampled from the tool's arg record. */
+    /**
+     * Extracted display value (e.g. command, file path) sampled from the tool's arg record; {@link ABSENT} when the field is missing.
+     */
     const value = entry.extract(args,);
-    if (value !== undefined) {
+    if (value !== ABSENT) {
       return entry.format(
         value,
         tense,
@@ -135,10 +141,10 @@ const EVENT_BODY_BUILDERS: Record<HandledEventType, (data: EventData,) => string
 
 /** Data bag for event-specific fields passed to title builders. */
 type EventData = {
-  toolName?: string;
-  args?: Record<string, unknown>;
-  reason?: string;
-  prompt?: string;
+  readonly toolName?: string;
+  readonly args?: ToolArgs;
+  readonly reason?: string;
+  readonly prompt?: string;
 };
 
 /**
@@ -174,10 +180,10 @@ function titleForEvent(
   {
     eventType,
     data,
-  }: {
+  }: Readonly<{
     eventType: HandledEventType;
     data: EventData;
-  },
+  }>,
 ): string {
   /** Body-text builder selected by event type; produces the user-visible payload before the prefix. */
   const builder = EVENT_BODY_BUILDERS[eventType];

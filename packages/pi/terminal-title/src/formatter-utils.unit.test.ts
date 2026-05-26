@@ -20,6 +20,7 @@ import {
   stringField,
   truncate,
 } from './formatter-utils.ts';
+import { ABSENT, } from './maybe.ts';
 
 await describe({
   name: '',
@@ -101,26 +102,26 @@ await describe({
           },
         },),
         it({
-          name: 'returns undefined for missing key',
+          name: 'returns ABSENT for missing key',
           fn: async () => {
             expect(stringField({ input: { path: '/foo.ts', }, key: 'missing', },),).toBe(
-              undefined,
+              ABSENT,
             );
           },
         },),
         it({
-          name: 'returns undefined for non-string value',
+          name: 'returns ABSENT for non-string value',
           fn: async () => {
             expect(stringField({ input: { count: 42, }, key: 'count', },),).toBe(
-              undefined,
+              ABSENT,
             );
           },
         },),
         it({
-          name: 'returns undefined for null value',
+          name: 'returns ABSENT for null value',
           fn: async () => {
             expect(stringField({ input: { path: null, }, key: 'path', },),).toBe(
-              undefined,
+              ABSENT,
             );
           },
         },),
@@ -142,10 +143,10 @@ await describe({
           },
         },),
         it({
-          name: 'returns undefined when field is absent',
+          name: 'returns ABSENT when field is absent',
           fn: async () => {
             const extractPath = field('path',);
-            expect(extractPath({ other: 'value', },),).toBe(undefined,);
+            expect(extractPath({ other: 'value', },),).toBe(ABSENT,);
           },
         },),
       ],

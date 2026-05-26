@@ -29,8 +29,8 @@ import { titleForEvent, } from './title-builder.ts';
 
 /** Minimal context shape needed by all event handlers (just `ui.setTitle()`). */
 type TitleContext = {
-  ui: {
-    setTitle: (title: string,) => void;
+  readonly ui: {
+    readonly setTitle: (title: string,) => void;
   };
 };
 
@@ -59,10 +59,10 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
   pi.on(
     'tool_execution_start',
     function handleToolExecutionStart(
-      event: {
+      event: Readonly<{
         toolName: string;
         args?: unknown;
-      },
+      }>,
       ctx: TitleContext,
     ) {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- pi event args are typed as `any` */
@@ -85,9 +85,9 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
   pi.on(
     'tool_execution_end',
     function handleToolExecutionEnd(
-      event: {
+      event: Readonly<{
         toolName: string;
-      },
+      }>,
       ctx: TitleContext,
     ) {
       ctx.ui
@@ -104,7 +104,7 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
   pi.on(
     'session_start',
     function handleSessionStart(
-      event: SessionStartEvent,
+      event: Readonly<Pick<SessionStartEvent, 'reason'>>,
       ctx: TitleContext,
     ) {
       ctx.ui
@@ -121,7 +121,7 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
   pi.on(
     'session_shutdown',
     function handleSessionShutdown(
-      _event: SessionShutdownEvent,
+      _event: Readonly<Pick<SessionShutdownEvent, 'type'>>,
       ctx: TitleContext,
     ) {
       ctx.ui
@@ -136,7 +136,7 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
   pi.on(
     'agent_end',
     function handleAgentEnd(
-      _event: AgentEndEvent,
+      _event: Readonly<Pick<AgentEndEvent, 'type'>>,
       ctx: TitleContext,
     ) {
       ctx.ui
@@ -151,7 +151,7 @@ export default function terminalTitle(pi: ExtensionAPI,): void {
   pi.on(
     'before_agent_start',
     function handleBeforeAgentStart(
-      event: BeforeAgentStartEvent,
+      event: Readonly<Pick<BeforeAgentStartEvent, 'prompt'>>,
       ctx: TitleContext,
     ) {
       ctx.ui
