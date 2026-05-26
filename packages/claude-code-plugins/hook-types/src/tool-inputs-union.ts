@@ -32,6 +32,16 @@ import type {
   WriteToolInput,
 } from './tool-inputs.ts';
 
+/* oxlint-disable no-restricted-syntax/no-optional-escape -- External-boundary mirror: Claude Code's tool schemas for EnterPlanMode, TaskList, and CronList declare `properties: {}` (no parameters); faithfully representing that empty-object input shape is this package's purpose, not a fake-optionality dodge. */
+/**
+ * Input shape for built-in tools whose Claude Code schema declares `properties: {}`.
+ *
+ * Used by tools that accept no parameters (`EnterPlanMode`, `TaskList`, `CronList`),
+ * whose `tool_input` is therefore always an object with no properties.
+ */
+export type NoToolInput = Record<string, never>;
+/* oxlint-enable no-restricted-syntax/no-optional-escape */
+
 /**
  * Map from built-in tool name to its input type.
  *
@@ -53,18 +63,18 @@ export type BuiltInToolInputMap = {
   AskUserQuestion: AskUserQuestionToolInput;
   NotebookEdit: NotebookEditToolInput;
   LSP: LspToolInput;
-  EnterPlanMode: Record<string, never>;
+  EnterPlanMode: NoToolInput;
   ExitPlanMode: ExitPlanModeToolInput;
   EnterWorktree: EnterWorktreeToolInput;
   TaskCreate: TaskCreateToolInput;
   TaskGet: TaskGetToolInput;
-  TaskList: Record<string, never>;
+  TaskList: NoToolInput;
   TaskOutput: TaskOutputToolInput;
   TaskStop: TaskStopToolInput;
   TaskUpdate: TaskUpdateToolInput;
   CronCreate: CronCreateToolInput;
   CronDelete: CronDeleteToolInput;
-  CronList: Record<string, never>;
+  CronList: NoToolInput;
   Skill: SkillToolInput;
   ToolSearch: ToolSearchToolInput;
 };
