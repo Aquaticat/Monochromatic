@@ -14,6 +14,8 @@ import {
   VERDICT_TOOL,
 } from './judge-tool.ts';
 import {
+  callJudge,
+  collectJudgeVerdictArgs,
   collectToolCall,
   extractJsonVerdict,
   parseVerdict,
@@ -224,6 +226,212 @@ await describe({
         const result = await collectToolCall(mockStream() as never,);
         expect(result.verdict,).toBe('approve',);
         expect(result.reason,).toBe('tool path',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: collectJudgeVerdictArgs.name,
+  children: [
+    it({
+      name: 'uses first tool call without retrying',
+      fn: async () => {
+        async function* toolCallStream(): AsyncIterable<unknown> {
+          yield {
+            type: 'toolcall_end',
+            contentIndex: 0,
+            toolCall: {
+              id: '1',
+              name: 'render_verdict',
+              arguments: {
+                verdict: 'approve',
+                reason: 'tool path',
+              },
+            },
+            partial: {},
+          };
+        }
+
+        function createJsonRetryStream(): AsyncIterable<unknown> {
+          throw new Error('retry should not run when tool call is present',);
+        }
+
+        const result = await collectJudgeVerdictArgs({
+          toolCallStream: toolCallStream() as never,
+          createJsonRetryStream: createJsonRetryStream as never,
+        },);
+        expect(result.verdict,).toBe('approve',);
+        expect(result.reason,).toBe('tool path',);
+      },
+    },),
+
+    it({
+      name: 'retries direct JSON when first stream has no tool call',
+      fn: async () => {
+        async function* firstStream(): AsyncIterable<unknown> {
+          yield {
+            type: 'text_end',
+            contentIndex: 0,
+            content: 'I did not use the tool.',
+            partial: {},
+          };
+        }
+
+        async function* jsonRetryStream(): AsyncIterable<unknown> {
+          yield {
+            type: 'text_end',
+            contentIndex: 0,
+            content: '{"verdict":"deny","reason":"dangerous","guidance":"use propose_trust"}',
+            partial: {},
+          };
+        }
+
+        function createJsonRetryStream(
+          {
+            firstAttemptTextContent,
+          }: {
+            readonly firstAttemptTextContent: string;
+          },
+        ): AsyncIterable<unknown> {
+          expect(firstAttemptTextContent,).toBe('I did not use the tool.',);
+          return jsonRetryStream();
+        }
+
+        const result = await collectJudgeVerdictArgs({
+          toolCallStream: firstStream() as never,
+          createJsonRetryStream: createJsonRetryStream as never,
+        },);
+        expect(result.verdict,).toBe('deny',);
+        expect(result.guidance,).toBe('use propose_trust',);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: callJudge.name,
+  children: [
+    it({
+      name: 'retries without tools and parses direct JSON',
+      fn: async () => {
+        /** Captured stream calls so the test can verify first-attempt and retry options. */
+        const calls: {
+          readonly context: unknown;
+          readonly options: unknown;
+        }[] = [];
+
+        async function* firstStream(): AsyncIterable<unknown> {
+          yield {
+            type: 'text_end',
+            contentIndex: 0,
+            content: 'I did not use the tool.',
+            partial: {},
+          };
+        }
+
+        async function* retryStream(): AsyncIterable<unknown> {
+          yield {
+            type: 'text_end',
+            contentIndex: 0,
+            content: '{"verdict":"ask","reason":"needs user","guidance":""}',
+            partial: {},
+          };
+        }
+
+        const streamSimpleFns = {
+          streamSimpleFn(
+            this: void,
+            _model: never,
+            context: unknown,
+            options?: unknown,
+          ): AsyncIterable<unknown> {
+            calls.push({
+              context,
+              options,
+            },);
+            if (calls.length === 1)
+              return firstStream();
+            return retryStream();
+          },
+        };
+
+        const verdict = await callJudge({
+          model: {
+            id: 'test-model',
+            name: 'Test model',
+            api: 'openai-completions',
+            provider: 'openai',
+            baseUrl: 'https://example.invalid',
+            reasoning: false,
+            input: ['text',],
+            cost: {
+              input: 0,
+              output: 0,
+              cacheRead: 0,
+              cacheWrite: 0,
+            },
+            contextWindow: 1,
+            maxTokens: 1,
+          } as never,
+          auth: {
+            apiKey: 'test-key',
+            headers: {
+              'x-test': 'yes',
+            },
+          },
+          action: 'bash: echo hi',
+          cwd: '/project',
+          recentContext: '',
+          trustDirectives: [],
+          timeoutMs: 10_000,
+          systemPrompt:
+            'You MUST call the render_verdict tool to submit your evaluation. Do not respond with text; use the tool.',
+          batchContext: [],
+          streamSimpleFn: streamSimpleFns.streamSimpleFn as never,
+        },);
+
+        expect(verdict.verdict,).toBe('ask',);
+        expect(calls,).toHaveLength(2,);
+
+        /** First and retry stream invocations, narrowed after the length assertion above. */
+        const [
+          firstCall,
+          retryCall,
+        ] = calls;
+        if ((firstCall === undefined)
+          || (retryCall === undefined)) {
+          throw new Error('expected first and retry stream calls',);
+        }
+
+        const firstContext = firstCall.context as {
+          readonly tools?: readonly unknown[];
+          readonly messages: readonly { readonly content: string; }[];
+        };
+        const retryContext = retryCall.context as {
+          readonly tools?: readonly unknown[];
+          readonly systemPrompt?: string;
+          readonly messages: readonly { readonly content: string; }[];
+        };
+        const firstOptions = firstCall.options as Record<string, unknown>;
+        const retryOptions = retryCall.options as Record<string, unknown>;
+
+        expect(firstContext.tools,).toHaveLength(1,);
+        expect(firstOptions.toolChoice,).toBe('required',);
+        expect(firstOptions.apiKey,).toBe('test-key',);
+        expect(retryContext.tools,).toBeUndefined();
+        expect(retryOptions.toolChoice,).toBeUndefined();
+        expect(retryOptions.apiKey,).toBe('test-key',);
+        expect(retryContext.systemPrompt?.includes('Retry mode:',),).toBe(true,);
+        expect(
+          retryContext.systemPrompt?.includes(
+            'For this retry, use the direct JSON transport described below.',
+          ),
+        ).toBe(true,);
+        expect(
+          retryContext.systemPrompt?.includes('Do not respond with text; use the tool.',),
+        ).toBe(false,);
+        expect(retryContext.messages[0]?.content.includes('I did not use the tool.',),).toBe(true,);
       },
     },),
   ],

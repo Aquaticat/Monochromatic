@@ -6,7 +6,7 @@ LLM-as-judge guardrail for pi. Replaces pi-safeguard with fixed path handling an
 
 Three-stage pipeline:
 
-```
+```text
 tool_call -> flagger (signals.ts, wide-net boolean predicates)
           -> judge (judge.ts, LLM call via tool-calling with forced tool_choice)
           -> approve (silent) / deny (block + guidance) / ask (user decides)
@@ -20,17 +20,21 @@ Primary path: the judge is invoked with forced `tool_choice` (`render_verdict`).
 The pi-ai event stream's `toolcall_end` event carries the parsed `arguments`,
 which are translated to a `Verdict` by `parseVerdict`.
 
-Fallback path: if the model ignores `toolChoice` and returns text instead
-(observed with some non-Anthropic providers), the stream's `text_end` events
-are concatenated and `extractJsonVerdict` parses the JSON object out of the
-text. The fallback first tries `JSON.parse(text)` for the whole-text case,
-then falls back to a balanced-brace scan that respects string-literal escapes
-(so a `"reason"` field containing `{` or `}` does not skew the boundaries).
+Retry path: if the model finishes without calling `render_verdict`,
+`callJudge` retries once without tools and asks for direct JSON. The retry
+uses the same safety context, then parses the retry response with
+`extractJsonVerdict`.
 
-When the fallback fires, the judge logs an error so an operator can see
-the contract violation. The contract is still "MUST call the tool"; the
-fallback exists so an unexpected provider response degrades gracefully
-rather than throwing.
+Compatibility fallback: `collectToolCall` can still parse first-pass text
+for tests and direct helper usage. The parser first tries `JSON.parse(text)`
+for the whole-text case, then falls back to a balanced-brace scan that
+respects string-literal escapes (so a `"reason"` field containing `{` or `}`
+does not skew the boundaries).
+
+When either fallback path fires, the judge logs an error so an operator can
+see the contract violation. The primary contract remains "MUST call the
+tool"; the retry exists so an unexpected provider response degrades
+gracefully rather than throwing.
 
 ## Bug fixes vs upstream pi-safeguard
 
@@ -43,7 +47,7 @@ rather than throwing.
 | Budget model               | Separate `pi-budget-model` package          | Inlined `budget-model.ts`                              |
 | Bash parser                | `@aliou/sh` (UNLICENSED, three gap bugs)    | `shell-quote` (MIT) plus targeted extraction           |
 | `--` separator             | Not handled in `hasFlag()`                  | Handled                                                |
-| Judge response format      | Free-text JSON                              | Forced tool-calling, free-text JSON as logged fallback |
+| Judge response format      | Free-text JSON                              | Forced tool-calling, direct-JSON retry, logged text parser fallback |
 
 ## Configuration
 
