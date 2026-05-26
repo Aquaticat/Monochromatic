@@ -36,10 +36,10 @@ export function generateDomainXml(
     vcpus,
     qcow2Path,
   }: {
-    name: string;
-    memoryMib: string;
-    vcpus: string;
-    qcow2Path: string;
+    readonly name: string;
+    readonly memoryMib: string;
+    readonly vcpus: string;
+    readonly qcow2Path: string;
   },
 ): string {
   return h({

@@ -56,8 +56,8 @@ async function run(
     cmd,
     args,
   }: {
-    cmd: string;
-    args: readonly string[];
+    readonly cmd: string;
+    readonly args: readonly string[];
   },
 ): Promise<void> {
   /** Spawned child process with inherited stdio; awaited via `once(child, 'close')` for the exit code. */
@@ -66,13 +66,12 @@ async function run(
     [...args,],
     { stdio: 'inherit', },
   );
-  /** Exit code from the child's `close` event; non-zero signals command failure. */
-  const [code,] = await once(
+  await once(
     child,
     'close',
   );
-  if (code !== 0)
-    throw new Error(`${cmd} exited with code ${String(code,)}`,);
+  if (child.exitCode !== 0)
+    throw new Error(`${cmd} exited with code ${String(child.exitCode,)}`,);
 }
 
 /**
