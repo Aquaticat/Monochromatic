@@ -32,34 +32,63 @@ import type { SignalContext, } from './types.ts';
  * ```typescript
  * pathSignals({ filePath: "/etc/passwd", ctx: { cwd: "/project", home: "/home/user" } }); // true
  * pathSignals({ filePath: "./src/index.ts", ctx: { cwd: "/project", home: "/home/user" } }); // false
+ * pathSignals({
+ *   filePath: "/home/user/.agents/skills/example/SKILL.md",
+ *   ctx,
+ *   allowlistedDirs: ["/home/user/.agents/skills/example"],
+ * }); // false
+ * const allowlistedDirs = ["/home/user/.agents/skills/example"];
+ * pathSignals({
+ *   filePath: "/home/user/.agents/skills/example/.env",
+ *   ctx,
+ *   allowlistedDirs,
+ * }); // true
  * ```
  */
 function pathSignals(
   {
     filePath,
     ctx,
+    allowlistedDirs = [],
   }: {
     readonly filePath: string;
     readonly ctx: SignalContext;
+    /** Directories whose contents should not trip location-based signals for this call. */
+    readonly allowlistedDirs?: readonly string[];
   },
 ): boolean {
-  /** Cached resolution shared by the cwd-containment, dotfile, and secret-pattern checks below. */
+  /** Cached resolution shared by the cwd-containment, allowlist, dotfile, and secret checks. */
   const resolved = resolvePath({
     filePath,
     cwd: ctx.cwd,
   },);
 
-  if (!isUnder({
-    resolved,
-    dir: ctx.cwd,
-  },)) {
+  /** Whether this call targets a per-call allowlisted directory such as a loaded skill root. */
+  const allowlisted = allowlistedDirs.some(
+    function allowlistedDirContainsPath(dir,) {
+      return isUnder({
+        resolved,
+        dir: nodePath.resolve(
+          ctx.cwd,
+          dir,
+        ),
+      },);
+    },
+  );
+
+  if ((!allowlisted)
+    && (!isUnder({
+      resolved,
+      dir: ctx.cwd,
+    },))) {
     return true;
   }
 
-  if (isHomeDotfile({
-    resolved,
-    home: ctx.home,
-  },)) {
+  if ((!allowlisted)
+    && isHomeDotfile({
+      resolved,
+      home: ctx.home,
+    },)) {
     return true;
   }
 

@@ -68,6 +68,17 @@ rather than throwing.
 
 The `judgeModel` defaults to `{strategy: "same-provider", costRatio: 0.5, majorVersions: 1}` when the config is absent or `judgeModel` is unset; defined once in `src/constants.ts` as `JUDGE_MODEL_DEFAULTS` and referenced from the loader, the global defaults, and the budget-model selector.
 
+## Skill read allowlist
+
+Before each agent run, auto-mode reads Pi's loaded skill metadata from
+`before_agent_start` and allows `read` tool access to every loaded skill
+directory. This prevents guard prompts when the model loads `SKILL.md` or
+referenced files from global, project, or package skills.
+
+The allowlist is read-only and still preserves secret-path checks. `write`,
+`edit`, and `bash` tool calls targeting skill directories still go through the
+normal signal and judge pipeline.
+
 ## Logging
 
 The package uses tagged loggers from `@monochromatic-dev/module-logger`.

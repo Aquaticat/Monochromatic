@@ -42,6 +42,27 @@ const l = tagged({
 },);
 
 /**
+ * Readonly event subset needed to collect skill read allowlist entries.
+ *
+ * @example
+ * ```typescript
+ * const event: SkillPromptEvent = {
+ *   systemPromptOptions: { skills: [{ baseDir: "/skills/example" }] },
+ * };
+ * ```
+ */
+type SkillPromptEvent = {
+  /** Structured prompt options containing loaded skill metadata. */
+  readonly systemPromptOptions: {
+    /** Skills visible to the model in the current prompt. */
+    readonly skills?: readonly {
+      /** Absolute skill root directory. */
+      readonly baseDir: string;
+    }[];
+  };
+};
+
+/**
  * Auto-mode pi extension.
  *
  * Subscribes to agent lifecycle events to implement the
@@ -144,7 +165,7 @@ export default function autoMode(
 
   //region Turn-level tracking
 
-  /* oxlint-disable no-restricted-syntax/no-function-root-let -- closure state shared by `agent_start`, `turn_start`, `agent_end`, and `tool_call` handlers; each handler writes a subset of these latches */
+  /* oxlint-disable no-restricted-syntax/no-function-root-let -- handler closure state for turn and skill latches */
   /** Batch siblings accumulated during the current agent turn; surfaced to the judge for context. */
   let currentTurnBatch: BatchEntry[] = [];
   /** True once any tool call in this turn is denied; latched until the next `turn_start`. */
@@ -157,11 +178,33 @@ export default function autoMode(
     verdict: string;
     reason: string;
   }[] = [];
+  /** Skill base directories visible in the current prompt; read-tool access bypasses path prompts. */
+  let currentSkillReadDirs: readonly string[] = [];
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
   //endregion
 
   //region Event handlers
+
+  pi.on(
+    'before_agent_start',
+    function handleBeforeAgentStart(
+      event: SkillPromptEvent,
+    ) {
+      /** Prompt options carrying the loaded skill catalog for this turn. */
+      const { systemPromptOptions, } = event;
+      /** Skills visible in the current system prompt; empty when no skills are loaded. */
+      const skills = systemPromptOptions
+        .skills
+        ?? [];
+      currentSkillReadDirs = skills
+        .map(
+          function skillBaseDir(skill,) {
+            return skill.baseDir;
+          },
+        );
+    },
+  );
 
   pi.on(
     'agent_start',
@@ -205,6 +248,7 @@ export default function autoMode(
         );
         flowVerdicts = [];
       }
+      currentSkillReadDirs = [];
     },
   );
 
@@ -227,6 +271,7 @@ export default function autoMode(
         event,
         ctx: signalCtx,
         config,
+        readAllowlistedDirs: currentSkillReadDirs,
       },)
         || (denialInPreviousTurn && isRelevantTool(event,));
 

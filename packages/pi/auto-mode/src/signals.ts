@@ -81,6 +81,11 @@ export type MergedConfig = {
  * @example
  * ```typescript
  * const flagged = shouldFlag({ event, ctx: { cwd, home } });
+ * const skillRead = shouldFlag({
+ *   event,
+ *   ctx: { cwd, home },
+ *   readAllowlistedDirs: ["/home/user/.agents/skills/example"],
+ * });
  * ```
  */
 function shouldFlag(
@@ -88,10 +93,13 @@ function shouldFlag(
     event,
     ctx,
     config,
+    readAllowlistedDirs = [],
   }: {
     readonly event: ToolCallEvent;
     readonly ctx: SignalContext;
     readonly config?: MergedConfig;
+    /** Directories whose contents are safe for read-tool skill activation. */
+    readonly readAllowlistedDirs?: readonly string[];
   },
 ): boolean {
   if (isToolCallEventType(
@@ -120,11 +128,19 @@ function shouldFlag(
 
   /** Path argument extracted from the tool event when one applies (read/write/edit/etc.). */
   const filePath = getFilePath(event,);
+  /** Skill directory allowlist applied only to read-tool activation, not writes or shell commands. */
+  const pathAllowlistedDirs = isToolCallEventType(
+    'read',
+    event,
+  )
+    ? readAllowlistedDirs
+    : [];
   if (
     (filePath !== '')
       && pathSignals({
       filePath,
       ctx,
+      allowlistedDirs: pathAllowlistedDirs,
     },)
   ) {
     return true;

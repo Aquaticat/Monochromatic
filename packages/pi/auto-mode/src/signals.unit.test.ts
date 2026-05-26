@@ -5,6 +5,7 @@
  * content signals, text signals, and user command matching.
  */
 
+import type { ToolCallEvent, } from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,
@@ -26,6 +27,7 @@ import {
   type CommandMatcher,
   hasFlag,
   matchUserCommands,
+  shouldFlag,
 } from './signals.ts';
 import type {
   BashAnalysis,
@@ -91,6 +93,52 @@ await describe({
           .toBe(
             true,
           );
+      },
+    },),
+
+    //endregion
+
+    //region Skill read allowlist
+
+    it({
+      name: 'does not flag allowlisted skill path outside cwd',
+      fn: async () => {
+        expect(
+          pathSignals({
+            filePath: '/var/home/user/.agents/skills/code-review/SKILL.md',
+            ctx: DEFAULT_CTX,
+            allowlistedDirs: ['/var/home/user/.agents/skills/code-review',],
+          },),
+        )
+          .toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'flags sibling skill path outside allowlist',
+      fn: async () => {
+        expect(
+          pathSignals({
+            filePath: '/var/home/user/.agents/skills/other/SKILL.md',
+            ctx: DEFAULT_CTX,
+            allowlistedDirs: ['/var/home/user/.agents/skills/code-review',],
+          },),
+        )
+          .toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'flags secret-looking path inside skill allowlist',
+      fn: async () => {
+        expect(
+          pathSignals({
+            filePath: '/var/home/user/.agents/skills/code-review/.env',
+            ctx: DEFAULT_CTX,
+            allowlistedDirs: ['/var/home/user/.agents/skills/code-review',],
+          },),
+        )
+          .toBe(true,);
       },
     },),
 
@@ -453,6 +501,97 @@ await describe({
       fn: async () => {
         const analysis = analyzeBashCommand('ls -la',);
         expect(matchUserCommands({ analysis, matchers: [], },),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: shouldFlag.name,
+  children: [
+    it({
+      name: 'does not flag read tool call inside skill read allowlist',
+      fn: async () => {
+        const event: ToolCallEvent = {
+          type: 'tool_call',
+          toolName: 'read',
+          toolCallId: 'read-skill',
+          input: {
+            path: '/var/home/user/.agents/skills/testing-practices/SKILL.md',
+          },
+        };
+
+        expect(shouldFlag({
+          event,
+          ctx: DEFAULT_CTX,
+          readAllowlistedDirs: ['/var/home/user/.agents/skills/testing-practices',],
+        },),)
+          .toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'flags write tool call inside skill read allowlist',
+      fn: async () => {
+        const event: ToolCallEvent = {
+          type: 'tool_call',
+          toolName: 'write',
+          toolCallId: 'write-skill',
+          input: {
+            path: '/var/home/user/.agents/skills/testing-practices/SKILL.md',
+            content: 'changed',
+          },
+        };
+
+        expect(shouldFlag({
+          event,
+          ctx: DEFAULT_CTX,
+          readAllowlistedDirs: ['/var/home/user/.agents/skills/testing-practices',],
+        },),)
+          .toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'flags secret-looking read path inside skill read allowlist',
+      fn: async () => {
+        const event: ToolCallEvent = {
+          type: 'tool_call',
+          toolName: 'read',
+          toolCallId: 'read-skill-secret',
+          input: {
+            path: '/var/home/user/.agents/skills/testing-practices/.env',
+          },
+        };
+
+        expect(shouldFlag({
+          event,
+          ctx: DEFAULT_CTX,
+          readAllowlistedDirs: ['/var/home/user/.agents/skills/testing-practices',],
+        },),)
+          .toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'flags bash path inside skill read allowlist',
+      fn: async () => {
+        const event: ToolCallEvent = {
+          type: 'tool_call',
+          toolName: 'bash',
+          toolCallId: 'bash-skill',
+          input: {
+            command:
+              'cat /var/home/user/.agents/skills/testing-practices/SKILL.md',
+          },
+        };
+
+        expect(shouldFlag({
+          event,
+          ctx: DEFAULT_CTX,
+          readAllowlistedDirs: ['/var/home/user/.agents/skills/testing-practices',],
+        },),)
+          .toBe(true,);
       },
     },),
   ],

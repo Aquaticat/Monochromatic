@@ -133,12 +133,13 @@ await describe({
     //region Registration
 
     it({
-      name: 'registers all four event handlers',
+      name: 'registers all five event handlers',
       fn: async () => {
         const { api, registrations, } = createMockApi();
         autoMode(api,);
 
         const expectedEvents = [
+          'before_agent_start',
           'agent_start',
           'turn_start',
           'agent_end',
@@ -150,6 +151,62 @@ await describe({
           expect(handlers,).toBeDefined();
           expect(handlers,).toHaveLength(1,);
         }
+      },
+    },),
+
+    //endregion
+
+    //region Skill read allowlist
+
+    it({
+      name: 'allows read tool calls inside loaded skill directories',
+      fn: async () => {
+        const { api, registrations, } = createMockApi();
+        autoMode(api,);
+
+        const beforeAgentStartHandler = getHandler({
+          registrations,
+          event: 'before_agent_start',
+        },);
+        const toolCallHandler = getHandler({
+          registrations,
+          event: 'tool_call',
+        },);
+
+        beforeAgentStartHandler({
+          type: 'before_agent_start',
+          prompt: '',
+          systemPrompt: '',
+          systemPromptOptions: {
+            cwd: '/var/home/user/project',
+            skills: [
+              {
+                name: 'testing-practices',
+                description: 'Use when working with tests.',
+                filePath:
+                  '/var/home/user/.agents/skills/testing-practices/SKILL.md',
+                baseDir: '/var/home/user/.agents/skills/testing-practices',
+              },
+            ],
+          },
+        },);
+
+        const result = toolCallHandler(
+          {
+            type: 'tool_call',
+            toolName: 'read',
+            toolCallId: 'read-skill',
+            input: {
+              path:
+                '/var/home/user/.agents/skills/testing-practices/SKILL.md',
+            },
+          },
+          {
+            cwd: '/var/home/user/project',
+          },
+        );
+
+        expect(result,).toBeUndefined();
       },
     },),
 
