@@ -89,6 +89,10 @@ Open behavioral decision discovered during the sweep (NOT a lint issue):
 
 - `module/memoize` lint is green (commit 1665ed5a), but the kv-store -> `ABSENT` migration (commit b76ec75f) changed runtime behavior: a memoized function returning `undefined` now round-trips through kv-store and gets cached, instead of being treated as a miss and recomputed. This breaks 4 unit tests (`memoize.unit.test.ts:180,207,244`, `memoize-async.unit.test.ts:195`) which assert the old "undefined is a miss" contract. Whether memoize should now cache `undefined` (arguably more correct) or keep treating it as a miss is a product decision for the user, so the tests are left untouched. Resolve the semantics, then update the 4 tests accordingly.
 
+Post-sweep consolidation candidate (out of scope for lint-zero, noted for the user):
+
+- The `Maybe<T> = T | typeof ABSENT` alias (with a local `const ABSENT: unique symbol = Symbol('absent')`, narrowed by `=== ABSENT`) has been independently recreated as a per-package `src/maybe.ts` in at least `deps-cube`, `pi/advisor`, `cli/terminal-exec`, and `dev-script/page-weight`. Each copy is correct and matches the sanctioned sentinel pattern (NOT a banned Option/Maybe monad: it is a bare union with a unique symbol, no boxing). The duplication is a DRY candidate: a shared `@monochromatic-dev/module-maybe` (or extending `module-or-throw`/reusing kv-store's exported `ABSENT`) would consolidate them. Deferred because it is a refactor, not a lint fix.
+
 Manual rework that no lint rule catches (the type annotation is honest):
 
 - `webapp-content/ssg-test` and `dev-script/inference-canary-viewer` used `''` as an absence sentinel in earlier passes. The user ruled that `''` is not a valid sentinel. Hunt these by reading the files (grep for `''` defaults and returns in slots that mean absent) and convert to `?:`, an `if`-guard, or a real Symbol or domain sentinel.
