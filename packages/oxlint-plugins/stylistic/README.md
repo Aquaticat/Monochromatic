@@ -3,6 +3,7 @@
 Oxlint JS plugin for TypeScript stylistic rules:
 one-item-per-line formatting across multi-element constructs,
 statement-boundary semicolon enforcement,
+trailing comma enforcement,
 and explicit operator structure in nested expressions.
 
 The per-line rules fire when 2 or more items share a source line
@@ -51,6 +52,22 @@ All per-line rules are auto-fixable via `oxlint --fix`.
   The rule has no options: configure it as `"stylistic/semi": "error"`, not as
   `["error", "always"]`.
   Auto-fixable; the fixer inserts `;` after the node's last syntax token.
+
+### List boundaries
+
+- **comma-dangle**: require trailing commas in supported comma-delimited lists.
+  Mirrors `@stylistic/comma-dangle` in plain `"always"` mode only.
+  The rule has no options: configure it as `"stylistic/comma-dangle": "error"`, not as
+  `["error", "always"]`.
+  Auto-fixable; the fixer inserts `,` after the last syntax token before the list's closing delimiter.
+  It covers arrays, objects, array and object patterns, named import and export specifiers,
+  import attributes, function parameters, call and constructor arguments, dynamic imports,
+  enum members, type parameter declarations, tuple types, and TypeScript function-like signatures.
+  Empty lists are ignored.
+  Final rest elements are ignored because JavaScript grammar rejects a trailing comma there.
+  Use-site type arguments are not covered: `new Set<string>()` and `fn<A, B>()` do not receive
+  trailing commas because oxlint exposes them as `TSTypeParameterInstantiation`, not as
+  `TSTypeParameterDeclaration`.
 
 ### Expression structure
 
@@ -157,17 +174,20 @@ rules are intentionally out of scope.
 Vertical whitespace stays with dprint plus local judgment;
 this plugin enforces item boundaries and expression structure only.
 
-**Minimum 2 items**: single-item constructs are never flagged.
+**Minimum 2 items for per-line rules**: single-item constructs are never flagged by per-line rules.
 An array with one element or a function with one parameter stays on one line.
+`comma-dangle` is separate and still requires a trailing comma for a supported single-item list.
 
-**Shared implementation**: all rules delegate to `checkItemsPerLine` in the utility layer.
-Each rule's visitor only extracts the relevant container and items from the AST,
-keeping rule files minimal.
+**Shared per-line implementation**: per-line rules delegate to `checkItemsPerLine` in the utility layer.
+Each per-line visitor only extracts the relevant container and items from the AST,
+keeping those rule files minimal.
 
 ## Source files
 
 - `index.ts`: plugin entry point; assembles all rules into the oxlint plugin object
-- `rules/`: one file per rule, each exporting a `CreateOnceRule`
+- `rules/comma-dangle.ts`: trailing comma detection and autofix for supported comma-delimited lists
+- `rules/`: one file per remaining rule, each exporting a `CreateOnceRule`
+- `utility/comma-dangle.ts`: shared trailing comma token lookup and reporting helpers
 - `utility/item-per-line.ts`: shared detection and reporting logic
 - `utility/item-per-line-fix.ts`: shared autofix logic (indentation detection, content rebuild)
 - `utility/needs-fix.ts`: line-sharing detection between items and container delimiters

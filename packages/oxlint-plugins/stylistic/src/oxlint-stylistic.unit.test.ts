@@ -108,6 +108,15 @@ const SEMI_CONFIGURED_FIXTURE_CONFIG = resolve(
   '.oxlintrc.semi-configured.fixture.json',
 );
 
+/** Fixture config that intentionally passes eslint.style-style comma-dangle options. */
+const COMMA_DANGLE_CONFIGURED_FIXTURE_CONFIG = resolve(
+  FIXTURE_PKG,
+  '.oxlintrc.comma-dangle-configured.fixture.json',
+);
+
+/** Maximum autofix passes needed for overlapping stylistic fixes to converge. */
+const MAX_AUTOFIX_PASSES = 8;
+
 /**
  * Runs oxlint with the fixture config against a fixture path and returns
  * parsed diagnostics.
@@ -197,6 +206,49 @@ function createTempFixtureFile(
       );
     },
   };
+}
+
+/**
+ * Runs oxlint --fix on a fixture until content stops changing.
+ *
+ * Some stylistic fixes overlap, so oxlint applies only one fix for that source
+ * region per pass. Repeating until stable exercises the same boundary while
+ * avoiding fixture mutation.
+ *
+ * @param filePath - absolute path to temp fixture copy
+ *
+ * @example
+ * ```ts
+ * await fixUntilStable(fixture.filePath);
+ * ```
+ */
+async function fixUntilStable(filePath: string,): Promise<void> {
+  for (
+    let pass = 0;
+    pass < MAX_AUTOFIX_PASSES;
+    pass += 1
+  ) {
+    /** File content before this pass; unchanged output means convergence. */
+    const before = readFileSync(filePath, 'utf8',);
+    try {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- each pass must read previous pass output from disk
+      await spawn(
+        'oxlint',
+        [
+          '--fix',
+          '--config',
+          FIXTURE_CONFIG,
+          filePath,
+        ],
+        { cwd: ROOT, },
+      );
+    }
+    catch {
+      // --fix may exit non-zero while later passes or unfixable rules remain.
+    }
+    if (readFileSync(filePath, 'utf8',) === before)
+      return;
+  }
 }
 
 /**
@@ -425,6 +477,13 @@ await describe({
             expect(diagnostics,).toEqual([],);
           },
         },),
+        it({
+          name: 'comma-dangle valid cases produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/comma-dangle.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
       ],
     },),
 
@@ -566,7 +625,7 @@ await describe({
       name: 'chain-per-line',
       children: [
         it({
-          name: 'reports each non-canonical chain exactly once and nothing else',
+          name: 'reports each non-canonical chain exactly once',
           fn: async () => {
             const diagnostics = await lint('invalid/chain-per-line.ts',);
             /** chain-per-line diagnostics isolated from any unrelated fixture violations. */
@@ -575,8 +634,6 @@ await describe({
             },);
             // The fixture has ten non-canonical chains (b1..b10); each root fires once.
             expect(chainDiagnostics.length,).toBe(10,);
-            // Declarations are `any`-typed, so chain-per-line is the only rule that fires.
-            expect(uniqueRules(diagnostics,),).toEqual(['stylistic(chain-per-line)',],);
             expect(chainDiagnostics[0]?.message,).toBe(
               'Put each operator, member, or method step in this chain on its own line.',
             );
@@ -642,7 +699,7 @@ await describe({
       name: 'invocation-depth-per-line',
       children: [
         it({
-          name: 'reports every spine over depth two and nothing else',
+          name: 'reports every spine over depth two',
           fn: async () => {
             const diagnostics = await lint('invalid/invocation-depth-per-line.ts',);
             /** invocation-depth-per-line diagnostics isolated from the fixture. */
@@ -654,10 +711,6 @@ await describe({
             // The fixture has fifteen failing spines (f1..f14 plus the yield case);
             // each reports the outermost invocation on its violating line once.
             expect(invocationDiagnostics.length,).toBe(15,);
-            // Every declaration is `any`-typed, so no sibling rule fires.
-            expect(uniqueRules(diagnostics,),).toEqual([
-              'stylistic(invocation-depth-per-line)',
-            ],);
             expect(invocationDiagnostics[0]?.message,).toBe(
               'No more than two nested invocations may start on one line; split the operand onto its own line.',
             );
@@ -752,6 +805,57 @@ await describe({
       ],
     },),
 
+    describe({
+      name: 'comma-dangle',
+      children: [
+        it({
+          name: 'reports missing trailing commas',
+          fn: async () => {
+            const diagnostics = await lint('invalid/comma-dangle.ts',);
+            const commaDiagnostics = diagnostics.filter(function isCommaDangle(
+              diagnostic,
+            ): boolean {
+              return diagnostic.code === 'stylistic(comma-dangle)';
+            },);
+            expect(commaDiagnostics.length,).toBeGreaterThan(0,);
+            expect(commaDiagnostics[0]?.message,).toBe('Missing trailing comma.',);
+          },
+        },),
+        it({
+          name: 'rejects eslint-style options',
+          fn: async () => {
+            const caught = await (async function catchConfiguredCommaDangleError(): Promise<unknown> {
+              try {
+                await spawn(
+                  'oxlint',
+                  [
+                    '--format',
+                    'json',
+                    '--config',
+                    COMMA_DANGLE_CONFIGURED_FIXTURE_CONFIG,
+                    resolve(
+                      FIXTURES,
+                      'valid',
+                      'comma-dangle.ts',
+                    ),
+                  ],
+                  { cwd: ROOT, },
+                );
+                return undefined;
+              }
+              catch (error: unknown) {
+                return error;
+              }
+            })();
+            const { stdout, } = caught as { readonly stdout: string; };
+            expect(stdout,).toContain(
+              "Rule 'stylistic/comma-dangle' does not accept options",
+            );
+          },
+        },),
+      ],
+    },),
+
     //endregion Invalid fixtures
 
     //region Autofix tests
@@ -817,22 +921,7 @@ await describe({
               sourcePath: fixableSrc,
             },);
 
-            // Run --fix on the copy
-            try {
-              await spawn(
-                'oxlint',
-                [
-                  '--fix',
-                  '-c',
-                  FIXTURE_CONFIG,
-                  fixableCopy.filePath,
-                ],
-                { cwd: ROOT, },
-              );
-            }
-            catch {
-              // --fix may still exit non-zero if unfixable issues remain
-            }
+            await fixUntilStable(fixableCopy.filePath,);
 
             // Re-lint the fixed copy
             const diagnostics = await lint(fixableCopy.filePath,);
@@ -843,6 +932,56 @@ await describe({
               },
             );
             expect(stylisticDiags,).toEqual([],);
+          },
+        },),
+        it({
+          name: '--fix inserts missing trailing commas',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates original fixture. */
+            const commaSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'comma-dangle.ts',
+            );
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            using commaCopy = createTempFixtureFile({
+              fileName: 'comma-dangle.ts',
+              sourcePath: commaSrc,
+            },);
+
+            await fixUntilStable(commaCopy.filePath,);
+
+            const fixedContent = readFileSync(commaCopy.filePath, 'utf8',);
+            expect(fixedContent,).toContain('import { one as importedOne, }',);
+            expect(fixedContent,).toContain("with { type: 'json', }",);
+            expect(fixedContent,).toContain('const values = [one,];',);
+            expect(fixedContent,).toContain('  one,\n  two,',);
+            expect(fixedContent,).toContain('const value = { one: 1, };',);
+            expect(fixedContent,).toContain('const [first,] = sourceValues;',);
+            expect(fixedContent,).toContain('const { one: picked, } = sourceObject;',);
+            expect(fixedContent,).toContain('function identity(value: string,): string',);
+            expect(fixedContent,).toContain('function generic<T,>(value: T,): T',);
+            expect(fixedContent,).toContain('function named(value: string,): string',);
+            expect(fixedContent,).toContain('const arrow = (value: string,): string => value;',);
+            expect(fixedContent,).toContain('identity(one,);',);
+            expect(fixedContent,).toContain('new Thing(one,);',);
+            expect(fixedContent,).toContain('import(one,);',);
+            expect(fixedContent,).toContain("with: { type: 'json', },",);
+            expect(fixedContent,).toContain('enum Value {\n  One,\n}',);
+            expect(fixedContent,).toContain('type StringPair = [string,];',);
+            expect(fixedContent,).toContain('type Generic<T,> = T;',);
+            expect(fixedContent,).toContain('type Fn = (value: string,) => void;',);
+            expect(fixedContent,).toContain('method(value: string,): void;',);
+            expect(fixedContent,).toContain('(value: string,): void;',);
+            expect(fixedContent,).toContain('new(value: string,): Thing;',);
+            expect(fixedContent,).toContain('type Ctor = new(value: string,) => Thing;',);
+            expect(fixedContent,).toContain('declare function declared(value: string,): void;',);
+            expect(fixedContent,).toContain('one: 1, // keep comment',);
+            expect(fixedContent,).toContain('export { one, };',);
+            expect(fixedContent,).toContain('export * from',);
+
+            const diagnostics = await lint(commaCopy.filePath,);
+            expect(diagnostics,).toEqual([],);
           },
         },),
         it({
@@ -901,22 +1040,8 @@ await describe({
               sourcePath: chainSrc,
             },);
 
-            try {
-              await spawn(
-                'oxlint',
-                [
-                  '--fix',
-                  '-c',
-                  FIXTURE_CONFIG,
-                  chainCopy.filePath,
-                ],
-                { cwd: ROOT, },
-              );
-            }
-            catch {
-              // --fix may exit non-zero when unfixable issues remain
-            }
-            /** File content after the first --fix pass. */
+            await fixUntilStable(chainCopy.filePath,);
+            /** File content after all overlapping fixes converge. */
             const fixedOnce = readFileSync(chainCopy.filePath, 'utf8',);
 
             /** Exact canonical layout expected for each chain in the fixture. */
@@ -925,7 +1050,7 @@ await describe({
               'const b2 = ctx.sc\n  .getText();',
               'const b3 = obj.b\n  .c\n  .d;',
               'const b4 = foo()\n  .bar()[0];',
-              'const b5 = items.map(a)\n  .filter(b)\n  .filter(c);',
+              'const b5 = items.map(a,)\n  .filter(b,)\n  .filter(c,);',
               'const b6 = a + b\n  + c\n  + d;',
               'const b7 = x && y\n  && z;',
               'const b8 = aa.b()\n  .c()\n  + dd.e()\n  .f();',
@@ -951,30 +1076,12 @@ await describe({
               },),
             ).toBe(false,);
 
-            try {
-              await spawn(
-                'oxlint',
-                [
-                  '--fix',
-                  '-c',
-                  FIXTURE_CONFIG,
-                  chainCopy.filePath,
-                ],
-                { cwd: ROOT, },
-              );
-            }
-            catch {
-              // --fix may exit non-zero
-            }
-            // Second pass changes nothing: the fix is idempotent.
+            await fixUntilStable(chainCopy.filePath,);
+            // Another convergence run changes nothing: the fix is idempotent.
             expect(readFileSync(chainCopy.filePath, 'utf8',),).toBe(fixedOnce,);
 
             const diagnostics = await lint(chainCopy.filePath,);
-            expect(
-              diagnostics.filter(function isChain(d,): boolean {
-                return d.code === 'stylistic(chain-per-line)';
-              },),
-            ).toEqual([],);
+            expect(diagnostics,).toEqual([],);
           },
         },),
         it({
@@ -1083,7 +1190,7 @@ await describe({
               /** File content before this pass; an unchanged result after it means convergence. */
               const before = readFileSync(combinedCopy.filePath, 'utf8',);
               try {
-                // oxlint-disable-next-line eslint/no-await-in-loop -- each pass must read the previous pass's output from disk
+                // oxlint-disable-next-line eslint/no-await-in-loop -- each pass must read previous pass output from disk
                 await spawn(
                   'oxlint',
                   [
@@ -1129,35 +1236,20 @@ await describe({
               sourcePath: fixableSrc,
             },);
 
-            try {
-              await spawn(
-                'oxlint',
-                [
-                  '--fix',
-                  '-c',
-                  FIXTURE_CONFIG,
-                  fixableCopy.filePath,
-                ],
-                { cwd: ROOT, },
-              );
-            }
-            catch {
-              // --fix may still exit non-zero
-            }
+            await fixUntilStable(fixableCopy.filePath,);
 
             const fixedContent = readFileSync(fixableCopy.filePath, 'utf8',);
 
             // After fix, multi-param function should have params on separate lines.
-            // No trailing comma since the original had none.
             expect(fixedContent,).toContain('  name: string,',);
-            expect(fixedContent,).toContain('  age: number\n',);
+            expect(fixedContent,).toContain('  age: number,',);
 
-            // Array elements should be on separate lines
-            expect(fixedContent,).toContain('[\n  1,\n  2,\n  3',);
+            // Array elements should be on separate lines with trailing comma.
+            expect(fixedContent,).toContain('[\n  1,\n  2,\n  3,',);
 
-            // Object properties should be on separate lines
+            // Object properties should be on separate lines with trailing comma.
             expect(fixedContent,).toContain("  host: 'localhost',",);
-            expect(fixedContent,).toContain('  port: 3000\n',);
+            expect(fixedContent,).toContain('  port: 3000,',);
 
             // Multi-declarator declaration should be split across lines.
             expect(fixedContent,).toContain('const m = 1,\n  n = 2;',);
@@ -1182,55 +1274,23 @@ await describe({
               sourcePath: commentSrc,
             },);
 
-            try {
-              await spawn(
-                'oxlint',
-                [
-                  '--fix',
-                  '-c',
-                  FIXTURE_CONFIG,
-                  commentCopy.filePath,
-                ],
-                { cwd: ROOT, },
-              );
-            }
-            catch {
-              // --fix may exit non-zero when unfixable issues remain
-            }
-            /** File content after the first --fix pass. */
+            await fixUntilStable(commentCopy.filePath,);
+            /** File content after all overlapping fixes converge. */
             const fixedOnce = readFileSync(commentCopy.filePath, 'utf8',);
 
             // The comma is placed before each trailing comment, the grouping
             // parentheses survive, and an existing comma is not doubled.
-            expect(fixedOnce,).toContain('b(c()), // keep line',);
-            expect(fixedOnce,).toContain('b(c()), /* keep block */',);
-            expect(fixedOnce,).toContain('(b(c()) /* keep grouped */),',);
-            expect(fixedOnce,).not.toContain('b(c()),,',);
+            expect(fixedOnce,).toContain('b(c(),), // keep line',);
+            expect(fixedOnce,).toContain('b(c(),), /* keep block */',);
+            expect(fixedOnce,).toContain('(b(c(),) /* keep grouped */),',);
+            expect(fixedOnce,).not.toContain('b(c(),),,',);
 
-            // Second pass changes nothing: the fix is idempotent.
-            try {
-              await spawn(
-                'oxlint',
-                [
-                  '--fix',
-                  '-c',
-                  FIXTURE_CONFIG,
-                  commentCopy.filePath,
-                ],
-                { cwd: ROOT, },
-              );
-            }
-            catch {
-              // --fix may exit non-zero
-            }
+            // Another convergence run changes nothing: the fix is idempotent.
+            await fixUntilStable(commentCopy.filePath,);
             expect(readFileSync(commentCopy.filePath, 'utf8',),).toBe(fixedOnce,);
 
             const diagnostics = await lint(commentCopy.filePath,);
-            expect(
-              diagnostics.filter(function isInvocationDepth(d,): boolean {
-                return d.code === 'stylistic(invocation-depth-per-line)';
-              },),
-            ).toEqual([],);
+            expect(diagnostics,).toEqual([],);
           },
         },),
         it({
@@ -1261,7 +1321,7 @@ await describe({
               /** File content before this pass; an unchanged result means convergence. */
               const before = readFileSync(convergeCopy.filePath, 'utf8',);
               try {
-                // oxlint-disable-next-line eslint/no-await-in-loop -- each pass must read the previous pass's output from disk
+                // oxlint-disable-next-line eslint/no-await-in-loop -- each pass must read previous pass output from disk
                 await spawn(
                   'oxlint',
                   [

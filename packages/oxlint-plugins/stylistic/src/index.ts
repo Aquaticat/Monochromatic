@@ -6,6 +6,7 @@ import {
 import { argumentPerLine, } from './rules/argument-per-line.ts';
 import { arrayElementPerLine, } from './rules/array-element-per-line.ts';
 import { chainPerLine, } from './rules/chain-per-line.ts';
+import { commaDangle, } from './rules/comma-dangle.ts';
 import { destructurePerLine, } from './rules/destructure-per-line.ts';
 import { exportPerLine, } from './rules/export-per-line.ts';
 import { importPerLine, } from './rules/import-per-line.ts';
@@ -22,7 +23,8 @@ import { typePropertyPerLine, } from './rules/type-property-per-line.ts';
 /**
  * Oxlint JS plugin for TypeScript stylistic rules: one-item-per-line
  * formatting across multi-element constructs, semicolon enforcement,
- * and explicit operator structure in nested expressions.
+ * trailing comma enforcement, and explicit operator structure in nested
+ * expressions.
  *
  * The per-line rules fire when 2 or more items share a source line and
  * auto-fix by placing every item on its own line with consistent
@@ -66,6 +68,7 @@ const plugin: Plugin = eslintCompatPlugin({
     'one-var-declaration-per-line': oneVarDeclarationPerLine,
     'max-statements-per-line': maxStatementsPerLine,
     semi,
+    'comma-dangle': commaDangle,
     //endregion Statement boundaries
 
     //region Expression structure: enforce explicit parens at operator boundaries and break chains across lines

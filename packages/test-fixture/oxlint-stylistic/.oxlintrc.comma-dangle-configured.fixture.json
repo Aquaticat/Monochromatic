@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../node_modules/oxlint/configuration_schema.json",
+  // Dedicated config proving stylistic/comma-dangle does not accept eslint.style-style options.
+  "jsPlugins": [
+    "../../oxlint-plugins/stylistic/src/index.ts"
+  ],
+  "ignorePatterns": [
+    "**/dist",
+    "**/node_modules"
+  ],
+  "rules": {
+    "stylistic/comma-dangle": [
+      "error",
+      "always"
+    ]
+  }
+}

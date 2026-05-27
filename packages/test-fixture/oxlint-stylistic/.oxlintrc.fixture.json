@@ -23,6 +23,7 @@
     "stylistic/one-var-declaration-per-line": "error",
     "stylistic/max-statements-per-line": "error",
     "stylistic/semi": "error",
+    "stylistic/comma-dangle": "error",
     "stylistic/no-mixed-operators": "error",
     "stylistic/chain-per-line": "error",
     "stylistic/invocation-depth-per-line": "error"
