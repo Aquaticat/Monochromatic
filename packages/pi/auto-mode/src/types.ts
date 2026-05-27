@@ -12,6 +12,12 @@ import type {
   Api,
   Model,
 } from '@earendil-works/pi-ai';
+import type {
+  BudgetModel as SharedBudgetModel,
+  BudgetModelAuth,
+  BudgetModelOverride,
+  BudgetModelStrategy,
+} from '@monochromatic-dev/pi-shared-model-selection/budget';
 
 //region Custom entry types
 
@@ -171,36 +177,14 @@ type BashAnalysis = {
 
 //region Budget model types
 
-/** Authentication details for a budget model. */
-type BudgetModelAuth = {
-  /** API key for the model provider. */
-  readonly apiKey?: string;
-  /** Custom headers for the request. */
-  readonly headers?: Readonly<Record<string, string>>;
-};
-
-/** A selected budget model with its auth credentials. */
-type BudgetModel = {
-  readonly model: Model<Api>;
-  readonly auth: BudgetModelAuth;
-};
+/** A selected budget model with pi-ai model shape. */
+type BudgetModel = SharedBudgetModel<Model<Api>>;
 
 /** Strategy for finding a budget model. */
-type ModelStrategy = 'same-provider' | 'any-provider';
+type ModelStrategy = BudgetModelStrategy;
 
-/**
- * Pinned-model override for the judge.
- *
- * `string` selects a model by `provider/id`; the object form allows
- * supplying explicit auth alongside the model id (used when the
- * registry can't otherwise resolve credentials).
- */
-type ModelOverride =
-  | string
-  | {
-    readonly model: string;
-    readonly auth: BudgetModelAuth;
-  };
+/** Pinned-model override for the judge. */
+type ModelOverride = BudgetModelOverride;
 
 /**
  * Configured judge-model selection.

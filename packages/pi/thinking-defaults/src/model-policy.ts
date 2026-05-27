@@ -4,6 +4,8 @@
  * @module
  */
 
+import { getModelIdLeaf, } from '@monochromatic-dev/pi-shared-model-selection/core';
+
 //region Thinking default constants
 
 /** Thinking levels this extension writes as defaults. */
@@ -28,34 +30,6 @@ type ModelWithId = {
 //endregion Model shapes
 
 //region Model id helpers
-
-/**
- * Returns the final slash-delimited segment from a model id.
- *
- * Provider prefixes such as `openai/` or `synthetic/hf:provider/` are
- * intentionally ignored by looking only at the segment after the final `/`.
- *
- * @param modelId - model id to inspect
- *
- * @returns final slash-delimited model id segment
- *
- * @example
- * ```typescript
- * getModelIdLeaf({ modelId: 'openai/gpt-5.5' }); // 'gpt-5.5'
- * ```
- */
-export function getModelIdLeaf(
-  {
-    modelId,
-  }: {
-    readonly modelId: string;
-  },
-): string {
-  /** Index after the final slash, or zero when no slash exists. */
-  const leafStartIndex = modelId.lastIndexOf('/',)
-    + 1;
-  return modelId.slice(leafStartIndex,);
-}
 
 /**
  * Detects whether a model id is GPT-shaped.
@@ -115,6 +89,7 @@ export function getThinkingDefaultForModel(
 //endregion Model id helpers
 
 export {
+  getModelIdLeaf,
   GPT_THINKING_DEFAULT,
   NON_GPT_THINKING_DEFAULT,
 };

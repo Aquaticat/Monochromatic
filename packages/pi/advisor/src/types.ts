@@ -5,8 +5,6 @@
  */
 
 import type {
-  Api,
-  Model,
   StopReason,
   Usage,
 } from '@earendil-works/pi-ai';
@@ -20,6 +18,15 @@ import type {
   Static,
   TSchema,
 } from 'typebox';
+import type {
+  DefaultModelSelection as SharedDefaultModelSelection,
+  EffectiveModelScope as SharedEffectiveModelScope,
+  ModelCostScore as SharedModelCostScore,
+  ReadonlyModel,
+  ScopedModel,
+  ScopedThinkingLevel as SharedScopedThinkingLevel,
+  ScopeSource as SharedScopeSource,
+} from '@monochromatic-dev/pi-shared-model-selection/core';
 
 //region Configuration
 
@@ -58,10 +65,10 @@ export type AdvisorConfig = {
 //region Scope
 
 /** Where the effective scoped model set came from. */
-export type ScopeSource = 'live' | 'argv' | 'settings' | 'available';
+export type ScopeSource = SharedScopeSource;
 
 /** Thinking level suffix carried by pi model scope patterns. */
-export type ScopedThinkingLevel = 'off' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh';
+export type ScopedThinkingLevel = SharedScopedThinkingLevel;
 
 /**
  * Deep-readonly view of pi-ai's `Model<Api>` with `api` widened to plain `string`.
@@ -71,93 +78,23 @@ export type ScopedThinkingLevel = 'off' | 'minimal' | 'low' | 'medium' | 'high' 
  * mirror with primitive types cleans the chain reliably while remaining
  * structurally assignable from the live `Model<Api>` value.
  */
-export type AdvisorReadonlyModel = {
-  /** Model identifier, e.g. `claude-sonnet-4-5-20251001`. */
-  readonly id: string;
-  /** Human-readable model name. */
-  readonly name: string;
-  /** API protocol identifier, widened to satisfy readonly checks. */
-  readonly api: string;
-  /** Provider identifier, e.g. `anthropic`. */
-  readonly provider: string;
-  /** Provider base URL. */
-  readonly baseUrl: string;
-  /** Whether the model emits reasoning content. */
-  readonly reasoning: boolean;
-  /** Optional thinking-level mapping from pi to provider values. */
-  readonly thinkingLevelMap?: ReadonlyDeep<NonNullable<Model<Api>['thinkingLevelMap']>>;
-  /** Supported input modalities. */
-  readonly input: readonly ('text' | 'image')[];
-  /** Per-token pricing details. */
-  readonly cost: {
-    /** Input-token price. */
-    readonly input: number;
-    /** Output-token price. */
-    readonly output: number;
-    /** Cache-read price. */
-    readonly cacheRead: number;
-    /** Cache-write price. */
-    readonly cacheWrite: number;
-  };
-  /** Maximum input-token context window. */
-  readonly contextWindow: number;
-  /** Maximum output tokens for a single response. */
-  readonly maxTokens: number;
-  /** Optional provider request headers. */
-  readonly headers?: ReadonlyDeep<Record<string, string>>;
-};
+export type AdvisorReadonlyModel = ReadonlyModel;
 
 /** Model entry available to Advisor after scope resolution. */
-export type ScopedAdvisorModel = {
-  /** Pi model object. */
-  readonly model: AdvisorReadonlyModel;
-  /** Canonical `provider/modelId` slug. */
-  readonly canonicalSlug: string;
-  /** Thinking level suffix from a scope pattern, when present. */
-  readonly thinkingLevel?: ScopedThinkingLevel;
-};
+export type ScopedAdvisorModel = ScopedModel;
 
 /** Effective scoped model set for a tool call or status query. */
-export type EffectiveModelScope = {
-  /** Source that produced this scoped model set. */
-  readonly source: ScopeSource;
-  /** Models available to Advisor. */
-  readonly entries: readonly ScopedAdvisorModel[];
-  /** Patterns used for argv or settings scope reconstruction. */
-  readonly patterns?: readonly string[];
-};
+export type EffectiveModelScope = SharedEffectiveModelScope;
 
 //endregion Scope
 
 //region Selection
 
 /** Cost inputs computed for one model during default selection. */
-export type ModelCostScore = {
-  /** Canonical model slug. */
-  readonly slug: string;
-  /** Input tokens estimated for serialized Advisor request. */
-  readonly inputTokens: number;
-  /** Output-token budget used for ranking. */
-  readonly maxOutputTokens: number;
-  /** Expected cost score used for ordering. */
-  readonly expectedCost: number;
-  /** Input-token price from model metadata. */
-  readonly inputCost: number;
-  /** Output-token price from model metadata. */
-  readonly outputCost: number;
-  /** Model context window used as tie-breaker. */
-  readonly contextWindow: number;
-};
+export type ModelCostScore = SharedModelCostScore;
 
 /** Default model selection result. */
-export type DefaultModelSelection = {
-  /** Selected scoped model. */
-  readonly selected: ScopedAdvisorModel;
-  /** Sorted scores, best first. */
-  readonly ranking: readonly ModelCostScore[];
-  /** Human-readable reason for the top rank. */
-  readonly reason: string;
-};
+export type DefaultModelSelection = SharedDefaultModelSelection;
 
 /** Explicit or default selection result for a tool call. */
 export type AdvisorModelSelection = {

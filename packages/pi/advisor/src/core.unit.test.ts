@@ -15,13 +15,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 
-import { parseArgvModelPatterns, } from './argv-scope.ts';
+import { resolveRequestedModel, } from '@monochromatic-dev/pi-shared-model-selection/core';
 import {
   selectDefaultModel,
   selectDefaultModelFromContextEstimates,
-} from './model-cost.ts';
-import { resolveRequestedModel, } from './model-slug.ts';
-import { resolveModelPatterns, } from './scope-patterns.ts';
+} from '@monochromatic-dev/pi-shared-model-selection/cost';
+import {
+  parseArgvModelPatterns,
+  resolveModelPatterns,
+} from '@monochromatic-dev/pi-shared-model-selection/scope';
 import { prepareAdvisorArguments, } from './tool-params.ts';
 import type { EffectiveModelScope, } from './types.ts';
 
@@ -206,6 +208,7 @@ await describe({
               scope: twoModelScope,
               requestedSlug: 'expensive/reviewer',
               modelRegistry,
+              errorPrefix: 'advisor',
             },);
             expect(result.selected.canonicalSlug,).toBe('expensive/reviewer',);
           },
@@ -219,6 +222,7 @@ await describe({
                 scope: twoModelScope,
                 requestedSlug: 'reviewer',
                 modelRegistry,
+                errorPrefix: 'advisor',
               },);
             }
             catch (error) {
@@ -239,7 +243,7 @@ await describe({
             const result = selectDefaultModel({
               scope: twoModelScope,
               estimatedInputTokens: INPUT_TOKENS,
-              maxAdvisorOutputTokens: OUTPUT_BUDGET,
+              maxOutputTokens: OUTPUT_BUDGET,
             },);
             expect(result.selected.canonicalSlug,).toBe('expensive/reviewer',);
           },
@@ -264,7 +268,7 @@ await describe({
                   EMPTY_INPUT_TOKENS,
                 ],
               ],),
-              maxAdvisorOutputTokens: OUTPUT_BUDGET,
+              maxOutputTokens: OUTPUT_BUDGET,
             },);
             expect(result.selected.canonicalSlug,).toBe('cheap/reviewer',);
           },

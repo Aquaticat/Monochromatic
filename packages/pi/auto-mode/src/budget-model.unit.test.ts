@@ -18,7 +18,7 @@ import {
   extractVersionNumbers,
   findCheapestInMajorVersions,
   NO_MAJOR_VERSION,
-} from './budget-model-version.ts';
+} from '@monochromatic-dev/pi-shared-model-selection/core';
 import { NoBudgetModelError, } from './budget-model.ts';
 
 /**

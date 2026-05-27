@@ -21,7 +21,7 @@ import {
   renderAdvisorCall,
   renderAdvisorResult,
 } from './rendering.ts';
-import { resolveEffectiveScope, } from './scope-resolver.ts';
+import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/scope';
 import { selectAdvisorRunContext, } from './tool-context-selection.ts';
 import {
   AdvisorToolParametersSchema,
@@ -160,7 +160,10 @@ export async function runAdvisor(
   /** Start time for duration metadata. */
   const startedAt = Date.now();
   /** Effective scoped model set. */
-  const scope = resolveEffectiveScope({ ctx: options.ctx, },);
+  const scope = resolveEffectiveScope({
+    ctx: options.ctx,
+    errorPrefix: 'advisor',
+  },);
   if (scope.entries
     .length
     === 0) {

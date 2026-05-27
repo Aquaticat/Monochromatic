@@ -6,8 +6,8 @@
 
 import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
-import { selectDefaultModel, } from './model-cost.ts';
-import { resolveRequestedModel, } from './model-slug.ts';
+import { resolveRequestedModel, } from '@monochromatic-dev/pi-shared-model-selection/core';
+import { selectDefaultModel, } from '@monochromatic-dev/pi-shared-model-selection/cost';
 import type {
   AdvisorConfig,
   AdvisorModelSelection,
@@ -57,6 +57,7 @@ export function selectAdvisorModel(
       scope,
       requestedSlug,
       modelRegistry,
+      errorPrefix: 'advisor',
     },);
   }
 
@@ -64,7 +65,7 @@ export function selectAdvisorModel(
   const defaultSelection = selectDefaultModel({
     scope,
     estimatedInputTokens,
-    maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
+    maxOutputTokens: config.maxAdvisorOutputTokens,
   },);
   return {
     selected: defaultSelection.selected,

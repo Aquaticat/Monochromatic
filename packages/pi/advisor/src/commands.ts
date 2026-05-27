@@ -13,8 +13,8 @@ import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import { sendAdvisorMessage, } from './command-message.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import { maxContextCharsForAdvisorModel, } from './context.ts';
-import { selectDefaultModel, } from './model-cost.ts';
-import { resolveEffectiveScope, } from './scope-resolver.ts';
+import { selectDefaultModel, } from '@monochromatic-dev/pi-shared-model-selection/cost';
+import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/scope';
 import { runAdvisor, } from './tool.ts';
 import type { AdvisorConfig, } from './types.ts';
 
@@ -179,7 +179,10 @@ export function buildAdvisorStatus(
   },
 ): string {
   /** Effective model scope for status. */
-  const scope = resolveEffectiveScope({ ctx, },);
+  const scope = resolveEffectiveScope({
+    ctx,
+    errorPrefix: 'advisor',
+  },);
   /** Empty-context default ranking for status display. */
   const defaultSelection = scope.entries
     .length
@@ -188,7 +191,7 @@ export function buildAdvisorStatus(
     : selectDefaultModel({
       scope,
       estimatedInputTokens: 0,
-      maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
+      maxOutputTokens: config.maxAdvisorOutputTokens,
     },);
   /** Advisor model system prompt used for budget reserve estimate. */
   const advisorSystemPrompt = buildAdvisorSystemPrompt(config,);

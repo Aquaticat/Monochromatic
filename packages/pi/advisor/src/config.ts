@@ -19,7 +19,7 @@ import {
 import {
   ABSENT,
   type Maybe,
-} from './maybe.ts';
+} from '@monochromatic-dev/pi-shared-model-selection/core';
 import type { AdvisorConfig, } from './types.ts';
 
 //region Defaults

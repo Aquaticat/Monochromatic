@@ -27,9 +27,9 @@ import {
   MAIN_MODEL_GUIDANCE_PREFIX,
 } from './constants.ts';
 import { l as parentLogger, } from './log.ts';
-import { selectDefaultModel, } from './model-cost.ts';
+import { selectDefaultModel, } from '@monochromatic-dev/pi-shared-model-selection/cost';
 import { renderAdvisorMessage, } from './rendering.ts';
-import { resolveEffectiveScope, } from './scope-resolver.ts';
+import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/scope';
 import { createAdvisorTool, } from './tool.ts';
 
 /** Tagged logger for the Advisor entry point. */
@@ -157,7 +157,10 @@ function buildMainModelGuidance(
   },
 ): string {
   /** Effective scoped model set. */
-  const scope = resolveEffectiveScope({ ctx, },);
+  const scope = resolveEffectiveScope({
+    ctx,
+    errorPrefix: 'advisor',
+  },);
   /** Default model for empty Advisor params. */
   const defaultSelection = scope.entries
     .length
@@ -166,7 +169,7 @@ function buildMainModelGuidance(
     : selectDefaultModel({
       scope,
       estimatedInputTokens: 0,
-      maxAdvisorOutputTokens: config.maxAdvisorOutputTokens,
+      maxOutputTokens: config.maxAdvisorOutputTokens,
     },);
   /** Canonical slugs available to Advisor. */
   const scopedSlugs = scope.entries

@@ -14,7 +14,7 @@ import { LATEST_USER_EXCERPT_CHARS, } from './constants.ts';
 import {
   ABSENT,
   type Maybe,
-} from './maybe.ts';
+} from '@monochromatic-dev/pi-shared-model-selection/core';
 
 //region Public API
 

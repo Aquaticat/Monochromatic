@@ -16,7 +16,7 @@ import {
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
-import { loadSettingsScopePatterns, } from './settings-scope.ts';
+import { loadSettingsScopePatterns, } from '@monochromatic-dev/pi-shared-model-selection/scope';
 
 //region Fixtures
 

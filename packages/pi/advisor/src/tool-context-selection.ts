@@ -13,8 +13,8 @@ import {
   buildAdvisorContext,
   maxContextCharsForAdvisorModel,
 } from './context.ts';
-import { selectDefaultModelFromContextEstimates, } from './model-cost.ts';
-import { resolveRequestedModel, } from './model-slug.ts';
+import { resolveRequestedModel, } from '@monochromatic-dev/pi-shared-model-selection/core';
+import { selectDefaultModelFromContextEstimates, } from '@monochromatic-dev/pi-shared-model-selection/cost';
 import type {
   AdvisorConfig,
   AdvisorContext,
@@ -99,6 +99,7 @@ export function selectAdvisorRunContext(
       scope: options.scope,
       requestedSlug: options.requestedSlug,
       modelRegistry: options.modelRegistry,
+      errorPrefix: 'advisor',
     },);
     return {
       selection,
@@ -145,7 +146,7 @@ export function selectAdvisorRunContext(
   const defaultSelection = selectDefaultModelFromContextEstimates({
     scope: options.scope,
     estimatedInputTokensBySlug,
-    maxAdvisorOutputTokens: options.config
+    maxOutputTokens: options.config
       .maxAdvisorOutputTokens,
   },);
   /** Context candidate matching selected default model. */
