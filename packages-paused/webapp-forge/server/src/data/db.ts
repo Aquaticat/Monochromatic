@@ -127,7 +127,7 @@ if (
   (reposSchemaRow === undefined)
     || (reposSchemaRow
     .s
-      .includes('REFERENCES users',))
+    .includes('REFERENCES users',))
 ) {
   await db.exec(migration0004,);
 }
