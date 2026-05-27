@@ -266,7 +266,9 @@ await describe({
 
             /** No writeTimestamp for this dest because content was identical (size check unsafe under concurrent execution) */
             expect(
-              writeTimestamps.has(resolve(join(destDir, 'same.ts',),),),
+              writeTimestamps.has(
+                resolve(join(destDir, 'same.ts',),),
+              ),
             ).toBe(
               false,
             );
@@ -314,10 +316,14 @@ await describe({
             },);
             /** Each dest path must be tracked individually (size check unsafe under concurrent execution) */
             expect(
-              writes.has(resolve(join(tempDir, 'out', 'x.ts',),),),
+              writes.has(
+                resolve(join(tempDir, 'out', 'x.ts',),),
+              ),
             ).toBe(true,);
             expect(
-              writes.has(resolve(join(tempDir, 'out', 'y.ts',),),),
+              writes.has(
+                resolve(join(tempDir, 'out', 'y.ts',),),
+              ),
             ).toBe(true,);
             await teardown(tempDir,);
           },
