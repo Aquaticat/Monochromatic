@@ -1,14 +1,9 @@
 /**
- * Unit tests for Advisor settings scope loading.
+ * Unit tests for pi settings scope loading.
  *
  * @module
  */
 
-import {
-  describe,
-  expect,
-  it,
-} from '@monochromatic-dev/module-test';
 import {
   mkdir,
   mkdtemp,
@@ -16,7 +11,14 @@ import {
 } from 'node:fs/promises';
 import { tmpdir, } from 'node:os';
 import { join, } from 'node:path';
-import { loadSettingsScopePatterns, } from '@monochromatic-dev/pi-shared-model-selection/scope';
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test';
+
+import { loadSettingsScopePatterns, } from './scope.ts';
+import { captureError, } from './test-fixtures.ts';
 
 //region Fixtures
 
@@ -33,10 +35,10 @@ await describe({
   children: [
     it({
       name: 'returns unrestricted scope when settings are absent',
-      fn: async () => {
+      fn: async function testAbsentSettings() {
         const root = await mkdtemp(join(
           tmpdir(),
-          'pi-advisor-settings-test-',
+          'pi-shared-settings-test-',
         ),);
         expect(loadSettingsScopePatterns({
           cwd: join(
@@ -53,10 +55,10 @@ await describe({
     },),
     it({
       name: 'prefers project enabledModels over global enabledModels',
-      fn: async () => {
+      fn: async function testProjectSettingsPrecedence() {
         const root = await mkdtemp(join(
           tmpdir(),
-          'pi-advisor-settings-test-',
+          'pi-shared-settings-test-',
         ),);
         const home = join(
           root,
@@ -106,6 +108,45 @@ await describe({
         expect(loadSettingsScopePatterns({ cwd, home, },).patterns,).toEqual([
           PROJECT_PATTERN,
         ],);
+      },
+    },),
+    it({
+      name: 'throws for invalid enabledModels',
+      fn: async function testInvalidSettings() {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'pi-shared-settings-test-',
+        ),);
+        const cwd = join(
+          root,
+          'repo',
+        );
+        await mkdir(
+          join(
+            cwd,
+            '.pi',
+          ),
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            cwd,
+            '.pi',
+            'settings.json',
+          ),
+          JSON.stringify({ enabledModels: [1,], },),
+        );
+        const error = captureError(function loadInvalidSettings() {
+          return loadSettingsScopePatterns({
+            cwd,
+            home: join(
+              root,
+              'home',
+            ),
+          },);
+        },);
+        expect(error,).toBeInstanceOf(Error,);
+        expect((error as Error).message,).toContain('invalid project settings',);
       },
     },),
   ],
