@@ -1,12 +1,42 @@
+import { glob, } from 'node:fs/promises';
+
 import {
   cat,
   overwrite,
   overwriteEach,
   overwriteIfNotExists,
 } from '@monochromatic-dev/dev-script-file-enforcer/ts';
-import { glob, } from 'node:fs/promises';
-import { homedir, } from 'node:os';
-import { join, } from 'node:path';
+
+import type browserslist from 'browserslist';
+
+/**
+ * Resolver function exported by the `browserslist` package.
+ *
+ * @example
+ * ```ts
+ * const resolveBrowserslist = await importBrowserslist();
+ * ```
+ */
+type BrowserslistResolver = typeof browserslist;
+
+/**
+ * Imports Browserslist at runtime so generators use the installed package data.
+ *
+ * @returns Browserslist resolver from dynamic package import.
+ *
+ * @example
+ * ```ts
+ * const resolveBrowserslist = await importBrowserslist();
+ * ```
+ */
+async function importBrowserslist(): Promise<BrowserslistResolver> {
+  /** CommonJS package namespace exposed through ESM dynamic import. */
+  const browserslistModule = await import('browserslist') as {
+    readonly default: BrowserslistResolver;
+  };
+
+  return browserslistModule.default;
+}
 
 /**
  * Generates mise.toml from mise.no-env.toml with a dynamic [env] section
@@ -83,6 +113,34 @@ ${await cat([
 }
 
 /**
+ * Generates resolved Browserslist targets for build tools that cannot resolve
+ * `.browserslistrc` directly.
+ *
+ * @example
+ * ```ts
+ * await generateResolvedBrowserslistTargets();
+ * ```
+ */
+async function generateResolvedBrowserslistTargets(): Promise<void> {
+  /** Browserslist resolver loaded lazily so file-enforcer uses real package data. */
+  const resolveBrowserslist = await importBrowserslist();
+  /** Target strings selected by the root `.browserslistrc` file. */
+  const targets = resolveBrowserslist(
+    undefined,
+    { path: process.cwd(), },
+  );
+
+  await overwrite({
+    dest: './.browserslistrc.resolved.local.json',
+    content: `${JSON.stringify(
+      targets,
+      null,
+      2,
+    )}\n`,
+  },);
+}
+
+/**
  * Mirrors canonical skills from .agents/skills/ to .factory/skills/ and .claude/skills/
  * for legacy consumers.
  */
@@ -132,6 +190,8 @@ ${await cat(['./AGENTS.md',],)}`,
   generateMiseToml(),
 
   generateForbiddenStringsRules(),
+
+  generateResolvedBrowserslistTargets(),
 
   mirrorSkills(),
   // Oxlint config: root oxlint.config.ts imports @monochromatic-dev/config-oxlint and adds jsPlugins.

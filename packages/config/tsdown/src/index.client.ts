@@ -5,6 +5,11 @@ import {
   type UserConfig,
 } from 'tsdown';
 
+import { browserslistTargets, } from './browserslist-targets.ts';
+
+/** Resolved Browserslist targets shared by client bundles. */
+const target = await browserslistTargets({ runtime: 'browser', },);
+
 /**
  * Shared tsdown configuration for browser client bundles.
  *
@@ -27,7 +32,7 @@ import {
 const _default_1: UserConfig = defineConfig({
   entry: ['./src/client.ts',],
   dts: false,
-  target: 'firefox140',
+  target,
   platform: 'neutral',
   inputOptions: {
     resolve: {

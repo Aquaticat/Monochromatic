@@ -3,6 +3,11 @@ import {
   type UserConfig,
 } from 'tsdown';
 
+import { browserslistTargets, } from './browserslist-targets.ts';
+
+/** Resolved Browserslist targets shared by Node builds. */
+const target = await browserslistTargets({ runtime: 'node', },);
+
 /**
  * Shared tsdown configuration for Node.js platform builds.
  *
@@ -20,7 +25,7 @@ import {
 const _default_1: UserConfig = defineConfig({
   entry: ['./src/index.ts',],
   dts: true,
-  target: 'firefox140',
+  target,
   platform: 'node',
   deps: {
     alwaysBundle: [

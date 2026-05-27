@@ -54,8 +54,9 @@ The 24 split into four groups:
   `extglob`, `for-in`, `repeat-element`, `repeat-string`, `sax`, `set-blocking`.
 - Source-map / browser-data / JSON utilities replaced by bundler built-ins
   or catalog deps (4):
-  `caniuse-lite`, `convert-source-map`, `fast-json-stable-stringify`,
-  `source-map-resolve`.
+  `caniuse-lite` (blocked except `browserslist` itself, which resolves
+  `.browserslistrc` for file-enforcer and config-tsdown), `convert-source-map`,
+  `fast-json-stable-stringify`, `source-map-resolve`.
 
 ### Conditions for revisiting
 
@@ -74,9 +75,10 @@ change here so future readers see the audit trail.
 After editing the POLICY block, run `mise run prepare:pnpm:install`.
 pnpm rewrites the `pnpmfileChecksum` line in `pnpm-lock.yaml`
 and re-runs resolution.
-Because no current manifest declares any blocked package,
-no substitutions occur and no `[blocked-dep]` lines are printed.
-The only diff is the checksum line itself, which is committed alongside
+Allowed exceptions do not print warnings; currently `browserslist` is allowed
+for `caniuse-lite` so file-enforcer and config-tsdown can resolve real browser data.
+For every non-allowed dependent, no substitutions should occur and no `[blocked-dep]`
+lines should print. The checksum line in `pnpm-lock.yaml` is committed alongside
 the `.pnpmfile.mjs` change.
 
 ## vlt 0.x fails to fetch manifest when dependency spec includes semver build metadata `+<hash>` suffix

@@ -3,6 +3,11 @@ import {
   type UserConfig,
 } from 'tsdown';
 
+import { browserslistTargets, } from './browserslist-targets.ts';
+
+/** Resolved Browserslist targets shared by neutral builds. */
+const target = await browserslistTargets({ runtime: 'browser', },);
+
 /**
  * Shared tsdown configuration for neutral (browser-compatible) platform builds.
  *
@@ -19,7 +24,7 @@ import {
 const _default_1: UserConfig = defineConfig({
   entry: ['./src/index.ts',],
   dts: true,
-  target: 'firefox140',
+  target,
   platform: 'neutral',
   inputOptions: {
     resolve: {

@@ -7,8 +7,15 @@
     "config",
     "monochromatic"
   ],
+  "dependencies": {
+    "browserslist": "catalog:"
+  },
   "devDependencies": {
-    "tsdown": "catalog:"
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
   },
   "type": "module",
   "files": [

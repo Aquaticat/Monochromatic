@@ -491,7 +491,7 @@ description = "Approve build scripts for native dependencies"
 run = "pnpm approve-builds sharp"
 
 [tasks."prepare:pnpm:others:files"]
-description = "Sync file-enforcer managed files (CLAUDE.md, skill mirrors)"
+description = "Sync file-enforcer managed files"
 run = "bun file-enforcer.config.ts"
 
 [tasks."prepare:playwright"]

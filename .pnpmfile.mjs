@@ -40,8 +40,9 @@
 const POLICY = Object.freeze({
   'caniuse-lite': {
     action: 'throw',
+    allowed: ['browserslist',],
     reason:
-      '3MB+ browserslist data dep; the workspace targets a baseline directly, browserslist unused',
+      '3MB+ browser support DB; only the real browserslist package may load it for resolved build targets',
   },
   'convert-source-map': {
     action: 'throw',
