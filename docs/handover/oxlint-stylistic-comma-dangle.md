@@ -76,6 +76,17 @@ Those numbers are estimates, not a limit.
 They show that the target package should need a small rule file rather than a
 port of the full ESLint rule.
 
+The existing fixtures confirm this design fits established repo convention rather
+than imposing a new one.
+`packages/test-fixture/oxlint-stylistic/src/valid/single-item.ts` already places a
+trailing comma on every single-item construct (`[1,]`, `{ host: 'localhost', }`,
+`[string,]`, `export { identity, }`, `identity(x: number,)`), and
+`packages/test-fixture/oxlint-stylistic/src/invalid/fixable-trailing-comma.ts`
+exists solely to assert that `--fix` preserves trailing commas.
+The repo already mandates trailing commas everywhere, so always-only with no
+options enforces what the fixtures and dprint output already produce; it is not a
+new policy.
+
 ## Required semantics
 
 `stylistic/comma-dangle` should:
@@ -103,6 +114,12 @@ Out of scope for the first pass:
   This package is adding an always-only rule, so the first implementation should
   not add a `never` branch unless a repo fixture or oxlint parse behavior proves
   it is needed.
+  Consequence to document, not to fix: use-site type arguments such as
+  `new Set<string>()` and `foo<A, B>()` will not receive a trailing comma, because
+  no visitor covers `TSTypeParameterInstantiation`; only
+  `TSTypeParameterDeclaration` (the `<T>` at a declaration site, in the covered
+  set below) is handled. Note this in the README so it is not later filed as
+  missed coverage.
 
 ## Syntax categories to cover
 
@@ -213,6 +230,18 @@ Core checker behavior:
    - For imports, exports, attributes, enums, type parameters, tuples, and
      function params, use `sourceCode.getTokenAfter(lastItem)` to detect an
      existing comma, otherwise use `sourceCode.getLastToken(lastItem)`.
+
+   The two strategies are not interchangeable; do not collapse them to
+   `getLastToken(container, 1)` everywhere.
+   For imports, exports, and import attributes the comma-delimited list is not at
+   the container tail: an `ImportDeclaration` node spans through `from 'source'`
+   and the optional `;`, so `getLastToken(container, 1)` returns the source-string
+   token, and inserting after it produces the broken
+   `import { one } from 'pkg', ;`.
+   The `getTokenAfter(lastItem)` form is correct for the array/object/call group
+   too, but `getLastToken(container, 1)` is kept there because it reads the token
+   before the close delimiter directly, including for trailing array holes such as
+   `[one, ,]`.
 4. If the trailing token is already `,`, return.
 5. Check the next token is one of `)`, `]`, `}`, or `>` when a next token exists.
 6. Report on `lastItem` with `messageId: 'missingComma'`.
@@ -288,9 +317,44 @@ Update:
   enable `stylistic/comma-dangle`.
 - `packages/oxlint-plugins/stylistic/src/oxlint-stylistic.unit.test.ts`:
   add diagnostic and autofix assertions.
-- Existing valid and invalid fixtures as needed.
-  Enabling the rule globally can add comma-dangle diagnostics to existing invalid
-  fixtures and can change autofix output for `invalid/fixable.ts`.
+- Existing valid and invalid fixtures as needed; see "Existing fixture impact"
+  below for the measured per-file effect.
+
+## Existing fixture impact
+
+Measured surface at handoff: 23 fixtures in
+`packages/test-fixture/oxlint-stylistic/src/invalid/`, 7 in `src/valid/`.
+Enabling `stylistic/comma-dangle` globally in `.oxlintrc.fixture.json` affects them
+as follows.
+
+Valid fixtures (each asserts no violations for the rules it covers):
+
+- Already comma-safe, no change: `single-item.ts` (single-item lists already carry
+  trailing commas), `empty-constructs.ts` (empty lists, which the rule ignores, so
+  it doubles as the empty-list regression guard), `already-per-line.ts`,
+  `no-mixed-operators.ts`, `chain-per-line.ts`, and `semi.ts`. Every multi-element
+  list in these is multiline with a trailing comma, single-item with a trailing
+  comma, or empty.
+- `invocation-depth-per-line.ts` contains single-line comma-less constructs
+  (`a(b(c()), other)`, `import(b(c()), opts)`, `a({ value: b(c()) })`) that the
+  rule will flag. Its test filters to `stylistic(invocation-depth-per-line)` and
+  does not assert an empty array, so the new diagnostics do not break it. Do not
+  tighten that test to assert zero diagnostics. Either keep the filter or add
+  trailing commas to those three constructs to keep the global fixture clean.
+
+Invalid fixtures: most already trigger other rules, so assert the filtered
+`stylistic(comma-dangle)` subset, never the full diagnostics array. Two need direct
+attention:
+
+- `invalid/fixable-trailing-comma.ts`: already fully comma-dangled, so `--fix`
+  produces no comma changes. Use it to confirm the rule does not double-insert a
+  comma after an existing one.
+- `invalid/fixable.ts`: the autofix target that changes. The test file already
+  holds two divergent assertions for it: `oxlint-stylistic.unit.test.ts:885`
+  expects `  port: 3000,` (with comma) while `:1160` expects `  port: 3000\n`
+  (without). Reconcile both: confirm which fix path each test exercises, and
+  whether the comma rule makes `:885` redundant or `:1160` the only assertion that
+  moves. Do not assume a single assertion moves.
 
 ## Fixture coverage checklist
 
@@ -412,10 +476,10 @@ Add an autofix test with a temp fixture copy, following the existing `semi` and
 The test should check representative inserted commas and then re-lint the fixed
 copy.
 
-Existing `invalid/fixable.ts` autofix assertions will need updates after the
-rule is enabled globally.
-For example, assertions that currently expect `port: 3000\n` should expect
-`port: 3000,\n` if the comma rule fixes that fixture.
+Existing `invalid/fixable.ts` autofix assertions need updates after the rule is
+enabled globally.
+See "Existing fixture impact" for the `:885`/`:1160` divergence to reconcile; the
+two autofix paths disagree today, so do not assume a single assertion moves.
 
 ## Verification commands
 
