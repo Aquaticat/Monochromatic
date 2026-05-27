@@ -12,11 +12,124 @@
  * @module
  */
 
+import { createHash, } from 'node:crypto';
+
 import {
   isToolCallEventType,
   type ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
 import { RELEVANT_TOOLS, } from './constants.ts';
+
+/** Hash algorithm used for approval fingerprints. */
+const APPROVAL_FINGERPRINT_HASH_ALGORITHM = 'sha256';
+
+/** Digest encoding used for approval fingerprints. */
+const APPROVAL_FINGERPRINT_HASH_ENCODING = 'hex';
+
+/**
+ * Build a stable fingerprint for exact same-session approval reuse.
+ *
+ * The fingerprint includes the tool name, current working directory, and full
+ * tool input. Only the digest is stored in the session, so write or edit
+ * payloads are compared without persisting their contents in custom entries.
+ *
+ * @param event - tool call event being guarded
+ *
+ * @param cwd - current extension working directory
+ *
+ * @returns SHA-256 digest for the guarded tool call
+ *
+ * @example
+ * ```typescript
+ * const fingerprint = buildApprovalFingerprint({ event, cwd: '/repo' });
+ * ```
+ */
+function buildApprovalFingerprint(
+  {
+    event,
+    cwd,
+  }: {
+    readonly event: ToolCallEvent;
+    readonly cwd: string;
+  },
+): string {
+  /** Serialized call identity with canonical object key order. */
+  const serializedCall = stableSerialize({
+    cwd,
+    input: event.input,
+    toolName: event.toolName,
+  },);
+  return createHash(APPROVAL_FINGERPRINT_HASH_ALGORITHM,)
+    .update(serializedCall,)
+    .digest(APPROVAL_FINGERPRINT_HASH_ENCODING,);
+}
+
+/**
+ * Serialize JSON-compatible data with sorted object keys.
+ *
+ * Tool inputs arrive as JSON-compatible objects. Sorting object keys keeps the
+ * approval fingerprint stable when semantically identical input objects have
+ * different insertion order. `undefined` mirrors JSON.stringify semantics:
+ * omitted in objects and encoded as `null` in arrays.
+ *
+ * @param value - JSON-compatible value to serialize
+ *
+ * @returns canonical JSON string
+ *
+ * @example
+ * ```typescript
+ * stableSerialize({ b: 2, a: 1 }); // '{"a":1,"b":2}'
+ * ```
+ */
+function stableSerialize(
+  value: unknown,
+): string {
+  if (Array.isArray(value,)) {
+    return `[${
+      value
+        .map(function serializeArrayItem(item,) {
+          return item === undefined
+            ? 'null'
+            : stableSerialize(item,);
+        },)
+        .join(',',)
+    }]`;
+  }
+
+  if ((value === null) || ((typeof value) !== 'object')) {
+    return JSON.stringify(value,)
+      ?? 'null';
+  }
+
+  /** Object value narrowed to JSON-like record for key sorting. */
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Tool inputs are JSON-compatible plain objects after arrays, null, and primitives are handled; this narrows values for Object.entries without changing runtime data.
+  const record = value as Readonly<Record<string, unknown>>;
+  return `{${
+    Object
+      .entries(record,)
+      .filter(function keepsJsonObjectEntry(entry,) {
+        /** Entry value tested against JSON.stringify object omission semantics. */
+        const [, entryValue,] = entry;
+        return entryValue !== undefined;
+      },)
+      .toSorted(function compareEntryKeys(
+        leftEntry,
+        rightEntry,
+      ) {
+        /** Left object key. */
+        const [leftKey,] = leftEntry;
+        /** Right object key. */
+        const [rightKey,] = rightEntry;
+        return leftKey.localeCompare(rightKey,);
+      },)
+      .map(function serializeObjectEntry(entry,) {
+        /** Object key and value serialized into canonical key order. */
+        const [entryKey, entryValue,] = entry;
+        return `${JSON.stringify(entryKey,)}:${stableSerialize(entryValue,)}`;
+      },)
+      .join(',',)
+  }}`;
+}
 
 /**
  * Extract text content from a tool call event.
@@ -200,6 +313,7 @@ function isRelevantTool(
 }
 
 export {
+  buildApprovalFingerprint,
   describeAction,
   extractToolText,
   getFilePath,

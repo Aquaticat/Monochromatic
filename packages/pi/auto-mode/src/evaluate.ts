@@ -18,6 +18,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import { askUser, } from './ask-user.ts';
 import {
   buildContext,
+  getReusableApproval,
   getTrustDirectives,
 } from './context.ts';
 import { callJudge, } from './judge.ts';
@@ -74,7 +75,8 @@ function decisionForDenyVerdict(
 /**
  * Evaluate a flagged action through the judge pipeline.
  *
- * Resolves a judge model, calls the judge, and processes
+ * Reuses a latest same-session approval for the exact action when present.
+ * Otherwise resolves a judge model, calls the judge, and processes
  * the verdict. On approve, allows and reports an `approved`
  * flow verdict. On deny, blocks with reason plus guidance and reports a
  * `denied` flow verdict. On ask, prompts the user (no flow
@@ -84,7 +86,15 @@ function decisionForDenyVerdict(
  *
  * @example
  * ```typescript
- * const result = await evaluate({ pi, ctx, config, systemPrompt: prompt, action: "bash: sudo rm -rf /", batchContext: [] });
+ * const result = await evaluate({
+ *   pi,
+ *   ctx,
+ *   config,
+ *   systemPrompt: prompt,
+ *   action: "bash: sudo rm -rf /",
+ *   approvalFingerprint: "abc123",
+ *   batchContext: [],
+ * });
  * ```
  */
 async function evaluate(
@@ -94,6 +104,7 @@ async function evaluate(
     config,
     systemPrompt,
     action,
+    approvalFingerprint,
     batchContext,
   }: {
     readonly pi: ExtensionAPI;
@@ -101,6 +112,7 @@ async function evaluate(
     readonly config: MergedConfig;
     readonly systemPrompt: string;
     readonly action: string;
+    readonly approvalFingerprint: string;
     readonly batchContext: readonly BatchEntry[];
   },
 ): Promise<EvaluateResult> {
@@ -110,6 +122,36 @@ async function evaluate(
     l,
   },);
   innerL.debug(`evaluating action: ${action}`,);
+
+  /** Prior approval for the exact action, if the latest matching session verdict still allows reuse. */
+  const reusableApproval = getReusableApproval({
+    ctx,
+    action,
+    approvalFingerprint,
+  },);
+  if (reusableApproval.reusable) {
+    /** Audit reason recorded for this reuse decision and surfaced in the flow widget. */
+    const reuseReason = `Previously approved in this session (${reusableApproval.source}): ${reusableApproval.reason}`;
+    innerL.info(`reuse ${reusableApproval.source}: ${action}`,);
+    pi.appendEntry(
+      VERDICT_ENTRY_TYPE,
+      {
+        action,
+        approvalFingerprint,
+        reusedFromVerdict: reusableApproval.source,
+        verdict: 'approve',
+        reason: reusableApproval.reason,
+      } satisfies VerdictData,
+    );
+    return {
+      decision: { block: false, },
+      flowVerdict: {
+        action,
+        verdict: 'approved',
+        reason: reuseReason,
+      },
+    };
+  }
 
   /**
    * Resolved judge model handed to {@link callJudge}, or a recoverable failure marker.
@@ -158,6 +200,7 @@ async function evaluate(
         pi,
         ctx,
         action,
+        approvalFingerprint,
         explanation: 'No judge model available; manual approval required.',
       },),
     };
@@ -192,6 +235,7 @@ async function evaluate(
         VERDICT_ENTRY_TYPE,
         {
           action,
+          approvalFingerprint,
           verdict: 'approve',
           reason: verdict.reason,
         } satisfies VerdictData,
@@ -213,6 +257,7 @@ async function evaluate(
         VERDICT_ENTRY_TYPE,
         {
           action,
+          approvalFingerprint,
           verdict: 'deny',
           reason: verdict.reason,
         } satisfies VerdictData,
@@ -233,6 +278,7 @@ async function evaluate(
         pi,
         ctx,
         action,
+        approvalFingerprint,
         explanation: verdict.reason,
         reflectExplanationOnDeny: true,
       },),
@@ -247,6 +293,7 @@ async function evaluate(
         pi,
         ctx,
         action,
+        approvalFingerprint,
         explanation: `Judge error: ${msg}`,
       },),
     };

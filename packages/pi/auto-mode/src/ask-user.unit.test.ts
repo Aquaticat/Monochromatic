@@ -17,6 +17,9 @@ import { askUser, } from './ask-user.ts';
 import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
 import { VERDICT_ENTRY_TYPE, } from './types.ts';
 
+/** Approval fingerprint for ask-user tests. */
+const READ_ENV_EXAMPLE_APPROVAL_FINGERPRINT = 'read-env-example-fingerprint';
+
 /** Custom entry appended by the mock extension API. */
 type AppendedEntry = {
   /** Entry custom type passed to {@link ExtensionAPI.appendEntry}. */
@@ -196,6 +199,7 @@ await describe({
           pi: createMockApi({ entries, },),
           ctx: createInteractiveContext({ choice: 'Allow', },),
           action: 'read .env.example',
+          approvalFingerprint: READ_ENV_EXAMPLE_APPROVAL_FINGERPRINT,
           explanation: 'The user should decide whether this is safe.',
         },);
 
@@ -205,6 +209,7 @@ await describe({
           customType: VERDICT_ENTRY_TYPE,
           data: {
             action: 'read .env.example',
+            approvalFingerprint: READ_ENV_EXAMPLE_APPROVAL_FINGERPRINT,
             verdict: 'user-approve',
             reason: 'The user should decide whether this is safe.',
           },

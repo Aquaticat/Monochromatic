@@ -12,7 +12,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 import { MAX_CONTEXT_ACTIVITIES, } from './constants.ts';
-import { buildContext, } from './context.ts';
+import {
+  buildContext,
+  getReusableApproval,
+} from './context.ts';
+import type { VerdictData, } from './types.ts';
 
 //region Test fixtures
 
@@ -21,6 +25,12 @@ const LONG_TEXT_REPEAT_COUNT = 80;
 
 /** Number of bash tool activities generated for cap tests. */
 const BASH_ACTIVITY_COUNT = 6;
+
+/** Approval fingerprint for read .env fixtures. */
+const READ_ENV_APPROVAL_FINGERPRINT = 'read-env-fingerprint';
+
+/** Approval fingerprint for read .env.example fixtures. */
+const READ_ENV_EXAMPLE_APPROVAL_FINGERPRINT = 'read-env-example-fingerprint';
 
 /** Text block shape consumed by {@link buildContext}. */
 type MockTextBlock = {
@@ -77,14 +87,7 @@ type MockBranchEntry =
     /** Verdict entry discriminator. */
     readonly type: 'auto-mode:verdict';
     /** Verdict data attached to next tool result. */
-    readonly data: {
-      /** Guarded action. */
-      readonly action: string;
-      /** Verdict value. */
-      readonly verdict: 'deny';
-      /** Verdict reason. */
-      readonly reason: string;
-    };
+    readonly data: VerdictData;
   };
 
 /**
@@ -244,6 +247,31 @@ function bashActivity(
   ];
 }
 
+/**
+ * Build auto-mode verdict entry.
+ *
+ * @param data - verdict payload stored in session history
+ *
+ * @returns verdict branch entry
+ *
+ * @example
+ * ```typescript
+ * verdictEntry({
+ *   action: 'read .env',
+ *   verdict: 'user-approve',
+ *   reason: 'Allowed',
+ * });
+ * ```
+ */
+function verdictEntry(
+  data: VerdictData,
+): MockBranchEntry {
+  return {
+    type: 'auto-mode:verdict',
+    data,
+  };
+}
+
 //endregion Test fixtures
 
 await describe({
@@ -322,6 +350,167 @@ await describe({
 
         expect(context,).toContain(finalLine,);
         expect(context.endsWith(finalLine,),).toBe(true,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: getReusableApproval.name,
+  children: [
+    it({
+      name: 'reuses latest prior approval for exact action',
+      fn: async function reusesLatestPriorApprovalForExactAction(): Promise<void> {
+        /** Reusable approval found for exact action string. */
+        const approval = getReusableApproval({
+          ctx: contextFromBranch({
+            branch: [
+              verdictEntry({
+                action: 'read .env',
+                approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
+                verdict: 'user-approve',
+                reason: 'User allowed dotenv read.',
+              },),
+            ],
+          },),
+          action: 'read .env',
+          approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
+        },);
+
+        expect(approval.reusable,).toBe(true,);
+        if (!approval.reusable)
+          throw new Error('Expected prior approval to be reusable.',);
+        expect(approval.source,).toBe('user-approve',);
+        expect(approval.reason,).toBe('User allowed dotenv read.',);
+      },
+    },),
+
+    it({
+      name: 'does not reuse approval superseded by later denial',
+      fn: async function doesNotReuseSupersededApproval(): Promise<void> {
+        /** Reusable approval lookup after a later denial for the same action. */
+        const approval = getReusableApproval({
+          ctx: contextFromBranch({
+            branch: [
+              verdictEntry({
+                action: 'read .env',
+                approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
+                verdict: 'approve',
+                reason: 'Judge allowed dotenv read.',
+              },),
+              verdictEntry({
+                action: 'read .env',
+                approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
+                verdict: 'user-deny',
+                reason: 'User denied later repeat.',
+              },),
+            ],
+          },),
+          action: 'read .env',
+          approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
+        },);
+
+        expect(approval.reusable,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'does not reuse approval for different action text',
+      fn: async function doesNotReuseDifferentActionText(): Promise<void> {
+        /** Reusable approval lookup for a related but non-identical action. */
+        const approval = getReusableApproval({
+          ctx: contextFromBranch({
+            branch: [
+              verdictEntry({
+                action: 'read .env.example',
+                approvalFingerprint: READ_ENV_EXAMPLE_APPROVAL_FINGERPRINT,
+                verdict: 'approve',
+                reason: 'Safe example file.',
+              },),
+            ],
+          },),
+          action: 'read .env',
+          approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
+        },);
+
+        expect(approval.reusable,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'does not reuse legacy approval without fingerprint',
+      fn: async function doesNotReuseLegacyApprovalWithoutFingerprint(): Promise<void> {
+        /** Reusable approval lookup for pre-fingerprint verdict entries. */
+        const approval = getReusableApproval({
+          ctx: contextFromBranch({
+            branch: [
+              verdictEntry({
+                action: 'read .env',
+                verdict: 'approve',
+                reason: 'Legacy approval without fingerprint.',
+              },),
+            ],
+          },),
+          action: 'read .env',
+          approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
+        },);
+
+        expect(approval.reusable,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'does not reuse older approval after legacy verdict',
+      fn: async function doesNotReuseOlderApprovalAfterLegacyVerdict(): Promise<void> {
+        /** Reusable approval lookup after an unkeyed verdict for same action. */
+        const approval = getReusableApproval({
+          ctx: contextFromBranch({
+            branch: [
+              verdictEntry({
+                action: 'read .env',
+                approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
+                verdict: 'approve',
+                reason: 'Fingerprint approval.',
+              },),
+              verdictEntry({
+                action: 'read .env',
+                verdict: 'user-deny',
+                reason: 'Legacy denial without fingerprint.',
+              },),
+            ],
+          },),
+          action: 'read .env',
+          approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
+        },);
+
+        expect(approval.reusable,).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'preserves original source from reused approval entry',
+      fn: async function preservesOriginalSourceFromReusedApproval(): Promise<void> {
+        /** Reusable approval lookup for an entry produced by prior reuse. */
+        const approval = getReusableApproval({
+          ctx: contextFromBranch({
+            branch: [
+              verdictEntry({
+                action: 'read .env',
+                approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
+                reusedFromVerdict: 'user-approve',
+                verdict: 'approve',
+                reason: 'User allowed dotenv read.',
+              },),
+            ],
+          },),
+          action: 'read .env',
+          approvalFingerprint: READ_ENV_APPROVAL_FINGERPRINT,
+        },);
+
+        expect(approval.reusable,).toBe(true,);
+        if (!approval.reusable)
+          throw new Error('Expected reused approval entry to be reusable.',);
+        expect(approval.source,).toBe('user-approve',);
       },
     },),
   ],

@@ -26,6 +26,7 @@ import {
 } from './signals.ts';
 import { buildSystemPrompt, } from './system-prompt.ts';
 import {
+  buildApprovalFingerprint,
   describeAction,
   isRelevantTool,
 } from './tool-helpers.ts';
@@ -280,6 +281,11 @@ export default function autoMode(
 
       /** Human-readable rendering of the tool call shown to the judge and the user. */
       const action = describeAction(event,);
+      /** Stable identity for exact same-session approval reuse. */
+      const approvalFingerprint = buildApprovalFingerprint({
+        event,
+        cwd: ctx.cwd,
+      },);
       /** Snapshot of this turn's siblings handed to the judge so it can reason about batch context; empty when this is the turn's first flagged call. */
       const batchContext = [...currentTurnBatch,];
 
@@ -289,6 +295,7 @@ export default function autoMode(
         config,
         systemPrompt,
         action,
+        approvalFingerprint,
         batchContext,
       },)
         .then(

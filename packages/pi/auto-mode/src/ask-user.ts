@@ -39,7 +39,13 @@ const l = tagged({
  *
  * @example
  * ```typescript
- * const result = await askUser({ pi, ctx, action: "bash: sudo rm -rf /", explanation: "Destructive command" });
+ * const result = await askUser({
+ *   pi,
+ *   ctx,
+ *   action: "bash: sudo rm -rf /",
+ *   approvalFingerprint: "abc123",
+ *   explanation: "Destructive command",
+ * });
  * ```
  */
 async function askUser(
@@ -47,12 +53,14 @@ async function askUser(
     pi,
     ctx,
     action,
+    approvalFingerprint,
     explanation,
     reflectExplanationOnDeny = false,
   }: {
     readonly pi: ExtensionAPI;
     readonly ctx: ExtensionContext;
     readonly action: string;
+    readonly approvalFingerprint?: string;
     readonly explanation: string;
     readonly reflectExplanationOnDeny?: boolean;
   },
@@ -69,6 +77,9 @@ async function askUser(
       VERDICT_ENTRY_TYPE,
       {
         action,
+        ...(approvalFingerprint !== undefined
+          ? { approvalFingerprint, }
+          : {}),
         verdict: 'user-deny',
         reason: 'no UI',
       } satisfies VerdictData,
@@ -104,6 +115,9 @@ async function askUser(
       VERDICT_ENTRY_TYPE,
       {
         action,
+        ...(approvalFingerprint !== undefined
+          ? { approvalFingerprint, }
+          : {}),
         verdict: 'user-approve',
         reason: explanation,
       } satisfies VerdictData,
@@ -117,6 +131,9 @@ async function askUser(
       VERDICT_ENTRY_TYPE,
       {
         action,
+        ...(approvalFingerprint !== undefined
+          ? { approvalFingerprint, }
+          : {}),
         verdict: 'user-deny',
         reason: 'user stopped',
       } satisfies VerdictData,
@@ -133,6 +150,9 @@ async function askUser(
     VERDICT_ENTRY_TYPE,
     {
       action,
+      ...(approvalFingerprint !== undefined
+        ? { approvalFingerprint, }
+        : {}),
       verdict: 'user-deny',
       reason: explanation,
     } satisfies VerdictData,

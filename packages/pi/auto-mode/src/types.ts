@@ -40,6 +40,10 @@ const VERDICT_ENTRY_TYPE = 'auto-mode:verdict';
 type VerdictData = {
   /** Human-readable description of the action. */
   readonly action: string;
+  /** Stable fingerprint of the exact tool call approved or denied. */
+  readonly approvalFingerprint?: string;
+  /** Original approval verdict when this entry was produced by reuse. */
+  readonly reusedFromVerdict?: 'approve' | 'user-approve';
   /** Judge or user decision. */
   readonly verdict:
     | 'approve'

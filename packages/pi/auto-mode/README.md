@@ -14,6 +14,24 @@ tool_call -> flagger (signals.ts, wide-net boolean predicates)
           -> ask (user decides; user-denied blocks include reason)
 ```
 
+### Session approval reuse
+
+Before resolving a judge model, auto-mode checks the current session branch for
+an earlier verdict with the same action text and approval fingerprint. The
+fingerprint hashes the tool name, current working directory, and full tool input,
+so a later write or edit to the same path with different content does not match.
+Only the fingerprint digest of the full input is stored; full write or edit
+payloads are not added to custom entries. Older verdict entries without an
+approval fingerprint fail closed: they are not reused, and the newest same-action
+unkeyed verdict prevents older fingerprinted approvals from being reused.
+
+If the latest matching verdict is `approve` or `user-approve`, auto-mode allows
+the action immediately and records a fresh `approve` verdict with the original
+approval reason plus `reusedFromVerdict` metadata for auditability. A later
+`deny`, `user-deny`, or `ask` verdict for the same
+action and fingerprint disables reuse, so stale approvals do not override newer
+decisions.
+
 The flagger and judge are strictly separated: the flagger never provides reasons, the judge sees only raw action plus context.
 
 ### Judge context

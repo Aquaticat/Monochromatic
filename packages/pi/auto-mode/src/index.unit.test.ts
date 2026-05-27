@@ -5,12 +5,17 @@
  * and propose_trust tool execution.
  */
 
-import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
+import type { ExtensionAPI, ToolCallEvent, } from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test';
+import { buildApprovalFingerprint, } from './tool-helpers.ts';
+import {
+  VERDICT_ENTRY_TYPE,
+  type VerdictData,
+} from './types.ts';
 
 //region Mock infrastructure
 
@@ -207,6 +212,80 @@ await describe({
         );
 
         expect(result,).toBeUndefined();
+      },
+    },),
+
+    //endregion
+
+    //region Approval reuse
+
+    it({
+      name: 'auto approves flagged action with prior session approval',
+      fn: async function autoApprovesFlaggedActionWithPriorSessionApproval() {
+        const {
+          api,
+          registrations,
+          entries,
+        } = createMockApi();
+        autoMode(api,);
+
+        /** Registered tool-call handler under test. */
+        const toolCallHandler = getHandler({
+          registrations,
+          event: 'tool_call',
+        },);
+        /** Repeated read tool event that should match prior session approval. */
+        const event = {
+          type: 'tool_call',
+          toolName: 'read',
+          toolCallId: 'read-env',
+          input: {
+            path: '/repo/.env',
+          },
+        } as unknown as ToolCallEvent;
+        /** Exact fingerprint for the repeated read tool event. */
+        const approvalFingerprint = buildApprovalFingerprint({
+          event,
+          cwd: '/repo',
+        },);
+        /** Guard result for repeated action, undefined means allowed by Pi. */
+        const result = await toolCallHandler(
+          event,
+          {
+            cwd: '/repo',
+            ui: {
+              setWidget() {},
+            },
+            sessionManager: {
+              getBranch() {
+                return [
+                  {
+                    type: VERDICT_ENTRY_TYPE,
+                    data: {
+                      action: 'read /repo/.env',
+                      approvalFingerprint,
+                      verdict: 'user-approve',
+                      reason: 'User approved dotenv read.',
+                    } satisfies VerdictData,
+                  },
+                ];
+              },
+            },
+          },
+        );
+
+        expect(result,).toBeUndefined();
+        expect(entries,).toHaveLength(1,);
+        expect(entries[0],).toEqual({
+          customType: VERDICT_ENTRY_TYPE,
+          data: {
+            action: 'read /repo/.env',
+            approvalFingerprint,
+            reusedFromVerdict: 'user-approve',
+            verdict: 'approve',
+            reason: 'User approved dotenv read.',
+          },
+        },);
       },
     },),
 

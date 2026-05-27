@@ -20,6 +20,31 @@ import {
 } from './types.ts';
 
 /**
+ * Reusable approval lookup result.
+ *
+ * Uses a positive discriminant so callers must handle missing or superseded
+ * approvals explicitly.
+ *
+ * @example
+ * ```typescript
+ * const approval: ReusableApproval = { reusable: false };
+ * ```
+ */
+type ReusableApproval =
+  | {
+    /** Whether session history contains reusable approval. */
+    readonly reusable: true;
+    /** Prior approval reason to surface in audit logs and widgets. */
+    readonly reason: string;
+    /** Approval source used to distinguish judge and user approvals. */
+    readonly source: 'approve' | 'user-approve';
+  }
+  | {
+    /** Whether session history contains reusable approval. */
+    readonly reusable: false;
+  };
+
+/**
  * Get active trust directives from the session.
  *
  * A `null` data value acts as a reset sentinel (clears all prior directives).
@@ -49,6 +74,89 @@ function getTrustDirectives(
     }
   }
   return directives;
+}
+
+/**
+ * Find reusable approval for an action in current session history.
+ *
+ * Scans the active branch backward and only reuses approval when latest verdict
+ * for the exact action and approval fingerprint is an approval. A later denial
+ * for same action and fingerprint disables reuse, so stale approvals cannot
+ * override newer user or judge decisions.
+ *
+ * @param ctx - extension context with session access
+ *
+ * @param action - exact action description produced by `describeAction`
+ *
+ * @param approvalFingerprint - exact guarded tool-call fingerprint
+ *
+ * @returns reusable approval metadata, or a negative result
+ *
+ * @example
+ * ```typescript
+ * const approval = getReusableApproval({
+ *   ctx,
+ *   action: 'read .env',
+ *   approvalFingerprint: 'abc123',
+ * });
+ * if (approval.reusable) console.log(approval.reason);
+ * ```
+ */
+function getReusableApproval(
+  {
+    ctx,
+    action,
+    approvalFingerprint,
+  }: {
+    readonly ctx: ExtensionContext;
+    readonly action: string;
+    readonly approvalFingerprint: string;
+  },
+): ReusableApproval {
+  /** Current branch snapshot; entries before forks outside this branch are intentionally ignored. */
+  const branch = ctx.sessionManager
+    .getBranch();
+
+  for (let i = branch.length
+    - 1; i >= 0; i--) {
+    /** Branch entry inspected while walking newest to oldest. */
+    const entry = branch[i];
+    if (entry === undefined)
+      continue;
+    if (!isVerdictEntry(entry,))
+      continue;
+    /** Verdict payload from matching custom entry. */
+    const {
+      action: verdictAction,
+      approvalFingerprint: verdictApprovalFingerprint,
+      reason,
+      reusedFromVerdict,
+      verdict,
+    } = entry.data;
+    if (verdictAction
+      !== action)
+      continue;
+    if (verdictApprovalFingerprint === undefined)
+      return { reusable: false, };
+    if (verdictApprovalFingerprint
+      !== approvalFingerprint)
+      continue;
+
+    if ((verdict
+      === 'approve') || (verdict
+      === 'user-approve')) {
+      return {
+        reusable: true,
+        reason,
+        source: reusedFromVerdict
+          ?? verdict,
+      };
+    }
+
+    return { reusable: false, };
+  }
+
+  return { reusable: false, };
 }
 
 /**
@@ -318,5 +426,6 @@ function bashDetail(
 
 export {
   buildContext,
+  getReusableApproval,
   getTrustDirectives,
 };
