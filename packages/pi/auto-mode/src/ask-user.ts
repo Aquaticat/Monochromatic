@@ -3,7 +3,7 @@
  *
  * Owns the UI side of the evaluate pipeline: prompts the user via the
  * extension's UI when the judge returns "ask", and renders the
- * accumulated verdicts in a widget for the active flow.
+ * accumulated denials in a widget for the active flow.
  *
  * @module
  */
@@ -168,7 +168,10 @@ async function askUser(
 }
 
 /**
- * Update the widget with accumulated verdict counts.
+ * Update the widget with accumulated denied verdict counts.
+ *
+ * Approved verdicts are intentionally omitted so routine auto-approvals do not
+ * create visible widget noise.
  *
  * @example
  * ```typescript
@@ -188,15 +191,6 @@ function updateWidget(
     }[];
   },
 ): void {
-  /** Count of `approved` verdicts, surfaced in the widget summary line. */
-  const approved = verdicts
-    .filter(
-      function isApproved(v,) {
-        return v.verdict
-          === 'approved';
-      },
-    )
-    .length;
   /** Count of `denied` verdicts, surfaced in the widget summary line. */
   const denied = verdicts
     .filter(
@@ -206,16 +200,20 @@ function updateWidget(
       },
     )
     .length;
-  /** Comma-joined summary fragments; empty when both counts are zero so the widget stays blank. */
-  const parts: string[] = [];
-  if (approved > 0)
-    parts.push(`${approved} approved`,);
-  if (denied > 0)
-    parts.push(`${denied} denied`,);
+
+  if (denied === 0) {
+    ctx.ui
+      .setWidget(
+      'auto-mode',
+      undefined,
+    );
+    return;
+  }
+
   ctx.ui
     .setWidget(
     'auto-mode',
-    [parts.join(', ',),],
+    [`${denied} denied`,],
   );
 }
 
