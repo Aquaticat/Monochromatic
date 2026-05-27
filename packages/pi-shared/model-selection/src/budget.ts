@@ -4,4 +4,15 @@
  * @module
  */
 
-export {};
+export * from './budget-report.ts';
+export * from './budget-selection.ts';
+export * from './budget-override.ts';
+export type {
+  BudgetModel,
+  BudgetModelAuth,
+  BudgetModelCandidate,
+  BudgetModelOverride,
+  BudgetModelSelectionOptions,
+  BudgetModelStrategy,
+  ResolveBudgetAuth,
+} from './types.ts';

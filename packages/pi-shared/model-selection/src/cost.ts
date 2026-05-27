@@ -4,4 +4,8 @@
  * @module
  */
 
-export {};
+export * from './cost-ranking.ts';
+export type {
+  DefaultModelSelection,
+  ModelCostScore,
+} from './types.ts';
