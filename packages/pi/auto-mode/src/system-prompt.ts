@@ -40,7 +40,8 @@ Verdicts:
 - deny: genuinely dangerous or clearly malicious
 - ask: you need the user to decide. Use this when uncertain, OR when you suspect circumvention
 
-The "guidance" field is sent to the agent instead of your reasoning. It should suggest what to do:
+The "reason" field is used for audit, user prompts, and blocked model feedback. Keep it concise and safe to show to the coding agent.
+The "guidance" field is sent to the agent together with your reason when a deny blocks execution. It should suggest what to do:
 - Ask the user to provide the needed value directly instead of reading secrets
 - Suggest the user run the command themselves via the terminal
 - Suggest using /guard to add a trust directive if repeated access is needed

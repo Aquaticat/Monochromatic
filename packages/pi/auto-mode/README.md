@@ -9,7 +9,9 @@ Three-stage pipeline:
 ```text
 tool_call -> flagger (signals.ts, wide-net boolean predicates)
           -> judge (judge.ts, LLM call via tool-calling with forced tool_choice)
-          -> approve (silent) / deny (block + guidance) / ask (user decides)
+          -> approve (silent)
+          -> deny (block + reason + guidance)
+          -> ask (user decides; user-denied blocks include reason)
 ```
 
 The flagger and judge are strictly separated: the flagger never provides reasons, the judge sees only raw action plus context.

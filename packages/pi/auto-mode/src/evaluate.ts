@@ -22,14 +22,16 @@ import {
 } from './context.ts';
 import { callJudge, } from './judge.ts';
 import { l as parentLogger, } from './log.ts';
+import { formatModelBlockReason, } from './model-feedback.ts';
 import type { MergedConfig, } from './signals.ts';
-import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
 import {
   type BatchEntry,
   type BudgetModel,
   type BudgetModelOptions,
   type EvaluateResult,
   VERDICT_ENTRY_TYPE,
+  type GuardDecision,
+  type Verdict,
   type VerdictData,
 } from './types.ts';
 
@@ -40,11 +42,41 @@ const l = tagged({
 },);
 
 /**
+ * Build model-facing block decision for a judge deny verdict.
+ *
+ * @param verdict - preserves judge rationale and guidance for agent self-correction
+ *
+ * @returns blocked decision carrying both rationale and safer next step
+ *
+ * @example
+ * ```typescript
+ * decisionForDenyVerdict({
+ *   verdict: { verdict: 'deny', reason: 'Risky command.', guidance: 'Use dry-run.' },
+ * });
+ * ```
+ */
+function decisionForDenyVerdict(
+  {
+    verdict,
+  }: {
+    readonly verdict: Verdict;
+  },
+): GuardDecision {
+  return {
+    block: true,
+    reason: formatModelBlockReason({
+      guardrailReason: verdict.reason,
+      guidance: verdict.guidance,
+    },),
+  };
+}
+
+/**
  * Evaluate a flagged action through the judge pipeline.
  *
  * Resolves a judge model, calls the judge, and processes
  * the verdict. On approve, allows and reports an `approved`
- * flow verdict. On deny, blocks with guidance and reports a
+ * flow verdict. On deny, blocks with reason plus guidance and reports a
  * `denied` flow verdict. On ask, prompts the user (no flow
  * verdict; the prompt path records its own session entry).
  *
@@ -186,11 +218,7 @@ async function evaluate(
         } satisfies VerdictData,
       );
       return {
-        decision: {
-          block: true,
-          reason: verdict.guidance
-            !== '' ? verdict.guidance : DEFAULT_DENY_GUIDANCE,
-        },
+        decision: decisionForDenyVerdict({ verdict, },),
         flowVerdict: {
           action,
           verdict: 'denied',
@@ -206,6 +234,7 @@ async function evaluate(
         ctx,
         action,
         explanation: verdict.reason,
+        reflectExplanationOnDeny: true,
       },),
     };
   }
@@ -279,4 +308,7 @@ function toBudgetModelOptions(
   return opts;
 }
 
-export { evaluate, };
+export {
+  decisionForDenyVerdict,
+  evaluate,
+};

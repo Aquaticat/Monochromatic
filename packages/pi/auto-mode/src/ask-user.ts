@@ -14,6 +14,7 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import { l as parentLogger, } from './log.ts';
+import { formatModelBlockReason, } from './model-feedback.ts';
 import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
 import {
   type GuardDecision,
@@ -31,6 +32,8 @@ const l = tagged({
  * Prompt the user to approve or deny an action.
  *
  * If no interactive UI is available, denies by default (fail-closed).
+ * Verdict-ask callers opt into reflecting the explanation when the user denies;
+ * fallback prompts keep the generic block guidance.
  *
  * @returns block decision with guidance, or an allow decision
  *
@@ -45,11 +48,13 @@ async function askUser(
     ctx,
     action,
     explanation,
+    reflectExplanationOnDeny = false,
   }: {
     readonly pi: ExtensionAPI;
     readonly ctx: ExtensionContext;
     readonly action: string;
     readonly explanation: string;
+    readonly reflectExplanationOnDeny?: boolean;
   },
 ): Promise<GuardDecision> {
   /** Per-call sub-logger so log lines from this entry point carry the function name as a tag. */
@@ -134,7 +139,11 @@ async function askUser(
   );
   return {
     block: true,
-    reason: DEFAULT_DENY_GUIDANCE,
+    reason: reflectExplanationOnDeny
+      ? formatModelBlockReason({
+          guardrailReason: explanation,
+        },)
+      : DEFAULT_DENY_GUIDANCE,
   };
 }
 

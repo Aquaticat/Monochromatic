@@ -48,12 +48,13 @@ const VERDICT_TOOL: Tool = {
       },
       reason: {
         type: 'string',
-        description: 'Brief explanation of your reasoning',
+        description:
+          'Brief explanation of your reasoning; keep it safe to show to the coding agent when blocked',
       },
       guidance: {
         type: 'string',
         description:
-          'Actionable guidance for the agent when verdict is "deny" (ignored for approve/ask)',
+          'Actionable guidance for the agent when verdict is "deny"; sent with reason when blocked',
       },
     },
     required: [
