@@ -27,6 +27,9 @@
     "@earendil-works/pi-coding-agent": "*",
     "typebox": "*"
   },
+  "dependencies": {
+    "@monochromatic-dev/pi-shared-model-selection": "workspace:*"
+  },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "catalog:",
     "@monochromatic-dev/config-tsdown": "workspace:*",

@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
+    "@monochromatic-dev/pi-shared-model-selection": "workspace:*",
     "shell-quote": "^1.8.3",
     "valibot": "catalog:"
   },

@@ -1899,11 +1899,45 @@ importers:
         specifier: 'catalog:'
         version: 5.5.0
 
+  packages/pi-shared/model-selection:
+    dependencies:
+      minimatch:
+        specifier: ^10.2.3
+        version: 10.2.5
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.5.0
+      valibot:
+        specifier: 'catalog:'
+        version: 1.4.0(typescript@6.0.3)
+    devDependencies:
+      '@earendil-works/pi-ai':
+        specifier: ^0.74.0
+        version: 0.74.0
+      '@earendil-works/pi-coding-agent':
+        specifier: 'catalog:'
+        version: 0.75.5
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.3.11
+
   packages/pi/advisor:
     dependencies:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/pi-shared-model-selection':
+        specifier: workspace:*
+        version: link:../../pi-shared/model-selection
       minimatch:
         specifier: ^10.2.3
         version: 10.2.5
@@ -1944,6 +1978,9 @@ importers:
       '@monochromatic-dev/module-logger':
         specifier: workspace:*
         version: link:../../module/logger
+      '@monochromatic-dev/pi-shared-model-selection':
+        specifier: workspace:*
+        version: link:../../pi-shared/model-selection
       shell-quote:
         specifier: ^1.8.3
         version: 1.8.3
@@ -2035,6 +2072,10 @@ importers:
         version: 1.3.11
 
   packages/pi/thinking-defaults:
+    dependencies:
+      '@monochromatic-dev/pi-shared-model-selection':
+        specifier: workspace:*
+        version: link:../../pi-shared/model-selection
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
