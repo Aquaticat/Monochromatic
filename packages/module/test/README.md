@@ -1258,12 +1258,53 @@ covering sequential (`1`), bounded (`2`..`n`), and unbounded (`Infinity`) in one
 ## Self-test
 
 ```bash
-mise run //packages/module/test:test
+mise run //packages/module/test:buildAndTest
 ```
 
 The test files under `src/*.unit.test.ts` use the package's own primitives to validate itself.
+`buildAndTest` builds the harness, then runs the shared `test:unit` task, which executes each
+`*.unit.test.ts` file in its own `bun` process (`mise run //packages/module/test:test:unit` once
+the dist is built). Per-file process isolation keeps each suite's event loop independent; a single
+shared process let one suite's timers starve another's, making a wall-clock concurrency assertion
+flaky under load.
+
+## Property-based testing (internal)
+
+`format-error.property.unit.test.ts` fuzzes the wide-input surfaces of `format-error.ts` with
+[fast-check](https://www.npmjs.com/package/fast-check). fast-check is an internal dev tool for this
+self-test only: it is a `devDependency`, is not re-exported from `index.ts`, and never reaches
+consumers of the harness.
+
+Conventions for adding property tests here:
+
+- No wrapper. Call `await assert(asyncProperty(arbitrary, predicate), { numRuns })` directly inside
+  an `it` `fn`. A thrown counterexample propagates out of `fn` and the harness records it as a
+  normal FAIL, so no integration layer is needed; this matches the harness's no-magic design.
+- Write predicates as named functions (the workspace callback style), single-argument where
+  possible (bundle multiple generated values into one `record` arbitrary).
+- Inside a predicate, use the imported global `expect`, never the scoped `expect.assertions(n)` from
+  `TestContext`. A property runs its body `numRuns` times, so assertion counting would multiply and
+  misfire.
+- Bind `numRuns` to a named constant and set an explicit `timeout` on the `it`; a property runs its
+  body many times, so the default single-assertion budget is too tight.
+- Leave the seed random. On failure fast-check prints the `seed`, the shrunk `Counterexample`, and a
+  `path`, which together reproduce the exact case; pin nothing.
+- Assert invariants that can actually fail. A vacuous shape check (`Array.isArray(...)`) passes
+  whether or not the property exercises anything; prefer falsifiable invariants (exact line counts,
+  marker presence, fragment absence). The cycle-marker property was verified to fail and shrink to
+  the minimal counterexample when the source marker was changed.
 
 ## Dependencies
+
+- **chai**: assertion engine
+- **chai-as-promised**: registered as a chai plugin for users who prefer chai's `.eventually` syntax over the built-in `rejects`/`resolves` API
+- **expect-type**: compile-time type assertions, re-exported as `expectTypeOf`
+- **sinon**: stubs, spies, sandboxes (exposed via `TestContext.sinon`)
+- **sinon-chai**: chai plugin for sinon matchers
+- **@monochromatic-dev/module-es**: tagged logger
+
+fast-check is a `devDependency` used only by the property-based self-tests; it is not a runtime
+dependency and is not part of the public API.
 
 - **chai**: assertion engine
 - **chai-as-promised**: registered as a chai plugin for users who prefer chai's `.eventually` syntax over the built-in `rejects`/`resolves` API
