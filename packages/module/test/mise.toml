@@ -25,7 +25,9 @@ extends = "lint:oxlint"
 [tasks."lint:types"]
 extends = "lint:types"
 
-[tasks.test]
-description = "Self-test the test harness (builds first)"
-depends = ["build"]
-run = "bun src/self.unit.test.ts"
+[tasks."test:unit"]
+extends = "test:unit"
+
+[tasks.buildAndTest]
+description = "Build the harness, then run every *.unit.test.ts in its own bun process"
+run = "mise run build; mise run test:unit"
