@@ -1,6 +1,6 @@
 packages:
-- 'packages/*/*'
-- 'packages-deprecated/*/*'
+  - 'packages/*/*'
+  - 'packages-deprecated/*/*'
 
 allowBuilds:
   '@vscode/ripgrep': false
@@ -11,7 +11,7 @@ allowBuilds:
 autoInstallPeers: false
 
 catalog:
-  '@anthropic-ai/sdk': '0.92.0'
+  '@anthropic-ai/sdk': '>=0.99.0'
   '@csstools/css-tokenizer': '>=4.0.0'
   '@deck.gl/core': '>=9.3.2'
   '@deck.gl/layers': '>=9.3.2'
@@ -28,7 +28,7 @@ catalog:
   '@libsql/client': '>=0.17.3'
   '@libsql/kysely-libsql': '>=0.4.1'
   '@luma.gl/engine': '>=9.3.2'
-  '@earendil-works/pi-coding-agent': '>=0.75.5'
+  '@earendil-works/pi-coding-agent': '>=0.76.0'
   '@mdx-js/mdx': '>=3.1.0'
   '@microsoft/tsdoc': '>=0.16.0'
   '@mitata/counters': '>=0.0.8'
@@ -59,10 +59,10 @@ catalog:
   'dot-prop': '>=10.1.0'
   'execa': '>=9.6.1'
   'expect-type': '>=1.3.0'
-  'feedsmith': '>=3.0.0-next.4'
+  'feedsmith': '>=3.0.0-next.6'
   'file-type': '>=21.3.0'
   'find-up': '>=8.0.0'
-  'h3': '>=2.0.1-rc.16'
+  'h3': '>=2.0.1-rc.22'
   'happy-dom': '>=20.5.0'
   'happy-opfs': '>=2.0.2'
   'happy-rusty': '>=1.9.1'
@@ -134,31 +134,35 @@ hoistWorkspacePackages: false
 linkWorkspacePackages: true
 managePackageManagerVersions: false
 minimumReleaseAgeExclude:
-- '@earendil-works/pi-agent-core@0.75.4'
-- '@earendil-works/pi-ai@0.75.4'
-- '@earendil-works/pi-coding-agent@0.75.4'
-- '@earendil-works/pi-tui@0.75.4'
-- '@oxlint/binding-android-arm-eabi@1.67.0'
-- '@oxlint/binding-android-arm64@1.67.0'
-- '@oxlint/binding-darwin-arm64@1.67.0'
-- '@oxlint/binding-darwin-x64@1.67.0'
-- '@oxlint/binding-freebsd-x64@1.67.0'
-- '@oxlint/binding-linux-arm-gnueabihf@1.67.0'
-- '@oxlint/binding-linux-arm-musleabihf@1.67.0'
-- '@oxlint/binding-linux-arm64-gnu@1.67.0'
-- '@oxlint/binding-linux-arm64-musl@1.67.0'
-- '@oxlint/binding-linux-ppc64-gnu@1.67.0'
-- '@oxlint/binding-linux-riscv64-gnu@1.67.0'
-- '@oxlint/binding-linux-riscv64-musl@1.67.0'
-- '@oxlint/binding-linux-s390x-gnu@1.67.0'
-- '@oxlint/binding-linux-x64-gnu@1.67.0'
-- '@oxlint/binding-linux-x64-musl@1.67.0'
-- '@oxlint/binding-openharmony-arm64@1.67.0'
-- '@oxlint/binding-win32-arm64-msvc@1.67.0'
-- '@oxlint/binding-win32-ia32-msvc@1.67.0'
-- '@oxlint/binding-win32-x64-msvc@1.67.0'
-- '@oxlint/plugins@1.67.0'
-- oxlint@1.67.0
+  - '@earendil-works/pi-agent-core@0.75.4'
+  - '@earendil-works/pi-ai@0.75.4'
+  - '@earendil-works/pi-coding-agent@0.75.4'
+  - '@earendil-works/pi-tui@0.75.4'
+  - '@oxlint/binding-android-arm-eabi@1.67.0'
+  - '@oxlint/binding-android-arm64@1.67.0'
+  - '@oxlint/binding-darwin-arm64@1.67.0'
+  - '@oxlint/binding-darwin-x64@1.67.0'
+  - '@oxlint/binding-freebsd-x64@1.67.0'
+  - '@oxlint/binding-linux-arm-gnueabihf@1.67.0'
+  - '@oxlint/binding-linux-arm-musleabihf@1.67.0'
+  - '@oxlint/binding-linux-arm64-gnu@1.67.0'
+  - '@oxlint/binding-linux-arm64-musl@1.67.0'
+  - '@oxlint/binding-linux-ppc64-gnu@1.67.0'
+  - '@oxlint/binding-linux-riscv64-gnu@1.67.0'
+  - '@oxlint/binding-linux-riscv64-musl@1.67.0'
+  - '@oxlint/binding-linux-s390x-gnu@1.67.0'
+  - '@oxlint/binding-linux-x64-gnu@1.67.0'
+  - '@oxlint/binding-linux-x64-musl@1.67.0'
+  - '@oxlint/binding-openharmony-arm64@1.67.0'
+  - '@oxlint/binding-win32-arm64-msvc@1.67.0'
+  - '@oxlint/binding-win32-ia32-msvc@1.67.0'
+  - '@oxlint/binding-win32-x64-msvc@1.67.0'
+  - '@oxlint/plugins@1.67.0'
+  - oxlint@1.67.0
+  - '@earendil-works/pi-agent-core@0.76.0'
+  - '@earendil-works/pi-ai@0.76.0'
+  - '@earendil-works/pi-coding-agent@0.76.0'
+  - '@earendil-works/pi-tui@0.76.0'
 nodeLinker: isolated
 
 overrides:
@@ -322,14 +326,14 @@ strictPeerDependencies: true
 
 supportedArchitectures:
   cpu:
-  - x64
-  - arm64
-  - current
+    - x64
+    - arm64
+    - current
   libc:
-  - glibc
-  - musl
-  - current
+    - glibc
+    - musl
+    - current
   os:
-  - darwin
-  - linux
-  - current
+    - darwin
+    - linux
+    - current
