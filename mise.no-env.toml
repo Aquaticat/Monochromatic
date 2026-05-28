@@ -437,7 +437,7 @@ if ($args | is-empty) {
 #endregion Linting Tasks
 
 # Formatter orchestration
-# dprint handles formatting (TypeScript, CSS, JSON, YAML, TOML, HTML, markup).
+# dprint handles formatting (CSS, JSON, YAML, TOML, HTML).
 # After dprint, stylelint --fix and oxlint --fix run in parallel
 # to apply auto-fixable lint rules that formatters can't cover.
 #
