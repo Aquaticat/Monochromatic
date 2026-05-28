@@ -1,0 +1,36 @@
+{
+  "name": "@monochromatic-dev/markdownlint-rule-no-pipe-tables",
+  "private": true,
+  "keywords": [
+    "markdownlint",
+    "markdownlint-rule",
+    "monochromatic"
+  ],
+  "devDependencies": {
+    "markdownlint": "catalog:"
+  },
+  "main": "index.mjs",
+  "module": "index.mjs",
+  "type": "module",
+  "files": [
+    "index.mjs",
+    "no-pipe-tables.mjs",
+    "to-html-table.mjs"
+  ],
+  "author": {
+    "name": "Aquaticat",
+    "email": "an@aquati.cat",
+    "url": "https://aquati.cat"
+  },
+  "license": "LGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Aquaticat/Monochromatic.git",
+    "directory": "packages/markdownlint-plugins/no-pipe-tables"
+  },
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "preferUnplugged": true,
+  "description": "Markdownlint rule banning Markdown pipe tables (autofix to HTML); pipe tables force single-line rows."
+}

@@ -75,6 +75,7 @@ catalog:
   'kysely': '>=0.28.17'
   'lezer-json5': '>=2.0.0'
   'lezer-toml': '>=1.0.0'
+  'markdownlint': '>=0.40.0'
   'memfs': '>=4.17.2'
   'micromark': '>=4.0.2'
   'mitata': '>=1.0.34'

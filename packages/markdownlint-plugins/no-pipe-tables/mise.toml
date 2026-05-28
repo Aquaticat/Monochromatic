@@ -1,0 +1,12 @@
+[tasks.lint]
+extends = "lint"
+
+[tasks."lint:oxlint"]
+extends = "lint:oxlint"
+
+# No lint:types -- this package has no TypeScript source files (hand-written .mjs
+# with JSDoc, mirroring packages/config/stylelint).
+
+[tasks."test:unit"]
+description = "Run the no-pipe-tables rule self-test (.mjs, run directly with bun)"
+run = "bun no-pipe-tables.unit.test.mjs"
