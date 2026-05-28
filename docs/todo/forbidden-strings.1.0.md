@@ -12,15 +12,17 @@ integration, 0 failures), `cargo clippy --release -- -D warnings` is clean, the 
 via the OIDC trusted-publishing workflow, and performance is roughly two orders of magnitude
 under the stated budget.
 
-A `1.0` tag is a promise: a scanner that does not leak the rules it is given (Tier 0), a clear
-and accepted position on the content it does not scan (Tier 1), a stable CLI surface, a stable
+A `1.0` tag is a promise: a scanner whose security model is written down (what it guarantees and,
+just as importantly, what it explicitly does not), that does not leak the rules it is given, that
+takes a clear position on the content it does not scan, with a stable CLI surface, a stable
 output contract, gated correctness, and a crate that installs and documents cleanly for someone
-outside this monorepo. Items are tiered by how load-bearing they are. Tier 0 is the one
-unambiguous correctness blocker: it is undocumented and contradicts the headline guarantee. Tier
-1 is a set of already-documented false-negative tradeoffs that a 1.0 should consciously accept or
+outside this monorepo. Items are tiered by how load-bearing they are. Tier 0 is the security
+story: the one unambiguous correctness blocker (the load-path disclosure, which is undocumented
+and contradicts the headline guarantee) plus the documentation that bounds expectations. Tier 1
+is a set of already-documented false-negative tradeoffs that a 1.0 should consciously accept or
 tighten rather than a list of bugs to fix.
 
-## Tier 0: rule-content disclosure on the load path (security blocker)
+## Tier 0: security model, guarantees, and disclosure
 
 The README's central promise is that the matched substring, the surrounding line, and the rule
 pattern are never printed in failure output, so a sensitive rule body (a customer name, an
@@ -72,6 +74,23 @@ captures. Three distinct emission paths leak:
     read error) and assert the sentinel bytes never appear on stdout or stderr. The invariant the
     entire security model rests on currently has no automated guard, which is why this regressed
     unnoticed.
+5.  Document the security model in the shipped README, including the explicit non-guarantees.
+    Today the threat model lives only in the internal design doc
+    ([forbidden-strings.md](./forbidden-strings.md)): the tool defends against accidental
+    introduction of enumerable forbidden literals by trusted contributors, not against
+    adversarial commits. Because matching is literal and byte/codepoint exact with no
+    normalization, it is trivially bypassed, and that is by design rather than a defect. State
+    the bypasses as security boundaries, not bugs: a forbidden string written with Unicode
+    homoglyphs (Cyrillic `а` for Latin `a`), in a different Unicode normalization form (NFC
+    versus NFD, NFKC versus NFKD), with zero-width or bidi control characters spliced in, or via
+    string concatenation, base64 / hex encoding, or character-code arrays, will not match.
+    Equally state the operational boundaries: the local pre-commit hook is bypassable with
+    `--no-verify`, so the required CI check is the actual enforcement line; already-committed
+    history is out of scope (it needs `git filter-repo`); and, once items 1 through 4 land, the
+    one positive guarantee is that rule bodies are never printed in failure output. A 1.0
+    security tool must put its guarantees and its non-guarantees where users read them, so nobody
+    mistakes accident-prevention for adversarial defense. Promote this from the design doc into
+    a README "Security model" section and link the two.
 
 ## Tier 1: documented false-negative coverage gaps (accept or tighten)
 
@@ -87,7 +106,7 @@ whether the fail-closed principle should extend to coverage so a skipped file is
 stderr diagnostic, optionally a configurable nonzero exit) and not only findable by reading the
 docs.
 
-5.  Decide the posture on coverage gaps: accept them as documented limitations, or extend
+6.  Decide the posture on coverage gaps: accept them as documented limitations, or extend
     fail-closed so a file that cannot be fully scanned produces a visible diagnostic at runtime.
     The behaviors in question, all currently documented and silent:
     -   The 8 KiB binary tail cap. `read_with_binary_check` (`src/lib.rs:337-357`) scans only the
@@ -105,7 +124,7 @@ docs.
     -   Symlinked directories are not descended (`follow_links` defaults to false, not
         overridden). Documented as "Symlinks NOT followed". Confirm this is the intended boundary
         or follow links with a cycle guard.
-6.  Bound per-file memory. The NUL-free branch of `read_with_binary_check` (`src/lib.rs:355`)
+7.  Bound per-file memory. The NUL-free branch of `read_with_binary_check` (`src/lib.rs:355`)
     reads the entire file into a `Vec<u8>` with no cap, and files fan out across the rayon pool,
     so up to one large file per thread can be resident at once. A single pathological multi-GB
     tracked text file (or several) can exhaust host memory during `--all`. This one is not
@@ -116,28 +135,28 @@ docs.
 
 ## Tier 2: release engineering and packaging
 
-7.  Add a Rust CI workflow that gates merges on `cargo test`, `cargo clippy -- -D warnings`,
+8.  Add a Rust CI workflow that gates merges on `cargo test`, `cargo clippy -- -D warnings`,
     and `cargo fmt --check`. Today the only workflow touching cargo is
     `.github/workflows/cargo-publish.yml`, and it runs `cargo package` (compile-verify) only;
     tests and lint never run in CI, so a regression lands green. Tracked as issue #122
     (open, ready-for-human), not yet done.
-8.  Run the test suite cross-platform, not just on the dev machine. `cargo-publish.yml` builds
+9.  Run the test suite cross-platform, not just on the dev machine. `cargo-publish.yml` builds
     seven target triples (linux gnu/musl, arm gnu/musl, macOS x86/arm, windows-msvc) but never
     runs `cargo test` on any of them. Path canonicalization, symlink handling, the `gix-index`
     read, and Windows path separators are all claimed-supported in the README yet exercised only
     under Linux.
-9.  Ship a license file inside the crate. `Cargo.toml` sets `license = "LGPL-3.0-or-later"` but
+10. Ship a license file inside the crate. `Cargo.toml` sets `license = "LGPL-3.0-or-later"` but
     its `include` list is `src/**/*.rs`, `Cargo.toml`, `Cargo.lock`, `README.md` only, so the
     published `.crate` carries no license text. The text exists at repo-root
     `LICENSES/LGPL-3.0-or-later.txt`; copy it into the package and add it to `include`.
-10. Declare and test a minimum supported Rust version. `Cargo.toml` has no `rust-version`, so
+11. Declare and test a minimum supported Rust version. `Cargo.toml` has no `rust-version`, so
     there is no stated MSRV and nothing pins it. Pick a floor, add `rust-version`, and add an
-    MSRV job to the CI matrix from item 7. While editing metadata, fill the empty `authors` and
+    MSRV job to the CI matrix from item 8. While editing metadata, fill the empty `authors` and
     `documentation` fields.
-11. Write a `CHANGELOG.md`. The `0.1.0` through `0.1.8` history is undocumented outside git log.
+12. Write a `CHANGELOG.md`. The `0.1.0` through `0.1.8` history is undocumented outside git log.
     A 1.0 release with a semver commitment needs release notes a consumer can read before
     bumping.
-12. Write a stability policy and state it in the README. Declare which surfaces are stable under
+13. Write a stability policy and state it in the README. Declare which surfaces are stable under
     semver (CLI flags, the exit-code contract `0`/`1`/`2`, the `PATH:LINE:COL_START..COL_END
     rule=N` output line, and the redaction guarantee once Tier 0 is fixed) and which are
     explicitly not (the `forbidden_strings` lib API: `run_cli_from_env`, the `fuzzing`-gated
@@ -148,73 +167,73 @@ docs.
 Each of these is already admitted in the README as a known quirk. For 1.0 they should be fixed,
 or, where intentional, kept and documented with rationale rather than as a surprise.
 
-13. Uppercase or otherwise invalid regex flags silently degrade to a literal scan. `/foo/i` is a
+14. Uppercase or otherwise invalid regex flags silently degrade to a literal scan. `/foo/i` is a
     regex; `/foo/I` is a literal match for the six-byte string `/foo/I`, with no load-time error
     (the classifier rejects non-`[a-z]` flags at `src/rules/parse.rs:150` and falls through to
     literal handling at `:209`). A rule author who fat-fingers a capital flag gets silently wrong
     behavior. Warn or error at load.
-14. `--all` plus positional file arguments silently discards the positional list (the walker
+15. `--all` plus positional file arguments silently discards the positional list (the walker
     output overwrites it). Fix: reject the combination with a usage error (exit 2).
-15. A bare `//` rule compiles to `(?-flags:)` and matches the empty string at every position,
+16. A bare `//` rule compiles to `(?-flags:)` and matches the empty string at every position,
     flagging every file. Fix: detect and reject this shape at load.
-16. A UTF-8 BOM at the start of the rules file is not stripped, so the first rule silently
+17. A UTF-8 BOM at the start of the rules file is not stripped, so the first rule silently
     carries a leading `\u{FEFF}` and never matches as intended. Fix: strip the BOM on load.
-17. The rules file and `--all` resolve relative to the current working directory, not the git
+18. The rules file and `--all` resolve relative to the current working directory, not the git
     repository root (default `./forbidden-strings.local.txt`; the walker calls `list_files(".")`
     at `src/lib.rs:705`). Run the tool from a subdirectory and the default rules file is not
     found and `--all` scans only that subtree, which is surprising for a tool described as a
     git-repo scanner. Walk up to the repository root, or keep cwd-relative and emit an explicit
     "no rules file found at <cwd>" error plus a documented note.
-18. Identical rules are not deduplicated; each fires its own `rule=N` hit. Decision needed: dedup
+19. Identical rules are not deduplicated; each fires its own `rule=N` hit. Decision needed: dedup
     at load, or keep current behavior and document it as intentional.
 
 ## Tier 4: documentation and distribution
 
-19. Fix the stale README pointer. README lines 258 through 264 reference
+20. Fix the stale README pointer. README lines 258 through 264 reference
     `TROUBLESHOOTING.resharp.md` "in the repository root"; the file now lives at
     `docs/troubleshooting/resharp.md` (the `--help` text already points there correctly). The
     root file does not exist, so the pointer is dead.
-20. Fix README relative links for the published crate. `PERF.md`, `FUZZING.md`, and
+21. Fix README relative links for the published crate. `PERF.md`, `FUZZING.md`, and
     `docs/troubleshooting/resharp.md` are not in the `include` set, so every relative link to
     them 404s on the crates.io and docs.rs rendered README, which is the first page a prospective
     user sees. Either bundle those files or rewrite the links to absolute repository URLs in the
     shipped README.
-21. Add install and distribution docs for consumers outside the monorepo. The README documents
+22. Add install and distribution docs for consumers outside the monorepo. The README documents
     only the in-repo `mise run ...:build` path. A 1.0 should document `cargo install
     forbidden-strings`, downloading a prebuilt release archive, and verifying its SLSA build
     provenance with `gh attestation verify` (the publish workflow already produces these
     attestations).
-22. Decide the rustdoc story. There are zero `///` doc comments in `src/` (confirmed: 0
+23. Decide the rustdoc story. There are zero `///` doc comments in `src/` (confirmed: 0
     doc-tests), so the docs.rs page renders effectively empty. Either add crate-level and API
     rustdoc, or mark the lib `#[doc(hidden)]` and configure docs.rs to surface the README, so the
     published documentation page is not blank.
 
 ## Tier 5: dependency and soundness stability
 
-23. Resolve the pre-1.0 dependency exposure. `resharp = "0.6"`, `gix-hash = "0.25"`, and
+24. Resolve the pre-1.0 dependency exposure. `resharp = "0.6"`, `gix-hash = "0.25"`, and
     `gix-index = "0.51"` are all `0.x` crates that break on minor bumps, and the `gix` family
     churns frequently. A 1.0 inherits their instability and the known resharp panic shapes
     documented in `Cargo.toml`. Decide an explicit policy: pin tightly, keep `Cargo.lock`
     committed for the binary (already done), and decide whether 1.0 should wait on the upstream
     resharp fix tracked in issue #158.
-24. Close the open-endedness of the resharp pre-validators. `src/rules.rs:931` notes shapes "the
+25. Close the open-endedness of the resharp pre-validators. `src/rules.rs:931` notes shapes "the
     pre-validator does not yet know," with the `catch_unwind` fail-closed net as backstop. For
     1.0, formally adopt the fail-closed contract as a permanent guarantee (upstream resharp fixes
     are not assured), add a regression test for every known-bad shape currently listed in
     `Cargo.toml` and `docs/troubleshooting/resharp.md`, and document it as part of the stability
-    promise from item 12.
-25. Add fuzzing to CI. `FUZZING.md` states "CI integration is deferred." The tool's core safety
+    promise from item 13.
+26. Add fuzzing to CI. `FUZZING.md` states "CI integration is deferred." The tool's core safety
     claims (linear-time matching, no catastrophic backtracking, fail-closed on a panicking rule)
     rest on fuzz coverage that currently runs only on-demand locally. Add a scheduled or nightly
     bounded fuzz-smoke job that exercises the seven soundness targets, so a regression in those
     invariants surfaces without a manual run.
-26. Add a dependency-advisory scan (`cargo audit` or `cargo deny`) to CI. For a security tool,
+27. Add a dependency-advisory scan (`cargo audit` or `cargo deny`) to CI. For a security tool,
     an unguarded known-vulnerable transitive dependency directly undercuts the value proposition,
     and there is currently nothing watching for one.
 
 ## Tier 6: scope lock
 
-27. Lock the non-goals and reconsider the highest-value ones. The README's "When to pick
+28. Lock the non-goals and reconsider the highest-value ones. The README's "When to pick
     something else" lists SARIF/JSON output, stdin/streaming input, git-history scanning, per-rule
     path scoping, per-rule allowlists, and CEL post-match filtering as deliberately omitted. For a
     1.0, commit these formally as non-goals or pull the adoption-blocking ones into scope.
@@ -222,7 +241,7 @@ or, where intentional, kept and documented with rationale rather than as a surpr
     adoption-relevant. Also resolve the still-open scope questions in
     [forbidden-strings.md](./forbidden-strings.md) (which file classes are scanned, whether
     commit messages are scanned, whether a path-exclude list is needed).
-28. Add a deterministic output mode and a performance-regression guard. Cross-file hit ordering
+29. Add a deterministic output mode and a performance-regression guard. Cross-file hit ordering
     is rayon-scheduler-determined (stable on a given input but not sorted), which makes CI
     snapshot-diffing awkward; offer a sorted-output mode. Separately, the numbers in `PERF.md` are
     maintained by hand with no automated guard, so a future change could silently blow the
@@ -230,28 +249,35 @@ or, where intentional, kept and documented with rationale rather than as a surpr
 
 ## Suggested sequencing
 
-Tier 0 is the hard gate: until the load path stops printing rule bodies (guarded by a redaction
-test), the tool breaks the guarantee it is sold on, so no 1.0 ships. Tier 1 is a decision the
-1.0 must make explicitly (accept the documented coverage gaps, or extend fail-closed to them)
-rather than a set of fixes, with item 6 (unbounded memory) the one genuine latent fix in it. The
-Tier 2 items are the next true blockers: without CI gating (7, 8), a license (9), and a stated
-stability contract (12), the version number is the only thing that would change at 1.0. Tier 3
-foot-guns are cheap, individually small, and each removes a documented surprise. Tier 4 is a day
-of documentation work. Tier 5 and the scope lock in Tier 6 carry the most judgment and should be
-decided deliberately, since they define what the 1.0 promise actually covers.
+Tier 0 is the gate. Until the load path stops printing rule bodies (items 1 through 3, guarded
+by the redaction test in item 4) and the security model is written where users read it (item 5),
+the tool both breaks the guarantee it is sold on and leaves its non-guarantees implicit, so
+no 1.0 ships. Tier 1 is a decision the 1.0 must make explicitly (accept the documented coverage
+gaps, or extend fail-closed to them) rather than a set of fixes, with item 7 (unbounded memory)
+the one genuine latent fix in it. The Tier 2 items are the next true blockers: without CI gating
+(8, 9), a license (10), and a stated stability contract (13), the version number is the only
+thing that would change at 1.0. Tier 3 foot-guns are cheap, individually small, and each removes
+a documented surprise. Tier 4 is a day of documentation work. Tier 5 and the scope lock in Tier 6
+carry the most judgment and should be decided deliberately, since they define what the 1.0
+promise actually covers.
 
 ## A note on completeness
 
-This list grew through review, and two corrections sharpened it. The first pass (22 items)
+This list grew through review, and several corrections sharpened it. The first pass (22 items)
 missed the Tier 0 disclosure defect because it verified redaction only on the scan path and
 trusted the README's claim for the load path instead of reading the load, pre-validate, and
 compile-error code; that is a genuine undocumented defect. A prompt to look past leak vectors
 surfaced the Tier 1 coverage gaps. A further correction noted that those gaps are not undiscovered
 bugs: the 8 KiB tail cap is an intentional perf tradeoff, and every Tier 1 behavior is already
 documented in the README "Walker behaviour" section, so Tier 1 was reframed from "soundness
-blocker" to an explicit accept-or-tighten decision. The lesson across all three: distinguish an
-undocumented contradiction of a stated guarantee (a blocker, Tier 0) from a documented,
-deliberate tradeoff (a decision to ratify, Tier 1). The remaining tiers were derived from reading
-the code and config directly. This enumeration is not asserted to be exhaustive; the correctness
-tiers warrant a dedicated audit pass, and the redaction regression test in item 4 is how the
-Tier 0 fix becomes durable. Append new findings rather than treating the count as final.
+blocker" to an explicit accept-or-tighten decision. A final note added the security-model
+documentation (item 5): the threat model, including the explicit non-guarantees (Unicode
+homoglyphs, normalization forms, zero-width characters, concatenation, encoding, all of which
+defeat literal matching by design), lived only in the internal design doc and belongs in the
+shipped README. The lesson across these: distinguish an undocumented contradiction of a stated
+guarantee (a blocker) from a documented, deliberate tradeoff (a decision to ratify), and make the
+tool's guarantees and non-guarantees explicit. The remaining tiers were derived from reading the
+code and config directly. This enumeration is not asserted to be exhaustive; the correctness
+items in Tier 0 and Tier 1 warrant a dedicated audit pass, and the redaction regression test in
+item 4 is how the Tier 0 fix becomes durable. Append new findings rather than treating the count
+as final.
