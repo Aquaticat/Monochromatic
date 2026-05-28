@@ -4,7 +4,7 @@
  * - Command sets and patterns used by the flagger
  *   (privilege, mutating, network, env-dump, interpreter, etc.)
  * - Context-builder limits used by `context.ts`
- *   (max tools, user-message truncation lengths, bash detail length)
+ *   (recent activity floor)
  *
  * @module
  */
@@ -29,8 +29,28 @@ export const JUDGE_MODEL_DEFAULTS = {
 
 //region Context builder limits
 
-/** Maximum number of activity lines included in judge context. */
-export const MAX_CONTEXT_ACTIVITIES = 5;
+/**
+ * Minimum recent activity lines included in judge context when history exists.
+ *
+ * @example
+ * ```typescript
+ * const floor = CONTEXT_ACTIVITY_FLOOR;
+ * ```
+ */
+export const CONTEXT_ACTIVITY_FLOOR = 5;
+
+/**
+ * Compatibility alias for older imports.
+ *
+ * @deprecated Use {@link CONTEXT_ACTIVITY_FLOOR}; judge context now treats this
+ * count as a floor, not a cap.
+ *
+ * @example
+ * ```typescript
+ * const floor = MAX_CONTEXT_ACTIVITIES;
+ * ```
+ */
+export const MAX_CONTEXT_ACTIVITIES: typeof CONTEXT_ACTIVITY_FLOOR = CONTEXT_ACTIVITY_FLOOR;
 
 //endregion
 

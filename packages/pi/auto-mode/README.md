@@ -36,10 +36,11 @@ The flagger and judge are strictly separated: the flagger never provides reasons
 
 ### Judge context
 
-The recent activity sent to the judge is scoped from the latest user message.
-Auto-mode sends at most five rendered activity lines from that scoped window,
-using the newest lines when the scoped window exceeds five lines.
-Messages are not abbreviated.
+The recent activity sent to the judge uses the larger of the latest user-message
+activity span and the newest five rendered activity lines. Short latest-user
+spans backfill older activity until the five-line floor is reached when enough
+history exists; longer latest-user spans are not capped. Messages are not
+abbreviated.
 
 For bash tool results, the context line includes the execution outcome and the
 full final non-empty line of bash output.

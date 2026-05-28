@@ -1,9 +1,10 @@
 /**
  * Session context builder for the judge prompt.
  *
- * Walks the session branch from the last user message,
- * building a structured summary that the judge can use
- * to understand recent activity and detect circumvention.
+ * Walks the session branch and selects the larger of the latest user-message
+ * activity span and the recent-activity floor, building a structured summary
+ * that the judge can use to understand recent activity and detect
+ * circumvention.
  *
  * @module
  */
@@ -12,7 +13,7 @@ import type {
   ExtensionContext,
   SessionMessageEntry,
 } from '@earendil-works/pi-coding-agent';
-import { MAX_CONTEXT_ACTIVITIES, } from './constants.ts';
+import { CONTEXT_ACTIVITY_FLOOR, } from './constants.ts';
 import {
   isTrustEntry,
   isVerdictEntry,
@@ -168,7 +169,8 @@ const NO_PENDING_VERDICT = Symbol('no-pending-verdict',);
 /**
  * Build a context summary for the LLM judge.
  *
- * Scoped from the last user message, capped at recent activities.
+ * Includes the larger of the latest user-message activity span and the
+ * recent-activity floor.
  * Includes verdict outcomes for denied/asked actions so the
  * judge can detect circumvention.
  *
@@ -184,21 +186,9 @@ const NO_PENDING_VERDICT = Symbol('no-pending-verdict',);
 function buildContext(
   ctx: ExtensionContext,
 ): string {
-  /** Full session branch snapshot, scanned forward and backward below. */
+  /** Full session branch snapshot, scanned forward below. */
   const branch = ctx.sessionManager
     .getBranch();
-
-  /** Index of the most recent user message; -1 sentinel means none found. */
-  const userIdx = branch.findLastIndex(
-    function isUserMessage(item,) {
-      return (item !== undefined)
-        && (item.type
-          === 'message')
-        && ((item as SessionMessageEntry).message
-          .role
-          === 'user');
-    },
-  );
 
   /** Accumulator for activity lines in chronological order. */
   const activityLines: string[] = [];
@@ -215,21 +205,8 @@ function buildContext(
   let pendingVerdict: VerdictData | typeof NO_PENDING_VERDICT = NO_PENDING_VERDICT;
   /* oxlint-enable no-restricted-syntax/no-function-root-let */
 
-  /** Fallback window size when no user message anchors the scan. */
-  const TWENTY = 20;
-  /** Tail-window start used when no user message is found in the branch. */
-  const tailStart = Math.max(
-    0,
-    branch.length
-      - TWENTY,
-  );
-  /** Index where the forward scan begins. */
-  const start = (userIdx !== (-1)) ? userIdx : tailStart;
-
-  for (let i = start; i < branch
-    .length; i++) {
-    /** Branch entry under inspection during the forward summary build. */
-    const entry = branch[i];
+  for (const entry of branch) {
+    // Branch entry under inspection during the forward summary build.
     if (entry === undefined)
       continue;
 
@@ -298,13 +275,53 @@ function buildContext(
     }
   }
 
-  /** Final activity lines capped to the newest entries in the scoped window. */
-  return activityLines
-    .slice(-MAX_CONTEXT_ACTIVITIES,)
+  /** Final activity lines selected by max(latest-user span, recent floor). */
+  return selectContextActivityLines(activityLines,)
     .join('\n',);
 }
 
 //region Internal helpers
+
+/**
+ * Select judge-context activity lines.
+ *
+ * Keeps the larger of:
+ * - the activity span from latest user message through now
+ * - the newest configured floor of activity lines
+ *
+ * @param activityLines - chronological activity lines built from session branch
+ *
+ * @returns selected chronological activity lines for judge context
+ *
+ * @example
+ * ```typescript
+ * selectContextActivityLines(['[tool] one', '[user] run', '[tool] two']);
+ * ```
+ */
+function selectContextActivityLines(
+  activityLines: readonly string[],
+): readonly string[] {
+  /** Activity-line index of latest user message, or -1 when none exists. */
+  const lastUserActivityIndex = activityLines.findLastIndex(
+    function isUserActivityLine(activityLine,) {
+      return activityLine.startsWith('[user] ',);
+    },
+  );
+  /** Earliest line included by the recent-activity floor. */
+  const recentFloorStart = Math.max(
+    0,
+    activityLines.length
+      - CONTEXT_ACTIVITY_FLOOR,
+  );
+  /** Start line for max(latest-user span, recent floor). */
+  const selectedStart = lastUserActivityIndex === (-1)
+    ? recentFloorStart
+    : Math.min(
+      lastUserActivityIndex,
+      recentFloorStart,
+    );
+  return activityLines.slice(selectedStart,);
+}
 
 /**
  * Extract text from user message content.

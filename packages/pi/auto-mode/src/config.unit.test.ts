@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test';
 import { compilePatterns, } from './config.ts';
-import { MAX_CONTEXT_ACTIVITIES, } from './constants.ts';
+import { CONTEXT_ACTIVITY_FLOOR, } from './constants.ts';
 import {
   BASE_SYSTEM_PROMPT,
   buildSystemPrompt,
@@ -24,7 +24,7 @@ await describe({
     it({
       name: 'has expected constant values',
       fn: async () => {
-        expect(MAX_CONTEXT_ACTIVITIES,).toBe(5,);
+        expect(CONTEXT_ACTIVITY_FLOOR,).toBe(5,);
       },
     },),
 

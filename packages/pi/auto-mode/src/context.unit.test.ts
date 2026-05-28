@@ -11,7 +11,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test';
-import { MAX_CONTEXT_ACTIVITIES, } from './constants.ts';
+import { CONTEXT_ACTIVITY_FLOOR, } from './constants.ts';
 import {
   buildContext,
   getReusableApproval,
@@ -293,8 +293,8 @@ await describe({
     },),
 
     it({
-      name: 'caps scoped activities at five newest lines',
-      fn: async function testCapsScopedActivitiesAtFiveNewestLines(): Promise<void> {
+      name: 'keeps entire latest-user span when it exceeds five lines',
+      fn: async function testKeepsEntireLatestUserSpanWhenItExceedsFiveLines(): Promise<void> {
         /** Generated activities after the latest user message. */
         const generatedActivities = Array.from(
           { length: BASH_ACTIVITY_COUNT, },
@@ -317,9 +317,66 @@ await describe({
         /** Activity lines sent to the judge. */
         const lines = context.split('\n',);
 
-        expect(lines,).toHaveLength(MAX_CONTEXT_ACTIVITIES,);
+        expect(lines,).toHaveLength(BASH_ACTIVITY_COUNT + 1,);
         expect(context.includes('old request',),).toBe(false,);
-        expect(context.includes('new request',),).toBe(false,);
+        expect(context.includes('new request',),).toBe(true,);
+        expect(context.includes('result 1',),).toBe(true,);
+        expect(context.includes('result 6',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'backfills to five newest lines when latest-user span is shorter',
+      fn: async function testBackfillsToFiveNewestLinesWhenLatestUserSpanIsShorter(): Promise<void> {
+        /** Generated activities before the latest user message. */
+        const olderActivities = Array.from(
+          { length: CONTEXT_ACTIVITY_FLOOR, },
+          function createActivity(_, activityIndex,) {
+            return bashActivity(activityIndex + 1,);
+          },
+        )
+          .flat();
+        /** Context built from enough older activity to fill the minimum window. */
+        const context = buildContext(
+          contextFromBranch({
+            branch: [
+              userMessage('old request',),
+              ...olderActivities,
+              userMessage('new request',),
+            ],
+          },),
+        );
+        /** Activity lines sent to the judge. */
+        const lines = context.split('\n',);
+
+        expect(lines,).toHaveLength(CONTEXT_ACTIVITY_FLOOR,);
+        expect(context.includes('old request',),).toBe(false,);
+        expect(context.includes('result 1',),).toBe(false,);
+        expect(context.includes('result 2',),).toBe(true,);
+        expect(context.includes('result 5',),).toBe(true,);
+        expect(context.endsWith('[user] new request',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'uses newest five lines when no user message exists',
+      fn: async function testUsesNewestFiveLinesWhenNoUserMessageExists(): Promise<void> {
+        /** Generated activities without any user-message anchor. */
+        const generatedActivities = Array.from(
+          { length: BASH_ACTIVITY_COUNT, },
+          function createActivity(_, activityIndex,) {
+            return bashActivity(activityIndex + 1,);
+          },
+        )
+          .flat();
+        /** Context built from tool activity only. */
+        const context = buildContext(
+          contextFromBranch({ branch: generatedActivities, },),
+        );
+        /** Activity lines sent to the judge. */
+        const lines = context.split('\n',);
+
+        expect(lines,).toHaveLength(CONTEXT_ACTIVITY_FLOOR,);
         expect(context.includes('result 1',),).toBe(false,);
         expect(context.includes('result 2',),).toBe(true,);
         expect(context.includes('result 6',),).toBe(true,);
