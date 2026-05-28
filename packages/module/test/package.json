@@ -38,6 +38,7 @@
     "@types/chai-as-promised": "catalog:",
     "@types/sinon": "catalog:",
     "@types/sinon-chai": "catalog:",
+    "fast-check": "catalog:",
     "typescript": "catalog:"
   }
 }

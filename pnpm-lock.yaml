@@ -129,6 +129,9 @@ catalogs:
     expect-type:
       specifier: '>=1.3.0'
       version: 1.3.0
+    fast-check:
+      specifier: '>=4.8.0'
+      version: 4.8.0
     feedsmith:
       specifier: '>=3.0.0-next.6'
       version: 3.0.0-next.6
@@ -1752,6 +1755,9 @@ importers:
       '@types/sinon-chai':
         specifier: 'catalog:'
         version: 4.0.0
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.8.0
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -4067,6 +4073,10 @@ packages:
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
 
+  fast-check@4.8.0:
+    resolution: {integrity: sha512-GOJ158CUMnN6cSahsv4+ExARvIDuzzinFjkp0E9WtiBa5zcVeLozVkWaE4IzFcc+Y48Wp1EDlUZsXRyAztQcSg==}
+    engines: {node: '>=12.17.0'}
+
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
@@ -4881,6 +4891,9 @@ packages:
 
   property-information@7.1.0:
     resolution: {integrity: sha512-TwEZ+X+yCJmYfL7TPUOcvBZ4QfoT5YenQiJuX//0th53DE6w0xxLEtfK3iyryQFddXuvkIk51EEgrJQ0WJkOmQ==}
+
+  pure-rand@8.4.0:
+    resolution: {integrity: sha512-IoM8YF/jY0hiugFo/wOWqfmarlE6J0wc6fDK1PhftMk7MGhVZl88sZimmqBBFomLOCSmcCCpsfj7wXASCpvK9A==}
 
   qified@0.9.1:
     resolution: {integrity: sha512-n7mar4T0xQ+39dE2vGTAlbxUEpndwPANH0kDef1/MYsB8Bba9wshkybIRx74qgcvKQPEWErf9AqAdYjhzY2Ilg==}
@@ -6827,6 +6840,10 @@ snapshots:
 
   extend@3.0.2: {}
 
+  fast-check@4.8.0:
+    dependencies:
+      pure-rand: 8.4.0
+
   fast-deep-equal@3.1.3: {}
 
   fast-glob@3.3.3:
@@ -7898,6 +7915,8 @@ snapshots:
   promise-make-naked@3.0.2: {}
 
   property-information@7.1.0: {}
+
+  pure-rand@8.4.0: {}
 
   qified@0.9.1:
     dependencies:
