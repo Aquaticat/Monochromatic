@@ -28,6 +28,27 @@ and contradicts the headline guarantee) plus the documentation that bounds expec
 is a set of already-documented false-negative tradeoffs that a 1.0 should consciously accept or
 tighten rather than a list of bugs to fix.
 
+## Tracking
+
+GitHub milestone: [forbidden-strings 1.0](https://github.com/Aquaticat/Monochromatic/milestone/1).
+This document stays the canonical detail; the issues link back to the tier items here. Item to
+issue map:
+
+- Items 1 to 4 (load-path disclosure fix plus redaction test): #217
+- Item 5 (security-model README section): #218
+- Item 7 (bound per-file memory): #219
+- Items 8 to 9 (CI gating plus cross-platform matrix): #122 (reused)
+- Item 10 (ship LICENSE): #220
+- Item 11 (MSRV plus metadata): #221
+- Item 12 (CHANGELOG): #222
+- Item 13 (stability policy): #223
+- Items 14 to 18 (rule-loading and CLI foot-guns): #224
+- Items 20 to 22 (README links plus install docs): #225
+- Item 25 (resharp fail-closed regression tests): #226, related #158 (reused)
+- Items 26 to 27 (CI fuzz-smoke plus advisory scan): #227
+- Item 29 (deterministic output plus perf guard): #228
+- Items 6, 19, 23, 24, 28 (human decisions): #229
+
 ## Tier 0: security model, guarantees, and disclosure
 
 The README's central promise is that the matched substring, the surrounding line, and the rule
