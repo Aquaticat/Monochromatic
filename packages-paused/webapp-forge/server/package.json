@@ -12,7 +12,7 @@
     "@libsql/kysely-libsql": "catalog:",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/module-numeric-const": "workspace:*",
+    "@monochromatic-dev/module-const": "workspace:*",
     "@tursodatabase/database": "catalog:",
     "aws4fetch": "catalog:",
     "better-auth": "catalog:",

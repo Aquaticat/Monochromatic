@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/module-numeric-const": "workspace:*",
+    "@monochromatic-dev/module-const": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:",
     "nano-spawn": "catalog:",

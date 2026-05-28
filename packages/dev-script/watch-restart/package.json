@@ -26,7 +26,7 @@
   "dependencies": {
     "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/module-numeric-const": "workspace:*",
+    "@monochromatic-dev/module-const": "workspace:*",
     "@monochromatic-dev/module-or-throw": "workspace:*",
     "@optique/core": "catalog:",
     "@optique/run": "catalog:",

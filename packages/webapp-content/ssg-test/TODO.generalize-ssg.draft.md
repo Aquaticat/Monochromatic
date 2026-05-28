@@ -210,7 +210,7 @@ naming choice; the steps below are common to whichever option is picked.
 - [ ] Bundle the private dependencies into the published output. The SSG depends on three `private: true`
       packages: `module-logger`, `module-fs-path`, `module-hyperscript`. tsdown/rolldown bundles them, but
       verify the bundle does not break `module-fs-path`'s monorepo-root logic (covered in Phase 4).
-      `module-numeric-const`, `module-or-throw`, and `module-i18n-compose` are already publishable.
+      `module-const`, `module-or-throw`, and `module-i18n-compose` are already publishable.
 - [ ] Set `package.json` `files`, `main`/`exports`, `bin`, `license` (`LGPL-3.0-or-later`), and `repository`;
       remove `private: true`; add `publishConfig` mirroring `packages/module/i18n-compose/package.json`.
 - [ ] Add a `README.md`: what it is, the supported locale set, how to author `site.config.ts`,

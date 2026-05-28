@@ -20,7 +20,7 @@ import {
   BYTES_PER_GIB,
   BYTES_PER_KIB,
   BYTES_PER_MIB,
-} from '@monochromatic-dev/module-numeric-const';
+} from '@monochromatic-dev/module-const';
 import {
   ARG_ABSENT,
   getArgumentValue,

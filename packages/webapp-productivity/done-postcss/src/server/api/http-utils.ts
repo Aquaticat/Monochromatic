@@ -2,7 +2,7 @@
  * Shared HTTP response utilities for API handlers.
  */
 
-import { HTTP_OK, } from '@monochromatic-dev/module-numeric-const';
+import { HTTP_OK, } from '@monochromatic-dev/module-const';
 
 export {
   HTTP_BAD_REQUEST,
@@ -11,7 +11,7 @@ export {
   HTTP_INTERNAL_SERVER_ERROR,
   HTTP_NOT_FOUND,
   HTTP_OK,
-} from '@monochromatic-dev/module-numeric-const';
+} from '@monochromatic-dev/module-const';
 
 /**
  * Wraps a payload in a JSON `Response` with the correct content type.

@@ -5,7 +5,7 @@
  * style modules. CSS custom properties live in `tokens.ts`.
  */
 
-import { HALF, } from '@monochromatic-dev/module-numeric-const';
+import { HALF, } from '@monochromatic-dev/module-const';
 
 /** Maximum content width in rem. */
 export const MAX_WIDTH = 48;

@@ -25,7 +25,7 @@ import {
 } from './collect.ts';
 import { summarize, } from './stats.ts';
 
-import { BYTES_PER_KIB, } from '@monochromatic-dev/module-numeric-const';
+import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const';
 
 export {};
 

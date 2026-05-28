@@ -3,9 +3,9 @@
 Ready to publish.
 
 Numeric formatters for the gaps left by `Intl.DurationFormat` and `Intl.NumberFormat`.
-This package mirrors `@monochromatic-dev/module-numeric-const`:
+This package mirrors `@monochromatic-dev/module-const`:
 one file per category, re-exported from `index.ts`,
-consuming the matching constants file (`numeric-const/src/time.ts` etc.) instead of redefining ratios.
+consuming the matching constants category (`packages/module/const/src/time.ts` etc.) instead of redefining ratios.
 
 The charter is narrow.
 Only formatters that the platform `Intl` APIs explicitly do not cover go here.

@@ -12,7 +12,7 @@ import {
   cssVar,
   hCss as $,
 } from '@monochromatic-dev/module-hyperscript/ts';
-import { HALF, } from '@monochromatic-dev/module-numeric-const';
+import { HALF, } from '@monochromatic-dev/module-const';
 
 /** Full dimension as percentage. */
 const FULL = 100;

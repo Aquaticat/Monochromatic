@@ -4,7 +4,7 @@
  * Handles start/stop timer state transitions and blocker-aware
  * task completion. Basic CRUD remains in tasks.ts.
  */
-import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-const';
 
 import db from '../db.ts';
 import {

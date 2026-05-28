@@ -1,7 +1,7 @@
 {
   "license": "LGPL-3.0-or-later",
-  "name": "@monochromatic-dev/module-numeric-const",
-  "description": "Universal numeric constants: time/duration ratios, IEC binary and SI decimal byte units, RFC 9110 HTTP status codes, fractions composed from the -2..2 exempt range.",
+  "name": "@monochromatic-dev/module-const",
+  "description": "Universal constants: ASCII character sets, time/duration ratios, IEC and SI byte units, RFC 9110 HTTP status codes, and fractions composed from the -2..2 exempt range.",
   "type": "module",
   "version": "0.0.1",
   "private": false,
@@ -22,7 +22,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "packages/module/numeric-const"
+    "directory": "packages/module/const"
   },
   "publishConfig": {
     "access": "public",

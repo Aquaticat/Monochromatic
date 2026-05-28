@@ -7,7 +7,7 @@
   "dependencies": {
     "@monochromatic-dev/build-tool-css": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
-    "@monochromatic-dev/module-numeric-const": "workspace:*",
+    "@monochromatic-dev/module-const": "workspace:*",
     "@tursodatabase/database": "catalog:",
     "h3": "catalog:",
     "postcss": "catalog:"

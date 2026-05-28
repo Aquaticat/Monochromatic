@@ -10,7 +10,7 @@
  * import {
  *   HALF,
  *   QUARTER,
- * } from '@monochromatic-dev/module-numeric-const';
+ * } from '@monochromatic-dev/module-const';
  * ```
  *
  * @module

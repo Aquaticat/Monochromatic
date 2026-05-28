@@ -39,7 +39,7 @@ import {
   renderSimplePage,
 } from './_layout.ts';
 
-import { BYTES_PER_KIB, } from '@monochromatic-dev/module-numeric-const';
+import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const';
 
 /** Tier-2 boundary in kibibytes. */
 const TIER_2_THRESHOLD_KIB = 8;

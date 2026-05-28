@@ -2,7 +2,7 @@
  * Shared constants for editord client and server.
  */
 
-import { BYTES_PER_KIB, } from '@monochromatic-dev/module-numeric-const';
+import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const';
 
 /**
  * Maximum file size in bytes before large-file degradation kicks in.

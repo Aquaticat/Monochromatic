@@ -46,7 +46,7 @@ packages/dev-script/watch-restart/
 ├── HANDOVER.implementation-state.md   ← this file
 ├── README.md                          ← CLI surface and design choices
 ├── mise.toml                          ← extends-only tasks
-├── package.json                       ← deps: chokidar, ignore, picomatch, optique, ts-pattern, module-{async-time,logger,numeric-const,or-throw}
+├── package.json                       ← deps: chokidar, ignore, picomatch, optique, ts-pattern, module-{async-time,logger,const,or-throw}
 ├── src/
 │   ├── child.ts                       ← Child class (spawn + state machine) + killSignal/processGroup/clear + injectable SpawnFn/ProcessSignalFn/WriteClearFn
 │   ├── child.unit.test.ts             ← 17 tests (state machine + stop + restart + reentry guards + defaults + Q6 options block)
@@ -106,7 +106,7 @@ When implementing per-instance state (HashCache, the running watcher, the child 
 
 ### Picked up during the hash-cache implementation
 
-Added `@monochromatic-dev/module-numeric-const` as a dependency so `DEFAULT_MAX_HASH_SIZE_BYTES = 16 * BYTES_PER_MIB` reads in named units rather than `16 * 1024 * 1024`. AGENTS.md "magic literals as named const" is satisfied; future tuning lands at the constant declaration.
+Added `@monochromatic-dev/module-const` as a dependency so `DEFAULT_MAX_HASH_SIZE_BYTES = 16 * BYTES_PER_MIB` reads in named units rather than `16 * 1024 * 1024`. AGENTS.md "magic literals as named const" is satisfied; future tuning lands at the constant declaration.
 
 `hashFile` uses `crypto.subtle.digest('SHA-256', bytes)` and `Buffer.from(digest).toString('hex')`. Node and Bun both expose `Buffer` globally; AGENTS.md "cross-runtime patterns" reads here as "no Bun-specific imports," not "no Node APIs." The whole package targets Node/Bun via tsdown's `.node.ts` config.
 

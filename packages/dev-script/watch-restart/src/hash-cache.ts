@@ -1,4 +1,4 @@
-import { BYTES_PER_MIB, } from '@monochromatic-dev/module-numeric-const';
+import { BYTES_PER_MIB, } from '@monochromatic-dev/module-const';
 import {
   readFile,
   stat,

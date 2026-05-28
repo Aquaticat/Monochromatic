@@ -4,7 +4,7 @@
  * @module
  */
 
-import { BYTES_PER_GIB, } from '@monochromatic-dev/module-numeric-const';
+import { BYTES_PER_GIB, } from '@monochromatic-dev/module-const';
 
 import { readConfig, } from './config.ts';
 import {

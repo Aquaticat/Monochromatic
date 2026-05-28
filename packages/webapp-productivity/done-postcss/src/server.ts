@@ -9,7 +9,7 @@
  * Client JS bundles are built separately via `mise run build:js:client` (tsdown).
  */
 import { build as buildCSS, } from '@monochromatic-dev/build-tool-css/ts';
-import { HTTP_BAD_REQUEST, } from '@monochromatic-dev/module-numeric-const';
+import { HTTP_BAD_REQUEST, } from '@monochromatic-dev/module-const';
 import {
   defineHandler,
   getRouterParam,

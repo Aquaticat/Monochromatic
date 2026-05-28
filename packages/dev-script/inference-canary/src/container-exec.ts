@@ -2,7 +2,7 @@
  * Low-level container execution: runs a command in the container runtime and
  * returns structured output including stdout, stderr, exit code, and timeout status.
  */
-import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-const';
 
 import { execBun, } from './container-base.ts';
 import {

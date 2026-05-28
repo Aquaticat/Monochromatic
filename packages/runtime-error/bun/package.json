@@ -6,7 +6,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@monochromatic-dev/module-numeric-const": "workspace:*"
+    "@monochromatic-dev/module-const": "workspace:*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",

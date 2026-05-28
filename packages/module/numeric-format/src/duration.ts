@@ -29,7 +29,7 @@ import {
   SECONDS_PER_DAY,
   SECONDS_PER_HOUR,
   SECONDS_PER_MINUTE,
-} from '@monochromatic-dev/module-numeric-const';
+} from '@monochromatic-dev/module-const';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 /**
@@ -70,7 +70,7 @@ export function formatDuration(durationMs: number,): string {
  * calendar months range 28 to 31; productivity-app convention rounds to
  * 30 so `30d` of accumulated work renders as `1m0w` and the user does
  * not have to mentally convert. Approximation is intentional and lives
- * here (call site) rather than in `module-numeric-const` so it is
+ * here (call site) rather than in `module-const` so it is
  * visible to readers of this formatter.
  */
 const DAYS_PER_MONTH = 30;

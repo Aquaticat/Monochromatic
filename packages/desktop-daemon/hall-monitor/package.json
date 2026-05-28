@@ -6,7 +6,7 @@
   "private": true,
   "main": "src/index.ts",
   "dependencies": {
-    "@monochromatic-dev/module-numeric-const": "workspace:*",
+    "@monochromatic-dev/module-const": "workspace:*",
     "nano-spawn": "catalog:"
   },
   "devDependencies": {

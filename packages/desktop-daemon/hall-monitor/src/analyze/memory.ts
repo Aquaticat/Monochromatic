@@ -1,7 +1,7 @@
 import {
   MS_PER_SECOND,
   SECONDS_PER_MINUTE,
-} from '@monochromatic-dev/module-numeric-const';
+} from '@monochromatic-dev/module-const';
 
 /** How long capture sets are retained in the buffer before pruning. */
 const RETENTION_MS = 10 * SECONDS_PER_MINUTE

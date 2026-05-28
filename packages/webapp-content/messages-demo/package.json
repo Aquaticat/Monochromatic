@@ -9,7 +9,7 @@
     "@monochromatic-dev/module-async-time": "workspace:*",
     "@monochromatic-dev/module-hyperscript": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
-    "@monochromatic-dev/module-numeric-const": "workspace:*",
+    "@monochromatic-dev/module-const": "workspace:*",
     "@tursodatabase/database": "catalog:",
     "h3": "catalog:",
     "micromark": "catalog:"

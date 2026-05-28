@@ -5,7 +5,7 @@
  * within popover overlays.
  */
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import { MS_PER_SECOND, } from '@monochromatic-dev/module-numeric-const';
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-const';
 
 import type {
   ProbeDetail,

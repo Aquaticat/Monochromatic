@@ -8,5 +8,5 @@ extends = "lint:oxlint"
 extends = "lint:types"
 
 [tasks.test]
-description = "Run unit tests for every numeric-const category"
+description = "Run unit tests for every const category"
 run = "bun src/self.unit.test.ts"

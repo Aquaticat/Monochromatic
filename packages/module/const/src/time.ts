@@ -10,7 +10,7 @@
  *   MS_PER_HOUR,
  *   MS_PER_SECOND,
  *   SECONDS_PER_DAY,
- * } from '@monochromatic-dev/module-numeric-const';
+ * } from '@monochromatic-dev/module-const';
  * ```
  *
  * @module

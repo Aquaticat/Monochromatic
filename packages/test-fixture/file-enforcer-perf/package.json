@@ -8,7 +8,7 @@
   "dependencies": {
     "@monochromatic-dev/dev-script-file-enforcer": "workspace:*",
     "@monochromatic-dev/module-fs-path": "workspace:*",
-    "@monochromatic-dev/module-numeric-const": "workspace:*",
+    "@monochromatic-dev/module-const": "workspace:*",
     "nano-spawn": "catalog:"
   },
   "devDependencies": {

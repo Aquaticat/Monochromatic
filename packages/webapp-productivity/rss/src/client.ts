@@ -3,7 +3,7 @@ import {
   HALF,
   QUARTER,
   THREE_QUARTERS,
-} from '@monochromatic-dev/module-numeric-const';
+} from '@monochromatic-dev/module-const';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 import * as v from 'valibot';
 

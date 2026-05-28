@@ -12,7 +12,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import { BYTES_PER_KIB, } from '@monochromatic-dev/module-numeric-const';
+import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const';
 
 import { createAutounattendIso, } from './autounattend.ts';
 import {

@@ -27,11 +27,6 @@
  */
 
 import {
-  describe,
-  expect,
-  it,
-} from '@monochromatic-dev/module-test';
-import {
   anything,
   array,
   assert,
@@ -45,6 +40,12 @@ import {
   type Arbitrary,
 } from 'fast-check';
 
+import { ASCII_LOWERCASE_ALPHANUMERIC_CHARS, } from '@monochromatic-dev/module-const';
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test';
 import {
   formatErrorDeep,
   formatFailure,
@@ -82,20 +83,6 @@ const MAX_USER_FRAMES = 5;
 const MAX_HARNESS_FRAMES = 6;
 
 /**
- * Alphabet for generated identifier tokens: lowercase letters and
- * digits only, so a generated token can never contain a `/` (and thus
- * never accidentally form a harness path fragment) or a newline (which
- * would corrupt synthetic `.stack` construction). Listed as explicit
- * single characters rather than spreading a string literal, which the
- * `no-misused-spread` rule flags for its Unicode-code-point hazard.
- */
-const SAFE_CHARS: readonly string[] = [
-  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-];
-
-/**
  * Mirror of `HARNESS_INTERNAL_FRAGMENTS` in `./format-error.ts`. The
  * source list is not exported (it is module-private), so it is copied
  * here. If the source list changes, update this mirror; the
@@ -129,13 +116,13 @@ const TRAPPED_KEYS: readonly string[] = [
 //region Arbitraries
 
 /**
- * Single identifier token of {@link SAFE_CHARS} characters; the unit of
- * generated messages, names, and frame tokens.
+ * Single identifier token of {@link ASCII_LOWERCASE_ALPHANUMERIC_CHARS}
+ * characters; the unit of generated messages, names, and frame tokens.
  */
 const safeWordArbitrary = string({
   minLength: 1,
   maxLength: MAX_WORD_LENGTH,
-  unit: constantFrom(...SAFE_CHARS,),
+  unit: constantFrom(...ASCII_LOWERCASE_ALPHANUMERIC_CHARS,),
 },);
 
 /**

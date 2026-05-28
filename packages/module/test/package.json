@@ -33,6 +33,7 @@
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-const": "workspace:*",
     "@types/bun": "catalog:",
     "@types/chai": "catalog:",
     "@types/chai-as-promised": "catalog:",

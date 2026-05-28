@@ -55,7 +55,7 @@
 import {
   HALF,
   QUARTER,
-} from '@monochromatic-dev/module-numeric-const';
+} from '@monochromatic-dev/module-const';
 
 import type { PackageProbe, } from './probe.ts';
 

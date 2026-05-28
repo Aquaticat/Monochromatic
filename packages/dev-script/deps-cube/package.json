@@ -31,7 +31,7 @@
     "@deck.gl/mesh-layers": "catalog:",
     "@luma.gl/engine": "catalog:",
     "@monochromatic-dev/module-fs-path": "workspace:*",
-    "@monochromatic-dev/module-numeric-const": "workspace:*",
+    "@monochromatic-dev/module-const": "workspace:*",
     "find-up": "catalog:",
     "nano-spawn": "catalog:",
     "p-limit": "catalog:",
