@@ -56,6 +56,27 @@ export const libAllowSpecifiers: readonly LibSpecifier[] = [
   {
     from: 'lib',
     name: [
+      // WeakSet, WeakMap, and WeakRef are identity-marker types used for
+      // traversal visited-sets, caches, and metadata tagging. Their
+      // declared methods (`add`/`delete`/`has`, `set`/`get`/`delete`,
+      // `deref`) lack `readonly` modifiers, so the rule flags them as
+      // mutable. Forcing immutability (e.g. copy-on-write ReadonlySet)
+      // breaks correctness: on a DAG with shared children, per-branch
+      // copies permit sibling re-traversal of the same object, causing
+      // exponential output (2^(depth+1)-1 lines for depth-N balanced
+      // AggregateError). The weak-reference semantics are also the
+      // correct default for traversal markers and transient metadata,
+      // since they don't artificially extend object lifetimes. See
+      // Codex finding "Error DAG formatting can grow exponentially"
+      // (commit f354fe3).
+      'WeakSet',
+      'WeakMap',
+      'WeakRef',
+    ],
+  },
+  {
+    from: 'lib',
+    name: [
       // Promise/Iterable families have method properties (`then`, `catch`,
       // `[Symbol.iterator]`, `next`, `return`, `throw`) that are not marked
       // readonly. Instances are effectively immutable values for consumers.
