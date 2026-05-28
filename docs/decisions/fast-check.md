@@ -47,3 +47,13 @@ The property tests were proven falsifiable, not just green: temporarily changing
 `packages/module/test/src/format-error.ts` made the cycle-termination property fail and fast-check
 shrank to the minimal counterexample (`Counterexample: [1]`), then the source was reverted. A green
 self-test alone does not prove a property exercises anything; this confirms it does.
+
+## Outcome: a real bug found and fixed
+
+Probing the no-throw surface showed `formatErrorDeep` was not total: an error object whose
+`.message`/`.name`/`.cause`/`.stack`/`.errors` getter throws propagated the throw mid-walk, because
+only `String()` conversion was guarded (via `safeString`), not the property reads. This contradicted
+`safeString`'s own documented intent that trapped getters cannot derail logging. The reads now go
+through a `readProperty` helper (`Reflect.get` inside `try`/`catch`), and the no-throw property
+generates throwing-getter objects so it proves the fix. This is the property-testing payoff: the gap
+was invisible to the example-based fixtures and surfaced only under generated adversarial input.
