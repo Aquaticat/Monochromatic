@@ -2,6 +2,9 @@
 
 Plan for blocking enumerable literal/regex strings from being introduced in commits,
 both locally and in CI.
+
+Release-readiness work for promoting the shipped crate to `1.0` lives in a separate
+checklist: [forbidden-strings.1.0.md](./forbidden-strings.1.0.md).
 This document deliberately does not name any of the forbidden terms,
 because every committed file in this repo (including this plan) is itself a place
 the rule must not appear.
