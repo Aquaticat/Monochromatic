@@ -172,10 +172,15 @@ docs.
     runs `cargo test` on any of them. Path canonicalization, symlink handling, the `gix-index`
     read, and Windows path separators are all claimed-supported in the README yet exercised only
     under Linux.
-10. Ship a license file inside the crate. `Cargo.toml` sets `license = "LGPL-3.0-or-later"` but
-    its `include` list is `src/**/*.rs`, `Cargo.toml`, `Cargo.lock`, `README.md` only, so the
-    published `.crate` carries no license text. The text exists at repo-root
-    `LICENSES/LGPL-3.0-or-later.txt`; copy it into the package and add it to `include`.
+10. Ship the license text inside the crate. `Cargo.toml` sets `license = "LGPL-3.0-or-later"`
+    but its `include` list is `src/**/*.rs`, `Cargo.toml`, `Cargo.lock`, `README.md` only, so the
+    published `.crate` carries no license text at all. LGPL-3.0 incorporates GPL-3.0 by reference
+    (the LGPL text reads "incorporates the terms and conditions of version 3 of the GNU General
+    Public License"), so a compliant distribution ships both files, not just the LGPL one. Copy
+    `LICENSES/LGPL-3.0-or-later.txt` and `LICENSES/GPL-3.0-or-later.txt` into the package and add
+    both to `include`; confirm with `cargo package --list` that they appear in the `.crate`. This
+    is purely mechanical (the repo is uniformly LGPL-3.0-or-later, so there is no license choice
+    to make), hence `ready-for-agent`.
 11. Declare and test a minimum supported Rust version. `Cargo.toml` has no `rust-version`, so
     there is no stated MSRV and nothing pins it. Pick a floor, add `rust-version`, and add an
     MSRV job to the CI matrix from item 8. While editing metadata, fill the empty `authors` and
