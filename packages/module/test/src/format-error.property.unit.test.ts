@@ -6,8 +6,14 @@
  * fixtures; these properties fuzz the wide-input surfaces where the
  * harness must behave in every situation:
  *
- * - totality: the formatter resolves to string lines for arbitrary
- *   thrown values without throwing itself
+ * - no-throw and shape: the formatter resolves to a non-empty array of
+ *   string lines for arbitrary plain thrown values without throwing.
+ *   This is deliberately scoped to plain values: an error object whose
+ *   `.message`/`.name`/`.cause`/`.stack`/`.errors` getter throws is NOT
+ *   generated here, because `format-error.ts` guards only `String()`
+ *   conversion (via `safeString`), not those property reads, so such an
+ *   object propagates the getter's throw. See the note on the no-throw
+ *   test.
  * - cycle safety: self-referential and ring-shaped `.cause` chains
  *   terminate and emit the `... (cycle)` marker exactly once
  * - aggregate membership: every `AggregateError.errors` member is
@@ -279,18 +285,26 @@ function buildErrorWithMixedStack({
 await describe({
   name: 'format-error (property)',
   children: [
-    //region Totality
+    //region No-throw and shape
 
+    // Scoped to plain values: `errorLikeArbitrary` and `anything()` never
+    // produce throwing property getters. `formatErrorDeep` guards only
+    // `String()` conversion, not the `.message`/`.name`/`.cause`/`.stack`/
+    // `.errors` reads, so an object with a throwing getter currently
+    // propagates the throw (verified empirically). Covering that case would
+    // require hardening `format-error.ts`; it is a surfaced follow-up, not a
+    // claim this property makes.
     it({
-      name: 'formatErrorDeep resolves to string lines for arbitrary values without throwing',
+      name: 'formatErrorDeep returns non-empty string lines for arbitrary plain values without throwing',
       timeout: PROPERTY_TIMEOUT_MS,
       fn: async () => {
         await assert(
           asyncProperty(
             oneof(errorLikeArbitrary, anything(),),
-            async function neverThrows(value,) {
+            async function returnsStringLines(value,) {
               const lines = await formatErrorDeep(value,);
               expect(Array.isArray(lines,),).toBe(true,);
+              expect(lines.length,).toBeGreaterThan(0,);
               lines.forEach(function assertString(line,) {
                 expect(typeof line,).toBe('string',);
               },);
@@ -301,7 +315,7 @@ await describe({
       },
     },),
 
-    //endregion Totality
+    //endregion No-throw and shape
 
     //region Cycle safety
 
