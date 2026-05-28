@@ -135,6 +135,47 @@ function safeString(value: unknown,): string {
 }
 
 /**
+ * Reads a property from an error-like object, returning `undefined`
+ * when the key is absent or when accessing it throws. Error objects
+ * can carry a throwing getter (or a `Proxy` `get` trap) on `.message`,
+ * `.cause`, and similar; reading them directly would let the getter's
+ * throw escape the formatter mid-walk. `Reflect.get` returns `undefined`
+ * for an absent key, and the `try` swallows a throwing read, so the
+ * formatter degrades gracefully (treats the field as missing) instead of
+ * propagating the trap, matching {@link safeString}'s guard on
+ * `String()`.
+ *
+ * @param source - object to read from
+ *
+ * @param key - property name to read
+ *
+ * @returns property value, or `undefined` when absent or unreadable
+ *
+ * @example
+ * ```ts
+ * readProperty({ source: new Error('boom'), key: 'message', }) // 'boom'
+ * readProperty({ source: {}, key: 'message', })                // undefined
+ * ```
+ */
+function readProperty({
+  source,
+  key,
+}: {
+  readonly source: object;
+  readonly key: string;
+},): unknown {
+  try {
+    return Reflect.get(
+      source,
+      key,
+    );
+  }
+  catch {
+    return undefined;
+  }
+}
+
+/**
  * Extracts the message string from an error-like object.
  * Falls back to `<unknown message>` when the field is missing or
  * not a string.
@@ -151,8 +192,13 @@ function safeString(value: unknown,): string {
  * ```
  */
 function readMessage(error: object,): string {
-  if (('message' in error) && ((typeof error.message) === 'string'))
-    return error.message;
+  /** Defensively-read `.message`; held in a local so the getter fires at most once. */
+  const message = readProperty({
+    source: error,
+    key: 'message',
+  },);
+  if ((typeof message) === 'string')
+    return message;
   return '<unknown message>';
 }
 
@@ -172,10 +218,13 @@ function readMessage(error: object,): string {
  * ```
  */
 function readErrorLabel(error: object,): string {
-  if (('name' in error) && ((typeof error.name) === 'string')
-    && (error.name
-      !== ''))
-    return error.name;
+  /** Defensively-read `.name`; held in a local so the getter fires at most once. */
+  const label = readProperty({
+    source: error,
+    key: 'name',
+  },);
+  if (((typeof label) === 'string') && (label !== ''))
+    return label;
   return 'Error';
 }
 
@@ -257,10 +306,15 @@ function readStackFrames({
   readonly message: string;
   readonly workspacePrefix: string;
 },): readonly string[] {
-  if ((!('stack' in error)) || ((typeof error.stack) !== 'string'))
+  /** Defensively-read `.stack`; held in a local so the getter fires at most once. */
+  const stack = readProperty({
+    source: error,
+    key: 'stack',
+  },);
+  if ((typeof stack) !== 'string')
     return [];
   /** Raw newline-split stack lines, before header-line trimming and per-frame cleanup. */
-  const rawLines = error.stack
+  const rawLines = stack
     .split('\n',);
   /**
    * V8 and JavaScriptCore prefix the stack with `ErrorName: message`
@@ -362,8 +416,11 @@ function formatNode({
   /** Composed header-plus-frames string for this node, prepended to the descendants in the return list. */
   const line = `${headerPrefix}${label}: ${message}${framesInline}`;
 
-  /** Cause value pulled out so the recursion only runs once when a cause exists. */
-  const causeValue: unknown = 'cause' in value ? value.cause : undefined;
+  /** Cause value, defensively read, pulled out so the recursion only runs once when a cause exists. */
+  const causeValue: unknown = readProperty({
+    source: value,
+    key: 'cause',
+  },);
   /** Recursively rendered cause subtree, kept separate from `errorLines` so cause precedes aggregate members. */
   const causeLines = causeValue !== undefined
     ? formatNode({
@@ -374,8 +431,11 @@ function formatNode({
     },)
     : [];
 
-  /** `errors` field pulled out so the array check and subsequent iteration both refer to the same captured value. */
-  const errorsField: unknown = 'errors' in value ? value.errors : undefined;
+  /** `errors` field, defensively read, pulled out so the array check and subsequent iteration both refer to the same captured value. */
+  const errorsField: unknown = readProperty({
+    source: value,
+    key: 'errors',
+  },);
   /** Recursively rendered aggregate members, appended after `causeLines` to keep walk order stable. */
   const errorLines: readonly string[] = Array.isArray(errorsField,)
     ? errorsField.flatMap(function formatAggregateMember(
@@ -413,7 +473,10 @@ function formatNode({
  * Non-Error throws (`throw 'oops'`, `throw 42`, `throw null`) render
  * as a single `Threw non-Error value: ...` line. Missing `.message`
  * renders as `<unknown message>`. Missing `.stack` contributes no
- * frames.
+ * frames. Property reads are getter-safe (see {@link readProperty}): a
+ * `.message`/`.name`/`.cause`/`.stack`/`.errors` accessor that throws
+ * degrades to the missing-field fallback rather than propagating, so the
+ * walk never rejects on a hostile error object.
  *
  * @param value - thrown value of unknown shape
  *

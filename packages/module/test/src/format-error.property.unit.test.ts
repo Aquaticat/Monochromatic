@@ -7,13 +7,11 @@
  * harness must behave in every situation:
  *
  * - no-throw and shape: the formatter resolves to a non-empty array of
- *   string lines for arbitrary plain thrown values without throwing.
- *   This is deliberately scoped to plain values: an error object whose
- *   `.message`/`.name`/`.cause`/`.stack`/`.errors` getter throws is NOT
- *   generated here, because `format-error.ts` guards only `String()`
- *   conversion (via `safeString`), not those property reads, so such an
- *   object propagates the getter's throw. See the note on the no-throw
- *   test.
+ *   string lines for arbitrary thrown values without throwing, including
+ *   hostile error objects whose `.message`/`.name`/`.cause`/`.stack`/
+ *   `.errors` getter throws. `format-error.ts` reads every error
+ *   property defensively, so such a getter degrades to a fallback
+ *   instead of propagating the throw mid-walk.
  * - cycle safety: self-referential and ring-shaped `.cause` chains
  *   terminate and emit the `... (cycle)` marker exactly once
  * - aggregate membership: every `AggregateError.errors` member is
@@ -112,6 +110,20 @@ const HARNESS_INTERNAL_FRAGMENTS: readonly string[] = [
   'node_modules/sinon/',
 ];
 
+/**
+ * Error properties `formatErrorDeep` reads. A hostile error object can
+ * make any of these throw on access; the no-throw property generates
+ * such objects to prove the formatter's defensive reads degrade rather
+ * than propagate.
+ */
+const TRAPPED_KEYS: readonly string[] = [
+  'message',
+  'name',
+  'cause',
+  'stack',
+  'errors',
+];
+
 //endregion Constants
 
 //region Arbitraries
@@ -156,6 +168,21 @@ function buildErrorLikeArbitrary(): Arbitrary<unknown> {
 
 /** Error-like value arbitrary, instantiated once for reuse across properties. */
 const errorLikeArbitrary = buildErrorLikeArbitrary();
+
+/**
+ * Arbitrary producing an object with a single throwing accessor on one
+ * of {@link TRAPPED_KEYS}. Models a hostile error value whose getter
+ * throws when `formatErrorDeep` reads it.
+ */
+const throwingGetterArbitrary = constantFrom(...TRAPPED_KEYS,).map(function toTrappedValue(key,): unknown {
+  return Object.defineProperty({}, key, {
+    get: function throwOnRead(): never {
+      throw new Error(`getter trap on ${key}`,);
+    },
+    enumerable: true,
+    configurable: true,
+  },);
+},);
 
 //endregion Arbitraries
 
@@ -287,20 +314,19 @@ await describe({
   children: [
     //region No-throw and shape
 
-    // Scoped to plain values: `errorLikeArbitrary` and `anything()` never
-    // produce throwing property getters. `formatErrorDeep` guards only
-    // `String()` conversion, not the `.message`/`.name`/`.cause`/`.stack`/
-    // `.errors` reads, so an object with a throwing getter currently
-    // propagates the throw (verified empirically). Covering that case would
-    // require hardening `format-error.ts`; it is a surfaced follow-up, not a
-    // claim this property makes.
+    // `throwingGetterArbitrary` mixes in error objects whose property
+    // getter throws. `format-error.ts` reads every error property through
+    // `readProperty`, so a hostile getter degrades to a fallback instead
+    // of propagating. Reverting that guard makes this property fail with a
+    // throwing-getter counterexample (verified), so it genuinely proves
+    // the hardening rather than asserting a vacuous shape.
     it({
-      name: 'formatErrorDeep returns non-empty string lines for arbitrary plain values without throwing',
+      name: 'formatErrorDeep returns non-empty string lines for arbitrary values, including throwing getters, without throwing',
       timeout: PROPERTY_TIMEOUT_MS,
       fn: async () => {
         await assert(
           asyncProperty(
-            oneof(errorLikeArbitrary, anything(),),
+            oneof(errorLikeArbitrary, anything(), throwingGetterArbitrary,),
             async function returnsStringLines(value,) {
               const lines = await formatErrorDeep(value,);
               expect(Array.isArray(lines,),).toBe(true,);
