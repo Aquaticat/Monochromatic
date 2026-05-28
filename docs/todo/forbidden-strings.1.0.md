@@ -7,10 +7,16 @@ This complements the original design rationale in [forbidden-strings.md](./forbi
 that document covers why the tool exists and how it works. This one covers what is missing
 before a `1.0` semver commitment is honest.
 
-Current measured baseline (2026-05-28): `cargo test --release` passes (190 unit plus 19
-integration, 0 failures), `cargo clippy --release -- -D warnings` is clean, the crate publishes
-via the OIDC trusted-publishing workflow, and performance is roughly two orders of magnitude
-under the stated budget.
+Current state verified 2026-05-28: `cargo test --release` passes (190 unit plus 19 integration,
+0 failures), `cargo clippy --release -- -D warnings` is clean, and the crate publishes via the
+OIDC trusted-publishing workflow. Performance figures are recorded in `PERF.md` (most recent
+recorded run 2026-05-16: 9.4 ms cold start, 56.6 ms full `--all` on this repo); a spot-check on
+2026-05-28 reproduced the same order of magnitude (sub-10 ms start, roughly 65 ms `--all`), which
+fits inside the pre-commit and pre-push budgets the README targets. The design doc's original
+5 s / 500 ms budgets are several tens of times larger than these numbers, but the perf docs
+themselves note those budgets are no longer the relevant yardstick, so this checklist treats
+performance as well-characterized and not a 1.0 gap; the items below are about contract, coverage,
+and documentation.
 
 A `1.0` tag is a promise: a scanner whose security model is written down (what it guarantees and,
 just as importantly, what it explicitly does not), that does not leak the rules it is given, that
