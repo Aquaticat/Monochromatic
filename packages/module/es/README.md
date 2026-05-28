@@ -2,6 +2,10 @@
 
 A comprehensive functional programming utility library for TypeScript, designed to provide every thinkable utility function with excellent type safety, performance, and developer experience.
 
+> Split-warning, 2026-05-28: `@monochromatic-dev/module-es` is planned to be
+> split into focused packages. Prefer existing focused packages for new imports,
+> and treat new root exports as migration staging rather than stable expansion.
+>
 > Stale-warning, 2026-05-13: this README predates the current `types` taxonomy
 > and package export map. Treat broad examples below as aspirational unless they
 > use actual subpaths from `package.json`.
