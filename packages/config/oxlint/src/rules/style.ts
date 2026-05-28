@@ -67,6 +67,11 @@ export const styleRules: DummyRuleMap = {
   // when an async function's only await sites are tail-position returns.
   'typescript/return-await': 'off',
 
+  // The rule's documented promise-handler rationale does not fit
+  // Promise.all(input.map(callback)) callbacks, and its raw-value rewrite can
+  // conflict with require-await and await-thenable in mixed sync/async mappers.
+  'promise/no-return-wrap': 'off',
+
   // Doesn't support eslint parameter allow when intersecting.
   'typescript/ban-types': 'off',
 
