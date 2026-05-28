@@ -64,6 +64,7 @@ export const OXLINT_SUPPRESSIONS: readonly OxlintSuppression[] = [
   {
     rule: 'prefer-readonly-parameter-types',
     snippetIncludes: 'CssValue',
+    pathIncludes: 'src/client/mixins.ts',
     reason: [
       'CssValue is a deeply-readonly branded primitive (`string & { readonly __cssValue: unique symbol }`).',
       'oxlint/tsgolint AND typescript-eslint only exempt branded primitives at the TOP LEVEL of a parameter',
@@ -73,6 +74,8 @@ export const OXLINT_SUPPRESSIONS: readonly OxlintSuppression[] = [
       'lost when the rule recurses into a property type, so there is no `CssValue` name left to match.',
       'Working-as-intended in both implementations (typescript-eslint #1790/#11660; nested non-readonly',
       'members are "working as intended" per #2823). See docs/troubleshooting/oxlint-prefer-readonly-branded-nesting.md.',
+      'Scoped via pathIncludes to src/client/mixins.ts, the only flagged site (verified by raw',
+      '`oxlint --type-aware`), so a CssValue token in any other file cannot trip the substring match.',
     ]
       .join(' ',),
   },
@@ -454,3 +457,64 @@ export function filterOxlintOutput({
 }
 
 //endregion Output filtering
+
+//region Exit-code decision
+
+/**
+ * oxlint's exit code when a run failed only because lint diagnostics were
+ * found, as opposed to a config error, panic, or crash.
+ *
+ * Verified by running `oxlint --type-aware`: a lint-violation run exits `1`
+ * with empty stderr (a missing-config error also exits `1`, but its message is
+ * not a parseable diagnostic block, so nothing is suppressed and the failure
+ * propagates through the `totalSuppressed === 0` guard). Crashes use other
+ * codes or write to stderr, which {@link shouldForceSuccess} rejects.
+ */
+export const OXLINT_DIAGNOSTICS_EXIT_CODE = 1;
+
+/**
+ * Decides whether the wrapper may convert oxlint's non-zero exit into success.
+ *
+ * Forces success only when the failure was caused solely by diagnostics the
+ * suppression registry dropped: at least one block was suppressed, none
+ * survived, oxlint used its ordinary diagnostics exit code, and stderr was
+ * empty. A config error or panic that merely coincides with a suppressible
+ * block (a non-{@link OXLINT_DIAGNOSTICS_EXIT_CODE} exit or any stderr output)
+ * keeps the failure, so a real fault is never hidden behind a suppressed false
+ * positive.
+ *
+ * @param hasRemainingDiagnostics - whether any non-suppressed block survived filtering
+ *
+ * @param totalSuppressed - count of diagnostic blocks dropped this run
+ *
+ * @param exitCode - oxlint's exit code; callers guard the absent case (no code reported is never a forced success)
+ *
+ * @param stderr - oxlint's captured stderr, empty string when none
+ *
+ * @returns whether the wrapper should exit `0` despite oxlint's non-zero exit
+ *
+ * @example
+ * ```ts
+ * shouldForceSuccess({ hasRemainingDiagnostics: false, totalSuppressed: 1, exitCode: 1, stderr: '' }); // true
+ * shouldForceSuccess({ hasRemainingDiagnostics: false, totalSuppressed: 1, exitCode: 2, stderr: 'fatal' }); // false
+ * ```
+ */
+export function shouldForceSuccess({
+  hasRemainingDiagnostics,
+  totalSuppressed,
+  exitCode,
+  stderr,
+}: {
+  readonly hasRemainingDiagnostics: boolean;
+  readonly totalSuppressed: number;
+  readonly exitCode: number;
+  readonly stderr: string;
+},): boolean {
+  return (!hasRemainingDiagnostics)
+    && (totalSuppressed > 0)
+    && (exitCode === OXLINT_DIAGNOSTICS_EXIT_CODE)
+    && (stderr.trim()
+      === '');
+}
+
+//endregion Exit-code decision

@@ -9,6 +9,7 @@ import {
   filterOxlintOutput,
   NOT_DIAGNOSTIC_HEADER,
   OXLINT_SUPPRESSIONS,
+  shouldForceSuccess,
 } from './oxlint-suppress.ts';
 
 /** Diagnostic block for the CssValue branded-nesting false positive (matches the shipped suppression). */
@@ -28,6 +29,19 @@ const realViolationBlock = [
   '     ,-[src/server/handler.ts:10:20]',
   '  10 | export function handle(options: { count: number; },): void {',
   '     :                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^',
+  '     `----',
+].join('\n',);
+
+/**
+ * Prefer-readonly block naming `CssValue` in a file other than the gated
+ * `src/client/mixins.ts`; the default registry's `pathIncludes` gate must keep
+ * it (a `CssValue` token elsewhere is not the documented false positive).
+ */
+const cssValueOtherFileBlock = [
+  '  ! typescript(prefer-readonly-parameter-types): Parameter should be a readonly type.',
+  '     ,-[src/widgets/panel.ts:10:3]',
+  '  10 | export function panel({ gap, }: { gap?: CssValue; },): void {',
+  '     :                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^',
   '     `----',
 ].join('\n',);
 
@@ -225,6 +239,91 @@ await describe({
               return suppression.snippetIncludes
                 === 'CssValue';
             },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'default registry path gate keeps a CssValue block outside src/client/mixins.ts',
+          fn: async () => {
+            // Precision: the default suppression is scoped to src/client/mixins.ts,
+            // so a prefer-readonly violation naming CssValue in any other file is
+            // a real diagnostic and must survive.
+            const result = filterOxlintOutput({
+              output: [
+                cssValueOtherFileBlock,
+                '',
+                summary({
+                  warnings: 1,
+                  errors: 0,
+                },),
+              ].join('\n',),
+            },);
+            expect(result.hasRemainingDiagnostics,).toBe(true,);
+            expect(result.suppressedWarnings,).toBe(0,);
+            expect(result.filtered
+              .includes('src/widgets/panel.ts',),).toBe(true,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: shouldForceSuccess.name,
+      children: [
+        it({
+          name: 'forces success when only suppressed diagnostics caused the failure',
+          fn: async () => {
+            expect(shouldForceSuccess({
+              hasRemainingDiagnostics: false,
+              totalSuppressed: 1,
+              exitCode: 1,
+              stderr: '',
+            },),).toBe(true,);
+          },
+        },),
+        it({
+          name: 'preserves failure when real diagnostics remain',
+          fn: async () => {
+            expect(shouldForceSuccess({
+              hasRemainingDiagnostics: true,
+              totalSuppressed: 1,
+              exitCode: 1,
+              stderr: '',
+            },),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'preserves failure when nothing was suppressed',
+          fn: async () => {
+            expect(shouldForceSuccess({
+              hasRemainingDiagnostics: false,
+              totalSuppressed: 0,
+              exitCode: 1,
+              stderr: '',
+            },),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'preserves failure on a non-diagnostics exit code',
+          fn: async () => {
+            expect(shouldForceSuccess({
+              hasRemainingDiagnostics: false,
+              totalSuppressed: 1,
+              exitCode: 2,
+              stderr: '',
+            },),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'preserves failure when stderr carries a non-diagnostic error',
+          fn: async () => {
+            // The finding's mixed-failure case: a suppressible block on stdout
+            // plus a fatal message on stderr must not be converted to success.
+            expect(shouldForceSuccess({
+              hasRemainingDiagnostics: false,
+              totalSuppressed: 1,
+              exitCode: 1,
+              stderr: 'fatal: cache database could not be read',
+            },),).toBe(false,);
           },
         },),
       ],

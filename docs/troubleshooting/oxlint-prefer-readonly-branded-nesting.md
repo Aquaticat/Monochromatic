@@ -184,14 +184,18 @@ Both fail at the name gate, because the recursed property type carries no `CssVa
 ### Wrapper suppression (chosen)
 
 `task-oxlint` drops diagnostic blocks matching a hardcoded, documented signature and
-recomputes the `Found N warnings and M errors.` summary, exiting non-zero only when
-non-suppressed diagnostics remain. `packages/dev-script/task-util/src/oxlint-suppress.ts`
-ships one entry:
+recomputes the `Found N warnings and M errors.` summary. It converts oxlint's failure to
+success only when every parsed block was suppressed, oxlint exited with its ordinary
+diagnostics code (`1`), and stderr was empty; a config error or panic that coincides with a
+suppressible block keeps the failure (`shouldForceSuccess` in
+`packages/dev-script/task-util/src/oxlint-suppress.ts`).
+That module ships one entry:
 
 ```typescript
 {
   rule: 'prefer-readonly-parameter-types',
   snippetIncludes: 'CssValue',
+  pathIncludes: 'src/client/mixins.ts',
   reason: '...',
 }
 ```
@@ -200,6 +204,18 @@ This mirrors the source-filtering shape of
 [tsgo-filter.ts](../../packages/dev-script/task-util/src/tsgo-filter.ts) (which already drops
 node_modules and generated-i18n diagnostics).
 
+Output format requirement. The block parser keys on oxlint's graphical reporter (a `!`/`x`
+`plugin(rule):` header opening a multi-line block). oxlint's piped default reporter is not
+stable across versions: 1.65 emitted graphical-when-piped, 1.67 emits a compact one-line
+format (`path:line:col: severity plugin(rule): message`) that the parser cannot classify, so
+nothing is suppressed and the `focusOutline` false positive fails the lint. `task-oxlint`
+therefore pins `--format=default` before forwarding arguments (skipping the pin when the
+caller passes an explicit `--format`/`-f`), so the parser always receives the graphical
+blocks regardless of oxlint's version or TTY state. Verified by running
+`mise run //packages/webapp-productivity/done:lint:oxlint`: without the pin on oxlint 1.67 it
+exits `1` with the unsuppressed compact line; with the pin it exits `0` and reports
+`Found 0 warnings and 0 errors.`
+
 Tradeoffs:
 
 - Invisible at the source site: a reader of `mixins.ts` sees no marker that the rule is
@@ -207,11 +223,14 @@ Tradeoffs:
 - Diverges from raw oxlint: a direct `oxlint` invocation (or CI not routed through
   `task-oxlint`) still reports the parameter. The repo runs lint through the wrapper, so the
   mise lint task is the boundary that matters.
-- Substring match: `snippetIncludes: 'CssValue'` also matches `'CssValueHelper'` and would
-  wrongly drop a real violation on a param that has both a mutable field and a `CssValue`
-  field. Acceptable because `CssValue` is always deeply readonly and `focusOutline` is the
-  only nested-`CssValue` parameter in the repo; tighten with `pathIncludes` if a real
-  collision appears.
+- Substring match scoped by path: `snippetIncludes: 'CssValue'` also matches `'CssValueHelper'`,
+  so the entry adds `pathIncludes: 'src/client/mixins.ts'` to confine the match to the sole
+  flagged site. `focusOutline` is the only nested-`CssValue` parameter oxlint flags (verified
+  by raw `oxlint --type-aware`: the package reports it, and the only other nested-`CssValue`
+  shape, `touchTarget` in `module/hyperscript/src/css/index.unit.test.ts`, is not flagged). A
+  `CssValue` token in any other file can no longer trip the match; a residual same-file
+  collision (a real mutable param alongside a `CssValue` field in `mixins.ts` itself) remains
+  possible but would surface as a visible failure, never hide a real one.
 
 ### Refactor to a top-level branded parameter (rejected here, valid in general)
 

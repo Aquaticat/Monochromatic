@@ -16,7 +16,10 @@
 import spawn from 'nano-spawn';
 
 import { augmentOxlintOutput, } from './oxlint-augment.ts';
-import { filterOxlintOutput, } from './oxlint-suppress.ts';
+import {
+  filterOxlintOutput,
+  shouldForceSuccess,
+} from './oxlint-suppress.ts';
 
 //region Main execution
 
@@ -37,6 +40,25 @@ import { filterOxlintOutput, } from './oxlint-suppress.ts';
 const threadOverride = process.env
   .OXLINT_THREADS;
 
+/**
+ * Whether the caller already passed an explicit output format flag.
+ *
+ * The wrapper pins `--format=default` so the suppression parser always receives
+ * oxlint's stable graphical block reporter. oxlint's piped default reporter
+ * varies by version: 1.67 emits a compact one-line format that the block parser
+ * cannot classify, silently defeating suppression (the focusOutline false
+ * positive then fails the lint). An explicit caller `--format`/`-f` must win, so
+ * the pin is skipped when one is present.
+ */
+const hasExplicitFormat = process.argv
+  .slice(2,)
+  .some(function isFormatFlag(arg,) {
+    return (arg === '--format')
+      || (arg === '-f')
+      || arg.startsWith('--format=',)
+      || arg.startsWith('-f=',);
+  },);
+
 /** Arguments forwarded to oxlint. */
 const oxlintArgs = [
   ...(((threadOverride !== undefined) && (threadOverride !== ''))
@@ -45,6 +67,7 @@ const oxlintArgs = [
       threadOverride,
     ]
     : []),
+  ...(hasExplicitFormat ? [] : ['--format=default',]),
   ...process.argv
     .slice(2,),
 ];
@@ -114,13 +137,27 @@ catch (error) {
     /** Total blocks dropped this run; zero means the filter changed nothing, so oxlint's failure stands. */
     const totalSuppressed = suppressed.suppressedWarnings
       + suppressed.suppressedErrors;
-    // Force success only when the failure was caused solely by suppressed
-    // diagnostics. Preserve oxlint's exit code when real diagnostics remain OR
-    // nothing was suppressed (e.g. a config error or panic emits no parseable
-    // block, so suppressedTotal stays 0 and the failure must propagate).
-    if (suppressed.hasRemainingDiagnostics
-      || (totalSuppressed === 0)) {
-      process.exitCode = subprocessError.exitCode
+    /** oxlint's reported exit code; absent (e.g. signal termination) never qualifies as a forced success. */
+    const { exitCode, } = subprocessError;
+    /**
+     * Whether to convert oxlint's non-zero exit into success.
+     *
+     * True only when the failure was caused solely by suppressed diagnostics:
+     * something was dropped, nothing real survived, oxlint used its ordinary
+     * diagnostics exit code, and stderr was empty. A config error or panic that
+     * coincides with a suppressible block (non-1 exit or stderr text) keeps
+     * oxlint's failure, so a real fault is never hidden by a suppression.
+     */
+    const forceSuccess = (exitCode !== undefined)
+      && shouldForceSuccess({
+        hasRemainingDiagnostics: suppressed.hasRemainingDiagnostics,
+        totalSuppressed,
+        exitCode,
+        stderr: subprocessError.stderr
+          ?? '',
+      },);
+    if (!forceSuccess) {
+      process.exitCode = exitCode
         ?? 1;
     }
 
