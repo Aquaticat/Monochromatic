@@ -201,7 +201,7 @@ AGENTS.md was compressed from 6672 words / 684 lines to 5894 words / 449 lines (
 
 ### Sub-section merges
 
-- **Pre-response checklist item 4 + "Hedge phrases that signal a skipped step"**: single hedge-phrase list now lives in the dedicated section; checklist item 4 cross-references it. Full hedge list, the `ccsr` stop-hook reference, and the genuine-uncertainty exception clause all preserved.
+- **Pre-response checklist item 4 + "Hedge phrases that signal a skipped step"**: single hedge-phrase list now lives in the dedicated section; checklist item 4 cross-references it. Full hedge list, the stop-hook reference, and the genuine-uncertainty exception clause all preserved.
 - **"Measure before you characterize" + "Ask only for non-measurable facts"**: collapsed to "Measure-vs-ask" with two bolded sub-rules. Both example lists (measurement commands; non-measurable cases) and the three-failure-direction summary preserved. Dropped: prose framing, employee-vs-boss analogy retained inside.
 - **Pre-response checklist item 9 + "Before claiming inability"**: checklist item 9 cross-references the dedicated section; the bridging-tools list (`ffmpeg`, `pandoc`, etc.) and "state the bridges you tried" rule kept in the dedicated section.
 - **TypeScript standards / Type system / Variables and values / Programming patterns**: merged into one "TypeScript" section with four bolded sub-headings (Standards / Type system / Variables and values / Programming patterns). Every bullet kept; only the four `H3` headers became four `**bold**` paragraph leads.
@@ -241,7 +241,7 @@ AGENTS.md was compressed from 6693 words / 480 lines to 6672 words / 477 lines (
 
 ### Prose tightening
 
-- **`ccsr` stop hook entry** in `Enforcement mechanisms`: the inline 6-phrase hedge list ("probably", "maybe", etc.) replaced by a back-reference to the canonical "Hedge phrases that signal a skipped step" section.
+- **Stop hook entry** in `Enforcement mechanisms`: the inline 6-phrase hedge list ("probably", "maybe", etc.) replaced by a back-reference to the canonical "Hedge phrases that signal a skipped step" section.
 - **Hedge phrases section**: the reciprocal back-pointer "(Item 4 of the pre-response checklist applies to the same phrases.)" dropped; the checklist already points here.
 - **Proactivity calibration**: three "(see X)" parenthetical cross-references dropped from paragraph 2; the rules stand on their own. The recognition-cue paragraph at line 23 retained as distinct from the action rule at line 19.
 - **Clone-source-and-read cluster**: six mentions (pre-response checklist item 2, hedge-phrase entry "no public diagnosis exists", research-tools web-search rationale, before-running-command clone rule, Third-party-libraries canonical, "Name the verification step" example) consolidated. Line 387 (Third-party libraries) kept as canonical home with the full rule and the "quote file path, line number, code excerpt" caveat. Other mentions reference back via "(see ...)" pointers. Distinct sub-rules preserved separately: the `gh repo clone` vs `git clone` operational preference (`Before running a command`); the "do not remove cloned repos from `/tmp`" lifecycle rule (`Research tools`); the verification-step example value (`Name the verification step`).
@@ -373,6 +373,10 @@ The `runbook` skill encodes the required sections (Setup, Steps, What to check, 
 
 A test file covering sync matchers but skipping async matchers is the same as no async tests; the bug ships silently.
 
+#### Enforcement mechanisms: why the stop-hook name is not in AGENTS.md
+
+AGENTS.md deliberately does not name the stop hook (`ccsr`) that enforces hedge-phrase and trailing-question rules. The hook exists and fires on every response; naming it in the rules document lets agents game the surface pattern (swapping one hedge for a novel one that passes the filter but carries the same epistemic gap) rather than internalizing the underlying rule. The hook's existence is discoverable from rejected-response feedback anyway, but AGENTS.md should not hand agents the bypass recipe up front. The rules themselves (the hedge-phrase list, the ask-user-tool question rule) remain; only the hook's identity and implementation details are suppressed. This follows the same principle as the "Runtime environment checks" rule in "What does not belong": passive text in AGENTS.md is weaker than an active hook, and naming the hook trades a small self-catch convenience for a larger gaming risk.
+
 #### Follow document pointers: the worked example
 
 A ToS that says "Services are governed by separate subscription agreements, not these Website Terms" points at a separate document where the substantive provisions live; fetch it before drawing conclusions about its contents.
@@ -392,7 +396,7 @@ Deliberately dropped (not relocated), with the user pointing at each as model-ob
 - The "logical unit" definition under git commit guidelines; the model knows what a logical commit is.
 - The push-authorization restatement; it duplicates the harness Git Safety Protocol.
 
-Kept verbatim in AGENTS.md: the "Hedge phrases that signal a skipped step" list (it mirrors the hardcoded `ccsr` trigger set in `packages/claude-code-plugins/source/src/handlers/stop-reminders/uncertainty-phrases.ts`, so it cannot be inferred or thinned) and all fenced code blocks (git-cleanup commands, commit-message example).
+Kept verbatim in AGENTS.md: the "Hedge phrases that signal a skipped step" list (it mirrors the hardcoded stop-hook trigger set in `packages/claude-code-plugins/source/src/handlers/stop-reminders/uncertainty-phrases.ts`, so it cannot be inferred or thinned) and all fenced code blocks (git-cleanup commands, commit-message example).
 
 Prose abbreviations applied in AGENTS.md text only, never in backtick tokens, filenames, code blocks, or the hedge section: config to conf, source to src, documentation to docs, directory to dir.
 
