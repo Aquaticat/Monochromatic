@@ -22,6 +22,20 @@
       <excludeFolder url="file://$MODULE_DIR$/packages-paused/webapp-forge/stress/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages-paused/webapp-search/ai-tree/dist" />
       <excludeFolder url="file://$MODULE_DIR$/packages-paused/webapp-search/exa-search/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/.claude" />
+      <excludeFolder url="file://$MODULE_DIR$/.crush" />
+      <excludeFolder url="file://$MODULE_DIR$/.factory/skills" />
+      <excludeFolder url="file://$MODULE_DIR$/.serena/cache" />
+      <excludeFolder url="file://$MODULE_DIR$/.serena/memories" />
+      <excludeFolder url="file://$MODULE_DIR$/data" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cli/forbidden-strings/fuzz/artifacts" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cli/forbidden-strings/fuzz/target" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/cli/forbidden-strings/target" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/dev-script/inference-canary/src/canary-lint" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/dev-script/vm-builder/output" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/webapp-content/ssg-test/.cache" />
+      <excludeFolder url="file://$MODULE_DIR$/playwright-report" />
+      <excludeFolder url="file://$MODULE_DIR$/test-results" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
