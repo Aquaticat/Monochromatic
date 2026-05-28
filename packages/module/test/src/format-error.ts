@@ -302,9 +302,9 @@ function readStackFrames({
  * per error, with stack frames joined inline after the header for
  * grep-friendliness.
  *
- * Cycle-safe: ancestor error objects are tracked in a `Set` threaded
- * by value down each descent; on revisit, emits `... (cycle)` and stops
- * the recursion at that branch.
+ * Cycle-safe: visited error objects are tracked in a shared
+ * {@link WeakSet}; on revisit, emits `... (cycle)` and stops the
+ * recursion at that branch.
  *
  * @param headerPrefix - text prepended to the node's line
  *   (empty for the root, `Caused by: ` for a cause node, `[N/M] `
@@ -312,8 +312,8 @@ function readStackFrames({
  *
  * @param value - error-like value at this node
  *
- * @param visited - ancestor cycle-detection set; each descent threads a
- *   fresh copy extended with the current node rather than mutating it
+ * @param visited - shared cycle-detection set, mutated as the walk
+ *   descends
  *
  * @param workspacePrefix - resolved prefix from
  *   {@link resolveWorkspacePrefix}
@@ -329,7 +329,7 @@ function formatNode({
 }: {
   readonly headerPrefix: string;
   readonly value: unknown;
-  readonly visited: ReadonlySet<object>;
+  readonly visited: WeakSet<object>;
   readonly workspacePrefix: string;
 },): readonly string[] {
   if (((typeof value) !== 'object') || (value === null))
@@ -338,16 +338,7 @@ function formatNode({
   if (visited.has(value,))
     return [`${headerPrefix}... (cycle)`,];
 
-  /**
-   * Fresh ancestor set extended with the current node, threaded into the
-   * recursive calls instead of mutating `visited`. A self-referential or
-   * ancestor `.cause` is still detected on revisit; bounded by error
-   * nesting depth, so the per-level copy stays small.
-   */
-  const visitedWithCurrent = new Set([
-    ...visited,
-    value,
-  ],);
+  visited.add(value,);
 
   /** Extracted message kept in a local so it can be reused for header construction and stack-header trimming. */
   const message = readMessage(value,);
@@ -378,7 +369,7 @@ function formatNode({
     ? formatNode({
       headerPrefix: 'Caused by: ',
       value: causeValue,
-      visited: visitedWithCurrent,
+      visited,
       workspacePrefix,
     },)
     : [];
@@ -394,7 +385,7 @@ function formatNode({
       return formatNode({
         headerPrefix: `[${String(index + 1,)}/${String(errorsField.length,)}] `,
         value: member,
-        visited: visitedWithCurrent,
+        visited,
         workspacePrefix,
       },);
     },)
@@ -415,7 +406,7 @@ function formatNode({
  * one line and `grep` matches by message, class, or frame.
  *
  * Walks the cause chain depth-first, then expands aggregate members
- * after a node's cause. Cycle-safe via a `Set` of ancestor visited
+ * after a node's cause. Cycle-safe via a {@link WeakSet} of visited
  * error objects; on revisit, emits `... (cycle)` and stops descending
  * at that branch.
  *
@@ -444,8 +435,8 @@ function formatNode({
  * ```
  */
 export async function formatErrorDeep(value: unknown,): Promise<readonly string[]> {
-  /** Empty seed ancestor set; each `formatNode` descent threads a fresh extended copy so a self-referential `.cause` does not recurse forever. */
-  const visited = new Set<object>();
+  /** Shared cycle-detection set so a self-referential `.cause` does not recurse forever. */
+  const visited = new WeakSet<object>();
   /** Resolved once per top-level walk so all descendants see the same prefix. */
   const workspacePrefix = await resolveWorkspacePrefix();
   return formatNode({
