@@ -5,7 +5,7 @@ import './process-shim.ts';
 import {
   dirname,
   resolve,
-} from '@monochromatic-dev/module-fs-path';
+} from '@monochromatic-dev/module-fs-path/ts';
 import postcss, { parse, } from 'postcss';
 import { readCssFile, } from './fs.ts';
 import { postcssInlineImport, } from './import.ts';

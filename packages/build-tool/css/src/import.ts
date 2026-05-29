@@ -15,7 +15,7 @@ import {
   isAbsolute,
   resolve,
   sep,
-} from '@monochromatic-dev/module-fs-path';
+} from '@monochromatic-dev/module-fs-path/ts';
 import {
   type AtRule,
   parse,

@@ -9,7 +9,7 @@ import {
   dirname,
   join,
   resolve,
-} from '@monochromatic-dev/module-fs-path';
+} from '@monochromatic-dev/module-fs-path/ts';
 import {
   existsSync,
   readCssFileSync,

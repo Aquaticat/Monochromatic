@@ -11,7 +11,7 @@ import { join, } from 'node:path';
 
 import {
   findMiseMonorepoRootCached,
-} from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+} from '@monochromatic-dev/module-fs-path/ts';
 import spawn from 'nano-spawn';
 
 /** Fallback base repository URL when git remote is unavailable */

@@ -23,7 +23,7 @@
  * @module
  */
 
-import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path';
+import { findMiseMonorepoRootCached, } from '@monochromatic-dev/module-fs-path/ts';
 
 /**
  * Substrings identifying stack frames that belong to the harness's

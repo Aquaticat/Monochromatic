@@ -21,7 +21,7 @@
 import { readFile, } from 'node:fs/promises';
 import { resolve as resolvePath, } from 'node:path';
 
-import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path';
+import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path/ts';
 
 import type { PackageProbe, } from './probe.ts';
 import { renderControls, } from './render-controls.ts';

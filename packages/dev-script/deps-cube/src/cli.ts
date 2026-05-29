@@ -36,7 +36,7 @@ import {
 } from 'node:fs/promises';
 import { resolve as resolvePath, } from 'node:path';
 
-import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path';
+import { findPackageRootCached, } from '@monochromatic-dev/module-fs-path/ts';
 
 import { createCache, } from './cache.ts';
 import { readCatalog, } from './catalog.ts';

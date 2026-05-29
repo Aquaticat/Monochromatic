@@ -3,7 +3,7 @@ import { join, } from 'node:path';
 
 import {
   findMiseMonorepoRootCached,
-} from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+} from '@monochromatic-dev/module-fs-path/ts';
 import {
   l,
   tagged,

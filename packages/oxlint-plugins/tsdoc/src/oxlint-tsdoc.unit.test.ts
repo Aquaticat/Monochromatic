@@ -1,6 +1,6 @@
 import { resolve, } from 'node:path';
 
-import { findMiseMonorepoRoot, } from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+import { findMiseMonorepoRoot, } from '@monochromatic-dev/module-fs-path/ts';
 import {
   describe,
   expect,

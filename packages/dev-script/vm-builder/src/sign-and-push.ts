@@ -14,7 +14,7 @@
  */
 import {
   findMiseMonorepoRootCached,
-} from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+} from '@monochromatic-dev/module-fs-path/ts';
 import { spawn as nodeSpawn, } from 'node:child_process';
 import { once, } from 'node:events';
 import { join, } from 'node:path';

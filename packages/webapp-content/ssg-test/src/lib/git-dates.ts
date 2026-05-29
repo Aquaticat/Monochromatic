@@ -18,7 +18,7 @@ import spawn, { type Result, } from 'nano-spawn';
 
 import {
   findMiseMonorepoRootCached,
-} from '@monochromatic-dev/module-fs-path/find-monorepo-root';
+} from '@monochromatic-dev/module-fs-path/ts';
 
 import type { Logger, } from './types.ts';
 
