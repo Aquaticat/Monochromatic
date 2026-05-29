@@ -11,9 +11,9 @@ import type {
 import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import {
   ABSENT,
+  type BudgetModelAuth,
   type Maybe,
-} from '@monochromatic-dev/pi-shared-model-selection/core';
-import type { BudgetModelAuth, } from '@monochromatic-dev/pi-shared-model-selection/budget';
+} from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import { l as parentLogger, } from './log.ts';
 

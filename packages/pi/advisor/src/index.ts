@@ -27,9 +27,11 @@ import {
   MAIN_MODEL_GUIDANCE_PREFIX,
 } from './constants.ts';
 import { l as parentLogger, } from './log.ts';
-import { selectDefaultModel, } from '@monochromatic-dev/pi-shared-model-selection/cost';
+import {
+  resolveEffectiveScope,
+  selectDefaultModel,
+} from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { renderAdvisorMessage, } from './rendering.ts';
-import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/scope';
 import { createAdvisorTool, } from './tool.ts';
 
 /** Tagged logger for the Advisor entry point. */

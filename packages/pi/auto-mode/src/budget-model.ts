@@ -9,7 +9,7 @@ import {
   NoBudgetModelError,
   resolveBudgetModelOverride,
   selectBudgetModel,
-} from '@monochromatic-dev/pi-shared-model-selection/budget';
+} from '@monochromatic-dev/pi-shared-model-selection/ts';
 import {
   findBudgetOverrideModel,
   hasConfiguredBudgetAuth,

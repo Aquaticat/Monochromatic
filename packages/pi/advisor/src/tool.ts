@@ -21,7 +21,7 @@ import {
   renderAdvisorCall,
   renderAdvisorResult,
 } from './rendering.ts';
-import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/scope';
+import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { selectAdvisorRunContext, } from './tool-context-selection.ts';
 import {
   AdvisorToolParametersSchema,

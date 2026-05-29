@@ -24,9 +24,9 @@ import {
 import { latestUserPromptExcerpt, } from './context-user.ts';
 import {
   ABSENT,
+  estimateAdvisorInputTokens,
   type Maybe,
-} from '@monochromatic-dev/pi-shared-model-selection/core';
-import { estimateAdvisorInputTokens, } from '@monochromatic-dev/pi-shared-model-selection/pi-coding-agent';
+} from '@monochromatic-dev/pi-shared-model-selection/ts';
 import type {
   AdvisorConfig,
   AdvisorContext,

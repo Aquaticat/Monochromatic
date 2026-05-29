@@ -13,8 +13,10 @@ import {
   buildAdvisorContext,
   maxContextCharsForAdvisorModel,
 } from './context.ts';
-import { resolveRequestedModel, } from '@monochromatic-dev/pi-shared-model-selection/core';
-import { selectDefaultModelFromContextEstimates, } from '@monochromatic-dev/pi-shared-model-selection/cost';
+import {
+  resolveRequestedModel,
+  selectDefaultModelFromContextEstimates,
+} from '@monochromatic-dev/pi-shared-model-selection/ts';
 import type {
   AdvisorConfig,
   AdvisorContext,

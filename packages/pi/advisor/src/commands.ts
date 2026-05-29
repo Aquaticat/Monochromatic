@@ -13,8 +13,10 @@ import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import { sendAdvisorMessage, } from './command-message.ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import { maxContextCharsForAdvisorModel, } from './context.ts';
-import { selectDefaultModel, } from '@monochromatic-dev/pi-shared-model-selection/cost';
-import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/scope';
+import {
+  resolveEffectiveScope,
+  selectDefaultModel,
+} from '@monochromatic-dev/pi-shared-model-selection/ts';
 import { runAdvisor, } from './tool.ts';
 import type { AdvisorConfig, } from './types.ts';
 

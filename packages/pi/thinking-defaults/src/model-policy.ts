@@ -4,7 +4,7 @@
  * @module
  */
 
-import { getModelIdLeaf, } from '@monochromatic-dev/pi-shared-model-selection/core';
+import { getModelIdLeaf, } from '@monochromatic-dev/pi-shared-model-selection/ts';
 
 //region Thinking default constants
 

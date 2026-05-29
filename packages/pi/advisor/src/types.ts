@@ -26,7 +26,7 @@ import type {
   ScopedModel,
   ScopedThinkingLevel as SharedScopedThinkingLevel,
   ScopeSource as SharedScopeSource,
-} from '@monochromatic-dev/pi-shared-model-selection/core';
+} from '@monochromatic-dev/pi-shared-model-selection/ts';
 
 //region Configuration
 

@@ -6,8 +6,10 @@
 
 import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
-import { resolveRequestedModel, } from '@monochromatic-dev/pi-shared-model-selection/core';
-import { selectDefaultModel, } from '@monochromatic-dev/pi-shared-model-selection/cost';
+import {
+  resolveRequestedModel,
+  selectDefaultModel,
+} from '@monochromatic-dev/pi-shared-model-selection/ts';
 import type {
   AdvisorConfig,
   AdvisorModelSelection,

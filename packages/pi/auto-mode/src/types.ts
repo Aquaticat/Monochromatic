@@ -17,7 +17,7 @@ import type {
   BudgetModelAuth,
   BudgetModelOverride,
   BudgetModelStrategy,
-} from '@monochromatic-dev/pi-shared-model-selection/budget';
+} from '@monochromatic-dev/pi-shared-model-selection/ts';
 
 //region Custom entry types
 
