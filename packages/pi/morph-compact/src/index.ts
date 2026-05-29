@@ -27,7 +27,7 @@ import type {
   ExtensionAPI,
   ExtensionCommandContext,
 } from '@earendil-works/pi-coding-agent';
-import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec';
+import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec/ts';
 import {
   NO_MORPH_KEY,
   resetApiKeyCache,

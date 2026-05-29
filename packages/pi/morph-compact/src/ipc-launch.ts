@@ -9,7 +9,7 @@
  */
 
 import type { ExtensionAPI, } from '@earendil-works/pi-coding-agent';
-import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec';
+import { launchTerminal, } from '@monochromatic-dev/cli-terminal-exec/ts';
 import {
   rmSync,
   unlinkSync,
