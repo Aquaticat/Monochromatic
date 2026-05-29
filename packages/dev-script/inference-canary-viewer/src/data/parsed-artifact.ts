@@ -8,7 +8,7 @@
 import type {
   ArtifactMeta,
   EnrichedArtifactMeta,
-} from '@monochromatic-dev/dev-script-inference-canary/src/linter-artifacts.ts';
+} from '@monochromatic-dev/dev-script-inference-canary/ts';
 
 import type { ProbeDetail, } from './viewer-types.ts';
 

@@ -8,14 +8,14 @@ import type {
   ConfigSnapshot,
   StreamTiming,
   StreamUsage,
-} from '@monochromatic-dev/dev-script-inference-canary/src/runner-types.ts';
+} from '@monochromatic-dev/dev-script-inference-canary/ts';
 
 export type {
   ConfigSnapshot,
   OpenRouterModelId,
   StreamTiming,
   StreamUsage,
-} from '@monochromatic-dev/dev-script-inference-canary/src/runner-types.ts';
+} from '@monochromatic-dev/dev-script-inference-canary/ts';
 
 /**
  * A single run entry derived from artifact metadata.

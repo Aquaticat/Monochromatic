@@ -16,7 +16,7 @@ import {
   type ArtifactMeta,
   type FailureArtifactMeta,
   LINT_DIR,
-} from '@monochromatic-dev/dev-script-inference-canary/src/linter-artifacts.ts';
+} from '@monochromatic-dev/dev-script-inference-canary/ts';
 
 import type { ArtifactData, } from './viewer-types.ts';
 
