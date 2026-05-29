@@ -1,7 +1,7 @@
 import {
   ABSENT,
   createSyncStore,
-} from '@monochromatic-dev/module-kv-store';
+} from '@monochromatic-dev/module-kv-store/ts';
 import {
   describe,
   expect,

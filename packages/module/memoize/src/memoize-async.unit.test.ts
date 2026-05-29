@@ -1,4 +1,4 @@
-import { createStore, } from '@monochromatic-dev/module-kv-store';
+import { createStore, } from '@monochromatic-dev/module-kv-store/ts';
 import {
   describe,
   expect,

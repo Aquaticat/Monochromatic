@@ -2,7 +2,7 @@ import {
   ABSENT,
   createStore,
   type Store,
-} from '@monochromatic-dev/module-kv-store';
+} from '@monochromatic-dev/module-kv-store/ts';
 
 import { buildCacheKey, } from './cache-key.ts';
 import {

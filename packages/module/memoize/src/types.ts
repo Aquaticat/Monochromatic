@@ -1,7 +1,7 @@
 import type {
   Store,
   SyncStore,
-} from '@monochromatic-dev/module-kv-store';
+} from '@monochromatic-dev/module-kv-store/ts';
 
 /** Maximum cache entries before LRU eviction in default memoize stores. */
 export const DEFAULT_MAX_CACHE_SIZE = 1_024;
