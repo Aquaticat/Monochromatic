@@ -304,8 +304,9 @@ function bodyLines({
 /**
  * Convert one micromark pipe-table token into HTML `<table>` lines, one element
  * per line so cell content can later be edited across multiple lines (the whole
- * reason pipe tables are banned). Inline Markdown inside cells is emitted
- * verbatim; GitHub renders it, though strict CommonMark would not.
+ * reason pipe tables are banned). Cell text is escaped for raw HTML text
+ * context; inline Markdown markers that are not HTML-sensitive remain literal
+ * for renderers that support Markdown inside HTML table cells.
  *
  * @param table - token of type `table`
  *
