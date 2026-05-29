@@ -1372,6 +1372,9 @@ importers:
 
   packages/module/current-time-context:
     devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript

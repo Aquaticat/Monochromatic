@@ -3,7 +3,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { formatTimeContext, } from './index.ts';
+import { formatTimeContext, } from '@monochromatic-dev/module-current-time-context';
 
 await describe({
   name: '',
