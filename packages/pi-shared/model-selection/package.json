@@ -14,32 +14,7 @@
       "types": "./dist/final/node/index.d.mts",
       "default": "./dist/final/node/index.mjs"
     },
-    "./core": {
-      "types": "./dist/final/node/core.d.mts",
-      "default": "./dist/final/node/core.mjs"
-    },
-    "./scope": {
-      "types": "./dist/final/node/scope.d.mts",
-      "default": "./dist/final/node/scope.mjs"
-    },
-    "./cost": {
-      "types": "./dist/final/node/cost.d.mts",
-      "default": "./dist/final/node/cost.mjs"
-    },
-    "./budget": {
-      "types": "./dist/final/node/budget.d.mts",
-      "default": "./dist/final/node/budget.mjs"
-    },
-    "./pi-coding-agent": {
-      "types": "./dist/final/node/pi-coding-agent.d.mts",
-      "default": "./dist/final/node/pi-coding-agent.mjs"
-    },
-    "./ts": "./src/index.ts",
-    "./core/ts": "./src/core.ts",
-    "./scope/ts": "./src/scope.ts",
-    "./cost/ts": "./src/cost.ts",
-    "./budget/ts": "./src/budget.ts",
-    "./pi-coding-agent/ts": "./src/pi-coding-agent.ts"
+    "./ts": "./src/index.ts"
   },
   "files": [
     "dist/final",
