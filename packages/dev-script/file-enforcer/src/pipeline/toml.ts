@@ -4,7 +4,7 @@ import {
   tomlSet,
   tomlStringify,
   type TomlValueInput,
-} from '@monochromatic-dev/module-toml-edit';
+} from '@monochromatic-dev/module-toml-edit/ts';
 import type { Path, } from '../types.ts';
 
 /**
