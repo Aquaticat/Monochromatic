@@ -8,6 +8,8 @@
   "module": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*",
     "./find-monorepo-root": "./src/find-monorepo-root.ts",
     "./find-package-root": "./src/find-package-root.ts"
   },
