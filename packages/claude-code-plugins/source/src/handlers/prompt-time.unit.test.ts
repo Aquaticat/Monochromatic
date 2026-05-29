@@ -1,6 +1,6 @@
 import type {
   UserPromptSubmitInput,
-} from '@monochromatic-dev/claude-code-plugins-hook-types';
+} from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 import {
   describe,
   expect,

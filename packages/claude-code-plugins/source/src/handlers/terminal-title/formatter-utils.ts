@@ -9,7 +9,7 @@
 
 import type {
   GenericToolInput,
-} from '@monochromatic-dev/claude-code-plugins-hook-types';
+} from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 import { basename, } from 'node:path';
 
 /** Maximum length for pattern and query strings displayed in the title. */

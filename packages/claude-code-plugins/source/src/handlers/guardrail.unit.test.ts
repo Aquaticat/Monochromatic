@@ -1,4 +1,4 @@
-import type { PreToolUseInput, } from '@monochromatic-dev/claude-code-plugins-hook-types';
+import type { PreToolUseInput, } from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 import {
   describe,
   expect,

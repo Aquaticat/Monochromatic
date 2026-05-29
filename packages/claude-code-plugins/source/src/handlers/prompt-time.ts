@@ -1,7 +1,7 @@
 import type {
   UserPromptSubmitInput,
   UserPromptSubmitOutput,
-} from '@monochromatic-dev/claude-code-plugins-hook-types';
+} from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 
 import { formatTimeContext, } from '@monochromatic-dev/module-current-time-context/ts';

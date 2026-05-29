@@ -14,7 +14,7 @@
 import type {
   HookInput,
   HookOutputBase,
-} from '@monochromatic-dev/claude-code-plugins-hook-types';
+} from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 import {
   readFileSync,

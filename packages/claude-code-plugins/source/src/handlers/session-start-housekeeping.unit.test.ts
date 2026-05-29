@@ -18,7 +18,7 @@ import { join, } from 'node:path';
 
 import type {
   SessionStartInput,
-} from '@monochromatic-dev/claude-code-plugins-hook-types';
+} from '@monochromatic-dev/claude-code-plugins-hook-types/ts';
 
 import {
   cleanRootSentinelArtifacts,
