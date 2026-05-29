@@ -375,6 +375,17 @@ Exception: raw `console` is allowed when precise control over terminal output is
 
 No hardcoded secrets, unsanitized user input in SQL/shell/HTML, overly permissive CORS/permissions, or secrets in logs.
 
+Any code that transforms or embeds text across a syntax boundary must treat the destination grammar as the authority.
+Source escapes are not portable: Markdown `\<`, shell quotes, JSON escaping, URL encoding, or regex escaping do not make
+text safe in another language. Normalize source semantics only as needed, then encode for the exact destination subcontext
+at the final interpolation boundary. Account for nested contexts: HTML text vs attribute vs URL, JS string inside
+`<script>`, CSS string, SQL literal, shell token, Markdown/MDX, JSON, regex, glob, terminal escape, and config syntax.
+This applies to serializers, code generators, formatters, autofixes, docs generators, renderers, CLIs, and tests.
+
+Tests for any transformer that emits another syntax must include adversarial boundary cases for that destination:
+active delimiters, terminators, escapes, quotes, newlines, traversal tokens, command separators, and source-escaped
+variants. Happy-path formatting and idempotence tests are not enough.
+
 ### CSS
 
 When editing CSS, the `css` skill encodes the platform-feature defaults (native dialog, popover API, nesting, `@layer`, `@scope`, container queries), Firefox ESR 140 browser baseline, `rem`-only sizing, logical properties, longhand shorthand rules, design-token colors, and the 48px touch-target / focus-visible accessibility floor;
