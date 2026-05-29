@@ -9,9 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./ts": "./src/index.ts",
-    "./ts/*": "./src/*",
-    "./find-monorepo-root": "./src/find-monorepo-root.ts",
-    "./find-package-root": "./src/find-package-root.ts"
+    "./ts/*": "./src/*"
   },
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
