@@ -1518,6 +1518,9 @@ importers:
 
   packages/module/i18n-compose:
     devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
