@@ -110,9 +110,15 @@ Before each agent run, auto-mode reads Pi's loaded skill metadata from
 directory. This prevents guard prompts when the model loads `SKILL.md` or
 referenced files from global, project, or package skills.
 
+Auto-mode also allows `read` tool access to existing files under `/tmp/agent`.
+Agents should place third-party source clones there when they need repeated
+inspection outside the current project. The allowlist uses canonical filesystem
+paths, so symlinks that resolve outside `/tmp/agent` still go through the normal
+signal and judge pipeline.
+
 The allowlist is read-only and still preserves secret-path checks. `write`,
-`edit`, and `bash` tool calls targeting skill directories still go through the
-normal signal and judge pipeline.
+`edit`, and `bash` tool calls targeting skill directories or `/tmp/agent` still
+go through the normal signal and judge pipeline.
 
 ## Logging
 

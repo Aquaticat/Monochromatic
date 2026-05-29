@@ -5,6 +5,15 @@
  * content signals, text signals, and user command matching.
  */
 
+import {
+  mkdir,
+  mkdtemp,
+  symlink,
+  writeFile,
+} from 'node:fs/promises';
+import { tmpdir, } from 'node:os';
+import { join, } from 'node:path';
+
 import type { ToolCallEvent, } from '@earendil-works/pi-coding-agent';
 import {
   describe,
@@ -105,12 +114,141 @@ await describe({
       fn: async () => {
         expect(
           pathSignals({
-            filePath: '/var/home/user/.agents/skills/code-review/SKILL.md',
+            filePath: '/var/home/user/Monochromatic/.agents/skills/code-review/SKILL.md',
             ctx: DEFAULT_CTX,
-            allowlistedDirs: ['/var/home/user/.agents/skills/code-review',],
+            allowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/code-review',],
           },),
         )
           .toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'does not flag existing allowlisted temp file outside cwd',
+      fn: async function doesNotFlagExistingAllowlistedTempFile() {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'auto-mode-path-',
+        ),);
+        const allowedDir = join(
+          root,
+          'allowed',
+        );
+        await mkdir(
+          allowedDir,
+          { recursive: true, },
+        );
+        const sourceFile = join(
+          allowedDir,
+          'source.ts',
+        );
+        await writeFile(
+          sourceFile,
+          'export const source = true;\n',
+        );
+
+        expect(
+          pathSignals({
+            filePath: sourceFile,
+            ctx: DEFAULT_CTX,
+            allowlistedDirs: [allowedDir,],
+          },),
+        )
+          .toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'flags allowlisted symlink that resolves outside allowlist',
+      fn: async function flagsAllowlistedSymlinkEscape() {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'auto-mode-path-',
+        ),);
+        const allowedDir = join(
+          root,
+          'allowed',
+        );
+        const outsideDir = join(
+          root,
+          'outside',
+        );
+        await mkdir(
+          allowedDir,
+          { recursive: true, },
+        );
+        await mkdir(
+          outsideDir,
+          { recursive: true, },
+        );
+        const outsideFile = join(
+          outsideDir,
+          'source.ts',
+        );
+        await writeFile(
+          outsideFile,
+          'export const outside = true;\n',
+        );
+        const linkPath = join(
+          allowedDir,
+          'source.ts',
+        );
+        await symlink(
+          outsideFile,
+          linkPath,
+        );
+
+        expect(
+          pathSignals({
+            filePath: linkPath,
+            ctx: DEFAULT_CTX,
+            allowlistedDirs: [allowedDir,],
+          },),
+        )
+          .toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'flags non-secret allowlisted symlink to secret-looking target',
+      fn: async function flagsAllowlistedSecretSymlinkTarget() {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'auto-mode-path-',
+        ),);
+        const allowedDir = join(
+          root,
+          'allowed',
+        );
+        await mkdir(
+          allowedDir,
+          { recursive: true, },
+        );
+        const secretFile = join(
+          allowedDir,
+          '.env',
+        );
+        await writeFile(
+          secretFile,
+          'VALUE=example\n',
+        );
+        const linkPath = join(
+          allowedDir,
+          'source.txt',
+        );
+        await symlink(
+          secretFile,
+          linkPath,
+        );
+
+        expect(
+          pathSignals({
+            filePath: linkPath,
+            ctx: DEFAULT_CTX,
+            allowlistedDirs: [allowedDir,],
+          },),
+        )
+          .toBe(true,);
       },
     },),
 
@@ -119,9 +257,9 @@ await describe({
       fn: async () => {
         expect(
           pathSignals({
-            filePath: '/var/home/user/.agents/skills/other/SKILL.md',
+            filePath: '/var/home/user/Monochromatic/.agents/skills/other/SKILL.md',
             ctx: DEFAULT_CTX,
-            allowlistedDirs: ['/var/home/user/.agents/skills/code-review',],
+            allowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/code-review',],
           },),
         )
           .toBe(true,);
@@ -133,9 +271,9 @@ await describe({
       fn: async () => {
         expect(
           pathSignals({
-            filePath: '/var/home/user/.agents/skills/code-review/.env',
+            filePath: '/var/home/user/Monochromatic/.agents/skills/code-review/.env',
             ctx: DEFAULT_CTX,
-            allowlistedDirs: ['/var/home/user/.agents/skills/code-review',],
+            allowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/code-review',],
           },),
         )
           .toBe(true,);
@@ -517,14 +655,14 @@ await describe({
           toolName: 'read',
           toolCallId: 'read-skill',
           input: {
-            path: '/var/home/user/.agents/skills/testing-practices/SKILL.md',
+            path: '/var/home/user/Monochromatic/.agents/skills/testing-practices/SKILL.md',
           },
         };
 
         expect(shouldFlag({
           event,
           ctx: DEFAULT_CTX,
-          readAllowlistedDirs: ['/var/home/user/.agents/skills/testing-practices',],
+          readAllowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/testing-practices',],
         },),)
           .toBe(false,);
       },
@@ -538,7 +676,7 @@ await describe({
           toolName: 'write',
           toolCallId: 'write-skill',
           input: {
-            path: '/var/home/user/.agents/skills/testing-practices/SKILL.md',
+            path: '/var/home/user/Monochromatic/.agents/skills/testing-practices/SKILL.md',
             content: 'changed',
           },
         };
@@ -546,7 +684,7 @@ await describe({
         expect(shouldFlag({
           event,
           ctx: DEFAULT_CTX,
-          readAllowlistedDirs: ['/var/home/user/.agents/skills/testing-practices',],
+          readAllowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/testing-practices',],
         },),)
           .toBe(true,);
       },
@@ -560,14 +698,14 @@ await describe({
           toolName: 'read',
           toolCallId: 'read-skill-secret',
           input: {
-            path: '/var/home/user/.agents/skills/testing-practices/.env',
+            path: '/var/home/user/Monochromatic/.agents/skills/testing-practices/.env',
           },
         };
 
         expect(shouldFlag({
           event,
           ctx: DEFAULT_CTX,
-          readAllowlistedDirs: ['/var/home/user/.agents/skills/testing-practices',],
+          readAllowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/testing-practices',],
         },),)
           .toBe(true,);
       },
@@ -582,14 +720,14 @@ await describe({
           toolCallId: 'bash-skill',
           input: {
             command:
-              'cat /var/home/user/.agents/skills/testing-practices/SKILL.md',
+              'cat /var/home/user/Monochromatic/.agents/skills/testing-practices/SKILL.md',
           },
         };
 
         expect(shouldFlag({
           event,
           ctx: DEFAULT_CTX,
-          readAllowlistedDirs: ['/var/home/user/.agents/skills/testing-practices',],
+          readAllowlistedDirs: ['/var/home/user/Monochromatic/.agents/skills/testing-practices',],
         },),)
           .toBe(true,);
       },

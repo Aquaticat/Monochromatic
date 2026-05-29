@@ -5,12 +5,21 @@
  * and propose_trust tool execution.
  */
 
+import {
+  mkdir,
+  mkdtemp,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
+import { join, } from 'node:path';
+
 import type { ExtensionAPI, ToolCallEvent, } from '@earendil-works/pi-coding-agent';
 import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test';
+import { AGENT_TEMP_READ_DIR, } from './constants.ts';
 import { buildApprovalFingerprint, } from './tool-helpers.ts';
 import {
   VERDICT_ENTRY_TYPE,
@@ -189,8 +198,8 @@ await describe({
                 name: 'testing-practices',
                 description: 'Use when working with tests.',
                 filePath:
-                  '/var/home/user/.agents/skills/testing-practices/SKILL.md',
-                baseDir: '/var/home/user/.agents/skills/testing-practices',
+                  '/var/home/user/Monochromatic/.agents/skills/testing-practices/SKILL.md',
+                baseDir: '/var/home/user/Monochromatic/.agents/skills/testing-practices',
               },
             ],
           },
@@ -203,7 +212,7 @@ await describe({
             toolCallId: 'read-skill',
             input: {
               path:
-                '/var/home/user/.agents/skills/testing-practices/SKILL.md',
+                '/var/home/user/Monochromatic/.agents/skills/testing-practices/SKILL.md',
             },
           },
           {
@@ -212,6 +221,59 @@ await describe({
         );
 
         expect(result,).toBeUndefined();
+      },
+    },),
+
+    it({
+      name: 'allows read tool calls inside agent temp directory',
+      fn: async function allowsAgentTempRead() {
+        await mkdir(
+          AGENT_TEMP_READ_DIR,
+          { recursive: true, },
+        );
+        const tempRoot = await mkdtemp(join(
+          AGENT_TEMP_READ_DIR,
+          'auto-mode-index-test-',
+        ),);
+        const tempFile = join(
+          tempRoot,
+          'source.ts',
+        );
+        await writeFile(
+          tempFile,
+          'export const source = true;\n',
+        );
+
+        const { api, registrations, } = createMockApi();
+        autoMode(api,);
+
+        const toolCallHandler = getHandler({
+          registrations,
+          event: 'tool_call',
+        },);
+
+        const result = toolCallHandler(
+          {
+            type: 'tool_call',
+            toolName: 'read',
+            toolCallId: 'read-agent-temp',
+            input: {
+              path: tempFile,
+            },
+          },
+          {
+            cwd: '/var/home/user/project',
+          },
+        );
+
+        expect(result,).toBeUndefined();
+        await rm(
+          tempRoot,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
       },
     },),
 

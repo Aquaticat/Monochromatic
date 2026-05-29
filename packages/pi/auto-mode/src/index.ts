@@ -17,6 +17,7 @@ import type {
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import { updateWidget, } from './ask-user.ts';
 import { loadMergedConfig, } from './config.ts';
+import { AGENT_TEMP_READ_DIR, } from './constants.ts';
 import { evaluate, } from './evaluate.ts';
 import { l as parentLogger, } from './log.ts';
 import { registerProposeTrust, } from './register-propose-trust.ts';
@@ -266,13 +267,18 @@ export default function autoMode(
           .HOME
           ?? '/home',
       };
+      /** Read-only roots whose existing non-secret contents bypass location prompts. */
+      const readAllowlistedDirs: readonly string[] = [
+        AGENT_TEMP_READ_DIR,
+        ...currentSkillReadDirs,
+      ];
 
       /** True when the tool call trips a static rule, or when a previous-turn denial promotes a relevant follow-up. */
       const flagged = shouldFlag({
         event,
         ctx: signalCtx,
         config,
-        readAllowlistedDirs: currentSkillReadDirs,
+        readAllowlistedDirs,
       },)
         || (denialInPreviousTurn && isRelevantTool(event,));
 

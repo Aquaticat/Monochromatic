@@ -54,6 +54,20 @@ export const MAX_CONTEXT_ACTIVITIES: typeof CONTEXT_ACTIVITY_FLOOR = CONTEXT_ACT
 
 //endregion
 
+//region Read allowlist directories
+
+/**
+ * Agent-owned temp root whose existing files may be inspected without guard prompts.
+ *
+ * @example
+ * ```typescript
+ * const root = AGENT_TEMP_READ_DIR;
+ * ```
+ */
+export const AGENT_TEMP_READ_DIR = '/tmp/agent';
+
+//endregion
+
 //region Privilege commands
 
 /** Commands that escalate privileges. */
