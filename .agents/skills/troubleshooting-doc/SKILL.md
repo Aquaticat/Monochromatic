@@ -94,9 +94,12 @@ stop at "constraint 5: not yet" and report the gate failed. Prototype
 the minimal fix yourself before declaring the audit done:
 
 1. Clone the upstream source into a fresh, private, unpredictable
-   directory created with `mktemp -d` (or an equivalently private
-   throwaway workspace). Never reuse an existing `/tmp/<repo>` clone or
-   any other pre-existing directory for this step.
+   directory under `/tmp/agent/`, created with `mktemp --directory`
+   (or an equivalently private throwaway workspace under `/tmp/agent/`).
+   Before first use, ensure the root exists with private permissions:
+   `mkdir --parents /tmp/agent; chmod 700 /tmp/agent`.
+   Never reuse an existing `/tmp/agent/<repo>` clone or any other
+   pre-existing directory for this step.
 2. Confirm the clone's `origin` URL and checked-out commit/tag match the
    upstream source cited in the doc before editing.
 3. Apply the smallest change that addresses the cause identified in

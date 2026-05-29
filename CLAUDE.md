@@ -254,8 +254,10 @@ When discovering something not immediately obvious to a future reader, document 
 - `agent-browser`: headless browser CLI; rendered web pages, screenshots, web UI interaction, deployed-app verification
 - `FetchUrl`: documentation sites, npm pages, GitHub READMEs; raw source still useful when docs are incomplete
 - `gh`: GitHub issues, PRs, release notes, repository metadata
-- Web search cannot inspect package internals (sizes, dependency trees, source); clone repos or install packages (see "Before running a command" for the clone-to-`/tmp` operational rule)
-- Do not remove cloned repos or other audit artifacts from `/tmp`; the user will clean up when ready
+- Web search cannot inspect package internals (sizes, dependency trees, source); clone repos or install packages
+  (see "Before running a command" for the clone-to-`/tmp/agent` operational rule)
+- Do not remove cloned repos or other audit artifacts from `/tmp/agent`;
+  the user will clean up when ready
 
 ## Before running a command
 
@@ -276,10 +278,14 @@ Reserve external timeout wrappers for commands whose behavior is being tested or
 
 Always pass an explicit path (`.` or absolute) to `rg` in the Bash tool.
 
-Clone the git repo of a package to a temp dir whenever investigating src code.
-Use `gh repo clone <repo> <tmp-dir> -- --depth 1` instead of `git clone` unless commit history is part of the
-investigation;
+Clone the git repo of a package under `/tmp/agent/` whenever investigating src code.
+Before first use, ensure the root exists with private permissions:
+`mkdir --parents /tmp/agent; chmod 700 /tmp/agent`.
+Use `gh repo clone <repo> /tmp/agent/<descriptive-name>-<date-or-random> -- --depth 1` instead of `git clone`
+unless commit history is part of the investigation;
 `gh` handles authentication and fork remotes automatically.
+Auto-mode allows structured `read` tool access to existing non-secret files under `/tmp/agent`;
+writes, bash commands, secret-looking paths, and symlink escapes still go through the guardrail.
 
 ### Long-form flags
 
