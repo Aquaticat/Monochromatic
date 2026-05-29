@@ -135,6 +135,30 @@ const BLOCKQUOTE_TABLE = [
   '',
 ].join('\n',);
 
+/** Pipe table containing Markdown-escaped and raw HTML-special characters. */
+const UNSAFE_HTML_PIPE_TABLE = [
+  '| Payload |',
+  '| - |',
+  String.raw`| \<img src=x onerror=alert(1)> & <script>"x"</script> ' |`,
+  '',
+].join('\n',);
+
+/** Expected HTML rendering of {@link UNSAFE_HTML_PIPE_TABLE}. */
+const EXPECTED_SAFE_HTML = [
+  '<table>',
+  '<thead>',
+  '<tr>',
+  '<th>Payload</th>',
+  '</tr>',
+  '</thead>',
+  '<tbody>',
+  '<tr>',
+  '<td>&lt;img src=x onerror=alert(1)&gt; &amp; &lt;script&gt;&quot;x&quot;&lt;/script&gt; &#39;</td>',
+  '</tr>',
+  '</tbody>',
+  '</table>',
+];
+
 await describe({
   name: RULE,
   children: [
@@ -177,6 +201,30 @@ await describe({
         expect(
           toHtmlTable(firstTableToken(PIPE_TABLE,),),
         ).toEqual(EXPECTED_HTML,);
+      },
+    },),
+    it({
+      name: 'escapes HTML-special cell text when converting to HTML',
+      fn: async function transformEscapesHtml() {
+        expect(
+          toHtmlTable(firstTableToken(UNSAFE_HTML_PIPE_TABLE,),),
+        ).toEqual(EXPECTED_SAFE_HTML,);
+      },
+    },),
+    it({
+      name: 'autofix keeps Markdown-escaped tags as inert HTML text',
+      fn: async function autofixEscapesHtml() {
+        const fixed = applyFixes(
+          UNSAFE_HTML_PIPE_TABLE,
+          lintString(UNSAFE_HTML_PIPE_TABLE,),
+        );
+        expect(fixed.includes('<img src=x',),).toBe(false,);
+        expect(fixed.includes('<script>',),).toBe(false,);
+        expect(fixed.includes('&lt;img src=x onerror=alert(1)&gt;',),).toBe(true,);
+        expect(fixed.includes('&amp;',),).toBe(true,);
+        expect(fixed.includes('&quot;x&quot;',),).toBe(true,);
+        expect(fixed.includes('&#39;',),).toBe(true,);
+        expect(ruleErrors(lintString(fixed,),).length,).toBe(0,);
       },
     },),
     it({

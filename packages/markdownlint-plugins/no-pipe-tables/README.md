@@ -32,8 +32,12 @@ one report per table line; `--fix` clears them all in one pass.
 Only top-level tables are autofixed. A table inside a blockquote or an indented context is reported
 without a fix (so `--fix` cannot corrupt its prefix) and is converted by hand.
 
-Cell content is emitted verbatim, including inline Markdown. GitHub renders Markdown inside HTML table
-cells; strict CommonMark does not. Spot-check cells that contained inline Markdown after converting.
+Cell content is emitted as HTML text, not raw HTML. The table-only `\|` escape and HTML-sensitive
+Markdown escapes such as `\<` are normalized first, then `&`, `<`, `>`, and quote characters are
+entity-escaped before the text is placed between `<th>` or `<td>` tags. Existing HTML entities are
+also treated as literal cell text, so their ampersands are escaped too. Inline Markdown markers such
+as `**x**` are otherwise left in place; GitHub renders Markdown inside HTML table cells, though strict
+CommonMark does not. Spot-check cells that contained inline Markdown after converting.
 
 ## Usage
 

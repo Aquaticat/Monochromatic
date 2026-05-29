@@ -1,3 +1,4 @@
+import { htmlTableCellText, } from './html-table-cell-text.ts';
 import type { ReadonlyToken, } from './token.ts';
 
 /**
@@ -52,8 +53,9 @@ function childrenOfType({
 /**
  * Trimmed text of one table cell from its `tableContent` child. An empty cell
  * has no `tableContent`, so the loop runs zero times and the fallback is the
- * empty string. The table-only `\|` escape is resolved to a literal pipe because
- * pipes are not special inside the emitted HTML.
+ * empty string. Markdown escapes that matter in an HTML text context are
+ * consumed, then HTML metacharacters are entity-escaped before the text is
+ * interpolated into a raw HTML table cell.
  *
  * @param cell - cell token (`tableHeader`, `tableData`, or `tableDelimiter`)
  *
@@ -64,10 +66,7 @@ function cellText(cell: ReadonlyToken,): string {
     parent: cell,
     types: ['tableContent',],
   },)) {
-    return content.text
-      .split(String.raw`\|`,)
-      .join('|',)
-      .trim();
+    return htmlTableCellText(content.text,);
   }
   return '';
 }
