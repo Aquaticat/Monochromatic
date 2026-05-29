@@ -204,11 +204,22 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
    "./dist/final/neutral/index.d.mts", "default": "./dist/final/neutral/index.mjs" }` (node: swap `neutral`->`node`);
    keep `./ts` + `./ts/*`; `files` -> add `"dist/final"` before `"src"`; add `"@monochromatic-dev/config-tsdown":
    "workspace:*"` as the first devDep.
-4. Switch the package's own unit tests to import the BUILT dist instead of sibling source: `} from './foo.ts';` ->
-   `} from '../dist/final/neutral/index.mjs';` (relative-to-dist, matching the precedent). Leave test-aggregator
-   imports (`import './foo.unit.test.ts'`) and `module-test/ts` / other-package `/ts` imports alone. The dist index
+4. Switch the package's own unit tests to import the BUILT dist instead of sibling source. PREFERRED form: switch the
+   specifier to the package BY NAME (`@monochromatic-dev/<pkg>`), which resolves to `.` = dist after the flip. This is
+   UNIFORM (one target string regardless of the test file's directory depth, so it works for nested-`src/` packages
+   like `module-es` too, unlike a relative `../dist/...` path which the precedent used). KEY: tests that ALREADY import
+   by name (e.g. `module-function-arity`'s) need NO edit at all -- they follow `.` automatically. Only relative source
+   imports (`} from './foo.ts';`) need switching, to `} from '@monochromatic-dev/<pkg>';`. Leave test-aggregator
+   imports (`import './foo.unit.test.ts'`), `module-test/ts`, and other-package `/ts` imports alone. The dist index
    must re-export every symbol the tests use; if not, `buildAndTest` fails loudly naming the symbol -> add the
-   re-export to the index (finishing Phase A) OR keep that one test on source if it tests a genuine internal.
+   re-export to the index (finishing Phase A) OR keep that one test on source if it tests a genuine internal. If a
+   single test file imports TWO+ own source modules, switching both to by-name creates a duplicate import -> merge them
+   into one statement (same as Phase B's eslint/no-duplicate-imports merges).
+
+   SCALING: packages with one test file per function (`module-or-throw` = 25, `module-toml-edit` = 18,
+   `module-i18n-compose` = 9) make manual per-file switching expensive. For those, consider a small throwaway tool
+   (`*.unit.test.ts` only: rewrite a relative import of an own non-test source module to `@monochromatic-dev/<pkg>`,
+   merging duplicates) and let `buildAndTest` be the oracle. Tests already importing by name cost nothing.
 5. `pnpm install` (links the new config-tsdown devDep; updates root `pnpm-lock.yaml`).
 6. Gate: `mise run //packages/<path>:buildAndTest` (build emits `dist/final/neutral`, tests pass against it).
 7. Commit: `git add <tsdown.config>` (untracked), then `git commit <package.json> <mise.toml> <tsdown.config>
@@ -226,17 +237,23 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
   package edited-but-not-yet-built. Run repo-wide lint:types only as a FINAL check after all dist exist. (Same reason
   `git clean -dX` then lint:types breaks until rebuild: inherent to the precedent's pattern.)
 
-### Done
+### Done (all neutral, repo-wide lint:types not yet re-run as final — see Final verification)
 
-- `module-async-time` (neutral, `test:unit` variant) — commit message `build(module-async-time): produce neutral dist (Phase C pilot)`.
-- `module-const` (neutral, custom `test` variant) — `build(module-const): produce neutral dist`.
+- `module-async-time` (`test:unit` variant; tests switched to relative-to-dist) — `build(module-async-time): produce neutral dist (Phase C pilot)`.
+- `module-const` (custom `test` aggregator variant; 5 tests switched to relative-to-dist) — `build(module-const): produce neutral dist`.
+- `module-function-arity` (`test:unit`; test already by-name, NO test edit) — `build(module-function-arity): produce neutral dist`.
+- `module-current-time-context` (`test:unit`; 1 test switched to by-name) — `build(module-current-time-context): produce neutral dist`.
+
+(Note: async-time/const used relative-to-dist `../dist/final/neutral/index.mjs`; later conversions use the cleaner
+by-name form. Both work; no need to retrofit the first two.)
 
 ### Remaining — bundle sets determined (deps + `node:` built-in scan)
 
-NEUTRAL, no bin (mechanical, recipe above): `module-current-time-context`, `module-function-arity`,
-`module-i18n-compose`, `module-or-throw`, `module-numeric-format` (deps module-const + module-or-throw, both neutral),
-`module-toml-edit` (deps module-or-throw + toml-eslint-parser; confirm toml-eslint-parser isn't node-only),
-`claude-code-plugins-hook-types` (pure types).
+NEUTRAL, no bin (mechanical, recipe above): `module-i18n-compose` (9 tests), `module-or-throw` (25 tests),
+`module-numeric-format` (4 tests; deps module-const + module-or-throw, both neutral), `module-toml-edit` (18 tests;
+deps module-or-throw + toml-eslint-parser; confirm toml-eslint-parser isn't node-only), `claude-code-plugins-hook-types`
+(pure types, 0 tests, no module-test devDep -- build emits just the `.d.mts`; lowest value, consider whether it's worth
+building at all vs leaving source-only like the config-* packages).
 
 VERIFY-THEN-ROUTE: `mcp-stdio` — an stdio MCP transport; likely uses `process` stdin/stdout (a global, so the `node:`
 grep missed it) -> probably NODE bundle. Check before converting.
