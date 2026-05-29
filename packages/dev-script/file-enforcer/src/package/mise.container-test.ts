@@ -13,7 +13,7 @@
  * ```
  */
 
-import { matrix, } from '@monochromatic-dev/module-matrix';
+import { matrix, } from '@monochromatic-dev/module-matrix/ts';
 
 await matrix({
   os: [
