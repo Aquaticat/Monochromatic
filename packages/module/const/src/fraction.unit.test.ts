@@ -16,7 +16,7 @@ import {
   THIRD,
   THREE_QUARTERS,
   TWO_THIRDS,
-} from './fraction.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: 'fraction',

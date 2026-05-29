@@ -24,7 +24,7 @@ import {
   SECONDS_PER_DAY,
   SECONDS_PER_HOUR,
   SECONDS_PER_MINUTE,
-} from './time.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: 'time',

@@ -20,7 +20,7 @@ import {
   BYTES_PER_MIB,
   BYTES_PER_TB,
   BYTES_PER_TIB,
-} from './byte.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: 'byte',

@@ -21,7 +21,7 @@ import {
   HTTP_NOT_MODIFIED,
   HTTP_OK,
   HTTP_UNAUTHORIZED,
-} from './http-status.ts';
+} from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: 'http-status',

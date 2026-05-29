@@ -14,7 +14,7 @@ import {
   ASCII_DECIMAL_DIGIT_CHARS,
   ASCII_LOWERCASE_ALPHANUMERIC_CHARS,
   ASCII_LOWERCASE_LETTER_CHARS,
-} from './ascii.ts';
+} from '../dist/final/neutral/index.mjs';
 
 //region Expected fixtures
 
