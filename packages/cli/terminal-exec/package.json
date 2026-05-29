@@ -9,7 +9,9 @@
     "terminal-exec": "src/index.ts"
   },
   "exports": {
-    ".": "./src/launch.ts"
+    ".": "./src/launch.ts",
+    "./ts": "./src/launch.ts",
+    "./ts/*": "./src/*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
