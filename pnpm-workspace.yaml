@@ -28,7 +28,7 @@ catalog:
   '@libsql/client': '>=0.17.3'
   '@libsql/kysely-libsql': '>=0.4.1'
   '@luma.gl/engine': '>=9.3.2'
-  '@earendil-works/pi-coding-agent': '>=0.76.0'
+  '@earendil-works/pi-coding-agent': '>=0.77.0'
   '@mdx-js/mdx': '>=3.1.0'
   '@microsoft/tsdoc': '>=0.16.0'
   '@mitata/counters': '>=0.0.8'
@@ -165,6 +165,10 @@ minimumReleaseAgeExclude:
   - '@earendil-works/pi-ai@0.76.0'
   - '@earendil-works/pi-coding-agent@0.76.0'
   - '@earendil-works/pi-tui@0.76.0'
+  - '@earendil-works/pi-agent-core@0.77.0'
+  - '@earendil-works/pi-ai@0.77.0'
+  - '@earendil-works/pi-coding-agent@0.77.0'
+  - '@earendil-works/pi-tui@0.77.0'
 nodeLinker: isolated
 
 overrides:
