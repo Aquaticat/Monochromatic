@@ -7,7 +7,9 @@
   "private": false,
   "module": "src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
   },
   "dependencies": {
     "@monochromatic-dev/module-const": "workspace:*",
