@@ -422,6 +422,7 @@ Use `{@inheritDoc originalFn}` for non-async wrappers.
 
 - Adhere to Oxlint, dprint confs.
 - Use `//region`/`//endregion` markers with purpose and explanation for logical code sections.
+- Cross-package workspace imports must resolve to TypeScript source, not built output.
 - Include `.ts` extensions in imports; group: built-ins, external, workspace, relative, type-only.
 - Prefer named imports, `import type` for type-only, absolute imports for workspace packages.
 - Use `import ... with { type: 'text' }` for static assets (SVG, HTML, CSS, SQL) instead of `readFile`; Bun resolves these at build time with no async preload step needed.
