@@ -11,17 +11,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./ts": "./src/index.ts",
-    "./ts/*": "./src/*",
-    "./list": "./src/list.ts",
-    "./create": "./src/create.ts",
-    "./destroy": "./src/destroy.ts",
-    "./exec": "./src/exec.ts",
-    "./run": "./src/run.ts",
-    "./clone": "./src/clone.ts",
-    "./registry": "./src/registry.ts",
-    "./update": "./src/update.ts",
-    "./meta": "./src/meta.ts",
-    "./file-transfer": "./src/file-transfer.ts"
+    "./ts/*": "./src/*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
