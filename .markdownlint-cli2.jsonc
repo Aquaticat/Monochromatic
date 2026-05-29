@@ -55,13 +55,15 @@
   "customRules": [
     "./packages/markdownlint-plugins/no-pipe-tables/dist/final/node/index.mjs",
   ],
-  // Whole-tree coverage. gitignore prunes node_modules/dist and the large
-  // binaries (qcow2, etc.) that OOMed the old `markdownlint-cli2 .` glob walk.
+  // Whole-tree coverage. gitignore prunes ignored binaries, and the explicit
+  // nested node_modules ignore prevents fast-glob from following workspace
+  // package symlink cycles before gitignore's predicate can filter them.
   "globs": [
     "**/*.md",
   ],
   "gitignore": true,
   "ignores": [
+    "**/node_modules/**",
     "node_modules/**",
     "dist/**",
     ".dist/**",

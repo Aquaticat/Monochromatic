@@ -415,17 +415,15 @@ if ($args | is-empty) {
 }
 """
 
+# markdownlint-cli2 appends configured `globs` to CLI file args unless
+# `--no-globs` is present (markdownlint-cli2.mjs:415-418), so explicit file
+# paths MUST pass --no-globs or they still drag in the whole `**/*.md` tree.
 # No-arg lints the whole tree via the config `globs` (`**/*.md`) with
-# `gitignore: true`, which prunes node_modules/dist and the large binaries
-# (qcow2, etc.) that OOMed the old `markdownlint-cli2 .` glob walk: the bare `.`
-# is passed verbatim to globby and walks every file, including binaries the
-# config ignores do not exclude (see docs/troubleshooting/markdownlint-cli2.md).
-# Explicit file paths MUST pass --no-globs: markdownlint-cli2 otherwise APPENDS
-# the config `globs` to the CLI args (markdownlint-cli2.mjs:415-418), so a single
-# file would still drag in the whole `**/*.md` tree. --no-globs lints only the
-# given files.
-# The `no-pipe-tables` custom rule loads from a built dist; build it first on a
-# fresh clone (issue #231) or markdownlint-cli2 fails to import it.
+# `gitignore: true`; `.markdownlint-cli2.jsonc` also ignores nested
+# node_modules so fast-glob prunes workspace package symlink cycles before
+# gitignore's predicate can filter them. The `no-pipe-tables` custom rule loads
+# from a built dist; build it first on a fresh clone (issue #231) or
+# markdownlint-cli2 fails to import it.
 [tasks."lint:markdownlint"]
 hide = true
 description = "Lint Markdown with markdownlint-cli2, optionally restricted to specific files"
@@ -452,7 +450,10 @@ if ($args | is-empty) {
 # exit code 0 and reads stdout as formatted content, not the file on disk.
 [tasks.format]
 description = "Format all files"
-run = ["dprint fmt", { tasks = ["format:stylelint", "format:oxlint", "format:markdownlint"] }]
+run = [
+  "dprint fmt",
+  { tasks = ["format:stylelint", "format:oxlint", "format:markdownlint"] },
+]
 
 [tasks."format:stylelint"]
 hide = true
