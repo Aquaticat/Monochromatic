@@ -8,10 +8,9 @@
  * The mixin definitions are imported as a text string (bundled inline
  * by Bun) so no filesystem access is needed at runtime.
  */
-// Side-effect: shims `globalThis.process` for PostCSS and node:path polyfill.
-// Must be imported before build-css so the shim exists when postcss evaluates.
-// oxlint-disable-next-line import/no-unassigned-import -- side-effect: process shim
-import '@monochromatic-dev/build-tool-css/ts/process-shim';
+// Importing applyMixins from the build-css index also installs the
+// `globalThis.process` PostCSS/node:path shim: the index's first statement is
+// `import './process-shim.ts'`, so the shim exists before postcss evaluates.
 import { applyMixins, } from '@monochromatic-dev/build-tool-css/ts';
 // Bun inlines the CSS file content as a string at bundle time
 import mixinSource from './mixins.css' with { type: 'text', };
