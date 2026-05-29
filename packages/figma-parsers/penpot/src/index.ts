@@ -10,7 +10,7 @@
 
 import type { FigmaFile, } from '@monochromatic-dev/figma-kiwi';
 
-import { ZipWriter, } from '@monochromatic-dev/module-zip-writer';
+import { ZipWriter, } from '@monochromatic-dev/module-zip-writer/ts';
 
 // region Types
 
