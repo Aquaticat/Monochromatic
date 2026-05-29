@@ -51,13 +51,22 @@ changed).
 - `7f4b5e0f` refactor: the TypeScript package (src, tsconfig, tsdown config, package.json, mise.toml,
   README) replacing the old `.mjs`; pnpm-lock deps.
 - `7eecee77` style: incidental formatter output in two unrelated files (user approved committing).
+- `7b9c72f3` docs: prior handover rewrite for the TS architecture.
+- `d172b7b4` feat(markdownlint): wired the rule into `.markdownlint-cli2.jsonc` (customRules -> the
+  built dist, `no-pipe-tables: true`, `globs: ["**/*.md"]`, `gitignore: true`, extended `ignores`) and
+  `mise.toml` (no-arg `lint:markdownlint` is now plain `markdownlint-cli2`; added `format:markdownlint`
+  wired into the root `format` task).
 - Earlier WIP `.mjs` package (`23f59a11`) is superseded by the refactor (its `.mjs` files deleted).
 - Package gate is green: `build`; `lint:types` exit 0; `lint:oxlint` 0 warnings / 0 errors;
   `test:unit` 6/6 against the built dist; `buildAndTest` works.
-- Issue #231 filed: the rule needs a built dist, so a fresh clone (no `dist/`) breaks markdown linting
-  once wired; no build preamble was wired into the lint task on purpose (rejected workaround). The
-  issue asks for a better solution (e.g. run markdownlint-cli2 under Bun so `customRules` can point at
-  source), left open.
+- Issue #231 filed: the rule needs a built dist, so a fresh clone (no `dist/`) breaks markdown linting;
+  no build preamble was wired into the lint task on purpose (rejected workaround). The issue asks for a
+  better solution (e.g. run markdownlint-cli2 under Bun so `customRules` can point at source), open.
+- Task 3 fixture verification PASSED through the real `mise run lint:markdownlint`: the dist `import()`s
+  under Node via the real config and flags a pipe table at its first line (continuation lines reported
+  too); HTML and prose fixtures pass; `format:markdownlint --` converts the pipe table to a well-formed
+  `<table>` (alignment `:---`/`--:`/`:--:` -> left/right/center; escaped `\|` -> `|`); re-lint is clean
+  (idempotent). Fixtures were deleted.
 
 ## Verified facts (do not re-investigate)
 
@@ -83,39 +92,44 @@ changed).
   relative path. The path must be the BUILT artifact (`dist/final/node/index.mjs`), since
   markdownlint-cli2 runs under Node and cannot import `.ts`.
 - markdownlint-cli2 runtime is 0.22.1 bundling markdownlint 0.40.0.
+- markdownlint-cli2 APPENDS the config `globs` to CLI file args (`markdownlint-cli2.mjs:415-418`,
+  gated on `!noGlobs`). So an explicit single-file run ALSO drags in the whole `**/*.md` tree (this was
+  the 1m+ slowness the user hit). The fix, already applied: the explicit-args branches of both
+  `lint:markdownlint` and `format:markdownlint` pass `--no-globs`, so they lint/fix only the given
+  files. The no-arg branches use config globs (whole tree) deliberately.
+- `gitignore: true` is doing the real pruning of NESTED `node_modules`/`dist`. The `ignores` patterns
+  (`node_modules/**`, `dist/**`) are anchored at the start, so they match only TOP-LEVEL dirs, not
+  `packages/*/node_modules` or `packages/*/dist`. Do not drop `gitignore: true` without first adding
+  `**/node_modules/**`, `**/dist/**`, etc. It may also be the dominant cost of the whole-tree run;
+  measure before changing.
 
 ## Remaining work
 
-### Task 2: wire into root config (`.markdownlint-cli2.jsonc` + `mise.toml`)
+Build the rule before any whole-tree `lint:markdownlint`/`format:markdownlint` run (dist is gitignored,
+no build preamble; see #231): `mise run //packages/markdownlint-plugins/no-pipe-tables:build`.
 
-- In `.markdownlint-cli2.jsonc`: add `"no-pipe-tables": true` inside `"config"`; add top-level
-  `"customRules": ["./packages/markdownlint-plugins/no-pipe-tables/dist/final/node/index.mjs"]` (the
-  built artifact, not src); add `"globs": ["**/*.md"]`, `"gitignore": true`; extend `"ignores"` with
-  `"packages-paused/**"`, `"packages-deprecated/**"`, `".out-of-scope/**"` (keep the existing four).
-- In `mise.toml`: change the no-arg branch of `[tasks."lint:markdownlint"]` (lines ~425-436) from
-  `markdownlint-cli2 .` to plain `markdownlint-cli2` (uses config globs). Add a
-  `[tasks."format:markdownlint"]` mirroring `format:stylelint` (`mise.toml:453`) that runs
-  `markdownlint-cli2 --fix`, and add `"format:markdownlint"` to the root `format` task's tasks list
-  (`mise.toml:451`).
-- BUILD FIRST: before any `lint:markdownlint`/`format:markdownlint` run (fixture, migration, final
-  sweep), run `mise run //packages/markdownlint-plugins/no-pipe-tables:build`; the dist is gitignored
-  and the lint task has no build preamble (see #231).
+### Task 4: migrate existing pipe tables -- BLOCKED on a scope decision
 
-### Task 3: fixture verification (real task path) -- MANDATORY
+CRITICAL, not yet resolved: expanding `globs` to `**/*.md` subjects EVERY previously-unlinted `.md`
+(hundreds across `packages/**` and `docs/**`) to ALL the enabled built-in rules (MD001, MD014, MD024,
+MD025, MD026, MD034, MD036, MD040, MD052, MD053, MD054), not just `no-pipe-tables`. Before this change
+only the 5 top-level `.md` were linted (`markdownlint-cli2 .` -> top-level `*.{md,markdown}`). So
+"whole-tree zero errors" is potentially a large pre-existing-doc cleanup unrelated to pipe tables.
 
-The unit tests validate the dist in isolation; only this step crosses the markdownlint-cli2 boundary
-(proves the dist `import()`s under Node through the real config, and a load failure would break ALL
-markdown linting). Build first, then: a throwaway `.md` with a pipe table flags `no-pipe-tables` via
-`mise run lint:markdownlint -- <file>.md`; `markdownlint-cli2 --fix <file>.md` converts to a valid
-`<table>`; re-lint clean; a table-free and an HTML-table file pass. Delete fixtures.
+Next step is to MEASURE, then likely ASK the user (non-measurable scope decision):
 
-### Task 4: migrate existing pipe tables
-
-~32 files have real pipe tables (`packages-paused/**`, `packages-deprecated/**` now ignored). Build,
-then `mise run format:markdownlint`; review `git diff` (well-formed tables, alignment, cells with
-inline Markdown), `agent-browser` a converted doc to confirm it renders, hand-convert any
-blockquote/indented tables the rule reported without a fix. Then full `mise run lint:markdownlint` must
-be zero errors with no OOM; note the runtime.
+1. Build, then run the whole-tree lint ONCE, capturing to a file (it is slow, ~1m+; the user rejected
+   re-running it): `mise run lint:markdownlint > /tmp/md-lint-full.txt 2>&1`. Count errors by rule:
+   `rg " error " /tmp/md-lint-full.txt | sed -E 's/.* error ([a-zA-Z0-9-]+).*/\\1/' | sort | uniq -c | sort -rn`.
+2. If dominated by `no-pipe-tables`, just migrate: `mise run format:markdownlint` (whole-tree --fix)
+   converts pipe tables to HTML. If there is a large body of OTHER-rule violations, surface a scope
+   question: fix all now, or fix only pipe tables this round and defer/triage the rest (e.g. file a
+   tracking issue; the other rules were never enforced on these files before).
+3. Migration review: `git diff` (well-formed tables, alignment, inline-Markdown cells); render a
+   converted doc with `agent-browser` to confirm the HTML table renders; hand-convert any
+   blockquote/indented tables the rule reported without a fix.
+4. Confirm `no-pipe-tables` errors are zero tree-wide; note the runtime; decide if `gitignore: true` is
+   the slow part (see verified-facts note before touching it).
 
 ### Task 5: docs
 
