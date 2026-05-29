@@ -44,11 +44,30 @@
       "shortcut": false,
       "url_inline": true,
     },
+
+    // no-pipe-tables: ban Markdown pipe tables (they force each row onto one
+    // line); autofixes to an HTML <table>. Custom rule, see customRules below.
+    "no-pipe-tables": true,
   },
+  // Custom rules. Path is the built artifact, not src: markdownlint-cli2 runs
+  // under Node and cannot import .ts. The dist is gitignored, so a fresh clone
+  // must build the rule before linting (tracked in issue #231).
+  "customRules": [
+    "./packages/markdownlint-plugins/no-pipe-tables/dist/final/node/index.mjs",
+  ],
+  // Whole-tree coverage. gitignore prunes node_modules/dist and the large
+  // binaries (qcow2, etc.) that OOMed the old `markdownlint-cli2 .` glob walk.
+  "globs": [
+    "**/*.md",
+  ],
+  "gitignore": true,
   "ignores": [
     "node_modules/**",
     "dist/**",
     ".dist/**",
     "bak/**",
+    "packages-paused/**",
+    "packages-deprecated/**",
+    ".out-of-scope/**",
   ],
 }
