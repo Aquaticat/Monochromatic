@@ -5,3 +5,7 @@
  */
 
 export * from './core.ts';
+export * from './scope.ts';
+export * from './cost.ts';
+export * from './budget.ts';
+export * from './pi-coding-agent.ts';
