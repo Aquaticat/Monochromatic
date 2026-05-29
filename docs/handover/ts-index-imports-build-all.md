@@ -68,83 +68,97 @@ Commits on the branch (newest last):
 Recommended confirmation before Phase B: a repo-wide `mise run lint:types` (per-package checks passed for every
 touched package and the inference-canary-viewer consumer; additive exports cannot change existing type-checking).
 
-## Phase B: IN PROGRESS — rewrite imports to `/ts`
+## Phase B: DONE — every non-exempt cross-package import resolves to `/ts`
 
-Approach decided WITH the user: NOT a heavy AST codemod. The user steered to a minimal literal-replace tool
-("automation would slow you down"); the rewrite is exact-string replacement, the only tricky part (duplicate-import
-merges) is bounded to 36 sites and hand-merged.
+Approach decided WITH the user: NOT a heavy AST codemod. A minimal literal-replace tool did the specifier swap; the
+duplicate-import merges (36 sites across 4 targets) were hand-merged. Final resolution sweep: 0 cross-package imports
+resolve to non-`/ts`. The only remaining bare `@monochromatic-dev/*` specifiers are SELF-imports (a package importing
+itself by name, plan-excluded; includes the intentional "tests import the built dist" pattern) and TSDoc/README
+`@example` comments (deferred, see "Doc examples" below).
 
-### The tool: `mise.rewrite-ts-imports.ts` (repo root, UNTRACKED, throwaway)
+### The tools (repo root, UNTRACKED, throwaway)
 
-Run per target: `bun mise.rewrite-ts-imports.ts <target-unscoped> [--dry]`. Prints the changed-file list to stdout
-(redirect to a file for staging), a summary to stderr. Logic:
+`mise.rewrite-ts-imports.ts` — run per target: `bun mise.rewrite-ts-imports.ts <target-unscoped> [--dry]`. Prints the
+changed-file list to stdout, a summary to stderr. Walks `packages/**/*.{ts,tsx,mts}` (skips `dist`, `node_modules`),
+skips files OWNED by the target (self-imports), rewrites `@monochromatic-dev/<target>[/sub]` to `.../ts` ONLY in
+import/export context (a `from`/`import`/`import(` with a word-boundary before it). Critical safety guard: never
+touches bare string-literal package names (verified skips: `config/oxlint/.../allow-pkg.ts`,
+`pi/auto-mode/.../git-worktree-read-allowlist.ts`). Boundary-safe, idempotent.
 
-- Walks `packages/**/*.{ts,tsx,mts}` (skips `dist`, `node_modules`).
-- Skips files OWNED by the target (self-imports).
-- Rewrites a `@monochromatic-dev/<target>[/sub]` specifier to `@monochromatic-dev/<target>/ts` ONLY in import/export
-  context: a `from`/`import`/`import(` with a word-boundary before it. This is the critical safety guard: it must NOT
-  touch bare string-literal package names. Verified hazards it correctly skips: `config/oxlint/.../allow-pkg.ts`
-  (`package: "@monochromatic-dev/module-logger/types"`), `pi/auto-mode/.../git-worktree-read-allowlist.ts`
-  (`const CLI_GIT_PACKAGE_NAME = '@monochromatic-dev/cli-git'`). Boundary-safe (`module-test` won't match
-  `module-testing`). Idempotent (leaves `/ts` alone). Decide on committing or deleting the tool at the very end.
+`mise.detect-merge-sites.ts` — run per target: reports files that would have DUPLICATE import statements after collapse
+(condition: `valueCount + typeCount > 1` for the target's `/ts`; see the rule finding below). Used as the merge oracle
+(detector -> 0 after merging), cross-checked against real scoped oxlint.
+
+Both decide-on-keep-or-delete at the very end (after Phase C).
 
 ### Staging: paths contain SPACES (module/es dir names like `t object/...`)
 
 `git add $(cat list)` / `$(cat list)` WORD-SPLITS and breaks. Use `git commit --pathspec-from-file=<list> -m ...`
-(one path per line, spaces preserved; cli-git accepts it as explicit pathspecs). Confirm `git diff --cached` empty first.
+(one path per line, spaces preserved; cli-git accepts it as explicit pathspecs). For module-logger the full set was
+captured with `git diff --name-only` (tool's 38 + 26 hand-merges + the cli-git pilot = 65 files; untracked scratch
+tools excluded automatically).
 
-### The `/dom` prerequisite (DONE for module-test consumers; MORE needed for later built targets)
+### The `/dom` prerequisite (NO new switches were needed during Phase B)
 
-Importing a built package's `/ts` (source) drags its dependency SOURCE into the consumer's type-check. `module-logger`'s
-`src/sinks/opfs.ts` uses DOM APIs (`FileSystemWritableFileStream`, `navigator.storage`); base-config consumers lack the
-DOM lib and fail TS2304/TS2339. Canonical fix (docs/troubleshooting/typescript.md §"All packages must extend
-config-typescript/dom"): switch the consumer tsconfig from base to `config-typescript/dom` (purely lib-additive).
-Committed for the 9 base-extenders that import module-test. The 8 remaining base-extenders are `shim-*`/`stub-*`/
-`test-fixture-*` (left on base: they don't import module-test, and adding DOM lib to a polyfill shim risks global
-redeclaration collisions e.g. `DOMException`) and `inference-canary/tsconfig.canary-lint.json` (auxiliary, generated
-code, not in the lint:types gate). EXPECT to switch more base-extenders as `module-logger`/`module-es` get rewritten;
-the repo-wide lint:types gate catches each one (error cites `opfs.ts`; the REPORTED consumer package varies run-to-run
-due to tsgo `--build` incremental caching, but the fix is always "switch that consumer to /dom").
+Importing a built package's `/ts` drags its dependency SOURCE into the consumer's type-check; `module-logger`'s
+`src/sinks/opfs.ts` uses DOM APIs (`FileSystemWritableFileStream`, `navigator.storage`), so base-config consumers
+without the DOM lib fail TS2304/TS2339. Fix (docs/troubleshooting/typescript.md §"All packages must extend
+config-typescript/dom"): switch the consumer tsconfig to `config-typescript/dom`. The 9 base-extenders importing
+module-test were switched in Phase A's prep (commit d4536cf8). NO further switches were needed: every built-package
+flip (module-kv-store, figma-kiwi, ..., module-logger itself) kept repo-wide `lint:types` GREEN, because the remaining
+module-logger consumers were already on `/dom`. (If a future flip DOES break, the lint:types error cites `opfs.ts`; the
+reported consumer package varies run-to-run due to tsgo `--build` incremental caching, but the fix is always "switch
+that consumer to /dom" and commit it with the target.)
 
-### oxlint policy (user instruction)
+### The duplicate-import rule — EMPIRICAL findings (correct the earlier guess)
 
-PRE-EXISTING oxlint debt exists and is to be IGNORED (e.g. `module/es` has ~27 errors/168 warnings: regex `u`-flag,
-nullish-union, in SOURCE files untouched by this work). The gate is repo-wide `lint:types` GREEN, not lint:oxlint.
-BUT do not ADD new oxlint errors: the duplicate-import rule IS enabled, so collapsed feature imports that land two
-`/ts` statements in one file MUST be hand-merged (value bindings into one `import { ... }`, type bindings into one
-`import type { ... }`; separate value/type statements are fine under `no-duplicates` default `prefer-inline:false`).
+The active rule is `eslint/no-duplicate-imports`, NOT `import/no-duplicates`, and the earlier "separate value/type is
+fine under prefer-inline:false" note was WRONG. Validated by running scoped `mise run //packages/cli/git:lint:oxlint`
+on a hand-merged pilot file:
 
-### 36 merge sites (must hand-merge after the target's literal replace)
+- A separate `import type { X } from '.../ts'` alongside a value `import { ... } from '.../ts'` (same specifier) IS a
+  duplicate. The fix is ONE merged statement with type bindings folded inline as `type X` specifiers
+  (e.g. `import { initPromise, logger, tagged, type Logger } from '@monochromatic-dev/module-logger/ts';`). This is
+  valid under `verbatimModuleSyntax: true`. Aliases preserved as `type Logger as ModuleLogger`, `logger as defaultLogger`.
+- Therefore a file with `value=1 type=1` (one value import + one type import collapsing to the same `/ts`) IS a merge
+  site. The detector condition is `value + type > 1`.
+- `includeExports` is effectively false: an `export ... from '.../ts'` re-export does NOT conflict with an `import`
+  from the same specifier (validated: `inference-canary-viewer/src/data/viewer-types.ts` has both, oxlint clean).
+- dprint `importDeclaration.forceMultiLine: "whenMultiple"` (packages/config/dprint/index.json): a multi-specifier
+  import MUST be multi-line, one binding per line. Single-binding imports stay inline. Merged blocks follow this; `mise
+  run lint:dprint` confirmed none of the merged files were flagged.
 
-Files importing 2+ distinct feature-subpaths of the SAME package. By target: `module-logger` (most; the `log.ts`
-boilerplate `/logger`+`/tagged`+`/types`, plus `/logger`+`/tagged` and `/tagged`+`/types` variants; ALSO `favicon.ts`
-now has `/logger`+`/tagged`), `pi-shared-model-selection` (in `pi/advisor`, `pi/auto-mode`), `cli-mvm` (3 files in
-`mcp/mvm`), `build-tool-css` (1 file in `done-postcss`: `/ts/process-shim`+`/ts`). Confirm each merge target's index
-re-exports the needed bindings (module-logger does: logger/initPromise/tagged/sinks/types).
+PRE-EXISTING oxlint debt is IGNORED (user instruction); the gate is repo-wide `lint:types` GREEN. The only oxlint
+constraint observed is "do not ADD a `no-duplicate-imports` violation", handled by the merges above.
 
-### Progress
+### Progress — ALL targets committed (newest last)
 
-DONE (committed, newest last): `refactor(webapp-content-ssg-test): use static logger import in favicon` (06b6afca,
-dynamic import()->static, per user); `build(*): extend config-typescript/dom in raw-ts module-test consumers`
-(d4536cf8, 9 tsconfigs); `refactor(module-test): import via /ts index` (35459241, 307 single-specifier rewrites, no
-merge sites). Repo-wide lint:types GREEN after these.
+Pilot + prep (prior session): `06b6afca` favicon dynamic->static; `d4536cf8` 9 tsconfigs to /dom; `35459241`
+module-test (307 files).
 
-NEXT — remaining targets (enumerate precisely by dry-running the tool for each non-exempt package; the list below is
-the expected set):
+This session, in dependency-risk order (each its own commit, repo-wide lint:types GREEN after each):
+- Wave 1, pure src->src no-op source libs (no merge): `module-or-throw`, `module-const`, `module-async-time`,
+  `module-current-time-context`, `module-numeric-format`, `module-toml-edit`, `mcp-stdio`,
+  `claude-code-plugins-hook-types` (note: package NAME is `@monochromatic-dev/claude-code-plugins-hook-types`),
+  `cli-terminal-exec`.
+- Wave 2, bare imports of built packages (dist->src flip, no merge): `module-kv-store`, `module-async-iter`,
+  `module-matrix`, `module-zip-writer`, `module-memoize`, `figma-kiwi`.
+- Wave 3, feature/deep/merge targets: `module-fs-path` (`/find-monorepo-root`), `dev-script-inference-canary`
+  (deep `/src/*.ts`), `build-tool-css` (`/ts/process-shim`; the redundant process-shim side-effect import was dropped,
+  since importing applyMixins from the index runs the shim transitively), `cli-mvm` (8 features, 3 merges),
+  `pi-shared-model-selection` (5 features, 6 merges), `module-logger` (108 specifiers / 65 files / 26 merges; commit
+  `e671ac97`).
 
-1. Built-package bare targets: `module-es`, `module-kv-store`, `module-async-iter`, `figma-kiwi`, `module-matrix`,
-   `module-zip-writer`, `module-memoize`, `module-observable`. (`module-hyperscript` is mostly already `/ts`.)
-2. Feature-named / merge-site targets: `module-logger`, `pi-shared-model-selection`, `module-fs-path`, `cli-mvm`,
-   `dev-script-inference-canary` (its viewer's 5 deep `/src/*.ts`), `build-tool-css`.
-3. Safe source-only libs (src->src no-op): `module-const`, `module-or-throw`, `module-async-time`,
-   `module-current-time-context`, `module-numeric-format`, `module-function-arity`, `module-i18n-compose`,
-   `module-toml-edit`, `module-image-diff`, `module-token-count`, `mcp-stdio`, `claude-code-plugins-hook-types`,
-   `cli-terminal-exec`.
+Targets with 0 cross-package specifiers (nothing to do): `module-es`, `module-observable`, `module-function-arity`,
+`module-i18n-compose`, `module-image-diff`, `module-token-count`, `module-hyperscript`. (Their only bare specifiers are
+self-imports.)
 
-Per-target loop: `bun mise.rewrite-ts-imports.ts <t> > /tmp/agent_<t>.out` -> hand-merge if merge site -> repo-wide
-`mise '//packages/...:lint:types'` GREEN (switch any newly-breaking base consumer to /dom, commit that with the
-target) -> `git commit --pathspec-from-file=/tmp/agent_<t>.out -m "refactor(<t>): import via /ts index"`. Ignore
-pre-existing oxlint. After all targets, re-run the resolution analysis (expect 0 dist-resolving, 0 unresolved).
+### Doc examples — DEFERRED (not code imports; out of the rewrite scope, fix in a docs pass)
+
+TSDoc/README `@example` blocks still show old import forms. Known: `module/or-throw/README.md` (bare),
+`module/logger/src/tagged.ts:17` (`/tagged`, escaped `\@`), `claude-code-plugins/hook-types/src/index.ts:11`
+(`@monochromatic-dev/claude-code-hook-types` — ALSO a WRONG package name, missing `plugins`). These do not affect
+lint:types or oxlint. Update them when convenient (the `/tagged` one becomes unimportable after Phase B2).
 
 ## Phase B2: remove feature-named export entries
 
