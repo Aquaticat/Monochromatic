@@ -6,6 +6,7 @@
  */
 
 import {
+  chmod,
   mkdir,
   mkdtemp,
   rm,
@@ -25,6 +26,9 @@ import {
   VERDICT_ENTRY_TYPE,
   type VerdictData,
 } from './types.ts';
+
+/** Private directory mode required before `/tmp/agent` is read-allowlisted. */
+const PRIVATE_DIRECTORY_MODE = 0o700;
 
 //region Mock infrastructure
 
@@ -230,6 +234,10 @@ await describe({
         await mkdir(
           AGENT_TEMP_READ_DIR,
           { recursive: true, },
+        );
+        await chmod(
+          AGENT_TEMP_READ_DIR,
+          PRIVATE_DIRECTORY_MODE,
         );
         const tempRoot = await mkdtemp(join(
           AGENT_TEMP_READ_DIR,

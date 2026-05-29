@@ -17,7 +17,6 @@ import type {
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import { updateWidget, } from './ask-user.ts';
 import { loadMergedConfig, } from './config.ts';
-import { AGENT_TEMP_READ_DIR, } from './constants.ts';
 import { evaluate, } from './evaluate.ts';
 import { l as parentLogger, } from './log.ts';
 import { registerProposeTrust, } from './register-propose-trust.ts';
@@ -26,6 +25,7 @@ import {
   shouldFlag,
 } from './signals.ts';
 import { buildSystemPrompt, } from './system-prompt.ts';
+import { agentTempReadAllowlistedDirs, } from './temp-read-allowlist.ts';
 import {
   buildApprovalFingerprint,
   describeAction,
@@ -269,7 +269,7 @@ export default function autoMode(
       };
       /** Read-only roots whose existing non-secret contents bypass location prompts. */
       const readAllowlistedDirs: readonly string[] = [
-        AGENT_TEMP_READ_DIR,
+        ...agentTempReadAllowlistedDirs(),
         ...currentSkillReadDirs,
       ];
 

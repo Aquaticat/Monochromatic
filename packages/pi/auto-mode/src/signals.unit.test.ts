@@ -8,6 +8,7 @@
 import {
   mkdir,
   mkdtemp,
+  rm,
   symlink,
   writeFile,
 } from 'node:fs/promises';
@@ -155,6 +156,13 @@ await describe({
           },),
         )
           .toBe(false,);
+        await rm(
+          root,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
       },
     },),
 
@@ -206,6 +214,13 @@ await describe({
           },),
         )
           .toBe(true,);
+        await rm(
+          root,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
       },
     },),
 
@@ -249,6 +264,13 @@ await describe({
           },),
         )
           .toBe(true,);
+        await rm(
+          root,
+          {
+            recursive: true,
+            force: true,
+          },
+        );
       },
     },),
 
