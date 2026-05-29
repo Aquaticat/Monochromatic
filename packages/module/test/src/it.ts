@@ -2,7 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import type { Logger, } from '@monochromatic-dev/module-logger/types';
 
 import { withTimeout, } from '@monochromatic-dev/module-async-time/ts';
-import { formatDuration, } from '@monochromatic-dev/module-numeric-format';
+import { formatDuration, } from '@monochromatic-dev/module-numeric-format/ts';
 import {
   type DescriptorContext,
   makeDescriptor,
