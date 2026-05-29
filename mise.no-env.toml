@@ -576,7 +576,7 @@ run = "bun packages/dev-script/file-enforcer/src/cli.ts --watch"
 [tasks.canary]
 description = "Run inference canary probes against the configured model"
 usage = 'arg "[args]" var=#true help="Additional arguments (--model <id> --runs <n>)"'
-run = "bun packages/dev-script/inference-canary/src/index.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+run = "bun packages/dev-script/inference-canary/src/canary.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
 
 #endregion Inference Canary
 

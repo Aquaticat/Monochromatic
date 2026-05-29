@@ -4,6 +4,12 @@
   "description": "Canary probes for detecting LLM inference degradation from within agent sessions.",
   "type": "module",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*",
+    "./src/*": "./src/*"
+  },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",

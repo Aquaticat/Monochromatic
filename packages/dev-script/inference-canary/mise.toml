@@ -1,7 +1,7 @@
 [tasks.run]
 description = "Run the inference canary against all configured models"
 depends = ["prepare"]
-run = "bun src/index.ts"
+run = "bun src/canary.ts"
 
 [tasks.lint]
 extends = "lint"
