@@ -13,7 +13,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/types';
 import {
   describe,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import { resolve, } from 'node:path';
 
 import {

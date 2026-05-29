@@ -3,7 +3,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 import type * as Jsonc from '@_/types/t object/t jsonc/t/index.ts';
 import type {

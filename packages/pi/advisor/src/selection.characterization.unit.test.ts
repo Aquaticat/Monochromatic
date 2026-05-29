@@ -13,7 +13,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 import { selectAdvisorModel, } from './advisor-selection.ts';
 import type {

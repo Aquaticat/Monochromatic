@@ -9,7 +9,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import { compilePatterns, } from './config.ts';
 import { CONTEXT_ACTIVITY_FLOOR, } from './constants.ts';
 import {

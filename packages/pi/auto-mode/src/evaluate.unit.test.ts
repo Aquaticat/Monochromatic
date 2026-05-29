@@ -12,7 +12,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import { JUDGE_MODEL_DEFAULTS, } from './constants.ts';
 import {
   decisionForDenyVerdict,

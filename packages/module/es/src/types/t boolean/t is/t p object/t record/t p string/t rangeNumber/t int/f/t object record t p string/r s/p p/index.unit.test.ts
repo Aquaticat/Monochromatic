@@ -2,7 +2,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 // TODO: import compiled.
 import { $ as isRangeNumberInt, } from './index.ts';

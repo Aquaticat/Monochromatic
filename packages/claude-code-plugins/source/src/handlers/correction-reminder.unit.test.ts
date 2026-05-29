@@ -5,7 +5,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import {
   correctionReminderHandler,
   correctionReminderParser,

@@ -3,7 +3,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 const { $, } = types.string.from.array.string.concat.with.string.sync.named;
 

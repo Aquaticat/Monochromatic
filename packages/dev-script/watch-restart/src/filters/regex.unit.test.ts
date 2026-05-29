@@ -2,7 +2,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import { compileRegex, } from '../cli-helpers.ts';
 import { HashCache, } from '../hash-cache.ts';
 import { l as defaultLogger, } from '../log.ts';

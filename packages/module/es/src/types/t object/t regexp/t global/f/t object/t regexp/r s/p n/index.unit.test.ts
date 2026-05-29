@@ -5,7 +5,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 const { $, } = types.object.regexp.global.from.object.regexp.sync.named;
 

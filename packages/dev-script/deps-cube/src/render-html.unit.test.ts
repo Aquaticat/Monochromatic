@@ -19,7 +19,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 import type { PackageProbe, } from './probe.ts';
 import { renderHtml, } from './render-html.ts';

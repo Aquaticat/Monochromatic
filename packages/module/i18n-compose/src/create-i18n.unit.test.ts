@@ -9,7 +9,7 @@ import {
   expect,
   expectTypeOf,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 import { createI18n, } from './create-i18n.ts';
 import type { LocaleSpec, } from './locale-spec.ts';

@@ -8,7 +8,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 import { resolveModelPatterns, } from './scope.ts';
 import { fixtureModel, } from './test-fixtures.ts';

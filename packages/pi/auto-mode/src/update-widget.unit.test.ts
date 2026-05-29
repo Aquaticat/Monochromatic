@@ -9,7 +9,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import { updateWidget, } from './ask-user.ts';
 
 /** Widget name used by auto-mode status updates. */

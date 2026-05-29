@@ -12,7 +12,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import { askUser, } from './ask-user.ts';
 import { DEFAULT_DENY_GUIDANCE, } from './system-prompt.ts';
 import { VERDICT_ENTRY_TYPE, } from './types.ts';

@@ -2,7 +2,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import spawn, { type SubprocessError, } from 'nano-spawn';
 
 /** Prefix emitted by the tagged logger on info-level lines */

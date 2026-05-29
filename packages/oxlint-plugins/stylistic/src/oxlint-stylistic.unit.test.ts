@@ -16,7 +16,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import spawn from 'nano-spawn';
 
 import type { ChainNode, } from './utility/chain.ts';

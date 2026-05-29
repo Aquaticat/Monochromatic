@@ -9,7 +9,7 @@ import {
   expect,
   expectTypeOf,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 import { weakMapOrThrow, } from './weak-map-or-throw.ts';
 

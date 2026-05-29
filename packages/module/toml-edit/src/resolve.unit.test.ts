@@ -8,7 +8,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 import { parseTomlEdit, } from './parse-toml-edit.ts';
 import { tomlGetValue, } from './toml-get-value.ts';

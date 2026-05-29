@@ -11,7 +11,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import { join, } from 'node:path';
 import { rolldown, } from 'rolldown';
 import { importAttributesPlugin, } from './index.ts';

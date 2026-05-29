@@ -9,7 +9,7 @@ import {
   expect,
   expectTypeOf,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 import { numberOrThrow, } from './number-or-throw.ts';
 

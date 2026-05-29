@@ -19,7 +19,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import { AGENT_TEMP_READ_DIR, } from './constants.ts';
 import { buildApprovalFingerprint, } from './tool-helpers.ts';
 import {

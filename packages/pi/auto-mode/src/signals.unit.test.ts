@@ -20,7 +20,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import { analyzeBashCommand, } from './command-parser.ts';
 import {
   contentSignals,

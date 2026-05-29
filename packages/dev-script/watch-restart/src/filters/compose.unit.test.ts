@@ -3,7 +3,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 import { HashCache, } from '../hash-cache.ts';
 import { l as defaultLogger, } from '../log.ts';
 import type {

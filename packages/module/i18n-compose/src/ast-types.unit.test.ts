@@ -10,7 +10,7 @@ import {
   describe,
   expectTypeOf,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 import type {
   DeclarativeSentence,

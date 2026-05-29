@@ -4,7 +4,7 @@ import {
   expect,
   expectTypeOf,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 const { $, } = types.object.record.from.record.omit.named;
 

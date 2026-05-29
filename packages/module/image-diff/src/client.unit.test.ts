@@ -2,7 +2,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 import { compareAll, } from './client.multi.compare.ts';
 import { embedAll, } from './client.multi.ts';

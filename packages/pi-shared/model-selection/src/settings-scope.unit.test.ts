@@ -15,7 +15,7 @@ import {
   describe,
   expect,
   it,
-} from '@monochromatic-dev/module-test';
+} from '@monochromatic-dev/module-test/ts';
 
 import { loadSettingsScopePatterns, } from './scope.ts';
 import { captureError, } from './test-fixtures.ts';
