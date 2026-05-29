@@ -186,27 +186,75 @@ DEFERRED to Phase C (structural, not simple dead-entry pruning):
   review. (The advisor's "build-tool-css needs no B2 change" assumed it resolved via an existing `./ts/*`; the file has
   no `./ts/*`, so the explicit entries are the thing to normalize, just not in B2.)
 
-## Phase C: convert source-only and bin packages to builds (LAST)
+## Phase C: IN PROGRESS — convert source-only and bin packages to builds
 
-By now everything imports `/ts`, so flipping `.` from src to dist affects no in-repo consumer. Standard pattern
-(precedent: commit `7f4b5e0`, `markdownlint-no-pipe-tables`): add tsdown config(s) for the package's bundle set
-(`tsdown.browser.config.ts` -> `config-tsdown/.ts` for neutral; `tsdown.node.config.ts` -> `.node.ts` for node),
-add matching `mise.toml` build tasks via `extends`, flip `exports["."]` to the dist shape mirroring the bundles, keep
-`./ts` + `./ts/*`, set `"module"`, add `dist/final` to `files`, add `config-tsdown` + `config-typescript` (+ `module-test`)
-devDeps.
+Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo consumer. Precedent: commit `7f4b5e0`
+(`markdownlint-no-pipe-tables`, node-only). Neutral exemplar: `module-test`.
 
-- Library conversions (the 14 Phase A libs): determine each one's bundle set by runtime (node deps -> node; isomorphic
-  -> neutral; both where needed).
-- Bin builds (have `bin`, no build task): `cli-fy`, `cli-mvm`, `cli-rgffplay`, `cli-terminal-exec`, `mcp-mvm`,
-  `dev-script-task-util`, `dev-script-vm-builder`, plus `module-image-diff`, `module-token-count`. (`claude-code-plugins-source`
-  is exempt.) Note `cli-mvm` now has `src/cli.ts` as the bin and `dev-script-inference-canary` has `src/canary.ts`.
-- Normalize `pi-shared-model-selection` to node-only single-index: collapse its tsdown entry config to `src/index.ts`
-  only (emit `dist/final/node`), drop the separate scope/cost/budget/pi-coding-agent bundles.
-- Pilot a foundational lib first (`module-fs-path` or `module-async-time`); verify the cycle (lib -> devDep
-  `module-test` -> dep lib) does not deadlock build/test ordering before fanning out.
-- Per-package exit: `mise run //packages/<path>:build` emits the chosen bundle(s); `:buildAndTest` passes (converted
-  packages' tests import the built dist, so test import targets may need switching). `isolatedDeclarations: true` is
-  newly exercised; expect to add explicit return types on some exported functions. Commit per package.
+### PROVEN recipe per neutral source-only lib (validated on `module-async-time` + `module-const`)
+
+1. Add `tsdown.browser.config.ts` (one line): `export { default, } from '@monochromatic-dev/config-tsdown/.ts';`
+   (neutral). For node use `tsdown.node.config.ts` -> `'@monochromatic-dev/config-tsdown/.node.ts'`.
+2. `mise.toml`: add `build`, `build:js`, `build:js:browser` (or `build:js:node`) + the three `watch:*` twins via
+   `extends`, and a `buildAndTest` task. CAVEAT: the test-task wiring VARIES per package — some have
+   `[tasks."test:unit"] extends = "test:unit"` (then `buildAndTest = "mise run build; mise run test:unit"`), others a
+   custom `[tasks.test] run = "bun src/self.unit.test.ts"` (then `buildAndTest = "mise run build; mise run test"`).
+   Read the existing mise.toml and preserve its test task; only ADD build + buildAndTest.
+3. `package.json`: `"module"` -> `dist/final/neutral/index.mjs`; `exports["."]` -> `{ "types":
+   "./dist/final/neutral/index.d.mts", "default": "./dist/final/neutral/index.mjs" }` (node: swap `neutral`->`node`);
+   keep `./ts` + `./ts/*`; `files` -> add `"dist/final"` before `"src"`; add `"@monochromatic-dev/config-tsdown":
+   "workspace:*"` as the first devDep.
+4. Switch the package's own unit tests to import the BUILT dist instead of sibling source: `} from './foo.ts';` ->
+   `} from '../dist/final/neutral/index.mjs';` (relative-to-dist, matching the precedent). Leave test-aggregator
+   imports (`import './foo.unit.test.ts'`) and `module-test/ts` / other-package `/ts` imports alone. The dist index
+   must re-export every symbol the tests use; if not, `buildAndTest` fails loudly naming the symbol -> add the
+   re-export to the index (finishing Phase A) OR keep that one test on source if it tests a genuine internal.
+5. `pnpm install` (links the new config-tsdown devDep; updates root `pnpm-lock.yaml`).
+6. Gate: `mise run //packages/<path>:buildAndTest` (build emits `dist/final/neutral`, tests pass against it).
+7. Commit: `git add <tsdown.config>` (untracked), then `git commit <package.json> <mise.toml> <tsdown.config>
+   <switched test files> pnpm-lock.yaml -m "build(<pkg>): produce neutral dist"`.
+
+### Findings (de-risk the fan-out)
+
+- isolatedDeclarations: 0 new errors. `config-typescript` already runs a declaration-emitting types build under
+  `lint:types`, so the source already satisfies it. The plan's "expect to add return types" caution is STALE.
+- No build/test cycle stall: `module-test` is consumed via `/ts` source, so building a lib never needs module-test's
+  dist and vice versa.
+- `dist/` is gitignored; commits never include built artifacts (only `files: [dist/final, src]` for publish).
+- GATE IS build + buildAndTest PER PACKAGE, not lint:types. Do NOT run repo-wide `lint:types` mid-batch: converted
+  tests import `../dist/.../index.mjs` whose `.d.mts` only exists after a build, so lint:types FALSE-FAILS on any
+  package edited-but-not-yet-built. Run repo-wide lint:types only as a FINAL check after all dist exist. (Same reason
+  `git clean -dX` then lint:types breaks until rebuild: inherent to the precedent's pattern.)
+
+### Done
+
+- `module-async-time` (neutral, `test:unit` variant) — commit message `build(module-async-time): produce neutral dist (Phase C pilot)`.
+- `module-const` (neutral, custom `test` variant) — `build(module-const): produce neutral dist`.
+
+### Remaining — bundle sets determined (deps + `node:` built-in scan)
+
+NEUTRAL, no bin (mechanical, recipe above): `module-current-time-context`, `module-function-arity`,
+`module-i18n-compose`, `module-or-throw`, `module-numeric-format` (deps module-const + module-or-throw, both neutral),
+`module-toml-edit` (deps module-or-throw + toml-eslint-parser; confirm toml-eslint-parser isn't node-only),
+`claude-code-plugins-hook-types` (pure types).
+
+VERIFY-THEN-ROUTE: `mcp-stdio` — an stdio MCP transport; likely uses `process` stdin/stdout (a global, so the `node:`
+grep missed it) -> probably NODE bundle. Check before converting.
+
+NEUTRAL but cross-runtime/OPFS: `module-fs-path` (uses a computed `node:path` dynamic import + happy-opfs; its tests
+may need a non-node/DOM env). Do as its own mini-pilot.
+
+BINS (different mechanics: `#!/usr/bin/env bun` shebang on the bin entry, a `bin` bundle in addition to/instead of the
+lib bundle): `module-image-diff`, `module-token-count`, `cli-terminal-exec`, plus `cli-fy`, `cli-mvm`, `cli-rgffplay`,
+`mcp-mvm`, `dev-script-task-util`, `dev-script-vm-builder`. (`claude-code-plugins-source` is exempt.) `cli-mvm`'s bin is
+`src/cli.ts`; `dev-script-inference-canary`'s is `src/canary.ts`. Each bin needs its own mini-pilot.
+
+NORMALIZE: `pi-shared-model-selection` -> node-only single-index: collapse the tsdown entry config to `src/index.ts`
+only (emit `dist/final/node`), drop the separate scope/cost/budget/pi-coding-agent bundles. Its export map was already
+pruned to `.`+`./ts` in B2, so only the build config + the `.` dist shape need finishing.
+
+DEFERRED B2 (fold into their Phase C conversion): `cli-vmsync` (add `./ts`+`./ts/*` first, then bin build);
+`build-tool-css` (consolidate `./ts/fs-registry`+`./ts/process-shim` to a single `./ts/*`; its `.` is already dist).
 
 ## Final verification
 
