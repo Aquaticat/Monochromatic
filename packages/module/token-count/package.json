@@ -10,7 +10,9 @@
     "token-count": "./src/cli.ts"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "catalog:",
