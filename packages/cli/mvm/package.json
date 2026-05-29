@@ -6,9 +6,12 @@
   "private": true,
   "main": "src/index.ts",
   "bin": {
-    "mvm": "src/index.ts"
+    "mvm": "src/cli.ts"
   },
   "exports": {
+    ".": "./src/index.ts",
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*",
     "./list": "./src/list.ts",
     "./create": "./src/create.ts",
     "./destroy": "./src/destroy.ts",

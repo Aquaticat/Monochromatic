@@ -1,7 +1,7 @@
 [tasks.run]
 description = "Run mvm CLI"
 usage = 'arg "[args]" var=#true help="Subcommand and arguments"'
-run = "bun src/index.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
+run = "bun src/cli.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
 
 [tasks.lint]
 extends = "lint"
