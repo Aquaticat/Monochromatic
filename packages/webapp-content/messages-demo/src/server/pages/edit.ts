@@ -27,7 +27,7 @@ import {
   renderSimplePage,
 } from './_layout.ts';
 
-import { BYTES_PER_MIB, } from '@monochromatic-dev/module-const';
+import { BYTES_PER_MIB, } from '@monochromatic-dev/module-const/ts';
 
 /** Tier-3 character threshold: one mebibyte. */
 const TIER_3_THRESHOLD_BYTES: number = BYTES_PER_MIB;

@@ -10,7 +10,7 @@ import {
   HTTP_CONFLICT,
   HTTP_NOT_FOUND,
   HTTP_OK,
-} from '@monochromatic-dev/module-const';
+} from '@monochromatic-dev/module-const/ts';
 
 import {
   completeTask,

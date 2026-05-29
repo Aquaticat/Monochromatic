@@ -3,7 +3,7 @@ import { parseArgs, } from 'node:util';
 import {
   MS_PER_SECOND,
   SECONDS_PER_MINUTE,
-} from '@monochromatic-dev/module-const';
+} from '@monochromatic-dev/module-const/ts';
 
 import { forceCleanup, } from './analyze/llama.ts';
 import { cycle, } from './cycle.ts';

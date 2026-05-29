@@ -17,7 +17,7 @@ export {
   HTTP_NOT_FOUND,
   HTTP_NOT_MODIFIED,
   HTTP_OK,
-} from '@monochromatic-dev/module-const';
+} from '@monochromatic-dev/module-const/ts';
 
 /** 302 Found: temporary redirect that may change method on follow. */
 export const HTTP_FOUND = 302;

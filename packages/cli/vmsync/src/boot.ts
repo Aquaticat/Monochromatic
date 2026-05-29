@@ -14,7 +14,7 @@ import { join, } from 'node:path';
 import {
   BYTES_PER_GIB,
   BYTES_PER_MIB,
-} from '@monochromatic-dev/module-const';
+} from '@monochromatic-dev/module-const/ts';
 
 import {
   detectHypervisor,

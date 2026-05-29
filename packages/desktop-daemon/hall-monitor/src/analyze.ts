@@ -1,4 +1,4 @@
-import { MS_PER_SECOND, } from '@monochromatic-dev/module-const';
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-const/ts';
 
 import type { CaptureSet, } from './analyze/memory.ts';
 

@@ -2,7 +2,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import {
   MS_PER_SECOND,
   SECONDS_PER_MINUTE,
-} from '@monochromatic-dev/module-const';
+} from '@monochromatic-dev/module-const/ts';
 import * as v from 'valibot';
 import { l as parentLogger, } from './log.ts';
 

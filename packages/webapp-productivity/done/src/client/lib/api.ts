@@ -4,7 +4,7 @@
  *
  * Automatically sets `Content-Type: application/json` and shows a toast on error.
  */
-import { HTTP_NO_CONTENT, } from '@monochromatic-dev/module-const';
+import { HTTP_NO_CONTENT, } from '@monochromatic-dev/module-const/ts';
 
 import { showToast, } from '../components/toast-message.ts';
 

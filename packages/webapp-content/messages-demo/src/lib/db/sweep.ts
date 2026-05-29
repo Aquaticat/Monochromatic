@@ -13,7 +13,7 @@ import {
   HOURS_PER_DAY,
   MS_PER_SECOND,
   SECONDS_PER_MINUTE,
-} from '@monochromatic-dev/module-const';
+} from '@monochromatic-dev/module-const/ts';
 
 import db, {
   all,

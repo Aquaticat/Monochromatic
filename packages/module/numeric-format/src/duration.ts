@@ -29,7 +29,7 @@ import {
   SECONDS_PER_DAY,
   SECONDS_PER_HOUR,
   SECONDS_PER_MINUTE,
-} from '@monochromatic-dev/module-const';
+} from '@monochromatic-dev/module-const/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 /**

@@ -5,7 +5,7 @@
  * because it's always created programmatically (never placed in server HTML).
  */
 import { hDom as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import { MS_PER_SECOND, } from '@monochromatic-dev/module-const';
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-const/ts';
 
 import type { Task, } from '../../lib/types.ts';
 import {

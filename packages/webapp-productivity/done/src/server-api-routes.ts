@@ -23,7 +23,7 @@ import {
   handleStopTimer,
 } from './server/api/timer.ts';
 
-import { HTTP_BAD_REQUEST, } from '@monochromatic-dev/module-const';
+import { HTTP_BAD_REQUEST, } from '@monochromatic-dev/module-const/ts';
 
 /**
  * Extracts a required route parameter, throwing 400 if missing.

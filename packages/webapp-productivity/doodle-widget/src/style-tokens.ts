@@ -17,7 +17,7 @@ import {
   HALF,
   QUARTER,
   THREE_QUARTERS,
-} from '@monochromatic-dev/module-const';
+} from '@monochromatic-dev/module-const/ts';
 
 //region Fractional building blocks
 

@@ -17,7 +17,7 @@ import {
   BYTES_PER_GIB,
   BYTES_PER_KIB,
   BYTES_PER_MIB,
-} from '@monochromatic-dev/module-const';
+} from '@monochromatic-dev/module-const/ts';
 
 /**
  * Format a byte count as a human-readable IEC binary string.

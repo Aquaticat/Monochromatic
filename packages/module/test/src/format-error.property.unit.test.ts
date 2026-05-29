@@ -40,7 +40,7 @@ import {
   type Arbitrary,
 } from 'fast-check';
 
-import { ASCII_LOWERCASE_ALPHANUMERIC_CHARS, } from '@monochromatic-dev/module-const';
+import { ASCII_LOWERCASE_ALPHANUMERIC_CHARS, } from '@monochromatic-dev/module-const/ts';
 import {
   describe,
   expect,

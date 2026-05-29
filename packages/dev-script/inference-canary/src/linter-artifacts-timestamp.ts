@@ -6,7 +6,7 @@
  * checks whether timestamps fall within a 24-hour recency window.
  */
 
-import { MS_PER_DAY, } from '@monochromatic-dev/module-const';
+import { MS_PER_DAY, } from '@monochromatic-dev/module-const/ts';
 
 /** 24 hours in milliseconds */
 export const TWENTY_FOUR_HOURS_MS: number = MS_PER_DAY;

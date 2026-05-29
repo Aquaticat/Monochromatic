@@ -20,7 +20,7 @@
 
 import pLimit from 'p-limit';
 
-import { MS_PER_DAY, } from '@monochromatic-dev/module-const';
+import { MS_PER_DAY, } from '@monochromatic-dev/module-const/ts';
 
 import type { Cache, } from './cache.ts';
 import type { CatalogEntry, } from './catalog.ts';

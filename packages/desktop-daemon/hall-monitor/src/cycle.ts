@@ -1,4 +1,4 @@
-import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const';
+import { BYTES_PER_KIB, } from '@monochromatic-dev/module-const/ts';
 
 import {
   analyze,

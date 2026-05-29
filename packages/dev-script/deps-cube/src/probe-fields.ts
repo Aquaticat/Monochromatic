@@ -19,7 +19,7 @@ import spawn from 'nano-spawn';
 import {
   MS_PER_DAY,
   MS_PER_SECOND,
-} from '@monochromatic-dev/module-const';
+} from '@monochromatic-dev/module-const/ts';
 
 import {
   type Cache,

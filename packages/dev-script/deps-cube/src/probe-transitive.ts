@@ -20,7 +20,7 @@
  * ```
  */
 
-import { MS_PER_DAY, } from '@monochromatic-dev/module-const';
+import { MS_PER_DAY, } from '@monochromatic-dev/module-const/ts';
 import {
   type Cache,
   CACHE_MISS,

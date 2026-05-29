@@ -13,7 +13,7 @@ import {
   HALF,
   QUARTER,
   THREE_QUARTERS,
-} from '@monochromatic-dev/module-const';
+} from '@monochromatic-dev/module-const/ts';
 
 /** Fixed Y axis tick values for score plots (0 to 1) */
 export const Y_TICKS: readonly number[] = [

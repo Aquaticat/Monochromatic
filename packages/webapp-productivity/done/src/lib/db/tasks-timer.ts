@@ -1,7 +1,7 @@
 /**
  * Task timer and completion operations.
  */
-import { MS_PER_SECOND, } from '@monochromatic-dev/module-const';
+import { MS_PER_SECOND, } from '@monochromatic-dev/module-const/ts';
 
 import db from '../db.ts';
 import {
