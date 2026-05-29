@@ -15,6 +15,7 @@ When a cue matches, follow the target rule immediately rather than rediscovering
 - Git cleanup, destructive git guards, or worktree safety reviews: see "Git cleanup and worktree safety reviews".
 - Tests: see "Essential commands".
 - User correction of a substantive claim: see "Pre-response checklist".
+- User's "I"/"me"/"future me" referring to the human, not a future agent: see "Communication style".
 - Verification touching destructive or stateful behavior: see "Verify on a throwaway, not against real state".
 - Removing a regex, or refactoring a loop, over text or a flat array: see "Simplification progression" (no recursion over linear input; JS has no guaranteed tail-call elimination).
 - About to type a bundled or single-letter CLI flag (e.g. `rg -rl`, `-rn`): see "Long-form flags".
@@ -32,6 +33,12 @@ these tags carry harness-level conf, not what the user typed.
 "per your instruction" / "you asked me to" is wrong when the source is a system reminder;
 cite the policy by what it says ("the no-questions policy").
 Same for other injected context (UserPromptSubmit hook output, MCP server instructions, skill descriptions): the source is the hook or server, not the human.
+
+The user's first-person words name the human, never Claude or a future agent session.
+"I", "me", "my", "myself", "future me", "next time I" all point to the person typing;
+Claude is "you" or "Claude" in their words.
+The repo's pervasive handover-to-future-sessions framing (`docs/handover/`, "future readers", "future sessions will follow") primes the wrong reading: "future me will find a better solution" means the human plans to solve it later, not work handed to a future Claude.
+The cue: about to read a user's "me"/"I" as an agent, or to address a doc, issue, plan, or task to "future-me" when the user meant themselves.
 
 Cite the right source file.
 Rules span AGENTS.md, the harness system prompt, hook confs in `.claude/settings.json`, skill `SKILL.md` files, MCP server instructions, and `CLAUDE.md` (regenerated from AGENTS.md).
