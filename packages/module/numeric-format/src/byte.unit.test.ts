@@ -9,7 +9,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { formatBytes, } from './byte.ts';
+import { formatBytes, } from '@monochromatic-dev/module-numeric-format';
 
 await describe({
   name: formatBytes.name,

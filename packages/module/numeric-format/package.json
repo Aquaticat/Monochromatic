@@ -5,9 +5,12 @@
   "type": "module",
   "version": "0.0.1",
   "private": false,
-  "module": "src/index.ts",
+  "module": "dist/final/neutral/index.mjs",
   "exports": {
-    ".": "./src/index.ts",
+    ".": {
+      "types": "./dist/final/neutral/index.d.mts",
+      "default": "./dist/final/neutral/index.mjs"
+    },
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
   },
@@ -16,12 +19,14 @@
     "@monochromatic-dev/module-or-throw": "workspace:*"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:",
     "typescript": "catalog:"
   },
   "files": [
+    "dist/final",
     "src"
   ],
   "repository": {

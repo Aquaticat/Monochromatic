@@ -9,7 +9,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { formatDuration, } from './duration.ts';
+import { formatDuration, } from '@monochromatic-dev/module-numeric-format';
 
 await describe({
   name: formatDuration.name,

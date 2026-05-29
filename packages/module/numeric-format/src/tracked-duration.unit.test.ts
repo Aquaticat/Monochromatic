@@ -9,7 +9,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { formatTrackedDuration, } from './duration.ts';
+import { formatTrackedDuration, } from '@monochromatic-dev/module-numeric-format';
 
 const SECONDS_PER_MINUTE = 60;
 const SECONDS_PER_HOUR = 3_600;
