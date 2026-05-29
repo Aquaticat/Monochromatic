@@ -6,16 +6,30 @@
     "markdownlint-rule",
     "monochromatic"
   ],
-  "devDependencies": {
-    "markdownlint": "catalog:"
+  "dependencies": {
+    "@monochromatic-dev/module-or-throw": "workspace:*"
   },
-  "main": "index.mjs",
-  "module": "index.mjs",
+  "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
+    "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-test": "workspace:*",
+    "@types/bun": "catalog:",
+    "markdownlint": "catalog:",
+    "typescript": "catalog:"
+  },
   "type": "module",
+  "module": "dist/final/node/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/final/node/index.d.mts",
+      "default": "./dist/final/node/index.mjs"
+    },
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
+  },
   "files": [
-    "index.mjs",
-    "no-pipe-tables.mjs",
-    "to-html-table.mjs"
+    "dist/final",
+    "src"
   ],
   "author": {
     "name": "Aquaticat",
@@ -28,9 +42,5 @@
     "url": "https://github.com/Aquaticat/Monochromatic.git",
     "directory": "packages/markdownlint-plugins/no-pipe-tables"
   },
-  "exports": {
-    ".": "./index.mjs"
-  },
-  "preferUnplugged": true,
   "description": "Markdownlint rule banning Markdown pipe tables (autofix to HTML); pipe tables force single-line rows."
 }

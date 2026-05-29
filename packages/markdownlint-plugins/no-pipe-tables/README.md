@@ -37,19 +37,34 @@ cells; strict CommonMark does not. Spot-check cells that contained inline Markdo
 
 ## Usage
 
-Referenced from the repo's `.markdownlint-cli2.jsonc` by relative path and enabled by name:
+Referenced from the repo's `.markdownlint-cli2.jsonc` by relative path and enabled by name. The path
+is the built artifact, not the source:
 
 ```jsonc
 {
   "config": { "no-pipe-tables": true },
-  "customRules": ["./packages/markdownlint-plugins/no-pipe-tables/index.mjs"]
+  "customRules": ["./packages/markdownlint-plugins/no-pipe-tables/dist/final/node/index.mjs"]
 }
 ```
 
-The module is committed `.mjs` (no build step); markdownlint-cli2 runs under Node and imports it
-directly.
+## Build
+
+The rule is authored in TypeScript under `src/` and built with tsdown (`mise run build`, via the
+`.node.ts` config) to `dist/final/node/index.mjs`. markdownlint-cli2 is installed as a mise `npm:`
+global and runs under Node, which cannot import `.ts`, so it loads the built JavaScript. The bundle is
+self-contained: type-only imports (`markdownlint`) are erased and `@monochromatic-dev/module-or-throw`
+is inlined, so the artifact has no runtime dependencies.
+
+`dist/` is gitignored. A fresh clone (or a tree after a clean) must build before linting, because a
+custom rule that fails to import aborts the whole markdownlint run. No build preamble is wired into the
+lint task on purpose; a better solution is tracked in
+[issue #231](https://github.com/Aquaticat/Monochromatic/issues/231).
 
 ## Development
 
-- Self-test: `mise run //packages/markdownlint-plugins/no-pipe-tables:test:unit`
-- Lint: `mise run //packages/markdownlint-plugins/no-pipe-tables:lint`
+- Build then self-test (tests import the built dist): `mise run //packages/markdownlint-plugins/no-pipe-tables:buildAndTest`
+- Self-test only (requires an up-to-date dist): `mise run //packages/markdownlint-plugins/no-pipe-tables:test:unit`
+- Lint (oxlint and types): `mise run //packages/markdownlint-plugins/no-pipe-tables:lint`
+
+The tests exercise the bundled, minified `dist` artifact (the exact module markdownlint-cli2 loads),
+using the `@monochromatic-dev/module-test` harness.

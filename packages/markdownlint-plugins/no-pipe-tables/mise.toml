@@ -1,12 +1,33 @@
+[tasks.build]
+extends = "build"
+
+[tasks."build:js"]
+extends = "build:js"
+
+[tasks."build:js:node"]
+extends = "build:js:node"
+
+[tasks."watch:build"]
+extends = "watch:build"
+
+[tasks."watch:build:js"]
+extends = "watch:build:js"
+
+[tasks."watch:build:js:node"]
+extends = "watch:build:js:node"
+
 [tasks.lint]
 extends = "lint"
 
 [tasks."lint:oxlint"]
 extends = "lint:oxlint"
 
-# No lint:types -- this package has no TypeScript source files (hand-written .mjs
-# with JSDoc, mirroring packages/config/stylelint).
+[tasks."lint:types"]
+extends = "lint:types"
 
 [tasks."test:unit"]
-description = "Run the no-pipe-tables rule self-test (.mjs, run directly with bun)"
-run = "bun no-pipe-tables.unit.test.mjs"
+extends = "test:unit"
+
+[tasks.buildAndTest]
+description = "Build the rule, then run *.unit.test.ts against the built dist"
+run = "mise run build; mise run test:unit"
