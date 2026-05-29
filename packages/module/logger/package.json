@@ -12,10 +12,7 @@
       "default": "./dist/final/neutral/index.mjs"
     },
     "./ts": "./src/index.ts",
-    "./ts/*": "./src/*",
-    "./logger": "./src/logger.ts",
-    "./tagged": "./src/tagged.ts",
-    "./types": "./src/types.ts"
+    "./ts/*": "./src/*"
   },
   "files": [
     "dist/final",
