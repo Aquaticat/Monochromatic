@@ -6,10 +6,24 @@ Async timing primitives.
 
 ### Helpers
 
-| Function      | Behavior                                                                                |
-| ------------- | --------------------------------------------------------------------------------------- |
-| `wait`        | Resolves after a delay in milliseconds; thin `setTimeout` wrapper                       |
-| `withTimeout` | Races a promise against a deadline; rejects with a labeled `Error` if the deadline wins |
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`wait`</td>
+<td>Resolves after a delay in milliseconds; thin `setTimeout` wrapper</td>
+</tr>
+<tr>
+<td>`withTimeout`</td>
+<td>Races a promise against a deadline; rejects with a labeled `Error` if the deadline wins</td>
+</tr>
+</tbody>
+</table>
 
 ### Usage
 

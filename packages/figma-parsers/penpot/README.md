@@ -49,18 +49,56 @@ bun packages/figma-parsers/penpot/scripts/convert.ts input.fig [output.penpot]
 
 ## Type mapping
 
-| Figma NodeType                 | Penpot shape type    |
-| ------------------------------ | -------------------- |
-| CANVAS                         | frame (becomes page) |
-| FRAME / SECTION / STICKY       | frame                |
-| GROUP                          | group                |
-| SLIDE (deck)                   | frame (becomes page) |
-| TEXT                           | text                 |
-| ROUNDED_RECTANGLE / RECTANGLE  | rect                 |
-| ELLIPSE                        | circle               |
-| VECTOR / LINE / STAR / POLYGON | path                 |
-| BOOLEAN_OPERATION              | bool                 |
-| SYMBOL / INSTANCE / COMPONENT  | frame                |
+<table>
+<thead>
+<tr>
+<th>Figma NodeType</th>
+<th>Penpot shape type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CANVAS</td>
+<td>frame (becomes page)</td>
+</tr>
+<tr>
+<td>FRAME / SECTION / STICKY</td>
+<td>frame</td>
+</tr>
+<tr>
+<td>GROUP</td>
+<td>group</td>
+</tr>
+<tr>
+<td>SLIDE (deck)</td>
+<td>frame (becomes page)</td>
+</tr>
+<tr>
+<td>TEXT</td>
+<td>text</td>
+</tr>
+<tr>
+<td>ROUNDED_RECTANGLE / RECTANGLE</td>
+<td>rect</td>
+</tr>
+<tr>
+<td>ELLIPSE</td>
+<td>circle</td>
+</tr>
+<tr>
+<td>VECTOR / LINE / STAR / POLYGON</td>
+<td>path</td>
+</tr>
+<tr>
+<td>BOOLEAN_OPERATION</td>
+<td>bool</td>
+</tr>
+<tr>
+<td>SYMBOL / INSTANCE / COMPONENT</td>
+<td>frame</td>
+</tr>
+</tbody>
+</table>
 
 Nodes with no Penpot equivalent (DOCUMENT, NONE, NODE, SLIDE_GRID,
 SLIDE_ROW, VARIABLE, VARIABLE_SET) are skipped.

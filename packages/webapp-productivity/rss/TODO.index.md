@@ -28,15 +28,60 @@ This directory contains detailed improvement plans for the RSS reader package, o
 
 ## 2. 📊 Summary by Priority
 
-| Priority     | Category          | File                                                       | Key Tasks                                                |
-| ------------ | ----------------- | ---------------------------------------------------------- | -------------------------------------------------------- |
-| **Critical** | Testing           | [`TODO.testing.md`](./TODO.testing.md)                     | Unit tests, integration tests, E2E tests, 80% coverage   |
-| **Critical** | Documentation     | [`TODO.documentation.md`](./TODO.documentation.md)         | TSDoc, API docs, architecture diagrams, guides           |
-| **High**     | Code Organization | [`TODO.code-organization.md`](./TODO.code-organization.md) | Directory structure, dependency injection, error classes |
-| **Pending**  | Caching           | [`TODO.caching.md`](./TODO.caching.md)                     | Caddy proxy setup, cache configuration                   |
-| **Pending**  | Performance       | [`TODO.performance.md`](./TODO.performance.md)             | Profiling, parallel fetching, database evaluation        |
-| **Low**      | Configuration     | [`TODO.configuration.md`](./TODO.configuration.md)         | Externalize constants, environment variables             |
-| **N/A**      | Not Planned       | [`TODO.not-planned.md`](./TODO.not-planned.md)             | Retry logic, UX features, monitoring                     |
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Category</th>
+<th>File</th>
+<th>Key Tasks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>**Critical**</td>
+<td>Testing</td>
+<td>[`TODO.testing.md`](./TODO.testing.md)</td>
+<td>Unit tests, integration tests, E2E tests, 80% coverage</td>
+</tr>
+<tr>
+<td>**Critical**</td>
+<td>Documentation</td>
+<td>[`TODO.documentation.md`](./TODO.documentation.md)</td>
+<td>TSDoc, API docs, architecture diagrams, guides</td>
+</tr>
+<tr>
+<td>**High**</td>
+<td>Code Organization</td>
+<td>[`TODO.code-organization.md`](./TODO.code-organization.md)</td>
+<td>Directory structure, dependency injection, error classes</td>
+</tr>
+<tr>
+<td>**Pending**</td>
+<td>Caching</td>
+<td>[`TODO.caching.md`](./TODO.caching.md)</td>
+<td>Caddy proxy setup, cache configuration</td>
+</tr>
+<tr>
+<td>**Pending**</td>
+<td>Performance</td>
+<td>[`TODO.performance.md`](./TODO.performance.md)</td>
+<td>Profiling, parallel fetching, database evaluation</td>
+</tr>
+<tr>
+<td>**Low**</td>
+<td>Configuration</td>
+<td>[`TODO.configuration.md`](./TODO.configuration.md)</td>
+<td>Externalize constants, environment variables</td>
+</tr>
+<tr>
+<td>**N/A**</td>
+<td>Not Planned</td>
+<td>[`TODO.not-planned.md`](./TODO.not-planned.md)</td>
+<td>Retry logic, UX features, monitoring</td>
+</tr>
+</tbody>
+</table>
 
 ## 3. 🎯 Recommended Implementation Order
 

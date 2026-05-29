@@ -30,26 +30,89 @@ Subscribes to pi agent lifecycle events and updates the terminal window/tab titl
 
 **Event → title mapping:**
 
-| Event                  | Title example                |
-| ---------------------- | ---------------------------- |
-| `tool_execution_start` | `π Reading index.ts`         |
-| `tool_execution_end`   | `π Read index.ts`            |
-| `session_start`        | `π Session startup`          |
-| `session_shutdown`     | `π Session ended`            |
-| `agent_end`            | `π Stopped`                  |
-| `before_agent_start`   | `π Refactor the auth module` |
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Title example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`tool_execution_start`</td>
+<td>`π Reading index.ts`</td>
+</tr>
+<tr>
+<td>`tool_execution_end`</td>
+<td>`π Read index.ts`</td>
+</tr>
+<tr>
+<td>`session_start`</td>
+<td>`π Session startup`</td>
+</tr>
+<tr>
+<td>`session_shutdown`</td>
+<td>`π Session ended`</td>
+</tr>
+<tr>
+<td>`agent_end`</td>
+<td>`π Stopped`</td>
+</tr>
+<tr>
+<td>`before_agent_start`</td>
+<td>`π Refactor the auth module`</td>
+</tr>
+</tbody>
+</table>
 
 **Tool registry:**
 
-| Tool    | Pre title             | Post title           |
-| ------- | --------------------- | -------------------- |
-| `bash`  | `π npm test`          | `π npm test`         |
-| `read`  | `π Reading index.ts`  | `π Read index.ts`    |
-| `edit`  | `π Editing config.ts` | `π Edited config.ts` |
-| `write` | `π Writing output.ts` | `π Wrote output.ts`  |
-| `grep`  | `π Searching "TODO"`  | `π Searched "TODO"`  |
-| `find`  | `π Finding "*.ts"`    | `π Found "*.ts"`     |
-| `ls`    | `π Listing src`       | `π Listed src`       |
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Pre title</th>
+<th>Post title</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`bash`</td>
+<td>`π npm test`</td>
+<td>`π npm test`</td>
+</tr>
+<tr>
+<td>`read`</td>
+<td>`π Reading index.ts`</td>
+<td>`π Read index.ts`</td>
+</tr>
+<tr>
+<td>`edit`</td>
+<td>`π Editing config.ts`</td>
+<td>`π Edited config.ts`</td>
+</tr>
+<tr>
+<td>`write`</td>
+<td>`π Writing output.ts`</td>
+<td>`π Wrote output.ts`</td>
+</tr>
+<tr>
+<td>`grep`</td>
+<td>`π Searching "TODO"`</td>
+<td>`π Searched "TODO"`</td>
+</tr>
+<tr>
+<td>`find`</td>
+<td>`π Finding "*.ts"`</td>
+<td>`π Found "*.ts"`</td>
+</tr>
+<tr>
+<td>`ls`</td>
+<td>`π Listing src`</td>
+<td>`π Listed src`</td>
+</tr>
+</tbody>
+</table>
 
 Custom/MCP tools that are not in the registry display generically:
 `π Running mcp__weather` / `π Ran mcp__weather`

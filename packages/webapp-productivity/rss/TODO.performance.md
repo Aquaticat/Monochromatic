@@ -66,15 +66,60 @@ Tasks:
 
 Evaluate replacing JSONL with a proper database:
 
-| Aspect               | JSONL (Current)         | SQLite             | PostgreSQL          |
-| -------------------- | ----------------------- | ------------------ | ------------------- |
-| **Setup Complexity** | ✅ None                 | ✅ Minimal         | ⚠️ Requires server   |
-| **Performance**      | ❌ Full file read/write | ✅ Indexed queries | ✅ Best performance |
-| **Concurrency**      | ❌ File locks           | ✅ MVCC            | ✅ Full ACID        |
-| **Memory Usage**     | ❌ Loads entire file    | ✅ Efficient       | ✅ Most efficient   |
-| **Querying**         | ❌ Manual filtering     | ✅ SQL             | ✅ Full SQL         |
-| **Scalability**      | ❌ Limited              | ✅ Good            | ✅ Excellent        |
-| **Maintenance**      | ✅ Simple files         | ✅ Single file     | ⚠️ Server management |
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>JSONL (Current)</th>
+<th>SQLite</th>
+<th>PostgreSQL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>**Setup Complexity**</td>
+<td>✅ None</td>
+<td>✅ Minimal</td>
+<td>⚠️ Requires server</td>
+</tr>
+<tr>
+<td>**Performance**</td>
+<td>❌ Full file read/write</td>
+<td>✅ Indexed queries</td>
+<td>✅ Best performance</td>
+</tr>
+<tr>
+<td>**Concurrency**</td>
+<td>❌ File locks</td>
+<td>✅ MVCC</td>
+<td>✅ Full ACID</td>
+</tr>
+<tr>
+<td>**Memory Usage**</td>
+<td>❌ Loads entire file</td>
+<td>✅ Efficient</td>
+<td>✅ Most efficient</td>
+</tr>
+<tr>
+<td>**Querying**</td>
+<td>❌ Manual filtering</td>
+<td>✅ SQL</td>
+<td>✅ Full SQL</td>
+</tr>
+<tr>
+<td>**Scalability**</td>
+<td>❌ Limited</td>
+<td>✅ Good</td>
+<td>✅ Excellent</td>
+</tr>
+<tr>
+<td>**Maintenance**</td>
+<td>✅ Simple files</td>
+<td>✅ Single file</td>
+<td>⚠️ Server management</td>
+</tr>
+</tbody>
+</table>
 
 Tasks:
 
@@ -123,15 +168,60 @@ Tasks:
 
 ## 4. Performance Targets
 
-| Metric                     | Current | Target  | Improvement |
-| -------------------------- | ------- | ------- | ----------- |
-| Feed fetch time (10 feeds) | ~10s    | <2s     | 5x          |
-| Memory usage (idle)        | Unknown | <100MB  | -           |
-| Memory usage (active)      | Unknown | <200MB  | -           |
-| HTML generation            | Unknown | <50ms   | -           |
-| Client reload time         | 1s poll | Instant | WebSocket   |
-| OPML parse time            | Unknown | <10ms   | -           |
-| Startup time               | Unknown | <1s     | -           |
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Current</th>
+<th>Target</th>
+<th>Improvement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Feed fetch time (10 feeds)</td>
+<td>~10s</td>
+<td><2s</td>
+<td>5x</td>
+</tr>
+<tr>
+<td>Memory usage (idle)</td>
+<td>Unknown</td>
+<td><100MB</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Memory usage (active)</td>
+<td>Unknown</td>
+<td><200MB</td>
+<td>-</td>
+</tr>
+<tr>
+<td>HTML generation</td>
+<td>Unknown</td>
+<td><50ms</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Client reload time</td>
+<td>1s poll</td>
+<td>Instant</td>
+<td>WebSocket</td>
+</tr>
+<tr>
+<td>OPML parse time</td>
+<td>Unknown</td>
+<td><10ms</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Startup time</td>
+<td>Unknown</td>
+<td><1s</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
 
 ## 5. Implementation Priority
 

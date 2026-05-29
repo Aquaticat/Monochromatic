@@ -122,8 +122,8 @@ optionality as `T | undefined` (`void` is assignable from `undefined`). The rule
 These make some fake-optional encodings ill-typed at a chosen boundary. None is a global enforcer; each is
 opt-in at the point a value enters typed code, and none is checkable by the syntax-only lint plugin.
 Verified against the TypeScript template-literal-types and conditional-types documentation
-(https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html and
-https://www.typescriptlang.org/docs/handbook/2/conditional-types.html).
+(<https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html> and
+<https://www.typescriptlang.org/docs/handbook/2/conditional-types.html>).
 
 - Non-empty string brand via a conditional template-literal type:
   `type NonEmpty<S extends string> = S extends '' ? never : S`. A constructor typed
@@ -161,8 +161,8 @@ a shared module (for example a `@monochromatic-dev/module-*` package) so every p
 A proper `Option<T>` (effect Option, fp-ts `Option`, neverthrow's `Result`, ts-belt) is the textbook
 answer in functional TypeScript, and the libraries are real and maintained to varying degrees: effect is
 the official successor to fp-ts with fp-ts's author now on the team
-(https://effect.website/docs/additional-resources/effect-vs-fp-ts/), while neverthrow is simpler but no
-longer actively maintained (https://npm-compare.com/fp-ts,neverthrow,ts-results,ts-toolbelt).
+(<https://effect.website/docs/additional-resources/effect-vs-fp-ts/>), while neverthrow is simpler but no
+longer actively maintained (<https://npm-compare.com/fp-ts,neverthrow,ts-results,ts-toolbelt>).
 
 It should still be rejected here, for two repo-specific reasons:
 
@@ -230,22 +230,22 @@ the entire ladder is reopened by a single `// oxlint-disable-next-line no-restri
 ## How comparable strict-TypeScript projects enforce this
 
 - typescript-eslint `strict-boolean-expressions` and `no-unnecessary-condition`
-  (https://typescript-eslint.io/rules/strict-boolean-expressions/ and
-  https://typescript-eslint.io/rules/no-unnecessary-condition/). Both are type-aware; they need
+  (<https://typescript-eslint.io/rules/strict-boolean-expressions/> and
+  <https://typescript-eslint.io/rules/no-unnecessary-condition/>). Both are type-aware; they need
   parserServices and the TS program. `strict-boolean-expressions` even has a dedicated option about
   treating an empty string as falsy, which confirms that the strongest mainstream tool addresses the
   coercion site ("is this used in a boolean position"), not the encoding decision ("is this `''` meant as
   absent"). Not applicable to the oxlint plugin, which has no type info; the lesson is that even with full
   type access, the `''`-as-sentinel intent is not what these rules check.
-- eslint-plugin-total-functions (https://github.com/danielnixon/eslint-plugin-total-functions and
-  https://www.npmjs.com/package/eslint-plugin-total-functions). `require-strict-mode` enforces `strict`
+- eslint-plugin-total-functions (<https://github.com/danielnixon/eslint-plugin-total-functions> and
+  <https://www.npmjs.com/package/eslint-plugin-total-functions>). `require-strict-mode` enforces `strict`
   plus `noUncheckedIndexedAccess` (both already on here); `no-unsafe-type-assertion` blocks the
   `{} as Foo` move. The philosophy ("total functions, no partial functions") matches this repo's
   throw-at-the-boundary stance, but every rule is type-aware, so none ports to oxlint directly. It does
   validate that `noUncheckedIndexedAccess` belongs in the strict baseline, which it already is here.
 - effect Option, fp-ts `Option`, neverthrow, ts-belt
-  (https://effect.website/docs/additional-resources/effect-vs-neverthrow/ and
-  https://npm-compare.com/fp-ts,neverthrow,ts-results,ts-toolbelt). These encode absence as a first-class
+  (<https://effect.website/docs/additional-resources/effect-vs-neverthrow/> and
+  <https://npm-compare.com/fp-ts,neverthrow,ts-results,ts-toolbelt>). These encode absence as a first-class
   value rather than enforcing its absence. As argued above, that is the opposite of this repo's stance at
   `AGENTS.md:412`, and adopting one would convert "no escape hatch" into "one blessed escape hatch".
 

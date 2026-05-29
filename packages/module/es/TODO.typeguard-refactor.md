@@ -86,7 +86,7 @@ export function isSchema<const T extends Schema = Schema,>(
 }
 ```
 
-### Proven Benefits from 84-Scenario Analysis:
+### Proven Benefits from 84-Scenario Analysis
 
 1. **🎯 Type preservation**: 35 scenarios maintain properties vs 24 that lose them
 2. **🚫 Compile-time safety**: 18 scenarios catch errors vs 23 💣 false safety scenarios
@@ -306,21 +306,21 @@ export function isSchema<const T extends Schema = Schema,>(
 
 ## Evidence-Based Decision Framework
 
-### When Unknown Pattern Is 💣 Dangerous:
+### When Unknown Pattern Is 💣 Dangerous
 
 - `null`, `undefined` values (compiles, runtime explosion)
 - Empty objects (compiles, missing methods)
 - Wrong property types (compiles, runtime type errors)
 - Functions without proper structure
 
-### When Generic Pattern Is 🎯 Superior:
+### When Generic Pattern Is 🎯 Superior
 
 - Objects with additional properties (`objectWithParse` test case)
 - Branded types and complex intersections
 - Any types needing structure preservation
 - Well-typed internal APIs
 
-### When Typed Pattern Provides 🚫 Safety:
+### When Typed Pattern Provides 🚫 Safety
 
 - Catches 70% of obviously wrong inputs at compile time
 - Forces explicit casting for unclear scenarios

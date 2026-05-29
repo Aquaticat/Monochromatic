@@ -13,18 +13,49 @@ the runtime check turns a silent type lie into a loud, debuggable failure.
 
 ### Boolean shape
 
-| Function            | Throws when                                                              |
-| ------------------- | ------------------------------------------------------------------------ |
-| `nonNullishOrThrow` | value is `null` or `undefined`                                           |
-| `truthyOrThrow`     | value is falsy (`false`, `0`, `0n`, `''`, `null`, `undefined`, or `NaN`) |
-| `falsyOrThrow`      | value is truthy                                                          |
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Throws when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`nonNullishOrThrow`</td>
+<td>value is `null` or `undefined`</td>
+</tr>
+<tr>
+<td>`truthyOrThrow`</td>
+<td>value is falsy (`false`, `0`, `0n`, `''`, `null`, `undefined`, or `NaN`)</td>
+</tr>
+<tr>
+<td>`falsyOrThrow`</td>
+<td>value is truthy</td>
+</tr>
+</tbody>
+</table>
 
 ### Container size
 
-| Function          | Throws when                                              |
-| ----------------- | -------------------------------------------------------- |
-| `emptyOrThrow`    | value lacks a recognized size shape, or has nonzero size |
-| `nonemptyOrThrow` | value lacks a recognized size shape, or has zero size    |
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Throws when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`emptyOrThrow`</td>
+<td>value lacks a recognized size shape, or has nonzero size</td>
+</tr>
+<tr>
+<td>`nonemptyOrThrow`</td>
+<td>value lacks a recognized size shape, or has zero size</td>
+</tr>
+</tbody>
+</table>
 
 Recognized size shapes: strings, arrays, `Set`, `Map`, plain objects.
 `WeakSet` and `WeakMap` are intentionally rejected (no enumerable size).
@@ -32,33 +63,93 @@ Bare iterables and async iterables are rejected (sizing requires consumption).
 
 ### Iterable protocols
 
-| Function                    | Throws when                                          |
-| --------------------------- | ---------------------------------------------------- |
-| `iterableOrThrow`           | value does not implement the sync-iterable protocol  |
-| `asyncIterableOrThrow`      | value does not implement the async-iterable protocol |
-| `maybeAsyncIterableOrThrow` | value implements neither protocol                    |
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Throws when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`iterableOrThrow`</td>
+<td>value does not implement the sync-iterable protocol</td>
+</tr>
+<tr>
+<td>`asyncIterableOrThrow`</td>
+<td>value does not implement the async-iterable protocol</td>
+</tr>
+<tr>
+<td>`maybeAsyncIterableOrThrow`</td>
+<td>value implements neither protocol</td>
+</tr>
+</tbody>
+</table>
 
 Strings count as sync-iterable.
 Objects must have `Symbol.iterator` or `Symbol.asyncIterator` to pass.
 
 ### Container instances
 
-| Function         | Throws when                       |
-| ---------------- | --------------------------------- |
-| `arrayOrThrow`   | `Array.isArray(value)` is `false` |
-| `setOrThrow`     | value is not `instanceof Set`     |
-| `mapOrThrow`     | value is not `instanceof Map`     |
-| `weakSetOrThrow` | value is not `instanceof WeakSet` |
-| `weakMapOrThrow` | value is not `instanceof WeakMap` |
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Throws when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`arrayOrThrow`</td>
+<td>`Array.isArray(value)` is `false`</td>
+</tr>
+<tr>
+<td>`setOrThrow`</td>
+<td>value is not `instanceof Set`</td>
+</tr>
+<tr>
+<td>`mapOrThrow`</td>
+<td>value is not `instanceof Map`</td>
+</tr>
+<tr>
+<td>`weakSetOrThrow`</td>
+<td>value is not `instanceof WeakSet`</td>
+</tr>
+<tr>
+<td>`weakMapOrThrow`</td>
+<td>value is not `instanceof WeakMap`</td>
+</tr>
+</tbody>
+</table>
 
 ### Standard built-ins
 
-| Function         | Throws when                       |
-| ---------------- | --------------------------------- |
-| `promiseOrThrow` | value is not `instanceof Promise` |
-| `dateOrThrow`    | value is not `instanceof Date`    |
-| `regExpOrThrow`  | value is not `instanceof RegExp`  |
-| `errorOrThrow`   | value is not `instanceof Error`   |
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Throws when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`promiseOrThrow`</td>
+<td>value is not `instanceof Promise`</td>
+</tr>
+<tr>
+<td>`dateOrThrow`</td>
+<td>value is not `instanceof Date`</td>
+</tr>
+<tr>
+<td>`regExpOrThrow`</td>
+<td>value is not `instanceof RegExp`</td>
+</tr>
+<tr>
+<td>`errorOrThrow`</td>
+<td>value is not `instanceof Error`</td>
+</tr>
+</tbody>
+</table>
 
 `dateOrThrow` does not check date validity (invalid dates still pass).
 `promiseOrThrow` rejects thenables.
@@ -66,23 +157,63 @@ Objects must have `Symbol.iterator` or `Symbol.asyncIterator` to pass.
 
 ### typeof primitives
 
-| Function          | Throws when                                                |
-| ----------------- | ---------------------------------------------------------- |
-| `stringOrThrow`   | `typeof value !== 'string'`                                |
-| `numberOrThrow`   | `typeof value !== 'number'` (accepts `NaN` and `Infinity`) |
-| `bigintOrThrow`   | `typeof value !== 'bigint'`                                |
-| `booleanOrThrow`  | `typeof value !== 'boolean'`                               |
-| `symbolOrThrow`   | `typeof value !== 'symbol'`                                |
-| `functionOrThrow` | `typeof value !== 'function'`                              |
-| `objectOrThrow`   | `typeof value !== 'object'` or `value === null`            |
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Throws when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`stringOrThrow`</td>
+<td>`typeof value !== 'string'`</td>
+</tr>
+<tr>
+<td>`numberOrThrow`</td>
+<td>`typeof value !== 'number'` (accepts `NaN` and `Infinity`)</td>
+</tr>
+<tr>
+<td>`bigintOrThrow`</td>
+<td>`typeof value !== 'bigint'`</td>
+</tr>
+<tr>
+<td>`booleanOrThrow`</td>
+<td>`typeof value !== 'boolean'`</td>
+</tr>
+<tr>
+<td>`symbolOrThrow`</td>
+<td>`typeof value !== 'symbol'`</td>
+</tr>
+<tr>
+<td>`functionOrThrow`</td>
+<td>`typeof value !== 'function'`</td>
+</tr>
+<tr>
+<td>`objectOrThrow`</td>
+<td>`typeof value !== 'object'` or `value === null`</td>
+</tr>
+</tbody>
+</table>
 
 Boxed-primitive wrappers (`new String(...)`, `new Number(...)`, etc.) are intentionally rejected.
 
 ### Numeric union
 
-| Function         | Throws when                            |
-| ---------------- | -------------------------------------- |
-| `numericOrThrow` | value is neither `number` nor `bigint` |
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Throws when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`numericOrThrow`</td>
+<td>value is neither `number` nor `bigint`</td>
+</tr>
+</tbody>
+</table>
 
 `numericOrThrow` corresponds to the `t numeric/` category in `module-es`.
 

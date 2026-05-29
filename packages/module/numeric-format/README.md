@@ -13,11 +13,32 @@ Anything `Intl` already handles should be called directly at the consumer.
 
 ## Exports
 
-| Function                | Source            | Description                                                                                     |
-| ----------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
-| `formatBytes`           | `src/byte.ts`     | IEC binary byte formatter (`KiB` / `MiB` / `GiB`).                                              |
-| `formatDuration`        | `src/duration.ts` | Magnitude-adaptive sub-ms / ms / s formatter for `performance.now()` deltas.                    |
-| `formatTrackedDuration` | `src/duration.ts` | Ultra-compact seconds-to-years ladder for productivity-app chip text (`1h30m`, `3d1h`, `1y2m`). |
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Source</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`formatBytes`</td>
+<td>`src/byte.ts`</td>
+<td>IEC binary byte formatter (`KiB` / `MiB` / `GiB`).</td>
+</tr>
+<tr>
+<td>`formatDuration`</td>
+<td>`src/duration.ts`</td>
+<td>Magnitude-adaptive sub-ms / ms / s formatter for `performance.now()` deltas.</td>
+</tr>
+<tr>
+<td>`formatTrackedDuration`</td>
+<td>`src/duration.ts`</td>
+<td>Ultra-compact seconds-to-years ladder for productivity-app chip text (`1h30m`, `3d1h`, `1y2m`).</td>
+</tr>
+</tbody>
+</table>
 
 ## Why not `Intl.DurationFormat`
 
@@ -87,16 +108,57 @@ Output rule: strict top-2 in adjacency.
 The biggest non-zero unit pairs with the immediately smaller unit, even if the smaller one is zero.
 Seconds-only renders as top-1 (`Xs`), all-zero renders as `0s`.
 
-| Magnitude  | Shape  | Example                                          |
-| ---------- | ------ | ------------------------------------------------ |
-| zero       | `0s`   | `formatTrackedDuration(0)` -> `'0s'`             |
-| < 1 minute | `Xs`   | `formatTrackedDuration(45)` -> `'45s'`           |
-| minutes    | `XmYs` | `formatTrackedDuration(90)` -> `'1m30s'`         |
-| hours      | `XhYm` | `formatTrackedDuration(5_400)` -> `'1h30m'`      |
-| days       | `XdYh` | `formatTrackedDuration(263_400)` -> `'3d1h'`     |
-| weeks      | `XwYd` | `formatTrackedDuration(1_468_800)` -> `'2w3d'`   |
-| months     | `XmYw` | `formatTrackedDuration(30 * 86400)` -> `'1m0w'`  |
-| years      | `XyYm` | `formatTrackedDuration(425 * 86400)` -> `'1y2m'` |
+<table>
+<thead>
+<tr>
+<th>Magnitude</th>
+<th>Shape</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>zero</td>
+<td>`0s`</td>
+<td>`formatTrackedDuration(0)` -> `'0s'`</td>
+</tr>
+<tr>
+<td>< 1 minute</td>
+<td>`Xs`</td>
+<td>`formatTrackedDuration(45)` -> `'45s'`</td>
+</tr>
+<tr>
+<td>minutes</td>
+<td>`XmYs`</td>
+<td>`formatTrackedDuration(90)` -> `'1m30s'`</td>
+</tr>
+<tr>
+<td>hours</td>
+<td>`XhYm`</td>
+<td>`formatTrackedDuration(5_400)` -> `'1h30m'`</td>
+</tr>
+<tr>
+<td>days</td>
+<td>`XdYh`</td>
+<td>`formatTrackedDuration(263_400)` -> `'3d1h'`</td>
+</tr>
+<tr>
+<td>weeks</td>
+<td>`XwYd`</td>
+<td>`formatTrackedDuration(1_468_800)` -> `'2w3d'`</td>
+</tr>
+<tr>
+<td>months</td>
+<td>`XmYw`</td>
+<td>`formatTrackedDuration(30 * 86400)` -> `'1m0w'`</td>
+</tr>
+<tr>
+<td>years</td>
+<td>`XyYm`</td>
+<td>`formatTrackedDuration(425 * 86400)` -> `'1y2m'`</td>
+</tr>
+</tbody>
+</table>
 
 Single-letter `m` is reused for both months and minutes; the secondary suffix always disambiguates.
 A standalone `Xm` chip never occurs because seconds-only renders as `Xs`.

@@ -528,14 +528,54 @@ Once the warning count is zero (every report is refactored, allowlist-shaped, or
 
 ### Status table
 
-| Phase                         | State | Date       | Notes                                                            |
-| ----------------------------- | ----- | ---------- | ---------------------------------------------------------------- |
-| 0: rules landed               | DONE  | 2026-05-10 | Two rule files + registration + `'warn'` enablement + AGENTS.md. |
-| 1: baseline capture           | TODO  |            | Per-rule report count, spot-check 10 each.                       |
-| 2: mechanical refactors       | TODO  |            | Ternary, reduce, chain.                                          |
-| 3: helper / IIFE              | TODO  |            | Use the allowlist heuristics deliberately.                       |
-| 4: disable-with-justification | TODO  |            | Each disable names a concrete constraint.                        |
-| 5: flip to `'error'`          | TODO  |            | Both entries in `restriction.ts`.                                |
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>State</th>
+<th>Date</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0: rules landed</td>
+<td>DONE</td>
+<td>2026-05-10</td>
+<td>Two rule files + registration + `'warn'` enablement + AGENTS.md.</td>
+</tr>
+<tr>
+<td>1: baseline capture</td>
+<td>TODO</td>
+<td></td>
+<td>Per-rule report count, spot-check 10 each.</td>
+</tr>
+<tr>
+<td>2: mechanical refactors</td>
+<td>TODO</td>
+<td></td>
+<td>Ternary, reduce, chain.</td>
+</tr>
+<tr>
+<td>3: helper / IIFE</td>
+<td>TODO</td>
+<td></td>
+<td>Use the allowlist heuristics deliberately.</td>
+</tr>
+<tr>
+<td>4: disable-with-justification</td>
+<td>TODO</td>
+<td></td>
+<td>Each disable names a concrete constraint.</td>
+</tr>
+<tr>
+<td>5: flip to `'error'`</td>
+<td>TODO</td>
+<td></td>
+<td>Both entries in `restriction.ts`.</td>
+</tr>
+</tbody>
+</table>
 
 ### Verification targets
 

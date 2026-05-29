@@ -195,20 +195,103 @@ import type {
 
 ## Current Implementation Status
 
-| Category        | Functions | Tests   | Documentation | Completeness                          |
-| --------------- | --------- | ------- | ------------- | ------------------------------------- |
-| **Any**         | 8/10      | 60%     | 70%           | 🟡 Partial                            |
-| **Array**       | 12/50+    | 80%     | 85%           | 🟡 Basic                              |
-| **Boolean**     | 3/5       | 100%    | 90%           | 🟢 Good                               |
-| **Error**       | 25/30     | 90%     | 85%           | 🟢 Excellent                          |
-| **Function**    | 20/30     | 75%     | 70%           | 🟢 Good                               |
-| **Iterable**    | 25/60+    | 65%     | 60%           | 🟡 Partial                            |
-| **Numeric**     | 15/25     | 85%     | 80%           | 🟢 Good                               |
-| **String**      | 20/40+    | 85%     | 75%           | 🟢 Good                               |
-| **Object**      | Partial   | Partial | Partial       | 🟡 Record pick, omit, and merge exist |
-| **Date**        | 0/25+     | 0%      | 0%            | 🔴 Missing                            |
-| **Math**        | 0/20+     | 0%      | 0%            | 🔴 Missing                            |
-| **Collections** | 5/20+     | 40%     | 50%           | 🔴 Basic                              |
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Functions</th>
+<th>Tests</th>
+<th>Documentation</th>
+<th>Completeness</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>**Any**</td>
+<td>8/10</td>
+<td>60%</td>
+<td>70%</td>
+<td>🟡 Partial</td>
+</tr>
+<tr>
+<td>**Array**</td>
+<td>12/50+</td>
+<td>80%</td>
+<td>85%</td>
+<td>🟡 Basic</td>
+</tr>
+<tr>
+<td>**Boolean**</td>
+<td>3/5</td>
+<td>100%</td>
+<td>90%</td>
+<td>🟢 Good</td>
+</tr>
+<tr>
+<td>**Error**</td>
+<td>25/30</td>
+<td>90%</td>
+<td>85%</td>
+<td>🟢 Excellent</td>
+</tr>
+<tr>
+<td>**Function**</td>
+<td>20/30</td>
+<td>75%</td>
+<td>70%</td>
+<td>🟢 Good</td>
+</tr>
+<tr>
+<td>**Iterable**</td>
+<td>25/60+</td>
+<td>65%</td>
+<td>60%</td>
+<td>🟡 Partial</td>
+</tr>
+<tr>
+<td>**Numeric**</td>
+<td>15/25</td>
+<td>85%</td>
+<td>80%</td>
+<td>🟢 Good</td>
+</tr>
+<tr>
+<td>**String**</td>
+<td>20/40+</td>
+<td>85%</td>
+<td>75%</td>
+<td>🟢 Good</td>
+</tr>
+<tr>
+<td>**Object**</td>
+<td>Partial</td>
+<td>Partial</td>
+<td>Partial</td>
+<td>🟡 Record pick, omit, and merge exist</td>
+</tr>
+<tr>
+<td>**Date**</td>
+<td>0/25+</td>
+<td>0%</td>
+<td>0%</td>
+<td>🔴 Missing</td>
+</tr>
+<tr>
+<td>**Math**</td>
+<td>0/20+</td>
+<td>0%</td>
+<td>0%</td>
+<td>🔴 Missing</td>
+</tr>
+<tr>
+<td>**Collections**</td>
+<td>5/20+</td>
+<td>40%</td>
+<td>50%</td>
+<td>🔴 Basic</td>
+</tr>
+</tbody>
+</table>
 
 **Target**: 500+ utility functions across 20+ categories
 

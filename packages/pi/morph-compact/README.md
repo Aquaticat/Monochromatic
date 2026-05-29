@@ -67,11 +67,32 @@ higher than traditional summarization would use for two reasons:
    more context per cycle keeps the model's working memory closer to the full
    conversation, reducing accumulated drift across repeated compactions.
 
-| Context usage | Ratio | Lines kept |
-| ------------- | ----- | ---------- |
-| >80%          | 0.3   | 30%        |
-| >60%          | 0.4   | 40%        |
-| else          | 0.5   | 50%        |
+<table>
+<thead>
+<tr>
+<th>Context usage</th>
+<th>Ratio</th>
+<th>Lines kept</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>>80%</td>
+<td>0.3</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>>60%</td>
+<td>0.4</td>
+<td>40%</td>
+</tr>
+<tr>
+<td>else</td>
+<td>0.5</td>
+<td>50%</td>
+</tr>
+</tbody>
+</table>
 
 ## Commands
 

@@ -69,16 +69,57 @@ gracefully rather than throwing.
 
 ## Bug fixes vs upstream pi-safeguard
 
-| Aspect                     | pi-safeguard                                | pi-auto-mode                                           |
-| -------------------------- | ------------------------------------------- | ------------------------------------------------------ |
-| `isSystemPath` check       | Present (causes `/var/home` false positive) | Removed                                                |
-| Budget model API           | Calls removed `getApiKey()`                 | Calls `getApiKeyAndHeaders()`                          |
-| Error handling in evaluate | Bare `catch` swallows TypeErrors            | Logs error, falls back to ask-user                     |
-| Config validation          | (none in upstream)                          | Valibot (Standard-Schema-compatible)                   |
-| Budget model               | Separate `pi-budget-model` package          | Inlined `budget-model.ts`                              |
-| Bash parser                | `@aliou/sh` (UNLICENSED, three gap bugs)    | `shell-quote` (MIT) plus targeted extraction           |
-| `--` separator             | Not handled in `hasFlag()`                  | Handled                                                |
-| Judge response format      | Free-text JSON                              | Forced tool-calling, direct-JSON retry, logged text parser fallback |
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>pi-safeguard</th>
+<th>pi-auto-mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`isSystemPath` check</td>
+<td>Present (causes `/var/home` false positive)</td>
+<td>Removed</td>
+</tr>
+<tr>
+<td>Budget model API</td>
+<td>Calls removed `getApiKey()`</td>
+<td>Calls `getApiKeyAndHeaders()`</td>
+</tr>
+<tr>
+<td>Error handling in evaluate</td>
+<td>Bare `catch` swallows TypeErrors</td>
+<td>Logs error, falls back to ask-user</td>
+</tr>
+<tr>
+<td>Config validation</td>
+<td>(none in upstream)</td>
+<td>Valibot (Standard-Schema-compatible)</td>
+</tr>
+<tr>
+<td>Budget model</td>
+<td>Separate `pi-budget-model` package</td>
+<td>Inlined `budget-model.ts`</td>
+</tr>
+<tr>
+<td>Bash parser</td>
+<td>`@aliou/sh` (UNLICENSED, three gap bugs)</td>
+<td>`shell-quote` (MIT) plus targeted extraction</td>
+</tr>
+<tr>
+<td>`--` separator</td>
+<td>Not handled in `hasFlag()`</td>
+<td>Handled</td>
+</tr>
+<tr>
+<td>Judge response format</td>
+<td>Free-text JSON</td>
+<td>Forced tool-calling, direct-JSON retry, logged text parser fallback</td>
+</tr>
+</tbody>
+</table>
 
 ## Configuration
 

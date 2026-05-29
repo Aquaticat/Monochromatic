@@ -11,7 +11,7 @@ mark this decision superseded; do not delete it.
 
 The user asked what it would take to add browser-style window tabs to KDE Plasma,
 using `leafOfTree/WindowTabs` as the motivating example:
-https://github.com/leafOfTree/WindowTabs
+<https://github.com/leafOfTree/WindowTabs>
 
 The current environment during the evaluation was KDE Plasma/KWin `6.6.4` on Wayland.
 That matters because an external utility cannot control native Wayland windows through
@@ -21,17 +21,17 @@ A KDE implementation needs KWin cooperation.
 KDE has direct prior art. Plasma 4.4 shipped window tabbing, described in KDE's
 release announcement as grouping windows into tabs in the upper window border,
 with middle-mouse drag onto another decoration bar or a titlebar context menu action:
-https://kde.org/announcements/4/4.4.0/plasma/
+<https://kde.org/announcements/4/4.4.0/plasma/>
 
 Old KWin/X11 contained core tab-group implementation. The `KDE/kwin-x11` Plasma 5.0
 branch had `TabGroup`, with behavior for adding/removing tabs, switching current tabs,
 closing groups, and syncing window state:
-https://raw.githubusercontent.com/KDE/kwin-x11/Plasma/5.0/tabgroup.h
-https://raw.githubusercontent.com/KDE/kwin-x11/Plasma/5.0/tabgroup.cpp
+<https://raw.githubusercontent.com/KDE/kwin-x11/Plasma/5.0/tabgroup.h>
+<https://raw.githubusercontent.com/KDE/kwin-x11/Plasma/5.0/tabgroup.cpp>
 
 Old KWin user actions exposed tab operations such as `Attach as tab to`, `Switch to Tab`,
 `Untab`, and `Close Entire Group`:
-https://raw.githubusercontent.com/KDE/kwin-x11/Plasma/5.0/useractions.cpp
+<https://raw.githubusercontent.com/KDE/kwin-x11/Plasma/5.0/useractions.cpp>
 
 Current KWin still contains config fossils for tab behavior. A local source search of
 `/tmp/kilo/kwin-shallow` found `InactiveTabsSkipTaskbar`, `AutogroupSimilarWindows`,
@@ -41,25 +41,25 @@ and `AutogroupInForeground` in `src/kwin.kcfg`, but found no active `TabGroup` o
 KDE upstream has already rejected restoring the feature in its old form. Bug 343690
 is resolved intentional, with discussion around missing Plasma 5 tabbing and CSD
 (client-side decoration) problems:
-https://bugs.kde.org/show_bug.cgi?id=343690
+<https://bugs.kde.org/show_bug.cgi?id=343690>
 
 Bug 474739 was closed as a duplicate of 343690 with the response that KDE is not bringing
 this back:
-https://bugs.kde.org/show_bug.cgi?id=474739
+<https://bugs.kde.org/show_bug.cgi?id=474739>
 
 A KDecoration2 API attempt, Phabricator D3472, was abandoned. Review feedback called out
 duplicated tab logic and the risk of decoration-local state diverging from core tab state:
-https://phabricator.kde.org/D3472
+<https://phabricator.kde.org/D3472>
 
 A modern prototype exists: `Aziroshin/kwin-window-tabbing`. It uses a KWin script plus a
 Python/PySide tab-bar helper, and its README says it is semi-usable for simple cases,
 glitchy, missing features, and not Plasma 6-ready:
-https://github.com/Aziroshin/kwin-window-tabbing
+<https://github.com/Aziroshin/kwin-window-tabbing>
 
 A related KWin script, `hnjae/kwin-scripts` Simple Window Groups, demonstrates script-level
 window grouping, show/hide behavior, shortcuts, and titlebar menu integration, but it is not
 persistent frame-level tabbing:
-https://github.com/hnjae/kwin-scripts
+<https://github.com/hnjae/kwin-scripts>
 
 ## Decision
 
@@ -100,11 +100,11 @@ Expected maintenance was estimated as:
 
 KDE's Plasma 6 schedule currently targets feature releases around a four-month cadence, with
 multiple bugfix releases after each stable release:
-https://community.kde.org/Schedules/Plasma_6
+<https://community.kde.org/Schedules/Plasma_6>
 
 KWin scripting API compatibility is a concrete risk. KDE Discuss includes a Plasma 5 to Plasma 6
 KWin scripting thread where a KDE developer says Plasma 6 brought breaking changes to KWin scripts:
-https://discuss.kde.org/t/kwin-scripting-from-5-x-to-6-x-compatible/2905
+<https://discuss.kde.org/t/kwin-scripting-from-5-x-to-6-x-compatible/2905>
 
 ## Rejected path
 

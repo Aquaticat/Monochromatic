@@ -239,17 +239,82 @@ The index is split into two files:
 
 ### Supported package managers
 
-| Manager | Detection           | Search                   | Install                            | Privilege |
-| ------- | ------------------- | ------------------------ | ---------------------------------- | --------- |
-| apt     | `apt-get --version` | `apt-cache show`         | `apt-get install --yes`            | sudo      |
-| dnf     | `dnf --version`     | `dnf info`               | `dnf install --assumeyes`          | sudo      |
-| pacman  | `pacman --version`  | `pacman -Si`             | `pacman -S --noconfirm`            | sudo      |
-| apk     | `apk --version`     | `apk info --description` | `apk add`                          | sudo      |
-| zypper  | `zypper --version`  | `zypper info`            | `zypper install --non-interactive` | sudo      |
-| brew    | `brew --version`    | `brew info`              | `brew install`                     | user      |
-| winget  | `winget --version`  | `winget show --exact`    | `winget install --id --exact`      | user      |
-| scoop   | `scoop --version`   | `scoop info`             | `scoop install`                    | user      |
-| choco   | `choco --version`   | `choco info`             | `choco install --yes`              | admin     |
+<table>
+<thead>
+<tr>
+<th>Manager</th>
+<th>Detection</th>
+<th>Search</th>
+<th>Install</th>
+<th>Privilege</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>apt</td>
+<td>`apt-get --version`</td>
+<td>`apt-cache show`</td>
+<td>`apt-get install --yes`</td>
+<td>sudo</td>
+</tr>
+<tr>
+<td>dnf</td>
+<td>`dnf --version`</td>
+<td>`dnf info`</td>
+<td>`dnf install --assumeyes`</td>
+<td>sudo</td>
+</tr>
+<tr>
+<td>pacman</td>
+<td>`pacman --version`</td>
+<td>`pacman -Si`</td>
+<td>`pacman -S --noconfirm`</td>
+<td>sudo</td>
+</tr>
+<tr>
+<td>apk</td>
+<td>`apk --version`</td>
+<td>`apk info --description`</td>
+<td>`apk add`</td>
+<td>sudo</td>
+</tr>
+<tr>
+<td>zypper</td>
+<td>`zypper --version`</td>
+<td>`zypper info`</td>
+<td>`zypper install --non-interactive`</td>
+<td>sudo</td>
+</tr>
+<tr>
+<td>brew</td>
+<td>`brew --version`</td>
+<td>`brew info`</td>
+<td>`brew install`</td>
+<td>user</td>
+</tr>
+<tr>
+<td>winget</td>
+<td>`winget --version`</td>
+<td>`winget show --exact`</td>
+<td>`winget install --id --exact`</td>
+<td>user</td>
+</tr>
+<tr>
+<td>scoop</td>
+<td>`scoop --version`</td>
+<td>`scoop info`</td>
+<td>`scoop install`</td>
+<td>user</td>
+</tr>
+<tr>
+<td>choco</td>
+<td>`choco --version`</td>
+<td>`choco info`</td>
+<td>`choco install --yes`</td>
+<td>admin</td>
+</tr>
+</tbody>
+</table>
 
 Privilege escalation is auto-detected: `sudo` is prepended for managers that need root,
 skipped when already running as root (UID 0 / container context).

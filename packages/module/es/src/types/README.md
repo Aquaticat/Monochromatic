@@ -23,40 +23,144 @@ A sophisticated hierarchical organization system for TypeScript utilities, built
 
 **"I need to..."**
 
-| Use Case                           | Path Pattern                                                             | Example                                                                                                                                               |
-| ---------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Check if value is string           | `type boolean/type is/type param string/from/type unknown/`              | [`import { $ as isString }`](type%20boolean/type%20is/type%20param%20string/from/type%20unknown/restriction%20sync/params%20positional/index.ts)      |
-| Convert any value to export string | `type string/from/type any/export/`                                      | [`import { $ as toExport }`](type%20string/from/type%20any/export/restriction%20sync/params%20positional/index.ts)                                    |
-| Generate UUID                      | `type string/type uuid/from/type never/random/`                          | [`import { $ as randomUUID }`](type%20string/type%20uuid/from/type%20never/random/restriction%20sync/params%20positional/index.ts)                    |
-| Convert iterable to array          | `type object/type array/from/type iterable/`                             | [`import { $ as iterableToArray }`](type%20object/type%20array/from/type%20iterable/restriction%20sync/params%20positional/index.ts)                  |
-| Generate number sequence           | `type function/type generator/type param number/from/type number/range/` | [`import { $ as rangeGenerator }`](type function/type generator/type param number/from/type number/range/restriction sync/params positional/index.ts) |
-| Join string array                  | `type string/from/type array/type param string/concat/`                  | [`import { $ as arrayConcat }`](type%20string/from/type%20array/type%20param%20string/concat/restriction%20sync/params%20positional/index.ts)         |
+<table>
+<thead>
+<tr>
+<th>Use Case</th>
+<th>Path Pattern</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Check if value is string</td>
+<td>`type boolean/type is/type param string/from/type unknown/`</td>
+<td>[`import { $ as isString }`](type%20boolean/type%20is/type%20param%20string/from/type%20unknown/restriction%20sync/params%20positional/index.ts)</td>
+</tr>
+<tr>
+<td>Convert any value to export string</td>
+<td>`type string/from/type any/export/`</td>
+<td>[`import { $ as toExport }`](type%20string/from/type%20any/export/restriction%20sync/params%20positional/index.ts)</td>
+</tr>
+<tr>
+<td>Generate UUID</td>
+<td>`type string/type uuid/from/type never/random/`</td>
+<td>[`import { $ as randomUUID }`](type%20string/type%20uuid/from/type%20never/random/restriction%20sync/params%20positional/index.ts)</td>
+</tr>
+<tr>
+<td>Convert iterable to array</td>
+<td>`type object/type array/from/type iterable/`</td>
+<td>[`import { $ as iterableToArray }`](type%20object/type%20array/from/type%20iterable/restriction%20sync/params%20positional/index.ts)</td>
+</tr>
+<tr>
+<td>Generate number sequence</td>
+<td>`type function/type generator/type param number/from/type number/range/`</td>
+<td>[`import { $ as rangeGenerator }`](type function/type generator/type param number/from/type number/range/restriction sync/params positional/index.ts)</td>
+</tr>
+<tr>
+<td>Join string array</td>
+<td>`type string/from/type array/type param string/concat/`</td>
+<td>[`import { $ as arrayConcat }`](type%20string/from/type%20array/type%20param%20string/concat/restriction%20sync/params%20positional/index.ts)</td>
+</tr>
+</tbody>
+</table>
 
 ### Type-Based Lookup
 
-| Return Type    | Base Path                                                            | Common Operations                         |
-| -------------- | -------------------------------------------------------------------- | ----------------------------------------- |
-| `string`       | [`type string/`](type%20string/)                                     | from any, from array, concat, transform   |
-| `boolean`      | [`type boolean/`](type%20boolean/)                                   | type guards (is), validation, comparison  |
-| `Array<T>`     | [`type object/type array/`](type%20object/type%20array/)             | from iterable, from range, transformation |
-| `Generator<T>` | [`type function/type generator/`](type%20function/type%20generator/) | ranges, sequences, lazy iteration         |
+<table>
+<thead>
+<tr>
+<th>Return Type</th>
+<th>Base Path</th>
+<th>Common Operations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`string`</td>
+<td>[`type string/`](type%20string/)</td>
+<td>from any, from array, concat, transform</td>
+</tr>
+<tr>
+<td>`boolean`</td>
+<td>[`type boolean/`](type%20boolean/)</td>
+<td>type guards (is), validation, comparison</td>
+</tr>
+<tr>
+<td>`Array<T>`</td>
+<td>[`type object/type array/`](type%20object/type%20array/)</td>
+<td>from iterable, from range, transformation</td>
+</tr>
+<tr>
+<td>`Generator<T>`</td>
+<td>[`type function/type generator/`](type%20function/type%20generator/)</td>
+<td>ranges, sequences, lazy iteration</td>
+</tr>
+</tbody>
+</table>
 
 ### Operation-Based Lookup
 
-| Operation   | Pattern                                                     | Examples                         |
-| ----------- | ----------------------------------------------------------- | -------------------------------- |
-| Type guards | `type boolean/type is/type param {type}/from/type unknown/` | string, number, object checks    |
-| Conversions | `type {output}/from/type {input}/`                          | any to string, iterable to array |
-| Generators  | `type function/type generator/type param {type}/from/`      | ranges, sequences                |
-| Exports     | `type string/from/type any/export/`                         | serialization, code generation   |
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Pattern</th>
+<th>Examples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Type guards</td>
+<td>`type boolean/type is/type param {type}/from/type unknown/`</td>
+<td>string, number, object checks</td>
+</tr>
+<tr>
+<td>Conversions</td>
+<td>`type {output}/from/type {input}/`</td>
+<td>any to string, iterable to array</td>
+</tr>
+<tr>
+<td>Generators</td>
+<td>`type function/type generator/type param {type}/from/`</td>
+<td>ranges, sequences</td>
+</tr>
+<tr>
+<td>Exports</td>
+<td>`type string/from/type any/export/`</td>
+<td>serialization, code generation</td>
+</tr>
+</tbody>
+</table>
 
 ### Constraint Filtering
 
-| Constraint        | Suffix               | Purpose                   |
-| ----------------- | -------------------- | ------------------------- |
-| Sync only         | `restriction sync/`  | No async operations       |
-| Positional params | `params positional/` | Function(a, b, c) style   |
-| Named params      | `params named/`      | Function({a, b, c}) style |
+<table>
+<thead>
+<tr>
+<th>Constraint</th>
+<th>Suffix</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sync only</td>
+<td>`restriction sync/`</td>
+<td>No async operations</td>
+</tr>
+<tr>
+<td>Positional params</td>
+<td>`params positional/`</td>
+<td>Function(a, b, c) style</td>
+</tr>
+<tr>
+<td>Named params</td>
+<td>`params named/`</td>
+<td>Function({a, b, c}) style</td>
+</tr>
+</tbody>
+</table>
 
 ## Organizational Principles
 
@@ -487,13 +591,42 @@ type string/type uuid/from/type never/random/restriction sync/params positional/
 
 ### Common Navigation Shortcuts
 
-| Want to...                 | Navigate to...                  | Then look for...                       |
-| -------------------------- | ------------------------------- | -------------------------------------- |
-| Convert anything to string | `type string/from/`             | `type any/`, `type unknown/`           |
-| Create type guards         | `type boolean/type is/`         | `type param {type}/from/type unknown/` |
-| Generate sequences         | `type function/type generator/` | `from/type number/range/`              |
-| Transform arrays           | `type string/from/type array/`  | Specific operations like `concat/`     |
-| Create arrays              | `type object/type array/from/`  | Input type like `type iterable/`       |
+<table>
+<thead>
+<tr>
+<th>Want to...</th>
+<th>Navigate to...</th>
+<th>Then look for...</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Convert anything to string</td>
+<td>`type string/from/`</td>
+<td>`type any/`, `type unknown/`</td>
+</tr>
+<tr>
+<td>Create type guards</td>
+<td>`type boolean/type is/`</td>
+<td>`type param {type}/from/type unknown/`</td>
+</tr>
+<tr>
+<td>Generate sequences</td>
+<td>`type function/type generator/`</td>
+<td>`from/type number/range/`</td>
+</tr>
+<tr>
+<td>Transform arrays</td>
+<td>`type string/from/type array/`</td>
+<td>Specific operations like `concat/`</td>
+</tr>
+<tr>
+<td>Create arrays</td>
+<td>`type object/type array/from/`</td>
+<td>Input type like `type iterable/`</td>
+</tr>
+</tbody>
+</table>
 
 ### Cross-Reference System
 
@@ -808,22 +941,68 @@ The utilities are being migrated from the legacy [`../type/`](../../../../../bak
 
 #### Directory Mapping
 
-| Legacy Path                    | New Path                                     | Status         |
-| ------------------------------ | -------------------------------------------- | -------------- |
-| `../type/typeof/string/`       | `type string/type typeof/from/type unknown/` | ✅ Migrated    |
-| `../type/custom/string/jsonc/` | `type string/from/type string/jsonc/`        | 🔄 In Progress |
-| `../type/custom/object/array/` | `type object/type array/from/`               | 🔄 In Progress |
-| `../type/typeof/boolean/`      | `type boolean/type is/from/type unknown/`    | ✅ Migrated    |
+<table>
+<thead>
+<tr>
+<th>Legacy Path</th>
+<th>New Path</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`../type/typeof/string/`</td>
+<td>`type string/type typeof/from/type unknown/`</td>
+<td>✅ Migrated</td>
+</tr>
+<tr>
+<td>`../type/custom/string/jsonc/`</td>
+<td>`type string/from/type string/jsonc/`</td>
+<td>🔄 In Progress</td>
+</tr>
+<tr>
+<td>`../type/custom/object/array/`</td>
+<td>`type object/type array/from/`</td>
+<td>🔄 In Progress</td>
+</tr>
+<tr>
+<td>`../type/typeof/boolean/`</td>
+<td>`type boolean/type is/from/type unknown/`</td>
+<td>✅ Migrated</td>
+</tr>
+</tbody>
+</table>
 
 #### Function Name Mapping
 
 Legacy functions used descriptive names; new structure uses `$` for consistency:
 
-| Legacy                    | New                        | Import Pattern                      |
-| ------------------------- | -------------------------- | ----------------------------------- |
-| `isString(value)`         | `export function $(value)` | `import { $ as isString }`          |
-| `arrayFromIterable(iter)` | `export function $(iter)`  | `import { $ as arrayFromIterable }` |
-| `generateUUID()`          | `export function $()`      | `import { $ as generateUUID }`      |
+<table>
+<thead>
+<tr>
+<th>Legacy</th>
+<th>New</th>
+<th>Import Pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`isString(value)`</td>
+<td>`export function $(value)`</td>
+<td>`import { $ as isString }`</td>
+</tr>
+<tr>
+<td>`arrayFromIterable(iter)`</td>
+<td>`export function $(iter)`</td>
+<td>`import { $ as arrayFromIterable }`</td>
+</tr>
+<tr>
+<td>`generateUUID()`</td>
+<td>`export function $()`</td>
+<td>`import { $ as generateUUID }`</td>
+</tr>
+</tbody>
+</table>
 
 ### Migration Checklist for Developers
 
@@ -852,7 +1031,7 @@ The migration involves some breaking changes:
 
 ### When to Create New Utilities
 
-#### Create New Utilities When:
+#### Create New Utilities When
 
 ✅ **Solving a common problem**
 
@@ -882,7 +1061,7 @@ type string/from/type array/type param string/concat/restriction sync/params pos
 type string/type uuid/from/type never/random/restriction sync/params positional/
 ```
 
-#### Extend Existing Utilities When:
+#### Extend Existing Utilities When
 
 ❌ **Adding minor variations**
 

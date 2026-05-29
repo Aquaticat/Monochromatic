@@ -8,13 +8,48 @@ Externalize hardcoded values to make the application more flexible and configura
 
 ## 2. Current Hardcoded Values
 
-| Value               | Current               | Location      | Purpose                           |
-| ------------------- | --------------------- | ------------- | --------------------------------- |
-| `FETCH_INTERVAL_MS` | 300000 ms / 5 minutes | `interval.ts` | Fetch-cache time bucket           |
-| Display limit       | 100 items             | `html.ts`     | Maximum items shown in UI         |
-| Poll interval       | 1000ms                | `client.ts`   | Client-side asset check frequency |
-| Fetch timeout       | 30 seconds            | Various       | HTTP request timeout              |
-| File paths          | Hardcoded             | Various       | JSONL, OPML locations             |
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Current</th>
+<th>Location</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`FETCH_INTERVAL_MS`</td>
+<td>300000 ms / 5 minutes</td>
+<td>`interval.ts`</td>
+<td>Fetch-cache time bucket</td>
+</tr>
+<tr>
+<td>Display limit</td>
+<td>100 items</td>
+<td>`html.ts`</td>
+<td>Maximum items shown in UI</td>
+</tr>
+<tr>
+<td>Poll interval</td>
+<td>1000ms</td>
+<td>`client.ts`</td>
+<td>Client-side asset check frequency</td>
+</tr>
+<tr>
+<td>Fetch timeout</td>
+<td>30 seconds</td>
+<td>Various</td>
+<td>HTTP request timeout</td>
+</tr>
+<tr>
+<td>File paths</td>
+<td>Hardcoded</td>
+<td>Various</td>
+<td>JSONL, OPML locations</td>
+</tr>
+</tbody>
+</table>
 
 ## 3. Tasks
 

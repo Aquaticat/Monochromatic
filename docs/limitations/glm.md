@@ -204,9 +204,22 @@ Across the auto-mode package, the only logs are five `console.error` calls in er
 
 `README.md`:
 
-| Aspect             | pi-safeguard         | pi-auto-mode                       |
-| ------------------ | -------------------- | ---------------------------------- |
-| Verdict extraction | `parseVerdict(text)` | Read `toolCall.arguments` directly |
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>pi-safeguard</th>
+<th>pi-auto-mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Verdict extraction</td>
+<td>`parseVerdict(text)`</td>
+<td>Read `toolCall.arguments` directly</td>
+</tr>
+</tbody>
+</table>
 
 `judge-stream.ts:73-77`:
 

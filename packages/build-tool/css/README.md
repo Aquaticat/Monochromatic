@@ -125,16 +125,48 @@ import { applyMixins, } from '@monochromatic-dev/build-css/ts';
 
 ## Module structure
 
-| File                | Purpose                                                               |
-| ------------------- | --------------------------------------------------------------------- |
-| `index.ts`          | CLI entry point with argument parsing                                 |
-| `build.ts`          | Orchestrates the full pipeline; exports `build()` and `applyMixins()` |
-| `import.ts`         | Custom PostCSS `@import` plugin with monorepo-aware resolution        |
-| `mixin.ts`          | `collectMixins` and `expandApplyRules` (PostCSS walkers)              |
-| `mixin-registry.ts` | Mixin storage, nested `@apply` expansion, type guards                 |
-| `fs.ts`             | Adaptive file reader (in-memory registry with `node:fs` fallback)     |
-| `fs-registry.ts`    | In-memory `Map` for browser-side file storage                         |
-| `process-shim.ts`   | Minimal `globalThis.process` shim for browser environments            |
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`index.ts`</td>
+<td>CLI entry point with argument parsing</td>
+</tr>
+<tr>
+<td>`build.ts`</td>
+<td>Orchestrates the full pipeline; exports `build()` and `applyMixins()`</td>
+</tr>
+<tr>
+<td>`import.ts`</td>
+<td>Custom PostCSS `@import` plugin with monorepo-aware resolution</td>
+</tr>
+<tr>
+<td>`mixin.ts`</td>
+<td>`collectMixins` and `expandApplyRules` (PostCSS walkers)</td>
+</tr>
+<tr>
+<td>`mixin-registry.ts`</td>
+<td>Mixin storage, nested `@apply` expansion, type guards</td>
+</tr>
+<tr>
+<td>`fs.ts`</td>
+<td>Adaptive file reader (in-memory registry with `node:fs` fallback)</td>
+</tr>
+<tr>
+<td>`fs-registry.ts`</td>
+<td>In-memory `Map` for browser-side file storage</td>
+</tr>
+<tr>
+<td>`process-shim.ts`</td>
+<td>Minimal `globalThis.process` shim for browser environments</td>
+</tr>
+</tbody>
+</table>
 
 ## Testing
 

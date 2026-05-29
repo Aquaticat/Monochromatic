@@ -51,16 +51,57 @@ for each definition:
 
 ### Primitives (8 types, same as stock Kiwi)
 
-| ~index | type_raw | Type   |
-| ------ | -------- | ------ |
-| 0      | -1       | bool   |
-| 1      | -2       | byte   |
-| 2      | -3       | int    |
-| 3      | -4       | uint   |
-| 4      | -5       | float  |
-| 5      | -6       | string |
-| 6      | -7       | int64  |
-| 7      | -8       | uint64 |
+<table>
+<thead>
+<tr>
+<th>~index</th>
+<th>type_raw</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>-1</td>
+<td>bool</td>
+</tr>
+<tr>
+<td>1</td>
+<td>-2</td>
+<td>byte</td>
+</tr>
+<tr>
+<td>2</td>
+<td>-3</td>
+<td>int</td>
+</tr>
+<tr>
+<td>3</td>
+<td>-4</td>
+<td>uint</td>
+</tr>
+<tr>
+<td>4</td>
+<td>-5</td>
+<td>float</td>
+</tr>
+<tr>
+<td>5</td>
+<td>-6</td>
+<td>string</td>
+</tr>
+<tr>
+<td>6</td>
+<td>-7</td>
+<td>int64</td>
+</tr>
+<tr>
+<td>7</td>
+<td>-8</td>
+<td>uint64</td>
+</tr>
+</tbody>
+</table>
 
 ### Difference from stock Kiwi schema
 
@@ -177,12 +218,47 @@ and nodeChanges are typically present.
 
 All three file types decoded 100%:
 
-| File                                   | Type | Doc bytes | Nodes | Decoded |
-| -------------------------------------- | ---- | --------- | ----- | ------- |
-| Color palette - base.fig               | fig  | 2,779     | 8     | 100%    |
-| ScholarCopilot.fig                     | fig  | 3,718,268 | 2,976 | 100%    |
-| MTM6162-040 participation 2 cover.deck | deck | 114,358   | 59    | 100%    |
-| Todo app - Brainstorming.jam           | jam  | 621,850   | 58    | 100%    |
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Type</th>
+<th>Doc bytes</th>
+<th>Nodes</th>
+<th>Decoded</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Color palette - base.fig</td>
+<td>fig</td>
+<td>2,779</td>
+<td>8</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>ScholarCopilot.fig</td>
+<td>fig</td>
+<td>3,718,268</td>
+<td>2,976</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>MTM6162-040 participation 2 cover.deck</td>
+<td>deck</td>
+<td>114,358</td>
+<td>59</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>Todo app - Brainstorming.jam</td>
+<td>jam</td>
+<td>621,850</td>
+<td>58</td>
+<td>100%</td>
+</tr>
+</tbody>
+</table>
 
 ## Research files
 

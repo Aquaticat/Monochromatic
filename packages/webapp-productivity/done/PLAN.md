@@ -1110,10 +1110,27 @@ Coolify's reverse proxy handles HTTPS termination: the orchestrator only listens
 
 **Services:**
 
-| Service        | Image                                     | Purpose                                    |
-| -------------- | ----------------------------------------- | ------------------------------------------ |
-| `orchestrator` | Custom (Bun + app code)                   | Auth, reverse proxy, process management    |
-| `llama-cpp`    | `ghcr.io/ggml-org/llama.cpp:server` (CPU) | Shared AI inference, OpenAI-compatible API |
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Image</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`orchestrator`</td>
+<td>Custom (Bun + app code)</td>
+<td>Auth, reverse proxy, process management</td>
+</tr>
+<tr>
+<td>`llama-cpp`</td>
+<td>`ghcr.io/ggml-org/llama.cpp:server` (CPU)</td>
+<td>Shared AI inference, OpenAI-compatible API</td>
+</tr>
+</tbody>
+</table>
 
 The orchestrator container spawns per-user Bun processes as child processes within itself (not separate containers).
 Each child process runs `Bun.build()` at startup to bundle client assets: no separate build step in the Dockerfile.
@@ -1257,31 +1274,121 @@ Read-only inbound for MVP. Outbound writes deferred post-competition.
 A throwaway flashcard app was built pre-competition to validate the architecture.
 These patterns are confirmed working: no surprises expected during implementation.
 
-| Pattern                                                    | Status        | Notes                                                                      |
-| ---------------------------------------------------------- | ------------- | -------------------------------------------------------------------------- |
-| build-css -> Bun.build() -> Bun.serve() pipeline           | **validated** | Runs at startup, restarts cleanly with `bun --watch`                       |
-| Bun.serve() `routes` with `:param` and per-method dispatch | **validated** | Type-safe params, SIMD-accelerated, replaces hand-written router           |
-| Embedded JSON (`<script type="application/json">`)         | **validated** | Client reads with `JSON.parse(el.textContent)`                             |
-| CSS-as-text-import (Bun.build() inlines CSS strings)       | **validated** | `import styles from "..." with { type: "text" }` works                     |
-| @mixin/@apply via @monochromatic-dev/build-css             | **validated** | LightningCSS + PostCSS expansion, oxc-resolver works under Bun             |
-| Custom elements                                            | **validated** | `<flash-card>` with shadow DOM, attributes, events                         |
-| zod validation on API routes                               | **validated** | Schema validation with error messages                                      |
-| fetch() mutations + window.location.reload()               | **validated** | Simple mutation pattern, no client-side state sync                         |
-| bun:sqlite in-memory DB                                    | **validated** | CRUD, foreign keys, WAL mode                                               |
-| Bun.file() auto Content-Type                               | **validated** | No manual content-type mapping needed                                      |
-| Static imports for DB + route handlers                     | **validated** | Dynamic imports unnecessary: top-level await ensures build completes first |
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>build-css -> Bun.build() -> Bun.serve() pipeline</td>
+<td>**validated**</td>
+<td>Runs at startup, restarts cleanly with `bun --watch`</td>
+</tr>
+<tr>
+<td>Bun.serve() `routes` with `:param` and per-method dispatch</td>
+<td>**validated**</td>
+<td>Type-safe params, SIMD-accelerated, replaces hand-written router</td>
+</tr>
+<tr>
+<td>Embedded JSON (`<script type="application/json">`)</td>
+<td>**validated**</td>
+<td>Client reads with `JSON.parse(el.textContent)`</td>
+</tr>
+<tr>
+<td>CSS-as-text-import (Bun.build() inlines CSS strings)</td>
+<td>**validated**</td>
+<td>`import styles from "..." with { type: "text" }` works</td>
+</tr>
+<tr>
+<td>@mixin/@apply via @monochromatic-dev/build-css</td>
+<td>**validated**</td>
+<td>LightningCSS + PostCSS expansion, oxc-resolver works under Bun</td>
+</tr>
+<tr>
+<td>Custom elements</td>
+<td>**validated**</td>
+<td>`<flash-card>` with shadow DOM, attributes, events</td>
+</tr>
+<tr>
+<td>zod validation on API routes</td>
+<td>**validated**</td>
+<td>Schema validation with error messages</td>
+</tr>
+<tr>
+<td>fetch() mutations + window.location.reload()</td>
+<td>**validated**</td>
+<td>Simple mutation pattern, no client-side state sync</td>
+</tr>
+<tr>
+<td>bun:sqlite in-memory DB</td>
+<td>**validated**</td>
+<td>CRUD, foreign keys, WAL mode</td>
+</tr>
+<tr>
+<td>Bun.file() auto Content-Type</td>
+<td>**validated**</td>
+<td>No manual content-type mapping needed</td>
+</tr>
+<tr>
+<td>Static imports for DB + route handlers</td>
+<td>**validated**</td>
+<td>Dynamic imports unnecessary: top-level await ensures build completes first</td>
+</tr>
+</tbody>
+</table>
 
 ### Not yet tested (verify early in implementation)
 
-| Pattern                                        | Risk   | Mitigation                                              |
-| ---------------------------------------------- | ------ | ------------------------------------------------------- |
-| FTS5 full-text search                          | low    | Standard SQLite extension, well-documented              |
-| llama.cpp HTTP client + structured JSON output | medium | Test on day 4 with real model before wiring UI          |
-| File/BLOB attachments in SQLite                | low    | Standard bun:sqlite, deferred feature anyway            |
-| 5 client entrypoints (vs 2 tested)             | low    | Bun.build() is fast, linear scaling expected            |
-| setInterval timer tick on client               | low    | Standard browser API, trivial to test                   |
-| @upyo/smtp email sending                       | medium | External dependency, test with real SMTP early          |
-| Orchestrator multi-process spawning            | high   | Most complex untested piece: budget extra time on day 5 |
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FTS5 full-text search</td>
+<td>low</td>
+<td>Standard SQLite extension, well-documented</td>
+</tr>
+<tr>
+<td>llama.cpp HTTP client + structured JSON output</td>
+<td>medium</td>
+<td>Test on day 4 with real model before wiring UI</td>
+</tr>
+<tr>
+<td>File/BLOB attachments in SQLite</td>
+<td>low</td>
+<td>Standard bun:sqlite, deferred feature anyway</td>
+</tr>
+<tr>
+<td>5 client entrypoints (vs 2 tested)</td>
+<td>low</td>
+<td>Bun.build() is fast, linear scaling expected</td>
+</tr>
+<tr>
+<td>setInterval timer tick on client</td>
+<td>low</td>
+<td>Standard browser API, trivial to test</td>
+</tr>
+<tr>
+<td>@upyo/smtp email sending</td>
+<td>medium</td>
+<td>External dependency, test with real SMTP early</td>
+</tr>
+<tr>
+<td>Orchestrator multi-process spawning</td>
+<td>high</td>
+<td>Most complex untested piece: budget extra time on day 5</td>
+</tr>
+</tbody>
+</table>
 
 ## Risk areas
 

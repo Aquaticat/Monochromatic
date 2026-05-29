@@ -14,12 +14,42 @@ The package provides two entry points:
 
 Both expose the same named exports:
 
-| Export  | Returns       | Environment    | Description                                                           |
-| ------- | ------------- | -------------- | --------------------------------------------------------------------- |
-| `hHtml` | `string`      | Any JS runtime | Server-side HTML with automatic XSS escaping                          |
-| `hCss`  | `string`      | Any JS runtime | CSS rules and at-rules with strict property/value types via `csstype` |
-| `hDom`  | `HTMLElement` | Browser only   | Live DOM elements via `document.createElement`                        |
-| `hXml`  | `string`      | Any JS runtime | Well-formed XML with namespace support and self-closing tags          |
+<table>
+<thead>
+<tr>
+<th>Export</th>
+<th>Returns</th>
+<th>Environment</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`hHtml`</td>
+<td>`string`</td>
+<td>Any JS runtime</td>
+<td>Server-side HTML with automatic XSS escaping</td>
+</tr>
+<tr>
+<td>`hCss`</td>
+<td>`string`</td>
+<td>Any JS runtime</td>
+<td>CSS rules and at-rules with strict property/value types via `csstype`</td>
+</tr>
+<tr>
+<td>`hDom`</td>
+<td>`HTMLElement`</td>
+<td>Browser only</td>
+<td>Live DOM elements via `document.createElement`</td>
+</tr>
+<tr>
+<td>`hXml`</td>
+<td>`string`</td>
+<td>Any JS runtime</td>
+<td>Well-formed XML with namespace support and self-closing tags</td>
+</tr>
+</tbody>
+</table>
 
 All `css*` value constructors (`cssRem`, `cssVar`, `cssOklch`, etc.) are also
 top-level named exports.

@@ -76,15 +76,60 @@ Each fix revealed a new constraint that nobody had documented.
 
 ### The 7 versions
 
-| Version | Approach                        | Failure                       | Sandbox constraint discovered             |
-| ------- | ------------------------------- | ----------------------------- | ----------------------------------------- |
-| V1      | `PIPESTATUS` via `;` separator  | `_bof` gets non-numeric value | `;` splits into separate shell contexts   |
-| V2      | `{ cmd; echo EC:$?; }` grouping | `bash: command not found: {`  | `{` treated as command name               |
-| V3      | Direct `$PIPESTATUS`            | Same as V1                    | (repeat of constraint 1)                  |
-| V4      | `bash -c` wrapper               | `!` escaped to `\!`           | Extra shell layer corrupts quoting        |
-| V5      | `set -o pipefail &&`            | SIGPIPE exit 141              | `< /dev/null` appended to last command    |
-| V6      | `\|\| (exit $?)` suffix         | `$?` is empty                 | Variables don't expand in suffix position |
-| V7      | `&& true` suffix                | **Works**                     | ;                                         |
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Approach</th>
+<th>Failure</th>
+<th>Sandbox constraint discovered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V1</td>
+<td>`PIPESTATUS` via `;` separator</td>
+<td>`_bof` gets non-numeric value</td>
+<td>`;` splits into separate shell contexts</td>
+</tr>
+<tr>
+<td>V2</td>
+<td>`{ cmd; echo EC:$?; }` grouping</td>
+<td>`bash: command not found: {`</td>
+<td>`{` treated as command name</td>
+</tr>
+<tr>
+<td>V3</td>
+<td>Direct `$PIPESTATUS`</td>
+<td>Same as V1</td>
+<td>(repeat of constraint 1)</td>
+</tr>
+<tr>
+<td>V4</td>
+<td>`bash -c` wrapper</td>
+<td>`!` escaped to `\!`</td>
+<td>Extra shell layer corrupts quoting</td>
+</tr>
+<tr>
+<td>V5</td>
+<td>`set -o pipefail &&`</td>
+<td>SIGPIPE exit 141</td>
+<td>`< /dev/null` appended to last command</td>
+</tr>
+<tr>
+<td>V6</td>
+<td>`|| (exit $?)` suffix</td>
+<td>`$?` is empty</td>
+<td>Variables don't expand in suffix position</td>
+</tr>
+<tr>
+<td>V7</td>
+<td>`&& true` suffix</td>
+<td>**Works**</td>
+<td>;</td>
+</tr>
+</tbody>
+</table>
 
 **The solution:** `set -o pipefail && cmd 2>&1 | bun filter && true`.
 No shell variables, no special syntax, no nested shells.

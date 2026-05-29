@@ -10,20 +10,77 @@ Implement efficient caching to reduce server load, improve performance, and prov
 
 ### 2.1 Why Caddy Proxy Over In-App Caching
 
-| Aspect                         | Caddy Caching Proxy                | In-Application Caching                                    |
-| ------------------------------ | ---------------------------------- | --------------------------------------------------------- |
-| **Implementation Complexity**  | ✅ Minimal - Just change fetch URL | ❌ High - Need cache library, storage, invalidation logic |
-| **Code Changes Required**      | ✅ 1-line change per fetch         | ❌ Extensive refactoring, new dependencies                |
-| **Memory Usage**               | ✅ Zero application memory         | ❌ Stores cache in app memory/disk                        |
-| **Performance**                | ✅ Caddy optimized C code          | ⚠️ JavaScript overhead                                     |
-| **Scalability**                | ✅ Scales independently            | ❌ Each app instance has separate cache                   |
-| **Cache Sharing**              | ✅ All instances share cache       | ❌ Each instance maintains own cache                      |
-| **ETags/Conditional Requests** | ✅ Built-in support                | ❌ Manual implementation needed                           |
-| **Stale-While-Revalidate**     | ✅ Native Caddy feature            | ❌ Complex to implement correctly                         |
-| **Cache Persistence**          | ✅ Survives app restarts           | ❌ Lost on restart (unless persisted)                     |
-| **Monitoring**                 | ✅ Caddy metrics/logs              | ❌ Custom instrumentation needed                          |
-| **Cache Invalidation**         | ✅ Caddy handles automatically     | ❌ Manual logic required                                  |
-| **Error Resilience**           | ✅ Can serve stale on errors       | ❌ Complex fallback logic needed                          |
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Caddy Caching Proxy</th>
+<th>In-Application Caching</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>**Implementation Complexity**</td>
+<td>✅ Minimal - Just change fetch URL</td>
+<td>❌ High - Need cache library, storage, invalidation logic</td>
+</tr>
+<tr>
+<td>**Code Changes Required**</td>
+<td>✅ 1-line change per fetch</td>
+<td>❌ Extensive refactoring, new dependencies</td>
+</tr>
+<tr>
+<td>**Memory Usage**</td>
+<td>✅ Zero application memory</td>
+<td>❌ Stores cache in app memory/disk</td>
+</tr>
+<tr>
+<td>**Performance**</td>
+<td>✅ Caddy optimized C code</td>
+<td>⚠️ JavaScript overhead</td>
+</tr>
+<tr>
+<td>**Scalability**</td>
+<td>✅ Scales independently</td>
+<td>❌ Each app instance has separate cache</td>
+</tr>
+<tr>
+<td>**Cache Sharing**</td>
+<td>✅ All instances share cache</td>
+<td>❌ Each instance maintains own cache</td>
+</tr>
+<tr>
+<td>**ETags/Conditional Requests**</td>
+<td>✅ Built-in support</td>
+<td>❌ Manual implementation needed</td>
+</tr>
+<tr>
+<td>**Stale-While-Revalidate**</td>
+<td>✅ Native Caddy feature</td>
+<td>❌ Complex to implement correctly</td>
+</tr>
+<tr>
+<td>**Cache Persistence**</td>
+<td>✅ Survives app restarts</td>
+<td>❌ Lost on restart (unless persisted)</td>
+</tr>
+<tr>
+<td>**Monitoring**</td>
+<td>✅ Caddy metrics/logs</td>
+<td>❌ Custom instrumentation needed</td>
+</tr>
+<tr>
+<td>**Cache Invalidation**</td>
+<td>✅ Caddy handles automatically</td>
+<td>❌ Manual logic required</td>
+</tr>
+<tr>
+<td>**Error Resilience**</td>
+<td>✅ Can serve stale on errors</td>
+<td>❌ Complex fallback logic needed</td>
+</tr>
+</tbody>
+</table>
 
 **Verdict**: Caddy proxy caching aligns perfectly with infrastructure-first philosophy
 
@@ -187,16 +244,57 @@ const response = await fetch(fetchUrl,);
 
 ## 6. Potential Considerations
 
-| Consideration                 | Impact                                             | Mitigation                                 |
-| ----------------------------- | -------------------------------------------------- | ------------------------------------------ |
-| **Infrastructure Dependency** | App requires Caddy to be properly configured       | Document Caddy config in deployment docs   |
-| **Additional Network Hop**    | ~5-10ms latency on cache misses                    | Negligible compared to external fetch time |
-| **URL Encoding Complexity**   | Feed URLs must be properly encoded as query params | Simple encodeURIComponent() wrapper        |
-| **Local Development**         | Developers need Caddy running locally              | Can fallback to direct fetch in dev mode   |
-| **Security Concerns**         | Open proxy could be abused if unrestricted         | Whitelist allowed domains in Caddy         |
-| **Debugging Complexity**      | Cache issues separate from app logs                | Correlate via request IDs/timestamps       |
-| **Single Point of Failure**   | If Caddy cache fails, all feeds fail               | Caddy HA setup or fallback to direct fetch |
-| **Cache Invalidation**        | Can't force refresh specific feeds easily          | Add cache-bust parameter when needed       |
+<table>
+<thead>
+<tr>
+<th>Consideration</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>**Infrastructure Dependency**</td>
+<td>App requires Caddy to be properly configured</td>
+<td>Document Caddy config in deployment docs</td>
+</tr>
+<tr>
+<td>**Additional Network Hop**</td>
+<td>~5-10ms latency on cache misses</td>
+<td>Negligible compared to external fetch time</td>
+</tr>
+<tr>
+<td>**URL Encoding Complexity**</td>
+<td>Feed URLs must be properly encoded as query params</td>
+<td>Simple encodeURIComponent() wrapper</td>
+</tr>
+<tr>
+<td>**Local Development**</td>
+<td>Developers need Caddy running locally</td>
+<td>Can fallback to direct fetch in dev mode</td>
+</tr>
+<tr>
+<td>**Security Concerns**</td>
+<td>Open proxy could be abused if unrestricted</td>
+<td>Whitelist allowed domains in Caddy</td>
+</tr>
+<tr>
+<td>**Debugging Complexity**</td>
+<td>Cache issues separate from app logs</td>
+<td>Correlate via request IDs/timestamps</td>
+</tr>
+<tr>
+<td>**Single Point of Failure**</td>
+<td>If Caddy cache fails, all feeds fail</td>
+<td>Caddy HA setup or fallback to direct fetch</td>
+</tr>
+<tr>
+<td>**Cache Invalidation**</td>
+<td>Can't force refresh specific feeds easily</td>
+<td>Add cache-bust parameter when needed</td>
+</tr>
+</tbody>
+</table>
 
 ## 7. Alternative: Research In-App Caching Libraries
 

@@ -21,9 +21,9 @@ All computation runs locally; no data leaves the machine.
 - **ffmpeg**: image capture and downscaling
 - **Spectacle** (KDE): screenshot capture (`spectacle -f -b -n`)
 - **v4l2** webcam at `/dev/video0`: webcam capture
-- [llama.cpp]: local LLM inference (`llama-server`)
+- [llama.cpp](https://github.com/ggerganov/llama.cpp): local LLM inference (`llama-server`)
 - [LFM2.5-VL-1.6B GGUF][LFM2.5-VL-1.6B] + mmproj: vision model files
-- [distrobox]: container to run llama-server (used here for AMD GPU overrides)
+- [distrobox](https://distrobox.it): container to run llama-server (used here for AMD GPU overrides)
 - **notify-send**: desktop notifications (libnotify)
 - **logger**: syslog logging (systemd)
 

@@ -112,10 +112,30 @@ It fails for several reasons:
 
 The two-layer split:
 
-| Layer                   | What                                                | Changes | Rebuild cost            |
-| ----------------------- | --------------------------------------------------- | ------- | ----------------------- |
-| Container image         | OS, KDE, system packages, mise binary, user account | Rarely  | ~10 min build + convert |
-| First-login provisioner | mise toolchains, dotfiles, ghostty, librewolf       | Often   | ~5 min run              |
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>What</th>
+<th>Changes</th>
+<th>Rebuild cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Container image</td>
+<td>OS, KDE, system packages, mise binary, user account</td>
+<td>Rarely</td>
+<td>~10 min build + convert</td>
+</tr>
+<tr>
+<td>First-login provisioner</td>
+<td>mise toolchains, dotfiles, ghostty, librewolf</td>
+<td>Often</td>
+<td>~5 min run</td>
+</tr>
+</tbody>
+</table>
 
 User-level changes never trigger an image rebuild.
 Image changes never require re-provisioning user tools.
@@ -126,13 +146,36 @@ The monorepo already has [file-enforcer](../../packages/dev-script/file-enforcer
 a declarative TypeScript tool for syncing derived files.
 Its primitives map directly to provisioner needs:
 
-| file-enforcer primitive           | Provisioner use                                   |
-| --------------------------------- | ------------------------------------------------- |
-| `exec()`                          | Clone repos, run `mise install`, install flatpaks |
-| `overwrite()` / `overwriteEach()` | Place dotfiles into `~/.config/`                  |
-| `cat()`                           | Read dotfile sources                              |
-| Content-based write skipping      | Idempotent re-runs for free                       |
-| Platform-aware `exec()` dispatch  | Cross-platform if needed later                    |
+<table>
+<thead>
+<tr>
+<th>file-enforcer primitive</th>
+<th>Provisioner use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>`exec()`</td>
+<td>Clone repos, run `mise install`, install flatpaks</td>
+</tr>
+<tr>
+<td>`overwrite()` / `overwriteEach()`</td>
+<td>Place dotfiles into `~/.config/`</td>
+</tr>
+<tr>
+<td>`cat()`</td>
+<td>Read dotfile sources</td>
+</tr>
+<tr>
+<td>Content-based write skipping</td>
+<td>Idempotent re-runs for free</td>
+</tr>
+<tr>
+<td>Platform-aware `exec()` dispatch</td>
+<td>Cross-platform if needed later</td>
+</tr>
+</tbody>
+</table>
 
 Writing the provisioner as a file-enforcer config
 reuses existing infrastructure instead of inventing a new tool.

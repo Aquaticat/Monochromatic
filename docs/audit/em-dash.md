@@ -15,27 +15,93 @@ AGENTS.md rule:
 
 Original audit (2026-05-10):
 
-| Category                      | Violations | Files |
-| ----------------------------- | ---------- | ----- |
-| Em-dash (`—`) prose asides    | 196        | 91    |
-| En-dash (`–`) violations      | 4          | 3     |
-| ASCII `--` em-dash substitute | 1058       | 369   |
-| ASCII `-` em-dash substitute  | 625        | 58    |
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Violations</th>
+<th>Files</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Em-dash (`—`) prose asides</td>
+<td>196</td>
+<td>91</td>
+</tr>
+<tr>
+<td>En-dash (`–`) violations</td>
+<td>4</td>
+<td>3</td>
+</tr>
+<tr>
+<td>ASCII `--` em-dash substitute</td>
+<td>1058</td>
+<td>369</td>
+</tr>
+<tr>
+<td>ASCII `-` em-dash substitute</td>
+<td>625</td>
+<td>58</td>
+</tr>
+</tbody>
+</table>
 
 Total original violations: 1883.
 
 Post-sweep counts (2026-05-14, issue #55):
 
-| Category         | Outside intentional | Inside intentional |
-| ---------------- | ------------------- | ------------------ |
-| Em-dash (`—`) MD | 0                   | 199                |
-| Em-dash (`—`) TS | 0                   | 0                  |
-| En-dash (`–`) MD | 0                   | 14                 |
-| En-dash (`–`) TS | 0                   | 2                  |
-| ASCII `--` MD    | preserved CLI args  | preserved CLI args |
-| ASCII `--` TS    | preserved CLI args  | preserved CLI args |
-| ASCII `-` MD     | preserved bullets   | preserved bullets  |
-| ASCII `-` TS     | preserved TSDoc     | preserved TSDoc    |
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Outside intentional</th>
+<th>Inside intentional</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Em-dash (`—`) MD</td>
+<td>0</td>
+<td>199</td>
+</tr>
+<tr>
+<td>Em-dash (`—`) TS</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>En-dash (`–`) MD</td>
+<td>0</td>
+<td>14</td>
+</tr>
+<tr>
+<td>En-dash (`–`) TS</td>
+<td>0</td>
+<td>2</td>
+</tr>
+<tr>
+<td>ASCII `--` MD</td>
+<td>preserved CLI args</td>
+<td>preserved CLI args</td>
+</tr>
+<tr>
+<td>ASCII `--` TS</td>
+<td>preserved CLI args</td>
+<td>preserved CLI args</td>
+</tr>
+<tr>
+<td>ASCII `-` MD</td>
+<td>preserved bullets</td>
+<td>preserved bullets</td>
+</tr>
+<tr>
+<td>ASCII `-` TS</td>
+<td>preserved TSDoc</td>
+<td>preserved TSDoc</td>
+</tr>
+</tbody>
+</table>
 
 Intentional content (preserved by exclusion list): `AUDIT.em-dash.md` itself
 (self-references), `PLANNING.forbidden-strings-em-dash.md`,

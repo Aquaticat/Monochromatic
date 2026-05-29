@@ -22,13 +22,13 @@ Each plugin's `.claude-plugin/plugin.json` declares hooks of the form:
 
 When a user installs the plugin, Claude Code copies the plugin source into a per-user cache
 (`~/.claude/plugins/cache`, per the Plugins reference at
-https://code.claude.com/docs/en/plugins-reference under "Plugin caching and file resolution") and resolves
+<https://code.claude.com/docs/en/plugins-reference> under "Plugin caching and file resolution") and resolves
 `${CLAUDE_PLUGIN_ROOT}` to that cache path.
 Claude Code does not automatically run `npm install`, `pnpm install`, a `prepare` script, or any other
 package manager step on the cached copy.
 
 The hook `command` field accepts a full shell command in shell form
-(per https://code.claude.com/docs/en/hooks under "Exec form and shell form"):
+(per <https://code.claude.com/docs/en/hooks> under "Exec form and shell form"):
 
 > Shell form runs when `args` is absent. The `command` string is passed to a shell: `sh -c` on macOS and
 > Linux, Git Bash on Windows, or PowerShell when Git Bash isn't installed.
@@ -38,7 +38,7 @@ This means the `command` field is not restricted to pointing at a pre-built arti
 it can also invoke a TypeScript-capable runtime against source.
 
 Claude Code also provides `${CLAUDE_PLUGIN_DATA}`, a persistent per-plugin directory documented at
-https://code.claude.com/docs/en/plugins-reference under "Persistent data directory".
+<https://code.claude.com/docs/en/plugins-reference> under "Persistent data directory".
 The reference includes a canonical example of a SessionStart hook that runs `npm install` into
 `${CLAUDE_PLUGIN_DATA}` when the plugin's bundled `package.json` differs from the persisted copy:
 

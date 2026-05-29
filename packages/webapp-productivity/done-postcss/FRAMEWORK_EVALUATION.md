@@ -45,12 +45,32 @@ With SSR off the table, Vapor's beta status becomes less concerning; client-only
 
 Checked Done's spec against what frameworks provide:
 
-| Framework feature     | Done's actual need                                                                                                                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **Reactivity**        | One `setInterval(1000)` for timer display. Everything else is user-initiated (tap -> fetch -> re-render).                             |
-| **Routing**           | 5 screens. A `switch` on `pathname` covers it. Task details and search are overlays, may not even need routes.                        |
-| **Client-side state** | All state lives in server SQLite. Client state is: one timer tick number, "is section collapsed" booleans, "is overlay open" boolean. |
-| **Component model**   | 5 screens, maybe 3-4 reusable elements (task card, chip editor, collapsible section, FAB).                                            |
+<table>
+<thead>
+<tr>
+<th>Framework feature</th>
+<th>Done's actual need</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>**Reactivity**</td>
+<td>One `setInterval(1000)` for timer display. Everything else is user-initiated (tap -> fetch -> re-render).</td>
+</tr>
+<tr>
+<td>**Routing**</td>
+<td>5 screens. A `switch` on `pathname` covers it. Task details and search are overlays, may not even need routes.</td>
+</tr>
+<tr>
+<td>**Client-side state**</td>
+<td>All state lives in server SQLite. Client state is: one timer tick number, "is section collapsed" booleans, "is overlay open" boolean.</td>
+</tr>
+<tr>
+<td>**Component model**</td>
+<td>5 screens, maybe 3-4 reusable elements (task card, chip editor, collapsible section, FAB).</td>
+</tr>
+</tbody>
+</table>
 
 No reactive state graph, no complex routing, no client-side store. A framework solves problems Done doesn't have.
 
