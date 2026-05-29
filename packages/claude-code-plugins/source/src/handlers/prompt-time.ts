@@ -4,7 +4,7 @@ import type {
 } from '@monochromatic-dev/claude-code-plugins-hook-types';
 import type { ReadonlyDeep, } from 'type-fest';
 
-import { formatTimeContext, } from '@monochromatic-dev/module-current-time-context';
+import { formatTimeContext, } from '@monochromatic-dev/module-current-time-context/ts';
 
 /**
  * Output of the prompt-time handler.

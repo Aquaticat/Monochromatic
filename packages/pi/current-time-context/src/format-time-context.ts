@@ -6,7 +6,7 @@
 
 import {
   formatTimeContext as sharedFormatTimeContext,
-} from '@monochromatic-dev/module-current-time-context';
+} from '@monochromatic-dev/module-current-time-context/ts';
 
 //region Formatting
 
