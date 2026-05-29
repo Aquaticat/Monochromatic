@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { iterableOrThrow, } from './iterable-or-throw.ts';
+import { iterableOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: iterableOrThrow.name,

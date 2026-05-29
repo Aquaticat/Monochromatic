@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { nonNullishOrThrow, } from './non-nullish-or-throw.ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: nonNullishOrThrow.name,

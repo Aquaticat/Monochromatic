@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { emptyOrThrow, } from './empty-or-throw.ts';
+import { emptyOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: emptyOrThrow.name,

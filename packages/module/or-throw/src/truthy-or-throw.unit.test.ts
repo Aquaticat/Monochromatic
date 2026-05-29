@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { truthyOrThrow, } from './truthy-or-throw.ts';
+import { truthyOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: truthyOrThrow.name,

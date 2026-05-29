@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { mapOrThrow, } from './map-or-throw.ts';
+import { mapOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: mapOrThrow.name,

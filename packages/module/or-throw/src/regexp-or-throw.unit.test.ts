@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { regExpOrThrow, } from './regexp-or-throw.ts';
+import { regExpOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 /* oxlint-disable no-restricted-syntax/no-regex -- this file tests regExpOrThrow; every test must construct a regex literal or RegExp instance as input. The regex sites here ARE the test fixtures. */
 

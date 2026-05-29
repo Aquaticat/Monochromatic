@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { booleanOrThrow, } from './boolean-or-throw.ts';
+import { booleanOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: booleanOrThrow.name,

@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { bigintOrThrow, } from './bigint-or-throw.ts';
+import { bigintOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: bigintOrThrow.name,

@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { setOrThrow, } from './set-or-throw.ts';
+import { setOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: setOrThrow.name,

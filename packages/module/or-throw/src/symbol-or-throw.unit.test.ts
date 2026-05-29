@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { symbolOrThrow, } from './symbol-or-throw.ts';
+import { symbolOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: symbolOrThrow.name,

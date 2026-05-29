@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { errorOrThrow, } from './error-or-throw.ts';
+import { errorOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: errorOrThrow.name,

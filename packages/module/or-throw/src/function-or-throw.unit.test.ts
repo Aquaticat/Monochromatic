@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { functionOrThrow, } from './function-or-throw.ts';
+import { functionOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 function double(n: number,): number {
   return n * 2;

@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { maybeAsyncIterableOrThrow, } from './maybe-async-iterable-or-throw.ts';
+import { maybeAsyncIterableOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: maybeAsyncIterableOrThrow.name,

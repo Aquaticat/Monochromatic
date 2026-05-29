@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { asyncIterableOrThrow, } from './async-iterable-or-throw.ts';
+import { asyncIterableOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: asyncIterableOrThrow.name,

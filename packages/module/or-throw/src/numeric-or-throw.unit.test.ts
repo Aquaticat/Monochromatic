@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { numericOrThrow, } from './numeric-or-throw.ts';
+import { numericOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: numericOrThrow.name,

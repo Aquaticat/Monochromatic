@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { promiseOrThrow, } from './promise-or-throw.ts';
+import { promiseOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: promiseOrThrow.name,

@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { weakSetOrThrow, } from './weak-set-or-throw.ts';
+import { weakSetOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: weakSetOrThrow.name,

@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { dateOrThrow, } from './date-or-throw.ts';
+import { dateOrThrow, } from '@monochromatic-dev/module-or-throw';
 
 await describe({
   name: dateOrThrow.name,
