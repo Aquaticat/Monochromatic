@@ -6,7 +6,7 @@
 import {
   createMcpServer,
   serve,
-} from '@monochromatic-dev/mcp-stdio';
+} from '@monochromatic-dev/mcp-stdio/ts';
 
 import {
   execTool,

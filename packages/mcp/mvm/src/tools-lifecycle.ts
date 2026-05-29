@@ -7,7 +7,7 @@ import { update, } from '@monochromatic-dev/cli-mvm/update';
 import {
   defineTool,
   type ToolEntry,
-} from '@monochromatic-dev/mcp-stdio';
+} from '@monochromatic-dev/mcp-stdio/ts';
 
 import {
   errorResponse,
