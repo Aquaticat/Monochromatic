@@ -9,6 +9,10 @@
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import {
+  initPromise,
+  logger,
+} from '@monochromatic-dev/module-logger/logger';
 import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 
 import { fileExists, } from '../images/convert.ts';
@@ -174,11 +178,6 @@ export async function ensureFavicons(
 
 //region Standalone execution: allows running via `mise run generate:favicons`
 if (import.meta.main) {
-  /** Lazily imported logger so library consumers do not pull in the side-effect initialiser. */
-  const {
-    logger,
-    initPromise,
-  } = await import('@monochromatic-dev/module-logger/logger');
   await initPromise;
   await ensureFavicons({ l: logger, },);
 }
