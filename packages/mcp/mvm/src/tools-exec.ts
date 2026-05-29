@@ -2,8 +2,10 @@
  * Command execution tool definitions: exec and run.
  * @module
  */
-import { exec, } from '@monochromatic-dev/cli-mvm/exec';
-import { run, } from '@monochromatic-dev/cli-mvm/run';
+import {
+  exec,
+  run,
+} from '@monochromatic-dev/cli-mvm/ts';
 import {
   defineTool,
   type ToolEntry,

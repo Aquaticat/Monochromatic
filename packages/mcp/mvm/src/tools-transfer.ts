@@ -5,7 +5,7 @@
 import {
   pullFile,
   pushFile,
-} from '@monochromatic-dev/cli-mvm/file-transfer';
+} from '@monochromatic-dev/cli-mvm/ts';
 import {
   defineTool,
   type ToolEntry,

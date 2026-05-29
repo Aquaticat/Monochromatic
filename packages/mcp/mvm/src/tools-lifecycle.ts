@@ -2,8 +2,10 @@
  * VM lifecycle tool definitions: list and update.
  * @module
  */
-import { list, } from '@monochromatic-dev/cli-mvm/list';
-import { update, } from '@monochromatic-dev/cli-mvm/update';
+import {
+  list,
+  update,
+} from '@monochromatic-dev/cli-mvm/ts';
 import {
   defineTool,
   type ToolEntry,

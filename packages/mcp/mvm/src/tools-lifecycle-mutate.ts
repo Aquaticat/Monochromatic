@@ -2,12 +2,12 @@
  * VM mutation tool definitions: create and destroy.
  * @module
  */
-import { clone, } from '@monochromatic-dev/cli-mvm/clone';
-import { create, } from '@monochromatic-dev/cli-mvm/create';
 import {
+  clone,
+  create,
   destroy,
   destroyAll,
-} from '@monochromatic-dev/cli-mvm/destroy';
+} from '@monochromatic-dev/cli-mvm/ts';
 import {
   defineTool,
   type ToolEntry,
