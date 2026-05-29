@@ -10,7 +10,9 @@
     "image-diff": "./src/cli.ts"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
   },
   "dependencies": {
     "@monochromatic-dev/module-logger": "workspace:*",
