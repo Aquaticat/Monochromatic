@@ -1,4 +1,4 @@
-import { wait, } from '@monochromatic-dev/module-async-time';
+import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,

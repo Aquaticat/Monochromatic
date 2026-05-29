@@ -7,6 +7,6 @@
  * namespace export `types.object.promise.from.number.wait.positional.portable.$`
  * continues to resolve.
  *
- * @see {@link import('@monochromatic-dev/module-async-time').wait}
+ * @see {@link import('@monochromatic-dev/module-async-time/ts').wait}
  */
-export { wait as $, } from '@monochromatic-dev/module-async-time';
+export { wait as $, } from '@monochromatic-dev/module-async-time/ts';

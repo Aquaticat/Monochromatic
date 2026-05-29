@@ -8,6 +8,6 @@
  * `types.object.promise.from.object.withTimeout.async.portable.$`
  * continues to resolve.
  *
- * @see {@link import('@monochromatic-dev/module-async-time').withTimeout}
+ * @see {@link import('@monochromatic-dev/module-async-time/ts').withTimeout}
  */
-export { withTimeout as $, } from '@monochromatic-dev/module-async-time';
+export { withTimeout as $, } from '@monochromatic-dev/module-async-time/ts';
