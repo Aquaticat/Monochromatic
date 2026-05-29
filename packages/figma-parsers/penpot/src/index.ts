@@ -8,7 +8,7 @@
  * @module figma-to-penpot
  */
 
-import type { FigmaFile, } from '@monochromatic-dev/figma-kiwi';
+import type { FigmaFile, } from '@monochromatic-dev/figma-kiwi/ts';
 
 import { ZipWriter, } from '@monochromatic-dev/module-zip-writer/ts';
 

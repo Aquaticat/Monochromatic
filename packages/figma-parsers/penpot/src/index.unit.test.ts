@@ -4,7 +4,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { FigmaFile as FigmaFileType, } from '@monochromatic-dev/figma-kiwi';
+import type { FigmaFile as FigmaFileType, } from '@monochromatic-dev/figma-kiwi/ts';
 import {
   convertFigmaToPenpot,
   figmaColorToHex,
