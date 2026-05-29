@@ -6,7 +6,9 @@
   "type": "module",
   "private": true,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./ts": "./src/index.ts",
+    "./ts/*": "./src/*"
   },
   "devDependencies": {
     "@monochromatic-dev/config-typescript": "workspace:*",
