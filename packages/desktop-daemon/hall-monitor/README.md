@@ -120,6 +120,4 @@ src/
 ```
 
 [Bun]: https://bun.sh
-[llama.cpp]: https://github.com/ggerganov/llama.cpp
 [LFM2.5-VL-1.6B]: https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B-GGUF
-[distrobox]: https://distrobox.it
