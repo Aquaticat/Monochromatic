@@ -18,8 +18,8 @@ import { build as buildCSS, } from '@monochromatic-dev/build-tool-css/ts';
 import {
   initPromise,
   logger,
-} from '@monochromatic-dev/module-logger/logger';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import {
   defineHandler,
   H3,

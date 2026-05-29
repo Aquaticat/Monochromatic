@@ -12,8 +12,8 @@ import { join, } from 'node:path';
 import {
   initPromise,
   logger,
-} from '@monochromatic-dev/module-logger/logger';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 
 import { fileExists, } from '../images/convert.ts';
 import type { Logger, } from '../lib/types.ts';

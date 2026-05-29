@@ -1,4 +1,4 @@
-import type { Logger, } from '@monochromatic-dev/module-logger/types';
+import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 /**
  * Universal pipeline-step supertype for the wide internal (implementation-side) signatures.

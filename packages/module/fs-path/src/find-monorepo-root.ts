@@ -12,7 +12,7 @@
  * @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   ABSENT,

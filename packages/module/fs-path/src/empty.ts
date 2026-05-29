@@ -14,7 +14,7 @@ import {
 } from 'node:fs/promises';
 import { posix, } from 'node:path';
 
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 /** Module-scoped tagged logger. */
 const l = tagged({ tag: 'path/empty', },);

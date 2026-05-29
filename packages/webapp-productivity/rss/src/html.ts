@@ -1,7 +1,7 @@
 /** HTML rendering for RSS feed pages, filtering out ignored entries. */
 
 import { hHtml as h, } from '@monochromatic-dev/module-hyperscript/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { itemToFeed, } from './html-item.ts';
 import {
   getIgnoreContent,

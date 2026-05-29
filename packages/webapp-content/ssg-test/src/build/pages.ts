@@ -4,7 +4,7 @@
  * Generates all HTML pages from posts and rendered content,
  * writing each to the dist directory.
  */
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { Locales, } from '../i18n/i18n-types.ts';
 

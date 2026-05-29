@@ -14,7 +14,7 @@ import {
   type Model,
   streamSimple,
 } from '@earendil-works/pi-ai';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   toolChoiceForApi,
   VERDICT_TOOL,

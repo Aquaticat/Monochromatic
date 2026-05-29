@@ -1,6 +1,6 @@
 import decircular from 'decircular';
 
-import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/logger';
+import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/ts';
 
 import { hasCycle, } from './has-cycle.ts';
 import type { Serializer, } from './types.ts';

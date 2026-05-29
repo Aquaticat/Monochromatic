@@ -14,7 +14,7 @@ import type {
   ExtensionContext,
   ToolCallEvent,
 } from '@earendil-works/pi-coding-agent';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { updateWidget, } from './ask-user.ts';
 import { loadMergedConfig, } from './config.ts';
 import { evaluate, } from './evaluate.ts';

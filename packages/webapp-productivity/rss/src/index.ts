@@ -1,4 +1,4 @@
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { memoizeAsync, } from '@monochromatic-dev/module-memoize/ts';
 import {
   defineHandler,

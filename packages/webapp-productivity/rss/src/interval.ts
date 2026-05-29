@@ -1,4 +1,4 @@
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   MS_PER_SECOND,
   SECONDS_PER_MINUTE,

@@ -14,7 +14,7 @@ import {
   type BudgetModelAuth,
   type Maybe,
 } from '@monochromatic-dev/pi-shared-model-selection/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { l as parentLogger, } from './log.ts';
 
 /** Tagged logger for budget-model auth adapters. */

@@ -8,7 +8,7 @@ import type {
   AssistantMessageEvent,
   ToolCall,
 } from '@earendil-works/pi-ai';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { extractJsonVerdict, } from './judge-json.ts';
 import { l as parentLogger, } from './log.ts';
 

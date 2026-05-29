@@ -12,7 +12,7 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from '@earendil-works/pi-coding-agent';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ReadonlyDeep, } from 'type-fest';
 import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import {

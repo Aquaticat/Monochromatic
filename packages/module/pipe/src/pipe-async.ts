@@ -1,8 +1,10 @@
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import {
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 import { runPipeAsync, } from './run.ts';
 
-import type { Logger, } from '@monochromatic-dev/module-logger/types';
 import type {
   AsyncStep,
   DeferredArgs,

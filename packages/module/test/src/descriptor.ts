@@ -12,7 +12,7 @@
  * @module
  */
 
-import type { Logger, } from '@monochromatic-dev/module-logger/types';
+import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 /**
  * Symbol-keyed dispatch method. Parent suites call this on each child

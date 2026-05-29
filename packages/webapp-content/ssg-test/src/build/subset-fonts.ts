@@ -32,8 +32,8 @@ import { fileURLToPath, } from 'node:url';
 import {
   initPromise,
   logger,
-} from '@monochromatic-dev/module-logger/logger';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import {
   init as initSubset,
   subset,

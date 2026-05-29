@@ -7,9 +7,11 @@
  * Results are reported through `describe`/`it` from `\@monochromatic-dev/module-test`.
  */
 
-import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/logger';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
-import type { Logger, } from '@monochromatic-dev/module-logger/types';
+import {
+  logger as defaultLogger,
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   it,

@@ -7,7 +7,7 @@
  * @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { readFileSync, } from 'node:fs';
 import { join, } from 'node:path';
 import * as v from 'valibot';

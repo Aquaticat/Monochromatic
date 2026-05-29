@@ -3,7 +3,7 @@ import {
   stringify as superjsonStringify,
 } from 'superjson';
 
-import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/logger';
+import { logger as defaultLogger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   buildDefaultBackends,

@@ -1,9 +1,9 @@
 import {
   initPromise,
   logger,
-} from '@monochromatic-dev/module-logger/logger';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
-import type { Logger, } from '@monochromatic-dev/module-logger/types';
+  tagged,
+  type Logger,
+} from '@monochromatic-dev/module-logger/ts';
 
 await initPromise;
 

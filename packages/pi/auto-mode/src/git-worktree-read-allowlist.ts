@@ -10,7 +10,7 @@ import {
   resolve,
 } from 'node:path';
 
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { l as parentLogger, } from './log.ts';
 

@@ -19,8 +19,8 @@ import readdir from 'tiny-readdir-glob';
 import {
   initPromise,
   logger,
-} from '@monochromatic-dev/module-logger/logger';
-import { tagged, } from '@monochromatic-dev/module-logger/tagged';
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 
 import { maybeConvert, } from './convert.ts';
 
