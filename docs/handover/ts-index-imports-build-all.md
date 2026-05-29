@@ -5,7 +5,8 @@ Live progress for the refactor described in the approved plan at
 done, what is next, and the gotchas a fresh session needs.
 
 Branch: `refactor/ts-index-imports-build-all` (created off `main`). Commit after each package; use explicit scoped
-pathspecs (`cli-git` rejects `git add -A`/`.`). Commit trailer: `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
+pathspecs (`cli-git` rejects `git add -A`/`.`). Commit trailer: `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`
+(the harness-specified form; an earlier "(1M context)" variant appears in older commits, harmless).
 
 ## Goal and locked decisions
 
@@ -236,6 +237,24 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
   tests import `../dist/.../index.mjs` whose `.d.mts` only exists after a build, so lint:types FALSE-FAILS on any
   package edited-but-not-yet-built. Run repo-wide lint:types only as a FINAL check after all dist exist. (Same reason
   `git clean -dX` then lint:types breaks until rebuild: inherent to the precedent's pattern.)
+- First-with-deps bundling CONFIRMED: the neutral config (`packages/config/tsdown/src/index.ts`) sets
+  `deps: { alwaysBundle: ['@monochromatic-dev/**'] }`, so workspace deps are INLINED into the self-contained bundle
+  (verified: `module-logger`/`numeric-format`/`toml-edit` dist `.mjs` have zero `@monochromatic-dev` imports). External
+  npm deps (e.g. `toml-eslint-parser`) stay EXTERNAL (one bare import in the dist, resolved from the consumer's
+  node_modules). Consequence: build order is irrelevant; a lib builds standalone regardless of whether its workspace
+  deps are built yet.
+- THE BY-NAME SMOKE-TEST LEVER (sharpens step 4): the dist's ONLY new risk vs source is re-export/bundle integrity;
+  the source unit tests already cover the logic and bundling adds no code paths. So you do NOT need every public test
+  routed through the dist -- you need the public surface exercised BY-NAME once (executes the bundle) PLUS the dts emit
+  (which fails the build if any index re-export is missing, covering re-export completeness for free). Practical rule:
+  if a package already has a by-name test (e.g. a `public-api.unit.test.ts`), it IS the smoke test -- flip with ZERO
+  test edits. If not, switch ONE or TWO broad round-trip tests to by-name and leave the rest on source. Internal-symbol
+  tests (symbols NOT in the index) CANNOT route through dist and MUST stay on source -- this is forced, not a choice.
+- A THIRD throwaway tool exists: `mise.switch-tests-byname.ts` (repo root, UNTRACKED). `bun mise.switch-tests-byname.ts
+  <pkgDir> <pkgName> [--dry]`. Switches a `*.unit.test.ts`'s relative own-source import to by-name, but ONLY for files
+  with EXACTLY ONE own-source import (no-merge tier); files with 2+ are reported and SKIPPED for hand-merge (the
+  `eslint/no-duplicate-imports` case). No regex (pure string scan), idempotent. Used for `module-or-throw` (25 files,
+  all single-binding public). buildAndTest is the oracle for internal-symbol mistakes.
 
 ### Done (all neutral, repo-wide lint:types not yet re-run as final — see Final verification)
 
@@ -243,17 +262,25 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
 - `module-const` (custom `test` aggregator variant; 5 tests switched to relative-to-dist) — `build(module-const): produce neutral dist`.
 - `module-function-arity` (`test:unit`; test already by-name, NO test edit) — `build(module-function-arity): produce neutral dist`.
 - `module-current-time-context` (`test:unit`; 1 test switched to by-name) — `build(module-current-time-context): produce neutral dist`.
+- `module-numeric-format` (custom `test` aggregator; 3 leaf tests switched to by-name; FIRST built lib WITH workspace
+  deps -- module-const + module-or-throw inlined) — `build(module-numeric-format): produce neutral dist`.
+- `module-or-throw` (`test:unit`; 25 single-binding public tests switched to by-name via `mise.switch-tests-byname.ts`)
+  — `build(module-or-throw): produce neutral dist`.
+- `module-i18n-compose` (`test:unit`; `public-api.unit.test.ts` already by-name = the smoke test, ZERO test edits)
+  — `build(module-i18n-compose): produce neutral dist`.
+- `module-toml-edit` (`test:unit`; two clean all-public round-trips `canonical`+`toml-delete` hand-merged to by-name;
+  toml-eslint-parser stays external; internal `tomlFloat`/`tomlInteger`/`encodeKey`/`isAttachedGap` tests stay on source)
+  — `build(module-toml-edit): produce neutral dist`.
 
 (Note: async-time/const used relative-to-dist `../dist/final/neutral/index.mjs`; later conversions use the cleaner
 by-name form. Both work; no need to retrofit the first two.)
 
 ### Remaining — bundle sets determined (deps + `node:` built-in scan)
 
-NEUTRAL, no bin (mechanical, recipe above): `module-i18n-compose` (9 tests), `module-or-throw` (25 tests),
-`module-numeric-format` (4 tests; deps module-const + module-or-throw, both neutral), `module-toml-edit` (18 tests;
-deps module-or-throw + toml-eslint-parser; confirm toml-eslint-parser isn't node-only), `claude-code-plugins-hook-types`
-(pure types, 0 tests, no module-test devDep -- build emits just the `.d.mts`; lowest value, consider whether it's worth
-building at all vs leaving source-only like the config-* packages).
+NEUTRAL, no bin: ALL DONE except `claude-code-plugins-hook-types` (pure types, 0 tests, no module-test devDep). A build
+would emit only a `.d.mts` with no runtime code -- there is no source-to-dist TRANSFORMATION, so it is analogous to the
+exempt pure-data config-* packages, NOT a buildable lib. RECOMMENDATION: leave it source-only (`.` stays at
+`./src/index.ts`); do not add a build. Confirm with the user if treating it as a build is desired, otherwise skip.
 
 VERIFY-THEN-ROUTE: `mcp-stdio` — an stdio MCP transport; likely uses `process` stdin/stdout (a global, so the `node:`
 grep missed it) -> probably NODE bundle. Check before converting.
