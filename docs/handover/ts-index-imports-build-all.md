@@ -160,13 +160,31 @@ TSDoc/README `@example` blocks still show old import forms. Known: `module/or-th
 (`@monochromatic-dev/claude-code-hook-types` — ALSO a WRONG package name, missing `plugins`). These do not affect
 lint:types or oxlint. Update them when convenient (the `/tagged` one becomes unimportable after Phase B2).
 
-## Phase B2: remove feature-named export entries
+## Phase B2: DONE (5 of 7 packages; 2 deferred to Phase C)
 
-After no consumer imports them, delete feature-named (and `<feature>/ts`) entries from each non-exempt package's
-`exports`, leaving `.`, `./ts`, `./ts/*`. Examples: `module-logger` (drop `./logger`, `./tagged`, `./types`);
-`module-fs-path` (drop `./find-monorepo-root`, `./find-package-root`); `pi-shared-model-selection` (drop `./core`,
-`./scope`, `./cost`, `./budget`, `./pi-coding-agent` and their `/ts` twins); `cli-mvm` (drop `./list`, `./create`, ...);
-`dev-script-inference-canary` (drop the TEMPORARY `./src/*` passthrough). Commit per package; verify `lint:types`.
+Removed feature-named (and `<feature>/ts`) export entries, leaving `.`, `./ts`, `./ts/*` (where it existed). Verified by
+the resolution sweep (still 0 in-scope non-`/ts` cross-package imports) + a repo-wide non-`.ts` reference grep (0
+references in `packages/` to any removed entry; the only hits are `packages-paused/` (out of scope), `docs/`, READMEs,
+and the throwaway tool) + a JSON-parse/keys check on each edited file. NOTE: `lint:types` is a WEAK B2 gate (a
+package.json-only edit may not invalidate a consumer's tsbuildinfo, so green can be stale); the sweep + 0-consumer proof
+is the real verification. It was green anyway.
+
+Done (one commit each): `module-logger` (`./logger`, `./tagged`, `./types`); `pi-shared-model-selection` (all 5
+per-feature dist entries `./core`/`./scope`/`./cost`/`./budget`/`./pi-coding-agent` AND their `/ts` twins — leaving
+`.`+`./ts`; the per-feature dist BUNDLES are collapsed to a single index in Phase C); `cli-mvm` (10 feature entries);
+`module-fs-path` (`./find-monorepo-root`, `./find-package-root`); `dev-script-inference-canary` (the temporary `./src/*`
+passthrough).
+
+DEFERRED to Phase C (structural, not simple dead-entry pruning):
+
+- `cli-vmsync`: its `exports` is feature-ONLY (`./import`, `./boot`, `./sync`, ...), with NO `.`/`./ts`/`./ts/*`. It was
+  never a Phase B target (0 cross-package consumers) and never got Phase A's `./ts`. Removing its only exports needs the
+  Phase A `./ts` add + the Phase C bin-build treatment together. All its feature exports are confirmed unimported.
+- `build-tool-css`: has explicit `./ts/fs-registry` + `./ts/process-shim` (a `/ts/<file>` form) and NO `./ts/*`
+  wildcard. Both are confirmed unimported (Phase B collapsed the one `done-postcss` consumer to `/ts`). Normalize to the
+  canonical `.`+`./ts`+`./ts/*` shape (replace the two explicit entries with a single `./ts/*`) during its Phase C build
+  review. (The advisor's "build-tool-css needs no B2 change" assumed it resolved via an existing `./ts/*`; the file has
+  no `./ts/*`, so the explicit entries are the thing to normalize, just not in B2.)
 
 ## Phase C: convert source-only and bin packages to builds (LAST)
 
