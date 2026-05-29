@@ -163,7 +163,9 @@ export function runPipe(args: RunArgs,): unknown {
       l.debug('5 steps',);
       return fn5(
         fn4(
-          fn3(fn2(fn1(value,),),),
+          fn3(
+            fn2(fn1(value,),),
+          ),
         ),
       );
     }
@@ -171,7 +173,11 @@ export function runPipe(args: RunArgs,): unknown {
       l.debug('6 steps',);
       return fn6(
         fn5(
-          fn4(fn3(fn2(fn1(value,),),),),
+          fn4(
+            fn3(
+              fn2(fn1(value,),),
+            ),
+          ),
         ),
       );
     }
@@ -179,7 +185,11 @@ export function runPipe(args: RunArgs,): unknown {
       l.debug('7 steps',);
       return fn7(
         fn6(
-          fn5(fn4(fn3(fn2(fn1(value,),),),),),
+          fn5(
+            fn4(
+              fn3(fn2(fn1(value,),),),
+            ),
+          ),
         ),
       );
     }
@@ -187,7 +197,11 @@ export function runPipe(args: RunArgs,): unknown {
       l.debug('8 steps',);
       return fn8(
         fn7(
-          fn6(fn5(fn4(fn3(fn2(fn1(value,),),),),),),
+          fn6(
+            fn5(
+              fn4(fn3(fn2(fn1(value,),),),),
+            ),
+          ),
         ),
       );
     }
@@ -195,7 +209,11 @@ export function runPipe(args: RunArgs,): unknown {
     l.debug('9 steps',);
     return fn9(
       fn8(
-        fn7(fn6(fn5(fn4(fn3(fn2(fn1(value,),),),),),),),
+        fn7(
+          fn6(
+            fn5(fn4(fn3(fn2(fn1(value,),),),),),
+          ),
+        ),
       ),
     );
   }
@@ -305,7 +323,9 @@ export async function runPipeAsync(args: RunArgs,): Promise<unknown> {
       l.debug('5 steps',);
       return await fn5(
         await fn4(
-          await fn3(await fn2(await fn1(await value,),),),
+          await fn3(
+            await fn2(await fn1(await value,),),
+          ),
         ),
       );
     }
@@ -313,7 +333,11 @@ export async function runPipeAsync(args: RunArgs,): Promise<unknown> {
       l.debug('6 steps',);
       return await fn6(
         await fn5(
-          await fn4(await fn3(await fn2(await fn1(await value,),),),),
+          await fn4(
+            await fn3(
+              await fn2(await fn1(await value,),),
+            ),
+          ),
         ),
       );
     }
@@ -321,7 +345,11 @@ export async function runPipeAsync(args: RunArgs,): Promise<unknown> {
       l.debug('7 steps',);
       return await fn7(
         await fn6(
-          await fn5(await fn4(await fn3(await fn2(await fn1(await value,),),),),),
+          await fn5(
+            await fn4(
+              await fn3(await fn2(await fn1(await value,),),),
+            ),
+          ),
         ),
       );
     }

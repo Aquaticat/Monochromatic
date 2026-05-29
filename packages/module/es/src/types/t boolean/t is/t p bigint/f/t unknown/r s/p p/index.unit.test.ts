@@ -20,7 +20,7 @@ await describe({
         expect(isBigint(BigInt(Number.MIN_SAFE_INTEGER,) - 1n,),).toBe(true,);
         // oxlint-disable-next-line unicorn/prefer-bigint-literals -- testing
         expect(
-          isBigint(123456789012345678901234567890n,),
+          isBigint(123_456_789_012_345_678_901_234_567_890n,),
         ).toBe(true,);
       },
     },),
