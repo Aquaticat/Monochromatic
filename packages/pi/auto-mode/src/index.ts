@@ -18,6 +18,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/tagged';
 import { updateWidget, } from './ask-user.ts';
 import { loadMergedConfig, } from './config.ts';
 import { evaluate, } from './evaluate.ts';
+import { linkedWorktreeReadAllowlistedDirs, } from './git-worktree-read-allowlist.ts';
 import { l as parentLogger, } from './log.ts';
 import { registerProposeTrust, } from './register-propose-trust.ts';
 import {
@@ -268,10 +269,13 @@ export default function autoMode(
           ?? '/home',
       };
       /** Read-only roots whose existing non-secret contents bypass location prompts. */
-      const readAllowlistedDirs: readonly string[] = [
-        ...agentTempReadAllowlistedDirs(),
-        ...currentSkillReadDirs,
-      ];
+      const readAllowlistedDirs: readonly string[] = event.toolName === 'read'
+        ? [
+          ...agentTempReadAllowlistedDirs(),
+          ...linkedWorktreeReadAllowlistedDirs({ cwd: ctx.cwd, },),
+          ...currentSkillReadDirs,
+        ]
+        : [];
 
       /** True when the tool call trips a static rule, or when a previous-turn denial promotes a relevant follow-up. */
       const flagged = shouldFlag({

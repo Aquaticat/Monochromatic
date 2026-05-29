@@ -117,9 +117,14 @@ there when they need repeated inspection outside the current project. The
 allowlist uses canonical filesystem paths, so symlinks that resolve outside
 `/tmp/agent` still go through the normal signal and judge pipeline.
 
+Auto-mode also allows `read` tool access to existing files in linked git
+worktrees attached to the current repository. The worktree list comes from real
+git metadata, and each candidate root is classified with `rev-parse` so the main
+worktree is not added to this cross-worktree allowlist.
+
 The allowlist is read-only and still preserves secret-path checks. `write`,
-`edit`, and `bash` tool calls targeting skill directories or `/tmp/agent` still
-go through the normal signal and judge pipeline.
+`edit`, and `bash` tool calls targeting skill directories, linked worktrees,
+or `/tmp/agent` still go through the normal signal and judge pipeline.
 
 ## Logging
 
