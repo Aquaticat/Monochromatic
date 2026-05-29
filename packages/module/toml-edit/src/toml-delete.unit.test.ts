@@ -13,10 +13,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlDelete, } from './toml-delete.ts';
-import { tomlGetValue, } from './toml-get-value.ts';
-import { tomlStringify, } from './toml-stringify.ts';
+import {
+  parseTomlEdit,
+  tomlDelete,
+  tomlGetValue,
+  tomlStringify,
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: tomlDelete.name,

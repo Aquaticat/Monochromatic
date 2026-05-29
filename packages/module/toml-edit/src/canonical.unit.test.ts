@@ -10,11 +10,13 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { emptyTomlEdit, } from './empty-toml-edit.ts';
-import { parseTomlEdit, } from './parse-toml-edit.ts';
-import { tomlSetHeaderComment, } from './toml-set-header-comment.ts';
-import { tomlSet, } from './toml-set.ts';
-import { tomlStringify, } from './toml-stringify.ts';
+import {
+  emptyTomlEdit,
+  parseTomlEdit,
+  tomlSet,
+  tomlSetHeaderComment,
+  tomlStringify,
+} from '@monochromatic-dev/module-toml-edit';
 
 await describe({
   name: 'canonical emission via emptyTomlEdit',
