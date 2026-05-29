@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { wait, } from './wait.ts';
+import { wait, } from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: wait.name,

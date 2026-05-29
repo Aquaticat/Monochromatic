@@ -10,7 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { withTimeout, } from './with-timeout.ts';
+import { withTimeout, } from '../dist/final/neutral/index.mjs';
 
 await describe({
   name: withTimeout.name,
