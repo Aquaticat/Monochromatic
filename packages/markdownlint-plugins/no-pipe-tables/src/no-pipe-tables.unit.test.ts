@@ -3,7 +3,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   applyFixes,
   type LintError,

@@ -1,4 +1,4 @@
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 /** Prefix used by Markdown backslash escapes. */
 const MARKDOWN_ESCAPE_PREFIX = '\\';

@@ -25,7 +25,7 @@ import {
 } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 /** Absolute directory of this module, used to locate the sibling codepoints file. */
 const HERE = import.meta.dirname;

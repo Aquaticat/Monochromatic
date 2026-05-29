@@ -4,7 +4,7 @@
  * @module
  */
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { attachedCommentsFor, } from './comments.ts';
 import { effectiveAt, } from './effective-value.ts';

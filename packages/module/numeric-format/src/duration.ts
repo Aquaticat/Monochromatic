@@ -30,7 +30,7 @@ import {
   SECONDS_PER_HOUR,
   SECONDS_PER_MINUTE,
 } from '@monochromatic-dev/module-const';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 /**
  * Cutoff below which a duration renders with one decimal place. Above

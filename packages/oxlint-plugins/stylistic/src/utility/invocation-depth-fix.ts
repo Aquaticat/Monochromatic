@@ -4,7 +4,7 @@ import type {
   Token,
 } from '@oxlint/plugins';
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { baseIndentAt, } from './indent.ts';
 import {

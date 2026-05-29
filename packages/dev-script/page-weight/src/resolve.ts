@@ -12,7 +12,7 @@ import {
   resolve as pathResolve,
 } from 'node:path';
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
   ABSENT,

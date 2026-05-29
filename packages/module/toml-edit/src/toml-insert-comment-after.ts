@@ -4,7 +4,7 @@
  * @module
  */
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { TomlPathNotFoundError, } from './errors.ts';
 import { formatPath, } from './path.ts';

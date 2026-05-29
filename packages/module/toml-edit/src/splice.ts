@@ -13,7 +13,7 @@
  * @module
  */
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { AST, } from 'toml-eslint-parser';
 
 import type {

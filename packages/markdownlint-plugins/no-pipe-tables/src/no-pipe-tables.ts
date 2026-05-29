@@ -3,7 +3,7 @@ import type {
   RuleOnError,
 } from 'markdownlint';
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type { ReadonlyToken, } from './token.ts';
 import toHtmlTable from './to-html-table.ts';

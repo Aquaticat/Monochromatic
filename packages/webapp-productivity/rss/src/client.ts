@@ -4,7 +4,7 @@ import {
   QUARTER,
   THREE_QUARTERS,
 } from '@monochromatic-dev/module-const';
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import * as v from 'valibot';
 
 //region Scroll event observer: Tracks element visibility and dispatches custom scroll lifecycle events

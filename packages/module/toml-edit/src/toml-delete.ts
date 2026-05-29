@@ -11,7 +11,7 @@
  * @module
  */
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   type AST,
   getStaticTOMLValue,

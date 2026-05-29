@@ -8,7 +8,7 @@ import type {
   VisitorWithHooks,
 } from '@oxlint/plugins';
 
-import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
   type ChainNode,
