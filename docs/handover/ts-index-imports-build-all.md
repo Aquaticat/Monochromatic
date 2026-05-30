@@ -243,6 +243,18 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
   npm deps (e.g. `toml-eslint-parser`) stay EXTERNAL (one bare import in the dist, resolved from the consumer's
   node_modules). Consequence: build order is irrelevant; a lib builds standalone regardless of whether its workspace
   deps are built yet.
+- DEP CLASSIFICATION decides the bundle shape (tsdown defaults): `dependencies`/`peerDependencies` are
+  EXTERNALIZED (bare import in dist, consumer installs); `devDependencies` are AUTO-BUNDLED inline (consumers never
+  install devDeps). The config's `alwaysBundle`/`neverBundle` override this. So a runtime dep that must ship inlined
+  belongs in devDeps OR `alwaysBundle`; a dep meant to stay external stays in `dependencies`. For each dep-heavy
+  package, classify accordingly and VERIFY by grepping the built dist's `import ... from` lines (the method used for
+  toml-edit/module-logger). Do NOT reclassify a package's existing deps without reason; respect its split + the config
+  overrides.
+- NODE config (`packages/config/tsdown/src/index.node.ts`): `platform: 'node'`, `outDir: dist/final/node`,
+  `alwaysBundle: ['@monochromatic-dev/**', 'find-up', 'nano-spawn']` (find-up/nano-spawn force-bundled despite being
+  `dependencies`), `neverBundle: ['@earendil-works/pi-coding-agent', 'typebox', '@earendil-works/pi-ai']` (pi runtime
+  peer deps, provided at load time -- bundling them causes CJS/ESM "exports is not defined"). Relevant to pi-shared and
+  any pi-* / CLI package consuming those peers.
 - THE BY-NAME SMOKE-TEST LEVER (sharpens step 4): the dist's ONLY new risk vs source is re-export/bundle integrity;
   the source unit tests already cover the logic and bundling adds no code paths. So you do NOT need every public test
   routed through the dist -- you need the public surface exercised BY-NAME once (executes the bundle) PLUS the dts emit
@@ -256,7 +268,7 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
   `eslint/no-duplicate-imports` case). No regex (pure string scan), idempotent. Used for `module-or-throw` (25 files,
   all single-binding public). buildAndTest is the oracle for internal-symbol mistakes.
 
-### Done (all neutral, repo-wide lint:types not yet re-run as final — see Final verification)
+### Done (neutral unless noted; repo-wide lint:types not yet re-run as final — see Final verification)
 
 - `module-async-time` (`test:unit` variant; tests switched to relative-to-dist) — `build(module-async-time): produce neutral dist (Phase C pilot)`.
 - `module-const` (custom `test` aggregator variant; 5 tests switched to relative-to-dist) — `build(module-const): produce neutral dist`.
@@ -271,6 +283,10 @@ Everything imports `/ts`, so flipping `.` from src to dist affects no in-repo co
 - `module-toml-edit` (`test:unit`; two clean all-public round-trips `canonical`+`toml-delete` hand-merged to by-name;
   toml-eslint-parser stays external; internal `tomlFloat`/`tomlInteger`/`encodeKey`/`isAttachedGap` tests stay on source)
   — `build(module-toml-edit): produce neutral dist`.
+- `mcp-stdio` (NODE bundle — uses process.stdin/stdout; `private: true`; FIRST node build) — per user direction the
+  index was EXPANDED to re-export the previously-internal `JSON_RPC_*` codes + `PROTOCOL_VERSION` + `readLines`, so all
+  4 tests route through dist: json-rpc + line-reader via the tool, transport (3) + server (5) hand-merged; added the
+  missing `test:unit` task — `build(mcp-stdio): produce node dist`.
 
 (Note: async-time/const used relative-to-dist `../dist/final/neutral/index.mjs`; later conversions use the cleaner
 by-name form. Both work; no need to retrofit the first two.)
@@ -282,8 +298,7 @@ would emit only a `.d.mts` with no runtime code -- there is no source-to-dist TR
 exempt pure-data config-* packages, NOT a buildable lib. RECOMMENDATION: leave it source-only (`.` stays at
 `./src/index.ts`); do not add a build. Confirm with the user if treating it as a build is desired, otherwise skip.
 
-VERIFY-THEN-ROUTE: `mcp-stdio` — an stdio MCP transport; likely uses `process` stdin/stdout (a global, so the `node:`
-grep missed it) -> probably NODE bundle. Check before converting.
+VERIFY-THEN-ROUTE: `mcp-stdio` — DONE (node bundle; see Done above). Confirmed it uses `process` stdin/stdout.
 
 NEUTRAL but cross-runtime/OPFS: `module-fs-path` (uses a computed `node:path` dynamic import + happy-opfs; its tests
 may need a non-node/DOM env). Do as its own mini-pilot.
