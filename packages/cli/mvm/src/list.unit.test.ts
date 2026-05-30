@@ -16,7 +16,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { splitOnWhitespace, } from './list.ts';
+import { splitOnWhitespace, } from '@monochromatic-dev/cli-mvm';
 
 /** Length for the long single-run cases; large enough to overflow a per-character recursion under an engine without tail-call elimination. */
 const STACK_RUN = 100_000;

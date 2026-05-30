@@ -717,9 +717,15 @@ importers:
         specifier: 'catalog:'
         version: 2.1.0
     devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
+      '@monochromatic-dev/module-fs-path':
+        specifier: workspace:*
+        version: link:../../module/fs-path
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
