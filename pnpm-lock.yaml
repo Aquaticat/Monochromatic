@@ -1509,6 +1509,9 @@ importers:
         specifier: 'catalog:'
         version: 2.0.2
     devDependencies:
+      '@monochromatic-dev/config-tsdown':
+        specifier: workspace:*
+        version: link:../../config/tsdown
       '@monochromatic-dev/config-typescript':
         specifier: workspace:*
         version: link:../../config/typescript
@@ -1518,6 +1521,9 @@ importers:
       '@types/bun':
         specifier: 'catalog:'
         version: 1.3.11
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.22.0(@typescript/native-preview@7.0.0-dev.20260507.1)(typescript@6.0.3)
       typescript:
         specifier: 'catalog:'
         version: 6.0.3

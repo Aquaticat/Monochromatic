@@ -5,9 +5,12 @@
   "type": "module",
   "version": "0.0.1",
   "private": true,
-  "module": "src/index.ts",
+  "module": "dist/final/neutral/index.mjs",
   "exports": {
-    ".": "./src/index.ts",
+    ".": {
+      "types": "./dist/final/neutral/index.d.mts",
+      "default": "./dist/final/neutral/index.mjs"
+    },
     "./ts": "./src/index.ts",
     "./ts/*": "./src/*"
   },
@@ -16,13 +19,16 @@
     "happy-opfs": "catalog:"
   },
   "devDependencies": {
+    "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:"
   },
   "files": [
-    "src"
+    "src",
+    "dist/final"
   ],
   "repository": {
     "type": "git",

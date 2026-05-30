@@ -105,3 +105,14 @@ when a browser consumer needs it.
 
 The path utilities (`dirname`, `join`, `resolve`, `isAbsolute`) delegate to `node:path/posix` when available and fall
 back to pure-JS implementations in `src/fallbacks.ts` otherwise.
+
+## Built artifact is node/bun only
+
+The source obfuscates the `node:path` specifier (`` `node${':path'}` ``) so browser bundlers cannot statically
+resolve it, keeping `src/` genuinely cross-runtime. Browser consumers import the `/ts` source, where that obfuscation
+is intact.
+
+The neutral `.` build (`dist/final/neutral/index.mjs`) is a different story: rolldown constant-folds the template
+literal back to a plain `import('node:path')`, so the built artifact is effectively node/bun-only. Nothing in this
+repo loads the `.` dist in a browser (all consumers use `/ts`), so this is inconsequential in practice, but do not
+assume the built `.` bundle is browser-loadable.

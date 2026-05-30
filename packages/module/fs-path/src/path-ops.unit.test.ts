@@ -26,7 +26,7 @@ import {
   join,
   resolve,
   sep,
-} from './index.ts';
+} from '@monochromatic-dev/module-fs-path';
 import {
   trimLeadingSlash,
   trimTrailingSlash,

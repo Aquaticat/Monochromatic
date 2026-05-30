@@ -1,3 +1,21 @@
+[tasks.build]
+extends = "build"
+
+[tasks.'build:js']
+extends = "build:js"
+
+[tasks.'build:js:browser']
+extends = "build:js:browser"
+
+[tasks.'watch:build']
+extends = "watch:build"
+
+[tasks.'watch:build:js']
+extends = "watch:build:js"
+
+[tasks.'watch:build:js:browser']
+extends = "watch:build:js:browser"
+
 [tasks.lint]
 extends = "lint"
 
@@ -10,3 +28,7 @@ extends = "lint:types"
 [tasks.test]
 description = "Run unit tests for fs-path"
 run = "bun src/self.unit.test.ts"
+
+[tasks.buildAndTest]
+description = "Build the neutral dist, then run the aggregator (path-ops imports the built `.` bundle as the smoke test)"
+run = "mise run build; mise run test"
