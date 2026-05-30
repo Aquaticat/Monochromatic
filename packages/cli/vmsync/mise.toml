@@ -3,8 +3,23 @@ description = "Run vmsync CLI"
 usage = 'arg "[args]" var=#true help="Subcommand and arguments"'
 run = "bun src/index.ts ...($env.usage_args? | default '' | split row ' ' | where {|part| $part != '' })"
 
+[tasks.build]
+extends = "build"
+
+[tasks.'build:js']
+extends = "build:js"
+
 [tasks.'build:js:node']
 extends = "build:js:node"
+
+[tasks.'watch:build']
+extends = "watch:build"
+
+[tasks.'watch:build:js']
+extends = "watch:build:js"
+
+[tasks.'watch:build:js:node']
+extends = "watch:build:js:node"
 
 [tasks.lint]
 extends = "lint"
@@ -17,6 +32,10 @@ extends = "lint:oxlint"
 
 [tasks.'test:unit']
 extends = "test:unit"
+
+[tasks.buildAndTest]
+description = "Build the node bin, then run unit tests (lifecycle.expensive VM tests run via test:e2e)"
+run = "mise run build; mise run test:unit"
 
 [tasks.'test:e2e']
 description = "Run vmsync VM lifecycle tests (creates VMs, requires KVM)"

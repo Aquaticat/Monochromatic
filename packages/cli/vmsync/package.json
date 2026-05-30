@@ -6,22 +6,12 @@
   "private": true,
   "main": "src/index.ts",
   "bin": {
-    "vmsync": "src/index.ts"
-  },
-  "exports": {
-    "./import": "./src/import.ts",
-    "./boot": "./src/boot.ts",
-    "./sync": "./src/sync.ts",
-    "./status": "./src/status.ts",
-    "./list": "./src/list.ts",
-    "./config": "./src/config.ts",
-    "./qemu-img": "./src/qemu-img.ts",
-    "./nbd": "./src/nbd.ts",
-    "./types": "./src/types.ts"
+    "vmsync": "dist/final/node/index.mjs"
   },
   "devDependencies": {
     "@monochromatic-dev/config-tsdown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
+    "@monochromatic-dev/module-fs-path": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
     "@types/bun": "catalog:",
     "find-up": "catalog:"
